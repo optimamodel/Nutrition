@@ -67,9 +67,11 @@ class Parameters:
    
    
 class FertileWomen:
-    def __init__(self, birthRateStunted, birthRateNonStunted, stuntedPopulationSize, nonStuntedPopulationSize):    
+    def __init__(self, birthRateStunted, birthRateNonStunted, stuntedPopulationSize, nonStuntedPopulationSize, probabilityOfStuntedBabyIfStunted, probabilityOfStuntedBabyIfNonStunted):    
         self.birthRateStunted = birthRateStunted
-        self.bithRateNonStunted = birthRateNonStunted
+        self.birthRateNonStunted = birthRateNonStunted
+        self.probabilityOfStuntedBabyIfStunted = probabilityOfStuntedBabyIfStunted
+        self.probabilityOfStuntedBabyIfNonStunted = probabilityOfStuntedBabyIfNonStunted
         self.stuntedPopulationSize = stuntedPopulationSize
         self.nonStuntedPopulationSize = nonStuntedPopulationSize
  
@@ -80,11 +82,23 @@ class Model:
         self.compartmentList = compartmentList
         
     def moveOneTimeStep(self):
-        #call update on compartment list
+        #call update on compartment list (independent of other compartments)
         for group in self.compartmentList:
             group.updateCompartment()
         
-#        #perform aging
+        #updates that involve interactions with other compartments
+        #1. births
+        newborns = self.compartmentList[0]
+        mums = self.fertileWomen
+        newStunted    = mums.stuntedPopulationSize    * mums.birthRateStunted    * mums.probabilityOfStuntedBabyIfStunted \
+            +           mums.nonStuntedPopulationSize * mums.birthRateNonStunted * mums.probabilityOfStuntedBabyIfNonStunted
+        newNonStunted = mums.stuntedPopulationSize    * mums.birthRateStunted    * (1. - mums.probabilityOfStuntedBabyIfStunted) \
+            +           mums.nonStuntedPopulationSize * mums.birthRateNonStunted * (1. - mums.probabilityOfStuntedBabyIfNonStunted)
+        newborns.conditions.stuntedPopulationSize    += newStunted
+        newborns.conditions.nonStuntedPopulationSize += newNonStunted
+        #2. perform aging
+            
+            
 #        #new births first
 #        saveThisPopulationSizeStunted = self.compartmentList[0].conditions.stuntedPopulationSize
 #        saveThisPopulationSizeNonStunted = self.compartmentList[0].conditions.nonStuntedPopulationSize        
