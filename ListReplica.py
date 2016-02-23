@@ -107,6 +107,9 @@ class Model:
             aging[ind-1]['stunted']    -= numStuntedAging
             aging[ind]['nonStunted']   += numNonStuntedAging
             aging[ind-1]['nonStunted'] -= numNonStuntedAging
+        for ind in range(numCompartments):
+            self.compartmentList[ind].conditions.stuntedPopulationSize    += aging[ind]['stunted']
+            self.compartmentList[ind].conditions.nonStuntedPopulationSize += aging[ind]['nonStunted']
             
 #        #new births first
 #        saveThisPopulationSizeStunted = self.compartmentList[0].conditions.stuntedPopulationSize
