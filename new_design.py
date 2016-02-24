@@ -38,11 +38,24 @@ class Model:
         
                 
     def applyAging(self):
+        numCompartments = len(self.listOfAgeCompartments)
         unagedListOfAgeCompartments = self.listOfAgeCompartments
-        for group in range(1, len(self.listOfAgeCompartments)):
-            
-            addThese = self.listOfAgeCompartments[group-1]
-            minusThese = 1
+        for ind in range(1, len(self.listOfAgeCompartments)):
+            youngerBoxes = unagedListOfAgeCompartments[ind-1].listOfBoxes
+            for stuntingStatus in ["mild","moderate","high","severe"]:
+                for wastingStatus in ["mild","moderate","high","severe"]:
+#                    youngerBox = youngerBoxes[stuntingStatus][wastingStatus]
+#                    numAging = youngerBoxes.populationSize
+            numStuntedAging    = youngerBoxes.conditions.stuntedPopulationSize    * youngerBoxes.parameters.agingRate
+            numNonStuntedAging = youngerBoxes.conditions.nonStuntedPopulationSize * youngerBoxes.parameters.agingRate
+            aging[ind]['stunted']      += numStuntedAging
+            aging[ind-1]['stunted']    -= numStuntedAging
+            aging[ind]['nonStunted']   += numNonStuntedAging
+            aging[ind-1]['nonStunted'] -= numNonStuntedAging
+        for ind in range(numCompartments):
+            self.compartmentList[ind].conditions.stuntedPopulationSize    += aging[ind]['stunted']
+            self.compartmentList[ind].conditions.nonStuntedPopulationSize += aging[ind]['nonStunted']
+
         
     def moveOneTimeStep(self):
         self.applyMortality()

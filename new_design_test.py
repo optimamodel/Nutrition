@@ -16,6 +16,13 @@ mothers = code.FertileWomen(0.2, 500)
 # high - between 2 and 3 SD less than mean
 # severe - more than 3 SD less than mean
 
+"""
+# Madhura's suggested code for Boxes
+allBoxes = {}
+for stuntingStatus in ["mild","moderate","high","severe"]:
+    allBoxes{key=stuntingStatus} = code.Box(stuntingStatus,....)
+"""
+
 a1 = code.Box("mild", "mild", 200, 0.1)
 a2 = code.Box("mild", "moderate", 200, 0.1)
 a3 = code.Box("mild", "high", 200, 0.1)
