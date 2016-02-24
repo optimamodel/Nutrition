@@ -6,21 +6,13 @@ Created on Fri Feb 19 11:33:36 2016
 """
 
 class Compartment:
-    def __init__(self, name, conditions, data, parameters, causeOfDeathList):
+    def __init__(self, name, conditions, data, parameters):
         self.name = name  
         self.conditions = conditions
         self.data = data
         self.parameters = parameters 
-        self.causeOfDeathList = causeOfDeathList
-        self.setOverallMortalityParameterFromDeathList()
-        
-    def setOverallMortalityParameterFromDeathList(self):
-        combinedRate = 0
-        for cause in self.causeOfDeathList:
-            combinedRate += cause.mortalityRate #THIS IS NOT THE RIGHT WAY TO COMBINE MORTALITIES - PLACE HOLDER
-        self.parameters.mortalityStunted = self.parameters.stuntingMortalityFactor * combinedRate
-        self.parameters.mortalityNonStunted = combinedRate
-       
+                
+           
     def updateCompartment(self):
         self.conditions.applyMortality(self.parameters.mortalityStunted, self.parameters.mortalityNotStunted)
         self.conditions.applyNewStunting(self.parameters.stuntingRate)
@@ -60,9 +52,16 @@ class Parameters:
         self.stuntingRate = stuntingRate
         self.recoveryRate = recoveryRate
         self.mortalityStunted = 0
-        self.mortalityNotStunted = 0
+        self.mortalityNonStunted = 0
         self.agingRate = agingRate
         self.stuntingMortalityFactor = stuntingMortalityFactor
+        
+    def setOverallMortalityParameterFromDeathList(self, causeOfDeathList):
+        combinedRate = 0
+        for cause in self.causeOfDeathList:
+            combinedRate += cause.mortalityRate #THIS IS NOT THE RIGHT WAY TO COMBINE MORTALITIES - PLACE HOLDER
+        self.mortalityStunted = self.stuntingMortalityFactor * combinedRate
+        self.mortalityNonStunted = combinedRate    
         
    
    
@@ -77,9 +76,13 @@ class FertileWomen:
  
  
 class Model:
-    def __init__(self, fertileWomen, compartmentList):
+    def __init__(self, fertileWomen, compartmentList, causeOfDeathList):
         self.fertileWomen = fertileWomen
         self.compartmentList = compartmentList
+        self.causeOfDeathList = causeOfDeathList        
+        
+        #do this in some kind of looped fashion
+        #setOverallMortalityParameterFromDeathList()
         
     def moveOneTimeStep(self):
         #call update on compartment list (independent of other compartments)
