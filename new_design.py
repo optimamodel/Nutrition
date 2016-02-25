@@ -39,22 +39,19 @@ class Model:
                 
     def applyAging(self):
         numCompartments = len(self.listOfAgeCompartments)
-        unagedListOfAgeCompartments = self.listOfAgeCompartments
-        for ind in range(1, len(self.listOfAgeCompartments)):
-            youngerBoxes = unagedListOfAgeCompartments[ind-1].listOfBoxes
-            for stuntingStatus in ["mild","moderate","high","severe"]:
-                for wastingStatus in ["mild","moderate","high","severe"]:
-#                    youngerBox = youngerBoxes[stuntingStatus][wastingStatus]
-#                    numAging = youngerBoxes.populationSize
-            numStuntedAging    = youngerBoxes.conditions.stuntedPopulationSize    * youngerBoxes.parameters.agingRate
-            numNonStuntedAging = youngerBoxes.conditions.nonStuntedPopulationSize * youngerBoxes.parameters.agingRate
-            aging[ind]['stunted']      += numStuntedAging
-            aging[ind-1]['stunted']    -= numStuntedAging
-            aging[ind]['nonStunted']   += numNonStuntedAging
-            aging[ind-1]['nonStunted'] -= numNonStuntedAging
-        for ind in range(numCompartments):
-            self.compartmentList[ind].conditions.stuntedPopulationSize    += aging[ind]['stunted']
-            self.compartmentList[ind].conditions.nonStuntedPopulationSize += aging[ind]['nonStunted']
+        # unagedListOfAgeCompartments = self.listOfAgeCompartments # I think this doesn't make a copy of the list, but just points to the same address in memory, so dangerous to use as we are
+        for stuntingStatus in ["mild","moderate","high","severe"]:
+            for wastingStatus in ["mild","moderate","high","severe"]:
+                aging = [0.]*numCompartments
+                for ind in range(0, numCompartments):
+                    youngerCompartment = self.listOfAgeCompartments[ind-1]
+                    #youngerBoxes = youngerCompartment.allBoxes
+                    youngerBox = youngerBoxes[stuntingStatus][wastingStatus] #need to be able to search for box
+                    numAging = int(youngerBox.populationSize * youngerCompartment.agingRate)
+                    aging[ind]   += numAging
+                    aging[ind-1] -= numAging
+                for ind in range(numCompartments):
+                    self.listOfAgeCompartments[ind].allBoxes[stuntingStatus][wastingStatus].populationSize += aging[ind]
 
         
     def moveOneTimeStep(self):
