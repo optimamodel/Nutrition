@@ -19,10 +19,12 @@ class Box:
         self.cumulativeDeaths = 0
 
 class AgeCompartment:
-    def __init__(self, name, listOfBoxes, agingRate):
+    def __init__(self, name, listOfBoxes, agingRate, stuntDict, wasteDict):
         self.name = name  
         self.listOfBoxes = listOfBoxes
         self.agingRate = agingRate
+        self.stuntDict = stuntDict
+        self.wasteDict = wasteDict
         
 class Model:
     def __init__(self, name, fertileWomen, listOfAgeCompartments):
