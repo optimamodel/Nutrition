@@ -22,20 +22,24 @@ mothers = code.FertileWomen(0.2, 500)
 # <insert code to read from spreadsheet> ;)
 
 listOfAgeCompartments = []
+ageRangeList  = ["0-1 month","1-6 months","6-12 months","12-24 months","24-59 months"]
+agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.]
+numAgegroups = len(ageRangeList)
 
 # Loop over all age-groups
-# ageRange = <string>
-# agingRate = <float>
+for age in range(numAgegroups):
+    ageRange  = ageRangeList[age]
+    agingRate = agingRateList[age]
 
 # allBoxes is a dictionary rather than a list to provide to AgeCompartment
-   allBoxes = {}
-   for stuntingStatus in ["mild","moderate","high","severe"]:
-       for wastingStatus in ["mild","moderate","high","severe"]:
-           allBoxes[stuntingStatus] = {}
-           allBoxes[stuntingStatus][wastingStatus] =  code.Box(stuntingStatus,wastingStatus,thisPopSize, thisMortalityRate)
+    allBoxes = {}
+    for stuntingStatus in ["mild","moderate","high","severe"]:
+        for wastingStatus in ["mild","moderate","high","severe"]:
+            allBoxes[stuntingStatus] = {}
+            allBoxes[stuntingStatus][wastingStatus] =  code.Box(stuntingStatus,wastingStatus,thisPopSize, thisMortalityRate)
 
-   compartment = code.AgeCompartment(ageRange,allBoxes,agingRate)
-   listOfAgeCompartments.append(compartment)
+    compartment = code.AgeCompartment(ageRange,allBoxes,agingRate)
+    listOfAgeCompartments.append(compartment)
 
 """
 
