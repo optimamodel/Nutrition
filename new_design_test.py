@@ -17,10 +17,26 @@ mothers = code.FertileWomen(0.2, 500)
 # severe - more than 3 SD less than mean
 
 """
-# Madhura's suggested code for Boxes
-allBoxes = {}
-for stuntingStatus in ["mild","moderate","high","severe"]:
-    allBoxes{key=stuntingStatus} = code.Box(stuntingStatus,....)
+# Madhura's suggestion
+#
+# <insert code to read from spreadsheet> ;)
+
+listOfAgeCompartments = []
+
+# Loop over all age-groups
+# ageRange = <string>
+# agingRate = <float>
+
+# allBoxes is a dictionary rather than a list to provide to AgeCompartment
+   allBoxes = {}
+   for stuntingStatus in ["mild","moderate","high","severe"]:
+       for wastingStatus in ["mild","moderate","high","severe"]:
+           allBoxes[stuntingStatus] = {}
+           allBoxes[stuntingStatus][wastingStatus] =  code.Box(stuntingStatus,wastingStatus,thisPopSize, thisMortalityRate)
+
+   compartment = code.AgeCompartment(ageRange,allBoxes,agingRate)
+   listOfAgeCompartments.append(compartment)
+
 """
 
 a1 = code.Box("mild", "mild", 200, 0.1)
