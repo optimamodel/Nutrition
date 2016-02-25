@@ -39,11 +39,15 @@ a16 = code.Box("severe", "severe", 200, 0.1)
 #put them all in a list
 listOfBoxes0to1Month = [a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16 ]
 
+#make a stunting and wasting dictionary
+stuntDict = {'mild':70, 'moderate':15, 'high':10, 'severe':5}
+wasteDict = {'mild':70, 'moderate':15, 'high':10, 'severe':5}
+
 #make the 0-1 month age group object
-Month0to1 = code.AgeCompartment("0-1 month", listOfBoxes0to1Month, 1)
+Month0to1 = code.AgeCompartment("0-1 month", listOfBoxes0to1Month, 1, stuntDict, wasteDict)
 
 #make the 1-6 month age group object (just reuse 0-1 month list for now)
-Month1to6 = code.AgeCompartment("1-6 month", listOfBoxes0to1Month, 0.2)
+Month1to6 = code.AgeCompartment("1-6 month", listOfBoxes0to1Month, 0.2, stuntDict, wasteDict)
 
 #make the list of age compartments
 listOfAgeCompartments = [Month0to1, Month1to6]
