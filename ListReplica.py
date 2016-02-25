@@ -90,6 +90,8 @@ class Model:
             group.updateCompartment()
         
         #updates that involve interactions with other compartments
+        # out of date....
+        """
         #1. births
         newborns = self.compartmentList[0]
         mums = self.fertileWomen
@@ -113,6 +115,7 @@ class Model:
         for ind in range(numCompartments):
             self.compartmentList[ind].conditions.stuntedPopulationSize    += aging[ind]['stunted']
             self.compartmentList[ind].conditions.nonStuntedPopulationSize += aging[ind]['nonStunted']
+        """
             
 #        #new births first
 #        saveThisPopulationSizeStunted = self.compartmentList[0].conditions.stuntedPopulationSize
