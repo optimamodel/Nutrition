@@ -32,11 +32,11 @@ class Model:
         
     def applyMortality(self):
         for ageGroup in self.listOfAgeCompartments:
-            for stuntStat in ["normal", "mild", "moderate", "high"]:
-                for wasteStat in ["normal", "mild", "moderate", "high"]:
-                    deaths = ageGroup.dictOfBoxes[stuntStat][wasteStat].populationSize * ageGroup.dictOfBoxes[stuntStat][wasteStat].mortalityRate
-                    ageGroup.dictOfBoxes[stuntStat][wasteStat].populationSize -= deaths
-                    ageGroup.dictOfBoxes[stuntStat][wasteStat].cumulativeDeaths += deaths
+            for stuntingStatus in ["normal", "mild", "moderate", "high"]:
+                for wastingStatus in ["normal", "mild", "moderate", "high"]:
+                    deaths = ageGroup.dictOfBoxes[stuntingStatus][wastingStatus].populationSize * ageGroup.dictOfBoxes[stuntingStatus][wastingStatus].mortalityRate
+                    ageGroup.dictOfBoxes[stuntingStatus][wastingStatus].populationSize -= deaths
+                    ageGroup.dictOfBoxes[stuntingStatus][wastingStatus].cumulativeDeaths += deaths
         
                 
     def applyAging(self):
@@ -50,9 +50,14 @@ class Model:
                     numAging = int(youngerBox.populationSize * youngerCompartment.agingRate)
                     aging[ind]   += numAging
                     aging[ind-1] -= numAging
+                    
+                #remember to age people out of the last age compartment
+                ageOut = self.listOfAgeCompartments[numCompartments].dictOfBoxes[stuntingStatus][wastingStatus].populationSize * self.listOfAgeCompartments[numCompartments].agingRate    
+                aging[numCompartments] -= ageOut 
                 for ageCompartment in range(0, numCompartments):
                     self.listOfAgeCompartments[ageCompartment].dictOfBoxes[stuntingStatus][wastingStatus].populationSize += aging[ageCompartment]
-
+                   
+                
         
     def applyBirths(self):
         #PLACE HOLDER CODE
