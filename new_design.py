@@ -52,8 +52,8 @@ class Model:
                     aging[ind-1] -= numAging
                     
                 #remember to age people out of the last age compartment
-                ageOut = self.listOfAgeCompartments[numCompartments].dictOfBoxes[stuntingStatus][wastingStatus].populationSize * self.listOfAgeCompartments[numCompartments].agingRate    
-                aging[numCompartments] -= ageOut 
+                #ageOut = self.listOfAgeCompartments[numCompartments].dictOfBoxes[stuntingStatus][wastingStatus].populationSize * self.listOfAgeCompartments[numCompartments].agingRate    
+                #aging[numCompartments] -= ageOut 
                 for ageCompartment in range(0, numCompartments):
                     self.listOfAgeCompartments[ageCompartment].dictOfBoxes[stuntingStatus][wastingStatus].populationSize += aging[ageCompartment]
                    
