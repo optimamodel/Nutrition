@@ -32,11 +32,13 @@ for age in range(numAgeGroups): #made the 'G' capital
 # allBoxes is a dictionary rather than a list to provide to AgeCompartment
     allBoxes = {}
     for stuntingStatus in ["normal", "mild", "moderate", "high"]:
-        allBoxes[stuntingStatus] = {} #moved this line out by one loop
+        allBoxes[stuntingStatus] = {} 
         for wastingStatus in ["normal", "mild", "moderate", "high"]:
-            thisPopSize = 100 #place holder
-            thisMortalityRate = 0.1 #place holder
-            allBoxes[stuntingStatus][wastingStatus] =  code.Box(stuntingStatus, wastingStatus, thisPopSize, thisMortalityRate)
+            allBoxes[stuntingStatus][wastingStatus] = {}
+            for breastFeedingStatus in ["exclusive", "predominant", "partial", "none"]:
+                thisPopSize = 100 #place holder
+                thisMortalityRate = 0.1 #place holder
+                allBoxes[stuntingStatus][wastingStatus][breastFeedingStatus] =  code.Box(stuntingStatus, wastingStatus, breastFeedingStatus, thisPopSize, thisMortalityRate)
 
     compartment = code.AgeCompartment(ageRange, allBoxes, agingRate)
     listOfAgeCompartments.append(compartment)

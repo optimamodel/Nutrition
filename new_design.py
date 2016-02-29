@@ -11,9 +11,10 @@ class FertileWomen:
         self.populationSize = populationSize
 
 class Box:
-    def __init__(self, stuntStatus, wasteStatus, populationSize, mortalityRate):
+    def __init__(self, stuntStatus, wasteStatus, breastFeedingStatus, populationSize, mortalityRate):
         self.stuntStatus =  stuntStatus
         self.wasteStatus = wasteStatus
+        self.breastFeedingStatus = breastFeedingStatus
         self.populationSize = populationSize
         self.mortalityRate = mortalityRate
         self.cumulativeDeaths = 0
@@ -35,28 +36,31 @@ class Model:
         for ageGroup in self.listOfAgeCompartments:
             for stuntingStatus in ["normal", "mild", "moderate", "high"]:
                 for wastingStatus in ["normal", "mild", "moderate", "high"]:
-                    deaths = ageGroup.dictOfBoxes[stuntingStatus][wastingStatus].populationSize * ageGroup.dictOfBoxes[stuntingStatus][wastingStatus].mortalityRate
-                    ageGroup.dictOfBoxes[stuntingStatus][wastingStatus].populationSize -= deaths
-                    ageGroup.dictOfBoxes[stuntingStatus][wastingStatus].cumulativeDeaths += deaths
+                    for breastFeedingStatus in ["exclusive", "predominant", "partial", "none"]:
+                        deaths = ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastFeedingStatus].populationSize * ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastFeedingStatus].mortalityRate
+                        ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastFeedingStatus].populationSize -= deaths
+                        ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastFeedingStatus].cumulativeDeaths += deaths
         
                 
     def applyAging(self):
+        #currently there is no movement between statuses when aging 
         numCompartments = len(self.listOfAgeCompartments)
         for stuntingStatus in ["normal", "mild", "moderate", "high"]:
             for wastingStatus in ["normal", "mild", "moderate", "high"]:
-                aging = [0.]*numCompartments
-                for ind in range(1, numCompartments):
-                    youngerCompartment = self.listOfAgeCompartments[ind-1]
-                    youngerBox = youngerCompartment.dictOfBoxes[stuntingStatus][wastingStatus] 
-                    numAging = int(youngerBox.populationSize * youngerCompartment.agingRate)
-                    aging[ind]   += numAging
-                    aging[ind-1] -= numAging
+                for breastFeedingStatus in ["exclusive", "predominant", "partial", "none"]:
+                    aging = [0.]*numCompartments
+                    for ind in range(1, numCompartments):
+                        youngerCompartment = self.listOfAgeCompartments[ind-1]
+                        youngerBox = youngerCompartment.dictOfBoxes[stuntingStatus][wastingStatus][breastFeedingStatus] 
+                        numAging = int(youngerBox.populationSize * youngerCompartment.agingRate)
+                        aging[ind]   += numAging
+                        aging[ind-1] -= numAging
                     
-                #remember to age people out of the last age compartment
-                ageOut = self.listOfAgeCompartments[numCompartments-1].dictOfBoxes[stuntingStatus][wastingStatus].populationSize * self.listOfAgeCompartments[numCompartments-1].agingRate    
-                aging[numCompartments-1] -= ageOut 
-                for ageCompartment in range(0, numCompartments):
-                    self.listOfAgeCompartments[ageCompartment].dictOfBoxes[stuntingStatus][wastingStatus].populationSize += aging[ageCompartment]
+                    #remember to age people out of the last age compartment
+                    ageOut = self.listOfAgeCompartments[numCompartments-1].dictOfBoxes[stuntingStatus][wastingStatus][breastFeedingStatus].populationSize * self.listOfAgeCompartments[numCompartments-1].agingRate    
+                    aging[numCompartments-1] -= ageOut 
+                    for ageCompartment in range(0, numCompartments):
+                        self.listOfAgeCompartments[ageCompartment].dictOfBoxes[stuntingStatus][wastingStatus][breastFeedingStatus].populationSize += aging[ageCompartment]
                    
                 
         
