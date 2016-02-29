@@ -64,10 +64,45 @@ class Model:
                    
                 
         
-    def applyBirths(self):
-        #PLACE HOLDER CODE
-        x=2
-        return x
+    def applyBirths(self,fakeData):
+        # calculate total number of new babies
+        birthRate = self.fertileWomen.birthRate  #WARNING: assuming per pre-determined timestep
+        numWomen  = self.fertileWomen.populationSize
+        numNewBabies = numWomen * birthRate
+        # P(mothersAge,birthOrder,timeBtwn)
+        probBirthAndTime = {}
+        for mothersAge in ["<18 years","18-34 years","35-49 years"]:
+            probBirthAndTime[mothersAge]={}
+            for birthOrder in ["first","second or third","greater than third"]:
+                probBirthAndTime[mothersAge][birthOrder]={}
+                probBirthType = fakeData.probBirthType[mothersAge,birthOrder] #probBirthType is a dictionary defined somewhere
+                if birthOrder == "first":
+                    probBirthAndTime[mothersAge][birthOrder]["first"] = probBirthType
+                else:
+                    probTimeBtwnBirths = fakeData.probTimeBtwnBirths
+                    probFirst = probTimeBtwnBirths["first"]
+                    for timeBtwnBirths in ["<18 months","18-23 months","<24 months"]:
+                        probTimeIfNotFirst = probTimeBtwnBirths[timeBtwnBirths]/(1-probFirst)
+                        probBirthAndTime[mothersAge][birthOrder][timeBtwnBirths] = probBirthType * probTimeIfNotFirst
+        # continue for each birth outcome
+        baselineStatusAtBirth = {}
+        for birthOutcome in ["pretermSGA","pretermAGA","termSGA","termAGA"]:
+            # calculate baseline P(birthOutcome | standard (mothersAge,birthOrder,timeBtwn))
+            summation = 0.
+            for mothersAge in ["<18 years","18-34 years","35-49 years"]:
+                for birthOrder in ["first","second or third","greater than third"]:
+                    for timeBtwnBirths in ["first","<18 months","18-23 months","<24 months"]:
+                        P_bt = probBirthAndTime[mothersAge][birthOrder][timeBtwnBirths]
+                        RR_gb = fakeData.RRbirthOutcomeByAgeAndOrder[birthOutcome][mothersAge][birthOrder]
+                        RR_gt = fakeData.RRbirthOutcomeByTime[birthOutcome][timeBtwnBirths]
+                        summation += P_bt * RR_gb * RR_gt
+            baselineStatusAtBirth[birthOutcome] = summation / fakeData.probBirthOutcome[birthOutcome]
+        # now decide stunting odds accordingly BUT DOES BIRTH AGE, ORDER, AND TIME EVEN MATTER?
+        for stuntingStatus in ["normal", "mild", "moderate", "high"]:
+            for wastingStatus in ["normal", "mild", "moderate", "high"]:
+                for breastFeedingStatus in ["exclusive", "predominant", "partial", "none"]:
+                    #self.listOfAgeCompartments[0].dictOfBoxes[stuntingStatus][wastingStatus][breastFeedingStatus].populationSize += numNewBabies * statusSpecificFraction
+        #return x
     
     def moveOneTimeStep(self):
         self.applyMortality()
