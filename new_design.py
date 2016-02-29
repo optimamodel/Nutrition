@@ -28,6 +28,7 @@ class AgeCompartment:
 class Model:
     def __init__(self, name, fertileWomen, listOfAgeCompartments):
         self.name = name
+        self.fertileWomen = fertileWomen
         self.listOfAgeCompartments = listOfAgeCompartments
         
     def applyMortality(self):
@@ -52,8 +53,8 @@ class Model:
                     aging[ind-1] -= numAging
                     
                 #remember to age people out of the last age compartment
-                #ageOut = self.listOfAgeCompartments[numCompartments].dictOfBoxes[stuntingStatus][wastingStatus].populationSize * self.listOfAgeCompartments[numCompartments].agingRate    
-                #aging[numCompartments] -= ageOut 
+                ageOut = self.listOfAgeCompartments[numCompartments-1].dictOfBoxes[stuntingStatus][wastingStatus].populationSize * self.listOfAgeCompartments[numCompartments-1].agingRate    
+                aging[numCompartments-1] -= ageOut 
                 for ageCompartment in range(0, numCompartments):
                     self.listOfAgeCompartments[ageCompartment].dictOfBoxes[stuntingStatus][wastingStatus].populationSize += aging[ageCompartment]
                    
