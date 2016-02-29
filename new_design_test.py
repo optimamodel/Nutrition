@@ -55,6 +55,6 @@ model.applyAging()
 fakeData = fakeDataCode.getFakeData()
 underlyingMortality = equations.getUnderlyingMortalityByAge(fakeData)
 
-
+model.updateMortalityRate(fakeData, underlyingMortality)
 
 

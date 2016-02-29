@@ -37,6 +37,7 @@ def getUnderlyingMortalityByAge(data):
     X = []
     for i in range(0, len(LHS)):
         X.append(LHS[i] / RHS[i])
-    return X
+    Xdictionary = dict(zip(data.ages, X))  
+    return Xdictionary
     
 
