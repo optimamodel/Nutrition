@@ -64,6 +64,7 @@ class Model:
                    
                 
         
+
     def applyBirths(self,fakeData):
         # calculate total number of new babies
         birthRate = self.fertileWomen.birthRate  #WARNING: assuming per pre-determined timestep
@@ -103,8 +104,28 @@ class Model:
                 for breastFeedingStatus in ["exclusive", "predominant", "partial", "none"]:
                     #self.listOfAgeCompartments[0].dictOfBoxes[stuntingStatus][wastingStatus][breastFeedingStatus].populationSize += numNewBabies * statusSpecificFraction
         #return x
+
+
+        
+    def updateMortalityRate(self, data, underlyingMortality):
+        for ageGroup in self.listOfAgeCompartments:
+            age = ageGroup.name
+            for stuntingStatus in ["normal", "mild", "moderate", "high"]:
+                for wastingStatus in ["normal", "mild", "moderate", "high"]:
+                    for breastFeedingStatus in ["exclusive", "predominant", "partial", "none"]:
+                        count = 0                        
+                        for cause in data.causesOfDeath:
+                            t1 = underlyingMortality[age]    
+                            t2 = data.causeOfDeathByAge[cause][age]
+                            t3 = data.RRStunting[cause][stuntingStatus][age]
+                            t4 = data.RRWasting[cause][wastingStatus][age]
+                            t5 = data.RRBreastFeeding[cause][breastFeedingStatus][age]
+                            count += t1 * t2 * t3 * t4 * t5                            
+                        ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastFeedingStatus].mortalityRate = count
+
     
     def moveOneTimeStep(self):
+        self.updateMortalityRate()
         self.applyMortality()
         self.applyAging()
         self.applyBirths()

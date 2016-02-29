@@ -6,6 +6,8 @@ Created on Wed Feb 24 13:49:18 2016
 """
 
 import new_design as code
+import fake_data as fakeDataCode
+import solvingEquations as equations
 
 #make the fertile women
 mothers = code.FertileWomen(0.2, 500)
@@ -49,5 +51,10 @@ for age in range(numAgeGroups): #made the 'G' capital
 model = code.Model("Main model", mothers, listOfAgeCompartments)
 model.applyMortality()
 model.applyAging()
+
+fakeData = fakeDataCode.getFakeData()
+underlyingMortality = equations.getUnderlyingMortalityByAge(fakeData)
+
+model.updateMortalityRate(fakeData, underlyingMortality)
 
 
