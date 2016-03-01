@@ -47,20 +47,20 @@ class Model:
         numCompartments = len(self.listOfAgeCompartments)
         for stuntingStatus in ["normal", "mild", "moderate", "high"]:
             for wastingStatus in ["normal", "mild", "moderate", "high"]:
-                for breastFeedingStatus in ["exclusive", "predominant", "partial", "none"]:
+                for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
                     aging = [0.]*numCompartments
                     for ind in range(1, numCompartments):
                         youngerCompartment = self.listOfAgeCompartments[ind-1]
-                        youngerBox = youngerCompartment.dictOfBoxes[stuntingStatus][wastingStatus][breastFeedingStatus] 
+                        youngerBox = youngerCompartment.dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus] 
                         numAging = int(youngerBox.populationSize * youngerCompartment.agingRate)
                         aging[ind]   += numAging
                         aging[ind-1] -= numAging
                     
                     #remember to age people out of the last age compartment
-                    ageOut = self.listOfAgeCompartments[numCompartments-1].dictOfBoxes[stuntingStatus][wastingStatus][breastFeedingStatus].populationSize * self.listOfAgeCompartments[numCompartments-1].agingRate    
+                    ageOut = self.listOfAgeCompartments[numCompartments-1].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize * self.listOfAgeCompartments[numCompartments-1].agingRate    
                     aging[numCompartments-1] -= ageOut 
                     for ageCompartment in range(0, numCompartments):
-                        self.listOfAgeCompartments[ageCompartment].dictOfBoxes[stuntingStatus][wastingStatus][breastFeedingStatus].populationSize += aging[ageCompartment]
+                        self.listOfAgeCompartments[ageCompartment].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize += aging[ageCompartment]
                    
                 
         
@@ -87,8 +87,9 @@ class Model:
                         probBirthAndTime[mothersAge][birthOrder][timeBtwnBirths] = probCircumstance * probTimeIfNotFirst
         # calculate baseline P(birthOutcome | standard (mothersAge,birthOrder,timeBtwn))
         baselineStatusAtBirth = {}
-        # continue for each birth outcome
-        for birthOutcome in ["pretermSGA","pretermAGA","termSGA","termAGA"]:
+        sumProbOutcome = 0.
+        # continue for each birth outcome (first 3 anyway, for which relative risks are provided)
+        for birthOutcome in ["pretermSGA","pretermAGA","termSGA"]: #,"termAGA"]:
             summation = 0.
             for mothersAge in ["<18 years","18-34 years","35-49 years"]:
                 for birthOrder in ["first","second or third","greater than third"]:
@@ -98,11 +99,13 @@ class Model:
                         RR_gt = data.RRbirthOutcomeByTime[birthOutcome][timeBtwnBirths]
                         summation += P_bt * RR_gb * RR_gt
             baselineStatusAtBirth[birthOutcome] = data.probBirthOutcome[birthOutcome] / summation
-        # now decide stunting odds accordingly BUT DOES BIRTH AGE, ORDER, AND TIME EVEN MATTER?
+            sumProbOutcome += baselineStatusAtBirth[birthOutcome]
+        baselineStatusAtBirth["termAGA"] = 1. - sumProbOutcome
+        # now calculate stunting probability accordingly
         for stuntingStatus in ["normal", "mild", "moderate", "high"]:
             for wastingStatus in ["normal", "mild", "moderate", "high"]:
-                for breastFeedingStatus in ["exclusive", "predominant", "partial", "none"]:
-                    #self.listOfAgeCompartments[0].dictOfBoxes[stuntingStatus][wastingStatus][breastFeedingStatus].populationSize += numNewBabies * statusSpecificFraction
+                for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
+                    #self.listOfAgeCompartments[0].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize += numNewBabies * data.wastingDistribution[wastingStatus]["0-1 month"] * data.breastfeedingDistribution[breastfeedingStatus]["0-1 month"] * stuntingFraction
         #return x
 
 
@@ -112,18 +115,20 @@ class Model:
             age = ageGroup.name
             for stuntingStatus in ["normal", "mild", "moderate", "high"]:
                 for wastingStatus in ["normal", "mild", "moderate", "high"]:
-                    for breastFeedingStatus in ["exclusive", "predominant", "partial", "none"]:
+                    for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
                         count = 0                        
                         for cause in data.causesOfDeath:
                             t1 = underlyingMortality[age]    
                             t2 = data.causeOfDeathByAge[cause][age]
                             t3 = data.RRStunting[cause][stuntingStatus][age]
                             t4 = data.RRWasting[cause][wastingStatus][age]
-                            t5 = data.RRBreastFeeding[cause][breastFeedingStatus][age]
+                            t5 = data.RRBreastfeeding[cause][breastfeedingStatus][age]
                             count += t1 * t2 * t3 * t4 * t5                            
-                        ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastFeedingStatus].mortalityRate = count
+                        ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].mortalityRate = count
 
     
+
+
     def moveOneTimeStep(self):
         self.updateMortalityRate()
         self.applyMortality()
