@@ -6,7 +6,7 @@ Created on Fri Feb 26 15:57:07 2016
 """
 
 class Data:
-    def __init__(self, ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastFeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist):
+    def __init__(self, ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastFeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime):
         self.ages = ages
         self.causesOfDeath = causesOfDeath
         self.totalMortalityByAge = totalMortalityByAge
@@ -19,7 +19,8 @@ class Data:
         self.breastfeedingDistribution = breastfeedingDistribution
         self.birthCircumstanceDist = birthCircumstanceDist
         self.timeBetweenBirthsDist = timeBetweenBirthsDist
-    
+        self.RRbirthOutcomeByAgeAndOrder = RRbirthOutcomeByAgeAndOrder
+        self.RRbirthOutcomeByTime = RRbirthOutcomeByTime
     
     
 def getFakeData():
@@ -61,6 +62,26 @@ def getFakeData():
 
     # distribution of time between births
     timeBetweenBirthsDist = {"first":0.2258,"<18 months":0.0705,"18-23 months":0.134,"<24 months":0.5698}
+
+
+    # Relative Risks of (frist 3) Birth Outcomes by maternal age & birth order, and time
+    RRbirthOutcomeByAgeAndOrder = {"pretermSGA":{"<18 years":{"first":3.14,"second or third":1.6,"greater than third":1.6},
+                                                 "18-34 years":{"first":1.73,"second or third":1.,"greater than third":1.},
+                                                 "35-49 years":{"first":1.73,"second or third":1.57,"greater than third":1.57}},
+                                   "pretermAGA":{"<18 years":{"first":1.75,"second or third":1.4,"greater than third":1.4},
+                                                 "18-34 years":{"first":1.75,"second or third":1.,"greater than third":1.},
+                                                 "35-49 years":{"first":1.75,"second or third":1.33,"greater than third":1.33}},
+                                   "termSGA":{"<18 years":{"first":1.52,"second or third":1.2,"greater than third":1.2},
+                                              "18-34 years":{"first":1.52,"second or third":1.,"greater than third":1.},
+                                              "35-49 years":{"first":1.52,"second or third":1.,"greater than third":1.}}}
+
+
+    RRbirthOutcomeByTime = {"pretermSGA":{"first":1.,"<18 months":3.03,"18-23 months":1.77,"<24 months":1.},
+                            "pretermAGA":{"first":1.,"<18 months":1.49,"18-23 months":1.1,"<24 months":1.},
+                            "termSGA":{"first":1.,"<18 months":1.41,"18-23 months":1.18,"<24 months":1.}}
+
+
+
 
     fakeData = Data(ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastFeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist)
     return fakeData
