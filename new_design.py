@@ -97,7 +97,7 @@ class Model:
                         RR_gb = data.RRbirthOutcomeByAgeAndOrder[birthOutcome][mothersAge][birthOrder]
                         RR_gt = data.RRbirthOutcomeByTime[birthOutcome][timeBtwnBirths]
                         summation += P_bt * RR_gb * RR_gt
-            baselineStatusAtBirth[birthOutcome] = summation / data.probBirthOutcome[birthOutcome]
+            baselineStatusAtBirth[birthOutcome] = data.probBirthOutcome[birthOutcome] / summation
         # now decide stunting odds accordingly BUT DOES BIRTH AGE, ORDER, AND TIME EVEN MATTER?
         for stuntingStatus in ["normal", "mild", "moderate", "high"]:
             for wastingStatus in ["normal", "mild", "moderate", "high"]:
