@@ -49,10 +49,12 @@ for age in range(numAgeGroups): #made the 'G' capital
 
 #make the model object
 model = code.Model("Main model", mothers, listOfAgeCompartments)
+fakeData = fakeDataCode.getFakeData()
+model.calcConstants(fakeData)
+
 model.applyMortality()
 model.applyAging()
 
-fakeData = fakeDataCode.getFakeData()
 underlyingMortality = equations.getUnderlyingMortalityByAge(fakeData)
 
 model.updateMortalityRate(fakeData, underlyingMortality)
