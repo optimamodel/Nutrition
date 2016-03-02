@@ -37,15 +37,16 @@ class Model:
         import sqrt from numpy
         numAgeGroups = len(self.listOfAgeCompartments)
         # probability of stunting progression
-        self.probStuntedIfNotPreviouslyStunted = {}
-        self.probStuntedPreviouslyStunted = {}
+        self.probStuntedIfNotPreviously = {}
+        self.probStuntedIfPreviously = {}
         for ageInd in range(1,numAgeGroups):
             ageName = data.ages[ageInd]
             OddsRatio = data.ORstuntingProgression[ageName]
             numStuntedNow =  self.listOfAgeCompartments.[ageInd].dictOfBoxes["high"]["normal"]["exclusive"].populationsSize
-            numNotStuntedNow = 0.
-            for stuntingStatus in ["normal", "mild", "moderate"]:
-                numNotStuntedNow += self.listOfAgeCompartments.dictOfBoxes[stuntingStatus]["normal"]["exclusive"].populationsSize
+            #numNotStuntedNow = 0.
+            #for stuntingStatus in ["normal", "mild", "moderate"]:
+            #    numNotStuntedNow += self.listOfAgeCompartments.dictOfBoxes[stuntingStatus]["normal"]["exclusive"].populationsSize
+            numNotStuntedNow += self.listOfAgeCompartments.dictOfBoxes["moderate"]["normal"]["exclusive"].populationsSize
             numTotalNow = numStuntedNow + numNotStuntedNow
             FracStuntedNow = numStuntedNow / numTotalNow # aka Fn
             # solve quadratic equation
@@ -58,8 +59,8 @@ class Model:
             # not sure what to do if both or neither are solutions
             if(soln1>0.)and(soln1<1.): p0 = soln1
             if(soln2>0.)and(soln2<1.): p0 = soln2
-            self.probStuntedIfNotPreviouslyStunted[ageName] = p0
-            self.probStuntedPreviouslyStunted[ageName]      = p0*OddsRatio/(1.-p0+OddsRatio*p0)
+            self.probStuntedIfNotPreviously[ageName] = p0
+            self.probStuntedIfPreviously[ageName]    = p0*OddsRatio/(1.-p0+OddsRatio*p0)
         # probability of stunting given IUGR status...
 
 
@@ -74,12 +75,13 @@ class Model:
 
 
 
-    def applyAging(self):
+    def applyAging(self,ageNames): # ageNames = data.ages
         #currently there is no movement between statuses when aging 
         numCompartments = len(self.listOfAgeCompartments)
-        for stuntingStatus in ["normal", "mild", "moderate", "high"]:
-            for wastingStatus in ["normal", "mild", "moderate", "high"]:
-                for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
+        for wastingStatus in ["normal", "mild", "moderate", "high"]:
+            for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
+                """
+                for stuntingStatus in ["normal", "mild", "moderate", "high"]:
                     aging = [0.]*numCompartments
                     for ind in range(1, numCompartments):
                         youngerCompartment = self.listOfAgeCompartments[ind-1]
@@ -87,14 +89,47 @@ class Model:
                         numAging = int(youngerBox.populationSize * youngerCompartment.agingRate)
                         aging[ind]   += numAging
                         aging[ind-1] -= numAging
-                    
                     #remember to age people out of the last age compartment
                     ageOut = self.listOfAgeCompartments[numCompartments-1].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize * self.listOfAgeCompartments[numCompartments-1].agingRate    
                     aging[numCompartments-1] -= ageOut 
                     for ageCompartment in range(0, numCompartments):
                         self.listOfAgeCompartments[ageCompartment].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize += aging[ageCompartment]
-                   
-                
+                """
+                agingOut = []*numCompartments
+                for ind in range(0, numCompartments):
+                    agingOut[ind] = {}
+                    for stuntingStatus in ["normal", "mild", "moderate", "high"]:
+                        thisCompartment = self.listOfAgeCompartments[ind]
+                        thisBox = thisCompartment.dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus] 
+                        numAging = int(thisBox.populationSize * thisCompartment.agingRate)
+                        agingOut[ind][stuntingStatus] = numAging
+                # first age group does not have aging in
+                newborns = self.listOfAgeCompartments[0]
+                for stuntingStatus in ["normal", "mild", "moderate", "high"]:
+                    newbornBox = newborns.dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus]
+                    newbornBox.populationSize -= agingOut[0][stuntingStatus]
+                # for older age groups, you need to decide if people stayed stunted from previous age group
+                # WARNING: not finished. Problem: the odds ratios refer to stunted if stunted previously. Interpreting as more or less stunted within levels. Not sure if this allows progression and not recovery, or vice versa
+                for ind in range(1, numCompartments):
+                    ageName = agesNames[ind]
+                    thisAgeCompartment = self.listOfAgeCompartments[ind]
+                    # normal stunting
+                    thisBox = thisAgeCompartment.dictOfBoxes["normal"][wastingStatus][breastfeedingStatus]
+                    thisBox.populationSize -= agingOut[ind]["normal"]
+                    thisBox.populationSize += self.probStuntedIfPreviously[ageName]*agingOut[ind-1]["normal"] + (1.-self.probStuntedIfPreviously[ageName])*agingOut[ind-1]["mild"]
+                    # mild stunting
+                    thisBox = thisAgeCompartment.dictOfBoxes["mild"][wastingStatus][breastfeedingStatus]
+                    thisBox.populationSize -= agingOut[ind]["mild"]
+                    thisBox.populationSize += self.probStuntedIfPreviously[ageName]*agingOut[ind-1]["mild"] + self.probStuntedIfNotPreviously[ageName]*agingOut[ind-1]["normal"]
+                    # moderate stunting
+                    thisBox = thisAgeCompartment.dictOfBoxes["moderate"][wastingStatus][breastfeedingStatus]
+                    thisBox.populationSize -= agingOut[ind]["moderate"]
+                    thisBox.populationSize += self.probStuntedIfPreviously[ageName]*agingOut[ind-1]["moderate"] + self.probStuntedIfNotPreviously[ageName]*agingOut[ind-1]["mild"]
+                    # high stunting
+                    thisBox = thisAgeCompartment.dictOfBoxes["high"][wastingStatus][breastfeedingStatus]
+                    thisBox.populationSize -= agingOut[ind]["high"]
+                    thisBox.populationSize += self.probStuntedIfPreviously[ageName]*agingOut[ind-1]["high"] + self.probStuntedIfNotPreviously[ageName]*agingOut[ind-1]["moderate"]
+                    
         
 
     def applyBirths(self,data):
