@@ -32,6 +32,37 @@ class Model:
         self.fertileWomen = fertileWomen
         self.listOfAgeCompartments = listOfAgeCompartments
         
+    # Before beginning model, determine constants. Either put this into __init__ or call directly after creating Model
+    def calcConstants(self,data):
+        import sqrt from numpy
+        numAgeGroups = len(self.listOfAgeCompartments)
+        # probability of stunting progression
+        self.probStuntedIfNotPreviouslyStunted = {}
+        self.probStuntedPreviouslyStunted = {}
+        for ageInd in range(1,numAgeGroups):
+            ageName = data.ages[ageInd]
+            OddsRatio = data.ORstuntingProgression[ageName]
+            numStuntedNow =  self.listOfAgeCompartments.[ageInd].dictOfBoxes["high"]["normal"]["exclusive"].populationsSize
+            numNotStuntedNow = 0.
+            for stuntingStatus in ["normal", "mild", "moderate"]:
+                numNotStuntedNow += self.listOfAgeCompartments.dictOfBoxes[stuntingStatus]["normal"]["exclusive"].populationsSize
+            numTotalNow = numStuntedNow + numNotStuntedNow
+            FracStuntedNow = numStuntedNow / numTotalNow # aka Fn
+            # solve quadratic equation
+            a = FracNotStuntedNow*(1-OddsRatio)
+            b = -numTotalNow
+            c = FracStuntedNow
+            det = sqrt(b**2 - 4.*a*c)
+            soln1 = (-b + det)/(2.*a)
+            soln2 = (-b - det)/(2.*a)
+            # not sure what to do if both or neither are solutions
+            if(soln1>0.)and(soln1<1.): p0 = soln1
+            if(soln2>0.)and(soln2<1.): p0 = soln2
+            self.probStuntedIfNotPreviouslyStunted[ageName] = p0
+            self.probStuntedPreviouslyStunted[ageName]      = p0*OddsRatio/(1.-p0+OddsRatio*p0)
+        # probability of stunting given IUGR status...
+
+
     def applyMortality(self):
         for ageGroup in self.listOfAgeCompartments:
             for stuntingStatus in ["normal", "mild", "moderate", "high"]:
@@ -40,8 +71,9 @@ class Model:
                         deaths = ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastFeedingStatus].populationSize * ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastFeedingStatus].mortalityRate
                         ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastFeedingStatus].populationSize -= deaths
                         ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastFeedingStatus].cumulativeDeaths += deaths
-        
-                
+
+
+
     def applyAging(self):
         #currently there is no movement between statuses when aging 
         numCompartments = len(self.listOfAgeCompartments)
@@ -136,7 +168,3 @@ class Model:
         self.applyBirths()
         
         
-        
-        
-        
-                
