@@ -59,4 +59,6 @@ underlyingMortality = equations.getUnderlyingMortalityByAge(fakeData)
 
 model.updateMortalityRate(fakeData, underlyingMortality)
 
+spreadsheetData = fakeDataCode.getDataFromSpreadsheet('InputForCode.xlsx')
 
+underlyingMortality = equations.getUnderlyingMortalityByAge(spreadsheetData)
