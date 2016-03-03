@@ -13,6 +13,8 @@ class Constants:
         self.probStuntedIfNotPreviously = 0
         self.probStuntedIfPreviously = 0
         self.getStuntingProbabilities(self)
+        self.baselineProbBirthOutcome = {}
+        self.getBaselineProbBirthOutcome(self)
 
     def getUnderlyingMortalityByAge(self):
         #Equation is:  LHS = RHS * X
@@ -46,7 +48,7 @@ class Constants:
     
 
     def getStuntingProbabilities(self):
-        import sqrt from numpy
+        from numpy import sqrt 
         numAgeGroups = len(self.model.listOfAgeCompartments)
         # probability of stunting progression
         self.probStuntedIfNotPreviously = {}
@@ -54,7 +56,7 @@ class Constants:
         for ageInd in range(1,numAgeGroups):
             ageName = self.data.ages[ageInd]
             OddsRatio = self.data.ORstuntingProgression[ageName]
-            numStuntedNow =  self.model.listOfAgeCompartments.[ageInd].dictOfBoxes["high"]["normal"]["exclusive"].populationsSize
+            numStuntedNow =  self.model.listOfAgeCompartments[ageInd].dictOfBoxes["high"]["normal"]["exclusive"].populationsSize
             numNotStuntedNow = 0.
             for stuntingStatus in ["normal", "mild", "moderate"]:
                 numNotStuntedNow += self.model.listOfAgeCompartments.dictOfBoxes[stuntingStatus]["normal"]["exclusive"].populationsSize
@@ -73,3 +75,39 @@ class Constants:
             self.probStuntedIfNotPreviously[ageName] = p0
             self.probStuntedIfPreviously[ageName]    = p0*OddsRatio/(1.-p0+OddsRatio*p0)
         
+
+
+    # calculation of probability of birth outcome (given baseline maternalAge=18-34 years , birthOrder=second or third, timeBetweenBirths=>24 months 
+    # P(birthOutcome | standard (maternalAge,birthOrder,timeBtwn))
+    def getBaselineProbBirthOutcome(self):
+        # P(maternalAge,birthOrder,timeBtwn)
+        probBirthAndTime = {}
+        for maternalAge in ["<18 years","18-34 years","35-49 years"]:
+            probBirthAndTime[maternalAge]={}
+            for birthOrder in ["first","second or third","greater than third"]:
+                probBirthAndTime[maternalAge][birthOrder]={}
+                probCircumstance = self.data.birthCircumstanceDist[maternalAge][birthOrder]
+                if birthOrder == "first":
+                    probBirthAndTime[maternalAge][birthOrder]["first"] = probCircumstance
+                else:
+                    probTimeBtwnBirths = self.data.timeBetweenBirthsDist
+                    probFirst = probTimeBtwnBirths["first"]
+                    for timeBtwnBirths in ["<18 months","18-23 months","<24 months"]:
+                        probTimeIfNotFirst = probTimeBtwnBirths[timeBtwnBirths]/(1-probFirst)
+                        probBirthAndTime[maternalAge][birthOrder][timeBtwnBirths] = probCircumstance * probTimeIfNotFirst
+        # now calculate baseline
+        sumProbOutcome = 0.
+        # only need to calculate for first 3 birth outcomes, for which relative risks are provided
+        for birthOutcome in ["pretermSGA","pretermAGA","termSGA"]:
+            summation = 0.
+            for maternalAge in ["<18 years","18-34 years","35-49 years"]:
+                for birthOrder in ["first","second or third","greater than third"]:
+                    for timeBtwnBirths in ["first","<18 months","18-23 months","<24 months"]:
+                        P_bt = probBirthAndTime[maternalAge][birthOrder][timeBtwnBirths]
+                        RR_gb = self.data.RRbirthOutcomeByAgeAndOrder[birthOutcome][maternalAge][birthOrder]
+                        RR_gt = self.data.RRbirthOutcomeByTime[birthOutcome][timeBtwnBirths]
+                        summation += P_bt * RR_gb * RR_gt
+            self.baselineProbBirthOutcome[birthOutcome] = self.data.probBirthOutcome[birthOutcome] / summation
+            sumProbOutcome += self.baselineProbBirthOutcome[birthOutcome]
+        self.baselineProbBirthOutcome["termAGA"] = 1. - sumProbOutcome
+
