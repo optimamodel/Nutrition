@@ -5,12 +5,11 @@ Created on Wed Feb 24 13:49:18 2016
 @author: ruthpearson
 """
 
-import new_design as code
-import fake_data as fakeDataCode
-import solvingEquations as equations
+import model as modelCode
+import data as dataCode
+import constants as constantsCode
 
-#make the fertile women
-mothers = code.FertileWomen(0.2, 500)
+
 
 #key of combinations of stunting and wasting
 # normal - up to 1 SD less than mean
@@ -19,10 +18,15 @@ mothers = code.FertileWomen(0.2, 500)
 # high - more than 3 SD less than mean
 
 
-# <insert code to read from spreadsheet> ;)
+# make the fertile women
+mothers = modelCode.FertileWomen(0.2, 500)
 
+# read the data from the spreadsheet
+spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx')
+
+#----------------------   MAKE ALL THE BOXES     ---------------------
 listOfAgeCompartments = []
-ageRangeList  = ["0-1 month","1-6 months","6-12 months","12-24 months","24-59 months"]
+ageRangeList  = spreadsheetData.ages
 agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.]
 numAgeGroups = len(ageRangeList)
 
@@ -40,25 +44,32 @@ for age in range(numAgeGroups): #made the 'G' capital
             for breastFeedingStatus in ["exclusive", "predominant", "partial", "none"]:
                 thisPopSize = 100 #place holder
                 thisMortalityRate = 0.1 #place holder
-                allBoxes[stuntingStatus][wastingStatus][breastFeedingStatus] =  code.Box(stuntingStatus, wastingStatus, breastFeedingStatus, thisPopSize, thisMortalityRate)
+                allBoxes[stuntingStatus][wastingStatus][breastFeedingStatus] =  modelCode.Box(stuntingStatus, wastingStatus, breastFeedingStatus, thisPopSize, thisMortalityRate)
 
-    compartment = code.AgeCompartment(ageRange, allBoxes, agingRate)
+    compartment = modelCode.AgeCompartment(ageRange, allBoxes, agingRate)
     listOfAgeCompartments.append(compartment)
+    
+#------------------------------------------------------------------------    
 
+# make a model object
+model = modelCode.Model("Main model", mothers, listOfAgeCompartments, spreadsheetData.ages)
 
+# make a constants object
+# (initialisation sets all constant values based on inputdata and inputmodel) 
+constants = constantsCode(spreadsheetData, model)
 
-#make the model object
-model = code.Model("Main model", mothers, listOfAgeCompartments)
-fakeData = fakeDataCode.getFakeData()
-model.calcConstants(fakeData)
+#set the constants in the model
+model.setConstants(constants)
 
+model.updateMortalityRate(spreadsheetData)
 model.applyMortality()
 model.applyAging()
 
-underlyingMortality = equations.getUnderlyingMortalityByAge(fakeData)
 
-model.updateMortalityRate(fakeData, underlyingMortality)
 
-spreadsheetData = fakeDataCode.getDataFromSpreadsheet('InputForCode.xlsx')
 
-underlyingMortality = equations.getUnderlyingMortalityByAge(spreadsheetData)
+
+
+
+
+

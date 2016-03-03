@@ -27,42 +27,17 @@ class AgeCompartment:
 
         
 class Model:
-    def __init__(self, name, fertileWomen, listOfAgeCompartments):
+    def __init__(self, name, fertileWomen, listOfAgeCompartments, ages):
         self.name = name
         self.fertileWomen = fertileWomen
         self.listOfAgeCompartments = listOfAgeCompartments
+        self.ages = ages
+        self.constants = 0
         
-    # Before beginning model, determine constants. Either put this into __init__ or call directly after creating Model
-    def calcConstants(self,data):
-        import sqrt from numpy
-        numAgeGroups = len(self.listOfAgeCompartments)
-        # probability of stunting progression
-        self.probStuntedIfNotPreviously = {}
-        self.probStuntedIfPreviously = {}
-        for ageInd in range(1,numAgeGroups):
-            ageName = data.ages[ageInd]
-            OddsRatio = data.ORstuntingProgression[ageName]
-            numStuntedNow =  self.listOfAgeCompartments.[ageInd].dictOfBoxes["high"]["normal"]["exclusive"].populationsSize
-            numNotStuntedNow = 0.
-            for stuntingStatus in ["normal", "mild", "moderate"]:
-                numNotStuntedNow += self.listOfAgeCompartments.dictOfBoxes[stuntingStatus]["normal"]["exclusive"].populationsSize
-            numTotalNow = numStuntedNow + numNotStuntedNow
-            FracStuntedNow = numStuntedNow / numTotalNow # aka Fn
-            # solve quadratic equation
-            a = FracNotStuntedNow*(1-OddsRatio)
-            b = -numTotalNow
-            c = FracStuntedNow
-            det = sqrt(b**2 - 4.*a*c)
-            soln1 = (-b + det)/(2.*a)
-            soln2 = (-b - det)/(2.*a)
-            # not sure what to do if both or neither are solutions
-            if(soln1>0.)and(soln1<1.): p0 = soln1
-            if(soln2>0.)and(soln2<1.): p0 = soln2
-            self.probStuntedIfNotPreviously[ageName] = p0
-            self.probStuntedIfPreviously[ageName]    = p0*OddsRatio/(1.-p0+OddsRatio*p0)
-        # probability of stunting given IUGR status...
-
-
+    def setConstants(self, inputConstants):
+        self.constants = inputConstants
+        
+    
     def applyMortality(self):
         for ageGroup in self.listOfAgeCompartments:
             for stuntingStatus in ["normal", "mild", "moderate", "high"]:
@@ -176,7 +151,7 @@ class Model:
 
 
         
-    def updateMortalityRate(self, data, underlyingMortality):
+    def updateMortalityRate(self, data):
         for ageGroup in self.listOfAgeCompartments:
             age = ageGroup.name
             for stuntingStatus in ["normal", "mild", "moderate", "high"]:
@@ -184,7 +159,7 @@ class Model:
                     for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
                         count = 0                        
                         for cause in data.causesOfDeath:
-                            t1 = underlyingMortality[age]    
+                            t1 = constants.underlyingMortality[age]    
                             t2 = data.causeOfDeathByAge[cause][age]
                             t3 = data.RRStunting[cause][stuntingStatus][age]
                             t4 = data.RRWasting[cause][wastingStatus][age]
