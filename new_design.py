@@ -43,10 +43,9 @@ class Model:
             ageName = data.ages[ageInd]
             OddsRatio = data.ORstuntingProgression[ageName]
             numStuntedNow =  self.listOfAgeCompartments.[ageInd].dictOfBoxes["high"]["normal"]["exclusive"].populationsSize
-            #numNotStuntedNow = 0.
-            #for stuntingStatus in ["normal", "mild", "moderate"]:
-            #    numNotStuntedNow += self.listOfAgeCompartments.dictOfBoxes[stuntingStatus]["normal"]["exclusive"].populationsSize
-            numNotStuntedNow += self.listOfAgeCompartments.dictOfBoxes["moderate"]["normal"]["exclusive"].populationsSize
+            numNotStuntedNow = 0.
+            for stuntingStatus in ["normal", "mild", "moderate"]:
+                numNotStuntedNow += self.listOfAgeCompartments.dictOfBoxes[stuntingStatus]["normal"]["exclusive"].populationsSize
             numTotalNow = numStuntedNow + numNotStuntedNow
             FracStuntedNow = numStuntedNow / numTotalNow # aka Fn
             # solve quadratic equation
