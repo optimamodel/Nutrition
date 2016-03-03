@@ -56,7 +56,7 @@ model = modelCode.Model("Main model", mothers, listOfAgeCompartments, spreadshee
 
 # make a constants object
 # (initialisation sets all constant values based on inputdata and inputmodel) 
-constants = constantsCode(spreadsheetData, model)
+constants = constantsCode.Constants(spreadsheetData, model)
 
 #set the constants in the model
 model.setConstants(constants)
