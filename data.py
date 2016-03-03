@@ -221,9 +221,10 @@ def getDataFromSpreadsheet(fileName):
     #set these to zero for now, need to add them to spreadsheet
     birthCircumstanceDist = 0
     timeBetweenBirthsDist = 0   
-    RRbirthOutcomeByAgeAndOrder = 0
-    RRbirthOutcomeByTime = 0
+    RRbirthOutcomeByAgeAndOrder = {}
+    RRbirthOutcomeByTime = {}
+    ORstuntingProgression = {}
             
-    spreadsheetData = Data(ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastFeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime)
+    spreadsheetData = Data(ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastFeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime,     ORstuntingProgression)
     return spreadsheetData        
                   
