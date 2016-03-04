@@ -54,7 +54,7 @@ class Model:
         for wastingStatus in ["normal", "mild", "moderate", "high"]:
             for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
                 # calculate how many people are aging out of each box
-                agingOut = []*numCompartments
+                agingOut = [None]*numCompartments
                 for ind in range(0, numCompartments):
                     agingOut[ind] = {}
                     for stuntingStatus in ["normal", "mild", "moderate", "high"]:
@@ -111,7 +111,7 @@ class Model:
                     for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
                         count = 0                        
                         for cause in data.causesOfDeath:
-                            t1 = self.constants.underlyingMortality[age]    
+                            t1 = self.constants.underlyingMortalityByAge[age]    
                             t2 = data.causeOfDeathByAge[cause][age]
                             t3 = data.RRStunting[cause][stuntingStatus][age]
                             t4 = data.RRWasting[cause][wastingStatus][age]
