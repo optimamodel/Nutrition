@@ -62,11 +62,13 @@ constants = constantsCode.Constants(spreadsheetData, model)
 #set the constants in the model
 model.setConstants(constants)
 
+# These will go into a time-loop
 model.updateMortalityRate(spreadsheetData)
 model.applyMortality()
 model.applyAging()
 model.applyBirths(spreadsheetData)
 
+# collect output, make graphs etc.
 
 
 
