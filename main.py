@@ -65,7 +65,7 @@ model.setConstants(constants)
 model.updateMortalityRate(spreadsheetData)
 model.applyMortality()
 model.applyAging()
-
+model.applyBirths(spreadsheetData)
 
 
 
