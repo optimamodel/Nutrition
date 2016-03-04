@@ -225,6 +225,6 @@ def getDataFromSpreadsheet(fileName):
     RRbirthOutcomeByTime = {}
     ORstuntingProgression = {}
             
-    spreadsheetData = Data(ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastFeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime,     ORstuntingProgression)
+    spreadsheetData = Data(ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastFeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression)
     return spreadsheetData        
                   

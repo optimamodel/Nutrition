@@ -9,11 +9,14 @@ class Constants:
     def __init__(self, data, model):
         self.data = data
         self.model = model
-        self.underlyingMortalityByAge = getUnderlyingMortalityByAge(self)
+        
+        self.underlyingMortalityByAge = []        
         self.probStuntedIfNotPreviously = 0
         self.probStuntedIfPreviously = 0
+        self.baselineProbBirthOutcome = {}  
+        
+        self.getUnderlyingMortalityByAge(self)
         self.getStuntingProbabilities(self)
-        self.baselineProbBirthOutcome = {}
         self.getBaselineProbBirthOutcome(self)
 
     def getUnderlyingMortalityByAge(self):
