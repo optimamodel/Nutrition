@@ -41,10 +41,10 @@ for age in range(numAgeGroups): #made the 'G' capital
         allBoxes[stuntingStatus] = {} 
         for wastingStatus in ["normal", "mild", "moderate", "high"]:
             allBoxes[stuntingStatus][wastingStatus] = {}
-            for breastFeedingStatus in ["exclusive", "predominant", "partial", "none"]:
+            for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
                 thisPopSize = 100 #place holder
                 thisMortalityRate = 0.1 #place holder
-                allBoxes[stuntingStatus][wastingStatus][breastFeedingStatus] =  modelCode.Box(stuntingStatus, wastingStatus, breastFeedingStatus, thisPopSize, thisMortalityRate)
+                allBoxes[stuntingStatus][wastingStatus][breastfeedingStatus] =  modelCode.Box(stuntingStatus, wastingStatus, breastfeedingStatus, thisPopSize, thisMortalityRate)
 
     compartment = modelCode.AgeCompartment(ageRange, allBoxes, agingRate)
     listOfAgeCompartments.append(compartment)

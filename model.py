@@ -11,10 +11,10 @@ class FertileWomen:
         self.populationSize = populationSize
 
 class Box:
-    def __init__(self, stuntStatus, wasteStatus, breastFeedingStatus, populationSize, mortalityRate):
+    def __init__(self, stuntStatus, wasteStatus, breastfeedingStatus, populationSize, mortalityRate):
         self.stuntStatus =  stuntStatus
         self.wasteStatus = wasteStatus
-        self.breastFeedingStatus = breastFeedingStatus
+        self.breastfeedingStatus = breastfeedingStatus
         self.populationSize = populationSize
         self.mortalityRate = mortalityRate
         self.cumulativeDeaths = 0
@@ -42,10 +42,10 @@ class Model:
         for ageGroup in self.listOfAgeCompartments:
             for stuntingStatus in ["normal", "mild", "moderate", "high"]:
                 for wastingStatus in ["normal", "mild", "moderate", "high"]:
-                    for breastFeedingStatus in ["exclusive", "predominant", "partial", "none"]:
-                        deaths = ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastFeedingStatus].populationSize * ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastFeedingStatus].mortalityRate
-                        ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastFeedingStatus].populationSize -= deaths
-                        ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastFeedingStatus].cumulativeDeaths += deaths
+                    for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
+                        deaths = ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize * ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].mortalityRate
+                        ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize -= deaths
+                        ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].cumulativeDeaths += deaths
 
 
 
