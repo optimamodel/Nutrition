@@ -62,7 +62,7 @@ def getFakeData():
                              "35-49 years":{"first":0.0003,"second or third":0.0085,"greater than third":0.1048}}
 
     # distribution of time between births
-    timeBetweenBirthsDist = {"first":0.2258,"<18 months":0.0705,"18-23 months":0.134,"<24 months":0.5698}
+    timeBetweenBirthsDist = {"first":0.2258,"<18 months":0.0705,"18-23 months":0.134,">24 months":0.5698}
 
 
     # Relative Risks of (first 3) Birth Outcomes by maternal age & birth order, and time
