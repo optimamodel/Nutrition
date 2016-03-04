@@ -218,12 +218,67 @@ def getDataFromSpreadsheet(fileName):
         for age in ages:
             breastfeedingDistribution[status][age] = df.loc['Breast Feeding'][age][status]
             
-    #set these to zero for now, need to add them to spreadsheet
-    birthCircumstanceDist = 0
-    timeBetweenBirthsDist = 0   
+    
+    #  READ birth distribution SHEET
+    #  gets you:
+    #  - birthCircumstanceDist
+    df = pandas.read_excel(Location, sheetname = 'birth distribution') #read this way for this task
+    motherAges = list(df.columns.values)[1:]
+    birthTypes = list(df['Type'])
+    
+    df = pandas.read_excel(Location, sheetname = 'birth distribution', index_col = [0]) #read this way for this task
+    birthCircumstanceDist = {}
+    for age in motherAges:
+        birthCircumstanceDist[age] = {}
+        for status in birthTypes:
+            birthCircumstanceDist[age][status] = df[age][status]
+    
+    #  READ time between births SHEET
+    #  gets you:
+    #  - timeBetweenBirthsDist
+    df = pandas.read_excel(Location, sheetname = 'time between births')
+    timeBetweenBirthsDist = dict(zip(list(df.columns.values), df.iloc[0]))
+    
+    #  READ RR birth by type SHEET
+    #  gets you:
+    #  - RRbirthOutcomeByAgeAndOrder
+    
+    #get the list of outcomes for which we have relative risks
+    df = pandas.read_excel(Location, sheetname = 'RR birth by type', index_col = [0]) #read this way for this task
+    mylist = list(df.index.values)
+    myset = set(mylist)
+    listOfOutcomes = list(myset)
+    
+    #put the RR into RRbirthOutcomeByAgeAndOrder
+    df = pandas.read_excel(Location, sheetname = 'RR birth by type', index_col = [0, 1]) #read this way for this task
+    
     RRbirthOutcomeByAgeAndOrder = {}
+    for outcome in listOfOutcomes:
+        RRbirthOutcomeByAgeAndOrder[outcome] = {}
+        for age in motherAges:
+            RRbirthOutcomeByAgeAndOrder[outcome][age] = {}
+            for status in ['first', 'second or third', 'greater than third']:    
+                RRbirthOutcomeByAgeAndOrder[outcome][age][status] = df.loc[outcome][age][status]
+                
+    #  READ RR birth by time SHEET
+    #  gets you:
+    #  - RRbirthOutcomeByTime
+    df = pandas.read_excel(Location, sheetname = 'RR birth by time') #read this way for this task
+    birthLag = list(df.columns.values)[1:]
+    
+    df = pandas.read_excel(Location, sheetname = 'RR birth by time', index_col = [0]) #read this way for this task
     RRbirthOutcomeByTime = {}
-    ORstuntingProgression = {}
+    for outcome in listOfOutcomes:
+        RRbirthOutcomeByTime[outcome] = {}
+        for time in birthLag:
+            RRbirthOutcomeByTime[outcome][time] = df[time][outcome]           
+            
+    #  READ OR stunting progression SHEET
+    #  gets you:
+    #  - ORstuntingProgression
+    df = pandas.read_excel(Location, sheetname = 'OR stunting progression')
+    ORstuntingProgression = dict(zip(list(df.columns.values), df.iloc[0]))        
+  
             
     spreadsheetData = Data(ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastFeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression)
     return spreadsheetData        

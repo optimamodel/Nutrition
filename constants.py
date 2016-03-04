@@ -15,9 +15,9 @@ class Constants:
         self.probStuntedIfPreviously = 0
         self.baselineProbBirthOutcome = {}  
         
-        self.getUnderlyingMortalityByAge(self)
-        self.getStuntingProbabilities(self)
-        self.getBaselineProbBirthOutcome(self)
+        self.getUnderlyingMortalityByAge()
+        self.getStuntingProbabilities()
+        self.getBaselineProbBirthOutcome()
 
     def getUnderlyingMortalityByAge(self):
         #Equation is:  LHS = RHS * X
@@ -65,6 +65,7 @@ class Constants:
                 numNotStuntedNow += self.model.listOfAgeCompartments.dictOfBoxes[stuntingStatus]["normal"]["exclusive"].populationsSize
             numTotalNow = numStuntedNow + numNotStuntedNow
             FracStuntedNow = numStuntedNow / numTotalNow # aka Fn
+            FracNotStuntedNow = 1 - FracStuntedNow
             # solve quadratic equation
             a = FracNotStuntedNow*(1-OddsRatio)
             b = -numTotalNow
