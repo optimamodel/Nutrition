@@ -31,7 +31,7 @@ agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.]
 numAgeGroups = len(ageRangeList)
 
 # Loop over all age-groups
-for age in range(numAgeGroups): #made the 'G' capital 
+for age in range(numAgeGroups): 
     ageRange  = ageRangeList[age]
     agingRate = agingRateList[age]
 
