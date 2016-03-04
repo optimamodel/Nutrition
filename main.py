@@ -22,7 +22,8 @@ import constants as constantsCode
 mothers = modelCode.FertileWomen(0.2, 500)
 
 # read the data from the spreadsheet
-spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx')
+#spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx')
+spreadsheetData = dataCode.getFakeData()
 
 #----------------------   MAKE ALL THE BOXES     ---------------------
 listOfAgeCompartments = []
