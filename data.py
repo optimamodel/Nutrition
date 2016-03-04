@@ -6,7 +6,7 @@ Created on Fri Feb 26 15:57:07 2016
 """
 
 class Data:
-    def __init__(self, ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression):
+    def __init__(self, ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression):
         self.ages = ages
         self.causesOfDeath = causesOfDeath
         self.totalMortalityByAge = totalMortalityByAge
@@ -19,6 +19,7 @@ class Data:
         self.breastfeedingDistribution = breastfeedingDistribution
         self.birthCircumstanceDist = birthCircumstanceDist
         self.timeBetweenBirthsDist = timeBetweenBirthsDist
+        self.birthOutcomeDist = birthOutcomeDist
         self.RRbirthOutcomeByAgeAndOrder = RRbirthOutcomeByAgeAndOrder
         self.RRbirthOutcomeByTime = RRbirthOutcomeByTime
         self.ORstuntingProgression = ORstuntingProgression
@@ -62,8 +63,10 @@ def getFakeData():
                              "35-49 years":{"first":0.0003,"second or third":0.0085,"greater than third":0.1048}}
 
     # distribution of time between births
-    timeBetweenBirthsDist = {"first":0.2258,"<18 months":0.0705,"18-23 months":0.134,">24 months":0.5698}
+    timeBetweenBirthsDist = {"first":0.2258,"<18 months":0.0705,"18-23 months":0.134,"<24 months":0.5698}
 
+    # distribution of birth outcomes
+    birthOutcomeDist = {"pretermSGA":0.0198, "pretermAGA":0.1032, "termSGA":0.1351, "termAGA":0.7419}
 
     # Relative Risks of (first 3) Birth Outcomes by maternal age & birth order, and time
     RRbirthOutcomeByAgeAndOrder = {"pretermSGA":{"<18 years":{"first":3.14,"second or third":1.6,"greater than third":1.6},
@@ -85,7 +88,7 @@ def getFakeData():
     # Odds Ratios on Stunting by: BirthOutcomes, Previous Stunting Category, ...
     ORstuntingProgression = {ages[1]:12.4, ages[2]:21.4, ages[3]:30.3, ages[4]:46.2}
 
-    fakeData = Data(ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression)
+    fakeData = Data(ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression)
 
     return fakeData
     
