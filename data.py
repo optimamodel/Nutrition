@@ -6,14 +6,14 @@ Created on Fri Feb 26 15:57:07 2016
 """
 
 class Data:
-    def __init__(self, ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastFeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression):
+    def __init__(self, ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression):
         self.ages = ages
         self.causesOfDeath = causesOfDeath
         self.totalMortalityByAge = totalMortalityByAge
         self.causeOfDeathByAge = causeOfDeathByAge
         self.RRStunting = RRStunting
         self.RRWasting = RRWasting
-        self.RRBreastFeeding = RRBreastFeeding
+        self.RRBreastfeeding = RRBreastfeeding
         self.stuntingDistribution = stuntingDistribution
         self.wastingDistribution = wastingDistribution
         self.breastfeedingDistribution = breastfeedingDistribution
@@ -40,7 +40,7 @@ def getFakeData():
                          "moderate":{"0-1 month":0.1, "1-6 months":0.1, "6-12 months":0.1, "12-24 months":0.1, "24-59 months":0.1},
                          "high":{"0-1 month":0.1, "1-6 months":0.1, "6-12 months":0.1, "12-24 months":0.1, "24-59 months":0.1} }
     
-    RRBreastFeedingMalaria = {"exclusive":{"0-1 month":0.1, "1-6 months":0.1, "6-12 months":0.1, "12-24 months":0.1, "24-59 months":0.1},
+    RRBreastfeedingMalaria = {"exclusive":{"0-1 month":0.1, "1-6 months":0.1, "6-12 months":0.1, "12-24 months":0.1, "24-59 months":0.1},
                                  "predominant":{"0-1 month":0.1, "1-6 months":0.1, "6-12 months":0.1, "12-24 months":0.1, "24-59 months":0.1},
                                  "partial":{"0-1 month":0.1, "1-6 months":0.1, "6-12 months":0.1, "12-24 months":0.1, "24-59 months":0.1},
                                  "none":{"0-1 month":0.1, "1-6 months":0.1, "6-12 months":0.1, "12-24 months":0.1, "24-59 months":0.1} }    
@@ -49,12 +49,12 @@ def getFakeData():
     #diarrhea would be same form as malaria, just re-use for now
     RRStunting = {"diarrhea":RRStuntingMalaria, "malaria":RRStuntingMalaria}
     RRWasting = {"diarrhea":RRStuntingMalaria, "malaria":RRStuntingMalaria} #this is just the same as stunting for now    
-    RRBreastFeeding = {"diarrhea":RRBreastFeedingMalaria, "malaria":RRBreastFeedingMalaria} #this is just the same as stunting for now
+    RRBreastfeeding = {"diarrhea":RRBreastfeedingMalaria, "malaria":RRBreastfeedingMalaria} #this is just the same as stunting for now
     
     #stunting, wasting, breast feeding distributions (similar form to one disease table of RR, so just re-use for now)
     stuntingDistribution = RRStuntingMalaria
     wastingDistribution = RRStuntingMalaria
-    breastfeedingDistribution = RRBreastFeedingMalaria
+    breastfeedingDistribution = RRBreastfeedingMalaria
     
     # birth circumstance distributions
     birthCircumstanceDist = {"<18 years":{"first":0.0543,"second or third":0.009,"greater than third":0.00},
@@ -85,7 +85,7 @@ def getFakeData():
     # Odds Ratios on Stunting by: BirthOutcomes, Previous Stunting Category, ...
     ORstuntingProgression = {ages[1]:12.4, ages[2]:21.4, ages[3]:30.3, ages[4]:46.2}
 
-    fakeData = Data(ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastFeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression)
+    fakeData = Data(ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression)
 
     return fakeData
     
@@ -168,28 +168,28 @@ def getDataFromSpreadsheet(fileName):
                 else:
                     RRWasting[cause][wastingStatus][age] = 1        
 
-    #  READ RRBreastFeeding SHEET
+    #  READ RRBreastfeeding SHEET
     #  gets you:
-    #  - RRBreastFeeding
+    #  - RRBreastfeeding
     
     #get the list of causes for which we have relative risks
-    df = pandas.read_excel(Location, sheetname = 'RRBreastFeeding', index_col = [0]) #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'RRBreastfeeding', index_col = [0]) #read this way for this task
     mylist = list(df.index.values)
     myset = set(mylist)
-    listCausesRRBreastFeeding = list(myset)
-    #put the RR into RRBreastFeeding
-    df = pandas.read_excel(Location, sheetname = 'RRBreastFeeding', index_col = [0, 1]) #read this way for this task
+    listCausesRRBreastfeeding = list(myset)
+    #put the RR into RRBreastfeeding
+    df = pandas.read_excel(Location, sheetname = 'RRBreastfeeding', index_col = [0, 1]) #read this way for this task
     
-    RRBreastFeeding = {}
+    RRBreastfeeding = {}
     for cause in causesOfDeath:
-        RRBreastFeeding[cause] = {}
-        for breastFeedingStatus in ['exclusive', 'predominant', 'partial', 'none']:
-            RRBreastFeeding[cause][breastFeedingStatus] = {}
+        RRBreastfeeding[cause] = {}
+        for breastfeedingStatus in ['exclusive', 'predominant', 'partial', 'none']:
+            RRBreastfeeding[cause][breastfeedingStatus] = {}
             for age in ages:
-                if cause in listCausesRRBreastFeeding: #if no RR given for this cause then set to 1
-                    RRBreastFeeding[cause][breastFeedingStatus][age] = df.loc[cause][age][breastFeedingStatus]
+                if cause in listCausesRRBreastfeeding: #if no RR given for this cause then set to 1
+                    RRBreastfeeding[cause][breastfeedingStatus][age] = df.loc[cause][age][breastfeedingStatus]
                 else:
-                    RRBreastFeeding[cause][breastFeedingStatus][age] = 1  
+                    RRBreastfeeding[cause][breastfeedingStatus][age] = 1  
         
     #  READ distributions SHEET
     #  gets you:
@@ -216,7 +216,7 @@ def getDataFromSpreadsheet(fileName):
     for status in ['exclusive', 'predominant', 'partial', 'none']:
         breastfeedingDistribution[status] = {}
         for age in ages:
-            breastfeedingDistribution[status][age] = df.loc['Breast Feeding'][age][status]
+            breastfeedingDistribution[status][age] = df.loc['Breastfeeding'][age][status]
             
     
     #  READ birth distribution SHEET
@@ -280,6 +280,6 @@ def getDataFromSpreadsheet(fileName):
     ORstuntingProgression = dict(zip(list(df.columns.values), df.iloc[0]))        
   
             
-    spreadsheetData = Data(ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastFeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression)
+    spreadsheetData = Data(ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression)
     return spreadsheetData        
                   
