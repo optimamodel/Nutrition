@@ -228,19 +228,14 @@ df = pandas.read_excel(Location, sheetname = 'OR stunting progression')
 ORstuntingProgression = dict(zip(list(df.columns.values), df.iloc[0]))
 
 
-# In[ ]:
+# In[290]:
 
+#  READ birth outcome distribution SHEET
+#  gets you:
+#  - birthOutcomeDist
 
-
-
-# In[ ]:
-
-
-
-
-# In[ ]:
-
-
+df = pandas.read_excel(Location, sheetname = 'birth outcome distribution')
+birthOutcomeDist = dict(zip(list(df.columns.values), df.iloc[0]))
 
 
 # In[ ]:

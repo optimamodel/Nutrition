@@ -98,7 +98,7 @@ class Model:
             for wastingStatus in ["normal", "mild", "moderate", "high"]:
                 for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
                     stuntingFraction = 0.2 # WARNING PLACEHOLDER
-                    self.listOfAgeCompartments[0].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize += numNewBabies * data.wastingDistribution[wastingStatus]["0-1 month"] * data.breastfeedingDistribution[breastfeedingStatus]["0-1 month"] * stuntingFraction
+                    self.listOfAgeCompartments[0].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize += numNewBabies * data.wastingDistribution[wastingStatus]["<1 month"] * data.breastfeedingDistribution[breastfeedingStatus]["<1 month"] * stuntingFraction
 
 
 

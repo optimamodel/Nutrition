@@ -280,9 +280,16 @@ def getDataFromSpreadsheet(fileName):
     #  gets you:
     #  - ORstuntingProgression
     df = pandas.read_excel(Location, sheetname = 'OR stunting progression')
-    ORstuntingProgression = dict(zip(list(df.columns.values), df.iloc[0]))        
-  
+    ORstuntingProgression = dict(zip(list(df.columns.values), df.iloc[0]))    
+
+    #  READ birth outcome distribution SHEET
+    #  gets you:
+    #  - birthOutcomeDist
+    
+    df = pandas.read_excel(Location, sheetname = 'birth outcome distribution')
+    birthOutcomeDist = dict(zip(list(df.columns.values), df.iloc[0]))    
+      
             
-    spreadsheetData = Data(ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression)
+    spreadsheetData = Data(ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression)
     return spreadsheetData        
                   

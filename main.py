@@ -22,8 +22,9 @@ import constants as constantsCode
 mothers = modelCode.FertileWomen(0.2, 500)
 
 # read the data from the spreadsheet
-#spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx')
-spreadsheetData = dataCode.getFakeData()
+spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx')
+# get fake data
+#fakeData = dataCode.getFakeData()
 
 #----------------------   MAKE ALL THE BOXES     ---------------------
 listOfAgeCompartments = []
@@ -65,7 +66,7 @@ model.setConstants(constants)
 # These will go into a time-loop
 model.updateMortalityRate(spreadsheetData)
 model.applyMortality()
-model.applyAging()
+#model.applyAging()  #BUG TO FIX
 model.applyBirths(spreadsheetData)
 
 # collect output, make graphs etc.
