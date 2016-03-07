@@ -66,7 +66,7 @@ model.setConstants(constants)
 # These will go into a time-loop
 model.updateMortalityRate(spreadsheetData)
 model.applyMortality()
-#model.applyAging()  #BUG TO FIX
+model.applyAging()  #BUG TO FIX
 model.applyBirths(spreadsheetData)
 
 # collect output, make graphs etc.
