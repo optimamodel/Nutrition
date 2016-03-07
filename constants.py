@@ -32,8 +32,6 @@ class Constants:
                                 t1 = self.data.stuntingDistribution[stuntingStatus][age]
                                 t2 = self.data.wastingDistribution[wastingStatus][age] 
                                 t3 = self.data.breastfeedingDistribution[breastfeedingStatus][age]
-                                if (age == '24-59 months'):
-                                    t3 = 1 #assuming breastfeeding not relevant at this age, zeros mess things up 
                                 t4 = self.data.RRStunting[cause][stuntingStatus][age]
                                 t5 = self.data.RRWasting[cause][wastingStatus][age]
                                 t6 = self.data.RRBreastfeeding[cause][breastfeedingStatus][age]
