@@ -50,6 +50,7 @@ class Constants:
         self.underlyingMortalityByAge = Xdictionary
     
 
+
     def getStuntingProbabilities(self):
         from numpy import sqrt 
         numAgeGroups = len(self.model.listOfAgeCompartments)
@@ -66,9 +67,9 @@ class Constants:
             numTotalNow = numStuntedNow + numNotStuntedNow
             FracStuntedNow = numStuntedNow / numTotalNow # aka Fn
             FracNotStuntedNow = 1 - FracStuntedNow
-            # solve quadratic equation
+            # solve quadratic equation ax**2 + bx + c = 0
             a = FracNotStuntedNow*(1-OddsRatio)
-            b = -numTotalNow
+            b = -1. #-numTotalNow (should be FracNotStunted + FracStunted)
             c = FracStuntedNow
             det = sqrt(b**2 - 4.*a*c)
             soln1 = (-b + det)/(2.*a)
