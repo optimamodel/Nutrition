@@ -59,18 +59,23 @@ class Constants:
         self.probStuntedIfPreviously = {}
         for ageInd in range(1,numAgeGroups):
             ageName = self.data.ages[ageInd]
+            youngerName = self.data.ages[ageInd-1]
             OddsRatio = self.data.ORstuntingProgression[ageName]
-            numStuntedNow =  self.model.listOfAgeCompartments[ageInd].dictOfBoxes["high"]["normal"]["exclusive"].populationSize
-            numNotStuntedNow = 0.
-            for stuntingStatus in ["normal", "mild", "moderate"]:
-                numNotStuntedNow += self.model.listOfAgeCompartments[ageInd].dictOfBoxes[stuntingStatus]["normal"]["exclusive"].populationSize
-            numTotalNow = numStuntedNow + numNotStuntedNow
-            FracStuntedNow = numStuntedNow / numTotalNow # aka Fn
-            FracNotStuntedNow = 1 - FracStuntedNow
+            agingRateThis = self.model.listOfAgeCompartments[ageInd].agingRate
+            numStuntedThis    = 0.
+            numStuntedYounger = 0.
+            for stuntingCat in ["moderate","high"]:
+                numStuntedThis    =  self.model.listOfAgeCompartments[ageInd].dictOfBoxes[stuntingCat]["normal"]["exclusive"].populationSize
+                numStuntedYounger =  self.model.listOfAgeCompartments[ageInd-1].dictOfBoxes[stuntingCat]["normal"]["exclusive"].populationSize
+            numNotStuntedThis    = 0.
+            numNotStuntedYounger = 0.
+            for stuntingCat in ["normal", "mild"]:
+                numNotStuntedThis    += self.model.listOfAgeCompartments[ageInd].dictOfBoxes[stuntingCat]["normal"]["exclusive"].populationSize
+                numNotStuntedYounger += self.model.listOfAgeCompartments[ageInd-1].dictOfBoxes[stuntingCat]["normal"]["exclusive"].populationSize
             # solve quadratic equation ax**2 + bx + c = 0
-            a = FracNotStuntedNow*(1-OddsRatio)
-            b = -1. #-numTotalNow (should be FracNotStunted + FracStunted)
-            c = FracStuntedNow
+            a = numNotStuntedYounger * (1-OddsRatio)
+            b = (OddsRatio-1)*agingRateThis*numStuntedThis - OddsRatio*numStuntedYounger - numNotStuntedYounger
+            c = agingRateThis*numStuntedThis
             det = sqrt(b**2 - 4.*a*c)
             soln1 = (-b + det)/(2.*a)
             soln2 = (-b - det)/(2.*a)
