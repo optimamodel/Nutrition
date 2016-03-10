@@ -44,7 +44,7 @@ class Model:
             for stuntingStatus in ["normal", "mild", "moderate", "high"]:
                 for wastingStatus in ["normal", "mild", "moderate", "high"]:
                     for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
-                        deaths = ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize * ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].mortalityRate
+                        deaths = ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize * ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].mortalityRate * self.timestep
                         ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize -= deaths
                         ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].cumulativeDeaths += deaths
 
@@ -61,7 +61,7 @@ class Model:
                     for stuntingStatus in ["normal", "mild", "moderate", "high"]:
                         thisCompartment = self.listOfAgeCompartments[ind]
                         thisBox = thisCompartment.dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus] 
-                        numAging = int(thisBox.populationSize * thisCompartment.agingRate)
+                        numAging = int(thisBox.populationSize * thisCompartment.agingRate * self.timestep)
                         agingOut[ind][stuntingStatus] = numAging
                 # first age group does not have aging in
                 newborns = self.listOfAgeCompartments[0]
@@ -92,7 +92,7 @@ class Model:
         # calculate total number of new babies
         birthRate = self.fertileWomen.birthRate  #WARNING: assuming per pre-determined timestep
         numWomen  = self.fertileWomen.populationSize
-        numNewBabies = numWomen * birthRate
+        numNewBabies = numWomen * birthRate * self.timestep
         # see constants.py for calculation of baseline probability of birth outcome
         # now calculate stunting probability accordingly
         for stuntingStatus in ["normal", "mild", "moderate", "high"]:
