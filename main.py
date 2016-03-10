@@ -29,8 +29,11 @@ spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx')
 #----------------------   MAKE ALL THE BOXES     ---------------------
 listOfAgeCompartments = []
 ageRangeList  = spreadsheetData.ages
-agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.]
+agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per year
 numAgeGroups = len(ageRangeList)
+timespan = 5.0 # [years] running the model for this long
+numsteps = 60  # number of timesteps; determined to produce a sensible timestep
+timestep = timespan / float(numsteps)
 
 # Loop over all age-groups
 for age in range(numAgeGroups): 
@@ -54,7 +57,7 @@ for age in range(numAgeGroups):
 #------------------------------------------------------------------------    
 
 # make a model object
-model = modelCode.Model("Main model", mothers, listOfAgeCompartments, spreadsheetData.ages)
+model = modelCode.Model("Main model", mothers, listOfAgeCompartments, spreadsheetData.ages, timestep)
 
 # make a constants object
 # (initialisation sets all constant values based on inputdata and inputmodel) 
@@ -63,11 +66,14 @@ constants = constantsCode.Constants(spreadsheetData, model)
 #set the constants in the model
 model.setConstants(constants)
 
+# TODO create dataframe to hold numsteps datapoints for any important output
+
 # These will go into a time-loop
-model.updateMortalityRate(spreadsheetData)
-model.applyMortality()
-model.applyAging()  #BUG TO FIX
-model.applyBirths(spreadsheetData)
+for t in range(numsteps):
+    model.updateMortalityRate(spreadsheetData)
+    model.applyMortality()
+    model.applyAging()
+    model.applyBirths(spreadsheetData)
 
 # collect output, make graphs etc.
 
