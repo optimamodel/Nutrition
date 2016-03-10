@@ -48,7 +48,7 @@ for age in range(numAgeGroups):
             allBoxes[stuntingStatus][wastingStatus] = {}
             for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
                 thisPopSize = 100 #place holder
-                thisMortalityRate = 0.1 #place holder
+                thisMortalityRate = spreadsheetData.totalMortalityByAge[age] #0.1 #place holder
                 allBoxes[stuntingStatus][wastingStatus][breastfeedingStatus] =  modelCode.Box(stuntingStatus, wastingStatus, breastfeedingStatus, thisPopSize, thisMortalityRate)
 
     compartment = modelCode.AgeCompartment(ageRange, allBoxes, agingRate)
