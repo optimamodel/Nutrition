@@ -98,6 +98,7 @@ infile.close()
 output.getPopSizeByAgePlot(modelList)
 output.getCumulativeDeathsByAgePlot(modelList)
 output.getNumStuntedByAgePlot(modelList)
+#output.getStuntedPercent(modelList)
 
 
 

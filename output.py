@@ -106,3 +106,56 @@ def getNumStuntedByAgePlot(modelList):
     plt.xlabel('time steps in months')
     plt.title('Number of People Stunted by Age Group')
     plt.show()
+    
+    
+def getStuntedPercent(modelList): # NOT WORKING YET
+    from operator import truediv    
+    #this counts people in the top 2 stunting categories as stunted
+    ageList = modelList[0].ages
+    #get population size for each age group
+    percentStunted = {}
+    for age in range(0, len(modelList[0].ages)):
+        percentStunted[age] = 0
+        
+        # count STUNTED 
+        countArray = []
+        for model in modelList:
+            count = 0            
+            for stuntingStatus in ["moderate", "high"]:
+                for wastingStatus in ["normal", "mild", "moderate", "high"]:
+                    for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
+                        count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize
+            countArray.append(count)
+            
+        # count NOT STUNTED 
+        countArrayN = []
+        for model in modelList:
+            count = 0            
+            for stuntingStatus in ["normal", "mild"]:
+                for wastingStatus in ["normal", "mild", "moderate", "high"]:
+                    for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
+                        count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize
+            countArrayN.append(count)
+            
+            
+        percentStunted[age] = map(truediv, countArray, countArrayN)            
+    
+    import numpy as np
+    import matplotlib.pyplot as plt
+    
+    x = np.arange(len(modelList))    
+    
+    p1 = plt.bar(x,percentStunted[0])
+    p2 = plt.bar(x,percentStunted[1])
+    #y3 = percentStunted[2]
+    #y4 = percentStunted[3]
+    #y5 = percentStunted[4]
+    
+    #fig, ax = plt.subplots()
+    #ax.stackplot(x, y1, y2, y3, y4, y5)
+    #ax.legend(ageList, loc = 'upper left')
+    plt.ylabel('% of people stunted')
+    plt.xlabel('time steps in months')
+    plt.title('Percent of People Stunted by Age Group')
+    plt.legend((p1[0], p2[0]),('thing 1', 'thing 2'))
+    plt.show()    
