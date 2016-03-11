@@ -8,6 +8,7 @@ Created on Wed Feb 24 13:49:18 2016
 import model as modelCode
 import data as dataCode
 import constants as constantsCode
+import output as output
 
 
 
@@ -70,16 +71,28 @@ model.setConstants(constants)
 
 # These will go into a time-loop
 
-for t in range(numsteps):
-    model.updateMortalityRate(spreadsheetData)
-    model.applyMortality()
-    model.applyAging()
-    model.applyBirths(spreadsheetData)
+#open file to dump objects into at each time step
+import pickle as pickle
+outfile = open('testOutput.pkl', 'wb')
 
+for t in range(numsteps):
+    print t
+    model.moveOneTimeStep(spreadsheetData)
+    pickle.dump(model, outfile)
+    
+outfile.close()    
 
 # collect output, make graphs etc.
+infile = open('testOutput.pkl', 'rb')
+modelList = []
+while 1:
+    try:
+        modelList.append(pickle.load(infile))
+    except (EOFError):
+        break
+infile.close()
 
-
+output.getPopSizeByAgePlot(modelList)
 
 
 

@@ -123,10 +123,10 @@ class Model:
     
 
 
-    def moveOneTimeStep(self):
-        self.updateMortalityRate()
+    def moveOneTimeStep(self,data):
+        self.updateMortalityRate(data)
         self.applyMortality()
         self.applyAging()
-        self.applyBirths()
+        self.applyBirths(data)
         
         
