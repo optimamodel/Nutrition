@@ -20,7 +20,7 @@ import output as output
 
 
 # make the fertile women
-mothers = modelCode.FertileWomen(0.2, 500)
+mothers = modelCode.FertileWomen(0.2, 2.e6)
 
 # read the data from the spreadsheet
 spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx')
@@ -32,6 +32,8 @@ listOfAgeCompartments = []
 ageRangeList  = spreadsheetData.ages
 agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per year
 numAgeGroups = len(ageRangeList)
+agePopSizes  = [2.e5, 3.e5, 7.e5, 14.e5, 43.e5]
+
 timespan = 5.0 # [years] running the model for this long
 numsteps = 60  # number of timesteps; determined to produce a sensible timestep
 timestep = timespan / float(numsteps)
@@ -40,6 +42,7 @@ timestep = timespan / float(numsteps)
 for age in range(numAgeGroups): 
     ageRange  = ageRangeList[age]
     agingRate = agingRateList[age]
+    agePopSize = agePopSizes[age]
 
 # allBoxes is a dictionary rather than a list to provide to AgeCompartment
     allBoxes = {}
@@ -48,8 +51,8 @@ for age in range(numAgeGroups):
         for wastingStatus in ["normal", "mild", "moderate", "high"]:
             allBoxes[stuntingStatus][wastingStatus] = {}
             for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
-                thisPopSize = 100 #place holder
-                thisMortalityRate = spreadsheetData.totalMortalityByAge[age] #0.1 #place holder
+                thisPopSize = int(agePopSize/64.) # WARNING need to distribute appropriately
+                thisMortalityRate = spreadsheetData.totalMortalityByAge[age] # WARNING need to distribute appropriately
                 allBoxes[stuntingStatus][wastingStatus][breastfeedingStatus] =  modelCode.Box(stuntingStatus, wastingStatus, breastfeedingStatus, thisPopSize, thisMortalityRate)
 
     compartment = modelCode.AgeCompartment(ageRange, allBoxes, agingRate)
