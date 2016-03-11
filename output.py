@@ -38,3 +38,71 @@ def getPopSizeByAgePlot(modelList):
     plt.xlabel('time steps in months')
     plt.title('Population Size by Age Group')
     plt.show()
+
+
+def getCumulativeDeathsByAgePlot(modelList):
+    ageList = modelList[0].ages
+    #get population size for each age group
+    cumulativeDeaths = {}
+    for age in range(0, len(modelList[0].ages)):
+        cumulativeDeaths[age] = 0
+        countArray = []
+        for model in modelList:
+            count = 0            
+            for stuntingStatus in ["normal", "mild", "moderate", "high"]:
+                for wastingStatus in ["normal", "mild", "moderate", "high"]:
+                    for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
+                        count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].cumulativeDeaths
+            countArray.append(count)
+        cumulativeDeaths[age] = countArray            
+    
+    import numpy as np
+    import matplotlib.pyplot as plt
+    x = np.arange(len(modelList))
+    y1 = cumulativeDeaths[0]
+    y2 = cumulativeDeaths[1]
+    y3 = cumulativeDeaths[2]
+    y4 = cumulativeDeaths[3]
+    y5 = cumulativeDeaths[4]
+    
+    fig, ax = plt.subplots()
+    ax.stackplot(x, y1, y2, y3, y4, y5)
+    ax.legend(ageList, loc = 'upper left')
+    plt.ylabel('cumulative deaths')
+    plt.xlabel('time steps in months')
+    plt.title('Cumulative Deaths by Age Group')
+    plt.show()
+    
+def getNumStuntedByAgePlot(modelList):
+    #this counts people in the top 2 stunting categories
+    ageList = modelList[0].ages
+    #get population size for each age group
+    numStunted = {}
+    for age in range(0, len(modelList[0].ages)):
+        numStunted[age] = 0
+        countArray = []
+        for model in modelList:
+            count = 0            
+            for stuntingStatus in ["moderate", "high"]:
+                for wastingStatus in ["normal", "mild", "moderate", "high"]:
+                    for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
+                        count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize
+            countArray.append(count)
+        numStunted[age] = countArray            
+    
+    import numpy as np
+    import matplotlib.pyplot as plt
+    x = np.arange(len(modelList))
+    y1 = numStunted[0]
+    y2 = numStunted[1]
+    y3 = numStunted[2]
+    y4 = numStunted[3]
+    y5 = numStunted[4]
+    
+    fig, ax = plt.subplots()
+    ax.stackplot(x, y1, y2, y3, y4, y5)
+    ax.legend(ageList, loc = 'upper left')
+    plt.ylabel('number of people stunted')
+    plt.xlabel('time steps in months')
+    plt.title('Number of People Stunted by Age Group')
+    plt.show()

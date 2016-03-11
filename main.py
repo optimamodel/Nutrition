@@ -93,6 +93,8 @@ while 1:
 infile.close()
 
 output.getPopSizeByAgePlot(modelList)
+output.getCumulativeDeathsByAgePlot(modelList)
+output.getNumStuntedByAgePlot(modelList)
 
 
 
