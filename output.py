@@ -20,7 +20,9 @@ def getPopSizeByAgePlot(modelList):
                     for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
                         count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize
             countArray.append(count)
-        popSize[age] = countArray            
+        popSize[age] = countArray      
+            
+        
     
     import numpy as np
     import matplotlib.pyplot as plt
@@ -38,6 +40,8 @@ def getPopSizeByAgePlot(modelList):
     plt.xlabel('time steps in months')
     plt.title('Population Size by Age Group')
     plt.show()
+    
+    return popSize
 
 
 def getCumulativeDeathsByAgePlot(modelList):
