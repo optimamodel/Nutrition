@@ -61,21 +61,22 @@ class Constants:
             ageName = self.data.ages[ageInd]
             youngerName = self.data.ages[ageInd-1]
             OddsRatio = self.data.ORstuntingProgression[ageName]
-            agingRateThis = self.model.listOfAgeCompartments[ageInd].agingRate
-            numStuntedThis    = 0.
+            numStuntedThisAge = 0.
             numStuntedYounger = 0.
             for stuntingCat in ["moderate","high"]:
-                numStuntedThis    =  self.model.listOfAgeCompartments[ageInd].dictOfBoxes[stuntingCat]["normal"]["exclusive"].populationSize
+                numStuntedThisAge =  self.model.listOfAgeCompartments[ageInd].dictOfBoxes[stuntingCat]["normal"]["exclusive"].populationSize
                 numStuntedYounger =  self.model.listOfAgeCompartments[ageInd-1].dictOfBoxes[stuntingCat]["normal"]["exclusive"].populationSize
-            numNotStuntedThis    = 0.
+            numNotStuntedThisAge = 0.
             numNotStuntedYounger = 0.
             for stuntingCat in ["normal", "mild"]:
-                numNotStuntedThis    += self.model.listOfAgeCompartments[ageInd].dictOfBoxes[stuntingCat]["normal"]["exclusive"].populationSize
+                numNotStuntedThisAge += self.model.listOfAgeCompartments[ageInd].dictOfBoxes[stuntingCat]["normal"]["exclusive"].populationSize
                 numNotStuntedYounger += self.model.listOfAgeCompartments[ageInd-1].dictOfBoxes[stuntingCat]["normal"]["exclusive"].populationSize
+            fracStuntedThisAge = numStuntedThisAge / (numStuntedThisAge + numNotStuntedThisAge)
+            fracStuntedYounger = numStuntedYounger / (numStuntedYounger + numNotStuntedYounger)
             # solve quadratic equation ax**2 + bx + c = 0
-            a = numNotStuntedYounger * (1-OddsRatio)
-            b = (OddsRatio-1)*agingRateThis*numStuntedThis - OddsRatio*numStuntedYounger - numNotStuntedYounger
-            c = agingRateThis*numStuntedThis
+            a = (1.-fracStuntedYounger) * (1.-OddsRatio)
+            b = (OddsRatio-1)*fracStuntedThisAge - OddsRatio*fracStuntedYounger - (1.-fracStuntedYounger)
+            c = fracStuntedThisAge
             det = sqrt(b**2 - 4.*a*c)
             soln1 = (-b + det)/(2.*a)
             soln2 = (-b - det)/(2.*a)
