@@ -46,14 +46,14 @@ for age in range(numAgeGroups):
 
 # allBoxes is a dictionary rather than a list to provide to AgeCompartment
     allBoxes = {}
-    for stuntingStatus in ["normal", "mild", "moderate", "high"]:
-        allBoxes[stuntingStatus] = {} 
-        for wastingStatus in ["normal", "mild", "moderate", "high"]:
-            allBoxes[stuntingStatus][wastingStatus] = {}
-            for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
-                thisPopSize = int(agePopSize/64.) # WARNING need to distribute appropriately
+    for stuntingCat in ["normal", "mild", "moderate", "high"]:
+        allBoxes[stuntingCat] = {} 
+        for wastingCat in ["normal", "mild", "moderate", "high"]:
+            allBoxes[stuntingCat][wastingCat] = {}
+            for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+                thisPopSize = int( agePopSize * spreadsheetData.stuntingDistribution[stuntingCat][ageRange] * spreadsheetData.wastingDistribution[wastingCat][ageRange] * spreadsheetData.breastfeedingDistribution[breastfeedingCat][ageRange]  ) # Assuming independent
                 thisMortalityRate = spreadsheetData.totalMortalityByAge[age] # WARNING need to distribute appropriately
-                allBoxes[stuntingStatus][wastingStatus][breastfeedingStatus] =  modelCode.Box(stuntingStatus, wastingStatus, breastfeedingStatus, thisPopSize, thisMortalityRate)
+                allBoxes[stuntingCat][wastingCat][breastfeedingCat] =  modelCode.Box(stuntingCat, wastingCat, breastfeedingCat, thisPopSize, thisMortalityRate)
 
     compartment = modelCode.AgeCompartment(ageRange, allBoxes, agingRate)
     listOfAgeCompartments.append(compartment)
