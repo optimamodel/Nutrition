@@ -41,7 +41,7 @@ class Constants:
         
         
         LHS = [float(i) for i in self.data.totalMortalityByAge]
-        
+                
         X = []
         for i in range(0, len(LHS)):
             X.append(LHS[i] / RHS[i])
@@ -59,13 +59,12 @@ class Constants:
         self.probStuntedIfPreviously = {}
         for ageInd in range(1,numAgeGroups):
             ageName = self.data.ages[ageInd]
-            youngerName = self.data.ages[ageInd-1]
             OddsRatio = self.data.ORstuntingProgression[ageName]
             numStuntedThisAge = 0.
             numStuntedYounger = 0.
             for stuntingCat in ["moderate","high"]:
-                numStuntedThisAge =  self.model.listOfAgeCompartments[ageInd].dictOfBoxes[stuntingCat]["normal"]["exclusive"].populationSize
-                numStuntedYounger =  self.model.listOfAgeCompartments[ageInd-1].dictOfBoxes[stuntingCat]["normal"]["exclusive"].populationSize
+                numStuntedThisAge +=  self.model.listOfAgeCompartments[ageInd].dictOfBoxes[stuntingCat]["normal"]["exclusive"].populationSize
+                numStuntedYounger +=  self.model.listOfAgeCompartments[ageInd-1].dictOfBoxes[stuntingCat]["normal"]["exclusive"].populationSize
             numNotStuntedThisAge = 0.
             numNotStuntedYounger = 0.
             for stuntingCat in ["normal", "mild"]:

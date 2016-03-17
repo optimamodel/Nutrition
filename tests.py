@@ -5,6 +5,8 @@ Created on Tue Mar 15 15:32:21 2016
 @author: ruth
 """
 import unittest
+import numpy
+
 import model as model
 import data as data
 import constants as constants
@@ -18,7 +20,7 @@ def setUpDataAndModelObjects(self):
     ageRangeList  = testData.ages
     agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per year
     numAgeGroups = len(ageRangeList)
-    agePopSizes  = [2.e5, 3.e5, 7.e5, 14.e5, 43.e5]
+    agePopSizes  = [6400, 6400, 6400, 6400, 6400]
     timespan = 5.0 # [years] running the model for this long
     numsteps = 60  # number of timesteps; determined to produce a sensible timestep
     timestep = timespan / float(numsteps)
@@ -51,8 +53,25 @@ class TestsForConstantsClass(unittest.TestCase):
         self.testConstants = constants.Constants(self.testData, self.testModel)
         
     def testGetUnderlyingMortalityByAge(self):
-        self.assertEqual(100, self.testConstants.underlyingMortalityByAge['<1 month'])
+        for age in self.testModel.ages:
+            self.assertEqual(1./6400, self.testConstants.underlyingMortalityByAge[age])
         
+    def testStuntingProbabilitiesEqualExpectedWhenORis2(self):
+        # for OR = 2, assuming F(a) = F(a-1) = 0.5:
+        # pn = sqrt(2) - 1
+        for age in ['1-5 months', '6-11 months', '12-23 months', '24-59 months']:
+            self.assertEqual(self.testConstants.probStuntedIfNotPreviously[age], numpy.sqrt(2)-1)
+        
+    def testRealtionshipBetweenStuntingProbabilitiesWhenORis2(self):
+        # this relationship between ps and pn comes from the OR definition
+        # ps = OR * pn / (1 - pn + (OR * pn)) 
+        for age in ['1-5 months', '6-11 months', '12-23 months', '24-59 months']:
+            ps = 2 * self.testConstants.probStuntedIfNotPreviously[age] / (1 + self.testConstants.probStuntedIfNotPreviously[age])
+            self.assertEqual(self.testConstants.probStuntedIfPreviously[age], ps)
+                
+    def testGetBaselineBirthOutcome(self):
+        # need to write tests for this once quartic equation is solved
+         self.assertTrue(False)
     
     
     
