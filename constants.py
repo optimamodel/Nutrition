@@ -57,6 +57,7 @@ class Constants:
         # probability of stunting progression
         self.probStuntedIfNotPreviously = {}
         self.probStuntedIfPreviously = {}
+        eps = 1.e-5
         for ageInd in range(1,numAgeGroups):
             ageName = self.data.ages[ageInd]
             OddsRatio = self.data.ORstuntingProgression[ageName]
@@ -70,8 +71,8 @@ class Constants:
             for stuntingCat in ["normal", "mild"]:
                 numNotStuntedThisAge += self.model.listOfAgeCompartments[ageInd].dictOfBoxes[stuntingCat]["normal"]["exclusive"].populationSize
                 numNotStuntedYounger += self.model.listOfAgeCompartments[ageInd-1].dictOfBoxes[stuntingCat]["normal"]["exclusive"].populationSize
-            fracStuntedThisAge = numStuntedThisAge / (numStuntedThisAge + numNotStuntedThisAge)
-            fracStuntedYounger = numStuntedYounger / (numStuntedYounger + numNotStuntedYounger)
+            fracStuntedThisAge = numStuntedThisAge / (numStuntedThisAge + numNotStuntedThisAge + eps)
+            fracStuntedYounger = numStuntedYounger / (numStuntedYounger + numNotStuntedYounger + eps)
             # solve quadratic equation ax**2 + bx + c = 0
             a = (1.-fracStuntedYounger) * (1.-OddsRatio)
             b = (OddsRatio-1)*fracStuntedThisAge - OddsRatio*fracStuntedYounger - (1.-fracStuntedYounger)
