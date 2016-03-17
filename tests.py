@@ -12,7 +12,7 @@ import data as data
 import constants as constants
 
 
-def setUpDataAndModelObjects(self):
+def setUpDataAndModelObjects():
     mothers = model.FertileWomen(0.2, 2.e6)
     testData = data.getDataFromSpreadsheet('InputForCode_tests.xlsx')
     #----------------------   MAKE ALL THE BOXES     ---------------------
@@ -36,7 +36,7 @@ def setUpDataAndModelObjects(self):
             for wastingStatus in ["normal", "mild", "moderate", "high"]:
                 allBoxes[stuntingStatus][wastingStatus] = {}
                 for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
-                    thisPopSize = int(agePopSize/64.) # WARNING need to distribute appropriately
+                    thisPopSize = int(agePopSize/64.) # 100 people in each box
                     thisMortalityRate = testData.totalMortalityByAge[age] # WARNING need to distribute appropriately
                     allBoxes[stuntingStatus][wastingStatus][breastfeedingStatus] =  model.Box(stuntingStatus, wastingStatus, breastfeedingStatus, thisPopSize, thisMortalityRate)
         compartment = model.AgeCompartment(ageRange, allBoxes, agingRate)
@@ -44,13 +44,14 @@ def setUpDataAndModelObjects(self):
     #------------------------------------------------------------------------    
     # make a model object
     testModel = model.Model("Main model", mothers, listOfAgeCompartments, testData.ages, timestep)
-    return testData, testModel
+    # make the constants object    
+    testConstants = constants.Constants(testData, testModel)
+    return testData, testModel, testConstants
     
 
 class TestsForConstantsClass(unittest.TestCase):
     def setUp(self):
-        [self.testData, self.testModel] = setUpDataAndModelObjects(self)
-        self.testConstants = constants.Constants(self.testData, self.testModel)
+        [self.testData, self.testModel, self.testConstants] = setUpDataAndModelObjects()
         
     def testGetUnderlyingMortalityByAge(self):
         for age in self.testModel.ages:
@@ -69,11 +70,41 @@ class TestsForConstantsClass(unittest.TestCase):
             ps = 2 * self.testConstants.probStuntedIfNotPreviously[age] / (1 + self.testConstants.probStuntedIfNotPreviously[age])
             self.assertEqual(self.testConstants.probStuntedIfPreviously[age], ps)
                 
+    @unittest.skip("write test once quartic is solved")            
     def testGetBaselineBirthOutcome(self):
         # need to write tests for this once quartic equation is solved
          self.assertTrue(False)
+         
+ 
+class TestsForModelClass(unittest.TestCase):
+    def setUp(self):
+        [self.testData, self.testModel, self.testConstants] = setUpDataAndModelObjects()
+        
+    def testApplyMortalityOneBox(self):
+        # deaths = popsize * mortality * timestep
+        #popsize = 100, mortality = 1, timestep = 1/12
+        self.testModel.applyMortality()
+        popSize = self.testModel.listOfAgeCompartments[0].dictOfBoxes['high']['mild']['none'].populationSize
+        cumulativeDeaths = self.testModel.listOfAgeCompartments[0].dictOfBoxes['high']['mild']['none'].cumulativeDeaths
+        self.assertAlmostEqual(100./12., cumulativeDeaths)
+        self.assertAlmostEqual(100. - (100./12.), popSize)
+        
+    def testApplyMortalityBySummingAllBoxes(self):
+        self.testModel.applyMortality()
+        for ageGroup in range(0, len(self.testModel.listOfAgeCompartments)):
+            sumPopSize = 0.
+            sumCumulativeDeaths = 0.
+            for stuntingStatus in ["normal", "mild", "moderate", "high"]:
+                for wastingStatus in ["normal", "mild", "moderate", "high"]:
+                    for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
+                        sumPopSize += self.testModel.listOfAgeCompartments[ageGroup].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize
+                        sumCumulativeDeaths += self.testModel.listOfAgeCompartments[ageGroup].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].cumulativeDeaths
+            self.assertAlmostEqual(64. * (100./12.), sumCumulativeDeaths)
+            self.assertAlmostEqual(64. * (100. - (100./12.)), sumPopSize)
+        
     
     
     
+# this needs to be here for the tests to run automatically    
 if __name__ == '__main__':
     unittest.main()    
