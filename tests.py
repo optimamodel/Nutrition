@@ -82,6 +82,15 @@ class TestsForModelClass(unittest.TestCase):
     def setUp(self):
         [self.testData, self.testModel, self.testConstants] = setUpDataAndModelObjects()
         
+    def testNumberInAnAgeCompartment(self):
+        sumPopAge1 = 0
+        for stuntingStatus in ["normal", "mild", "moderate", "high"]:
+            for wastingStatus in ["normal", "mild", "moderate", "high"]:
+                for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
+                    sumPopAge1 += self.testModel.listOfAgeCompartments[1].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize 
+        self.assertEqual(sumPopAge1, 64 * 100)    
+        
+
     def testApplyMortalityOneBox(self):
         # deaths = popsize * mortality * timestep
         #popsize = 100, mortality = 1, timestep = 1/12
@@ -105,22 +114,23 @@ class TestsForModelClass(unittest.TestCase):
             self.assertAlmostEqual(64. * (100. - (100./12.)), sumPopSize)
             
     def testApplyAgingForNewbornsOnly(self):
-        self.testModel.applyAging()
-        self.assertEqual(100. - int(100./12.), self.testModel.listOfAgeCompartments[0].dictOfBoxes['mild']['high']['predominant'].populationSize)
+        self.testModel.applyAging(self.testData)
+        #self.assertEqual(100. - int(100./12.), self.testModel.listOfAgeCompartments[0].dictOfBoxes['mild']['high']['predominant'].populationSize)
+        self.assertEqual(0., self.testModel.listOfAgeCompartments[0].dictOfBoxes['mild']['high']['predominant'].populationSize)
         
     def testApplyAgingForIntegerProbabilities(self):
         # sum aging out age[0] should equal sum aging in age[1]   
         # set integer probabilities so that there is no movement between stunting statuses
         self.testModel.constants.probStuntedIfNotPreviously['1-5 months'] = 0
         self.testModel.constants.probStuntedIfPreviously['1-5 months'] = 1
-        sumAgeingOutAge0 = 64. * int(100. * (1./12))
-        sumAgeingOutAge1 = 64. * int(100. * (1./5) * (1./12))
-        self.testModel.applyAging()
+        sumAgeingOutAge0 = 64. * int(100. * (1./1.)) # * (1./12))
+        sumAgeingOutAge1 = 64. * int(100. * (1./5.)) # * (1./12))
+        self.testModel.applyAging(self.testData)
         sumPopAge1 = 0
         for stuntingStatus in ["normal", "mild", "moderate", "high"]:
-                for wastingStatus in ["normal", "mild", "moderate", "high"]:
-                    for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
-                        sumPopAge1 += self.testModel.listOfAgeCompartments[1].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize 
+            for wastingStatus in ["normal", "mild", "moderate", "high"]:
+                for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
+                    sumPopAge1 += self.testModel.listOfAgeCompartments[1].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize 
         self.assertEqual(sumPopAge1, (64 * 100) - sumAgeingOutAge1 + sumAgeingOutAge0)    
 
     @unittest.skip("talk to Mud about this")
