@@ -20,6 +20,11 @@ class Helper:
         fractionModerate = fractionYes - norm.cdf(invCDFalpha - 1.)
         fractionMild     = norm.cdf(invCDFalpha + 1.) - fractionYes
         fractionNormal   = 1. - norm.cdf(invCDFalpha + 1.)
-        return fractionHigh, fractionModerate, fractionMild, fractionNormal
+        restratification = {} 
+        restratification["normal"] = fractionNormal
+        restratification["mild"] = fractionMild
+        restratification["moderate"] = fractionModerate
+        restratification["high"] = fractionHigh
+        return restratification
         
         
