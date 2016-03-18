@@ -51,7 +51,8 @@ class Model:
 
 
     def applyAging(self):
-        import helper as helper
+        import helper as helperCode
+        helper = helperCode.Helper()
         numCompartments = len(self.listOfAgeCompartments)
         for wastingCat in ["normal", "mild", "moderate", "high"]:
             for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
