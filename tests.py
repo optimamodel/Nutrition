@@ -133,6 +133,12 @@ class TestsForModelClass(unittest.TestCase):
     def testApplyBirths(self):
         # need to write this test
         self.assertTrue(False)
+        
+    def testUpdateMortalityRate(self):
+        self.testModel.constants.underlyingMortalityByAge['12-23 months'] = 1
+        self.testModel.updateMortalityRate(self.testData)
+        updatedMortalityRate = self.testModel.listOfAgeCompartments[3].dictOfBoxes['normal']['normal']['none'].mortalityRate
+        self.assertEqual(100, updatedMortalityRate)
          
     
 # this needs to be here for the tests to run automatically    
