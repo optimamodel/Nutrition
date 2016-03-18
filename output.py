@@ -142,24 +142,29 @@ def getStuntedPercent(modelList): # NOT WORKING YET
             countArrayN.append(count)
             
             
-        percentStunted[age] = map(truediv, countArray, countArrayN)            
+        percentStunted[age] = map(truediv, countArray, countArrayN)     
     
     import numpy as np
     import matplotlib.pyplot as plt
     
-    x = np.arange(len(modelList))    
+    x = np.arange(len(modelList))
+    width = 0.35
+    fig, ax = plt.subplots()    
+    rects1 = ax.bar(6*x*width, percentStunted[0], width, color='r')
+    rects2 = ax.bar(6*x*width + width, percentStunted[1], width, color='y')
+    rects3 = ax.bar(6*x*width + 2*width, percentStunted[2], width, color='g')
+    rects4 = ax.bar(6*x*width + 3*width, percentStunted[3], width, color='c')
+    rects5 = ax.bar(6*x*width + 4*width, percentStunted[4], width, color='m')
     
-    p1 = plt.bar(x,percentStunted[0])
-    p2 = plt.bar(x,percentStunted[1])
-    #y3 = percentStunted[2]
-    #y4 = percentStunted[3]
-    #y5 = percentStunted[4]
+    # Shrink current axis's height by 10% on the bottom
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0 + box.height * 0.1,
+                 box.width, box.height * 0.9])
     
-    #fig, ax = plt.subplots()
-    #ax.stackplot(x, y1, y2, y3, y4, y5)
-    #ax.legend(ageList, loc = 'upper left')
-    plt.ylabel('% of people stunted')
-    plt.xlabel('time steps in months')
-    plt.title('Percent of People Stunted by Age Group')
-    plt.legend((p1[0], p2[0]),('thing 1', 'thing 2'))
+    ax.legend( (rects1[0], rects2[0], rects3[0], rects4[0], rects5[0]), (ageList[:]), loc = 'upper center', bbox_to_anchor=(0.5, -0.15), ncol=5, fancybox=True, shadow=True)
+    ax.set_xticks(x*6*width + 2.5*width)
+    ax.set_xticklabels(x[:]+1)
+    ax.set_ylabel('% of people stunted')
+    ax.set_xlabel('time steps in months')
+    ax.set_title('Percent of People Stunted by Age Group')
     plt.show()    

@@ -35,7 +35,7 @@ numAgeGroups = len(ageRangeList)
 agePopSizes  = [2.e5, 3.e5, 7.e5, 14.e5, 43.e5]
 
 timespan = 5.0 # [years] running the model for this long
-numsteps = 60  # number of timesteps; determined to produce a sensible timestep
+numsteps = 10  # number of timesteps; determined to produce a sensible timestep
 timestep = timespan / float(numsteps)
 
 # Loop over all age-groups
@@ -98,7 +98,7 @@ infile.close()
 output.getPopSizeByAgePlot(modelList)
 output.getCumulativeDeathsByAgePlot(modelList)
 output.getNumStuntedByAgePlot(modelList)
-#output.getStuntedPercent(modelList)
+output.getStuntedPercent(modelList)
 
 
 
