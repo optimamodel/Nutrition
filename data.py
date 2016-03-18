@@ -104,7 +104,7 @@ def getDataFromSpreadsheet(fileName):
     #  - totalMortalityByAge
     
     df = pandas.read_excel(Location, sheetname = 'total mortality')
-    totalMortalityByAge = list(df.iloc[0])
+    totalMortalityByAge = list(df.iloc[0] / 1000.)
     
     #  READ MORTALITY SHEET
     #  gets you:
@@ -209,17 +209,17 @@ def getDataFromSpreadsheet(fileName):
     for status in ['normal', 'mild', 'moderate', 'high']:
         stuntingDistribution[status] = {}
         for age in ages:
-            stuntingDistribution[status][age] = df.loc['Stunting'][age][status]
+            stuntingDistribution[status][age] = df.loc['Stunting'][age][status] / 100.
     #wasting        
     for status in ['normal', 'mild', 'moderate', 'high']:
         wastingDistribution[status] = {}
         for age in ages:
-            wastingDistribution[status][age] = df.loc['Wasting'][age][status]        
-    #breast feeding       
+            wastingDistribution[status][age] = df.loc['Wasting'][age][status] / 100.
+    #breastfeeding  
     for status in ['exclusive', 'predominant', 'partial', 'none']:
         breastfeedingDistribution[status] = {}
         for age in ages:
-            breastfeedingDistribution[status][age] = df.loc['Breastfeeding'][age][status]
+            breastfeedingDistribution[status][age] = df.loc['Breastfeeding'][age][status] / 100.
             
     
     #  READ birth distribution SHEET
