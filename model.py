@@ -50,39 +50,47 @@ class Model:
 
 
 
-    def applyAging(self):
+    def applyAging(self,data):
         import helper as helperCode
         helper = helperCode.Helper()
         numCompartments = len(self.listOfAgeCompartments)
-        for wastingCat in ["normal", "mild", "moderate", "high"]:
-            for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
-                # calculate how many people are aging out of each box
-                agingOut = [None]*numCompartments
-                for ind in range(0, numCompartments):
-                    agingOut[ind] = {}
+        # calculate how many people are aging out of each box
+        agingOut = [None]*numCompartments
+        for ind in range(0, numCompartments):
+            agingOut[ind] = {}
+            for wastingCat in ["normal", "mild", "moderate", "high"]:
+                agingOut[ind][wastingCat] = {}
+                for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+                    agingOut[ind][wastingCat][breastfeedingCat] = {}
                     for stuntingCat in ["normal", "mild", "moderate", "high"]:
                         thisCompartment = self.listOfAgeCompartments[ind]
                         thisBox = thisCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat] 
-                        agingOut[ind][stuntingCat] = thisBox.populationSize * thisCompartment.agingRate * self.timestep
-                # first age group does not have aging in
-                newborns = self.listOfAgeCompartments[0]
+                        agingOut[ind][wastingCat][breastfeedingCat][stuntingCat] = thisBox.populationSize * thisCompartment.agingRate# * self.timestep
+        # first age group does not have aging in
+        newborns = self.listOfAgeCompartments[0]
+        for wastingCat in ["normal", "mild", "moderate", "high"]:
+            for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
                 for stuntingCat in ["normal", "mild", "moderate", "high"]:
                     newbornBox = newborns.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat]
-                    newbornBox.populationSize -= agingOut[0][stuntingCat]
-                # for older age groups, you need to decide if people stayed stunted from previous age group
-                for ind in range(1, numCompartments):
-                    ageName = self.ages[ind]
-                    thisAgeCompartment = self.listOfAgeCompartments[ind]
-                    numNotPreviouslyStunted = agingOut[ind-1]["normal"] + agingOut[ind-1]["mild"]
-                    numPreviouslyStunted    = agingOut[ind-1]["moderate"] + agingOut[ind-1]["high"]
-                    # update for each stunting levels
+                    newbornBox.populationSize -= agingOut[0][wastingCat][breastfeedingCat][stuntingCat]
+        # for older age groups, you need to decide if people stayed stunted from previous age group
+        for ind in range(1, numCompartments):
+            ageName = self.ages[ind]
+            thisAgeCompartment = self.listOfAgeCompartments[ind]
+            restratIfPreviously    = helper.restratify(self.constants.probStuntedIfPreviously[ageName])
+            restratIfNotPreviously = helper.restratify(self.constants.probStuntedIfNotPreviously[ageName])
+            for wastingCat in ["normal", "mild", "moderate", "high"]:
+                numNotPreviouslyStunted = 0.
+                numPreviouslyStunted    = 0.
+                for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+                    numNotPreviouslyStunted += agingOut[ind-1][wastingCat][breastfeedingCat]["normal"] + agingOut[ind-1][wastingCat][breastfeedingCat]["mild"]
+                    numPreviouslyStunted    += agingOut[ind-1][wastingCat][breastfeedingCat]["moderate"] + agingOut[ind-1][wastingCat][breastfeedingCat]["high"]
+                for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
                     for stuntingCat in ["normal","mild","moderate","high"]:
                         thisBox = thisAgeCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat]
-                        thisBox.populationSize -= agingOut[ind][stuntingCat]
-                        restratIfPreviously    = helper.restratify(self.constants.probStuntedIfPreviously[ageName])
-                        restratIfNotPreviously = helper.restratify(self.constants.probStuntedIfNotPreviously[ageName])
-                        thisBox.populationSize += numNotPreviouslyStunted * restratIfNotPreviously[stuntingCat]
-                        thisBox.populationSize += numPreviouslyStunted    * restratIfPreviously[stuntingCat]
+                        thisBox.populationSize -= agingOut[ind][wastingCat][breastfeedingCat][stuntingCat]
+                        thisBox.populationSize += numNotPreviouslyStunted * restratIfNotPreviously[stuntingCat] * data.breastfeedingDistribution[breastfeedingCat][ageName]
+                        thisBox.populationSize += numPreviouslyStunted    * restratIfPreviously[stuntingCat]    * data.breastfeedingDistribution[breastfeedingCat][ageName]
 
 
     def applyBirths(self,data):
@@ -123,7 +131,7 @@ class Model:
     def moveOneTimeStep(self,data):
         self.updateMortalityRate(data)
         self.applyMortality()
-        self.applyAging()
+        self.applyAging(data)
         self.applyBirths(data)
         
         
