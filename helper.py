@@ -7,7 +7,7 @@ Created on Mon Feb 29 11:35:02 2016
 
 class Helper:
     def __init__(self):
-        self.foo=0
+        self.restratification = {}
 
 
     # Going from binary stunting/wasting to four fractions
@@ -20,11 +20,10 @@ class Helper:
         fractionModerate = fractionYes - norm.cdf(invCDFalpha - 1.)
         fractionMild     = norm.cdf(invCDFalpha + 1.) - fractionYes
         fractionNormal   = 1. - norm.cdf(invCDFalpha + 1.)
-        restratification = {} 
-        restratification["normal"] = fractionNormal
-        restratification["mild"] = fractionMild
-        restratification["moderate"] = fractionModerate
-        restratification["high"] = fractionHigh
-        return restratification
+        self.restratification["normal"] = fractionNormal
+        self.restratification["mild"] = fractionMild
+        self.restratification["moderate"] = fractionModerate
+        self.restratification["high"] = fractionHigh
+        return self.restratification
         
         
