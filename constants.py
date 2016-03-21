@@ -132,13 +132,36 @@ class Constants:
 
 
     def getBirthStuntingQuarticCoefficients(self):
-        A=0.
-        B=0.
-        C=0.
-        D=0.
-        E=0.
-        OddsRatios = [1.,2.82,1.94,4.98]
-        F1 = self.baselineProbBirthOutcome["termSGA"]
-        F2 = self.baselineProbBirthOutcome["pretermAGA"]
-        F3 = self.baselineProbBirthOutcome["pretermSGA"]
+        OR = []
+        OR[0] = 1.
+        OR[1] = self.data.ORBirthOutcomeStunting["termSGA"]
+        OR[2] = self.data.ORBirthOutcomeStunting["pretermAGA"]
+        OR[3] = self.data.ORBirthOutcomeStunting["pretermSGA"]
+        FracBO = []
+        FracBO[0] = self.baselineProbBirthOutcome["termAGA"]
+        FracBO[1] = self.baselineProbBirthOutcome["termSGA"]
+        FracBO[2] = self.baselineProbBirthOutcome["pretermAGA"]
+        FracBO[3] = self.baselineProbBirthOutcome["pretermSGA"]
+        numNewborns        = 0.
+        numNewbornsStunted = 0.
+        for wastingCat in ["normal", "mild", "moderate", "high"]:
+            for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+                for stuntingCat in ["normal","mild"]:
+                    numNewborns +=self.model.listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
+                for stuntingCat in ["moderate","high"]:
+                    numNewborns +=self.model.listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
+                    numNewbornsStunted +=self.model.listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
+        FracStunted = float(numNewbornsStunted) / float(numNewborns)
+        A = FracBO[0]*(OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.)
+        B = (OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.) * ( \
+            sum( FracBO[0] / (OR[i]-1.)         for i in (1,2,3)) + \
+            sum( OR[i] * FracBO[i] / (OR[i]-1.) for i in (1,2,3)) - \
+            FracStunted )
+        C = sum( FracBO[0] * (OR[i]-1.)         for i in (1,2,3)) + \
+            sum( OR[i] * FracBO[i] * sum((OR[1]-1.)+(OR[2]-1.)+(OR[3]-1.)-(OR[j]-1.)for j in (1,2,3)) ) - \
+            sum( FracStunted*(OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.)/(OR[i]-1.) for i in (1,2,3))
+        D = FracBO[0] + \
+            sum( OR[i] * FracBO[i] for i in (1,2,3)) - \
+            sum( FracStunted * (OR[i]-1.) for i in (1,2,3))
+        E = -FracStunted
         return [A,B,C,D,E]
