@@ -18,12 +18,17 @@ def setUpDataAndModelObjects():
     #----------------------   MAKE ALL THE BOXES     ---------------------
     listOfAgeCompartments = []
     ageRangeList  = testData.ages
-    agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per year
+    agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
     numAgeGroups = len(ageRangeList)
     agePopSizes  = [6400, 6400, 6400, 6400, 6400]
-    timespan = 5.0 # [years] running the model for this long
-    numsteps = 60  # number of timesteps; determined to produce a sensible timestep
-    timestep = timespan / float(numsteps)
+    
+    #timespan = 5.0 # [years] running the model for this long
+    #numsteps = 60  # number of timesteps; determined to produce a sensible timestep
+    #timestep = timespan / float(numsteps)
+    timestep = 1./12. 
+    numsteps = 10  
+    timespan = timestep * float(numsteps)    
+    
     # Loop over all age-groups
     for age in range(numAgeGroups): 
         ageRange  = ageRangeList[age]
@@ -57,7 +62,7 @@ class TestsForConstantsClass(unittest.TestCase):
         
     def testGetUnderlyingMortalityByAge(self):
         for age in self.testModel.ages:
-            self.assertEqual(1./6400, self.testConstants.underlyingMortalityByAge[age])
+            self.assertAlmostEqual((1./6400)*(1.e6), self.testConstants.underlyingMortalityByAge[age])
         
     def testStuntingProbabilitiesEqualExpectedWhenORis2(self):
         # for OR = 2, assuming F(a) = F(a-1) = 0.5:
