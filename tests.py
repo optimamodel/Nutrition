@@ -10,9 +10,10 @@ import numpy
 import model as model
 import data as data
 import constants as constants
+import helper as helper
 
 
-def setUpDataAndModelObjects():
+def setUpDataModelConstantsObjects():
     mothers = model.FertileWomen(0.2, 2.e6)
     testData = data.getDataFromSpreadsheet('InputForCode_tests.xlsx')
     #----------------------   MAKE ALL THE BOXES     ---------------------
@@ -55,10 +56,23 @@ def setUpDataAndModelObjects():
     testModel.setConstants(testConstants)
     return testData, testModel, testConstants
     
+    
+class TestsForSetUpDataModelConstantsObjectsFunction(unittest.TestCase):
+    def setUp(self):
+        [self.testData, self.testModel, self.testConstants] = setUpDataModelConstantsObjects()
+        
+    def testNumberInAnAgeCompartment(self):
+        sumPopAge1 = 0
+        for stuntingStatus in ["normal", "mild", "moderate", "high"]:
+            for wastingStatus in ["normal", "mild", "moderate", "high"]:
+                for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
+                    sumPopAge1 += self.testModel.listOfAgeCompartments[1].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize 
+        self.assertEqual(sumPopAge1, 64 * 100)     
+    
 
 class TestsForConstantsClass(unittest.TestCase):
     def setUp(self):
-        [self.testData, self.testModel, self.testConstants] = setUpDataAndModelObjects()
+        [self.testData, self.testModel, self.testConstants] = setUpDataModelConstantsObjects()
         
     def testGetUnderlyingMortalityByAge(self):
         for age in self.testModel.ages:
@@ -85,15 +99,7 @@ class TestsForConstantsClass(unittest.TestCase):
  
 class TestsForModelClass(unittest.TestCase):
     def setUp(self):
-        [self.testData, self.testModel, self.testConstants] = setUpDataAndModelObjects()
-        
-    def testNumberInAnAgeCompartment(self):
-        sumPopAge1 = 0
-        for stuntingStatus in ["normal", "mild", "moderate", "high"]:
-            for wastingStatus in ["normal", "mild", "moderate", "high"]:
-                for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
-                    sumPopAge1 += self.testModel.listOfAgeCompartments[1].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize 
-        self.assertEqual(sumPopAge1, 64 * 100)    
+        [self.testData, self.testModel, self.testConstants] = setUpDataModelConstantsObjects()
         
 
     def testApplyMortalityOneBox(self):
@@ -120,7 +126,6 @@ class TestsForModelClass(unittest.TestCase):
             
     def testApplyAgingForNewbornsOnly(self):
         self.testModel.applyAging(self.testData)
-        #self.assertEqual(100. - int(100./12.), self.testModel.listOfAgeCompartments[0].dictOfBoxes['mild']['high']['predominant'].populationSize)
         self.assertEqual(0., self.testModel.listOfAgeCompartments[0].dictOfBoxes['mild']['high']['predominant'].populationSize)
         
     def testApplyAgingForIntegerProbabilities(self):
@@ -155,6 +160,17 @@ class TestsForModelClass(unittest.TestCase):
         updatedMortalityRate = self.testModel.listOfAgeCompartments[3].dictOfBoxes['normal']['normal']['none'].mortalityRate
         self.assertEqual(100, updatedMortalityRate)
          
+         
+class TestsForHelperClass(unittest.TestCase):
+    def setUp(self):
+        self.helper = helper.Helper()
+             
+    def testRestratifyWhenFractionYesIsHalf(self):
+        # if FractionYes = 0.5 then (symmetric normal) distribution is centred at global mean -2 SD
+        # therefore we expect moderate = normal and mild = high
+        stratification = self.helper.restratify(0.5)
+        self.assertEqual(stratification['moderate'], stratification['mild'])
+        self.assertEqual(stratification['normal'], stratification['high'])
     
 # this needs to be here for the tests to run automatically    
 if __name__ == '__main__':
