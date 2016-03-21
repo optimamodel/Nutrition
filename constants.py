@@ -113,7 +113,7 @@ class Constants:
         # now calculate baseline
         sumProbOutcome = 0.
         # only need to calculate for first 3 birth outcomes, for which relative risks are provided
-        for birthOutcome in ["pretermSGA","pretermAGA","termSGA"]:
+        for birthOutcome in ["Pre-term SGA","Pre-term AGA","Term SGA"]:
             summation = 0.
             for maternalAge in ["<18 years","18-34 years","35-49 years"]:
                 for birthOrder in ["first","second or third","greater than third"]:
@@ -124,7 +124,7 @@ class Constants:
                         summation += P_bt * RR_gb * RR_gt
             self.baselineProbBirthOutcome[birthOutcome] = self.data.birthOutcomeDist[birthOutcome] / summation
             sumProbOutcome += self.baselineProbBirthOutcome[birthOutcome]
-        self.baselineProbBirthOutcome["termAGA"] = 1. - sumProbOutcome
+        self.baselineProbBirthOutcome["Term AGA"] = 1. - sumProbOutcome
 
 
 
@@ -132,16 +132,17 @@ class Constants:
 
 
     def getBirthStuntingQuarticCoefficients(self):
-        OR = []
+        print self.data.ORBirthOutcomeStunting
+        OR = [1.]*4
         OR[0] = 1.
-        OR[1] = self.data.ORBirthOutcomeStunting["termSGA"]
-        OR[2] = self.data.ORBirthOutcomeStunting["pretermAGA"]
-        OR[3] = self.data.ORBirthOutcomeStunting["pretermSGA"]
-        FracBO = []
-        FracBO[0] = self.baselineProbBirthOutcome["termAGA"]
-        FracBO[1] = self.baselineProbBirthOutcome["termSGA"]
-        FracBO[2] = self.baselineProbBirthOutcome["pretermAGA"]
-        FracBO[3] = self.baselineProbBirthOutcome["pretermSGA"]
+        OR[1] = self.data.ORBirthOutcomeStunting["Term SGA"]
+        OR[2] = self.data.ORBirthOutcomeStunting["Pre-term AGA"]
+        OR[3] = self.data.ORBirthOutcomeStunting["Pre-term SGA"]
+        FracBO = [0.]*4
+        FracBO[0] = self.baselineProbBirthOutcome["Term AGA"]
+        FracBO[1] = self.baselineProbBirthOutcome["Term SGA"]
+        FracBO[2] = self.baselineProbBirthOutcome["Pre-term AGA"]
+        FracBO[3] = self.baselineProbBirthOutcome["Pre-term SGA"]
         numNewborns        = 0.
         numNewbornsStunted = 0.
         for wastingCat in ["normal", "mild", "moderate", "high"]:
@@ -152,6 +153,7 @@ class Constants:
                     numNewborns +=self.model.listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
                     numNewbornsStunted +=self.model.listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
         FracStunted = float(numNewbornsStunted) / float(numNewborns)
+        # i/j will refer to the four birth outcomes
         A = FracBO[0]*(OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.)
         B = (OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.) * ( \
             sum( FracBO[0] / (OR[i]-1.)         for i in (1,2,3)) + \
