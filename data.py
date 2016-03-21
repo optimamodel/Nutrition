@@ -6,7 +6,7 @@ Created on Fri Feb 26 15:57:07 2016
 """
 
 class Data:
-    def __init__(self, ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression):
+    def __init__(self, ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting):
         self.ages = ages
         self.causesOfDeath = causesOfDeath
         self.totalMortalityByAge = totalMortalityByAge
@@ -23,6 +23,7 @@ class Data:
         self.RRbirthOutcomeByAgeAndOrder = RRbirthOutcomeByAgeAndOrder
         self.RRbirthOutcomeByTime = RRbirthOutcomeByTime
         self.ORstuntingProgression = ORstuntingProgression
+        self.ORBirthOutcomeStunting = ORBirthOutcomeStunting
     
     
 def getFakeData():
@@ -289,7 +290,12 @@ def getDataFromSpreadsheet(fileName):
     df = pandas.read_excel(Location, sheetname = 'birth outcome distribution')
     birthOutcomeDist = dict(zip(list(df.columns.values), df.iloc[0]))    
       
+    #  READ OR birth outcome stunting SHEET
+    #  gets you:
+    #  - ORBirthOutcomeStunting
+    df = pandas.read_excel(Location, sheetname = 'OR birth outcome stunting')
+    ORBirthOutcomeStunting = dict(zip(list(df.columns.values), df.iloc[0]))   
             
-    spreadsheetData = Data(ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression)
+    spreadsheetData = Data(ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting)
     return spreadsheetData        
                   
