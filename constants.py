@@ -14,10 +14,12 @@ class Constants:
         self.probStuntedIfNotPreviously = 0
         self.probStuntedIfPreviously = 0
         self.baselineProbBirthOutcome = {}  
-        
+        self.birthStuntingQuarticCoefficients = []
+
         self.getUnderlyingMortalityByAge()
         self.getStuntingProbabilities()
         self.getBaselineProbBirthOutcome()
+        self.getBirthStuntingQuarticCoefficients()
 
     def getUnderlyingMortalityByAge(self):
         #Equation is:  LHS = RHS * X
@@ -123,3 +125,20 @@ class Constants:
             self.baselineProbBirthOutcome[birthOutcome] = self.data.birthOutcomeDist[birthOutcome] / summation
             sumProbOutcome += self.baselineProbBirthOutcome[birthOutcome]
         self.baselineProbBirthOutcome["termAGA"] = 1. - sumProbOutcome
+
+
+
+    
+
+
+    def getBirthStuntingQuarticCoefficients(self):
+        A=0.
+        B=0.
+        C=0.
+        D=0.
+        E=0.
+        OddsRatios = [1.,2.82,1.94,4.98]
+        F1 = self.baselineProbBirthOutcome["termSGA"]
+        F2 = self.baselineProbBirthOutcome["pretermAGA"]
+        F3 = self.baselineProbBirthOutcome["pretermSGA"]
+        return [A,B,C,D,E]
