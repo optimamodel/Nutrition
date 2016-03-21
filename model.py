@@ -65,7 +65,7 @@ class Model:
                     agingOut[ind][wastingCat][breastfeedingCat] = {}
                     for stuntingCat in ["normal", "mild", "moderate", "high"]:
                         thisBox = thisCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat] 
-                        agingOut[ind][wastingCat][breastfeedingCat][stuntingCat] = int( thisBox.populationSize * thisCompartment.agingRate ) # * self.timestep
+                        agingOut[ind][wastingCat][breastfeedingCat][stuntingCat] = thisBox.populationSize * thisCompartment.agingRate  # * self.timestep
         # first age group does not have aging in
         newborns = self.listOfAgeCompartments[0]
         for wastingCat in ["normal", "mild", "moderate", "high"]:

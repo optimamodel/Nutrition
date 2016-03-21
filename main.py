@@ -52,7 +52,7 @@ for age in range(numAgeGroups):
         for wastingCat in ["normal", "mild", "moderate", "high"]:
             allBoxes[stuntingCat][wastingCat] = {}
             for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
-                thisPopSize = int( agePopSize * spreadsheetData.stuntingDistribution[stuntingCat][ageRange] * spreadsheetData.wastingDistribution[wastingCat][ageRange] * spreadsheetData.breastfeedingDistribution[breastfeedingCat][ageRange]  ) # Assuming independent
+                thisPopSize = agePopSize * spreadsheetData.stuntingDistribution[stuntingCat][ageRange] * spreadsheetData.wastingDistribution[wastingCat][ageRange] * spreadsheetData.breastfeedingDistribution[breastfeedingCat][ageRange]   # Assuming independent
                 thisMortalityRate = spreadsheetData.totalMortalityByAge[age] # WARNING need to distribute appropriately
                 allBoxes[stuntingCat][wastingCat][breastfeedingCat] =  modelCode.Box(stuntingCat, wastingCat, breastfeedingCat, thisPopSize, thisMortalityRate)
 
