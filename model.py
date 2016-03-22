@@ -34,6 +34,8 @@ class Model:
         self.ages = ages
         self.timestep = timestep
         self.constants = 0
+        import helper as helperCode
+        self.helper = helperCode.Helper()
         
     def setConstants(self, inputConstants):
         self.constants = inputConstants
@@ -51,8 +53,6 @@ class Model:
 
 
     def applyAging(self,data):
-        import helper as helperCode
-        helper = helperCode.Helper()
         numCompartments = len(self.listOfAgeCompartments)
         # calculate how many people are aging out of each box
         agingOut = [None]*numCompartments
@@ -77,8 +77,8 @@ class Model:
         for ind in range(1, numCompartments):
             ageName = self.ages[ind]
             thisAgeCompartment = self.listOfAgeCompartments[ind]
-            restratIfPreviously    = helper.restratify(self.constants.probStuntedIfPreviously[ageName])
-            restratIfNotPreviously = helper.restratify(self.constants.probStuntedIfNotPreviously[ageName])
+            restratIfPreviously    = self.helper.restratify(self.constants.probStuntedIfPreviously[ageName])
+            restratIfNotPreviously = self.helper.restratify(self.constants.probStuntedIfNotPreviously[ageName])
             for wastingCat in ["normal", "mild", "moderate", "high"]:
                 numAgingInNotStunted = 0.
                 numAgingInStunted    = 0.
@@ -94,6 +94,7 @@ class Model:
 
 
 
+
     def applyBirths(self,data):
         # calculate total number of new babies
         birthRate = self.fertileWomen.birthRate  #WARNING: assuming per pre-determined timestep
@@ -101,11 +102,26 @@ class Model:
         numNewBabies = numWomen * birthRate * self.timestep
         # see constants.py for calculation of baseline probability of birth outcome
         # now calculate stunting probability accordingly
+        # full birthOutcome distributions WARNING this whole thing should probably be defined within the Model class
+        BOdist = {}
+        BOsum = 0.
+        for birthOutcome in ["Pre-term SGA","Pre-term AGA","Term SGA"]:
+            BOdist[birthOutcome] = data.birthOutcomeDist[birthOutcome]
+            BOsum += BOdist[birthOutcome]
+        BOdist["Term AGA"] = 1. - BOsum
+        # restratify Stunting
+        restratifiedStuntingAtBirth = {}
+        for birthOutcome in ["Pre-term SGA","Pre-term AGA","Term SGA","Term AGA"]:
+            restratifiedStuntingAtBirth[birthOutcome] = self.helper.restratify(self.constants.probsStuntingAtBirth[birthOutcome])
+        # sum over birth outcome for full stratified stunting fractions, then apply to birth distribution
+        stuntingFractions = {}
         for stuntingCat in ["normal", "mild", "moderate", "high"]:
+            stuntingFractions[stuntingCat] = 0.
+            for birthOutcome in ["Pre-term SGA","Pre-term AGA","Term SGA","Term AGA"]:
+                stuntingFractions[stuntingCat] += restratifiedStuntingAtBirth[birthOutcome][stuntingCat] * BOdist[birthOutcome] # data.birthOutcomeDist[birthOutcome]
             for wastingCat in ["normal", "mild", "moderate", "high"]:
                 for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
-                    stuntingFraction = data.stuntingDistribution[stuntingCat]["<1 month"] # WARNING PLACEHOLDER
-                    self.listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize += numNewBabies * data.wastingDistribution[wastingCat]["<1 month"] * data.breastfeedingDistribution[breastfeedingCat]["<1 month"] * stuntingFraction
+                    self.listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize += numNewBabies * data.wastingDistribution[wastingCat]["<1 month"] * data.breastfeedingDistribution[breastfeedingCat]["<1 month"] * stuntingFractions[stuntingCat]
 
 
 
