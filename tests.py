@@ -128,20 +128,26 @@ class TestsForModelClass(unittest.TestCase):
         self.testModel.applyAging(self.testData)
         self.assertEqual(0., self.testModel.listOfAgeCompartments[0].dictOfBoxes['mild']['high']['predominant'].populationSize)
         
-    def testApplyAgingForIntegerProbabilities(self):
+    def testApplyAging(self):
         # sum aging out age[0] should equal sum aging in age[1]   
-        # set integer probabilities so that there is no movement between stunting statuses
-        self.testModel.constants.probStuntedIfNotPreviously['1-5 months'] = 0
-        self.testModel.constants.probStuntedIfPreviously['1-5 months'] = 1
-        sumAgeingOutAge0 = 64. * int(100. * (1./1.)) # * (1./12))
-        sumAgeingOutAge1 = 64. * int(100. * (1./5.)) # * (1./12))
+        # default testing dist for breastfeeding is set to be equal to 1 in spreadsheet, therefore 0.1 in data
+        # we need breastfeeding dist to sum to 1 per age group, set this below:
+        for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
+            for ageName in self.testModel.ages:
+                self.testData.breastfeedingDistribution[breastfeedingStatus][ageName] = 0.25 #divide 1 by 4 boxes
+        # calculate what we expect        
+        sumAgeingOutAge0 = 64. * 100. * (1./1.) 
+        sumAgeingOutAge1 = 64. * 100. * (1./5.) 
+        expectedSumPopAge1 = (64 * 100) - sumAgeingOutAge1 + sumAgeingOutAge0
+        # call the function to apply aging
         self.testModel.applyAging(self.testData)
+        # count population in age 1 after calling aging function
         sumPopAge1 = 0
         for stuntingStatus in ["normal", "mild", "moderate", "high"]:
             for wastingStatus in ["normal", "mild", "moderate", "high"]:
                 for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
                     sumPopAge1 += self.testModel.listOfAgeCompartments[1].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize 
-        self.assertEqual(sumPopAge1, (64 * 100) - sumAgeingOutAge1 + sumAgeingOutAge0)    
+        self.assertEqual(sumPopAge1, expectedSumPopAge1)    
 
     @unittest.skip("talk to Mud about this")
     def testApplyAgingForNonIntegerProbabilities(self):
