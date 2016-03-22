@@ -153,14 +153,14 @@ class Constants:
                     numNewborns +=self.model.listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
                     numNewbornsStunted +=self.model.listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
         FracStunted = float(numNewbornsStunted) / float(numNewborns)
-        # i/j will refer to the four birth outcomes
+        # [i] will refer to the four birth outcomes
         A = FracBO[0]*(OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.)
         B = (OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.) * ( \
             sum( FracBO[0] / (OR[i]-1.)         for i in (1,2,3)) + \
             sum( OR[i] * FracBO[i] / (OR[i]-1.) for i in (1,2,3)) - \
             FracStunted )
         C = sum( FracBO[0] * (OR[i]-1.)         for i in (1,2,3)) + \
-            sum( OR[i] * FracBO[i] * sum((OR[1]-1.)+(OR[2]-1.)+(OR[3]-1.)-(OR[j]-1.)for j in (1,2,3)) ) - \
+            sum( OR[i] * FracBO[i] * ((OR[1]-1.)+(OR[2]-1.)+(OR[3]-1.)-(OR[i]-1.)) for i in (1,2,3) ) - \
             sum( FracStunted*(OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.)/(OR[i]-1.) for i in (1,2,3))
         D = FracBO[0] + \
             sum( OR[i] * FracBO[i] for i in (1,2,3)) - \
