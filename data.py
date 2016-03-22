@@ -67,23 +67,23 @@ def getFakeData():
     timeBetweenBirthsDist = {"first":0.2258,"<18 months":0.0705,"18-23 months":0.134,"<24 months":0.5698}
 
     # distribution of birth outcomes
-    birthOutcomeDist = {"pretermSGA":0.0198, "pretermAGA":0.1032, "termSGA":0.1351, "termAGA":0.7419}
+    birthOutcomeDist = {"Pre-term SGA":0.0198, "Pre-term AGA":0.1032, "Term AGA":0.1351, "Term SGA":0.7419}
 
     # Relative Risks of (first 3) Birth Outcomes by maternal age & birth order, and time
-    RRbirthOutcomeByAgeAndOrder = {"pretermSGA":{"<18 years":{"first":3.14,"second or third":1.6,"greater than third":1.6},
+    RRbirthOutcomeByAgeAndOrder = {"Pre-term SGA":{"<18 years":{"first":3.14,"second or third":1.6,"greater than third":1.6},
                                                  "18-34 years":{"first":1.73,"second or third":1.,"greater than third":1.},
                                                  "35-49 years":{"first":1.73,"second or third":1.57,"greater than third":1.57}},
-                                   "pretermAGA":{"<18 years":{"first":1.75,"second or third":1.4,"greater than third":1.4},
+                                   "Pre-term AGA":{"<18 years":{"first":1.75,"second or third":1.4,"greater than third":1.4},
                                                  "18-34 years":{"first":1.75,"second or third":1.,"greater than third":1.},
                                                  "35-49 years":{"first":1.75,"second or third":1.33,"greater than third":1.33}},
-                                   "termSGA":{"<18 years":{"first":1.52,"second or third":1.2,"greater than third":1.2},
+                                   "Term SGA":{"<18 years":{"first":1.52,"second or third":1.2,"greater than third":1.2},
                                               "18-34 years":{"first":1.52,"second or third":1.,"greater than third":1.},
                                               "35-49 years":{"first":1.52,"second or third":1.,"greater than third":1.}}}
 
 
-    RRbirthOutcomeByTime = {"pretermSGA":{"first":1.,"<18 months":3.03,"18-23 months":1.77,"<24 months":1.},
-                            "pretermAGA":{"first":1.,"<18 months":1.49,"18-23 months":1.1,"<24 months":1.},
-                            "termSGA":{"first":1.,"<18 months":1.41,"18-23 months":1.18,"<24 months":1.}}
+    RRbirthOutcomeByTime = {"Pre-term SGA":{"first":1.,"<18 months":3.03,"18-23 months":1.77,"<24 months":1.},
+                            "Pre-term AGA":{"first":1.,"<18 months":1.49,"18-23 months":1.1,"<24 months":1.},
+                            "Term SGA":{"first":1.,"<18 months":1.41,"18-23 months":1.18,"<24 months":1.}}
 
 
     # Odds Ratios on Stunting by: BirthOutcomes, Previous Stunting Category, ...
