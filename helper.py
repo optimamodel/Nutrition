@@ -25,9 +25,3 @@ class Helper:
         restratification["moderate"] = fractionModerate
         restratification["high"] = fractionHigh
         return restratification
-        
-        
-    def evalQuartic(self,coefficients,p0):
-        from math import pow
-        A,B,C,D,E = coefficients
-        return A*pow(p0,4) + B*pow(p0,3) + C*pow(p0,2) + D*p0 + E
