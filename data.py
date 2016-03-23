@@ -6,7 +6,7 @@ Created on Fri Feb 26 15:57:07 2016
 """
 
 class Data:
-    def __init__(self, ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, InciDiarrhoea, RRdiarrhoea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting):
+    def __init__(self, ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, InciDiarrhoea, RRdiarrhoea, ORdiarrhoea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting):
         self.ages = ages
         self.causesOfDeath = causesOfDeath
         self.totalMortalityByAge = totalMortalityByAge
@@ -20,6 +20,7 @@ class Data:
         self.ORstuntingProgression = ORstuntingProgression
         self.InciDiarrhoea = InciDiarrhoea
         self.RRdiarrhoea = RRdiarrhoea
+        self.ORdiarrhoea = ORdiarrhoea
         self.birthCircumstanceDist = birthCircumstanceDist
         self.timeBetweenBirthsDist = timeBetweenBirthsDist
         self.birthOutcomeDist = birthOutcomeDist
@@ -279,6 +280,18 @@ def getDataFromSpreadsheet(fileName):
         for time in birthLag:
             RRbirthOutcomeByTime[outcome][time] = df[time][outcome]           
             
+    #  READ OR stunting progression SHEET
+    #  gets you:
+    #  - ORstuntingProgression
+    df = pandas.read_excel(Location, sheetname = 'OR stunting progression')
+    ORstuntingProgression = dict(zip(list(df.columns.values), df.iloc[0]))    
+
+    # READ Incidence Diarrhoea SHEET
+    # gets you:
+    # - InciDiarrhoea
+    df = pandas.read_excel(Location, sheetname = 'Incidence diarrhoea')
+    InciDiarrhoea = dict(zip(list(df.columns.values), df.iloc[0]))    
+
     # READ RR diarrhoea SHEET
     # gets you:
     # - RRdiarrhoea
@@ -289,17 +302,11 @@ def getDataFromSpreadsheet(fileName):
         for breastfeedingCat in ['exclusive', 'predominant', 'partial', 'none']:
             RRdiarrhoea[age][breastfeedingCat] = df[age][breastfeedingCat]       
 
-    # READ Incidence Diarrhoea SHEET
+    # READ OR Diarrhoea SHEET
     # gets you:
-    # - InciDiarrhoea
-    df = pandas.read_excel(Location, sheetname = 'Incidence Diarrhoea')
-    InciDiarrhoea = dict(zip(list(df.columns.values), df.iloc[0]))    
-
-    #  READ OR stunting progression SHEET
-    #  gets you:
-    #  - ORstuntingProgression
-    df = pandas.read_excel(Location, sheetname = 'OR stunting progression')
-    ORstuntingProgression = dict(zip(list(df.columns.values), df.iloc[0]))    
+    # - ORdiarrhoea
+    df = pandas.read_excel(Location, sheetname = 'OR stunting diarrhoea')
+    ORdiarrhoea = dict(zip(list(df.columns.values), df.iloc[0]))    
 
     #  READ birth outcome distribution SHEET
     #  gets you:
@@ -313,6 +320,7 @@ def getDataFromSpreadsheet(fileName):
     df = pandas.read_excel(Location, sheetname = 'OR birth outcome stunting')
     ORBirthOutcomeStunting = dict(zip(list(df.columns.values), df.iloc[0]))   
             
-    spreadsheetData = Data(ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, InciDiarrhoea, RRdiarrhoea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting)
+    spreadsheetData = Data(ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, InciDiarrhoea, RRdiarrhoea, ORdiarrhoea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting)
+
     return spreadsheetData        
                   
