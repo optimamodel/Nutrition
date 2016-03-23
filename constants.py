@@ -13,6 +13,7 @@ class Constants:
         self.underlyingMortalityByAge = []        
         self.probStuntedIfNotPreviously = 0
         self.probStuntedIfPreviously = 0
+        self.probStuntedIfDiarrhoea = {}
         self.baselineProbsBirthOutcome = {}  
         self.probsBirthOutcome = {}  
         self.birthStuntingQuarticCoefficients = []
@@ -103,33 +104,38 @@ class Constants:
 
     def getProbStuntingDiarrhoea(self):
         from numpy import sqrt 
+        from math import pow
         numAgeGroups = len(self.model.listOfAgeCompartments)
         # probability of stunting progression
-        self.probStuntedIfNotPreviously = {}
-        self.probStuntedIfPreviously = {}
+        self.probStuntedIfDiarrhoea["nodia"] = {}
+        self.probStuntedIfDiarrhoea["dia"] = {}
         eps = 1.e-5
         for ageInd in range(1,numAgeGroups):
             ageName = self.data.ages[ageInd]
             thisAge = self.model.listOfAgeCompartments[ageInd]
             younger = self.model.listOfAgeCompartments[ageInd-1]
-            OddsRatio = self.data.ORstuntingProgression[ageName]
+            Za = self.data.InciDiarrhoea[ageName]
+            # population odds ratio = AO (see Eqn 3.9)
+            RRnot = self.data.RRdiarrhoea[ageName]["none"]
+            AO = pow(self.data.ORstuntingDiarrhoea[ageName],RRnot*Za/thisAge.agingRate)
+            # instead have beta fracDiarrhoea
+            fracDiarrhoea = 0.
+            for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+                RDa = self.data.RRdiarrhoea[ageName][breastfeedingCat]
+                fracDiarrhoea += 1. - (RRnot*Za-RDa*Za)/(RRnot*Za)
+            # fraction stunted
             numStuntedThisAge = 0.
-            numStuntedYounger = 0.
             numNotStuntedThisAge = 0.
-            numNotStuntedYounger = 0.
             for wastingCat in ["normal", "mild", "moderate", "high"]:
                 for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
                     for stuntingCat in ["moderate","high"]:
-                        numStuntedThisAge +=  thisAge.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
-                        numStuntedYounger +=  younger.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
+                        numStuntedThisAge    += thisAge.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
                     for stuntingCat in ["normal", "mild"]:
                         numNotStuntedThisAge += thisAge.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
-                        numNotStuntedYounger += younger.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
             fracStuntedThisAge = numStuntedThisAge / (numStuntedThisAge + numNotStuntedThisAge + eps)
-            fracStuntedYounger = numStuntedYounger / (numStuntedYounger + numNotStuntedYounger + eps)
             # solve quadratic equation ax**2 + bx + c = 0
-            a = (1.-fracStuntedYounger) * (1.-OddsRatio)
-            b = (OddsRatio-1)*fracStuntedThisAge - OddsRatio*fracStuntedYounger - (1.-fracStuntedYounger)
+            a = (1.-fracDiarrhoea) * (1.-AO)
+            b = (AO-1)*fracStuntedThisAge - AO*fracDiarrhoea - (1.-fracDiarrhoea)
             c = fracStuntedThisAge
             det = sqrt(b**2 - 4.*a*c)
             soln1 = (-b + det)/(2.*a)
@@ -137,8 +143,8 @@ class Constants:
             # not sure what to do if both or neither are solutions
             if(soln1>0.)and(soln1<1.): p0 = soln1
             if(soln2>0.)and(soln2<1.): p0 = soln2
-            self.probStuntedIfNotPreviously[ageName] = p0
-            self.probStuntedIfPreviously[ageName]    = p0*OddsRatio/(1.-p0+OddsRatio*p0)
+            self.probStuntedIfDiarrhoea["nodia"][ageName] = p0
+            self.probStuntedIfDiarrhoea["dia"][ageName]   = p0*AO/(1.-p0+AO*p0)
 
 
         
