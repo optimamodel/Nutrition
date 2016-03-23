@@ -117,7 +117,7 @@ class Constants:
             Za = self.data.InciDiarrhoea[ageName]
             # population odds ratio = AO (see Eqn 3.9)
             RRnot = self.data.RRdiarrhoea[ageName]["none"]
-            AO = pow(self.data.ORstuntingDiarrhoea[ageName],RRnot*Za/thisAge.agingRate)
+            AO = pow(self.data.ORdiarrhoea[ageName],RRnot*Za/thisAge.agingRate)
             # instead have beta fracDiarrhoea
             fracDiarrhoea = 0.
             for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
