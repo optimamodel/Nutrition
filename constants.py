@@ -159,10 +159,9 @@ class Constants:
         OR[2] = self.data.ORBirthOutcomeStunting["Pre-term AGA"]
         OR[3] = self.data.ORBirthOutcomeStunting["Pre-term SGA"]
         FracBO = [0.]*4
-        # WARNING currently using 2016 birth outcome distribution with no intervntion changes
-        FracBO[1] = self.data.birthOutcomeDist["Term SGA"]     # self.probsBirthOutcome["Term SGA"]
-        FracBO[2] = self.data.birthOutcomeDist["Pre-term AGA"] # self.probsBirthOutcome["Pre-term AGA"]
-        FracBO[3] = self.data.birthOutcomeDist["Pre-term SGA"] # self.probsBirthOutcome["Pre-term SGA"]
+        FracBO[1] = self.data.birthOutcomeDist["Term SGA"]    
+        FracBO[2] = self.data.birthOutcomeDist["Pre-term AGA"]
+        FracBO[3] = self.data.birthOutcomeDist["Pre-term SGA"]
         FracBO[0] = 1. - sum(FracBO[1:3])
         numNewborns        = 0.
         numNewbornsStunted = 0.
@@ -202,7 +201,7 @@ class Constants:
     # SOLVE QUARTIC
     # p0 = Probability of Stunting at birth if Birth outcome = Term AGA
     def getProbStuntingAtBirthForBaselineBirthOutcome(self):
-        eps = 0.01
+        eps = 0.001
         p0min = 0.
         p0max = 1.
         interval = p0max - p0min
