@@ -20,7 +20,8 @@ class Constants:
         self.probsStuntingAtBirth = {}
 
         self.getUnderlyingMortalityByAge()
-        self.getStuntingProbabilities()
+        self.getProbStuntingProgression()
+        self.getProbStuntingDiarrhoea()
         self.getBaselineProbsBirthOutcome()
         self.getBirthStuntingQuarticCoefficients()
         self.getProbStuntingAtBirthForBaselineBirthOutcome()
@@ -59,7 +60,7 @@ class Constants:
     
 
 
-    def getStuntingProbabilities(self):
+    def getProbStuntingProgression(self):
         from numpy import sqrt 
         numAgeGroups = len(self.model.listOfAgeCompartments)
         # probability of stunting progression
@@ -100,6 +101,47 @@ class Constants:
         
 
 
+    def getProbStuntingDiarrhoea(self):
+        from numpy import sqrt 
+        numAgeGroups = len(self.model.listOfAgeCompartments)
+        # probability of stunting progression
+        self.probStuntedIfNotPreviously = {}
+        self.probStuntedIfPreviously = {}
+        eps = 1.e-5
+        for ageInd in range(1,numAgeGroups):
+            ageName = self.data.ages[ageInd]
+            thisAge = self.model.listOfAgeCompartments[ageInd]
+            younger = self.model.listOfAgeCompartments[ageInd-1]
+            OddsRatio = self.data.ORstuntingProgression[ageName]
+            numStuntedThisAge = 0.
+            numStuntedYounger = 0.
+            numNotStuntedThisAge = 0.
+            numNotStuntedYounger = 0.
+            for wastingCat in ["normal", "mild", "moderate", "high"]:
+                for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+                    for stuntingCat in ["moderate","high"]:
+                        numStuntedThisAge +=  thisAge.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
+                        numStuntedYounger +=  younger.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
+                    for stuntingCat in ["normal", "mild"]:
+                        numNotStuntedThisAge += thisAge.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
+                        numNotStuntedYounger += younger.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
+            fracStuntedThisAge = numStuntedThisAge / (numStuntedThisAge + numNotStuntedThisAge + eps)
+            fracStuntedYounger = numStuntedYounger / (numStuntedYounger + numNotStuntedYounger + eps)
+            # solve quadratic equation ax**2 + bx + c = 0
+            a = (1.-fracStuntedYounger) * (1.-OddsRatio)
+            b = (OddsRatio-1)*fracStuntedThisAge - OddsRatio*fracStuntedYounger - (1.-fracStuntedYounger)
+            c = fracStuntedThisAge
+            det = sqrt(b**2 - 4.*a*c)
+            soln1 = (-b + det)/(2.*a)
+            soln2 = (-b - det)/(2.*a)
+            # not sure what to do if both or neither are solutions
+            if(soln1>0.)and(soln1<1.): p0 = soln1
+            if(soln2>0.)and(soln2<1.): p0 = soln2
+            self.probStuntedIfNotPreviously[ageName] = p0
+            self.probStuntedIfPreviously[ageName]    = p0*OddsRatio/(1.-p0+OddsRatio*p0)
+
+
+        
     # calculation of probabilities of birth outcome
     # given baseline maternalAge=18-34 years , birthOrder=second or third, timeBetweenBirths=>24 months 
     # P(birthOutcome | standard (maternalAge,birthOrder,timeBtwn)
