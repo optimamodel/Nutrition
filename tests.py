@@ -146,12 +146,6 @@ class TestsForModelClass(unittest.TestCase):
                     sumPopAge1 += self.testModel.listOfAgeCompartments[1].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize 
         self.assertAlmostEqual(sumPopAge1, expectedSumPopAge1)    
 
-    @unittest.skip("talk to Mud about this")
-    def testApplyAgingForNonIntegerProbabilities(self):
-        # need to write this test
-        # sum aging out age[0] should equal sum aging in age[1]
-         self.assertTrue(False)
-         
     @unittest.skip("need to translate birth outcome to stunting after quartic solved")     
     def testApplyBirths(self):
         # need to write this test
