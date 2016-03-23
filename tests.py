@@ -23,9 +23,6 @@ def setUpDataModelConstantsObjects():
     numAgeGroups = len(ageRangeList)
     agePopSizes  = [6400, 6400, 6400, 6400, 6400]
     
-    #timespan = 5.0 # [years] running the model for this long
-    #numsteps = 60  # number of timesteps; determined to produce a sensible timestep
-    #timestep = timespan / float(numsteps)
     timestep = 1./12. 
     numsteps = 10  
     timespan = timestep * float(numsteps)    
@@ -147,7 +144,7 @@ class TestsForModelClass(unittest.TestCase):
             for wastingStatus in ["normal", "mild", "moderate", "high"]:
                 for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
                     sumPopAge1 += self.testModel.listOfAgeCompartments[1].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize 
-        self.assertEqual(sumPopAge1, expectedSumPopAge1)    
+        self.assertAlmostEqual(sumPopAge1, expectedSumPopAge1)    
 
     @unittest.skip("talk to Mud about this")
     def testApplyAgingForNonIntegerProbabilities(self):
