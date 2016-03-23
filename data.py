@@ -6,23 +6,25 @@ Created on Fri Feb 26 15:57:07 2016
 """
 
 class Data:
-    def __init__(self, ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting):
+    def __init__(self, ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, InciDiarrhoea, RRdiarrhoea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting):
         self.ages = ages
         self.causesOfDeath = causesOfDeath
         self.totalMortalityByAge = totalMortalityByAge
         self.causeOfDeathByAge = causeOfDeathByAge
-        self.RRStunting = RRStunting
-        self.RRWasting = RRWasting
-        self.RRBreastfeeding = RRBreastfeeding
         self.stuntingDistribution = stuntingDistribution
         self.wastingDistribution = wastingDistribution
         self.breastfeedingDistribution = breastfeedingDistribution
+        self.RRStunting = RRStunting
+        self.RRWasting = RRWasting
+        self.RRBreastfeeding = RRBreastfeeding
+        self.ORstuntingProgression = ORstuntingProgression
+        self.InciDiarrhoea = InciDiarrhoea
+        self.RRdiarrhoea = RRdiarrhoea
         self.birthCircumstanceDist = birthCircumstanceDist
         self.timeBetweenBirthsDist = timeBetweenBirthsDist
         self.birthOutcomeDist = birthOutcomeDist
         self.RRbirthOutcomeByAgeAndOrder = RRbirthOutcomeByAgeAndOrder
         self.RRbirthOutcomeByTime = RRbirthOutcomeByTime
-        self.ORstuntingProgression = ORstuntingProgression
         self.ORBirthOutcomeStunting = ORBirthOutcomeStunting
     
     
@@ -277,6 +279,22 @@ def getDataFromSpreadsheet(fileName):
         for time in birthLag:
             RRbirthOutcomeByTime[outcome][time] = df[time][outcome]           
             
+    # READ RR diarrhoea SHEET
+    # gets you:
+    # - RRdiarrhoea
+    df = pandas.read_excel(Location, sheetname = 'RR diarrhoea', index_col = [0]) #read this way for this task
+    RRdiarrhoea = {}
+    for age in ages:
+        RRdiarrhoea[age] = {}
+        for breastfeedingCat in ['exclusive', 'predominant', 'partial', 'none']:
+            RRdiarrhoea[age][breastfeedingCat] = df[age][breastfeedingCat]       
+
+    # READ Incidence Diarrhoea SHEET
+    # gets you:
+    # - InciDiarrhoea
+    df = pandas.read_excel(Location, sheetname = 'Incidence Diarrhoea')
+    InciDiarrhoea = dict(zip(list(df.columns.values), df.iloc[0]))    
+
     #  READ OR stunting progression SHEET
     #  gets you:
     #  - ORstuntingProgression
@@ -286,7 +304,6 @@ def getDataFromSpreadsheet(fileName):
     #  READ birth outcome distribution SHEET
     #  gets you:
     #  - birthOutcomeDist
-    
     df = pandas.read_excel(Location, sheetname = 'birth outcome distribution')
     birthOutcomeDist = dict(zip(list(df.columns.values), df.iloc[0]))    
       
@@ -296,6 +313,6 @@ def getDataFromSpreadsheet(fileName):
     df = pandas.read_excel(Location, sheetname = 'OR birth outcome stunting')
     ORBirthOutcomeStunting = dict(zip(list(df.columns.values), df.iloc[0]))   
             
-    spreadsheetData = Data(ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting)
+    spreadsheetData = Data(ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, InciDiarrhoea, RRdiarrhoea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting)
     return spreadsheetData        
                   
