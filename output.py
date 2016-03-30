@@ -6,23 +6,29 @@ Created on Fri Mar 11 11:50:20 2016
 """
 
 
-def getPopSizeByAgePlot(modelList):
+def getPopSizeByAgePlot(modelList, label):
     ageList = modelList[0].ages
     #get population size for each age group
     popSize = {}
     for age in range(0, len(modelList[0].ages)):
         popSize[age] = 0
-        countArray = []
+        countThis = []
         for model in modelList:
             count = 0            
             for stuntingStatus in ["normal", "mild", "moderate", "high"]:
                 for wastingStatus in ["normal", "mild", "moderate", "high"]:
                     for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
                         count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize
-            countArray.append(count)
-        popSize[age] = countArray      
-            
-        
+            countThis.append(count)
+        popSize[age] = countThis      
+    
+    #get some x axis stuff    
+    numYears = len(modelList)/12         
+    yearList = [2016]
+    xTickList = [0]
+    for i in range(1, numYears+1):
+        yearList.append(yearList[0] + i)   
+        xTickList.append(i * 12)
     
     import numpy as np
     import matplotlib.pyplot as plt
@@ -36,29 +42,40 @@ def getPopSizeByAgePlot(modelList):
     fig, ax = plt.subplots()
     ax.stackplot(x, y1, y2, y3, y4, y5)
     ax.legend(ageList, loc = 'upper left')
+    ax.set_xticks(xTickList)
+    ax.set_xticklabels(yearList)
+    #ax.set_ylim([0, 1.6e10])
     plt.ylabel('population size')
-    plt.xlabel('time steps in months')
-    plt.title('Population Size by Age Group')
+    #plt.xlabel('time steps in months')
+    plt.title('Population Size by Age Group:  ' + label)
     plt.show()
     
     return popSize
 
 
-def getCumulativeDeathsByAgePlot(modelList):
+def getCumulativeDeathsByAgePlot(modelList, label):
     ageList = modelList[0].ages
     #get population size for each age group
     cumulativeDeaths = {}
     for age in range(0, len(modelList[0].ages)):
         cumulativeDeaths[age] = 0
-        countArray = []
+        countThis = []
         for model in modelList:
             count = 0            
             for stuntingStatus in ["normal", "mild", "moderate", "high"]:
                 for wastingStatus in ["normal", "mild", "moderate", "high"]:
                     for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
                         count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].cumulativeDeaths
-            countArray.append(count)
-        cumulativeDeaths[age] = countArray            
+            countThis.append(count)
+        cumulativeDeaths[age] = countThis            
+    
+    #get some x axis stuff    
+    numYears = len(modelList)/12         
+    yearList = [2016]
+    xTickList = [0]
+    for i in range(1, numYears+1):
+        yearList.append(yearList[0] + i)   
+        xTickList.append(i * 12)    
     
     import numpy as np
     import matplotlib.pyplot as plt
@@ -71,28 +88,38 @@ def getCumulativeDeathsByAgePlot(modelList):
     
     fig, ax = plt.subplots()
     ax.stackplot(x, y1, y2, y3, y4, y5)
+    ax.set_xticks(xTickList)
+    ax.set_xticklabels(yearList)
     ax.legend(ageList, loc = 'upper left')
     plt.ylabel('cumulative deaths')
-    plt.xlabel('time steps in months')
-    plt.title('Cumulative Deaths by Age Group')
+    #plt.xlabel('time steps in months')
+    plt.title('Cumulative Deaths by Age Group:  ' + label)
     plt.show()
     
-def getNumStuntedByAgePlot(modelList):
+def getNumStuntedByAgePlot(modelList, label):
     #this counts people in the top 2 stunting categories
     ageList = modelList[0].ages
     #get population size for each age group
     numStunted = {}
     for age in range(0, len(modelList[0].ages)):
         numStunted[age] = 0
-        countArray = []
+        countThis = []
         for model in modelList:
             count = 0            
             for stuntingStatus in ["moderate", "high"]:
                 for wastingStatus in ["normal", "mild", "moderate", "high"]:
                     for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
                         count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize
-            countArray.append(count)
-        numStunted[age] = countArray            
+            countThis.append(count)
+        numStunted[age] = countThis      
+        
+    #get some x axis stuff    
+    numYears = len(modelList)/12         
+    yearList = [2016]
+    xTickList = [0]
+    for i in range(1, numYears+1):
+        yearList.append(yearList[0] + i)   
+        xTickList.append(i * 12)      
     
     import numpy as np
     import matplotlib.pyplot as plt
@@ -105,15 +132,18 @@ def getNumStuntedByAgePlot(modelList):
     
     fig, ax = plt.subplots()
     ax.stackplot(x, y1, y2, y3, y4, y5)
+    ax.set_xticks(xTickList)
+    ax.set_xticklabels(yearList)
     ax.legend(ageList, loc = 'upper left')
     plt.ylabel('number of people stunted')
-    plt.xlabel('time steps in months')
-    plt.title('Number of People Stunted by Age Group')
+    #plt.xlabel('time steps in months')
+    plt.title('Number of People Stunted by Age Group:  ' + label)
     plt.show()
     
     
-def getStuntedPercent(modelList): # NOT WORKING YET
-    from operator import truediv    
+def getStuntedPercent(modelList, label): # NOT WORKING YET
+    from operator import truediv  
+    import numpy as np
     #this counts people in the top 2 stunting categories as stunted
     ageList = modelList[0].ages
     #get population size for each age group
@@ -122,32 +152,44 @@ def getStuntedPercent(modelList): # NOT WORKING YET
         percentStunted[age] = 0
         
         # count STUNTED 
-        countArray = []
+        countThis = []
         for model in modelList:
             count = 0            
             for stuntingStatus in ["moderate", "high"]:
                 for wastingStatus in ["normal", "mild", "moderate", "high"]:
                     for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
                         count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize
-            countArray.append(count)
+            countThis.append(count)
             
         # count NOT STUNTED 
-        countArrayN = []
+        countThisN = []
         for model in modelList:
             count = 0            
             for stuntingStatus in ["normal", "mild"]:
                 for wastingStatus in ["normal", "mild", "moderate", "high"]:
                     for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
                         count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize
-            countArrayN.append(count)
+            countThisN.append(count)
             
+        
+        #get yearly average
+        numYears = len(modelList)/12 
+        yearAveStunted = []
+        yearAveNotStunted = []
+        for year in range(1, numYears+1):
+            yearAveStunted.append(np.average(countThis[(year - 1) * 12 : (year * 12) - 1]))
+            yearAveNotStunted.append(np.average(countThisN[(year - 1) * 12 : (year * 12) - 1]))
             
-        percentStunted[age] = map(truediv, countArray, countArrayN)     
+        percentStunted[age] = map(truediv, yearAveStunted, yearAveNotStunted)    
+        
+    yearList = [2017]
+    for i in range(1, numYears):
+        yearList.append(yearList[0] + i)
     
     import numpy as np
     import matplotlib.pyplot as plt
     
-    x = np.arange(len(modelList))
+    x = np.arange(numYears)
     width = 0.35
     fig, ax = plt.subplots()    
     rects1 = ax.bar(6*x*width, percentStunted[0], width, color='r')
@@ -163,8 +205,8 @@ def getStuntedPercent(modelList): # NOT WORKING YET
     
     ax.legend( (rects1[0], rects2[0], rects3[0], rects4[0], rects5[0]), (ageList[:]), loc = 'upper center', bbox_to_anchor=(0.5, -0.15), ncol=5, fancybox=True, shadow=True)
     ax.set_xticks(x*6*width + 2.5*width)
-    ax.set_xticklabels(x[:]+1)
+    ax.set_xticklabels(yearList)
     ax.set_ylabel('% of people stunted')
-    ax.set_xlabel('time steps in months')
-    ax.set_title('Percent of People Stunted by Age Group')
+    #ax.set_xlabel('time steps in months')
+    ax.set_title('Percent of People Stunted by Age Group:  ' + label)
     plt.show()    

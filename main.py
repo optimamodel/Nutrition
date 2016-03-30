@@ -24,6 +24,20 @@ mothers = modelCode.FertileWomen(0.2, 2.e6)
 
 # read the data from the spreadsheet
 spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx')
+
+## intervention:  make first 2 age groups exclusively breastfed 
+#for age in ['<1 month', '1-5 months']:
+#    for status in ["predominant", "partial", "none"]:
+#        spreadsheetData.breastfeedingDistribution[status][age] = 0
+#        spreadsheetData.breastfeedingDistribution['exclusive'][age] = 100         
+
+# intervention:  improve breastfeeding in first 2 age groups 
+for age in ['<1 month']: #, '1-5 months']:
+    spreadsheetData.breastfeedingDistribution['exclusive'][age] = 60
+    spreadsheetData.breastfeedingDistribution['predominant'][age] = 30
+    spreadsheetData.breastfeedingDistribution['partial'][age] = 10
+    spreadsheetData.breastfeedingDistribution['none'][age] = 0     
+
 # get fake data
 #fakeData = dataCode.getFakeData()
 
@@ -36,7 +50,7 @@ agePopSizes  = [2.e5, 3.e5, 7.e5, 14.e5, 43.e5]
 
 #timespan = 5.0 # [years] running the model for this long
 timestep = 1./12. # 1 month #timespan / float(numsteps)
-numsteps = 10  # number of timesteps; determined to produce a sensible timestep
+numsteps = 120  # number of timesteps; determined to produce a sensible timestep
 timespan = timestep * float(numsteps)
 
 # Loop over all age-groups
@@ -96,10 +110,11 @@ while 1:
         break
 infile.close()
 
-output.getPopSizeByAgePlot(modelList)
-output.getCumulativeDeathsByAgePlot(modelList)
-output.getNumStuntedByAgePlot(modelList)
-output.getStuntedPercent(modelList)
+#ploting scripts assume numsteps is a multiple of 12 (integer years)
+output.getPopSizeByAgePlot(modelList, "test")
+output.getCumulativeDeathsByAgePlot(modelList, "test")
+output.getNumStuntedByAgePlot(modelList, "test")
+output.getStuntedPercent(modelList, "test")
 
 
 
