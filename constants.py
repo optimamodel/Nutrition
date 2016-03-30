@@ -53,8 +53,9 @@ class Constants:
         LHS = [float(i) for i in self.data.totalMortalityByAge]
                 
         X = []
+        fudgeFactor = 2  # HACK WARNING REMOVE THIS FACTOR
         for i in range(0, len(LHS)):
-            X.append(LHS[i] / RHS[i])
+            X.append(fudgeFactor * (LHS[i] / RHS[i]))
         Xdictionary = dict(zip(self.data.ages, X))  
         #return Xdictionary
         self.underlyingMortalityByAge = Xdictionary

@@ -67,7 +67,8 @@ def getCumulativeDeathsByAgePlot(modelList, label):
                     for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
                         count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].cumulativeDeaths
             countThis.append(count)
-        cumulativeDeaths[age] = countThis            
+        cumulativeDeaths[age] = countThis  
+
     
     #get some x axis stuff    
     numYears = len(modelList)/12         
