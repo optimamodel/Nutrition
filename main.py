@@ -25,17 +25,17 @@ mothers = modelCode.FertileWomen(0.2, 2.e6)
 # read the data from the spreadsheet
 spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx')
 
-## intervention:  make first 2 age groups exclusively breastfed 
+# intervention:  make first 2 age groups exclusively breastfed 
 #for age in ['<1 month', '1-5 months']:
 #    for status in ["predominant", "partial", "none"]:
 #        spreadsheetData.breastfeedingDistribution[status][age] = 0
-#        spreadsheetData.breastfeedingDistribution['exclusive'][age] = 100         
+#        spreadsheetData.breastfeedingDistribution['exclusive'][age] = 1         
 
 # intervention:  improve breastfeeding in first 2 age groups 
-for age in ['<1 month']: #, '1-5 months']:
-    spreadsheetData.breastfeedingDistribution['exclusive'][age] = 60
-    spreadsheetData.breastfeedingDistribution['predominant'][age] = 30
-    spreadsheetData.breastfeedingDistribution['partial'][age] = 10
+for age in ['<1 month', '1-5 months']:
+    spreadsheetData.breastfeedingDistribution['exclusive'][age] = 0.6
+    spreadsheetData.breastfeedingDistribution['predominant'][age] = 0.3
+    spreadsheetData.breastfeedingDistribution['partial'][age] = 0.1
     spreadsheetData.breastfeedingDistribution['none'][age] = 0     
 
 # get fake data

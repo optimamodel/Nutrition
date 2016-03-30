@@ -38,32 +38,32 @@ while 1:
         break
 file3.close()
 
-file4 = open('someNewbornIntervention.pkl', 'rb')
-# read the model output with simple intervention for newborns only
-someNewborn = []
-while 1:
-    try:
-        someNewborn.append(pickle.load(file4))
-    except (EOFError):
-        break
-file4.close()
+#file4 = open('someNewbornIntervention.pkl', 'rb')
+## read the model output with simple intervention for newborns only
+#someNewborn = []
+#while 1:
+#    try:
+#        someNewborn.append(pickle.load(file4))
+#    except (EOFError):
+#        break
+#file4.close()
 
 output.getPopSizeByAgePlot(none, "none")
 output.getPopSizeByAgePlot(some, "some")
-output.getPopSizeByAgePlot(someNewborn, "some newborn")
+#output.getPopSizeByAgePlot(someNewborn, "some newborn")
 output.getPopSizeByAgePlot(extreme, "extreme")
 
 output.getCumulativeDeathsByAgePlot(none, "none")
 output.getCumulativeDeathsByAgePlot(some, "some")
-output.getCumulativeDeathsByAgePlot(someNewborn, "some newborn")
+#output.getCumulativeDeathsByAgePlot(someNewborn, "some newborn")
 output.getCumulativeDeathsByAgePlot(extreme, "extreme")
 
 output.getNumStuntedByAgePlot(none, "none")
 output.getNumStuntedByAgePlot(some, "some")
-output.getNumStuntedByAgePlot(someNewborn, "some newborn")
+#output.getNumStuntedByAgePlot(someNewborn, "some newborn")
 output.getNumStuntedByAgePlot(extreme, "extreme")
 
 output.getStuntedPercent(none, "none")
 output.getStuntedPercent(some, "some")
-output.getStuntedPercent(someNewborn, "some newborn")
+#output.getStuntedPercent(someNewborn, "some newborn")
 output.getStuntedPercent(extreme, "extreme")
