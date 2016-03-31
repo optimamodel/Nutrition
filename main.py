@@ -25,22 +25,6 @@ mothers = modelCode.FertileWomen(0.2, 2.e6)
 # read the data from the spreadsheet
 spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx')
 
-# intervention:  make first 2 age groups exclusively breastfed 
-#for age in ['<1 month', '1-5 months']:
-#    for status in ["predominant", "partial", "none"]:
-#        spreadsheetData.breastfeedingDistribution[status][age] = 0
-#        spreadsheetData.breastfeedingDistribution['exclusive'][age] = 1         
-
-# intervention:  improve breastfeeding in first 2 age groups 
-for age in ['<1 month', '1-5 months']:
-    spreadsheetData.breastfeedingDistribution['exclusive'][age] = 0.6
-    spreadsheetData.breastfeedingDistribution['predominant'][age] = 0.3
-    spreadsheetData.breastfeedingDistribution['partial'][age] = 0.1
-    spreadsheetData.breastfeedingDistribution['none'][age] = 0     
-
-# get fake data
-#fakeData = dataCode.getFakeData()
-
 #----------------------   MAKE ALL THE BOXES     ---------------------
 listOfAgeCompartments = []
 ageRangeList  = spreadsheetData.ages
@@ -85,9 +69,22 @@ constants = constantsCode.Constants(spreadsheetData, model)
 #set the constants in the model
 model.setConstants(constants)
 
-# TODO create dataframe to hold numsteps datapoints for any important output
+# -------------------------------------------------------------------------
+## intervention:  make first 2 age groups exclusively breastfed 
+#for age in ['<1 month', '1-5 months']:
+#    for status in ["predominant", "partial", "none"]:
+#        spreadsheetData.breastfeedingDistribution[status][age] = 0
+#        spreadsheetData.breastfeedingDistribution['exclusive'][age] = 1         
 
-# These will go into a time-loop
+## intervention:  improve breastfeeding in first 2 age groups 
+for age in ['<1 month', '1-5 months']:
+    spreadsheetData.breastfeedingDistribution['exclusive'][age] = 0.6
+    spreadsheetData.breastfeedingDistribution['predominant'][age] = 0.3
+    spreadsheetData.breastfeedingDistribution['partial'][age] = 0.1
+    spreadsheetData.breastfeedingDistribution['none'][age] = 0    
+    
+    
+# -------------------------------------------------------------------------    
 
 #open file to dump objects into at each time step
 import pickle as pickle
