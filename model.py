@@ -77,8 +77,8 @@ class Model:
         for ind in range(1, numCompartments):
             ageName = self.ages[ind]
             thisAgeCompartment = self.listOfAgeCompartments[ind]
-            restratIfPreviously    = self.helper.restratify(self.constants.probStuntedIfPreviously[ageName])
-            restratIfNotPreviously = self.helper.restratify(self.constants.probStuntedIfNotPreviously[ageName])
+            restratIfPreviously    = self.helper.restratify(self.constants.probStuntedIfPrevStunted["yesstunted"][ageName])
+            restratIfNotPreviously = self.helper.restratify(self.constants.probStuntedIfPrevStunted["notstunted"][ageName])
             for wastingCat in ["normal", "mild", "moderate", "high"]:
                 numAgingInNotStunted = 0.
                 numAgingInStunted    = 0.
