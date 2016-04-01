@@ -143,13 +143,13 @@ def getDataFromSpreadsheet(fileName):
     RRStunting = {}
     for cause in causesOfDeath:
         RRStunting[cause] = {}
-        for stuntingStatus in ['normal', 'mild', 'moderate', 'high']:
-            RRStunting[cause][stuntingStatus] = {}
+        for stuntingCat in ['normal', 'mild', 'moderate', 'high']:
+            RRStunting[cause][stuntingCat] = {}
             for age in ages:
                 if cause in listCausesRRStunting: #if no RR given for this cause then set to 1
-                    RRStunting[cause][stuntingStatus][age] = df.loc[cause][age][stuntingStatus]
+                    RRStunting[cause][stuntingCat][age] = df.loc[cause][age][stuntingCat]
                 else:
-                    RRStunting[cause][stuntingStatus][age] = 1
+                    RRStunting[cause][stuntingCat][age] = 1
                    
             
     #  READ RRWasting SHEET
@@ -167,13 +167,13 @@ def getDataFromSpreadsheet(fileName):
     RRWasting = {}
     for cause in causesOfDeath:
         RRWasting[cause] = {}
-        for wastingStatus in ['normal', 'mild', 'moderate', 'high']:
-            RRWasting[cause][wastingStatus] = {}
+        for wastingCat in ['normal', 'mild', 'moderate', 'high']:
+            RRWasting[cause][wastingCat] = {}
             for age in ages:
                 if cause in listCausesRRWasting: #if no RR given for this cause then set to 1
-                    RRWasting[cause][wastingStatus][age] = df.loc[cause][age][wastingStatus]
+                    RRWasting[cause][wastingCat][age] = df.loc[cause][age][wastingCat]
                 else:
-                    RRWasting[cause][wastingStatus][age] = 1        
+                    RRWasting[cause][wastingCat][age] = 1        
 
     #  READ RRBreastfeeding SHEET
     #  gets you:
@@ -190,13 +190,13 @@ def getDataFromSpreadsheet(fileName):
     RRBreastfeeding = {}
     for cause in causesOfDeath:
         RRBreastfeeding[cause] = {}
-        for breastfeedingStatus in ['exclusive', 'predominant', 'partial', 'none']:
-            RRBreastfeeding[cause][breastfeedingStatus] = {}
+        for breastfeedingCat in ['exclusive', 'predominant', 'partial', 'none']:
+            RRBreastfeeding[cause][breastfeedingCat] = {}
             for age in ages:
                 if cause in listCausesRRBreastfeeding: #if no RR given for this cause then set to 1
-                    RRBreastfeeding[cause][breastfeedingStatus][age] = df.loc[cause][age][breastfeedingStatus]
+                    RRBreastfeeding[cause][breastfeedingCat][age] = df.loc[cause][age][breastfeedingCat]
                 else:
-                    RRBreastfeeding[cause][breastfeedingStatus][age] = 1  
+                    RRBreastfeeding[cause][breastfeedingCat][age] = 1  
         
     #  READ distributions SHEET
     #  gets you:

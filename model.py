@@ -11,10 +11,10 @@ class FertileWomen:
         self.populationSize = populationSize
 
 class Box:
-    def __init__(self, stuntStatus, wasteStatus, breastfeedingStatus, populationSize, mortalityRate):
-        self.stuntStatus =  stuntStatus
-        self.wasteStatus = wasteStatus
-        self.breastfeedingStatus = breastfeedingStatus
+    def __init__(self, stuntCat, wasteCat, breastfeedingCat, populationSize, mortalityRate):
+        self.stuntCat =  stuntCat
+        self.wasteCat = wasteCat
+        self.breastfeedingCat = breastfeedingCat
         self.populationSize = populationSize
         self.mortalityRate = mortalityRate
         self.cumulativeDeaths = 0
@@ -43,12 +43,12 @@ class Model:
     
     def applyMortality(self):
         for ageGroup in self.listOfAgeCompartments:
-            for stuntingStatus in ["normal", "mild", "moderate", "high"]:
-                for wastingStatus in ["normal", "mild", "moderate", "high"]:
-                    for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
-                        deaths = ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize * ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].mortalityRate * self.timestep
-                        ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize -= deaths
-                        ageGroup.dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].cumulativeDeaths += deaths
+            for stuntingCat in ["normal", "mild", "moderate", "high"]:
+                for wastingCat in ["normal", "mild", "moderate", "high"]:
+                    for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+                        deaths = ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize * ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate * self.timestep
+                        ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize -= deaths
+                        ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].cumulativeDeaths += deaths
 
 
 

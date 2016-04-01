@@ -34,14 +34,14 @@ def setUpDataModelConstantsObjects():
         agePopSize = agePopSizes[age]
     # allBoxes is a dictionary rather than a list to provide to AgeCompartment
         allBoxes = {}
-        for stuntingStatus in ["normal", "mild", "moderate", "high"]:
-            allBoxes[stuntingStatus] = {} 
-            for wastingStatus in ["normal", "mild", "moderate", "high"]:
-                allBoxes[stuntingStatus][wastingStatus] = {}
-                for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
+        for stuntingCat in ["normal", "mild", "moderate", "high"]:
+            allBoxes[stuntingCat] = {} 
+            for wastingCat in ["normal", "mild", "moderate", "high"]:
+                allBoxes[stuntingCat][wastingCat] = {}
+                for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
                     thisPopSize = int(agePopSize/64.) # 100 people in each box
                     thisMortalityRate = testData.totalMortalityByAge[age] # WARNING need to distribute appropriately
-                    allBoxes[stuntingStatus][wastingStatus][breastfeedingStatus] =  model.Box(stuntingStatus, wastingStatus, breastfeedingStatus, thisPopSize, thisMortalityRate)
+                    allBoxes[stuntingCat][wastingCat][breastfeedingCat] =  model.Box(stuntingCat, wastingCat, breastfeedingCat, thisPopSize, thisMortalityRate)
         compartment = model.AgeCompartment(ageRange, allBoxes, agingRate)
         listOfAgeCompartments.append(compartment)
     #------------------------------------------------------------------------    
@@ -60,10 +60,10 @@ class TestsForSetUpDataModelConstantsObjectsFunction(unittest.TestCase):
         
     def testNumberInAnAgeCompartment(self):
         sumPopAge1 = 0
-        for stuntingStatus in ["normal", "mild", "moderate", "high"]:
-            for wastingStatus in ["normal", "mild", "moderate", "high"]:
-                for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
-                    sumPopAge1 += self.testModel.listOfAgeCompartments[1].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize 
+        for stuntingCat in ["normal", "mild", "moderate", "high"]:
+            for wastingCat in ["normal", "mild", "moderate", "high"]:
+                for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+                    sumPopAge1 += self.testModel.listOfAgeCompartments[1].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize 
         self.assertEqual(sumPopAge1, 64 * 100)     
     
 
@@ -113,11 +113,11 @@ class TestsForModelClass(unittest.TestCase):
         for ageGroup in range(0, len(self.testModel.listOfAgeCompartments)):
             sumPopSize = 0.
             sumCumulativeDeaths = 0.
-            for stuntingStatus in ["normal", "mild", "moderate", "high"]:
-                for wastingStatus in ["normal", "mild", "moderate", "high"]:
-                    for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
-                        sumPopSize += self.testModel.listOfAgeCompartments[ageGroup].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize
-                        sumCumulativeDeaths += self.testModel.listOfAgeCompartments[ageGroup].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].cumulativeDeaths
+            for stuntingCat in ["normal", "mild", "moderate", "high"]:
+                for wastingCat in ["normal", "mild", "moderate", "high"]:
+                    for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+                        sumPopSize += self.testModel.listOfAgeCompartments[ageGroup].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
+                        sumCumulativeDeaths += self.testModel.listOfAgeCompartments[ageGroup].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].cumulativeDeaths
             self.assertAlmostEqual(64. * (100./12.), sumCumulativeDeaths)
             self.assertAlmostEqual(64. * (100. - (100./12.)), sumPopSize)
             
@@ -129,9 +129,9 @@ class TestsForModelClass(unittest.TestCase):
         # sum aging out age[0] should equal sum aging in age[1]   
         # default testing dist for breastfeeding is set to be equal to 1 in spreadsheet, therefore 0.1 in data
         # we need breastfeeding dist to sum to 1 per age group, set this below:
-        for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
+        for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
             for ageName in self.testModel.ages:
-                self.testData.breastfeedingDistribution[breastfeedingStatus][ageName] = 0.25 #divide 1 by 4 boxes
+                self.testData.breastfeedingDistribution[breastfeedingCat][ageName] = 0.25 #divide 1 by 4 boxes
         # calculate what we expect        
         sumAgeingOutAge0 = 64. * 100. * (1./1.) 
         sumAgeingOutAge1 = 64. * 100. * (1./5.) 
@@ -140,10 +140,10 @@ class TestsForModelClass(unittest.TestCase):
         self.testModel.applyAging(self.testData)
         # count population in age 1 after calling aging function
         sumPopAge1 = 0
-        for stuntingStatus in ["normal", "mild", "moderate", "high"]:
-            for wastingStatus in ["normal", "mild", "moderate", "high"]:
-                for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
-                    sumPopAge1 += self.testModel.listOfAgeCompartments[1].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize 
+        for stuntingCat in ["normal", "mild", "moderate", "high"]:
+            for wastingCat in ["normal", "mild", "moderate", "high"]:
+                for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+                    sumPopAge1 += self.testModel.listOfAgeCompartments[1].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize 
         self.assertAlmostEqual(sumPopAge1, expectedSumPopAge1)    
 
     @unittest.skip("need to translate birth outcome to stunting after quartic solved")     

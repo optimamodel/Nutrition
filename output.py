@@ -15,10 +15,10 @@ def getPopSizeByAgePlot(modelList, label):
         countThis = []
         for model in modelList:
             count = 0            
-            for stuntingStatus in ["normal", "mild", "moderate", "high"]:
-                for wastingStatus in ["normal", "mild", "moderate", "high"]:
-                    for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
-                        count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize
+            for stuntingCat in ["normal", "mild", "moderate", "high"]:
+                for wastingCat in ["normal", "mild", "moderate", "high"]:
+                    for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+                        count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
             countThis.append(count)
         popSize[age] = countThis      
     
@@ -62,10 +62,10 @@ def getCumulativeDeathsByAgePlot(modelList, label):
         countThis = []
         for model in modelList:
             count = 0            
-            for stuntingStatus in ["normal", "mild", "moderate", "high"]:
-                for wastingStatus in ["normal", "mild", "moderate", "high"]:
-                    for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
-                        count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].cumulativeDeaths
+            for stuntingCat in ["normal", "mild", "moderate", "high"]:
+                for wastingCat in ["normal", "mild", "moderate", "high"]:
+                    for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+                        count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].cumulativeDeaths
             countThis.append(count)
         cumulativeDeaths[age] = countThis  
 
@@ -107,10 +107,10 @@ def getNumStuntedByAgePlot(modelList, label):
         countThis = []
         for model in modelList:
             count = 0            
-            for stuntingStatus in ["moderate", "high"]:
-                for wastingStatus in ["normal", "mild", "moderate", "high"]:
-                    for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
-                        count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize
+            for stuntingCat in ["moderate", "high"]:
+                for wastingCat in ["normal", "mild", "moderate", "high"]:
+                    for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+                        count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
             countThis.append(count)
         numStunted[age] = countThis      
         
@@ -156,20 +156,20 @@ def getStuntedPercent(modelList, label): # NOT WORKING YET
         countThis = []
         for model in modelList:
             count = 0            
-            for stuntingStatus in ["moderate", "high"]:
-                for wastingStatus in ["normal", "mild", "moderate", "high"]:
-                    for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
-                        count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize
+            for stuntingCat in ["moderate", "high"]:
+                for wastingCat in ["normal", "mild", "moderate", "high"]:
+                    for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+                        count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
             countThis.append(count)
             
         # count NOT STUNTED 
         countThisN = []
         for model in modelList:
             count = 0            
-            for stuntingStatus in ["normal", "mild"]:
-                for wastingStatus in ["normal", "mild", "moderate", "high"]:
-                    for breastfeedingStatus in ["exclusive", "predominant", "partial", "none"]:
-                        count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingStatus][wastingStatus][breastfeedingStatus].populationSize
+            for stuntingCat in ["normal", "mild"]:
+                for wastingCat in ["normal", "mild", "moderate", "high"]:
+                    for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+                        count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
             countThisN.append(count)
             
         
