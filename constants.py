@@ -11,9 +11,9 @@ class Constants:
         self.model = model
         
         self.underlyingMortalityByAge = []        
-        self.probStuntedIfNotPreviously = 0
-        self.probStuntedIfPreviously = 0
+        self.probStuntedIfPrevStunted = {}
         self.probStuntedIfDiarrhoea = {}
+        self.probStunted = {}
         self.baselineProbsBirthOutcome = {}  
         self.probsBirthOutcome = {}  
         self.birthStuntingQuarticCoefficients = []
@@ -23,6 +23,7 @@ class Constants:
         self.getUnderlyingMortalityByAge()
         self.getProbStuntingProgression()
         self.getProbStuntingDiarrhoea()
+        self.getProbStunting()
         self.getBaselineProbsBirthOutcome()
         self.getBirthStuntingQuarticCoefficients()
         self.getProbStuntingAtBirthForBaselineBirthOutcome()
@@ -49,7 +50,6 @@ class Constants:
                                 count += t1 * t2 * t3 * t4 * t5 * t6 * t7
             RHS.append(count)     
         
-        
         LHS = [float(i) for i in self.data.totalMortalityByAge]
                 
         X = []
@@ -66,8 +66,8 @@ class Constants:
         from numpy import sqrt 
         numAgeGroups = len(self.model.listOfAgeCompartments)
         # probability of stunting progression
-        self.probStuntedIfNotPreviously = {}
-        self.probStuntedIfPreviously = {}
+        self.probStuntedIfPrevStunted["notstunted"] = {}
+        self.probStuntedIfPrevStunted["yesstunted"] = {}
         eps = 1.e-5
         for ageInd in range(1,numAgeGroups):
             ageName = self.data.ages[ageInd]
@@ -98,8 +98,8 @@ class Constants:
             # not sure what to do if both or neither are solutions
             if(soln1>0.)and(soln1<1.): p0 = soln1
             if(soln2>0.)and(soln2<1.): p0 = soln2
-            self.probStuntedIfNotPreviously[ageName] = p0
-            self.probStuntedIfPreviously[ageName]    = p0*OddsRatio/(1.-p0+OddsRatio*p0)
+            self.probStuntedIfPrevStunted["notstunted"][ageName] = p0
+            self.probStuntedIfPrevStunted["yesstunted"][ageName] = p0*OddsRatio/(1.-p0+OddsRatio*p0)
         
 
 
@@ -146,6 +146,18 @@ class Constants:
             if(soln2>0.)and(soln2<1.): p0 = soln2
             self.probStuntedIfDiarrhoea["nodia"][ageName] = p0
             self.probStuntedIfDiarrhoea["dia"][ageName]   = p0*AO/(1.-p0+AO*p0)
+
+
+
+    def getProbStunting(self):
+        numAgeGroups = len(self.model.listOfAgeCompartments)
+        for ageInd in range(1,numAgeGroups):
+            ageName = self.data.ages[ageInd]
+            self.probStunted[ageName] = {}
+            for prevStunt in ["notstunted","yesstunted"]:
+                self.probStunted[ageName][prevStunt] = {}
+                for prevDiarr in ["nodia","dia"]:
+                    self.probStunted[ageName][prevStunt][prevDiarr] = 1. - (1.-self.probStuntedIfPrevStunted[prevStunt])*(1.-self.probStuntedIfDiarrhoea[prevDiarr])
 
 
         
