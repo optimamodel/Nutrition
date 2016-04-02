@@ -72,6 +72,8 @@ class TestsForConstantsClass(unittest.TestCase):
         [self.testData, self.testModel, self.testConstants] = setUpDataModelConstantsObjects()
         
     def testGetUnderlyingMortalityByAge(self):
+        # 64 compartments per age; 1/100=0.01 (distributions); 100 (cause); 1 (RR); 1000/1000=1 (total mortality)
+        # underlyingMortality = total mortality / (numCompartments * dist * dist * dist * RR * RR * RR * cause)
         for age in self.testModel.ages:
             self.assertAlmostEqual((1./6400)*(1.e6), self.testConstants.underlyingMortalityByAge[age])
         
@@ -79,14 +81,14 @@ class TestsForConstantsClass(unittest.TestCase):
         # for OR = 2, assuming F(a) = F(a-1) = 0.5:
         # pn = sqrt(2) - 1
         for age in ['1-5 months', '6-11 months', '12-23 months', '24-59 months']:
-            self.assertAlmostEqual(self.testConstants.probStuntedIfNotPreviously[age], numpy.sqrt(2)-1)
+            self.assertAlmostEqual(self.testConstants.probStuntedIfPrevStunted["notstunted"][age], numpy.sqrt(2)-1)
         
-    def testRealtionshipBetweenStuntingProbabilitiesWhenORis2(self):
+    def testRelationshipBetweenStuntingProbabilitiesWhenORis2(self):
         # this relationship between ps and pn comes from the OR definition
         # ps = OR * pn / (1 - pn + (OR * pn)) 
         for age in ['1-5 months', '6-11 months', '12-23 months', '24-59 months']:
-            ps = 2 * self.testConstants.probStuntedIfNotPreviously[age] / (1 + self.testConstants.probStuntedIfNotPreviously[age])
-            self.assertAlmostEqual(self.testConstants.probStuntedIfPreviously[age], ps)
+            ps = 2 * self.testConstants.probStuntedIfPrevStunted["notstunted"][age] / (1 + self.testConstants.probStuntedIfPrevStunted["notstunted"][age])
+            self.assertAlmostEqual(self.testConstants.probStuntedIfPrevStunted["yesstunted"][age], ps)
                 
     @unittest.skip("write test once quartic is solved")            
     def testGetBaselineBirthOutcome(self):
