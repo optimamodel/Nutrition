@@ -38,24 +38,23 @@ class Constants:
             count = 0
             for cause in self.data.causesOfDeath:
                 for stuntingCat in ["normal", "mild", "moderate", "high"]:
-                        for wastingCat in ["normal", "mild", "moderate", "high"]:
-                            for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
-                                t1 = self.data.stuntingDistribution[stuntingCat][age]
-                                t2 = self.data.wastingDistribution[wastingCat][age] 
-                                t3 = self.data.breastfeedingDistribution[breastfeedingCat][age]
-                                t4 = self.data.RRStunting[cause][stuntingCat][age]
-                                t5 = self.data.RRWasting[cause][wastingCat][age]
-                                t6 = self.data.RRBreastfeeding[cause][breastfeedingCat][age]
-                                t7 = self.data.causeOfDeathByAge[cause][age]
-                                count += t1 * t2 * t3 * t4 * t5 * t6 * t7
+                    for wastingCat in ["normal", "mild", "moderate", "high"]:
+                        for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+                            t1 = self.data.stuntingDistribution[stuntingCat][age]
+                            t2 = self.data.wastingDistribution[wastingCat][age] 
+                            t3 = self.data.breastfeedingDistribution[breastfeedingCat][age]
+                            t4 = self.data.RRStunting[cause][stuntingCat][age]
+                            t5 = self.data.RRWasting[cause][wastingCat][age]
+                            t6 = self.data.RRBreastfeeding[cause][breastfeedingCat][age]
+                            t7 = self.data.causeOfDeathByAge[cause][age]
+                            count += t1 * t2 * t3 * t4 * t5 * t6 * t7
             RHS.append(count)     
         
         LHS = [float(i) for i in self.data.totalMortalityByAge]
                 
         X = []
-        fudgeFactor = 2  # HACK WARNING REMOVE THIS FACTOR
         for i in range(0, len(LHS)):
-            X.append(fudgeFactor * (LHS[i] / RHS[i]))
+            X.append(LHS[i] / RHS[i])
         Xdictionary = dict(zip(self.data.ages, X))  
         #return Xdictionary
         self.underlyingMortalityByAge = Xdictionary
@@ -157,7 +156,7 @@ class Constants:
             for prevStunt in ["notstunted","yesstunted"]:
                 self.probStunted[ageName][prevStunt] = {}
                 for prevDiarr in ["nodia","dia"]:
-                    self.probStunted[ageName][prevStunt][prevDiarr] = 1. - (1.-self.probStuntedIfPrevStunted[prevStunt])*(1.-self.probStuntedIfDiarrhoea[prevDiarr])
+                    self.probStunted[ageName][prevStunt][prevDiarr] = 1. - (1.-self.probStuntedIfPrevStunted[prevStunt][ageName])*(1.-self.probStuntedIfDiarrhoea[prevDiarr][ageName])
 
 
         
