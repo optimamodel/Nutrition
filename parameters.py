@@ -9,8 +9,8 @@ class Data:
     def __init__(self, data):
         self.ages = data.ages
         self.causesOfDeath = data.causesOfDeath
-        self.totalMortalityByAge = data.totalMortalityByAge
-        self.causeOfDeathByAge = data.causeOfDeathByAge
+        self.totalMortality = data.totalMortality
+        self.causeOfDeathDist = data.causeOfDeathDist
         self.stuntingDistribution = data.stuntingDistribution
         self.wastingDistribution = data.wastingDistribution
         self.breastfeedingDistribution = data.breastfeedingDistribution

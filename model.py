@@ -89,8 +89,8 @@ class Model:
                     for stuntingCat in ["normal","mild","moderate","high"]:
                         thisBox = thisAgeCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat]
                         thisBox.populationSize -= agingOut[ind][wastingCat][breastfeedingCat][stuntingCat]
-                        thisBox.populationSize += numAgingInNotStunted * restratIfNotPreviously[stuntingCat] * data.breastfeedingDistribution[breastfeedingCat][ageName]
-                        thisBox.populationSize += numAgingInStunted    * restratIfPreviously[stuntingCat]    * data.breastfeedingDistribution[breastfeedingCat][ageName]
+                        thisBox.populationSize += numAgingInNotStunted * restratIfNotPreviously[stuntingCat] * data.breastfeedingDistribution[ageName][breastfeedingCat]
+                        thisBox.populationSize += numAgingInStunted    * restratIfPreviously[stuntingCat]    * data.breastfeedingDistribution[ageName][breastfeedingCat]
 
 
 
@@ -121,7 +121,7 @@ class Model:
                 stuntingFractions[stuntingCat] += restratifiedStuntingAtBirth[birthOutcome][stuntingCat] * BOdist[birthOutcome] # data.birthOutcomeDist[birthOutcome]
             for wastingCat in ["normal", "mild", "moderate", "high"]:
                 for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
-                    self.listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize += numNewBabies * data.wastingDistribution[wastingCat]["<1 month"] * data.breastfeedingDistribution[breastfeedingCat]["<1 month"] * stuntingFractions[stuntingCat]
+                    self.listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize += numNewBabies * data.wastingDistribution["<1 month"][wastingCat] * data.breastfeedingDistribution["<1 month"][breastfeedingCat] * stuntingFractions[stuntingCat]
 
 
 
@@ -135,10 +135,10 @@ class Model:
                         count = 0                        
                         for cause in data.causesOfDeath:
                             t1 = self.constants.underlyingMortalityByAge[age]    
-                            t2 = data.causeOfDeathByAge[cause][age]
-                            t3 = data.RRStunting[cause][stuntingCat][age]
-                            t4 = data.RRWasting[cause][wastingCat][age]
-                            t5 = data.RRBreastfeeding[cause][breastfeedingCat][age]
+                            t2 = data.causeOfDeathDist[age][cause]
+                            t3 = data.RRStunting[age][cause][stuntingCat]
+                            t4 = data.RRWasting[age][cause][wastingCat]
+                            t5 = data.RRBreastfeeding[age][cause][breastfeedingCat]
                             count += t1 * t2 * t3 * t4 * t5                            
                         ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate = count
 

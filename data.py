@@ -6,11 +6,11 @@ Created on Fri Feb 26 15:57:07 2016
 """
 
 class Data:
-    def __init__(self, ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, InciDiarrhoea, RRdiarrhoea, ORdiarrhoea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting):
+    def __init__(self, ages, causesOfDeath, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, InciDiarrhoea, RRdiarrhoea, ORdiarrhoea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting):
         self.ages = ages
         self.causesOfDeath = causesOfDeath
-        self.totalMortalityByAge = totalMortalityByAge
-        self.causeOfDeathByAge = causeOfDeathByAge
+        self.totalMortality = totalMortality
+        self.causeOfDeathDist = causeOfDeathDist
         self.stuntingDistribution = stuntingDistribution
         self.wastingDistribution = wastingDistribution
         self.breastfeedingDistribution = breastfeedingDistribution
@@ -28,16 +28,16 @@ class Data:
         self.RRbirthOutcomeByTime = RRbirthOutcomeByTime
         self.ORBirthOutcomeStunting = ORBirthOutcomeStunting
     
-    
+"""    
 def getFakeData():
         
     ages = ["0-1 month", "1-6 months", "6-12 months", "12-24 months", "24-59 months"]
     causesOfDeath = ["diarrhea", "malaria"]
     #THIS IS LEFT HAND SIDE OF EQUATION
-    totalMortalityByAge = [22, 35, 35, 35, 49]
+    totalMortality = [22, 35, 35, 35, 49]
     
     #causes of death are percent (0 to 1)
-    causeOfDeathByAge = {"diarrhea":{"0-1 month":0.4, "1-6 months":0.1, "6-12 months":0.1, "12-24 months":0.1, "24-59 months":0.1}, "malaria":{"0-1 month":0.2, "1-6 months":0.2, "6-12 months":0.2, "12-24 months":0.2, "24-59 months":0.2}}
+    causeOfDeathDist = {"diarrhea":{"0-1 month":0.4, "1-6 months":0.1, "6-12 months":0.1, "12-24 months":0.1, "24-59 months":0.1}, "malaria":{"0-1 month":0.2, "1-6 months":0.2, "6-12 months":0.2, "12-24 months":0.2, "24-59 months":0.2}}
     
     #Relative Risks for stunting, wasting, breast feeding
     RRStuntingMalaria = {"normal":{"0-1 month":0.1, "1-6 months":0.1, "6-12 months":0.1, "12-24 months":0.1, "24-59 months":0.1},
@@ -92,10 +92,10 @@ def getFakeData():
     # Odds Ratios on Stunting by: BirthOutcomes, Previous Stunting Category, ...
     ORstuntingProgression = {ages[1]:12.4, ages[2]:21.4, ages[3]:30.3, ages[4]:46.2}
 
-    fakeData = Data(ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression)
+    fakeData = Data(ages, causesOfDeath, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression)
 
     return fakeData
-    
+"""    
     
     
 def getDataFromSpreadsheet(fileName):
@@ -105,10 +105,11 @@ def getDataFromSpreadsheet(fileName):
     
     #  READ TOTAL MORTALITY SHEET
     #  gets you:
-    #  - totalMortalityByAge
+    #  - totalMortality
     
     df = pandas.read_excel(Location, sheetname = 'total mortality')
-    totalMortalityByAge = list(df.iloc[0] / 1000.)
+    totalMortality = dict(zip(list(df.columns.values), df.iloc[0]/1000.))   #WARNING replace 1000. with 1000s of births
+    #totalMortality = list(df.iloc[0] / 1000.)
     
     #  READ MORTALITY SHEET
     #  gets you:
@@ -120,13 +121,13 @@ def getDataFromSpreadsheet(fileName):
     df = pandas.read_excel(Location, sheetname = 'mortality') #read this way for this task
     causesOfDeath = list(df['Cause'])
     ages = list(df.columns.values)[1:]
-    #get the nested list of causeOfDeathByAge
+    #get the nested list of causeOfDeathDist
     df = pandas.read_excel(Location, sheetname = 'mortality', index_col = 'Cause') #read this way for this task
-    causeOfDeathByAge = {}
-    for cause in causesOfDeath:
-        causeOfDeathByAge[cause] = {}
-        for age in ages:
-            causeOfDeathByAge[cause][age] = df.loc[cause, age]
+    causeOfDeathDist = {}
+    for age in ages:
+        causeOfDeathDist[age] = {}
+        for cause in causesOfDeath:
+            causeOfDeathDist[age][cause] = df.loc[cause, age]
             
     #  READ RRStunting SHEET
     #  gets you:
@@ -141,15 +142,15 @@ def getDataFromSpreadsheet(fileName):
     df = pandas.read_excel(Location, sheetname = 'RRStunting', index_col = [0, 1]) #read this way for this task
     
     RRStunting = {}
-    for cause in causesOfDeath:
-        RRStunting[cause] = {}
-        for stuntingCat in ['normal', 'mild', 'moderate', 'high']:
-            RRStunting[cause][stuntingCat] = {}
-            for age in ages:
+    for age in ages:
+        RRStunting[age] = {}
+        for cause in causesOfDeath:
+            RRStunting[age][cause] = {}
+            for stuntingCat in ['normal', 'mild', 'moderate', 'high']:
                 if cause in listCausesRRStunting: #if no RR given for this cause then set to 1
-                    RRStunting[cause][stuntingCat][age] = df.loc[cause][age][stuntingCat]
+                    RRStunting[age][cause][stuntingCat] = df.loc[cause][age][stuntingCat]
                 else:
-                    RRStunting[cause][stuntingCat][age] = 1
+                    RRStunting[age][cause][stuntingCat] = 1
                    
             
     #  READ RRWasting SHEET
@@ -165,15 +166,15 @@ def getDataFromSpreadsheet(fileName):
     df = pandas.read_excel(Location, sheetname = 'RRWasting', index_col = [0, 1]) #read this way for this task
     
     RRWasting = {}
-    for cause in causesOfDeath:
-        RRWasting[cause] = {}
-        for wastingCat in ['normal', 'mild', 'moderate', 'high']:
-            RRWasting[cause][wastingCat] = {}
-            for age in ages:
+    for age in ages:
+        RRWasting[age] = {}
+        for cause in causesOfDeath:
+            RRWasting[age][cause] = {}
+            for wastingCat in ['normal', 'mild', 'moderate', 'high']:
                 if cause in listCausesRRWasting: #if no RR given for this cause then set to 1
-                    RRWasting[cause][wastingCat][age] = df.loc[cause][age][wastingCat]
+                    RRWasting[age][cause][wastingCat] = df.loc[cause][age][wastingCat]
                 else:
-                    RRWasting[cause][wastingCat][age] = 1        
+                    RRWasting[age][cause][wastingCat] = 1        
 
     #  READ RRBreastfeeding SHEET
     #  gets you:
@@ -188,15 +189,15 @@ def getDataFromSpreadsheet(fileName):
     df = pandas.read_excel(Location, sheetname = 'RRBreastfeeding', index_col = [0, 1]) #read this way for this task
     
     RRBreastfeeding = {}
-    for cause in causesOfDeath:
-        RRBreastfeeding[cause] = {}
-        for breastfeedingCat in ['exclusive', 'predominant', 'partial', 'none']:
-            RRBreastfeeding[cause][breastfeedingCat] = {}
-            for age in ages:
+    for age in ages:
+        RRBreastfeeding[age] = {}
+        for cause in causesOfDeath: 
+            RRBreastfeeding[age][cause] = {}
+            for breastfeedingCat in ['exclusive', 'predominant', 'partial', 'none']:
                 if cause in listCausesRRBreastfeeding: #if no RR given for this cause then set to 1
-                    RRBreastfeeding[cause][breastfeedingCat][age] = df.loc[cause][age][breastfeedingCat]
+                    RRBreastfeeding[age][cause][breastfeedingCat] = df.loc[cause][age][breastfeedingCat]
                 else:
-                    RRBreastfeeding[cause][breastfeedingCat][age] = 1  
+                    RRBreastfeeding[age][cause][breastfeedingCat] = 1  
         
     #  READ distributions SHEET
     #  gets you:
@@ -210,20 +211,20 @@ def getDataFromSpreadsheet(fileName):
     breastfeedingDistribution = {}
     
     #stunting
-    for status in ['normal', 'mild', 'moderate', 'high']:
-        stuntingDistribution[status] = {}
-        for age in ages:
-            stuntingDistribution[status][age] = df.loc['Stunting'][age][status] / 100.
+    for age in ages:
+        stuntingDistribution[age] = {}
+        for status in ['normal', 'mild', 'moderate', 'high']:
+            stuntingDistribution[age][status] = df.loc['Stunting'][age][status] / 100.
     #wasting        
-    for status in ['normal', 'mild', 'moderate', 'high']:
-        wastingDistribution[status] = {}
-        for age in ages:
-            wastingDistribution[status][age] = df.loc['Wasting'][age][status] / 100.
+    for age in ages:
+        wastingDistribution[age] = {}
+        for status in ['normal', 'mild', 'moderate', 'high']:
+            wastingDistribution[age][status] = df.loc['Wasting'][age][status] / 100.
     #breastfeeding  
-    for status in ['exclusive', 'predominant', 'partial', 'none']:
-        breastfeedingDistribution[status] = {}
-        for age in ages:
-            breastfeedingDistribution[status][age] = df.loc['Breastfeeding'][age][status] / 100.
+    for age in ages:
+        breastfeedingDistribution[age] = {}
+        for status in ['exclusive', 'predominant', 'partial', 'none']:
+            breastfeedingDistribution[age][status] = df.loc['Breastfeeding'][age][status] / 100.
             
     
     #  READ birth distribution SHEET
@@ -235,10 +236,10 @@ def getDataFromSpreadsheet(fileName):
     
     df = pandas.read_excel(Location, sheetname = 'birth distribution', index_col = [0]) #read this way for this task
     birthCircumstanceDist = {}
-    for age in motherAges:
-        birthCircumstanceDist[age] = {}
+    for maternalAge in motherAges:
+        birthCircumstanceDist[maternalAge] = {}
         for status in birthTypes:
-            birthCircumstanceDist[age][status] = df[age][status]
+            birthCircumstanceDist[maternalAge][status] = df[maternalAge][status]
     
     #  READ time between births SHEET
     #  gets you:
@@ -320,7 +321,7 @@ def getDataFromSpreadsheet(fileName):
     df = pandas.read_excel(Location, sheetname = 'OR birth outcome stunting')
     ORBirthOutcomeStunting = dict(zip(list(df.columns.values), df.iloc[0]))   
             
-    spreadsheetData = Data(ages, causesOfDeath, totalMortalityByAge, causeOfDeathByAge, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, InciDiarrhoea, RRdiarrhoea, ORdiarrhoea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting)
+    spreadsheetData = Data(ages, causesOfDeath, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, stuntingDistribution, wastingDistribution, breastfeedingDistribution, InciDiarrhoea, RRdiarrhoea, ORdiarrhoea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting)
 
     return spreadsheetData        
                   

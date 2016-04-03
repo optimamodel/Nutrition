@@ -33,6 +33,7 @@ class Constants:
     def getUnderlyingMortalityByAge(self):
         #Equation is:  LHS = RHS * X
         #we are solving for X
+        LHS = []
         RHS = []
         for age in self.data.ages:
             count = 0
@@ -40,17 +41,17 @@ class Constants:
                 for stuntingCat in ["normal", "mild", "moderate", "high"]:
                     for wastingCat in ["normal", "mild", "moderate", "high"]:
                         for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
-                            t1 = self.data.stuntingDistribution[stuntingCat][age]
-                            t2 = self.data.wastingDistribution[wastingCat][age] 
-                            t3 = self.data.breastfeedingDistribution[breastfeedingCat][age]
-                            t4 = self.data.RRStunting[cause][stuntingCat][age]
-                            t5 = self.data.RRWasting[cause][wastingCat][age]
-                            t6 = self.data.RRBreastfeeding[cause][breastfeedingCat][age]
-                            t7 = self.data.causeOfDeathByAge[cause][age]
+                            t1 = self.data.stuntingDistribution[age][stuntingCat]
+                            t2 = self.data.wastingDistribution[age][wastingCat] 
+                            t3 = self.data.breastfeedingDistribution[age][breastfeedingCat]
+                            t4 = self.data.RRStunting[age][cause][stuntingCat]
+                            t5 = self.data.RRWasting[age][cause][wastingCat]
+                            t6 = self.data.RRBreastfeeding[age][cause][breastfeedingCat]
+                            t7 = self.data.causeOfDeathDist[age][cause]
                             count += t1 * t2 * t3 * t4 * t5 * t6 * t7
             RHS.append(count)     
-        
-        LHS = [float(i) for i in self.data.totalMortalityByAge]
+            LHS.append(self.data.totalMortality[age])
+        #LHS = [float(i) for i in self.data.totalMortalityByAge]
                 
         X = []
         for i in range(0, len(LHS)):

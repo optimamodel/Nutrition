@@ -40,7 +40,7 @@ def setUpDataModelConstantsObjects():
                 allBoxes[stuntingCat][wastingCat] = {}
                 for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
                     thisPopSize = int(agePopSize/64.) # 100 people in each box
-                    thisMortalityRate = testData.totalMortalityByAge[age] # WARNING need to distribute appropriately
+                    thisMortalityRate = testData.totalMortality[ageRange] # WARNING need to distribute appropriately
                     allBoxes[stuntingCat][wastingCat][breastfeedingCat] =  model.Box(stuntingCat, wastingCat, breastfeedingCat, thisPopSize, thisMortalityRate)
         compartment = model.AgeCompartment(ageRange, allBoxes, agingRate)
         listOfAgeCompartments.append(compartment)
@@ -133,7 +133,7 @@ class TestsForModelClass(unittest.TestCase):
         # we need breastfeeding dist to sum to 1 per age group, set this below:
         for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
             for ageName in self.testModel.ages:
-                self.testData.breastfeedingDistribution[breastfeedingCat][ageName] = 0.25 #divide 1 by 4 boxes
+                self.testData.breastfeedingDistribution[ageName][breastfeedingCat] = 0.25 #divide 1 by 4 boxes
         # calculate what we expect        
         sumAgeingOutAge0 = 64. * 100. * (1./1.) 
         sumAgeingOutAge1 = 64. * 100. * (1./5.) 

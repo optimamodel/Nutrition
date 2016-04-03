@@ -50,8 +50,8 @@ for age in range(numAgeGroups):
         for wastingCat in ["normal", "mild", "moderate", "high"]:
             allBoxes[stuntingCat][wastingCat] = {}
             for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
-                thisPopSize = agePopSize * spreadsheetData.stuntingDistribution[stuntingCat][ageRange] * spreadsheetData.wastingDistribution[wastingCat][ageRange] * spreadsheetData.breastfeedingDistribution[breastfeedingCat][ageRange]   # Assuming independent
-                thisMortalityRate = spreadsheetData.totalMortalityByAge[age] # WARNING need to distribute appropriately
+                thisPopSize = agePopSize * spreadsheetData.stuntingDistribution[ageRange][stuntingCat] * spreadsheetData.wastingDistribution[ageRange][wastingCat] * spreadsheetData.breastfeedingDistribution[ageRange][breastfeedingCat]   # Assuming independent
+                thisMortalityRate = spreadsheetData.totalMortality[ageRange] # WARNING need to distribute appropriately
                 allBoxes[stuntingCat][wastingCat][breastfeedingCat] =  modelCode.Box(stuntingCat, wastingCat, breastfeedingCat, thisPopSize, thisMortalityRate)
 
     compartment = modelCode.AgeCompartment(ageRange, allBoxes, agingRate)
@@ -73,15 +73,15 @@ model.setConstants(constants)
 ## intervention:  make first 2 age groups exclusively breastfed 
 #for age in ['<1 month', '1-5 months']:
 #    for status in ["predominant", "partial", "none"]:
-#        spreadsheetData.breastfeedingDistribution[status][age] = 0
-#        spreadsheetData.breastfeedingDistribution['exclusive'][age] = 1         
+#        spreadsheetData.breastfeedingDistribution[age][status] = 0
+#        spreadsheetData.breastfeedingDistribution[age]['exclusive'] = 1         
 
 ## intervention:  improve breastfeeding in first 2 age groups 
 for age in ['<1 month', '1-5 months']:
-    spreadsheetData.breastfeedingDistribution['exclusive'][age] = 0.6
-    spreadsheetData.breastfeedingDistribution['predominant'][age] = 0.3
-    spreadsheetData.breastfeedingDistribution['partial'][age] = 0.1
-    spreadsheetData.breastfeedingDistribution['none'][age] = 0    
+    spreadsheetData.breastfeedingDistribution[age]['exclusive'] = 0.6
+    spreadsheetData.breastfeedingDistribution[age]['predominant'] = 0.3
+    spreadsheetData.breastfeedingDistribution[age]['partial'] = 0.1
+    spreadsheetData.breastfeedingDistribution[age]['none'] = 0    
     
     
 # -------------------------------------------------------------------------    
