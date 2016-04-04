@@ -35,7 +35,7 @@ agePopSizes  = [2.e5, 3.e5, 7.e5, 14.e5, 43.e5]
 
 #timespan = 5.0 # [years] running the model for this long
 timestep = 1./12. # 1 month #timespan / float(numsteps)
-numsteps = 120  # number of timesteps; determined to produce a sensible timestep
+numsteps = 110  # number of timesteps; determined to produce a sensible timestep
 timespan = timestep * float(numsteps)
 
 # Loop over all age-groups
@@ -80,11 +80,13 @@ params = parametersCode.Params(spreadsheetData)
 #        params.breastfeedingDistribution[age]['exclusive'] = 1         
 
 ## intervention:  improve breastfeeding in first 2 age groups 
+"""
 for age in ['<1 month', '1-5 months']:
     params.breastfeedingDistribution[age]['exclusive'] = 0.6
     params.breastfeedingDistribution[age]['predominant'] = 0.3
     params.breastfeedingDistribution[age]['partial'] = 0.1
-    params.breastfeedingDistribution[age]['none'] = 0    
+    params.breastfeedingDistribution[age]['none'] = 0
+"""
 # -------------------------------------------------------------------------    
 model.setParams(params)
 
