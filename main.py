@@ -8,6 +8,7 @@ Created on Wed Feb 24 13:49:18 2016
 import model as modelCode
 import data as dataCode
 import constants as constantsCode
+import parameters as parametersCode
 import output as output
 
 
@@ -65,26 +66,31 @@ model = modelCode.Model("Main model", mothers, listOfAgeCompartments, spreadshee
 # make a constants object
 # (initialisation sets all constant values based on inputdata and inputmodel) 
 constants = constantsCode.Constants(spreadsheetData, model)
-
 #set the constants in the model
 model.setConstants(constants)
 
+#set the parameters in the model
+params = parametersCode.Params(spreadsheetData)
+# UPDATE WITH INTERVENTIONS
 # -------------------------------------------------------------------------
 ## intervention:  make first 2 age groups exclusively breastfed 
 #for age in ['<1 month', '1-5 months']:
 #    for status in ["predominant", "partial", "none"]:
-#        spreadsheetData.breastfeedingDistribution[age][status] = 0
-#        spreadsheetData.breastfeedingDistribution[age]['exclusive'] = 1         
+#        params.breastfeedingDistribution[age][status] = 0
+#        params.breastfeedingDistribution[age]['exclusive'] = 1         
 
 ## intervention:  improve breastfeeding in first 2 age groups 
 for age in ['<1 month', '1-5 months']:
-    spreadsheetData.breastfeedingDistribution[age]['exclusive'] = 0.6
-    spreadsheetData.breastfeedingDistribution[age]['predominant'] = 0.3
-    spreadsheetData.breastfeedingDistribution[age]['partial'] = 0.1
-    spreadsheetData.breastfeedingDistribution[age]['none'] = 0    
-    
-    
+    params.breastfeedingDistribution[age]['exclusive'] = 0.6
+    params.breastfeedingDistribution[age]['predominant'] = 0.3
+    params.breastfeedingDistribution[age]['partial'] = 0.1
+    params.breastfeedingDistribution[age]['none'] = 0    
 # -------------------------------------------------------------------------    
+model.setParams(params)
+
+
+
+
 
 #open file to dump objects into at each time step
 import pickle as pickle
@@ -92,7 +98,7 @@ outfile = open('testOutput.pkl', 'wb')
 
 for t in range(numsteps):
     print t
-    model.moveOneTimeStep(spreadsheetData)
+    model.moveOneTimeStep()
     pickle.dump(model, outfile)
     
 outfile.close()    

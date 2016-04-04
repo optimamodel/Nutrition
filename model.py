@@ -33,13 +33,18 @@ class Model:
         self.listOfAgeCompartments = listOfAgeCompartments
         self.ages = ages
         self.timestep = timestep
-        self.constants = 0
+        self.constants = None
+        self.params = None
         import helper as helperCode
         self.helper = helperCode.Helper()
         
     def setConstants(self, inputConstants):
         self.constants = inputConstants
         
+
+    def setParams(self, inputParams):
+        self.params = inputParams
+
     
     def applyMortality(self):
         for ageGroup in self.listOfAgeCompartments:
@@ -52,7 +57,7 @@ class Model:
 
 
 
-    def applyAging(self,data):
+    def applyAging(self):
         numCompartments = len(self.listOfAgeCompartments)
         # calculate how many people are aging out of each box
         agingOut = [None]*numCompartments
@@ -89,26 +94,19 @@ class Model:
                     for stuntingCat in ["normal","mild","moderate","high"]:
                         thisBox = thisAgeCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat]
                         thisBox.populationSize -= agingOut[ind][wastingCat][breastfeedingCat][stuntingCat]
-                        thisBox.populationSize += numAgingInNotStunted * restratIfNotPreviously[stuntingCat] * data.breastfeedingDistribution[ageName][breastfeedingCat]
-                        thisBox.populationSize += numAgingInStunted    * restratIfPreviously[stuntingCat]    * data.breastfeedingDistribution[ageName][breastfeedingCat]
+                        thisBox.populationSize += numAgingInNotStunted * restratIfNotPreviously[stuntingCat] * self.params.breastfeedingDistribution[ageName][breastfeedingCat]
+                        thisBox.populationSize += numAgingInStunted    * restratIfPreviously[stuntingCat]    * self.params.breastfeedingDistribution[ageName][breastfeedingCat]
 
 
 
 
-    def applyBirths(self,data):
+    def applyBirths(self):
         # calculate total number of new babies
         birthRate = self.fertileWomen.birthRate  #WARNING: assuming per pre-determined timestep
         numWomen  = self.fertileWomen.populationSize
         numNewBabies = numWomen * birthRate * self.timestep
         # see constants.py for calculation of baseline probability of birth outcome
         # now calculate stunting probability accordingly
-        # full birthOutcome distributions WARNING this whole thing should probably be defined within the Model class
-        BOdist = {}
-        BOsum = 0.
-        for birthOutcome in ["Pre-term SGA","Pre-term AGA","Term SGA"]:
-            BOdist[birthOutcome] = data.birthOutcomeDist[birthOutcome]
-            BOsum += BOdist[birthOutcome]
-        BOdist["Term AGA"] = 1. - BOsum
         # restratify Stunting
         restratifiedStuntingAtBirth = {}
         for birthOutcome in ["Pre-term SGA","Pre-term AGA","Term SGA","Term AGA"]:
@@ -118,37 +116,37 @@ class Model:
         for stuntingCat in ["normal", "mild", "moderate", "high"]:
             stuntingFractions[stuntingCat] = 0.
             for birthOutcome in ["Pre-term SGA","Pre-term AGA","Term SGA","Term AGA"]:
-                stuntingFractions[stuntingCat] += restratifiedStuntingAtBirth[birthOutcome][stuntingCat] * BOdist[birthOutcome] # data.birthOutcomeDist[birthOutcome]
+                stuntingFractions[stuntingCat] += restratifiedStuntingAtBirth[birthOutcome][stuntingCat] * self.params.birthOutcomeDist[birthOutcome]
             for wastingCat in ["normal", "mild", "moderate", "high"]:
                 for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
-                    self.listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize += numNewBabies * data.wastingDistribution["<1 month"][wastingCat] * data.breastfeedingDistribution["<1 month"][breastfeedingCat] * stuntingFractions[stuntingCat]
+                    self.listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize += numNewBabies * self.params.wastingDistribution["<1 month"][wastingCat] * self.params.breastfeedingDistribution["<1 month"][breastfeedingCat] * stuntingFractions[stuntingCat]
 
 
 
         
-    def updateMortalityRate(self, data):
+    def updateMortalityRate(self):
         for ageGroup in self.listOfAgeCompartments:
             age = ageGroup.name
             for stuntingCat in ["normal", "mild", "moderate", "high"]:
                 for wastingCat in ["normal", "mild", "moderate", "high"]:
                     for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
                         count = 0                        
-                        for cause in data.causesOfDeath:
+                        for cause in self.params.causesOfDeath:
                             t1 = self.constants.underlyingMortalityByAge[age]    
-                            t2 = data.causeOfDeathDist[age][cause]
-                            t3 = data.RRStunting[age][cause][stuntingCat]
-                            t4 = data.RRWasting[age][cause][wastingCat]
-                            t5 = data.RRBreastfeeding[age][cause][breastfeedingCat]
+                            t2 = self.params.causeOfDeathDist[age][cause]
+                            t3 = self.params.RRStunting[age][cause][stuntingCat]
+                            t4 = self.params.RRWasting[age][cause][wastingCat]
+                            t5 = self.params.RRBreastfeeding[age][cause][breastfeedingCat]
                             count += t1 * t2 * t3 * t4 * t5                            
                         ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate = count
 
     
 
 
-    def moveOneTimeStep(self,data):
-        self.updateMortalityRate(data)
+    def moveOneTimeStep(self):
+        self.updateMortalityRate()
         self.applyMortality()
-        self.applyAging(data)
-        self.applyBirths(data)
+        self.applyAging()
+        self.applyBirths()
         
         

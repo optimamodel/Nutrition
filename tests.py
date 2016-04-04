@@ -10,6 +10,7 @@ import numpy
 import model as model
 import data as data
 import constants as constants
+import parameters as parametersCode
 import helper as helper
 
 
@@ -51,12 +52,15 @@ def setUpDataModelConstantsObjects():
     testConstants = constants.Constants(testData, testModel)
     # set the constants in the model object
     testModel.setConstants(testConstants)
-    return testData, testModel, testConstants
+    testParams = parametersCode.Params(testData)
+    testModel.setParams(testParams)
+
+    return testData, testModel, testConstants, testParams
     
     
 class TestsForSetUpDataModelConstantsObjectsFunction(unittest.TestCase):
     def setUp(self):
-        [self.testData, self.testModel, self.testConstants] = setUpDataModelConstantsObjects()
+        [self.testData, self.testModel, self.testConstants, self.testParams] = setUpDataModelConstantsObjects()
         
     def testNumberInAnAgeCompartment(self):
         sumPopAge1 = 0
@@ -69,7 +73,7 @@ class TestsForSetUpDataModelConstantsObjectsFunction(unittest.TestCase):
 
 class TestsForConstantsClass(unittest.TestCase):
     def setUp(self):
-        [self.testData, self.testModel, self.testConstants] = setUpDataModelConstantsObjects()
+        [self.testData, self.testModel, self.testConstants, self.testParams] = setUpDataModelConstantsObjects()
         
     def testGetUnderlyingMortalityByAge(self):
         # 64 compartments per age; 1/100=0.01 (distributions); 100 (cause); 1 (RR); 1000/1000=1 (total mortality)
@@ -98,7 +102,7 @@ class TestsForConstantsClass(unittest.TestCase):
  
 class TestsForModelClass(unittest.TestCase):
     def setUp(self):
-        [self.testData, self.testModel, self.testConstants] = setUpDataModelConstantsObjects()
+        [self.testData, self.testModel, self.testConstants, self.testParams] = setUpDataModelConstantsObjects()
         
 
     def testApplyMortalityOneBox(self):
@@ -124,7 +128,7 @@ class TestsForModelClass(unittest.TestCase):
             self.assertAlmostEqual(64. * (100. - (100./12.)), sumPopSize)
             
     def testApplyAgingForNewbornsOnly(self):
-        self.testModel.applyAging(self.testData)
+        self.testModel.applyAging()
         self.assertEqual(0., self.testModel.listOfAgeCompartments[0].dictOfBoxes['mild']['high']['predominant'].populationSize)
         
     def testApplyAging(self):
@@ -139,7 +143,7 @@ class TestsForModelClass(unittest.TestCase):
         sumAgeingOutAge1 = 64. * 100. * (1./5.) 
         expectedSumPopAge1 = (64 * 100) - sumAgeingOutAge1 + sumAgeingOutAge0
         # call the function to apply aging
-        self.testModel.applyAging(self.testData)
+        self.testModel.applyAging()
         # count population in age 1 after calling aging function
         sumPopAge1 = 0
         for stuntingCat in ["normal", "mild", "moderate", "high"]:
@@ -155,7 +159,7 @@ class TestsForModelClass(unittest.TestCase):
         
     def testUpdateMortalityRate(self):
         self.testModel.constants.underlyingMortalityByAge['12-23 months'] = 1
-        self.testModel.updateMortalityRate(self.testData)
+        self.testModel.updateMortalityRate()
         updatedMortalityRate = self.testModel.listOfAgeCompartments[3].dictOfBoxes['normal']['normal']['none'].mortalityRate
         self.assertEqual(100, updatedMortalityRate)
          
