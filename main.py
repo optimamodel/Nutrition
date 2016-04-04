@@ -21,7 +21,7 @@ import output as output
 
 
 # make the fertile women
-mothers = modelCode.FertileWomen(0.2, 2.e6)
+mothers = modelCode.FertileWomen(0.9, 2.e6)
 
 # read the data from the spreadsheet
 spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx')
