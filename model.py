@@ -81,22 +81,29 @@ class Model:
         # for older age groups, you need to decide if people stayed stunted from previous age group
         for ind in range(1, numCompartments):
             ageName = self.ages[ind]
+            younger = self.ages[ind-1]
             thisAgeCompartment = self.listOfAgeCompartments[ind]
-            restratIfPreviously    = self.helper.restratify(self.constants.probStuntedIfPrevStunted["yesstunted"][ageName])
-            restratIfNotPreviously = self.helper.restratify(self.constants.probStuntedIfPrevStunted["notstunted"][ageName])
+            Za = self.params.InciDiarrhoea[ageName]
+            RRnot = self.params.RRdiarrhoea[ageName]["none"]
             for wastingCat in ["normal", "mild", "moderate", "high"]:
-                numAgingInNotStunted = 0.
-                numAgingInStunted    = 0.
-                for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
-                    numAgingInNotStunted += agingOut[ind-1][wastingCat][breastfeedingCat]["normal"] + agingOut[ind-1][wastingCat][breastfeedingCat]["mild"]
-                    numAgingInStunted    += agingOut[ind-1][wastingCat][breastfeedingCat]["moderate"] + agingOut[ind-1][wastingCat][breastfeedingCat]["high"]
+                prevWT = wastingCat
                 for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
                     for stuntingCat in ["normal","mild","moderate","high"]:
                         thisBox = thisAgeCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat]
                         thisBox.populationSize -= agingOut[ind][wastingCat][breastfeedingCat][stuntingCat]
-                        thisBox.populationSize += numAgingInNotStunted * restratIfNotPreviously[stuntingCat] * self.params.breastfeedingDistribution[ageName][breastfeedingCat]
-                        thisBox.populationSize += numAgingInStunted    * restratIfPreviously[stuntingCat]    * self.params.breastfeedingDistribution[ageName][breastfeedingCat]
-
+                        for prevBF in ["exclusive", "predominant", "partial", "none"]:
+                            numAgingIn = {}
+                            numAgingIn["notstunted"] = agingOut[ind-1][prevWT][prevBF]["normal"] + agingOut[ind-1][prevWT][prevBF]["mild"]
+                            numAgingIn["yesstunted"] = agingOut[ind-1][prevWT][prevBF]["moderate"] + agingOut[ind-1][prevWT][prevBF]["high"]
+                            RDa = self.params.RRdiarrhoea[younger][prevBF]
+                            beta = {}
+                            beta["dia"]   = 1. - (RRnot*Za-RDa*Za)/(RRnot*Za)
+                            beta["nodia"] = (RRnot*Za-RDa*Za)/(RRnot*Za)
+                            for prevStunt in ["yesstunted","notstunted"]:
+                                for prevDiarr in ["dia","nodia"]:
+                                    gamma = self.constants.probStunted[ageName][prevStunt][prevDiarr]
+                                    fracStunted = self.helper.restratify(gamma)
+                                    thisBox.populationSize += fracStunted[stuntingCat] * beta[prevDiarr] * numAgingIn[prevStunt] * self.params.breastfeedingDistribution[ageName][breastfeedingCat]
 
 
 
