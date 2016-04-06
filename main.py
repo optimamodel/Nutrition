@@ -71,7 +71,7 @@ model.setConstants(constants)
 
 #set the parameters in the model
 params = parametersCode.Params(spreadsheetData)
-# UPDATE WITH INTERVENTIONS
+# UPDATE PARAMS (NOT DATA) WITH INTERVENTIONS
 # -------------------------------------------------------------------------
 ## intervention:  make first 2 age groups exclusively breastfed 
 #for age in ['<1 month', '1-5 months']:
@@ -106,7 +106,7 @@ for t in range(numsteps):
 outfile.close()    
 
 # collect output, make graphs etc.
-infile = open('testOutput.pkl', 'rb')
+infile = open('Default.pkl', 'rb')
 modelList = []
 while 1:
     try:
