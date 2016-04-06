@@ -37,24 +37,45 @@ class Model:
         self.params = None
         import helper as helperCode
         self.helper = helperCode.Helper()
+
         
     def setConstants(self, inputConstants):
         self.constants = inputConstants
-        
 
+       
     def setParams(self, inputParams):
         self.params = inputParams
 
     
+        
+    def updateMortalityRate(self):
+        for ageGroup in self.listOfAgeCompartments:
+            age = ageGroup.name
+            for stuntingCat in ["normal", "mild", "moderate", "high"]:
+                for wastingCat in ["normal", "mild", "moderate", "high"]:
+                    for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+                        count = 0.
+                        for cause in self.params.causesOfDeath:
+                            t1 = self.constants.underlyingMortalities[age][cause]
+                            #t2 = self.params.causeOfDeathDist[age][cause]
+                            t3 = self.params.RRStunting[age][cause][stuntingCat]
+                            t4 = self.params.RRWasting[age][cause][wastingCat]
+                            t5 = self.params.RRBreastfeeding[age][cause][breastfeedingCat]
+                            count += t1 * t3 * t4 * t5                            
+                        ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate = count
+
+    
+
     def applyMortality(self):
         for ageGroup in self.listOfAgeCompartments:
             for stuntingCat in ["normal", "mild", "moderate", "high"]:
                 for wastingCat in ["normal", "mild", "moderate", "high"]:
                     for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
-                        deaths = ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize * ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate * self.timestep
-                        ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize -= deaths
-                        ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].cumulativeDeaths += deaths
-
+                        thisBox = ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat]
+                        deaths = thisBox.populationSize * thisBox.mortalityRate * self.timestep
+                        thisBox.populationSize -= deaths
+                        thisBox.cumulativeDeaths += deaths
+                    
 
 
     def applyAging(self):
@@ -87,23 +108,25 @@ class Model:
             RRnot = self.params.RRdiarrhoea[ageName]["none"]
             for wastingCat in ["normal", "mild", "moderate", "high"]:
                 prevWT = wastingCat
+                numAgingIn = {}
+                numAgingIn["notstunted"] = 0.
+                numAgingIn["yesstunted"] = 0.
+                for prevBF in ["exclusive", "predominant", "partial", "none"]:
+                    numAgingIn["notstunted"] += agingOut[ind-1][prevWT][prevBF]["normal"] + agingOut[ind-1][prevWT][prevBF]["mild"]
+                    numAgingIn["yesstunted"] += agingOut[ind-1][prevWT][prevBF]["moderate"] + agingOut[ind-1][prevWT][prevBF]["high"]
+                    RDa = self.params.RRdiarrhoea[younger][prevBF]
+                    beta = {}
+                    beta["dia"]   = 1. - (RRnot*Za-RDa*Za)/(RRnot*Za)
+                    beta["nodia"] = (RRnot*Za-RDa*Za)/(RRnot*Za)
                 for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
                     for stuntingCat in ["normal","mild","moderate","high"]:
                         thisBox = thisAgeCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat]
                         thisBox.populationSize -= agingOut[ind][wastingCat][breastfeedingCat][stuntingCat]
-                        for prevBF in ["exclusive", "predominant", "partial", "none"]:
-                            numAgingIn = {}
-                            numAgingIn["notstunted"] = agingOut[ind-1][prevWT][prevBF]["normal"] + agingOut[ind-1][prevWT][prevBF]["mild"]
-                            numAgingIn["yesstunted"] = agingOut[ind-1][prevWT][prevBF]["moderate"] + agingOut[ind-1][prevWT][prevBF]["high"]
-                            RDa = self.params.RRdiarrhoea[younger][prevBF]
-                            beta = {}
-                            beta["dia"]   = 1. - (RRnot*Za-RDa*Za)/(RRnot*Za)
-                            beta["nodia"] = (RRnot*Za-RDa*Za)/(RRnot*Za)
-                            for prevStunt in ["yesstunted","notstunted"]:
-                                for prevDiarr in ["dia","nodia"]:
-                                    gamma = self.constants.probStunted[ageName][prevStunt][prevDiarr]
-                                    fracStunted = self.helper.restratify(gamma)
-                                    thisBox.populationSize += fracStunted[stuntingCat] * beta[prevDiarr] * numAgingIn[prevStunt] * self.params.breastfeedingDistribution[ageName][breastfeedingCat]
+                        for prevStunt in ["yesstunted","notstunted"]:
+                            for prevDiarr in ["dia","nodia"]:
+                                gamma = self.constants.probStunted[ageName][prevStunt][prevDiarr]
+                                fracStunted = self.helper.restratify(gamma)
+                                thisBox.populationSize += fracStunted[stuntingCat] * beta[prevDiarr] * numAgingIn[prevStunt] * self.params.breastfeedingDistribution[ageName][breastfeedingCat]
 
 
 
@@ -111,9 +134,7 @@ class Model:
         # calculate total number of new babies
         birthRate = self.fertileWomen.birthRate  #WARNING: assuming per pre-determined timestep
         numWomen  = self.fertileWomen.populationSize
-        numNewBabies = numWomen * birthRate * self.timestep
-        # see constants.py for calculation of baseline probability of birth outcome
-        # now calculate stunting probability accordingly
+        numNewBabies = 170000 #numWomen * birthRate * self.timestep
         # restratify Stunting
         restratifiedStuntingAtBirth = {}
         for birthOutcome in ["Pre-term SGA","Pre-term AGA","Term SGA","Term AGA"]:
@@ -130,24 +151,6 @@ class Model:
 
 
 
-        
-    def updateMortalityRate(self):
-        for ageGroup in self.listOfAgeCompartments:
-            age = ageGroup.name
-            for stuntingCat in ["normal", "mild", "moderate", "high"]:
-                for wastingCat in ["normal", "mild", "moderate", "high"]:
-                    for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
-                        count = 0                        
-                        for cause in self.params.causesOfDeath:
-                            t1 = self.constants.underlyingMortalityByAge[age]    
-                            t2 = self.params.causeOfDeathDist[age][cause]
-                            t3 = self.params.RRStunting[age][cause][stuntingCat]
-                            t4 = self.params.RRWasting[age][cause][wastingCat]
-                            t5 = self.params.RRBreastfeeding[age][cause][breastfeedingCat]
-                            count += t1 * t2 * t3 * t4 * t5                            
-                        ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate = count
-
-    
 
 
     def moveOneTimeStep(self):
