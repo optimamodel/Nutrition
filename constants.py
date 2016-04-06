@@ -10,7 +10,7 @@ class Constants:
         self.data = data
         self.model = model
         
-        self.underlyingMortalityByAge = []        
+        self.underlyingMortalities = {}
         self.probStuntedIfPrevStunted = {}
         self.probStuntedIfDiarrhoea = {}
         self.probStunted = {}
@@ -20,7 +20,7 @@ class Constants:
         self.baselineProbStuntingAtBirth = 0.
         self.probsStuntingAtBirth = {}
 
-        self.getUnderlyingMortalityByAge()
+        self.getUnderlyingMortalities()
         self.getProbStuntingProgression()
         self.getProbStuntingDiarrhoea()
         self.getProbStunting()
@@ -30,14 +30,15 @@ class Constants:
         self.getProbsStuntingAtBirth()
 
 
-    def getUnderlyingMortalityByAge(self):
+    def getUnderlyingMortalities(self):
         #Equation is:  LHS = RHS * X
         #we are solving for X
-        LHS = []
-        RHS = []
+        # Calculate RHS for each age and cause
+        RHS = {}
         for age in self.data.ages:
-            count = 0
+            RHS[age] = {}
             for cause in self.data.causesOfDeath:
+                RHS[age][cause] = 0.
                 for stuntingCat in ["normal", "mild", "moderate", "high"]:
                     for wastingCat in ["normal", "mild", "moderate", "high"]:
                         for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
@@ -47,18 +48,45 @@ class Constants:
                             t4 = self.data.RRStunting[age][cause][stuntingCat]
                             t5 = self.data.RRWasting[age][cause][wastingCat]
                             t6 = self.data.RRBreastfeeding[age][cause][breastfeedingCat]
-                            t7 = self.data.causeOfDeathDist[age][cause]
-                            count += t1 * t2 * t3 * t4 * t5 * t6 * t7
-            RHS.append(count)     
-            LHS.append(self.data.totalMortality[age])
-        #LHS = [float(i) for i in self.data.totalMortalityByAge]
-                
-        X = []
-        for i in range(0, len(LHS)):
-            X.append(LHS[i] / RHS[i])
-        Xdictionary = dict(zip(self.data.ages, X))  
-        #return Xdictionary
-        self.underlyingMortalityByAge = Xdictionary
+                            RHS[age][cause] += t1 * t2 * t3 * t4 * t5 * t6
+        # Calculated total mortality by age (corrected for units)
+        MortalityCorrected = {}
+        # note that mortality rate have currently been pre-divided by 1000
+        # Newborns
+        age = self.data.ages[0]
+        Mnew = self.data.totalMortality[age]
+        m1 = Mnew
+        MortalityCorrected[age] = m1
+        # 1-5 months
+        age = self.data.ages[1]
+        Minfant = self.data.totalMortality[age]
+        Frac2 = (1.-Minfant)/(1.-m1)
+        m2 = 1. - pow(Frac2,1./11.)
+        #m2 = 1. - Frac2**(1./11.)
+        MortalityCorrected[age] = m2
+        # 6-12 months
+        age = self.data.ages[2]
+        m3 = m2
+        MortalityCorrected[age] = m3
+        # 12-24 months
+        age = self.data.ages[3]
+        Mu5 = self.data.totalMortality[age]
+        Frac4 = (1.-Mu5)/(1.-m1)/(Frac2)
+        #m4 = 1. - pow(Frac4,1./48.)
+        m4 = 1. - Frac4**(1./48.)
+        MortalityCorrected[age] = m4
+        # 24-60 months
+        age = self.data.ages[4]
+        m5 = m4
+        MortalityCorrected[age] = m5
+        # Calculate LHS for each age and cause of death then solve for X
+        Xdictionary = {} 
+        for age in self.data.ages:
+            Xdictionary[age] = {}
+            for cause in self.data.causesOfDeath:
+                LHS_age_cause = MortalityCorrected[age] * self.data.causeOfDeathDist[age][cause]
+                Xdictionary[age][cause] = LHS_age_cause / RHS[age][cause]
+        self.underlyingMortalities = Xdictionary
     
 
 
