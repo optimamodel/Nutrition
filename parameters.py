@@ -7,9 +7,9 @@ Created on Fri April 1 2016
 
 class Params:
     def __init__(self, data):
-        self.ages = data.ages
+        #self.ages = data.ages
         self.causesOfDeath = data.causesOfDeath
-        self.totalMortality = data.totalMortality
+        #self.totalMortality = data.totalMortality
         self.causeOfDeathDist = data.causeOfDeathDist
         self.stuntingDistribution = data.stuntingDistribution
         self.wastingDistribution = data.wastingDistribution
