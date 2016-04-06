@@ -75,11 +75,12 @@ class TestsForConstantsClass(unittest.TestCase):
     def setUp(self):
         [self.testData, self.testModel, self.testConstants, self.testParams] = setUpDataModelConstantsObjects()
         
-    def testGetUnderlyingMortalityByAge(self):
-        # 64 compartments per age; 1/100=0.01 (distributions); 100 (cause); 1 (RR); 1000/1000=1 (total mortality)
+    def testGetUnderlyingMortalities(self):
+        # 64 compartments per age; 1/100=0.01 (distributions); 1 (cause); 1 (RR); 500/1000=0.5 (total mortality)
         # underlyingMortality = total mortality / (numCompartments * dist * dist * dist * RR * RR * RR * cause)
-        for age in self.testModel.ages:
-            self.assertAlmostEqual((1./6400)*(1.e6), self.testConstants.underlyingMortalityByAge[age])
+        self.assertAlmostEqual((0.5/64.)*(1.e6), self.testConstants.underlyingMortalities["<1 month"]["Neonatal diarrhea"])
+        for age in ['1-5 months', '6-11 months', '12-23 months', '24-59 months']:
+            self.assertAlmostEqual((0./64.)*(1.e6), self.testConstants.underlyingMortalities[age]["Diarrhea"])
         
     def testStuntingProbabilitiesEqualExpectedWhenORis2(self):
         # for OR = 2, assuming F(a) = F(a-1) = 0.5:
@@ -107,12 +108,12 @@ class TestsForModelClass(unittest.TestCase):
 
     def testApplyMortalityOneBox(self):
         # deaths = popsize * mortality * timestep
-        #popsize = 100, mortality = 1, timestep = 1/12
+        #popsize = 100, mortality = 0.5, timestep = 1/12
         self.testModel.applyMortality()
         popSize = self.testModel.listOfAgeCompartments[0].dictOfBoxes['high']['mild']['none'].populationSize
         cumulativeDeaths = self.testModel.listOfAgeCompartments[0].dictOfBoxes['high']['mild']['none'].cumulativeDeaths
-        self.assertAlmostEqual(100./12., cumulativeDeaths)
-        self.assertAlmostEqual(100. - (100./12.), popSize)
+        self.assertAlmostEqual(100.*0.5/12., cumulativeDeaths)
+        self.assertAlmostEqual(100. - (100.*0.5/12.), popSize)
         
     def testApplyMortalityBySummingAllBoxes(self):
         self.testModel.applyMortality()
@@ -158,10 +159,10 @@ class TestsForModelClass(unittest.TestCase):
         self.assertTrue(False)
         
     def testUpdateMortalityRate(self):
-        self.testModel.constants.underlyingMortalityByAge['12-23 months'] = 1
+        self.testModel.constants.underlyingMortalities['12-23 months']["Diarrhea"] = 1
         self.testModel.updateMortalityRate()
         updatedMortalityRate = self.testModel.listOfAgeCompartments[3].dictOfBoxes['normal']['normal']['none'].mortalityRate
-        self.assertEqual(100, updatedMortalityRate)
+        self.assertEqual(1., updatedMortalityRate)
          
          
 class TestsForHelperClass(unittest.TestCase):
