@@ -49,6 +49,16 @@ class Constants:
                             t5 = self.data.RRWasting[age][cause][wastingCat]
                             t6 = self.data.RRBreastfeeding[age][cause][breastfeedingCat]
                             RHS[age][cause] += t1 * t2 * t3 * t4 * t5 * t6
+        # RHS for newborns only
+        age = "<1 month"
+        for cause in self.data.causesOfDeath:
+            for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+                Pbf = self.data.breastfeedingDistribution[age][breastfeedingCat]
+                RRbf = self.data.RRBreastfeeding[age][cause][breastfeedingCat]
+                for birthoutcome in self.model.birthOutcomes:
+                    Pbo = self.data.birthOutcomeDist[birthoutcome]
+                    RRbo = self.data.RRdeathByBirthOutcome[cause][birthoutcome]
+                    RHS[age][cause] += Pbf * RRbf * Pbo * RRbo
         # Calculated total mortality by age (corrected for units)
         MortalityCorrected = {}
         # note that mortality rate have currently been pre-divided by 1000
@@ -223,19 +233,6 @@ class Constants:
                         RR_gt = self.data.RRbirthOutcomeByTime[birthOutcome][interval]
                         summation += P_bt * RR_gb * RR_gt
             self.baselineProbsBirthOutcome[birthOutcome] = self.data.birthOutcomeDist[birthOutcome] / summation
-            # WARNING not sure if we should *just* calculate baseline or the overall probBirthOutcome
-            # when in the code can we expect changes to RRs or P_bt via interventions?
-            """
-            self.probsBirthOutcome[birthOutcome] = 0.
-            for maternalAge in ["<18 years","18-34 years","35-49 years"]:
-                for birthOrder in ["first","second or third","greater than third"]:
-                    for interval in ["first","<18 months","18-23 months","<24 months"]:
-                        P_bt = probAgeOrderInterval[maternalAge][birthOrder][interval]
-                        RR_gb = self.data.RRbirthOutcomeByAgeAndOrder[birthOutcome][maternalAge][birthOrder]
-                        RR_gt = self.data.RRbirthOutcomeByTime[birthOutcome][interval]
-                        self.probsBirthOutcome[birthOutcome] += baselineProbBirthOutcome * RR_gb * RR_gt * P_bt
-            sumProbOutcome += self.probsBirthOutcome[birthOutcome]
-            """
         self.baselineProbsBirthOutcome["Term AGA"] = 1. - sumProbOutcome
 
     
