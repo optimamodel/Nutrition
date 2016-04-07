@@ -15,9 +15,12 @@ import helper as helper
 
 
 def setUpDataModelConstantsObjects():
-    mothers = model.FertileWomen(0.2, 2.e6)
-    testData = data.getDataFromSpreadsheet('InputForCode_tests.xlsx')
+    ages = ["<1 month","1-5 months","6-11 months","12-23 months","24-59 months"]
+    birthOutcomes = ["Pre-term SGA","Pre-term AGA","Term SGA","Term AGA"]
+    listOfLabels = [ages,birthOutcomes]
+    testData = data.getDataFromSpreadsheet('InputForCode_tests.xlsx',listOfLabels)
     #----------------------   MAKE ALL THE BOXES     ---------------------
+    mothers = model.FertileWomen(0.2, 2.e6)
     listOfAgeCompartments = []
     ageRangeList  = testData.ages
     agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
@@ -47,7 +50,7 @@ def setUpDataModelConstantsObjects():
         listOfAgeCompartments.append(compartment)
     #------------------------------------------------------------------------    
     # make a model object
-    testModel = model.Model("Main model", mothers, listOfAgeCompartments, testData.ages, timestep)
+    testModel = model.Model("Main model", mothers, listOfAgeCompartments, listOfLabels, timestep)
     # make the constants object    
     testConstants = constants.Constants(testData, testModel)
     # set the constants in the model object
@@ -78,7 +81,7 @@ class TestsForConstantsClass(unittest.TestCase):
     def testGetUnderlyingMortalities(self):
         # 64 compartments per age; 1/100=0.01 (distributions); 1 (cause); 1 (RR); 500/1000=0.5 (total mortality)
         # underlyingMortality = total mortality / (numCompartments * dist * dist * dist * RR * RR * RR * cause)
-        self.assertAlmostEqual((0.5/64.)*(1.e6), self.testConstants.underlyingMortalities["<1 month"]["Neonatal diarrhea"])
+        self.assertAlmostEqual((0.5/4.)*(1.e2), self.testConstants.underlyingMortalities["<1 month"]["Neonatal diarrhea"])
         for age in ['1-5 months', '6-11 months', '12-23 months', '24-59 months']:
             self.assertAlmostEqual((0./64.)*(1.e6), self.testConstants.underlyingMortalities[age]["Diarrhea"])
         
@@ -125,8 +128,8 @@ class TestsForModelClass(unittest.TestCase):
                     for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
                         sumPopSize += self.testModel.listOfAgeCompartments[ageGroup].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
                         sumCumulativeDeaths += self.testModel.listOfAgeCompartments[ageGroup].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].cumulativeDeaths
-            self.assertAlmostEqual(64. * (100./12.), sumCumulativeDeaths)
-            self.assertAlmostEqual(64. * (100. - (100./12.)), sumPopSize)
+            self.assertAlmostEqual(64. * (100.*0.5/12.), sumCumulativeDeaths)
+            self.assertAlmostEqual(64. * (100. - (100.*0.5/12.)), sumPopSize)
             
     def testApplyAgingForNewbornsOnly(self):
         self.testModel.applyAging()
