@@ -20,13 +20,21 @@ import output as output
 # high - more than 3 SD less than mean
 
 
+# WARNING I think we need a list of labels here, provided to data and model
+# define age-range list here instead of reading from data?
+ages = ["<1 month","1-5 months","6-11 months","12-23 months","24-59 months"]
+birthOutcomes = ["Pre-term SGA","Pre-term AGA","Term SGA","Term AGA"]
+# define all categories of intermediate health outcomes (stunting, wasting, breastfeeding) here too??
+listOfLabels = [ages,birthOutcomes]
+
+# read the data from the spreadsheet
+spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx',listOfLabels)
+
+#----------------------   MAKE ALL THE BOXES     ---------------------
+
 # make the fertile women
 mothers = modelCode.FertileWomen(0.9, 2.e6)
 
-# read the data from the spreadsheet
-spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx')
-
-#----------------------   MAKE ALL THE BOXES     ---------------------
 listOfAgeCompartments = []
 ageRangeList  = spreadsheetData.ages
 agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
@@ -61,7 +69,7 @@ for age in range(numAgeGroups):
 #------------------------------------------------------------------------    
 
 # make a model object
-model = modelCode.Model("Main model", mothers, listOfAgeCompartments, spreadsheetData.ages, timestep)
+model = modelCode.Model("Main model", mothers, listOfAgeCompartments, listOfLabels, timestep)
 
 # make a constants object
 # (initialisation sets all constant values based on inputdata and inputmodel) 
@@ -93,10 +101,10 @@ model.setParams(params)
 
 
 
-
+pickleFilename = 'Default.pkl'
 #open file to dump objects into at each time step
 import pickle as pickle
-outfile = open('testOutput.pkl', 'wb')
+outfile = open(pickleFilename, 'wb')
 
 for t in range(numsteps):
     print t
@@ -106,7 +114,7 @@ for t in range(numsteps):
 outfile.close()    
 
 # collect output, make graphs etc.
-infile = open('Default.pkl', 'rb')
+infile = open(pickleFilename, 'rb')
 modelList = []
 while 1:
     try:
