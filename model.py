@@ -27,11 +27,11 @@ class AgeCompartment:
 
         
 class Model:
-    def __init__(self, name, fertileWomen, listOfAgeCompartments, ages, timestep):
+    def __init__(self, name, fertileWomen, listOfAgeCompartments, listOfLabels, timestep):
         self.name = name
         self.fertileWomen = fertileWomen
         self.listOfAgeCompartments = listOfAgeCompartments
-        self.ages = ages
+        self.ages,self.birthOutcomes = listOfLabels
         self.timestep = timestep
         self.constants = None
         self.params = None
@@ -49,7 +49,21 @@ class Model:
     
         
     def updateMortalityRate(self):
-        for ageGroup in self.listOfAgeCompartments:
+        # Newborns first
+        ageGroup = self.listOfAgeCompartments[0]
+        age = ageGroup.name
+        for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+            count = 0.
+            for cause in self.params.causesOfDeath:
+                Rb = self.params.RRBreastfeeding[age][cause][breastfeedingCat]
+                for birthoutcome in self.birthOutcomes:
+                    Rbo = self.params.RRdeathByBirthOutcome[cause][birthoutcome]
+                    count += Rb * Rbo * self.constants.underlyingMortalities[age][cause]
+            for stuntingCat in ["normal", "mild", "moderate", "high"]:
+                for wastingCat in ["normal", "mild", "moderate", "high"]:
+                    ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate = count
+        # over 1 months
+        for ageGroup in self.listOfAgeCompartments[1:]:
             age = ageGroup.name
             for stuntingCat in ["normal", "mild", "moderate", "high"]:
                 for wastingCat in ["normal", "mild", "moderate", "high"]:
