@@ -17,6 +17,7 @@ class Params:
         self.RRStunting = data.RRStunting
         self.RRWasting = data.RRWasting
         self.RRBreastfeeding = data.RRBreastfeeding
+        self.RRdeathByBirthOutcome = data.RRdeathByBirthOutcome
         self.ORstuntingProgression = data.ORstuntingProgression
         self.InciDiarrhoea = data.InciDiarrhoea
         self.RRdiarrhoea = data.RRdiarrhoea
@@ -26,15 +27,8 @@ class Params:
         self.RRbirthOutcomeByAgeAndOrder = data.RRbirthOutcomeByAgeAndOrder
         self.RRbirthOutcomeByTime = data.RRbirthOutcomeByTime
         self.ORBirthOutcomeStunting = data.ORBirthOutcomeStunting
-        self.birthOutcomeDist = {}
+        self.birthOutcomeDist = data.birthOutcomeDist
     
-        # full birthOutcome distributions WARNING maybe a function for this?
-        BOsum = 0.
-        for birthOutcome in ["Pre-term SGA","Pre-term AGA","Term SGA"]:
-            self.birthOutcomeDist[birthOutcome] = data.birthOutcomeDist[birthOutcome]
-            BOsum += self.birthOutcomeDist[birthOutcome]
-        self.birthOutcomeDist["Term AGA"] = 1. - BOsum
-
 
 # Add all functions for updating parameters due to interventions here....
 
