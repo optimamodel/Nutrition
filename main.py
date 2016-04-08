@@ -39,11 +39,11 @@ listOfAgeCompartments = []
 ageRangeList  = spreadsheetData.ages
 agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
 numAgeGroups = len(ageRangeList)
-agePopSizes  = [2.e5, 3.e5, 7.e5, 14.e5, 43.e5]
+agePopSizes  = [2.e5, 4.e5, 7.e5, 1.44e6, 44.e5]
 
 #timespan = 5.0 # [years] running the model for this long
 timestep = 1./12. # 1 month #timespan / float(numsteps)
-numsteps = 110  # number of timesteps; determined to produce a sensible timestep
+numsteps = 115  # number of timesteps; determined to produce a sensible timestep
 timespan = timestep * float(numsteps)
 
 # Loop over all age-groups
