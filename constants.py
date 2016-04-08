@@ -151,17 +151,20 @@ class Constants:
         eps = 1.e-5
         for ageInd in range(1,numAgeGroups):
             ageName = self.data.ages[ageInd]
+            youngerName = self.data.ages[ageInd-1]
             thisAge = self.model.listOfAgeCompartments[ageInd]
             younger = self.model.listOfAgeCompartments[ageInd-1]
-            Za = self.data.InciDiarrhoea[ageName]
+            Za = self.data.InciDiarrhoea[youngerName]
             # population odds ratio = AO (see Eqn 3.9)
-            RRnot = self.data.RRdiarrhoea[ageName]["none"]
-            AO = pow(self.data.ORdiarrhoea[ageName],RRnot*Za/thisAge.agingRate)
-            # instead have beta fracDiarrhoea
+            RRnot = self.data.RRdiarrhoea[youngerName]["none"]
+            AO = pow(self.data.ORdiarrhoea[youngerName],RRnot*Za/younger.agingRate) # WARNING check OR
+            # instead have fraction of children of age a who are experiencing diarrhoea
             fracDiarrhoea = 0.
             for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
-                RDa = self.data.RRdiarrhoea[ageName][breastfeedingCat]
-                fracDiarrhoea += 1. - (RRnot*Za-RDa*Za)/(RRnot*Za)
+                RDa = self.data.RRdiarrhoea[youngerName][breastfeedingCat]
+                beta = 1. - (RRnot*Za-RDa*Za)/(RRnot*Za)
+                pab  = self.data.breastfeedingDistribution[youngerName][breastfeedingCat]
+                fracDiarrhoea += beta * pab
             # fraction stunted
             numStuntedThisAge = 0.
             numNotStuntedThisAge = 0.
