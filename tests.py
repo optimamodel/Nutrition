@@ -79,9 +79,10 @@ class TestsForConstantsClass(unittest.TestCase):
         [self.testData, self.testModel, self.testConstants, self.testParams] = setUpDataModelConstantsObjects()
         
     def testGetUnderlyingMortalities(self):
-        # 64 compartments per age; 1/100=0.01 (distributions); 1 (cause); 1 (RR); 500/1000=0.5 (total mortality)
+        # 64 compartments per age; 25/100=0.25 (distributions); 1 (cause); 1 (RR); 500/1000=0.5 (total mortality)
         # underlyingMortality = total mortality / (numCompartments * dist * dist * dist * RR * RR * RR * cause)
-        self.assertAlmostEqual((0.5/4.)*(1.e2), self.testConstants.underlyingMortalities["<1 month"]["Neonatal diarrhea"])
+        # underlyingMortality = total mortality / (numBFCompartments * BFdist * RR * RR * cause) for newborns
+        self.assertAlmostEqual(0.5/4./0.25, self.testConstants.underlyingMortalities["<1 month"]["Neonatal diarrhea"])
         for age in ['1-5 months', '6-11 months', '12-23 months', '24-59 months']:
             self.assertAlmostEqual((0./64.)*(1.e6), self.testConstants.underlyingMortalities[age]["Diarrhea"])
         
@@ -137,11 +138,6 @@ class TestsForModelClass(unittest.TestCase):
         
     def testApplyAging(self):
         # sum aging out age[0] should equal sum aging in age[1]   
-        # default testing dist for breastfeeding is set to be equal to 1 in spreadsheet, therefore 0.1 in data
-        # we need breastfeeding dist to sum to 1 per age group, set this below:
-        for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
-            for ageName in self.testModel.ages:
-                self.testData.breastfeedingDistribution[ageName][breastfeedingCat] = 0.25 #divide 1 by 4 boxes
         # calculate what we expect        
         sumAgeingOutAge0 = 64. * 100. * (1./1.) 
         sumAgeingOutAge1 = 64. * 100. * (1./5.) 
@@ -153,7 +149,7 @@ class TestsForModelClass(unittest.TestCase):
         for stuntingCat in ["normal", "mild", "moderate", "high"]:
             for wastingCat in ["normal", "mild", "moderate", "high"]:
                 for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
-                    sumPopAge1 += self.testModel.listOfAgeCompartments[1].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize 
+                    sumPopAge1 += self.testModel.listOfAgeCompartments[1].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
         self.assertAlmostEqual(sumPopAge1, expectedSumPopAge1)    
 
     @unittest.skip("need to translate birth outcome to stunting after quartic solved")     
