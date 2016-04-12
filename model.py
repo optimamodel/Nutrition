@@ -4,6 +4,7 @@ Created on Wed Feb 24 13:43:14 2016
 
 @author: ruthpearson
 """
+from __future__ import division
 
 class FertileWomen:
     def __init__(self, birthRate, populationSize):
@@ -25,13 +26,31 @@ class AgeCompartment:
         self.dictOfBoxes = dictOfBoxes
         self.agingRate = agingRate
 
+    def getTotalPopulation(self, stuntingList, wastingList, breastfeedingList):
+        sum = 0.
+        for stuntingCat in ["normal", "mild", "moderate", "high"]:
+            for wastingCat in wastingList:
+                for breastfeedingCat in breastfeedingList:
+                    thisBox = self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat] 
+                    sum += thisBox.populationSize
+        return sum
+
+    def getStuntedFraction(self, stuntingList, wastingList, breastfeedingList):
+        NumberStunted = 0            
+        for stuntingCat in ["moderate", "high"]:
+            for wastingCat in wastingList:
+                for breastfeedingCat in breastfeedingList:
+                    NumberStunted += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
+        NumberTotal = self.getTotalPopulation(stuntingList, wastingList, breastfeedingList)
+        return NumberStunted/NumberTotal
+
         
 class Model:
     def __init__(self, name, fertileWomen, listOfAgeCompartments, listOfLabels, timestep):
         self.name = name
         self.fertileWomen = fertileWomen
         self.listOfAgeCompartments = listOfAgeCompartments
-        self.ages,self.birthOutcomes = listOfLabels
+        self.ages,self.birthOutcomes,self.wastingList,self.stuntingList,self.breastfeedingList = listOfLabels
         self.timestep = timestep
         self.constants = None
         self.params = None
@@ -93,6 +112,7 @@ class Model:
 
 
     def applyAging(self):
+        eps = 1.e-5
         numCompartments = len(self.listOfAgeCompartments)
         # calculate how many people are aging out of each box
         agingOut = [None]*numCompartments
@@ -105,7 +125,8 @@ class Model:
                     agingOut[ind][wastingCat][breastfeedingCat] = {}
                     for stuntingCat in ["normal", "mild", "moderate", "high"]:
                         thisBox = thisCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat] 
-                        agingOut[ind][wastingCat][breastfeedingCat][stuntingCat] = thisBox.populationSize * thisCompartment.agingRate  # * self.timestep
+                        agingOut[ind][wastingCat][breastfeedingCat][stuntingCat] = thisBox.populationSize * thisCompartment.agingRate #*self.timestep
+            #print "Population size in %s is %g"%(self.ages[ind],thisCompartment.getTotalPopulation(self.stuntingList,self.wastingList,self.breastfeedingList))
         # first age group does not have aging in
         newborns = self.listOfAgeCompartments[0]
         for wastingCat in ["normal", "mild", "moderate", "high"]:
@@ -118,29 +139,40 @@ class Model:
             ageName = self.ages[ind]
             younger = self.ages[ind-1]
             thisAgeCompartment = self.listOfAgeCompartments[ind]
-            Za = self.params.InciDiarrhoea[ageName]
-            RRnot = self.params.RRdiarrhoea[ageName]["none"]
-            for wastingCat in ["normal", "mild", "moderate", "high"]:
-                prevWT = wastingCat
-                numAgingIn = {}
+            numAgingInStunted = {}
+            for stuntingCat in ["normal","mild","moderate","high"]:
+                numAgingInStunted[stuntingCat] = 0.
+            Za = self.params.InciDiarrhoea[younger]
+            RRnot = self.params.RRdiarrhoea[younger]["none"]
+            numAgingIn = {}
+            for prevBF in ["exclusive", "predominant", "partial", "none"]:
                 numAgingIn["notstunted"] = 0.
                 numAgingIn["yesstunted"] = 0.
-                for prevBF in ["exclusive", "predominant", "partial", "none"]:
+                for prevWT in ["normal", "mild", "moderate", "high"]:
                     numAgingIn["notstunted"] += agingOut[ind-1][prevWT][prevBF]["normal"] + agingOut[ind-1][prevWT][prevBF]["mild"]
                     numAgingIn["yesstunted"] += agingOut[ind-1][prevWT][prevBF]["moderate"] + agingOut[ind-1][prevWT][prevBF]["high"]
-                    RDa = self.params.RRdiarrhoea[younger][prevBF]
-                    beta = {}
-                    beta["dia"]   = 1. - (RRnot*Za-RDa*Za)/(RRnot*Za)
-                    beta["nodia"] = (RRnot*Za-RDa*Za)/(RRnot*Za)
+                numAgingInThisBF = numAgingIn["yesstunted"] + numAgingIn["notstunted"]
+                RDa = self.params.RRdiarrhoea[younger][prevBF]
+                fracDiarrhoea = {}
+                fracDiarrhoea["dia"]   = 1. - (RRnot*Za-RDa*Za)/(RRnot*Za)
+                fracDiarrhoea["nodia"] = (RRnot*Za-RDa*Za)/(RRnot*Za)
+                probStuntingIfThisBF = 0.
+                for prevStunt in ["yesstunted","notstunted"]:
+                    fracPrevStunt = numAgingIn[prevStunt] / (numAgingInThisBF + eps)
+                    for prevDiarr in ["dia","nodia"]:
+                        gamma = self.constants.probStunted[ageName][prevStunt][prevDiarr]
+                        probStuntingIfThisBF += fracPrevStunt * fracDiarrhoea[prevDiarr] * gamma
+                fracStuntedThisBF = self.helper.restratify(probStuntingIfThisBF)
+                for stuntingCat in ["normal","mild","moderate","high"]:
+                    numAgingInStunted[stuntingCat] += fracStuntedThisBF[stuntingCat] * numAgingInThisBF
+            for wastingCat in ["normal", "mild", "moderate", "high"]:
+                paw = self.params.wastingDistribution[ageName][wastingCat]
                 for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+                    pab = self.params.breastfeedingDistribution[ageName][breastfeedingCat]
                     for stuntingCat in ["normal","mild","moderate","high"]:
                         thisBox = thisAgeCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat]
                         thisBox.populationSize -= agingOut[ind][wastingCat][breastfeedingCat][stuntingCat]
-                        for prevStunt in ["yesstunted","notstunted"]:
-                            for prevDiarr in ["dia","nodia"]:
-                                gamma = self.constants.probStunted[ageName][prevStunt][prevDiarr]
-                                fracStunted = self.helper.restratify(gamma)
-                                thisBox.populationSize += fracStunted[stuntingCat] * beta[prevDiarr] * numAgingIn[prevStunt] * self.params.breastfeedingDistribution[ageName][breastfeedingCat]
+                        thisBox.populationSize += numAgingInStunted[stuntingCat] * pab * paw
 
 
 
@@ -172,5 +204,4 @@ class Model:
         self.applyMortality()
         self.applyAging()
         self.applyBirths()
-        
-        
+
