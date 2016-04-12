@@ -4,6 +4,7 @@ Created on Fri Mar 11 11:50:20 2016
 
 @author: ruth
 """
+from __future__ import division
 
 
 def getPopSizeByAgePlot(modelList, label):
@@ -23,7 +24,7 @@ def getPopSizeByAgePlot(modelList, label):
         popSize[age] = countThis      
     
     #get some x axis stuff    
-    numYears = len(modelList)/12         
+    numYears = int(len(modelList)/12)
     yearList = [2016]
     xTickList = [0]
     for i in range(1, numYears+1):
@@ -71,7 +72,7 @@ def getCumulativeDeathsByAgePlot(modelList, label):
 
     
     #get some x axis stuff    
-    numYears = len(modelList)/12         
+    numYears = int(len(modelList)/12)
     yearList = [2016]
     xTickList = [0]
     for i in range(1, numYears+1):
@@ -115,7 +116,7 @@ def getNumStuntedByAgePlot(modelList, label):
         numStunted[age] = countThis      
         
     #get some x axis stuff    
-    numYears = len(modelList)/12         
+    numYears = int(len(modelList)/12)
     yearList = [2016]
     xTickList = [0]
     for i in range(1, numYears+1):
@@ -153,35 +154,37 @@ def getStuntedPercent(modelList, label): # NOT WORKING YET
         percentStunted[age] = 0
         
         # count STUNTED 
-        countThis = []
+        countStuntedList = []
+        countNotStuntedList = []
+        countStuntedFracList = []
+
         for model in modelList:
-            count = 0            
-            for stuntingCat in ["moderate", "high"]:
-                for wastingCat in ["normal", "mild", "moderate", "high"]:
-                    for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
-                        count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
-            countThis.append(count)
-            
-        # count NOT STUNTED 
-        countThisN = []
-        for model in modelList:
-            count = 0            
-            for stuntingCat in ["normal", "mild"]:
-                for wastingCat in ["normal", "mild", "moderate", "high"]:
-                    for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
-                        count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
-            countThisN.append(count)
+            countStunted = 0            
+            countNotStunted = 0            
+            for wastingCat in ["normal", "mild", "moderate", "high"]:
+                for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+                    for stuntingCat in ["moderate", "high"]:
+                        countStunted += model.listOfAgeCompartments[age].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
+                    for stuntingCat in ["normal", "mild"]:
+                        countNotStunted += model.listOfAgeCompartments[age].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
+            countStuntedFrac = countStunted / (countStunted + countNotStunted)
+            countStuntedList.append(countStunted)
+            countNotStuntedList.append(countNotStunted)
+            countStuntedFracList.append(countStuntedFrac)
             
         
         #get yearly average
-        numYears = len(modelList)/12 
+        numYears = int(len(modelList)/12)
         yearAveStunted = []
         yearAveNotStunted = []
+        yearAveStuntedPerc = []
         for year in range(1, numYears+1):
-            yearAveStunted.append(np.average(countThis[(year - 1) * 12 : (year * 12) - 1]))
-            yearAveNotStunted.append(np.average(countThisN[(year - 1) * 12 : (year * 12) - 1]))
+            yearAveStunted.append(np.average(countStuntedList[(year - 1) * 12 : (year * 12) - 1]))
+            yearAveNotStunted.append(np.average(countNotStuntedList[(year - 1) * 12 : (year * 12) - 1]))
+            yearAveStuntedPerc.append(100.*np.average(countStuntedFracList[(year - 1) * 12 : (year * 12) - 1]))
             
-        percentStunted[age] = map(truediv, yearAveStunted, yearAveNotStunted)    
+        #percentStunted[age] = map(truediv, yearAveStunted, yearAveNotStunted)    # this isn't the percentage stunted!
+        percentStunted[age] = yearAveStuntedPerc
         
     yearList = [2017]
     for i in range(1, numYears):
