@@ -79,7 +79,7 @@ class TestsForConstantsClass(unittest.TestCase):
         [self.testData, self.testModel, self.testConstants, self.testParams] = setUpDataModelConstantsObjects()
         
     def testGetUnderlyingMortalities(self):
-        # 64 compartments per age; 25/100=0.25 (distributions); 1 (cause); 1 (RR); 500/1000=0.5 (total mortality)
+        # 64 compartments per age; 25/100=0.25 (distributions); 1 (cause); 1 (RR); 500/1000=0.5 for newborn otherwise 0.0 (total mortality) 
         # underlyingMortality = total mortality / (numCompartments * dist * dist * dist * RR * RR * RR * cause)
         # underlyingMortality = total mortality / (numBFCompartments * BFdist * RR * RR * cause) for newborns
         self.assertAlmostEqual(0.5/4./0.25, self.testConstants.underlyingMortalities["<1 month"]["Neonatal diarrhea"])
