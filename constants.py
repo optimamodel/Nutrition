@@ -4,6 +4,7 @@ Created on Mon Feb 29 11:35:02 2016
 
 @author: ruth
 """
+from __future__ import division
 
 class Constants:
     def __init__(self, data, model):
@@ -14,7 +15,7 @@ class Constants:
         self.probStuntedIfPrevStunted = {}
         self.probStuntedIfDiarrhoea = {}
         self.probStunted = {}
-        self.baselineProbsBirthOutcome = {}  
+        #self.baselineProbsBirthOutcome = {}  
         self.probsBirthOutcome = {}  
         self.birthStuntingQuarticCoefficients = []
         self.baselineProbStuntingAtBirth = 0.
@@ -24,7 +25,7 @@ class Constants:
         self.getProbStuntingProgression()
         self.getProbStuntingDiarrhoea()
         self.getProbStunting()
-        self.getBaselineProbsBirthOutcome()
+        #self.getBaselineProbsBirthOutcome()
         self.getBirthStuntingQuarticCoefficients()
         self.getProbStuntingAtBirthForBaselineBirthOutcome()
         self.getProbsStuntingAtBirth()
@@ -52,6 +53,7 @@ class Constants:
         # RHS for newborns only
         age = "<1 month"
         for cause in self.data.causesOfDeath:
+            RHS[age][cause] = 0.
             for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
                 Pbf = self.data.breastfeedingDistribution[age][breastfeedingCat]
                 RRbf = self.data.RRBreastfeeding[age][cause][breastfeedingCat]
@@ -59,6 +61,14 @@ class Constants:
                     Pbo = self.data.birthOutcomeDist[birthoutcome]
                     RRbo = self.data.RRdeathByBirthOutcome[cause][birthoutcome]
                     RHS[age][cause] += Pbf * RRbf * Pbo * RRbo
+        # Store total age population sizes
+        AgePop = []
+        for ageInd in range(len(self.data.ages)):
+            AgePop.append(0.)
+            for stuntingCat in ["normal", "mild", "moderate", "high"]:
+                for wastingCat in ["normal", "mild", "moderate", "high"]:
+                    for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+                        AgePop[ageInd] += self.model.listOfAgeCompartments[ageInd].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
         # Calculated total mortality by age (corrected for units)
         MortalityCorrected = {}
         # note that mortality rate have currently been pre-divided by 1000
@@ -70,9 +80,9 @@ class Constants:
         # 1-5 months
         age = self.data.ages[1]
         Minfant = self.data.totalMortality[age]
-        Frac2 = (1.-Minfant)/(1.-m1)
-        m2 = 1. - pow(Frac2,1./11.)
-        #m2 = 1. - Frac2**(1./11.)
+        #Frac2 = (1.-Minfant)/(1.-m1)
+        #m2 = 1. - pow(Frac2,1./11.)
+        m2 = (Minfant - Mnew)*AgePop[0]/(AgePop[1]+AgePop[2])
         MortalityCorrected[age] = m2
         # 6-12 months
         age = self.data.ages[2]
@@ -81,9 +91,9 @@ class Constants:
         # 12-24 months
         age = self.data.ages[3]
         Mu5 = self.data.totalMortality[age]
-        Frac4 = (1.-Mu5)/(1.-m1)/(Frac2)
+        #Frac4 = (1.-Mu5)/(1.-m1)/(Frac2)
         #m4 = 1. - pow(Frac4,1./48.)
-        m4 = 1. - Frac4**(1./48.)
+        m4 = (Mu5 - Minfant)*AgePop[0]/(AgePop[3]+AgePop[4])
         MortalityCorrected[age] = m4
         # 24-60 months
         age = self.data.ages[4]
@@ -97,7 +107,7 @@ class Constants:
                 LHS_age_cause = MortalityCorrected[age] * self.data.causeOfDeathDist[age][cause]
                 Xdictionary[age][cause] = LHS_age_cause / RHS[age][cause]
         self.underlyingMortalities = Xdictionary
-    
+        
 
 
     def getProbStuntingProgression(self):
@@ -162,9 +172,10 @@ class Constants:
             fracDiarrhoea = 0.
             for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
                 RDa = self.data.RRdiarrhoea[youngerName][breastfeedingCat]
-                beta = 1. - (RRnot*Za-RDa*Za)/(RRnot*Za)
+                beta = 1. - (RRnot*Za-RDa*Za)/(RRnot*Za+eps)
                 pab  = self.data.breastfeedingDistribution[youngerName][breastfeedingCat]
                 fracDiarrhoea += beta * pab
+            print "Fraction of children in age-group %s who experience high-incidence diarrhoea = %g"%(ageName,fracDiarrhoea)
             # fraction stunted
             numStuntedThisAge = 0.
             numNotStuntedThisAge = 0.
@@ -287,10 +298,12 @@ class Constants:
 
 
 
+
     # SOLVE QUARTIC
     # p0 = Probability of Stunting at birth if Birth outcome = Term AGA
     def getProbStuntingAtBirthForBaselineBirthOutcome(self):
-        eps = 0.001
+        from numpy import sqrt 
+        eps = 0.0001
         p0min = 0.
         p0max = 1.
         interval = p0max - p0min
@@ -305,8 +318,9 @@ class Constants:
         if(PositiveAtMin == PositiveAtMax): 
             raise ValueError("ERROR: Quartic function evaluated at 0 & 1 both on the same side")
         while interval > eps:
-            p0x = (p0max-p0min)/2.
-            if(self.evalQuartic(p0x)>0 == PositiveAtMin):
+            p0x = (p0max+p0min)/2.
+            PositiveAtP0 = self.evalQuartic(p0x)>0
+            if(PositiveAtP0 == PositiveAtMin):
                 p0min = p0x
                 PositiveAtMin = self.evalQuartic(p0min)>0
             else:
@@ -314,6 +328,18 @@ class Constants:
                 PositiveAtMax = self.evalQuartic(p0max)>0
             interval = p0max - p0min
         self.baselineProbStuntingAtBirth = p0x
+        # Check 2nd deriv has no solutions
+        print "Quartic   at %g = %g"%(p0x,self.evalQuartic(p0x))
+        A,B,C,D,E = self.birthStuntingQuarticCoefficients
+        AA = 4.*3.*A
+        BB = 3.*2.*B
+        CC = 2.*C
+        det = sqrt(BB**2 - 4.*AA*CC)
+        soln1 = (-BB + det)/(2.*AA)
+        soln2 = (-BB - det)/(2.*AA)
+        print "Determinant = %g"%det
+        print "Two solutions are %g and %g"%(soln1,soln2)
+        
 
 
 
