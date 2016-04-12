@@ -103,7 +103,7 @@ def getDataFromSpreadsheet(fileName,listOfLabels):
     
     import pandas
     Location = fileName
-    [ages,birthOutcomes] = listOfLabels
+    [ages,birthOutcomes,stuntingList,wastingList,breastfeedingList] = listOfLabels
     
     #  READ TOTAL MORTALITY SHEET
     #  gets you:
