@@ -20,12 +20,12 @@ import output as output
 # high - more than 3 SD less than mean
 
 
-# WARNING I think we need a list of labels here, provided to data and model
-# define age-range list here instead of reading from data?
 ages = ["<1 month","1-5 months","6-11 months","12-23 months","24-59 months"]
 birthOutcomes = ["Pre-term SGA","Pre-term AGA","Term SGA","Term AGA"]
-# define all categories of intermediate health outcomes (stunting, wasting, breastfeeding) here too??
-listOfLabels = [ages,birthOutcomes]
+wastingList = ["normal", "mild", "moderate", "high"]
+stuntingList = ["normal", "mild", "moderate", "high"]
+breastfeedingList = ["exclusive", "predominant", "partial", "none"]
+listOfLabels = [ages,birthOutcomes,wastingList,stuntingList,breastfeedingList]
 
 # read the data from the spreadsheet
 spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx',listOfLabels)
@@ -36,7 +36,7 @@ spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx',listOfLabe
 mothers = modelCode.FertileWomen(0.9, 2.e6)
 
 listOfAgeCompartments = []
-ageRangeList  = spreadsheetData.ages
+ageRangeList  = ages #spreadsheetData.ages
 agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
 numAgeGroups = len(ageRangeList)
 agePopSizes  = [2.e5, 4.e5, 7.e5, 1.44e6, 44.e5]
