@@ -25,10 +25,10 @@ birthOutcomes = ["Pre-term SGA","Pre-term AGA","Term SGA","Term AGA"]
 wastingList = ["normal", "mild", "moderate", "high"]
 stuntingList = ["normal", "mild", "moderate", "high"]
 breastfeedingList = ["exclusive", "predominant", "partial", "none"]
-listOfLabels = [ages,birthOutcomes,wastingList,stuntingList,breastfeedingList]
+keyList = [ages,birthOutcomes,wastingList,stuntingList,breastfeedingList]
 
 # read the data from the spreadsheet
-spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx',listOfLabels)
+spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx',keyList)
 
 #----------------------   MAKE ALL THE BOXES     ---------------------
 
@@ -69,11 +69,11 @@ for age in range(numAgeGroups):
 #------------------------------------------------------------------------    
 
 # make a model object
-model = modelCode.Model("Main model", mothers, listOfAgeCompartments, listOfLabels, timestep)
+model = modelCode.Model("Main model", mothers, listOfAgeCompartments, keyList, timestep)
 
 # make a constants object
 # (initialisation sets all constant values based on inputdata and inputmodel) 
-constants = constantsCode.Constants(spreadsheetData, model)
+constants = constantsCode.Constants(spreadsheetData, model, keyList)
 #set the constants in the model
 model.setConstants(constants)
 
