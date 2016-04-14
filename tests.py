@@ -17,8 +17,11 @@ import helper as helper
 def setUpDataModelConstantsObjects():
     ages = ["<1 month","1-5 months","6-11 months","12-23 months","24-59 months"]
     birthOutcomes = ["Pre-term SGA","Pre-term AGA","Term SGA","Term AGA"]
-    listOfLabels = [ages,birthOutcomes]
-    testData = data.getDataFromSpreadsheet('InputForCode_tests.xlsx',listOfLabels)
+    wastingList = ["normal", "mild", "moderate", "high"]
+    stuntingList = ["normal", "mild", "moderate", "high"]
+    breastfeedingList = ["exclusive", "predominant", "partial", "none"]
+    keyList = [ages,birthOutcomes,wastingList,stuntingList,breastfeedingList]
+    testData = data.getDataFromSpreadsheet('InputForCode_tests.xlsx',keyList)
     #----------------------   MAKE ALL THE BOXES     ---------------------
     mothers = model.FertileWomen(0.2, 2.e6)
     listOfAgeCompartments = []
@@ -50,9 +53,9 @@ def setUpDataModelConstantsObjects():
         listOfAgeCompartments.append(compartment)
     #------------------------------------------------------------------------    
     # make a model object
-    testModel = model.Model("Main model", mothers, listOfAgeCompartments, listOfLabels, timestep)
+    testModel = model.Model("Main model", mothers, listOfAgeCompartments, keyList, timestep)
     # make the constants object    
-    testConstants = constants.Constants(testData, testModel)
+    testConstants = constants.Constants(testData, testModel, keyList)
     # set the constants in the model object
     testModel.setConstants(testConstants)
     testParams = parametersCode.Params(testData)
