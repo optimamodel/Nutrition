@@ -46,11 +46,11 @@ class AgeCompartment:
 
         
 class Model:
-    def __init__(self, name, fertileWomen, listOfAgeCompartments, listOfLabels, timestep):
+    def __init__(self, name, fertileWomen, listOfAgeCompartments, keyList, timestep):
         self.name = name
         self.fertileWomen = fertileWomen
         self.listOfAgeCompartments = listOfAgeCompartments
-        self.ages,self.birthOutcomes,self.wastingList,self.stuntingList,self.breastfeedingList = listOfLabels
+        self.ages,self.birthOutcomes,self.wastingList,self.stuntingList,self.breastfeedingList = keyList
         self.timestep = timestep
         self.constants = None
         self.params = None
