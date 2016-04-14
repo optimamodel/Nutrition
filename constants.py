@@ -7,14 +7,14 @@ Created on Mon Feb 29 11:35:02 2016
 from __future__ import division
 
 class Constants:
-    def __init__(self, data, model):
+    def __init__(self, data, model, keyList):
         self.data = data
         self.model = model
+        self.ages,self.birthOutcomes,self.wastingList,self.stuntingList,self.breastfeedingList = keyList
         
         self.underlyingMortalities = {}
         self.probStuntedIfPrevStunted = {}
-        self.probStuntedIfDiarrhoea = {}
-        self.probStunted = {}
+        self.fracStuntedIfDiarrhoea = {}
         #self.baselineProbsBirthOutcome = {}  
         self.probsBirthOutcome = {}  
         self.birthStuntingQuarticCoefficients = []
@@ -23,8 +23,7 @@ class Constants:
 
         self.getUnderlyingMortalities()
         self.getProbStuntingProgression()
-        self.getProbStuntingDiarrhoea()
-        self.getProbStunting()
+        self.getFracStuntingGivenDiarrhoea()
         #self.getBaselineProbsBirthOutcome()
         self.getBirthStuntingQuarticCoefficients()
         self.getProbStuntingAtBirthForBaselineBirthOutcome()
@@ -110,10 +109,10 @@ class Constants:
         
 
 
+    # Calculate probability of stunting in this age group given stunting in previous age-group
     def getProbStuntingProgression(self):
         from numpy import sqrt 
         numAgeGroups = len(self.model.listOfAgeCompartments)
-        # probability of stunting progression
         self.probStuntedIfPrevStunted["notstunted"] = {}
         self.probStuntedIfPrevStunted["yesstunted"] = {}
         eps = 1.e-5
@@ -151,41 +150,34 @@ class Constants:
         
 
 
-    def getProbStuntingDiarrhoea(self):
+
+    # Calculate probability of stunting in current age-group given diarrhoea incidence
+    def getFracStuntingGivenDiarrhoea(self):
         from numpy import sqrt 
         from math import pow
         numAgeGroups = len(self.model.listOfAgeCompartments)
         # probability of stunting progression
-        self.probStuntedIfDiarrhoea["nodia"] = {}
-        self.probStuntedIfDiarrhoea["dia"] = {}
+        self.fracStuntedIfDiarrhoea["nodia"] = {}
+        self.fracStuntedIfDiarrhoea["dia"] = {}
         eps = 1.e-5
-        for ageInd in range(1,numAgeGroups):
+        for ageInd in range(0,numAgeGroups):
             ageName = self.data.ages[ageInd]
-            youngerName = self.data.ages[ageInd-1]
             thisAge = self.model.listOfAgeCompartments[ageInd]
-            younger = self.model.listOfAgeCompartments[ageInd-1]
-            Za = self.data.InciDiarrhoea[youngerName]
+            Za = self.data.InciDiarrhoea[ageName]
             # population odds ratio = AO (see Eqn 3.9)
-            RRnot = self.data.RRdiarrhoea[youngerName]["none"]
-            AO = pow(self.data.ORdiarrhoea[youngerName],RRnot*Za/younger.agingRate) # WARNING check OR
+            RRnot = self.data.RRdiarrhoea[ageName]["none"]
+            AO = pow(self.data.ORdiarrhoea[ageName],RRnot*Za/thisAge.agingRate) # WARNING check OR
             # instead have fraction of children of age a who are experiencing diarrhoea
             fracDiarrhoea = 0.
             for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
-                RDa = self.data.RRdiarrhoea[youngerName][breastfeedingCat]
-                beta = 1. - (RRnot*Za-RDa*Za)/(RRnot*Za+eps)
-                pab  = self.data.breastfeedingDistribution[youngerName][breastfeedingCat]
+                RDa = self.data.RRdiarrhoea[ageName][breastfeedingCat]
+                beta = 1. - (RRnot-RDa)/(RRnot) #(RRnot*Za-RDa*Za)/(RRnot*Za+eps)
+                pab  = self.data.breastfeedingDistribution[ageName][breastfeedingCat]
                 fracDiarrhoea += beta * pab
             print "Fraction of children in age-group %s who experience high-incidence diarrhoea = %g"%(ageName,fracDiarrhoea)
             # fraction stunted
-            numStuntedThisAge = 0.
-            numNotStuntedThisAge = 0.
-            for wastingCat in ["normal", "mild", "moderate", "high"]:
-                for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
-                    for stuntingCat in ["moderate","high"]:
-                        numStuntedThisAge    += thisAge.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
-                    for stuntingCat in ["normal", "mild"]:
-                        numNotStuntedThisAge += thisAge.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
-            fracStuntedThisAge = numStuntedThisAge / (numStuntedThisAge + numNotStuntedThisAge + eps)
+            fracStuntedThisAge = thisAge.getStuntedFraction(self.stuntingList,self.wastingList,self.breastfeedingList)
+            print "Stunted fraction for %s age group is %g"%(ageName,fracStuntedThisAge)
             # solve quadratic equation ax**2 + bx + c = 0
             a = (1.-fracDiarrhoea) * (1.-AO)
             b = (AO-1)*fracStuntedThisAge - AO*fracDiarrhoea - (1.-fracDiarrhoea)
@@ -196,23 +188,13 @@ class Constants:
             # not sure what to do if both or neither are solutions
             if(soln1>0.)and(soln1<1.): p0 = soln1
             if(soln2>0.)and(soln2<1.): p0 = soln2
-            self.probStuntedIfDiarrhoea["nodia"][ageName] = p0
-            self.probStuntedIfDiarrhoea["dia"][ageName]   = p0*AO/(1.-p0+AO*p0)
+            self.fracStuntedIfDiarrhoea["nodia"][ageName] = p0
+            self.fracStuntedIfDiarrhoea["dia"][ageName]   = p0*AO/(1.-p0+AO*p0)
+            print "Test: F*p1 * (1-F)*p2 = %g"%(fracDiarrhoea*p0 + (1.-fracDiarrhoea)*p0*AO/(1.-p0+AO*p0))
 
 
 
-    def getProbStunting(self):
-        numAgeGroups = len(self.model.listOfAgeCompartments)
-        for ageInd in range(1,numAgeGroups):
-            ageName = self.data.ages[ageInd]
-            self.probStunted[ageName] = {}
-            for prevStunt in ["notstunted","yesstunted"]:
-                self.probStunted[ageName][prevStunt] = {}
-                for prevDiarr in ["nodia","dia"]:
-                    self.probStunted[ageName][prevStunt][prevDiarr] = 1. - (1.-self.probStuntedIfPrevStunted[prevStunt][ageName])*(1.-self.probStuntedIfDiarrhoea[prevDiarr][ageName])
 
-
-        
     # calculation of probabilities of birth outcome
     # given baseline maternalAge=18-34 years , birthOrder=second or third, timeBetweenBirths=>24 months 
     # P(birthOutcome | standard (maternalAge,birthOrder,timeBtwn)
