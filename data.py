@@ -99,11 +99,11 @@ def getFakeData():
 """    
     
     
-def getDataFromSpreadsheet(fileName,listOfLabels):
+def getDataFromSpreadsheet(fileName,keyList):
     
     import pandas
     Location = fileName
-    [ages,birthOutcomes,stuntingList,wastingList,breastfeedingList] = listOfLabels
+    [ages,birthOutcomes,stuntingList,wastingList,breastfeedingList] = keyList
     
     #  READ TOTAL MORTALITY SHEET
     #  gets you:
