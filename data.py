@@ -6,7 +6,7 @@ Created on Fri Feb 26 15:57:07 2016
 """
 
 class Data:
-    def __init__(self, ages, causesOfDeath, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, InciDiarrhoea, RRdiarrhoea, ORdiarrhoea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting):
+    def __init__(self, ages, causesOfDeath, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, InciDiarrhoea, RRdiarrhoea, ORdiarrhoea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting, ORstuntingZinc, InterventionCoveragesCurrent):
         self.ages = ages
         self.causesOfDeath = causesOfDeath
         self.totalMortality = totalMortality
@@ -28,6 +28,8 @@ class Data:
         self.RRbirthOutcomeByAgeAndOrder = RRbirthOutcomeByAgeAndOrder
         self.RRbirthOutcomeByTime = RRbirthOutcomeByTime
         self.ORBirthOutcomeStunting = ORBirthOutcomeStunting
+        self.ORstuntingZinc = ORstuntingZinc
+        self.InterventionCoveragesCurrent = InterventionCoveragesCurrent
     
 
     
@@ -269,6 +271,14 @@ def getDataFromSpreadsheet(fileName,keyList):
     df = pandas.read_excel(Location, sheetname = 'OR stunting diarrhoea')
     ORdiarrhoea = dict(zip(list(df.columns.values), df.iloc[0]))    
 
+
+    # READ OR Stunting given Zinc SHEET
+    # gets you:
+    # - ORstuntingZinc
+    df = pandas.read_excel(Location, sheetname = 'OR stunting Zinc')
+    ORstuntingZinc = dict(zip(list(df.columns.values), df.iloc[0]))    
+
+
     #  READ birth outcome distribution SHEET
     #  gets you:
     #  - birthOutcomeDist (partial)
@@ -288,8 +298,26 @@ def getDataFromSpreadsheet(fileName,keyList):
     #  - ORBirthOutcomeStunting
     df = pandas.read_excel(Location, sheetname = 'OR birth outcome stunting')
     ORBirthOutcomeStunting = dict(zip(list(df.columns.values), df.iloc[0]))   
+
+
+
+    #  READ Intervention Coverages SHEET
+    #  gets you:
+    #  - InterventionCoveragesCurrent
+
+    #get list of causesOfDeath
+    df = pandas.read_excel(Location, sheetname = 'Intervention coverages') #read this way for this task
+    InterventionList = list(df['Intervention'])
+    #get the nested list of causeOfDeathDist
+    df = pandas.read_excel(Location, sheetname = 'Intervention coverages', index_col = 'Intervention') #read this way for this task
+    InterventionCoveragesCurrent = {}
+    for intervention in InterventionList:
+        InterventionCoveragesCurrent[intervention] = df.loc[intervention, "pre-2016"]
+
+
+
             
-    spreadsheetData = Data(ages, causesOfDeath, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, InciDiarrhoea, RRdiarrhoea, ORdiarrhoea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting)
+    spreadsheetData = Data(ages, causesOfDeath, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, InciDiarrhoea, RRdiarrhoea, ORdiarrhoea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting, ORstuntingZinc, InterventionCoveragesCurrent)
 
     return spreadsheetData        
                   
