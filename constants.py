@@ -174,10 +174,8 @@ class Constants:
                 beta = 1. - (RRnot-RDa)/(RRnot) #(RRnot*Za-RDa*Za)/(RRnot*Za+eps)
                 pab  = self.data.breastfeedingDistribution[ageName][breastfeedingCat]
                 fracDiarrhoea += beta * pab
-            print "Fraction of children in age-group %s who experience high-incidence diarrhoea = %g"%(ageName,fracDiarrhoea)
             # fraction stunted
             fracStuntedThisAge = thisAge.getStuntedFraction(self.stuntingList,self.wastingList,self.breastfeedingList)
-            print "Stunted fraction for %s age group is %g"%(ageName,fracStuntedThisAge)
             # solve quadratic equation ax**2 + bx + c = 0
             a = (1.-fracDiarrhoea) * (1.-AO)
             b = (AO-1)*fracStuntedThisAge - AO*fracDiarrhoea - (1.-fracDiarrhoea)
@@ -310,7 +308,7 @@ class Constants:
                 PositiveAtMax = self.evalQuartic(p0max)>0
             interval = p0max - p0min
         self.baselineProbStuntingAtBirth = p0x
-        # Check 2nd deriv has no solutions
+        # Check 2nd deriv has no solutions between 0 and 1
         print "Quartic   at %g = %g"%(p0x,self.evalQuartic(p0x))
         A,B,C,D,E = self.birthStuntingQuarticCoefficients
         AA = 4.*3.*A
@@ -319,7 +317,7 @@ class Constants:
         det = sqrt(BB**2 - 4.*AA*CC)
         soln1 = (-BB + det)/(2.*AA)
         soln2 = (-BB - det)/(2.*AA)
-        print "Determinant = %g"%det
+        # check that no solution between 0 and 1
         print "Two solutions are %g and %g"%(soln1,soln2)
         
 
