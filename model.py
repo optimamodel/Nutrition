@@ -44,6 +44,14 @@ class AgeCompartment:
         NumberTotal = self.getTotalPopulation(stuntingList, wastingList, breastfeedingList)
         return NumberStunted/NumberTotal
 
+    def distribute(self, stuntingList, wastingList, breastfeedingList, stuntingDist, wastingDist, breastfeedingDist, totalPop):
+        ageName = self.name
+        for stuntingCat in stuntingList:
+            for wastingCat in wastingList:
+                for breastfeedingCat in breastfeedingList:
+                    self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize = stuntingDist[ageName][stuntingCat] * wastingDist[ageName][wastingCat] * breastfeedingDist[ageName][breastfeedingCat] * totalPop
+
+
         
 class Model:
     def __init__(self, name, fertileWomen, listOfAgeCompartments, keyList, timestep):
@@ -65,7 +73,17 @@ class Model:
     def setParams(self, inputParams):
         self.params = inputParams
 
+
+    def updateCoverages(self,newCoverage):
+        self.params.increaseCoverageOfZinc(newCoverage["Zinc supplementation"])
+        self.redistributeStunting(self.params.stuntingDistribution)
     
+
+    def redistributeStunting(self, stuntingDist):
+        for ageGroup in self.listOfAgeCompartments:
+            totalPop = ageGroup.getTotalPopulation(self.stuntingList,self.wastingList,self.breastfeedingList)
+            ageGroup.distribute(self.stuntingList,self.wastingList,self.breastfeedingList,self.params.stuntingDistribution,self.params.wastingDistribution,self.params.breastfeedingDistribution,totalPop)
+
         
     def updateMortalityRate(self):
         # Newborns first
