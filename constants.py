@@ -15,6 +15,7 @@ class Constants:
         self.underlyingMortalities = {}
         self.probStuntedIfPrevStunted = {}
         self.fracStuntedIfDiarrhoea = {}
+        self.fracStuntedIfZinc = {}
         #self.baselineProbsBirthOutcome = {}  
         self.probsBirthOutcome = {}  
         self.birthStuntingQuarticCoefficients = []
@@ -24,6 +25,7 @@ class Constants:
         self.getUnderlyingMortalities()
         self.getProbStuntingProgression()
         self.getFracStuntingGivenDiarrhoea()
+        self.getFracStuntingGivenZinc()
         #self.getBaselineProbsBirthOutcome()
         self.getBirthStuntingQuarticCoefficients()
         self.getProbStuntingAtBirthForBaselineBirthOutcome()
@@ -188,8 +190,44 @@ class Constants:
             if(soln2>0.)and(soln2<1.): p0 = soln2
             self.fracStuntedIfDiarrhoea["nodia"][ageName] = p0
             self.fracStuntedIfDiarrhoea["dia"][ageName]   = p0*AO/(1.-p0+AO*p0)
-            print "Test: F*p1 * (1-F)*p2 = %g"%(fracDiarrhoea*p0 + (1.-fracDiarrhoea)*p0*AO/(1.-p0+AO*p0))
+            #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%((fracDiarrhoea*p0 + (1.-fracDiarrhoea)*p0*AO/(1.-p0+AO*p0)), fracStuntedThisAge)
 
+
+
+
+
+    # Calculate probability of stunting in current age-group given diarrhoea incidence
+    def getFracStuntingGivenZinc(self):
+        from numpy import sqrt 
+        from math import pow
+        numAgeGroups = len(self.model.listOfAgeCompartments)
+        # probability of stunting progression
+        self.fracStuntedIfZinc["nozinc"] = {}
+        self.fracStuntedIfZinc["zinc"] = {}
+        eps = 1.e-5
+        for ageInd in range(0,numAgeGroups):
+            ageName = self.data.ages[ageInd]
+            thisAge = self.model.listOfAgeCompartments[ageInd]
+            # population odds ratio = AO (see Eqn 3.9)
+            OddsRatio = self.data.ORstuntingZinc[ageName]
+            # instead have fraction of children of age a who have enough zinc
+            #fracZinc = self.data.InterventionCoveragesCurrent["Zinc supplementation"]
+            fracZinc = 0.
+            # fraction stunted
+            fracStuntedThisAge = thisAge.getStuntedFraction(self.stuntingList,self.wastingList,self.breastfeedingList)
+            # solve quadratic equation ax**2 + bx + c = 0
+            a = (1.-fracZinc) * (1.-OddsRatio)
+            b = (OddsRatio-1)*fracStuntedThisAge - OddsRatio*fracZinc - (1.-fracZinc)
+            c = fracStuntedThisAge
+            det = sqrt(b**2 - 4.*a*c)
+            soln1 = (-b + det)/(2.*a)
+            soln2 = (-b - det)/(2.*a)
+            # not sure what to do if both or neither are solutions
+            if(soln1>0.)and(soln1<1.): p0 = soln1
+            if(soln2>0.)and(soln2<1.): p0 = soln2
+            self.fracStuntedIfZinc["nozinc"][ageName] = p0
+            self.fracStuntedIfZinc["zinc"][ageName]   = p0*OddsRatio/(1.-p0+OddsRatio*p0)
+            #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%((fracZinc*p0 + (1.-fracZinc)*p0*OddsRatio/(1.-p0+OddsRatio*p0)), fracStuntedThisAge)
 
 
 
@@ -283,7 +321,7 @@ class Constants:
     # p0 = Probability of Stunting at birth if Birth outcome = Term AGA
     def getProbStuntingAtBirthForBaselineBirthOutcome(self):
         from numpy import sqrt 
-        eps = 0.0001
+        tolerance = 0.00001
         p0min = 0.
         p0max = 1.
         interval = p0max - p0min
@@ -297,7 +335,7 @@ class Constants:
         PositiveAtMax = self.evalQuartic(p0max)>0
         if(PositiveAtMin == PositiveAtMax): 
             raise ValueError("ERROR: Quartic function evaluated at 0 & 1 both on the same side")
-        while interval > eps:
+        while interval > tolerance:
             p0x = (p0max+p0min)/2.
             PositiveAtP0 = self.evalQuartic(p0x)>0
             if(PositiveAtP0 == PositiveAtMin):
@@ -309,7 +347,7 @@ class Constants:
             interval = p0max - p0min
         self.baselineProbStuntingAtBirth = p0x
         # Check 2nd deriv has no solutions between 0 and 1
-        print "Quartic   at %g = %g"%(p0x,self.evalQuartic(p0x))
+        #print "Quartic   at %g = %g"%(p0x,self.evalQuartic(p0x))
         A,B,C,D,E = self.birthStuntingQuarticCoefficients
         AA = 4.*3.*A
         BB = 3.*2.*B
@@ -318,7 +356,7 @@ class Constants:
         soln1 = (-BB + det)/(2.*AA)
         soln2 = (-BB - det)/(2.*AA)
         # check that no solution between 0 and 1
-        print "Two solutions are %g and %g"%(soln1,soln2)
+        #print "Two solutions are %g and %g"%(soln1,soln2)
         
 
 
