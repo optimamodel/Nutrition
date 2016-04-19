@@ -78,30 +78,11 @@ constants = constantsCode.Constants(spreadsheetData, model, keyList)
 model.setConstants(constants)
 
 #set the parameters in the model
-params = parametersCode.Params(spreadsheetData)
-# UPDATE PARAMS (NOT DATA) WITH INTERVENTIONS
-# -------------------------------------------------------------------------
-## intervention:  make first 2 age groups exclusively breastfed 
-#for age in ['<1 month', '1-5 months']:
-#    for status in ["predominant", "partial", "none"]:
-#        params.breastfeedingDistribution[age][status] = 0
-#        params.breastfeedingDistribution[age]['exclusive'] = 1         
-
-## intervention:  improve breastfeeding in first 2 age groups 
-"""
-for age in ['<1 month', '1-5 months']:
-    params.breastfeedingDistribution[age]['exclusive'] = 0.6
-    params.breastfeedingDistribution[age]['predominant'] = 0.3
-    params.breastfeedingDistribution[age]['partial'] = 0.1
-    params.breastfeedingDistribution[age]['none'] = 0
-"""
-# -------------------------------------------------------------------------    
+params = parametersCode.Params(spreadsheetData,constants,keyList)
 model.setParams(params)
 
 
-
-
-pickleFilename = 'Default.pkl'
+pickleFilename = 'testDefault.pkl'
 #open file to dump objects into at each time step
 import pickle as pickle
 outfile = open(pickleFilename, 'wb')
@@ -129,6 +110,52 @@ output.getCumulativeDeathsByAgePlot(modelList, "test")
 output.getNumStuntedByAgePlot(modelList, "test")
 output.getStuntedPercent(modelList, "test")
 
+
+
+# UPDATE PARAMS (NOT DATA) WITH INTERVENTIONS
+print "Updated interventions"
+# -------------------------------------------------------------------------
+## intervention:  make first 2 age groups exclusively breastfed 
+#for age in ['<1 month', '1-5 months']:
+#    for status in ["predominant", "partial", "none"]:
+#        params.breastfeedingDistribution[age][status] = 0
+#        params.breastfeedingDistribution[age]['exclusive'] = 1         
+
+## intervention:  improve breastfeeding in first 2 age groups 
+
+print "Zinc supplementation coverage"
+newCoverages={}
+newCoverages["Zinc supplementation"] = 0.5
+model.updateCoverages(newCoverages)
+# -------------------------------------------------------------------------    
+
+pickleFilename = 'testZinc.pkl'
+#open file to dump objects into at each time step
+import pickle as pickle
+outfile = open(pickleFilename, 'wb')
+
+for t in range(numsteps):
+    print t
+    model.moveOneTimeStep()
+    pickle.dump(model, outfile)
+    
+outfile.close()    
+
+# collect output, make graphs etc.
+infile = open(pickleFilename, 'rb')
+newModelList = []
+while 1:
+    try:
+        newModelList.append(pickle.load(infile))
+    except (EOFError):
+        break
+infile.close()
+
+#ploting scripts assume numsteps is a multiple of 12 (integer years)
+output.getPopSizeByAgePlot(newModelList, "increased Zinc")
+output.getCumulativeDeathsByAgePlot(newModelList, "increased Zinc")
+output.getNumStuntedByAgePlot(newModelList, "increased Zinc")
+output.getStuntedPercent(newModelList, "increased Zinc")
 
 
 
