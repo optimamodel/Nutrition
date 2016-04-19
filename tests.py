@@ -58,7 +58,7 @@ def setUpDataModelConstantsObjects():
     testConstants = constants.Constants(testData, testModel, keyList)
     # set the constants in the model object
     testModel.setConstants(testConstants)
-    testParams = parametersCode.Params(testData)
+    testParams = parametersCode.Params(testData, testConstants, keyList)
     testModel.setParams(testParams)
 
     return testData, testModel, testConstants, testParams
