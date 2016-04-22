@@ -54,6 +54,77 @@ def getPopSizeByAgePlot(modelList, label):
     return popSize
 
 
+
+def getPopAndStuntedSizePlot(modelList, label):
+    ageList = modelList[0].ages
+    numAges = len(ageList)
+    # get populations sizes for all U5s
+    numMonths = len(modelList) 
+    totalPopU5 = [0.]*numMonths
+    stuntPopU5 = [0.]*numMonths
+    # get population size for each age group
+    totalPop = []
+    stuntPop = []
+    for age in range(0, numAges):
+        totalPop.append([])
+        stuntPop.append([])
+        m=0
+        for model in modelList:
+            total     = model.listOfAgeCompartments[age].getTotalPopulation()
+            stuntfrac = model.listOfAgeCompartments[age].getStuntedFraction()
+            totalPop[age].append(total)
+            stuntPop[age].append(total*stuntfrac)
+            totalPopU5[m] += total
+            stuntPopU5[m] += total*stuntfrac
+            m+=1
+
+    #get some x axis stuff    
+    numYears = int(len(modelList)/12)
+    yearList = list(range(2016,2016+numYears+1))#[2016]
+    xTickList = list(range(0,12*(numYears+1),12)) # [0]
+    #for i in range(1, numYears):
+        #yearList.append(yearList[0] + i)   
+        #xTickList.append(i * 12)
+    
+    import numpy as np
+    import matplotlib.pyplot as plt
+    x = np.arange(len(modelList))
+
+    fig, ax = plt.subplots()
+    plot_total = plt.fill_between(x,totalPopU5,stuntPopU5,color='blue')
+    plot_stunt = plt.fill_between(x,stuntPopU5,0,         color='red')
+    ax.set_xticks(xTickList)
+    ax.set_xticklabels(yearList)
+    ax.set_xlim([0,12*numYears])
+    plt.ylabel('population size')
+    plt.title('Total and Stunted Population Size : %s'%(label))
+    ax.legend([plot_total,plot_stunt],["Total","Stunted"])
+    plt.show()
+
+
+    axes=[]
+    fig, ax = plt.subplots()
+    #for age in range(0, len(modelList[0].ages)):
+    #    fig, ((axes[0],axes[1],axes[2]),(axes[3],axes[4],ax5)) = plt.subplots(2,3)
+    y1 = totalPop[0]
+    y2 = totalPop[1]
+    y3 = totalPop[2]
+    y4 = totalPop[3]
+    y5 = totalPop[4]
+    ax.stackplot(x, y1, y2, y3, y4, y5)
+    ax.legend(ageList, loc = 'upper left')
+    ax.set_xticks(xTickList)
+    ax.set_xticklabels(yearList)
+    #ax.set_ylim([0, 1.6e10])
+    plt.ylabel('population size')
+    #plt.xlabel('time steps in months')
+    plt.title('Population Size by Age Group:  ' + label)
+    plt.show()
+    
+    return totalPop, stuntPop
+
+
+
 def getCumulativeDeathsByAgePlot(modelList, label):
     ageList = modelList[0].ages
     #get population size for each age group
@@ -97,6 +168,7 @@ def getCumulativeDeathsByAgePlot(modelList, label):
     #plt.xlabel('time steps in months')
     plt.title('Cumulative Deaths by Age Group:  ' + label)
     plt.show()
+
     
 def getNumStuntedByAgePlot(modelList, label):
     #this counts people in the top 2 stunting categories
