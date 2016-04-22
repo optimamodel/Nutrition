@@ -49,7 +49,7 @@ def setUpDataModelConstantsObjects():
                     thisPopSize = int(agePopSize/64.) # 100 people in each box
                     thisMortalityRate = testData.totalMortality[ageRange] # WARNING need to distribute appropriately
                     allBoxes[stuntingCat][wastingCat][breastfeedingCat] =  model.Box(stuntingCat, wastingCat, breastfeedingCat, thisPopSize, thisMortalityRate)
-        compartment = model.AgeCompartment(ageRange, allBoxes, agingRate)
+        compartment = model.AgeCompartment(ageRange, allBoxes, agingRate, keyList)
         listOfAgeCompartments.append(compartment)
     #------------------------------------------------------------------------    
     # make a model object
