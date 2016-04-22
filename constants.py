@@ -58,13 +58,13 @@ class Constants:
             for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
                 Pbf = self.data.breastfeedingDistribution[age][breastfeedingCat]
                 RRbf = self.data.RRBreastfeeding[age][cause][breastfeedingCat]
-                for birthoutcome in self.model.birthOutcomes:
+                for birthoutcome in self.birthOutcomes:
                     Pbo = self.data.birthOutcomeDist[birthoutcome]
                     RRbo = self.data.RRdeathByBirthOutcome[cause][birthoutcome]
                     RHS[age][cause] += Pbf * RRbf * Pbo * RRbo
         # Store total age population sizes
         AgePop = []
-        for ageInd in range(len(self.data.ages)):
+        for ageInd in range(len(self.ages)):
             AgePop.append(0.)
             for stuntingCat in ["normal", "mild", "moderate", "high"]:
                 for wastingCat in ["normal", "mild", "moderate", "high"]:
@@ -74,35 +74,35 @@ class Constants:
         MortalityCorrected = {}
         # note that mortality rate have currently been pre-divided by 1000
         # Newborns
-        age = self.data.ages[0]
+        age = self.ages[0]
         Mnew = self.data.totalMortality[age]
         m1 = Mnew
         MortalityCorrected[age] = m1
         # 1-5 months
-        age = self.data.ages[1]
+        age = self.ages[1]
         Minfant = self.data.totalMortality[age]
         #Frac2 = (1.-Minfant)/(1.-m1)
         #m2 = 1. - pow(Frac2,1./11.)
         m2 = (Minfant - Mnew)*AgePop[0]/(AgePop[1]+AgePop[2])
         MortalityCorrected[age] = m2
         # 6-12 months
-        age = self.data.ages[2]
+        age = self.ages[2]
         m3 = m2
         MortalityCorrected[age] = m3
         # 12-24 months
-        age = self.data.ages[3]
+        age = self.ages[3]
         Mu5 = self.data.totalMortality[age]
         #Frac4 = (1.-Mu5)/(1.-m1)/(Frac2)
         #m4 = 1. - pow(Frac4,1./48.)
         m4 = (Mu5 - Minfant)*AgePop[0]/(AgePop[3]+AgePop[4])
         MortalityCorrected[age] = m4
         # 24-60 months
-        age = self.data.ages[4]
+        age = self.ages[4]
         m5 = m4
         MortalityCorrected[age] = m5
         # Calculate LHS for each age and cause of death then solve for X
         Xdictionary = {} 
-        for age in self.data.ages:
+        for age in self.ages:
             Xdictionary[age] = {}
             for cause in self.data.causesOfDeath:
                 LHS_age_cause = MortalityCorrected[age] * self.data.causeOfDeathDist[age][cause]
@@ -114,12 +114,12 @@ class Constants:
     # Calculate probability of stunting in this age group given stunting in previous age-group
     def getProbStuntingProgression(self):
         from numpy import sqrt 
-        numAgeGroups = len(self.model.listOfAgeCompartments)
+        numAgeGroups = len(self.ages)
         self.probStuntedIfPrevStunted["notstunted"] = {}
         self.probStuntedIfPrevStunted["yesstunted"] = {}
         eps = 1.e-5
         for ageInd in range(1,numAgeGroups):
-            ageName = self.data.ages[ageInd]
+            ageName = self.ages[ageInd]
             thisAge = self.model.listOfAgeCompartments[ageInd]
             younger = self.model.listOfAgeCompartments[ageInd-1]
             OddsRatio = self.data.ORstuntingProgression[ageName]
@@ -161,9 +161,8 @@ class Constants:
         # probability of stunting progression
         self.fracStuntedIfDiarrhoea["nodia"] = {}
         self.fracStuntedIfDiarrhoea["dia"] = {}
-        eps = 1.e-5
         for ageInd in range(0,numAgeGroups):
-            ageName = self.data.ages[ageInd]
+            ageName = self.ages[ageInd]
             thisAge = self.model.listOfAgeCompartments[ageInd]
             Za = self.data.InciDiarrhoea[ageName]
             # population odds ratio = AO (see Eqn 3.9)
@@ -173,11 +172,11 @@ class Constants:
             fracDiarrhoea = 0.
             for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
                 RDa = self.data.RRdiarrhoea[ageName][breastfeedingCat]
-                beta = 1. - (RRnot-RDa)/(RRnot) #(RRnot*Za-RDa*Za)/(RRnot*Za+eps)
+                beta = 1. - (RRnot-RDa)/(RRnot) #(RRnot*Za-RDa*Za)/(RRnot*Za)
                 pab  = self.data.breastfeedingDistribution[ageName][breastfeedingCat]
                 fracDiarrhoea += beta * pab
             # fraction stunted
-            fracStuntedThisAge = thisAge.getStuntedFraction(self.stuntingList,self.wastingList,self.breastfeedingList)
+            fracStuntedThisAge = thisAge.getStuntedFraction()
             # solve quadratic equation ax**2 + bx + c = 0
             a = (1.-fracDiarrhoea) * (1.-AO)
             b = (AO-1)*fracStuntedThisAge - AO*fracDiarrhoea - (1.-fracDiarrhoea)
@@ -206,7 +205,7 @@ class Constants:
         self.fracStuntedIfZinc["zinc"] = {}
         eps = 1.e-5
         for ageInd in range(0,numAgeGroups):
-            ageName = self.data.ages[ageInd]
+            ageName = self.ages[ageInd]
             thisAge = self.model.listOfAgeCompartments[ageInd]
             # population odds ratio = AO (see Eqn 3.9)
             OddsRatio = self.data.ORstuntingZinc[ageName]
@@ -214,7 +213,7 @@ class Constants:
             #fracZinc = self.data.InterventionCoveragesCurrent["Zinc supplementation"]
             fracZinc = 0.
             # fraction stunted
-            fracStuntedThisAge = thisAge.getStuntedFraction(self.stuntingList,self.wastingList,self.breastfeedingList)
+            fracStuntedThisAge = thisAge.getStuntedFraction()
             # solve quadratic equation ax**2 + bx + c = 0
             a = (1.-fracZinc) * (1.-OddsRatio)
             b = (OddsRatio-1)*fracStuntedThisAge - OddsRatio*fracZinc - (1.-fracZinc)
