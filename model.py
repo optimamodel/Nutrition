@@ -21,34 +21,35 @@ class Box:
         self.cumulativeDeaths = 0
 
 class AgeCompartment:
-    def __init__(self, name, dictOfBoxes, agingRate):
+    def __init__(self, name, dictOfBoxes, agingRate, keyList):
         self.name = name  
         self.dictOfBoxes = dictOfBoxes
         self.agingRate = agingRate
+        self.ages,self.birthOutcomes,self.wastingList,self.stuntingList,self.breastfeedingList = keyList
 
-    def getTotalPopulation(self, stuntingList, wastingList, breastfeedingList):
+    def getTotalPopulation(self):
         sum = 0.
-        for stuntingCat in ["normal", "mild", "moderate", "high"]:
-            for wastingCat in wastingList:
-                for breastfeedingCat in breastfeedingList:
+        for stuntingCat in self.stuntingList:
+            for wastingCat in self.wastingList:
+                for breastfeedingCat in self.breastfeedingList:
                     thisBox = self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat] 
                     sum += thisBox.populationSize
         return sum
 
-    def getStuntedFraction(self, stuntingList, wastingList, breastfeedingList):
+    def getStuntedFraction(self):
         NumberStunted = 0.
         for stuntingCat in ["moderate", "high"]:
-            for wastingCat in wastingList:
-                for breastfeedingCat in breastfeedingList:
+            for wastingCat in self.wastingList:
+                for breastfeedingCat in self.breastfeedingList:
                     NumberStunted += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
-        NumberTotal = self.getTotalPopulation(stuntingList, wastingList, breastfeedingList)
+        NumberTotal = self.getTotalPopulation()
         return NumberStunted/NumberTotal
 
-    def distribute(self, stuntingList, wastingList, breastfeedingList, stuntingDist, wastingDist, breastfeedingDist, totalPop):
+    def distribute(self, stuntingDist, wastingDist, breastfeedingDist, totalPop):
         ageName = self.name
-        for stuntingCat in stuntingList:
-            for wastingCat in wastingList:
-                for breastfeedingCat in breastfeedingList:
+        for stuntingCat in self.stuntingList:
+            for wastingCat in self.wastingList:
+                for breastfeedingCat in self.breastfeedingList:
                     self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize = stuntingDist[ageName][stuntingCat] * wastingDist[ageName][wastingCat] * breastfeedingDist[ageName][breastfeedingCat] * totalPop
 
 
@@ -75,14 +76,37 @@ class Model:
 
 
     def updateCoverages(self,newCoverage):
-        self.params.increaseCoverageOfZinc(newCoverage["Zinc supplementation"])
-        self.redistributeStunting(self.params.stuntingDistribution)
-    
-
-    def redistributeStunting(self, stuntingDist):
+        # setup
+        MortalityUpdate={}
+        for cause in self.params.causesOfDeath:
+            MortalityUpdate[cause] = 1.
+        StuntingUpdate=1.
+        # Zinc
+        redStunting, redDiarrhea = self.params.increaseCoverageOfZinc(newCoverage["Zinc supplementation"])
+        print "Reduction in Stunting due to Zinc = %g"%(redStunting)
+        print "Reduction in Diarrhea mortality = "
+        print redDiarrhea
+        StuntingUpdate *= 1.-redStunting
+        #for cause in self.params.causesOfDeath:
+        MortalityUpdate["Diarrhea"] *= 1.-redDiarrhea
+        # Repeat for all interventions
+        #
+        #
+        # update stunting
         for ageGroup in self.listOfAgeCompartments:
-            totalPop = ageGroup.getTotalPopulation(self.stuntingList,self.wastingList,self.breastfeedingList)
-            ageGroup.distribute(self.stuntingList,self.wastingList,self.breastfeedingList,self.params.stuntingDistribution,self.params.wastingDistribution,self.params.breastfeedingDistribution,totalPop)
+            ageName = ageGroup.name
+            oldProbStunting = self.params.stuntingDistribution[ageName]["high"] + self.params.stuntingDistribution[ageName]["moderate"]
+            newProbStunting = oldProbStunting * StuntingUpdate
+            print self.params.stuntingDistribution[ageName]
+            self.params.stuntingDistribution[ageName] = self.helper.restratify(newProbStunting)
+            print self.params.stuntingDistribution[ageName]
+            totalPop = ageGroup.getTotalPopulation()
+            ageGroup.distribute(self.params.stuntingDistribution,self.params.wastingDistribution,self.params.breastfeedingDistribution,totalPop)
+        # update mortalities
+        for ageGroup in self.listOfAgeCompartments:
+            ageName = ageGroup.name
+            self.constants.underlyingMortalities[ageName]["Diarrhea"] *= MortalityUpdate["Diarrhea"]
+
 
         
     def updateMortalityRate(self):
@@ -180,7 +204,7 @@ class Model:
                         thisBox = thisAgeCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat]
                         thisBox.populationSize -= agingOut[ind][wastingCat][breastfeedingCat][stuntingCat]
                         thisBox.populationSize += numAgingInStratified[stuntingCat] * pab * paw
-            #print "Stunted fraction in %s is %g"%(ageName,thisAgeCompartment.getStuntedFraction(self.stuntingList,self.wastingList,self.breastfeedingList))
+            #print "Stunted fraction in %s is %g"%(ageName,thisAgeCompartment.getStuntedFraction())
 
 
 
