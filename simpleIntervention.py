@@ -55,3 +55,5 @@ output.getNumStuntedByAgePlot(zinc, "zinc")
 
 output.getStuntedPercent(default, "default")
 output.getStuntedPercent(zinc, "zinc")
+
+output.getCombinedPlots(default,"default",zinc,"zinc")
