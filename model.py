@@ -97,9 +97,7 @@ class Model:
             ageName = ageGroup.name
             oldProbStunting = self.params.stuntingDistribution[ageName]["high"] + self.params.stuntingDistribution[ageName]["moderate"]
             newProbStunting = oldProbStunting * StuntingUpdate
-            print self.params.stuntingDistribution[ageName]
             self.params.stuntingDistribution[ageName] = self.helper.restratify(newProbStunting)
-            print self.params.stuntingDistribution[ageName]
             totalPop = ageGroup.getTotalPopulation()
             ageGroup.distribute(self.params.stuntingDistribution,self.params.wastingDistribution,self.params.breastfeedingDistribution,totalPop)
         # update mortalities
