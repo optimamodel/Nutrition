@@ -50,8 +50,8 @@ class Params:
         #Diarrhea
         reductionMortality={}
         #reductionMortality["diarrhea"]
-        affectedFrac = 0.253 # take from data
-        effectiveness = 0.50 # take from data
+        affectedFrac = 0.5 #0.253 # take from data
+        effectiveness = 0.5 # take from data
         reductionMortality["diarrhea"] = affectedFrac * effectiveness * (newCoverage - oldCoverage) / (1. - effectiveness*oldCoverage)
         #self.InciDiarrhea["12-23 months"] *= (1.-reduction)
         return reductionStunting, reductionMortality["diarrhea"]
