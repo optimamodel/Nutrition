@@ -6,7 +6,7 @@ Created on Fri Feb 26 15:57:07 2016
 """
 
 class Data:
-    def __init__(self, ages, causesOfDeath, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, InciDiarrhoea, RRdiarrhoea, ORdiarrhoea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting, ORstuntingZinc, InterventionCoveragesCurrent):
+    def __init__(self, ages, causesOfDeath, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, InciDiarrhea, RRdiarrhea, ORdiarrhea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting, ORstuntingZinc, InterventionCoveragesCurrent):
         self.ages = ages
         self.causesOfDeath = causesOfDeath
         self.totalMortality = totalMortality
@@ -19,9 +19,9 @@ class Data:
         self.RRBreastfeeding = RRBreastfeeding
         self.RRdeathByBirthOutcome = RRdeathByBirthOutcome
         self.ORstuntingProgression = ORstuntingProgression
-        self.InciDiarrhoea = InciDiarrhoea
-        self.RRdiarrhoea = RRdiarrhoea
-        self.ORdiarrhoea = ORdiarrhoea
+        self.InciDiarrhea = InciDiarrhea
+        self.RRdiarrhea = RRdiarrhea
+        self.ORdiarrhea = ORdiarrhea
         self.birthCircumstanceDist = birthCircumstanceDist
         self.timeBetweenBirthsDist = timeBetweenBirthsDist
         self.birthOutcomeDist = birthOutcomeDist
@@ -249,27 +249,27 @@ def getDataFromSpreadsheet(fileName,keyList):
     df = pandas.read_excel(Location, sheetname = 'OR stunting progression')
     ORstuntingProgression = dict(zip(list(df.columns.values), df.iloc[0]))    
 
-    # READ Incidence Diarrhoea SHEET
+    # READ Incidence Diarrhea SHEET
     # gets you:
-    # - InciDiarrhoea
+    # - InciDiarrhea
     df = pandas.read_excel(Location, sheetname = 'Incidence diarrhoea')
-    InciDiarrhoea = dict(zip(list(df.columns.values), df.iloc[0]))    
+    InciDiarrhea = dict(zip(list(df.columns.values), df.iloc[0]))    
 
-    # READ RR diarrhoea SHEET
+    # READ RR diarrhea SHEET
     # gets you:
-    # - RRdiarrhoea
+    # - RRdiarrhea
     df = pandas.read_excel(Location, sheetname = 'RR diarrhoea', index_col = [0]) #read this way for this task
-    RRdiarrhoea = {}
+    RRdiarrhea = {}
     for age in ages:
-        RRdiarrhoea[age] = {}
+        RRdiarrhea[age] = {}
         for breastfeedingCat in ['exclusive', 'predominant', 'partial', 'none']:
-            RRdiarrhoea[age][breastfeedingCat] = df[age][breastfeedingCat]       
+            RRdiarrhea[age][breastfeedingCat] = df[age][breastfeedingCat]       
 
-    # READ OR Diarrhoea SHEET
+    # READ OR Diarrhea SHEET
     # gets you:
-    # - ORdiarrhoea
+    # - ORdiarrhea
     df = pandas.read_excel(Location, sheetname = 'OR stunting diarrhoea')
-    ORdiarrhoea = dict(zip(list(df.columns.values), df.iloc[0]))    
+    ORdiarrhea = dict(zip(list(df.columns.values), df.iloc[0]))    
 
 
     # READ OR Stunting given Zinc SHEET
@@ -317,7 +317,7 @@ def getDataFromSpreadsheet(fileName,keyList):
 
 
             
-    spreadsheetData = Data(ages, causesOfDeath, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, InciDiarrhoea, RRdiarrhoea, ORdiarrhoea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting, ORstuntingZinc, InterventionCoveragesCurrent)
+    spreadsheetData = Data(ages, causesOfDeath, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, InciDiarrhea, RRdiarrhea, ORdiarrhea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting, ORstuntingZinc, InterventionCoveragesCurrent)
 
     return spreadsheetData        
                   
