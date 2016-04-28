@@ -286,3 +286,49 @@ def getStuntedPercent(modelList, label): # NOT WORKING YET
     #ax.set_xlabel('time steps in months')
     ax.set_title('Percent of People Stunted by Age Group:  ' + label)
     plt.show()    
+
+
+
+
+def getCombinedPlots(modelList1,tag1,modelList2,tag2):
+    # set up
+    ageList = modelList[0].ages
+    numAges = len(ageList)
+    numMonths = len(modelList) 
+    # initialise
+    totalPopU5 = [0.]*numMonths
+    stuntPopU5 = [0.]*numMonths
+    totalPop = []
+    stuntPop = []
+    for age in range(0, numAges):
+        totalPop.append([])
+        stuntPop.append([])
+        m=0
+        for model in modelList:
+            total     = model.listOfAgeCompartments[age].getTotalPopulation()
+            stuntfrac = model.listOfAgeCompartments[age].getStuntedFraction()
+            totalPop[age].append(total)
+            stuntPop[age].append(total*stuntfrac)
+            totalPopU5[m] += total
+            stuntPopU5[m] += total*stuntfrac
+            m+=1
+
+    numYears = int(len(modelList)/12)
+    skip = 2
+    yearList =  list(range(2016,2016+numYears+1,skip))#[2016]
+    xTickList = list(range(0,12*(numYears+1),   skip*12)) # [0]
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+    x = np.arange(len(modelList))
+
+    fig, ax = plt.subplots()
+#    plot_total = plt.fill_between(x,totalPopU5,stuntPopU5,color='blue')
+    plot_stunt = plt.fill_between(x, stuntPopU5, 0,    color='red')
+    ax.set_xticks(xTickList)
+    ax.set_xticklabels(yearList)
+    ax.set_xlim([0,12*numYears])
+    plt.ylabel('population size')
+    plt.title('Total and Stunted Population Size : %s'%(label))
+    ax.legend([plot_total,plot_stunt],["Total","Stunted"])
+    plt.show()
