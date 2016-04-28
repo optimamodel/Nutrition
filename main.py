@@ -61,6 +61,8 @@ def makeBoxes(thisAgePopSize):
 
 
 
+plotData = []
+
 #------------------------------------------------------------------------    
 # DEFAULT RUN WITH NO CHANGES TO INTERVENTIONS
 
@@ -110,13 +112,20 @@ while 1:
         break
 infile.close()
 
-#plotting scripts assume numsteps is a multiple of 12 (integer years)
-output.getPopSizeByAgePlot(modelList, "test")
-output.getPopAndStuntedSizePlot(modelList, "test")
-output.getCumulativeDeathsByAgePlot(modelList, "test")
-output.getNumStuntedByAgePlot(modelList, "test")
-output.getStuntedPercent(modelList, "test")
 
+tag = "default"
+"""
+#plotting scripts assume numsteps is a multiple of 12 (integer years)
+output.getPopSizeByAgePlot(modelList, tag)
+output.getPopAndStuntedSizePlot(modelList, tag)
+output.getCumulativeDeathsByAgePlot(modelList, tag)
+output.getNumStuntedByAgePlot(modelList, tag)
+output.getStuntedPercent(modelList, tag)
+"""
+plotData.append({})
+plotData[0]["modelList"] = modelList
+plotData[0]["tag"] = tag
+plotData[0]["color"] = 'grey'
 
 #------------------------------------------------------------------------    
 # UPDATE PARAMS (NOT DATA) WITH INTERVENTIONS
@@ -142,24 +151,17 @@ model.setConstants(constants)
 
 #set the parameters in the model
 params = parametersCode.Params(spreadsheetData,constants,keyList)
-# --------------------------------------------------
-# Change parameters here
-## intervention:  make first 2 age groups exclusively breastfed 
-#for age in ['<1 month', '1-5 months']:
-#    for status in ["predominant", "partial", "none"]:
-#        params.breastfeedingDistribution[age][status] = 0
-#        params.breastfeedingDistribution[age]['exclusive'] = 1         
 model.setParams(params)
-# --------------------------------------------------
-#print "Updated interventions"
+
+# increase zinc coverage
 newCoverages={}
 newCoverages["Zinc supplementation"] = 0.5
 print "Update Zinc supplementation coverage to %g percent"%(newCoverages["Zinc supplementation"]*100.)
 model.updateCoverages(newCoverages)
-# -------------------------------------------------------------------------    
 
+
+# file to dump objects into at each time step
 pickleFilename = 'testZinc.pkl'
-#open file to dump objects into at each time step
 import pickle as pickle
 outfile = open(pickleFilename, 'wb')
 
@@ -180,13 +182,33 @@ while 1:
         break
 infile.close()
 
+tag = "increased Zinc"
+"""
 #plotting scripts assume numsteps is a multiple of 12 (integer years)
-output.getPopSizeByAgePlot(newModelList, "increased Zinc")
-output.getPopAndStuntedSizePlot(newModelList, "increased Zinc")
-output.getCumulativeDeathsByAgePlot(newModelList, "increased Zinc")
-output.getNumStuntedByAgePlot(newModelList, "increased Zinc")
-output.getStuntedPercent(newModelList, "increased Zinc")
+output.getPopSizeByAgePlot(newModelList, tag)
+output.getPopAndStuntedSizePlot(newModelList, tag)
+output.getCumulativeDeathsByAgePlot(newModelList, tag)
+output.getNumStuntedByAgePlot(newModelList, tag)
+output.getStuntedPercent(newModelList, tag)
+"""
 
+plotData.append({})
+plotData[1]["modelList"] = newModelList
+plotData[1]["tag"] = tag
+plotData[1]["color"] = 'blue'
+
+
+# --------------------------------------------------
+# Change parameters here
+## intervention:  make first 2 age groups exclusively breastfed 
+#for age in ['<1 month', '1-5 months']:
+#    for status in ["predominant", "partial", "none"]:
+#        params.breastfeedingDistribution[age][status] = 0
+#        params.breastfeedingDistribution[age]['exclusive'] = 1         
+
+#------------------------------------------------------------------------    
+
+output.getCombinedPlots(2,plotData)
 
 
 
