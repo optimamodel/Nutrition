@@ -14,7 +14,7 @@ class Constants:
         
         self.underlyingMortalities = {}
         self.probStuntedIfPrevStunted = {}
-        self.fracStuntedIfDiarrhoea = {}
+        self.fracStuntedIfDiarrhea = {}
         self.fracStuntedIfZinc = {}
         #self.baselineProbsBirthOutcome = {}  
         self.probsBirthOutcome = {}  
@@ -24,7 +24,7 @@ class Constants:
 
         self.getUnderlyingMortalities()
         self.getProbStuntingProgression()
-        self.getFracStuntingGivenDiarrhoea()
+        self.getFracStuntingGivenDiarrhea()
         self.getFracStuntingGivenZinc()
         #self.getBaselineProbsBirthOutcome()
         self.getBirthStuntingQuarticCoefficients()
@@ -153,33 +153,33 @@ class Constants:
 
 
 
-    # Calculate probability of stunting in current age-group given diarrhoea incidence
-    def getFracStuntingGivenDiarrhoea(self):
+    # Calculate probability of stunting in current age-group given diarrhea incidence
+    def getFracStuntingGivenDiarrhea(self):
         from numpy import sqrt 
         from math import pow
         numAgeGroups = len(self.model.listOfAgeCompartments)
         # probability of stunting progression
-        self.fracStuntedIfDiarrhoea["nodia"] = {}
-        self.fracStuntedIfDiarrhoea["dia"] = {}
+        self.fracStuntedIfDiarrhea["nodia"] = {}
+        self.fracStuntedIfDiarrhea["dia"] = {}
         for ageInd in range(0,numAgeGroups):
             ageName = self.ages[ageInd]
             thisAge = self.model.listOfAgeCompartments[ageInd]
-            Za = self.data.InciDiarrhoea[ageName]
+            Za = self.data.InciDiarrhea[ageName]
             # population odds ratio = AO (see Eqn 3.9)
-            RRnot = self.data.RRdiarrhoea[ageName]["none"]
-            AO = pow(self.data.ORdiarrhoea[ageName],RRnot*Za/thisAge.agingRate) # WARNING check OR
-            # instead have fraction of children of age a who are experiencing diarrhoea
-            fracDiarrhoea = 0.
+            RRnot = self.data.RRdiarrhea[ageName]["none"]
+            AO = pow(self.data.ORdiarrhea[ageName],RRnot*Za/thisAge.agingRate) # WARNING check OR
+            # instead have fraction of children of age a who are experiencing diarrhea
+            fracDiarrhea = 0.
             for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
-                RDa = self.data.RRdiarrhoea[ageName][breastfeedingCat]
+                RDa = self.data.RRdiarrhea[ageName][breastfeedingCat]
                 beta = 1. - (RRnot-RDa)/(RRnot) #(RRnot*Za-RDa*Za)/(RRnot*Za)
                 pab  = self.data.breastfeedingDistribution[ageName][breastfeedingCat]
-                fracDiarrhoea += beta * pab
+                fracDiarrhea += beta * pab
             # fraction stunted
             fracStuntedThisAge = thisAge.getStuntedFraction()
             # solve quadratic equation ax**2 + bx + c = 0
-            a = (1.-fracDiarrhoea) * (1.-AO)
-            b = (AO-1)*fracStuntedThisAge - AO*fracDiarrhoea - (1.-fracDiarrhoea)
+            a = (1.-fracDiarrhea) * (1.-AO)
+            b = (AO-1)*fracStuntedThisAge - AO*fracDiarrhea - (1.-fracDiarrhea)
             c = fracStuntedThisAge
             det = sqrt(b**2 - 4.*a*c)
             soln1 = (-b + det)/(2.*a)
@@ -187,15 +187,15 @@ class Constants:
             # not sure what to do if both or neither are solutions
             if(soln1>0.)and(soln1<1.): p0 = soln1
             if(soln2>0.)and(soln2<1.): p0 = soln2
-            self.fracStuntedIfDiarrhoea["nodia"][ageName] = p0
-            self.fracStuntedIfDiarrhoea["dia"][ageName]   = p0*AO/(1.-p0+AO*p0)
-            #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%((fracDiarrhoea*p0 + (1.-fracDiarrhoea)*p0*AO/(1.-p0+AO*p0)), fracStuntedThisAge)
+            self.fracStuntedIfDiarrhea["nodia"][ageName] = p0
+            self.fracStuntedIfDiarrhea["dia"][ageName]   = p0*AO/(1.-p0+AO*p0)
+            #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%((fracDiarrhea*p0 + (1.-fracDiarrhea)*p0*AO/(1.-p0+AO*p0)), fracStuntedThisAge)
 
 
 
 
 
-    # Calculate probability of stunting in current age-group given diarrhoea incidence
+    # Calculate probability of stunting in current age-group given diarrhea incidence
     def getFracStuntingGivenZinc(self):
         from numpy import sqrt 
         from math import pow
