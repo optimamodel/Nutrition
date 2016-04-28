@@ -23,9 +23,9 @@ class Params:
         self.RRBreastfeeding = data.RRBreastfeeding
         self.RRdeathByBirthOutcome = data.RRdeathByBirthOutcome
         self.ORstuntingProgression = data.ORstuntingProgression
-        self.InciDiarrhoea = data.InciDiarrhoea
-        self.RRdiarrhoea = data.RRdiarrhoea
-        self.ORdiarrhoea = data.ORdiarrhoea
+        self.InciDiarrhea = data.InciDiarrhea
+        self.RRdiarrhea = data.RRdiarrhea
+        self.ORdiarrhea = data.ORdiarrhea
         self.birthCircumstanceDist = data.birthCircumstanceDist
         self.timeBetweenBirthsDist = data.timeBetweenBirthsDist
         self.RRbirthOutcomeByAgeAndOrder = data.RRbirthOutcomeByAgeAndOrder
@@ -47,12 +47,12 @@ class Params:
             oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
             newProbStunting = newCoverage*probStuntingIfZinc + (1.-newCoverage)*probStuntingIfNoZinc
             reductionStunting = (oldProbStunting - newProbStunting)/oldProbStunting
-        #Diarrhoea
+        #Diarrhea
         reductionMortality={}
-        #reductionMortality["diarrhoea"]
+        #reductionMortality["diarrhea"]
         affectedFrac = 0.253 # take from data
         effectiveness = 0.50 # take from data
-        reductionMortality["diarrhoea"] = affectedFrac * effectiveness * (newCoverage - oldCoverage) / (1. - effectiveness*oldCoverage)
-        #self.InciDiarrhoea["12-23 months"] *= (1.-reduction)
-        return reductionStunting, reductionMortality["diarrhoea"]
+        reductionMortality["diarrhea"] = affectedFrac * effectiveness * (newCoverage - oldCoverage) / (1. - effectiveness*oldCoverage)
+        #self.InciDiarrhea["12-23 months"] *= (1.-reduction)
+        return reductionStunting, reductionMortality["diarrhea"]
         
