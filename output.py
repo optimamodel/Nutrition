@@ -255,7 +255,6 @@ def getStuntedPercent(modelList, label): # NOT WORKING YET
             yearAveNotStunted.append(np.average(countNotStuntedList[(year - 1) * 12 : (year * 12) - 1]))
             yearAveStuntedPerc.append(100.*np.average(countStuntedFracList[(year - 1) * 12 : (year * 12) - 1]))
             
-        #percentStunted[age] = map(truediv, yearAveStunted, yearAveNotStunted)    # this isn't the percentage stunted!
         percentStunted[age] = yearAveStuntedPerc
         
     yearList = [2017]
@@ -290,45 +289,74 @@ def getStuntedPercent(modelList, label): # NOT WORKING YET
 
 
 
-def getCombinedPlots(modelList1,tag1,modelList2,tag2):
+def getCombinedPlots(numRuns,data): #modelList1,tag1,modelList2,tag2):
     # set up
-    ageList = modelList[0].ages
-    numAges = len(ageList)
-    numMonths = len(modelList) 
-    # initialise
-    totalPopU5 = [0.]*numMonths
-    stuntPopU5 = [0.]*numMonths
-    totalPop = []
-    stuntPop = []
-    for age in range(0, numAges):
-        totalPop.append([])
-        stuntPop.append([])
-        m=0
-        for model in modelList:
-            total     = model.listOfAgeCompartments[age].getTotalPopulation()
-            stuntfrac = model.listOfAgeCompartments[age].getStuntedFraction()
-            totalPop[age].append(total)
-            stuntPop[age].append(total*stuntfrac)
-            totalPopU5[m] += total
-            stuntPopU5[m] += total*stuntfrac
-            m+=1
+    totalPopU5 = {}
+    stuntPopU5 = {}
+    for run in range(numRuns):
+        modelList = data[run]["modelList"]
+        tag       = data[run]["tag"]
+        ageList = modelList[0].ages
+        numAges = len(ageList)
+        numMonths = len(modelList) 
+        # initialise
+        totalPopU5[tag] = [0.]*numMonths
+        stuntPopU5[tag] = [0.]*numMonths
+        totalPop = []
+        stuntPop = []
+        for age in range(numAges):
+            totalPop.append([])
+            stuntPop.append([])
+            m=0
+            for model in modelList:
+                total     = model.listOfAgeCompartments[age].getTotalPopulation()
+                stuntfrac = model.listOfAgeCompartments[age].getStuntedFraction()
+                totalPop[age].append(total)
+                stuntPop[age].append(total*stuntfrac)
+                totalPopU5[tag][m] += total
+                stuntPopU5[tag][m] += total*stuntfrac
+                m+=1
 
+
+    stuntFracU5 = {}
+    for run in range(numRuns):
+        tag       = data[run]["tag"]
+        stuntFracU5[tag] = [0.]*numMonths
+        for m in range(numMonths):
+            stuntFracU5[tag][m] = stuntPopU5[tag][m] / totalPopU5[tag][m]
+
+
+    import numpy as np
+    import matplotlib.pyplot as plt
     numYears = int(len(modelList)/12)
     skip = 2
     yearList =  list(range(2016,2016+numYears+1,skip))#[2016]
     xTickList = list(range(0,12*(numYears+1),   skip*12)) # [0]
-
-    import numpy as np
-    import matplotlib.pyplot as plt
-    x = np.arange(len(modelList))
+    x = np.arange(numMonths)
 
     fig, ax = plt.subplots()
-#    plot_total = plt.fill_between(x,totalPopU5,stuntPopU5,color='blue')
-    plot_stunt = plt.fill_between(x, stuntPopU5, 0,    color='red')
     ax.set_xticks(xTickList)
     ax.set_xticklabels(yearList)
     ax.set_xlim([0,12*numYears])
-    plt.ylabel('population size')
-    plt.title('Total and Stunted Population Size : %s'%(label))
-    ax.legend([plot_total,plot_stunt],["Total","Stunted"])
+    plt.ylabel('Stunted population size')
+    #plt.title('Total and Stunted Population Size : %s'%(label))
+    #plot_total = plt.fill_between(x,totalPopU5,stuntPopU5,color='blue')
+    for run in range(numRuns):
+        tag       = data[run]["tag"]
+        color     = data[run]["color"]
+        plot_stunt = plt.fill_between(x, stuntPopU5[tag], 0, color=color)
+    #ax.legend([plot_total,plot_stunt],["Total","Stunted"])
+        #ax.legend([plot_total,plot_stunt],["Total","Stunted"])
+    plt.show()
+
+
+    fig, ax = plt.subplots()
+    ax.set_xticks(xTickList)
+    ax.set_xticklabels(yearList)
+    ax.set_xlim([0,12*numYears])
+    plt.ylabel('Stunted prevalence')
+    for run in range(numRuns):
+        tag       = data[run]["tag"]
+        color     = data[run]["color"]
+        plot_stunt = plt.fill_between(x, stuntFracU5[tag], 0, color=color)
     plt.show()
