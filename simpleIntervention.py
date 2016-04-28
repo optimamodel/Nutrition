@@ -56,4 +56,15 @@ output.getNumStuntedByAgePlot(zinc, "zinc")
 output.getStuntedPercent(default, "default")
 output.getStuntedPercent(zinc, "zinc")
 
-output.getCombinedPlots(default,"default",zinc,"zinc")
+
+
+plotData = []
+plotData.append({})
+plotData[0]["modelList"] = default
+plotData[0]["tag"] = "default"
+plotData[0]["color"] = 'grey'
+plotData.append({})
+plotData[1]["modelList"] = zinc
+plotData[1]["tag"] = "increased Zinc"
+plotData[1]["color"] = 'blue'
+output.getCombinedPlots(2,plotData)
