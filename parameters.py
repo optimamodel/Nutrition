@@ -23,7 +23,7 @@ class Params:
         self.RRBreastfeeding = data.RRBreastfeeding
         self.RRdeathByBirthOutcome = data.RRdeathByBirthOutcome
         self.ORstuntingProgression = data.ORstuntingProgression
-        self.InciDiarrhea = data.InciDiarrhea
+        self.incidenceDiarrhea = data.incidenceDiarrhea
         self.RRdiarrhea = data.RRdiarrhea
         self.ORdiarrhea = data.ORdiarrhea
         self.birthCircumstanceDist = data.birthCircumstanceDist
