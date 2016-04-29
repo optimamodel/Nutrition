@@ -230,8 +230,8 @@ class Model:
 
 
     def moveOneTimeStep(self):
-        self.updateMortalityRate()
-        self.applyMortality()
+        self.updateMortalityRate() #becasue interventions will change it.  Move into interventions?
+        self.applyMortality() 
         self.applyAging()
         self.applyBirths()
 

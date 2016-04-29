@@ -13,12 +13,6 @@ import parameters as parametersCode
 import output as output
 
 
-#key of combinations of stunting and wasting
-# normal - up to 1 SD less than mean
-# mild - between 1 and 2 SD less than mean
-# moderate - between 2 and 3 SD less than mean
-# high - more than 3 SD less than mean
-
 
 ages = ["<1 month","1-5 months","6-11 months","12-23 months","24-59 months"]
 birthOutcomes = ["Pre-term SGA","Pre-term AGA","Term SGA","Term AGA"]
@@ -30,8 +24,6 @@ keyList = [ages,birthOutcomes,wastingList,stuntingList,breastfeedingList]
 # read the data from the spreadsheet
 spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx',keyList)
 
-#----------------------   MAKE ALL THE BOXES     ---------------------
-
 # make the fertile women
 mothers = modelCode.FertileWomen(0.9, 2.e6)
 
@@ -40,25 +32,36 @@ agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging
 numAgeGroups = len(ageRangeList)
 agePopSizes  = [2.e5, 4.e5, 7.e5, 1.44e6, 44.e5]
 
-#timespan = 5.0 # [years] running the model for this long
 timestep = 1./12. # 1 month #timespan / float(numsteps)
-numsteps = 168  # number of timesteps; determined to produce a sensible timestep
+numsteps = 36 #168  # number of timesteps; determined to produce a sensible timestep
 timespan = timestep * float(numsteps)
 
 
-# allBoxes is a dictionary rather than a list to provide to AgeCompartment
-def makeBoxes(thisAgePopSize):
+#-------------------------------------------------------------------------
+def makeBoxes(thisAgePopSize, ageRange):
     allBoxes = {}
-    for stuntingCat in ["normal", "mild", "moderate", "high"]:
+    for stuntingCat in stuntingList:
         allBoxes[stuntingCat] = {} 
-        for wastingCat in ["normal", "mild", "moderate", "high"]:
+        for wastingCat in wastingList:
             allBoxes[stuntingCat][wastingCat] = {}
-            for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+            for breastfeedingCat in breastfeedingList:
                 thisPopSize = thisAgePopSize * spreadsheetData.stuntingDistribution[ageRange][stuntingCat] * spreadsheetData.wastingDistribution[ageRange][wastingCat] * spreadsheetData.breastfeedingDistribution[ageRange][breastfeedingCat]   # Assuming independent
                 thisMortalityRate = spreadsheetData.totalMortality[ageRange] # WARNING need to distribute appropriately
                 allBoxes[stuntingCat][wastingCat][breastfeedingCat] =  modelCode.Box(stuntingCat, wastingCat, breastfeedingCat, thisPopSize, thisMortalityRate)
     return allBoxes
 
+def makeAgeCompartements(ageRangeList, agingRateList, agePopSizes, keyList):
+    numAgeGroups = len(ageRangeList)
+    listOfAgeCompartments = []
+    for age in range(numAgeGroups): # Loop over all age-groups
+        ageRange  = ageRangeList[age]
+        agingRate = agingRateList[age]
+        agePopSize = agePopSizes[age]
+        thisAgeBoxes = makeBoxes(agePopSize, ageRange)
+        compartment = modelCode.AgeCompartment(ageRange, thisAgeBoxes, agingRate, keyList)
+        listOfAgeCompartments.append(compartment)
+    return listOfAgeCompartments         
+#------------------------------------------------------------------------    
 
 
 plotData = []
@@ -66,26 +69,11 @@ plotData = []
 #------------------------------------------------------------------------    
 # DEFAULT RUN WITH NO CHANGES TO INTERVENTIONS
 
-# Loop over all age-groups
-listOfAgeCompartments = []
-for age in range(numAgeGroups): 
-    ageRange  = ageRangeList[age]
-    agingRate = agingRateList[age]
-    agePopSize = agePopSizes[age]
-    thisAgeBoxes = makeBoxes(agePopSize)
-    compartment = modelCode.AgeCompartment(ageRange, thisAgeBoxes, agingRate, keyList)
-    listOfAgeCompartments.append(compartment)
-
-# make a model object
+# DEFAULT RUN WITH NO CHANGES TO INTERVENTIONS
+listOfAgeCompartments = makeAgeCompartements(ageRangeList, agingRateList, agePopSizes, keyList)
 model = modelCode.Model("Main model", mothers, listOfAgeCompartments, keyList, timestep)
-
-# make a constants object
-# (initialisation sets all constant values based on inputdata and inputmodel) 
 constants = constantsCode.Constants(spreadsheetData, model, keyList)
-#set the constants in the model
 model.setConstants(constants)
-
-#set the parameters in the model
 params = parametersCode.Params(spreadsheetData,constants,keyList)
 model.setParams(params)
 
@@ -96,7 +84,7 @@ import pickle as pickle
 outfile = open(pickleFilename, 'wb')
 
 for t in range(numsteps):
-    print t
+    #print t
     model.moveOneTimeStep()
     pickle.dump(model, outfile)
     
@@ -128,30 +116,13 @@ plotData[0]["tag"] = tag
 plotData[0]["color"] = 'grey'
 
 #------------------------------------------------------------------------    
-# UPDATE PARAMS (NOT DATA) WITH INTERVENTIONS
-
-# Loop over all age-groups
-listOfAgeCompartments = []
-for age in range(numAgeGroups): 
-    ageRange  = ageRangeList[age]
-    agingRate = agingRateList[age]
-    agePopSize = agePopSizes[age]
-    thisAgeBoxes = makeBoxes(agePopSize)
-    compartment = modelCode.AgeCompartment(ageRange, thisAgeBoxes, agingRate, keyList)
-    listOfAgeCompartments.append(compartment)
-
-# make a model object
-model = modelCode.Model("Zinc model", mothers, listOfAgeCompartments, keyList, timestep)
-
-# make a constants object
-# (initialisation sets all constant values based on inputdata and inputmodel) 
-constants = constantsCode.Constants(spreadsheetData, model, keyList)
-#set the constants in the model
-model.setConstants(constants)
-
-#set the parameters in the model
+# INTERVENTION
+listOfAgeCompartments = makeAgeCompartements(ageRangeList, agingRateList, agePopSizes, keyList)
+modelZ = modelCode.Model("Zinc model", mothers, listOfAgeCompartments, keyList, timestep)
+constants = constantsCode.Constants(spreadsheetData, modelZ, keyList)
+modelZ.setConstants(constants)
 params = parametersCode.Params(spreadsheetData,constants,keyList)
-model.setParams(params)
+modelZ.setParams(params)
 
 # increase zinc coverage
 newCoverages={}
@@ -160,14 +131,16 @@ print "Update Zinc supplementation coverage to %g percent"%(newCoverages["Zinc s
 model.updateCoverages(newCoverages)
 
 
+
+
 # file to dump objects into at each time step
 pickleFilename = 'testZinc.pkl'
 import pickle as pickle
 outfile = open(pickleFilename, 'wb')
 
 for t in range(numsteps):
-    print t
-    model.moveOneTimeStep()
+    #print t
+    modelZ.moveOneTimeStep()
     pickle.dump(model, outfile)
     
 outfile.close()    
@@ -197,16 +170,6 @@ plotData[1]["modelList"] = newModelList
 plotData[1]["tag"] = tag
 plotData[1]["color"] = 'blue'
 
-
-# --------------------------------------------------
-# Change parameters here
-## intervention:  make first 2 age groups exclusively breastfed 
-#for age in ['<1 month', '1-5 months']:
-#    for status in ["predominant", "partial", "none"]:
-#        params.breastfeedingDistribution[age][status] = 0
-#        params.breastfeedingDistribution[age]['exclusive'] = 1         
-
-#------------------------------------------------------------------------    
 
 output.getCombinedPlots(2,plotData)
 

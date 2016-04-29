@@ -360,3 +360,50 @@ def getCombinedPlots(numRuns,data): #modelList1,tag1,modelList2,tag2):
         color     = data[run]["color"]
         plot_stunt = plt.fill_between(x, stuntFracU5[tag], 0, color=color)
     plt.show()
+
+
+def getSimpleBarFromDictionary(dictionary, label):
+    import numpy as np
+    import matplotlib.pyplot as plt
+    X = np.arange(len(dictionary))
+    plt.bar(X, dictionary.values(), align='center', width=0.5)
+    plt.xticks(X, dictionary.keys())
+    ymax = 1
+    plt.ylim(0, ymax)
+    plt.title(label)
+    plt.show()
+    
+def getStuntingStatusesGivenAge(modelList, age, lable):
+    import matplotlib.pyplot as plt
+    fig, ax = plt.subplots()
+    numYears = int(len(modelList)/12) 
+    yearList = list(range(2016, 2016 + numYears + 1))
+    xticklist = range(0, len(modelList) + 12, 12)
+    ax.set_xticks(xticklist)
+    ax.set_xticklabels(yearList)
+    
+    high = []
+    moderate = []
+    mild = []
+    normal = []
+    
+    for model in modelList:
+        high.append(model.params.stuntingDistribution[age]['high'])
+        moderate.append(model.params.stuntingDistribution[age]['moderate'])
+        mild.append(model.params.stuntingDistribution[age]['mild'])
+        normal.append(model.params.stuntingDistribution[age]['normal'])
+    
+    ax.plot(high, label = 'high')
+    ax.plot(moderate, label = 'moderate')
+    ax.plot(mild, label = 'mild')
+    ax.plot(normal, label = 'normal')
+    plt.legend()
+    plt.title(age + ":  " + lable)
+    plt.ylim(0, 1)
+    plt.show()
+    
+    
+    
+    
+    
+    
