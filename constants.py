@@ -41,9 +41,9 @@ class Constants:
             RHS[age] = {}
             for cause in self.data.causesOfDeath:
                 RHS[age][cause] = 0.
-                for stuntingCat in ["normal", "mild", "moderate", "high"]:
-                    for wastingCat in ["normal", "mild", "moderate", "high"]:
-                        for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+                for stuntingCat in self.stuntingList:
+                    for wastingCat in self.wastingList:
+                        for breastfeedingCat in self.breastfeedingList:
                             t1 = self.data.stuntingDistribution[age][stuntingCat]
                             t2 = self.data.wastingDistribution[age][wastingCat] 
                             t3 = self.data.breastfeedingDistribution[age][breastfeedingCat]
@@ -55,7 +55,7 @@ class Constants:
         age = "<1 month"
         for cause in self.data.causesOfDeath:
             RHS[age][cause] = 0.
-            for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+            for breastfeedingCat in self.breastfeedingList:
                 Pbf = self.data.breastfeedingDistribution[age][breastfeedingCat]
                 RRbf = self.data.RRBreastfeeding[age][cause][breastfeedingCat]
                 for birthoutcome in self.birthOutcomes:
@@ -66,9 +66,9 @@ class Constants:
         AgePop = []
         for ageInd in range(len(self.ages)):
             AgePop.append(0.)
-            for stuntingCat in ["normal", "mild", "moderate", "high"]:
-                for wastingCat in ["normal", "mild", "moderate", "high"]:
-                    for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+            for stuntingCat in self.stuntingList:
+                for wastingCat in self.wastingList:
+                    for breastfeedingCat in self.breastfeedingList:
                         AgePop[ageInd] += self.model.listOfAgeCompartments[ageInd].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
         # Calculated total mortality by age (corrected for units)
         MortalityCorrected = {}
@@ -127,8 +127,8 @@ class Constants:
             numStuntedYounger = 0.
             numNotStuntedThisAge = 0.
             numNotStuntedYounger = 0.
-            for wastingCat in ["normal", "mild", "moderate", "high"]:
-                for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+            for wastingCat in self.wastingList:
+                for breastfeedingCat in self.breastfeedingList:
                     for stuntingCat in ["moderate","high"]:
                         numStuntedThisAge +=  thisAge.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
                         numStuntedYounger +=  younger.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
@@ -139,7 +139,7 @@ class Constants:
             fracStuntedYounger = numStuntedYounger / (numStuntedYounger + numNotStuntedYounger + eps)
             # solve quadratic equation ax**2 + bx + c = 0
             a = (1.-fracStuntedYounger) * (1.-OddsRatio)
-            b = (OddsRatio-1)*fracStuntedThisAge - OddsRatio*fracStuntedYounger - (1.-fracStuntedYounger)
+            b = (OddsRatio-1.)*fracStuntedThisAge - OddsRatio*fracStuntedYounger - (1.-fracStuntedYounger)
             c = fracStuntedThisAge
             det = sqrt(b**2 - 4.*a*c)
             soln1 = (-b + det)/(2.*a)
@@ -164,13 +164,18 @@ class Constants:
         for ageInd in range(0,numAgeGroups):
             ageName = self.ages[ageInd]
             thisAge = self.model.listOfAgeCompartments[ageInd]
-            Za = self.data.InciDiarrhea[ageName]
+            sum = 0.
+            for breastfeedingCat in self.breastfeedingList:
+                RDa = self.data.RRdiarrhea[ageName][breastfeedingCat]
+                pab  = self.data.breastfeedingDistribution[ageName][breastfeedingCat]
+                sum += RDa * pab
+            Za = self.data.incidenceDiarrhea[ageName] / sum
             # population odds ratio = AO (see Eqn 3.9)
             RRnot = self.data.RRdiarrhea[ageName]["none"]
-            AO = pow(self.data.ORdiarrhea[ageName],RRnot*Za/thisAge.agingRate) # WARNING check OR
+            AO = pow(self.data.ORdiarrhea[ageName],RRnot*Za) #/thisAge.agingRate)
             # instead have fraction of children of age a who are experiencing diarrhea
             fracDiarrhea = 0.
-            for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+            for breastfeedingCat in self.breastfeedingList:
                 RDa = self.data.RRdiarrhea[ageName][breastfeedingCat]
                 beta = 1. - (RRnot-RDa)/(RRnot) #(RRnot*Za-RDa*Za)/(RRnot*Za)
                 pab  = self.data.breastfeedingDistribution[ageName][breastfeedingCat]
@@ -179,7 +184,7 @@ class Constants:
             fracStuntedThisAge = thisAge.getStuntedFraction()
             # solve quadratic equation ax**2 + bx + c = 0
             a = (1.-fracDiarrhea) * (1.-AO)
-            b = (AO-1)*fracStuntedThisAge - AO*fracDiarrhea - (1.-fracDiarrhea)
+            b = (AO-1.)*fracStuntedThisAge - AO*fracDiarrhea - (1.-fracDiarrhea)
             c = fracStuntedThisAge
             det = sqrt(b**2 - 4.*a*c)
             soln1 = (-b + det)/(2.*a)
@@ -189,7 +194,7 @@ class Constants:
             if(soln2>0.)and(soln2<1.): p0 = soln2
             self.fracStuntedIfDiarrhea["nodia"][ageName] = p0
             self.fracStuntedIfDiarrhea["dia"][ageName]   = p0*AO/(1.-p0+AO*p0)
-            #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%((fracDiarrhea*p0 + (1.-fracDiarrhea)*p0*AO/(1.-p0+AO*p0)), fracStuntedThisAge)
+            print "Test: F*p1 * (1-F)*p2 = %g = %g?"%((fracDiarrhea*p0 + (1.-fracDiarrhea)*p0*AO/(1.-p0+AO*p0)), fracStuntedThisAge)
 
 
 
@@ -282,8 +287,8 @@ class Constants:
         FracBO[0] = 1. - sum(FracBO[1:3])
         numNewborns        = 0.
         numNewbornsStunted = 0.
-        for wastingCat in ["normal", "mild", "moderate", "high"]:
-            for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+        for wastingCat in self.wastingList:
+            for breastfeedingCat in self.breastfeedingList:
                 for stuntingCat in ["normal","mild"]:
                     numNewborns +=self.model.listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
                 for stuntingCat in ["moderate","high"]:
