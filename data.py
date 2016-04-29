@@ -6,7 +6,7 @@ Created on Fri Feb 26 15:57:07 2016
 """
 
 class Data:
-    def __init__(self, ages, causesOfDeath, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, InciDiarrhea, RRdiarrhea, ORdiarrhea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting, ORstuntingZinc, InterventionCoveragesCurrent):
+    def __init__(self, ages, causesOfDeath, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidenceDiarrhea, RRdiarrhea, ORdiarrhea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting, ORstuntingZinc, InterventionCoveragesCurrent):
         self.ages = ages
         self.causesOfDeath = causesOfDeath
         self.totalMortality = totalMortality
@@ -19,7 +19,7 @@ class Data:
         self.RRBreastfeeding = RRBreastfeeding
         self.RRdeathByBirthOutcome = RRdeathByBirthOutcome
         self.ORstuntingProgression = ORstuntingProgression
-        self.InciDiarrhea = InciDiarrhea
+        self.incidenceDiarrhea = incidenceDiarrhea
         self.RRdiarrhea = RRdiarrhea
         self.ORdiarrhea = ORdiarrhea
         self.birthCircumstanceDist = birthCircumstanceDist
@@ -251,9 +251,9 @@ def getDataFromSpreadsheet(fileName,keyList):
 
     # READ Incidence Diarrhea SHEET
     # gets you:
-    # - InciDiarrhea
+    # - incidenceDiarrhea
     df = pandas.read_excel(Location, sheetname = 'Incidence diarrhoea')
-    InciDiarrhea = dict(zip(list(df.columns.values), df.iloc[0]))    
+    incidenceDiarrhea = dict(zip(list(df.columns.values), df.iloc[0]))    
 
     # READ RR diarrhea SHEET
     # gets you:
@@ -317,7 +317,7 @@ def getDataFromSpreadsheet(fileName,keyList):
 
 
             
-    spreadsheetData = Data(ages, causesOfDeath, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, InciDiarrhea, RRdiarrhea, ORdiarrhea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting, ORstuntingZinc, InterventionCoveragesCurrent)
+    spreadsheetData = Data(ages, causesOfDeath, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidenceDiarrhea, RRdiarrhea, ORdiarrhea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting, ORstuntingZinc, InterventionCoveragesCurrent)
 
     return spreadsheetData        
                   
