@@ -33,7 +33,7 @@ numAgeGroups = len(ageRangeList)
 agePopSizes  = [2.e5, 4.e5, 7.e5, 1.44e6, 44.e5]
 
 timestep = 1./12. # 1 month #timespan / float(numsteps)
-numsteps = 36 #168  # number of timesteps; determined to produce a sensible timestep
+numsteps = 168  # number of timesteps; determined to produce a sensible timestep
 timespan = timestep * float(numsteps)
 
 
@@ -126,7 +126,7 @@ modelZ.setParams(params)
 
 # increase zinc coverage
 newCoverages={}
-newCoverages["Zinc supplementation"] = 0.5
+newCoverages["Zinc supplementation"] = 0.3
 print "Update Zinc supplementation coverage to %g percent"%(newCoverages["Zinc supplementation"]*100.)
 modelZ.updateCoverages(newCoverages)
 
