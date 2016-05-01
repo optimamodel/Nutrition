@@ -128,7 +128,7 @@ modelZ.setParams(params)
 newCoverages={}
 newCoverages["Zinc supplementation"] = 0.5
 print "Update Zinc supplementation coverage to %g percent"%(newCoverages["Zinc supplementation"]*100.)
-model.updateCoverages(newCoverages)
+modelZ.updateCoverages(newCoverages)
 
 
 
@@ -141,7 +141,7 @@ outfile = open(pickleFilename, 'wb')
 for t in range(numsteps):
     #print t
     modelZ.moveOneTimeStep()
-    pickle.dump(model, outfile)
+    pickle.dump(modelZ, outfile)
     
 outfile.close()    
 

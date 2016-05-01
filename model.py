@@ -80,13 +80,10 @@ class Model:
         MortalityUpdate={}
         for cause in self.params.causesOfDeath:
             MortalityUpdate[cause] = 1.
-        StuntingUpdate=1.
         # Zinc
         redStunting, redDiarrhea = self.params.increaseCoverageOfZinc(newCoverage["Zinc supplementation"])
-        print "Reduction in Stunting due to Zinc = %g"%(redStunting)
         print "Reduction in Diarrhea mortality = "
         print redDiarrhea
-        StuntingUpdate *= 1.-redStunting
         #for cause in self.params.causesOfDeath:
         MortalityUpdate["Diarrhea"] *= 1.-redDiarrhea
         # Repeat for all interventions
@@ -96,7 +93,7 @@ class Model:
         for ageGroup in self.listOfAgeCompartments:
             ageName = ageGroup.name
             oldProbStunting = self.params.stuntingDistribution[ageName]["high"] + self.params.stuntingDistribution[ageName]["moderate"]
-            newProbStunting = oldProbStunting * StuntingUpdate
+            newProbStunting = oldProbStunting * (1. - redStunting[ageName])
             self.params.stuntingDistribution[ageName] = self.helper.restratify(newProbStunting)
             totalPop = ageGroup.getTotalPopulation()
             ageGroup.distribute(self.params.stuntingDistribution,self.params.wastingDistribution,self.params.breastfeedingDistribution,totalPop)

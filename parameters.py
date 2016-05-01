@@ -41,12 +41,13 @@ class Params:
     def increaseCoverageOfZinc(self,newCoverage):
         oldCoverage = self.InterventionCoverages["Zinc supplementation"]
         # calculate reduction in stunted fraction
+        reductionStunting = {}
         for ageName in self.ages:
             probStuntingIfZinc = self.constants.fracStuntedIfZinc["zinc"][ageName]
             probStuntingIfNoZinc = self.constants.fracStuntedIfZinc["nozinc"][ageName]
             oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
             newProbStunting = newCoverage*probStuntingIfZinc + (1.-newCoverage)*probStuntingIfNoZinc
-            reductionStunting = (oldProbStunting - newProbStunting)/oldProbStunting
+            reductionStunting[ageName] = (oldProbStunting - newProbStunting)/oldProbStunting
         #Diarrhea
         reductionMortality={}
         #reductionMortality["diarrhea"]
