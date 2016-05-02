@@ -133,6 +133,16 @@ class Model:
                 self.constants.underlyingMortalities[ageName][cause] *= MortalityUpdate[ageName][cause]
 
 
+    def updateCoverages2(self,newCoverage):
+        # update mortalities
+        mortalityUpdate = self.params.getReductionMortality(newCoverage)
+        for ageGroup in self.listOfAgeCompartments:
+            ageName = ageGroup.name
+            for cause in self.params.causesOfDeath:
+                self.constants.underlyingMortalities[ageName][cause] *= mortalityUpdate[ageName][cause]        
+
+
+
         
     def updateMortalityRate(self):
         # Newborns first

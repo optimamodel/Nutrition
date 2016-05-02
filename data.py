@@ -6,7 +6,7 @@ Created on Fri Feb 26 15:57:07 2016
 """
 
 class Data:
-    def __init__(self, ages, causesOfDeath, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidenceDiarrhea, RRdiarrhea, ORdiarrhea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting, ORstuntingZinc, InterventionCoveragesCurrent):
+    def __init__(self, ages, causesOfDeath, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidenceDiarrhea, RRdiarrhea, ORdiarrhea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting, ORstuntingZinc, InterventionCoveragesCurrent, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness):
         self.ages = ages
         self.causesOfDeath = causesOfDeath
         self.totalMortality = totalMortality
@@ -30,6 +30,9 @@ class Data:
         self.ORBirthOutcomeStunting = ORBirthOutcomeStunting
         self.ORstuntingZinc = ORstuntingZinc
         self.InterventionCoveragesCurrent = InterventionCoveragesCurrent
+        self.interventionAffectedFraction = interventionAffectedFraction
+        self.interventionMortalityEffectiveness = interventionMortalityEffectiveness
+        self.interventionIncidenceEffectiveness = interventionIncidenceEffectiveness
     
 
     
@@ -306,18 +309,72 @@ def getDataFromSpreadsheet(fileName,keyList):
     #  - InterventionCoveragesCurrent
 
     #get list of causesOfDeath
-    df = pandas.read_excel(Location, sheetname = 'Intervention coverages') #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'Interventions coverages') #read this way for this task
     InterventionList = list(df['Intervention'])
     #get the nested list of causeOfDeathDist
-    df = pandas.read_excel(Location, sheetname = 'Intervention coverages', index_col = 'Intervention') #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'Interventions coverages', index_col = 'Intervention') #read this way for this task
     InterventionCoveragesCurrent = {}
     for intervention in InterventionList:
         InterventionCoveragesCurrent[intervention] = df.loc[intervention, "pre-2016"]
 
+    # READ Interventions affected fraction SHEET
+    # gets you:
+    # - interventionAffectedFraction
+    #get the list of interventions
+    df = pandas.read_excel(Location, sheetname = 'Interventions affected fraction', index_col = [0]) #read this way for this task
+    mylist = list(df.index.values)
+    myset = set(mylist)
+    listOfInterventions = list(myset)
+    #do the rest
+    df = pandas.read_excel(Location, sheetname = 'Interventions affected fraction', index_col = [0, 1]) #read this way for this task
+    interventionAffectedFraction = {}
+    for intervention in listOfInterventions:
+        interventionAffectedFraction[intervention] = {}
+        for age in ages:
+            interventionAffectedFraction[intervention][age] = {}
+            for cause in ['Diarrhea', 'Pneumonia']:    
+                interventionAffectedFraction[intervention][age][cause] = df.loc[intervention][age][cause]
+                
+    # READ Interventions mortality effectiveness SHEET
+    # gets you:
+    # - interventionMortalityEffectiveness
+    #get the list of interventions
+    df = pandas.read_excel(Location, sheetname = 'Interventions mortality eff', index_col = [0]) #read this way for this task
+    mylist = list(df.index.values)
+    myset = set(mylist)
+    listOfInterventions = list(myset)
+    #do the rest
+    df = pandas.read_excel(Location, sheetname = 'Interventions mortality eff', index_col = [0, 1]) #read this way for this task
+    interventionMortalityEffectiveness = {}
+    for intervention in listOfInterventions:
+        interventionMortalityEffectiveness[intervention] = {}
+        for age in ages:
+            interventionMortalityEffectiveness[intervention][age] = {}
+            for cause in ['Diarrhea', 'Pneumonia']:    
+                interventionMortalityEffectiveness[intervention][age][cause] = df.loc[intervention][age][cause]            
+
+
+    # READ Interventions incidence effectiveness SHEET
+    # gets you:
+    # - interventionIncidenceEffectiveness
+    #get the list of interventions
+    df = pandas.read_excel(Location, sheetname = 'Interventions incidence eff', index_col = [0]) #read this way for this task
+    mylist = list(df.index.values)
+    myset = set(mylist)
+    listOfInterventions = list(myset)
+    #do the rest
+    df = pandas.read_excel(Location, sheetname = 'Interventions incidence eff', index_col = [0, 1]) #read this way for this task
+    interventionIncidenceEffectiveness = {}
+    for intervention in listOfInterventions:
+        interventionIncidenceEffectiveness[intervention] = {}
+        for age in ages:
+            interventionIncidenceEffectiveness[intervention][age] = {}
+            for cause in ['Diarrhea', 'Pneumonia']:    
+                interventionIncidenceEffectiveness[intervention][age][cause] = df.loc[intervention][age][cause]            
 
 
             
-    spreadsheetData = Data(ages, causesOfDeath, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidenceDiarrhea, RRdiarrhea, ORdiarrhea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting, ORstuntingZinc, InterventionCoveragesCurrent)
+    spreadsheetData = Data(ages, causesOfDeath, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidenceDiarrhea, RRdiarrhea, ORdiarrhea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting, ORstuntingZinc, InterventionCoveragesCurrent, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness)
 
     return spreadsheetData        
                   

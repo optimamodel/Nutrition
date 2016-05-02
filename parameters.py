@@ -34,6 +34,8 @@ class Params:
         self.birthOutcomeDist = data.birthOutcomeDist
         self.ORstuntingZinc = data.ORstuntingZinc
         self.InterventionCoverages = data.InterventionCoveragesCurrent
+        self.interventionMortalityEffectiveness = data.interventionMortalityEffectiveness
+        self.interventionAffectedFraction = data.interventionAffectedFraction
     
 
 # Add all functions for updating parameters due to interventions here....
@@ -75,4 +77,33 @@ class Params:
             self.incidenceDiarrhea[ageName] *= 1.-reduction
         # -------------------------
         return reductionStunting, reductionMortality
+        
+        
+    def getReductionMortality(self, newCoverage):
+        reductionMortality={}
+        for ageName in self.ages:
+            reductionMortality[ageName]={}
+            for cause in self.causesOfDeath:
+                reductionMortality[ageName][cause]=1.
+        causeList = ((self.interventionMortalityEffectiveness.values()[0]).values()[0]).keys()        
+        for ageName in self.ages:
+            for intervention in self.interventionMortalityEffectiveness.keys():
+                for cause in causeList:
+                    affectedFrac = self.interventionAffectedFraction[intervention][ageName][cause]
+                    effectiveness = self.interventionMortalityEffectiveness[intervention][ageName][cause]
+                    newCoverageVal = newCoverage[intervention]
+                    oldCoverage = self.InterventionCoverages[intervention]
+                    reduction = affectedFrac * effectiveness * (newCoverageVal - oldCoverage) / (1. - effectiveness*oldCoverage)
+                    reductionMortality[ageName][cause] *= 1. - reduction
+        return reductionMortality            
+        
+        
+    def geReductionStunting(self, newCoverage):
+        
+        return reductionStunting        
+            
+            
+                        
+
+        
         
