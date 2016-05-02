@@ -45,8 +45,9 @@ class AgeCompartment:
         NumberTotal = self.getTotalPopulation()
         return NumberStunted/NumberTotal
 
-    def distribute(self, stuntingDist, wastingDist, breastfeedingDist, totalPop):
+    def distribute(self, stuntingDist, wastingDist, breastfeedingDist):
         ageName = self.name
+        totalPop = self.getTotalPopulation()
         for stuntingCat in self.stuntingList:
             for wastingCat in self.wastingList:
                 for breastfeedingCat in self.breastfeedingList:
@@ -134,14 +135,25 @@ class Model:
 
 
     def updateCoverages2(self,newCoverage):
-        # update mortalities
-        mortalityUpdate = self.params.getReductionMortality(newCoverage)
+        #newCoverage is a dictionary of coverages by intervention        
+        
+        # get combined reductions from all interventions
+        mortalityReduction = self.params.getMortalityReduction(newCoverage)
+        stuntingReduction = self.params.getStuntingReduction(newCoverage)
+        
+        #apply reductions to each age group
         for ageGroup in self.listOfAgeCompartments:
             ageName = ageGroup.name
+
+            #update mortality            
             for cause in self.params.causesOfDeath:
-                self.constants.underlyingMortalities[ageName][cause] *= mortalityUpdate[ageName][cause]        
-
-
+                self.constants.underlyingMortalities[ageName][cause] *= mortalityReduction[ageName][cause]        
+            
+            #update stunting    
+            oldProbStunting = ageGroup.getStuntedFraction()
+            newProbStunting = oldProbStunting * stuntingReduction[ageName]
+            self.params.stuntingDistribution[ageName] = self.helper.restratify(newProbStunting)
+            ageGroup.distribute(self.params.stuntingDistribution,self.params.wastingDistribution,self.params.breastfeedingDistribution)
 
         
     def updateMortalityRate(self):

@@ -44,30 +44,30 @@ class Params:
         oldCoverage = self.InterventionCoverages["Zinc supplementation"]
         # -------------------------
         # calculate reduction in stunted fraction
-        reductionStunting = {}
+        stuntingReduction = {}
         for ageName in self.ages:
             probStuntingIfZinc = self.constants.fracStuntedIfZinc["zinc"][ageName]
             probStuntingIfNoZinc = self.constants.fracStuntedIfZinc["nozinc"][ageName]
             oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
             newProbStunting = newCoverage*probStuntingIfZinc + (1.-newCoverage)*probStuntingIfNoZinc
-            reductionStunting[ageName] = (oldProbStunting - newProbStunting)/oldProbStunting
+            stuntingReduction[ageName] = (oldProbStunting - newProbStunting)/oldProbStunting
         # -------------------------
         # Mortality
-        reductionMortality={}
+        mortalityReduction={}
         for ageName in self.ages:
-            reductionMortality[ageName]={}
+            mortalityReduction[ageName]={}
             for cause in self.causesOfDeath:
-                reductionMortality[ageName][cause]=0.
+                mortalityReduction[ageName][cause]=0.
         # Diarrhea
         for ageName in ["12-23 months","24-59 months"]:
             affectedFrac = 0.253 # take from data
             effectiveness = 0.5 # take from data
-            reductionMortality[ageName]["Diarrhea"] = affectedFrac * effectiveness * (newCoverage - oldCoverage) / (1. - effectiveness*oldCoverage)
+            mortalityReduction[ageName]["Diarrhea"] = affectedFrac * effectiveness * (newCoverage - oldCoverage) / (1. - effectiveness*oldCoverage)
         # Pneumonia
         for ageName in ["12-23 months","24-59 months"]:
             affectedFrac = 0.253 # take from data
             effectiveness = 0.5 # take from data
-            reductionMortality[ageName]["Pneumonia"] = affectedFrac * effectiveness * (newCoverage - oldCoverage) / (1. - effectiveness*oldCoverage)
+            mortalityReduction[ageName]["Pneumonia"] = affectedFrac * effectiveness * (newCoverage - oldCoverage) / (1. - effectiveness*oldCoverage)
         # -------------------------
         # Incidence
         for ageName in ["12-23 months","24-59 months"]:
@@ -76,15 +76,15 @@ class Params:
             reduction = affectedFrac * effectiveness * (newCoverage - oldCoverage) / (1. - effectiveness*oldCoverage)
             self.incidenceDiarrhea[ageName] *= 1.-reduction
         # -------------------------
-        return reductionStunting, reductionMortality
+        return stuntingReduction, mortalityReduction
         
         
-    def getReductionMortality(self, newCoverage):
-        reductionMortality={}
+    def getMortalityReduction(self, newCoverage):
+        mortalityReduction={}
         for ageName in self.ages:
-            reductionMortality[ageName]={}
+            mortalityReduction[ageName]={}
             for cause in self.causesOfDeath:
-                reductionMortality[ageName][cause]=1.
+                mortalityReduction[ageName][cause]=1.
         causeList = ((self.interventionMortalityEffectiveness.values()[0]).values()[0]).keys()        
         for ageName in self.ages:
             for intervention in self.interventionMortalityEffectiveness.keys():
@@ -94,13 +94,27 @@ class Params:
                     newCoverageVal = newCoverage[intervention]
                     oldCoverage = self.InterventionCoverages[intervention]
                     reduction = affectedFrac * effectiveness * (newCoverageVal - oldCoverage) / (1. - effectiveness*oldCoverage)
-                    reductionMortality[ageName][cause] *= 1. - reduction
-        return reductionMortality            
+                    mortalityReduction[ageName][cause] *= 1. - reduction
+        return mortalityReduction            
         
         
-    def geReductionStunting(self, newCoverage):
-        
-        return reductionStunting        
+    def getStuntingReduction(self, newCoverage):
+        stuntingReduction = {}
+        for ageName in self.ages:
+            stuntingReduction[ageName] = 1
+            oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
+            for intervention in self.newCoverage.keys():            
+                if "zinc" or "Zinc" in intervention: 
+                    probStuntingIfZinc = self.constants.fracStuntedIfZinc["zinc"][ageName]
+                    probStuntingIfNoZinc = self.constants.fracStuntedIfZinc["nozinc"][ageName]
+                    newProbStunting = newCoverage[intervention]*probStuntingIfZinc + (1.-newCoverage[intervention])*probStuntingIfNoZinc
+                    reduction = (oldProbStunting - newProbStunting)/oldProbStunting
+                    
+                else:      
+                    reduction = 0
+                                 
+                stuntingReduction[ageName] *= 1. - reduction    
+        return stuntingReduction        
             
             
                         
