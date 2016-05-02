@@ -130,7 +130,7 @@ class Model:
             ageGroup.distribute(self.params.stuntingDistribution,self.params.wastingDistribution,self.params.breastfeedingDistribution,totalPop)
             # update mortalities
             for cause in self.params.causesOfDeath:
-                self.constants.underlyingMortalities[ageName][cause] *= 1.-MortalityUpdate[ageName][cause]
+                self.constants.underlyingMortalities[ageName][cause] *= MortalityUpdate[ageName][cause]
 
 
         
