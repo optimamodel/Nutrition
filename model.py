@@ -128,7 +128,7 @@ class Model:
             newProbStunting = oldProbStunting * StuntingUpdate[ageName]
             self.params.stuntingDistribution[ageName] = self.helper.restratify(newProbStunting)
             totalPop = ageGroup.getTotalPopulation()
-            ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, totalPop)
+            ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
             # update mortalities
             for cause in self.params.causesOfDeath:
                 self.constants.underlyingMortalities[ageName][cause] *= MortalityUpdate[ageName][cause]
