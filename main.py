@@ -117,6 +117,7 @@ plotData[0]["color"] = 'grey'
 
 #------------------------------------------------------------------------    
 # INTERVENTION
+spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx', keyList)
 listOfAgeCompartments = makeAgeCompartements(ageRangeList, agingRateList, agePopSizes, keyList)
 modelZ = modelCode.Model("Zinc model", mothers, listOfAgeCompartments, keyList, timestep)
 constants = constantsCode.Constants(spreadsheetData, modelZ, keyList)
