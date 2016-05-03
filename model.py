@@ -25,7 +25,7 @@ class AgeCompartment:
         self.name = name  
         self.dictOfBoxes = dictOfBoxes
         self.agingRate = agingRate
-        self.ages,self.birthOutcomes,self.wastingList,self.stuntingList,self.breastfeedingList = keyList
+        self.ages, self.birthOutcomes, self.wastingList, self.stuntingList, self.breastfeedingList = keyList
 
     def getTotalPopulation(self):
         sum = 0.
@@ -60,7 +60,7 @@ class Model:
         self.name = name
         self.fertileWomen = fertileWomen
         self.listOfAgeCompartments = listOfAgeCompartments
-        self.ages,self.birthOutcomes,self.wastingList,self.stuntingList,self.breastfeedingList = keyList
+        self.ages, self.birthOutcomes, self.wastingList, self.stuntingList, self.breastfeedingList = keyList
         self.timestep = timestep
         self.constants = None
         self.params = None
@@ -76,7 +76,7 @@ class Model:
         self.params = inputParams
 
 
-    def updateCoverages(self,newCoverage):
+    def updateCoverages(self, newCoverage):
         # setup dictionaries for updates with default no-update values
         MortalityUpdate={}
         StuntingUpdate={}
@@ -111,7 +111,7 @@ class Model:
                 sum += RDa * pab
             Za = self.params.incidenceDiarrhea[ageName] / sum
             RRnot = self.params.RRdiarrhea[ageName]["none"]
-            AO = pow(self.params.ORdiarrhea[ageName],RRnot*Za)#/ageGroup.agingRate)
+            AO = pow(self.params.ORdiarrhea[ageName], RRnot*Za)#/ageGroup.agingRate)
             fracDiarrhea = 0.
             for breastfeedingCat in self.breastfeedingList:
                 RDa = self.params.RRdiarrhea[ageName][breastfeedingCat]
@@ -128,13 +128,13 @@ class Model:
             newProbStunting = oldProbStunting * StuntingUpdate[ageName]
             self.params.stuntingDistribution[ageName] = self.helper.restratify(newProbStunting)
             totalPop = ageGroup.getTotalPopulation()
-            ageGroup.distribute(self.params.stuntingDistribution,self.params.wastingDistribution,self.params.breastfeedingDistribution,totalPop)
+            ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, totalPop)
             # update mortalities
             for cause in self.params.causesOfDeath:
                 self.constants.underlyingMortalities[ageName][cause] *= MortalityUpdate[ageName][cause]
 
 
-    def updateCoverages2(self,newCoverage):
+    def updateCoverages2(self, newCoverage):
         #newCoverage is a dictionary of coverages by intervention        
         
         # get combined reductions from all interventions
@@ -153,7 +153,7 @@ class Model:
             oldProbStunting = ageGroup.getStuntedFraction()
             newProbStunting = oldProbStunting * stuntingReduction[ageName]
             self.params.stuntingDistribution[ageName] = self.helper.restratify(newProbStunting)
-            ageGroup.distribute(self.params.stuntingDistribution,self.params.wastingDistribution,self.params.breastfeedingDistribution)
+            ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
 
         
     def updateMortalityRate(self):
@@ -238,7 +238,7 @@ class Model:
             numAgingInStratified = {}
             for stuntingCat in self.stuntingList:
                 numAgingInStratified[stuntingCat] = 0.
-            for prevStunt in ["yesstunted","notstunted"]:
+            for prevStunt in ["yesstunted", "notstunted"]:
                 restratifiedProbBecomeStunted = self.helper.restratify(self.constants.probStuntedIfPrevStunted[prevStunt][ageName])
                 for stuntingCat in self.stuntingList:
                     numAgingInStratified[stuntingCat] += restratifiedProbBecomeStunted[stuntingCat] * numAgingIn[prevStunt]
@@ -247,7 +247,7 @@ class Model:
                 paw = self.params.wastingDistribution[ageName][wastingCat]
                 for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
                     pab = self.params.breastfeedingDistribution[ageName][breastfeedingCat]
-                    for stuntingCat in ["normal","mild","moderate","high"]:
+                    for stuntingCat in ["normal", "mild", "moderate", "high"]:
                         thisBox = thisAgeCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat]
                         thisBox.populationSize -= agingOut[ind][wastingCat][breastfeedingCat][stuntingCat]
                         thisBox.populationSize += numAgingInStratified[stuntingCat] * pab * paw
@@ -261,13 +261,13 @@ class Model:
         numNewBabies = 170000 #numWomen * birthRate * self.timestep
         # restratify Stunting
         restratifiedStuntingAtBirth = {}
-        for birthOutcome in ["Pre-term SGA","Pre-term AGA","Term SGA","Term AGA"]:
+        for birthOutcome in ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"]:
             restratifiedStuntingAtBirth[birthOutcome] = self.helper.restratify(self.constants.probsStuntingAtBirth[birthOutcome])
         # sum over birth outcome for full stratified stunting fractions, then apply to birth distribution
         stuntingFractions = {}
         for stuntingCat in ["normal", "mild", "moderate", "high"]:
             stuntingFractions[stuntingCat] = 0.
-            for birthOutcome in ["Pre-term SGA","Pre-term AGA","Term SGA","Term AGA"]:
+            for birthOutcome in ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"]:
                 stuntingFractions[stuntingCat] += restratifiedStuntingAtBirth[birthOutcome][stuntingCat] * self.params.birthOutcomeDist[birthOutcome]
             for wastingCat in ["normal", "mild", "moderate", "high"]:
                 for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:

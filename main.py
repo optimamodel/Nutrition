@@ -14,15 +14,15 @@ import output as output
 
 
 
-ages = ["<1 month","1-5 months","6-11 months","12-23 months","24-59 months"]
-birthOutcomes = ["Pre-term SGA","Pre-term AGA","Term SGA","Term AGA"]
+ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
+birthOutcomes = ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"]
 wastingList = ["normal", "mild", "moderate", "high"]
 stuntingList = ["normal", "mild", "moderate", "high"]
 breastfeedingList = ["exclusive", "predominant", "partial", "none"]
-keyList = [ages,birthOutcomes,wastingList,stuntingList,breastfeedingList]
+keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
 
 # read the data from the spreadsheet
-spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx',keyList)
+spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx', keyList)
 
 # make the fertile women
 mothers = modelCode.FertileWomen(0.9, 2.e6)
@@ -74,7 +74,7 @@ listOfAgeCompartments = makeAgeCompartements(ageRangeList, agingRateList, agePop
 model = modelCode.Model("Main model", mothers, listOfAgeCompartments, keyList, timestep)
 constants = constantsCode.Constants(spreadsheetData, model, keyList)
 model.setConstants(constants)
-params = parametersCode.Params(spreadsheetData,constants,keyList)
+params = parametersCode.Params(spreadsheetData, constants, keyList)
 model.setParams(params)
 
 
@@ -171,7 +171,7 @@ plotData[1]["tag"] = tag
 plotData[1]["color"] = 'blue'
 
 
-output.getCombinedPlots(2,plotData)
+output.getCombinedPlots(2, plotData)
 
 
 

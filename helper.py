@@ -12,7 +12,7 @@ class Helper:
     # Going from binary stunting/wasting to four fractions
     # Yes refers to more than 2 standard deviations below the global mean/median
     # in our notes, fractionYes = alpha
-    def restratify(self,fractionYes):
+    def restratify(self, fractionYes):
         from scipy.stats import norm
         invCDFalpha = norm.ppf(fractionYes)
         fractionHigh     = norm.cdf(invCDFalpha - 1.)

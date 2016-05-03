@@ -80,8 +80,8 @@ def getPopAndStuntedSizePlot(modelList, label):
 
     #get some x axis stuff    
     numYears = int(len(modelList)/12)
-    yearList = list(range(2016,2016+numYears+1))#[2016]
-    xTickList = list(range(0,12*(numYears+1),12)) # [0]
+    yearList = list(range(2016, 2016+numYears+1))#[2016]
+    xTickList = list(range(0, 12*(numYears+1), 12)) # [0]
     #for i in range(1, numYears):
         #yearList.append(yearList[0] + i)   
         #xTickList.append(i * 12)
@@ -91,21 +91,21 @@ def getPopAndStuntedSizePlot(modelList, label):
     x = np.arange(len(modelList))
 
     fig, ax = plt.subplots()
-    plot_total = plt.fill_between(x,totalPopU5,stuntPopU5,color='blue')
-    plot_stunt = plt.fill_between(x,stuntPopU5,0,         color='red')
+    plot_total = plt.fill_between(x, totalPopU5, stuntPopU5, color='blue')
+    plot_stunt = plt.fill_between(x, stuntPopU5, 0,         color='red')
     ax.set_xticks(xTickList)
     ax.set_xticklabels(yearList)
-    ax.set_xlim([0,12*numYears])
+    ax.set_xlim([0, 12*numYears])
     plt.ylabel('population size')
     plt.title('Total and Stunted Population Size : %s'%(label))
-    ax.legend([plot_total,plot_stunt],["Total","Stunted"])
+    ax.legend([plot_total, plot_stunt], ["Total", "Stunted"])
     plt.show()
 
 
     axes=[]
     fig, ax = plt.subplots()
     #for age in range(0, len(modelList[0].ages)):
-    #    fig, ((axes[0],axes[1],axes[2]),(axes[3],axes[4],ax5)) = plt.subplots(2,3)
+    #    fig, ((axes[0], axes[1], axes[2]), (axes[3], axes[4], ax5)) = plt.subplots(2,3)
     y1 = totalPop[0]
     y2 = totalPop[1]
     y3 = totalPop[2]
@@ -289,7 +289,7 @@ def getStuntedPercent(modelList, label): # NOT WORKING YET
 
 
 
-def getCombinedPlots(numRuns,data): #modelList1,tag1,modelList2,tag2):
+def getCombinedPlots(numRuns, data): #modelList1, tag1, modelList2, tag2):
     # set up
     totalPopU5 = {}
     stuntPopU5 = {}
@@ -330,30 +330,30 @@ def getCombinedPlots(numRuns,data): #modelList1,tag1,modelList2,tag2):
     import matplotlib.pyplot as plt
     numYears = int(len(modelList)/12)
     skip = 2
-    yearList =  list(range(2016,2016+numYears+1,skip))#[2016]
-    xTickList = list(range(0,12*(numYears+1),   skip*12)) # [0]
+    yearList =  list(range(2016, 2016+numYears+1, skip))#[2016]
+    xTickList = list(range(0, 12*(numYears+1),    skip*12)) # [0]
     x = np.arange(numMonths)
 
     fig, ax = plt.subplots()
     ax.set_xticks(xTickList)
     ax.set_xticklabels(yearList)
-    ax.set_xlim([0,12*numYears])
+    ax.set_xlim([0, 12*numYears])
     plt.ylabel('Stunted population size')
     #plt.title('Total and Stunted Population Size : %s'%(label))
-    #plot_total = plt.fill_between(x,totalPopU5,stuntPopU5,color='blue')
+    #plot_total = plt.fill_between(x, totalPopU5, stuntPopU5, color='blue')
     for run in range(numRuns):
         tag       = data[run]["tag"]
         color     = data[run]["color"]
         plot_stunt = plt.fill_between(x, stuntPopU5[tag], 0, color=color)
-    #ax.legend([plot_total,plot_stunt],["Total","Stunted"])
-        #ax.legend([plot_total,plot_stunt],["Total","Stunted"])
+    #ax.legend([plot_total, plot_stunt], ["Total", "Stunted"])
+        #ax.legend([plot_total, plot_stunt], ["Total", "Stunted"])
     plt.show()
 
 
     fig, ax = plt.subplots()
     ax.set_xticks(xTickList)
     ax.set_xticklabels(yearList)
-    ax.set_xlim([0,12*numYears])
+    ax.set_xlim([0, 12*numYears])
     plt.ylabel('Stunted prevalence')
     for run in range(numRuns):
         tag       = data[run]["tag"]

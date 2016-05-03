@@ -15,13 +15,13 @@ import helper as helper
 
 
 def setUpDataModelConstantsObjects():
-    ages = ["<1 month","1-5 months","6-11 months","12-23 months","24-59 months"]
-    birthOutcomes = ["Pre-term SGA","Pre-term AGA","Term SGA","Term AGA"]
+    ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
+    birthOutcomes = ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"]
     wastingList = ["normal", "mild", "moderate", "high"]
     stuntingList = ["normal", "mild", "moderate", "high"]
     breastfeedingList = ["exclusive", "predominant", "partial", "none"]
-    keyList = [ages,birthOutcomes,wastingList,stuntingList,breastfeedingList]
-    testData = data.getDataFromSpreadsheet('InputForCode_tests.xlsx',keyList)
+    keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
+    testData = data.getDataFromSpreadsheet('InputForCode_tests.xlsx', keyList)
     #----------------------   MAKE ALL THE BOXES     ---------------------
     mothers = model.FertileWomen(0.2, 2.e6)
     listOfAgeCompartments = []

@@ -67,4 +67,4 @@ plotData.append({})
 plotData[1]["modelList"] = zinc
 plotData[1]["tag"] = "increased Zinc"
 plotData[1]["color"] = 'blue'
-output.getCombinedPlots(2,plotData)
+output.getCombinedPlots(2, plotData)

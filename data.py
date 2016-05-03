@@ -36,11 +36,11 @@ class Data:
     
 
     
-def getDataFromSpreadsheet(fileName,keyList):
+def getDataFromSpreadsheet(fileName, keyList):
     
     import pandas
     Location = fileName
-    [ages,birthOutcomes,stuntingList,wastingList,breastfeedingList] = keyList
+    [ages, birthOutcomes, stuntingList, wastingList, breastfeedingList] = keyList
     
     #  READ TOTAL MORTALITY SHEET
     #  gets you:
@@ -290,7 +290,7 @@ def getDataFromSpreadsheet(fileName,keyList):
     # construct full birthOutcome distribution
     birthOutcomeDist = {}
     BOsum = 0.
-    for birthOutcome in ["Pre-term SGA","Pre-term AGA","Term SGA"]:
+    for birthOutcome in ["Pre-term SGA", "Pre-term AGA", "Term SGA"]:
         birthOutcomeDist[birthOutcome] = birthOutcomeDist_partial[birthOutcome]
         BOsum += birthOutcomeDist[birthOutcome]
     birthOutcomeDist["Term AGA"] = 1. - BOsum

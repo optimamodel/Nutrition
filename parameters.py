@@ -9,7 +9,7 @@ from __future__ import division
 class Params:
     def __init__(self, data, constants, keyList):
         self.constants = constants
-        self.ages,self.birthOutcomes,self.wastingList,self.stuntingList,self.breastfeedingList = keyList
+        self.ages, self.birthOutcomes, self.wastingList, self.stuntingList, self.breastfeedingList = keyList
         import helper as helperCode
         self.helper = helperCode.Helper()
 
@@ -40,7 +40,7 @@ class Params:
 
 # Add all functions for updating parameters due to interventions here....
 
-    def increaseCoverageOfZinc(self,newCoverage):
+    def increaseCoverageOfZinc(self, newCoverage):
         oldCoverage = self.InterventionCoverages["Zinc supplementation"]
         # -------------------------
         # calculate reduction in stunted fraction
@@ -59,18 +59,18 @@ class Params:
             for cause in self.causesOfDeath:
                 mortalityReduction[ageName][cause]=0.
         # Diarrhea
-        for ageName in ["12-23 months","24-59 months"]:
+        for ageName in ["12-23 months", "24-59 months"]:
             affectedFrac = 0.253 # take from data
             effectiveness = 0.5 # take from data
             mortalityReduction[ageName]["Diarrhea"] = affectedFrac * effectiveness * (newCoverage - oldCoverage) / (1. - effectiveness*oldCoverage)
         # Pneumonia
-        for ageName in ["12-23 months","24-59 months"]:
+        for ageName in ["12-23 months", "24-59 months"]:
             affectedFrac = 0.253 # take from data
             effectiveness = 0.5 # take from data
             mortalityReduction[ageName]["Pneumonia"] = affectedFrac * effectiveness * (newCoverage - oldCoverage) / (1. - effectiveness*oldCoverage)
         # -------------------------
         # Incidence
-        for ageName in ["12-23 months","24-59 months"]:
+        for ageName in ["12-23 months", "24-59 months"]:
             affectedFrac = 0.253 # take from data
             effectiveness = 0.65 # take from data
             reduction = affectedFrac * effectiveness * (newCoverage - oldCoverage) / (1. - effectiveness*oldCoverage)
