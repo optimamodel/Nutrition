@@ -50,7 +50,7 @@ def makeBoxes(thisAgePopSize, ageRange):
                 allBoxes[stuntingCat][wastingCat][breastfeedingCat] =  modelCode.Box(stuntingCat, wastingCat, breastfeedingCat, thisPopSize, thisMortalityRate)
     return allBoxes
 
-def makeAgeCompartements(ageRangeList, agingRateList, agePopSizes, keyList):
+def makeAgeCompartments(ageRangeList, agingRateList, agePopSizes, keyList):
     numAgeGroups = len(ageRangeList)
     listOfAgeCompartments = []
     for age in range(numAgeGroups): # Loop over all age-groups
@@ -71,7 +71,7 @@ plotData = []
 # read the data from the spreadsheet
 spreadsheetData2 = dataCode.getDataFromSpreadsheet('InputForCode.xlsx', keyList)
 # DEFAULT RUN WITH NO CHANGES TO INTERVENTIONS
-listOfAgeCompartments = makeAgeCompartements(ageRangeList, agingRateList, agePopSizes, keyList)
+listOfAgeCompartments = makeAgeCompartments(ageRangeList, agingRateList, agePopSizes, keyList)
 model = modelCode.Model("Main model", mothers, listOfAgeCompartments, keyList, timestep)
 constants = constantsCode.Constants(spreadsheetData, model, keyList)
 model.setConstants(constants)
@@ -119,7 +119,7 @@ plotData[0]["color"] = 'grey'
 #------------------------------------------------------------------------    
 # INTERVENTION
 spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx', keyList)
-listOfAgeCompartments = makeAgeCompartements(ageRangeList, agingRateList, agePopSizes, keyList)
+listOfAgeCompartments = makeAgeCompartments(ageRangeList, agingRateList, agePopSizes, keyList)
 modelZ = modelCode.Model("Zinc model", mothers, listOfAgeCompartments, keyList, timestep)
 constants = constantsCode.Constants(spreadsheetData, modelZ, keyList)
 modelZ.setConstants(constants)
