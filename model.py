@@ -178,6 +178,7 @@ class Model:
             #update mortality            
             for cause in self.params.causesOfDeath:
                 self.constants.underlyingMortalities[ageName][cause] *= mortalityReduction[ageName][cause]        
+            self.updateMortalityRate()    
             
             #update stunting    
             oldProbStunting = ageGroup.getStuntedFraction()
@@ -226,11 +227,6 @@ class Model:
                         deaths = thisBox.populationSize * thisBox.mortalityRate * self.timestep
                         thisBox.populationSize -= deaths
                         thisBox.cumulativeDeaths += deaths
-            ageName = ageCompartment.name
-            self.params.stuntingDistribution[ageName]      = ageCompartment.getStuntingDistribution()
-            self.params.wastingDistribution[ageName]       = ageCompartment.getWastingDistribution()
-            self.params.breastfeedingDistribution[ageName] = ageCompartment.getBreastfeedingDistribution()
-
 
 
     def applyAging(self):
@@ -285,12 +281,6 @@ class Model:
                         thisBox = thisAgeCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat]
                         thisBox.populationSize -= agingOut[ind][wastingCat][breastfeedingCat][stuntingCat]
                         thisBox.populationSize += numAgingInStratified[stuntingCat] * pab * paw
-        # update params
-        for ageCompartment in self.listOfAgeCompartments:
-            ageName = ageCompartment.name
-            self.params.stuntingDistribution[ageName]      = ageCompartment.getStuntingDistribution()
-            self.params.wastingDistribution[ageName]       = ageCompartment.getWastingDistribution()
-            self.params.breastfeedingDistribution[ageName] = ageCompartment.getBreastfeedingDistribution()
 
 
 
@@ -315,17 +305,19 @@ class Model:
             for wastingCat in ["normal", "mild", "moderate", "high"]:
                 for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
                     ageCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize += numNewBabies * self.params.wastingDistribution[ageName][wastingCat] * self.params.breastfeedingDistribution[ageName][breastfeedingCat] * stuntingFractions[stuntingCat]
-        # update params
-        self.params.stuntingDistribution[ageName]      = ageCompartment.getStuntingDistribution()
-        self.params.wastingDistribution[ageName]       = ageCompartment.getWastingDistribution()
-        self.params.breastfeedingDistribution[ageName] = ageCompartment.getBreastfeedingDistribution()
 
 
+    def updateRiskDistributions(self):
+        for ageCompartment in self.listOfAgeCompartments:
+            ageName = ageCompartment.name
+            self.params.stuntingDistribution[ageName]      = ageCompartment.getStuntingDistribution()
+            self.params.wastingDistribution[ageName]       = ageCompartment.getWastingDistribution()
+            self.params.breastfeedingDistribution[ageName] = ageCompartment.getBreastfeedingDistribution()
 
 
     def moveOneTimeStep(self):
-        self.updateMortalityRate() #becasue interventions will change it.  Move into interventions?
         self.applyMortality() 
         self.applyAging()
         self.applyBirths()
+        self.updateRiskDistributions()
 
