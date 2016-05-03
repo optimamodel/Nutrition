@@ -113,7 +113,7 @@ class Constants:
 
     # Calculate probability of stunting in this age group given stunting in previous age-group
     def getProbStuntingProgression(self):
-        from numpy import sqrt 
+        from numpy import sqrt
         numAgeGroups = len(self.ages)
         self.probStuntedIfPrevStunted["notstunted"] = {}
         self.probStuntedIfPrevStunted["yesstunted"] = {}
@@ -123,20 +123,8 @@ class Constants:
             thisAge = self.model.listOfAgeCompartments[ageInd]
             younger = self.model.listOfAgeCompartments[ageInd-1]
             OddsRatio = self.data.ORstuntingProgression[ageName]
-            numStuntedThisAge = 0.
-            numStuntedYounger = 0.
-            numNotStuntedThisAge = 0.
-            numNotStuntedYounger = 0.
-            for wastingCat in self.wastingList:
-                for breastfeedingCat in self.breastfeedingList:
-                    for stuntingCat in ["moderate","high"]:
-                        numStuntedThisAge +=  thisAge.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
-                        numStuntedYounger +=  younger.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
-                    for stuntingCat in ["normal", "mild"]:
-                        numNotStuntedThisAge += thisAge.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
-                        numNotStuntedYounger += younger.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
-            fracStuntedThisAge = numStuntedThisAge / (numStuntedThisAge + numNotStuntedThisAge + eps)
-            fracStuntedYounger = numStuntedYounger / (numStuntedYounger + numNotStuntedYounger + eps)
+            fracStuntedThisAge = thisAge.getStuntedFraction()
+            fracStuntedYounger = younger.getStuntedFraction()
             # solve quadratic equation ax**2 + bx + c = 0
             a = (1.-fracStuntedYounger) * (1.-OddsRatio)
             b = (OddsRatio-1.)*fracStuntedThisAge - OddsRatio*fracStuntedYounger - (1.-fracStuntedYounger)
@@ -149,6 +137,8 @@ class Constants:
             if(soln2>0.)and(soln2<1.): p0 = soln2
             self.probStuntedIfPrevStunted["notstunted"][ageName] = p0
             self.probStuntedIfPrevStunted["yesstunted"][ageName] = p0*OddsRatio/(1.-p0+OddsRatio*p0)
+            test1 = fracStuntedYounger*self.probStuntedIfPrevStunted["yesstunted"][ageName] + (1.-fracStuntedYounger)*self.probStuntedIfPrevStunted["notstunted"][ageName]
+            #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%(test1, fracStuntedThisAge)
         
 
 
@@ -193,7 +183,7 @@ class Constants:
             if(soln2>0.)and(soln2<1.): p0 = soln2
             self.fracStuntedIfDiarrhea["nodia"][ageName] = p0
             self.fracStuntedIfDiarrhea["dia"][ageName]   = p0*AO/(1.-p0+AO*p0)
-            #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%((fracDiarrhea*p0 + (1.-fracDiarrhea)*p0*AO/(1.-p0+AO*p0)), fracStuntedThisAge)
+            #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%((1.-fracDiarrhea)*p0 + fracDiarrhea*p0*AO/(1.-p0+AO*p0), fracStuntedThisAge)
 
 
 
@@ -226,7 +216,7 @@ class Constants:
             if(soln2>0.)and(soln2<1.): p0 = soln2
             self.fracStuntedIfZinc["nozinc"][ageName] = p0
             self.fracStuntedIfZinc["zinc"][ageName]   = p0*OddsRatio/(1.-p0+OddsRatio*p0)
-            #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%((fracZinc*p0 + (1.-fracZinc)*p0*OddsRatio/(1.-p0+OddsRatio*p0)), fracStuntedThisAge)
+            #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%((1.-fracZinc)*p0 + fracZinc*p0*OddsRatio/(1.-p0+OddsRatio*p0), fracStuntedThisAge)
 
 
 
