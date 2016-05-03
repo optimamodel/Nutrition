@@ -118,7 +118,7 @@ class Constants:
         self.probStuntedIfPrevStunted["notstunted"] = {}
         self.probStuntedIfPrevStunted["yesstunted"] = {}
         eps = 1.e-5
-        for ageInd in range(1,numAgeGroups):
+        for ageInd in range(1, numAgeGroups):
             ageName = self.ages[ageInd]
             thisAge = self.model.listOfAgeCompartments[ageInd]
             younger = self.model.listOfAgeCompartments[ageInd-1]
@@ -194,7 +194,7 @@ class Constants:
             if(soln2>0.)and(soln2<1.): p0 = soln2
             self.fracStuntedIfDiarrhea["nodia"][ageName] = p0
             self.fracStuntedIfDiarrhea["dia"][ageName]   = p0*AO/(1.-p0+AO*p0)
-            print "Test: F*p1 * (1-F)*p2 = %g = %g?"%((fracDiarrhea*p0 + (1.-fracDiarrhea)*p0*AO/(1.-p0+AO*p0)), fracStuntedThisAge)
+            #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%((fracDiarrhea*p0 + (1.-fracDiarrhea)*p0*AO/(1.-p0+AO*p0)), fracStuntedThisAge)
 
 
 
@@ -313,7 +313,7 @@ class Constants:
 
 
     # internal function to evaluate the quartic function for probability of stunting at birth at baseline birth outcome
-    def evalQuartic(self,p0):
+    def evalQuartic(self, p0):
         from math import pow
         A,B,C,D,E = self.birthStuntingQuarticCoefficients
         return A*pow(p0,4) + B*pow(p0,3) + C*pow(p0,2) + D*p0 + E
@@ -374,6 +374,6 @@ class Constants:
             self.probsStuntingAtBirth[birthOutcome] = p0*OR / (1.-p0+OR*p0)
             pi = self.probsStuntingAtBirth[birthOutcome]
             if(pi<0. or pi>1.):
-                raise ValueError("probability of stunting at birth, at outcome %s, is out of range (%f)"%(birthOutcome,pi))
+                raise ValueError("probability of stunting at birth, at outcome %s, is out of range (%f)"%(birthOutcome, pi))
             
             
