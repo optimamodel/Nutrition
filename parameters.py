@@ -33,7 +33,7 @@ class Params:
         self.ORBirthOutcomeStunting = data.ORBirthOutcomeStunting
         self.birthOutcomeDist = data.birthOutcomeDist
         self.ORstuntingZinc = data.ORstuntingZinc
-        self.InterventionCoverages = data.InterventionCoveragesCurrent
+        self.interventionCoverages = data.interventionCoveragesCurrent
         self.interventionMortalityEffectiveness = data.interventionMortalityEffectiveness
         self.interventionAffectedFraction = data.interventionAffectedFraction
     
@@ -41,7 +41,7 @@ class Params:
 # Add all functions for updating parameters due to interventions here....
 
     def increaseCoverageOfZinc(self, newCoverage):
-        oldCoverage = self.InterventionCoverages["Zinc supplementation"]
+        oldCoverage = self.interventionCoverages["Zinc supplementation"]
         # -------------------------
         # calculate reduction in stunted fraction
         stuntingReduction = {}
@@ -92,7 +92,7 @@ class Params:
                     affectedFrac = self.interventionAffectedFraction[intervention][ageName][cause]
                     effectiveness = self.interventionMortalityEffectiveness[intervention][ageName][cause]
                     newCoverageVal = newCoverage[intervention]
-                    oldCoverage = self.InterventionCoverages[intervention]
+                    oldCoverage = self.interventionCoverages[intervention]
                     reduction = affectedFrac * effectiveness * (newCoverageVal - oldCoverage) / (1. - effectiveness*oldCoverage)
                     mortalityReduction[ageName][cause] *= 1. - reduction
         return mortalityReduction            
