@@ -117,7 +117,6 @@ class Constants:
         numAgeGroups = len(self.ages)
         self.probStuntedIfPrevStunted["notstunted"] = {}
         self.probStuntedIfPrevStunted["yesstunted"] = {}
-        eps = 1.e-5
         for ageInd in range(1, numAgeGroups):
             ageName = self.ages[ageInd]
             thisAge = self.model.listOfAgeCompartments[ageInd]
