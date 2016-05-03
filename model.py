@@ -43,7 +43,7 @@ class AgeCompartment:
                 for breastfeedingCat in self.breastfeedingList:
                     NumberStunted += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
         NumberTotal = self.getTotalPopulation()
-        return NumberStunted/NumberTotal
+        return float(NumberStunted)/float(NumberTotal)
 
     def getStuntingDistribution(self):
         totalPop = self.getTotalPopulation()
