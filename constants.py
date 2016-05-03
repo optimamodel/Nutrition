@@ -38,7 +38,7 @@ class Constants:
         #we are solving for X
         # Calculate RHS for each age and cause
         RHS = {}
-        for age in self.data.ages:
+        for age in self.ages:
             RHS[age] = {}
             for cause in self.data.causesOfDeath:
                 RHS[age][cause] = 0.
@@ -303,16 +303,7 @@ class Constants:
         FracBO[2] = self.data.birthOutcomeDist["Pre-term AGA"]
         FracBO[3] = self.data.birthOutcomeDist["Pre-term SGA"]
         FracBO[0] = 1. - sum(FracBO[1:3])
-        numNewborns        = 0.
-        numNewbornsStunted = 0.
-        for wastingCat in self.wastingList:
-            for breastfeedingCat in self.breastfeedingList:
-                for stuntingCat in ["normal","mild"]:
-                    numNewborns +=self.model.listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
-                for stuntingCat in ["moderate","high"]:
-                    numNewborns +=self.model.listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
-                    numNewbornsStunted +=self.model.listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
-        FracStunted = float(numNewbornsStunted) / float(numNewborns)
+        FracStunted = self.model.listOfAgeCompartments[0].getStuntedFraction()
         # [i] will refer to the three non-baseline birth outcomes
         A = FracBO[0]*(OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.)
         B = (OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.) * ( \
