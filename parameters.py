@@ -104,7 +104,7 @@ class Params:
             stuntingReduction[ageName] = 1
             oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
             for intervention in newCoverage.keys():            
-                if "zinc" or "Zinc" in intervention: 
+                if intervention == 'Zinc supplementation': 
                     probStuntingIfZinc = self.constants.fracStuntedIfZinc["zinc"][ageName]
                     probStuntingIfNoZinc = self.constants.fracStuntedIfZinc["nozinc"][ageName]
                     newProbStunting = newCoverage[intervention]*probStuntingIfZinc + (1.-newCoverage[intervention])*probStuntingIfNoZinc
@@ -112,8 +112,8 @@ class Params:
                     
                 else:      
                     reduction = 0
-                                 
-                stuntingReduction[ageName] *= 1. - reduction    
+                    
+                stuntingReduction[ageName] *= 1. - reduction
         return stuntingReduction        
             
             
