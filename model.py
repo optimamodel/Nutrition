@@ -47,35 +47,32 @@ class AgeCompartment:
 
     def getStuntingDistribution(self):
         totalPop = self.getTotalPopulation()
-        eps = 1.e-5
         returnDict = {}
         for stuntingCat in self.stuntingList:
             returnDict[stuntingCat] = 0.
             for wastingCat in self.wastingList:
                 for breastfeedingCat in self.breastfeedingList:
-                    returnDict[stuntingCat] += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize / (totalPop + eps)
+                    returnDict[stuntingCat] += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize / totalPop
         return returnDict
 
     def getWastingDistribution(self):
         totalPop = self.getTotalPopulation()
-        eps = 1.e-5
         returnDict = {}
         for wastingCat in self.wastingList:
             returnDict[wastingCat] = 0.
             for stuntingCat in self.stuntingList:
                 for breastfeedingCat in self.breastfeedingList:
-                    returnDict[wastingCat] += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize / (totalPop + eps)
+                    returnDict[wastingCat] += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize / totalPop
         return returnDict
 
     def getBreastfeedingDistribution(self):
         totalPop = self.getTotalPopulation()
-        eps = 1.e-5
         returnDict = {}
         for breastfeedingCat in self.breastfeedingList:
             returnDict[breastfeedingCat] = 0.
             for wastingCat in self.wastingList:
                 for stuntingCat in self.stuntingList:
-                    returnDict[breastfeedingCat] += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize / (totalPop + eps)
+                    returnDict[breastfeedingCat] += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize / totalPop
         return returnDict
 
     def distribute(self, stuntingDist, wastingDist, breastfeedingDist):
