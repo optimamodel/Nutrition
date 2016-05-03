@@ -5,6 +5,7 @@ Created on Fri April 1 2016
 @author: madhura
 """
 from __future__ import division
+from copy import deepcopy as dcp
 
 class Params:
     def __init__(self, data, constants, keyList):
@@ -13,29 +14,29 @@ class Params:
         import helper as helperCode
         self.helper = helperCode.Helper()
 
-        self.causesOfDeath = data.causesOfDeath
-        self.causeOfDeathDist = data.causeOfDeathDist
-        self.stuntingDistribution = data.stuntingDistribution
-        self.wastingDistribution = data.wastingDistribution
-        self.breastfeedingDistribution = data.breastfeedingDistribution
-        self.RRStunting = data.RRStunting
-        self.RRWasting = data.RRWasting
-        self.RRBreastfeeding = data.RRBreastfeeding
-        self.RRdeathByBirthOutcome = data.RRdeathByBirthOutcome
-        self.ORstuntingProgression = data.ORstuntingProgression
-        self.incidenceDiarrhea = data.incidenceDiarrhea
-        self.RRdiarrhea = data.RRdiarrhea
-        self.ORdiarrhea = data.ORdiarrhea
-        self.birthCircumstanceDist = data.birthCircumstanceDist
-        self.timeBetweenBirthsDist = data.timeBetweenBirthsDist
-        self.RRbirthOutcomeByAgeAndOrder = data.RRbirthOutcomeByAgeAndOrder
-        self.RRbirthOutcomeByTime = data.RRbirthOutcomeByTime
-        self.ORBirthOutcomeStunting = data.ORBirthOutcomeStunting
-        self.birthOutcomeDist = data.birthOutcomeDist
-        self.ORstuntingZinc = data.ORstuntingZinc
-        self.interventionCoverages = data.interventionCoveragesCurrent
-        self.interventionMortalityEffectiveness = data.interventionMortalityEffectiveness
-        self.interventionAffectedFraction = data.interventionAffectedFraction
+        self.causesOfDeath = dcp(data.causesOfDeath)
+        self.causeOfDeathDist = dcp(data.causeOfDeathDist)
+        self.stuntingDistribution = dcp(data.stuntingDistribution)
+        self.wastingDistribution = dcp(data.wastingDistribution)
+        self.breastfeedingDistribution = dcp(data.breastfeedingDistribution)
+        self.RRStunting = dcp(data.RRStunting)
+        self.RRWasting = dcp(data.RRWasting)
+        self.RRBreastfeeding = dcp(data.RRBreastfeeding)
+        self.RRdeathByBirthOutcome = dcp(data.RRdeathByBirthOutcome)
+        self.ORstuntingProgression = dcp(data.ORstuntingProgression)
+        self.incidenceDiarrhea = dcp(data.incidenceDiarrhea)
+        self.RRdiarrhea = dcp(data.RRdiarrhea)
+        self.ORdiarrhea = dcp(data.ORdiarrhea)
+        self.birthCircumstanceDist = dcp(data.birthCircumstanceDist)
+        self.timeBetweenBirthsDist = dcp(data.timeBetweenBirthsDist)
+        self.RRbirthOutcomeByAgeAndOrder = dcp(data.RRbirthOutcomeByAgeAndOrder)
+        self.RRbirthOutcomeByTime = dcp(data.RRbirthOutcomeByTime)
+        self.ORBirthOutcomeStunting = dcp(data.ORBirthOutcomeStunting)
+        self.birthOutcomeDist = dcp(data.birthOutcomeDist)
+        self.ORstuntingZinc = dcp(data.ORstuntingZinc)
+        self.interventionCoverages = dcp(data.interventionCoveragesCurrent)
+        self.interventionMortalityEffectiveness = dcp(data.interventionMortalityEffectiveness)
+        self.interventionAffectedFraction = dcp(data.interventionAffectedFraction)
     
 
 # Add all functions for updating parameters due to interventions here....
