@@ -68,13 +68,14 @@ plotData = []
 
 #------------------------------------------------------------------------    
 # DEFAULT RUN WITH NO CHANGES TO INTERVENTIONS
-
+# read the data from the spreadsheet
+spreadsheetData2 = dataCode.getDataFromSpreadsheet('InputForCode.xlsx', keyList)
 # DEFAULT RUN WITH NO CHANGES TO INTERVENTIONS
 listOfAgeCompartments = makeAgeCompartements(ageRangeList, agingRateList, agePopSizes, keyList)
 model = modelCode.Model("Main model", mothers, listOfAgeCompartments, keyList, timestep)
 constants = constantsCode.Constants(spreadsheetData, model, keyList)
 model.setConstants(constants)
-params = parametersCode.Params(spreadsheetData, constants, keyList)
+params = parametersCode.Params(spreadsheetData2, constants, keyList)
 model.setParams(params)
 
 

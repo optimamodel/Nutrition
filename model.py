@@ -178,6 +178,7 @@ class Model:
             #update mortality            
             for cause in self.params.causesOfDeath:
                 self.constants.underlyingMortalities[ageName][cause] *= mortalityReduction[ageName][cause]        
+            self.updateMortalityRate()    
             
             #update stunting    
             oldProbStunting = ageGroup.getStuntedFraction()
@@ -324,7 +325,6 @@ class Model:
 
 
     def moveOneTimeStep(self):
-        self.updateMortalityRate() #becasue interventions will change it.  Move into interventions?
         self.applyMortality() 
         self.applyAging()
         self.applyBirths()
