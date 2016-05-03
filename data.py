@@ -6,7 +6,7 @@ Created on Fri Feb 26 15:57:07 2016
 """
 
 class Data:
-    def __init__(self, ages, causesOfDeath, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidenceDiarrhea, RRdiarrhea, ORdiarrhea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting, ORstuntingZinc, InterventionCoveragesCurrent, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness):
+    def __init__(self, ages, causesOfDeath, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidenceDiarrhea, RRdiarrhea, ORdiarrhea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting, ORstuntingZinc, interventionCoveragesCurrent, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness):
         self.ages = ages
         self.causesOfDeath = causesOfDeath
         self.totalMortality = totalMortality
@@ -29,7 +29,7 @@ class Data:
         self.RRbirthOutcomeByTime = RRbirthOutcomeByTime
         self.ORBirthOutcomeStunting = ORBirthOutcomeStunting
         self.ORstuntingZinc = ORstuntingZinc
-        self.InterventionCoveragesCurrent = InterventionCoveragesCurrent
+        self.interventionCoveragesCurrent = interventionCoveragesCurrent
         self.interventionAffectedFraction = interventionAffectedFraction
         self.interventionMortalityEffectiveness = interventionMortalityEffectiveness
         self.interventionIncidenceEffectiveness = interventionIncidenceEffectiveness
@@ -310,12 +310,12 @@ def getDataFromSpreadsheet(fileName, keyList):
 
     #get list of causesOfDeath
     df = pandas.read_excel(Location, sheetname = 'Interventions coverages') #read this way for this task
-    InterventionList = list(df['Intervention'])
+    interventionList = list(df['Intervention'])
     #get the nested list of causeOfDeathDist
     df = pandas.read_excel(Location, sheetname = 'Interventions coverages', index_col = 'Intervention') #read this way for this task
-    InterventionCoveragesCurrent = {}
-    for intervention in InterventionList:
-        InterventionCoveragesCurrent[intervention] = df.loc[intervention, "pre-2016"]
+    interventionCoveragesCurrent = {}
+    for intervention in interventionList:
+        interventionCoveragesCurrent[intervention] = df.loc[intervention, "pre-2016"]
 
     # READ Interventions affected fraction SHEET
     # gets you:
@@ -374,7 +374,7 @@ def getDataFromSpreadsheet(fileName, keyList):
 
 
             
-    spreadsheetData = Data(ages, causesOfDeath, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidenceDiarrhea, RRdiarrhea, ORdiarrhea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting, ORstuntingZinc, InterventionCoveragesCurrent, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness)
+    spreadsheetData = Data(ages, causesOfDeath, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidenceDiarrhea, RRdiarrhea, ORdiarrhea, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORBirthOutcomeStunting, ORstuntingZinc, interventionCoveragesCurrent, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness)
 
     return spreadsheetData        
                   
