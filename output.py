@@ -121,7 +121,7 @@ def getPopAndStuntedSizePlot(modelList, label):
     plt.title('Population Size by Age Group:  ' + label)
     plt.show()
     
-    return totalPop, stuntPop
+    #return totalPop, stuntPop
 
 
 

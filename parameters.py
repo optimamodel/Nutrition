@@ -87,7 +87,7 @@ class Params:
                 mortalityReduction[ageName][cause]=1.
         causeList = ((self.interventionMortalityEffectiveness.values()[0]).values()[0]).keys()        
         for ageName in self.ages:
-            for intervention in newCoverage:
+            for intervention in newCoverage.keys():
                 for cause in causeList:
                     affectedFrac = self.interventionAffectedFraction[intervention][ageName][cause]
                     effectiveness = self.interventionMortalityEffectiveness[intervention][ageName][cause]
