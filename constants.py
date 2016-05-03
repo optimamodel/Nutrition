@@ -5,11 +5,12 @@ Created on Mon Feb 29 11:35:02 2016
 @author: ruth
 """
 from __future__ import division
+from copy import deepcopy as dcp
 
 class Constants:
     def __init__(self, data, model, keyList):
-        self.data = data
-        self.model = model
+        self.data = dcp(data)
+        self.model = dcp(model)
         self.ages,self.birthOutcomes,self.wastingList,self.stuntingList,self.breastfeedingList = keyList
         
         self.underlyingMortalities = {}
