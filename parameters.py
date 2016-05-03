@@ -87,7 +87,7 @@ class Params:
                 mortalityReduction[ageName][cause]=1.
         causeList = ((self.interventionMortalityEffectiveness.values()[0]).values()[0]).keys()        
         for ageName in self.ages:
-            for intervention in self.interventionMortalityEffectiveness.keys():
+            for intervention in newCoverage:
                 for cause in causeList:
                     affectedFrac = self.interventionAffectedFraction[intervention][ageName][cause]
                     effectiveness = self.interventionMortalityEffectiveness[intervention][ageName][cause]
@@ -103,7 +103,7 @@ class Params:
         for ageName in self.ages:
             stuntingReduction[ageName] = 1
             oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
-            for intervention in self.newCoverage.keys():            
+            for intervention in newCoverage.keys():            
                 if "zinc" or "Zinc" in intervention: 
                     probStuntingIfZinc = self.constants.fracStuntedIfZinc["zinc"][ageName]
                     probStuntingIfNoZinc = self.constants.fracStuntedIfZinc["nozinc"][ageName]
