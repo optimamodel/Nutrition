@@ -5,4 +5,5 @@
 #ignore Ruth's random testing file and some notes
 randomTests.py 
 InputOutputNotebook.ipynb
+.DS_Store
 
