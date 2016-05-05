@@ -362,16 +362,23 @@ def getCombinedPlots(numRuns, data): #modelList1, tag1, modelList2, tag2):
     plt.show()
 
 
-def getSimpleBarFromDictionary(dictionary, label):
+def getSimpleBarFromDictionary(dictionary, label, order):
     import numpy as np
     import matplotlib.pyplot as plt
+    from collections import OrderedDict
+    
+    d = OrderedDict([])
+    for i in range(0, len(dictionary)):
+        d[order[i]] = dictionary[order[i]]
+    
     X = np.arange(len(dictionary))
-    plt.bar(X, dictionary.values(), align='center', width=0.5)
-    plt.xticks(X, dictionary.keys())
+    plt.bar(X, d.values(), align='center', width=0.5)
+    plt.xticks(X, d.keys())
     ymax = 1
     plt.ylim(0, ymax)
     plt.title(label)
     plt.show()
+
     
 def getStuntingStatusesGivenAge(modelList, age, lable):
     import matplotlib.pyplot as plt

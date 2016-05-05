@@ -74,6 +74,8 @@ model.setConstants(constants)
 params = parametersCode.Params(spreadsheetData, constants, keyList)
 model.setParams(params)
 
+order = ['high', 'moderate', 'mild', 'normal']
+
 print 'BEFORE'
 for i in range(0,5):
     print ages[i]    
@@ -81,7 +83,7 @@ for i in range(0,5):
     print 'underlying mortality Diarrhea:  ', model.constants.underlyingMortalities[ages[i]]['Diarrhea']
     print 'underlying mortality Pneumonia:  ', model.constants.underlyingMortalities[ages[i]]['Pneumonia']
     print
-    output.getSimpleBarFromDictionary(model.params.stuntingDistribution[ages[i]], ages[i] +' before', ['high', 'moderate', 'mild', 'normal'])
+    output.getSimpleBarFromDictionary(model.params.stuntingDistribution[ages[i]], ages[i] +' before', order)
 
 
 newCoverages={}
@@ -96,7 +98,7 @@ for i in range(0,5):
     print 'underlying mortality Diarrhea:  ', model.constants.underlyingMortalities[ages[i]]['Diarrhea']
     print 'underlying mortality Pneumonia:  ', model.constants.underlyingMortalities[ages[i]]['Pneumonia']
     print
-    output.getSimpleBarFromDictionary(model.params.stuntingDistribution[ages[i]], ages[i] +' after', ['high', 'moderate', 'mild', 'normal'])
+    output.getSimpleBarFromDictionary(model.params.stuntingDistribution[ages[i]], ages[i] +' after', order)
 
 pickleFilename = 'testDefault.pkl'
 #open file to dump objects into at each time step
