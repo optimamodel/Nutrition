@@ -258,10 +258,11 @@ def getStuntedPercent(modelList, label):
 
     
     
-def getCombinedPlots(numRuns, data): #modelList1, tag1, modelList2, tag2):
+def getCombinedPlots(numRuns, data):
     # set up
     totalPopU5 = {}
     stuntPopU5 = {}
+    cumulDeathsU5 = {}
     for run in range(numRuns):
         modelList = data[run]["modelList"]
         tag       = data[run]["tag"]
@@ -271,19 +272,22 @@ def getCombinedPlots(numRuns, data): #modelList1, tag1, modelList2, tag2):
         # initialise
         totalPopU5[tag] = [0.]*numMonths
         stuntPopU5[tag] = [0.]*numMonths
-        totalPop = []
-        stuntPop = []
+        cumulDeathsU5[tag] = [0.]*numMonths
+        #totalPop = []
+        #stuntPop = []
         for age in range(numAges):
-            totalPop.append([])
-            stuntPop.append([])
+            #totalPop.append([])
+            #stuntPop.append([])
             m=0
             for model in modelList:
                 total     = model.listOfAgeCompartments[age].getTotalPopulation()
-                stuntfrac = model.listOfAgeCompartments[age].getStuntedFraction()
-                totalPop[age].append(total)
-                stuntPop[age].append(total*stuntfrac)
+                stuntFrac = model.listOfAgeCompartments[age].getStuntedFraction()
+                cumulDeaths = model.listOfAgeCompartments[age].getCumulativeDeaths()
+                #totalPop[age].append(total)
+                #stuntPop[age].append(total*stuntFrac)
                 totalPopU5[tag][m] += total
-                stuntPopU5[tag][m] += total*stuntfrac
+                stuntPopU5[tag][m] += total*stuntFrac
+                cumulDeathsU5[tag][m] += cumulDeaths
                 m+=1
 
 
