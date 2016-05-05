@@ -180,19 +180,17 @@ output.getNumStuntedByAgePlot(modelList, 'before')
 output.getNumStuntedByAgePlot(newModelList, 'after')
 
 output.getStuntedPercent(modelList, 'before')
-output.getStuntedPercent2(modelList, 'before')
 
 output.getStuntedPercent(newModelList, 'after')
-output.getStuntedPercent2(newModelList, 'after')
 
 output.getCumulativeDeathsByAgePlot(modelList, 'before')
 output.getCumulativeDeathsByAgePlot(newModelList, 'after')
 
-print 'stunted fraction for 6-11 months before'
+print 'stunted fraction for 12-23 months before'
 for i in range(numsteps):
-    print 'stunted frac:  ', modelList[i].listOfAgeCompartments[2].getStuntedFraction()
+    print 'stunted frac:  ', modelList[i].listOfAgeCompartments[3].getStuntedFraction()
 
-print 'stunted fraction for 6-11 months after'
+print 'stunted fraction for 12-23 months after'
 for i in range(numsteps):
-    print 'stunted frac:  ', newModelList[i].listOfAgeCompartments[2].getStuntedFraction()
+    print 'stunted frac:  ', newModelList[i].listOfAgeCompartments[3].getStuntedFraction()
 
