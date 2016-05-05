@@ -215,55 +215,26 @@ def getNumStuntedByAgePlot(modelList, label):
     plt.show()
     
     
-def getStuntedPercent(modelList, label): # NOT WORKING YET
-    from operator import truediv  
+    
+def getStuntedPercent(modelList, label): 
     import numpy as np
-    #this counts people in the top 2 stunting categories as stunted
     ageList = modelList[0].ages
-    #get population size for each age group
     percentStunted = {}
     for age in range(0, len(modelList[0].ages)):
-        percentStunted[age] = 0
-        
-        # count STUNTED 
-        countStuntedList = []
-        countNotStuntedList = []
-        countStuntedFracList = []
-
+        StuntedFracList = []
         for model in modelList:
-            countStunted = 0            
-            countNotStunted = 0            
-            for wastingCat in ["normal", "mild", "moderate", "high"]:
-                for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
-                    for stuntingCat in ["moderate", "high"]:
-                        countStunted += model.listOfAgeCompartments[age].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
-                    for stuntingCat in ["normal", "mild"]:
-                        countNotStunted += model.listOfAgeCompartments[age].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
-            countStuntedFrac = countStunted / (countStunted + countNotStunted)
-            countStuntedList.append(countStunted)
-            countNotStuntedList.append(countNotStunted)
-            countStuntedFracList.append(countStuntedFrac)
-            
-        
+            StuntedFrac = model.listOfAgeCompartments[age].getStuntedFraction()
+            StuntedFracList.append(StuntedFrac)
         #get yearly average
         numYears = int(len(modelList)/12)
-        yearAveStunted = []
-        yearAveNotStunted = []
         yearAveStuntedPerc = []
         for year in range(1, numYears+1):
-            yearAveStunted.append(np.average(countStuntedList[(year - 1) * 12 : (year * 12) - 1]))
-            yearAveNotStunted.append(np.average(countNotStuntedList[(year - 1) * 12 : (year * 12) - 1]))
-            yearAveStuntedPerc.append(100.*np.average(countStuntedFracList[(year - 1) * 12 : (year * 12) - 1]))
-            
+            yearAveStuntedPerc.append(100.*np.average(StuntedFracList[(year - 1) * 12 : (year * 12) - 1]))
         percentStunted[age] = yearAveStuntedPerc
-        
     yearList = [2017]
     for i in range(1, numYears):
         yearList.append(yearList[0] + i)
-    
-    import numpy as np
     import matplotlib.pyplot as plt
-    
     x = np.arange(numYears)
     width = 0.35
     fig, ax = plt.subplots()    
@@ -272,7 +243,6 @@ def getStuntedPercent(modelList, label): # NOT WORKING YET
     rects3 = ax.bar(6*x*width + 2*width, percentStunted[2], width, color='g')
     rects4 = ax.bar(6*x*width + 3*width, percentStunted[3], width, color='c')
     rects5 = ax.bar(6*x*width + 4*width, percentStunted[4], width, color='m')
-    
     # Shrink current axis's height by 10% on the bottom
     box = ax.get_position()
     ax.set_position([box.x0, box.y0 + box.height * 0.1,
@@ -286,9 +256,8 @@ def getStuntedPercent(modelList, label): # NOT WORKING YET
     ax.set_title('Percent of People Stunted by Age Group:  ' + label)
     plt.show()    
 
-
-
-
+    
+    
 def getCombinedPlots(numRuns, data): #modelList1, tag1, modelList2, tag2):
     # set up
     totalPopU5 = {}

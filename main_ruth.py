@@ -10,6 +10,7 @@ import data as dataCode
 import constants as constantsCode
 import parameters as parametersCode
 import output as output
+import pickle as pickle
 
 #-------------------------------------------------------------------------    
 def makeBoxes(thisAgePopSize, ageGroup, keyList):
@@ -74,42 +75,50 @@ model.setConstants(constants)
 params = parametersCode.Params(spreadsheetData, constants, keyList)
 model.setParams(params)
 
-order = ['high', 'moderate', 'mild', 'normal']
+#model.moveOneTimeStep() #move one time step to correct non-gaussian dists
+#
+#order = ['high', 'moderate', 'mild', 'normal']
+#print 'BEFORE'
+#for i in range(0,5):
+#    print ages[i]    
+#    print 'stunted frac:  ', model.listOfAgeCompartments[i].getStuntedFraction()
+#    print 'underlying mortality Diarrhea:  ', model.constants.underlyingMortalities[ages[i]]['Diarrhea']
+#    print 'underlying mortality Pneumonia:  ', model.constants.underlyingMortalities[ages[i]]['Pneumonia']
+#    print
+#    #output.getSimpleBarFromDictionary(model.params.stuntingDistribution[ages[i]], ages[i] +' before', order)
+#
+#
+#newCoverages={}
+#newCoverages["Zinc supplementation"] = 1
+#newCoverages["Vitamin A supplementation"] = 1
+#model.updateCoverages2(newCoverages)
+#
+#print 'AFTER'
+#for i in range(0,5):
+#    print ages[i]    
+#    print 'stunted frac:  ', model.listOfAgeCompartments[i].getStuntedFraction()
+#    print 'underlying mortality Diarrhea:  ', model.constants.underlyingMortalities[ages[i]]['Diarrhea']
+#    print 'underlying mortality Pneumonia:  ', model.constants.underlyingMortalities[ages[i]]['Pneumonia']
+#    print
+#    #output.getSimpleBarFromDictionary(model.params.stuntingDistribution[ages[i]], ages[i] +' after', order)
 
-print 'BEFORE'
-for i in range(0,5):
-    print ages[i]    
-    print 'stunted frac:  ', model.listOfAgeCompartments[i].getStuntedFraction()
-    print 'underlying mortality Diarrhea:  ', model.constants.underlyingMortalities[ages[i]]['Diarrhea']
-    print 'underlying mortality Pneumonia:  ', model.constants.underlyingMortalities[ages[i]]['Pneumonia']
-    print
-    output.getSimpleBarFromDictionary(model.params.stuntingDistribution[ages[i]], ages[i] +' before', order)
 
 
-newCoverages={}
-newCoverages["Zinc supplementation"] = 1
-newCoverages["Vitamin A supplementation"] = 1
-model.updateCoverages2(newCoverages)
 
-print 'AFTER'
-for i in range(0,5):
-    print ages[i]    
-    print 'stunted frac:  ', model.listOfAgeCompartments[i].getStuntedFraction()
-    print 'underlying mortality Diarrhea:  ', model.constants.underlyingMortalities[ages[i]]['Diarrhea']
-    print 'underlying mortality Pneumonia:  ', model.constants.underlyingMortalities[ages[i]]['Pneumonia']
-    print
-    output.getSimpleBarFromDictionary(model.params.stuntingDistribution[ages[i]], ages[i] +' after', order)
+
+
+
+
+
+
+
 
 pickleFilename = 'testDefault.pkl'
-#open file to dump objects into at each time step
-import pickle as pickle
 outfile = open(pickleFilename, 'wb')
 
 for t in range(numsteps):
-    #print t
     model.moveOneTimeStep()
     pickle.dump(model, outfile)
-    
 outfile.close()    
 
 # collect output, make graphs etc.
@@ -127,31 +136,30 @@ infile.close()
 #------------------------------------------------------------------------    
 # INTERVENTION
 listOfAgeCompartments = makeAgeCompartements(agingRateList, agePopSizes, keyList)
+spreadsheetData2 = dataCode.getDataFromSpreadsheet('InputForCode.xlsx', keyList)
 modelZ = modelCode.Model("Zinc model", mothers, listOfAgeCompartments, keyList, timestep)
-constants = constantsCode.Constants(spreadsheetData, modelZ, keyList)
+constants = constantsCode.Constants(spreadsheetData2, modelZ, keyList)
 modelZ.setConstants(constants)
-params = parametersCode.Params(spreadsheetData, constants, keyList)
+params = parametersCode.Params(spreadsheetData2, constants, keyList)
 modelZ.setParams(params)
 
-# increase zinc coverage
-newCoverages={}
-newCoverages["Zinc supplementation"] = 0.3
 
+
+newCoverages={}
+newCoverages["Zinc supplementation"] = 1
+newCoverages["Vitamin A supplementation"] = 1
 modelZ.updateCoverages2(newCoverages)
 
 
 
 
 # file to dump objects into at each time step
-pickleFilename = 'testZinc.pkl'
-import pickle as pickle
+pickleFilename = 'testInterventions.pkl'
 outfile = open(pickleFilename, 'wb')
 
 for t in range(numsteps):
-    #print t
     modelZ.moveOneTimeStep()
     pickle.dump(modelZ, outfile)
-    
 outfile.close()    
 
 # collect output, make graphs etc.
@@ -171,5 +179,20 @@ output.getPopAndStuntedSizePlot(newModelList, 'after')
 output.getNumStuntedByAgePlot(modelList, 'before')
 output.getNumStuntedByAgePlot(newModelList, 'after')
 
+output.getStuntedPercent(modelList, 'before')
+output.getStuntedPercent2(modelList, 'before')
 
+output.getStuntedPercent(newModelList, 'after')
+output.getStuntedPercent2(newModelList, 'after')
+
+output.getCumulativeDeathsByAgePlot(modelList, 'before')
+output.getCumulativeDeathsByAgePlot(newModelList, 'after')
+
+print 'stunted fraction for 6-11 months before'
+for i in range(numsteps):
+    print 'stunted frac:  ', modelList[i].listOfAgeCompartments[2].getStuntedFraction()
+
+print 'stunted fraction for 6-11 months after'
+for i in range(numsteps):
+    print 'stunted frac:  ', newModelList[i].listOfAgeCompartments[2].getStuntedFraction()
 
