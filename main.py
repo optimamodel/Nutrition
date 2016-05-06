@@ -118,7 +118,7 @@ plotData[0]["color"] = 'grey'
 
 #------------------------------------------------------------------------    
 # INTERVENTION
-spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx', keyList)
+#spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx', keyList)
 listOfAgeCompartments = makeAgeCompartments(ageRangeList, agingRateList, agePopSizes, keyList)
 modelZ = modelCode.Model("Zinc model", mothers, listOfAgeCompartments, keyList, timestep)
 constants = constantsCode.Constants(spreadsheetData, modelZ, keyList)
@@ -128,9 +128,9 @@ modelZ.setParams(params)
 
 # increase zinc coverage
 newCoverages={}
-newCoverages["Zinc supplementation"] = 0.3
-print "Update Zinc supplementation coverage to %g percent"%(newCoverages["Zinc supplementation"]*100.)
-modelZ.updateCoverages(newCoverages)
+#newCoverages["Zinc supplementation"] = 0.3
+newCoverages["Vitamin A supplementation"] = 0.3
+modelZ.updateCoverages2(newCoverages)
 
 
 
