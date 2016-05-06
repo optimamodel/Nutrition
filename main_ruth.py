@@ -180,7 +180,6 @@ output.getNumStuntedByAgePlot(modelList, 'before')
 output.getNumStuntedByAgePlot(newModelList, 'after')
 
 output.getStuntedPercent(modelList, 'before')
-
 output.getStuntedPercent(newModelList, 'after')
 
 output.getCumulativeDeathsByAgePlot(modelList, 'before')

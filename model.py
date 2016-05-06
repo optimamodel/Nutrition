@@ -106,6 +106,7 @@ class Model:
         self.params = None
         import helper as helperCode
         self.helper = helperCode.Helper()
+        self.totalStuntingUpdateNeoNatal = 1
 
         
     def setConstants(self, inputConstants):
@@ -179,7 +180,7 @@ class Model:
         
         # get combined reductions from all interventions
         mortalityReduction = self.params.getMortalityReduction(newCoverage)
-        stuntingReduction = self.params.getStuntingReduction(newCoverage)
+        stuntingUpdate = self.params.getStuntingUpdate(newCoverage)
         
         #apply reductions to each age group
         for ageGroup in self.listOfAgeCompartments:
@@ -192,10 +193,10 @@ class Model:
             
             #update stunting    
             oldProbStunting = ageGroup.getStuntedFraction()
-            newProbStunting = oldProbStunting * stuntingReduction[ageName]
+            newProbStunting = oldProbStunting * stuntingUpdate[ageName]
             self.params.stuntingDistribution[ageName] = self.helper.restratify(newProbStunting)
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
-
+            self.totalStuntingUpdateNeoNatal *= stuntingUpdate['<1 month']
         
     def updateMortalityRate(self):
         # Newborns first
@@ -315,6 +316,13 @@ class Model:
             for wastingCat in ["normal", "mild", "moderate", "high"]:
                 for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
                     ageCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize += numNewBabies * self.params.wastingDistribution[ageName][wastingCat] * self.params.breastfeedingDistribution[ageName][breastfeedingCat] * stuntingFractions[stuntingCat]
+
+        #now reduce stunting due to interventions
+        oldProbStunting = ageCompartment.getStuntedFraction()
+        newProbStunting = oldProbStunting * self.totalStuntingUpdateNeoNatal
+        self.params.stuntingDistribution[ageName] = self.helper.restratify(newProbStunting)
+        ageCompartment.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
+
 
 
     def updateRiskDistributions(self):

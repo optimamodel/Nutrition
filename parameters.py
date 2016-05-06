@@ -45,13 +45,13 @@ class Params:
         oldCoverage = self.interventionCoverages["Zinc supplementation"]
         # -------------------------
         # calculate reduction in stunted fraction
-        stuntingReduction = {}
+        stuntingUpdate = {}
         for ageName in self.ages:
             probStuntingIfZinc = self.constants.fracStuntedIfZinc["zinc"][ageName]
             probStuntingIfNoZinc = self.constants.fracStuntedIfZinc["nozinc"][ageName]
             oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
             newProbStunting = newCoverage*probStuntingIfZinc + (1.-newCoverage)*probStuntingIfNoZinc
-            stuntingReduction[ageName] = (oldProbStunting - newProbStunting)/oldProbStunting
+            stuntingUpdate[ageName] = (oldProbStunting - newProbStunting)/oldProbStunting
         # -------------------------
         # Mortality
         mortalityReduction={}
@@ -77,7 +77,7 @@ class Params:
             reduction = affectedFrac * effectiveness * (newCoverage - oldCoverage) / (1. - effectiveness*oldCoverage)
             self.incidenceDiarrhea[ageName] *= 1.-reduction
         # -------------------------
-        return stuntingReduction, mortalityReduction
+        return stuntingUpdate, mortalityReduction
         
         
     def getMortalityReduction(self, newCoverage):
@@ -99,10 +99,10 @@ class Params:
         return mortalityReduction            
         
         
-    def getStuntingReduction(self, newCoverage):
-        stuntingReduction = {}
+    def getStuntingUpdate(self, newCoverage):
+        stuntingUpdate = {}
         for ageName in self.ages:
-            stuntingReduction[ageName] = 1
+            stuntingUpdate[ageName] = 1
             oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
             for intervention in newCoverage.keys():            
                 if intervention == 'Zinc supplementation': 
@@ -114,8 +114,8 @@ class Params:
                 else:      
                     reduction = 0
                     
-                stuntingReduction[ageName] *= 1. - reduction
-        return stuntingReduction        
+                stuntingUpdate[ageName] *= 1. - reduction
+        return stuntingUpdate        
             
             
                         
