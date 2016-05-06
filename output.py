@@ -258,11 +258,12 @@ def getStuntedPercent(modelList, label):
 
     
     
-def getCombinedPlots(numRuns, data):
+def getCombinedPlots(numRuns, data, save=False):
     # set up
     totalPopU5 = {}
     stuntPopU5 = {}
     cumulDeathsU5 = {}
+    cumulDeathsList = {}
     for run in range(numRuns):
         modelList = data[run]["modelList"]
         tag       = data[run]["tag"]
@@ -273,31 +274,31 @@ def getCombinedPlots(numRuns, data):
         totalPopU5[tag] = [0.]*numMonths
         stuntPopU5[tag] = [0.]*numMonths
         cumulDeathsU5[tag] = [0.]*numMonths
-        #totalPop = []
-        #stuntPop = []
-        for age in range(numAges):
-            #totalPop.append([])
-            #stuntPop.append([])
-            m=0
-            for model in modelList:
-                total     = model.listOfAgeCompartments[age].getTotalPopulation()
-                stuntFrac = model.listOfAgeCompartments[age].getStuntedFraction()
+        cumulDeathsList[tag] = {}
+        for ageName in ageList:
+            cumulDeathsList[tag][ageName] = [0.]*numMonths
+        #totalPop = [None]*numAges
+        #stuntPop = [None]*numAges
+        for mon in range(numMonths):
+            model = modelList[mon]
+            for age in range(numAges):
+                ageName = ageList[age]
+                total       = model.listOfAgeCompartments[age].getTotalPopulation()
+                stuntFrac   = model.listOfAgeCompartments[age].getStuntedFraction()
                 cumulDeaths = model.listOfAgeCompartments[age].getCumulativeDeaths()
                 #totalPop[age].append(total)
                 #stuntPop[age].append(total*stuntFrac)
-                totalPopU5[tag][m] += total
-                stuntPopU5[tag][m] += total*stuntFrac
-                cumulDeathsU5[tag][m] += cumulDeaths
-                m+=1
-
-
+                totalPopU5[tag][mon]    += total
+                stuntPopU5[tag][mon]    += total*stuntFrac
+                cumulDeathsU5[tag][mon] += cumulDeaths
+                cumulDeathsList[tag][ageName][mon] = cumulDeaths
+    # stunted fraction can't be added, so calculate from stuntPopU5 and totalPopU5 afterward
     stuntFracU5 = {}
     for run in range(numRuns):
         tag       = data[run]["tag"]
         stuntFracU5[tag] = [0.]*numMonths
         for m in range(numMonths):
             stuntFracU5[tag][m] = stuntPopU5[tag][m] / totalPopU5[tag][m]
-
 
     import numpy as np
     import matplotlib.pyplot as plt
@@ -307,32 +308,89 @@ def getCombinedPlots(numRuns, data):
     xTickList = list(range(0, 12*(numYears+1),    skip*12)) # [0]
     x = np.arange(numMonths)
 
+    # PLOT comparison of Stunted Population Size (everyone U5)
     fig, ax = plt.subplots()
     ax.set_xticks(xTickList)
     ax.set_xticklabels(yearList)
     ax.set_xlim([0, 12*numYears])
-    plt.ylabel('Stunted population size')
-    #plt.title('Total and Stunted Population Size : %s'%(label))
-    #plot_total = plt.fill_between(x, totalPopU5, stuntPopU5, color='blue')
+    plt.ylabel('Stunted population size (all U5)')
+    plotList = []
+    tagList  = []
     for run in range(numRuns):
         tag       = data[run]["tag"]
         color     = data[run]["color"]
-        plot_stunt = plt.fill_between(x, stuntPopU5[tag], 0, color=color)
-    #ax.legend([plot_total, plot_stunt], ["Total", "Stunted"])
-        #ax.legend([plot_total, plot_stunt], ["Total", "Stunted"])
-    plt.show()
+        plotObj = plt.fill_between(x, stuntPopU5[tag], 0, color=color)
+        tagList.append(tag)
+        plotList.append(plotObj)
+    ax.legend(plotList, tagList)
+    if save:
+        plt.savefig("compare_stuntedPopSize.png")
+    else:
+        plt.show()
 
-
+    # PLOT comparison of Stunted Fraction (everyone U5)
     fig, ax = plt.subplots()
     ax.set_xticks(xTickList)
     ax.set_xticklabels(yearList)
     ax.set_xlim([0, 12*numYears])
-    plt.ylabel('Stunted prevalence')
+    plt.ylabel('Stunted prevalence (all U5)')
+    plotList = []
+    tagList  = []
     for run in range(numRuns):
         tag       = data[run]["tag"]
         color     = data[run]["color"]
-        plot_stunt = plt.fill_between(x, stuntFracU5[tag], 0, color=color)
-    plt.show()
+        plotObj = plt.fill_between(x, stuntFracU5[tag], 0, color=color)
+        tagList.append(tag)
+        plotList.append(plotObj)
+    ax.legend(plotList, tagList)
+    if save:
+        plt.savefig("compare_stuntedFraction.png")
+    else:
+        plt.show()
+
+    # PLOT comparison of Cumulative Deaths (everyone U5)
+    fig, ax = plt.subplots()
+    ax.set_xticks(xTickList)
+    ax.set_xticklabels(yearList)
+    ax.set_xlim([0, 12*numYears])
+    plt.ylabel('Cumulative Deaths (all U5)')
+    plotList = []
+    tagList  = []
+    for run in range(numRuns):
+        tag       = data[run]["tag"]
+        color     = data[run]["color"]
+        plotObj = plt.fill_between(x, cumulDeathsU5[tag], 0, color=color)
+        tagList.append(tag)
+        plotList.append(plotObj)
+    ax.legend(plotList, tagList)
+    if save:
+        plt.savefig("compare_cumulativeDeaths.png")
+    else:
+        plt.show()
+
+
+    # PLOT comparison of Cumulative Deaths (newborns)
+    fig, ax = plt.subplots()
+    ax.set_xticks(xTickList)
+    ax.set_xticklabels(yearList)
+    ax.set_xlim([0, 12*numYears])
+    plt.ylabel('Cumulative Deaths (<1 month)')
+    plotList = []
+    tagList  = []
+    for run in range(numRuns):
+        tag       = data[run]["tag"]
+        color     = data[run]["color"]
+        plotObj = plt.fill_between(x, cumulDeathsList[tag]["<1 month"], 0, color=color)
+        tagList.append(tag)
+        plotList.append(plotObj)
+    ax.legend(plotList, tagList)
+    if save:
+        plt.savefig("compare_cumulativeDeaths_newborns.png")
+    else:
+        plt.show()
+
+
+
 
 
 def getSimpleBarFromDictionary(dictionary, label, order):
