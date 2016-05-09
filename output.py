@@ -440,8 +440,20 @@ def getStuntingStatusesGivenAge(modelList, age, lable):
     plt.ylim(0, 1)
     plt.show()
     
-    
-    
+def getDeathsAverted(modelList, modelList2, label):
+    import numpy as np
+    import matplotlib.pyplot as plt
+    finalIndex = len(modelList) - 1
+    deathsAvertedByAge=[]
+    for age in range(0, len(modelList[0].ages)):
+        deathsAverted = modelList[finalIndex].listOfAgeCompartments[age].getCumulativeDeaths() - modelList2[finalIndex].listOfAgeCompartments[age].getCumulativeDeaths()
+        deathsAvertedByAge.append(deathsAverted)
+    X = np.arange(len(modelList[0].ages))
+    plt.bar(X, deathsAvertedByAge, align='center', width=0.5)
+    plt.xticks(X, modelList[0].ages)
+    plt.title('total deaths averted: ', label)
+    plt.show()     
+        
     
     
     

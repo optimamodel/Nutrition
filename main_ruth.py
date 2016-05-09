@@ -218,6 +218,8 @@ for stuntingCat in ["normal", "mild", "moderate", "high"]:
         for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
             print 'mortality rate (no int, int) ', modelList[0].listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate, '  ', newModelList[0].listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate
 
+output.getDeathsAverted(modelList, newModelList, 'deaths averted with intervention')
+
 #order = ['high', 'moderate', 'mild', 'normal']
 #for i in range(4,5):
 #    print ages[i]    
