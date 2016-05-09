@@ -175,17 +175,17 @@ while 1:
 infile.close()
 
 
-output.getPopAndStuntedSizePlot(modelList, 'before')
-output.getPopAndStuntedSizePlot(newModelList, 'after')
-
-output.getNumStuntedByAgePlot(modelList, 'before')
-output.getNumStuntedByAgePlot(newModelList, 'after')
-
-output.getStuntedPercent(modelList, 'before')
-output.getStuntedPercent(newModelList, 'after')
-
-output.getCumulativeDeathsByAgePlot(modelList, 'before')
-output.getCumulativeDeathsByAgePlot(newModelList, 'after')
+#output.getPopAndStuntedSizePlot(modelList, 'before')
+#output.getPopAndStuntedSizePlot(newModelList, 'after')
+#
+#output.getNumStuntedByAgePlot(modelList, 'before')
+#output.getNumStuntedByAgePlot(newModelList, 'after')
+#
+#output.getStuntedPercent(modelList, 'before')
+#output.getStuntedPercent(newModelList, 'after')
+#
+#output.getCumulativeDeathsByAgePlot(modelList, 'before')
+#output.getCumulativeDeathsByAgePlot(newModelList, 'after')
 
 #print 'stunted fraction for 12-23 months before'
 #for i in range(numsteps):
@@ -195,30 +195,41 @@ output.getCumulativeDeathsByAgePlot(newModelList, 'after')
 #for i in range(numsteps):
 #    print 'stunted frac:  ', newModelList[i].listOfAgeCompartments[3].getStuntedFraction()
 
-for age in range(0,5):
-    print ages[age]    
-    print 'before: cumulative deaths = ', modelList[167].listOfAgeCompartments[age].getCumulativeDeaths()
-    print 'after: cumulative deaths = ', newModelList[167].listOfAgeCompartments[age].getCumulativeDeaths()
-    print 'before: pop size = ', modelList[167].listOfAgeCompartments[age].getTotalPopulation()
-    print 'after: pop size = ', newModelList[167].listOfAgeCompartments[age].getTotalPopulation()
-
-for j in range(0,5):  
-    print
-    for i in range(0, len(modelList)):
-        #print 'cumulative deaths newborns (no int, int):  ', modelList[i].listOfAgeCompartments[0].getCumulativeDeaths(), ' ,  ', newModelList[i].listOfAgeCompartments[0].getCumulativeDeaths()         
-        print 'cumulative deaths ', ages[j], '  (no int, int):  ', modelList[i].listOfAgeCompartments[j].getCumulativeDeaths(), ' ,  ', newModelList[i].listOfAgeCompartments[j].getCumulativeDeaths() 
-        
-        
-for cause in params.causesOfDeath:
-    print 'underlyingMortality ', cause, ' newborns (no int, int):  ', modelList[0].constants.underlyingMortalities['<1 month'][cause], '   ', newModelList[0].constants.underlyingMortalities['<1 month'][cause]     
-
-
-for stuntingCat in ["normal", "mild", "moderate", "high"]:
-    for wastingCat in ["normal", "mild", "moderate", "high"]:
-        for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
-            print 'mortality rate (no int, int) ', modelList[0].listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate, '  ', newModelList[0].listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate
+#for age in range(0,5):
+#    print ages[age]    
+#    print 'before: cumulative deaths = ', modelList[167].listOfAgeCompartments[age].getCumulativeDeaths()
+#    print 'after: cumulative deaths = ', newModelList[167].listOfAgeCompartments[age].getCumulativeDeaths()
+#    print 'before: pop size = ', modelList[167].listOfAgeCompartments[age].getTotalPopulation()
+#    print 'after: pop size = ', newModelList[167].listOfAgeCompartments[age].getTotalPopulation()
+#
+#for j in range(0,5):  
+#    print
+#    for i in range(0, len(modelList)):
+#        #print 'cumulative deaths newborns (no int, int):  ', modelList[i].listOfAgeCompartments[0].getCumulativeDeaths(), ' ,  ', newModelList[i].listOfAgeCompartments[0].getCumulativeDeaths()         
+#        print 'cumulative deaths ', ages[j], '  (no int, int):  ', modelList[i].listOfAgeCompartments[j].getCumulativeDeaths(), ' ,  ', newModelList[i].listOfAgeCompartments[j].getCumulativeDeaths() 
+#        
+#        
+#for cause in params.causesOfDeath:
+#    print 'underlyingMortality ', cause, ' newborns (no int, int):  ', modelList[0].constants.underlyingMortalities['<1 month'][cause], '   ', newModelList[0].constants.underlyingMortalities['<1 month'][cause]     
+#
+#
+#for stuntingCat in ["normal", "mild", "moderate", "high"]:
+#    for wastingCat in ["normal", "mild", "moderate", "high"]:
+#        for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+#            print 'mortality rate (no int, int) ', modelList[0].listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate, '  ', newModelList[0].listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate
 
 output.getDeathsAverted(modelList, newModelList, 'deaths averted with intervention')
+
+plotData = []
+plotData.append({})
+plotData[0]["modelList"] = modelList
+plotData[0]["tag"] = 'no int'
+plotData[0]["color"] = 'grey'
+plotData.append({})
+plotData[1]["modelList"] = newModelList
+plotData[1]["tag"] = 'with int'
+plotData[1]["color"] = 'blue'
+output.getCombinedPlots(2, plotData)
 
 #order = ['high', 'moderate', 'mild', 'normal']
 #for i in range(4,5):

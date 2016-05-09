@@ -322,7 +322,7 @@ def getCombinedPlots(numRuns, data, save=False):
         plotObj = plt.fill_between(x, stuntPopU5[tag], 0, color=color)
         tagList.append(tag)
         plotList.append(plotObj)
-    ax.legend(plotList, tagList)
+    ax.legend(plotList, tagList, loc = 'lower right')
     if save:
         plt.savefig("compare_stuntedPopSize.png")
     else:
@@ -342,7 +342,7 @@ def getCombinedPlots(numRuns, data, save=False):
         plotObj = plt.fill_between(x, stuntFracU5[tag], 0, color=color)
         tagList.append(tag)
         plotList.append(plotObj)
-    ax.legend(plotList, tagList)
+    ax.legend(plotList, tagList, loc = 'lower right')
     if save:
         plt.savefig("compare_stuntedFraction.png")
     else:
@@ -362,7 +362,7 @@ def getCombinedPlots(numRuns, data, save=False):
         plotObj = plt.fill_between(x, cumulDeathsU5[tag], 0, color=color)
         tagList.append(tag)
         plotList.append(plotObj)
-    ax.legend(plotList, tagList)
+    ax.legend(plotList, tagList, loc = 'lower right')
     if save:
         plt.savefig("compare_cumulativeDeaths.png")
     else:
@@ -383,7 +383,7 @@ def getCombinedPlots(numRuns, data, save=False):
         plotObj = plt.fill_between(x, cumulDeathsList[tag]["<1 month"], 0, color=color)
         tagList.append(tag)
         plotList.append(plotObj)
-    ax.legend(plotList, tagList)
+    ax.legend(plotList, tagList, loc = 'lower right')
     if save:
         plt.savefig("compare_cumulativeDeaths_newborns.png")
     else:
@@ -451,7 +451,7 @@ def getDeathsAverted(modelList, modelList2, label):
     X = np.arange(len(modelList[0].ages))
     plt.bar(X, deathsAvertedByAge, align='center', width=0.5)
     plt.xticks(X, modelList[0].ages)
-    plt.title('total deaths averted: ', label)
+    plt.title('total deaths averted: ' + label)
     plt.show()     
         
     

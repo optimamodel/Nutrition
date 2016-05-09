@@ -178,16 +178,6 @@ plotData[1]["color"] = 'blue'
 
 output.getCombinedPlots(2, plotData)
 
-plotData2 = []
-plotData2.append({})
-plotData2[0]["modelList"] = newModelList
-plotData2[0]["tag"] = tag
-plotData2[0]["color"] = 'blue'
-plotData2.append({})
-plotData2[1]["modelList"] = plotData[0]["modelList"]
-plotData2[1]["tag"] = plotData[0]["tag"]
-plotData2[1]["color"] = plotData[0]["color"]
-output.getCombinedPlots(2, plotData2)
 
 
 
