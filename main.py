@@ -66,6 +66,7 @@ def makeAgeCompartments(ageRangeList, agingRateList, agePopSizes, keyList):
 
 plotData = []
 
+
 #------------------------------------------------------------------------    
 # DEFAULT RUN WITH NO CHANGES TO INTERVENTIONS
 # read the data from the spreadsheet
@@ -77,6 +78,7 @@ constants = constantsCode.Constants(spreadsheetData, model, keyList)
 model.setConstants(constants)
 params = parametersCode.Params(spreadsheetData2, constants, keyList)
 model.setParams(params)
+model.updateMortalityRate()
 
 
 pickleFilename = 'testDefault.pkl'
@@ -125,6 +127,7 @@ constants = constantsCode.Constants(spreadsheetData, modelZ, keyList)
 modelZ.setConstants(constants)
 params = parametersCode.Params(spreadsheetData,constants,keyList)
 modelZ.setParams(params)
+modelZ.updateMortalityRate()
 
 # increase zinc coverage
 newCoverages={}
@@ -174,6 +177,17 @@ plotData[1]["color"] = 'blue'
 
 
 output.getCombinedPlots(2, plotData)
+
+plotData2 = []
+plotData2.append({})
+plotData2[0]["modelList"] = newModelList
+plotData2[0]["tag"] = tag
+plotData2[0]["color"] = 'blue'
+plotData2.append({})
+plotData2[1]["modelList"] = plotData[0]["modelList"]
+plotData2[1]["tag"] = plotData[0]["tag"]
+plotData2[1]["color"] = plotData[0]["color"]
+output.getCombinedPlots(2, plotData2)
 
 
 

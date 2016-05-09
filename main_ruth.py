@@ -74,6 +74,7 @@ constants = constantsCode.Constants(spreadsheetData, model, keyList)
 model.setConstants(constants)
 params = parametersCode.Params(spreadsheetData, constants, keyList)
 model.setParams(params)
+model.updateMortalityRate() #now update mortlaity rate of all the boxes
 
 #model.moveOneTimeStep() #move one time step to correct non-gaussian dists
 #
@@ -142,6 +143,7 @@ constants = constantsCode.Constants(spreadsheetData2, modelZ, keyList)
 modelZ.setConstants(constants)
 params = parametersCode.Params(spreadsheetData2, constants, keyList)
 modelZ.setParams(params)
+modelZ.updateMortalityRate() #now update mortlaity rate of all the boxes
 
 
 
@@ -185,11 +187,45 @@ output.getStuntedPercent(newModelList, 'after')
 output.getCumulativeDeathsByAgePlot(modelList, 'before')
 output.getCumulativeDeathsByAgePlot(newModelList, 'after')
 
-print 'stunted fraction for 12-23 months before'
-for i in range(numsteps):
-    print 'stunted frac:  ', modelList[i].listOfAgeCompartments[3].getStuntedFraction()
+#print 'stunted fraction for 12-23 months before'
+#for i in range(numsteps):
+#    print 'stunted frac:  ', modelList[i].listOfAgeCompartments[3].getStuntedFraction()
+#
+#print 'stunted fraction for 12-23 months after'
+#for i in range(numsteps):
+#    print 'stunted frac:  ', newModelList[i].listOfAgeCompartments[3].getStuntedFraction()
 
-print 'stunted fraction for 12-23 months after'
-for i in range(numsteps):
-    print 'stunted frac:  ', newModelList[i].listOfAgeCompartments[3].getStuntedFraction()
+for age in range(0,5):
+    print ages[age]    
+    print 'before: cumulative deaths = ', modelList[167].listOfAgeCompartments[age].getCumulativeDeaths()
+    print 'after: cumulative deaths = ', newModelList[167].listOfAgeCompartments[age].getCumulativeDeaths()
+    print 'before: pop size = ', modelList[167].listOfAgeCompartments[age].getTotalPopulation()
+    print 'after: pop size = ', newModelList[167].listOfAgeCompartments[age].getTotalPopulation()
+
+for j in range(0,5):  
+    print
+    for i in range(0, len(modelList)):
+        #print 'cumulative deaths newborns (no int, int):  ', modelList[i].listOfAgeCompartments[0].getCumulativeDeaths(), ' ,  ', newModelList[i].listOfAgeCompartments[0].getCumulativeDeaths()         
+        print 'cumulative deaths ', ages[j], '  (no int, int):  ', modelList[i].listOfAgeCompartments[j].getCumulativeDeaths(), ' ,  ', newModelList[i].listOfAgeCompartments[j].getCumulativeDeaths() 
+        
+        
+for cause in params.causesOfDeath:
+    print 'underlyingMortality ', cause, ' newborns (no int, int):  ', modelList[0].constants.underlyingMortalities['<1 month'][cause], '   ', newModelList[0].constants.underlyingMortalities['<1 month'][cause]     
+
+
+for stuntingCat in ["normal", "mild", "moderate", "high"]:
+    for wastingCat in ["normal", "mild", "moderate", "high"]:
+        for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+            print 'mortality rate (no int, int) ', modelList[0].listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate, '  ', newModelList[0].listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate
+
+#order = ['high', 'moderate', 'mild', 'normal']
+#for i in range(4,5):
+#    print ages[i]    
+#    output.getSimpleBarFromDictionary(modelList[1].params.stuntingDistribution[ages[i]], ages[i] +' no intervention, time step 1', order)
+#    output.getSimpleBarFromDictionary(newModelList[1].params.stuntingDistribution[ages[i]], ages[i] +' intervention, time step 1', order)
+#    output.getSimpleBarFromDictionary(modelList[167].params.stuntingDistribution[ages[i]], ages[i] +' no intervention, time step 167', order)
+#    output.getSimpleBarFromDictionary(newModelList[167].params.stuntingDistribution[ages[i]], ages[i] +' intervention, time step 167', order)
+
+
+
 
