@@ -25,7 +25,7 @@ class AgeCompartment:
         self.name = name  
         self.dictOfBoxes = dictOfBoxes
         self.agingRate = agingRate
-        self.ages, self.birthOutcomes, self.wastingList, self.stuntingList, self.breastfeedingList = keyList
+        self.ages, self.birthOutcomeList, self.wastingList, self.stuntingList, self.breastfeedingList = keyList
 
     def getTotalPopulation(self):
         sum = 0.
@@ -100,7 +100,7 @@ class Model:
         self.name = name
         self.fertileWomen = fertileWomen
         self.listOfAgeCompartments = listOfAgeCompartments
-        self.ages, self.birthOutcomes, self.wastingList, self.stuntingList, self.breastfeedingList = keyList
+        self.ages, self.birthOutcomeList, self.wastingList, self.stuntingList, self.breastfeedingList = keyList
         self.timestep = timestep
         self.constants = None
         self.params = None
@@ -202,22 +202,22 @@ class Model:
         # Newborns first
         ageCompartment = self.listOfAgeCompartments[0]
         age = ageCompartment.name
-        for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+        for breastfeedingCat in self.breastfeedingList:
             count = 0.
             for cause in self.params.causesOfDeath:
                 Rb = self.params.RRBreastfeeding[age][cause][breastfeedingCat]
-                for birthoutcome in self.birthOutcomes:
+                for birthoutcome in self.birthOutcomeList:
                     Rbo = self.params.RRdeathByBirthOutcome[cause][birthoutcome]
                     count += Rb * Rbo * self.constants.underlyingMortalities[age][cause]
-            for stuntingCat in ["normal", "mild", "moderate", "high"]:
-                for wastingCat in ["normal", "mild", "moderate", "high"]:
+            for stuntingCat in self.stuntingList:
+                for wastingCat in self.wastingList:
                     ageCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate = count
         # over 1 months
         for ageCompartment in self.listOfAgeCompartments[1:]:
             age = ageCompartment.name
-            for stuntingCat in ["normal", "mild", "moderate", "high"]:
-                for wastingCat in ["normal", "mild", "moderate", "high"]:
-                    for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+            for stuntingCat in self.stuntingList:
+                for wastingCat in self.wastingList:
+                    for breastfeedingCat in self.breastfeedingList:
                         count = 0.
                         for cause in self.params.causesOfDeath:
                             t1 = self.constants.underlyingMortalities[age][cause]
@@ -231,9 +231,9 @@ class Model:
 
     def applyMortality(self):
         for ageCompartment in self.listOfAgeCompartments:
-            for stuntingCat in ["normal", "mild", "moderate", "high"]:
-                for wastingCat in ["normal", "mild", "moderate", "high"]:
-                    for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+            for stuntingCat in self.stuntingList:
+                for wastingCat in self.wastingList:
+                    for breastfeedingCat in self.breastfeedingList:
                         thisBox = ageCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat]
                         deaths = thisBox.populationSize * thisBox.mortalityRate * self.timestep
                         thisBox.populationSize -= deaths
@@ -248,17 +248,17 @@ class Model:
         for ind in range(0, numCompartments):
             thisCompartment = self.listOfAgeCompartments[ind]
             agingOut[ind] = {}
-            for wastingCat in ["normal", "mild", "moderate", "high"]:
+            for wastingCat in self.wastingList:
                 agingOut[ind][wastingCat] = {}
-                for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+                for breastfeedingCat in self.breastfeedingList:
                     agingOut[ind][wastingCat][breastfeedingCat] = {}
                     for stuntingCat in self.stuntingList:
                         thisBox = thisCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat] 
                         agingOut[ind][wastingCat][breastfeedingCat][stuntingCat] = thisBox.populationSize * thisCompartment.agingRate #*self.timestep
         # first age group does not have aging in
         newborns = self.listOfAgeCompartments[0]
-        for wastingCat in ["normal", "mild", "moderate", "high"]:
-            for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+        for wastingCat in self.wastingList:
+            for breastfeedingCat in self.breastfeedingList:
                 for stuntingCat in self.stuntingList:
                     newbornBox = newborns.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat]
                     newbornBox.populationSize -= agingOut[0][wastingCat][breastfeedingCat][stuntingCat]
@@ -271,8 +271,8 @@ class Model:
             numAgingIn = {}
             numAgingIn["notstunted"] = 0.
             numAgingIn["yesstunted"] = 0.
-            for prevBF in ["exclusive", "predominant", "partial", "none"]:
-                for prevWT in ["normal", "mild", "moderate", "high"]:
+            for prevBF in self.breastfeedingList:
+                for prevWT in self.wastingList:
                     numAgingIn["notstunted"] += agingOut[ind-1][prevWT][prevBF]["normal"] + agingOut[ind-1][prevWT][prevBF]["mild"]
                     numAgingIn["yesstunted"] += agingOut[ind-1][prevWT][prevBF]["moderate"] + agingOut[ind-1][prevWT][prevBF]["high"]
             # calculate which of those aging in are moving into a stunted category (4 categories)
@@ -284,11 +284,11 @@ class Model:
                 for stuntingCat in self.stuntingList:
                     numAgingInStratified[stuntingCat] += restratifiedProbBecomeStunted[stuntingCat] * numAgingIn[prevStunt]
             # distribution those aging in amongst those stunting categories but also breastfeeding and wasting
-            for wastingCat in ["normal", "mild", "moderate", "high"]:
+            for wastingCat in self.wastingList:
                 paw = self.params.wastingDistribution[ageName][wastingCat]
-                for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+                for breastfeedingCat in self.breastfeedingList:
                     pab = self.params.breastfeedingDistribution[ageName][breastfeedingCat]
-                    for stuntingCat in ["normal", "mild", "moderate", "high"]:
+                    for stuntingCat in self.stuntingList:
                         thisBox = thisAgeCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat]
                         thisBox.populationSize -= agingOut[ind][wastingCat][breastfeedingCat][stuntingCat]
                         thisBox.populationSize += numAgingInStratified[stuntingCat] * pab * paw
@@ -305,16 +305,16 @@ class Model:
         ageName         = ageCompartment.name
         # restratify Stunting
         restratifiedStuntingAtBirth = {}
-        for birthOutcome in ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"]:
+        for birthOutcome in self.birthOutcomeList:
             restratifiedStuntingAtBirth[birthOutcome] = self.helper.restratify(self.constants.probsStuntingAtBirth[birthOutcome])
         # sum over birth outcome for full stratified stunting fractions, then apply to birth distribution
         stuntingFractions = {}
-        for stuntingCat in ["normal", "mild", "moderate", "high"]:
+        for stuntingCat in self.stuntingList:
             stuntingFractions[stuntingCat] = 0.
-            for birthOutcome in ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"]:
+            for birthOutcome in self.birthOutcomeList:
                 stuntingFractions[stuntingCat] += restratifiedStuntingAtBirth[birthOutcome][stuntingCat] * self.params.birthOutcomeDist[birthOutcome]
-            for wastingCat in ["normal", "mild", "moderate", "high"]:
-                for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+            for wastingCat in self.wastingList:
+                for breastfeedingCat in self.breastfeedingList:
                     ageCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize += numNewBabies * self.params.wastingDistribution[ageName][wastingCat] * self.params.breastfeedingDistribution[ageName][breastfeedingCat] * stuntingFractions[stuntingCat]
 
         #now reduce stunting due to interventions
