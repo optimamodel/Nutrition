@@ -17,6 +17,7 @@ class Constants:
         self.probStuntedIfPrevStunted = {}
         self.fracStuntedIfDiarrhea = {}
         self.fracStuntedIfZinc = {}
+        self.probStuntedIfCovered = {}
         #self.baselineProbsBirthOutcome = {}  
         self.probsBirthOutcome = {}  
         self.birthStuntingQuarticCoefficients = []
@@ -27,6 +28,7 @@ class Constants:
         self.getProbStuntingProgression()
         self.getFracStuntingGivenDiarrhea()
         self.getFracStuntingGivenZinc()
+        #self.getProbStuntedIfCoveredByIntervention()
         #self.getBaselineProbsBirthOutcome()
         self.getBirthStuntingQuarticCoefficients()
         self.getProbStuntingAtBirthForBaselineBirthOutcome()
@@ -230,10 +232,9 @@ class Constants:
         for ageInd in range(0,numAgeGroups):
             ageName = self.ages[ageInd]
             thisAge = self.model.listOfAgeCompartments[ageInd]
+            #LOOP OVER INTERVENTIONS
             OddsRatio = self.data.ORstuntingZinc[ageName]
-            # instead have fraction of children of age a who have enough zinc
-            #fracZinc = self.data.InterventionCoveragesCurrent["Zinc supplementation"]
-            fracZinc = 0.
+            fracZinc = self.data.interventionCoveragesCurrent["Zinc supplementation"]
             # fraction stunted
             fracStuntedThisAge = thisAge.getStuntedFraction()
             # solve quadratic equation ax**2 + bx + c = 0
