@@ -45,6 +45,14 @@ class AgeCompartment:
         NumberTotal = self.getTotalPopulation()
         return float(NumberStunted)/float(NumberTotal)
 
+    def getNumberStunted(self):
+        NumberStunted = 0.
+        for stuntingCat in ["moderate", "high"]:
+            for wastingCat in self.wastingList:
+                for breastfeedingCat in self.breastfeedingList:
+                    NumberStunted += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
+        return NumberStunted
+
 
     def getCumulativeDeaths(self):
         sum = 0.
