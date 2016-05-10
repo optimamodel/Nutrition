@@ -15,11 +15,7 @@ def getPopSizeByAgePlot(modelList, label):
         popSize[age] = 0
         countThis = []
         for model in modelList:
-            count = 0            
-            for stuntingCat in ["normal", "mild", "moderate", "high"]:
-                for wastingCat in ["normal", "mild", "moderate", "high"]:
-                    for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
-                        count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
+            count = model.listOfAgeCompartments[age].getTotalPopulation()
             countThis.append(count)
         popSize[age] = countThis      
     
@@ -133,11 +129,7 @@ def getCumulativeDeathsByAgePlot(modelList, label):
         cumulativeDeaths[age] = 0
         countThis = []
         for model in modelList:
-            count = 0            
-            for stuntingCat in ["normal", "mild", "moderate", "high"]:
-                for wastingCat in ["normal", "mild", "moderate", "high"]:
-                    for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
-                        count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].cumulativeDeaths
+            count = model.listOfAgeCompartments[age].getCumulativeDeaths()
             countThis.append(count)
         cumulativeDeaths[age] = countThis  
 
@@ -179,11 +171,7 @@ def getNumStuntedByAgePlot(modelList, label):
         numStunted[age] = 0
         countThis = []
         for model in modelList:
-            count = 0            
-            for stuntingCat in ["moderate", "high"]:
-                for wastingCat in ["normal", "mild", "moderate", "high"]:
-                    for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
-                        count += model.listOfAgeCompartments[age].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
+            count = model.listOfAgeCompartments[age].getNumberStunted()
             countThis.append(count)
         numStunted[age] = countThis      
         
