@@ -85,7 +85,7 @@ def getDataFromSpreadsheet(fileName, keyList):
         RRStunting[age] = {}
         for cause in causesOfDeath:
             RRStunting[age][cause] = {}
-            for stuntingCat in ['normal', 'mild', 'moderate', 'high']:
+            for stuntingCat in self.stuntingList:
                 if cause in listCausesRRStunting: #if no RR given for this cause then set to 1
                     RRStunting[age][cause][stuntingCat] = df.loc[cause][age][stuntingCat]
                 else:
@@ -109,7 +109,7 @@ def getDataFromSpreadsheet(fileName, keyList):
         RRWasting[age] = {}
         for cause in causesOfDeath:
             RRWasting[age][cause] = {}
-            for wastingCat in ['normal', 'mild', 'moderate', 'high']:
+            for wastingCat in self.wastingList:
                 if cause in listCausesRRWasting: #if no RR given for this cause then set to 1
                     RRWasting[age][cause][wastingCat] = df.loc[cause][age][wastingCat]
                 else:
@@ -133,7 +133,7 @@ def getDataFromSpreadsheet(fileName, keyList):
         RRBreastfeeding[age] = {}
         for cause in causesOfDeath: 
             RRBreastfeeding[age][cause] = {}
-            for breastfeedingCat in ['exclusive', 'predominant', 'partial', 'none']:
+            for breastfeedingCat in self.breastfeedingList:
                 if cause in listCausesRRBreastfeeding: #if no RR given for this cause then set to 1
                     RRBreastfeeding[age][cause][breastfeedingCat] = df.loc[cause][age][breastfeedingCat]
                 else:
@@ -174,17 +174,17 @@ def getDataFromSpreadsheet(fileName, keyList):
     #stunting
     for age in ages:
         stuntingDistribution[age] = {}
-        for status in ['normal', 'mild', 'moderate', 'high']:
+        for status in self.stuntingList:
             stuntingDistribution[age][status] = df.loc['Stunting'][age][status] / 100.
     #wasting        
     for age in ages:
         wastingDistribution[age] = {}
-        for status in ['normal', 'mild', 'moderate', 'high']:
+        for status in self.wastingList:
             wastingDistribution[age][status] = df.loc['Wasting'][age][status] / 100.
     #breastfeeding  
     for age in ages:
         breastfeedingDistribution[age] = {}
-        for status in ['exclusive', 'predominant', 'partial', 'none']:
+        for status in breastfeedingList:
             breastfeedingDistribution[age][status] = df.loc['Breastfeeding'][age][status] / 100.
             
     
@@ -265,7 +265,7 @@ def getDataFromSpreadsheet(fileName, keyList):
     RRdiarrhea = {}
     for age in ages:
         RRdiarrhea[age] = {}
-        for breastfeedingCat in ['exclusive', 'predominant', 'partial', 'none']:
+        for breastfeedingCat in self.breastfeedingList:
             RRdiarrhea[age][breastfeedingCat] = df[age][breastfeedingCat]       
 
     # READ OR Diarrhea SHEET
