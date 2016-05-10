@@ -160,7 +160,6 @@ class Model:
                 sum += RDa * pab
             Za = self.params.incidenceDiarrhea[ageName] / sum
             RRnot = self.params.RRdiarrhea[ageName]["none"]
-            AO = pow(self.params.ORdiarrhea[ageName], RRnot*Za)#/ageGroup.agingRate)
             fracDiarrhea = 0.
             for breastfeedingCat in self.breastfeedingList:
                 RDa = self.params.RRdiarrhea[ageName][breastfeedingCat]
@@ -189,6 +188,7 @@ class Model:
         # get combined reductions from all interventions
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
         stuntingUpdate = self.params.getStuntingUpdate(newCoverage)
+        incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
         
         #apply reductions to each age group
         for ageGroup in self.listOfAgeCompartments:
@@ -205,6 +205,11 @@ class Model:
             self.params.stuntingDistribution[ageName] = self.helper.restratify(newProbStunting)
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
             self.totalStuntingUpdateNeoNatal *= stuntingUpdate['<1 month']
+            
+            #update incidence
+            self.params.incidenceDiarrhea[ageName] *= incidenceUpdate[ageName]['diarrhea']
+            #need to add flow on effect here
+            
         
     def updateMortalityRate(self):
         # Newborns first
