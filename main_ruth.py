@@ -22,7 +22,7 @@ def makeBoxes(thisAgePopSize, ageGroup, keyList):
             allBoxes[stuntingCat][wastingCat] = {}
             for breastfeedingCat in breastfeedingList:
                 thisPopSize = thisAgePopSize * spreadsheetData.stuntingDistribution[ageGroup][stuntingCat] * spreadsheetData.wastingDistribution[ageGroup][wastingCat] * spreadsheetData.breastfeedingDistribution[ageGroup][breastfeedingCat]   # Assuming independent
-                thisMortalityRate = spreadsheetData.totalMortality[ageGroup] # WARNING need to distribute appropriately
+                thisMortalityRate = 0
                 allBoxes[stuntingCat][wastingCat][breastfeedingCat] =  modelCode.Box(stuntingCat, wastingCat, breastfeedingCat, thisPopSize, thisMortalityRate)
     return allBoxes
 
@@ -217,16 +217,16 @@ infile.close()
 #        for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
 #            print 'mortality rate (no int, int) ', modelList[0].listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate, '  ', newModelList[0].listOfAgeCompartments[0].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate
 
-output.getDeathsAverted(modelList, newModelList, 'deaths averted with intervention')
+output.getDeathsAverted(modelList, newModelList, '')
 
 plotData = []
 plotData.append({})
 plotData[0]["modelList"] = modelList
-plotData[0]["tag"] = 'no int'
+plotData[0]["tag"] = 'no intervention'
 plotData[0]["color"] = 'grey'
 plotData.append({})
 plotData[1]["modelList"] = newModelList
-plotData[1]["tag"] = 'with int'
+plotData[1]["tag"] = 'with intervention'
 plotData[1]["color"] = 'blue'
 output.getCombinedPlots(2, plotData)
 

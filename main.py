@@ -44,7 +44,7 @@ def makeBoxes(thisAgePopSize, ageGroup, keyList):
             allBoxes[stuntingCat][wastingCat] = {}
             for breastfeedingCat in breastfeedingList:
                 thisPopSize = thisAgePopSize * spreadsheetData.stuntingDistribution[ageGroup][stuntingCat] * spreadsheetData.wastingDistribution[ageGroup][wastingCat] * spreadsheetData.breastfeedingDistribution[ageGroup][breastfeedingCat]   # Assuming independent
-                thisMortalityRate = spreadsheetData.totalMortality[ageGroup] # WARNING need to distribute appropriately
+                thisMortalityRate = 0
                 allBoxes[stuntingCat][wastingCat][breastfeedingCat] =  modelCode.Box(stuntingCat, wastingCat, breastfeedingCat, thisPopSize, thisMortalityRate)
     return allBoxes
 

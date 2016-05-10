@@ -146,7 +146,7 @@ class Model:
             """
             # calculate additional reduction in stunting due to incidence of diarrhoea
             sum = 0.
-            for breastfeedingCat in self.breastfeedingList:
+            for breastfeedingCat in self.breastfeedingList: 
                 RDa = self.params.RRdiarrhea[ageName][breastfeedingCat]
                 pab  = self.params.breastfeedingDistribution[ageName][breastfeedingCat]
                 sum += RDa * pab
@@ -179,7 +179,7 @@ class Model:
         #newCoverage is a dictionary of coverages by intervention        
         
         # get combined reductions from all interventions
-        mortalityReduction = self.params.getMortalityReduction(newCoverage)
+        mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
         stuntingUpdate = self.params.getStuntingUpdate(newCoverage)
         
         #apply reductions to each age group
@@ -188,7 +188,7 @@ class Model:
 
             #update mortality            
             for cause in self.params.causesOfDeath:
-                self.constants.underlyingMortalities[ageName][cause] *= mortalityReduction[ageName][cause]        
+                self.constants.underlyingMortalities[ageName][cause] *= mortalityUpdate[ageName][cause]        
             self.updateMortalityRate()    
             
             #update stunting    

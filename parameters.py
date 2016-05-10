@@ -80,12 +80,12 @@ class Params:
         return stuntingUpdate, mortalityReduction
         
         
-    def getMortalityReduction(self, newCoverage):
-        mortalityReduction={}
+    def getMortalityUpdate(self, newCoverage):
+        mortalityUpdate = {}
         for ageName in self.ages:
-            mortalityReduction[ageName]={}
+            mortalityUpdate[ageName] = {}
             for cause in self.causesOfDeath:
-                mortalityReduction[ageName][cause]=1.
+                mortalityUpdate[ageName][cause] = 1.
         causeList = ((self.interventionMortalityEffectiveness.values()[0]).values()[0]).keys()        
         for ageName in self.ages:
             for intervention in newCoverage.keys():
@@ -95,8 +95,8 @@ class Params:
                     newCoverageVal = newCoverage[intervention]
                     oldCoverage = self.interventionCoverages[intervention]
                     reduction = affectedFrac * effectiveness * (newCoverageVal - oldCoverage) / (1. - effectiveness*oldCoverage)
-                    mortalityReduction[ageName][cause] *= 1. - reduction
-        return mortalityReduction            
+                    mortalityUpdate[ageName][cause] *= 1. - reduction
+        return mortalityUpdate           
         
         
     def getStuntingUpdate(self, newCoverage):
