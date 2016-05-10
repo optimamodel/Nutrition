@@ -137,11 +137,10 @@ infile.close()
 #------------------------------------------------------------------------    
 # INTERVENTION
 listOfAgeCompartments = makeAgeCompartements(agingRateList, agePopSizes, keyList)
-spreadsheetData2 = dataCode.getDataFromSpreadsheet('InputForCode.xlsx', keyList)
 modelZ = modelCode.Model("Zinc model", mothers, listOfAgeCompartments, keyList, timestep)
-constants = constantsCode.Constants(spreadsheetData2, modelZ, keyList)
+constants = constantsCode.Constants(spreadsheetData, modelZ, keyList)
 modelZ.setConstants(constants)
-params = parametersCode.Params(spreadsheetData2, constants, keyList)
+params = parametersCode.Params(spreadsheetData, constants, keyList)
 modelZ.setParams(params)
 modelZ.updateMortalityRate() #now update mortlaity rate of all the boxes
 
