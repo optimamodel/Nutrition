@@ -158,7 +158,7 @@ class Model:
                 RDa = self.params.RRdiarrhea[ageName][breastfeedingCat]
                 pab  = self.params.breastfeedingDistribution[ageName][breastfeedingCat]
                 sum += RDa * pab
-            Za = self.params.incidenceDiarrhea[ageName] / sum
+            Za = self.params.incidences[ageName]['Diarrhea'] / sum
             RRnot = self.params.RRdiarrhea[ageName]["none"]
             fracDiarrhea = 0.
             for breastfeedingCat in self.breastfeedingList:
@@ -207,7 +207,7 @@ class Model:
             self.totalStuntingUpdateNeoNatal *= stuntingUpdate['<1 month']
             
             #update incidence
-            self.params.incidenceDiarrhea[ageName] *= incidenceUpdate[ageName]['diarrhea']
+            self.params.incidences[ageName]['Diarrhea'] *= incidenceUpdate[ageName]['diarrhea']
             #need to add flow on effect here
             
         
