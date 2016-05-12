@@ -160,10 +160,10 @@ class Constants:
                 RDa = self.data.RRdiarrhea[ageName][breastfeedingCat]
                 pab  = self.data.breastfeedingDistribution[ageName][breastfeedingCat]
                 sum += RDa * pab
-            Za = self.data.incidenceDiarrhea[ageName] / sum
+            Za = self.data.incidences[ageName]['Diarrhea'] / sum
             # population odds ratio = AO (see Eqn 3.9)
             RRnot = self.data.RRdiarrhea[ageName]["none"]
-            AO = pow(self.data.ORdiarrhea[ageName],RRnot*Za) #/thisAge.agingRate)
+            AO = pow(self.data.ORstuntingCondition[ageName]['Diarrhea'],RRnot*Za) #/thisAge.agingRate)
             # instead have fraction of children of age a who are experiencing diarrhea
             fracDiarrhea = 0.
             for breastfeedingCat in self.breastfeedingList:
@@ -200,7 +200,7 @@ class Constants:
         for ageInd in range(0,numAgeGroups):
             ageName = self.ages[ageInd]
             thisAge = self.model.listOfAgeCompartments[ageInd]
-            OddsRatio = self.data.ORstuntingZinc[ageName]
+            OddsRatio = self.data.ORstuntingIntervention[ageName]['Zinc supplementation']
             # instead have fraction of children of age a who have enough zinc
             fracZinc = self.data.interventionCoveragesCurrent["Zinc supplementation"]
             #fracZinc = 0.
@@ -233,7 +233,7 @@ class Constants:
             ageName = self.ages[ageInd]
             thisAge = self.model.listOfAgeCompartments[ageInd]
             #LOOP OVER INTERVENTIONS
-            OddsRatio = self.data.ORstuntingZinc[ageName]
+            OddsRatio = self.data.ORstuntingIntervention[ageName]['Zinc supplementation']
             fracZinc = self.data.interventionCoveragesCurrent["Zinc supplementation"]
             # fraction stunted
             fracStuntedThisAge = thisAge.getStuntedFraction()
@@ -253,7 +253,7 @@ class Constants:
 
 
 
-
+    """
     # calculation of probabilities of birth outcome
     # given baseline maternalAge=18-34 years , birthOrder=second or third, timeBetweenBirths=>24 months 
     # P(birthOutcome | standard (maternalAge,birthOrder,timeBtwn)
@@ -289,16 +289,16 @@ class Constants:
                         summation += P_bt * RR_gb * RR_gt
             self.baselineProbsBirthOutcome[birthOutcome] = self.data.birthOutcomeDist[birthOutcome] / summation
         self.baselineProbsBirthOutcome["Term AGA"] = 1. - sumProbOutcome
-
+    """
     
 
 
     def getBirthStuntingQuarticCoefficients(self):
         OR = [1.]*4
         OR[0] = 1.
-        OR[1] = self.data.ORBirthOutcomeStunting["Term SGA"]
-        OR[2] = self.data.ORBirthOutcomeStunting["Pre-term AGA"]
-        OR[3] = self.data.ORBirthOutcomeStunting["Pre-term SGA"]
+        OR[1] = self.data.ORstuntingBirthOutcome["Term SGA"]
+        OR[2] = self.data.ORstuntingBirthOutcome["Pre-term AGA"]
+        OR[3] = self.data.ORstuntingBirthOutcome["Pre-term SGA"]
         FracBO = [0.]*4
         FracBO[1] = self.data.birthOutcomeDist["Term SGA"]    
         FracBO[2] = self.data.birthOutcomeDist["Pre-term AGA"]
@@ -380,7 +380,7 @@ class Constants:
         p0 = self.baselineProbStuntingAtBirth
         self.probsStuntingAtBirth["Term AGA"] = p0
         for birthOutcome in ["Pre-term SGA","Pre-term AGA","Term SGA"]:
-            OR = self.data.ORBirthOutcomeStunting[birthOutcome]
+            OR = self.data.ORstuntingBirthOutcome[birthOutcome]
             self.probsStuntingAtBirth[birthOutcome] = p0*OR / (1.-p0+OR*p0)
             pi = self.probsStuntingAtBirth[birthOutcome]
             if(pi<0. or pi>1.):
