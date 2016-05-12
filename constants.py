@@ -148,6 +148,7 @@ class Constants:
     # Calculate probability of stunting in current age-group given diarrhea incidence
     def getFracStuntingGivenDiarrhea(self):
         from numpy import sqrt 
+        eps = 1.e-5
         from math import pow
         numAgeGroups = len(self.model.listOfAgeCompartments)
         self.fracStuntedIfDiarrhea["nodia"] = {}
@@ -178,11 +179,13 @@ class Constants:
             b = (AO-1.)*fracStuntedThisAge - AO*fracDiarrhea - (1.-fracDiarrhea)
             c = fracStuntedThisAge
             det = sqrt(b**2 - 4.*a*c)
-            soln1 = (-b + det)/(2.*a)
-            soln2 = (-b - det)/(2.*a)
-            # not sure what to do if both or neither are solutions
-            if(soln1>0.)and(soln1<1.): p0 = soln1
-            if(soln2>0.)and(soln2<1.): p0 = soln2
+            if(abs(a)<eps):
+                p0 = -c/b
+            else:
+                soln1 = (-b + det)/(2.*a)
+                soln2 = (-b - det)/(2.*a)
+                if(soln1>0.)and(soln1<1.): p0 = soln1
+                if(soln2>0.)and(soln2<1.): p0 = soln2
             self.fracStuntedIfDiarrhea["nodia"][ageName] = p0
             self.fracStuntedIfDiarrhea["dia"][ageName]   = p0*AO/(1.-p0+AO*p0)
             #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%((1.-fracDiarrhea)*p0 + fracDiarrhea*p0*AO/(1.-p0+AO*p0), fracStuntedThisAge)
@@ -194,6 +197,7 @@ class Constants:
     # Calculate probability of stunting in current age-group given coverage by zinc
     def getFracStuntingGivenZinc(self):
         from numpy import sqrt 
+        eps = 1.e-5
         numAgeGroups = len(self.model.listOfAgeCompartments)
         self.fracStuntedIfZinc["nozinc"] = {}
         self.fracStuntedIfZinc["zinc"] = {}
@@ -201,9 +205,7 @@ class Constants:
             ageName = self.ages[ageInd]
             thisAge = self.model.listOfAgeCompartments[ageInd]
             OddsRatio = self.data.ORstuntingIntervention[ageName]['Zinc supplementation']
-            # instead have fraction of children of age a who have enough zinc
             fracZinc = self.data.interventionCoveragesCurrent["Zinc supplementation"]
-            #fracZinc = 0.
             # fraction stunted
             fracStuntedThisAge = thisAge.getStuntedFraction()
             # solve quadratic equation ax**2 + bx + c = 0
@@ -211,11 +213,13 @@ class Constants:
             b = (OddsRatio-1)*fracStuntedThisAge - OddsRatio*fracZinc - (1.-fracZinc)
             c = fracStuntedThisAge
             det = sqrt(b**2 - 4.*a*c)
-            soln1 = (-b + det)/(2.*a)
-            soln2 = (-b - det)/(2.*a)
-            # not sure what to do if both or neither are solutions
-            if(soln1>0.)and(soln1<1.): p0 = soln1
-            if(soln2>0.)and(soln2<1.): p0 = soln2
+            if(abs(a)<eps):
+                p0 = -c/b
+            else:
+                soln1 = (-b + det)/(2.*a)
+                soln2 = (-b - det)/(2.*a)
+                if(soln1>0.)and(soln1<1.): p0 = soln1
+                if(soln2>0.)and(soln2<1.): p0 = soln2
             self.fracStuntedIfZinc["nozinc"][ageName] = p0
             self.fracStuntedIfZinc["zinc"][ageName]   = p0*OddsRatio/(1.-p0+OddsRatio*p0)
             #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%((1.-fracZinc)*p0 + fracZinc*p0*OddsRatio/(1.-p0+OddsRatio*p0), fracStuntedThisAge)
@@ -226,10 +230,11 @@ class Constants:
     def getProbStuntedIfCoveredByIntervention(self):
         # input interventionList? oddsRatioList? currentCoverageList?
         from numpy import sqrt 
+        eps = 1.e-5
         numAgeGroups = len(self.model.listOfAgeCompartments)
         self.probStuntedIfCovered["nozinc"] = {}
         self.probStuntedIfCovered["zinc"] = {}
-        for ageInd in range(0,numAgeGroups):
+        for ageInd in range(numAgeGroups):
             ageName = self.ages[ageInd]
             thisAge = self.model.listOfAgeCompartments[ageInd]
             #LOOP OVER INTERVENTIONS
@@ -242,11 +247,13 @@ class Constants:
             b = (OddsRatio-1)*fracStuntedThisAge - OddsRatio*fracZinc - (1.-fracZinc)
             c = fracStuntedThisAge
             det = sqrt(b**2 - 4.*a*c)
-            soln1 = (-b + det)/(2.*a)
-            soln2 = (-b - det)/(2.*a)
-            # not sure what to do if both or neither are solutions
-            if(soln1>0.)and(soln1<1.): p0 = soln1
-            if(soln2>0.)and(soln2<1.): p0 = soln2
+            if(abs(a)<eps):
+                p0 = -c/b
+            else:
+                soln1 = (-b + det)/(2.*a)
+                soln2 = (-b - det)/(2.*a)
+                if(soln1>0.)and(soln1<1.): p0 = soln1
+                if(soln2>0.)and(soln2<1.): p0 = soln2
             self.probStuntedIfCovered["nozinc"][ageName] = p0
             self.probStuntedIfCovered["zinc"][ageName]   = p0*OddsRatio/(1.-p0+OddsRatio*p0)
             #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%((fracZinc*p0 + (1.-fracZinc)*p0*OddsRatio/(1.-p0+OddsRatio*p0)), fracStuntedThisAge)
@@ -361,7 +368,6 @@ class Constants:
             interval = p0max - p0min
         self.baselineProbStuntingAtBirth = p0x
         # Check 2nd deriv has no solutions between 0 and 1
-        #print "Quartic   at %g = %g"%(p0x,self.evalQuartic(p0x))
         A,B,C,D,E = self.birthStuntingQuarticCoefficients
         AA = 4.*3.*A
         BB = 3.*2.*B
@@ -369,8 +375,10 @@ class Constants:
         det = sqrt(BB**2 - 4.*AA*CC)
         soln1 = (-BB + det)/(2.*AA)
         soln2 = (-BB - det)/(2.*AA)
-        # check that no solution between 0 and 1
-        #print "Two solutions are %g and %g"%(soln1,soln2)
+        if((soln1>0.)and(soln1<1.)):
+            print "Warning problem with solving Quartic, see soln1"
+        if((soln2>0.)and(soln2<1.)):
+            print "Warning problem with solving Quartic, see soln2"
         
 
 
