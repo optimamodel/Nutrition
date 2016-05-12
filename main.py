@@ -101,6 +101,7 @@ plotData[0]["modelList"] = modelList
 plotData[0]["tag"] = tag
 plotData[0]["color"] = 'grey'
 
+
 #------------------------------------------------------------------------    
 # INTERVENTION
 listOfAgeCompartments = makeAgeCompartements(agingRateList, agePopSizes, keyList)
@@ -119,9 +120,8 @@ modelZ.updateCoverages2(newCoverages)
 
 
 
-
 # file to dump objects into at each time step
-pickleFilename = 'testZinc.pkl'
+pickleFilename = 'testIntervention.pkl'
 import pickle as pickle
 outfile = open(pickleFilename, 'wb')
 for t in range(numsteps):
@@ -139,7 +139,7 @@ while 1:
         break
 infile.close()
 
-tag = "increased Zinc"
+tag = "with 2 interventions"
 plotData.append({})
 plotData[1]["modelList"] = newModelList
 plotData[1]["tag"] = tag
