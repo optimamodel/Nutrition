@@ -26,7 +26,7 @@ class Constants:
 
         self.getUnderlyingMortalities()
         self.getProbStuntingProgression()
-        self.getFracStuntingGivenDiarrhea()
+        self.initialiseFracStuntedIfDiarrhea()
         self.getFracStuntingGivenZinc()
         #self.getProbStuntedIfCoveredByIntervention()
         #self.getBaselineProbsBirthOutcome()
@@ -146,7 +146,7 @@ class Constants:
 
 
     # Calculate probability of stunting in current age-group given diarrhea incidence
-    def getFracStuntingGivenDiarrhea(self):
+    def getFracStuntingGivenDiarrhea(self):  #REPLACED BY FUNCTIONS BELOW, REMOVE ONCE EVERYTHING WORKING
         from numpy import sqrt 
         eps = 1.e-5
         from math import pow
@@ -191,8 +191,74 @@ class Constants:
             #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%((1.-fracDiarrhea)*p0 + fracDiarrhea*p0*AO/(1.-p0+AO*p0), fracStuntedThisAge)
 
 
+    def initialiseFracStuntedIfDiarrhea(self):
+        incidence = self.data.incidenceDiarrhea        
+        Z0 = self.getZaGivenIncidence(incidence)
+        Zt = Z0 #this is true for the initialisation
+        beta = self.getBetaGivenZ0AndZt(Z0, Zt)
+        AO = self.getAOGivenZa(Zt)
+        self.getFracStuntedIfDiarrheaGivenBetaAndAO(beta, AO)        
+    
+    
+    def getFracStuntedIfDiarrheaGivenBetaAndAO(self, beta, AO):
+        from numpy import sqrt        
+        numAgeGroups = len(self.model.listOfAgeCompartments)        
+        self.fracStuntedIfDiarrhea["nodia"] = {}
+        self.fracStuntedIfDiarrhea["dia"] = {}
+        for ageInd in range(0, numAgeGroups):
+            ageName = self.ages[ageInd]
+            thisAge = self.model.listOfAgeCompartments[ageInd]
+            #get fraction of people with diarrhea
+            fracDiarrhea = 0.
+            for breastfeedingCat in self.breastfeedingList:
+                fracDiarrhea += beta[ageName][breastfeedingCat] * self.data.breastfeedingDistribution[ageName][breastfeedingCat]
+            # get fraction stunted
+            fracStuntedThisAge = thisAge.getStuntedFraction()
+            # solve quadratic equation ax**2 + bx + c = 0
+            a = (1. - fracDiarrhea) * (1. - AO[ageName])
+            b = (AO[ageName] - 1.) * fracStuntedThisAge - AO[ageName] * fracDiarrhea - (1. - fracDiarrhea)
+            c = fracStuntedThisAge
+            det = sqrt(b**2 - 4.*a*c)
+            soln1 = (-b + det)/(2.*a)
+            soln2 = (-b - det)/(2.*a)
+            # not sure what to do if both or neither are solutions
+            if(soln1>0.)and(soln1<1.): p0 = soln1
+            if(soln2>0.)and(soln2<1.): p0 = soln2
+            self.fracStuntedIfDiarrhea["nodia"][ageName] = p0
+            self.fracStuntedIfDiarrhea["dia"][ageName]   = p0 * AO[ageName] / (1. - p0 + AO[ageName] * p0)
+            
 
 
+    def getZaGivenIncidence(self, incidence):
+        Za = {}
+        for ageName in self.ages:
+            sum = 0.
+            for breastfeedingCat in self.breastfeedingList:
+                RDa = self.data.RRdiarrhea[ageName][breastfeedingCat]
+                pab  = self.data.breastfeedingDistribution[ageName][breastfeedingCat]
+                sum += RDa * pab
+            Za[ageName] = incidence[ageName] / sum
+        return Za     
+
+
+    def getAOGivenZa(self, Za):
+        from math import pow
+        AO = {}
+        for ageName in self.ages:
+            RRnot = self.data.RRdiarrhea[ageName]["none"]
+            AO[ageName] = pow(self.data.ORdiarrhea[ageName], RRnot * Za[ageName])
+        return AO    
+        
+        
+    def getBetaGivenZ0AndZt(self, Z0, Zt):
+        beta = {}
+        for ageName in self.ages:
+            beta[ageName] = {}
+            RRnot = self.data.RRdiarrhea[ageName]["none"]
+            for breastfeedingCat in self.breastfeedingList:
+                RDa = self.data.RRdiarrhea[ageName][breastfeedingCat]
+                beta[ageName][breastfeedingCat] = 1. - ((RRnot * Z0[ageName] - RDa * Zt[ageName]) / RRnot * Z0[ageName])   
+        return beta        
 
     # Calculate probability of stunting in current age-group given coverage by zinc
     def getFracStuntingGivenZinc(self):
