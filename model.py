@@ -150,7 +150,7 @@ class Model:
             self.totalStuntingUpdateNeoNatal *= stuntingUpdate['<1 month']
             
             #update incidence
-            self.params.incidenceDiarrhea[ageName] *= incidenceUpdate[ageName]['diarrhea']
+            self.params.incidences[ageName]['Diarrhea'] *= incidenceUpdate[ageName]['Diarrhea']
             #need to add flow on effect here
             
             

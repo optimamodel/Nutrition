@@ -15,6 +15,8 @@ class Params:
         self.helper = helperCode.Helper()
 
         self.causesOfDeath = dcp(data.causesOfDeath)
+        self.conditions = dcp(data.conditions)
+        #self.totalMortality = dcp(data.totalMortality)
         self.causeOfDeathDist = dcp(data.causeOfDeathDist)
         self.stuntingDistribution = dcp(data.stuntingDistribution)
         self.wastingDistribution = dcp(data.wastingDistribution)
@@ -24,16 +26,16 @@ class Params:
         self.RRBreastfeeding = dcp(data.RRBreastfeeding)
         self.RRdeathByBirthOutcome = dcp(data.RRdeathByBirthOutcome)
         self.ORstuntingProgression = dcp(data.ORstuntingProgression)
-        self.incidenceDiarrhea = dcp(data.incidenceDiarrhea)
+        self.incidences = dcp(data.incidences)
         self.RRdiarrhea = dcp(data.RRdiarrhea)
-        self.ORdiarrhea = dcp(data.ORdiarrhea)
+        self.ORstuntingCondition = dcp(data.ORstuntingCondition)
         self.birthCircumstanceDist = dcp(data.birthCircumstanceDist)
         self.timeBetweenBirthsDist = dcp(data.timeBetweenBirthsDist)
         self.RRbirthOutcomeByAgeAndOrder = dcp(data.RRbirthOutcomeByAgeAndOrder)
         self.RRbirthOutcomeByTime = dcp(data.RRbirthOutcomeByTime)
-        self.ORBirthOutcomeStunting = dcp(data.ORBirthOutcomeStunting)
+        self.ORstuntingBirthOutcome = dcp(data.ORstuntingBirthOutcome)
         self.birthOutcomeDist = dcp(data.birthOutcomeDist)
-        self.ORstuntingZinc = dcp(data.ORstuntingZinc)
+        self.ORstuntingIntervention = dcp(data.ORstuntingIntervention)
         self.interventionCoverages = dcp(data.interventionCoveragesCurrent)
         self.interventionMortalityEffectiveness = dcp(data.interventionMortalityEffectiveness)
         self.interventionAffectedFraction = dcp(data.interventionAffectedFraction)
@@ -42,8 +44,6 @@ class Params:
 
 # Add all functions for updating parameters due to interventions here....
 
-    
-        
     def getMortalityUpdate(self, newCoverage):
         mortalityUpdate = {}
         for ageName in self.ages:
@@ -86,18 +86,17 @@ class Params:
         incidenceUpdate = {}
         for ageName in self.ages:
             incidenceUpdate[ageName] = {}
-        for cause in self.causesOfDeath:
-                incidenceUpdate[ageName][cause] = 1.
-        causeList = ((self.interventionIncidenceEffectiveness.values()[0]).values()[0]).keys()
+            for condition in self.conditions:
+                incidenceUpdate[ageName][condition] = 1.
         for ageName in self.ages:
             for intervention in newCoverage.keys():
-                for cause in causeList:
-                    affectedFrac = self.interventionAffectedFraction[intervention][ageName][cause]
-                    effectiveness = self.interventionIncidenceEffectiveness[intervention][ageName][cause]
+                for condition in self.conditions:
+                    affectedFrac = self.interventionAffectedFraction[intervention][ageName][condition]
+                    effectiveness = self.interventionIncidenceEffectiveness[intervention][ageName][condition]
                     newCoverageVal = newCoverage[intervention]
                     oldCoverage = self.interventionCoverages[intervention]
                     reduction = affectedFrac * effectiveness * (newCoverageVal - oldCoverage) / (1. - effectiveness*oldCoverage)
-                    incidenceUpdate[ageName][cause] *= 1. - reduction
+                    incidenceUpdate[ageName][condition] *= 1. - reduction
         return incidenceUpdate                         
 
         
