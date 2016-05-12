@@ -192,7 +192,9 @@ class Constants:
 
 
     def initialiseFracStuntedIfDiarrhea(self):
-        incidence = self.data.incidenceDiarrhea        
+        incidence = {}
+        for ageName in self.ages:
+            incidence[ageName] = self.data.incidences[ageName]['Diarrhea']
         Z0 = self.getZaGivenIncidence(incidence)
         Zt = Z0 #this is true for the initialisation
         beta = self.getBetaGivenZ0AndZt(Z0, Zt)
@@ -201,7 +203,8 @@ class Constants:
     
     
     def getFracStuntedIfDiarrheaGivenBetaAndAO(self, beta, AO):
-        from numpy import sqrt        
+        from numpy import sqrt    
+        eps = 1.e-5
         numAgeGroups = len(self.model.listOfAgeCompartments)        
         self.fracStuntedIfDiarrhea["nodia"] = {}
         self.fracStuntedIfDiarrhea["dia"] = {}
@@ -219,11 +222,14 @@ class Constants:
             b = (AO[ageName] - 1.) * fracStuntedThisAge - AO[ageName] * fracDiarrhea - (1. - fracDiarrhea)
             c = fracStuntedThisAge
             det = sqrt(b**2 - 4.*a*c)
-            soln1 = (-b + det)/(2.*a)
-            soln2 = (-b - det)/(2.*a)
-            # not sure what to do if both or neither are solutions
-            if(soln1>0.)and(soln1<1.): p0 = soln1
-            if(soln2>0.)and(soln2<1.): p0 = soln2
+            if(abs(a)<eps):
+                p0 = -c/b
+            else:
+                soln1 = (-b + det)/(2.*a)
+                soln2 = (-b - det)/(2.*a)
+                # not sure what to do if both or neither are solutions
+                if(soln1>0.)and(soln1<1.): p0 = soln1
+                if(soln2>0.)and(soln2<1.): p0 = soln2
             self.fracStuntedIfDiarrhea["nodia"][ageName] = p0
             self.fracStuntedIfDiarrhea["dia"][ageName]   = p0 * AO[ageName] / (1. - p0 + AO[ageName] * p0)
             
@@ -246,7 +252,7 @@ class Constants:
         AO = {}
         for ageName in self.ages:
             RRnot = self.data.RRdiarrhea[ageName]["none"]
-            AO[ageName] = pow(self.data.ORdiarrhea[ageName], RRnot * Za[ageName])
+            AO[ageName] = pow(self.data.ORstuntingCondition[ageName]['Diarrhea'], RRnot * Za[ageName])
         return AO    
         
         
