@@ -115,7 +115,7 @@ modelZ.updateMortalityRate()
 newCoverages={}
 newCoverages["Zinc supplementation"] = 1.0
 newCoverages["Vitamin A supplementation"] = 1.0
-modelZ.updateCoverages2(newCoverages)
+modelZ.updateCoverages(newCoverages)
 
 
 

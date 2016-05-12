@@ -42,44 +42,7 @@ class Params:
 
 # Add all functions for updating parameters due to interventions here....
 
-    def increaseCoverageOfZinc(self, newCoverage):
-        oldCoverage = self.interventionCoverages["Zinc supplementation"]
-        # -------------------------
-        # calculate reduction in stunted fraction
-        stuntingUpdate = {}
-        for ageName in self.ages:
-            probStuntingIfZinc = self.constants.fracStuntedIfZinc["zinc"][ageName]
-            probStuntingIfNoZinc = self.constants.fracStuntedIfZinc["nozinc"][ageName]
-            oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
-            newProbStunting = newCoverage*probStuntingIfZinc + (1.-newCoverage)*probStuntingIfNoZinc
-            stuntingUpdate[ageName] = (oldProbStunting - newProbStunting)/oldProbStunting
-        # -------------------------
-        # Mortality
-        mortalityReduction={}
-        for ageName in self.ages:
-            mortalityReduction[ageName]={}
-            for cause in self.causesOfDeath:
-                mortalityReduction[ageName][cause]=0.
-        # Diarrhea
-        for ageName in ["12-23 months", "24-59 months"]:
-            affectedFrac = 0.253 # take from data
-            effectiveness = 0.5 # take from data
-            mortalityReduction[ageName]["Diarrhea"] = affectedFrac * effectiveness * (newCoverage - oldCoverage) / (1. - effectiveness*oldCoverage)
-        # Pneumonia
-        for ageName in ["12-23 months", "24-59 months"]:
-            affectedFrac = 0.253 # take from data
-            effectiveness = 0.5 # take from data
-            mortalityReduction[ageName]["Pneumonia"] = affectedFrac * effectiveness * (newCoverage - oldCoverage) / (1. - effectiveness*oldCoverage)
-        # -------------------------
-        # Incidence
-        for ageName in ["12-23 months", "24-59 months"]:
-            affectedFrac = 0.253 # take from data
-            effectiveness = 0.65 # take from data
-            reduction = affectedFrac * effectiveness * (newCoverage - oldCoverage) / (1. - effectiveness*oldCoverage)
-            self.incidenceDiarrhea[ageName] *= 1.-reduction
-        # -------------------------
-        return stuntingUpdate, mortalityReduction
-        
+    
         
     def getMortalityUpdate(self, newCoverage):
         mortalityUpdate = {}
