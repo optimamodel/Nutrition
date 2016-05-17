@@ -132,29 +132,43 @@ class Model:
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
         stuntingUpdate = self.params.getStuntingUpdate(newCoverage)
         incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
+              
         
-        #save stunting update for neonatals for use in apply births
-        self.totalStuntingUpdateNeoNatal *= stuntingUpdate['<1 month']        
-        
-        #apply reductions to each age group
+        # MORTALITY
         for ageGroup in self.listOfAgeCompartments:
             ageName = ageGroup.name
-
             #update mortality            
             for cause in self.params.causesOfDeath:
                 self.constants.underlyingMortalities[ageName][cause] *= mortalityUpdate[ageName][cause]        
             self.updateMortalityRate()    
             
+            
+        # INCIDENCE
+        incidencesBefore = {}
+        incidencesAfter = {}  
+        for ageGroup in self.listOfAgeCompartments:
+            ageName = ageGroup.name
+            #update incidence
+            incidencesBefore[ageName] = self.params.incidences[ageName]['Diarrhea']
+            self.params.incidences[ageName]['Diarrhea'] *= incidenceUpdate[ageName]['Diarrhea']
+            incidencesAfter[ageName] = self.params.incidences[ageName]['Diarrhea']
+        # get flow on effect to stunting due to changing incidence
+        Z0 = self.constants.getZaGivenIncidence(incidencesBefore)
+        Zt = self.constants.getZaGivenIncidence(incidencesAfter)             
+        beta = self.constants.getBetaGivenZ0AndZt(Z0, Zt)
+        stuntingUpdateDueToIncidence = self.params.getIncidenceStuntingUpdateGivenBeta(beta)
+        
+        # STUNTING
+        #save stunting update for neonatals for use in apply births
+        self.totalStuntingUpdateNeoNatal *= stuntingUpdate['<1 month']
+        for ageGroup in self.listOfAgeCompartments:
+            ageName = ageGroup.name    
             #update stunting    
             oldProbStunting = ageGroup.getStuntedFraction()
-            newProbStunting = oldProbStunting * stuntingUpdate[ageName]
+            #combine stunting update with stunting reduction due to changed incidences 
+            newProbStunting = oldProbStunting * stuntingUpdate[ageName] * stuntingUpdateDueToIncidence[ageName]
             self.params.stuntingDistribution[ageName] = self.helper.restratify(newProbStunting)
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
-            
-            
-            #update incidence
-            self.params.incidences[ageName]['Diarrhea'] *= incidenceUpdate[ageName]['Diarrhea']
-            #need to add flow on effect here
             
             
             

@@ -100,4 +100,18 @@ class Params:
         return incidenceUpdate                         
 
         
-        
+    def getIncidenceStuntingUpdateGivenBeta(self, beta):
+        stuntingUpdate = {}
+        for ageName in self.ages:
+            stuntingUpdate[ageName] = 0 
+            newProbStunting = 0
+            oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
+            for breastfeedingCat in self.breastfeedingList:
+                pab = self.breastfeedingDistribution[ageName][breastfeedingCat]
+                t1 = beta[ageName][breastfeedingCat] * self.constants.fracStuntedIfDiarrhea["dia"][ageName]
+                t2 = (1 - beta[ageName][breastfeedingCat]) * self.constants.fracStuntedIfDiarrhea["nodia"][ageName]                
+                newProbStunting += pab * (t1 + t2)
+            reduction = (oldProbStunting - newProbStunting)/oldProbStunting
+        stuntingUpdate[ageName] *= 1. - reduction
+        return stuntingUpdate
+            
