@@ -133,6 +133,9 @@ class Model:
         stuntingUpdate = self.params.getStuntingUpdate(newCoverage)
         incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
         
+        #save stunting update for neonatals for use in apply births
+        self.totalStuntingUpdateNeoNatal *= stuntingUpdate['<1 month']        
+        
         #apply reductions to each age group
         for ageGroup in self.listOfAgeCompartments:
             ageName = ageGroup.name
@@ -147,7 +150,7 @@ class Model:
             newProbStunting = oldProbStunting * stuntingUpdate[ageName]
             self.params.stuntingDistribution[ageName] = self.helper.restratify(newProbStunting)
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
-            self.totalStuntingUpdateNeoNatal *= stuntingUpdate['<1 month']
+            
             
             #update incidence
             self.params.incidences[ageName]['Diarrhea'] *= incidenceUpdate[ageName]['Diarrhea']

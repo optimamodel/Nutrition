@@ -177,11 +177,11 @@ infile.close()
 #output.getPopAndStuntedSizePlot(modelList, 'before')
 #output.getPopAndStuntedSizePlot(newModelList, 'after')
 #
-#output.getNumStuntedByAgePlot(modelList, 'before')
-#output.getNumStuntedByAgePlot(newModelList, 'after')
+output.getNumStuntedByAgePlot(modelList, 'before')
+output.getNumStuntedByAgePlot(newModelList, 'after')
 #
-#output.getStuntedPercent(modelList, 'before')
-#output.getStuntedPercent(newModelList, 'after')
+output.getStuntedPercent(modelList, 'before')
+output.getStuntedPercent(newModelList, 'after')
 #
 #output.getCumulativeDeathsByAgePlot(modelList, 'before')
 #output.getCumulativeDeathsByAgePlot(newModelList, 'after')
