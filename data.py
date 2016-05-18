@@ -6,7 +6,7 @@ Created on Fri Feb 26 15:57:07 2016
 """
 
 class Data:
-    def __init__(self, ages, causesOfDeath, conditions, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention, interventionCoveragesCurrent, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness):
+    def __init__(self, ages, causesOfDeath, conditions, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention, interventionCoveragesCurrent, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness, interventionsMaternal):
         self.ages = ages
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
@@ -34,6 +34,7 @@ class Data:
         self.interventionAffectedFraction = interventionAffectedFraction
         self.interventionMortalityEffectiveness = interventionMortalityEffectiveness
         self.interventionIncidenceEffectiveness = interventionIncidenceEffectiveness
+        self.interventionsMaternal = interventionsMaternal
     
 
     
@@ -350,6 +351,32 @@ def getDataFromSpreadsheet(fileName, keyList):
         interventionCoveragesCurrent[intervention] = df.loc[intervention, "pre-2016"]
 
 
+# READ Interventions maternal SHEET
+    # gets you:
+    # - interventionsMaternal
+    #get the list of interventions
+    df = pandas.read_excel(Location, sheetname = 'Interventions maternal', index_col = [0]) 
+    mylist = list(df.index.values)
+    myset = set(mylist)
+    interventionsHere = list(myset)
+    #do the rest
+    df = pandas.read_excel(Location, sheetname = 'Interventions maternal', index_col = [0, 1]) 
+    interventionsMaternal = {}
+    # initialise
+    for intervention in interventionList:
+        interventionsMaternal[intervention] = {}
+        for outcome in birthOutcomes:
+            interventionsMaternal[intervention][outcome] = {}
+            for value in ['effectiveness', 'affected fraction']:
+                interventionsMaternal[intervention][outcome][value] = 0.
+    # complete # WARNING allowing for all causes of death, but completing according to condition
+    for intervention in interventionsHere:
+        for outcome in birthOutcomes:
+            for value in ['effectiveness', 'affected fraction']:
+                interventionsMaternal[intervention][outcome][value] = df.loc[intervention][outcome][value]
+
+
+
     # READ Interventions affected fraction SHEET
     # gets you:
     # - interventionAffectedFraction
@@ -435,7 +462,7 @@ def getDataFromSpreadsheet(fileName, keyList):
 
 
             
-    spreadsheetData = Data(ages, causesOfDeath, conditions, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention, interventionCoveragesCurrent, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness)
+    spreadsheetData = Data(ages, causesOfDeath, conditions, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention, interventionCoveragesCurrent, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness, interventionsMaternal)
 
     return spreadsheetData        
                   
