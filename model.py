@@ -132,8 +132,8 @@ class Model:
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
         stuntingUpdate = self.params.getStuntingUpdate(newCoverage)
         incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
+        birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)
               
-        
         # MORTALITY
         for ageGroup in self.listOfAgeCompartments:
             ageName = ageGroup.name
@@ -141,7 +141,6 @@ class Model:
             for cause in self.params.causesOfDeath:
                 self.constants.underlyingMortalities[ageName][cause] *= mortalityUpdate[ageName][cause]        
             self.updateMortalityRate()    
-            
             
         # INCIDENCE
         incidencesBefore = {}
@@ -170,32 +169,13 @@ class Model:
             self.params.stuntingDistribution[ageName] = self.helper.restratify(newProbStunting)
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
             
+        # BIRTH OUTCOME
+        for outcome in self.birthOutcomeList:
+            self.params.birthOutcomeDist[outcome] *= birthUpdate[outcome]
+        self.params.birthOutcomeDist['Term AGA'] = 1 - (self.params.birthOutcomeDist['Pre-term SGA'] + self.params.birthOutcomeDist['Pre-term AGA'] + self.params.birthOutcomeDist['Term SGA'])    
             
             
             
-            """
-            # calculate additional reduction in stunting due to incidence of diarrhoea
-            sum = 0.
-            for breastfeedingCat in self.breastfeedingList: 
-                RDa = self.params.RRdiarrhea[ageName][breastfeedingCat]
-                pab  = self.params.breastfeedingDistribution[ageName][breastfeedingCat]
-                sum += RDa * pab
-            Za = self.params.incidenceDiarrhea[ageName] / sum
-            RRnot = self.params.RRdiarrhea[ageName]["none"]
-            fracDiarrhea = 0.
-            for breastfeedingCat in self.breastfeedingList:
-                RDa = self.params.RRdiarrhea[ageName][breastfeedingCat]
-                beta = 1. - (RRnot-RDa)/(RRnot)
-                pab  = self.params.breastfeedingDistribution[ageName][breastfeedingCat]
-                fracDiarrhea += beta * pab
-            probStuntingIfDiarrhea   = self.constants.fracStuntedIfDiarrhea["dia"][ageName]
-            probStuntingIfNoDiarrhea = self.constants.fracStuntedIfDiarrhea["nodia"][ageName]
-            newProbStunting = fracDiarrhea*probStuntingIfDiarrhea + (1.-fracDiarrhea)*probStuntingIfNoDiarrhea
-            redStuntingViaIncidenceDia = (oldProbStunting - newProbStunting)/oldProbStunting
-            StuntingUpdate[ageName] *= 1.-redStuntingViaIncidenceDia
-            """
-            
-        
     def updateMortalityRate(self):
         # Newborns first
         ageCompartment = self.listOfAgeCompartments[0]
