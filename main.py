@@ -114,6 +114,8 @@ modelZ.updateMortalityRate()
 
 # increase zinc coverage
 newCoverages={}
+for intervention in spreadsheetData.interventionList:
+    newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
 newCoverages["Zinc supplementation"] = 1.0
 newCoverages["Vitamin A supplementation"] = 1.0
 modelZ.updateCoverages(newCoverages)
