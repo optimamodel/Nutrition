@@ -40,6 +40,7 @@ class Params:
         self.interventionMortalityEffectiveness = dcp(data.interventionMortalityEffectiveness)
         self.interventionAffectedFraction = dcp(data.interventionAffectedFraction)
         self.interventionIncidenceEffectiveness = dcp(data.interventionIncidenceEffectiveness)
+        self.interventionsMaternal = dcp(data.interventionsMaternal)
     
 
 # Add all functions for updating parameters due to interventions here....
@@ -61,6 +62,20 @@ class Params:
                     reduction = affectedFrac * effectiveness * (newCoverageVal - oldCoverage) / (1. - effectiveness*oldCoverage)
                     mortalityUpdate[ageName][cause] *= 1. - reduction
         return mortalityUpdate           
+        
+    def getBirthOutcomeUpdate(self, newCoverage):
+        birthOutcomeUpdate = {}
+        for outcome in self.birthOutcomes:
+            birthOutcomeUpdate[outcome] = 1
+        for intervention in newCoverage.keys():
+            for outcome in self.birthOutcomes:
+                affectedFrac = self.interventionsMaternal[intervention][outcome]['affected fraction']
+                effectiveness = self.interventionsMaternal[intervention][outcome]['effectiveness']
+                newCoverageVal = newCoverage[intervention]
+                oldCoverage = self.interventionCoverages[intervention]
+                reduction = affectedFrac * effectiveness * (newCoverageVal - oldCoverage) / (1. - effectiveness*oldCoverage)
+                birthOutcomeUpdate[outcome] *= 1. - reduction
+        return birthOutcomeUpdate               
         
         
     def getStuntingUpdate(self, newCoverage):
