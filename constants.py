@@ -199,11 +199,6 @@ class Constants:
         Zt = Z0 #this is true for the initialisation
         beta = self.getBetaGivenZ0AndZt(Z0, Zt)
         AO = self.getAOGivenZa(Zt)
-        self.getInitialFracStuntedIfDiarrheaGivenBetaAndAO(beta, AO)        
-    
-    
-    
-    def getInitialFracStuntedIfDiarrheaGivenBetaAndAO(self, beta, AO):
         from numpy import sqrt    
         eps = 1.e-5
         numAgeGroups = len(self.model.listOfAgeCompartments)        
