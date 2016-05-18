@@ -127,6 +127,6 @@ class Params:
                 t2 = (1 - beta[ageName][breastfeedingCat]) * self.constants.fracStuntedIfDiarrhea["nodia"][ageName]                
                 newProbStunting += pab * (t1 + t2)
             reduction = (oldProbStunting - newProbStunting)/oldProbStunting
-        stuntingUpdate[ageName] *= 1. - reduction
+            stuntingUpdate[ageName] *= 1. - reduction
         return stuntingUpdate
             
