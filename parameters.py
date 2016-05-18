@@ -103,7 +103,7 @@ class Params:
     def getIncidenceStuntingUpdateGivenBeta(self, beta):
         stuntingUpdate = {}
         for ageName in self.ages:
-            stuntingUpdate[ageName] = 0 
+            stuntingUpdate[ageName] = 1
             newProbStunting = 0
             oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
             for breastfeedingCat in self.breastfeedingList:
