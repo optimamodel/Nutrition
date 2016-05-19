@@ -30,7 +30,7 @@ numAgeGroups = len(ageRangeList)
 agePopSizes  = [2.e5, 4.e5, 7.e5, 1.44e6, 44.e5]
 
 timestep = 1./12. 
-numsteps = 168  
+numsteps = 60 #168  
 timespan = timestep * float(numsteps)
 
 
@@ -116,8 +116,9 @@ modelZ.updateMortalityRate()
 newCoverages={}
 for intervention in spreadsheetData.interventionList:
     newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
-newCoverages["Zinc supplementation"] = 1.0
-newCoverages["Vitamin A supplementation"] = 1.0
+    newCoverages[intervention] = max(1.0,newCoverages[intervention]+0.5) 
+#newCoverages["Zinc supplementation"] = 1.0
+#newCoverages["Vitamin A supplementation"] = 1.0
 modelZ.updateCoverages(newCoverages)
 
 
