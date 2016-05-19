@@ -140,7 +140,6 @@ class Model:
             #update mortality            
             for cause in self.params.causesOfDeath:
                 self.constants.underlyingMortalities[ageName][cause] *= mortalityUpdate[ageName][cause]        
-            self.updateMortalityRate()    
             
         # INCIDENCE
         incidencesBefore = {}
@@ -174,6 +173,11 @@ class Model:
             self.params.birthOutcomeDist[outcome] *= birthUpdate[outcome]
         self.params.birthOutcomeDist['Term AGA'] = 1 - (self.params.birthOutcomeDist['Pre-term SGA'] + self.params.birthOutcomeDist['Pre-term AGA'] + self.params.birthOutcomeDist['Term SGA'])    
             
+        # UPDATE MORTALITY AFTER HAVING CHANGED: underlyingMortality and birthOutcomeDist
+        self.updateMortalityRate()    
+
+
+
             
             
     def updateMortalityRate(self):
@@ -184,9 +188,10 @@ class Model:
             count = 0.
             for cause in self.params.causesOfDeath:
                 Rb = self.params.RRBreastfeeding[age][cause][breastfeedingCat]
-                for birthoutcome in self.birthOutcomeList:
-                    Rbo = self.params.RRdeathByBirthOutcome[cause][birthoutcome]
-                    count += Rb * Rbo * self.constants.underlyingMortalities[age][cause]
+                for outcome in self.birthOutcomeList:
+                    pbo = self.params.birthOutcomeDist[outcome]
+                    Rbo = self.params.RRdeathByBirthOutcome[cause][outcome]
+                    count += Rb * pbo * Rbo * self.constants.underlyingMortalities[age][cause]
             for stuntingCat in self.stuntingList:
                 for wastingCat in self.wastingList:
                     ageCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate = count
@@ -283,14 +288,14 @@ class Model:
         ageName         = ageCompartment.name
         # restratify Stunting
         restratifiedStuntingAtBirth = {}
-        for birthOutcome in self.birthOutcomeList:
-            restratifiedStuntingAtBirth[birthOutcome] = self.helper.restratify(self.constants.probsStuntingAtBirth[birthOutcome])
+        for outcome in self.birthOutcomeList:
+            restratifiedStuntingAtBirth[outcome] = self.helper.restratify(self.constants.probsStuntingAtBirth[outcome])
         # sum over birth outcome for full stratified stunting fractions, then apply to birth distribution
         stuntingFractions = {}
         for stuntingCat in self.stuntingList:
             stuntingFractions[stuntingCat] = 0.
-            for birthOutcome in self.birthOutcomeList:
-                stuntingFractions[stuntingCat] += restratifiedStuntingAtBirth[birthOutcome][stuntingCat] * self.params.birthOutcomeDist[birthOutcome]
+            for outcome in self.birthOutcomeList:
+                stuntingFractions[stuntingCat] += restratifiedStuntingAtBirth[outcome][stuntingCat] * self.params.birthOutcomeDist[outcome]
             for wastingCat in self.wastingList:
                 for breastfeedingCat in self.breastfeedingList:
                     ageCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize += numNewBabies * self.params.wastingDistribution[ageName][wastingCat] * self.params.breastfeedingDistribution[ageName][breastfeedingCat] * stuntingFractions[stuntingCat]
