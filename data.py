@@ -398,9 +398,7 @@ def getDataFromSpreadsheet(fileName, keyList):
                 interventionAffectedFraction[intervention][age][cause] = 0.
     # complete # WARNING allowing for all causes of death, but completing according to condition
     for intervention in interventionsHere:
-        interventionAffectedFraction[intervention] = {}
         for age in ages:
-            interventionAffectedFraction[intervention][age] = {}
             conditionsHere = df.loc[intervention][age].keys()
             for condition in conditionsHere:    
                 interventionAffectedFraction[intervention][age][condition] = df.loc[intervention][age][condition]
@@ -426,9 +424,7 @@ def getDataFromSpreadsheet(fileName, keyList):
                 interventionMortalityEffectiveness[intervention][age][cause] = 0.
     # complete
     for intervention in interventionsHere:
-        interventionMortalityEffectiveness[intervention] = {}
         for age in ages:
-            interventionMortalityEffectiveness[intervention][age] = {}
             causesHere = df.loc[intervention][age].keys()
             for cause in causesHere:    
                 interventionMortalityEffectiveness[intervention][age][cause] = df.loc[intervention][age][cause]
@@ -454,9 +450,7 @@ def getDataFromSpreadsheet(fileName, keyList):
                 interventionIncidenceEffectiveness[intervention][age][condition] = 0.
     # complete
     for intervention in interventionsHere:
-        interventionIncidenceEffectiveness[intervention] = {}
         for age in ages:
-            interventionIncidenceEffectiveness[intervention][age] = {}
             conditionsHere = df.loc[intervention][age].keys()
             for condition in conditionsHere:    
                 interventionIncidenceEffectiveness[intervention][age][condition] = df.loc[intervention][age][condition]
