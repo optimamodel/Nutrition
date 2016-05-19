@@ -112,15 +112,19 @@ params = parametersCode.Params(spreadsheetData,constants,keyList)
 modelZ.setParams(params)
 modelZ.updateMortalityRate()
 
-# increase zinc coverage
+# scale up interventions
+# initialise
 newCoverages={}
 for intervention in spreadsheetData.interventionList:
     newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
+# increase coverage for all by 50 percentage points (capped at 100%)
+for intervention in spreadsheetData.interventionList:
     newCoverages[intervention] = max(1.0,newCoverages[intervention]+0.5) 
+# increase zinc coverage
 #newCoverages["Zinc supplementation"] = 1.0
+# increase Vit A
 #newCoverages["Vitamin A supplementation"] = 1.0
 modelZ.updateCoverages(newCoverages)
-
 
 
 # file to dump objects into at each time step
