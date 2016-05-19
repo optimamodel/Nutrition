@@ -159,7 +159,7 @@ class Model:
         
         # STUNTING
         #save stunting update for neonatals for use in apply births
-        self.totalStuntingUpdateNeoNatal *= stuntingUpdate['<1 month']
+        self.totalStuntingUpdateNeoNatal *= stuntingUpdate['<1 month'] * stuntingUpdateDueToIncidence['<1 month']
         for ageGroup in self.listOfAgeCompartments:
             ageName = ageGroup.name    
             #update stunting    

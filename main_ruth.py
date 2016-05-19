@@ -144,12 +144,16 @@ params = parametersCode.Params(spreadsheetData, constants, keyList)
 modelZ.setParams(params)
 modelZ.updateMortalityRate() #now update mortlaity rate of all the boxes
 
-
-
 newCoverages={}
-newCoverages["Zinc supplementation"] = 1
-newCoverages["Vitamin A supplementation"] = 1
+for intervention in spreadsheetData.interventionList:
+    newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
+newCoverages["Zinc supplementation"] = 1.0
+newCoverages["Vitamin A supplementation"] = 1.0
+newCoverages["IPTp"] = 1.0
+newCoverages["Balanced energy supplementation"] = 1.0
+newCoverages["Multiple micronutrient supplementation"] = 1.0
 modelZ.updateCoverages(newCoverages)
+
 
 
 

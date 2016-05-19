@@ -30,7 +30,7 @@ numAgeGroups = len(ageRangeList)
 agePopSizes  = [2.e5, 4.e5, 7.e5, 1.44e6, 44.e5]
 
 timestep = 1./12. 
-numsteps = 60 #168  
+numsteps = 168  
 timespan = timestep * float(numsteps)
 
 
