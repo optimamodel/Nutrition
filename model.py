@@ -114,7 +114,9 @@ class Model:
         self.params = None
         import helper as helperCode
         self.helper = helperCode.Helper()
-        self.totalStuntingUpdateNeoNatal = 1
+        self.totalInterventionStuntingUpdate = {}
+        for age in self.ages:
+            self.totalInterventionStuntingUpdate[age] = 1.
 
         
     def setConstants(self, inputConstants):
@@ -157,13 +159,12 @@ class Model:
         stuntingUpdateDueToIncidence = self.params.getIncidenceStuntingUpdateGivenBeta(beta)
         
         # STUNTING
-        #save stunting update for neonatals for use in apply births
-        self.totalStuntingUpdateNeoNatal *= stuntingUpdate['<1 month'] * stuntingUpdateDueToIncidence['<1 month']
         for ageGroup in self.listOfAgeCompartments:
-            ageName = ageGroup.name    
+            ageName = ageGroup.name
+            #save total stunting update for use in apply births and apply aging
+            self.totalInterventionStuntingUpdate[ageName] *= stuntingUpdate[ageName] * stuntingUpdateDueToIncidence[ageName]
             #update stunting    
             oldProbStunting = ageGroup.getStuntedFraction()
-            #combine stunting update with stunting reduction due to changed incidences 
             newProbStunting = oldProbStunting * stuntingUpdate[ageName] * stuntingUpdateDueToIncidence[ageName]
             self.params.stuntingDistribution[ageName] = self.helper.restratify(newProbStunting)
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
@@ -266,6 +267,14 @@ class Model:
                 restratifiedProbBecomeStunted = self.helper.restratify(self.constants.probStuntedIfPrevStunted[prevStunt][ageName])
                 for stuntingCat in self.stuntingList:
                     numAgingInStratified[stuntingCat] += restratifiedProbBecomeStunted[stuntingCat] * numAgingIn[prevStunt]
+            
+            # get total fraction now stunted and reduce due to interventions
+            numAgingInNowStunted = numAgingInStratified['high'] + numAgingInStratified['moderate']            
+            totalNumAgingIn = numAgingIn["yesstunted"] + numAgingIn["notstunted"]            
+            fracAgingInNowStunted = numAgingInNowStunted / totalNumAgingIn
+            reducedFracAgingInNowStunted = fracAgingInNowStunted * self.totalInterventionStuntingUpdate[ageName]            
+            fracAgingInStratified = self.helper.restratify(reducedFracAgingInNowStunted)             
+            
             # distribution those aging in amongst those stunting categories but also breastfeeding and wasting
             for wastingCat in self.wastingList:
                 paw = self.params.wastingDistribution[ageName][wastingCat]
@@ -274,8 +283,8 @@ class Model:
                     for stuntingCat in self.stuntingList:
                         thisBox = thisAgeCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat]
                         thisBox.populationSize -= agingOut[ind][wastingCat][breastfeedingCat][stuntingCat]
-                        thisBox.populationSize += numAgingInStratified[stuntingCat] * pab * paw
-
+                        thisBox.populationSize += fracAgingInStratified[stuntingCat] * totalNumAgingIn * pab * paw
+            
 
 
     def applyBirths(self):
@@ -302,7 +311,7 @@ class Model:
 
         #now reduce stunting due to interventions
         oldProbStunting = ageCompartment.getStuntedFraction()
-        newProbStunting = oldProbStunting * self.totalStuntingUpdateNeoNatal
+        newProbStunting = oldProbStunting * self.totalInterventionStuntingUpdate['<1 month']
         self.params.stuntingDistribution[ageName] = self.helper.restratify(newProbStunting)
         ageCompartment.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
 
