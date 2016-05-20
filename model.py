@@ -187,7 +187,7 @@ class Model:
         for breastfeedingCat in self.breastfeedingList:
             count = 0.
             for cause in self.params.causesOfDeath:
-                pbf = self.params.breastfeedingDistribution[breastfeedingCat]
+                pbf = self.params.breastfeedingDistribution[age][breastfeedingCat]
                 Rb = self.params.RRBreastfeeding[age][cause][breastfeedingCat]
                 for outcome in self.birthOutcomeList:
                     pbo = self.params.birthOutcomeDist[outcome]
@@ -208,9 +208,9 @@ class Model:
                             t2 = self.params.RRStunting[age][cause][stuntingCat]
                             t3 = self.params.RRWasting[age][cause][wastingCat]
                             t4 = self.params.RRBreastfeeding[age][cause][breastfeedingCat]
-                            t5 = self.params.stuntingDistribution[stuntingCat]
-                            t6 = self.params.wastingDistribution[wastingCat]
-                            t7 = self.params.breastfeedingDistribution[breastfeedingCat]
+                            t5 = self.params.stuntingDistribution[age][stuntingCat]
+                            t6 = self.params.wastingDistribution[age][wastingCat]
+                            t7 = self.params.breastfeedingDistribution[age][breastfeedingCat]
                             count += t1 * t2 * t3 * t4 * t5 * t6 * t7                            
                         ageCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate = count
 

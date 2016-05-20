@@ -163,8 +163,12 @@ class TestsForModelClass(unittest.TestCase):
     def testUpdateMortalityRate(self):
         self.testModel.constants.underlyingMortalities['12-23 months']["Diarrhea"] = 1
         self.testModel.updateMortalityRate()
+        pas = self.testData.stuntingDistribution['12-23 months']['normal']
+        paw = self.testData.wastingDistribution['12-23 months']['normal']
+        pab = self.testData.breastfeedingDistribution['12-23 months']['none']
         updatedMortalityRate = self.testModel.listOfAgeCompartments[3].dictOfBoxes['normal']['normal']['none'].mortalityRate
-        self.assertEqual(1., updatedMortalityRate)
+        expectedMortalityRate = pas * paw * pab 
+        self.assertEqual(expectedMortalityRate, updatedMortalityRate)
          
          
 class TestsForHelperClass(unittest.TestCase):
