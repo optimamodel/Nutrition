@@ -205,10 +205,13 @@ class Model:
                         count = 0.
                         for cause in self.params.causesOfDeath:
                             t1 = self.constants.underlyingMortalities[age][cause]
-                            t3 = self.params.RRStunting[age][cause][stuntingCat]
-                            t4 = self.params.RRWasting[age][cause][wastingCat]
-                            t5 = self.params.RRBreastfeeding[age][cause][breastfeedingCat]
-                            count += t1 * t3 * t4 * t5                            
+                            t2 = self.params.RRStunting[age][cause][stuntingCat]
+                            t3 = self.params.RRWasting[age][cause][wastingCat]
+                            t4 = self.params.RRBreastfeeding[age][cause][breastfeedingCat]
+                            t5 = self.params.stuntingDistribution[stuntingCat]
+                            t6 = self.params.wastingDistribution[wastingCat]
+                            t7 = self.params.breastfeedingDistribution[breastfeedingCat]
+                            count += t1 * t2 * t3 * t4 * t5 * t6 * t7                            
                         ageCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate = count
 
     
