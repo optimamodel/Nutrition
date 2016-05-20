@@ -16,7 +16,7 @@ class Params:
 
         self.causesOfDeath = dcp(data.causesOfDeath)
         self.conditions = dcp(data.conditions)
-        #self.totalMortality = dcp(data.totalMortality)
+        self.totalMortality = dcp(data.totalMortality)
         self.causeOfDeathDist = dcp(data.causeOfDeathDist)
         self.stuntingDistribution = dcp(data.stuntingDistribution)
         self.wastingDistribution = dcp(data.wastingDistribution)
@@ -29,13 +29,14 @@ class Params:
         self.incidences = dcp(data.incidences)
         self.RRdiarrhea = dcp(data.RRdiarrhea)
         self.ORstuntingCondition = dcp(data.ORstuntingCondition)
-        self.birthCircumstanceDist = dcp(data.birthCircumstanceDist)
-        self.timeBetweenBirthsDist = dcp(data.timeBetweenBirthsDist)
-        self.RRbirthOutcomeByAgeAndOrder = dcp(data.RRbirthOutcomeByAgeAndOrder)
-        self.RRbirthOutcomeByTime = dcp(data.RRbirthOutcomeByTime)
+        #self.birthCircumstanceDist = dcp(data.birthCircumstanceDist)
+        #self.timeBetweenBirthsDist = dcp(data.timeBetweenBirthsDist)
+        #self.RRbirthOutcomeByAgeAndOrder = dcp(data.RRbirthOutcomeByAgeAndOrder)
+        #self.RRbirthOutcomeByTime = dcp(data.RRbirthOutcomeByTime)
         self.ORstuntingBirthOutcome = dcp(data.ORstuntingBirthOutcome)
         self.birthOutcomeDist = dcp(data.birthOutcomeDist)
         self.ORstuntingIntervention = dcp(data.ORstuntingIntervention)
+        self.ORexclusivebfIntervention = dcp(data.ORexclusivebfIntervention)
         self.interventionCoverages = dcp(data.interventionCoveragesCurrent)
         self.interventionMortalityEffectiveness = dcp(data.interventionMortalityEffectiveness)
         self.interventionAffectedFraction = dcp(data.interventionAffectedFraction)
@@ -66,7 +67,7 @@ class Params:
     def getBirthOutcomeUpdate(self, newCoverage):
         birthOutcomeUpdate = {}
         for outcome in self.birthOutcomes:
-            birthOutcomeUpdate[outcome] = 1
+            birthOutcomeUpdate[outcome] = 1.
         for intervention in newCoverage.keys():
             for outcome in self.birthOutcomes:
                 affectedFrac = self.interventionsMaternal[intervention][outcome]['affected fraction']
@@ -81,7 +82,7 @@ class Params:
     def getStuntingUpdate(self, newCoverage):
         stuntingUpdate = {}
         for ageName in self.ages:
-            stuntingUpdate[ageName] = 1
+            stuntingUpdate[ageName] = 1.
             oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
             for intervention in newCoverage.keys():            
                 if intervention == 'Zinc supplementation': 
@@ -96,6 +97,22 @@ class Params:
                 stuntingUpdate[ageName] *= 1. - reduction
         return stuntingUpdate        
             
+    """
+    def getBreastfeedingUpdate(self, newCoverage):
+        breastfeedingUpdate = {}
+        for ageName in self.ages:
+            breastfeedingUpdate[ageName] = {}
+            for breastfeedingCat in self.breastfeedingList:
+                breastfeedingUpdate[ageName][breastfeedingCat] = 1.
+            oldFracExclusive = self.breastfeedingDistribution[ageName]["exclusive"]
+            for intervention in newCoverage.keys():
+                probStuntingIfCovered    = self.constants.fracStuntedIfCovered["zinc"][ageName]
+                probStuntingIfNotCovered = self.constants.fracStuntedIfCovered["nozinc"][ageName]
+                newFracExclusive = newCoverage[intervention]*probStuntingIfCovered + (1.-newCoverage[intervention])*probStuntingIfNotCovered
+                reduction = (oldFracExclusive - newFracExclusive)/oldFracExclusive
+                breastfeedingUpdate[breastfeedingCat] *= 1. - reduction
+        return breastfeedingUpdate               
+    """
             
     def getIncidenceUpdate(self, newCoverage):
         incidenceUpdate = {}
@@ -118,7 +135,7 @@ class Params:
     def getIncidenceStuntingUpdateGivenBeta(self, beta):
         stuntingUpdate = {}
         for ageName in self.ages:
-            stuntingUpdate[ageName] = 1
+            stuntingUpdate[ageName] = 1.
             newProbStunting = 0
             oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
             for breastfeedingCat in self.breastfeedingList:
