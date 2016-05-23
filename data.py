@@ -323,9 +323,9 @@ def getDataFromSpreadsheet(fileName, keyList):
     # READ OR Exclusive Breastfeeding given Promotion Coverage SHEET
     # gets you:
     # - ORexclusivebfIntervention
-    df = pandas.read_excel(Location, sheetname = 'OR stunting by intervention')
+    df = pandas.read_excel(Location, sheetname = 'OR exclusiveBF by intervention')
     interventionsHere = list(df['Intervention'])
-    df = pandas.read_excel(Location, sheetname = 'OR stunting by intervention', index_col = 'Intervention')
+    df = pandas.read_excel(Location, sheetname = 'OR exclusiveBF by intervention', index_col = 'Intervention')
     ORexclusivebfIntervention = {}
     for age in ages:
         ORexclusivebfIntervention[age] = {}
@@ -333,7 +333,6 @@ def getDataFromSpreadsheet(fileName, keyList):
             ORexclusivebfIntervention[age][intervention] = 1.
         for intervention in interventionsHere:
             ORexclusivebfIntervention[age][intervention] = df.loc[intervention, age]
-
             
 
     #  READ birth outcome distribution SHEET
