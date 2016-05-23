@@ -18,7 +18,8 @@ class Constants:
         self.fracStuntedIfDiarrhea = {}
         self.fracStuntedIfZinc = {}
         self.probStuntedIfCovered = {}
-        #self.baselineProbsBirthOutcome = {}  
+        self.probExclusivelyBreastfedIfCovered = {}
+        #self.baselineProbsBirthOutcome = {}
         self.probsBirthOutcome = {}  
         self.birthStuntingQuarticCoefficients = []
         self.baselineProbStuntingAtBirth = 0.
@@ -28,7 +29,8 @@ class Constants:
         self.getProbStuntingProgression()
         self.initialiseFracStuntedIfDiarrhea()
         self.getFracStuntingGivenZinc()
-        #self.getProbStuntedIfCoveredByIntervention()
+        self.getProbStuntedIfCoveredByIntervention()
+        self.getProbExclusivelyBreastfedIfCoveredByIntervention()
         #self.getBaselineProbsBirthOutcome()
         self.getBirthStuntingQuarticCoefficients()
         self.getProbStuntingAtBirthForBaselineBirthOutcome()
@@ -295,12 +297,11 @@ class Constants:
 
 
     # Calculate probability of stunting in current age-group given coverage by intervention
+    # WARNING: currently not appropriate for OR complementary feeding
     def getProbStuntedIfCoveredByIntervention(self):
-        # input interventionList? oddsRatioList? currentCoverageList?
         from numpy import sqrt 
         eps = 1.e-5
         numAgeGroups = len(self.model.listOfAgeCompartments)
-        #LOOP OVER INTERVENTIONS
         for intervention in self.data.interventionList:
             self.probStuntedIfCovered[intervention]["not covered"] = {}
             self.probStuntedIfCovered[intervention]["covered"]     = {}
@@ -324,7 +325,38 @@ class Constants:
                     if(soln2>0.)and(soln2<1.): p0 = soln2
                 self.probStuntedIfCovered[intervention]["not covered"][ageName] = p0
                 self.probStuntedIfCovered[intervention]["covered"][ageName]     = p0*OddsRatio/(1.-p0+OddsRatio*p0)
-            #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%((fracCovered*p0 + (1.-fracCovered)*p0*OddsRatio/(1.-p0+OddsRatio*p0)), fracStuntedThisAge)
+
+
+
+    # Calculate probability of stunting in current age-group given coverage by intervention
+    def getProbExclusivelyBreastfedIfCoveredByIntervention(self):
+        from numpy import sqrt 
+        eps = 1.e-5
+        numAgeGroups = len(self.model.listOfAgeCompartments)
+        for intervention in self.data.interventionList:
+            self.probExclusivelyBreastfedIfCovered[intervention]["not covered"] = {}
+            self.probExclusivelyBreastfedIfCovered[intervention]["covered"]     = {}
+            for ageInd in range(numAgeGroups):
+                ageName = self.ages[ageInd]
+                thisAge = self.model.listOfAgeCompartments[ageInd]
+                OddsRatio = self.data.ORexclusivebfIntervention[ageName][intervention]
+                fracCovered = self.data.interventionCoveragesCurrent[intervention]
+                fracExclusivelyBreastfedThisAge = self.data.breastfeedingDistribution[ageName]["exclusive"]
+                #fracExclusivelyBreastfedThisAge = thisAge.getStuntedFraction()
+                # solve quadratic equation ax**2 + bx + c = 0
+                a = (1.-fracCovered) * (1.-OddsRatio)
+                b = (OddsRatio-1)*fracExclusivelyBreastfedThisAge - OddsRatio*fracCovered - (1.-fracCovered)
+                c = fracExclusivelyBreastfedThisAge
+                det = sqrt(b**2 - 4.*a*c)
+                if(abs(a)<eps):
+                    p0 = -c/b
+                else:
+                    soln1 = (-b + det)/(2.*a)
+                    soln2 = (-b - det)/(2.*a)
+                    if(soln1>0.)and(soln1<1.): p0 = soln1
+                    if(soln2>0.)and(soln2<1.): p0 = soln2
+                self.probExclusivelyBreastfedIfCovered[intervention]["not covered"][ageName] = p0
+                self.probExclusivelyBreastfedIfCovered[intervention]["covered"][ageName]     = p0*OddsRatio/(1.-p0+OddsRatio*p0)
 
 
 
