@@ -93,6 +93,13 @@ class AgeCompartment:
                     returnDict[breastfeedingCat] += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize / totalPop
         return returnDict
 
+    def getNumberExclusivelyBreastfed(self):
+        NumberExclusivelyBreastfed = 0.
+        for stuntingCat in self.stuntingList:
+            for wastingCat in self.wastingList:
+                NumberExclusivelyBreastfed += self.dictOfBoxes[stuntingCat][wastingCat]["exclusive"].populationSize
+        return NumberExclusivelyBreastfed
+
     def distribute(self, stuntingDist, wastingDist, breastfeedingDist):
         ageName = self.name
         totalPop = self.getTotalPopulation()
@@ -135,6 +142,7 @@ class Model:
         stuntingUpdate = self.params.getStuntingUpdate(newCoverage)
         incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
         birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)
+        exclusivebfUpdate = self.params.getExclusiveBFUpdate(newCoverage)
               
         # MORTALITY
         for ageGroup in self.listOfAgeCompartments:
@@ -143,6 +151,21 @@ class Model:
             for cause in self.params.causesOfDeath:
                 self.constants.underlyingMortalities[ageName][cause] *= mortalityUpdate[ageName][cause]        
             
+        # BREASTFEEDING
+        for ageGroup in self.listOfAgeCompartments:
+            ageName = ageGroup.name
+            totalPop = ageGroup.getTotalPopulation()
+            numExclusiveBefore    = ageGroup.getNumberExclusivelyBreastfed()
+            numExclusiveAfter     = numExclusiveBefore * exclusivebfUpdate[ageName]
+            numShifting           = numExclusiveAfter - numExclusiveBefore
+            numNotExclusiveBefore = totalPop - numExclusiveBefore
+            fracShiftingNotExclusive = numShifting / numNotExclusiveBefore
+            self.params.breastfeedingDistribution[ageName]["exclusive"] *= exclusivebfUpdate[ageName]
+            BFlistNotExclusive = [cat for cat in self.breastfeedingList if cat!="exclusive"]
+            for cat in BFlistNotExclusive:
+                self.params.breastfeedingDistribution[ageName][cat] *= 1. - fracShiftingNotExclusive
+            ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
+
         # INCIDENCE
         incidencesBefore = {}
         incidencesAfter = {}  

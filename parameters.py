@@ -16,7 +16,7 @@ class Params:
 
         self.causesOfDeath = dcp(data.causesOfDeath)
         self.conditions = dcp(data.conditions)
-        self.totalMortality = dcp(data.totalMortality)
+        #self.totalMortality = dcp(data.totalMortality)
         self.causeOfDeathDist = dcp(data.causeOfDeathDist)
         self.stuntingDistribution = dcp(data.stuntingDistribution)
         self.wastingDistribution = dcp(data.wastingDistribution)
@@ -25,18 +25,14 @@ class Params:
         self.RRWasting = dcp(data.RRWasting)
         self.RRBreastfeeding = dcp(data.RRBreastfeeding)
         self.RRdeathByBirthOutcome = dcp(data.RRdeathByBirthOutcome)
-        self.ORstuntingProgression = dcp(data.ORstuntingProgression)
+        #self.ORstuntingProgression = dcp(data.ORstuntingProgression)
         self.incidences = dcp(data.incidences)
-        self.RRdiarrhea = dcp(data.RRdiarrhea)
-        self.ORstuntingCondition = dcp(data.ORstuntingCondition)
-        #self.birthCircumstanceDist = dcp(data.birthCircumstanceDist)
-        #self.timeBetweenBirthsDist = dcp(data.timeBetweenBirthsDist)
-        #self.RRbirthOutcomeByAgeAndOrder = dcp(data.RRbirthOutcomeByAgeAndOrder)
-        #self.RRbirthOutcomeByTime = dcp(data.RRbirthOutcomeByTime)
-        self.ORstuntingBirthOutcome = dcp(data.ORstuntingBirthOutcome)
+        #self.RRdiarrhea = dcp(data.RRdiarrhea)
+        #self.ORstuntingCondition = dcp(data.ORstuntingCondition)
+        #self.ORstuntingBirthOutcome = dcp(data.ORstuntingBirthOutcome)
         self.birthOutcomeDist = dcp(data.birthOutcomeDist)
-        self.ORstuntingIntervention = dcp(data.ORstuntingIntervention)
-        self.ORexclusivebfIntervention = dcp(data.ORexclusivebfIntervention)
+        #self.ORstuntingIntervention = dcp(data.ORstuntingIntervention)
+        #self.ORexclusivebfIntervention = dcp(data.ORexclusivebfIntervention)
         self.interventionCoverages = dcp(data.interventionCoveragesCurrent)
         self.interventionMortalityEffectiveness = dcp(data.interventionMortalityEffectiveness)
         self.interventionAffectedFraction = dcp(data.interventionAffectedFraction)
@@ -85,34 +81,37 @@ class Params:
             stuntingUpdate[ageName] = 1.
             oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
             for intervention in newCoverage.keys():            
+                probStuntingIfCovered    = self.constants.probStuntedIfCovered[intervention]["covered"][ageName]
+                probStuntingIfNotCovered = self.constants.probStuntedIfCovered[intervention]["not covered"][ageName]
+                newProbStunting = newCoverage[intervention]*probStuntingIfCovered + (1.-newCoverage[intervention])*probStuntingIfNotCovered
+                reduction = (oldProbStunting - newProbStunting)/oldProbStunting
+                """
                 if intervention == 'Zinc supplementation': 
                     probStuntingIfZinc = self.constants.fracStuntedIfZinc["zinc"][ageName]
                     probStuntingIfNoZinc = self.constants.fracStuntedIfZinc["nozinc"][ageName]
                     newProbStunting = newCoverage[intervention]*probStuntingIfZinc + (1.-newCoverage[intervention])*probStuntingIfNoZinc
                     reduction = (oldProbStunting - newProbStunting)/oldProbStunting
-                    
                 else:      
                     reduction = 0
-                    
+                """
                 stuntingUpdate[ageName] *= 1. - reduction
         return stuntingUpdate        
             
-    """
-    def getBreastfeedingUpdate(self, newCoverage):
-        breastfeedingUpdate = {}
+
+    def getExclusiveBFUpdate(self, newCoverage):
+        eps = 1.e-5
+        exclusivebfUpdate = {}
         for ageName in self.ages:
-            breastfeedingUpdate[ageName] = {}
-            for breastfeedingCat in self.breastfeedingList:
-                breastfeedingUpdate[ageName][breastfeedingCat] = 1.
+            exclusivebfUpdate[ageName] = 1.
             oldFracExclusive = self.breastfeedingDistribution[ageName]["exclusive"]
             for intervention in newCoverage.keys():
-                probStuntingIfCovered    = self.constants.fracStuntedIfCovered["zinc"][ageName]
-                probStuntingIfNotCovered = self.constants.fracStuntedIfCovered["nozinc"][ageName]
-                newFracExclusive = newCoverage[intervention]*probStuntingIfCovered + (1.-newCoverage[intervention])*probStuntingIfNotCovered
-                reduction = (oldFracExclusive - newFracExclusive)/oldFracExclusive
-                breastfeedingUpdate[breastfeedingCat] *= 1. - reduction
-        return breastfeedingUpdate               
-    """
+                probExclusiveIfCovered    = self.constants.probExclusivelyBreastfedIfCovered[intervention]["covered"][ageName]
+                probExclusiveIfNotCovered = self.constants.probExclusivelyBreastfedIfCovered[intervention]["not covered"][ageName]
+                newFracExclusive = newCoverage[intervention]*probExclusiveIfCovered + (1.-newCoverage[intervention])*probExclusiveIfNotCovered
+                if oldFracExclusive > eps:
+                    exclusivebfUpdate[ageName] *= float(newFracExclusive) / float(oldFracExclusive)
+        return exclusivebfUpdate               
+
             
     def getIncidenceUpdate(self, newCoverage):
         incidenceUpdate = {}
