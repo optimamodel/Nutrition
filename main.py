@@ -117,9 +117,11 @@ modelZ.updateMortalityRate()
 newCoverages={}
 for intervention in spreadsheetData.interventionList:
     newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
-# increase coverage for all by 50 percentage points (capped at 100%)
+    print "Current coverage of %s = %g"%(intervention,newCoverages[intervention])
+# increase coverage for all by 30 percentage points (capped at 100%)
 for intervention in spreadsheetData.interventionList:
-    newCoverages[intervention] = max(1.0,newCoverages[intervention]+0.5) 
+    newCoverages[intervention] = min(1.0,newCoverages[intervention]+0.3) 
+    print "New coverage of %s = %g"%(intervention,newCoverages[intervention])
 # increase zinc coverage
 #newCoverages["Zinc supplementation"] = 1.0
 # increase Vit A
