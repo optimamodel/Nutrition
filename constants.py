@@ -300,31 +300,31 @@ class Constants:
         from numpy import sqrt 
         eps = 1.e-5
         numAgeGroups = len(self.model.listOfAgeCompartments)
-        self.probStuntedIfCovered["nozinc"] = {}
-        self.probStuntedIfCovered["zinc"] = {}
-        for ageInd in range(numAgeGroups):
-            ageName = self.ages[ageInd]
-            thisAge = self.model.listOfAgeCompartments[ageInd]
-            #LOOP OVER INTERVENTIONS
-            OddsRatio = self.data.ORstuntingIntervention[ageName]['Zinc supplementation']
-            fracZinc = self.data.interventionCoveragesCurrent["Zinc supplementation"]
-            # fraction stunted
-            fracStuntedThisAge = thisAge.getStuntedFraction()
-            # solve quadratic equation ax**2 + bx + c = 0
-            a = (1.-fracZinc) * (1.-OddsRatio)
-            b = (OddsRatio-1)*fracStuntedThisAge - OddsRatio*fracZinc - (1.-fracZinc)
-            c = fracStuntedThisAge
-            det = sqrt(b**2 - 4.*a*c)
-            if(abs(a)<eps):
-                p0 = -c/b
-            else:
-                soln1 = (-b + det)/(2.*a)
-                soln2 = (-b - det)/(2.*a)
-                if(soln1>0.)and(soln1<1.): p0 = soln1
-                if(soln2>0.)and(soln2<1.): p0 = soln2
-            self.probStuntedIfCovered["nozinc"][ageName] = p0
-            self.probStuntedIfCovered["zinc"][ageName]   = p0*OddsRatio/(1.-p0+OddsRatio*p0)
-            #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%((fracZinc*p0 + (1.-fracZinc)*p0*OddsRatio/(1.-p0+OddsRatio*p0)), fracStuntedThisAge)
+        #LOOP OVER INTERVENTIONS
+        for intervention in self.data.interventionList:
+            self.probStuntedIfCovered[intervention]["not covered"] = {}
+            self.probStuntedIfCovered[intervention]["covered"]     = {}
+            for ageInd in range(numAgeGroups):
+                ageName = self.ages[ageInd]
+                thisAge = self.model.listOfAgeCompartments[ageInd]
+                OddsRatio = self.data.ORstuntingIntervention[ageName][intervention]
+                fracCovered = self.data.interventionCoveragesCurrent[intervention]
+                fracStuntedThisAge = thisAge.getStuntedFraction()
+                # solve quadratic equation ax**2 + bx + c = 0
+                a = (1.-fracCovered) * (1.-OddsRatio)
+                b = (OddsRatio-1)*fracStuntedThisAge - OddsRatio*fracCovered - (1.-fracCovered)
+                c = fracStuntedThisAge
+                det = sqrt(b**2 - 4.*a*c)
+                if(abs(a)<eps):
+                    p0 = -c/b
+                else:
+                    soln1 = (-b + det)/(2.*a)
+                    soln2 = (-b - det)/(2.*a)
+                    if(soln1>0.)and(soln1<1.): p0 = soln1
+                    if(soln2>0.)and(soln2<1.): p0 = soln2
+                self.probStuntedIfCovered[intervention]["not covered"][ageName] = p0
+                self.probStuntedIfCovered[intervention]["covered"][ageName]     = p0*OddsRatio/(1.-p0+OddsRatio*p0)
+            #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%((fracCovered*p0 + (1.-fracCovered)*p0*OddsRatio/(1.-p0+OddsRatio*p0)), fracStuntedThisAge)
 
 
 
