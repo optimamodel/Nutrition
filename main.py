@@ -63,6 +63,56 @@ def makeAgeCompartements(agingRateList, agePopSizes, keyList):
 #-------------------------------------------------------------------------  
 
 plotData = []
+run = 0
+
+
+#------------------------------------------------------------------------    
+# INTERVENTION
+listOfAgeCompartments = makeAgeCompartements(agingRateList, agePopSizes, keyList)
+modelZ = modelCode.Model("Decreased Coverage model", mothers, listOfAgeCompartments, keyList, timestep)
+constants = constantsCode.Constants(spreadsheetData, modelZ, keyList)
+modelZ.setConstants(constants)
+params = parametersCode.Params(spreadsheetData,constants,keyList)
+modelZ.setParams(params)
+modelZ.updateMortalityRate()
+
+# scale up interventions
+# initialise
+newCoverages={}
+for intervention in spreadsheetData.interventionList:
+    newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
+    print "Current coverage of %s = %g"%(intervention,newCoverages[intervention])
+# decrease coverage for all by 30 percentage points (capped at 0%)
+for intervention in spreadsheetData.interventionList:
+    newCoverages[intervention] = max(0.0,newCoverages[intervention]-0.3) 
+    print "New coverage of %s = %g"%(intervention,newCoverages[intervention])
+modelZ.updateCoverages(newCoverages)
+
+# file to dump objects into at each time step
+pickleFilename = 'test_Intervention_M30.pkl'
+import pickle as pickle
+outfile = open(pickleFilename, 'wb')
+for t in range(numsteps):
+    modelZ.moveOneTimeStep()
+    pickle.dump(modelZ, outfile)
+outfile.close()    
+
+# collect output, make graphs etc.
+infile = open(pickleFilename, 'rb')
+newModelList = []
+while 1:
+    try:
+        newModelList.append(pickle.load(infile))
+    except (EOFError):
+        break
+infile.close()
+
+tag = "all interventions - decrease coverage by 30\%"
+plotData.append({})
+plotData[run]["modelList"] = newModelList
+plotData[run]["tag"] = tag
+plotData[run]["color"] = 'red'
+run += 1
 
 
 #------------------------------------------------------------------------    
@@ -74,7 +124,6 @@ model.setConstants(constants)
 params = parametersCode.Params(spreadsheetData, constants, keyList)
 model.setParams(params)
 model.updateMortalityRate()
-
 
 pickleFilename = 'testDefault.pkl'
 import pickle as pickle
@@ -94,18 +143,17 @@ while 1:
         break
 infile.close()
 
-
 tag = "default"
 plotData.append({})
-plotData[0]["modelList"] = modelList
-plotData[0]["tag"] = tag
-plotData[0]["color"] = 'grey'
-
+plotData[run]["modelList"] = modelList
+plotData[run]["tag"] = tag
+plotData[run]["color"] = 'grey'
+run += 1
 
 #------------------------------------------------------------------------    
 # INTERVENTION
 listOfAgeCompartments = makeAgeCompartements(agingRateList, agePopSizes, keyList)
-modelZ = modelCode.Model("Zinc model", mothers, listOfAgeCompartments, keyList, timestep)
+modelZ = modelCode.Model("Increased Coverage model", mothers, listOfAgeCompartments, keyList, timestep)
 constants = constantsCode.Constants(spreadsheetData, modelZ, keyList)
 modelZ.setConstants(constants)
 params = parametersCode.Params(spreadsheetData,constants,keyList)
@@ -124,13 +172,11 @@ for intervention in spreadsheetData.interventionList:
     print "New coverage of %s = %g"%(intervention,newCoverages[intervention])
 # increase zinc coverage
 #newCoverages["Zinc supplementation"] = 1.0
-# increase Vit A
-#newCoverages["Vitamin A supplementation"] = 1.0
 modelZ.updateCoverages(newCoverages)
 
 
 # file to dump objects into at each time step
-pickleFilename = 'testIntervention.pkl'
+pickleFilename = 'test_Intervention_P30.pkl'
 import pickle as pickle
 outfile = open(pickleFilename, 'wb')
 for t in range(numsteps):
@@ -148,14 +194,18 @@ while 1:
         break
 infile.close()
 
-tag = "with 2 interventions"
+tag = "all interventions - increase coverage by 30\%"
 plotData.append({})
-plotData[1]["modelList"] = newModelList
-plotData[1]["tag"] = tag
-plotData[1]["color"] = 'blue'
+plotData[run]["modelList"] = newModelList
+plotData[run]["tag"] = tag
+plotData[run]["color"] = 'blue'
+run += 1
 
 
-output.getCombinedPlots(2, plotData)
+#------------------------------------------------------------------------    
+
+
+output.getCombinedPlots(run, plotData)
 output.getDeathsAverted(modelList, newModelList, 'test')
 
 
