@@ -18,53 +18,59 @@ while 1:
         break
 file1.close()
 
-file2 = open('testZinc.pkl', 'rb')
+file2 = open('test_Intervention_M30.pkl', 'rb')
 # read the model output with simple intervention
-zinc = []
+test_m30 = []
 while 1:
     try:
-        zinc.append(pickle.load(file2))
+        test_m30.append(pickle.load(file2))
     except (EOFError):
         break
 file2.close()
 
-"""
-file3 = open('extremeIntervention.pkl', 'rb')
+file3 = open('test_Intervention_P30.pkl', 'rb')
 # read the model output with simple intervention
-extreme = []
+test_p30 = []
 while 1:
     try:
-        extreme.append(pickle.load(file3))
+        test_p30.append(pickle.load(file3))
     except (EOFError):
         break
 file3.close()
-"""
 
 
 output.getPopSizeByAgePlot(default, "default")
-output.getPopSizeByAgePlot(zinc, "zinc")
+output.getPopSizeByAgePlot(test_m30, "test_m30")
 
 output.getPopAndStuntedSizePlot(default, "default")
-output.getPopAndStuntedSizePlot(zinc, "zinc")
+output.getPopAndStuntedSizePlot(test_m30, "test_m30")
 
 output.getCumulativeDeathsByAgePlot(default, "default")
-output.getCumulativeDeathsByAgePlot(zinc, "zinc")
+output.getCumulativeDeathsByAgePlot(test_m30, "test_m30")
 
 output.getNumStuntedByAgePlot(default, "default")
-output.getNumStuntedByAgePlot(zinc, "zinc")
+output.getNumStuntedByAgePlot(test_m30, "test_m30")
 
 output.getStuntedPercent(default, "default")
-output.getStuntedPercent(zinc, "zinc")
+output.getStuntedPercent(test_m30, "test_m30")
 
 
 
 plotData = []
+run=0
 plotData.append({})
-plotData[0]["modelList"] = default
-plotData[0]["tag"] = "default"
-plotData[0]["color"] = 'grey'
+plotData[run]["modelList"] = test_m30
+plotData[run]["tag"] = "decreased coverage by 30\%"
+plotData[run]["color"] = 'red'
+run += 1
 plotData.append({})
-plotData[1]["modelList"] = zinc
-plotData[1]["tag"] = "increased Zinc"
-plotData[1]["color"] = 'blue'
-output.getCombinedPlots(2, plotData)
+plotData[run]["modelList"] = default
+plotData[run]["tag"] = "default"
+plotData[run]["color"] = 'grey'
+run += 1
+plotData.append({})
+plotData[run]["modelList"] = test_p30
+plotData[run]["tag"] = "increased coverage by 30\%"
+plotData[run]["color"] = 'blue'
+run += 1
+output.getCombinedPlots(run, plotData)
