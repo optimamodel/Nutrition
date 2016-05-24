@@ -186,6 +186,7 @@ class Model:
             ageName = ageGroup.name
             #save total stunting update for use in apply births and apply aging
             self.totalInterventionStuntingUpdate[ageName] *= stuntingUpdate[ageName] * stuntingUpdateDueToIncidence[ageName]
+            self.constants.stuntingUpdateAfterInterventions[ageName] *= stuntingUpdate[ageName] * stuntingUpdateDueToIncidence[ageName]
             #update stunting    
             oldProbStunting = ageGroup.getStuntedFraction()
             newProbStunting = oldProbStunting * stuntingUpdate[ageName] * stuntingUpdateDueToIncidence[ageName]

@@ -16,7 +16,7 @@ class Constants:
         self.underlyingMortalities = {}
         self.probStuntedIfPrevStunted = {}
         self.fracStuntedIfDiarrhea = {}
-        self.fracStuntedIfZinc = {}
+        #self.fracStuntedIfZinc = {}
         self.probStuntedIfCovered = {}
         self.probExclusivelyBreastfedIfCovered = {}
         #self.baselineProbsBirthOutcome = {}
@@ -24,11 +24,15 @@ class Constants:
         self.birthStuntingQuarticCoefficients = []
         self.baselineProbStuntingAtBirth = 0.
         self.probsStuntingAtBirth = {}
+        self.initialStuntingTrend = -0.5 # 0.5 percent decrease in stunting prevalence per year
+        self.stuntingUpdateAfterInterventions = {}
+        for age in self.ages:
+            self.stuntingUpdateAfterInterventions[age] = 1.
 
         self.getUnderlyingMortalities()
         self.getProbStuntingProgression()
         self.initialiseFracStuntedIfDiarrhea()
-        self.getFracStuntingGivenZinc()
+        #self.getFracStuntingGivenZinc()
         self.getProbStuntedIfCoveredByIntervention()
         self.getProbExclusivelyBreastfedIfCoveredByIntervention()
         #self.getBaselineProbsBirthOutcome()
