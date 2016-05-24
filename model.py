@@ -142,7 +142,7 @@ class Model:
         stuntingUpdate = self.params.getStuntingUpdate(newCoverage)
         incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
         birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)
-        exclusivebfUpdate = self.params.getExclusiveBFUpdate(newCoverage)
+        exclusivebfFracNew = self.params.getExclusiveBFNew(newCoverage)
               
         # MORTALITY
         for ageGroup in self.listOfAgeCompartments:
@@ -156,11 +156,11 @@ class Model:
             ageName = ageGroup.name
             totalPop = ageGroup.getTotalPopulation()
             numExclusiveBefore    = ageGroup.getNumberExclusivelyBreastfed()
-            numExclusiveAfter     = numExclusiveBefore * exclusivebfUpdate[ageName]
+            numExclusiveAfter     = totalPop * exclusivebfFracNew[ageName]
             numShifting           = numExclusiveAfter - numExclusiveBefore
             numNotExclusiveBefore = totalPop - numExclusiveBefore
             fracShiftingNotExclusive = numShifting / numNotExclusiveBefore
-            self.params.breastfeedingDistribution[ageName]["exclusive"] *= exclusivebfUpdate[ageName]
+            self.params.breastfeedingDistribution[ageName]["exclusive"] = exclusivebfFracNew[ageName]
             BFlistNotExclusive = [cat for cat in self.breastfeedingList if cat!="exclusive"]
             for cat in BFlistNotExclusive:
                 self.params.breastfeedingDistribution[ageName][cat] *= 1. - fracShiftingNotExclusive

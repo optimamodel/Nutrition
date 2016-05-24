@@ -98,19 +98,18 @@ class Params:
         return stuntingUpdate        
             
 
-    def getExclusiveBFUpdate(self, newCoverage):
-        eps = 1.e-5
-        exclusivebfUpdate = {}
+    def getExclusiveBFNew(self, newCoverage):
+        exclusivebfFracNew = {}
         for ageName in self.ages:
-            exclusivebfUpdate[ageName] = 1.
-            oldFracExclusive = self.breastfeedingDistribution[ageName]["exclusive"]
+            exclusivebfFracBefore = self.breastfeedingDistribution[ageName]["exclusive"]
+            exclusivebfFracNew[ageName] = exclusivebfFracBefore
             for intervention in newCoverage.keys():
                 probExclusiveIfCovered    = self.constants.probExclusivelyBreastfedIfCovered[intervention]["covered"][ageName]
                 probExclusiveIfNotCovered = self.constants.probExclusivelyBreastfedIfCovered[intervention]["not covered"][ageName]
-                newFracExclusive = newCoverage[intervention]*probExclusiveIfCovered + (1.-newCoverage[intervention])*probExclusiveIfNotCovered
-                if oldFracExclusive > eps:
-                    exclusivebfUpdate[ageName] *= float(newFracExclusive) / float(oldFracExclusive)
-        return exclusivebfUpdate               
+                exclusivebfFracNewThis = newCoverage[intervention]*probExclusiveIfCovered + (1.-newCoverage[intervention])*probExclusiveIfNotCovered
+                FracAdd = exclusivebfFracNewThis - exclusivebfFracBefore
+                exclusivebfFracNew[ageName] += FracAdd
+        return exclusivebfFracNew               
 
             
     def getIncidenceUpdate(self, newCoverage):
