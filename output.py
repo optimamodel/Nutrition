@@ -309,7 +309,7 @@ def getCombinedPlots(numRuns, data, save=False):
         tag       = data[run]["tag"]
         color     = data[run]["color"]
         #plotObj = plt.fill_between(x, stuntPopU5[tag], 0, color=color)
-        plotObj = plt.plot(x, stuntPopU5[tag], linewidth=3., color=color)
+        plotObj, = plt.plot(x, stuntPopU5[tag], linewidth=3., color=color)
         tagList.append(tag)
         plotList.append(plotObj)
     plt.legend(plotList, tagList, loc = 'lower right')
@@ -331,7 +331,7 @@ def getCombinedPlots(numRuns, data, save=False):
         tag       = data[run]["tag"]
         color     = data[run]["color"]
         #plotObj = plt.fill_between(x, stuntFracU5[tag], 0, color=color)
-        plotObj = plt.plot(x, stuntFracU5[tag], linewidth=3., color=color)
+        plotObj, = plt.plot(x, stuntFracU5[tag], linewidth=3., color=color)
         tagList.append(tag)
         plotList.append(plotObj)
     plt.legend(plotList, tagList, loc = 'lower right')
@@ -352,7 +352,7 @@ def getCombinedPlots(numRuns, data, save=False):
         tag       = data[run]["tag"]
         color     = data[run]["color"]
         #plotObj = plt.fill_between(x, cumulDeathsU5[tag], 0, color=color)
-        plotObj = plt.plot(x, cumulDeathsU5[tag], linewidth=3., color=color)
+        plotObj, = plt.plot(x, cumulDeathsU5[tag], linewidth=3., color=color)
         tagList.append(tag)
         plotList.append(plotObj)
     plt.legend(plotList, tagList, loc = 'lower right')
@@ -374,7 +374,7 @@ def getCombinedPlots(numRuns, data, save=False):
         tag       = data[run]["tag"]
         color     = data[run]["color"]
         #plotObj = plt.fill_between(x, cumulDeathsList[tag]["<1 month"], 0, color=color)
-        plotObj = plt.plot(x, cumulDeathsList[tag]["<1 month"], linewidth=3., color=color)
+        plotObj, = plt.plot(x, cumulDeathsList[tag]["<1 month"], linewidth=3., color=color)
         tagList.append(tag)
         plotList.append(plotObj)
     plt.legend(plotList, tagList, loc = 'lower right')
