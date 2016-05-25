@@ -143,6 +143,7 @@ class Model:
         incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
         birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)
         exclusivebfFracNew = self.params.getExclusiveBFNew(newCoverage)
+        stuntingUpdateComplementaryFeeding = self.params.getStuntingUpdateComplementaryFeeding(newCoverage)
               
         # MORTALITY
         for ageGroup in self.listOfAgeCompartments:
@@ -184,12 +185,13 @@ class Model:
         # STUNTING
         for ageGroup in self.listOfAgeCompartments:
             ageName = ageGroup.name
+            totalUpdate = stuntingUpdate[ageName] * stuntingUpdateDueToIncidence[ageName] * stuntingUpdateComplementaryFeeding[ageName]
             #save total stunting update for use in apply births and apply aging
-            self.totalInterventionStuntingUpdate[ageName] *= stuntingUpdate[ageName] * stuntingUpdateDueToIncidence[ageName]
-            self.constants.stuntingUpdateAfterInterventions[ageName] *= stuntingUpdate[ageName] * stuntingUpdateDueToIncidence[ageName]
+            self.totalInterventionStuntingUpdate[ageName] *= totalUpdate
+            self.constants.stuntingUpdateAfterInterventions[ageName] *= totalUpdate
             #update stunting    
             oldProbStunting = ageGroup.getStuntedFraction()
-            newProbStunting = oldProbStunting * stuntingUpdate[ageName] * stuntingUpdateDueToIncidence[ageName]
+            newProbStunting = oldProbStunting * totalUpdate
             self.params.stuntingDistribution[ageName] = self.helper.restratify(newProbStunting)
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
             
