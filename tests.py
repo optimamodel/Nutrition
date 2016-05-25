@@ -41,11 +41,11 @@ def setUpDataModelConstantsObjects():
         agePopSize = agePopSizes[age]
     # allBoxes is a dictionary rather than a list to provide to AgeCompartment
         allBoxes = {}
-        for stuntingCat in ["normal", "mild", "moderate", "high"]:
+        for stuntingCat in stuntingList:
             allBoxes[stuntingCat] = {} 
-            for wastingCat in ["normal", "mild", "moderate", "high"]:
+            for wastingCat in wastingList:
                 allBoxes[stuntingCat][wastingCat] = {}
-                for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
+                for breastfeedingCat in breastfeedingList:
                     thisPopSize = int(agePopSize/64.) # 100 people in each box
                     thisMortalityRate = testData.totalMortality[ageRange] # WARNING need to distribute appropriately
                     allBoxes[stuntingCat][wastingCat][breastfeedingCat] =  model.Box(stuntingCat, wastingCat, breastfeedingCat, thisPopSize, thisMortalityRate)
