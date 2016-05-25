@@ -339,7 +339,10 @@ class Model:
         self.params.stuntingDistribution[ageName] = self.helper.restratify(newProbStunting)
         ageCompartment.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
 
-
+    def applyAgingAndBirths(self):
+        # aging must happen before births
+        self.applyAging()
+        self.applyBirths()
 
     def updateRiskDistributions(self):
         for ageCompartment in self.listOfAgeCompartments:
@@ -351,7 +354,6 @@ class Model:
 
     def moveOneTimeStep(self):
         self.applyMortality() 
-        self.applyAging()
-        self.applyBirths()
+        self.applyAgingAndBirths()
         self.updateRiskDistributions()
 
