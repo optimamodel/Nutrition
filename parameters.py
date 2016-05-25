@@ -146,20 +146,22 @@ class Params:
         return stuntingUpdate
         
         
-     def getStuntingUpdateComplementaryFeeding(self, newCoverage):
+    def getStuntingUpdateComplementaryFeeding(self, newCoverage):
         stuntingUpdate = {}
         FracSecure = 0.5 # WARNING HARDCODED, NEED TO GET FROM DATA
+        FracCovered = newCoverage['Complementary feeding']
+        Frac = [0.]*4
+        Frac[0] = FracSecure * FracCovered    
+        Frac[1] = FracSecure * (1 - FracCovered)
+        Frac[2] = (1 - FracSecure) * FracCovered
+        Frac[3] = (1 - FracSecure) * (1 - FracCovered)
         for ageName in self.ages:
             stuntingUpdate[ageName] = 1.
             oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
-            
-
-            
-            for intervention in newCoverage.keys():            
-                probStuntingIfCovered    = self.constants.probStuntedIfCovered[intervention]["covered"][ageName]
-                probStuntingIfNotCovered = self.constants.probStuntedIfCovered[intervention]["not covered"][ageName]
-                newProbStunting = newCoverage[intervention]*probStuntingIfCovered + (1.-newCoverage[intervention])*probStuntingIfNotCovered
-                
-                reduction = (oldProbStunting - newProbStunting)/oldProbStunting
-                stuntingUpdate[ageName] *= 1. - reduction
+            newProbStunting = 0
+            for i in len(self.data.complementsList):            
+                probThisGroup = self.constants.probsStuntingComplementaryFeeding[ageName][self.data.complementsList[i]]
+                newProbStunting = probThisGroup * Frac[i]
+            reduction = (oldProbStunting - newProbStunting)/oldProbStunting
+            stuntingUpdate[ageName] *= 1. - reduction
         return stuntingUpdate           
