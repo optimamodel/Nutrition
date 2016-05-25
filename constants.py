@@ -20,7 +20,8 @@ class Constants:
         self.probStuntedIfCovered = {}
         self.probExclusivelyBreastfedIfCovered = {}
         self.probsBirthOutcome = {}  
-        self.initialStuntingTrend = -0.00 # fractional decrease in stunting prevalence per year
+        self.initialStuntingTrend = -0. # percentage decrease in stunting prevalence per year
+        self.initialStuntingTrend = self.initialStuntingTrend / 100. * self.model.timestep # fractional decrease in stunting prevalence per timestep
         self.FractionFoodSecure = 0.5 # eventually this will come from data somehow
         self.stuntingUpdateAfterInterventions = {}
         for age in self.ages:
@@ -134,7 +135,7 @@ class Constants:
             thisAge = self.model.listOfAgeCompartments[ageInd]
             younger = self.model.listOfAgeCompartments[ageInd-1]
             OddsRatio = self.data.ORstuntingProgression[ageName]
-            fracStuntedThisAge = thisAge.getStuntedFraction() * (1.+self.initialStuntingTrend)
+            fracStuntedThisAge = thisAge.getStuntedFraction() + self.initialStuntingTrend
             fracStuntedYounger = younger.getStuntedFraction()
             # solve quadratic equation ax**2 + bx + c = 0
             a = (1.-fracStuntedYounger) * (1.-OddsRatio)
@@ -182,7 +183,7 @@ class Constants:
                 pab  = self.data.breastfeedingDistribution[ageName][breastfeedingCat]
                 fracDiarrhea += beta * pab
             # fraction stunted
-            fracStuntedThisAge = thisAge.getStuntedFraction() * (1.+self.initialStuntingTrend)
+            fracStuntedThisAge = thisAge.getStuntedFraction() + self.initialStuntingTrend
             # solve quadratic equation ax**2 + bx + c = 0
             a = (1.-fracDiarrhea) * (1.-AO)
             b = (AO-1.)*fracStuntedThisAge - AO*fracDiarrhea - (1.-fracDiarrhea)
@@ -221,7 +222,7 @@ class Constants:
             for breastfeedingCat in self.breastfeedingList:
                 fracDiarrhea += beta[ageName][breastfeedingCat] * self.data.breastfeedingDistribution[ageName][breastfeedingCat]
             # get fraction stunted
-            fracStuntedThisAge = thisAge.getStuntedFraction() * (1.+self.initialStuntingTrend)
+            fracStuntedThisAge = thisAge.getStuntedFraction() + self.initialStuntingTrend
             # solve quadratic equation ax**2 + bx + c = 0
             a = (1. - fracDiarrhea) * (1. - AO[ageName])
             b = (AO[ageName] - 1.) * fracStuntedThisAge - AO[ageName] * fracDiarrhea - (1. - fracDiarrhea)
@@ -284,7 +285,7 @@ class Constants:
             OddsRatio = self.data.ORstuntingIntervention[ageName]['Zinc supplementation']
             fracZinc = self.data.interventionCoveragesCurrent["Zinc supplementation"]
             # fraction stunted
-            fracStuntedThisAge = thisAge.getStuntedFraction() * (1.+self.initialStuntingTrend)
+            fracStuntedThisAge = thisAge.getStuntedFraction() + self.initialStuntingTrend
             # solve quadratic equation ax**2 + bx + c = 0
             a = (1.-fracZinc) * (1.-OddsRatio)
             b = (OddsRatio-1)*fracStuntedThisAge - OddsRatio*fracZinc - (1.-fracZinc)
@@ -318,7 +319,7 @@ class Constants:
                 thisAge = self.model.listOfAgeCompartments[ageInd]
                 OddsRatio = self.data.ORstuntingIntervention[ageName][intervention]
                 fracCovered = self.data.interventionCoveragesCurrent[intervention]
-                fracStuntedThisAge = thisAge.getStuntedFraction() * (1.+self.initialStuntingTrend)
+                fracStuntedThisAge = thisAge.getStuntedFraction() + self.initialStuntingTrend
                 # solve quadratic equation ax**2 + bx + c = 0
                 a = (1.-fracCovered) * (1.-OddsRatio)
                 b = (OddsRatio-1)*fracStuntedThisAge - OddsRatio*fracCovered - (1.-fracCovered)
@@ -420,7 +421,7 @@ class Constants:
         FracBO[2] = self.data.birthOutcomeDist["Pre-term AGA"]
         FracBO[3] = self.data.birthOutcomeDist["Pre-term SGA"]
         FracBO[0] = 1. - sum(FracBO[1:3])
-        FracStunted = self.model.listOfAgeCompartments[0].getStuntedFraction() * (1.+self.initialStuntingTrend)
+        FracStunted = self.model.listOfAgeCompartments[0].getStuntedFraction() + self.initialStuntingTrend
         # [i] will refer to the three non-baseline birth outcomes
         A = FracBO[0]*(OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.)
         B = (OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.) * ( \
@@ -453,7 +454,7 @@ class Constants:
             Frac[1] = FracSecure * (1 - FracCovered)
             Frac[2] = (1 - FracSecure) * FracCovered
             Frac[3] = (1 - FracSecure) * (1 - FracCovered)
-            FracStunted = self.model.listOfAgeCompartments[ageGroup].getStuntedFraction() * (1.+self.initialStuntingTrend)
+            FracStunted = self.model.listOfAgeCompartments[ageGroup].getStuntedFraction() + self.initialStuntingTrend
             # [i] will refer to the three non-baseline birth outcomes
             A = Frac[0]*(OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.)
             B = (OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.) * ( \
