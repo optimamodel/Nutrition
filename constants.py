@@ -446,7 +446,7 @@ class Constants:
             OR[2] = self.data.ORstuntingComplementaryFeeding[age]["Complementary feeding (food insecure with promotion and supplementation)"]
             OR[3] = self.data.ORstuntingComplementaryFeeding[age]["Complementary feeding (food insecure with neither promotion nor supplementation)"]
             FracSecure = 0.5 #WARNING placeholder, need to get this from data
-            FracCovered = 0.7 #WARNING placeholder, need to get this from data            
+            FracCovered = self.data.interventionCoveragesCurrent['Complementary feeding']            
             Frac = [0.]*4
             Frac[0] = FracSecure * FracCovered    
             Frac[1] = FracSecure * (1 - FracCovered)
