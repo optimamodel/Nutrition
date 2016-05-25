@@ -21,6 +21,7 @@ class Constants:
         self.probExclusivelyBreastfedIfCovered = {}
         self.probsBirthOutcome = {}  
         self.initialStuntingTrend = -0.00 # fractional decrease in stunting prevalence per year
+        self.FractionFoodSecure = 0.5 # eventually this will come from data somehow
         self.stuntingUpdateAfterInterventions = {}
         for age in self.ages:
             self.stuntingUpdateAfterInterventions[age] = 1.
@@ -445,7 +446,7 @@ class Constants:
             OR[1] = self.data.ORstuntingComplementaryFeeding[age]["Complementary feeding (food secure without promotion)"]
             OR[2] = self.data.ORstuntingComplementaryFeeding[age]["Complementary feeding (food insecure with promotion and supplementation)"]
             OR[3] = self.data.ORstuntingComplementaryFeeding[age]["Complementary feeding (food insecure with neither promotion nor supplementation)"]
-            FracSecure = 0.5 #WARNING placeholder, need to get this from data
+            FracSecure = self.FractionFoodSecure
             FracCovered = self.data.interventionCoveragesCurrent['Complementary feeding']            
             Frac = [0.]*4
             Frac[0] = FracSecure * FracCovered    

@@ -149,7 +149,7 @@ class Params:
         
     def getStuntingUpdateComplementaryFeeding(self, newCoverage):
         stuntingUpdate = {}
-        FracSecure = 0.5 # WARNING HARDCODED, NEED TO GET FROM DATA
+        FracSecure = self.constants.FractionFoodSecure
         FracCovered = newCoverage['Complementary feeding']
         Frac = [0.]*4
         Frac[0] = FracSecure * FracCovered    
