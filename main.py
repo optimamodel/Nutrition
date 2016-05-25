@@ -22,6 +22,7 @@ breastfeedingList = ["exclusive", "predominant", "partial", "none"]
 keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
 
 spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx', keyList)
+
 mothers = modelCode.FertileWomen(0.9, 2.e6)
 
 ageRangeList  = ages 
@@ -67,7 +68,7 @@ def makeAgeCompartments(agingRateList, agePopSizes, keyList):
 plotData = []
 run = 0
 
-
+"""
 #------------------------------------------------------------------------    
 # INTERVENTION
 nametag = "all interventions: decrease coverage by 10% points"
@@ -115,14 +116,15 @@ plotData[run]["modelList"] = newModelList
 plotData[run]["tag"] = nametag
 plotData[run]["color"] = 'red'
 run += 1
-
+"""
 
 #------------------------------------------------------------------------    
 # DEFAULT RUN WITH NO CHANGES TO INTERVENTIONS
 nametag = "Baseline"
-print "\n"+nametag
 pickleFilename = 'testDefault.pkl'
+plotcolor = 'grey'
 
+print "\n"+nametag
 listOfAgeCompartments = makeAgeCompartments(agingRateList, agePopSizes, keyList)
 model = modelCode.Model(nametag, mothers, listOfAgeCompartments, keyList, timestep)
 constants = constantsCode.Constants(spreadsheetData, model, keyList)
@@ -151,15 +153,18 @@ infile.close()
 plotData.append({})
 plotData[run]["modelList"] = modelList
 plotData[run]["tag"] = nametag
-plotData[run]["color"] = 'grey'
+plotData[run]["color"] = plotcolor
 run += 1
 
 #------------------------------------------------------------------------    
 # INTERVENTION
-nametag = "all interventions: increase coverage by 30%-points"
-print "\n"+nametag
-pickleFilename = 'test_Intervention_P30.pkl'
+chosenIntervention = spreadsheetData.interventionList[0]
+percentageIncrease = 50
+nametag = chosenIntervention+": increase coverage by %g%% points"%(percentageIncrease)
+pickleFilename = 'test_OneIntervention_P%i.pkl'%(percentageIncrease)
+plotcolor = 'green'
 
+print "\n"+nametag
 listOfAgeCompartments = makeAgeCompartments(agingRateList, agePopSizes, keyList)
 modelZ = modelCode.Model("Increased Coverage model", mothers, listOfAgeCompartments, keyList, timestep)
 constants = constantsCode.Constants(spreadsheetData, modelZ, keyList)
@@ -168,22 +173,21 @@ params = parametersCode.Params(spreadsheetData,constants,keyList)
 modelZ.setParams(params)
 modelZ.updateMortalityRate()
 
+# file to dump objects into at each time step
+import pickle as pickle
+outfile = open(pickleFilename, 'wb')
+modelZ.moveOneTimeStep()
+pickle.dump(modelZ, outfile)
+
 # scale up interventions
 # initialise
 newCoverages={}
 for intervention in spreadsheetData.interventionList:
     newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
-# increase coverage for all by 30 percentage points (capped at 100%)
-for intervention in spreadsheetData.interventionList:
-    newCoverages[intervention] = min(1.0,newCoverages[intervention]+0.3) 
-    #print "New coverage of %s = %g"%(intervention,newCoverages[intervention])
+newCoverages[chosenIntervention] += percentageIncrease/100.
 modelZ.updateCoverages(newCoverages)
 
-
-# file to dump objects into at each time step
-import pickle as pickle
-outfile = open(pickleFilename, 'wb')
-for t in range(numsteps):
+for t in range(numsteps-1):
     modelZ.moveOneTimeStep()
     pickle.dump(modelZ, outfile)
 outfile.close()    
@@ -201,7 +205,60 @@ infile.close()
 plotData.append({})
 plotData[run]["modelList"] = newModelList
 plotData[run]["tag"] = nametag
-plotData[run]["color"] = 'blue'
+plotData[run]["color"] = plotcolor
+run += 1
+
+
+#------------------------------------------------------------------------    
+# INTERVENTION
+percentageIncrease = 50
+nametag = "All interventions: increase coverage by %g%% points"%(percentageIncrease)
+pickleFilename = 'test_Intervention_P%i.pkl'%(percentageIncrease)
+plotcolor = 'blue'
+
+print "\n"+nametag
+listOfAgeCompartments = makeAgeCompartments(agingRateList, agePopSizes, keyList)
+modelZ = modelCode.Model("Increased Coverage model", mothers, listOfAgeCompartments, keyList, timestep)
+constants = constantsCode.Constants(spreadsheetData, modelZ, keyList)
+modelZ.setConstants(constants)
+params = parametersCode.Params(spreadsheetData,constants,keyList)
+modelZ.setParams(params)
+modelZ.updateMortalityRate()
+
+# file to dump objects into at each time step
+import pickle as pickle
+outfile = open(pickleFilename, 'wb')
+modelZ.moveOneTimeStep()
+pickle.dump(modelZ, outfile)
+
+# scale up all interventions
+# initialise
+newCoverages={}
+for intervention in spreadsheetData.interventionList:
+    newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
+for intervention in spreadsheetData.interventionList:
+    newCoverages[intervention] = min(1.0,newCoverages[intervention]+percentageIncrease/100.) 
+modelZ.updateCoverages(newCoverages)
+
+for t in range(numsteps-1):
+    modelZ.moveOneTimeStep()
+    pickle.dump(modelZ, outfile)
+outfile.close()    
+
+# collect output, make graphs etc.
+infile = open(pickleFilename, 'rb')
+newModelList = []
+while 1:
+    try:
+        newModelList.append(pickle.load(infile))
+    except (EOFError):
+        break
+infile.close()
+
+plotData.append({})
+plotData[run]["modelList"] = newModelList
+plotData[run]["tag"] = nametag
+plotData[run]["color"] = plotcolor
 run += 1
 
 
