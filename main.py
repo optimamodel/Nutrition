@@ -68,8 +68,11 @@ run = 0
 
 #------------------------------------------------------------------------    
 # INTERVENTION
+nametag = "all interventions - decrease coverage by 30%%"
+pickleFilename = 'test_Intervention_M30.pkl'
+
 listOfAgeCompartments = makeAgeCompartements(agingRateList, agePopSizes, keyList)
-modelZ = modelCode.Model("Decreased Coverage model", mothers, listOfAgeCompartments, keyList, timestep)
+modelZ = modelCode.Model(nametag, mothers, listOfAgeCompartments, keyList, timestep)
 constants = constantsCode.Constants(spreadsheetData, modelZ, keyList)
 modelZ.setConstants(constants)
 params = parametersCode.Params(spreadsheetData,constants,keyList)
@@ -89,7 +92,6 @@ for intervention in spreadsheetData.interventionList:
 modelZ.updateCoverages(newCoverages)
 
 # file to dump objects into at each time step
-pickleFilename = 'test_Intervention_M30.pkl'
 import pickle as pickle
 outfile = open(pickleFilename, 'wb')
 for t in range(numsteps):
@@ -107,25 +109,26 @@ while 1:
         break
 infile.close()
 
-tag = "all interventions - decrease coverage by 30\%"
 plotData.append({})
 plotData[run]["modelList"] = newModelList
-plotData[run]["tag"] = tag
+plotData[run]["tag"] = nametag
 plotData[run]["color"] = 'red'
 run += 1
 
 
 #------------------------------------------------------------------------    
 # DEFAULT RUN WITH NO CHANGES TO INTERVENTIONS
+nametag = "Baseline"
+pickleFilename = 'testDefault.pkl'
+
 listOfAgeCompartments = makeAgeCompartements(agingRateList, agePopSizes, keyList)
-model = modelCode.Model("Main model", mothers, listOfAgeCompartments, keyList, timestep)
+model = modelCode.Model(nametag, mothers, listOfAgeCompartments, keyList, timestep)
 constants = constantsCode.Constants(spreadsheetData, model, keyList)
 model.setConstants(constants)
 params = parametersCode.Params(spreadsheetData, constants, keyList)
 model.setParams(params)
 model.updateMortalityRate()
 
-pickleFilename = 'testDefault.pkl'
 import pickle as pickle
 outfile = open(pickleFilename, 'wb')
 for t in range(numsteps):
@@ -143,15 +146,17 @@ while 1:
         break
 infile.close()
 
-tag = "default"
 plotData.append({})
 plotData[run]["modelList"] = modelList
-plotData[run]["tag"] = tag
+plotData[run]["tag"] = nametag
 plotData[run]["color"] = 'grey'
 run += 1
 
 #------------------------------------------------------------------------    
 # INTERVENTION
+nametag = "all interventions - increase coverage by 30%%"
+pickleFilename = 'test_Intervention_P30.pkl'
+
 listOfAgeCompartments = makeAgeCompartements(agingRateList, agePopSizes, keyList)
 modelZ = modelCode.Model("Increased Coverage model", mothers, listOfAgeCompartments, keyList, timestep)
 constants = constantsCode.Constants(spreadsheetData, modelZ, keyList)
@@ -176,7 +181,6 @@ modelZ.updateCoverages(newCoverages)
 
 
 # file to dump objects into at each time step
-pickleFilename = 'test_Intervention_P30.pkl'
 import pickle as pickle
 outfile = open(pickleFilename, 'wb')
 for t in range(numsteps):
@@ -194,10 +198,9 @@ while 1:
         break
 infile.close()
 
-tag = "all interventions - increase coverage by 30\%"
 plotData.append({})
 plotData[run]["modelList"] = newModelList
-plotData[run]["tag"] = tag
+plotData[run]["tag"] = nametag
 plotData[run]["color"] = 'blue'
 run += 1
 
