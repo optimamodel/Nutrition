@@ -38,6 +38,7 @@ class Params:
         self.interventionAffectedFraction = dcp(data.interventionAffectedFraction)
         self.interventionIncidenceEffectiveness = dcp(data.interventionIncidenceEffectiveness)
         self.interventionsMaternal = dcp(data.interventionsMaternal)
+        self.complementsList = dcp(data.complementsList)
     
 
 # Add all functions for updating parameters due to interventions here....
@@ -159,8 +160,8 @@ class Params:
             stuntingUpdate[ageName] = 1.
             oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
             newProbStunting = 0
-            for i in len(self.data.complementsList):            
-                probThisGroup = self.constants.probsStuntingComplementaryFeeding[ageName][self.data.complementsList[i]]
+            for i in range(len(self.complementsList)):            
+                probThisGroup = self.constants.probsStuntingComplementaryFeeding[ageName][self.complementsList[i]]
                 newProbStunting = probThisGroup * Frac[i]
             reduction = (oldProbStunting - newProbStunting)/oldProbStunting
             stuntingUpdate[ageName] *= 1. - reduction
