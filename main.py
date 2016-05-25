@@ -33,6 +33,8 @@ timestep = 1./12.
 numsteps = 168  
 timespan = timestep * float(numsteps)
 
+for intervention in spreadsheetData.interventionList:
+    print "Baseline coverage of %s = %g"%(intervention,spreadsheetData.interventionCoveragesCurrent[intervention])
 
 #-------------------------------------------------------------------------    
 def makeBoxes(thisAgePopSize, ageGroup, keyList):
@@ -48,7 +50,7 @@ def makeBoxes(thisAgePopSize, ageGroup, keyList):
                 allBoxes[stuntingCat][wastingCat][breastfeedingCat] =  modelCode.Box(stuntingCat, wastingCat, breastfeedingCat, thisPopSize, thisMortalityRate)
     return allBoxes
 
-def makeAgeCompartements(agingRateList, agePopSizes, keyList):
+def makeAgeCompartments(agingRateList, agePopSizes, keyList):
     ages, birthOutcomes, wastingList, stuntingList, breastfeedingList = keyList
     numAgeGroups = len(ages)
     listOfAgeCompartments = []
@@ -68,10 +70,11 @@ run = 0
 
 #------------------------------------------------------------------------    
 # INTERVENTION
-nametag = "all interventions - decrease coverage by 30%%"
-pickleFilename = 'test_Intervention_M30.pkl'
+nametag = "all interventions: decrease coverage by 10% points"
+print "\n"+nametag
+pickleFilename = 'test_Intervention_M10.pkl'
 
-listOfAgeCompartments = makeAgeCompartements(agingRateList, agePopSizes, keyList)
+listOfAgeCompartments = makeAgeCompartments(agingRateList, agePopSizes, keyList)
 modelZ = modelCode.Model(nametag, mothers, listOfAgeCompartments, keyList, timestep)
 constants = constantsCode.Constants(spreadsheetData, modelZ, keyList)
 modelZ.setConstants(constants)
@@ -79,16 +82,14 @@ params = parametersCode.Params(spreadsheetData,constants,keyList)
 modelZ.setParams(params)
 modelZ.updateMortalityRate()
 
-# scale up interventions
+# scale up/down interventions
 # initialise
 newCoverages={}
 for intervention in spreadsheetData.interventionList:
     newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
-    print "Current coverage of %s = %g"%(intervention,newCoverages[intervention])
-# decrease coverage for all by 30 percentage points (capped at 0%)
 for intervention in spreadsheetData.interventionList:
-    newCoverages[intervention] = max(0.0,newCoverages[intervention]-0.3) 
-    print "New coverage of %s = %g"%(intervention,newCoverages[intervention])
+    newCoverages[intervention] = max(0.0,newCoverages[intervention]-0.1) 
+    #print "New coverage of %s = %g"%(intervention,newCoverages[intervention])
 modelZ.updateCoverages(newCoverages)
 
 # file to dump objects into at each time step
@@ -119,9 +120,10 @@ run += 1
 #------------------------------------------------------------------------    
 # DEFAULT RUN WITH NO CHANGES TO INTERVENTIONS
 nametag = "Baseline"
+print "\n"+nametag
 pickleFilename = 'testDefault.pkl'
 
-listOfAgeCompartments = makeAgeCompartements(agingRateList, agePopSizes, keyList)
+listOfAgeCompartments = makeAgeCompartments(agingRateList, agePopSizes, keyList)
 model = modelCode.Model(nametag, mothers, listOfAgeCompartments, keyList, timestep)
 constants = constantsCode.Constants(spreadsheetData, model, keyList)
 model.setConstants(constants)
@@ -154,10 +156,11 @@ run += 1
 
 #------------------------------------------------------------------------    
 # INTERVENTION
-nametag = "all interventions - increase coverage by 30%%"
+nametag = "all interventions: increase coverage by 30%-points"
+print "\n"+nametag
 pickleFilename = 'test_Intervention_P30.pkl'
 
-listOfAgeCompartments = makeAgeCompartements(agingRateList, agePopSizes, keyList)
+listOfAgeCompartments = makeAgeCompartments(agingRateList, agePopSizes, keyList)
 modelZ = modelCode.Model("Increased Coverage model", mothers, listOfAgeCompartments, keyList, timestep)
 constants = constantsCode.Constants(spreadsheetData, modelZ, keyList)
 modelZ.setConstants(constants)
@@ -170,13 +173,10 @@ modelZ.updateMortalityRate()
 newCoverages={}
 for intervention in spreadsheetData.interventionList:
     newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
-    print "Current coverage of %s = %g"%(intervention,newCoverages[intervention])
 # increase coverage for all by 30 percentage points (capped at 100%)
 for intervention in spreadsheetData.interventionList:
     newCoverages[intervention] = min(1.0,newCoverages[intervention]+0.3) 
-    print "New coverage of %s = %g"%(intervention,newCoverages[intervention])
-# increase zinc coverage
-#newCoverages["Zinc supplementation"] = 1.0
+    #print "New coverage of %s = %g"%(intervention,newCoverages[intervention])
 modelZ.updateCoverages(newCoverages)
 
 
