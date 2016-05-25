@@ -18,7 +18,7 @@ class Constants:
         self.fracStuntedIfDiarrhea = {}
         #self.fracStuntedIfZinc = {}
         self.probStuntedIfCovered = {}
-        self.probExclusivelyBreastfedIfCovered = {}
+        self.probAppropriatelyBreastfedIfCovered = {}
         self.probsBirthOutcome = {}  
         self.initialStuntingTrend = -0. # percentage decrease in stunting prevalence per year
         self.initialStuntingTrend = self.initialStuntingTrend / 100. * self.model.timestep # fractional decrease in stunting prevalence per timestep
@@ -31,7 +31,7 @@ class Constants:
         self.getProbStuntingProgression()
         self.initialiseFracStuntedIfDiarrhea()
         self.getProbStuntedIfCoveredByIntervention()
-        self.getProbExclusivelyBreastfedIfCoveredByIntervention()
+        self.getProbAppropriatelyBreastfedIfCoveredByIntervention()
         self.initialiseFracStuntedIfDiarrhea()
         #self.getFracStuntingGivenZinc()
         self.getProbStuntedIfCoveredByIntervention()
@@ -305,7 +305,6 @@ class Constants:
 
 
     # Calculate probability of stunting in current age-group given coverage by intervention
-    # WARNING: currently not appropriate for OR complementary feeding
     def getProbStuntedIfCoveredByIntervention(self):
         from numpy import sqrt 
         eps = 1.e-5
@@ -338,24 +337,25 @@ class Constants:
 
 
     # Calculate probability of stunting in current age-group given coverage by intervention
-    def getProbExclusivelyBreastfedIfCoveredByIntervention(self):
+    def getProbAppropriatelyBreastfedIfCoveredByIntervention(self):
         from numpy import sqrt 
         eps = 1.e-5
         numAgeGroups = len(self.model.listOfAgeCompartments)
         for intervention in self.data.interventionList:
-            self.probExclusivelyBreastfedIfCovered[intervention] = {}
-            self.probExclusivelyBreastfedIfCovered[intervention]["not covered"] = {}
-            self.probExclusivelyBreastfedIfCovered[intervention]["covered"]     = {}
+            self.probAppropriatelyBreastfedIfCovered[intervention] = {}
+            self.probAppropriatelyBreastfedIfCovered[intervention]["not covered"] = {}
+            self.probAppropriatelyBreastfedIfCovered[intervention]["covered"]     = {}
             for ageInd in range(numAgeGroups):
                 ageName = self.ages[ageInd]
                 thisAge = self.model.listOfAgeCompartments[ageInd]
-                OddsRatio = self.data.ORexclusivebfIntervention[ageName][intervention]
+                OddsRatio = self.data.ORappropriatebfIntervention[ageName][intervention]
                 fracCovered = self.data.interventionCoveragesCurrent[intervention]
-                fracExclusivelyBreastfedThisAge = self.data.breastfeedingDistribution[ageName]["exclusive"]
+                appropriatePractice = self.data.ageAppropriateBreastfeeding[ageName]
+                fracAppropriatelyBreastfedThisAge = self.data.breastfeedingDistribution[ageName][appropriatePractice]
                 # solve quadratic equation ax**2 + bx + c = 0
                 a = (1.-fracCovered) * (1.-OddsRatio)
-                b = (OddsRatio-1)*fracExclusivelyBreastfedThisAge - OddsRatio*fracCovered - (1.-fracCovered)
-                c = fracExclusivelyBreastfedThisAge
+                b = (OddsRatio-1)*fracAppropriatelyBreastfedThisAge - OddsRatio*fracCovered - (1.-fracCovered)
+                c = fracAppropriatelyBreastfedThisAge
                 det = sqrt(b**2 - 4.*a*c)
                 if(abs(a)<eps):
                     p0 = -c/b
@@ -364,9 +364,9 @@ class Constants:
                     soln2 = (-b - det)/(2.*a)
                     if(soln1>0.)and(soln1<1.): p0 = soln1
                     if(soln2>0.)and(soln2<1.): p0 = soln2
-                self.probExclusivelyBreastfedIfCovered[intervention]["not covered"][ageName] = p0
-                self.probExclusivelyBreastfedIfCovered[intervention]["covered"][ageName]     = p0*OddsRatio/(1.-p0+OddsRatio*p0)
-                #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%((1.-fracCovered)*p0 + fracCovered*p0*OddsRatio/(1.-p0+OddsRatio*p0), fracExclusivelyBreastfedThisAge)
+                self.probAppropriatelyBreastfedIfCovered[intervention]["not covered"][ageName] = p0
+                self.probAppropriatelyBreastfedIfCovered[intervention]["covered"][ageName]     = p0*OddsRatio/(1.-p0+OddsRatio*p0)
+                #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%((1.-fracCovered)*p0 + fracCovered*p0*OddsRatio/(1.-p0+OddsRatio*p0), fracAppropriatelyBreastfedThisAge)
 
 
 

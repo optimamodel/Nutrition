@@ -93,12 +93,12 @@ class AgeCompartment:
                     returnDict[breastfeedingCat] += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize / totalPop
         return returnDict
 
-    def getNumberExclusivelyBreastfed(self):
-        NumberExclusivelyBreastfed = 0.
+    def getNumberAppropriatelyBreastfed(self,practice):
+        NumberAppropriatelyBreastfed = 0.
         for stuntingCat in self.stuntingList:
             for wastingCat in self.wastingList:
-                NumberExclusivelyBreastfed += self.dictOfBoxes[stuntingCat][wastingCat]["exclusive"].populationSize
-        return NumberExclusivelyBreastfed
+                NumberAppropriatelyBreastfed += self.dictOfBoxes[stuntingCat][wastingCat][practice].populationSize
+        return NumberAppropriatelyBreastfed
 
     def distribute(self, stuntingDist, wastingDist, breastfeedingDist):
         ageName = self.name
@@ -140,7 +140,7 @@ class Model:
         stuntingUpdate = self.params.getStuntingUpdate(newCoverage)
         incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
         birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)
-        exclusivebfFracNew = self.params.getExclusiveBFNew(newCoverage)
+        appropriatebfFracNew = self.params.getAppropriateBFNew(newCoverage)
         stuntingUpdateComplementaryFeeding = self.params.getStuntingUpdateComplementaryFeeding(newCoverage)
               
         # MORTALITY
@@ -153,16 +153,19 @@ class Model:
         # BREASTFEEDING
         for ageGroup in self.listOfAgeCompartments:
             ageName = ageGroup.name
+            appropriatePractice = self.params.ageAppropriateBreastfeeding[ageName]
             totalPop = ageGroup.getTotalPopulation()
-            numExclusiveBefore    = ageGroup.getNumberExclusivelyBreastfed()
-            numExclusiveAfter     = totalPop * exclusivebfFracNew[ageName]
-            numShifting           = numExclusiveAfter - numExclusiveBefore
-            numNotExclusiveBefore = totalPop - numExclusiveBefore
-            fracShiftingNotExclusive = numShifting / numNotExclusiveBefore
-            self.params.breastfeedingDistribution[ageName]["exclusive"] = exclusivebfFracNew[ageName]
-            BFlistNotExclusive = [cat for cat in self.breastfeedingList if cat!="exclusive"]
-            for cat in BFlistNotExclusive:
-                self.params.breastfeedingDistribution[ageName][cat] *= 1. - fracShiftingNotExclusive
+            numAppropriateBefore    = ageGroup.getNumberAppropriatelyBreastfed(appropriatePractice)
+            numAppropriateAfter     = totalPop * appropriatebfFracNew[ageName]
+            numShifting           = numAppropriateAfter - numAppropriateBefore
+            numNotAppropriateBefore = totalPop - numAppropriateBefore
+            fracShiftingNotAppropriate = 0.
+            if numNotAppropriateBefore > 0.01:
+                fracShiftingNotAppropriate = numShifting / numNotAppropriateBefore
+            self.params.breastfeedingDistribution[ageName][appropriatePractice] = appropriatebfFracNew[ageName]
+            BFlistNotAppropriate = [cat for cat in self.breastfeedingList if cat!=appropriatePractice]
+            for cat in BFlistNotAppropriate:
+                self.params.breastfeedingDistribution[ageName][cat] *= 1. - fracShiftingNotAppropriate
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
 
         # INCIDENCE

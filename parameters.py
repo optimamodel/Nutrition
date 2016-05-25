@@ -32,7 +32,8 @@ class Params:
         #self.ORstuntingBirthOutcome = dcp(data.ORstuntingBirthOutcome)
         self.birthOutcomeDist = dcp(data.birthOutcomeDist)
         #self.ORstuntingIntervention = dcp(data.ORstuntingIntervention)
-        #self.ORexclusivebfIntervention = dcp(data.ORexclusivebfIntervention)
+        #self.ORappropriatebfIntervention = dcp(data.ORappropriatebfIntervention)
+        self.ageAppropriateBreastfeeding = dcp(data.ageAppropriateBreastfeeding)
         self.interventionCoverages = dcp(data.interventionCoveragesCurrent)
         self.interventionMortalityEffectiveness = dcp(data.interventionMortalityEffectiveness)
         self.interventionAffectedFraction = dcp(data.interventionAffectedFraction)
@@ -99,18 +100,19 @@ class Params:
         return stuntingUpdate        
             
 
-    def getExclusiveBFNew(self, newCoverage):
-        exclusivebfFracNew = {}
+    def getAppropriateBFNew(self, newCoverage):
+        appropriatebfFracNew = {}
         for ageName in self.ages:
-            exclusivebfFracBefore = self.breastfeedingDistribution[ageName]["exclusive"]
-            exclusivebfFracNew[ageName] = exclusivebfFracBefore
+            appropriatePractice = self.ageAppropriateBreastfeeding[ageName]
+            appropriatebfFracBefore = self.breastfeedingDistribution[ageName][appropriatePractice]
+            appropriatebfFracNew[ageName] = appropriatebfFracBefore
             for intervention in newCoverage.keys():
-                probExclusiveIfCovered    = self.constants.probExclusivelyBreastfedIfCovered[intervention]["covered"][ageName]
-                probExclusiveIfNotCovered = self.constants.probExclusivelyBreastfedIfCovered[intervention]["not covered"][ageName]
-                exclusivebfFracNewThis = newCoverage[intervention]*probExclusiveIfCovered + (1.-newCoverage[intervention])*probExclusiveIfNotCovered
-                FracAdd = exclusivebfFracNewThis - exclusivebfFracBefore
-                exclusivebfFracNew[ageName] += FracAdd
-        return exclusivebfFracNew               
+                probAppropriateIfCovered    = self.constants.probAppropriatelyBreastfedIfCovered[intervention]["covered"][ageName]
+                probAppropriateIfNotCovered = self.constants.probAppropriatelyBreastfedIfCovered[intervention]["not covered"][ageName]
+                appropriatebfFracNewThis = newCoverage[intervention]*probAppropriateIfCovered + (1.-newCoverage[intervention])*probAppropriateIfNotCovered
+                fracAdd = appropriatebfFracNewThis - appropriatebfFracBefore
+                appropriatebfFracNew[ageName] += fracAdd
+        return appropriatebfFracNew               
 
             
     def getIncidenceUpdate(self, newCoverage):
