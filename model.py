@@ -122,8 +122,6 @@ class Model:
         import helper as helperCode
         self.helper = helperCode.Helper()
         self.totalInterventionStuntingUpdate = {}
-        for age in self.ages:
-            self.totalInterventionStuntingUpdate[age] = 1.
 
         
     def setConstants(self, inputConstants):
@@ -187,7 +185,6 @@ class Model:
             ageName = ageGroup.name
             totalUpdate = stuntingUpdate[ageName] * stuntingUpdateDueToIncidence[ageName] * stuntingUpdateComplementaryFeeding[ageName]
             #save total stunting update for use in apply births and apply aging
-            self.totalInterventionStuntingUpdate[ageName] *= totalUpdate
             self.constants.stuntingUpdateAfterInterventions[ageName] *= totalUpdate
             #update stunting    
             oldProbStunting = ageGroup.getStuntedFraction()
@@ -298,7 +295,7 @@ class Model:
             numAgingInNowStunted = numAgingInStratified['high'] + numAgingInStratified['moderate']            
             totalNumAgingIn = numAgingIn["yesstunted"] + numAgingIn["notstunted"]            
             fracAgingInNowStunted = numAgingInNowStunted / totalNumAgingIn
-            reducedFracAgingInNowStunted = fracAgingInNowStunted * self.totalInterventionStuntingUpdate[ageName]            
+            reducedFracAgingInNowStunted = fracAgingInNowStunted * self.constants.stuntingUpdateAfterInterventions[ageName]            
             fracAgingInStratified = self.helper.restratify(reducedFracAgingInNowStunted)             
             
             # distribution those aging in amongst those stunting categories but also breastfeeding and wasting
@@ -337,7 +334,7 @@ class Model:
 
         #now reduce stunting due to interventions
         oldProbStunting = ageCompartment.getStuntedFraction()
-        newProbStunting = oldProbStunting * self.totalInterventionStuntingUpdate['<1 month']
+        newProbStunting = oldProbStunting * self.constants.stuntingUpdateAfterInterventions['<1 month']
         self.params.stuntingDistribution[ageName] = self.helper.restratify(newProbStunting)
         ageCompartment.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
 
