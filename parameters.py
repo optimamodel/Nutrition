@@ -162,7 +162,7 @@ class Params:
             newProbStunting = 0
             for i in range(len(self.complementsList)):            
                 probThisGroup = self.constants.probsStuntingComplementaryFeeding[ageName][self.complementsList[i]]
-                newProbStunting = probThisGroup * Frac[i]
+                newProbStunting += probThisGroup * Frac[i]
             reduction = (oldProbStunting - newProbStunting)/oldProbStunting
             stuntingUpdate[ageName] *= 1. - reduction
         return stuntingUpdate           
