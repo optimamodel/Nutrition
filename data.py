@@ -6,7 +6,7 @@ Created on Fri Feb 26 15:57:07 2016
 """
 
 class Data:
-    def __init__(self, ages, causesOfDeath, conditions, interventionList, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention, ORexclusivebfIntervention, interventionCoveragesCurrent, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness, interventionsMaternal):
+    def __init__(self, ages, causesOfDeath, conditions, interventionList, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention, ORexclusivebfIntervention, interventionCoveragesCurrent, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness, interventionsMaternal, complementsList, ORstuntingComplementaryFeeding):
         self.ages = ages
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
@@ -37,6 +37,8 @@ class Data:
         self.interventionMortalityEffectiveness = interventionMortalityEffectiveness
         self.interventionIncidenceEffectiveness = interventionIncidenceEffectiveness
         self.interventionsMaternal = interventionsMaternal
+        self.complementsList = complementsList
+        self.ORstuntingComplementaryFeeding = ORstuntingComplementaryFeeding
     
 
     
@@ -472,8 +474,21 @@ def getDataFromSpreadsheet(fileName, keyList):
                 interventionIncidenceEffectiveness[intervention][age][condition] = df.loc[intervention][age][condition]
 
 
+
+    # READ OR stunting for complements SHEET
+    # gets you:
+    # - ORstuntingComplementaryFeeding
+    df = pandas.read_excel(Location, sheetname = 'OR stunting for complements') 
+    complementsList = list(df['Complements group'])
+    df = pandas.read_excel(Location, sheetname = 'OR stunting for complements', index_col = 'Complements group') 
+    ORstuntingComplementaryFeeding = {}
+    for age in ages:
+        ORstuntingComplementaryFeeding[age] = {}
+        for group in complementsList:
+            ORstuntingComplementaryFeeding[age][group] = df.loc[group, age]    
+    
             
-    spreadsheetData = Data(ages, causesOfDeath, conditions, interventionList, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention, ORexclusivebfIntervention, interventionCoveragesCurrent, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness, interventionsMaternal)
+    spreadsheetData = Data(ages, causesOfDeath, conditions, interventionList, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention, ORexclusivebfIntervention, interventionCoveragesCurrent, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness, interventionsMaternal, complementsList, ORstuntingComplementaryFeeding)
 
     return spreadsheetData        
                   

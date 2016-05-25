@@ -19,11 +19,7 @@ class Constants:
         #self.fracStuntedIfZinc = {}
         self.probStuntedIfCovered = {}
         self.probExclusivelyBreastfedIfCovered = {}
-        #self.baselineProbsBirthOutcome = {}
         self.probsBirthOutcome = {}  
-        self.birthStuntingQuarticCoefficients = []
-        self.baselineProbStuntingAtBirth = 0.
-        self.probsStuntingAtBirth = {}
         self.initialStuntingTrend = -0.5 # 0.5 percent decrease in stunting prevalence per year
         self.stuntingUpdateAfterInterventions = {}
         for age in self.ages:
@@ -32,14 +28,20 @@ class Constants:
         self.getUnderlyingMortalities()
         self.getProbStuntingProgression()
         self.initialiseFracStuntedIfDiarrhea()
-        #self.getFracStuntingGivenZinc()
         self.getProbStuntedIfCoveredByIntervention()
         self.getProbExclusivelyBreastfedIfCoveredByIntervention()
-        #self.getBaselineProbsBirthOutcome()
-        self.getBirthStuntingQuarticCoefficients()
-        self.getProbStuntingAtBirthForBaselineBirthOutcome()
-        self.getProbsStuntingAtBirth()
+        self.initialiseFracStuntedIfDiarrhea()
+        #self.getFracStuntingGivenZinc()
+        #self.getProbStuntedIfCoveredByIntervention()
 
+        # for births
+        self.birthStuntingQuarticCoefficients = self.getBirthStuntingQuarticCoefficients()
+        self.baselineProbStuntingAtBirth = self.getBaselineProbabilityViaQuartic(self.birthStuntingQuarticCoefficients)
+        self.probsStuntingAtBirth = self.getProbsStuntingAtBirth()
+        # for complementary feeding
+        self.complementaryFeedingQuarticCoefficients = self.getComplementaryFeedingQuarticCoefficients()
+        self.baselineProbStuntingComplementaryFeeding = self.getBaselineProbabilityViaQuarticByAge(self.complementaryFeedingQuarticCoefficients)    
+        self.probsStuntingComplementaryFeeding = self.getProbsStuntingComplementaryFeeding()
 
     def getUnderlyingMortalities(self):
         #Equation is:  LHS = RHS * X
@@ -431,14 +433,48 @@ class Constants:
             sum( OR[i] * FracBO[i] for i in (1,2,3)) - \
             sum( FracStunted * (OR[i]-1.) for i in (1,2,3))
         E = -FracStunted
-        self.birthStuntingQuarticCoefficients = [A,B,C,D,E]
+        return [A,B,C,D,E]
+        
+        
+    def getComplementaryFeedingQuarticCoefficients(self):
+        coEffs = {}
+        for ageGroup in range(len(self.ages)): 
+            age = self.ages[ageGroup]
+            OR = [1.]*4
+            OR[0] = 1.
+            OR[1] = self.data.ORstuntingComplementaryFeeding[age]["Complementary feeding (food secure without promotion)"]
+            OR[2] = self.data.ORstuntingComplementaryFeeding[age]["Complementary feeding (food insecure with promotion and supplementation)"]
+            OR[3] = self.data.ORstuntingComplementaryFeeding[age]["Complementary feeding (food insecure with neither promotion nor supplementation)"]
+            FracSecure = 0.5 #WARNING placeholder, need to get this from data
+            FracCovered = 0.7 #WARNING placeholder, need to get this from data            
+            Frac = [0.]*4
+            Frac[0] = FracSecure * FracCovered    
+            Frac[1] = FracSecure * (1 - FracCovered)
+            Frac[2] = (1 - FracSecure) * FracCovered
+            Frac[3] = (1 - FracSecure) * (1 - FracCovered)
+            FracStunted = self.model.listOfAgeCompartments[ageGroup].getStuntedFraction()
+            # [i] will refer to the three non-baseline birth outcomes
+            A = Frac[0]*(OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.)
+            B = (OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.) * ( \
+                sum( Frac[0] / (OR[i]-1.)         for i in (1,2,3)) + \
+                sum( OR[i] * Frac[i] / (OR[i]-1.) for i in (1,2,3)) - \
+                FracStunted )
+            C = sum( Frac[0] * (OR[i]-1.)         for i in (1,2,3)) + \
+                sum( OR[i] * Frac[i] * ((OR[1]-1.)+(OR[2]-1.)+(OR[3]-1.)-(OR[i]-1.)) for i in (1,2,3) ) - \
+                sum( FracStunted*(OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.)/(OR[i]-1.) for i in (1,2,3))
+            D = Frac[0] + \
+                sum( OR[i] * Frac[i] for i in (1,2,3)) - \
+                sum( FracStunted * (OR[i]-1.) for i in (1,2,3))
+            E = -FracStunted
+            coEffs[age] = [A,B,C,D,E]
+        return coEffs      
 
 
 
     # internal function to evaluate the quartic function for probability of stunting at birth at baseline birth outcome
-    def evalQuartic(self, p0):
+    def evalQuartic(self, p0, coEffs):
         from math import pow
-        A,B,C,D,E = self.birthStuntingQuarticCoefficients
+        A,B,C,D,E = coEffs
         return A*pow(p0,4) + B*pow(p0,3) + C*pow(p0,2) + D*p0 + E
 
 
@@ -446,35 +482,40 @@ class Constants:
 
     # SOLVE QUARTIC
     # p0 = Probability of Stunting at birth if Birth outcome = Term AGA
-    def getProbStuntingAtBirthForBaselineBirthOutcome(self):
-        from numpy import sqrt 
+    def getBaselineProbabilityViaQuartic(self, coEffs):
+        from numpy import sqrt, isnan
+        baselineProbability = 0        
+        # if any CoEffs are nan then baseline prob is -E (initial % stunted)
+        if isnan(coEffs).any():
+            baselineProbability = -coEffs[4]
+            return baselineProbability
         tolerance = 0.00001
         p0min = 0.
         p0max = 1.
         interval = p0max - p0min
-        if self.evalQuartic(p0min)==0:
-            self.baselineProbStuntingAtBirth = p0min
-            return
-        if self.evalQuartic(p0max)==0:
-            self.baselineProbStuntingAtBirth = p0max
-            return
-        PositiveAtMin = self.evalQuartic(p0min)>0
-        PositiveAtMax = self.evalQuartic(p0max)>0
+        if self.evalQuartic(p0min, coEffs)==0:
+            baselineProbability = p0min
+            return baselineProbability
+        if self.evalQuartic(p0max, coEffs)==0:
+            baselineProbability = p0max
+            return baselineProbability
+        PositiveAtMin = self.evalQuartic(p0min, coEffs)>0
+        PositiveAtMax = self.evalQuartic(p0max, coEffs)>0
         if(PositiveAtMin == PositiveAtMax): 
             raise ValueError("ERROR: Quartic function evaluated at 0 & 1 both on the same side")
         while interval > tolerance:
             p0x = (p0max+p0min)/2.
-            PositiveAtP0 = self.evalQuartic(p0x)>0
+            PositiveAtP0 = self.evalQuartic(p0x, coEffs)>0
             if(PositiveAtP0 == PositiveAtMin):
                 p0min = p0x
-                PositiveAtMin = self.evalQuartic(p0min)>0
+                PositiveAtMin = self.evalQuartic(p0min, coEffs)>0
             else:
                 p0max = p0x
-                PositiveAtMax = self.evalQuartic(p0max)>0
+                PositiveAtMax = self.evalQuartic(p0max, coEffs)>0
             interval = p0max - p0min
-        self.baselineProbStuntingAtBirth = p0x
+        baselineProbability = p0x
         # Check 2nd deriv has no solutions between 0 and 1
-        A,B,C,D,E = self.birthStuntingQuarticCoefficients
+        A,B,C,D,E = coEffs 
         AA = 4.*3.*A
         BB = 3.*2.*B
         CC = 2.*C
@@ -485,19 +526,40 @@ class Constants:
             print "Warning problem with solving Quartic, see soln1"
         if((soln2>0.)and(soln2<1.)):
             print "Warning problem with solving Quartic, see soln2"
+        return baselineProbability
         
-
-
+        
+    def getBaselineProbabilityViaQuarticByAge(self, coEffs):
+        #CoEffs are a dictionary of coefficients by age
+        baselineProbability = {}        
+        for age in self.ages:
+            baselineProbability[age] = self.getBaselineProbabilityViaQuartic(coEffs[age])
+        return baselineProbability    
 
 
     def getProbsStuntingAtBirth(self):
         p0 = self.baselineProbStuntingAtBirth
-        self.probsStuntingAtBirth["Term AGA"] = p0
+        probsStuntingAtBirth = {}
+        probsStuntingAtBirth["Term AGA"] = p0
         for birthOutcome in ["Pre-term SGA","Pre-term AGA","Term SGA"]:
             OR = self.data.ORstuntingBirthOutcome[birthOutcome]
-            self.probsStuntingAtBirth[birthOutcome] = p0*OR / (1.-p0+OR*p0)
-            pi = self.probsStuntingAtBirth[birthOutcome]
+            probsStuntingAtBirth[birthOutcome] = p0*OR / (1.-p0+OR*p0)
+            pi = probsStuntingAtBirth[birthOutcome]
             if(pi<0. or pi>1.):
                 raise ValueError("probability of stunting at birth, at outcome %s, is out of range (%f)"%(birthOutcome, pi))
-            
+        return probsStuntingAtBirth        
+                
+    def getProbsStuntingComplementaryFeeding(self):
+        probsStuntingComplementaryFeeding = {}        
+        for age in self.ages: 
+            probsStuntingComplementaryFeeding[age] = {}
+            p0 = self.baselineProbStuntingComplementaryFeeding[age]
+            probsStuntingComplementaryFeeding[age]["Complementary feeding (food secure with promotion)"] = p0
+            for group in self.data.complementsList:
+                OR = self.data.ORstuntingComplementaryFeeding[age][group]
+                probsStuntingComplementaryFeeding[age][group] = p0*OR / (1.-p0+OR*p0)
+                pi = probsStuntingComplementaryFeeding[age][group]
+                if(pi<0. or pi>1.):
+                    raise ValueError("probability of stunting complementary feeding, at outcome %s, age %s, is out of range (%f)"%(group, age, pi))            
+        return probsStuntingComplementaryFeeding    
             
