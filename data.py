@@ -6,7 +6,7 @@ Created on Fri Feb 26 15:57:07 2016
 """
 
 class Data:
-    def __init__(self, ages, causesOfDeath, conditions, interventionList, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention, ORexclusivebfIntervention, interventionCoveragesCurrent, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness, interventionsMaternal, complementsList, ORstuntingComplementaryFeeding):
+    def __init__(self, ages, causesOfDeath, conditions, interventionList, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention, ORexclusivebfIntervention, interventionCoveragesCurrent, interventionCostCoverage, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness, interventionsMaternal, complementsList, ORstuntingComplementaryFeeding):
         self.ages = ages
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
@@ -33,6 +33,7 @@ class Data:
         self.ORstuntingIntervention = ORstuntingIntervention
         self.ORexclusivebfIntervention = ORexclusivebfIntervention
         self.interventionCoveragesCurrent = interventionCoveragesCurrent
+        self.interventionCostCoverage = interventionCostCoverage
         self.interventionAffectedFraction = interventionAffectedFraction
         self.interventionMortalityEffectiveness = interventionMortalityEffectiveness
         self.interventionIncidenceEffectiveness = interventionIncidenceEffectiveness
@@ -362,12 +363,19 @@ def getDataFromSpreadsheet(fileName, keyList):
     #  READ Intervention Coverages SHEET
     #  gets you:
     #  - InterventionCoveragesCurrent
+    #  - InterventionCostCoverage
 
     #get the nested list of causeOfDeathDist
     df = pandas.read_excel(Location, sheetname = 'Interventions coverages', index_col = 'Intervention') #read this way for this task
     interventionCoveragesCurrent = {}
+    interventionCostCoverage = {}
+    costinfoList = ["unit cost","saturation coverage"]
     for intervention in interventionList:
-        interventionCoveragesCurrent[intervention] = df.loc[intervention, "pre-2016"]
+        interventionCoveragesCurrent[intervention] = df.loc[intervention, "baseline coverage"]
+        interventionCostCoverage[intervention] = {}
+        for costinfo in costinfoList:
+            interventionCostCoverage[intervention][costinfo] = df.loc[intervention, costinfo]
+        
 
 
 # READ Interventions maternal SHEET
@@ -488,7 +496,7 @@ def getDataFromSpreadsheet(fileName, keyList):
             ORstuntingComplementaryFeeding[age][group] = df.loc[group, age]    
     
             
-    spreadsheetData = Data(ages, causesOfDeath, conditions, interventionList, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention, ORexclusivebfIntervention, interventionCoveragesCurrent, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness, interventionsMaternal, complementsList, ORstuntingComplementaryFeeding)
+    spreadsheetData = Data(ages, causesOfDeath, conditions, interventionList, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition, birthCircumstanceDist, timeBetweenBirthsDist, birthOutcomeDist, RRbirthOutcomeByAgeAndOrder, RRbirthOutcomeByTime, ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention, ORexclusivebfIntervention, interventionCoveragesCurrent, interventionCostCoverage, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness, interventionsMaternal, complementsList, ORstuntingComplementaryFeeding)
 
     return spreadsheetData        
                   
