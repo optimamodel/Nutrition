@@ -153,55 +153,7 @@ class Constants:
             #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%(test1, fracStuntedThisAge)
         
 
-
-
-    # Calculate probability of stunting in current age-group given diarrhea incidence
-    def getFracStuntingGivenDiarrhea(self):  #REPLACED BY FUNCTIONS BELOW, REMOVE ONCE EVERYTHING WORKING
-        from numpy import sqrt 
-        eps = 1.e-5
-        from math import pow
-        numAgeGroups = len(self.model.listOfAgeCompartments)
-        self.fracStuntedIfDiarrhea["nodia"] = {}
-        self.fracStuntedIfDiarrhea["dia"] = {}
-        for ageInd in range(0,numAgeGroups):
-            ageName = self.ages[ageInd]
-            thisAge = self.model.listOfAgeCompartments[ageInd]
-            sum = 0.
-            for breastfeedingCat in self.breastfeedingList:
-                RDa = self.data.RRdiarrhea[ageName][breastfeedingCat]
-                pab  = self.data.breastfeedingDistribution[ageName][breastfeedingCat]
-                sum += RDa * pab
-            Za = self.data.incidences[ageName]['Diarrhea'] / sum
-            # population odds ratio = AO (see Eqn 3.9)
-            RRnot = self.data.RRdiarrhea[ageName]["none"]
-            AO = pow(self.data.ORstuntingCondition[ageName]['Diarrhea'],RRnot*Za) #/thisAge.agingRate)
-            # instead have fraction of children of age a who are experiencing diarrhea
-            fracDiarrhea = 0.
-            for breastfeedingCat in self.breastfeedingList:
-                RDa = self.data.RRdiarrhea[ageName][breastfeedingCat]
-                beta = 1. - (RRnot-RDa)/(RRnot) #(RRnot*Za-RDa*Za)/(RRnot*Za)
-                pab  = self.data.breastfeedingDistribution[ageName][breastfeedingCat]
-                fracDiarrhea += beta * pab
-            # fraction stunted
-            fracStuntedThisAge = thisAge.getStuntedFraction() + self.initialStuntingTrend
-            # solve quadratic equation ax**2 + bx + c = 0
-            a = (1.-fracDiarrhea) * (1.-AO)
-            b = (AO-1.)*fracStuntedThisAge - AO*fracDiarrhea - (1.-fracDiarrhea)
-            c = fracStuntedThisAge
-            det = sqrt(b**2 - 4.*a*c)
-            if(abs(a)<eps):
-                p0 = -c/b
-            else:
-                soln1 = (-b + det)/(2.*a)
-                soln2 = (-b - det)/(2.*a)
-                if(soln1>0.)and(soln1<1.): p0 = soln1
-                if(soln2>0.)and(soln2<1.): p0 = soln2
-            self.fracStuntedIfDiarrhea["nodia"][ageName] = p0
-            self.fracStuntedIfDiarrhea["dia"][ageName]   = p0*AO/(1.-p0+AO*p0)
-            #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%((1.-fracDiarrhea)*p0 + fracDiarrhea*p0*AO/(1.-p0+AO*p0), fracStuntedThisAge)
-
-
-    def initialiseFracStuntedIfDiarrhea(self):
+        def initialiseFracStuntedIfDiarrhea(self):
         incidence = {}
         for ageName in self.ages:
             incidence[ageName] = self.data.incidences[ageName]['Diarrhea']
