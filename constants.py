@@ -153,11 +153,11 @@ class Constants:
             #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%(test1, fracStuntedThisAge)
         
 
-        def initialiseFracStuntedIfDiarrhea(self):
+    def initialiseFracStuntedIfDiarrhea(self):
         incidence = {}
         for ageName in self.ages:
             incidence[ageName] = self.data.incidences[ageName]['Diarrhea']
-        Z0 = self.getZaGivenIncidence(incidence)
+        Z0 = self.getZa(incidence, self.data.breastfeedingDistribution)
         Zt = Z0 #this is true for the initialisation
         beta = self.getBetaGivenZ0AndZt(Z0, Zt)
         AO = self.getAOGivenZa(Zt)
@@ -193,14 +193,28 @@ class Constants:
             
 
 
-    def getZaGivenIncidence(self, incidence):
+    def getDiarrheaRiskSum(self, ageName, breastfeedingDistribution):
+        bfDistribution = dcp(breastfeedingDistribution)
+        sum = 0.
+        for breastfeedingCat in self.breastfeedingList:
+            RDa = self.data.RRdiarrhea[ageName][breastfeedingCat]
+            pab  = bfDistribution[ageName][breastfeedingCat]
+            sum += RDa * pab
+        return sum
+
+
+    def getZa(self, incidence, breastfeedingDistribution):
+        bfDistribution = dcp(breastfeedingDistribution)
         Za = {}
         for ageName in self.ages:
+            sum = self.getDiarrheaRiskSum(ageName, bfDistribution)
+            """
             sum = 0.
             for breastfeedingCat in self.breastfeedingList:
                 RDa = self.data.RRdiarrhea[ageName][breastfeedingCat]
-                pab  = self.data.breastfeedingDistribution[ageName][breastfeedingCat]
+                pab  = bfDistribution[ageName][breastfeedingCat]
                 sum += RDa * pab
+            """
             Za[ageName] = incidence[ageName] / sum
         return Za     
 
@@ -223,6 +237,7 @@ class Constants:
                 RDa = self.data.RRdiarrhea[ageName][breastfeedingCat]
                 beta[ageName][breastfeedingCat] = 1. - ((RRnot * Z0[ageName] - RDa * Zt[ageName]) / RRnot * Z0[ageName])   
         return beta        
+
 
     # Calculate probability of stunting in current age-group given coverage by zinc
     def getFracStuntingGivenZinc(self):

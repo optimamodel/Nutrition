@@ -153,6 +153,7 @@ class Model:
         # BREASTFEEDING
         for ageGroup in self.listOfAgeCompartments:
             ageName = ageGroup.name
+            SumBefore = self.constants.getDiarrheaRiskSum(ageName, self.params.breastfeedingDistribution)
             appropriatePractice = self.params.ageAppropriateBreastfeeding[ageName]
             totalPop = ageGroup.getTotalPopulation()
             numAppropriateBefore    = ageGroup.getNumberAppropriatelyBreastfed(appropriatePractice)
@@ -167,6 +168,8 @@ class Model:
             for cat in BFlistNotAppropriate:
                 self.params.breastfeedingDistribution[ageName][cat] *= 1. - fracShiftingNotAppropriate
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
+            SumAfter = self.constants.getDiarrheaRiskSum(ageName, self.params.breastfeedingDistribution)
+            self.params.incidences[ageName]['Diarrhea'] = self.params.incidences[ageName]['Diarrhea'] / SumBefore * SumAfter
 
         # INCIDENCE
         incidencesBefore = {}
@@ -178,8 +181,11 @@ class Model:
             self.params.incidences[ageName]['Diarrhea'] *= incidenceUpdate[ageName]['Diarrhea']
             incidencesAfter[ageName] = self.params.incidences[ageName]['Diarrhea']
         # get flow on effect to stunting due to changing incidence
-        Z0 = self.constants.getZaGivenIncidence(incidencesBefore)
-        Zt = self.constants.getZaGivenIncidence(incidencesAfter)             
+        # WARNING since incidences have been updated by breastfeeding, then the following two lines should have params.breastfeedingDist
+        Z0 = self.constants.getZa(incidencesBefore, self.params.breastfeedingDistribution)
+        Zt = self.constants.getZa(incidencesAfter,  self.params.breastfeedingDistribution)
+        #Z0 = self.constants.getZa(incidencesBefore, self.constants.data.breastfeedingDistribution)
+        #Zt = self.constants.getZa(incidencesAfter,  self.constants.data.breastfeedingDistribution)
         beta = self.constants.getBetaGivenZ0AndZt(Z0, Zt)
         stuntingUpdateDueToIncidence = self.params.getIncidenceStuntingUpdateGivenBeta(beta)
         
