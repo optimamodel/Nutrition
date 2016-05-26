@@ -275,7 +275,6 @@ class Model:
         # for older age groups, you need to decide if people stayed stunted from previous age group
         for ind in range(1, numCompartments):
             ageName = self.ages[ind]
-            younger = self.ages[ind-1]
             thisAgeCompartment = self.listOfAgeCompartments[ind]
             # calculate how many of those aging in from younger age group are stunted (binary)
             numAgingIn = {}
@@ -290,17 +289,10 @@ class Model:
             for stuntingCat in self.stuntingList:
                 numAgingInStratified[stuntingCat] = 0.
             for prevStunt in ["yesstunted", "notstunted"]:
-                restratifiedProbBecomeStunted = self.helper.restratify(self.constants.probStuntedIfPrevStunted[prevStunt][ageName])
+                totalProbStunt = self.constants.probStuntedIfPrevStunted[prevStunt][ageName] * self.constants.stuntingUpdateAfterInterventions[ageName]
+                restratifiedProbBecomeStunted = self.helper.restratify(totalProbStunt)
                 for stuntingCat in self.stuntingList:
                     numAgingInStratified[stuntingCat] += restratifiedProbBecomeStunted[stuntingCat] * numAgingIn[prevStunt]
-            
-            # get total fraction now stunted and reduce due to interventions
-            numAgingInNowStunted = numAgingInStratified['high'] + numAgingInStratified['moderate']            
-            totalNumAgingIn = numAgingIn["yesstunted"] + numAgingIn["notstunted"]            
-            fracAgingInNowStunted = numAgingInNowStunted / totalNumAgingIn
-            reducedFracAgingInNowStunted = fracAgingInNowStunted * self.constants.stuntingUpdateAfterInterventions[ageName]            
-            fracAgingInStratified = self.helper.restratify(reducedFracAgingInNowStunted)             
-            
             # distribution those aging in amongst those stunting categories but also breastfeeding and wasting
             for wastingCat in self.wastingList:
                 paw = self.params.wastingDistribution[ageName][wastingCat]
@@ -309,7 +301,7 @@ class Model:
                     for stuntingCat in self.stuntingList:
                         thisBox = thisAgeCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat]
                         thisBox.populationSize -= agingOut[ind][wastingCat][breastfeedingCat][stuntingCat]
-                        thisBox.populationSize += fracAgingInStratified[stuntingCat] * totalNumAgingIn * pab * paw
+                        thisBox.populationSize += numAgingInStratified[stuntingCat] * pab * paw
             
 
 
