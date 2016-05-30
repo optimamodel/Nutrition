@@ -121,7 +121,6 @@ class Model:
         self.params = None
         import helper as helperCode
         self.helper = helperCode.Helper()
-        self.totalInterventionStuntingUpdate = {}
 
         
     def setConstants(self, inputConstants):
@@ -257,7 +256,6 @@ class Model:
 
 
     def applyAging(self):
-        eps = 1.e-5
         numCompartments = len(self.listOfAgeCompartments)
         # calculate how many people are aging out of each box
         agingOut = [None]*numCompartments
