@@ -28,6 +28,7 @@ agePopSizes  = [1.7e5, 4.e5, 7.e5, 1.44e6, 44.e5]
 timestep = 1./12. 
 numsteps = 168
 timespan = timestep * float(numsteps)
+nstep_eq = 24
 
 for intervention in spreadsheetData.interventionList:
     print "Baseline coverage of %s = %g"%(intervention,spreadsheetData.interventionCoveragesCurrent[intervention])
@@ -125,7 +126,7 @@ for ichoose in range(len(spreadsheetData.interventionList)):
 
 #------------------------------------------------------------------------    
 # INTERVENTION
-percentageIncrease = 50
+percentageIncrease = 90
 nametag = "All interventions: increase coverage by %g%% points"%(percentageIncrease)
 pickleFilename = 'test_Intervention_P%i.pkl'%(percentageIncrease)
 plotcolor = 'black'
@@ -133,6 +134,10 @@ plotcolor = 'black'
 print "\n"+nametag
 modelZ, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
 
+
+# Find equilibrium
+for t in range(nstep_eq):
+    modelZ.moveOneTimeStep()
 
 # file to dump objects into at each time step
 import pickle as pickle
