@@ -7,10 +7,7 @@ Created on Tue Mar 15 15:32:21 2016
 import unittest
 import numpy
 
-import model as model
 import data as data
-import constants as constants
-import parameters as parametersCode
 import helper as helper
 
 
@@ -22,45 +19,13 @@ def setUpDataModelConstantsObjects():
     breastfeedingList = ["exclusive", "predominant", "partial", "none"]
     keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
     testData = data.getDataFromSpreadsheet('InputForCode_tests.xlsx', keyList)
-    #----------------------   MAKE ALL THE BOXES     ---------------------
-    mothers = model.FertileWomen(0.2, 2.e6)
-    listOfAgeCompartments = []
-    ageRangeList  = testData.ages
+    mothers = {'birthRate':0.9, 'populationSize':2.e6}
     agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
-    numAgeGroups = len(ageRangeList)
     agePopSizes  = [6400, 6400, 6400, 6400, 6400]
-    
     timestep = 1./12. 
-    numsteps = 10  
-    timespan = timestep * float(numsteps)    
-    
-    # Loop over all age-groups
-    for age in range(numAgeGroups): 
-        ageRange  = ageRangeList[age]
-        agingRate = agingRateList[age]
-        agePopSize = agePopSizes[age]
-    # allBoxes is a dictionary rather than a list to provide to AgeCompartment
-        allBoxes = {}
-        for stuntingCat in stuntingList:
-            allBoxes[stuntingCat] = {} 
-            for wastingCat in wastingList:
-                allBoxes[stuntingCat][wastingCat] = {}
-                for breastfeedingCat in breastfeedingList:
-                    thisPopSize = int(agePopSize/64.) # 100 people in each box
-                    thisMortalityRate = testData.totalMortality[ageRange] # WARNING need to distribute appropriately
-                    allBoxes[stuntingCat][wastingCat][breastfeedingCat] =  model.Box(stuntingCat, wastingCat, breastfeedingCat, thisPopSize, thisMortalityRate)
-        compartment = model.AgeCompartment(ageRange, allBoxes, agingRate, keyList)
-        listOfAgeCompartments.append(compartment)
-    #------------------------------------------------------------------------    
-    # make a model object
-    testModel = model.Model("Main model", mothers, listOfAgeCompartments, keyList, timestep)
-    # make the constants object    
-    testConstants = constants.Constants(testData, testModel, keyList)
-    # set the constants in the model object
-    testModel.setConstants(testConstants)
-    testParams = parametersCode.Params(testData, testConstants, keyList)
-    testModel.setParams(testParams)
 
+    helperTests = helper.Helper()
+    testModel, testConstants, testParams = helperTests.setupModelConstantsParameters('tests', mothers, timestep, agingRateList, agePopSizes, keyList, testData)
     return testData, testModel, testConstants, testParams
     
     
@@ -121,7 +86,8 @@ class TestsForModelClass(unittest.TestCase):
         cumulativeDeaths = self.testModel.listOfAgeCompartments[0].dictOfBoxes['high']['mild']['none'].cumulativeDeaths
         self.assertAlmostEqual(100.*0.5/12., cumulativeDeaths)
         self.assertAlmostEqual(100. - (100.*0.5/12.), popSize)
-        
+    
+    @unittest.skip("underlying mortalites all set to zero except for neonatals")
     def testApplyMortalityBySummingAllBoxes(self):
         self.testModel.applyMortality()
         for ageGroup in range(0, len(self.testModel.listOfAgeCompartments)):
