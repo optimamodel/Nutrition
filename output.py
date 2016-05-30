@@ -309,18 +309,17 @@ def getCombinedPlots(numRuns, data, save=False):
     ax.set_xticks(xTickList)
     ax.set_xticklabels(yearList)
     ax.set_xlim([0, 12*numYears])
-    ax.set_ylim([0., 1.5*stuntPopU5[data[0]["tag"]][0]])
+    #ax.set_ylim([0., 1.5*stuntPopU5[data[0]["tag"]][0]])
     plt.ylabel('Stunted population size (all U5)')
     plotList = []
     for run in range(numRuns):
         tag       = data[run]["tag"]
         color     = data[run]["color"]
-        #plotObj = plt.fill_between(x, stuntPopU5[tag], 0, color=color)
         plotObj, = plt.plot(x, stuntPopU5[tag], linewidth=3., color=color)
         plotList.append(plotObj)
-    plt.legend(plotList, tagList, loc = 'lower right')
+    plt.legend(plotList, tagList, loc = 'center left', bbox_to_anchor=(1,0.5))
     if save:
-        plt.savefig("compare_stuntedPopSize.png")
+        plt.savefig("compare_stuntedPopSize.png", bbox_inches='tight')
     else:
         plt.show()
 
@@ -329,18 +328,17 @@ def getCombinedPlots(numRuns, data, save=False):
     ax.set_xticks(xTickList)
     ax.set_xticklabels(yearList)
     ax.set_xlim([0, 12*numYears])
-    ax.set_ylim([0., 40.])
+    #ax.set_ylim([0., 40.])
     plt.ylabel('Stunted prevalence (all U5)')
     plotList = []
     for run in range(numRuns):
         tag       = data[run]["tag"]
         color     = data[run]["color"]
-        #plotObj = plt.fill_between(x, stuntFracU5[tag], 0, color=color)
         plotObj, = plt.plot(x, stuntFracU5[tag], linewidth=3., color=color)
         plotList.append(plotObj)
-    plt.legend(plotList, tagList, loc = 'lower right')
+    plt.legend(plotList, tagList, loc = 'center left', bbox_to_anchor=(1,0.5))
     if save:
-        plt.savefig("compare_stuntedFraction.png")
+        plt.savefig("compare_stuntedFraction.png", bbox_inches='tight')
     else:
         plt.show()
 
@@ -356,9 +354,9 @@ def getCombinedPlots(numRuns, data, save=False):
         color     = data[run]["color"]
         plotObj, = plt.plot(x, cumulDeathsU5[tag], linewidth=3., color=color)
         plotList.append(plotObj)
-    plt.legend(plotList, tagList, loc = 'lower right')
+    plt.legend(plotList, tagList, loc = 'center left', bbox_to_anchor=(1,0.5))
     if save:
-        plt.savefig("compare_cumulativeDeaths.png")
+        plt.savefig("compare_cumulativeDeaths.png", bbox_inches='tight')
     else:
         plt.show()
 
@@ -369,11 +367,12 @@ def getCombinedPlots(numRuns, data, save=False):
     ax.axes.get_xaxis().tick_bottom()
     ax.axes.get_yaxis().tick_left()
     #ax.set_axis_bgcolor('#DDDDDD')
-    y_pos = np.arange(numRuns-1)+0.5
+    ax.set_ylim([0,numRuns-1])
+    y_pos = np.arange(numRuns-1)
+    ax.set_yticks(y_pos+0.5)
+    ax.set_yticklabels(tagList[1:])
     ax.set_ylabel('Interventions',  size=16)
     ax.set_xlabel('Number of deaths averted in children <5', size=16)
-    ax.set_yticks(y_pos)
-    ax.set_yticklabels(tagList[1:])
     # calculate deaths averted
     deathsAvertedList = []
     modelList = data[0]["modelList"]
@@ -387,7 +386,8 @@ def getCombinedPlots(numRuns, data, save=False):
         for age in range(1, numAges):
             deathsScenario += modelList[numMonths-1].listOfAgeCompartments[age].getCumulativeDeaths()
         deathsAvertedList.append(deathsBaseline - deathsScenario)
-    ax.barh(y_pos, deathsAvertedList, height=0.4, facecolor='#BBEEFF', edgecolor='k', linewidth=1.5)
+    barwid = 0.5
+    ax.barh(y_pos+0.5-0.5*barwid, deathsAvertedList, height=barwid, facecolor='#BBEEFF', edgecolor='k', linewidth=1.5)
     if save:
         plt.savefig("compare_totalDeathsAverted.png", bbox_inches='tight')
     else:
