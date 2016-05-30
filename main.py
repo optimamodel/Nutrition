@@ -9,8 +9,9 @@ from __future__ import division
 import data as dataCode
 import output as output
 import helper as helper
+import pickle as pickle
 from copy import deepcopy as dcp
-
+import costcov as costCov
 
 helper = helper.Helper()
 ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
@@ -24,7 +25,7 @@ mothers = {'birthRate':0.9, 'populationSize':2.e6}
 ageRangeList  = ages 
 agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
 numAgeGroups = len(ageRangeList)
-agePopSizes  = [2.e5, 4.e5, 7.e5, 1.44e6, 44.e5]
+agePopSizes  = [1.7e5, 4.e5, 7.e5, 1.44e6, 44.e5]
 timestep = 1./12. 
 numsteps = 168  
 timespan = timestep * float(numsteps)
@@ -44,9 +45,9 @@ plotcolor = 'grey'
 print "\n"+nametag
 model, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
 
-import pickle as pickle
 outfile = open(pickleFilename, 'wb')
-for t in range(numsteps):
+pickle.dump(model, outfile)
+for t in range(numsteps-1):
     model.moveOneTimeStep()
     pickle.dump(model, outfile)
 outfile.close()    
@@ -78,9 +79,7 @@ modelZ, constants, params = helper.setupModelConstantsParameters(nametag, mother
 
 
 # file to dump objects into at each time step
-import pickle as pickle
 outfile = open(pickleFilename, 'wb')
-modelZ.moveOneTimeStep()
 pickle.dump(modelZ, outfile)
 
 # initialise
