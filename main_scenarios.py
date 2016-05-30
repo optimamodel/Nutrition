@@ -10,6 +10,7 @@ import data as dataCode
 import helper as helper
 import output as output
 from copy import deepcopy as dcp
+import pickle as pickle
 
 
 helper = helper.Helper()
@@ -46,12 +47,13 @@ print "\n"+nametag
 model, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
 
 # file to dump objects into at each time step
-import pickle as pickle
 outfile = open(pickleFilename, 'wb')
+pickle.dump(model, outfile)
+model.moveOneTimeStep()
 pickle.dump(model, outfile)
 
 # Run model
-for t in range(numsteps-1):
+for t in range(numsteps-2):
     model.moveOneTimeStep()
     pickle.dump(model, outfile)
 outfile.close()    
@@ -87,8 +89,9 @@ for ichoose in range(len(spreadsheetData.interventionList)):
     modelX, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
 
     # file to dump objects into at each time step
-    import pickle as pickle
     outfile = open(pickleFilename, 'wb')
+    pickle.dump(modelX, outfile)
+    modelX.moveOneTimeStep()
     pickle.dump(modelX, outfile)
 
     # initialise
@@ -102,7 +105,7 @@ for ichoose in range(len(spreadsheetData.interventionList)):
     modelX.updateCoverages(newCoverages)
 
     # Run model
-    for t in range(numsteps-1):
+    for t in range(numsteps-2):
         modelX.moveOneTimeStep()
         pickle.dump(modelX, outfile)
     outfile.close()    
@@ -140,8 +143,9 @@ for t in range(nstep_eq):
     modelZ.moveOneTimeStep()
 
 # file to dump objects into at each time step
-import pickle as pickle
 outfile = open(pickleFilename, 'wb')
+pickle.dump(modelZ, outfile)
+modelZ.moveOneTimeStep()
 pickle.dump(modelZ, outfile)
 
 # scale up all interventions
@@ -154,7 +158,7 @@ for intervention in spreadsheetData.interventionList:
 modelZ.updateCoverages(newCoverages)
 
 # Run model
-for t in range(numsteps-1):
+for t in range(numsteps-2):
     modelZ.moveOneTimeStep()
     pickle.dump(modelZ, outfile)
 outfile.close()    
