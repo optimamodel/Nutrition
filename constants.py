@@ -195,19 +195,19 @@ class Constants:
 
     def getDiarrheaRiskSum(self, ageName, breastfeedingDistribution):
         bfDistribution = dcp(breastfeedingDistribution)
-        sum = 0.
+        riskSum = 0.
         for breastfeedingCat in self.breastfeedingList:
             RDa = self.data.RRdiarrhea[ageName][breastfeedingCat]
             pab  = bfDistribution[ageName][breastfeedingCat]
-            sum += RDa * pab
-        return sum
+            riskSum += RDa * pab
+        return riskSum
 
 
     def getZa(self, incidence, breastfeedingDistribution):
         bfDistribution = dcp(breastfeedingDistribution)
         Za = {}
         for ageName in self.ages:
-            sum = self.getDiarrheaRiskSum(ageName, bfDistribution)
+            riskSum = self.getDiarrheaRiskSum(ageName, bfDistribution)
             """
             sum = 0.
             for breastfeedingCat in self.breastfeedingList:
@@ -215,7 +215,7 @@ class Constants:
                 pab  = bfDistribution[ageName][breastfeedingCat]
                 sum += RDa * pab
             """
-            Za[ageName] = incidence[ageName] / sum
+            Za[ageName] = incidence[ageName] / riskSum
         return Za     
 
 
