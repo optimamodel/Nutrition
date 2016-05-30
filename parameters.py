@@ -87,15 +87,6 @@ class Params:
                 probStuntingIfNotCovered = self.constants.probStuntedIfCovered[intervention]["not covered"][ageName]
                 newProbStunting = newCoverage[intervention]*probStuntingIfCovered + (1.-newCoverage[intervention])*probStuntingIfNotCovered
                 reduction = (oldProbStunting - newProbStunting)/oldProbStunting
-                """
-                if intervention == 'Zinc supplementation': 
-                    probStuntingIfZinc = self.constants.fracStuntedIfZinc["zinc"][ageName]
-                    probStuntingIfNoZinc = self.constants.fracStuntedIfZinc["nozinc"][ageName]
-                    newProbStunting = newCoverage[intervention]*probStuntingIfZinc + (1.-newCoverage[intervention])*probStuntingIfNoZinc
-                    reduction = (oldProbStunting - newProbStunting)/oldProbStunting
-                else:      
-                    reduction = 0
-                """
                 stuntingUpdate[ageName] *= 1. - reduction
         return stuntingUpdate        
             
