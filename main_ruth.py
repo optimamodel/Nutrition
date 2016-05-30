@@ -5,10 +5,7 @@ Created on Tue May  3 09:54:36 2016
 @author: ruth
 """
 
-import model as modelCode
 import data as dataCode
-import constants as constantsCode
-import parameters as parametersCode
 import output as output
 import pickle as pickle
 import helper as helper
