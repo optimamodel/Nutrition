@@ -17,39 +17,38 @@ run=0
 pickleFilename = 'testDefault.pkl'
 nametag = "Baseline"
 plotcolor = 'grey'
-file3 = open(pickleFilename, 'rb')
-test_p30 = []
+file = open(pickleFilename, 'rb')
+modelList = []
 while 1:
     try:
-        test_p30.append(pickle.load(file3))
+        modelList.append(pickle.load(file))
     except (EOFError):
         break
-file3.close()
+file.close()
 plotData.append({})
-plotData[run]["modelList"] = test_p30
+plotData[run]["modelList"] = modelList
 plotData[run]["tag"] = nametag
 plotData[run]["color"] = plotcolor
 run += 1
 
-percentageIncrease = 90
+percentageIncrease = 50
 for ichoose in range(len(spreadsheetData.interventionList)):
     chosenIntervention = spreadsheetData.interventionList[ichoose]
     pickleFilename = 'test_Intervention%i_P%i.pkl'%(ichoose,percentageIncrease)
-    #nametag = chosenIntervention+": increase coverage by %g%% points"%(percentageIncrease)
     nametag = chosenIntervention
     print "\n"+nametag
 
-    file3 = open(pickleFilename, 'rb')
+    fileX = open(pickleFilename, 'rb')
     # read the model output with simple intervention
-    test_p30 = []
+    modelXList = []
     while 1:
         try:
-            test_p30.append(pickle.load(file3))
+            modelXList.append(pickle.load(fileX))
         except (EOFError):
             break
-    file3.close()
+    fileX.close()
     plotData.append({})
-    plotData[run]["modelList"] = test_p30
+    plotData[run]["modelList"] = modelXList
     plotData[run]["tag"] = nametag
     plotData[run]["color"] = (1.0-0.13*run, 1.0-0.3*abs(run-4), 0.0+0.13*run)
     run += 1
