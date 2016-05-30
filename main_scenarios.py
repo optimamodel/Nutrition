@@ -100,7 +100,7 @@ for ichoose in range(len(spreadsheetData.interventionList)):
         newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
     # scale up intervention
     newCoverages[chosenIntervention] += percentageIncrease/100.
-    newCoverages[chosenIntervention] = min(1.0,newCoverages[chosenIntervention])
+    newCoverages[chosenIntervention] = min(0.9,newCoverages[chosenIntervention])
     newCoverages[chosenIntervention] = max(0.0,newCoverages[chosenIntervention])
     modelX.updateCoverages(newCoverages)
 
