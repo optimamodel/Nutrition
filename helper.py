@@ -25,3 +25,60 @@ class Helper:
         restratification["moderate"] = fractionModerate
         restratification["high"] = fractionHigh
         return restratification
+
+    def makeBoxes(self, thisAgePopSize, ageGroup, keyList, spreadsheetData):
+        import model as modelCode        
+        allBoxes = {}
+        ages, birthOutcomes, wastingList, stuntingList, breastfeedingList = keyList
+        for stuntingCat in stuntingList:
+            allBoxes[stuntingCat] = {} 
+            for wastingCat in wastingList:
+                allBoxes[stuntingCat][wastingCat] = {}
+                for breastfeedingCat in breastfeedingList:
+                    thisPopSize = thisAgePopSize * spreadsheetData.stuntingDistribution[ageGroup][stuntingCat] * spreadsheetData.wastingDistribution[ageGroup][wastingCat] * spreadsheetData.breastfeedingDistribution[ageGroup][breastfeedingCat]   # Assuming independent
+                    thisMortalityRate = 0
+                    allBoxes[stuntingCat][wastingCat][breastfeedingCat] =  modelCode.Box(stuntingCat, wastingCat, breastfeedingCat, thisPopSize, thisMortalityRate)
+        return allBoxes
+
+    def makeAgeCompartments(self, agingRateList, agePopSizes, keyList, spreadsheetData):
+        import model as modelCode
+        ages, birthOutcomes, wastingList, stuntingList, breastfeedingList = keyList
+        numAgeGroups = len(ages)
+        listOfAgeCompartments = []
+        for age in range(numAgeGroups): # Loop over all age-groups
+            ageGroup  = ages[age]
+            agingRate = agingRateList[age]
+            agePopSize = agePopSizes[age]
+            thisAgeBoxes = self.makeBoxes(agePopSize, ageGroup, keyList, spreadsheetData)
+            compartment = modelCode.AgeCompartment(ageGroup, thisAgeBoxes, agingRate, keyList)
+            listOfAgeCompartments.append(compartment)
+        return listOfAgeCompartments         
+        
+    def setupModelConstantsParameters(self, nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData):
+        import model as modelCode
+        import constants as constantsCode
+        import parameters as parametersCode        
+        listOfAgeCompartments = self.makeAgeCompartments(agingRateList, agePopSizes, keyList, spreadsheetData)
+        fertileWomen = modelCode.FertileWomen(mothers['birthRate'], mothers['populationSize'])
+        model = modelCode.Model(nametag, fertileWomen, listOfAgeCompartments, keyList, timestep)
+        constants = constantsCode.Constants(spreadsheetData, model, keyList)
+        model.setConstants(constants)
+        parameters = parametersCode.Params(spreadsheetData, constants, keyList)
+        model.setParams(parameters)
+        model.updateMortalityRate()
+        return model, constants, parameters
+                
+                
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        

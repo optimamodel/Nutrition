@@ -11,52 +11,20 @@ import constants as constantsCode
 import parameters as parametersCode
 import output as output
 import pickle as pickle
+import helper as helper
 
-#-------------------------------------------------------------------------    
-def makeBoxes(thisAgePopSize, ageGroup, keyList):
-    allBoxes = {}
-    ages, birthOutcomes, wastingList, stuntingList, breastfeedingList = keyList
-    for stuntingCat in stuntingList:
-        allBoxes[stuntingCat] = {} 
-        for wastingCat in wastingList:
-            allBoxes[stuntingCat][wastingCat] = {}
-            for breastfeedingCat in breastfeedingList:
-                thisPopSize = thisAgePopSize * spreadsheetData.stuntingDistribution[ageGroup][stuntingCat] * spreadsheetData.wastingDistribution[ageGroup][wastingCat] * spreadsheetData.breastfeedingDistribution[ageGroup][breastfeedingCat]   # Assuming independent
-                thisMortalityRate = 0
-                allBoxes[stuntingCat][wastingCat][breastfeedingCat] =  modelCode.Box(stuntingCat, wastingCat, breastfeedingCat, thisPopSize, thisMortalityRate)
-    return allBoxes
-
-def makeAgeCompartements(agingRateList, agePopSizes, keyList):
-    ages, birthOutcomes, wastingList, stuntingList, breastfeedingList = keyList
-    numAgeGroups = len(ages)
-    listOfAgeCompartments = []
-    for age in range(numAgeGroups): # Loop over all age-groups
-        ageGroup  = ages[age]
-        agingRate = agingRateList[age]
-        agePopSize = agePopSizes[age]
-        thisAgeBoxes = makeBoxes(agePopSize, ageGroup, keyList)
-        compartment = modelCode.AgeCompartment(ageGroup, thisAgeBoxes, agingRate, keyList)
-        listOfAgeCompartments.append(compartment)
-    return listOfAgeCompartments         
-#-------------------------------------------------------------------------    
-
-
+helper = helper.Helper()
 ages = ["<1 month","1-5 months","6-11 months","12-23 months","24-59 months"]
 birthOutcomes = ["Pre-term SGA","Pre-term AGA","Term SGA","Term AGA"]
 wastingList = ["normal", "mild", "moderate", "high"]
 stuntingList = ["normal", "mild", "moderate", "high"]
 breastfeedingList = ["exclusive", "predominant", "partial", "none"]
 keyList = [ages,birthOutcomes,wastingList,stuntingList,breastfeedingList]
-
-# read the data from the spreadsheet
 spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx', keyList)
-# make the fertile women
-mothers = modelCode.FertileWomen(0.9, 2.e6)
-
+mothers = {'birthRate':0.9, 'populationSize':2.e6}
 agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
 numAgeGroups = len(ages)
 agePopSizes  = [2.e5, 4.e5, 7.e5, 1.44e6, 44.e5]
-
 timestep = 1./12. # 1 month 
 numsteps = 168  
 timespan = timestep * float(numsteps)
@@ -68,13 +36,8 @@ for intervention in spreadsheetData.interventionList:
 
 #------------------------------------------------------------------------    
 # DEFAULT RUN WITH NO CHANGES TO INTERVENTIONS
-listOfAgeCompartments = makeAgeCompartements(agingRateList, agePopSizes, keyList)
-model = modelCode.Model("Main model", mothers, listOfAgeCompartments, keyList, timestep)
-constants = constantsCode.Constants(spreadsheetData, model, keyList)
-model.setConstants(constants)
-params = parametersCode.Params(spreadsheetData, constants, keyList)
-model.setParams(params)
-model.updateMortalityRate() #now update mortlaity rate of all the boxes
+nametag = 'without interventions'
+model, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
 
 
 pickleFilename = 'testDefault.pkl'
@@ -99,13 +62,8 @@ infile.close()
 
 #------------------------------------------------------------------------    
 # INTERVENTION
-listOfAgeCompartments = makeAgeCompartements(agingRateList, agePopSizes, keyList)
-modelZ = modelCode.Model("Interventions added model", mothers, listOfAgeCompartments, keyList, timestep)
-constants = constantsCode.Constants(spreadsheetData, modelZ, keyList)
-modelZ.setConstants(constants)
-params = parametersCode.Params(spreadsheetData, constants, keyList)
-modelZ.setParams(params)
-modelZ.updateMortalityRate() #now update mortlaity rate of all the boxes
+nametag = 'with interventions'
+modelZ, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
 
 
 newCoverages={}
