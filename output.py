@@ -364,27 +364,32 @@ def getCombinedPlots(numRuns, data, save=False):
 
     # PLOT total deaths averted
     fig, ax = plt.subplots()
-    y_pos = np.arange(numRuns)
-    ax.set_ylabel('Interventions',  size=20)
-    ax.set_xlabel('Deaths Averted', size=20)
-    ax.set_yticks(y_pos, tagList)
-    #ax.set_xticks(xTickList)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.axes.get_xaxis().tick_bottom()
+    ax.axes.get_yaxis().tick_left()
+    #ax.set_axis_bgcolor('#DDDDDD')
+    y_pos = np.arange(numRuns-1)+0.5
+    ax.set_ylabel('Interventions',  size=16)
+    ax.set_xlabel('Number of deaths averted in children <5', size=16)
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(tagList[1:])
     # calculate deaths averted
     deathsAvertedList = []
     modelList = data[0]["modelList"]
     deathsBaseline = 0.
-    for age in range(1, numAges):
+    for age in range(0, numAges):
         deathsBaseline += modelList[numMonths-1].listOfAgeCompartments[age].getCumulativeDeaths()
-    for run in range(numRuns):
+    for run in range(1, numRuns):
         tag       = data[run]["tag"]
         modelList = data[run]["modelList"]
         deathsScenario = 0.
         for age in range(1, numAges):
             deathsScenario += modelList[numMonths-1].listOfAgeCompartments[age].getCumulativeDeaths()
         deathsAvertedList.append(deathsBaseline - deathsScenario)
-    ax.barh(y_pos,deathsAvertedList, facecolor='cyan', edgecolor='k', linewidth=2)
+    ax.barh(y_pos, deathsAvertedList, height=0.4, facecolor='#BBEEFF', edgecolor='k', linewidth=1.5)
     if save:
-        plt.savefig("compare_totalDeathsAverted.png")
+        plt.savefig("compare_totalDeathsAverted.png", bbox_inches='tight')
     else:
         plt.show()
 
