@@ -11,7 +11,7 @@ import data as data
 import helper as helper
 
 
-def setUpDataModelConstantsObjects():
+def setUpDataModelConstantsParameters():
     ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
     birthOutcomes = ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"]
     wastingList = ["normal", "mild", "moderate", "high"]
@@ -26,12 +26,12 @@ def setUpDataModelConstantsObjects():
 
     helperTests = helper.Helper()
     testModel, testConstants, testParams = helperTests.setupModelConstantsParameters('tests', mothers, timestep, agingRateList, agePopSizes, keyList, testData)
-    return testData, testModel, testConstants, testParams
+    return testData, testModel, testConstants, testParams, keyList
     
     
-class TestsForSetUpDataModelConstantsObjectsFunction(unittest.TestCase):
+class TestsForsetUpDataModelConstantsParameters(unittest.TestCase):
     def setUp(self):
-        [self.testData, self.testModel, self.testConstants, self.testParams] = setUpDataModelConstantsObjects()
+        [self.testData, self.testModel, self.testConstants, self.testParams, self.keyList] = setUpDataModelConstantsParameters()
         
     def testNumberInAnAgeCompartment(self):
         sumPopAge1 = 0
@@ -44,7 +44,7 @@ class TestsForSetUpDataModelConstantsObjectsFunction(unittest.TestCase):
 
 class TestsForConstantsClass(unittest.TestCase):
     def setUp(self):
-        [self.testData, self.testModel, self.testConstants, self.testParams] = setUpDataModelConstantsObjects()
+        [self.testData, self.testModel, self.testConstants, self.testParams, self.keyList] = setUpDataModelConstantsParameters()
         
     def testGetUnderlyingMortalities(self):
         # 64 compartments per age; 25/100=0.25 (distributions); 1 (cause); 1 (RR); 500/1000=0.5 for newborn otherwise 0.0 (total mortality) 
@@ -66,7 +66,11 @@ class TestsForConstantsClass(unittest.TestCase):
         for age in ['1-5 months', '6-11 months', '12-23 months', '24-59 months']:
             ps = 2 * self.testConstants.probStuntedIfPrevStunted["notstunted"][age] / (1 + self.testConstants.probStuntedIfPrevStunted["notstunted"][age])
             self.assertAlmostEqual(self.testConstants.probStuntedIfPrevStunted["yesstunted"][age], ps)
-                
+           
+    def testDiarrheaRiskSum(self):
+        riskSum = self.testConstants.getDiarrheaRiskSum('24-59 months', self.testData.breastfeedingDistribution)        
+        self.assertEqual(1., riskSum)
+           
     @unittest.skip("write test once quartic is solved")            
     def testGetBaselineBirthOutcome(self):
         # need to write tests for this once quartic equation is solved
@@ -75,7 +79,7 @@ class TestsForConstantsClass(unittest.TestCase):
  
 class TestsForModelClass(unittest.TestCase):
     def setUp(self):
-        [self.testData, self.testModel, self.testConstants, self.testParams] = setUpDataModelConstantsObjects()
+        [self.testData, self.testModel, self.testConstants, self.testParams, self.keyList] = setUpDataModelConstantsParameters()
         
 
     def testApplyMortalityOneBox(self):
@@ -137,6 +141,9 @@ class TestsForModelClass(unittest.TestCase):
 class TestsForHelperClass(unittest.TestCase):
     def setUp(self):
         self.helper = helper.Helper()
+        [self.testData, self.testModel, self.testConstants, self.testParams, self.keyList] = setUpDataModelConstantsParameters()
+        self.agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] 
+        self.agePopSizes  = [6400, 6400, 6400, 6400, 6400]             
              
     def testRestratifyWhenFractionYesIsHalf(self):
         # if FractionYes = 0.5 then (symmetric normal) distribution is centred at global mean -2 SD
@@ -144,6 +151,20 @@ class TestsForHelperClass(unittest.TestCase):
         stratification = self.helper.restratify(0.5)
         self.assertEqual(stratification['moderate'], stratification['mild'])
         self.assertEqual(stratification['normal'], stratification['high'])
+        
+    def testMakeBoxes(self):
+        # 0.25 * 0.25 * 0.25 * 6400 = 100
+        boxes = self.helper.makeBoxes(6400, '6-11 months', self.keyList, self.testData)   
+        self.assertEqual(100, boxes['normal']['normal']['none'].populationSize)
+
+    def testMakeAgeCompartment(self):
+        listOfAgeCompartments = self.helper.makeAgeCompartments(self.agingRateList, self.agePopSizes, self.keyList, self.testData)        
+        self.assertAlmostEqual(5, len(listOfAgeCompartments))
+        self.assertAlmostEqual(100, listOfAgeCompartments[2].dictOfBoxes['normal']['normal']['none'].populationSize)
+        
+    def testSetUpModelConstantsParameters(self):
+        self.assertEqual(self.testConstants.initialStuntingTrend, self.testModel.constants.initialStuntingTrend)
+        self.assertEqual(self.testParams.stuntingDistribution['1-5 months'], self.testModel.params.stuntingDistribution['1-5 months'])
     
 # this needs to be here for the tests to run automatically    
 if __name__ == '__main__':
