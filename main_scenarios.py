@@ -28,11 +28,12 @@ mothers = modelCode.FertileWomen(0.9, 2.e6)
 ageRangeList  = ages 
 agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
 numAgeGroups = len(ageRangeList)
-agePopSizes  = [2.e5, 4.e5, 7.e5, 1.44e6, 44.e5]
+agePopSizes  = [1.7e5, 4.e5, 7.e5, 1.44e6, 44.e5]
 
 timestep = 1./12. 
-numsteps = 60
+numsteps = 168
 timespan = timestep * float(numsteps)
+nstep_eq = 24
 
 for intervention in spreadsheetData.interventionList:
     print "Baseline coverage of %s = %g"%(intervention,spreadsheetData.interventionCoveragesCurrent[intervention])
@@ -83,8 +84,15 @@ params = parametersCode.Params(spreadsheetData, constants, keyList)
 model.setParams(params)
 model.updateMortalityRate()
 
+# Find equilibrium
+for t in range(nstep_eq):
+    model.moveOneTimeStep()
+
+# file to dump objects into at each time step
 import pickle as pickle
 outfile = open(pickleFilename, 'wb')
+
+# Run model
 for t in range(numsteps):
     model.moveOneTimeStep()
     pickle.dump(model, outfile)
@@ -108,13 +116,14 @@ run += 1
 
 #------------------------------------------------------------------------    
 # INTERVENTION
-percentageIncrease = 50
+percentageIncrease = 90
 
 for ichoose in range(len(spreadsheetData.interventionList)):
     chosenIntervention = spreadsheetData.interventionList[ichoose]
-    nametag = chosenIntervention+": increase coverage by %g%% points"%(percentageIncrease)
+    #nametag = chosenIntervention+": increase coverage by %g%% points"%(percentageIncrease)
+    nametag = chosenIntervention
     pickleFilename = 'test_Intervention%i_P%i.pkl'%(ichoose,percentageIncrease)
-    plotcolor = 'green'
+    plotcolor = (0.1*run, 1.-0.1*run, 0.3+0.05*run)
     print "\n"+nametag
 
     listOfAgeCompartments = makeAgeCompartments(agingRateList, agePopSizes, keyList)
@@ -124,6 +133,10 @@ for ichoose in range(len(spreadsheetData.interventionList)):
     params = parametersCode.Params(spreadsheetData,constants,keyList)
     modelX.setParams(params)
     modelX.updateMortalityRate()
+
+    # Find equilibrium
+    for t in range(nstep_eq):
+        modelX.moveOneTimeStep()
 
     # file to dump objects into at each time step
     import pickle as pickle
@@ -139,6 +152,7 @@ for ichoose in range(len(spreadsheetData.interventionList)):
     newCoverages[chosenIntervention] += percentageIncrease/100.
     modelX.updateCoverages(newCoverages)
 
+    # Run model
     for t in range(numsteps-1):
         modelX.moveOneTimeStep()
         pickle.dump(modelX, outfile)
@@ -163,7 +177,7 @@ for ichoose in range(len(spreadsheetData.interventionList)):
 
 #------------------------------------------------------------------------    
 # INTERVENTION
-percentageIncrease = 50
+percentageIncrease = 90
 nametag = "All interventions: increase coverage by %g%% points"%(percentageIncrease)
 pickleFilename = 'test_Intervention_P%i.pkl'%(percentageIncrease)
 plotcolor = 'blue'
@@ -176,6 +190,10 @@ modelZ.setConstants(constants)
 params = parametersCode.Params(spreadsheetData,constants,keyList)
 modelZ.setParams(params)
 modelZ.updateMortalityRate()
+
+# Find equilibrium
+for t in range(nstep_eq):
+    modelZ.moveOneTimeStep()
 
 # file to dump objects into at each time step
 import pickle as pickle

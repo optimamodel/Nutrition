@@ -31,11 +31,12 @@ plotData[run]["tag"] = nametag
 plotData[run]["color"] = plotcolor
 run += 1
 
-percentageIncrease = 50
+percentageIncrease = 90
 for ichoose in range(len(spreadsheetData.interventionList)):
     chosenIntervention = spreadsheetData.interventionList[ichoose]
     pickleFilename = 'test_Intervention%i_P%i.pkl'%(ichoose,percentageIncrease)
-    nametag = chosenIntervention+": increase coverage by %g%% points"%(percentageIncrease)
+    #nametag = chosenIntervention+": increase coverage by %g%% points"%(percentageIncrease)
+    nametag = chosenIntervention
     print "\n"+nametag
 
     file3 = open(pickleFilename, 'rb')
@@ -50,7 +51,7 @@ for ichoose in range(len(spreadsheetData.interventionList)):
     plotData.append({})
     plotData[run]["modelList"] = test_p30
     plotData[run]["tag"] = nametag
-    plotData[run]["color"] = 'green'
+    plotData[run]["color"] = (0.1*run, 1.-0.12*run, 0.3+0.05*run)
     run += 1
 
-output.getCombinedPlots(run, plotData)
+output.getCombinedPlots(run, plotData, save=True)
