@@ -51,7 +51,7 @@ for ichoose in range(len(spreadsheetData.interventionList)):
     plotData.append({})
     plotData[run]["modelList"] = test_p30
     plotData[run]["tag"] = nametag
-    plotData[run]["color"] = (0.1*run, 1.-0.12*run, 0.3+0.05*run)
+    plotData[run]["color"] = (1.0-0.13*run, 1.0-0.3*abs(run-4), 0.0+0.13*run)
     run += 1
 
 output.getCombinedPlots(run, plotData, save=True)
