@@ -366,7 +366,6 @@ def getCombinedPlots(numRuns, data, save=False):
     ax.spines['right'].set_visible(False)
     ax.axes.get_xaxis().tick_bottom()
     ax.axes.get_yaxis().tick_left()
-    #ax.set_axis_bgcolor('#DDDDDD')
     ax.set_ylim([0,numRuns-1])
     y_pos = np.arange(numRuns-1)
     ax.set_yticks(y_pos+0.5)
@@ -375,21 +374,50 @@ def getCombinedPlots(numRuns, data, save=False):
     ax.set_xlabel('Number of deaths averted in children <5', size=16)
     # calculate deaths averted
     deathsAvertedList = []
-    modelList = data[0]["modelList"]
-    deathsBaseline = 0.
-    for age in range(0, numAges):
-        deathsBaseline += modelList[numMonths-1].listOfAgeCompartments[age].getCumulativeDeaths()
+    deathsBaseline = cumulDeathsU5[data[0]["tag"]][numMonths-1]
+    for run in range(1, numRuns):
+        tag       = data[run]["tag"]
+        deathsScenario = cumulDeathsU5[tag][numMonths-1]
+        deathsAvertedList.append(deathsBaseline - deathsScenario)
+    barwid = 0.5
+    ax.barh(y_pos+0.5-0.5*barwid, deathsAvertedList, height=barwid, facecolor='#AADDFF', edgecolor='k', linewidth=1.5)
+    if save:
+        plt.savefig("compare_totalDeathsAverted.png", bbox_inches='tight')
+    else:
+        plt.show()
+
+    # PLOT total deaths averted in neonates
+    fig, ax = plt.subplots()
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.axes.get_xaxis().tick_bottom()
+    ax.axes.get_yaxis().tick_left()
+    ax.set_ylim(0,numRuns-1)
+    ax.set_xlim(0,4000)
+    y_pos = np.arange(numRuns-1)
+    ax.set_yticks(y_pos+0.5)
+    ax.set_yticklabels(tagList[1:])
+    ax.set_ylabel('Interventions',  size=16)
+    ax.set_xlabel('Number of deaths averted in children: <5 years and neonatals', size=16)
+    # calculate deaths averted
+    deathsAvertedList    = []
+    deathsNeoAvertedList = []
+    neonatesName = ageList[0]
+    tagBaseline = data[0]["tag"]
+    deathsNeoBaseline = cumulDeathsList[tagBaseline][neonatesName][numMonths-1]
+    deathsBaseline    = cumulDeathsU5[tagBaseline][numMonths-1]
     for run in range(1, numRuns):
         tag       = data[run]["tag"]
         modelList = data[run]["modelList"]
-        deathsScenario = 0.
-        for age in range(1, numAges):
-            deathsScenario += modelList[numMonths-1].listOfAgeCompartments[age].getCumulativeDeaths()
-        deathsAvertedList.append(deathsBaseline - deathsScenario)
+        deathsNeoScenario = cumulDeathsList[tag][neonatesName][numMonths-1]
+        deathsScenario = cumulDeathsU5[tag][numMonths-1]
+        deathsNeoAvertedList.append(deathsNeoBaseline - deathsNeoScenario)
+        deathsAvertedList.append(   deathsBaseline    - deathsScenario)
     barwid = 0.5
-    ax.barh(y_pos+0.5-0.5*barwid, deathsAvertedList, height=barwid, facecolor='#BBEEFF', edgecolor='k', linewidth=1.5)
+    ax.barh(y_pos+0.5-0.5*barwid, deathsAvertedList,    height=barwid, facecolor='#AADDFF', edgecolor='k', linewidth=1.5)
+    ax.barh(y_pos+0.5-0.5*barwid, deathsNeoAvertedList, height=barwid, facecolor='#FF88DD', edgecolor='k', linewidth=1.5)
     if save:
-        plt.savefig("compare_totalDeathsAverted.png", bbox_inches='tight')
+        plt.savefig("compare_totalDeathsAverted_neonates.png", bbox_inches='tight')
     else:
         plt.show()
 
