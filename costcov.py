@@ -3,6 +3,8 @@
 # COST COVERAGE FUNCTIONS
 ########################################################
 class Costcov():
+    def __init__(self):
+        self.foo = 0.
 
     def function(self, x, ccopar, popsize, eps=None):
         '''Returns coverage in a given year for a given spending amount.'''
