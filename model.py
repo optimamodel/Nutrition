@@ -134,6 +134,11 @@ class Model:
     def updateCoverages(self, newCoverage):
         #newCoverage is a dictionary of coverages by intervention        
         
+        # call initialisation of probabilities related to interventions
+        oldCoverage = self.params.interventionCoverages
+        self.constants.getProbStuntedIfCoveredByIntervention(oldCoverage, self.params.stuntingDistribution)
+        self.constants.getProbAppropriatelyBreastfedIfCoveredByIntervention(oldCoverage, self.params.breastfeedingDistribution)        
+        
         # get combined reductions from all interventions
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
         stuntingUpdate = self.params.getStuntingUpdate(newCoverage)
