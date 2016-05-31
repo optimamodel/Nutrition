@@ -29,8 +29,6 @@ class Constants:
         self.getUnderlyingMortalities()
         self.getProbStuntingProgression()
         self.initialiseFracStuntedIfDiarrhea()
-        self.getProbStuntedIfCoveredByIntervention()
-        self.getProbAppropriatelyBreastfedIfCoveredByIntervention()
 
         # for births
         self.birthStuntingQuarticCoefficients = self.getBirthStuntingQuarticCoefficients()
@@ -237,7 +235,7 @@ class Constants:
 
 
     # Calculate probability of stunting in current age-group given coverage by intervention
-    def getProbStuntedIfCoveredByIntervention(self):
+    def getProbStuntedIfCoveredByIntervention(self, interventionCoverages, stuntingDistribution):
         from numpy import sqrt 
         eps = 1.e-5
         numAgeGroups = len(self.model.listOfAgeCompartments)
@@ -247,10 +245,9 @@ class Constants:
             self.probStuntedIfCovered[intervention]["covered"]     = {}
             for ageInd in range(numAgeGroups):
                 ageName = self.ages[ageInd]
-                thisAge = self.model.listOfAgeCompartments[ageInd]
                 OddsRatio = self.data.ORstuntingIntervention[ageName][intervention]
-                fracCovered = self.data.interventionCoveragesCurrent[intervention]
-                fracStuntedThisAge = thisAge.getStuntedFraction()# + self.initialStuntingTrend
+                fracCovered = interventionCoverages[intervention]
+                fracStuntedThisAge = stuntingDistribution[ageName]['high'] + stuntingDistribution[ageName]['moderate']
                 # solve quadratic equation ax**2 + bx + c = 0
                 a = (1.-fracCovered) * (1.-OddsRatio)
                 b = (OddsRatio-1)*fracStuntedThisAge - OddsRatio*fracCovered - (1.-fracCovered)
@@ -269,7 +266,7 @@ class Constants:
 
 
     # Calculate probability of stunting in current age-group given coverage by intervention
-    def getProbAppropriatelyBreastfedIfCoveredByIntervention(self):
+    def getProbAppropriatelyBreastfedIfCoveredByIntervention(self, interventionCoverages, breastfeedingDistribution):
         from numpy import sqrt 
         eps = 1.e-5
         numAgeGroups = len(self.model.listOfAgeCompartments)
@@ -279,11 +276,10 @@ class Constants:
             self.probAppropriatelyBreastfedIfCovered[intervention]["covered"]     = {}
             for ageInd in range(numAgeGroups):
                 ageName = self.ages[ageInd]
-                thisAge = self.model.listOfAgeCompartments[ageInd]
                 OddsRatio = self.data.ORappropriatebfIntervention[ageName][intervention]
-                fracCovered = self.data.interventionCoveragesCurrent[intervention]
+                fracCovered = interventionCoverages[intervention]
                 appropriatePractice = self.data.ageAppropriateBreastfeeding[ageName]
-                fracAppropriatelyBreastfedThisAge = self.data.breastfeedingDistribution[ageName][appropriatePractice]
+                fracAppropriatelyBreastfedThisAge = breastfeedingDistribution[ageName][appropriatePractice]
                 # solve quadratic equation ax**2 + bx + c = 0
                 a = (1.-fracCovered) * (1.-OddsRatio)
                 b = (OddsRatio-1)*fracAppropriatelyBreastfedThisAge - OddsRatio*fracCovered - (1.-fracCovered)
