@@ -6,7 +6,7 @@ Created on Fri Feb 26 15:57:07 2016
 """
 
 class Data:
-    def __init__(self, ages, causesOfDeath, conditions, interventionList, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition, birthOutcomeDist, ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention, ORappropriatebfIntervention, ageAppropriateBreastfeeding, interventionCoveragesCurrent, interventionCostCoverage, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness, interventionsMaternal, complementsList, ORstuntingComplementaryFeeding):
+    def __init__(self, ages, causesOfDeath, conditions, interventionList, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition, birthOutcomeDist, ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention, ORappropriatebfIntervention, ageAppropriateBreastfeeding, interventionCoveragesCurrent, interventionCostCoverage, interventionTargetPop, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness, interventionsMaternal, complementsList, ORstuntingComplementaryFeeding):
         self.ages = ages
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
@@ -35,6 +35,7 @@ class Data:
         self.ageAppropriateBreastfeeding = ageAppropriateBreastfeeding
         self.interventionCoveragesCurrent = interventionCoveragesCurrent
         self.interventionCostCoverage = interventionCostCoverage
+        self.interventionTargetPop = interventionTargetPop
         self.interventionAffectedFraction = interventionAffectedFraction
         self.interventionMortalityEffectiveness = interventionMortalityEffectiveness
         self.interventionIncidenceEffectiveness = interventionIncidenceEffectiveness
@@ -61,7 +62,9 @@ def getDataFromSpreadsheet(fileName, keyList):
     df = pandas.read_excel(Location, sheetname = 'Interventions coverages') #read this way for this task
     interventionList = list(df['Intervention'])
 
-
+    allPops = ages[:]
+    allPops.append('pregnant women')
+    
 
     #  READ TOTAL MORTALITY SHEET
     #  gets you:
@@ -371,7 +374,7 @@ def getDataFromSpreadsheet(fileName, keyList):
 
 
 
-    #  READ Intervention Coverages SHEET
+    #  READ Current Intervention Coverages SHEET
     #  gets you:
     #  - InterventionCoveragesCurrent
     #  - InterventionCostCoverage
@@ -388,8 +391,18 @@ def getDataFromSpreadsheet(fileName, keyList):
             interventionCostCoverage[intervention][costinfo] = df.loc[intervention, costinfo]
         
 
+    # READ Intervention Target Population Matrix SHEET
+    # gets you:
+    # - interventionTargetPop
+    df = pandas.read_excel(Location, sheetname = 'Interventions target population', index_col = 'Intervention')
+    interventionTargetPop = {}
+    for intervention in interventionList:
+        interventionTargetPop[intervention] = {}
+        for pop in allPops:
+            interventionTargetPop[intervention][pop] = df.loc[intervention, pop]
 
-# READ Interventions maternal SHEET
+    
+    # READ Interventions maternal SHEET
     # gets you:
     # - interventionsMaternal
     #get the list of interventions
@@ -507,7 +520,7 @@ def getDataFromSpreadsheet(fileName, keyList):
             ORstuntingComplementaryFeeding[age][group] = df.loc[group, age]    
     
             
-    spreadsheetData = Data(ages, causesOfDeath, conditions, interventionList, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition, birthOutcomeDist, ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention, ORappropriatebfIntervention, ageAppropriateBreastfeeding, interventionCoveragesCurrent, interventionCostCoverage, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness, interventionsMaternal, complementsList, ORstuntingComplementaryFeeding)
+    spreadsheetData = Data(ages, causesOfDeath, conditions, interventionList, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition, birthOutcomeDist, ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention, ORappropriatebfIntervention, ageAppropriateBreastfeeding, interventionCoveragesCurrent, interventionCostCoverage, interventionTargetPop, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness, interventionsMaternal, complementsList, ORstuntingComplementaryFeeding)
 
     return spreadsheetData        
                   
