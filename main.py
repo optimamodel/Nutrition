@@ -22,9 +22,8 @@ breastfeedingList = ["exclusive", "predominant", "partial", "none"]
 keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
 spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode.xlsx', keyList)
 mothers = {'birthRate':0.9, 'populationSize':2.e6}
-ageRangeList  = ages 
 agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
-numAgeGroups = len(ageRangeList)
+numAgeGroups = len(ages)
 agePopSizes  = [1.7e5, 4.e5, 7.e5, 1.44e6, 44.e5]
 timestep = 1./12. 
 numsteps = 168  
@@ -87,11 +86,22 @@ newCoverages={}
 for intervention in spreadsheetData.interventionList:
     newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
 """
+# arbitrary allocation of funding
 investmentDict = {} # dictionary of money for each intervention
 for intervention in spreadsheetData.interventionList:
-    unitcost   = dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])
-    saturation = dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])
-    newCoverages[intervention] = costcoverage(investment, unitcost, saturation, targetpop) # function from HIV
+    investmentDict[intervention] = 20.e6 # 20 million dollars per intervention per year for the full 14 years (2 billion total)
+# update coverage
+targetPopSize = {}
+for intervention in spreadsheetData.interventionList:
+    targetPopSize[intervention] = 0.
+    for ageInd in range(numAgeGroups):
+        age = ages[ageInd]
+        targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][age] * modelZ.listOfAgeCompartments[ageInd].getTotalPopulation()
+    targetPopSize[intervention] +=     spreadsheetData.interventionTargetPop[intervention]['pregnant women'] * modelZ.fertileWomen.populationSize
+    ccopar = {}
+    ccopar['unitcost']   = dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])
+    ccopar['saturation'] = dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])
+    newCoverages[intervention] = costCov.function(investment, ccopar, targetPopSize) # function from HIV
 """
 modelZ.updateCoverages(newCoverages)
 
