@@ -135,9 +135,8 @@ class Model:
         #newCoverage is a dictionary of coverages by intervention        
         
         # call initialisation of probabilities related to interventions
-        oldCoverage = self.params.interventionCoverages
-        self.constants.getProbStuntedIfCoveredByIntervention(oldCoverage, self.params.stuntingDistribution)
-        self.constants.getProbAppropriatelyBreastfedIfCoveredByIntervention(oldCoverage, self.params.breastfeedingDistribution)        
+        self.constants.getProbStuntedIfCoveredByIntervention(self.params.interventionCoverages, self.params.stuntingDistribution)
+        self.constants.getProbAppropriatelyBreastfedIfCoveredByIntervention(self.params.interventionCoverages, self.params.breastfeedingDistribution)        
         
         # get combined reductions from all interventions
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
@@ -213,7 +212,8 @@ class Model:
         # UPDATE MORTALITY AFTER HAVING CHANGED: underlyingMortality and birthOutcomeDist
         self.updateMortalityRate()    
 
-
+        # set newCoverages as the coverages in interventions
+        self.params.interventionCoverages = newCoverage
 
             
             
