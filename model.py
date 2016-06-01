@@ -193,7 +193,6 @@ class Model:
         #Zt = self.constants.getZa(incidencesAfter,  self.constants.data.breastfeedingDistribution)
         beta = self.constants.getBetaGivenZ0AndZt(Z0, Zt)
         stuntingUpdateDueToIncidence = self.params.getIncidenceStuntingUpdateGivenBeta(beta)
-        print 'stuntingUpdateDueToIncidence:  ', stuntingUpdateDueToIncidence
         
         # STUNTING
         for ageGroup in self.listOfAgeCompartments:
