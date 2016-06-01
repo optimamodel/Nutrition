@@ -11,9 +11,12 @@ import output as output
 import helper as helper
 import pickle as pickle
 from copy import deepcopy as dcp
-import costcov as costCov
+import costcov
+from numpy import array
 
 helper = helper.Helper()
+costCov = costcov.Costcov()
+
 ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
 birthOutcomes = ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"]
 wastingList = ["normal", "mild", "moderate", "high"]
@@ -85,24 +88,29 @@ pickle.dump(modelZ, outfile)
 newCoverages={}
 for intervention in spreadsheetData.interventionList:
     newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
-"""
 # arbitrary allocation of funding
 investmentDict = {} # dictionary of money for each intervention
 for intervention in spreadsheetData.interventionList:
-    investmentDict[intervention] = 20.e6 # 20 million dollars per intervention per year for the full 14 years (2 billion total)
-# update coverage
+    investmentDict[intervention] = 1.e6 # 1 million BDT per intervention per year for the full 14 years
+# calculate coverage (%)
 targetPopSize = {}
 for intervention in spreadsheetData.interventionList:
+    print intervention
+    investment = array([investmentDict[intervention]])
     targetPopSize[intervention] = 0.
     for ageInd in range(numAgeGroups):
         age = ages[ageInd]
         targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][age] * modelZ.listOfAgeCompartments[ageInd].getTotalPopulation()
     targetPopSize[intervention] +=     spreadsheetData.interventionTargetPop[intervention]['pregnant women'] * modelZ.fertileWomen.populationSize
     ccopar = {}
-    ccopar['unitcost']   = dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])
-    ccopar['saturation'] = dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])
-    newCoverages[intervention] = costCov.function(investment, ccopar, targetPopSize) # function from HIV
-"""
+    ccopar['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
+    ccopar['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
+    additionalPeopleCovered = costCov.function(investment, ccopar, targetPopSize[intervention]) # function from HIV
+    additionalCoverage = additionalPeopleCovered / targetPopSize[intervention]
+    print "additional coverage: %g"%(additionalCoverage)
+    newCoverages[intervention] += additionalCoverage[0] 
+    print "new coverage: %g"%(newCoverages[intervention])
+# update coverage
 modelZ.updateCoverages(newCoverages)
 
 for t in range(numsteps-1):
