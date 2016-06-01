@@ -79,7 +79,7 @@ run += 1
 
 #------------------------------------------------------------------------    
 # INTERVENTION
-investmentIncrease = 1.e6
+investmentIncrease = 1.e6  # 1 million BDT per intervention per year for the full 14 years
 
 for ichoose in range(len(spreadsheetData.interventionList)):
     chosenIntervention = spreadsheetData.interventionList[ichoose]
@@ -101,24 +101,21 @@ for ichoose in range(len(spreadsheetData.interventionList)):
     for intervention in spreadsheetData.interventionList:
         newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
     # allocation of funding
-    investmentDict = {} # dictionary of money for each intervention
-    for intervention in spreadsheetData.interventionList:
-        investmentDict[intervention] = investmentIncrease # 1 million BDT per intervention per year for the full 14 years
+    investment = array([investmentIncrease])
     # calculate coverage (%)
     targetPopSize = {}
-    investment = array([investmentDict[chosenIntervention]])
     targetPopSize[chosenIntervention] = 0.
     for ageInd in range(numAgeGroups):
         age = ages[ageInd]
         targetPopSize[chosenIntervention] += spreadsheetData.interventionTargetPop[chosenIntervention][age] * modelX.listOfAgeCompartments[ageInd].getTotalPopulation()
     targetPopSize[chosenIntervention] +=     spreadsheetData.interventionTargetPop[chosenIntervention]['pregnant women'] * modelX.fertileWomen.populationSize
-    ccopar = {}
-    ccopar['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[chosenIntervention]["unit cost"])])
-    ccopar['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[chosenIntervention]["saturation coverage"])])
-    additionalPeopleCovered = costCov.function(investment, ccopar, targetPopSize[chosenIntervention]) # function from HIV
-    additionalCoverage = additionalPeopleCovered / targetPopSize[chosenIntervention]
-    print "additional coverage: %g"%(additionalCoverage)
-    newCoverages[chosenIntervention] += additionalCoverage[0] 
+    costCovParams = {}
+    costCovParams['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[chosenIntervention]["unit cost"])])
+    costCovParams['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[chosenIntervention]["saturation coverage"])])
+    additionalPeopleCovered   = costCov.function(investment, costCovParams, targetPopSize[chosenIntervention]) # function from HIV
+    additionalFractionCovered = additionalPeopleCovered / targetPopSize[chosenIntervention]
+    print "additional coverage: %g"%(additionalFractionCovered)
+    newCoverages[chosenIntervention] += additionalFractionCovered
     print "new coverage: %g"%(newCoverages[chosenIntervention])
     # scale up intervention
     modelX.updateCoverages(newCoverages)
