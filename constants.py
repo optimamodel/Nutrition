@@ -18,7 +18,9 @@ class Constants:
         self.fracStuntedIfDiarrhea = {}
         self.probStuntedIfCovered = {}
         self.probAppropriatelyBreastfedIfCovered = {}
-        self.probsBirthOutcome = {}  
+        self.probsStuntingComplementaryFeeding = {}
+        self.probsStuntingAtBirth = {}
+        
         self.initialStuntingTrend = -0. # percentage decrease in stunting prevalence per year
         self.initialStuntingTrend = self.initialStuntingTrend / 100. * self.model.timestep # fractional decrease in stunting prevalence per timestep
         self.FractionFoodSecure = 0.5 # eventually this will come from data somehow
@@ -28,13 +30,8 @@ class Constants:
 
         self.getUnderlyingMortalities()
         self.getProbStuntingProgression()
+        self.getProbsStuntingAtBirth()
 
-        # for births
-        self.birthStuntingQuarticCoefficients = self.getBirthStuntingQuarticCoefficients()
-        self.baselineProbStuntingAtBirth = self.getBaselineProbabilityViaQuartic(self.birthStuntingQuarticCoefficients)
-        self.probsStuntingAtBirth = self.getProbsStuntingAtBirth()
-        # for complementary feeding
-        self.probsStuntingComplementaryFeeding = {}
 
     def getUnderlyingMortalities(self):
         #Equation is:  LHS = RHS * X
@@ -198,13 +195,6 @@ class Constants:
         Za = {}
         for ageName in self.ages:
             riskSum = self.getDiarrheaRiskSum(ageName, bfDistribution)
-            """
-            sum = 0.
-            for breastfeedingCat in self.breastfeedingList:
-                RDa = self.data.RRdiarrhea[ageName][breastfeedingCat]
-                pab  = bfDistribution[ageName][breastfeedingCat]
-                sum += RDa * pab
-            """
             Za[ageName] = incidence[ageName] / riskSum
         return Za     
 
@@ -291,47 +281,6 @@ class Constants:
                 self.probAppropriatelyBreastfedIfCovered[intervention]["not covered"][ageName] = p0
                 self.probAppropriatelyBreastfedIfCovered[intervention]["covered"][ageName]     = p0*OddsRatio/(1.-p0+OddsRatio*p0)
                 #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%((1.-fracCovered)*p0 + fracCovered*p0*OddsRatio/(1.-p0+OddsRatio*p0), fracAppropriatelyBreastfedThisAge)
-
-
-
-    """
-    # calculation of probabilities of birth outcome
-    # given baseline maternalAge=18-34 years , birthOrder=second or third, timeBetweenBirths=>24 months 
-    # P(birthOutcome | standard (maternalAge,birthOrder,timeBtwn)
-    def getBaselineProbsBirthOutcome(self):
-        # P(maternalAge,birthOrder,timeBtwn)
-        probInterval = self.data.timeBetweenBirthsDist
-        probAgeOrderInterval = {}
-        for maternalAge in ["<18 years","18-34 years","35-49 years"]:
-            probAgeOrderInterval[maternalAge] = {}
-            for birthOrder in ["first","second or third","greater than third"]:
-                probAgeOrderInterval[maternalAge][birthOrder] = {}
-                probCircumstance = self.data.birthCircumstanceDist[maternalAge][birthOrder]
-                for interval in ["first","<18 months","18-23 months","<24 months"]:
-                    probAgeOrderInterval[maternalAge][birthOrder][interval] = 0.
-                if birthOrder == "first":
-                    probAgeOrderInterval[maternalAge][birthOrder]["first"] = probCircumstance 
-                else:
-                    probFirst = probInterval["first"]
-                    for interval in ["<18 months","18-23 months","<24 months"]:
-                        probTimeIfNotFirst = probInterval[interval] / (1-probFirst)
-                        probAgeOrderInterval[maternalAge][birthOrder][interval] = probCircumstance * probTimeIfNotFirst
-        # Probabilities for 3 of the birth outcomes
-        sumProbOutcome = 0.
-        # only need to calculate for first 3 birth outcomes, for which relative risks are provided
-        for birthOutcome in ["Pre-term SGA","Pre-term AGA","Term SGA"]:
-            summation = 0.
-            for maternalAge in ["<18 years","18-34 years","35-49 years"]:
-                for birthOrder in ["first","second or third","greater than third"]:
-                    for interval in ["first","<18 months","18-23 months","<24 months"]:
-                        P_bt = probAgeOrderInterval[maternalAge][birthOrder][interval]
-                        RR_gb = self.data.RRbirthOutcomeByAgeAndOrder[birthOutcome][maternalAge][birthOrder]
-                        RR_gt = self.data.RRbirthOutcomeByTime[birthOutcome][interval]
-                        summation += P_bt * RR_gb * RR_gt
-            self.baselineProbsBirthOutcome[birthOutcome] = self.data.birthOutcomeDist[birthOutcome] / summation
-        self.baselineProbsBirthOutcome["Term AGA"] = 1. - sumProbOutcome
-    """
-    
 
 
     def getBirthStuntingQuarticCoefficients(self):
@@ -464,7 +413,9 @@ class Constants:
 
 
     def getProbsStuntingAtBirth(self):
-        p0 = self.baselineProbStuntingAtBirth
+        coEffs = self.getBirthStuntingQuarticCoefficients()
+        baselineProbStuntingAtBirth = self.getBaselineProbabilityViaQuartic(coEffs)        
+        p0 = baselineProbStuntingAtBirth
         probsStuntingAtBirth = {}
         probsStuntingAtBirth["Term AGA"] = p0
         for birthOutcome in ["Pre-term SGA","Pre-term AGA","Term SGA"]:
@@ -473,7 +424,7 @@ class Constants:
             pi = probsStuntingAtBirth[birthOutcome]
             if(pi<0. or pi>1.):
                 raise ValueError("probability of stunting at birth, at outcome %s, is out of range (%f)"%(birthOutcome, pi))
-        return probsStuntingAtBirth        
+        self.probsStuntingAtBirth = probsStuntingAtBirth        
                 
     def getProbsStuntingComplementaryFeeding(self, stuntingDistribution, interventionCoverages):
         coEffs = self.getComplementaryFeedingQuarticCoefficients(stuntingDistribution, interventionCoverages)
