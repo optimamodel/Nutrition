@@ -397,8 +397,9 @@ def getCombinedPlots(numRuns, data, save=False):
     y_pos = np.arange(numRuns-1)
     ax.set_yticks(y_pos+0.5)
     ax.set_yticklabels(tagList[1:])
+    ax.set_title('Kenya: 2016-2030', size=16)
     ax.set_ylabel('Interventions',  size=16)
-    ax.set_xlabel('Number of deaths averted in children: <5 years and neonatals', size=16)
+    ax.set_xlabel('Number of deaths averted in children', size=16)
     # calculate deaths averted
     deathsAvertedList    = []
     deathsNeoAvertedList = []
@@ -414,8 +415,9 @@ def getCombinedPlots(numRuns, data, save=False):
         deathsNeoAvertedList.append(deathsNeoBaseline - deathsNeoScenario)
         deathsAvertedList.append(   deathsBaseline    - deathsScenario)
     barwid = 0.5
-    ax.barh(y_pos+0.5-0.5*barwid, deathsAvertedList,    height=barwid, facecolor='#AADDFF', edgecolor='k', linewidth=1.5)
-    ax.barh(y_pos+0.5-0.5*barwid, deathsNeoAvertedList, height=barwid, facecolor='#FF88DD', edgecolor='k', linewidth=1.5)
+    h1 = ax.barh(y_pos+0.5-0.5*barwid, deathsAvertedList,    height=barwid, facecolor='#AADDFF', edgecolor='k', linewidth=1.5)
+    h2 = ax.barh(y_pos+0.5-0.5*barwid, deathsNeoAvertedList, height=barwid, facecolor='#FF88DD', edgecolor='k', linewidth=1.5)
+    plt.legend([h1,h2],["<5 years","<1 month"])
     if save:
         plt.savefig("compare_totalDeathsAverted_neonates.png", bbox_inches='tight')
     else:
