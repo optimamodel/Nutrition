@@ -32,6 +32,7 @@ plotData[run]["color"] = plotcolor
 run += 1
 
 percentageIncrease = 50
+title = 'Kenya: 2016-2030 \n Scale up interventions by %i%% points'%(percentageIncrease)
 for ichoose in range(len(spreadsheetData.interventionList)):
     chosenIntervention = spreadsheetData.interventionList[ichoose]
     pickleFilename = 'test_Intervention%i_P%i.pkl'%(ichoose,percentageIncrease)
@@ -53,4 +54,4 @@ for ichoose in range(len(spreadsheetData.interventionList)):
     plotData[run]["color"] = (1.0-0.13*run, 1.0-0.3*abs(run-4), 0.0+0.13*run)
     run += 1
 
-output.getCombinedPlots(run, plotData, save=True)
+output.getCombinedPlots(run, plotData, title=title, save=True)
