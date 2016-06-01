@@ -246,7 +246,7 @@ def getStuntedPercent(modelList, label):
 
     
     
-def getCombinedPlots(numRuns, data, save=False):
+def getCombinedPlots(numRuns, data, filenamePrefix="compare", title="", save=False):
     import numpy as np
     import matplotlib.pyplot as plt
     # set up
@@ -319,7 +319,7 @@ def getCombinedPlots(numRuns, data, save=False):
         plotList.append(plotObj)
     plt.legend(plotList, tagList, loc = 'center left', bbox_to_anchor=(1,0.5))
     if save:
-        plt.savefig("compare_stuntedPopSize.png", bbox_inches='tight')
+        plt.savefig("%s_stuntedPopSize.png"%(filenamePrefix), bbox_inches='tight')
     else:
         plt.show()
 
@@ -338,7 +338,7 @@ def getCombinedPlots(numRuns, data, save=False):
         plotList.append(plotObj)
     plt.legend(plotList, tagList, loc = 'center left', bbox_to_anchor=(1,0.5))
     if save:
-        plt.savefig("compare_stuntedFraction.png", bbox_inches='tight')
+        plt.savefig("%s_stuntedFraction.png"%(filenamePrefix), bbox_inches='tight')
     else:
         plt.show()
 
@@ -356,7 +356,7 @@ def getCombinedPlots(numRuns, data, save=False):
         plotList.append(plotObj)
     plt.legend(plotList, tagList, loc = 'center left', bbox_to_anchor=(1,0.5))
     if save:
-        plt.savefig("compare_cumulativeDeaths.png", bbox_inches='tight')
+        plt.savefig("%s_cumulativeDeaths.png"%(filenamePrefix), bbox_inches='tight')
     else:
         plt.show()
 
@@ -366,40 +366,14 @@ def getCombinedPlots(numRuns, data, save=False):
     ax.spines['right'].set_visible(False)
     ax.axes.get_xaxis().tick_bottom()
     ax.axes.get_yaxis().tick_left()
-    ax.set_ylim([0,numRuns-1])
-    y_pos = np.arange(numRuns-1)
-    ax.set_yticks(y_pos+0.5)
-    ax.set_yticklabels(tagList[1:])
-    ax.set_ylabel('Interventions',  size=16)
-    ax.set_xlabel('Number of deaths averted in children <5', size=16)
-    # calculate deaths averted
-    deathsAvertedList = []
-    deathsBaseline = cumulDeathsU5[data[0]["tag"]][numMonths-1]
-    for run in range(1, numRuns):
-        tag       = data[run]["tag"]
-        deathsScenario = cumulDeathsU5[tag][numMonths-1]
-        deathsAvertedList.append(deathsBaseline - deathsScenario)
-    barwid = 0.5
-    ax.barh(y_pos+0.5-0.5*barwid, deathsAvertedList, height=barwid, facecolor='#AADDFF', edgecolor='k', linewidth=1.5)
-    if save:
-        plt.savefig("compare_totalDeathsAverted.png", bbox_inches='tight')
-    else:
-        plt.show()
-
-    # PLOT total deaths averted in neonates
-    fig, ax = plt.subplots()
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.axes.get_xaxis().tick_bottom()
-    ax.axes.get_yaxis().tick_left()
     ax.set_ylim(0,numRuns-1)
-    ax.set_xlim(0,4000)
+    ax.set_xlim(0,2000)
     y_pos = np.arange(numRuns-1)
     ax.set_yticks(y_pos+0.5)
     ax.set_yticklabels(tagList[1:])
-    ax.set_title('Kenya: 2016-2030', size=16)
+    ax.set_title(title, size=16, y=1.13)
     ax.set_ylabel('Interventions',  size=16)
-    ax.set_xlabel('Number of deaths averted in children', size=16)
+    ax.set_xlabel('Number of deaths averted in children', size=14)
     # calculate deaths averted
     deathsAvertedList    = []
     deathsNeoAvertedList = []
@@ -411,15 +385,22 @@ def getCombinedPlots(numRuns, data, save=False):
         tag       = data[run]["tag"]
         modelList = data[run]["modelList"]
         deathsNeoScenario = cumulDeathsList[tag][neonatesName][numMonths-1]
-        deathsScenario = cumulDeathsU5[tag][numMonths-1]
+        deathsScenario    = cumulDeathsU5[tag][numMonths-1]
         deathsNeoAvertedList.append(deathsNeoBaseline - deathsNeoScenario)
         deathsAvertedList.append(   deathsBaseline    - deathsScenario)
+    ax2 = ax.twiny()
+    ax2.set_xlim(ax.get_xlim())
+    percentTicks = np.array([0.5,1.0,1.5])
+    pTicksTrans = percentTicks/100.*deathsBaseline
+    ax2.set_xticks(pTicksTrans)
+    ax2.set_xticklabels(percentTicks)
+    ax2.set_xlabel('Percent of deaths averted (%)', size=14)
     barwid = 0.5
     h1 = ax.barh(y_pos+0.5-0.5*barwid, deathsAvertedList,    height=barwid, facecolor='#AADDFF', edgecolor='k', linewidth=1.5)
-    h2 = ax.barh(y_pos+0.5-0.5*barwid, deathsNeoAvertedList, height=barwid, facecolor='#FF88DD', edgecolor='k', linewidth=1.5)
+    h2 = ax.barh(y_pos+0.5-0.5*barwid, deathsNeoAvertedList, height=barwid, facecolor='#FF9977', edgecolor='k', linewidth=1.5)
     plt.legend([h1,h2],["<5 years","<1 month"])
     if save:
-        plt.savefig("compare_totalDeathsAverted_neonates.png", bbox_inches='tight')
+        plt.savefig("%s_totalDeathsAverted.png"%(filenamePrefix), bbox_inches='tight')
     else:
         plt.show()
 
