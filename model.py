@@ -137,6 +137,8 @@ class Model:
         # call initialisation of probabilities related to interventions
         self.constants.getProbStuntedIfCoveredByIntervention(self.params.interventionCoverages, self.params.stuntingDistribution)
         self.constants.getProbAppropriatelyBreastfedIfCoveredByIntervention(self.params.interventionCoverages, self.params.breastfeedingDistribution)        
+        self.constants.getFracStuntedIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.stuntingDistribution)        
+        self.constants.getProbsStuntingComplementaryFeeding(self.params.stuntingDistribution, self.params.interventionCoverages)        
         
         # get combined reductions from all interventions
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
@@ -145,7 +147,7 @@ class Model:
         birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)
         appropriatebfFracNew = self.params.getAppropriateBFNew(newCoverage)
         stuntingUpdateComplementaryFeeding = self.params.getStuntingUpdateComplementaryFeeding(newCoverage)
-              
+        
         # MORTALITY
         for ageGroup in self.listOfAgeCompartments:
             ageName = ageGroup.name
@@ -191,6 +193,7 @@ class Model:
         #Zt = self.constants.getZa(incidencesAfter,  self.constants.data.breastfeedingDistribution)
         beta = self.constants.getBetaGivenZ0AndZt(Z0, Zt)
         stuntingUpdateDueToIncidence = self.params.getIncidenceStuntingUpdateGivenBeta(beta)
+        print 'stuntingUpdateDueToIncidence:  ', stuntingUpdateDueToIncidence
         
         # STUNTING
         for ageGroup in self.listOfAgeCompartments:

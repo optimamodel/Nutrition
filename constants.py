@@ -28,16 +28,13 @@ class Constants:
 
         self.getUnderlyingMortalities()
         self.getProbStuntingProgression()
-        self.initialiseFracStuntedIfDiarrhea()
 
         # for births
         self.birthStuntingQuarticCoefficients = self.getBirthStuntingQuarticCoefficients()
         self.baselineProbStuntingAtBirth = self.getBaselineProbabilityViaQuartic(self.birthStuntingQuarticCoefficients)
         self.probsStuntingAtBirth = self.getProbsStuntingAtBirth()
         # for complementary feeding
-        self.complementaryFeedingQuarticCoefficients = self.getComplementaryFeedingQuarticCoefficients()
-        self.baselineProbStuntingComplementaryFeeding = self.getBaselineProbabilityViaQuarticByAge(self.complementaryFeedingQuarticCoefficients)    
-        self.probsStuntingComplementaryFeeding = self.getProbsStuntingComplementaryFeeding()
+        self.probsStuntingComplementaryFeeding = {}
 
     def getUnderlyingMortalities(self):
         #Equation is:  LHS = RHS * X
@@ -147,11 +144,11 @@ class Constants:
             #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%(test1, fracStuntedThisAge)
         
 
-    def initialiseFracStuntedIfDiarrhea(self):
+    def getFracStuntedIfDiarrhea(self, currentIncidences, breastfeedingDistribution, stuntingDistribution):
         incidence = {}
         for ageName in self.ages:
-            incidence[ageName] = self.data.incidences[ageName]['Diarrhea']
-        Z0 = self.getZa(incidence, self.data.breastfeedingDistribution)
+            incidence[ageName] = currentIncidences[ageName]['Diarrhea']
+        Z0 = self.getZa(incidence, breastfeedingDistribution)
         Zt = Z0 #this is true for the initialisation
         beta = self.getBetaGivenZ0AndZt(Z0, Zt)
         AO = self.getAOGivenZa(Zt)
@@ -162,13 +159,12 @@ class Constants:
         self.fracStuntedIfDiarrhea["dia"] = {}
         for ageInd in range(0, numAgeGroups):
             ageName = self.ages[ageInd]
-            thisAge = self.model.listOfAgeCompartments[ageInd]
             #get fraction of people with diarrhea
             fracDiarrhea = 0.
             for breastfeedingCat in self.breastfeedingList:
-                fracDiarrhea += beta[ageName][breastfeedingCat] * self.data.breastfeedingDistribution[ageName][breastfeedingCat]
+                fracDiarrhea += beta[ageName][breastfeedingCat] * breastfeedingDistribution[ageName][breastfeedingCat]
             # get fraction stunted
-            fracStuntedThisAge = thisAge.getStuntedFraction()# + self.initialStuntingTrend
+            fracStuntedThisAge = stuntingDistribution[ageName]['high'] + stuntingDistribution[ageName]['moderate'] # + self.initialStuntingTrend
             # solve quadratic equation ax**2 + bx + c = 0
             a = (1. - fracDiarrhea) * (1. - AO[ageName])
             b = (AO[ageName] - 1.) * fracStuntedThisAge - AO[ageName] * fracDiarrhea - (1. - fracDiarrhea)
@@ -366,7 +362,7 @@ class Constants:
         return [A,B,C,D,E]
         
         
-    def getComplementaryFeedingQuarticCoefficients(self):
+    def getComplementaryFeedingQuarticCoefficients(self, stuntingDistribution, interventionCoverages):
         coEffs = {}
         for ageGroup in range(len(self.ages)): 
             age = self.ages[ageGroup]
@@ -376,13 +372,13 @@ class Constants:
             OR[2] = self.data.ORstuntingComplementaryFeeding[age]["Complementary feeding (food insecure with promotion and supplementation)"]
             OR[3] = self.data.ORstuntingComplementaryFeeding[age]["Complementary feeding (food insecure with neither promotion nor supplementation)"]
             FracSecure = self.FractionFoodSecure
-            FracCovered = self.data.interventionCoveragesCurrent['Complementary feeding']            
+            FracCovered = interventionCoverages['Complementary feeding']            
             Frac = [0.]*4
             Frac[0] = FracSecure * FracCovered    
             Frac[1] = FracSecure * (1 - FracCovered)
             Frac[2] = (1 - FracSecure) * FracCovered
             Frac[3] = (1 - FracSecure) * (1 - FracCovered)
-            FracStunted = self.model.listOfAgeCompartments[ageGroup].getStuntedFraction()# + self.initialStuntingTrend
+            FracStunted = stuntingDistribution[age]['high'] + stuntingDistribution[age]['moderate'] # + self.initialStuntingTrend
             # [i] will refer to the three non-baseline birth outcomes
             A = Frac[0]*(OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.)
             B = (OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.) * ( \
@@ -479,11 +475,13 @@ class Constants:
                 raise ValueError("probability of stunting at birth, at outcome %s, is out of range (%f)"%(birthOutcome, pi))
         return probsStuntingAtBirth        
                 
-    def getProbsStuntingComplementaryFeeding(self):
+    def getProbsStuntingComplementaryFeeding(self, stuntingDistribution, interventionCoverages):
+        coEffs = self.getComplementaryFeedingQuarticCoefficients(stuntingDistribution, interventionCoverages)
+        baselineProbStuntingComplementaryFeeding = self.getBaselineProbabilityViaQuarticByAge(coEffs)        
         probsStuntingComplementaryFeeding = {}        
         for age in self.ages: 
             probsStuntingComplementaryFeeding[age] = {}
-            p0 = self.baselineProbStuntingComplementaryFeeding[age]
+            p0 = baselineProbStuntingComplementaryFeeding[age]
             probsStuntingComplementaryFeeding[age]["Complementary feeding (food secure with promotion)"] = p0
             for group in self.data.complementsList:
                 OR = self.data.ORstuntingComplementaryFeeding[age][group]
@@ -491,5 +489,5 @@ class Constants:
                 pi = probsStuntingComplementaryFeeding[age][group]
                 if(pi<0. or pi>1.):
                     raise ValueError("probability of stunting complementary feeding, at outcome %s, age %s, is out of range (%f)"%(group, age, pi))            
-        return probsStuntingComplementaryFeeding    
+        self.probsStuntingComplementaryFeeding = probsStuntingComplementaryFeeding    
             
