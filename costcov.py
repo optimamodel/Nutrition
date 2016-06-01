@@ -2,6 +2,8 @@
 ########################################################
 # COST COVERAGE FUNCTIONS
 ########################################################
+from numpy import array, maximum, exp, zeros
+
 class Costcov():
     def __init__(self):
         self.foo = 0.
@@ -11,7 +13,7 @@ class Costcov():
         u = array(ccopar['unitcost'])
         s = array(ccopar['saturation'])
         if eps is None: eps = 1.e-3 #Settings().eps # Warning, use project-nonspecific eps
-        if isnumber(popsize): popsize = array([popsize])
+        popsize = array([popsize])
 
         nyrs,npts = len(u),len(x)
         eps = array([eps]*npts)
