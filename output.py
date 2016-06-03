@@ -267,9 +267,6 @@ def getCombinedPlots(numRuns, data, filenamePrefix="compare", title="", save=Fal
         totalPopU5[tag] = [0.]*numMonths
         stuntPopU5[tag] = [0.]*numMonths
         cumulDeathsU5[tag] = [0.]*numMonths
-        cumulDeathsList[tag] = {}
-        for ageName in ageList:
-            cumulDeathsList[tag][ageName] = [0.]*numMonths
         #totalPop = [None]*numAges
         #stuntPop = [None]*numAges
         for mon in range(numMonths):
@@ -284,7 +281,6 @@ def getCombinedPlots(numRuns, data, filenamePrefix="compare", title="", save=Fal
                 totalPopU5[tag][mon]    += total
                 stuntPopU5[tag][mon]    += total*stuntFrac
                 cumulDeathsU5[tag][mon] += cumulDeaths
-                cumulDeathsList[tag][ageName][mon] = cumulDeaths
     # stunted fraction can't be added, so calculate from stuntPopU5 and totalPopU5 afterward
     stuntFracU5 = {}
     for run in range(numRuns):
@@ -297,7 +293,7 @@ def getCombinedPlots(numRuns, data, filenamePrefix="compare", title="", save=Fal
     skip = 2
     yearList =  list(range(2016, 2016+numYears+1, skip))#[2016]
     xTickList = list(range(0, 12*(numYears+1),    skip*12)) # [0]
-    x = np.arange(numMonths)
+    monthList = np.arange(numMonths)
 
     tagList  = []
     for run in range(numRuns):
@@ -315,7 +311,7 @@ def getCombinedPlots(numRuns, data, filenamePrefix="compare", title="", save=Fal
     for run in range(numRuns):
         tag       = data[run]["tag"]
         color     = data[run]["color"]
-        plotObj, = plt.plot(x, stuntPopU5[tag], linewidth=3., color=color)
+        plotObj, = plt.plot(monthList, stuntPopU5[tag], linewidth=3., color=color)
         plotList.append(plotObj)
     plt.legend(plotList, tagList, loc = 'center left', bbox_to_anchor=(1,0.5))
     if save:
@@ -334,7 +330,7 @@ def getCombinedPlots(numRuns, data, filenamePrefix="compare", title="", save=Fal
     for run in range(numRuns):
         tag       = data[run]["tag"]
         color     = data[run]["color"]
-        plotObj, = plt.plot(x, stuntFracU5[tag], linewidth=3., color=color)
+        plotObj, = plt.plot(monthList, stuntFracU5[tag], linewidth=3., color=color)
         plotList.append(plotObj)
     plt.legend(plotList, tagList, loc = 'center left', bbox_to_anchor=(1,0.5))
     if save:
@@ -352,7 +348,7 @@ def getCombinedPlots(numRuns, data, filenamePrefix="compare", title="", save=Fal
     for run in range(numRuns):
         tag       = data[run]["tag"]
         color     = data[run]["color"]
-        plotObj, = plt.plot(x, cumulDeathsU5[tag], linewidth=3., color=color)
+        plotObj, = plt.plot(monthList, cumulDeathsU5[tag], linewidth=3., color=color)
         plotList.append(plotObj)
     plt.legend(plotList, tagList, loc = 'center left', bbox_to_anchor=(1,0.5))
     if save:
@@ -360,20 +356,41 @@ def getCombinedPlots(numRuns, data, filenamePrefix="compare", title="", save=Fal
     else:
         plt.show()
 
-    # PLOT total deaths averted
-    fig, ax = plt.subplots()
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.axes.get_xaxis().tick_bottom()
-    ax.axes.get_yaxis().tick_left()
-    ax.set_ylim(0,numRuns-1)
-    ax.set_xlim(0,2000)
-    y_pos = np.arange(numRuns-1)
-    ax.set_yticks(y_pos+0.5)
-    ax.set_yticklabels(tagList[1:])
-    ax.set_title(title, size=16, y=1.13)
-    ax.set_ylabel('Interventions',  size=16)
-    ax.set_xlabel('Number of deaths averted in children', size=14)
+
+
+
+def getCompareDeathsAverted(numRuns, data, filenamePrefix="compare", title="", save=False):
+    import numpy as np
+    from math import ceil
+    import matplotlib.pyplot as plt
+    # set up
+    modelList = data[0]["modelList"]
+    ageList = modelList[0].ages
+    numAges = len(ageList)
+    numMonths = len(modelList)
+    tagList  = []
+    for run in range(numRuns):
+        tag       = data[run]["tag"]
+        tagList.append(tag)
+    # add up deaths
+    cumulDeathsU5 = {}
+    cumulDeathsList = {}
+    for run in range(numRuns):
+        modelList = data[run]["modelList"]
+        tag       = data[run]["tag"]
+        # initialise
+        cumulDeathsU5[tag] = [0.]*numMonths
+        cumulDeathsList[tag] = {}
+        for ageName in ageList:
+            cumulDeathsList[tag][ageName] = [0.]*numMonths
+        for mon in range(numMonths):
+            model = modelList[mon]
+            for age in range(numAges):
+                ageName = ageList[age]
+                total       = model.listOfAgeCompartments[age].getTotalPopulation()
+                cumulDeaths = model.listOfAgeCompartments[age].getCumulativeDeaths()
+                cumulDeathsU5[tag][mon] += cumulDeaths
+                cumulDeathsList[tag][ageName][mon] = cumulDeaths
     # calculate deaths averted
     deathsAvertedList    = []
     deathsNeoAvertedList = []
@@ -388,13 +405,34 @@ def getCombinedPlots(numRuns, data, filenamePrefix="compare", title="", save=Fal
         deathsScenario    = cumulDeathsU5[tag][numMonths-1]
         deathsNeoAvertedList.append(deathsNeoBaseline - deathsNeoScenario)
         deathsAvertedList.append(   deathsBaseline    - deathsScenario)
+    # PLOTTING
+    # setup figure
+    fig, ax = plt.subplots()
+    ax.set_title(title, size=16, y=1.13)
+    maxDeaths      = max(deathsAvertedList)
+    maxDeathsAxis  = ceil(maxDeaths/500.)*500
+    maxPercent     = maxDeaths/deathsBaseline
+    maxPercentAxis = ceil(maxPercent/0.5)*0.5
+    percentTicks = np.arange(0.5,maxPercentAxis,0.5)
+    pTicksTrans = percentTicks/100.*deathsBaseline
+    y_pos = np.arange(numRuns-1)
+    # axes
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.axes.get_xaxis().tick_bottom()
+    ax.axes.get_yaxis().tick_left()
+    ax.set_ylim(0,numRuns-1)
+    ax.set_xlim(0,maxDeathsAxis)
+    ax.set_yticks(y_pos+0.5)
+    ax.set_yticklabels(tagList[1:])
+    ax.set_ylabel('Interventions',  size=16)
+    ax.set_xlabel('Number of deaths averted in children', size=14)
     ax2 = ax.twiny()
     ax2.set_xlim(ax.get_xlim())
-    percentTicks = np.array([0.5,1.0,1.5])
-    pTicksTrans = percentTicks/100.*deathsBaseline
     ax2.set_xticks(pTicksTrans)
     ax2.set_xticklabels(percentTicks)
     ax2.set_xlabel('Percent of deaths averted (%)', size=14)
+    # plot
     barwid = 0.5
     h1 = ax.barh(y_pos+0.5-0.5*barwid, deathsAvertedList,    height=barwid, facecolor='#AADDFF', edgecolor='k', linewidth=1.5)
     h2 = ax.barh(y_pos+0.5-0.5*barwid, deathsNeoAvertedList, height=barwid, facecolor='#FF9977', edgecolor='k', linewidth=1.5)
