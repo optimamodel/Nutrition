@@ -17,12 +17,13 @@ wastingList = ["normal", "mild", "moderate", "high"]
 stuntingList = ["normal", "mild", "moderate", "high"]
 breastfeedingList = ["exclusive", "predominant", "partial", "none"]
 keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
-spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode_Kenya.xlsx', keyList)
+dataFilename = 'InputForCode_%s.xlsx'%(country)
+spreadsheetData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
 
 plotData = []
 run=0
 
-pickleFilename = 'testDefault.pkl'
+pickleFilename = '%s_Default.pkl'%(country)
 nametag = "Baseline"
 plotcolor = 'grey'
 file = open(pickleFilename, 'rb')
@@ -39,12 +40,15 @@ plotData[run]["tag"] = nametag
 plotData[run]["color"] = plotcolor
 run += 1
 
+
 percentageIncrease = 50
 title = '%s: 2016-2030 \n Scale up interventions by %i%% points'%(country,percentageIncrease)
 filenamePrefix = '%s_%i'%(country,percentageIncrease)
-for ichoose in range(len(spreadsheetData.interventionList)):
+numInterventions = len(spreadsheetData.interventionList)
+colorStep = 1./float(numInterventions)-1.e-2
+for ichoose in range(numInterventions):
     chosenIntervention = spreadsheetData.interventionList[ichoose]
-    pickleFilename = 'test_Intervention%i_P%i.pkl'%(ichoose,percentageIncrease)
+    pickleFilename = '%s_Intervention%i_P%i.pkl'%(country,ichoose,percentageIncrease)
     nametag = chosenIntervention
     print "\n"+nametag
 
@@ -60,7 +64,7 @@ for ichoose in range(len(spreadsheetData.interventionList)):
     plotData.append({})
     plotData[run]["modelList"] = modelXList
     plotData[run]["tag"] = nametag
-    plotData[run]["color"] = (1.0-0.13*run, 1.0-0.3*abs(run-4), 0.0+0.13*run)
+    plotData[run]["color"] = (1.0-colorStep*run, 1.0-0.23*abs(run-4), 0.0+colorStep*run)
     run += 1
 
-output.getCombinedPlots(run, plotData, filenamePrefix=filenamePrefix, title=title, save=True)
+output.getCompareDeathsAverted(run, plotData, filenamePrefix=filenamePrefix, title=title, save=True)
