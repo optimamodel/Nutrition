@@ -12,6 +12,9 @@ import output as output
 from copy import deepcopy as dcp
 import pickle as pickle
 
+country = 'Kenya'
+agePopSizes  = [1.7e5, 4.e5, 7.e5, 1.44e6, 44.e5]
+mothers = {'birthRate':0.9, 'populationSize':2.e6}
 
 helper = helper.Helper()
 ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
@@ -20,16 +23,14 @@ wastingList = ["normal", "mild", "moderate", "high"]
 stuntingList = ["normal", "mild", "moderate", "high"]
 breastfeedingList = ["exclusive", "predominant", "partial", "none"]
 keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
-spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode_Kenya.xlsx', keyList)
-mothers = {'birthRate':0.9, 'populationSize':2.e6}
+dataFilename = 'InputForCode_%s.xlsx'%(country)
+spreadsheetData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
 ageRangeList  = ages 
 agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
 numAgeGroups = len(ageRangeList)
-agePopSizes  = [1.7e5, 4.e5, 7.e5, 1.44e6, 44.e5]
 timestep = 1./12. 
 numsteps = 168
 timespan = timestep * float(numsteps)
-nstep_eq = 24
 
 for intervention in spreadsheetData.interventionList:
     print "Baseline coverage of %s = %g"%(intervention,spreadsheetData.interventionCoveragesCurrent[intervention])
@@ -40,7 +41,7 @@ run = 0
 #------------------------------------------------------------------------    
 # DEFAULT RUN WITH NO CHANGES TO INTERVENTIONS
 nametag = "Baseline"
-pickleFilename = 'testDefault.pkl'
+pickleFilename = '%s_Default.pkl'%(country)
 plotcolor = 'grey'
 
 print "\n"+nametag
@@ -78,12 +79,13 @@ run += 1
 # INTERVENTION
 percentageIncrease = 50
 
-for ichoose in range(len(spreadsheetData.interventionList)):
+numInterventions = len(spreadsheetData.interventionList)
+colorStep = 1./float(numInterventions)-1.e-2
+for ichoose in range(numInterventions):
     chosenIntervention = spreadsheetData.interventionList[ichoose]
-    #nametag = chosenIntervention+": increase coverage by %g%% points"%(percentageIncrease)
     nametag = chosenIntervention
-    pickleFilename = 'test_Intervention%i_P%i.pkl'%(ichoose,percentageIncrease)
-    plotcolor = (1.0-0.13*run, 1.0-0.3*abs(run-4), 0.0+0.13*run)
+    pickleFilename = '%s_Intervention%i_P%i.pkl'%(country,ichoose,percentageIncrease)
+    plotcolor = (1.0-colorStep*run, 1.0-0.23*abs(run-4), 0.0+colorStep*run)
 
     print "\n"+nametag
     modelX, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
@@ -100,8 +102,9 @@ for ichoose in range(len(spreadsheetData.interventionList)):
         newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
     # scale up intervention
     newCoverages[chosenIntervention] += percentageIncrease/100.
-    newCoverages[chosenIntervention] = min(0.9,newCoverages[chosenIntervention])
-    newCoverages[chosenIntervention] = max(0.0,newCoverages[chosenIntervention])
+    newCoverages[chosenIntervention] = min(newCoverages[chosenIntervention],spreadsheetData.interventionCostCoverage[chosenIntervention]["saturation coverage"])
+    newCoverages[chosenIntervention] = max(newCoverages[chosenIntervention],spreadsheetData.interventionCoveragesCurrent[chosenIntervention])
+    newCoverages[chosenIntervention] = max(newCoverages[chosenIntervention],0.0)
     modelX.updateCoverages(newCoverages)
 
     # Run model
@@ -129,18 +132,14 @@ for ichoose in range(len(spreadsheetData.interventionList)):
 
 #------------------------------------------------------------------------    
 # INTERVENTION
-percentageIncrease = 90
+percentageIncrease = 50
 nametag = "All interventions: increase coverage by %g%% points"%(percentageIncrease)
-pickleFilename = 'test_Intervention_P%i.pkl'%(percentageIncrease)
+pickleFilename = '%s_Intervention_P%i.pkl'%(country,percentageIncrease)
 plotcolor = 'black'
 
 print "\n"+nametag
 modelZ, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
 
-
-# Find equilibrium
-for t in range(nstep_eq):
-    modelZ.moveOneTimeStep()
 
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')
@@ -154,7 +153,10 @@ newCoverages={}
 for intervention in spreadsheetData.interventionList:
     newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
 for intervention in spreadsheetData.interventionList:
-    newCoverages[intervention] = min(1.0,newCoverages[intervention]+percentageIncrease/100.) 
+    newCoverages[intervention] += percentageIncrease/100.
+    newCoverages[intervention] = min(newCoverages[intervention],spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])
+    newCoverages[intervention] = max(newCoverages[intervention],spreadsheetData.interventionCoveragesCurrent[intervention])
+    newCoverages[intervention] = max(newCoverages[intervention],0.0)
 modelZ.updateCoverages(newCoverages)
 
 # Run model
