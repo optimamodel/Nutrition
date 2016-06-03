@@ -1,7 +1,15 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed May 30 2016
+
+@author: madhurakilledar
+"""
 
 import output as output
 import pickle as pickle
 import data as dataCode
+
+country = 'Kenya'
 
 ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
 birthOutcomes = ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"]
@@ -32,7 +40,8 @@ plotData[run]["color"] = plotcolor
 run += 1
 
 percentageIncrease = 50
-title = 'Kenya: 2016-2030 \n Scale up interventions by %i%% points'%(percentageIncrease)
+title = '%s: 2016-2030 \n Scale up interventions by %i%% points'%(country,percentageIncrease)
+filenamePrefix = '%s_%i'%(country,percentageIncrease)
 for ichoose in range(len(spreadsheetData.interventionList)):
     chosenIntervention = spreadsheetData.interventionList[ichoose]
     pickleFilename = 'test_Intervention%i_P%i.pkl'%(ichoose,percentageIncrease)
@@ -54,4 +63,4 @@ for ichoose in range(len(spreadsheetData.interventionList)):
     plotData[run]["color"] = (1.0-0.13*run, 1.0-0.3*abs(run-4), 0.0+0.13*run)
     run += 1
 
-output.getCombinedPlots(run, plotData, title=title, save=True)
+output.getCombinedPlots(run, plotData, filenamePrefix=filenamePrefix, title=title, save=True)
