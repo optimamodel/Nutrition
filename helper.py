@@ -58,6 +58,12 @@ class Helper:
         import model as modelCode
         import constants as constantsCode
         import parameters as parametersCode        
+        # gaussianise stunting in *data*
+        ages = keyList[0]        
+        for ageGroup in range(len(ages)):
+            ageName = ages[ageGroup]
+            probStunting = spreadsheetData.stuntingDistribution[ageName]['high'] + spreadsheetData.stuntingDistribution[ageName]['moderate']
+            spreadsheetData.stuntingDistribution[ageName] = self.restratify(probStunting)
         listOfAgeCompartments = self.makeAgeCompartments(agingRateList, agePopSizes, keyList, spreadsheetData)
         fertileWomen = modelCode.FertileWomen(mothers['birthRate'], mothers['populationSize'])
         model = modelCode.Model(nametag, fertileWomen, listOfAgeCompartments, keyList, timestep)
