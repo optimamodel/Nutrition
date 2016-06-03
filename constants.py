@@ -23,7 +23,7 @@ class Constants:
         
         self.initialStuntingTrend = -0. # percentage decrease in stunting prevalence per year
         self.initialStuntingTrend = self.initialStuntingTrend / 100. * self.model.timestep # fractional decrease in stunting prevalence per timestep
-        self.FractionFoodSecure = 0.5 # eventually this will come from data somehow
+        self.FractionFoodSecure = 0.7 # eventually this will come from data somehow
         self.stuntingUpdateAfterInterventions = {}
         for age in self.ages:
             self.stuntingUpdateAfterInterventions[age] = 1.
@@ -321,12 +321,13 @@ class Constants:
             OR[2] = self.data.ORstuntingComplementaryFeeding[age]["Complementary feeding (food insecure with promotion and supplementation)"]
             OR[3] = self.data.ORstuntingComplementaryFeeding[age]["Complementary feeding (food insecure with neither promotion nor supplementation)"]
             FracSecure = self.FractionFoodSecure
-            FracCovered = interventionCoverages['Complementary feeding']            
+            FracCoveredEduc = interventionCoverages['Complementary feeding (education)']
+            FracCoveredSupp = interventionCoverages['Complementary feeding (supplementation)']
             Frac = [0.]*4
-            Frac[0] = FracSecure * FracCovered    
-            Frac[1] = FracSecure * (1 - FracCovered)
-            Frac[2] = (1 - FracSecure) * FracCovered
-            Frac[3] = (1 - FracSecure) * (1 - FracCovered)
+            Frac[0] = FracSecure * FracCoveredEduc
+            Frac[1] = FracSecure * (1 - FracCoveredEduc)
+            Frac[2] = (1 - FracSecure) * FracCoveredSupp
+            Frac[3] = (1 - FracSecure) * (1 - FracCoveredSupp)
             FracStunted = stuntingDistribution[age]['high'] + stuntingDistribution[age]['moderate'] # + self.initialStuntingTrend
             # [i] will refer to the three non-baseline birth outcomes
             A = Frac[0]*(OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.)

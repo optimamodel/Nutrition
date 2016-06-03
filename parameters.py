@@ -143,12 +143,13 @@ class Params:
     def getStuntingUpdateComplementaryFeeding(self, newCoverage):
         stuntingUpdate = {}
         FracSecure = self.constants.FractionFoodSecure
-        FracCovered = newCoverage['Complementary feeding']
+        FracCoveredEduc = newCoverage['Complementary feeding (education)']
+        FracCoveredSupp = newCoverage['Complementary feeding (supplementation)']
         Frac = [0.]*4
-        Frac[0] = FracSecure * FracCovered    
-        Frac[1] = FracSecure * (1 - FracCovered)
-        Frac[2] = (1 - FracSecure) * FracCovered
-        Frac[3] = (1 - FracSecure) * (1 - FracCovered)
+        Frac[0] = FracSecure * FracCoveredEduc
+        Frac[1] = FracSecure * (1 - FracCoveredEduc)
+        Frac[2] = (1 - FracSecure) * FracCoveredSupp
+        Frac[3] = (1 - FracSecure) * (1 - FracCoveredSupp)
         for ageName in self.ages:
             stuntingUpdate[ageName] = 1.
             oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
