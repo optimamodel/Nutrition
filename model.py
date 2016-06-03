@@ -28,13 +28,13 @@ class AgeCompartment:
         self.ages, self.birthOutcomeList, self.wastingList, self.stuntingList, self.breastfeedingList = keyList
 
     def getTotalPopulation(self):
-        sum = 0.
+        totalSum = 0.
         for stuntingCat in self.stuntingList:
             for wastingCat in self.wastingList:
                 for breastfeedingCat in self.breastfeedingList:
                     thisBox = self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat] 
-                    sum += thisBox.populationSize
-        return sum
+                    totalSum += thisBox.populationSize
+        return totalSum
 
     def getStuntedFraction(self):
         NumberStunted = 0.
@@ -55,12 +55,12 @@ class AgeCompartment:
 
 
     def getCumulativeDeaths(self):
-        sum = 0.
+        totalSum = 0.
         for stuntingCat in self.stuntingList:
             for wastingCat in self.wastingList:
                 for breastfeedingCat in self.breastfeedingList:
-                    sum += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].cumulativeDeaths
-        return sum
+                    totalSum += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].cumulativeDeaths
+        return totalSum
 
 
     def getStuntingDistribution(self):
@@ -304,7 +304,7 @@ class Model:
                 restratifiedProbBecomeStunted = self.helper.restratify(totalProbStunt)
                 for stuntingCat in self.stuntingList:
                     numAgingInStratified[stuntingCat] += restratifiedProbBecomeStunted[stuntingCat] * numAgingIn[prevStunt]
-            # distribution those aging in amongst those stunting categories but also breastfeeding and wasting
+            # distribute those aging in amongst those stunting categories but also breastfeeding and wasting
             for wastingCat in self.wastingList:
                 paw = self.params.wastingDistribution[ageName][wastingCat]
                 for breastfeedingCat in self.breastfeedingList:
@@ -313,7 +313,12 @@ class Model:
                         thisBox = thisAgeCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat]
                         thisBox.populationSize -= agingOut[ind][wastingCat][breastfeedingCat][stuntingCat]
                         thisBox.populationSize += numAgingInStratified[stuntingCat] * pab * paw
-            
+
+            # gaussianise
+            stuntingDistributionNow = thisAgeCompartment.getStuntingDistribution()            
+            probStunting = stuntingDistributionNow['high'] + stuntingDistributionNow['moderate']
+            self.params.stuntingDistribution[ageName] = self.helper.restratify(probStunting)
+            thisAgeCompartment.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
 
 
     def applyBirths(self):
