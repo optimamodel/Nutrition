@@ -39,7 +39,7 @@ class TestsForsetUpDataModelConstantsParameters(unittest.TestCase):
             for wastingCat in ["normal", "mild", "moderate", "high"]:
                 for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
                     sumPopAge1 += self.testModel.listOfAgeCompartments[1].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize 
-        self.assertEqual(sumPopAge1, 64 * 100)     
+        self.assertAlmostEqual(sumPopAge1, 64 * 100)     
     
 
 class TestsForConstantsClass(unittest.TestCase):
@@ -98,11 +98,14 @@ class TestsForModelClass(unittest.TestCase):
     def testApplyMortalityOneBox(self):
         # deaths = popsize * mortality * timestep
         #popsize = 100, mortality = 0.5, timestep = 1/12
+        self.helper = helper.Helper()
+        gaussianStuntingDist = self.helper.restratify(0.5) 
+        initialPopSize = gaussianStuntingDist['high'] * 0.25 * 0.25 * 6400 
         self.testModel.applyMortality()
         popSize = self.testModel.listOfAgeCompartments[0].dictOfBoxes['high']['mild']['none'].populationSize
         cumulativeDeaths = self.testModel.listOfAgeCompartments[0].dictOfBoxes['high']['mild']['none'].cumulativeDeaths
-        self.assertAlmostEqual(100.*0.5/12., cumulativeDeaths)
-        self.assertAlmostEqual(100. - (100.*0.5/12.), popSize)
+        self.assertAlmostEqual(initialPopSize * 0.5 / 12., cumulativeDeaths)
+        self.assertAlmostEqual(initialPopSize - (initialPopSize * 0.5 / 12.), popSize)
     
     @unittest.skip("underlying mortalites all set to zero except for neonatals")
     def testApplyMortalityBySummingAllBoxes(self):
@@ -156,7 +159,8 @@ class TestsForHelperClass(unittest.TestCase):
         self.helper = helper.Helper()
         [self.testData, self.testModel, self.testConstants, self.testParams, self.keyList] = setUpDataModelConstantsParameters()
         self.agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] 
-        self.agePopSizes  = [6400, 6400, 6400, 6400, 6400]             
+        self.agePopSizes  = [6400, 6400, 6400, 6400, 6400]    
+        self.gaussianStuntingDist = self.helper.restratify(0.5)         
              
     def testRestratifyWhenFractionYesIsHalf(self):
         # if FractionYes = 0.5 then (symmetric normal) distribution is centred at global mean -2 SD
@@ -167,13 +171,16 @@ class TestsForHelperClass(unittest.TestCase):
         
     def testMakeBoxes(self):
         # 0.25 * 0.25 * 0.25 * 6400 = 100
+        # but we gaussianise the stunting dist now so..
+        expected = self.gaussianStuntingDist['normal'] * 0.25 * 0.25 * 6400
         boxes = self.helper.makeBoxes(6400, '6-11 months', self.keyList, self.testData)   
-        self.assertEqual(100, boxes['normal']['normal']['none'].populationSize)
+        self.assertEqual(expected, boxes['normal']['normal']['none'].populationSize)
 
     def testMakeAgeCompartment(self):
         listOfAgeCompartments = self.helper.makeAgeCompartments(self.agingRateList, self.agePopSizes, self.keyList, self.testData)        
         self.assertAlmostEqual(5, len(listOfAgeCompartments))
-        self.assertAlmostEqual(100, listOfAgeCompartments[2].dictOfBoxes['normal']['normal']['none'].populationSize)
+        expected = self.gaussianStuntingDist['normal'] * 0.25 * 0.25 * 6400
+        self.assertAlmostEqual(expected, listOfAgeCompartments[2].dictOfBoxes['normal']['normal']['none'].populationSize)
         
     def testSetUpModelConstantsParameters(self):
         self.assertEqual(self.testConstants.initialStuntingTrend, self.testModel.constants.initialStuntingTrend)
