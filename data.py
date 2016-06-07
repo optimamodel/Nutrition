@@ -6,11 +6,12 @@ Created on Fri Feb 26 15:57:07 2016
 """
 
 class Data:
-    def __init__(self, ages, causesOfDeath, conditions, interventionList, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition, birthOutcomeDist, ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention, ORappropriatebfIntervention, ageAppropriateBreastfeeding, interventionCoveragesCurrent, interventionCostCoverage, interventionTargetPop, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness, interventionsMaternal, complementsList, ORstuntingComplementaryFeeding):
+    def __init__(self, ages, causesOfDeath, conditions, interventionList, demographics, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition, birthOutcomeDist, ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention, ORappropriatebfIntervention, ageAppropriateBreastfeeding, interventionCoveragesCurrent, interventionCostCoverage, interventionTargetPop, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness, interventionsMaternal, complementsList, ORstuntingComplementaryFeeding):
         self.ages = ages
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
         self.interventionList = interventionList
+        self.demographics = demographics
         self.totalMortality = totalMortality
         self.causeOfDeathDist = causeOfDeathDist
         self.stuntingDistribution = stuntingDistribution
@@ -55,16 +56,27 @@ def getDataFromSpreadsheet(fileName, keyList):
     # GET ALL LISTS
 
     #get list of ages and causesOfDeath
-    df = pandas.read_excel(Location, sheetname = 'mortality') #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'mortality')
     causesOfDeath = list(df['Cause'])
 
     #get list of interventions
-    df = pandas.read_excel(Location, sheetname = 'Interventions coverages') #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'Interventions coverages')
     interventionList = list(df['Intervention'])
 
     allPops = ages[:]
     allPops.append('pregnant women')
     
+
+    # READ demographics SHEET
+    # sets:
+    # - demographics
+    df = pandas.read_excel(Location, sheetname = 'demographics')
+    indicatorsList = list(df['indicators'])
+    df = pandas.read_excel(Location, sheetname = 'demographics', index_col = 'indicators')
+    demographics = {}
+    for indicator in indicatorsList:
+        demographics[indicator] = df.loc[indicator,'data']
+
 
     #  READ TOTAL MORTALITY SHEET
     #  gets you:
@@ -81,7 +93,7 @@ def getDataFromSpreadsheet(fileName, keyList):
     #  - causeOfDeathByAge
 
     #get the nested list of causeOfDeathDist
-    df = pandas.read_excel(Location, sheetname = 'mortality', index_col = 'Cause') #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'mortality', index_col = 'Cause')
     causeOfDeathDist = {}
     for age in ages:
         causeOfDeathDist[age] = {}
@@ -94,12 +106,12 @@ def getDataFromSpreadsheet(fileName, keyList):
     #  - RRStunting
     
     #get the list of causes for which we have relative risks
-    df = pandas.read_excel(Location, sheetname = 'RRStunting', index_col = [0]) #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'RRStunting', index_col = [0])
     mylist = list(df.index.values)
     myset = set(mylist)
     listCausesRRStunting = list(myset)
     #put the RR into RRStunting
-    df = pandas.read_excel(Location, sheetname = 'RRStunting', index_col = [0, 1]) #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'RRStunting', index_col = [0, 1])
     
     RRStunting = {}
     for age in ages:
@@ -118,12 +130,12 @@ def getDataFromSpreadsheet(fileName, keyList):
     #  - RRWasting
     
     #get the list of causes for which we have relative risks
-    df = pandas.read_excel(Location, sheetname = 'RRWasting', index_col = [0]) #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'RRWasting', index_col = [0])
     mylist = list(df.index.values)
     myset = set(mylist)
     listCausesRRWasting = list(myset)
     #put the RR into RRWasting
-    df = pandas.read_excel(Location, sheetname = 'RRWasting', index_col = [0, 1]) #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'RRWasting', index_col = [0, 1])
     
     RRWasting = {}
     for age in ages:
@@ -142,12 +154,12 @@ def getDataFromSpreadsheet(fileName, keyList):
     #  - RRBreastfeeding
     
     #get the list of causes for which we have relative risks
-    df = pandas.read_excel(Location, sheetname = 'RRBreastfeeding', index_col = [0]) #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'RRBreastfeeding', index_col = [0])
     mylist = list(df.index.values)
     myset = set(mylist)
     listCausesRRBreastfeeding = list(myset)
     #put the RR into RRBreastfeeding
-    df = pandas.read_excel(Location, sheetname = 'RRBreastfeeding', index_col = [0, 1]) #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'RRBreastfeeding', index_col = [0, 1])
     
     RRBreastfeeding = {}
     for age in ages:
@@ -166,10 +178,10 @@ def getDataFromSpreadsheet(fileName, keyList):
     #  - RRdeathByBirthOutcome
 
     #get list of causesOfDeath
-    df = pandas.read_excel(Location, sheetname = 'RR Death by Birth Outcome') #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'RR Death by Birth Outcome')
     causesListedHere = list(df['Cause'])
     #get the nested list of causeOfDeathDist
-    df = pandas.read_excel(Location, sheetname = 'RR Death by Birth Outcome', index_col = 'Cause') #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'RR Death by Birth Outcome', index_col = 'Cause')
     RRdeathByBirthOutcome = {}
     for cause in causesOfDeath:
         RRdeathByBirthOutcome[cause] = {}
@@ -187,7 +199,7 @@ def getDataFromSpreadsheet(fileName, keyList):
     #  - wastingDistribution
     #  - breastfeedingDistribution
     
-    df = pandas.read_excel(Location, sheetname = 'distributions', index_col = [0, 1]) #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'distributions', index_col = [0, 1])
     stuntingDistribution = {}
     wastingDistribution = {}
     breastfeedingDistribution = {}
@@ -213,11 +225,11 @@ def getDataFromSpreadsheet(fileName, keyList):
     #  READ birth distribution SHEET
     #  gets you:
     #  - birthCircumstanceDist
-    df = pandas.read_excel(Location, sheetname = 'birth distribution') #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'birth distribution')
     motherAges = list(df.columns.values)[1:]
     birthTypes = list(df['Type'])
     
-    df = pandas.read_excel(Location, sheetname = 'birth distribution', index_col = [0]) #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'birth distribution', index_col = [0])
     birthCircumstanceDist = {}
     for maternalAge in motherAges:
         birthCircumstanceDist[maternalAge] = {}
@@ -236,13 +248,13 @@ def getDataFromSpreadsheet(fileName, keyList):
     #  - RRbirthOutcomeByAgeAndOrder
     
     #get the list of outcomes for which we have relative risks
-    df = pandas.read_excel(Location, sheetname = 'RR birth by type', index_col = [0]) #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'RR birth by type', index_col = [0])
     mylist = list(df.index.values)
     myset = set(mylist)
     listOfOutcomes = list(myset)
     
     #put the RR into RRbirthOutcomeByAgeAndOrder
-    df = pandas.read_excel(Location, sheetname = 'RR birth by type', index_col = [0, 1]) #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'RR birth by type', index_col = [0, 1])
     
     RRbirthOutcomeByAgeAndOrder = {}
     for outcome in listOfOutcomes:
@@ -256,10 +268,10 @@ def getDataFromSpreadsheet(fileName, keyList):
     #  READ RR birth by time SHEET
     #  gets you:
     #  - RRbirthOutcomeByTime
-    df = pandas.read_excel(Location, sheetname = 'RR birth by time') #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'RR birth by time')
     birthLag = list(df.columns.values)[1:]
     
-    df = pandas.read_excel(Location, sheetname = 'RR birth by time', index_col = [0]) #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'RR birth by time', index_col = [0])
     RRbirthOutcomeByTime = {}
     for outcome in listOfOutcomes:
         RRbirthOutcomeByTime[outcome] = {}
@@ -274,9 +286,10 @@ def getDataFromSpreadsheet(fileName, keyList):
     df = pandas.read_excel(Location, sheetname = 'OR stunting progression')
     ORstuntingProgression = dict(zip(list(df.columns.values), df.iloc[0]))    
 
-    # READ Incidence Diarrhea SHEET
+
+    # READ Incidence of conditions SHEET
     # gets you:
-    # - incidenceDiarrhea
+    # - incidences
     df = pandas.read_excel(Location, sheetname = 'Incidence of conditions')
     conditions = list(df['Condition'])
     df = pandas.read_excel(Location, sheetname = 'Incidence of conditions', index_col = 'Condition')
@@ -290,7 +303,7 @@ def getDataFromSpreadsheet(fileName, keyList):
     # READ RR diarrhea SHEET
     # gets you:
     # - RRdiarrhea
-    df = pandas.read_excel(Location, sheetname = 'RR diarrhoea', index_col = [0]) #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'RR diarrhoea', index_col = [0])
     RRdiarrhea = {}
     for age in ages:
         RRdiarrhea[age] = {}
@@ -380,7 +393,7 @@ def getDataFromSpreadsheet(fileName, keyList):
     #  - InterventionCostCoverage
 
     #get the nested list of causeOfDeathDist
-    df = pandas.read_excel(Location, sheetname = 'Interventions coverages', index_col = 'Intervention') #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'Interventions coverages', index_col = 'Intervention')
     interventionCoveragesCurrent = {}
     interventionCostCoverage = {}
     costinfoList = ["unit cost","saturation coverage"]
@@ -432,12 +445,12 @@ def getDataFromSpreadsheet(fileName, keyList):
     # gets you:
     # - interventionAffectedFraction
     #get the list of interventions
-    df = pandas.read_excel(Location, sheetname = 'Interventions affected fraction', index_col = [0]) #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'Interventions affected fraction', index_col = [0])
     mylist = list(df.index.values)
     myset = set(mylist)
     interventionsHere = list(myset)
     #do the rest
-    df = pandas.read_excel(Location, sheetname = 'Interventions affected fraction', index_col = [0, 1]) #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'Interventions affected fraction', index_col = [0, 1])
     interventionAffectedFraction = {}
     # initialise
     for intervention in interventionList:
@@ -458,12 +471,12 @@ def getDataFromSpreadsheet(fileName, keyList):
     # gets you:
     # - interventionMortalityEffectiveness
     #get the list of interventions
-    df = pandas.read_excel(Location, sheetname = 'Interventions mortality eff', index_col = [0]) #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'Interventions mortality eff', index_col = [0])
     mylist = list(df.index.values)
     myset = set(mylist)
     interventionsHere = list(myset)
     #do the rest
-    df = pandas.read_excel(Location, sheetname = 'Interventions mortality eff', index_col = [0, 1]) #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'Interventions mortality eff', index_col = [0, 1])
     interventionMortalityEffectiveness = {}
     # initialise
     for intervention in interventionList:
@@ -484,12 +497,12 @@ def getDataFromSpreadsheet(fileName, keyList):
     # gets you:
     # - interventionIncidenceEffectiveness
     #get the list of interventions
-    df = pandas.read_excel(Location, sheetname = 'Interventions incidence eff', index_col = [0]) #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'Interventions incidence eff', index_col = [0])
     mylist = list(df.index.values)
     myset = set(mylist)
     interventionsHere = list(myset)
     #do the rest
-    df = pandas.read_excel(Location, sheetname = 'Interventions incidence eff', index_col = [0, 1]) #read this way for this task
+    df = pandas.read_excel(Location, sheetname = 'Interventions incidence eff', index_col = [0, 1])
     interventionIncidenceEffectiveness = {}
     # initialise
     for intervention in interventionList:
@@ -520,7 +533,7 @@ def getDataFromSpreadsheet(fileName, keyList):
             ORstuntingComplementaryFeeding[age][group] = df.loc[group, age]    
     
             
-    spreadsheetData = Data(ages, causesOfDeath, conditions, interventionList, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition, birthOutcomeDist, ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention, ORappropriatebfIntervention, ageAppropriateBreastfeeding, interventionCoveragesCurrent, interventionCostCoverage, interventionTargetPop, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness, interventionsMaternal, complementsList, ORstuntingComplementaryFeeding)
+    spreadsheetData = Data(ages, causesOfDeath, conditions, interventionList, demographics, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition, birthOutcomeDist, ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention, ORappropriatebfIntervention, ageAppropriateBreastfeeding, interventionCoveragesCurrent, interventionCostCoverage, interventionTargetPop, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness, interventionsMaternal, complementsList, ORstuntingComplementaryFeeding)
 
     return spreadsheetData        
                   
