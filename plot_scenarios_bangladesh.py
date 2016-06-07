@@ -65,5 +65,5 @@ for ichoose in range(len(spreadsheetData.interventionList)):
     plotData[run]["color"] = (1.0-0.13*run, 1.0-0.3*abs(run-4), 0.0+0.13*run)
     run += 1
 
-#output.getCombinedPlots(run, plotData, filenamePrefix=filenamePrefix, title=title, save=True)
+output.getCombinedPlots(run, plotData, filenamePrefix=filenamePrefix, title=title, save=True)
 output.getCompareDeathsAverted(run, plotData, filenamePrefix=filenamePrefix, title=title, save=True)
