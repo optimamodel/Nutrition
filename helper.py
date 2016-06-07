@@ -4,10 +4,9 @@ Created on Mon Feb 29 11:35:02 2016
 
 @author: madhura
 """
+from copy import deepcopy as dcp
 
 class Helper:
-    def __init__(self):
-        self.foo = 0.
 
     # Going from binary stunting/wasting to four fractions
     # Yes refers to more than 2 standard deviations below the global mean/median
@@ -26,8 +25,33 @@ class Helper:
         restratification["high"] = fractionHigh
         return restratification
 
+
+    def makeAgePopSizes(self, numAgeGroups, ageGroupSpans, spreadsheetData):
+        agePopSizes = [0.]*numAgeGroups
+        numGroupsInYear = 3
+        numMonthsInYear = sum(ageGroupSpans[:numGroupsInYear])
+        numPopEachMonth = spreadsheetData.demographics['number of live births'] / numMonthsInYear
+        for i in range(numGroupsInYear):
+            agePopSizes[i] = numPopEachMonth * ageGroupSpans[i]
+        numMonthsOlder = sum(ageGroupSpans) - numMonthsInYear
+        numPopOlder = spreadsheetData.demographics['population U5'] - spreadsheetData.demographics['number of live births']
+        numPopEachMonthOlder = numPopOlder / numMonthsOlder
+        for i in range(numGroupsInYear,numAgeGroups):
+            agePopSizes[i] = numPopEachMonthOlder * ageGroupSpans[i]
+        return agePopSizes
+
+
+    def makePregnantWomen(self, spreadsheetData):
+        pregnantWomen = {}
+        annualPregnancies = dcp(spreadsheetData.demographics['number of pregnant women'])
+        annualBirths      = dcp(spreadsheetData.demographics['number of live births'])
+        pregnantWomen['populationSize'] = annualPregnancies
+        pregnantWomen['birthRate']      = annualBirths / annualPregnancies
+        return pregnantWomen
+
+
     def makeBoxes(self, thisAgePopSize, ageGroup, keyList, spreadsheetData):
-        import model as modelCode        
+        import model as modelCode
         allBoxes = {}
         ages, birthOutcomes, wastingList, stuntingList, breastfeedingList = keyList
         for stuntingCat in stuntingList:
@@ -39,6 +63,7 @@ class Helper:
                     thisMortalityRate = 0
                     allBoxes[stuntingCat][wastingCat][breastfeedingCat] =  modelCode.Box(stuntingCat, wastingCat, breastfeedingCat, thisPopSize, thisMortalityRate)
         return allBoxes
+
 
     def makeAgeCompartments(self, agingRateList, agePopSizes, keyList, spreadsheetData):
         import model as modelCode
@@ -53,6 +78,7 @@ class Helper:
             compartment = modelCode.AgeCompartment(ageGroup, thisAgeBoxes, agingRate, keyList)
             listOfAgeCompartments.append(compartment)
         return listOfAgeCompartments         
+
         
     def setupModelConstantsParameters(self, nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData):
         import model as modelCode
@@ -65,7 +91,7 @@ class Helper:
             probStunting = spreadsheetData.stuntingDistribution[ageName]['high'] + spreadsheetData.stuntingDistribution[ageName]['moderate']
             spreadsheetData.stuntingDistribution[ageName] = self.restratify(probStunting)
         listOfAgeCompartments = self.makeAgeCompartments(agingRateList, agePopSizes, keyList, spreadsheetData)
-        fertileWomen = modelCode.FertileWomen(mothers['birthRate'], mothers['populationSize'])
+        fertileWomen = modelCode.FertileWomen(mothers['birthRate'], mothers['populationSize'], mothers['annualPercentPopGrowth'])
         model = modelCode.Model(nametag, fertileWomen, listOfAgeCompartments, keyList, timestep)
         constants = constantsCode.Constants(spreadsheetData, model, keyList)
         model.setConstants(constants)
