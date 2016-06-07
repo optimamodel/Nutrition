@@ -16,6 +16,7 @@ class Params:
 
         self.causesOfDeath = dcp(data.causesOfDeath)
         self.conditions = dcp(data.conditions)
+        self.demographics = dcp(data.demographics)
         #self.totalMortality = dcp(data.totalMortality)
         self.causeOfDeathDist = dcp(data.causeOfDeathDist)
         self.stuntingDistribution = dcp(data.stuntingDistribution)
@@ -142,7 +143,7 @@ class Params:
         
     def getStuntingUpdateComplementaryFeeding(self, newCoverage):
         stuntingUpdate = {}
-        FracSecure = self.constants.FractionFoodSecure
+        FracSecure = 1. - self.demographics['fraction food insecure']
         FracCoveredEduc = newCoverage['Complementary feeding (education)']
         FracCoveredSupp = newCoverage['Complementary feeding (supplementation)']
         Frac = [0.]*4

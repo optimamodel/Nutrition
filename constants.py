@@ -23,7 +23,6 @@ class Constants:
         
         self.initialStuntingTrend = -0. # percentage decrease in stunting prevalence per year
         self.initialStuntingTrend = self.initialStuntingTrend / 100. * self.model.timestep # fractional decrease in stunting prevalence per timestep
-        self.FractionFoodSecure = 0.7 # eventually this will come from data somehow
         self.stuntingUpdateAfterInterventions = {}
         for age in self.ages:
             self.stuntingUpdateAfterInterventions[age] = 1.
@@ -320,7 +319,7 @@ class Constants:
             OR[1] = self.data.ORstuntingComplementaryFeeding[age]["Complementary feeding (food secure without promotion)"]
             OR[2] = self.data.ORstuntingComplementaryFeeding[age]["Complementary feeding (food insecure with promotion and supplementation)"]
             OR[3] = self.data.ORstuntingComplementaryFeeding[age]["Complementary feeding (food insecure with neither promotion nor supplementation)"]
-            FracSecure = self.FractionFoodSecure
+            FracSecure = 1. - self.data.demographics['fraction food insecure']
             FracCoveredEduc = interventionCoverages['Complementary feeding (education)']
             FracCoveredSupp = interventionCoverages['Complementary feeding (supplementation)']
             Frac = [0.]*4
