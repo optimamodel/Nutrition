@@ -7,10 +7,11 @@ Created on Wed Feb 24 13:43:14 2016
 from __future__ import division
 
 class FertileWomen:
-    def __init__(self, birthRate, populationSize):
+    def __init__(self, birthRate, populationSize, annualPercentPopGrowth):
         self.birthRate = birthRate
         self.populationSize = populationSize
-
+        self.annualPercentPopGrowth = annualPercentPopGrowth
+        
 class Box:
     def __init__(self, stuntCat, wasteCat, breastfeedingCat, populationSize, mortalityRate):
         self.stuntCat =  stuntCat
@@ -325,7 +326,8 @@ class Model:
         # calculate total number of new babies
         birthRate = self.fertileWomen.birthRate  #WARNING: assuming per pre-determined timestep
         numWomen  = self.fertileWomen.populationSize
-        numNewBabies = 170000 #numWomen * birthRate * self.timestep
+        numNewBabies = numWomen * birthRate * self.timestep
+        self.fertileWomen.populationSize *= (1.+self.fertileWomen.annualPercentPopGrowth*self.timestep)
         # convenient names
         ageCompartment = self.listOfAgeCompartments[0]
         ageName         = ageCompartment.name
