@@ -14,25 +14,29 @@ import pickle as pickle
 import costcov
 from numpy import array
 
+country = 'Kenya'
+
 helper = helper.Helper()
 costCov = costcov.Costcov()
-
 ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
 birthOutcomes = ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"]
 wastingList = ["normal", "mild", "moderate", "high"]
 stuntingList = ["normal", "mild", "moderate", "high"]
 breastfeedingList = ["exclusive", "predominant", "partial", "none"]
 keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
-spreadsheetData = dataCode.getDataFromSpreadsheet('InputForCode_Kenya.xlsx', keyList)
-mothers = {'birthRate':0.9, 'populationSize':2.e6}
-ageRangeList  = ages 
+
+dataFilename = 'InputForCode_%s.xlsx'%(country)
+spreadsheetData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
+mothers = helper.makePregnantWomen(spreadsheetData)
+mothers['annualPercentPopGrowth'] = 0.03
+ageGroupSpans = [1., 5., 6., 12., 36.] # number of months in each age group
 agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
-numAgeGroups = len(ageRangeList)
-agePopSizes  = [1.7e5, 4.e5, 7.e5, 1.44e6, 44.e5]
+numAgeGroups = len(ages)
+agePopSizes  = helper.makeAgePopSizes(numAgeGroups, ageGroupSpans, spreadsheetData)
+
 timestep = 1./12. 
 numsteps = 168
 timespan = timestep * float(numsteps)
-nstep_eq = 24
 
 for intervention in spreadsheetData.interventionList:
     print "Baseline coverage of %s = %g"%(intervention,spreadsheetData.interventionCoveragesCurrent[intervention])
@@ -43,7 +47,7 @@ run = 0
 #------------------------------------------------------------------------    
 # DEFAULT RUN WITH NO CHANGES TO INTERVENTIONS
 nametag = "Baseline"
-pickleFilename = 'testDefault.pkl'
+pickleFilename = '%s_Default.pkl'%(country)
 plotcolor = 'grey'
 
 print "\n"+nametag
@@ -154,10 +158,6 @@ plotcolor = 'black'
 print "\n"+nametag
 modelZ, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
 
-
-# Find equilibrium
-for t in range(nstep_eq):
-    modelZ.moveOneTimeStep()
 
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')

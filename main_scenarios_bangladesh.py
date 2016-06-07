@@ -13,8 +13,6 @@ from copy import deepcopy as dcp
 import pickle as pickle
 
 country = 'Bangladesh'
-agePopSizes  = [0.25e6, 1.23e6, 1.48e6, 2.96e6, 8.87e6] # WARNING need to calculate from data
-mothers = {'birthRate':0.9, 'populationSize':2.e6}
 
 helper = helper.Helper()
 ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
@@ -23,11 +21,16 @@ wastingList = ["normal", "mild", "moderate", "high"]
 stuntingList = ["normal", "mild", "moderate", "high"]
 breastfeedingList = ["exclusive", "predominant", "partial", "none"]
 keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
+
 dataFilename = 'InputForCode_%s.xlsx'%(country)
 spreadsheetData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
-ageRangeList  = ages 
+mothers = helper.makePregnantWomen(spreadsheetData)
+mothers['annualPercentPopGrowth'] = -0.01
+ageGroupSpans = [1., 5., 6., 12., 36.] # number of months in each age group
 agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
-numAgeGroups = len(ageRangeList)
+numAgeGroups = len(ages)
+agePopSizes  = helper.makeAgePopSizes(numAgeGroups, ageGroupSpans, spreadsheetData)
+
 timestep = 1./12. 
 numsteps = 168
 timespan = timestep * float(numsteps)
