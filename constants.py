@@ -65,41 +65,33 @@ class Constants:
         # Store total age population sizes
         AgePop = []
         for ageInd in range(len(self.ages)):
-            AgePop.append(0.)
-            for stuntingCat in self.stuntingList:
-                for wastingCat in self.wastingList:
-                    for breastfeedingCat in self.breastfeedingList:
-                        AgePop[ageInd] += self.model.listOfAgeCompartments[ageInd].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
+            AgePop.append(self.model.listOfAgeCompartments[ageInd].getTotalPopulation())
         # Calculated total mortality by age (corrected for units)
         MortalityCorrected = {}
-        # note that mortality rate have currently been pre-divided by 1000
+        LiveBirths = self.data.demographics["number of live births"]
+        Mnew = self.data.totalMortality["neonatal"]
+        Minfant = self.data.totalMortality["infant"]
+        Mu5 = self.data.totalMortality["under 5"]
         # Newborns
         age = self.ages[0]
-        Mnew = self.data.totalMortality[age]
-        m1 = Mnew
-        MortalityCorrected[age] = m1
+        m0 = Mnew*LiveBirths/1000./AgePop[0]
+        MortalityCorrected[age] = m0
         # 1-5 months
         age = self.ages[1]
-        Minfant = self.data.totalMortality[age]
-        #Frac2 = (1.-Minfant)/(1.-m1)
-        #m2 = 1. - pow(Frac2,1./11.)
-        m2 = (Minfant - Mnew)*AgePop[0]/(AgePop[1]+AgePop[2])
-        MortalityCorrected[age] = m2
+        m1 = (Minfant - Mnew)*LiveBirths/1000.*5./11./AgePop[1]
+        MortalityCorrected[age] = m1
         # 6-12 months
         age = self.ages[2]
-        m3 = m2
-        MortalityCorrected[age] = m3
+        m2 = (Minfant - Mnew)*LiveBirths/1000.*6./11./AgePop[2]
+        MortalityCorrected[age] = m2
         # 12-24 months
         age = self.ages[3]
-        Mu5 = self.data.totalMortality[age]
-        #Frac4 = (1.-Mu5)/(1.-m1)/(Frac2)
-        #m4 = 1. - pow(Frac4,1./48.)
-        m4 = (Mu5 - Minfant)*AgePop[0]/(AgePop[3]+AgePop[4])
-        MortalityCorrected[age] = m4
+        m3 = (Mu5 - Minfant)*LiveBirths/1000.*1./4./AgePop[3]
+        MortalityCorrected[age] = m3
         # 24-60 months
         age = self.ages[4]
-        m5 = m4
-        MortalityCorrected[age] = m5
+        m4 = (Mu5 - Minfant)*LiveBirths/1000.*3./4./AgePop[4]
+        MortalityCorrected[age] = m4
         # Calculate LHS for each age and cause of death then solve for X
         Xdictionary = {} 
         for age in self.ages:
