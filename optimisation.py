@@ -4,32 +4,32 @@ Created on Wed Jun  8 13:58:29 2016
 
 @author: ruth
 """
-def getTotalInitialAllocation(data, targetPopSize):
-    # saturation?
-    # add $1 to all?
+def getTotalInitialAllocation(data, costCoverageInfo, targetPopSize):
+    import costcov
+    costCov = costcov.Costcov()
     allocation = []
     for intervention in data.interventionList:
-        unitCost = data.interventionCostCoverage[intervention]['unit cost']
-        coverage = data.interventionCoveragesCurrent[intervention]
-        allocation.append(unitCost * coverage * targetPopSize[intervention])
+        coverage = array([dcp(data.interventionCoveragesCurrent[intervention])])
+        spending = costCov.inversefunction(coverage, costCoverageInfo[intervention], targetPopSize[intervention])  
+        allocation.append(spending)
     return allocation
 
-def rescaleBudget(totalBudget, proposalBudget):
-        scaleRatio = totalBudget / sum(proposalBudget)
-        rescaledBudget = [x * scaleRatio for x in proposalBudget]
-        return rescaledBudget 
+def rescaleAllocation(totalBudget, proposalAllocation):
+        scaleRatio = totalBudget / sum(proposalAllocation)
+        rescaledAllocation = [x * scaleRatio for x in proposalAllocation]
+        return rescaledAllocation 
 
-def objectiveFunction(proposalBudget, totalBudget, costCoverageInfo, optimise, mothers, timestep, agingRateList, agePopSizes, keyList, data):
+def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimise, mothers, timestep, agingRateList, agePopSizes, keyList, data):
     import helper as helper
     from numpy import array
     helper = helper.Helper()
     model, constants, params = helper.setupModelConstantsParameters('optimisation model', mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
-    scaledProposalBudget = rescaleBudget(totalBudget, proposalBudget)
+    scaledproposalAllocation = rescaleAllocation(totalBudget, proposalAllocation)
     # calculate coverage (%)
     newCoverages = {}    
-    i = 0
-    for intervention in data.interventionList:
-        newCoverages[intervention] = costCov.function(array([scaledProposalBudget[i]]), costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
+    for i in range(0, len(data.interventionList)):
+        intervention = data.interventionList[i]
+        newCoverages[intervention] = costCov.function(array([scaledproposalAllocation[i]]), costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
     model.updateCoverages(newCoverages)
     for t in range(numsteps):
         model.moveOneTimeStep()
@@ -66,8 +66,6 @@ ageGroupSpans = [1., 5., 6., 12., 36.] # number of months in each age group
 agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH (WARNING use ageSpans to define this)
 numAgeGroups = len(ages)
 agePopSizes  = helper.makeAgePopSizes(numAgeGroups, ageGroupSpans, spreadsheetData)
-# this model created to calculate targetPopSizes
-model, constants, params = helper.setupModelConstantsParameters('optimisation model', mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
 targetPopSize = {}
 costCoverageInfo = {}
 for intervention in spreadsheetData.interventionList:
@@ -75,21 +73,20 @@ for intervention in spreadsheetData.interventionList:
     costCoverageInfo[intervention] = {}
     for ageInd in range(numAgeGroups):
         age = ages[ageInd]
-        targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][age] * model.listOfAgeCompartments[ageInd].getTotalPopulation()
-    targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention]['pregnant women'] * model.fertileWomen.populationSize
+        targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][age] * agePopSizes[ageInd]
+    targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention]['pregnant women'] * mothers['populationSize']
     costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
     costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
-    # this is starting budget as vector   
     
-initialAllocation = getTotalInitialAllocation(spreadsheetData, targetPopSize)
+initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)
 totalBudget = sum(initialAllocation)
 xmin = [0.] * len(initialAllocation)
 optimise = 'deaths' # choose between 'deaths' and 'stunting'
 args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'mothers':mothers, 'timestep':timestep, 'agingRateList':agingRateList, 'agePopSizes':agePopSizes, 'keyList':keyList, 'data':spreadsheetData}    
 budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, initialAllocation, args, xmin = xmin)  #MaxFunEvals = 10            
 
-scaledInitialAllocation = rescaleBudget(totalBudget, initialAllocation)
-scaledBudgetBest = rescaleBudget(totalBudget, budgetBest)
+scaledInitialAllocation = rescaleAllocation(totalBudget, initialAllocation)
+scaledBudgetBest = rescaleAllocation(totalBudget, budgetBest)
 budgetDictBefore = {}
 budgetDictAfter = {}  
 i = 0        
