@@ -434,7 +434,7 @@ def getCompareDeathsAverted(numRuns, data, filenamePrefix="compare", title="", s
     ax2.set_xlabel('Percent of deaths averted (%)', size=14)
     # plot
     barwid = 0.5
-    h1 = ax.barh(y_pos+0.5-0.5*barwid, deathsAvertedList,    height=barwid, facecolor='#AADDFF', edgecolor='k', linewidth=1.5)
+    h1 = ax.barh(y_pos+0.5-0.5*barwid, deathsAvertedList,    height=barwid, facecolor='#99CCEE', edgecolor='k', linewidth=1.5)
     h2 = ax.barh(y_pos+0.5-0.5*barwid, deathsNeoAvertedList, height=barwid, facecolor='#FF9977', edgecolor='k', linewidth=1.5)
     plt.legend([h1,h2],["<5 years","<1 month"])
     if save:
