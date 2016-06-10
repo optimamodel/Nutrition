@@ -246,7 +246,7 @@ def getStuntedPercent(modelList, label):
 
     
     
-def getCombinedPlots(numRuns, data, filenamePrefix="compare", title="", save=False):
+def getCombinedPlots(numRuns, data, startYear=2016, filenamePrefix="compare", title="", save=False):
     import numpy as np
     import matplotlib.pyplot as plt
     # set up
@@ -291,8 +291,8 @@ def getCombinedPlots(numRuns, data, filenamePrefix="compare", title="", save=Fal
 
     # PLOTTING
     skip = 2
-    yearList =  list(range(2016, 2016+numYears+1, skip))#[2016]
-    xTickList = list(range(0, 12*(numYears+1),    skip*12)) # [0]
+    yearList =  list(range(startYear, startYear+numYears+1, skip))
+    xTickList = list(range(0, 12*(numYears+1),    skip*12))
     monthList = np.arange(numMonths)
 
     tagList  = []
@@ -410,8 +410,8 @@ def getCompareDeathsAverted(numRuns, data, filenamePrefix="compare", title="", s
     fig, ax = plt.subplots()
     ax.set_title(title, size=16, y=1.13)
     maxDeaths      = max(deathsAvertedList)
-    maxDeathsAxis  = ceil(maxDeaths/500.)*500
-    maxPercent     = maxDeaths/deathsBaseline
+    maxDeathsAxis  = ceil(maxDeaths/5000.)*5000
+    maxPercent     = maxDeaths/deathsBaseline*100.
     maxPercentAxis = ceil(maxPercent/0.5)*0.5
     percentTicks = np.arange(0.5,maxPercentAxis,0.5)
     pTicksTrans = percentTicks/100.*deathsBaseline
