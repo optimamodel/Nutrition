@@ -4,13 +4,15 @@ Created on Wed Jun  8 13:58:29 2016
 
 @author: ruth
 """
-def getTotalInitialBudget(data):
+def getTotalInitialBudget(data, targetPopSize):
+    # saturateion?
+    # target population?
+    # add $1 to all?
     totalBudget = 0
     for intervention in data.interventionList:
         unitCost = data.interventionCostCoverage[intervention]['unit cost']
         coverage = data.interventionCoveragesCurrent[intervention]
-        totalPopulationU5 = data.demographics['population U5']
-        totalBudget += unitCost * coverage * totalPopulationU5
+        totalBudget += unitCost * coverage * targetPopSize[intervention]
     return totalBudget   
 
 def rescaleBudget(totalBudget, proposalBudget):
@@ -87,7 +89,7 @@ for intervention in spreadsheetData.interventionList:
     costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
     # this is starting budget as vector   
     startingVector.append(costCoverageInfo[intervention]['unitcost'] * spreadsheetData.interventionCoveragesCurrent[intervention] * targetPopSize[intervention])
-totalBudget = getTotalInitialBudget(spreadsheetData)
+totalBudget = getTotalInitialBudget(spreadsheetData, targetPopSize)
 xmin = [0.] * len(startingVector)
 optimise = 'deaths' # choose between 'deaths' and 'stunting'
 args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'mothers':mothers, 'timestep':timestep, 'agingRateList':agingRateList, 'agePopSizes':agePopSizes, 'keyList':keyList, 'data':spreadsheetData}    
