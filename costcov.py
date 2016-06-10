@@ -2,7 +2,7 @@
 ########################################################
 # COST COVERAGE FUNCTIONS
 ########################################################
-from numpy import array, maximum, exp, zeros
+from numpy import array, maximum, exp, zeros, log
 
 class Costcov():
     def __init__(self):
@@ -24,14 +24,14 @@ class Costcov():
                 y[yr,:] = maximum((2*s[yr]/(1+exp(-2*x/(popsize[yr]*s[yr]*u[yr])))-s[yr])*popsize[yr],eps)
             return y
 
-    def inversefunction(self, x, ccopar, popsize, eps=None):
+
+    def inversefunction(self, y, ccopar, popsize):
         '''Returns coverage in a given year for a given spending amount.'''
         u = array(ccopar['unitcost'])
         s = array(ccopar['saturation'])
-        if eps is None: eps = 1.e-3 #Settings().eps # Warning, use project-nonspecific eps
-        if isnumber(popsize): popsize = array([popsize])
-
-        nyrs,npts = len(u),len(x)
-        eps = array([eps]*npts)
-        if nyrs==npts: return maximum((2*s/(1+exp(-2*x/(popsize*s*u)))-s)*popsize,eps)
-        else: raise OptimaException('coverage vector should be the same length as params.')
+        if isinstance(popsize,(float,int)): popsize = array([popsize])
+        
+        nyrs,npts = len(u),len(y)
+        if nyrs==npts: return -0.5*popsize*s*u*log(2*s/(y+s*popsize))
+        else: raise Exception('y should be the same length as params.')
+ 
