@@ -32,7 +32,7 @@ numAgeGroups = len(ages)
 agePopSizes  = helper.makeAgePopSizes(numAgeGroups, ageGroupSpans, spreadsheetData)
 
 timestep = 1./12. 
-numsteps = 168
+numsteps = 180
 timespan = timestep * float(numsteps)
 
 for intervention in spreadsheetData.interventionList:
@@ -187,7 +187,7 @@ run += 1
 #------------------------------------------------------------------------    
 
 
-output.getCombinedPlots(run, plotData)
+output.getCombinedPlots(run, plotData, startYear=2015)
 output.getDeathsAverted(modelList, newModelList, 'test')
 output.getCompareDeathsAverted(run, plotData, filenamePrefix=country, title='comparison with LiST', save=True)
 

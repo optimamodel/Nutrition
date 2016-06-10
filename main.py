@@ -35,7 +35,7 @@ numAgeGroups = len(ages)
 agePopSizes  = helper.makeAgePopSizes(numAgeGroups, ageGroupSpans, spreadsheetData)
 
 timestep = 1./12. 
-numsteps = 168  
+numsteps = 180  
 timespan = timestep * float(numsteps)
 
 for intervention in spreadsheetData.interventionList:
@@ -91,6 +91,8 @@ modelZ, constants, params = helper.setupModelConstantsParameters(nametag, mother
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')
 pickle.dump(modelZ, outfile)
+model.moveOneTimeStep()
+pickle.dump(model, outfile)
 
 # initialise
 newCoverages={}
@@ -121,7 +123,7 @@ for intervention in spreadsheetData.interventionList:
 # update coverage
 modelZ.updateCoverages(newCoverages)
 
-for t in range(numsteps-1):
+for t in range(numsteps-2):
     modelZ.moveOneTimeStep()
     pickle.dump(modelZ, outfile)
 outfile.close()    
@@ -146,7 +148,7 @@ run += 1
 #------------------------------------------------------------------------    
 
 
-output.getCombinedPlots(run, plotData)
+output.getCombinedPlots(run, plotData startYear=2015)
 #output.getDeathsAverted(modelList, newModelList, 'test')
 
 
