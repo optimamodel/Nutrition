@@ -424,7 +424,7 @@ def getDataFromSpreadsheet(fileName, keyList):
     for intervention in interventionList:
         interventionTargetPop[intervention] = {}
         for pop in allPops:
-            interventionTargetPop[intervention][pop] = df.loc[intervention, pop] / 100.
+            interventionTargetPop[intervention][pop] = df.loc[intervention, pop]
 
     
     # READ Interventions maternal SHEET
