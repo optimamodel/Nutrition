@@ -112,10 +112,10 @@ for intervention in spreadsheetData.interventionList:
         age = ages[ageInd]
         targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][age] * modelZ.listOfAgeCompartments[ageInd].getTotalPopulation()
     targetPopSize[intervention] +=     spreadsheetData.interventionTargetPop[intervention]['pregnant women'] * modelZ.fertileWomen.populationSize
-    ccopar = {}
-    ccopar['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
-    ccopar['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
-    additionalPeopleCovered = costCov.function(investment, ccopar, targetPopSize[intervention]) # function from HIV
+    costCovParams = {}
+    costCovParams['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
+    costCovParams['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
+    additionalPeopleCovered = costCov.function(investment, costCovParams, targetPopSize[intervention]) # function from HIV
     additionalCoverage = additionalPeopleCovered / targetPopSize[intervention]
     print "additional coverage: %g"%(additionalCoverage)
     newCoverages[intervention] += additionalCoverage[0] 
