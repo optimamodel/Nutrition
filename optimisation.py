@@ -19,8 +19,6 @@ def inputFunctionForAsd(proposalBudget, totalBudget, costCoverageInfo, mothers, 
     from numpy import array
     helper = helper.Helper()
     
-    print "calling function"
-    
     def rescaleProposalBudget(totalBudget, proposalBudget):
         scaleRatio = totalBudget / sum(proposalBudget)
         rescaledProposalBudget = [x * scaleRatio for x in proposalBudget]
@@ -36,7 +34,7 @@ def inputFunctionForAsd(proposalBudget, totalBudget, costCoverageInfo, mothers, 
     model.updateCoverages(newCoverages)
     for t in range(numsteps):
         model.moveOneTimeStep()
-    performanceMeasure = model.listOfAgeCompartments[0].getCumulativeDeaths() # PLACE HOLDER 
+    performanceMeasure = model.getCumulativeAgingOutStunted()
     return performanceMeasure    
             
             
@@ -77,12 +75,22 @@ for intervention in spreadsheetData.interventionList:
     for ageInd in range(numAgeGroups):
         age = ages[ageInd]
         targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][age] * model.listOfAgeCompartments[ageInd].getTotalPopulation()
-    targetPopSize[intervention] +=     spreadsheetData.interventionTargetPop[intervention]['pregnant women'] * model.fertileWomen.populationSize
+    targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention]['pregnant women'] * model.fertileWomen.populationSize
     costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
     costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
     # this is starting budget as vector   
     startingVector.append(costCoverageInfo[intervention]['unitcost'] * costCoverageInfo[intervention]['saturation'] * targetPopSize[intervention])
 totalBudget = getTotalInitialBudget(spreadsheetData)
+xmin = [0.] * len(startingVector)
 args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'mothers':mothers, 'timestep':timestep, 'agingRateList':agingRateList, 'agePopSizes':agePopSizes, 'keyList':keyList, 'data':spreadsheetData}    
-budgetBest, fval, exitflag, output = asd.asd(inputFunctionForAsd, startingVector, args)            
-          
+budgetBest, fval, exitflag, output = asd.asd(inputFunctionForAsd, startingVector, args, xmin = xmin)  #MaxFunEvals = 10            
+
+budgetDictBefore = {}
+budgetDictAfter = {}  
+i = 0        
+for intervention in spreadsheetData.interventionList:
+    budgetDictBefore[intervention] = startingVector[i]
+    budgetDictAfter[intervention] = budgetBest[i]  
+    i += 1        
+    
+output.getBudgetPieChartComparison(budgetDictBefore, budgetDictAfter)    
