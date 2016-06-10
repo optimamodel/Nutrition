@@ -118,11 +118,12 @@ class Model:
         self.listOfAgeCompartments = listOfAgeCompartments
         self.ages, self.birthOutcomeList, self.wastingList, self.stuntingList, self.breastfeedingList = keyList
         self.timestep = timestep
+        self.itime = 0
         self.constants = None
         self.params = None
         import helper as helperCode
         self.helper = helperCode.Helper()
-
+        
         
     def setConstants(self, inputConstants):
         self.constants = inputConstants
@@ -368,4 +369,5 @@ class Model:
         self.applyMortality() 
         self.applyAgingAndBirths()
         self.updateRiskDistributions()
+        self.itime += 1
 
