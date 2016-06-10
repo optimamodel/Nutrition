@@ -123,7 +123,7 @@ class Model:
         self.params = None
         import helper as helperCode
         self.helper = helperCode.Helper()
-        
+        self.cumulativeAgingOutStunted = 0
         
     def setConstants(self, inputConstants):
         self.constants = inputConstants
@@ -132,6 +132,14 @@ class Model:
     def setParams(self, inputParams):
         self.params = inputParams
 
+    def getTotalCumulativeDeaths(self):
+        totalCumulativeDeaths = 0
+        for ageGroup in self.listOfAgeCompartments:
+            totalCumulativeDeaths += ageGroup.getCumulativeDeaths()
+        return totalCumulativeDeaths
+        
+    def getCumulativeAgingOutStunted(self):
+        return self.cumulativeAgingOutStunted
 
     def updateCoverages(self, newCoverage):
         #newCoverage is a dictionary of coverages by intervention        
@@ -268,6 +276,7 @@ class Model:
         numCompartments = len(self.listOfAgeCompartments)
         # calculate how many people are aging out of each box
         agingOut = [None]*numCompartments
+        countAgingOutStunted = 0
         for ind in range(0, numCompartments):
             thisCompartment = self.listOfAgeCompartments[ind]
             agingOut[ind] = {}
@@ -278,6 +287,10 @@ class Model:
                     for stuntingCat in self.stuntingList:
                         thisBox = thisCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat] 
                         agingOut[ind][wastingCat][breastfeedingCat][stuntingCat] = thisBox.populationSize * thisCompartment.agingRate #*self.timestep
+                    # count only the people in the last age group who are aging out of the model stunted
+                    if ind == numCompartments - 1: 
+                        countAgingOutStunted += agingOut[ind][wastingCat][breastfeedingCat]['high'] + agingOut[ind][wastingCat][breastfeedingCat]['moderate']
+        self.cumulativeAgingOutStunted += countAgingOutStunted                
         # first age group does not have aging in
         newborns = self.listOfAgeCompartments[0]
         for wastingCat in self.wastingList:

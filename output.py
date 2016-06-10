@@ -507,6 +507,19 @@ def getDeathsAverted(modelList, modelList2, label):
     plt.title('total deaths averted: ' + label)
     plt.show()     
         
-    
+def getBudgetPieChartComparison(budgetDictBefore, budgetDictAfter):
+    import matplotlib.pyplot as plt
+    plt.figure(1, figsize=(6,6))
+    labels = budgetDictBefore.keys()
+    fracs = budgetDictBefore.values()
+    plt.pie(fracs, labels = labels)
+    plt.title('budget before')
+    plt.show()
+    plt.figure(1, figsize=(6,6))
+    labels = budgetDictAfter.keys()
+    fracs = budgetDictAfter.values()
+    plt.pie(fracs, labels = labels)
+    plt.title('budget after')
+    plt.show()
     
     
