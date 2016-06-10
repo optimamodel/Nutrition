@@ -4,14 +4,14 @@ Created on Wed Jun  8 13:58:29 2016
 
 @author: ruth
 """
-def getTotalInitialAllocation(data, targetPopSize):
-    # saturation?
-    # add $1 to all?
+def getTotalInitialAllocation(data, costCoverageInfo, targetPopSize):
+    import costcov
+    costCov = costcov.Costcov()
     allocation = []
     for intervention in data.interventionList:
-        unitCost = data.interventionCostCoverage[intervention]['unit cost']
-        coverage = data.interventionCoveragesCurrent[intervention]
-        allocation.append(unitCost * coverage * targetPopSize[intervention])
+        coverage = array([dcp(data.interventionCoveragesCurrent[intervention])])
+        spending = costCov.inversefunction(coverage, costCoverageInfo[intervention], targetPopSize[intervention])  
+        allocation.append(spending)
     return allocation
 
 def rescaleAllocation(totalBudget, proposalAllocation):
@@ -78,7 +78,7 @@ for intervention in spreadsheetData.interventionList:
     costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
     costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
     
-initialAllocation = getTotalInitialAllocation(spreadsheetData, targetPopSize)
+initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)
 totalBudget = sum(initialAllocation)
 xmin = [0.] * len(initialAllocation)
 optimise = 'deaths' # choose between 'deaths' and 'stunting'

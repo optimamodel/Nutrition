@@ -26,7 +26,7 @@ class Costcov():
 
 
     def inversefunction(self, y, ccopar, popsize):
-        '''Returns coverage in a given year for a given spending amount.'''
+        '''Returns cost in a given year for a given coverage amount.'''
         u = array(ccopar['unitcost'])
         s = array(ccopar['saturation'])
         if isinstance(popsize,(float,int)): popsize = array([popsize])
