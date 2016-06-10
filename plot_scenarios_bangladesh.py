@@ -41,7 +41,7 @@ plotData[run]["color"] = plotcolor
 run += 1
 
 percentageIncrease = 30
-title = '%s: 2016-2030 \n Scale up interventions by %i%% points'%(country,percentageIncrease)
+title = '%s: 2015-2030 \n Scale up interventions by %i%% points'%(country,percentageIncrease)
 filenamePrefix = '%s_%i'%(country,percentageIncrease)
 
 for ichoose in range(len(spreadsheetData.interventionList)):
@@ -65,5 +65,5 @@ for ichoose in range(len(spreadsheetData.interventionList)):
     plotData[run]["color"] = (1.0-0.13*run, 1.0-0.3*abs(run-4), 0.0+0.13*run)
     run += 1
 
-output.getCombinedPlots(run, plotData, filenamePrefix=filenamePrefix, title=title, save=True)
+output.getCombinedPlots(run, plotData, startYear=2015, filenamePrefix=filenamePrefix, title=title, save=True)
 output.getCompareDeathsAverted(run, plotData, filenamePrefix=filenamePrefix, title=title, save=True)
