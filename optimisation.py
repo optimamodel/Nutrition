@@ -4,16 +4,15 @@ Created on Wed Jun  8 13:58:29 2016
 
 @author: ruth
 """
-def getTotalInitialBudget(data, targetPopSize):
-    # saturateion?
-    # target population?
+def getTotalInitialAllocation(data, targetPopSize):
+    # saturation?
     # add $1 to all?
-    totalBudget = 0
+    allocation = []
     for intervention in data.interventionList:
         unitCost = data.interventionCostCoverage[intervention]['unit cost']
         coverage = data.interventionCoveragesCurrent[intervention]
-        totalBudget += unitCost * coverage * targetPopSize[intervention]
-    return totalBudget   
+        allocation.append(unitCost * coverage * targetPopSize[intervention])
+    return allocation
 
 def rescaleBudget(totalBudget, proposalBudget):
         scaleRatio = totalBudget / sum(proposalBudget)
@@ -71,7 +70,6 @@ agePopSizes  = helper.makeAgePopSizes(numAgeGroups, ageGroupSpans, spreadsheetDa
 model, constants, params = helper.setupModelConstantsParameters('optimisation model', mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
 targetPopSize = {}
 costCoverageInfo = {}
-startingVector = []
 for intervention in spreadsheetData.interventionList:
     targetPopSize[intervention] = 0.
     costCoverageInfo[intervention] = {}
@@ -82,20 +80,21 @@ for intervention in spreadsheetData.interventionList:
     costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
     costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
     # this is starting budget as vector   
-    startingVector.append(costCoverageInfo[intervention]['unitcost'] * spreadsheetData.interventionCoveragesCurrent[intervention] * targetPopSize[intervention])
-totalBudget = getTotalInitialBudget(spreadsheetData, targetPopSize)
-xmin = [0.] * len(startingVector)
+    
+initialAllocation = getTotalInitialAllocation(spreadsheetData, targetPopSize)
+totalBudget = sum(initialAllocation)
+xmin = [0.] * len(initialAllocation)
 optimise = 'deaths' # choose between 'deaths' and 'stunting'
 args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'mothers':mothers, 'timestep':timestep, 'agingRateList':agingRateList, 'agePopSizes':agePopSizes, 'keyList':keyList, 'data':spreadsheetData}    
-budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, startingVector, args, xmin = xmin)  #MaxFunEvals = 10            
+budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, initialAllocation, args, xmin = xmin)  #MaxFunEvals = 10            
 
-scaledStartingVector = rescaleBudget(totalBudget, startingVector)
+scaledInitialAllocation = rescaleBudget(totalBudget, initialAllocation)
 scaledBudgetBest = rescaleBudget(totalBudget, budgetBest)
 budgetDictBefore = {}
 budgetDictAfter = {}  
 i = 0        
 for intervention in spreadsheetData.interventionList:
-    budgetDictBefore[intervention] = scaledStartingVector[i]
+    budgetDictBefore[intervention] = scaledInitialAllocation[i]
     budgetDictAfter[intervention] = scaledBudgetBest[i]  
     i += 1        
     
