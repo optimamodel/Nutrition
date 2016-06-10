@@ -20,18 +20,12 @@ def rescaleBudget(totalBudget, proposalBudget):
         rescaledBudget = [x * scaleRatio for x in proposalBudget]
         return rescaledBudget 
 
-def inputFunctionForAsd(proposalBudget, totalBudget, costCoverageInfo, optimise, mothers, timestep, agingRateList, agePopSizes, keyList, data):
+def objectiveFunction(proposalBudget, totalBudget, costCoverageInfo, optimise, mothers, timestep, agingRateList, agePopSizes, keyList, data):
     import helper as helper
     from numpy import array
     helper = helper.Helper()
-    
-    def rescaleProposalBudget(totalBudget, proposalBudget):
-        scaleRatio = totalBudget / sum(proposalBudget)
-        rescaledProposalBudget = [x * scaleRatio for x in proposalBudget]
-        return rescaledProposalBudget    
-    
     model, constants, params = helper.setupModelConstantsParameters('optimisation model', mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
-    scaledProposalBudget = rescaleProposalBudget(totalBudget, proposalBudget)
+    scaledProposalBudget = rescaleBudget(totalBudget, proposalBudget)
     # calculate coverage (%)
     newCoverages = {}    
     i = 0
@@ -93,7 +87,7 @@ totalBudget = getTotalInitialBudget(spreadsheetData, targetPopSize)
 xmin = [0.] * len(startingVector)
 optimise = 'deaths' # choose between 'deaths' and 'stunting'
 args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'mothers':mothers, 'timestep':timestep, 'agingRateList':agingRateList, 'agePopSizes':agePopSizes, 'keyList':keyList, 'data':spreadsheetData}    
-budgetBest, fval, exitflag, output = asd.asd(inputFunctionForAsd, startingVector, args, xmin = xmin)  #MaxFunEvals = 10            
+budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, startingVector, args, xmin = xmin)  #MaxFunEvals = 10            
 
 scaledStartingVector = rescaleBudget(totalBudget, startingVector)
 scaledBudgetBest = rescaleBudget(totalBudget, budgetBest)
