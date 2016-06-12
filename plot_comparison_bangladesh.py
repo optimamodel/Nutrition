@@ -12,98 +12,78 @@ import data as dataCode
 
 country = 'Bangladesh'
 
-ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
-birthOutcomes = ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"]
-wastingList = ["normal", "mild", "moderate", "high"]
-stuntingList = ["normal", "mild", "moderate", "high"]
-breastfeedingList = ["exclusive", "predominant", "partial", "none"]
-keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
-dataFilename = 'Input_LiST_%s.xlsx'%(country)
-spreadsheetData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
-
 startYear = 2016
 numYears = 15
 yearList =  list(range(startYear, startYear+numYears))
 
-plotData = []
-run=0
 
 #------------------------------------------------------------------------    
-# DEFAULT RUN WITH NO CHANGES TO INTERVENTIONS
+# GATHER OPTIMA OUTPUT
+
+def addToPlotData(plotData,run,pickleFilename,nametag,plotcolor):
+    file = open(pickleFilename, 'rb')
+    modelList = []
+    while 1:
+        try:
+            modelList.append(pickle.load(file))
+        except (EOFError):
+            break
+    file.close()
+    plotData.append({})
+    plotData[run]["modelList"] = modelList
+    plotData[run]["tag"] = nametag
+    plotData[run]["color"] = plotcolor
+
+plotData = []
+run=0
+#-------------------------------
+# Default Baseline run
 nametag = "Baseline"
 pickleFilename = '%s_Default.pkl'%(country)
 plotcolor = 'grey'
-
-file = open(pickleFilename, 'rb')
-modelList = []
-while 1:
-    try:
-        modelList.append(pickle.load(file))
-    except (EOFError):
-        break
-file.close()
-plotData.append({})
-plotData[run]["modelList"] = modelList
-plotData[run]["tag"] = nametag
-plotData[run]["color"] = plotcolor
+addToPlotData(plotData,run,pickleFilename,nametag,plotcolor)
 run += 1
-
-#------------------------------------------------------------------------    
-# INCREASE COVERAGE OF COMPLEMENTARY FEEDING BY 50%
+#-------------------------------
+# Increase coverage of Complementary feeding
 percentageIncrease = 50
-nametag = "Complementary feeding: increase coverage by %g%% points"%(percentageIncrease)
+nametag = "Complementary feeding: ++ %g%% points"%(percentageIncrease)
 pickleFilename = '%s_CompFeed_P%i.pkl'%(country,percentageIncrease)
 plotcolor = 'green'
-
-file = open(pickleFilename, 'rb')
-modelList = []
-while 1:
-    try:
-        modelList.append(pickle.load(file))
-    except (EOFError):
-        break
-file.close()
-plotData.append({})
-plotData[run]["modelList"] = modelList
-plotData[run]["tag"] = nametag
-plotData[run]["color"] = plotcolor
+addToPlotData(plotData,run,pickleFilename,nametag,plotcolor)
 run += 1
-
-#------------------------------------------------------------------------    
-# INCREASE COVERAGE OF BREASTFEEDING FROM 61% to 90%
+#-------------------------------
+# Increase coverage of breastfeeding
 percentageIncrease = 29
-nametag = "Breastfeeding: increase coverage by %g%% points"%(percentageIncrease)
+nametag = "Breastfeeding: ++ %g%% points"%(percentageIncrease)
 pickleFilename = '%s_BreastFeed_P%i.pkl'%(country,percentageIncrease)
 plotcolor = 'blue'
-
-file = open(pickleFilename, 'rb')
-modelList = []
-while 1:
-    try:
-        modelList.append(pickle.load(file))
-    except (EOFError):
-        break
-file.close()
-plotData.append({})
-plotData[run]["modelList"] = modelList
-plotData[run]["tag"] = nametag
-plotData[run]["color"] = plotcolor
+addToPlotData(plotData,run,pickleFilename,nametag,plotcolor)
 run += 1
 
 numRuns = run
+
+
 #------------------------------------------------------------------------    
-# READ FROM LIST OUTPUT
+# GATHER LiST OUTPUT
+fileName_LiST = "output_LiSTscenarios_%s.xlsx"%(country)
 import pandas
-df = pandas.read_excel("output_LiSTscenarios_bangladesh.xlsx", sheetname = 'total stunting')
+df = pandas.read_excel(fileName_LiST, sheetname = 'total stunting')
 scenarios = list(df['scenario'])
-df = pandas.read_excel("output_LiSTscenarios_bangladesh.xlsx", sheetname = 'total stunting', index_col = [0])
+# stunting prevalence
+df = pandas.read_excel(fileName_LiST, sheetname = 'total stunting', index_col = [0])
 stunting_LiST = {}
 for scenario in scenarios:
-    #stunting_LiST[scenario] = {}
     stunting_LiST[scenario] = []
     for year in yearList:
-        #stunting_LiST[scenario][year] = df.loc[scenario, year]
         stunting_LiST[scenario].append(df.loc[scenario, year])
+# deaths each year
+df = pandas.read_excel(fileName_LiST, sheetname = 'deaths', index_col = [0])
+deaths_LiST = {}
+for scenario in scenarios:
+    deaths_LiST[scenario] = []
+    for year in yearList:
+        deaths_LiST[scenario].append(df.loc[scenario, year])
+
 
 #------------------------------------------------------------------------    
 # MAKE PLOTS
@@ -154,42 +134,36 @@ for iRun in range(numRuns):
 # PLOTTING
 skip = 2
 yearPlotList =  list(range(startYear, startYear+numYears, skip))
-#xTickList = list(range(0, 12*(numYears+1),    skip*12))
-#xTickList = np.arange(numYears)
-monthList = np.arange(numMonths)
-
-tagList  = []
-for iRun in range(numRuns):
-    tag       = plotData[iRun]["tag"]
-    tagList.append(tag)
-
 # PLOT comparison of Stunted Fraction (everyone U5)
 fig, ax = plt.subplots()
-#ax.set_xticks(xTickList)
 ax.set_xticklabels(yearPlotList)
 ax.set_xlim([yearList[0], yearList[numYears-1]])
 ax.set_ylim([35., 42.])
 plt.ylabel('Stunted prevalence (all U5)')
+plt.xlabel('Year')
+# choose scenarios
+plotRuns_Optima = [0,1]
+plotRuns_LiST   = [0,2]
+colorChoice     = ['grey','green']
+# plot
 plotList = []
-for iRun in range(numRuns):
+tagList_Optima = []
+tagList_LiST   = []
+for i in range(2):
+    iRun = plotRuns_Optima[i]
     tag       = plotData[iRun]["tag"]
     color     = plotData[iRun]["color"]
-    plotObj,  = plt.plot(yearList, stuntFracU5annual[tag], linewidth=1.7,     color=color)
-    plotMark, = plt.plot(yearList, stuntFracU5annual[tag], ms=19, marker='o', color=color)
+    plotObj,  = plt.plot(yearList, stuntFracU5annual[tag], linewidth=1.7,     color=colorChoice[i])
+    plotMark, = plt.plot(yearList, stuntFracU5annual[tag], ms=17, marker='o', color=colorChoice[i])
     plotList.append(plotMark)
-    
-icolor=0
-for scenario in scenarios:
-    plotObj,  = plt.plot(yearList, stunting_LiST[scenario], linewidth=1.7,    )
-    plotMark, = plt.plot(yearList, stunting_LiST[scenario], ms=21, marker='*',)
+    tagList_Optima.append("Optima: "+tag)
+for i in range(2):
+    iRun = plotRuns_LiST[i]
+    scenario = scenarios[iRun]
+    plotObj,  = plt.plot(yearList, stunting_LiST[scenario], linewidth=1.7,    color=colorChoice[i])
+    plotMark, = plt.plot(yearList, stunting_LiST[scenario], ms=21, marker='*',color=colorChoice[i])
     plotList.append(plotMark)
-    icolor += 1
-
-
-for i in range(numRuns):
-    tagList[i]   = "Optima: "+tagList[i]
-for i in range(len(scenarios)):
-    scenarios[i] = "LiST:   "+scenarios[i]
-    
-plt.legend(plotList, tagList+scenarios, loc = 'center left', bbox_to_anchor=(1,0.5))
+    tagList_Optima.append("LiST:   "+scenario)
+tagList = tagList_Optima + tagList_LiST
+plt.legend(plotList, tagList, loc = 'upper center', bbox_to_anchor=(0.5,-0.1))
 plt.savefig("%s_stuntingPrevalence.png"%(filenamePrefix), bbox_inches='tight')
