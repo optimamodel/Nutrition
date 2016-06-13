@@ -60,7 +60,7 @@ class Costcov():
         u = 5.
         x =[]
         for y in yvals:
-            x.append( -0.5*p*s*u* np.log(2.*s/(y*s*p)) )
+            x.append( -0.5*p*s*u* np.log((s*p-y)/(s*p+y)))
         plt.plot(yvals, x)
         plt.ylabel('spending')
         plt.xlabel('coverage')
