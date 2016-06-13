@@ -53,12 +53,11 @@ model, constants, params = helper.setupModelConstantsParameters(nametag, mothers
 
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')
-pickle.dump(model, outfile)
 model.moveOneTimeStep()
 pickle.dump(model, outfile)
 
 # Run model
-for t in range(numsteps-2):
+for t in range(numsteps-1):
     model.moveOneTimeStep()
     pickle.dump(model, outfile)
 outfile.close()    
@@ -92,7 +91,6 @@ modelZ, constants, params = helper.setupModelConstantsParameters(nametag, mother
 
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')
-pickle.dump(modelZ, outfile)
 modelZ.moveOneTimeStep()
 pickle.dump(modelZ, outfile)
 
@@ -109,7 +107,7 @@ for intervention in ['Complementary feeding (supplementation)','Complementary fe
 modelZ.updateCoverages(newCoverages)
 
 # Run model
-for t in range(numsteps-2):
+for t in range(numsteps-1):
     modelZ.moveOneTimeStep()
     pickle.dump(modelZ, outfile)
 outfile.close()    
@@ -144,7 +142,6 @@ modelZ, constants, params = helper.setupModelConstantsParameters(nametag, mother
 
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')
-pickle.dump(modelZ, outfile)
 modelZ.moveOneTimeStep()
 pickle.dump(modelZ, outfile)
 
@@ -161,7 +158,7 @@ for intervention in ['Breastfeeding promotion (dual delivery)']:
 modelZ.updateCoverages(newCoverages)
 
 # Run model
-for t in range(numsteps-2):
+for t in range(numsteps-1):
     modelZ.moveOneTimeStep()
     pickle.dump(modelZ, outfile)
 outfile.close()    
