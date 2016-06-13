@@ -101,7 +101,7 @@ for intervention in spreadsheetData.interventionList:
     finalCoverage[intervention] = costCov.function(array([scaledBudgetBest[i]]), costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
     i += 1        
     
-outputPlot.getBudgetPieChartComparison(budgetDictBefore, budgetDictAfter, optimise, output.fval[0], output.fval[len(output.fval)-1])    
+outputPlot.getBudgetPieChartComparison(budgetDictBefore, budgetDictAfter, optimise, output.fval[0], fval)    
 
 
 
