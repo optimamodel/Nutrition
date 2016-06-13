@@ -32,7 +32,7 @@ class Costcov():
         if isinstance(popsize,(float,int)): popsize = array([popsize])
         
         nyrs,npts = len(u),len(y)
-        if nyrs==npts: return -0.5*popsize*s*u*log(2*s/(y+s*popsize))
+        if nyrs==npts: return -0.5*popsize*s*u*log((s*popsize-y)/(s*popsize+y))
         else: raise Exception('y should be the same length as params.')
         
         
