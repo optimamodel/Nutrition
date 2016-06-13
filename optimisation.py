@@ -9,11 +9,12 @@ def getTotalInitialAllocation(data, costCoverageInfo, targetPopSize):
     costCov = costcov.Costcov()
     allocation = []
     for intervention in data.interventionList:
-        coverage = array([dcp(data.interventionCoveragesCurrent[intervention])])
-        if coverage == 0:
+        coverageFraction = array([dcp(data.interventionCoveragesCurrent[intervention])])
+        coverageNumber = coverageFraction * targetPopSize[intervention]
+        if coverageNumber == 0:
             spending = 0
         else:
-            spending = costCov.inversefunction(coverage, costCoverageInfo[intervention], targetPopSize[intervention])  
+            spending = costCov.inversefunction(coverageNumber, costCoverageInfo[intervention], targetPopSize[intervention])  
         allocation.append(spending)
     return allocation
 
