@@ -54,7 +54,7 @@ class Costcov():
         plt.title('FUNCTION:  pop x saturation ~ 1.2e7')
         plt.show()
         
-        yvals = np.arange(0, 1, 1e-2)
+        yvals = np.arange(0, 1.2e7, 1e2)
         s = 0.85
         p = 14537500.
         u = 5.
