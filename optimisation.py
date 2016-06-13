@@ -10,7 +10,10 @@ def getTotalInitialAllocation(data, costCoverageInfo, targetPopSize):
     allocation = []
     for intervention in data.interventionList:
         coverage = array([dcp(data.interventionCoveragesCurrent[intervention])])
-        spending = costCov.inversefunction(coverage, costCoverageInfo[intervention], targetPopSize[intervention])  
+        if coverage == 0:
+            spending = 0
+        else:
+            spending = costCov.inversefunction(coverage, costCoverageInfo[intervention], targetPopSize[intervention])  
         allocation.append(spending)
     return allocation
 
@@ -89,10 +92,17 @@ scaledInitialAllocation = rescaleAllocation(totalBudget, initialAllocation)
 scaledBudgetBest = rescaleAllocation(totalBudget, budgetBest)
 budgetDictBefore = {}
 budgetDictAfter = {}  
+finalCoverage = {}
 i = 0        
 for intervention in spreadsheetData.interventionList:
     budgetDictBefore[intervention] = scaledInitialAllocation[i]
     budgetDictAfter[intervention] = scaledBudgetBest[i]  
+    finalCoverage[intervention] = costCov.function(array([scaledBudgetBest[i]]), costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
     i += 1        
     
-outputPlot.getBudgetPieChartComparison(budgetDictBefore, budgetDictAfter)    
+outputPlot.getBudgetPieChartComparison(budgetDictBefore, budgetDictAfter, optimise, output.fval[0], output.fval[len(output.fval)-1])    
+
+
+
+
+       
