@@ -276,7 +276,7 @@ class Model:
         numCompartments = len(self.listOfAgeCompartments)
         # calculate how many people are aging out of each box
         agingOut = [None]*numCompartments
-        countAgingOutStunted = 0
+        #countAgingOutStunted = 0
         for ind in range(0, numCompartments):
             thisCompartment = self.listOfAgeCompartments[ind]
             agingOut[ind] = {}
@@ -288,8 +288,10 @@ class Model:
                         thisBox = thisCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat] 
                         agingOut[ind][wastingCat][breastfeedingCat][stuntingCat] = thisBox.populationSize * thisCompartment.agingRate #*self.timestep
                     # count only the people in the last age group who are aging out of the model stunted
-                    if ind == numCompartments - 1: 
-                        countAgingOutStunted += agingOut[ind][wastingCat][breastfeedingCat]['high'] + agingOut[ind][wastingCat][breastfeedingCat]['moderate']
+        #            if ind == numCompartments - 1: 
+        #                countAgingOutStunted += agingOut[ind][wastingCat][breastfeedingCat]['high'] + agingOut[ind][wastingCat][breastfeedingCat]['moderate']
+        oldest = self.listOfAgeCompartments[numCompartments-1]
+        countAgingOutStunted = oldest.getNumberStunted() * oldest.agingRate
         self.cumulativeAgingOutStunted += countAgingOutStunted                
         # first age group does not have aging in
         newborns = self.listOfAgeCompartments[0]
