@@ -47,7 +47,8 @@ run += 1
 #-------------------------------
 # Increase coverage of Complementary feeding
 percentageIncrease = 50
-nametag = "Complementary feeding: ++ %g%% points"%(percentageIncrease)
+#nametag = "scale-up complementary feeding: ++ %g%% points"%(percentageIncrease)
+nametag = "Scale-up complementary feeding"
 pickleFilename = '%s_CompFeed_P%i.pkl'%(country,percentageIncrease)
 plotcolor = 'green'
 addToPlotData(plotData,run,pickleFilename,nametag,plotcolor)
@@ -56,6 +57,7 @@ run += 1
 # Increase coverage of breastfeeding
 percentageIncrease = 29
 nametag = "Breastfeeding: ++ %g%% points"%(percentageIncrease)
+nametag = "Scale-up breastfeeding"
 pickleFilename = '%s_BreastFeed_P%i.pkl'%(country,percentageIncrease)
 plotcolor = 'blue'
 addToPlotData(plotData,run,pickleFilename,nametag,plotcolor)
@@ -156,7 +158,7 @@ fig, ax = plt.subplots()
 ax.set_xticklabels(yearPlotList)
 ax.set_xlim([yearList[0], yearList[numYears-1]])
 ax.set_ylim([35., 42.])
-plt.ylabel('Stunted prevalence (all U5)')
+plt.ylabel('Percentage of children under 5 stunted')
 plt.xlabel('Year')
 # choose scenarios
 plotRuns_Optima = [0,1]
@@ -192,7 +194,7 @@ fig, ax = plt.subplots()
 ax.set_xticklabels(yearPlotList)
 ax.set_xlim([yearList[0], yearList[numYears-1]])
 ax.set_ylim([90000, 120000])
-plt.ylabel('Deaths (all U5)')
+plt.ylabel('Number of deaths in children under 5')
 plt.xlabel('Year')
 # choose scenarios
 plotRuns_Optima = [0,2]
