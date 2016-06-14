@@ -27,8 +27,11 @@ def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimis
     import helper as helper
     from numpy import array
     helper = helper.Helper()
-    model, constants, params = helper.setupModelConstantsParameters('optimisation model', mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
-    scaledproposalAllocation = rescaleAllocation(totalBudget, proposalAllocation)
+    model, constants, params = helper.setupModelConstantsParameters('optimisation model', mothers, timestep, agingRateList, agePopSizes, keyList, data)
+    if sum(proposalAllocation) == 0: 
+        scaledproposalAllocation = proposalAllocation
+    else:    
+        scaledproposalAllocation = rescaleAllocation(totalBudget, proposalAllocation)
     # calculate coverage (%)
     newCoverages = {}    
     for i in range(0, len(data.interventionList)):
@@ -65,7 +68,7 @@ breastfeedingList = ["exclusive", "predominant", "partial", "none"]
 keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
 spreadsheetData = dataCode.getDataFromSpreadsheet(dataSpreadsheetName, keyList)
 mothers = helper.makePregnantWomen(spreadsheetData)
-mothers['annualPercentPopGrowth'] = 0.03
+mothers['annualPercentPopGrowth'] = - 0.01
 ageGroupSpans = [1., 5., 6., 12., 36.] # number of months in each age group
 agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH (WARNING use ageSpans to define this)
 numAgeGroups = len(ages)
