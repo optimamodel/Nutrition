@@ -19,9 +19,9 @@ def getTotalInitialAllocation(data, costCoverageInfo, targetPopSize):
     return allocation
 
 def rescaleAllocation(totalBudget, proposalAllocation):
-        scaleRatio = totalBudget / sum(proposalAllocation)
-        rescaledAllocation = [x * scaleRatio for x in proposalAllocation]
-        return rescaledAllocation 
+    scaleRatio = totalBudget / sum(proposalAllocation)
+    rescaledAllocation = [x * scaleRatio for x in proposalAllocation]
+    return rescaledAllocation 
 
 def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimise, mothers, timestep, agingRateList, agePopSizes, keyList, data):
     import helper as helper
@@ -88,7 +88,7 @@ for intervention in spreadsheetData.interventionList:
 initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)
 totalBudget = sum(initialAllocation)
 xmin = [0.] * len(initialAllocation)
-optimise = 'deaths' # choose between 'deaths' and 'stunting'
+optimise = 'stunting' # choose between 'deaths' and 'stunting'
 args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'mothers':mothers, 'timestep':timestep, 'agingRateList':agingRateList, 'agePopSizes':agePopSizes, 'keyList':keyList, 'data':spreadsheetData}    
 budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, initialAllocation, args, xmin = xmin)  #MaxFunEvals = 10            
 
