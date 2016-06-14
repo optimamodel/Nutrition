@@ -30,6 +30,8 @@ ageGroupSpans = [1., 5., 6., 12., 36.] # number of months in each age group
 agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
 numAgeGroups = len(ages)
 agePopSizes  = helper.makeAgePopSizes(numAgeGroups, ageGroupSpans, spreadsheetData)
+agePopSizes = [246307.75 , 1231538.75 , 1477846.50 , 2950860.00 , 8895211.00 ]
+
 
 timestep = 1./12. 
 numsteps = 180
