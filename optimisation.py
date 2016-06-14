@@ -19,13 +19,14 @@ def getTotalInitialAllocation(data, costCoverageInfo, targetPopSize):
     return allocation
 
 def rescaleAllocation(totalBudget, proposalAllocation):
-        scaleRatio = totalBudget / sum(proposalAllocation)
-        rescaledAllocation = [x * scaleRatio for x in proposalAllocation]
-        return rescaledAllocation 
+    scaleRatio = totalBudget / sum(proposalAllocation)
+    rescaledAllocation = [x * scaleRatio for x in proposalAllocation]
+    return rescaledAllocation 
 
 def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimise, mothers, timestep, agingRateList, agePopSizes, keyList, data):
     import helper as helper
     from numpy import array
+    from copy import deepcopy as dcp
     helper = helper.Helper()
     model, constants, params = helper.setupModelConstantsParameters('optimisation model', mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
     scaledproposalAllocation = rescaleAllocation(totalBudget, proposalAllocation)
@@ -56,7 +57,7 @@ helper = helper.Helper()
 costCov = costcov.Costcov()
 dataSpreadsheetName = 'InputForCode_Bangladesh.xlsx'
 timestep = 1./12. 
-numsteps = 168  
+numsteps = 180
 ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
 birthOutcomes = ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"]
 wastingList = ["normal", "mild", "moderate", "high"]
@@ -84,10 +85,15 @@ for intervention in spreadsheetData.interventionList:
     
 initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)
 totalBudget = sum(initialAllocation)
-xmin = [0.] * len(initialAllocation)
+#proposalAllocation = dcp(initialAllocation)
+proposalAllocation = [invest-1000. if invest>2000. else 1000. for invest in initialAllocation]
+#proposalAllocation = [totalBudget/len(initialAllocation)] * len(initialAllocation)
+#xmin = [0.] * len(initialAllocation)
+xmin = [100.] * len(initialAllocation)
+#xmin  = [0.01*invest if invest>100. else 1. for invest in initialAllocation]
 optimise = 'deaths' # choose between 'deaths' and 'stunting'
 args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'mothers':mothers, 'timestep':timestep, 'agingRateList':agingRateList, 'agePopSizes':agePopSizes, 'keyList':keyList, 'data':spreadsheetData}    
-budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, initialAllocation, args, xmin = xmin)  #MaxFunEvals = 10            
+budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, proposalAllocation, args, xmin = xmin)  #MaxFunEvals = 10            
 
 scaledInitialAllocation = rescaleAllocation(totalBudget, initialAllocation)
 scaledBudgetBest = rescaleAllocation(totalBudget, budgetBest)
