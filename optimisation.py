@@ -26,7 +26,6 @@ def rescaleAllocation(totalBudget, proposalAllocation):
 def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimise, mothers, timestep, agingRateList, agePopSizes, keyList, data):
     import helper as helper
     from numpy import array
-    from copy import deepcopy as dcp
     helper = helper.Helper()
     model, constants, params = helper.setupModelConstantsParameters('optimisation model', mothers, timestep, agingRateList, agePopSizes, keyList, data)
     if sum(proposalAllocation) == 0: 
