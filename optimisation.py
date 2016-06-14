@@ -28,8 +28,11 @@ def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimis
     from numpy import array
     from copy import deepcopy as dcp
     helper = helper.Helper()
-    model, constants, params = helper.setupModelConstantsParameters('optimisation model', mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
-    scaledproposalAllocation = rescaleAllocation(totalBudget, proposalAllocation)
+    model, constants, params = helper.setupModelConstantsParameters('optimisation model', mothers, timestep, agingRateList, agePopSizes, keyList, data)
+    if sum(proposalAllocation) == 0: 
+        scaledproposalAllocation = proposalAllocation
+    else:    
+        scaledproposalAllocation = rescaleAllocation(totalBudget, proposalAllocation)
     # calculate coverage (%)
     newCoverages = {}    
     for i in range(0, len(data.interventionList)):
@@ -66,7 +69,7 @@ breastfeedingList = ["exclusive", "predominant", "partial", "none"]
 keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
 spreadsheetData = dataCode.getDataFromSpreadsheet(dataSpreadsheetName, keyList)
 mothers = helper.makePregnantWomen(spreadsheetData)
-mothers['annualPercentPopGrowth'] = 0.03
+mothers['annualPercentPopGrowth'] = - 0.01
 ageGroupSpans = [1., 5., 6., 12., 36.] # number of months in each age group
 agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH (WARNING use ageSpans to define this)
 numAgeGroups = len(ages)
@@ -85,13 +88,13 @@ for intervention in spreadsheetData.interventionList:
     
 initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)
 totalBudget = sum(initialAllocation)
-#proposalAllocation = dcp(initialAllocation)
-proposalAllocation = [invest-1000. if invest>2000. else 1000. for invest in initialAllocation]
+proposalAllocation = dcp(initialAllocation)
+#proposalAllocation = [invest-1000. if invest>2000. else 1000. for invest in initialAllocation]
 #proposalAllocation = [totalBudget/len(initialAllocation)] * len(initialAllocation)
-#xmin = [0.] * len(initialAllocation)
-xmin = [100.] * len(initialAllocation)
+xmin = [0.] * len(initialAllocation)
+#xmin = [100.] * len(initialAllocation)
 #xmin  = [0.01*invest if invest>100. else 1. for invest in initialAllocation]
-optimise = 'deaths' # choose between 'deaths' and 'stunting'
+optimise = 'stunting' # choose between 'deaths' and 'stunting'
 args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'mothers':mothers, 'timestep':timestep, 'agingRateList':agingRateList, 'agePopSizes':agePopSizes, 'keyList':keyList, 'data':spreadsheetData}    
 budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, proposalAllocation, args, xmin = xmin)  #MaxFunEvals = 10            
 
@@ -107,7 +110,7 @@ for intervention in spreadsheetData.interventionList:
     finalCoverage[intervention] = costCov.function(array([scaledBudgetBest[i]]), costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
     i += 1        
     
-outputPlot.getBudgetPieChartComparison(budgetDictBefore, budgetDictAfter, optimise, output.fval[0], output.fval[len(output.fval)-1])    
+outputPlot.getBudgetPieChartComparison(budgetDictBefore, budgetDictAfter, optimise, output.fval[0], fval)    
 
 
 

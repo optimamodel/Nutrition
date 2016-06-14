@@ -123,7 +123,7 @@ class Model:
         self.params = None
         import helper as helperCode
         self.helper = helperCode.Helper()
-        self.cumulativeAgingOutStunted = 0
+        self.cumulativeAgingOutStunted = 0.0
         
     def setConstants(self, inputConstants):
         self.constants = inputConstants
@@ -318,7 +318,7 @@ class Model:
                 numAgingInStratified[stuntingCat] = 0.
             for prevStunt in ["yesstunted", "notstunted"]:
                 totalProbStunt = self.constants.probStuntedIfPrevStunted[prevStunt][ageName] * self.constants.stuntingUpdateAfterInterventions[ageName]
-                restratifiedProbBecomeStunted = self.helper.restratify(totalProbStunt)
+                restratifiedProbBecomeStunted = self.helper.restratify(min(1., totalProbStunt))
                 for stuntingCat in self.stuntingList:
                     numAgingInStratified[stuntingCat] += restratifiedProbBecomeStunted[stuntingCat] * numAgingIn[prevStunt]
             # distribute those aging in amongst those stunting categories but also breastfeeding and wasting
@@ -330,7 +330,6 @@ class Model:
                         thisBox = thisAgeCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat]
                         thisBox.populationSize -= agingOut[ind][wastingCat][breastfeedingCat][stuntingCat]
                         thisBox.populationSize += numAgingInStratified[stuntingCat] * pab * paw
-
             # gaussianise
             stuntingDistributionNow = thisAgeCompartment.getStuntingDistribution()            
             probStunting = stuntingDistributionNow['high'] + stuntingDistributionNow['moderate']
