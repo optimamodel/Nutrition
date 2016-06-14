@@ -359,7 +359,7 @@ def getCombinedPlots(numRuns, data, startYear=2016, filenamePrefix="compare", ti
 
 
 
-def getCompareDeathsAverted(numRuns, data, filenamePrefix="compare", title="", save=False):
+def getCompareDeathsAverted(numRuns, data, scalePercent=0.2, filenamePrefix="compare", title="", save=False):
     import numpy as np
     from math import ceil
     import matplotlib.pyplot as plt
@@ -411,9 +411,8 @@ def getCompareDeathsAverted(numRuns, data, filenamePrefix="compare", title="", s
     ax.set_title(title, size=16, y=1.13)
     maxDeaths      = max(deathsAvertedList)
     maxDeathsAxis  = ceil(maxDeaths/5000.)*5000
-    maxPercent     = maxDeaths/deathsBaseline*100.
-    maxPercentAxis = ceil(maxPercent/0.5)*0.5
-    percentTicks = np.arange(0.5,maxPercentAxis,0.5)
+    maxPercentAxis = maxDeathsAxis/deathsBaseline*100.
+    percentTicks = np.arange(scalePercent,maxPercentAxis,scalePercent)
     pTicksTrans = percentTicks/100.*deathsBaseline
     y_pos = np.arange(numRuns-1)
     # axes
