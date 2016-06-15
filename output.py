@@ -3,7 +3,23 @@
 Created on Fri Mar 11 11:50:20 2016
 
 @author: ruth
+
+contains:
+getPopSizeByAgePlot()
+getPopAndStuntedSizePlot()
+getCumulativeDeathsByAgePlot()
+getNumStuntedByAgePlot()
+getStuntedPercent()
+getCombinedPlots()
+getCompareDeathsAverted()
+getStuntingCasesAverted()
+getSimpleBarFromDictionary()
+getStuntingStatusesGivenAge()
+getDeathsAverted()
+getBudgetPieChartComparison()
+
 """
+
 from __future__ import division
 
 
@@ -204,7 +220,7 @@ def getNumStuntedByAgePlot(modelList, label):
     
     
     
-def getStuntedPercent(modelList, label): 
+def getStuntedPercent(modelList, label, startYear=2016): 
     import numpy as np
     ageList = modelList[0].ages
     percentStunted = {}
@@ -219,7 +235,7 @@ def getStuntedPercent(modelList, label):
         for year in range(1, numYears+1):
             yearAveStuntedPerc.append(100.*np.average(StuntedFracList[(year - 1) * 12 : (year * 12) - 1]))
         percentStunted[age] = yearAveStuntedPerc
-    yearList = [2017]
+    yearList = [startYear]
     for i in range(1, numYears):
         yearList.append(yearList[0] + i)
     import matplotlib.pyplot as plt
@@ -246,7 +262,7 @@ def getStuntedPercent(modelList, label):
 
     
     
-def getCombinedPlots(numRuns, data, startYear=2016, filenamePrefix="compare", title="", save=False):
+def getCombinedPlots(numRuns, data, startYear=2016, filenamePrefix="compare", save=False):
     import numpy as np
     import matplotlib.pyplot as plt
     # set up
@@ -400,7 +416,6 @@ def getCompareDeathsAverted(numRuns, data, scalePercent=0.2, filenamePrefix="com
     deathsBaseline    = cumulDeathsU5[tagBaseline][numMonths-1]
     for run in range(1, numRuns):
         tag       = data[run]["tag"]
-        modelList = data[run]["modelList"]
         deathsNeoScenario = cumulDeathsList[tag][neonatesName][numMonths-1]
         deathsScenario    = cumulDeathsU5[tag][numMonths-1]
         deathsNeoAvertedList.append(deathsNeoBaseline - deathsNeoScenario)
@@ -438,6 +453,89 @@ def getCompareDeathsAverted(numRuns, data, scalePercent=0.2, filenamePrefix="com
     plt.legend([h1,h2],["<5 years","<1 month"])
     if save:
         plt.savefig("%s_totalDeathsAverted.png"%(filenamePrefix), bbox_inches='tight')
+    else:
+        plt.show()
+
+
+
+def getStuntingCasesAverted(numRuns, data, scalePercent=0.2, filenamePrefix="compare", title="", save=False):
+    import numpy as np
+    from math import ceil
+    import matplotlib.pyplot as plt
+    # set up
+    modelList = data[0]["modelList"]
+    ageList = modelList[0].ages
+    numAges = len(ageList)
+    numMonths = len(modelList)
+    tagList  = []
+    for run in range(numRuns):
+        tag       = data[run]["tag"]
+        tagList.append(tag)
+    # add up deaths
+    totalPopU5 = {}
+    stuntPopU5 = {}
+    for run in range(numRuns):
+        modelList = data[run]["modelList"]
+        tag       = data[run]["tag"]
+        # initialise
+        totalPopU5[tag] = [0.]*numMonths
+        stuntPopU5[tag] = [0.]*numMonths
+        for mon in range(numMonths):
+            model = modelList[mon]
+            for age in range(numAges):
+                ageName = ageList[age]
+                total       = model.listOfAgeCompartments[age].getTotalPopulation()
+                stuntFrac   = model.listOfAgeCompartments[age].getStuntedFraction()
+                totalPopU5[tag][mon]    += total
+                stuntPopU5[tag][mon]    += total*stuntFrac
+    # stunted fraction can't be added, so calculate from stuntPopU5 and totalPopU5 afterward
+    stuntFracU5 = {}
+    for run in range(numRuns):
+        tag       = data[run]["tag"]
+        stuntFracU5[tag] = [0.]*numMonths
+        for m in range(numMonths):
+            stuntFracU5[tag][m] = 100. * stuntPopU5[tag][m] / totalPopU5[tag][m]
+    # calculate stunting cases averted
+    stuntingAvertedList    = []
+    tagBaseline = data[0]["tag"]
+    stuntingCasesBaseline    = stuntPopU5[tagBaseline][numMonths-1]
+    for run in range(1, numRuns):
+        tag = data[run]["tag"]
+        stuntingCasesScenario = stuntPopU5[tag][numMonths-1]
+        stuntingAvertedList.append(stuntingCasesBaseline - stuntingCasesScenario)
+
+    # PLOTTING
+    # setup figure
+    fig, ax = plt.subplots()
+    ax.set_title(title, size=16, y=1.13)
+    maxStunting     = max(stuntingAvertedList)
+    maxStuntingAxis = ceil(maxStunting/10000.)*10000
+    maxPercentAxis = maxStuntingAxis/stuntingCasesBaseline*100.
+    percentTicks = np.arange(scalePercent,maxPercentAxis,scalePercent)
+    pTicksTrans = percentTicks/100.*stuntingCasesBaseline
+    y_pos = np.arange(numRuns-1)
+    # axes
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.axes.get_xaxis().tick_bottom()
+    ax.axes.get_yaxis().tick_left()
+    ax.set_ylim(0,numRuns-1)
+    ax.set_xlim(0,maxStuntingAxis)
+    ax.set_yticks(y_pos+0.5)
+    ax.set_yticklabels(tagList[1:])
+    ax.set_ylabel('Interventions',  size=16)
+    ax.set_xlabel('Number of stunting cases averted in children under 5', size=14)
+    ax2 = ax.twiny()
+    ax2.set_xlim(ax.get_xlim())
+    ax2.set_xticks(pTicksTrans)
+    ax2.set_xticklabels(percentTicks)
+    ax2.set_xlabel('Percent of stunting cases averted (%)', size=14)
+    # plot
+    barwid = 0.5
+    h1 = ax.barh(y_pos+0.5-0.5*barwid, stuntingAvertedList, height=barwid, facecolor='#99CCEE', edgecolor='k', linewidth=1.5)
+    #plt.legend([h1],["<5 years"])
+    if save:
+        plt.savefig("%s_U5stuntingCasesAverted.png"%(filenamePrefix), bbox_inches='tight')
     else:
         plt.show()
 
