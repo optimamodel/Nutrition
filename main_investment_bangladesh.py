@@ -155,6 +155,7 @@ filenamePrefix = '%s_inv'%(country)
 #output.getCombinedPlots(run, plotData)
 output.getCombinedPlots(run, plotData, startYear=2015, filenamePrefix=filenamePrefix, title=title, save=True)
 output.getCompareDeathsAverted(run, plotData, scalePercent=0.1, filenamePrefix=filenamePrefix, title=title, save=True)
+output.getStuntingCasesAverted(run, plotData, scalePercent=0.1, filenamePrefix=filenamePrefix, title=title, save=True)
 
 
 
