@@ -88,6 +88,9 @@ for intervention in spreadsheetData.interventionList:
 initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)
 totalBudget = sum(initialAllocation)
 proposalAllocation = dcp(initialAllocation)
+
+proposalAllocation = [totalBudget/2., 0., totalBudget/2., 0., 0., 0.,0.]
+
 #proposalAllocation = [invest-1000. if invest>2000. else 1000. for invest in initialAllocation]
 #proposalAllocation = [totalBudget/len(initialAllocation)] * len(initialAllocation)
 xmin = [0.] * len(initialAllocation)
@@ -97,19 +100,18 @@ optimise = 'stunting' # choose between 'deaths' and 'stunting'
 args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'mothers':mothers, 'timestep':timestep, 'agingRateList':agingRateList, 'agePopSizes':agePopSizes, 'keyList':keyList, 'data':spreadsheetData}    
 budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, proposalAllocation, args, xmin = xmin)  #MaxFunEvals = 10            
 
-scaledInitialAllocation = rescaleAllocation(totalBudget, initialAllocation)
 scaledBudgetBest = rescaleAllocation(totalBudget, budgetBest)
 budgetDictBefore = {}
 budgetDictAfter = {}  
 finalCoverage = {}
 i = 0        
 for intervention in spreadsheetData.interventionList:
-    budgetDictBefore[intervention] = scaledInitialAllocation[i]
+    budgetDictBefore[intervention] = proposalAllocation[i]
     budgetDictAfter[intervention] = scaledBudgetBest[i]  
     finalCoverage[intervention] = costCov.function(array([scaledBudgetBest[i]]), costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
     i += 1        
     
-outputPlot.getBudgetPieChartComparison(budgetDictBefore, budgetDictAfter, optimise, output.fval[0], fval)    
+outputPlot.getBudgetPieChartComparison(budgetDictBefore, budgetDictAfter, optimise, output.fval[0], fval[0][0])    
 
 
 
