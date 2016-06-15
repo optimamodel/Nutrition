@@ -93,7 +93,7 @@ for scenario in scenarios:
 #------------------------------------------------------------------------    
 # MAKE PLOTS
 filenamePrefix = '%s_comparison'%(country)
-#output.getCombinedPlots(run, plotData, startYear=2015, filenamePrefix=filenamePrefix, title=title, save=True)
+#output.getCombinedPlots(run, plotData, startYear=2015, filenamePrefix=filenamePrefix, save=True)
 #output.getCompareDeathsAverted(run, plotData, filenamePrefix=filenamePrefix, title=title, save=True)
 
 import numpy as np

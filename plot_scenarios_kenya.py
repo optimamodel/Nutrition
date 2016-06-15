@@ -67,5 +67,5 @@ for ichoose in range(numInterventions):
     plotData[run]["color"] = (1.0-colorStep*run, 1.0-0.23*abs(run-4), 0.0+colorStep*run)
     run += 1
 
-output.getCombinedPlots(run, plotData, filenamePrefix=filenamePrefix, title=title, save=True)
+output.getCombinedPlots(run, plotData, filenamePrefix=filenamePrefix, save=True)
 output.getCompareDeathsAverted(run, plotData, filenamePrefix=filenamePrefix, title=title, save=True)
