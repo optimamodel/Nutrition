@@ -48,7 +48,7 @@ run += 1
 # Increase coverage of Complementary feeding
 percentageIncrease = 50
 #nametag = "scale-up complementary feeding: ++ %g%% points"%(percentageIncrease)
-nametag = "Scale-up complementary feeding"
+nametag = "scale-up complementary feeding"
 pickleFilename = '%s_CompFeed_P%i.pkl'%(country,percentageIncrease)
 plotcolor = 'green'
 addToPlotData(plotData,run,pickleFilename,nametag,plotcolor)
@@ -57,7 +57,7 @@ run += 1
 # Increase coverage of breastfeeding
 percentageIncrease = 29
 nametag = "Breastfeeding: ++ %g%% points"%(percentageIncrease)
-nametag = "Scale-up breastfeeding"
+nametag = "scale-up breastfeeding promotion"
 pickleFilename = '%s_BreastFeed_P%i.pkl'%(country,percentageIncrease)
 plotcolor = 'blue'
 addToPlotData(plotData,run,pickleFilename,nametag,plotcolor)
@@ -182,7 +182,7 @@ for i in range(2):
     plotObj,  = plt.plot(yearList, stunting_LiST[scenario], linewidth=1.7,    color=colorChoice[i])
     plotMark, = plt.plot(yearList, stunting_LiST[scenario], ms=21, marker='*',color=colorChoice[i])
     plotList.append(plotMark)
-    tagList_Optima.append("LiST:   "+scenario)
+    tagList_Optima.append("LiST      : "+scenario)
 tagList = tagList_Optima + tagList_LiST
 plt.legend(plotList, tagList, loc = 'upper center', bbox_to_anchor=(0.5,-0.1))
 plt.savefig("%s_stuntingPrevalence.png"%(filenamePrefix), bbox_inches='tight')
@@ -218,7 +218,7 @@ for i in range(2):
     plotObj,  = plt.plot(yearList, deaths_LiST[scenario], linewidth=1.7,    color=colorChoice[i])
     plotMark, = plt.plot(yearList, deaths_LiST[scenario], ms=21, marker='*',color=colorChoice[i])
     plotList.append(plotMark)
-    tagList_Optima.append("LiST:   "+scenario)
+    tagList_Optima.append("LiST     : "+scenario)
 tagList = tagList_Optima + tagList_LiST
 plt.legend(plotList, tagList, loc = 'upper center', bbox_to_anchor=(0.5,-0.1))
 plt.savefig("%s_annualDeaths.png"%(filenamePrefix), bbox_inches='tight')
