@@ -12,7 +12,7 @@ def getTotalInitialAllocation(data, costCoverageInfo, targetPopSize):
         coverageFraction = array([dcp(data.interventionCoveragesCurrent[intervention])])
         coverageNumber = coverageFraction * targetPopSize[intervention]
         if coverageNumber == 0:
-            spending = 0
+            spending = array([0.])
         else:
             spending = costCov.inversefunction(coverageNumber, costCoverageInfo[intervention], targetPopSize[intervention])  
         allocation.append(spending)
@@ -106,8 +106,8 @@ budgetDictAfter = {}
 finalCoverage = {}
 i = 0        
 for intervention in spreadsheetData.interventionList:
-    budgetDictBefore[intervention] = proposalAllocation[i]
-    budgetDictAfter[intervention] = scaledBudgetBest[i]  
+    budgetDictBefore[intervention] = proposalAllocation[i][0]
+    budgetDictAfter[intervention] = scaledBudgetBest[i][0]  
     finalCoverage[intervention] = costCov.function(array([scaledBudgetBest[i]]), costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
     i += 1        
     
