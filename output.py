@@ -619,14 +619,68 @@ def getBudgetPieChartComparison(budgetDictBefore, budgetDictAfter, optimise, fva
     plt.title('BUDGET ALLOCATION AFTER: [optimising for '  + optimise + ']  number of '+optimise+'=' + str(fvalAfter) )
     plt.show()
     
-def plotFinalCoverage(finalCoverageDict, string):
-    import numpy as np
+def plotCoverage(coverageDict, string):
+    from pylab import *    
+    val = coverageDict.values()    # the bar lengths
+    pos = arange(len(coverageDict))+.5    # the bar centers on the y axis
+    figure(1)
+    barh(pos,val, align='center')
+    yticks(pos, coverageDict.keys())
+    xlabel('Coverage')
+    title(string)
+    grid(True)
+
+
+def plotSpendingAllocation(spendDict, string):
+    from pylab import *
+    val = spendDict.values()    # the bar lengths
+    pos = arange(len(spendDict))+.5    # the bar centers on the y axis
+    figure(1)
+    barh(pos,val, align='center')
+    yticks(pos, spendDict.keys())
+    xlabel('Spending')
+    title(string)
+    grid(True)
+    
+    
+def plotSpendingAndCoverageTogether(spendDict, coverageDict):
+    from pylab import *
+    f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
+    
+    val = spendDict.values()    # the bar lengths
+    pos = arange(len(spendDict))+.5    # the bar centers on the y axis
+    figure(1)
+    ax1.barh(pos,val, align='center')
+    yticks(pos, spendDict.keys())
+    ax1.set_title('Spending')
+    grid(True)
+    
+    val = coverageDict.values()    # the bar lengths
+    pos = arange(len(coverageDict))+.5    # the bar centers on the y axis
+    figure(1)
+    ax2.barh(pos,val, align='center')
+    #yticks(pos, coverageDict.keys())
+    ax2.set_title('Coverage')
+    grid(True)    
+    
+    
+def compareOptimisationOutput(self, spendDict, coverageDict):
     import matplotlib.pyplot as plt
-    d = finalCoverageDict
-    X = np.arange(len(d))
-    plt.bar(X, d.values(), align='center', width=0.5)
-    plt.xticks(X, d.keys())
-    ymax = 1
-    plt.ylim(0, ymax)
-    plt.title(string)
-    plt.show()   
+    plt.figure(1)
+    
+    plt.subplot(221)
+    self.plotSpendingAndCoverageTogether(spendDict, coverageDict)
+    plt.title('before')
+    
+    plt.subplot(222)
+    self.plotSpendingAndCoverageTogether(spendDict, coverageDict)
+    plt.title('after')
+#    plt.subplot(223)
+#    self.plotSpendingAllocation(spendDict, string)
+#    
+#    plt.subplot(224)
+#    self.plotCoverage(coverageDict, string)
+    
+    plt.show()
+    
+    
