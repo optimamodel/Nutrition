@@ -605,27 +605,36 @@ def getDeathsAverted(modelList, modelList2, label):
     plt.show()     
         
 def getBudgetPieChartComparison(budgetDictBefore, budgetDictAfter, optimise, fvalBefore, fvalAfter, string):
-    #tidy up dictionaries
+    # get colour dictionary
+    colorStep = 1./float(len(budgetDictAfter))-1.e-2
+    plotColor = {}
+    run = 1
+    for intervention in budgetDictAfter.keys():
+        plotColor[intervention] = (1.0-colorStep*run, 1.0-0.23*abs(run-4), 0.0+colorStep*run)
+        run += 1
+    #tidy up dictionaries    
     budgetDictAfterClean = {}
     budgetDictBeforeClean = {}
-    for key in budgetDictBefore.keys():
+    colorsBefore = []
+    colorsAfter = []
+    for key in sorted(budgetDictBefore.keys()):
         if budgetDictBefore[key] > 1:
             budgetDictBeforeClean[key] = budgetDictBefore[key]
-    for key in budgetDictAfter.keys():
+            colorsBefore.append(plotColor[key])
         if budgetDictAfter[key] > 1:
-            budgetDictAfterClean[key] = budgetDictAfter[key]        
-    
+            budgetDictAfterClean[key] = budgetDictAfter[key]   
+            colorsAfter.append(plotColor[key])
     from pylab import *
     figure()
     ax1 = subplot(211, aspect='equal', adjustable='box-forced')
-    labels = budgetDictBeforeClean.keys()
-    fracs = budgetDictBeforeClean.values()
-    ax1.pie(fracs, labels = labels)    
+    labels = sorted(budgetDictBeforeClean.keys())
+    fracs = [budgetDictBeforeClean[key] for key in sorted(budgetDictBeforeClean.keys())] 
+    ax1.pie(fracs, labels = labels, colors = colorsBefore)    
     ax1.set_title('before: fval = ' + str(fvalBefore))
     ax2 = subplot(212, aspect='equal', adjustable='box-forced')
-    labels = budgetDictAfterClean.keys()
-    fracs = budgetDictAfterClean.values()
-    ax2.pie(fracs, labels = labels)
+    labels = sorted(budgetDictAfterClean.keys())
+    fracs = [budgetDictAfterClean[key] for key in sorted(budgetDictAfterClean.keys())]
+    ax2.pie(fracs, labels = labels, colors = colorsAfter)
     ax2.set_title('after: fval = ' + str(fvalAfter))
     plt.suptitle('optimising for: ' + optimise + '. ' + string)
     plt.show()
