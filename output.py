@@ -649,7 +649,6 @@ def plotSpendingAndCoverageTogether(spendDict, coverageDict):
     
     val = spendDict.values()    # the bar lengths
     pos = arange(len(spendDict))+.5    # the bar centers on the y axis
-    figure(1)
     ax1.barh(pos,val, align='center')
     yticks(pos, spendDict.keys())
     ax1.set_title('Spending')
@@ -657,29 +656,42 @@ def plotSpendingAndCoverageTogether(spendDict, coverageDict):
     
     val = coverageDict.values()    # the bar lengths
     pos = arange(len(coverageDict))+.5    # the bar centers on the y axis
-    figure(1)
     ax2.barh(pos,val, align='center')
-    #yticks(pos, coverageDict.keys())
     ax2.set_title('Coverage')
     grid(True)    
     
     
-def compareOptimisationOutput(self, spendDict, coverageDict):
-    import matplotlib.pyplot as plt
-    plt.figure(1)
+def compareOptimisationOutput(self, spendDictBefore, spendDictAfter, coverageDictBefore, coverageDictAfter):
+    from pylab import *
+    f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='col', sharey='row')
     
-    plt.subplot(221)
-    self.plotSpendingAndCoverageTogether(spendDict, coverageDict)
-    plt.title('before')
+    val = spendDictBefore.values()    # the bar lengths
+    pos = arange(len(spendDictBefore))+.5    # the bar centers on the y axis
+    ax1.barh(pos,val, align='center')
+    ax1.set_yticklabels(spendDictBefore.keys())
+    #yticks(pos, spendDict.keys())
+    ax1.set_title('spending before')
+    ax1.grid(True)
     
-    plt.subplot(222)
-    self.plotSpendingAndCoverageTogether(spendDict, coverageDict)
-    plt.title('after')
-#    plt.subplot(223)
-#    self.plotSpendingAllocation(spendDict, string)
-#    
-#    plt.subplot(224)
-#    self.plotCoverage(coverageDict, string)
+    val = coverageDictBefore.values()    # the bar lengths
+    pos = arange(len(coverageDictBefore))+.5    # the bar centers on the y axis
+    ax2.barh(pos,val, align='center')
+    ax2.set_title('coverage before')
+    ax2.grid(True)        
+    
+    val = spendDictAfter.values()    # the bar lengths
+    pos = arange(len(spendDictAfter))+.5    # the bar centers on the y axis
+    ax3.barh(pos,val, align='center')
+    ax3.set_yticklabels(spendDictAfter.keys())
+    #yticks(pos, spendDict.keys())
+    ax3.set_title('spending after')
+    ax3.grid(True)
+    
+    val = coverageDictAfter.values()    # the bar lengths
+    pos = arange(len(coverageDictAfter))+.5    # the bar centers on the y axis
+    ax4.barh(pos,val, align='center')
+    ax4.set_title('coverage after')
+    ax4.grid(True)        
     
     plt.show()
     
