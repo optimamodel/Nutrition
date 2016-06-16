@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Feb 24 13:49:18 2016
+Created on Wed Jun 01 2016
 
-@author: ruthpearson
+@author: madhurakilledar
 """
 from __future__ import division
 
@@ -15,6 +15,7 @@ import costcov
 from numpy import array
 
 country = 'Kenya'
+startYear = 2016
 
 helper = helper.Helper()
 costCov = costcov.Costcov()
@@ -35,7 +36,7 @@ numAgeGroups = len(ages)
 agePopSizes  = helper.makeAgePopSizes(numAgeGroups, ageGroupSpans, spreadsheetData)
 
 timestep = 1./12. 
-numsteps = 168
+numsteps = 180
 timespan = timestep * float(numsteps)
 
 for intervention in spreadsheetData.interventionList:
@@ -55,12 +56,11 @@ model, constants, params = helper.setupModelConstantsParameters(nametag, mothers
 
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')
-pickle.dump(model, outfile)
 model.moveOneTimeStep()
 pickle.dump(model, outfile)
 
 # Run model
-for t in range(numsteps-2):
+for t in range(numsteps-1):
     model.moveOneTimeStep()
     pickle.dump(model, outfile)
 outfile.close()    
@@ -84,11 +84,13 @@ run += 1
 #------------------------------------------------------------------------    
 # INTERVENTION
 investmentIncrease = 1.e6  # 1 million BDT per intervention per year for the full 14 years
+title = '%s: 2015-2030 \n Scale up intervention by %i million BDT per year'%(country,investmentIncrease/1e6)
+print title
 
 for ichoose in range(len(spreadsheetData.interventionList)):
     chosenIntervention = spreadsheetData.interventionList[ichoose]
     nametag = chosenIntervention
-    pickleFilename = 'test_Intervention%i_Invest.pkl'%(ichoose)
+    pickleFilename = '%s_Intervention%i_Invest.pkl'%(country,ichoose)
     plotcolor = (1.0-0.13*run, 1.0-0.3*abs(run-4), 0.0+0.13*run)
     print "\n %s: increase investment by BDT %g"%(nametag,investmentIncrease)
 
@@ -96,7 +98,6 @@ for ichoose in range(len(spreadsheetData.interventionList)):
 
     # file to dump objects into at each time step
     outfile = open(pickleFilename, 'wb')
-    pickle.dump(modelX, outfile)
     modelX.moveOneTimeStep()
     pickle.dump(modelX, outfile)
 
@@ -125,7 +126,7 @@ for ichoose in range(len(spreadsheetData.interventionList)):
     modelX.updateCoverages(newCoverages)
 
     # Run model
-    for t in range(numsteps-2):
+    for t in range(numsteps-1):
         modelX.moveOneTimeStep()
         pickle.dump(modelX, outfile)
     outfile.close()    
@@ -147,60 +148,14 @@ for ichoose in range(len(spreadsheetData.interventionList)):
     run += 1
 
 
-"""
-#------------------------------------------------------------------------    
-# INTERVENTION
-percentageIncrease = 90
-nametag = "All interventions: increase coverage by %g%% points"%(percentageIncrease)
-pickleFilename = 'test_Intervention_P%i.pkl'%(percentageIncrease)
-plotcolor = 'black'
-
-print "\n"+nametag
-modelZ, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
-
-
-# file to dump objects into at each time step
-outfile = open(pickleFilename, 'wb')
-pickle.dump(modelZ, outfile)
-modelZ.moveOneTimeStep()
-pickle.dump(modelZ, outfile)
-
-# scale up all interventions
-# initialise
-newCoverages={}
-for intervention in spreadsheetData.interventionList:
-    newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
-for intervention in spreadsheetData.interventionList:
-    newCoverages[intervention] = min(1.0,newCoverages[intervention]+percentageIncrease/100.) 
-modelZ.updateCoverages(newCoverages)
-
-# Run model
-for t in range(numsteps-2):
-    modelZ.moveOneTimeStep()
-    pickle.dump(modelZ, outfile)
-outfile.close()    
-
-# collect output, make graphs etc.
-infile = open(pickleFilename, 'rb')
-newModelList = []
-while 1:
-    try:
-        newModelList.append(pickle.load(infile))
-    except (EOFError):
-        break
-infile.close()
-
-plotData.append({})
-plotData[run]["modelList"] = newModelList
-plotData[run]["tag"] = nametag
-plotData[run]["color"] = plotcolor
-run += 1
-"""
-
 #------------------------------------------------------------------------    
 
+filenamePrefix = '%s_fixedInvest'%(country)
 
-output.getCombinedPlots(run, plotData)
+#output.getCombinedPlots(run, plotData)
+output.getCombinedPlots(run, plotData, startYear=startYear-1, filenamePrefix=filenamePrefix, save=True)
+output.getCompareDeathsAverted(run, plotData, scalePercent=0.1, filenamePrefix=filenamePrefix, title=title, save=True)
+output.getStuntingCasesAverted(run, plotData, scalePercent=0.1, filenamePrefix=filenamePrefix, title=title, save=True)
 
 
 
