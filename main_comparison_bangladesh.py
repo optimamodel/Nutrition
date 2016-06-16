@@ -13,6 +13,7 @@ from copy import deepcopy as dcp
 import pickle as pickle
 
 country = 'Bangladesh'
+startYear = 2016
 
 helper = helper.Helper()
 ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
@@ -22,7 +23,7 @@ stuntingList = ["normal", "mild", "moderate", "high"]
 breastfeedingList = ["exclusive", "predominant", "partial", "none"]
 keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
 
-dataFilename = 'Input_LiST_%s.xlsx'%(country)
+dataFilename = 'Input_LiST_%s_%i.xlsx'%(country,startYear)
 spreadsheetData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
 mothers = helper.makePregnantWomen(spreadsheetData)
 mothers['annualPercentPopGrowth'] = -0.01
@@ -186,7 +187,7 @@ run += 1
 #------------------------------------------------------------------------    
 
 
-output.getCombinedPlots(run, plotData, startYear=2015)
+output.getCombinedPlots(run, plotData, startYear=startYear-1)
 output.getDeathsAverted(modelList, newModelList, 'test')
 output.getCompareDeathsAverted(run, plotData, filenamePrefix=country, title='comparison with LiST', save=True)
 
