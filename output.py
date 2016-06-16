@@ -604,21 +604,32 @@ def getDeathsAverted(modelList, modelList2, label):
     plt.title('total deaths averted: ' + label)
     plt.show()     
         
-def getBudgetPieChartComparison(budgetDictBefore, budgetDictAfter, optimise, fvalBefore, fvalAfter):
-    import matplotlib.pyplot as plt
-    plt.figure(1, figsize=(6,6))
-    labels = budgetDictBefore.keys()
-    fracs = budgetDictBefore.values()
-    plt.pie(fracs, labels = labels)
-    plt.title('BUDGET ALLOCATION BEFORE: [optimising for ' + optimise +  ']  number of '+optimise+'='  + str(fvalBefore) )
-    plt.show()
-    plt.figure(1, figsize=(6,6))
-    labels = budgetDictAfter.keys()
-    fracs = budgetDictAfter.values()
-    plt.pie(fracs, labels = labels)
-    plt.title('BUDGET ALLOCATION AFTER: [optimising for '  + optimise + ']  number of '+optimise+'=' + str(fvalAfter) )
-    plt.show()
+def getBudgetPieChartComparison(budgetDictBefore, budgetDictAfter, optimise, fvalBefore, fvalAfter, string):
+    #tidy up dictionaries
+    budgetDictAfterClean = {}
+    budgetDictBeforeClean = {}
+    for key in budgetDictBefore.keys():
+        if budgetDictBefore[key] > 1:
+            budgetDictBeforeClean[key] = budgetDictBefore[key]
+    for key in budgetDictAfter.keys():
+        if budgetDictAfter[key] > 1:
+            budgetDictAfterClean[key] = budgetDictAfter[key]        
     
+    from pylab import *
+    figure()
+    ax1 = subplot(211, aspect='equal', adjustable='box-forced')
+    labels = budgetDictBeforeClean.keys()
+    fracs = budgetDictBeforeClean.values()
+    ax1.pie(fracs, labels = labels)    
+    ax1.set_title('before: fval = ' + str(fvalBefore))
+    ax2 = subplot(212, aspect='equal', adjustable='box-forced')
+    labels = budgetDictAfterClean.keys()
+    fracs = budgetDictAfterClean.values()
+    ax2.pie(fracs, labels = labels)
+    ax2.set_title('after: fval = ' + str(fvalAfter))
+    plt.suptitle('optimising for: ' + optimise + '. ' + string)
+    plt.show()
+
 def plotCoverage(coverageDict, string):
     from pylab import *    
     val = coverageDict.values()    # the bar lengths
@@ -646,14 +657,12 @@ def plotSpendingAllocation(spendDict, string):
 def plotSpendingAndCoverageTogether(spendDict, coverageDict):
     from pylab import *
     f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
-    
     val = spendDict.values()    # the bar lengths
     pos = arange(len(spendDict))+.5    # the bar centers on the y axis
     ax1.barh(pos,val, align='center')
     yticks(pos, spendDict.keys())
     ax1.set_title('Spending')
     grid(True)
-    
     val = coverageDict.values()    # the bar lengths
     pos = arange(len(coverageDict))+.5    # the bar centers on the y axis
     ax2.barh(pos,val, align='center')
@@ -661,7 +670,7 @@ def plotSpendingAndCoverageTogether(spendDict, coverageDict):
     grid(True)    
     
     
-def compareOptimisationOutput(self, spendDictBefore, spendDictAfter, coverageDictBefore, coverageDictAfter, string):
+def compareOptimisationOutput(spendDictBefore, spendDictAfter, coverageDictBefore, coverageDictAfter, optimise, string):
     from pylab import *
     f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='col', sharey='row')
     
@@ -683,7 +692,6 @@ def compareOptimisationOutput(self, spendDictBefore, spendDictAfter, coverageDic
     pos = arange(len(spendDictAfter))+.5    # the bar centers on the y axis
     ax3.barh(pos,val, align='center')
     ax3.set_yticklabels(spendDictAfter.keys())
-    #yticks(pos, spendDict.keys())
     ax3.set_title('spending after')
     ax3.grid(True)
     
@@ -693,7 +701,7 @@ def compareOptimisationOutput(self, spendDictBefore, spendDictAfter, coverageDic
     ax4.set_title('coverage after')
     ax4.grid(True)        
     
-    plt.suptitle(string)
+    plt.suptitle('optimising for: ' + optimise + '. ' + string)
     plt.show()
     
     
