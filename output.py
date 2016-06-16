@@ -661,7 +661,7 @@ def plotSpendingAndCoverageTogether(spendDict, coverageDict):
     grid(True)    
     
     
-def compareOptimisationOutput(self, spendDictBefore, spendDictAfter, coverageDictBefore, coverageDictAfter):
+def compareOptimisationOutput(self, spendDictBefore, spendDictAfter, coverageDictBefore, coverageDictAfter, string):
     from pylab import *
     f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='col', sharey='row')
     
@@ -693,6 +693,7 @@ def compareOptimisationOutput(self, spendDictBefore, spendDictAfter, coverageDic
     ax4.set_title('coverage after')
     ax4.grid(True)        
     
+    plt.suptitle(string)
     plt.show()
     
     
