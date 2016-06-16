@@ -150,7 +150,7 @@ for ichoose in range(len(spreadsheetData.interventionList)):
 
 #------------------------------------------------------------------------    
 
-filenamePrefix = '%s_inv'%(country)
+filenamePrefix = '%s_fixedInvest'%(country)
 
 #output.getCombinedPlots(run, plotData)
 output.getCombinedPlots(run, plotData, startYear=2015, filenamePrefix=filenamePrefix, save=True)
