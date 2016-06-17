@@ -97,7 +97,7 @@ numInterventions = len(initialAllocation)
 print 'STUNTING'
 optimise = 'stunting' # choose between 'deaths' and 'stunting'
 cascadeOutputBudgetDictStunting = {}
-for cascade in range(0.6, 3.0, 0.2):
+for cascade in [0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0]:
     print 'CASCADE:  ' + str(cascade)
 
     filename = 'Bangladesh_stunting__cascade_'+str(cascade)+'.pkl'
@@ -106,9 +106,9 @@ for cascade in range(0.6, 3.0, 0.2):
     for r in range(0, 50):
         print 'SAMPLE:  ' + str(r)
         totalBudget = currentTotalBudget * cascade
-        args = {'verbose':0, 'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'mothers':mothers, 'timestep':timestep, 'agingRateList':agingRateList, 'agePopSizes':agePopSizes, 'keyList':keyList, 'data':spreadsheetData} 
+        args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'mothers':mothers, 'timestep':timestep, 'agingRateList':agingRateList, 'agePopSizes':agePopSizes, 'keyList':keyList, 'data':spreadsheetData} 
         proposalAllocation = np.random.rand(numInterventions)
-        budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, proposalAllocation, args, xmin = xmin)
+        budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, proposalAllocation, args, xmin = xmin, verbose = 0)
         outputDict = {'budgetBest':budgetBest, 'fval':fval, 'exitflag':exitflag, 'output':output}    
         totalOutput.append(outputDict)
         pickle.dump(outputDict, outfile)
@@ -134,7 +134,7 @@ for cascade in range(0.6, 3.0, 0.2):
 print 'DEATHS'
 optimise = 'deaths' # choose between 'deaths' and 'stunting'
 cascadeOutputBudgetDictDeaths = {}
-for cascade in range(0.6, 3.0, 0.2):
+for cascade in [0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0]:
     print 'CASCADE:  ' + str(cascade)
 
     filename = 'Bangladesh_deaths__cascade_'+str(cascade)+'.pkl'
@@ -143,9 +143,9 @@ for cascade in range(0.6, 3.0, 0.2):
     for r in range(0, 50):
         print 'SAMPLE:  ' + str(r)
         totalBudget = currentTotalBudget * cascade
-        args = {'verbose':0, 'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'mothers':mothers, 'timestep':timestep, 'agingRateList':agingRateList, 'agePopSizes':agePopSizes, 'keyList':keyList, 'data':spreadsheetData} 
+        args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'mothers':mothers, 'timestep':timestep, 'agingRateList':agingRateList, 'agePopSizes':agePopSizes, 'keyList':keyList, 'data':spreadsheetData} 
         proposalAllocation = np.random.rand(numInterventions)
-        budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, proposalAllocation, args, xmin = xmin)
+        budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, proposalAllocation, args, xmin = xmin, verbose = 0)
         outputDict = {'budgetBest':budgetBest, 'fval':fval, 'exitflag':exitflag, 'output':output}    
         totalOutputD.append(outputDict)
         pickle.dump(outputDict, outfile)
