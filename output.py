@@ -637,7 +637,8 @@ def getBudgetPieChartComparison(budgetDictBefore, budgetDictAfter, optimise, fva
     ax2.pie(fracs, labels = labels, colors = colorsAfter)
     ax2.set_title('after: fval = ' + str(fvalAfter))
     plt.suptitle('optimising for: ' + optimise + '. ' + string)
-    plt.show()
+    #plt.show()
+    plt.savefig(string + '.png')
 
 def plotCoverage(coverageDict, string):
     from pylab import *    
@@ -711,6 +712,7 @@ def compareOptimisationOutput(spendDictBefore, spendDictAfter, coverageDictBefor
     ax4.grid(True)        
     
     plt.suptitle('optimising for: ' + optimise + '. ' + string)
-    plt.show()
+    #plt.show()
+    plt.savefig(string + '.png')
     
     
