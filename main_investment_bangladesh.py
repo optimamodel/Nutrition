@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Feb 24 13:49:18 2016
+Created on Wed Jun 14 2016
 
-@author: ruthpearson
+@author: madhurakilledar
 """
 from __future__ import division
 
@@ -15,6 +15,7 @@ import costcov
 from numpy import array
 
 country = 'Bangladesh'
+startYear = 2016
 
 helper = helper.Helper()
 costCov = costcov.Costcov()
@@ -150,10 +151,10 @@ for ichoose in range(len(spreadsheetData.interventionList)):
 
 #------------------------------------------------------------------------    
 
-filenamePrefix = '%s_inv'%(country)
+filenamePrefix = '%s_fixedInvest'%(country)
 
 #output.getCombinedPlots(run, plotData)
-output.getCombinedPlots(run, plotData, startYear=2015, filenamePrefix=filenamePrefix, save=True)
+output.getCombinedPlots(run, plotData, startYear=startYear-1, filenamePrefix=filenamePrefix, save=True)
 output.getCompareDeathsAverted(run, plotData, scalePercent=0.1, filenamePrefix=filenamePrefix, title=title, save=True)
 output.getStuntingCasesAverted(run, plotData, scalePercent=0.1, filenamePrefix=filenamePrefix, title=title, save=True)
 
