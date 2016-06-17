@@ -14,6 +14,9 @@ from copy import deepcopy as dcp
 import costcov
 from numpy import array
 
+country = 'Bangladesh'
+startYear = 2016
+
 helper = helper.Helper()
 costCov = costcov.Costcov()
 
@@ -24,7 +27,6 @@ stuntingList = ["normal", "mild", "moderate", "high"]
 breastfeedingList = ["exclusive", "predominant", "partial", "none"]
 keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
 
-country = 'Bangladesh'
 dataFilename = 'InputForCode_%s.xlsx'%(country)
 spreadsheetData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
 mothers = helper.makePregnantWomen(spreadsheetData)
@@ -47,14 +49,18 @@ run = 0
 #------------------------------------------------------------------------    
 # DEFAULT RUN WITH NO CHANGES TO INTERVENTIONS
 nametag = "Baseline"
-pickleFilename = 'testDefault.pkl'
+pickleFilename = '%s_Default.pkl'%(country)
 plotcolor = 'grey'
 
 print "\n"+nametag
 model, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
 
+# file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')
+model.moveOneTimeStep()
 pickle.dump(model, outfile)
+
+# Run model
 for t in range(numsteps-1):
     model.moveOneTimeStep()
     pickle.dump(model, outfile)
@@ -81,7 +87,7 @@ run += 1
 #------------------------------------------------------------------------    
 # INTERVENTION
 nametag = "Fixed investment"
-pickleFilename = 'test_Investment.pkl'
+pickleFilename = '%s_Investment.pkl'%(country)
 plotcolor = 'green'
 
 print "\n"+nametag
@@ -90,7 +96,6 @@ modelZ, constants, params = helper.setupModelConstantsParameters(nametag, mother
 
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')
-pickle.dump(modelZ, outfile)
 model.moveOneTimeStep()
 pickle.dump(model, outfile)
 
@@ -123,7 +128,7 @@ for intervention in spreadsheetData.interventionList:
 # update coverage
 modelZ.updateCoverages(newCoverages)
 
-for t in range(numsteps-2):
+for t in range(numsteps-1):
     modelZ.moveOneTimeStep()
     pickle.dump(modelZ, outfile)
 outfile.close()    
@@ -148,7 +153,7 @@ run += 1
 #------------------------------------------------------------------------    
 
 
-output.getCombinedPlots(run, plotData startYear=2015)
+output.getCombinedPlots(run, plotData startYear=startYear-1)
 #output.getDeathsAverted(modelList, newModelList, 'test')
 
 
