@@ -61,7 +61,7 @@ def getDataFromSpreadsheet(fileName, keyList):
     causesOfDeath = list(df['Cause'])
 
     #get list of interventions
-    df = pandas.read_excel(Location, sheetname = 'Interventions coverages')
+    df = pandas.read_excel(Location, sheetname = 'Interventions cost and coverage')
     interventionList = list(df['Intervention'])
 
     #get list of projection years
@@ -405,7 +405,7 @@ def getDataFromSpreadsheet(fileName, keyList):
     #  - InterventionCostCoverage
 
     #get the nested list of causeOfDeathDist
-    df = pandas.read_excel(Location, sheetname = 'Interventions coverages', index_col = 'Intervention')
+    df = pandas.read_excel(Location, sheetname = 'Interventions cost and coverage', index_col = 'Intervention')
     interventionCoveragesCurrent = {}
     interventionCostCoverage = {}
     costinfoList = ["unit cost","saturation coverage"]
