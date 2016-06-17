@@ -132,14 +132,35 @@ class Model:
     def setParams(self, inputParams):
         self.params = inputParams
 
+
     def getTotalCumulativeDeaths(self):
         totalCumulativeDeaths = 0
         for ageGroup in self.listOfAgeCompartments:
             totalCumulativeDeaths += ageGroup.getCumulativeDeaths()
         return totalCumulativeDeaths
         
+
     def getCumulativeAgingOutStunted(self):
         return self.cumulativeAgingOutStunted
+
+
+    def getDiagnostics(self, verbose=False):
+        numAges = len(self.ages)
+        newborns = self.listOfAgeCompartments[0]
+        fracStuntedNew = newborns.getStuntedFraction()
+        popsizeU5    = 0.
+        numStuntedU5 = 0.
+        for i in range(numAges):
+            thisAgeGroup = self.listOfAgeCompartments[i]
+            numStuntedU5 += thisAgeGroup.getNumberStunted()
+            popsizeU5    += thisAgeGroup.getTotalPopulation()
+        fracStuntedU5 = numStuntedU5 / popsizeU5
+        if verbose:
+            print "stunting prevalence in newborns = %g%%"%(fracStuntedNew*100.)
+            print "stunting prevalence in under 5s = %g%%"%(fracStuntedU5 *100.)
+            print "populations size of    under 5s = %g  "%(popsizeU5)
+        return fracStuntedNew, fracStuntedU5, popsizeU5
+
 
     def updateCoverages(self, newCoverage):
         #newCoverage is a dictionary of coverages by intervention        
@@ -199,8 +220,6 @@ class Model:
         # WARNING since incidences have been updated by breastfeeding, then the following two lines should have params.breastfeedingDist
         Z0 = self.constants.getZa(incidencesBefore, self.params.breastfeedingDistribution)
         Zt = self.constants.getZa(incidencesAfter,  self.params.breastfeedingDistribution)
-        #Z0 = self.constants.getZa(incidencesBefore, self.constants.data.breastfeedingDistribution)
-        #Zt = self.constants.getZa(incidencesAfter,  self.constants.data.breastfeedingDistribution)
         beta = self.constants.getBetaGivenZ0AndZt(Z0, Zt)
         stuntingUpdateDueToIncidence = self.params.getIncidenceStuntingUpdateGivenBeta(beta)
         
@@ -379,5 +398,5 @@ class Model:
         self.applyMortality() 
         self.applyAgingAndBirths()
         self.updateRiskDistributions()
-        self.itime += 1
+        #self.itime += 1
 
