@@ -19,6 +19,10 @@ timestep = 1./12.
 numsteps = 180
 timespan = timestep * float(numsteps)
 #endYear  = startYear + int(timespan)
+numYears = int(timespan)
+yearList = list(range(startYear, startYear+numYears))
+print "yearList"
+print yearList
 
 helper = helper.Helper()
 ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
@@ -53,11 +57,50 @@ plotData = []
 run = 0
 
 #------------------------------------------------------------------------    
-# DEFAULT RUN WITH NO CHANGES TO INTERVENTIONS
-nametag = "Optima model"
+# HISTORICAL BUT BASELINE 2000
+
+nametag = "Optima (2000 baseline)"
+filenamePrefix = '%s_Historical_baseline'%(country)
+pickleFilename = '%s_baseline.pkl'%(filenamePrefix)
+plotcolor = 'grey'
+
+print "\n"+nametag
+modelB, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
+
+# file to dump objects into at each time step
+outfile = open(pickleFilename, 'wb')
+
+# Run model until the end
+for t in range(numsteps):
+    modelB.moveOneTimeStep()
+    pickle.dump(modelB, outfile)
+
+# done
+outfile.close()    
+
+# collect output, make graphs etc.
+infile = open(pickleFilename, 'rb')
+modelList = []
+while 1:
+    try:
+        modelList.append(pickle.load(infile))
+    except (EOFError):
+        break
+infile.close()
+
+plotData.append({})
+plotData[run]["modelList"] = modelList
+plotData[run]["tag"] = nametag
+plotData[run]["color"] = plotcolor
+run += 1
+
+#------------------------------------------------------------------------    
+# HISTORICAL SCALE UPS
+
+nametag = "Optima (with scale ups)"
 filenamePrefix = '%s_Historical'%(country)
 pickleFilename = '%s.pkl'%(filenamePrefix)
-plotcolor = 'grey'
+plotcolor = 'green'
 
 print "\n"+nametag
 modelH, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
@@ -153,14 +196,14 @@ plotData[run]["tag"] = nametag
 plotData[run]["color"] = plotcolor
 run += 1
 
-numRuns = run
-numYears = int(timespan)
-yearList =  list(range(startYear, startYear+numYears))
 #------------------------------------------------------------------------    
+numRuns = run
 
 output.getCombinedPlots(run, plotData, startYear=startYear, filenamePrefix=filenamePrefix, save=True)
 #output.getDeathsAverted(modelList, newModelList, 'test')
 #output.getStuntedPercent(modelList, '2000-2015', startYear=2000)
+
+#------------------------------------------------------------------------    
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -217,32 +260,48 @@ for iRun in range(numRuns):
 
 # PLOTTING
 print "plotting..."
-skip = 2
-yearPlotList =  list(range(startYear, startYear+numYears, skip))
+#skip = 2
+#yearTickList =  list(range(startYear, startYear+numYears, skip))
+#print "yearTickList"
+#print yearTickList
+yearAxisLimits = [yearList[0]-1, yearList[numYears-1]+1]
+print "axes limits"
+print yearAxisLimits
 
 # PLOT comparison of Stunted Fraction (everyone U5)
 fig, ax = plt.subplots()
-ax.set_xticklabels(yearPlotList)
-ax.set_xlim([yearList[0], yearList[numYears-1]])
-ax.set_ylim([34., 47.])
-plt.ylabel('Percentage of children under 5 stunted')
 plt.xlabel('Year')
+ax.set_xlim(yearAxisLimits)
+#ax.set_xticklabels(yearTickList)
+plt.ylabel('Percentage of children under 5 stunted')
+ax.set_ylim([20., 46.])
 
 # plot
 plotList = []
 tagList = []
-tag       = plotData[iRun]["tag"]
-color     = plotData[iRun]["color"]
-plotObj,  = plt.plot(yearList, stuntFracU5annual[tag], linewidth=1.7,     color=color)
-plotMark, = plt.plot(yearList, stuntFracU5annual[tag], ms=10, marker='o', color=color)
-plotList.append(plotMark)
-tagList.append(tag)
+for iRun in range(numRuns):
+    tag       = plotData[iRun]["tag"]
+    color     = plotData[iRun]["color"]
+    plotObj,  = plt.plot(yearList, stuntFracU5annual[tag], linewidth=2.7,     color=color)
+    #plotMark, = plt.plot(yearList, stuntFracU5annual[tag], ms=4, marker='o', color=color)
+    plotList.append(plotObj)
+    tagList.append(tag)
 
-historyYear      = np.array([2000, 2000, 2004, 2004, 2007, 2007, 2007, 2009, 2011, 2012, 2014])
-historyStuntFrac = np.array([45,   44.7, 42,   43,   40,   36,   43.2, 43,   41,   42,   36])
-plotHistory, = plt.scatter(historyYear, historyStuntFrac, s=17, marker='*', color="red")
-plotList.append(plotHistory)
-tagList.append("Historical data")
+#allYear      = [2000, 2000, 2004, 2004, 2007, 2007, 2007, 2009, 2011, 2012, 2014]
+#allStuntFrac = [45,   44.7, 42,   43,   40,   36,   43.2, 43,   41,   42,   36]
+
+BDHSyear      = [2000, 2004, 2007, 2011, 2014]
+BDHSstuntFrac = [44.7, 43,   43.2, 41,   36  ]
+plotBDHS = plt.scatter(BDHSyear, BDHSstuntFrac, s=80, marker='s', color="#DD1144")
+plotList.append(plotBDHS)
+tagList.append("Data (BDHS)")
+
+otherYear      = [2000, 2004, 2007, 2007, 2009, 2012]
+otherStuntFrac = [45,   42,   40,   36,   43,   42  ]
+plotOther = plt.scatter(otherYear, otherStuntFrac, s=80, marker='D', color="#DD7722")
+plotList.append(plotOther)
+tagList.append("Data (other)")
+
 
 plt.legend(plotList, tagList, loc = 'upper center', bbox_to_anchor=(0.5,-0.1))
 plt.savefig("%s_stuntingPrevalence.png"%(filenamePrefix), bbox_inches='tight')
@@ -251,7 +310,7 @@ plt.savefig("%s_stuntingPrevalence.png"%(filenamePrefix), bbox_inches='tight')
 """
 # PLOT comparison of Deaths (everyone U5)
 fig, ax = plt.subplots()
-ax.set_xticklabels(yearPlotList)
+ax.set_xticklabels(yearTickList)
 ax.set_xlim([yearList[0], yearList[numYears-1]])
 ax.set_ylim([100000, 200000])
 plt.ylabel('Number of deaths in children under 5')
