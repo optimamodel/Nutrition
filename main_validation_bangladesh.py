@@ -21,8 +21,6 @@ timespan = timestep * float(numsteps)
 #endYear  = startYear + int(timespan)
 numYears = int(timespan)
 yearList = list(range(startYear, startYear+numYears))
-print "yearList"
-print yearList
 
 helper = helper.Helper()
 ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
@@ -31,14 +29,15 @@ wastingList = ["normal", "mild", "moderate", "high"]
 stuntingList = ["normal", "mild", "moderate", "high"]
 breastfeedingList = ["exclusive", "predominant", "partial", "none"]
 keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
-
-dataFilename = 'Input_Optima_%s_%i.xlsx'%(country,startYear)
-spreadsheetData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
-mothers = helper.makePregnantWomen(spreadsheetData)
-mothers['annualPercentPopGrowth'] = -0.01
 ageGroupSpans = [1., 5., 6., 12., 36.] # number of months in each age group
 agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
 numAgeGroups = len(ages)
+
+dataFilename = 'Input_Optima_%s_%i.xlsx'%(country,startYear)
+
+spreadsheetData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
+mothers = helper.makePregnantWomen(spreadsheetData)
+mothers['annualPercentPopGrowth'] = -0.01
 agePopSizes  = helper.makeAgePopSizes(numAgeGroups, ageGroupSpans, spreadsheetData)
 year1 = 3871841
 year2 = 3731124
@@ -49,9 +48,10 @@ agePopSizes  = [year1/12., year1*5./12., year1*6./12., year2, year3+year4+year5]
 
 # initialise
 newCoverages={}
+print "Baseline coverages:"
 for intervention in spreadsheetData.interventionList:
     newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
-    print "Baseline coverage of %s = %g"%(intervention,spreadsheetData.interventionCoveragesCurrent[intervention])
+    print "%s : %g"%(intervention,spreadsheetData.interventionCoveragesCurrent[intervention])
 
 plotData = []
 run = 0
@@ -116,12 +116,18 @@ for t in range(stepsUntilNextUpdate):
     pickle.dump(modelH, outfile)
 totalStepsTaken += stepsUntilNextUpdate
 
+print "\n" 
+modelH.getDiagnostics(verbose=True)
+
 # update coverages in 2004
 newCoverages["Vitamin A supplementation"] = 0.82
 modelH.updateCoverages(newCoverages)
-print "\n Current Coverages:"
+print "\n coverages after 2004:"
 for intervention in spreadsheetData.interventionList:
     print "%s : %g"%(intervention,newCoverages[intervention])
+
+print "\n" 
+modelH.getDiagnostics(verbose=True)
 
 # Run model until 2007
 yearsUntilNextUpdate = 3
@@ -131,12 +137,18 @@ for t in range(stepsUntilNextUpdate):
     pickle.dump(modelH, outfile)
 totalStepsTaken += stepsUntilNextUpdate
 
+print "\n" 
+modelH.getDiagnostics(verbose=True)
+
 # update coverages in 2007
 newCoverages["Vitamin A supplementation"] = 0.84
 modelH.updateCoverages(newCoverages)
-print "\n Current Coverages:"
+print "\n coverages after 2007:"
 for intervention in spreadsheetData.interventionList:
     print "%s : %g"%(intervention,newCoverages[intervention])
+
+print "\n" 
+modelH.getDiagnostics(verbose=True)
 
 # Run model until 2011
 yearsUntilNextUpdate = 4
@@ -146,13 +158,27 @@ for t in range(stepsUntilNextUpdate):
     pickle.dump(modelH, outfile)
 totalStepsTaken += stepsUntilNextUpdate
 
+print "\n" 
+modelH.getDiagnostics(verbose=True)
+
 # update coverages in 2011
 newCoverages["Vitamin A supplementation"] = 0.6
-newCoverages["Breastfeeding promotion (dual delivery)"] = 0.61
 modelH.updateCoverages(newCoverages)
-print "\n Current Coverages:"
+print "\n coverages after 2011:"
 for intervention in spreadsheetData.interventionList:
     print "%s : %g"%(intervention,newCoverages[intervention])
+
+print "\n" 
+modelH.getDiagnostics(verbose=True)
+
+newCoverages["Breastfeeding promotion (dual delivery)"] = 0.61
+modelH.updateCoverages(newCoverages)
+print "\n coverages after 2011:"
+for intervention in spreadsheetData.interventionList:
+    print "%s : %g"%(intervention,newCoverages[intervention])
+
+print "\n" 
+modelH.getDiagnostics(verbose=True)
 
 # Run model until 2014
 yearsUntilNextUpdate = 3
@@ -162,20 +188,29 @@ for t in range(stepsUntilNextUpdate):
     pickle.dump(modelH, outfile)
 totalStepsTaken += stepsUntilNextUpdate
 
+print "\n" 
+modelH.getDiagnostics(verbose=True)
+
 # update coverages in 2014
 newCoverages["Vitamin A supplementation"] = 0.621
 newCoverages["Complementary feeding (education)"] = 0.247
 modelH.updateCoverages(newCoverages)
-print "\n Current Coverages:"
+print "\n coverages after 2014::"
 for intervention in spreadsheetData.interventionList:
     print "%s : %g"%(intervention,newCoverages[intervention])
 
+print "\n" 
+modelH.getDiagnostics(verbose=True)
+
 # Run model until the end
-print "Number of years left to run = %g"%((numsteps-totalStepsTaken)/12)
+print "\n Number of years left to run = %g"%((numsteps-totalStepsTaken)/12)
 for t in range(numsteps-totalStepsTaken):
     modelH.moveOneTimeStep()
     pickle.dump(modelH, outfile)
 totalStepsTaken += t+1
+
+print "\n" 
+modelH.getDiagnostics(verbose=True)
 
 # done
 outfile.close()    
@@ -259,14 +294,10 @@ for iRun in range(numRuns):
 
 
 # PLOTTING
-print "plotting..."
+print "\n Plotting..."
 #skip = 2
 #yearTickList =  list(range(startYear, startYear+numYears, skip))
-#print "yearTickList"
-#print yearTickList
 yearAxisLimits = [yearList[0]-1, yearList[numYears-1]+1]
-print "axes limits"
-print yearAxisLimits
 
 # PLOT comparison of Stunted Fraction (everyone U5)
 fig, ax = plt.subplots()
