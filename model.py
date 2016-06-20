@@ -5,26 +5,27 @@ Created on Wed Feb 24 13:43:14 2016
 @author: ruthpearson
 """
 from __future__ import division
+from copy import deepcopy as dcp
 
 class FertileWomen:
     def __init__(self, birthRate, populationSize, annualPercentPopGrowth):
-        self.birthRate = birthRate
-        self.populationSize = populationSize
+        self.birthRate = dcp(birthRate)
+        self.populationSize = dcp(populationSize)
         self.annualPercentPopGrowth = annualPercentPopGrowth
         
 class Box:
     def __init__(self, stuntCat, wasteCat, breastfeedingCat, populationSize, mortalityRate):
-        self.stuntCat =  stuntCat
-        self.wasteCat = wasteCat
-        self.breastfeedingCat = breastfeedingCat
-        self.populationSize = populationSize
-        self.mortalityRate = mortalityRate
+        #self.stuntCat =  stuntCat
+        #self.wasteCat = wasteCat
+        #self.breastfeedingCat = breastfeedingCat
+        self.populationSize = dcp(populationSize)
+        self.mortalityRate = dcp(mortalityRate)
         self.cumulativeDeaths = 0
 
 class AgeCompartment:
     def __init__(self, name, dictOfBoxes, agingRate, keyList):
         self.name = name  
-        self.dictOfBoxes = dictOfBoxes
+        self.dictOfBoxes = dcp(dictOfBoxes)
         self.agingRate = agingRate
         self.ages, self.birthOutcomeList, self.wastingList, self.stuntingList, self.breastfeedingList = keyList
 
@@ -150,15 +151,16 @@ class Model:
         fracStuntedNew = newborns.getStuntedFraction()
         popsizeU5    = 0.
         numStuntedU5 = 0.
-        for i in range(numAges):
-            thisAgeGroup = self.listOfAgeCompartments[i]
-            numStuntedU5 += thisAgeGroup.getNumberStunted()
-            popsizeU5    += thisAgeGroup.getTotalPopulation()
+        for ageGroup in self.listOfAgeCompartments:
+            numStuntedU5 += ageGroup.getNumberStunted()
+            popsizeU5    += ageGroup.getTotalPopulation()
         fracStuntedU5 = numStuntedU5 / popsizeU5
         if verbose:
             print "stunting prevalence in newborns = %g%%"%(fracStuntedNew*100.)
             print "stunting prevalence in under 5s = %g%%"%(fracStuntedU5 *100.)
             print "populations size of    under 5s = %g  "%(popsizeU5)
+            for ageName in self.ages:
+                print "For %s incidence of diarrhea is %g"%(ageName,self.params.incidences[ageName]['Diarrhea'])
         return fracStuntedNew, fracStuntedU5, popsizeU5
 
 
@@ -168,8 +170,8 @@ class Model:
         # call initialisation of probabilities related to interventions
         self.constants.getProbStuntedIfCoveredByIntervention(self.params.interventionCoverages, self.params.stuntingDistribution)
         self.constants.getProbAppropriatelyBreastfedIfCoveredByIntervention(self.params.interventionCoverages, self.params.breastfeedingDistribution)        
-        self.constants.getFracStuntedIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.stuntingDistribution)        
-        self.constants.getProbsStuntingComplementaryFeeding(self.params.stuntingDistribution, self.params.interventionCoverages)        
+        self.constants.getProbStuntedIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.stuntingDistribution)        
+        self.constants.getProbStuntedComplementaryFeeding(self.params.stuntingDistribution, self.params.interventionCoverages)        
         
         # get combined reductions from all interventions
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
@@ -178,7 +180,7 @@ class Model:
         birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)
         appropriatebfFracNew = self.params.getAppropriateBFNew(newCoverage)
         stuntingUpdateComplementaryFeeding = self.params.getStuntingUpdateComplementaryFeeding(newCoverage)
-        
+
         # MORTALITY
         for ageGroup in self.listOfAgeCompartments:
             ageName = ageGroup.name
@@ -206,6 +208,8 @@ class Model:
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
             SumAfter = self.constants.getDiarrheaRiskSum(ageName, self.params.breastfeedingDistribution)
             self.params.incidences[ageName]['Diarrhea'] = self.params.incidences[ageName]['Diarrhea'] / SumBefore * SumAfter
+            #beta = self.constants.getBetaGivenZ0AndZt(1., 1.)
+            #stuntingUpdateDueToBreastfeeding = self.params.getStuntingUpdateDueToIncidence(beta)
 
         # INCIDENCE
         incidencesBefore = {}
@@ -221,7 +225,7 @@ class Model:
         Z0 = self.constants.getZa(incidencesBefore, self.params.breastfeedingDistribution)
         Zt = self.constants.getZa(incidencesAfter,  self.params.breastfeedingDistribution)
         beta = self.constants.getBetaGivenZ0AndZt(Z0, Zt)
-        stuntingUpdateDueToIncidence = self.params.getIncidenceStuntingUpdateGivenBeta(beta)
+        stuntingUpdateDueToIncidence = self.params.getStuntingUpdateDueToIncidence(beta)
         
         # STUNTING
         for ageGroup in self.listOfAgeCompartments:
