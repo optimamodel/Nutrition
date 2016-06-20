@@ -58,7 +58,7 @@ run = 0
 
 #------------------------------------------------------------------------    
 # HISTORICAL BUT BASELINE 2000
-
+"""
 nametag = "Optima (2000 baseline)"
 filenamePrefix = '%s_Historical_baseline'%(country)
 pickleFilename = '%s_baseline.pkl'%(filenamePrefix)
@@ -93,7 +93,7 @@ plotData[run]["modelList"] = modelList
 plotData[run]["tag"] = nametag
 plotData[run]["color"] = plotcolor
 run += 1
-
+"""
 #------------------------------------------------------------------------    
 # HISTORICAL SCALE UPS
 
@@ -110,6 +110,7 @@ totalStepsTaken = 0
 outfile = open(pickleFilename, 'wb')
 
 yearsUntilNextUpdate = 4
+print "\n running for %i years"%(yearsUntilNextUpdate)
 stepsUntilNextUpdate = int(yearsUntilNextUpdate/timestep)
 for t in range(stepsUntilNextUpdate):
     modelH.moveOneTimeStep()
@@ -121,6 +122,7 @@ modelH.getDiagnostics(verbose=True)
 
 # update coverages in 2004
 newCoverages["Vitamin A supplementation"] = 0.82
+print "\n Updating..."
 modelH.updateCoverages(newCoverages)
 print "\n coverages after 2004:"
 for intervention in spreadsheetData.interventionList:
@@ -131,6 +133,7 @@ modelH.getDiagnostics(verbose=True)
 
 # Run model until 2007
 yearsUntilNextUpdate = 3
+print "\n running for %i years"%(yearsUntilNextUpdate)
 stepsUntilNextUpdate = int(yearsUntilNextUpdate/timestep)
 for t in range(stepsUntilNextUpdate):
     modelH.moveOneTimeStep()
@@ -142,6 +145,7 @@ modelH.getDiagnostics(verbose=True)
 
 # update coverages in 2007
 newCoverages["Vitamin A supplementation"] = 0.84
+print "\n Updating..."
 modelH.updateCoverages(newCoverages)
 print "\n coverages after 2007:"
 for intervention in spreadsheetData.interventionList:
@@ -152,6 +156,7 @@ modelH.getDiagnostics(verbose=True)
 
 # Run model until 2011
 yearsUntilNextUpdate = 4
+print "\n running for %i years"%(yearsUntilNextUpdate)
 stepsUntilNextUpdate = int(yearsUntilNextUpdate/timestep)
 for t in range(stepsUntilNextUpdate):
     modelH.moveOneTimeStep()
@@ -163,6 +168,7 @@ modelH.getDiagnostics(verbose=True)
 
 # update coverages in 2011
 newCoverages["Vitamin A supplementation"] = 0.6
+print "\n Updating..."
 modelH.updateCoverages(newCoverages)
 print "\n coverages after 2011:"
 for intervention in spreadsheetData.interventionList:
@@ -172,6 +178,7 @@ print "\n"
 modelH.getDiagnostics(verbose=True)
 
 newCoverages["Breastfeeding promotion (dual delivery)"] = 0.61
+print "\n Updating..."
 modelH.updateCoverages(newCoverages)
 print "\n coverages after 2011:"
 for intervention in spreadsheetData.interventionList:
@@ -182,6 +189,7 @@ modelH.getDiagnostics(verbose=True)
 
 # Run model until 2014
 yearsUntilNextUpdate = 3
+print "\n running for %i years"%(yearsUntilNextUpdate)
 stepsUntilNextUpdate = int(yearsUntilNextUpdate/timestep)
 for t in range(stepsUntilNextUpdate):
     modelH.moveOneTimeStep()
@@ -194,6 +202,7 @@ modelH.getDiagnostics(verbose=True)
 # update coverages in 2014
 newCoverages["Vitamin A supplementation"] = 0.621
 newCoverages["Complementary feeding (education)"] = 0.247
+print "\n Updating..."
 modelH.updateCoverages(newCoverages)
 print "\n coverages after 2014::"
 for intervention in spreadsheetData.interventionList:
