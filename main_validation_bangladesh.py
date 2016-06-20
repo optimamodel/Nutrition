@@ -58,9 +58,9 @@ run = 0
 
 #------------------------------------------------------------------------    
 # HISTORICAL BUT BASELINE 2000
-"""
+
 nametag = "Optima (2000 baseline)"
-filenamePrefix = '%s_Historical_baseline'%(country)
+filenamePrefix = '%s_Historical'%(country)
 pickleFilename = '%s_baseline.pkl'%(filenamePrefix)
 plotcolor = 'grey'
 
@@ -93,7 +93,8 @@ plotData[run]["modelList"] = modelList
 plotData[run]["tag"] = nametag
 plotData[run]["color"] = plotcolor
 run += 1
-"""
+
+
 #------------------------------------------------------------------------    
 # HISTORICAL SCALE UPS
 
@@ -109,6 +110,7 @@ totalStepsTaken = 0
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')
 
+# Run model until 2004
 yearsUntilNextUpdate = 4
 print "\n running for %i years"%(yearsUntilNextUpdate)
 stepsUntilNextUpdate = int(yearsUntilNextUpdate/timestep)
@@ -117,7 +119,6 @@ for t in range(stepsUntilNextUpdate):
     pickle.dump(modelH, outfile)
 totalStepsTaken += stepsUntilNextUpdate
 
-print "\n" 
 modelH.getDiagnostics(verbose=True)
 
 # update coverages in 2004
@@ -128,7 +129,6 @@ print "\n coverages after 2004:"
 for intervention in spreadsheetData.interventionList:
     print "%s : %g"%(intervention,newCoverages[intervention])
 
-print "\n" 
 modelH.getDiagnostics(verbose=True)
 
 # Run model until 2007
@@ -140,7 +140,6 @@ for t in range(stepsUntilNextUpdate):
     pickle.dump(modelH, outfile)
 totalStepsTaken += stepsUntilNextUpdate
 
-print "\n" 
 modelH.getDiagnostics(verbose=True)
 
 # update coverages in 2007
@@ -151,7 +150,6 @@ print "\n coverages after 2007:"
 for intervention in spreadsheetData.interventionList:
     print "%s : %g"%(intervention,newCoverages[intervention])
 
-print "\n" 
 modelH.getDiagnostics(verbose=True)
 
 # Run model until 2011
@@ -163,7 +161,6 @@ for t in range(stepsUntilNextUpdate):
     pickle.dump(modelH, outfile)
 totalStepsTaken += stepsUntilNextUpdate
 
-print "\n" 
 modelH.getDiagnostics(verbose=True)
 
 # update coverages in 2011
@@ -174,7 +171,6 @@ print "\n coverages after 2011:"
 for intervention in spreadsheetData.interventionList:
     print "%s : %g"%(intervention,newCoverages[intervention])
 
-print "\n" 
 modelH.getDiagnostics(verbose=True)
 
 newCoverages["Breastfeeding promotion (dual delivery)"] = 0.61
@@ -184,7 +180,6 @@ print "\n coverages after 2011:"
 for intervention in spreadsheetData.interventionList:
     print "%s : %g"%(intervention,newCoverages[intervention])
 
-print "\n" 
 modelH.getDiagnostics(verbose=True)
 
 # Run model until 2014
@@ -196,7 +191,6 @@ for t in range(stepsUntilNextUpdate):
     pickle.dump(modelH, outfile)
 totalStepsTaken += stepsUntilNextUpdate
 
-print "\n" 
 modelH.getDiagnostics(verbose=True)
 
 # update coverages in 2014
@@ -208,7 +202,6 @@ print "\n coverages after 2014::"
 for intervention in spreadsheetData.interventionList:
     print "%s : %g"%(intervention,newCoverages[intervention])
 
-print "\n" 
 modelH.getDiagnostics(verbose=True)
 
 # Run model until the end
@@ -218,7 +211,6 @@ for t in range(numsteps-totalStepsTaken):
     pickle.dump(modelH, outfile)
 totalStepsTaken += t+1
 
-print "\n" 
 modelH.getDiagnostics(verbose=True)
 
 # done
