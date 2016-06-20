@@ -19,6 +19,7 @@ class Box:
         self.mortalityRate = dcp(mortalityRate)
         self.cumulativeDeaths = 0
 
+
 class AgeCompartment:
     def __init__(self, name, dictOfBoxes, agingRate, keyList):
         self.name = name  
@@ -52,7 +53,6 @@ class AgeCompartment:
                     NumberStunted += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
         return NumberStunted
 
-
     def getCumulativeDeaths(self):
         totalSum = 0.
         for stuntingCat in self.stuntingList:
@@ -60,7 +60,6 @@ class AgeCompartment:
                 for breastfeedingCat in self.breastfeedingList:
                     totalSum += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].cumulativeDeaths
         return totalSum
-
 
     def getStuntingDistribution(self):
         totalPop = self.getTotalPopulation()
@@ -106,6 +105,20 @@ class AgeCompartment:
             for wastingCat in self.wastingList:
                 for breastfeedingCat in self.breastfeedingList:
                     self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize = stuntingDist[ageName][stuntingCat] * wastingDist[ageName][wastingCat] * breastfeedingDist[ageName][breastfeedingCat] * totalPop
+
+    def getMortality(self):
+        agePop = 0.
+        ageMortality = 0.
+        for stuntingCat in self.stuntingList:
+            for wastingCat in self.wastingList:
+                for breastfeedingCat in self.breastfeedingList:
+                    thisBox = self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat] 
+                    boxMortality = thisBox.mortalityRate
+                    boxPop = thisBox.populationSize
+                    agePop += boxPop
+                    ageMortality += boxMortality*boxPop
+        ageMortality /= agePop
+        return ageMortality
 
 
         
@@ -153,11 +166,19 @@ class Model:
             popsizeU5    += ageGroup.getTotalPopulation()
         fracStuntedU5 = numStuntedU5 / popsizeU5
         if verbose:
+            print "\n     DIAGNOSTICS"
             print "stunting prevalence in newborns = %g%%"%(fracStuntedNew*100.)
             print "stunting prevalence in under 5s = %g%%"%(fracStuntedU5 *100.)
             print "populations size of    under 5s = %g  "%(popsizeU5)
-            for ageName in self.ages:
-                print "For %s incidence of diarrhea is %g"%(ageName,self.params.incidences[ageName]['Diarrhea'])
+            for ageGroup in self.listOfAgeCompartments:
+                #for ageName in self.ages:
+                ageName = ageGroup.name
+                print "For age %s olds..."%(ageName)
+                print "... incidence of diarrhea is %g"%(self.params.incidences[ageName]['Diarrhea'])
+                print "... breastfeeding distribution"
+                print ageGroup.getBreastfeedingDistribution()
+                print "... mortality"
+                print ageGroup.getMortality()
         return fracStuntedNew, fracStuntedU5, popsizeU5
 
 
@@ -218,7 +239,6 @@ class Model:
             self.params.incidences[ageName]['Diarrhea'] *= incidenceUpdate[ageName]['Diarrhea']
             incidencesAfter[ageName] = self.params.incidences[ageName]['Diarrhea']
         # get flow on effect to stunting due to changing incidence
-        # WARNING since incidences have been updated by breastfeeding, then the following two lines should have params.breastfeedingDist
         Z0 = self.constants.getZa(incidencesBefore, self.params.breastfeedingDistribution)
         Zt = self.constants.getZa(incidencesAfter,  self.params.breastfeedingDistribution)
         beta = self.constants.getBetaGivenZ0AndZt(Z0, Zt)
