@@ -14,10 +14,7 @@ class FertileWomen:
         self.annualPercentPopGrowth = annualPercentPopGrowth
         
 class Box:
-    def __init__(self, stuntCat, wasteCat, breastfeedingCat, populationSize, mortalityRate):
-        #self.stuntCat =  stuntCat
-        #self.wasteCat = wasteCat
-        #self.breastfeedingCat = breastfeedingCat
+    def __init__(self, populationSize, mortalityRate):
         self.populationSize = dcp(populationSize)
         self.mortalityRate = dcp(mortalityRate)
         self.cumulativeDeaths = 0
