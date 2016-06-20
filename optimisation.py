@@ -55,6 +55,7 @@ import costcov
 from copy import deepcopy as dcp
 from numpy import array
 import asd as asd
+import numpy as np
 helper = helper.Helper()
 costCov = costcov.Costcov()
 dataSpreadsheetName = 'InputForCode_Bangladesh.xlsx'
@@ -89,30 +90,42 @@ initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo,
 totalBudget = sum(initialAllocation)
 proposalAllocation = dcp(initialAllocation)
 
-proposalAllocation = [totalBudget/2., 0., totalBudget/2., 0., 0., 0.,0.]
-
+#proposalAllocation = [1., 1., 1., 1., 1., 1., 1.]
+#proposalAllocation = [totalBudget/2., 0., totalBudget/2., 0., 0., 0.,0.]
 #proposalAllocation = [invest-1000. if invest>2000. else 1000. for invest in initialAllocation]
 #proposalAllocation = [totalBudget/len(initialAllocation)] * len(initialAllocation)
+
 xmin = [0.] * len(initialAllocation)
 #xmin = [100.] * len(initialAllocation)
 #xmin  = [0.01*invest if invest>100. else 1. for invest in initialAllocation]
+
 optimise = 'stunting' # choose between 'deaths' and 'stunting'
 args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'mothers':mothers, 'timestep':timestep, 'agingRateList':agingRateList, 'agePopSizes':agePopSizes, 'keyList':keyList, 'data':spreadsheetData}    
-budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, proposalAllocation, args, xmin = xmin)  #MaxFunEvals = 10            
 
-scaledBudgetBest = rescaleAllocation(totalBudget, budgetBest)
-budgetDictBefore = {}
-budgetDictAfter = {}  
-finalCoverage = {}
-i = 0        
-for intervention in spreadsheetData.interventionList:
-    budgetDictBefore[intervention] = proposalAllocation[i][0]
-    budgetDictAfter[intervention] = scaledBudgetBest[i][0]  
-    finalCoverage[intervention] = costCov.function(array([scaledBudgetBest[i]]), costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
-    i += 1        
+for r in range(0, 10):
     
-outputPlot.getBudgetPieChartComparison(budgetDictBefore, budgetDictAfter, optimise, output.fval[0], fval[0][0])    
+    proposalAllocation = np.random.rand(7)
 
+    budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, proposalAllocation, args, xmin = xmin)  #MaxFunEvals = 10            
+    
+    scaledBudgetBest = rescaleAllocation(totalBudget, budgetBest)
+    scaledproposalAllocation = rescaleAllocation(totalBudget, proposalAllocation)
+    budgetDictBefore = {}
+    budgetDictAfter = {}  
+    initialCoverage = {}
+    finalCoverage = {}
+    i = 0        
+    for intervention in spreadsheetData.interventionList:
+        budgetDictBefore[intervention] = scaledproposalAllocation[i]#[0]
+        budgetDictAfter[intervention] = scaledBudgetBest[i][0]  
+        initialCoverage[intervention] = costCov.function(array([scaledproposalAllocation[i]]), costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
+        finalCoverage[intervention] = costCov.function(array([scaledBudgetBest[i]]), costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
+        i += 1        
+        
+        
+    string = optimise+'_random_'+str(r)    
+    outputPlot.getBudgetPieChartComparison(budgetDictBefore, budgetDictAfter, optimise, output.fval[0], fval[0][0], string+'_pie')    
+    outputPlot.compareOptimisationOutput(budgetDictBefore, budgetDictAfter, initialCoverage, finalCoverage, optimise, string)
 
 
 
