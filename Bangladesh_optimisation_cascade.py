@@ -5,6 +5,16 @@ Created on Fri Jun 17 13:56:23 2016
 @author: ruth
 """
 
+class OutputClass:
+    def __init__(self, budgetBest, fval, exitflag, cleanOutputIterations, cleanOutputFuncCount, cleanOutputFvalVector, cleanOutputXVector):
+        self.budgetBest = budgetBest
+        self.fval = fval
+        self.exitflag = exitflag
+        self.cleanOutputIterations = cleanOutputIterations
+        self.cleanOutputFuncCount = cleanOutputFuncCount
+        self.cleanOutputFvalVector = cleanOutputFvalVector
+        self.cleanOutputXVector = cleanOutputXVector
+
 def getTotalInitialAllocation(data, costCoverageInfo, targetPopSize):
     import costcov
     costCov = costcov.Costcov()
@@ -91,102 +101,54 @@ initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo,
 currentTotalBudget = sum(initialAllocation)
 xmin = [0.] * len(initialAllocation)
 numInterventions = len(initialAllocation)
+MCSampleSize = 25
+cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]  
 
 
-#  -------------     STUNTING    ----------------
-print 'STUNTING'
-optimise = 'stunting' # choose between 'deaths' and 'stunting'
-cascadeOutputBudgetDictStunting = {}
-for cascade in [0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0]:
-    print 'CASCADE:  ' + str(cascade)
+for optimise in ['stunting', 'deaths']:
 
-    filename = 'Bangladesh_stunting__cascade_'+str(cascade)+'.pkl'
-    outfile = open(filename, 'wb')
-    totalOutput = []
-    for r in range(0, 50):
-        print 'SAMPLE:  ' + str(r)
-        totalBudget = currentTotalBudget * cascade
-        args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'mothers':mothers, 'timestep':timestep, 'agingRateList':agingRateList, 'agePopSizes':agePopSizes, 'keyList':keyList, 'data':spreadsheetData} 
-        proposalAllocation = np.random.rand(numInterventions)
-        budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, proposalAllocation, args, xmin = xmin, verbose = 0)
-        outputDict = {'budgetBest':budgetBest, 'fval':fval, 'exitflag':exitflag, 'output':output}    
-        totalOutput.append(outputDict)
-        pickle.dump(outputDict, outfile)
-    outfile.close() 
+    print optimise
+    cascadeBudget = {}
+    for cascade in cascadeValues:
+        print 'CASCADE:  ' + str(cascade)
     
-    # find the best
-    bestOutput = totalOutput[0]
-    for sample in range(0, len(totalOutput)):
-        if totalOutput[sample]['fval'] < bestOutput['fval']:
-            bestOutput = totalOutput[sample]
+        filename = 'Bangladesh_cascade_output_'+str(cascade)+'_'+optimise+'.pkl'
+        outfile = open(filename, 'wb')
+        scenarioMonteCarloOutput = []
+        for r in range(0, MCSampleSize):
+            print 'SAMPLE:  ' + str(r)
+            totalBudget = currentTotalBudget * cascade
+            args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'mothers':mothers, 'timestep':timestep, 'agingRateList':agingRateList, 'agePopSizes':agePopSizes, 'keyList':keyList, 'data':spreadsheetData} 
+            proposalAllocation = np.random.rand(numInterventions)
+            budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, proposalAllocation, args, xmin = xmin, verbose = 0)
+            outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval, output.x)        
+            scenarioMonteCarloOutput.append(outputOneRun)
+            pickle.dump(outputOneRun, outfile)
+        outfile.close() 
         
-    
-    bestOutputBudget = bestOutput['budgetBest']
-    bestOutputBudgetScaled = rescaleAllocation(totalBudget, bestOutputBudget)
-    cascadeOutputBudgetDictStunting[cascade] = bestOutputBudgetScaled
-
-    filename = 'Bangladesh_cascadeOutputBudgetDictStunting.pkl'
+        # find the best
+        bestSample = scenarioMonteCarloOutput[0]
+        for sample in range(0, len(scenarioMonteCarloOutput)):
+            if scenarioMonteCarloOutput[sample].fval < bestSample.fval:
+                bestSample = scenarioMonteCarloOutput[sample]
+            
+        # scale it and make a dictionary
+        bestSampleBudget = bestSample.budgetBest
+        bestSampleBudgetScaled = rescaleAllocation(totalBudget, bestSampleBudget)
+        bestSampleBudgetScaledDict = {}
+        for i in range(0, len(spreadsheetData.interventionList)):
+            intervention = spreadsheetData.interventionList[i]
+            bestSampleBudgetScaledDict[intervention] = bestSampleBudgetScaled[i]  
+        # put it in the cascade output
+        cascadeBudget[cascade] = bestSampleBudgetScaledDict
+        # save this cascade scenario dictionary of allocation to file
+        filename = 'Bangladesh_cascade_dictionary'+str(cascade)+'_'+optimise+'.pkl'
+        outfile = open(filename, 'wb')
+        pickle.dump(bestSampleBudgetScaledDict, outfile)
+        outfile.close() 
+    # save full cascade to file
+    filename = 'Bangladesh_full_cascade_dictionary_'+optimise+'.pkl'
     outfile = open(filename, 'wb')
-    pickle.dump(cascadeOutputBudgetDictStunting, outfile)
-    outfile.close() 
-    
-#  -------------     DEATHS    ----------------
-print 'DEATHS'
-optimise = 'deaths' # choose between 'deaths' and 'stunting'
-cascadeOutputBudgetDictDeaths = {}
-for cascade in [0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0]:
-    print 'CASCADE:  ' + str(cascade)
-
-    filename = 'Bangladesh_deaths__cascade_'+str(cascade)+'.pkl'
-    outfile = open(filename, 'wb')
-    totalOutputD = []
-    for r in range(0, 50):
-        print 'SAMPLE:  ' + str(r)
-        totalBudget = currentTotalBudget * cascade
-        args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'mothers':mothers, 'timestep':timestep, 'agingRateList':agingRateList, 'agePopSizes':agePopSizes, 'keyList':keyList, 'data':spreadsheetData} 
-        proposalAllocation = np.random.rand(numInterventions)
-        budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, proposalAllocation, args, xmin = xmin, verbose = 0)
-        outputDict = {'budgetBest':budgetBest, 'fval':fval, 'exitflag':exitflag, 'output':output}    
-        totalOutputD.append(outputDict)
-        pickle.dump(outputDict, outfile)
-    outfile.close() 
-    
-    # find the best
-    bestOutput = totalOutputD[0]
-    for sample in range(0, len(totalOutputD)):
-        if totalOutputD[sample]['fval'] < bestOutput['fval']:
-            bestOutput = totalOutputD[sample]
+    pickle.dump(cascadeBudget, outfile)
+    outfile.close()     
         
-    
-    bestOutputBudget = bestOutput['budgetBest']
-    bestOutputBudgetScaled = rescaleAllocation(totalBudget, bestOutputBudget)
-    cascadeOutputBudgetDictDeaths[cascade] = bestOutputBudgetScaled
-
-    filename = 'Bangladesh_cascadeOutputBudgetDictDeaths.pkl'
-    outfile = open(filename, 'wb')
-    pickle.dump(cascadeOutputBudgetDictDeaths, outfile)
-    outfile.close()
-
-
-
-
-
-
-
-
-
-#scaledBudgetBest = rescaleAllocation(totalBudget, budgetBest)
-#rescaledProposalAllocation = rescaleAllocation(totalBudget, proposalAllocation)
-#budgetDictBefore = {}
-#budgetDictAfter = {}  
-#finalCoverage = {}
-#initialCoverage = {}
-#i = 0        
-#for intervention in spreadsheetData.interventionList:
-#    budgetDictBefore[intervention] = rescaledProposalAllocation[i][0]
-#    budgetDictAfter[intervention] = scaledBudgetBest[i][0]  
-#    finalCoverage[intervention] = costCov.function(array([scaledBudgetBest[i]]), costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
-#    initialCoverage[intervention] = costCov.function(array([rescaledProposalAllocation[i]]), costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
-#    i += 1        
-    
-
