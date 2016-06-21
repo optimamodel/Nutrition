@@ -59,7 +59,7 @@ run = 0
 #------------------------------------------------------------------------    
 # HISTORICAL BUT BASELINE 2000
 
-nametag = "Optima (2000 baseline)"
+nametag = "Baseline"
 filenamePrefix = '%s_Historical'%(country)
 pickleFilename = '%s_baseline.pkl'%(filenamePrefix)
 plotcolor = 'grey'
@@ -98,7 +98,7 @@ run += 1
 #------------------------------------------------------------------------    
 # HISTORICAL SCALE UPS
 
-nametag = "Optima (with scale ups)"
+nametag = "Nutrition-specific interventions only (Optima)"
 filenamePrefix = '%s_Historical'%(country)
 pickleFilename = '%s.pkl'%(filenamePrefix)
 plotcolor = 'green'
@@ -242,7 +242,9 @@ output.getCombinedPlots(run, plotData, startYear=startYear, filenamePrefix=filen
 #------------------------------------------------------------------------    
 
 import numpy as np
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
+from matplotlib.ticker import FuncFormatter
+from matplotlib import rcParams
 
 # set up
 modelList = plotData[0]["modelList"]
@@ -296,17 +298,28 @@ for iRun in range(numRuns):
 
 # PLOTTING
 print "\n Plotting..."
+
+rcParams.update({'font.size':20})
+
 #skip = 2
 #yearTickList =  list(range(startYear, startYear+numYears, skip))
 yearAxisLimits = [yearList[0]-1, yearList[numYears-1]+1]
 
+def myfunc(x, pos=0):
+    return '%.0f%%'%(x)
+
 # PLOT comparison of Stunted Fraction (everyone U5)
 fig, ax = plt.subplots()
-plt.xlabel('Year')
+ax.set_xlabel('Year', size=20)
 ax.set_xlim(yearAxisLimits)
+#plt.rc('xtick', labelsize=20)
+#ax.get_xticklabels().set_fontsize(20)
 #ax.set_xticklabels(yearTickList)
-plt.ylabel('Percentage of children under 5 stunted')
-ax.set_ylim([20., 46.])
+#plt.ylabel('Percentage of children under 5 stunted')
+ax.set_ylim([0, 50])
+ax.yaxis.set_major_formatter(FuncFormatter(myfunc))
+#plt.rc('ytick', labelsize=24)
+#ax.get_yticklabels().set_fontsize(20)
 
 # plot
 plotList = []
@@ -314,8 +327,7 @@ tagList = []
 for iRun in range(numRuns):
     tag       = plotData[iRun]["tag"]
     color     = plotData[iRun]["color"]
-    plotObj,  = plt.plot(yearList, stuntFracU5annual[tag], linewidth=2.7,     color=color)
-    #plotMark, = plt.plot(yearList, stuntFracU5annual[tag], ms=4, marker='o', color=color)
+    plotObj,  = plt.plot(yearList, stuntFracU5annual[tag], linewidth=3.3, color=color)
     plotList.append(plotObj)
     tagList.append(tag)
 
@@ -324,7 +336,7 @@ for iRun in range(numRuns):
 
 BDHSyear      = [2000, 2004, 2007, 2011, 2014]
 BDHSstuntFrac = [44.7, 43,   43.2, 41,   36  ]
-plotBDHS = plt.scatter(BDHSyear, BDHSstuntFrac, s=80, marker='s', color="#DD1144")
+plotBDHS = plt.scatter(BDHSyear, BDHSstuntFrac, s=80, marker='s', color="#DD0055")
 plotList.append(plotBDHS)
 tagList.append("Data (BDHS)")
 
