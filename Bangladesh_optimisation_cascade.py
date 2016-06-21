@@ -112,8 +112,8 @@ for optimise in ['stunting', 'deaths']:
     for cascade in cascadeValues:
         print 'CASCADE:  ' + str(cascade)
     
-        filename = 'Bangladesh_cascade_output_'+str(cascade)+'_'+optimise+'.pkl'
-        outfile = open(filename, 'wb')
+        #filename = 'Bangladesh_cascade_output_'+str(cascade)+'_'+optimise+'.pkl'
+        #outfile = open(filename, 'wb')
         scenarioMonteCarloOutput = []
         for r in range(0, MCSampleSize):
             print 'SAMPLE:  ' + str(r)
@@ -123,8 +123,8 @@ for optimise in ['stunting', 'deaths']:
             budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, proposalAllocation, args, xmin = xmin, verbose = 0)
             outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval, output.x)        
             scenarioMonteCarloOutput.append(outputOneRun)
-            pickle.dump(outputOneRun, outfile)
-        outfile.close() 
+            #pickle.dump(outputOneRun, outfile)
+        #outfile.close() 
         
         # find the best
         bestSample = scenarioMonteCarloOutput[0]
