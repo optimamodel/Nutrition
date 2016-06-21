@@ -125,7 +125,7 @@ class Params:
         return incidenceUpdate                         
 
         
-    def getIncidenceStuntingUpdateGivenBeta(self, beta):
+    def getStuntingUpdateDueToIncidence(self, beta):
         stuntingUpdate = {}
         for ageName in self.ages:
             stuntingUpdate[ageName] = 1.

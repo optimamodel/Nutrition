@@ -21,8 +21,6 @@ timespan = timestep * float(numsteps)
 #endYear  = startYear + int(timespan)
 numYears = int(timespan)
 yearList = list(range(startYear, startYear+numYears))
-print "yearList"
-print yearList
 
 helper = helper.Helper()
 ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
@@ -31,14 +29,15 @@ wastingList = ["normal", "mild", "moderate", "high"]
 stuntingList = ["normal", "mild", "moderate", "high"]
 breastfeedingList = ["exclusive", "predominant", "partial", "none"]
 keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
-
-dataFilename = 'Input_Optima_%s_%i.xlsx'%(country,startYear)
-spreadsheetData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
-mothers = helper.makePregnantWomen(spreadsheetData)
-mothers['annualPercentPopGrowth'] = -0.01
 ageGroupSpans = [1., 5., 6., 12., 36.] # number of months in each age group
 agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
 numAgeGroups = len(ages)
+
+dataFilename = 'Input_Optima_%s_%i.xlsx'%(country,startYear)
+
+spreadsheetData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
+mothers = helper.makePregnantWomen(spreadsheetData)
+mothers['annualPercentPopGrowth'] = -0.01
 agePopSizes  = helper.makeAgePopSizes(numAgeGroups, ageGroupSpans, spreadsheetData)
 year1 = 3871841
 year2 = 3731124
@@ -49,9 +48,10 @@ agePopSizes  = [year1/12., year1*5./12., year1*6./12., year2, year3+year4+year5]
 
 # initialise
 newCoverages={}
+print "Baseline coverages:"
 for intervention in spreadsheetData.interventionList:
     newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
-    print "Baseline coverage of %s = %g"%(intervention,spreadsheetData.interventionCoveragesCurrent[intervention])
+    print "%s : %g"%(intervention,spreadsheetData.interventionCoveragesCurrent[intervention])
 
 plotData = []
 run = 0
@@ -59,8 +59,8 @@ run = 0
 #------------------------------------------------------------------------    
 # HISTORICAL BUT BASELINE 2000
 
-nametag = "Optima (2000 baseline)"
-filenamePrefix = '%s_Historical_baseline'%(country)
+nametag = "Baseline"
+filenamePrefix = '%s_Historical'%(country)
 pickleFilename = '%s_baseline.pkl'%(filenamePrefix)
 plotcolor = 'grey'
 
@@ -94,10 +94,11 @@ plotData[run]["tag"] = nametag
 plotData[run]["color"] = plotcolor
 run += 1
 
+
 #------------------------------------------------------------------------    
 # HISTORICAL SCALE UPS
 
-nametag = "Optima (with scale ups)"
+nametag = "Nutrition-specific interventions only (Optima)"
 filenamePrefix = '%s_Historical'%(country)
 pickleFilename = '%s.pkl'%(filenamePrefix)
 plotcolor = 'green'
@@ -109,73 +110,108 @@ totalStepsTaken = 0
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')
 
+# Run model until 2004
 yearsUntilNextUpdate = 4
+print "\n running for %i years"%(yearsUntilNextUpdate)
 stepsUntilNextUpdate = int(yearsUntilNextUpdate/timestep)
 for t in range(stepsUntilNextUpdate):
     modelH.moveOneTimeStep()
     pickle.dump(modelH, outfile)
 totalStepsTaken += stepsUntilNextUpdate
+
+modelH.getDiagnostics(verbose=True)
 
 # update coverages in 2004
 newCoverages["Vitamin A supplementation"] = 0.82
+print "\n Updating..."
 modelH.updateCoverages(newCoverages)
-print "\n Current Coverages:"
+print "\n coverages after 2004:"
 for intervention in spreadsheetData.interventionList:
     print "%s : %g"%(intervention,newCoverages[intervention])
+
+modelH.getDiagnostics(verbose=True)
 
 # Run model until 2007
 yearsUntilNextUpdate = 3
+print "\n running for %i years"%(yearsUntilNextUpdate)
 stepsUntilNextUpdate = int(yearsUntilNextUpdate/timestep)
 for t in range(stepsUntilNextUpdate):
     modelH.moveOneTimeStep()
     pickle.dump(modelH, outfile)
 totalStepsTaken += stepsUntilNextUpdate
+
+modelH.getDiagnostics(verbose=True)
 
 # update coverages in 2007
 newCoverages["Vitamin A supplementation"] = 0.84
+print "\n Updating..."
 modelH.updateCoverages(newCoverages)
-print "\n Current Coverages:"
+print "\n coverages after 2007:"
 for intervention in spreadsheetData.interventionList:
     print "%s : %g"%(intervention,newCoverages[intervention])
+
+modelH.getDiagnostics(verbose=True)
 
 # Run model until 2011
 yearsUntilNextUpdate = 4
+print "\n running for %i years"%(yearsUntilNextUpdate)
 stepsUntilNextUpdate = int(yearsUntilNextUpdate/timestep)
 for t in range(stepsUntilNextUpdate):
     modelH.moveOneTimeStep()
     pickle.dump(modelH, outfile)
 totalStepsTaken += stepsUntilNextUpdate
+
+modelH.getDiagnostics(verbose=True)
 
 # update coverages in 2011
 newCoverages["Vitamin A supplementation"] = 0.6
-newCoverages["Breastfeeding promotion (dual delivery)"] = 0.61
+print "\n Updating..."
 modelH.updateCoverages(newCoverages)
-print "\n Current Coverages:"
+print "\n coverages after 2011:"
 for intervention in spreadsheetData.interventionList:
     print "%s : %g"%(intervention,newCoverages[intervention])
 
+modelH.getDiagnostics(verbose=True)
+
+newCoverages["Breastfeeding promotion (dual delivery)"] = 0.61
+print "\n Updating..."
+modelH.updateCoverages(newCoverages)
+print "\n coverages after 2011:"
+for intervention in spreadsheetData.interventionList:
+    print "%s : %g"%(intervention,newCoverages[intervention])
+
+modelH.getDiagnostics(verbose=True)
+
 # Run model until 2014
 yearsUntilNextUpdate = 3
+print "\n running for %i years"%(yearsUntilNextUpdate)
 stepsUntilNextUpdate = int(yearsUntilNextUpdate/timestep)
 for t in range(stepsUntilNextUpdate):
     modelH.moveOneTimeStep()
     pickle.dump(modelH, outfile)
 totalStepsTaken += stepsUntilNextUpdate
+
+modelH.getDiagnostics(verbose=True)
 
 # update coverages in 2014
 newCoverages["Vitamin A supplementation"] = 0.621
 newCoverages["Complementary feeding (education)"] = 0.247
+print "\n Updating..."
 modelH.updateCoverages(newCoverages)
-print "\n Current Coverages:"
+print "\n coverages after 2014::"
 for intervention in spreadsheetData.interventionList:
     print "%s : %g"%(intervention,newCoverages[intervention])
 
+modelH.getDiagnostics(verbose=True)
+
 # Run model until the end
-print "Number of years left to run = %g"%((numsteps-totalStepsTaken)/12)
+print "\n Number of years left to run = %g"%((numsteps-totalStepsTaken)/12)
 for t in range(numsteps-totalStepsTaken):
     modelH.moveOneTimeStep()
     pickle.dump(modelH, outfile)
 totalStepsTaken += t+1
+
+modelH.getDiagnostics(verbose=True)
 
 # done
 outfile.close()    
@@ -206,7 +242,9 @@ output.getCombinedPlots(run, plotData, startYear=startYear, filenamePrefix=filen
 #------------------------------------------------------------------------    
 
 import numpy as np
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
+from matplotlib.ticker import FuncFormatter
+from matplotlib import rcParams
 
 # set up
 modelList = plotData[0]["modelList"]
@@ -259,22 +297,29 @@ for iRun in range(numRuns):
 
 
 # PLOTTING
-print "plotting..."
+print "\n Plotting..."
+
+rcParams.update({'font.size':20})
+
 #skip = 2
 #yearTickList =  list(range(startYear, startYear+numYears, skip))
-#print "yearTickList"
-#print yearTickList
 yearAxisLimits = [yearList[0]-1, yearList[numYears-1]+1]
-print "axes limits"
-print yearAxisLimits
+
+def myfunc(x, pos=0):
+    return '%.0f%%'%(x)
 
 # PLOT comparison of Stunted Fraction (everyone U5)
 fig, ax = plt.subplots()
-plt.xlabel('Year')
+ax.set_xlabel('Year', size=20)
 ax.set_xlim(yearAxisLimits)
+#plt.rc('xtick', labelsize=20)
+#ax.get_xticklabels().set_fontsize(20)
 #ax.set_xticklabels(yearTickList)
-plt.ylabel('Percentage of children under 5 stunted')
-ax.set_ylim([20., 46.])
+#plt.ylabel('Percentage of children under 5 stunted')
+ax.set_ylim([0, 50])
+ax.yaxis.set_major_formatter(FuncFormatter(myfunc))
+#plt.rc('ytick', labelsize=24)
+#ax.get_yticklabels().set_fontsize(20)
 
 # plot
 plotList = []
@@ -282,8 +327,7 @@ tagList = []
 for iRun in range(numRuns):
     tag       = plotData[iRun]["tag"]
     color     = plotData[iRun]["color"]
-    plotObj,  = plt.plot(yearList, stuntFracU5annual[tag], linewidth=2.7,     color=color)
-    #plotMark, = plt.plot(yearList, stuntFracU5annual[tag], ms=4, marker='o', color=color)
+    plotObj,  = plt.plot(yearList, stuntFracU5annual[tag], linewidth=3.3, color=color)
     plotList.append(plotObj)
     tagList.append(tag)
 
@@ -292,7 +336,7 @@ for iRun in range(numRuns):
 
 BDHSyear      = [2000, 2004, 2007, 2011, 2014]
 BDHSstuntFrac = [44.7, 43,   43.2, 41,   36  ]
-plotBDHS = plt.scatter(BDHSyear, BDHSstuntFrac, s=80, marker='s', color="#DD1144")
+plotBDHS = plt.scatter(BDHSyear, BDHSstuntFrac, s=80, marker='s', color="#DD0055")
 plotList.append(plotBDHS)
 tagList.append("Data (BDHS)")
 
