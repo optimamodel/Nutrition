@@ -182,9 +182,10 @@ class Model:
         return fracStuntedNew, fracStuntedU5, popsizeU5
 
 
-    def updateCoverages(self, newCoverage):
+    def updateCoverages(self, newCoverageArg):
         #newCoverage is a dictionary of coverages by intervention        
-        
+        newCoverage = dcp(newCoverageArg)
+
         # call initialisation of probabilities related to interventions
         self.constants.getProbStuntedIfCoveredByIntervention(self.params.interventionCoverages, self.params.stuntingDistribution)
         self.constants.getProbAppropriatelyBreastfedIfCoveredByIntervention(self.params.interventionCoverages, self.params.breastfeedingDistribution)        
@@ -271,7 +272,7 @@ class Model:
         self.updateMortalityRate()    
 
         # set newCoverages as the coverages in interventions
-        self.params.interventionCoverages = dcp(newCoverage)
+        self.params.interventionCoverages = newCoverage
 
             
             
@@ -375,6 +376,7 @@ class Model:
             # gaussianise
             stuntingDistributionNow = thisAgeCompartment.getStuntingDistribution()            
             probStunting = stuntingDistributionNow['high'] + stuntingDistributionNow['moderate']
+            #probStunting = thisAgeCompartment.getStuntedFraction()
             self.params.stuntingDistribution[ageName] = self.helper.restratify(probStunting)
             thisAgeCompartment.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
 
