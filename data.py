@@ -309,7 +309,7 @@ def getDataFromSpreadsheet(fileName, keyList):
     for age in ages:
         incidences[age] = {}
         for condition in conditions:
-            incidences[age][condition] = df.loc[condition, age]
+            incidences[age][condition] = df.loc[condition, age] / 12. #WARNING HACK should multiply by timestep within code
 
 
     # READ RR diarrhea SHEET
