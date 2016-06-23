@@ -40,7 +40,7 @@ plotData[run]["tag"] = nametag
 plotData[run]["color"] = plotcolor
 run += 1
 
-percentageIncrease = 30
+percentageIncrease = 20
 title = '%s: 2015-2030 \n Scale up interventions by %i%% points'%(country,percentageIncrease)
 filenamePrefix = '%s_%i'%(country,percentageIncrease)
 
