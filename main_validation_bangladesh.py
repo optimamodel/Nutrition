@@ -16,7 +16,7 @@ country = 'Bangladesh'
 startYear = 2000
 
 timestep = 1./12. 
-numsteps = 180
+numsteps = 192
 timespan = timestep * float(numsteps)
 #endYear  = startYear + int(timespan)
 numYears = int(timespan)
@@ -301,8 +301,9 @@ print "\n Plotting..."
 
 rcParams.update({'font.size':20})
 
-#skip = 2
-#yearTickList =  list(range(startYear, startYear+numYears, skip))
+skip = 5
+yearTickList =  list(range(startYear, startYear+numYears, skip))
+#yearAxisLimits = [yearList[0]-1, yearList[numYears-1]+1]
 yearAxisLimits = [yearList[0]-1, yearList[numYears-1]+1]
 
 def myfunc(x, pos=0):
@@ -312,6 +313,7 @@ def myfunc(x, pos=0):
 fig, ax = plt.subplots()
 ax.set_xlabel('Year', size=20)
 ax.set_xlim(yearAxisLimits)
+ax.set_xticks(yearTickList)
 #plt.rc('xtick', labelsize=20)
 #ax.get_xticklabels().set_fontsize(20)
 #ax.set_xticklabels(yearTickList)
@@ -347,7 +349,7 @@ plotList.append(plotOther)
 tagList.append("Data (other)")
 
 
-plt.legend(plotList, tagList, loc = 'upper center', bbox_to_anchor=(0.5,-0.1))
+plt.legend(plotList, tagList, loc = 'upper center', bbox_to_anchor=(0.5,-0.16))
 plt.savefig("%s_stuntingPrevalence.png"%(filenamePrefix), bbox_inches='tight')
 
 
