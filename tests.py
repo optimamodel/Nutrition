@@ -20,6 +20,7 @@ def setUpDataModelConstantsParameters():
     keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
     testData = data.getDataFromSpreadsheet('InputForCode_tests.xlsx', keyList)
     mothers = {'birthRate':0.9, 'populationSize':2.e6}
+    mothers['annualPercentPopGrowth'] = 0.
     agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
     agePopSizes  = [6400, 6400, 6400, 6400, 6400]
     timestep = 1./12. 
@@ -47,10 +48,10 @@ class TestsForConstantsClass(unittest.TestCase):
         [self.testData, self.testModel, self.testConstants, self.testParams, self.keyList] = setUpDataModelConstantsParameters()
         
     def testGetUnderlyingMortalities(self):
-        # 64 compartments per age; 25/100=0.25 (distributions); 1 (cause); 1 (RR); 500/1000=0.5 for newborn otherwise 0.0 (total mortality) 
+        # 64 compartments per age; 25/100=0.25 (distributions); 1 (cause); 1 (RR); 500*12/1000=6. for newborn otherwise 0.0 (total mortality) 
         # underlyingMortality = total mortality / (numCompartments * dist * dist * dist * RR * RR * RR * cause)
         # underlyingMortality = total mortality / (numBFCompartments * BFdist * RR * RR * cause) for newborns
-        self.assertAlmostEqual(0.5/4./0.25, self.testConstants.underlyingMortalities["<1 month"]["Neonatal diarrhea"])
+        self.assertAlmostEqual(6./4./0.25, self.testConstants.underlyingMortalities["<1 month"]["Neonatal diarrhea"])
         for age in ['1-5 months', '6-11 months', '12-23 months', '24-59 months']:
             self.assertAlmostEqual((0./64.)*(1.e6), self.testConstants.underlyingMortalities[age]["Diarrhea"])
         
@@ -97,15 +98,15 @@ class TestsForModelClass(unittest.TestCase):
 
     def testApplyMortalityOneBox(self):
         # deaths = popsize * mortality * timestep
-        #popsize = 100, mortality = 0.5, timestep = 1/12
+        #popsize = 100, mortality = 6., timestep = 1/12
         self.helper = helper.Helper()
         gaussianStuntingDist = self.helper.restratify(0.5) 
         initialPopSize = gaussianStuntingDist['high'] * 0.25 * 0.25 * 6400 
         self.testModel.applyMortality()
         popSize = self.testModel.listOfAgeCompartments[0].dictOfBoxes['high']['mild']['none'].populationSize
         cumulativeDeaths = self.testModel.listOfAgeCompartments[0].dictOfBoxes['high']['mild']['none'].cumulativeDeaths
-        self.assertAlmostEqual(initialPopSize * 0.5 / 12., cumulativeDeaths)
-        self.assertAlmostEqual(initialPopSize - (initialPopSize * 0.5 / 12.), popSize)
+        self.assertAlmostEqual(initialPopSize * 6. / 12., cumulativeDeaths)
+        self.assertAlmostEqual(initialPopSize - (initialPopSize * 6. / 12.), popSize)
     
     @unittest.skip("underlying mortalites all set to zero except for neonatals")
     def testApplyMortalityBySummingAllBoxes(self):
