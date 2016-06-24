@@ -47,6 +47,10 @@ class Helper:
         annualBirths      = dcp(spreadsheetData.demographics['number of live births'])
         pregnantWomen['populationSize'] = annualPregnancies
         pregnantWomen['birthRate']      = annualBirths / annualPregnancies
+        projectedBirths   = dcp(spreadsheetData.projectedBirths)
+        baseBirths = projectedBirths[0]
+        numYears   = len(projectedBirths)-1
+        pregnantWomen['annualPercentPopGrowth'] = (projectedBirths[numYears]-baseBirths)/float(numYears)/float(baseBirths)
         return pregnantWomen
 
 
