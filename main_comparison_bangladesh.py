@@ -84,86 +84,169 @@ run += 1
 
 #------------------------------------------------------------------------    
 # INCREASE COVERAGE OF COMPLEMENTARY FEEDING BY 50%
-percentageIncrease = 50
-nametag = "Complementary feeding: increase coverage by %g%% points"%(percentageIncrease)
-pickleFilename = '%s_CompFeed_P%i.pkl'%(country,percentageIncrease)
-plotcolor = 'green'
+scenarios = [30, 50, 70]
+for icov in range(len(scenarios)):
+    CFcoverage = scenarios[icov]
+    #percentageIncrease = 50
+    #nametag = "Complementary feeding: increase coverage by %g%% points"%(percentageIncrease)
+    #pickleFilename = '%s_CompFeed_P%i.pkl'%(country,percentageIncrease)
+    nametag = "Complementary feeding: %g%% coverage"%(CFcoverage)
+    pickleFilename = '%s_CompFeed_P%i.pkl'%(country,CFcoverage)
+    plotcolor = (0.1, 1.0-0.2*icov, 0.1)
 
-print "\n"+nametag
-modelZ, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
+    print "\n"+nametag
+    modelCF, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
 
-# file to dump objects into at each time step
-outfile = open(pickleFilename, 'wb')
-modelZ.moveOneTimeStep()
-pickle.dump(modelZ, outfile)
+    # file to dump objects into at each time step
+    outfile = open(pickleFilename, 'wb')
 
-# initialise
-newCoverages={}
-for intervention in spreadsheetData.interventionList:
-    newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
-# scale up
-for intervention in ['Complementary feeding (supplementation)','Complementary feeding (education)']:
-    newCoverages[intervention] += percentageIncrease/100.
-    newCoverages[intervention] = min(newCoverages[intervention],spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])
-    newCoverages[intervention] = max(newCoverages[intervention],spreadsheetData.interventionCoveragesCurrent[intervention])
-    newCoverages[intervention] = max(newCoverages[intervention],0.0)
-modelZ.updateCoverages(newCoverages)
+    # run for a year before
+    timestepsPre = 12
+    for t in range(timestepsPre):
+        modelCF.moveOneTimeStep()
+        pickle.dump(modelCF, outfile)
 
-# Run model
-for t in range(numsteps-1):
-    modelZ.moveOneTimeStep()
-    pickle.dump(modelZ, outfile)
-outfile.close()    
+    # initialise
+    newCoverages={}
+    for intervention in spreadsheetData.interventionList:
+        newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
+    # scale up
+    for intervention in ['Complementary feeding (supplementation)','Complementary feeding (education)']:
+    #newCoverages[intervention] += percentageIncrease/100.
+        newCoverages[intervention] = CFcoverage/100.
+        #newCoverages[intervention] = min(newCoverages[intervention],spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])
+        #newCoverages[intervention] = max(newCoverages[intervention],spreadsheetData.interventionCoveragesCurrent[intervention])
+        #newCoverages[intervention] = max(newCoverages[intervention],0.0)
+    modelCF.updateCoverages(newCoverages)
 
-# collect output, make graphs etc.
-infile = open(pickleFilename, 'rb')
-newModelList = []
-while 1:
-    try:
-        newModelList.append(pickle.load(infile))
-    except (EOFError):
-        break
-infile.close()
+    # Run model
+    for t in range(numsteps-timestepsPre):
+        modelCF.moveOneTimeStep()
+        pickle.dump(modelCF, outfile)
 
-plotData.append({})
-plotData[run]["modelList"] = newModelList
-plotData[run]["tag"] = nametag
-plotData[run]["color"] = plotcolor
-run += 1
+    # done
+    outfile.close()    
+
+    # collect output, make graphs etc.
+    infile = open(pickleFilename, 'rb')
+    newModelList = []
+    while 1:
+        try:
+            newModelList.append(pickle.load(infile))
+        except (EOFError):
+            break
+    infile.close()
+
+    plotData.append({})
+    plotData[run]["modelList"] = newModelList
+    plotData[run]["tag"] = nametag
+    plotData[run]["color"] = plotcolor
+    run += 1
 
 
 
 #------------------------------------------------------------------------    
 # INCREASE COVERAGE OF BREASTFEEDING FROM 61% to 90%
-percentageIncrease = 29
-nametag = "Breastfeeding: increase coverage by %g%% points"%(percentageIncrease)
-pickleFilename = '%s_BreastFeed_P%i.pkl'%(country,percentageIncrease)
-plotcolor = 'blue'
+scenarios = [70, 80, 90]
+for icov in range(len(scenarios)):
+    BFcoverage = scenarios[icov]
+    #percentageIncrease = 29
+    #nametag = "Breastfeeding: increase coverage by %g%% points"%(percentageIncrease)
+    #pickleFilename = '%s_Breastfeed_P%i.pkl'%(country,percentageIncrease)
+    nametag = "Breastfeeding promotion: %g%% coverage"%(BFcoverage)
+    pickleFilename = '%s_Breastfeed_P%i.pkl'%(country,BFcoverage)
+    plotcolor = (0.1, 0.1, 1.0-0.2*icov)
+
+    print "\n"+nametag
+    modelBF, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
+
+    # file to dump objects into at each time step
+    outfile = open(pickleFilename, 'wb')
+
+    # run for a year before
+    timestepsPre = 12
+    for t in range(timestepsPre):
+        modelBF.moveOneTimeStep()
+        pickle.dump(modelBF, outfile)
+
+    # initialise
+    newCoverages={}
+    for intervention in spreadsheetData.interventionList:
+        newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
+
+    # scale up
+    for intervention in ['Breastfeeding promotion (dual delivery)']:
+        #newCoverages[intervention] += percentageIncrease/100.
+        newCoverages[intervention] = BFcoverage/100.
+        #newCoverages[intervention] = min(newCoverages[intervention],spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])
+        #newCoverages[intervention] = max(newCoverages[intervention],spreadsheetData.interventionCoveragesCurrent[intervention])
+        #newCoverages[intervention] = max(newCoverages[intervention],0.0)
+    modelBF.updateCoverages(newCoverages)
+
+    # Run model
+    for t in range(numsteps-timestepsPre):
+        modelBF.moveOneTimeStep()
+        pickle.dump(modelBF, outfile)
+
+    # done
+    outfile.close()    
+
+    # collect output, make graphs etc.
+    infile = open(pickleFilename, 'rb')
+    newModelList = []
+    while 1:
+        try:
+            newModelList.append(pickle.load(infile))
+        except (EOFError):
+            break
+    infile.close()
+
+    plotData.append({})
+    plotData[run]["modelList"] = newModelList
+    plotData[run]["tag"] = nametag
+    plotData[run]["color"] = plotcolor
+    run += 1
+
+
+
+#------------------------------------------------------------------------    
+# INCREASE COVERAGE OF BREASTFEEDING AND COMPLEMENTARY FEEDING
+BFcoverage = 90
+CFcoverage = 70
+nametag = "Scale up Breastfeeding promotion to %g%% and Complementary feeding to %g%%"%(BFcoverage,CFcoverage)
+pickleFilename = '%s_BF%i_CF%i.pkl'%(country,BFcoverage,CFcoverage)
+plotcolor = (1.0-0.2*icov, 0.1, 0.1)
 
 print "\n"+nametag
-modelZ, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
+modelBC, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
 
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')
-modelZ.moveOneTimeStep()
-pickle.dump(modelZ, outfile)
+
+# run for a year before
+timestepsPre = 12
+for t in range(timestepsPre):
+    modelBC.moveOneTimeStep()
+    pickle.dump(modelBC, outfile)
 
 # initialise
 newCoverages={}
 for intervention in spreadsheetData.interventionList:
     newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
+
 # scale up
 for intervention in ['Breastfeeding promotion (dual delivery)']:
-    newCoverages[intervention] += percentageIncrease/100.
-    newCoverages[intervention] = min(newCoverages[intervention],spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])
-    newCoverages[intervention] = max(newCoverages[intervention],spreadsheetData.interventionCoveragesCurrent[intervention])
-    newCoverages[intervention] = max(newCoverages[intervention],0.0)
-modelZ.updateCoverages(newCoverages)
+    newCoverages[intervention] = BFcoverage/100.
+for intervention in ['Complementary feeding (supplementation)','Complementary feeding (education)']:
+    newCoverages[intervention] = CFcoverage/100.
+modelBC.updateCoverages(newCoverages)
 
 # Run model
-for t in range(numsteps-1):
-    modelZ.moveOneTimeStep()
-    pickle.dump(modelZ, outfile)
+for t in range(numsteps-timestepsPre):
+    modelBC.moveOneTimeStep()
+    pickle.dump(modelBC, outfile)
+
+# done
 outfile.close()    
 
 # collect output, make graphs etc.
@@ -181,8 +264,6 @@ plotData[run]["modelList"] = newModelList
 plotData[run]["tag"] = nametag
 plotData[run]["color"] = plotcolor
 run += 1
-
-
 
 #------------------------------------------------------------------------    
 
