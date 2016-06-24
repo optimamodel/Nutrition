@@ -4,7 +4,11 @@ Created on Fri Jun 24 14:28:54 2016
 
 @author: ruth
 """
-import optimisation as optimisation
+
+import os, sys
+moduleDir = os.path.join(os.path.dirname(__file__), '..')
+sys.path.append(moduleDir)
+import optimisation
 
 timestep = 1./12. 
 numsteps = 180
@@ -20,13 +24,13 @@ numModelSteps = 180
 MCSampleSize = 25
 optimise = 'stunting'
 
-spreadsheet0 = 'InputForCode_Bangladesh.xlsx'
-spreadsheet1 = 'InputForCode_Bangladesh.xlsx'
-spreadsheet2 = 'InputForCode_Bangladesh.xlsx'
-spreadsheet3 = 'InputForCode_Bangladesh.xlsx'
-spreadsheet4 = 'InputForCode_Bangladesh.xlsx'
-spreadsheet5 = 'InputForCode_Bangladesh.xlsx'
-spreadsheet6 = 'InputForCode_Bangladesh.xlsx'
+spreadsheet0 = 'Barisal.xlsx'
+spreadsheet1 = 'Chittagong.xlsx'
+spreadsheet2 = 'Dhaka.xlsx'
+spreadsheet3 = 'Khulna.xlsx'
+spreadsheet4 = 'Rajshahi.xlsx'
+spreadsheet5 = 'Rangpur.xlsx'
+spreadsheet6 = 'Sylhet.xlsx'
 spreadsheetList = [spreadsheet0, spreadsheet1, spreadsheet2, spreadsheet3, spreadsheet4, spreadsheet5, spreadsheet6]
 
 for i in range(0, len(spreadsheetList)):
