@@ -4,7 +4,6 @@ Created on Fri Jun 24 14:28:54 2016
 
 @author: ruth
 """
-
 import os, sys
 moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
@@ -38,5 +37,3 @@ for i in range(0, len(spreadsheetList)):
     thisOptimisation = optimisation.Optimisation(spreadsheet, timestep, numModelSteps, ages, birthOutcomes, wastingList, stuntingList, breastfeedingList, ageGroupSpans, agingRateList)
     filename = 'Bangladesh_geospatial_stunting_region_'+str(i)
     thisOptimisation.performSingleOptimisation(optimise, MCSampleSize, filename)
-
-
