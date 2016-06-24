@@ -26,5 +26,5 @@ cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]
 thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, timestep, numModelSteps, ages, birthOutcomes, wastingList, stuntingList, breastfeedingList, ageGroupSpans, agingRateList)
 
 optimise = 'stunting'
-filename = 'Bangladesh_cascade_stunting_v2'
+filename = 'Bangladesh_cascade_stunting_v3'
 thisOptimisation.performCascadeOptimisation(optimise, MCSampleSize, filename, cascadeValues)
