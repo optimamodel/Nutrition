@@ -6,6 +6,8 @@ Created on Wed Jun  8 13:58:29 2016
 """
 def getTotalInitialAllocation(data, costCoverageInfo, targetPopSize):
     import costcov
+    from numpy import array
+    from copy import deepcopy as dcp
     costCov = costcov.Costcov()
     allocation = []
     for intervention in data.interventionList:
@@ -23,10 +25,12 @@ def rescaleAllocation(totalBudget, proposalAllocation):
     rescaledAllocation = [x * scaleRatio for x in proposalAllocation]
     return rescaledAllocation 
 
-def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimise, mothers, timestep, agingRateList, agePopSizes, keyList, data):
+def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimise, mothers, timestep, numModelSteps, targetPopSize, agingRateList, agePopSizes, keyList, data):
     import helper as helper
+    import costcov
     from numpy import array
     helper = helper.Helper()
+    costCov = costcov.Costcov()
     model, constants, params = helper.setupModelConstantsParameters('optimisation model', mothers, timestep, agingRateList, agePopSizes, keyList, data)
     if sum(proposalAllocation) == 0: 
         scaledproposalAllocation = proposalAllocation
@@ -38,95 +42,129 @@ def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimis
         intervention = data.interventionList[i]
         newCoverages[intervention] = costCov.function(array([scaledproposalAllocation[i]]), costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
     model.updateCoverages(newCoverages)
-    for t in range(numsteps):
+    for t in range(numModelSteps):
         model.moveOneTimeStep()
     if optimise == 'deaths':    
         performanceMeasure = model.getTotalCumulativeDeaths()
     if optimise == 'stunting':        
         performanceMeasure = model.getCumulativeAgingOutStunted()
     return performanceMeasure    
+
+            
+class OutputClass:
+    def __init__(self, budgetBest, fval, exitflag, cleanOutputIterations, cleanOutputFuncCount, cleanOutputFvalVector, cleanOutputXVector):
+        self.budgetBest = budgetBest
+        self.fval = fval
+        self.exitflag = exitflag
+        self.cleanOutputIterations = cleanOutputIterations
+        self.cleanOutputFuncCount = cleanOutputFuncCount
+        self.cleanOutputFvalVector = cleanOutputFvalVector
+        self.cleanOutputXVector = cleanOutputXVector      
             
             
-            
-import output as outputPlot            
-import data as dataCode
-import helper as helper
-import costcov
-from copy import deepcopy as dcp
-from numpy import array
-import asd as asd
-import numpy as np
-helper = helper.Helper()
-costCov = costcov.Costcov()
-dataSpreadsheetName = 'InputForCode_Bangladesh.xlsx'
-timestep = 1./12. 
-numsteps = 180
-ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
-birthOutcomes = ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"]
-wastingList = ["normal", "mild", "moderate", "high"]
-stuntingList = ["normal", "mild", "moderate", "high"]
-breastfeedingList = ["exclusive", "predominant", "partial", "none"]
-keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
-spreadsheetData = dataCode.getDataFromSpreadsheet(dataSpreadsheetName, keyList)
-mothers = helper.makePregnantWomen(spreadsheetData)
-mothers['annualPercentPopGrowth'] = - 0.01
-ageGroupSpans = [1., 5., 6., 12., 36.] # number of months in each age group
-agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH (WARNING use ageSpans to define this)
-numAgeGroups = len(ages)
-agePopSizes  = helper.makeAgePopSizes(numAgeGroups, ageGroupSpans, spreadsheetData)
-targetPopSize = {}
-costCoverageInfo = {}
-for intervention in spreadsheetData.interventionList:
-    targetPopSize[intervention] = 0.
-    costCoverageInfo[intervention] = {}
-    for ageInd in range(numAgeGroups):
-        age = ages[ageInd]
-        targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][age] * agePopSizes[ageInd]
-    targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention]['pregnant women'] * mothers['populationSize']
-    costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
-    costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
-    
-initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)
-totalBudget = sum(initialAllocation)
-proposalAllocation = dcp(initialAllocation)
-
-#proposalAllocation = [1., 1., 1., 1., 1., 1., 1.]
-#proposalAllocation = [totalBudget/2., 0., totalBudget/2., 0., 0., 0.,0.]
-#proposalAllocation = [invest-1000. if invest>2000. else 1000. for invest in initialAllocation]
-#proposalAllocation = [totalBudget/len(initialAllocation)] * len(initialAllocation)
-
-xmin = [0.] * len(initialAllocation)
-#xmin = [100.] * len(initialAllocation)
-#xmin  = [0.01*invest if invest>100. else 1. for invest in initialAllocation]
-
-optimise = 'stunting' # choose between 'deaths' and 'stunting'
-args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'mothers':mothers, 'timestep':timestep, 'agingRateList':agingRateList, 'agePopSizes':agePopSizes, 'keyList':keyList, 'data':spreadsheetData}    
-
-for r in range(0, 10):
-    
-    proposalAllocation = np.random.rand(7)
-
-    budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, proposalAllocation, args, xmin = xmin)  #MaxFunEvals = 10            
-    
-    scaledBudgetBest = rescaleAllocation(totalBudget, budgetBest)
-    scaledproposalAllocation = rescaleAllocation(totalBudget, proposalAllocation)
-    budgetDictBefore = {}
-    budgetDictAfter = {}  
-    initialCoverage = {}
-    finalCoverage = {}
-    i = 0        
-    for intervention in spreadsheetData.interventionList:
-        budgetDictBefore[intervention] = scaledproposalAllocation[i]#[0]
-        budgetDictAfter[intervention] = scaledBudgetBest[i][0]  
-        initialCoverage[intervention] = costCov.function(array([scaledproposalAllocation[i]]), costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
-        finalCoverage[intervention] = costCov.function(array([scaledBudgetBest[i]]), costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
-        i += 1        
+class Optimisation:
+    def __init__(self, dataSpreadsheetName, timestep, numModelSteps, ages, birthOutcomes, wastingList, stuntingList, breastfeedingList, ageGroupSpans, agingRateList):
+        self.dataSpreadsheetName = dataSpreadsheetName
+        self.timestep = timestep
+        self.numModelSteps = numModelSteps
+        self.ages = ages
+        self.birthOutcomes = birthOutcomes
+        self.wastingList = wastingList
+        self.stuntingList = stuntingList
+        self.breastfeedingList = breastfeedingList
+        self.ageGroupSpans = ageGroupSpans
+        self.agingRateList = agingRateList
+        
+    def performSingleOptimisation(self, optimise, MCSampleSize, filename):
+        import data as dataCode
+        import helper as helper
+        from copy import deepcopy as dcp
+        from numpy import array
+        helper = helper.Helper()
+        keyList = [self.ages, self.birthOutcomes, self.wastingList, self.stuntingList, self.breastfeedingList]
+        spreadsheetData = dataCode.getDataFromSpreadsheet(self.dataSpreadsheetName, keyList)        
+        mothers = helper.makePregnantWomen(spreadsheetData) 
+        mothers['annualPercentPopGrowth'] = - 0.01  # WARNING: this is the hard coded Bangladesh value
+        numAgeGroups = len(self.ages)
+        agePopSizes  = helper.makeAgePopSizes(numAgeGroups, self.ageGroupSpans, spreadsheetData)  
+        targetPopSize = {}
+        costCoverageInfo = {}
+        for intervention in spreadsheetData.interventionList:
+            targetPopSize[intervention] = 0.
+            costCoverageInfo[intervention] = {}
+            for ageInd in range(numAgeGroups):
+                age = self.ages[ageInd]
+                targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][age] * agePopSizes[ageInd]
+            targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention]['pregnant women'] * mothers['populationSize']
+            costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
+            costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
+        
+        initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)
+        totalBudget = sum(initialAllocation)
+        xmin = [0.] * len(initialAllocation)
+        args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'mothers':mothers, 'timestep':self.timestep, 'numModelSteps':self.numModelSteps, 'targetPopSize':targetPopSize, 'agingRateList':self.agingRateList, 'agePopSizes':agePopSizes, 'keyList':keyList, 'data':spreadsheetData}    
+        self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, filename+'.pkl')
         
         
-    string = optimise+'_random_'+str(r)    
-    outputPlot.getBudgetPieChartComparison(budgetDictBefore, budgetDictAfter, optimise, output.fval[0], fval[0][0], string+'_pie')    
-    outputPlot.compareOptimisationOutput(budgetDictBefore, budgetDictAfter, initialCoverage, finalCoverage, optimise, string)
+    def performCascadeOptimisation(self, optimise, MCSampleSize, filename, cascadeValues):
+        import data as dataCode
+        import helper as helper
+        from copy import deepcopy as dcp
+        from numpy import array
+        helper = helper.Helper()
+        keyList = [self.ages, self.birthOutcomes, self.wastingList, self.stuntingList, self.breastfeedingList]
+        spreadsheetData = dataCode.getDataFromSpreadsheet(self.dataSpreadsheetName, keyList)        
+        mothers = helper.makePregnantWomen(spreadsheetData) 
+        mothers['annualPercentPopGrowth'] = - 0.01  # WARNING: this is the hard coded Bangladesh value
+        numAgeGroups = len(self.ages)
+        agePopSizes  = helper.makeAgePopSizes(numAgeGroups, self.ageGroupSpans, spreadsheetData)  
+        targetPopSize = {}
+        costCoverageInfo = {}
+        for intervention in spreadsheetData.interventionList:
+            targetPopSize[intervention] = 0.
+            costCoverageInfo[intervention] = {}
+            for ageInd in range(numAgeGroups):
+                age = self.ages[ageInd]
+                targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][age] * agePopSizes[ageInd]
+            targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention]['pregnant women'] * mothers['populationSize']
+            costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
+            costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
+            
+        initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)
+        currentTotalBudget = sum(initialAllocation)
+        xmin = [0.] * len(initialAllocation)
+        
+        for cascade in cascadeValues:
+            totalBudget = currentTotalBudget * cascade
+            args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'mothers':mothers, 'timestep':self.timestep, 'numModelSteps':self.numModelSteps, 'targetPopSize':targetPopSize, 'agingRateList':self.agingRateList, 'agePopSizes':agePopSizes, 'keyList':keyList, 'data':spreadsheetData}    
+            self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, filename+str(cascade)+'.pkl')    
 
-
-
-       
+        
+    def runOnce(self, MCSampleSize, xmin, args, interventionList, totalBudget, filename):        
+        import asd as asd 
+        import pickle as pickle
+        import numpy as np
+        numInterventions = len(interventionList)
+        scenarioMonteCarloOutput = []
+        for r in range(0, MCSampleSize):
+            proposalAllocation = np.random.rand(numInterventions)
+            budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, proposalAllocation, args, xmin = xmin)  
+            outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval, output.x)        
+            scenarioMonteCarloOutput.append(outputOneRun)   
+        # find the best
+        bestSample = scenarioMonteCarloOutput[0]
+        for sample in range(0, len(scenarioMonteCarloOutput)):
+            if scenarioMonteCarloOutput[sample].fval < bestSample.fval:
+                bestSample = scenarioMonteCarloOutput[sample]
+        # scale it and make a dictionary
+        bestSampleBudget = bestSample.budgetBest
+        bestSampleBudgetScaled = rescaleAllocation(totalBudget, bestSampleBudget)
+        bestSampleBudgetScaledDict = {}
+        for i in range(0, len(interventionList)):
+            intervention = interventionList[i]
+            bestSampleBudgetScaledDict[intervention] = bestSampleBudgetScaled[i]      
+        # put it in a file    
+        outfile = open(filename, 'wb')
+        pickle.dump(bestSampleBudgetScaledDict, outfile)
+        outfile.close()  
+        
