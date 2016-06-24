@@ -26,7 +26,6 @@ keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
 dataFilename = 'Input_LiST_%s_%i.xlsx'%(country,startYear)
 spreadsheetData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
 mothers = helper.makePregnantWomen(spreadsheetData)
-mothers['annualPercentPopGrowth'] = -0.01
 ageGroupSpans = [1., 5., 6., 12., 36.] # number of months in each age group
 agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
 numAgeGroups = len(ages)
