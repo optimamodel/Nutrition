@@ -23,13 +23,13 @@ numModelSteps = 180
 MCSampleSize = 25
 optimise = 'deaths'
 
-spreadsheet0 = 'InputForCode_Bangladesh.xlsx'
-spreadsheet1 = 'InputForCode_Bangladesh.xlsx'
-spreadsheet2 = 'InputForCode_Bangladesh.xlsx'
-spreadsheet3 = 'InputForCode_Bangladesh.xlsx'
-spreadsheet4 = 'InputForCode_Bangladesh.xlsx'
-spreadsheet5 = 'InputForCode_Bangladesh.xlsx'
-spreadsheet6 = 'InputForCode_Bangladesh.xlsx'
+spreadsheet0 = 'subregionSpreadsheets/Barisal.xlsx'
+spreadsheet1 = 'subregionSpreadsheets/Chittagong.xlsx'
+spreadsheet2 = 'subregionSpreadsheets/Dhaka.xlsx'
+spreadsheet3 = 'subregionSpreadsheets/Khulna.xlsx'
+spreadsheet4 = 'subregionSpreadsheets/Rajshahi.xlsx'
+spreadsheet5 = 'subregionSpreadsheets/Rangpur.xlsx'
+spreadsheet6 = 'subregionSpreadsheets/Sylhet.xlsx'
 spreadsheetList = [spreadsheet0, spreadsheet1, spreadsheet2, spreadsheet3, spreadsheet4, spreadsheet5, spreadsheet6]
 
 for i in range(0, len(spreadsheetList)):

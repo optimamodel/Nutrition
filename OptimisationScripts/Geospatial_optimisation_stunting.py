@@ -24,13 +24,13 @@ numModelSteps = 180
 MCSampleSize = 25
 optimise = 'stunting'
 
-spreadsheet0 = 'Barisal.xlsx'
-spreadsheet1 = 'Chittagong.xlsx'
-spreadsheet2 = 'Dhaka.xlsx'
-spreadsheet3 = 'Khulna.xlsx'
-spreadsheet4 = 'Rajshahi.xlsx'
-spreadsheet5 = 'Rangpur.xlsx'
-spreadsheet6 = 'Sylhet.xlsx'
+spreadsheet0 = 'subregionSpreadsheets/Barisal.xlsx'
+spreadsheet1 = 'subregionSpreadsheets/Chittagong.xlsx'
+spreadsheet2 = 'subregionSpreadsheets/Dhaka.xlsx'
+spreadsheet3 = 'subregionSpreadsheets/Khulna.xlsx'
+spreadsheet4 = 'subregionSpreadsheets/Rajshahi.xlsx'
+spreadsheet5 = 'subregionSpreadsheets/Rangpur.xlsx'
+spreadsheet6 = 'subregionSpreadsheets/Sylhet.xlsx'
 spreadsheetList = [spreadsheet0, spreadsheet1, spreadsheet2, spreadsheet3, spreadsheet4, spreadsheet5, spreadsheet6]
 
 for i in range(0, len(spreadsheetList)):
