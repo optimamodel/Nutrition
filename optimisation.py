@@ -148,7 +148,7 @@ class Optimisation:
         scenarioMonteCarloOutput = []
         for r in range(0, MCSampleSize):
             proposalAllocation = np.random.rand(numInterventions)
-            budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, proposalAllocation, args, xmin = xmin)  
+            budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, proposalAllocation, args, xmin = xmin, verbose = 0)  
             outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval, output.x)        
             scenarioMonteCarloOutput.append(outputOneRun)   
         # find the best
