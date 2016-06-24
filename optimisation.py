@@ -89,7 +89,6 @@ class Optimisation:
         keyList = [self.ages, self.birthOutcomes, self.wastingList, self.stuntingList, self.breastfeedingList]
         spreadsheetData = dataCode.getDataFromSpreadsheet(self.dataSpreadsheetName, keyList)        
         mothers = helper.makePregnantWomen(spreadsheetData) 
-        mothers['annualPercentPopGrowth'] = - 0.01  # WARNING: this is the hard coded Bangladesh value
         numAgeGroups = len(self.ages)
         agePopSizes  = helper.makeAgePopSizes(numAgeGroups, self.ageGroupSpans, spreadsheetData)  
         targetPopSize = {}
@@ -120,7 +119,6 @@ class Optimisation:
         keyList = [self.ages, self.birthOutcomes, self.wastingList, self.stuntingList, self.breastfeedingList]
         spreadsheetData = dataCode.getDataFromSpreadsheet(self.dataSpreadsheetName, keyList)        
         mothers = helper.makePregnantWomen(spreadsheetData) 
-        mothers['annualPercentPopGrowth'] = - 0.01  # WARNING: this is the hard coded Bangladesh value
         numAgeGroups = len(self.ages)
         agePopSizes  = helper.makeAgePopSizes(numAgeGroups, self.ageGroupSpans, spreadsheetData)  
         targetPopSize = {}
