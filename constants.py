@@ -285,7 +285,7 @@ class Constants:
         FracBO[2] = self.data.birthOutcomeDist["Pre-term AGA"]
         FracBO[3] = self.data.birthOutcomeDist["Pre-term SGA"]
         FracBO[0] = 1. - sum(FracBO[1:3])
-        FracStunted = self.model.listOfAgeCompartments[0].getStuntedFraction() + self.initialStuntingTrend
+        FracStunted = self.model.listOfAgeCompartments[0].getStuntedFraction() #+ self.initialStuntingTrend
         # [i] will refer to the three non-baseline birth outcomes
         A = FracBO[0]*(OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.)
         B = (OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.) * ( \
