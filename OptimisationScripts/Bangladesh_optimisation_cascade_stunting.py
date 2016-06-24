@@ -10,7 +10,7 @@ moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
 import optimisation
 
-dataSpreadsheetName = 'InputForCode_Bangladesh.xlsx'
+dataSpreadsheetName = '../InputForCode_Bangladesh.xlsx'
 timestep = 1./12. 
 numsteps = 180
 ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
