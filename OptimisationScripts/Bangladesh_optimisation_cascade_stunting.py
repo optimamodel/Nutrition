@@ -5,7 +5,10 @@ Created on Fri Jun 24 14:04:46 2016
 @author: ruth
 """
 
-import optimisation as optimisation
+import os, sys
+moduleDir = os.path.join(os.path.dirname(__file__), '..')
+sys.path.append(moduleDir)
+import optimisation
 
 dataSpreadsheetName = 'InputForCode_Bangladesh.xlsx'
 timestep = 1./12. 

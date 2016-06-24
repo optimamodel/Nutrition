@@ -41,8 +41,13 @@ def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimis
     for i in range(0, len(data.interventionList)):
         intervention = data.interventionList[i]
         newCoverages[intervention] = costCov.function(array([scaledproposalAllocation[i]]), costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
+    # run the model
+    timestepsPre = 12
+    for t in range(timestepsPre):
+        model.moveOneTimeStep()    
+    # update coverages after 1 year    
     model.updateCoverages(newCoverages)
-    for t in range(numModelSteps):
+    for t in range(numModelSteps - timestepsPre):
         model.moveOneTimeStep()
     if optimise == 'deaths':    
         performanceMeasure = model.getTotalCumulativeDeaths()
