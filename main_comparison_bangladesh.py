@@ -14,6 +14,7 @@ import pickle as pickle
 
 country = 'Bangladesh'
 startYear = 2016
+version = '1604'
 
 helper = helper.Helper()
 ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
@@ -23,7 +24,7 @@ stuntingList = ["normal", "mild", "moderate", "high"]
 breastfeedingList = ["exclusive", "predominant", "partial", "none"]
 keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
 
-dataFilename = 'Input_LiST_%s_%i.xlsx'%(country,startYear)
+dataFilename = 'Input_%s_%i_%s_LiST.xlsx'%(country, startYear, version)
 spreadsheetData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
 mothers = helper.makePregnantWomen(spreadsheetData)
 ageGroupSpans = [1., 5., 6., 12., 36.] # number of months in each age group
@@ -47,7 +48,7 @@ run = 0
 #------------------------------------------------------------------------    
 # DEFAULT RUN WITH NO CHANGES TO INTERVENTIONS
 nametag = "Baseline"
-pickleFilename = '%s_Default.pkl'%(country)
+pickleFilename = '%s_Default_forLiST.pkl'%(country)
 plotcolor = 'grey'
 
 print "\n"+nametag
@@ -55,11 +56,9 @@ model, constants, params = helper.setupModelConstantsParameters(nametag, mothers
 
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')
-model.moveOneTimeStep()
-pickle.dump(model, outfile)
 
 # Run model
-for t in range(numsteps-1):
+for t in range(numsteps):
     model.moveOneTimeStep()
     pickle.dump(model, outfile)
 outfile.close()    
@@ -210,11 +209,11 @@ for icov in range(len(scenarios)):
 
 #------------------------------------------------------------------------    
 # INCREASE COVERAGE OF BREASTFEEDING AND COMPLEMENTARY FEEDING
-BFcoverage = 90
+BFcoverage = 70
 CFcoverage = 70
 nametag = "Scale up Breastfeeding promotion to %g%% and Complementary feeding to %g%%"%(BFcoverage,CFcoverage)
 pickleFilename = '%s_BF%i_CF%i.pkl'%(country,BFcoverage,CFcoverage)
-plotcolor = (1.0-0.2*icov, 0.1, 0.1)
+plotcolor = (0.7, 0.1, 0.1)
 
 print "\n"+nametag
 modelBC, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
@@ -268,8 +267,8 @@ run += 1
 
 
 output.getCombinedPlots(run, plotData, startYear=startYear-1)
-output.getDeathsAverted(modelList, newModelList, 'test')
-output.getCompareDeathsAverted(run, plotData, filenamePrefix=country, title='comparison with LiST', save=True)
+#output.getDeathsAverted(modelList, newModelList, 'test')
+#output.getCompareDeathsAverted(run, plotData, filenamePrefix=country, title='comparison with LiST', save=True)
 
 
 

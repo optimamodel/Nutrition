@@ -40,7 +40,7 @@ run=0
 #-------------------------------
 # Default Baseline run
 nametag = "Baseline"
-pickleFilename = '%s_Default.pkl'%(country)
+pickleFilename = '%s_Default_forLiST.pkl'%(country)
 plotcolor = 'grey'
 addToPlotData(plotData,run,pickleFilename,nametag,plotcolor)
 run += 1
@@ -50,7 +50,7 @@ scenarios = [30, 50, 70]
 for icov in range(len(scenarios)):
     CFcoverage = scenarios[icov]
     #percentageIncrease = 50
-    nametag = "scale-up complementary feeding to %i%%"%(CFcoverage)
+    nametag = "CF to %i%%"%(CFcoverage)
     pickleFilename = '%s_CompFeed_P%i.pkl'%(country,CFcoverage)
     plotcolor = (0.1, 1.0-0.2*icov, 0.1)
     addToPlotData(plotData,run,pickleFilename,nametag,plotcolor)
@@ -61,12 +61,24 @@ scenarios = [70, 80, 90]
 for icov in range(len(scenarios)):
     BFcoverage = scenarios[icov]
     #percentageIncrease = 29
-    nametag = "scale-up breastfeeding promotion to %i%%"%(BFcoverage)
+    nametag = "BF to %i%%"%(BFcoverage)
     pickleFilename = '%s_BreastFeed_P%i.pkl'%(country,BFcoverage)
     plotcolor = (0.1, 0.1, 1.0-0.15*icov)
     addToPlotData(plotData,run,pickleFilename,nametag,plotcolor)
     run += 1
 
+#-------------------------------
+# Increase coverage of breastfeeding AND complementary feeding
+BFcoverage = 90
+CFcoverage = 70
+nametag = "BF to %i and CF to %i"%(BFcoverage,CFcoverage)
+pickleFilename = '%s_BF%i_CF%i.pkl'%(country,BFcoverage,CFcoverage)
+plotcolor = (0.7, 0.1, 0.1)
+addToPlotData(plotData,run,pickleFilename,nametag,plotcolor)
+run += 1
+
+
+#-------------------------------
 
 numRuns = run
 
@@ -199,23 +211,28 @@ for iRun in range(1,numRuns):
 #------------------------------------------------------------------------    
 # MAKE PLOTS
 filenamePrefix = '%s_comparison'%(country)
-#output.getCombinedPlots(run, plotData, startYear=2015, filenamePrefix=filenamePrefix, save=True)
-#output.getCompareDeathsAverted(run, plotData, filenamePrefix=filenamePrefix, title=title, save=True)
 
 import numpy as np
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
+from matplotlib.ticker import FuncFormatter
+from matplotlib import rcParams
+
+def myfunc(x, pos=0):
+    return '%.0f%%'%(x)
 
 # PLOTTING
 print "plotting..."
 skip = 2
 yearPlotList =  list(range(startYear, startYear+numYears, skip))
+rcParams.update({'font.size':20})
 
 # PLOT comparison of Stunted Fraction (everyone U5)
 fig, ax = plt.subplots()
 ax.set_xticklabels(yearPlotList)
 ax.set_xlim([yearList[0], yearList[numYears-1]])
 ax.set_ylim([35., 42.])
-plt.ylabel('Percentage of children under 5 stunted')
+ax.yaxis.set_major_formatter(FuncFormatter(myfunc))
+#plt.ylabel('Percentage of children under 5 stunted')
 plt.xlabel('Year')
 # choose scenarios
 plotRuns_Optima = [0,1,2,3]
@@ -287,12 +304,12 @@ plt.savefig("%s_annualDeaths.png"%(filenamePrefix), bbox_inches='tight')
 fig, ax = plt.subplots()
 ax.set_xticklabels(yearPlotList)
 ax.set_xlim([yearList[0], yearList[numYears-1]])
-ax.set_ylim([0, 2000])
+ax.set_ylim([0, 2500])
 plt.ylabel('Number of deaths averted in children under 5')
 plt.xlabel('Year')
 # choose scenarios
-plotRuns_Optima = [4,5,6]
-plotRuns_LiST   = [1,2,3]
+plotRuns_Optima = [4,5,7]
+plotRuns_LiST   = [1,2,7]
 colorChoice     = ['#9999FF','#6666DD','#4444BB']
 # plot
 plotList = []
@@ -323,7 +340,7 @@ plt.savefig("%s_DeathsAverted.png"%(filenamePrefix), bbox_inches='tight')
 fig, ax = plt.subplots()
 ax.set_xticklabels(yearPlotList)
 ax.set_xlim([yearList[0], yearList[numYears-1]])
-ax.set_ylim([0, 600000])
+ax.set_ylim([0, 700000])
 plt.ylabel('Cases of stunting averted in children under 5')
 plt.xlabel('Year')
 # choose scenarios
