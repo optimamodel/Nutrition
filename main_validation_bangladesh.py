@@ -33,7 +33,7 @@ ageGroupSpans = [1., 5., 6., 12., 36.] # number of months in each age group
 agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
 numAgeGroups = len(ages)
 
-dataFilename = 'Input_Optima_%s_%i.xlsx'%(country,startYear)
+dataFilename = 'Input_%s_%i_1604.xlsx'%(country,startYear)
 
 spreadsheetData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
 mothers = helper.makePregnantWomen(spreadsheetData)
@@ -314,14 +314,9 @@ fig, ax = plt.subplots()
 ax.set_xlabel('Year', size=20)
 ax.set_xlim(yearAxisLimits)
 ax.set_xticks(yearTickList)
-#plt.rc('xtick', labelsize=20)
-#ax.get_xticklabels().set_fontsize(20)
-#ax.set_xticklabels(yearTickList)
 #plt.ylabel('Percentage of children under 5 stunted')
 ax.set_ylim([0, 50])
 ax.yaxis.set_major_formatter(FuncFormatter(myfunc))
-#plt.rc('ytick', labelsize=24)
-#ax.get_yticklabels().set_fontsize(20)
 
 # plot
 plotList = []
