@@ -208,11 +208,8 @@ class Model:
                 self.constants.underlyingMortalities[ageName][cause] *= mortalityUpdate[ageName][cause]        
             
         # BREASTFEEDING
-        incidencesBefore = {}
-        incidencesAfter = {}  
         for ageGroup in self.listOfAgeCompartments:
             ageName = ageGroup.name
-            incidencesBefore[ageName] = self.params.incidences[ageName]['Diarrhea']
             SumBefore = self.constants.getDiarrheaRiskSum(ageName, self.params.breastfeedingDistribution)
             appropriatePractice = self.params.ageAppropriateBreastfeeding[ageName]
             totalPop = ageGroup.getTotalPopulation()
@@ -230,10 +227,7 @@ class Model:
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
             SumAfter = self.constants.getDiarrheaRiskSum(ageName, self.params.breastfeedingDistribution)
             self.params.incidences[ageName]['Diarrhea'] = self.params.incidences[ageName]['Diarrhea'] / SumBefore * SumAfter # update incidence of diarrhea
-            incidencesAfter[ageName] = self.params.incidences[ageName]['Diarrhea']
-        Z0 = self.constants.getZa(incidencesBefore, self.params.breastfeedingDistribution)
-        Zt = self.constants.getZa(incidencesAfter,  self.params.breastfeedingDistribution)
-        beta = self.constants.getBetaGivenZ0AndZt(Z0, Zt)
+        beta = self.constants.getFracDiarrheaFixedZ()
         stuntingUpdateDueToBreastfeeding = self.params.getStuntingUpdateDueToIncidence(beta)
 
         # INCIDENCE

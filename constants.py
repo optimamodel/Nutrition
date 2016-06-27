@@ -210,6 +210,17 @@ class Constants:
         return beta        
 
 
+    def getFracDiarrheaFixedZ(self):
+        beta = {}
+        for ageName in self.ages:
+            beta[ageName] = {}
+            RRnot = self.data.RRdiarrhea[ageName]["none"]
+            for breastfeedingCat in self.breastfeedingList:
+                RDa = self.data.RRdiarrhea[ageName][breastfeedingCat]
+                beta[ageName][breastfeedingCat] = 1. - ((RRnot - RDa) / RRnot)   
+        return beta        
+        
+
 
     # Calculate probability of stunting in current age-group given coverage by intervention
     def getProbStuntedIfCoveredByIntervention(self, interventionCoverages, stuntingDistribution):
