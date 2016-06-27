@@ -171,7 +171,7 @@ class Constants:
             
 
 
-    def updateProbStuntedIfDiarrheaNewZa(Zt):
+    def updateProbStuntedIfDiarrheaNewZa(self,Zt):
         AO = self.getAOGivenZa(Zt)
         numAgeGroups = len(self.model.listOfAgeCompartments)        
         for iAge in range(numAgeGroups):
