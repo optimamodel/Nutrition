@@ -12,7 +12,7 @@ getNumStuntedByAgePlot()
 getStuntedPercent()
 getCombinedPlots()
 getCompareDeathsAverted()
-getStuntingCasesAverted()
+getU5StuntingCasesAverted()
 getSimpleBarFromDictionary()
 getStuntingStatusesGivenAge()
 getDeathsAverted()
@@ -458,7 +458,7 @@ def getCompareDeathsAverted(numRuns, data, scalePercent=0.2, filenamePrefix="com
 
 
 
-def getStuntingCasesAverted(numRuns, data, scalePercent=0.2, filenamePrefix="compare", title="", save=False):
+def getU5StuntingCasesAverted(numRuns, data, scalePercent=0.2, filenamePrefix="compare", title="", save=False):
     import numpy as np
     from math import ceil
     import matplotlib.pyplot as plt
@@ -536,6 +536,70 @@ def getStuntingCasesAverted(numRuns, data, scalePercent=0.2, filenamePrefix="com
     #plt.legend([h1],["<5 years"])
     if save:
         plt.savefig("%s_U5stuntingCasesAverted.png"%(filenamePrefix), bbox_inches='tight')
+    else:
+        plt.show()
+
+
+
+
+
+def getA5StuntingCasesAverted(numRuns, data, scalePercent=0.2, filenamePrefix="compare", title="", save=False):
+    import numpy as np
+    from math import ceil
+    import matplotlib.pyplot as plt
+    # set up
+    modelList = data[0]["modelList"]
+    numMonths = len(modelList)
+    tagList  = []
+    for run in range(numRuns):
+        tag       = data[run]["tag"]
+        tagList.append(tag)
+    # add up deaths
+    stuntPopA5 = {}
+    for run in range(numRuns):
+        modelList = data[run]["modelList"]
+        tag       = data[run]["tag"]
+        stuntPopA5[tag] = modelList[numMonths-1].getCumulativeAgingOutStunted()
+    # calculate stunting cases averted
+    stuntingAvertedList    = []
+    tagBaseline = data[0]["tag"]
+    stuntingCasesBaseline    = stuntPopA5[tagBaseline]
+    for run in range(1, numRuns):
+        tag = data[run]["tag"]
+        stuntingCasesScenario = stuntPopA5[tag]
+        stuntingAvertedList.append(stuntingCasesBaseline - stuntingCasesScenario)
+
+    # PLOTTING
+    # setup figure
+    fig, ax = plt.subplots()
+    ax.set_title(title, size=16, y=1.13)
+    maxStunting     = max(stuntingAvertedList)
+    maxStuntingAxis = ceil(maxStunting/10000.)*10000
+    maxPercentAxis = maxStuntingAxis/stuntingCasesBaseline*100.
+    percentTicks = np.arange(scalePercent,maxPercentAxis,scalePercent)
+    pTicksTrans = percentTicks/100.*stuntingCasesBaseline
+    y_pos = np.arange(numRuns-1)
+    # axes
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.axes.get_xaxis().tick_bottom()
+    ax.axes.get_yaxis().tick_left()
+    ax.set_ylim(0,numRuns-1)
+    ax.set_xlim(0,maxStuntingAxis)
+    ax.set_yticks(y_pos+0.5)
+    ax.set_yticklabels(tagList[1:])
+    ax.set_ylabel('Interventions',  size=16)
+    ax.set_xlabel('Number of stunting cases averted in children by age 5', size=14)
+    ax2 = ax.twiny()
+    ax2.set_xlim(ax.get_xlim())
+    ax2.set_xticks(pTicksTrans)
+    ax2.set_xticklabels(percentTicks)
+    ax2.set_xlabel('Percent of stunting cases averted (%)', size=14)
+    # plot
+    barwid = 0.5
+    h1 = ax.barh(y_pos+0.5-0.5*barwid, stuntingAvertedList, height=barwid, facecolor='#99CCEE', edgecolor='k', linewidth=1.5)
+    if save:
+        plt.savefig("%s_A5stuntingCasesAverted.png"%(filenamePrefix), bbox_inches='tight')
     else:
         plt.show()
 
