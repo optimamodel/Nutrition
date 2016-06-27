@@ -243,6 +243,7 @@ class Model:
         Z0 = self.constants.getZa(incidencesBefore, self.params.breastfeedingDistribution)
         Zt = self.constants.getZa(incidencesAfter,  self.params.breastfeedingDistribution)
         beta = self.constants.getBetaGivenZ0AndZt(Z0, Zt)
+        self.constants.updateProbStuntedIfDiarrheaNewZa(Zt)
         stuntingUpdateDueToIncidence = self.params.getStuntingUpdateDueToIncidence(beta)
         
         # STUNTING

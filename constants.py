@@ -171,6 +171,15 @@ class Constants:
             
 
 
+    def updateProbStuntedIfDiarrheaNewZa(Zt):
+        AO = self.getAOGivenZa(Zt)
+        numAgeGroups = len(self.model.listOfAgeCompartments)        
+        for iAge in range(numAgeGroups):
+            ageName = self.ages[iAge]
+            Omega0  = self.fracStuntedIfDiarrhea["nodia"][ageName]
+            self.fracStuntedIfDiarrhea["dia"][ageName] = Omega0 * AO[ageName] / (1. - Omega0 + AO[ageName]*Omega0)
+
+
     def getDiarrheaRiskSum(self, ageName, breastfeedingDistribution):
         bfDistribution = dcp(breastfeedingDistribution)
         riskSum = 0.
