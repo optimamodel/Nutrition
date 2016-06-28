@@ -37,7 +37,6 @@ dataFilename = 'Input_%s_%i_1604.xlsx'%(country,startYear)
 
 spreadsheetData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
 mothers = helper.makePregnantWomen(spreadsheetData)
-mothers['annualPercentPopGrowth'] = -0.01
 agePopSizes  = helper.makeAgePopSizes(numAgeGroups, ageGroupSpans, spreadsheetData)
 year1 = 3871841
 year2 = 3731124
