@@ -200,3 +200,61 @@ class Optimisation:
             intervention = spreadsheetData.interventionList[i]
             initialAllocationDictionary[intervention] = initialAllocation[i]
         return initialAllocationDictionary    
+        
+        
+        
+        
+    def oneModelRunWithOutput(self, allocationDictionary):
+        import data as dataCode
+        import helper as helper
+        from copy import deepcopy as dcp
+        from numpy import array
+        import costcov
+        helper = helper.Helper()
+        costCov = costcov.Costcov()
+        keyList = [self.ages, self.birthOutcomes, self.wastingList, self.stuntingList, self.breastfeedingList]
+        spreadsheetData = dataCode.getDataFromSpreadsheet(self.dataSpreadsheetName, keyList)        
+        mothers = helper.makePregnantWomen(spreadsheetData) 
+        numAgeGroups = len(self.ages)
+        agePopSizes  = helper.makeAgePopSizes(numAgeGroups, self.ageGroupSpans, spreadsheetData)  
+        targetPopSize = {}
+        costCoverageInfo = {}
+        for intervention in spreadsheetData.interventionList:
+            targetPopSize[intervention] = 0.
+            costCoverageInfo[intervention] = {}
+            for ageInd in range(numAgeGroups):
+                age = self.ages[ageInd]
+                targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][age] * agePopSizes[ageInd]
+            targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention]['pregnant women'] * mothers['populationSize']
+            costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
+            costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
+        # set up the model    
+        model, constants, params = helper.setupModelConstantsParameters('one model', mothers, self.timestep, self.agingRateList, agePopSizes, keyList, spreadsheetData)
+        # calculate coverage (%)
+        newCoverages = {}    
+        for i in range(0, len(spreadsheetData.interventionList)):
+            intervention = spreadsheetData.interventionList[i]
+            newCoverages[intervention] = costCov.function(array([allocationDictionary[intervention][0]]), costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
+        # run the model
+        modelList = []    
+        timestepsPre = 12
+        for t in range(timestepsPre):
+            model.moveOneTimeStep()  
+            modelThisTimeStep = dcp(model)
+            modelList.append(modelThisTimeStep)
+        # update coverages after 1 year    
+        model.updateCoverages(newCoverages)
+        for t in range(self.numModelSteps - timestepsPre):
+            model.moveOneTimeStep()
+            modelThisTimeStep = dcp(model)
+            modelList.append(modelThisTimeStep)
+        return modelList    
+    
+    
+    
+
+
+
+
+
+                
