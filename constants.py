@@ -215,7 +215,8 @@ class Constants:
             RRnot = self.data.RRdiarrhea[ageName]["none"]
             for breastfeedingCat in self.breastfeedingList:
                 RDa = self.data.RRdiarrhea[ageName][breastfeedingCat]
-                beta[ageName][breastfeedingCat] = 1. - ((RRnot * Z0[ageName] - RDa * Zt[ageName]) / RRnot * Z0[ageName])   
+                beta[ageName][breastfeedingCat] = 1. - (RRnot * Z0[ageName] - RDa * Zt[ageName]) / (RRnot * Z0[ageName]) 
+                # RDa * Zt[ageName] / (RRnot * Z0[ageName])
         return beta        
 
 
@@ -226,7 +227,7 @@ class Constants:
             RRnot = self.data.RRdiarrhea[ageName]["none"]
             for breastfeedingCat in self.breastfeedingList:
                 RDa = self.data.RRdiarrhea[ageName][breastfeedingCat]
-                beta[ageName][breastfeedingCat] = 1. - ((RRnot - RDa) / RRnot)   
+                beta[ageName][breastfeedingCat] = RDa/RRnot #1. - ((RRnot - RDa) / RRnot)   
         return beta        
         
 
