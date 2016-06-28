@@ -16,6 +16,7 @@ from numpy import array
 
 country = 'Bangladesh'
 startYear = 2016
+version = '1604'
 
 helper = helper.Helper()
 costCov = costcov.Costcov()
@@ -26,8 +27,8 @@ stuntingList = ["normal", "mild", "moderate", "high"]
 breastfeedingList = ["exclusive", "predominant", "partial", "none"]
 keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
 
-#dataFilename = 'InputForCode_%s.xlsx'%(country)
-dataFilename = 'Input_%s_%i_1606.xlsx'%(country,startYear)
+dataFilename = 'InputForCode_%s.xlsx'%(country)
+#dataFilename = 'Input_%s_%i_%s.xlsx'%(country, startYear, version)
 spreadsheetData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
 mothers = helper.makePregnantWomen(spreadsheetData)
 ageGroupSpans = [1., 5., 6., 12., 36.] # number of months in each age group
@@ -48,7 +49,7 @@ run = 0
 #------------------------------------------------------------------------    
 # DEFAULT RUN WITH NO CHANGES TO INTERVENTIONS
 nametag = "Baseline"
-pickleFilename = '%s_Default.pkl'%(country)
+pickleFilename = '%s_Default_Investment.pkl'%(country)
 plotcolor = 'grey'
 
 print "\n"+nametag
@@ -56,11 +57,9 @@ model, constants, params = helper.setupModelConstantsParameters(nametag, mothers
 
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')
-model.moveOneTimeStep()
-pickle.dump(model, outfile)
 
 # Run model
-for t in range(numsteps-1):
+for t in range(numsteps):
     model.moveOneTimeStep()
     pickle.dump(model, outfile)
 outfile.close()    
@@ -92,7 +91,7 @@ for ichoose in range(len(spreadsheetData.interventionList)):
     chosenIntervention = spreadsheetData.interventionList[ichoose]
     nametag = chosenIntervention
     pickleFilename = '%s_Intervention%i_Invest.pkl'%(country,ichoose)
-    plotcolor = (1.0-0.13*run, 1.0-0.3*abs(run-4), 0.0+0.13*run)
+    plotcolor = (1.0-0.13*run, 1.0-0.24*abs(run-4), 0.0+0.13*run)
     print "\n %s: increase in annual investment by USD %g"%(nametag,investmentIncrease)
 
     modelX, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
@@ -151,12 +150,12 @@ for ichoose in range(len(spreadsheetData.interventionList)):
 
 #------------------------------------------------------------------------    
 
-filenamePrefix = '%s_fixedInvest'%(country)
+filenamePrefix = '%s_%s_fixedInvest'%(country, version)
 
-#output.getCombinedPlots(run, plotData)
 output.getCombinedPlots(run, plotData, startYear=startYear-1, filenamePrefix=filenamePrefix, save=True)
 output.getCompareDeathsAverted(run, plotData, scalePercent=0.1, filenamePrefix=filenamePrefix, title=title, save=True)
-output.getStuntingCasesAverted(run, plotData, scalePercent=0.1, filenamePrefix=filenamePrefix, title=title, save=True)
+output.getU5StuntingCasesAverted(run, plotData, scalePercent=0.5, filenamePrefix=filenamePrefix, title=title, save=True)
+output.getA5StuntingCasesAverted(run, plotData, scalePercent=0.5, filenamePrefix=filenamePrefix, title=title, save=True)
 
 
 

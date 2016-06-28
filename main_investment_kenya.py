@@ -56,11 +56,9 @@ model, constants, params = helper.setupModelConstantsParameters(nametag, mothers
 
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')
-model.moveOneTimeStep()
-pickle.dump(model, outfile)
 
 # Run model
-for t in range(numsteps-1):
+for t in range(numsteps):
     model.moveOneTimeStep()
     pickle.dump(model, outfile)
 outfile.close()    
@@ -152,10 +150,10 @@ for ichoose in range(len(spreadsheetData.interventionList)):
 
 filenamePrefix = '%s_fixedInvest'%(country)
 
-#output.getCombinedPlots(run, plotData)
 output.getCombinedPlots(run, plotData, startYear=startYear-1, filenamePrefix=filenamePrefix, save=True)
 output.getCompareDeathsAverted(run, plotData, scalePercent=0.1, filenamePrefix=filenamePrefix, title=title, save=True)
-output.getStuntingCasesAverted(run, plotData, scalePercent=0.1, filenamePrefix=filenamePrefix, title=title, save=True)
+output.getU5StuntingCasesAverted(run, plotData, scalePercent=0.5, filenamePrefix=filenamePrefix, title=title, save=True)
+output.getA5StuntingCasesAverted(run, plotData, scalePercent=0.5, filenamePrefix=filenamePrefix, title=title, save=True)
 
 
 
