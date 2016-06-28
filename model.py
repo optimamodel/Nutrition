@@ -150,6 +150,12 @@ class Model:
             totalCumulativeDeaths += ageGroup.getCumulativeDeaths()
         return totalCumulativeDeaths
         
+    def getTotalNumberStunted(self):
+        totalNumberStunted = 0
+        for ageGroup in self.listOfAgeCompartments:
+            totalNumberStunted += ageGroup.getNumberStunted()
+        return totalNumberStunted
+        
 
     def getCumulativeAgingOutStunted(self):
         return self.cumulativeAgingOutStunted
