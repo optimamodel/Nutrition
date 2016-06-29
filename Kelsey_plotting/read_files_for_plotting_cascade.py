@@ -10,7 +10,7 @@ cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]
 # BANGLADESH DEATHS
 cascade_deaths = []
 for cascade in cascadeValues:
-    filename = '../OptimisationOutput/Bangladesh/deaths/v3/Bangladesh_cascade_deaths_v3_'+str(cascade)+'.pkl'
+    filename = '../OptimisationOutput/Bangladesh/deaths/v5/Bangladesh_cascade_deaths_v5_'+str(cascade)+'.pkl'
     infile = open(filename, 'rb')
     thisDict = {cascade:pickle.load(infile)}
     cascade_deaths.append(thisDict)
@@ -20,7 +20,7 @@ for cascade in cascadeValues:
 # BANGLADESH STUNTING
 cascade_stunting = []
 for cascade in cascadeValues:
-    filename = '../OptimisationOutput/Bangladesh/stunting/v3/Bangladesh_cascade_stunting_v3_'+str(cascade)+'.pkl'
+    filename = '../OptimisationOutput/Bangladesh/stunting/v5/Bangladesh_cascade_stunting_v5_'+str(cascade)+'.pkl'
     infile = open(filename, 'rb')
     thisDict = {cascade:pickle.load(infile)}
     cascade_stunting.append(thisDict)
@@ -32,7 +32,7 @@ geospatialDeaths = []
 for region in range(0,7):
     deaths = []
     for cascade in cascadeValues:
-        filename = '../OptimisationOutput/Bangladesh/deaths/geospatial/v1/region'+str(region)+'_cascade_deaths_'+str(cascade)+'.pkl'
+        filename = '../OptimisationOutput/Bangladesh/deaths/geospatial/v3/region'+str(region)+'_cascade_deaths_'+str(cascade)+'.pkl'
         infile = open(filename, 'rb')
         thisDict = {cascade:pickle.load(infile)}
         deaths.append(thisDict)
@@ -48,7 +48,7 @@ geospatialStunting = []
 for region in range(0,7):
     stunting = []
     for cascade in cascadeValues:
-        filename = '../OptimisationOutput/Bangladesh/stunting/geospatial/v1/region'+str(region)+'_cascade_stunting_'+str(cascade)+'.pkl'
+        filename = '../OptimisationOutput/Bangladesh/stunting/geospatial/v3/region'+str(region)+'_cascade_stunting_'+str(cascade)+'.pkl'
         infile = open(filename, 'rb')
         thisDict = {cascade:pickle.load(infile)}
         stunting.append(thisDict)

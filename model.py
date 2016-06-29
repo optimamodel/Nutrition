@@ -156,6 +156,14 @@ class Model:
             totalNumberStunted += ageGroup.getNumberStunted()
         return totalNumberStunted
         
+    def getTotalStuntedFraction(self):
+        totalNumberStunted = 0.
+        totalPopSize = 0
+        for ageGroup in self.listOfAgeCompartments: 
+            totalNumberStunted += ageGroup.getNumberStunted()
+            totalPopSize += ageGroup.getTotalPopulation()
+        return float(totalNumberStunted)/float(totalPopSize)
+        
 
     def getCumulativeAgingOutStunted(self):
         return self.cumulativeAgingOutStunted
