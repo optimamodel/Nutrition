@@ -26,7 +26,6 @@ keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
 dataFilename = 'InputForCode_%s.xlsx'%(country)
 spreadsheetData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
 mothers = helper.makePregnantWomen(spreadsheetData)
-mothers['annualPercentPopGrowth'] = -0.01
 ageGroupSpans = [1., 5., 6., 12., 36.] # number of months in each age group
 agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
 numAgeGroups = len(ages)
@@ -138,7 +137,6 @@ for ichoose in range(numInterventions):
     run += 1
 
 #------------------------------------------------------------------------    
-"""
 # INTERVENTION
 percentageIncrease = 30
 nametag = "All interventions: increase coverage by %g%% points"%(percentageIncrease)
@@ -188,7 +186,6 @@ plotData[run]["modelList"] = newModelList
 plotData[run]["tag"] = nametag
 plotData[run]["color"] = plotcolor
 run += 1
-"""
 
 #------------------------------------------------------------------------    
 
@@ -196,7 +193,8 @@ filenamePrefix = '%s_fixedScaleup'%(country)
 
 output.getCombinedPlots(run, plotData, startYear=startYear-1, filenamePrefix=filenamePrefix, save=True)
 output.getCompareDeathsAverted(run, plotData, scalePercent=0.5, filenamePrefix=filenamePrefix, title=title, save=True)
-output.getStuntingCasesAverted(run, plotData, scalePercent=0.5, filenamePrefix=filenamePrefix, title=title, save=True)
+output.getU5StuntingCasesAverted(run, plotData, scalePercent=0.5, filenamePrefix=filenamePrefix, title=title, save=True)
+output.getA5StuntingCasesAverted(run, plotData, scalePercent=0.5, filenamePrefix=filenamePrefix, title=title, save=True)
 
 
 
