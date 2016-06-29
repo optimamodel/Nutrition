@@ -323,7 +323,8 @@ class Constants:
         return [A,B,C,D,E]
         
         
-    def getComplementaryFeedingQuarticCoefficients(self, stuntingDistribution, interventionCoverages):
+    def getComplementaryFeedingQuarticCoefficients(self, stuntingDistribution, interventionCoveragesArg):
+        interventionCoverages = dcp(interventionCoveragesArg)
         coEffs = {}
         for ageGroup in range(len(self.ages)): 
             age = self.ages[ageGroup]
@@ -439,7 +440,9 @@ class Constants:
                 raise ValueError("probability of stunting at birth, at outcome %s, is out of range (%f)"%(birthOutcome, pi))
         self.probsStuntingAtBirth = probsStuntingAtBirth        
                 
-    def getProbStuntedComplementaryFeeding(self, stuntingDistribution, interventionCoverages):
+    def getProbStuntedComplementaryFeeding(self, stuntingDistributionArg, interventionCoveragesArg):
+        interventionCoverages = dcp(interventionCoveragesArg)
+        stuntingDistribution  = dcp(stuntingDistributionArg)
         coEffs = self.getComplementaryFeedingQuarticCoefficients(stuntingDistribution, interventionCoverages)
         baselineProbStuntingComplementaryFeeding = self.getBaselineProbabilityViaQuarticByAge(coEffs)        
         probsStuntingComplementaryFeeding = {}        
