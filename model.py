@@ -194,9 +194,9 @@ class Model:
 
         # call initialisation of probabilities related to interventions
         self.constants.getProbStuntedIfCoveredByIntervention(self.params.interventionCoverages, self.params.stuntingDistribution)
-        self.constants.getProbAppropriatelyBreastfedIfCoveredByIntervention(self.params.interventionCoverages, self.params.breastfeedingDistribution)        
-        self.constants.getProbStuntedIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.stuntingDistribution)        
-        self.constants.getProbStuntedComplementaryFeeding(self.params.stuntingDistribution, self.params.interventionCoverages)        
+        self.constants.getProbAppropriatelyBreastfedIfCoveredByIntervention(self.params.interventionCoverages, self.params.breastfeedingDistribution)
+        self.constants.getProbStuntedIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.stuntingDistribution)
+        self.constants.getProbStuntedComplementaryFeeding(self.params.stuntingDistribution, self.params.interventionCoverages)
         
         # get combined reductions from all interventions
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
