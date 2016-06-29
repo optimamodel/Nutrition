@@ -44,7 +44,6 @@ for intervention in spreadsheetData.interventionList:
 plotData = []
 run = 0
 
-
 #------------------------------------------------------------------------    
 # DEFAULT RUN WITH NO CHANGES TO INTERVENTIONS
 nametag = "Baseline"
@@ -81,13 +80,10 @@ run += 1
 
 
 #------------------------------------------------------------------------    
-# INCREASE COVERAGE OF COMPLEMENTARY FEEDING BY 50%
+# INCREASE COVERAGE OF COMPLEMENTARY FEEDING
 scenarios = [30, 50, 70]
 for icov in range(len(scenarios)):
     CFcoverage = scenarios[icov]
-    #percentageIncrease = 50
-    #nametag = "Complementary feeding: increase coverage by %g%% points"%(percentageIncrease)
-    #pickleFilename = '%s_CompFeed_P%i.pkl'%(country,percentageIncrease)
     nametag = "Complementary feeding: %g%% coverage"%(CFcoverage)
     pickleFilename = '%s_CompFeed_P%i.pkl'%(country,CFcoverage)
     plotcolor = (0.1, 1.0-0.2*icov, 0.1)
@@ -110,11 +106,7 @@ for icov in range(len(scenarios)):
         newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
     # scale up
     for intervention in ['Complementary feeding (supplementation)','Complementary feeding (education)']:
-    #newCoverages[intervention] += percentageIncrease/100.
         newCoverages[intervention] = CFcoverage/100.
-        #newCoverages[intervention] = min(newCoverages[intervention],spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])
-        #newCoverages[intervention] = max(newCoverages[intervention],spreadsheetData.interventionCoveragesCurrent[intervention])
-        #newCoverages[intervention] = max(newCoverages[intervention],0.0)
     modelCF.updateCoverages(newCoverages)
 
     # Run model
@@ -142,15 +134,11 @@ for icov in range(len(scenarios)):
     run += 1
 
 
-
 #------------------------------------------------------------------------    
-# INCREASE COVERAGE OF BREASTFEEDING FROM 61% to 90%
+# INCREASE COVERAGE OF BREASTFEEDING
 scenarios = [70, 80, 90]
 for icov in range(len(scenarios)):
     BFcoverage = scenarios[icov]
-    #percentageIncrease = 29
-    #nametag = "Breastfeeding: increase coverage by %g%% points"%(percentageIncrease)
-    #pickleFilename = '%s_Breastfeed_P%i.pkl'%(country,percentageIncrease)
     nametag = "Breastfeeding promotion: %g%% coverage"%(BFcoverage)
     pickleFilename = '%s_Breastfeed_P%i.pkl'%(country,BFcoverage)
     plotcolor = (0.1, 0.1, 1.0-0.2*icov)
@@ -174,11 +162,7 @@ for icov in range(len(scenarios)):
 
     # scale up
     for intervention in ['Breastfeeding promotion (dual delivery)']:
-        #newCoverages[intervention] += percentageIncrease/100.
         newCoverages[intervention] = BFcoverage/100.
-        #newCoverages[intervention] = min(newCoverages[intervention],spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])
-        #newCoverages[intervention] = max(newCoverages[intervention],spreadsheetData.interventionCoveragesCurrent[intervention])
-        #newCoverages[intervention] = max(newCoverages[intervention],0.0)
     modelBF.updateCoverages(newCoverages)
 
     # Run model
@@ -209,8 +193,8 @@ for icov in range(len(scenarios)):
 
 #------------------------------------------------------------------------    
 # INCREASE COVERAGE OF BREASTFEEDING AND COMPLEMENTARY FEEDING
-BFcoverage = 70
-CFcoverage = 70
+BFcoverage = 80
+CFcoverage = 30
 nametag = "Scale up Breastfeeding promotion to %g%% and Complementary feeding to %g%%"%(BFcoverage,CFcoverage)
 pickleFilename = '%s_BF%i_CF%i.pkl'%(country,BFcoverage,CFcoverage)
 plotcolor = (0.7, 0.1, 0.1)
@@ -265,10 +249,6 @@ run += 1
 
 #------------------------------------------------------------------------    
 
-
-output.getCombinedPlots(run, plotData, startYear=startYear-1)
-#output.getDeathsAverted(modelList, newModelList, 'test')
-#output.getCompareDeathsAverted(run, plotData, filenamePrefix=country, title='comparison with LiST', save=True)
 
 
 
