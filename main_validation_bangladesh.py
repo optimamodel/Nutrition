@@ -302,7 +302,6 @@ rcParams.update({'font.size':20})
 
 skip = 5
 yearTickList =  list(range(startYear, startYear+numYears, skip))
-#yearAxisLimits = [yearList[0]-1, yearList[numYears-1]+1]
 yearAxisLimits = [yearList[0]-1, yearList[numYears-1]+1]
 
 def myfunc(x, pos=0):
@@ -320,15 +319,12 @@ ax.yaxis.set_major_formatter(FuncFormatter(myfunc))
 # plot
 plotList = []
 tagList = []
-for iRun in range(numRuns):
+for iRun in range(1,numRuns):
     tag       = plotData[iRun]["tag"]
     color     = plotData[iRun]["color"]
     plotObj,  = plt.plot(yearList, stuntFracU5annual[tag], linewidth=3.3, color=color)
     plotList.append(plotObj)
     tagList.append(tag)
-
-#allYear      = [2000, 2000, 2004, 2004, 2007, 2007, 2007, 2009, 2011, 2012, 2014]
-#allStuntFrac = [45,   44.7, 42,   43,   40,   36,   43.2, 43,   41,   42,   36]
 
 BDHSyear      = [2000, 2004, 2007, 2011, 2014]
 BDHSstuntFrac = [44.7, 43,   43.2, 41,   36  ]
