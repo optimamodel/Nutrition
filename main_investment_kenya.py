@@ -108,9 +108,9 @@ for ichoose in range(len(spreadsheetData.interventionList)):
     # calculate coverage (%)
     targetPopSize = {}
     targetPopSize[chosenIntervention] = 0.
-    for ageInd in range(numAgeGroups):
-        age = ages[ageInd]
-        targetPopSize[chosenIntervention] += spreadsheetData.interventionTargetPop[chosenIntervention][age] * modelX.listOfAgeCompartments[ageInd].getTotalPopulation()
+    for iAge in range(numAgeGroups):
+        ageName = ages[iAge]
+        targetPopSize[chosenIntervention] += spreadsheetData.interventionTargetPop[chosenIntervention][ageName] * modelX.listOfAgeCompartments[iAge].getTotalPopulation()
     targetPopSize[chosenIntervention] +=     spreadsheetData.interventionTargetPop[chosenIntervention]['pregnant women'] * modelX.fertileWomen.populationSize
     costCovParams = {}
     costCovParams['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[chosenIntervention]["unit cost"])])

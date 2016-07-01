@@ -13,11 +13,15 @@ getStuntedPercent()
 getCombinedPlots()
 getCompareDeathsAverted()
 getU5StuntingCasesAverted()
+getA5StuntingCasesAverted()
 getSimpleBarFromDictionary()
 getStuntingStatusesGivenAge()
 getDeathsAverted()
 getBudgetPieChartComparison()
-
+plotCoverage()
+plotSpendingAllocation()
+plotSpendingAndCoverageTogether()
+compareOptimisationOutput()
 """
 
 from __future__ import division
@@ -27,13 +31,13 @@ def getPopSizeByAgePlot(modelList, label):
     ageList = modelList[0].ages
     #get population size for each age group
     popSize = {}
-    for age in range(0, len(modelList[0].ages)):
-        popSize[age] = 0
+    for iAge in range(0, len(modelList[0].ages)):
+        popSize[iAge] = 0
         countThis = []
         for model in modelList:
-            count = model.listOfAgeCompartments[age].getTotalPopulation()
+            count = model.listOfAgeCompartments[iAge].getTotalPopulation()
             countThis.append(count)
-        popSize[age] = countThis      
+        popSize[iAge] = countThis      
     
     #get some x axis stuff    
     numYears = int(len(modelList)/12)
@@ -77,26 +81,23 @@ def getPopAndStuntedSizePlot(modelList, label):
     # get population size for each age group
     totalPop = []
     stuntPop = []
-    for age in range(0, numAges):
+    for iAge in range(0, numAges):
         totalPop.append([])
         stuntPop.append([])
         m=0
         for model in modelList:
-            total     = model.listOfAgeCompartments[age].getTotalPopulation()
-            stuntfrac = model.listOfAgeCompartments[age].getStuntedFraction()
-            totalPop[age].append(total)
-            stuntPop[age].append(total*stuntfrac)
+            total     = model.listOfAgeCompartments[iAge].getTotalPopulation()
+            stuntfrac = model.listOfAgeCompartments[iAge].getStuntedFraction()
+            totalPop[iAge].append(total)
+            stuntPop[iAge].append(total*stuntfrac)
             totalPopU5[m] += total
             stuntPopU5[m] += total*stuntfrac
             m+=1
 
     #get some x axis stuff    
     numYears = int(len(modelList)/12)
-    yearList = list(range(2016, 2016+numYears+1))#[2016]
-    xTickList = list(range(0, 12*(numYears+1), 12)) # [0]
-    #for i in range(1, numYears):
-        #yearList.append(yearList[0] + i)   
-        #xTickList.append(i * 12)
+    yearList = list(range(2016, 2016+numYears+1))
+    xTickList = list(range(0, 12*(numYears+1), 12))
     
     import numpy as np
     import matplotlib.pyplot as plt
@@ -116,7 +117,7 @@ def getPopAndStuntedSizePlot(modelList, label):
 
     axes=[]
     fig, ax = plt.subplots()
-    #for age in range(0, len(modelList[0].ages)):
+    #for iAge in range(0, len(modelList[0].ages)):
     #    fig, ((axes[0], axes[1], axes[2]), (axes[3], axes[4], ax5)) = plt.subplots(2,3)
     y1 = totalPop[0]
     y2 = totalPop[1]
@@ -141,13 +142,13 @@ def getCumulativeDeathsByAgePlot(modelList, label):
     ageList = modelList[0].ages
     #get population size for each age group
     cumulativeDeaths = {}
-    for age in range(0, len(modelList[0].ages)):
-        cumulativeDeaths[age] = 0
+    for iAge in range(0, len(modelList[0].ages)):
+        cumulativeDeaths[iAge] = 0
         countThis = []
         for model in modelList:
-            count = model.listOfAgeCompartments[age].getCumulativeDeaths()
+            count = model.listOfAgeCompartments[iAge].getCumulativeDeaths()
             countThis.append(count)
-        cumulativeDeaths[age] = countThis  
+        cumulativeDeaths[iAge] = countThis  
 
     
     #get some x axis stuff    
@@ -183,13 +184,13 @@ def getNumStuntedByAgePlot(modelList, label):
     ageList = modelList[0].ages
     #get population size for each age group
     numStunted = {}
-    for age in range(0, len(modelList[0].ages)):
-        numStunted[age] = 0
+    for iAge in range(0, len(modelList[0].ages)):
+        numStunted[iAge] = 0
         countThis = []
         for model in modelList:
-            count = model.listOfAgeCompartments[age].getNumberStunted()
+            count = model.listOfAgeCompartments[iAge].getNumberStunted()
             countThis.append(count)
-        numStunted[age] = countThis      
+        numStunted[iAge] = countThis      
         
     #get some x axis stuff    
     numYears = int(len(modelList)/12)
@@ -224,17 +225,17 @@ def getStuntedPercent(modelList, label, startYear=2016):
     import numpy as np
     ageList = modelList[0].ages
     percentStunted = {}
-    for age in range(0, len(modelList[0].ages)):
+    for iAge in range(0, len(modelList[0].ages)):
         StuntedFracList = []
         for model in modelList:
-            StuntedFrac = model.listOfAgeCompartments[age].getStuntedFraction()
+            StuntedFrac = model.listOfAgeCompartments[iAge].getStuntedFraction()
             StuntedFracList.append(StuntedFrac)
         #get yearly average
         numYears = int(len(modelList)/12)
         yearAveStuntedPerc = []
         for year in range(1, numYears+1):
             yearAveStuntedPerc.append(100.*np.average(StuntedFracList[(year - 1) * 12 : (year * 12) - 1]))
-        percentStunted[age] = yearAveStuntedPerc
+        percentStunted[iAge] = yearAveStuntedPerc
     yearList = [startYear]
     for i in range(1, numYears):
         yearList.append(yearList[0] + i)
@@ -283,17 +284,13 @@ def getCombinedPlots(numRuns, data, startYear=2016, filenamePrefix="compare", sa
         totalPopU5[tag] = [0.]*numMonths
         stuntPopU5[tag] = [0.]*numMonths
         cumulDeathsU5[tag] = [0.]*numMonths
-        #totalPop = [None]*numAges
-        #stuntPop = [None]*numAges
         for mon in range(numMonths):
             model = modelList[mon]
-            for age in range(numAges):
-                ageName = ageList[age]
-                total       = model.listOfAgeCompartments[age].getTotalPopulation()
-                stuntFrac   = model.listOfAgeCompartments[age].getStuntedFraction()
-                cumulDeaths = model.listOfAgeCompartments[age].getCumulativeDeaths()
-                #totalPop[age].append(total)
-                #stuntPop[age].append(total*stuntFrac)
+            for iAge in range(numAges):
+                ageName = ageList[iAge]
+                total       = model.listOfAgeCompartments[iAge].getTotalPopulation()
+                stuntFrac   = model.listOfAgeCompartments[iAge].getStuntedFraction()
+                cumulDeaths = model.listOfAgeCompartments[iAge].getCumulativeDeaths()
                 totalPopU5[tag][mon]    += total
                 stuntPopU5[tag][mon]    += total*stuntFrac
                 cumulDeathsU5[tag][mon] += cumulDeaths
@@ -401,10 +398,10 @@ def getCompareDeathsAverted(numRuns, data, scalePercent=0.2, filenamePrefix="com
             cumulDeathsList[tag][ageName] = [0.]*numMonths
         for mon in range(numMonths):
             model = modelList[mon]
-            for age in range(numAges):
-                ageName = ageList[age]
-                total       = model.listOfAgeCompartments[age].getTotalPopulation()
-                cumulDeaths = model.listOfAgeCompartments[age].getCumulativeDeaths()
+            for iAge in range(numAges):
+                ageName = ageList[iAge]
+                total       = model.listOfAgeCompartments[iAge].getTotalPopulation()
+                cumulDeaths = model.listOfAgeCompartments[iAge].getCumulativeDeaths()
                 cumulDeathsU5[tag][mon] += cumulDeaths
                 cumulDeathsList[tag][ageName][mon] = cumulDeaths
     # calculate deaths averted
@@ -482,10 +479,10 @@ def getU5StuntingCasesAverted(numRuns, data, scalePercent=0.2, filenamePrefix="c
         stuntPopU5[tag] = [0.]*numMonths
         for mon in range(numMonths):
             model = modelList[mon]
-            for age in range(numAges):
-                ageName = ageList[age]
-                total       = model.listOfAgeCompartments[age].getTotalPopulation()
-                stuntFrac   = model.listOfAgeCompartments[age].getStuntedFraction()
+            for iAge in range(numAges):
+                ageName = ageList[iAge]
+                total       = model.listOfAgeCompartments[iAge].getTotalPopulation()
+                stuntFrac   = model.listOfAgeCompartments[iAge].getStuntedFraction()
                 totalPopU5[tag][mon]    += total
                 stuntPopU5[tag][mon]    += total*stuntFrac
     # stunted fraction can't be added, so calculate from stuntPopU5 and totalPopU5 afterward
@@ -533,7 +530,6 @@ def getU5StuntingCasesAverted(numRuns, data, scalePercent=0.2, filenamePrefix="c
     # plot
     barwid = 0.5
     h1 = ax.barh(y_pos+0.5-0.5*barwid, stuntingAvertedList, height=barwid, facecolor='#99CCEE', edgecolor='k', linewidth=1.5)
-    #plt.legend([h1],["<5 years"])
     if save:
         plt.savefig("%s_U5stuntingCasesAverted.png"%(filenamePrefix), bbox_inches='tight')
     else:
@@ -625,7 +621,7 @@ def getSimpleBarFromDictionary(dictionary, label, order):
     plt.show()
 
     
-def getStuntingStatusesGivenAge(modelList, age, lable):
+def getStuntingStatusesGivenAge(modelList, ageName, lable):
     import matplotlib.pyplot as plt
     fig, ax = plt.subplots()
     numYears = int(len(modelList)/12) 
@@ -640,17 +636,17 @@ def getStuntingStatusesGivenAge(modelList, age, lable):
     normal = []
     
     for model in modelList:
-        high.append(model.params.stuntingDistribution[age]['high'])
-        moderate.append(model.params.stuntingDistribution[age]['moderate'])
-        mild.append(model.params.stuntingDistribution[age]['mild'])
-        normal.append(model.params.stuntingDistribution[age]['normal'])
+        high.append(model.params.stuntingDistribution[ageName]['high'])
+        moderate.append(model.params.stuntingDistribution[ageName]['moderate'])
+        mild.append(model.params.stuntingDistribution[ageName]['mild'])
+        normal.append(model.params.stuntingDistribution[ageName]['normal'])
     
     ax.plot(high, label = 'high')
     ax.plot(moderate, label = 'moderate')
     ax.plot(mild, label = 'mild')
     ax.plot(normal, label = 'normal')
     plt.legend()
-    plt.title(age + ":  " + lable)
+    plt.title(ageName + ":  " + lable)
     plt.ylim(0, 1)
     plt.show()
     
@@ -659,8 +655,8 @@ def getDeathsAverted(modelList, modelList2, label):
     import matplotlib.pyplot as plt
     finalIndex = len(modelList) - 1
     deathsAvertedByAge=[]
-    for age in range(0, len(modelList[0].ages)):
-        deathsAverted = modelList[finalIndex].listOfAgeCompartments[age].getCumulativeDeaths() - modelList2[finalIndex].listOfAgeCompartments[age].getCumulativeDeaths()
+    for iAge in range(0, len(modelList[0].ages)):
+        deathsAverted = modelList[finalIndex].listOfAgeCompartments[iAge].getCumulativeDeaths() - modelList2[finalIndex].listOfAgeCompartments[iAge].getCumulativeDeaths()
         deathsAvertedByAge.append(deathsAverted)
     X = np.arange(len(modelList[0].ages))
     plt.bar(X, deathsAvertedByAge, align='center', width=0.5)

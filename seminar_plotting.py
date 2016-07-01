@@ -90,8 +90,8 @@ fig, ax = plt.subplots()
 
 finalIndex = len(modelList) - 1
 deathsAvertedByAge=[]
-for age in range(0, len(modelList[0].ages)):
-    deathsAverted = modelList[finalIndex].listOfAgeCompartments[age].getCumulativeDeaths() - modelList2[finalIndex].listOfAgeCompartments[age].getCumulativeDeaths()
+for iAge in range(0, len(modelList[0].ages)):
+    deathsAverted = modelList[finalIndex].listOfAgeCompartments[iAge].getCumulativeDeaths() - modelList2[finalIndex].listOfAgeCompartments[iAge].getCumulativeDeaths()
     deathsAvertedByAge.append(deathsAverted)
 
 bars = []    

@@ -287,42 +287,42 @@ class Model:
             
     def updateMortalityRate(self):
         # Newborns first
-        ageCompartment = self.listOfAgeCompartments[0]
-        age = ageCompartment.name
+        ageGroup = self.listOfAgeCompartments[0]
+        ageName = ageGroup.name
         for breastfeedingCat in self.breastfeedingList:
             count = 0.
             for cause in self.params.causesOfDeath:
-                Rb = self.params.RRBreastfeeding[age][cause][breastfeedingCat]
+                Rb = self.params.RRBreastfeeding[ageName][cause][breastfeedingCat]
                 for outcome in self.birthOutcomeList:
                     pbo = self.params.birthOutcomeDist[outcome]
                     Rbo = self.params.RRdeathByBirthOutcome[cause][outcome]
-                    count += Rb * pbo * Rbo * self.constants.underlyingMortalities[age][cause]
+                    count += Rb * pbo * Rbo * self.constants.underlyingMortalities[ageName][cause]
             for stuntingCat in self.stuntingList:
                 for wastingCat in self.wastingList:
-                    ageCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate = count
+                    ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate = count
         # over 1 months
-        for ageCompartment in self.listOfAgeCompartments[1:]:
-            age = ageCompartment.name
+        for ageGroup in self.listOfAgeCompartments[1:]:
+            ageName = ageGroup.name
             for stuntingCat in self.stuntingList:
                 for wastingCat in self.wastingList:
                     for breastfeedingCat in self.breastfeedingList:
                         count = 0.
                         for cause in self.params.causesOfDeath:
-                            t1 = self.constants.underlyingMortalities[age][cause]
-                            t2 = self.params.RRStunting[age][cause][stuntingCat]
-                            t3 = self.params.RRWasting[age][cause][wastingCat]
-                            t4 = self.params.RRBreastfeeding[age][cause][breastfeedingCat]
+                            t1 = self.constants.underlyingMortalities[ageName][cause]
+                            t2 = self.params.RRStunting[ageName][cause][stuntingCat]
+                            t3 = self.params.RRWasting[ageName][cause][wastingCat]
+                            t4 = self.params.RRBreastfeeding[ageName][cause][breastfeedingCat]
                             count += t1 * t2 * t3 * t4                            
-                        ageCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate = count
+                        ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate = count
 
     
 
     def applyMortality(self):
-        for ageCompartment in self.listOfAgeCompartments:
+        for ageGroup in self.listOfAgeCompartments:
             for stuntingCat in self.stuntingList:
                 for wastingCat in self.wastingList:
                     for breastfeedingCat in self.breastfeedingList:
-                        thisBox = ageCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat]
+                        thisBox = ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat]
                         deaths = thisBox.populationSize * thisBox.mortalityRate * self.timestep
                         thisBox.populationSize -= deaths
                         thisBox.cumulativeDeaths += deaths
@@ -397,8 +397,8 @@ class Model:
         numNewBabies = numWomen * birthRate * self.timestep
         self.fertileWomen.populationSize *= (1.+self.fertileWomen.annualPercentPopGrowth*self.timestep)
         # convenient names
-        ageCompartment = self.listOfAgeCompartments[0]
-        ageName         = ageCompartment.name
+        ageGroup = self.listOfAgeCompartments[0]
+        ageName         = ageGroup.name
         # restratify Stunting
         restratifiedStuntingAtBirth = {}
         for outcome in self.birthOutcomeList:
@@ -411,13 +411,13 @@ class Model:
                 stuntingFractions[stuntingCat] += restratifiedStuntingAtBirth[outcome][stuntingCat] * self.params.birthOutcomeDist[outcome]
             for wastingCat in self.wastingList:
                 for breastfeedingCat in self.breastfeedingList:
-                    ageCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize += numNewBabies * self.params.wastingDistribution[ageName][wastingCat] * self.params.breastfeedingDistribution[ageName][breastfeedingCat] * stuntingFractions[stuntingCat]
+                    ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize += numNewBabies * self.params.wastingDistribution[ageName][wastingCat] * self.params.breastfeedingDistribution[ageName][breastfeedingCat] * stuntingFractions[stuntingCat]
 
         #now reduce stunting due to interventions
-        oldProbStunting = ageCompartment.getStuntedFraction()
+        oldProbStunting = ageGroup.getStuntedFraction()
         newProbStunting = oldProbStunting * self.constants.stuntingUpdateAfterInterventions['<1 month']
         self.params.stuntingDistribution[ageName] = self.helper.restratify(newProbStunting)
-        ageCompartment.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
+        ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
 
     def applyAgingAndBirths(self):
         # aging must happen before births
@@ -425,11 +425,11 @@ class Model:
         self.applyBirths()
 
     def updateRiskDistributions(self):
-        for ageCompartment in self.listOfAgeCompartments:
-            ageName = ageCompartment.name
-            self.params.stuntingDistribution[ageName]      = ageCompartment.getStuntingDistribution()
-            self.params.wastingDistribution[ageName]       = ageCompartment.getWastingDistribution()
-            self.params.breastfeedingDistribution[ageName] = ageCompartment.getBreastfeedingDistribution()
+        for ageGroup in self.listOfAgeCompartments:
+            ageName = ageGroup.name
+            self.params.stuntingDistribution[ageName]      = ageGroup.getStuntingDistribution()
+            self.params.wastingDistribution[ageName]       = ageGroup.getWastingDistribution()
+            self.params.breastfeedingDistribution[ageName] = ageGroup.getBreastfeedingDistribution()
 
 
     def moveOneTimeStep(self):

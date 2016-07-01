@@ -154,11 +154,11 @@ for iRun in range(numRuns):
     cumulDeathsU5[tag] = [0.]*numMonths
     for mon in range(numMonths):
         model = modelList[mon]
-        for age in range(numAges):
-            ageName = ageList[age]
-            total       = model.listOfAgeCompartments[age].getTotalPopulation()
-            stuntFrac   = model.listOfAgeCompartments[age].getStuntedFraction()
-            cumulDeaths = model.listOfAgeCompartments[age].getCumulativeDeaths()
+        for iAge in range(numAges):
+            ageName = ageList[iAge]
+            total       = model.listOfAgeCompartments[iAge].getTotalPopulation()
+            stuntFrac   = model.listOfAgeCompartments[iAge].getStuntedFraction()
+            cumulDeaths = model.listOfAgeCompartments[iAge].getCumulativeDeaths()
             totalPopU5[tag][mon]    += total
             stuntPopU5[tag][mon]    += total*stuntFrac
             cumulDeathsU5[tag][mon] += cumulDeaths

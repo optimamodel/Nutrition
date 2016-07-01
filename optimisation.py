@@ -96,9 +96,9 @@ class Optimisation:
         for intervention in spreadsheetData.interventionList:
             targetPopSize[intervention] = 0.
             costCoverageInfo[intervention] = {}
-            for ageInd in range(numAgeGroups):
-                age = self.ages[ageInd]
-                targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][age] * agePopSizes[ageInd]
+            for iAge in range(numAgeGroups):
+                ageName = self.ages[iAge]
+                targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][ageName] * agePopSizes[iAge]
             targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention]['pregnant women'] * mothers['populationSize']
             costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
             costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
@@ -126,9 +126,9 @@ class Optimisation:
         for intervention in spreadsheetData.interventionList:
             targetPopSize[intervention] = 0.
             costCoverageInfo[intervention] = {}
-            for ageInd in range(numAgeGroups):
-                age = self.ages[ageInd]
-                targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][age] * agePopSizes[ageInd]
+            for iAge in range(numAgeGroups):
+                ageName = self.ages[iAge]
+                targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][ageName] * agePopSizes[iAge]
             targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention]['pregnant women'] * mothers['populationSize']
             costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
             costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
@@ -187,9 +187,9 @@ class Optimisation:
         for intervention in spreadsheetData.interventionList:
             targetPopSize[intervention] = 0.
             costCoverageInfo[intervention] = {}
-            for ageInd in range(numAgeGroups):
-                age = self.ages[ageInd]
-                targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][age] * agePopSizes[ageInd]
+            for iAge in range(numAgeGroups):
+                ageName = self.ages[iAge]
+                targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][ageName] * agePopSizes[iAge]
             targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention]['pregnant women'] * mothers['populationSize']
             costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
             costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
@@ -222,9 +222,9 @@ class Optimisation:
         for intervention in spreadsheetData.interventionList:
             targetPopSize[intervention] = 0.
             costCoverageInfo[intervention] = {}
-            for ageInd in range(numAgeGroups):
-                age = self.ages[ageInd]
-                targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][age] * agePopSizes[ageInd]
+            for iAge in range(numAgeGroups):
+                ageName = self.ages[iAge]
+                targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][ageName] * agePopSizes[iAge]
             targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention]['pregnant women'] * mothers['populationSize']
             costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
             costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])

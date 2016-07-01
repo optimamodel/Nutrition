@@ -52,21 +52,21 @@ class TestsForConstantsClass(unittest.TestCase):
         # underlyingMortality = total mortality / (numCompartments * dist * dist * dist * RR * RR * RR * cause)
         # underlyingMortality = total mortality / (numBFCompartments * BFdist * RR * RR * cause) for newborns
         self.assertAlmostEqual(6./4./0.25, self.testConstants.underlyingMortalities["<1 month"]["Neonatal diarrhea"])
-        for age in ['1-5 months', '6-11 months', '12-23 months', '24-59 months']:
-            self.assertAlmostEqual((0./64.)*(1.e6), self.testConstants.underlyingMortalities[age]["Diarrhea"])
+        for ageName in ['1-5 months', '6-11 months', '12-23 months', '24-59 months']:
+            self.assertAlmostEqual((0./64.)*(1.e6), self.testConstants.underlyingMortalities[ageName]["Diarrhea"])
         
     def testStuntingProbabilitiesEqualExpectedWhenORis2(self):
         # for OR = 2, assuming F(a) = F(a-1) = 0.5:
         # pn = sqrt(2) - 1
-        for age in ['1-5 months', '6-11 months', '12-23 months', '24-59 months']:
-            self.assertAlmostEqual(self.testConstants.probStuntedIfPrevStunted["notstunted"][age], numpy.sqrt(2)-1)
+        for ageName in ['1-5 months', '6-11 months', '12-23 months', '24-59 months']:
+            self.assertAlmostEqual(self.testConstants.probStuntedIfPrevStunted["notstunted"][ageName], numpy.sqrt(2)-1)
         
     def testRelationshipBetweenStuntingProbabilitiesWhenORis2(self):
         # this relationship between ps and pn comes from the OR definition
         # ps = OR * pn / (1 - pn + (OR * pn)) 
-        for age in ['1-5 months', '6-11 months', '12-23 months', '24-59 months']:
-            ps = 2 * self.testConstants.probStuntedIfPrevStunted["notstunted"][age] / (1 + self.testConstants.probStuntedIfPrevStunted["notstunted"][age])
-            self.assertAlmostEqual(self.testConstants.probStuntedIfPrevStunted["yesstunted"][age], ps)
+        for ageName in ['1-5 months', '6-11 months', '12-23 months', '24-59 months']:
+            ps = 2 * self.testConstants.probStuntedIfPrevStunted["notstunted"][ageName] / (1 + self.testConstants.probStuntedIfPrevStunted["notstunted"][ageName])
+            self.assertAlmostEqual(self.testConstants.probStuntedIfPrevStunted["yesstunted"][ageName], ps)
            
     def testDiarrheaRiskSum(self):
         riskSum = self.testConstants.getDiarrheaRiskSum('24-59 months', self.testData.breastfeedingDistribution)        
@@ -111,14 +111,14 @@ class TestsForModelClass(unittest.TestCase):
     @unittest.skip("underlying mortalites all set to zero except for neonatals")
     def testApplyMortalityBySummingAllBoxes(self):
         self.testModel.applyMortality()
-        for ageGroup in range(0, len(self.testModel.listOfAgeCompartments)):
+        for iAge in range(0, len(self.testModel.listOfAgeCompartments)):
             sumPopSize = 0.
             sumCumulativeDeaths = 0.
             for stuntingCat in ["normal", "mild", "moderate", "high"]:
                 for wastingCat in ["normal", "mild", "moderate", "high"]:
                     for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
-                        sumPopSize += self.testModel.listOfAgeCompartments[ageGroup].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
-                        sumCumulativeDeaths += self.testModel.listOfAgeCompartments[ageGroup].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].cumulativeDeaths
+                        sumPopSize += self.testModel.listOfAgeCompartments[iAge].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
+                        sumCumulativeDeaths += self.testModel.listOfAgeCompartments[iAge].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].cumulativeDeaths
             self.assertAlmostEqual(64. * (100.*0.5/12.), sumCumulativeDeaths)
             self.assertAlmostEqual(64. * (100. - (100.*0.5/12.)), sumPopSize)
             

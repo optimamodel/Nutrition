@@ -54,7 +54,7 @@ class Helper:
         return pregnantWomen
 
 
-    def makeBoxes(self, thisAgePopSize, ageGroup, keyList, spreadsheetData):
+    def makeBoxes(self, thisAgePopSize, ageName, keyList, spreadsheetData):
         import model as modelCode
         allBoxes = {}
         ages, birthOutcomes, wastingList, stuntingList, breastfeedingList = keyList
@@ -63,7 +63,7 @@ class Helper:
             for wastingCat in wastingList:
                 allBoxes[stuntingCat][wastingCat] = {}
                 for breastfeedingCat in breastfeedingList:
-                    thisPopSize = thisAgePopSize * spreadsheetData.stuntingDistribution[ageGroup][stuntingCat] * spreadsheetData.wastingDistribution[ageGroup][wastingCat] * spreadsheetData.breastfeedingDistribution[ageGroup][breastfeedingCat]   # Assuming independent
+                    thisPopSize = thisAgePopSize * spreadsheetData.stuntingDistribution[ageName][stuntingCat] * spreadsheetData.wastingDistribution[ageName][wastingCat] * spreadsheetData.breastfeedingDistribution[ageName][breastfeedingCat]   # Assuming independent
                     thisMortalityRate = 0
                     allBoxes[stuntingCat][wastingCat][breastfeedingCat] =  modelCode.Box(thisPopSize, thisMortalityRate)
         return allBoxes
@@ -74,12 +74,12 @@ class Helper:
         ages, birthOutcomes, wastingList, stuntingList, breastfeedingList = keyList
         numAgeGroups = len(ages)
         listOfAgeCompartments = []
-        for age in range(numAgeGroups): # Loop over all age-groups
-            ageGroup  = ages[age]
-            agingRate = agingRateList[age]
-            agePopSize = agePopSizes[age]
-            thisAgeBoxes = self.makeBoxes(agePopSize, ageGroup, keyList, spreadsheetData)
-            compartment = modelCode.AgeCompartment(ageGroup, thisAgeBoxes, agingRate, keyList)
+        for iAge in range(numAgeGroups): # Loop over all age-groups
+            ageName  = ages[iAge]
+            agingRate = agingRateList[iAge]
+            agePopSize = agePopSizes[iAge]
+            thisAgeBoxes = self.makeBoxes(agePopSize, ageName, keyList, spreadsheetData)
+            compartment = modelCode.AgeCompartment(ageName, thisAgeBoxes, agingRate, keyList)
             listOfAgeCompartments.append(compartment)
         return listOfAgeCompartments         
 
@@ -90,8 +90,8 @@ class Helper:
         import parameters as parametersCode        
         # gaussianise stunting in *data*
         ages = keyList[0]        
-        for ageGroup in range(len(ages)):
-            ageName = ages[ageGroup]
+        for iAge in range(len(ages)):
+            ageName = ages[iAge]
             probStunting = spreadsheetData.stuntingDistribution[ageName]['high'] + spreadsheetData.stuntingDistribution[ageName]['moderate']
             spreadsheetData.stuntingDistribution[ageName] = self.restratify(probStunting)
         listOfAgeCompartments = self.makeAgeCompartments(agingRateList, agePopSizes, keyList, spreadsheetData)

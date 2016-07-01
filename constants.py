@@ -24,8 +24,8 @@ class Constants:
         self.initialStuntingTrend = -0. # percentage decrease in stunting prevalence per year
         self.initialStuntingTrend = self.initialStuntingTrend / 100. * self.model.timestep # fractional decrease in stunting prevalence per timestep
         self.stuntingUpdateAfterInterventions = {}
-        for age in self.ages:
-            self.stuntingUpdateAfterInterventions[age] = 1.
+        for ageName in self.ages:
+            self.stuntingUpdateAfterInterventions[ageName] = 1.
 
         self.getUnderlyingMortalities()
         self.getProbStuntingProgression()
@@ -37,35 +37,35 @@ class Constants:
         #we are solving for X
         # Calculate RHS for each age and cause
         RHS = {}
-        for age in self.ages:
-            RHS[age] = {}
+        for ageName in self.ages:
+            RHS[ageName] = {}
             for cause in self.data.causesOfDeath:
-                RHS[age][cause] = 0.
+                RHS[ageName][cause] = 0.
                 for stuntingCat in self.stuntingList:
                     for wastingCat in self.wastingList:
                         for breastfeedingCat in self.breastfeedingList:
-                            t1 = self.data.stuntingDistribution[age][stuntingCat]
-                            t2 = self.data.wastingDistribution[age][wastingCat] 
-                            t3 = self.data.breastfeedingDistribution[age][breastfeedingCat]
-                            t4 = self.data.RRStunting[age][cause][stuntingCat]
-                            t5 = self.data.RRWasting[age][cause][wastingCat]
-                            t6 = self.data.RRBreastfeeding[age][cause][breastfeedingCat]
-                            RHS[age][cause] += t1 * t2 * t3 * t4 * t5 * t6
+                            t1 = self.data.stuntingDistribution[ageName][stuntingCat]
+                            t2 = self.data.wastingDistribution[ageName][wastingCat] 
+                            t3 = self.data.breastfeedingDistribution[ageName][breastfeedingCat]
+                            t4 = self.data.RRStunting[ageName][cause][stuntingCat]
+                            t5 = self.data.RRWasting[ageName][cause][wastingCat]
+                            t6 = self.data.RRBreastfeeding[ageName][cause][breastfeedingCat]
+                            RHS[ageName][cause] += t1 * t2 * t3 * t4 * t5 * t6
         # RHS for newborns only
-        age = "<1 month"
+        ageName = "<1 month"
         for cause in self.data.causesOfDeath:
-            RHS[age][cause] = 0.
+            RHS[ageName][cause] = 0.
             for breastfeedingCat in self.breastfeedingList:
-                Pbf = self.data.breastfeedingDistribution[age][breastfeedingCat]
-                RRbf = self.data.RRBreastfeeding[age][cause][breastfeedingCat]
+                Pbf = self.data.breastfeedingDistribution[ageName][breastfeedingCat]
+                RRbf = self.data.RRBreastfeeding[ageName][cause][breastfeedingCat]
                 for birthoutcome in self.birthOutcomes:
                     Pbo = self.data.birthOutcomeDist[birthoutcome]
                     RRbo = self.data.RRdeathByBirthOutcome[cause][birthoutcome]
-                    RHS[age][cause] += Pbf * RRbf * Pbo * RRbo
+                    RHS[ageName][cause] += Pbf * RRbf * Pbo * RRbo
         # Store total age population sizes
         AgePop = []
-        for ageInd in range(len(self.ages)):
-            AgePop.append(self.model.listOfAgeCompartments[ageInd].getTotalPopulation())
+        for iAge in range(len(self.ages)):
+            AgePop.append(self.model.listOfAgeCompartments[iAge].getTotalPopulation())
         # Calculated total mortality by age (corrected for units)
         MortalityCorrected = {}
         LiveBirths = self.data.demographics["number of live births"]
@@ -73,32 +73,32 @@ class Constants:
         Minfant = self.data.totalMortality["infant"]
         Mu5 = self.data.totalMortality["under 5"]
         # Newborns
-        age = self.ages[0]
+        ageName = self.ages[0]
         m0 = Mnew*LiveBirths/1000./AgePop[0]
-        MortalityCorrected[age] = m0
+        MortalityCorrected[ageName] = m0
         # 1-5 months
-        age = self.ages[1]
+        ageName = self.ages[1]
         m1 = (Minfant - Mnew)*LiveBirths/1000.*5./11./AgePop[1]
-        MortalityCorrected[age] = m1
+        MortalityCorrected[ageName] = m1
         # 6-12 months
-        age = self.ages[2]
+        ageName = self.ages[2]
         m2 = (Minfant - Mnew)*LiveBirths/1000.*6./11./AgePop[2]
-        MortalityCorrected[age] = m2
+        MortalityCorrected[ageName] = m2
         # 12-24 months
-        age = self.ages[3]
+        ageName = self.ages[3]
         m3 = (Mu5 - Minfant)*LiveBirths/1000.*1./4./AgePop[3]
-        MortalityCorrected[age] = m3
+        MortalityCorrected[ageName] = m3
         # 24-60 months
-        age = self.ages[4]
+        ageName = self.ages[4]
         m4 = (Mu5 - Minfant)*LiveBirths/1000.*3./4./AgePop[4]
-        MortalityCorrected[age] = m4
+        MortalityCorrected[ageName] = m4
         # Calculate LHS for each age and cause of death then solve for X
         Xdictionary = {} 
-        for age in self.ages:
-            Xdictionary[age] = {}
+        for ageName in self.ages:
+            Xdictionary[ageName] = {}
             for cause in self.data.causesOfDeath:
-                LHS_age_cause = MortalityCorrected[age] * self.data.causeOfDeathDist[age][cause]
-                Xdictionary[age][cause] = LHS_age_cause / RHS[age][cause]
+                LHS_age_cause = MortalityCorrected[ageName] * self.data.causeOfDeathDist[ageName][cause]
+                Xdictionary[ageName][cause] = LHS_age_cause / RHS[ageName][cause]
         self.underlyingMortalities = Xdictionary
         
 
@@ -109,10 +109,10 @@ class Constants:
         numAgeGroups = len(self.ages)
         self.probStuntedIfPrevStunted["notstunted"] = {}
         self.probStuntedIfPrevStunted["yesstunted"] = {}
-        for ageInd in range(1, numAgeGroups):
-            ageName = self.ages[ageInd]
-            thisAge = self.model.listOfAgeCompartments[ageInd]
-            younger = self.model.listOfAgeCompartments[ageInd-1]
+        for iAge in range(1, numAgeGroups):
+            ageName = self.ages[iAge]
+            thisAge = self.model.listOfAgeCompartments[iAge]
+            younger = self.model.listOfAgeCompartments[iAge-1]
             OddsRatio = self.data.ORstuntingProgression[ageName]
             fracStuntedThisAge = thisAge.getStuntedFraction() + self.initialStuntingTrend
             fracStuntedYounger = younger.getStuntedFraction()
@@ -142,11 +142,11 @@ class Constants:
         AO = self.getAOGivenZa(Zt)
         from numpy import sqrt    
         eps = 1.e-5
-        numAgeGroups = len(self.model.listOfAgeCompartments)        
+        numAgeGroups = len(self.ages)
         self.fracStuntedIfDiarrhea["nodia"] = {}
         self.fracStuntedIfDiarrhea["dia"] = {}
-        for ageInd in range(0, numAgeGroups):
-            ageName = self.ages[ageInd]
+        for iAge in range(0, numAgeGroups):
+            ageName = self.ages[iAge]
             #get fraction of people with diarrhea
             fracDiarrhea = 0.
             for breastfeedingCat in self.breastfeedingList:
@@ -173,7 +173,7 @@ class Constants:
 
     def updateProbStuntedIfDiarrheaNewZa(self,Zt):
         AO = self.getAOGivenZa(Zt)
-        numAgeGroups = len(self.model.listOfAgeCompartments)        
+        numAgeGroups = len(self.ages)
         for iAge in range(numAgeGroups):
             ageName = self.ages[iAge]
             Omega0  = self.fracStuntedIfDiarrhea["nodia"][ageName]
@@ -236,13 +236,13 @@ class Constants:
     def getProbStuntedIfCoveredByIntervention(self, interventionCoverages, stuntingDistribution):
         from numpy import sqrt 
         eps = 1.e-5
-        numAgeGroups = len(self.model.listOfAgeCompartments)
+        numAgeGroups = len(self.ages)
         for intervention in self.data.interventionList:
             self.probStuntedIfCovered[intervention] = {}
             self.probStuntedIfCovered[intervention]["not covered"] = {}
             self.probStuntedIfCovered[intervention]["covered"]     = {}
-            for ageInd in range(numAgeGroups):
-                ageName = self.ages[ageInd]
+            for iAge in range(numAgeGroups):
+                ageName = self.ages[iAge]
                 OddsRatio = self.data.ORstuntingIntervention[ageName][intervention]
                 fracCovered = interventionCoverages[intervention]
                 fracStuntedThisAge = stuntingDistribution[ageName]['high'] + stuntingDistribution[ageName]['moderate']
@@ -267,7 +267,7 @@ class Constants:
     def getProbAppropriatelyBreastfedIfCoveredByIntervention(self, interventionCoverages, breastfeedingDistribution):
         from numpy import sqrt 
         eps = 1.e-5
-        numAgeGroups = len(self.model.listOfAgeCompartments)
+        numAgeGroups = len(self.ages)
         for intervention in self.data.interventionList:
             self.probAppropriatelyBreastfedIfCovered[intervention] = {}
             self.probAppropriatelyBreastfedIfCovered[intervention]["not covered"] = {}
@@ -326,13 +326,13 @@ class Constants:
     def getComplementaryFeedingQuarticCoefficients(self, stuntingDistribution, interventionCoveragesArg):
         interventionCoverages = dcp(interventionCoveragesArg)
         coEffs = {}
-        for ageGroup in range(len(self.ages)): 
-            age = self.ages[ageGroup]
+        for iAge in range(len(self.ages)): 
+            ageName = self.ages[iAge]
             OR = [1.]*4
             OR[0] = 1.
-            OR[1] = self.data.ORstuntingComplementaryFeeding[age]["Complementary feeding (food secure without promotion)"]
-            OR[2] = self.data.ORstuntingComplementaryFeeding[age]["Complementary feeding (food insecure with promotion and supplementation)"]
-            OR[3] = self.data.ORstuntingComplementaryFeeding[age]["Complementary feeding (food insecure with neither promotion nor supplementation)"]
+            OR[1] = self.data.ORstuntingComplementaryFeeding[ageName]["Complementary feeding (food secure without promotion)"]
+            OR[2] = self.data.ORstuntingComplementaryFeeding[ageName]["Complementary feeding (food insecure with promotion and supplementation)"]
+            OR[3] = self.data.ORstuntingComplementaryFeeding[ageName]["Complementary feeding (food insecure with neither promotion nor supplementation)"]
             FracSecure = 1. - self.data.demographics['fraction food insecure']
             FracCoveredEduc = interventionCoverages['Complementary feeding (education)']
             FracCoveredSupp = interventionCoverages['Complementary feeding (supplementation)']
@@ -341,7 +341,7 @@ class Constants:
             Frac[1] = FracSecure * (1 - FracCoveredEduc)
             Frac[2] = (1 - FracSecure) * FracCoveredSupp
             Frac[3] = (1 - FracSecure) * (1 - FracCoveredSupp)
-            FracStunted = stuntingDistribution[age]['high'] + stuntingDistribution[age]['moderate']
+            FracStunted = stuntingDistribution[ageName]['high'] + stuntingDistribution[ageName]['moderate']
             # [i] will refer to the three non-baseline birth outcomes
             A = Frac[0]*(OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.)
             B = (OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.) * ( \
@@ -355,7 +355,7 @@ class Constants:
                 sum( OR[i] * Frac[i] for i in (1,2,3)) - \
                 sum( FracStunted * (OR[i]-1.) for i in (1,2,3))
             E = -FracStunted
-            coEffs[age] = [A,B,C,D,E]
+            coEffs[ageName] = [A,B,C,D,E]
         return coEffs      
 
 
@@ -421,8 +421,8 @@ class Constants:
     def getBaselineProbabilityViaQuarticByAge(self, coEffs):
         #CoEffs are a dictionary of coefficients by age
         baselineProbability = {}        
-        for age in self.ages:
-            baselineProbability[age] = self.getBaselineProbabilityViaQuartic(coEffs[age])
+        for ageName in self.ages:
+            baselineProbability[ageName] = self.getBaselineProbabilityViaQuartic(coEffs[ageName])
         return baselineProbability    
 
 
@@ -446,15 +446,15 @@ class Constants:
         coEffs = self.getComplementaryFeedingQuarticCoefficients(stuntingDistribution, interventionCoverages)
         baselineProbStuntingComplementaryFeeding = self.getBaselineProbabilityViaQuarticByAge(coEffs)        
         probsStuntingComplementaryFeeding = {}        
-        for age in self.ages: 
-            probsStuntingComplementaryFeeding[age] = {}
-            p0 = baselineProbStuntingComplementaryFeeding[age]
-            probsStuntingComplementaryFeeding[age]["Complementary feeding (food secure with promotion)"] = p0
+        for ageName in self.ages: 
+            probsStuntingComplementaryFeeding[ageName] = {}
+            p0 = baselineProbStuntingComplementaryFeeding[ageName]
+            probsStuntingComplementaryFeeding[ageName]["Complementary feeding (food secure with promotion)"] = p0
             for group in self.data.complementsList:
-                OR = self.data.ORstuntingComplementaryFeeding[age][group]
-                probsStuntingComplementaryFeeding[age][group] = p0*OR / (1.-p0+OR*p0)
-                pi = probsStuntingComplementaryFeeding[age][group]
+                OR = self.data.ORstuntingComplementaryFeeding[ageName][group]
+                probsStuntingComplementaryFeeding[ageName][group] = p0*OR / (1.-p0+OR*p0)
+                pi = probsStuntingComplementaryFeeding[ageName][group]
                 if(pi<0. or pi>1.):
-                    raise ValueError("probability of stunting complementary feeding, at outcome %s, age %s, is out of range (%f)"%(group, age, pi))            
+                    raise ValueError("probability of stunting complementary feeding, at outcome %s, age %s, is out of range (%f)"%(group, ageName, pi))            
         self.probsStuntingComplementaryFeeding = probsStuntingComplementaryFeeding    
             

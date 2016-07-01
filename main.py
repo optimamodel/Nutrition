@@ -113,9 +113,9 @@ for intervention in spreadsheetData.interventionList:
     print intervention
     investment = array([investmentDict[intervention]])
     targetPopSize[intervention] = 0.
-    for ageInd in range(numAgeGroups):
-        age = ages[ageInd]
-        targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][age] * modelZ.listOfAgeCompartments[ageInd].getTotalPopulation()
+    for iAge in range(numAgeGroups):
+        ageName = ages[iAge]
+        targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][ageName] * modelZ.listOfAgeCompartments[iAge].getTotalPopulation()
     targetPopSize[intervention] +=     spreadsheetData.interventionTargetPop[intervention]['pregnant women'] * modelZ.fertileWomen.populationSize
     costCovParams = {}
     costCovParams['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
