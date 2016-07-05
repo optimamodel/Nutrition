@@ -64,8 +64,7 @@ class Helper:
                 allBoxes[stuntingCat][wastingCat] = {}
                 for breastfeedingCat in breastfeedingList:
                     thisPopSize = thisAgePopSize * spreadsheetData.stuntingDistribution[ageName][stuntingCat] * spreadsheetData.wastingDistribution[ageName][wastingCat] * spreadsheetData.breastfeedingDistribution[ageName][breastfeedingCat]   # Assuming independent
-                    thisMortalityRate = 0
-                    allBoxes[stuntingCat][wastingCat][breastfeedingCat] =  modelCode.Box(thisPopSize, thisMortalityRate)
+                    allBoxes[stuntingCat][wastingCat][breastfeedingCat] =  modelCode.Box(thisPopSize)
         return allBoxes
 
 

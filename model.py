@@ -14,9 +14,9 @@ class FertileWomen:
         self.annualPercentPopGrowth = annualPercentPopGrowth
         
 class Box:
-    def __init__(self, populationSize, mortalityRate):
+    def __init__(self, populationSize):
         self.populationSize = populationSize
-        self.mortalityRate = mortalityRate
+        self.mortalityRate = None
         self.cumulativeDeaths = 0
 
 
