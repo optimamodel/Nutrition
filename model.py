@@ -9,14 +9,14 @@ from copy import deepcopy as dcp
 
 class FertileWomen:
     def __init__(self, birthRate, populationSize, annualPercentPopGrowth):
-        self.birthRate = dcp(birthRate)
-        self.populationSize = dcp(populationSize)
+        self.birthRate = birthRate
+        self.populationSize = populationSize
         self.annualPercentPopGrowth = annualPercentPopGrowth
         
 class Box:
     def __init__(self, populationSize, mortalityRate):
-        self.populationSize = dcp(populationSize)
-        self.mortalityRate = dcp(mortalityRate)
+        self.populationSize = populationSize
+        self.mortalityRate = mortalityRate
         self.cumulativeDeaths = 0
 
 
