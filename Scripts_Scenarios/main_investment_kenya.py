@@ -1,59 +1,60 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jun 14 2016
+Created on Wed Jun 01 2016
 
 @author: madhurakilledar
 """
 from __future__ import division
+from copy import deepcopy as dcp
+import pickle as pickle
+from numpy import array
 
+import os, sys
+moduleDir = os.path.join(os.path.dirname(__file__), '..')
+sys.path.append(moduleDir)
 import data as dataCode
 import helper as helper
 import output as output
-from copy import deepcopy as dcp
-import pickle as pickle
 import costcov
-from numpy import array
-
-country = 'Bangladesh'
-startYear = 2016
-version = '1604'
 
 helper = helper.Helper()
 costCov = costcov.Costcov()
+
 ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
 birthOutcomes = ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"]
 wastingList = ["normal", "mild", "moderate", "high"]
 stuntingList = ["normal", "mild", "moderate", "high"]
 breastfeedingList = ["exclusive", "predominant", "partial", "none"]
 keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
-
-dataFilename = 'InputForCode_%s.xlsx'%(country)
-#dataFilename = 'Input_%s_%i_%s.xlsx'%(country, startYear, version)
-spreadsheetData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
-mothers = helper.makePregnantWomen(spreadsheetData)
 ageGroupSpans = [1., 5., 6., 12., 36.] # number of months in each age group
 agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
-numAgeGroups = len(ages)
-agePopSizes  = helper.makeAgePopSizes(numAgeGroups, ageGroupSpans, spreadsheetData)
-
 timestep = 1./12. 
+
+country = 'Kenya'
+startYear = 2016
+
+dataFilename = '../input_spreadsheets/%s/Input_%s_%i.xlsx'%(country,country,startYear)
+inputData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
+mothers = helper.makePregnantWomen(inputData)
+numAgeGroups = len(ages)
+agePopSizes  = helper.makeAgePopSizes(numAgeGroups, ageGroupSpans, inputData)
+
 numsteps = 180
 timespan = timestep * float(numsteps)
 
-for intervention in spreadsheetData.interventionList:
-    print "Baseline coverage of %s = %g"%(intervention,spreadsheetData.interventionCoveragesCurrent[intervention])
+for intervention in inputData.interventionList:
+    print "Baseline coverage of %s = %g"%(intervention,inputData.interventionCoveragesCurrent[intervention])
 
 plotData = []
 run = 0
-
 #------------------------------------------------------------------------    
 # DEFAULT RUN WITH NO CHANGES TO INTERVENTIONS
 nametag = "Baseline"
-pickleFilename = '%s_Default_Investment.pkl'%(country)
+pickleFilename = '%s_Default.pkl'%(country)
 plotcolor = 'grey'
 
 print "\n"+nametag
-model, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
+model, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
 
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')
@@ -82,19 +83,18 @@ run += 1
 
 #------------------------------------------------------------------------    
 # INTERVENTION
-investmentIncrease = 1.e6  # 1 million USD per intervention per year for the full 15 years
-#title = '%s: 2015-2030 \n Scale up intervention by USD %i'%(country,investmentIncrease)
-title = '%s: 2015-2030 \n Scale up intervention by %i million USD per year'%(country,investmentIncrease/1e6)
+investmentIncrease = 1.e6  # 1 million BDT per intervention per year for the full 14 years
+title = '%s: 2015-2030 \n Scale up intervention by %i million BDT per year'%(country,investmentIncrease/1e6)
 print title
 
-for ichoose in range(len(spreadsheetData.interventionList)):
-    chosenIntervention = spreadsheetData.interventionList[ichoose]
+for ichoose in range(len(inputData.interventionList)):
+    chosenIntervention = inputData.interventionList[ichoose]
     nametag = chosenIntervention
     pickleFilename = '%s_Intervention%i_Invest.pkl'%(country,ichoose)
-    plotcolor = (1.0-0.13*run, 1.0-0.24*abs(run-4), 0.0+0.13*run)
-    print "\n %s: increase in annual investment by USD %g"%(nametag,investmentIncrease)
+    plotcolor = (1.0-0.13*run, 1.0-0.3*abs(run-4), 0.0+0.13*run)
+    print "\n %s: increase investment by BDT %g"%(nametag,investmentIncrease)
 
-    modelX, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
+    modelX, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
 
     # file to dump objects into at each time step
     outfile = open(pickleFilename, 'wb')
@@ -103,8 +103,8 @@ for ichoose in range(len(spreadsheetData.interventionList)):
 
     # initialise
     newCoverages={}
-    for intervention in spreadsheetData.interventionList:
-        newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
+    for intervention in inputData.interventionList:
+        newCoverages[intervention] = inputData.interventionCoveragesCurrent[intervention]
     # allocation of funding
     investment = array([investmentIncrease])
     # calculate coverage (%)
@@ -112,11 +112,11 @@ for ichoose in range(len(spreadsheetData.interventionList)):
     targetPopSize[chosenIntervention] = 0.
     for iAge in range(numAgeGroups):
         ageName = ages[iAge]
-        targetPopSize[chosenIntervention] += spreadsheetData.interventionTargetPop[chosenIntervention][ageName] * modelX.listOfAgeCompartments[iAge].getTotalPopulation()
-    targetPopSize[chosenIntervention] +=     spreadsheetData.interventionTargetPop[chosenIntervention]['pregnant women'] * modelX.fertileWomen.populationSize
+        targetPopSize[chosenIntervention] += inputData.interventionTargetPop[chosenIntervention][ageName] * modelX.listOfAgeCompartments[iAge].getTotalPopulation()
+    targetPopSize[chosenIntervention] +=     inputData.interventionTargetPop[chosenIntervention]['pregnant women'] * modelX.fertileWomen.populationSize
     costCovParams = {}
-    costCovParams['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[chosenIntervention]["unit cost"])])
-    costCovParams['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[chosenIntervention]["saturation coverage"])])
+    costCovParams['unitcost']   = array([dcp(inputData.interventionCostCoverage[chosenIntervention]["unit cost"])])
+    costCovParams['saturation'] = array([dcp(inputData.interventionCostCoverage[chosenIntervention]["saturation coverage"])])
     additionalPeopleCovered   = costCov.function(investment, costCovParams, targetPopSize[chosenIntervention]) # function from HIV
     additionalFractionCovered = additionalPeopleCovered / targetPopSize[chosenIntervention]
     print "additional coverage: %g"%(additionalFractionCovered)
@@ -150,7 +150,7 @@ for ichoose in range(len(spreadsheetData.interventionList)):
 
 #------------------------------------------------------------------------    
 
-filenamePrefix = '%s_%s_fixedInvest'%(country, version)
+filenamePrefix = '%s_fixedInvest'%(country)
 
 output.getCombinedPlots(run, plotData, startYear=startYear-1, filenamePrefix=filenamePrefix, save=True)
 output.getCompareDeathsAverted(run, plotData, scalePercent=0.1, filenamePrefix=filenamePrefix, title=title, save=True)

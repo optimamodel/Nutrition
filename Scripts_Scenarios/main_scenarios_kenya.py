@@ -1,19 +1,23 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed June 01 2016
+Created on Wed Feb 24 13:49:18 2016
 
-@author: madhurakilledar
+@author: ruthpearson
 """
 from __future__ import division
-
-import data as dataCode
-import helper as helper
-import output as output
 from copy import deepcopy as dcp
 import pickle as pickle
 
-country = 'Bangladesh'
+import os, sys
+moduleDir = os.path.join(os.path.dirname(__file__), '..')
+sys.path.append(moduleDir)
+import data as dataCode
+import helper as helper
+import output as output
+
+country = 'Kenya'
 startYear = 2016
+#agePopSizes  = [1.7e5, 4.e5, 7.e5, 1.44e6, 44.e5]
 
 helper = helper.Helper()
 ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
@@ -22,23 +26,22 @@ wastingList = ["normal", "mild", "moderate", "high"]
 stuntingList = ["normal", "mild", "moderate", "high"]
 breastfeedingList = ["exclusive", "predominant", "partial", "none"]
 keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
-
-dataFilename = 'InputForCode_%s.xlsx'%(country)
-spreadsheetData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
-mothers = helper.makePregnantWomen(spreadsheetData)
 ageGroupSpans = [1., 5., 6., 12., 36.] # number of months in each age group
 agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
+timestep = 1./12. 
+
+dataFilename = '../input_spreadsheets/%s/Input_%s_%i.xlsx'%(country,country,startYear)
+spreadsheetData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
+mothers = helper.makePregnantWomen(spreadsheetData)
+#mothers['annualPercentPopGrowth'] = 0.03
 numAgeGroups = len(ages)
 agePopSizes  = helper.makeAgePopSizes(numAgeGroups, ageGroupSpans, spreadsheetData)
 
-timestep = 1./12. 
-numsteps = 180
+numsteps = 168
 timespan = timestep * float(numsteps)
 
-newCoverages={}
-print "Baseline coverages:"
 for intervention in spreadsheetData.interventionList:
-    print "%s : %g"%(intervention,spreadsheetData.interventionCoveragesCurrent[intervention])
+    print "Baseline coverage of %s = %g"%(intervention,spreadsheetData.interventionCoveragesCurrent[intervention])
 
 plotData = []
 run = 0
@@ -54,9 +57,12 @@ model, constants, params = helper.setupModelConstantsParameters(nametag, mothers
 
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')
+pickle.dump(model, outfile)
+model.moveOneTimeStep()
+pickle.dump(model, outfile)
 
 # Run model
-for t in range(numsteps):
+for t in range(numsteps-2):
     model.moveOneTimeStep()
     pickle.dump(model, outfile)
 outfile.close()    
@@ -79,9 +85,7 @@ run += 1
 
 #------------------------------------------------------------------------    
 # INTERVENTION
-percentageIncrease = 20
-title = '%s: 2015-2030 \n Scale up intervention by %i%%'%(country,percentageIncrease)
-print title
+percentageIncrease = 50
 
 numInterventions = len(spreadsheetData.interventionList)
 colorStep = 1./float(numInterventions)-1.e-2
@@ -96,12 +100,12 @@ for ichoose in range(numInterventions):
 
     # file to dump objects into at each time step
     outfile = open(pickleFilename, 'wb')
+    pickle.dump(modelX, outfile)
     modelX.moveOneTimeStep()
     pickle.dump(modelX, outfile)
 
-    modelX.getDiagnostics(verbose=True)
-
     # initialise
+    newCoverages={}
     for intervention in spreadsheetData.interventionList:
         newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
     # scale up intervention
@@ -109,13 +113,10 @@ for ichoose in range(numInterventions):
     newCoverages[chosenIntervention] = min(newCoverages[chosenIntervention],spreadsheetData.interventionCostCoverage[chosenIntervention]["saturation coverage"])
     newCoverages[chosenIntervention] = max(newCoverages[chosenIntervention],spreadsheetData.interventionCoveragesCurrent[chosenIntervention])
     newCoverages[chosenIntervention] = max(newCoverages[chosenIntervention],0.0)
-    print "new coverage: %g"%(newCoverages[chosenIntervention])
     modelX.updateCoverages(newCoverages)
 
-    modelX.getDiagnostics(verbose=True)
-
     # Run model
-    for t in range(numsteps-1):
+    for t in range(numsteps-2):
         modelX.moveOneTimeStep()
         pickle.dump(modelX, outfile)
     outfile.close()    
@@ -136,9 +137,10 @@ for ichoose in range(numInterventions):
     plotData[run]["color"] = plotcolor
     run += 1
 
+
 #------------------------------------------------------------------------    
 # INTERVENTION
-percentageIncrease = 30
+percentageIncrease = 50
 nametag = "All interventions: increase coverage by %g%% points"%(percentageIncrease)
 pickleFilename = '%s_Intervention_P%i.pkl'%(country,percentageIncrease)
 plotcolor = 'black'
@@ -187,14 +189,12 @@ plotData[run]["tag"] = nametag
 plotData[run]["color"] = plotcolor
 run += 1
 
+
 #------------------------------------------------------------------------    
 
-filenamePrefix = '%s_fixedScaleup'%(country)
 
-output.getCombinedPlots(run, plotData, startYear=startYear-1, filenamePrefix=filenamePrefix, save=True)
-output.getCompareDeathsAverted(run, plotData, scalePercent=0.5, filenamePrefix=filenamePrefix, title=title, save=True)
-output.getU5StuntingCasesAverted(run, plotData, scalePercent=0.5, filenamePrefix=filenamePrefix, title=title, save=True)
-output.getA5StuntingCasesAverted(run, plotData, scalePercent=0.5, filenamePrefix=filenamePrefix, title=title, save=True)
+output.getCombinedPlots(run, plotData)
+output.getDeathsAverted(modelList, newModelList, 'test')
 
 
 
