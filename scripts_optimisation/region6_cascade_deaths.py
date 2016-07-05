@@ -25,12 +25,11 @@ MCSampleSize = 25
 #cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]  
 cascadeValues = [0.25, 0.50, 0.75, 1.0]
 
-spreadsheet3 = 'subregionSpreadsheets/Khulna.xlsx'
+spreadsheet6 = '../input_spreadsheets/Bangladesh/subregionSpreadsheets/Sylhet.xlsx'
+thisOptimisation = optimisation.Optimisation(spreadsheet6, timestep, numModelSteps, ages, birthOutcomes, wastingList, stuntingList, breastfeedingList, ageGroupSpans, agingRateList)
 
-thisOptimisation = optimisation.Optimisation(spreadsheet3, timestep, numModelSteps, ages, birthOutcomes, wastingList, stuntingList, breastfeedingList, ageGroupSpans, agingRateList)
-
-optimise = 'stunting'
-filename = 'region3_cascade_stunting_'
+optimise = 'deaths'
+filename = 'region6_cascade_deaths_'
 thisOptimisation.performCascadeOptimisation(optimise, MCSampleSize, filename, cascadeValues)
 
    

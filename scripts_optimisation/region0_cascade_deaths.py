@@ -25,7 +25,7 @@ MCSampleSize = 25
 #cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]  
 cascadeValues = [0.25, 0.50, 0.75, 1.0]
 
-spreadsheet0 = 'subregionSpreadsheets/Barisal.xlsx'
+spreadsheet0 = '../input_spreadsheets/Bangladesh/subregionSpreadsheets/Barisal.xlsx'
 
 thisOptimisation = optimisation.Optimisation(spreadsheet0, timestep, numModelSteps, ages, birthOutcomes, wastingList, stuntingList, breastfeedingList, ageGroupSpans, agingRateList)
 

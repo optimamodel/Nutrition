@@ -23,13 +23,12 @@ agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging
 numModelSteps = 180
 MCSampleSize = 25
 #cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]  
-cascadeValues = [1.50, 2.0, 3.0, 4.0]
-
-spreadsheet6 = 'subregionSpreadsheets/Sylhet.xlsx'
-thisOptimisation = optimisation.Optimisation(spreadsheet6, timestep, numModelSteps, ages, birthOutcomes, wastingList, stuntingList, breastfeedingList, ageGroupSpans, agingRateList)
+cascadeValues = [0.25, 0.50, 0.75, 1.0]
+spreadsheet1 = '../input_spreadsheets/Bangladesh/subregionSpreadsheets/Chittagong.xlsx'
+thisOptimisation = optimisation.Optimisation(spreadsheet1, timestep, numModelSteps, ages, birthOutcomes, wastingList, stuntingList, breastfeedingList, ageGroupSpans, agingRateList)
 
 optimise = 'deaths'
-filename = 'region6_cascade_deaths_'
+filename = 'region1_cascade_deaths_'
 thisOptimisation.performCascadeOptimisation(optimise, MCSampleSize, filename, cascadeValues)
 
    

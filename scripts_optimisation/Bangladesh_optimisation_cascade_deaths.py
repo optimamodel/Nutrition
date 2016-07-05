@@ -10,6 +10,7 @@ moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
 import optimisation
 
+dataSpreadsheetName = '../input_spreadsheets/Bangladesh/InputForCode_Bangladesh.xlsx'
 timestep = 1./12. 
 numsteps = 180
 ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
@@ -23,14 +24,12 @@ agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging
 numModelSteps = 180
 MCSampleSize = 25
 #cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]  
-cascadeValues = [1.50, 2.0, 3.0, 4.0]
+cascadeValues = [0.25, 0.50, 0.75, 1.0]
 
-spreadsheet5 = 'subregionSpreadsheets/Rangpur.xlsx'
-
-thisOptimisation = optimisation.Optimisation(spreadsheet5, timestep, numModelSteps, ages, birthOutcomes, wastingList, stuntingList, breastfeedingList, ageGroupSpans, agingRateList)
+thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, timestep, numModelSteps, ages, birthOutcomes, wastingList, stuntingList, breastfeedingList, ageGroupSpans, agingRateList)
 
 optimise = 'deaths'
-filename = 'region5_cascade_deaths_'
+filename = 'Bangladesh_cascade_deaths_v4_'
 thisOptimisation.performCascadeOptimisation(optimise, MCSampleSize, filename, cascadeValues)
 
    
