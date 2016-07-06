@@ -54,7 +54,7 @@ pickleFilename = '%s_Default.pkl'%(country)
 plotcolor = 'grey'
 
 print "\n"+nametag
-model, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
+model, derived, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
 
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')
@@ -96,7 +96,7 @@ for ichoose in range(numInterventions):
     plotcolor = (1.0-colorStep*run, 1.0-0.23*abs(run-4), 0.0+colorStep*run)
 
     print "\n"+nametag
-    modelX, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
+    modelX, derived, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
 
     # file to dump objects into at each time step
     outfile = open(pickleFilename, 'wb')
@@ -148,7 +148,7 @@ pickleFilename = '%s_Intervention_P%i.pkl'%(country,percentageIncrease)
 plotcolor = 'black'
 
 print "\n"+nametag
-modelZ, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
+modelZ, derived, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
 
 
 # file to dump objects into at each time step

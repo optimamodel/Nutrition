@@ -55,7 +55,7 @@ pickleFilename = '%s_Default_forLiST.pkl'%(country)
 plotcolor = 'grey'
 
 print "\n"+nametag
-model, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
+model, derived, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
 
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')
@@ -93,7 +93,7 @@ for icov in range(len(scenarios)):
     plotcolor = (0.1, 1.0-0.2*icov, 0.1)
 
     print "\n"+nametag
-    modelCF, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
+    modelCF, derived, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
 
     # file to dump objects into at each time step
     outfile = open(pickleFilename, 'wb')
@@ -148,7 +148,7 @@ for icov in range(len(scenarios)):
     plotcolor = (0.1, 0.1, 1.0-0.2*icov)
 
     print "\n"+nametag
-    modelBF, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
+    modelBF, derived, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
 
     # file to dump objects into at each time step
     outfile = open(pickleFilename, 'wb')
@@ -204,7 +204,7 @@ pickleFilename = '%s_BF%i_CF%i.pkl'%(country,BFcoverage,CFcoverage)
 plotcolor = (0.7, 0.1, 0.1)
 
 print "\n"+nametag
-modelBC, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
+modelBC, derived, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
 
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')

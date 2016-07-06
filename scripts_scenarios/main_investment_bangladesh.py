@@ -57,7 +57,7 @@ pickleFilename = '%s_Default_Investment.pkl'%(country)
 plotcolor = 'grey'
 
 print "\n"+nametag
-model, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
+model, derived, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
 
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')
@@ -98,7 +98,7 @@ for ichoose in range(len(inputData.interventionList)):
     plotcolor = (1.0-0.13*run, 1.0-0.24*abs(run-4), 0.0+0.13*run)
     print "\n %s: increase in annual investment by USD %g"%(nametag,investmentIncrease)
 
-    modelX, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
+    modelX, derived, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
 
     # file to dump objects into at each time step
     outfile = open(pickleFilename, 'wb')

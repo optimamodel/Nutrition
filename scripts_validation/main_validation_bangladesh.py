@@ -67,7 +67,7 @@ pickleFilename = '%s_baseline.pkl'%(filenamePrefix)
 plotcolor = 'grey'
 
 print "\n"+nametag
-modelB, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
+modelB, derived, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
 
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')
@@ -106,7 +106,7 @@ pickleFilename = '%s.pkl'%(filenamePrefix)
 plotcolor = 'green'
 
 print "\n"+nametag
-modelH, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
+modelH, derived, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
 
 totalStepsTaken = 0
 # file to dump objects into at each time step

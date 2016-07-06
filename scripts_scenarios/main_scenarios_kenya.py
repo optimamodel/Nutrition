@@ -31,17 +31,17 @@ agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging
 timestep = 1./12. 
 
 dataFilename = '../input_spreadsheets/%s/Input_%s_%i.xlsx'%(country,country,startYear)
-spreadsheetData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
-mothers = helper.makePregnantWomen(spreadsheetData)
+inputData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
+mothers = helper.makePregnantWomen(inputData)
 #mothers['annualPercentPopGrowth'] = 0.03
 numAgeGroups = len(ages)
-agePopSizes  = helper.makeAgePopSizes(numAgeGroups, ageGroupSpans, spreadsheetData)
+agePopSizes  = helper.makeAgePopSizes(numAgeGroups, ageGroupSpans, inputData)
 
 numsteps = 168
 timespan = timestep * float(numsteps)
 
-for intervention in spreadsheetData.interventionList:
-    print "Baseline coverage of %s = %g"%(intervention,spreadsheetData.interventionCoveragesCurrent[intervention])
+for intervention in inputData.interventionList:
+    print "Baseline coverage of %s = %g"%(intervention,inputData.interventionCoveragesCurrent[intervention])
 
 plotData = []
 run = 0
@@ -53,7 +53,7 @@ pickleFilename = '%s_Default.pkl'%(country)
 plotcolor = 'grey'
 
 print "\n"+nametag
-model, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
+model, derived, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
 
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')
@@ -87,16 +87,16 @@ run += 1
 # INTERVENTION
 percentageIncrease = 50
 
-numInterventions = len(spreadsheetData.interventionList)
+numInterventions = len(inputData.interventionList)
 colorStep = 1./float(numInterventions)-1.e-2
 for ichoose in range(numInterventions):
-    chosenIntervention = spreadsheetData.interventionList[ichoose]
+    chosenIntervention = inputData.interventionList[ichoose]
     nametag = chosenIntervention
     pickleFilename = '%s_Intervention%i_P%i.pkl'%(country,ichoose,percentageIncrease)
     plotcolor = (1.0-colorStep*run, 1.0-0.23*abs(run-4), 0.0+colorStep*run)
 
     print "\n"+nametag
-    modelX, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
+    modelX, derived, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
 
     # file to dump objects into at each time step
     outfile = open(pickleFilename, 'wb')
@@ -106,12 +106,12 @@ for ichoose in range(numInterventions):
 
     # initialise
     newCoverages={}
-    for intervention in spreadsheetData.interventionList:
-        newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
+    for intervention in inputData.interventionList:
+        newCoverages[intervention] = inputData.interventionCoveragesCurrent[intervention]
     # scale up intervention
     newCoverages[chosenIntervention] += percentageIncrease/100.
-    newCoverages[chosenIntervention] = min(newCoverages[chosenIntervention],spreadsheetData.interventionCostCoverage[chosenIntervention]["saturation coverage"])
-    newCoverages[chosenIntervention] = max(newCoverages[chosenIntervention],spreadsheetData.interventionCoveragesCurrent[chosenIntervention])
+    newCoverages[chosenIntervention] = min(newCoverages[chosenIntervention],inputData.interventionCostCoverage[chosenIntervention]["saturation coverage"])
+    newCoverages[chosenIntervention] = max(newCoverages[chosenIntervention],inputData.interventionCoveragesCurrent[chosenIntervention])
     newCoverages[chosenIntervention] = max(newCoverages[chosenIntervention],0.0)
     modelX.updateCoverages(newCoverages)
 
@@ -146,7 +146,7 @@ pickleFilename = '%s_Intervention_P%i.pkl'%(country,percentageIncrease)
 plotcolor = 'black'
 
 print "\n"+nametag
-modelZ, constants, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData)
+modelZ, derived, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
 
 
 # file to dump objects into at each time step
@@ -158,12 +158,12 @@ pickle.dump(modelZ, outfile)
 # scale up all interventions
 # initialise
 newCoverages={}
-for intervention in spreadsheetData.interventionList:
-    newCoverages[intervention] = spreadsheetData.interventionCoveragesCurrent[intervention]
-for intervention in spreadsheetData.interventionList:
+for intervention in inputData.interventionList:
+    newCoverages[intervention] = inputData.interventionCoveragesCurrent[intervention]
+for intervention in inputData.interventionList:
     newCoverages[intervention] += percentageIncrease/100.
-    newCoverages[intervention] = min(newCoverages[intervention],spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])
-    newCoverages[intervention] = max(newCoverages[intervention],spreadsheetData.interventionCoveragesCurrent[intervention])
+    newCoverages[intervention] = min(newCoverages[intervention],inputData.interventionCostCoverage[intervention]["saturation coverage"])
+    newCoverages[intervention] = max(newCoverages[intervention],inputData.interventionCoveragesCurrent[intervention])
     newCoverages[intervention] = max(newCoverages[intervention],0.0)
 modelZ.updateCoverages(newCoverages)
 
