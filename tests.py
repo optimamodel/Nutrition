@@ -18,7 +18,7 @@ def setUpDataModelConstantsParameters():
     stuntingList = ["normal", "mild", "moderate", "high"]
     breastfeedingList = ["exclusive", "predominant", "partial", "none"]
     keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
-    testData = data.getDataFromSpreadsheet('InputForCode_tests.xlsx', keyList)
+    testData = data.getDataFromSpreadsheet('input_spreadsheets/InputForCode_tests.xlsx', keyList)
     mothers = {'birthRate':0.9, 'populationSize':2.e6}
     mothers['annualPercentPopGrowth'] = 0.
     agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
