@@ -25,13 +25,13 @@ agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging
 numModelSteps = 180
 cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0] 
 
-spreadsheet0 = '../OptimisationScripts/subregionSpreadsheets/Barisal.xlsx'
-spreadsheet1 = '../OptimisationScripts/subregionSpreadsheets/Chittagong.xlsx'
-spreadsheet2 = '../OptimisationScripts/subregionSpreadsheets/Dhaka.xlsx'
-spreadsheet3 = '../OptimisationScripts/subregionSpreadsheets/Khulna.xlsx'
-spreadsheet4 = '../OptimisationScripts/subregionSpreadsheets/Rajshahi.xlsx'
-spreadsheet5 = '../OptimisationScripts/subregionSpreadsheets/Rangpur.xlsx'
-spreadsheet6 = '../OptimisationScripts/subregionSpreadsheets/Sylhet.xlsx'
+spreadsheet0 = '../input_spreadsheets/Bangladesh/subregionSpreadsheets/Barisal.xlsx'
+spreadsheet1 = '../input_spreadsheets/Bangladesh/subregionSpreadsheets/Chittagong.xlsx'
+spreadsheet2 = '../input_spreadsheets/Bangladesh/subregionSpreadsheets/Dhaka.xlsx'
+spreadsheet3 = '../input_spreadsheets/Bangladesh/subregionSpreadsheets/Khulna.xlsx'
+spreadsheet4 = '../input_spreadsheets/Bangladesh/subregionSpreadsheets/Rajshahi.xlsx'
+spreadsheet5 = '../input_spreadsheets/Bangladesh/subregionSpreadsheets/Rangpur.xlsx'
+spreadsheet6 = '../input_spreadsheets/Bangladesh/subregionSpreadsheets/Sylhet.xlsx'
 spreadsheetList = [spreadsheet0, spreadsheet1, spreadsheet2, spreadsheet3, spreadsheet4, spreadsheet5, spreadsheet6]
 
 # BASELINE
@@ -67,7 +67,7 @@ for region in range(0, len(spreadsheetList)):
     # OPTIMISING DEATHS
     cascade_optimisedForDeaths = {}
     for cascade in cascadeValues:
-        filename = '../OptimisationOutput/Bangladesh/deaths/geospatial/v3/region'+str(region)+'_cascade_deaths_'+str(cascade)+'.pkl'
+        filename = '../Results2016Jun/Bangladesh/deaths/geospatial/v3/region'+str(region)+'_cascade_deaths_'+str(cascade)+'.pkl'
         infile = open(filename, 'rb')
         thisAllocation = pickle.load(infile)
         infile.close()
@@ -76,7 +76,7 @@ for region in range(0, len(spreadsheetList)):
     # OPTIMISING STUNTING
     cascade_optimisedForStunting = {}
     for cascade in cascadeValues:
-        filename = '../OptimisationOutput/Bangladesh/stunting/geospatial/v3/region'+str(region)+'_cascade_stunting_'+str(cascade)+'.pkl'
+        filename = '../Results2016Jun/Bangladesh/stunting/geospatial/v3/region'+str(region)+'_cascade_stunting_'+str(cascade)+'.pkl'
         infile = open(filename, 'rb')
         thisAllocation = pickle.load(infile)
         infile.close()

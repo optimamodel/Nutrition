@@ -12,11 +12,11 @@ import pickle
 import numpy as np
 
 # read the optimal budget allocations from file
-filename = '../OptimisationOutput/Bangladesh/deaths/v5/Bangladesh_cascade_deaths_v5_1.0.pkl'
+filename = '../Results2016Jun/Bangladesh/deaths/v5/Bangladesh_cascade_deaths_v5_1.0.pkl'
 infile = open(filename, 'rb')
 deathsOptimumAllocation = pickle.load(infile)
 infile.close()
-filename = '../OptimisationOutput/Bangladesh/stunting/v5/Bangladesh_cascade_stunting_v5_1.0.pkl'
+filename = '../Results2016Jun/Bangladesh/stunting/v5/Bangladesh_cascade_stunting_v5_1.0.pkl'
 infile = open(filename, 'rb')
 stuntingOptimumAllocation = pickle.load(infile)
 infile.close()
@@ -35,7 +35,7 @@ agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging
 numModelSteps = 180
 
 # NATIONAL
-dataSpreadsheetName = '../InputForCode_Bangladesh.xlsx'
+dataSpreadsheetName = '../input_spreadsheets/Bangladesh/InputForCode_Bangladesh.xlsx'
 thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, timestep, numModelSteps, ages, birthOutcomes, wastingList, stuntingList, breastfeedingList, ageGroupSpans, agingRateList)
 initialAllocation = thisOptimisation.getInitialAllocationDictionary()
 

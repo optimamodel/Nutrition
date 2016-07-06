@@ -23,7 +23,7 @@ ageGroupSpans = [1., 5., 6., 12., 36.] # number of months in each age group
 agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH (WARNING use ageSpans to define this)
 numModelSteps = 180
 
-spreadsheetData = '../InputForCode_Bangladesh.xlsx'
+spreadsheetData = '.../input_spreadsheets/Bangladesh/InputForCode_Bangladesh.xlsx'
 thisOptimisation = optimisation.Optimisation(spreadsheetData, timestep, numModelSteps, ages, birthOutcomes, wastingList, stuntingList, breastfeedingList, ageGroupSpans, agingRateList)
 
 # BASELINE 
@@ -36,7 +36,7 @@ numberOfStuntingBaseline =baseline[numModelSteps-1].getCumulativeAgingOutStunted
 # OPTIMISING DEATHS
 cascade_optimisedForDeaths = {}
 for cascade in cascadeValues:
-    filename = '../OptimisationOutput/Bangladesh/deaths/v5/Bangladesh_cascade_deaths_v5_'+str(cascade)+'.pkl'
+    filename = '../Results2016Jun/Bangladesh/deaths/v5/Bangladesh_cascade_deaths_v5_'+str(cascade)+'.pkl'
     infile = open(filename, 'rb')
     thisAllocation = pickle.load(infile)
     infile.close()
@@ -45,7 +45,7 @@ for cascade in cascadeValues:
 # OPTIMISING STUNTING
 cascade_optimisedForStunting = {}
 for cascade in cascadeValues:
-    filename = '../OptimisationOutput/Bangladesh/stunting/v5/Bangladesh_cascade_stunting_v5_'+str(cascade)+'.pkl'
+    filename = '../Results2016Jun/Bangladesh/stunting/v5/Bangladesh_cascade_stunting_v5_'+str(cascade)+'.pkl'
     infile = open(filename, 'rb')
     thisAllocation = pickle.load(infile)
     infile.close()
