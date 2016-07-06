@@ -48,9 +48,9 @@ class Helper:
         populationSize = annualPregnancies
         birthRate   = annualBirths / annualPregnancies
         projectedBirths   = dcp(spreadsheetData.projectedBirths)
-        baseBirths = projectedBirths[0]
+        baseBirths = float(projectedBirths[0])
         numYears   = len(projectedBirths)-1
-        annualPercentPopGrowth = (projectedBirths[numYears]-baseBirths)/float(numYears)/float(baseBirths)
+        annualPercentPopGrowth = (projectedBirths[numYears]-baseBirths)/float(numYears)/baseBirths
         pregnantWomen = modelCode.PregnantWomen(birthRate, populationSize, annualPercentPopGrowth)        
         return pregnantWomen
 
