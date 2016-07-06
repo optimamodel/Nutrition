@@ -97,7 +97,7 @@ class Helper:
         listOfAgeCompartments = self.makeAgeCompartments(agingRateList, agePopSizes, keyList, spreadsheetData)
         pregnantWomen = self.makePregnantWomen(spreadsheetData)
         model = modelCode.Model(nametag, pregnantWomen, listOfAgeCompartments, keyList, timestep)
-        derived = derivedCode.Constants(spreadsheetData, model, keyList)
+        derived = derivedCode.Derived(spreadsheetData, model, keyList)
         model.setDerived(derived)
         parameters = parametersCode.Params(spreadsheetData, derived, keyList)
         model.setParams(parameters)
