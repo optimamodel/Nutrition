@@ -26,10 +26,10 @@ def setUpDataModelConstantsParameters():
     timestep = 1./12. 
 
     helperTests = helper.Helper()
-    testModel, testDerived, testParams = helperTests.setupModelConstantsParameters('tests', mothers, timestep, agingRateList, agePopSizes, keyList, testData)
+
+    testModel, testDerived, testParams = helperTests.setupModelConstantsParameters('tests', testData)
     return testData, testModel, testDerived, testParams, keyList
-    
-    
+
 class TestsForsetUpDataModelConstantsParameters(unittest.TestCase):
     def setUp(self):
         [self.testData, self.testModel, self.testDerived, self.testParams, self.keyList] = setUpDataModelConstantsParameters()
@@ -174,11 +174,11 @@ class TestsForHelperClass(unittest.TestCase):
         # 0.25 * 0.25 * 0.25 * 6400 = 100
         # but we gaussianise the stunting dist now so..
         expected = self.gaussianStuntingDist['normal'] * 0.25 * 0.25 * 6400
-        boxes = self.helper.makeBoxes(6400, '6-11 months', self.keyList, self.testData)   
+        boxes = self.helper.makeBoxes(6400, '6-11 months', self.testData)   
         self.assertEqual(expected, boxes['normal']['normal']['none'].populationSize)
 
     def testMakeAgeCompartment(self):
-        listOfAgeCompartments = self.helper.makeAgeCompartments(self.agingRateList, self.agePopSizes, self.keyList, self.testData)        
+        listOfAgeCompartments = self.helper.makeAgeCompartments(self.agePopSizes, self.testData)        
         self.assertAlmostEqual(5, len(listOfAgeCompartments))
         expected = self.gaussianStuntingDist['normal'] * 0.25 * 0.25 * 6400
         self.assertAlmostEqual(expected, listOfAgeCompartments[2].dictOfBoxes['normal']['normal']['none'].populationSize)

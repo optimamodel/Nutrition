@@ -7,6 +7,16 @@ Created on Mon Feb 29 11:35:02 2016
 from copy import deepcopy as dcp
 
 class Helper:
+    def __init__(self):
+        self.timestep = 1./12. 
+        self.ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
+        self.birthOutcomes = ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"]
+        self.wastingList = ["normal", "mild", "moderate", "high"]
+        self.stuntingList = ["normal", "mild", "moderate", "high"]
+        self.breastfeedingList = ["exclusive", "predominant", "partial", "none"]
+        self.keyList = [self.ages, self.birthOutcomes, self.wastingList, self.stuntingList, self.breastfeedingList]
+        self.ageGroupSpans = [1., 5., 6., 12., 36.] # number of months in each age group
+        self.agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.]
 
     # Going from binary stunting/wasting to four fractions
     # Yes refers to more than 2 standard deviations below the global mean/median
@@ -26,18 +36,19 @@ class Helper:
         return restratification
 
 
-    def makeAgePopSizes(self, numAgeGroups, ageGroupSpans, spreadsheetData):
+    def makeAgePopSizes(self, spreadsheetData):
+        numAgeGroups = len(self.ages)        
         agePopSizes = [0.]*numAgeGroups
         numGroupsInYear = 3
-        numMonthsInYear = sum(ageGroupSpans[:numGroupsInYear])
+        numMonthsInYear = sum(self.ageGroupSpans[:numGroupsInYear])
         numPopEachMonth = spreadsheetData.demographics['number of live births'] / numMonthsInYear
         for i in range(numGroupsInYear):
-            agePopSizes[i] = numPopEachMonth * ageGroupSpans[i]
-        numMonthsOlder = sum(ageGroupSpans) - numMonthsInYear
+            agePopSizes[i] = numPopEachMonth * self.ageGroupSpans[i]
+        numMonthsOlder = sum(self.ageGroupSpans) - numMonthsInYear
         numPopOlder = spreadsheetData.demographics['population U5'] - spreadsheetData.demographics['number of live births']
         numPopEachMonthOlder = numPopOlder / numMonthsOlder
         for i in range(numGroupsInYear,numAgeGroups):
-            agePopSizes[i] = numPopEachMonthOlder * ageGroupSpans[i]
+            agePopSizes[i] = numPopEachMonthOlder * self.ageGroupSpans[i]
         return agePopSizes
 
 
@@ -55,10 +66,10 @@ class Helper:
         return pregnantWomen
 
 
-    def makeBoxes(self, thisAgePopSize, ageName, keyList, spreadsheetData):
+    def makeBoxes(self, thisAgePopSize, ageName, spreadsheetData):
         import model as modelCode
         allBoxes = {}
-        ages, birthOutcomes, wastingList, stuntingList, breastfeedingList = keyList
+        ages, birthOutcomes, wastingList, stuntingList, breastfeedingList = self.keyList
         for stuntingCat in stuntingList:
             allBoxes[stuntingCat] = {} 
             for wastingCat in wastingList:
@@ -69,37 +80,38 @@ class Helper:
         return allBoxes
 
 
-    def makeAgeCompartments(self, agingRateList, agePopSizes, keyList, spreadsheetData):
+    def makeAgeCompartments(self, agePopSizes, spreadsheetData):
         import model as modelCode
-        ages, birthOutcomes, wastingList, stuntingList, breastfeedingList = keyList
+        ages, birthOutcomes, wastingList, stuntingList, breastfeedingList = self.keyList
         numAgeGroups = len(ages)
         listOfAgeCompartments = []
         for iAge in range(numAgeGroups): # Loop over all age-groups
             ageName  = ages[iAge]
-            agingRate = agingRateList[iAge]
+            agingRate = self.agingRateList[iAge]
             agePopSize = agePopSizes[iAge]
-            thisAgeBoxes = self.makeBoxes(agePopSize, ageName, keyList, spreadsheetData)
-            compartment = modelCode.AgeCompartment(ageName, thisAgeBoxes, agingRate, keyList)
+            thisAgeBoxes = self.makeBoxes(agePopSize, ageName, spreadsheetData)
+            compartment = modelCode.AgeCompartment(ageName, thisAgeBoxes, agingRate, self.keyList)
             listOfAgeCompartments.append(compartment)
         return listOfAgeCompartments         
 
         
-    def setupModelConstantsParameters(self, nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData):
+    def setupModelConstantsParameters(self, nametag, spreadsheetData):
         import model as modelCode
         import derived as derivedCode
         import parameters as parametersCode        
         # gaussianise stunting in *data*
-        ages = keyList[0]        
+        ages = self.keyList[0]        
         for iAge in range(len(ages)):
             ageName = ages[iAge]
             probStunting = spreadsheetData.stuntingDistribution[ageName]['high'] + spreadsheetData.stuntingDistribution[ageName]['moderate']
             spreadsheetData.stuntingDistribution[ageName] = self.restratify(probStunting)
-        listOfAgeCompartments = self.makeAgeCompartments(agingRateList, agePopSizes, keyList, spreadsheetData)
+        agePopSizes = self.makeAgePopSizes(spreadsheetData)   
+        listOfAgeCompartments = self.makeAgeCompartments(agePopSizes, spreadsheetData)
         pregnantWomen = self.makePregnantWomen(spreadsheetData)
-        model = modelCode.Model(nametag, pregnantWomen, listOfAgeCompartments, keyList, timestep)
-        derived = derivedCode.Derived(spreadsheetData, model, keyList)
+        model = modelCode.Model(nametag, pregnantWomen, listOfAgeCompartments, self.keyList, self.timestep)
+        derived = derivedCode.Derived(spreadsheetData, model, self.keyList)
         model.setDerived(derived)
-        parameters = parametersCode.Params(spreadsheetData, derived, keyList)
+        parameters = parametersCode.Params(spreadsheetData, derived, self.keyList)
         model.setParams(parameters)
         model.updateMortalityRate()
         return model, derived, parameters
