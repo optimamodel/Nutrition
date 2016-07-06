@@ -42,15 +42,16 @@ class Helper:
 
 
     def makePregnantWomen(self, spreadsheetData):
-        pregnantWomen = {}
+        import model as modelCode        
         annualPregnancies = dcp(spreadsheetData.demographics['number of pregnant women'])
         annualBirths      = dcp(spreadsheetData.demographics['number of live births'])
-        pregnantWomen['populationSize'] = annualPregnancies
-        pregnantWomen['birthRate']      = annualBirths / annualPregnancies
+        populationSize = annualPregnancies
+        birthRate   = annualBirths / annualPregnancies
         projectedBirths   = dcp(spreadsheetData.projectedBirths)
         baseBirths = projectedBirths[0]
         numYears   = len(projectedBirths)-1
-        pregnantWomen['annualPercentPopGrowth'] = (projectedBirths[numYears]-baseBirths)/float(numYears)/float(baseBirths)
+        annualPercentPopGrowth = (projectedBirths[numYears]-baseBirths)/float(numYears)/float(baseBirths)
+        pregnantWomen = modelCode.FertileWomen(birthRate, populationSize, annualPercentPopGrowth)        
         return pregnantWomen
 
 
@@ -94,8 +95,8 @@ class Helper:
             probStunting = spreadsheetData.stuntingDistribution[ageName]['high'] + spreadsheetData.stuntingDistribution[ageName]['moderate']
             spreadsheetData.stuntingDistribution[ageName] = self.restratify(probStunting)
         listOfAgeCompartments = self.makeAgeCompartments(agingRateList, agePopSizes, keyList, spreadsheetData)
-        fertileWomen = modelCode.FertileWomen(mothers['birthRate'], mothers['populationSize'], mothers['annualPercentPopGrowth'])
-        model = modelCode.Model(nametag, fertileWomen, listOfAgeCompartments, keyList, timestep)
+        pregnantWomen = self.makePregnantWomen(spreadsheetData)
+        model = modelCode.Model(nametag, pregnantWomen, listOfAgeCompartments, keyList, timestep)
         constants = constantsCode.Constants(spreadsheetData, model, keyList)
         model.setConstants(constants)
         parameters = parametersCode.Params(spreadsheetData, constants, keyList)
