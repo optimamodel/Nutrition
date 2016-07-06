@@ -7,7 +7,7 @@ Created on Wed Feb 24 13:43:14 2016
 from __future__ import division
 from copy import deepcopy as dcp
 
-class FertileWomen:
+class PregnantWomen:
     def __init__(self, birthRate, populationSize, annualPercentPopGrowth):
         self.birthRate = birthRate
         self.populationSize = populationSize

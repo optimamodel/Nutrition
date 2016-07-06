@@ -51,7 +51,7 @@ class Helper:
         baseBirths = projectedBirths[0]
         numYears   = len(projectedBirths)-1
         annualPercentPopGrowth = (projectedBirths[numYears]-baseBirths)/float(numYears)/float(baseBirths)
-        pregnantWomen = modelCode.FertileWomen(birthRate, populationSize, annualPercentPopGrowth)        
+        pregnantWomen = modelCode.PregnantWomen(birthRate, populationSize, annualPercentPopGrowth)        
         return pregnantWomen
 
 
