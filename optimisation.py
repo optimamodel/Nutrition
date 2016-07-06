@@ -69,26 +69,27 @@ class OutputClass:
             
 class Optimisation:
     def __init__(self, dataSpreadsheetName, numModelSteps):
+        import helper as helper        
         self.dataSpreadsheetName = dataSpreadsheetName
         self.numModelSteps = numModelSteps
+        self.helper = helper.Helper()
         
     def performSingleOptimisation(self, optimise, MCSampleSize, filename):
         import data as dataCode
-        import helper as helper
         from copy import deepcopy as dcp
         from numpy import array
-        helper = helper.Helper()
-        spreadsheetData = dataCode.getDataFromSpreadsheet(self.dataSpreadsheetName, helper.keyList)        
-        mothers = helper.makePregnantWomen(spreadsheetData) 
-        numAgeGroups = len(helper.ages)
-        agePopSizes  = helper.makeAgePopSizes(spreadsheetData)  
+        
+        spreadsheetData = dataCode.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
+        mothers = self.helper.makePregnantWomen(spreadsheetData) 
+        numAgeGroups = len(self.helper.ages)
+        agePopSizes  = self.helper.makeAgePopSizes(spreadsheetData)  
         targetPopSize = {}
         costCoverageInfo = {}
         for intervention in spreadsheetData.interventionList:
             targetPopSize[intervention] = 0.
             costCoverageInfo[intervention] = {}
             for iAge in range(numAgeGroups):
-                ageName = helper.ages[iAge]
+                ageName = self.helper.ages[iAge]
                 targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][ageName] * agePopSizes[iAge]
             targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention]['pregnant women'] * mothers.populationSize
             costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
@@ -103,21 +104,19 @@ class Optimisation:
         
     def performCascadeOptimisation(self, optimise, MCSampleSize, filename, cascadeValues):
         import data as dataCode
-        import helper as helper
         from copy import deepcopy as dcp
         from numpy import array
-        helper = helper.Helper()
-        spreadsheetData = dataCode.getDataFromSpreadsheet(self.dataSpreadsheetName, helper.keyList)        
-        mothers = helper.makePregnantWomen(spreadsheetData) 
-        numAgeGroups = len(helper.ages)
-        agePopSizes  = helper.makeAgePopSizes(spreadsheetData)  
+        spreadsheetData = dataCode.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
+        mothers = self.helper.makePregnantWomen(spreadsheetData) 
+        numAgeGroups = len(self.helper.ages)
+        agePopSizes  = self.helper.makeAgePopSizes(spreadsheetData)  
         targetPopSize = {}
         costCoverageInfo = {}
         for intervention in spreadsheetData.interventionList:
             targetPopSize[intervention] = 0.
             costCoverageInfo[intervention] = {}
             for iAge in range(numAgeGroups):
-                ageName = helper.ages[iAge]
+                ageName = self.helper.ages[iAge]
                 targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][ageName] * agePopSizes[iAge]
             targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention]['pregnant women'] * mothers.populationSize
             costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
@@ -163,21 +162,19 @@ class Optimisation:
         
     def getInitialAllocationDictionary(self):
         import data as dataCode
-        import helper as helper
         from copy import deepcopy as dcp
         from numpy import array
-        helper = helper.Helper()
-        spreadsheetData = dataCode.getDataFromSpreadsheet(self.dataSpreadsheetName, helper.keyList)        
-        mothers = helper.makePregnantWomen(spreadsheetData) 
-        numAgeGroups = len(helper.ages)
-        agePopSizes  = helper.makeAgePopSizes(spreadsheetData)  
+        spreadsheetData = dataCode.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
+        mothers = self.helper.makePregnantWomen(spreadsheetData) 
+        numAgeGroups = len(self.helper.ages)
+        agePopSizes  = self.helper.makeAgePopSizes(spreadsheetData)  
         targetPopSize = {}
         costCoverageInfo = {}
         for intervention in spreadsheetData.interventionList:
             targetPopSize[intervention] = 0.
             costCoverageInfo[intervention] = {}
             for iAge in range(numAgeGroups):
-                ageName = helper.ages[iAge]
+                ageName = self.helper.ages[iAge]
                 targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][ageName] * agePopSizes[iAge]
             targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention]['pregnant women'] * mothers.populationSize
             costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
@@ -195,29 +192,27 @@ class Optimisation:
         
     def oneModelRunWithOutput(self, allocationDictionary):
         import data as dataCode
-        import helper as helper
         from copy import deepcopy as dcp
         from numpy import array
         import costcov
-        helper = helper.Helper()
         costCov = costcov.Costcov()
-        spreadsheetData = dataCode.getDataFromSpreadsheet(self.dataSpreadsheetName, helper.keyList)        
-        mothers = helper.makePregnantWomen(spreadsheetData) 
-        numAgeGroups = len(helper.ages)
-        agePopSizes  = helper.makeAgePopSizes(spreadsheetData)  
+        spreadsheetData = dataCode.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
+        mothers = self.helper.makePregnantWomen(spreadsheetData) 
+        numAgeGroups = len(self.helper.ages)
+        agePopSizes  = self.helper.makeAgePopSizes(spreadsheetData)  
         targetPopSize = {}
         costCoverageInfo = {}
         for intervention in spreadsheetData.interventionList:
             targetPopSize[intervention] = 0.
             costCoverageInfo[intervention] = {}
             for iAge in range(numAgeGroups):
-                ageName = helper.ages[iAge]
+                ageName = self.helper.ages[iAge]
                 targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][ageName] * agePopSizes[iAge]
             targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention]['pregnant women'] * mothers.populationSize
             costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
             costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
         # set up the model    
-        model, derived, params = helper.setupModelConstantsParameters('one model', spreadsheetData)
+        model, derived, params = self.helper.setupModelConstantsParameters('one model', spreadsheetData)
         # calculate coverage (%)
         newCoverages = {}    
         for i in range(0, len(spreadsheetData.interventionList)):
