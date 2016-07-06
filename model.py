@@ -136,8 +136,8 @@ class Model:
         self.helper = helperCode.Helper()
         self.cumulativeAgingOutStunted = 0.0
         
-    def setConstants(self, inputConstants):
-        self.derived = inputConstants
+    def setDerived(self, inputDerived):
+        self.derived = inputDerived
 
        
     def setParams(self, inputParams):
