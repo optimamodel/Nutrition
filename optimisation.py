@@ -31,7 +31,7 @@ def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimis
     from numpy import array
     helper = helper.Helper()
     costCov = costcov.Costcov()
-    model, constants, params = helper.setupModelConstantsParameters('optimisation model', mothers, timestep, agingRateList, agePopSizes, keyList, data)
+    model, derived, params = helper.setupModelConstantsParameters('optimisation model', mothers, timestep, agingRateList, agePopSizes, keyList, data)
     if sum(proposalAllocation) == 0: 
         scaledproposalAllocation = proposalAllocation
     else:    
@@ -229,7 +229,7 @@ class Optimisation:
             costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
             costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
         # set up the model    
-        model, constants, params = helper.setupModelConstantsParameters('one model', mothers, self.timestep, self.agingRateList, agePopSizes, keyList, spreadsheetData)
+        model, derived, params = helper.setupModelConstantsParameters('one model', mothers, self.timestep, self.agingRateList, agePopSizes, keyList, spreadsheetData)
         # calculate coverage (%)
         newCoverages = {}    
         for i in range(0, len(spreadsheetData.interventionList)):

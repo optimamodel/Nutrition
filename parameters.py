@@ -8,8 +8,8 @@ from __future__ import division
 from copy import deepcopy as dcp
 
 class Params:
-    def __init__(self, data, constants, keyList):
-        self.constants = constants
+    def __init__(self, data, derived, keyList):
+        self.derived = derived
         self.ages, self.birthOutcomes, self.wastingList, self.stuntingList, self.breastfeedingList = keyList
         import helper as helperCode
         self.helper = helperCode.Helper()
@@ -84,8 +84,8 @@ class Params:
             stuntingUpdate[ageName] = 1.
             oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
             for intervention in newCoverage.keys():            
-                probStuntingIfCovered    = self.constants.probStuntedIfCovered[intervention]["covered"][ageName]
-                probStuntingIfNotCovered = self.constants.probStuntedIfCovered[intervention]["not covered"][ageName]
+                probStuntingIfCovered    = self.derived.probStuntedIfCovered[intervention]["covered"][ageName]
+                probStuntingIfNotCovered = self.derived.probStuntedIfCovered[intervention]["not covered"][ageName]
                 newProbStunting = newCoverage[intervention]*probStuntingIfCovered + (1.-newCoverage[intervention])*probStuntingIfNotCovered
                 reduction = (oldProbStunting - newProbStunting)/oldProbStunting
                 stuntingUpdate[ageName] *= 1. - reduction
@@ -99,8 +99,8 @@ class Params:
             appropriatebfFracBefore = self.breastfeedingDistribution[ageName][appropriatePractice]
             appropriatebfFracNew[ageName] = appropriatebfFracBefore
             for intervention in newCoverage.keys():
-                probAppropriateIfCovered    = self.constants.probAppropriatelyBreastfedIfCovered[intervention]["covered"][ageName]
-                probAppropriateIfNotCovered = self.constants.probAppropriatelyBreastfedIfCovered[intervention]["not covered"][ageName]
+                probAppropriateIfCovered    = self.derived.probAppropriatelyBreastfedIfCovered[intervention]["covered"][ageName]
+                probAppropriateIfNotCovered = self.derived.probAppropriatelyBreastfedIfCovered[intervention]["not covered"][ageName]
                 appropriatebfFracNewThis = newCoverage[intervention]*probAppropriateIfCovered + (1.-newCoverage[intervention])*probAppropriateIfNotCovered
                 fracAdd = appropriatebfFracNewThis - appropriatebfFracBefore
                 appropriatebfFracNew[ageName] += fracAdd
@@ -133,8 +133,8 @@ class Params:
             oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
             for breastfeedingCat in self.breastfeedingList:
                 pab = self.breastfeedingDistribution[ageName][breastfeedingCat]
-                t1 = beta[ageName][breastfeedingCat] * self.constants.fracStuntedIfDiarrhea["dia"][ageName]
-                t2 = (1 - beta[ageName][breastfeedingCat]) * self.constants.fracStuntedIfDiarrhea["nodia"][ageName]                
+                t1 = beta[ageName][breastfeedingCat] * self.derived.fracStuntedIfDiarrhea["dia"][ageName]
+                t2 = (1 - beta[ageName][breastfeedingCat]) * self.derived.fracStuntedIfDiarrhea["nodia"][ageName]                
                 newProbStunting += pab * (t1 + t2)
             reduction = (oldProbStunting - newProbStunting)/oldProbStunting
             stuntingUpdate[ageName] *= 1. - reduction
@@ -156,7 +156,7 @@ class Params:
             oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
             newProbStunting = 0
             for i in range(len(self.complementsList)):            
-                probThisGroup = self.constants.probsStuntingComplementaryFeeding[ageName][self.complementsList[i]]
+                probThisGroup = self.derived.probsStuntingComplementaryFeeding[ageName][self.complementsList[i]]
                 newProbStunting += probThisGroup * Frac[i]
             reduction = (oldProbStunting - newProbStunting)/oldProbStunting
             stuntingUpdate[ageName] *= 1. - reduction

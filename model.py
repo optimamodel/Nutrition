@@ -130,14 +130,14 @@ class Model:
         self.ages, self.birthOutcomeList, self.wastingList, self.stuntingList, self.breastfeedingList = keyList
         self.timestep = timestep
         self.itime = 0
-        self.constants = None
+        self.derived = None
         self.params = None
         import helper as helperCode
         self.helper = helperCode.Helper()
         self.cumulativeAgingOutStunted = 0.0
         
     def setConstants(self, inputConstants):
-        self.constants = inputConstants
+        self.derived = inputConstants
 
        
     def setParams(self, inputParams):
@@ -201,10 +201,10 @@ class Model:
         newCoverage = dcp(newCoverageArg)
 
         # call initialisation of probabilities related to interventions
-        self.constants.getProbStuntedIfCoveredByIntervention(self.params.interventionCoverages, self.params.stuntingDistribution)
-        self.constants.getProbAppropriatelyBreastfedIfCoveredByIntervention(self.params.interventionCoverages, self.params.breastfeedingDistribution)
-        self.constants.getProbStuntedIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.stuntingDistribution)
-        self.constants.getProbStuntedComplementaryFeeding(self.params.stuntingDistribution, self.params.interventionCoverages)
+        self.derived.getProbStuntedIfCoveredByIntervention(self.params.interventionCoverages, self.params.stuntingDistribution)
+        self.derived.getProbAppropriatelyBreastfedIfCoveredByIntervention(self.params.interventionCoverages, self.params.breastfeedingDistribution)
+        self.derived.getProbStuntedIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.stuntingDistribution)
+        self.derived.getProbStuntedComplementaryFeeding(self.params.stuntingDistribution, self.params.interventionCoverages)
         
         # get combined reductions from all interventions
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
@@ -219,12 +219,12 @@ class Model:
             ageName = ageGroup.name
             #update mortality            
             for cause in self.params.causesOfDeath:
-                self.constants.underlyingMortalities[ageName][cause] *= mortalityUpdate[ageName][cause]        
+                self.derived.underlyingMortalities[ageName][cause] *= mortalityUpdate[ageName][cause]        
             
         # BREASTFEEDING
         for ageGroup in self.listOfAgeCompartments:
             ageName = ageGroup.name
-            SumBefore = self.constants.getDiarrheaRiskSum(ageName, self.params.breastfeedingDistribution)
+            SumBefore = self.derived.getDiarrheaRiskSum(ageName, self.params.breastfeedingDistribution)
             appropriatePractice = self.params.ageAppropriateBreastfeeding[ageName]
             totalPop = ageGroup.getTotalPopulation()
             numAppropriateBefore    = ageGroup.getNumberAppropriatelyBreastfed(appropriatePractice)
@@ -239,9 +239,9 @@ class Model:
             for cat in BFlistNotAppropriate:
                 self.params.breastfeedingDistribution[ageName][cat] *= 1. - fracShiftingNotAppropriate
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
-            SumAfter = self.constants.getDiarrheaRiskSum(ageName, self.params.breastfeedingDistribution)
+            SumAfter = self.derived.getDiarrheaRiskSum(ageName, self.params.breastfeedingDistribution)
             self.params.incidences[ageName]['Diarrhea'] = self.params.incidences[ageName]['Diarrhea'] / SumBefore * SumAfter # update incidence of diarrhea
-        beta = self.constants.getFracDiarrheaFixedZ()
+        beta = self.derived.getFracDiarrheaFixedZ()
         stuntingUpdateDueToBreastfeeding = self.params.getStuntingUpdateDueToIncidence(beta)
 
         # INCIDENCE
@@ -254,10 +254,10 @@ class Model:
             self.params.incidences[ageName]['Diarrhea'] *= incidenceUpdate[ageName]['Diarrhea']
             incidencesAfter[ageName] = self.params.incidences[ageName]['Diarrhea']
         # get flow on effect to stunting due to changing incidence
-        Z0 = self.constants.getZa(incidencesBefore, self.params.breastfeedingDistribution)
-        Zt = self.constants.getZa(incidencesAfter,  self.params.breastfeedingDistribution)
-        beta = self.constants.getBetaGivenZ0AndZt(Z0, Zt)
-        self.constants.updateProbStuntedIfDiarrheaNewZa(Zt)
+        Z0 = self.derived.getZa(incidencesBefore, self.params.breastfeedingDistribution)
+        Zt = self.derived.getZa(incidencesAfter,  self.params.breastfeedingDistribution)
+        beta = self.derived.getBetaGivenZ0AndZt(Z0, Zt)
+        self.derived.updateProbStuntedIfDiarrheaNewZa(Zt)
         stuntingUpdateDueToIncidence = self.params.getStuntingUpdateDueToIncidence(beta)
         
         # STUNTING
@@ -265,7 +265,7 @@ class Model:
             ageName = ageGroup.name
             totalUpdate = stuntingUpdate[ageName] * stuntingUpdateDueToIncidence[ageName] * stuntingUpdateComplementaryFeeding[ageName] *stuntingUpdateDueToBreastfeeding[ageName]
             #save total stunting update for use in apply births and apply aging
-            self.constants.stuntingUpdateAfterInterventions[ageName] *= totalUpdate
+            self.derived.stuntingUpdateAfterInterventions[ageName] *= totalUpdate
             #update stunting    
             oldProbStunting = ageGroup.getStuntedFraction()
             newProbStunting = oldProbStunting * totalUpdate
@@ -296,7 +296,7 @@ class Model:
                 for outcome in self.birthOutcomeList:
                     pbo = self.params.birthOutcomeDist[outcome]
                     Rbo = self.params.RRdeathByBirthOutcome[cause][outcome]
-                    count += Rb * pbo * Rbo * self.constants.underlyingMortalities[ageName][cause]
+                    count += Rb * pbo * Rbo * self.derived.underlyingMortalities[ageName][cause]
             for stuntingCat in self.stuntingList:
                 for wastingCat in self.wastingList:
                     ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate = count
@@ -308,7 +308,7 @@ class Model:
                     for breastfeedingCat in self.breastfeedingList:
                         count = 0.
                         for cause in self.params.causesOfDeath:
-                            t1 = self.constants.underlyingMortalities[ageName][cause]
+                            t1 = self.derived.underlyingMortalities[ageName][cause]
                             t2 = self.params.RRStunting[ageName][cause][stuntingCat]
                             t3 = self.params.RRWasting[ageName][cause][wastingCat]
                             t4 = self.params.RRBreastfeeding[ageName][cause][breastfeedingCat]
@@ -369,7 +369,7 @@ class Model:
             for stuntingCat in self.stuntingList:
                 numAgingInStratified[stuntingCat] = 0.
             for prevStunt in ["yesstunted", "notstunted"]:
-                totalProbStunt = self.constants.probStuntedIfPrevStunted[prevStunt][ageName] * self.constants.stuntingUpdateAfterInterventions[ageName]
+                totalProbStunt = self.derived.probStuntedIfPrevStunted[prevStunt][ageName] * self.derived.stuntingUpdateAfterInterventions[ageName]
                 restratifiedProbBecomeStunted = self.helper.restratify(min(1., totalProbStunt))
                 for stuntingCat in self.stuntingList:
                     numAgingInStratified[stuntingCat] += restratifiedProbBecomeStunted[stuntingCat] * numAgingIn[prevStunt]
@@ -402,7 +402,7 @@ class Model:
         # restratify Stunting
         restratifiedStuntingAtBirth = {}
         for outcome in self.birthOutcomeList:
-            restratifiedStuntingAtBirth[outcome] = self.helper.restratify(self.constants.probsStuntingAtBirth[outcome])
+            restratifiedStuntingAtBirth[outcome] = self.helper.restratify(self.derived.probsStuntingAtBirth[outcome])
         # sum over birth outcome for full stratified stunting fractions, then apply to birth distribution
         stuntingFractions = {}
         for stuntingCat in self.stuntingList:
@@ -415,7 +415,7 @@ class Model:
 
         #now reduce stunting due to interventions
         oldProbStunting = ageGroup.getStuntedFraction()
-        newProbStunting = oldProbStunting * self.constants.stuntingUpdateAfterInterventions['<1 month']
+        newProbStunting = oldProbStunting * self.derived.stuntingUpdateAfterInterventions['<1 month']
         self.params.stuntingDistribution[ageName] = self.helper.restratify(newProbStunting)
         ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
 

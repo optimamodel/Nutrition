@@ -86,7 +86,7 @@ class Helper:
         
     def setupModelConstantsParameters(self, nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData):
         import model as modelCode
-        import derived as constantsCode
+        import derived as derivedCode
         import parameters as parametersCode        
         # gaussianise stunting in *data*
         ages = keyList[0]        
@@ -97,12 +97,12 @@ class Helper:
         listOfAgeCompartments = self.makeAgeCompartments(agingRateList, agePopSizes, keyList, spreadsheetData)
         pregnantWomen = self.makePregnantWomen(spreadsheetData)
         model = modelCode.Model(nametag, pregnantWomen, listOfAgeCompartments, keyList, timestep)
-        constants = constantsCode.Constants(spreadsheetData, model, keyList)
-        model.setConstants(constants)
-        parameters = parametersCode.Params(spreadsheetData, constants, keyList)
+        derived = derivedCode.Constants(spreadsheetData, model, keyList)
+        model.setConstants(derived)
+        parameters = parametersCode.Params(spreadsheetData, derived, keyList)
         model.setParams(parameters)
         model.updateMortalityRate()
-        return model, constants, parameters
+        return model, derived, parameters
                 
                 
         
