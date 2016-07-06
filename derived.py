@@ -128,8 +128,6 @@ class Derived:
             if(soln2>0.)and(soln2<1.): p0 = soln2
             self.probStuntedIfPrevStunted["notstunted"][ageName] = p0
             self.probStuntedIfPrevStunted["yesstunted"][ageName] = p0*OddsRatio/(1.-p0+OddsRatio*p0)
-            test1 = fracStuntedYounger*self.probStuntedIfPrevStunted["yesstunted"][ageName] + (1.-fracStuntedYounger)*self.probStuntedIfPrevStunted["notstunted"][ageName]
-            #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%(test1, fracStuntedThisAge)
         
 
     def getProbStuntedIfDiarrhea(self, currentIncidences, breastfeedingDistribution, stuntingDistribution):
@@ -292,7 +290,6 @@ class Derived:
                     if(soln2>0.)and(soln2<1.): p0 = soln2
                 self.probAppropriatelyBreastfedIfCovered[intervention]["not covered"][ageName] = p0
                 self.probAppropriatelyBreastfedIfCovered[intervention]["covered"][ageName]     = p0*OddsRatio/(1.-p0+OddsRatio*p0)
-                #print "Test: F*p1 * (1-F)*p2 = %g = %g?"%((1.-fracCovered)*p0 + fracCovered*p0*OddsRatio/(1.-p0+OddsRatio*p0), fracAppropriatelyBreastfedThisAge)
 
 
     def getBirthStuntingQuarticCoefficients(self):
