@@ -225,22 +225,22 @@ class Model:
         for ageGroup in self.listOfAgeCompartments:
             ageName = ageGroup.name
             SumBefore = self.derived.getDiarrheaRiskSum(ageName, self.params.breastfeedingDistribution)
-            appropriatePractice = self.params.ageAppropriateBreastfeeding[ageName]
-            totalPop = ageGroup.getTotalPopulation()
-            numAppropriateBefore    = ageGroup.getNumberAppropriatelyBreastfed(appropriatePractice)
-            numAppropriateAfter     = totalPop * appropriatebfFracNew[ageName]
-            numShifting           = numAppropriateAfter - numAppropriateBefore
-            numNotAppropriateBefore = totalPop - numAppropriateBefore
-            fracShiftingNotAppropriate = 0.
-            if numNotAppropriateBefore > 0.01:
-                fracShiftingNotAppropriate = numShifting / numNotAppropriateBefore
-            self.params.breastfeedingDistribution[ageName][appropriatePractice] = appropriatebfFracNew[ageName] # update breastfeeding distribution
-            BFlistNotAppropriate = [cat for cat in self.breastfeedingList if cat!=appropriatePractice]
-            for cat in BFlistNotAppropriate:
-                self.params.breastfeedingDistribution[ageName][cat] *= 1. - fracShiftingNotAppropriate
+            correctPractice = self.params.ageAppropriateBreastfeeding[ageName]
+            agePop = ageGroup.getTotalPopulation()
+            numCorrectBefore   = ageGroup.getNumberAppropriatelyBreastfed(correctPractice)
+            numCorrectAfter    = agePop * appropriatebfFracNew[ageName]
+            numShifting        = numCorrectAfter - numCorrectBefore
+            numIncorrectBefore = agePop - numCorrectBefore
+            fracCorrecting = 0.
+            if numIncorrectBefore > 0.01:
+                fracCorrecting = numShifting / numIncorrectBefore
+            self.params.breastfeedingDistribution[ageName][correctPractice] = appropriatebfFracNew[ageName] # update breastfeeding distribution
+            incorrectPractices = [practice for practice in self.breastfeedingList if practice!=correctPractice]
+            for practice in incorrectPractices:
+                self.params.breastfeedingDistribution[ageName][practice] *= 1. - fracCorrecting
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
             SumAfter = self.derived.getDiarrheaRiskSum(ageName, self.params.breastfeedingDistribution)
-            self.params.incidences[ageName]['Diarrhea'] = self.params.incidences[ageName]['Diarrhea'] / SumBefore * SumAfter # update incidence of diarrhea
+            self.params.incidences[ageName]['Diarrhea'] *= SumAfter / SumBefore # update incidence of diarrhea
         beta = self.derived.getFracDiarrheaFixedZ()
         stuntingUpdateDueToBreastfeeding = self.params.getStuntingUpdateDueToIncidence(beta)
 
