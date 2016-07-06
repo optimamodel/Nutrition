@@ -2,7 +2,17 @@
 
 ## Getting started
 checkout the master branch:
-`>> python main.py`
+
+`>> python tests.py`
+
+`>> cd scripts_scenarios`
+`>> python main_scenarios_bangladesh.py`
+`>> python main_investment_bangladesh.py`
+
+`>> cd scripts_validation`
+`>> python main_validation_bangladesh.py`
+`>> python main_comparison_bangladesh.py`
+
 
 ## Dependencies 
 Please ensure that the following are installed
