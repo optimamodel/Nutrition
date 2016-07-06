@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#-*- coding: utf-8 -*-
 """
 Created on Mon Feb 29 11:35:02 2016
 
@@ -86,7 +86,7 @@ class Helper:
         
     def setupModelConstantsParameters(self, nametag, mothers, timestep, agingRateList, agePopSizes, keyList, spreadsheetData):
         import model as modelCode
-        import constants as constantsCode
+        import derived as constantsCode
         import parameters as parametersCode        
         # gaussianise stunting in *data*
         ages = keyList[0]        
