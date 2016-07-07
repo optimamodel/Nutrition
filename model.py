@@ -123,8 +123,7 @@ class AgeCompartment:
 
         
 class Model:
-    def __init__(self, name, fertileWomen, listOfAgeCompartments, keyList, timestep):
-        self.name = name
+    def __init__(self, fertileWomen, listOfAgeCompartments, keyList, timestep):
         self.fertileWomen = fertileWomen
         self.listOfAgeCompartments = listOfAgeCompartments
         self.ages, self.birthOutcomeList, self.wastingList, self.stuntingList, self.breastfeedingList = keyList
@@ -132,8 +131,8 @@ class Model:
         self.itime = 0
         self.derived = None
         self.params = None
-        import helper as helperCode
-        self.helper = helperCode.Helper()
+        import helper 
+        self.helper = helper.Helper()
         self.cumulativeAgingOutStunted = 0.0
         
     def setDerived(self, inputDerived):
@@ -170,7 +169,6 @@ class Model:
 
 
     def getDiagnostics(self, verbose=False):
-        numAges = len(self.ages)
         newborns = self.listOfAgeCompartments[0]
         fracStuntedNew = newborns.getStuntedFraction()
         popsizeU5    = 0.

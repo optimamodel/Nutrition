@@ -21,13 +21,9 @@ def setUpDataModelConstantsParameters():
     testData = data.getDataFromSpreadsheet('input_spreadsheets/InputForCode_tests.xlsx', keyList)
     mothers = {'birthRate':0.9, 'populationSize':2.e6}
     mothers['annualPercentPopGrowth'] = 0.
-    agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
-    agePopSizes  = [6400, 6400, 6400, 6400, 6400]
-    timestep = 1./12. 
-
     helperTests = helper.Helper()
 
-    testModel, testDerived, testParams = helperTests.setupModelConstantsParameters('tests', testData)
+    testModel, testDerived, testParams = helperTests.setupModelConstantsParameters(testData)
     return testData, testModel, testDerived, testParams, keyList
 
 class TestsForsetUpDataModelConstantsParameters(unittest.TestCase):
@@ -40,7 +36,7 @@ class TestsForsetUpDataModelConstantsParameters(unittest.TestCase):
             for wastingCat in ["normal", "mild", "moderate", "high"]:
                 for breastfeedingCat in ["exclusive", "predominant", "partial", "none"]:
                     sumPopAge1 += self.testModel.listOfAgeCompartments[1].dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize 
-        self.assertAlmostEqual(sumPopAge1, 64 * 100)     
+        self.assertAlmostEqual(sumPopAge1, 32000)     
     
 
 class TestsForConstantsClass(unittest.TestCase):
@@ -129,9 +125,9 @@ class TestsForModelClass(unittest.TestCase):
     def testApplyAging(self):
         # sum aging out age[0] should equal sum aging in age[1]   
         # calculate what we expect        
-        sumAgeingOutAge0 = 64. * 100. * (1./1.) 
-        sumAgeingOutAge1 = 64. * 100. * (1./5.) 
-        expectedSumPopAge1 = (64 * 100) - sumAgeingOutAge1 + sumAgeingOutAge0
+        sumAgeingOutAge0 = 6400. * (1./1.) 
+        sumAgeingOutAge1 = 32000. * (1./5.) 
+        expectedSumPopAge1 = 32000. - sumAgeingOutAge1 + sumAgeingOutAge0
         # call the function to apply aging
         self.testModel.applyAging()
         # count population in age 1 after calling aging function

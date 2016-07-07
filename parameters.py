@@ -11,8 +11,6 @@ class Params:
     def __init__(self, data, derived, keyList):
         self.derived = derived
         self.ages, self.birthOutcomes, self.wastingList, self.stuntingList, self.breastfeedingList = keyList
-        import helper as helperCode
-        self.helper = helperCode.Helper()
 
         self.causesOfDeath = dcp(data.causesOfDeath)
         self.conditions = dcp(data.conditions)

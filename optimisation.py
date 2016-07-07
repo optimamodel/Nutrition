@@ -26,12 +26,12 @@ def rescaleAllocation(totalBudget, proposalAllocation):
     return rescaledAllocation 
 
 def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimise, numModelSteps, targetPopSize, data):
-    import helper as helper
+    import helper 
     import costcov
     from numpy import array
     helper = helper.Helper()
     costCov = costcov.Costcov()
-    model, derived, params = helper.setupModelConstantsParameters('optimisation model', data)
+    model, derived, params = helper.setupModelConstantsParameters(data)
     if sum(proposalAllocation) == 0: 
         scaledproposalAllocation = proposalAllocation
     else:    
@@ -75,11 +75,11 @@ class Optimisation:
         self.helper = helper.Helper()
         
     def performSingleOptimisation(self, optimise, MCSampleSize, filename):
-        import data as dataCode
+        import data 
         from copy import deepcopy as dcp
         from numpy import array
         
-        spreadsheetData = dataCode.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
+        spreadsheetData = data.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         mothers = self.helper.makePregnantWomen(spreadsheetData) 
         numAgeGroups = len(self.helper.ages)
         agePopSizes  = self.helper.makeAgePopSizes(spreadsheetData)  
@@ -103,10 +103,10 @@ class Optimisation:
         
         
     def performCascadeOptimisation(self, optimise, MCSampleSize, filename, cascadeValues):
-        import data as dataCode
+        import data 
         from copy import deepcopy as dcp
         from numpy import array
-        spreadsheetData = dataCode.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
+        spreadsheetData = data.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         mothers = self.helper.makePregnantWomen(spreadsheetData) 
         numAgeGroups = len(self.helper.ages)
         agePopSizes  = self.helper.makeAgePopSizes(spreadsheetData)  
@@ -134,7 +134,7 @@ class Optimisation:
         
     def runOnce(self, MCSampleSize, xmin, args, interventionList, totalBudget, filename):        
         import asd as asd 
-        import pickle as pickle
+        import pickle 
         import numpy as np
         numInterventions = len(interventionList)
         scenarioMonteCarloOutput = []
@@ -161,10 +161,10 @@ class Optimisation:
         outfile.close()  
         
     def getInitialAllocationDictionary(self):
-        import data as dataCode
+        import data 
         from copy import deepcopy as dcp
         from numpy import array
-        spreadsheetData = dataCode.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
+        spreadsheetData = data.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         mothers = self.helper.makePregnantWomen(spreadsheetData) 
         numAgeGroups = len(self.helper.ages)
         agePopSizes  = self.helper.makeAgePopSizes(spreadsheetData)  
@@ -191,12 +191,12 @@ class Optimisation:
         
         
     def oneModelRunWithOutput(self, allocationDictionary):
-        import data as dataCode
+        import data 
         from copy import deepcopy as dcp
         from numpy import array
         import costcov
         costCov = costcov.Costcov()
-        spreadsheetData = dataCode.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
+        spreadsheetData = data.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         mothers = self.helper.makePregnantWomen(spreadsheetData) 
         numAgeGroups = len(self.helper.ages)
         agePopSizes  = self.helper.makeAgePopSizes(spreadsheetData)  
@@ -212,7 +212,7 @@ class Optimisation:
             costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
             costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
         # set up the model    
-        model, derived, params = self.helper.setupModelConstantsParameters('one model', spreadsheetData)
+        model, derived, params = self.helper.setupModelConstantsParameters(spreadsheetData)
         # calculate coverage (%)
         newCoverages = {}    
         for i in range(0, len(spreadsheetData.interventionList)):
