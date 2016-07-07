@@ -11,9 +11,9 @@ import pickle as pickle
 import os, sys
 moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
-import data as dataCode
-import helper as helper
-import output as output
+import data
+import helper
+import output
 
 helper = helper.Helper()
 
@@ -21,11 +21,11 @@ country = 'Kenya'
 startYear = 2016
 
 dataFilename = '../input_spreadsheets/%s/Input_%s_%i.xlsx'%(country,country,startYear)
-inputData = dataCode.getDataFromSpreadsheet(dataFilename, helper.keyList)
-numAgeGroups = len(helper.ages)
+inputData = data.getDataFromSpreadsheet(dataFilename, helper.keyList)
+numAgeGroups = len(helper.keyList['ages'])
 
 numsteps = 168
-timespan = helper.timestep * float(numsteps)
+timespan = helper.keyList['timestep'] * float(numsteps)
 
 for intervention in inputData.interventionList:
     print "Baseline coverage of %s = %g"%(intervention,inputData.interventionCoveragesCurrent[intervention])

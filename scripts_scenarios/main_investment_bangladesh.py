@@ -27,7 +27,7 @@ version = '1604'
 dataFilename = '../input_spreadsheets/%s/InputForCode_%s.xlsx'%(country, country)
 #dataFilename = '../input_spreadsheets/%s/Input_%s_%i_%s.xlsx'%(country, country, startYear, version)
 inputData = dataCode.getDataFromSpreadsheet(dataFilename, helper.keyList)
-numAgeGroups = len(helper.ages)
+numAgeGroups = len(helper.keyList['ages'])
 
 numsteps = 180
 
@@ -102,7 +102,7 @@ for ichoose in range(len(inputData.interventionList)):
     targetPopSize = {}
     targetPopSize[chosenIntervention] = 0.
     for iAge in range(numAgeGroups):
-        ageName = helper.ages[iAge]
+        ageName = helper.keyList['ages'][iAge]
         targetPopSize[chosenIntervention] += inputData.interventionTargetPop[chosenIntervention][ageName] * modelX.listOfAgeCompartments[iAge].getTotalPopulation()
     targetPopSize[chosenIntervention] +=     inputData.interventionTargetPop[chosenIntervention]['pregnant women'] * modelX.fertileWomen.populationSize
     costCovParams = {}

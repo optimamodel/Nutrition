@@ -12,9 +12,9 @@ from numpy import array
 import os, sys
 moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
-import data as dataCode
-import helper as helper
-import output as output
+import data
+import helper
+import output
 import costcov
 
 helper = helper.Helper()
@@ -24,11 +24,11 @@ country = 'Kenya'
 startYear = 2016
 
 dataFilename = '../input_spreadsheets/%s/Input_%s_%i.xlsx'%(country, country, startYear)
-inputData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
-numAgeGroups = len(helper.ages)
+inputData = data.getDataFromSpreadsheet(dataFilename, keyList)
+numAgeGroups = len(helper.keyList['ages'])
 
 numsteps = 180
-timespan = helper.timestep * float(numsteps)
+timespan = helper.keyList['timestep'] * float(numsteps)
 
 for intervention in inputData.interventionList:
     print "Baseline coverage of %s = %g"%(intervention, inputData.interventionCoveragesCurrent[intervention])
@@ -99,7 +99,7 @@ for ichoose in range(len(inputData.interventionList)):
     targetPopSize = {}
     targetPopSize[chosenIntervention] = 0.
     for iAge in range(numAgeGroups):
-        ageName = helper.ages[iAge]
+        ageName = helper.keyList['ages'][iAge]
         targetPopSize[chosenIntervention] += inputData.interventionTargetPop[chosenIntervention][ageName] * modelX.listOfAgeCompartments[iAge].getTotalPopulation()
     targetPopSize[chosenIntervention] +=     inputData.interventionTargetPop[chosenIntervention]['pregnant women'] * modelX.fertileWomen.populationSize
     costCovParams = {}

@@ -51,8 +51,11 @@ def getDataFromSpreadsheet(fileName, keyList):
     
     import pandas
     Location = fileName
-    [ages, birthOutcomes, stuntingList, wastingList, breastfeedingList] = keyList
-    
+    ages = keyList['ages']
+    birthOutcomes = keyList['birthOutcomes']
+    wastingList = keyList['wastingList']
+    stuntingList = keyList['stuntingList']
+    breastfeedingList = keyList['breastfeedingList']
     
     # GET ALL LISTS
 

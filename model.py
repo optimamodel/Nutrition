@@ -25,7 +25,9 @@ class AgeCompartment:
         self.name = name  
         self.dictOfBoxes = dcp(dictOfBoxes)
         self.agingRate = agingRate
-        self.ages, self.birthOutcomeList, self.wastingList, self.stuntingList, self.breastfeedingList = keyList
+        self.wastingList = keyList['wastingList']
+        self.stuntingList = keyList['stuntingList']
+        self.breastfeedingList = keyList['breastfeedingList']
 
     def getTotalPopulation(self):
         totalSum = 0.
@@ -123,11 +125,15 @@ class AgeCompartment:
 
         
 class Model:
-    def __init__(self, fertileWomen, listOfAgeCompartments, keyList, timestep):
+    def __init__(self, fertileWomen, listOfAgeCompartments, keyList):
         self.fertileWomen = fertileWomen
         self.listOfAgeCompartments = listOfAgeCompartments
-        self.ages, self.birthOutcomeList, self.wastingList, self.stuntingList, self.breastfeedingList = keyList
-        self.timestep = timestep
+        self.ages = keyList['ages']
+        self.birthOutcomes = keyList['birthOutcomes']
+        self.wastingList = keyList['wastingList']
+        self.stuntingList = keyList['stuntingList']
+        self.breastfeedingList = keyList['breastfeedingList']
+        self.timestep = keyList['timestep']
         self.itime = 0
         self.derived = None
         self.params = None
@@ -271,7 +277,7 @@ class Model:
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
             
         # BIRTH OUTCOME
-        for outcome in self.birthOutcomeList:
+        for outcome in self.birthOutcomes:
             self.params.birthOutcomeDist[outcome] *= birthUpdate[outcome]
         self.params.birthOutcomeDist['Term AGA'] = 1 - (self.params.birthOutcomeDist['Pre-term SGA'] + self.params.birthOutcomeDist['Pre-term AGA'] + self.params.birthOutcomeDist['Term SGA'])    
             
@@ -291,7 +297,7 @@ class Model:
             count = 0.
             for cause in self.params.causesOfDeath:
                 Rb = self.params.RRBreastfeeding[ageName][cause][breastfeedingCat]
-                for outcome in self.birthOutcomeList:
+                for outcome in self.birthOutcomes:
                     pbo = self.params.birthOutcomeDist[outcome]
                     Rbo = self.params.RRdeathByBirthOutcome[cause][outcome]
                     count += Rb * pbo * Rbo * self.derived.underlyingMortalities[ageName][cause]
@@ -399,13 +405,13 @@ class Model:
         ageName         = ageGroup.name
         # restratify Stunting
         restratifiedStuntingAtBirth = {}
-        for outcome in self.birthOutcomeList:
+        for outcome in self.birthOutcomes:
             restratifiedStuntingAtBirth[outcome] = self.helper.restratify(self.derived.probsStuntingAtBirth[outcome])
         # sum over birth outcome for full stratified stunting fractions, then apply to birth distribution
         stuntingFractions = {}
         for stuntingCat in self.stuntingList:
             stuntingFractions[stuntingCat] = 0.
-            for outcome in self.birthOutcomeList:
+            for outcome in self.birthOutcomes:
                 stuntingFractions[stuntingCat] += restratifiedStuntingAtBirth[outcome][stuntingCat] * self.params.birthOutcomeDist[outcome]
             for wastingCat in self.wastingList:
                 for breastfeedingCat in self.breastfeedingList:

@@ -11,9 +11,9 @@ import pickle as pickle
 import os, sys
 moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
-import data as dataCode
-import helper as helper
-import output as output
+import data
+import helper
+import output
 
 helper = helper.Helper()
 
@@ -21,8 +21,8 @@ country = 'Bangladesh'
 startYear = 2016
 
 dataFilename = '../input_spreadsheets/%s/InputForCode_%s.xlsx'%(country,country)
-inputData = dataCode.getDataFromSpreadsheet(dataFilename, helper.keyList)
-numAgeGroups = len(helper.ages)
+inputData = data.getDataFromSpreadsheet(dataFilename, helper.keyList)
+numAgeGroups = len(helper.keyList['ages'])
 
 numsteps = 180
 

@@ -22,7 +22,7 @@ startYear = 2000
 
 dataFilename = '../input_spreadsheets/%s/validation/Input_%s_%i_1604.xlsx'%(country, country, startYear)
 inputData = data.getDataFromSpreadsheet(dataFilename, helper.keyList)
-numAgeGroups = len(helper.ages)
+numAgeGroups = len(helper.keyList['ages'])
 year1 = 3871841
 year2 = 3731124
 year3 = 3645815
@@ -31,7 +31,7 @@ year5 = 3491964
 agePopSizes  = [year1/12., year1*5./12., year1*6./12., year2, year3+year4+year5]
 
 numsteps = 192
-timespan = helper.timestep * float(numsteps)
+timespan = helper.keyList['timestep'] * float(numsteps)
 #endYear  = startYear + int(timespan)
 numYears = int(timespan)
 yearList = list(range(startYear, startYear+numYears))
@@ -103,7 +103,7 @@ outfile = open(pickleFilename, 'wb')
 # Run model until 2004
 yearsUntilNextUpdate = 4
 print "\n running for %i years"%(yearsUntilNextUpdate)
-stepsUntilNextUpdate = int(yearsUntilNextUpdate/helper.timestep)
+stepsUntilNextUpdate = int(yearsUntilNextUpdate/helper.keyList['timestep'])
 for t in range(stepsUntilNextUpdate):
     modelH.moveOneTimeStep()
     pickle.dump(modelH, outfile)
@@ -124,7 +124,7 @@ modelH.getDiagnostics(verbose=True)
 # Run model until 2007
 yearsUntilNextUpdate = 3
 print "\n running for %i years"%(yearsUntilNextUpdate)
-stepsUntilNextUpdate = int(yearsUntilNextUpdate/helper.timestep)
+stepsUntilNextUpdate = int(yearsUntilNextUpdate/helper.keyList['timestep'])
 for t in range(stepsUntilNextUpdate):
     modelH.moveOneTimeStep()
     pickle.dump(modelH, outfile)
@@ -145,7 +145,7 @@ modelH.getDiagnostics(verbose=True)
 # Run model until 2011
 yearsUntilNextUpdate = 4
 print "\n running for %i years"%(yearsUntilNextUpdate)
-stepsUntilNextUpdate = int(yearsUntilNextUpdate/helper.timestep)
+stepsUntilNextUpdate = int(yearsUntilNextUpdate/helper.keyList['timestep'])
 for t in range(stepsUntilNextUpdate):
     modelH.moveOneTimeStep()
     pickle.dump(modelH, outfile)
@@ -175,7 +175,7 @@ modelH.getDiagnostics(verbose=True)
 # Run model until 2014
 yearsUntilNextUpdate = 3
 print "\n running for %i years"%(yearsUntilNextUpdate)
-stepsUntilNextUpdate = int(yearsUntilNextUpdate/helper.timestep)
+stepsUntilNextUpdate = int(yearsUntilNextUpdate/helper.keyList['timestep'])
 for t in range(stepsUntilNextUpdate):
     modelH.moveOneTimeStep()
     pickle.dump(modelH, outfile)

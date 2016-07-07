@@ -10,9 +10,16 @@ from copy import deepcopy as dcp
 class Derived:
     def __init__(self, data, model, keyList):
         self.data = dcp(data)
-        self.model = dcp(model)
-        self.ages,self.birthOutcomes,self.wastingList,self.stuntingList,self.breastfeedingList = keyList
-        
+        self.initialModel = dcp(model)
+
+        self.ages = keyList['ages']
+        self.birthOutcomes = keyList['birthOutcomes']
+        self.wastingList = keyList['wastingList']
+        self.stuntingList = keyList['stuntingList']
+        self.breastfeedingList = keyList['breastfeedingList']
+        self.timestep = keyList['timestep']
+        self.ageGroupSpans = keyList['ageGroupSpans']
+
         self.underlyingMortalities = {}
         self.probStuntedIfPrevStunted = {}
         self.fracStuntedIfDiarrhea = {}
@@ -22,7 +29,7 @@ class Derived:
         self.probsStuntingAtBirth = {}
         
         self.initialStuntingTrend = -0. # percentage decrease in stunting prevalence per year
-        self.initialStuntingTrend = self.initialStuntingTrend / 100. * self.model.timestep # fractional decrease in stunting prevalence per timestep
+        self.initialStuntingTrend = self.initialStuntingTrend / 100. * self.timestep # fractional decrease in stunting prevalence per timestep
         self.stuntingUpdateAfterInterventions = {}
         for ageName in self.ages:
             self.stuntingUpdateAfterInterventions[ageName] = 1.
@@ -65,7 +72,7 @@ class Derived:
         # Store total age population sizes
         AgePop = []
         for iAge in range(len(self.ages)):
-            AgePop.append(self.model.listOfAgeCompartments[iAge].getTotalPopulation())
+            AgePop.append(self.initialModel.listOfAgeCompartments[iAge].getTotalPopulation())
         # Calculated total mortality by age (corrected for units)
         MortalityCorrected = {}
         LiveBirths = self.data.demographics["number of live births"]
@@ -111,8 +118,8 @@ class Derived:
         self.probStuntedIfPrevStunted["yesstunted"] = {}
         for iAge in range(1, numAgeGroups):
             ageName = self.ages[iAge]
-            thisAge = self.model.listOfAgeCompartments[iAge]
-            younger = self.model.listOfAgeCompartments[iAge-1]
+            thisAge = self.initialModel.listOfAgeCompartments[iAge]
+            younger = self.initialModel.listOfAgeCompartments[iAge-1]
             OddsRatio = self.data.ORstuntingProgression[ageName]
             fracStuntedThisAge = thisAge.getStuntedFraction() + self.initialStuntingTrend
             fracStuntedYounger = younger.getStuntedFraction()
@@ -200,9 +207,11 @@ class Derived:
     def getAOGivenZa(self, Za):
         from math import pow
         AO = {}
-        for ageName in self.ages:
+        numAgeGroups = len(self.ages)
+        for i in range(numAgeGroups):
+            ageName = self.ages[i]
             RRnot = self.data.RRdiarrhea[ageName]["none"]
-            AO[ageName] = pow(self.data.ORstuntingCondition[ageName]['Diarrhea'], RRnot * Za[ageName])
+            AO[ageName] = pow(self.data.ORstuntingCondition[ageName]['Diarrhea'], RRnot * Za[ageName] * self.ageGroupSpans[i])
         return AO    
         
         
@@ -303,7 +312,7 @@ class Derived:
         FracBO[2] = self.data.birthOutcomeDist["Pre-term AGA"]
         FracBO[3] = self.data.birthOutcomeDist["Pre-term SGA"]
         FracBO[0] = 1. - sum(FracBO[1:3])
-        FracStunted = self.model.listOfAgeCompartments[0].getStuntedFraction() #+ self.initialStuntingTrend
+        FracStunted = self.initialModel.listOfAgeCompartments[0].getStuntedFraction() #+ self.initialStuntingTrend
         # [i] will refer to the three non-baseline birth outcomes
         A = FracBO[0]*(OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.)
         B = (OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.) * ( \

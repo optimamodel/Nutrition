@@ -10,7 +10,12 @@ from copy import deepcopy as dcp
 class Params:
     def __init__(self, data, derived, keyList):
         self.derived = derived
-        self.ages, self.birthOutcomes, self.wastingList, self.stuntingList, self.breastfeedingList = keyList
+
+        self.ages = keyList['ages']
+        self.birthOutcomes = keyList['birthOutcomes']
+        self.wastingList = keyList['wastingList']
+        self.stuntingList = keyList['stuntingList']
+        self.breastfeedingList = keyList['breastfeedingList']
 
         self.causesOfDeath = dcp(data.causesOfDeath)
         self.conditions = dcp(data.conditions)

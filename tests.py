@@ -12,19 +12,11 @@ import helper as helper
 
 
 def setUpDataModelConstantsParameters():
-    ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
-    birthOutcomes = ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"]
-    wastingList = ["normal", "mild", "moderate", "high"]
-    stuntingList = ["normal", "mild", "moderate", "high"]
-    breastfeedingList = ["exclusive", "predominant", "partial", "none"]
-    keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
-    testData = data.getDataFromSpreadsheet('input_spreadsheets/InputForCode_tests.xlsx', keyList)
-    mothers = {'birthRate':0.9, 'populationSize':2.e6}
-    mothers['annualPercentPopGrowth'] = 0.
     helperTests = helper.Helper()
-
+    testData = data.getDataFromSpreadsheet('input_spreadsheets/InputForCode_tests.xlsx', helperTests.keyList)
     testModel, testDerived, testParams = helperTests.setupModelConstantsParameters(testData)
-    return testData, testModel, testDerived, testParams, keyList
+    return testData, testModel, testDerived, testParams, helperTests.keyList
+
 
 class TestsForsetUpDataModelConstantsParameters(unittest.TestCase):
     def setUp(self):
