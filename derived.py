@@ -12,13 +12,8 @@ class Derived:
         self.data = dcp(data)
         self.initialModel = dcp(model)
 
-        self.ages = keyList['ages']
-        self.birthOutcomes = keyList['birthOutcomes']
-        self.wastingList = keyList['wastingList']
-        self.stuntingList = keyList['stuntingList']
-        self.breastfeedingList = keyList['breastfeedingList']
-        self.timestep = keyList['timestep']
-        self.ageGroupSpans = keyList['ageGroupSpans']
+        for key in keyList.keys():
+            setattr(self, key, keyList[key])
 
         self.underlyingMortalities = {}
         self.probStuntedIfPrevStunted = {}

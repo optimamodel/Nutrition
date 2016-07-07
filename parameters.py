@@ -11,11 +11,8 @@ class Params:
     def __init__(self, data, derived, keyList):
         self.derived = derived
 
-        self.ages = keyList['ages']
-        self.birthOutcomes = keyList['birthOutcomes']
-        self.wastingList = keyList['wastingList']
-        self.stuntingList = keyList['stuntingList']
-        self.breastfeedingList = keyList['breastfeedingList']
+        for key in keyList.keys():
+            setattr(self, key, keyList[key])
 
         self.causesOfDeath = dcp(data.causesOfDeath)
         self.conditions = dcp(data.conditions)

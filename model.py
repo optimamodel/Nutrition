@@ -25,9 +25,8 @@ class AgeCompartment:
         self.name = name  
         self.dictOfBoxes = dcp(dictOfBoxes)
         self.agingRate = agingRate
-        self.wastingList = keyList['wastingList']
-        self.stuntingList = keyList['stuntingList']
-        self.breastfeedingList = keyList['breastfeedingList']
+        for key in keyList.keys():
+            setattr(self, key, keyList[key])
 
     def getTotalPopulation(self):
         totalSum = 0.
@@ -128,12 +127,8 @@ class Model:
     def __init__(self, fertileWomen, listOfAgeCompartments, keyList):
         self.fertileWomen = fertileWomen
         self.listOfAgeCompartments = listOfAgeCompartments
-        self.ages = keyList['ages']
-        self.birthOutcomes = keyList['birthOutcomes']
-        self.wastingList = keyList['wastingList']
-        self.stuntingList = keyList['stuntingList']
-        self.breastfeedingList = keyList['breastfeedingList']
-        self.timestep = keyList['timestep']
+        for key in keyList.keys():
+            setattr(self, key, keyList[key])
         self.itime = 0
         self.derived = None
         self.params = None
