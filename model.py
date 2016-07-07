@@ -131,8 +131,8 @@ class Model:
         self.itime = 0
         self.derived = None
         self.params = None
-        import helper as helperCode
-        self.helper = helperCode.Helper()
+        import helper 
+        self.helper = helper.Helper()
         self.cumulativeAgingOutStunted = 0.0
         
     def setDerived(self, inputDerived):
@@ -169,7 +169,6 @@ class Model:
 
 
     def getDiagnostics(self, verbose=False):
-        numAges = len(self.ages)
         newborns = self.listOfAgeCompartments[0]
         fracStuntedNew = newborns.getStuntedFraction()
         popsizeU5    = 0.
