@@ -66,7 +66,6 @@ def getDataFromSpreadsheet(fileName, keyList):
 
     #get list of projection years
     df = pandas.read_excel(Location, sheetname = 'projected births')
-    projectionYearList = list(df['year'])
 
     allPops = ages[:]
     allPops.append('pregnant women')
