@@ -53,7 +53,7 @@ class Helper:
 
 
     def makePregnantWomen(self, spreadsheetData):
-        import model as modelCode        
+        import model       
         annualPregnancies = dcp(spreadsheetData.demographics['number of pregnant women'])
         annualBirths      = dcp(spreadsheetData.demographics['number of live births'])
         populationSize = annualPregnancies
@@ -62,12 +62,12 @@ class Helper:
         baseBirths = float(projectedBirths[0])
         numYears   = len(projectedBirths)-1
         annualPercentPopGrowth = (projectedBirths[numYears]-baseBirths)/float(numYears)/baseBirths
-        pregnantWomen = modelCode.PregnantWomen(birthRate, populationSize, annualPercentPopGrowth)        
+        pregnantWomen = model.PregnantWomen(birthRate, populationSize, annualPercentPopGrowth)        
         return pregnantWomen
 
 
     def makeBoxes(self, thisAgePopSize, ageName, spreadsheetData):
-        import model as modelCode
+        import model 
         allBoxes = {}
         ages, birthOutcomes, wastingList, stuntingList, breastfeedingList = self.keyList
         for stuntingCat in stuntingList:
@@ -76,12 +76,12 @@ class Helper:
                 allBoxes[stuntingCat][wastingCat] = {}
                 for breastfeedingCat in breastfeedingList:
                     thisPopSize = thisAgePopSize * spreadsheetData.stuntingDistribution[ageName][stuntingCat] * spreadsheetData.wastingDistribution[ageName][wastingCat] * spreadsheetData.breastfeedingDistribution[ageName][breastfeedingCat]   # Assuming independent
-                    allBoxes[stuntingCat][wastingCat][breastfeedingCat] =  modelCode.Box(thisPopSize)
+                    allBoxes[stuntingCat][wastingCat][breastfeedingCat] =  model.Box(thisPopSize)
         return allBoxes
 
 
     def makeAgeCompartments(self, agePopSizes, spreadsheetData):
-        import model as modelCode
+        import model 
         ages, birthOutcomes, wastingList, stuntingList, breastfeedingList = self.keyList
         numAgeGroups = len(ages)
         listOfAgeCompartments = []
@@ -90,15 +90,15 @@ class Helper:
             agingRate = self.agingRateList[iAge]
             agePopSize = agePopSizes[iAge]
             thisAgeBoxes = self.makeBoxes(agePopSize, ageName, spreadsheetData)
-            compartment = modelCode.AgeCompartment(ageName, thisAgeBoxes, agingRate, self.keyList)
+            compartment = model.AgeCompartment(ageName, thisAgeBoxes, agingRate, self.keyList)
             listOfAgeCompartments.append(compartment)
         return listOfAgeCompartments         
 
         
     def setupModelConstantsParameters(self, spreadsheetData):
-        import model as modelCode
-        import derived as derivedCode
-        import parameters as parametersCode        
+        import model 
+        import derived 
+        import parameters        
         # gaussianise stunting in *data*
         ages = self.keyList[0]        
         for iAge in range(len(ages)):
@@ -108,10 +108,10 @@ class Helper:
         agePopSizes = self.makeAgePopSizes(spreadsheetData)   
         listOfAgeCompartments = self.makeAgeCompartments(agePopSizes, spreadsheetData)
         pregnantWomen = self.makePregnantWomen(spreadsheetData)
-        model = modelCode.Model(pregnantWomen, listOfAgeCompartments, self.keyList, self.timestep)
-        derived = derivedCode.Derived(spreadsheetData, model, self.keyList)
+        model = model.Model(pregnantWomen, listOfAgeCompartments, self.keyList, self.timestep)
+        derived = derived.Derived(spreadsheetData, model, self.keyList)
         model.setDerived(derived)
-        parameters = parametersCode.Params(spreadsheetData, derived, self.keyList)
+        parameters = parameters.Params(spreadsheetData, derived, self.keyList)
         model.setParams(parameters)
         model.updateMortalityRate()
         return model, derived, parameters
