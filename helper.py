@@ -95,7 +95,7 @@ class Helper:
         return listOfAgeCompartments         
 
         
-    def setupModelConstantsParameters(self, nametag, spreadsheetData):
+    def setupModelConstantsParameters(self, spreadsheetData):
         import model as modelCode
         import derived as derivedCode
         import parameters as parametersCode        
@@ -108,7 +108,7 @@ class Helper:
         agePopSizes = self.makeAgePopSizes(spreadsheetData)   
         listOfAgeCompartments = self.makeAgeCompartments(agePopSizes, spreadsheetData)
         pregnantWomen = self.makePregnantWomen(spreadsheetData)
-        model = modelCode.Model(nametag, pregnantWomen, listOfAgeCompartments, self.keyList, self.timestep)
+        model = modelCode.Model(pregnantWomen, listOfAgeCompartments, self.keyList, self.timestep)
         derived = derivedCode.Derived(spreadsheetData, model, self.keyList)
         model.setDerived(derived)
         parameters = parametersCode.Params(spreadsheetData, derived, self.keyList)

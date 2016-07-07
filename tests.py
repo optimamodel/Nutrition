@@ -23,7 +23,7 @@ def setUpDataModelConstantsParameters():
     mothers['annualPercentPopGrowth'] = 0.
     helperTests = helper.Helper()
 
-    testModel, testDerived, testParams = helperTests.setupModelConstantsParameters('tests', testData)
+    testModel, testDerived, testParams = helperTests.setupModelConstantsParameters(testData)
     return testData, testModel, testDerived, testParams, keyList
 
 class TestsForsetUpDataModelConstantsParameters(unittest.TestCase):

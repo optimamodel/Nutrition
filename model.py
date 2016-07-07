@@ -123,8 +123,7 @@ class AgeCompartment:
 
         
 class Model:
-    def __init__(self, name, fertileWomen, listOfAgeCompartments, keyList, timestep):
-        self.name = name
+    def __init__(self, fertileWomen, listOfAgeCompartments, keyList, timestep):
         self.fertileWomen = fertileWomen
         self.listOfAgeCompartments = listOfAgeCompartments
         self.ages, self.birthOutcomeList, self.wastingList, self.stuntingList, self.breastfeedingList = keyList
