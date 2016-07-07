@@ -11,30 +11,18 @@ import pickle as pickle
 import os, sys
 moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
-import data as dataCode
-import helper as helper
-import output as output
+import data
+import helper
+import output
 
 helper = helper.Helper()
-
-ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
-birthOutcomes = ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"]
-wastingList = ["normal", "mild", "moderate", "high"]
-stuntingList = ["normal", "mild", "moderate", "high"]
-breastfeedingList = ["exclusive", "predominant", "partial", "none"]
-keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
-ageGroupSpans = [1., 5., 6., 12., 36.] # number of months in each age group
-agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
-timestep = 1./12. 
 
 country = 'Bangladesh'
 startYear = 2000
 
 dataFilename = '../input_spreadsheets/%s/validation/Input_%s_%i_1604.xlsx'%(country, country, startYear)
-inputData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
-mothers = helper.makePregnantWomen(inputData)
-numAgeGroups = len(ages)
-agePopSizes  = helper.makeAgePopSizes(numAgeGroups, ageGroupSpans, inputData)
+inputData = data.getDataFromSpreadsheet(dataFilename, helper.keyList)
+numAgeGroups = len(helper.ages)
 year1 = 3871841
 year2 = 3731124
 year3 = 3645815
@@ -43,7 +31,7 @@ year5 = 3491964
 agePopSizes  = [year1/12., year1*5./12., year1*6./12., year2, year3+year4+year5]
 
 numsteps = 192
-timespan = timestep * float(numsteps)
+timespan = helper.timestep * float(numsteps)
 #endYear  = startYear + int(timespan)
 numYears = int(timespan)
 yearList = list(range(startYear, startYear+numYears))
@@ -67,7 +55,7 @@ pickleFilename = '%s_baseline.pkl'%(filenamePrefix)
 plotcolor = 'grey'
 
 print "\n"+nametag
-modelB, derived, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
+modelB, derived, params = helper.setupModelConstantsParameters(inputData)
 
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')
@@ -106,7 +94,7 @@ pickleFilename = '%s.pkl'%(filenamePrefix)
 plotcolor = 'green'
 
 print "\n"+nametag
-modelH, derived, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
+modelH, derived, params = helper.setupModelConstantsParameters(inputData)
 
 totalStepsTaken = 0
 # file to dump objects into at each time step
@@ -115,7 +103,7 @@ outfile = open(pickleFilename, 'wb')
 # Run model until 2004
 yearsUntilNextUpdate = 4
 print "\n running for %i years"%(yearsUntilNextUpdate)
-stepsUntilNextUpdate = int(yearsUntilNextUpdate/timestep)
+stepsUntilNextUpdate = int(yearsUntilNextUpdate/helper.timestep)
 for t in range(stepsUntilNextUpdate):
     modelH.moveOneTimeStep()
     pickle.dump(modelH, outfile)
@@ -136,7 +124,7 @@ modelH.getDiagnostics(verbose=True)
 # Run model until 2007
 yearsUntilNextUpdate = 3
 print "\n running for %i years"%(yearsUntilNextUpdate)
-stepsUntilNextUpdate = int(yearsUntilNextUpdate/timestep)
+stepsUntilNextUpdate = int(yearsUntilNextUpdate/helper.timestep)
 for t in range(stepsUntilNextUpdate):
     modelH.moveOneTimeStep()
     pickle.dump(modelH, outfile)
@@ -157,7 +145,7 @@ modelH.getDiagnostics(verbose=True)
 # Run model until 2011
 yearsUntilNextUpdate = 4
 print "\n running for %i years"%(yearsUntilNextUpdate)
-stepsUntilNextUpdate = int(yearsUntilNextUpdate/timestep)
+stepsUntilNextUpdate = int(yearsUntilNextUpdate/helper.timestep)
 for t in range(stepsUntilNextUpdate):
     modelH.moveOneTimeStep()
     pickle.dump(modelH, outfile)
@@ -187,7 +175,7 @@ modelH.getDiagnostics(verbose=True)
 # Run model until 2014
 yearsUntilNextUpdate = 3
 print "\n running for %i years"%(yearsUntilNextUpdate)
-stepsUntilNextUpdate = int(yearsUntilNextUpdate/timestep)
+stepsUntilNextUpdate = int(yearsUntilNextUpdate/helper.timestep)
 for t in range(stepsUntilNextUpdate):
     modelH.moveOneTimeStep()
     pickle.dump(modelH, outfile)

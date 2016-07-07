@@ -6,9 +6,8 @@ Created on Wed June 01 2016
 @author: madhurakilledar
 """
 
-import output as output
-import pickle as pickle
-import data as dataCode
+import output
+import pickle
 
 country = 'Bangladesh'
 

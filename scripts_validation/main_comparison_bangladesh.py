@@ -11,36 +11,23 @@ import pickle as pickle
 import os, sys
 moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
-import data as dataCode
-import helper as helper
-import output as output
+import data
+import helper
+import output
 
 helper = helper.Helper()
-
-ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
-birthOutcomes = ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"]
-wastingList = ["normal", "mild", "moderate", "high"]
-stuntingList = ["normal", "mild", "moderate", "high"]
-breastfeedingList = ["exclusive", "predominant", "partial", "none"]
-keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
-ageGroupSpans = [1., 5., 6., 12., 36.] # number of months in each age group
-agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
-timestep = 1./12. 
 
 country = 'Bangladesh'
 startYear = 2016
 version = '1604'
 
 dataFilename = '../input_spreadsheets/%s/validation/Input_%s_%i_%s_LiST.xlsx'%(country, country, startYear, version)
-inputData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
-mothers = helper.makePregnantWomen(inputData)
-numAgeGroups = len(ages)
-agePopSizes  = helper.makeAgePopSizes(numAgeGroups, ageGroupSpans, inputData)
-agePopSizes = [246307.75 , 1231538.75 , 1477846.50 , 2950860.00 , 8895211.00 ]
+inputData = data.getDataFromSpreadsheet(dataFilename, helper.keyList)
+numAgeGroups = len(helper.ages)
+agePopSizes = [246307.75 , 1231538.75 , 1477846.50 , 2950860.00 , 8895211.00 ] #override
 
 
 numsteps = 180
-timespan = timestep * float(numsteps)
 
 for intervention in inputData.interventionList:
     print "Baseline coverage of %s = %g"%(intervention,inputData.interventionCoveragesCurrent[intervention])
@@ -55,7 +42,7 @@ pickleFilename = '%s_Default_forLiST.pkl'%(country)
 plotcolor = 'grey'
 
 print "\n"+nametag
-model, derived, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
+model, derived, params = helper.setupModelConstantsParameters(inputData)
 
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')
@@ -93,7 +80,7 @@ for icov in range(len(scenarios)):
     plotcolor = (0.1, 1.0-0.2*icov, 0.1)
 
     print "\n"+nametag
-    modelCF, derived, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
+    modelCF, derived, params = helper.setupModelConstantsParameters(inputData)
 
     # file to dump objects into at each time step
     outfile = open(pickleFilename, 'wb')
@@ -148,7 +135,7 @@ for icov in range(len(scenarios)):
     plotcolor = (0.1, 0.1, 1.0-0.2*icov)
 
     print "\n"+nametag
-    modelBF, derived, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
+    modelBF, derived, params = helper.setupModelConstantsParameters(inputData)
 
     # file to dump objects into at each time step
     outfile = open(pickleFilename, 'wb')
@@ -204,7 +191,7 @@ pickleFilename = '%s_BF%i_CF%i.pkl'%(country,BFcoverage,CFcoverage)
 plotcolor = (0.7, 0.1, 0.1)
 
 print "\n"+nametag
-modelBC, derived, params = helper.setupModelConstantsParameters(nametag, mothers, timestep, agingRateList, agePopSizes, keyList, inputData)
+modelBC, derived, params = helper.setupModelConstantsParameters(inputData)
 
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')

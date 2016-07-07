@@ -13,11 +13,11 @@ import os, sys
 moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
 import data as dataCode
-import helper as helpCode
+import helper as helper
 import output
 import costcov
 
-helper = helpCode.Helper()
+helper = helper.Helper()
 costCov = costcov.Costcov()
 
 country = 'Bangladesh'
@@ -44,7 +44,7 @@ pickleFilename = '%s_Default_Investment.pkl'%(country)
 plotcolor = 'grey'
 
 print "\n"+nametag
-model, derived, params = helper.setupModelConstantsParameters(nametag, inputData)
+model, derived, params = helper.setupModelConstantsParameters(inputData)
 
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')
@@ -85,7 +85,7 @@ for ichoose in range(len(inputData.interventionList)):
     plotcolor = (1.0-0.13*run, 1.0-0.24*abs(run-4), 0.0+0.13*run)
     print "\n %s: increase in annual investment by USD %g"%(nametag,investmentIncrease)
 
-    modelX, derived, params = helper.setupModelConstantsParameters(nametag, inputData)
+    modelX, derived, params = helper.setupModelConstantsParameters(inputData)
 
     # file to dump objects into at each time step
     outfile = open(pickleFilename, 'wb')

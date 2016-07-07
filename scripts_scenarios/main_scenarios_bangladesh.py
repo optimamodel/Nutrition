@@ -12,22 +12,17 @@ import os, sys
 moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
 import data as dataCode
-import helper as helpCode
+import helper as helper
 import output as output
 
-helper = helpCode.Helper()
+helper = helper.Helper()
 
 country = 'Bangladesh'
 startYear = 2016
 
-ageGroupSpans = [1., 5., 6., 12., 36.] # number of months in each age group
-agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH
-
 dataFilename = '../input_spreadsheets/%s/InputForCode_%s.xlsx'%(country,country)
 inputData = dataCode.getDataFromSpreadsheet(dataFilename, helper.keyList)
-mothers = helper.makePregnantWomen(inputData)
 numAgeGroups = len(helper.ages)
-agePopSizes  = helper.makeAgePopSizes(numAgeGroups, ageGroupSpans, inputData)
 
 numsteps = 180
 
@@ -46,7 +41,7 @@ pickleFilename = '%s_Default.pkl'%(country)
 plotcolor = 'grey'
 
 print "\n"+nametag
-model, derived, params = helper.setupModelConstantsParameters(nametag, inputData)
+model, derived, params = helper.setupModelConstantsParameters(inputData)
 
 # file to dump objects into at each time step
 outfile = open(pickleFilename, 'wb')
@@ -88,7 +83,7 @@ for ichoose in range(numInterventions):
     plotcolor = (1.0-colorStep*run, 1.0-0.23*abs(run-4), 0.0+colorStep*run)
 
     print "\n"+nametag
-    modelX, derived, params = helper.setupModelConstantsParameters(nametag, inputData)
+    modelX, derived, params = helper.setupModelConstantsParameters(inputData)
 
     # file to dump objects into at each time step
     outfile = open(pickleFilename, 'wb')
@@ -140,7 +135,7 @@ pickleFilename = '%s_Intervention_P%i.pkl'%(country,percentageIncrease)
 plotcolor = 'black'
 
 print "\n"+nametag
-modelZ, derived, params = helper.setupModelConstantsParameters(nametag, inputData)
+modelZ, derived, params = helper.setupModelConstantsParameters(inputData)
 
 
 # file to dump objects into at each time step
