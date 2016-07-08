@@ -28,7 +28,7 @@ numsteps = 168
 timespan = helper.keyList['timestep'] * float(numsteps)
 
 for intervention in inputData.interventionList:
-    print "Baseline coverage of %s = %g"%(intervention,inputData.interventionCoveragesCurrent[intervention])
+    print "Baseline coverage of %s = %g"%(intervention,inputData.coverage[intervention])
 
 plotData = []
 run = 0
@@ -94,11 +94,11 @@ for ichoose in range(numInterventions):
     # initialise
     newCoverages={}
     for intervention in inputData.interventionList:
-        newCoverages[intervention] = inputData.interventionCoveragesCurrent[intervention]
+        newCoverages[intervention] = inputData.coverage[intervention]
     # scale up intervention
     newCoverages[chosenIntervention] += percentageIncrease/100.
     newCoverages[chosenIntervention] = min(newCoverages[chosenIntervention],inputData.interventionCostCoverage[chosenIntervention]["saturation coverage"])
-    newCoverages[chosenIntervention] = max(newCoverages[chosenIntervention],inputData.interventionCoveragesCurrent[chosenIntervention])
+    newCoverages[chosenIntervention] = max(newCoverages[chosenIntervention],inputData.coverage[chosenIntervention])
     newCoverages[chosenIntervention] = max(newCoverages[chosenIntervention],0.0)
     modelX.updateCoverages(newCoverages)
 
@@ -146,11 +146,11 @@ pickle.dump(modelZ, outfile)
 # initialise
 newCoverages={}
 for intervention in inputData.interventionList:
-    newCoverages[intervention] = inputData.interventionCoveragesCurrent[intervention]
+    newCoverages[intervention] = inputData.coverage[intervention]
 for intervention in inputData.interventionList:
     newCoverages[intervention] += percentageIncrease/100.
     newCoverages[intervention] = min(newCoverages[intervention],inputData.interventionCostCoverage[intervention]["saturation coverage"])
-    newCoverages[intervention] = max(newCoverages[intervention],inputData.interventionCoveragesCurrent[intervention])
+    newCoverages[intervention] = max(newCoverages[intervention],inputData.coverage[intervention])
     newCoverages[intervention] = max(newCoverages[intervention],0.0)
 modelZ.updateCoverages(newCoverages)
 

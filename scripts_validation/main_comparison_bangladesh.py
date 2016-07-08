@@ -30,7 +30,7 @@ agePopSizes = [246307.75 , 1231538.75 , 1477846.50 , 2950860.00 , 8895211.00 ] #
 numsteps = 180
 
 for intervention in inputData.interventionList:
-    print "Baseline coverage of %s = %g"%(intervention,inputData.interventionCoveragesCurrent[intervention])
+    print "Baseline coverage of %s = %g"%(intervention,inputData.coverage[intervention])
 
 plotData = []
 run = 0
@@ -94,7 +94,7 @@ for icov in range(len(scenarios)):
     # initialise
     newCoverages={}
     for intervention in inputData.interventionList:
-        newCoverages[intervention] = inputData.interventionCoveragesCurrent[intervention]
+        newCoverages[intervention] = inputData.coverage[intervention]
     # scale up
     for intervention in ['Complementary feeding (supplementation)','Complementary feeding (education)']:
         newCoverages[intervention] = CFcoverage/100.
@@ -149,7 +149,7 @@ for icov in range(len(scenarios)):
     # initialise
     newCoverages={}
     for intervention in inputData.interventionList:
-        newCoverages[intervention] = inputData.interventionCoveragesCurrent[intervention]
+        newCoverages[intervention] = inputData.coverage[intervention]
 
     # scale up
     for intervention in ['Breastfeeding promotion (dual delivery)']:
@@ -205,7 +205,7 @@ for t in range(timestepsPre):
 # initialise
 newCoverages={}
 for intervention in inputData.interventionList:
-    newCoverages[intervention] = inputData.interventionCoveragesCurrent[intervention]
+    newCoverages[intervention] = inputData.coverage[intervention]
 
 # scale up
 for intervention in ['Breastfeeding promotion (dual delivery)']:

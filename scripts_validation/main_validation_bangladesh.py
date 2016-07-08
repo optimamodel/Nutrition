@@ -40,8 +40,8 @@ yearList = list(range(startYear, startYear+numYears))
 newCoverages={}
 print "Baseline coverages:"
 for intervention in inputData.interventionList:
-    newCoverages[intervention] = inputData.interventionCoveragesCurrent[intervention]
-    print "%s : %g"%(intervention,inputData.interventionCoveragesCurrent[intervention])
+    newCoverages[intervention] = inputData.coverage[intervention]
+    print "%s : %g"%(intervention,inputData.coverage[intervention])
 
 plotData = []
 run = 0

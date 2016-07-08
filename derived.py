@@ -239,7 +239,7 @@ class Derived:
 
 
     # Calculate probability of stunting in current age-group given coverage by intervention
-    def setProbStuntedIfCovered(self, interventionCoverages, stuntingDistribution):
+    def setProbStuntedIfCovered(self, coverage, stuntingDistribution):
         from numpy import sqrt 
         eps = 1.e-5
         numAgeGroups = len(self.ages)
@@ -250,7 +250,7 @@ class Derived:
             for iAge in range(numAgeGroups):
                 ageName = self.ages[iAge]
                 OddsRatio = self.data.ORstuntingIntervention[ageName][intervention]
-                fracCovered = interventionCoverages[intervention]
+                fracCovered = coverage[intervention]
                 fracStuntedThisAge = self.helper.sumStuntedComponents(stuntingDistribution[ageName])
                 # solve quadratic equation ax**2 + bx + c = 0
                 a = (1.-fracCovered) * (1.-OddsRatio)
@@ -270,7 +270,7 @@ class Derived:
 
 
     # Calculate probability of stunting in current age-group given coverage by intervention
-    def setProbCorrectlyBreastfedIfCovered(self, interventionCoverages, breastfeedingDistribution):
+    def setProbCorrectlyBreastfedIfCovered(self, coverage, breastfeedingDistribution):
         from numpy import sqrt 
         eps = 1.e-5
         numAgeGroups = len(self.ages)
@@ -281,7 +281,7 @@ class Derived:
             for i in range(numAgeGroups):
                 ageName = self.ages[i]
                 OddsRatio = self.data.ORappropriatebfIntervention[ageName][intervention]
-                fracCovered = interventionCoverages[intervention]
+                fracCovered = coverage[intervention]
                 appropriatePractice = self.data.ageAppropriateBreastfeeding[ageName]
                 fracCorrectlyBreastfedThisAge = breastfeedingDistribution[ageName][appropriatePractice]
                 # solve quadratic equation ax**2 + bx + c = 0
@@ -328,8 +328,8 @@ class Derived:
         return [A,B,C,D,E]
         
         
-    def getComplementaryFeedingQuarticCoefficients(self, stuntingDistribution, interventionCoveragesArg):
-        interventionCoverages = dcp(interventionCoveragesArg)
+    def getComplementaryFeedingQuarticCoefficients(self, stuntingDistribution, coverageArg):
+        coverage = dcp(coverageArg)
         coEffs = {}
         for iAge in range(len(self.ages)): 
             ageName = self.ages[iAge]
@@ -339,8 +339,8 @@ class Derived:
             OR[2] = self.data.ORstuntingComplementaryFeeding[ageName]["Complementary feeding (food insecure with promotion and supplementation)"]
             OR[3] = self.data.ORstuntingComplementaryFeeding[ageName]["Complementary feeding (food insecure with neither promotion nor supplementation)"]
             FracSecure = 1. - self.data.demographics['fraction food insecure']
-            FracCoveredEduc = interventionCoverages['Complementary feeding (education)']
-            FracCoveredSupp = interventionCoverages['Complementary feeding (supplementation)']
+            FracCoveredEduc = coverage['Complementary feeding (education)']
+            FracCoveredSupp = coverage['Complementary feeding (supplementation)']
             Frac = [0.]*4
             Frac[0] = FracSecure * FracCoveredEduc
             Frac[1] = FracSecure * (1 - FracCoveredEduc)
@@ -446,10 +446,10 @@ class Derived:
         self.probStuntedAtBirth = probStuntedAtBirth        
            
      
-    def setProbStuntedComplementaryFeeding(self, stuntingDistributionArg, interventionCoveragesArg):
-        interventionCoverages = dcp(interventionCoveragesArg)
+    def setProbStuntedComplementaryFeeding(self, stuntingDistributionArg, coverageArg):
+        coverage = dcp(coverageArg)
         stuntingDistribution  = dcp(stuntingDistributionArg)
-        coEffs = self.getComplementaryFeedingQuarticCoefficients(stuntingDistribution, interventionCoverages)
+        coEffs = self.getComplementaryFeedingQuarticCoefficients(stuntingDistribution, coverage)
         baselineProbStuntingComplementaryFeeding = self.getBaselineProbabilityViaQuarticByAge(coEffs)        
         probStuntedComplementaryFeeding = {}        
         for ageName in self.ages: 

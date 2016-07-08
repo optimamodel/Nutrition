@@ -200,17 +200,17 @@ class Model:
         newCoverage = dcp(newCoverageArg)
 
         # call initialisation of probabilities related to interventions
-        self.derived.setProbStuntedIfCovered(self.params.interventionCoverages, self.params.stuntingDistribution)
-        self.derived.setProbCorrectlyBreastfedIfCovered(self.params.interventionCoverages, self.params.breastfeedingDistribution)
+        self.derived.setProbStuntedIfCovered(self.params.coverage, self.params.stuntingDistribution)
+        self.derived.setProbCorrectlyBreastfedIfCovered(self.params.coverage, self.params.breastfeedingDistribution)
         self.derived.setProbStuntedIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.stuntingDistribution)
-        self.derived.setProbStuntedComplementaryFeeding(self.params.stuntingDistribution, self.params.interventionCoverages)
+        self.derived.setProbStuntedComplementaryFeeding(self.params.stuntingDistribution, self.params.coverage)
         
         # get combined reductions from all interventions
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
         stuntingUpdate = self.params.getStuntingUpdate(newCoverage)
         incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
         birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)
-        appropriatebfFracNew = self.params.getAppropriateBFNew(newCoverage)
+        newFracCorrectlyBreastfed = self.params.getAppropriateBFNew(newCoverage)
         stuntingUpdateComplementaryFeeding = self.params.getStuntingUpdateComplementaryFeeding(newCoverage)
 
         # MORTALITY
@@ -227,13 +227,13 @@ class Model:
             correctPractice = self.params.ageAppropriateBreastfeeding[ageName]
             agePop = ageGroup.getTotalPopulation()
             numCorrectBefore   = ageGroup.getNumberCorrectlyBreastfed(correctPractice)
-            numCorrectAfter    = agePop * appropriatebfFracNew[ageName]
+            numCorrectAfter    = agePop * newFracCorrectlyBreastfed[ageName]
             numShifting        = numCorrectAfter - numCorrectBefore
             numIncorrectBefore = agePop - numCorrectBefore
             fracCorrecting = 0.
             if numIncorrectBefore > 0.01:
                 fracCorrecting = numShifting / numIncorrectBefore
-            self.params.breastfeedingDistribution[ageName][correctPractice] = appropriatebfFracNew[ageName] # update breastfeeding distribution
+            self.params.breastfeedingDistribution[ageName][correctPractice] = newFracCorrectlyBreastfed[ageName] # update breastfeeding distribution
             incorrectPractices = [practice for practice in self.breastfeedingList if practice!=correctPractice]
             for practice in incorrectPractices:
                 self.params.breastfeedingDistribution[ageName][practice] *= 1. - fracCorrecting
@@ -280,7 +280,7 @@ class Model:
         self.updateMortalityRate()    
 
         # set newCoverages as the coverages in interventions
-        self.params.interventionCoverages = newCoverage
+        self.params.coverage = newCoverage
 
             
             

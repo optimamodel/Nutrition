@@ -31,7 +31,7 @@ numsteps = 180
 timespan = helper.keyList['timestep'] * float(numsteps)
 
 for intervention in inputData.interventionList:
-    print "Baseline coverage of %s = %g"%(intervention, inputData.interventionCoveragesCurrent[intervention])
+    print "Baseline coverage of %s = %g"%(intervention, inputData.coverage[intervention])
 
 plotData = []
 run = 0
@@ -92,7 +92,7 @@ for ichoose in range(len(inputData.interventionList)):
     # initialise
     newCoverages={}
     for intervention in inputData.interventionList:
-        newCoverages[intervention] = inputData.interventionCoveragesCurrent[intervention]
+        newCoverages[intervention] = inputData.coverage[intervention]
     # allocation of funding
     investment = array([investmentIncrease])
     # calculate coverage (%)
@@ -100,8 +100,8 @@ for ichoose in range(len(inputData.interventionList)):
     targetPopSize[chosenIntervention] = 0.
     for iAge in range(numAgeGroups):
         ageName = helper.keyList['ages'][iAge]
-        targetPopSize[chosenIntervention] += inputData.interventionTargetPop[chosenIntervention][ageName] * modelX.listOfAgeCompartments[iAge].getTotalPopulation()
-    targetPopSize[chosenIntervention] +=     inputData.interventionTargetPop[chosenIntervention]['pregnant women'] * modelX.fertileWomen.populationSize
+        targetPopSize[chosenIntervention] += inputData.targetPopulation[chosenIntervention][ageName] * modelX.listOfAgeCompartments[iAge].getTotalPopulation()
+    targetPopSize[chosenIntervention] +=     inputData.targetPopulation[chosenIntervention]['pregnant women'] * modelX.fertileWomen.populationSize
     costCovParams = {}
     costCovParams['unitcost']   = array([dcp(inputData.interventionCostCoverage[chosenIntervention]["unit cost"])])
     costCovParams['saturation'] = array([dcp(inputData.interventionCostCoverage[chosenIntervention]["saturation coverage"])])

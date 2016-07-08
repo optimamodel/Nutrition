@@ -11,7 +11,7 @@ def getTotalInitialAllocation(data, costCoverageInfo, targetPopSize):
     costCov = costcov.Costcov()
     allocation = []
     for intervention in data.interventionList:
-        coverageFraction = array([dcp(data.interventionCoveragesCurrent[intervention])])
+        coverageFraction = array([dcp(data.coverage[intervention])])
         coverageNumber = coverageFraction * targetPopSize[intervention]
         if coverageNumber == 0:
             spending = array([0.])
@@ -90,8 +90,8 @@ class Optimisation:
             costCoverageInfo[intervention] = {}
             for iAge in range(numAgeGroups):
                 ageName = self.helper.ages[iAge]
-                targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][ageName] * agePopSizes[iAge]
-            targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention]['pregnant women'] * mothers.populationSize
+                targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * agePopSizes[iAge]
+            targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['pregnant women'] * mothers.populationSize
             costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
             costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
         
@@ -117,8 +117,8 @@ class Optimisation:
             costCoverageInfo[intervention] = {}
             for iAge in range(numAgeGroups):
                 ageName = self.helper.ages[iAge]
-                targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][ageName] * agePopSizes[iAge]
-            targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention]['pregnant women'] * mothers.populationSize
+                targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * agePopSizes[iAge]
+            targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['pregnant women'] * mothers.populationSize
             costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
             costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
             
@@ -175,8 +175,8 @@ class Optimisation:
             costCoverageInfo[intervention] = {}
             for iAge in range(numAgeGroups):
                 ageName = self.helper.ages[iAge]
-                targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][ageName] * agePopSizes[iAge]
-            targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention]['pregnant women'] * mothers.populationSize
+                targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * agePopSizes[iAge]
+            targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['pregnant women'] * mothers.populationSize
             costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
             costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
         
@@ -207,8 +207,8 @@ class Optimisation:
             costCoverageInfo[intervention] = {}
             for iAge in range(numAgeGroups):
                 ageName = self.helper.ages[iAge]
-                targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention][ageName] * agePopSizes[iAge]
-            targetPopSize[intervention] += spreadsheetData.interventionTargetPop[intervention]['pregnant women'] * mothers.populationSize
+                targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * agePopSizes[iAge]
+            targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['pregnant women'] * mothers.populationSize
             costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
             costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
         # set up the model    

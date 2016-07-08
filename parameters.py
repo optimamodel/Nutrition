@@ -35,10 +35,10 @@ class Params:
         #self.ORstuntingIntervention = dcp(data.ORstuntingIntervention)
         #self.ORappropriatebfIntervention = dcp(data.ORappropriatebfIntervention)
         self.ageAppropriateBreastfeeding = dcp(data.ageAppropriateBreastfeeding)
-        self.interventionCoverages = dcp(data.interventionCoveragesCurrent)
-        self.interventionMortalityEffectiveness = dcp(data.interventionMortalityEffectiveness)
-        self.interventionAffectedFraction = dcp(data.interventionAffectedFraction)
-        self.interventionIncidenceEffectiveness = dcp(data.interventionIncidenceEffectiveness)
+        self.coverage = dcp(data.coverage)
+        self.effectivenessMortality = dcp(data.effectivenessMortality)
+        self.affectedFraction = dcp(data.affectedFraction)
+        self.effectivenessIncidence = dcp(data.effectivenessIncidence)
         self.interventionsMaternal = dcp(data.interventionsMaternal)
         self.complementsList = dcp(data.complementsList)
     
@@ -51,14 +51,14 @@ class Params:
             mortalityUpdate[ageName] = {}
             for cause in self.causesOfDeath:
                 mortalityUpdate[ageName][cause] = 1.
-        causeList = ((self.interventionMortalityEffectiveness.values()[0]).values()[0]).keys()        
+        causeList = ((self.effectivenessMortality.values()[0]).values()[0]).keys()        
         for ageName in self.ages:
             for intervention in newCoverage.keys():
                 for cause in causeList:
-                    affectedFrac = self.interventionAffectedFraction[intervention][ageName][cause]
-                    effectiveness = self.interventionMortalityEffectiveness[intervention][ageName][cause]
+                    affectedFrac = self.affectedFraction[intervention][ageName][cause]
+                    effectiveness = self.effectivenessMortality[intervention][ageName][cause]
                     newCoverageVal = newCoverage[intervention]
-                    oldCoverage = self.interventionCoverages[intervention]
+                    oldCoverage = self.coverage[intervention]
                     reduction = affectedFrac * effectiveness * (newCoverageVal - oldCoverage) / (1. - effectiveness*oldCoverage)
                     mortalityUpdate[ageName][cause] *= 1. - reduction
         return mortalityUpdate           
@@ -72,7 +72,7 @@ class Params:
                 affectedFrac = self.interventionsMaternal[intervention][outcome]['affected fraction']
                 effectiveness = self.interventionsMaternal[intervention][outcome]['effectiveness']
                 newCoverageVal = newCoverage[intervention]
-                oldCoverage = self.interventionCoverages[intervention]
+                oldCoverage = self.coverage[intervention]
                 reduction = affectedFrac * effectiveness * (newCoverageVal - oldCoverage) / (1. - effectiveness*oldCoverage)
                 birthOutcomeUpdate[outcome] *= 1. - reduction
         return birthOutcomeUpdate               
@@ -116,10 +116,10 @@ class Params:
         for ageName in self.ages:
             for intervention in newCoverage.keys():
                 for condition in self.conditions:
-                    affectedFrac = self.interventionAffectedFraction[intervention][ageName][condition]
-                    effectiveness = self.interventionIncidenceEffectiveness[intervention][ageName][condition]
+                    affectedFrac = self.affectedFraction[intervention][ageName][condition]
+                    effectiveness = self.effectivenessIncidence[intervention][ageName][condition]
                     newCoverageVal = newCoverage[intervention]
-                    oldCoverage = self.interventionCoverages[intervention]
+                    oldCoverage = self.coverage[intervention]
                     reduction = affectedFrac * effectiveness * (newCoverageVal - oldCoverage) / (1. - effectiveness*oldCoverage)
                     incidenceUpdate[ageName][condition] *= 1. - reduction
         return incidenceUpdate                         
