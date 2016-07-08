@@ -6,7 +6,7 @@ Created on Fri Feb 26 15:57:07 2016
 """
 
 class Data:
-    def __init__(self, ages, causesOfDeath, conditions, interventionList, 
+    def __init__(self, causesOfDeath, conditions, interventionList, 
                  demographics, projectedBirths, totalMortality, causeOfDeathDist,
                  RRdeathStunting, RRdeathWasting, RRdeathBreastfeeding, 
                  RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution,
@@ -17,7 +17,6 @@ class Data:
                  targetPopulation, affectedFraction, effectivenessMortality,
                  effectivenessIncidence, interventionsMaternal, complementsList,
                  ORstuntingComplementaryFeeding):
-        self.ages = ages
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
         self.interventionList = interventionList
@@ -65,6 +64,9 @@ def getDataFromSpreadsheet(fileName, keyList):
     #get list of ages and causesOfDeath
     df = pandas.read_excel(Location, sheetname = 'mortality')
     causesOfDeath = list(df['Cause'])
+    #get list of conditions
+    df = pandas.read_excel(Location, sheetname = 'Incidence of conditions')
+    conditions = list(df['Condition'])
     #get list of interventions
     df = pandas.read_excel(Location, sheetname = 'Interventions cost and coverage')
     interventionList = list(df['Intervention'])
@@ -222,8 +224,6 @@ def getDataFromSpreadsheet(fileName, keyList):
     # READ Incidence of conditions SHEET
     # sets:
     # - incidences
-    df = pandas.read_excel(Location, sheetname = 'Incidence of conditions')
-    conditions = list(df['Condition'])
     df = pandas.read_excel(Location, sheetname = 'Incidence of conditions', index_col = 'Condition')
     incidences = {}
     for ageName in ages:
@@ -444,7 +444,7 @@ def getDataFromSpreadsheet(fileName, keyList):
             ORstuntingComplementaryFeeding[ageName][group] = df.loc[group, ageName]    
 
             
-    spreadsheetData = Data(ages, causesOfDeath, conditions, interventionList, demographics,
+    spreadsheetData = Data(causesOfDeath, conditions, interventionList, demographics,
                            projectedBirths, totalMortality, causeOfDeathDist, RRdeathStunting,
                            RRdeathWasting, RRdeathBreastfeeding, RRdeathByBirthOutcome,
                            stuntingDistribution, wastingDistribution, breastfeedingDistribution,
