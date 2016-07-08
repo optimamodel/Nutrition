@@ -40,7 +40,7 @@ class Params:
         self.affectedFraction = dcp(data.affectedFraction)
         self.effectivenessIncidence = dcp(data.effectivenessIncidence)
         self.interventionsMaternal = dcp(data.interventionsMaternal)
-        self.complementsList = dcp(data.complementsList)
+        self.foodSecurityGroups = dcp(data.foodSecurityGroups)
     
 
 # Add all functions for updating parameters due to interventions here....
@@ -144,19 +144,19 @@ class Params:
     def getStuntingUpdateComplementaryFeeding(self, newCoverage):
         stuntingUpdate = {}
         FracSecure = 1. - self.demographics['fraction food insecure']
-        FracCoveredEduc = newCoverage['Complementary feeding (education)']
-        FracCoveredSupp = newCoverage['Complementary feeding (supplementation)']
+        FracCoveredEducation = newCoverage['Complementary feeding (education)']
+        FracCoveredSupplements = newCoverage['Complementary feeding (supplementation)']
         Frac = [0.]*4
-        Frac[0] = FracSecure * FracCoveredEduc
-        Frac[1] = FracSecure * (1 - FracCoveredEduc)
-        Frac[2] = (1 - FracSecure) * FracCoveredSupp
-        Frac[3] = (1 - FracSecure) * (1 - FracCoveredSupp)
+        Frac[0] = FracSecure * FracCoveredEducation
+        Frac[1] = FracSecure * (1 - FracCoveredEducation)
+        Frac[2] = (1 - FracSecure) * FracCoveredSupplements
+        Frac[3] = (1 - FracSecure) * (1 - FracCoveredSupplements)
         for ageName in self.ages:
             stuntingUpdate[ageName] = 1.
             oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
             newProbStunting = 0
-            for i in range(len(self.complementsList)):            
-                probThisGroup = self.derived.probStuntedComplementaryFeeding[ageName][self.complementsList[i]]
+            for i in range(len(self.foodSecurityGroups)):            
+                probThisGroup = self.derived.probStuntedComplementaryFeeding[ageName][self.foodSecurityGroups[i]]
                 newProbStunting += probThisGroup * Frac[i]
             reduction = (oldProbStunting - newProbStunting)/oldProbStunting
             stuntingUpdate[ageName] *= 1. - reduction

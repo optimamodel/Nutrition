@@ -15,7 +15,7 @@ class Data:
                  ORstuntingIntervention, ORappropriatebfIntervention, 
                  ageAppropriateBreastfeeding, coverage, interventionCostCoverage,
                  targetPopulation, affectedFraction, effectivenessMortality,
-                 effectivenessIncidence, interventionsMaternal, complementsList,
+                 effectivenessIncidence, interventionsMaternal, foodSecurityGroups,
                  ORstuntingComplementaryFeeding):
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
@@ -47,7 +47,7 @@ class Data:
         self.effectivenessMortality = effectivenessMortality
         self.effectivenessIncidence = effectivenessIncidence
         self.interventionsMaternal = interventionsMaternal
-        self.complementsList = complementsList
+        self.foodSecurityGroups = foodSecurityGroups
         self.ORstuntingComplementaryFeeding = ORstuntingComplementaryFeeding
     
 
@@ -435,12 +435,12 @@ def getDataFromSpreadsheet(fileName, keyList):
     # sets:
     # - ORstuntingComplementaryFeeding
     df = pandas.read_excel(Location, sheetname = 'OR stunting for complements') 
-    complementsList = list(df['Complements group'])
+    foodSecurityGroups = list(df['Complements group'])
     df = pandas.read_excel(Location, sheetname = 'OR stunting for complements', index_col = 'Complements group') 
     ORstuntingComplementaryFeeding = {}
     for ageName in ages:
         ORstuntingComplementaryFeeding[ageName] = {}
-        for group in complementsList:
+        for group in foodSecurityGroups:
             ORstuntingComplementaryFeeding[ageName][group] = df.loc[group, ageName]    
 
             
@@ -453,7 +453,7 @@ def getDataFromSpreadsheet(fileName, keyList):
                            ORappropriatebfIntervention, ageAppropriateBreastfeeding, coverage,
                            interventionCostCoverage, targetPopulation, affectedFraction,
                            effectivenessMortality, effectivenessIncidence, interventionsMaternal,
-                           complementsList, ORstuntingComplementaryFeeding)
+                           foodSecurityGroups, ORstuntingComplementaryFeeding)
 
     return spreadsheetData
                   

@@ -456,7 +456,7 @@ class Derived:
             probStuntedComplementaryFeeding[ageName] = {}
             p0 = baselineProbStuntingComplementaryFeeding[ageName]
             probStuntedComplementaryFeeding[ageName]["Complementary feeding (food secure with promotion)"] = p0
-            for group in self.data.complementsList:
+            for group in self.data.foodSecurityGroups:
                 OR = self.data.ORstuntingComplementaryFeeding[ageName][group]
                 probStuntedComplementaryFeeding[ageName][group] = p0*OR / (1.-p0+OR*p0)
                 pi = probStuntedComplementaryFeeding[ageName][group]
