@@ -5,20 +5,21 @@ Created on Wed June 01 2016
 @author: madhurakilledar
 """
 
-import output as output
 import pickle as pickle
-import data as dataCode
+
+import os, sys
+moduleDir = os.path.join(os.path.dirname(__file__), '..')
+sys.path.append(moduleDir)
+import data
+import helper
+import output
 
 country = 'Bangladesh'
 
-ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
-birthOutcomes = ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"]
-wastingList = ["normal", "mild", "moderate", "high"]
-stuntingList = ["normal", "mild", "moderate", "high"]
-breastfeedingList = ["exclusive", "predominant", "partial", "none"]
-keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
-dataFilename = 'InputForCode_%s.xlsx'%(country)
-spreadsheetData = dataCode.getDataFromSpreadsheet(dataFilename, keyList)
+helper = helper.Helper()
+
+dataFilename = '../input_spreadsheets/%s/InputForCode_%s.xlsx'%(country, country)
+inputData = data.getDataFromSpreadsheet(dataFilename, helper.keyList)
 
 plotData = []
 run=0
@@ -44,8 +45,8 @@ percentageIncrease = 20
 title = '%s: 2015-2030 \n Scale up interventions by %i%% points'%(country,percentageIncrease)
 filenamePrefix = '%s_%i'%(country,percentageIncrease)
 
-for ichoose in range(len(spreadsheetData.interventionList)):
-    chosenIntervention = spreadsheetData.interventionList[ichoose]
+for ichoose in range(len(inputData.interventionList)):
+    chosenIntervention = inputData.interventionList[ichoose]
     pickleFilename = '%s_Intervention%i_P%i.pkl'%(country,ichoose,percentageIncrease)
     nametag = chosenIntervention
     print "\n"+nametag
