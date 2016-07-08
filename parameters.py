@@ -17,7 +17,7 @@ class Params:
         self.causesOfDeath = dcp(data.causesOfDeath)
         self.conditions = dcp(data.conditions)
         self.demographics = dcp(data.demographics)
-        #self.totalMortality = dcp(data.totalMortality)
+        #self.rawMortality = dcp(data.rawMortality)
         self.causeOfDeathDist = dcp(data.causeOfDeathDist)
         self.stuntingDistribution = dcp(data.stuntingDistribution)
         self.wastingDistribution = dcp(data.wastingDistribution)

@@ -75,9 +75,9 @@ class Derived:
         # Calculated total mortality by age (corrected for units)
         MortalityCorrected = {}
         LiveBirths = self.data.demographics["number of live births"]
-        Mnew = self.data.totalMortality["neonatal"]
-        Minfant = self.data.totalMortality["infant"]
-        Mu5 = self.data.totalMortality["under 5"]
+        Mnew = self.data.rawMortality["neonatal"]
+        Minfant = self.data.rawMortality["infant"]
+        Mu5 = self.data.rawMortality["under 5"]
         # Newborns
         ageName = self.ages[0]
         m0 = Mnew*LiveBirths/1000./AgePop[0]

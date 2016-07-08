@@ -7,7 +7,7 @@ Created on Fri Feb 26 15:57:07 2016
 
 class Data:
     def __init__(self, causesOfDeath, conditions, interventionList, 
-                 demographics, projectedBirths, totalMortality, causeOfDeathDist,
+                 demographics, projectedBirths, rawMortality, causeOfDeathDist,
                  RRdeathStunting, RRdeathWasting, RRdeathBreastfeeding, 
                  RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution,
                  breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition,
@@ -22,7 +22,7 @@ class Data:
         self.interventionList = interventionList
         self.demographics = demographics
         self.projectedBirths = projectedBirths
-        self.totalMortality = totalMortality
+        self.rawMortality = rawMortality
         self.causeOfDeathDist = causeOfDeathDist
         self.stuntingDistribution = stuntingDistribution
         self.wastingDistribution = wastingDistribution
@@ -95,9 +95,9 @@ def getDataFromSpreadsheet(fileName, keyList):
 
     #  READ TOTAL MORTALITY SHEET
     #  sets:
-    #  - totalMortality
+    #  - rawMortality
     df = pandas.read_excel(Location, sheetname = 'total mortality')
-    totalMortality = dict(zip(list(df.columns.values), df.iloc[0]))
+    rawMortality = dict(zip(list(df.columns.values), df.iloc[0]))
 
     #  READ MORTALITY SHEET
     #  sets:
@@ -445,7 +445,7 @@ def getDataFromSpreadsheet(fileName, keyList):
 
             
     spreadsheetData = Data(causesOfDeath, conditions, interventionList, demographics,
-                           projectedBirths, totalMortality, causeOfDeathDist, RRdeathStunting,
+                           projectedBirths, rawMortality, causeOfDeathDist, RRdeathStunting,
                            RRdeathWasting, RRdeathBreastfeeding, RRdeathByBirthOutcome,
                            stuntingDistribution, wastingDistribution, breastfeedingDistribution,
                            incidences, RRdiarrhea, ORstuntingCondition, birthOutcomeDist, 
