@@ -70,7 +70,7 @@ class TestsForConstantsClass(unittest.TestCase):
         # for neonatal:  OR = 1.04, RR = 1, alpha = 1, set Z = 1
         # AO[0] = OR ^ (RR * Z * alpha)
         z = {'<1 month':1, '1-5 months':1, '6-11 months':1, '12-23 months':1, '24-59 months':1}
-        AO = self.testDerived.getAOGivenZa(z) 
+        AO = self.testDerived.getAverageOR(z) 
         self.assertEqual(AO['<1 month'], 1.04)
            
     @unittest.skip("write test once quartic is solved")            

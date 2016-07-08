@@ -255,7 +255,7 @@ class Model:
         # get flow on effect to stunting due to changing incidence
         Z0 = self.derived.getZa(incidencesBefore, self.params.breastfeedingDistribution)
         Zt = self.derived.getZa(incidencesAfter,  self.params.breastfeedingDistribution)
-        beta = self.derived.getBetaGivenZ0AndZt(Z0, Zt)
+        beta = self.derived.getFracDiarrhea(Z0, Zt)
         self.derived.updateProbStuntedIfDiarrheaNewZa(Zt)
         stuntingUpdateDueToIncidence = self.params.getStuntingUpdateDueToIncidence(beta)
         

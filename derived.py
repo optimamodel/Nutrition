@@ -142,8 +142,8 @@ class Derived:
             incidence[ageName] = currentIncidences[ageName]['Diarrhea']
         Z0 = self.getZa(incidence, breastfeedingDistribution)
         Zt = Z0 #this is true for the initialisation
-        beta = self.getBetaGivenZ0AndZt(Z0, Zt)
-        AO = self.getAOGivenZa(Zt)
+        beta = self.getFracDiarrhea(Z0, Zt)
+        AO = self.getAverageOR(Zt)
         from numpy import sqrt    
         eps = 1.e-5
         numAgeGroups = len(self.ages)
@@ -176,7 +176,7 @@ class Derived:
 
 
     def updateProbStuntedIfDiarrheaNewZa(self,Zt):
-        AO = self.getAOGivenZa(Zt)
+        AO = self.getAverageOR(Zt)
         numAgeGroups = len(self.ages)
         for iAge in range(numAgeGroups):
             ageName = self.ages[iAge]
@@ -203,7 +203,7 @@ class Derived:
         return Za     
 
 
-    def getAOGivenZa(self, Za):
+    def getAverageOR(self, Za):
         from math import pow
         AO = {}
         numAgeGroups = len(self.ages)
@@ -214,7 +214,7 @@ class Derived:
         return AO    
         
         
-    def getBetaGivenZ0AndZt(self, Z0, Zt):
+    def getFracDiarrhea(self, Z0, Zt):
         beta = {}
         for ageName in self.ages:
             beta[ageName] = {}
