@@ -20,7 +20,7 @@ class Derived:
         self.initialStuntingTrend = -0. # percentage decrease in stunting prevalence per year
         self.initialStuntingTrend = self.initialStuntingTrend / 100. * self.timestep # fractional decrease in stunting prevalence per timestep
 
-        self.underlyingMortalities = {}
+        self.referenceMortality = {}
         self.probStuntedIfPrevStunted = {}
         self.fracStuntedIfDiarrhea = {}
         self.probStuntedIfCovered = {}
@@ -32,13 +32,13 @@ class Derived:
         for ageName in self.ages:
             self.stuntingUpdateAfterInterventions[ageName] = 1.
 
-        self.setUnderlyingMortalities()
+        self.setReferenceMortality()
         self.setProbStuntingProgression()
         self.setProbStuntedAtBirth()
 
 
 
-    def setUnderlyingMortalities(self):
+    def setReferenceMortality(self):
         #Equation is:  LHS = RHS * X
         #we are solving for X
         # Calculate RHS for each age and cause
@@ -105,7 +105,7 @@ class Derived:
             for cause in self.data.causesOfDeath:
                 LHS_age_cause = MortalityCorrected[ageName] * self.data.causeOfDeathDist[ageName][cause]
                 Xdictionary[ageName][cause] = LHS_age_cause / RHS[ageName][cause]
-        self.underlyingMortalities = Xdictionary
+        self.referenceMortality = Xdictionary
         
 
 

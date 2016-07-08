@@ -39,9 +39,9 @@ class TestsForConstantsClass(unittest.TestCase):
         # 64 compartments per age; 25/100=0.25 (distributions); 1 (cause); 1 (RR); 500*12/1000=6. for newborn otherwise 0.0 (total mortality) 
         # underlyingMortality = total mortality / (numCompartments * dist * dist * dist * RR * RR * RR * cause)
         # underlyingMortality = total mortality / (numBFCompartments * BFdist * RR * RR * cause) for newborns
-        self.assertAlmostEqual(6./4./0.25, self.testDerived.underlyingMortalities["<1 month"]["Neonatal diarrhea"])
+        self.assertAlmostEqual(6./4./0.25, self.testDerived.referenceMortality["<1 month"]["Neonatal diarrhea"])
         for ageName in ['1-5 months', '6-11 months', '12-23 months', '24-59 months']:
-            self.assertAlmostEqual((0./64.)*(1.e6), self.testDerived.underlyingMortalities[ageName]["Diarrhea"])
+            self.assertAlmostEqual((0./64.)*(1.e6), self.testDerived.referenceMortality[ageName]["Diarrhea"])
         
     def testStuntingProbabilitiesEqualExpectedWhenORis2(self):
         # for OR = 2, assuming F(a) = F(a-1) = 0.5:
@@ -136,7 +136,7 @@ class TestsForModelClass(unittest.TestCase):
         self.assertTrue(False)
         
     def testUpdateMortalityRate(self):
-        self.testModel.derived.underlyingMortalities['12-23 months']["Diarrhea"] = 1
+        self.testModel.derived.referenceMortality['12-23 months']["Diarrhea"] = 1
         self.testModel.updateMortalityRate()
         updatedMortalityRate = self.testModel.listOfAgeCompartments[3].dictOfBoxes['normal']['normal']['none'].mortalityRate
         expectedMortalityRate = 1. 

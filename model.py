@@ -218,7 +218,7 @@ class Model:
             ageName = ageGroup.name
             #update mortality            
             for cause in self.params.causesOfDeath:
-                self.derived.underlyingMortalities[ageName][cause] *= mortalityUpdate[ageName][cause]        
+                self.derived.referenceMortality[ageName][cause] *= mortalityUpdate[ageName][cause]        
             
         # BREASTFEEDING
         for ageGroup in self.listOfAgeCompartments:
@@ -295,7 +295,7 @@ class Model:
                 for outcome in self.birthOutcomes:
                     pbo = self.params.birthOutcomeDist[outcome]
                     Rbo = self.params.RRdeathByBirthOutcome[cause][outcome]
-                    count += Rb * pbo * Rbo * self.derived.underlyingMortalities[ageName][cause]
+                    count += Rb * pbo * Rbo * self.derived.referenceMortality[ageName][cause]
             for stuntingCat in self.stuntingList:
                 for wastingCat in self.wastingList:
                     ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate = count
@@ -307,7 +307,7 @@ class Model:
                     for breastfeedingCat in self.breastfeedingList:
                         count = 0.
                         for cause in self.params.causesOfDeath:
-                            t1 = self.derived.underlyingMortalities[ageName][cause]
+                            t1 = self.derived.referenceMortality[ageName][cause]
                             t2 = self.params.RRdeathStunting[ageName][cause][stuntingCat]
                             t3 = self.params.RRdeathWasting[ageName][cause][wastingCat]
                             t4 = self.params.RRdeathBreastfeeding[ageName][cause][breastfeedingCat]
