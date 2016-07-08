@@ -14,8 +14,8 @@ dataSpreadsheetName = '../input_spreadsheets/Bangladesh/InputForCode_Bangladesh.
 numModelSteps = 180
 MCSampleSize = 25
 
-#cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]  
-cascadeValues = [0.25, 0.50, 0.75, 1.0]
+cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]  
+#cascadeValues = [0.25, 0.50, 0.75, 1.0]
 
 thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps)
 
