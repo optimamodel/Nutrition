@@ -128,10 +128,25 @@ class Helper:
                 
                 
     
-        
-        
-        
-        
+    def setupModelSpecificPopsizes(self, inputData, agePopSizes):
+        import model 
+        import derived 
+        import parameters        
+        # gaussianise stunting in *data*
+        ages = self.keyList['ages']
+        for iAge in range(len(ages)):
+            ageName = ages[iAge]
+            probStunting = self.sumStuntedComponents(inputData.stuntingDistribution[ageName])
+            inputData.stuntingDistribution[ageName] = self.restratify(probStunting)
+        listOfAgeCompartments = self.makeAgeCompartments(agePopSizes, inputData)
+        pregnantWomen = self.makePregnantWomen(inputData)
+        model = model.Model(pregnantWomen, listOfAgeCompartments, self.keyList)
+        derived = derived.Derived(inputData, model, self.keyList)
+        model.setDerived(derived)
+        parameters = parameters.Params(inputData, derived, self.keyList)
+        model.setParams(parameters)
+        model.updateMortalityRate()
+        return model, derived, parameters
         
         
         

@@ -6,8 +6,12 @@ Created on Wed June 01 2016
 @author: madhurakilledar
 """
 
-import output
 import pickle
+
+import os, sys
+moduleDir = os.path.join(os.path.dirname(__file__), '..')
+sys.path.append(moduleDir)
+import output
 
 country = 'Bangladesh'
 
@@ -82,7 +86,7 @@ numRuns = run
 
 #------------------------------------------------------------------------    
 # GATHER LiST OUTPUT
-filename_LiST = "scenarios_LiST_%s.xlsx"%(country)
+filename_LiST = "../input_spreadsheets/%s/validation/scenarios_LiST_%s.xlsx"%(country, country)
 import pandas
 df = pandas.read_excel(filename_LiST, sheetname = 'deaths')
 scenarios = list(df['scenario'])
