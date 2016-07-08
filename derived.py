@@ -53,9 +53,9 @@ class Derived:
                             t1 = self.data.stuntingDistribution[ageName][stuntingCat]
                             t2 = self.data.wastingDistribution[ageName][wastingCat] 
                             t3 = self.data.breastfeedingDistribution[ageName][breastfeedingCat]
-                            t4 = self.data.RRStunting[ageName][cause][stuntingCat]
-                            t5 = self.data.RRWasting[ageName][cause][wastingCat]
-                            t6 = self.data.RRBreastfeeding[ageName][cause][breastfeedingCat]
+                            t4 = self.data.RRdeathStunting[ageName][cause][stuntingCat]
+                            t5 = self.data.RRdeathWasting[ageName][cause][wastingCat]
+                            t6 = self.data.RRdeathBreastfeeding[ageName][cause][breastfeedingCat]
                             RHS[ageName][cause] += t1 * t2 * t3 * t4 * t5 * t6
         # RHS for newborns only
         ageName = "<1 month"
@@ -63,7 +63,7 @@ class Derived:
             RHS[ageName][cause] = 0.
             for breastfeedingCat in self.breastfeedingList:
                 Pbf = self.data.breastfeedingDistribution[ageName][breastfeedingCat]
-                RRbf = self.data.RRBreastfeeding[ageName][cause][breastfeedingCat]
+                RRbf = self.data.RRdeathBreastfeeding[ageName][cause][breastfeedingCat]
                 for birthoutcome in self.birthOutcomes:
                     Pbo = self.data.birthOutcomeDist[birthoutcome]
                     RRbo = self.data.RRdeathByBirthOutcome[cause][birthoutcome]

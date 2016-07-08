@@ -8,15 +8,15 @@ Created on Fri Feb 26 15:57:07 2016
 class Data:
     def __init__(self, ages, causesOfDeath, conditions, interventionList, 
                  demographics, projectedBirths, totalMortality, causeOfDeathDist,
-                 RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome,
-                 stuntingDistribution, wastingDistribution, breastfeedingDistribution,
-                 incidences, RRdiarrhea, ORstuntingCondition, birthOutcomeDist,
-                 ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention,
-                 ORappropriatebfIntervention, ageAppropriateBreastfeeding,
-                 coverage, interventionCostCoverage, targetPopulation,
-                 affectedFraction, effectivenessMortality,
-                 effectivenessIncidence, interventionsMaternal,
-                 complementsList, ORstuntingComplementaryFeeding):
+                 RRdeathStunting, RRdeathWasting, RRdeathBreastfeeding, 
+                 RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution,
+                 breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition,
+                 birthOutcomeDist, ORstuntingProgression, ORstuntingBirthOutcome,
+                 ORstuntingIntervention, ORappropriatebfIntervention, 
+                 ageAppropriateBreastfeeding, coverage, interventionCostCoverage,
+                 targetPopulation, affectedFraction, effectivenessMortality,
+                 effectivenessIncidence, interventionsMaternal, complementsList,
+                 ORstuntingComplementaryFeeding):
         self.ages = ages
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
@@ -28,9 +28,9 @@ class Data:
         self.stuntingDistribution = stuntingDistribution
         self.wastingDistribution = wastingDistribution
         self.breastfeedingDistribution = breastfeedingDistribution
-        self.RRStunting = RRStunting
-        self.RRWasting = RRWasting
-        self.RRBreastfeeding = RRBreastfeeding
+        self.RRdeathStunting = RRdeathStunting
+        self.RRdeathWasting = RRdeathWasting
+        self.RRdeathBreastfeeding = RRdeathBreastfeeding
         self.RRdeathByBirthOutcome = RRdeathByBirthOutcome
         self.ORstuntingProgression = ORstuntingProgression
         self.incidences = incidences
@@ -109,66 +109,66 @@ def getDataFromSpreadsheet(fileName, keyList):
             
     #  READ RRStunting SHEET
     #  sets:
-    #  - RRStunting
+    #  - RRdeathStunting
     df = pandas.read_excel(Location, sheetname = 'RRStunting', index_col = [0])
     #get the list of causes for which we have relative risks
     mylist = list(df.index.values)
     myset = set(mylist)
-    listCausesRRStunting = list(myset)
-    #put the RR into RRStunting
+    listCausesRRdeathStunting = list(myset)
+    #put the RR into RRdeathStunting
     df = pandas.read_excel(Location, sheetname = 'RRStunting', index_col = [0, 1])
-    RRStunting = {}
+    RRdeathStunting = {}
     for ageName in ages:
-        RRStunting[ageName] = {}
+        RRdeathStunting[ageName] = {}
         for cause in causesOfDeath:
-            RRStunting[ageName][cause] = {}
+            RRdeathStunting[ageName][cause] = {}
             for stuntingCat in stuntingList:
-                if cause in listCausesRRStunting: #if no RR given for this cause then set to 1
-                    RRStunting[ageName][cause][stuntingCat] = df.loc[cause][ageName][stuntingCat]
+                if cause in listCausesRRdeathStunting: #if no RR given for this cause then set to 1
+                    RRdeathStunting[ageName][cause][stuntingCat] = df.loc[cause][ageName][stuntingCat]
                 else:
-                    RRStunting[ageName][cause][stuntingCat] = 1
+                    RRdeathStunting[ageName][cause][stuntingCat] = 1
                    
     #  READ RRWasting SHEET
     #  sets:
-    #  - RRWasting
+    #  - RRdeathWasting
     df = pandas.read_excel(Location, sheetname = 'RRWasting', index_col = [0])
     #get the list of causes for which we have relative risks
     mylist = list(df.index.values)
     myset = set(mylist)
-    listCausesRRWasting = list(myset)
-    #put the RR into RRWasting
+    listCausesRRdeathWasting = list(myset)
+    #put the RR into RRdeathWasting
     df = pandas.read_excel(Location, sheetname = 'RRWasting', index_col = [0, 1])
-    RRWasting = {}
+    RRdeathWasting = {}
     for ageName in ages:
-        RRWasting[ageName] = {}
+        RRdeathWasting[ageName] = {}
         for cause in causesOfDeath:
-            RRWasting[ageName][cause] = {}
+            RRdeathWasting[ageName][cause] = {}
             for wastingCat in wastingList:
-                if cause in listCausesRRWasting: #if no RR given for this cause then set to 1
-                    RRWasting[ageName][cause][wastingCat] = df.loc[cause][ageName][wastingCat]
+                if cause in listCausesRRdeathWasting: #if no RR given for this cause then set to 1
+                    RRdeathWasting[ageName][cause][wastingCat] = df.loc[cause][ageName][wastingCat]
                 else:
-                    RRWasting[ageName][cause][wastingCat] = 1        
+                    RRdeathWasting[ageName][cause][wastingCat] = 1        
 
     #  READ RRBreastfeeding SHEET
     #  sets:
-    #  - RRBreastfeeding
+    #  - RRdeathBreastfeeding
     df = pandas.read_excel(Location, sheetname = 'RRBreastfeeding', index_col = [0])
     #get the list of causes for which we have relative risks
     mylist = list(df.index.values)
     myset = set(mylist)
-    listCausesRRBreastfeeding = list(myset)
-    #put the RR into RRBreastfeeding
+    listCausesRRdeathBreastfeeding = list(myset)
+    #put the RR into RRdeathBreastfeeding
     df = pandas.read_excel(Location, sheetname = 'RRBreastfeeding', index_col = [0, 1])
-    RRBreastfeeding = {}
+    RRdeathBreastfeeding = {}
     for ageName in ages:
-        RRBreastfeeding[ageName] = {}
+        RRdeathBreastfeeding[ageName] = {}
         for cause in causesOfDeath: 
-            RRBreastfeeding[ageName][cause] = {}
+            RRdeathBreastfeeding[ageName][cause] = {}
             for breastfeedingCat in breastfeedingList:
-                if cause in listCausesRRBreastfeeding: #if no RR given for this cause then set to 1
-                    RRBreastfeeding[ageName][cause][breastfeedingCat] = df.loc[cause][ageName][breastfeedingCat]
+                if cause in listCausesRRdeathBreastfeeding: #if no RR given for this cause then set to 1
+                    RRdeathBreastfeeding[ageName][cause][breastfeedingCat] = df.loc[cause][ageName][breastfeedingCat]
                 else:
-                    RRBreastfeeding[ageName][cause][breastfeedingCat] = 1  
+                    RRdeathBreastfeeding[ageName][cause][breastfeedingCat] = 1  
         
     #  READ RR Death by Birth Outcome SHEET
     #  sets:
@@ -445,15 +445,15 @@ def getDataFromSpreadsheet(fileName, keyList):
 
             
     spreadsheetData = Data(ages, causesOfDeath, conditions, interventionList, demographics,
-                           projectedBirths, totalMortality, causeOfDeathDist, RRStunting,
-                           RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution,
-                           wastingDistribution, breastfeedingDistribution, incidences, RRdiarrhea,
-                           ORstuntingCondition, birthOutcomeDist, ORstuntingProgression,
-                           ORstuntingBirthOutcome, ORstuntingIntervention, ORappropriatebfIntervention,
-                           ageAppropriateBreastfeeding, coverage,
+                           projectedBirths, totalMortality, causeOfDeathDist, RRdeathStunting,
+                           RRdeathWasting, RRdeathBreastfeeding, RRdeathByBirthOutcome,
+                           stuntingDistribution, wastingDistribution, breastfeedingDistribution,
+                           incidences, RRdiarrhea, ORstuntingCondition, birthOutcomeDist, 
+                           ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention,
+                           ORappropriatebfIntervention, ageAppropriateBreastfeeding, coverage,
                            interventionCostCoverage, targetPopulation, affectedFraction,
-                           effectivenessMortality, effectivenessIncidence,
-                           interventionsMaternal, complementsList, ORstuntingComplementaryFeeding)
+                           effectivenessMortality, effectivenessIncidence, interventionsMaternal,
+                           complementsList, ORstuntingComplementaryFeeding)
 
     return spreadsheetData
                   

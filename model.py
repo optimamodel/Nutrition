@@ -8,10 +8,10 @@ from __future__ import division
 from copy import deepcopy as dcp
 
 class PregnantWomen:
-    def __init__(self, birthRate, populationSize, annualPercentPopGrowth):
+    def __init__(self, birthRate, populationSize, annualGrowth):
         self.birthRate = birthRate
         self.populationSize = populationSize
-        self.annualPercentPopGrowth = annualPercentPopGrowth
+        self.annualGrowth = annualGrowth
         
 class Box:
     def __init__(self, populationSize):
@@ -124,8 +124,8 @@ class AgeCompartment:
 
         
 class Model:
-    def __init__(self, fertileWomen, listOfAgeCompartments, keyList):
-        self.fertileWomen = fertileWomen
+    def __init__(self, pregnantWomen, listOfAgeCompartments, keyList):
+        self.pregnantWomen = pregnantWomen
         self.listOfAgeCompartments = listOfAgeCompartments
         for key in keyList.keys():
             setattr(self, key, keyList[key])
@@ -291,7 +291,7 @@ class Model:
         for breastfeedingCat in self.breastfeedingList:
             count = 0.
             for cause in self.params.causesOfDeath:
-                Rb = self.params.RRBreastfeeding[ageName][cause][breastfeedingCat]
+                Rb = self.params.RRdeathBreastfeeding[ageName][cause][breastfeedingCat]
                 for outcome in self.birthOutcomes:
                     pbo = self.params.birthOutcomeDist[outcome]
                     Rbo = self.params.RRdeathByBirthOutcome[cause][outcome]
@@ -308,9 +308,9 @@ class Model:
                         count = 0.
                         for cause in self.params.causesOfDeath:
                             t1 = self.derived.underlyingMortalities[ageName][cause]
-                            t2 = self.params.RRStunting[ageName][cause][stuntingCat]
-                            t3 = self.params.RRWasting[ageName][cause][wastingCat]
-                            t4 = self.params.RRBreastfeeding[ageName][cause][breastfeedingCat]
+                            t2 = self.params.RRdeathStunting[ageName][cause][stuntingCat]
+                            t3 = self.params.RRdeathWasting[ageName][cause][wastingCat]
+                            t4 = self.params.RRdeathBreastfeeding[ageName][cause][breastfeedingCat]
                             count += t1 * t2 * t3 * t4                            
                         ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate = count
 
@@ -391,13 +391,13 @@ class Model:
 
     def applyBirths(self):
         # calculate total number of new babies
-        birthRate = self.fertileWomen.birthRate  #WARNING: assuming per pre-determined timestep
-        numWomen  = self.fertileWomen.populationSize
+        birthRate = self.pregnantWomen.birthRate  #WARNING: assuming per pre-determined timestep
+        numWomen  = self.pregnantWomen.populationSize
         numNewBabies = numWomen * birthRate * self.timestep
-        self.fertileWomen.populationSize *= (1.+self.fertileWomen.annualPercentPopGrowth*self.timestep)
+        self.pregnantWomen.populationSize *= (1.+self.pregnantWomen.annualGrowth*self.timestep)
         # convenient names
         ageGroup = self.listOfAgeCompartments[0]
-        ageName         = ageGroup.name
+        ageName  = ageGroup.name
         # restratify Stunting
         restratifiedStuntingAtBirth = {}
         for outcome in self.birthOutcomes:
