@@ -17,26 +17,28 @@ class Derived:
         for key in keyList.keys():
             setattr(self, key, keyList[key])
 
+        self.initialStuntingTrend = -0. # percentage decrease in stunting prevalence per year
+        self.initialStuntingTrend = self.initialStuntingTrend / 100. * self.timestep # fractional decrease in stunting prevalence per timestep
+
         self.underlyingMortalities = {}
         self.probStuntedIfPrevStunted = {}
         self.fracStuntedIfDiarrhea = {}
         self.probStuntedIfCovered = {}
-        self.probAppropriatelyBreastfedIfCovered = {}
-        self.probsStuntingComplementaryFeeding = {}
-        self.probsStuntingAtBirth = {}
+        self.probCorrectlyBreastfedIfCovered = {}
+        self.probStuntedComplementaryFeeding = {}
+        self.probStuntedAtBirth = {}
         
-        self.initialStuntingTrend = -0. # percentage decrease in stunting prevalence per year
-        self.initialStuntingTrend = self.initialStuntingTrend / 100. * self.timestep # fractional decrease in stunting prevalence per timestep
         self.stuntingUpdateAfterInterventions = {}
         for ageName in self.ages:
             self.stuntingUpdateAfterInterventions[ageName] = 1.
 
-        self.getUnderlyingMortalities()
-        self.getProbStuntingProgression()
-        self.getProbStuntedAtBirth()
+        self.setUnderlyingMortalities()
+        self.setProbStuntingProgression()
+        self.setProbStuntedAtBirth()
 
 
-    def getUnderlyingMortalities(self):
+
+    def setUnderlyingMortalities(self):
         #Equation is:  LHS = RHS * X
         #we are solving for X
         # Calculate RHS for each age and cause
@@ -108,7 +110,7 @@ class Derived:
 
 
     # Calculate probability of stunting in this age group given stunting in previous age-group
-    def getProbStuntingProgression(self):
+    def setProbStuntingProgression(self):
         from numpy import sqrt
         numAgeGroups = len(self.ages)
         self.probStuntedIfPrevStunted["notstunted"] = {}
@@ -134,7 +136,7 @@ class Derived:
             self.probStuntedIfPrevStunted["yesstunted"][ageName] = p0*OddsRatio/(1.-p0+OddsRatio*p0)
         
 
-    def getProbStuntedIfDiarrhea(self, currentIncidences, breastfeedingDistribution, stuntingDistribution):
+    def setProbStuntedIfDiarrhea(self, currentIncidences, breastfeedingDistribution, stuntingDistribution):
         incidence = {}
         for ageName in self.ages:
             incidence[ageName] = currentIncidences[ageName]['Diarrhea']
@@ -237,7 +239,7 @@ class Derived:
 
 
     # Calculate probability of stunting in current age-group given coverage by intervention
-    def getProbStuntedIfCoveredByIntervention(self, interventionCoverages, stuntingDistribution):
+    def setProbStuntedIfCovered(self, interventionCoverages, stuntingDistribution):
         from numpy import sqrt 
         eps = 1.e-5
         numAgeGroups = len(self.ages)
@@ -268,24 +270,24 @@ class Derived:
 
 
     # Calculate probability of stunting in current age-group given coverage by intervention
-    def getProbAppropriatelyBreastfedIfCoveredByIntervention(self, interventionCoverages, breastfeedingDistribution):
+    def setProbCorrectlyBreastfedIfCovered(self, interventionCoverages, breastfeedingDistribution):
         from numpy import sqrt 
         eps = 1.e-5
         numAgeGroups = len(self.ages)
         for intervention in self.data.interventionList:
-            self.probAppropriatelyBreastfedIfCovered[intervention] = {}
-            self.probAppropriatelyBreastfedIfCovered[intervention]["not covered"] = {}
-            self.probAppropriatelyBreastfedIfCovered[intervention]["covered"]     = {}
+            self.probCorrectlyBreastfedIfCovered[intervention] = {}
+            self.probCorrectlyBreastfedIfCovered[intervention]["not covered"] = {}
+            self.probCorrectlyBreastfedIfCovered[intervention]["covered"]     = {}
             for i in range(numAgeGroups):
                 ageName = self.ages[i]
                 OddsRatio = self.data.ORappropriatebfIntervention[ageName][intervention]
                 fracCovered = interventionCoverages[intervention]
                 appropriatePractice = self.data.ageAppropriateBreastfeeding[ageName]
-                fracAppropriatelyBreastfedThisAge = breastfeedingDistribution[ageName][appropriatePractice]
+                fracCorrectlyBreastfedThisAge = breastfeedingDistribution[ageName][appropriatePractice]
                 # solve quadratic equation ax**2 + bx + c = 0
                 a = (1.-fracCovered) * (1.-OddsRatio)
-                b = (OddsRatio-1)*fracAppropriatelyBreastfedThisAge - OddsRatio*fracCovered - (1.-fracCovered)
-                c = fracAppropriatelyBreastfedThisAge
+                b = (OddsRatio-1)*fracCorrectlyBreastfedThisAge - OddsRatio*fracCovered - (1.-fracCovered)
+                c = fracCorrectlyBreastfedThisAge
                 det = sqrt(b**2 - 4.*a*c)
                 if(abs(a)<eps):
                     p0 = -c/b
@@ -294,8 +296,8 @@ class Derived:
                     soln2 = (-b - det)/(2.*a)
                     if(soln1>0.)and(soln1<1.): p0 = soln1
                     if(soln2>0.)and(soln2<1.): p0 = soln2
-                self.probAppropriatelyBreastfedIfCovered[intervention]["not covered"][ageName] = p0
-                self.probAppropriatelyBreastfedIfCovered[intervention]["covered"][ageName]     = p0*OddsRatio/(1.-p0+OddsRatio*p0)
+                self.probCorrectlyBreastfedIfCovered[intervention]["not covered"][ageName] = p0
+                self.probCorrectlyBreastfedIfCovered[intervention]["covered"][ageName]     = p0*OddsRatio/(1.-p0+OddsRatio*p0)
 
 
     def getBirthStuntingQuarticCoefficients(self):
@@ -429,35 +431,36 @@ class Derived:
         return baselineProbability    
 
 
-    def getProbStuntedAtBirth(self):
+    def setProbStuntedAtBirth(self):
         coEffs = self.getBirthStuntingQuarticCoefficients()
         baselineProbStuntingAtBirth = self.getBaselineProbabilityViaQuartic(coEffs)        
         p0 = baselineProbStuntingAtBirth
-        probsStuntingAtBirth = {}
-        probsStuntingAtBirth["Term AGA"] = p0
+        probStuntedAtBirth = {}
+        probStuntedAtBirth["Term AGA"] = p0
         for birthOutcome in ["Pre-term SGA","Pre-term AGA","Term SGA"]:
             OR = self.data.ORstuntingBirthOutcome[birthOutcome]
-            probsStuntingAtBirth[birthOutcome] = p0*OR / (1.-p0+OR*p0)
-            pi = probsStuntingAtBirth[birthOutcome]
+            probStuntedAtBirth[birthOutcome] = p0*OR / (1.-p0+OR*p0)
+            pi = probStuntedAtBirth[birthOutcome]
             if(pi<0. or pi>1.):
                 raise ValueError("probability of stunting at birth, at outcome %s, is out of range (%f)"%(birthOutcome, pi))
-        self.probsStuntingAtBirth = probsStuntingAtBirth        
-                
-    def getProbStuntedComplementaryFeeding(self, stuntingDistributionArg, interventionCoveragesArg):
+        self.probStuntedAtBirth = probStuntedAtBirth        
+           
+     
+    def setProbStuntedComplementaryFeeding(self, stuntingDistributionArg, interventionCoveragesArg):
         interventionCoverages = dcp(interventionCoveragesArg)
         stuntingDistribution  = dcp(stuntingDistributionArg)
         coEffs = self.getComplementaryFeedingQuarticCoefficients(stuntingDistribution, interventionCoverages)
         baselineProbStuntingComplementaryFeeding = self.getBaselineProbabilityViaQuarticByAge(coEffs)        
-        probsStuntingComplementaryFeeding = {}        
+        probStuntedComplementaryFeeding = {}        
         for ageName in self.ages: 
-            probsStuntingComplementaryFeeding[ageName] = {}
+            probStuntedComplementaryFeeding[ageName] = {}
             p0 = baselineProbStuntingComplementaryFeeding[ageName]
-            probsStuntingComplementaryFeeding[ageName]["Complementary feeding (food secure with promotion)"] = p0
+            probStuntedComplementaryFeeding[ageName]["Complementary feeding (food secure with promotion)"] = p0
             for group in self.data.complementsList:
                 OR = self.data.ORstuntingComplementaryFeeding[ageName][group]
-                probsStuntingComplementaryFeeding[ageName][group] = p0*OR / (1.-p0+OR*p0)
-                pi = probsStuntingComplementaryFeeding[ageName][group]
+                probStuntedComplementaryFeeding[ageName][group] = p0*OR / (1.-p0+OR*p0)
+                pi = probStuntedComplementaryFeeding[ageName][group]
                 if(pi<0. or pi>1.):
                     raise ValueError("probability of stunting complementary feeding, at outcome %s, age %s, is out of range (%f)"%(group, ageName, pi))            
-        self.probsStuntingComplementaryFeeding = probsStuntingComplementaryFeeding    
+        self.probStuntedComplementaryFeeding = probStuntedComplementaryFeeding    
             

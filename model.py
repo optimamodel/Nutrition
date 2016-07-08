@@ -92,12 +92,12 @@ class AgeCompartment:
                     returnDict[breastfeedingCat] += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize / totalPop
         return returnDict
 
-    def getNumberAppropriatelyBreastfed(self,practice):
-        NumberAppropriatelyBreastfed = 0.
+    def getNumberCorrectlyBreastfed(self,practice):
+        NumberCorrectlyBreastfed = 0.
         for stuntingCat in self.stuntingList:
             for wastingCat in self.wastingList:
-                NumberAppropriatelyBreastfed += self.dictOfBoxes[stuntingCat][wastingCat][practice].populationSize
-        return NumberAppropriatelyBreastfed
+                NumberCorrectlyBreastfed += self.dictOfBoxes[stuntingCat][wastingCat][practice].populationSize
+        return NumberCorrectlyBreastfed
 
     def distribute(self, stuntingDist, wastingDist, breastfeedingDist):
         ageName = self.name
@@ -200,10 +200,10 @@ class Model:
         newCoverage = dcp(newCoverageArg)
 
         # call initialisation of probabilities related to interventions
-        self.derived.getProbStuntedIfCoveredByIntervention(self.params.interventionCoverages, self.params.stuntingDistribution)
-        self.derived.getProbAppropriatelyBreastfedIfCoveredByIntervention(self.params.interventionCoverages, self.params.breastfeedingDistribution)
-        self.derived.getProbStuntedIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.stuntingDistribution)
-        self.derived.getProbStuntedComplementaryFeeding(self.params.stuntingDistribution, self.params.interventionCoverages)
+        self.derived.setProbStuntedIfCovered(self.params.interventionCoverages, self.params.stuntingDistribution)
+        self.derived.setProbCorrectlyBreastfedIfCovered(self.params.interventionCoverages, self.params.breastfeedingDistribution)
+        self.derived.setProbStuntedIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.stuntingDistribution)
+        self.derived.setProbStuntedComplementaryFeeding(self.params.stuntingDistribution, self.params.interventionCoverages)
         
         # get combined reductions from all interventions
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
@@ -226,7 +226,7 @@ class Model:
             SumBefore = self.derived.getDiarrheaRiskSum(ageName, self.params.breastfeedingDistribution)
             correctPractice = self.params.ageAppropriateBreastfeeding[ageName]
             agePop = ageGroup.getTotalPopulation()
-            numCorrectBefore   = ageGroup.getNumberAppropriatelyBreastfed(correctPractice)
+            numCorrectBefore   = ageGroup.getNumberCorrectlyBreastfed(correctPractice)
             numCorrectAfter    = agePop * appropriatebfFracNew[ageName]
             numShifting        = numCorrectAfter - numCorrectBefore
             numIncorrectBefore = agePop - numCorrectBefore
@@ -401,7 +401,7 @@ class Model:
         # restratify Stunting
         restratifiedStuntingAtBirth = {}
         for outcome in self.birthOutcomes:
-            restratifiedStuntingAtBirth[outcome] = self.helper.restratify(self.derived.probsStuntingAtBirth[outcome])
+            restratifiedStuntingAtBirth[outcome] = self.helper.restratify(self.derived.probStuntedAtBirth[outcome])
         # sum over birth outcome for full stratified stunting fractions, then apply to birth distribution
         stuntingFractions = {}
         for stuntingCat in self.stuntingList:

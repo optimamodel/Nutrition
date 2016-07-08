@@ -93,18 +93,18 @@ class Params:
             
 
     def getAppropriateBFNew(self, newCoverage):
-        appropriatebfFracNew = {}
+        correctbfFracNew = {}
         for ageName in self.ages:
-            appropriatePractice = self.ageAppropriateBreastfeeding[ageName]
-            appropriatebfFracBefore = self.breastfeedingDistribution[ageName][appropriatePractice]
-            appropriatebfFracNew[ageName] = appropriatebfFracBefore
+            correctPractice = self.ageAppropriateBreastfeeding[ageName]
+            correctbfFracBefore = self.breastfeedingDistribution[ageName][correctPractice]
+            correctbfFracNew[ageName] = correctbfFracBefore
             for intervention in newCoverage.keys():
-                probAppropriateIfCovered    = self.derived.probAppropriatelyBreastfedIfCovered[intervention]["covered"][ageName]
-                probAppropriateIfNotCovered = self.derived.probAppropriatelyBreastfedIfCovered[intervention]["not covered"][ageName]
-                appropriatebfFracNewThis = newCoverage[intervention]*probAppropriateIfCovered + (1.-newCoverage[intervention])*probAppropriateIfNotCovered
-                fracAdd = appropriatebfFracNewThis - appropriatebfFracBefore
-                appropriatebfFracNew[ageName] += fracAdd
-        return appropriatebfFracNew               
+                probCorrectIfCovered    = self.derived.probCorrectlyBreastfedIfCovered[intervention]["covered"][ageName]
+                probCorrectIfNotCovered = self.derived.probCorrectlyBreastfedIfCovered[intervention]["not covered"][ageName]
+                correctbfFracNewThis = newCoverage[intervention]*probCorrectIfCovered + (1.-newCoverage[intervention])*probCorrectIfNotCovered
+                fracAdd = correctbfFracNewThis - correctbfFracBefore
+                correctbfFracNew[ageName] += fracAdd
+        return correctbfFracNew               
 
             
     def getIncidenceUpdate(self, newCoverage):
@@ -156,7 +156,7 @@ class Params:
             oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
             newProbStunting = 0
             for i in range(len(self.complementsList)):            
-                probThisGroup = self.derived.probsStuntingComplementaryFeeding[ageName][self.complementsList[i]]
+                probThisGroup = self.derived.probStuntedComplementaryFeeding[ageName][self.complementsList[i]]
                 newProbStunting += probThisGroup * Frac[i]
             reduction = (oldProbStunting - newProbStunting)/oldProbStunting
             stuntingUpdate[ageName] *= 1. - reduction
