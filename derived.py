@@ -6,9 +6,11 @@ Created on Mon Feb 29 11:35:02 2016
 """
 from __future__ import division
 from copy import deepcopy as dcp
+import helper as helper
 
 class Derived:
     def __init__(self, data, model, keyList):
+        self.helper = helper.Helper()        
         self.data = dcp(data)
         self.initialModel = dcp(model)
 
@@ -152,7 +154,7 @@ class Derived:
             for breastfeedingCat in self.breastfeedingList:
                 fracDiarrhea += beta[ageName][breastfeedingCat] * breastfeedingDistribution[ageName][breastfeedingCat]
             # get fraction stunted
-            fracStuntedThisAge = stuntingDistribution[ageName]['high'] + stuntingDistribution[ageName]['moderate']
+            fracStuntedThisAge = self.helper.sumStuntedComponents(stuntingDistribution[ageName])
             # solve quadratic equation ax**2 + bx + c = 0
             a = (1. - fracDiarrhea) * (1. - AO[ageName])
             b = (AO[ageName] - 1.) * fracStuntedThisAge - AO[ageName] * fracDiarrhea - (1. - fracDiarrhea)
@@ -247,7 +249,7 @@ class Derived:
                 ageName = self.ages[iAge]
                 OddsRatio = self.data.ORstuntingIntervention[ageName][intervention]
                 fracCovered = interventionCoverages[intervention]
-                fracStuntedThisAge = stuntingDistribution[ageName]['high'] + stuntingDistribution[ageName]['moderate']
+                fracStuntedThisAge = self.helper.sumStuntedComponents(stuntingDistribution[ageName])
                 # solve quadratic equation ax**2 + bx + c = 0
                 a = (1.-fracCovered) * (1.-OddsRatio)
                 b = (OddsRatio-1)*fracStuntedThisAge - OddsRatio*fracCovered - (1.-fracCovered)
@@ -342,7 +344,7 @@ class Derived:
             Frac[1] = FracSecure * (1 - FracCoveredEduc)
             Frac[2] = (1 - FracSecure) * FracCoveredSupp
             Frac[3] = (1 - FracSecure) * (1 - FracCoveredSupp)
-            FracStunted = stuntingDistribution[ageName]['high'] + stuntingDistribution[ageName]['moderate']
+            FracStunted = self.helper.sumStuntedComponents(stuntingDistribution[ageName])
             # [i] will refer to the three non-baseline birth outcomes
             A = Frac[0]*(OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.)
             B = (OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.) * ( \

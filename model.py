@@ -383,7 +383,7 @@ class Model:
                         thisBox.populationSize += numAgingInStratified[stuntingCat] * pab * paw
             # gaussianise
             stuntingDistributionNow = thisAgeCompartment.getStuntingDistribution()            
-            probStunting = stuntingDistributionNow['high'] + stuntingDistributionNow['moderate']
+            probStunting = self.helper.sumStuntedComponents(stuntingDistributionNow)
             #probStunting = thisAgeCompartment.getStuntedFraction()
             self.params.stuntingDistribution[ageName] = self.helper.restratify(probStunting)
             thisAgeCompartment.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)

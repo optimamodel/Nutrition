@@ -17,6 +17,7 @@ class Helper:
         self.keyList['breastfeedingList'] = ["exclusive", "predominant", "partial", "none"]
         self.keyList['ageGroupSpans'] = [1., 5., 6., 12., 36.] # number of months in each age group
         self.keyList['agingRates'] = [1./1., 1./5., 1./6., 1./12., 1./36.]
+        self.keyList['stuntedList'] = ["moderate", "high"]
 
     # Going from binary stunting/wasting to four fractions
     # Yes refers to more than 2 standard deviations below the global mean/median
@@ -34,6 +35,13 @@ class Helper:
         restratification["moderate"] = fractionModerate
         restratification["high"] = fractionHigh
         return restratification
+        
+    def sumStuntedComponents(self, thingToSum):
+        sumStuntedComponents = 0
+        for stuntingCat in self.keyList['stuntedList']:
+            sumStuntedComponents += thingToSum[stuntingCat]  
+        return sumStuntedComponents    
+                   
 
 
     def makeAgePopSizes(self, spreadsheetData):
@@ -105,7 +113,7 @@ class Helper:
         ages = self.keyList['ages']
         for iAge in range(len(ages)):
             ageName = ages[iAge]
-            probStunting = spreadsheetData.stuntingDistribution[ageName]['high'] + spreadsheetData.stuntingDistribution[ageName]['moderate']
+            probStunting = self.sumStuntedComponents(spreadsheetData.stuntingDistribution[ageName])
             spreadsheetData.stuntingDistribution[ageName] = self.restratify(probStunting)
         agePopSizes = self.makeAgePopSizes(spreadsheetData)   
         listOfAgeCompartments = self.makeAgeCompartments(agePopSizes, spreadsheetData)
@@ -119,6 +127,7 @@ class Helper:
         return model, derived, parameters
                 
                 
+    
         
         
         
