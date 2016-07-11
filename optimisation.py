@@ -76,25 +76,8 @@ class Optimisation:
         
     def performSingleOptimisation(self, optimise, MCSampleSize, filename):
         import data 
-        from copy import deepcopy as dcp
-        from numpy import array
-        
         spreadsheetData = data.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
-        mothers = self.helper.makePregnantWomen(spreadsheetData) 
-        numAgeGroups = len(self.helper.keyList['ages'])
-        agePopSizes  = self.helper.makeAgePopSizes(spreadsheetData)  
-        targetPopSize = {}
-        costCoverageInfo = {}
-        for intervention in spreadsheetData.interventionList:
-            targetPopSize[intervention] = 0.
-            costCoverageInfo[intervention] = {}
-            for iAge in range(numAgeGroups):
-                ageName = self.helper.keyList['ages'][iAge]
-                targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * agePopSizes[iAge]
-            targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['pregnant women'] * mothers.populationSize
-            costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
-            costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
-        
+        costCoverageInfo, targetPopSize = self.getCostCoverageInfoAndTargetPopSize()        
         initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)
         totalBudget = sum(initialAllocation)
         xmin = [0.] * len(initialAllocation)
@@ -104,28 +87,11 @@ class Optimisation:
         
     def performCascadeOptimisation(self, optimise, MCSampleSize, filename, cascadeValues):
         import data 
-        from copy import deepcopy as dcp
-        from numpy import array
         spreadsheetData = data.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
-        mothers = self.helper.makePregnantWomen(spreadsheetData) 
-        numAgeGroups = len(self.helper.keyList['ages'])
-        agePopSizes  = self.helper.makeAgePopSizes(spreadsheetData)  
-        targetPopSize = {}
-        costCoverageInfo = {}
-        for intervention in spreadsheetData.interventionList:
-            targetPopSize[intervention] = 0.
-            costCoverageInfo[intervention] = {}
-            for iAge in range(numAgeGroups):
-                ageName = self.helper.keyList['ages'][iAge]
-                targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * agePopSizes[iAge]
-            targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['pregnant women'] * mothers.populationSize
-            costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
-            costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
-            
+        costCoverageInfo, targetPopSize = self.getCostCoverageInfoAndTargetPopSize()            
         initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)
         currentTotalBudget = sum(initialAllocation)
         xmin = [0.] * len(initialAllocation)
-        
         for cascade in cascadeValues:
             totalBudget = currentTotalBudget * cascade
             args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'numModelSteps':self.numModelSteps, 'targetPopSize':targetPopSize, 'data':spreadsheetData}    
@@ -162,31 +128,14 @@ class Optimisation:
         
     def getInitialAllocationDictionary(self):
         import data 
-        from copy import deepcopy as dcp
-        from numpy import array
         spreadsheetData = data.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
-        mothers = self.helper.makePregnantWomen(spreadsheetData) 
-        numAgeGroups = len(self.helper.keyList['ages'])
-        agePopSizes  = self.helper.makeAgePopSizes(spreadsheetData)  
-        targetPopSize = {}
-        costCoverageInfo = {}
-        for intervention in spreadsheetData.interventionList:
-            targetPopSize[intervention] = 0.
-            costCoverageInfo[intervention] = {}
-            for iAge in range(numAgeGroups):
-                ageName = self.helper.keyList['ages'][iAge]
-                targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * agePopSizes[iAge]
-            targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['pregnant women'] * mothers.populationSize
-            costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
-            costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
-        
+        costCoverageInfo, targetPopSize = self.getCostCoverageInfoAndTargetPopSize()        
         initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)        
         initialAllocationDictionary = {}
         for i in range(0, len(spreadsheetData.interventionList)):
             intervention = spreadsheetData.interventionList[i]
             initialAllocationDictionary[intervention] = initialAllocation[i]
         return initialAllocationDictionary    
-        
         
         
         
@@ -245,9 +194,9 @@ class Optimisation:
         import pickle
         import data
         spreadsheetData = data.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList) 
+        costCoverageInfo, targetPopSize = self.getCostCoverageInfoAndTargetPopSize()
         initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)
         currentTotalBudget = sum(initialAllocation)            
-        
         spendingVector = []        
         outcomeVector = []
         for cascade in cascadeValues:
@@ -261,7 +210,6 @@ class Optimisation:
                 outcomeVector.append(modelOutput[self.numModelSteps-1].getTotalCumulativeDeaths()[0])
             if outcome == 'stunting':    
                 outcomeVector.append(modelOutput[self.numModelSteps-1].getCumulativeAgingOutStunted()[0])    
-                
         return spendingVector, outcomeVector        
 
                 
