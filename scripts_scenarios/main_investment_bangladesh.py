@@ -106,8 +106,8 @@ for ichoose in range(len(inputData.interventionList)):
         targetPopSize[chosenIntervention] += inputData.targetPopulation[chosenIntervention][ageName] * modelX.listOfAgeCompartments[iAge].getTotalPopulation()
     targetPopSize[chosenIntervention] +=     inputData.targetPopulation[chosenIntervention]['pregnant women'] * modelX.fertileWomen.populationSize
     costCovParams = {}
-    costCovParams['unitcost']   = array([dcp(inputData.interventionCostCoverage[chosenIntervention]["unit cost"])])
-    costCovParams['saturation'] = array([dcp(inputData.interventionCostCoverage[chosenIntervention]["saturation coverage"])])
+    costCovParams['unitcost']   = array([dcp(inputData.costSaturation[chosenIntervention]["unit cost"])])
+    costCovParams['saturation'] = array([dcp(inputData.costSaturation[chosenIntervention]["saturation coverage"])])
     additionalPeopleCovered   = costCov.function(investment, costCovParams, targetPopSize[chosenIntervention]) # function from HIV
     additionalFractionCovered = additionalPeopleCovered / targetPopSize[chosenIntervention]
     print "additional coverage: %g"%(additionalFractionCovered)

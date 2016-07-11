@@ -13,7 +13,7 @@ class Data:
                  breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition,
                  birthOutcomeDist, ORstuntingProgression, ORstuntingBirthOutcome,
                  ORstuntingIntervention, ORappropriatebfIntervention, 
-                 ageAppropriateBreastfeeding, coverage, interventionCostCoverage,
+                 ageAppropriateBreastfeeding, coverage, costSaturation,
                  targetPopulation, affectedFraction, effectivenessMortality,
                  effectivenessIncidence, interventionsMaternal, foodSecurityGroups,
                  ORstuntingComplementaryFeeding):
@@ -41,7 +41,7 @@ class Data:
         self.ORappropriatebfIntervention = ORappropriatebfIntervention
         self.ageAppropriateBreastfeeding = ageAppropriateBreastfeeding
         self.coverage = coverage
-        self.interventionCostCoverage = interventionCostCoverage
+        self.costSaturation = costSaturation
         self.targetPopulation = targetPopulation
         self.affectedFraction = affectedFraction
         self.effectivenessMortality = effectivenessMortality
@@ -310,17 +310,17 @@ def getDataFromSpreadsheet(fileName, keyList):
 
     #  READ Current Intervention Coverages SHEET
     #  sets:
-    #  - InterventionCoveragesCurrent
-    #  - InterventionCostCoverage
+    #  - coverage
+    #  - costSaturation
     df = pandas.read_excel(Location, sheetname = 'Interventions cost and coverage', index_col = 'Intervention')
     coverage = {}
-    interventionCostCoverage = {}
+    costSaturation = {}
     costinfoList = ["unit cost","saturation coverage"]
     for intervention in interventionList:
         coverage[intervention] = df.loc[intervention, "baseline coverage"]
-        interventionCostCoverage[intervention] = {}
+        costSaturation[intervention] = {}
         for costinfo in costinfoList:
-            interventionCostCoverage[intervention][costinfo] = df.loc[intervention, costinfo]
+            costSaturation[intervention][costinfo] = df.loc[intervention, costinfo]
 
     # READ Intervention Target Population Matrix SHEET
     # sets:
@@ -451,7 +451,7 @@ def getDataFromSpreadsheet(fileName, keyList):
                            incidences, RRdiarrhea, ORstuntingCondition, birthOutcomeDist, 
                            ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention,
                            ORappropriatebfIntervention, ageAppropriateBreastfeeding, coverage,
-                           interventionCostCoverage, targetPopulation, affectedFraction,
+                           costSaturation, targetPopulation, affectedFraction,
                            effectivenessMortality, effectivenessIncidence, interventionsMaternal,
                            foodSecurityGroups, ORstuntingComplementaryFeeding)
 

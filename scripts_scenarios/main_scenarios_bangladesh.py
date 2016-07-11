@@ -97,7 +97,7 @@ for ichoose in range(numInterventions):
         newCoverages[intervention] = inputData.coverage[intervention]
     # scale up intervention
     newCoverages[chosenIntervention] += percentageIncrease/100.
-    newCoverages[chosenIntervention] = min(newCoverages[chosenIntervention],inputData.interventionCostCoverage[chosenIntervention]["saturation coverage"])
+    newCoverages[chosenIntervention] = min(newCoverages[chosenIntervention],inputData.costSaturation[chosenIntervention]["saturation coverage"])
     newCoverages[chosenIntervention] = max(newCoverages[chosenIntervention],inputData.coverage[chosenIntervention])
     newCoverages[chosenIntervention] = max(newCoverages[chosenIntervention],0.0)
     print "new coverage: %g"%(newCoverages[chosenIntervention])
@@ -151,7 +151,7 @@ for intervention in inputData.interventionList:
     newCoverages[intervention] = inputData.coverage[intervention]
 for intervention in inputData.interventionList:
     newCoverages[intervention] += percentageIncrease/100.
-    newCoverages[intervention] = min(newCoverages[intervention],inputData.interventionCostCoverage[intervention]["saturation coverage"])
+    newCoverages[intervention] = min(newCoverages[intervention],inputData.costSaturation[intervention]["saturation coverage"])
     newCoverages[intervention] = max(newCoverages[intervention],inputData.coverage[intervention])
     newCoverages[intervention] = max(newCoverages[intervention],0.0)
 modelZ.updateCoverages(newCoverages)

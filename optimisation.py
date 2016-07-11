@@ -185,8 +185,8 @@ class Optimisation:
                 ageName = self.helper.keyList['ages'][iAge]
                 targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * agePopSizes[iAge]
             targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['pregnant women'] * mothers.populationSize
-            costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
-            costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
+            costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.costSaturation[intervention]["unit cost"])])
+            costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.costSaturation[intervention]["saturation coverage"])])
         return costCoverageInfo, targetPopSize
     
     
