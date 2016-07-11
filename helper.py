@@ -44,29 +44,29 @@ class Helper:
                    
 
 
-    def makeAgePopSizes(self, spreadsheetData):
+    def makeAgePopSizes(self, inputData):
         numAgeGroups = len(self.keyList['ages'])        
         agePopSizes = [0.]*numAgeGroups
         numGroupsInYear = 3
         numMonthsInYear = sum(self.keyList['ageGroupSpans'][:numGroupsInYear])
-        numPopEachMonth = spreadsheetData.demographics['number of live births'] / numMonthsInYear
+        numPopEachMonth = inputData.demographics['number of live births'] / numMonthsInYear
         for i in range(numGroupsInYear):
             agePopSizes[i] = numPopEachMonth * self.keyList['ageGroupSpans'][i]
         numMonthsOlder = sum(self.keyList['ageGroupSpans']) - numMonthsInYear
-        numPopOlder = spreadsheetData.demographics['population U5'] - spreadsheetData.demographics['number of live births']
+        numPopOlder = inputData.demographics['population U5'] - inputData.demographics['number of live births']
         numPopEachMonthOlder = numPopOlder / numMonthsOlder
         for i in range(numGroupsInYear,numAgeGroups):
             agePopSizes[i] = numPopEachMonthOlder * self.keyList['ageGroupSpans'][i]
         return agePopSizes
 
 
-    def makePregnantWomen(self, spreadsheetData):
+    def makePregnantWomen(self, inputData):
         import model       
-        annualPregnancies = dcp(spreadsheetData.demographics['number of pregnant women'])
-        annualBirths      = dcp(spreadsheetData.demographics['number of live births'])
+        annualPregnancies = dcp(inputData.demographics['number of pregnant women'])
+        annualBirths      = dcp(inputData.demographics['number of live births'])
         populationSize = annualPregnancies
         birthRate   = annualBirths / annualPregnancies
-        projectedBirths   = dcp(spreadsheetData.projectedBirths)
+        projectedBirths   = dcp(inputData.projectedBirths)
         baseBirths = float(projectedBirths[0])
         numYears   = len(projectedBirths)-1
         annualGrowth = (projectedBirths[numYears]-baseBirths)/float(numYears)/baseBirths
@@ -74,7 +74,7 @@ class Helper:
         return pregnantWomen
 
 
-    def makeBoxes(self, thisAgePopSize, ageName, spreadsheetData):
+    def makeBoxes(self, thisAgePopSize, ageName, inputData):
         import model 
         wastingList = self.keyList['wastingList']
         stuntingList = self.keyList['stuntingList']
@@ -85,12 +85,12 @@ class Helper:
             for wastingCat in wastingList:
                 allBoxes[stuntingCat][wastingCat] = {}
                 for breastfeedingCat in breastfeedingList:
-                    thisPopSize = thisAgePopSize * spreadsheetData.stuntingDistribution[ageName][stuntingCat] * spreadsheetData.wastingDistribution[ageName][wastingCat] * spreadsheetData.breastfeedingDistribution[ageName][breastfeedingCat]   # Assuming independent
+                    thisPopSize = thisAgePopSize * inputData.stuntingDistribution[ageName][stuntingCat] * inputData.wastingDistribution[ageName][wastingCat] * inputData.breastfeedingDistribution[ageName][breastfeedingCat]   # Assuming independent
                     allBoxes[stuntingCat][wastingCat][breastfeedingCat] =  model.Box(thisPopSize)
         return allBoxes
 
 
-    def makeAgeCompartments(self, agePopSizes, spreadsheetData):
+    def makeAgeCompartments(self, agePopSizes, inputData):
         import model 
         ages = self.keyList['ages']
         numAgeGroups = len(ages)
@@ -99,13 +99,13 @@ class Helper:
             ageName  = ages[iAge]
             agingRate = self.keyList['agingRates'][iAge]
             agePopSize = agePopSizes[iAge]
-            thisAgeBoxes = self.makeBoxes(agePopSize, ageName, spreadsheetData)
+            thisAgeBoxes = self.makeBoxes(agePopSize, ageName, inputData)
             compartment = model.AgeCompartment(ageName, thisAgeBoxes, agingRate, self.keyList)
             listOfAgeCompartments.append(compartment)
         return listOfAgeCompartments         
 
         
-    def setupModelConstantsParameters(self, spreadsheetData):
+    def setupModelConstantsParameters(self, inputData):
         import model 
         import derived 
         import parameters        
@@ -113,15 +113,15 @@ class Helper:
         ages = self.keyList['ages']
         for iAge in range(len(ages)):
             ageName = ages[iAge]
-            probStunting = self.sumStuntedComponents(spreadsheetData.stuntingDistribution[ageName])
-            spreadsheetData.stuntingDistribution[ageName] = self.restratify(probStunting)
-        agePopSizes = self.makeAgePopSizes(spreadsheetData)   
-        listOfAgeCompartments = self.makeAgeCompartments(agePopSizes, spreadsheetData)
-        pregnantWomen = self.makePregnantWomen(spreadsheetData)
+            probStunting = self.sumStuntedComponents(inputData.stuntingDistribution[ageName])
+            inputData.stuntingDistribution[ageName] = self.restratify(probStunting)
+        agePopSizes = self.makeAgePopSizes(inputData)   
+        listOfAgeCompartments = self.makeAgeCompartments(agePopSizes, inputData)
+        pregnantWomen = self.makePregnantWomen(inputData)
         model = model.Model(pregnantWomen, listOfAgeCompartments, self.keyList)
-        derived = derived.Derived(spreadsheetData, model, self.keyList)
+        derived = derived.Derived(inputData, model, self.keyList)
         model.setDerived(derived)
-        parameters = parameters.Params(spreadsheetData, derived, self.keyList)
+        parameters = parameters.Params(inputData, derived, self.keyList)
         model.setParams(parameters)
         model.updateMortalityRate()
         return model, derived, parameters
