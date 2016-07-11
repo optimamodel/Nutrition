@@ -12,16 +12,6 @@ import optimisation
 import pickle as pickle
 from copy import deepcopy as dcp
 
-timestep = 1./12. 
-numsteps = 180
-ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
-birthOutcomes = ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"]
-wastingList = ["normal", "mild", "moderate", "high"]
-stuntingList = ["normal", "mild", "moderate", "high"]
-breastfeedingList = ["exclusive", "predominant", "partial", "none"]
-keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
-ageGroupSpans = [1., 5., 6., 12., 36.] # number of months in each age group
-agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH (WARNING use ageSpans to define this)
 numModelSteps = 180
 cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0] 
 
@@ -40,7 +30,7 @@ numberAgingOutStunted_baseline = {}
 for region in range(0, len(spreadsheetList)):
     print "baseline region " + str(region)
     spreadsheetData = spreadsheetList[region]
-    thisOptimisation = optimisation.Optimisation(spreadsheetData, timestep, numModelSteps, ages, birthOutcomes, wastingList, stuntingList, breastfeedingList, ageGroupSpans, agingRateList)
+    thisOptimisation = optimisation.Optimisation(spreadsheetData, numModelSteps)
     initialAllocation = thisOptimisation.getInitialAllocationDictionary()
     baseline = thisOptimisation.oneModelRunWithOutput(initialAllocation)
     numberOfDeaths_baseline['region '+str(region)] = baseline[numModelSteps-1].getTotalCumulativeDeaths()[0]
@@ -57,7 +47,7 @@ numberAgingOutStunted_optimisingStunting = {}
 
 for region in range(0, len(spreadsheetList)):
     spreadsheetData = spreadsheetList[region]
-    thisOptimisation = optimisation.Optimisation(spreadsheetData, timestep, numModelSteps, ages, birthOutcomes, wastingList, stuntingList, breastfeedingList, ageGroupSpans, agingRateList)
+    thisOptimisation = optimisation.Optimisation(spreadsheetData, numModelSteps)
     print "everything else region " + str(region)
     numberOfDeaths_optimisingDeaths['region '+str(region)] = {}
     numberAgingOutStunted_optimisingDeaths['region '+str(region)] = {}
