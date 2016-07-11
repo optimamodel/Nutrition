@@ -76,7 +76,7 @@ class Optimisation:
         
     def performSingleOptimisation(self, optimise, MCSampleSize, filename):
         import data 
-        spreadsheetData = data.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
+        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         costCoverageInfo, targetPopSize = self.getCostCoverageInfoAndTargetPopSize()        
         initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)
         totalBudget = sum(initialAllocation)
@@ -87,7 +87,7 @@ class Optimisation:
         
     def performCascadeOptimisation(self, optimise, MCSampleSize, filename, cascadeValues):
         import data 
-        spreadsheetData = data.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
+        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         costCoverageInfo, targetPopSize = self.getCostCoverageInfoAndTargetPopSize()            
         initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)
         currentTotalBudget = sum(initialAllocation)
@@ -128,7 +128,7 @@ class Optimisation:
         
     def getInitialAllocationDictionary(self):
         import data 
-        spreadsheetData = data.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
+        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         costCoverageInfo, targetPopSize = self.getCostCoverageInfoAndTargetPopSize()        
         initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)        
         initialAllocationDictionary = {}
@@ -145,7 +145,7 @@ class Optimisation:
         from copy import deepcopy as dcp
         from numpy import array
         costCov = costcov.Costcov()
-        spreadsheetData = data.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
+        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
         model, derived, params = self.helper.setupModelConstantsParameters(spreadsheetData)
         costCoverageInfo, targetPopSize = self.getCostCoverageInfoAndTargetPopSize()
         newCoverages = {}    
@@ -172,7 +172,7 @@ class Optimisation:
         import data 
         from copy import deepcopy as dcp
         from numpy import array
-        spreadsheetData = data.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
+        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         mothers = self.helper.makePregnantWomen(spreadsheetData) 
         numAgeGroups = len(self.helper.keyList['ages'])
         agePopSizes  = self.helper.makeAgePopSizes(spreadsheetData)  
@@ -185,15 +185,15 @@ class Optimisation:
                 ageName = self.helper.keyList['ages'][iAge]
                 targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * agePopSizes[iAge]
             targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['pregnant women'] * mothers.populationSize
-            costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
-            costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
+            costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.costSaturation[intervention]["unit cost"])])
+            costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.costSaturation[intervention]["saturation coverage"])])
         return costCoverageInfo, targetPopSize
     
     
     def generateBOCVectors(self, filename, cascadeValues, outcome):
         import pickle
         import data
-        spreadsheetData = data.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList) 
+        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList) 
         costCoverageInfo, targetPopSize = self.getCostCoverageInfoAndTargetPopSize()
         initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)
         currentTotalBudget = sum(initialAllocation)            

@@ -21,7 +21,7 @@ country = 'Bangladesh'
 startYear = 2000
 
 dataFilename = '../input_spreadsheets/%s/validation/Input_%s_%i_1604.xlsx'%(country, country, startYear)
-inputData = data.getDataFromSpreadsheet(dataFilename, helper.keyList)
+inputData = data.readSpreadsheet(dataFilename, helper.keyList)
 numAgeGroups = len(helper.keyList['ages'])
 year1 = 3871841
 year2 = 3731124

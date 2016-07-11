@@ -13,7 +13,7 @@ import helper as helper
 
 def setUpDataModelConstantsParameters():
     helperTests = helper.Helper()
-    testData = data.getDataFromSpreadsheet('input_spreadsheets/InputForCode_tests.xlsx', helperTests.keyList)
+    testData = data.readSpreadsheet('input_spreadsheets/InputForCode_tests.xlsx', helperTests.keyList)
     testModel, testDerived, testParams = helperTests.setupModelConstantsParameters(testData)
     return testData, testModel, testDerived, testParams, helperTests.keyList
 

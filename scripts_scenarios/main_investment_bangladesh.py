@@ -26,7 +26,7 @@ version = '1604'
 
 dataFilename = '../input_spreadsheets/%s/InputForCode_%s.xlsx'%(country, country)
 #dataFilename = '../input_spreadsheets/%s/Input_%s_%i_%s.xlsx'%(country, country, startYear, version)
-inputData = dataCode.getDataFromSpreadsheet(dataFilename, helper.keyList)
+inputData = dataCode.readSpreadsheet(dataFilename, helper.keyList)
 numAgeGroups = len(helper.keyList['ages'])
 
 numsteps = 180
@@ -106,8 +106,8 @@ for ichoose in range(len(inputData.interventionList)):
         targetPopSize[chosenIntervention] += inputData.targetPopulation[chosenIntervention][ageName] * modelX.listOfAgeCompartments[iAge].getTotalPopulation()
     targetPopSize[chosenIntervention] +=     inputData.targetPopulation[chosenIntervention]['pregnant women'] * modelX.fertileWomen.populationSize
     costCovParams = {}
-    costCovParams['unitcost']   = array([dcp(inputData.interventionCostCoverage[chosenIntervention]["unit cost"])])
-    costCovParams['saturation'] = array([dcp(inputData.interventionCostCoverage[chosenIntervention]["saturation coverage"])])
+    costCovParams['unitcost']   = array([dcp(inputData.costSaturation[chosenIntervention]["unit cost"])])
+    costCovParams['saturation'] = array([dcp(inputData.costSaturation[chosenIntervention]["saturation coverage"])])
     additionalPeopleCovered   = costCov.function(investment, costCovParams, targetPopSize[chosenIntervention]) # function from HIV
     additionalFractionCovered = additionalPeopleCovered / targetPopSize[chosenIntervention]
     print "additional coverage: %g"%(additionalFractionCovered)
