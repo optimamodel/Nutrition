@@ -191,29 +191,14 @@ class Optimisation:
         
         
     def oneModelRunWithOutput(self, allocationDictionary):
-        import data 
+        import costcov
+        import data
         from copy import deepcopy as dcp
         from numpy import array
-        import costcov
         costCov = costcov.Costcov()
-        spreadsheetData = data.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
-        mothers = self.helper.makePregnantWomen(spreadsheetData) 
-        numAgeGroups = len(self.helper.keyList['ages'])
-        agePopSizes  = self.helper.makeAgePopSizes(spreadsheetData)  
-        targetPopSize = {}
-        costCoverageInfo = {}
-        for intervention in spreadsheetData.interventionList:
-            targetPopSize[intervention] = 0.
-            costCoverageInfo[intervention] = {}
-            for iAge in range(numAgeGroups):
-                ageName = self.helper.keyList['ages'][iAge]
-                targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * agePopSizes[iAge]
-            targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['pregnant women'] * mothers.populationSize
-            costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
-            costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
-        # set up the model    
+        spreadsheetData = data.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
         model, derived, params = self.helper.setupModelConstantsParameters(spreadsheetData)
-        # calculate coverage (%)
+        costCoverageInfo, targetPopSize = self.getCostCoverageInfoAndTargetPopSize()
         newCoverages = {}    
         for i in range(0, len(spreadsheetData.interventionList)):
             intervention = spreadsheetData.interventionList[i]
@@ -233,6 +218,27 @@ class Optimisation:
             modelList.append(modelThisTimeStep)
         return modelList    
     
+        
+    def getCostCoverageInfoAndTargetPopSize(self):
+        import data 
+        from copy import deepcopy as dcp
+        from numpy import array
+        spreadsheetData = data.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
+        mothers = self.helper.makePregnantWomen(spreadsheetData) 
+        numAgeGroups = len(self.helper.keyList['ages'])
+        agePopSizes  = self.helper.makeAgePopSizes(spreadsheetData)  
+        targetPopSize = {}
+        costCoverageInfo = {}
+        for intervention in spreadsheetData.interventionList:
+            targetPopSize[intervention] = 0.
+            costCoverageInfo[intervention] = {}
+            for iAge in range(numAgeGroups):
+                ageName = self.helper.keyList['ages'][iAge]
+                targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * agePopSizes[iAge]
+            targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['pregnant women'] * mothers.populationSize
+            costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["unit cost"])])
+            costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.interventionCostCoverage[intervention]["saturation coverage"])])
+        return costCoverageInfo, targetPopSize
     
     
     def generateBOCVectors(self, filename, cascadeValues, outcome):
