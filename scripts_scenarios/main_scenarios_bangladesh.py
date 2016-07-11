@@ -21,7 +21,7 @@ country = 'Bangladesh'
 startYear = 2016
 
 dataFilename = '../input_spreadsheets/%s/InputForCode_%s.xlsx'%(country,country)
-inputData = data.getDataFromSpreadsheet(dataFilename, helper.keyList)
+inputData = data.readSpreadsheet(dataFilename, helper.keyList)
 numAgeGroups = len(helper.keyList['ages'])
 
 numsteps = 180

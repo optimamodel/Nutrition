@@ -52,7 +52,7 @@ class Data:
     
 
     
-def getDataFromSpreadsheet(fileName, keyList):
+def readSpreadsheet(fileName, keyList):
     import pandas
     Location = fileName
     ages = keyList['ages']

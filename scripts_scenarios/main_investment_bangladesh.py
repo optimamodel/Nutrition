@@ -26,7 +26,7 @@ version = '1604'
 
 dataFilename = '../input_spreadsheets/%s/InputForCode_%s.xlsx'%(country, country)
 #dataFilename = '../input_spreadsheets/%s/Input_%s_%i_%s.xlsx'%(country, country, startYear, version)
-inputData = dataCode.getDataFromSpreadsheet(dataFilename, helper.keyList)
+inputData = dataCode.readSpreadsheet(dataFilename, helper.keyList)
 numAgeGroups = len(helper.keyList['ages'])
 
 numsteps = 180
