@@ -10,7 +10,7 @@ cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]
 # BANGLADESH DEATHS
 cascade_deaths = []
 for cascade in cascadeValues:
-    filename = '../Results2016Jun/Bangladesh/deaths/v5/Bangladesh_cascade_deaths_v5_'+str(cascade)+'.pkl'
+    filename = '../Results2016Jul/Bangladesh/deaths/v1/Bangladesh_cascade_deaths_v1_'+str(cascade)+'.pkl'
     infile = open(filename, 'rb')
     thisDict = {cascade:pickle.load(infile)}
     cascade_deaths.append(thisDict)
@@ -20,7 +20,7 @@ for cascade in cascadeValues:
 # BANGLADESH STUNTING
 cascade_stunting = []
 for cascade in cascadeValues:
-    filename = '../Results2016Jun/Bangladesh/stunting/v5/Bangladesh_cascade_stunting_v5_'+str(cascade)+'.pkl'
+    filename = '../Results2016Jul/Bangladesh/stunting/v1/Bangladesh_cascade_stunting_v1_'+str(cascade)+'.pkl'
     infile = open(filename, 'rb')
     thisDict = {cascade:pickle.load(infile)}
     cascade_stunting.append(thisDict)

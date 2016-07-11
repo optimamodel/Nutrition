@@ -10,21 +10,11 @@ moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
 import optimisation
 
-timestep = 1./12. 
-numsteps = 180
-ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
-birthOutcomes = ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"]
-wastingList = ["normal", "mild", "moderate", "high"]
-stuntingList = ["normal", "mild", "moderate", "high"]
-breastfeedingList = ["exclusive", "predominant", "partial", "none"]
-keyList = [ages, birthOutcomes, wastingList, stuntingList, breastfeedingList]
-ageGroupSpans = [1., 5., 6., 12., 36.] # number of months in each age group
-agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] # fraction of people aging out per MONTH (WARNING use ageSpans to define this)
 numModelSteps = 180
 
 # NATIONAL
-dataSpreadsheetName = '../InputForCode_Bangladesh.xlsx'
-thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, timestep, numModelSteps, ages, birthOutcomes, wastingList, stuntingList, breastfeedingList, ageGroupSpans, agingRateList)
+dataSpreadsheetName = '../input_spreadsheets/Bangladesh/InputForCode_Bangladesh.xlsx'
+thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps)
 initialAllocation = thisOptimisation.getInitialAllocationDictionary()
 
 # GEOSPATIAL
@@ -40,6 +30,6 @@ spreadsheetList = [spreadsheet0, spreadsheet1, spreadsheet2, spreadsheet3, sprea
 geospatialInitialAllocation = []
 for region in range(0,7):
     dataSpreadsheetName = spreadsheetList[region]
-    thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, timestep, numModelSteps, ages, birthOutcomes, wastingList, stuntingList, breastfeedingList, ageGroupSpans, agingRateList)
+    thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps)
     allocation = thisOptimisation.getInitialAllocationDictionary()
     geospatialInitialAllocation.append( {'region '+str(region):allocation} )
