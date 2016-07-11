@@ -235,9 +235,27 @@ class Optimisation:
     
     
     
-
-
-
-
+    def generateBOCVectors(self, filename, cascadeValues, outcome):
+        import pickle
+        import data
+        spreadsheetData = data.getDataFromSpreadsheet(self.dataSpreadsheetName, self.helper.keyList) 
+        initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)
+        currentTotalBudget = sum(initialAllocation)            
+        
+        spendingVector = []        
+        outcomeVector = []
+        for cascade in cascadeValues:
+            spendingVector.append(cascade * currentTotalBudget)
+            filename = filename+str(cascade)+'.pkl'
+            infile = open(filename, 'rb')
+            thisAllocation = pickle.load(infile)
+            infile.close()
+            modelOutput = self.oneModelRunWithOutput(thisAllocation)
+            if outcome == 'deaths':    
+                outcomeVector.append(modelOutput[self.numModelSteps-1].getTotalCumulativeDeaths()[0])
+            if outcome == 'stunting':    
+                outcomeVector.append(modelOutput[self.numModelSteps-1].getCumulativeAgingOutStunted()[0])    
+                
+        return spendingVector, outcomeVector        
 
                 
