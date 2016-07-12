@@ -104,7 +104,7 @@ for ichoose in range(len(inputData.interventionList)):
     for iAge in range(numAgeGroups):
         ageName = helper.keyList['ages'][iAge]
         targetPopSize[chosenIntervention] += inputData.targetPopulation[chosenIntervention][ageName] * modelX.listOfAgeCompartments[iAge].getTotalPopulation()
-    targetPopSize[chosenIntervention] +=     inputData.targetPopulation[chosenIntervention]['pregnant women'] * modelX.fertileWomen.populationSize
+    targetPopSize[chosenIntervention] +=     inputData.targetPopulation[chosenIntervention]['pregnant women'] * modelX.PregnantWomen.populationSize
     costCovParams = {}
     costCovParams['unitcost']   = array([dcp(inputData.costSaturation[chosenIntervention]["unit cost"])])
     costCovParams['saturation'] = array([dcp(inputData.costSaturation[chosenIntervention]["saturation coverage"])])
