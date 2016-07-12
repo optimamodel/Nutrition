@@ -8,18 +8,51 @@ import pickle
 multiples = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0] 
 
 country = 'Bangladesh'
-rootfolder = '../../Results2016Jun/%s'%(country)
-version = 'v5'
+root = '../../Results2016Jun/%s'%(country)
 
+
+def reformat_results(results):
+    from numpy import array
+    increments = results.keys()
+    spendingsets = results.values()
+    rows = []
+    for i in range(len(increments)):
+        chunk = spendingsets[i]
+        values = array(chunk.values()).tolist()
+        valarray = [item for sublist in values for item in sublist]
+        valarray.insert(0, increments[i])
+        rows.append(valarray)
+    rows.sort()
+    prognames = spendingsets[0].keys()
+    prognames.insert(0, 'Multiple')
+    return prognames, rows
+
+
+
+# NATIONAL
+version = 'v5'
 cascade = {}
-for objective in ['deaths','stunting']:
-    cascade[objective] = []
+for outcome in ['deaths','stunting']:
+    cascade[outcome] = {}
     for multiple in multiples:
-        filename = '%s/%s/%s/%s_cascade_%s_%s_%s.pkl'%(rootfolder, country, objective, country, objective, version, str(multiple))
+        filename = '%s/%s/%s/%s_cascade_%s_%s_%s.pkl'%(root, outcome, version, country, outcome, version, str(multiple))
         infile = open(filename, 'rb')
-        thisDict = {multiple:pickle.load(infile)}
-        cascade[objective].append(thisDict)
+        result = pickle.load(infile)
+        cascade[outcome][multiple] = result
         infile.close()
+
+    prognames, rows = reformat_results(cascade[outcome])
+
+    import csv
+    outfilename = '%s/cascade_min_%s.csv'%(root, outcome)
+    with open(outfilename, "wb") as f:
+        writer = csv.writer(f)
+        writer.writerow(prognames)
+        writer.writerows(rows)
+
+
+# GEOSPATIAL
+
 
 
 
