@@ -6,7 +6,7 @@ Created on Wed Jun 01 2016
 """
 from __future__ import division
 from copy import deepcopy as dcp
-import pickle as pickle
+import pickle
 from numpy import array
 
 import os, sys
@@ -24,21 +24,22 @@ country = 'Kenya'
 startYear = 2016
 
 dataFilename = '../input_spreadsheets/%s/Input_%s_%i.xlsx'%(country, country, startYear)
-inputData = data.readSpreadsheet(dataFilename, keyList)
+inputData = data.readSpreadsheet(dataFilename, helper.keyList)
 numAgeGroups = len(helper.keyList['ages'])
 
 numsteps = 180
 timespan = helper.keyList['timestep'] * float(numsteps)
 
+print "Baseline coverage of: "
 for intervention in inputData.interventionList:
-    print "Baseline coverage of %s = %g"%(intervention, inputData.coverage[intervention])
+    print "%s = %g"%(intervention,inputData.coverage[intervention])
 
 plotData = []
 run = 0
 #------------------------------------------------------------------------    
 # DEFAULT RUN WITH NO CHANGES TO INTERVENTIONS
 nametag = "Baseline"
-pickleFilename = '%s_Default.pkl'%(country)
+pickleFilename = '%s_Default_Investment.pkl'%(country)
 plotcolor = 'grey'
 
 print "\n"+nametag
@@ -79,7 +80,7 @@ for ichoose in range(len(inputData.interventionList)):
     chosenIntervention = inputData.interventionList[ichoose]
     nametag = chosenIntervention
     pickleFilename = '%s_Intervention%i_Invest.pkl'%(country,ichoose)
-    plotcolor = (1.0-0.13*run, 1.0-0.3*abs(run-4), 0.0+0.13*run)
+    plotcolor = (1.0-0.13*run, 1.0-0.24*abs(run-4), 0.0+0.13*run)
     print "\n %s: increase investment by BDT %g"%(nametag,investmentIncrease)
 
     modelX, derived, params = helper.setupModelConstantsParameters(inputData)
@@ -101,7 +102,7 @@ for ichoose in range(len(inputData.interventionList)):
     for iAge in range(numAgeGroups):
         ageName = helper.keyList['ages'][iAge]
         targetPopSize[chosenIntervention] += inputData.targetPopulation[chosenIntervention][ageName] * modelX.listOfAgeCompartments[iAge].getTotalPopulation()
-    targetPopSize[chosenIntervention] +=     inputData.targetPopulation[chosenIntervention]['pregnant women'] * modelX.PregnantWomen.populationSize
+    targetPopSize[chosenIntervention] +=     inputData.targetPopulation[chosenIntervention]['pregnant women'] * modelX.pregnantWomen.populationSize
     costCovParams = {}
     costCovParams['unitcost']   = array([dcp(inputData.costSaturation[chosenIntervention]["unit cost"])])
     costCovParams['saturation'] = array([dcp(inputData.costSaturation[chosenIntervention]["saturation coverage"])])
