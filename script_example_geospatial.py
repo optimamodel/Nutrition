@@ -17,5 +17,4 @@ optimise = 'deaths'
 filename = 'region0_cascade_deaths_'
 thisOptimisation.performCascadeOptimisation(optimise, MCSampleSize, filename, cascadeValues)
 
-BOC_deaths_spending, BOC_deaths_outcome = thisOptimisation.generateBOCVectors(filename, cascadeValues, 'deaths')
-BOC_stunting_spending, BOC_stunting_outcome = thisOptimisation.generateBOCVectors(filename, cascadeValues, 'stunting')
+BOC_spending, BOC_outcome = thisOptimisation.generateBOCVectors(filename, cascadeValues, optimise)
