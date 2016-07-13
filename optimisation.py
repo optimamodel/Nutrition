@@ -190,7 +190,7 @@ class Optimisation:
         return costCoverageInfo, targetPopSize
     
     
-    def generateBOCVectors(self, filename, cascadeValues, outcome):
+    def generateBOCVectors(self, filenameStem, cascadeValues, outcome):
         import pickle
         import data
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList) 
@@ -201,7 +201,7 @@ class Optimisation:
         outcomeVector = []
         for cascade in cascadeValues:
             spendingVector.append(cascade * currentTotalBudget)
-            filename = filename+str(cascade)+'.pkl'
+            filename = filenameStem+str(cascade)+'.pkl'
             infile = open(filename, 'rb')
             thisAllocation = pickle.load(infile)
             infile.close()
@@ -212,4 +212,10 @@ class Optimisation:
                 outcomeVector.append(modelOutput[self.numModelSteps-1].getCumulativeAgingOutStunted()[0])    
         return spendingVector, outcomeVector        
 
-                
+
+#    def geospatialObjectiveFunction(self, budgetList, BOCList, optimise):
+#        outcomeList = []
+#        for region in range(0, len(BOCList)):
+#            outcome = # do pchip thing
+#            outcomeList.append(outcome)
+#                
