@@ -6,15 +6,14 @@ Created on Wed Jun  8 13:58:29 2016
 """
 def getTotalInitialAllocation(data, costCoverageInfo, targetPopSize):
     import costcov
-    from numpy import array
     from copy import deepcopy as dcp
     costCov = costcov.Costcov()
     allocation = []
     for intervention in data.interventionList:
-        coverageFraction = array([dcp(data.coverage[intervention])])
+        coverageFraction = dcp(data.coverage[intervention])
         coverageNumber = coverageFraction * targetPopSize[intervention]
         if coverageNumber == 0:
-            spending = array([0.])
+            spending = 0.
         else:
             spending = costCov.inversefunction(coverageNumber, costCoverageInfo[intervention], targetPopSize[intervention])  
         allocation.append(spending)
@@ -28,7 +27,6 @@ def rescaleAllocation(totalBudget, proposalAllocation):
 def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimise, numModelSteps, targetPopSize, data):
     import helper 
     import costcov
-    from numpy import array
     helper = helper.Helper()
     costCov = costcov.Costcov()
     model, derived, params = helper.setupModelConstantsParameters(data)
@@ -40,7 +38,7 @@ def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimis
     newCoverages = {}    
     for i in range(0, len(data.interventionList)):
         intervention = data.interventionList[i]
-        newCoverages[intervention] = costCov.function(array([scaledproposalAllocation[i]]), costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
+        newCoverages[intervention] = costCov.function(scaledproposalAllocation[i], costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
     # run the model
     timestepsPre = 12
     for t in range(timestepsPre):
@@ -69,7 +67,7 @@ class OutputClass:
             
 class Optimisation:
     def __init__(self, dataSpreadsheetName, numModelSteps):
-        import helper as helper        
+        import helper       
         self.dataSpreadsheetName = dataSpreadsheetName
         self.numModelSteps = numModelSteps
         self.helper = helper.Helper()
@@ -143,7 +141,6 @@ class Optimisation:
         import costcov
         import data
         from copy import deepcopy as dcp
-        from numpy import array
         costCov = costcov.Costcov()
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
         model, derived, params = self.helper.setupModelConstantsParameters(spreadsheetData)
@@ -151,7 +148,7 @@ class Optimisation:
         newCoverages = {}    
         for i in range(0, len(spreadsheetData.interventionList)):
             intervention = spreadsheetData.interventionList[i]
-            newCoverages[intervention] = costCov.function(array([allocationDictionary[intervention][0]]), costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
+            newCoverages[intervention] = costCov.function(allocationDictionary[intervention], costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
         # run the model
         modelList = []    
         timestepsPre = 12
@@ -171,7 +168,6 @@ class Optimisation:
     def getCostCoverageInfoAndTargetPopSize(self):
         import data 
         from copy import deepcopy as dcp
-        from numpy import array
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         mothers = self.helper.makePregnantWomen(spreadsheetData) 
         numAgeGroups = len(self.helper.keyList['ages'])
@@ -185,8 +181,8 @@ class Optimisation:
                 ageName = self.helper.keyList['ages'][iAge]
                 targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * agePopSizes[iAge]
             targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['pregnant women'] * mothers.populationSize
-            costCoverageInfo[intervention]['unitcost']   = array([dcp(spreadsheetData.costSaturation[intervention]["unit cost"])])
-            costCoverageInfo[intervention]['saturation'] = array([dcp(spreadsheetData.costSaturation[intervention]["saturation coverage"])])
+            costCoverageInfo[intervention]['unitcost']   = dcp(spreadsheetData.costSaturation[intervention]["unit cost"])
+            costCoverageInfo[intervention]['saturation'] = dcp(spreadsheetData.costSaturation[intervention]["saturation coverage"])
         return costCoverageInfo, targetPopSize
     
     
