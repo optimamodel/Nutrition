@@ -10,6 +10,7 @@ class Costcov():
 
     def function(self, x, costCovInfo, popsize, eps=None):
         '''Returns coverage in a given year for a given spending amount.'''
+        x = array([x])
         u = array(costCovInfo['unitcost'])
         s = array(costCovInfo['saturation'])
         if eps is None: eps = 1.e-3 #Settings().eps # Warning, use project-nonspecific eps
@@ -17,7 +18,9 @@ class Costcov():
 
         nyrs,npts = len(u),len(x)
         eps = array([eps]*npts)
-        if nyrs==npts: return maximum((2*s/(1+exp(-2*x/(popsize*s*u)))-s)*popsize,eps)
+        if nyrs==npts: 
+            y = maximum((2*s/(1+exp(-2*x/(popsize*s*u)))-s)*popsize,eps)
+            return y[0]
         else:
             y = zeros((nyrs,npts))
             for yr in range(nyrs):
@@ -26,13 +29,16 @@ class Costcov():
 
 
     def inversefunction(self, y, costCovInfo, popsize):
+        y = array([y])
         '''Returns cost in a given year for a given coverage amount.'''
         u = array(costCovInfo['unitcost'])
         s = array(costCovInfo['saturation'])
         if isinstance(popsize,(float,int)): popsize = array([popsize])
         
         nyrs,npts = len(u),len(y)
-        if nyrs==npts: return -0.5*popsize*s*u*log((s*popsize-y)/(s*popsize+y))
+        if nyrs==npts: 
+            x = -0.5*popsize*s*u*log((s*popsize-y)/(s*popsize+y))
+            return x[0]    
         else: raise Exception('y should be the same length as params.')
         
         
