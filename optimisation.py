@@ -23,8 +23,21 @@ def rescaleAllocation(totalBudget, proposalAllocation):
     scaleRatio = totalBudget / sum(proposalAllocation)
     rescaledAllocation = [x * scaleRatio for x in proposalAllocation]
     return rescaledAllocation 
+    
+def getTargetPopSizeFromModelInstance(dataSpreadsheetName, keyList, model):    
+    import data 
+    spreadsheetData = data.readSpreadsheet(dataSpreadsheetName, keyList)        
+    numAgeGroups = len(keyList['ages'])
+    targetPopSize = {}
+    for intervention in spreadsheetData.interventionList:
+        targetPopSize[intervention] = 0.
+        for iAge in range(numAgeGroups):
+            ageName = keyList['ages'][iAge]
+            targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * model.listOfAgeCompartments[iAge].getTotalPopulation()
+        targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['pregnant women'] * model.pregnantWomen.populationSize
+    return targetPopSize    
 
-def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimise, numModelSteps, targetPopSize, data):
+def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimise, numModelSteps, dataSpreadsheetName, data):
     import helper 
     import costcov
     helper = helper.Helper()
@@ -34,16 +47,16 @@ def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimis
         scaledproposalAllocation = proposalAllocation
     else:    
         scaledproposalAllocation = rescaleAllocation(totalBudget, proposalAllocation)
-    # calculate coverage (%)
-    newCoverages = {}    
-    for i in range(0, len(data.interventionList)):
-        intervention = data.interventionList[i]
-        newCoverages[intervention] = costCov.function(scaledproposalAllocation[i], costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
     # run the model
     timestepsPre = 12
     for t in range(timestepsPre):
         model.moveOneTimeStep()    
-    # update coverages after 1 year    
+    # update coverages after 1 year   
+    targetPopSize = getTargetPopSizeFromModelInstance(dataSpreadsheetName, helper.keyList, model)   
+    newCoverages = {}    
+    for i in range(0, len(data.interventionList)):
+        intervention = data.interventionList[i]
+        newCoverages[intervention] = costCov.function(scaledproposalAllocation[i], costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
     model.updateCoverages(newCoverages)
     for t in range(numModelSteps - timestepsPre):
         model.moveOneTimeStep()
@@ -75,24 +88,26 @@ class Optimisation:
     def performSingleOptimisation(self, optimise, MCSampleSize, filename):
         import data 
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
-        costCoverageInfo, targetPopSize = self.getCostCoverageInfoAndTargetPopSize()        
-        initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)
+        costCoverageInfo = self.getCostCoverageInfo()  
+        initialTargetPopSize = self.getInitialTargetPopSize()
+        initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
         totalBudget = sum(initialAllocation)
         xmin = [0.] * len(initialAllocation)
-        args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'numModelSteps':self.numModelSteps, 'targetPopSize':targetPopSize, 'data':spreadsheetData}    
+        args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
         self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, filename+'.pkl')
         
         
     def performCascadeOptimisation(self, optimise, MCSampleSize, filename, cascadeValues):
         import data 
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
-        costCoverageInfo, targetPopSize = self.getCostCoverageInfoAndTargetPopSize()            
-        initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)
+        costCoverageInfo = self.getCostCoverageInfo()  
+        initialTargetPopSize = self.getInitialTargetPopSize()          
+        initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
         currentTotalBudget = sum(initialAllocation)
         xmin = [0.] * len(initialAllocation)
         for cascade in cascadeValues:
             totalBudget = currentTotalBudget * cascade
-            args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'numModelSteps':self.numModelSteps, 'targetPopSize':targetPopSize, 'data':spreadsheetData}    
+            args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
             self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, filename+str(cascade)+'.pkl')    
 
         
@@ -127,7 +142,8 @@ class Optimisation:
     def getInitialAllocationDictionary(self):
         import data 
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
-        costCoverageInfo, targetPopSize = self.getCostCoverageInfoAndTargetPopSize()        
+        costCoverageInfo = self.getCostCoverageInfo()
+        targetPopSize = self.getInitialTargetPopSize()        
         initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)        
         initialAllocationDictionary = {}
         for i in range(0, len(spreadsheetData.interventionList)):
@@ -144,11 +160,7 @@ class Optimisation:
         costCov = costcov.Costcov()
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
         model, derived, params = self.helper.setupModelConstantsParameters(spreadsheetData)
-        costCoverageInfo, targetPopSize = self.getCostCoverageInfoAndTargetPopSize()
-        newCoverages = {}    
-        for i in range(0, len(spreadsheetData.interventionList)):
-            intervention = spreadsheetData.interventionList[i]
-            newCoverages[intervention] = costCov.function(allocationDictionary[intervention], costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
+        costCoverageInfo = self.getCostCoverageInfo()
         # run the model
         modelList = []    
         timestepsPre = 12
@@ -157,6 +169,11 @@ class Optimisation:
             modelThisTimeStep = dcp(model)
             modelList.append(modelThisTimeStep)
         # update coverages after 1 year    
+        targetPopSize = getTargetPopSizeFromModelInstance(self.dataSpreadsheetName, self.helper.keyList, model)
+        newCoverages = {}    
+        for i in range(0, len(spreadsheetData.interventionList)):
+            intervention = spreadsheetData.interventionList[i]
+            newCoverages[intervention] = costCov.function(allocationDictionary[intervention], costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
         model.updateCoverages(newCoverages)
         for t in range(self.numModelSteps - timestepsPre):
             model.moveOneTimeStep()
@@ -165,25 +182,31 @@ class Optimisation:
         return modelList    
     
         
-    def getCostCoverageInfoAndTargetPopSize(self):
+    def getCostCoverageInfo(self):
         import data 
         from copy import deepcopy as dcp
+        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
+        costCoverageInfo = {}
+        for intervention in spreadsheetData.interventionList:
+            costCoverageInfo[intervention] = {}
+            costCoverageInfo[intervention]['unitcost']   = dcp(spreadsheetData.costSaturation[intervention]["unit cost"])
+            costCoverageInfo[intervention]['saturation'] = dcp(spreadsheetData.costSaturation[intervention]["saturation coverage"])
+        return costCoverageInfo
+        
+    def getInitialTargetPopSize(self):
+        import data 
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         mothers = self.helper.makePregnantWomen(spreadsheetData) 
         numAgeGroups = len(self.helper.keyList['ages'])
         agePopSizes  = self.helper.makeAgePopSizes(spreadsheetData)  
         targetPopSize = {}
-        costCoverageInfo = {}
         for intervention in spreadsheetData.interventionList:
             targetPopSize[intervention] = 0.
-            costCoverageInfo[intervention] = {}
             for iAge in range(numAgeGroups):
                 ageName = self.helper.keyList['ages'][iAge]
                 targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * agePopSizes[iAge]
             targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['pregnant women'] * mothers.populationSize
-            costCoverageInfo[intervention]['unitcost']   = dcp(spreadsheetData.costSaturation[intervention]["unit cost"])
-            costCoverageInfo[intervention]['saturation'] = dcp(spreadsheetData.costSaturation[intervention]["saturation coverage"])
-        return costCoverageInfo, targetPopSize
+        return targetPopSize    
     
     
     def generateBOCVectors(self, filenameStem, cascadeValues, outcome):
@@ -210,6 +233,7 @@ class Optimisation:
 
 
 #    def geospatialObjectiveFunction(self, budgetList, BOCList, optimise):
+#    MAYBE THIS BELONGS OUTSIDE OF THE CLASS?    
 #        outcomeList = []
 #        for region in range(0, len(BOCList)):
 #            outcome = # do pchip thing
