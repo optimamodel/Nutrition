@@ -41,8 +41,7 @@ numberOfDeaths_optimiseStunting = []
 numberOfDeaths_baseline.append(baseline[0].getTotalCumulativeDeaths())
 numberOfDeaths_optimiseDeaths.append(optimiseDeaths[0].getTotalCumulativeDeaths())
 numberOfDeaths_optimiseStunting.append(optimiseStunting[0].getTotalCumulativeDeaths())
-# do this way due to weird differences in array([]) output
-for model in range(1, 13):
+for model in range(1, len(baseline)):
     difference = baseline[model].getTotalCumulativeDeaths() - baseline[model - 1].getTotalCumulativeDeaths()
     numberOfDeaths_baseline.append(difference)
     
@@ -51,19 +50,6 @@ for model in range(1, 13):
     
     difference = optimiseStunting[model].getTotalCumulativeDeaths() - optimiseStunting[model - 1].getTotalCumulativeDeaths()
     numberOfDeaths_optimiseStunting.append(difference) 
-for model in range(13, len(baseline)):
-    difference = baseline[model].getTotalCumulativeDeaths()[0] - baseline[model - 1].getTotalCumulativeDeaths()[0]
-    numberOfDeaths_baseline.append(difference) 
-    
-    difference = optimiseDeaths[model].getTotalCumulativeDeaths()[0] - optimiseDeaths[model - 1].getTotalCumulativeDeaths()[0]
-    numberOfDeaths_optimiseDeaths.append(difference)    
-    
-    difference = optimiseStunting[model].getTotalCumulativeDeaths()[0] - optimiseStunting[model - 1].getTotalCumulativeDeaths()[0]
-    numberOfDeaths_optimiseStunting.append(difference) 
-
-numberOfDeaths_baseline[12] = numberOfDeaths_baseline[12][0]
-numberOfDeaths_optimiseDeaths[12] = numberOfDeaths_optimiseDeaths[12][0]
-numberOfDeaths_optimiseStunting[12] = numberOfDeaths_optimiseStunting[12][0]
 
 
 # GET Y AXIS FOR FRACTION OF CHILDREN STUNTED
@@ -118,15 +104,10 @@ agingOutStunted_baselineYearly = []
 agingOutStunted_optimiseDeathsYearly = []
 agingOutStunted_optimiseStuntingYearly = []
 numYears = len(baseline)/12
-for i in range(0, 1):
+for i in range(0, numYears):
     step = i*12
     agingOutStunted_baselineYearly.append( sum(agingOutStunted_baseline[step:(12+step)]) )
     agingOutStunted_optimiseDeathsYearly.append( sum(agingOutStunted_optimiseDeaths[step:(12+step)]) )
     agingOutStunted_optimiseStuntingYearly.append( sum(agingOutStunted_optimiseStunting[step:(12+step)]) ) 
 
-for i in range(1, numYears):
-    step = i*12
-    agingOutStunted_baselineYearly.append( sum(agingOutStunted_baseline[step:(12+step)])[0] )
-    agingOutStunted_optimiseDeathsYearly.append( sum(agingOutStunted_optimiseDeaths[step:(12+step)])[0] )
-    agingOutStunted_optimiseStuntingYearly.append( sum(agingOutStunted_optimiseStunting[step:(12+step)])[0] )    
     
