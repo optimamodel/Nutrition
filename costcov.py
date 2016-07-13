@@ -11,8 +11,8 @@ class Costcov():
     def function(self, x, costCovInfo, popsize, eps=None):
         '''Returns coverage in a given year for a given spending amount.'''
         x = array([x])
-        u = array(costCovInfo['unitcost'])
-        s = array(costCovInfo['saturation'])
+        u = array([costCovInfo['unitcost']])
+        s = array([costCovInfo['saturation']])
         if eps is None: eps = 1.e-3 #Settings().eps # Warning, use project-nonspecific eps
         popsize = array([popsize])
 
@@ -31,8 +31,8 @@ class Costcov():
     def inversefunction(self, y, costCovInfo, popsize):
         y = array([y])
         '''Returns cost in a given year for a given coverage amount.'''
-        u = array(costCovInfo['unitcost'])
-        s = array(costCovInfo['saturation'])
+        u = array([costCovInfo['unitcost']])
+        s = array([costCovInfo['saturation']])
         if isinstance(popsize,(float,int)): popsize = array([popsize])
         
         nyrs,npts = len(u),len(y)
