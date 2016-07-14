@@ -213,7 +213,8 @@ class Optimisation:
         import pickle
         import data
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList) 
-        costCoverageInfo, targetPopSize = self.getCostCoverageInfoAndTargetPopSize()
+        costCoverageInfo = self.getCostCoverageInfo()
+        targetPopSize = self.getInitialTargetPopSize()
         initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)
         currentTotalBudget = sum(initialAllocation)            
         spendingVector = []        
