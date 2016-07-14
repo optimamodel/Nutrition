@@ -96,6 +96,14 @@ class Optimisation:
         args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
         self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, filename+'.pkl')
         
+    def performSingleOptimisationForGivenTotalBudget(self, optimise, MCSampleSize, filename, totalBudget):
+        import data 
+        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
+        costCoverageInfo = self.getCostCoverageInfo()  
+        xmin = [0.] * len(spreadsheetData.interventionList)
+        args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
+        self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, filename+'.pkl')    
+        
         
     def performCascadeOptimisation(self, optimise, MCSampleSize, filename, cascadeValues):
         import data 
@@ -227,16 +235,102 @@ class Optimisation:
             infile.close()
             modelOutput = self.oneModelRunWithOutput(thisAllocation)
             if outcome == 'deaths':    
-                outcomeVector.append(modelOutput[self.numModelSteps-1].getTotalCumulativeDeaths()[0])
+                outcomeVector.append(modelOutput[self.numModelSteps-1].getTotalCumulativeDeaths())
             if outcome == 'stunting':    
-                outcomeVector.append(modelOutput[self.numModelSteps-1].getCumulativeAgingOutStunted()[0])    
+                outcomeVector.append(modelOutput[self.numModelSteps-1].getCumulativeAgingOutStunted())    
         return spendingVector, outcomeVector        
 
 
-#    def geospatialObjectiveFunction(self, budgetList, BOCList, optimise):
-#    MAYBE THIS BELONGS OUTSIDE OF THE CLASS?    
-#        outcomeList = []
-#        for region in range(0, len(BOCList)):
-#            outcome = # do pchip thing
-#            outcomeList.append(outcome)
-#                
+
+class GeospatialOptimisation:
+    def __init__(self, regionSpreadsheetList, cascadeFilenameList, numModelSteps, cascadeValues, optimise):
+        self.regionSpreadsheetList = regionSpreadsheetList
+        self.cascadeFilenameList = cascadeFilenameList
+        self.numModelSteps = numModelSteps
+        self.cascadeValues = cascadeValues
+        self.optimise = optimise
+        self.numRegions = len(regionSpreadsheetList)        
+        
+    def generateAllRegionsBOC(self):
+        import optimisation
+        regionalBOCs = {}
+        regionalBOCs['spending'] = []
+        regionalBOCs['outcome'] = []        
+        for region in range(0, self.numRegions):
+            thisSpreadsheet = self.regionSpreadsheetList[region]
+            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps)
+            filename = self.cascadeFilenameList[region]
+            spending, outcome = thisOptimisation.generateBOCVectors(filename, self.cascadeValues, self.optimise)            
+            regionalBOCs['spending'].append(spending)
+            regionalBOCs['outcome'].append(outcome)
+        return regionalBOCs    
+        
+    def getTotalNationalBudget(self):
+        import optimisation
+        import data
+        regionalBudgets = []
+        for region in range(0, self.numRegions):
+            thisSpreadsheet = self.regionSpreadsheetList[region]
+            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps)        
+            spreadsheetData = data.readSpreadsheet(thisSpreadsheet, thisOptimisation.helper.keyList)             
+            costCoverageInfo = thisOptimisation.getCostCoverageInfo()  
+            initialTargetPopSize = thisOptimisation.getInitialTargetPopSize()          
+            initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
+            regionTotalBudget = sum(initialAllocation)
+            regionalBudgets.append(regionTotalBudget)
+        nationalTotalBudget = sum(regionalBudgets)
+        return nationalTotalBudget
+        
+    def getOptimisedRegionalBudgetList(self, geoMCSampleSize):
+        import asd
+        import numpy as np
+        xmin = [0.] * len(self.numRegions)
+        regionalBOCs = self.generateAllRegionsBOC()
+        totalBudget = self.getTotalNationalBudget()
+        scenarioMonteCarloOutput = []
+        for r in range(0, geoMCSampleSize):
+            proposalSpendingList = np.random.rand(self.numRegions)
+            args = {'regionalBOCs':regionalBOCs, 'totalBudget':totalBudget}
+            budgetBest, fval, exitflag, output = asd.asd(geospatialObjectiveFunction, proposalSpendingList, args, xmin = xmin, verbose = 0)  
+            outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval, output.x)        
+            scenarioMonteCarloOutput.append(outputOneRun)         
+        # find the best
+        bestSample = scenarioMonteCarloOutput[0]
+        for sample in range(0, len(scenarioMonteCarloOutput)):
+            if scenarioMonteCarloOutput[sample].fval < bestSample.fval:
+                bestSample = scenarioMonteCarloOutput[sample]
+        bestSampleScaled = rescaleAllocation(totalBudget, bestSample.budgetBest)        
+        optimisedRegionalBudgetList = bestSampleScaled  
+        return optimisedRegionalBudgetList
+        
+    def performGeospatialOptimisation(self, geoMCSampleSize, MCSampleSize, filenameList):
+        import optimisation        
+        optimisedRegionalBudgetList = self.getOptimisedRegionalBudgetList(geoMCSampleSize)
+        for region in range(0, self.numRegions):
+            filename = filenameList[region]
+            thisSpreadsheet = self.regionSpreadsheetList[region]
+            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps) 
+            thisBudget = optimisedRegionalBudgetList[region]
+            thisOptimisation.performSingleOptimisationForGivenTotalBudget(self.optimise, MCSampleSize, filename, thisBudget)
+        
+        
+        
+def geospatialObjectiveFunction(proposalSpendingList, regionalBOCs, totalBudget):
+    import pchip
+    numRegions = len(proposalSpendingList)
+    if sum(proposalSpendingList) == 0: 
+        scaledProposalSpendingList = proposalSpendingList
+    else:    
+        scaledProposalSpendingList = rescaleAllocation(totalBudget, proposalSpendingList)    
+    outcomeList = []
+    for region in range(0, numRegions):
+        outcome = pchip.pchip(regionalBOCs['spending'][region], regionalBOCs['outcome'][region], scaledProposalSpendingList[region], deriv = False, method='pchip')        
+        outcomeList.append(outcome)
+    nationalOutcome = sum(outcomeList)
+    return nationalOutcome    
+            
+            
+            
+            
+            
+            
