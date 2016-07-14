@@ -32,7 +32,7 @@ numsteps = 180
 
 oldCoverages={}
 costCovParams = {}
-print "\n Baseline coverage of: "
+print "Baseline coverage of: "
 for intervention in inputData.interventionList:
     print "%s = %g"%(intervention,inputData.coverage[intervention])
     oldCoverages[intervention]  = inputData.coverage[intervention]
@@ -66,17 +66,16 @@ run += 1
 
 #------------------------------------------------------------------------    
 # INTERVENTION
-title = '%s: 2015-2030 \n Put entire current budget into one intervention'%(country)
+investmentIncrease = 1.e6  # 1 million USD per intervention per year for the full 15 years
+title = '%s: 2015-2030 \n Scale up intervention by %i million USD per year'%(country,investmentIncrease/1e6)
 print title
 
 modelB, derived, params = helper.setupModelConstantsParameters(inputData)
 modelB.moveOneTimeStep()
 
 # calculate target population size and current spending
-currentBudget = 0.
 targetPopSize = {}
 currentSpending = {}
-newCoverages = {}
 for intervention in inputData.interventionList:
     print intervention
     targetPopSize[intervention] = 0.
@@ -87,28 +86,22 @@ for intervention in inputData.interventionList:
     coverageNumber  = oldCoverages[intervention] * targetPopSize[intervention]
     currentSpending[intervention] = costCov.inversefunction(coverageNumber, costCovParams[intervention], targetPopSize[intervention])
     print currentSpending[intervention]
-    currentBudget += currentSpending[intervention]
-print 'Current Budget = %g USD'%currentBudget
 
 for ichoose in range(len(inputData.interventionList)):
     chosenIntervention = inputData.interventionList[ichoose]
     nametag = chosenIntervention
     plotcolor = (1.0-0.13*run, 1.0-0.24*abs(run-4), 0.0+0.13*run)
-    print "\n %s"%nametag
+    print "\n %s: increase in annual investment by USD %g"%(nametag,investmentIncrease)
+
+    newCoverages = dcp(oldCoverages)
 
     modelX = dcp(modelB)
     modelXList = []
     modelXList.append(dcp(modelX))
 
-    for intervention in inputData.interventionList:
-        newCoverages[intervention] = 0.
     # allocation of funding
-    investment = currentBudget
-    #additionalPeopleCovered   = costCov.function(investment, costCovParams, targetPopSize[chosenIntervention])
-    #additionalFractionCovered = additionalPeopleCovered / targetPopSize[chosenIntervention]
-    #print "additional coverage: %g"%(additionalFractionCovered)
-    #newCoverages[chosenIntervention] += additionalFractionCovered
-    peopleCovered   = costCov.function(investment, costCovParams[chosenIntervention], targetPopSize[chosenIntervention])
+    newInvestment   = currentSpending[chosenIntervention] + investmentIncrease
+    peopleCovered   = costCov.function(newInvestment, costCovParams[chosenIntervention], targetPopSize[chosenIntervention])
     fractionCovered = peopleCovered / targetPopSize[chosenIntervention]
     newCoverages[chosenIntervention] = fractionCovered
     print "new coverage: %g"%(newCoverages[chosenIntervention])
@@ -129,12 +122,12 @@ for ichoose in range(len(inputData.interventionList)):
 
 #------------------------------------------------------------------------    
 
-filenamePrefix = '%s_%s_fixedInvest'%(country, version)
+filenamePrefix = '%s_%s_addInvest'%(country, version)
 
 output.getCombinedPlots(run, plotData, startYear=startYear-1, filenamePrefix=filenamePrefix, save=True)
-output.getCompareDeathsAverted(run, plotData, scalePercent=0.5, filenamePrefix=filenamePrefix, title=title, save=True)
-output.getU5StuntingCasesAverted(run, plotData, scalePercent=0.1, filenamePrefix=filenamePrefix, title=title, save=True)
-output.getA5StuntingCasesAverted(run, plotData, scalePercent=0.1, filenamePrefix=filenamePrefix, title=title, save=True)
+output.getCompareDeathsAverted(run, plotData, scalePercent=0.1, filenamePrefix=filenamePrefix, title=title, save=True)
+output.getU5StuntingCasesAverted(run, plotData, scalePercent=0.5, filenamePrefix=filenamePrefix, title=title, save=True)
+output.getA5StuntingCasesAverted(run, plotData, scalePercent=0.5, filenamePrefix=filenamePrefix, title=title, save=True)
 
 
 
