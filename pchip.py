@@ -52,7 +52,7 @@ def pchip(x, y, xnew, deriv = False, method='pchip'):
     
     if type(y)==type(array([])): ynew = array(ynew) # Try to preserve original type
     
-    return ynew
+    return ynew[0]
     
 #=========================================================
 def pchip_slopes(x, y, monotone=True):
