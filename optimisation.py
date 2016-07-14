@@ -65,6 +65,20 @@ def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimis
     if optimise == 'stunting':        
         performanceMeasure = model.getCumulativeAgingOutStunted()
     return performanceMeasure    
+    
+def geospatialObjectiveFunction(proposalSpendingList, regionalBOCs, totalBudget):
+    import pchip
+    numRegions = len(proposalSpendingList)
+    if sum(proposalSpendingList) == 0: 
+        scaledProposalSpendingList = proposalSpendingList
+    else:    
+        scaledProposalSpendingList = rescaleAllocation(totalBudget, proposalSpendingList)    
+    outcomeList = []
+    for region in range(0, numRegions):
+        outcome = pchip.pchip(regionalBOCs['spending'][region], regionalBOCs['outcome'][region], scaledProposalSpendingList[region], deriv = False, method='pchip')        
+        outcomeList.append(outcome)
+    nationalOutcome = sum(outcomeList)
+    return nationalOutcome       
 
             
 class OutputClass:
@@ -315,22 +329,6 @@ class GeospatialOptimisation:
         
         
         
-def geospatialObjectiveFunction(proposalSpendingList, regionalBOCs, totalBudget):
-    import pchip
-    numRegions = len(proposalSpendingList)
-    if sum(proposalSpendingList) == 0: 
-        scaledProposalSpendingList = proposalSpendingList
-    else:    
-        scaledProposalSpendingList = rescaleAllocation(totalBudget, proposalSpendingList)    
-    outcomeList = []
-    for region in range(0, numRegions):
-        outcome = pchip.pchip(regionalBOCs['spending'][region], regionalBOCs['outcome'][region], scaledProposalSpendingList[region], deriv = False, method='pchip')        
-        outcomeList.append(outcome)
-    nationalOutcome = sum(outcomeList)
-    return nationalOutcome    
-            
-            
-            
             
             
             
