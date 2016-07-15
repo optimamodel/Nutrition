@@ -17,7 +17,7 @@ pchipeps = 1e-8
 
 #=========================================================
 def pchip(x, y, xnew, deriv = False, method='pchip'):
-    
+    xnew = [xnew]
     sortzip = dcp(sorted(zip(x,y)))
     xs = [a for a,b in sortzip]
     ys = [b for a,b in sortzip]
