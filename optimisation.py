@@ -299,13 +299,15 @@ class GeospatialOptimisation:
         import asd
         import numpy as np
         xmin = [0.] * len(self.numRegions)
+        print 'reading files to generate regional BOCs..'
         regionalBOCs = self.generateAllRegionsBOC()
+        print 'finished reading files to generate BOCs'
         totalBudget = self.getTotalNationalBudget()
         scenarioMonteCarloOutput = []
         for r in range(0, geoMCSampleSize):
             proposalSpendingList = np.random.rand(self.numRegions)
             args = {'regionalBOCs':regionalBOCs, 'totalBudget':totalBudget}
-            budgetBest, fval, exitflag, output = asd.asd(geospatialObjectiveFunction, proposalSpendingList, args, xmin = xmin, verbose = 0)  
+            budgetBest, fval, exitflag, output = asd.asd(geospatialObjectiveFunction, proposalSpendingList, args, xmin = xmin, verbose = 2)  
             outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval, output.x)        
             scenarioMonteCarloOutput.append(outputOneRun)         
         # find the best
@@ -317,11 +319,12 @@ class GeospatialOptimisation:
         optimisedRegionalBudgetList = bestSampleScaled  
         return optimisedRegionalBudgetList
         
-    def performGeospatialOptimisation(self, geoMCSampleSize, MCSampleSize, filenameList):
-        import optimisation        
+    def performGeospatialOptimisation(self, geoMCSampleSize, MCSampleSize, filenameStem):
+        import optimisation  
         optimisedRegionalBudgetList = self.getOptimisedRegionalBudgetList(geoMCSampleSize)
         for region in range(0, self.numRegions):
-            filename = filenameList[region]
+            print 'optimising for region ', region
+            filename = filenameStem + '_region_' + str(region) 
             thisSpreadsheet = self.regionSpreadsheetList[region]
             thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps) 
             thisBudget = optimisedRegionalBudgetList[region]
