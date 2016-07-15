@@ -412,13 +412,7 @@ class Model:
             for wastingCat in self.wastingList:
                 for breastfeedingCat in self.breastfeedingList:
                     ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize += numNewBabies * self.params.wastingDistribution[ageName][wastingCat] * self.params.breastfeedingDistribution[ageName][breastfeedingCat] * stuntingFractions[stuntingCat]
-        """
-        #now reduce stunting due to interventions
-        oldProbStunting = ageGroup.getStuntedFraction()
-        newProbStunting = oldProbStunting * self.derived.stuntingUpdateAfterInterventions['<1 month']
-        self.params.stuntingDistribution[ageName] = self.helper.restratify(newProbStunting)
-        ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
-        """
+
 
     def applyAgingAndBirths(self):
         # aging must happen before births
