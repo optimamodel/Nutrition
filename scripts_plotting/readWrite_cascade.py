@@ -7,16 +7,16 @@ Created on Tue Jul 12 2016
 import pickle
 
 country = 'Bangladesh'
+version = 'Results20160718'
 
-root = '../../Results2016Jun/%s'%(country)
+root = '../../%s/%s'%(country,version)
 print "\n find input here : %s"%root
 
 import os
-outpath = './%s'%(country)
+outpath = '../../%s/%s_csv'%(country,version)
 print "\n find output here : %s"%outpath
 if not os.path.exists(outpath):
     os.makedirs(outpath)
-
 
 cascadeMultiples = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0] 
 
@@ -43,12 +43,11 @@ def reformat_results(results):
 
 
 # NATIONAL
-version = 'v5'
 national = {}
 for outcome in ['deaths','stunting']:
     national[outcome] = {}
     for multiple in cascadeMultiples:
-        filename = '%s/%s/%s/%s_cascade_%s_%s_%s.pkl'%(root, outcome, version, country, outcome, version, str(multiple))
+        filename = '%s/%s/national/%s_cascade_%s_%s.pkl'%(root, outcome, country, outcome, str(multiple))
         infile = open(filename, 'rb')
         allocation = pickle.load(infile)
         national[outcome][multiple] = allocation
@@ -57,7 +56,7 @@ for outcome in ['deaths','stunting']:
     prognames, rows = reformat_results(national[outcome])
 
     import csv
-    outfilename = '%s/national_cascade_min_%s.csv'%(outpath, outcome)
+    outfilename = '%s/national_cascade_min%s.csv'%(outpath, outcome)
     with open(outfilename, "wb") as f:
         writer = csv.writer(f)
         writer.writerow(prognames)
@@ -66,7 +65,6 @@ for outcome in ['deaths','stunting']:
 
 
 # GEOSPATIAL
-version = 'v3'
 numRegions = 7
 geospatial = {}
 for outcome in ['deaths','stunting']:
@@ -75,7 +73,7 @@ for outcome in ['deaths','stunting']:
         region = 'region%s'%(iReg)
         geospatial[outcome][region] = {}
         for multiple in cascadeMultiples:
-            filename = '%s/%s/geospatial/%s/%s_cascade_%s_%s.pkl'%(root, outcome, version, region, outcome, str(multiple))
+            filename = '%s/%s/geospatial/%s_cascade_%s_%s.pkl'%(root, outcome, region, outcome, str(multiple))
             infile = open(filename, 'rb')
             allocation = pickle.load(infile)
             geospatial[outcome][region][multiple] = allocation
@@ -84,7 +82,7 @@ for outcome in ['deaths','stunting']:
         prognames, rows = reformat_results(geospatial[outcome][region])
 
         import csv
-        outfilename = '%s/%s_cascade_min_%s.csv'%(outpath, region, outcome)
+        outfilename = '%s/%s_cascade_min%s.csv'%(outpath, region, outcome)
         with open(outfilename, "wb") as f:
             writer = csv.writer(f)
             writer.writerow(prognames)
