@@ -5,7 +5,7 @@ Created on Tue Jul 12 2016
 @author: madhurakilledar and kelseygrantham
 """
 import pickle
-cascade = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0] 
+cascadeMultiples = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0] 
 
 country = 'Bangladesh'
 root = '../../Results2016Jun/%s'%(country)
@@ -36,7 +36,7 @@ def reformat_results(results):
 # NATIONAL
 version = 'v5'
 national = {}
-for multiple in cascade:
+for multiple in cascadeMultiples:
     national[multiple] = {}
     for outcome in ['deaths','stunting']:
         filename = '%s/%s/%s/%s_cascade_%s_%s_%s.pkl'%(root, outcome, version, country, outcome, version, str(multiple))
@@ -57,7 +57,7 @@ geospatial = {}
 for iReg in range(numRegions):
     region = 'region%s'%(iReg)
     geospatial[region] = {}
-    for multiple in cascade:
+    for multiple in cascadeMultiples:
         geospatial[region][multiple] = {}
         for outcome in ['deaths','stunting']:
             filename = '%s/%s/geospatial/%s/%s_cascade_%s_%s.pkl'%(root, outcome, version, region, outcome, str(multiple))

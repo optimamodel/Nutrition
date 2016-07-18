@@ -18,7 +18,7 @@ if not os.path.exists(outpath):
     os.makedirs(outpath)
 
 
-cascade = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0] 
+cascadeMultiples = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0] 
 
 
 # convert 
@@ -47,7 +47,7 @@ version = 'v5'
 national = {}
 for outcome in ['deaths','stunting']:
     national[outcome] = {}
-    for multiple in cascade:
+    for multiple in cascadeMultiples:
         filename = '%s/%s/%s/%s_cascade_%s_%s_%s.pkl'%(root, outcome, version, country, outcome, version, str(multiple))
         infile = open(filename, 'rb')
         allocation = pickle.load(infile)
@@ -74,7 +74,7 @@ for outcome in ['deaths','stunting']:
     for iReg in range(numRegions):
         region = 'region%s'%(iReg)
         geospatial[outcome][region] = {}
-        for multiple in cascade:
+        for multiple in cascadeMultiples:
             filename = '%s/%s/geospatial/%s/%s_cascade_%s_%s.pkl'%(root, outcome, version, region, outcome, str(multiple))
             infile = open(filename, 'rb')
             allocation = pickle.load(infile)
