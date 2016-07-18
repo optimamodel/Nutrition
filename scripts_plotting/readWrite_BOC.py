@@ -12,11 +12,12 @@ sys.path.append(moduleDir)
 import optimisation
 
 country = 'Bangladesh'
+version = 'Results20160718'
 
-root = '../../%s/Results20160718'%(country)
+root = '../../%s/%s'%(country,version)
 print "\n find input here : %s"%root
 
-outpath = '../../%s/Results20160718_csv'%(country)
+outpath = '../../%s/%s_csv'%(country,version)
 print "\n find output here : %s"%outpath
 if not os.path.exists(outpath):
     os.makedirs(outpath)
@@ -67,6 +68,20 @@ for objective in ['deaths','stunting']:
         numStunted[objective][multiple] = cascadeModels[objective][multiple][numsteps-1].getCumulativeAgingOutStunted()
 
 
+    # Repeat but for writing to csv
+    rowHeader  = ["Multiple of current budget"]
+    rowDeaths  = ['Number of deaths under 5']
+    rowStunted = ['Number of child stunted at age 5']
+    for multiple in cascadeMultiples:
+        rowHeader.append(multiple)
+        rowDeaths.append( numDeaths[objective][multiple])
+        rowStunted.append(numStunted[objective][multiple])
+    outfilename = '%s/%s_BOC_min%s.csv'%(outpath, country, objective)
+    with open(outfilename, "wb") as f:
+        writer = csv.writer(f)
+        writer.writerow(rowHeader)
+        writer.writerow(rowDeaths)
+        writer.writerow(rowStunted)
 
 
 
