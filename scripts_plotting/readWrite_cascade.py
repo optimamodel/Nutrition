@@ -5,10 +5,20 @@ Created on Tue Jul 12 2016
 @author: madhurakilledar and kelseygrantham
 """
 import pickle
-cascade = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0] 
 
 country = 'Bangladesh'
+
 root = '../../Results2016Jun/%s'%(country)
+print "\n find input here : %s"%root
+
+import os
+outpath = './%s'%(country)
+print "\n find output here : %s"%outpath
+if not os.path.exists(outpath):
+    os.makedirs(outpath)
+
+
+cascade = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0] 
 
 
 # convert 
@@ -32,7 +42,6 @@ def reformat_results(results):
     return prognames, rows
 
 
-
 # NATIONAL
 version = 'v5'
 national = {}
@@ -41,14 +50,14 @@ for outcome in ['deaths','stunting']:
     for multiple in cascade:
         filename = '%s/%s/%s/%s_cascade_%s_%s_%s.pkl'%(root, outcome, version, country, outcome, version, str(multiple))
         infile = open(filename, 'rb')
-        result = pickle.load(infile)
-        national[outcome][multiple] = result
+        allocation = pickle.load(infile)
+        national[outcome][multiple] = allocation
         infile.close()
 
     prognames, rows = reformat_results(national[outcome])
 
     import csv
-    outfilename = '%s/national_cascade_min_%s.csv'%(root, outcome)
+    outfilename = '%s/national_cascade_min_%s.csv'%(outpath, outcome)
     with open(outfilename, "wb") as f:
         writer = csv.writer(f)
         writer.writerow(prognames)
@@ -68,14 +77,14 @@ for outcome in ['deaths','stunting']:
         for multiple in cascade:
             filename = '%s/%s/geospatial/%s/%s_cascade_%s_%s.pkl'%(root, outcome, version, region, outcome, str(multiple))
             infile = open(filename, 'rb')
-            result = pickle.load(infile)
-            geospatial[outcome][region][multiple] = result
+            allocation = pickle.load(infile)
+            geospatial[outcome][region][multiple] = allocation
             infile.close()
 
         prognames, rows = reformat_results(geospatial[outcome][region])
 
         import csv
-        outfilename = '%s/%s_cascade_min_%s.csv'%(root, region, outcome)
+        outfilename = '%s/%s_cascade_min_%s.csv'%(outpath, region, outcome)
         with open(outfilename, "wb") as f:
             writer = csv.writer(f)
             writer.writerow(prognames)
