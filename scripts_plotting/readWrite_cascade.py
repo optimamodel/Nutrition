@@ -29,16 +29,17 @@ def reformat_results(results):
     from numpy import array
     increments = results.keys()
     spendingsets = results.values()
+    prognames = spendingsets[0].keys()
+    prognames.insert(0, 'Multiple of current budget')
     rows = []
     for i in range(len(increments)):
-        chunk = spendingsets[i]
-        values = array(chunk.values()).tolist()
-        valarray = [item for sublist in values for item in sublist]
+        allocationDict = spendingsets[i]
+        #values = array(allocationDict.values()).tolist()
+        #valarray = [item for sublist in values for item in sublist]
+        valarray = allocationDict.values()
         valarray.insert(0, increments[i])
         rows.append(valarray)
     rows.sort()
-    prognames = spendingsets[0].keys()
-    prognames.insert(0, 'Multiple')
     return prognames, rows
 
 
