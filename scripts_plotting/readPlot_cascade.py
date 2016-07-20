@@ -13,16 +13,19 @@ from plotting import plotalloccascade
 cascadeMultiples = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0] 
 
 country = 'Bangladesh'
-root = '../../Results2016Jun/%s'%(country)
+version = 'Results20160718'
+
+root = '../../%s/%s'%(country,version)
+print "\n find input here : %s"%root
 
 
 # NATIONAL
-version = 'v5'
+print country
 national = {}
 for objective in ['deaths','stunting']:
     national[objective] = {}
     for multiple in cascadeMultiples:
-        filename = '%s/%s/%s/%s_cascade_%s_%s_%s.pkl'%(root, objective, version, country, objective, version, str(multiple))
+        filename = '%s/%s/national/%s_cascade_%s_%s.pkl'%(root, objective, country, objective, str(multiple))
         infile = open(filename, 'rb')
         allocation = pickle.load(infile)
         national[objective][multiple] = allocation
@@ -33,7 +36,6 @@ for objective in ['deaths','stunting']:
 
 
 # GEOSPATIAL
-version = 'v3'
 numRegions = 7
 geospatial = {}
 for iReg in range(numRegions):
@@ -42,7 +44,7 @@ for iReg in range(numRegions):
     for objective in ['deaths','stunting']:
         geospatial[region][objective] = {}
         for multiple in cascadeMultiples:
-            filename = '%s/%s/geospatial/%s/%s_cascade_%s_%s.pkl'%(root, objective, version, region, objective, str(multiple))
+            filename = '%s/%s/geospatial/%s_cascade_%s_%s.pkl'%(root, objective, region, objective, str(multiple))
             infile = open(filename, 'rb')
             allocation = pickle.load(infile)
             geospatial[region][objective][multiple] = allocation
