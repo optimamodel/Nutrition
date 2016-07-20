@@ -5,6 +5,7 @@ Created on Tue Jul 12 2016
 @author: madhurakilledar and kelseygrantham
 """
 import pickle
+import csv
 
 country = 'Bangladesh'
 version = 'Results20160718'
@@ -22,11 +23,10 @@ cascadeMultiples = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]
 
 
 # convert 
-# from dictionary of list of dictionaries of...arrays?
+# from dictionary of list of dictionaries
 # to list of lists
 # and a header
 def reformat_results(results):
-    from numpy import array
     increments = results.keys()
     spendingsets = results.values()
     prognames = spendingsets[0].keys()
@@ -34,8 +34,6 @@ def reformat_results(results):
     rows = []
     for i in range(len(increments)):
         allocationDict = spendingsets[i]
-        #values = array(allocationDict.values()).tolist()
-        #valarray = [item for sublist in values for item in sublist]
         valarray = allocationDict.values()
         valarray.insert(0, increments[i])
         rows.append(valarray)
@@ -55,8 +53,6 @@ for outcome in ['deaths','stunting']:
         infile.close()
 
     prognames, rows = reformat_results(national[outcome])
-
-    import csv
     outfilename = '%s/national_cascade_min%s.csv'%(outpath, outcome)
     with open(outfilename, "wb") as f:
         writer = csv.writer(f)
@@ -81,8 +77,6 @@ for outcome in ['deaths','stunting']:
             infile.close()
 
         prognames, rows = reformat_results(geospatial[outcome][region])
-
-        import csv
         outfilename = '%s/%s_cascade_min%s.csv'%(outpath, region, outcome)
         with open(outfilename, "wb") as f:
             writer = csv.writer(f)
