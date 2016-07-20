@@ -281,7 +281,7 @@ class GeospatialOptimisation:
             spending, outcome = thisOptimisation.generateBOCVectors(filename, self.regionNameList, self.cascadeValues, self.optimise)            
             regionalBOCs['spending'].append(spending)
             regionalBOCs['outcome'].append(outcome)
-        print 'finished generating regionsl BOCs from files'    
+        print 'finished generating regional BOCs from files'    
         self.regionalBOCs = regionalBOCs    
         
     def getTotalNationalBudget(self):
@@ -299,11 +299,22 @@ class GeospatialOptimisation:
             regionalBudgets.append(regionTotalBudget)
         nationalTotalBudget = sum(regionalBudgets)
         return nationalTotalBudget
-        
+    
+
+    def generateResultsForGeospatialCascades(self):
+        import optimisation  
+        for region in range(0, self.numRegions):
+            regionName = self.regionNameList[region]
+            spreadsheet = self.regionSpreadsheetList[region]
+            thisOptimisation = optimisation.Optimisation(spreadsheet, self.numModelSteps)
+            filename = self.resultsFileStem + regionName + '_cascade_' + self.optimise + '_'
+            thisOptimisation.performCascadeOptimisation(self.optimise, self.MCSampleSize, filename, self.cascadeValues)
+
+    
     def getOptimisedRegionalBudgetList(self, geoMCSampleSize):
         import asd
         import numpy as np
-        xmin = [0.] * len(self.numRegions)
+        xmin = [0.] * self.numRegions
         # if BOCs not generated, generate them
         if self.regionalBOCs == None:
             self.generateAllRegionsBOC()
@@ -326,10 +337,13 @@ class GeospatialOptimisation:
         
     def performGeospatialOptimisation(self, geoMCSampleSize, MCSampleSize, filenameStem):
         import optimisation  
+        print 'beginning geospatial optimisation..'
         optimisedRegionalBudgetList = self.getOptimisedRegionalBudgetList(geoMCSampleSize)
+        print 'finished geospatial optimisation'
         for region in range(0, self.numRegions):
-            print 'optimising for region ', region
-            filename = filenameStem + '_region_' + str(region) 
+            regionName = self.regionNameList[region]
+            print 'optimising for individual region ', regionName
+            filename = filenameStem + '_' + regionName 
             thisSpreadsheet = self.regionSpreadsheetList[region]
             thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps) 
             thisBudget = optimisedRegionalBudgetList[region]
