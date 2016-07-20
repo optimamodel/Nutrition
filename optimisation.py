@@ -231,7 +231,7 @@ class Optimisation:
         return targetPopSize    
     
     
-    def generateBOCVectors(self, filenameStem, cascadeValues, outcome):
+    def generateBOCVectors(self, filenameStem, regionNameList, cascadeValues, outcome):
         import pickle
         import data
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList) 
@@ -243,7 +243,7 @@ class Optimisation:
         outcomeVector = []
         for cascade in cascadeValues:
             spendingVector.append(cascade * currentTotalBudget)
-            filename = filenameStem+str(cascade)+'.pkl'
+            filename = filenameStem + '_cascade_' + str(outcome) + '_' + str(cascade)+'.pkl'
             infile = open(filename, 'rb')
             thisAllocation = pickle.load(infile)
             infile.close()
@@ -257,27 +257,32 @@ class Optimisation:
 
 
 class GeospatialOptimisation:
-    def __init__(self, regionSpreadsheetList, cascadeFilenameList, numModelSteps, cascadeValues, optimise):
+    def __init__(self, regionSpreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem):
         self.regionSpreadsheetList = regionSpreadsheetList
-        self.cascadeFilenameList = cascadeFilenameList
+        self.regionNameList = regionNameList
         self.numModelSteps = numModelSteps
         self.cascadeValues = cascadeValues
         self.optimise = optimise
+        self.resultsFileStem = resultsFileStem
         self.numRegions = len(regionSpreadsheetList)        
+        self.regionalBOCs = None 
         
     def generateAllRegionsBOC(self):
+        print 'reading files to generate regional BOCs..'
         import optimisation
         regionalBOCs = {}
         regionalBOCs['spending'] = []
         regionalBOCs['outcome'] = []        
         for region in range(0, self.numRegions):
+            print 'generating BOC for region: ', self.regionNameList[region]
             thisSpreadsheet = self.regionSpreadsheetList[region]
             thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps)
-            filename = self.cascadeFilenameList[region]
-            spending, outcome = thisOptimisation.generateBOCVectors(filename, self.cascadeValues, self.optimise)            
+            filename = self.resultsFileStem + self.regionNameList[region]
+            spending, outcome = thisOptimisation.generateBOCVectors(filename, self.regionNameList, self.cascadeValues, self.optimise)            
             regionalBOCs['spending'].append(spending)
             regionalBOCs['outcome'].append(outcome)
-        return regionalBOCs    
+        print 'finished generating regionsl BOCs from files'    
+        self.regionalBOCs = regionalBOCs    
         
     def getTotalNationalBudget(self):
         import optimisation
@@ -299,14 +304,14 @@ class GeospatialOptimisation:
         import asd
         import numpy as np
         xmin = [0.] * len(self.numRegions)
-        print 'reading files to generate regional BOCs..'
-        regionalBOCs = self.generateAllRegionsBOC()
-        print 'finished reading files to generate BOCs'
+        # if BOCs not generated, generate them
+        if self.regionalBOCs == None:
+            self.generateAllRegionsBOC()
         totalBudget = self.getTotalNationalBudget()
         scenarioMonteCarloOutput = []
         for r in range(0, geoMCSampleSize):
             proposalSpendingList = np.random.rand(self.numRegions)
-            args = {'regionalBOCs':regionalBOCs, 'totalBudget':totalBudget}
+            args = {'regionalBOCs':self.regionalBOCs, 'totalBudget':totalBudget}
             budgetBest, fval, exitflag, output = asd.asd(geospatialObjectiveFunction, proposalSpendingList, args, xmin = xmin, verbose = 2)  
             outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval, output.x)        
             scenarioMonteCarloOutput.append(outputOneRun)         
