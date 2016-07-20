@@ -18,6 +18,7 @@ root = '../../%s/%s'%(country,version)
 print "\n find input here : %s"%root
 
 
+
 # NATIONAL
 nationalAllocations = {}
 # current baseline
@@ -37,19 +38,25 @@ for objective in ['deaths','stunting']:
 
 
 
-"""
 # GEOSPATIAL
-numRegions = 7
-geospatial = {}
+regions = ['Barisal','Chittagong','Dhaka','Khulna','Rajshahi','Rangpur','Sylhet']
+numRegions = len(regions)
+spreadsheets = []
+geospatialAllocations = {}
 for iReg in range(numRegions):
     region = 'region%s'%(iReg)
-    geospatial[region] = {}
+    regionName = regions[iReg]
+    print regionName
+    spreadsheetPath = '../input_spreadsheets/%s/subregionSpreadsheets/%s.xlsx'%(country,regionName)
+    spreadsheets.append(spreadsheetPath)
+    thisOptimisation = optimisation.Optimisation(spreadsheetPath, numsteps)
+    geospatialAllocations[region] = {}
+    geospatialAllocations[region]['baseline'] = thisOptimisation.getInitialAllocationDictionary()
     for objective in ['deaths','stunting']:
-        geospatial[region][objective] = {}
         filename = '%s/%s/geospatial/%s_cascade_%s_1.0.pkl'%(root, objective, region, objective)
         infile = open(filename, 'rb')
         allocation = pickle.load(infile)
-        geospatial[region][objective][multiple] = allocation
+        geospatialAllocations[region][objective] = allocation
         infile.close()
         # plot
-"""
+        plotallocations(geospatialAllocations[region]['baseline'],geospatialAllocations[region][objective])
