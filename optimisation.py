@@ -132,6 +132,24 @@ class Optimisation:
             args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
             self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, filename+str(cascade)+'.pkl')    
 
+    def cascadeFunc(self, cascadeValue, currentTotalBudget, costCoverageInfo, optimise, MCSampleSize, xmin, filename):
+        totalBudget = currentTotalBudget * cascadeValue
+        args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':self.spreadsheetData}    
+        self.runOnce(MCSampleSize, xmin, args, self.spreadsheetData.interventionList, totalBudget, filename+str(cascadeValue)+'.pkl')                   
+    
+    
+    def performParallelCascadeOptimisation(self, optimise, MCSampleSize, filename, cascadeValues):
+        import data 
+        from joblib import Parallel, delayed
+        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
+        costCoverageInfo = self.getCostCoverageInfo()  
+        initialTargetPopSize = self.getInitialTargetPopSize()          
+        initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
+        currentTotalBudget = sum(initialAllocation)
+        xmin = [0.] * len(initialAllocation)
+        # use one core per cascade value
+        nCores = len(cascadeValues)
+        Parallel(n_jobs=nCores)(delayed(self.cascadeFunc)(cascadeValue, currentTotalBudget, costCoverageInfo, optimise, MCSampleSize, xmin, filename) for cascadeValue in cascadeValues)
         
     def runOnce(self, MCSampleSize, xmin, args, interventionList, totalBudget, filename):        
         import asd as asd 
