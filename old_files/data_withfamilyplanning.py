@@ -6,53 +6,49 @@ Created on Fri Feb 26 15:57:07 2016
 """
 
 class Data:
-    def __init__(self, causesOfDeath, conditions, interventionList, 
-                 demographics, projectedBirths, rawMortality, causeOfDeathDist,
-                 RRdeathStunting, RRdeathWasting, RRdeathBreastfeeding, 
-                 RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution,
-                 breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition,
-                 birthOutcomeDist, ORstuntingProgression, ORstuntingBirthOutcome,
-                 ORstuntingIntervention, ORappropriatebfIntervention, 
-                 ageAppropriateBreastfeeding, coverage, costSaturation,
-                 targetPopulation, affectedFraction, effectivenessMortality,
-                 effectivenessIncidence, interventionsMaternal, foodSecurityGroups,
-                 ORstuntingComplementaryFeeding):
+    def __init__(self, ages, causesOfDeath, conditions, interventionList, demographics, projectedBirths, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition, birthOutcomeDist, ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention, ORappropriatebfIntervention, ageAppropriateBreastfeeding, interventionCoveragesCurrent, interventionCostCoverage, interventionTargetPop, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness, interventionsMaternal, complementsList, ORstuntingComplementaryFeeding):
+        self.ages = ages
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
         self.interventionList = interventionList
         self.demographics = demographics
         self.projectedBirths = projectedBirths
-        self.rawMortality = rawMortality
+        self.totalMortality = totalMortality
         self.causeOfDeathDist = causeOfDeathDist
         self.stuntingDistribution = stuntingDistribution
         self.wastingDistribution = wastingDistribution
         self.breastfeedingDistribution = breastfeedingDistribution
-        self.RRdeathStunting = RRdeathStunting
-        self.RRdeathWasting = RRdeathWasting
-        self.RRdeathBreastfeeding = RRdeathBreastfeeding
+        self.RRStunting = RRStunting
+        self.RRWasting = RRWasting
+        self.RRBreastfeeding = RRBreastfeeding
         self.RRdeathByBirthOutcome = RRdeathByBirthOutcome
         self.ORstuntingProgression = ORstuntingProgression
         self.incidences = incidences
         self.RRdiarrhea = RRdiarrhea
         self.ORstuntingCondition = ORstuntingCondition
+        #self.birthCircumstanceDist = birthCircumstanceDist
+        #self.timeBetweenBirthsDist = timeBetweenBirthsDist
+        #self.RRbirthOutcomeByAgeAndOrder = RRbirthOutcomeByAgeAndOrder
+        #self.RRbirthOutcomeByTime = RRbirthOutcomeByTime
         self.ORstuntingBirthOutcome = ORstuntingBirthOutcome
         self.birthOutcomeDist = birthOutcomeDist
         self.ORstuntingIntervention = ORstuntingIntervention
         self.ORappropriatebfIntervention = ORappropriatebfIntervention
         self.ageAppropriateBreastfeeding = ageAppropriateBreastfeeding
-        self.coverage = coverage
-        self.costSaturation = costSaturation
-        self.targetPopulation = targetPopulation
-        self.affectedFraction = affectedFraction
-        self.effectivenessMortality = effectivenessMortality
-        self.effectivenessIncidence = effectivenessIncidence
+        self.interventionCoveragesCurrent = interventionCoveragesCurrent
+        self.interventionCostCoverage = interventionCostCoverage
+        self.interventionTargetPop = interventionTargetPop
+        self.interventionAffectedFraction = interventionAffectedFraction
+        self.interventionMortalityEffectiveness = interventionMortalityEffectiveness
+        self.interventionIncidenceEffectiveness = interventionIncidenceEffectiveness
         self.interventionsMaternal = interventionsMaternal
-        self.foodSecurityGroups = foodSecurityGroups
+        self.complementsList = complementsList
         self.ORstuntingComplementaryFeeding = ORstuntingComplementaryFeeding
     
 
     
-def readSpreadsheet(fileName, keyList):
+def getDataFromSpreadsheet(fileName, keyList):
+    
     import pandas
     Location = fileName
     ages = keyList['ages']
@@ -61,21 +57,23 @@ def readSpreadsheet(fileName, keyList):
     stuntingList = keyList['stuntingList']
     breastfeedingList = keyList['breastfeedingList']
     
+    # GET ALL LISTS
+
     #get list of ages and causesOfDeath
     df = pandas.read_excel(Location, sheetname = 'mortality')
     causesOfDeath = list(df['Cause'])
-    #get list of conditions
-    df = pandas.read_excel(Location, sheetname = 'Incidence of conditions')
-    conditions = list(df['Condition'])
+
     #get list of interventions
     df = pandas.read_excel(Location, sheetname = 'Interventions cost and coverage')
     interventionList = list(df['Intervention'])
+
     #get list of projection years
     df = pandas.read_excel(Location, sheetname = 'projected births')
     projectionYearList = list(df['year'])
-    # put all populations in a list
+
     allPops = ages[:]
     allPops.append('pregnant women')
+    
 
     # READ demographics SHEET
     # sets:
@@ -87,96 +85,115 @@ def readSpreadsheet(fileName, keyList):
     for indicator in indicatorsList:
         demographics[indicator] = df.loc[indicator,'data']
 
+
     # READ projected births SHEET
     # sets:
     # - projectedBirths
     df = pandas.read_excel(Location, sheetname = 'projected births')
     projectedBirths = list(df['number of births'])
 
+
     #  READ TOTAL MORTALITY SHEET
-    #  sets:
-    #  - rawMortality
+    #  gets you:
+    #  - totalMortality
+
     df = pandas.read_excel(Location, sheetname = 'total mortality')
-    rawMortality = dict(zip(list(df.columns.values), df.iloc[0]))
+    totalMortality = dict(zip(list(df.columns.values), df.iloc[0]))
+
 
     #  READ MORTALITY SHEET
-    #  sets:
-    #  - causeOfDeathDist
+    #  gets you:
+    #  - ages
+    #  - causesOfDeath
+    #  - causeOfDeathByAge
+
+    #get the nested list of causeOfDeathDist
     df = pandas.read_excel(Location, sheetname = 'mortality', index_col = 'Cause')
     causeOfDeathDist = {}
     for ageName in ages:
         causeOfDeathDist[ageName] = {}
         for cause in causesOfDeath:
             causeOfDeathDist[ageName][cause] = df.loc[cause, ageName]
+
             
     #  READ RRStunting SHEET
-    #  sets:
-    #  - RRdeathStunting
+    #  gets you:
+    #  - RRStunting
+    
+    #get the list of causes for which we have relative risks
     df = pandas.read_excel(Location, sheetname = 'RRStunting', index_col = [0])
-    #get the list of causes for which we have relative risks
     mylist = list(df.index.values)
     myset = set(mylist)
-    listCausesRRdeathStunting = list(myset)
-    #put the RR into RRdeathStunting
+    listCausesRRStunting = list(myset)
+    #put the RR into RRStunting
     df = pandas.read_excel(Location, sheetname = 'RRStunting', index_col = [0, 1])
-    RRdeathStunting = {}
+    
+    RRStunting = {}
     for ageName in ages:
-        RRdeathStunting[ageName] = {}
+        RRStunting[ageName] = {}
         for cause in causesOfDeath:
-            RRdeathStunting[ageName][cause] = {}
+            RRStunting[ageName][cause] = {}
             for stuntingCat in stuntingList:
-                if cause in listCausesRRdeathStunting: #if no RR given for this cause then set to 1
-                    RRdeathStunting[ageName][cause][stuntingCat] = df.loc[cause][ageName][stuntingCat]
+                if cause in listCausesRRStunting: #if no RR given for this cause then set to 1
+                    RRStunting[ageName][cause][stuntingCat] = df.loc[cause][ageName][stuntingCat]
                 else:
-                    RRdeathStunting[ageName][cause][stuntingCat] = 1
+                    RRStunting[ageName][cause][stuntingCat] = 1
                    
+            
     #  READ RRWasting SHEET
-    #  sets:
-    #  - RRdeathWasting
-    df = pandas.read_excel(Location, sheetname = 'RRWasting', index_col = [0])
+    #  gets you:
+    #  - RRWasting
+    
     #get the list of causes for which we have relative risks
+    df = pandas.read_excel(Location, sheetname = 'RRWasting', index_col = [0])
     mylist = list(df.index.values)
     myset = set(mylist)
-    listCausesRRdeathWasting = list(myset)
-    #put the RR into RRdeathWasting
+    listCausesRRWasting = list(myset)
+    #put the RR into RRWasting
     df = pandas.read_excel(Location, sheetname = 'RRWasting', index_col = [0, 1])
-    RRdeathWasting = {}
+    
+    RRWasting = {}
     for ageName in ages:
-        RRdeathWasting[ageName] = {}
+        RRWasting[ageName] = {}
         for cause in causesOfDeath:
-            RRdeathWasting[ageName][cause] = {}
+            RRWasting[ageName][cause] = {}
             for wastingCat in wastingList:
-                if cause in listCausesRRdeathWasting: #if no RR given for this cause then set to 1
-                    RRdeathWasting[ageName][cause][wastingCat] = df.loc[cause][ageName][wastingCat]
+                if cause in listCausesRRWasting: #if no RR given for this cause then set to 1
+                    RRWasting[ageName][cause][wastingCat] = df.loc[cause][ageName][wastingCat]
                 else:
-                    RRdeathWasting[ageName][cause][wastingCat] = 1        
+                    RRWasting[ageName][cause][wastingCat] = 1        
+
 
     #  READ RRBreastfeeding SHEET
-    #  sets:
-    #  - RRdeathBreastfeeding
-    df = pandas.read_excel(Location, sheetname = 'RRBreastfeeding', index_col = [0])
+    #  gets you:
+    #  - RRBreastfeeding
+    
     #get the list of causes for which we have relative risks
+    df = pandas.read_excel(Location, sheetname = 'RRBreastfeeding', index_col = [0])
     mylist = list(df.index.values)
     myset = set(mylist)
-    listCausesRRdeathBreastfeeding = list(myset)
-    #put the RR into RRdeathBreastfeeding
+    listCausesRRBreastfeeding = list(myset)
+    #put the RR into RRBreastfeeding
     df = pandas.read_excel(Location, sheetname = 'RRBreastfeeding', index_col = [0, 1])
-    RRdeathBreastfeeding = {}
+    
+    RRBreastfeeding = {}
     for ageName in ages:
-        RRdeathBreastfeeding[ageName] = {}
+        RRBreastfeeding[ageName] = {}
         for cause in causesOfDeath: 
-            RRdeathBreastfeeding[ageName][cause] = {}
+            RRBreastfeeding[ageName][cause] = {}
             for breastfeedingCat in breastfeedingList:
-                if cause in listCausesRRdeathBreastfeeding: #if no RR given for this cause then set to 1
-                    RRdeathBreastfeeding[ageName][cause][breastfeedingCat] = df.loc[cause][ageName][breastfeedingCat]
+                if cause in listCausesRRBreastfeeding: #if no RR given for this cause then set to 1
+                    RRBreastfeeding[ageName][cause][breastfeedingCat] = df.loc[cause][ageName][breastfeedingCat]
                 else:
-                    RRdeathBreastfeeding[ageName][cause][breastfeedingCat] = 1  
+                    RRBreastfeeding[ageName][cause][breastfeedingCat] = 1  
+
         
     #  READ RR Death by Birth Outcome SHEET
-    #  sets:
+    #  gets you:
     #  - RRdeathByBirthOutcome
-    df = pandas.read_excel(Location, sheetname = 'RR Death by Birth Outcome')
+
     #get list of causesOfDeath
+    df = pandas.read_excel(Location, sheetname = 'RR Death by Birth Outcome')
     causesListedHere = list(df['Cause'])
     #get the nested list of causeOfDeathDist
     df = pandas.read_excel(Location, sheetname = 'RR Death by Birth Outcome', index_col = 'Cause')
@@ -190,15 +207,18 @@ def readSpreadsheet(fileName, keyList):
             for birthoutcome in birthOutcomes:
                 RRdeathByBirthOutcome[cause][birthoutcome] = 1.
 
+
     #  READ distributions SHEET
-    #  sets:
+    #  gets you:
     #  - stuntingDistribution
     #  - wastingDistribution
     #  - breastfeedingDistribution
+    
     df = pandas.read_excel(Location, sheetname = 'distributions', index_col = [0, 1])
     stuntingDistribution = {}
     wastingDistribution = {}
     breastfeedingDistribution = {}
+    
     #stunting
     for ageName in ages:
         stuntingDistribution[ageName] = {}
@@ -215,15 +235,78 @@ def readSpreadsheet(fileName, keyList):
         for status in breastfeedingList:
             breastfeedingDistribution[ageName][status] = df.loc['Breastfeeding'][ageName][status] / 100.
             
+    
+    """
+    #  READ birth distribution SHEET
+    #  gets you:
+    #  - birthCircumstanceDist
+    df = pandas.read_excel(Location, sheetname = 'birth distribution')
+    motherAges = list(df.columns.values)[1:]
+    birthTypes = list(df['Type'])
+    
+    df = pandas.read_excel(Location, sheetname = 'birth distribution', index_col = [0])
+    birthCircumstanceDist = {}
+    for maternalAge in motherAges:
+        birthCircumstanceDist[maternalAge] = {}
+        for status in birthTypes:
+            birthCircumstanceDist[maternalAge][status] = df[maternalAge][status]
+    
+    #  READ time between births SHEET
+    #  gets you:
+    #  - timeBetweenBirthsDist
+    df = pandas.read_excel(Location, sheetname = 'time between births')
+    timeBetweenBirthsDist = dict(zip(list(df.columns.values), df.iloc[0]))
+    
+
+    #  READ RR birth by type SHEET
+    #  gets you:
+    #  - RRbirthOutcomeByAgeAndOrder
+    
+    #get the list of outcomes for which we have relative risks
+    df = pandas.read_excel(Location, sheetname = 'RR birth by type', index_col = [0])
+    mylist = list(df.index.values)
+    myset = set(mylist)
+    listOfOutcomes = list(myset)
+    
+    #put the RR into RRbirthOutcomeByAgeAndOrder
+    df = pandas.read_excel(Location, sheetname = 'RR birth by type', index_col = [0, 1])
+    
+    RRbirthOutcomeByAgeAndOrder = {}
+    for outcome in listOfOutcomes:
+        RRbirthOutcomeByAgeAndOrder[outcome] = {}
+        for ageName in motherAges:
+            RRbirthOutcomeByAgeAndOrder[outcome][ageName] = {}
+            for status in ['first', 'second or third', 'greater than third']:    
+                RRbirthOutcomeByAgeAndOrder[outcome][ageName][status] = df.loc[outcome][ageName][status]
+
+                
+    #  READ RR birth by time SHEET
+    #  gets you:
+    #  - RRbirthOutcomeByTime
+    df = pandas.read_excel(Location, sheetname = 'RR birth by time')
+    birthLag = list(df.columns.values)[1:]
+    
+    df = pandas.read_excel(Location, sheetname = 'RR birth by time', index_col = [0])
+    RRbirthOutcomeByTime = {}
+    for outcome in listOfOutcomes:
+        RRbirthOutcomeByTime[outcome] = {}
+        for time in birthLag:
+            RRbirthOutcomeByTime[outcome][time] = df[time][outcome]           
+    """
+
+
     #  READ OR stunting progression SHEET
-    #  sets:
+    #  gets you:
     #  - ORstuntingProgression
     df = pandas.read_excel(Location, sheetname = 'OR stunting progression')
     ORstuntingProgression = dict(zip(list(df.columns.values), df.iloc[0]))    
 
+
     # READ Incidence of conditions SHEET
-    # sets:
+    # gets you:
     # - incidences
+    df = pandas.read_excel(Location, sheetname = 'Incidence of conditions')
+    conditions = list(df['Condition'])
     df = pandas.read_excel(Location, sheetname = 'Incidence of conditions', index_col = 'Condition')
     incidences = {}
     for ageName in ages:
@@ -231,8 +314,9 @@ def readSpreadsheet(fileName, keyList):
         for condition in conditions:
             incidences[ageName][condition] = df.loc[condition, ageName] / 12. #WARNING HACK should multiply by timestep within code
 
+
     # READ RR diarrhea SHEET
-    # sets:
+    # gets you:
     # - RRdiarrhea
     df = pandas.read_excel(Location, sheetname = 'RR diarrhoea', index_col = [0])
     RRdiarrhea = {}
@@ -242,7 +326,7 @@ def readSpreadsheet(fileName, keyList):
             RRdiarrhea[ageName][breastfeedingCat] = df[ageName][breastfeedingCat]       
 
     # READ OR Diarrhea SHEET
-    # sets:
+    # gets you:
     # - ORstuntingCondition
     df = pandas.read_excel(Location, sheetname = 'OR stunting by condition')
     conditionsHere = list(df['Condition'])
@@ -254,9 +338,11 @@ def readSpreadsheet(fileName, keyList):
             ORstuntingCondition[ageName][condition] = 1.
         for condition in conditionsHere:
             ORstuntingCondition[ageName][condition] = df.loc[condition, ageName]
+    #ORstuntingCondition = dict(zip(list(df.columns.values), df.iloc[0]))    
+
 
     # READ OR Stunting given Intervention Coverage SHEET
-    # sets:
+    # gets you:
     # - ORstuntingIntervention
     df = pandas.read_excel(Location, sheetname = 'OR stunting by intervention')
     interventionsHere = list(df['Intervention'])
@@ -269,8 +355,9 @@ def readSpreadsheet(fileName, keyList):
         for intervention in interventionsHere:
             ORstuntingIntervention[ageName][intervention] = df.loc[intervention, ageName]
 
+
     # READ OR Appropriate Breastfeeding given OR Appropriate Breastfeeding SHEET
-    # sets:
+    # gets you:
     # - ORappropriatebfIntervention
     df = pandas.read_excel(Location, sheetname = 'OR appropriateBF by interv')
     interventionsHere = list(df['Intervention'])
@@ -282,15 +369,18 @@ def readSpreadsheet(fileName, keyList):
             ORappropriatebfIntervention[ageName][intervention] = 1.
         for intervention in interventionsHere:
             ORappropriatebfIntervention[ageName][intervention] = df.loc[intervention, ageName]
+            
 
     #  READ Appropriate Breastfeeding Practice SHEET
-    #  sets:
+    #  gets you:
     #  - ageAppropriateBreastfeeding
     df = pandas.read_excel(Location, sheetname = 'Appropriate breastfeeding')
     ageAppropriateBreastfeeding = dict(zip(list(df.columns.values), df.iloc[0]))    
 
+
+
     #  READ birth outcome distribution SHEET
-    #  sets:
+    #  gets you:
     #  - birthOutcomeDist (partial)
     df = pandas.read_excel(Location, sheetname = 'birth outcome distribution')
     birthOutcomeDist_partial = dict(zip(list(df.columns.values), df.iloc[0]))    
@@ -302,41 +392,49 @@ def readSpreadsheet(fileName, keyList):
         BOsum += birthOutcomeDist[birthOutcome]
     birthOutcomeDist["Term AGA"] = 1. - BOsum
 
+
+      
     #  READ OR birth outcome stunting SHEET
-    #  sets:
+    #  gets you:
     #  - ORstuntingBirthOutcome
     df = pandas.read_excel(Location, sheetname = 'OR stunting by birth outcome')
     ORstuntingBirthOutcome = dict(zip(list(df.columns.values), df.iloc[0]))   
 
+
+
     #  READ Current Intervention Coverages SHEET
-    #  sets:
-    #  - coverage
-    #  - costSaturation
+    #  gets you:
+    #  - InterventionCoveragesCurrent
+    #  - InterventionCostCoverage
+
+    #get the nested list of causeOfDeathDist
     df = pandas.read_excel(Location, sheetname = 'Interventions cost and coverage', index_col = 'Intervention')
-    coverage = {}
-    costSaturation = {}
+    interventionCoveragesCurrent = {}
+    interventionCostCoverage = {}
     costinfoList = ["unit cost","saturation coverage"]
     for intervention in interventionList:
-        coverage[intervention] = df.loc[intervention, "baseline coverage"]
-        costSaturation[intervention] = {}
+        interventionCoveragesCurrent[intervention] = df.loc[intervention, "baseline coverage"]
+        interventionCostCoverage[intervention] = {}
         for costinfo in costinfoList:
-            costSaturation[intervention][costinfo] = df.loc[intervention, costinfo]
+            interventionCostCoverage[intervention][costinfo] = df.loc[intervention, costinfo]
+        
 
     # READ Intervention Target Population Matrix SHEET
-    # sets:
-    # - targetPopulation
+    # gets you:
+    # - interventionTargetPop
     df = pandas.read_excel(Location, sheetname = 'Interventions target population', index_col = 'Intervention')
-    targetPopulation = {}
+    interventionTargetPop = {}
     for intervention in interventionList:
-        targetPopulation[intervention] = {}
+        interventionTargetPop[intervention] = {}
         for pop in allPops:
-            targetPopulation[intervention][pop] = df.loc[intervention, pop]
+            interventionTargetPop[intervention][pop] = df.loc[intervention, pop]
+
     
     # READ Interventions maternal SHEET
-    # sets:
+    # gets you:
     # - interventionsMaternal
-    df = pandas.read_excel(Location, sheetname = 'Interventions maternal', index_col = [0]) 
     #get the list of interventions
+    df = pandas.read_excel(Location, sheetname = 'Interventions maternal', index_col = [0]) 
     mylist = list(df.index.values)
     myset = set(mylist)
     interventionsHere = list(myset)
@@ -356,104 +454,101 @@ def readSpreadsheet(fileName, keyList):
             for value in ['effectiveness', 'affected fraction']:
                 interventionsMaternal[intervention][outcome][value] = df.loc[intervention][outcome][value]
 
+
+
     # READ Interventions affected fraction SHEET
-    # sets:
-    # - affectedFraction
-    df = pandas.read_excel(Location, sheetname = 'Interventions affected fraction', index_col = [0])
+    # gets you:
+    # - interventionAffectedFraction
     #get the list of interventions
+    df = pandas.read_excel(Location, sheetname = 'Interventions affected fraction', index_col = [0])
     mylist = list(df.index.values)
     myset = set(mylist)
     interventionsHere = list(myset)
     #do the rest
     df = pandas.read_excel(Location, sheetname = 'Interventions affected fraction', index_col = [0, 1])
-    affectedFraction = {}
+    interventionAffectedFraction = {}
     # initialise
     for intervention in interventionList:
-        affectedFraction[intervention] = {}
+        interventionAffectedFraction[intervention] = {}
         for ageName in ages:
-            affectedFraction[intervention][ageName] = {}
+            interventionAffectedFraction[intervention][ageName] = {}
             for cause in causesOfDeath:
-                affectedFraction[intervention][ageName][cause] = 0.
+                interventionAffectedFraction[intervention][ageName][cause] = 0.
     # complete # WARNING allowing for all causes of death, but completing according to condition
     for intervention in interventionsHere:
         for ageName in ages:
             conditionsHere = df.loc[intervention][ageName].keys()
             for condition in conditionsHere:    
-                affectedFraction[intervention][ageName][condition] = df.loc[intervention][ageName][condition]
+                interventionAffectedFraction[intervention][ageName][condition] = df.loc[intervention][ageName][condition]
+
                 
     # READ Interventions mortality effectiveness SHEET
-    # sets:
-    # - effectivenessMortality
-    df = pandas.read_excel(Location, sheetname = 'Interventions mortality eff', index_col = [0])
+    # gets you:
+    # - interventionMortalityEffectiveness
     #get the list of interventions
+    df = pandas.read_excel(Location, sheetname = 'Interventions mortality eff', index_col = [0])
     mylist = list(df.index.values)
     myset = set(mylist)
     interventionsHere = list(myset)
     #do the rest
     df = pandas.read_excel(Location, sheetname = 'Interventions mortality eff', index_col = [0, 1])
-    effectivenessMortality = {}
+    interventionMortalityEffectiveness = {}
     # initialise
     for intervention in interventionList:
-        effectivenessMortality[intervention] = {}
+        interventionMortalityEffectiveness[intervention] = {}
         for ageName in ages:
-            effectivenessMortality[intervention][ageName] = {}
+            interventionMortalityEffectiveness[intervention][ageName] = {}
             for cause in causesOfDeath:
-                effectivenessMortality[intervention][ageName][cause] = 0.
+                interventionMortalityEffectiveness[intervention][ageName][cause] = 0.
     # complete
     for intervention in interventionsHere:
         for ageName in ages:
             causesHere = df.loc[intervention][ageName].keys()
             for cause in causesHere:    
-                effectivenessMortality[intervention][ageName][cause] = df.loc[intervention][ageName][cause]
+                interventionMortalityEffectiveness[intervention][ageName][cause] = df.loc[intervention][ageName][cause]
+
 
     # READ Interventions incidence effectiveness SHEET
-    # sets
-    # - effectivenessIncidence
-    df = pandas.read_excel(Location, sheetname = 'Interventions incidence eff', index_col = [0])
+    # gets you:
+    # - interventionIncidenceEffectiveness
     #get the list of interventions
+    df = pandas.read_excel(Location, sheetname = 'Interventions incidence eff', index_col = [0])
     mylist = list(df.index.values)
     myset = set(mylist)
     interventionsHere = list(myset)
     #do the rest
     df = pandas.read_excel(Location, sheetname = 'Interventions incidence eff', index_col = [0, 1])
-    effectivenessIncidence = {}
+    interventionIncidenceEffectiveness = {}
     # initialise
     for intervention in interventionList:
-        effectivenessIncidence[intervention] = {}
+        interventionIncidenceEffectiveness[intervention] = {}
         for ageName in ages:
-            effectivenessIncidence[intervention][ageName] = {}
+            interventionIncidenceEffectiveness[intervention][ageName] = {}
             for condition in conditions:
-                effectivenessIncidence[intervention][ageName][condition] = 0.
+                interventionIncidenceEffectiveness[intervention][ageName][condition] = 0.
     # complete
     for intervention in interventionsHere:
         for ageName in ages:
             conditionsHere = df.loc[intervention][ageName].keys()
             for condition in conditionsHere:    
-                effectivenessIncidence[intervention][ageName][condition] = df.loc[intervention][ageName][condition]
+                interventionIncidenceEffectiveness[intervention][ageName][condition] = df.loc[intervention][ageName][condition]
+
+
 
     # READ OR stunting for complements SHEET
-    # sets:
+    # gets you:
     # - ORstuntingComplementaryFeeding
     df = pandas.read_excel(Location, sheetname = 'OR stunting for complements') 
-    foodSecurityGroups = list(df['Complements group'])
+    complementsList = list(df['Complements group'])
     df = pandas.read_excel(Location, sheetname = 'OR stunting for complements', index_col = 'Complements group') 
     ORstuntingComplementaryFeeding = {}
     for ageName in ages:
         ORstuntingComplementaryFeeding[ageName] = {}
-        for group in foodSecurityGroups:
+        for group in complementsList:
             ORstuntingComplementaryFeeding[ageName][group] = df.loc[group, ageName]    
-
+    
             
-    spreadsheetData = Data(causesOfDeath, conditions, interventionList, demographics,
-                           projectedBirths, rawMortality, causeOfDeathDist, RRdeathStunting,
-                           RRdeathWasting, RRdeathBreastfeeding, RRdeathByBirthOutcome,
-                           stuntingDistribution, wastingDistribution, breastfeedingDistribution,
-                           incidences, RRdiarrhea, ORstuntingCondition, birthOutcomeDist, 
-                           ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention,
-                           ORappropriatebfIntervention, ageAppropriateBreastfeeding, coverage,
-                           costSaturation, targetPopulation, affectedFraction,
-                           effectivenessMortality, effectivenessIncidence, interventionsMaternal,
-                           foodSecurityGroups, ORstuntingComplementaryFeeding)
+    spreadsheetData = Data(ages, causesOfDeath, conditions, interventionList, demographics, projectedBirths, totalMortality, causeOfDeathDist, RRStunting, RRWasting, RRBreastfeeding, RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution, breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition, birthOutcomeDist, ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention, ORappropriatebfIntervention, ageAppropriateBreastfeeding, interventionCoveragesCurrent, interventionCostCoverage, interventionTargetPop, interventionAffectedFraction, interventionMortalityEffectiveness, interventionIncidenceEffectiveness, interventionsMaternal, complementsList, ORstuntingComplementaryFeeding)
 
     return spreadsheetData
                   

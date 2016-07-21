@@ -1,13 +1,12 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Mar 10 15:35:20 2016
-
-@author: ruth
-"""
-
-#ignore files ending in .pyc
+# files we don't need to track
 *.pyc
+*.pkl
 
 #ignore Ruth's random testing file and some notes
 randomTests.py 
+optimisationPractice.py
 InputOutputNotebook.ipynb
+.DS_Store
+.spyderworkspace
+main_ruth.py
+seminar_plotting.py
