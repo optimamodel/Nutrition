@@ -24,7 +24,7 @@ spreadsheet5 = '../input_spreadsheets/Bangladesh/subregionSpreadsheets/Rangpur.x
 spreadsheet6 = '../input_spreadsheets/Bangladesh/subregionSpreadsheets/Sylhet.xlsx'
 spreadsheetList = [spreadsheet0, spreadsheet1, spreadsheet2, spreadsheet3, spreadsheet4, spreadsheet5, spreadsheet6]
 regionNameList = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
-resultsFileStem = 'Results2016Jul/'+optimise+'/geospatial/'
+resultsFileStem = '../Results2016Jul/'+optimise+'/geospatial/'
 
 geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
 geospatialOptimisation.generateParallelResultsForGeospatialCascades(nCores, MCSampleSize)
