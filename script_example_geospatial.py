@@ -7,10 +7,10 @@ Created on Mon Jul 11 17:54:47 2016
 
 import optimisation
 
-numModelSteps = 24
-MCSampleSize = 1
+numModelSteps = 180
+MCSampleSize = 25
 geoMCSampleSize = 1
-cascadeValues = [0.25, 0.50] #, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]  
+cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]  
 optimise = 'deaths'
 spreadsheet0 = 'input_spreadsheets/Bangladesh/subregionSpreadsheets/Barisal.xlsx'
 spreadsheet1 = 'input_spreadsheets/Bangladesh/subregionSpreadsheets/Chittagong.xlsx'
@@ -29,7 +29,7 @@ GAresultsFileStem = 'ResultsExampleParallel/deaths/geospatial/GAResult'
 #geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
 #geospatialOptimisation.generateAllRegionsBOC()
 #geospatialOptimisation.performGeospatialOptimisation(geoMCSampleSize, MCSampleSize, GAresultsFileStem)
-#geospatialOptimisation.generateResultsForGeospatialCascades()
+#geospatialOptimisation.generateResultsForGeospatialCascades(MCSampleSize)
 
 geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
 nCores = 4
