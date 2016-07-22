@@ -325,40 +325,31 @@ class GeospatialOptimisation:
         return nationalTotalBudget
     
 
-    def generateResultsForGeospatialCascades(self):
+    def generateResultsForGeospatialCascades(self, MCSampleSize):
         import optimisation  
         for region in range(0, self.numRegions):
             regionName = self.regionNameList[region]
             spreadsheet = self.regionSpreadsheetList[region]
             thisOptimisation = optimisation.Optimisation(spreadsheet, self.numModelSteps)
             filename = self.resultsFileStem + regionName + '_cascade_' + self.optimise + '_'
-            thisOptimisation.performCascadeOptimisation(self.optimise, self.MCSampleSize, filename, self.cascadeValues)
+            thisOptimisation.performCascadeOptimisation(self.optimise, MCSampleSize, filename, self.cascadeValues)
             
-    def generateParallelResultsForGeospatialCascades(self, nCores):
-        from joblib import Parallel, delayed        
-        combinations = []
-        for region in range(0, self.numRegions):
-            regionName = self.regionNameList[region]
-            for value in self.cascadeValues:
-                combinations.append([region, regionName, value])
-        # run in parallel        
-        Parallel(n_jobs = nCores)(delayed(self.geoParallelRunFunction)(combination) for combination in combinations)
-                
-            
+    def generateParallelResultsForGeospatialCascades(self, numCores, MCSampleSize):
+        import optimisation  
+        numParallelCombinations = len(self.cascadeValues) * self.numRegions
+        # check that you have enough cores and don't parallelise if you don't
+        if numCores < numParallelCombinations:
+            print "num cores is not enough"
+        else:    
+            for region in range(0, self.numRegions):
+                regionName = self.regionNameList[region]
+                spreadsheet = self.regionSpreadsheetList[region]
+                thisOptimisation = optimisation.Optimisation(spreadsheet, self.numModelSteps)
+                filename = self.resultsFileStem + regionName
+                subNumCores = len(self.cascadeValues)
+                thisOptimisation.performParallelCascadeOptimisation(self.optimise, MCSampleSize, filename, self.cascadeValues, subNumCores)        
 
-    def geoParallelRunFunction(self, combination):
-        import optimisation
-        print combination
-        regionIndex = combination[0]        
-        regionName = combination[1]
-        cascadeValue = combination[2]
-        spreadsheet = self.regionSpreadsheetList[regionIndex]
-        thisOptimisation = optimisation.Optimisation(spreadsheet, self.numModelSteps)
-        filename = self.resultsFileStem + regionName + '_cascade_' + self.optimise + '_'
-        thisOptimisation.performCascadeOptimisation(self.optimise, self.MCSampleSize, filename, [cascadeValue])
-        
-        
-    
+
     def getOptimisedRegionalBudgetList(self, geoMCSampleSize):
         import asd
         import numpy as np

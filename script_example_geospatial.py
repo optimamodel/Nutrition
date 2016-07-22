@@ -23,7 +23,7 @@ spreadsheetList = [spreadsheet0, spreadsheet1] #, spreadsheet2, spreadsheet3, sp
 
 regionNameList = ['Barisal', 'Chittagong'] #, 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
 #regionNameList = ['region0', 'region1', 'region2', 'region3', 'region4', 'region5', 'region6']
-resultsFileStem = 'ResultsExampleParallel/deaths/geospatial/Barisal'
+resultsFileStem = 'ResultsExampleParallel/deaths/geospatial/'
 GAresultsFileStem = 'ResultsExampleParallel/deaths/geospatial/GAResult'
 
 #geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
@@ -31,12 +31,13 @@ GAresultsFileStem = 'ResultsExampleParallel/deaths/geospatial/GAResult'
 #geospatialOptimisation.performGeospatialOptimisation(geoMCSampleSize, MCSampleSize, GAresultsFileStem)
 #geospatialOptimisation.generateResultsForGeospatialCascades()
 
-#geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
-#nCores = 2
-#geospatialOptimisation.generateParallelResultsForGeospatialCascades(nCores)
-numCores = 2
-optimisation1 = optimisation.Optimisation(spreadsheet0, numModelSteps)
-processes = optimisation1.performParallelCascadeOptimisation(optimise, MCSampleSize, resultsFileStem, cascadeValues, numCores)
+geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
+nCores = 4
+thing = geospatialOptimisation.generateParallelResultsForGeospatialCascades(nCores, MCSampleSize)
+
+#numCores = 2
+#optimisation1 = optimisation.Optimisation(spreadsheet0, numModelSteps)
+#optimisation1.performParallelCascadeOptimisation(optimise, MCSampleSize, resultsFileStem, cascadeValues, numCores)
 
 
 
