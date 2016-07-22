@@ -34,9 +34,9 @@ GAresultsFileStem = 'ResultsExampleParallel/deaths/geospatial/GAResult'
 #geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
 #nCores = 2
 #geospatialOptimisation.generateParallelResultsForGeospatialCascades(nCores)
-
+numCores = 2
 optimisation1 = optimisation.Optimisation(spreadsheet0, numModelSteps)
-processes = optimisation1.performParallelCascadeOptimisation(optimise, MCSampleSize, resultsFileStem, cascadeValues)
+processes = optimisation1.performParallelCascadeOptimisation(optimise, MCSampleSize, resultsFileStem, cascadeValues, numCores)
 
 
 

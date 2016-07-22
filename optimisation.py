@@ -138,7 +138,7 @@ class Optimisation:
         self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, filename+'_cascade_'+str(optimise)+'_'+str(cascadeValue)+'.pkl')                   
     
     
-    def performParallelCascadeOptimisation(self, optimise, MCSampleSize, filename, cascadeValues):
+    def performParallelCascadeOptimisation(self, optimise, MCSampleSize, filename, cascadeValues, numCores):
         import data 
         from multiprocessing import Process
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
@@ -147,17 +147,15 @@ class Optimisation:
         initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
         currentTotalBudget = sum(initialAllocation)
         xmin = [0.] * len(initialAllocation)
-        # use one core per cascade value
-        #nCores = len(cascadeValues)
-        #Parallel(n_jobs=nCores)(delayed(self.cascadeParallelRunFunction)(cascadeValue, currentTotalBudget, costCoverageInfo, optimise, MCSampleSize, xmin, filename) for cascadeValue in cascadeValues)
-        processes = []
-        for value in cascadeValues:
-            prc = Process(
-                target=self.cascadeParallelRunFunction, 
-                args=(value, currentTotalBudget, spreadsheetData, costCoverageInfo, optimise, MCSampleSize, xmin, filename))
-            prc.start()
-            processes.append(prc)    
-        return processes    
+        # check that you have enough cores and don't parallelise if you don't
+        if numCores < len(cascadeValues):
+            print "numCores is not enough"
+        else:    
+            for value in cascadeValues:
+                prc = Process(
+                    target=self.cascadeParallelRunFunction, 
+                    args=(value, currentTotalBudget, spreadsheetData, costCoverageInfo, optimise, MCSampleSize, xmin, filename))
+                prc.start()
         
     def runOnce(self, MCSampleSize, xmin, args, interventionList, totalBudget, filename):        
         import asd as asd 
