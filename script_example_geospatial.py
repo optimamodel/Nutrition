@@ -23,7 +23,7 @@ spreadsheetList = [spreadsheet0, spreadsheet1] #, spreadsheet2, spreadsheet3, sp
 
 regionNameList = ['Barisal', 'Chittagong'] #, 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
 #regionNameList = ['region0', 'region1', 'region2', 'region3', 'region4', 'region5', 'region6']
-resultsFileStem = 'ResultsExampleParallel/deaths/geospatial/'
+resultsFileStem = 'ResultsExampleParallel/deaths/geospatial/Barisal'
 GAresultsFileStem = 'ResultsExampleParallel/deaths/geospatial/GAResult'
 
 #geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)

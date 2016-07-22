@@ -135,7 +135,7 @@ class Optimisation:
     def cascadeParallelRunFunction(self, cascadeValue, currentTotalBudget, spreadsheetData, costCoverageInfo, optimise, MCSampleSize, xmin, filename):
         totalBudget = currentTotalBudget * cascadeValue
         args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
-        self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, filename+str(cascadeValue)+'.pkl')                   
+        self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, filename+'_cascade_'+str(optimise)+'_'+str(cascadeValue)+'.pkl')                   
     
     
     def performParallelCascadeOptimisation(self, optimise, MCSampleSize, filename, cascadeValues):
