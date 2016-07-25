@@ -27,7 +27,7 @@ numCores = 8
 thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise, resultsFileStem)
 
 # use it to genarate geospatial cascades if they're not already there (these will be stored in the resultsFileStem location)
-thisOptimisation.performParallelCascadeOptimisation(optimise, MCSampleSize, cascadeValues, numCores)
+thisOptimisation.performParallelCascadeOptimisation(MCSampleSize, cascadeValues, numCores)
 
 # perform one optimisation of the curent budget
 # the output file will be (resultsFileStem):
