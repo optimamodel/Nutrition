@@ -93,14 +93,15 @@ class OutputClass:
             
             
 class Optimisation:
-    def __init__(self, dataSpreadsheetName, numModelSteps, resultsFileStem):
+    def __init__(self, dataSpreadsheetName, numModelSteps, optimise, resultsFileStem):
         import helper       
         self.dataSpreadsheetName = dataSpreadsheetName
         self.numModelSteps = numModelSteps
+        self.optimise = optimise
         self.resultsFileStem = resultsFileStem
         self.helper = helper.Helper()
         
-    def performSingleOptimisation(self, optimise, MCSampleSize):
+    def performSingleOptimisation(self, MCSampleSize):
         import data 
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         costCoverageInfo = self.getCostCoverageInfo()  
@@ -108,19 +109,19 @@ class Optimisation:
         initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
         totalBudget = sum(initialAllocation)
         xmin = [0.] * len(initialAllocation)
-        args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
+        args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
         self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, self.resultsFileStem+'.pkl')
         
-    def performSingleOptimisationForGivenTotalBudget(self, optimise, MCSampleSize, totalBudget):
+    def performSingleOptimisationForGivenTotalBudget(self, MCSampleSize, totalBudget):
         import data 
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         costCoverageInfo = self.getCostCoverageInfo()  
         xmin = [0.] * len(spreadsheetData.interventionList)
-        args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
+        args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
         self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, self.resultsFileStem+'.pkl')    
         
         
-    def performCascadeOptimisation(self, optimise, MCSampleSize, cascadeValues):
+    def performCascadeOptimisation(self, MCSampleSize, cascadeValues):
         import data 
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         costCoverageInfo = self.getCostCoverageInfo()  
@@ -130,16 +131,16 @@ class Optimisation:
         xmin = [0.] * len(initialAllocation)
         for cascade in cascadeValues:
             totalBudget = currentTotalBudget * cascade
-            args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
+            args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
             self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, self.resultsFileStem+str(cascade)+'.pkl')    
 
-    def cascadeParallelRunFunction(self, cascadeValue, currentTotalBudget, spreadsheetData, costCoverageInfo, optimise, MCSampleSize, xmin):
+    def cascadeParallelRunFunction(self, cascadeValue, currentTotalBudget, spreadsheetData, costCoverageInfo, MCSampleSize, xmin):
         totalBudget = currentTotalBudget * cascadeValue
-        args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
-        self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, self.resultsFileStem+'_cascade_'+str(optimise)+'_'+str(cascadeValue)+'.pkl')                   
+        args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
+        self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, self.resultsFileStem+'_cascade_'+str(self.optimise)+'_'+str(cascadeValue)+'.pkl')                   
     
     
-    def performParallelCascadeOptimisation(self, optimise, MCSampleSize, cascadeValues, numCores):
+    def performParallelCascadeOptimisation(self, MCSampleSize, cascadeValues, numCores):
         import data 
         from multiprocessing import Process
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
@@ -155,7 +156,7 @@ class Optimisation:
             for value in cascadeValues:
                 prc = Process(
                     target=self.cascadeParallelRunFunction, 
-                    args=(value, currentTotalBudget, spreadsheetData, costCoverageInfo, optimise, MCSampleSize, xmin))
+                    args=(value, currentTotalBudget, spreadsheetData, costCoverageInfo, self.optimise, MCSampleSize, xmin))
                 prc.start()
         
     def runOnce(self, MCSampleSize, xmin, args, interventionList, totalBudget, filename):        
@@ -268,7 +269,7 @@ class Optimisation:
         outcomeVector = []
         for cascade in cascadeValues:
             spendingVector.append(cascade * currentTotalBudget)
-            filename = self.resultsFileStem + '_cascade_' + str(outcome) + '_' + str(cascade)+'.pkl'
+            filename = self.resultsFileStem + '_cascade_' + str(self.optimise) + '_' + str(cascade)+'.pkl'
             infile = open(filename, 'rb')
             thisAllocation = pickle.load(infile)
             infile.close()
