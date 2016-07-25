@@ -302,9 +302,9 @@ class GeospatialOptimisation:
         for region in range(0, self.numRegions):
             print 'generating BOC for region: ', self.regionNameList[region]
             thisSpreadsheet = self.regionSpreadsheetList[region]
-            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps)
             filename = self.resultsFileStem + self.regionNameList[region]
-            spending, outcome = thisOptimisation.generateBOCVectors(filename, self.regionNameList, self.cascadeValues, self.optimise)            
+            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, filename)
+            spending, outcome = thisOptimisation.generateBOCVectors(self.regionNameList, self.cascadeValues, self.optimise)            
             regionalBOCs['spending'].append(spending)
             regionalBOCs['outcome'].append(outcome)
         print 'finished generating regional BOCs from files'    
@@ -316,7 +316,7 @@ class GeospatialOptimisation:
         regionalBudgets = []
         for region in range(0, self.numRegions):
             thisSpreadsheet = self.regionSpreadsheetList[region]
-            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps)        
+            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, 'dummyFileName')        
             spreadsheetData = data.readSpreadsheet(thisSpreadsheet, thisOptimisation.helper.keyList)             
             costCoverageInfo = thisOptimisation.getCostCoverageInfo()  
             initialTargetPopSize = thisOptimisation.getInitialTargetPopSize()          
@@ -332,8 +332,8 @@ class GeospatialOptimisation:
         for region in range(0, self.numRegions):
             regionName = self.regionNameList[region]
             spreadsheet = self.regionSpreadsheetList[region]
-            thisOptimisation = optimisation.Optimisation(spreadsheet, self.numModelSteps)
             filename = self.resultsFileStem + regionName + '_cascade_' + self.optimise + '_'
+            thisOptimisation = optimisation.Optimisation(spreadsheet, self.numModelSteps, self.optimise, filename)
             thisOptimisation.performCascadeOptimisation(self.optimise, MCSampleSize, filename, self.cascadeValues)
             
     def generateParallelResultsForGeospatialCascades(self, numCores, MCSampleSize):
@@ -347,10 +347,10 @@ class GeospatialOptimisation:
             for region in range(0, self.numRegions):
                 regionName = self.regionNameList[region]
                 spreadsheet = self.regionSpreadsheetList[region]
-                thisOptimisation = optimisation.Optimisation(spreadsheet, self.numModelSteps)
                 filename = self.resultsFileStem + regionName
+                thisOptimisation = optimisation.Optimisation(spreadsheet, self.numModelSteps, self.optimise, filename)
                 subNumCores = len(self.cascadeValues)
-                thisOptimisation.performParallelCascadeOptimisation(self.optimise, MCSampleSize, filename, self.cascadeValues, subNumCores)        
+                thisOptimisation.performParallelCascadeOptimisation(self.optimise, MCSampleSize, self.cascadeValues, subNumCores)        
 
 
     def getOptimisedRegionalBudgetList(self, geoMCSampleSize):
@@ -387,9 +387,9 @@ class GeospatialOptimisation:
             print 'optimising for individual region ', regionName
             filename = filenameStem + '_' + regionName 
             thisSpreadsheet = self.regionSpreadsheetList[region]
-            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps) 
+            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, filename) 
             thisBudget = optimisedRegionalBudgetList[region]
-            thisOptimisation.performSingleOptimisationForGivenTotalBudget(self.optimise, MCSampleSize, filename, thisBudget)
+            thisOptimisation.performSingleOptimisationForGivenTotalBudget(self.optimise, MCSampleSize, thisBudget)
         
     def plotReallocationByRegion(self):
         from plotting import plotallocations 
@@ -399,7 +399,7 @@ class GeospatialOptimisation:
         for iReg in range(self.numRegions):
             regionName = self.regionNameList[iReg]
             print regionName
-            thisOptimisation = optimisation.Optimisation(self.regionSpreadsheetList[iReg], self.numModelSteps)
+            thisOptimisation = optimisation.Optimisation(self.regionSpreadsheetList[iReg], self.numModelSteps, self.optimise, 'dummyFilename')
             geospatialAllocations[regionName] = {}
             geospatialAllocations[regionName]['baseline'] = thisOptimisation.getInitialAllocationDictionary()
             filename = '%s%s_cascade_%s_1.0.pkl'%(self.resultsFileStem, regionName, self.optimise)
