@@ -11,11 +11,11 @@ sys.path.append(moduleDir)
 import optimisation
 
 optimise = 'deaths'
-nCores = 49
+nCores = 7
 
 numModelSteps = 180
 MCSampleSize = 25
-cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0] #, 4.0]  
+cascadeValues = [4.0] #[0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]  
 spreadsheet0 = '../input_spreadsheets/Bangladesh/subregionSpreadsheets/Barisal.xlsx'
 spreadsheet1 = '../input_spreadsheets/Bangladesh/subregionSpreadsheets/Chittagong.xlsx'
 spreadsheet2 = '../input_spreadsheets/Bangladesh/subregionSpreadsheets/Dhaka.xlsx'
