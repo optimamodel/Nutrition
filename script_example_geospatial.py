@@ -27,10 +27,10 @@ spreadsheetList = [spreadsheet0, spreadsheet1, spreadsheet2, spreadsheet3, sprea
 regionNameList = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
 
 # this is the location of the optimisation results per region (to be generated or harvested)
-resultsFileStem = 'ResultsExampleParallel/deaths/geospatial/'
+resultsFileStem = 'Results2016Jul/deaths/geospatial/'
 
 # this is the location of the results from the geospatial analysis
-GAresultsFileStem = 'ResultsExampleParallel/deaths/geospatial/GAResult'
+GAresultsFileStem = 'Results2016Jul/deaths/geospatial/GAResult'
 
 # check athena and then specify how many cores you are going to use (this translates into the number of jobs as we assume 1 core per job)
 nCores = 4
@@ -38,8 +38,11 @@ nCores = 4
 # instantiate a geospatial object
 geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
 
-# use it to genarate geospatial cascades (these will be stored in the resultsFileStem location)
+# use it to genarate geospatial cascades if they're not already there (these will be stored in the resultsFileStem location)
 geospatialOptimisation.generateParallelResultsForGeospatialCascades(nCores, MCSampleSize)
+
+# plot the reallocation of spending per region
+geospatialOptimisation.plotReallocationByRegion()
 
 # now harvest those results to perform the geospatial optimisation
 geospatialOptimisation.performGeospatialOptimisation(geoMCSampleSize, MCSampleSize, GAresultsFileStem)
