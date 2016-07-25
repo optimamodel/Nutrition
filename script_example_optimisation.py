@@ -20,10 +20,11 @@ optimise = 'stunting'
 resultsFileStem = '../ResultsExampleParallel/'+optimise+'/national/Bangladesh'
 
 # check athena and then specify how many cores you are going to use (this translates into the number of jobs as we assume 1 core per job)
+# this is only needed if you plan to run in parallel
 numCores = 8
 
 # instantiate an optimisation object
-thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, resultsFileStem)
+thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise, resultsFileStem)
 
 # use it to genarate geospatial cascades if they're not already there (these will be stored in the resultsFileStem location)
 thisOptimisation.performParallelCascadeOptimisation(optimise, MCSampleSize, cascadeValues, numCores)
