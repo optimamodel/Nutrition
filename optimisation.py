@@ -350,7 +350,7 @@ class GeospatialOptimisation:
                 filename = self.resultsFileStem + regionName
                 thisOptimisation = optimisation.Optimisation(spreadsheet, self.numModelSteps, self.optimise, filename)
                 subNumCores = len(self.cascadeValues)
-                thisOptimisation.performParallelCascadeOptimisation(self.optimise, MCSampleSize, self.cascadeValues, subNumCores)        
+                thisOptimisation.performParallelCascadeOptimisation(MCSampleSize, self.cascadeValues, subNumCores)        
 
 
     def getOptimisedRegionalBudgetList(self, geoMCSampleSize):
