@@ -21,4 +21,4 @@ t1 = time.time()
 total = t1-t0
 
 #  DETAIL TIMING RUN RESULTS BELOW FOR OUR RECORDS
-# total = 346 s = 5.75 min for:  MCSampleSize = 1, numModelSteps = 180  (on Ruth's laptop)
+# total = 346 s = 5.75 min for:  MCSampleSize = 1, numModelSteps = 180, (optimised for deaths)  (on Ruth's laptop)
