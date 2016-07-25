@@ -156,7 +156,7 @@ class Optimisation:
             for value in cascadeValues:
                 prc = Process(
                     target=self.cascadeParallelRunFunction, 
-                    args=(value, currentTotalBudget, spreadsheetData, costCoverageInfo, self.optimise, MCSampleSize, xmin))
+                    args=(value, currentTotalBudget, spreadsheetData, costCoverageInfo, MCSampleSize, xmin))
                 prc.start()
         
     def runOnce(self, MCSampleSize, xmin, args, interventionList, totalBudget, filename):        
