@@ -112,13 +112,13 @@ class Optimisation:
         args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
         self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, self.resultsFileStem+'.pkl')
         
-    def performSingleOptimisationForGivenTotalBudget(self, MCSampleSize, totalBudget):
+    def performSingleOptimisationForGivenTotalBudget(self, MCSampleSize, totalBudget, filename):
         import data 
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         costCoverageInfo = self.getCostCoverageInfo()  
         xmin = [0.] * len(spreadsheetData.interventionList)
         args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
-        self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, self.resultsFileStem+'.pkl')    
+        self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, self.resultsFileStem+'_'+filename+'.pkl')    
         
         
     def performCascadeOptimisation(self, MCSampleSize, cascadeValues):
