@@ -15,19 +15,15 @@ MCSampleSize = 25
 geoMCSampleSize = 25
 cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]  
 optimise = 'deaths'
-spreadsheet0 = 'input_spreadsheets/Bangladesh/subregionSpreadsheets/Barisal.xlsx'
-spreadsheet1 = 'input_spreadsheets/Bangladesh/subregionSpreadsheets/Chittagong.xlsx'
-spreadsheet2 = 'input_spreadsheets/Bangladesh/subregionSpreadsheets/Dhaka.xlsx'
-spreadsheet3 = 'input_spreadsheets/Bangladesh/subregionSpreadsheets/Khulna.xlsx'
-spreadsheet4 = 'input_spreadsheets/Bangladesh/subregionSpreadsheets/Rajshahi.xlsx'
-spreadsheet5 = 'input_spreadsheets/Bangladesh/subregionSpreadsheets/Rangpur.xlsx'
-spreadsheet6 = 'input_spreadsheets/Bangladesh/subregionSpreadsheets/Sylhet.xlsx'
-spreadsheetList = [spreadsheet0, spreadsheet1, spreadsheet2, spreadsheet3, spreadsheet4, spreadsheet5, spreadsheet6]
-
 regionNameList = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
+spreadsheetFileStem = '../input_spreadsheets/Bangladesh/2016Jul26/subregionSpreadsheets/'
+spreadsheetList = []
+for regionName in regionNameList:
+    spreadsheet = spreadsheetFileStem + regionName + '.xlsx'
+    spreadsheetList.append(spreadsheet)
 
 # this is the location of the optimisation results per region (to be generated or harvested)
-resultsFileStem = 'Results2016Jul/deaths/geospatial/'
+resultsFileStem = 'ResultsExample/'+optimise+'/geospatial/'
 
 # this is the location of the results from the geospatial analysis
 GAresultsFileStem = 'Results2016Jul/deaths/geospatial/GAResult'
