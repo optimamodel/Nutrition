@@ -11,7 +11,7 @@ sys.path.append(moduleDir)
 import optimisation
 
 optimise = 'deaths'
-nCores = 7
+nCores = 49
 
 numModelSteps = 180
 MCSampleSize = 25
