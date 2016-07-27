@@ -112,3 +112,17 @@ def plotalloccascade(budgetcascade):
     plt.xlim([min(tick_pos)-bar_width, max(tick_pos)+bar_width])
     plt.tight_layout()
     plt.show()
+    
+    
+### placeholder very simple unfancy function to plot time series.  Added by Ruth.
+def plotTimeSeries(years, yBaseline, yOptimised, title):
+    import matplotlib.pyplot as plt
+    plt.plot(years, yBaseline, label = 'baseline')
+    plt.plot(years, yOptimised, label = 'optimised')
+    plt.ylabel('objective')
+    plt.title(title)
+    plt.legend()
+    plt.show()    
+        
+    
+    
