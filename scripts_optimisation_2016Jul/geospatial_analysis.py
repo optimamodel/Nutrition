@@ -23,7 +23,6 @@ for regionName in regionNameList:
     spreadsheet = spreadsheetFileStem + regionName + '.xlsx'
     spreadsheetList.append(spreadsheet)
 
-
 for optimise in optimiseList:
     print 'running GA for:  ', optimise
     
