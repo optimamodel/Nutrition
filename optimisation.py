@@ -118,7 +118,7 @@ class Optimisation:
         costCoverageInfo = self.getCostCoverageInfo()  
         xmin = [0.] * len(spreadsheetData.interventionList)
         args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
-        self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, self.resultsFileStem+'_'+filename+'.pkl')    
+        self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, self.resultsFileStem+filename+'.pkl')    
         
         
     def performCascadeOptimisation(self, MCSampleSize, cascadeValues):
@@ -377,7 +377,7 @@ class GeospatialOptimisation:
         optimisedRegionalBudgetList = bestSampleScaled  
         return optimisedRegionalBudgetList
         
-    def performGeospatialOptimisation(self, geoMCSampleSize, MCSampleSize, filenameStem):
+    def performGeospatialOptimisation(self, geoMCSampleSize, MCSampleSize, GAFile):
         import optimisation  
         print 'beginning geospatial optimisation..'
         optimisedRegionalBudgetList = self.getOptimisedRegionalBudgetList(geoMCSampleSize)
@@ -385,11 +385,10 @@ class GeospatialOptimisation:
         for region in range(0, self.numRegions):
             regionName = self.regionNameList[region]
             print 'optimising for individual region ', regionName
-            filename = filenameStem + '_' + regionName 
             thisSpreadsheet = self.regionSpreadsheetList[region]
-            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, filename) 
+            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, self.resultsFileStem) 
             thisBudget = optimisedRegionalBudgetList[region]
-            thisOptimisation.performSingleOptimisationForGivenTotalBudget(self.optimise, MCSampleSize, thisBudget)
+            thisOptimisation.performSingleOptimisationForGivenTotalBudget(MCSampleSize, thisBudget, GAFile+'_'+regionName)
         
     def plotReallocationByRegion(self):
         from plotting import plotallocations 
@@ -410,5 +409,84 @@ class GeospatialOptimisation:
             # plot
             plotallocations(geospatialAllocations[regionName]['baseline'],geospatialAllocations[regionName][self.optimise])
             
+    def plotPostGAReallocationByRegion(self, GAFile):
+        from plotting import plotallocations 
+        import pickle
+        import optimisation
+        geospatialAllocations = {}
+        for iReg in range(self.numRegions):
+            regionName = self.regionNameList[iReg]
+            print regionName
+            thisOptimisation = optimisation.Optimisation(self.regionSpreadsheetList[iReg], self.numModelSteps, self.optimise, 'dummyFilename')
+            geospatialAllocations[regionName] = {}
+            geospatialAllocations[regionName]['baseline'] = thisOptimisation.getInitialAllocationDictionary()
+            filename = '%s%s_%s.pkl'%(self.resultsFileStem, GAFile, regionName)
+            infile = open(filename, 'rb')
+            allocation = pickle.load(infile)
+            geospatialAllocations[regionName][self.optimise] = allocation
+            infile.close()
+            # plot
+            plotallocations(geospatialAllocations[regionName]['baseline'],geospatialAllocations[regionName][self.optimise])       
             
+    def plotTimeSeriesPostGAReallocationByRegion(self, GAFile):
+        import pickle
+        import optimisation
+        from plotting import plotTimeSeries
+        from copy import deepcopy as dcp
+        for region in range(len(self.regionSpreadsheetList)):
+            regionName = self.regionNameList[region]
+            spreadsheet = self.regionSpreadsheetList[region]
+            allocation = {}
+            thisOptimisation = optimisation.Optimisation(spreadsheet, self.numModelSteps, self.optimise, 'dummyFile')
+            # Baseline
+            allocation['baseline'] = thisOptimisation.getInitialAllocationDictionary()
+            # read the optimal budget allocations from file
+            filename = '%s%s_%s.pkl'%(self.resultsFileStem, GAFile, regionName)
+            infile = open(filename, 'rb')
+            allocation[self.optimise] = pickle.load(infile)
+            infile.close()
             
+            scenarios = ['baseline', dcp(self.optimise)]
+            # run models and save output 
+            print "performing model runs to generate time series..."
+            modelRun = {}
+            for scenario in scenarios:
+                modelRun[scenario] = thisOptimisation.oneModelRunWithOutput(allocation[scenario])
+            
+            # get y axis
+            objective = {}    
+            objectiveYearly = {}
+            for scenario in scenarios:
+                objective[scenario] = []
+                
+                if self.optimise == 'deaths':
+                    objective[scenario].append(modelRun[scenario][0].getTotalCumulativeDeaths())
+                    for i in range(1, self.numModelSteps):
+                        difference = modelRun[scenario][i].getTotalCumulativeDeaths() - modelRun[scenario][i-1].getTotalCumulativeDeaths()
+                        objective[scenario].append(difference)
+                        
+                if self.optimise == 'stunting':
+                    objective[scenario].append(modelRun[scenario][0].getCumulativeAgingOutStunted())
+                    for i in range(1, self.numModelSteps):
+                        difference = modelRun[scenario][i].getCumulativeAgingOutStunted() - modelRun[scenario][i-1].getCumulativeAgingOutStunted()
+                        objective[scenario].append(difference)
+            
+                # make it yearly
+                numYears = self.numModelSteps/12
+                objectiveYearly[scenario] = []
+                for i in range(0, numYears):
+                    step = i*12
+                    objectiveYearly[scenario].append( sum(objective[scenario][step:12+step]) )
+            title = regionName + '  ' + self.optimise   
+            years = range(2016, 2016 + numYears)
+            plotTimeSeries(years, objectiveYearly['baseline'], objectiveYearly[self.optimise], title)
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
