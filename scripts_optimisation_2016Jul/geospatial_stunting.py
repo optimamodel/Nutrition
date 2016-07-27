@@ -10,11 +10,11 @@ sys.path.append(moduleDir)
 import optimisation
 
 optimise = 'stunting'
-nCores = 49
+nCores = 7
 
 numModelSteps = 180
 MCSampleSize = 25
-cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0] #, 4.0]  
+cascadeValues = [4.0] #[0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0] #, 4.0]  
 regionNameList = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
 spreadsheetFileStem = '../input_spreadsheets/Bangladesh/2016Jul26/subregionSpreadsheets/'
 spreadsheetList = []
