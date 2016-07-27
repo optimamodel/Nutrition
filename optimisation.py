@@ -445,32 +445,27 @@ class GeospatialOptimisation:
             infile = open(filename, 'rb')
             allocation[self.optimise] = pickle.load(infile)
             infile.close()
-            
             scenarios = ['baseline', dcp(self.optimise)]
             # run models and save output 
             print "performing model runs to generate time series..."
             modelRun = {}
             for scenario in scenarios:
                 modelRun[scenario] = thisOptimisation.oneModelRunWithOutput(allocation[scenario])
-            
             # get y axis
             objective = {}    
             objectiveYearly = {}
             for scenario in scenarios:
                 objective[scenario] = []
-                
                 if self.optimise == 'deaths':
                     objective[scenario].append(modelRun[scenario][0].getTotalCumulativeDeaths())
                     for i in range(1, self.numModelSteps):
                         difference = modelRun[scenario][i].getTotalCumulativeDeaths() - modelRun[scenario][i-1].getTotalCumulativeDeaths()
                         objective[scenario].append(difference)
-                        
                 if self.optimise == 'stunting':
                     objective[scenario].append(modelRun[scenario][0].getCumulativeAgingOutStunted())
                     for i in range(1, self.numModelSteps):
                         difference = modelRun[scenario][i].getCumulativeAgingOutStunted() - modelRun[scenario][i-1].getCumulativeAgingOutStunted()
                         objective[scenario].append(difference)
-            
                 # make it yearly
                 numYears = self.numModelSteps/12
                 objectiveYearly[scenario] = []
