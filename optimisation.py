@@ -60,11 +60,8 @@ def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimis
     model.updateCoverages(newCoverages)
     for t in range(numModelSteps - timestepsPre):
         model.moveOneTimeStep()
-    if optimise == 'deaths':    
-        performanceMeasure = model.getTotalCumulativeDeaths()
-    if optimise == 'stunting':        
-        performanceMeasure = model.getCumulativeAgingOutStunted()
-    return performanceMeasure    
+    performanceMeasure = model.getOutcome(optimise)
+    return performanceMeasure
     
 def geospatialObjectiveFunction(proposalSpendingList, regionalBOCs, totalBudget):
     import pchip
@@ -274,10 +271,7 @@ class Optimisation:
             thisAllocation = pickle.load(infile)
             infile.close()
             modelOutput = self.oneModelRunWithOutput(thisAllocation)
-            if outcome == 'deaths':    
-                outcomeVector.append(modelOutput[self.numModelSteps-1].getTotalCumulativeDeaths())
-            if outcome == 'stunting':    
-                outcomeVector.append(modelOutput[self.numModelSteps-1].getCumulativeAgingOutStunted())    
+            outcomeVector.append(modelOutput[self.numModelSteps-1].getOutcome(outcome))
         return spendingVector, outcomeVector        
 
 
@@ -476,16 +470,10 @@ class GeospatialOptimisation:
             objectiveYearly = {}
             for scenario in scenarios:
                 objective[scenario] = []
-                if self.optimise == 'deaths':
-                    objective[scenario].append(modelRun[scenario][0].getTotalCumulativeDeaths())
-                    for i in range(1, self.numModelSteps):
-                        difference = modelRun[scenario][i].getTotalCumulativeDeaths() - modelRun[scenario][i-1].getTotalCumulativeDeaths()
-                        objective[scenario].append(difference)
-                if self.optimise == 'stunting':
-                    objective[scenario].append(modelRun[scenario][0].getCumulativeAgingOutStunted())
-                    for i in range(1, self.numModelSteps):
-                        difference = modelRun[scenario][i].getCumulativeAgingOutStunted() - modelRun[scenario][i-1].getCumulativeAgingOutStunted()
-                        objective[scenario].append(difference)
+                objective[scenario].append(modelRun[scenario][0].getOutcome(self.optimise))
+                for i in range(1, self.numModelSteps):
+                    difference = modelRun[scenario][i].getOutcome(self.optimise) - modelRun[scenario][i-1].getOutcome(self.optimise)
+                    objective[scenario].append(difference)
                 # make it yearly
                 numYears = self.numModelSteps/12
                 objectiveYearly[scenario] = []
