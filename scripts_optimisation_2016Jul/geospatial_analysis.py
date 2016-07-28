@@ -23,12 +23,18 @@ for regionName in regionNameList:
     spreadsheet = spreadsheetFileStem + regionName + '.xlsx'
     spreadsheetList.append(spreadsheet)
 
+import time
+t0 = time.time()   
+
 for optimise in optimiseList:
     print 'running GA for:  ', optimise
     
     resultsFileStem = '../Results2016Jul25/'+optimise+'/geospatial/'
-    #GAresultsFileStem = '../Results2016Jul25/'+optimise+'/GA'    
     GAFile = 'GA'    
     
     geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
     geospatialOptimisation.performGeospatialOptimisation(geoMCSampleSize, MCSampleSize, GAFile)
+    
+t1 = time.time()
+total = t1-t0 
+print 'total time  ',total   
