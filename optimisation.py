@@ -389,6 +389,26 @@ class GeospatialOptimisation:
             thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, self.resultsFileStem) 
             thisBudget = optimisedRegionalBudgetList[region]
             thisOptimisation.performSingleOptimisationForGivenTotalBudget(MCSampleSize, thisBudget, GAFile+'_'+regionName)
+            
+    def performParallelGeospatialOptimisation(self, geoMCSampleSize, MCSampleSize, GAFile, numCores):
+        import optimisation  
+        from multiprocessing import Process
+        print 'beginning geospatial optimisation..'
+        optimisedRegionalBudgetList = self.getOptimisedRegionalBudgetList(geoMCSampleSize)
+        print 'finished geospatial optimisation'
+        if self.numRegions >numCores:
+            print "not enough cores to parallelise"
+        else:    
+            for region in range(0, self.numRegions):
+                regionName = self.regionNameList[region]
+                print 'optimising for individual region ', regionName
+                thisSpreadsheet = self.regionSpreadsheetList[region]
+                thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, self.resultsFileStem) 
+                thisBudget = optimisedRegionalBudgetList[region]
+                prc = Process(
+                    target=thisOptimisation.performSingleOptimisationForGivenTotalBudget, 
+                    args=(MCSampleSize, thisBudget, GAFile+'_'+regionName))
+                prc.start()
         
     def plotReallocationByRegion(self):
         from plotting import plotallocations 
