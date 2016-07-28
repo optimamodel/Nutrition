@@ -144,12 +144,6 @@ class Model:
         self.params = inputParams
 
 
-    def getTotalCumulativeDeaths(self):
-        totalCumulativeDeaths = 0
-        for ageGroup in self.listOfAgeCompartments:
-            totalCumulativeDeaths += ageGroup.getCumulativeDeaths()
-        return totalCumulativeDeaths
-        
     def getTotalNumberStunted(self):
         totalNumberStunted = 0
         for ageGroup in self.listOfAgeCompartments:
@@ -164,9 +158,34 @@ class Model:
             totalPopSize += ageGroup.getTotalPopulation()
         return float(totalNumberStunted)/float(totalPopSize)
         
-
+    def getTotalCumulativeDeaths(self):
+        totalCumulativeDeaths = 0
+        for ageGroup in self.listOfAgeCompartments:
+            totalCumulativeDeaths += ageGroup.getCumulativeDeaths()
+        return totalCumulativeDeaths
+        
     def getCumulativeAgingOutStunted(self):
         return self.cumulativeAgingOutStunted
+
+    def getDALYs(self):
+        DALYs = 0.0
+        numStuntedAt5 = self.getCumulativeAgingOutStunted()
+        DALYs += numStuntedAt5 * 0.23 * 78. # 0.23 = disability weight; 78. = 83-5 = life-expectancy minus age of calculation
+        for ageGroup in self.listOfAgeCompartments:
+            cumulativeDeathsThisAge = ageGroup.getCumulativeDeaths()
+            DALYs += cumulativeDeathsThisAge * 80. # should be slightly different for each age
+        return DALYs
+    
+
+    def getOutcome(self, outcome):
+        outcomeValue = None
+        if outcome == 'deaths':
+            outcomeValue = self.getTotalCumulativeDeaths()
+        elif outcome == 'stunting':
+            outcomeValue = self.getCumulativeAgingOutStunted()
+        elif outcome == 'DALYs':
+            outcomeValue = self.getDALYs()
+        return outcomeValue
 
 
     def getDiagnostics(self, verbose=False):
