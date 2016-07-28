@@ -18,6 +18,7 @@ class Helper:
         self.keyList['ageGroupSpans'] = [1., 5., 6., 12., 36.] # number of months in each age group
         self.keyList['agingRates'] = [1./1., 1./5., 1./6., 1./12., 1./36.]
         self.keyList['stuntedList'] = ["moderate", "high"]
+        self.keyList['life expectancy'] = 83.5
 
     # Going from binary stunting/wasting to four fractions
     # Yes refers to more than 2 standard deviations below the global mean/median
