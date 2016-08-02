@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Jul 22 15:42:49 2016
+Created on Tue Aug  2 17:27:39 2016
 
 @author: ruth
 """
+
 import os, sys
 moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
 import optimisation
 
-optimise = 'stunting'
+optimise = 'DALYs'
 nCores = 49
 
 numModelSteps = 180

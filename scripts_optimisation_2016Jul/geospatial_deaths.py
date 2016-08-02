@@ -15,15 +15,15 @@ nCores = 49
 
 numModelSteps = 180
 MCSampleSize = 25
-cascadeValues = [4.0] #[0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0] #, 4.0]  
+cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0] #, 4.0]  
 regionNameList = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
-spreadsheetFileStem = '../input_spreadsheets/Bangladesh/2016Jul26/subregionSpreadsheets/'
+spreadsheetFileStem = '../input_spreadsheets/Bangladesh/2016Aug02/subregionSpreadsheets/'
 spreadsheetList = []
 for regionName in regionNameList:
     spreadsheet = spreadsheetFileStem + regionName + '.xlsx'
     spreadsheetList.append(spreadsheet)
 
-resultsFileStem = '../Results2016Jul26/'+optimise+'/geospatial/'
+resultsFileStem = '../Results2016Aug02/'+optimise+'/geospatial/'
 
 geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
 geospatialOptimisation.generateParallelResultsForGeospatialCascades(nCores, MCSampleSize)
