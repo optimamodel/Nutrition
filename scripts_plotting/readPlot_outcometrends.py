@@ -15,12 +15,12 @@ country = 'Bangladesh'
 version = 'v5'
 root = '../../Results2016Jun/%s'%(country)
 
-numModelSteps = 180
+numTimesteps = 180
 
 allocation = {}
 dataSpreadsheetName = '../input_spreadsheets/%s/InputForCode_Bangladesh.xlsx'%(country)
-thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps)
 # Baseline
+thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numTimesteps, 'foo', 'shouldnotbehere')
 allocation['baseline'] = thisOptimisation.getInitialAllocationDictionary()
 # read the optimal budget allocations from file
 for scenario in ['deaths','stunting']:
@@ -36,8 +36,7 @@ for scenario in ['baseline','deaths','stunting']:
     print scenario
     modelRun[scenario] = thisOptimisation.oneModelRunWithOutput(allocation[scenario])
 
-#baseline = thisOptimisation.oneModelRunWithOutput(allocation[scenario])
-numsteps = len(modelRun['baseline']) # WARNING would have to equal numModelSteps?
+
 
 # GET Y AXIS FOR NUMBER OF DEATHS
 print "\n Monthly Deaths" 
@@ -46,7 +45,7 @@ for scenario in ['baseline','deaths','stunting']:
     print scenario
     numDeaths[scenario] = []
     numDeaths[scenario].append(modelRun[scenario][0].getTotalCumulativeDeaths())
-    for i in range(1, numsteps):
+    for i in range(1, numTimesteps):
         print modelRun[scenario][i].getTotalCumulativeDeaths()
         difference = modelRun[scenario][i].getTotalCumulativeDeaths() - modelRun[scenario][i-1].getTotalCumulativeDeaths()
         numDeaths[scenario].append(difference)
@@ -55,7 +54,7 @@ for scenario in ['baseline','deaths','stunting']:
 stuntingPrev = {}
 for scenario in ['baseline','deaths','stunting']:
     stuntingPrev[scenario] = []
-    for i in range(0, numsteps):
+    for i in range(0, numTimesteps):
         stuntingPrev[scenario].append(modelRun[scenario][i].getTotalStuntedFraction())
     
 # GET Y AXIS FOR NUMBER AGING OUT STUNTED
@@ -65,13 +64,13 @@ for scenario in ['baseline','deaths','stunting']:
     print scenario
     numStuntedAfter5[scenario] = []
     numStuntedAfter5[scenario].append(modelRun[scenario][0].getCumulativeAgingOutStunted())
-    for i in range(1, numsteps):
+    for i in range(1, numTimesteps):
         print modelRun[scenario][i].getCumulativeAgingOutStunted()
         difference = modelRun[scenario][i].getCumulativeAgingOutStunted() - modelRun[scenario][i-1].getCumulativeAgingOutStunted()
         numStuntedAfter5[scenario].append(difference)
 
 # MAKE THESE YEARLY
-numYears = numsteps/12
+numYears = numTimesteps/12
 
 # DEATHS
 print "\n Annual deaths"
