@@ -123,6 +123,37 @@ def plotTimeSeries(years, yBaseline, yOptimised, title):
     plt.title(title)
     plt.legend()
     plt.show()    
+    
+def plotRegionalBOCs(regionalBOCs, regionList, optimise):
+    import matplotlib.pyplot as plt
+    for region in range(len(regionList)):
+        regionName = regionList[region]
+        x = regionalBOCs['spending'][region]
+        y = regionalBOCs['outcome'][region]
+        plt.plot(x, y, label = regionName)
+    plt.title('BOCs')
+    plt.ylabel(optimise)
+    plt.xlabel('spending')
+    plt.legend()
+    plt.show()
+
+def plotTradeOffCurves(tradeOffCurves, regionList, optimise):
+    import matplotlib.pyplot as plt
+    for region in range(len(regionList)):
+        regionName = regionList[region]
+        x = tradeOffCurves[regionName]['spending']
+        y = tradeOffCurves[regionName]['outcome']
+        plt.plot(x, y, label = regionName)
+    plt.title('trade off curves')
+    plt.ylabel(optimise+' cases averted')
+    plt.xlabel('additional $')
+    plt.legend()
+    plt.show()
+
+
+
+
+    
         
     
     
