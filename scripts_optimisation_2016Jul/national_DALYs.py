@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Jul 22 15:44:01 2016
+Created on Tue Aug  2 17:11:33 2016
 
 @author: ruth
 """
@@ -10,7 +10,7 @@ moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
 import optimisation
 
-optimise = 'deaths'
+optimise = 'DALYs'
 numCores = 8
 
 dataSpreadsheetName = '../input_spreadsheets/Bangladesh/2016Aug02/InputForCode_Bangladesh.xlsx'
@@ -21,6 +21,3 @@ resultsFileStem = '../Results2016Aug02/'+optimise+'/national/Bangladesh'
 
 thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise, resultsFileStem)
 thisOptimisation.performParallelCascadeOptimisation(MCSampleSize, cascadeValues, numCores)
-
-
-
