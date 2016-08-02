@@ -292,6 +292,7 @@ class GeospatialOptimisation:
         self.resultsFileStem = resultsFileStem
         self.numRegions = len(regionSpreadsheetList)        
         self.regionalBOCs = None 
+        self.tradeOffCurves = None
         
     def generateAllRegionsBOC(self):
         print 'reading files to generate regional BOCs..'
@@ -309,6 +310,57 @@ class GeospatialOptimisation:
             regionalBOCs['outcome'].append(outcome)
         print 'finished generating regional BOCs from files'    
         self.regionalBOCs = regionalBOCs    
+        
+    def outputRegionalBOCsFile(self, filename):
+        import pickle 
+        regionalBOCsReformat = {}
+        for region in range(0, self.numRegions):
+            regionName = self.regionNameList[region]
+            regionalBOCsReformat[regionName] = {}
+            for key in ['spending', 'outcome']:
+                regionalBOCsReformat[regionName][key] = self.regionalBOCs[key][region]
+        outfile = open(filename, 'wb')
+        pickle.dump(regionalBOCsReformat, outfile)
+        outfile.close()         
+        
+    def outputTradeOffCurves(self, filename):
+        import pickle
+        self.getTradeOffCurves()
+        outfile = open(filename, 'wb')
+        pickle.dump(self.tradeOffCurves, outfile)
+        outfile.close()  
+        
+    def getTradeOffCurves(self):
+        # get index for cascade value of 1.0
+        i = 0
+        for value in self.cascadeValues:
+            if (value == 1.0):
+                index = i
+            i += 1    
+        tradeOffCurves = {}
+        for region in range(0, self.numRegions):
+            regionName = self.regionNameList[region]
+            currentSpending = self.regionalBOCs['spending'][region][index]
+            currentOucome = self.regionalBOCs['outcome'][region][index]
+            tradeOffCurves[regionName] = {}
+            spendDifference = []
+            outcomeAverted = []            
+            for i in range(len(self.cascadeValues)):
+                spendDifference.append( self.regionalBOCs['spending'][region][i] - currentSpending )
+                outcomeAverted.append( currentOucome - self.regionalBOCs['outcome'][region][i]  )
+            tradeOffCurves[regionName]['spending'] = spendDifference
+            tradeOffCurves[regionName]['outcome'] = outcomeAverted
+        self.tradeOffCurves = tradeOffCurves    
+    
+    def plotTradeOffCurves(self):
+        import plotting
+        self.getTradeOffCurves()
+        plotting.plotTradeOffCurves(self.tradeOffCurves, self.regionNameList, self.optimise)     
+
+    
+    def plotRegionalBOCs(self):
+        import plotting
+        plotting.plotRegionalBOCs(self.regionalBOCs, self.regionNameList, self.optimise)
         
     def getTotalNationalBudget(self):
         import optimisation
