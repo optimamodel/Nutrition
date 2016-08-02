@@ -145,8 +145,8 @@ class Params:
         stuntingUpdate = {}
         X1 = self.demographics['fraction poor']
         X2 = self.demographics['fraction food insecure (poor)']
-        Ce  = coverage['Complementary feeding (education)']
-        Cse = coverage['Complementary feeding (supplementation)']
+        Ce  = self.coverage['Complementary feeding (education)']
+        Cse = self.coverage['Complementary feeding (supplementation)']
         """
         FracSecure = 1. - self.demographics['fraction food insecure']
         FracCoveredEducation = newCoverage['Complementary feeding (education)']
