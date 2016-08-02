@@ -35,6 +35,7 @@ for optimise in optimiseList:
     
     geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
     geospatialOptimisation.performParallelGeospatialOptimisation(geoMCSampleSize, MCSampleSize, GAFile, numCores)
+
     
 #t1 = time.time()
 #total = t1-t0 
