@@ -272,7 +272,56 @@ class Optimisation:
             infile.close()
             modelOutput = self.oneModelRunWithOutput(thisAllocation)
             outcomeVector.append(modelOutput[self.numModelSteps-1].getOutcome(outcome))
-        return spendingVector, outcomeVector        
+        return spendingVector, outcomeVector    
+        
+    def plotReallocation(self):
+        from plotting import plotallocations 
+        import pickle
+        baselineAllocation = self.getInitialAllocationDictionary()
+        filename = '%s_cascade_%s_1.0.pkl'%(self.resultsFileStem, self.optimise)
+        infile = open(filename, 'rb')
+        optimisedAllocation = pickle.load(infile)
+        infile.close()
+        # plot
+        plotallocations(baselineAllocation,optimisedAllocation)    
+        
+    def plotTimeSeries(self):
+        import pickle
+        from plotting import plotTimeSeries
+        from copy import deepcopy as dcp
+        allocation = {}
+        # Baseline
+        allocation['baseline'] = self.getInitialAllocationDictionary()
+        # read the optimal budget allocations from file
+        filename = '%s_cascade_%s_1.0.pkl'%(self.resultsFileStem, self.optimise)
+        infile = open(filename, 'rb')
+        allocation[self.optimise] = pickle.load(infile)
+        infile.close()
+        scenarios = ['baseline', dcp(self.optimise)]
+        # run models and save output 
+        print "performing model runs to generate time series..."
+        modelRun = {}
+        for scenario in scenarios:
+            modelRun[scenario] = self.oneModelRunWithOutput(allocation[scenario])
+        # get y axis
+        objective = {}    
+        objectiveYearly = {}
+        for scenario in scenarios:
+            objective[scenario] = []
+            objective[scenario].append(modelRun[scenario][0].getOutcome(self.optimise))
+            for i in range(1, self.numModelSteps):
+                difference = modelRun[scenario][i].getOutcome(self.optimise) - modelRun[scenario][i-1].getOutcome(self.optimise)
+                objective[scenario].append(difference)
+            # make it yearly
+            numYears = self.numModelSteps/12
+            objectiveYearly[scenario] = []
+            for i in range(0, numYears):
+                step = i*12
+                objectiveYearly[scenario].append( sum(objective[scenario][step:12+step]) )
+        title = self.optimise   
+        years = range(2016, 2016 + numYears)
+        plotTimeSeries(years, objectiveYearly['baseline'], objectiveYearly[self.optimise], title)
+            
 
 
 
