@@ -28,4 +28,5 @@ resultsFileStem = '../Results2016Aug02/'+optimise+'/geospatial/'
 geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
 #geospatialOptimisation.generateParallelResultsForGeospatialCascades(nCores, MCSampleSize)
 
-geospatialOptimisation.generateParallelExtremeGeospatialCascadePoints(numCores = 7, MCSampleSize)
+numCores = 7
+geospatialOptimisation.generateParallelExtremeGeospatialCascadePoints(numCores, MCSampleSize)
