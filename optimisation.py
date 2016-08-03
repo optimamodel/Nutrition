@@ -445,7 +445,25 @@ class GeospatialOptimisation:
                 filename = self.resultsFileStem + regionName
                 thisOptimisation = optimisation.Optimisation(spreadsheet, self.numModelSteps, self.optimise, filename)
                 subNumCores = len(self.cascadeValues)
-                thisOptimisation.performParallelCascadeOptimisation(MCSampleSize, self.cascadeValues, subNumCores)        
+                thisOptimisation.performParallelCascadeOptimisation(MCSampleSize, self.cascadeValues, subNumCores)  
+                
+                
+    def generateParallelExtremeGeospatialCascadePoints(self, numCores, MCSampleSize):
+        import optimisation  
+        numParallelCombinations = self.numRegions
+        #  assume 1 core per combination and then
+        # check that you've said you have enough and don't parallelise if you don't
+        totalNationalBudget = self.getTotalNationalBudget()        
+        if numCores < numParallelCombinations:
+            print "num cores is not enough"
+        else:    
+            for region in range(0, self.numRegions):
+                regionName = self.regionNameList[region]
+                spreadsheet = self.regionSpreadsheetList[region]
+                filename = self.resultsFileStem + regionName
+                thisOptimisation = optimisation.Optimisation(spreadsheet, self.numModelSteps, self.optimise, filename)
+                filename = '_cascade_'+str(self.optimise)+'_extreme'
+                thisOptimisation.performSingleOptimisationForGivenTotalBudget(MCSampleSize, totalNationalBudget, filename)
 
 
     def getOptimisedRegionalBudgetList(self, geoMCSampleSize):
