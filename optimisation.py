@@ -129,7 +129,7 @@ class Optimisation:
         for cascade in cascadeValues:
             totalBudget = currentTotalBudget * cascade
             args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
-            self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, self.resultsFileStem+str(cascade)+'.pkl')    
+            self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, self.resultsFileStem+'_cascade_'+str(self.optimise)+'_'+str(cascade)+'.pkl')    
 
     def cascadeParallelRunFunction(self, cascadeValue, currentTotalBudget, spreadsheetData, costCoverageInfo, MCSampleSize, xmin):
         totalBudget = currentTotalBudget * cascadeValue
@@ -194,7 +194,15 @@ class Optimisation:
         for i in range(0, len(spreadsheetData.interventionList)):
             intervention = spreadsheetData.interventionList[i]
             initialAllocationDictionary[intervention] = initialAllocation[i]
-        return initialAllocationDictionary    
+        return initialAllocationDictionary 
+        
+    def getTotalInitialBudget(self):
+        import data 
+        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
+        costCoverageInfo = self.getCostCoverageInfo()
+        targetPopSize = self.getInitialTargetPopSize()        
+        initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)        
+        return sum(initialAllocation)     
         
         
         
@@ -407,16 +415,11 @@ class GeospatialOptimisation:
         
     def getTotalNationalBudget(self):
         import optimisation
-        import data
         regionalBudgets = []
         for region in range(0, self.numRegions):
             thisSpreadsheet = self.regionSpreadsheetList[region]
             thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, 'dummyFileName')        
-            spreadsheetData = data.readSpreadsheet(thisSpreadsheet, thisOptimisation.helper.keyList)             
-            costCoverageInfo = thisOptimisation.getCostCoverageInfo()  
-            initialTargetPopSize = thisOptimisation.getInitialTargetPopSize()          
-            initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
-            regionTotalBudget = sum(initialAllocation)
+            regionTotalBudget = thisOptimisation.getTotalInitialBudget()
             regionalBudgets.append(regionTotalBudget)
         nationalTotalBudget = sum(regionalBudgets)
         return nationalTotalBudget
@@ -424,50 +427,45 @@ class GeospatialOptimisation:
 
     def generateResultsForGeospatialCascades(self, MCSampleSize):
         import optimisation  
+        import math
+        from copy import deepcopy as dcp
+        totalNationalBudget = self.getTotalNationalBudget()
         for region in range(0, self.numRegions):
             regionName = self.regionNameList[region]
             spreadsheet = self.regionSpreadsheetList[region]
-            filename = self.resultsFileStem + regionName + '_cascade_' + self.optimise + '_'
+            filename = self.resultsFileStem + regionName
             thisOptimisation = optimisation.Optimisation(spreadsheet, self.numModelSteps, self.optimise, filename)
-            thisOptimisation.performCascadeOptimisation(self.optimise, MCSampleSize, filename, self.cascadeValues)
+            thisCascade = dcp(self.cascadeValues)
+            # if final cascade value is 'extreme' replace it with totalNationalBudget / current regional total budget
+            if self.cascadeValues[-1] == 'extreme':
+                regionalTotalBudget = thisOptimisation.getTotalInitialBudget()
+                thisCascade[-1] = math.ceil(totalNationalBudget / regionalTotalBudget) # this becomes a file name so keep it as an integer
+            thisOptimisation.performCascadeOptimisation(MCSampleSize, thisCascade)
             
     def generateParallelResultsForGeospatialCascades(self, numCores, MCSampleSize):
         import optimisation  
+        import math
+        from copy import deepcopy as dcp
         numParallelCombinations = len(self.cascadeValues) * self.numRegions
         #  assume 1 core per combination and then
         # check that you've said you have enough and don't parallelise if you don't
         if numCores < numParallelCombinations:
             print "num cores is not enough"
-        else:    
+        else:   
+            totalNationalBudget = self.getTotalNationalBudget()
             for region in range(0, self.numRegions):
                 regionName = self.regionNameList[region]
                 spreadsheet = self.regionSpreadsheetList[region]
                 filename = self.resultsFileStem + regionName
                 thisOptimisation = optimisation.Optimisation(spreadsheet, self.numModelSteps, self.optimise, filename)
                 subNumCores = len(self.cascadeValues)
-                thisOptimisation.performParallelCascadeOptimisation(MCSampleSize, self.cascadeValues, subNumCores)  
+                thisCascade = dcp(self.cascadeValues)
+                # if final cascade value is 'extreme' replace it with totalNationalBudget / current regional total budget
+                if self.cascadeValues[-1] == 'extreme':
+                    regionalTotalBudget = thisOptimisation.getTotalInitialBudget()
+                    thisCascade[-1] = math.ceil(totalNationalBudget / regionalTotalBudget) # this becomes a file name so keep it as an integer
+                thisOptimisation.performParallelCascadeOptimisation(MCSampleSize, thisCascade, subNumCores)  
                 
-                
-    def generateParallelExtremeGeospatialCascadePoints(self, numCores, MCSampleSize):
-        import optimisation 
-        from multiprocessing import Process
-        numParallelCombinations = self.numRegions
-        #  assume 1 core per combination and then
-        # check that you've said you have enough and don't parallelise if you don't
-        totalNationalBudget = self.getTotalNationalBudget()        
-        if numCores < numParallelCombinations:
-            print "num cores is not enough"
-        else:    
-            for region in range(0, self.numRegions):
-                regionName = self.regionNameList[region]
-                spreadsheet = self.regionSpreadsheetList[region]
-                filename = self.resultsFileStem + regionName
-                thisOptimisation = optimisation.Optimisation(spreadsheet, self.numModelSteps, self.optimise, filename)
-                filename = '_cascade_'+str(self.optimise)+'_extreme'
-                prc = Process(
-                    target=thisOptimisation.performSingleOptimisationForGivenTotalBudget, 
-                    args=(MCSampleSize, totalNationalBudget, filename))
-                prc.start()                
                 
 
     def getOptimisedRegionalBudgetList(self, geoMCSampleSize):
