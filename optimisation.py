@@ -348,15 +348,23 @@ class GeospatialOptimisation:
     def generateAllRegionsBOC(self):
         print 'reading files to generate regional BOCs..'
         import optimisation
+        import math
+        from copy import deepcopy as dcp
         regionalBOCs = {}
         regionalBOCs['spending'] = []
-        regionalBOCs['outcome'] = []        
+        regionalBOCs['outcome'] = [] 
+        totalNationalBudget = self.getTotalNationalBudget()
         for region in range(0, self.numRegions):
             print 'generating BOC for region: ', self.regionNameList[region]
             thisSpreadsheet = self.regionSpreadsheetList[region]
             filename = self.resultsFileStem + self.regionNameList[region]
             thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, filename)
-            spending, outcome = thisOptimisation.generateBOCVectors(self.regionNameList, self.cascadeValues, self.optimise)            
+            # if final cascade value is 'extreme' replace it with value we used to generate .pkl file
+            thisCascade = dcp(self.cascadeValues)            
+            if self.cascadeValues[-1] == 'extreme':
+                regionalTotalBudget = thisOptimisation.getTotalInitialBudget()
+                thisCascade[-1] = math.ceil(totalNationalBudget / regionalTotalBudget)            
+            spending, outcome = thisOptimisation.generateBOCVectors(self.regionNameList, thisCascade, self.optimise)            
             regionalBOCs['spending'].append(spending)
             regionalBOCs['outcome'].append(outcome)
         print 'finished generating regional BOCs from files'    
