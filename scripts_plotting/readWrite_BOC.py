@@ -29,7 +29,7 @@ numsteps = 180
 # NATIONAL
 print "\n National..."
 spreadsheetPath = '../input_spreadsheets/%s/InputForCode_%s.xlsx'%(country, country)
-thisOptimisation = optimisation.Optimisation(spreadsheetPath, numsteps)
+thisOptimisation = optimisation.Optimisation(spreadsheetPath, numsteps, "foo", "thisshouldnotbehere")
 
 models = {}
 numDeaths  = {}
@@ -109,7 +109,7 @@ for iReg in range(numRegions):
     print regionName
     spreadsheetPath = '../input_spreadsheets/%s/subregionSpreadsheets/%s.xlsx'%(country,regionName)
     spreadsheets.append(spreadsheetPath)
-    thisOptimisation = optimisation.Optimisation(spreadsheetPath, numsteps)
+    thisOptimisation = optimisation.Optimisation(spreadsheetPath, numsteps, "foo", "thisshouldnotbehere")
 
     # Baseline
     allocation = thisOptimisation.getInitialAllocationDictionary()
