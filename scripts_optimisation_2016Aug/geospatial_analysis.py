@@ -11,11 +11,12 @@ sys.path.append(moduleDir)
 import optimisation
 
 optimiseList = ['DALYs', 'stunting']  #['deaths']
+extraMoney = 10000000
 
 numModelSteps = 180
 MCSampleSize = 25
 geoMCSampleSize = 25
-cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 'extreme'] 
+cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 'extreme']
 regionNameList = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
 spreadsheetFileStem = '../input_spreadsheets/Bangladesh/2016Aug02/subregionSpreadsheets/'
 spreadsheetList = []
@@ -23,20 +24,15 @@ for regionName in regionNameList:
     spreadsheet = spreadsheetFileStem + regionName + '.xlsx'
     spreadsheetList.append(spreadsheet)
 
-#import time
-#t0 = time.time()   
 
-numCores = 14 # need twice this many available becasue optimising for 
+numCores = 14 # need this number times the number of otcomes you're optimising for
 for optimise in optimiseList:
     print 'running GA for:  ', optimise
     
     resultsFileStem = '../Results2016Aug02/'+optimise+'/geospatial/'
-    GAFile = 'GA'    
+    GAFile = 'GA_extra_'+str(extraMoney)    
     
     geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
-    geospatialOptimisation.performParallelGeospatialOptimisation(geoMCSampleSize, MCSampleSize, GAFile, numCores)
+    geospatialOptimisation.performParallelGeospatialOptimisationExtraMoney(geoMCSampleSize, MCSampleSize, GAFile, numCores, extraMoney)
 
     
-#t1 = time.time()
-#total = t1-t0 
-#print 'total time  ',total   
