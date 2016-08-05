@@ -75,7 +75,22 @@ def geospatialObjectiveFunction(proposalSpendingList, regionalBOCs, totalBudget)
         outcome = pchip.pchip(regionalBOCs['spending'][region], regionalBOCs['outcome'][region], scaledProposalSpendingList[region], deriv = False, method='pchip')        
         outcomeList.append(outcome)
     nationalOutcome = sum(outcomeList)
-    return nationalOutcome       
+    return nationalOutcome    
+    
+def geospatialObjectiveFunctionExtraMoney(proposalSpendingList, regionalBOCs, currentRegionalSpendingList, extraMoney):
+    import pchip
+    numRegions = len(proposalSpendingList)
+    if sum(proposalSpendingList) == 0: 
+        scaledProposalSpendingList = proposalSpendingList
+    else:    
+        scaledProposalSpendingList = rescaleAllocation(extraMoney, proposalSpendingList)    
+    outcomeList = []
+    for region in range(0, numRegions):
+        newTotalSpending = currentRegionalSpendingList[region] + scaledProposalSpendingList[region]
+        outcome = pchip.pchip(regionalBOCs['spending'][region], regionalBOCs['outcome'][region], newTotalSpending, deriv = False, method='pchip')        
+        outcomeList.append(outcome)
+    nationalOutcome = sum(outcomeList)
+    return nationalOutcome        
 
             
 class OutputClass:
@@ -431,6 +446,16 @@ class GeospatialOptimisation:
             regionalBudgets.append(regionTotalBudget)
         nationalTotalBudget = sum(regionalBudgets)
         return nationalTotalBudget
+        
+    def getCurrentRegionalBudgets(self):
+        import optimisation
+        regionalBudgets = []
+        for region in range(0, self.numRegions):
+            thisSpreadsheet = self.regionSpreadsheetList[region]
+            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, 'dummyFileName')        
+            regionTotalBudget = thisOptimisation.getTotalInitialBudget()
+            regionalBudgets.append(regionTotalBudget)
+        return regionalBudgets    
     
 
     def generateResultsForGeospatialCascades(self, MCSampleSize):
@@ -500,6 +525,32 @@ class GeospatialOptimisation:
         optimisedRegionalBudgetList = bestSampleScaled  
         return optimisedRegionalBudgetList
         
+    def getOptimisedRegionalBudgetListExtraMoney(self, geoMCSampleSize, extraMoney):
+        import asd
+        import numpy as np
+        from operator import add
+        xmin = [0.] * self.numRegions
+        # if BOCs not generated, generate them
+        if self.regionalBOCs == None:
+            self.generateAllRegionsBOC()
+        currentRegionalSpendingList = self.getCurrentRegionalBudgets()
+        scenarioMonteCarloOutput = []
+        for r in range(0, geoMCSampleSize):
+            proposalSpendingList = np.random.rand(self.numRegions)
+            args = {'regionalBOCs':self.regionalBOCs, 'currentRegionalSpendingList':currentRegionalSpendingList, 'extraMoney':extraMoney}
+            budgetBest, fval, exitflag, output = asd.asd(geospatialObjectiveFunctionExtraMoney, proposalSpendingList, args, xmin = xmin, verbose = 2)  
+            outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval, output.x)        
+            scenarioMonteCarloOutput.append(outputOneRun)         
+        # find the best
+        bestSample = scenarioMonteCarloOutput[0]
+        for sample in range(0, len(scenarioMonteCarloOutput)):
+            if scenarioMonteCarloOutput[sample].fval < bestSample.fval:
+                bestSample = scenarioMonteCarloOutput[sample]
+        bestSampleScaled = rescaleAllocation(extraMoney, bestSample.budgetBest) 
+        # to get the total optimised regional budgets add the optimised allocation of the extra money to the regional baseline amounts
+        optimisedRegionalBudgetList = map(add, bestSampleScaled, currentRegionalSpendingList)
+        return optimisedRegionalBudgetList    
+        
     def performGeospatialOptimisation(self, geoMCSampleSize, MCSampleSize, GAFile):
         import optimisation  
         print 'beginning geospatial optimisation..'
@@ -532,6 +583,27 @@ class GeospatialOptimisation:
                     target=thisOptimisation.performSingleOptimisationForGivenTotalBudget, 
                     args=(MCSampleSize, thisBudget, GAFile+'_'+regionName))
                 prc.start()
+                
+    def performParallelGeospatialOptimisationExtraMoney(self, geoMCSampleSize, MCSampleSize, GAFile, numCores, extraMoney):
+        # this optimisation keeps current regional spending the same and optimises only additional spending across regions        
+        import optimisation  
+        from multiprocessing import Process
+        print 'beginning geospatial optimisation..'
+        optimisedRegionalBudgetList = self.getOptimisedRegionalBudgetListExtraMoney(geoMCSampleSize, extraMoney)
+        print 'finished geospatial optimisation'
+        if self.numRegions >numCores:
+            print "not enough cores to parallelise"
+        else:    
+            for region in range(0, self.numRegions):
+                regionName = self.regionNameList[region]
+                print 'optimising for individual region ', regionName
+                thisSpreadsheet = self.regionSpreadsheetList[region]
+                thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, self.resultsFileStem) 
+                thisBudget = optimisedRegionalBudgetList[region]
+                prc = Process(
+                    target=thisOptimisation.performSingleOptimisationForGivenTotalBudget, 
+                    args=(MCSampleSize, thisBudget, GAFile+'_'+regionName))
+                prc.start()            
         
     def plotReallocationByRegion(self):
         from plotting import plotallocations 
