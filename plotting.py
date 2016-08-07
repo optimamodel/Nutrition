@@ -147,7 +147,7 @@ def plotTradeOffCurves(tradeOffCurves, regionList, optimise):
     plt.title('trade off curves')
     plt.ylabel(optimise+' cases averted')
     plt.xlabel('additional $')
-    plt.legend()
+    plt.legend(loc = 'upper left')
     plt.show()
 
 

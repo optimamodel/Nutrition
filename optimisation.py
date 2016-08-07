@@ -408,6 +408,9 @@ class GeospatialOptimisation:
         outfile.close()  
         
     def getTradeOffCurves(self):
+        # if BOCs not generated, generate them
+        if self.regionalBOCs == None:
+            self.generateAllRegionsBOC()
         # get index for cascade value of 1.0
         i = 0
         for value in self.cascadeValues:
