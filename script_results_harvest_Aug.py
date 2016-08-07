@@ -46,13 +46,13 @@ geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, re
 #geospatialOptimisation.plotPostGAReallocationByRegion(GAFile2)
 #geospatialOptimisation.plotTimeSeriesPostGAReallocationByRegion(GAFile2)
 
-import pickle
-filename = stem+'_regionalBOCS_'+optimise+'.pkl'
-infile = open(filename, 'rb')
-this = pickle.load(infile)
-infile.close()
-
-geospatialOptimisation.regionalBOCs = this
+#import pickle
+#filename = stem+'_regionalBOCS_'+optimise+'.pkl'
+#infile = open(filename, 'rb')
+#this = pickle.load(infile)
+#infile.close()
+#
+#geospatialOptimisation.regionalBOCs = this
 geospatialOptimisation.plotTradeOffCurves()
 
 
