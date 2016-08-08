@@ -390,6 +390,9 @@ class GeospatialOptimisation:
         
     def outputRegionalBOCsFile(self, filename):
         import pickle 
+        # if BOCs not generated, generate them
+        if self.regionalBOCs == None:
+            self.generateAllRegionsBOC()
         regionalBOCsReformat = {}
         for region in range(0, self.numRegions):
             regionName = self.regionNameList[region]
