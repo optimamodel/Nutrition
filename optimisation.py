@@ -137,12 +137,15 @@ class Optimisation:
         args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
         self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, self.resultsFileStem+'.pkl')
         
-    def performSingleOptimisationForGivenTotalBudget(self, MCSampleSize, totalBudget, filename):
+    def performSingleOptimisationForGivenTotalBudget(self, MCSampleSize, totalBudget, filename, haveFixedProgCosts):
         import data 
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         costCoverageInfo = self.getCostCoverageInfo()  
         xmin = [0.] * len(spreadsheetData.interventionList)
-        args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
+        initialTargetPopSize = self.getInitialTargetPopSize() 
+        initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
+        fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation)  
+        args = {'totalBudget':totalBudget, 'fixedCosts':fixedCosts, 'costCoverageInfo':costCoverageInfo, 'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
         self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, self.resultsFileStem+filename+'.pkl')    
         
         
@@ -613,7 +616,7 @@ class GeospatialOptimisation:
                     args=(MCSampleSize, thisBudget, GAFile+'_'+regionName))
                 prc.start()
                 
-    def performParallelGeospatialOptimisationExtraMoney(self, geoMCSampleSize, MCSampleSize, GAFile, numCores, extraMoney):
+    def performParallelGeospatialOptimisationExtraMoney(self, geoMCSampleSize, MCSampleSize, GAFile, numCores, extraMoney, haveFixedProgCosts):
         # this optimisation keeps current regional spending the same and optimises only additional spending across regions        
         import optimisation  
         from multiprocessing import Process
@@ -631,7 +634,7 @@ class GeospatialOptimisation:
                 thisBudget = optimisedRegionalBudgetList[region]
                 prc = Process(
                     target=thisOptimisation.performSingleOptimisationForGivenTotalBudget, 
-                    args=(MCSampleSize, thisBudget, GAFile+'_'+regionName))
+                    args=(MCSampleSize, thisBudget, GAFile+'_'+regionName, haveFixedProgCosts))
                 prc.start()            
         
     def plotReallocationByRegion(self):

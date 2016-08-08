@@ -12,6 +12,7 @@ import optimisation
 
 optimiseList = ['DALYs', 'stunting', 'deaths']
 extraMoney = 10000000
+haveFixedProgCosts = True
 
 numModelSteps = 180
 MCSampleSize = 25
@@ -33,6 +34,6 @@ for optimise in optimiseList:
     GAFile = 'GA_fixedProg_extra_'+str(extraMoney)    
     
     geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
-    geospatialOptimisation.performParallelGeospatialOptimisationExtraMoney(geoMCSampleSize, MCSampleSize, GAFile, numCores, extraMoney)
+    geospatialOptimisation.performParallelGeospatialOptimisationExtraMoney(geoMCSampleSize, MCSampleSize, GAFile, numCores, extraMoney, haveFixedProgCosts)
 
     
