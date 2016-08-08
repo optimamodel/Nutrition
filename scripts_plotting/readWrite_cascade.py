@@ -53,7 +53,8 @@ for outcome in ['deaths','stunting']:
         infile.close()
 
     prognames, rows = reformat_results(national[outcome])
-    outfilename = '%s/national_cascade_min%s.csv'%(outpath, outcome)
+    #outfilename = '%s/national_cascade_min%s.csv'%(outpath, outcome) # use this filename later
+    outfilename = '%s/cascade_min_%s.csv'%(outpath, outcome)
     with open(outfilename, "wb") as f:
         writer = csv.writer(f)
         writer.writerow(prognames)
@@ -67,17 +68,18 @@ geospatial = {}
 for outcome in ['deaths','stunting']:
     geospatial[outcome] = {}
     for iReg in range(numRegions):
-        region = 'region%s'%(iReg)
-        geospatial[outcome][region] = {}
+        regionNum = 'region%s'%(iReg)
+        geospatial[outcome][regionNum] = {}
         for multiple in cascadeMultiples:
-            filename = '%s/%s/geospatial/%s_cascade_%s_%s.pkl'%(root, outcome, region, outcome, str(multiple))
+            filename = '%s/%s/geospatial/%s_cascade_%s_%s.pkl'%(root, outcome, regionNum, outcome, str(multiple))
             infile = open(filename, 'rb')
             allocation = pickle.load(infile)
-            geospatial[outcome][region][multiple] = allocation
+            geospatial[outcome][regionNum][multiple] = allocation
             infile.close()
 
-        prognames, rows = reformat_results(geospatial[outcome][region])
-        outfilename = '%s/%s_cascade_min%s.csv'%(outpath, region, outcome)
+        prognames, rows = reformat_results(geospatial[outcome][regionNum])
+        #outfilename = '%s/%s_cascade_min%s.csv'%(outpath, regionNum, outcome) # use this filename later
+        outfilename = '%s/%s_min_%s.csv'%(outpath, regionNum, outcome)
         with open(outfilename, "wb") as f:
             writer = csv.writer(f)
             writer.writerow(prognames)
