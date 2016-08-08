@@ -37,17 +37,27 @@ def getTargetPopSizeFromModelInstance(dataSpreadsheetName, keyList, model):
         targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['pregnant women'] * model.pregnantWomen.populationSize
     return targetPopSize    
 
-def objectiveFunction(allocation, totalBudget, costCoverageInfo, optimise, numModelSteps, dataSpreadsheetName, data):
+    
+def objectiveFunction(allocation, totalBudget, fixedCosts, costCoverageInfo, optimise, numModelSteps, dataSpreadsheetName, data):
     import helper 
     import costcov
     from copy import deepcopy as dcp
+    from operator import add
     helper = helper.Helper()
     costCov = costcov.Costcov()
     model, derived, params = helper.setupModelConstantsParameters(data)
+    availableBudget = totalBudget - sum(fixedCosts)
+    #make sure fixed costs do not exceed total budget
+    if totalBudget < fixedCosts:
+        print "error: total budget is less than fixed costs"
+        break
+    # scale the asd allocation appropriately
     if sum(allocation) == 0: 
         scaledAllocation = dcp(allocation)
     else:    
-        scaledAllocation = rescaleAllocation(totalBudget, allocation)
+        scaledAllocation = rescaleAllocation(availableBudget, allocation)
+    # add the fixed costs to the scaled allocation of available budget
+    scaledAllocation = map(add, scaledAllocation, fixedCosts)   
     # run the model
     timestepsPre = 12
     for t in range(timestepsPre):
@@ -62,7 +72,7 @@ def objectiveFunction(allocation, totalBudget, costCoverageInfo, optimise, numMo
     for t in range(numModelSteps - timestepsPre):
         model.moveOneTimeStep()
     performanceMeasure = model.getOutcome(optimise)
-    return performanceMeasure
+    return performanceMeasure    
     
 def geospatialObjectiveFunction(spendingList, regionalBOCs, totalBudget):
     import pchip
@@ -149,13 +159,13 @@ class Optimisation:
             args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
             self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, self.resultsFileStem+'_cascade_'+str(self.optimise)+'_'+str(cascade)+'.pkl')    
 
-    def cascadeParallelRunFunction(self, cascadeValue, currentTotalBudget, spreadsheetData, costCoverageInfo, MCSampleSize, xmin):
+    def cascadeParallelRunFunction(self, cascadeValue, currentTotalBudget, fixedCosts, spreadsheetData, costCoverageInfo, MCSampleSize, xmin):
         totalBudget = currentTotalBudget * cascadeValue
-        args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
+        args = {'totalBudget':totalBudget, 'fixedCosts':fixedCosts, 'costCoverageInfo':costCoverageInfo, 'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
         self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, self.resultsFileStem+'_cascade_'+str(self.optimise)+'_'+str(cascadeValue)+'.pkl')                   
     
     
-    def performParallelCascadeOptimisation(self, MCSampleSize, cascadeValues, numCores):
+    def performParallelCascadeOptimisation(self, MCSampleSize, cascadeValues, numCores, haveFixedProgCosts):
         import data 
         from multiprocessing import Process
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
@@ -164,6 +174,8 @@ class Optimisation:
         initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
         currentTotalBudget = sum(initialAllocation)
         xmin = [0.] * len(initialAllocation)
+        # set fixed costs if you have them
+        fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation)            
         # check that you have enough cores and don't parallelise if you don't
         if numCores < len(cascadeValues):
             print "numCores is not enough"
@@ -171,9 +183,17 @@ class Optimisation:
             for value in cascadeValues:
                 prc = Process(
                     target=self.cascadeParallelRunFunction, 
-                    args=(value, currentTotalBudget, spreadsheetData, costCoverageInfo, MCSampleSize, xmin))
+                    args=(value, currentTotalBudget, fixedCosts, spreadsheetData, costCoverageInfo, MCSampleSize, xmin))
                 prc.start()
         
+    def getFixedCosts(self, haveFixedProgCosts, initialAllocation):
+        from copy import deepcopy as dcp
+        if haveFixedProgCosts:
+            fixedCosts = dcp(initialAllocation)
+        else:
+            fixedCosts = [0.] * len(initialAllocation)
+        return fixedCosts    
+    
     def runOnce(self, MCSampleSize, xmin, args, interventionList, totalBudget, filename):        
         import asd as asd 
         import pickle 
@@ -484,7 +504,7 @@ class GeospatialOptimisation:
                 thisCascade[-1] = math.ceil(totalNationalBudget / regionalTotalBudget) # this becomes a file name so keep it as an integer
             thisOptimisation.performCascadeOptimisation(MCSampleSize, thisCascade)
             
-    def generateParallelResultsForGeospatialCascades(self, numCores, MCSampleSize):
+    def generateParallelResultsForGeospatialCascades(self, numCores, MCSampleSize, haveFixedProgCosts):
         import optimisation  
         import math
         from copy import deepcopy as dcp
@@ -506,7 +526,7 @@ class GeospatialOptimisation:
                 if self.cascadeValues[-1] == 'extreme':
                     regionalTotalBudget = thisOptimisation.getTotalInitialBudget()
                     thisCascade[-1] = math.ceil(totalNationalBudget / regionalTotalBudget) # this becomes a file name so keep it as an integer
-                thisOptimisation.performParallelCascadeOptimisation(MCSampleSize, thisCascade, subNumCores)  
+                thisOptimisation.performParallelCascadeOptimisation(MCSampleSize, thisCascade, subNumCores, haveFixedProgCosts)  
                 
                 
 
