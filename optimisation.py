@@ -19,9 +19,9 @@ def getTotalInitialAllocation(data, costCoverageInfo, targetPopSize):
         allocation.append(spending)
     return allocation
 
-def rescaleAllocation(totalBudget, proposalAllocation):
-    scaleRatio = totalBudget / sum(proposalAllocation)
-    rescaledAllocation = [x * scaleRatio for x in proposalAllocation]
+def rescaleAllocation(totalBudget, allocation):
+    scaleRatio = totalBudget / sum(allocation)
+    rescaledAllocation = [x * scaleRatio for x in allocation]
     return rescaledAllocation 
     
 def getTargetPopSizeFromModelInstance(dataSpreadsheetName, keyList, model):    
@@ -37,16 +37,17 @@ def getTargetPopSizeFromModelInstance(dataSpreadsheetName, keyList, model):
         targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['pregnant women'] * model.pregnantWomen.populationSize
     return targetPopSize    
 
-def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimise, numModelSteps, dataSpreadsheetName, data):
+def objectiveFunction(allocation, totalBudget, costCoverageInfo, optimise, numModelSteps, dataSpreadsheetName, data):
     import helper 
     import costcov
+    from copy import deepcopy as dcp
     helper = helper.Helper()
     costCov = costcov.Costcov()
     model, derived, params = helper.setupModelConstantsParameters(data)
-    if sum(proposalAllocation) == 0: 
-        scaledproposalAllocation = proposalAllocation
+    if sum(allocation) == 0: 
+        scaledAllocation = dcp(allocation)
     else:    
-        scaledproposalAllocation = rescaleAllocation(totalBudget, proposalAllocation)
+        scaledAllocation = rescaleAllocation(totalBudget, allocation)
     # run the model
     timestepsPre = 12
     for t in range(timestepsPre):
@@ -56,37 +57,39 @@ def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimis
     newCoverages = {}    
     for i in range(0, len(data.interventionList)):
         intervention = data.interventionList[i]
-        newCoverages[intervention] = costCov.function(scaledproposalAllocation[i], costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
+        newCoverages[intervention] = costCov.function(scaledAllocation[i], costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
     model.updateCoverages(newCoverages)
     for t in range(numModelSteps - timestepsPre):
         model.moveOneTimeStep()
     performanceMeasure = model.getOutcome(optimise)
     return performanceMeasure
     
-def geospatialObjectiveFunction(proposalSpendingList, regionalBOCs, totalBudget):
+def geospatialObjectiveFunction(spendingList, regionalBOCs, totalBudget):
     import pchip
-    numRegions = len(proposalSpendingList)
-    if sum(proposalSpendingList) == 0: 
-        scaledProposalSpendingList = proposalSpendingList
+    from copy import deepcopy as dcp
+    numRegions = len(spendingList)
+    if sum(spendingList) == 0: 
+        scaledSpendingList = dcp(spendingList)
     else:    
-        scaledProposalSpendingList = rescaleAllocation(totalBudget, proposalSpendingList)    
+        scaledSpendingList = rescaleAllocation(totalBudget, spendingList)    
     outcomeList = []
     for region in range(0, numRegions):
-        outcome = pchip.pchip(regionalBOCs['spending'][region], regionalBOCs['outcome'][region], scaledProposalSpendingList[region], deriv = False, method='pchip')        
+        outcome = pchip.pchip(regionalBOCs['spending'][region], regionalBOCs['outcome'][region], scaledSpendingList[region], deriv = False, method='pchip')        
         outcomeList.append(outcome)
     nationalOutcome = sum(outcomeList)
     return nationalOutcome    
     
-def geospatialObjectiveFunctionExtraMoney(proposalSpendingList, regionalBOCs, currentRegionalSpendingList, extraMoney):
+def geospatialObjectiveFunctionExtraMoney(spendingList, regionalBOCs, currentRegionalSpendingList, extraMoney):
     import pchip
-    numRegions = len(proposalSpendingList)
-    if sum(proposalSpendingList) == 0: 
-        scaledProposalSpendingList = proposalSpendingList
+    from copy import deepcopy as dcp
+    numRegions = len(spendingList)
+    if sum(spendingList) == 0: 
+        scaledSpendingList = dcp(spendingList)
     else:    
-        scaledProposalSpendingList = rescaleAllocation(extraMoney, proposalSpendingList)    
+        scaledSpendingList = rescaleAllocation(extraMoney, spendingList)    
     outcomeList = []
     for region in range(0, numRegions):
-        newTotalSpending = currentRegionalSpendingList[region] + scaledProposalSpendingList[region]
+        newTotalSpending = currentRegionalSpendingList[region] + scaledSpendingList[region]
         outcome = pchip.pchip(regionalBOCs['spending'][region], regionalBOCs['outcome'][region], newTotalSpending, deriv = False, method='pchip')        
         outcomeList.append(outcome)
     nationalOutcome = sum(outcomeList)
@@ -405,6 +408,9 @@ class GeospatialOptimisation:
         outfile.close()  
         
     def getTradeOffCurves(self):
+        # if BOCs not generated, generate them
+        if self.regionalBOCs == None:
+            self.generateAllRegionsBOC()
         # get index for cascade value of 1.0
         i = 0
         for value in self.cascadeValues:

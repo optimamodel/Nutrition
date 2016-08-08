@@ -25,7 +25,7 @@ for regionName in regionNameList:
     spreadsheetList.append(spreadsheet)
 
 
-numCores = 14 # need this number times the number of otcomes you're optimising for
+numCores = 7 # need this number times the number of otcomes you're optimising for
 for optimise in optimiseList:
     print 'running GA for:  ', optimise
     

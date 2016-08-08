@@ -26,7 +26,7 @@ for regionName in regionNameList:
 #import time
 #t0 = time.time()   
 
-numCores = 14 # need twice this many available becasue optimising for 
+numCores = 7 # need twice this many available becasue optimising for 
 for optimise in optimiseList:
     print 'running GA for:  ', optimise
     
