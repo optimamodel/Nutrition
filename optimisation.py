@@ -48,9 +48,9 @@ def objectiveFunction(allocation, totalBudget, fixedCosts, costCoverageInfo, opt
     model, derived, params = helper.setupModelConstantsParameters(data)
     availableBudget = totalBudget - sum(fixedCosts)
     #make sure fixed costs do not exceed total budget
-    if totalBudget < fixedCosts:
+    if totalBudget < sum(fixedCosts):
         print "error: total budget is less than fixed costs"
-        break
+        return
     # scale the asd allocation appropriately
     if sum(allocation) == 0: 
         scaledAllocation = dcp(allocation)
