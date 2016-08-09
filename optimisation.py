@@ -125,6 +125,7 @@ class Optimisation:
         self.optimise = optimise
         self.resultsFileStem = resultsFileStem
         self.helper = helper.Helper()
+        self.timeSeries = None
         
     def performSingleOptimisation(self, MCSampleSize):
         import data 
@@ -334,9 +335,8 @@ class Optimisation:
         # plot
         plotallocations(baselineAllocation,optimisedAllocation)    
         
-    def plotTimeSeries(self):
+    def getTimeSeries(self, outcomeOfInterest):
         import pickle
-        from plotting import plotTimeSeries
         from copy import deepcopy as dcp
         allocation = {}
         # Baseline
@@ -357,9 +357,9 @@ class Optimisation:
         objectiveYearly = {}
         for scenario in scenarios:
             objective[scenario] = []
-            objective[scenario].append(modelRun[scenario][0].getOutcome(self.optimise))
+            objective[scenario].append(modelRun[scenario][0].getOutcome(outcomeOfInterest))
             for i in range(1, self.numModelSteps):
-                difference = modelRun[scenario][i].getOutcome(self.optimise) - modelRun[scenario][i-1].getOutcome(self.optimise)
+                difference = modelRun[scenario][i].getOutcome(outcomeOfInterest) - modelRun[scenario][i-1].getOutcome(outcomeOfInterest)
                 objective[scenario].append(difference)
             # make it yearly
             numYears = self.numModelSteps/12
@@ -367,11 +367,90 @@ class Optimisation:
             for i in range(0, numYears):
                 step = i*12
                 objectiveYearly[scenario].append( sum(objective[scenario][step:12+step]) )
-        title = self.optimise   
         years = range(2016, 2016 + numYears)
-        plotTimeSeries(years, objectiveYearly['baseline'], objectiveYearly[self.optimise], title)
-            
+        self.timeSeries = {'years':years, 'objectiveYearly':objectiveYearly}
+    
+    def plotTimeSeries(self, outcomeOfInterest):
+        from plotting import plotTimeSeries
+        if self.timeSeries == None:
+            self.getTimeSeries(outcomeOfInterest)
+        title = self.optimise
+        plotTimeSeries(self.timeSeries['years'], self.timeSeries['objectiveYearly']['baseline'], self.timeSeries['objectiveYearly'][self.optimise], title)
 
+    def outputTimeSeriesToCSV(self, outcomeOfInterest):
+        import csv
+        if self.timeSeries == None:
+            self.getTimeSeries(outcomeOfInterest)   
+        years = self.timeSeries['years']
+        objectiveYearly = self.timeSeries['objectiveYearly']
+        # write time series to csv    
+        headings = ['Year', outcomeOfInterest+" (baseline)", outcomeOfInterest+" (min "+self.optimise+")"]
+        rows = []
+        for i in range(len(years)):
+            year = years[i]
+            valarray = [year, objectiveYearly['baseline'][i], objectiveYearly[self.optimise][i]]
+            rows.append(valarray)
+        rows.sort()                
+        outfilename = '%s_annual_%s_min_%s.csv'%(self.resultsFileStem, outcomeOfInterest, self.optimise)
+        with open(outfilename, "wb") as f:
+            writer = csv.writer(f)
+            writer.writerow(headings)
+            writer.writerows(rows)   
+            
+    def outputCascadeAndOutcomeToCSV(self, cascadeValues, outcomeOfInterest):
+            import csv
+            import pickle
+            from copy import deepcopy as dcp
+            cascadeData = {}
+            outcome = {}
+            thisCascade = dcp(cascadeValues)
+            for multiple in thisCascade:
+                filename = '%s_cascade_%s_%s.pkl'%(self.resultsFileStem, self.optimise, str(multiple))
+                infile = open(filename, 'rb')
+                allocation = pickle.load(infile)
+                cascadeData[multiple] = allocation
+                infile.close()
+                modelOutput = self.oneModelRunWithOutput(allocation)
+                outcome[multiple] = modelOutput[self.numModelSteps-1].getOutcome(outcomeOfInterest)
+            # write the cascade csv
+            spendingsets = cascadeData.values()
+            prognames = spendingsets[0].keys()
+            prognames.insert(0, 'Multiple of current budget')
+            rows = []
+            for i in range(len(thisCascade)):
+                allocationDict = spendingsets[i]
+                valarray = allocationDict.values()
+                valarray.insert(0, thisCascade[i])
+                rows.append(valarray)
+            rows.sort()                
+            outfilename = '%s_min_%s.csv'%(self.resultsFileStem, self.optimise)
+            with open(outfilename, "wb") as f:
+                writer = csv.writer(f)
+                writer.writerow(prognames)
+                writer.writerows(rows)
+            # write the outcome csv    
+            headings = ['Multiple of current budget', outcomeOfInterest+" (min "+self.optimise+")"]
+            rows = []
+            for i in range(len(thisCascade)):
+                multiple = thisCascade[i]
+                valarray = [multiple, outcome[multiple]]
+                rows.append(valarray)
+            rows.sort()                
+            outfilename = '%s_%s_cascade_min_%s.csv'%(self.resultsFileStem, outcomeOfInterest, self.optimise)
+            with open(outfilename, "wb") as f:
+                writer = csv.writer(f)
+                writer.writerow(headings)
+                writer.writerows(rows)
+                
+    def outcomeCurrentSpendingToCSV(self):
+        import csv
+        currentSpending = self.getInitialAllocationDictionary()
+        outfilename = '%s_current_spending.csv'%(self.resultsFileStem)
+        with open(outfilename, "wb") as f:
+                writer = csv.writer(f)
+                writer.writerow(currentSpending.keys())
+                writer.writerow(currentSpending.values())                
+             
 
 
 class GeospatialOptimisation:
