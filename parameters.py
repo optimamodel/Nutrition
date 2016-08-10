@@ -145,6 +145,7 @@ class Params:
         stuntingUpdate = {}
         X1 = self.demographics['fraction poor']
         X2 = self.demographics['fraction food insecure (poor)']
+        X3 = self.demographics['fraction food insecure (not poor)']
         Ce  = self.coverage['Complementary feeding (education)']
         Cse = self.coverage['Complementary feeding (supplementation)']
         """
@@ -153,10 +154,10 @@ class Params:
         FracCoveredSupplements = newCoverage['Complementary feeding (supplementation)']
         """
         Frac = [0.]*4
-        Frac[0] = X1*(1.-X2)*Ce + (1.-X1)*Ce + X1*(1.-X2)*(1.-Ce)*Cse
-        Frac[1] = X1*(1.-X2)*(1.-Ce)*(1.-Cse) + (1.-X1)*(1.-Ce)
-        Frac[2] = X1*X2*Cse
-        Frac[3] = X1*X2*(1.-Cse)
+        Frac[0] = X1*(1.-X2)*Ce + (1.-X1)*(1.-X3)*Ce + X1*(1.-X2)*(1.-Ce)*Cse
+        Frac[1] = X1*(1.-X2)*(1.-Ce)*(1.-Cse) + (1.-X1)*(1.-X3)*(1.-Ce)
+        Frac[2] = X1*X2*Cse + (1.-X1)*X3*Ce
+        Frac[3] = X1*X2*(1.-Cse) + (1.-X1)*X3*(1.-Ce)
         """
         Frac[0] = FracSecure * FracCoveredEducation
         Frac[1] = FracSecure * (1 - FracCoveredEducation)
