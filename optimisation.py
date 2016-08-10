@@ -674,7 +674,7 @@ class GeospatialOptimisation:
         optimisedRegionalBudgetList = map(add, bestSampleScaled, currentRegionalSpendingList)
         return optimisedRegionalBudgetList    
         
-    def performGeospatialOptimisation(self, geoMCSampleSize, MCSampleSize, GAFile):
+    def performGeospatialOptimisation(self, geoMCSampleSize, MCSampleSize, GAFile, haveFixedProgCosts):
         import optimisation  
         print 'beginning geospatial optimisation..'
         optimisedRegionalBudgetList = self.getOptimisedRegionalBudgetList(geoMCSampleSize)
@@ -685,9 +685,9 @@ class GeospatialOptimisation:
             thisSpreadsheet = self.regionSpreadsheetList[region]
             thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, self.resultsFileStem) 
             thisBudget = optimisedRegionalBudgetList[region]
-            thisOptimisation.performSingleOptimisationForGivenTotalBudget(MCSampleSize, thisBudget, GAFile+'_'+regionName)
+            thisOptimisation.performSingleOptimisationForGivenTotalBudget(MCSampleSize, thisBudget, GAFile+'_'+regionName, haveFixedProgCosts)
             
-    def performParallelGeospatialOptimisation(self, geoMCSampleSize, MCSampleSize, GAFile, numCores):
+    def performParallelGeospatialOptimisation(self, geoMCSampleSize, MCSampleSize, GAFile, numCores, haveFixedProgCosts):
         import optimisation  
         from multiprocessing import Process
         print 'beginning geospatial optimisation..'
@@ -704,7 +704,7 @@ class GeospatialOptimisation:
                 thisBudget = optimisedRegionalBudgetList[region]
                 prc = Process(
                     target=thisOptimisation.performSingleOptimisationForGivenTotalBudget, 
-                    args=(MCSampleSize, thisBudget, GAFile+'_'+regionName))
+                    args=(MCSampleSize, thisBudget, GAFile+'_'+regionName, haveFixedProgCosts))
                 prc.start()
                 
     def performParallelGeospatialOptimisationExtraMoney(self, geoMCSampleSize, MCSampleSize, GAFile, numCores, extraMoney, haveFixedProgCosts):
