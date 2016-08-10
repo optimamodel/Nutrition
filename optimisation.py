@@ -442,7 +442,7 @@ class Optimisation:
                 writer.writerow(headings)
                 writer.writerows(rows)
                 
-    def outcomeCurrentSpendingToCSV(self):
+    def outputCurrentSpendingToCSV(self):
         import csv
         currentSpending = self.getInitialAllocationDictionary()
         outfilename = '%s_current_spending.csv'%(self.resultsFileStem)
@@ -505,12 +505,24 @@ class GeospatialOptimisation:
         pickle.dump(regionalBOCsReformat, outfile)
         outfile.close()         
         
-    def outputTradeOffCurves(self, filename):
-        import pickle
-        self.getTradeOffCurves()
-        outfile = open(filename, 'wb')
-        pickle.dump(self.tradeOffCurves, outfile)
-        outfile.close()  
+    def outputTradeOffCurves(self):
+        #import pickle
+        import csv
+        if self.tradeOffCurves == None:
+            self.getTradeOffCurves()
+        #outfile = open(filename, 'wb')
+        #pickle.dump(self.tradeOffCurves, outfile)
+        #outfile.close()  
+        outfilename = '%strade_off_curves.csv'%(self.resultsFileStem)    
+        with open(outfilename, "wb") as f:        
+            writer = csv.writer(f)            
+            for region in range(self.numRegions):
+                regionName = self.regionNameList[region]
+                row1 = ['spending'] + self.tradeOffCurves[regionName]['spending']
+                row2 = ['outcome'] + self.tradeOffCurves[regionName]['outcome']
+                writer.writerow([regionName])
+                writer.writerow(row1)
+                writer.writerow(row2)
         
     def getTradeOffCurves(self):
         # if BOCs not generated, generate them
@@ -797,66 +809,56 @@ class GeospatialOptimisation:
             plotTimeSeries(years, objectiveYearly['baseline'], objectiveYearly[self.optimise], title)
         
         
-    def outputRegionalCascadesToCSV(self, outcomeOfInterest):
-        import csv
-        import pickle
+    def outputRegionalCascadesAndOutcomeToCSV(self, outcomeOfInterest):
         from copy import deepcopy as dcp
         import math
         import optimisation
         totalNationalBudget = self.getTotalNationalBudget()
-        cascadeData = {}
-        outcome = {}
         for region in range(self.numRegions):
             regionName = self.regionNameList[region]
             print regionName
             thisSpreadsheet = self.regionSpreadsheetList[region]
-            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, 'dummyFilename') 
-            cascadeData[regionName] = {}
-            outcome[regionName] = {}
+            filename = self.resultsFileStem+regionName
+            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, filename) 
             thisCascade = dcp(self.cascadeValues)      
             # if final cascade value is 'extreme' replace it with value we used to generate .pkl file
             if self.cascadeValues[-1] == 'extreme':
                 regionalTotalBudget = thisOptimisation.getTotalInitialBudget()
-                thisCascade[-1] = math.ceil(totalNationalBudget / regionalTotalBudget) 
-            for multiple in thisCascade:
-                filename = '%s%s_cascade_%s_%s.pkl'%(self.resultsFileStem, regionName, self.optimise, str(multiple))
-                infile = open(filename, 'rb')
-                allocation = pickle.load(infile)
-                cascadeData[regionName][multiple] = allocation
-                infile.close()
-                modelOutput = thisOptimisation.oneModelRunWithOutput(allocation)
-                outcome[regionName][multiple] = modelOutput[self.numModelSteps-1].getOutcome(outcomeOfInterest)
-            # this indentation matches regions
-            # write the cascade csv
-            spendingsets = cascadeData[regionName].values()
-            prognames = spendingsets[0].keys()
-            prognames.insert(0, 'Multiple of current budget')
-            rows = []
-            for i in range(len(thisCascade)):
-                allocationDict = spendingsets[i]
-                valarray = allocationDict.values()
-                valarray.insert(0, thisCascade[i])
-                rows.append(valarray)
-            rows.sort()                
-            outfilename = '%s%s_min_%s.csv'%(self.resultsFileStem, regionName, self.optimise)
+                thisCascade[-1] = math.ceil(totalNationalBudget / regionalTotalBudget)            
+            thisOptimisation.outputCascadeAndOutcomeToCSV(thisCascade, outcomeOfInterest)
+        
+    def outputRegionalCurrentSpendingToCSV(self):
+        import optimisation
+        for region in range(self.numRegions):
+            regionName = self.regionNameList[region]
+            thisSpreadsheet = self.regionSpreadsheetList[region]
+            filename = self.resultsFileStem+regionName
+            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, filename)    
+            thisOptimisation.outputCurrentSpendingToCSV()
+        
+        
+    def outputRegionalPostGAOptimisedSpendingToCSV(self, GAFile):
+        import pickle
+        import csv
+        for iReg in range(self.numRegions):
+            regionName = self.regionNameList[iReg]
+            filename = '%s%s_%s.pkl'%(self.resultsFileStem, GAFile, regionName)
+            infile = open(filename, 'rb')
+            allocation = pickle.load(infile)
+            infile.close()
+            outfilename = '%s%s_optimised_spending.csv'%(self.resultsFileStem, regionName)
             with open(outfilename, "wb") as f:
-                writer = csv.writer(f)
-                writer.writerow(prognames)
-                writer.writerows(rows)
-            # write the outcome csv    
-            headings = ['Multiple of current budget', outcomeOfInterest+" (min "+self.optimise+")"]
-            rows = []
-            for i in range(len(thisCascade)):
-                multiple = thisCascade[i]
-                valarray = [multiple, outcome[regionName][multiple]]
-                rows.append(valarray)
-            rows.sort()                
-            outfilename = '%s%s_%s_cascade_min_%s.csv'%(self.resultsFileStem, regionName, outcomeOfInterest, self.optimise)
-            with open(outfilename, "wb") as f:
-                writer = csv.writer(f)
-                writer.writerow(headings)
-                writer.writerows(rows)
-        
-        
-        
-        
+                    writer = csv.writer(f)
+                    writer.writerow(allocation.keys())
+                    writer.writerow(allocation.values())  
+                    
+    def outputRegionalTimeSeriesToCSV(self, outcomeOfInterest):
+        import optimisation
+        for region in range(self.numRegions):
+            regionName = self.regionNameList[region]
+            thisSpreadsheet = self.regionSpreadsheetList[region]
+            filename = self.resultsFileStem+regionName
+            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, filename)   
+            thisOptimisation.outputTimeSeriesToCSV(outcomeOfInterest)
+                    
+                    
