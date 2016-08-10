@@ -10,8 +10,8 @@ moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
 import optimisation
 
-optimiseList = ['deaths'] #['DALYs', 'stunting', 'deaths']
-extraMoney = 10000000
+optimiseList = ['DALYs'] #['DALYs', 'stunting', 'deaths']
+haveFixedProgCosts = False
 
 numModelSteps = 180
 MCSampleSize = 25
@@ -29,10 +29,10 @@ numCores = 7 # need this number times the number of otcomes you're optimising fo
 for optimise in optimiseList:
     print 'running GA for:  ', optimise
     
-    resultsFileStem = '../Results2016Aug02/'+optimise+'/geospatial/'
-    GAFile = 'GA_extra_'+str(extraMoney)    
+    resultsFileStem = '../Results2016Aug10/'+optimise+'/geospatial/'
+    GAFile = 'GA'    
     
     geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
-    geospatialOptimisation.performParallelGeospatialOptimisationExtraMoney(geoMCSampleSize, MCSampleSize, GAFile, numCores, extraMoney)
+    geospatialOptimisation.performParallelGeospatialOptimisation(geoMCSampleSize, MCSampleSize, GAFile, numCores, haveFixedProgCosts)
 
     
