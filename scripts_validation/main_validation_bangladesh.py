@@ -20,7 +20,7 @@ helper = helper.Helper()
 country = 'Bangladesh'
 startYear = 2000
 
-dataFilename = '../input_spreadsheets/%s/validation/Input_%s_%i_1604.xlsx'%(country, country, startYear)
+dataFilename = '../input_spreadsheets/%s/pre2016Jul26/validation/Input_%s_%i_1604.xlsx'%(country, country, startYear)
 inputData = data.readSpreadsheet(dataFilename, helper.keyList)
 numAgeGroups = len(helper.keyList['ages'])
 year1 = 3871841
