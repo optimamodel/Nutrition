@@ -391,7 +391,7 @@ class Optimisation:
             valarray = [year, objectiveYearly['baseline'][i], objectiveYearly[self.optimise][i]]
             rows.append(valarray)
         rows.sort()                
-        outfilename = '%s_annual_%s_min_%s.csv'%(self.resultsFileStem, outcomeOfInterest, self.optimise)
+        outfilename = '%s_annual_timeseries_%s_min_%s.csv'%(self.resultsFileStem, outcomeOfInterest, self.optimise)
         with open(outfilename, "wb") as f:
             writer = csv.writer(f)
             writer.writerow(headings)
@@ -423,7 +423,7 @@ class Optimisation:
                 valarray.insert(0, thisCascade[i])
                 rows.append(valarray)
             rows.sort()                
-            outfilename = '%s_min_%s.csv'%(self.resultsFileStem, self.optimise)
+            outfilename = '%s_cascade_min_%s.csv'%(self.resultsFileStem, self.optimise)
             with open(outfilename, "wb") as f:
                 writer = csv.writer(f)
                 writer.writerow(prognames)
@@ -436,7 +436,7 @@ class Optimisation:
                 valarray = [multiple, outcome[multiple]]
                 rows.append(valarray)
             rows.sort()                
-            outfilename = '%s_%s_cascade_min_%s.csv'%(self.resultsFileStem, outcomeOfInterest, self.optimise)
+            outfilename = '%s_cascade_%s_outcome_min_%s.csv'%(self.resultsFileStem, outcomeOfInterest, self.optimise)
             with open(outfilename, "wb") as f:
                 writer = csv.writer(f)
                 writer.writerow(headings)
@@ -846,6 +846,7 @@ class GeospatialOptimisation:
             infile = open(filename, 'rb')
             allocation = pickle.load(infile)
             infile.close()
+            allocation = self.orderInterventionDictionaryConsistently(allocation)
             outfilename = '%s%s_optimised_spending.csv'%(self.resultsFileStem, regionName)
             with open(outfilename, "wb") as f:
                     writer = csv.writer(f)
@@ -861,4 +862,15 @@ class GeospatialOptimisation:
             thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, filename)   
             thisOptimisation.outputTimeSeriesToCSV(outcomeOfInterest)
                     
-                    
+    def orderInterventionDictionaryConsistently(self, dictionary):
+        import data
+        import helper
+        from collections import OrderedDict
+        thisHelper = helper.Helper()
+        aSpreadsheet = self.regionSpreadsheetList[0]
+        thisData = data.readSpreadsheet(aSpreadsheet, thisHelper.keyList)
+        order = thisData.interventionList
+        dictionaryOrdered = OrderedDict([])
+        for i in range(0, len(dictionary)):
+            dictionaryOrdered[order[i]] = dictionary[order[i]]    
+        return dictionaryOrdered                    
