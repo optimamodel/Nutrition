@@ -4,6 +4,14 @@ Created on Wed Jun  8 13:58:29 2016
 
 @author: ruth
 """
+def returnAlphabeticalDictionary(dictionary):
+    from collections import OrderedDict
+    dictionaryOrdered = OrderedDict([])
+    order = sorted(dictionary)
+    for i in range(0, len(dictionary)):
+        dictionaryOrdered[order[i]] = dictionary[order[i]]    
+    return dictionaryOrdered 
+
 def getTotalInitialAllocation(data, costCoverageInfo, targetPopSize):
     import costcov
     from copy import deepcopy as dcp
@@ -413,12 +421,12 @@ class Optimisation:
                 modelOutput = self.oneModelRunWithOutput(allocation)
                 outcome[multiple] = modelOutput[self.numModelSteps-1].getOutcome(outcomeOfInterest)
             # write the cascade csv
-            spendingsets = cascadeData.values()
-            prognames = spendingsets[0].keys()
+            prognames = returnAlphabeticalDictionary(cascadeData[cascadeValues[0]]).keys()            
             prognames.insert(0, 'Multiple of current budget')
             rows = []
             for i in range(len(thisCascade)):
-                allocationDict = spendingsets[i]
+                allocationDict = cascadeData[cascadeValues[i]]                
+                allocationDict = returnAlphabeticalDictionary(allocationDict)
                 valarray = allocationDict.values()
                 valarray.insert(0, thisCascade[i])
                 rows.append(valarray)
@@ -445,6 +453,7 @@ class Optimisation:
     def outputCurrentSpendingToCSV(self):
         import csv
         currentSpending = self.getInitialAllocationDictionary()
+        currentSpending = returnAlphabeticalDictionary(currentSpending)
         outfilename = '%s_current_spending.csv'%(self.resultsFileStem)
         with open(outfilename, "wb") as f:
                 writer = csv.writer(f)
@@ -846,7 +855,7 @@ class GeospatialOptimisation:
             infile = open(filename, 'rb')
             allocation = pickle.load(infile)
             infile.close()
-            allocation = self.orderInterventionDictionaryConsistently(allocation)
+            allocation = returnAlphabeticalDictionary(allocation)
             outfilename = '%s%s_optimised_spending.csv'%(self.resultsFileStem, regionName)
             with open(outfilename, "wb") as f:
                     writer = csv.writer(f)
@@ -862,15 +871,5 @@ class GeospatialOptimisation:
             thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, filename)   
             thisOptimisation.outputTimeSeriesToCSV(outcomeOfInterest)
                     
-    def orderInterventionDictionaryConsistently(self, dictionary):
-        import data
-        import helper
-        from collections import OrderedDict
-        thisHelper = helper.Helper()
-        aSpreadsheet = self.regionSpreadsheetList[0]
-        thisData = data.readSpreadsheet(aSpreadsheet, thisHelper.keyList)
-        order = thisData.interventionList
-        dictionaryOrdered = OrderedDict([])
-        for i in range(0, len(dictionary)):
-            dictionaryOrdered[order[i]] = dictionary[order[i]]    
-        return dictionaryOrdered                    
+
+                   
