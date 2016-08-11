@@ -65,7 +65,7 @@ def objectiveFunction(allocation, totalBudget, fixedCosts, costCoverageInfo, opt
     else:    
         scaledAllocation = rescaleAllocation(availableBudget, allocation)
     # add the fixed costs to the scaled allocation of available budget
-    scaledAllocation = map(add, scaledAllocation, fixedCosts)   
+    scaledAllocation = map(add, scaledAllocation, fixedCosts)  
     # run the model
     timestepsPre = 12
     for t in range(timestepsPre):
@@ -187,7 +187,7 @@ class Optimisation:
         currentTotalBudget = sum(initialAllocation)
         xmin = [0.] * len(initialAllocation)
         # set fixed costs if you have them
-        fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation)            
+        fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation) 
         # check that you have enough cores and don't parallelise if you don't
         if numCores < len(cascadeValues):
             print "numCores is not enough"
@@ -210,6 +210,7 @@ class Optimisation:
         import asd as asd 
         import pickle 
         import numpy as np
+        from operator import add
         numInterventions = len(interventionList)
         scenarioMonteCarloOutput = []
         for r in range(0, MCSampleSize):
@@ -222,9 +223,11 @@ class Optimisation:
         for sample in range(0, len(scenarioMonteCarloOutput)):
             if scenarioMonteCarloOutput[sample].fval < bestSample.fval:
                 bestSample = scenarioMonteCarloOutput[sample]
-        # scale it and make a dictionary
+        # scale it to available budget, add the fixed costs and make it a dictionary
         bestSampleBudget = bestSample.budgetBest
-        bestSampleBudgetScaled = rescaleAllocation(totalBudget, bestSampleBudget)
+        availableBudget = totalBudget - sum(args['fixedCosts'])
+        bestSampleBudgetScaled = rescaleAllocation(availableBudget, bestSampleBudget)
+        bestSampleBudgetScaled = map(add, bestSampleBudgetScaled, args['fixedCosts'])        
         bestSampleBudgetScaledDict = {}
         for i in range(0, len(interventionList)):
             intervention = interventionList[i]
