@@ -86,7 +86,7 @@ numRuns = run
 
 #------------------------------------------------------------------------    
 # GATHER LiST OUTPUT
-filename_LiST = "../input_spreadsheets/%s/validation/scenarios_LiST_%s.xlsx"%(country, country)
+filename_LiST = "../input_spreadsheets/%s/pre2016Jul26/validation/scenarios_LiST_%s.xlsx"%(country, country)
 import pandas
 df = pandas.read_excel(filename_LiST, sheetname = 'deaths')
 scenarios = list(df['scenario'])
