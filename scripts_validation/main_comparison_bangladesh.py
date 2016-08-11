@@ -21,7 +21,8 @@ country = 'Bangladesh'
 startYear = 2016
 version = '1604'
 
-dataFilename = '../input_spreadsheets/%s/validation/Input_%s_%i_%s_LiST.xlsx'%(country, country, startYear, version)
+#dataFilename = '../input_spreadsheets/%s/validation/Input_%s_%i_%s_LiST.xlsx'%(country, country, startYear, version)
+dataFilename = '../input_spreadsheets/%s/2016Aug02/validation/Input_%s_%i_%s_LiST.xlsx'%(country, country, startYear, version)
 inputData = data.readSpreadsheet(dataFilename, helper.keyList)
 numAgeGroups = len(helper.keyList['ages'])
 agePopSizes = [246307.75 , 1231538.75 , 1477846.50 , 2950860.00 , 8895211.00 ] #override
