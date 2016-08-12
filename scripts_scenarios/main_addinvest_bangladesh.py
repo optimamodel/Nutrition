@@ -23,7 +23,8 @@ country = 'Bangladesh'
 startYear = 2016
 version = '1604'
 
-dataFilename = '../input_spreadsheets/%s/InputForCode_%s.xlsx'%(country, country)
+dataFilename = '../input_spreadsheets/%s/2016Aug02/InputForCode_%s.xlsx'%(country, country)
+#dataFilename = '../input_spreadsheets/%s/pre2016Jul26/InputForCode_%s.xlsx'%(country, country)
 #dataFilename = '../input_spreadsheets/%s/Input_%s_%i_%s.xlsx'%(country, country, startYear, version)
 inputData = data.readSpreadsheet(dataFilename, helper.keyList)
 numAgeGroups = len(helper.keyList['ages'])
@@ -66,7 +67,7 @@ run += 1
 
 #------------------------------------------------------------------------    
 # INTERVENTION
-investmentIncrease = 1.e6  # 1 million USD per intervention per year for the full 15 years
+investmentIncrease = 2.e6  # 2 million USD per intervention per year for the full 15 years
 title = '%s: 2015-2030 \n Scale up intervention by %i million USD per year'%(country,investmentIncrease/1e6)
 print title
 
@@ -126,6 +127,7 @@ filenamePrefix = '%s_%s_addInvest'%(country, version)
 
 output.getCombinedPlots(run, plotData, startYear=startYear-1, filenamePrefix=filenamePrefix, save=True)
 output.getCompareDeathsAverted(run, plotData, scalePercent=0.1, filenamePrefix=filenamePrefix, title=title, save=True)
+output.getDALYsAverted(run, plotData, scalePercent=0.1, filenamePrefix=filenamePrefix, title=title, save=True)
 output.getU5StuntingCasesAverted(run, plotData, scalePercent=0.5, filenamePrefix=filenamePrefix, title=title, save=True)
 output.getA5StuntingCasesAverted(run, plotData, scalePercent=0.5, filenamePrefix=filenamePrefix, title=title, save=True)
 
