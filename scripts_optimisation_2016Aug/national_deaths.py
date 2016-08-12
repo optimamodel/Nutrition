@@ -18,7 +18,7 @@ dataSpreadsheetName = '../input_spreadsheets/Bangladesh/2016Aug02/InputForCode_B
 numModelSteps = 180
 MCSampleSize = 25
 cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]  
-resultsFileStem = '../Results2016Aug10/'+optimise+'/national/Bangladesh'
+resultsFileStem = '../Results2016Aug12/'+optimise+'/national/Bangladesh'
 
 thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise, resultsFileStem)
 thisOptimisation.performParallelCascadeOptimisation(MCSampleSize, cascadeValues, numCores, haveFixedProgCosts)
