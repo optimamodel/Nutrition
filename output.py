@@ -400,7 +400,6 @@ def getCompareDeathsAverted(numRuns, data, scalePercent=0.2, filenamePrefix="com
             model = modelList[mon]
             for iAge in range(numAges):
                 ageName = ageList[iAge]
-                total       = model.listOfAgeCompartments[iAge].getTotalPopulation()
                 cumulDeaths = model.listOfAgeCompartments[iAge].getCumulativeDeaths()
                 cumulDeathsU5[tag][mon] += cumulDeaths
                 cumulDeathsList[tag][ageName][mon] = cumulDeaths
@@ -450,6 +449,73 @@ def getCompareDeathsAverted(numRuns, data, scalePercent=0.2, filenamePrefix="com
     plt.legend([h1,h2],["<5 years","<1 month"])
     if save:
         plt.savefig("%s_totalDeathsAverted.png"%(filenamePrefix), bbox_inches='tight')
+    else:
+        plt.show()
+
+
+
+def getDALYsAverted(numRuns, data, scalePercent=0.2, filenamePrefix="compare", title="", save=False):
+    import numpy as np
+    from math import ceil
+    import matplotlib.pyplot as plt
+    # set up
+    modelList = data[0]["modelList"]
+    ageList = modelList[0].ages
+    numMonths = len(modelList)
+    tagList  = []
+    for run in range(numRuns):
+        tag       = data[run]["tag"]
+        tagList.append(tag)
+    # add up DALYs
+    cumulDALYsU5 = {}
+    for run in range(numRuns):
+        modelList = data[run]["modelList"]
+        tag       = data[run]["tag"]
+        # initialise
+        cumulDALYsU5[tag] = [0.]*numMonths
+        for mon in range(numMonths):
+            model = modelList[mon]
+            cumulDALYsU5[tag][mon] += model.getDALYs()
+    # calculate DALYs averted
+    DALYsAvertedList    = []
+    tagBaseline = data[0]["tag"]
+    DALYsBaseline    = cumulDALYsU5[tagBaseline][numMonths-1]
+    for run in range(1, numRuns):
+        tag       = data[run]["tag"]
+        DALYsScenario    = cumulDALYsU5[tag][numMonths-1]
+        DALYsAvertedList.append(   DALYsBaseline    - DALYsScenario)
+    # PLOTTING
+    # setup figure
+    fig, ax = plt.subplots()
+    ax.set_title(title, size=16, y=1.13)
+    maxDALYs      = max(DALYsAvertedList)
+    maxDALYsAxis  = ceil(maxDALYs/100000.)*100000
+    maxPercentAxis = maxDALYsAxis/DALYsBaseline*100.
+    percentTicks = np.arange(scalePercent,maxPercentAxis,scalePercent)
+    pTicksTrans = percentTicks/100.*DALYsBaseline
+    y_pos = np.arange(numRuns-1)
+    # axes
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.axes.get_xaxis().tick_bottom()
+    ax.axes.get_yaxis().tick_left()
+    ax.set_ylim(0,numRuns-1)
+    ax.set_xlim(0,maxDALYsAxis)
+    ax.set_yticks(y_pos+0.5)
+    ax.set_yticklabels(tagList[1:])
+    ax.set_ylabel('Interventions',  size=16)
+    ax.set_xlabel('Number of DALYs averted in children', size=14)
+    ax2 = ax.twiny()
+    ax2.set_xlim(ax.get_xlim())
+    ax2.set_xticks(pTicksTrans)
+    ax2.set_xticklabels(percentTicks)
+    ax2.set_xlabel('Percent of DALYs averted (%)', size=14)
+    # plot
+    barwid = 0.6
+    h1 = ax.barh(y_pos+0.5-0.5*barwid, DALYsAvertedList,    height=barwid, facecolor='#99CCEE', edgecolor='k', linewidth=1.5)
+    #plt.legend([h1,h2],["<5 years","<1 month"])
+    if save:
+        plt.savefig("%s_DALYsAverted.png"%(filenamePrefix), bbox_inches='tight')
     else:
         plt.show()
 
