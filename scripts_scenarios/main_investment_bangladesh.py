@@ -23,7 +23,8 @@ country = 'Bangladesh'
 startYear = 2016
 version = '1604'
 
-dataFilename = '../input_spreadsheets/%s/InputForCode_%s.xlsx'%(country, country)
+dataFilename = '../input_spreadsheets/%s/2016Aug02/InputForCode_%s.xlsx'%(country, country)
+#dataFilename = '../input_spreadsheets/%s/pre2016Jul26/InputForCode_%s.xlsx'%(country, country)
 #dataFilename = '../input_spreadsheets/%s/Input_%s_%i_%s.xlsx'%(country, country, startYear, version)
 inputData = data.readSpreadsheet(dataFilename, helper.keyList)
 numAgeGroups = len(helper.keyList['ages'])
@@ -66,7 +67,8 @@ run += 1
 
 #------------------------------------------------------------------------    
 # INTERVENTION
-title = '%s: 2015-2030 \n Put entire current budget into one intervention'%(country)
+fraction = 0.4
+title = '%s: 2015-2030 \n Divert %g%% of current budget into one intervention'%(country,fraction*100)
 print title
 
 modelB, derived, params = helper.setupModelConstantsParameters(inputData)
@@ -101,9 +103,9 @@ for ichoose in range(len(inputData.interventionList)):
     modelXList.append(dcp(modelX))
 
     for intervention in inputData.interventionList:
-        newCoverages[intervention] = 0.
+        newCoverages[intervention] = oldCoverages[intervention]
     # allocation of funding
-    investment = currentBudget
+    investment = currentBudget*fraction + (1.-fraction)*currentSpending[chosenIntervention]
     #additionalPeopleCovered   = costCov.function(investment, costCovParams, targetPopSize[chosenIntervention])
     #additionalFractionCovered = additionalPeopleCovered / targetPopSize[chosenIntervention]
     #print "additional coverage: %g"%(additionalFractionCovered)
@@ -131,10 +133,11 @@ for ichoose in range(len(inputData.interventionList)):
 
 filenamePrefix = '%s_%s_fixedInvest'%(country, version)
 
-output.getCombinedPlots(run, plotData, startYear=startYear-1, filenamePrefix=filenamePrefix, save=True)
-output.getCompareDeathsAverted(run, plotData, scalePercent=0.5, filenamePrefix=filenamePrefix, title=title, save=True)
-output.getU5StuntingCasesAverted(run, plotData, scalePercent=0.1, filenamePrefix=filenamePrefix, title=title, save=True)
-output.getA5StuntingCasesAverted(run, plotData, scalePercent=0.1, filenamePrefix=filenamePrefix, title=title, save=True)
+output.getCombinedPlots(         run, plotData, startYear=startYear-1, filenamePrefix=filenamePrefix, save=True)
+output.getCompareDeathsAverted(  run, plotData, scalePercent=0.2, filenamePrefix=filenamePrefix, title=title, save=True)
+output.getDALYsAverted(          run, plotData, scalePercent=0.2, filenamePrefix=filenamePrefix, title=title, save=True)
+output.getU5StuntingCasesAverted(run, plotData, scalePercent=0.5, filenamePrefix=filenamePrefix, title=title, save=True)
+output.getA5StuntingCasesAverted(run, plotData, scalePercent=0.5, filenamePrefix=filenamePrefix, title=title, save=True)
 
 
 
