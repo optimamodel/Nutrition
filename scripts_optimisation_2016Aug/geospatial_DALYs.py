@@ -12,7 +12,7 @@ import optimisation
 
 optimise = 'DALYs'
 haveFixedProgCosts = False
-nCores = 49
+nCores = 56
 
 numModelSteps = 180
 MCSampleSize = 25
@@ -24,7 +24,7 @@ for regionName in regionNameList:
     spreadsheet = spreadsheetFileStem + regionName + '.xlsx'
     spreadsheetList.append(spreadsheet)
     
-resultsFileStem = '../Results2016Aug10/'+optimise+'/geospatial/'
+resultsFileStem = '../Results2016Aug12/'+optimise+'/geospatial/'
 
 geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
 geospatialOptimisation.generateParallelResultsForGeospatialCascades(nCores, MCSampleSize, haveFixedProgCosts)

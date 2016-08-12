@@ -25,11 +25,11 @@ for regionName in regionNameList:
     spreadsheetList.append(spreadsheet)
 
 
-numCores = 7 # need this number times the number of otcomes you're optimising for
+numCores = 8 # need this number times the number of otcomes you're optimising for
 for optimise in optimiseList:
     print 'running GA for:  ', optimise
     
-    resultsFileStem = '../Results2016Aug10/'+optimise+'/geospatial/'
+    resultsFileStem = '../Results2016Aug12/'+optimise+'/geospatial/'
     GAFile = 'GA'    
     
     geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)

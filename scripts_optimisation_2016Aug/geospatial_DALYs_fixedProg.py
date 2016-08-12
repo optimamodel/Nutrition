@@ -24,7 +24,7 @@ for regionName in regionNameList:
     spreadsheet = spreadsheetFileStem + regionName + '.xlsx'
     spreadsheetList.append(spreadsheet)
     
-resultsFileStem = '../Results2016Aug10fixedProgCosts/'+optimise+'/geospatial/'
+resultsFileStem = '../Results2016Aug12fixedProgCosts/'+optimise+'/geospatial/'
 
 geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
 geospatialOptimisation.generateParallelResultsForGeospatialCascades(nCores, MCSampleSize, haveFixedProgCosts)
