@@ -249,7 +249,9 @@ plt.xlabel('Year')
 # choose scenarios
 plotRuns_Optima = [4,5,6]
 plotRuns_LiST   = [4,5,6]
-colorChoice     = ['#99FF99','#66DD66','#44BB44']
+color_Optima    = ['#6666FF','#3333DD','#0000AA']
+color_LiST      = ['#FF6666','#DD3333','#AA0000']
+#colorChoice     = ['#99FF99','#66DD66','#44BB44']
 # plot
 plotList = []
 tagList_Optima = []
@@ -258,56 +260,17 @@ for i in range(3):
     iRun = plotRuns_Optima[i]
     tag       = plotData[iRun]["tag"]
     color     = plotData[iRun]["color"]
-    plotObj,  = plt.plot(yearList, stuntFracU5annual[tag], linewidth=1.7,     color=colorChoice[i])
-    plotMark, = plt.plot(yearList, stuntFracU5annual[tag], ms=17, marker='o', color=colorChoice[i])
-    plotList.append(plotMark)
+    plotObj,  = plt.plot(yearList, stuntFracU5annual[tag], linewidth=3.0, color=color_Optima[i])#    color=colorChoice[i])
+    #plotMark, = plt.plot(yearList, stuntFracU5annual[tag], ms=17, marker='o', color=colorChoice[i])
+    plotList.append(plotObj)
     tagList_Optima.append("Optima: "+tag)
 for i in range(3):
     iRun = plotRuns_LiST[i]
     scenario = scenarios[iRun]
-    plotObj,  = plt.plot(yearList, stunting_LiST[scenario], linewidth=1.7,    color=colorChoice[i])
-    plotMark, = plt.plot(yearList, stunting_LiST[scenario], ms=21, marker='*',color=colorChoice[i])
-    plotList.append(plotMark)
-    tagList_Optima.append("LiST     : "+scenario)
-tagList = tagList_Optima + tagList_LiST
-plt.legend(plotList, tagList, loc = 'center left', bbox_to_anchor=(1.05,0.5))
-plt.savefig("%s_stuntingPrevalence_CF.png"%(filenamePrefix), bbox_inches='tight')
-
-
-
-
-# PLOT comparison of Stunted Fraction (everyone U5)
-fig, ax = plt.subplots()
-ax.set_xlim([yearList[0], yearList[numYears-1]])
-ax.set_xticklabels(yearPlotList)
-ax.tick_params(pad=11)
-ax.set_ylim([39., 42.])
-ax.yaxis.set_major_formatter(FuncFormatter(myfunc2))
-plt.title('Prevalence of stunting in children under 5',y=1.09)
-plt.xlabel('Year')
-# choose scenarios
-plotRuns_Optima = [2,4,7]
-plotRuns_LiST   = [2,4,9]
-colorChoice     = ['#99FF99','#66DD66','#44BB44']
-# plot
-plotList = []
-tagList_Optima = []
-tagList_LiST   = []
-for i in range(3):
-    iRun = plotRuns_Optima[i]
-    tag       = plotData[iRun]["tag"]
-    color     = plotData[iRun]["color"]
-    plotObj,  = plt.plot(yearList, stuntFracU5annual[tag], linewidth=1.7,     color=colorChoice[i])
-    plotMark, = plt.plot(yearList, stuntFracU5annual[tag], ms=17, marker='o', color=colorChoice[i])
-    plotList.append(plotMark)
-    tagList_Optima.append("Optima: "+tag)
-for i in range(3):
-    iRun = plotRuns_LiST[i]
-    scenario = scenarios[iRun]
-    plotObj,  = plt.plot(yearList, stunting_LiST[scenario], linewidth=1.7,    color=colorChoice[i])
-    plotMark, = plt.plot(yearList, stunting_LiST[scenario], ms=21, marker='*',color=colorChoice[i])
-    plotList.append(plotMark)
-    tagList_Optima.append("LiST     : "+scenario)
+    plotObj,  = plt.plot(yearList, stunting_LiST[scenario], linewidth=3.0,    color=color_LiST[i])
+    #plotMark, = plt.plot(yearList, stunting_LiST[scenario], ms=21, marker='*',color=colorChoice[i])
+    plotList.append(plotObj)
+    tagList_LiST.append("LiST     : "+scenario)
 tagList = tagList_Optima + tagList_LiST
 plt.legend(plotList, tagList, loc = 'center left', bbox_to_anchor=(1.05,0.5))
 plt.savefig("%s_stuntingPrevalence.png"%(filenamePrefix), bbox_inches='tight')
@@ -327,7 +290,9 @@ plt.xlabel('Year')
 # choose scenarios
 plotRuns_Optima = [2,4,7] #[1,2,3]
 plotRuns_LiST   = [2,4,9] #[4,5,6]
-colorChoice     = ['#81D5EC','#51A5BC','#31859C'] # 31859C hue
+color_Optima    = ['#6666FF','#3333DD','#0000AA']
+color_LiST      = ['#FF6666','#DD3333','#AA0000']
+#colorChoice     = ['#81D5EC','#51A5BC','#31859C'] # 31859C hue
 # plot
 plotList = []
 tagList_Optima = []
@@ -336,17 +301,17 @@ for i in range(3):
     iRun = plotRuns_Optima[i]
     tag       = plotData[iRun]["tag"]
     color     = plotData[iRun]["color"]
-    plotObj,  = plt.plot(yearList, stunted_averted[tag], linewidth=1.7,     color=colorChoice[i])
-    plotMark, = plt.plot(yearList, stunted_averted[tag], ms=17, marker='o', color=colorChoice[i])
-    plotList.append(plotMark)
+    plotObj,  = plt.plot(yearList, stunted_averted[tag], linewidth=3.0,     color=color_Optima[i])
+    #plotMark, = plt.plot(yearList, stunted_averted[tag], ms=17, marker='o', color=colorChoice[i])
+    plotList.append(plotObj)
     tagList_Optima.append("Optima: "+tag)
 for i in range(3):
     iRun = plotRuns_LiST[i]
     scenario = scenarios[iRun]
-    plotObj,  = plt.plot(yearList, stunted_averted_LiST[scenario], linewidth=1.7,    color=colorChoice[i])
-    plotMark, = plt.plot(yearList, stunted_averted_LiST[scenario], ms=21, marker='*',color=colorChoice[i])
-    plotList.append(plotMark)
-    tagList_Optima.append("LiST     : "+scenario)
+    plotObj,  = plt.plot(yearList, stunted_averted_LiST[scenario], linewidth=3.0,    color=color_LiST[i])
+    #plotMark, = plt.plot(yearList, stunted_averted_LiST[scenario], ms=21, marker='*',color=colorChoice[i])
+    plotList.append(plotObj)
+    tagList_LiST.append("LiST     : "+scenario)
 tagList = tagList_Optima + tagList_LiST
 #plt.legend(plotList, tagList, loc = 'upper center', bbox_to_anchor=(0.5,-0.13))
 plt.legend(plotList, tagList, loc = 'center left', bbox_to_anchor=(1.05,0.5))
@@ -367,7 +332,9 @@ plt.xlabel('Year')
 # choose scenarios
 plotRuns_Optima = [0,2,4,7]
 plotRuns_LiST   = [0,2,4,9]
-colorChoice     = ['grey','#E9D9FD','#C9B9DD','#8474BB'] # B2A2C6 hue
+color_Optima    = ['grey','#6666FF','#3333DD','#0000AA']
+color_LiST      = ['grey','#FF6666','#DD3333','#AA0000']
+#colorChoice     = ['grey','#E9D9FD','#C9B9DD','#8474BB'] # B2A2C6 hue
 # plot
 plotList = []
 tagList_Optima = []
@@ -376,17 +343,17 @@ for i in range(4):
     iRun = plotRuns_Optima[i]
     tag       = plotData[iRun]["tag"]
     color     = plotData[iRun]["color"]
-    plotObj,  = plt.plot(yearList, deathsU5annual[tag], linewidth=1.7,     color=colorChoice[i])
-    plotMark, = plt.plot(yearList, deathsU5annual[tag], ms=17, marker='o', color=colorChoice[i])
-    plotList.append(plotMark)
+    plotObj,  = plt.plot(yearList, deathsU5annual[tag], linewidth=3.0,     color=color_Optima[i])
+    #plotMark, = plt.plot(yearList, deathsU5annual[tag], ms=17, marker='o', color=colorChoice[i])
+    plotList.append(plotObj)
     tagList_Optima.append("Optima: "+tag)
 for i in range(4):
     iRun = plotRuns_LiST[i]
     scenario = scenarios[iRun]
-    plotObj,  = plt.plot(yearList, deaths_LiST[scenario], linewidth=1.7,    color=colorChoice[i])
-    plotMark, = plt.plot(yearList, deaths_LiST[scenario], ms=21, marker='*',color=colorChoice[i])
-    plotList.append(plotMark)
-    tagList_Optima.append("LiST     : "+scenario)
+    plotObj,  = plt.plot(yearList, deaths_LiST[scenario], linewidth=3.0,    color=color_LiST[i])
+    #plotMark, = plt.plot(yearList, deaths_LiST[scenario], ms=21, marker='*',color=colorChoice[i])
+    plotList.append(plotObj)
+    tagList_LiST.append("LiST     : "+scenario)
 tagList = tagList_Optima + tagList_LiST
 plt.legend(plotList, tagList, loc = 'center left', bbox_to_anchor=(1.05,0.5))
 plt.savefig("%s_annualDeaths.png"%(filenamePrefix), bbox_inches='tight')
@@ -405,7 +372,9 @@ plt.xlabel('Year')
 # choose scenarios
 plotRuns_Optima = [0,2,4,7]
 plotRuns_LiST   = [0,2,4,9]
-colorChoice     = ['grey','#E9D9FD','#C9B9DD','#8474BB'] # B2A2C6 hue
+color_Optima    = ['grey','#6666FF','#3333DD','#0000AA']
+color_LiST      = ['grey','#FF6666','#DD3333','#AA0000']
+#colorChoice     = ['grey','#E9D9FD','#C9B9DD','#8474BB'] # B2A2C6 hue
 # plot
 plotList = []
 tagList_Optima = []
@@ -414,17 +383,17 @@ for i in range(4):
     iRun = plotRuns_Optima[i]
     tag       = plotData[iRun]["tag"]
     color     = plotData[iRun]["color"]
-    plotObj,  = plt.plot(yearList, deathsU5annual[tag], linewidth=1.7,     color=colorChoice[i])
-    plotMark, = plt.plot(yearList, deathsU5annual[tag], ms=17, marker='o', color=colorChoice[i])
-    plotList.append(plotMark)
+    plotObj,  = plt.plot(yearList, deathsU5annual[tag], linewidth=3.0,     color=color_Optima[i])
+    #plotMark, = plt.plot(yearList, deathsU5annual[tag], ms=17, marker='o', color=colorChoice[i])
+    plotList.append(plotObj)
     tagList_Optima.append("Optima: "+tag)
 for i in range(4):
     iRun = plotRuns_LiST[i]
     scenario = scenarios[iRun]
-    plotObj,  = plt.plot(yearList, deaths_LiST[scenario], linewidth=1.7,    color=colorChoice[i])
-    plotMark, = plt.plot(yearList, deaths_LiST[scenario], ms=21, marker='*',color=colorChoice[i])
-    plotList.append(plotMark)
-    tagList_Optima.append("LiST     : "+scenario)
+    plotObj,  = plt.plot(yearList, deaths_LiST[scenario], linewidth=3.0,    color=color_LiST[i])
+    #plotMark, = plt.plot(yearList, deaths_LiST[scenario], ms=21, marker='*',color=colorChoice[i])
+    plotList.append(plotObj)
+    tagList_LiST.append("LiST     : "+scenario)
 tagList = tagList_Optima + tagList_LiST
 plt.legend(plotList, tagList, loc = 'center left', bbox_to_anchor=(1.05,0.5))
 plt.savefig("%s_annualDeaths_zoom.png"%(filenamePrefix), bbox_inches='tight')
@@ -444,7 +413,9 @@ plt.xlabel('Year')
 # choose scenarios
 plotRuns_Optima = [2,4,7]
 plotRuns_LiST   = [2,4,9]
-colorChoice     = ['#E9D9FD','#C9B9DD','#8474BB'] # B2A2C6 hue
+color_Optima    = ['#6666FF','#3333DD','#0000AA']
+color_LiST      = ['#FF6666','#DD3333','#AA0000']
+#colorChoice     = ['#E9D9FD','#C9B9DD','#8474BB'] # B2A2C6 hue
 # plot
 plotList = []
 tagList_Optima = []
@@ -453,17 +424,17 @@ for i in range(3):
     iRun = plotRuns_Optima[i]
     tag       = plotData[iRun]["tag"]
     color     = plotData[iRun]["color"]
-    plotObj,  = plt.plot(yearList, deaths_averted[tag], linewidth=1.7,     color=colorChoice[i])
-    plotMark, = plt.plot(yearList, deaths_averted[tag], ms=17, marker='o', color=colorChoice[i])
-    plotList.append(plotMark)
+    plotObj,  = plt.plot(yearList, deaths_averted[tag], linewidth=3.0,     color=color_Optima[i])
+    #plotMark, = plt.plot(yearList, deaths_averted[tag], ms=17, marker='o', color=colorChoice[i])
+    plotList.append(plotObj)
     tagList_Optima.append("Optima: "+tag)
 for i in range(3):
     iRun = plotRuns_LiST[i]
     scenario = scenarios[iRun]
-    plotObj,  = plt.plot(yearList, deaths_averted_LiST[scenario], linewidth=1.7,    color=colorChoice[i])
-    plotMark, = plt.plot(yearList, deaths_averted_LiST[scenario], ms=21, marker='*',color=colorChoice[i])
-    plotList.append(plotMark)
-    tagList_Optima.append("LiST     : "+scenario)
+    plotObj,  = plt.plot(yearList, deaths_averted_LiST[scenario], linewidth=3.0,    color=color_LiST[i])
+    #plotMark, = plt.plot(yearList, deaths_averted_LiST[scenario], ms=21, marker='*',color=colorChoice[i])
+    plotList.append(plotObj)
+    tagList_LiST.append("LiST     : "+scenario)
 tagList = tagList_Optima + tagList_LiST
 plt.legend(plotList, tagList, loc = 'center left', bbox_to_anchor=(1.05,0.5))
 plt.savefig("%s_DeathsAverted.png"%(filenamePrefix), bbox_inches='tight')
@@ -484,7 +455,9 @@ plt.xlabel('Year')
 # choose scenarios
 plotRuns_Optima = [2,4,7]
 plotRuns_LiST   = [2,4,9]
-colorChoice     = ['#E9D9FD','#C9B9DD','#8474BB'] # B2A2C6 hue
+color_Optima    = ['#6666FF','#3333DD','#0000AA']
+color_LiST      = ['#FF6666','#DD3333','#AA0000']
+#colorChoice     = ['#E9D9FD','#C9B9DD','#8474BB'] # B2A2C6 hue
 # plot
 plotList = []
 tagList_Optima = []
@@ -493,17 +466,17 @@ for i in range(3):
     iRun = plotRuns_Optima[i]
     tag       = plotData[iRun]["tag"]
     color     = plotData[iRun]["color"]
-    plotObj,  = plt.plot(yearList, deaths_averted_perc[tag], linewidth=1.7,     color=colorChoice[i])
-    plotMark, = plt.plot(yearList, deaths_averted_perc[tag], ms=17, marker='o', color=colorChoice[i])
-    plotList.append(plotMark)
+    plotObj,  = plt.plot(yearList, deaths_averted_perc[tag], linewidth=3.0,     color=color_Optima[i])
+    #plotMark, = plt.plot(yearList, deaths_averted_perc[tag], ms=17, marker='o', color=colorChoice[i])
+    plotList.append(plotObj)
     tagList_Optima.append("Optima: "+tag)
 for i in range(3):
     iRun = plotRuns_LiST[i]
     scenario = scenarios[iRun]
-    plotObj,  = plt.plot(yearList, deaths_averted_perc_LiST[scenario], linewidth=1.7,    color=colorChoice[i])
-    plotMark, = plt.plot(yearList, deaths_averted_perc_LiST[scenario], ms=21, marker='*',color=colorChoice[i])
-    plotList.append(plotMark)
-    tagList_Optima.append("LiST     : "+scenario)
+    plotObj,  = plt.plot(yearList, deaths_averted_perc_LiST[scenario], linewidth=3.0,    color=color_LiST[i])
+    #plotMark, = plt.plot(yearList, deaths_averted_perc_LiST[scenario], ms=21, marker='*',color=colorChoice[i])
+    plotList.append(plotObj)
+    tagList_LiST.append("LiST     : "+scenario)
 tagList = tagList_Optima + tagList_LiST
 plt.legend(plotList, tagList, loc = 'center left', bbox_to_anchor=(1.05,0.5))
 plt.savefig("%s_DeathsAvertedPerc.png"%(filenamePrefix), bbox_inches='tight')
