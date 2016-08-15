@@ -390,6 +390,7 @@ class Optimisation:
 
     def outputTimeSeriesToCSV(self, outcomeOfInterest):
         import csv
+        # WARNING: MAKE A NEW Optimisation CLASS OBJECT FOR EACH outcomeOfInterest
         if self.timeSeries == None:
             self.getTimeSeries(outcomeOfInterest)   
         years = self.timeSeries['years']
