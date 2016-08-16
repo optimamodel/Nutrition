@@ -142,35 +142,27 @@ class Params:
         
         
     def getStuntingUpdateComplementaryFeeding(self, newCoverage):
-        stuntingUpdate = {}
+        # collect data
         X1 = self.demographics['fraction poor']
         X2 = self.demographics['fraction food insecure (poor)']
         X3 = self.demographics['fraction food insecure (not poor)']
-        Ce  = self.coverage['Complementary feeding (education)']
-        Cse = self.coverage['Complementary feeding (supplementation)']
-        """
-        FracSecure = 1. - self.demographics['fraction food insecure']
-        FracCoveredEducation = newCoverage['Complementary feeding (education)']
-        FracCoveredSupplements = newCoverage['Complementary feeding (supplementation)']
-        """
+        Ce  = newCoverage['Complementary feeding (education)']
+        Cse = newCoverage['Complementary feeding (supplementation)']
+        # calculate fraction of children in each of the food security/access to intervention groups
         Frac = [0.]*4
         Frac[0] = X1*(1.-X2)*Ce + (1.-X1)*(1.-X3)*Ce + X1*(1.-X2)*(1.-Ce)*Cse
         Frac[1] = X1*(1.-X2)*(1.-Ce)*(1.-Cse) + (1.-X1)*(1.-X3)*(1.-Ce)
         Frac[2] = X1*X2*Cse + (1.-X1)*X3*Ce
         Frac[3] = X1*X2*(1.-Cse) + (1.-X1)*X3*(1.-Ce)
-        """
-        Frac[0] = FracSecure * FracCoveredEducation
-        Frac[1] = FracSecure * (1 - FracCoveredEducation)
-        Frac[2] = (1 - FracSecure) * FracCoveredSupplements
-        Frac[3] = (1 - FracSecure) * (1 - FracCoveredSupplements)
-        """
+        # calculate stunting update
+        stuntingUpdate = {}
         for ageName in self.ages:
             stuntingUpdate[ageName] = 1.
             oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
             newProbStunting = 0
             for i in range(len(self.foodSecurityGroups)):            
-                probThisGroup = self.derived.probStuntedComplementaryFeeding[ageName][self.foodSecurityGroups[i]]
-                newProbStunting += probThisGroup * Frac[i]
+                probStuntedThisGroup = self.derived.probStuntedComplementaryFeeding[ageName][self.foodSecurityGroups[i]]
+                newProbStunting += probStuntedThisGroup * Frac[i]
             reduction = (oldProbStunting - newProbStunting)/oldProbStunting
             stuntingUpdate[ageName] *= 1. - reduction
         return stuntingUpdate           
