@@ -146,8 +146,8 @@ class Params:
         X1 = self.demographics['fraction poor']
         X2 = self.demographics['fraction food insecure (poor)']
         X3 = self.demographics['fraction food insecure (not poor)']
-        Ce  = newCoverage['Complementary feeding (education)']
-        Cse = newCoverage['Complementary feeding (supplementation)']
+        Ce  = newCoverage['Complementary feeding education']
+        Cse = newCoverage['Public provision of complementary foods']
         # calculate fraction of children in each of the food security/access to intervention groups
         Frac = [0.]*4
         Frac[0] = X1*(1.-X2)*Ce + (1.-X1)*(1.-X3)*Ce + X1*(1.-X2)*(1.-Ce)*Cse

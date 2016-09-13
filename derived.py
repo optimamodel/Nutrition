@@ -341,12 +341,12 @@ class Derived:
             X1 = self.data.demographics['fraction poor']
             X2 = self.data.demographics['fraction food insecure (poor)']
             X3 = self.data.demographics['fraction food insecure (not poor)']
-            Ce  = coverage['Complementary feeding (education)']
-            Cse = coverage['Complementary feeding (supplementation)']
+            Ce  = coverage['Complementary feeding education']
+            Cse = coverage['Public provision of complementary foods']
             """
             FracSecure = 1. - self.data.demographics['fraction food insecure']
-            FracCoveredEduc = coverage['Complementary feeding (education)']
-            FracCoveredSupp = coverage['Complementary feeding (supplementation)']
+            FracCoveredEduc = coverage['Complementary feeding education']
+            FracCoveredSupp = coverage['Public provision of complementary foods']
             """
             Frac = [0.]*4
             Frac[0] = X1*(1.-X2)*Ce + (1.-X1)*(1.-X3)*Ce + X1*(1.-X2)*(1.-Ce)*Cse
