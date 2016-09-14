@@ -62,7 +62,7 @@ def readSpreadsheet(fileName, keyList):
     breastfeedingList = keyList['breastfeedingList']
     
     #get list of ages and causesOfDeath
-    df = pandas.read_excel(Location, sheetname = 'mortality')
+    df = pandas.read_excel(Location, sheetname = 'causes of death')
     causesOfDeath = list(df['Cause'])
     #get list of conditions
     df = pandas.read_excel(Location, sheetname = 'Incidence of conditions')
@@ -96,13 +96,13 @@ def readSpreadsheet(fileName, keyList):
     #  READ TOTAL MORTALITY SHEET
     #  sets:
     #  - rawMortality
-    df = pandas.read_excel(Location, sheetname = 'total mortality')
+    df = pandas.read_excel(Location, sheetname = 'mortality rates')
     rawMortality = dict(zip(list(df.columns.values), df.iloc[0]))
 
     #  READ MORTALITY SHEET
     #  sets:
     #  - causeOfDeathDist
-    df = pandas.read_excel(Location, sheetname = 'mortality', index_col = 'Cause')
+    df = pandas.read_excel(Location, sheetname = 'causes of death', index_col = 'Cause')
     causeOfDeathDist = {}
     for ageName in ages:
         causeOfDeathDist[ageName] = {}
@@ -112,13 +112,13 @@ def readSpreadsheet(fileName, keyList):
     #  READ RRStunting SHEET
     #  sets:
     #  - RRdeathStunting
-    df = pandas.read_excel(Location, sheetname = 'RRStunting', index_col = [0])
+    df = pandas.read_excel(Location, sheetname = 'RR death by stunting', index_col = [0])
     #get the list of causes for which we have relative risks
     mylist = list(df.index.values)
     myset = set(mylist)
     listCausesRRdeathStunting = list(myset)
     #put the RR into RRdeathStunting
-    df = pandas.read_excel(Location, sheetname = 'RRStunting', index_col = [0, 1])
+    df = pandas.read_excel(Location, sheetname = 'RR death by stunting', index_col = [0, 1])
     RRdeathStunting = {}
     for ageName in ages:
         RRdeathStunting[ageName] = {}
@@ -133,13 +133,13 @@ def readSpreadsheet(fileName, keyList):
     #  READ RRWasting SHEET
     #  sets:
     #  - RRdeathWasting
-    df = pandas.read_excel(Location, sheetname = 'RRWasting', index_col = [0])
+    df = pandas.read_excel(Location, sheetname = 'RR death by wasting', index_col = [0])
     #get the list of causes for which we have relative risks
     mylist = list(df.index.values)
     myset = set(mylist)
     listCausesRRdeathWasting = list(myset)
     #put the RR into RRdeathWasting
-    df = pandas.read_excel(Location, sheetname = 'RRWasting', index_col = [0, 1])
+    df = pandas.read_excel(Location, sheetname = 'RR death by wasting', index_col = [0, 1])
     RRdeathWasting = {}
     for ageName in ages:
         RRdeathWasting[ageName] = {}
@@ -154,13 +154,13 @@ def readSpreadsheet(fileName, keyList):
     #  READ RRBreastfeeding SHEET
     #  sets:
     #  - RRdeathBreastfeeding
-    df = pandas.read_excel(Location, sheetname = 'RRBreastfeeding', index_col = [0])
+    df = pandas.read_excel(Location, sheetname = 'RR death by breastfeeding', index_col = [0])
     #get the list of causes for which we have relative risks
     mylist = list(df.index.values)
     myset = set(mylist)
     listCausesRRdeathBreastfeeding = list(myset)
     #put the RR into RRdeathBreastfeeding
-    df = pandas.read_excel(Location, sheetname = 'RRBreastfeeding', index_col = [0, 1])
+    df = pandas.read_excel(Location, sheetname = 'RR death by breastfeeding', index_col = [0, 1])
     RRdeathBreastfeeding = {}
     for ageName in ages:
         RRdeathBreastfeeding[ageName] = {}
@@ -175,11 +175,11 @@ def readSpreadsheet(fileName, keyList):
     #  READ RR Death by Birth Outcome SHEET
     #  sets:
     #  - RRdeathByBirthOutcome
-    df = pandas.read_excel(Location, sheetname = 'RR Death by Birth Outcome')
+    df = pandas.read_excel(Location, sheetname = 'RR death by birth outcome')
     #get list of causesOfDeath
     causesListedHere = list(df['Cause'])
     #get the nested list of causeOfDeathDist
-    df = pandas.read_excel(Location, sheetname = 'RR Death by Birth Outcome', index_col = 'Cause')
+    df = pandas.read_excel(Location, sheetname = 'RR death by birth outcome', index_col = 'Cause')
     RRdeathByBirthOutcome = {}
     for cause in causesOfDeath:
         RRdeathByBirthOutcome[cause] = {}
@@ -272,9 +272,9 @@ def readSpreadsheet(fileName, keyList):
     # READ OR Appropriate Breastfeeding given OR Appropriate Breastfeeding SHEET
     # sets:
     # - ORappropriatebfIntervention
-    df = pandas.read_excel(Location, sheetname = 'OR appropriateBF by interv')
+    df = pandas.read_excel(Location, sheetname = 'OR correctBF by interventn')
     interventionsHere = list(df['Intervention'])
-    df = pandas.read_excel(Location, sheetname = 'OR appropriateBF by interv', index_col = 'Intervention')
+    df = pandas.read_excel(Location, sheetname = 'OR correctBF by interventn', index_col = 'Intervention')
     ORappropriatebfIntervention = {}
     for ageName in ages:
         ORappropriatebfIntervention[ageName] = {}
@@ -434,9 +434,9 @@ def readSpreadsheet(fileName, keyList):
     # READ OR stunting for complements SHEET
     # sets:
     # - ORstuntingComplementaryFeeding
-    df = pandas.read_excel(Location, sheetname = 'OR stunting for complements') 
-    foodSecurityGroups = list(df['Complements group'])
-    df = pandas.read_excel(Location, sheetname = 'OR stunting for complements', index_col = 'Complements group') 
+    df = pandas.read_excel(Location, sheetname = 'OR stunting by compfeeding') 
+    foodSecurityGroups = list(df['Food security & education'])
+    df = pandas.read_excel(Location, sheetname = 'OR stunting by compfeeding', index_col = 'Food security & education') 
     ORstuntingComplementaryFeeding = {}
     for ageName in ages:
         ORstuntingComplementaryFeeding[ageName] = {}
