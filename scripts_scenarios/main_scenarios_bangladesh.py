@@ -19,8 +19,9 @@ helper = helper.Helper()
 
 country = 'Bangladesh'
 startYear = 2016
+date = '2016Sept12'
 
-dataFilename = '../input_spreadsheets/%s/InputForCode_%s.xlsx'%(country,country)
+dataFilename = '../input_spreadsheets/%s/%s/InputForCode_%s.xlsx'%(country, date, country)
 inputData = data.readSpreadsheet(dataFilename, helper.keyList)
 numAgeGroups = len(helper.keyList['ages'])
 
@@ -180,7 +181,7 @@ run += 1
 
 #------------------------------------------------------------------------    
 
-filenamePrefix = '%s_fixedScaleup'%(country)
+filenamePrefix = '%s_%s_fixedScaleup'%(country, date)
 
 output.getCombinedPlots(run, plotData, startYear=startYear-1, filenamePrefix=filenamePrefix, save=True)
 output.getCompareDeathsAverted(run, plotData, scalePercent=0.5, filenamePrefix=filenamePrefix, title=title, save=True)

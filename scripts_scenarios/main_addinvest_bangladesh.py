@@ -21,11 +21,9 @@ costCov = costcov.Costcov()
 
 country = 'Bangladesh'
 startYear = 2016
-version = '1604'
+date = '2016Sept12'
 
-dataFilename = '../input_spreadsheets/%s/2016Aug02/InputForCode_%s.xlsx'%(country, country)
-#dataFilename = '../input_spreadsheets/%s/pre2016Jul26/InputForCode_%s.xlsx'%(country, country)
-#dataFilename = '../input_spreadsheets/%s/Input_%s_%i_%s.xlsx'%(country, country, startYear, version)
+dataFilename = '../input_spreadsheets/%s/%s/InputForCode_%s.xlsx'%(country, date, country)
 inputData = data.readSpreadsheet(dataFilename, helper.keyList)
 numAgeGroups = len(helper.keyList['ages'])
 
@@ -123,7 +121,7 @@ for ichoose in range(len(inputData.interventionList)):
 
 #------------------------------------------------------------------------    
 
-filenamePrefix = '%s_%s_addInvest'%(country, version)
+filenamePrefix = '%s_%s_addInvest'%(country, date)
 
 output.getCombinedPlots(run, plotData, startYear=startYear-1, filenamePrefix=filenamePrefix, save=True)
 output.getCompareDeathsAverted(run, plotData, scalePercent=0.1, filenamePrefix=filenamePrefix, title=title, save=True)
