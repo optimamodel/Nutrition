@@ -327,10 +327,22 @@ class Derived:
         E = -FracStunted
         return [A,B,C,D,E]
         
+
         
     def getComplementaryFeedingQuarticCoefficients(self, stuntingDistribution, coverageArg):
         coverage = dcp(coverageArg)
         coEffs = {}
+        # Fraction of population in each subset of food security and education
+        X1 = self.data.demographics['fraction poor']
+        X2 = self.data.demographics['fraction food insecure (poor)']
+        X3 = self.data.demographics['fraction food insecure (not poor)']
+        Ce  = coverage['Complementary feeding education']
+        Cse = coverage['Public provision of complementary foods']
+        Frac = [0.]*4
+        Frac[0] = X1*(1.-X2)*Ce + (1.-X1)*(1.-X3)*Ce + X1*(1.-X2)*(1.-Ce)*Cse
+        Frac[1] = X1*(1.-X2)*(1.-Ce)*(1.-Cse) + (1.-X1)*(1.-X3)*(1.-Ce)
+        Frac[2] = X1*X2*Cse + (1.-X1)*X3*Ce
+        Frac[3] = X1*X2*(1.-Cse) + (1.-X1)*X3*(1.-Ce)
         for iAge in range(len(self.ages)): 
             ageName = self.ages[iAge]
             OR = [1.]*4
@@ -338,27 +350,6 @@ class Derived:
             OR[1] = self.data.ORstuntingComplementaryFeeding[ageName]["Complementary feeding (food secure without promotion)"]
             OR[2] = self.data.ORstuntingComplementaryFeeding[ageName]["Complementary feeding (food insecure with promotion and supplementation)"]
             OR[3] = self.data.ORstuntingComplementaryFeeding[ageName]["Complementary feeding (food insecure with neither promotion nor supplementation)"]
-            X1 = self.data.demographics['fraction poor']
-            X2 = self.data.demographics['fraction food insecure (poor)']
-            X3 = self.data.demographics['fraction food insecure (not poor)']
-            Ce  = coverage['Complementary feeding education']
-            Cse = coverage['Public provision of complementary foods']
-            """
-            FracSecure = 1. - self.data.demographics['fraction food insecure']
-            FracCoveredEduc = coverage['Complementary feeding education']
-            FracCoveredSupp = coverage['Public provision of complementary foods']
-            """
-            Frac = [0.]*4
-            Frac[0] = X1*(1.-X2)*Ce + (1.-X1)*(1.-X3)*Ce + X1*(1.-X2)*(1.-Ce)*Cse
-            Frac[1] = X1*(1.-X2)*(1.-Ce)*(1.-Cse) + (1.-X1)*(1.-X3)*(1.-Ce)
-            Frac[2] = X1*X2*Cse + (1.-X1)*X3*Ce
-            Frac[3] = X1*X2*(1.-Cse) + (1.-X1)*X3*(1.-Ce)
-            """
-            Frac[0] = FracSecure * FracCoveredEduc
-            Frac[1] = FracSecure * (1 - FracCoveredEduc)
-            Frac[2] = (1 - FracSecure) * FracCoveredSupp
-            Frac[3] = (1 - FracSecure) * (1 - FracCoveredSupp)
-            """
             FracStunted = self.helper.sumStuntedComponents(stuntingDistribution[ageName])
             # [i] will refer to the three non-baseline birth outcomes
             A = Frac[0]*(OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.)
@@ -383,7 +374,6 @@ class Derived:
         from math import pow
         A,B,C,D,E = coEffs
         return A*pow(p0,4) + B*pow(p0,3) + C*pow(p0,2) + D*p0 + E
-
 
 
 
@@ -474,6 +464,6 @@ class Derived:
                 probStuntedComplementaryFeeding[ageName][group] = p0*OR / (1.-p0+OR*p0)
                 pi = probStuntedComplementaryFeeding[ageName][group]
                 if(pi<0. or pi>1.):
-                    raise ValueError("probability of stunting complementary feeding, at outcome %s, age %s, is out of range (%f)"%(group, ageName, pi))            
+                    raise ValueError("probability of stunting complementary feeding, at outcome %s, age %s, is out of range (%f)"%(group, ageName, pi))
         self.probStuntedComplementaryFeeding = probStuntedComplementaryFeeding    
             
