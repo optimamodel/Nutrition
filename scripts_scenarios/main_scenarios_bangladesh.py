@@ -129,57 +129,6 @@ for ichoose in range(numInterventions):
     run += 1
 
 #------------------------------------------------------------------------    
-# INTERVENTION
-percentageIncrease = 30
-nametag = "All interventions: increase coverage by %g%% points"%(percentageIncrease)
-pickleFilename = '%s_Intervention_P%i.pkl'%(country,percentageIncrease)
-plotcolor = 'black'
-
-print "\n"+nametag
-modelZ, derived, params = helper.setupModelConstantsParameters(inputData)
-
-
-# file to dump objects into at each time step
-outfile = open(pickleFilename, 'wb')
-pickle.dump(modelZ, outfile)
-modelZ.moveOneTimeStep()
-pickle.dump(modelZ, outfile)
-
-# scale up all interventions
-# initialise
-newCoverages={}
-for intervention in inputData.interventionList:
-    newCoverages[intervention] = inputData.coverage[intervention]
-for intervention in inputData.interventionList:
-    newCoverages[intervention] += percentageIncrease/100.
-    newCoverages[intervention] = min(newCoverages[intervention],inputData.costSaturation[intervention]["saturation coverage"])
-    newCoverages[intervention] = max(newCoverages[intervention],inputData.coverage[intervention])
-    newCoverages[intervention] = max(newCoverages[intervention],0.0)
-modelZ.updateCoverages(newCoverages)
-
-# Run model
-for t in range(numsteps-2):
-    modelZ.moveOneTimeStep()
-    pickle.dump(modelZ, outfile)
-outfile.close()    
-
-# collect output, make graphs etc.
-infile = open(pickleFilename, 'rb')
-newModelList = []
-while 1:
-    try:
-        newModelList.append(pickle.load(infile))
-    except (EOFError):
-        break
-infile.close()
-
-plotData.append({})
-plotData[run]["modelList"] = newModelList
-plotData[run]["tag"] = nametag
-plotData[run]["color"] = plotcolor
-run += 1
-
-#------------------------------------------------------------------------    
 
 filenamePrefix = '%s_%s_fixedScaleup'%(country, date)
 
