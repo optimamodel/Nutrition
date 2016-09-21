@@ -129,7 +129,7 @@ for ichoose in range(len(inputData.interventionList)):
 
 #------------------------------------------------------------------------    
 
-filenamePrefix = '%s_%s_fixedInvest'%(country, date)
+filenamePrefix = '%s_%s_divert'%(country, date)
 
 output.getCombinedPlots(         run, plotData, startYear=startYear-1, filenamePrefix=filenamePrefix, save=True)
 output.getCompareDeathsAverted(  run, plotData, scalePercent=0.2, filenamePrefix=filenamePrefix, title=title, save=True)
