@@ -19,10 +19,9 @@ helper = helper.Helper()
 
 country = 'Bangladesh'
 startYear = 2016
-version = '1604'
+date = '2016Sept12'
 
-#dataFilename = '../input_spreadsheets/%s/pre2016Jul26/validation/Input_%s_%i_%s_LiST.xlsx'%(country, country, startYear, version)
-dataFilename = '../input_spreadsheets/%s/2016Aug02/validation/Input_%s_%i_%s_LiST.xlsx'%(country, country, startYear, version)
+dataFilename = '../input_spreadsheets/%s/%s/InputForCode_%s.xlsx'%(country, date, country)
 inputData = data.readSpreadsheet(dataFilename, helper.keyList)
 numAgeGroups = len(helper.keyList['ages'])
 agePopSizes = [246307.75 , 1231538.75 , 1477846.50 , 2950860.00 , 8895211.00 ] #override
@@ -35,6 +34,10 @@ for intervention in inputData.interventionList:
 
 plotData = []
 run = 0
+
+intervention_breastfeeding     = 'Breastfeeding promotion'
+intervention_complementaryfood = 'Public provision of complementary foods'
+intervention_foodeducation     = 'Complementary feeding education'
 
 #------------------------------------------------------------------------    
 # DEFAULT RUN WITH NO CHANGES TO INTERVENTIONS
@@ -97,7 +100,7 @@ for icov in range(len(scenarios)):
     for intervention in inputData.interventionList:
         newCoverages[intervention] = inputData.coverage[intervention]
     # scale up
-    for intervention in ['Complementary feeding (supplementation)','Complementary feeding (education)']:
+    for intervention in [intervention_complementaryfood,intervention_foodeducation]:
         newCoverages[intervention] = CFcoverage/100.
     modelCF.updateCoverages(newCoverages)
 
@@ -153,7 +156,7 @@ for icov in range(len(scenarios)):
         newCoverages[intervention] = inputData.coverage[intervention]
 
     # scale up
-    for intervention in ['Breastfeeding promotion (dual delivery)']:
+    for intervention in [intervention_breastfeeding]:
         newCoverages[intervention] = BFcoverage/100.
     modelBF.updateCoverages(newCoverages)
 
@@ -209,9 +212,9 @@ for intervention in inputData.interventionList:
     newCoverages[intervention] = inputData.coverage[intervention]
 
 # scale up
-for intervention in ['Breastfeeding promotion (dual delivery)']:
+for intervention in [intervention_breastfeeding]:
     newCoverages[intervention] = BFcoverage/100.
-for intervention in ['Complementary feeding (supplementation)','Complementary feeding (education)']:
+for intervention in [intervention_complementaryfood,intervention_foodeducation]:
     newCoverages[intervention] = CFcoverage/100.
 modelBC.updateCoverages(newCoverages)
 
