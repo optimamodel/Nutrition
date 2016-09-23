@@ -30,42 +30,37 @@ for outcomeOfInterest in outcomeOfInterestList:
     thisOptimisation.outputCascadeAndOutcomeToCSV(cascadeValues, outcomeOfInterest)
     
 # cascades for deaths and DALYs
-thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, 'deaths', resultsFileStem)
+optimise = 'deaths'
+resultsFileStem = 'Results2016Sep21/'+optimise+'/national/Bangladesh'
+thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise, resultsFileStem)
 thisOptimisation.outputCascadeAndOutcomeToCSV(cascadeValues, 'deaths') 
-thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, 'DALYs', resultsFileStem)
+thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise, resultsFileStem)
+thisOptimisation.outputCascadeAndOutcomeToCSV(cascadeValues, 'stunting') 
+optimise = 'DALYs'
+resultsFileStem = 'Results2016Sep21/'+optimise+'/national/Bangladesh'
+thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise, resultsFileStem)
 thisOptimisation.outputCascadeAndOutcomeToCSV(cascadeValues, 'DALYs')    
     
 
-### GEOSPATIAL
-#optimise = 'DALYs'
-#regionNameList = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
-#spreadsheetFileStem = 'input_spreadsheets/Bangladesh/2016Sept12/subregionSpreadsheets/'
-#spreadsheetList = []
-#for regionName in regionNameList:
-#    spreadsheet = spreadsheetFileStem + regionName + '.xlsx'
-#    spreadsheetList.append(spreadsheet)
-#
-## GEOSPATIAL WITHOUT EXTRA MONEY
-## DALYs: bar graph/region, trade off curves, cascade and outcomes for DALYs    
-#cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 'extreme']  
-#GAFile = 'GA'  
-#resultsFileStem = 'Results2016Sep21/'+optimise+'/geospatial/'
-#geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
-#geospatialOptimisation.outputRegionalCurrentSpendingToCSV()
-#geospatialOptimisation.outputRegionalPostGAOptimisedSpendingToCSV(GAFile)
-#geospatialOptimisation.outputTradeOffCurves()
-#geospatialOptimisation.outputRegionalCascadesAndOutcomeToCSV('DALYs')
-#geospatialOptimisation.outputRegionalTimeSeriesToCSV('DALYs')
-#
-## GEOSPATIAL EXTRA MONEY
-#extraMoney = 10000000
-#cascadeValuesExtra = [1.0, 1.20, 1.50, 1.80, 2.0, 3.0, 'extreme']
-## DALYs extra money: bar graph/region, trade off curves, cascade and outcomes for DALYs    
-#GAFileExtra = 'GA_fixedProg_extra_'+str(extraMoney)   
-#resultsFileStem = 'Results2016Sep21fixedProgCosts/'+optimise+'/geospatial/'
-#geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValuesExtra, optimise, resultsFileStem)
-#geospatialOptimisation.outputRegionalCurrentSpendingToCSV()
-#geospatialOptimisation.outputRegionalPostGAOptimisedSpendingToCSV(GAFileExtra)
-#geospatialOptimisation.outputTradeOffCurves()
-#geospatialOptimisation.outputRegionalCascadesAndOutcomeToCSV('DALYs')
-#geospatialOptimisation.outputRegionalTimeSeriesToCSV('DALYs')
+## GEOSPATIAL
+optimise = 'stunting'
+regionNameList = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
+spreadsheetFileStem = 'input_spreadsheets/Bangladesh/2016Sept12/subregionSpreadsheets/'
+spreadsheetList = []
+for regionName in regionNameList:
+    spreadsheet = spreadsheetFileStem + regionName + '.xlsx'
+    spreadsheetList.append(spreadsheet)
+
+
+# GEOSPATIAL EXTRA MONEY
+extraMoney = 10000000
+cascadeValuesExtra = [1.0, 1.20, 1.50, 1.80, 2.0, 3.0, 'extreme']
+# DALYs extra money: bar graph/region, trade off curves, cascade and outcomes for DALYs    
+GAFileExtra = 'GA_fixedProg_extra_'+str(extraMoney)   
+resultsFileStem = 'Results2016Sep21fixedProgCosts/'+optimise+'/geospatial/'
+geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValuesExtra, optimise, resultsFileStem)
+geospatialOptimisation.outputRegionalCurrentSpendingToCSV()
+geospatialOptimisation.outputRegionalPostGAOptimisedSpendingToCSV(GAFileExtra)
+geospatialOptimisation.outputTradeOffCurves()
+geospatialOptimisation.outputRegionalCascadesAndOutcomeToCSV('stunting')
+geospatialOptimisation.outputRegionalTimeSeriesToCSV('stunting')
