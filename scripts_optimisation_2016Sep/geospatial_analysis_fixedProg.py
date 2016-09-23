@@ -10,7 +10,7 @@ moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
 import optimisation
 
-optimiseList = ['stunting']  #['DALYs', 'stunting', 'deaths']
+optimiseList = ['deaths', 'DALYs']  #['DALYs', 'stunting', 'deaths']
 extraMoney = 10000000
 haveFixedProgCosts = True
 
