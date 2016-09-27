@@ -477,6 +477,7 @@ class GeospatialOptimisation:
         self.numRegions = len(regionSpreadsheetList)        
         self.regionalBOCs = None 
         self.tradeOffCurves = None
+        self.postGATimeSeries = None
         
     def generateAllRegionsBOC(self):
         print 'reading files to generate regional BOCs..'
@@ -779,11 +780,13 @@ class GeospatialOptimisation:
             # plot
             plotallocations(geospatialAllocations[regionName]['baseline'],geospatialAllocations[regionName][self.optimise])       
             
-    def plotTimeSeriesPostGAReallocationByRegion(self, GAFile):
+    def getTimeSeriesPostGAReallocationByRegion(self, GAFile):    
         import pickle
         import optimisation
-        from plotting import plotTimeSeries
         from copy import deepcopy as dcp
+        self.postGATimeSeries = {}
+        numYears = self.numModelSteps/12
+        years = range(2016, 2016 + numYears)
         for region in range(len(self.regionSpreadsheetList)):
             regionName = self.regionNameList[region]
             spreadsheet = self.regionSpreadsheetList[region]
@@ -812,14 +815,44 @@ class GeospatialOptimisation:
                     difference = modelRun[scenario][i].getOutcome(self.optimise) - modelRun[scenario][i-1].getOutcome(self.optimise)
                     objective[scenario].append(difference)
                 # make it yearly
-                numYears = self.numModelSteps/12
                 objectiveYearly[scenario] = []
                 for i in range(0, numYears):
                     step = i*12
                     objectiveYearly[scenario].append( sum(objective[scenario][step:12+step]) )
-            title = regionName + '  ' + self.optimise   
-            years = range(2016, 2016 + numYears)
-            plotTimeSeries(years, objectiveYearly['baseline'], objectiveYearly[self.optimise], title)
+            self.postGATimeSeries[regionName] = {'years':years, 'objectiveYearly':objectiveYearly}
+            
+    
+    def plotTimeSeriesPostGAReallocationByRegion(self, GAFile):
+        from plotting import plotTimeSeries
+        if self.postGATimeSeries == None:
+            self.getTimeSeriesPostGAReallocationByRegion(GAFile)
+        for region in range(len(self.regionSpreadsheetList)):
+            regionName = self.regionNameList[region]    
+            title = regionName + '  ' + self.optimise
+            plotTimeSeries(self.postGATimeSeries[regionName]['years'], self.postGATimeSeries[regionName]['objectiveYearly']['baseline'], self.postGATimeSeries[regionName]['objectiveYearly'][self.optimise], title)
+
+    def outputToCSVTimeSeriesPostGAReallocationByRegion(self, GAFile):
+        import csv
+        if self.postGATimeSeries == None:
+            self.getTimeSeriesPostGAReallocationByRegion(GAFile)   
+        for region in range(len(self.regionSpreadsheetList)):
+            regionName = self.regionNameList[region]            
+            
+            years = self.postGATimeSeries[regionName]['years']
+            objectiveYearly = self.postGATimeSeries[regionName]['objectiveYearly']
+            # write time series to csv    
+            headings = ['Year', self.optimise+" (baseline)", self.optimise+" (min "+self.optimise+")"]
+            rows = []
+            for i in range(len(years)):
+                year = years[i]
+                valarray = [year, objectiveYearly['baseline'][i], objectiveYearly[self.optimise][i]]
+                rows.append(valarray)
+            rows.sort()                
+            outfilename = '%s%s_annual_timeseries_postGA_%s_min_%s.csv'%(self.resultsFileStem, regionName, self.optimise, self.optimise)
+            with open(outfilename, "wb") as f:
+                writer = csv.writer(f)
+                writer.writerow(headings)
+                writer.writerows(rows)           
         
         
     def outputRegionalCascadesAndOutcomeToCSV(self, outcomeOfInterest):
