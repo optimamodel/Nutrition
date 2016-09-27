@@ -86,6 +86,7 @@ for intervention in inputData.interventionList:
     currentSpending[intervention] = costCov.inversefunction(coverageNumber, costCovParams[intervention], targetPopSize[intervention])
     print currentSpending[intervention]
 
+# For each intervention...
 for ichoose in range(len(inputData.interventionList)):
     chosenIntervention = inputData.interventionList[ichoose]
     nametag = chosenIntervention
