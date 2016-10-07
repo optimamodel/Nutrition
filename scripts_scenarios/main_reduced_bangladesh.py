@@ -29,12 +29,14 @@ numAgeGroups = len(helper.keyList['ages'])
 
 numsteps = 180
 
-oldCoverages={}
+zeroCoverages={}
+for intervention in inputData.interventionList:
+    zeroCoverages[intervention] = 0.
+
 costCovParams = {}
 print "Baseline coverage of: "
 for intervention in inputData.interventionList:
     print "%s = %g"%(intervention,inputData.coverage[intervention])
-    oldCoverages[intervention]  = inputData.coverage[intervention]
     # calculate coverage (%)
     costCovParams[intervention] = {}
     costCovParams[intervention]['unitcost']   = dcp(inputData.costSaturation[intervention]["unit cost"])
@@ -44,16 +46,21 @@ plotData = []
 run = 0
 
 #------------------------------------------------------------------------    
-# DEFAULT RUN WITH NO CHANGES TO INTERVENTIONS
-nametag = "Baseline"
+# DEFAULT RUN WITH NO FUNDING TO ANY INTERVENTION
+nametag = "No Funding"
 plotcolor = 'grey'
 
 print "\n"+nametag
 model, derived, params = helper.setupModelConstantsParameters(inputData)
+model.moveOneTimeStep()
 modelList = []
+modelList.append(dcp(model))
+
+newCoverages = dcp(zeroCoverages)
+model.updateCoverages(newCoverages)
 
 # Run model
-for t in range(numsteps):
+for t in range(numsteps-1):
     model.moveOneTimeStep()
     modelList.append(dcp(model))
 
@@ -65,43 +72,37 @@ run += 1
 
 #------------------------------------------------------------------------    
 # INTERVENTION
-investmentIncrease = 2.e6  # 2 million USD per intervention per year for the full 15 years
-title = '%s: 2015-2030 \n Scale up intervention by %i million USD per year'%(country,investmentIncrease/1e6)
+investment = 10.e6  # 10 million USD per intervention per year for the full 15 years
+title = '%s: 2015-2030 \n %i million USD annual funding to one intervention'%(country,investment/1e6)
 print title
 
 modelB, derived, params = helper.setupModelConstantsParameters(inputData)
 modelB.moveOneTimeStep()
 
-# calculate target population size and current spending
+# calculate target population size
 targetPopSize = {}
-currentSpending = {}
 for intervention in inputData.interventionList:
-    print intervention
     targetPopSize[intervention] = 0.
     for iAge in range(numAgeGroups):
         ageName = helper.keyList['ages'][iAge]
         targetPopSize[intervention] += inputData.targetPopulation[intervention][ageName] * modelB.listOfAgeCompartments[iAge].getTotalPopulation()
     targetPopSize[intervention] +=     inputData.targetPopulation[intervention]['pregnant women'] * modelB.pregnantWomen.populationSize
-    coverageNumber  = oldCoverages[intervention] * targetPopSize[intervention]
-    currentSpending[intervention] = costCov.inversefunction(coverageNumber, costCovParams[intervention], targetPopSize[intervention])
-    print currentSpending[intervention]
 
 # For each intervention...
 for ichoose in range(len(inputData.interventionList)):
     chosenIntervention = inputData.interventionList[ichoose]
     nametag = chosenIntervention
     plotcolor = (1.0-0.13*run, 1.0-0.24*abs(run-4), 0.0+0.13*run)
-    print "\n %s: increase in annual investment by USD %g"%(nametag,investmentIncrease)
+    print "\n %s: increase in annual investment by USD %g"%(nametag,investment)
 
-    newCoverages = dcp(oldCoverages)
+    newCoverages = dcp(zeroCoverages)
 
     modelX = dcp(modelB)
     modelXList = []
     modelXList.append(dcp(modelX))
 
     # allocation of funding
-    newInvestment   = currentSpending[chosenIntervention] + investmentIncrease
-    peopleCovered   = costCov.function(newInvestment, costCovParams[chosenIntervention], targetPopSize[chosenIntervention])
+    peopleCovered   = costCov.function(investment, costCovParams[chosenIntervention], targetPopSize[chosenIntervention])
     fractionCovered = peopleCovered / targetPopSize[chosenIntervention]
     newCoverages[chosenIntervention] = fractionCovered
     print "new coverage: %g"%(newCoverages[chosenIntervention])
@@ -122,13 +123,13 @@ for ichoose in range(len(inputData.interventionList)):
 
 #------------------------------------------------------------------------    
 
-filenamePrefix = '%s_%s_addInvest'%(country, date)
+filenamePrefix = '%s_%s_reduced'%(country, date)
 
 output.getCombinedPlots(run, plotData, startYear=startYear-1, filenamePrefix=filenamePrefix, save=True)
-output.getCompareDeathsAverted(run, plotData, scalePercent=0.1, filenamePrefix=filenamePrefix, title=title, save=True)
-output.getDALYsAverted(run, plotData, scalePercent=0.1, filenamePrefix=filenamePrefix, title=title, save=True)
-output.getU5StuntingCasesAverted(run, plotData, scalePercent=0.5, filenamePrefix=filenamePrefix, title=title, save=True)
-output.getA5StuntingCasesAverted(run, plotData, scalePercent=0.5, filenamePrefix=filenamePrefix, title=title, save=True)
+output.getCompareDeathsAverted(  run, plotData, scalePercent=0.5, filenamePrefix=filenamePrefix, title=title, save=True)
+output.getDALYsAverted(          run, plotData, scalePercent=0.5, filenamePrefix=filenamePrefix, title=title, save=True)
+output.getU5StuntingCasesAverted(run, plotData, scalePercent=1.0, filenamePrefix=filenamePrefix, title=title, save=True)
+output.getA5StuntingCasesAverted(run, plotData, scalePercent=1.0, filenamePrefix=filenamePrefix, title=title, save=True)
 
 
 
