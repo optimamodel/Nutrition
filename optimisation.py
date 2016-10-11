@@ -269,7 +269,6 @@ class Optimisation:
         for r in range(0, MCSampleSize):
             proposalAllocation = np.random.rand(numInterventions)
             budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, proposalAllocation, args, xmin = xmin, verbose = 0) 
-            print output.fval
             # add each of the samples to the big vectors   
             for sample in range(len(output.fval)):
                 scaledBudget = rescaleAllocation(availableBudget, output.x[sample])
