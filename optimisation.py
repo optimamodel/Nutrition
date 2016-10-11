@@ -198,6 +198,25 @@ class Optimisation:
                     args=(value, currentTotalBudget, fixedCosts, spreadsheetData, costCoverageInfo, MCSampleSize, xmin))
                 prc.start()
         
+    def performParallelSampling(self, MCSampleSize, haveFixedProgCosts, numRuns, filename):
+        import data 
+        from multiprocessing import Process
+        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
+        costCoverageInfo = self.getCostCoverageInfo()  
+        initialTargetPopSize = self.getInitialTargetPopSize()          
+        initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
+        currentTotalBudget = sum(initialAllocation)
+        xmin = [0.] * len(initialAllocation)
+        # set fixed costs if you have them
+        fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation) 
+        runOnceArgs = {'totalBudget':currentTotalBudget, 'fixedCosts':fixedCosts, 'costCoverageInfo':costCoverageInfo, 'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}
+        for i in range(numRuns):
+            prc = Process(
+                target=self.runOnceDumpFullOutputToFile, 
+                args=(MCSampleSize, xmin, runOnceArgs, spreadsheetData.interventionList, currentTotalBudget, filename+"_"+str(i)))
+            prc.start()    
+        
+        
     def getFixedCosts(self, haveFixedProgCosts, initialAllocation):
         from copy import deepcopy as dcp
         if haveFixedProgCosts:
@@ -236,6 +255,43 @@ class Optimisation:
         outfile = open(filename, 'wb')
         pickle.dump(bestSampleBudgetScaledDict, outfile)
         outfile.close()  
+        
+    def runOnceDumpFullOutputToFile(self, MCSampleSize, xmin, args, interventionList, totalBudget, filename):        
+        # Ruth wrote this function to aid in creating data for the Health Hack weekend        
+        import asd as asd 
+        import numpy as np
+        from operator import add
+        import csv
+        numInterventions = len(interventionList)
+        scaledOutputX = []
+        fvalVector = []
+        availableBudget = totalBudget - sum(args['fixedCosts'])
+        for r in range(0, MCSampleSize):
+            proposalAllocation = np.random.rand(numInterventions)
+            budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, proposalAllocation, args, xmin = xmin, verbose = 0) 
+            print output.fval
+            # add each of the samples to the big vectors   
+            for sample in range(len(output.fval)):
+                scaledBudget = rescaleAllocation(availableBudget, output.x[sample])
+                scaledBudget = map(add, scaledBudget, args['fixedCosts']) 
+                scaledOutputX.append(scaledBudget)
+                fvalVector.append(output.fval[sample])   
+        # output samples to csv     
+        outfilename = '%s.csv'%(filename)
+        header = ['fval'] + interventionList
+        rows = []
+        for sample in range(len(fvalVector)):
+            valArray = [fvalVector[sample]] + scaledOutputX[sample]
+            rows.append(valArray)
+        with open(outfilename, "wb") as f:
+                writer = csv.writer(f)
+                writer.writerow(header)
+                writer.writerows(rows)
+                
+                
+    
+        
+                
         
     def getInitialAllocationDictionary(self):
         import data 
