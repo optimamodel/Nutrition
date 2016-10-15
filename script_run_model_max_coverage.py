@@ -35,3 +35,12 @@ for t in range(numModelSteps - timestepsPre):
     model.moveOneTimeStep()
     modelThisTimeStep = dcp(model)
     modelList.append(modelThisTimeStep)
+    
+# get outcome
+cumulativeStunting = modelList[numModelSteps-1].getOutcome('stunting')
+cumulativeDeaths = modelList[numModelSteps-1].getOutcome('deaths')
+
+
+
+
+
