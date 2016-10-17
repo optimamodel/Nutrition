@@ -65,8 +65,8 @@ run += 1
 
 #------------------------------------------------------------------------    
 # INTERVENTION
-fraction = 0.4
-title = '%s: 2015-2030 \n Divert %g%% of current budget into one intervention'%(country,fraction*100)
+diverted_fraction = 0.4
+title = '%s: 2015-2030 \n Divert %g%% of current budget into one intervention'%(country,diverted_fraction*100)
 print title
 
 modelB, derived, params = helper.setupModelConstantsParameters(inputData)
@@ -90,6 +90,16 @@ for intervention in inputData.interventionList:
     currentBudget += currentSpending[intervention]
 print 'Current Budget = %g USD'%currentBudget
 
+
+# calculate reduced coverage (implied by funding reduced by some fraction)
+reducedCoverages = {}
+for intervention in inputData.interventionList:
+    # reduced coverage for all interventions
+    investment = (1.-diverted_fraction)*currentSpending[intervention]
+    peopleCovered   = costCov.function(investment, costCovParams[intervention], targetPopSize[intervention])
+    fractionCovered = peopleCovered / targetPopSize[intervention]
+    reducedCoverages[intervention] = fractionCovered
+
 for ichoose in range(len(inputData.interventionList)):
     chosenIntervention = inputData.interventionList[ichoose]
     nametag = chosenIntervention
@@ -100,14 +110,10 @@ for ichoose in range(len(inputData.interventionList)):
     modelXList = []
     modelXList.append(dcp(modelX))
 
-    for intervention in inputData.interventionList:
-        newCoverages[intervention] = oldCoverages[intervention]
-    # allocation of funding
-    investment = currentBudget*fraction + (1.-fraction)*currentSpending[chosenIntervention]
-    #additionalPeopleCovered   = costCov.function(investment, costCovParams, targetPopSize[chosenIntervention])
-    #additionalFractionCovered = additionalPeopleCovered / targetPopSize[chosenIntervention]
-    #print "additional coverage: %g"%(additionalFractionCovered)
-    #newCoverages[chosenIntervention] += additionalFractionCovered
+    newCoverages = dcp(reducedCoverages)
+
+    # coverage for chosen intervention (fractionally reduced funding, then additional funds from whole budget)
+    investment = currentBudget*diverted_fraction + (1.-diverted_fraction)*currentSpending[chosenIntervention]
     peopleCovered   = costCov.function(investment, costCovParams[chosenIntervention], targetPopSize[chosenIntervention])
     fractionCovered = peopleCovered / targetPopSize[chosenIntervention]
     newCoverages[chosenIntervention] = fractionCovered
