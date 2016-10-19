@@ -3,6 +3,28 @@
 Created on Wed Jun 14 2016
 
 @author: madhurakilledar
+
+AIM: compare outcomes for interventions
+when intervention receives extra funds
+(which have been diverted away from current allocation, so that total budget remains unchanged)
+
+INPUT:
+REQUIRED FILES
+input spreadsheet - see dataFilename
+
+VARIABLES
+country
+startYear
+date
+dataFilename
+numsteps
+diverted_fraction
+
+OUTPUT:
+code will create a bunch of png files using function in output.py
+- horizontal bar graphs comparing outcomes for each intervention (relative to baseline)
+- time trends of health outcomes
+
 """
 from __future__ import division
 from copy import deepcopy as dcp
