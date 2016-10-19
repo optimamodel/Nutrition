@@ -1,8 +1,30 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jun 14 2016
+Created in Sept 2016
 
 @author: madhurakilledar
+
+AIM: compare outcomes for interventions
+when all coverage is scaled back to zero
+then one intervention receives fixed funding
+
+INPUT:
+REQUIRED FILES
+input spreadsheet - see dataFilename
+
+VARIABLES
+country
+startYear
+date
+dataFilename
+numsteps
+investment
+
+OUTPUT:
+code will create a bunch of png files using function in output.py
+- horizontal bar graphs comparing outcomes for each intervention (relative to baseline)
+- time trends of health outcomes
+
 """
 from __future__ import division
 from copy import deepcopy as dcp

@@ -4,8 +4,7 @@ Created on Wed Jun 14 2016
 
 @author: madhurakilledar
 
-AIM: compare interventions with regards to
-health outcomes relative to baseline scenario
+AIM: compare outcomes for interventions
 when intervention is provided extra funding (a fixed amount, with currency as in data)
 
 INPUT:
@@ -22,7 +21,8 @@ investmentIncrease
 
 OUTPUT:
 code will create a bunch of png files using function in output.py
-these produce horizontal bar graphs comparing outcomes for each intervention
+- horizontal bar graphs comparing outcomes for each intervention (relative to baseline)
+- time trends of health outcomes
 
 """
 from __future__ import division
