@@ -1,6 +1,10 @@
 # files we don't need to track
 *.pyc
 *.pkl
+*.rds
+*.png
+.*
+.pkl
 
 #ignore Ruth's random testing file and some notes
 randomTests.py 
@@ -12,3 +16,4 @@ main_ruth.py
 seminar_plotting.py
 reformat_data.py
 Malaria_example.py
+Results*
