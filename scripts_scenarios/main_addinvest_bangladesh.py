@@ -3,6 +3,27 @@
 Created on Wed Jun 14 2016
 
 @author: madhurakilledar
+
+AIM: compare interventions with regards to
+health outcomes relative to baseline scenario
+when intervention is provided extra funding (a fixed amount, with currency as in data)
+
+INPUT:
+REQUIRED FILES
+input spreadsheet - see dataFilename
+
+VARIABLES
+country
+startYear
+date
+dataFilename
+numsteps
+investmentIncrease
+
+OUTPUT:
+code will create a bunch of png files using function in output.py
+these produce horizontal bar graphs comparing outcomes for each intervention
+
 """
 from __future__ import division
 from copy import deepcopy as dcp
