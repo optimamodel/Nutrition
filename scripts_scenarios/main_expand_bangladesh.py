@@ -1,8 +1,32 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jun 14 2016
+Created in Oct 2016
 
 @author: madhurakilledar
+
+AIM: compare cases of stunting in three scenarios
+1. baseline
+2. total budget increased and all interventions scaled up but with the same relative allocation
+3. total budget increased (by the same multiple) and optimal allocation used (must have been determined beforehand)
+
+INPUT:
+REQUIRED FILES
+input spreadsheet - see dataFilename
+
+VARIABLES
+country
+startYear
+date
+dataFilename
+numsteps
+delay
+fracScaleup
+
+OUTPUT:
+verbose output only
+stating number of cases of stunting (cumulative after age 5)
+and cases of stunting averted relative to baseline (scenario #1)
+
 """
 from __future__ import division
 from copy import deepcopy as dcp
