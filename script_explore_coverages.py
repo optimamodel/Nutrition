@@ -4,7 +4,7 @@ Created on Fri Oct 21 10:58:39 2016
 
 @author: ruth
 """
-
+# realised that plotting coverage at each time step (on the x axis) is redundant becasue the way we run the model we set coverage as constant 
 import optimisation
 import data 
 import pickle
@@ -24,6 +24,10 @@ finalCoverages = {}
 for cascade in cascadeValues: 
     print cascade
     finalCoverages[cascade] = {}
+    # set up dictionary    
+    for intervention in spreadsheetData.interventionList:
+            finalCoverages[cascade][intervention] = []    
+    
     thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise, resultsFileStem)
     filename = '%s_cascade_%s_%s.pkl'%(resultsFileStem, optimise, cascade)
     infile = open(filename, 'rb')
@@ -35,16 +39,18 @@ for cascade in cascadeValues:
     for step in range(12, numModelSteps-1):
         targetPopSize = optimisation.getTargetPopSizeFromModelInstance(dataSpreadsheetName, helper.keyList, modelList[step])  
         for intervention in spreadsheetData.interventionList:
-            finalCoverages[cascade][intervention] = []        
             finalCoverages[cascade][intervention].append(costCov.function(allocation[intervention], costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention])
 
 import matplotlib.pyplot as plt 
 for cascade in cascadeValues:
+    fig = plt.figure()
+    ax = plt.subplot(111)    
     for intervention in spreadsheetData.interventionList:
-        plt.plot(finalCoverages[cascade][intervention][:], label=intervention)
-    plt.legend()    
+        ax.plot(finalCoverages[cascade][intervention][:], label=intervention)
     plt.ylim(0,1)
     plt.title('cascade value:  ' + str(cascade))
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
+          fancybox=True, shadow=True, ncol=5)    
     plt.show()            
             
             
