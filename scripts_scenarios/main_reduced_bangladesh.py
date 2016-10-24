@@ -94,7 +94,7 @@ run += 1
 
 #------------------------------------------------------------------------    
 # INTERVENTION
-investment = 6.e6  # 6 million USD per intervention per year for the full 15 years
+investment = 11.e6  # 11 million USD per intervention per year for the full 15 years
 title = '%s: 2015-2030 \n %i million USD annual funding to one intervention'%(country,investment/1e6)
 print title
 
