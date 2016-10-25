@@ -45,7 +45,7 @@ costCov = costcov.Costcov()
 
 country = 'Bangladesh'
 startYear = 2016
-date = '2016Sept12'
+date = '2016Oct'
 
 dataFilename = '../input_spreadsheets/%s/%s/InputForCode_%s.xlsx'%(country, date, country)
 inputData = data.readSpreadsheet(dataFilename, helper.keyList)
@@ -163,19 +163,24 @@ modelO = dcp(modelB)
 newCoverages = dcp(oldCoverages)
 print "\n NEW coverage"
 CompFeed = 'Complementary feeding education'
-Zinc = 'Prophylactic zinc supplementation'
-eachBudget = totalBudget * fracScaleup / 2.
-# For each intervention...
-for intervention in [CompFeed, Zinc]:
+VitA = 'Vitamin A supplementation'
+#Zinc = 'Prophylactic zinc supplementation'
+#eachBudget = totalBudget * fracScaleup / 2.
+newBudget = {}
+newBudget[CompFeed] = totalBudget * fracScaleup * 2. / 3.
+newBudget[VitA]     = totalBudget * fracScaleup * 1. / 3.
 
-    # allocation of funding
-    newInvestment   = eachBudget
+# Allocate funds and calculate new coverage
+for intervention in [CompFeed, VitA]:
+    #newInvestment   = eachBudget
+    newInvestment   = newBudget[intervention]
     peopleCovered   = costCov.function(newInvestment, costCovParams[intervention], targetPopSize[intervention])
     fractionCovered = peopleCovered / targetPopSize[intervention]
     newCoverages[intervention] = fractionCovered
     print "%s: new investment USD %i, new coverage: %g"%(intervention,newInvestment,newCoverages[intervention])
-    # scale up intervention
-    modelO.updateCoverages(newCoverages)
+
+# scale up intervention
+modelO.updateCoverages(newCoverages)
 
 # Run model
 for t in range(numsteps-delay):

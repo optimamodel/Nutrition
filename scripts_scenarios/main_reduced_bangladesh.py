@@ -22,7 +22,7 @@ investment
 
 OUTPUT:
 code will create a bunch of png files using function in output.py
-- horizontal bar graphs comparing outcomes for each intervention (relative to baseline)
+- horizontal bar graphs comparing outcomes for each intervention (relative to zero funding)
 - time trends of health outcomes
 
 """
@@ -43,7 +43,7 @@ costCov = costcov.Costcov()
 
 country = 'Bangladesh'
 startYear = 2016
-date = '2016Sept12'
+date = '2016Oct'
 
 dataFilename = '../input_spreadsheets/%s/%s/InputForCode_%s.xlsx'%(country, date, country)
 inputData = data.readSpreadsheet(dataFilename, helper.keyList)
@@ -94,7 +94,7 @@ run += 1
 
 #------------------------------------------------------------------------    
 # INTERVENTION
-investment = 10.e6  # 10 million USD per intervention per year for the full 15 years
+investment = 11.e6  # 11 million USD per intervention per year for the full 15 years
 title = '%s: 2015-2030 \n %i million USD annual funding to one intervention'%(country,investment/1e6)
 print title
 

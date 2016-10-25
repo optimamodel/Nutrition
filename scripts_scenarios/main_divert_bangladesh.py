@@ -43,7 +43,7 @@ costCov = costcov.Costcov()
 
 country = 'Bangladesh'
 startYear = 2016
-date = '2016Sept12'
+date = '2016Oct'
 
 dataFilename = '../input_spreadsheets/%s/%s/InputForCode_%s.xlsx'%(country, date, country)
 inputData = data.readSpreadsheet(dataFilename, helper.keyList)
@@ -87,7 +87,7 @@ run += 1
 
 #------------------------------------------------------------------------    
 # INTERVENTION
-diverted_fraction = 0.4
+diverted_fraction = 0.33
 title = '%s: 2015-2030 \n Divert %g%% of current budget into one intervention'%(country,diverted_fraction*100)
 print title
 

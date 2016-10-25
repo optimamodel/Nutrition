@@ -3,6 +3,27 @@
 Created on Wed June 01 2016
 
 @author: madhurakilledar
+
+AIM: compare outcomes for each intervention
+when coverage is increased by a fixed percentage
+
+INPUT:
+REQUIRED FILES
+input spreadsheet - see dataFilename
+
+VARIABLES
+country
+startYear
+date
+dataFilename
+numsteps
+percentageIncrease
+
+OUTPUT:
+code will create a bunch of png files using function in output.py
+- horizontal bar graphs comparing outcomes for each intervention (relative to zero funding)
+- time trends of health outcomes
+
 """
 from __future__ import division
 from copy import deepcopy as dcp
@@ -19,7 +40,7 @@ helper = helper.Helper()
 
 country = 'Bangladesh'
 startYear = 2016
-date = '2016Sept12'
+date = '2016Oct'
 
 dataFilename = '../input_spreadsheets/%s/%s/InputForCode_%s.xlsx'%(country, date, country)
 inputData = data.readSpreadsheet(dataFilename, helper.keyList)
@@ -71,7 +92,7 @@ run += 1
 
 #------------------------------------------------------------------------    
 # INTERVENTION
-percentageIncrease = 20
+percentageIncrease = 80
 title = '%s: 2015-2030 \n Scale up intervention by %i%%'%(country,percentageIncrease)
 print title
 
