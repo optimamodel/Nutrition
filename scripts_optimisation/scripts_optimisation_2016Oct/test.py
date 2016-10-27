@@ -26,7 +26,7 @@ numCores = 8
 
 for optimise in ['stunting']:
 
-    resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+country+'_test'
+    resultsFileStem = '/home/ruthpearson/Nutrition/Results/'+date+'/'+optimise+'/national/'+country+'_test'
 
     thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem)
     thisOptimisation.performParallelCascadeOptimisation(MCSampleSize, cascadeValues, numCores, haveFixedProgCosts)
