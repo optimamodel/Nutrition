@@ -4,12 +4,12 @@ Created on Tue Oct 25 2016
 
 @author: madhura
 """
+
 rootpath = '../..'
 import os, sys
 moduleDir = os.path.join(os.path.dirname(__file__), rootpath)
 sys.path.append(moduleDir)
 import optimisation
-
 
 country = 'Bangladesh'
 date = '2016Oct'
@@ -28,9 +28,8 @@ for regionName in regionNameList:
     spreadsheet = spreadsheetFileStem + regionName + '.xlsx'
     spreadsheetList.append(spreadsheet)
     
-resultsFileStem = rootpath + '/ResultsfixedProgCosts/' +date+ '/' + optimise + '/geospatial/'
+resultsFileStem = '/home/ruthpearson/Nutrition/Results/'+date+'/'+optimise+'/geospatial/'
 
 geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
 geospatialOptimisation.generateParallelResultsForGeospatialCascades(nCores, MCSampleSize, haveFixedProgCosts)
-
 
