@@ -18,7 +18,7 @@ date = '2016Oct'
 
 spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+date+'/InputForCode_'+country+'.xlsx'
 
-numModelSteps = 12
+numModelSteps = 24
 MCSampleSize = 1
 cascadeValues = [7.0]  
 haveFixedProgCosts = False
