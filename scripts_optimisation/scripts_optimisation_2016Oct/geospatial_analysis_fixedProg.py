@@ -40,7 +40,7 @@ numCores = 8 # need this number times the number of outcomes you're optimising f
 for optimise in optimiseList:
     print 'running GA for:  ', optimise
     
-    resultsFileStem = resultsPath+'/Results/'+date+'fixedProgCosts/'+optimise+'/geospatial/'
+    resultsFileStem = resultsPath+'/'+date+'/'+optimise+'/geospatial/'
     GAFile = 'GA_fixedProg_extra_'+str(extraMoney)    
     
     geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
