@@ -21,6 +21,9 @@ nCores = 49
 numModelSteps = 180
 MCSampleSize = 25
 cascadeValues = [1.0, 1.1, 1.25, 1.5, 1.7, 2.0,  'extreme'] 
+
+resultsPath = '/home/ruthpearson/Nutrition/Results'
+
 regionNameList = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
 spreadsheetFileStem = rootpath + '/input_spreadsheets/' + country + '/' + date + '/subregionSpreadsheets/'
 spreadsheetList = []
@@ -28,7 +31,7 @@ for regionName in regionNameList:
     spreadsheet = spreadsheetFileStem + regionName + '.xlsx'
     spreadsheetList.append(spreadsheet)
     
-resultsFileStem = '/home/ruthpearson/Nutrition/Results/'+date+'/'+optimise+'/geospatial/'
+resultsFileStem = resultsPath+'/'+date+'/'+optimise+'/geospatial/'
 
 geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
 geospatialOptimisation.generateParallelResultsForGeospatialCascades(nCores, MCSampleSize, haveFixedProgCosts)
