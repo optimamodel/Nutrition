@@ -4,11 +4,15 @@ Created on Mon Oct 31 14:18:57 2016
 
 @author: ruth
 """
+import os, sys
 rootpath = '..'
+moduleDir = os.path.join(os.path.dirname(__file__), rootpath)
+sys.path.append(moduleDir)
+import optimisation
+
 country = 'Bangladesh'
 date = '2016Oct'
 
-import optimisation
 outcomeOfInterestList = ['deaths', 'stunting', 'DALYs'] 
 numModelSteps = 180
 MCSampleSize = 25
@@ -46,7 +50,7 @@ thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps,
 thisOptimisation.outputCascadeAndOutcomeToCSV(cascadeValues, 'DALYs')    
     
 
-## GEOSPATIAL
+# GEOSPATIAL
 optimise = 'stunting'
 regionNameList = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
 spreadsheetFileStem = rootpath+'/input_spreadsheets/'+country+'/'+date+'/subregionSpreadsheets/'
@@ -62,7 +66,7 @@ cascadeValuesExtra = [1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 'extreme']
 analysis = 'fixedCosts'
 # DALYs extra money: bar graph/region, trade off curves, cascade and outcomes for DALYs    
 GAFileExtra = 'GA_fixedProg_extra_'+str(extraMoney)   
-resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/geospatial/'+analysis
+resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/geospatial/'+analysis+'/'
 geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValuesExtra, optimise, resultsFileStem)
 geospatialOptimisation.outputRegionalCurrentSpendingToCSV()
 geospatialOptimisation.outputRegionalPostGAOptimisedSpendingToCSV(GAFileExtra)
