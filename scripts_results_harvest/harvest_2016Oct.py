@@ -12,13 +12,12 @@ import optimisation
 
 country = 'Bangladesh'
 date = '2016Oct'
-
-outcomeOfInterestList = ['deaths', 'stunting', 'DALYs'] 
+ 
 numModelSteps = 180
-MCSampleSize = 25
 
 # NATIONAL
 dataSpreadsheetName = rootpath+'/input_spreadsheets/'+country+'/'+date+'/InputForCode_'+country+'.xlsx'
+outcomeOfInterestList = ['deaths', 'stunting', 'DALYs']
 cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]  
 analysis = 'noConstraints'
 optimise = 'stunting'
@@ -64,7 +63,7 @@ for regionName in regionNameList:
 extraMoney = 10000000
 cascadeValuesExtra = [1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 'extreme']
 analysis = 'fixedCosts'
-# DALYs extra money: bar graph/region, trade off curves, cascade and outcomes for DALYs    
+# stunting extra money: bar graph/region, trade off curves, cascade and outcomes    
 GAFileExtra = 'GA_fixedProg_extra_'+str(extraMoney)   
 resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/geospatial/'+analysis+'/'
 geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValuesExtra, optimise, resultsFileStem)
