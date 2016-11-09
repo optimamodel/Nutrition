@@ -30,9 +30,10 @@ values1$density<-numStuntAvert
 ####PNG outputs. I actually split it up as a multipanel plot so that the legend colourbar could go below.
 
 b <- 0.5
+g <- 0.8
 
 zc <- as.matrix(seq(min(values1$density), max(values1$density), length.out=100))
-mycolor1 <- two.colors(n=100, start=rgb(1,1,b,alpha=0.75), end=rgb(0,1,b,alpha=0.75), middle=rgb(0.5,1,b,alpha=0.75))
+mycolor1 <- two.colors(n=100, start=rgb(1,g,b,alpha=0.75), end=rgb(0,g,b,alpha=0.75), middle=rgb(0.5,g,b,alpha=0.75))
 
 
 png(file="/Users/ruth/Desktop/Nutrition/Bangladesh R map/BNG_level1.png",width=5, height=6, units="in", res=300)
@@ -41,7 +42,7 @@ layout.show(2)
 par(mar=c(0,0,0,0), oma=c(0,0,2,0))
 
 #plot(G1,col=rgb(1,1-values1$density,0,alpha=0.75), add=F, lwd=1, border=F)
-plot(G1,col=rgb(1-(values1$density-min(values1$density))/(max(values1$density)-min(values1$density)),1,b,alpha=0.75), add=F, lwd=1, border=F)
+plot(G1,col=rgb(1-(values1$density-min(values1$density))/(max(values1$density)-min(values1$density)),g,b,alpha=0.75), add=F, lwd=1, border=F)
 
 invisible(text(getSpPPolygonsLabptSlots(G1), labels=as.character(G1$NAME_1), cex=0.75, col="black", font=1))
 #mtext(side=3, line=0, "optimized geospatial spending", cex=1.5)
