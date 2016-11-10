@@ -81,9 +81,10 @@ plotcolor = 'grey'
 print "\n"+nametag
 model, derived, params = helper.setupModelConstantsParameters(inputData)
 
-# Run model
-for t in range(delay):
-    model.moveOneTimeStep()
+for iAge in range(numAgeGroups):
+    ageName = helper.keyList['ages'][iAge]
+    print "Number of children in %s = %i"%(ageName,model.listOfAgeCompartments[iAge].getTotalPopulation())
+print "Number of pregnant women = %i"%(model.pregnantWomen.populationSize)
 
 # calculate target population size and current spending
 targetPopSize = {}
@@ -101,10 +102,13 @@ for intervention in inputData.interventionList:
     #print "%s = %i USD"%(intervention, baselineSpending[intervention])
 #print "Baseline Annual Budget = %i USD"%(baselineBudget)
 
+# Run model
+for t in range(delay):
+    model.moveOneTimeStep()
+
 for t in range(numsteps-delay):
     model.moveOneTimeStep()
 
-#model.getDiagnostics(verbose=True)
 baselineStunted = model.getOutcome('stunting')
 print "Number of children stunted = %i"%baselineStunted
 baselineDeaths = model.getOutcome('deaths')
@@ -130,14 +134,16 @@ targetPopSize = {}
 newSpending = {}
 newBudget = 0.
 for intervention in inputData.interventionList:
+    print "\n %s"%intervention
     targetPopSize[intervention] = 0.
     for iAge in range(numAgeGroups):
         ageName = helper.keyList['ages'][iAge]
         targetPopSize[intervention] += inputData.targetPopulation[intervention][ageName] * modelB.listOfAgeCompartments[iAge].getTotalPopulation()
     targetPopSize[intervention] +=     inputData.targetPopulation[intervention]['pregnant women'] * modelB.pregnantWomen.populationSize
+    print "Target Population Size = %i"%(targetPopSize[intervention])
     coverageNumber  = newCoverages[intervention] * targetPopSize[intervention]
     newSpending[intervention] = costCov.inversefunction(coverageNumber, costCovParams[intervention], targetPopSize[intervention])
-    print "%s = %i USD"%(intervention, newSpending[intervention])
+    print "Spending = %i USD"%(newSpending[intervention])
     newBudget += newSpending[intervention]
 print "New Annual Budget = %i USD"%(newBudget)
 
