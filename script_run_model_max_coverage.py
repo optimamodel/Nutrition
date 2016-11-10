@@ -12,10 +12,10 @@ import numpy as np
 import optimisation
 import csv
 helper = helper.Helper()
-numModelSteps = 120
-numYears = 10
+numModelSteps = 180
+numYears = 15
 years = range(2016, 2016 + numYears)
-saturationCoverage = 0.85
+saturationCoverage = 0.80
 
 country = 'Bangladesh'
 date = '2016Oct'
@@ -183,3 +183,30 @@ outfilename = 'Bangladesh_full_coverage_costs.csv'
 with open(outfilename, "wb") as f:
     writer = csv.writer(f)
     writer.writerows(rows) 
+    
+    
+    
+# get total initial allocations and write to csv
+baselineAnnualCosts = []   
+for i in range(len(spreadsheetList)):
+    regionName = nameList[i]
+    spreadsheet = spreadsheetList[i]
+    thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem)
+    costCoverageInfo = thisOptimisation.getCostCoverageInfo()  
+    initialTargetPopSize = thisOptimisation.getInitialTargetPopSize()
+    spreadsheetData = data.readSpreadsheet(spreadsheet, helper.keyList) 
+    initialAllocation = optimisation.getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
+    baselineAnnualCosts.append(sum(initialAllocation))
+    
+rows = []
+rows.append(nameList)
+rows.append(baselineAnnualCosts)
+outfilename = 'Bangladesh_baseline_annual_costs.csv'
+with open(outfilename, "wb") as f:
+    writer = csv.writer(f)
+    writer.writerows(rows) 
+    
+    
+    
+    
+    
