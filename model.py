@@ -186,6 +186,8 @@ class Model:
             outcomeValue = self.getCumulativeAgingOutStunted()
         elif outcome == 'DALYs':
             outcomeValue = self.getDALYs()
+        elif outcome == 'stunting prev':
+            outcomeValue = self.getTotalStuntedFraction()    
         return outcomeValue
 
 
