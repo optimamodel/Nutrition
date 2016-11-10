@@ -15,6 +15,7 @@ helper = helper.Helper()
 numModelSteps = 120
 numYears = 10
 years = range(2016, 2016 + numYears)
+saturationCoverage = 0.85
 
 country = 'Bangladesh'
 date = '2016Oct'
@@ -32,7 +33,7 @@ for regionName in regionNameList:
 
 # ------------------    SOME USEFUL FUNCTIONS       ---------------------------
 
-def getYearlyObjectiveList(spreadsheet):
+def getSaturationCoverageOutcomes(spreadsheet):
     spreadsheetData = data.readSpreadsheet(spreadsheet, helper.keyList)
     model, derived, params = helper.setupModelConstantsParameters(spreadsheetData)
     # run the model
@@ -46,7 +47,7 @@ def getYearlyObjectiveList(spreadsheet):
     newCoverages = {}    
     for i in range(0, len(spreadsheetData.interventionList)):
         intervention = spreadsheetData.interventionList[i]
-        newCoverages[intervention] = 1
+        newCoverages[intervention] = saturationCoverage
     model.updateCoverages(newCoverages)
     for t in range(numModelSteps - timestepsPre):
         model.moveOneTimeStep()
@@ -84,7 +85,7 @@ def getYearlyObjectiveList(spreadsheet):
     return objectiveYearly
 
 
-def getBaseline(spreadsheet):
+def getBaselineOutcomes(spreadsheet):
     optimise = 'dummy1'
     resultsFileStem = 'dummy2'
     thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem)
@@ -122,7 +123,7 @@ def getBaseline(spreadsheet):
 
 # -----------------------------------------------------------------------------
 
-# GENERATE RESULTS AND OUTPUT TO CSV 
+## GENERATE RESULTS AND OUTPUT TO CSV 
 nameList = ['national'] + regionNameList
 results = {}
 results['baseline'] = {}
@@ -131,8 +132,8 @@ for i in range(len(spreadsheetList)):
     regionName = nameList[i]
     print regionName
     spreadsheet = spreadsheetList[i]
-    results['full coverage'][regionName] = getYearlyObjectiveList(spreadsheet)
-    results['baseline'][regionName] = getBaseline(spreadsheet)
+    results['full coverage'][regionName] = getSaturationCoverageOutcomes(spreadsheet)
+    results['baseline'][regionName] = getBaselineOutcomes(spreadsheet)
 
 
 rows = []
@@ -151,5 +152,34 @@ with open(outfilename, "wb") as f:
     writer.writerows(rows)   
 
 
+# calculate cost of full coverage and write to CSV
+import costcov
+costCov = costcov.Costcov()
+import helper
+helper = helper.Helper()
+optimise = 'dummy1'
+resultsFileStem = 'dummy2'
 
-
+cost = {}
+for i in range(len(spreadsheetList)):
+    regionName = nameList[i]
+    cost[regionName] = []
+    spreadsheet = spreadsheetList[i]
+    thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem)
+    costCoverageInfo = thisOptimisation.getCostCoverageInfo()  
+    initialTargetPopSize = thisOptimisation.getInitialTargetPopSize()
+    spreadsheetData = data.readSpreadsheet(spreadsheet, helper.keyList) 
+    for intervention in spreadsheetData.interventionList:
+        coverageFraction = 0.84 # using 0.85 causes inf in cost coverage inverse function
+        coverageNumber = coverageFraction * initialTargetPopSize[intervention]
+        spending = costCov.inversefunction(coverageNumber, costCoverageInfo[intervention], initialTargetPopSize[intervention])  
+        cost[regionName].append(spending)
+        
+rows = []
+rows.append([''] + spreadsheetData.interventionList)
+for region in nameList:
+    rows.append([region] + cost[region])
+outfilename = 'Bangladesh_full_coverage_costs.csv'
+with open(outfilename, "wb") as f:
+    writer = csv.writer(f)
+    writer.writerows(rows) 
