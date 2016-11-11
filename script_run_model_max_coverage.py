@@ -125,31 +125,31 @@ def getBaselineOutcomes(spreadsheet):
 
 ## GENERATE RESULTS AND OUTPUT TO CSV 
 nameList = ['national'] + regionNameList
-results = {}
-results['baseline'] = {}
-results['full coverage'] = {}
-for i in range(len(spreadsheetList)):
-    regionName = nameList[i]
-    print regionName
-    spreadsheet = spreadsheetList[i]
-    results['full coverage'][regionName] = getSaturationCoverageOutcomes(spreadsheet)
-    results['baseline'][regionName] = getBaselineOutcomes(spreadsheet)
-
-
-rows = []
-for analysis in ['baseline', 'full coverage']:
-    rows.append('')
-    rows.append([analysis] + [' ', ' ', ' ',' ', ' ', ' ',' ', ' ', ' ',' '])
-    for objective in ['stunting', 'stunting prev', 'deaths', 'DALYs']:
-        rows.append('')        
-        rows.append([objective] + [' ', ' ', ' ',' ', ' ', ' ',' ', ' ', ' ',' '])
-        rows.append([' '] + years)
-        for region in nameList:
-            rows.append([region] + results[analysis][region][objective])
-outfilename = 'Bangladesh_full_coverage_comparison.csv'
-with open(outfilename, "wb") as f:
-    writer = csv.writer(f)
-    writer.writerows(rows)   
+#results = {}
+#results['baseline'] = {}
+#results['full coverage'] = {}
+#for i in range(len(spreadsheetList)):
+#    regionName = nameList[i]
+#    print regionName
+#    spreadsheet = spreadsheetList[i]
+#    results['full coverage'][regionName] = getSaturationCoverageOutcomes(spreadsheet)
+#    results['baseline'][regionName] = getBaselineOutcomes(spreadsheet)
+#
+#
+#rows = []
+#for analysis in ['baseline', 'full coverage']:
+#    rows.append('')
+#    rows.append([analysis] + [' ', ' ', ' ',' ', ' ', ' ',' ', ' ', ' ',' '])
+#    for objective in ['stunting', 'stunting prev', 'deaths', 'DALYs']:
+#        rows.append('')        
+#        rows.append([objective] + [' ', ' ', ' ',' ', ' ', ' ',' ', ' ', ' ',' '])
+#        rows.append([' '] + years)
+#        for region in nameList:
+#            rows.append([region] + results[analysis][region][objective])
+#outfilename = 'Bangladesh_full_coverage_comparison.csv'
+#with open(outfilename, "wb") as f:
+#    writer = csv.writer(f)
+#    writer.writerows(rows)   
 
 
 # calculate cost of full coverage and write to CSV
@@ -161,6 +161,7 @@ optimise = 'dummy1'
 resultsFileStem = 'dummy2'
 
 cost = {}
+targetPopSize ={}
 for i in range(len(spreadsheetList)):
     regionName = nameList[i]
     cost[regionName] = []
@@ -168,43 +169,53 @@ for i in range(len(spreadsheetList)):
     thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem)
     costCoverageInfo = thisOptimisation.getCostCoverageInfo()  
     initialTargetPopSize = thisOptimisation.getInitialTargetPopSize()
+    targetPopSize[regionName] = initialTargetPopSize
     spreadsheetData = data.readSpreadsheet(spreadsheet, helper.keyList) 
     for intervention in spreadsheetData.interventionList:
-        coverageFraction = 0.84 # using 0.85 causes inf in cost coverage inverse function
+        coverageFraction = saturationCoverage # using 0.85 causes inf in cost coverage inverse function
         coverageNumber = coverageFraction * initialTargetPopSize[intervention]
         spending = costCov.inversefunction(coverageNumber, costCoverageInfo[intervention], initialTargetPopSize[intervention])  
         cost[regionName].append(spending)
         
 rows = []
-rows.append([''] + spreadsheetData.interventionList)
+rows.append([' '] + targetPopSize['national'].keys())
 for region in nameList:
-    rows.append([region] + cost[region])
-outfilename = 'Bangladesh_full_coverage_costs.csv'
+    rows.append([region] + targetPopSize[region].values())
+outfilename = 'Bangladesh_initial_ target_pop_size.csv'
 with open(outfilename, "wb") as f:
     writer = csv.writer(f)
-    writer.writerows(rows) 
-    
-    
-    
-# get total initial allocations and write to csv
-baselineAnnualCosts = []   
-for i in range(len(spreadsheetList)):
-    regionName = nameList[i]
-    spreadsheet = spreadsheetList[i]
-    thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem)
-    costCoverageInfo = thisOptimisation.getCostCoverageInfo()  
-    initialTargetPopSize = thisOptimisation.getInitialTargetPopSize()
-    spreadsheetData = data.readSpreadsheet(spreadsheet, helper.keyList) 
-    initialAllocation = optimisation.getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
-    baselineAnnualCosts.append(sum(initialAllocation))
-    
-rows = []
-rows.append(nameList)
-rows.append(baselineAnnualCosts)
-outfilename = 'Bangladesh_baseline_annual_costs.csv'
-with open(outfilename, "wb") as f:
-    writer = csv.writer(f)
-    writer.writerows(rows) 
+    writer.writerows(rows)         
+        
+#rows = []
+#rows.append([''] + spreadsheetData.interventionList)
+#for region in nameList:
+#    rows.append([region] + cost[region])
+#outfilename = 'Bangladesh_full_coverage_costs.csv'
+#with open(outfilename, "wb") as f:
+#    writer = csv.writer(f)
+#    writer.writerows(rows) 
+#    
+#    
+#    
+## get total initial allocations and write to csv
+#baselineAnnualCosts = []   
+#for i in range(len(spreadsheetList)):
+#    regionName = nameList[i]
+#    spreadsheet = spreadsheetList[i]
+#    thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem)
+#    costCoverageInfo = thisOptimisation.getCostCoverageInfo()  
+#    initialTargetPopSize = thisOptimisation.getInitialTargetPopSize()
+#    spreadsheetData = data.readSpreadsheet(spreadsheet, helper.keyList) 
+#    initialAllocation = optimisation.getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
+#    baselineAnnualCosts.append(sum(initialAllocation))
+#    
+#rows = []
+#rows.append(nameList)
+#rows.append(baselineAnnualCosts)
+#outfilename = 'Bangladesh_baseline_annual_costs.csv'
+#with open(outfilename, "wb") as f:
+#    writer = csv.writer(f)
+#    writer.writerows(rows) 
     
     
     
