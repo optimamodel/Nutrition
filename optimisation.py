@@ -201,6 +201,7 @@ class Optimisation:
                     target=self.cascadeParallelRunFunction, 
                     args=(value, currentTotalBudget, fixedCosts, spreadsheetData, costCoverageInfo, MCSampleSize, xmin))
                 prc.start()
+            prc.join()
         
     def performParallelSampling(self, MCSampleSize, haveFixedProgCosts, numRuns, filename):
         import data 
@@ -219,7 +220,7 @@ class Optimisation:
                 target=self.runOnceDumpFullOutputToFile, 
                 args=(MCSampleSize, xmin, runOnceArgs, spreadsheetData.interventionList, currentTotalBudget, filename+"_"+str(i)))
             prc.start()    
-        
+        prc.join()
         
     def getFixedCosts(self, haveFixedProgCosts, initialAllocation):
         from copy import deepcopy as dcp
@@ -779,6 +780,7 @@ class GeospatialOptimisation:
                     target=thisOptimisation.performSingleOptimisationForGivenTotalBudget, 
                     args=(MCSampleSize, thisBudget, GAFile+'_'+regionName, haveFixedProgCosts))
                 prc.start()
+            prc.join()    
                 
     def performParallelGeospatialOptimisationExtraMoney(self, geoMCSampleSize, MCSampleSize, GAFile, numCores, extraMoney, haveFixedProgCosts):
         # this optimisation keeps current regional spending the same and optimises only additional spending across regions        
@@ -799,7 +801,8 @@ class GeospatialOptimisation:
                 prc = Process(
                     target=thisOptimisation.performSingleOptimisationForGivenTotalBudget, 
                     args=(MCSampleSize, thisBudget, GAFile+'_'+regionName, haveFixedProgCosts))
-                prc.start()            
+                prc.start()    
+            prc.join()    
         
     def plotReallocationByRegion(self):
         from plotting import plotallocations 
