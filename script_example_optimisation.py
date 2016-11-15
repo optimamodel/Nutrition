@@ -7,15 +7,26 @@ Created on Mon Jul 25 12:25:36 2016
 This is an example script of how to use the optimisation class to generate and harvest results.
 Use as a reference, do not edit.
 """
-
+# all the code is contained in the optimisation module (optimisation.py)
 import optimisation
+
+# information about the analysis
 country = 'Bangladesh'
 date = '2016Oct'
 
+# the name of the spreadsheet containting the data
 dataSpreadsheetName = '/input_spreadsheets/'+country+'/'+date+'/InputForCode_'+country+'.xlsx'
+
+# how long to run the analysis for (1 step = 1 month)
 numModelSteps = 180
+
+# how many MC samples (chains of the optimisation) to run
 MCSampleSize = 25
+
+# the multiples of the current budget to run the budget cascade for 
 cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]
+
+# the objective of the optimisation
 optimise = 'stunting'  
 
 # this is the location of the optimisation results per region (to be generated or harvested)
