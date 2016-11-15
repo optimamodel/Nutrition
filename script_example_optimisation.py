@@ -30,7 +30,7 @@ cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]
 optimise = 'stunting'  
 
 # this is the location of the optimisation results per region (to be generated or harvested)
-resultsFileStem = '/Results/'+date+'/'+optimise+'/national/'+country
+resultsFileStem = 'Results/'+date+'/'+optimise+'/national/'+country
 
 # check athena and then specify how many cores you are going to use (this translates into the number of jobs as we assume 1 core per job)
 # this is only needed if you plan to run in parallel
