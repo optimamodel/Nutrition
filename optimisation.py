@@ -134,6 +134,10 @@ class Optimisation:
         self.resultsFileStem = resultsFileStem
         self.helper = helper.Helper()
         self.timeSeries = None
+        # check that results directory exists and if not then create it
+        import os
+        if not os.path.exists(resultsFileStem):
+            os.makedirs(resultsFileStem)
         
     def performSingleOptimisation(self, MCSampleSize):
         import data 
@@ -286,11 +290,7 @@ class Optimisation:
                 writer = csv.writer(f)
                 writer.writerow(header)
                 writer.writerows(rows)
-                
-                
-    
-        
-                
+                        
         
     def getInitialAllocationDictionary(self):
         import data 
@@ -533,6 +533,10 @@ class GeospatialOptimisation:
         self.regionalBOCs = None 
         self.tradeOffCurves = None
         self.postGATimeSeries = None
+        # check that results directory exists and if not then create it
+        import os
+        if not os.path.exists(resultsFileStem):
+            os.makedirs(resultsFileStem)        
         
     def generateAllRegionsBOC(self):
         print 'reading files to generate regional BOCs..'
