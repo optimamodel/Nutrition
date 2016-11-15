@@ -27,7 +27,7 @@ optimise = 'deaths'
 regionNameList = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
 
 # create a list of the spreadsheet names for each region
-spreadsheetFileStem = '/input_spreadsheets/' + country + '/' + date + '/subregionSpreadsheets/'
+spreadsheetFileStem = 'input_spreadsheets/' + country + '/' + date + '/subregionSpreadsheets/'
 spreadsheetList = []
 for regionName in regionNameList:
     spreadsheet = spreadsheetFileStem + regionName + '.xlsx'

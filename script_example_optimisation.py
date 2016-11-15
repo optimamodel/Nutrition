@@ -15,7 +15,7 @@ country = 'Bangladesh'
 date = '2016Oct'
 
 # the name of the spreadsheet containting the data
-dataSpreadsheetName = '/input_spreadsheets/'+country+'/'+date+'/InputForCode_'+country+'.xlsx'
+dataSpreadsheetName = 'input_spreadsheets/'+country+'/'+date+'/InputForCode_'+country+'.xlsx'
 
 # how long to run the analysis for (1 step = 1 month)
 numModelSteps = 180
