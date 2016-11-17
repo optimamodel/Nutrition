@@ -23,7 +23,27 @@ class Project:
         cascadeValues = [1.0, 2.0]  # REMOVE this once cascade read from csv is fixed
         numCores = len(cascadeValues)
         thisOptimisation.performParallelCascadeOptimisation(self.projectData.MCSampleSize, cascadeValues, numCores, self.haveFixedProgCosts)
+        # modify above function to return the cascade dictionaries and store in self.results
+        # self.results['cascade'] = return value
         
+    def runSingleOptimisation(self):
+        import optimisation      
+        thisOptimisation = optimisation.Optimisation(self.projectData.dataSpreadsheetName, self.numModelSteps, self.projectData.optimise, self.resultsFileStem)
+        thisOptimisation.performSingleOptimisation(self.projectData.MCSampleSize)
+        # modify above function to return the cascade dictionaries and store in self.results
+        # self.results['single optimisation'] = return value
+        
+    def runSingleOptimisationCustomBudget(self, customBudget):
+        import optimisation      
+        thisOptimisation = optimisation.Optimisation(self.projectData.dataSpreadsheetName, self.numModelSteps, self.projectData.optimise, self.resultsFileStem)
+        thisOptimisation.performSingleOptimisationForGivenTotalBudget(self.projectData.MCSampleSize, customBudget, "custom_budget_$"+customBudget, self.haveFixedProgCosts)
+        # modify above function to return the cascade dictionaries and store in self.results
+        # self.results['custom budget'] = {}
+        # self.results['custom budget']['budget'] = customBudget
+        # self.results['custom budget']['allocation'] = return value
+        
+    def outputProjectResults(self):
+        #output everything in results to csv, including info about the project
         
         
 class ProjectData:
