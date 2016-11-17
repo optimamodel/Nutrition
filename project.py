@@ -6,28 +6,24 @@ Created on Wed Nov 16 13:50:35 2016
 """
 
 class Project:
-    def __init__(self, projectName, projectDescription):
-        self.projectName = projectName
-        self.projectDescription = projectDescription
-        self.analylsisType = None
-        self.analysisTypeList = ['noConstraints', 'fixedCosts']
-        self.dataSpreadsheets = {}
+    def __init__(self, projectDataSpreadsheetName):
+        self.projectDataSpreadsheetName = projectDataSpreadsheetName
+        self.constraintTypeList = ['noConstraints', 'fixedCosts']
         self.results = {}
+        self.projectData = ProjectData(projectDataSpreadsheetName)
+        self.numModelSteps = self.projectData.numYears * 12
+        self.haveFixedProgCosts = False
+        if self.projectData.analysisType == 'fixedCosts':
+            self.haveFixedProgCosts = True
+        self.resultsFileStem = 'ResultsTest/'+self.projectData.date+'/'+self.projectData.optimise+'/'+self.projectData.analysisType+'/'+self.projectData.spendingConstraints+'/'+self.projectData.country    
         
-    def setProjectDescription(self, projectDescription):
-        self.projectDescription = projectDescription
+    def runCascade(self):
+        import optimisation      
+        thisOptimisation = optimisation.Optimisation(self.projectData.dataSpreadsheetName, self.numModelSteps, self.projectData.optimise, self.resultsFileStem)
+        cascadeValues = [1.0, 2.0]  # REMOVE this once cascade read from csv is fixed
+        numCores = len(cascadeValues)
+        thisOptimisation.performParallelCascadeOptimisation(self.projectData.MCSampleSize, cascadeValues, numCores, self.haveFixedProgCosts)
         
-    def setAnalysisType(self, analysisType):
-        if (analysisType in self.analysisTypeList):
-            self.analylsisType = analysisType
-        else:
-            print "analysis type " + analysisType + " is not supported"
-            
-    def setDataSpreadsheetNational(self, dataSpreadsheetNational):
-        self.dataSpreadsheets['national'] = dataSpreadsheetNational
-        
-    def setDataSpreadsheetGeospatial(self, dataSpreadsheetGeospatial):
-        self.dataSpreadsheets['national'] = dataSpreadsheetGeospatial    
         
         
 class ProjectData:
@@ -80,7 +76,7 @@ class ProjectData:
         self.date = values['date']
         self.numYears = values['number of years']
         self.optimise = values['optimise for']
-        self.cascade = values['cascade multiples']
+        self.cascade = values['cascade multiples'].split()
         self.extraMoney = values['extra money']
         self.MCSampleSize = values['MCSampleSize']
         self.geoMCSampleSize = values['geoMCSampleSize']
