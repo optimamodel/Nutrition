@@ -9,3 +9,5 @@ import project
 projectSpreadsheet = 'project_spreadsheets/test_national_project.xlsx'
 thisProject = project.Project(projectSpreadsheet)
 thisProject.runCascade()
+thisProject.runSingleOptimisation()
+thisProject.runSingleOptimisationCustomBudget(10000000)
