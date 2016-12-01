@@ -139,19 +139,28 @@ class Optimisation:
         if not os.path.exists(resultsFileStem):
             os.makedirs(resultsFileStem)
         
-    def performSingleOptimisation(self, MCSampleSize):
+    def performSingleOptimisation(self, MCSampleSize, haveFixedProgCosts):
         import data 
+        import pickle
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         costCoverageInfo = self.getCostCoverageInfo()  
         initialTargetPopSize = self.getInitialTargetPopSize()
         initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
         totalBudget = sum(initialAllocation)
         xmin = [0.] * len(initialAllocation)
-        args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
-        self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, self.resultsFileStem+'.pkl')
+        # set fixed costs if you have them
+        fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation)
+        args = {'totalBudget':totalBudget, 'fixedCosts':fixedCosts, 'costCoverageInfo':costCoverageInfo, 'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
+        filename = self.resultsFileStem+'.pkl'   
+        self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, filename)
+        # read the pkl file into a variable to be returned
+        infile = open(filename, 'rb')
+        allocation = pickle.load(infile)         
+        return allocation       
         
     def performSingleOptimisationForGivenTotalBudget(self, MCSampleSize, totalBudget, filename, haveFixedProgCosts):
         import data 
+        import pickle
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         costCoverageInfo = self.getCostCoverageInfo()  
         xmin = [0.] * len(spreadsheetData.interventionList)
@@ -159,8 +168,12 @@ class Optimisation:
         initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
         fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation)  
         args = {'totalBudget':totalBudget, 'fixedCosts':fixedCosts, 'costCoverageInfo':costCoverageInfo, 'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
-        self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, self.resultsFileStem+filename+'.pkl')    
-        
+        outputFilename = self.resultsFileStem+'_'+filename+'.pkl'        
+        self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, outputFilename)    
+        # read the pkl file into a variable to be returned
+        infile = open(outputFilename, 'rb')
+        allocation = pickle.load(infile)         
+        return allocation 
         
     def performCascadeOptimisation(self, MCSampleSize, cascadeValues):
         import data 
@@ -180,10 +193,10 @@ class Optimisation:
         args = {'totalBudget':totalBudget, 'fixedCosts':fixedCosts, 'costCoverageInfo':costCoverageInfo, 'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
         self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, self.resultsFileStem+'_cascade_'+str(self.optimise)+'_'+str(cascadeValue)+'.pkl')                   
     
-    
     def performParallelCascadeOptimisation(self, MCSampleSize, cascadeValues, numCores, haveFixedProgCosts):
         import data 
         from multiprocessing import Process
+        import pickle
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         costCoverageInfo = self.getCostCoverageInfo()  
         initialTargetPopSize = self.getInitialTargetPopSize()          
@@ -202,6 +215,15 @@ class Optimisation:
                     args=(value, currentTotalBudget, fixedCosts, spreadsheetData, costCoverageInfo, MCSampleSize, xmin))
                 prc.start()
             prc.join()
+        # read the cascade files into a dictionary to be returned
+        cascade = {}    
+        for value in cascadeValues: 
+            filename = self.resultsFileStem+'_cascade_'+str(self.optimise)+'_'+str(value)+'.pkl'
+            infile = open(filename, 'rb')
+            cascade[value] = pickle.load(infile)         
+        return cascade    
+             
+                
         
     def performParallelSampling(self, MCSampleSize, haveFixedProgCosts, numRuns, filename):
         import data 
