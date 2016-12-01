@@ -11,32 +11,24 @@ class Project:
         self.constraintTypeList = ['noConstraints', 'fixedCosts']
         self.results = {}
         self.projectData = ProjectData(projectDataSpreadsheetName)
-        self.numModelSteps = self.projectData.numYears * 12
-        self.haveFixedProgCosts = False
-        if self.projectData.analysisType == 'fixedCosts':
-            self.haveFixedProgCosts = True
-        self.resultsFileStem = 'ResultsTest/'+self.projectData.date+'/'+self.projectData.optimise+'/'+self.projectData.analysisType+'/'+self.projectData.spendingConstraints+'/'+self.projectData.country    
+        # instantiate optimisation object
+        import optimisation      
+        self.thisOptimisation = optimisation.Optimisation(self.projectData.dataSpreadsheetName, self.projectData.numModelSteps, self.projectData.optimise, self.projectData.resultsFileStem)
         
     def runCascade(self):
-        import optimisation      
-        thisOptimisation = optimisation.Optimisation(self.projectData.dataSpreadsheetName, self.numModelSteps, self.projectData.optimise, self.resultsFileStem)
         cascadeValues = [1.0, 2.0]  # REMOVE this once cascade read from csv is fixed
         numCores = len(cascadeValues)
-        thisOptimisation.performParallelCascadeOptimisation(self.projectData.MCSampleSize, cascadeValues, numCores, self.haveFixedProgCosts)
+        self.thisOptimisation.performParallelCascadeOptimisation(self.projectData.MCSampleSize, cascadeValues, numCores, self.projectData.haveFixedProgCosts)
         # modify above function to return the cascade dictionaries and store in self.results
         # self.results['cascade'] = return value
         
     def runSingleOptimisation(self):
-        import optimisation      
-        thisOptimisation = optimisation.Optimisation(self.projectData.dataSpreadsheetName, self.numModelSteps, self.projectData.optimise, self.resultsFileStem)
-        thisOptimisation.performSingleOptimisation(self.projectData.MCSampleSize)
+        self.thisOptimisation.performSingleOptimisation(self.projectData.MCSampleSize)
         # modify above function to return the cascade dictionaries and store in self.results
         # self.results['single optimisation'] = return value
         
     def runSingleOptimisationCustomBudget(self, customBudget):
-        import optimisation      
-        thisOptimisation = optimisation.Optimisation(self.projectData.dataSpreadsheetName, self.numModelSteps, self.projectData.optimise, self.resultsFileStem)
-        thisOptimisation.performSingleOptimisationForGivenTotalBudget(self.projectData.MCSampleSize, customBudget, "custom_budget_$"+customBudget, self.haveFixedProgCosts)
+        self.thisOptimisation.performSingleOptimisationForGivenTotalBudget(self.projectData.MCSampleSize, customBudget, "custom_budget_$"+customBudget, self.projectData.haveFixedProgCosts)
         # modify above function to return the cascade dictionaries and store in self.results
         # self.results['custom budget'] = {}
         # self.results['custom budget']['budget'] = customBudget
@@ -44,7 +36,7 @@ class Project:
         
     def outputProjectResults(self):
         #output everything in results to csv, including info about the project
-        
+        return None
         
 class ProjectData:
     def __init__(self, projectDataSpreadsheetName):
@@ -64,8 +56,14 @@ class ProjectData:
         self.geoMCSampleSize = None
         self.reRunMCSampleSize = None
         self.dataFromSpreadsheet = None
-        
+        # call function to read project spreadsheet into variables
         self.readProjectDataFromSpreadsheet()
+        # set some derived variables
+        self.numModelSteps = self.numYears * 12
+        self.haveFixedProgCosts = False
+        if self.spendingConstraints == 'fixedCosts':
+            self.haveFixedProgCosts = True
+        self.resultsFileStem = 'ResultsTest/'+self.date+'/'+self.optimise+'/'+self.analysisType+'/'+self.spendingConstraints+'/'+self.country    
         
     def readProjectDataFromSpreadsheet(self):    
         #read from csv         
