@@ -32,7 +32,60 @@ class Project:
         
     def outputProjectResults(self):
         #output everything in results to csv, including info about the project
-        return None
+        import xlwt, csv, os     
+        # make folder for CSV files
+        if not os.path.exists(self.projectData.resultsFileStem+'CSVs/'):
+            os.makedirs(self.projectData.resultsFileStem+'CSVs/')
+        # run functions to make CSV files    
+        self.outputProjectOverviewCSV()        
+        self.outputCascadeToCSV()
+        # combine all CSV files in CSV directory into one .xls file
+        csvFolder = self.projectData.resultsFileStem + 'CSVs/'
+        book = xlwt.Workbook()
+        for fil in os.listdir(csvFolder):
+            sheet = book.add_sheet(fil[:-4])
+            with open(csvFolder + fil) as filname:
+                reader = csv.reader(filname)
+                i = 0
+                for row in reader:
+                    for j, each in enumerate(row):
+                        sheet.write(i, j, each)
+                    i += 1
+        book.save("%sResults.xls"%(self.projectData.resultsFileStem))
+        
+        
+    def outputProjectOverviewCSV(self):
+        import csv
+        rows = []
+        rows.append(self.projectData.projectName)
+        rows.append(self.projectData.projectDescription)
+        rows.append(self.projectData.projectDataSpreadsheetName)
+        rows.append(self.projectData.dataSpreadsheetName)
+        rows.append(' ')
+        # add current spending and coverage        
+        outfilename = '%s%soverview.csv'%(self.projectData.resultsFileStem, 'CSVs/')
+        with open(outfilename, "wb") as f:
+            writer = csv.writer(f)
+            writer.writerows(rows)    
+    
+    def outputCascadeToCSV(self):
+        import csv
+        # write the cascade csv
+        prognames = self.results['cascade'][self.projectData.cascade[0]].keys()            
+        prognames.insert(0, 'Multiple of current budget')
+        rows = []
+        for i in range(len(self.projectData.cascade)):
+            value = self.projectData.cascade[i]
+            allocationDict = self.results['cascade'][value]               
+            valarray = allocationDict.values()
+            valarray.insert(0, value)
+            rows.append(valarray)
+        outfilename = '%s%scascade%s.csv'%(self.projectData.resultsFileStem, 'CSVs/', self.projectData.optimise)
+        with open(outfilename, "wb") as f:
+            writer = csv.writer(f)
+            writer.writerow(prognames)
+            writer.writerows(rows)
+        
         
 class ProjectData:
     def __init__(self, projectDataSpreadsheetName):
@@ -59,7 +112,7 @@ class ProjectData:
         self.haveFixedProgCosts = False
         if self.spendingConstraints == 'fixedCosts':
             self.haveFixedProgCosts = True
-        self.resultsFileStem = 'ResultsTest/'+self.date+'/'+self.optimise+'/'+self.analysisType+'/'+self.spendingConstraints+'/'+self.country    
+        self.resultsFileStem = 'ResultsTest/'+self.date+'/'+self.optimise+'/'+self.analysisType+'/'+self.spendingConstraints+'/'+self.country+'/'    
         
     def readProjectDataFromSpreadsheet(self):    
         #read from csv         
@@ -90,7 +143,7 @@ class ProjectData:
         self.date = values['date']
         self.numYears = values['number of years']
         self.optimise = values['optimise for']
-        self.cascade = values['cascade multiples'].split()
+        self.cascade = [1.0, 2.0]  #FIX THIS values['cascade multiples'].split()
         self.extraMoney = values['extra money']
         self.MCSampleSize = values['MCSampleSize']
         self.geoMCSampleSize = values['geoMCSampleSize']
