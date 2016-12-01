@@ -16,10 +16,10 @@ helper = helper.Helper()
 numModelSteps = 12 # this is becasue we get the population size to update coverages after 1 year
 optimise = 'stunting'
 GAFile = 'GA_fixedProg_extra_'+str(10000000)   
-resultsFileStem = 'Results2016Sep21fixedProgCosts/'+optimise+'/geospatial/'
+resultsFileStem = 'Results/2016Oct/'+optimise+'/geospatial/fixedCosts/'
 
 regionNameList = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
-spreadsheetFileStem = 'input_spreadsheets/Bangladesh/2016Sept12/subregionSpreadsheets/'
+spreadsheetFileStem = 'input_spreadsheets/Bangladesh/2016Oct/subregionSpreadsheets/'
 spreadsheetList = []
 for regionName in regionNameList:
     spreadsheet = spreadsheetFileStem + regionName + '.xlsx'
