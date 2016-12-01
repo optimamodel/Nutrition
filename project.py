@@ -18,21 +18,17 @@ class Project:
     def runCascade(self):
         cascadeValues = [1.0, 2.0]  # REMOVE this once cascade read from csv is fixed
         numCores = len(cascadeValues)
-        self.thisOptimisation.performParallelCascadeOptimisation(self.projectData.MCSampleSize, cascadeValues, numCores, self.projectData.haveFixedProgCosts)
-        # modify above function to return the cascade dictionaries and store in self.results
-        # self.results['cascade'] = return value
+        self.results['cascade'] = self.thisOptimisation.performParallelCascadeOptimisation(self.projectData.MCSampleSize, cascadeValues, numCores, self.projectData.haveFixedProgCosts)
+         
         
     def runSingleOptimisation(self):
-        self.thisOptimisation.performSingleOptimisation(self.projectData.MCSampleSize)
-        # modify above function to return the cascade dictionaries and store in self.results
-        # self.results['single optimisation'] = return value
+        self.results['single optimisation'] = self.thisOptimisation.performSingleOptimisation(self.projectData.MCSampleSize, self.projectData.haveFixedProgCosts)
+         
         
     def runSingleOptimisationCustomBudget(self, customBudget):
-        self.thisOptimisation.performSingleOptimisationForGivenTotalBudget(self.projectData.MCSampleSize, customBudget, "custom_budget_$"+customBudget, self.projectData.haveFixedProgCosts)
-        # modify above function to return the cascade dictionaries and store in self.results
-        # self.results['custom budget'] = {}
-        # self.results['custom budget']['budget'] = customBudget
-        # self.results['custom budget']['allocation'] = return value
+        self.results['single optimisation budget $' + str(customBudget)] = self.thisOptimisation.performSingleOptimisationForGivenTotalBudget(self.projectData.MCSampleSize, customBudget, "custom_budget_$"+str(customBudget), self.projectData.haveFixedProgCosts)
+        
+
         
     def outputProjectResults(self):
         #output everything in results to csv, including info about the project
