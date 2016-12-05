@@ -62,7 +62,7 @@ thisOptimisation.performSingleOptimisation(MCSampleSize)
 # ../ResultsExampleParallel/'+optimise+'/national/Bangladesh_example_given_budget.pkl
 totalBudget = thisOptimisation.getInitialAllocationDictionary()
 filename = 'example_given_budget'
-thisOptimisation.performSingleOptimisationForGivenTotalBudget(MCSampleSize, totalBudget, filename)
+thisOptimisation.performSingleOptimisationForGivenTotalBudget(MCSampleSize, totalBudget, filename, haveFixedProgCosts)
 
 # run the model for a given starting budget 
 # output can be used to access time series qualities of the model run
