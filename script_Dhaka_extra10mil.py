@@ -13,8 +13,8 @@ country = 'Bangladesh'
 date = '2016Oct'
 optimise = 'stunting'
 haveFixedProgCosts = True
-numModelSteps = 24 #180
-MCSampleSize = 1 #25
+numModelSteps = 180
+MCSampleSize = 25
 spreadsheet = 'input_spreadsheets/' + country + '/' + date + '/subregionSpreadsheets/Dhaka.xlsx'
 resultsFileStem = 'ResultsDhaka10mil/' +date+ '/' + optimise + '/'
 
