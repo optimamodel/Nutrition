@@ -8,10 +8,11 @@ from __future__ import division
 from copy import deepcopy as dcp
 
 class PregnantWomen:
-    def __init__(self, birthRate, populationSize, annualGrowth):
+    def __init__(self, birthRate, populationSize, annualGrowth, mortality):
         self.birthRate = birthRate
         self.populationSize = populationSize
         self.annualGrowth = annualGrowth
+        self.mortality = mortality
         
 class Box:
     def __init__(self, populationSize):

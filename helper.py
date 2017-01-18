@@ -71,7 +71,8 @@ class Helper:
         baseBirths = float(projectedBirths[0])
         numYears   = len(projectedBirths)-1
         annualGrowth = (projectedBirths[numYears]-baseBirths)/float(numYears)/baseBirths
-        pregnantWomen = model.PregnantWomen(birthRate, populationSize, annualGrowth)        
+        mortality = dcp(inputData.rawMortality['pregnant women'])
+        pregnantWomen = model.PregnantWomen(birthRate, populationSize, annualGrowth, mortality)        
         return pregnantWomen
 
 
