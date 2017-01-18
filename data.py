@@ -104,7 +104,7 @@ def readSpreadsheet(fileName, keyList):
     #  - causeOfDeathDist
     df = pandas.read_excel(Location, sheetname = 'causes of death', index_col = 'Cause')
     causeOfDeathDist = {}
-    for ageName in ages:
+    for ageName in ages + ['pregnant women']:
         causeOfDeathDist[ageName] = {}
         for cause in causesOfDeath:
             causeOfDeathDist[ageName][cause] = df.loc[cause, ageName]
