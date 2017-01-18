@@ -106,6 +106,20 @@ class Derived:
                 LHS_age_cause = MortalityCorrected[ageName] * self.data.causeOfDeathDist[ageName][cause]
                 Xdictionary[ageName][cause] = LHS_age_cause / RHS[ageName][cause]
         self.referenceMortality = Xdictionary
+        # now call function to set maternal reference mortality
+        self.setReferenceMaternalMortality()
+        
+        
+    def setReferenceMaternalMortality(self):
+        birthRate = self.initialModel.pregnantWomen.birthRate
+        popSize = self.initialModel.pregnantWomen.populationSize
+        numBirths = birthRate * popSize
+        maternalMortality = self.data.rawMortality['pregnant women']
+        numMaternalDeaths = numBirths * maternalMortality / 1000
+        fractionMaternalMortality = numMaternalDeaths / popSize
+        self.referenceMortality['pregnant women'] = {}
+        for cause in self.data.causesOfDeath:        
+            self.referenceMortality['pregnant women'][cause] = fractionMaternalMortality * self.data.causeOfDeathDist['pregnant women'][cause]
         
 
 
