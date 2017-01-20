@@ -111,9 +111,8 @@ class Derived:
         
         
     def setReferenceMaternalMortality(self):
-        birthRate = self.initialModel.pregnantWomen.birthRate
-        popSize = self.initialModel.pregnantWomen.populationSize
-        numBirths = birthRate * popSize
+        popSize = self.data.demographics['number of pregnant women']
+        numBirths = self.data.demographics['number of live births']
         maternalMortality = self.data.rawMortality['pregnant women']
         numMaternalDeaths = numBirths * maternalMortality / 1000
         fractionMaternalMortality = numMaternalDeaths / popSize

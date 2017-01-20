@@ -8,11 +8,11 @@ from __future__ import division
 from copy import deepcopy as dcp
 
 class PregnantWomen:
-    def __init__(self, birthRate, populationSize, annualGrowth, mortality):
+    def __init__(self, birthRate, populationSize, annualGrowth):
         self.birthRate = birthRate
         self.populationSize = populationSize
         self.annualGrowth = annualGrowth
-        self.mortality = mortality
+        self.mortalityRate = None
         
 class Box:
     def __init__(self, populationSize):
@@ -336,7 +336,11 @@ class Model:
                             t4 = self.params.RRdeathBreastfeeding[ageName][cause][breastfeedingCat]
                             count += t1 * t2 * t3 * t4                            
                         ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate = count
-
+        # pregnant women
+        count = 0
+        for cause in self.params.causesOfDeath:    
+            count += self.derived.referenceMortality['pregnant women'][cause]            
+        self.pregnantWomen.mortalityRate = count             
     
 
     def applyMortality(self):
