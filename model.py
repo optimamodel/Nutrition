@@ -13,6 +13,7 @@ class PregnantWomen:
         self.populationSize = populationSize
         self.annualGrowth = annualGrowth
         self.mortalityRate = None
+        self.cumulativeDeaths = 0
         
 class Box:
     def __init__(self, populationSize):
@@ -421,7 +422,6 @@ class Model:
         birthRate = self.pregnantWomen.birthRate  #WARNING: assuming per pre-determined timestep
         numWomen  = self.pregnantWomen.populationSize
         numNewBabies = numWomen * birthRate * self.timestep
-        self.pregnantWomen.populationSize *= (1.+self.pregnantWomen.annualGrowth*self.timestep)
         # convenient names
         ageGroup = self.listOfAgeCompartments[0]
         ageName  = ageGroup.name
@@ -445,6 +445,12 @@ class Model:
         # aging must happen before births
         self.applyAging()
         self.applyBirths()
+        
+    def progressPregnantWomen(self):
+        # applyBirths() must happen first
+        deaths = self.pregnantWomen.populationSize * self.pregnantWomen.mortalityRate * self.timestep
+        self.pregnantWomen.cumulativeDeaths += deaths
+        self.pregnantWomen.populationSize *= (1. + self.pregnantWomen.annualGrowth * self.timestep)
 
     def updateRiskDistributions(self):
         for ageGroup in self.listOfAgeCompartments:
@@ -457,6 +463,7 @@ class Model:
     def moveOneTimeStep(self):
         self.applyMortality() 
         self.applyAgingAndBirths()
+        self.progressPregnantWomen()
         self.updateRiskDistributions()
         #self.itime += 1
 
