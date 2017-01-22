@@ -16,7 +16,7 @@ class Data:
                  ageAppropriateBreastfeeding, coverage, costSaturation,
                  targetPopulation, affectedFraction, effectivenessMortality,
                  effectivenessIncidence, interventionsMaternal, foodSecurityGroups,
-                 ORstuntingComplementaryFeeding):
+                 ORstuntingComplementaryFeeding, deliveryDistribution):
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
         self.interventionList = interventionList
@@ -49,6 +49,7 @@ class Data:
         self.interventionsMaternal = interventionsMaternal
         self.foodSecurityGroups = foodSecurityGroups
         self.ORstuntingComplementaryFeeding = ORstuntingComplementaryFeeding
+        self.deliveryDistribution = deliveryDistribution
     
 
     
@@ -60,6 +61,7 @@ def readSpreadsheet(fileName, keyList):
     wastingList = keyList['wastingList']
     stuntingList = keyList['stuntingList']
     breastfeedingList = keyList['breastfeedingList']
+    deliveryList = keyList['deliveryList']
     
     #get list of ages and causesOfDeath
     df = pandas.read_excel(Location, sheetname = 'causes of death')
@@ -214,6 +216,11 @@ def readSpreadsheet(fileName, keyList):
         breastfeedingDistribution[ageName] = {}
         for status in breastfeedingList:
             breastfeedingDistribution[ageName][status] = df.loc['Breastfeeding'][ageName][status] / 100.
+    #delivery
+    deliveryDistribution = {}
+    for status in deliveryList:
+        deliveryDistribution[status] = df.loc['Delivery']['pregnant women'][status] / 100.            
+            
             
     #  READ OR stunting progression SHEET
     #  sets:
@@ -453,7 +460,7 @@ def readSpreadsheet(fileName, keyList):
                            ORappropriatebfIntervention, ageAppropriateBreastfeeding, coverage,
                            costSaturation, targetPopulation, affectedFraction,
                            effectivenessMortality, effectivenessIncidence, interventionsMaternal,
-                           foodSecurityGroups, ORstuntingComplementaryFeeding)
+                           foodSecurityGroups, ORstuntingComplementaryFeeding, deliveryDistribution)
 
     return spreadsheetData
                   
