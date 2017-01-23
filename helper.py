@@ -66,13 +66,13 @@ class Helper:
         import model       
         annualPregnancies = dcp(inputData.demographics['number of pregnant women'])
         annualBirths      = dcp(inputData.demographics['number of live births'])
-        populationSize = annualPregnancies
         birthRate   = annualBirths / annualPregnancies
         projectedBirths   = dcp(inputData.projectedBirths)
         baseBirths = float(projectedBirths[0])
         numYears   = len(projectedBirths)-1
         annualGrowth = (projectedBirths[numYears]-baseBirths)/float(numYears)/baseBirths
-        pregnantWomen = model.PregnantWomen(birthRate, populationSize, annualGrowth)        
+        boxes = self.makeMaternalBoxes(inputData)
+        pregnantWomen = model.PregnantWomen(birthRate, annualGrowth, boxes, self.keyList)        
         return pregnantWomen
 
 
@@ -90,6 +90,17 @@ class Helper:
                     thisPopSize = thisAgePopSize * inputData.stuntingDistribution[ageName][stuntingCat] * inputData.wastingDistribution[ageName][wastingCat] * inputData.breastfeedingDistribution[ageName][breastfeedingCat]   # Assuming independent
                     allBoxes[stuntingCat][wastingCat][breastfeedingCat] =  model.Box(thisPopSize)
         return allBoxes
+        
+        
+    def makeMaternalBoxes(self, inputData):
+        import model
+        annualPregnancies = dcp(inputData.demographics['number of pregnant women'])
+        populationSize = annualPregnancies
+        boxes = {}
+        for status in self.keyList['deliveryList']:
+             thisPopSize = populationSize * inputData.deliveryDistribution[status]
+             boxes[status] = model.Box(thisPopSize)   
+        return boxes     
 
 
     def makeAgeCompartments(self, agePopSizes, inputData):
