@@ -41,6 +41,7 @@ class Params:
         self.effectivenessIncidence = dcp(data.effectivenessIncidence)
         self.interventionsMaternal = dcp(data.interventionsMaternal)
         self.foodSecurityGroups = dcp(data.foodSecurityGroups)
+        self.deliveryDistribution = dcp(data.deliveryDistribution)
     
 
 # Add all functions for updating parameters due to interventions here....
