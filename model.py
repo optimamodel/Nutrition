@@ -8,12 +8,18 @@ from __future__ import division
 from copy import deepcopy as dcp
 
 class PregnantWomen:
-    def __init__(self, birthRate, populationSize, annualGrowth):
+    def __init__(self, birthRate, annualGrowth, dictOfBoxes, keyList):
         self.birthRate = birthRate
-        self.populationSize = populationSize
         self.annualGrowth = annualGrowth
-        self.mortalityRate = None
-        self.cumulativeDeaths = 0
+        self.dictOfBoxes = dcp(dictOfBoxes)
+        for key in keyList.keys():
+            setattr(self, key, keyList[key])
+        
+    def getTotalPopulation(self):
+        totalSum = 0
+        for status in self.deliveryList:
+            totalSum += self.dictOfBoxes[status].populationSize
+        return totalSum    
         
 class Box:
     def __init__(self, populationSize):
@@ -338,10 +344,12 @@ class Model:
                             count += t1 * t2 * t3 * t4                            
                         ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate = count
         # pregnant women
-        count = 0
-        for cause in self.params.causesOfDeath:    
-            count += self.derived.referenceMortality['pregnant women'][cause]            
-        self.pregnantWomen.mortalityRate = count             
+        for status in self.deliveryList:                
+            count = 0
+            for cause in self.params.causesOfDeath:    
+                count += self.derived.referenceMortality['pregnant women'][cause]       
+            # in absense of risks distribute mortality between delivery groups based on population fraction    
+            self.pregnantWomen.dictOfBoxes[status].mortalityRate = count *  self.params.deliveryDistribution[status]            
     
 
     def applyMortality(self):
@@ -420,7 +428,7 @@ class Model:
     def applyBirths(self):
         # calculate total number of new babies
         birthRate = self.pregnantWomen.birthRate  #WARNING: assuming per pre-determined timestep
-        numWomen  = self.pregnantWomen.populationSize
+        numWomen  = self.pregnantWomen.getTotalPopulation()
         numNewBabies = numWomen * birthRate * self.timestep
         # convenient names
         ageGroup = self.listOfAgeCompartments[0]
@@ -448,9 +456,15 @@ class Model:
         
     def progressPregnantWomen(self):
         # applyBirths() must happen first
-        deaths = self.pregnantWomen.populationSize * self.pregnantWomen.mortalityRate * self.timestep
-        self.pregnantWomen.cumulativeDeaths += deaths
-        self.pregnantWomen.populationSize *= (1. + self.pregnantWomen.annualGrowth * self.timestep)
+        currentPopulationSize = self.pregnantWomen.getTotalPopulation()
+        newPopulationSize = currentPopulationSize * (1. + self.pregnantWomen.annualGrowth * self.timestep)
+        for status in self.deliveryList:
+            # calculate deaths (do this before pop size updated)
+            deaths = self.pregnantWomen.dictOfBoxes[status].populationSize * self.pregnantWomen.dictOfBoxes[status].mortalityRate * self.timestep
+            self.pregnantWomen.dictOfBoxes[status].cumulativeDeaths += deaths
+            #update population sizes
+            self.pregnantWomen.dictOfBoxes[status].populationSize = newPopulationSize * self.params.deliveryDistribution[status]
+
 
     def updateRiskDistributions(self):
         for ageGroup in self.listOfAgeCompartments:
