@@ -106,7 +106,7 @@ def readSpreadsheet(fileName, keyList):
     #  - causeOfDeathDist
     df = pandas.read_excel(Location, sheetname = 'causes of death', index_col = 'Cause')
     causeOfDeathDist = {}
-    for ageName in ages + ['pregnant women']:
+    for ageName in allPops:
         causeOfDeathDist[ageName] = {}
         for cause in causesOfDeath:
             causeOfDeathDist[ageName][cause] = df.loc[cause, ageName]
@@ -377,13 +377,13 @@ def readSpreadsheet(fileName, keyList):
     # initialise
     for intervention in interventionList:
         affectedFraction[intervention] = {}
-        for ageName in ages:
+        for ageName in allPops:
             affectedFraction[intervention][ageName] = {}
             for cause in causesOfDeath:
                 affectedFraction[intervention][ageName][cause] = 0.
     # complete # WARNING allowing for all causes of death, but completing according to condition
     for intervention in interventionsHere:
-        for ageName in ages:
+        for ageName in allPops:
             conditionsHere = df.loc[intervention][ageName].keys()
             for condition in conditionsHere:    
                 affectedFraction[intervention][ageName][condition] = df.loc[intervention][ageName][condition]
@@ -402,13 +402,13 @@ def readSpreadsheet(fileName, keyList):
     # initialise
     for intervention in interventionList:
         effectivenessMortality[intervention] = {}
-        for ageName in ages:
+        for ageName in allPops:
             effectivenessMortality[intervention][ageName] = {}
             for cause in causesOfDeath:
                 effectivenessMortality[intervention][ageName][cause] = 0.
     # complete
     for intervention in interventionsHere:
-        for ageName in ages:
+        for ageName in allPops:
             causesHere = df.loc[intervention][ageName].keys()
             for cause in causesHere:    
                 effectivenessMortality[intervention][ageName][cause] = df.loc[intervention][ageName][cause]
