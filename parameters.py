@@ -52,10 +52,9 @@ class Params:
             mortalityUpdate[ageName] = {}
             for cause in self.causesOfDeath:
                 mortalityUpdate[ageName][cause] = 1.
-        causeList = ((self.effectivenessMortality.values()[0]).values()[0]).keys()        
         for ageName in self.ages:
             for intervention in newCoverage.keys():
-                for cause in causeList:
+                for cause in self.causesOfDeath:
                     affectedFrac = self.affectedFraction[intervention][ageName][cause]
                     effectiveness = self.effectivenessMortality[intervention][ageName][cause]
                     newCoverageVal = newCoverage[intervention]
