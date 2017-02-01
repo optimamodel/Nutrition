@@ -244,11 +244,10 @@ class Model:
         stuntingUpdateComplementaryFeeding = self.params.getStuntingUpdateComplementaryFeeding(newCoverage)
 
         # MORTALITY
-        for ageGroup in self.listOfAgeCompartments:
-            ageName = ageGroup.name
+        for pop in self.allPops:
             #update mortality            
             for cause in self.params.causesOfDeath:
-                self.derived.referenceMortality[ageName][cause] *= mortalityUpdate[ageName][cause]        
+                self.derived.referenceMortality[pop][cause] *= mortalityUpdate[pop][cause]        
             
         # BREASTFEEDING
         for ageGroup in self.listOfAgeCompartments:

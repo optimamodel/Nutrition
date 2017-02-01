@@ -48,19 +48,19 @@ class Params:
 
     def getMortalityUpdate(self, newCoverage):
         mortalityUpdate = {}
-        for ageName in self.ages:
-            mortalityUpdate[ageName] = {}
+        for pop in self.allPops:
+            mortalityUpdate[pop] = {}
             for cause in self.causesOfDeath:
-                mortalityUpdate[ageName][cause] = 1.
-        for ageName in self.ages:
+                mortalityUpdate[pop][cause] = 1.
+        for pop in self.allPops:
             for intervention in newCoverage.keys():
                 for cause in self.causesOfDeath:
-                    affectedFrac = self.affectedFraction[intervention][ageName][cause]
-                    effectiveness = self.effectivenessMortality[intervention][ageName][cause]
+                    affectedFrac = self.affectedFraction[intervention][pop][cause]
+                    effectiveness = self.effectivenessMortality[intervention][pop][cause]
                     newCoverageVal = newCoverage[intervention]
                     oldCoverage = self.coverage[intervention]
                     reduction = affectedFrac * effectiveness * (newCoverageVal - oldCoverage) / (1. - effectiveness*oldCoverage)
-                    mortalityUpdate[ageName][cause] *= 1. - reduction
+                    mortalityUpdate[pop][cause] *= 1. - reduction
         return mortalityUpdate           
         
     def getBirthOutcomeUpdate(self, newCoverage):
@@ -142,27 +142,32 @@ class Params:
         
         
     def getStuntingUpdateComplementaryFeeding(self, newCoverage):
-        # collect data
-        X1 = self.demographics['fraction poor']
-        X2 = self.demographics['fraction food insecure (poor)']
-        X3 = self.demographics['fraction food insecure (not poor)']
-        Ce  = newCoverage['Complementary feeding education']
-        Cse = newCoverage['Public provision of complementary foods']
-        # calculate fraction of children in each of the food security/access to intervention groups
-        Frac = [0.]*4
-        Frac[0] = X1*(1.-X2)*Ce + (1.-X1)*(1.-X3)*Ce + X1*(1.-X2)*(1.-Ce)*Cse
-        Frac[1] = X1*(1.-X2)*(1.-Ce)*(1.-Cse) + (1.-X1)*(1.-X3)*(1.-Ce)
-        Frac[2] = X1*X2*Cse + (1.-X1)*X3*Ce
-        Frac[3] = X1*X2*(1.-Cse) + (1.-X1)*X3*(1.-Ce)
-        # calculate stunting update
         stuntingUpdate = {}
         for ageName in self.ages:
-            stuntingUpdate[ageName] = 1.
-            oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
-            newProbStunting = 0
-            for i in range(len(self.foodSecurityGroups)):            
-                probStuntedThisGroup = self.derived.probStuntedComplementaryFeeding[ageName][self.foodSecurityGroups[i]]
-                newProbStunting += probStuntedThisGroup * Frac[i]
-            reduction = (oldProbStunting - newProbStunting)/oldProbStunting
-            stuntingUpdate[ageName] *= 1. - reduction
+            stuntingUpdate[ageName] = 1.      
+        key1 = 'Complementary feeding education'
+        key2 = 'Public provision of complementary foods'
+        # this update only happens if coverage of the complementary feeding interventions changes
+        if key1 in newCoverage and key2 in newCoverage:    
+            # collect data
+            X1 = self.demographics['fraction poor']
+            X2 = self.demographics['fraction food insecure (poor)']
+            X3 = self.demographics['fraction food insecure (not poor)']
+            Ce  = newCoverage[key1]
+            Cse = newCoverage[key2]
+            # calculate fraction of children in each of the food security/access to intervention groups
+            Frac = [0.]*4
+            Frac[0] = X1*(1.-X2)*Ce + (1.-X1)*(1.-X3)*Ce + X1*(1.-X2)*(1.-Ce)*Cse
+            Frac[1] = X1*(1.-X2)*(1.-Ce)*(1.-Cse) + (1.-X1)*(1.-X3)*(1.-Ce)
+            Frac[2] = X1*X2*Cse + (1.-X1)*X3*Ce
+            Frac[3] = X1*X2*(1.-Cse) + (1.-X1)*X3*(1.-Ce)
+            # calculate stunting update
+            for ageName in self.ages:
+                oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
+                newProbStunting = 0
+                for i in range(len(self.foodSecurityGroups)):            
+                    probStuntedThisGroup = self.derived.probStuntedComplementaryFeeding[ageName][self.foodSecurityGroups[i]]
+                    newProbStunting += probStuntedThisGroup * Frac[i]
+                reduction = (oldProbStunting - newProbStunting)/oldProbStunting
+                stuntingUpdate[ageName] *= 1. - reduction
         return stuntingUpdate           
