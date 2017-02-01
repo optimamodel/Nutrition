@@ -62,6 +62,7 @@ def readSpreadsheet(fileName, keyList):
     stuntingList = keyList['stuntingList']
     breastfeedingList = keyList['breastfeedingList']
     deliveryList = keyList['deliveryList']
+    allPops = keyList['allPops']
     
     #get list of ages and causesOfDeath
     df = pandas.read_excel(Location, sheetname = 'causes of death')
@@ -75,9 +76,6 @@ def readSpreadsheet(fileName, keyList):
     #get list of projection years
     df = pandas.read_excel(Location, sheetname = 'projected births')
     projectionYearList = list(df['year'])
-    # put all populations in a list
-    allPops = ages[:]
-    allPops.append('pregnant women')
 
     # READ demographics SHEET
     # sets:
@@ -106,10 +104,10 @@ def readSpreadsheet(fileName, keyList):
     #  - causeOfDeathDist
     df = pandas.read_excel(Location, sheetname = 'causes of death', index_col = 'Cause')
     causeOfDeathDist = {}
-    for ageName in allPops:
-        causeOfDeathDist[ageName] = {}
+    for pop in allPops:
+        causeOfDeathDist[pop] = {}
         for cause in causesOfDeath:
-            causeOfDeathDist[ageName][cause] = df.loc[cause, ageName]
+            causeOfDeathDist[pop][cause] = df.loc[cause, pop]
             
     #  READ RRStunting SHEET
     #  sets:
@@ -377,16 +375,16 @@ def readSpreadsheet(fileName, keyList):
     # initialise
     for intervention in interventionList:
         affectedFraction[intervention] = {}
-        for ageName in allPops:
-            affectedFraction[intervention][ageName] = {}
+        for pop in allPops:
+            affectedFraction[intervention][pop] = {}
             for cause in causesOfDeath:
-                affectedFraction[intervention][ageName][cause] = 0.
+                affectedFraction[intervention][pop][cause] = 0.
     # complete # WARNING allowing for all causes of death, but completing according to condition
     for intervention in interventionsHere:
-        for ageName in allPops:
-            conditionsHere = df.loc[intervention][ageName].keys()
+        for pop in allPops:
+            conditionsHere = df.loc[intervention][pop].keys()
             for condition in conditionsHere:    
-                affectedFraction[intervention][ageName][condition] = df.loc[intervention][ageName][condition]
+                affectedFraction[intervention][pop][condition] = df.loc[intervention][pop][condition]
                 
     # READ Interventions mortality effectiveness SHEET
     # sets:
@@ -402,16 +400,17 @@ def readSpreadsheet(fileName, keyList):
     # initialise
     for intervention in interventionList:
         effectivenessMortality[intervention] = {}
-        for ageName in allPops:
-            effectivenessMortality[intervention][ageName] = {}
+        for pop in allPops:
+            effectivenessMortality[intervention][pop] = {}
             for cause in causesOfDeath:
-                effectivenessMortality[intervention][ageName][cause] = 0.
+                effectivenessMortality[intervention][pop][cause] = 0.
+    
     # complete
     for intervention in interventionsHere:
-        for ageName in allPops:
-            causesHere = df.loc[intervention][ageName].keys()
+        for pop in allPops:
+            causesHere = df.loc[intervention][pop].keys()
             for cause in causesHere:    
-                effectivenessMortality[intervention][ageName][cause] = df.loc[intervention][ageName][cause]
+                effectivenessMortality[intervention][pop][cause] = df.loc[intervention][pop][cause]
 
     # READ Interventions incidence effectiveness SHEET
     # sets

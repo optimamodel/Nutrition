@@ -20,6 +20,8 @@ class Helper:
         self.keyList['stuntedList'] = ["moderate", "high"]
         self.keyList['life expectancy'] = 83.5
         self.keyList['deliveryList'] = ["unassisted", "assisted at home", "essential care", "BEmOC", "CEmOC"]
+        self.keyList['allPops'] = dcp(self.keyList['ages'])
+        self.keyList['allPops'].append('pregnant women')
 
     # Going from binary stunting/wasting to four fractions
     # Yes refers to more than 2 standard deviations below the global mean/median
