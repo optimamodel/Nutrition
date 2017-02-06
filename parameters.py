@@ -39,7 +39,7 @@ class Params:
         self.effectivenessMortality = dcp(data.effectivenessMortality)
         self.affectedFraction = dcp(data.affectedFraction)
         self.effectivenessIncidence = dcp(data.effectivenessIncidence)
-        self.interventionsMaternal = dcp(data.interventionsMaternal)
+        self.interventionsBirthOutcome = dcp(data.interventionsBirthOutcome)
         self.foodSecurityGroups = dcp(data.foodSecurityGroups)
         self.deliveryDistribution = dcp(data.deliveryDistribution)
     
@@ -69,8 +69,8 @@ class Params:
             birthOutcomeUpdate[outcome] = 1.
         for intervention in newCoverage.keys():
             for outcome in self.birthOutcomes:
-                affectedFrac = self.interventionsMaternal[intervention][outcome]['affected fraction']
-                effectiveness = self.interventionsMaternal[intervention][outcome]['effectiveness']
+                affectedFrac = self.interventionsBirthOutcome[intervention][outcome]['affected fraction']
+                effectiveness = self.interventionsBirthOutcome[intervention][outcome]['effectiveness']
                 newCoverageVal = newCoverage[intervention]
                 oldCoverage = self.coverage[intervention]
                 reduction = affectedFrac * effectiveness * (newCoverageVal - oldCoverage) / (1. - effectiveness*oldCoverage)
