@@ -251,6 +251,7 @@ class Model:
         
         # get combined reductions from all interventions
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
+        maternalMortalityUpdate = self.params.getMaternalMortalityUpdate(newCoverage)
         stuntingUpdate = self.params.getStuntingUpdate(newCoverage)
         incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
         birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)
@@ -261,6 +262,9 @@ class Model:
         for pop in self.allPops:
             #update mortality            
             for cause in self.params.causesOfDeath:
+                # add the maternal mortality update to the mortality update for pregnant women
+                mortalityUpdate['pregnant women'][cause] *= 1. - maternalMortalityUpdate[cause]
+                # update reference mortality
                 self.derived.referenceMortality[pop][cause] *= mortalityUpdate[pop][cause]        
             
         # BREASTFEEDING

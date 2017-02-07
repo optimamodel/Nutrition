@@ -21,6 +21,7 @@ class Params:
         self.causeOfDeathDist = dcp(data.causeOfDeathDist)
         self.stuntingDistribution = dcp(data.stuntingDistribution)
         self.wastingDistribution = dcp(data.wastingDistribution)
+        self.deliveryDistribution = dcp(data.deliveryDistribution)
         self.breastfeedingDistribution = dcp(data.breastfeedingDistribution)
         self.RRdeathStunting = dcp(data.RRdeathStunting)
         self.RRdeathWasting = dcp(data.RRdeathWasting)
@@ -42,6 +43,8 @@ class Params:
         self.interventionsBirthOutcome = dcp(data.interventionsBirthOutcome)
         self.foodSecurityGroups = dcp(data.foodSecurityGroups)
         self.deliveryDistribution = dcp(data.deliveryDistribution)
+        self.interventionsMaternalAff = dcp(data.interventionsMaternalAff)
+        self.interventionsMaternalEff = dcp(data.interventionsMaternalEff)
     
 
 # Add all functions for updating parameters due to interventions here....
@@ -61,7 +64,23 @@ class Params:
                     oldCoverage = self.coverage[intervention]
                     reduction = affectedFrac * effectiveness * (newCoverageVal - oldCoverage) / (1. - effectiveness*oldCoverage)
                     mortalityUpdate[pop][cause] *= 1. - reduction
-        return mortalityUpdate           
+        return mortalityUpdate       
+        
+    def getMaternalMortalityUpdate(self, newCoverage):
+        maternalMortalityUpdate = {}
+        for cause in self.causesOfDeath:
+            maternalMortalityUpdate[cause] = 1.
+        for intervention in newCoverage.keys():
+            for cause in self.causesOfDeath:
+                for delivery in self.deliveryList:
+                    affectedFrac = self.interventionsMaternalAff[intervention][delivery][cause]
+                    effectiveness = self.interventionsMaternalEff[intervention][delivery][cause]
+                    newCoverageVal = newCoverage[intervention]
+                    oldCoverage = self.coverage[intervention]
+                    reduction = affectedFrac * effectiveness * (newCoverageVal - oldCoverage) / (1. - effectiveness*oldCoverage)
+                    reducedReduction = reduction * self.deliveryDistribution[delivery]
+                    maternalMortalityUpdate[cause] *= 1. - reducedReduction
+        return maternalMortalityUpdate           
         
     def getBirthOutcomeUpdate(self, newCoverage):
         birthOutcomeUpdate = {}
