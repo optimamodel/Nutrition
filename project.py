@@ -108,7 +108,7 @@ class ProjectData:
         # call function to read project spreadsheet into variables
         self.readProjectDataFromSpreadsheet()
         # set some derived variables
-        self.numModelSteps = self.numYears * 12
+        self.numModelSteps = self.numYears * 12 #WARNING numYears not set yet, think about this
         self.haveFixedProgCosts = False
         if self.spendingConstraints == 'fixedCosts':
             self.haveFixedProgCosts = True
