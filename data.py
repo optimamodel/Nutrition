@@ -78,7 +78,6 @@ def readSpreadsheet(fileName, keyList):
     interventionList = list(df['Intervention'])
     #get list of projection years
     df = pandas.read_excel(Location, sheetname = 'projected births')
-    projectionYearList = list(df['year'])
 
     # READ demographics SHEET
     # sets:
