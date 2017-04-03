@@ -259,11 +259,12 @@ class Model:
         stuntingUpdateComplementaryFeeding = self.params.getStuntingUpdateComplementaryFeeding(newCoverage)
 
         # MORTALITY
+        # add the maternal mortality update to the mortality update for pregnant women
+        for cause in self.params.causesOfDeath:
+            mortalityUpdate['pregnant women'][cause] *= 1. - maternalMortalityUpdate[cause]
+        #update mortality for each population
         for pop in self.allPops:
-            #update mortality            
             for cause in self.params.causesOfDeath:
-                # add the maternal mortality update to the mortality update for pregnant women
-                mortalityUpdate['pregnant women'][cause] *= 1. - maternalMortalityUpdate[cause]
                 # update reference mortality
                 self.derived.referenceMortality[pop][cause] *= mortalityUpdate[pop][cause]        
             
