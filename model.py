@@ -140,9 +140,10 @@ class AgeCompartment:
 
         
 class Model:
-    def __init__(self, pregnantWomen, listOfAgeCompartments, keyList):
+    def __init__(self, pregnantWomen, listOfAgeCompartments, listOfReproductiveAgeCompartments, keyList):
         self.pregnantWomen = pregnantWomen
         self.listOfAgeCompartments = listOfAgeCompartments
+        self.listOfReproductiveAgeCompartments = listOfReproductiveAgeCompartments
         for key in keyList.keys():
             setattr(self, key, keyList[key])
         self.itime = 0
