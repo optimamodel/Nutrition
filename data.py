@@ -17,7 +17,7 @@ class Data:
                  targetPopulation, affectedFraction, effectivenessMortality,
                  effectivenessIncidence, interventionsBirthOutcome, foodSecurityGroups,
                  ORstuntingComplementaryFeeding, deliveryDistribution, 
-                 interventionsMaternalAff, interventionsMaternalEff):
+                 interventionsMaternalAff, interventionsMaternalEff, anemiaPrevalence):
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
         self.interventionList = interventionList
@@ -53,6 +53,7 @@ class Data:
         self.deliveryDistribution = deliveryDistribution
         self.interventionsMaternalAff = interventionsMaternalAff
         self.interventionsMaternalEff = interventionsMaternalEff
+        self.anemiaPrevalence = anemiaPrevalence
     
 
     
@@ -219,7 +220,13 @@ def readSpreadsheet(fileName, keyList):
     #delivery
     deliveryDistribution = {}
     for status in deliveryList:
-        deliveryDistribution[status] = df.loc['Delivery']['pregnant women'][status] / 100.            
+        deliveryDistribution[status] = df.loc['Delivery']['pregnant women'][status] / 100.       
+        
+    #  READ ANEMIA PREVALENCE SHEET
+    #  sets:
+    #  - anemiaPrevalence
+    df = pandas.read_excel(Location, sheetname = 'anemia prevalence')
+    anemiaPrevalence = dict(zip(list(df.columns.values), df.iloc[0]))    
             
             
     #  READ OR stunting progression SHEET
@@ -516,7 +523,7 @@ def readSpreadsheet(fileName, keyList):
                            costSaturation, targetPopulation, affectedFraction,
                            effectivenessMortality, effectivenessIncidence, interventionsBirthOutcome,
                            foodSecurityGroups, ORstuntingComplementaryFeeding, deliveryDistribution, 
-                           interventionsMaternalAff, interventionsMaternalEff)
+                           interventionsMaternalAff, interventionsMaternalEff, anemiaPrevalence)
 
     return spreadsheetData
                   
