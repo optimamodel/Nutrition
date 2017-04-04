@@ -17,7 +17,8 @@ class Data:
                  targetPopulation, affectedFraction, effectivenessMortality,
                  effectivenessIncidence, interventionsBirthOutcome, foodSecurityGroups,
                  ORstuntingComplementaryFeeding, deliveryDistribution, 
-                 interventionsMaternalAff, interventionsMaternalEff, anemiaPrevalence):
+                 interventionsMaternalAff, interventionsMaternalEff, anemiaDistribution):
+       
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
         self.interventionList = interventionList
@@ -53,7 +54,7 @@ class Data:
         self.deliveryDistribution = deliveryDistribution
         self.interventionsMaternalAff = interventionsMaternalAff
         self.interventionsMaternalEff = interventionsMaternalEff
-        self.anemiaPrevalence = anemiaPrevalence
+        self.anemiaDistribution = anemiaDistribution
     
 
     
@@ -67,6 +68,8 @@ def readSpreadsheet(fileName, keyList):
     breastfeedingList = keyList['breastfeedingList']
     deliveryList = keyList['deliveryList']
     allPops = keyList['allPops']
+    anemiaList = keyList['anemiaList']
+    reproductiveAges = keyList['reproductive ages']
     
     #get list of ages and causesOfDeath
     df = pandas.read_excel(Location, sheetname = 'causes of death')
@@ -224,10 +227,13 @@ def readSpreadsheet(fileName, keyList):
         
     #  READ ANEMIA PREVALENCE SHEET
     #  sets:
-    #  - anemiaPrevalence
-    df = pandas.read_excel(Location, sheetname = 'anemia prevalence')
-    anemiaPrevalence = dict(zip(list(df.columns.values), df.iloc[0]))    
-            
+    #  - anemiaDistribution
+    df = pandas.read_excel(Location, sheetname = 'anemia prevalence', index_col = [0, 1])
+    anemiaDistribution = {}
+    for ageName in allPops + reproductiveAges:
+        anemiaDistribution[ageName] = {}
+        for status in anemiaList:
+            anemiaDistribution[ageName][status] = df.loc['Anemia'][ageName][status] / 100.            
             
     #  READ OR stunting progression SHEET
     #  sets:
@@ -523,7 +529,7 @@ def readSpreadsheet(fileName, keyList):
                            costSaturation, targetPopulation, affectedFraction,
                            effectivenessMortality, effectivenessIncidence, interventionsBirthOutcome,
                            foodSecurityGroups, ORstuntingComplementaryFeeding, deliveryDistribution, 
-                           interventionsMaternalAff, interventionsMaternalEff, anemiaPrevalence)
+                           interventionsMaternalAff, interventionsMaternalEff, anemiaDistribution)
 
     return spreadsheetData
                   
