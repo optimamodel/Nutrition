@@ -136,6 +136,14 @@ class AgeCompartment:
                     ageMortality += boxMortality*boxPop
         ageMortality /= agePop
         return ageMortality
+        
+class ReproductiveAgeCompartment:
+    def __init__(self, name, dictOfBoxes, agingRate, keyList):
+        self.name = name  
+        self.dictOfBoxes = dcp(dictOfBoxes)
+        self.agingRate = agingRate
+        for key in keyList.keys():
+            setattr(self, key, keyList[key])        
 
 
         

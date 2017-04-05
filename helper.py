@@ -141,7 +141,7 @@ class Helper:
                 agingRate = self.keyList['reproductive aging rates'][iAge]
                 agePopSize = popReproductiveAge / numAgeGroups
                 thisAgeBoxes = self.makeReproductiveAgeBoxes(agePopSize, ageName, inputData)
-                compartment = model.AgeCompartment(ageName, thisAgeBoxes, agingRate, self.keyList)
+                compartment = model.ReproductiveAgeCompartment(ageName, thisAgeBoxes, agingRate, self.keyList)
                 listOfReproductiveAgeCompartments.append(compartment)
             return listOfReproductiveAgeCompartments              
    
