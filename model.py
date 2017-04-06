@@ -452,7 +452,33 @@ class Model:
             #probStunting = thisAgeCompartment.getStuntedFraction()
             self.params.stuntingDistribution[ageName] = self.helper.restratify(probStunting)
             thisAgeCompartment.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
-
+            
+    def applyAgingReproductiveAges(self):
+        numCompartments = len(self.listOfReproductiveAgeCompartments)
+        # calculate how many people are aging out of each box
+        agingOut = [None]*numCompartments
+        for ind in range(0, numCompartments):
+            thisCompartment = self.listOfReproductiveAgeCompartments[ind]
+            agingOut[ind] = {}
+            for status in self.anemiaList:
+                thisBox = thisCompartment.dictOfBoxes[status]
+                agingOut[ind][status] = thisBox.populationSize * thisCompartment.agingRate 
+        # add the new 15 -19 year olds
+        thisCompartment = self.listOfReproductiveAgeCompartments[0]
+        for status in self.anemiaList:
+            thisBox = thisCompartment.dictOfBoxes[status]
+            thisBox.populationSize += thisBox.populationSize * self.derived.annualGrowth15to19  
+        # update all other reproductive population sizes
+        # (15-19 years happened separately above)        
+        for ind in range(1, numCompartments):
+            thisCompartment = self.listOfReproductiveAgeCompartments[ind]
+            for status in self.anemiaList:
+                thisBox = thisCompartment.dictOfBoxes[status]
+                # add those aging in
+                thisBox.populationSize += agingOut[ind-1][status]
+                # remove those aging out
+                thisBox.populationSize -= agingOut[ind][status]
+                
 
     def applyBirths(self):
         # calculate total number of new babies
