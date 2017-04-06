@@ -102,7 +102,7 @@ def readSpreadsheet(fileName, keyList):
     # sets:
     # - projectedReproductiveAge
     df = pandas.read_excel(Location, sheetname = 'projected reproductive age')
-    projectedReproductiveAge = list(df['women turning 15 years old'])
+    projectedReproductiveAge = list(df['population 15-19 years old'])
 
 
     #  READ TOTAL MORTALITY SHEET
