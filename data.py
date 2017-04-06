@@ -17,7 +17,8 @@ class Data:
                  targetPopulation, affectedFraction, effectivenessMortality,
                  effectivenessIncidence, interventionsBirthOutcome, foodSecurityGroups,
                  ORstuntingComplementaryFeeding, deliveryDistribution, 
-                 interventionsMaternalAff, interventionsMaternalEff, anemiaDistribution):
+                 interventionsMaternalAff, interventionsMaternalEff, anemiaDistribution,
+                 projectedReproductiveAge):
        
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
@@ -55,7 +56,7 @@ class Data:
         self.interventionsMaternalAff = interventionsMaternalAff
         self.interventionsMaternalEff = interventionsMaternalEff
         self.anemiaDistribution = anemiaDistribution
-    
+        self.projectedReproductiveAge = projectedReproductiveAge
 
     
 def readSpreadsheet(fileName, keyList):
@@ -80,8 +81,6 @@ def readSpreadsheet(fileName, keyList):
     #get list of interventions
     df = pandas.read_excel(Location, sheetname = 'Interventions cost and coverage')
     interventionList = list(df['Intervention'])
-    #get list of projection years
-    df = pandas.read_excel(Location, sheetname = 'projected births')
 
     # READ demographics SHEET
     # sets:
@@ -98,6 +97,13 @@ def readSpreadsheet(fileName, keyList):
     # - projectedBirths
     df = pandas.read_excel(Location, sheetname = 'projected births')
     projectedBirths = list(df['number of births'])
+
+    # READ projected reproductive age SHEET
+    # sets:
+    # - projectedReproductiveAge
+    df = pandas.read_excel(Location, sheetname = 'projected reproductive age')
+    projectedReproductiveAge = list(df['women turning 15 years old'])
+
 
     #  READ TOTAL MORTALITY SHEET
     #  sets:
@@ -529,7 +535,8 @@ def readSpreadsheet(fileName, keyList):
                            costSaturation, targetPopulation, affectedFraction,
                            effectivenessMortality, effectivenessIncidence, interventionsBirthOutcome,
                            foodSecurityGroups, ORstuntingComplementaryFeeding, deliveryDistribution, 
-                           interventionsMaternalAff, interventionsMaternalEff, anemiaDistribution)
+                           interventionsMaternalAff, interventionsMaternalEff, anemiaDistribution,
+                           projectedReproductiveAge)
 
     return spreadsheetData
                   
