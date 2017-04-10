@@ -53,6 +53,14 @@ class AgeCompartment:
                 for breastfeedingCat in self.breastfeedingList:
                     NumberStunted += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
         return NumberStunted
+        
+    def getNumberNotStunted(self):
+        numberNotStunted = 0.
+        for stuntingCat in ["normal", "mild"]:
+            for wastingCat in self.wastingList:
+                for breastfeedingCat in self.breastfeedingList:
+                     numberNotStunted += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
+        return numberNotStunted             
 
     def getCumulativeDeaths(self):
         totalSum = 0.
@@ -135,6 +143,7 @@ class Model:
         import helper 
         self.helper = helper.Helper()
         self.cumulativeAgingOutStunted = 0.0
+        self.cumulativeAgingOutNotStunted = 0.0
         
     def setDerived(self, inputDerived):
         self.derived = inputDerived
@@ -166,6 +175,9 @@ class Model:
         
     def getCumulativeAgingOutStunted(self):
         return self.cumulativeAgingOutStunted
+        
+    def getCumulativeAgingOutNotStunted(self):
+        return self.cumulativeAgingOutNotStunted    
 
     def getDALYs(self):
         DALYs = 0.0
@@ -184,6 +196,8 @@ class Model:
             outcomeValue = self.getTotalCumulativeDeaths()
         elif outcome == 'stunting':
             outcomeValue = self.getCumulativeAgingOutStunted()
+        elif outcome == 'thrive':
+            outcomeValue = self.getCumulativeAgingOutNotStunted()    
         elif outcome == 'DALYs':
             outcomeValue = self.getDALYs()
         elif outcome == 'stunting prev':
@@ -365,7 +379,9 @@ class Model:
                         agingOut[ind][wastingCat][breastfeedingCat][stuntingCat] = thisBox.populationSize * thisCompartment.agingRate #*self.timestep
         oldest = self.listOfAgeCompartments[numCompartments-1]
         countAgingOutStunted = oldest.getNumberStunted() * oldest.agingRate
-        self.cumulativeAgingOutStunted += countAgingOutStunted                
+        countAgingOutNotStunted = oldest.getNumberNotStunted() * oldest.agingRate
+        self.cumulativeAgingOutStunted += countAgingOutStunted
+        self.cumulativeAgingOutNotStunted += countAgingOutNotStunted                  
         # first age group does not have aging in
         newborns = self.listOfAgeCompartments[0]
         for wastingCat in self.wastingList:
