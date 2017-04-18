@@ -11,10 +11,10 @@ sys.path.append(moduleDir)
 import optimisation
 
 
-rootpath = '..'
+rootpath = '../..'
 
 country = 'Bangladesh'
-date = '2017Apr'
+date = '2017Apr_test'
 spreadsheetDate = '2016Oct'
 
 spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/InputForCode_'+country+'.xlsx'
