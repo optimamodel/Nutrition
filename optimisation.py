@@ -80,6 +80,8 @@ def objectiveFunction(allocation, totalBudget, fixedCosts, costCoverageInfo, opt
     for t in range(numModelSteps - timestepsPre):
         model.moveOneTimeStep()
     performanceMeasure = model.getOutcome(optimise)
+    if optimise == 'thrive':
+        performanceMeasure = 1./performanceMeasure
     return performanceMeasure    
     
 def geospatialObjectiveFunction(spendingList, regionalBOCs, totalBudget):
