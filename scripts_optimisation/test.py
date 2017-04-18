@@ -11,7 +11,7 @@ sys.path.append(moduleDir)
 import optimisation
 
 
-rootpath = '../..'
+rootpath = '../'
 
 country = 'Bangladesh'
 date = '2017Apr'
