@@ -25,7 +25,7 @@ cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]
 haveFixedProgCosts = False
 numCores = 8
 
-for optimise in ['stunting','stunting prev', 'thrive']:
+for optimise in ['thrive']: #['stunting','stunting prev', 'thrive']:
 
     resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+country
 
