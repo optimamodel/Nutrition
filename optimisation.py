@@ -81,7 +81,7 @@ def objectiveFunction(allocation, totalBudget, fixedCosts, costCoverageInfo, opt
         model.moveOneTimeStep()
     performanceMeasure = model.getOutcome(optimise)
     if optimise == 'thrive':
-        performanceMeasure = 1./performanceMeasure
+        performanceMeasure = - performanceMeasure
     return performanceMeasure    
     
 def geospatialObjectiveFunction(spendingList, regionalBOCs, totalBudget):
