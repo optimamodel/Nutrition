@@ -13,7 +13,7 @@ sys.path.append(moduleDir)
 import optimisation
 
 country = 'Bangladesh'
-date = '2017Act'
+date = '2017Apr'
 spreadsheetDate = '2016Oct'
 
 extraMoney = 0

@@ -12,7 +12,7 @@ sys.path.append(moduleDir)
 import optimisation
 
 country = 'Bangladesh'
-date = '2017Act'
+date = '2017Apr'
 spreadsheetDate = '2016Oct'
 
 optimise = 'thrive'
@@ -29,7 +29,7 @@ for regionName in regionNameList:
     spreadsheet = spreadsheetFileStem + regionName + '.xlsx'
     spreadsheetList.append(spreadsheet)
 
-resultsFileStem = rootpath + '/ResultsfixedProgCosts/' + date + '/' + optimise + '/geospatial/'
+resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialNotFixed/'
 
 geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps,
                                                              cascadeValues, optimise, resultsFileStem)
