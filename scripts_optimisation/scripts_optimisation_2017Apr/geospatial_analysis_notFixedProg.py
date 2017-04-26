@@ -25,7 +25,7 @@ geoMCSampleSize = 25
 numModelSteps = 180
 cascadeValues = [1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 'extreme']
 
-resultsPath = '/home/ruthpearson/Nutrition/Results/'
+resultsPath = '/home/samh/Nutrition/Results/'
 
 regionNameList = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
 spreadsheetFileStem = rootpath + '/input_spreadsheets/' + country + '/' + spreadsheetDate + '/subregionSpreadsheets/'
@@ -38,8 +38,8 @@ numCores = 8  # need this number times the number of outcomes you're optimising 
 for optimise in ['thrive']:
     print 'running GA for:  ', optimise
 
-    resultsFileStem = resultsPath + '/' + date + '/' + optimise + '/geospatial/'
-    GAFile = 'GA_fixedProg_extra_' + str(extraMoney)
+    resultsFileStem = resultsPath + '/' + date + '/' + optimise + '/geospatialNotFixed/'
+    GAFile = 'GA_notFixedProg_extra_' + str(extraMoney)
 
     geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps,
                                                                  cascadeValues, optimise, resultsFileStem)
