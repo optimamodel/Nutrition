@@ -621,13 +621,16 @@ class GeospatialOptimisation:
         for region in range(0, self.numRegions):
             regionName = self.regionNameList[region]
             currentSpending = self.regionalBOCs['spending'][region][index]
-            currentOucome = self.regionalBOCs['outcome'][region][index]
+            currentOutcome = self.regionalBOCs['outcome'][region][index]
             tradeOffCurves[regionName] = {}
             spendDifference = []
             outcomeAverted = []            
             for i in range(len(self.cascadeValues)):
                 spendDifference.append( self.regionalBOCs['spending'][region][i] - currentSpending )
-                outcomeAverted.append( currentOucome - self.regionalBOCs['outcome'][region][i]  )
+                if self.optimise == 'thrive':
+                    outcomeAverted.append( self.regionalBOCs['outcome'][region][i] - currentOutcome )
+                else:
+                    outcomeAverted.append( currentOutcome - self.regionalBOCs['outcome'][region][i]  )
             tradeOffCurves[regionName]['spending'] = spendDifference
             tradeOffCurves[regionName]['outcome'] = outcomeAverted
         self.tradeOffCurves = tradeOffCurves    
