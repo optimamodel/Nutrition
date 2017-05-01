@@ -213,7 +213,7 @@ class Model:
             outcomeValue = self.getTotalCumulativeDeaths()
         elif outcome == 'stunting':
             outcomeValue = self.getCumulativeAgingOutStunted()
-        elif outcome == 'alive and thrive':
+        elif outcome == 'thrive':
             outcomeValue = self.getCumulativeAgingOutNotStunted()    
         elif outcome == 'DALYs':
             outcomeValue = self.getDALYs()
