@@ -80,9 +80,11 @@ def objectiveFunction(allocation, totalBudget, fixedCosts, costCoverageInfo, opt
     for t in range(numModelSteps - timestepsPre):
         model.moveOneTimeStep()
     performanceMeasure = model.getOutcome(optimise)
+    if optimise == 'thrive':
+        performanceMeasure = - performanceMeasure
     return performanceMeasure    
     
-def geospatialObjectiveFunction(spendingList, regionalBOCs, totalBudget):
+def geospatialObjectiveFunction(spendingList, regionalBOCs, totalBudget, optimise):
     import pchip
     from copy import deepcopy as dcp
     numRegions = len(spendingList)
@@ -95,9 +97,11 @@ def geospatialObjectiveFunction(spendingList, regionalBOCs, totalBudget):
         outcome = pchip.pchip(regionalBOCs['spending'][region], regionalBOCs['outcome'][region], scaledSpendingList[region], deriv = False, method='pchip')        
         outcomeList.append(outcome)
     nationalOutcome = sum(outcomeList)
+    if optimise == 'thrive':
+        nationalOutcome = - nationalOutcome
     return nationalOutcome    
     
-def geospatialObjectiveFunctionExtraMoney(spendingList, regionalBOCs, currentRegionalSpendingList, extraMoney):
+def geospatialObjectiveFunctionExtraMoney(spendingList, regionalBOCs, currentRegionalSpendingList, extraMoney, optimise):
     import pchip
     from copy import deepcopy as dcp
     numRegions = len(spendingList)
@@ -111,6 +115,8 @@ def geospatialObjectiveFunctionExtraMoney(spendingList, regionalBOCs, currentReg
         outcome = pchip.pchip(regionalBOCs['spending'][region], regionalBOCs['outcome'][region], newTotalSpending, deriv = False, method='pchip')        
         outcomeList.append(outcome)
     nationalOutcome = sum(outcomeList)
+    if optimise == 'thrive':
+        nationalOutcome = - nationalOutcome
     return nationalOutcome        
 
             
@@ -731,7 +737,7 @@ class GeospatialOptimisation:
         scenarioMonteCarloOutput = []
         for r in range(0, geoMCSampleSize):
             proposalSpendingList = np.random.rand(self.numRegions)
-            args = {'regionalBOCs':self.regionalBOCs, 'totalBudget':totalBudget}
+            args = {'regionalBOCs':self.regionalBOCs, 'totalBudget':totalBudget, 'optimise':self.optimise}
             budgetBest, fval, exitflag, output = asd.asd(geospatialObjectiveFunction, proposalSpendingList, args, xmin = xmin, verbose = 2)  
             outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval, output.x)        
             scenarioMonteCarloOutput.append(outputOneRun)         
@@ -756,7 +762,7 @@ class GeospatialOptimisation:
         scenarioMonteCarloOutput = []
         for r in range(0, geoMCSampleSize):
             proposalSpendingList = np.random.rand(self.numRegions)
-            args = {'regionalBOCs':self.regionalBOCs, 'currentRegionalSpendingList':currentRegionalSpendingList, 'extraMoney':extraMoney}
+            args = {'regionalBOCs':self.regionalBOCs, 'currentRegionalSpendingList':currentRegionalSpendingList, 'extraMoney':extraMoney, 'optimise':self.optimise}
             budgetBest, fval, exitflag, output = asd.asd(geospatialObjectiveFunctionExtraMoney, proposalSpendingList, args, xmin = xmin, verbose = 2)  
             outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval, output.x)        
             scenarioMonteCarloOutput.append(outputOneRun)         
