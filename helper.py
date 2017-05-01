@@ -135,11 +135,11 @@ class Helper:
             popReproductiveAge = dcp(inputData.demographics['population reproductive age'])
             ages = self.keyList['reproductive ages']
             numAgeGroups = len(ages)
+            agePopSize = popReproductiveAge / numAgeGroups # equally distributed
             listOfReproductiveAgeCompartments = []
             for iAge in range(numAgeGroups): 
                 ageName  = ages[iAge]
                 agingRate = self.keyList['reproductive aging rates'][iAge]
-                agePopSize = popReproductiveAge / numAgeGroups
                 thisAgeBoxes = self.makeReproductiveAgeBoxes(agePopSize, ageName, inputData)
                 compartment = model.ReproductiveAgeCompartment(ageName, thisAgeBoxes, agingRate, self.keyList)
                 listOfReproductiveAgeCompartments.append(compartment)
