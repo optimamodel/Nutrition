@@ -16,7 +16,6 @@ country = 'Bangladesh'
 date = '2017Apr'
 spreadsheetDate = '2016Oct'
 
-extraMoney = 0
 haveFixedProgCosts = False
 
 rerunMCSampleSize = 25
@@ -39,9 +38,9 @@ for optimise in ['thrive']:
     print 'running GA for:  ', optimise
 
     resultsFileStem = resultsPath + '/' + date + '/' + optimise + '/geospatialNotFixed/'
-    GAFile = 'GA_notFixedProg_extra_' + str(extraMoney)
+    GAFile = 'GA_notFixedProg' 
 
     geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps,
                                                                  cascadeValues, optimise, resultsFileStem)
-    geospatialOptimisation.performParallelGeospatialOptimisationExtraMoney(geoMCSampleSize, rerunMCSampleSize, GAFile,
-                                                                           numCores, extraMoney, haveFixedProgCosts)
+    geospatialOptimisation.performParallelGeospatialOptimisation(geoMCSampleSize, rerunMCSampleSize, GAFile,
+                                                                           numCores, haveFixedProgCosts)
