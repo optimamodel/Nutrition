@@ -21,7 +21,8 @@ G3$NAME_3<-as.factor(G3$NAME_3)
 # This is making a table of disctricts and their values (random uniform at the moment) to be coloured. Could easily read this in from excel
 values1<-as.data.frame(G1$NAME_1)
 #values1$density<-runif(length(values1[,1]),0,1)
-numStuntAvert<-c(77104, 285304, 447721, 87600, 135460, 56975, 50571) 
+# this is actually num extra people thriving now
+numStuntAvert<-c(84668, 310739, 491482, 120132, 163211, 103730, 77415) 
 values1$density<-numStuntAvert
 
 
@@ -48,9 +49,9 @@ invisible(text(getSpPPolygonsLabptSlots(G1), labels=as.character(G1$NAME_1), cex
 #mtext(side=3, line=0, "optimized geospatial spending", cex=1.5)
 par(mar=c(1.5,1,1,2))
 image(zc, col=mycolor1, axes=F, xlab="", ylab="" )
-mtext("stunting cases averted")
+mtext("additional people who escape stunting")
 #tidylabels <- round(seq(min(values1$density),max(values1$density),length.out=5))
-tidylabels <- c(50000, 150000, 250000, 350000, 450000)
+tidylabels <- c(77500, 180000, 285000, 340000, 490000)
 axis(1, at=seq(0,1, length.out=5),  labels=tidylabels, las=1,  tcl=-.15, padj=-1, cex=0.5)
 dev.off()
 
