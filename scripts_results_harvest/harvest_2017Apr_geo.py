@@ -23,10 +23,9 @@ for regionName in regionNameList:
     spreadsheetList.append(spreadsheet)
 
 
-extraMoney = 0
 analysis = 'geospatialNotFixed'
 # stunting extra money: bar graph/region, trade off curves, cascade and outcomes
-GAFile = 'GA_notFixedProg_extra_'+str(extraMoney)
+GAFile = 'GA_notFixedProg'
 resultsFileStem = rootpath+'/Results/'+date+'/'+optimise +'/'+analysis+'/'
 
 geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
