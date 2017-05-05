@@ -376,7 +376,10 @@ class Model:
             for cause in self.params.causesOfDeath:    
                 count += self.derived.referenceMortality['pregnant women'][cause]       
             # in absense of risks distribute mortality between delivery groups based on population fraction    
-            self.pregnantWomen.dictOfBoxes[status].mortalityRate = count *  self.params.deliveryDistribution[status]            
+            self.pregnantWomen.dictOfBoxes[status].mortalityRate = count *  self.params.deliveryDistribution[status]
+        # women of reproductive age
+
+
     
 
     def applyMortality(self):

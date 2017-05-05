@@ -403,7 +403,7 @@ def readSpreadsheet(fileName, keyList):
         for outcome in birthOutcomes:
             for value in ['effectiveness', 'affected fraction']:
                 interventionsBirthOutcome[intervention][outcome][value] = df.loc[intervention][outcome][value]
-
+    # TODO DEAL WITH THE allPops ISSUE BELOW
     # READ Interventions affected fraction SHEET
     # sets:
     # - affectedFraction

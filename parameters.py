@@ -26,6 +26,7 @@ class Params:
         self.RRdeathWasting = dcp(data.RRdeathWasting)
         self.RRdeathBreastfeeding = dcp(data.RRdeathBreastfeeding)
         self.RRdeathByBirthOutcome = dcp(data.RRdeathByBirthOutcome)
+        self.RRdeathAnemia = dcp(data.RRdeathAnemia)
         self.incidences = dcp(data.incidences)
         self.birthOutcomeDist = dcp(data.birthOutcomeDist)
         self.ageAppropriateBreastfeeding = dcp(data.ageAppropriateBreastfeeding)
