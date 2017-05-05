@@ -202,6 +202,27 @@ def readSpreadsheet(fileName, keyList):
             for birthoutcome in birthOutcomes:
                 RRdeathByBirthOutcome[cause][birthoutcome] = 1.
 
+    #  READ RR Death by Anemia
+    #  sets:
+    #  - RRdeathByAnemia
+    df = pandas.read_excel(Location, sheetname = 'RR death by anemia', index_col = [0])
+    # get list of causes for which we have relative risks
+    mylist = list(df.index.values)
+    myset = set(mylist)
+    listCausesRRdeathAnemia = list(myset)
+    # put the RR into RRdeathAnemia
+    df = pandas.read_excel(Location, sheetname = 'RR death by anemia', index_col = [0, 1])
+    RRdeathAnemia = {}
+    for ageName in reproductiveAges:
+        RRdeathAnemia[ageName] = {}
+        for cause in causesOfDeath:
+            RRdeathAnemia[ageName][cause] = {}
+            for anemiaStatus in anemiaList:
+                if cause in listCausesRRdeathAnemia: #if no RR given for this cause then set to 1
+                    RRdeathAnemia[ageName][cause][anemiaStatus] = df.loc[cause][ageName][anemiaStatus]
+                else:
+                    RRdeathAnemia[ageName][cause][anemiaStatus] = 1
+
     #  READ distributions SHEET
     #  sets:
     #  - stuntingDistribution
