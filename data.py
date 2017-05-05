@@ -7,7 +7,7 @@ Created on Fri Feb 26 15:57:07 2016
 
 class Data:
     def __init__(self, causesOfDeath, conditions, interventionList, 
-                 demographics, projectedBirths, rawMortality, causeOfDeathDist,
+                 demographics, projectedBirths, rawMortality, causeOfDeathDist, RRdeathAnemia,
                  RRdeathStunting, RRdeathWasting, RRdeathBreastfeeding, 
                  RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution,
                  breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition,
@@ -30,6 +30,7 @@ class Data:
         self.stuntingDistribution = stuntingDistribution
         self.wastingDistribution = wastingDistribution
         self.breastfeedingDistribution = breastfeedingDistribution
+        self.RRdeathAnemia = RRdeathAnemia
         self.RRdeathStunting = RRdeathStunting
         self.RRdeathWasting = RRdeathWasting
         self.RRdeathBreastfeeding = RRdeathBreastfeeding
@@ -547,7 +548,7 @@ def readSpreadsheet(fileName, keyList):
 
             
     spreadsheetData = Data(causesOfDeath, conditions, interventionList, demographics,
-                           projectedBirths, rawMortality, causeOfDeathDist, RRdeathStunting,
+                           projectedBirths, rawMortality, causeOfDeathDist, RRdeathAnemia, RRdeathStunting,
                            RRdeathWasting, RRdeathBreastfeeding, RRdeathByBirthOutcome,
                            stuntingDistribution, wastingDistribution, breastfeedingDistribution,
                            incidences, RRdiarrhea, ORstuntingCondition, birthOutcomeDist, 
