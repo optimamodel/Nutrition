@@ -377,7 +377,17 @@ class Model:
                 count += self.derived.referenceMortality['pregnant women'][cause]       
             # in absense of risks distribute mortality between delivery groups based on population fraction    
             self.pregnantWomen.dictOfBoxes[status].mortalityRate = count *  self.params.deliveryDistribution[status]
+        # TODO below should be checked. Add reproductiveAge object as param in Model?
         # women of reproductive age
+        for ageGroup in self.listOfReproductiveAgeCompartments:
+            ageName = ageGroup.name
+            for anemiaStatus in self.anemiaList:
+                count = 0
+                for cause in self.params.causesOfDeath:
+                    t1 = self.derived.referenceMortality['women of reproductive age'][ageName][cause]
+                    t2 = self.params.RRdeathAnemia[ageName][cause][anemiaStatus]
+                    count += t1 * t2
+                # self.reproductiveAge.dictOfBoxes....
 
 
     
