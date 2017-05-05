@@ -258,7 +258,7 @@ def readSpreadsheet(fileName, keyList):
     #  - anemiaDistribution
     df = pandas.read_excel(Location, sheetname = 'anemia prevalence', index_col = [0, 1])
     anemiaDistribution = {}
-    for ageName in allPops + reproductiveAges:
+    for ageName in allPops:
         anemiaDistribution[ageName] = {}
         for status in anemiaList:
             anemiaDistribution[ageName][status] = df.loc['Anemia'][ageName][status] / 100.            
