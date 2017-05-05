@@ -114,6 +114,8 @@ class Derived:
         self.referenceMortality = Xdictionary
         # now call function to set maternal reference mortality
         self.setReferenceMaternalMortality()
+        # now call function to set women of reproductive age mortality
+        self.setReferenceWRAMortality()
         
         
     def setReferenceMaternalMortality(self):
