@@ -401,6 +401,13 @@ class Model:
                         thisBox.populationSize -= deaths
                         thisBox.cumulativeDeaths += deaths
 
+    def applyWRAMortality(self):
+        for ageGroup in self.listOfReproductiveAgeCompartments:
+            for anemiaStatus in self.anemiaList:
+                thisBox = ageGroup.dictOfBoxes[anemiaStatus]
+                deaths = thisBox.populationSize * thisBox.mortalityRate * self.timestep # TODO there is no method or attribute self.timestep
+                thisBox.populationSize -= deaths
+                thisBox.cumulativeDeaths += deaths                
 
     def applyAging(self):
         numCompartments = len(self.listOfAgeCompartments)
