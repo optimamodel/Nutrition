@@ -71,7 +71,7 @@ def readSpreadsheet(fileName, keyList):
     deliveryList = keyList['deliveryList']
     allPops = keyList['allPops']
     anemiaList = keyList['anemiaList']
-    reproductiveAges = keyList['reproductive ages']
+    reproductiveAges = keyList['reproductiveAges']
 
     #get list of ages and causesOfDeath
     df = pandas.read_excel(Location, sheetname = 'causes of death')

@@ -199,10 +199,10 @@ class Model:
     def getDALYs(self):
         DALYs = 0.0
         numStuntedAt5 = self.getCumulativeAgingOutStunted()
-        DALYs += numStuntedAt5 * 0.23 # * (self.helper.keyList['life expectancy'] - 5.) # 0.23 = disability weight
+        DALYs += numStuntedAt5 * 0.23 # * (self.helper.keyList['lifeExpectancy'] - 5.) # 0.23 = disability weight
         for ageGroup in self.listOfAgeCompartments:
             cumulativeDeathsThisAge = ageGroup.getCumulativeDeaths()
-            #DALYs += cumulativeDeathsThisAge * (self.helper.keyList['life expectancy'] - 2.5) # should be slightly different for each age
+            #DALYs += cumulativeDeathsThisAge * (self.helper.keyList['lifeExpectancy'] - 2.5) # should be slightly different for each age
             DALYs += cumulativeDeathsThisAge * 33.3
         return DALYs
     

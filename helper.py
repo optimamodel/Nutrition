@@ -18,13 +18,13 @@ class Helper:
         self.keyList['anemiaList'] = ["anemic", "not anemic"]
         self.keyList['ageGroupSpans'] = [1., 5., 6., 12., 36.] # number of months in each age group
         self.keyList['agingRates'] = [1./1., 1./5., 1./6., 1./12., 1./36.]
-        self.keyList['reproductive ages'] = ['15-19 years', '20-24 years', '25-29 years', '30-34 years', '35-39 years', '40-44 years']
-        self.keyList['reproductive aging rates'] = [1./5., 1./5., 1./5., 1./5., 1./5., 1./5.] # this is in years       
+        self.keyList['reproductiveAges'] = ['15-19 years', '20-24 years', '25-29 years', '30-34 years', '35-39 years', '40-44 years']
+        self.keyList['reproductiveAgingRates'] = [1./5., 1./5., 1./5., 1./5., 1./5., 1./5.] # this is in years
         self.keyList['stuntedList'] = ["moderate", "high"]
-        self.keyList['life expectancy'] = 83.5
+        self.keyList['lifeExpectancy'] = 83.5
         self.keyList['deliveryList'] = ["unassisted", "assisted at home", "essential care", "BEmOC", "CEmOC"]
         self.keyList['allPops'] = dcp(self.keyList['ages'])
-        self.keyList['allPops'] += ['pregnant women'] + self.keyList['reproductive ages']
+        self.keyList['allPops'] += ['pregnant women'] + self.keyList['reproductiveAges']
 
     # Going from binary stunting/wasting to four fractions
     # Yes refers to more than 2 standard deviations below the global mean/median
@@ -133,13 +133,13 @@ class Helper:
     def makeReproductiveAgeCompartments(self, inputData):
             import model 
             popReproductiveAge = dcp(inputData.demographics['population reproductive age'])
-            ages = self.keyList['reproductive ages']
+            ages = self.keyList['reproductiveAges']
             numAgeGroups = len(ages)
             agePopSize = popReproductiveAge / numAgeGroups # equally distributed
             listOfReproductiveAgeCompartments = []
             for iAge in range(numAgeGroups): 
                 ageName  = ages[iAge]
-                agingRate = self.keyList['reproductive aging rates'][iAge]
+                agingRate = self.keyList['reproductiveAgingRates'][iAge]
                 thisAgeBoxes = self.makeReproductiveAgeBoxes(agePopSize, ageName, inputData)
                 compartment = model.ReproductiveAgeCompartment(ageName, thisAgeBoxes, agingRate, self.keyList)
                 listOfReproductiveAgeCompartments.append(compartment)
