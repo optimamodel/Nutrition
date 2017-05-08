@@ -130,12 +130,10 @@ class Derived:
         
     # TODO how to calculate reference mortality?
     def setReferenceWRAMortality(self):
-        popSize = self.data.demographics['population reproductive age']
-        self.referenceMortality['women of reproductive age'] = {}
         for ageName in self.reproductiveAges:
-            self.referenceMortality['women of reproductive age'][ageName] = {}
+            self.referenceMortality[ageName] = {}
             for cause in self.data.causesOfDeath:
-                self.referenceMortality['women of reproductive age'][ageName][cause] = 1
+                self.referenceMortality[ageName][cause] = 1
 
     # Calculate probability of stunting in this age group given stunting in previous age-group
     def setProbStuntingProgression(self):
