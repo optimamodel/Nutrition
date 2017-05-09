@@ -24,7 +24,7 @@ geoMCSampleSize = 25
 numModelSteps = 180
 cascadeValues = [1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 'extreme']
 
-resultsPath = '/home/samh/Nutrition/Results/'
+resultsPath = '/home/ruthpearson/Nutrition/Results/'
 
 regionNameList = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
 spreadsheetFileStem = rootpath + '/input_spreadsheets/' + country + '/' + spreadsheetDate + '/subregionSpreadsheets/'
