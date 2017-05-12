@@ -11,7 +11,7 @@ spreadsheetDate = '2016Oct'
 
 numModelSteps = 180
 
-cascadeValues = [1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 'extreme']
+cascadeValues = [0.0, 1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 'extreme']
 
 # GEOSPATIAL
 optimise = 'thrive'
@@ -24,7 +24,6 @@ for regionName in regionNameList:
 
 
 analysis = 'geospatialNotFixed'
-# stunting extra money: bar graph/region, trade off curves, cascade and outcomes
 GAFile = 'GA_notFixedProg'
 resultsFileStem = rootpath+'/Results/'+date+'/'+optimise +'/'+analysis+'/'
 
@@ -34,3 +33,7 @@ geospatialOptimisation.outputRegionalPostGAOptimisedSpendingToCSV(GAFile)
 geospatialOptimisation.outputTradeOffCurves()
 geospatialOptimisation.outputToCSVTimeSeriesPostGAReallocationByRegion(GAFile)
 
+geospatialOptimisation.outputRegionalBOCsFile('regionalBOCs')
+geospatialOptimisation.plotPostGAReallocationByRegion(GAFile)
+#geospatialOptimisation.plotTradeOffCurves()
+#geospatialOptimisation.outputTradeOffCurves()
