@@ -21,7 +21,7 @@ nCores = 49
 
 numModelSteps = 180
 MCSampleSize = 25
-cascadeValues = [0.0] #[1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 'extreme']
+cascadeValues = [0.0, 1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 'extreme']
 regionNameList = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
 spreadsheetFileStem = rootpath + '/input_spreadsheets/' + country + '/' + spreadsheetDate + '/subregionSpreadsheets/'
 spreadsheetList = []
