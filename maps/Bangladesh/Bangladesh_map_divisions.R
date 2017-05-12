@@ -22,7 +22,7 @@ G3$NAME_3<-as.factor(G3$NAME_3)
 values1<-as.data.frame(G1$NAME_1)
 #values1$density<-runif(length(values1[,1]),0,1)
 # this is actually num extra people thriving now
-numStuntAvert<-c(84668, 310739, 491482, 120132, 163211, 103730, 77415) 
+numStuntAvert<-c(86160, 316721, 498625, 120464, 164657, 93362, 76026) 
 values1$density<-numStuntAvert
 
 
@@ -51,7 +51,7 @@ par(mar=c(1.5,1,1,2))
 image(zc, col=mycolor1, axes=F, xlab="", ylab="" )
 mtext("additional people who escape stunting")
 #tidylabels <- round(seq(min(values1$density),max(values1$density),length.out=5))
-tidylabels <- c(77500, 180000, 285000, 340000, 490000)
+tidylabels <- c(76000, 182000, 287000, 393000, 499000)
 axis(1, at=seq(0,1, length.out=5),  labels=tidylabels, las=1,  tcl=-.15, padj=-1, cex=0.5)
 dev.off()
 
