@@ -139,7 +139,7 @@ class Derived:
                 RHS[ageName][cause] = 0.
                 for anemiaStatus in self.anemiaList:
                     t1 = self.data.anemiaDistribution[ageName][anemiaStatus]
-                    t2 = self.data.RRdeathAnemia[ageName][cause]
+                    t2 = self.data.RRdeathAnemia[ageName][cause][anemiaStatus]
 
                     RHS[ageName][cause] += t1 * t2
         # TODO will we need to adjust raw mortality (as for children)?
@@ -147,7 +147,7 @@ class Derived:
         # Calculate LHA for each age and cause of death then solve for X
         Xdictionary = {}
         for ageName in self.reproductiveAges:
-            Xdictionary = {}
+            Xdictionary[ageName] = {}
             for cause in self.data.causesOfDeath:
                 LHS_age_cause = self.data.rawMortality[ageName] * self.data.causeOfDeathDist[ageName][cause]
                 Xdictionary[ageName][cause] = LHS_age_cause / RHS[ageName][cause]
