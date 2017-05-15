@@ -22,7 +22,7 @@ rerunMCSampleSize = 25
 geoMCSampleSize = 25
 # WARNING: these must match values used in the other geospatial scripts
 numModelSteps = 180
-cascadeValues = [0.0, 1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 'extreme']
+cascadeValues = [0.0, 0.1, 0.2, 0.4, 0.8, 1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 'extreme']
 
 resultsPath = '/home/ruthpearson/Nutrition/Results/'
 
