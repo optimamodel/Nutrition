@@ -383,7 +383,7 @@ class Model:
             for anemiaStatus in self.anemiaList:
                 count = 0
                 for cause in self.params.causesOfDeath:
-                    t1 = self.derived.referenceMortality['women of reproductive age'][ageName][cause]
+                    t1 = self.derived.referenceMortality[ageName][cause]
                     t2 = self.params.RRdeathAnemia[ageName][cause][anemiaStatus]
                     count += t1 * t2
                 ageGroup.dictOfBoxes[anemiaStatus].mortalityRate = count
