@@ -9,7 +9,7 @@ import pchip
 import pickle
 
 regionNameList = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
-filename = 'Results/2017Apr/thrive/geospatialNotFixed/regionalBOCs_withZeroCascade' #regionalBOCs_noZeroCascade
+filename = 'Results/2017Apr/thrive/geospatialNotFixed/regionalBOCs_extraPoints'#regionalBOCs_withZeroCascade #regionalBOCs_noZeroCascade
 infile = open(filename, 'rb')
 regionalBOCs = pickle.load(infile)
 valueList = range(0, 22000000, 1000000)

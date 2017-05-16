@@ -11,7 +11,7 @@ spreadsheetDate = '2016Oct'
 
 numModelSteps = 180
 
-cascadeValues = [0.0, 1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 'extreme']
+cascadeValues = [0.0, 0.1, 0.2, 0.4, 0.8, 1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 'extreme']
 
 # GEOSPATIAL
 optimise = 'thrive'
@@ -35,5 +35,5 @@ geospatialOptimisation.outputToCSVTimeSeriesPostGAReallocationByRegion(GAFile)
 
 geospatialOptimisation.outputRegionalBOCsFile('regionalBOCs')
 geospatialOptimisation.plotPostGAReallocationByRegion(GAFile)
-#geospatialOptimisation.plotTradeOffCurves()
+geospatialOptimisation.plotTradeOffCurves()
 #geospatialOptimisation.outputTradeOffCurves()
