@@ -12,7 +12,7 @@ class Data:
                  RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution,
                  breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition,
                  birthOutcomeDist, ORstuntingProgression, ORstuntingBirthOutcome,
-                 ORstuntingIntervention, RRanemicIntervention, ORanemicIntervention,
+                 ORstuntingIntervention, RRanemiaIntervention, ORanemicIntervention,
                  ORappropriatebfIntervention,
                  ageAppropriateBreastfeeding, coverage, costSaturation,
                  targetPopulation, affectedFraction, effectivenessMortality,
@@ -43,7 +43,7 @@ class Data:
         self.ORstuntingBirthOutcome = ORstuntingBirthOutcome
         self.birthOutcomeDist = birthOutcomeDist
         self.ORstuntingIntervention = ORstuntingIntervention
-        self.RRanemicIntervention = RRanemicIntervention
+        self.RRanemiaIntervention = RRanemiaIntervention
         self.ORanemicIntervention = ORanemicIntervention
         self.ORappropriatebfIntervention = ORappropriatebfIntervention
         self.ageAppropriateBreastfeeding = ageAppropriateBreastfeeding
@@ -323,17 +323,17 @@ def readSpreadsheet(fileName, keyList):
     # READ RR anemic by intervention sheet
     # sets for all interventions
     # sets:
-    # - RRanemicIntervention
+    # - RRanemiaIntervention
     df = pandas.read_excel(Location, sheetname = 'RR anemic by intervention')
     interventionsRR = list(df['Intervention'])
     df = pandas.read_excel(Location, sheetname='RR anemic by intervention', index_col = 'Intervention')
-    RRanemicIntervention = {}
+    RRanemiaIntervention = {}
     for pop in allPops:
-        RRanemicIntervention[pop] = {}
+        RRanemiaIntervention[pop] = {}
         for intervention in interventionList:
-            RRanemicIntervention[pop][intervention] = 1.
+            RRanemiaIntervention[pop][intervention] = 1.
         for intervention in interventionsRR:
-            RRanemicIntervention[pop][intervention] = df.loc[intervention, pop]
+            RRanemiaIntervention[pop][intervention] = df.loc[intervention, pop]
 
     # READ OR anemic by intervention sheet
     # checks in the interventionsOR list to keep track
@@ -348,7 +348,7 @@ def readSpreadsheet(fileName, keyList):
         for intervention in interventionList:
             if intervention in interventionsOR:
                 # remove if OR instead of RR
-                del RRanemicIntervention[pop][intervention]
+                del RRanemiaIntervention[pop][intervention]
                 ORanemicIntervention[pop][intervention] = df.loc[intervention, pop]
 
 
@@ -589,7 +589,7 @@ def readSpreadsheet(fileName, keyList):
                            stuntingDistribution, wastingDistribution, breastfeedingDistribution,
                            incidences, RRdiarrhea, ORstuntingCondition, birthOutcomeDist, 
                            ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention,
-                           RRanemicIntervention, ORanemicIntervention,
+                           RRanemiaIntervention, ORanemicIntervention,
                            ORappropriatebfIntervention, ageAppropriateBreastfeeding, coverage,
                            costSaturation, targetPopulation, affectedFraction,
                            effectivenessMortality, effectivenessIncidence, interventionsBirthOutcome,
