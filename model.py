@@ -405,7 +405,7 @@ class Model:
         for ageGroup in self.listOfReproductiveAgeCompartments:
             for anemiaStatus in self.anemiaList:
                 thisBox = ageGroup.dictOfBoxes[anemiaStatus]
-                deaths = thisBox.populationSize * thisBox.mortalityRate * self.timestep
+                deaths = thisBox.populationSize * thisBox.mortalityRate
                 thisBox.populationSize -= deaths
                 thisBox.cumulativeDeaths += deaths
 
