@@ -257,6 +257,7 @@ class Model:
         self.derived.setProbCorrectlyBreastfedIfCovered(self.params.coverage, self.params.breastfeedingDistribution)
         self.derived.setProbStuntedIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.stuntingDistribution)
         self.derived.setProbStuntedComplementaryFeeding(self.params.stuntingDistribution, self.params.coverage)
+        self.derived.setProbAnemicIfCovered(self.params.coverage, self.params.anemiaDistribution)
         
         # get combined reductions from all interventions
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
