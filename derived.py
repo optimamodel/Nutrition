@@ -27,6 +27,7 @@ class Derived:
         self.probCorrectlyBreastfedIfCovered = {}
         self.probStuntedComplementaryFeeding = {}
         self.probStuntedAtBirth = {}
+        self.probAnemicIfCovered = {}
         
         self.stuntingUpdateAfterInterventions = {}
         for ageName in self.ages:
@@ -142,7 +143,6 @@ class Derived:
                     t2 = self.data.RRdeathAnemia[ageName][cause][anemiaStatus]
 
                     RHS[ageName][cause] += t1 * t2
-        # TODO will we need to adjust raw mortality (as for children)?
 
         # Calculate LHA for each age and cause of death then solve for X
         Xdictionary = {}
@@ -312,6 +312,45 @@ class Derived:
                 self.probStuntedIfCovered[intervention]["not covered"][ageName] = p0
                 self.probStuntedIfCovered[intervention]["covered"][ageName]     = p0*OddsRatio/(1.-p0+OddsRatio*p0)
 
+    # Calculate probability of being anemic in each population group given coverage by intervention
+    def setProbAnemicIfCovered(self, coverage, anemiaDistribution):
+        # TODO haven't taken into account IPTp as an indirect impact on anemia
+        # TODO will need affected fraction
+        from numpy import sqrt
+        eps = 1.e-5
+        for intervention in self.data.interventionList:
+            self.probAnemicIfCovered[intervention] = {}
+            self.probAnemicIfCovered[intervention]["not covered"] = {}
+            self.probAnemicIfCovered[intervention]["covered"] = {}
+            for pop in self.allPops:
+                fracCovered = coverage[intervention]
+                fracAnemicThisPop = anemiaDistribution[pop]["anemic"]
+                relativeRisk = self.data.RRanemiaIntervention[pop].get(intervention)
+                if relativeRisk is not None: # have RR for this intervention
+
+                    # for RR, solve linear equation for prob anemic not covered (pn) and covered (pc)
+                    pn = fracAnemicThisPop/(relativeRisk*fracCovered + (1- fracCovered))
+                    pc = relativeRisk*pn
+                    self.probAnemicIfCovered[intervention]["not covered"][pop] = pn
+                    self.probAnemicIfCovered[intervention]["covered"][pop] = pc
+                else: # must be OR
+                    oddsRatio = self.data.ORanemiaIntervention[pop][intervention]
+
+                    # solve quadratic equation ax**2 + bx + c = 0
+                    a = (1. - fracCovered) * (1. - oddsRatio)
+                    b = (oddsRatio - 1) * fracAnemicThisPop - oddsRatio * fracCovered - (1. - fracCovered)
+                    c = fracAnemicThisPop
+                    det = sqrt(b ** 2 - 4. * a * c)
+                    if (abs(a) < eps):
+                        p0 = -c / b
+                    else:
+                        soln1 = (-b + det) / (2. * a)
+                        soln2 = (-b - det) / (2. * a)
+                        if (soln1 > 0.) and (soln1 < 1.): p0 = soln1
+                        if (soln2 > 0.) and (soln2 < 1.): p0 = soln2
+                    self.probAnemicIfCovered[intervention]["not covered"][pop] = p0
+                    self.probAnemicIfCovered[intervention]["covered"][pop] = p0 * oddsRatio / (
+                    1. - p0 + oddsRatio * p0)
 
 
     # Calculate probability of stunting in current age-group given coverage by intervention
