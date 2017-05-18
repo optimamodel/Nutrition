@@ -22,6 +22,7 @@ class Params:
         self.wastingDistribution = dcp(data.wastingDistribution)
         self.deliveryDistribution = dcp(data.deliveryDistribution)
         self.breastfeedingDistribution = dcp(data.breastfeedingDistribution)
+        self.anemiaDistribution = dcp(data.anemiaDistribution)
         self.RRdeathStunting = dcp(data.RRdeathStunting)
         self.RRdeathWasting = dcp(data.RRdeathWasting)
         self.RRdeathBreastfeeding = dcp(data.RRdeathBreastfeeding)
@@ -102,8 +103,20 @@ class Params:
                 newProbStunting = newCoverage[intervention]*probStuntingIfCovered + (1.-newCoverage[intervention])*probStuntingIfNotCovered
                 reduction = (oldProbStunting - newProbStunting)/oldProbStunting
                 stuntingUpdate[ageName] *= 1. - reduction
-        return stuntingUpdate        
-            
+        return stuntingUpdate
+
+    def getAnemiaUpdate(self, newCoverage):
+        anemiaUpdate = {}
+        for pop in self.allPops:
+            anemiaUpdate[pop] = 1.
+            oldProbAnemic = self.anemiaDistribution[pop]["anemic"]
+            for intervention in newCoverage.keys():
+                probAnemicIfCovered = self.derived.probAnemicIfCovered[intervention]["covered"][pop]
+                probAnemicIfNotCovered = self.derived.probAnemicIfCovered[intervention]["not covered"][pop]
+                newProbAnemic = newCoverage[intervention]*probAnemicIfCovered + (1-newCoverage[intervention])*probAnemicIfNotCovered
+                reduction = (oldProbAnemic - newProbAnemic)/oldProbAnemic
+                anemiaUpdate[pop] *= 1. - reduction
+        return anemiaUpdate
 
     def getAppropriateBFNew(self, newCoverage):
         correctbfFracNew = {}

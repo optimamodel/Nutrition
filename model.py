@@ -263,6 +263,7 @@ class Model:
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
         maternalMortalityUpdate = self.params.getMaternalMortalityUpdate(newCoverage)
         stuntingUpdate = self.params.getStuntingUpdate(newCoverage)
+        anemiaUpdate = self.params.getAnemiaUpdate(newCoverage) # TODO will need to use this below
         incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
         birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)
         newFracCorrectlyBreastfed = self.params.getAppropriateBFNew(newCoverage)
