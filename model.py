@@ -526,7 +526,7 @@ class Model:
             self.params.stuntingDistribution[ageName] = self.helper.restratify(probStunting)
             thisAgeCompartment.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
             
-    def applyAgingReproductiveAges(self):
+    def applyWRAaging(self):
         numCompartments = len(self.listOfReproductiveAgeCompartments)
         # calculate how many people are aging out of each box
         agingOut = [None]*numCompartments
