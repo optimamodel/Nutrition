@@ -141,9 +141,7 @@ class Derived:
                 for anemiaStatus in self.anemiaList:
                     t1 = self.data.anemiaDistribution[ageName][anemiaStatus]
                     t2 = self.data.RRdeathAnemia[ageName][cause][anemiaStatus]
-
                     RHS[ageName][cause] += t1 * t2
-
         # Calculate LHA for each age and cause of death then solve for X
         Xdictionary = {}
         for ageName in self.reproductiveAges:
@@ -327,7 +325,6 @@ class Derived:
                 fracAnemicThisPop = anemiaDistribution[pop]["anemic"]
                 relativeRisk = self.data.RRanemiaIntervention[pop].get(intervention)
                 if relativeRisk is not None: # have RR for this intervention
-
                     # for RR, solve linear equation for prob anemic not covered (pn) and covered (pc)
                     pn = fracAnemicThisPop/(relativeRisk*fracCovered + (1- fracCovered))
                     pc = relativeRisk*pn
@@ -335,7 +332,6 @@ class Derived:
                     self.probAnemicIfCovered[intervention]["covered"][pop] = pc
                 else: # must be OR
                     oddsRatio = self.data.ORanemiaIntervention[pop][intervention]
-
                     # solve quadratic equation ax**2 + bx + c = 0
                     a = (1. - fracCovered) * (1. - oddsRatio)
                     b = (oddsRatio - 1) * fracAnemicThisPop - oddsRatio * fracCovered - (1. - fracCovered)
