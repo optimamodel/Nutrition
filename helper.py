@@ -102,9 +102,11 @@ class Helper:
         annualPregnancies = dcp(inputData.demographics['number of pregnant women'])
         populationSize = annualPregnancies
         boxes = {}
-        for status in self.keyList['deliveryList']:
-             thisPopSize = populationSize * inputData.deliveryDistribution[status]
-             boxes[status] = model.Box(thisPopSize)   
+        for anemiaStatus in self.keyList['anemiaList']:
+            boxes[anemiaStatus] = {}
+            for deliveryStatus in self.keyList['deliveryList']:
+                 thisPopSize = populationSize * inputData.deliveryDistribution[deliveryStatus] * inputData.anemiaDistribution['pregnant women'][anemiaStatus]
+                 boxes[anemiaStatus][deliveryStatus] = model.Box(thisPopSize)
         return boxes  
         
     def makeReproductiveAgeBoxes(self, thisAgePopSize, ageName, inputData):
