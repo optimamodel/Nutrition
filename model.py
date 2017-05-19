@@ -17,9 +17,24 @@ class PregnantWomen:
         
     def getTotalPopulation(self):
         totalSum = 0
-        for status in self.deliveryList:
-            totalSum += self.dictOfBoxes[status].populationSize
-        return totalSum    
+        for anemiaStatus in self.anemiaList:
+            for deliveryStatus in self.deliveryList:
+                totalSum += self.dictOfBoxes[anemiaStatus][deliveryStatus].populationSize
+        return totalSum
+
+    def getAnemicFraction(self):
+        totalAnemic = 0.
+        totalPop = self.getTotalPopulation()
+        for deliveryStatus in self.deliveryList:
+            totalAnemic += self.dictOfBoxes['anemic'][deliveryStatus].populationSize
+        return float(totalAnemic)/float(totalPop)
+
+    def distributePopulation(self, anemiaDist, deliveryDist):
+        totalPop = self.getTotalPopulation()
+        for anemiaStatus in self.anemiaList:
+            for deliveryStatus in self.deliveryList:
+                self.dictOfBoxes[anemiaStatus][deliveryStatus].populationSize = anemiaDist['pregnant women'][anemiaStatus] * deliveryDist[deliveryStatus] * totalPop
+
         
 class Box:
     def __init__(self, populationSize):
@@ -349,7 +364,7 @@ class Model:
         # ANEMIA
         # Women of reproductive age
         for ageGroup in self.listOfReproductiveAgeCompartments:
-            ageName = ageGroup.Name
+            ageName = ageGroup.name
             # update anemia
             oldProbAnemia = ageGroup.getAnemicFraction()
             newProbAnemia = oldProbAnemia * anemiaUpdate[ageName]
@@ -357,6 +372,12 @@ class Model:
             self.params.anemiaDistribution[ageName]["not anemic"] = 1. - newProbAnemia
             ageGroup.distributeAnemicPopulation(self.params.anemiaDistribution)
 
+        # Pregnant Women
+        oldProbAnemia = self.pregnantWomen.getAnemicFraction()
+        newProbAnemia = oldProbAnemia * anemiaUpdate['pregnant women']
+        self.params.anemiaDistribution['pregnant women']['anemic'] = newProbAnemia
+        self.params.anemiaDistribution['pregnant women']['not anemic'] = 1. - newProbAnemia
+        self.pregnantWomen.distributePopulation(self.params.anemiaDistribution, self.params.deliveryDistribution)
 
         # BIRTH OUTCOME
         for outcome in self.birthOutcomes:
@@ -401,12 +422,15 @@ class Model:
                             count += t1 * t2 * t3 * t4                            
                         ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate = count
         # pregnant women
-        for status in self.deliveryList:                
-            count = 0
-            for cause in self.params.causesOfDeath:    
-                count += self.derived.referenceMortality['pregnant women'][cause]       
-            # in absense of risks distribute mortality between delivery groups based on population fraction    
-            self.pregnantWomen.dictOfBoxes[status].mortalityRate = count *  self.params.deliveryDistribution[status]
+        for anemiaStatus in self.anemiaList:
+            for deliveryStatus in self.deliveryList:
+                count = 0
+                for cause in self.params.causesOfDeath:
+                    t1 = self.derived.referenceMortality['pregnant women'][cause]
+                    t2 = self.params.RRdeathAnemia['pregnant women'][cause][anemiaStatus]
+                    count += t1 * t2
+                # in absense of risks distribute mortality between delivery groups based on population fraction # TODO is there an issue with below calculation?
+                self.pregnantWomen.dictOfBoxes[anemiaStatus][deliveryStatus].mortalityRate = count *  self.params.deliveryDistribution[deliveryStatus]
         # women of reproductive age
         for ageGroup in self.listOfReproductiveAgeCompartments:
             ageName = ageGroup.name
