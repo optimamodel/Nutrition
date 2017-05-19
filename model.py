@@ -143,10 +143,26 @@ class ReproductiveAgeCompartment:
         self.dictOfBoxes = dcp(dictOfBoxes)
         self.agingRate = agingRate
         for key in keyList.keys():
-            setattr(self, key, keyList[key])        
+            setattr(self, key, keyList[key])
+
+    def getTotalPopulation(self):
+        totalSum = 0.
+        for anemiaStatus in self.anemiaList:
+            totalSum += self.dictOfBoxes[anemiaStatus].populationSize
+        return totalSum
+
+    def distributeAnemicPopulation(self, anemiaDist):
+        ageName = self.name
+        totalPop = self.getTotalPopulation()
+        for anemiaStatus in self.anemiaList:
+            self.dictOfBoxes[anemiaStatus].populationSize = anemiaDist[ageName][anemiaStatus] * totalPop
+
+    def getAnemicFraction(self):
+        numberAnemic = self.dictOfBoxes["anemic"].populationSize
+        numberTotal = self.getTotalPopulation()
+        return float(numberAnemic)/numberTotal
 
 
-        
 class Model:
     def __init__(self, pregnantWomen, listOfAgeCompartments, listOfReproductiveAgeCompartments, keyList):
         self.pregnantWomen = pregnantWomen
@@ -263,7 +279,7 @@ class Model:
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
         maternalMortalityUpdate = self.params.getMaternalMortalityUpdate(newCoverage)
         stuntingUpdate = self.params.getStuntingUpdate(newCoverage)
-        anemiaUpdate = self.params.getAnemiaUpdate(newCoverage) # TODO will need to use this below
+        anemiaUpdate = self.params.getAnemiaUpdate(newCoverage)
         incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
         birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)
         newFracCorrectlyBreastfed = self.params.getAppropriateBFNew(newCoverage)
@@ -329,7 +345,19 @@ class Model:
             newProbStunting = oldProbStunting * totalUpdate
             self.params.stuntingDistribution[ageName] = self.helper.restratify(newProbStunting)
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
-            
+
+        # ANEMIA
+        # Women of reproductive age
+        for ageGroup in self.listOfReproductiveAgeCompartments:
+            ageName = ageGroup.Name
+            # update anemia
+            oldProbAnemia = ageGroup.getAnemicFraction()
+            newProbAnemia = oldProbAnemia * anemiaUpdate[ageName]
+            self.params.anemiaDistribution[ageName]["anemic"] = newProbAnemia
+            self.params.anemiaDistribution[ageName]["not anemic"] = 1. - newProbAnemia
+            ageGroup.distributeAnemicPopulation(self.params.anemiaDistribution)
+
+
         # BIRTH OUTCOME
         for outcome in self.birthOutcomes:
             self.params.birthOutcomeDist[outcome] *= birthUpdate[outcome]
