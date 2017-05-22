@@ -600,10 +600,10 @@ class Model:
     def progressPregnantWomen(self):
         # applyBirths() must happen first
         currentPopulationSize = self.pregnantWomen.getTotalPopulation()
-        newPopulationSize = currentPopulationSize * (1. + self.pregnantWomen.annualGrowth * self.timestep)
+        newPopulationSize = currentPopulationSize * (1. + self.pregnantWomen.annualGrowth)
         for status in self.deliveryList:
             # calculate deaths (do this before pop size updated)
-            deaths = self.pregnantWomen.dictOfBoxes[status].populationSize * self.pregnantWomen.dictOfBoxes[status].mortalityRate * self.timestep
+            deaths = self.pregnantWomen.dictOfBoxes[status].populationSize * self.pregnantWomen.dictOfBoxes[status].mortalityRate
             self.pregnantWomen.dictOfBoxes[status].cumulativeDeaths += deaths
             #update population sizes
             self.pregnantWomen.dictOfBoxes[status].populationSize = newPopulationSize * self.params.deliveryDistribution[status]
@@ -620,7 +620,16 @@ class Model:
     def moveOneTimeStep(self):
         self.applyMortality() 
         self.applyAgingAndBirths()
-        self.progressPregnantWomen()
         self.updateRiskDistributions()
         #self.itime += 1
+        
+    def moveModelOneYear(self):
+        # monthly progession
+        for month in range(12):
+            self.moveOneTimeStep()
+        # yearly progression
+        self.progressPregnantWomen()
+        self.applyWRAMortality()
+        self.applyWRAaging()
+        # TODO: update distributions
 
