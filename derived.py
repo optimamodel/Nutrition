@@ -165,18 +165,9 @@ class Derived:
             OddsRatio = self.data.ORstuntingProgression[ageName]
             fracStuntedThisAge = thisAge.getStuntedFraction() + self.initialStuntingTrend
             fracStuntedYounger = younger.getStuntedFraction()
-            # solve quadratic equation ax**2 + bx + c = 0
-            a = (1.-fracStuntedYounger) * (1.-OddsRatio)
-            b = (OddsRatio-1.)*fracStuntedThisAge - OddsRatio*fracStuntedYounger - (1.-fracStuntedYounger)
-            c = fracStuntedThisAge
-            det = sqrt(b**2 - 4.*a*c)
-            soln1 = (-b + det)/(2.*a)
-            soln2 = (-b - det)/(2.*a)
-            # not sure what to do if both or neither are solutions
-            if(soln1>0.)and(soln1<1.): p0 = soln1
-            if(soln2>0.)and(soln2<1.): p0 = soln2
-            self.probStuntedIfPrevStunted["notstunted"][ageName] = p0
-            self.probStuntedIfPrevStunted["yesstunted"][ageName] = p0*OddsRatio/(1.-p0+OddsRatio*p0)
+            pn, pc = self.solveQuadratic(OddsRatio, fracStuntedYounger, fracStuntedThisAge)
+            self.probStuntedIfPrevStunted["notstunted"][ageName] = pn
+            self.probStuntedIfPrevStunted["yesstunted"][ageName] = pc
         
 
     def setProbStuntedIfDiarrhea(self, currentIncidences, breastfeedingDistribution, stuntingDistribution):
@@ -200,21 +191,9 @@ class Derived:
                 fracDiarrhea += beta[ageName][breastfeedingCat] * breastfeedingDistribution[ageName][breastfeedingCat]
             # get fraction stunted
             fracStuntedThisAge = self.helper.sumStuntedComponents(stuntingDistribution[ageName])
-            # solve quadratic equation ax**2 + bx + c = 0
-            a = (1. - fracDiarrhea) * (1. - AO[ageName])
-            b = (AO[ageName] - 1.) * fracStuntedThisAge - AO[ageName] * fracDiarrhea - (1. - fracDiarrhea)
-            c = fracStuntedThisAge
-            det = sqrt(b**2 - 4.*a*c)
-            if(abs(a)<eps):
-                p0 = -c/b
-            else:
-                soln1 = (-b + det)/(2.*a)
-                soln2 = (-b - det)/(2.*a)
-                # not sure what to do if both or neither are solutions
-                if(soln1>0.)and(soln1<1.): p0 = soln1
-                if(soln2>0.)and(soln2<1.): p0 = soln2
-            self.fracStuntedIfDiarrhea["nodia"][ageName] = p0
-            self.fracStuntedIfDiarrhea["dia"][ageName]   = p0 * AO[ageName] / (1. - p0 + AO[ageName] * p0)
+            pn, pc = self.solveQuadratic(AO[ageName], fracDiarrhea, fracStuntedThisAge)
+            self.fracStuntedIfDiarrhea["nodia"][ageName] = pn
+            self.fracStuntedIfDiarrhea["dia"][ageName]   = pc
             
 
 
@@ -295,20 +274,9 @@ class Derived:
                 OddsRatio = self.data.ORstuntingIntervention[ageName][intervention]
                 fracCovered = coverage[intervention]
                 fracStuntedThisAge = self.helper.sumStuntedComponents(stuntingDistribution[ageName])
-                # solve quadratic equation ax**2 + bx + c = 0
-                a = (1.-fracCovered) * (1.-OddsRatio)
-                b = (OddsRatio-1)*fracStuntedThisAge - OddsRatio*fracCovered - (1.-fracCovered)
-                c = fracStuntedThisAge
-                det = sqrt(b**2 - 4.*a*c)
-                if(abs(a)<eps):
-                    p0 = -c/b
-                else:
-                    soln1 = (-b + det)/(2.*a)
-                    soln2 = (-b - det)/(2.*a)
-                    if(soln1>0.)and(soln1<1.): p0 = soln1
-                    if(soln2>0.)and(soln2<1.): p0 = soln2
-                self.probStuntedIfCovered[intervention]["not covered"][ageName] = p0
-                self.probStuntedIfCovered[intervention]["covered"][ageName]     = p0*OddsRatio/(1.-p0+OddsRatio*p0)
+                pn, pc = self.solveQuadratic(OddsRatio, fracCovered, fracStuntedThisAge)
+                self.probStuntedIfCovered[intervention]["not covered"][ageName] = pn
+                self.probStuntedIfCovered[intervention]["covered"][ageName]     = pc
 
     # Calculate probability of being anemic in each population group given coverage by intervention
     def setProbAnemicIfCovered(self, coverage, anemiaDistribution):
@@ -328,25 +296,11 @@ class Derived:
                     # for RR, solve linear equation for prob anemic not covered (pn) and covered (pc)
                     pn = fracAnemicThisPop/(relativeRisk*fracCovered + (1- fracCovered))
                     pc = relativeRisk*pn
-                    self.probAnemicIfCovered[intervention]["not covered"][pop] = pn
-                    self.probAnemicIfCovered[intervention]["covered"][pop] = pc
                 else: # must be OR
                     oddsRatio = self.data.ORanemiaIntervention[pop][intervention]
-                    # solve quadratic equation ax**2 + bx + c = 0
-                    a = (1. - fracCovered) * (1. - oddsRatio)
-                    b = (oddsRatio - 1) * fracAnemicThisPop - oddsRatio * fracCovered - (1. - fracCovered)
-                    c = fracAnemicThisPop
-                    det = sqrt(b ** 2 - 4. * a * c)
-                    if (abs(a) < eps):
-                        p0 = -c / b
-                    else:
-                        soln1 = (-b + det) / (2. * a)
-                        soln2 = (-b - det) / (2. * a)
-                        if (soln1 > 0.) and (soln1 < 1.): p0 = soln1
-                        if (soln2 > 0.) and (soln2 < 1.): p0 = soln2
-                    self.probAnemicIfCovered[intervention]["not covered"][pop] = p0
-                    self.probAnemicIfCovered[intervention]["covered"][pop] = p0 * oddsRatio / (
-                    1. - p0 + oddsRatio * p0)
+                    pn, pc = self.solveQuadratic(oddsRatio, fracCovered, fracAnemicThisPop)
+                self.probAnemicIfCovered[intervention]["not covered"][pop] = pn
+                self.probAnemicIfCovered[intervention]["covered"][pop] = pc
 
 
     # Calculate probability of stunting in current age-group given coverage by intervention
@@ -364,21 +318,28 @@ class Derived:
                 fracCovered = coverage[intervention]
                 appropriatePractice = self.data.ageAppropriateBreastfeeding[ageName]
                 fracCorrectlyBreastfedThisAge = breastfeedingDistribution[ageName][appropriatePractice]
-                # solve quadratic equation ax**2 + bx + c = 0
-                a = (1.-fracCovered) * (1.-OddsRatio)
-                b = (OddsRatio-1)*fracCorrectlyBreastfedThisAge - OddsRatio*fracCovered - (1.-fracCovered)
-                c = fracCorrectlyBreastfedThisAge
-                det = sqrt(b**2 - 4.*a*c)
-                if(abs(a)<eps):
-                    p0 = -c/b
-                else:
-                    soln1 = (-b + det)/(2.*a)
-                    soln2 = (-b - det)/(2.*a)
-                    if(soln1>0.)and(soln1<1.): p0 = soln1
-                    if(soln2>0.)and(soln2<1.): p0 = soln2
-                self.probCorrectlyBreastfedIfCovered[intervention]["not covered"][ageName] = p0
-                self.probCorrectlyBreastfedIfCovered[intervention]["covered"][ageName]     = p0*OddsRatio/(1.-p0+OddsRatio*p0)
+                pn, pc = self.solveQuadratic(OddsRatio, fracCovered, fracCorrectlyBreastfedThisAge)
+                self.probCorrectlyBreastfedIfCovered[intervention]["not covered"][ageName] = pn
+                self.probCorrectlyBreastfedIfCovered[intervention]["covered"][ageName]     = pc
 
+
+    def solveQuadratic(self, oddsRatio, fracA, fracB):
+        # solves quadratic where fracA is the fraction covered by intervention, and fracB is fraction of pop. in a particular box
+        from numpy import sqrt
+        eps = 1.e-5
+        a = (1. - fracA) * (1. - oddsRatio)
+        b = (oddsRatio - 1) * fracB - oddsRatio * fracA - (1. - fracA)
+        c = fracB
+        det = sqrt(b ** 2 - 4. * a * c)
+        if (abs(a) < eps):
+            p0 = -c / b
+        else:
+            soln1 = (-b + det) / (2. * a)
+            soln2 = (-b - det) / (2. * a)
+            if (soln1 > 0.) and (soln1 < 1.): p0 = soln1
+            if (soln2 > 0.) and (soln2 < 1.): p0 = soln2
+        p1 = p0 * oddsRatio / (1. - p0 + oddsRatio * p0)
+        return p0, p1
 
     def getBirthStuntingQuarticCoefficients(self):
         OR = [1.]*4
