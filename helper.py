@@ -92,8 +92,11 @@ class Helper:
             for wastingCat in wastingList:
                 allBoxes[stuntingCat][wastingCat] = {}
                 for breastfeedingCat in breastfeedingList:
-                    thisPopSize = thisAgePopSize * inputData.stuntingDistribution[ageName][stuntingCat] * inputData.wastingDistribution[ageName][wastingCat] * inputData.breastfeedingDistribution[ageName][breastfeedingCat]   # Assuming independent
-                    allBoxes[stuntingCat][wastingCat][breastfeedingCat] =  model.Box(thisPopSize)
+                    allBoxes[stuntingCat][wastingCat][breastfeedingCat] = {}
+                    for anemiaStatus in self.keyList['anemiaList']:
+                        thisPopSize = thisAgePopSize * inputData.stuntingDistribution[ageName][stuntingCat] * inputData.wastingDistribution[ageName][wastingCat] * \
+                                      inputData.breastfeedingDistribution[ageName][breastfeedingCat] * inputData.anemiaDistribution[ageName][anemiaStatus] # Assuming independent
+                        allBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus] =  model.Box(thisPopSize)
         return allBoxes
         
         

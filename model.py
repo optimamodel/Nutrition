@@ -56,8 +56,9 @@ class AgeCompartment:
         for stuntingCat in self.stuntingList:
             for wastingCat in self.wastingList:
                 for breastfeedingCat in self.breastfeedingList:
-                    thisBox = self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat] 
-                    totalSum += thisBox.populationSize
+                    for anemiaStatus in self.anemiaList:
+                        thisBox = self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus]
+                        totalSum += thisBox.populationSize
         return totalSum
 
     def getStuntedFraction(self):
@@ -65,7 +66,8 @@ class AgeCompartment:
         for stuntingCat in ["moderate", "high"]:
             for wastingCat in self.wastingList:
                 for breastfeedingCat in self.breastfeedingList:
-                    NumberStunted += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
+                    for anemiaStatus in self.anemiaList:
+                        NumberStunted += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].populationSize
         NumberTotal = self.getTotalPopulation()
         return float(NumberStunted)/float(NumberTotal)
 
@@ -74,7 +76,8 @@ class AgeCompartment:
         for stuntingCat in ["moderate", "high"]:
             for wastingCat in self.wastingList:
                 for breastfeedingCat in self.breastfeedingList:
-                    NumberStunted += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
+                    for anemiaStatus in self.anemiaList:
+                        NumberStunted += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].populationSize
         return NumberStunted
         
     def getNumberNotStunted(self):
@@ -82,7 +85,8 @@ class AgeCompartment:
         for stuntingCat in ["normal", "mild"]:
             for wastingCat in self.wastingList:
                 for breastfeedingCat in self.breastfeedingList:
-                    NumberNotStunted += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize
+                    for anemiaStatus in self.anemiaList:
+                        NumberNotStunted += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].populationSize
         return NumberNotStunted    
 
     def getCumulativeDeaths(self):
@@ -90,7 +94,8 @@ class AgeCompartment:
         for stuntingCat in self.stuntingList:
             for wastingCat in self.wastingList:
                 for breastfeedingCat in self.breastfeedingList:
-                    totalSum += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].cumulativeDeaths
+                    for anemiaStatus in self.anemiaList:
+                        totalSum += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].cumulativeDeaths
         return totalSum
 
     def getStuntingDistribution(self):
@@ -100,7 +105,8 @@ class AgeCompartment:
             returnDict[stuntingCat] = 0.
             for wastingCat in self.wastingList:
                 for breastfeedingCat in self.breastfeedingList:
-                    returnDict[stuntingCat] += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize / totalPop
+                    for anemiaStatus in self.anemiaList:
+                        returnDict[stuntingCat] += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].populationSize / totalPop
         return returnDict
 
     def getWastingDistribution(self):
@@ -110,7 +116,8 @@ class AgeCompartment:
             returnDict[wastingCat] = 0.
             for stuntingCat in self.stuntingList:
                 for breastfeedingCat in self.breastfeedingList:
-                    returnDict[wastingCat] += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize / totalPop
+                    for anemiaStatus in self.anemiaList:
+                        returnDict[wastingCat] += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].populationSize / totalPop
         return returnDict
 
     def getBreastfeedingDistribution(self):
@@ -120,23 +127,27 @@ class AgeCompartment:
             returnDict[breastfeedingCat] = 0.
             for wastingCat in self.wastingList:
                 for stuntingCat in self.stuntingList:
-                    returnDict[breastfeedingCat] += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize / totalPop
+                    for anemiaStatus in self.anemiaList:
+                        returnDict[breastfeedingCat] += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].populationSize / totalPop
         return returnDict
 
     def getNumberCorrectlyBreastfed(self,practice):
         NumberCorrectlyBreastfed = 0.
         for stuntingCat in self.stuntingList:
             for wastingCat in self.wastingList:
-                NumberCorrectlyBreastfed += self.dictOfBoxes[stuntingCat][wastingCat][practice].populationSize
+                for anemiaStatus in self.anemiaList:
+                    NumberCorrectlyBreastfed += self.dictOfBoxes[stuntingCat][wastingCat][practice][anemiaStatus].populationSize
         return NumberCorrectlyBreastfed
 
-    def distribute(self, stuntingDist, wastingDist, breastfeedingDist):
+    def distribute(self, stuntingDist, wastingDist, breastfeedingDist, anemiaDist):
         ageName = self.name
         totalPop = self.getTotalPopulation()
         for stuntingCat in self.stuntingList:
             for wastingCat in self.wastingList:
                 for breastfeedingCat in self.breastfeedingList:
-                    self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].populationSize = stuntingDist[ageName][stuntingCat] * wastingDist[ageName][wastingCat] * breastfeedingDist[ageName][breastfeedingCat] * totalPop
+                    for anemiaStatus in self.anemiaList:
+                        self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].populationSize = stuntingDist[ageName][stuntingCat] * wastingDist[ageName][wastingCat] *\
+                                                                                                                   breastfeedingDist[ageName][breastfeedingCat] * anemiaDist[ageName][anemiaStatus] * totalPop
 
     def getMortality(self):
         agePop = 0.
@@ -144,11 +155,12 @@ class AgeCompartment:
         for stuntingCat in self.stuntingList:
             for wastingCat in self.wastingList:
                 for breastfeedingCat in self.breastfeedingList:
-                    thisBox = self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat] 
-                    boxMortality = thisBox.mortalityRate
-                    boxPop = thisBox.populationSize
-                    agePop += boxPop
-                    ageMortality += boxMortality*boxPop
+                    for anemiaStatus in self.anemiaList:
+                        thisBox = self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus]
+                        boxMortality = thisBox.mortalityRate
+                        boxPop = thisBox.populationSize
+                        agePop += boxPop
+                        ageMortality += boxMortality*boxPop
         ageMortality /= agePop
         return ageMortality
         
@@ -327,7 +339,7 @@ class Model:
             incorrectPractices = [practice for practice in self.breastfeedingList if practice!=correctPractice]
             for practice in incorrectPractices:
                 self.params.breastfeedingDistribution[ageName][practice] *= 1. - fracCorrecting
-            ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
+            ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
             SumAfter = self.derived.getDiarrheaRiskSum(ageName, self.params.breastfeedingDistribution)
             self.params.incidences[ageName]['Diarrhea'] *= SumAfter / SumBefore # update incidence of diarrhea
         beta = self.derived.getFracDiarrheaFixedZ()
@@ -359,7 +371,7 @@ class Model:
             oldProbStunting = ageGroup.getStuntedFraction()
             newProbStunting = oldProbStunting * totalUpdate
             self.params.stuntingDistribution[ageName] = self.helper.restratify(newProbStunting)
-            ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
+            ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
 
         # ANEMIA
         # Women of reproductive age
@@ -406,21 +418,24 @@ class Model:
                     count += Rb * pbo * Rbo * self.derived.referenceMortality[ageName][cause]
             for stuntingCat in self.stuntingList:
                 for wastingCat in self.wastingList:
-                    ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate = count
+                    for anemiaStatus in self.anemiaList:
+                        ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].mortalityRate = count
         # over 1 months
         for ageGroup in self.listOfAgeCompartments[1:]:
             ageName = ageGroup.name
             for stuntingCat in self.stuntingList:
                 for wastingCat in self.wastingList:
                     for breastfeedingCat in self.breastfeedingList:
-                        count = 0.
-                        for cause in self.params.causesOfDeath:
-                            t1 = self.derived.referenceMortality[ageName][cause]
-                            t2 = self.params.RRdeathStunting[ageName][cause][stuntingCat]
-                            t3 = self.params.RRdeathWasting[ageName][cause][wastingCat]
-                            t4 = self.params.RRdeathBreastfeeding[ageName][cause][breastfeedingCat]
-                            count += t1 * t2 * t3 * t4                            
-                        ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat].mortalityRate = count
+                        for anemiaStatus in self.anemiaList:
+                            count = 0.
+                            for cause in self.params.causesOfDeath:
+                                t1 = self.derived.referenceMortality[ageName][cause]
+                                t2 = self.params.RRdeathStunting[ageName][cause][stuntingCat]
+                                t3 = self.params.RRdeathWasting[ageName][cause][wastingCat]
+                                t4 = self.params.RRdeathBreastfeeding[ageName][cause][breastfeedingCat]
+                                t5 = self.params.RRdeathAnemia[ageName][cause][anemiaStatus]
+                                count += t1 * t2 * t3 * t4 * t5
+                            ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].mortalityRate = count
         # pregnant women
         for anemiaStatus in self.anemiaList:
             for deliveryStatus in self.deliveryList:
@@ -511,7 +526,7 @@ class Model:
                 for stuntingCat in self.stuntingList:
                     numAgingInStratified[stuntingCat] += restratifiedProbBecomeStunted[stuntingCat] * numAgingIn[prevStunt]
             # distribute those aging in amongst those stunting categories but also breastfeeding and wasting
-            for wastingCat in self.wastingList:
+            for wastingCat in self.wastingList:  #TODO add anemiastatus in here?
                 paw = self.params.wastingDistribution[ageName][wastingCat]
                 for breastfeedingCat in self.breastfeedingList:
                     pab = self.params.breastfeedingDistribution[ageName][breastfeedingCat]
@@ -524,7 +539,7 @@ class Model:
             probStunting = self.helper.sumStuntedComponents(stuntingDistributionNow)
             #probStunting = thisAgeCompartment.getStuntedFraction()
             self.params.stuntingDistribution[ageName] = self.helper.restratify(probStunting)
-            thisAgeCompartment.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution)
+            thisAgeCompartment.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
             
     def applyWRAaging(self):
         numCompartments = len(self.listOfReproductiveAgeCompartments)
@@ -567,7 +582,7 @@ class Model:
             totalProbStunted = self.derived.probStuntedAtBirth[outcome] * self.derived.stuntingUpdateAfterInterventions['<1 month']
             restratifiedStuntingAtBirth[outcome] = self.helper.restratify(totalProbStunted)
         # sum over birth outcome for full stratified stunting fractions, then apply to birth distribution
-        stuntingFractions = {}
+        stuntingFractions = {}  # TODO anemiaStatus in here?
         for stuntingCat in self.stuntingList:
             stuntingFractions[stuntingCat] = 0.
             for outcome in self.birthOutcomes:
