@@ -644,7 +644,7 @@ class Model:
                 deaths = self.pregnantWomen.dictOfBoxes[anemiaStatus][deliveryStatus].populationSize * self.pregnantWomen.dictOfBoxes[anemiaStatus][deliveryStatus].mortalityRate * self.timestep
                 self.pregnantWomen.dictOfBoxes[anemiaStatus][deliveryStatus].cumulativeDeaths += deaths
                 #update population sizes
-                self.pregnantWomen.dictOfBoxes[anemiaStatus][deliveryStatus].populationSize = newPopulationSize * self.params.deliveryDistribution[deliveryStatus]
+                self.pregnantWomen.dictOfBoxes[anemiaStatus][deliveryStatus].populationSize = newPopulationSize * self.params.deliveryDistribution[deliveryStatus] * self.params.anemiaDistribution['pregnant women'][anemiaStatus]
         self.params.anemiaDistribution['pregnant women'] = self.pregnantWomen.getAnemiaDistribution()
 
     def updateRiskDistributions(self):
