@@ -189,6 +189,12 @@ class ReproductiveAgeCompartment:
         numberTotal = self.getTotalPopulation()
         return float(numberAnemic)/numberTotal
 
+    def getAnemiaDistribution(self):
+       totalPop = self.getTotalPopulation()
+       returnDict = {}
+       for status in self.anemiaList:
+           returnDict[status] = self.dictOfBoxes[status].populationSize / totalPop
+       return returnDict
 
 class Model:
     def __init__(self, pregnantWomen, listOfAgeCompartments, listOfReproductiveAgeCompartments, keyList):
@@ -600,10 +606,10 @@ class Model:
     def progressPregnantWomen(self):
         # applyBirths() must happen first
         currentPopulationSize = self.pregnantWomen.getTotalPopulation()
-        newPopulationSize = currentPopulationSize * (1. + self.pregnantWomen.annualGrowth)
+        newPopulationSize = currentPopulationSize * (1. + self.pregnantWomen.annualGrowth * self.timestep)
         for status in self.deliveryList:
             # calculate deaths (do this before pop size updated)
-            deaths = self.pregnantWomen.dictOfBoxes[status].populationSize * self.pregnantWomen.dictOfBoxes[status].mortalityRate
+            deaths = self.pregnantWomen.dictOfBoxes[status].populationSize * self.pregnantWomen.dictOfBoxes[status].mortalityRate * self.timestep
             self.pregnantWomen.dictOfBoxes[status].cumulativeDeaths += deaths
             #update population sizes
             self.pregnantWomen.dictOfBoxes[status].populationSize = newPopulationSize * self.params.deliveryDistribution[status]
@@ -615,21 +621,25 @@ class Model:
             self.params.stuntingDistribution[ageName]      = ageGroup.getStuntingDistribution()
             self.params.wastingDistribution[ageName]       = ageGroup.getWastingDistribution()
             self.params.breastfeedingDistribution[ageName] = ageGroup.getBreastfeedingDistribution()
+            #TODO: update anemia dist             
+            # when delivery distributions are altered, will need to update those here too
 
+    def updateYearlyRiskDistributions(self):
+        for ageName in self.listOfReproductiveAgeCompartments:
+            self.params.anemiaDistribution[ageName] = ageName.getAnemiaDistribution()
 
     def moveOneTimeStep(self):
         self.applyMortality() 
         self.applyAgingAndBirths()
+        self.progressPregnantWomen()
         self.updateRiskDistributions()
-        #self.itime += 1
         
     def moveModelOneYear(self):
         # monthly progession
         for month in range(12):
             self.moveOneTimeStep()
         # yearly progression
-        self.progressPregnantWomen()
         self.applyWRAMortality()
         self.applyWRAaging()
-        # TODO: update distributions
+        self.updateYearlyRiskDistributions()
 
