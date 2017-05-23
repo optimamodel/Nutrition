@@ -35,6 +35,14 @@ class PregnantWomen:
             for deliveryStatus in self.deliveryList:
                 self.dictOfBoxes[anemiaStatus][deliveryStatus].populationSize = anemiaDist['pregnant women'][anemiaStatus] * deliveryDist[deliveryStatus] * totalPop
 
+    def getAnemiaDistribution(self):
+        totalPop = self.getTotalPopulation()
+        returnDict = {}
+        for anemiaStatus in self.anemiaList:
+            returnDict[anemiaStatus] = 0.
+            for deliveryStatus in self.deliveryList:
+                returnDict[anemiaStatus] += self.dictOfBoxes[anemiaStatus][deliveryStatus].populationSize / totalPop
+        return returnDict
         
 class Box:
     def __init__(self, populationSize):
@@ -392,6 +400,8 @@ class Model:
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
 
         # ANEMIA
+        # TODO CHILDREN
+
         # Women of reproductive age
         for ageGroup in self.listOfReproductiveAgeCompartments:
             ageName = ageGroup.name
@@ -635,7 +645,7 @@ class Model:
                 self.pregnantWomen.dictOfBoxes[anemiaStatus][deliveryStatus].cumulativeDeaths += deaths
                 #update population sizes
                 self.pregnantWomen.dictOfBoxes[anemiaStatus][deliveryStatus].populationSize = newPopulationSize * self.params.deliveryDistribution[deliveryStatus]
-
+        self.params.anemiaDistribution['pregnant women'] = self.pregnantWomen.getAnemiaDistribution()
 
     def updateRiskDistributions(self):
         for ageGroup in self.listOfAgeCompartments:
