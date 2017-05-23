@@ -57,13 +57,16 @@ class Derived:
                 for stuntingCat in self.stuntingList:
                     for wastingCat in self.wastingList:
                         for breastfeedingCat in self.breastfeedingList:
-                            t1 = self.data.stuntingDistribution[ageName][stuntingCat]
-                            t2 = self.data.wastingDistribution[ageName][wastingCat] 
-                            t3 = self.data.breastfeedingDistribution[ageName][breastfeedingCat]
-                            t4 = self.data.RRdeathStunting[ageName][cause][stuntingCat]
-                            t5 = self.data.RRdeathWasting[ageName][cause][wastingCat]
-                            t6 = self.data.RRdeathBreastfeeding[ageName][cause][breastfeedingCat]
-                            RHS[ageName][cause] += t1 * t2 * t3 * t4 * t5 * t6
+                            for anemiaStatus in self.anemiaList:
+                                t1 = self.data.stuntingDistribution[ageName][stuntingCat]
+                                t2 = self.data.wastingDistribution[ageName][wastingCat]
+                                t3 = self.data.breastfeedingDistribution[ageName][breastfeedingCat]
+                                t4 = self.data.anemiaDistribution[ageName][anemiaStatus]
+                                t5 = self.data.RRdeathStunting[ageName][cause][stuntingCat]
+                                t6 = self.data.RRdeathWasting[ageName][cause][wastingCat]
+                                t7 = self.data.RRdeathBreastfeeding[ageName][cause][breastfeedingCat]
+                                t8 = self.data.RRdeathAnemia[ageName][cause][anemiaStatus]
+                                RHS[ageName][cause] += t1 * t2 * t3 * t4 * t5 * t6 * t7 * t8
         # RHS for newborns only
         ageName = "<1 month"
         for cause in self.data.causesOfDeath:
@@ -74,7 +77,10 @@ class Derived:
                 for birthoutcome in self.birthOutcomes:
                     Pbo = self.data.birthOutcomeDist[birthoutcome]
                     RRbo = self.data.RRdeathByBirthOutcome[cause][birthoutcome]
-                    RHS[ageName][cause] += Pbf * RRbf * Pbo * RRbo
+                    for anemiaStatus in self.anemiaList:
+                        Pan = self.data.anemiaDistribution[ageName][anemiaStatus]
+                        RRan = self.data.RRdeathAnemia[ageName][cause][anemiaStatus]
+                        RHS[ageName][cause] += Pbf * RRbf * Pbo * RRbo * Pan * RRan
         # Store total age population sizes
         AgePop = []
         for iAge in range(len(self.ages)):
