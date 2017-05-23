@@ -657,8 +657,9 @@ class Model:
             # when delivery distributions are altered, will need to update those here too
 
     def updateYearlyRiskDistributions(self):
-        for ageName in self.listOfReproductiveAgeCompartments:
-            self.params.anemiaDistribution[ageName] = ageName.getAnemiaDistribution()
+        for ageGroup in self.listOfReproductiveAgeCompartments:
+            ageName = ageGroup.name
+            self.params.anemiaDistribution[ageName] = ageGroup.getAnemiaDistribution()
 
     def moveOneTimeStep(self):
         self.applyMortality() 
