@@ -280,8 +280,6 @@ class Derived:
 
     # Calculate probability of being anemic in each population group given coverage by intervention
     def setProbAnemicIfCovered(self, coverage, anemiaDistribution):
-        # TODO haven't taken into account IPTp as an indirect impact on anemia
-        # TODO will need affected fraction
         from numpy import sqrt
         eps = 1.e-5
         for intervention in self.data.interventionList:
@@ -289,8 +287,12 @@ class Derived:
             self.probAnemicIfCovered[intervention]["not covered"] = {}
             self.probAnemicIfCovered[intervention]["covered"] = {}
             for pop in self.allPops:
-                fracCovered = coverage[intervention]
-                fracAnemicThisPop = anemiaDistribution[pop]["anemic"]
+                if intervention == "IPTp":  # indirect intervention for anemia
+                    propExposed = self.data.proportionExposedMalaria[pop]
+                else:
+                    propExposed = 1
+                fracCovered = coverage[intervention] * propExposed
+                fracAnemicThisPop = anemiaDistribution[pop]["anemic"] * propExposed
                 relativeRisk = self.data.RRanemiaIntervention[pop].get(intervention)
                 if relativeRisk is not None: # have RR for this intervention
                     # for RR, solve linear equation for prob anemic not covered (pn) and covered (pc)
