@@ -108,3 +108,26 @@ class Costcov():
         plt.legend(loc = 'upper center', bbox_to_anchor=(0.5, -0.15), ncol=1, fancybox=True, shadow=True)  #plt.legend()
         plt.show()    
  
+ 
+ 
+    def outputCurvesToCSV(self, popSize, costCovInfo, filename):
+        import numpy as np
+        import csv
+        #FUNCTION
+        xvals = np.arange(0, 1e7, 1000)
+        y = {}
+        for intervention in costCovInfo.keys():
+            s = costCovInfo[intervention]['saturation']
+            p = popSize[intervention]
+            u = costCovInfo[intervention]['unitcost']
+            y[intervention] = [intervention]
+            for x in xvals:
+                y[intervention].append( (2.*s/(1.+np.exp(-2.*x/(s*u*p))) - s)*p )
+        # write to csv
+        x = ['spending'] + xvals.tolist()       
+        outfile = filename + '_costCoverageCurves.csv'
+        with open(outfile, "wb") as f:
+            writer = csv.writer(f)
+            writer.writerow(x)
+            for key in y.keys():
+                writer.writerow(y[key])  
