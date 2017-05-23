@@ -628,12 +628,13 @@ class Model:
         # applyBirths() must happen first
         currentPopulationSize = self.pregnantWomen.getTotalPopulation()
         newPopulationSize = currentPopulationSize * (1. + self.pregnantWomen.annualGrowth * self.timestep)
-        for status in self.deliveryList:
-            # calculate deaths (do this before pop size updated)
-            deaths = self.pregnantWomen.dictOfBoxes[status].populationSize * self.pregnantWomen.dictOfBoxes[status].mortalityRate * self.timestep
-            self.pregnantWomen.dictOfBoxes[status].cumulativeDeaths += deaths
-            #update population sizes
-            self.pregnantWomen.dictOfBoxes[status].populationSize = newPopulationSize * self.params.deliveryDistribution[status]
+        for anemiaStatus in self.anemiaList:
+            for deliveryStatus in self.deliveryList:
+                # calculate deaths (do this before pop size updated)
+                deaths = self.pregnantWomen.dictOfBoxes[anemiaStatus][deliveryStatus].populationSize * self.pregnantWomen.dictOfBoxes[anemiaStatus][deliveryStatus].mortalityRate * self.timestep
+                self.pregnantWomen.dictOfBoxes[anemiaStatus][deliveryStatus].cumulativeDeaths += deaths
+                #update population sizes
+                self.pregnantWomen.dictOfBoxes[anemiaStatus][deliveryStatus].populationSize = newPopulationSize * self.params.deliveryDistribution[deliveryStatus]
 
 
     def updateRiskDistributions(self):
