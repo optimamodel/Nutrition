@@ -19,7 +19,7 @@ class Data:
                  effectivenessIncidence, interventionsBirthOutcome, foodSecurityGroups,
                  ORstuntingComplementaryFeeding, deliveryDistribution,
                  interventionsMaternalAff, interventionsMaternalEff, anemiaDistribution,
-                 projectedReproductiveAge):
+                 projectedReproductiveAge, proportionExposedMalaria):
 
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
@@ -61,6 +61,7 @@ class Data:
         self.interventionsMaternalEff = interventionsMaternalEff
         self.anemiaDistribution = anemiaDistribution
         self.projectedReproductiveAge = projectedReproductiveAge
+        self.proportionExposedMalaria = proportionExposedMalaria
 
 
 def readSpreadsheet(fileName, keyList):
@@ -582,6 +583,9 @@ def readSpreadsheet(fileName, keyList):
         for group in foodSecurityGroups:
             ORstuntingComplementaryFeeding[ageName][group] = df.loc[group, ageName]
 
+    # READ proportion exposed to malaria
+    df = pandas.read_excel(Location, sheetname = 'Proportion exposed to malaria')
+    proportionExposedMalaria = dict(zip(list(df.columns.values), df.iloc[0]))
 
     spreadsheetData = Data(causesOfDeath, conditions, interventionList, demographics,
                            projectedBirths, rawMortality, causeOfDeathDist, RRdeathAnemia, RRdeathStunting,
@@ -595,7 +599,7 @@ def readSpreadsheet(fileName, keyList):
                            effectivenessMortality, effectivenessIncidence, interventionsBirthOutcome,
                            foodSecurityGroups, ORstuntingComplementaryFeeding, deliveryDistribution, 
                            interventionsMaternalAff, interventionsMaternalEff, anemiaDistribution,
-                           projectedReproductiveAge)
+                           projectedReproductiveAge, proportionExposedMalaria)
 
     return spreadsheetData
                   
