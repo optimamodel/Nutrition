@@ -23,17 +23,32 @@ for regionName in regionNameList:
     spreadsheetList.append(spreadsheet)
 
 
-analysis = 'geospatialNotFixed'
-GAFile = 'GA_notFixedProg'
+#analysis = 'geospatialNotFixed'
+#GAFile = 'GA_notFixedProg'
+#resultsFileStem = rootpath+'/Results/'+date+'/'+optimise +'/'+analysis+'/'
+#
+#geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
+#geospatialOptimisation.outputRegionalCurrentSpendingToCSV()
+#geospatialOptimisation.outputRegionalPostGAOptimisedSpendingToCSV(GAFile)
+#geospatialOptimisation.outputTradeOffCurves()
+#geospatialOptimisation.outputToCSVTimeSeriesPostGAReallocationByRegion(GAFile)
+#
+#geospatialOptimisation.outputRegionalBOCsFile('regionalBOCs')
+#geospatialOptimisation.plotPostGAReallocationByRegion(GAFile)
+#geospatialOptimisation.plotTradeOffCurves()
+#geospatialOptimisation.outputRegionalCascadesAndOutcomeToCSV('thrive')
+
+
+#  NOW HARVEST RESULTS FOR EXTRA MONEY
+analysis = 'geospatialNotFixedExtraMoney'
+GAFile = 'GA_notFixedProg_extraMoney'
 resultsFileStem = rootpath+'/Results/'+date+'/'+optimise +'/'+analysis+'/'
 
 geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
-geospatialOptimisation.outputRegionalCurrentSpendingToCSV()
-geospatialOptimisation.outputRegionalPostGAOptimisedSpendingToCSV(GAFile)
+#geospatialOptimisation.outputRegionalCurrentSpendingToCSV()
+#geospatialOptimisation.outputRegionalPostGAOptimisedSpendingToCSV(GAFile)
 geospatialOptimisation.outputTradeOffCurves()
 geospatialOptimisation.outputToCSVTimeSeriesPostGAReallocationByRegion(GAFile)
-
-geospatialOptimisation.outputRegionalBOCsFile('regionalBOCs')
 geospatialOptimisation.plotPostGAReallocationByRegion(GAFile)
-geospatialOptimisation.plotTradeOffCurves()
-#geospatialOptimisation.outputTradeOffCurves()
+geospatialOptimisation.outputTradeOffCurves()
+geospatialOptimisation.outputRegionalCascadesAndOutcomeToCSV('thrive')
