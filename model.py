@@ -79,6 +79,15 @@ class AgeCompartment:
         NumberTotal = self.getTotalPopulation()
         return float(NumberStunted)/float(NumberTotal)
 
+    def getAnemicFraction(self):
+        numberAnemic = 0.
+        numberTotal = self.getTotalPopulation()
+        for stuntingCat in self.stuntingList:
+            for wastingCat in self.wastingList:
+                for breastfeedingCat in self.breastfeedingList:
+                    numberAnemic += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat]["anemic"].populationSize
+        return float(numberAnemic)/float(numberTotal)
+
     def getNumberStunted(self):
         NumberStunted = 0.
         for stuntingCat in ["moderate", "high"]:
@@ -400,7 +409,14 @@ class Model:
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
 
         # ANEMIA
-        # TODO CHILDREN
+        # Children
+        for ageGroup in self.listOfAgeCompartments:
+            ageName = ageGroup.name
+            oldProbAnemia = ageGroup.getAnemicFraction()
+            newProbAnemia = oldProbAnemia * anemiaUpdate[ageName]
+            self.params.anemiaDistribution[ageName]['anemic'] = newProbAnemia
+            self.params.anemiaDistribution[ageName]['not anemic'] = 1. - newProbAnemia
+            ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
 
         # Women of reproductive age
         for ageGroup in self.listOfReproductiveAgeCompartments:
@@ -645,6 +661,7 @@ class Model:
                 self.pregnantWomen.dictOfBoxes[anemiaStatus][deliveryStatus].cumulativeDeaths += deaths
                 #update population sizes
                 self.pregnantWomen.dictOfBoxes[anemiaStatus][deliveryStatus].populationSize = newPopulationSize * self.params.deliveryDistribution[deliveryStatus] * self.params.anemiaDistribution['pregnant women'][anemiaStatus]
+        # TODO update delivery distribution?
         self.params.anemiaDistribution['pregnant women'] = self.pregnantWomen.getAnemiaDistribution()
 
     def updateRiskDistributions(self):
