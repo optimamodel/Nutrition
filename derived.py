@@ -160,7 +160,6 @@ class Derived:
 
     # Calculate probability of stunting in this age group given stunting in previous age-group
     def setProbStuntingProgression(self):
-        from numpy import sqrt
         numAgeGroups = len(self.ages)
         self.probStuntedIfPrevStunted["notstunted"] = {}
         self.probStuntedIfPrevStunted["yesstunted"] = {}
@@ -184,8 +183,6 @@ class Derived:
         Zt = Z0 #this is true for the initialisation
         beta = self.getFracDiarrhea(Z0, Zt)
         AO = self.getAverageOR(Zt)
-        from numpy import sqrt    
-        eps = 1.e-5
         numAgeGroups = len(self.ages)
         self.fracStuntedIfDiarrhea["nodia"] = {}
         self.fracStuntedIfDiarrhea["dia"] = {}
@@ -268,8 +265,6 @@ class Derived:
 
     # Calculate probability of stunting in current age-group given coverage by intervention
     def setProbStuntedIfCovered(self, coverage, stuntingDistribution):
-        from numpy import sqrt 
-        eps = 1.e-5
         numAgeGroups = len(self.ages)
         for intervention in self.data.interventionList:
             self.probStuntedIfCovered[intervention] = {}
@@ -286,8 +281,6 @@ class Derived:
 
     # Calculate probability of being anemic in each population group given coverage by intervention
     def setProbAnemicIfCovered(self, coverage, anemiaDistribution):
-        from numpy import sqrt
-        eps = 1.e-5
         for intervention in self.data.interventionList:
             self.probAnemicIfCovered[intervention] = {}
             self.probAnemicIfCovered[intervention]["not covered"] = {}
@@ -313,8 +306,6 @@ class Derived:
 
     # Calculate probability of stunting in current age-group given coverage by intervention
     def setProbCorrectlyBreastfedIfCovered(self, coverage, breastfeedingDistribution):
-        from numpy import sqrt 
-        eps = 1.e-5
         numAgeGroups = len(self.ages)
         for intervention in self.data.interventionList:
             self.probCorrectlyBreastfedIfCovered[intervention] = {}
@@ -332,7 +323,9 @@ class Derived:
 
 
     def solveQuadratic(self, oddsRatio, fracA, fracB):
-        # solves quadratic where fracA is the fraction covered by intervention, and fracB is fraction of pop. in a particular box
+        # solves quadratic to calculate probabilities where e.g.:
+        # fracA is fraction covered by intervention
+        # fracB is fraction of pop. in a particular risk status
         from numpy import sqrt
         eps = 1.e-5
         a = (1. - fracA) * (1. - oddsRatio)
