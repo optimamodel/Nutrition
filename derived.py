@@ -119,19 +119,19 @@ class Derived:
                 LHS_age_cause = MortalityCorrected[ageName] * self.data.causeOfDeathDist[ageName][cause]
                 Xdictionary[ageName][cause] = LHS_age_cause / RHS[ageName][cause]
         self.referenceMortality = Xdictionary
-        # now call function to set maternal reference mortality
-        self.setReferenceMaternalMortality()
+        # now call function to set pregnant women reference mortality
+        self.setReferencePregnantWomenMortality()
         # now call function to set women of reproductive age mortality
         self.setReferenceWRAMortality()
         
         
-    def setReferenceMaternalMortality(self):
+    def setReferencePregnantWomenMortality(self):
         popName = 'pregnant women'
         popSize = self.data.demographics['number of pregnant women']
         numBirths = self.data.demographics['number of live births']
-        maternalMortality = self.data.rawMortality['pregnant women']
-        numMaternalDeaths = numBirths * maternalMortality / 1000
-        fractionMaternalMortality = numMaternalDeaths / popSize
+        pregnantWomenMortality = self.data.rawMortality['pregnant women']
+        numPregnantWomenDeaths = numBirths * pregnantWomenMortality / 1000
+        fractionPregnantWomenMortality = numPregnantWomenDeaths / popSize
         RHS = {}
         RHS[popName]= {}
         for cause in self.data.causesOfDeath:
@@ -144,7 +144,7 @@ class Derived:
         Xdictionary = {}
         Xdictionary[popName] = {}
         for cause in self.data.causesOfDeath:
-            LHS_pop_cause = fractionMaternalMortality * self.data.causeOfDeathDist[popName][cause]
+            LHS_pop_cause = fractionPregnantWomenMortality * self.data.causeOfDeathDist[popName][cause]
             Xdictionary[popName][cause] = LHS_pop_cause / RHS[popName][cause]
         # add pregnant women reference mortality to dictionary
         self.referenceMortality.update(Xdictionary)

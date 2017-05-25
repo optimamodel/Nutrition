@@ -339,7 +339,7 @@ class Model:
         
         # get combined reductions from all interventions
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
-        maternalMortalityUpdate = self.params.getMaternalMortalityUpdate(newCoverage)
+        pregnantWomenMortalityUpdate = self.params.getPregnantWomenMortalityUpdate(newCoverage)
         stuntingUpdate = self.params.getStuntingUpdate(newCoverage)
         anemiaUpdate = self.params.getAnemiaUpdate(newCoverage)
         incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
@@ -348,9 +348,9 @@ class Model:
         stuntingUpdateComplementaryFeeding = self.params.getStuntingUpdateComplementaryFeeding(newCoverage)
 
         # MORTALITY
-        # add the maternal mortality update to the mortality update for pregnant women
+        # add the pregnant women mortality update to the mortality update for pregnant women
         for cause in self.params.causesOfDeath:
-            mortalityUpdate['pregnant women'][cause] *= 1. - maternalMortalityUpdate[cause]
+            mortalityUpdate['pregnant women'][cause] *= 1. - pregnantWomenMortalityUpdate[cause]
         #update mortality for each population
         for pop in self.allPops:
             for cause in self.params.causesOfDeath:

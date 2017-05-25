@@ -76,7 +76,7 @@ class Helper:
         baseBirths = float(projectedBirths[0])
         numYears   = len(projectedBirths)-1
         annualGrowth = (projectedBirths[numYears]-baseBirths)/float(numYears)/baseBirths
-        boxes = self.makeMaternalBoxes(inputData)
+        boxes = self.makePregnantWomenBoxes(inputData)
         pregnantWomen = model.PregnantWomen(birthRate, annualGrowth, boxes, self.keyList)        
         return pregnantWomen
 
@@ -100,7 +100,7 @@ class Helper:
         return allBoxes
         
         
-    def makeMaternalBoxes(self, inputData):
+    def makePregnantWomenBoxes(self, inputData):
         import model
         annualPregnancies = dcp(inputData.demographics['number of pregnant women'])
         populationSize = annualPregnancies

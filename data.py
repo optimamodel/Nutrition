@@ -18,7 +18,7 @@ class Data:
                  targetPopulation, affectedFraction, effectivenessMortality,
                  effectivenessIncidence, interventionsBirthOutcome, foodSecurityGroups,
                  ORstuntingComplementaryFeeding, deliveryDistribution,
-                 interventionsMaternalAff, interventionsMaternalEff, anemiaDistribution,
+                 interventionsPregnantWomenAff, interventionsPregnantWomenEff, anemiaDistribution,
                  projectedReproductiveAge, proportionExposedMalaria):
 
         self.causesOfDeath = causesOfDeath
@@ -57,8 +57,8 @@ class Data:
         self.foodSecurityGroups = foodSecurityGroups
         self.ORstuntingComplementaryFeeding = ORstuntingComplementaryFeeding
         self.deliveryDistribution = deliveryDistribution
-        self.interventionsMaternalAff = interventionsMaternalAff
-        self.interventionsMaternalEff = interventionsMaternalEff
+        self.interventionsPregnantWomenAff = interventionsPregnantWomenAff
+        self.interventionsPregnantWomenEff = interventionsPregnantWomenEff
         self.anemiaDistribution = anemiaDistribution
         self.projectedReproductiveAge = projectedReproductiveAge
         self.proportionExposedMalaria = proportionExposedMalaria
@@ -518,56 +518,56 @@ def readSpreadsheet(fileName, keyList):
                 effectivenessIncidence[intervention][ageName][condition] = df.loc[intervention][ageName][condition]
 
 
-    # READ Interventions maternal aff frac SHEET
+    # READ Interventions pregnant women aff frac SHEET
     # sets
-    # - interventionsMaternalAff
-    df = pandas.read_excel(Location, sheetname = 'Interventions maternal aff frac', index_col = [0])
+    # - interventionsPregnantWomenAff
+    df = pandas.read_excel(Location, sheetname = 'Inter. pregnant women aff frac', index_col = [0])
     #get the list of interventions
     mylist = list(df.index.values)
     myset = set(mylist)
     interventionsHere = list(myset)
     #do the rest
-    df = pandas.read_excel(Location, sheetname = 'Interventions maternal aff frac', index_col = [0, 1])
-    interventionsMaternalAff = {}
+    df = pandas.read_excel(Location, sheetname = 'Inter. pregnant women aff frac', index_col = [0, 1])
+    interventionsPregnantWomenAff = {}
     # initialise
     for intervention in interventionList:
-        interventionsMaternalAff[intervention] = {}
+        interventionsPregnantWomenAff[intervention] = {}
         for delivery in deliveryList:
-            interventionsMaternalAff[intervention][delivery] = {}
+            interventionsPregnantWomenAff[intervention][delivery] = {}
             for cause in causesOfDeath:
-                interventionsMaternalAff[intervention][delivery][cause] = 0.
+                interventionsPregnantWomenAff[intervention][delivery][cause] = 0.
     # complete
     for intervention in interventionsHere:
         for delivery in deliveryList:
             causesHere = df.loc[intervention][delivery].keys()
             for cause in causesHere:
-                interventionsMaternalAff[intervention][delivery][cause] = df.loc[intervention][delivery][cause]
+                interventionsPregnantWomenAff[intervention][delivery][cause] = df.loc[intervention][delivery][cause]
 
 
-    # READ Interventions maternal eff SHEET
+    # READ Interventions pregnant women eff SHEET
     # sets
-    # - interventionsMaternalEff
-    df = pandas.read_excel(Location, sheetname = 'Interventions maternal eff', index_col = [0])
+    # - interventionsPregnantWomenEff
+    df = pandas.read_excel(Location, sheetname = 'Inter. pregnant women eff', index_col = [0])
     #get the list of interventions
     mylist = list(df.index.values)
     myset = set(mylist)
     interventionsHere = list(myset)
     #do the rest
-    df = pandas.read_excel(Location, sheetname = 'Interventions maternal eff', index_col = [0, 1])
-    interventionsMaternalEff = {}
+    df = pandas.read_excel(Location, sheetname = 'Inter. pregnant women eff', index_col = [0, 1])
+    interventionsPregnantWomenEff = {}
     # initialise
     for intervention in interventionList:
-        interventionsMaternalEff[intervention] = {}
+        interventionsPregnantWomenEff[intervention] = {}
         for delivery in deliveryList:
-            interventionsMaternalEff[intervention][delivery] = {}
+            interventionsPregnantWomenEff[intervention][delivery] = {}
             for cause in causesOfDeath:
-                interventionsMaternalEff[intervention][delivery][cause] = 0.
+                interventionsPregnantWomenEff[intervention][delivery][cause] = 0.
     # complete
     for intervention in interventionsHere:
         for delivery in deliveryList:
             causesHere = df.loc[intervention][delivery].keys()
             for cause in causesHere:
-                interventionsMaternalEff[intervention][delivery][cause] = df.loc[intervention][delivery][cause]
+                interventionsPregnantWomenEff[intervention][delivery][cause] = df.loc[intervention][delivery][cause]
 
 
 
@@ -598,7 +598,7 @@ def readSpreadsheet(fileName, keyList):
                            costSaturation, targetPopulation, affectedFraction,
                            effectivenessMortality, effectivenessIncidence, interventionsBirthOutcome,
                            foodSecurityGroups, ORstuntingComplementaryFeeding, deliveryDistribution, 
-                           interventionsMaternalAff, interventionsMaternalEff, anemiaDistribution,
+                           interventionsPregnantWomenAff, interventionsPregnantWomenEff, anemiaDistribution,
                            projectedReproductiveAge, proportionExposedMalaria)
 
     return spreadsheetData
