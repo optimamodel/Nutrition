@@ -126,15 +126,29 @@ class Derived:
         
         
     def setReferenceMaternalMortality(self):
+        popName = 'pregnant women'
         popSize = self.data.demographics['number of pregnant women']
         numBirths = self.data.demographics['number of live births']
         maternalMortality = self.data.rawMortality['pregnant women']
         numMaternalDeaths = numBirths * maternalMortality / 1000
         fractionMaternalMortality = numMaternalDeaths / popSize
-        self.referenceMortality['pregnant women'] = {}
-        for cause in self.data.causesOfDeath:        
-            self.referenceMortality['pregnant women'][cause] = fractionMaternalMortality * self.data.causeOfDeathDist['pregnant women'][cause]
-        
+        RHS = {}
+        RHS[popName]= {}
+        for cause in self.data.causesOfDeath:
+            RHS[popName][cause] = 0.
+            for anemiaStatus in self.anemiaList:
+                t1 = self.data.anemiaDistribution[popName][anemiaStatus]
+                t2 = self.data.RRdeathAnemia[popName][cause][anemiaStatus]
+                RHS[popName][cause] += t1 * t2
+        # LHS
+        Xdictionary = {}
+        Xdictionary[popName] = {}
+        for cause in self.data.causesOfDeath:
+            LHS_pop_cause = fractionMaternalMortality * self.data.causeOfDeathDist[popName][cause]
+            Xdictionary[popName][cause] = LHS_pop_cause / RHS[popName][cause]
+        # add pregnant women reference mortality to dictionary
+        self.referenceMortality.update(Xdictionary)
+
     def setReferenceWRAMortality(self):
         #Equation is:  LHS = RHS * X
         #we are solving for X
@@ -148,7 +162,7 @@ class Derived:
                     t1 = self.data.anemiaDistribution[ageName][anemiaStatus]
                     t2 = self.data.RRdeathAnemia[ageName][cause][anemiaStatus]
                     RHS[ageName][cause] += t1 * t2
-        # Calculate LHA for each age and cause of death then solve for X
+        # Calculate LHS for each age and cause of death then solve for X
         Xdictionary = {}
         for ageName in self.reproductiveAges:
             Xdictionary[ageName] = {}
