@@ -538,7 +538,7 @@ class Model:
                         agingOut[ind][wastingCat][breastfeedingCat][stuntingCat] = {}
                         for anemiaStatus in self.anemiaList:
                             thisBox = thisCompartment.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus]
-                            agingOut[ind][wastingCat][breastfeedingCat][stuntingCat][anemiaStatus] = thisBox.populationSize * thisCompartment.agingRate #*self.timestep
+                            agingOut[ind][wastingCat][breastfeedingCat][stuntingCat][anemiaStatus] = thisBox.populationSize * thisCompartment.agingRate 
         oldest = self.listOfAgeCompartments[numCompartments-1]
         countAgingOutStunted = oldest.getNumberStunted() * oldest.agingRate
         countAgingOutNotStunted = oldest.getNumberNotStunted() * oldest.agingRate
