@@ -67,9 +67,8 @@ def objectiveFunction(allocation, totalBudget, fixedCosts, costCoverageInfo, opt
     # add the fixed costs to the scaled allocation of available budget
     scaledAllocation = map(add, scaledAllocation, fixedCosts)  
     # run the model
-    timestepsPre = 12
-    for t in range(timestepsPre):
-        model.moveOneTimeStep()    
+    timestepsPre = 1
+    model.moveModelOneYear()
     # update coverages after 1 year   
     targetPopSize = getTargetPopSizeFromModelInstance(dataSpreadsheetName, helper.keyList, model)   
     newCoverages = {}    
@@ -78,7 +77,7 @@ def objectiveFunction(allocation, totalBudget, fixedCosts, costCoverageInfo, opt
         newCoverages[intervention] = costCov.function(scaledAllocation[i], costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
     model.updateCoverages(newCoverages)
     for t in range(numModelSteps - timestepsPre):
-        model.moveOneTimeStep()
+        model.moveModelOneYear()
     performanceMeasure = model.getOutcome(optimise)
     if optimise == 'thrive':
         performanceMeasure = - performanceMeasure
@@ -353,11 +352,10 @@ class Optimisation:
         costCoverageInfo = self.getCostCoverageInfo()
         # run the model
         modelList = []    
-        timestepsPre = 12
-        for t in range(timestepsPre):
-            model.moveOneTimeStep()  
-            modelThisTimeStep = dcp(model)
-            modelList.append(modelThisTimeStep)
+        timestepsPre = 1
+        model.moveModelOneYear()
+        modelThisTimeStep = dcp(model)
+        modelList.append(modelThisTimeStep)
         # update coverages after 1 year    
         targetPopSize = getTargetPopSizeFromModelInstance(self.dataSpreadsheetName, self.helper.keyList, model)
         newCoverages = {}    
@@ -366,7 +364,7 @@ class Optimisation:
             newCoverages[intervention] = costCov.function(allocationDictionary[intervention], costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
         model.updateCoverages(newCoverages)
         for t in range(self.numModelSteps - timestepsPre):
-            model.moveOneTimeStep()
+            model.moveModelOneYear()
             modelThisTimeStep = dcp(model)
             modelList.append(modelThisTimeStep)
         return modelList    
