@@ -4,11 +4,14 @@ import helper
 import data
 
 # This script will test code in helper.py
+# Note: attributes for boxes like mortality rate not tested
+# because requires more sophisticated calculation that is better served in testing derived.py
 
 def setUpDataModelConstantsParameters():
     path = '/Users/samhainsworth/Desktop/Github Projects/InputForCode_tests.xlsx'
     helperTests = helper.Helper()
     testData = data.readSpreadsheet(path, helperTests.keyList)
+    # TODO currently an error in solving quartic, but this is from derived.py
     testModel, testDerived, testParams = helperTests.setupModelConstantsParameters(testData)
     return testData, testModel, testDerived, testParams, helperTests.keyList
 
@@ -22,15 +25,44 @@ class TestHelperClass(unittest.TestCase):
         cls.anemiaList = {"anemic", "not anemic"}
         cls.deliveryList = {"unassisted", "assisted at home", "essential care", "BEmOC", "CEmOC"}
         cls.wastingList = ["obese", "normal", "mild", "moderate", "high"]
-        cls.stuntingList = ["normal", "mild", "moderate", "high"]
         cls.breastfeedingList = ["exclusive", "predominant", "partial", "none"]
         cls.anemiaDist = {"anemic": 0.5, "not anemic": 0.5}
         cls.stuntingDist = {"normal": 0.25, "mild": 0.25, "moderate": 0.25, "high": 0.25}
         cls.wasingDist = {"obese": 0.2, "normal": 0.2, "mild": 0.2, "moderate": 0.2, "high": 0.2}
         cls.breastfeedingDist = {"exclusive": 0.25, "predominant": 0.25, "partial": 0.25, "none": 0.25}
         cls.deliveryDist = {"unassisted": 0.2, "assisted at home": 0.2, "essential care": 0.2, "BEmOC": 0.2, "CEmOC": 0.2}
+        # restratify stunting dist
+        cls.stuntingList = ["normal", "mild", "moderate", "high"]
+        cls.restratifiedStuntingDist = {}
+        for ageName in cls.ages:
+            probStunting = cls.helper.sumStuntedComponents(cls.testData.stuntingDistribution[ageName])
+            cls.restratifiedStuntingDist[ageName] = cls.helper.restratify(probStunting)
 
-        return
+
+    ############
+    # Tests for restratify of stunting distribution
+    # Test for different fractionYes values
+
+    def testRestratifyWhenFractionYesIsHalf(self):
+        # if FractionYes = 0.5 then (symmetric normal) distribution is centred at global mean -2 SD
+        # therefore we expect moderate = normal and mild = high
+        stratification = self.helper.restratify(0.5)
+        self.assertEqual(stratification['moderate'], stratification['mild'])
+        self.assertEqual(stratification['normal'], stratification['high'])
+
+    # TODO if fractionYes is 0 or 1 then it will put everyone in 'normal' or 'high', respectively.
+    def testRestratifyWhenFractionYesIsZero(self):
+        # expect everyone to be 'normal'
+        stratification = self.helper.restratify(0.)
+        # self.assertEqual(stratification['normal'], 1.0)
+        # self.assertEqual(stratification['moderate'], 0.)
+        # self.assertEqual(stratification['mild'], 0.)
+        # self.assertEqual(stratification['high'], 0.)
+
+    def testRestratifyWhenFractionYesIsOne(self):
+        # expect everyone to be stunted
+        stratification = self.helper.restratify(1.)
+
 
     #############
     # Tests for makePregnantWomenBoxes
@@ -49,11 +81,11 @@ class TestHelperClass(unittest.TestCase):
     def testPopulationSize(self):
         # Test population size of each box
         boxes = self.helper.makePregnantWomenBoxes(self.testData)
-        expectedTotalPop = 1000000 # 1 mil
+        expectedTotalPop = 1000000. # 1 mil
         for anemiaStatus in self.anemiaList:
             for deliveryStatus in self.deliveryList:
                 expectedPop = expectedTotalPop * self.deliveryDist[deliveryStatus] * self.anemiaDist[anemiaStatus]
-                self.assertEqual(expectedPop, boxes[anemiaStatus][deliveryStatus].populationSize)
+                self.assertAlmostEqual(expectedPop, boxes[anemiaStatus][deliveryStatus].populationSize)
 
     ###############
     # Tests for makePregnantWomen
@@ -85,32 +117,60 @@ class TestHelperClass(unittest.TestCase):
         listOfAgeCompartments = self.helper.makeAgeCompartments(agePopSizes, self.testData)
         self.assertEqual(5, len(listOfAgeCompartments))
 
+
+    def testAgePopSizes(self):
+        # make sure total pop is maintained
+        expectedTotalPop = 15000000.
+        agePopSizes = self.helper.makeAgePopSizes(self.testData)
+        self.assertAlmostEqual(expectedTotalPop, sum(agePopSizes))
+
     ##################
     # Tests for makeBoxes
+
     def testTotalPopulation(self):
         # make sure all boxes add to original pop size
+        expectedTotalPop = 15000000.
         agePopSizes = self.helper.makeAgePopSizes(self.testData)
-        self.assertEqual(15000000, sum(agePopSizes))
+        popSum = 0.
         for i in range(len(agePopSizes)):
             boxes = self.helper.makeBoxes(agePopSizes[i], self.ages[i], self.testData)
-            popSize = boxes.getTotalPopulation # TODO issue here
-            self.assertEqual(popSize, agePopSizes[i])
-
-
-
-    def testAgeBoxPopulationSize(self):
-        agePopSizes = self.helper.makeAgePopSizes(self.testData)
-        for ind in range(len(agePopSizes)):
+            # get the population size
             for stuntingCat in self.stuntingList:
                 for wastingCat in self.wastingList:
                     for breastfeedingCat in self.breastfeedingList:
                         for anemiaStatus in self.anemiaList:
-                            expectedPop = agePopSizes[ind] * self.stuntingDist[stuntingCat] * \
+                            popSum += boxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].populationSize
+        self.assertAlmostEqual(popSum, expectedTotalPop)
+
+    def testBoxesAttributes(self):
+        agePopSizes = self.helper.makeAgePopSizes(self.testData)
+        for index in range(len(agePopSizes)):
+            for stuntingCat in self.stuntingList:
+                for wastingCat in self.wastingList:
+                    for breastfeedingCat in self.breastfeedingList:
+                        for anemiaStatus in self.anemiaList:
+                            expectedPopThisBox = agePopSizes[index] * self.restratifiedStuntingDist[self.ages[index]][stuntingCat] * \
                                           self.wasingDist[wastingCat] * self.breastfeedingDist[breastfeedingCat] * \
                                           self.anemiaDist[anemiaStatus]
-                            box = self.helper.makeBoxes(agePopSizes[ind], self.ages[ind], self.testData)
-                            popSize = box[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].populationSize # TODO issue here
-                            self.assertEqual(expectedPop, popSize)
+                            box = self.helper.makeBoxes(agePopSizes[index], self.ages[index], self.testData)
+                            popSize = box[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].populationSize
+                            self.assertAlmostEqual(expectedPopThisBox, popSize)
+
+    #############
+    # Tests for makeReproductiveAgeCompartments
+    def testReproductiveCompartmentListLength(self):
+        listOfReproductiveAgeCompartments = self.helper.makeReproductiveAgeCompartments(self.testData)
+        self.assertEqual(6, len(listOfReproductiveAgeCompartments))
+
+    def testReproductiveAgePopSizes(self):
+        totalPopSize = 0.
+        expectedPopSize = 10000000.
+        listOfReproductiveAgeCompartments = self.helper.makeReproductiveAgeCompartments(self.testData)
+        for age in listOfReproductiveAgeCompartments:
+            for anemiaStatus in self.anemiaList:
+                totalPopSize += age.dictOfBoxes[anemiaStatus].populationSize
+        self.assertAlmostEqual(expectedPopSize, totalPopSize)
+
 
 
 if __name__ == "__main__":
