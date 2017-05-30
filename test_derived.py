@@ -32,12 +32,55 @@ class TestDerivedClass(unittest.TestCase):
                              'maternal: Hypertensive disorders', 'maternal: Sepsis', 'maternal: Abortion',
                              'maternal: Embolism', 'maternal: Other direct causes', 'maternal: Indirect causes',
                              'WRA: cause1', 'WRA: cause2', 'WRA: cause3']
+        cls.ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
+        cls.anemiaList = {"anemic", "not anemic"}
+        cls.deliveryList = {"unassisted", "assisted at home", "essential care", "BEmOC", "CEmOC"}
+        cls.wastingList = ["obese", "normal", "mild", "moderate", "high"]
+        cls.birthOutcomeList = ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"]
+        cls.breastfeedingList = ["exclusive", "predominant", "partial", "none"]
+        cls.anemiaDist = {"anemic": 0.5, "not anemic": 0.5}
+        cls.stuntingDist = {"normal": 0.25, "mild": 0.25, "moderate": 0.25, "high": 0.25}
+        cls.wasingDist = {"obese": 0.2, "normal": 0.2, "mild": 0.2, "moderate": 0.2, "high": 0.2}
+        cls.breastfeedingDist = {"exclusive": 0.25, "predominant": 0.25, "partial": 0.25, "none": 0.25}
+        cls.birthOutcomeDist = {"Pre-term SGA": 0.25, "Pre-term AGA": 0.25, "Term SGA": 0.25, "Term AGA": 0.25} # must sum to 1
+        cls.deliveryDist = {"unassisted": 0.2, "assisted at home": 0.2, "essential care": 0.2, "BEmOC": 0.2, "CEmOC": 0.2}
 
     #############
-    # Tests for setReferenceMortality
+    # Tests for setReferenceMortality (associated functions tested below)
     # Uses RR & distributions of each mortality risk factor
     # Make sure any changes to test spreadsheet added here
     # All these updated in function call above (self.testData)
+
+    def testNewbornReferenceMortality(self):
+        # With all RR set to 1, expected that it is RHS = product of distributions (summed for each cause & age)
+        # Corrected mortality = rawMort * num births/1000./ population size
+        # RHS
+        refMort = self.testDerived.referenceMortality
+        expectedRHS = {}
+        for cause in self.causesOfDeath:
+            expectedRHS[cause] = 0.
+            for breastfeedingCat in self.breastfeedingList:
+                for birthOutcome in self.birthOutcomeList:
+                    for anemiaStatus in self.anemiaList:
+                        expectedRHS[cause] += 0.25 * 0.25 * 0.5
+        # LHS
+        rawMort = 1.
+        liveBirths = 3000000.
+        popSize = self.helper.makeAgePopSizes(self.testData)[0]
+        expectedCorrectedMortality = rawMort * liveBirths /1000. / popSize
+        expectedRefMort = {}
+        for cause in ['Neonatal diarrhea', 'Neonatal sepsis', 'Neonatal pneumonia', 'Neonatal asphyxia',
+                       'Neonatal prematurity', 'Neonatal tetanus', 'Neonatal congenital anormalies',
+                        'Neonatal other']:
+            expectedLHS = expectedCorrectedMortality * 0.125
+            expectedRefMort[cause] = expectedLHS/expectedRHS[cause]
+            self.assertAlmostEqual(expectedRefMort[cause], refMort['<1 month'][cause])
+
+    #def testOneToFiveReferenceMortality(self):
+        # TODO this is complicated b/c of age adjustments to all other child age compartments
+
+    #######
+    # Tests for setReferenceWRAMortality & setReferencePregnantWomenMortality
 
     def testWRAReferenceMortality(self):
         # if all RR values are 1, then should just return original distribution of mortality risk factors
@@ -59,7 +102,11 @@ class TestDerivedClass(unittest.TestCase):
             expectedRefMort = fractionPregnantWomenMortality * self.testData.causeOfDeathDist['pregnant women'][cause]
             refMort = self.testDerived.referenceMortality[popName][cause]
             self.assertAlmostEqual(expectedRefMort, refMort)
-    
+
+    def testRefMortalityDictLength(self):
+        refMort = self.testDerived.referenceMortality
+        self.assertEqual(12, len(refMort.keys()))
+
 
 if __name__ == "__main__":
     unittest.main()
