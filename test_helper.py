@@ -124,6 +124,15 @@ class TestHelperClass(unittest.TestCase):
         agePopSizes = self.helper.makeAgePopSizes(self.testData)
         self.assertAlmostEqual(expectedTotalPop, sum(agePopSizes))
 
+    def testCompartmentListOrder(self):
+        agePopSizes = self.helper.makeAgePopSizes(self.testData)
+        listOfAgeCompartments = self.helper.makeAgeCompartments(agePopSizes, self.testData)
+        nameOrder = []
+        for compartment in listOfAgeCompartments:
+            nameOrder += [compartment.name]
+        expectedNameOrder = self.ages
+        self.assertEqual(expectedNameOrder, nameOrder)
+
     ##################
     # Tests for makeBoxes
 
@@ -171,6 +180,13 @@ class TestHelperClass(unittest.TestCase):
                 totalPopSize += age.dictOfBoxes[anemiaStatus].populationSize
         self.assertAlmostEqual(expectedPopSize, totalPopSize)
 
+    def testReproductiveCompartmentsListOrder(self):
+        listOfReproductiveAgeCompartments = self.helper.makeReproductiveAgeCompartments(self.testData)
+        nameOrder = []
+        for compartment in listOfReproductiveAgeCompartments:
+            nameOrder += [compartment.name]
+        expectedNameOrder = ["15-19 years", "20-24 years", "25-29 years", "30-34 years", "35-39 years", "40-44 years"]
+        self.assertEqual(expectedNameOrder, nameOrder)
 
 
 if __name__ == "__main__":
