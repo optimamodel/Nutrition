@@ -1,3 +1,4 @@
+import os
 import unittest
 import numpy as np
 import helper
@@ -8,10 +9,10 @@ import data
 # because requires more sophisticated calculation that is better served in testing derived.py
 
 def setUpDataModelConstantsParameters():
-    path = '/Users/samhainsworth/Desktop/Github Projects/InputForCode_tests.xlsx'
+    cwd = os.getcwd()
+    path = cwd + '/input_spreadsheets/testingSpreadsheets/InputForCode_helperTests.xlsx'
     helperTests = helper.Helper()
     testData = data.readSpreadsheet(path, helperTests.keyList)
-    # TODO currently an error in solving quartic, but this is from derived.py
     testModel, testDerived, testParams = helperTests.setupModelConstantsParameters(testData)
     return testData, testModel, testDerived, testParams, helperTests.keyList
 
@@ -50,18 +51,21 @@ class TestHelperClass(unittest.TestCase):
         self.assertEqual(stratification['moderate'], stratification['mild'])
         self.assertEqual(stratification['normal'], stratification['high'])
 
-    # TODO if fractionYes is 0 or 1 then it will put everyone in 'normal' or 'high', respectively.
     def testRestratifyWhenFractionYesIsZero(self):
         # expect everyone to be 'normal'
         stratification = self.helper.restratify(0.)
-        # self.assertEqual(stratification['normal'], 1.0)
-        # self.assertEqual(stratification['moderate'], 0.)
-        # self.assertEqual(stratification['mild'], 0.)
-        # self.assertEqual(stratification['high'], 0.)
+        self.assertEqual(stratification['normal'], 1.0)
+        self.assertEqual(stratification['moderate'], 0.)
+        self.assertEqual(stratification['mild'], 0.)
+        self.assertEqual(stratification['high'], 0.)
 
     def testRestratifyWhenFractionYesIsOne(self):
         # expect everyone to be stunted
         stratification = self.helper.restratify(1.)
+        self.assertEqual(stratification['normal'], 0.)
+        self.assertEqual(stratification['moderate'], 0.)
+        self.assertEqual(stratification['mild'], 0.)
+        self.assertEqual(stratification['high'], 1.0)
 
 
     #############
@@ -106,7 +110,6 @@ class TestHelperClass(unittest.TestCase):
     # Tests for makeAgePopSizes
 
     def testAgePopulationSize(self):
-        # TODO The method this is supposed to test is pretty hard to follow
         expectedAgePopSizes = []
 
     #################
