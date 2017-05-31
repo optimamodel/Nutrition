@@ -1,14 +1,13 @@
+import os
 import unittest
 import data
 import helper
 
 # This script will test code in derived.py
 
-# TODO suggestion: in order to test for many different values,
-# TODO create different spreadsheets and associate different tests with them
-
 def setUpDataModelConstantsParameters():
-    path = '/Users/samhainsworth/Desktop/Github Projects/InputForCode_tests.xlsx'
+    cwd = os.getcwd()
+    path = cwd + '/input_spreadsheets/testingSpreadsheets/InputForCode_derivedTests.xlsx'
     helperTests = helper.Helper()
     testData = data.readSpreadsheet(path, helperTests.keyList)
     testModel, testDerived, testParams = helperTests.setupModelConstantsParameters(testData)
@@ -77,7 +76,7 @@ class TestDerivedClass(unittest.TestCase):
             self.assertAlmostEqual(expectedRefMort[cause], refMort['<1 month'][cause])
 
     #def testOneToFiveReferenceMortality(self):
-        # TODO this is complicated b/c of age adjustments to all other child age compartments
+        # TODO: this is complicated b/c of age adjustments to all other child age compartments
 
     #######
     # Tests for setReferenceWRAMortality & setReferencePregnantWomenMortality
