@@ -6,7 +6,7 @@ This demo is for version 1.0 Optima Nutrition.  It demonstrates:
 how to run the baseline model
 how to run the model with different coverages 
 how to access outcomes
-how to tranlate a cost into a coverage
+how to translate a cost into a coverage
 
 @author: ruth
 """
