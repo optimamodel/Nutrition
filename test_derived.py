@@ -141,5 +141,93 @@ class TestDerivedClass(unittest.TestCase):
             #self.assertAlmostEqual(1., mortalitySum)
 
 
+    ######################
+    # Tests for setProbStuntingProgression
+    # Following tests use the assumption that if no new interventions implemented
+    # then the prcentage of stunted children remains the same (p. 6-7 eqns. doc)
+
+    def testStuntedIfPrevStuntedProbabilitiesWhenDistribtionsAreUniform(self):
+        expectedProbStunted = 0.5
+        expectedProbNotStunted = 0.5
+        for ageName in ["1-5 months", "6-11 months", "12-23 months", "24-59 months"]:   # exclude newborns
+            probStunted = self.testDerived.probStuntedIfPrevStunted["yesstunted"][ageName]
+            probNotStunted = self.testDerived.probStuntedIfPrevStunted["notstunted"][ageName]
+            self.assertAlmostEqual(expectedProbStunted, probStunted)
+            self.assertAlmostEqual(expectedProbNotStunted, probNotStunted)
+
+    def testStuntedIfEveryoneHighlyStunted(self):
+        data = dcp(self.testData)
+        ages = ["1-5 months", "6-11 months", "12-23 months", "24-59 months"] # exclude newborns
+        for ageName in ages:
+            for stuntingCat in self.helper.keyList['stuntingList']:
+                if stuntingCat == "high": data.stuntingDistribution[ageName][stuntingCat] = 1.
+                else: data.stuntingDistribution[ageName][stuntingCat] = 0.
+
+        testModel, testDerived, testParams = self.helper.setupModelConstantsParameters(data)
+        for ageName in ages:
+            probStunted = testDerived.probStuntedIfPrevStunted["yesstunted"][ageName]
+            probNotStunted = testDerived.probStuntedIfPrevStunted["notstunted"][ageName]
+            self.assertAlmostEqual(1., probNotStunted)
+            self.assertAlmostEqual(1., probStunted)
+
+    def testStuntedIfEveryonePrevHighOrModerate(self):
+        data = dcp(self.testData)
+        ages = ["1-5 months", "6-11 months", "12-23 months", "24-59 months"] # exclude newborns
+        for ageName in ages:
+            for stuntingCat in self.helper.keyList['stuntingList']:
+                if stuntingCat == "high" or stuntingCat == "moderate": data.stuntingDistribution[ageName][stuntingCat] = 0.5
+                else: data.stuntingDistribution[ageName][stuntingCat] = 0.
+
+        testModel, testDerived, testParams = self.helper.setupModelConstantsParameters(data)
+        for ageName in ages:
+            probStunted = testDerived.probStuntedIfPrevStunted["yesstunted"][ageName]
+            probNotStunted = testDerived.probStuntedIfPrevStunted["notstunted"][ageName]
+            self.assertAlmostEqual(1., probNotStunted)
+            self.assertAlmostEqual(1., probStunted)
+
+    def testStuntedIfEveryonePrevNormal(self):
+        data = dcp(self.testData)
+        ages = ["1-5 months", "6-11 months", "12-23 months", "24-59 months"]  # exclude newborns
+        for ageName in ages:
+            for stuntingCat in self.helper.keyList['stuntingList']:
+                if stuntingCat == "normal": data.stuntingDistribution[ageName][stuntingCat] = 1.
+                else: data.stuntingDistribution[ageName][stuntingCat] = 0.
+
+        testModel, testDerived, testParams = self.helper.setupModelConstantsParameters(data)
+        for ageName in ages:
+            probStunted = testDerived.probStuntedIfPrevStunted["yesstunted"][ageName]
+            probNotStunted = testDerived.probStuntedIfPrevStunted["notstunted"][ageName]
+            self.assertAlmostEqual(0., probNotStunted)
+            self.assertAlmostEqual(0., probStunted)
+
+    def testStuntedIfEveryonePrevNormalOrMild(self):
+        data = dcp(self.testData)
+        ages = ["1-5 months", "6-11 months", "12-23 months", "24-59 months"]  # exclude newborns
+        for ageName in ages:
+            for stuntingCat in self.helper.keyList['stuntingList']:
+                if stuntingCat == "normal" or stuntingCat == 'mild': data.stuntingDistribution[ageName][stuntingCat] = 1.
+                else: data.stuntingDistribution[ageName][stuntingCat] = 0.
+
+        testModel, testDerived, testParams = self.helper.setupModelConstantsParameters(data)
+        for ageName in ages:
+            probStunted = testDerived.probStuntedIfPrevStunted["yesstunted"][ageName]
+            probNotStunted = testDerived.probStuntedIfPrevStunted["notstunted"][ageName]
+            self.assertAlmostEqual(0., probNotStunted)
+            self.assertAlmostEqual(0., probStunted)
+
+    def testStuntedIfHalfMildHalfModerate(self):
+        data = dcp(self.testData)
+        ages = ["1-5 months", "6-11 months", "12-23 months", "24-59 months"]  # exclude newborns
+        for ageName in ages:
+            for stuntingCat in self.helper.keyList['stuntingList']:
+                if stuntingCat == "mild" or stuntingCat == 'moderate': data.stuntingDistribution[ageName][stuntingCat] = 0.5
+                else: data.stuntingDistribution[ageName][stuntingCat] = 0.
+
+        testModel, testDerived, testParams = self.helper.setupModelConstantsParameters(data)
+        for ageName in ages:
+            probStunted = testDerived.probStuntedIfPrevStunted["yesstunted"][ageName]
+            probNotStunted = testDerived.probStuntedIfPrevStunted["notstunted"][ageName]
+            self.assertAlmostEqual(0.5, probNotStunted)
+            self.assertAlmostEqual(0.5, probStunted)
 if __name__ == "__main__":
     unittest.main()
