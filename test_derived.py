@@ -229,5 +229,64 @@ class TestDerivedClass(unittest.TestCase):
             probNotStunted = testDerived.probStuntedIfPrevStunted["notstunted"][ageName]
             self.assertAlmostEqual(0.5, probNotStunted)
             self.assertAlmostEqual(0.5, probStunted)
+
+
+
+
+    #####################
+    # Tests for setProbStuntedIfDiarrhea # TODO: This requires a fair bit of manual computation
+    # Called from 'updateCoverages' method in model.py
+
+
+
+
+    ######################
+    # Tests for setProbStuntedIfCovered
+
+    def testProbStuntedIfAllCovered(self):
+        # if all covered then p0 = fracStunted & p1 = p0 * OR/(1-p0+OR*p0)
+        coverages = dcp(self.testParams.coverage)
+        newCoverages = {intervention: 1. for intervention in coverages.keys()}
+        stuntingDist = dcp(self.testData.stuntingDistribution)
+        self.testDerived.setProbStuntedIfCovered(newCoverages, stuntingDist)
+        for intervention in newCoverages.keys():
+            for ageName in self.helper.keyList['ages']:
+                expectedPc = self.helper.sumStuntedComponents(stuntingDist[ageName])
+                OR = self.testData.ORstuntingIntervention[ageName][intervention]
+                expectedPn = expectedPc * OR / (1- expectedPc + OR * expectedPc)
+                pc = self.testDerived.probStuntedIfCovered[intervention]['covered'][ageName]
+                pn = self.testDerived.probStuntedIfCovered[intervention]['not covered'][ageName]
+                self.assertAlmostEqual(expectedPc, pc)
+                self.assertAlmostEqual(expectedPn, pn)
+
+    def testProbStuntedIfNoneCovered(self):
+        # if none covered then p1 = fracStunted & p0 = p1/(OR(1-p1)+p1)
+        coverages = dcp(self.testParams.coverage)
+        newCoverages = {intervention: 0. for intervention in coverages.keys()}
+        stuntingDist = dcp(self.testData.stuntingDistribution)
+        self.testDerived.setProbStuntedIfCovered(newCoverages, stuntingDist)
+        for intervention in newCoverages.keys():
+            for ageName in self.helper.keyList['ages']:
+                expectedPn = self.helper.sumStuntedComponents(stuntingDist[ageName])
+                OR = self.testData.ORstuntingIntervention[ageName][intervention]
+                expectedPc = expectedPn / (OR * (1- expectedPn) + expectedPn)
+                pc = self.testDerived.probStuntedIfCovered[intervention]['covered'][ageName]
+                pn = self.testDerived.probStuntedIfCovered[intervention]['not covered'][ageName]
+                self.assertAlmostEqual(expectedPc, pc)
+                self.assertAlmostEqual(expectedPn, pn)
+
+
+    #####################
+    # Tests for setProbAnemicIfCovered
+
+
+
+    #####################
+    # Tests for solveQuadratic
+
+
+
+
+
 if __name__ == "__main__":
     unittest.main()
