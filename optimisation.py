@@ -53,7 +53,7 @@ def objectiveFunction(allocation, totalBudget, fixedCosts, costCoverageInfo, opt
     from operator import add
     helper = helper.Helper()
     costCov = costcov.Costcov()
-    model, derived, params = helper.setupModelConstantsParameters(data)
+    model, derived, params = helper.setupModelDerivedParameters(data)
     availableBudget = totalBudget - sum(fixedCosts)
     #make sure fixed costs do not exceed total budget
     if totalBudget < sum(fixedCosts):
@@ -348,7 +348,7 @@ class Optimisation:
         from copy import deepcopy as dcp
         costCov = costcov.Costcov()
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
-        model, derived, params = self.helper.setupModelConstantsParameters(spreadsheetData)
+        model, derived, params = self.helper.setupModelDerivedParameters(spreadsheetData)
         costCoverageInfo = self.getCostCoverageInfo()
         # run the model
         modelList = []    

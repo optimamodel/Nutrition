@@ -8,12 +8,12 @@ import data
 # Note: attributes for boxes like mortality rate not tested
 # because requires more sophisticated calculation that is better served in testing derived.py
 
-def setUpDataModelConstantsParameters():
+def setupDataModelDerivedParameters():
     cwd = os.getcwd()
     path = cwd + '/input_spreadsheets/testingSpreadsheets/InputForCode_helperTests.xlsx'
     helperTests = helper.Helper()
     testData = data.readSpreadsheet(path, helperTests.keyList)
-    testModel, testDerived, testParams = helperTests.setupModelConstantsParameters(testData)
+    testModel, testDerived, testParams = helperTests.setupModelDerivedParameters(testData)
     return testData, testModel, testDerived, testParams, helperTests.keyList
 
 
@@ -21,7 +21,7 @@ class TestHelperClass(unittest.TestCase):
     @classmethod    # allows to call this only once for all tests
     def setUpClass(cls):
         cls.helper = helper.Helper()
-        [cls.testData, cls.testModel, cls.testDerived, cls.testParams, cls.keyList] = setUpDataModelConstantsParameters()
+        [cls.testData, cls.testModel, cls.testDerived, cls.testParams, cls.keyList] = setupDataModelDerivedParameters()
         cls.ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
         cls.anemiaList = {"anemic", "not anemic"}
         cls.deliveryList = {"unassisted", "assisted at home", "essential care", "BEmOC", "CEmOC"}

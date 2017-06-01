@@ -35,7 +35,7 @@ for regionName in regionNameList:
 
 def getSaturationCoverageOutcomes(spreadsheet):
     spreadsheetData = data.readSpreadsheet(spreadsheet, helper.keyList)
-    model, derived, params = helper.setupModelConstantsParameters(spreadsheetData)
+    model, derived, params = helper.setupModelDerivedParameters(spreadsheetData)
     # run the model
     modelList = []    
     timestepsPre = 12

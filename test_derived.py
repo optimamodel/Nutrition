@@ -6,12 +6,12 @@ from copy import deepcopy as dcp
 
 # This script will test code in derived.py
 
-def setUpDataModelConstantsParameters():
+def setupDataModelDerivedParameters():
     cwd = os.getcwd()
     path = cwd + '/input_spreadsheets/testingSpreadsheets/InputForCode_derivedTests.xlsx'
     helperTests = helper.Helper()
     testData = data.readSpreadsheet(path, helperTests.keyList)
-    testModel, testDerived, testParams = helperTests.setupModelConstantsParameters(testData)
+    testModel, testDerived, testParams = helperTests.setupModelDerivedParameters(testData)
     return testData, testModel, testDerived, testParams, helperTests.keyList
 
 
@@ -22,7 +22,7 @@ class TestDerivedClass(unittest.TestCase):
         # call this to set up derived
         cls.helper = helper.Helper()
         [cls.testData, cls.testModel, cls.testDerived, cls.testParams,
-         cls.keyList] = setUpDataModelConstantsParameters()
+         cls.keyList] = setupDataModelDerivedParameters()
         cls.reproductiveAges = ['15-19 years', '20-24 years', '25-29 years', '30-34 years', '35-39 years', '40-44 years']
         cls.causesOfDeath = ['Neonatal diarrhea', 'Neonatal sepsis', 'Neonatal pneumonia', 'Neonatal asphyxia',
                              'Neonatal prematurity', 'Neonatal tetanus', 'Neonatal congenital anormalies',
@@ -113,7 +113,7 @@ class TestDerivedClass(unittest.TestCase):
         data = dcp(self.testData)
         # change raw mortalities to 0
         data.rawMortality = {age: 0. for age in originalPops}
-        testModel, testDerived, testParams = self.helper.setupModelConstantsParameters(data)
+        testModel, testDerived, testParams = self.helper.setupModelDerivedParameters(data)
         refMort = testDerived.referenceMortality
         for ageName in self.helper.keyList['allPops']:
             for cause in self.causesOfDeath:
@@ -132,7 +132,7 @@ class TestDerivedClass(unittest.TestCase):
         data.rawMortality['pregnant women'] = 1000.
         for name in self.reproductiveAges:
             data.rawMortality[name] = 1.
-        testModel, testDerived, testParams = self.helper.setupModelConstantsParameters(data)
+        testModel, testDerived, testParams = self.helper.setupModelDerivedParameters(data)
         refMort = testDerived.referenceMortality
         for ageName in self.helper.keyList['allPops']:
             mortalitySum = 0.
@@ -163,7 +163,7 @@ class TestDerivedClass(unittest.TestCase):
                 if stuntingCat == "high": data.stuntingDistribution[ageName][stuntingCat] = 1.
                 else: data.stuntingDistribution[ageName][stuntingCat] = 0.
 
-        testModel, testDerived, testParams = self.helper.setupModelConstantsParameters(data)
+        testModel, testDerived, testParams = self.helper.setupModelDerivedParameters(data)
         for ageName in ages:
             probStunted = testDerived.probStuntedIfPrevStunted["yesstunted"][ageName]
             probNotStunted = testDerived.probStuntedIfPrevStunted["notstunted"][ageName]
@@ -178,7 +178,7 @@ class TestDerivedClass(unittest.TestCase):
                 if stuntingCat == "high" or stuntingCat == "moderate": data.stuntingDistribution[ageName][stuntingCat] = 0.5
                 else: data.stuntingDistribution[ageName][stuntingCat] = 0.
 
-        testModel, testDerived, testParams = self.helper.setupModelConstantsParameters(data)
+        testModel, testDerived, testParams = self.helper.setupModelDerivedParameters(data)
         for ageName in ages:
             probStunted = testDerived.probStuntedIfPrevStunted["yesstunted"][ageName]
             probNotStunted = testDerived.probStuntedIfPrevStunted["notstunted"][ageName]
@@ -193,7 +193,7 @@ class TestDerivedClass(unittest.TestCase):
                 if stuntingCat == "normal": data.stuntingDistribution[ageName][stuntingCat] = 1.
                 else: data.stuntingDistribution[ageName][stuntingCat] = 0.
 
-        testModel, testDerived, testParams = self.helper.setupModelConstantsParameters(data)
+        testModel, testDerived, testParams = self.helper.setupModelDerivedParameters(data)
         for ageName in ages:
             probStunted = testDerived.probStuntedIfPrevStunted["yesstunted"][ageName]
             probNotStunted = testDerived.probStuntedIfPrevStunted["notstunted"][ageName]
@@ -208,7 +208,7 @@ class TestDerivedClass(unittest.TestCase):
                 if stuntingCat == "normal" or stuntingCat == 'mild': data.stuntingDistribution[ageName][stuntingCat] = 1.
                 else: data.stuntingDistribution[ageName][stuntingCat] = 0.
 
-        testModel, testDerived, testParams = self.helper.setupModelConstantsParameters(data)
+        testModel, testDerived, testParams = self.helper.setupModelDerivedParameters(data)
         for ageName in ages:
             probStunted = testDerived.probStuntedIfPrevStunted["yesstunted"][ageName]
             probNotStunted = testDerived.probStuntedIfPrevStunted["notstunted"][ageName]
@@ -223,7 +223,7 @@ class TestDerivedClass(unittest.TestCase):
                 if stuntingCat == "mild" or stuntingCat == 'moderate': data.stuntingDistribution[ageName][stuntingCat] = 0.5
                 else: data.stuntingDistribution[ageName][stuntingCat] = 0.
 
-        testModel, testDerived, testParams = self.helper.setupModelConstantsParameters(data)
+        testModel, testDerived, testParams = self.helper.setupModelDerivedParameters(data)
         for ageName in ages:
             probStunted = testDerived.probStuntedIfPrevStunted["yesstunted"][ageName]
             probNotStunted = testDerived.probStuntedIfPrevStunted["notstunted"][ageName]

@@ -151,7 +151,7 @@ class Helper:
             return listOfReproductiveAgeCompartments              
    
         
-    def setupModelConstantsParameters(self, inputData):
+    def setupModelDerivedParameters(self, inputData):
         import model 
         import derived 
         import parameters        
