@@ -13,7 +13,7 @@ helper = helper.Helper()
 numModelSteps = 180
 dataSpreadsheetName = 'input_spreadsheets/Bangladesh/2016Sept12/InputForCode_Bangladesh.xlsx'
 spreadsheetData = data.readSpreadsheet(dataSpreadsheetName, helper.keyList)
-model, derived, params = helper.setupModelConstantsParameters(spreadsheetData)
+model, derived, params = helper.setupModelDerivedParameters(spreadsheetData)
 
 # run the model
 modelList = []    

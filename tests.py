@@ -11,16 +11,16 @@ import data as data
 import helper as helper
 
 
-def setUpDataModelConstantsParameters():
+def setupDataModelDerivedParameters():
     helperTests = helper.Helper()
     testData = data.readSpreadsheet('input_spreadsheets/InputForCode_tests.xlsx', helperTests.keyList)
-    testModel, testDerived, testParams = helperTests.setupModelConstantsParameters(testData)
+    testModel, testDerived, testParams = helperTests.setupModelDerivedParameters(testData)
     return testData, testModel, testDerived, testParams, helperTests.keyList
 
 
-class TestsForsetUpDataModelConstantsParameters(unittest.TestCase):
+class TestsForsetupDataModelDerivedParameters(unittest.TestCase):
     def setUp(self):
-        [self.testData, self.testModel, self.testDerived, self.testParams, self.keyList] = setUpDataModelConstantsParameters()
+        [self.testData, self.testModel, self.testDerived, self.testParams, self.keyList] = setupDataModelDerivedParameters()
         
     def testNumberInAnAgeCompartment(self):
         sumPopAge1 = 0
@@ -33,7 +33,7 @@ class TestsForsetUpDataModelConstantsParameters(unittest.TestCase):
 
 class TestsForConstantsClass(unittest.TestCase):
     def setUp(self):
-        [self.testData, self.testModel, self.testDerived, self.testParams, self.keyList] = setUpDataModelConstantsParameters()
+        [self.testData, self.testModel, self.testDerived, self.testParams, self.keyList] = setupDataModelDerivedParameters()
         
     def testGetUnderlyingMortalities(self):
         # 64 compartments per age; 25/100=0.25 (distributions); 1 (cause); 1 (RR); 500*12/1000=6. for newborn otherwise 0.0 (total mortality) 
@@ -81,7 +81,7 @@ class TestsForConstantsClass(unittest.TestCase):
  
 class TestsForModelClass(unittest.TestCase):
     def setUp(self):
-        [self.testData, self.testModel, self.testDerived, self.testParams, self.keyList] = setUpDataModelConstantsParameters()
+        [self.testData, self.testModel, self.testDerived, self.testParams, self.keyList] = setupDataModelDerivedParameters()
         
 
     def testApplyMortalityOneBox(self):
@@ -146,7 +146,7 @@ class TestsForModelClass(unittest.TestCase):
 class TestsForHelperClass(unittest.TestCase):
     def setUp(self):
         self.helper = helper.Helper()
-        [self.testData, self.testModel, self.testDerived, self.testParams, self.keyList] = setUpDataModelConstantsParameters()
+        [self.testData, self.testModel, self.testDerived, self.testParams, self.keyList] = setupDataModelDerivedParameters()
         self.agingRateList = [1./1., 1./5., 1./6., 1./12., 1./36.] 
         self.agePopSizes  = [6400, 6400, 6400, 6400, 6400]    
         self.gaussianStuntingDist = self.helper.restratify(0.5)         
@@ -171,7 +171,7 @@ class TestsForHelperClass(unittest.TestCase):
         expected = self.gaussianStuntingDist['normal'] * 0.25 * 0.25 * 6400
         self.assertAlmostEqual(expected, listOfAgeCompartments[2].dictOfBoxes['normal']['normal']['none'].populationSize)
         
-    def testSetUpModelConstantsParameters(self):
+    def testsetupModelDerivedParameters(self):
         self.assertEqual(self.testDerived.initialStuntingTrend, self.testModel.derived.initialStuntingTrend)
         self.assertEqual(self.testParams.stuntingDistribution['1-5 months'], self.testModel.params.stuntingDistribution['1-5 months'])
     

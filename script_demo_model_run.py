@@ -20,7 +20,7 @@ spreadsheet = 'input_spreadsheets/Bangladesh/2016Oct/InputForCode_Bangladesh.xls
 spreadsheetData = data.readSpreadsheet(spreadsheet, helper.keyList)
 
 # make a model
-model, derived, params = helper.setupModelConstantsParameters(spreadsheetData)
+model, derived, params = helper.setupModelDerivedParameters(spreadsheetData)
 
 # make a list to save a version of the model at each time step
 modelList = []  
@@ -58,7 +58,7 @@ print 'cumulative number of people thriving with updated coverages is:'
 print cumulativeThriving
 
 # compare this to the baseline
-model, derived, params = helper.setupModelConstantsParameters(spreadsheetData)
+model, derived, params = helper.setupModelDerivedParameters(spreadsheetData)
 modelList = []  
 for t in range(numModelSteps):
     model.moveOneTimeStep()  
@@ -96,7 +96,7 @@ thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, 'dummy'
 costCoverageInfo = thisOptimisation.getCostCoverageInfo()
 
 # make some objects to help us get target popsize for new coverage of interventions
-model, derived, params = helper.setupModelConstantsParameters(spreadsheetData)
+model, derived, params = helper.setupModelDerivedParameters(spreadsheetData)
 
 # run the model for 1 year
 for t in range(timestepsPre):

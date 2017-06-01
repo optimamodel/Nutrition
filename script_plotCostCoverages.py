@@ -21,20 +21,20 @@ for regionName in regionNameList:
     spreadsheetList.append(spreadsheet)
 
 # get the plots
-#for region in range(0, len(regionNameList)):
-#    regionName = regionNameList[region]
-#    spreadsheet = spreadsheetList[region]
-#    thisData = data.readSpreadsheet(spreadsheet, helper.keyList)
-#    thisOptimisation = optimisation.Optimisation(spreadsheet, 180, 'thrive', 'dummy')
-#    costCovInfo = thisOptimisation.getCostCoverageInfo()
-#    # get target popsize
-#    model, derived, params = helper.setupModelConstantsParameters(thisData)
-#    # run the model
-#    for t in range(12):
-#        model.moveOneTimeStep()    
-#    # want target popsize after 1 year (this is when we add interventions)
-#    targetPopSize = optimisation.getTargetPopSizeFromModelInstance(spreadsheet, helper.keyList, model) 
-#    costCov.plotCurves(targetPopSize, costCovInfo, regionName)
+for region in range(0, len(regionNameList)):
+    regionName = regionNameList[region]
+    spreadsheet = spreadsheetList[region]
+    thisData = data.readSpreadsheet(spreadsheet, helper.keyList)
+    thisOptimisation = optimisation.Optimisation(spreadsheet, 180, 'thrive', 'dummy')
+    costCovInfo = thisOptimisation.getCostCoverageInfo()
+    # get target popsize
+    model, derived, params = helper.setupModelDerivedParameters(thisData)
+    # run the model
+    for t in range(12):
+        model.moveOneTimeStep()    
+    # want target popsize after 1 year (this is when we add interventions)
+    targetPopSize = optimisation.getTargetPopSizeFromModelInstance(spreadsheet, helper.keyList, model) 
+    costCov.plotCurves(targetPopSize, costCovInfo, regionName)
 
 # output the csvs
 for region in range(0, len(regionNameList)):
@@ -44,7 +44,7 @@ for region in range(0, len(regionNameList)):
     thisOptimisation = optimisation.Optimisation(spreadsheet, 180, 'thrive', 'dummy')
     costCovInfo = thisOptimisation.getCostCoverageInfo()
     # get target popsize
-    model, derived, params = helper.setupModelConstantsParameters(thisData)
+    model, derived, params = helper.setupModelDerivedParameters(thisData)
     # run the model
     for t in range(12):
         model.moveOneTimeStep()    

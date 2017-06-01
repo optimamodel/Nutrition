@@ -106,7 +106,7 @@ class Helper:
         return listOfAgeCompartments         
 
         
-    def setupModelConstantsParameters(self, inputData):
+    def setupModelDerivedParameters(self, inputData):
         import model 
         import derived 
         import parameters        

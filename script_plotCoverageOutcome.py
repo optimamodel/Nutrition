@@ -17,33 +17,33 @@ x_coverage = np.arange(0, 1.0, 0.05)#0.01)
 
 
 #  MAKE PLOT
-#spreadsheet = 'input_spreadsheets/Bangladesh/2016Oct/inputForCode_Bangladesh.xlsx'
-#thisData = data.readSpreadsheet(spreadsheet, helper.keyList)
-#for intervention in ['Breastfeeding promotion','Complementary feeding education']:
-#    y_outcome = []    
-#    for thisCoverage in x_coverage:
-#        # get model object
-#        model, derived, params = helper.setupModelConstantsParameters(thisData)
-#        timestepsPre = 12
-#        for t in range(timestepsPre):
-#            model.moveOneTimeStep() 
-#        # set initial coverage then change specific coverage
-#        coverage = dcp(thisData.coverage)    
-#        coverage[intervention] = thisCoverage  
-#        # update coverages after 1 year   
-#        model.updateCoverages(coverage)
-#        for t in range(numModelSteps - timestepsPre):
-#            model.moveOneTimeStep()
-#        y_outcome.append(model.getOutcome('thrive'))
-#    # plot for this intervention
-#    plt.plot(x_coverage, y_outcome)
-#    plt.xlabel('coverage')
-#    plt.ylabel('number thriving')
-#    plt.title(intervention)
-#    plt.show()    
-#    print intervention
-#    print x_coverage
-#    print y_outcome
+spreadsheet = 'input_spreadsheets/Bangladesh/2016Oct/inputForCode_Bangladesh.xlsx'
+thisData = data.readSpreadsheet(spreadsheet, helper.keyList)
+for intervention in ['Breastfeeding promotion','Complementary feeding education']:
+    y_outcome = []    
+    for thisCoverage in x_coverage:
+        # get model object
+        model, derived, params = helper.setupModelDerivedParameters(thisData)
+        timestepsPre = 12
+        for t in range(timestepsPre):
+            model.moveOneTimeStep() 
+        # set initial coverage then change specific coverage
+        coverage = dcp(thisData.coverage)    
+        coverage[intervention] = thisCoverage  
+        # update coverages after 1 year   
+        model.updateCoverages(coverage)
+        for t in range(numModelSteps - timestepsPre):
+            model.moveOneTimeStep()
+        y_outcome.append(model.getOutcome('thrive'))
+    # plot for this intervention
+    plt.plot(x_coverage, y_outcome)
+    plt.xlabel('coverage')
+    plt.ylabel('number thriving')
+    plt.title(intervention)
+    plt.show()    
+    print intervention
+    print x_coverage
+    print y_outcome
     
     
     
@@ -65,7 +65,7 @@ for region in range(len(regionNameList)):
         y_outcome[intervention] = [intervention]    
         for thisCoverage in x_coverage:
             # get model object
-            model, derived, params = helper.setupModelConstantsParameters(thisData)
+            model, derived, params = helper.setupModelDerivedParameters(thisData)
             timestepsPre = 12
             for t in range(timestepsPre):
                 model.moveOneTimeStep() 
