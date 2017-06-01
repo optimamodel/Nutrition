@@ -68,7 +68,7 @@ class Helper:
 
 
     def makePregnantWomen(self, inputData):
-        import model       
+        import populations       
         annualPregnancies = dcp(inputData.demographics['number of pregnant women'])
         annualBirths      = dcp(inputData.demographics['number of live births'])
         birthRate   = annualBirths / annualPregnancies
@@ -77,12 +77,12 @@ class Helper:
         numYears   = len(projectedBirths)-1
         annualGrowth = (projectedBirths[numYears]-baseBirths)/float(numYears)/baseBirths
         boxes = self.makePregnantWomenBoxes(inputData)
-        pregnantWomen = model.PregnantWomen(birthRate, annualGrowth, boxes, self.keyList)        
+        pregnantWomen = populations.PregnantWomen(birthRate, annualGrowth, boxes, self.keyList)        
         return pregnantWomen
 
 
     def makeBoxes(self, thisAgePopSize, ageName, inputData):
-        import model 
+        import populations 
         wastingList = self.keyList['wastingList']
         stuntingList = self.keyList['stuntingList']
         breastfeedingList = self.keyList['breastfeedingList']
@@ -96,12 +96,12 @@ class Helper:
                     for anemiaStatus in self.keyList['anemiaList']:
                         thisPopSize = thisAgePopSize * inputData.stuntingDistribution[ageName][stuntingCat] * inputData.wastingDistribution[ageName][wastingCat] * \
                                       inputData.breastfeedingDistribution[ageName][breastfeedingCat] * inputData.anemiaDistribution[ageName][anemiaStatus] # Assuming independent
-                        allBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus] =  model.Box(thisPopSize)
+                        allBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus] =  populations.Box(thisPopSize)
         return allBoxes
         
         
     def makePregnantWomenBoxes(self, inputData):
-        import model
+        import populations
         annualPregnancies = dcp(inputData.demographics['number of pregnant women'])
         populationSize = annualPregnancies
         boxes = {}
@@ -109,20 +109,20 @@ class Helper:
             boxes[anemiaStatus] = {}
             for deliveryStatus in self.keyList['deliveryList']:
                  thisPopSize = populationSize * inputData.deliveryDistribution[deliveryStatus] * inputData.anemiaDistribution['pregnant women'][anemiaStatus]
-                 boxes[anemiaStatus][deliveryStatus] = model.Box(thisPopSize)
+                 boxes[anemiaStatus][deliveryStatus] = populations.Box(thisPopSize)
         return boxes  
         
     def makeReproductiveAgeBoxes(self, thisAgePopSize, ageName, inputData):
-        import model
+        import populations
         boxes = {}
         for status in self.keyList['anemiaList']:
              thisPopSize = thisAgePopSize * inputData.anemiaDistribution[ageName][status]
-             boxes[status] = model.Box(thisPopSize)   
+             boxes[status] = populations.Box(thisPopSize)   
         return boxes       
 
 
     def makeAgeCompartments(self, agePopSizes, inputData):
-        import model 
+        import populations 
         ages = self.keyList['ages']
         numAgeGroups = len(ages)
         listOfAgeCompartments = []
@@ -131,12 +131,12 @@ class Helper:
             agingRate = self.keyList['agingRates'][iAge]
             agePopSize = agePopSizes[iAge]
             thisAgeBoxes = self.makeBoxes(agePopSize, ageName, inputData)
-            compartment = model.AgeCompartment(ageName, thisAgeBoxes, agingRate, self.keyList)
+            compartment = populations.AgeCompartment(ageName, thisAgeBoxes, agingRate, self.keyList)
             listOfAgeCompartments.append(compartment)
         return listOfAgeCompartments         
         
     def makeReproductiveAgeCompartments(self, inputData):
-            import model 
+            import populations 
             popReproductiveAge = dcp(inputData.demographics['population reproductive age'])
             ages = self.keyList['reproductiveAges']
             numAgeGroups = len(ages)
@@ -146,7 +146,7 @@ class Helper:
                 ageName  = ages[iAge]
                 agingRate = self.keyList['reproductiveAgingRates'][iAge]
                 thisAgeBoxes = self.makeReproductiveAgeBoxes(agePopSize, ageName, inputData)
-                compartment = model.ReproductiveAgeCompartment(ageName, thisAgeBoxes, agingRate, self.keyList)
+                compartment = populations.ReproductiveAgeCompartment(ageName, thisAgeBoxes, agingRate, self.keyList)
                 listOfReproductiveAgeCompartments.append(compartment)
             return listOfReproductiveAgeCompartments              
    
