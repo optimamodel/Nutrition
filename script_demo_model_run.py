@@ -3,6 +3,7 @@
 Created on Wed May 31 15:32:25 2017
 
 This demo is for version 1.0 Optima Nutrition.  It demonstrates:  
+how to run the baseline model
 how to run the model with different coverages 
 how to access outcomes
 how to tranlate a cost into a coverage
@@ -15,8 +16,10 @@ import helper
 helper = helper.Helper()
 
 numModelSteps = 180 # this is 12 months times 15 years
-dataSpreadsheetName = 'input_spreadsheets/Bangladesh/2016Oct/InputForCode_Bangladesh.xlsx'
-spreadsheetData = data.readSpreadsheet(dataSpreadsheetName, helper.keyList)
+spreadsheet = 'input_spreadsheets/Bangladesh/2016Oct/InputForCode_Bangladesh.xlsx'
+spreadsheetData = data.readSpreadsheet(spreadsheet, helper.keyList)
+
+# make a model
 model, derived, params = helper.setupModelConstantsParameters(spreadsheetData)
 
 # make a list to save a version of the model at each time step
@@ -45,7 +48,7 @@ for t in range(numModelSteps - timestepsPre):
 # index to final version of the model (final time step in the list)
 stepFinal = numModelSteps-1    
     
-# get outcome
+# get outcomes
 cumulativeAgingOutStunted = modelList[stepFinal].getOutcome('stunting')
 finalStuntingPrevalence = modelList[stepFinal].getOutcome('stunting prev')
 cumulativeDeaths = modelList[stepFinal].getOutcome('deaths')
@@ -87,13 +90,13 @@ import costcov
 costCov = costcov.Costcov()
 
 # make an optimisation object to help us later (it contains some useful functions)
-thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, 'dummy', 'dummy')
+thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, 'dummy', 'dummy')
 
 # get the cost coverage information relevant to this spreadsheet
-costCovInfo = thisOptimisation.getCostCoverageInfo()
+costCoverageInfo = thisOptimisation.getCostCoverageInfo()
 
 # make some objects to help us get target popsize for new coverage of interventions
-model, derived, params = helper.setupModelConstantsParameters(thisData)
+model, derived, params = helper.setupModelConstantsParameters(spreadsheetData)
 
 # run the model for 1 year
 for t in range(timestepsPre):
@@ -110,6 +113,11 @@ spending = 2000000
 
 # use a function in the costcov object to translate this spending into a coverage
 newCoverages[intervention] = costCov.function(spending, costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
+
+# print out the coverage that this spending translates to
+print newCoverages[intervention]
     
 """
+
+
 
