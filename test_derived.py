@@ -2,6 +2,7 @@ import os
 import unittest
 import data
 import helper
+from copy import deepcopy as dcp
 
 # This script will test code in derived.py
 
@@ -78,7 +79,7 @@ class TestDerivedClass(unittest.TestCase):
     #def testOneToFiveReferenceMortality(self):
         # TODO: this is complicated b/c of age adjustments to all other child age compartments
 
-    #######
+    ##############
     # Tests for setReferenceWRAMortality & setReferencePregnantWomenMortality
 
     def testWRAReferenceMortality(self):
@@ -105,6 +106,39 @@ class TestDerivedClass(unittest.TestCase):
     def testRefMortalityDictLength(self):
         refMort = self.testDerived.referenceMortality
         self.assertEqual(12, len(refMort.keys()))
+
+    def testIfRawMortalityIsZero(self):
+        #if raw mortality is 0 than reference mortality should be 0
+        originalPops = ['under 5', 'neonatal', 'infant', 'pregnant women'] + self.reproductiveAges
+        data = dcp(self.testData)
+        # change raw mortalities to 0
+        data.rawMortality = {age: 0. for age in originalPops}
+        testModel, testDerived, testParams = self.helper.setupModelConstantsParameters(data)
+        refMort = testDerived.referenceMortality
+        for ageName in self.helper.keyList['allPops']:
+            for cause in self.causesOfDeath:
+                self.assertAlmostEqual(0., refMort[ageName][cause])
+
+    def testIfRawMortalityIsMaximum(self): # TODO: think on this
+        # children: 1000 deaths per 1000 births
+        # pregnant women: 1000 deaths
+        # WRA: 1 (?)
+        # If mortality is 100% for all ages, we expect reference mortality
+        # for each age to sum to 1 (i.e. whole population will die of a cause).
+        data = dcp(self.testData)
+        data.rawMortality['under 5'] = 1000.
+        data.rawMortality['neonatal'] = 1000. * self.testModel.listOfAgeCompartments[0].getTotalPopulation() / self.testData.demographics['number of live births']
+        data.rawMortality['infant'] = 1000.
+        data.rawMortality['pregnant women'] = 1000.
+        for name in self.reproductiveAges:
+            data.rawMortality[name] = 1.
+        testModel, testDerived, testParams = self.helper.setupModelConstantsParameters(data)
+        refMort = testDerived.referenceMortality
+        for ageName in self.helper.keyList['allPops']:
+            mortalitySum = 0.
+            for cause in self.causesOfDeath:
+                mortalitySum += refMort[ageName][cause]
+            #self.assertAlmostEqual(1., mortalitySum)
 
 
 if __name__ == "__main__":
