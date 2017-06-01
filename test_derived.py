@@ -279,7 +279,25 @@ class TestDerivedClass(unittest.TestCase):
     #####################
     # Tests for setProbAnemicIfCovered
 
-
+    def testProbAnemicIfAllCovered(self):
+        # if all covered then p0 = fracStunted & p1 = p0 * OR/(1-p0+OR*p0)
+        coverages = dcp(self.testParams.coverage)
+        newCoverages = {intervention: 1. for intervention in coverages.keys()}
+        stuntingDist = dcp(self.testData.stuntingDistribution)
+        self.testDerived.setProbStuntedIfCovered(newCoverages, stuntingDist)
+        for intervention in newCoverages.keys():
+            for ageName in self.helper.keyList['ages']:
+                expectedPc = self.testData.anemiaDistribution[ageName]["anemic"]
+                RR = self.testData.RRanemiaIntervention[ageName].get(intervention)
+                if RR is not None:
+                    expectedPn = expectedPc/RR
+                else:
+                    OR = self.testData.ORanemiaIntervention[ageName][intervention]
+                    expectedPn = expectedPc * OR / (1 - expectedPc + OR * expectedPc)
+                pc = self.testDerived.probStuntedIfCovered[intervention]['covered'][ageName]
+                pn = self.testDerived.probStuntedIfCovered[intervention]['not covered'][ageName]
+                self.assertAlmostEqual(expectedPc, pc)
+                self.assertAlmostEqual(expectedPn, pn)
 
     #####################
     # Tests for solveQuadratic
