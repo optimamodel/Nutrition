@@ -234,7 +234,7 @@ class Model:
     def updateCoverages(self, newCoverageArg):
         # newCoverage is a dictionary of coverages by intervention        
         newCoverage = dcp(self.params.coverage)
-        newCoverage.upadate(newCoverageArg)
+        newCoverage.update(newCoverageArg)
 
         # call initialisation of probabilities related to interventions
         self.derived.setProbStuntedIfCovered(self.params.coverage, self.params.stuntingDistribution)
