@@ -280,63 +280,104 @@ class TestDerivedClass(unittest.TestCase):
     # Tests for setProbAnemicIfCovered
 
     def testProbAnemicIfAllCovered(self):
-        # if all covered then pc = fracStunted & pn = pc * OR/(1-pc+OR*pc)
+        # if all covered then pc = fracAnemic & pn = pc
         # extra constraint is prop exposed to malaria  must be 1 (so Cov*PropExposed=1)
         coverages = dcp(self.testParams.coverage)
         newCoverages = {intervention: 1. for intervention in coverages.keys()}
-        anemiaDist = dcp(self.testData.anemiaDistribution)
-        tmp = {}
-        for ageName in self.helper.keyList['allPops']:
-            # temp change to proportion exposed malaria
-            tmp[ageName] = self.testData.proportionExposedMalaria[ageName]
-            self.testDerived.data.proportionExposedMalaria[ageName] = 1.
-        self.testDerived.setProbAnemicIfCovered(newCoverages, anemiaDist)
-        for intervention in newCoverages.keys():
-            for ageName in self.helper.keyList['allPops']:
-
-                expectedPc = self.testData.anemiaDistribution[ageName]["anemic"]
-                RR = self.testData.RRanemiaIntervention[ageName].get(intervention)
-                if RR is not None:
-                    expectedPn = expectedPc/RR
-                else:
-                    OR = self.testData.ORanemiaIntervention[ageName][intervention]
-                    expectedPn = expectedPc * OR / (1. - expectedPc + OR * expectedPc)
-                pc = self.testDerived.probAnemicIfCovered[intervention]['covered'][ageName]
-                pn = self.testDerived.probAnemicIfCovered[intervention]['not covered'][ageName]
-                self.assertAlmostEqual(expectedPc, pc)
-                self.assertAlmostEqual(expectedPn, pn)
-                # set original value
-        self.testDerived.data.proportionExposedMalaria = tmp
-
-    def testProbAnemisIfNoneCovered(self):
-        # if none covered then pn = fracStunted*propExposed & pc = OR*pn/(1+ORpn-pn)
-        # proprortion exposed can be anything this time
         coverages = dcp(self.testParams.coverage)
-        newCoverages = {intervention: 0. for intervention in coverages.keys()}
         anemiaDist = dcp(self.testData.anemiaDistribution)
-        self.testDerived.setProbAnemicIfCovered(newCoverages, anemiaDist)
-        for intervention in newCoverages.keys():
+
+        # set tmp values
+        tmpExposure = self.testDerived.data.proportionExposedMalaria
+        self.testDerived.data.proportionExposedMalaria = {ageName: 1. for ageName in self.helper.keyList['allPops']}
+        tmpRR = self.testDerived.data.RRanemiaIntervention
+        self.testDerived.data.RRanemiaIntervention = {ageName: {intervention: 1. for intervention in coverages.keys()} for
+                                                      ageName in self.helper.keyList['allPops']}
+        tmpOR = self.testDerived.data.ORanemiaIntervention
+        self.testDerived.data.ORanemiaIntervention = {ageName: {intervention: 1. for intervention in coverages.keys()} for
+                                                      ageName in self.helper.keyList['allPops']}
+        # set probabilities
+        self.testDerived.setProbAnemicIfCovered(coverages, anemiaDist)
+        for intervention in coverages.keys():
             for ageName in self.helper.keyList['allPops']:
                 if intervention == "IPTp":
-                    propExposed = self.testData.proportionExposedMalaria[ageName]
+                    propExposed = self.testDerived.data.proportionExposedMalaria[ageName]
                 else:
                     propExposed = 1.
                 expectedPn = self.testData.anemiaDistribution[ageName]["anemic"] * propExposed
-                RR = self.testData.RRanemiaIntervention[ageName].get(intervention)
-                if RR is not None:
-                    expectedPc = expectedPn*RR
-                else:
-                    OR = self.testData.ORanemiaIntervention[ageName][intervention]
-                    expectedPc = expectedPn * OR / (1. + expectedPn*OR  - expectedPn)
+                expectedPc = expectedPn
                 pc = self.testDerived.probAnemicIfCovered[intervention]['covered'][ageName]
                 pn = self.testDerived.probAnemicIfCovered[intervention]['not covered'][ageName]
                 self.assertAlmostEqual(expectedPc, pc)
                 self.assertAlmostEqual(expectedPn, pn)
+        self.testDerived.data.RRanemiaIntervention = tmpRR
+        self.testDerived.data.ORanemiaIntervention = tmpOR
+        self.testDerived.data.proportionExposedMalaria = tmpExposure
+
+    def testProbAnemicIfNoneCovered(self):
+        # if none covered and RR=OR=1 then pn = fracAnemia*propExposed & pc = pn
+        # proprortion exposed can be anything this time
+        coverages = dcp(self.testParams.coverage)
+        anemiaDist = dcp(self.testData.anemiaDistribution)
+
+        # set tmp values
+        tmpRR = self.testDerived.data.RRanemiaIntervention
+        self.testDerived.data.RRanemiaIntervention = {ageName: {intervention: 1 for intervention in coverages.keys()} for
+                                                      ageName in self.helper.keyList['allPops']}
+        tmpOR = self.testDerived.data.ORanemiaIntervention
+        self.testDerived.data.ORanemiaIntervention = {ageName: {intervention: 1 for intervention in coverages.keys()} for
+                                                      ageName in self.helper.keyList['allPops']}
+        # set probabilities
+        self.testDerived.setProbAnemicIfCovered(coverages, anemiaDist)
+        for intervention in coverages.keys():
+            for ageName in self.helper.keyList['allPops']:
+                if intervention == "IPTp":
+                    propExposed = self.testDerived.data.proportionExposedMalaria[ageName]
+                else:
+                    propExposed = 1.
+                expectedPn = self.testData.anemiaDistribution[ageName]["anemic"] * propExposed
+                expectedPc = expectedPn
+                pc = self.testDerived.probAnemicIfCovered[intervention]['covered'][ageName]
+                pn = self.testDerived.probAnemicIfCovered[intervention]['not covered'][ageName]
+                self.assertAlmostEqual(expectedPc, pc)
+                self.assertAlmostEqual(expectedPn, pn)
+        self.testDerived.data.RRanemiaIntervention = tmpRR
+        self.testDerived.data.ORanemiaIntervention = tmpOR
+
+
+    def testProbAnemicIfMalariaExposureIsZero(self):
+        # If propExposed=0 & RR=OR=1, then pn = pc, which is 0 for IPTp but as usual for rest
+        coverages = dcp(self.testParams.coverage)
+        anemiaDist = dcp(self.testData.anemiaDistribution)
+
+        # set tmp values
+        tmpExposed = self.testDerived.data.proportionExposedMalaria
+        self.testDerived.data.proportionExposedMalaria = {ageName: 0. for ageName in self.helper.keyList['allPops']}
+        tmpRR = self.testDerived.data.RRanemiaIntervention
+        self.testDerived.data.RRanemiaIntervention = {ageName: {intervention: 1 for intervention in coverages.keys()} for ageName in self.helper.keyList['allPops']}
+        tmpOR = self.testDerived.data.ORanemiaIntervention
+        self.testDerived.data.ORanemiaIntervention = {ageName: {intervention: 1 for intervention in coverages.keys()} for ageName in self.helper.keyList['allPops']}
+        # set probabilities
+        self.testDerived.setProbAnemicIfCovered(coverages, anemiaDist)
+        for intervention in coverages.keys():
+            for ageName in self.helper.keyList['allPops']:
+                if intervention == "IPTp":
+                    propExposed = 0.
+                else:
+                    propExposed = 1.
+                expectedPn = self.testData.anemiaDistribution[ageName]["anemic"] * propExposed
+                expectedPc = expectedPn
+                pc = self.testDerived.probAnemicIfCovered[intervention]['covered'][ageName]
+                pn = self.testDerived.probAnemicIfCovered[intervention]['not covered'][ageName]
+                self.assertAlmostEqual(expectedPc, pc)
+                self.assertAlmostEqual(expectedPn, pn)
+        self.testDerived.data.proportionExposedMalaria = tmpExposed
+        self.testDerived.data.RRanemiaIntervention = tmpRR
+        self.testDerived.data.ORanemiaIntervention = tmpOR
+
 
 
     #####################
-    # Tests for solveQuadratic
-
 
 
 
