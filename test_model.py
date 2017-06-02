@@ -1,4 +1,45 @@
 # This script tests the code in model.py
 
+import os
+import unittest
+import data
+import helper
+from copy import deepcopy as dcp
+
+def setupDataModelDerivedParameters():
+    cwd = os.getcwd()
+    path = cwd + '/input_spreadsheets/testingSpreadsheets/InputForCode_modelTests.xlsx'
+    helperTests = helper.Helper()
+    testData = data.readSpreadsheet(path, helperTests.keyList)
+    testModel, testDerived, testParams = helperTests.setupModelDerivedParameters(testData)
+    return testData, testModel, testDerived, testParams, helperTests.keyList
+
+
+class TestModelClass(unittest.TestCase):
+
+    @classmethod  # allows to call this only once for all tests
+    def setUpClass(cls):
+        # call this to set up model
+        cls.helper = helper.Helper()
+        [cls.testData, cls.testModel, cls.testDerived, cls.testParams,
+         cls.keyList] = setupDataModelDerivedParameters()
+
+
+    ####################
+    # Tests for updateCoverages
+
+    def testMortalityIfCoverageIsZero(self):
+        coverages = self.testParams.coverage
+        newCoverages = {intervention: 0. for intervention in coverages.key()}
+        self.testModel.updateCoverages(newCoverages)
+
+
+
+
+
+
+if __name__ == "__main__":
+    unittest.main()
+
 
 
