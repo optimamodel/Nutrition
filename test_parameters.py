@@ -27,17 +27,26 @@ class TestParamsClass(unittest.TestCase):
     ################
     # Tests for getMortalityUpdate
 
-    def testMortalityIfCoverageIsZero(self):
-        # expect the update to be 0
+    def testMortalityIfCoverageRemainsConstant(self):
+        # expect that mortality won't change, hence mortalityUpdate =1
         coverages = self.testParams.coverage
-        newCoverages = {intervention: 0. for intervention in coverages.key()}
+        mortalityUpdate = self.testParams.getMortalityUpdate(coverages)
+        expectedUpdate = 1.
+        for pop in self.keyList['allPops']:
+            for cause in self.testData.causesOfDeath:
+                self.assertAlmostEqual(expectedUpdate, mortalityUpdate[pop][cause])
+
+    def testMortalityIfCoverageDecreasesToZero(self):
+        # Expect mortality rates to increase (>1)
+        coverages = self.testParams.coverage
+        newCoverages = {intervention: 0. for intervention in coverages.keys()}
         mortalityUpdate = self.testParams.getMortalityUpdate(newCoverages)
-        expectedUpdate = 0.
-        self.assertAlmostEqual(expectedUpdate, mortalityUpdate)
+        for pop in self.keyList['allPops']:
+            for cause in self.testData.causesOfDeath:
+                self.assertGreaterEqual(mortalityUpdate[pop][cause], 1)
 
-
-
-
+if __name__ == "__main__":
+    unittest.main()
 
 
 
