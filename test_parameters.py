@@ -63,7 +63,7 @@ class TestParamsClass(unittest.TestCase):
 
     def testIfUpdateMortalityTwice(self):
         # keep coverages the same (but different from original coverage) and update twice
-        # expect to update only the first time
+        # expect updates to be the same
         coverages = self.testParams.coverage
         newCoverages = {intervention: 0.5 for intervention in coverages.keys()}
         mortalityUpdateFirst = self.testParams.getMortalityUpdate(newCoverages)
@@ -104,6 +104,15 @@ class TestParamsClass(unittest.TestCase):
         stuntingUpdate = self.testParams.getStuntingUpdate(newCoverages)
         for age in self.keyList['ages']:
             self.assertLessEqual(stuntingUpdate[age], 1.)
+
+    def testIfUpdateStuntingTwice(self):
+        # keep coverages the same (but different from original coverage) and update twice
+        # expect updates to be the same
+        coverages = self.testParams.coverage
+        newCoverages = {intervention: 0.5 for intervention in coverages.keys()}
+        stuntingUpdateFirst = self.testParams.getMortalityUpdate(newCoverages)
+        stuntingUpdateSecond = self.testParams.getMortalityUpdate(newCoverages)
+        self.assertDictEqual(stuntingUpdateFirst, stuntingUpdateSecond)
 
 
 
