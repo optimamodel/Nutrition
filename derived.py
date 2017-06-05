@@ -294,18 +294,17 @@ class Derived:
                 self.probStuntedIfCovered[intervention]["covered"][ageName]     = pc
 
     # Calculate probability of being anemic in each population group given coverage by intervention
-    def setProbAnemicIfCovered(self, coverage, anemiaDistribution):
+    def setProbAnemicIfCovered(self, coverage, anemiaDistribution, fracAnemicExposedMalaria):
         for intervention in self.data.interventionList:
             self.probAnemicIfCovered[intervention] = {}
             self.probAnemicIfCovered[intervention]["not covered"] = {}
             self.probAnemicIfCovered[intervention]["covered"] = {}
             for pop in self.allPops:
                 if intervention == "IPTp":  # indirect intervention for anemia
-                    propExposed = self.data.proportionExposedMalaria[pop]
+                    fracAnemicThisPop = fracAnemicExposedMalaria[pop] #just the sub population
                 else:
-                    propExposed = 1.
-                fracCovered = coverage[intervention] * propExposed
-                fracAnemicThisPop = anemiaDistribution[pop]["anemic"] * propExposed
+                    fracAnemicThisPop = anemiaDistribution[pop]["anemic"]
+                fracCovered = coverage[intervention] 
                 relativeRisk = self.data.RRanemiaIntervention[pop].get(intervention)
                 if relativeRisk is not None: # have RR for this intervention
                     # for RR, solve linear equation for prob anemic not covered (pn) and covered (pc)

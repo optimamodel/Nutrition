@@ -19,7 +19,7 @@ class Data:
                  effectivenessIncidence, interventionsBirthOutcome, foodSecurityGroups,
                  ORstuntingComplementaryFeeding, deliveryDistribution,
                  interventionsPregnantWomenAff, interventionsPregnantWomenEff, anemiaDistribution,
-                 projectedReproductiveAge, proportionExposedMalaria):
+                 projectedReproductiveAge, fracAnemicExposedMalaria, fracExposedMalaria):
 
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
@@ -61,7 +61,8 @@ class Data:
         self.interventionsPregnantWomenEff = interventionsPregnantWomenEff
         self.anemiaDistribution = anemiaDistribution
         self.projectedReproductiveAge = projectedReproductiveAge
-        self.proportionExposedMalaria = proportionExposedMalaria
+        self.fracAnemicExposedMalaria = fracAnemicExposedMalaria
+        self.fracExposedMalaria = fracExposedMalaria
 
 
 def readSpreadsheet(fileName, keyList):
@@ -583,9 +584,13 @@ def readSpreadsheet(fileName, keyList):
         for group in foodSecurityGroups:
             ORstuntingComplementaryFeeding[ageName][group] = df.loc[group, ageName]
 
-    # READ proportion exposed to malaria
-    df = pandas.read_excel(Location, sheetname = 'Proportion exposed to malaria')
-    proportionExposedMalaria = dict(zip(list(df.columns.values), df.iloc[0]))
+    # READ fraction anemic exposed to malaria SHEET
+    df = pandas.read_excel(Location, sheetname = 'Frac anemic exposed malaria')
+    fracAnemicExposedMalaria = dict(zip(list(df.columns.values), df.iloc[0]))
+    
+    # READ fraction exposed to malaria SHEET
+    df = pandas.read_excel(Location, sheetname = 'Frac exposed malaria')
+    fracExposedMalaria = dict(zip(list(df.columns.values), df.iloc[0]))
 
     spreadsheetData = Data(causesOfDeath, conditions, interventionList, demographics,
                            projectedBirths, rawMortality, causeOfDeathDist, RRdeathAnemia, RRdeathStunting,
@@ -599,7 +604,7 @@ def readSpreadsheet(fileName, keyList):
                            effectivenessMortality, effectivenessIncidence, interventionsBirthOutcome,
                            foodSecurityGroups, ORstuntingComplementaryFeeding, deliveryDistribution, 
                            interventionsPregnantWomenAff, interventionsPregnantWomenEff, anemiaDistribution,
-                           projectedReproductiveAge, proportionExposedMalaria)
+                           projectedReproductiveAge, fracAnemicExposedMalaria, fracExposedMalaria)
 
     return spreadsheetData
                   

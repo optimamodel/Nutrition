@@ -194,13 +194,13 @@ class Model:
         self.derived.setProbCorrectlyBreastfedIfCovered(self.params.coverage, self.params.breastfeedingDistribution)
         self.derived.setProbStuntedIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.stuntingDistribution)
         self.derived.setProbStuntedComplementaryFeeding(self.params.stuntingDistribution, self.params.coverage)
-        self.derived.setProbAnemicIfCovered(self.params.coverage, self.params.anemiaDistribution)
+        self.derived.setProbAnemicIfCovered(self.params.coverage, self.params.anemiaDistribution, self.params.fracAnemicExposedMalaria)
         
         # get combined reductions from all interventions
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
         pregnantWomenMortalityUpdate = self.params.getPregnantWomenMortalityUpdate(newCoverage)
         stuntingUpdate = self.params.getStuntingUpdate(newCoverage)
-        anemiaUpdate = self.params.getAnemiaUpdate(newCoverage)
+        anemiaUpdate, malariaReduction = self.params.getAnemiaUpdate(newCoverage)
         incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
         birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)
         newFracCorrectlyBreastfed = self.params.getAppropriateBFNew(newCoverage)
@@ -288,11 +288,25 @@ class Model:
             ageGroup.distributeAnemicPopulation(self.params.anemiaDistribution)
 
         # Pregnant Women
+        pop = 'pregnant women'
+        # add the reduction from IPTp to anemia update for pregnant women
+        numberExposedMalaria = self.pregnantWomen.getTotalPopulation() * self.params.fracExposedMalaria[pop]
+        numberAnemicExposedMalaria = numberExposedMalaria * self.params.fracAnemicExposedMalaria[pop]
+        totalAnemicPopulation = self.pregnantWomen.getTotalPopulation() * self.params.anemiaDistribution[pop]["anemic"]
+        thisReduction = malariaReduction[pop] * numberAnemicExposedMalaria / totalAnemicPopulation
+        anemiaUpdate[pop] *= 1. - thisReduction        
+        # update anemia probability
         oldProbAnemia = self.pregnantWomen.getAnemicFraction()
-        newProbAnemia = oldProbAnemia * anemiaUpdate['pregnant women']
-        self.params.anemiaDistribution['pregnant women']['anemic'] = newProbAnemia
-        self.params.anemiaDistribution['pregnant women']['not anemic'] = 1. - newProbAnemia
+        newProbAnemia = oldProbAnemia * anemiaUpdate[pop]
+        self.params.anemiaDistribution[pop]['anemic'] = newProbAnemia
+        self.params.anemiaDistribution[pop]['not anemic'] = 1. - newProbAnemia
         self.pregnantWomen.distributePopulation(self.params.anemiaDistribution, self.params.deliveryDistribution)
+        # update fraction anemic exposed to malaria
+        oldFracAnemiaMalaria = self.params.fracAnemicExposedMalaria[pop]
+        newFracAnemiaMalaria = oldFracAnemiaMalaria * malariaReduction[pop]
+        self.params.fracAnemicExposedMalaria[pop] = newFracAnemiaMalaria
+        
+
 
         # BIRTH OUTCOME
         for outcome in self.birthOutcomes:
