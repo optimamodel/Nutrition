@@ -115,6 +115,35 @@ class TestParamsClass(unittest.TestCase):
         self.assertDictEqual(stuntingUpdateFirst, stuntingUpdateSecond)
 
 
+    #########################
+    # Tests for getStuntingUpdateDueToIncidence
+
+    def testStuntingIfBetaIsOne(self):
+        # proportion of children who experience x episodes of diarrhoea per month is 100%
+        # expect newProbstunting = 1 (if values below also 1) & update is then 1 - (-1) = 2
+        self.testDerived.fracStuntedIfDiarrhea['dia'] = {ageName: 1. for ageName in self.keyList['ages']}
+        self.testDerived.fracStuntedIfDiarrhea['nodia'] = {ageName: 1. for ageName in self.keyList['ages']} # not used
+        beta = {ageName: {feedingCat: 1. for feedingCat in self.keyList['breastfeedingList']} for ageName in self.keyList['ages']}
+        update = self.testParams.getStuntingUpdateDueToIncidence(beta)
+        expectedUpdate = 2.
+        for age in self.keyList['ages']:
+            self.assertAlmostEqual(update[age], expectedUpdate)
+
+    def testStuntingIfBetaIsZero(self):
+        # proportion of children who experience x episodes of diarrhoea per month is 0%
+        # expect newProbstunting = 1 (if values below also 1) & update is then 1 - (-1) = 2
+        self.testDerived.fracStuntedIfDiarrhea['dia'] = {ageName: 1. for ageName in self.keyList['ages']}
+        self.testDerived.fracStuntedIfDiarrhea['nodia'] = {ageName: 1. for ageName in self.keyList['ages']} # not used
+        beta = {ageName: {feedingCat: 0. for feedingCat in self.keyList['breastfeedingList']} for ageName in self.keyList['ages']}
+        update = self.testParams.getStuntingUpdateDueToIncidence(beta)
+        expectedUpdate = 2.
+        for age in self.keyList['ages']:
+            self.assertAlmostEqual(update[age], expectedUpdate)
+
+
+
+
+
 
 if __name__ == "__main__":
     unittest.main()
