@@ -56,11 +56,19 @@ class TestParamsClass(unittest.TestCase):
                                             for pop in self.keyList['allPops']} for intervention in coverages.keys() }
         self.testParams.effectivenessMortality = {intervention: {pop: {cause: 1. for cause in self.testData.causesOfDeath}
                                             for pop in self.keyList['allPops']} for intervention in coverages.keys() }
-
         mortalityUpdate = self.testParams.getMortalityUpdate(newCoverages)
         for pop in self.keyList['allPops']:
             for cause in self.testData.causesOfDeath:
                 self.assertAlmostEqual(0., mortalityUpdate[pop][cause])
+
+    def testIfUpdateMortalityTwice(self):
+        # keep coverages the same (but different from original coverage) and update twice
+        # expect to update only the first time
+        coverages = self.testParams.coverage
+        newCoverages = {intervention: 0.5 for intervention in coverages.keys()}
+        mortalityUpdateFirst = self.testParams.getMortalityUpdate(newCoverages)
+        mortalityUpdateSecond = self.testParams.getMortalityUpdate(newCoverages)
+        self.assertDictEqual(mortalityUpdateFirst, mortalityUpdateSecond)
 
 
 
