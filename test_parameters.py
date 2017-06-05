@@ -8,7 +8,7 @@ from copy import deepcopy as dcp
 
 def setupDataModelDerivedParameters():
     cwd = os.getcwd()
-    path = cwd + '/input_spreadsheets/testingSpreadsheets/InputForCode_modelTests.xlsx'
+    path = cwd + '/input_spreadsheets/testingSpreadsheets/InputForCode_parametersTests.xlsx'
     helperTests = helper.Helper()
     testData = data.readSpreadsheet(path, helperTests.keyList)
     testModel, testDerived, testParams = helperTests.setupModelDerivedParameters(testData)
@@ -37,13 +37,32 @@ class TestParamsClass(unittest.TestCase):
                 self.assertAlmostEqual(expectedUpdate, mortalityUpdate[pop][cause])
 
     def testMortalityIfCoverageDecreasesToZero(self):
-        # Expect mortality rates to increase (>1)
+        # Expect mortality rates to increase (>=1)
         coverages = self.testParams.coverage
         newCoverages = {intervention: 0. for intervention in coverages.keys()}
         mortalityUpdate = self.testParams.getMortalityUpdate(newCoverages)
         for pop in self.keyList['allPops']:
             for cause in self.testData.causesOfDeath:
                 self.assertGreaterEqual(mortalityUpdate[pop][cause], 1)
+
+    def testMortalityIfCoverageIncreasesFromZeroToOne(self):
+        # expect mortality update to be product of all reductions for each intervention: (1-eff*affFrac)
+        # affectedFrac & effectiveness = 1 so all updates will be 0
+        coverages = self.testParams.coverage
+        self.testParams.coverage = {intervention: 0. for intervention in coverages.keys()}
+        newCoverages = {intervention: 1. for intervention in coverages.keys()}
+        # set all affectedFrac & effectiveness to 1
+        self.testParams.affectedFraction = {intervention: {pop: {cause: 1. for cause in self.testData.causesOfDeath}
+                                            for pop in self.keyList['allPops']} for intervention in coverages.keys() }
+        self.testParams.effectivenessMortality = {intervention: {pop: {cause: 1. for cause in self.testData.causesOfDeath}
+                                            for pop in self.keyList['allPops']} for intervention in coverages.keys() }
+
+        mortalityUpdate = self.testParams.getMortalityUpdate(newCoverages)
+        for pop in self.keyList['allPops']:
+            for cause in self.testData.causesOfDeath:
+                self.assertAlmostEqual(0., mortalityUpdate[pop][cause])
+
+
 
 if __name__ == "__main__":
     unittest.main()
