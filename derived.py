@@ -303,13 +303,13 @@ class Derived:
                 if intervention == "IPTp":  # indirect intervention for anemia
                     propExposed = self.data.proportionExposedMalaria[pop]
                 else:
-                    propExposed = 1
+                    propExposed = 1.
                 fracCovered = coverage[intervention] * propExposed
                 fracAnemicThisPop = anemiaDistribution[pop]["anemic"] * propExposed
                 relativeRisk = self.data.RRanemiaIntervention[pop].get(intervention)
                 if relativeRisk is not None: # have RR for this intervention
                     # for RR, solve linear equation for prob anemic not covered (pn) and covered (pc)
-                    pn = fracAnemicThisPop/(relativeRisk*fracCovered + (1- fracCovered))
+                    pn = fracAnemicThisPop/(relativeRisk*fracCovered + (1.- fracCovered))
                     pc = relativeRisk*pn
                 else: # must be OR
                     oddsRatio = self.data.ORanemiaIntervention[pop][intervention]
