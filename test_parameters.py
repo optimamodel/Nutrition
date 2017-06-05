@@ -27,7 +27,7 @@ class TestParamsClass(unittest.TestCase):
     ################
     # Tests for getMortalityUpdate
 
-    def testMortalityIfCoverageRemainsConstant(self):
+    def testMortalityIfCoverageIsSameAsOriginal(self):
         # expect that mortality won't change, hence mortalityUpdate =1
         coverages = self.testParams.coverage
         mortalityUpdate = self.testParams.getMortalityUpdate(coverages)
@@ -69,6 +69,41 @@ class TestParamsClass(unittest.TestCase):
         mortalityUpdateFirst = self.testParams.getMortalityUpdate(newCoverages)
         mortalityUpdateSecond = self.testParams.getMortalityUpdate(newCoverages)
         self.assertDictEqual(mortalityUpdateFirst, mortalityUpdateSecond)
+
+
+
+    ####################
+    # Tests for getStuntingUpdate
+
+    def testStuntingIfCoverageIsSameAsOriginal(self):
+        # expect reduction=0 so update=1
+        coverages = self.testParams.coverage
+        # set probability stunted if covered
+        self.testDerived.setProbStuntedIfCovered(coverages, self.testData.stuntingDistribution)
+        stuntingUpdate = self.testParams.getStuntingUpdate(coverages)
+        for age in self.keyList['ages']:
+            self.assertAlmostEqual(1., stuntingUpdate[age])
+
+    def testStuntingIfCoverageDescreasesToZero(self):
+        # expect stunting to increase (>=1)
+        coverages = self.testParams.coverage
+        # set probability stunted if covered
+        self.testDerived.setProbStuntedIfCovered(coverages, self.testData.stuntingDistribution)
+        newCoverages = {intervention: 0. for intervention in coverages.keys()}
+        stuntingUpdate = self.testParams.getStuntingUpdate(newCoverages)
+        for age in self.keyList['ages']:
+            self.assertGreaterEqual(stuntingUpdate[age], 1.)
+
+    def testStuntingIfCoverageIncreasesFromZeroToOne(self):
+        # expect stunting to decrease (<=1)
+        coverages = self.testParams.coverage
+        newCoverages = {intervention: 0. for intervention in coverages.keys()}
+        # set probability stunted if covered
+        self.testDerived.setProbStuntedIfCovered(newCoverages, self.testData.stuntingDistribution)
+        newCoverages = {intervention: 1. for intervention in coverages.keys()}
+        stuntingUpdate = self.testParams.getStuntingUpdate(newCoverages)
+        for age in self.keyList['ages']:
+            self.assertLessEqual(stuntingUpdate[age], 1.)
 
 
 
