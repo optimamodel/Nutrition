@@ -303,7 +303,8 @@ class Model:
         self.pregnantWomen.distributePopulation(self.params.anemiaDistribution, self.params.deliveryDistribution)
         # update fraction anemic exposed to malaria
         oldFracAnemiaMalaria = self.params.fracAnemicExposedMalaria[pop]
-        newFracAnemiaMalaria = oldFracAnemiaMalaria * malariaReduction[pop]
+        malariaUpdate = 1. - malariaReduction[pop]
+        newFracAnemiaMalaria = oldFracAnemiaMalaria * malariaUpdate
         self.params.fracAnemicExposedMalaria[pop] = newFracAnemiaMalaria
         
 
