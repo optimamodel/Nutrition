@@ -10,7 +10,7 @@ import data
 
 def setupDataModelDerivedParameters():
     cwd = os.getcwd()
-    path = cwd + '/input_spreadsheets/testingSpreadsheets/InputForCode_helperTests.xlsx'
+    path = cwd + '/input_spreadsheets/testingSpreadsheets/InputForCode_mainTests.xlsx'
     helperTests = helper.Helper()
     testData = data.readSpreadsheet(path, helperTests.keyList)
     testModel, testDerived, testParams = helperTests.setupModelDerivedParameters(testData)

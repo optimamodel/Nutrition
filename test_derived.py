@@ -8,7 +8,7 @@ from copy import deepcopy as dcp
 
 def setupDataModelDerivedParameters():
     cwd = os.getcwd()
-    path = cwd + '/input_spreadsheets/testingSpreadsheets/InputForCode_derivedTests.xlsx'
+    path = cwd + '/input_spreadsheets/testingSpreadsheets/InputForCode_mainTests.xlsx'
     helperTests = helper.Helper()
     testData = data.readSpreadsheet(path, helperTests.keyList)
     testModel, testDerived, testParams = helperTests.setupModelDerivedParameters(testData)
@@ -278,7 +278,7 @@ class TestDerivedClass(unittest.TestCase):
 
     #####################
     # Tests for setProbAnemicIfCovered
-
+    # TODO: Will need to alter as the IPTp code has changed
     def testProbAnemicIfAllCovered(self):
         # if all covered then pc = fracAnemic & pn = pc
         # extra constraint is prop exposed to malaria  must be 1 (so Cov*PropExposed=1)
