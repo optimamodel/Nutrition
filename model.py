@@ -194,7 +194,7 @@ class Model:
         self.derived.setProbCorrectlyBreastfedIfCovered(self.params.coverage, self.params.breastfeedingDistribution)
         self.derived.setProbStuntedIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.stuntingDistribution)
         self.derived.setProbStuntedComplementaryFeeding(self.params.stuntingDistribution, self.params.coverage)
-        self.derived.setProbAnemicIfCovered(self.params.coverage, self.params.anemiaDistribution, self.params.fracAnemicExposedMalaria)
+        self.derived.setProbAnemicIfCovered(self.params.coverage, self.params.anemiaDistribution, self.params.fracAnemicExposedMalaria, self.params.fracAnemicNotPoor, self.params.fracAnemicPoor)
         
         # get combined reductions from all interventions
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
@@ -205,6 +205,7 @@ class Model:
         birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)
         newFracCorrectlyBreastfed = self.params.getAppropriateBFNew(newCoverage)
         stuntingUpdateComplementaryFeeding = self.params.getStuntingUpdateComplementaryFeeding(newCoverage)
+        
 
         # MORTALITY
         # add the pregnant women mortality update to the mortality update for pregnant women
@@ -268,11 +269,20 @@ class Model:
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
 
         # ANEMIA
+        # note: apply anemia update for general population to all other populations
+
+        # General population
+        pop = 'general population'
+        oldProbAnemia = self.params.anemiaDistribution[pop]["anemic"]
+        newProbAnemia = oldProbAnemia * anemiaUpdate[pop]
+        self.params.anemiaDistribution[pop]["anemic"] = newProbAnemia
+        self.params.anemiaDistribution[pop]["not anemic"] = 1. - newProbAnemia
+
         # Children
         for ageGroup in self.listOfAgeCompartments:
             ageName = ageGroup.name
             oldProbAnemia = ageGroup.getAnemicFraction()
-            newProbAnemia = oldProbAnemia * anemiaUpdate[ageName]
+            newProbAnemia = oldProbAnemia * anemiaUpdate[ageName] * anemiaUpdate['general population']
             self.params.anemiaDistribution[ageName]['anemic'] = newProbAnemia
             self.params.anemiaDistribution[ageName]['not anemic'] = 1. - newProbAnemia
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
@@ -282,7 +292,7 @@ class Model:
             ageName = ageGroup.name
             # update anemia
             oldProbAnemia = ageGroup.getAnemicFraction()
-            newProbAnemia = oldProbAnemia * anemiaUpdate[ageName]
+            newProbAnemia = oldProbAnemia * anemiaUpdate[ageName] * anemiaUpdate['general population']
             self.params.anemiaDistribution[ageName]["anemic"] = newProbAnemia
             self.params.anemiaDistribution[ageName]["not anemic"] = 1. - newProbAnemia
             ageGroup.distributeAnemicPopulation(self.params.anemiaDistribution)
@@ -297,7 +307,7 @@ class Model:
         anemiaUpdate[pop] *= 1. - thisReduction        
         # update anemia probability
         oldProbAnemia = self.pregnantWomen.getAnemicFraction()
-        newProbAnemia = oldProbAnemia * anemiaUpdate[pop]
+        newProbAnemia = oldProbAnemia * anemiaUpdate[pop] * anemiaUpdate['general population']
         self.params.anemiaDistribution[pop]['anemic'] = newProbAnemia
         self.params.anemiaDistribution[pop]['not anemic'] = 1. - newProbAnemia
         self.pregnantWomen.distributePopulation(self.params.anemiaDistribution, self.params.deliveryDistribution)
@@ -307,7 +317,6 @@ class Model:
         newFracAnemiaMalaria = oldFracAnemiaMalaria * malariaUpdate
         self.params.fracAnemicExposedMalaria[pop] = newFracAnemiaMalaria
         
-
 
         # BIRTH OUTCOME
         for outcome in self.birthOutcomes:

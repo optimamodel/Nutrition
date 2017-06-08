@@ -43,6 +43,7 @@ def getTargetPopSizeFromModelInstance(dataSpreadsheetName, keyList, model):
             ageName = keyList['ages'][iAge]
             targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * model.listOfAgeCompartments[iAge].getTotalPopulation()
         targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['pregnant women'] * model.pregnantWomen.getTotalPopulation()
+        targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['general population'] * spreadsheetData.demographics['general population size']
     return targetPopSize    
 
     
@@ -394,6 +395,7 @@ class Optimisation:
                 ageName = self.helper.keyList['ages'][iAge]
                 targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * agePopSizes[iAge]
             targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['pregnant women'] * mothers.getTotalPopulation()
+            targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['general population'] * spreadsheetData.demographics['general population']
         return targetPopSize    
     
     

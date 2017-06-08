@@ -23,6 +23,8 @@ class Params:
         self.deliveryDistribution = dcp(data.deliveryDistribution)
         self.breastfeedingDistribution = dcp(data.breastfeedingDistribution)
         self.anemiaDistribution = dcp(data.anemiaDistribution)
+        self.fracAnemicNotPoor = dcp(data.fracAnemicNotPoor)
+        self.fracAnemicPoor = dcp(data.fracAnemicPoor)
         self.fracAnemicExposedMalaria = dcp(data.fracAnemicExposedMalaria)
         self.fracExposedMalaria = dcp(data.fracExposedMalaria)
         self.RRdeathStunting = dcp(data.RRdeathStunting)
@@ -110,19 +112,27 @@ class Params:
     def getAnemiaUpdate(self, newCoverage):
         anemiaUpdate = {}
         malariaReduction = {}
-        for pop in self.allPops:
+        for pop in self.allPops + ['general population']:
             anemiaUpdate[pop] = 1.
-            malariaReduction[pop] = 1.
-            oldProbAnemic = self.anemiaDistribution[pop]["anemic"]
+            malariaReduction[pop] = 0.
             for intervention in newCoverage.keys():
                 probAnemicIfCovered = self.derived.probAnemicIfCovered[intervention]["covered"][pop]
                 probAnemicIfNotCovered = self.derived.probAnemicIfCovered[intervention]["not covered"][pop]
                 newProbAnemic = newCoverage[intervention]*probAnemicIfCovered + (1-newCoverage[intervention])*probAnemicIfNotCovered
-                if intervention == "IPTp":
-                    oldProbAnemicMalaria = self.fracAnemicExposedMalaria[pop]
-                    reduction = (oldProbAnemicMalaria - newProbAnemic)/oldProbAnemicMalaria
+                if intervention == 'IPTp':
+                    oldProbAnemic = self.fracAnemicExposedMalaria[pop]
+                    reduction = (oldProbAnemic - newProbAnemic)/oldProbAnemic
                     malariaReduction[pop] = reduction
+                elif "IFA poor" in intervention: 
+                    oldProbAnemic = self.fracAnemicPoor[pop]
+                    reduction = (oldProbAnemic - newProbAnemic)/oldProbAnemic
+                    anemiaUpdate[pop] *= 1. - reduction
+                elif "IFA not poor" in intervention: 
+                    oldProbAnemic = self.fracAnemicNotPoor[pop]
+                    reduction = (oldProbAnemic - newProbAnemic)/oldProbAnemic
+                    anemiaUpdate[pop] *= 1. - reduction    
                 else:    
+                    oldProbAnemic = self.anemiaDistribution[pop]["anemic"]
                     reduction = (oldProbAnemic - newProbAnemic)/oldProbAnemic
                     anemiaUpdate[pop] *= 1. - reduction
         return anemiaUpdate, malariaReduction

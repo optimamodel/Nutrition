@@ -19,7 +19,8 @@ class Data:
                  effectivenessIncidence, interventionsBirthOutcome, foodSecurityGroups,
                  ORstuntingComplementaryFeeding, deliveryDistribution,
                  interventionsPregnantWomenAff, interventionsPregnantWomenEff, anemiaDistribution,
-                 projectedReproductiveAge, fracAnemicExposedMalaria, fracExposedMalaria):
+                 projectedReproductiveAge, fracAnemicNotPoor, fracAnemicPoor, 
+                 fracAnemicExposedMalaria, fracExposedMalaria):
 
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
@@ -61,6 +62,8 @@ class Data:
         self.interventionsPregnantWomenEff = interventionsPregnantWomenEff
         self.anemiaDistribution = anemiaDistribution
         self.projectedReproductiveAge = projectedReproductiveAge
+        self.fracAnemicNotPoor = fracAnemicNotPoor
+        self.fracAnemicPoor = fracAnemicPoor
         self.fracAnemicExposedMalaria = fracAnemicExposedMalaria
         self.fracExposedMalaria = fracExposedMalaria
 
@@ -76,7 +79,6 @@ def readSpreadsheet(fileName, keyList):
     deliveryList = keyList['deliveryList']
     allPops = keyList['allPops']
     anemiaList = keyList['anemiaList']
-    reproductiveAges = keyList['reproductiveAges']
 
     #get list of ages and causesOfDeath
     df = pandas.read_excel(Location, sheetname = 'causes of death')
@@ -263,7 +265,7 @@ def readSpreadsheet(fileName, keyList):
     #  - anemiaDistribution
     df = pandas.read_excel(Location, sheetname = 'anemia prevalence', index_col = [0, 1])
     anemiaDistribution = {}
-    for ageName in allPops:
+    for ageName in allPops + ['general population']:
         anemiaDistribution[ageName] = {}
         for status in anemiaList:
             anemiaDistribution[ageName][status] = df.loc['Anemia'][ageName][status] / 100.
@@ -330,7 +332,7 @@ def readSpreadsheet(fileName, keyList):
     interventionsRR = list(df['Intervention'])
     df = pandas.read_excel(Location, sheetname='RR anemic by intervention', index_col = 'Intervention')
     RRanemiaIntervention = {}
-    for pop in allPops:
+    for pop in allPops + ['general population']:
         RRanemiaIntervention[pop] = {}
         for intervention in interventionList:
             RRanemiaIntervention[pop][intervention] = 1.
@@ -345,7 +347,7 @@ def readSpreadsheet(fileName, keyList):
     interventionsOR = list(df['Intervention'])
     df = pandas.read_excel(Location, sheetname='OR anemic by intervention', index_col = 'Intervention')
     ORanemiaIntervention = {}
-    for pop in allPops:
+    for pop in allPops + ['general population']:
         ORanemiaIntervention[pop] = {}
         for intervention in interventionList:
             if intervention in interventionsOR:
@@ -416,7 +418,7 @@ def readSpreadsheet(fileName, keyList):
     targetPopulation = {}
     for intervention in interventionList:
         targetPopulation[intervention] = {}
-        for pop in allPops:
+        for pop in allPops + ['general population']:
             targetPopulation[intervention][pop] = df.loc[intervention, pop]
 
     # READ Interventions birth outcome SHEET
@@ -584,6 +586,14 @@ def readSpreadsheet(fileName, keyList):
         for group in foodSecurityGroups:
             ORstuntingComplementaryFeeding[ageName][group] = df.loc[group, ageName]
 
+    # READ fraction anemic not poor SHEET
+    df = pandas.read_excel(Location, sheetname = 'Frac anemic not poor')
+    fracAnemicNotPoor = dict(zip(list(df.columns.values), df.iloc[0]))
+
+    # READ fraction anemic poor SHEET
+    df = pandas.read_excel(Location, sheetname = 'Frac anemic poor')
+    fracAnemicPoor = dict(zip(list(df.columns.values), df.iloc[0]))    
+    
     # READ fraction anemic exposed to malaria SHEET
     df = pandas.read_excel(Location, sheetname = 'Frac anemic exposed malaria')
     fracAnemicExposedMalaria = dict(zip(list(df.columns.values), df.iloc[0]))
@@ -604,7 +614,8 @@ def readSpreadsheet(fileName, keyList):
                            effectivenessMortality, effectivenessIncidence, interventionsBirthOutcome,
                            foodSecurityGroups, ORstuntingComplementaryFeeding, deliveryDistribution, 
                            interventionsPregnantWomenAff, interventionsPregnantWomenEff, anemiaDistribution,
-                           projectedReproductiveAge, fracAnemicExposedMalaria, fracExposedMalaria)
+                           projectedReproductiveAge, fracAnemicNotPoor, fracAnemicPoor, fracAnemicExposedMalaria,
+                           fracExposedMalaria)
 
     return spreadsheetData
                   
