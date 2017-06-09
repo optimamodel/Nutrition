@@ -10,13 +10,14 @@ from copy import deepcopy as dcp
 import helper
 import data
 import csv
+import optimisation
 helper = helper.Helper()
 
 numModelSteps = 180
 x_coverage = np.arange(0, 1.0, 0.05)#0.01)
 
 
-#  MAKE PLOT
+##  MAKE PLOT
 spreadsheet = 'input_spreadsheets/Bangladesh/2016Oct/inputForCode_Bangladesh.xlsx'
 thisData = data.readSpreadsheet(spreadsheet, helper.keyList)
 for intervention in ['Breastfeeding promotion','Complementary feeding education']:
@@ -47,7 +48,7 @@ for intervention in ['Breastfeeding promotion','Complementary feeding education'
     
     
     
-### OUTPUT TO CSV FOR EACH REGION EVERY INTERVENTION  
+#### OUTPUT TO CSV FOR EACH REGION EVERY INTERVENTION  
 regionNameList = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
 spreadsheetFileStem = 'input_spreadsheets/Bangladesh/2016Oct/subregionSpreadsheets/'
 spreadsheetList = []
@@ -86,3 +87,28 @@ for region in range(len(regionNameList)):
             for key in y_outcome.keys():
                 writer.writerow(y_outcome[key])          
    
+# OUTPUT TARGET POP SIZES FOR EACH INTERVENTION PER REGION
+for region in range(len(regionNameList)):
+    regionName = regionNameList[region]
+    print regionName
+    spreadsheet = spreadsheetList[region]
+    thisData = data.readSpreadsheet(spreadsheet, helper.keyList)
+    # get model object
+    model, derived, params = helper.setupModelDerivedParameters(thisData)
+    timestepsPre = 12
+    for t in range(timestepsPre):
+        model.moveOneTimeStep() 
+    # get target pops
+    targetPop = optimisation.getTargetPopSizeFromModelInstance(spreadsheet, helper.keyList, model)
+    # write to csv
+    outfile = regionName + '_targetPopulationSize.csv'
+    row1 = []
+    row2 = []
+    for key in targetPop.keys():
+        row1.append(key)
+        row2.append(targetPop[key])
+    
+    with open(outfile, "wb") as f:
+        writer = csv.writer(f)
+        writer.writerow(row1)
+        writer.writerow(row2)
