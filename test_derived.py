@@ -378,7 +378,15 @@ class TestDerivedClass(unittest.TestCase):
 
 
     #####################
+    # Test solveQuadratic
 
+    def testIfAllZero(self):    # TODO: Shows that quadratic cannot return probabilities either 0 or 1. Do we want it to?
+        # If all 0 then expect 0 probability of having risk factor whether covered or not
+        print "running now"
+        # OR=FracA=fracB=0
+        p0, p1 = self.testDerived.solveQuadratic(0., 0., 0.)
+        self.assertEqual(p0, 0.)
+        self.assertTrue(p1, 0.)
 
 
 
