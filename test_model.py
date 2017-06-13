@@ -23,6 +23,7 @@ class TestModelClass(unittest.TestCase):
         cls.helper = helper.Helper()
         [cls.testData, cls.testModel, cls.testDerived, cls.testParams,
          cls.keyList] = setupDataModelDerivedParameters()
+        cls.everyone = cls.keyList['allPops'] + ['general population']
 
 
     ####################
@@ -44,10 +45,10 @@ class TestModelClass(unittest.TestCase):
         coverages = self.testParams.coverage
         tmpAnemiaRR = self.testDerived.data.RRanemiaIntervention
         self.testDerived.data.RRanemiaIntervention = {ageName: {intervention: 1.5 for intervention in coverages.keys()} for
-                                                      ageName in self.keyList['allPops']}
+                                                      ageName in self.everyone}
         tmpAnemiaOR = self.testDerived.data.ORanemiaIntervention
         self.testDerived.data.ORanemiaIntervention = {ageName: {intervention: 1.5 for intervention in coverages.keys()} for
-                                                      ageName in self.keyList['allPops']}
+                                                      ageName in self.everyone}
         tmpStuntingOR = self.testDerived.data.ORstuntingIntervention
         self.testDerived.data.ORstuntingIntervention = {ageName: {intervention: 1.5 for intervention in coverages.keys()} for
                                                       ageName in self.keyList['allPops']}
@@ -72,6 +73,47 @@ class TestModelClass(unittest.TestCase):
         self.testModel.updateCoverages(newCoverages)
         mortalitySecond = self.testModel.derived.referenceMortality
         self.assertDictEqual(mortalityFirst, mortalitySecond)
+
+
+    #################
+    # Tests for updateMortalityRate
+
+    def testMortalityIfRRAndORAreZero(self):
+        # spreadsheet with all zeros
+        cwd = os.getcwd()
+        path = cwd + '/input_spreadsheets/testingSpreadsheets/InputForCode_mainTests_RRandORzero.xlsx'
+        helperTests = helper.Helper()
+        testData = data.readSpreadsheet(path, helperTests.keyList)
+        testModel, testDerived, testParams = helperTests.setupModelDerivedParameters(testData)
+        testModel.updateMortalityRate()
+
+    def testIfReferenceMortalityIsZero(self):
+        # expect that all mortalities updated to 0
+        refMort = self.testModel.derived.referenceMortality
+        self.testModel.derived.referenceMortality = {ageName:
+                                                         {cause: 0. for cause in self.testData.causesOfDeath}
+                                                     for ageName in self.everyone}
+        self.testModel.updateMortalityRate()
+        for ageGroup in self.testModel.listOfAgeCompartments:
+            for stuntingCat in self.keyList['stuntingList']:
+                for wastingCat in self.keyList['wastingList']:
+                    for breastfeedingCat in self.keyList['breastfeedingList']:
+                        for anemiaStatus in self.keyList['anemiaList']:
+                            ageMortality = ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].mortalityRate
+                            self.assertEqual(0., ageMortality)
+
+        for ageGroup in  self.testModel.listOfReproductiveAgeCompartments:
+            for anemiaStatus in self.keyList['anemiaList']:
+                ageMortality = ageGroup.dictOfBoxes[anemiaStatus].mortalityRate
+                self.assertEqual(0., ageMortality)
+
+        for anemiaStatus in self.keyList['anemiaList']:
+            for deliveryStatus in self.keyList['deliveryList']:
+                ageMortality = self.testModel.pregnantWomen.dictOfBoxes[anemiaStatus][deliveryStatus].mortalityRate
+                self.assertEqual(0., ageMortality)
+
+        # reset
+        self.testModel.derived.referenceMortality = refMort
 
 
 
