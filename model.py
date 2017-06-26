@@ -304,7 +304,7 @@ class Model:
         numberAnemicExposedMalaria = numberExposedMalaria * self.params.fracAnemicExposedMalaria[pop]
         totalAnemicPopulation = self.pregnantWomen.getTotalPopulation() * self.params.anemiaDistribution[pop]["anemic"]
         thisReduction = malariaReduction[pop] * numberAnemicExposedMalaria / totalAnemicPopulation
-        anemiaUpdate[pop] *= 1. - thisReduction        
+        anemiaUpdate[pop] *= 1. - thisReduction   
         # update anemia probability
         oldProbAnemia = self.pregnantWomen.getAnemicFraction()
         newProbAnemia = oldProbAnemia * anemiaUpdate[pop] * anemiaUpdate['general population']
