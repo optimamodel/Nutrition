@@ -200,7 +200,7 @@ class Model:
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
         pregnantWomenMortalityUpdate = self.params.getPregnantWomenMortalityUpdate(newCoverage)
         stuntingUpdate = self.params.getStuntingUpdate(newCoverage)
-        anemiaUpdate, malariaReduction = self.params.getAnemiaUpdate(newCoverage)
+        anemiaUpdate, malariaReduction, poorReduction, notPoorReduction = self.params.getAnemiaUpdate(newCoverage)
         incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
         birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)
         newFracCorrectlyBreastfed = self.params.getAppropriateBFNew(newCoverage)
@@ -288,14 +288,45 @@ class Model:
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
 
         # Women of reproductive age
+            poorUpdate  = {}
+            notPoorUpdate = {}
         for ageGroup in self.listOfReproductiveAgeCompartments:
             ageName = ageGroup.name
+            
+            poorUpdate[ageName]  = 1
+            notPoorUpdate[ageName] = 1
+            # add reductions from poor and not poor
+            totalNumberAnemic = ageGroup.getNumberAnemic()
+            numberPoor = ageGroup.getTotalPopulation() * self.params.fracPoor
+            numberNotPoor = ageGroup.getTotalPopulation() * self.params.fracNotPoor
+            numberAnemicPoor = self.params.fracAnemicPoor[ageName] * numberPoor
+            numberAnemicNotPoor = self.params.fracAnemicNotPoor[ageName] * numberNotPoor  
+            # poor                
+            for intervention in poorReduction[ageName].keys():
+                thisReduction = poorReduction[ageName][intervention] * numberAnemicPoor / totalNumberAnemic
+                anemiaUpdate[ageName] *= 1 - thisReduction
+                poorUpdate[ageName] *= 1 - poorReduction[ageName][intervention]
+            # not poor                
+            for intervention in notPoorReduction[ageName].keys():
+                thisReduction = notPoorReduction[ageName][intervention] * numberAnemicNotPoor / totalNumberAnemic
+                anemiaUpdate[ageName] *= 1 - thisReduction   
+                notPoorUpdate[ageName] *= 1 - notPoorReduction[ageName][intervention]
+            
             # update anemia
             oldProbAnemia = ageGroup.getAnemicFraction()
             newProbAnemia = oldProbAnemia * anemiaUpdate[ageName] * anemiaUpdate['general population']
             self.params.anemiaDistribution[ageName]["anemic"] = newProbAnemia
             self.params.anemiaDistribution[ageName]["not anemic"] = 1. - newProbAnemia
             ageGroup.distributeAnemicPopulation(self.params.anemiaDistribution)
+            
+            # update frac poor and not poor anemic in params
+            oldFracAnemicPoor = self.params.fracAnemicPoor[ageName]
+            oldFracAnemicNotPoor = self.params.fracAnemicNotPoor[ageName]
+            newFracAnemicPoor = oldFracAnemicPoor * poorUpdate[ageName]
+            newFracAnemicNotPoor = oldFracAnemicNotPoor * notPoorUpdate[ageName]
+            self.params.fracAnemicPoor[ageName] = newFracAnemicPoor
+            self.params.fracAnemicNotPoor[ageName] = newFracAnemicNotPoor
+            
 
         # Pregnant Women
         pop = 'pregnant women'
