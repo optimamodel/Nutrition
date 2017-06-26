@@ -119,7 +119,46 @@ for intervention in interventionList:
 plt.legend(loc = 'upper center', bbox_to_anchor=(0.5, -0.15), ncol=7, fancybox=True, shadow=True) 
 #plt.legend(loc='lower left')
 plt.show()              
-    
+
+
+#  FOOD FORTIFICATION
+
+interventionList = ['Food fortification maize', 'Food fortification rice', 'Food fortification wheat']
+coverageListList = [] 
+thisList = [0, 0.1, 0.2, 0.3, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4]   
+coverageListList.append(thisList)
+thisList = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.8, 0.8]   
+coverageListList.append(thisList)
+thisList = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.6, 0.6, 0.6, 0.6]   
+coverageListList.append(thisList)
+
+i = 0
+everyoneAnemicFraction = {}
+for intervention in interventionList:
+    everyoneAnemicFraction[intervention] = []
+    for coverage in coverageListList[i]:
+        model, derived, params = helper.setupModelDerivedParameters(spreadsheetData)
+        # run the model for one year before updating coverages  
+        timestepsPre = 1
+        for t in range(timestepsPre):
+            model.moveModelOneYear()  
+        # set coverage    
+        theseCoverages = dcp(zeroCoverages)  
+        theseCoverages[intervention] = coverage
+        # update coverages after 1 year     
+        model.updateCoverages(theseCoverages)
+        # run the model for the remaining timesteps
+        for t in range(numModelSteps - timestepsPre):
+            model.moveOneTimeStep()
+        # get outcome
+        everyoneAnemicFraction[intervention].append(model.getOutcome('anemia frac everyone'))
+    # plot for this intervention
+    plt.plot(coverageList, everyoneAnemicFraction[intervention], label = intervention)
+    plt.xlabel('coverage')
+    plt.ylabel('anemia prevalence everyone')
+    i += 1
+plt.legend(loc='lower left')
+plt.show()          
    
 
     
