@@ -8,19 +8,13 @@ country = 'Laos'
 date = '2017Jun'
 spreadsheetDate = '2017Jun'
 
-spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/InputForCode_LaoPDR_21Jun2017.xlsx'
-
-# numModelSteps = 180
-# MCSampleSize = 25
-# cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0]
-# haveFixedProgCosts = False
-# numCores = 8
+spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/InputForCode_LaoPDR_29Jun2017.xlsx'
 
 numModelSteps = 180
-MCSampleSize = 1
-cascadeValues = [1.0]
+MCSampleSize = 25
+cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0]
 haveFixedProgCosts = False
-numCores = 1
+numCores = 8
 
 for optimise in ['thrive']:
     resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+country
