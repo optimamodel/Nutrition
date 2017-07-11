@@ -16,7 +16,7 @@ country = 'Bangladesh'
 date = '2017Apr'
 spreadsheetDate = '2016Oct'
 
-extraMoney = 3000000
+extraMoney = 10000000
 haveFixedProgCosts = True
 
 rerunMCSampleSize = 25
