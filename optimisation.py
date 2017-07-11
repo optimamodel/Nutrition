@@ -717,7 +717,7 @@ class GeospatialOptimisation:
         # if BOCs not generated, generate them
         if self.regionalBOCs == None:
             self.generateAllRegionsBOC()
-        totalBudget = self.getTotalNationalBudget()
+        totalBudget = 3000000 #self.getTotalNationalBudget()
         scenarioMonteCarloOutput = []
         for r in range(0, geoMCSampleSize):
             proposalSpendingList = np.random.rand(self.numRegions)
