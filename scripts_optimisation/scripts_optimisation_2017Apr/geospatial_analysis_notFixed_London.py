@@ -38,7 +38,7 @@ for optimise in ['thrive']:
     print 'running GA for:  ', optimise
 
     resultsFileStem = resultsPath + '/' + date + '/' + optimise + '/geospatialNotFixed/'
-    GAFile = 'GA_notFixed_3mTotal' 
+    GAFile = 'GA_notFixed_1mTotal' 
 
     geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps,
                                                                  cascadeValues, optimise, resultsFileStem)
