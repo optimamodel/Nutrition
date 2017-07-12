@@ -10,18 +10,149 @@ import costcov
 import csv
 from optimisation import getTargetPopSizeFromModelInstance
 
-def getOutcomesGivenCoverage(spreadsheetData, interventionList, baselineCoverages, scaledCoverages, helper, allIdentical):
+
+def getCostCoverageInfo(dataSpreadsheetName, keyList):
+    import data
+    from copy import deepcopy as dcp
+    spreadsheetData = data.readSpreadsheet(dataSpreadsheetName, keyList)
+    costCoverageInfo = {}
+    for intervention in spreadsheetData.interventionList:
+        costCoverageInfo[intervention] = {}
+        costCoverageInfo[intervention]['unitcost'] = dcp(spreadsheetData.costSaturation[intervention]["unit cost"])
+        costCoverageInfo[intervention]['saturation'] = dcp(
+            spreadsheetData.costSaturation[intervention]["saturation coverage"])
+    return costCoverageInfo
+
+def getCoverageFromCostCurve(modelList, spreadsheetPath, helper, newCoverages, outcomeList):
+    # ABSOLUTE NUMBER CHILDREN COVERED
+    # This assumes that it is the target population size at the time of scaling interventions (i.e. after 12 months)
+    modelInstance = modelList[11]
+    targetPopSizes = getTargetPopSizeFromModelInstance(spreadsheetPath, helper.keyList, modelInstance)
+    interventionList = newCoverages.keys()
+    coverageThisIntervention = {}
+    for intervention in interventionList:
+        coverageThisIntervention[intervention] = targetPopSizes[intervention] * newCoverages[intervention]
+    # get coverage accross all interventions
+    totalCoverageAllInterventions = sum(coverageThisIntervention.values())
+    outcomeList += [totalCoverageAllInterventions]
+    return outcomeList, coverageThisIntervention
+
+def getCostOfCoverage(modelList, spreadsheetPath, interventionList, helper, coverageThisIntervention, outcomeList):
+    # This is the cost of covering the people calculated above (using inverse cost-coverage curve)
+    import costcov
+    costCov = costcov.Costcov()
+    modelInstance = modelList[11]
+    targetPopSizes = getTargetPopSizeFromModelInstance(spreadsheetPath, helper.keyList, modelInstance)
+    costThisIntervention = {}
+    costCoverageInfo = getCostCoverageInfo(spreadsheetPath, helper.keyList)
+    for intervention in interventionList:
+        costThisIntervention[intervention] = costCov.inversefunction(coverageThisIntervention[intervention],
+                                                                     costCoverageInfo[intervention],
+                                                                     targetPopSizes[intervention])
+    # get cost across all interventions
+    totalCostAllInterventions = sum(costThisIntervention.values())
+    outcomeList += [totalCostAllInterventions]
+
+    return outcomeList
+
+
+def getOutcomesAllSameCoverage(spreadsheetData, newCoverages, spreadsheetPath):
+    import helper
+    helper = helper.Helper()
+    outcomeList = []
+    outcomeList += ['All']
+    outcomeList += [newCoverages['Vitamin A supplementation']]
+
+    # set up model
+    model, derived, params = helper.setupModelDerivedParameters(spreadsheetData)
+
+    modelList = []
+    # prep model with current coverages
+    timestepsPre = 12
+    for t in range(timestepsPre):
+        model.moveOneTimeStep()
+        modelThisTimeStep = dcp(model)
+        modelList.append(modelThisTimeStep)
+
+    model.updateCoverages(newCoverages)
+
+    timesteps = 180
+    for t in range(timesteps - timestepsPre):
+        model.moveOneTimeStep()
+        modelThisTimeStep = dcp(model)
+        modelList.append(modelThisTimeStep)
+
+    # GET OUTCOMES #TODO: subtract first year?
+    totalDeaths = modelList[-1].getOutcome('deaths')
+    totalStunted = modelList[-1].getOutcome('stunting')
+    totalThrive = modelList[-1].getOutcome('thrive')
+    totalStuntedPrev = modelList[-1].getOutcome('stunting prev')
+    outcomeList += [totalDeaths, totalStunted, totalThrive, totalStuntedPrev]
+
+    # get target pop size and cost of coverage
+    outcomeList, coverageThisIntervention = getCoverageFromCostCurve(modelList, spreadsheetPath, helper, newCoverages, outcomeList)
+    interventionList = ['Balanced energy-protein supplementation', 'Vitamin A supplementation',
+                        'Public provision of complementary foods', 'Breastfeeding promotion',
+                        'Antenatal micronutrient supplementation', 'Complementary feeding education']
+    outcomeList = getCostOfCoverage(modelList, spreadsheetPath, interventionList, helper, coverageThisIntervention, outcomeList)
+
+    return outcomeList
+
+def getOutcomesAllCurrentCoverage(spreadsheetData, spreadsheetPath):
+    import helper
+    helper = helper.Helper()
+    outcomeList = []
+    outcomeList += ['All']
+    outcomeList += ['current']
+    # set up model
+    model, derived, params = helper.setupModelDerivedParameters(spreadsheetData)
+
+    modelList = []
+    # prep model with current coverages
+    timestepsPre = 12
+    for t in range(timestepsPre):
+        model.moveOneTimeStep()
+        modelThisTimeStep = dcp(model)
+        modelList.append(modelThisTimeStep)
+
+    newCoverages = dcp(model.params.coverage)
+
+    model.updateCoverages(newCoverages)
+
+    timesteps = 180
+    for t in range(timesteps - timestepsPre):
+        model.moveOneTimeStep()
+        modelThisTimeStep = dcp(model)
+        modelList.append(modelThisTimeStep)
+
+    # GET OUTCOMES #TODO: subtract first year?
+    totalDeaths = modelList[-1].getOutcome('deaths')
+    totalStunted = modelList[-1].getOutcome('stunting')
+    totalThrive = modelList[-1].getOutcome('thrive')
+    totalStuntedPrev = modelList[-1].getOutcome('stunting prev')
+    outcomeList += [totalDeaths, totalStunted, totalThrive, totalStuntedPrev]
+
+    # get target pop size and cost of coverage
+    outcomeList, coverageThisIntervention = getCoverageFromCostCurve(modelList, spreadsheetPath, helper, newCoverages, outcomeList)
+    interventionList = ['Balanced energy-protein supplementation', 'Vitamin A supplementation',
+                        'Public provision of complementary foods', 'Breastfeeding promotion',
+                        'Antenatal micronutrient supplementation', 'Complementary feeding education']
+    outcomeList = getCostOfCoverage(modelList, spreadsheetPath, interventionList, helper, coverageThisIntervention, outcomeList)
+
+
+    return outcomeList
+
+def getOutcomesScaledFromCurrent(spreadsheetData, scaledCoverages, spreadsheetPath):
+    import helper
+    helper = helper.Helper()
     rows = []
+    interventionList = ['Balanced energy-protein supplementation', 'Vitamin A supplementation',
+                        'Public provision of complementary foods', 'Breastfeeding promotion',
+                        'Antenatal micronutrient supplementation', 'Complementary feeding education']
     for intervention in interventionList:
         outcomeList = []
-        if allIdentical:
-            outcomeList += ['All']
-            outcomeList += [baselineCoverages[intervention]]
-            rows = []
-        else:
-            outcomeList += [intervention]
-            outcomeList += [scaledCoverages[intervention]]
-
+        outcomeList += [intervention]
+        outcomeList += [scaledCoverages[intervention]]
         # set up model
         model, derived, params = helper.setupModelDerivedParameters(spreadsheetData)
 
@@ -33,8 +164,7 @@ def getOutcomesGivenCoverage(spreadsheetData, interventionList, baselineCoverage
             modelThisTimeStep = dcp(model)
             modelList.append(modelThisTimeStep)
 
-        # scale up intervention one at a time from baseline coverage. If scale=baseline then interventions not scaled
-        newCoverages = dcp(baselineCoverages)
+        newCoverages = dcp(model.params.coverage)
         newCoverages[intervention] = scaledCoverages[intervention]
         model.updateCoverages(newCoverages)
 
@@ -51,10 +181,68 @@ def getOutcomesGivenCoverage(spreadsheetData, interventionList, baselineCoverage
         totalStuntedPrev = modelList[-1].getOutcome('stunting prev')
         outcomeList += [totalDeaths, totalStunted, totalThrive, totalStuntedPrev]
 
+
+        # get target pop size and cost of coverage
+        outcomeList, coverageThisIntervention = getCoverageFromCostCurve(modelList, spreadsheetPath, helper,
+                                                                         newCoverages, outcomeList)
+
+        outcomeList = getCostOfCoverage(modelList, spreadsheetPath, interventionList, helper, coverageThisIntervention,
+                                        outcomeList)
         rows.append(outcomeList)
-        # TODO: pop size? total costs?
 
     return rows
+
+def getOutcomesScaledFromZero(spreadsheetData, scaledCoverages, spreadsheetPath):
+    import helper
+    helper = helper.Helper()
+    rows = []
+    interventionList = ['Balanced energy-protein supplementation', 'Vitamin A supplementation',
+                        'Public provision of complementary foods', 'Breastfeeding promotion',
+                        'Antenatal micronutrient supplementation', 'Complementary feeding education']
+    for intervention in interventionList:
+        outcomeList = []
+        outcomeList += [intervention]
+        outcomeList += [scaledCoverages[intervention]]
+        # set up model
+        model, derived, params = helper.setupModelDerivedParameters(spreadsheetData)
+
+        modelList = []
+        # prep model with current coverages
+        timestepsPre = 12
+        for t in range(timestepsPre):
+            model.moveOneTimeStep()
+            modelThisTimeStep = dcp(model)
+            modelList.append(modelThisTimeStep)
+
+        newCoverages = {interv: 0. for interv in interventionList}
+        newCoverages[intervention] = scaledCoverages[intervention]
+        model.updateCoverages(newCoverages)
+
+        timesteps = 180
+        for t in range(timesteps - timestepsPre):
+            model.moveOneTimeStep()
+            modelThisTimeStep = dcp(model)
+            modelList.append(modelThisTimeStep)
+
+        # GET OUTCOMES #TODO: subtract first year?
+        totalDeaths = modelList[-1].getOutcome('deaths')
+        totalStunted = modelList[-1].getOutcome('stunting')
+        totalThrive = modelList[-1].getOutcome('thrive')
+        totalStuntedPrev = modelList[-1].getOutcome('stunting prev')
+        outcomeList += [totalDeaths, totalStunted, totalThrive, totalStuntedPrev]
+
+
+
+        # get target pop size and cost of coverage
+        outcomeList, coverageThisIntervention = getCoverageFromCostCurve(modelList, spreadsheetPath, helper,
+                                                                         newCoverages, outcomeList)
+
+        outcomeList = getCostOfCoverage(modelList, spreadsheetPath, interventionList, helper, coverageThisIntervention,
+                                        outcomeList)
+        rows.append(outcomeList)
+
+    return rows
+
 
 def writeToCSV(outfileName, outcomeList, rows):
     headings = ['intervention', 'coverage', 'total deaths', 'total stunting', 'total thriving', 'stunting prevalence',
@@ -65,43 +253,5 @@ def writeToCSV(outfileName, outcomeList, rows):
         if rows:
             w.writerows(outcomeList)
         else: # only 1 row
-            w.writerows(outcomeList)
+            w.writerow(outcomeList)
     return
-
-moduleDir = os.path.join(os.path.dirname(__file__), rootpath)
-sys.path.append(moduleDir)
-helper = helper.Helper()
-
-country = 'Bangladesh'
-date = '2017Jul'
-spreadsheetDate = '2016Oct'
-
-dataSpreadsheetPath = rootpath+'/input_spreadsheets/London_spreadsheets/'+country+'/'+spreadsheetDate+'/InputForCode_'+country+'.xlsx'
-resultsPath = rootpath+'/Results/'+date+'/modeloutcomes_manycoverages/'
-coveragesSpreadsheetPath = rootpath+'/input_spreadsheets/London_spreadsheets/coverages/many_coverages.xlsx'
-
-# get all the data & coverages
-spreadsheetData = data.readSpreadsheet(dataSpreadsheetPath, helper.keyList)
-interventionList = spreadsheetData.interventionList
-
-baselineSheet = pd.read_excel(coveragesSpreadsheetPath, sheetname='baseline coverages', index_col=[0])
-baselineCoverages = {}
-for intervention in interventionList:
-    baselineCoverages[intervention] = baselineSheet.loc[intervention, 'Coverage']
-
-scaledSheet = pd.read_excel(coveragesSpreadsheetPath, sheetname='scaled coverages', index_col=[0])
-scaledCoverages = {}
-for intervention in interventionList:
-    scaledCoverages[intervention] = scaledSheet.loc[intervention, 'Coverage']
-
-rowsForBaseline = getOutcomesGivenCoverage(spreadsheetData, interventionList, baselineCoverages, baselineCoverages, helper, allIdentical =True)
-rowsForScaled = getOutcomesGivenCoverage(spreadsheetData, interventionList, baselineCoverages, scaledCoverages, helper, allIdentical=False)
-
-if not os.path.exists(resultsPath):
-    os.makedirs(resultsPath)
-
-outfilename = resultsPath+'model_outcomes_Bangladesh_baseline.csv'
-writeToCSV(outfilename, rowsForBaseline, rows=False)
-outfilename = resultsPath+'model_outcomes_Bangladesh_scaled.csv'
-writeToCSV(outfilename, rowsForScaled, rows=True)
-
