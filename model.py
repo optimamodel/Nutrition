@@ -402,7 +402,7 @@ class Model:
                     t1 = self.derived.referenceMortality['pregnant women'][cause]
                     t2 = self.params.RRdeathAnemia['pregnant women'][cause][anemiaStatus]
                     count += t1 * t2
-                # in absense of risks distribute mortality between delivery groups based on population fraction # TODO is there an issue with below calculation?
+                # in absense of risks distribute mortality between delivery groups based on population fraction
                 self.pregnantWomen.dictOfBoxes[anemiaStatus][deliveryStatus].mortalityRate = count *  self.params.deliveryDistribution[deliveryStatus]
         # women of reproductive age
         for ageGroup in self.listOfReproductiveAgeCompartments:
