@@ -14,10 +14,8 @@ sys.path.append(moduleDir)
 import optimisation
 import costcov
 costCov = costcov.Costcov()
-import data
 import helper
 import costcov
-from copy import deepcopy as dcp
 
 costCov = costcov.Costcov()
 helper = helper.Helper()
@@ -31,36 +29,54 @@ for regionName in regionNameList:
     spreadsheet = spreadsheetFileStem + regionName + '.xlsx'
     spreadsheetList.append(spreadsheet)
     
-spending = [230189.1034, 830273.5871, 1315229.22, 216897.5043, 286073.4721, 121337.1132, 0] # this is Vit A
-    
-# get allocation dict of zeros 
-spreadsheetData = data.readSpreadsheet(spreadsheetList[0], helper.keyList)
-allocation = {}
-for intervention in spreadsheetData.interventionList:
-    allocation[intervention] = 0.0
+#spending = [230189.1034, 830273.5871, 1315229.22, 216897.5043, 286073.4721, 121337.1132, 0] # this is Vit A taken directly from output spreadsheet
+## get allocation dict of zeros 
+#spreadsheetData = data.readSpreadsheet(spreadsheetList[0], helper.keyList)
+#allocation = {}
+#for intervention in spreadsheetData.interventionList:
+#    allocation[intervention] = 0.0
+#    
+#coverages = {}    
+#for region in range(len(regionNameList)): 
+#    regionName = regionNameList[region]
+#    print regionName
+#    spreadsheet = spreadsheetList[region]
+#    spreadsheetData = data.readSpreadsheet(spreadsheet, helper.keyList) 
+#    thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, "dummy", "dummy")
+#    thisAllocation = dcp(allocation)
+#    thisAllocation['Vitamin A supplementation'] = spending[region]
+#    #print thisAllocation
+#    modelList = thisOptimisation.oneModelRunWithOutput(thisAllocation)
+#    costCoverageInfo = thisOptimisation.getCostCoverageInfo() 
+#    targetPopSize = optimisation.getTargetPopSizeFromModelInstance(spreadsheet, helper.keyList, modelList[numModelSteps-1]) 
+#    intervention = 'Vitamin A supplementation'
+#    coverage = costCov.function(thisAllocation[intervention], costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
+#    coverages[regionName] = dcp(coverage)    
+#    
+##print 'COVERAGES'
+##print coverages
 
 
-    
-i = 0    
-coverages = {}    
-for region in range(len(regionNameList)): 
+# now run model to get number of people stunted in each region for allocation
+import pickle
+date = '2017Apr'
+optimise = 'thrive'
+resultsFileStem =  '../Results/' + date + '/' + optimise + '/geospatialNotFixed_London/'
+GAFile = 'GA_notFixed_3mTotal' 
+
+for region in range(len(regionNameList)):
     regionName = regionNameList[region]
     print regionName
     spreadsheet = spreadsheetList[region]
-    spreadsheetData = data.readSpreadsheet(spreadsheet, helper.keyList) 
-    thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, "dummy", "dummy")
-    thisAllocation = dcp(allocation)
-    thisAllocation['Vitamin A supplementation'] = spending[i]
-    print thisAllocation
+    filename = '%s%s_%s.pkl'%(resultsFileStem, GAFile, regionName)
+    infile = open(filename, 'rb')
+    allocation = pickle.load(infile)
+    infile.close()
+    thisOptimisation = optimisation.Optimisation(spreadsheet, 180, optimise, resultsFileStem) 
     modelList = thisOptimisation.oneModelRunWithOutput(allocation)
-    costCoverageInfo = thisOptimisation.getCostCoverageInfo() 
-    targetPopSize = optimisation.getTargetPopSizeFromModelInstance(spreadsheet, helper.keyList, modelList[numModelSteps-1]) 
-    intervention = 'Vitamin A supplementation'
-    coverage = costCov.function(allocation[intervention], costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
-    coverages[regionName] = dcp(coverage)    
-    i+=1  
-    
-print 'COVERAGES'
+    print 'stunting:  ', modelList[179].getOutcome('stunting')
 
-print coverages
+
+
+
 
