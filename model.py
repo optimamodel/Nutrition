@@ -400,15 +400,16 @@ class Model:
                                 count += t1 * t2 * t3 * t4 * t5
                             ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].mortalityRate = count
         # pregnant women
-        for anemiaStatus in self.anemiaList:
-            for deliveryStatus in self.deliveryList:
+        for ageGroup in self.listOfPregnantWomenAgeCompartments:
+            ageName = ageGroup.name
+            for anemiaStatus in self.anemiaList:
                 count = 0
                 for cause in self.params.causesOfDeath:
-                    t1 = self.derived.referenceMortality['pregnant women'][cause]
-                    t2 = self.params.RRdeathAnemia['pregnant women'][cause][anemiaStatus]
+                    t1 = self.derived.referenceMortality[ageName][cause]
+                    t2 = self.params.RRdeathAnemia[ageName][cause][anemiaStatus]
                     count += t1 * t2
                 # in absense of risks distribute mortality between delivery groups based on population fraction
-                self.pregnantWomen.dictOfBoxes[anemiaStatus][deliveryStatus].mortalityRate = count *  self.params.deliveryDistribution[deliveryStatus]
+                ageGroup.dictOfBoxes[anemiaStatus].mortalityRate = count
         # women of reproductive age
         for ageGroup in self.listOfReproductiveAgeCompartments:
             ageName = ageGroup.name
