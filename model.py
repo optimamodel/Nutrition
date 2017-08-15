@@ -573,9 +573,8 @@ class Model:
 
     def applyBirths(self):
         # calculate total number of new babies
-        birthRate = self.pregnantWomen.birthRate  #WARNING: assuming per pre-determined timestep
-        numWomen  = self.pregnantWomen.getTotalPopulation()
-        numNewBabies = numWomen * birthRate * self.timestep
+        annualBirths = self.params.projectedBirths[self.year]
+        numNewBabies = annualBirths * self.timestep
         # convenient names
         ageGroup = self.listOfAgeCompartments[0]
         ageName  = ageGroup.name
