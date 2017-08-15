@@ -17,8 +17,7 @@ class Data:
                  ageAppropriateBreastfeeding, coverage, costSaturation,
                  targetPopulation, affectedFraction, effectivenessMortality,
                  effectivenessIncidence, interventionsBirthOutcome, foodSecurityGroups,
-                 ORstuntingComplementaryFeeding, deliveryDistribution,
-                 interventionsPregnantWomenAff, interventionsPregnantWomenEff, anemiaDistribution,
+                 ORstuntingComplementaryFeeding, anemiaDistribution,
                  projectedReproductiveAge, fracAnemicNotPoor, fracAnemicPoor, 
                  fracAnemicExposedMalaria, fracExposedMalaria):
 
@@ -57,9 +56,6 @@ class Data:
         self.interventionsBirthOutcome = interventionsBirthOutcome
         self.foodSecurityGroups = foodSecurityGroups
         self.ORstuntingComplementaryFeeding = ORstuntingComplementaryFeeding
-        self.deliveryDistribution = deliveryDistribution
-        self.interventionsPregnantWomenAff = interventionsPregnantWomenAff
-        self.interventionsPregnantWomenEff = interventionsPregnantWomenEff
         self.anemiaDistribution = anemiaDistribution
         self.projectedReproductiveAge = projectedReproductiveAge
         self.fracAnemicNotPoor = fracAnemicNotPoor
@@ -255,10 +251,6 @@ def readSpreadsheet(fileName, keyList):
         breastfeedingDistribution[ageName] = {}
         for status in breastfeedingList:
             breastfeedingDistribution[ageName][status] = df.loc['Breastfeeding'][ageName][status] / 100.
-    #delivery
-    deliveryDistribution = {}
-    for status in deliveryList:
-        deliveryDistribution[status] = df.loc['Delivery']['pregnant women'][status] / 100.
 
     #  READ ANEMIA PREVALENCE SHEET
     #  sets:
@@ -520,60 +512,6 @@ def readSpreadsheet(fileName, keyList):
             for condition in conditionsHere:
                 effectivenessIncidence[intervention][ageName][condition] = df.loc[intervention][ageName][condition]
 
-
-    # READ Interventions pregnant women aff frac SHEET
-    # sets
-    # - interventionsPregnantWomenAff
-    df = pandas.read_excel(Location, sheetname = 'Inter. pregnant women aff frac', index_col = [0])
-    #get the list of interventions
-    mylist = list(df.index.values)
-    myset = set(mylist)
-    interventionsHere = list(myset)
-    #do the rest
-    df = pandas.read_excel(Location, sheetname = 'Inter. pregnant women aff frac', index_col = [0, 1])
-    interventionsPregnantWomenAff = {}
-    # initialise
-    for intervention in interventionList:
-        interventionsPregnantWomenAff[intervention] = {}
-        for delivery in deliveryList:
-            interventionsPregnantWomenAff[intervention][delivery] = {}
-            for cause in causesOfDeath:
-                interventionsPregnantWomenAff[intervention][delivery][cause] = 0.
-    # complete
-    for intervention in interventionsHere:
-        for delivery in deliveryList:
-            causesHere = df.loc[intervention][delivery].keys()
-            for cause in causesHere:
-                interventionsPregnantWomenAff[intervention][delivery][cause] = df.loc[intervention][delivery][cause]
-
-
-    # READ Interventions pregnant women eff SHEET
-    # sets
-    # - interventionsPregnantWomenEff
-    df = pandas.read_excel(Location, sheetname = 'Inter. pregnant women eff', index_col = [0])
-    #get the list of interventions
-    mylist = list(df.index.values)
-    myset = set(mylist)
-    interventionsHere = list(myset)
-    #do the rest
-    df = pandas.read_excel(Location, sheetname = 'Inter. pregnant women eff', index_col = [0, 1])
-    interventionsPregnantWomenEff = {}
-    # initialise
-    for intervention in interventionList:
-        interventionsPregnantWomenEff[intervention] = {}
-        for delivery in deliveryList:
-            interventionsPregnantWomenEff[intervention][delivery] = {}
-            for cause in causesOfDeath:
-                interventionsPregnantWomenEff[intervention][delivery][cause] = 0.
-    # complete
-    for intervention in interventionsHere:
-        for delivery in deliveryList:
-            causesHere = df.loc[intervention][delivery].keys()
-            for cause in causesHere:
-                interventionsPregnantWomenEff[intervention][delivery][cause] = df.loc[intervention][delivery][cause]
-
-
-
     # READ OR stunting for complements SHEET
     # sets:
     # - ORstuntingComplementaryFeeding
@@ -612,8 +550,7 @@ def readSpreadsheet(fileName, keyList):
                            ORappropriatebfIntervention, ageAppropriateBreastfeeding, coverage,
                            costSaturation, targetPopulation, affectedFraction,
                            effectivenessMortality, effectivenessIncidence, interventionsBirthOutcome,
-                           foodSecurityGroups, ORstuntingComplementaryFeeding, deliveryDistribution, 
-                           interventionsPregnantWomenAff, interventionsPregnantWomenEff, anemiaDistribution,
+                           foodSecurityGroups, ORstuntingComplementaryFeeding, anemiaDistribution,
                            projectedReproductiveAge, fracAnemicNotPoor, fracAnemicPoor, fracAnemicExposedMalaria,
                            fracExposedMalaria)
 
