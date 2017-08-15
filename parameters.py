@@ -64,22 +64,7 @@ class Params:
                     reduction = affectedFrac * effectiveness * (newCoverageVal - oldCoverage) / (1. - effectiveness*oldCoverage)
                     mortalityUpdate[pop][cause] *= 1. - reduction
         return mortalityUpdate       
-        
-    def getPregnantWomenMortalityUpdate(self, newCoverage):
-        pregnantWomenMortalityUpdate = {}
-        for cause in self.causesOfDeath:
-            pregnantWomenMortalityUpdate[cause] = 1.
-        for intervention in newCoverage.keys():
-            for cause in self.causesOfDeath:
-                for delivery in self.deliveryList:
-                    affectedFrac = self.interventionsPregnantWomenAff[intervention][delivery][cause]
-                    effectiveness = self.interventionsPregnantWomenEff[intervention][delivery][cause]
-                    newCoverageVal = newCoverage[intervention]
-                    oldCoverage = self.coverage[intervention]
-                    reduction = affectedFrac * effectiveness * (newCoverageVal - oldCoverage) / (1. - effectiveness*oldCoverage)
-                    reducedReduction = reduction * self.deliveryDistribution[delivery]
-                    pregnantWomenMortalityUpdate[cause] *= 1. - reducedReduction
-        return pregnantWomenMortalityUpdate
+
         
     def getBirthOutcomeUpdate(self, newCoverage):
         birthOutcomeUpdate = {}
