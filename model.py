@@ -548,7 +548,28 @@ class Model:
                 thisBox.populationSize += agingOut[ind-1][status]
                 # remove those aging out
                 thisBox.populationSize -= agingOut[ind][status]
-                
+
+    def applyPregnantWomenAging(self):
+        numCompartments = len(self.listOfPregnantWomenAgeCompartments)
+        # calculate how many people aging out of each box
+        agingOut = [None]*numCompartments
+        for ind in range(0, numCompartments):
+            thisCompartment = self.listOfPregnantWomenAgeCompartments[ind]
+            agingOut[ind] = {}
+            for anemiaStatus in self.anemiaList:
+                thisBox = thisCompartment.dictOfBoxes[anemiaStatus]
+                thisBox.populationSize -= thisBox.populationSize * thisCompartment.agingRate
+        # calculate the number of new pregnant women in this year
+        birthRate = self.listOfPregnantWomenAgeCompartments[0].birthRate
+        birthsThisYear = self.params.projectedBirths[self.year]
+        pregnanciesThisTimeStep = birthsThisYear / birthRate
+        # distributed uniformly across each age group
+        for ind in range(0, numCompartments):
+            thisCompartment = self.listOfPregnantWomenAgeCompartments[ind]
+            for anemiaStatus in self.anemiaList:
+                thisBox = thisCompartment.dictOfBoxes[anemiaStatus]
+                thisBox.populationSize += pregnanciesThisTimeStep / numCompartments
+
 
     def applyBirths(self):
         # calculate total number of new babies
