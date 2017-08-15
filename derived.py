@@ -120,26 +120,25 @@ class Derived:
         
         
     def setReferencePregnantWomenMortality(self):
-        popName = 'pregnant women'
-        popSize = self.data.demographics['number of pregnant women']
-        numBirths = self.data.demographics['number of live births']
-        pregnantWomenMortality = self.data.rawMortality['pregnant women']
-        numPregnantWomenDeaths = numBirths * pregnantWomenMortality / 1000
-        fractionPregnantWomenMortality = numPregnantWomenDeaths / popSize
+        #Equation is:  LHS = RHS * X
+        #we are solving for X
+        # Calculate RHS for each age and cause
         RHS = {}
-        RHS[popName]= {}
-        for cause in self.data.causesOfDeath:
-            RHS[popName][cause] = 0.
-            for anemiaStatus in self.anemiaList:
-                t1 = self.data.anemiaDistribution[popName][anemiaStatus]
-                t2 = self.data.RRdeathAnemia[popName][cause][anemiaStatus]
-                RHS[popName][cause] += t1 * t2
-        # LHS
+        for ageName in self.pregnantWomenAges:
+            RHS[ageName] = {}
+            for cause in self.data.causesOfDeath:
+                RHS[ageName][cause] = 0.
+                for anemiaStatus in self.anemiaList:
+                    t1 = self.data.anemiaDistribution[ageName][anemiaStatus]
+                    t2 = self.data.RRdeathAnemia[ageName][cause][anemiaStatus]
+                    RHS[ageName][cause] += t1 * t2
+        # Calculate LHS for each age and cause of death then solve for X
         Xdictionary = {}
-        Xdictionary[popName] = {}
-        for cause in self.data.causesOfDeath:
-            LHS_pop_cause = fractionPregnantWomenMortality * self.data.causeOfDeathDist[popName][cause]
-            Xdictionary[popName][cause] = LHS_pop_cause / RHS[popName][cause]
+        for ageName in self.pregnantWomenAges:
+            Xdictionary[ageName] = {}
+            for cause in self.data.causesOfDeath:
+                LHS_age_cause = self.data.rawMortality[ageName] * self.data.causeOfDeathDist[ageName][cause]
+                Xdictionary[ageName][cause] = LHS_age_cause / RHS[ageName][cause]
         # add pregnant women reference mortality to dictionary
         self.referenceMortality.update(Xdictionary)
 
