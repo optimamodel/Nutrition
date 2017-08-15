@@ -101,30 +101,38 @@ class Model:
         return totalPopSize    
     
     def getAnemiaFractionPregnant(self):
-        totalNumberAnemic = self.pregnantWomen.getNumberAnemic()
-        totalPopSize = self.pregnantWomen.getTotalPopulation()
+        totalNumberAnemic = self.getAnemiaNumberPregnant()
+        totalPopSize = self.getTotalPopPregnant()
         return float(totalNumberAnemic)/float(totalPopSize)
-        
+
+    def getTotalPopPregnant(self):
+        totalPopSize = 0.
+        for ageGroup in self.listOfPregnantWomenAgeCompartments:
+            totalPopSize += ageGroup.getTotalPopulation()
+        return totalPopSize
+
     def getAnemiaNumberPregnant(self):
-        totalNumberAnemic = self.pregnantWomen.getNumberAnemic()
+        totalNumberAnemic = 0.
+        for ageGroup in self.listOfPregnantWomenAgeCompartments:
+            totalNumberAnemic += ageGroup.getNumberAnemic()
         return totalNumberAnemic    
         
     def getAnemiaFractionEveryone(self):
         totalNumberAnemic = 0.
-        totalPopSize = 0
+        totalPopSize = 0.
         totalNumberAnemic += self.getAnemiaNumberWRA()
         totalPopSize += self.getTotalPopWRA()
         totalNumberAnemic += self.getAnemiaNumberChildren()
         totalPopSize += self.getTotalPopChildren()
-        totalNumberAnemic += self.pregnantWomen.getNumberAnemic()
-        totalPopSize += self.pregnantWomen.getTotalPopulation()
+        totalNumberAnemic += self.getAnemiaNumberPregnant()
+        totalPopSize += self.getTotalPopPregnant()
         return float(totalNumberAnemic)/float(totalPopSize) 
         
     def getAnemiaNumberEveryone(self):
         totalNumberAnemic = 0.
         totalNumberAnemic += self.getAnemiaNumberWRA()
         totalNumberAnemic += self.getAnemiaNumberChildren()
-        totalNumberAnemic += self.pregnantWomen.getNumberAnemic()
+        totalNumberAnemic += self.getAnemiaNumberPregnant()
         return totalNumberAnemic    
 
     def getOutcome(self, outcome):
