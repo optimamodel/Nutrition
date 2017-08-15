@@ -68,21 +68,6 @@ class Helper:
             agePopSizes[i] = numPopEachMonthOlder * self.keyList['ageGroupSpans'][i]
         return agePopSizes
 
-
-    def makePregnantWomen(self, inputData):
-        import populations       
-        annualPregnancies = dcp(inputData.demographics['number of pregnant women'])
-        annualBirths      = dcp(inputData.demographics['number of live births'])
-        birthRate   = annualBirths / annualPregnancies
-        projectedBirths   = dcp(inputData.projectedBirths)
-        baseBirths = float(projectedBirths[0])
-        numYears   = len(projectedBirths)-1
-        annualGrowth = (projectedBirths[numYears]-baseBirths)/float(numYears)/baseBirths
-        boxes = self.makePregnantWomenBoxes(inputData)
-        pregnantWomen = populations.PregnantWomen(birthRate, annualGrowth, boxes, self.keyList)        
-        return pregnantWomen
-
-
     def makeBoxes(self, thisAgePopSize, ageName, inputData):
         import populations 
         wastingList = self.keyList['wastingList']
@@ -100,19 +85,7 @@ class Helper:
                                       inputData.breastfeedingDistribution[ageName][breastfeedingCat] * inputData.anemiaDistribution[ageName][anemiaStatus] # Assuming independent
                         allBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus] =  populations.Box(thisPopSize)
         return allBoxes
-        
-        
-    def makePregnantWomenBoxes(self, inputData):
-        import populations
-        annualPregnancies = dcp(inputData.demographics['number of pregnant women'])
-        populationSize = annualPregnancies
-        boxes = {}
-        for anemiaStatus in self.keyList['anemiaList']:
-            boxes[anemiaStatus] = {}
-            for deliveryStatus in self.keyList['deliveryList']:
-                 thisPopSize = populationSize * inputData.deliveryDistribution[deliveryStatus] * inputData.anemiaDistribution['pregnant women'][anemiaStatus]
-                 boxes[anemiaStatus][deliveryStatus] = populations.Box(thisPopSize)
-        return boxes  
+
         
     def makeReproductiveAgeBoxes(self, thisAgePopSize, ageName, inputData):
         import populations
@@ -122,6 +95,14 @@ class Helper:
              boxes[status] = populations.Box(thisPopSize)   
         return boxes       
 
+    def makePregnantWomenAgeBoxes(self, thisAgePopSize, ageName, inputData):
+        import populations
+        boxes = {}
+        for anemiaStatus in self.keyList['anemiaList']:
+            boxes[anemiaStatus] = {}
+            thisPopSize = thisAgePopSize * inputData.anemiaDistribution[ageName][anemiaStatus]
+            boxes[anemiaStatus] = populations.Box(thisPopSize)
+        return boxes
 
     def makeAgeCompartments(self, agePopSizes, inputData):
         import populations 
@@ -150,9 +131,26 @@ class Helper:
                 thisAgeBoxes = self.makeReproductiveAgeBoxes(agePopSize, ageName, inputData)
                 compartment = populations.ReproductiveAgeCompartment(ageName, thisAgeBoxes, agingRate, self.keyList)
                 listOfReproductiveAgeCompartments.append(compartment)
-            return listOfReproductiveAgeCompartments              
-   
-        
+            return listOfReproductiveAgeCompartments
+
+
+    def makePregnantWomenAgeCompartments(self, inputData):
+        import populations
+        popPregnantWomen = dcp(inputData.demographics['number of pregnant women'])
+        ages = self.keyList['pregnantWomenAges']
+        numAgeGroups = len(ages)
+        agePopSize = popPregnantWomen / numAgeGroups
+        listOfPregnantWomenAgeCompartments = []
+        annualBirths = dcp(inputData.demographics['number of live births'])
+        birthRate = annualBirths / popPregnantWomen
+        for iAge in range(numAgeGroups):
+            ageName = ages[iAge]
+            agingRate = self.keyList['pregnantWomenAgingRates'][iAge]
+            thisAgeBoxes = self.makePregnantWomenAgeBoxes(agePopSize, ageName, inputData)
+            compartment = populations.PregnantWomenAgeCompartment(ageName, birthRate, thisAgeBoxes, agingRate, self.keyList)
+            listOfPregnantWomenAgeCompartments.append(compartment)
+        return listOfPregnantWomenAgeCompartments
+
     def setupModelDerivedParameters(self, inputData):
         import model 
         import derived 
@@ -166,8 +164,8 @@ class Helper:
         agePopSizes = self.makeAgePopSizes(inputData)   
         listOfAgeCompartments = self.makeAgeCompartments(agePopSizes, inputData)
         listOfReproductiveAgeCompartments = self.makeReproductiveAgeCompartments(inputData)
-        pregnantWomen = self.makePregnantWomen(inputData)
-        model = model.Model(pregnantWomen, listOfAgeCompartments, listOfReproductiveAgeCompartments, self.keyList)
+        listOfPregnantWomenAgeCompartments = self.makePregnantWomenAgeCompartments(inputData)
+        model = model.Model(listOfPregnantWomenAgeCompartments, listOfAgeCompartments, listOfReproductiveAgeCompartments, self.keyList)
         derived = derived.Derived(inputData, model, self.keyList)
         model.setDerived(derived)
         parameters = parameters.Params(inputData, derived, self.keyList)
@@ -188,8 +186,8 @@ class Helper:
             probStunting = self.sumStuntedComponents(inputData.stuntingDistribution[ageName])
             inputData.stuntingDistribution[ageName] = self.restratify(probStunting)
         listOfAgeCompartments = self.makeAgeCompartments(agePopSizes, inputData)
-        pregnantWomen = self.makePregnantWomen(inputData)
-        model = model.Model(pregnantWomen, listOfAgeCompartments, self.keyList)
+        listOfPregnantWomenAgeCompartments = self.makePregnantWomenAgeCompartments(inputData)
+        model = model.Model(listOfPregnantWomenAgeCompartments, listOfAgeCompartments, self.keyList)
         derived = derived.Derived(inputData, model, self.keyList)
         model.setDerived(derived)
         parameters = parameters.Params(inputData, derived, self.keyList)
