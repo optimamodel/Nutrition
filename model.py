@@ -333,24 +333,25 @@ class Model:
             
 
         # Pregnant Women
-        pop = 'pregnant women'
-        # add the reduction from IPTp to anemia update for pregnant women
-        numberExposedMalaria = self.pregnantWomen.getTotalPopulation() * self.params.fracExposedMalaria[pop]
-        numberAnemicExposedMalaria = numberExposedMalaria * self.params.fracAnemicExposedMalaria[pop]
-        totalAnemicPopulation = self.pregnantWomen.getTotalPopulation() * self.params.anemiaDistribution[pop]["anemic"]
-        thisReduction = malariaReduction[pop] * numberAnemicExposedMalaria / totalAnemicPopulation
-        anemiaUpdate[pop] *= 1. - thisReduction   
-        # update anemia probability
-        oldProbAnemia = self.pregnantWomen.getAnemicFraction()
-        newProbAnemia = oldProbAnemia * anemiaUpdate[pop] * anemiaUpdate['general population']
-        self.params.anemiaDistribution[pop]['anemic'] = newProbAnemia
-        self.params.anemiaDistribution[pop]['not anemic'] = 1. - newProbAnemia
-        self.pregnantWomen.distributePopulation(self.params.anemiaDistribution, self.params.deliveryDistribution)
-        # update fraction anemic exposed to malaria
-        oldFracAnemiaMalaria = self.params.fracAnemicExposedMalaria[pop]
-        malariaUpdate = 1. - malariaReduction[pop]
-        newFracAnemiaMalaria = oldFracAnemiaMalaria * malariaUpdate
-        self.params.fracAnemicExposedMalaria[pop] = newFracAnemiaMalaria
+        for ageGroup in self.listOfPregnantWomenAgeCompartments:
+            ageName = ageGroup.name
+            # add the reduction from IPTp to anemia update for pregnant women
+            numberExposedMalaria = ageGroup.getTotalPopulation() * self.params.fracExposedMalaria[ageName]
+            numberAnemicExposedMalaria = numberExposedMalaria * self.params.fracAnemicExposedMalaria[ageName]
+            totalAnemicPopulation = ageGroup.getTotalPopulation() * self.params.anemiaDistribution[ageName]["anemic"]
+            thisReduction = malariaReduction[ageName] * numberAnemicExposedMalaria / totalAnemicPopulation
+            anemiaUpdate[ageName] *= 1. - thisReduction
+            # update anemia probability
+            oldProbAnemia = ageGroup.getAnemicFraction()
+            newProbAnemia = oldProbAnemia * anemiaUpdate[ageName] * anemiaUpdate['general population']
+            self.params.anemiaDistribution[ageName]['anemic'] = newProbAnemia
+            self.params.anemiaDistribution[ageName]['not anemic'] = 1. - newProbAnemia
+            ageGroup.distributePopulation(self.params.anemiaDistribution)
+            # update fraction anemic exposed to malaria
+            oldFracAnemiaMalaria = self.params.fracAnemicExposedMalaria[ageName]
+            malariaUpdate = 1. - malariaReduction[ageName]
+            newFracAnemiaMalaria = oldFracAnemiaMalaria * malariaUpdate
+            self.params.fracAnemicExposedMalaria[ageName] = newFracAnemiaMalaria
         
 
         # BIRTH OUTCOME
