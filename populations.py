@@ -12,10 +12,11 @@ class Box:
         self.mortalityRate = None
         self.cumulativeDeaths = 0
 
-class PregnantWomen:
-    def __init__(self, birthRate, annualGrowth, dictOfBoxes, keyList):
+class PregnantWomenAgeCompartment:
+    def __init__(self, name, birthRate, dictOfBoxes, agingRate, keyList):
+        self.name = name
+        self.agingRate = agingRate
         self.birthRate = birthRate
-        self.annualGrowth = annualGrowth
         self.dictOfBoxes = dcp(dictOfBoxes)
         for key in keyList.keys():
             setattr(self, key, keyList[key])
