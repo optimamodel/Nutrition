@@ -20,7 +20,6 @@ class Params:
         self.causeOfDeathDist = dcp(data.causeOfDeathDist)
         self.stuntingDistribution = dcp(data.stuntingDistribution)
         self.wastingDistribution = dcp(data.wastingDistribution)
-        self.deliveryDistribution = dcp(data.deliveryDistribution)
         self.breastfeedingDistribution = dcp(data.breastfeedingDistribution)
         self.anemiaDistribution = dcp(data.anemiaDistribution)
         self.fracPoor = dcp(data.demographics['fraction poor'])
@@ -43,9 +42,8 @@ class Params:
         self.effectivenessIncidence = dcp(data.effectivenessIncidence)
         self.interventionsBirthOutcome = dcp(data.interventionsBirthOutcome)
         self.foodSecurityGroups = dcp(data.foodSecurityGroups)
-        self.deliveryDistribution = dcp(data.deliveryDistribution)
-        self.interventionsPregnantWomenAff = dcp(data.interventionsPregnantWomenAff)
-        self.interventionsPregnantWomenEff = dcp(data.interventionsPregnantWomenEff)
+        self.projectedBirths = dcp(data.projectedBirths)
+        self.projectedWRA15to19 = dcp(data.projectedReproductiveAge)
     
 
 # Add all functions for updating parameters due to interventions here....
