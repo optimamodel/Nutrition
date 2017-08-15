@@ -33,12 +33,6 @@ class Derived:
         for ageName in self.ages:
             self.stuntingUpdateAfterInterventions[ageName] = 1.
 
-        #calculate annual growth of 15 to 19 year olds
-        projected15to19 = data.projectedReproductiveAge
-        basePop = float(projected15to19[0])
-        numYears   = len(projected15to19)-1
-        self.annualGrowth15to19 = (projected15to19[numYears]-basePop)/float(numYears)/basePop
-
         self.setReferenceMortality()
         self.setProbStuntingProgression()
         self.setProbStuntedAtBirth()
