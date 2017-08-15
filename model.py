@@ -600,20 +600,6 @@ class Model:
         # aging must happen before births
         self.applyAging()
         self.applyBirths()
-        
-    def progressPregnantWomen(self):
-        # applyBirths() must happen first
-        currentPopulationSize = self.pregnantWomen.getTotalPopulation()
-        newPopulationSize = currentPopulationSize * (1. + self.pregnantWomen.annualGrowth * self.timestep)
-        for anemiaStatus in self.anemiaList:
-            for deliveryStatus in self.deliveryList:
-                # calculate deaths (do this before pop size updated)
-                deaths = self.pregnantWomen.dictOfBoxes[anemiaStatus][deliveryStatus].populationSize * self.pregnantWomen.dictOfBoxes[anemiaStatus][deliveryStatus].mortalityRate * self.timestep
-                self.pregnantWomen.dictOfBoxes[anemiaStatus][deliveryStatus].cumulativeDeaths += deaths
-                #update population sizes
-                self.pregnantWomen.dictOfBoxes[anemiaStatus][deliveryStatus].populationSize = newPopulationSize * self.params.deliveryDistribution[deliveryStatus] * self.params.anemiaDistribution['pregnant women'][anemiaStatus]
-        # TODO update delivery distribution?
-        self.params.anemiaDistribution['pregnant women'] = self.pregnantWomen.getAnemiaDistribution()
 
     def updateRiskDistributions(self):
         for ageGroup in self.listOfAgeCompartments:
