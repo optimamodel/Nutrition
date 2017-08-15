@@ -529,12 +529,15 @@ class Model:
             agingOut[ind] = {}
             for status in self.anemiaList:
                 thisBox = thisCompartment.dictOfBoxes[status]
-                agingOut[ind][status] = thisBox.populationSize * thisCompartment.agingRate 
-        # add the new 15 -19 year olds
+                agingOut[ind][status] = thisBox.populationSize * thisCompartment.agingRate
+        # add the new 15 -19 year olds from data
         thisCompartment = self.listOfReproductiveAgeCompartments[0]
+        totalPopThisYear = self.params.projectedWRA15to19[self.year]
+        anemiaDistribution = thisCompartment.getAnemiaDistribution()
         for status in self.anemiaList:
+            # distribute based on existing anemia distribution
             thisBox = thisCompartment.dictOfBoxes[status]
-            thisBox.populationSize += thisBox.populationSize * self.derived.annualGrowth15to19  
+            thisBox.populationSize = totalPopThisYear * anemiaDistribution[status]
         # update all other reproductive population sizes
         # (15-19 years happened separately above)        
         for ind in range(1, numCompartments):
