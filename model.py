@@ -8,13 +8,13 @@ from __future__ import division
 from copy import deepcopy as dcp
 
 class Model:
-    def __init__(self, pregnantWomen, listOfAgeCompartments, listOfReproductiveAgeCompartments, keyList):
-        self.pregnantWomen = pregnantWomen
+    def __init__(self, listOfPregnantWomenAgeCompartments, listOfAgeCompartments, listOfReproductiveAgeCompartments, keyList):
+        self.listOfPregnantWomenAgeCompartments = listOfPregnantWomenAgeCompartments
         self.listOfAgeCompartments = listOfAgeCompartments
         self.listOfReproductiveAgeCompartments = listOfReproductiveAgeCompartments
         for key in keyList.keys():
             setattr(self, key, keyList[key])
-        self.itime = 0
+        self.year = 1 # start at 1 b/c model is set up using data from index 0
         self.derived = None
         self.params = None
         import helper 
@@ -31,14 +31,14 @@ class Model:
 
 
     def getTotalNumberStunted(self):
-        totalNumberStunted = 0
+        totalNumberStunted = 0.
         for ageGroup in self.listOfAgeCompartments:
             totalNumberStunted += ageGroup.getNumberStunted()
         return totalNumberStunted
         
     def getTotalStuntedFraction(self):
         totalNumberStunted = 0.
-        totalPopSize = 0
+        totalPopSize = 0.
         for ageGroup in self.listOfAgeCompartments: 
             totalNumberStunted += ageGroup.getNumberStunted()
             totalPopSize += ageGroup.getTotalPopulation()
@@ -57,7 +57,7 @@ class Model:
         return self.cumulativeAgingOutNotStunted
 
     def getDALYs(self):
-        DALYs = 0.0
+        DALYs = 0.
         numStuntedAt5 = self.getCumulativeAgingOutStunted()
         DALYs += numStuntedAt5 * 0.23 # * (self.helper.keyList['lifeExpectancy'] - 5.) # 0.23 = disability weight
         for ageGroup in self.listOfAgeCompartments:
@@ -78,7 +78,7 @@ class Model:
         return totalNumberAnemic   
         
     def getTotalPopChildren(self):
-        totalPopSize = 0
+        totalPopSize = 0.
         for ageGroup in self.listOfAgeCompartments: 
             totalPopSize += ageGroup.getTotalPopulation()
         return totalPopSize
@@ -95,7 +95,7 @@ class Model:
         return totalNumberAnemic  
         
     def getTotalPopWRA(self):
-        totalPopSize = 0
+        totalPopSize = 0.
         for ageGroup in self.listOfReproductiveAgeCompartments: 
             totalPopSize += ageGroup.getTotalPopulation()
         return totalPopSize    
