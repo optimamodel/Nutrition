@@ -611,16 +611,16 @@ class Model:
             # when delivery distributions are altered, will need to update those here too
 
     def updateYearlyRiskDistributions(self):
-        for ageGroup in self.listOfReproductiveAgeCompartments:
+        womenPops = self.listOfReproductiveAgeCompartments + self.listOfPregnantWomenAgeCompartments
+        for ageGroup in womenPops:
             ageName = ageGroup.name
             self.params.anemiaDistribution[ageName] = ageGroup.getAnemiaDistribution()
 
     def moveOneTimeStep(self):
         self.applyMortality() 
         self.applyAgingAndBirths()
-        self.progressPregnantWomen()
         self.updateRiskDistributions()
-        
+
     def moveModelOneYear(self):
         # monthly progession
         for month in range(12):
@@ -628,5 +628,8 @@ class Model:
         # yearly progression
         self.applyWRAMortality()
         self.applyWRAaging()
+        self.applyPregnantWomanMortality()
+        self.applyPregnantWomenAging()
         self.updateYearlyRiskDistributions()
+        self.year += 1
 
