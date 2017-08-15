@@ -18,7 +18,7 @@ class Helper:
         self.keyList['anemiaList'] = ["anemic", "not anemic"]
         self.keyList['ageGroupSpans'] = [1., 5., 6., 12., 36.] # number of months in each age group
         self.keyList['agingRates'] = [1./1., 1./5., 1./6., 1./12., 1./36.]
-        self.keyList['reproductiveAges'] = ['WRA: 15-19 years', 'WRA: 20-24 years', 'WRA: 25-29 years', 'WRA: 30-34 years', 'WRA: 35-39 years', 'WRA: 40-44 years']
+        self.keyList['reproductiveAges'] = ['WRA: 15-19 years', 'WRA: 20-29 years', 'WRA: 30-39 years', 'WRA: 40-49 years']
         self.keyList['reproductiveAgingRates'] = [1./5., 1./5., 1./5., 1./5., 1./5., 1./5.] # this is in years
         self.keyList['stuntedList'] = ["moderate", "high"]
         self.keyList['lifeExpectancy'] = 83.5
