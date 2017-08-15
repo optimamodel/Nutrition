@@ -24,36 +24,32 @@ class PregnantWomenAgeCompartment:
     def getTotalPopulation(self):
         totalSum = 0
         for anemiaStatus in self.anemiaList:
-            for deliveryStatus in self.deliveryList:
-                totalSum += self.dictOfBoxes[anemiaStatus][deliveryStatus].populationSize
+            totalSum += self.dictOfBoxes[anemiaStatus].populationSize
         return totalSum
 
     def getAnemicFraction(self):
         totalAnemic = 0.
         totalPop = self.getTotalPopulation()
-        for deliveryStatus in self.deliveryList:
-            totalAnemic += self.dictOfBoxes['anemic'][deliveryStatus].populationSize
+        totalAnemic += self.dictOfBoxes['anemic'].populationSize
         return float(totalAnemic)/float(totalPop)
         
     def getNumberAnemic(self):
         totalAnemic = 0.
-        for deliveryStatus in self.deliveryList:
-            totalAnemic += self.dictOfBoxes['anemic'][deliveryStatus].populationSize
+        totalAnemic += self.dictOfBoxes['anemic'].populationSize
         return totalAnemic    
 
-    def distributePopulation(self, anemiaDist, deliveryDist):
+    def distributePopulation(self, anemiaDist):
+        ageName = self.name
         totalPop = self.getTotalPopulation()
         for anemiaStatus in self.anemiaList:
-            for deliveryStatus in self.deliveryList:
-                self.dictOfBoxes[anemiaStatus][deliveryStatus].populationSize = anemiaDist['pregnant women'][anemiaStatus] * deliveryDist[deliveryStatus] * totalPop
+            self.dictOfBoxes[anemiaStatus].populationSize = anemiaDist[ageName][anemiaStatus] * totalPop
 
     def getAnemiaDistribution(self):
         totalPop = self.getTotalPopulation()
         returnDict = {}
         for anemiaStatus in self.anemiaList:
             returnDict[anemiaStatus] = 0.
-            for deliveryStatus in self.deliveryList:
-                returnDict[anemiaStatus] += self.dictOfBoxes[anemiaStatus][deliveryStatus].populationSize / totalPop
+            returnDict[anemiaStatus] += self.dictOfBoxes[anemiaStatus].populationSize / totalPop
         return returnDict
         
 
