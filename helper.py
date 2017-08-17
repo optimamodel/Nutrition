@@ -22,7 +22,6 @@ class Helper:
         self.keyList['reproductiveAgingRates'] = [1./5., 1./10., 1./10., 1./10.] # this is in years
         self.keyList['stuntedList'] = ["moderate", "high"]
         self.keyList['lifeExpectancy'] = 83.5
-        self.keyList['deliveryList'] = ["unassisted", "assisted at home", "essential care", "BEmOC", "CEmOC"]
         self.keyList['pregnantWomenAges'] = ["PW: 15-19 years", "PW: 20-29 years", "PW: 30-39 years", "PW: 40-49 years"]
         self.keyList['pregnantWomenAgeSpans'] = [5./35., 10./35., 10./35., 10./35.]
         self.keyList['allPops'] = dcp(self.keyList['ages'])
