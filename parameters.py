@@ -158,22 +158,35 @@ class Params:
                     incidenceUpdate[ageName][condition] *= 1. - reduction
         return incidenceUpdate                         
 
-        
-    def getStuntingUpdateDueToIncidence(self, beta):
+    def getUpdatesDueToIncidence(self, beta):
         stuntingUpdate = {}
+        anemiaUpdate = {}
         for ageName in self.ages:
+            # stunting
             stuntingUpdate[ageName] = 1.
             newProbStunting = 0
             oldProbStunting = self.stuntingDistribution[ageName]["high"] + self.stuntingDistribution[ageName]["moderate"]
+            # anemia
+            anemiaUpdate[ageName] = 1.
+            newProbAnemia = 0
+            oldProbAnemia = self.anemiaDistribution[ageName]["anemia"]
             for breastfeedingCat in self.breastfeedingList:
                 pab = self.breastfeedingDistribution[ageName][breastfeedingCat]
+                # stunting
                 t1 = beta[ageName][breastfeedingCat] * self.derived.fracStuntedIfDiarrhea["dia"][ageName]
                 t2 = (1 - beta[ageName][breastfeedingCat]) * self.derived.fracStuntedIfDiarrhea["nodia"][ageName]                
                 newProbStunting += pab * (t1 + t2)
-            reduction = (oldProbStunting - newProbStunting)/oldProbStunting
-            stuntingUpdate[ageName] *= 1. - reduction
-        return stuntingUpdate
-        
+                # anemia
+                t1 = beta[ageName][breastfeedingCat] * self.derived.fracAnemicIfDiarrhea["dia"][ageName]
+                t2 = (1 - beta[ageName][breastfeedingCat]) * self.derived.fracAnemicIfDiarrhea["nodia"][ageName]                
+                newProbAnemia += pab * (t1 + t2)
+            # stunting    
+            reductionStunting = (oldProbStunting - newProbStunting)/oldProbStunting 
+            stuntingUpdate[ageName] *= 1. - reductionStunting
+            # anemia
+            reductionAnemia = (oldProbAnemia - newProbAnemia)/oldProbAnemia
+            anemiaUpdate[ageName] *= 1. - reductionAnemia                
+        return stuntingUpdate, anemiaUpdate
         
     def getStuntingUpdateComplementaryFeeding(self, newCoverage):
         stuntingUpdate = {}
