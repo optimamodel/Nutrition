@@ -19,7 +19,7 @@ class Data:
                  effectivenessIncidence, interventionsBirthOutcome, foodSecurityGroups,
                  ORstuntingComplementaryFeeding, anemiaDistribution,
                  projectedReproductiveAge, fracAnemicNotPoor, fracAnemicPoor, 
-                 fracAnemicExposedMalaria, fracExposedMalaria):
+                 fracAnemicExposedMalaria, fracExposedMalaria, ORanemiaCondition):
 
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
@@ -62,6 +62,7 @@ class Data:
         self.fracAnemicPoor = fracAnemicPoor
         self.fracAnemicExposedMalaria = fracAnemicExposedMalaria
         self.fracExposedMalaria = fracExposedMalaria
+        self.ORanemiaCondition = ORanemiaCondition
 
 
 def readSpreadsheet(fileName, keyList):
@@ -288,7 +289,7 @@ def readSpreadsheet(fileName, keyList):
         for breastfeedingCat in breastfeedingList:
             RRdiarrhea[ageName][breastfeedingCat] = df[ageName][breastfeedingCat]
 
-    # READ OR Diarrhea SHEET
+    # READ OR stunting by condition SHEET
     # sets:
     # - ORstuntingCondition
     df = pandas.read_excel(Location, sheetname = 'OR stunting by condition')
@@ -301,6 +302,20 @@ def readSpreadsheet(fileName, keyList):
             ORstuntingCondition[ageName][condition] = 1.
         for condition in conditionsHere:
             ORstuntingCondition[ageName][condition] = df.loc[condition, ageName]
+
+    # READ OR anemia by condition SHEET
+    # sets:
+    # - ORanemiaCondition
+    df = pandas.read_excel(Location, sheetname = 'OR anemia by condition')
+    conditionsHere = list(df['Condition'])
+    df = pandas.read_excel(Location, sheetname = 'OR anemia by condition', index_col = 'Condition')
+    ORanemiaCondition = {}
+    for ageName in ages:
+        ORanemiaCondition[ageName] = {}
+        for condition in conditions:
+            ORanemiaCondition[ageName][condition] = 1.
+        for condition in conditionsHere:
+            ORanemiaCondition[ageName][condition] = df.loc[condition, ageName]
 
     # READ OR Stunting given Intervention Coverage SHEET
     # sets:
@@ -552,7 +567,7 @@ def readSpreadsheet(fileName, keyList):
                            effectivenessMortality, effectivenessIncidence, interventionsBirthOutcome,
                            foodSecurityGroups, ORstuntingComplementaryFeeding, anemiaDistribution,
                            projectedReproductiveAge, fracAnemicNotPoor, fracAnemicPoor, fracAnemicExposedMalaria,
-                           fracExposedMalaria)
+                           fracExposedMalaria, ORanemiaCondition)
 
     return spreadsheetData
                   
