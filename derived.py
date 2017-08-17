@@ -119,7 +119,7 @@ class Derived:
         self.setReferenceWRAMortality()
         
         
-    def setReferencePregnantWomenMortality(self):
+    def setReferencePregnantWomenMortality(self): # TODO: this needs to be adjusted based on births and age groups as function above
         #Equation is:  LHS = RHS * X
         #we are solving for X
         # Calculate RHS for each age and cause
@@ -132,12 +132,27 @@ class Derived:
                     t1 = self.data.anemiaDistribution[ageName][anemiaStatus]
                     t2 = self.data.RRdeathAnemia[ageName][cause][anemiaStatus]
                     RHS[ageName][cause] += t1 * t2
+        # get age populations
+        agePop = [compartment.getTotalPopulation() for compartment in self.initialModel.listOfPregnantWomenAgeCompartments]
+        # Correct raw mortality for units (per 1000 live births)
+        liveBirths = self.data.demographics['number of live births']
+        # TODO: the following will depend upon if we have data broken down by age group. Possible for WRA?
+        # The following assumes we only have a single mortality rate for PW
+        mortalityRate = self.data.rawMortality['maternal mortality rate'] # TODO: this dictionary needs to be updated to Janka's spreadsheet
+        mortalityCorrected = {}
+        for index in range(len(self.ages)):
+            ageName = self.ages[index]
+            if index == 0:
+                mortalityCorrected[ageName] = (mortalityRate * liveBirths / 1000.) * (4. / 34.) / agePop[index]
+            else:
+                mortalityCorrected[ageName] = (mortalityRate * liveBirths / 1000.) * (9. / 34.) / agePop[index]
+
         # Calculate LHS for each age and cause of death then solve for X
         Xdictionary = {}
         for ageName in self.pregnantWomenAges:
             Xdictionary[ageName] = {}
             for cause in self.data.causesOfDeath:
-                LHS_age_cause = self.data.rawMortality[ageName] * self.data.causeOfDeathDist[ageName][cause]
+                LHS_age_cause = mortalityCorrected[ageName] * self.data.causeOfDeathDist[ageName][cause]
                 Xdictionary[ageName][cause] = LHS_age_cause / RHS[ageName][cause]
         # add pregnant women reference mortality to dictionary
         self.referenceMortality.update(Xdictionary)
