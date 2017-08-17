@@ -617,9 +617,8 @@ class Model:
         # monthly progession
         for month in range(12):
             self.moveOneTimeStep()
-        # yearly progression, PW must come first if using WRA15-19 pop
         self.applyPregnantWomanMortality()
-        self.applyPregnantWomenAging()
+        self.applyPregnantWomenBirths()
         self.applyWRAMortality()
         self.applyWRAaging()
         self.updateYearlyRiskDistributions()
