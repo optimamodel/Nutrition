@@ -409,7 +409,6 @@ class Model:
                     t1 = self.derived.referenceMortality[ageName][cause]
                     t2 = self.params.RRdeathAnemia[ageName][cause][anemiaStatus]
                     count += t1 * t2
-                # in absense of risks distribute mortality between delivery groups based on population fraction
                 ageGroup.dictOfBoxes[anemiaStatus].mortalityRate = count
         # women of reproductive age
         for ageGroup in self.listOfReproductiveAgeCompartments:
