@@ -14,7 +14,7 @@ class Model:
         self.listOfReproductiveAgeCompartments = listOfReproductiveAgeCompartments
         for key in keyList.keys():
             setattr(self, key, keyList[key])
-        self.year = 1 # start at 1 b/c model is set up using data from index 0
+        self.year = 0
         self.derived = None
         self.params = None
         import helper 
@@ -549,26 +549,18 @@ class Model:
                 # remove those aging out
                 thisBox.populationSize -= agingOut[ind][status]
 
-    def applyPregnantWomenAging(self):
+    def applyPregnantWomenBirths(self):
+        """Use PW projections to distribute PW into age groups.
+        In absence of better advice, we wieight according to age group length."""
         numCompartments = len(self.listOfPregnantWomenAgeCompartments)
-        # calculate how many people aging out of each box
-        agingOut = [None]*numCompartments
-        for ind in range(0, numCompartments):
-            thisCompartment = self.listOfPregnantWomenAgeCompartments[ind]
-            agingOut[ind] = {}
+        projectedPWPop = self.params.projectedPW[self.year] # TODO: need to read in projected PW pop (in new data workbook)
+        for index in range(numCompartments):
+            popThisAge = projectedPWPop * self.pregnantWomenAgeSpans[index] # TODO: should have more realistic distribution figure
+            thisCompartment = self.listOfPregnantWomenAgeCompartments[index]
+            anemiaDistribution = thisCompartment.getAnemiaDistribution()
             for anemiaStatus in self.anemiaList:
                 thisBox = thisCompartment.dictOfBoxes[anemiaStatus]
-                thisBox.populationSize -= thisBox.populationSize * thisCompartment.agingRate
-        # calculate the number of new pregnant women in this year
-        birthRate = self.listOfPregnantWomenAgeCompartments[0].birthRate
-        birthsThisYear = self.params.projectedBirths[self.year]
-        pregnanciesThisTimeStep = birthsThisYear / birthRate
-        # distributed uniformly across each age group
-        for ind in range(0, numCompartments):
-            thisCompartment = self.listOfPregnantWomenAgeCompartments[ind]
-            for anemiaStatus in self.anemiaList:
-                thisBox = thisCompartment.dictOfBoxes[anemiaStatus]
-                thisBox.populationSize += pregnanciesThisTimeStep / numCompartments
+                thisBox.populationSize = popThisAge * anemiaDistribution[anemiaStatus] # distributed based on current anemia distribution
 
 
     def applyBirths(self):
