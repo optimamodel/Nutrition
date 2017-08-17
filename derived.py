@@ -244,14 +244,21 @@ class Derived:
             self.fracAnemicIfDiarrhea["nodia"][ageName] = pn
             self.fracAnemicIfDiarrhea["dia"][ageName]   = pc
 
-    def updateProbStuntedIfDiarrheaNewZa(self,Zt):
-        risk = 'stunting'        
-        AO = self.getAverageOR(Zt, risk)
+    #def updateProbStuntedIfDiarrheaNewZa(self,Zt):
+    def updateDiarrheaProbsNewZa(self, Zt):    
+        AOStunting = self.getAverageOR(Zt, 'stunting')
+        AOAnemia = self.getAverageOR(Zt, 'anemia')
         numAgeGroups = len(self.ages)
         for iAge in range(numAgeGroups):
             ageName = self.ages[iAge]
+            # stunting
+            AO = AOStunting
             Omega0  = self.fracStuntedIfDiarrhea["nodia"][ageName]
             self.fracStuntedIfDiarrhea["dia"][ageName] = Omega0 * AO[ageName] / (1. - Omega0 + AO[ageName]*Omega0)
+            # anemia
+            AO = AOAnemia
+            Omega0  = self.fracAnemicIfDiarrhea["nodia"][ageName]
+            self.fracAnemicIfDiarrhea["dia"][ageName] = Omega0 * AO[ageName] / (1. - Omega0 + AO[ageName]*Omega0)
 
 
     def getDiarrheaRiskSum(self, ageName, breastfeedingDistribution):

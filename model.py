@@ -254,12 +254,13 @@ class Model:
             incidencesBefore[ageName] = self.params.incidences[ageName]['Diarrhea']
             self.params.incidences[ageName]['Diarrhea'] *= incidenceUpdate[ageName]['Diarrhea']
             incidencesAfter[ageName] = self.params.incidences[ageName]['Diarrhea']
-        # get flow on effect to stunting due to changing incidence
+        # get flow on effects to stunting and anemia due to changing incidence
         Z0 = self.derived.getZa(incidencesBefore, self.params.breastfeedingDistribution)
         Zt = self.derived.getZa(incidencesAfter,  self.params.breastfeedingDistribution)
         beta = self.derived.getFracDiarrhea(Z0, Zt)
-        self.derived.updateProbStuntedIfDiarrheaNewZa(Zt)
-        stuntingUpdateDueToIncidence = self.params.getStuntingUpdateDueToIncidence(beta)
+        # update probabilities given new incidence 
+        self.derived.updateDiarrheaProbsNewZa(Zt) 
+        stuntingUpdateDueToIncidence, anemiaUpdateDueToIncidence = self.params.getUpdatesDueToIncidence(beta)  
         
         # STUNTING
         for ageGroup in self.listOfAgeCompartments:
@@ -287,7 +288,7 @@ class Model:
         for ageGroup in self.listOfAgeCompartments:
             ageName = ageGroup.name
             oldProbAnemia = ageGroup.getAnemicFraction()
-            newProbAnemia = oldProbAnemia * anemiaUpdate[ageName] * anemiaUpdate['general population']
+            newProbAnemia = oldProbAnemia * anemiaUpdate[ageName] * anemiaUpdate['general population'] * anemiaUpdateDueToIncidence[ageName]
             self.params.anemiaDistribution[ageName]['anemic'] = newProbAnemia
             self.params.anemiaDistribution[ageName]['not anemic'] = 1. - newProbAnemia
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
