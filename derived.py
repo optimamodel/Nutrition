@@ -119,7 +119,7 @@ class Derived:
         self.setReferenceWRAMortality()
         
         
-    def setReferencePregnantWomenMortality(self): # TODO: this needs to be adjusted based on births and age groups as function above
+    def setReferencePregnantWomenMortality(self):
         #Equation is:  LHS = RHS * X
         #we are solving for X
         # Calculate RHS for each age and cause
@@ -136,7 +136,6 @@ class Derived:
         agePop = [compartment.getTotalPopulation() for compartment in self.initialModel.listOfPregnantWomenAgeCompartments]
         # Correct raw mortality for units (per 1000 live births)
         liveBirths = self.data.demographics['number of live births']
-        # TODO: the following will depend upon if we have data broken down by age group. Possible for WRA?
         # The following assumes we only have a single mortality rate for PW
         mortalityRate = self.data.rawMortality['maternal mortality rate'] # TODO: this dictionary needs to be updated to Janka's spreadsheet
         mortalityCorrected = {}
