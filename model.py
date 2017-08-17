@@ -601,7 +601,6 @@ class Model:
             self.params.wastingDistribution[ageName]       = ageGroup.getWastingDistribution()
             self.params.breastfeedingDistribution[ageName] = ageGroup.getBreastfeedingDistribution()
             self.params.anemiaDistribution[ageName] = ageGroup.getAnemiaDistribution()
-            # when delivery distributions are altered, will need to update those here too
 
     def updateYearlyRiskDistributions(self):
         womenPops = self.listOfReproductiveAgeCompartments + self.listOfPregnantWomenAgeCompartments
