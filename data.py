@@ -73,7 +73,6 @@ def readSpreadsheet(fileName, keyList):
     wastingList = keyList['wastingList']
     stuntingList = keyList['stuntingList']
     breastfeedingList = keyList['breastfeedingList']
-    deliveryList = keyList['deliveryList']
     allPops = keyList['allPops']
     anemiaList = keyList['anemiaList']
 
