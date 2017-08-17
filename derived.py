@@ -204,7 +204,8 @@ class Derived:
         Z0 = self.getZa(incidence, breastfeedingDistribution)
         Zt = Z0 #this is true for the initialisation
         beta = self.getFracDiarrhea(Z0, Zt)
-        AO = self.getAverageOR(Zt)
+        risk = 'stunting'
+        AO = self.getAverageOR(Zt, risk)
         numAgeGroups = len(self.ages)
         self.fracStuntedIfDiarrhea["nodia"] = {}
         self.fracStuntedIfDiarrhea["dia"] = {}
@@ -220,10 +221,33 @@ class Derived:
             self.fracStuntedIfDiarrhea["nodia"][ageName] = pn
             self.fracStuntedIfDiarrhea["dia"][ageName]   = pc
             
-
+    def setProbAnemicIfDiarrhea(self, currentIncidences, breastfeedingDistribution, anemiaDistribution):
+        incidence = {}
+        for ageName in self.ages:
+            incidence[ageName] = currentIncidences[ageName]['Diarrhea']
+        Z0 = self.getZa(incidence, breastfeedingDistribution)
+        Zt = Z0 #this is true for the initialisation
+        beta = self.getFracDiarrhea(Z0, Zt)
+        risk = 'anemia'
+        AO = self.getAverageOR(Zt, risk)
+        numAgeGroups = len(self.ages)
+        self.fracAnemicIfDiarrhea["nodia"] = {}
+        self.fracAnemicIfDiarrhea["dia"] = {}
+        for iAge in range(0, numAgeGroups):
+            ageName = self.ages[iAge]
+            #get fraction of people with diarrhea
+            fracDiarrhea = 0.
+            for breastfeedingCat in self.breastfeedingList:
+                fracDiarrhea += beta[ageName][breastfeedingCat] * breastfeedingDistribution[ageName][breastfeedingCat]
+            # get fraction anemic 
+            fracAnemicThisAge = anemiaDistribution[ageName]['anemic']
+            pn, pc = self.solveQuadratic(AO[ageName], fracDiarrhea, fracAnemicThisAge)
+            self.fracAnemicIfDiarrhea["nodia"][ageName] = pn
+            self.fracAnemicIfDiarrhea["dia"][ageName]   = pc
 
     def updateProbStuntedIfDiarrheaNewZa(self,Zt):
-        AO = self.getAverageOR(Zt)
+        risk = 'stunting'        
+        AO = self.getAverageOR(Zt, risk)
         numAgeGroups = len(self.ages)
         for iAge in range(numAgeGroups):
             ageName = self.ages[iAge]
@@ -250,15 +274,21 @@ class Derived:
         return Za     
 
 
-    def getAverageOR(self, Za):
+    def getAverageOR(self, Za, risk):
         from math import pow
         AO = {}
         numAgeGroups = len(self.ages)
         for i in range(numAgeGroups):
             ageName = self.ages[i]
             RRnot = self.data.RRdiarrhea[ageName]["none"]
-            AO[ageName] = pow(self.data.ORstuntingCondition[ageName]['Diarrhea'], RRnot * Za[ageName] * self.ageGroupSpans[i])
-        return AO    
+            if risk == 'stunting':
+                OR = self.data.ORstuntingCondition[ageName]['Diarrhea']
+            elif risk == 'anemia':
+                OR = self.data.ORanemiaCondition[ageName]['Diarrhea']
+            else:
+                print 'risk factor is invalid'
+            AO[ageName] = pow(OR, RRnot * Za[ageName] * self.ageGroupSpans[i])
+        return AO   
         
         
     def getFracDiarrhea(self, Z0, Zt):
