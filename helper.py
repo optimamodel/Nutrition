@@ -144,7 +144,7 @@ class Helper:
         birthRate = annualBirths / popPregnantWomen
         for iAge in range(numAgeGroups):
             ageName = ages[iAge]
-            agingRate = self.keyList['pregnantWomenAgingRates'][iAge]
+            agingRate = self.keyList['pregnantWomenAgeSpans'][iAge]
             thisAgeBoxes = self.makePregnantWomenAgeBoxes(agePopSize, ageName, inputData)
             compartment = populations.PregnantWomenAgeCompartment(ageName, birthRate, thisAgeBoxes, agingRate, self.keyList)
             listOfPregnantWomenAgeCompartments.append(compartment)

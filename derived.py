@@ -244,7 +244,6 @@ class Derived:
             self.fracAnemicIfDiarrhea["nodia"][ageName] = pn
             self.fracAnemicIfDiarrhea["dia"][ageName]   = pc
 
-    #def updateProbStuntedIfDiarrheaNewZa(self,Zt):
     def updateDiarrheaProbsNewZa(self, Zt):    
         AOStunting = self.getAverageOR(Zt, 'stunting')
         AOAnemia = self.getAverageOR(Zt, 'anemia')
