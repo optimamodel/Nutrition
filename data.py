@@ -116,6 +116,21 @@ def splitSpreadsheetWithTwoIndexCols(sheet, keyForSplitting, rowList=None, scale
                 except KeyError:
                     resultDict[colName][row] = defaultValue
     return resultDict
+
+def readRelativeRisks(sheet, risk, statusList, causesOfDeath):
+    resultDict = {}
+    subsheet = sheet.loc[risk]
+    for columnName in subsheet:
+        column = subsheet[columnName]
+        resultDict[columnName] = {}
+        for cause in causesOfDeath:
+            resultDict[columnName][cause] = {}
+            for status in statusList:
+                try:
+                    resultDict[columnName][cause][status] = column[cause][status]
+                except KeyError: # RR set to 1 if cause not in spreadsheet
+                    resultDict[columnName][cause][status] = 1
+    return resultDict
 def readSpreadsheet(fileName, keyList):
     import pandas
     Location = fileName
