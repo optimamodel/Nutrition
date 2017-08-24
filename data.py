@@ -220,6 +220,28 @@ def readSpreadsheet(fileName, keyList):
     for colName in anemiaPrevalenceSheet:
         column = anemiaPrevalenceSheet[colName]
         anemiaPrevalence[anemiaType][colName] = column[anemiaType]['All']
+
+
+    ### DISTRIBUTIONS
+    distributionsSheet = pd.read_excel(location, sheetname='Distributions', index_col=[0,1])
+    distributionsSheet = distributionsSheet.dropna()
+    stuntingDistribution = splitSpreadsheetWithTwoIndexCols(distributionsSheet, 'Stunting', scaleFactor=100.)
+    wastingDistribution = splitSpreadsheetWithTwoIndexCols(distributionsSheet, 'Wasting', scaleFactor=100.)
+    breastfeedingDistribution = splitSpreadsheetWithTwoIndexCols(distributionsSheet, 'Breastfeeding', scaleFactor=100.)
+
+    ### BIRTH OUTCOMES AND RISKS
+    birthOutcomesSheet = pd.read_excel(location, sheetname='Birth outcomes & risks', index_col=[0,1])
+    birthOutcomesSheet = birthOutcomesSheet.dropna()
+    # distribution
+    birthOutcomeDistribution = splitSpreadsheetWithTwoIndexCols(birthOutcomesSheet, "Distribution")
+    ORstuntingBirthOutcome = {}
+    birthOutcomeDist = {}
+    for birthOutcome in birthOutcomeDistribution.keys():
+        ORstuntingBirthOutcome[birthOutcome] = birthOutcomeDistribution[birthOutcome]['OR stunting']
+        birthOutcomeDist[birthOutcome] = birthOutcomeDistribution[birthOutcome]["Fraction of births"]
+
+    # RR of death by birth outcome
+    RRdeathByBirthOutcome = splitSpreadsheetWithTwoIndexCols(birthOutcomesSheet, "RR of death", rowList=causesOfDeathList)
     RRdiarrhea = {}
     for ageName in ages:
         RRdiarrhea[ageName] = {}
