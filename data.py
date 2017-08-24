@@ -197,6 +197,29 @@ def readSpreadsheet(fileName, keyList):
     incidencesSheet = pd.read_excel(location, sheetname='Incidence of conditions', index_col=[0])
     incidences = readSheetWithOneIndexCol(incidencesSheet, scaleFactor=12.) #WARNING HACK should multiply by timestep within code
     conditionsList = list(incidencesSheet.index)
+
+    ### PREVALENCE OF ANEMIA
+    # done by anemia type
+    anemiaPrevalenceSheet = pd.read_excel(location, sheetname='Prevalence of anemia', index_col=[0,1])
+    anemiaPrevalenceSheet = anemiaPrevalenceSheet.dropna(how='all')
+    anemiaTypes = anemiaPrevalenceSheet.index.levels[0]
+    ageNames = anemiaPrevalenceSheet.index.levels[1]
+    anemiaPrevalence = {}
+    for colName in anemiaPrevalenceSheet:
+        column = anemiaPrevalenceSheet[colName]
+        for anemiaType in anemiaTypes:
+            anemiaPrevalence[anemiaType] = {}
+            for ageName in ageNames:
+                try:
+                    anemiaPrevalence[anemiaType][ageName] = column[anemiaType][ageName]
+                except KeyError:
+                    pass
+    # severe
+    anemiaType = 'Fraction anemia that is severe'
+    anemiaPrevalence[anemiaType] = {}
+    for colName in anemiaPrevalenceSheet:
+        column = anemiaPrevalenceSheet[colName]
+        anemiaPrevalence[anemiaType][colName] = column[anemiaType]['All']
     RRdiarrhea = {}
     for ageName in ages:
         RRdiarrhea[ageName] = {}
