@@ -254,7 +254,8 @@ def readSpreadsheet(fileName, keyList):
     childDia = RRsheet.loc['RR child diarrhea'].dropna(axis=1, how = 'all') # drop maternal
     childDia = childDia.loc['Diarrhea incidence'].dropna() # remove rows with NaN
     RRdiarrhea = {}
-    for ageName in ages:
+    for ageName in childDia:
+        column = childDia[ageName]
         RRdiarrhea[ageName] = {}
         for breastfeedingCat in breastfeedingList:
             RRdiarrhea[ageName][breastfeedingCat] = df[ageName][breastfeedingCat]
