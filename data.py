@@ -185,7 +185,7 @@ def readSpreadsheet(fileName, keyList):
     projectionsSheet = pd.read_excel(location, sheetname='Demographic projections', index_col=[0])
     projectionsDict = readSheetWithOneIndexCol(projectionsSheet)
     projectedBirths = projectionsDict['number of births']
-    projectedReproductiveAge = projectionsDict['total WRA']
+    projectedWRApop = projectionsDict['total WRA']
 
     ### CAUSES OF DEATH
     causesOfDeathSheet = pd.read_excel(location, sheetname='Causes of death', index_col=[0])
@@ -370,7 +370,7 @@ def readSpreadsheet(fileName, keyList):
                            costSaturation, targetPopulation, affectedFraction,
                            effectivenessMortality, effectivenessIncidence, interventionsBirthOutcome,
                            foodSecurityGroups, ORstuntingComplementaryFeeding, anemiaDistribution,
-                           projectedReproductiveAge, fracAnemicNotPoor, fracAnemicPoor, fracAnemicExposedMalaria,
+                           projectedWRApop, fracAnemicNotPoor, fracAnemicPoor, fracAnemicExposedMalaria,
                            fracExposedMalaria, ORanemiaCondition)
 
     return spreadsheetData
