@@ -19,8 +19,8 @@ class Data:
                  targetPopulation, affectedFraction, effectivenessMortality,
                  effectivenessIncidence, interventionsBirthOutcome, foodSecurityGroups,
                  ORstuntingComplementaryFeeding, anemiaDistribution,
-                 projectedReproductiveAge, fracAnemicNotPoor, fracAnemicPoor, 
-                 fracAnemicExposedMalaria, fracExposedMalaria, ORanemiaCondition):
+                 projectedWRApop, projectedWRApopByAge, projectedPWpop, fracAnemicNotPoor,
+                 fracAnemicPoor, fracAnemicExposedMalaria, fracExposedMalaria, ORanemiaCondition):
 
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
@@ -58,7 +58,9 @@ class Data:
         self.foodSecurityGroups = foodSecurityGroups
         self.ORstuntingComplementaryFeeding = ORstuntingComplementaryFeeding
         self.anemiaDistribution = anemiaDistribution
-        self.projectedReproductiveAge = projectedReproductiveAge
+        self.projectedWRApop = projectedWRApop
+        self.projectedWRApopByAge = projectedWRApopByAge
+        self.projectedPWpop = projectedPWpop
         self.fracAnemicNotPoor = fracAnemicNotPoor
         self.fracAnemicPoor = fracAnemicPoor
         self.fracAnemicExposedMalaria = fracAnemicExposedMalaria
@@ -105,7 +107,6 @@ def splitSpreadsheetWithTwoIndexCols(sheet, keyForSplitting, rowList=None, scale
                     resultDict[row][colName] = column[row] / scaleFactor
                 except KeyError:
                     resultDict[row][colName] = defaultValue
-
     else: # don't switch
         for colName in subsheet:
             resultDict[colName] = {}
@@ -145,8 +146,6 @@ def readInterventionsByPopulationTabs(sheet, outcome, interventionList, pops, ca
                     outcomeDict[intervention][pop][cause] = 0.
     return outcomeDict
 
-
-
 def readSpreadsheet(fileName, keyList):
     location = fileName
     ages = keyList['ages']
@@ -156,7 +155,6 @@ def readSpreadsheet(fileName, keyList):
     breastfeedingList = keyList['breastfeedingList']
     allPops = keyList['allPops']
     anemiaList = keyList['anemiaList']
-
 
     ### INTERVENTIONS COST AND COVERAGE
     # TODO: not complete in spreadsheet therefore some spaces wll be NaN.
@@ -186,6 +184,8 @@ def readSpreadsheet(fileName, keyList):
     projectionsDict = readSheetWithOneIndexCol(projectionsSheet)
     projectedBirths = projectionsDict['number of births']
     projectedWRApop = projectionsDict['total WRA']
+    projectedWRApopByAge = {age: projectionsDict[age] for age in projectionsDict.keys() if age.startswith('women')}
+    projectedPWpop = projectionsDict['pregnant women']
 
     ### CAUSES OF DEATH
     causesOfDeathSheet = pd.read_excel(location, sheetname='Causes of death', index_col=[0])
@@ -219,7 +219,6 @@ def readSpreadsheet(fileName, keyList):
     for colName in anemiaPrevalenceSheet:
         column = anemiaPrevalenceSheet[colName]
         anemiaPrevalence[anemiaType][colName] = column[anemiaType]['All']
-
 
     ### DISTRIBUTIONS
     distributionsSheet = pd.read_excel(location, sheetname='Distributions', index_col=[0,1])
@@ -336,10 +335,9 @@ def readSpreadsheet(fileName, keyList):
                 except KeyError:
                     interventionsBirthOutcome[intervention][birthOutcome][value] = 0.
 
-
     # INTERVENTIONS AFFECTED FRACTION AND EFFECTIVENESS
     # children
-    # warning: currently this applied to all population groups (no tabs from them yet)
+    # warning: currently this applied to all population groups (no tabs for them yet)
     interventionsForChildren = pd.read_excel(location, sheetname='Interventions for children', index_col=[0, 1, 2])
     affectedFraction = readInterventionsByPopulationTabs(interventionsForChildren, 'Affected fraction', interventionList, allPops, causesOfDeathList)
     effectivenessMortality = readInterventionsByPopulationTabs(interventionsForChildren, 'Effectiveness mortality', interventionList, allPops, causesOfDeathList)
@@ -369,7 +367,8 @@ def readSpreadsheet(fileName, keyList):
                            costSaturation, targetPopulation, affectedFraction,
                            effectivenessMortality, effectivenessIncidence, interventionsBirthOutcome,
                            foodSecurityGroups, ORstuntingComplementaryFeeding, anemiaDistribution,
-                           projectedWRApop, fracAnemicNotPoor, fracAnemicPoor, fracAnemicExposedMalaria,
+                           projectedWRApop, projectedWRApopByAge, projectedPWpop,
+                           fracAnemicNotPoor, fracAnemicPoor, fracAnemicExposedMalaria,
                            fracExposedMalaria, ORanemiaCondition)
 
     return spreadsheetData
