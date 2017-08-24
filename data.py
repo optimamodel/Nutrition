@@ -164,6 +164,22 @@ def readSpreadsheet(fileName, keyList):
     interventionList = list(interventionsSheet.index)
     coverage = dict(interventionsSheet["Baseline coverage"])
     costSaturation = interventionsSheet[["Saturation coverage", "Unit cost"]].to_dict(orient='index')
+
+    ### BASELINE YEAR DEMOGRAPHICS
+    demographicsSheet = pd.read_excel(location, sheetname='Baseline year demographics', index_col=[0, 1])
+    demographicsSheet = demographicsSheet.dropna(how='all')
+    # population
+    population = splitSpreadsheetWithTwoIndexCols(demographicsSheet, "Current year")
+    populationDict = population['Values']
+    # mortality
+    mortality = splitSpreadsheetWithTwoIndexCols(demographicsSheet, "Mortality")
+    rawMortality = mortality['Values']
+    # food
+    food = splitSpreadsheetWithTwoIndexCols(demographicsSheet, "Food")
+    foodDemographicsDict = food['Values']
+    # join into demographics dict
+    populationDict.update(foodDemographicsDict)
+    demographics = populationDict
     RRdiarrhea = {}
     for ageName in ages:
         RRdiarrhea[ageName] = {}
