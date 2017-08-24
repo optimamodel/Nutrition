@@ -71,6 +71,21 @@ def readSheetWithOneIndexCol(sheet, scaleFactor=1.):
         resultDict[columnName] = sheet[columnName] / scaleFactor
     return resultDict
 
+def readSheetWithTwoIndexCols(location, sheetname, indexList):
+    # always ignore the first col when creating dictionary
+    sheet = pd.read_excel(location, sheetname=sheetname, index_col=indexList)
+    sheet = sheet.dropna()
+    firstColList = sheet.index.levels[0]
+    secondColList = sheet.index.levels[1]
+    resultDict = {}
+    for outerLevel in firstColList:
+        for innerLevel in secondColList:
+            for columnName in sheet:
+                try:
+                    resultDict[innerLevel] = sheet.loc[outerLevel][columnName][innerLevel]
+                except KeyError: # do nothing if this combination doesn't exist
+                    pass
+    return resultDict
 def readSpreadsheet(fileName, keyList):
     import pandas
     Location = fileName
