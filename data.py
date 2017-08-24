@@ -299,6 +299,13 @@ def readSpreadsheet(fileName, keyList):
     for age in ages:
         ORstuntingComplementaryFeeding[age] = {}
         for intervention in interventionsHere:
+            if "Complementary" in intervention:
+                ORstuntingComplementaryFeeding[age][intervention] = ORsheet[age]['OR stunting by intervention'][intervention]
+                foodSecurityGroups += [intervention]
+    # TODO: what about prophylactic zinc supplementation? doesn't seem to be used at all (gets forgotten about)
+
+    # correct breastfeeding
+    ORappropriatebfIntervention = splitSpreadsheetWithTwoIndexCols(ORsheet, "OR for correct breastfeeding by intervention", rowList=interventionList)
     interventionsBirthOutcome = {}
     # initialise
     for intervention in interventionList:
