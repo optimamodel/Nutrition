@@ -490,7 +490,7 @@ class Model:
             
     def updateWRApopulation(self):
         """Uses projected figures to determine the population of WRA in a given age band and year"""
-        # TODO: two required changes: spreadsheet age bands must match those of 'reproductiveAges', self.year must count from 2017 up
+        # TODO: spreadsheet age bands must match those of 'reproductiveAges'
         for compartment in self.listOfReproductiveAgeCompartments:
             ageName = compartment.name
             popThisAgeAndYear = self.params.projectedWRApopByAge[ageName][self.year]
@@ -502,11 +502,11 @@ class Model:
 
     def applyPregnantWomenBirths(self):
         """Use PW projections to distribute PW into age groups.
-        In absence of better advice, we wieight according to age group length."""
+        In absence of better advice, weight according to age group size."""
         numCompartments = len(self.listOfPregnantWomenAgeCompartments)
-        projectedPWPop = self.params.projectedPW[self.year] # TODO: need to read in projected PW pop (in new data workbook)
+        projectedPWPop = self.params.projectedPWpop[self.year]
         for index in range(numCompartments):
-            popThisAge = projectedPWPop * self.pregnantWomenAgeSpans[index] # TODO: should have more realistic distribution figure
+            popThisAge = projectedPWPop * self.pregnantWomenAgeSpans[index]
             thisCompartment = self.listOfPregnantWomenAgeCompartments[index]
             anemiaDistribution = thisCompartment.getAnemiaDistribution()
             for anemiaStatus in self.anemiaList:
