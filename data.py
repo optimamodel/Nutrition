@@ -322,124 +322,20 @@ def readSpreadsheet(fileName, keyList):
     targetPopulation.update(splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'Non-pregnant WRA', switchKeys=True))
     # general pop # TODO: how do we want to handle the general pop? Not the same as current implementation in spreadsheet
     targetPopulation.update(splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'General population', switchKeys=True))
+
+    # INTERVENTIONS BIRTH OUTCOMES
+    interventionsBirthOutcomeSheet = pd.read_excel(location, sheetname='Interventions birth outcomes', index_col=[0,1])
     interventionsBirthOutcome = {}
-    # initialise
     for intervention in interventionList:
         interventionsBirthOutcome[intervention] = {}
-        for outcome in birthOutcomes:
-            interventionsBirthOutcome[intervention][outcome] = {}
+        for birthOutcome in birthOutcomes:
+            column = interventionsBirthOutcomeSheet[birthOutcome]
+            interventionsBirthOutcome[intervention][birthOutcome] = {}
             for value in ['effectiveness', 'affected fraction']:
-                interventionsBirthOutcome[intervention][outcome][value] = 0.
-    # complete # WARNING allowing for all causes of death, but completing according to condition
-    for intervention in interventionsHere:
-        for outcome in birthOutcomes:
-            for value in ['effectiveness', 'affected fraction']:
-                interventionsBirthOutcome[intervention][outcome][value] = df.loc[intervention][outcome][value]
-    # READ Interventions affected fraction SHEET
-    # sets:
-    # - affectedFraction
-    df = pandas.read_excel(Location, sheetname = 'Interventions affected fraction', index_col = [0])
-    #get the list of interventions
-    mylist = list(df.index.values)
-    myset = set(mylist)
-    interventionsHere = list(myset)
-    #do the rest
-    df = pandas.read_excel(Location, sheetname = 'Interventions affected fraction', index_col = [0, 1])
-    affectedFraction = {}
-    # initialise
-    for intervention in interventionList:
-        affectedFraction[intervention] = {}
-        for pop in allPops:
-            affectedFraction[intervention][pop] = {}
-            for cause in causesOfDeath:
-                affectedFraction[intervention][pop][cause] = 0.
-    # complete # WARNING allowing for all causes of death, but completing according to condition
-    for intervention in interventionsHere:
-        for pop in allPops:
-            conditionsHere = df.loc[intervention][pop].keys()
-            for condition in conditionsHere:
-                affectedFraction[intervention][pop][condition] = df.loc[intervention][pop][condition]
-
-    # READ Interventions mortality effectiveness SHEET
-    # sets:
-    # - effectivenessMortality
-    df = pandas.read_excel(Location, sheetname = 'Interventions mortality eff', index_col = [0])
-    #get the list of interventions
-    mylist = list(df.index.values)
-    myset = set(mylist)
-    interventionsHere = list(myset)
-    #do the rest
-    df = pandas.read_excel(Location, sheetname = 'Interventions mortality eff', index_col = [0, 1])
-    effectivenessMortality = {}
-    # initialise
-    for intervention in interventionList:
-        effectivenessMortality[intervention] = {}
-        for pop in allPops:
-            effectivenessMortality[intervention][pop] = {}
-            for cause in causesOfDeath:
-                effectivenessMortality[intervention][pop][cause] = 0.
-
-    # complete
-    for intervention in interventionsHere:
-        for pop in allPops:
-            causesHere = df.loc[intervention][pop].keys()
-            for cause in causesHere:
-                effectivenessMortality[intervention][pop][cause] = df.loc[intervention][pop][cause]
-
-    # READ Interventions incidence effectiveness SHEET
-    # sets
-    # - effectivenessIncidence
-    df = pandas.read_excel(Location, sheetname = 'Interventions incidence eff', index_col = [0])
-    #get the list of interventions
-    mylist = list(df.index.values)
-    myset = set(mylist)
-    interventionsHere = list(myset)
-    #do the rest
-    df = pandas.read_excel(Location, sheetname = 'Interventions incidence eff', index_col = [0, 1])
-    effectivenessIncidence = {}
-    # initialise
-    for intervention in interventionList:
-        effectivenessIncidence[intervention] = {}
-        for ageName in ages:
-            effectivenessIncidence[intervention][ageName] = {}
-            for condition in conditions:
-                effectivenessIncidence[intervention][ageName][condition] = 0.
-    # complete
-    for intervention in interventionsHere:
-        for ageName in ages:
-            conditionsHere = df.loc[intervention][ageName].keys()
-            for condition in conditionsHere:
-                effectivenessIncidence[intervention][ageName][condition] = df.loc[intervention][ageName][condition]
-
-    # READ OR stunting for complements SHEET
-    # sets:
-    # - ORstuntingComplementaryFeeding
-    df = pandas.read_excel(Location, sheetname = 'OR stunting by compfeeding')
-    foodSecurityGroups = list(df['Food security & education'])
-    df = pandas.read_excel(Location, sheetname = 'OR stunting by compfeeding', index_col = 'Food security & education')
-    ORstuntingComplementaryFeeding = {}
-    for ageName in ages:
-        ORstuntingComplementaryFeeding[ageName] = {}
-        for group in foodSecurityGroups:
-            ORstuntingComplementaryFeeding[ageName][group] = df.loc[group, ageName]
-
-    # READ fraction anemic not poor SHEET
-    df = pandas.read_excel(Location, sheetname = 'Frac anemic not poor')
-    fracAnemicNotPoor = dict(zip(list(df.columns.values), df.iloc[0]))
-
-    # READ fraction anemic poor SHEET
-    df = pandas.read_excel(Location, sheetname = 'Frac anemic poor')
-    fracAnemicPoor = dict(zip(list(df.columns.values), df.iloc[0]))    
-    
-    # READ fraction anemic exposed to malaria SHEET
-    df = pandas.read_excel(Location, sheetname = 'Frac anemic exposed malaria')
-    fracAnemicExposedMalaria = dict(zip(list(df.columns.values), df.iloc[0]))
-    
-    # READ fraction exposed to malaria SHEET
-    df = pandas.read_excel(Location, sheetname = 'Frac exposed malaria')
-    fracExposedMalaria = dict(zip(list(df.columns.values), df.iloc[0]))
-
-    spreadsheetData = Data(causesOfDeath, conditions, interventionList, demographics,
+                try:
+                    interventionsBirthOutcome[intervention][birthOutcome][value] = column[intervention][value]
+                except KeyError:
+                    interventionsBirthOutcome[intervention][birthOutcome][value] = 0.
                            projectedBirths, rawMortality, causeOfDeathDist, RRdeathAnemia, RRdeathStunting,
                            RRdeathWasting, RRdeathBreastfeeding, RRdeathByBirthOutcome,
                            stuntingDistribution, wastingDistribution, breastfeedingDistribution,
