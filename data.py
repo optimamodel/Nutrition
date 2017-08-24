@@ -299,67 +299,6 @@ def readSpreadsheet(fileName, keyList):
     for age in ages:
         ORstuntingComplementaryFeeding[age] = {}
         for intervention in interventionsHere:
-            ORappropriatebfIntervention[ageName][intervention] = df.loc[intervention, ageName]
-
-    #  READ Appropriate Breastfeeding Practice SHEET
-    #  sets:
-    #  - ageAppropriateBreastfeeding
-    df = pandas.read_excel(Location, sheetname = 'Appropriate breastfeeding')
-    ageAppropriateBreastfeeding = dict(zip(list(df.columns.values), df.iloc[0]))
-
-    #  READ birth outcome distribution SHEET
-    #  sets:
-    #  - birthOutcomeDist (partial)
-    df = pandas.read_excel(Location, sheetname = 'birth outcome distribution')
-    birthOutcomeDist_partial = dict(zip(list(df.columns.values), df.iloc[0]))
-    # construct full birthOutcome distribution
-    birthOutcomeDist = {}
-    BOsum = 0.
-    for birthOutcome in ["Pre-term SGA", "Pre-term AGA", "Term SGA"]:
-        birthOutcomeDist[birthOutcome] = birthOutcomeDist_partial[birthOutcome]
-        BOsum += birthOutcomeDist[birthOutcome]
-    birthOutcomeDist["Term AGA"] = 1. - BOsum
-
-    #  READ OR birth outcome stunting SHEET
-    #  sets:
-    #  - ORstuntingBirthOutcome
-    df = pandas.read_excel(Location, sheetname = 'OR stunting by birth outcome')
-    ORstuntingBirthOutcome = dict(zip(list(df.columns.values), df.iloc[0]))
-
-    #  READ Current Intervention Coverages SHEET
-    #  sets:
-    #  - coverage
-    #  - costSaturation
-    df = pandas.read_excel(Location, sheetname = 'Interventions cost and coverage', index_col = 'Intervention')
-    coverage = {}
-    costSaturation = {}
-    costinfoList = ["unit cost","saturation coverage"]
-    for intervention in interventionList:
-        coverage[intervention] = df.loc[intervention, "baseline coverage"]
-        costSaturation[intervention] = {}
-        for costinfo in costinfoList:
-            costSaturation[intervention][costinfo] = df.loc[intervention, costinfo]
-
-    # READ Intervention Target Population Matrix SHEET
-    # sets:
-    # - targetPopulation
-    df = pandas.read_excel(Location, sheetname = 'Interventions target population', index_col = 'Intervention')
-    targetPopulation = {}
-    for intervention in interventionList:
-        targetPopulation[intervention] = {}
-        for pop in allPops + ['general population']:
-            targetPopulation[intervention][pop] = df.loc[intervention, pop]
-
-    # READ Interventions birth outcome SHEET
-    # sets:
-    # - interventionsBirthOutcome
-    df = pandas.read_excel(Location, sheetname = 'Interventions birth outcome', index_col = [0])
-    #get the list of interventions
-    mylist = list(df.index.values)
-    myset = set(mylist)
-    interventionsHere = list(myset)
-    #do the rest
-    df = pandas.read_excel(Location, sheetname = 'Interventions birth outcome', index_col = [0, 1])
     interventionsBirthOutcome = {}
     # initialise
     for intervention in interventionList:
