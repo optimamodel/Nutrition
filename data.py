@@ -157,6 +157,13 @@ def readSpreadsheet(fileName, keyList):
     allPops = keyList['allPops']
     anemiaList = keyList['anemiaList']
 
+
+    ### INTERVENTIONS COST AND COVERAGE
+    # TODO: not complete in spreadsheet therefore some spaces wll be NaN.
+    interventionsSheet = pd.read_excel(location, sheetname = 'Interventions cost and coverage', index_col=0)
+    interventionList = list(interventionsSheet.index)
+    coverage = dict(interventionsSheet["Baseline coverage"])
+    costSaturation = interventionsSheet[["Saturation coverage", "Unit cost"]].to_dict(orient='index')
     RRdiarrhea = {}
     for ageName in ages:
         RRdiarrhea[ageName] = {}
