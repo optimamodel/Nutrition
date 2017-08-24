@@ -4,6 +4,7 @@ Created on Fri Feb 26 15:57:07 2016
 
 @author: ruth
 """
+import pandas as pd
 
 class Data:
     def __init__(self, causesOfDeath, conditions, interventionList, 
@@ -64,6 +65,11 @@ class Data:
         self.fracExposedMalaria = fracExposedMalaria
         self.ORanemiaCondition = ORanemiaCondition
 
+def readSheetWithOneIndexCol(sheet, scaleFactor=1.):
+    resultDict = {}
+    for columnName in sheet:
+        resultDict[columnName] = sheet[columnName] / scaleFactor
+    return resultDict
 
 def readSpreadsheet(fileName, keyList):
     import pandas
