@@ -242,6 +242,17 @@ def readSpreadsheet(fileName, keyList):
 
     # RR of death by birth outcome
     RRdeathByBirthOutcome = splitSpreadsheetWithTwoIndexCols(birthOutcomesSheet, "RR of death", rowList=causesOfDeathList)
+
+    ### RELATIVE RISKS
+    RRsheet = pd.read_excel(location, sheetname='Relative risks', index_col=[0,1,2])
+    RRsheet = RRsheet.dropna()
+    RRdeathStunting = readRelativeRisks(RRsheet, 'Stunting', stuntingList, causesOfDeathList)
+    RRdeathWasting = readRelativeRisks(RRsheet, 'Wasting', wastingList, causesOfDeathList)
+    RRdeathBreastfeeding = readRelativeRisks(RRsheet, 'Breastfeeding', breastfeedingList, causesOfDeathList)
+    # child diarrhea
+    RRsheet = pd.read_excel(location, sheetname='Relative risks', index_col=[0,1,2])
+    childDia = RRsheet.loc['RR child diarrhea'].dropna(axis=1, how = 'all') # drop maternal
+    childDia = childDia.loc['Diarrhea incidence'].dropna() # remove rows with NaN
     RRdiarrhea = {}
     for ageName in ages:
         RRdiarrhea[ageName] = {}
