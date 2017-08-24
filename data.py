@@ -336,6 +336,16 @@ def readSpreadsheet(fileName, keyList):
                     interventionsBirthOutcome[intervention][birthOutcome][value] = column[intervention][value]
                 except KeyError:
                     interventionsBirthOutcome[intervention][birthOutcome][value] = 0.
+
+
+    # INTERVENTIONS AFFECTED FRACTION AND EFFECTIVENESS
+    # children
+    # warning: currently this applied to all population groups (no tabs from them yet)
+    interventionsForChildren = pd.read_excel(location, sheetname='Interventions for children', index_col=[0, 1, 2])
+    affectedFraction = readInterventionsByPopulationTabs(interventionsForChildren, 'Affected fraction', interventionList, allPops, causesOfDeathList)
+    effectivenessMortality = readInterventionsByPopulationTabs(interventionsForChildren, 'Effectiveness mortality', interventionList, allPops, causesOfDeathList)
+    effectivenessIncidence = readInterventionsByPopulationTabs(interventionsForChildren, 'Effectiveness incidence', interventionList, ages, conditionsList) # children only
+    # TODO: interventions for other populations can go here...
                            projectedBirths, rawMortality, causeOfDeathDist, RRdeathAnemia, RRdeathStunting,
                            RRdeathWasting, RRdeathBreastfeeding, RRdeathByBirthOutcome,
                            stuntingDistribution, wastingDistribution, breastfeedingDistribution,
