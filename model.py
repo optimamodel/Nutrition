@@ -14,7 +14,7 @@ class Model:
         self.listOfReproductiveAgeCompartments = listOfReproductiveAgeCompartments
         for key in keyList.keys():
             setattr(self, key, keyList[key])
-        self.year = 0
+        self.year = 2017
         self.derived = None
         self.params = None
         import helper 
@@ -488,6 +488,17 @@ class Model:
             self.params.stuntingDistribution[ageName] = self.helper.restratify(probStunting)
             thisAgeCompartment.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
             
+    def updateWRApopulation(self):
+        """Uses projected figures to determine the population of WRA in a given age band and year"""
+        # TODO: two required changes: spreadsheet age bands must match those of 'reproductiveAges', self.year must count from 2017 up
+        for compartment in self.listOfReproductiveAgeCompartments:
+            ageName = compartment.name
+            popThisAgeAndYear = self.params.projectedWRApopByAge[ageName][self.year]
+            # distribute this figure across anemia status
+            anemiaDistribution = compartment.getAnemiaDistribution()
+            for anemiaStatus in self.anemiaList:
+                thisBox = compartment.dictOfBoxes[anemiaStatus]
+                thisBox.populationSize = popThisAgeAndYear * anemiaDistribution[anemiaStatus]
 
     def applyPregnantWomenBirths(self):
         """Use PW projections to distribute PW into age groups.
