@@ -180,6 +180,12 @@ def readSpreadsheet(fileName, keyList):
     # join into demographics dict
     populationDict.update(foodDemographicsDict)
     demographics = populationDict
+
+    ### DEMOGRAPHIC PROJECTIONS
+    projectionsSheet = pd.read_excel(location, sheetname='Demographic projections', index_col=[0])
+    projectionsDict = readSheetWithOneIndexCol(projectionsSheet)
+    projectedBirths = projectionsDict['number of births']
+    projectedReproductiveAge = projectionsDict['total WRA']
     RRdiarrhea = {}
     for ageName in ages:
         RRdiarrhea[ageName] = {}
