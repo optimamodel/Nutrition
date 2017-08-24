@@ -411,14 +411,6 @@ class Model:
                             thisBox.populationSize -= deaths
                             thisBox.cumulativeDeaths += deaths
 
-    def applyWRAMortality(self):
-        for ageGroup in self.listOfReproductiveAgeCompartments:
-            for anemiaStatus in self.anemiaList:
-                thisBox = ageGroup.dictOfBoxes[anemiaStatus]
-                deaths = thisBox.populationSize * thisBox.mortalityRate
-                thisBox.populationSize -= deaths
-                thisBox.cumulativeDeaths += deaths
-
     def applyPregnantWomanMortality(self):
         for ageGroup in self.listOfPregnantWomenAgeCompartments:
             for anemiaStatus in self.anemiaList:
@@ -496,34 +488,6 @@ class Model:
             self.params.stuntingDistribution[ageName] = self.helper.restratify(probStunting)
             thisAgeCompartment.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
             
-    def applyWRAaging(self):
-        numCompartments = len(self.listOfReproductiveAgeCompartments)
-        # calculate how many people are aging out of each box
-        agingOut = [None]*numCompartments
-        for ind in range(0, numCompartments):
-            thisCompartment = self.listOfReproductiveAgeCompartments[ind]
-            agingOut[ind] = {}
-            for status in self.anemiaList:
-                thisBox = thisCompartment.dictOfBoxes[status]
-                agingOut[ind][status] = thisBox.populationSize * thisCompartment.agingRate
-        # add the new 15 -19 year olds from data
-        thisCompartment = self.listOfReproductiveAgeCompartments[0]
-        totalPopThisYear = self.params.projectedWRA15to19[self.year]
-        anemiaDistribution = thisCompartment.getAnemiaDistribution()
-        for status in self.anemiaList:
-            # distribute based on existing anemia distribution
-            thisBox = thisCompartment.dictOfBoxes[status]
-            thisBox.populationSize = totalPopThisYear * anemiaDistribution[status]
-        # update all other reproductive population sizes
-        # (15-19 years happened separately above)        
-        for ind in range(1, numCompartments):
-            thisCompartment = self.listOfReproductiveAgeCompartments[ind]
-            for status in self.anemiaList:
-                thisBox = thisCompartment.dictOfBoxes[status]
-                # add those aging in
-                thisBox.populationSize += agingOut[ind-1][status]
-                # remove those aging out
-                thisBox.populationSize -= agingOut[ind][status]
 
     def applyPregnantWomenBirths(self):
         """Use PW projections to distribute PW into age groups.
