@@ -148,8 +148,7 @@ def readInterventionsByPopulationTabs(sheet, outcome, interventionList, pops, ca
 
 
 def readSpreadsheet(fileName, keyList):
-    import pandas
-    Location = fileName
+    location = fileName
     ages = keyList['ages']
     birthOutcomes = keyList['birthOutcomes']
     wastingList = keyList['wastingList']
