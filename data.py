@@ -346,6 +346,20 @@ def readSpreadsheet(fileName, keyList):
     effectivenessMortality = readInterventionsByPopulationTabs(interventionsForChildren, 'Effectiveness mortality', interventionList, allPops, causesOfDeathList)
     effectivenessIncidence = readInterventionsByPopulationTabs(interventionsForChildren, 'Effectiveness incidence', interventionList, ages, conditionsList) # children only
     # TODO: interventions for other populations can go here...
+
+
+
+    # TODO: not currently available in spreadsheet
+    RRanemiaIntervention = {}
+    ORanemiaIntervention = {}
+    anemiaDistribution = {}
+    fracAnemicNotPoor = {}
+    fracAnemicPoor = {}
+    fracAnemicExposedMalaria = {}
+    fracExposedMalaria = {}
+    ORanemiaCondition = {}
+
+    spreadsheetData = Data(causesOfDeathList, conditionsList, interventionList, demographics,
                            projectedBirths, rawMortality, causeOfDeathDist, RRdeathAnemia, RRdeathStunting,
                            RRdeathWasting, RRdeathBreastfeeding, RRdeathByBirthOutcome,
                            stuntingDistribution, wastingDistribution, breastfeedingDistribution,
