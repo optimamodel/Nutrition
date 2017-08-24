@@ -37,41 +37,40 @@ for outcomeOfInterest in outcomeOfInterestList:
     thisOptimisation.outputCascadeAndOutcomeToCSV(cascadeValues, outcomeOfInterest)
     
     
-# getting coverage info
+# GET COVERAGE INFO FOR THE CASCADE
 import pickle    
 import data 
 import costcov
+import csv
 costCov = costcov.Costcov()
 thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise, resultsFileStem)
 spreadsheetData = data.readSpreadsheet(dataSpreadsheetName, thisOptimisation.helper.keyList)
 
-# at 50% budget
-# read the optimal budget allocations from file
-filename = '%s_cascade_%s_0.5.pkl'%(resultsFileStem, optimise)
-infile = open(filename, 'rb')
-allocation = pickle.load(infile)
-infile.close()
-# run the model with this allocation
-modelList = thisOptimisation.oneModelRunWithOutput(allocation)
-# get cost coverage and target pop to translate cost to coverage
-costCoverageInfo = thisOptimisation.getCostCoverageInfo()
-# target pop size when interventions are added comes after 12 timesteps 
-targetPopSize = optimisation.getTargetPopSizeFromModelInstance(dataSpreadsheetName, thisOptimisation.helper.keyList, modelList[11])
-# get coverages
-coverages1 = {}
-for i in range(0, len(spreadsheetData.interventionList)):
-    intervention = spreadsheetData.interventionList[i]
-    coverages1[intervention] = costCov.function(allocation[intervention], costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
+coverages = {}
+for value in cascadeValues:
+    coverages[value] = []
+    filename = '%s_cascade_%s_%s.pkl'%(resultsFileStem, optimise, value)
+    infile = open(filename, 'rb')
+    allocation = pickle.load(infile)
+    infile.close()
+    # run the model with this allocation
+    modelList = thisOptimisation.oneModelRunWithOutput(allocation)
+    # get cost coverage and target pop to translate cost to coverage
+    costCoverageInfo = thisOptimisation.getCostCoverageInfo()
+    # target pop size when interventions are added comes after 12 timesteps 
+    targetPopSize = optimisation.getTargetPopSizeFromModelInstance(dataSpreadsheetName, thisOptimisation.helper.keyList, modelList[11])
+    # get coverages
+    for i in range(0, len(spreadsheetData.interventionList)):
+        intervention = spreadsheetData.interventionList[i]
+        coverages[value].append(costCov.function(allocation[intervention], costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention])
+# write to csv
+outfile = 'nationalCascadeCoverages_.csv'
+x = ['intervention'] + spreadsheetData.interventionList
+with open(outfile, "wb") as f:
+    writer = csv.writer(f)
+    writer.writerow(x)
+    for value in cascadeValues:
+        y = [value] + coverages[value]
+        writer.writerow(y)     
 
-# at 150% budget
-filename = '%s_cascade_%s_1.5.pkl'%(resultsFileStem, optimise)
-infile = open(filename, 'rb')
-allocation = pickle.load(infile)
-infile.close()
-modelList = thisOptimisation.oneModelRunWithOutput(allocation)
-costCoverageInfo = thisOptimisation.getCostCoverageInfo()
-targetPopSize = optimisation.getTargetPopSizeFromModelInstance(dataSpreadsheetName, thisOptimisation.helper.keyList, modelList[11])
-coverages2 = {}
-for i in range(0, len(spreadsheetData.interventionList)):
-    intervention = spreadsheetData.interventionList[i]
-    coverages2[intervention] = costCov.function(allocation[intervention], costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
+

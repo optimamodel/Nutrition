@@ -49,12 +49,47 @@ for intervention in ['Breastfeeding promotion','Complementary feeding education'
     
     
 #### OUTPUT TO CSV FOR EACH REGION EVERY INTERVENTION  
+# NATIONAL    
+spreadsheet = 'input_spreadsheets/Bangladesh/2016Oct/inputForCode_Bangladesh.xlsx'    
+thisData = data.readSpreadsheet(spreadsheet, helper.keyList)
+zeroCoverage = dcp(thisData.coverage)
+for intervention in thisData.interventionList:
+    zeroCoverage[intervention] = 0.
+    
+y_outcome = {}
+for intervention in thisData.interventionList:
+    y_outcome[intervention] = [intervention]    
+    for thisCoverage in x_coverage:
+        # get model object
+        model, derived, params = helper.setupModelDerivedParameters(thisData)
+        timestepsPre = 12
+        for t in range(timestepsPre):
+            model.moveOneTimeStep() 
+        # set zero coverage then change specific coverage
+        coverage = dcp(zeroCoverage)    
+        coverage[intervention] = thisCoverage  
+        # update coverages after 1 year   
+        model.updateCoverages(coverage)
+        for t in range(numModelSteps - timestepsPre):
+            model.moveOneTimeStep()
+        y_outcome[intervention].append(model.getOutcome('thrive'))
+# write to csv
+x = ['coverage'] + x_coverage.tolist()       
+outfile = 'national_coverageOutcomeCurves.csv'
+with open(outfile, "wb") as f:
+    writer = csv.writer(f)
+    writer.writerow(x)
+    for key in y_outcome.keys():
+        writer.writerow(y_outcome[key])        
+
+# GEOSPATIAL    
 regionNameList = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
 spreadsheetFileStem = 'input_spreadsheets/Bangladesh/2016Oct/subregionSpreadsheets/'
 spreadsheetList = []
 for regionName in regionNameList:
     spreadsheet = spreadsheetFileStem + regionName + '.xlsx'
     spreadsheetList.append(spreadsheet)    
+    
 
 for region in range(len(regionNameList)):
     regionName = regionNameList[region]
@@ -71,7 +106,7 @@ for region in range(len(regionNameList)):
             for t in range(timestepsPre):
                 model.moveOneTimeStep() 
             # set initial coverage then change specific coverage
-            coverage = dcp(thisData.coverage)    
+            coverage = dcp(zeroCoverage)    
             coverage[intervention] = thisCoverage  
             # update coverages after 1 year   
             model.updateCoverages(coverage)
