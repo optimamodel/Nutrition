@@ -166,31 +166,6 @@ class Model:
         return outcomeValue
 
 
-    def getDiagnostics(self, verbose=False):
-        newborns = self.listOfAgeCompartments[0]
-        fracStuntedNew = newborns.getStuntedFraction()
-        popsizeU5    = 0.
-        numStuntedU5 = 0.
-        for ageGroup in self.listOfAgeCompartments:
-            numStuntedU5 += ageGroup.getNumberStunted()
-            popsizeU5    += ageGroup.getTotalPopulation()
-        fracStuntedU5 = numStuntedU5 / popsizeU5
-        if verbose:
-            print "\n     DIAGNOSTICS"
-            print "stunting prevalence in newborns = %g%%"%(fracStuntedNew*100.)
-            print "stunting prevalence in under 5s = %g%%"%(fracStuntedU5 *100.)
-            print "populations size of    under 5s = %g  "%(popsizeU5)
-            for ageGroup in self.listOfAgeCompartments:
-                #for ageName in self.ages:
-                ageName = ageGroup.name
-                print "For age %s olds..."%(ageName)
-                print "... incidence of diarrhea is %g"%(self.params.incidences[ageName]['Diarrhea'])
-                print "... breastfeeding distribution"
-                print ageGroup.getBreastfeedingDistribution()
-                print "... mortality"
-                print ageGroup.getMortality()
-        return fracStuntedNew, fracStuntedU5, popsizeU5
-
 
     def updateCoverages(self, newCoverageArg):
         # newCoverage is a dictionary of coverages by intervention        
