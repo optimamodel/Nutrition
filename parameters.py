@@ -43,7 +43,9 @@ class Params:
         self.interventionsBirthOutcome = dcp(data.interventionsBirthOutcome)
         self.foodSecurityGroups = dcp(data.foodSecurityGroups)
         self.projectedBirths = dcp(data.projectedBirths)
-        self.projectedWRA15to19 = dcp(data.projectedReproductiveAge)
+        self.projectedWRApop = dcp(data.projectedWRApop)
+        self.projectedWRApopByAge = dcp(data.projectedWRApopByAge)
+        self.projectedPWpop = dcp(data.projectedPWpop)
     
 
 # Add all functions for updating parameters due to interventions here....
