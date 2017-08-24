@@ -191,6 +191,12 @@ def readSpreadsheet(fileName, keyList):
     causesOfDeathSheet = pd.read_excel(location, sheetname='Causes of death', index_col=[0])
     causeOfDeathDist = readSheetWithOneIndexCol(causesOfDeathSheet)
     causesOfDeathList = list(causesOfDeathSheet.index)
+
+    ### INCIDENCE OF CONDITIONS
+    # TODO: may need to divide by 12
+    incidencesSheet = pd.read_excel(location, sheetname='Incidence of conditions', index_col=[0])
+    incidences = readSheetWithOneIndexCol(incidencesSheet, scaleFactor=12.) #WARNING HACK should multiply by timestep within code
+    conditionsList = list(incidencesSheet.index)
     RRdiarrhea = {}
     for ageName in ages:
         RRdiarrhea[ageName] = {}
