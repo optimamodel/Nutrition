@@ -186,6 +186,11 @@ def readSpreadsheet(fileName, keyList):
     projectionsDict = readSheetWithOneIndexCol(projectionsSheet)
     projectedBirths = projectionsDict['number of births']
     projectedReproductiveAge = projectionsDict['total WRA']
+
+    ### CAUSES OF DEATH
+    causesOfDeathSheet = pd.read_excel(location, sheetname='Causes of death', index_col=[0])
+    causeOfDeathDist = readSheetWithOneIndexCol(causesOfDeathSheet)
+    causesOfDeathList = list(causesOfDeathSheet.index)
     RRdiarrhea = {}
     for ageName in ages:
         RRdiarrhea[ageName] = {}
