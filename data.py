@@ -310,6 +310,18 @@ def readSpreadsheet(fileName, keyList):
     # APPROPRIATE BREASTFEEDING
     breastfeedingSheet = pd.read_excel(location, sheetname='Appropriate breastfeeding')
     ageAppropriateBreastfeeding = dict(breastfeedingSheet.iloc[0])
+
+    # INTERVENTIONS TARGET POPULATION
+    targetPopSheet = pd.read_excel(location, sheetname='Interventions target population', index_col=[0,1])
+    targetPopSheet = targetPopSheet.dropna(how='all')
+    # children
+    targetPopulation = splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'Children', switchKeys=True)
+    # pregnant women
+    targetPopulation.update(splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'Pregnant women', switchKeys=True))
+    # non-pregnant WRA
+    targetPopulation.update(splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'Non-pregnant WRA', switchKeys=True))
+    # general pop # TODO: how do we want to handle the general pop? Not the same as current implementation in spreadsheet
+    targetPopulation.update(splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'General population', switchKeys=True))
     interventionsBirthOutcome = {}
     # initialise
     for intervention in interventionList:
