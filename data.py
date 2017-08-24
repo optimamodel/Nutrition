@@ -258,6 +258,27 @@ def readSpreadsheet(fileName, keyList):
         column = childDia[ageName]
         RRdiarrhea[ageName] = {}
         for breastfeedingCat in breastfeedingList:
+            RRdiarrhea[ageName][breastfeedingCat] = column[breastfeedingCat]
+    # maternal anemia
+    RRsheet = pd.read_excel(location, sheetname='Relative risks', index_col=[0,1,2])
+    maternalAnemia = RRsheet.loc['Maternal anemia']
+    RRdeathMaternalAnemia = {}
+    column = maternalAnemia['maternal']
+    for cause in causesOfDeathList:
+        RRdeathMaternalAnemia[cause] = {}
+        for anemiaStatus in anemiaList:
+            try:
+                RRdeathMaternalAnemia[cause][anemiaStatus] = column[cause][anemiaStatus]
+            except KeyError: # if cause not in shet, RR=1
+                RRdeathMaternalAnemia[cause][anemiaStatus] = 1
+    # women of reproductive age, assume no direct impact of interventions (RR=1)
+    RRdeathWRAanemia = {cause: 1. for cause in causesOfDeathList}
+    # combine all groups into single dictionary
+    # TODO: need children
+    RRdeathAnemia = RRdeathMaternalAnemia.update(RRdeathWRAanemia)
+
+
+    # TODO: need RR/OR anemia by intervention, don't forget to use general population. Also account for having a mix of OR and RR for interventions
         for intervention in interventionsHere:
             ORappropriatebfIntervention[ageName][intervention] = df.loc[intervention, ageName]
 
