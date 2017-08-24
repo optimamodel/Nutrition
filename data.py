@@ -279,6 +279,25 @@ def readSpreadsheet(fileName, keyList):
 
 
     # TODO: need RR/OR anemia by intervention, don't forget to use general population. Also account for having a mix of OR and RR for interventions
+
+
+
+    ### ODDS RATIOS
+    # stunting
+    ORsheet = pd.read_excel(location, sheetname='Odds ratios', index_col=[0,1])
+    ORsheet = ORsheet.dropna(axis=0, how='all') # drop rows of all NaN
+    # progression
+    ORstuntingProgression = dict(ORsheet.loc['OR stunting progression and condition','Stunting progression'])
+    del ORstuntingProgression['<1 month'] # not applicable to <1 month
+    # by condition
+    ORstuntingCondition = dict(ORsheet.loc['OR stunting progression and condition','Diarrhea'])
+    # by intervention
+    ORstuntingIntervention = splitSpreadsheetWithTwoIndexCols(ORsheet, "OR stunting by intervention", rowList=interventionList)
+    ORstuntingComplementaryFeeding = {}
+    interventionsHere = ORsheet.loc['OR stunting by intervention'].index
+    foodSecurityGroups = []
+    for age in ages:
+        ORstuntingComplementaryFeeding[age] = {}
         for intervention in interventionsHere:
             ORappropriatebfIntervention[ageName][intervention] = df.loc[intervention, ageName]
 
