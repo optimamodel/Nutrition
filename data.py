@@ -306,6 +306,10 @@ def readSpreadsheet(fileName, keyList):
 
     # correct breastfeeding
     ORappropriatebfIntervention = splitSpreadsheetWithTwoIndexCols(ORsheet, "OR for correct breastfeeding by intervention", rowList=interventionList)
+
+    # APPROPRIATE BREASTFEEDING
+    breastfeedingSheet = pd.read_excel(location, sheetname='Appropriate breastfeeding')
+    ageAppropriateBreastfeeding = dict(breastfeedingSheet.iloc[0])
     interventionsBirthOutcome = {}
     # initialise
     for intervention in interventionList:
