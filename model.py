@@ -569,8 +569,7 @@ class Model:
             self.moveOneTimeStep()
         self.applyPregnantWomanMortality()
         self.applyPregnantWomenBirths()
-        self.applyWRAMortality()
-        self.applyWRAaging()
+        self.updateWRApopulation()
         self.updateYearlyRiskDistributions()
         self.year += 1
 
