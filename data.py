@@ -131,6 +131,22 @@ def readRelativeRisks(sheet, risk, statusList, causesOfDeath):
                 except KeyError: # RR set to 1 if cause not in spreadsheet
                     resultDict[columnName][cause][status] = 1
     return resultDict
+
+def readInterventionsByPopulationTabs(sheet, outcome, interventionList, pops, causesOfDeath):
+    outcomeDict = {}
+    for intervention in interventionList:
+        outcomeDict[intervention] = {}
+        for pop in pops:
+            outcomeDict[intervention][pop] = {}
+            for cause in causesOfDeath:
+                try:
+                    outcomeDict[intervention][pop][cause] = sheet[pop][intervention][cause][outcome]
+                except KeyError:
+                    outcomeDict[intervention][pop][cause] = 0.
+    return outcomeDict
+
+
+
 def readSpreadsheet(fileName, keyList):
     import pandas
     Location = fileName
