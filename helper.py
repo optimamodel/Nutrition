@@ -12,7 +12,7 @@ class Helper:
         self.keyList['timestep'] = 1./12. 
         self.keyList['ages'] = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
         self.keyList['birthOutcomes'] = ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"]
-        self.keyList['wastingList'] = ["obese", "normal", "mild", "moderate", "high"]
+        self.keyList['wastingList'] = ["normal", "mild", "moderate", "high"]
         self.keyList['stuntingList'] = ["normal", "mild", "moderate", "high"]
         self.keyList['breastfeedingList'] = ["exclusive", "predominant", "partial", "none"]
         self.keyList['anemiaList'] = ["anemic", "not anemic"]
