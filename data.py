@@ -86,6 +86,36 @@ def readSheetWithTwoIndexCols(location, sheetname, indexList):
                 except KeyError: # do nothing if this combination doesn't exist
                     pass
     return resultDict
+
+def splitSpreadsheetWithTwoIndexCols(sheet, keyForSplitting, rowList=None, scaleFactor=1., defaultValue=1., switchKeys=False):
+    """rowList: a list of rows to iterate over, usually interventions or causes of death.
+    If switchKeys==True, then first index col will be the outer key, else remaining cols are outer keys.
+    scaleFactor: common factor to scale all values by.
+    """
+    subsheet = sheet.loc[keyForSplitting]
+    resultDict = {}
+    if rowList is None: # use rows only in subsheet
+        rowList = subsheet.index
+    if switchKeys:
+        for row in rowList:
+            resultDict[row] = {}
+            for colName in subsheet:
+                column = subsheet[colName]
+                try:
+                    resultDict[row][colName] = column[row] / scaleFactor
+                except KeyError:
+                    resultDict[row][colName] = defaultValue
+
+    else: # don't switch
+        for colName in subsheet:
+            resultDict[colName] = {}
+            column = subsheet[colName]
+            for row in rowList:
+                try:
+                    resultDict[colName][row] = column[row] / scaleFactor
+                except KeyError:
+                    resultDict[colName][row] = defaultValue
+    return resultDict
 def readSpreadsheet(fileName, keyList):
     import pandas
     Location = fileName
