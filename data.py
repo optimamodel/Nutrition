@@ -259,7 +259,7 @@ def readSpreadsheet(fileName, keyList):
             RRdiarrhea[ageName][breastfeedingCat] = column[breastfeedingCat]
     # maternal anemia
     RRsheet = pd.read_excel(location, sheetname='Relative risks', index_col=[0,1,2])
-    maternalAnemia = RRsheet.loc['Maternal anemia']
+    maternalAnemia = RRsheet.loc['Maternal anemia - death risk']
     RRdeathMaternalAnemia = {}
     column = maternalAnemia['maternal']
     for cause in causesOfDeathList:
