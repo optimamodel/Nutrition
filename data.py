@@ -218,27 +218,32 @@ def readSpreadsheet(fileName, keyList):
     conditionsList = list(incidencesSheet.index)
 
     ### PREVALENCE OF ANEMIA
-    # done by anemia type
+    # done by anemia type: anemic, not anemic, iron deficiency anemia, severe
     anemiaPrevalenceSheet = pd.read_excel(location, sheetname='Prevalence of anemia', index_col=[0,1])
     anemiaPrevalenceSheet = anemiaPrevalenceSheet.dropna(how='all')
-    anemiaTypes = anemiaPrevalenceSheet.index.levels[0]
-    ageNames = anemiaPrevalenceSheet.index.levels[1]
+    anemiaTypes = list(anemiaPrevalenceSheet.index.levels[0])
+    ageNames = list(anemiaPrevalenceSheet.index.levels[1])
+    ageNames = [age for age in ageNames if age != 'All'] # remove 'All'
     anemiaPrevalence = {}
     for colName in anemiaPrevalenceSheet:
+        anemiaPrevalence[colName] = {}
         column = anemiaPrevalenceSheet[colName]
-        for anemiaType in anemiaTypes:
-            anemiaPrevalence[anemiaType] = {}
-            for ageName in ageNames:
+        for ageName in ageNames:
+            anemiaPrevalence[colName][ageName] = {}
+            for anemiaType in anemiaTypes:
                 try:
-                    anemiaPrevalence[anemiaType][ageName] = column[anemiaType][ageName]
+                    if anemiaType == 'Fraction anemia that is severe': # assume uniformly distributed across ages
+                        anemiaPrevalence[colName][ageName][anemiaType] = column[anemiaType]['All']
+                    else:
+                        anemiaPrevalence[colName][ageName][anemiaType] = column[anemiaType][ageName]
                 except KeyError:
                     pass
-    # severe
-    anemiaType = 'Fraction anemia that is severe'
-    anemiaPrevalence[anemiaType] = {}
-    for colName in anemiaPrevalenceSheet:
-        column = anemiaPrevalenceSheet[colName]
-        anemiaPrevalence[anemiaType][colName] = column[anemiaType]['All']
+            # no anemia
+            anemiaPrevalence[colName][ageName]['No anemia'] = 1. - anemiaPrevalence[colName][ageName]['All anemia']
+    # convert age groups to those used in model
+    mappingDict = {"Children": ages, "WRA not pregnant": WRAages, "Pregnant women": PWages}
+    anemiaDistribution = mapAgeKeys(anemiaPrevalence, mappingDict)
+
 
     ### DISTRIBUTIONS
     distributionsSheet = pd.read_excel(location, sheetname='Distributions', index_col=[0,1])
