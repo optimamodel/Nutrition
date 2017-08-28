@@ -115,8 +115,6 @@ class Derived:
         self.referenceMortality = Xdictionary
         # now call function to set pregnant women reference mortality
         self.setReferencePregnantWomenMortality()
-        # now call function to set women of reproductive age mortality
-        self.setReferenceWRAMortality()
         
         
     def setReferencePregnantWomenMortality(self):
@@ -156,28 +154,6 @@ class Derived:
         # add pregnant women reference mortality to dictionary
         self.referenceMortality.update(Xdictionary)
 
-    def setReferenceWRAMortality(self):
-        #Equation is:  LHS = RHS * X
-        #we are solving for X
-        # Calculate RHS for each age and cause
-        RHS = {}
-        for ageName in self.reproductiveAges:
-            RHS[ageName] = {}
-            for cause in self.data.causesOfDeath:
-                RHS[ageName][cause] = 0.
-                for anemiaStatus in self.anemiaList:
-                    t1 = self.data.anemiaDistribution[ageName][anemiaStatus]
-                    t2 = self.data.RRdeathAnemia[ageName][cause][anemiaStatus]
-                    RHS[ageName][cause] += t1 * t2
-        # Calculate LHS for each age and cause of death then solve for X
-        Xdictionary = {}
-        for ageName in self.reproductiveAges:
-            Xdictionary[ageName] = {}
-            for cause in self.data.causesOfDeath:
-                LHS_age_cause = self.data.rawMortality[ageName] * self.data.causeOfDeathDist[ageName][cause]
-                Xdictionary[ageName][cause] = LHS_age_cause / RHS[ageName][cause]
-        # add WRA reference mortality to dictionary
-        self.referenceMortality.update(Xdictionary)
 
     # Calculate probability of stunting in this age group given stunting in previous age-group
     def setProbStuntingProgression(self):
