@@ -352,7 +352,7 @@ def readSpreadsheet(fileName, keyList):
     breastfeedingSheet = pd.read_excel(location, sheetname='Appropriate breastfeeding')
     ageAppropriateBreastfeeding = dict(breastfeedingSheet.iloc[0])
 
-    # INTERVENTIONS TARGET POPULATION
+    # INTERVENTIONS TARGET POPULATION # TODO: This dictionary needs to have the age groups for PW and non-pregnant WRA
     targetPopSheet = pd.read_excel(location, sheetname='Interventions target population', index_col=[0,1])
     targetPopSheet = targetPopSheet.dropna(how='all')
     # children
@@ -361,9 +361,12 @@ def readSpreadsheet(fileName, keyList):
     targetPopulation.update(splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'Pregnant women', switchKeys=True))
     # non-pregnant WRA
     targetPopulation.update(splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'Non-pregnant WRA', switchKeys=True))
-    # general pop # TODO: how do we want to handle the general pop? Not the same as current implementation in spreadsheet
+    # general pop
     #  NO MORE GENERAL POP!
     targetPopulation.update(splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'General population', switchKeys=True))
+    # change PW & WRA to age groups
+    targetPopulation = stratifyPopIntoAgeGroups(targetPopulation, interventionList, WRAages, 'Non-pregnant WRA', keyLevel=1)
+    targetPopulation = stratifyPopIntoAgeGroups(targetPopulation, interventionList, PWages, 'Pregnant women', keyLevel=1)
 
     # INTERVENTIONS BIRTH OUTCOMES
     interventionsBirthOutcomeSheet = pd.read_excel(location, sheetname='Interventions birth outcomes', index_col=[0,1])
