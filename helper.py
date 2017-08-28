@@ -117,15 +117,17 @@ class Helper:
             listOfAgeCompartments.append(compartment)
         return listOfAgeCompartments         
         
-    def makeReproductiveAgeCompartments(self, inputData):
+    def makeReproductiveAgeCompartments(self, inputData, listOfPregnantWomenAgeCompartments):
             import populations 
-            popReproductiveAge = dcp(inputData.demographics['population reproductive age'])
+            popWRA = dcp(inputData.demographics['population reproductive age'])
             ages = self.keyList['reproductiveAges']
             numAgeGroups = len(ages)
             listOfReproductiveAgeCompartments = []
-            for iAge in range(numAgeGroups): 
+            for iAge in range(numAgeGroups):
                 ageName  = ages[iAge]
-                agePopSize = popReproductiveAge[ageName]
+                PWcompartment = listOfPregnantWomenAgeCompartments[iAge]
+                PWpopThisAge = PWcompartment.getTotalPopulation()
+                agePopSize = popWRA[ageName] - PWpopThisAge # population WRA not pregnant
                 agingRate = self.keyList['reproductiveAgingRates'][iAge] # TODO: can probably remove this
                 thisAgeBoxes = self.makeReproductiveAgeBoxes(agePopSize, ageName, inputData)
                 compartment = populations.ReproductiveAgeCompartment(ageName, thisAgeBoxes, agingRate, self.keyList)
@@ -163,8 +165,8 @@ class Helper:
             inputData.stuntingDistribution[ageName] = self.restratify(probStunting)
         agePopSizes = self.makeAgePopSizes(inputData)   
         listOfAgeCompartments = self.makeAgeCompartments(agePopSizes, inputData)
-        listOfReproductiveAgeCompartments = self.makeReproductiveAgeCompartments(inputData)
-        listOfPregnantWomenAgeCompartments = self.makePregnantWomenAgeCompartments(inputData)
+        listOfPregnantWomenAgeCompartments = self.makePregnantWomenAgeCompartments(inputData) #warning: this must be done before WRA
+        listOfReproductiveAgeCompartments = self.makeReproductiveAgeCompartments(inputData, listOfPregnantWomenAgeCompartments)
         model = model.Model(listOfPregnantWomenAgeCompartments, listOfAgeCompartments, listOfReproductiveAgeCompartments, self.keyList)
         derived = derived.Derived(inputData, model, self.keyList)
         model.setDerived(derived)
