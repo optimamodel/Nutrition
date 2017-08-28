@@ -102,7 +102,7 @@ class Params:
         malariaReduction = {}
         poorReduction = {}
         notPoorReduction = {}
-        for pop in self.allPops + ['general population']:
+        for pop in self.allPops:
             anemiaUpdate[pop] = 1.
             malariaReduction[pop] = 0.
             poorReduction[pop] = {}

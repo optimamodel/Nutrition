@@ -250,20 +250,12 @@ class Model:
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
 
         # ANEMIA
-        # note: apply anemia update for general population to all other populations
-
-        # General population
-        pop = 'general population'
-        oldProbAnemia = self.params.anemiaDistribution[pop]["anemic"]
-        newProbAnemia = oldProbAnemia * anemiaUpdate[pop]
-        self.params.anemiaDistribution[pop]["anemic"] = newProbAnemia
-        self.params.anemiaDistribution[pop]["not anemic"] = 1. - newProbAnemia
 
         # Children
         for ageGroup in self.listOfAgeCompartments:
             ageName = ageGroup.name
             oldProbAnemia = ageGroup.getAnemicFraction()
-            newProbAnemia = oldProbAnemia * anemiaUpdate[ageName] * anemiaUpdate['general population'] * anemiaUpdateDueToIncidence[ageName]
+            newProbAnemia = oldProbAnemia * anemiaUpdate[ageName] * anemiaUpdateDueToIncidence[ageName]
             self.params.anemiaDistribution[ageName]['anemic'] = newProbAnemia
             self.params.anemiaDistribution[ageName]['not anemic'] = 1. - newProbAnemia
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
@@ -295,7 +287,7 @@ class Model:
             
             # update anemia
             oldProbAnemia = ageGroup.getAnemicFraction()
-            newProbAnemia = oldProbAnemia * anemiaUpdate[ageName] * anemiaUpdate['general population']
+            newProbAnemia = oldProbAnemia * anemiaUpdate[ageName] 
             self.params.anemiaDistribution[ageName]["anemic"] = newProbAnemia
             self.params.anemiaDistribution[ageName]["not anemic"] = 1. - newProbAnemia
             ageGroup.distributeAnemicPopulation(self.params.anemiaDistribution)
@@ -320,7 +312,7 @@ class Model:
             anemiaUpdate[ageName] *= 1. - thisReduction
             # update anemia probability
             oldProbAnemia = ageGroup.getAnemicFraction()
-            newProbAnemia = oldProbAnemia * anemiaUpdate[ageName] * anemiaUpdate['general population']
+            newProbAnemia = oldProbAnemia * anemiaUpdate[ageName]
             self.params.anemiaDistribution[ageName]['anemic'] = newProbAnemia
             self.params.anemiaDistribution[ageName]['not anemic'] = 1. - newProbAnemia
             ageGroup.distributePopulation(self.params.anemiaDistribution)

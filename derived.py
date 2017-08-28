@@ -342,7 +342,7 @@ class Derived:
             self.probAnemicIfCovered[intervention] = {}
             self.probAnemicIfCovered[intervention]["not covered"] = {}
             self.probAnemicIfCovered[intervention]["covered"] = {}
-            for pop in self.allPops + ['general population']:
+            for pop in self.allPops:
                 if intervention == "IPTp":  
                     #just the sub population exposed to malaria
                     fracAnemicThisPop = fracAnemicExposedMalaria[pop] 

@@ -23,7 +23,7 @@ class TestModelClass(unittest.TestCase):
         cls.helper = helper.Helper()
         [cls.testData, cls.testModel, cls.testDerived, cls.testParams,
          cls.keyList] = setupDataModelDerivedParameters()
-        cls.everyone = cls.keyList['allPops'] + ['general population']
+        cls.everyone = cls.keyList['allPops']
 
 
     ####################

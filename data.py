@@ -302,7 +302,7 @@ def readSpreadsheet(fileName, keyList):
     RRdeathMaternalAnemia.update(RRdeathWRAanemia)
     RRdeathAnemia = RRdeathMaternalAnemia
 
-    # TODO: need RR/OR anemia by intervention, don't forget to use general population. Also account for having a mix of OR and RR for interventions
+    # TODO: need RR/OR anemia by intervention, no longer using general population. Also account for having a mix of OR and RR for interventions
 
 
 
@@ -345,6 +345,7 @@ def readSpreadsheet(fileName, keyList):
     # non-pregnant WRA
     targetPopulation.update(splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'Non-pregnant WRA', switchKeys=True))
     # general pop # TODO: how do we want to handle the general pop? Not the same as current implementation in spreadsheet
+    #  NO MORE GENERAL POP!
     targetPopulation.update(splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'General population', switchKeys=True))
 
     # INTERVENTIONS BIRTH OUTCOMES
