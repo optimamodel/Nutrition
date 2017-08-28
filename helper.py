@@ -15,7 +15,7 @@ class Helper:
         self.keyList['wastingList'] = ["normal", "mild", "moderate", "high"]
         self.keyList['stuntingList'] = ["normal", "mild", "moderate", "high"]
         self.keyList['breastfeedingList'] = ["exclusive", "predominant", "partial", "none"]
-        self.keyList['anemiaList'] = ["anemic", "not anemic"]
+        self.keyList['anemiaList'] = ["anemic", "not anemic"] # TODO: may need to change these b/c we have different anemia categories now
         self.keyList['ageGroupSpans'] = [1., 5., 6., 12., 36.] # number of months in each age group
         self.keyList['agingRates'] = [1./1., 1./5., 1./6., 1./12., 1./36.]
         self.keyList['reproductiveAges'] = ['WRA: 15-19 years', 'WRA: 20-29 years', 'WRA: 30-39 years', 'WRA: 40-49 years']
@@ -122,11 +122,11 @@ class Helper:
             popReproductiveAge = dcp(inputData.demographics['population reproductive age'])
             ages = self.keyList['reproductiveAges']
             numAgeGroups = len(ages)
-            agePopSize = popReproductiveAge / numAgeGroups # equally distributed
             listOfReproductiveAgeCompartments = []
             for iAge in range(numAgeGroups): 
                 ageName  = ages[iAge]
-                agingRate = self.keyList['reproductiveAgingRates'][iAge]
+                agePopSize = popReproductiveAge[ageName]
+                agingRate = self.keyList['reproductiveAgingRates'][iAge] # TODO: can probably remove this
                 thisAgeBoxes = self.makeReproductiveAgeBoxes(agePopSize, ageName, inputData)
                 compartment = populations.ReproductiveAgeCompartment(ageName, thisAgeBoxes, agingRate, self.keyList)
                 listOfReproductiveAgeCompartments.append(compartment)
