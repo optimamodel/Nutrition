@@ -73,7 +73,7 @@ class Data:
 def readSheetWithOneIndexCol(sheet, scaleFactor=1.):
     resultDict = {}
     for columnName in sheet:
-        resultDict[columnName] = sheet[columnName] / scaleFactor
+        resultDict[columnName] = dict(sheet[columnName] / scaleFactor)
     return resultDict
 
 def readSheetWithTwoIndexCols(location, sheetname, indexList):
@@ -203,7 +203,7 @@ def readSpreadsheet(fileName, keyList):
     # food
     food = splitSpreadsheetWithTwoIndexCols(demographicsSheet, "Food")
     foodDemographicsDict = food['Values']
-    # join into demographics dict
+    # join to demographics dict
     populationDict.update(foodDemographicsDict)
     demographics = populationDict
     # WRA age distribution
@@ -221,7 +221,14 @@ def readSpreadsheet(fileName, keyList):
     projectionsDict = readSheetWithOneIndexCol(projectionsSheet)
     projectedBirths = projectionsDict['number of births']
     projectedWRApop = projectionsDict['total WRA']
-    projectedWRApopByAge = {age: projectionsDict[age] for age in projectionsDict.keys() if age.startswith('women')}
+    projectedWRApopByWrongAge = {age: projectionsDict[age] for age in projectionsDict.keys() if age.startswith('women')}
+    # map to correct keys by string operations
+    projectedWRApopByAge = {}
+    for ageName in projectedWRApopByWrongAge.keys():
+        newAgeName = ageName.partition(' ')[2]
+        newAgeName = "WRA: " + newAgeName + " years"
+        projectedWRApopByAge[newAgeName] = projectedWRApopByWrongAge[ageName]
+
     projectedPWpop = projectionsDict['pregnant women']
 
     ### CAUSES OF DEATH
