@@ -159,6 +159,20 @@ def mapAgeKeys(firstDict, secondDict):
             resultDict.update({key: dataDict[age] for key in mappingList if age in key})
     return resultDict
 
+def stratifyPopIntoAgeGroups(dictToUpdate, keyList, listOfAgeGroups, population, keyLevel=0):
+    """Solves the problem of data having only 'maternal' or 'WRA' for all age bands.
+    Copies single value and creates age groups."""
+    for key in keyList: # could be intervention, ages
+        if keyLevel == 0:
+            subDict = dictToUpdate.pop(population, None)
+            newAgeGroups = {age: subDict for age in listOfAgeGroups}
+            dictToUpdate.update(newAgeGroups)
+        elif keyLevel == 1:
+            subDict = dictToUpdate[key].pop(population, None)
+            newAgeGroups = {age:subDict for age in listOfAgeGroups}
+            dictToUpdate[key].update(newAgeGroups)
+    return dictToUpdate
+
 def readSpreadsheet(fileName, keyList):
     location = fileName
     ages = keyList['ages']
