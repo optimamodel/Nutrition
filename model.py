@@ -498,14 +498,15 @@ class Model:
                 WRAbox.populationSize = WRApopThisAgeAndYear * anemiaDistribution[anemiaStatus]
                 WRAbox.populationSize -= PWbox.populationSize # remove pregnant women
 
-    def applyPregnantWomenBirths(self):
+    def updatePWpopulation(self):
         """Use PW projections to distribute PW into age groups.
-        In absence of better advice, weight according to age group size."""
+        Distribute into age bands by age distribution, assumed constant over time."""
         numCompartments = len(self.listOfPregnantWomenAgeCompartments)
         projectedPWPop = self.params.projectedPWpop[self.year]
         for index in range(numCompartments):
-            popThisAge = projectedPWPop * self.pregnantWomenAgeSpans[index]
             thisCompartment = self.listOfPregnantWomenAgeCompartments[index]
+            ageName = thisCompartment.name
+            popThisAge = projectedPWPop * self.PWageDistribution[ageName]
             anemiaDistribution = thisCompartment.getAnemiaDistribution()
             for anemiaStatus in self.anemiaList:
                 thisBox = thisCompartment.dictOfBoxes[anemiaStatus]
@@ -566,7 +567,7 @@ class Model:
         for month in range(12):
             self.moveOneTimeStep()
         self.applyPregnantWomanMortality()
-        self.applyPregnantWomenBirths()
+        self.updatePWpopulation()
         self.updateWRApopulation()
         self.updateYearlyRiskDistributions()
         self.year += 1
