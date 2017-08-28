@@ -132,23 +132,24 @@ class Helper:
                 listOfReproductiveAgeCompartments.append(compartment)
             return listOfReproductiveAgeCompartments
 
-
     def makePregnantWomenAgeCompartments(self, inputData):
         import populations
-        popPregnantWomen = dcp(inputData.demographics['number of pregnant women'])
+        popPW= dcp(inputData.demographics['number of pregnant women'])
+        PWageDistribution = dcp(inputData.demographics['PW age distribution'])
         ages = self.keyList['pregnantWomenAges']
         numAgeGroups = len(ages)
-        agePopSize = popPregnantWomen / numAgeGroups
         listOfPregnantWomenAgeCompartments = []
         annualBirths = dcp(inputData.demographics['number of live births'])
-        birthRate = annualBirths / popPregnantWomen
+        birthRate = annualBirths / popPW
         for iAge in range(numAgeGroups):
             ageName = ages[iAge]
+            agePopSize = popPW * PWageDistribution[ageName]
             agingRate = self.keyList['pregnantWomenAgeSpans'][iAge]
             thisAgeBoxes = self.makePregnantWomenAgeBoxes(agePopSize, ageName, inputData)
             compartment = populations.PregnantWomenAgeCompartment(ageName, birthRate, thisAgeBoxes, agingRate, self.keyList)
             listOfPregnantWomenAgeCompartments.append(compartment)
         return listOfPregnantWomenAgeCompartments
+
 
     def setupModelDerivedParameters(self, inputData):
         import model 
