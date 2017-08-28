@@ -19,7 +19,8 @@ class Data:
                  targetPopulation, affectedFraction, effectivenessMortality,
                  effectivenessIncidence, interventionsBirthOutcome, foodSecurityGroups,
                  ORstuntingComplementaryFeeding, anemiaDistribution,
-                 projectedWRApop, projectedWRApopByAge, projectedPWpop, fracAnemicNotPoor,
+                 projectedWRApop, projectedWRApopByAge, projectedPWpop,
+                 PWageDistribution, fracAnemicNotPoor,
                  fracAnemicPoor, fracAnemicExposedMalaria, fracExposedMalaria, ORanemiaCondition):
 
         self.causesOfDeath = causesOfDeath
@@ -61,6 +62,7 @@ class Data:
         self.projectedWRApop = projectedWRApop
         self.projectedWRApopByAge = projectedWRApopByAge
         self.projectedPWpop = projectedPWpop
+        self.PWageDistribution = PWageDistribution
         self.fracAnemicNotPoor = fracAnemicNotPoor
         self.fracAnemicPoor = fracAnemicPoor
         self.fracAnemicExposedMalaria = fracAnemicExposedMalaria
@@ -178,6 +180,8 @@ def readSpreadsheet(fileName, keyList):
     # join into demographics dict
     populationDict.update(foodDemographicsDict)
     demographics = populationDict
+    # PW age distribution
+    PWageDistribution = splitSpreadsheetWithTwoIndexCols(demographicsSheet, "Age distribution pregnant")
 
     ### DEMOGRAPHIC PROJECTIONS
     projectionsSheet = pd.read_excel(location, sheetname='Demographic projections', index_col=[0])
@@ -367,7 +371,7 @@ def readSpreadsheet(fileName, keyList):
                            costSaturation, targetPopulation, affectedFraction,
                            effectivenessMortality, effectivenessIncidence, interventionsBirthOutcome,
                            foodSecurityGroups, ORstuntingComplementaryFeeding, anemiaDistribution,
-                           projectedWRApop, projectedWRApopByAge, projectedPWpop,
+                           projectedWRApop, projectedWRApopByAge, projectedPWpop, PWageDistribution,
                            fracAnemicNotPoor, fracAnemicPoor, fracAnemicExposedMalaria,
                            fracExposedMalaria, ORanemiaCondition)
 
