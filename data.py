@@ -148,6 +148,16 @@ def readInterventionsByPopulationTabs(sheet, outcome, interventionList, pops, ca
                     outcomeDict[intervention][pop][cause] = 0.
     return outcomeDict
 
+def mapAgeKeys(firstDict, secondDict):
+    """Solves the problem of the data workbook not having the correct age band keys"""
+    resultDict = {}
+    for pop in secondDict.keys():
+        dataDict = firstDict[pop]
+        mappingList = secondDict[pop]
+        for age in dataDict.keys():
+            resultDict.update({key: dataDict[age] for key in mappingList if age in key})
+    return resultDict
+
 def readSpreadsheet(fileName, keyList):
     location = fileName
     ages = keyList['ages']
@@ -157,9 +167,10 @@ def readSpreadsheet(fileName, keyList):
     breastfeedingList = keyList['breastfeedingList']
     allPops = keyList['allPops']
     anemiaList = keyList['anemiaList']
+    PWages = ["PW: 15-19 years", "PW: 20-29 years", "PW: 30-39 years", "PW: 40-49 years"]
+    WRAages = ['WRA: 15-19 years', 'WRA: 20-29 years', 'WRA: 30-39 years', 'WRA: 40-49 years']
 
     ### INTERVENTIONS COST AND COVERAGE
-    # TODO: not complete in spreadsheet therefore some spaces wll be NaN.
     interventionsSheet = pd.read_excel(location, sheetname = 'Interventions cost and coverage', index_col=0)
     interventionList = list(interventionsSheet.index)
     coverage = dict(interventionsSheet["Baseline coverage"])
