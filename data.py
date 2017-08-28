@@ -266,7 +266,7 @@ def readSpreadsheet(fileName, keyList):
     # RR of death by birth outcome
     RRdeathByBirthOutcome = splitSpreadsheetWithTwoIndexCols(birthOutcomesSheet, "RR of death", rowList=causesOfDeathList)
 
-    ### RELATIVE RISKS
+    ### RELATIVE RISKS # TODO: now that we have new types of anemia, do the RR treat those who are only severely anemic??
     RRsheet = pd.read_excel(location, sheetname='Relative risks', index_col=[0,1,2])
     RRsheet = RRsheet.dropna()
     RRdeathStunting = readRelativeRisks(RRsheet, 'Stunting', stuntingList, causesOfDeathList)
@@ -285,21 +285,22 @@ def readSpreadsheet(fileName, keyList):
     # maternal anemia
     RRsheet = pd.read_excel(location, sheetname='Relative risks', index_col=[0,1,2])
     maternalAnemia = RRsheet.loc['Maternal anemia - death risk']
-    RRdeathMaternalAnemia = {}
+    RRdeathMaternal = {}
     column = maternalAnemia['maternal']
     for cause in causesOfDeathList:
-        RRdeathMaternalAnemia[cause] = {}
+        RRdeathMaternal[cause] = {}
         for anemiaStatus in anemiaList:
             try:
-                RRdeathMaternalAnemia[cause][anemiaStatus] = column[cause][anemiaStatus]
+                RRdeathMaternal[cause][anemiaStatus] = column[cause][anemiaStatus]
             except KeyError: # if cause not in shet, RR=1
-                RRdeathMaternalAnemia[cause][anemiaStatus] = 1
+                RRdeathMaternal[cause][anemiaStatus] = 1
+    RRdeathMaternalAnemia = {age: RRdeathMaternal for age in PWages}
     # women of reproductive age, assume no direct impact of interventions (RR=1)
-    RRdeathWRAanemia = {cause: 1. for cause in causesOfDeathList}
+    RRdeathWRAanemia = {age: {cause: {status: 1. for status in anemiaList} for cause in causesOfDeathList} for age in WRAages}
     # combine all groups into single dictionary
     # TODO: need children
-    RRdeathAnemia = RRdeathMaternalAnemia.update(RRdeathWRAanemia)
-
+    RRdeathMaternalAnemia.update(RRdeathWRAanemia)
+    RRdeathAnemia = RRdeathMaternalAnemia
 
     # TODO: need RR/OR anemia by intervention, don't forget to use general population. Also account for having a mix of OR and RR for interventions
 
@@ -374,7 +375,6 @@ def readSpreadsheet(fileName, keyList):
     # TODO: not currently available in spreadsheet
     RRanemiaIntervention = {}
     ORanemiaIntervention = {}
-    anemiaDistribution = {}
     fracAnemicNotPoor = {}
     fracAnemicPoor = {}
     fracAnemicExposedMalaria = {}
