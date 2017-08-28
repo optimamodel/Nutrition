@@ -481,16 +481,22 @@ class Model:
             thisAgeCompartment.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
             
     def updateWRApopulation(self):
-        """Uses projected figures to determine the population of WRA in a given age band and year"""
-        # TODO: spreadsheet age bands must match those of 'reproductiveAges'
-        for compartment in self.listOfReproductiveAgeCompartments:
-            ageName = compartment.name
-            popThisAgeAndYear = self.params.projectedWRApopByAge[ageName][self.year]
-            # distribute this figure across anemia status
-            anemiaDistribution = compartment.getAnemiaDistribution()
+        """Uses projected figures to determine the population of WRA not pregnant in a given age band and year
+        warning: PW pop must be updated first."""
+        #assuming WRA and PW have same age bands
+        numCompartments = len(self.listOfReproductiveAgeCompartments)
+        for indx in range(numCompartments):
+            WRAcompartment = self.listOfReproductiveAgeCompartments[indx]
+            ageName = WRAcompartment.name
+            WRApopThisAgeAndYear = self.params.projectedWRApopByAge[ageName][self.year]
+            PWcompartment = self.listOfPregnantWomenAgeCompartments[indx]
+            # distribute over risk factors
+            anemiaDistribution = WRAcompartment.getAnemiaDistribution()
             for anemiaStatus in self.anemiaList:
-                thisBox = compartment.dictOfBoxes[anemiaStatus]
-                thisBox.populationSize = popThisAgeAndYear * anemiaDistribution[anemiaStatus]
+                WRAbox = WRAcompartment.dictOfBoxes[anemiaStatus]
+                PWbox = PWcompartment.dictOfBoxes[anemiaStatus]
+                WRAbox.populationSize = WRApopThisAgeAndYear * anemiaDistribution[anemiaStatus]
+                WRAbox.populationSize -= PWbox.populationSize # remove pregnant women
 
     def applyPregnantWomenBirths(self):
         """Use PW projections to distribute PW into age groups.
