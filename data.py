@@ -21,7 +21,7 @@ class Data:
                  ORstuntingComplementaryFeeding, anemiaDistribution,
                  projectedWRApop, projectedWRApopByAge, projectedPWpop,
                  PWageDistribution, fracAnemicNotPoor,
-                 fracAnemicPoor, fracAnemicExposedMalaria, fracExposedMalaria, ORanemiaCondition):
+                 fracAnemicPoor, fracAnemicExposedMalaria, fracExposedMalaria, ORanemiaCondition, fracSevereDia):
 
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
@@ -68,6 +68,7 @@ class Data:
         self.fracAnemicExposedMalaria = fracAnemicExposedMalaria
         self.fracExposedMalaria = fracExposedMalaria
         self.ORanemiaCondition = ORanemiaCondition
+        self.fracSevereDia = fracSevereDia
 
 def readSheetWithOneIndexCol(sheet, scaleFactor=1.):
     resultDict = {}
@@ -381,6 +382,7 @@ def readSpreadsheet(fileName, keyList):
     fracAnemicExposedMalaria = {}
     fracExposedMalaria = {}
     ORanemiaCondition = {}
+    fracSevereDia = 0.2 # made up value
 
     spreadsheetData = Data(causesOfDeathList, conditionsList, interventionList, demographics,
                            projectedBirths, rawMortality, causeOfDeathDist, RRdeathAnemia, RRdeathStunting,
@@ -395,7 +397,7 @@ def readSpreadsheet(fileName, keyList):
                            foodSecurityGroups, ORstuntingComplementaryFeeding, anemiaDistribution,
                            projectedWRApop, projectedWRApopByAge, projectedPWpop, PWageDistribution,
                            fracAnemicNotPoor, fracAnemicPoor, fracAnemicExposedMalaria,
-                           fracExposedMalaria, ORanemiaCondition)
+                           fracExposedMalaria, ORanemiaCondition, fracSevereDia)
 
     return spreadsheetData
                   

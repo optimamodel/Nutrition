@@ -47,6 +47,7 @@ class Params:
         self.projectedWRApopByAge = dcp(data.projectedWRApopByAge)
         self.projectedPWpop = dcp(data.projectedPWpop)
         self.PWageDistribution = dcp(data.PWageDistribution)
+        self.fracSevereDia = dcp(data.fracSevereDia)
     
 
 # Add all functions for updating parameters due to interventions here....

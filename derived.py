@@ -228,7 +228,8 @@ class Derived:
         Zt = Z0 #this is true for the initialisation
         beta = self.getFracDiarrhea(Z0, Zt)
         risk = 'anemia'
-        AO = self.getAverageOR(Zt, risk)
+        Yt = Zt * self.data.fracSevereDia
+        AO = self.getAverageOR(Yt, risk)
         numAgeGroups = len(self.ages)
         self.fracAnemicIfDiarrhea["nodia"] = {}
         self.fracAnemicIfDiarrhea["dia"] = {}
@@ -246,7 +247,8 @@ class Derived:
 
     def updateDiarrheaProbsNewZa(self, Zt):    
         AOStunting = self.getAverageOR(Zt, 'stunting')
-        AOAnemia = self.getAverageOR(Zt, 'anemia')
+        Yt = Zt * self.data.fracSevereDia
+        AOAnemia = self.getAverageOR(Yt, 'anemia')
         numAgeGroups = len(self.ages)
         for iAge in range(numAgeGroups):
             ageName = self.ages[iAge]
