@@ -182,8 +182,8 @@ def readSpreadsheet(fileName, keyList):
     breastfeedingList = keyList['breastfeedingList']
     allPops = keyList['allPops']
     anemiaList = keyList['anemiaList']
-    PWages = ["PW: 15-19 years", "PW: 20-29 years", "PW: 30-39 years", "PW: 40-49 years"]
-    WRAages = ['WRA: 15-19 years', 'WRA: 20-29 years', 'WRA: 30-39 years', 'WRA: 40-49 years']
+    PWages = keyList['pregnantWomenAges']
+    WRAages = keyList['reproductiveAges']
 
     ### INTERVENTIONS COST AND COVERAGE
     interventionsSheet = pd.read_excel(location, sheetname = 'Interventions cost and coverage', index_col=0)
@@ -198,7 +198,7 @@ def readSpreadsheet(fileName, keyList):
     population = splitSpreadsheetWithTwoIndexCols(demographicsSheet, "Current year")
     populationDict = population['Values']
     # mortality
-    mortality = splitSpreadsheetWithTwoIndexCols(demographicsSheet, "Mortality")
+    mortality = splitSpreadsheetWithTwoIndexCols(demographicsSheet, "Mortality rates")
     rawMortality = mortality['Values']
     # food
     food = splitSpreadsheetWithTwoIndexCols(demographicsSheet, "Food")
@@ -213,6 +213,8 @@ def readSpreadsheet(fileName, keyList):
     demographics['population reproductive age'] = WRAageDistribution
     # PW age distribution
     PWageDistribution = splitSpreadsheetWithTwoIndexCols(demographicsSheet, "Age distribution pregnant")
+    mappingDict = {'Values': PWages}
+    demographics['PW age distribution'] = mapAgeKeys(PWageDistribution, mappingDict)
 
     ### DEMOGRAPHIC PROJECTIONS
     projectionsSheet = pd.read_excel(location, sheetname='Demographic projections', index_col=[0])
@@ -225,6 +227,7 @@ def readSpreadsheet(fileName, keyList):
     ### CAUSES OF DEATH
     causesOfDeathSheet = pd.read_excel(location, sheetname='Causes of death', index_col=[0])
     causeOfDeathDist = readSheetWithOneIndexCol(causesOfDeathSheet)
+    causeOfDeathDist = stratifyPopIntoAgeGroups(causeOfDeathDist, ['maternal'], PWages, 'maternal')
     causesOfDeathList = list(causesOfDeathSheet.index)
 
     ### INCIDENCE OF CONDITIONS
@@ -279,7 +282,7 @@ def readSpreadsheet(fileName, keyList):
         birthOutcomeDist[birthOutcome] = birthOutcomeDistribution[birthOutcome]["Fraction of births"]
 
     # RR of death by birth outcome
-    RRdeathByBirthOutcome = splitSpreadsheetWithTwoIndexCols(birthOutcomesSheet, "RR of death", rowList=causesOfDeathList)
+    RRdeathByBirthOutcome = splitSpreadsheetWithTwoIndexCols(birthOutcomesSheet, "RR of death", rowList=causesOfDeathList, switchKeys=True)
 
     ### RELATIVE RISKS # TODO: now that we have new types of anemia, do the RR treat those who are only severely anemic??
     RRsheet = pd.read_excel(location, sheetname='Relative risks', index_col=[0,1,2])
@@ -310,11 +313,10 @@ def readSpreadsheet(fileName, keyList):
             except KeyError: # if cause not in shet, RR=1
                 RRdeathMaternal[cause][anemiaStatus] = 1
     RRdeathMaternalAnemia = {age: RRdeathMaternal for age in PWages}
-    # women of reproductive age, assume no direct impact of interventions (RR=1)
-    RRdeathWRAanemia = {age: {cause: {status: 1. for status in anemiaList} for cause in causesOfDeathList} for age in WRAages}
+    # women of reproductive age, assume no direct impact of interventions (RR=1). Also no data on children (RR=1)
+    RRdeathChildrenWRanemia = {age: {cause: {status: 1. for status in anemiaList} for cause in causesOfDeathList} for age in WRAages + ages}
     # combine all groups into single dictionary
-    # TODO: need children
-    RRdeathMaternalAnemia.update(RRdeathWRAanemia)
+    RRdeathMaternalAnemia.update(RRdeathChildrenWRanemia)
     RRdeathAnemia = RRdeathMaternalAnemia
 
     # TODO: need RR/OR anemia by intervention, no longer using general population. Also account for having a mix of OR and RR for interventions
