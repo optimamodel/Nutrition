@@ -191,6 +191,11 @@ def readSpreadsheet(fileName, keyList):
     # join into demographics dict
     populationDict.update(foodDemographicsDict)
     demographics = populationDict
+    # WRA age distribution
+    WRAageDistribution = splitSpreadsheetWithTwoIndexCols(demographicsSheet, "Women of reproductive age")
+    mappingDict = {"Values": WRAages} # make age bands consistent
+    WRAageDistribution = mapAgeKeys(WRAageDistribution, mappingDict)
+    demographics['population reproductive age'] = WRAageDistribution
     # PW age distribution
     PWageDistribution = splitSpreadsheetWithTwoIndexCols(demographicsSheet, "Age distribution pregnant")
 
