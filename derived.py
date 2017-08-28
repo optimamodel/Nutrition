@@ -137,10 +137,10 @@ class Derived:
         # Correct raw mortality for units (per 1000 live births)
         liveBirths = self.data.demographics['number of live births']
         # The following assumes we only have a single mortality rate for PW
-        mortalityRate = self.data.rawMortality['maternal mortality rate'] # TODO: this dictionary needs to be updated to Janka's spreadsheet
+        mortalityRate = self.data.rawMortality['maternal']
         mortalityCorrected = {}
-        for index in range(len(self.ages)):
-            ageName = self.ages[index]
+        for index in range(len(self.pregnantWomenAges)):
+            ageName = self.pregnantWomenAges[index]
             if index == 0:
                 mortalityCorrected[ageName] = (mortalityRate * liveBirths / 1000.) * (4. / 34.) / agePop[index]
             else:
