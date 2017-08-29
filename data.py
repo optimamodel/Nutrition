@@ -264,16 +264,20 @@ def readSpreadsheet(fileName, keyList):
                 except KeyError:
                     pass
             # no anemia
-            anemiaPrevalence[colName][ageName]['No anemia'] = 1. - anemiaPrevalence[colName][ageName]['All anemia']
+            anemiaPrevalence[colName][ageName]['not anemic'] = 1. - anemiaPrevalence[colName][ageName]['All anemia']
     # convert age groups to those used in model
     mappingDict = {"Children": ages, "WRA not pregnant": WRAages, "Pregnant women": PWages}
     anemiaDistribution = mapAgeKeys(anemiaPrevalence, mappingDict)
+    #rename
+    for ageName in ages + WRAages + PWages:
+        anemiaThisAge = anemiaDistribution[ageName]
+        anemiaThisAge['anemic'] = anemiaThisAge.pop('All anemia')
     print "::WARNING:: fictional anemia distribution for <1 month & 1-5 months age groups"
     # TODO: These are fake values b/c spredsheet has blank
-    anemiaDistribution["<1 month"]['All anemia'] = .1
-    anemiaDistribution["<1 month"]['No anemia'] = .9
-    anemiaDistribution["1-5 months"]['All anemia'] = .1
-    anemiaDistribution["1-5 months"]['No anemia'] = .9
+    anemiaDistribution["<1 month"]['anemic'] = .1
+    anemiaDistribution["<1 month"]['not anemic'] = .9
+    anemiaDistribution["1-5 months"]['anemic'] = .1
+    anemiaDistribution["1-5 months"]['not anemic'] = .9
 
     ### DISTRIBUTIONS
     distributionsSheet = pd.read_excel(location, sheetname='Distributions', index_col=[0,1])

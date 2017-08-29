@@ -15,7 +15,7 @@ class Helper:
         self.keyList['wastingList'] = ["normal", "mild", "moderate", "high"]
         self.keyList['stuntingList'] = ["normal", "mild", "moderate", "high"]
         self.keyList['breastfeedingList'] = ["exclusive", "predominant", "partial", "none"]
-        self.keyList['anemiaList'] = ['All anemia', 'No anemia']
+        self.keyList['anemiaList'] = ['anemic', 'not anemic']
         self.keyList['ageGroupSpans'] = [1., 5., 6., 12., 36.] # number of months in each age group
         self.keyList['agingRates'] = [1./1., 1./5., 1./6., 1./12., 1./36.]
         self.keyList['reproductiveAges'] = ['WRA: 15-19 years', 'WRA: 20-29 years', 'WRA: 30-39 years', 'WRA: 40-49 years']
