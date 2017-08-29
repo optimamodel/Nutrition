@@ -22,7 +22,7 @@ class Params:
         self.wastingDistribution = dcp(data.wastingDistribution)
         self.breastfeedingDistribution = dcp(data.breastfeedingDistribution)
         self.anemiaDistribution = dcp(data.anemiaDistribution)
-        self.fracPoor = dcp(data.demographics['fraction poor'])
+        self.fracPoor = dcp(data.demographics['fraction food insecure (default poor)'])
         self.fracNotPoor = 1 - self.fracPoor
         self.fracAnemicNotPoor = dcp(data.fracAnemicNotPoor)
         self.fracAnemicPoor = dcp(data.fracAnemicPoor)
