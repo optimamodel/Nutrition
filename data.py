@@ -347,7 +347,8 @@ def readSpreadsheet(fileName, keyList):
     ORstuntingProgression = dict(ORsheet.loc['OR stunting progression and condition','Stunting progression'])
     del ORstuntingProgression['<1 month'] # not applicable to <1 month
     # by condition
-    ORstuntingCondition = dict(ORsheet.loc['OR stunting progression and condition','Diarrhea'])
+    ORstuntingDia = dict(ORsheet.loc['OR stunting progression and condition','Diarrhea'])
+    ORstuntingCondition = {age:{condition: ORstuntingDia[age] for condition in ['Diarrhea']} for age in ages}
     # by intervention
     ORstuntingIntervention = splitSpreadsheetWithTwoIndexCols(ORsheet, "OR stunting by intervention", rowList=interventionList)
     ORstuntingComplementaryFeeding = {}
@@ -398,6 +399,14 @@ def readSpreadsheet(fileName, keyList):
                 except KeyError:
                     interventionsBirthOutcome[intervention][birthOutcome][value] = 0.
 
+    ### INTERVENTIONS ANEMIA
+    # relative risks
+    interventionsAnemiaSheet = pd.read_excel(location, sheetname='Interventions anemia', index_col=[0,1])
+    interventionsAnemiaSheet = interventionsAnemiaSheet.dropna(how='all')
+    RRanemiaIntervention = splitSpreadsheetWithTwoIndexCols(interventionsAnemiaSheet, 'Relative Risks')
+    # odds ratios
+    ORanemiaIntervention = splitSpreadsheetWithTwoIndexCols(interventionsAnemiaSheet, 'Odds Ratios')
+
     # INTERVENTIONS AFFECTED FRACTION AND EFFECTIVENESS
     # children
     # warning: currently this applied to all population groups (no tabs for them yet)
@@ -410,9 +419,6 @@ def readSpreadsheet(fileName, keyList):
 
 
     # TODO: not currently available in spreadsheet
-    RRanemiaIntervention = {}
-    ORanemiaIntervention = {}
-    # TODO: could put all these values in demographics
     print "::WARNING:: fractions pertaining to anemia/malaria and ORanemiaCondition are fictional."
     fracAnemicNotPoor = {age:0.5 for age in ages + WRAages + PWages}
     fracAnemicPoor = {age:0.5 for age in ages + WRAages + PWages}
