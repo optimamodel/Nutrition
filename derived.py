@@ -204,7 +204,9 @@ class Derived:
         Zt = Z0 #this is true for the initialisation
         beta = self.getFracDiarrhea(Z0, Zt)
         risk = 'anemia'
-        Yt = Zt * self.data.fracSevereDia
+        Yt = {}
+        for ageName in self.ages:
+            Yt[ageName] = Zt[ageName] * self.data.fracSevereDia
         AO = self.getAverageOR(Yt, risk)
         numAgeGroups = len(self.ages)
         self.fracAnemicIfDiarrhea["nodia"] = {}
