@@ -199,9 +199,9 @@ class Params:
         key1 = 'Complementary feeding education'
         key2 = 'Public provision of complementary foods'
         # collect data
-        X1 = self.demographics['fraction poor']
-        X2 = self.demographics['fraction food insecure (poor)']
-        X3 = self.demographics['fraction food insecure (not poor)']
+        X1 = self.demographics['fraction food insecure (default poor)']
+        X2 = 1.0 
+        X3 = 0.0 
         Ce  = newCoverage[key1]
         Cse = newCoverage[key2]
         # calculate fraction of children in each of the food security/access to intervention groups

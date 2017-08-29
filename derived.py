@@ -416,9 +416,9 @@ class Derived:
         coverage = dcp(coverageArg)
         coEffs = {}
         # Fraction of population in each subset of food security and education
-        X1 = self.data.demographics['fraction poor']
-        X2 = self.data.demographics['fraction food insecure (poor)']
-        X3 = self.data.demographics['fraction food insecure (not poor)']
+        X1 = self.data.demographics['fraction food insecure (default poor)']
+        X2 = 1. 
+        X3 = 0. 
         Ce  = coverage['Complementary feeding education']
         Cse = coverage['Public provision of complementary foods']
         Frac = [0.]*4
