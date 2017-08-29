@@ -268,7 +268,12 @@ def readSpreadsheet(fileName, keyList):
     # convert age groups to those used in model
     mappingDict = {"Children": ages, "WRA not pregnant": WRAages, "Pregnant women": PWages}
     anemiaDistribution = mapAgeKeys(anemiaPrevalence, mappingDict)
-
+    print "::WARNING:: fictional anemia distribution for <1 month & 1-5 months age groups"
+    # TODO: These are fake values b/c spredsheet has blank
+    anemiaDistribution["<1 month"]['All anemia'] = .1
+    anemiaDistribution["<1 month"]['No anemia'] = .9
+    anemiaDistribution["1-5 months"]['All anemia'] = .1
+    anemiaDistribution["1-5 months"]['No anemia'] = .9
 
     ### DISTRIBUTIONS
     distributionsSheet = pd.read_excel(location, sheetname='Distributions', index_col=[0,1])
@@ -403,11 +408,13 @@ def readSpreadsheet(fileName, keyList):
     # TODO: not currently available in spreadsheet
     RRanemiaIntervention = {}
     ORanemiaIntervention = {}
-    fracAnemicNotPoor = {}
-    fracAnemicPoor = {}
-    fracAnemicExposedMalaria = {}
-    fracExposedMalaria = {}
-    ORanemiaCondition = {}
+    # TODO: could put all these values in demographics
+    print "::WARNING:: fractions pertaining to anemia/malaria and ORanemiaCondition are fictional."
+    fracAnemicNotPoor = {age:0.5 for age in ages + WRAages + PWages}
+    fracAnemicPoor = {age:0.5 for age in ages + WRAages + PWages}
+    fracAnemicExposedMalaria = {age:0.5 for age in ages + WRAages + PWages}
+    fracExposedMalaria = demographics['fraction at risk of malaria']
+    ORanemiaCondition = {age:{condition:1. for condition in conditionsList} for age in ages}
     fracSevereDia = 0.2 # made up value
 
     spreadsheetData = Data(causesOfDeathList, conditionsList, interventionList, demographics,
