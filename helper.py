@@ -136,7 +136,7 @@ class Helper:
 
     def makePregnantWomenAgeCompartments(self, inputData):
         import populations
-        popPW= dcp(inputData.demographics['number of pregnant women'])
+        popPW = dcp(inputData.demographics['number of pregnant women'])
         PWageDistribution = dcp(inputData.PWageDistribution)
         ages = self.keyList['pregnantWomenAges']
         numAgeGroups = len(ages)
