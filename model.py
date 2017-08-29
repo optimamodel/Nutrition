@@ -192,7 +192,7 @@ class Model:
 
         # MORTALITY
         #update mortality for each population
-        for pop in self.allPops:
+        for pop in self.ages + self.pregnantWomenAges:
             for cause in self.params.causesOfDeath:
                 # update reference mortality
                 self.derived.referenceMortality[pop][cause] *= mortalityUpdate[pop][cause]        
@@ -370,16 +370,6 @@ class Model:
                             ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].mortalityRate = count
         # pregnant women
         for ageGroup in self.listOfPregnantWomenAgeCompartments:
-            ageName = ageGroup.name
-            for anemiaStatus in self.anemiaList:
-                count = 0
-                for cause in self.params.causesOfDeath:
-                    t1 = self.derived.referenceMortality[ageName][cause]
-                    t2 = self.params.RRdeathAnemia[ageName][cause][anemiaStatus]
-                    count += t1 * t2
-                ageGroup.dictOfBoxes[anemiaStatus].mortalityRate = count
-        # women of reproductive age
-        for ageGroup in self.listOfReproductiveAgeCompartments:
             ageName = ageGroup.name
             for anemiaStatus in self.anemiaList:
                 count = 0
