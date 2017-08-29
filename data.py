@@ -226,7 +226,7 @@ def readSpreadsheet(fileName, keyList):
     projectedWRApopByAge = {}
     for ageName in projectedWRApopByWrongAge.keys():
         newAgeName = ageName.partition(' ')[2]
-        newAgeName = "WRA: " + newAgeName + " years"
+        newAgeName = "WRA: " + newAgeName
         projectedWRApopByAge[newAgeName] = projectedWRApopByWrongAge[ageName]
 
     projectedPWpop = projectionsDict['pregnant women']
