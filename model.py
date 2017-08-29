@@ -496,7 +496,7 @@ class Model:
         for index in range(numCompartments):
             thisCompartment = self.listOfPregnantWomenAgeCompartments[index]
             ageName = thisCompartment.name
-            popThisAge = projectedPWPop * self.PWageDistribution[ageName]
+            popThisAge = projectedPWPop * self.params.PWageDistribution[ageName]
             anemiaDistribution = thisCompartment.getAnemiaDistribution()
             for anemiaStatus in self.anemiaList:
                 thisBox = thisCompartment.dictOfBoxes[anemiaStatus]

@@ -214,7 +214,7 @@ def readSpreadsheet(fileName, keyList):
     # PW age distribution
     PWageDistribution = splitSpreadsheetWithTwoIndexCols(demographicsSheet, "Age distribution pregnant")
     mappingDict = {'Values': PWages}
-    demographics['PW age distribution'] = mapAgeKeys(PWageDistribution, mappingDict)
+    PWageDistribution = mapAgeKeys(PWageDistribution, mappingDict)
 
     ### DEMOGRAPHIC PROJECTIONS
     projectionsSheet = pd.read_excel(location, sheetname='Demographic projections', index_col=[0])
