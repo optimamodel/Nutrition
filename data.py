@@ -364,7 +364,7 @@ def readSpreadsheet(fileName, keyList):
     breastfeedingSheet = pd.read_excel(location, sheetname='Appropriate breastfeeding')
     ageAppropriateBreastfeeding = dict(breastfeedingSheet.iloc[0])
 
-    # INTERVENTIONS TARGET POPULATION # TODO: This dictionary needs to have the age groups for PW and non-pregnant WRA
+    # INTERVENTIONS TARGET POPULATION
     targetPopSheet = pd.read_excel(location, sheetname='Interventions target population', index_col=[0,1])
     targetPopSheet = targetPopSheet.dropna(how='all')
     # children
