@@ -23,6 +23,7 @@ class Derived:
         self.referenceMortality = {}
         self.probStuntedIfPrevStunted = {}
         self.fracStuntedIfDiarrhea = {}
+        self.fracAnemicIfDiarrhea = {}
         self.probStuntedIfCovered = {}
         self.probCorrectlyBreastfedIfCovered = {}
         self.probStuntedComplementaryFeeding = {}
