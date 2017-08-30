@@ -300,7 +300,7 @@ def readSpreadsheet(fileName, keyList):
     # RR of death by birth outcome
     RRdeathByBirthOutcome = splitSpreadsheetWithTwoIndexCols(birthOutcomesSheet, "RR of death", rowList=causesOfDeathList, switchKeys=True)
 
-    ### RELATIVE RISKS # TODO: now that we have new types of anemia, do the RR treat those who are only severely anemic??
+    ### RELATIVE RISKS
     RRsheet = pd.read_excel(location, sheetname='Relative risks', index_col=[0,1,2])
     RRsheet = RRsheet.dropna()
     RRdeathStunting = readRelativeRisks(RRsheet, 'Stunting', stuntingList, causesOfDeathList)
@@ -359,7 +359,8 @@ def readSpreadsheet(fileName, keyList):
         for intervention in interventionsHere:
             if "Complementary" in intervention:
                 ORstuntingComplementaryFeeding[age][intervention] = ORsheet[age]['OR stunting by intervention'][intervention]
-                foodSecurityGroups += [intervention]
+                if intervention not in foodSecurityGroups:
+                    foodSecurityGroups += [intervention]
     # TODO: what about prophylactic zinc supplementation? doesn't seem to be used at all (gets forgotten about)
 
     # correct breastfeeding
@@ -417,8 +418,6 @@ def readSpreadsheet(fileName, keyList):
     affectedFraction = readInterventionsByPopulationTabs(interventionsForChildren, 'Affected fraction', interventionList, allPops, causesOfDeathList)
     effectivenessMortality = readInterventionsByPopulationTabs(interventionsForChildren, 'Effectiveness mortality', interventionList, allPops, causesOfDeathList)
     effectivenessIncidence = readInterventionsByPopulationTabs(interventionsForChildren, 'Effectiveness incidence', interventionList, ages, conditionsList) # children only
-    # TODO: interventions for other populations can go here...
-
 
 
     # TODO: not currently available in spreadsheet
