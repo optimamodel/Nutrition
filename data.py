@@ -403,9 +403,12 @@ def readSpreadsheet(fileName, keyList):
     # relative risks
     interventionsAnemiaSheet = pd.read_excel(location, sheetname='Interventions anemia', index_col=[0,1])
     interventionsAnemiaSheet = interventionsAnemiaSheet.dropna(how='all')
-    RRanemiaIntervention = splitSpreadsheetWithTwoIndexCols(interventionsAnemiaSheet, 'Relative Risks')
+    # remove interventions from RR if we have OR
+    interventionsOR = list(interventionsAnemiaSheet.loc["Odds Ratios"].index)
+    interventionsRR = [intervention for intervention in interventionList if intervention not in interventionsOR]
+    RRanemiaIntervention = splitSpreadsheetWithTwoIndexCols(interventionsAnemiaSheet, 'Relative Risks', rowList=interventionsRR)
     # odds ratios
-    ORanemiaIntervention = splitSpreadsheetWithTwoIndexCols(interventionsAnemiaSheet, 'Odds Ratios')
+    ORanemiaIntervention = splitSpreadsheetWithTwoIndexCols(interventionsAnemiaSheet, 'Odds Ratios', rowList=interventionsOR)
 
     # INTERVENTIONS AFFECTED FRACTION AND EFFECTIVENESS
     # children
