@@ -300,7 +300,7 @@ def readSpreadsheet(fileName, keyList):
     # RR of death by birth outcome
     RRdeathByBirthOutcome = splitSpreadsheetWithTwoIndexCols(birthOutcomesSheet, "RR of death", rowList=causesOfDeathList, switchKeys=True)
 
-    ### RELATIVE RISKS # TODO: now that we have new types of anemia, do the RR treat those who are only severely anemic??
+    ### RELATIVE RISKS
     RRsheet = pd.read_excel(location, sheetname='Relative risks', index_col=[0,1,2])
     RRsheet = RRsheet.dropna()
     RRdeathStunting = readRelativeRisks(RRsheet, 'Stunting', stuntingList, causesOfDeathList)
@@ -359,7 +359,8 @@ def readSpreadsheet(fileName, keyList):
         for intervention in interventionsHere:
             if "Complementary" in intervention:
                 ORstuntingComplementaryFeeding[age][intervention] = ORsheet[age]['OR stunting by intervention'][intervention]
-                foodSecurityGroups += [intervention]
+                if intervention not in foodSecurityGroups:
+                    foodSecurityGroups += [intervention]
     # TODO: what about prophylactic zinc supplementation? doesn't seem to be used at all (gets forgotten about)
 
     # correct breastfeeding
@@ -403,19 +404,20 @@ def readSpreadsheet(fileName, keyList):
     # relative risks
     interventionsAnemiaSheet = pd.read_excel(location, sheetname='Interventions anemia', index_col=[0,1])
     interventionsAnemiaSheet = interventionsAnemiaSheet.dropna(how='all')
-    RRanemiaIntervention = splitSpreadsheetWithTwoIndexCols(interventionsAnemiaSheet, 'Relative Risks')
+    # remove interventions from RR if we have OR
+    interventionsOR = list(interventionsAnemiaSheet.loc["Odds Ratios"].index)
+    interventionsRR = [intervention for intervention in interventionList if intervention not in interventionsOR]
+    RRanemiaIntervention = splitSpreadsheetWithTwoIndexCols(interventionsAnemiaSheet, 'Relative Risks', rowList=interventionsRR)
     # odds ratios
-    ORanemiaIntervention = splitSpreadsheetWithTwoIndexCols(interventionsAnemiaSheet, 'Odds Ratios')
+    ORanemiaIntervention = splitSpreadsheetWithTwoIndexCols(interventionsAnemiaSheet, 'Odds Ratios', rowList=interventionsOR)
 
     # INTERVENTIONS AFFECTED FRACTION AND EFFECTIVENESS
     # children
     # warning: currently this applied to all population groups (no tabs for them yet)
     interventionsForChildren = pd.read_excel(location, sheetname='Interventions for children', index_col=[0, 1, 2])
-    affectedFraction = readInterventionsByPopulationTabs(interventionsForChildren, 'Affected fraction', interventionList, allPops, causesOfDeathList)
+    affectedFraction = readInterventionsByPopulationTabs(interventionsForChildren, 'Affected fraction', interventionList, allPops, causesOfDeathList + ['Severe diarrhea']) # TODO: warning: severe diarrhea is not listed in 'causes of death' and so causes issues
     effectivenessMortality = readInterventionsByPopulationTabs(interventionsForChildren, 'Effectiveness mortality', interventionList, allPops, causesOfDeathList)
     effectivenessIncidence = readInterventionsByPopulationTabs(interventionsForChildren, 'Effectiveness incidence', interventionList, ages, conditionsList) # children only
-    # TODO: interventions for other populations can go here...
-
 
 
     # TODO: not currently available in spreadsheet
