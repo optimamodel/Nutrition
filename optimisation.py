@@ -35,15 +35,24 @@ def rescaleAllocation(totalBudget, allocation):
 def getTargetPopSizeFromModelInstance(dataSpreadsheetName, keyList, model):    
     import data 
     spreadsheetData = data.readSpreadsheet(dataSpreadsheetName, keyList)        
-    numAgeGroups = len(keyList['ages'])
     targetPopSize = {}
     for intervention in spreadsheetData.interventionList:
         targetPopSize[intervention] = 0.
+        # children
+        numAgeGroups = len(keyList['ages'])
         for iAge in range(numAgeGroups):
             ageName = keyList['ages'][iAge]
             targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * model.listOfAgeCompartments[iAge].getTotalPopulation()
-        targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['pregnant women'] * model.pregnantWomen.getTotalPopulation()
-        targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['general population'] * spreadsheetData.demographics['general population size']
+        # pregnant women
+        numAgeGroups = len(keyList['pregnantWomenAges'])    
+        for iAge in range(numAgeGroups):
+            ageName = keyList['pregnantWomenAges'][iAge]    
+            targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * model.listOfPregnantWomenAgeCompartments[iAge].getTotalPopulation()
+        # women of reproductive age
+        numAgeGroups = len(keyList['reproductiveAges'])    
+        for iAge in range(numAgeGroups):
+            ageName = keyList['reproductiveAges'][iAge]     
+            targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * model.listOfReproductiveAgeCompartments[iAge].getTotalPopulation()
     return targetPopSize    
 
     
@@ -385,17 +394,27 @@ class Optimisation:
     def getInitialTargetPopSize(self):
         import data 
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
-        mothers = self.helper.makePregnantWomen(spreadsheetData) 
-        numAgeGroups = len(self.helper.keyList['ages'])
-        agePopSizes  = self.helper.makeAgePopSizes(spreadsheetData)  
         targetPopSize = {}
         for intervention in spreadsheetData.interventionList:
             targetPopSize[intervention] = 0.
+            # children
+            agePopSizes  = self.helper.makeAgePopSizes(spreadsheetData)
+            numAgeGroups = len(self.helper.keyList['ages'])
             for iAge in range(numAgeGroups):
                 ageName = self.helper.keyList['ages'][iAge]
                 targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * agePopSizes[iAge]
-            targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['pregnant women'] * mothers.getTotalPopulation()
-            targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['general population'] * spreadsheetData.demographics['general population']
+            # pregnant women
+            agePopSizes = self.helper.makePregnantWomenAgePopSizes(self, spreadsheetData)
+            numAgeGroups = len(self.helper.keyList['pregnantWomenAges'])    
+            for iAge in range(numAgeGroups):
+                ageName = self.helper.keyList['pregnantWomenAges'][iAge]                   
+                targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * agePopSizes[iAge]
+            # women of reproductive age
+            agePopSizes = self.helper.makeWRAAgePopSizes(spreadsheetData)
+            numAgeGroups = len(self.helper.keyList['reproductiveAges'])    
+            for iAge in range(numAgeGroups):
+                ageName = self.helper.keyList['reproductiveAges'][iAge]    
+                targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * agePopSizes[iAge]
         return targetPopSize    
     
     

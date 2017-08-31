@@ -103,8 +103,9 @@ class Helper:
             boxes[anemiaStatus] = populations.Box(thisPopSize)
         return boxes
 
-    def makeAgeCompartments(self, agePopSizes, inputData):
+    def makeAgeCompartments(self, inputData):
         import populations 
+        agePopSizes = self.makeAgePopSizes(inputData)
         ages = self.keyList['ages']
         numAgeGroups = len(ages)
         listOfAgeCompartments = []
@@ -117,27 +118,46 @@ class Helper:
             listOfAgeCompartments.append(compartment)
         return listOfAgeCompartments         
         
-    def makeReproductiveAgeCompartments(self, inputData, listOfPregnantWomenAgeCompartments):
-            import populations 
-            popWRA = dcp(inputData.demographics['population reproductive age'])
-            ages = self.keyList['reproductiveAges']
-            numAgeGroups = len(ages)
-            listOfReproductiveAgeCompartments = []
-            for iAge in range(numAgeGroups):
-                ageName  = ages[iAge]
-                PWcompartment = listOfPregnantWomenAgeCompartments[iAge]
-                PWpopThisAge = PWcompartment.getTotalPopulation()
-                agePopSize = popWRA[ageName] - PWpopThisAge # population WRA not pregnant
-                agingRate = self.keyList['reproductiveAgingRates'][iAge] # TODO: can probably remove this
-                thisAgeBoxes = self.makeReproductiveAgeBoxes(agePopSize, ageName, inputData)
-                compartment = populations.ReproductiveAgeCompartment(ageName, thisAgeBoxes, agingRate, self.keyList)
-                listOfReproductiveAgeCompartments.append(compartment)
-            return listOfReproductiveAgeCompartments
+    def makeWRAAgePopSizes(self, inputData):
+        popPW = self.makePregnantWomenAgePopSizes(inputData)        
+        popWRA = dcp(inputData.demographics['population reproductive age'])
+        ages = self.keyList['reproductiveAges']
+        numAgeGroups = len(ages)
+        agePopSizes = [0.]*numAgeGroups
+        for iAge in range(numAgeGroups):
+            ageName  = ages[iAge]
+            agePopSizes[iAge] = popWRA[ageName] - popPW[iAge] # population WRA not pregnant 
+        return agePopSizes
+   
+    def makeReproductiveAgeCompartments(self, inputData):
+        import populations 
+        agePopSizes = self.makeWRAAgePopSizes(inputData)
+        ages = self.keyList['reproductiveAges']
+        numAgeGroups = len(ages)
+        listOfReproductiveAgeCompartments = []
+        for iAge in range(numAgeGroups):
+            ageName  = ages[iAge]
+            agingRate = self.keyList['reproductiveAgingRates'][iAge] # TODO: can probably remove this
+            thisAgeBoxes = self.makeReproductiveAgeBoxes(agePopSizes[iAge], ageName, inputData)
+            compartment = populations.ReproductiveAgeCompartment(ageName, thisAgeBoxes, agingRate, self.keyList)
+            listOfReproductiveAgeCompartments.append(compartment)
+        return listOfReproductiveAgeCompartments
 
-    def makePregnantWomenAgeCompartments(self, inputData):
-        import populations
+    def makePregnantWomenAgePopSizes(self, inputData):
         popPW = dcp(inputData.demographics['number of pregnant women'])
         PWageDistribution = dcp(inputData.PWageDistribution)
+        ages = self.keyList['pregnantWomenAges']
+        numAgeGroups = len(ages)
+        agePopSizes = [0.]*numAgeGroups
+        for iAge in range(numAgeGroups):
+            ageName = ages[iAge]
+            agePopSizes[iAge] = popPW * PWageDistribution[ageName]
+        return agePopSizes    
+    
+    def makePregnantWomenAgeCompartments(self, inputData):
+        import populations
+        agePopSizes = self.makePregnantWomenAgePopSizes(inputData)
+        popPW = dcp(inputData.demographics['number of pregnant women'])
         ages = self.keyList['pregnantWomenAges']
         numAgeGroups = len(ages)
         listOfPregnantWomenAgeCompartments = []
@@ -145,9 +165,8 @@ class Helper:
         birthRate = annualBirths / popPW
         for iAge in range(numAgeGroups):
             ageName = ages[iAge]
-            agePopSize = popPW * PWageDistribution[ageName]
             agingRate = self.keyList['pregnantWomenAgeSpans'][iAge]
-            thisAgeBoxes = self.makePregnantWomenAgeBoxes(agePopSize, ageName, inputData)
+            thisAgeBoxes = self.makePregnantWomenAgeBoxes(agePopSizes[iAge], ageName, inputData)
             compartment = populations.PregnantWomenAgeCompartment(ageName, birthRate, thisAgeBoxes, agingRate, self.keyList)
             listOfPregnantWomenAgeCompartments.append(compartment)
         return listOfPregnantWomenAgeCompartments
@@ -163,10 +182,9 @@ class Helper:
             ageName = ages[iAge]
             probStunting = self.sumStuntedComponents(inputData.stuntingDistribution[ageName])
             inputData.stuntingDistribution[ageName] = self.restratify(probStunting)
-        agePopSizes = self.makeAgePopSizes(inputData)   
-        listOfAgeCompartments = self.makeAgeCompartments(agePopSizes, inputData)
-        listOfPregnantWomenAgeCompartments = self.makePregnantWomenAgeCompartments(inputData) #warning: this must be done before WRA
-        listOfReproductiveAgeCompartments = self.makeReproductiveAgeCompartments(inputData, listOfPregnantWomenAgeCompartments)
+        listOfAgeCompartments = self.makeAgeCompartments(inputData)
+        listOfPregnantWomenAgeCompartments = self.makePregnantWomenAgeCompartments(inputData) 
+        listOfReproductiveAgeCompartments = self.makeReproductiveAgeCompartments(inputData)
         model = model.Model(listOfPregnantWomenAgeCompartments, listOfAgeCompartments, listOfReproductiveAgeCompartments, self.keyList)
         derived = derived.Derived(inputData, model, self.keyList)
         model.setDerived(derived)
