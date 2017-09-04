@@ -111,7 +111,15 @@ class Params:
             for intervention in newCoverage.keys():
                 probAnemicIfCovered = self.derived.probAnemicIfCovered[intervention]["covered"][pop]
                 probAnemicIfNotCovered = self.derived.probAnemicIfCovered[intervention]["not covered"][pop]
-                newProbAnemic = newCoverage[intervention]*probAnemicIfCovered + (1-newCoverage[intervention])*probAnemicIfNotCovered
+                # set the right coverage level
+                if "fortification" and "salt" in intervention:
+                    thisCoverage = newCoverage[intervention]
+                elif "fortification" in intervention:
+                    thisCoverage = newCoverage[intervention] * (1.- self.demographics['fraction of subsistence farming'])
+                else:    
+                    thisCoverage = newCoverage[intervention]
+                newProbAnemic = thisCoverage*probAnemicIfCovered + (1-thisCoverage)*probAnemicIfNotCovered
+                # set the right old probability of being anemic
                 if intervention == 'IPTp':
                     oldProbAnemic = self.fracAnemicExposedMalaria[pop]
                     reduction = (oldProbAnemic - newProbAnemic)/oldProbAnemic

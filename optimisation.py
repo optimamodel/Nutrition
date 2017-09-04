@@ -53,6 +53,9 @@ def getTargetPopSizeFromModelInstance(dataSpreadsheetName, keyList, model):
         for iAge in range(numAgeGroups):
             ageName = keyList['reproductiveAges'][iAge]     
             targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * model.listOfReproductiveAgeCompartments[iAge].getTotalPopulation()
+        # for food fortification set target population size as entire population
+        if "fortification" in intervention:
+           targetPopSize[intervention] =  spreadsheetData.demographics['total population'] #TODO: consider changing to demographic projection rather than baseline value
     return targetPopSize    
 
     
@@ -415,6 +418,9 @@ class Optimisation:
             for iAge in range(numAgeGroups):
                 ageName = self.helper.keyList['reproductiveAges'][iAge]    
                 targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * agePopSizes[iAge]
+            # for food fortification set target population size as entire population
+            if "fortification" in intervention:
+               targetPopSize[intervention] =  spreadsheetData.demographics['total population'] #TODO: consider changing to demographic projection rather than baseline value    
         return targetPopSize    
     
     
