@@ -46,6 +46,7 @@ class Params:
         self.projectedWRApop = dcp(data.projectedWRApop)
         self.projectedWRApopByAge = dcp(data.projectedWRApopByAge)
         self.projectedPWpop = dcp(data.projectedPWpop)
+        self.projectedGeneralPop = dcp(data.projectedGeneralPop)
         self.PWageDistribution = dcp(data.PWageDistribution)
         self.fracSevereDia = dcp(data.fracSevereDia)
     
