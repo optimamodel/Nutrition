@@ -20,7 +20,7 @@ class Data:
                  effectivenessIncidence, interventionsBirthOutcome, foodSecurityGroups,
                  ORstuntingComplementaryFeeding, anemiaDistribution,
                  projectedWRApop, projectedWRApopByAge, projectedPWpop,
-                 PWageDistribution, fracAnemicNotPoor,
+                 projectedGeneralPop, PWageDistribution, fracAnemicNotPoor,
                  fracAnemicPoor, fracAnemicExposedMalaria, fracExposedMalaria, ORanemiaCondition, fracSevereDia):
 
         self.causesOfDeath = causesOfDeath
@@ -62,6 +62,7 @@ class Data:
         self.projectedWRApop = projectedWRApop
         self.projectedWRApopByAge = projectedWRApopByAge
         self.projectedPWpop = projectedPWpop
+        self.projectedGeneralPop = projectedGeneralPop
         self.PWageDistribution = PWageDistribution
         self.fracAnemicNotPoor = fracAnemicNotPoor
         self.fracAnemicPoor = fracAnemicPoor
@@ -228,8 +229,9 @@ def readSpreadsheet(fileName, keyList):
         newAgeName = ageName.partition(' ')[2]
         newAgeName = "WRA: " + newAgeName
         projectedWRApopByAge[newAgeName] = projectedWRApopByWrongAge[ageName]
-
     projectedPWpop = projectionsDict['pregnant women']
+    # general population size
+    projectedGeneralPop = projectionsDict['total population']
 
     ### CAUSES OF DEATH
     causesOfDeathSheet = pd.read_excel(location, sheetname='Causes of death', index_col=[0])
@@ -440,8 +442,8 @@ def readSpreadsheet(fileName, keyList):
                            costSaturation, targetPopulation, affectedFraction,
                            effectivenessMortality, effectivenessIncidence, interventionsBirthOutcome,
                            foodSecurityGroups, ORstuntingComplementaryFeeding, anemiaDistribution,
-                           projectedWRApop, projectedWRApopByAge, projectedPWpop, PWageDistribution,
-                           fracAnemicNotPoor, fracAnemicPoor, fracAnemicExposedMalaria,
+                           projectedWRApop, projectedWRApopByAge, projectedPWpop, projectedGeneralPop,
+                           PWageDistribution, fracAnemicNotPoor, fracAnemicPoor, fracAnemicExposedMalaria,
                            fracExposedMalaria, ORanemiaCondition, fracSevereDia)
 
     return spreadsheetData
