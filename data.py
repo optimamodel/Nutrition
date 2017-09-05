@@ -176,6 +176,7 @@ def stratifyPopIntoAgeGroups(dictToUpdate, keyList, listOfAgeGroups, population,
     return dictToUpdate
 
 def readSpreadsheet(fileName, keyList):
+    from copy import deepcopy as dcp
     location = fileName
     ages = keyList['ages']
     birthOutcomes = keyList['birthOutcomes']
@@ -190,8 +191,10 @@ def readSpreadsheet(fileName, keyList):
     ### INTERVENTIONS COST AND COVERAGE
     interventionsSheet = pd.read_excel(location, sheetname = 'Interventions cost and coverage', index_col=0)
     interventionList = list(interventionsSheet.index)
-    interventionsCompleteList = [intervention + " with bed nets" if "IFAS" and "malaria" in intervention
-                                 else intervention for intervention in interventionList]
+    interventionsCompleteList =  dcp(interventionList)
+    for intervention in interventionList:
+        if "IFAS" and "malaria" in intervention:
+            interventionsCompleteList.append(intervention + " with bed nets")
     coverage = dict(interventionsSheet["Baseline coverage"])
     costSaturation = interventionsSheet[["Saturation coverage", "Unit cost"]].to_dict(orient='index')
 
