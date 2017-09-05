@@ -421,7 +421,7 @@ class Optimisation:
             numAgeGroups = len(self.helper.keyList['ages'])
             for iAge in range(numAgeGroups):
                 ageName = self.helper.keyList['ages'][iAge]
-                if "IFAS" and "bed nets" in intervention:
+                if "IFAS" in intervention:
                     target = 0.
                 else:    
                     target = spreadsheetData.targetPopulation[intervention][ageName]
@@ -431,7 +431,7 @@ class Optimisation:
             numAgeGroups = len(self.helper.keyList['pregnantWomenAges'])    
             for iAge in range(numAgeGroups):
                 ageName = self.helper.keyList['pregnantWomenAges'][iAge] 
-                if "IFAS" and "bed nets" in intervention:
+                if "IFAS" in intervention:
                     target = 0.
                 else:    
                     target = spreadsheetData.targetPopulation[intervention][ageName]
@@ -441,14 +441,15 @@ class Optimisation:
             numAgeGroups = len(self.helper.keyList['reproductiveAges'])    
             for iAge in range(numAgeGroups):
                 ageName = self.helper.keyList['reproductiveAges'][iAge] 
-                if "IFAS" and "bed nets" in intervention:
-                    target = 1.
+                if "IFAS" in intervention:
+                    target = 0.
                 else:
                     target = spreadsheetData.targetPopulation[intervention][ageName]
                 targetPopSize[intervention] += target * agePopSizes[iAge]
             # for food fortification set target population size as entire population
             if "fortification" in intervention:
                targetPopSize[intervention] =  spreadsheetData.demographics['total population'] #TODO: consider changing to demographic projection rather than baseline value    
+        #TODO: call function to add IFAS intervention target pop sizes to dictionary       
         return targetPopSize    
     
     
