@@ -226,7 +226,9 @@ class Derived:
 
     def updateDiarrheaProbsNewZa(self, Zt):    
         AOStunting = self.getAverageOR(Zt, 'stunting')
-        Yt = Zt * self.data.fracSevereDia
+        Yt = {}
+        for ageName in self.ages:
+            Yt[ageName] = Zt[ageName] * self.data.fracSevereDia
         AOAnemia = self.getAverageOR(Yt, 'anemia')
         numAgeGroups = len(self.ages)
         for iAge in range(numAgeGroups):
