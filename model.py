@@ -251,6 +251,9 @@ class Model:
 
         # ANEMIA
 
+        # if bednet coverage exceeds IFAS coverage in malaria areas, adjust coverages accordingly
+        newCoverage = dcp(self.params.adjustBednetCoverage(newCoverage))
+
         # Children
         for ageGroup in self.listOfAgeCompartments:
             ageName = ageGroup.name
