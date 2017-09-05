@@ -34,28 +34,44 @@ def rescaleAllocation(totalBudget, allocation):
     
 def getTargetPopSizeFromModelInstance(dataSpreadsheetName, keyList, model):    
     import data 
+    import helper
+    thisHelper = helper.Helper()
     spreadsheetData = data.readSpreadsheet(dataSpreadsheetName, keyList)        
     targetPopSize = {}
-    for intervention in spreadsheetData.interventionList:
+    for intervention in spreadsheetData.interventionCompleteList:
         targetPopSize[intervention] = 0.
         # children
         numAgeGroups = len(keyList['ages'])
         for iAge in range(numAgeGroups):
             ageName = keyList['ages'][iAge]
-            targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * model.listOfAgeCompartments[iAge].getTotalPopulation()
+            if "IFAS" in intervention:
+                target = 0.
+            else:
+                target = spreadsheetData.targetPopulation[intervention][ageName]
+            targetPopSize[intervention] += target * model.listOfAgeCompartments[iAge].getTotalPopulation()
         # pregnant women
         numAgeGroups = len(keyList['pregnantWomenAges'])    
         for iAge in range(numAgeGroups):
-            ageName = keyList['pregnantWomenAges'][iAge]    
-            targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * model.listOfPregnantWomenAgeCompartments[iAge].getTotalPopulation()
+            ageName = keyList['pregnantWomenAges'][iAge]  
+            if "IFAS" in intervention:
+                target = 0.
+            else:
+                target = spreadsheetData.targetPopulation[intervention][ageName]
+            targetPopSize[intervention] += target * model.listOfPregnantWomenAgeCompartments[iAge].getTotalPopulation()
         # women of reproductive age
         numAgeGroups = len(keyList['reproductiveAges'])    
         for iAge in range(numAgeGroups):
-            ageName = keyList['reproductiveAges'][iAge]     
-            targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * model.listOfReproductiveAgeCompartments[iAge].getTotalPopulation()
+            ageName = keyList['reproductiveAges'][iAge]  
+            if "IFAS" in intervention:
+                target = 0.
+            else:
+                target = spreadsheetData.targetPopulation[intervention][ageName]
+            targetPopSize[intervention] += target * model.listOfReproductiveAgeCompartments[iAge].getTotalPopulation()
         # for food fortification set target population size as entire population
         if "fortification" in intervention:
            targetPopSize[intervention] =  spreadsheetData.demographics['total population'] #TODO: consider changing to demographic projection rather than baseline value
+    # get IFAS target populations seperately
+    targetPopSize.update(thisHelper.setIFASTargetPopWRA(spreadsheetData, model))       
     return targetPopSize    
 
     
@@ -398,26 +414,38 @@ class Optimisation:
         import data 
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         targetPopSize = {}
-        for intervention in spreadsheetData.interventionList:
+        for intervention in spreadsheetData.interventionCompleteList:
             targetPopSize[intervention] = 0.
             # children
             agePopSizes  = self.helper.makeAgePopSizes(spreadsheetData)
             numAgeGroups = len(self.helper.keyList['ages'])
             for iAge in range(numAgeGroups):
                 ageName = self.helper.keyList['ages'][iAge]
-                targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * agePopSizes[iAge]
+                if "IFAS" and "bed nets" in intervention:
+                    target = 0.
+                else:    
+                    target = spreadsheetData.targetPopulation[intervention][ageName]
+                targetPopSize[intervention] += target * agePopSizes[iAge]
             # pregnant women
             agePopSizes = self.helper.makePregnantWomenAgePopSizes(self, spreadsheetData)
             numAgeGroups = len(self.helper.keyList['pregnantWomenAges'])    
             for iAge in range(numAgeGroups):
-                ageName = self.helper.keyList['pregnantWomenAges'][iAge]                   
-                targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * agePopSizes[iAge]
+                ageName = self.helper.keyList['pregnantWomenAges'][iAge] 
+                if "IFAS" and "bed nets" in intervention:
+                    target = 0.
+                else:    
+                    target = spreadsheetData.targetPopulation[intervention][ageName]
+                targetPopSize[intervention] += target * agePopSizes[iAge]
             # women of reproductive age
             agePopSizes = self.helper.makeWRAAgePopSizes(spreadsheetData)
             numAgeGroups = len(self.helper.keyList['reproductiveAges'])    
             for iAge in range(numAgeGroups):
-                ageName = self.helper.keyList['reproductiveAges'][iAge]    
-                targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * agePopSizes[iAge]
+                ageName = self.helper.keyList['reproductiveAges'][iAge] 
+                if "IFAS" and "bed nets" in intervention:
+                    target = 1.
+                else:
+                    target = spreadsheetData.targetPopulation[intervention][ageName]
+                targetPopSize[intervention] += target * agePopSizes[iAge]
             # for food fortification set target population size as entire population
             if "fortification" in intervention:
                targetPopSize[intervention] =  spreadsheetData.demographics['total population'] #TODO: consider changing to demographic projection rather than baseline value    
