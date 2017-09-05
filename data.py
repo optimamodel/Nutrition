@@ -191,10 +191,10 @@ def readSpreadsheet(fileName, keyList):
     ### INTERVENTIONS COST AND COVERAGE
     interventionsSheet = pd.read_excel(location, sheetname = 'Interventions cost and coverage', index_col=0)
     interventionList = list(interventionsSheet.index)
-    interventionsCompleteList =  dcp(interventionList)
+    interventionCompleteList =  dcp(interventionList)
     for intervention in interventionList:
         if "IFAS" and "malaria" in intervention:
-            interventionsCompleteList.append(intervention + " with bed nets")
+            interventionCompleteList.append(intervention + " with bed nets")
     coverage = dict(interventionsSheet["Baseline coverage"])
     costSaturation = interventionsSheet[["Saturation coverage", "Unit cost"]].to_dict(orient='index')
 
@@ -437,7 +437,7 @@ def readSpreadsheet(fileName, keyList):
     ORanemiaCondition = {age:{condition:1. for condition in conditionsList} for age in ages}
     fracSevereDia = 0.2 # made up value
 
-    spreadsheetData = Data(causesOfDeathList, conditionsList, interventionList, interventionsCompleteList,
+    spreadsheetData = Data(causesOfDeathList, conditionsList, interventionList, interventionCompleteList,
                            demographics, projectedBirths, rawMortality,
                            causeOfDeathDist, RRdeathAnemia, RRdeathStunting,
                            RRdeathWasting, RRdeathBreastfeeding, RRdeathByBirthOutcome,
