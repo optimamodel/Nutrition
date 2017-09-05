@@ -7,7 +7,7 @@ Created on Fri Feb 26 15:57:07 2016
 import pandas as pd
 
 class Data:
-    def __init__(self, causesOfDeath, conditions, interventionList, 
+    def __init__(self, causesOfDeath, conditions, interventionList, interventionCompleteList,
                  demographics, projectedBirths, rawMortality, causeOfDeathDist, RRdeathAnemia,
                  RRdeathStunting, RRdeathWasting, RRdeathBreastfeeding, 
                  RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution,
@@ -26,6 +26,7 @@ class Data:
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
         self.interventionList = interventionList
+        self.interventionCompleteList = interventionCompleteList
         self.demographics = demographics
         self.projectedBirths = projectedBirths
         self.rawMortality = rawMortality
@@ -189,6 +190,8 @@ def readSpreadsheet(fileName, keyList):
     ### INTERVENTIONS COST AND COVERAGE
     interventionsSheet = pd.read_excel(location, sheetname = 'Interventions cost and coverage', index_col=0)
     interventionList = list(interventionsSheet.index)
+    interventionsCompleteList = [intervention + " with bed nets" if "IFAS" and "malaria" in intervention
+                                 else intervention for intervention in interventionList]
     coverage = dict(interventionsSheet["Baseline coverage"])
     costSaturation = interventionsSheet[["Saturation coverage", "Unit cost"]].to_dict(orient='index')
 
@@ -359,7 +362,7 @@ def readSpreadsheet(fileName, keyList):
     for age in ages:
         ORstuntingComplementaryFeeding[age] = {}
         for intervention in interventionsHere:
-            if "Complementary" in intervention:
+            if "Complementary" in intervention and 'iron' not in intervention:
                 ORstuntingComplementaryFeeding[age][intervention] = ORsheet[age]['OR stunting by intervention'][intervention]
                 if intervention not in foodSecurityGroups:
                     foodSecurityGroups += [intervention]
@@ -431,8 +434,9 @@ def readSpreadsheet(fileName, keyList):
     ORanemiaCondition = {age:{condition:1. for condition in conditionsList} for age in ages}
     fracSevereDia = 0.2 # made up value
 
-    spreadsheetData = Data(causesOfDeathList, conditionsList, interventionList, demographics,
-                           projectedBirths, rawMortality, causeOfDeathDist, RRdeathAnemia, RRdeathStunting,
+    spreadsheetData = Data(causesOfDeathList, conditionsList, interventionList, interventionsCompleteList,
+                           demographics, projectedBirths, rawMortality,
+                           causeOfDeathDist, RRdeathAnemia, RRdeathStunting,
                            RRdeathWasting, RRdeathBreastfeeding, RRdeathByBirthOutcome,
                            stuntingDistribution, wastingDistribution, breastfeedingDistribution,
                            incidences, RRdiarrhea, ORstuntingCondition, birthOutcomeDist,
