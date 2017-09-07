@@ -215,17 +215,29 @@ class Helper:
         model.updateMortalityRate()
         return model, derived, parameters
         
-    def setIFASTargetPopWRA(self, spreadsheetData, model):
+    def setIFASTargetPopWRA(self, spreadsheetData, model, fromModel):
         attendance = spreadsheetData.demographics['school attendance WRA 15-19']
         fracPoor = spreadsheetData.demographics['fraction food insecure (default poor)']
         fracNotPoor = 1.-fracPoor
         fracMalaria = spreadsheetData.demographics['fraction at risk of malaria']
         fracNotMalaria = 1. - fracMalaria
-        pop15to19 = model.listOfReproductiveAgeCompartments[0].getTotalPopulation()        
-        pop20to29 = model.listOfReproductiveAgeCompartments[1].getTotalPopulation()
-        pop30to39 = model.listOfReproductiveAgeCompartments[2].getTotalPopulation()
-        pop40to49 = model.listOfReproductiveAgeCompartments[3].getTotalPopulation()
-        bednetCoverage = model.params.coverage['Long-lasting insecticide-treated bednets']
+        # get correct population sizes
+        if fromModel:
+            # if getting target popsize from model instance
+            pop15to19 = model.listOfReproductiveAgeCompartments[0].getTotalPopulation()        
+            pop20to29 = model.listOfReproductiveAgeCompartments[1].getTotalPopulation()
+            pop30to39 = model.listOfReproductiveAgeCompartments[2].getTotalPopulation()
+            pop40to49 = model.listOfReproductiveAgeCompartments[3].getTotalPopulation()
+            bednetCoverage = model.params.coverage['Long-lasting insecticide-treated bednets']
+        else:    
+            # if getting initial target pop size
+            agePopSizes = self.makeWRAAgePopSizes(spreadsheetData)
+            pop15to19 = agePopSizes[0]
+            pop20to29 = agePopSizes[1]
+            pop30to39 = agePopSizes[2]
+            pop40to49 = agePopSizes[3]       
+            bednetCoverage = spreadsheetData.coverage['Long-lasting insecticide-treated bednets']
+        
         IFASinterventions = [intervention for intervention in spreadsheetData.interventionCompleteList if "IFAS" in intervention]
         targetPopulation= {}
         for intervention in IFASinterventions:

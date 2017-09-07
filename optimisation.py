@@ -71,7 +71,8 @@ def getTargetPopSizeFromModelInstance(dataSpreadsheetName, keyList, model):
         if "fortification" in intervention:
            targetPopSize[intervention] =  spreadsheetData.demographics['total population'] #TODO: consider changing to demographic projection rather than baseline value
     # get IFAS target populations seperately
-    targetPopSize.update(thisHelper.setIFASTargetPopWRA(spreadsheetData, model))       
+    fromModel = True       
+    targetPopSize.update(thisHelper.setIFASTargetPopWRA(spreadsheetData, model, fromModel))       
     return targetPopSize    
 
     
@@ -412,6 +413,8 @@ class Optimisation:
         
     def getInitialTargetPopSize(self):
         import data 
+        import helper
+        thisHelper = helper.Helper()
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         targetPopSize = {}
         for intervention in spreadsheetData.interventionCompleteList:
@@ -427,7 +430,7 @@ class Optimisation:
                     target = spreadsheetData.targetPopulation[intervention][ageName]
                 targetPopSize[intervention] += target * agePopSizes[iAge]
             # pregnant women
-            agePopSizes = self.helper.makePregnantWomenAgePopSizes(self, spreadsheetData)
+            agePopSizes = self.helper.makePregnantWomenAgePopSizes(spreadsheetData)
             numAgeGroups = len(self.helper.keyList['pregnantWomenAges'])    
             for iAge in range(numAgeGroups):
                 ageName = self.helper.keyList['pregnantWomenAges'][iAge] 
@@ -449,7 +452,9 @@ class Optimisation:
             # for food fortification set target population size as entire population
             if "fortification" in intervention:
                targetPopSize[intervention] =  spreadsheetData.demographics['total population'] #TODO: consider changing to demographic projection rather than baseline value    
-        #TODO: call function to add IFAS intervention target pop sizes to dictionary       
+        #add IFAS intervention target pop sizes to dictionary  
+        fromModel = False       
+        targetPopSize.update(thisHelper.setIFASTargetPopWRA(spreadsheetData, "dummyModel", fromModel))        
         return targetPopSize    
     
     
