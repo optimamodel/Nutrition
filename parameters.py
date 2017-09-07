@@ -140,21 +140,19 @@ class Params:
         return anemiaUpdate, malariaReduction, poorReduction, notPoorReduction
 
     def adjustBednetCoverage(self, newCoverages):
-        """If bed net coverage < IFAS (malaria area) coverage then scales up new intervention with combined IFAS + bed nets.
-        This assumes bed net coverage is distributed proportionally to each population group"""
         from copy import deepcopy as dcp
         coverages = dcp(newCoverages)
         bednetCoverage = coverages['Long-lasting insecticide-treated bednets']
         for intervention in coverages.keys():
-            if 'IFAS' and 'malaria' in intervention and 'bed nets' not in intervention:
-                IFASmalariaCoverage = coverages[intervention]
-                combinedIntervention = intervention + " with bed nets"
-                if bednetCoverage < IFASmalariaCoverage:
-                    IFASandBednetCoverage = IFASmalariaCoverage
-                    coverages[combinedIntervention] = IFASandBednetCoverage
-                    coverages[intervention] = 0.
-                else:  # not greater than bed net coverage
-                    coverages[combinedIntervention] = 0.
+            if 'IFAS' and 'malaria' in intervention:
+                if 'bed nets' in intervention:
+                    IFASmalariaBedNetCoverage = coverages[intervention]
+                    if IFASmalariaBedNetCoverage > (1. - bednetCoverage):
+                        coverages[intervention] = (1. - bednetCoverage)
+                elif 'bed nets' not in intervention:
+                    IFASmalariaCoverage = coverages[intervention]
+                    if IFASmalariaCoverage > bednetCoverage:
+                        coverages[intervention] = bednetCoverage
         return coverages
 
     def getAppropriateBFNew(self, newCoverage):

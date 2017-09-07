@@ -179,10 +179,12 @@ class Model:
         self.derived.setProbAnemicIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
         self.derived.setProbStuntedComplementaryFeeding(self.params.stuntingDistribution, self.params.coverage)
         self.derived.setProbAnemicIfCovered(self.params.coverage, self.params.anemiaDistribution, self.params.fracAnemicExposedMalaria, self.params.fracAnemicNotPoor, self.params.fracAnemicPoor)
-        
+
         # get combined reductions from all interventions
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
         stuntingUpdate = self.params.getStuntingUpdate(newCoverage)
+        # before anemia update, check constraint on IFAS and bed net coverages
+        newCoverage = dcp(self.params.adjustBednetCoverage(newCoverage))
         anemiaUpdate, malariaReduction, poorReduction, notPoorReduction = self.params.getAnemiaUpdate(newCoverage)
         incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
         birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)
@@ -250,9 +252,6 @@ class Model:
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
 
         # ANEMIA
-
-        # if bednet coverage exceeds IFAS coverage in malaria areas, adjust coverages accordingly
-        newCoverage = dcp(self.params.adjustBednetCoverage(newCoverage))
 
         # Children
         for ageGroup in self.listOfAgeCompartments:
