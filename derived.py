@@ -425,7 +425,9 @@ class Derived:
         X2 = 1. 
         X3 = 0. 
         Ce  = coverage['Complementary feeding education']
-        Cse = coverage['Public provision of complementary foods']
+        Cse = coverage['Public provision of complementary foods'] + coverage['Public provision of complementary foods with iron']
+        if Cse > 0.95: #::warning:: this is current saturation coverage
+            Cse = 0.95
         Frac = [0.]*4
         Frac[0] = X1*(1.-X2)*Ce + (1.-X1)*(1.-X3)*Ce + X1*(1.-X2)*(1.-Ce)*Cse
         Frac[1] = X1*(1.-X2)*(1.-Ce)*(1.-Cse) + (1.-X1)*(1.-X3)*(1.-Ce)

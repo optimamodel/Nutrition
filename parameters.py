@@ -223,12 +223,15 @@ class Params:
             stuntingUpdate[ageName] = 1.      
         key1 = 'Complementary feeding education'
         key2 = 'Public provision of complementary foods'
+        key3 = 'Public provision of complementary foods with iron'
         # collect data
         X1 = self.demographics['fraction food insecure (default poor)']
         X2 = 1.0 
         X3 = 0.0 
         Ce  = newCoverage[key1]
-        Cse = newCoverage[key2]
+        Cse = newCoverage[key2] + newCoverage[key3]
+        if Cse > 0.95: #::warning:: this is current saturation coverage
+            Cse = 0.95
         # calculate fraction of children in each of the food security/access to intervention groups
         Frac = [0.]*4
         Frac[0] = X1*(1.-X2)*Ce + (1.-X1)*(1.-X3)*Ce + X1*(1.-X2)*(1.-Ce)*Cse
