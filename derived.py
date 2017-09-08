@@ -321,7 +321,7 @@ class Derived:
 
     # Calculate probability of being anemic in each population group given coverage by intervention
     def setProbAnemicIfCovered(self, coverage, anemiaDistribution, fracAnemicExposedMalaria, fracAnemicNotPoor, fracAnemicPoor):
-        for intervention in self.data.interventionList:
+        for intervention in self.data.interventionCompleteList:
             self.probAnemicIfCovered[intervention] = {}
             self.probAnemicIfCovered[intervention]["not covered"] = {}
             self.probAnemicIfCovered[intervention]["covered"] = {}
@@ -338,13 +338,19 @@ class Derived:
                 else:
                     fracAnemicThisPop = anemiaDistribution[pop]["anemic"]
                 fracCovered = coverage[intervention] 
-                relativeRisk = self.data.RRanemiaIntervention[pop].get(intervention)
+                # hidden IFAS interventions do not have corresponding RR/OR
+                if ' with bed nets' in intervention:
+                    thisIntervention = intervention.strip(" with bed nets")
+                else:
+                    thisIntervention = intervention    
+                # get correct RR/OR
+                relativeRisk = self.data.RRanemiaIntervention[pop].get(thisIntervention)
                 if relativeRisk is not None: # have RR for this intervention
                     # for RR, solve linear equation for prob anemic not covered (pn) and covered (pc)
                     pn = fracAnemicThisPop/(relativeRisk*fracCovered + (1.- fracCovered))
                     pc = relativeRisk*pn
                 else: # must be OR
-                    oddsRatio = self.data.ORanemiaIntervention[pop][intervention]
+                    oddsRatio = self.data.ORanemiaIntervention[pop][thisIntervention]
                     pn, pc = self.solveQuadratic(oddsRatio, fracCovered, fracAnemicThisPop)
                 self.probAnemicIfCovered[intervention]["not covered"][pop] = pn
                 self.probAnemicIfCovered[intervention]["covered"][pop] = pc
