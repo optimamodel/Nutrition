@@ -197,6 +197,16 @@ def readSpreadsheet(fileName, keyList):
             interventionCompleteList.append(intervention + " with bed nets")
     coverage = dict(interventionsSheet["Baseline coverage"])
     costSaturation = interventionsSheet[["Saturation coverage", "Unit cost"]].to_dict(orient='index')
+    # add hidden intervention data to coverage and cost saturation
+    hiddenInterventionList = list(set(interventionCompleteList) - set(interventionList))
+    for intervention in hiddenInterventionList:
+        correspondingIntervention = intervention.strip(" with bed nets")
+        thisCoverage = coverage[correspondingIntervention]
+        coverage.update({intervention : thisCoverage})
+        thisCostSaturation = costSaturation[correspondingIntervention]
+        costSaturation.update({intervention : thisCostSaturation})
+    
+
 
     ### BASELINE YEAR DEMOGRAPHICS
     demographicsSheet = pd.read_excel(location, sheetname='Baseline year demographics', index_col=[0, 1])
