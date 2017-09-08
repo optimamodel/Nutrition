@@ -263,8 +263,8 @@ class Model:
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
 
         # Women of reproductive age
-            poorUpdate  = {}
-            notPoorUpdate = {}
+        poorUpdate  = {}
+        notPoorUpdate = {}
         for ageGroup in self.listOfReproductiveAgeCompartments:
             ageName = ageGroup.name
             
