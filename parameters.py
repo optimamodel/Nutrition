@@ -113,9 +113,7 @@ class Params:
                 probAnemicIfCovered = self.derived.probAnemicIfCovered[intervention]["covered"][pop]
                 probAnemicIfNotCovered = self.derived.probAnemicIfCovered[intervention]["not covered"][pop]
                 # set the right coverage level
-                if "fortification" and "salt" in intervention:
-                    thisCoverage = newCoverage[intervention]
-                elif "fortification" in intervention:
+                if "fortification" in intervention and "salt" not in intervention:
                     thisCoverage = newCoverage[intervention] * (1.- self.demographics['fraction of subsistence farming'])
                 else:    
                     thisCoverage = newCoverage[intervention]
