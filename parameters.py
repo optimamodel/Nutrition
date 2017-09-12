@@ -227,7 +227,10 @@ class Params:
                     if newCoverages[intervention] > 1. - constrainedCoverages['Multiple micronutrient supplementation']:
                         constrainedCoverages[intervention] = 1. - constrainedCoverages['Multiple micronutrient supplementation']
                     
-             
+            # add constraint to WRA IFAS interventions, set to 0 coverage if anemia prevalance <20%
+            if 'IFAS' in intervention:
+                if aveAnemicFracWRA < 0.2:
+                    constrainedCoverages[intervention] = 0.
                         
         return constrainedCoverages
 
