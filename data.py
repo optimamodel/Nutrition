@@ -193,8 +193,9 @@ def readSpreadsheet(fileName, keyList):
     interventionList = list(interventionsSheet.index)
     interventionCompleteList =  dcp(interventionList)
     for intervention in interventionList:
-        if "IFAS" and "malaria" in intervention:
-            interventionCompleteList.append(intervention + " with bed nets")
+        if "IFAS" in intervention:
+            if "malaria" in intervention:
+                interventionCompleteList.append(intervention + " with bed nets")
     coverage = dict(interventionsSheet["Baseline coverage"])
     costSaturation = interventionsSheet[["Saturation coverage", "Unit cost"]].to_dict(orient='index')
     # add hidden intervention data to coverage and cost saturation

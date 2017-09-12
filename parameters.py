@@ -153,21 +153,22 @@ class Params:
         targetSpriklesMalaria = 0.
         targetPPCFironMalaria = 0.
         for age in range(0, len(listOfAgeCompartments)):
-            targetSprikles += self.rawTargetPop['Sprikles'][age] * listOfAgeCompartments[age].getTotalPopulation()
-            targetPPCFiron += self.rawTargetPop['Public provision of complementary foods with iron'][age] * listOfAgeCompartments[age].getTotalPopulation()
-            targetSpriklesMalaria += self.rawTargetPop['Sprikles (malaria area)'][age] * listOfAgeCompartments[age].getTotalPopulation()
-            targetPPCFironMalaria += self.rawTargetPop['Public provision of complementary foods with iron (malaria area)'][age] * listOfAgeCompartments[age].getTotalPopulation()
+            ageName = listOfAgeCompartments[age].name
+            targetSprikles += self.rawTargetPop['Sprinkles'][ageName] * listOfAgeCompartments[age].getTotalPopulation()
+            targetPPCFiron += self.rawTargetPop['Public provision of complementary foods with iron'][ageName] * listOfAgeCompartments[age].getTotalPopulation()
+            targetSpriklesMalaria += self.rawTargetPop['Sprinkles (malaria area)'][ageName] * listOfAgeCompartments[age].getTotalPopulation()
+            targetPPCFironMalaria += self.rawTargetPop['Public provision of complementary foods with iron (malaria area)'][ageName] * listOfAgeCompartments[age].getTotalPopulation()
         percentExtraPop = (targetSprikles - targetPPCFiron) / targetPPCFiron
         percentExtraPopMalaria = (targetSprikles - targetPPCFiron) / targetPPCFiron
         
         # calculate average anemia prevalence children and WRA
         thisList = []
         for age in range(0, len(listOfAgeCompartments)):
-            thisList.append(age.getAnemicFraction())
+            thisList.append(listOfAgeCompartments[age].getAnemicFraction())
         aveAnemicFracChildren = sum(thisList)/len(thisList)
         thisList = []
         for age in range(0, len(listOfReproductiveAgeCompartments)):
-            thisList.append(age.getAnemicFraction())
+            thisList.append(listOfReproductiveAgeCompartments[age].getAnemicFraction())
         aveAnemicFracWRA = sum(thisList)/len(thisList)
         
         # NOW ADD ALL CONSTRAINTS
