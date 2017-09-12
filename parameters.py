@@ -144,6 +144,7 @@ class Params:
         from copy import deepcopy as dcp
         constrainedCoverages = dcp(newCoverages)
         bednetCoverage = newCoverages['Long-lasting insecticide-treated bednets']
+        IPTpCovereage = newCoverages['IPTp']
         
         # FIRST CALCULATE SOME USEFUL THINGS
         # calculate overlap of PPCF+iron target pop with sprinkles target pop
@@ -210,7 +211,22 @@ class Params:
             if newCoverages['Zinc supplementation'] > (1. - totalConstrainedSprinklesCov):
                 constrainedCoverages['Zinc supplementation'] = (1. - totalConstrainedSprinklesCov)    
              
-            #
+            # add IPTp constraint to PW MMS in malaria area
+            if 'Multiple micronutrient' and 'malaria area' in intervention:
+                if newCoverages[intervention] > IPTpCovereage:
+                    constrainedCoverages[intervention] = IPTpCovereage
+            
+            # add constraint on PW IFAS and MMS- prefer MMS as the most expensive
+            if 'Iron and folic acid' in intervention:
+                if 'malaria' in intervention:
+                    if newCoverages[intervention] > 1. - constrainedCoverages['Multiple micronutrient supplementation (malaria area)']:
+                        constrainedCoverages[intervention] = 1. - constrainedCoverages['Multiple micronutrient supplementation (malaria area)']
+                    if constrainedCoverages[intervention] > IPTpCovereage:
+                        constrainedCoverages[intervention] = IPTpCovereage
+                else:
+                    if newCoverages[intervention] > 1. - constrainedCoverages['Multiple micronutrient supplementation']:
+                        constrainedCoverages[intervention] = 1. - constrainedCoverages['Multiple micronutrient supplementation']
+                    
              
                         
         return constrainedCoverages
