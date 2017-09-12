@@ -198,6 +198,15 @@ class Params:
                 if aveAnemicFracChildren < 0.2:
                     constrainedCoverages[intervention] = 0.
                     
+            # add constraints on vitamin A and zinc- neither can be given if sprikles already given.  Constrain sprinkles first!
+            s1 = 'Sprinkles'
+            s2 = 'Sprinkles (malaria area)'
+            totalNumSprinkles = constrainedCoverages[s1] * targetSprikles + constrainedCoverages[s2] * targetSpriklesMalaria                
+            totalConstrainedSprinklesCov = totalNumSprinkles/(targetSprikles + targetSpriklesMalaria)        
+            if newCoverages['Vitamin A supplementation'] > (1. - totalConstrainedSprinklesCov):
+                constrainedCoverages['Vitamin A supplementation'] = (1. - totalConstrainedSprinklesCov)
+            if newCoverages['Zinc supplementation'] > (1. - totalConstrainedSprinklesCov):
+                constrainedCoverages['Zinc supplementation'] = (1. - totalConstrainedSprinklesCov)    
                     
                         
         return constrainedCoverages
