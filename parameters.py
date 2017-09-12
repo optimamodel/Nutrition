@@ -145,7 +145,7 @@ class Params:
         constrainedCoverages = dcp(newCoverages)
         bednetCoverage = newCoverages['Long-lasting insecticide-treated bednets']
         
-        # FIRST GET SOME USEFUL THINGS
+        # FIRST CALCULATE SOME USEFUL THINGS
         # calculate overlap of PPCF+iron target pop with sprinkles target pop
         targetSprikles = 0.
         targetPPCFiron = 0.
@@ -192,6 +192,8 @@ class Params:
             if 'Sprinkles' in intervention:
                 if 'malaria' in intervention:
                     constrainedCoverages[intervention] = (1. - newCoverages['Public provision of complementary foods with iron (malaria area)']) * (1. + percentExtraPopMalaria)
+                    if constrainedCoverages[intervention] > bednetCoverage:
+                        constrainedCoverages[intervention] = bednetCoverage
                 else:
                     constrainedCoverages[intervention] = (1. - newCoverages['Public provision of complementary foods with iron']) * (1. + percentExtraPop)
                 # if anemia <20% set coverage to zero
@@ -207,7 +209,9 @@ class Params:
                 constrainedCoverages['Vitamin A supplementation'] = (1. - totalConstrainedSprinklesCov)
             if newCoverages['Zinc supplementation'] > (1. - totalConstrainedSprinklesCov):
                 constrainedCoverages['Zinc supplementation'] = (1. - totalConstrainedSprinklesCov)    
-                    
+             
+            #
+             
                         
         return constrainedCoverages
 
