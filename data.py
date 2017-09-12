@@ -440,12 +440,19 @@ def readSpreadsheet(fileName, keyList):
 
     # TODO: not currently available in spreadsheet
     print "::WARNING:: fractions pertaining to anemia/malaria and ORanemiaCondition are fictional."
-    fracAnemicNotPoor = {age:0.5 for age in ages + WRAages + PWages}
-    fracAnemicPoor = {age:0.5 for age in ages + WRAages + PWages}
-    fracAnemicExposedMalaria = {age:0.5 for age in ages + WRAages + PWages}
     fracExposedMalaria = demographics['fraction at risk of malaria']
     ORanemiaCondition = {age:{condition:1. for condition in conditionsList} for age in ages}
     fracSevereDia = 0.2 # made up value
+    
+    
+    # calculate fractions of poor, not poor and malaria exposed anemic
+    fracAnemicPoor = {}
+    fracAnemicNotPoor = {}
+    fracAnemicExposedMalaria = {}
+    for age in ages + WRAages + PWages:
+        fracAnemicPoor[age] = anemiaDistribution[age]['anemic'] * demographics['fraction food insecure (default poor)']
+        fracAnemicNotPoor[age] = anemiaDistribution[age]['anemic'] * (1. - demographics['fraction food insecure (default poor)'])
+        fracAnemicExposedMalaria[age] = anemiaDistribution[age]['anemic'] * demographics['fraction at risk of malaria']
 
     spreadsheetData = Data(causesOfDeathList, conditionsList, interventionList, interventionCompleteList,
                            demographics, projectedBirths, rawMortality,
