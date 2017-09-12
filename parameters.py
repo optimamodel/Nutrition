@@ -49,6 +49,7 @@ class Params:
         self.projectedGeneralPop = dcp(data.projectedGeneralPop)
         self.PWageDistribution = dcp(data.PWageDistribution)
         self.fracSevereDia = dcp(data.fracSevereDia)
+        self.rawTargetPop = dcp(data.targetPopulation)
     
 
 # Add all functions for updating parameters due to interventions here....
@@ -112,12 +113,14 @@ class Params:
             for intervention in newCoverage.keys():
                 probAnemicIfCovered = self.derived.probAnemicIfCovered[intervention]["covered"][pop]
                 probAnemicIfNotCovered = self.derived.probAnemicIfCovered[intervention]["not covered"][pop]
+                
                 # set the right coverage level
                 if "fortification" in intervention and "salt" not in intervention:
                     thisCoverage = newCoverage[intervention] * (1.- self.demographics['fraction of subsistence farming'])
                 else:    
                     thisCoverage = newCoverage[intervention]
                 newProbAnemic = thisCoverage*probAnemicIfCovered + (1-thisCoverage)*probAnemicIfNotCovered
+                
                 # set the right old probability of being anemic
                 if intervention == 'IPTp':
                     oldProbAnemic = self.fracAnemicExposedMalaria[pop]
@@ -137,20 +140,59 @@ class Params:
                     anemiaUpdate[pop] *= 1. - reduction
         return anemiaUpdate, malariaReduction, poorReduction, notPoorReduction
 
-    def adjustBednetCoverage(self, newCoverages):
+    def addCoverageConstraints(self, newCoverages, listOfAgeCompartments, listOfReproductiveAgeCompartments):
         from copy import deepcopy as dcp
         coverages = dcp(newCoverages)
         bednetCoverage = coverages['Long-lasting insecticide-treated bednets']
+        
+        # FIRST GET SOME USEFUL THINGS
+        # calculate overlap of PPCF+iron target pop with sprinkles target pop
+        targetSprikles = 0.
+        targetPPCFiron = 0.
+        targetSpriklesMalaria = 0.
+        targetPPCFironMalaria = 0.
+        for age in range(0, len(listOfAgeCompartments)):
+            targetSprikles += self.rawTargetPop['Sprikles'][age] * listOfAgeCompartments[age].getTotalPopulation()
+            targetPPCFiron += self.rawTargetPop['Public provision of complementary foods with iron'][age] * listOfAgeCompartments[age].getTotalPopulation()
+            targetSpriklesMalaria += self.rawTargetPop['Sprikles (malaria area)'][age] * listOfAgeCompartments[age].getTotalPopulation()
+            targetPPCFironMalaria += self.rawTargetPop['Public provision of complementary foods with iron (malaria area)'][age] * listOfAgeCompartments[age].getTotalPopulation()
+        percentExtraPop = (targetSprikles - targetPPCFiron) / targetPPCFiron
+        percentExtraPopMalaria = (targetSprikles - targetPPCFiron) / targetPPCFiron
+        
+        # calculate average anemia prevalence children and WRA
+        thisList = []
+        for age in range(0, len(listOfAgeCompartments)):
+            thisList.append(age.getAnemicFraction())
+        aveAnemicFracChildren = sum(thisList)/len(thisList)
+        thisList = []
+        for age in range(0, len(listOfReproductiveAgeCompartments)):
+            thisList.append(age.getAnemicFraction())
+        aveAnemicFracWRA = sum(thisList)/len(thisList)
+        
+        # NOW ADD ALL CONSTRAINTS
         for intervention in coverages.keys():
+            # set bed net constraints for all WRA IFAS interventions            
             if 'IFAS' and 'malaria' in intervention:
                 if 'bed nets' in intervention:
-                    IFASmalariaBedNetCoverage = coverages[intervention]
+                    IFASmalariaBedNetCoverage = newCoverages[intervention]
                     if IFASmalariaBedNetCoverage > (1. - bednetCoverage):
                         coverages[intervention] = (1. - bednetCoverage)
                 elif 'bed nets' not in intervention:
-                    IFASmalariaCoverage = coverages[intervention]
+                    IFASmalariaCoverage = newCoverages[intervention]
                     if IFASmalariaCoverage > bednetCoverage:
                         coverages[intervention] = bednetCoverage
+                        
+            # add constraints on sprinkles coverage                
+            # prioritise PPCF+iron over sprinkles, taking into accout extra pop which can be covered by sprinkles
+            if 'Sprinkles' in intervention:
+                if 'malaria' in intervention:
+                    coverages[intervention] = (1. - newCoverages['Public provision of complementary foods with iron (malaria area)']) * (1. + percentExtraPopMalaria)
+                else:
+                    coverages[intervention] = (1. - newCoverages['Public provision of complementary foods with iron']) * (1. + percentExtraPop)
+                # if anemia <20% set coverage to zero
+                if aveAnemicFracChildren < 0.2:
+                    coverages[intervention] = 0.
+                        
         return coverages
 
     def getAppropriateBFNew(self, newCoverage):

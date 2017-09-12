@@ -180,11 +180,12 @@ class Model:
         self.derived.setProbStuntedComplementaryFeeding(self.params.stuntingDistribution, self.params.coverage)
         self.derived.setProbAnemicIfCovered(self.params.coverage, self.params.anemiaDistribution, self.params.fracAnemicExposedMalaria, self.params.fracAnemicNotPoor, self.params.fracAnemicPoor)
 
+        # add all constraints to coverages
+        newCoverage = dcp(self.params.addCoverageConstraints(newCoverage, self.listOfAgeCompartments, self.listOfReproductiveAgeCompartments))
+
         # get combined reductions from all interventions
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
         stuntingUpdate = self.params.getStuntingUpdate(newCoverage)
-        # before anemia update, check constraint on IFAS and bed net coverages
-        newCoverage = dcp(self.params.adjustBednetCoverage(newCoverage))
         anemiaUpdate, malariaReduction, poorReduction, notPoorReduction = self.params.getAnemiaUpdate(newCoverage)
         incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
         birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)
