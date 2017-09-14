@@ -278,7 +278,7 @@ class Params:
             # anemia
             anemiaUpdate[ageName] = 1.
             newProbAnemia = 0
-            oldProbAnemia = self.anemiaDistribution[ageName]["anemia"]
+            oldProbAnemia = self.anemiaDistribution[ageName]["anemic"]
             for breastfeedingCat in self.breastfeedingList:
                 pab = self.breastfeedingDistribution[ageName][breastfeedingCat]
                 # stunting

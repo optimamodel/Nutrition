@@ -306,7 +306,7 @@ class Derived:
     # Calculate probability of stunting in current age-group given coverage by intervention
     def setProbStuntedIfCovered(self, coverage, stuntingDistribution):
         numAgeGroups = len(self.ages)
-        for intervention in self.data.interventionList:
+        for intervention in self.data.interventionCompleteList:
             self.probStuntedIfCovered[intervention] = {}
             self.probStuntedIfCovered[intervention]["not covered"] = {}
             self.probStuntedIfCovered[intervention]["covered"]     = {}
@@ -359,7 +359,7 @@ class Derived:
     # Calculate probability of stunting in current age-group given coverage by intervention
     def setProbCorrectlyBreastfedIfCovered(self, coverage, breastfeedingDistribution):
         numAgeGroups = len(self.ages)
-        for intervention in self.data.interventionList:
+        for intervention in self.data.interventionCompleteList:
             self.probCorrectlyBreastfedIfCovered[intervention] = {}
             self.probCorrectlyBreastfedIfCovered[intervention]["not covered"] = {}
             self.probCorrectlyBreastfedIfCovered[intervention]["covered"]     = {}

@@ -369,7 +369,7 @@ def readSpreadsheet(fileName, keyList):
     ORstuntingDia = dict(ORsheet.loc['OR stunting progression and condition','Diarrhea'])
     ORstuntingCondition = {age:{condition: ORstuntingDia[age] for condition in ['Diarrhea']} for age in ages}
     # by intervention
-    ORstuntingIntervention = splitSpreadsheetWithTwoIndexCols(ORsheet, "OR stunting by intervention", rowList=interventionList)
+    ORstuntingIntervention = splitSpreadsheetWithTwoIndexCols(ORsheet, "OR stunting by intervention", rowList=interventionCompleteList)
     ORstuntingComplementaryFeeding = {}
     interventionsHere = ORsheet.loc['OR stunting by intervention'].index
     foodSecurityGroups = []
@@ -383,7 +383,7 @@ def readSpreadsheet(fileName, keyList):
     # TODO: what about prophylactic zinc supplementation? doesn't seem to be used at all (gets forgotten about)
 
     # correct breastfeeding
-    ORappropriatebfIntervention = splitSpreadsheetWithTwoIndexCols(ORsheet, "OR for correct breastfeeding by intervention", rowList=interventionList)
+    ORappropriatebfIntervention = splitSpreadsheetWithTwoIndexCols(ORsheet, "OR for correct breastfeeding by intervention", rowList=interventionCompleteList)
 
     # APPROPRIATE BREASTFEEDING
     breastfeedingSheet = pd.read_excel(location, sheetname='Appropriate breastfeeding')
@@ -408,7 +408,7 @@ def readSpreadsheet(fileName, keyList):
     # INTERVENTIONS BIRTH OUTCOMES
     interventionsBirthOutcomeSheet = pd.read_excel(location, sheetname='Interventions birth outcomes', index_col=[0,1])
     interventionsBirthOutcome = {}
-    for intervention in interventionList:
+    for intervention in interventionCompleteList:
         interventionsBirthOutcome[intervention] = {}
         for birthOutcome in birthOutcomes:
             column = interventionsBirthOutcomeSheet[birthOutcome]
@@ -425,7 +425,7 @@ def readSpreadsheet(fileName, keyList):
     interventionsAnemiaSheet = interventionsAnemiaSheet.dropna(how='all')
     # remove interventions from RR if we have OR
     interventionsOR = list(interventionsAnemiaSheet.loc["Odds Ratios"].index)
-    interventionsRR = [intervention for intervention in interventionList if intervention not in interventionsOR]
+    interventionsRR = [intervention for intervention in interventionCompleteList if intervention not in interventionsOR]
     RRanemiaIntervention = splitSpreadsheetWithTwoIndexCols(interventionsAnemiaSheet, 'Relative Risks', rowList=interventionsRR)
     # odds ratios
     ORanemiaIntervention = splitSpreadsheetWithTwoIndexCols(interventionsAnemiaSheet, 'Odds Ratios', rowList=interventionsOR)
@@ -434,9 +434,9 @@ def readSpreadsheet(fileName, keyList):
     # children
     # warning: currently this applied to all population groups (no tabs for them yet)
     interventionsForChildren = pd.read_excel(location, sheetname='Interventions for children', index_col=[0, 1, 2])
-    affectedFraction = readInterventionsByPopulationTabs(interventionsForChildren, 'Affected fraction', interventionList, allPops, causesOfDeathList + ['Severe diarrhea']) # TODO: warning: severe diarrhea is not listed in 'causes of death' and so causes issues
-    effectivenessMortality = readInterventionsByPopulationTabs(interventionsForChildren, 'Effectiveness mortality', interventionList, allPops, causesOfDeathList)
-    effectivenessIncidence = readInterventionsByPopulationTabs(interventionsForChildren, 'Effectiveness incidence', interventionList, ages, conditionsList) # children only
+    affectedFraction = readInterventionsByPopulationTabs(interventionsForChildren, 'Affected fraction', interventionCompleteList, allPops, causesOfDeathList + ['Severe diarrhea']) # TODO: warning: severe diarrhea is not listed in 'causes of death' and so causes issues
+    effectivenessMortality = readInterventionsByPopulationTabs(interventionsForChildren, 'Effectiveness mortality', interventionCompleteList, allPops, causesOfDeathList)
+    effectivenessIncidence = readInterventionsByPopulationTabs(interventionsForChildren, 'Effectiveness incidence', interventionCompleteList, ages, conditionsList) # children only
 
 
     # TODO: not currently available in spreadsheet
@@ -444,7 +444,6 @@ def readSpreadsheet(fileName, keyList):
     fracExposedMalaria = demographics['fraction at risk of malaria']
     ORanemiaCondition = {age:{condition:1. for condition in conditionsList} for age in ages}
     fracSevereDia = 0.2 # made up value
-    
     
     # calculate fractions of poor, not poor and malaria exposed anemic
     fracAnemicPoor = {}

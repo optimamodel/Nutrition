@@ -221,7 +221,7 @@ class Model:
             SumAfter = self.derived.getDiarrheaRiskSum(ageName, self.params.breastfeedingDistribution)
             self.params.incidences[ageName]['Diarrhea'] *= SumAfter / SumBefore # update incidence of diarrhea
         beta = self.derived.getFracDiarrheaFixedZ()
-        stuntingUpdateDueToBreastfeeding = self.params.getStuntingUpdateDueToIncidence(beta)
+        stuntingUpdateDueToBreastfeeding, dummyAnemia = self.params.getUpdatesDueToIncidence(beta)
 
         # INCIDENCE
         incidencesBefore = {}
@@ -308,7 +308,7 @@ class Model:
         for ageGroup in self.listOfPregnantWomenAgeCompartments:
             ageName = ageGroup.name
             # add the reduction from IPTp to anemia update for pregnant women
-            numberExposedMalaria = ageGroup.getTotalPopulation() * self.params.fracExposedMalaria[ageName]
+            numberExposedMalaria = ageGroup.getTotalPopulation() * self.params.fracExposedMalaria
             numberAnemicExposedMalaria = numberExposedMalaria * self.params.fracAnemicExposedMalaria[ageName]
             totalAnemicPopulation = ageGroup.getTotalPopulation() * self.params.anemiaDistribution[ageName]["anemic"]
             thisReduction = malariaReduction[ageName] * numberAnemicExposedMalaria / totalAnemicPopulation
