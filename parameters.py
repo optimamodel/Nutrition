@@ -113,12 +113,7 @@ class Params:
             for intervention in newCoverage.keys():
                 probAnemicIfCovered = self.derived.probAnemicIfCovered[intervention]["covered"][pop]
                 probAnemicIfNotCovered = self.derived.probAnemicIfCovered[intervention]["not covered"][pop]
-                
-                # set the right coverage level
-                if "fortification" in intervention and "salt" not in intervention:
-                    thisCoverage = newCoverage[intervention] * (1.- self.demographics['fraction of subsistence farming'])
-                else:    
-                    thisCoverage = newCoverage[intervention]
+                thisCoverage = newCoverage[intervention]
                 newProbAnemic = thisCoverage*probAnemicIfCovered + (1-thisCoverage)*probAnemicIfNotCovered
                 
                 # set the right old probability of being anemic
@@ -143,8 +138,8 @@ class Params:
     def addCoverageConstraints(self, newCoverages, listOfAgeCompartments, listOfReproductiveAgeCompartments):
         from copy import deepcopy as dcp
         constrainedCoverages = dcp(newCoverages)
-        bednetCoverage = newCoverages['Long-lasting insecticide-treated bednets']
-        IPTpCovereage = newCoverages['IPTp']
+        bednetCoverage = constrainedCoverages['Long-lasting insecticide-treated bednets']
+        IPTpCoverage = constrainedCoverages['IPTp']
         
         # FIRST CALCULATE SOME USEFUL THINGS
         # calculate overlap of PPCF+iron target pop with sprinkles target pop
@@ -174,14 +169,12 @@ class Params:
         # NOW ADD ALL CONSTRAINTS
         for intervention in newCoverages.keys():
             # set bed net constraints for all WRA IFAS interventions            
-            if 'IFAS' and 'malaria' in intervention:
+            if ('IFAS' in intervention) and ('malaria' in intervention):
                 if 'bed nets' in intervention:
-                    IFASmalariaBedNetCoverage = newCoverages[intervention]
-                    if IFASmalariaBedNetCoverage > (1. - bednetCoverage):
+                    if newCoverages[intervention] > (1. - bednetCoverage):
                         constrainedCoverages[intervention] = (1. - bednetCoverage)
                 elif 'bed nets' not in intervention:
-                    IFASmalariaCoverage = newCoverages[intervention]
-                    if IFASmalariaCoverage > bednetCoverage:
+                    if newCoverages[intervention] > bednetCoverage:
                         constrainedCoverages[intervention] = bednetCoverage
                         
             # add constraint on PPCF + iron in malaria area to allow maximum coverage to equal bednet coverage - do this before sprinkles constraint!        
@@ -193,11 +186,15 @@ class Params:
             # prioritise PPCF+iron over sprinkles, taking into accout extra pop which can be covered by sprinkles
             if 'Sprinkles' in intervention:
                 if 'malaria' in intervention:
-                    constrainedCoverages[intervention] = (1. - newCoverages['Public provision of complementary foods with iron (malaria area)']) * (1. + percentExtraPopMalaria)
+                    maxAllowedCov = (1. - newCoverages['Public provision of complementary foods with iron (malaria area)']) * (1. + percentExtraPopMalaria)
+                    if newCoverages[intervention] > maxAllowedCov:                    
+                        constrainedCoverages[intervention] = maxAllowedCov
                     if constrainedCoverages[intervention] > bednetCoverage:
                         constrainedCoverages[intervention] = bednetCoverage
                 else:
-                    constrainedCoverages[intervention] = (1. - newCoverages['Public provision of complementary foods with iron']) * (1. + percentExtraPop)
+                    maxAllowedCov = (1. - newCoverages['Public provision of complementary foods with iron']) * (1. + percentExtraPop)
+                    if newCoverages[intervention] > maxAllowedCov:                        
+                        constrainedCoverages[intervention] = maxAllowedCov
                 # if anemia <20% set coverage to zero
                 if aveAnemicFracChildren < 0.2:
                     constrainedCoverages[intervention] = 0.
@@ -206,24 +203,24 @@ class Params:
             s1 = 'Sprinkles'
             s2 = 'Sprinkles (malaria area)'
             totalNumSprinkles = constrainedCoverages[s1] * targetSprikles + constrainedCoverages[s2] * targetSpriklesMalaria                
-            totalConstrainedSprinklesCov = totalNumSprinkles/(targetSprikles + targetSpriklesMalaria)        
+            totalConstrainedSprinklesCov = totalNumSprinkles/(targetSprikles + targetSpriklesMalaria)  
             if newCoverages['Vitamin A supplementation'] > (1. - totalConstrainedSprinklesCov):
                 constrainedCoverages['Vitamin A supplementation'] = (1. - totalConstrainedSprinklesCov)
             if newCoverages['Zinc supplementation'] > (1. - totalConstrainedSprinklesCov):
                 constrainedCoverages['Zinc supplementation'] = (1. - totalConstrainedSprinklesCov)    
              
             # add IPTp constraint to PW MMS in malaria area
-            if 'Multiple micronutrient' and 'malaria area' in intervention:
-                if newCoverages[intervention] > IPTpCovereage:
-                    constrainedCoverages[intervention] = IPTpCovereage
+            if ('Multiple micronutrient' in intervention) and ('malaria area' in intervention):
+                if newCoverages[intervention] > IPTpCoverage:
+                    constrainedCoverages[intervention] = IPTpCoverage
             
             # add constraint on PW IFAS and MMS- prefer MMS as the most expensive
             if 'Iron and folic acid' in intervention:
                 if 'malaria' in intervention:
                     if newCoverages[intervention] > 1. - constrainedCoverages['Multiple micronutrient supplementation (malaria area)']:
                         constrainedCoverages[intervention] = 1. - constrainedCoverages['Multiple micronutrient supplementation (malaria area)']
-                    if constrainedCoverages[intervention] > IPTpCovereage:
-                        constrainedCoverages[intervention] = IPTpCovereage
+                    if constrainedCoverages[intervention] > IPTpCoverage:
+                        constrainedCoverages[intervention] = IPTpCoverage
                 else:
                     if newCoverages[intervention] > 1. - constrainedCoverages['Multiple micronutrient supplementation']:
                         constrainedCoverages[intervention] = 1. - constrainedCoverages['Multiple micronutrient supplementation']
@@ -232,6 +229,10 @@ class Params:
             if 'IFAS' in intervention:
                 if aveAnemicFracWRA < 0.2:
                     constrainedCoverages[intervention] = 0.
+                    
+            # add food fortification constraints
+            if ("fortification" in intervention) and ("salt" not in intervention):
+                constrainedCoverages[intervention] = newCoverages[intervention] * (1.- self.demographics['fraction of subsistence farming'])
                         
         return constrainedCoverages
 
