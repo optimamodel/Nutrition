@@ -8,7 +8,7 @@ country = 'Tanzania'
 date = '2017Sep'
 spreadsheetDate = '2017Sep'
 
-spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/InputForCode_'+country+'14Sep17.xlsx'
+spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/InputForCode_'+country+'.xlsx'
 
 numModelSteps = 180
 MCSampleSize = 25
