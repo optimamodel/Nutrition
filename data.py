@@ -334,6 +334,7 @@ def readSpreadsheet(fileName, keyList):
             RRdiarrhea[ageName][breastfeedingCat] = column[breastfeedingCat]
     # maternal anemia
     RRsheet = pd.read_excel(location, sheetname='Relative risks', index_col=[0,1,2])
+    RRsheet = RRsheet.dropna()
     maternalAnemia = RRsheet.loc['Maternal anemia - death risk']
     RRdeathMaternal = {}
     column = maternalAnemia['maternal']
