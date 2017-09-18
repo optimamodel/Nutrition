@@ -281,13 +281,10 @@ class Helper:
         return targetPopulation        
                 
                 
-    def setIFASFractionTargetted(self, spreadsheetData, bednetCoverage):
-        attendance = spreadsheetData.demographics['school attendance WRA 15-19']
-        fracPoor = spreadsheetData.demographics['fraction food insecure (default poor)']
+    def setIFASFractionTargetted(self, attendance, fracPoor, fracMalaria, interventionCompleteList, bednetCoverage):
         fracNotPoor = 1.-fracPoor
-        fracMalaria = spreadsheetData.demographics['fraction at risk of malaria']
         fracNotMalaria = 1. - fracMalaria
-        IFASinterventions = [intervention for intervention in spreadsheetData.interventionCompleteList if "IFAS" in intervention]
+        IFASinterventions = [intervention for intervention in interventionCompleteList if "IFAS" in intervention]
         fractionTargeted = {}
         for pop in self.keyList['reproductiveAges']:
             fractionTargeted[pop] = {}
