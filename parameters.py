@@ -24,9 +24,6 @@ class Params:
         self.anemiaDistribution = dcp(data.anemiaDistribution)
         self.fracPoor = dcp(data.demographics['fraction food insecure (default poor)'])
         self.fracNotPoor = 1 - self.fracPoor
-        self.fracAnemicNotPoor = dcp(data.fracAnemicNotPoor)
-        self.fracAnemicPoor = dcp(data.fracAnemicPoor)
-        self.fracAnemicExposedMalaria = dcp(data.fracAnemicExposedMalaria)
         self.fracExposedMalaria = dcp(data.fracExposedMalaria)
         self.RRdeathStunting = dcp(data.RRdeathStunting)
         self.RRdeathWasting = dcp(data.RRdeathWasting)
@@ -50,6 +47,8 @@ class Params:
         self.PWageDistribution = dcp(data.PWageDistribution)
         self.fracSevereDia = dcp(data.fracSevereDia)
         self.rawTargetPop = dcp(data.targetPopulation)
+        self.attendance = dcp(data.demographics['school attendance WRA 15-19'])
+        self.inteventionCompleteList = dcp(data.interventionCompleteList)
     
 
 # Add all functions for updating parameters due to interventions here....
@@ -100,40 +99,53 @@ class Params:
                 stuntingUpdate[ageName] *= 1. - reduction
         return stuntingUpdate
 
-    def getAnemiaUpdate(self, newCoverage):
+    def getAnemiaUpdate(self, newCoverage, thisHelper):
         anemiaUpdate = {}
-        malariaReduction = {}
-        poorReduction = {}
-        notPoorReduction = {}
+        fracTargetedIFAS = thisHelper.setIFASFractionTargetted(self.attendance, self.fracPoor, self.fracMalaria, self.interventionCompleteList, newCoverage["Long-lasting insecticide-treated bednets"])
+        interventionsPW = ['IPTp', 'Multiple micronutrient supplementation', 'Iron and folic acid supplementation for pregnant women']        
         for pop in self.allPops:
             anemiaUpdate[pop] = 1.
-            malariaReduction[pop] = 0.
-            poorReduction[pop] = {}
-            notPoorReduction[pop] = {}
             for intervention in newCoverage.keys():
                 probAnemicIfCovered = self.derived.probAnemicIfCovered[intervention]["covered"][pop]
                 probAnemicIfNotCovered = self.derived.probAnemicIfCovered[intervention]["not covered"][pop]
                 thisCoverage = newCoverage[intervention]
                 newProbAnemic = thisCoverage*probAnemicIfCovered + (1-thisCoverage)*probAnemicIfNotCovered
-                
-                # set the right old probability of being anemic
-                if intervention == 'IPTp':
-                    oldProbAnemic = self.fracAnemicExposedMalaria[pop]
-                    reduction = (oldProbAnemic - newProbAnemic)/oldProbAnemic
-                    malariaReduction[pop] = reduction
-                elif "IFA poor" in intervention: 
-                    oldProbAnemic = self.fracAnemicPoor[pop]
-                    reduction = (oldProbAnemic - newProbAnemic)/oldProbAnemic
-                    poorReduction[pop][intervention] = reduction
-                elif "IFA not poor" in intervention: 
-                    oldProbAnemic = self.fracAnemicNotPoor[pop]
-                    reduction = (oldProbAnemic - newProbAnemic)/oldProbAnemic
-                    notPoorReduction[pop][intervention] = reduction    
-                else:    
-                    oldProbAnemic = self.anemiaDistribution[pop]["anemic"]
-                    reduction = (oldProbAnemic - newProbAnemic)/oldProbAnemic
-                    anemiaUpdate[pop] *= 1. - reduction
-        return anemiaUpdate, malariaReduction, poorReduction, notPoorReduction
+                oldProbAnemic = self.anemiaDistribution[pop]["anemic"]
+                # adjust newProbAnemic if necessary as newProbAnemic is amongst subgroup of age group in some cases
+                # new prob age group = prob old * frac not targeted + prob new in subgroup * frac targeted
+                # PW interventions
+                if any(this in intervention for this in interventionsPW) and "PW" in pop:  
+                    if 'malaria area' in intervention:
+                        fractionTargeted = self.fracExposedMalaria
+                    else:
+                        fractionTargeted = 1. - self.fracExposedMalaria
+                    fractionNotTargeted = 1. - fractionTargeted
+                    newProbAnemic = fractionNotTargeted * oldProbAnemic + newProbAnemic * fractionTargeted    
+                # sprinkles
+                if any(this in pop for this in ["6-11 months", "12-23 months", "24-59 months"]) and "Sprinkles" in intervention:
+                    if 'malaria area' in intervention:
+                        fractionTargeted = self.fracExposedMalaria
+                    else:
+                        fractionTargeted = 1. - self.fracExposedMalaria
+                    fractionNotTargeted = 1. - fractionTargeted
+                    newProbAnemic = fractionNotTargeted * oldProbAnemic + newProbAnemic * fractionTargeted     
+                # PPCF + iron
+                if any(this in pop for this in ["6-11 months", "12-23 months", ]) and "Public provision of complementary foods with iron" in intervention:
+                    if 'malaria area' in intervention:
+                        fractionTargeted = self.fracExposedMalaria
+                    else:
+                        fractionTargeted = 1. - self.fracExposedMalaria   
+                    fractionNotTargeted = 1. - fractionTargeted
+                    newProbAnemic = fractionNotTargeted * oldProbAnemic + newProbAnemic * fractionTargeted     
+                # WRA IFAS
+                if "IFAS" in intervention and "WRA" in pop: 
+                    fractionTargeted = fracTargetedIFAS[pop][intervention]
+                    fractionNotTargeted = 1. - fractionTargeted
+                    newProbAnemic = fractionNotTargeted * oldProbAnemic + newProbAnemic * fractionTargeted
+                # now calculate reduction    
+                reduction = (oldProbAnemic - newProbAnemic)/oldProbAnemic
+                anemiaUpdate[pop] *= 1. - reduction
+        return anemiaUpdate
 
     def addCoverageConstraints(self, newCoverages, listOfAgeCompartments, listOfReproductiveAgeCompartments):
         from copy import deepcopy as dcp
