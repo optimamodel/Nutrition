@@ -18,7 +18,7 @@ class Model:
         self.derived = None
         self.params = None
         import helper 
-        self.helper = helper.Helper()
+        self.thisHelper = helper.Helper()
         self.cumulativeAgingOutStunted = 0.0
         self.cumulativeAgingOutNotStunted = 0.0
         
@@ -59,10 +59,10 @@ class Model:
     def getDALYs(self):
         DALYs = 0.
         numStuntedAt5 = self.getCumulativeAgingOutStunted()
-        DALYs += numStuntedAt5 * 0.23 # * (self.helper.keyList['lifeExpectancy'] - 5.) # 0.23 = disability weight
+        DALYs += numStuntedAt5 * 0.23 # * (self.thisHelper.keyList['lifeExpectancy'] - 5.) # 0.23 = disability weight
         for ageGroup in self.listOfAgeCompartments:
             cumulativeDeathsThisAge = ageGroup.getCumulativeDeaths()
-            #DALYs += cumulativeDeathsThisAge * (self.helper.keyList['lifeExpectancy'] - 2.5) # should be slightly different for each age
+            #DALYs += cumulativeDeathsThisAge * (self.thisHelper.keyList['lifeExpectancy'] - 2.5) # should be slightly different for each age
             DALYs += cumulativeDeathsThisAge * 33.3
         return DALYs
         
@@ -187,7 +187,7 @@ class Model:
         # get combined reductions from all interventions
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
         stuntingUpdate = self.params.getStuntingUpdate(newCoverage)
-        anemiaUpdate, malariaReduction, poorReduction, notPoorReduction = self.params.getAnemiaUpdate(newCoverage)
+        anemiaUpdate = self.params.getAnemiaUpdate(newCoverage, self.thisHelper)
         incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
         birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)
         newFracCorrectlyBreastfed = self.params.getAppropriateBFNew(newCoverage)
@@ -250,11 +250,10 @@ class Model:
             #update stunting    
             oldProbStunting = ageGroup.getStuntedFraction()
             newProbStunting = oldProbStunting * totalUpdate
-            self.params.stuntingDistribution[ageName] = self.helper.restratify(newProbStunting)
+            self.params.stuntingDistribution[ageName] = self.thisHelper.restratify(newProbStunting)
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
 
         # ANEMIA
-
         # Children
         for ageGroup in self.listOfAgeCompartments:
             ageName = ageGroup.name
@@ -265,66 +264,22 @@ class Model:
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
 
         # Women of reproductive age
-        poorUpdate  = {}
-        notPoorUpdate = {}
         for ageGroup in self.listOfReproductiveAgeCompartments:
             ageName = ageGroup.name
-            
-            poorUpdate[ageName]  = 1
-            notPoorUpdate[ageName] = 1
-            # add reductions from poor and not poor
-            totalNumberAnemic = ageGroup.getNumberAnemic()
-            numberPoor = ageGroup.getTotalPopulation() * self.params.fracPoor
-            numberNotPoor = ageGroup.getTotalPopulation() * self.params.fracNotPoor
-            numberAnemicPoor = self.params.fracAnemicPoor[ageName] * numberPoor
-            numberAnemicNotPoor = self.params.fracAnemicNotPoor[ageName] * numberNotPoor  
-            # poor                
-            for intervention in poorReduction[ageName].keys():
-                thisReduction = poorReduction[ageName][intervention] * numberAnemicPoor / totalNumberAnemic
-                anemiaUpdate[ageName] *= 1 - thisReduction
-                poorUpdate[ageName] *= 1 - poorReduction[ageName][intervention]
-            # not poor                
-            for intervention in notPoorReduction[ageName].keys():
-                thisReduction = notPoorReduction[ageName][intervention] * numberAnemicNotPoor / totalNumberAnemic
-                anemiaUpdate[ageName] *= 1 - thisReduction   
-                notPoorUpdate[ageName] *= 1 - notPoorReduction[ageName][intervention]
-            
-            # update anemia
             oldProbAnemia = ageGroup.getAnemicFraction()
             newProbAnemia = oldProbAnemia * anemiaUpdate[ageName] 
             self.params.anemiaDistribution[ageName]["anemic"] = newProbAnemia
             self.params.anemiaDistribution[ageName]["not anemic"] = 1. - newProbAnemia
             ageGroup.distributeAnemicPopulation(self.params.anemiaDistribution)
-            
-            # update frac poor and not poor anemic in params
-            oldFracAnemicPoor = self.params.fracAnemicPoor[ageName]
-            oldFracAnemicNotPoor = self.params.fracAnemicNotPoor[ageName]
-            newFracAnemicPoor = oldFracAnemicPoor * poorUpdate[ageName]
-            newFracAnemicNotPoor = oldFracAnemicNotPoor * notPoorUpdate[ageName]
-            self.params.fracAnemicPoor[ageName] = newFracAnemicPoor
-            self.params.fracAnemicNotPoor[ageName] = newFracAnemicNotPoor
-            
 
         # Pregnant Women
         for ageGroup in self.listOfPregnantWomenAgeCompartments:
             ageName = ageGroup.name
-            # add the reduction from IPTp to anemia update for pregnant women
-            numberExposedMalaria = ageGroup.getTotalPopulation() * self.params.fracExposedMalaria
-            numberAnemicExposedMalaria = numberExposedMalaria * self.params.fracAnemicExposedMalaria[ageName]
-            totalAnemicPopulation = ageGroup.getTotalPopulation() * self.params.anemiaDistribution[ageName]["anemic"]
-            thisReduction = malariaReduction[ageName] * numberAnemicExposedMalaria / totalAnemicPopulation
-            anemiaUpdate[ageName] *= 1. - thisReduction
-            # update anemia probability
             oldProbAnemia = ageGroup.getAnemicFraction()
             newProbAnemia = oldProbAnemia * anemiaUpdate[ageName]
             self.params.anemiaDistribution[ageName]['anemic'] = newProbAnemia
             self.params.anemiaDistribution[ageName]['not anemic'] = 1. - newProbAnemia
             ageGroup.distributePopulation(self.params.anemiaDistribution)
-            # update fraction anemic exposed to malaria
-            oldFracAnemiaMalaria = self.params.fracAnemicExposedMalaria[ageName]
-            malariaUpdate = 1. - malariaReduction[ageName]
-            newFracAnemiaMalaria = oldFracAnemiaMalaria * malariaUpdate
-            self.params.fracAnemicExposedMalaria[ageName] = newFracAnemiaMalaria
         
 
         # BIRTH OUTCOME
@@ -453,7 +408,7 @@ class Model:
                 numAgingInStratified[stuntingCat] = 0.
             for prevStunt in ["yesstunted", "notstunted"]:
                 totalProbStunt = self.derived.probStuntedIfPrevStunted[prevStunt][ageName] * self.derived.stuntingUpdateAfterInterventions[ageName]
-                restratifiedProbBecomeStunted = self.helper.restratify(min(1., totalProbStunt))
+                restratifiedProbBecomeStunted = self.thisHelper.restratify(min(1., totalProbStunt))
                 for stuntingCat in self.stuntingList:
                     numAgingInStratified[stuntingCat] += restratifiedProbBecomeStunted[stuntingCat] * numAgingIn[prevStunt]
             # distribute those aging in amongst those stunting categories but also breastfeeding, wasting and anemia
@@ -469,9 +424,9 @@ class Model:
                             thisBox.populationSize += numAgingInStratified[stuntingCat] * pab * paw * paa
             # gaussianise
             stuntingDistributionNow = thisAgeCompartment.getStuntingDistribution()            
-            probStunting = self.helper.sumStuntedComponents(stuntingDistributionNow)
+            probStunting = self.thisHelper.sumStuntedComponents(stuntingDistributionNow)
             #probStunting = thisAgeCompartment.getStuntedFraction()
-            self.params.stuntingDistribution[ageName] = self.helper.restratify(probStunting)
+            self.params.stuntingDistribution[ageName] = self.thisHelper.restratify(probStunting)
             thisAgeCompartment.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
             
     def updateWRApopulation(self):
@@ -518,7 +473,7 @@ class Model:
         restratifiedStuntingAtBirth = {}
         for outcome in self.birthOutcomes:
             totalProbStunted = self.derived.probStuntedAtBirth[outcome] * self.derived.stuntingUpdateAfterInterventions['<1 month']
-            restratifiedStuntingAtBirth[outcome] = self.helper.restratify(totalProbStunted)
+            restratifiedStuntingAtBirth[outcome] = self.thisHelper.restratify(totalProbStunted)
         # sum over birth outcome for full stratified stunting fractions, then apply to birth distribution
         stuntingFractions = {}
         for stuntingCat in self.stuntingList:
