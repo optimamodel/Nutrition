@@ -20,8 +20,8 @@ class Data:
                  effectivenessIncidence, interventionsBirthOutcome, foodSecurityGroups,
                  ORstuntingComplementaryFeeding, anemiaDistribution,
                  projectedWRApop, projectedWRApopByAge, projectedPWpop,
-                 projectedGeneralPop, PWageDistribution, fracAnemicNotPoor,
-                 fracAnemicPoor, fracAnemicExposedMalaria, fracExposedMalaria, ORanemiaCondition, fracSevereDia):
+                 projectedGeneralPop, PWageDistribution, fracExposedMalaria, 
+                 ORanemiaCondition, fracSevereDia):
 
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
@@ -65,9 +65,6 @@ class Data:
         self.projectedPWpop = projectedPWpop
         self.projectedGeneralPop = projectedGeneralPop
         self.PWageDistribution = PWageDistribution
-        self.fracAnemicNotPoor = fracAnemicNotPoor
-        self.fracAnemicPoor = fracAnemicPoor
-        self.fracAnemicExposedMalaria = fracAnemicExposedMalaria
         self.fracExposedMalaria = fracExposedMalaria
         self.ORanemiaCondition = ORanemiaCondition
         self.fracSevereDia = fracSevereDia
@@ -445,14 +442,6 @@ def readSpreadsheet(fileName, keyList):
     ORanemiaCondition = {age:{condition:1. for condition in conditionsList} for age in ages}
     fracSevereDia = 0.2 # made up value
     
-    # calculate fractions of poor, not poor and malaria exposed anemic
-    fracAnemicPoor = {}
-    fracAnemicNotPoor = {}
-    fracAnemicExposedMalaria = {}
-    for age in ages + WRAages + PWages:
-        fracAnemicPoor[age] = anemiaDistribution[age]['anemic'] * demographics['fraction food insecure (default poor)']
-        fracAnemicNotPoor[age] = anemiaDistribution[age]['anemic'] * (1. - demographics['fraction food insecure (default poor)'])
-        fracAnemicExposedMalaria[age] = anemiaDistribution[age]['anemic'] * demographics['fraction at risk of malaria']
 
     spreadsheetData = Data(causesOfDeathList, conditionsList, interventionList, interventionCompleteList,
                            demographics, projectedBirths, rawMortality,
@@ -467,8 +456,7 @@ def readSpreadsheet(fileName, keyList):
                            effectivenessMortality, effectivenessIncidence, interventionsBirthOutcome,
                            foodSecurityGroups, ORstuntingComplementaryFeeding, anemiaDistribution,
                            projectedWRApop, projectedWRApopByAge, projectedPWpop, projectedGeneralPop,
-                           PWageDistribution, fracAnemicNotPoor, fracAnemicPoor, fracAnemicExposedMalaria,
-                           fracExposedMalaria, ORanemiaCondition, fracSevereDia)
+                           PWageDistribution, fracExposedMalaria, ORanemiaCondition, fracSevereDia)
 
     return spreadsheetData
                   
