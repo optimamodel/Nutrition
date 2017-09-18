@@ -48,7 +48,7 @@ class Params:
         self.fracSevereDia = dcp(data.fracSevereDia)
         self.rawTargetPop = dcp(data.targetPopulation)
         self.attendance = dcp(data.demographics['school attendance WRA 15-19'])
-        self.inteventionCompleteList = dcp(data.interventionCompleteList)
+        self.interventionCompleteList = dcp(data.interventionCompleteList)
     
 
 # Add all functions for updating parameters due to interventions here....
@@ -101,7 +101,7 @@ class Params:
 
     def getAnemiaUpdate(self, newCoverage, thisHelper):
         anemiaUpdate = {}
-        fracTargetedIFAS = thisHelper.setIFASFractionTargetted(self.attendance, self.fracPoor, self.fracMalaria, self.interventionCompleteList, newCoverage["Long-lasting insecticide-treated bednets"])
+        fracTargetedIFAS = thisHelper.setIFASFractionTargetted(self.attendance, self.fracPoor, self.fracExposedMalaria, self.interventionCompleteList, newCoverage["Long-lasting insecticide-treated bednets"])
         interventionsPW = ['IPTp', 'Multiple micronutrient supplementation', 'Iron and folic acid supplementation for pregnant women']        
         for pop in self.allPops:
             anemiaUpdate[pop] = 1.
