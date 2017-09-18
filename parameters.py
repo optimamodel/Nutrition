@@ -114,7 +114,7 @@ class Params:
                 # adjust newProbAnemic if necessary as newProbAnemic is amongst subgroup of age group in some cases
                 # new prob age group = prob old * frac not targeted + prob new in subgroup * frac targeted
                 # PW interventions
-                if any(this in intervention for this in interventionsPW) and "PW" in pop:  
+                if any(this in intervention for this in interventionsPW) and "PW" in pop:
                     if 'malaria area' in intervention:
                         fractionTargeted = self.fracExposedMalaria
                     else:
@@ -130,7 +130,7 @@ class Params:
                     fractionNotTargeted = 1. - fractionTargeted
                     newProbAnemic = fractionNotTargeted * oldProbAnemic + newProbAnemic * fractionTargeted     
                 # PPCF + iron
-                if any(this in pop for this in ["6-11 months", "12-23 months", ]) and "Public provision of complementary foods with iron" in intervention:
+                if any(this in pop for this in ["6-11 months", "12-23 months"]) and "Public provision of complementary foods with iron" in intervention:
                     if 'malaria area' in intervention:
                         fractionTargeted = self.fracExposedMalaria
                     else:
