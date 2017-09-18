@@ -252,15 +252,15 @@ class Helper:
             else:
                 frac1 = fracPoor
             # get fraction targetted by delivery method: frac2
-            if "community" and "not poor" in intervention:
+            if "community" in intervention and "not poor" in intervention:
                 frac2 = 0.49
             elif "community" in intervention:
                 frac2 = 0.7
-            elif "hospital" and "not poor" in intervention:
+            elif "hospital" in intervention and "not poor" in intervention:
                 frac2 = 0.21
             elif "hospital" in intervention:    
                 frac2 = 0.3
-            elif "retailer" and "not poor" in intervention:
+            elif "retailer" in intervention and "not poor" in intervention:
                 frac2 = 0.3
             else:
                 frac2 = 1.0
@@ -270,13 +270,73 @@ class Helper:
             else:
                 frac3 = fracNotMalaria   
             # get fractional reduction for bednet coverage: frac4
-            if "malaria area" and " with bed nets" in intervention:
-                frac4 = 1.
+            if "malaria area" in intervention and " with bed nets" in intervention:
+                frac4 = 1. # used in optimisation so target pop size can be everyone, optimisation will learn not to give more than 1-bednetCoverage
             elif "malaria area" in intervention:
                 frac4 = bednetCoverage
             else:
                 frac4 = 1.0
             # set target popluation for this intervention
-            targetPopulation[intervention] = pop * frac1 * frac2 * frac3* frac4
+            targetPopulation[intervention] = pop * frac1 * frac2 * frac3 * frac4
         return targetPopulation        
                 
+                
+    def setIFASFractionTargetted(self, spreadsheetData, bednetCoverage):
+        attendance = spreadsheetData.demographics['school attendance WRA 15-19']
+        fracPoor = spreadsheetData.demographics['fraction food insecure (default poor)']
+        fracNotPoor = 1.-fracPoor
+        fracMalaria = spreadsheetData.demographics['fraction at risk of malaria']
+        fracNotMalaria = 1. - fracMalaria
+        IFASinterventions = [intervention for intervention in spreadsheetData.interventionCompleteList if "IFAS" in intervention]
+        fractionTargeted = {}
+        for pop in self.keyList['reproductiveAges']:
+            fractionTargeted[pop] = {}
+            for intervention in IFASinterventions:
+                # get fraction of poor status: frac1
+                if "not poor" in intervention:
+                    frac1 = fracNotPoor
+                else:
+                    frac1 = fracPoor
+                # get fraction targetted by delivery method: frac2
+                if "community" in intervention and "not poor" in intervention:
+                    frac2 = 0.49
+                elif "community" in intervention:
+                    frac2 = 0.7
+                elif "hospital" in intervention and "not poor" in intervention:
+                    frac2 = 0.21
+                elif "hospital" in intervention:    
+                    frac2 = 0.3
+                elif "retailer" and "not poor" in intervention:
+                    frac2 = 0.3
+                else:
+                    frac2 = 1.0
+                # get fraction for malaria or no malaria: frac3
+                if "malaria area" in intervention:
+                    frac3 = fracMalaria
+                else:
+                    frac3 = fracNotMalaria   
+                # get fractional reduction for bednet coverage: frac4
+                if "malaria area" and " with bed nets" in intervention:
+                    frac4 = 1.- bednetCoverage # this has to do with probabilities so needs to be 1-bednetCoverage
+                elif "malaria area" in intervention:
+                    frac4 = bednetCoverage
+                else:
+                    frac4 = 1.0
+                # get fraction of age group targetted: frac5   
+                if "school" in intervention and "15-19" in pop:
+                    frac5 = attendance
+                elif "community" in intervention and "15-19" in pop:
+                    frac5 = (1.-attendance)
+                elif "community" in intervention and "15-19" not in pop:
+                    frac5 = 1.
+                elif "hospital" in intervention and "15-19" in pop:
+                    frac5 = (1.-attendance)
+                elif "hospital" in intervention and "15-19" not in pop:
+                    frac5 = 1.
+                elif "retailer" in intervention and "15-19" not in pop:
+                    frac5 = 1.
+                else:
+                    frac5 = 0.
+                # set fraction targetted for this pop and intervention
+                fractionTargeted[pop][intervention] = frac1 * frac2 * frac3 * frac4 * frac5
+        return fractionTargeted            
