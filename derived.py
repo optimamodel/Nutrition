@@ -326,17 +326,7 @@ class Derived:
             self.probAnemicIfCovered[intervention]["not covered"] = {}
             self.probAnemicIfCovered[intervention]["covered"] = {}
             for pop in self.allPops:
-                if intervention == "IPTp":  
-                    #just the sub population exposed to malaria
-                    fracAnemicThisPop = fracAnemicExposedMalaria[pop] 
-                if "IFA poor" in intervention:  
-                    #just the sub population who are poor
-                    fracAnemicThisPop = fracAnemicPoor[pop]
-                if "IFA not poor" in intervention:  
-                    #just the sub population who are not poor
-                    fracAnemicThisPop = fracAnemicNotPoor[pop] 
-                else:
-                    fracAnemicThisPop = anemiaDistribution[pop]["anemic"]
+                fracAnemicThisPop = anemiaDistribution[pop]["anemic"]
                 fracCovered = coverage[intervention] 
                 # hidden IFAS interventions do not have corresponding RR/OR
                 if ' with bed nets' in intervention:
