@@ -117,6 +117,8 @@ class Params:
                 if any(this in intervention for this in interventionsPW) and "PW" in pop:
                     if 'malaria area' in intervention:
                         fractionTargeted = self.fracExposedMalaria
+                    elif 'IPTp' in intervention:
+                        fractionTargeted = self.fracExposedMalaria
                     else:
                         fractionTargeted = 1. - self.fracExposedMalaria
                     fractionNotTargeted = 1. - fractionTargeted
@@ -245,7 +247,7 @@ class Params:
             # add food fortification constraints
             if ("fortification" in intervention) and ("salt" not in intervention):
                 constrainedCoverages[intervention] = newCoverages[intervention] * (1.- self.demographics['fraction of subsistence farming'])
-                        
+
         return constrainedCoverages
 
     def getAppropriateBFNew(self, newCoverage):
