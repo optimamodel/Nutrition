@@ -18,7 +18,25 @@ import numpy as np
 helper = helper.Helper()
 
 
-numModelSteps = 15 
+def runModelGivenCoverage(intervention, coverage, spreadsheetData, zeroCoverages, outcome):
+    numModelSteps = 15     
+    model, derived, params = helper.setupModelDerivedParameters(spreadsheetData)
+    # run the model for one year before updating coverages  
+    timestepsPre = 1
+    for t in range(timestepsPre):
+        model.moveModelOneYear()  
+    # set coverage    
+    theseCoverages = dcp(zeroCoverages)  
+    theseCoverages[intervention] = coverage
+    # update coverages after 1 year 
+    model.updateCoverages(theseCoverages)
+    # run the model for the remaining timesteps
+    for t in range(numModelSteps - timestepsPre):
+        model.moveModelOneYear()
+    # return outcome
+    return model.getOutcome(outcome)
+
+
 spreadsheet = rootpath + 'input_spreadsheets/Bangladesh/2017Aug/InputForCode_Bangladesh.xlsx'
 spreadsheetData = data.readSpreadsheet(spreadsheet, helper.keyList)
 coverageList = np.arange(0, 1.1, 0.1)
@@ -27,34 +45,23 @@ coverageList = np.arange(0, 1.1, 0.1)
 zeroCoverages = {}    
 for i in range(0, len(spreadsheetData.interventionList)):
     intervention = spreadsheetData.interventionList[i]
-    zeroCoverages[intervention] = 0
+    zeroCoverages[intervention] = 0.
+    
 
-#  PREGNANT WOMEN 
-interventionList = ['Balanced energy-protein supplementation', 'Multiple micronutrient supplementation', 'Multiple micronutrient supplementation (malaria area)', 'Iron and folic acid supplementation for pregnant women', 'Iron and folic acid supplementation for pregnant women (malaria area)', 'IPTp']
-pregnantFraction = {}
+    
+
+##  PREGNANT WOMEN 
+interventionList = ['Multiple micronutrient supplementation', 'Multiple micronutrient supplementation (malaria area)', 'Iron and folic acid supplementation for pregnant women', 'Iron and folic acid supplementation for pregnant women (malaria area)', 'IPTp']
+fracAnemicPreg = {}
 for intervention in interventionList:
-    pregnantFraction[intervention] = []
+    fracAnemicPreg[intervention] = []
     for coverage in coverageList:
-        print coverage
-        model, derived, params = helper.setupModelDerivedParameters(spreadsheetData)
-        # run the model for one year before updating coverages  
-        timestepsPre = 1
-        for t in range(timestepsPre):
-            model.moveModelOneYear()  
-        # set coverage    
-        theseCoverages = dcp(zeroCoverages)  
-        theseCoverages[intervention] = coverage
-        # update coverages after 1 year     
-        model.updateCoverages(theseCoverages)
-        # run the model for the remaining timesteps
-        for t in range(numModelSteps - timestepsPre):
-            model.moveOneTimeStep()
-        # get outcome
-        pregnantFraction[intervention].append(model.getOutcome('anemia frac pregnant'))
+        thisOutcome = runModelGivenCoverage(intervention, coverage, spreadsheetData, zeroCoverages, 'anemia frac pregnant')
+        fracAnemicPreg[intervention].append(thisOutcome)
     # plot for this intervention
-    plt.plot(coverageList, pregnantFraction[intervention], label = intervention)
-    plt.xlabel('coverage')
-    plt.ylabel('anemia prevalence pregnant women')
+    plt.plot(coverageList, fracAnemicPreg[intervention], label = intervention)
+plt.xlabel('coverage')
+plt.ylabel('anemia prevalence pregnant women')
 plt.legend(loc='lower left')
 plt.show()          
   
