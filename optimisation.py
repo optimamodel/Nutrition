@@ -225,7 +225,31 @@ class Optimisation:
                 target=self.runOnceDumpFullOutputToFile, 
                 args=(MCSampleSize, xmin, runOnceArgs, spreadsheetData.interventionList, currentTotalBudget, filename+"_"+str(i)))
             prc.start()    
-        
+
+    def performParallelCascadeOptimisationAlteredInterventionEffectiveness(self, MCSampleSize, cascadeValues, numCores, haveFixedProgCosts, intervention, effectiveness):
+        import data
+        from multiprocessing import Process
+        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
+        costCoverageInfo = self.getCostCoverageInfo()
+        initialTargetPopSize = self.getInitialTargetPopSize()
+        initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
+        currentTotalBudget = sum(initialAllocation)
+        xmin = [0.] * len(initialAllocation)
+        # set fixed costs if you have them
+        fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation)
+        # alter mortality & incidence effectiveness
+        for ageName in self.helper.keyList['ages']:
+            spreadsheetData.effectivenessMortality[intervention][ageName]['Diarrhea'] *= effectiveness
+            spreadsheetData.effectivenessIncidence[intervention][ageName]['Diarrhea'] *= effectiveness
+        # check that you have enough cores and don't parallelise if you don't
+        if numCores < len(cascadeValues):
+            print "numCores is not enough"
+        else:
+            for value in cascadeValues:
+                prc = Process(
+                    target=self.cascadeParallelRunFunction,
+                    args=(value, currentTotalBudget, fixedCosts, spreadsheetData, costCoverageInfo, MCSampleSize, xmin))
+                prc.start()
         
     def getFixedCosts(self, haveFixedProgCosts, initialAllocation):
         from copy import deepcopy as dcp
