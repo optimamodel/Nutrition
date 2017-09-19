@@ -26,6 +26,12 @@ class PregnantWomenAgeCompartment:
         for anemiaStatus in self.anemiaList:
             totalSum += self.dictOfBoxes[anemiaStatus].populationSize
         return totalSum
+        
+    def getCumulativeDeaths(self):
+        totalSum = 0.
+        for anemiaStatus in self.anemiaList:
+            totalSum += self.dictOfBoxes[anemiaStatus].cumulativeDeaths
+        return totalSum    
 
     def getAnemicFraction(self):
         totalAnemic = 0.

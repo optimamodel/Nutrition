@@ -44,11 +44,17 @@ class Model:
             totalPopSize += ageGroup.getTotalPopulation()
         return float(totalNumberStunted)/float(totalPopSize)
         
-    def getTotalCumulativeDeaths(self):
+    def getTotalCumulativeDeathsChildren(self):
         totalCumulativeDeaths = 0
         for ageGroup in self.listOfAgeCompartments:
             totalCumulativeDeaths += ageGroup.getCumulativeDeaths()
         return totalCumulativeDeaths
+        
+    def getTotalCumulativeDeathsPW(self):
+        totalCumulativeDeaths = 0
+        for ageGroup in self.listOfPregnantWomenAgeCompartments:
+            totalCumulativeDeaths += ageGroup.getCumulativeDeaths()
+        return totalCumulativeDeaths    
         
     def getCumulativeAgingOutStunted(self):
         return self.cumulativeAgingOutStunted
@@ -137,8 +143,10 @@ class Model:
 
     def getOutcome(self, outcome):
         outcomeValue = None
-        if outcome == 'deaths':
-            outcomeValue = self.getTotalCumulativeDeaths()
+        if outcome == 'deaths children':
+            outcomeValue = self.getTotalCumulativeDeathsChildren()
+        elif outcome == 'deaths PW':
+            outcomeValue = self.getTotalCumulativeDeathsPW()    
         elif outcome == 'stunting':
             outcomeValue = self.getCumulativeAgingOutStunted()
         elif outcome == 'thrive':
