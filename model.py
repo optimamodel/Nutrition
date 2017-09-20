@@ -445,15 +445,15 @@ class Model:
         for indx in range(numCompartments):
             WRAcompartment = self.listOfReproductiveAgeCompartments[indx]
             ageName = WRAcompartment.name
-            WRApopThisAgeAndYear = self.params.projectedWRApopByAge[ageName][self.year]
+            projectedWRApopThisAgeAndYear = self.params.projectedWRApopByAge[ageName][self.year]
             PWcompartment = self.listOfPregnantWomenAgeCompartments[indx]
+            totalPWpopThisAgeAndYear = PWcompartment.getTotalPopulation()
+            nonpregnantWRApopThisAgeAndYear = projectedWRApopThisAgeAndYear - totalPWpopThisAgeAndYear
             # distribute over risk factors
             anemiaDistribution = WRAcompartment.getAnemiaDistribution()
             for anemiaStatus in self.anemiaList:
                 WRAbox = WRAcompartment.dictOfBoxes[anemiaStatus]
-                PWbox = PWcompartment.dictOfBoxes[anemiaStatus]
-                WRAbox.populationSize = WRApopThisAgeAndYear * anemiaDistribution[anemiaStatus]
-                WRAbox.populationSize -= PWbox.populationSize # remove pregnant women
+                WRAbox.populationSize = nonpregnantWRApopThisAgeAndYear * anemiaDistribution[anemiaStatus]
 
     def updatePWpopulation(self):
         """Use PW projections to distribute PW into age groups.
