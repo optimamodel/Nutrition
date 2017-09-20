@@ -157,18 +157,18 @@ class Params:
         
         # FIRST CALCULATE SOME USEFUL THINGS
         # calculate overlap of PPCF+iron target pop with sprinkles target pop
-        targetSprikles = 0.
+        targetSprinkles = 0.
         targetPPCFiron = 0.
-        targetSpriklesMalaria = 0.
+        targetSprinklesMalaria = 0.
         targetPPCFironMalaria = 0.
         for age in range(0, len(listOfAgeCompartments)):
             ageName = listOfAgeCompartments[age].name
-            targetSprikles += self.rawTargetPop['Sprinkles'][ageName] * listOfAgeCompartments[age].getTotalPopulation()
+            targetSprinkles += self.rawTargetPop['Sprinkles'][ageName] * listOfAgeCompartments[age].getTotalPopulation()
             targetPPCFiron += self.rawTargetPop['Public provision of complementary foods with iron'][ageName] * listOfAgeCompartments[age].getTotalPopulation()
-            targetSpriklesMalaria += self.rawTargetPop['Sprinkles (malaria area)'][ageName] * listOfAgeCompartments[age].getTotalPopulation()
+            targetSprinklesMalaria += self.rawTargetPop['Sprinkles (malaria area)'][ageName] * listOfAgeCompartments[age].getTotalPopulation()
             targetPPCFironMalaria += self.rawTargetPop['Public provision of complementary foods with iron (malaria area)'][ageName] * listOfAgeCompartments[age].getTotalPopulation()
-        percentExtraPop = (targetSprikles - targetPPCFiron) / targetPPCFiron
-        percentExtraPopMalaria = (targetSprikles - targetPPCFiron) / targetPPCFiron
+        percentExtraPop = (targetSprinkles - targetPPCFiron) / targetPPCFiron
+        percentExtraPopMalaria = (targetSprinkles - targetPPCFiron) / targetPPCFiron
         
         # calculate average anemia prevalence children and WRA
         thisList = []
@@ -216,8 +216,8 @@ class Params:
             # add constraints on vitamin A and zinc- neither can be given if sprikles already given.  Constrain sprinkles first!
             s1 = 'Sprinkles'
             s2 = 'Sprinkles (malaria area)'
-            totalNumSprinkles = constrainedCoverages[s1] * targetSprikles + constrainedCoverages[s2] * targetSpriklesMalaria                
-            totalConstrainedSprinklesCov = totalNumSprinkles/(targetSprikles + targetSpriklesMalaria)  
+            totalNumSprinkles = constrainedCoverages[s1] * targetSprinkles + constrainedCoverages[s2] * targetSprinklesMalaria
+            totalConstrainedSprinklesCov = totalNumSprinkles/(targetSprinkles + targetSprinklesMalaria)
             if newCoverages['Vitamin A supplementation'] > (1. - totalConstrainedSprinklesCov):
                 constrainedCoverages['Vitamin A supplementation'] = (1. - totalConstrainedSprinklesCov)
             if newCoverages['Zinc supplementation'] > (1. - totalConstrainedSprinklesCov):
