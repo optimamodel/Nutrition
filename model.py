@@ -365,7 +365,6 @@ class Model:
             for anemiaStatus in self.anemiaList:
                 thisBox = ageGroup.dictOfBoxes[anemiaStatus]
                 deaths = thisBox.populationSize * thisBox.mortalityRate
-                thisBox.populationSize -= deaths
                 thisBox.cumulativeDeaths += deaths
 
     def applyAging(self):
