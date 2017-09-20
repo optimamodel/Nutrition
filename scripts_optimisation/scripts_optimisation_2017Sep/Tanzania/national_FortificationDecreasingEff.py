@@ -21,8 +21,6 @@ numCores = 40
 
 for optimise in ['deaths','thrive']:
     for effectiveness in effectivenessList:
-        print optimise
-        print effectiveness
         resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+country+'/FortificationOnly/'+str(effectiveness)+'_effective'
         thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem)
         thisOptimisation.performParallelCascadeOptimisationAlteredInterventionEffectiveness(MCSampleSize, cascadeValues, numCores, haveFixedProgCosts, intervention, effectiveness)
