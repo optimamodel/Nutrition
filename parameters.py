@@ -197,7 +197,7 @@ class Params:
                     constrainedCoverages[intervention] = bednetCoverage
             
             # add constraints on sprinkles coverage                
-            # prioritise PPCF+iron over sprinkles, taking into accout extra pop which can be covered by sprinkles
+            # prioritise PPCF+iron over sprinkles, taking into account extra pop which can be covered by sprinkles
             if 'Sprinkles' in intervention:
                 if 'malaria' in intervention:
                     maxAllowedCov = (1. - newCoverages['Public provision of complementary foods with iron (malaria area)']) * (1. + percentExtraPopMalaria)
@@ -213,7 +213,7 @@ class Params:
                 if aveAnemicFracChildren < 0.2:
                     constrainedCoverages[intervention] = 0.
                     
-            # add constraints on vitamin A and zinc- neither can be given if sprikles already given.  Constrain sprinkles first!
+            # add constraints on vitamin A and zinc- neither can be given if sprinkles already given.  Constrain sprinkles first!
             s1 = 'Sprinkles'
             s2 = 'Sprinkles (malaria area)'
             totalNumSprinkles = constrainedCoverages[s1] * targetSprinkles + constrainedCoverages[s2] * targetSprinklesMalaria
