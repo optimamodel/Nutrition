@@ -168,7 +168,7 @@ class Params:
             targetSprinklesMalaria += self.rawTargetPop['Sprinkles (malaria area)'][ageName] * listOfAgeCompartments[age].getTotalPopulation()
             targetPPCFironMalaria += self.rawTargetPop['Public provision of complementary foods with iron (malaria area)'][ageName] * listOfAgeCompartments[age].getTotalPopulation()
         percentExtraPop = (targetSprinkles - targetPPCFiron) / targetPPCFiron
-        percentExtraPopMalaria = (targetSprinkles - targetPPCFiron) / targetPPCFiron
+        percentExtraPopMalaria = (targetSprinklesMalaria - targetPPCFironMalaria) / targetPPCFironMalaria
         
         # calculate average anemia prevalence children and WRA
         thisList = []
