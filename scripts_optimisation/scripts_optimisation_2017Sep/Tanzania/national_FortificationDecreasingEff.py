@@ -15,11 +15,11 @@ spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/Inpu
 
 numModelSteps = 180
 MCSampleSize = 25
-cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0]
+cascadeValues = [1.]
 haveFixedProgCosts = False
-numCores = 40
+numCores = 5
 
-for optimise in ['deaths','thrive']:
+for optimise in ['thrive']:
     for effectiveness in effectivenessList:
         resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+country+'/FortificationOnly/'+str(effectiveness)+'_effective'
         thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem)
