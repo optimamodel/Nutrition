@@ -26,6 +26,16 @@ def runModelGivenCoverage(intervention, coverage, spreadsheetData, zeroCoverages
     # set coverage    
     theseCoverages = dcp(zeroCoverages)  
     theseCoverages[intervention] = coverage
+    # scale up malaria area part of IFAS interventions also    
+    if 'IFAS' in intervention:
+        interventionMalaria = intervention + ' (malaria area)'
+        theseCoverages[interventionMalaria] = coverage
+    if 'IFAS' in intervention and 'retailer' not in intervention:
+        if 'poor' in intervention:
+            interventionNotPoor = intervention.replace('poor', 'not poor')
+            interventionNotPoorMalaria = interventionNotPoor + ' (malaria area)'
+            theseCoverages[interventionNotPoor] = coverage
+            theseCoverages[interventionNotPoorMalaria] = coverage
     # update coverages after 1 year 
     model.updateCoverages(theseCoverages)
     # run the model for the remaining timesteps
@@ -42,6 +52,9 @@ zeroCoverages = {}
 for i in range(0, len(spreadsheetData.interventionList)):
     intervention = spreadsheetData.interventionList[i]
     zeroCoverages[intervention] = 0.
+# set bed nets and IPTp coverage to malaria prevalence so that constraints are met for certain interventions    
+zeroCoverages['Long-lasting insecticide-treated bednets'] = 0.1
+zeroCoverages['IPTp'] = 0.1 
 coverage95 = 0.95   
 
 # BASELINE
@@ -62,6 +75,12 @@ baseline.append(model.getOutcome('anemia frac children'))
 # EVERYTHING ELSE
 output = {}    
 for intervention in spreadsheetData.interventionList:
+    #combining IFAS interventions in malaria and non-malaria areas, poor and not-poor    
+    if 'IFAS' in intervention and 'malaria area' in intervention:
+        continue
+    if 'IFAS' in intervention and 'retailer' not in intervention:
+        if 'not poor' in intervention:
+            continue
     output[intervention] = []
     output[intervention].append(intervention)
     model = runModelGivenCoverage(intervention, coverage95, spreadsheetData, zeroCoverages)
@@ -123,6 +142,11 @@ with open(outfilename, "wb") as f:
     writer.writerow(header)
     writer.writerow(baseline)
     for intervention in spreadsheetData.interventionList:
+        if 'IFAS' in intervention and 'malaria area' in intervention:
+            continue
+        if 'IFAS' and 'retailer' not in intervention:
+            if 'not poor' in intervention:
+                continue
         writer.writerow(output[intervention])    
     writer.writerow(allIFAS)
     writer.writerow(allfoodFort)
