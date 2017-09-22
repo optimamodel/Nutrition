@@ -17,9 +17,9 @@ numModelSteps = 180
 MCSampleSize = 25
 cascadeValues = [1.]
 haveFixedProgCosts = False
-numCores = 5
+numCores = 10
 
-for optimise in ['thrive']:
+for optimise in ['deaths', 'stunting']:
     for effectiveness in effectivenessList:
         resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+country+'/FortificationOnly/'+str(effectiveness)+'_effective'
         thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem)
