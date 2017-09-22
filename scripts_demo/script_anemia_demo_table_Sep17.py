@@ -17,6 +17,7 @@ import helper
 helper = helper.Helper()
 
 def runModelGivenCoverage(intervention, coverage, spreadsheetData, zeroCoverages):
+    interventionsCombine = ['Public provision of complementary foods with iron', 'Sprinkles', 'Multiple micronutrient supplementation', 'Iron and folic acid supplementation for pregnant women']    
     numModelSteps = 14     
     model, derived, params = helper.setupModelDerivedParameters(spreadsheetData)
     # run the model for one year before updating coverages  
@@ -36,6 +37,9 @@ def runModelGivenCoverage(intervention, coverage, spreadsheetData, zeroCoverages
             interventionNotPoorMalaria = interventionNotPoor + ' (malaria area)'
             theseCoverages[interventionNotPoor] = coverage
             theseCoverages[interventionNotPoorMalaria] = coverage
+    if any(this in intervention for this in interventionsCombine):
+            interventionMalaria = intervention + ' (malaria area)'
+            theseCoverages[interventionMalaria] = coverage
     # update coverages after 1 year 
     model.updateCoverages(theseCoverages)
     # run the model for the remaining timesteps
@@ -57,14 +61,11 @@ zeroCoverages['Long-lasting insecticide-treated bednets'] = 0.1
 zeroCoverages['IPTp'] = 0.1 
 coverage95 = 0.95   
 
-# BASELINE
+# BASELINE (this is all interventions at zero)
 baseline = []
 baseline.append('Baseline')
 numModelSteps = 14     
-model, derived, params = helper.setupModelDerivedParameters(spreadsheetData)
-# run the model 
-for t in range(numModelSteps):
-    model.moveModelOneYear()
+model = runModelGivenCoverage('IPTp', 0.0, spreadsheetData, zeroCoverages)
 baseline.append(model.getOutcome('thrive')) 
 baseline.append(model.getOutcome('deaths children')) 
 baseline.append(model.getOutcome('deaths PW')) 
@@ -73,6 +74,7 @@ baseline.append(model.getOutcome('anemia frac WRA'))
 baseline.append(model.getOutcome('anemia frac children'))   
 
 # EVERYTHING ELSE
+interventionsCombine = ['Public provision of complementary foods with iron', 'Sprinkles', 'Multiple micronutrient supplementation', 'Iron and folic acid supplementation for pregnant women']
 output = {}    
 for intervention in spreadsheetData.interventionList:
     #combining IFAS interventions in malaria and non-malaria areas, poor and not-poor    
@@ -81,6 +83,9 @@ for intervention in spreadsheetData.interventionList:
     if 'IFAS' in intervention and 'retailer' not in intervention:
         if 'not poor' in intervention:
             continue
+    if any(this in intervention for this in interventionsCombine) and 'malaria area' in intervention:
+        continue
+        
     output[intervention] = []
     output[intervention].append(intervention)
     model = runModelGivenCoverage(intervention, coverage95, spreadsheetData, zeroCoverages)
@@ -147,6 +152,8 @@ with open(outfilename, "wb") as f:
         if 'IFAS' and 'retailer' not in intervention:
             if 'not poor' in intervention:
                 continue
+        if any(this in intervention for this in interventionsCombine) and 'malaria area' in intervention:
+            continue    
         writer.writerow(output[intervention])    
     writer.writerow(allIFAS)
     writer.writerow(allfoodFort)
