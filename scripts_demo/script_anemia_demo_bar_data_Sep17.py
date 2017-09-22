@@ -18,6 +18,7 @@ import csv
 helper = helper.Helper()
 
 def runModelGivenCoverage(intervention, coverage, spreadsheetData, zeroCoverages, outcome):
+    interventionsCombine = ['Public provision of complementary foods with iron', 'Sprinkles', 'Multiple micronutrient supplementation', 'Iron and folic acid supplementation for pregnant women']    
     numModelSteps = 14     
     model, derived, params = helper.setupModelDerivedParameters(spreadsheetData)
     # run the model for one year before updating coverages  
@@ -30,6 +31,14 @@ def runModelGivenCoverage(intervention, coverage, spreadsheetData, zeroCoverages
     if 'IFAS' in intervention:
         interventionMalaria = intervention + ' (malaria area)'
         theseCoverages[interventionMalaria] = coverage
+    if 'IFAS' in intervention and 'retailer' not in intervention:
+        interventionPoor = intervention.replace('not poor', 'poor')
+        interventionPoorMalaria = interventionPoor + ' (malaria area)'
+        theseCoverages[interventionPoor] = coverage
+        theseCoverages[interventionPoorMalaria] = coverage    
+    if any(this in intervention for this in interventionsCombine):
+            interventionMalaria = intervention + ' (malaria area)'
+            theseCoverages[interventionMalaria] = coverage    
     # update coverages after 1 year 
     model.updateCoverages(theseCoverages)
     # run the model for the remaining timesteps
@@ -53,7 +62,7 @@ for i in range(0, len(spreadsheetData.interventionList)):
 
 #  WOMEN OF REPRODUCTIVE AGE
 fracAnemic = {}
-interventionList = ['IFAS poor: school', 'IFAS poor: community', 'IFAS poor: hospital', 'IFAS not poor: school', 'IFAS not poor: community', 'IFAS not poor: hospital', 'IFAS not poor: retailer']
+interventionList = ['IFAS not poor: school', 'IFAS not poor: community', 'IFAS not poor: hospital', 'IFAS not poor: retailer']
 for intervention in interventionList:
     fracAnemic[intervention] = []
     for poor in poorFracList:
@@ -77,7 +86,7 @@ with open(outfilename, "wb") as f:
         
 #   PREGNANT WOMEN
 fracAnemic = {}
-interventionList = ['Multiple micronutrient supplementation', 'Multiple micronutrient supplementation (malaria area)', 'Iron and folic acid supplementation for pregnant women', 'Iron and folic acid supplementation for pregnant women (malaria area)']
+interventionList = ['Multiple micronutrient supplementation', 'Iron and folic acid supplementation for pregnant women']
 for intervention in interventionList:
     fracAnemic[intervention] = {}
     for malaria in malariaFracList:
@@ -108,7 +117,7 @@ with open(outfilename, "wb") as f:
     
 # CHILDREN
 fracAnemic = {}
-interventionList = ['Public provision of complementary foods with iron', 'Public provision of complementary foods with iron (malaria area)', 'Sprinkles', 'Sprinkles (malaria area)']
+interventionList = ['Public provision of complementary foods with iron', 'Sprinkles']
 for intervention in interventionList:
     fracAnemic[intervention] = {}
     for malaria in malariaFracList:
