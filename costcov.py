@@ -8,126 +8,86 @@ class Costcov():
     def __init__(self):
         self.foo = 0.
 
-    def function(self, x, costCovInfo, popsize, eps=None):
-        '''Returns coverage in a given year for a given spending amount.'''
-        x = array([x])
-        u = array([costCovInfo['unitcost']])
-        s = array([costCovInfo['saturation']])
-        if eps is None: eps = 1.e-3 #Settings().eps # Warning, use project-nonspecific eps
-        popsize = array([popsize])
+    def getCostCoverageCurve(self, costCoverageInfo, popSize, curveType, intervention):
+        unitCost = costCoverageInfo['unitcost']
+        saturation = costCoverageInfo['saturation']
+        if curveType == 'linear':
+            curve = self.linearCostCurve(unitCost, saturation, popSize)
+        else: # defaults to this
+            curve = self.increasingCostsLogisticCurve(unitCost, saturation, popSize)
+        return curve
 
-        nyrs,npts = len(u),len(x)
-        eps = array([eps]*npts)
-        if nyrs==npts: 
-            y = maximum((2*s/(1+exp(-2*x/(popsize*s*u)))-s)*popsize,eps)
-            return y[0]
+    def increasingCostsLogisticCurve(self, unitCost, saturation, popSize):
+        '''Produces the logistic function for increasing marginal costs, passing through origin'''
+        B = saturation * popSize
+        A = -B
+        C = 0.
+        D = unitCost*B/2.
+        curve = self.getCostCoverageCurveSpecifyingParameters(A, B, C, D, popSize)
+        return curve
+
+    def getCostCoverageCurveSpecifyingParameters(self, A, B, C, D, popSize):
+        '''This is a logistic curve with each parameter (A,B,C,D) provided by the user'''
+        logisticCurve = lambda x: (A + (B-A)/(1 + exp(-(x-C)/D))) / popSize
+        return logisticCurve
+
+    def linearCostCurve(self, unitCost, saturation, popSize):
+        m = 1. / unitCost
+        x0, y0 = [0.,0.] #extra point
+        if x0 == 0.:
+            c = y0
         else:
-            y = zeros((nyrs,npts))
-            for yr in range(nyrs):
-                y[yr,:] = maximum((2*s[yr]/(1+exp(-2*x/(popsize[yr]*s[yr]*u[yr])))-s[yr])*popsize[yr],eps)
-            return y
+            c = y0 / (m * x0)
+        maxCoverage = popSize * saturation
+        linearCurve = lambda x: (min(m * x + c, maxCoverage))/popSize
+        return linearCurve
 
+    def getSpending(self, coverage, costCoverageInfo, popSize):
+        '''Assumes standard increasing marginal costs curve '''
+        unitCost = costCoverageInfo['unitcost']
+        saturation = costCoverageInfo['saturation']
+        B = saturation * popSize
+        A = -B
+        C = 0.
+        D = unitCost * B / 2.
+        curve = self.inverseLogistic(A, B, C, D)
+        spending = curve(coverage)
+        return spending
 
-    def inversefunction(self, y, costCovInfo, popsize):
-        y = array([y])
-        '''Returns cost in a given year for a given coverage amount.'''
-        u = array([costCovInfo['unitcost']])
-        s = array([costCovInfo['saturation']])
-        if isinstance(popsize,(float,int)): popsize = array([popsize])
-        
-        nyrs,npts = len(u),len(y)
-        if nyrs==npts: 
-            x = -0.5*popsize*s*u*log((s*popsize-y)/(s*popsize+y))
-            return x[0]    
-        else: raise Exception('y should be the same length as params.')
-        
-        
-        
-    def plotExampleCurves(self):
-        # CURRENTLY THESE EXAMPLE NUMBERS COME FROM BANGLADESH        
-        import matplotlib.pyplot as plt
+    def inverseLogistic(self, A, B, C, D):
+        inverseCurve = lambda y: -D * log((B - y) / (y - A)) + C
+        return inverseCurve
+
+    def saveCurvesToPNG(self, curves, name, interventionList, popSize, resultsFileStem, budget, cascade, scale=True):
+        import os
         import numpy as np
+        import matplotlib.pyplot as plt
+        path = resultsFileStem + '/cost_curves'
+        if not os.path.exists(path):
+            os.makedirs(path)
+        plt.figure()
+        # map colors to match excel colours
+        colorDict = {'Vitamin A supplementation': 'g', 'Public provision of complementary foods': 'cornflowerblue',
+                  'Complementary feeding education': 'gold', 'Breastfeeding promotion': 'grey',
+                  'Balanced energy-protein supplementation': 'darkorange',
+                  'Antenatal micronutrient supplementation': 'darkblue'}
         xvals = np.arange(0, 1e8, 1000)
-        s = 0.85
-        p = 14537500.
-        u = 5.
-        y =[]
-        for x in xvals:
-            y.append( (2.*s/(1.+np.exp(-2.*x/(s*u*p))) - s)*p )
-        plt.plot(xvals, y)
-        plt.xlabel('spending')
-        plt.ylabel('coverage')
-        plt.title('FUNCTION:  pop x saturation ~ 1.2e7')
-        plt.show()
-        
-        yvals = np.arange(0, 1.2e7, 1e2)
-        s = 0.85
-        p = 14537500.
-        u = 5.
-        x =[]
-        for y in yvals:
-            x.append( -0.5*p*s*u* np.log((s*p-y)/(s*p+y)))
-        plt.plot(yvals, x)
-        plt.ylabel('spending')
-        plt.xlabel('coverage')
-        plt.title('INVERSE FUNCTION')
-        plt.show()
-        
-    def plotCurves(self, popSize, costCovInfo, plotTitle):
-        import matplotlib.pyplot as plt
-        import numpy as np
-        #FUNCTION
-        xvals = np.arange(0, 1e7, 1000)
-        for intervention in costCovInfo.keys():
-        
-            s = costCovInfo[intervention]['saturation']
-            p = popSize[intervention]
-            u = costCovInfo[intervention]['unitcost']
+        for intervention in interventionList:
+            curveThisIntervention = curves[intervention]
             y = []
             for x in xvals:
-                y.append( (2.*s/(1.+np.exp(-2.*x/(s*u*p))) - s)*p )
-            plt.plot(xvals, y, label = intervention)
-        plt.xlabel('spending')
-        plt.ylabel('coverage')
-        plt.title('FUNCTION: '+plotTitle)
-        plt.legend(loc = 'upper center', bbox_to_anchor=(0.5, -0.15), ncol=1, fancybox=True, shadow=True)  #plt.legend()
-        plt.show()
-        #INVERSE FUNCTION
-        yvals = np.arange(0, 1e6, 1e2)
-        for intervention in costCovInfo.keys():
-            s = costCovInfo[intervention]['saturation']
-            p = popSize[intervention]
-            u = costCovInfo[intervention]['unitcost']
-            x = []
-            for y in yvals:
-                x.append( -0.5*p*s*u* np.log((s*p-y)/(s*p+y)))
-            plt.plot(yvals, x, label = intervention)
-        plt.ylabel('spending')
-        plt.xlabel('coverage')
-        plt.title('INVERSE FUNCTION: '+plotTitle)
-        plt.legend(loc = 'upper center', bbox_to_anchor=(0.5, -0.15), ncol=1, fancybox=True, shadow=True)  #plt.legend()
-        plt.show()    
- 
- 
- 
-    def outputCurvesToCSV(self, popSize, costCovInfo, filename):
-        import numpy as np
-        import csv
-        #FUNCTION
-        xvals = np.arange(0, 1e7, 1000)
-        y = {}
-        for intervention in costCovInfo.keys():
-            s = costCovInfo[intervention]['saturation']
-            p = popSize[intervention]
-            u = costCovInfo[intervention]['unitcost']
-            y[intervention] = [intervention]
-            for x in xvals:
-                y[intervention].append( (2.*s/(1.+np.exp(-2.*x/(s*u*p))) - s)*p )
-        # write to csv
-        x = ['spending'] + xvals.tolist()       
-        outfile = filename + '_costCoverageCurves.csv'
-        with open(outfile, "wb") as f:
-            writer = csv.writer(f)
-            writer.writerow(x)
-            for key in y.keys():
-                writer.writerow(y[key])  
+                if scale: # rescale by popsize
+                    y.append(curveThisIntervention(x) * popSize[intervention])
+                else:
+                    y.append(curveThisIntervention(x))
+            plt.plot(xvals, y, label = str(intervention), color = colorDict[intervention])
+        # add dotted lines for each cascade
+        for cascadeValue in cascade:
+            thisBudget = budget * cascadeValue
+            plt.axvline(x=thisBudget, color = 'black', linestyle = 'dotted')
+        plt.xlabel("spending")
+        plt.ylabel("coverage")
+        lgnd = plt.legend(bbox_to_anchor=(1.03,1), loc = 2, prop = {'size':10}, ncol=1, fancybox=True, shadow=True)
+        plt.savefig(path + '/' + str(name) + '_'+ 'scale'+str(scale) + '.png', bbox_extra_artists=(lgnd,), bbox_inches = 'tight')
+        plt.close()
+        return
