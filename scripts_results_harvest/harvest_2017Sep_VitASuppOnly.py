@@ -9,27 +9,28 @@ country = 'Tanzania'
 date = '2017Sep'
 spreadsheetDate = '2017Sep'
 
+costCurveType = 'standard'
 numModelSteps = 180
 
 # NATIONAL
-dataSpreadsheetName = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/InputForCode_'+country+'_VitASuppOnly.xlsx'
-outcomeOfInterestList = ['thrive', 'deaths']
-cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]
+dataSpreadsheetName = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/TanzaniaHatSheets'+'/InputForCode_'+country+'Hat_VitASuppOnly.xlsx'
+outcomeOfInterestList = ['thrive']
+cascadeValues = [1.0]
 
 for optimise in outcomeOfInterestList:
-    resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/national/VitASuppOnly/'+country
+    resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/national/' + country + 'Hat/' + 'VitASuppOnly/'
     # both time series when optimising for thrive
-    thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise, resultsFileStem)
+    thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise, resultsFileStem, costCurveType)
     thisOptimisation.outputCurrentSpendingToCSV()
     thisOptimisation.outputTimeSeriesToCSV('thrive')
     thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise,
-                                                 resultsFileStem)  # this repitition is necessary
+                                                 resultsFileStem, costCurveType)  # this repitition is necessary
     thisOptimisation.outputTimeSeriesToCSV('deaths')
     # both outcomes for thrive cascade
     thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise,
-                                                 resultsFileStem)  # this one might not be
+                                                 resultsFileStem, costCurveType)  # this one might not be
     for outcomeOfInterest in outcomeOfInterestList:
-        thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise, resultsFileStem)
+        thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise, resultsFileStem, costCurveType)
         thisOptimisation.outputCascadeAndOutcomeToCSV(cascadeValues, outcomeOfInterest)
 
     # GET COVERAGE INFO FOR THE CASCADE
@@ -39,7 +40,7 @@ for optimise in outcomeOfInterestList:
     import csv
 
     costCov = costcov.Costcov()
-    thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise, resultsFileStem)
+    thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise, resultsFileStem, costCurveType)
     spreadsheetData = data.readSpreadsheet(dataSpreadsheetName, thisOptimisation.helper.keyList)
 
     coverages = {}
@@ -50,18 +51,25 @@ for optimise in outcomeOfInterestList:
         allocation = pickle.load(infile)
         infile.close()
         # run the model with this allocation
-        modelList = thisOptimisation.oneModelRunWithOutput(allocation)
-        # get cost coverage and target pop to translate cost to coverage
         costCoverageInfo = thisOptimisation.getCostCoverageInfo()
-        # target pop size when interventions are added comes after 12 timesteps
-        targetPopSize = optimisation.getTargetPopSizeFromModelInstance(dataSpreadsheetName, thisOptimisation.helper.keyList,
-                                                                       modelList[11])
-        # get coverages
-        for i in range(0, len(spreadsheetData.interventionList)):
-            intervention = spreadsheetData.interventionList[i]
-            coverages[value].append(
-                costCov.function(allocation[intervention], costCoverageInfo[intervention], targetPopSize[intervention]) /
-                targetPopSize[intervention])
+        modelList = thisOptimisation.oneModelRunWithOutput(allocation)
+        costCurves = optimisation.generateCostCurves(spreadsheetData, modelList[11], thisOptimisation.helper.keyList, thisOptimisation.dataSpreadsheetName,
+                                       costCoverageInfo, thisOptimisation.costCurveType)
+        for intervention in spreadsheetData.interventionList:
+            costCurveThisIntervention = costCurves[intervention]
+            coverages[value].append(costCurveThisIntervention(allocation[intervention]))
+        # get cost coverage and target pop to translate cost to coverage
+        # costCoverageInfo = thisOptimisation.getCostCoverageInfo()
+        # # target pop size when interventions are added comes after 12 timesteps
+        # targetPopSize = optimisation.getTargetPopSizeFromModelInstance(dataSpreadsheetName, thisOptimisation.helper.keyList,
+        #                                                                 modelList[11])
+        #
+        # # get coverages
+        # for i in range(0, len(spreadsheetData.interventionList)):
+        #     intervention = spreadsheetData.interventionList[i]
+        #     coverages[value].append(
+        #         costCov.function(allocation[intervention], costCoverageInfo[intervention], targetPopSize[intervention]) /
+        #         targetPopSize[intervention])
     # write to csv
     outfile = 'nationalCascadeCoverages_.csv'
     x = ['intervention'] + spreadsheetData.interventionList
