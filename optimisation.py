@@ -150,15 +150,16 @@ class OutputClass:
         self.cleanOutputFuncCount = cleanOutputFuncCount
         self.cleanOutputFvalVector = cleanOutputFvalVector
         self.cleanOutputXVector = cleanOutputXVector      
-            
-            
+
+
 class Optimisation:
-    def __init__(self, dataSpreadsheetName, numModelSteps, optimise, resultsFileStem):
+    def __init__(self, dataSpreadsheetName, numModelSteps, optimise, resultsFileStem, costCurveType):
         import helper       
         self.dataSpreadsheetName = dataSpreadsheetName
         self.numModelSteps = numModelSteps
         self.optimise = optimise
         self.resultsFileStem = resultsFileStem
+        self.costCurveType = costCurveType
         self.helper = helper.Helper()
         self.timeSeries = None
         # check that results directory exists and if not then create it
@@ -177,7 +178,7 @@ class Optimisation:
         args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
         self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, self.resultsFileStem+'.pkl')
         
-    def performSingleOptimisationForGivenTotalBudget(self, MCSampleSize, totalBudget, filename, haveFixedProgCosts, costCurveType):
+    def performSingleOptimisationForGivenTotalBudget(self, MCSampleSize, totalBudget, filename, haveFixedProgCosts):
         import data 
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         costCoverageInfo = self.getCostCoverageInfo()  
@@ -190,15 +191,15 @@ class Optimisation:
         model = runModelForNTimeSteps(timestepsPre, spreadsheetData, model=None)[0]
         # generate cost curves for each intervention
         costCurves = generateCostCurves(spreadsheetData, model, self.helper.keyList, self.dataSpreadsheetName,
-                                        costCoverageInfo, costCurveType)
+                                        costCoverageInfo, self.costCurveType)
         args = {'costCurves': costCurves, 'model': model, 'timestepsPre': timestepsPre,
                 'totalBudget': totalBudget, 'fixedCosts': fixedCosts, 'costCoverageInfo': costCoverageInfo,
                 'optimise': self.optimise, 'numModelSteps': self.numModelSteps,
                 'dataSpreadsheetName': self.dataSpreadsheetName, 'data': spreadsheetData}
         self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, self.resultsFileStem+filename+'.pkl')
+
         
-        
-    def performCascadeOptimisation(self, MCSampleSize, cascadeValues, haveFixedProgCosts, costCurveType):
+    def performCascadeOptimisation(self, MCSampleSize, cascadeValues, haveFixedProgCosts):
         import data
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
         timestepsPre = 12
@@ -213,7 +214,7 @@ class Optimisation:
         model = runModelForNTimeSteps(timestepsPre, spreadsheetData, model=None)[0]
         # generate cost curves for each intervention
         costCurves = generateCostCurves(spreadsheetData, model, self.helper.keyList, self.dataSpreadsheetName, costCoverageInfo,
-                                        costCurveType)
+                                        self.costCurveType)
         for cascade in cascadeValues:
             totalBudget = currentTotalBudget * cascade
             args = {'costCurves': costCurves, 'model': model, 'timestepsPre': timestepsPre,
@@ -232,7 +233,7 @@ class Optimisation:
         outFile = self.resultsFileStem+'_cascade_'+str(self.optimise)+'_'+str(cascadeValue)+'.pkl'
         self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, outFile)
 
-    def performParallelCascadeOptimisation(self, MCSampleSize, cascadeValues, numCores, haveFixedProgCosts, costCurveType):
+    def performParallelCascadeOptimisation(self, MCSampleSize, cascadeValues, numCores, haveFixedProgCosts):
         import data
         from multiprocessing import Process
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
@@ -248,7 +249,7 @@ class Optimisation:
         model = runModelForNTimeSteps(timestepsPre, spreadsheetData, model=None)[0]
         # generate cost curves for each intervention
         costCurves = generateCostCurves(spreadsheetData, model, self.helper.keyList, self.dataSpreadsheetName,
-                                        costCoverageInfo, costCurveType)
+                                        costCoverageInfo, self.costCurveType)
         # check that you have enough cores and don't parallelise if you don't
         if numCores < len(cascadeValues):
             print "numCores is not enough"
@@ -278,7 +279,7 @@ class Optimisation:
                 args=(MCSampleSize, xmin, runOnceArgs, spreadsheetData.interventionList, currentTotalBudget, filename+"_"+str(i)))
             prc.start()    
 
-    def performParallelCascadeOptimisationAlteredInterventionEffectiveness(self, MCSampleSize, cascadeValues, numCores, haveFixedProgCosts, intervention, effectiveness):
+    def performParallelCascadeOptimisationAlteredInterventionEffectiveness(self, MCSampleSize, cascadeValues, numCores, haveFixedProgCosts, intervention, effectiveness, savePlot):
         import data
         from multiprocessing import Process
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
@@ -287,12 +288,22 @@ class Optimisation:
         initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
         currentTotalBudget = sum(initialAllocation)
         xmin = [0.] * len(initialAllocation)
+        timestepsPre = 12
         # set fixed costs if you have them
         fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation)
         # alter mortality & incidence effectiveness
         for ageName in self.helper.keyList['ages']:
             spreadsheetData.effectivenessMortality[intervention][ageName]['Diarrhea'] *= effectiveness
             spreadsheetData.effectivenessIncidence[intervention][ageName]['Diarrhea'] *= effectiveness
+        # set up and run the model prior to optimising
+        model = runModelForNTimeSteps(timestepsPre, spreadsheetData, model=None)[0]
+        # generate cost curves for each intervention
+        if savePlot:
+            resultsPath = self.resultsFileStem
+        else:
+            resultsPath = None
+        costCurves = generateCostCurves(spreadsheetData, model, self.helper.keyList, self.dataSpreadsheetName,
+                                        costCoverageInfo, self.costCurveType, resultsFileStem=resultsPath, budget=currentTotalBudget, cascade=cascadeValues)
         # check that you have enough cores and don't parallelise if you don't
         if numCores < len(cascadeValues):
             print "numCores is not enough"
@@ -300,7 +311,8 @@ class Optimisation:
             for value in cascadeValues:
                 prc = Process(
                     target=self.cascadeParallelRunFunction,
-                    args=(value, currentTotalBudget, fixedCosts, spreadsheetData, costCoverageInfo, MCSampleSize, xmin))
+                    args=(costCurves, model, timestepsPre, value, currentTotalBudget, fixedCosts, spreadsheetData,
+                            costCoverageInfo, MCSampleSize, xmin))
                 prc.start()
         
     def getFixedCosts(self, haveFixedProgCosts, initialAllocation):
@@ -401,32 +413,24 @@ class Optimisation:
         
         
     def oneModelRunWithOutput(self, allocationDictionary):
-        import costcov
         import data
-        from copy import deepcopy as dcp
-        costCov = costcov.Costcov()
+        from numpy import maximum
+        eps = 1.e-3  ## WARNING: using project non-specific eps
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
-        model, derived, params = self.helper.setupModelDerivedParameters(spreadsheetData)
         costCoverageInfo = self.getCostCoverageInfo()
-        # run the model
-        modelList = []    
         timestepsPre = 12
-        for t in range(timestepsPre):
-            model.moveOneTimeStep()  
-            modelThisTimeStep = dcp(model)
-            modelList.append(modelThisTimeStep)
-        # update coverages after 1 year    
-        targetPopSize = getTargetPopSizeFromModelInstance(self.dataSpreadsheetName, self.helper.keyList, model)
-        newCoverages = {}    
+        model, modelList = runModelForNTimeSteps(timestepsPre, spreadsheetData, model=None, saveEachStep=True)
+        costCurves = generateCostCurves(spreadsheetData, model, self.helper.keyList, self.dataSpreadsheetName,
+                                       costCoverageInfo, self.costCurveType)
+        newCoverages = {}
         for i in range(0, len(spreadsheetData.interventionList)):
             intervention = spreadsheetData.interventionList[i]
-            newCoverages[intervention] = costCov.function(allocationDictionary[intervention], costCoverageInfo[intervention], targetPopSize[intervention]) / targetPopSize[intervention]
+            costCurveThisIntervention = costCurves[intervention]
+            newCoverages[intervention] = maximum(costCurveThisIntervention(allocationDictionary[intervention]), eps)
         model.updateCoverages(newCoverages)
-        for t in range(self.numModelSteps - timestepsPre):
-            model.moveOneTimeStep()
-            modelThisTimeStep = dcp(model)
-            modelList.append(modelThisTimeStep)
-        return modelList    
+        steps = self.numModelSteps - timestepsPre
+        modelList += runModelForNTimeSteps(steps, spreadsheetData, model, saveEachStep=True)[1]
+        return modelList
     
         
     def getCostCoverageInfo(self):
@@ -608,13 +612,14 @@ class Optimisation:
 
 
 class GeospatialOptimisation:
-    def __init__(self, regionSpreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem):
+    def __init__(self, regionSpreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem, costCurveType):
         self.regionSpreadsheetList = regionSpreadsheetList
         self.regionNameList = regionNameList
         self.numModelSteps = numModelSteps
         self.cascadeValues = cascadeValues
         self.optimise = optimise
         self.resultsFileStem = resultsFileStem
+        self.costCurveType = costCurveType
         self.numRegions = len(regionSpreadsheetList)        
         self.regionalBOCs = None 
         self.tradeOffCurves = None
@@ -775,7 +780,7 @@ class GeospatialOptimisation:
                 regionName = self.regionNameList[region]
                 spreadsheet = self.regionSpreadsheetList[region]
                 filename = self.resultsFileStem + regionName
-                thisOptimisation = optimisation.Optimisation(spreadsheet, self.numModelSteps, self.optimise, filename)
+                thisOptimisation = optimisation.Optimisation(spreadsheet, self.numModelSteps, self.optimise, filename, self.costCurveType)
                 subNumCores = len(self.cascadeValues)
                 thisCascade = dcp(self.cascadeValues)
                 # if final cascade value is 'extreme' replace it with totalNationalBudget / current regional total budget
@@ -862,7 +867,7 @@ class GeospatialOptimisation:
                 regionName = self.regionNameList[region]
                 print 'optimising for individual region ', regionName
                 thisSpreadsheet = self.regionSpreadsheetList[region]
-                thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, self.resultsFileStem) 
+                thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, self.resultsFileStem, self.costCurveType)
                 thisBudget = optimisedRegionalBudgetList[region]
                 prc = Process(
                     target=thisOptimisation.performSingleOptimisationForGivenTotalBudget, 
