@@ -1,4 +1,4 @@
-rootpath = '../..'
+rootpath = '../../..'
 import os, sys
 
 moduleDir = os.path.join(os.path.dirname(__file__), rootpath)
