@@ -328,6 +328,12 @@ class Params:
                 reductionWasting = (oldProbWasting - newProbWasting) / oldProbWasting
                 wastingUpdate[wastingCat][ageName] *= 1. - reductionWasting
         return stuntingUpdate, anemiaUpdate, wastingUpdate
+
+    def getWastingUpdateDueToWastingIncidence(self, incidenceBefore, incidenceAfter):
+        reduction = (incidenceBefore - incidenceAfter)/incidenceAfter
+        wastingUpdate = 1. - reduction
+        return wastingUpdate
+
     def getStuntingUpdateComplementaryFeeding(self, newCoverage):
         stuntingUpdate = {}
         for ageName in self.ages:
