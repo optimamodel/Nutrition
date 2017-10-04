@@ -547,23 +547,41 @@ class Model:
         # convenient names
         ageGroup = self.listOfAgeCompartments[0]
         ageName  = ageGroup.name
-        # restratify Stunting
+        # restratify stunting and wasting
         restratifiedStuntingAtBirth = {}
+        restratifiedWastingAtBirth = {}
         for outcome in self.birthOutcomes:
             totalProbStunted = self.derived.probStuntedAtBirth[outcome] * self.derived.stuntingUpdateAfterInterventions['<1 month']
             restratifiedStuntingAtBirth[outcome] = self.helper.restratify(totalProbStunted)
-        # sum over birth outcome for full stratified stunting fractions, then apply to birth distribution
+            restratifiedWastingAtBirth[outcome] = {}
+            totalProbWasted = 0.
+            # distribute proportions for wasting categories
+            for wastingCat in self.wastedList:
+                probWastedThisCat = self.derived.probWastedAtBirth[wastingCat][outcome] * self.derived.wastingUpdateAfterInterventions['<1 month'][wastingCat]
+                restratifiedWastingAtBirth[outcome][wastingCat] = probWastedThisCat
+                totalProbWasted += probWastedThisCat
+            # normality constraint on non-wasted proportions
+            for nonWastingCat in self.nonWastedList:
+                wastingDist = self.helper.restratify(totalProbWasted)
+                restratifiedWastingAtBirth[outcome][nonWastingCat] = wastingDist[nonWastingCat]
+        # sum over birth outcome for full stratified stunting and wasting fractions, then apply to birth distribution
         stuntingFractions = {}
+        wastingFractions = {}
+        for wastingCat in self.wastingList:
+            wastingFractions[wastingCat] = 0.
+            for outcome in self.birthOutcomes:
+                wastingFractions[wastingCat] += restratifiedWastingAtBirth[outcome][wastingCat] * self.params.birthOutcomeDist[outcome]
         for stuntingCat in self.stuntingList:
             stuntingFractions[stuntingCat] = 0.
             for outcome in self.birthOutcomes:
                 stuntingFractions[stuntingCat] += restratifiedStuntingAtBirth[outcome][stuntingCat] * self.params.birthOutcomeDist[outcome]
-            for wastingCat in self.wastingList:
+        for wastingCat in self.wastingList:
+            for stuntingCat in self.stuntingList:
                 for breastfeedingCat in self.breastfeedingList:
                     for anemiaStatus in self.anemiaList:
-                        ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].populationSize += numNewBabies * self.params.wastingDistribution[ageName][wastingCat] * \
-                                                                                                                        self.params.breastfeedingDistribution[ageName][breastfeedingCat] * self.params.anemiaDistribution[ageName][anemiaStatus] *\
-                                                                                                                        stuntingFractions[stuntingCat]
+                        ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].populationSize += numNewBabies * self.params.breastfeedingDistribution[ageName][breastfeedingCat] * \
+                                                                                                                            self.params.anemiaDistribution[ageName][anemiaStatus] *\
+                                                                                                                            stuntingFractions[stuntingCat] * wastingFractions[wastingCat]
 
     def applyAgingAndBirths(self):
         # aging must happen before births
