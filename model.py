@@ -263,7 +263,7 @@ class Model:
             wastingIncidenceAfter = incidencesAfter[wastingCat]
             # impact of wasting incidence on wasting prevalence (prevention interventions)
             wastingUpdateDueToWasingIncidence[wastingCat] = self.params.getWastingUpdateDueToWastingIncidence(wastingIncidenceBefore, wastingIncidenceAfter)
-        wastingUpdateDueToWasingIncidence['high'] = wastingUpdateDueToWasingIncidence.pop('Wasting (high)')
+        wastingUpdateDueToWasingIncidence['high'] = wastingUpdateDueToWasingIncidence.pop('Wasting (high)') # TODO: this could be more elegant, like making all wasting cats 'Wasting (.)'
         wastingUpdateDueToWasingIncidence['moderate'] = wastingUpdateDueToWasingIncidence.pop('Wasting (moderate)')
 
         # STUNTING
