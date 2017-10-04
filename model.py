@@ -226,23 +226,35 @@ class Model:
         beta = self.derived.getFracDiarrheaFixedZ()
         stuntingUpdateDueToBreastfeeding = self.params.getStuntingUpdateDueToIncidence(beta)
 
-        # INCIDENCE
+        # DIARRHEA AND WASTING INCIDENCE
         incidencesBefore = {}
-        incidencesAfter = {}  
-        for ageGroup in self.listOfAgeCompartments:
-            ageName = ageGroup.name
-            #update incidence
-            incidencesBefore[ageName] = self.params.incidences[ageName]['Diarrhea']
-            self.params.incidences[ageName]['Diarrhea'] *= incidenceUpdate[ageName]['Diarrhea']
-            incidencesAfter[ageName] = self.params.incidences[ageName]['Diarrhea']
-        # get flow on effects to stunting and anemia due to changing incidence
-        Z0 = self.derived.getZa(incidencesBefore, self.params.breastfeedingDistribution)
-        Zt = self.derived.getZa(incidencesAfter,  self.params.breastfeedingDistribution)
+        incidencesAfter = {}
+        for condition in ['Diarrhea', 'Wasting (moderate)', 'Wasting (high)']:
+            incidencesAfter[condition] = {}
+            incidencesAfter[condition] = {}
+            for ageGroup in self.listOfAgeCompartments:
+                ageName = ageGroup.name
+                incidencesBefore[condition][ageName] = self.params.incidences[condition][ageName]
+                self.params.incidences[condition][ageName] *= incidenceUpdate[condition][ageName]
+                incidencesAfter[condition][ageName] = self.params.incidences[condition][ageName]
+        # diarrhea
+        diaIncidenceBefore = incidencesBefore['Diarrhea']
+        diaIncidenceAfter = incidencesAfter['Diarrhea']
+        # get flow on effects to stunting, anemia and wasting due to changing diarrhea incidence
+        Z0 = self.derived.getZa(diaIncidenceBefore, self.params.breastfeedingDistribution)
+        Zt = self.derived.getZa(diaIncidenceAfter,  self.params.breastfeedingDistribution)
         beta = self.derived.getFracDiarrhea(Z0, Zt)
-        # update probabilities given new incidence 
-        self.derived.updateDiarrheaProbsNewZa(Zt) 
-        stuntingUpdateDueToIncidence, anemiaUpdateDueToIncidence = self.params.getUpdatesDueToIncidence(beta)  
-        
+        # update probabilities given new incidence
+        self.derived.updateDiarrheaProbsNewZa(Zt)
+        stuntingUpdateDueToIncidence, anemiaUpdateDueToIncidence, wastingUpdateDueToDiarrheaIncidence = self.params.getUpdatesDueToIncidence(beta)
+        # wasting
+        wastingUpdateDueToWasingIncidence = {}
+        for wastingCat in ['Wasting (moderate)', 'Wasting (high)']:
+            wastingIncidenceBefore = incidencesBefore[wastingCat]
+            wastingIncidenceAfter = incidencesAfter[wastingCat]
+            # impact of wasting incidence on wasting prevalence (prevention interventions)
+            wastingUpdateDueToWasingIncidence[wastingCat] = self.params.getWastingUpdateDueToWastingIncidence(wastingIncidenceBefore, wastingIncidenceAfter)
+
         # STUNTING
         for ageGroup in self.listOfAgeCompartments:
             ageName = ageGroup.name
