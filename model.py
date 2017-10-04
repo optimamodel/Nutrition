@@ -174,11 +174,13 @@ class Model:
 
         # call initialisation of probabilities related to interventions
         self.derived.setProbStuntedIfCovered(self.params.coverage, self.params.stuntingDistribution)
+        self.derived.setProbAnemicIfCovered(self.params.coverage, self.params.anemiaDistribution, self.params.fracAnemicExposedMalaria, self.params.fracAnemicNotPoor, self.params.fracAnemicPoor)
+        self.derived.setProbWastedIfCovered(self.params.coverage, self.params.wastingDistribution)
         self.derived.setProbCorrectlyBreastfedIfCovered(self.params.coverage, self.params.breastfeedingDistribution)
         self.derived.setProbStuntedIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.stuntingDistribution)
         self.derived.setProbAnemicIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
+        self.derived.setProbWastedIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.wastingDistribution)
         self.derived.setProbStuntedComplementaryFeeding(self.params.stuntingDistribution, self.params.coverage)
-        self.derived.setProbAnemicIfCovered(self.params.coverage, self.params.anemiaDistribution, self.params.fracAnemicExposedMalaria, self.params.fracAnemicNotPoor, self.params.fracAnemicPoor)
 
         # add all constraints to coverages
         newCoverage = dcp(self.params.addCoverageConstraints(newCoverage, self.listOfAgeCompartments, self.listOfReproductiveAgeCompartments))
@@ -187,6 +189,7 @@ class Model:
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
         stuntingUpdate = self.params.getStuntingUpdate(newCoverage)
         anemiaUpdate, malariaReduction, poorReduction, notPoorReduction = self.params.getAnemiaUpdate(newCoverage)
+        wastingUpdate = self.params.getWastingUpdate(newCoverage)
         incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
         birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)
         newFracCorrectlyBreastfed = self.params.getAppropriateBFNew(newCoverage)
