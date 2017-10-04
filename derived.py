@@ -400,6 +400,23 @@ class Derived:
                 self.probAnemicIfCovered[intervention]["not covered"][pop] = pn
                 self.probAnemicIfCovered[intervention]["covered"][pop] = pc
 
+    # calculate probability of wasting in current age group given coverage by intervention
+    def setProbWastedIfCovered(self, coverage, wastingDistribution):
+        numAgeGroups = len(self.ages)
+        for wastingCat in ["high", "moderate"]:
+            self.probWastedIfCovered[wastingCat] = {}
+            for intervention in self.data.interventionList:
+                self.probWastedIfCovered[wastingCat][intervention] = {}
+                self.probWastedIfCovered[wastingCat][intervention]["covered"] = {}
+                self.probWastedIfCovered[wastingCat][intervention]["not covered"] = {}
+                for iAge in range(numAgeGroups):
+                        ageName = self.ages[iAge]
+                        oddsRatio = self.data.ORwastingIntervention[wastingCat][ageName][intervention]
+                        fracCovered = coverage[intervention]
+                        fracThisCatThisAge = wastingDistribution[ageName][wastingCat]
+                        pn, pc = self.solveQuadratic(oddsRatio, fracCovered, fracThisCatThisAge)
+                        self.probWastedIfCovered[wastingCat][intervention]["not covered"][ageName] = pn
+                        self.probWastedIfCovered[wastingCat][intervention]["covered"][ageName] = pc
 
     # Calculate probability of stunting in current age-group given coverage by intervention
     def setProbCorrectlyBreastfedIfCovered(self, coverage, breastfeedingDistribution):
