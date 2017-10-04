@@ -665,3 +665,16 @@ class Derived:
                     raise ValueError("probability of stunting complementary feeding, at outcome %s, age %s, is out of range (%f)"%(group, ageName, pi))
         self.probStuntedComplementaryFeeding = probStuntedComplementaryFeeding    
             
+    def setDurationWastedNoTreatment(self): # TODO: may need to change order of keys to be consistent with other wasting dicts
+        for ageName in self.ages:
+            self.durationWastedNoTreatment[ageName] = {}
+            for intervention in self.data.interventionList:
+                self.durationWastedNoTreatment[ageName][intervention] = {}
+                for wastingCat in ['moderate', 'high']:
+                    effectivenessIncidence = self.data.effectivenessIncidence[intervention][ageName]['Wasting (%s)' %wastingCat]
+                    durationWastedOnTreatment = self.data.durationWastedOnTreatment[wastingCat]
+                    fracWasted = self.data.wastingDistribution[ageName][wastingCat]
+                    incidence = self.data.incidences[ageName]['Wasting (%s)' %wastingCat]
+                    durationWasted = fracWasted / incidence
+                    fracOnTreatmentShifted = self.data.coverage[intervention] * effectivenessIncidence
+                    self.durationWastedNoTreatment[ageName][intervention][wastingCat] = (durationWasted - fracOnTreatmentShifted*durationWastedOnTreatment)/(1.-fracOnTreatmentShifted)
