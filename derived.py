@@ -316,6 +316,8 @@ class Derived:
                 OR = self.data.ORstuntingCondition[ageName]['Diarrhea']
             elif risk == 'anemia':
                 OR = self.data.ORanemiaCondition[ageName]['Diarrhea']
+            elif 'Wasting' in risk:
+                OR = self.data.ORwastingCondition[risk][ageName]['Diarrhea']
             else:
                 print 'risk factor is invalid'
             AO[ageName] = pow(OR, RRnot * Za[ageName] * self.ageGroupSpans[i])
