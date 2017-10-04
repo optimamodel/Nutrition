@@ -26,10 +26,10 @@ MCSampleSize = 4
 cascadeValues = [0.0, 0.1, 0.2, 0.4, 0.8, 1.0, 1.1, 1.25, 1.5, 1.7, 2.0] 
 #cascadeValues = ['extreme']
 
-regionNameList = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Geita', 'Iringa', 'Kagera', 'Kaskazini_Pemba', 'Kaskazini_Unguja','Katavi']
+#regionNameList = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Geita', 'Iringa', 'Kagera', 'Kaskazini_Pemba', 'Kaskazini_Unguja','Katavi']
 #regionNameList = ['Kigoma', 'Kilimanjaro', 'Kusini_Pemba', 'Kusini_Unguja', 'Lindi', 'Manyara', 'Mara', 'Mbeya', 'Mjini_Magharibi']
 #regionNameList = ['Morogoro', 'Mtwara', 'Mwanza', 'Njombe', 'Pwani', 'Rukwa', 'Ruvuma', 'Shinyanga', 'Simiyu']
-#regionNameList = ['Singida', 'Tabora', 'Tanga']
+regionNameList = ['Singida', 'Tabora', 'Tanga']
 
 spreadsheetFileStem = rootpath + '/input_spreadsheets/' + country + '/' + spreadsheetDate + '/regions/'
 spreadsheetList = []
