@@ -50,6 +50,8 @@ class Params:
         self.PWageDistribution = dcp(data.PWageDistribution)
         self.fracSevereDia = dcp(data.fracSevereDia)
         self.rawTargetPop = dcp(data.targetPopulation)
+        self.durationWastingOnTreatment = dcp(data.durationWastedOnTreatment)
+        self.durationWastedNoTreatment = dcp(derived.durationWastedNoTreatment)
     
 
 # Add all functions for updating parameters due to interventions here....
@@ -139,6 +141,21 @@ class Params:
                     reduction = (oldProbAnemic - newProbAnemic)/oldProbAnemic
                     anemiaUpdate[pop] *= 1. - reduction
         return anemiaUpdate, malariaReduction, poorReduction, notPoorReduction
+
+    def getWastingUpdate(self, newCoverage):
+        wastingUpdate = {}
+        for wastingCat in self.wastedList:
+            wastingUpdate[wastingCat] = {}
+            for ageName in self.ages:
+                wastingUpdate[wastingCat][ageName] = 1.
+                oldProbWasting = self.wastingDistribution[ageName][wastingCat]
+                for intervention in newCoverage.keys():
+                    probWastingIfCovered = self.derived.probWastedIfCovered[wastingCat][intervention]["covered"][ageName]
+                    probWastingIfNotCovered = self.derived.probWastedIfCovered[wastingCat][intervention]["not covered"][ageName]
+                    newProbWasting = newCoverage[intervention]*probWastingIfCovered + (1.-newCoverage[intervention])*probWastingIfNotCovered
+                    reduction = (oldProbWasting - newProbWasting) / oldProbWasting
+                    wastingUpdate[wastingCat][ageName] *= 1. - reduction
+        return wastingUpdate
 
     def addCoverageConstraints(self, newCoverages, listOfAgeCompartments, listOfReproductiveAgeCompartments):
         from copy import deepcopy as dcp
