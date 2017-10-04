@@ -340,6 +340,25 @@ class Model:
             newFracAnemiaMalaria = oldFracAnemiaMalaria * malariaUpdate
             self.params.fracAnemicExposedMalaria[ageName] = newFracAnemiaMalaria
         
+        # WASTING
+        for ageGroup in self.listOfAgeCompartments:
+            newProbWasted = 0.
+            ageName = ageGroup.name
+            # probability of being in either SAM or MAM for this age
+            for wastingCat in self.wastedList:
+                totalUpdateThisCat = wastingUpdate[wastingCat] * wastingUpdateDueToDiarrheaIncidence[wastingCat] * wastingUpdateDueToWasingIncidence[wastingCat]
+                # save for use in apply births and apply aging
+                self.derived.wastingUpdateAfterInterventions[ageName][wastingCat] *= totalUpdateThisCat
+                # update overall wasting in this category
+                oldProbThisCat = ageGroup.getWastedFraction(wastingCat)
+                newProbThisCat = oldProbThisCat * totalUpdateThisCat
+                self.params.wastingDistribution[ageName][wastingCat] = newProbThisCat
+                newProbWasted += newProbThisCat
+            # normality constraint on non-wasted proportions
+            wastingDist = self.helper.restratify(newProbWasted)
+            for nonWastingCat in self.nonWastedList:
+                self.params.wastingDistribution[ageName][nonWastingCat] = wastingDist[nonWastingCat]
+            ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
 
         # BIRTH OUTCOME
         for outcome in self.birthOutcomes:
