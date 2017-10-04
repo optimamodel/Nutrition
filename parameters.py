@@ -311,9 +311,23 @@ class Params:
             stuntingUpdate[ageName] *= 1. - reductionStunting
             # anemia
             reductionAnemia = (oldProbAnemia - newProbAnemia)/oldProbAnemia
-            anemiaUpdate[ageName] *= 1. - reductionAnemia                
-        return stuntingUpdate, anemiaUpdate
-        
+            anemiaUpdate[ageName] *= 1. - reductionAnemia
+        # wasting (SAM and MAM)
+        wastingUpdate = {}
+        for wastingCat in self.wastedList:
+            wastingUpdate[wastingCat] = {}
+            for ageName in self.ages:
+                wastingUpdate[wastingCat][ageName] = 1.
+                newProbWasting = 0.
+                oldProbWasting = self.wastingDistribution[ageName][wastingCat]
+                for breastfeedingCat in self.breastfeedingList:
+                    pab = self.breastfeedingDistribution[ageName][breastfeedingCat]
+                    t1 = beta[ageName][breastfeedingCat] * self.derived.fracWastedIfDiarrhea[wastingCat]["dia"][ageName]
+                    t2 = (1. - beta[ageName][breastfeedingCat]) * self.derived.fracWastedIfDiarrhea[wastingCat]["nodia"][ageName]
+                    newProbWasting += pab* (t1 + t2)
+                reductionWasting = (oldProbWasting - newProbWasting) / oldProbWasting
+                wastingUpdate[wastingCat][ageName] *= 1. - reductionWasting
+        return stuntingUpdate, anemiaUpdate, wastingUpdate
     def getStuntingUpdateComplementaryFeeding(self, newCoverage):
         stuntingUpdate = {}
         for ageName in self.ages:
