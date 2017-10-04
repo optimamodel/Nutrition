@@ -21,7 +21,9 @@ class Data:
                  ORstuntingComplementaryFeeding, anemiaDistribution,
                  projectedWRApop, projectedWRApopByAge, projectedPWpop,
                  projectedGeneralPop, PWageDistribution, fracAnemicNotPoor,
-                 fracAnemicPoor, fracAnemicExposedMalaria, fracExposedMalaria, ORanemiaCondition, fracSevereDia):
+                 fracAnemicPoor, fracAnemicExposedMalaria, fracExposedMalaria, ORanemiaCondition,
+                 fracSevereDia, ORwastingCondition, ORwastingIntervention, ORwastingBirthOutcome,
+                 durationWastedOnTreatment):
 
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
@@ -44,10 +46,12 @@ class Data:
         self.RRdiarrhea = RRdiarrhea
         self.ORstuntingCondition = ORstuntingCondition
         self.ORstuntingBirthOutcome = ORstuntingBirthOutcome
+        self.ORwastingBirthOutcome = ORwastingBirthOutcome
         self.birthOutcomeDist = birthOutcomeDist
         self.ORstuntingIntervention = ORstuntingIntervention
         self.RRanemiaIntervention = RRanemiaIntervention
         self.ORanemiaIntervention = ORanemiaIntervention
+        self.ORwastingIntervention = ORwastingIntervention
         self.ORappropriatebfIntervention = ORappropriatebfIntervention
         self.ageAppropriateBreastfeeding = ageAppropriateBreastfeeding
         self.coverage = coverage
@@ -70,7 +74,9 @@ class Data:
         self.fracAnemicExposedMalaria = fracAnemicExposedMalaria
         self.fracExposedMalaria = fracExposedMalaria
         self.ORanemiaCondition = ORanemiaCondition
+        self.ORwastingCondition = ORwastingCondition
         self.fracSevereDia = fracSevereDia
+        self.durationWastedOnTreatment = durationWastedOnTreatment
 
 def readSheetWithOneIndexCol(sheet, scaleFactor=1.):
     resultDict = {}
@@ -215,6 +221,9 @@ def readSpreadsheet(fileName, keyList):
     # population
     population = splitSpreadsheetWithTwoIndexCols(demographicsSheet, "Current year")
     populationDict = population['Values']
+    durationWastedOnTreatment = {}
+    durationWastedOnTreatment['moderate'] = populationDict['average duration wasting (moderate) on treatment']
+    durationWastedOnTreatment['high'] = populationDict['average duration wasting (high) on treatment']
     # mortality
     mortality = splitSpreadsheetWithTwoIndexCols(demographicsSheet, "Mortality rates")
     rawMortality = mortality['Values']
@@ -311,9 +320,14 @@ def readSpreadsheet(fileName, keyList):
     # distribution
     birthOutcomeDistribution = splitSpreadsheetWithTwoIndexCols(birthOutcomesSheet, "Distribution")
     ORstuntingBirthOutcome = {}
+    ORwastingBirthOutcome = {}
+    ORwastingBirthOutcome['high'] = {}
+    ORwastingBirthOutcome['moderate'] = {}
     birthOutcomeDist = {}
     for birthOutcome in birthOutcomeDistribution.keys():
         ORstuntingBirthOutcome[birthOutcome] = birthOutcomeDistribution[birthOutcome]['OR stunting']
+        ORwastingBirthOutcome['high'][birthOutcome] = birthOutcomeDistribution[birthOutcome]['OR wasting (high)']
+        ORwastingBirthOutcome['moderate'][birthOutcome] = birthOutcomeDistribution[birthOutcome]['OR wasting (moderate)']
         birthOutcomeDist[birthOutcome] = birthOutcomeDistribution[birthOutcome]["Fraction of births"]
 
     # RR of death by birth outcome
@@ -434,7 +448,7 @@ def readSpreadsheet(fileName, keyList):
     # children
     # warning: currently this applied to all population groups (no tabs for them yet)
     interventionsForChildren = pd.read_excel(location, sheetname='Interventions for children', index_col=[0, 1, 2])
-    affectedFraction = readInterventionsByPopulationTabs(interventionsForChildren, 'Affected fraction', interventionList, allPops, causesOfDeathList + ['Severe diarrhea']) # TODO: warning: severe diarrhea is not listed in 'causes of death' and so causes issues
+    affectedFraction = readInterventionsByPopulationTabs(interventionsForChildren, 'Affected fraction', interventionList, allPops, causesOfDeathList + ['Severe diarrhea', 'Wasting (high)', 'Wasting (moderate)']) # TODO: warning: severe diarrhea & wasting not listed in 'causes of death' and so causes issues
     effectivenessMortality = readInterventionsByPopulationTabs(interventionsForChildren, 'Effectiveness mortality', interventionList, allPops, causesOfDeathList)
     effectivenessIncidence = readInterventionsByPopulationTabs(interventionsForChildren, 'Effectiveness incidence', interventionList, ages, conditionsList) # children only
 
@@ -444,6 +458,8 @@ def readSpreadsheet(fileName, keyList):
     fracExposedMalaria = demographics['fraction at risk of malaria']
     ORanemiaCondition = {age:{condition:1. for condition in conditionsList} for age in ages}
     fracSevereDia = 0.2 # made up value
+    ORwastingCondition = {wastingCat:{age:{condition:1. for condition in conditionsList} for age in ages} for wastingCat in ['Wasting (high)', 'Wasting (moderate)']} # TODO: add these to spreadsheet
+    ORwastingIntervention = {wastingCat:{age:{intervention:1. for intervention in interventionList} for age in ages} for wastingCat in ['high', 'moderate']}
     
     
     # calculate fractions of poor, not poor and malaria exposed anemic
@@ -469,7 +485,8 @@ def readSpreadsheet(fileName, keyList):
                            foodSecurityGroups, ORstuntingComplementaryFeeding, anemiaDistribution,
                            projectedWRApop, projectedWRApopByAge, projectedPWpop, projectedGeneralPop,
                            PWageDistribution, fracAnemicNotPoor, fracAnemicPoor, fracAnemicExposedMalaria,
-                           fracExposedMalaria, ORanemiaCondition, fracSevereDia)
+                           fracExposedMalaria, ORanemiaCondition, fracSevereDia, ORwastingCondition, ORwastingIntervention,
+                           ORwastingBirthOutcome, durationWastedOnTreatment)
 
     return spreadsheetData
                   
