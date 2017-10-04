@@ -259,7 +259,11 @@ class Derived:
                 self.fracWastedIfDiarrhea[wastingCat]["nodia"][ageName] = pn
                 self.fracWastedIfDiarrhea[wastingCat]["dia"][ageName]   = pc
 
+    def updateDiarrheaProbsNewZa(self, Zt):
         AOStunting = self.getAverageOR(Zt, 'stunting')
+        AOwasting = {}
+        for wastingCat in self.wastedList:
+            AOwasting[wastingCat] = self.getAverageOR(Zt, 'Wasting (%s)'%wastingCat)
         Yt = {}
         for ageName in self.ages:
             Yt[ageName] = Zt[ageName] * self.data.fracSevereDia
@@ -270,7 +274,12 @@ class Derived:
             # stunting
             AO = AOStunting
             Omega0  = self.fracStuntedIfDiarrhea["nodia"][ageName]
-            self.fracStuntedIfDiarrhea["dia"][ageName] = Omega0 * AO[ageName] / (1. - Omega0 + AO[ageName]*Omega0)
+            self.fracStuntedIfDiarrhea["dia"][ageName] = Omega0 * AO[ageName] / (1. - Omega0 + AO[ageName]*Omega0) # TODO: is there an error in the '+' here? Says '-' in appendix
+            # wasting
+            for wastingCat in self.wastedList:
+                AO = AOwasting[wastingCat]
+                Omega0 = self.fracWastedIfDiarrhea[wastingCat]["nodia"][ageName]
+                self.fracWastedIfDiarrhea[wastingCat]["dia"][ageName] = Omega0 * AO[ageName] / (1. - Omega0 + AO[ageName]*Omega0)
             # anemia
             AO = AOAnemia
             Omega0  = self.fracAnemicIfDiarrhea["nodia"][ageName]
