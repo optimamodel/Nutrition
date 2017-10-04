@@ -234,7 +234,31 @@ class Derived:
             self.fracAnemicIfDiarrhea["nodia"][ageName] = pn
             self.fracAnemicIfDiarrhea["dia"][ageName]   = pc
 
-    def updateDiarrheaProbsNewZa(self, Zt):    
+    def setProbWastedIfDiarrhea(self, currentIncidences, breastfeedingDistribution, wastingDistribution):
+        incidence = {}
+        for ageName in self.ages:
+            incidence[ageName] = currentIncidences[ageName]['Diarrhea']
+        Z0 = self.getZa(incidence, breastfeedingDistribution)
+        Zt = Z0 # true for initialisation
+        beta = self.getFracDiarrhea(Z0, Zt)
+        for wastingCat in self.wastedList:
+            risk = 'Wasting (%s)' %wastingCat
+            AO = self.getAverageOR(Zt, risk)
+            numAgeGroups = len(self.ages)
+            self.fracWastedIfDiarrhea[wastingCat] = {}
+            self.fracWastedIfDiarrhea[wastingCat]["nodia"] = {}
+            self.fracWastedIfDiarrhea[wastingCat]["dia"] = {}
+            for iAge in range(0, numAgeGroups):
+                ageName = self.ages[iAge]
+                fracDiarrhea = 0.
+                for breastfeedingCat in self.breastfeedingList:
+                    fracDiarrhea += beta[ageName][breastfeedingCat] * breastfeedingDistribution[ageName][breastfeedingCat]
+                # fraction wasted
+                fracThisCatThisAge = wastingDistribution[ageName][wastingCat]
+                pn, pc = self.solveQuadratic(AO[ageName], fracDiarrhea, fracThisCatThisAge)
+                self.fracWastedIfDiarrhea[wastingCat]["nodia"][ageName] = pn
+                self.fracWastedIfDiarrhea[wastingCat]["dia"][ageName]   = pc
+
         AOStunting = self.getAverageOR(Zt, 'stunting')
         Yt = {}
         for ageName in self.ages:
