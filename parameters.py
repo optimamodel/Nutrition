@@ -345,8 +345,10 @@ class Params:
         return stuntingUpdate, anemiaUpdate, wastingUpdate
 
     def getWastingUpdateDueToWastingIncidence(self, incidenceBefore, incidenceAfter):
-        reduction = (incidenceBefore - incidenceAfter)/incidenceAfter
-        wastingUpdate = 1. - reduction
+        wastingUpdate = {}
+        for age in self.ages:
+            reduction = (incidenceBefore[age] - incidenceAfter[age])/incidenceAfter[age]
+            wastingUpdate[age] = 1. - reduction
         return wastingUpdate
 
     def getStuntingUpdateComplementaryFeeding(self, newCoverage):

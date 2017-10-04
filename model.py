@@ -263,6 +263,8 @@ class Model:
             wastingIncidenceAfter = incidencesAfter[wastingCat]
             # impact of wasting incidence on wasting prevalence (prevention interventions)
             wastingUpdateDueToWasingIncidence[wastingCat] = self.params.getWastingUpdateDueToWastingIncidence(wastingIncidenceBefore, wastingIncidenceAfter)
+        wastingUpdateDueToWasingIncidence['high'] = wastingUpdateDueToWasingIncidence.pop('Wasting (high)')
+        wastingUpdateDueToWasingIncidence['moderate'] = wastingUpdateDueToWasingIncidence.pop('Wasting (moderate)')
 
         # STUNTING
         for ageGroup in self.listOfAgeCompartments:
@@ -310,16 +312,16 @@ class Model:
             ageName = ageGroup.name
             # probability of being in either SAM or MAM for this age
             for wastingCat in self.wastedList:
-                totalUpdateThisCat = wastingUpdate[wastingCat] * wastingUpdateDueToDiarrheaIncidence[wastingCat] * wastingUpdateDueToWasingIncidence[wastingCat]
-                # save for use in apply births and apply aging
-                self.derived.wastingUpdateAfterInterventions[ageName][wastingCat] *= totalUpdateThisCat
+                totalUpdateThisCatAndAge = wastingUpdate[wastingCat][ageName] * wastingUpdateDueToDiarrheaIncidence[wastingCat][ageName] * wastingUpdateDueToWasingIncidence[wastingCat][ageName]
+                # save for use in apply births
+                self.derived.wastingUpdateAfterInterventions[ageName][wastingCat] *= totalUpdateThisCatAndAge
                 # update overall wasting in this category
                 oldProbThisCat = ageGroup.getWastedFraction(wastingCat)
-                newProbThisCat = oldProbThisCat * totalUpdateThisCat
+                newProbThisCat = oldProbThisCat * totalUpdateThisCatAndAge
                 self.params.wastingDistribution[ageName][wastingCat] = newProbThisCat
                 newProbWasted += newProbThisCat
             # normality constraint on non-wasted proportions
-            wastingDist = self.helper.restratify(newProbWasted)
+            wastingDist = self.thisHelper.restratify(newProbWasted)
             for nonWastingCat in self.nonWastedList:
                 self.params.wastingDistribution[ageName][nonWastingCat] = wastingDist[nonWastingCat]
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
