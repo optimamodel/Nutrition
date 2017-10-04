@@ -351,7 +351,7 @@ class Derived:
     # Calculate probability of stunting in current age-group given coverage by intervention
     def setProbStuntedIfCovered(self, coverage, stuntingDistribution):
         numAgeGroups = len(self.ages)
-        for intervention in self.data.interventionList:
+        for intervention in self.data.interventionCompleteList:
             self.probStuntedIfCovered[intervention] = {}
             self.probStuntedIfCovered[intervention]["not covered"] = {}
             self.probStuntedIfCovered[intervention]["covered"]     = {}
@@ -365,23 +365,13 @@ class Derived:
                 self.probStuntedIfCovered[intervention]["covered"][ageName]     = pc
 
     # Calculate probability of being anemic in each population group given coverage by intervention
-    def setProbAnemicIfCovered(self, coverage, anemiaDistribution, fracAnemicExposedMalaria, fracAnemicNotPoor, fracAnemicPoor):
+    def setProbAnemicIfCovered(self, coverage, anemiaDistribution):
         for intervention in self.data.interventionCompleteList:
             self.probAnemicIfCovered[intervention] = {}
             self.probAnemicIfCovered[intervention]["not covered"] = {}
             self.probAnemicIfCovered[intervention]["covered"] = {}
             for pop in self.allPops:
-                if intervention == "IPTp":  
-                    #just the sub population exposed to malaria
-                    fracAnemicThisPop = fracAnemicExposedMalaria[pop] 
-                if "IFA poor" in intervention:  
-                    #just the sub population who are poor
-                    fracAnemicThisPop = fracAnemicPoor[pop]
-                if "IFA not poor" in intervention:  
-                    #just the sub population who are not poor
-                    fracAnemicThisPop = fracAnemicNotPoor[pop] 
-                else:
-                    fracAnemicThisPop = anemiaDistribution[pop]["anemic"]
+                fracAnemicThisPop = anemiaDistribution[pop]["anemic"]
                 fracCovered = coverage[intervention] 
                 # hidden IFAS interventions do not have corresponding RR/OR
                 if ' with bed nets' in intervention:
@@ -405,7 +395,7 @@ class Derived:
         numAgeGroups = len(self.ages)
         for wastingCat in ["high", "moderate"]:
             self.probWastedIfCovered[wastingCat] = {}
-            for intervention in self.data.interventionList:
+            for intervention in self.data.interventionCompleteList:
                 self.probWastedIfCovered[wastingCat][intervention] = {}
                 self.probWastedIfCovered[wastingCat][intervention]["covered"] = {}
                 self.probWastedIfCovered[wastingCat][intervention]["not covered"] = {}
@@ -421,7 +411,7 @@ class Derived:
     # Calculate probability of stunting in current age-group given coverage by intervention
     def setProbCorrectlyBreastfedIfCovered(self, coverage, breastfeedingDistribution):
         numAgeGroups = len(self.ages)
-        for intervention in self.data.interventionList:
+        for intervention in self.data.interventionCompleteList:
             self.probCorrectlyBreastfedIfCovered[intervention] = {}
             self.probCorrectlyBreastfedIfCovered[intervention]["not covered"] = {}
             self.probCorrectlyBreastfedIfCovered[intervention]["covered"]     = {}
