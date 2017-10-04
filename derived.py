@@ -24,19 +24,29 @@ class Derived:
         self.probStuntedIfPrevStunted = {}
         self.fracStuntedIfDiarrhea = {}
         self.fracAnemicIfDiarrhea = {}
+        self.fracWastedIfDiarrhea = {}
         self.probStuntedIfCovered = {}
         self.probCorrectlyBreastfedIfCovered = {}
         self.probStuntedComplementaryFeeding = {}
         self.probStuntedAtBirth = {}
+        self.probWastedAtBirth = {}
         self.probAnemicIfCovered = {}
+        self.probWastedIfCovered = {}
+        self.durationWastedNoTreatment = {}
         
         self.stuntingUpdateAfterInterventions = {}
+        self.wastingUpdateAfterInterventions = {}
         for ageName in self.ages:
             self.stuntingUpdateAfterInterventions[ageName] = 1.
+            self.wastingUpdateAfterInterventions[ageName] = {}
+            for wastingCat in self.wastedList:
+                self.wastingUpdateAfterInterventions[ageName][wastingCat] = 1.
 
         self.setReferenceMortality()
         self.setProbStuntingProgression()
         self.setProbStuntedAtBirth()
+        self.setProbWastedAtBirth()
+        self.setDurationWastedNoTreatment()
 
 
 
