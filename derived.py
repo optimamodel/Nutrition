@@ -483,7 +483,32 @@ class Derived:
         E = -FracStunted
         return [A,B,C,D,E]
         
-
+    def getBirthWastingQuarticCoefficients(self, wastingCat):
+        FracBO = [0.]*4
+        FracBO[1] = self.data.birthOutcomeDist["Term SGA"]
+        FracBO[2] = self.data.birthOutcomeDist["Pre-term AGA"]
+        FracBO[3] = self.data.birthOutcomeDist["Pre-term SGA"]
+        FracBO[0] = 1. - sum(FracBO[1:3])
+        OR = [1.]*4
+        OR[0] = 1.
+        OR[1] = self.data.ORwastingBirthOutcome[wastingCat]["Term SGA"]
+        OR[2] = self.data.ORwastingBirthOutcome[wastingCat]["Pre-term AGA"]
+        OR[3] = self.data.ORwastingBirthOutcome[wastingCat]["Pre-term SGA"]
+        FracWasted = self.initialModel.listOfAgeCompartments[0].getWastedFraction(wastingCat)
+        # [i] will refer to the three non-baseline birth outcomes
+        A = FracBO[0]*(OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.)
+        B = (OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.) * ( \
+            sum( FracBO[0] / (OR[i]-1.)         for i in (1,2,3)) + \
+            sum( OR[i] * FracBO[i] / (OR[i]-1.) for i in (1,2,3)) - \
+            FracWasted )
+        C = sum( FracBO[0] * (OR[i]-1.)         for i in (1,2,3)) + \
+            sum( OR[i] * FracBO[i] * ((OR[1]-1.)+(OR[2]-1.)+(OR[3]-1.)-(OR[i]-1.)) for i in (1,2,3) ) - \
+            sum( FracWasted*(OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.)/(OR[i]-1.) for i in (1,2,3))
+        D = FracBO[0] + \
+            sum( OR[i] * FracBO[i] for i in (1,2,3)) - \
+            sum( FracWasted * (OR[i]-1.) for i in (1,2,3))
+        E = -FracWasted
+        return [A,B,C,D,E]
         
     def getComplementaryFeedingQuarticCoefficients(self, stuntingDistribution, coverageArg):
         coverage = dcp(coverageArg)
@@ -536,7 +561,7 @@ class Derived:
 
 
     # SOLVE QUARTIC
-    # p0 = Probability of Stunting at birth if Birth outcome = Term AGA
+    # p0 = Probability of Stunting/wasting at birth if Birth outcome = Term AGA
     def getBaselineProbabilityViaQuartic(self, coEffs):
         from numpy import sqrt, isnan
         baselineProbability = 0        
@@ -606,7 +631,22 @@ class Derived:
                 raise ValueError("probability of stunting at birth, at outcome %s, is out of range (%f)"%(birthOutcome, pi))
         self.probStuntedAtBirth = probStuntedAtBirth        
            
-     
+    def setProbWastedAtBirth(self):
+        probWastedAtBirth = {}
+        for wastingCat in self.wastedList:
+            coEffs = self.getBirthWastingQuarticCoefficients(wastingCat)
+            p0 = self.getBaselineProbabilityViaQuartic(coEffs)
+            probWastedAtBirth[wastingCat] = {}
+            probWastedAtBirth[wastingCat]['Term AGA'] = p0
+            for birthOutcome in ["Pre-term SGA","Pre-term AGA","Term SGA"]:
+                probWastedAtBirth[wastingCat][birthOutcome] = {}
+                OR = self.data.ORwastingBirthOutcome[wastingCat][birthOutcome]
+                probWastedAtBirth[wastingCat][birthOutcome] = p0*OR / (1.-p0+OR*p0)
+                pi = p0*OR / (1.-p0+OR*p0)
+                if(pi<0. or pi>1.):
+                    raise ValueError("probability of wasting at birth, at outcome %s, is out of range (%f)"%(birthOutcome, pi))
+        self.probWastedAtBirth = probWastedAtBirth
+
     def setProbStuntedComplementaryFeeding(self, stuntingDistributionArg, coverageArg):
         coverage = dcp(coverageArg)
         stuntingDistribution  = dcp(stuntingDistributionArg)
