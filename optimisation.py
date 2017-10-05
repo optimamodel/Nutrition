@@ -385,11 +385,7 @@ class Optimisation:
                 writer = csv.writer(f)
                 writer.writerow(header)
                 writer.writerows(rows)
-                
-                
-    
-        
-                
+            
         
     def getInitialAllocationDictionary(self):
         import data 
@@ -610,6 +606,22 @@ class Optimisation:
                 writer.writerow(currentSpending.keys())
                 writer.writerow(currentSpending.values())                
              
+
+    def outputCostCurvesAsPNG(self, resultsFileStem, cascade, scale=True):
+        import data
+        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
+        timestepsPre = 12
+        costCoverageInfo = self.getCostCoverageInfo()
+        # run the model 
+        model = runModelForNTimeSteps(timestepsPre, spreadsheetData, model=None)[0]
+        initialTargetPopSize = self.getInitialTargetPopSize()
+        initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
+        budget = sum(initialAllocation)
+        # generate cost curves for each intervention
+        generateCostCurves(spreadsheetData, model, self.helper.keyList, self.dataSpreadsheetName, costCoverageInfo,
+                                        self.costCurveType, resultsFileStem, budget, cascade, scale)
+
+
 
 
 class GeospatialOptimisation:
