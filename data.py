@@ -326,6 +326,10 @@ def readSpreadsheet(fileName, keyList):
         costSaturation[intervention] = {}
         for costinfo in costinfoList:
             costSaturation[intervention][costinfo] = df.loc[intervention, costinfo]
+            
+    # WARNING HARD CODED FOR TANZANIA GEO ANALYSIS - CHANGE BACK!  
+    costSaturation['Vitamin A supplementation']["saturation coverage"] = 1.1        
+            
 
     # READ Intervention Target Population Matrix SHEET
     # sets:
