@@ -9,11 +9,10 @@ import optimisation
 country = 'Tanzania'
 date = '2017Sep'
 spreadsheetDate = '2017Sep'
-
 haveFixedProgCosts = False
 
-rerunMCSampleSize = 25
-geoMCSampleSize = 25
+rerunMCSampleSize = 4
+geoMCSampleSize = 4
 # WARNING: these must match values used in the other geospatial scripts
 numModelSteps = 180
 cascadeValues = [0.0, 0.1, 0.2, 0.4, 0.8, 1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 'extreme']
@@ -24,16 +23,14 @@ regionNameList = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Geita', 'Iringa', 'Kager
                   'Mjini_Magharibi', 'Morogoro', 'Mtwara', 'Mwanza', 'Njombe', 'Pwani',
                   'Rukwa', 'Ruvuma', 'Shinyanga', 'Simiyu', 'Singida', 'Tabora', 'Tanga']
 
-
-
 spreadsheetFileStem = rootpath + '/input_spreadsheets/' + country + '/' + spreadsheetDate + '/regions/InputForCode_'
 spreadsheetList = []
 for regionName in regionNameList:
     spreadsheet = spreadsheetFileStem + regionName + '.xlsx'
     spreadsheetList.append(spreadsheet)
 
-numCores = 8  # need this number times the number of outcomes you're optimising for
-for optimise in ['thrive']:
+numCores = 30  # need this number times the number of outcomes you're optimising for
+for optimise in ['thrive', 'deaths']:
     print 'running GA for:  ', optimise
 
     resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixed/'
