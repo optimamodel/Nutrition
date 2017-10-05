@@ -766,7 +766,7 @@ class GeospatialOptimisation:
                 thisCascade[-1] = math.ceil(totalNationalBudget / regionalTotalBudget) # this becomes a file name so keep it as an integer
             thisOptimisation.performCascadeOptimisation(MCSampleSize, thisCascade)
             
-    def generateParallelResultsForGeospatialCascades(self, numCores, MCSampleSize, haveFixedProgCosts):
+    def generateParallelResultsForGeospatialCascades(self, numCores, MCSampleSize, haveFixedProgCosts, splitCascade):
         import optimisation  
         import math
         from copy import deepcopy as dcp
@@ -788,7 +788,10 @@ class GeospatialOptimisation:
                 if self.cascadeValues[-1] == 'extreme':
                     regionalTotalBudget = thisOptimisation.getTotalInitialBudget()
                     thisCascade[-1] = math.ceil(totalNationalBudget / regionalTotalBudget) # this becomes a file name so keep it as an integer
-                thisOptimisation.performParallelCascadeOptimisation(MCSampleSize, thisCascade, subNumCores, haveFixedProgCosts)  
+                if splitCascade:    
+                    thisOptimisation.performParallelCascadeOptimisation(MCSampleSize, thisCascade, subNumCores, haveFixedProgCosts)  
+                else:
+                    thisOptimisation.performCascadeOptimisation(MCSampleSize, thisCascade, haveFixedProgCosts)
                 
                 
 
