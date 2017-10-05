@@ -76,7 +76,7 @@ def getTargetPopSizeFromModelInstance(dataSpreadsheetName, keyList, model):
 def objectiveFunction(allocation, costCurves, model, totalBudget, fixedCosts, costCoverageInfo, optimise, numModelSteps, dataSpreadsheetName, data, timestepsPre):
     from copy import deepcopy as dcp
     from operator import add
-    from numpy import maximum
+    from numpy import maximum, minimum
     eps = 1.e-3 ## WARNING: using project non-specific eps
     modelThisRun = dcp(model)
     availableBudget = totalBudget - sum(fixedCosts)
@@ -97,6 +97,7 @@ def objectiveFunction(allocation, costCurves, model, totalBudget, fixedCosts, co
         intervention = data.interventionList[i]
         costCurveThisIntervention = costCurves[intervention]
         newCoverages[intervention] = maximum(costCurveThisIntervention(scaledAllocation[i]), eps)
+        newCoverages[intervention] = minimum(newCoverages[intervention], 1.0)
     modelThisRun.updateCoverages(newCoverages)
     steps = numModelSteps - timestepsPre
     modelThisRun = runModelForNTimeSteps(steps, data, modelThisRun)[0]
