@@ -141,6 +141,20 @@ class Model:
         totalNumberAnemic += self.getAnemiaNumberPregnant()
         return totalNumberAnemic    
 
+    def getTotalNumberWasted(self):
+        totalWasted = 0.
+        for ageGroup in self.listOfAgeCompartments:
+            totalWasted += ageGroup.getNumberWasted()
+        return totalWasted
+
+    def getTotalWastedFraction(self):
+        totalNumberWasted = self.getTotalNumberWasted()
+        totalPopSize = self.getTotalPopChildren()
+        return float(totalNumberWasted)/float(totalPopSize)
+
+    def getWastingIncidence(self):
+        return self.params.incidences
+
     def getOutcome(self, outcome):
         outcomeValue = None
         if outcome == 'deaths children':
@@ -150,7 +164,9 @@ class Model:
         elif outcome == 'stunting':
             outcomeValue = self.getCumulativeAgingOutStunted()
         elif outcome == 'thrive':
-            outcomeValue = self.getCumulativeAgingOutNotStunted()    
+            outcomeValue = self.getCumulativeAgingOutNotStunted()
+        elif outcome == 'wasting prev':
+            outcomeValue = self.getTotalWastedFraction()
         elif outcome == 'DALYs':
             outcomeValue = self.getDALYs()
         elif outcome == 'stunting prev':
@@ -203,7 +219,6 @@ class Model:
         birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)
         newFracCorrectlyBreastfed = self.params.getAppropriateBFNew(newCoverage)
         stuntingUpdateComplementaryFeeding = self.params.getStuntingUpdateComplementaryFeeding(newCoverage)
-        
 
         # MORTALITY
         #update mortality for each population
@@ -233,7 +248,7 @@ class Model:
             SumAfter = self.derived.getDiarrheaRiskSum(ageName, self.params.breastfeedingDistribution)
             self.params.incidences[ageName]['Diarrhea'] *= SumAfter / SumBefore # update incidence of diarrhea
         beta = self.derived.getFracDiarrheaFixedZ()
-        stuntingUpdateDueToBreastfeeding, dummyAnemia, dummyWasting = self.params.getUpdatesDueToIncidence(beta) # TODO: may want to include impact breastfeeding on wasting
+        stuntingUpdateDueToBreastfeeding, dummyAnemia, dummyWasting = self.params.getUpdatesDueToIncidence(beta)
 
         # DIARRHEA AND WASTING INCIDENCE
         incidencesBefore = {}
@@ -325,7 +340,6 @@ class Model:
             for nonWastingCat in self.nonWastedList:
                 self.params.wastingDistribution[ageName][nonWastingCat] = wastingDist[nonWastingCat]
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
-
         # BIRTH OUTCOME
         for outcome in self.birthOutcomes:
             self.params.birthOutcomeDist[outcome] *= birthUpdate[outcome]
