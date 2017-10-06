@@ -71,7 +71,7 @@ class Costcov():
                   'Complementary feeding education': 'gold', 'Breastfeeding promotion': 'grey',
                   'Balanced energy-protein supplementation': 'darkorange',
                   'Antenatal micronutrient supplementation': 'darkblue'}
-        xvals = np.arange(0, 1e8, 1000)
+        xvals = np.arange(0, 1e7, 1000)
         for intervention in interventionList:
             curveThisIntervention = curves[intervention]
             y = []
