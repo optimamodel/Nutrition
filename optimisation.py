@@ -782,6 +782,7 @@ class GeospatialOptimisation:
         import optimisation  
         import math
         from copy import deepcopy as dcp
+        from multiprocessing import Process
         numParallelCombinations = len(self.cascadeValues) * self.numRegions
         #  assume 1 core per combination and then
         # check that you've said you have enough and don't parallelise if you don't
@@ -803,7 +804,8 @@ class GeospatialOptimisation:
                 if splitCascade:    
                     thisOptimisation.performParallelCascadeOptimisation(MCSampleSize, thisCascade, subNumCores, haveFixedProgCosts)  
                 else:
-                    thisOptimisation.performCascadeOptimisation(MCSampleSize, thisCascade, haveFixedProgCosts)
+                    prc = Process(target=thisOptimisation.performCascadeOptimisation, args=(MCSampleSize, thisCascade, haveFixedProgCosts))
+                    prc.start()
                 
                 
 
