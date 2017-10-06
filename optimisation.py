@@ -755,7 +755,7 @@ class GeospatialOptimisation:
         regionalBudgets = []
         for region in range(0, self.numRegions):
             thisSpreadsheet = self.regionSpreadsheetList[region]
-            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, 'dummyFileName')        
+            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, 'dummyFileName', 'dummyCurve')        
             regionTotalBudget = thisOptimisation.getTotalInitialBudget()
             regionalBudgets.append(regionTotalBudget)
         return regionalBudgets    
