@@ -391,7 +391,16 @@ def readSpreadsheet(fileName, keyList):
                 ORstuntingComplementaryFeeding[age][intervention] = ORsheet[age]['OR stunting by intervention'][intervention]
                 if intervention not in foodSecurityGroups:
                     foodSecurityGroups += [intervention]
-    # TODO: what about prophylactic zinc supplementation? doesn't seem to be used at all (gets forgotten about)
+    # wasting by intervention
+    wastingInterventionSheet = pd.read_excel(location, "Interventions wasting", index_col=[0,1])
+    wastingInterventionSheet = wastingInterventionSheet.dropna(axis=0, how='all')
+    ORwastingIntervention = {}
+    ORwastingIntervention['high'] = splitSpreadsheetWithTwoIndexCols(wastingInterventionSheet, "OR severe wasting by intervention", rowList=interventionCompleteList)
+    ORwastingIntervention['moderate'] = splitSpreadsheetWithTwoIndexCols(wastingInterventionSheet, "OR moderate wasting by intervention", rowList=interventionCompleteList)
+    # wasting by condition
+    ORwastingCondition = {}
+    ORwastingCondition['Wasting (high)'] = splitSpreadsheetWithTwoIndexCols(ORsheet, 'OR severe wasting by condition', rowList=conditionsList)
+    ORwastingCondition['Wasting (moderate)'] = splitSpreadsheetWithTwoIndexCols(ORsheet, 'OR moderate wasting by condition', rowList=conditionsList)
 
     # correct breastfeeding
     ORappropriatebfIntervention = splitSpreadsheetWithTwoIndexCols(ORsheet, "OR for correct breastfeeding by intervention", rowList=interventionCompleteList)
@@ -455,9 +464,6 @@ def readSpreadsheet(fileName, keyList):
     fracExposedMalaria = demographics['fraction at risk of malaria']
     ORanemiaCondition = {age:{condition:1. for condition in conditionsList} for age in ages}
     fracSevereDia = 0.2 # made up value
-    ORwastingCondition = {wastingCat:{age:{condition:1. for condition in conditionsList} for age in ages} for wastingCat in ['Wasting (high)', 'Wasting (moderate)']} # TODO: add these to spreadsheet
-    ORwastingIntervention = {wastingCat:{age:{intervention:1. for intervention in interventionCompleteList} for age in ages} for wastingCat in ['high', 'moderate']}
-    
 
     spreadsheetData = Data(causesOfDeathList, conditionsList, interventionList, interventionCompleteList,
                            demographics, projectedBirths, rawMortality,
