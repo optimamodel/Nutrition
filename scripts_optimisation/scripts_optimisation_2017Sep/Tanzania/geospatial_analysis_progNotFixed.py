@@ -1,4 +1,4 @@
-rootpath = '../..'
+rootpath = '../../..'
 
 import os, sys
 
