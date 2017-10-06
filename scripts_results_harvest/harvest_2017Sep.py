@@ -20,7 +20,7 @@ numModelSteps = 14
 dataSpreadsheetName = rootpath+'/input_spreadsheets/'+country+'/'+date+'/InputForCode_Bangladesh.xlsx'
 outcomeOfInterestList = ['anemia frac everyone', 'thrive', 'deaths']
 
-cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]
+cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0, 8.0, 15.0, 30.0]
 optimise = 'anemia frac everyone'
 resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+country
 # time series
