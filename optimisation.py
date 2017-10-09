@@ -1036,7 +1036,7 @@ class GeospatialOptimisation:
             print regionName
             thisSpreadsheet = self.regionSpreadsheetList[region]
             filename = self.resultsFileStem+regionName
-            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, filename) 
+            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, filename, self.costCurveType) 
             thisCascade = dcp(self.cascadeValues)      
             # if final cascade value is 'extreme' replace it with value we used to generate .pkl file
             if self.cascadeValues[-1] == 'extreme':
