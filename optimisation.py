@@ -1050,7 +1050,7 @@ class GeospatialOptimisation:
             regionName = self.regionNameList[region]
             thisSpreadsheet = self.regionSpreadsheetList[region]
             filename = self.resultsFileStem+regionName
-            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, filename)    
+            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, filename, self.costCurveType)    
             thisOptimisation.outputCurrentSpendingToCSV()
         
         
