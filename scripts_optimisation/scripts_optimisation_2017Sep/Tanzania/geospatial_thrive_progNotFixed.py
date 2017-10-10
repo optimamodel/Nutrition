@@ -16,7 +16,7 @@ nCores = 360 #(12*30 - not actually using all these)
 costCurveType = 'standard'
 numModelSteps = 180
 MCSampleSize = 4
-cascadeValues = [0.0, 0.1, 0.2, 0.4, 0.8, 1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 'extreme']
+cascadeValues = [462.0] #[0.0, 0.1, 0.2, 0.4, 0.8, 1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 'extreme']
 splitCascade = False
 
 
