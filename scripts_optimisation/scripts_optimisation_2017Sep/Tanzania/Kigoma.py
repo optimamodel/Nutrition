@@ -16,14 +16,14 @@ country = 'Tanzania'
 date = '2017Sep'
 spreadsheetDate = '2017Sep'
 
-optimise = 'thrive'
+optimise = 'deaths'
 haveFixedProgCosts = False
 nCores = 360 #(12*30 - not actually using all these)
 
 costCurveType = 'standard'
 numModelSteps = 180
 MCSampleSize = 10
-cascadeValues = [75] #[0.0, 0.1, 0.2, 0.4, 0.8, 1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 'extreme']
+cascadeValues = [0.0, 0.1, 0.2, 0.4, 0.8, 1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 75.0]
 splitCascade = True
 
 regionNameList = ['Kigoma']
