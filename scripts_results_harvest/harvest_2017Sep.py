@@ -8,69 +8,34 @@ import optimisation
 country = 'Tanzania'
 date = '2017Sep'
 spreadsheetDate = '2017Sep'
-
 numModelSteps = 180
 
-# NATIONAL
-dataSpreadsheetName = rootpath + '/input_spreadsheets/' + country + '/' + spreadsheetDate + '/InputForCode_' + country + '.xlsx'
-outcomeOfInterestList = ['thrive', 'deaths']
-cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]
+outcomeOfInterestList = ['thrive'] #['thrive', 'deaths']
+optimiseList = ['thrive'] #['deaths', 'thrive']
+cascadeValues = [0.0, 0.1, 0.2, 0.4, 0.8, 1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 'extreme']
+costCurveType = 'standard'
+GAFile = 'GA_progNotFixed'
+regionNameList = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Geita', 'Iringa', 'Kagera',
+                  'Kaskazini_Pemba', 'Kaskazini_Unguja', 'Katavi', 'Kigoma', 'Kilimanjaro',
+                  'Kusini_Pemba', 'Kusini_Unguja', 'Lindi', 'Manyara', 'Mara', 'Mbeya',
+                  'Mjini_Magharibi', 'Morogoro', 'Mtwara', 'Mwanza', 'Njombe', 'Pwani',
+                  'Rukwa', 'Ruvuma', 'Shinyanga', 'Simiyu', 'Singida', 'Tabora', 'Tanga']
 
-optimiseList = ['deaths', 'thrive']
+spreadsheetFileStem = rootpath + '/input_spreadsheets/' + country + '/' + spreadsheetDate + '/regions/InputForCode_'
+spreadsheetList = []
+for regionName in regionNameList:
+    spreadsheet = spreadsheetFileStem + regionName + '.xlsx'
+    spreadsheetList.append(spreadsheet)
+
+
 for optimise in optimiseList:
-    resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/national/' + country
-    # both time series when optimising for thrive
-    thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise, resultsFileStem)
-    thisOptimisation.outputCurrentSpendingToCSV()
-    thisOptimisation.outputTimeSeriesToCSV('thrive')
-    thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise,
-                                                 resultsFileStem)  # this repitition is necessary
-    thisOptimisation.outputTimeSeriesToCSV('deaths')
-    # both outcomes for thrive cascade
-    thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise,
-                                                 resultsFileStem)  # this one might not be
-    for outcomeOfInterest in outcomeOfInterestList:
-        thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise, resultsFileStem)
-        thisOptimisation.outputCascadeAndOutcomeToCSV(cascadeValues, outcomeOfInterest)
-
-    # GET COVERAGE INFO FOR THE CASCADE
-    import pickle
-    import data
-    import costcov
-    import csv
-
-    costCov = costcov.Costcov()
-    thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise, resultsFileStem)
-    spreadsheetData = data.readSpreadsheet(dataSpreadsheetName, thisOptimisation.helper.keyList)
-
-    coverages = {}
-    for value in cascadeValues:
-        coverages[value] = []
-        filename = '%s_cascade_%s_%s.pkl' % (resultsFileStem, optimise, value)
-        infile = open(filename, 'rb')
-        allocation = pickle.load(infile)
-        infile.close()
-        # run the model with this allocation
-        modelList = thisOptimisation.oneModelRunWithOutput(allocation)
-        # get cost coverage and target pop to translate cost to coverage
-        costCoverageInfo = thisOptimisation.getCostCoverageInfo()
-        # target pop size when interventions are added comes after 12 timesteps
-        targetPopSize = optimisation.getTargetPopSizeFromModelInstance(dataSpreadsheetName, thisOptimisation.helper.keyList,
-                                                                       modelList[11])
-        # get coverages
-        for i in range(0, len(spreadsheetData.interventionList)):
-            intervention = spreadsheetData.interventionList[i]
-            coverages[value].append(
-                costCov.function(allocation[intervention], costCoverageInfo[intervention], targetPopSize[intervention]) /
-                targetPopSize[intervention])
-    # write to csv
-    outfile = 'nationalCascadeCoverages_.csv'
-    x = ['intervention'] + spreadsheetData.interventionList
-    with open(outfile, "wb") as f:
-        writer = csv.writer(f)
-        writer.writerow(x)
-        for value in cascadeValues:
-            y = [value] + coverages[value]
-            writer.writerow(y)
-
-
+    resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixed/'
+    geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem, costCurveType)
+    geospatialOptimisation.outputRegionalCurrentSpendingToCSV()
+    #geospatialOptimisation.outputRegionalPostGAOptimisedSpendingToCSV(GAFile)
+    #geospatialOptimisation.outputRegionalBOCsFile('BOCs.csv')
+    geospatialOptimisation.outputTradeOffCurves()
+    geospatialOptimisation.plotTradeOffCurves()
+    for outcome in outcomeOfInterestList:
+        geospatialOptimisation.outputRegionalCascadesAndOutcomeToCSV(outcome)
+    
