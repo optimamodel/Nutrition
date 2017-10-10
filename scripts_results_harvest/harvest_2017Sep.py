@@ -8,7 +8,6 @@ import data
 import helper
 thisHelper = helper.Helper()
 import csv
-from multiprocessing import Process
 
 country = 'Tanzania'
 date = '2017Sep'
@@ -40,9 +39,7 @@ for optimise in optimiseList:
     geospatialOptimisation.outputRegionalPostGAOptimisedSpendingToCSV(GAFile)
     geospatialOptimisation.outputTradeOffCurves()
     for outcome in outcomeOfInterestList:
-        prc = Process(target=geospatialOptimisation.outputRegionalCascadesAndOutcomeToCSV, args=(outcome))
-        prc.start()
-        #geospatialOptimisation.outputRegionalCascadesAndOutcomeToCSV(outcome)
+        geospatialOptimisation.outputRegionalCascadesAndOutcomeToCSV(outcome)
         
         
 # get outcomes for current spending and zero spending
