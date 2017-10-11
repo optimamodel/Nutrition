@@ -20,7 +20,7 @@ numCores = 11
 
 for optimise in ['anemia frac everyone']:
 
-    resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+country+'/'
+    resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+country
 
     thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem)
     thisOptimisation.performParallelCascadeOptimisation(MCSampleSize, cascadeValues, numCores, haveFixedProgCosts)
