@@ -113,6 +113,47 @@ allIFAS.append(model.getOutcome('anemia frac WRA'))
 allIFAS.append(model.getOutcome('anemia frac children'))
 allIFAS.append(model.getOutcome('stunting prev'))
 
+# ALL IFA FORTIFICATION AT 95%
+allIFA = []
+allIFA.append('all IFA fortification')
+coverage = dcp(zeroCoverages)
+for intervention in spreadsheetData.interventionList:
+    if 'IFA fortification' in intervention:
+        coverage[intervention] = coverage95
+model, derived, params = helper.setupModelDerivedParameters(spreadsheetData)
+model.moveModelOneYear()
+model.updateCoverages(coverage)
+for t in range(numModelSteps - 1):
+    model.moveModelOneYear()
+allIFA.append(model.getOutcome('thrive'))
+allIFA.append(model.getOutcome('deaths children'))
+allIFA.append(model.getOutcome('deaths PW'))
+allIFA.append(model.getOutcome('anemia frac pregnant'))
+allIFA.append(model.getOutcome('anemia frac WRA'))
+allIFA.append(model.getOutcome('anemia frac children'))
+allIFA.append(model.getOutcome('stunting prev'))
+
+# ALL IRON FORTIFICATION AT 95%
+allIron = []
+allIron.append('all iron fortification')
+coverage = dcp(zeroCoverages)
+for intervention in spreadsheetData.interventionList:
+    if 'Iron fortification' in intervention:
+        coverage[intervention] = coverage95
+model, derived, params = helper.setupModelDerivedParameters(spreadsheetData)
+model.moveModelOneYear()
+model.updateCoverages(coverage)
+for t in range(numModelSteps - 1):
+    model.moveModelOneYear()
+allIron.append(model.getOutcome('thrive'))
+allIron.append(model.getOutcome('deaths children'))
+allIron.append(model.getOutcome('deaths PW'))
+allIron.append(model.getOutcome('anemia frac pregnant'))
+allIron.append(model.getOutcome('anemia frac WRA'))
+allIron.append(model.getOutcome('anemia frac children'))
+allIron.append(model.getOutcome('stunting prev'))
+
+
 # ALL FORTIFICATION INTERVENTIONS AT 95%
 allfoodFort = []
 allfoodFort.append('all food fortification')
@@ -153,4 +194,6 @@ with open(outfilename, "wb") as f:
             continue
         writer.writerow(output[intervention])
     writer.writerow(allIFAS)
+    writer.writerow(allIFA)
+    writer.writerow(allIron)
     writer.writerow(allfoodFort)
