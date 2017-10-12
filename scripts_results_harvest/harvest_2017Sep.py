@@ -15,7 +15,7 @@ spreadsheetDate = '2017Sep'
 numModelSteps = 180
 
 outcomeOfInterestList = ['thrive', 'deaths']
-optimiseList = ['thrive'] #['deaths', 'thrive']
+optimiseList = ['deaths'] #['deaths', 'thrive']
 cascadeValues = [0.0, 0.1, 0.2, 0.4, 0.8, 1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 3., 4., 5., 6., 8., 10., 'extreme']
 costCurveType = 'standard'
 GAFile = 'GA_progNotFixed'
