@@ -114,6 +114,16 @@ def geospatialObjectiveFunction(spendingList, regionalBOCs, totalBudget, optimis
         scaledSpendingList = dcp(spendingList)
     else:
         scaledSpendingList = rescaleAllocation(totalBudget, spendingList)
+    # add temporary constraints on 4 regions in Tanzania 
+    Kaskazini_Pemba = 1036021.0
+    Kaskazini_Unguja = 468386.0
+    Kusini_Pemba = 798502.0
+    Kusini_Unguja = 349128.0  
+    if scaledSpendingList[6]> Kaskazini_Pemba: scaledSpendingList[6] = Kaskazini_Pemba 
+    if scaledSpendingList[7]> Kaskazini_Unguja: scaledSpendingList[7] = Kaskazini_Unguja
+    if scaledSpendingList[11]> Kusini_Pemba: scaledSpendingList[11] = Kusini_Pemba
+    if scaledSpendingList[12]> Kusini_Unguja: scaledSpendingList[12] = Kusini_Unguja
+    # end add constraints    
     outcomeList = []
     for region in range(0, numRegions):
         outcome = pchip.pchip(regionalBOCs['spending'][region], regionalBOCs['outcome'][region], scaledSpendingList[region], deriv = False, method='pchip')        
