@@ -198,7 +198,7 @@ def readSpreadsheet(fileName, keyList):
     # add hidden intervention data to coverage and cost saturation
     hiddenInterventionList = list(set(interventionCompleteList) - set(interventionList))
     for intervention in hiddenInterventionList:
-        correspondingIntervention = intervention.strip(" with bed nets")
+        correspondingIntervention = intervention.replace(" with bed nets", "")
         thisCoverage = coverage[correspondingIntervention]
         coverage.update({intervention : thisCoverage})
         thisCostSaturation = costSaturation[correspondingIntervention]

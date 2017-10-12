@@ -330,7 +330,7 @@ class Derived:
                 fracCovered = coverage[intervention] 
                 # hidden IFAS interventions do not have corresponding RR/OR
                 if ' with bed nets' in intervention:
-                    thisIntervention = intervention.strip(" with bed nets")
+                    thisIntervention = intervention.replace(" with bed nets", "")
                 else:
                     thisIntervention = intervention    
                 # get correct RR/OR
