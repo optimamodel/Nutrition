@@ -248,9 +248,8 @@ class Params:
             if ("IFA fortification" in intervention):
                 # cannot give iron fortification to those already receiving IFA fortification
                 maxAllowedCovIron = 1.-newCoverages[intervention]
-                interventionName = dcp(intervention)
-                IFAend = interventionName.replace('IFA fortification of ', '')
-                ironIntName = 'Iron fortification of ' + IFAend
+                IFAend = intervention.replace('IFA ', '')
+                ironIntName = 'Iron ' + IFAend
                 ironCov = newCoverages[ironIntName]
                 if ironCov > maxAllowedCovIron:
                     constrainedCoverages[ironIntName] = maxAllowedCovIron
