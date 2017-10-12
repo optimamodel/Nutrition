@@ -5,6 +5,7 @@ import os, sys
 moduleDir = os.path.join(os.path.dirname(__file__), rootpath)
 sys.path.append(moduleDir)
 import optimisation
+from multiprocessing import Process
 
 country = 'Tanzania'
 date = '2017Sep'
@@ -38,5 +39,9 @@ for optimise in ['thrive', 'deaths']:
 
     geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps,
                                                                  cascadeValues, optimise, resultsFileStem, costCurveType)
-    geospatialOptimisation.performParallelGeospatialOptimisation(geoMCSampleSize, rerunMCSampleSize, GAFile,
-                                                                           numCores, haveFixedProgCosts)
+    # parallel for each optimise                                                             
+    prc = Process(target=geospatialOptimisation.performParallelGeospatialOptimisation, args=(geoMCSampleSize, rerunMCSampleSize, GAFile, numCores, haveFixedProgCosts))
+    prc.start()                                                                 
+                                                                 
+#    geospatialOptimisation.performParallelGeospatialOptimisation(geoMCSampleSize, rerunMCSampleSize, GAFile,
+#                                                                           numCores, haveFixedProgCosts)
