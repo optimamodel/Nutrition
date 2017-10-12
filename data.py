@@ -288,7 +288,6 @@ def readSpreadsheet(fileName, keyList):
     for ageName in ages + WRAages + PWages:
         anemiaThisAge = anemiaDistribution[ageName]
         anemiaThisAge['anemic'] = anemiaThisAge.pop('All anemia')
-    print "::WARNING:: fictional anemia distribution for <1 month & 1-5 months age groups"
     # TODO: These are fake values b/c spredsheet has blank
     anemiaDistribution["<1 month"]['anemic'] = .1
     anemiaDistribution["<1 month"]['not anemic'] = .9
@@ -438,7 +437,6 @@ def readSpreadsheet(fileName, keyList):
 
 
     # TODO: not currently available in spreadsheet
-    print "::WARNING:: fractions pertaining to anemia/malaria and ORanemiaCondition are fictional."
     fracExposedMalaria = demographics['fraction at risk of malaria']
     ORanemiaCondition = {age:{condition:1. for condition in conditionsList} for age in ages}
     fracSevereDia = 0.2 # made up value

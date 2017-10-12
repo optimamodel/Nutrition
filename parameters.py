@@ -144,6 +144,11 @@ class Params:
                     fractionTargeted = fracTargetedIFAS[pop][intervention]
                     fractionNotTargeted = 1. - fractionTargeted
                     newProbAnemic = fractionNotTargeted * oldProbAnemic + newProbAnemic * fractionTargeted
+                # bed nets
+                if "insecticide-treated bednets" in intervention:
+                    fractionTargeted = self.fracExposedMalaria
+                    fractionNotTargeted = 1. - fractionTargeted
+                    newProbAnemic = fractionNotTargeted * oldProbAnemic + newProbAnemic * fractionTargeted
                 # now calculate reduction    
                 reduction = (oldProbAnemic - newProbAnemic)/oldProbAnemic
                 anemiaUpdate[pop] *= 1. - reduction
