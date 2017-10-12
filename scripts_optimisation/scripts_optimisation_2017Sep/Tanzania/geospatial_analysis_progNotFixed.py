@@ -15,7 +15,7 @@ rerunMCSampleSize = 4
 geoMCSampleSize = 4
 # WARNING: these must match values used in the other geospatial scripts
 numModelSteps = 180
-cascadeValues = [0.0, 0.1, 0.2, 0.4, 0.8, 1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 'extreme']
+cascadeValues = [0.0, 0.1, 0.2, 0.4, 0.8, 1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 3., 4., 5., 6., 8., 10., 'extreme']
 costCurveType = 'standard'
 regionNameList = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Geita', 'Iringa', 'Kagera',
                   'Kaskazini_Pemba', 'Kaskazini_Unguja', 'Katavi', 'Kigoma', 'Kilimanjaro',
@@ -30,7 +30,7 @@ for regionName in regionNameList:
     spreadsheetList.append(spreadsheet)
 
 numCores = 30  # need this number times the number of outcomes you're optimising for
-for optimise in ['thrive', 'deaths']:
+for optimise in ['thrive']: #, 'deaths']:
     print 'running GA for:  ', optimise
 
     resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixed/'
