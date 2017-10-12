@@ -245,9 +245,19 @@ class Params:
                     constrainedCoverages[intervention] = 0.
                     
             # add food fortification constraints
-            if ("fortification" in intervention) and ("salt" not in intervention):
-                constrainedCoverages[intervention] = newCoverages[intervention] * (1.- self.demographics['fraction of subsistence farming'])
-
+            if ("IFA fortification" in intervention):
+                # cannot give iron fortification to those already receiving IFA fortification
+                maxAllowedCovIron = 1.-newCoverages[intervention]
+                interventionName = dcp(intervention)
+                IFAend = interventionName.replace('IFA fortification of ', '')
+                ironIntName = 'Iron fortification of ' + IFAend
+                ironCov = newCoverages[ironIntName]
+                if ironCov > maxAllowedCovIron:
+                    constrainedCoverages[ironIntName] = maxAllowedCovIron
+                # only cover those not growing own food
+                fracNotFarming = 1.- self.demographics['fraction of subsistence farming']
+                constrainedCoverages[intervention] = newCoverages[intervention] * fracNotFarming
+                constrainedCoverages[ironIntName] *= fracNotFarming
         return constrainedCoverages
 
     def getAppropriateBFNew(self, newCoverage):
