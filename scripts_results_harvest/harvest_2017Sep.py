@@ -17,7 +17,7 @@ numModelSteps = 180
 
 outcomeOfInterestList = ['thrive', 'deaths']
 optimiseList = ['deaths', 'thrive']
-cascadeValues = [0.0, 0.1, 0.2, 0.4, 0.8, 1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 3., 4., 5., 6., 8., 10., 'extreme']
+cascadeValues = [0.0, 0.1, 0.2, 0.4, 0.8, 1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 3., 4., 5., 6., 8., 10., 15.0, 20.0, 50.0, 100.0, 200.0, 400.0, 600.0, 'extreme']
 costCurveType = 'standard'
 GAFile = 'GA_progNotFixed'
 regionNameList = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Geita', 'Iringa', 'Kagera',
@@ -38,7 +38,7 @@ for optimise in optimiseList:
     geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem, costCurveType)
     #geospatialOptimisation.outputRegionalCurrentSpendingToCSV()
     geospatialOptimisation.outputRegionalPostGAOptimisedSpendingToCSV(GAFile)
-    #geospatialOptimisation.outputTradeOffCurves()
+    geospatialOptimisation.outputTradeOffCurves()
 #    for outcome in outcomeOfInterestList:
 #        geospatialOptimisation.outputRegionalCascadesAndOutcomeToCSV(outcome)
         
