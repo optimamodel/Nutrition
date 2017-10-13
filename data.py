@@ -22,7 +22,7 @@ class Data:
                  projectedWRApop, projectedWRApopByAge, projectedPWpop,
                  projectedGeneralPop, PWageDistribution, fracExposedMalaria,
                  ORanemiaCondition, fracSevereDia, ORwastingCondition,
-                 ORwastingIntervention, ORwastingBirthOutcome, durationWastedOnTreatment):
+                 ORwastingIntervention, ORwastingBirthOutcome, fracSAMtreatmentToMAM):
 
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
@@ -72,7 +72,7 @@ class Data:
         self.ORanemiaCondition = ORanemiaCondition
         self.ORwastingCondition = ORwastingCondition
         self.fracSevereDia = fracSevereDia
-        self.durationWastedOnTreatment = durationWastedOnTreatment
+        self.fracSAMtreatmentToMAM = fracSAMtreatmentToMAM
 
 def readSheetWithOneIndexCol(sheet, scaleFactor=1.):
     resultDict = {}
@@ -217,9 +217,6 @@ def readSpreadsheet(fileName, keyList):
     # population
     population = splitSpreadsheetWithTwoIndexCols(demographicsSheet, "Current year")
     populationDict = population['Values']
-    durationWastedOnTreatment = {}
-    durationWastedOnTreatment['moderate'] = populationDict['average duration wasting (moderate) on treatment']
-    durationWastedOnTreatment['high'] = populationDict['average duration wasting (high) on treatment']
     # mortality
     mortality = splitSpreadsheetWithTwoIndexCols(demographicsSheet, "Mortality rates")
     rawMortality = mortality['Values']
@@ -464,6 +461,7 @@ def readSpreadsheet(fileName, keyList):
     fracExposedMalaria = demographics['fraction at risk of malaria']
     ORanemiaCondition = {age:{condition:1. for condition in conditionsList} for age in ages}
     fracSevereDia = 0.2 # made up value
+    fracSAMtreatmentToMAM = 0.1 # fictional
 
     spreadsheetData = Data(causesOfDeathList, conditionsList, interventionList, interventionCompleteList,
                            demographics, projectedBirths, rawMortality,
@@ -479,7 +477,7 @@ def readSpreadsheet(fileName, keyList):
                            foodSecurityGroups, ORstuntingComplementaryFeeding, anemiaDistribution,
                            projectedWRApop, projectedWRApopByAge, projectedPWpop, projectedGeneralPop,
                            PWageDistribution, fracExposedMalaria, ORanemiaCondition, fracSevereDia,
-                           ORwastingCondition, ORwastingIntervention, ORwastingBirthOutcome, durationWastedOnTreatment)
-
+                           ORwastingCondition, ORwastingIntervention, ORwastingBirthOutcome,
+                           fracSAMtreatmentToMAM)
     return spreadsheetData
                   
