@@ -152,6 +152,17 @@ class Model:
         totalPopSize = self.getTotalPopChildren()
         return float(totalNumberWasted)/float(totalPopSize)
 
+    def getTotalInWastingCat(self, wastingCat):
+        totalNumber = 0.
+        for ageGroup in self.listOfAgeCompartments:
+            totalNumber += ageGroup.getNumberInWastingCat(wastingCat)
+        return totalNumber
+
+    def getFractionInWastingCat(self, wastingCat):
+        totalInCat = self.getTotalInWastingCat(wastingCat)
+        totalPopSize = self.getTotalPopChildren()
+        return float(totalInCat)/float(totalPopSize)
+
     def getWastingIncidence(self):
         return self.params.incidences
 
@@ -167,6 +178,10 @@ class Model:
             outcomeValue = self.getCumulativeAgingOutNotStunted()
         elif outcome == 'wasting prev':
             outcomeValue = self.getTotalWastedFraction()
+        elif outcome == 'severely wasted prev':
+            outcomeValue = self.getFractionInWastingCat('high')
+        elif outcome == 'moderately wasted prev':
+            outcomeValue = self.getFractionInWastingCat('moderate')
         elif outcome == 'DALYs':
             outcomeValue = self.getDALYs()
         elif outcome == 'stunting prev':
@@ -214,7 +229,7 @@ class Model:
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
         stuntingUpdate = self.params.getStuntingUpdate(newCoverage)
         anemiaUpdate = self.params.getAnemiaUpdate(newCoverage, self.thisHelper)
-        wastingUpdate = self.params.getWastingUpdate(newCoverage)
+        wastingUpdate, fromSAMtoMAMupdate = self.params.getWastingUpdate(newCoverage)
         incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
         birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)
         newFracCorrectlyBreastfed = self.params.getAppropriateBFNew(newCoverage)
@@ -272,14 +287,14 @@ class Model:
         self.derived.updateDiarrheaProbsNewZa(Zt)
         stuntingUpdateDueToIncidence, anemiaUpdateDueToIncidence, wastingUpdateDueToDiarrheaIncidence = self.params.getUpdatesDueToIncidence(beta)
         # wasting
-        wastingUpdateDueToWasingIncidence = {}
+        wastingUpdateDueToWastingIncidence = {}
         for wastingCat in ['Wasting (moderate)', 'Wasting (high)']:
             wastingIncidenceBefore = incidencesBefore[wastingCat]
             wastingIncidenceAfter = incidencesAfter[wastingCat]
             # impact of wasting incidence on wasting prevalence (prevention interventions)
-            wastingUpdateDueToWasingIncidence[wastingCat] = self.params.getWastingUpdateDueToWastingIncidence(wastingIncidenceBefore, wastingIncidenceAfter)
-        wastingUpdateDueToWasingIncidence['high'] = wastingUpdateDueToWasingIncidence.pop('Wasting (high)') # TODO: this could be more elegant, like making all wasting cats 'Wasting (.)'
-        wastingUpdateDueToWasingIncidence['moderate'] = wastingUpdateDueToWasingIncidence.pop('Wasting (moderate)')
+            wastingUpdateDueToWastingIncidence[wastingCat] = self.params.getWastingUpdateDueToWastingIncidence(wastingIncidenceBefore, wastingIncidenceAfter)
+        wastingUpdateDueToWastingIncidence['high'] = wastingUpdateDueToWastingIncidence.pop('Wasting (high)') # TODO: this could be more elegant, like making all wasting cats 'Wasting (.)'
+        wastingUpdateDueToWastingIncidence['moderate'] = wastingUpdateDueToWastingIncidence.pop('Wasting (moderate)')
 
         # STUNTING
         for ageGroup in self.listOfAgeCompartments:
@@ -326,8 +341,8 @@ class Model:
             newProbWasted = 0.
             ageName = ageGroup.name
             # probability of being in either SAM or MAM for this age
-            for wastingCat in self.wastedList:
-                totalUpdateThisCatAndAge = wastingUpdate[wastingCat][ageName] * wastingUpdateDueToDiarrheaIncidence[wastingCat][ageName] * wastingUpdateDueToWasingIncidence[wastingCat][ageName]
+            for wastingCat in self.wastedList: # 'high' must come first
+                totalUpdateThisCatAndAge = wastingUpdate[ageName][wastingCat] * wastingUpdateDueToDiarrheaIncidence[ageName][wastingCat] * wastingUpdateDueToWastingIncidence[wastingCat][ageName] * fromSAMtoMAMupdate[ageName][wastingCat]
                 # save for use in apply births
                 self.derived.wastingUpdateAfterInterventions[ageName][wastingCat] *= totalUpdateThisCatAndAge
                 # update overall wasting in this category
