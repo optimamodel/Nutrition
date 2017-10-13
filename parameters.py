@@ -47,10 +47,9 @@ class Params:
         self.PWageDistribution = dcp(data.PWageDistribution)
         self.fracSevereDia = dcp(data.fracSevereDia)
         self.rawTargetPop = dcp(data.targetPopulation)
-        self.durationWastingOnTreatment = dcp(data.durationWastedOnTreatment)
-        self.durationWastedNoTreatment = dcp(derived.durationWastedNoTreatment)
         self.attendance = dcp(data.demographics['school attendance WRA 15-19'])
         self.interventionCompleteList = dcp(data.interventionCompleteList)
+        self.fracSAMtreatmentToMAM = dcp(data.fracSAMtreatmentToMAM)
     
 
 # Add all functions for updating parameters due to interventions here....
@@ -153,18 +152,23 @@ class Params:
 
     def getWastingUpdate(self, newCoverage):
         wastingUpdate = {}
-        for wastingCat in self.wastedList:
-            wastingUpdate[wastingCat] = {}
-            for ageName in self.ages:
-                wastingUpdate[wastingCat][ageName] = 1.
+        fromSAMtoMAMupdate = {} # accounts for children moving from SAM to MAM after treatment
+        for ageName in self.ages:
+            fromSAMtoMAMupdate[ageName] = {}
+            wastingUpdate[ageName] = {}
+            for wastingCat in self.wastedList:
+                fromSAMtoMAMupdate[ageName][wastingCat] = 1.
+                wastingUpdate[ageName][wastingCat] = 1.
                 oldProbWasting = self.wastingDistribution[ageName][wastingCat]
                 for intervention in newCoverage.keys():
                     probWastingIfCovered = self.derived.probWastedIfCovered[wastingCat][intervention]["covered"][ageName]
                     probWastingIfNotCovered = self.derived.probWastedIfCovered[wastingCat][intervention]["not covered"][ageName]
                     newProbWasting = newCoverage[intervention]*probWastingIfCovered + (1.-newCoverage[intervention])*probWastingIfNotCovered
                     reduction = (oldProbWasting - newProbWasting) / oldProbWasting
-                    wastingUpdate[wastingCat][ageName] *= 1. - reduction
-        return wastingUpdate
+                    wastingUpdate[ageName][wastingCat] *= 1. - reduction
+            fromSAMtoMAMupdate[ageName]['moderate'] = (1. + (1.-wastingUpdate[ageName]['high']) * self.fracSAMtreatmentToMAM)
+        return wastingUpdate, fromSAMtoMAMupdate
+
 
     def addCoverageConstraints(self, newCoverages, listOfAgeCompartments, listOfReproductiveAgeCompartments):
         from copy import deepcopy as dcp
@@ -329,19 +333,20 @@ class Params:
             anemiaUpdate[ageName] *= 1. - reductionAnemia
         # wasting (SAM and MAM)
         wastingUpdate = {}
-        for wastingCat in self.wastedList:
-            wastingUpdate[wastingCat] = {}
-            for ageName in self.ages:
-                wastingUpdate[wastingCat][ageName] = 1.
+        for ageName in self.ages:
+            wastingUpdate[ageName] = {}
+            for wastingCat in self.wastedList:
+                wastingUpdate[ageName][wastingCat] = 1.
                 newProbWasting = 0.
                 oldProbWasting = self.wastingDistribution[ageName][wastingCat]
                 for breastfeedingCat in self.breastfeedingList:
                     pab = self.breastfeedingDistribution[ageName][breastfeedingCat]
                     t1 = beta[ageName][breastfeedingCat] * self.derived.fracWastedIfDiarrhea[wastingCat]["dia"][ageName]
-                    t2 = (1. - beta[ageName][breastfeedingCat]) * self.derived.fracWastedIfDiarrhea[wastingCat]["nodia"][ageName]
-                    newProbWasting += pab* (t1 + t2)
+                    t2 = (1. - beta[ageName][breastfeedingCat]) * \
+                         self.derived.fracWastedIfDiarrhea[wastingCat]["nodia"][ageName]
+                    newProbWasting += pab * (t1 + t2)
                 reductionWasting = (oldProbWasting - newProbWasting) / oldProbWasting
-                wastingUpdate[wastingCat][ageName] *= 1. - reductionWasting
+                wastingUpdate[ageName][wastingCat] *= 1. - reductionWasting
         return stuntingUpdate, anemiaUpdate, wastingUpdate
 
     def getWastingUpdateDueToWastingIncidence(self, incidenceBefore, incidenceAfter):
