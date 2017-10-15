@@ -13,6 +13,7 @@ def runModelGivenCoverage(intervention, coverage, spreadsheetData, zeroCoverages
     interventionsCombine = ['Public provision of complementary foods with iron', 'Sprinkles', 'Multiple micronutrient supplementation', 'Iron and folic acid supplementation for pregnant women']
     numModelSteps = 14
     model, derived, params = helper.setupModelDerivedParameters(spreadsheetData)
+
     # run the model for one year before updating coverages
     timestepsPre = 1
     for t in range(timestepsPre):
@@ -65,6 +66,8 @@ baseline.append(model.getOutcome('anemia frac WRA'))
 baseline.append(model.getOutcome('anemia frac children'))
 baseline.append(model.getOutcome('wasting prev'))
 baseline.append(model.getOutcome('stunting prev'))
+baseline.append(model.getOutcome('severely wasted prev'))
+baseline.append(model.getOutcome('moderately wasted prev'))
 
 # EVERYTHING ELSE
 interventionsCombine = ['Public provision of complementary foods with iron', 'Sprinkles',
@@ -91,6 +94,8 @@ for intervention in spreadsheetData.interventionList:
     output[intervention].append(model.getOutcome('anemia frac children'))
     output[intervention].append(model.getOutcome('wasting prev'))
     output[intervention].append(model.getOutcome('stunting prev'))
+    output[intervention].append(model.getOutcome('severely wasted prev'))
+    output[intervention].append(model.getOutcome('moderately wasted prev'))
 
 # ALL IFAS INTERVENTIONS AT 95%
 allIFAS = []
@@ -112,6 +117,9 @@ allIFAS.append(model.getOutcome('anemia frac WRA'))
 allIFAS.append(model.getOutcome('anemia frac children'))
 allIFAS.append(model.getOutcome('wasting prev'))
 allIFAS.append(model.getOutcome('stunting prev'))
+allIFAS.append(model.getOutcome('severely wasted prev'))
+allIFAS.append(model.getOutcome('moderately wasted prev'))
+
 
 # ALL FORTIFICATION INTERVENTIONS AT 95%
 allfoodFort = []
@@ -134,9 +142,13 @@ allfoodFort.append(model.getOutcome('anemia frac WRA'))
 allfoodFort.append(model.getOutcome('anemia frac children'))
 allfoodFort.append(model.getOutcome('wasting prev'))
 allfoodFort.append(model.getOutcome('stunting prev'))
+allfoodFort.append(model.getOutcome('severely wasted prev'))
+allfoodFort.append(model.getOutcome('moderately wasted prev'))
+
+
 
 header = ['scenario', 'thrive', 'deaths children', 'deaths PW', 'anemia prev PW', 'anemia prev WRA',
-          'anemia prev children', 'wasted prev children', 'stunting prev children']
+          'anemia prev children', 'wasted prev children', 'stunting prev children', 'severe wasting prev', 'moderate wasting prev']
 import csv
 
 outfilename = 'anemiaWithWasting.csv'
