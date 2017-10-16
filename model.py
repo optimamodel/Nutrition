@@ -229,7 +229,7 @@ class Model:
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
         stuntingUpdate = self.params.getStuntingUpdate(newCoverage)
         anemiaUpdate = self.params.getAnemiaUpdate(newCoverage, self.thisHelper)
-        wastingUpdate, fromSAMtoMAMupdate = self.params.getWastingUpdate(newCoverage)
+        wastingUpdate, fromSAMtoMAMupdate, fromMAMtoSAMupdate = self.params.getWastingPrevalenceUpdate(newCoverage)
         incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
         birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)
         newFracCorrectlyBreastfed = self.params.getAppropriateBFNew(newCoverage)
@@ -342,7 +342,8 @@ class Model:
             ageName = ageGroup.name
             # probability of being in either SAM or MAM for this age
             for wastingCat in self.wastedList: # 'high' must come first
-                totalUpdateThisCatAndAge = wastingUpdate[ageName][wastingCat] * wastingUpdateDueToDiarrheaIncidence[ageName][wastingCat] * wastingUpdateDueToWastingIncidence[wastingCat][ageName] * fromSAMtoMAMupdate[ageName][wastingCat]
+                totalUpdateThisCatAndAge = wastingUpdate[ageName][wastingCat] * wastingUpdateDueToDiarrheaIncidence[ageName][wastingCat] * wastingUpdateDueToWastingIncidence[wastingCat][ageName] * \
+                                           fromSAMtoMAMupdate[ageName][wastingCat] * fromMAMtoSAMupdate[ageName][wastingCat]
                 # save for use in apply births
                 self.derived.wastingUpdateAfterInterventions[ageName][wastingCat] *= totalUpdateThisCatAndAge
                 # update overall wasting in this category
