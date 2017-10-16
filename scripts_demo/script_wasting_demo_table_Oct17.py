@@ -24,6 +24,9 @@ def runModelGivenCoverage(intervention, coverage, spreadsheetData, zeroCoverages
     # scale up IPTp only if MMS
     if "Multiple micro" in intervention:
         theseCoverages['IPTp'] = 0.1
+    # scale up bednets only if IFAS in malaria area
+    if ("IFAS" in intervention) and ("malaria" in intervention):
+        theseCoverages['Long-lasting insecticide-treated bednets'] = 0.1
     # scale up malaria area part of IFAS interventions also
     if 'IFAS' in intervention:
         interventionMalaria = intervention + ' (malaria area)'
@@ -45,13 +48,12 @@ def runModelGivenCoverage(intervention, coverage, spreadsheetData, zeroCoverages
     # return outcome
     return model
 
-spreadsheet = rootpath + 'input_spreadsheets/Bangladesh/2017Aug/InputForCode_Bangladesh.xlsx'
+spreadsheet = rootpath + 'input_spreadsheets/Bangladesh/2017Oct/InputForCode_Bangladesh.xlsx'
 spreadsheetData = data.readSpreadsheet(spreadsheet, helper.keyList)
 
 zeroCoverages = {intervention:0. for intervention in spreadsheetData.interventionList}
 
 # set bed nets and IPTp coverage to malaria prevalence so that constraints are met for certain interventions
-zeroCoverages['Long-lasting insecticide-treated bednets'] = 0.1
 coverage95 = 0.95
 
 baseline = []
@@ -65,9 +67,9 @@ baseline.append(model.getOutcome('anemia frac pregnant'))
 baseline.append(model.getOutcome('anemia frac WRA'))
 baseline.append(model.getOutcome('anemia frac children'))
 baseline.append(model.getOutcome('wasting prev'))
-baseline.append(model.getOutcome('stunting prev'))
-baseline.append(model.getOutcome('severely wasted prev'))
 baseline.append(model.getOutcome('moderately wasted prev'))
+baseline.append(model.getOutcome('severely wasted prev'))
+baseline.append(model.getOutcome('stunting prev'))
 
 # EVERYTHING ELSE
 interventionsCombine = ['Public provision of complementary foods with iron', 'Sprinkles',
@@ -93,10 +95,9 @@ for intervention in spreadsheetData.interventionList:
     output[intervention].append(model.getOutcome('anemia frac WRA'))
     output[intervention].append(model.getOutcome('anemia frac children'))
     output[intervention].append(model.getOutcome('wasting prev'))
-    output[intervention].append(model.getOutcome('stunting prev'))
-    output[intervention].append(model.getOutcome('severely wasted prev'))
     output[intervention].append(model.getOutcome('moderately wasted prev'))
-
+    output[intervention].append(model.getOutcome('severely wasted prev'))
+    output[intervention].append(model.getOutcome('stunting prev'))
 # ALL IFAS INTERVENTIONS AT 95%
 allIFAS = []
 allIFAS.append('all IFAS WRA')
@@ -116,9 +117,9 @@ allIFAS.append(model.getOutcome('anemia frac pregnant'))
 allIFAS.append(model.getOutcome('anemia frac WRA'))
 allIFAS.append(model.getOutcome('anemia frac children'))
 allIFAS.append(model.getOutcome('wasting prev'))
-allIFAS.append(model.getOutcome('stunting prev'))
-allIFAS.append(model.getOutcome('severely wasted prev'))
 allIFAS.append(model.getOutcome('moderately wasted prev'))
+allIFAS.append(model.getOutcome('severely wasted prev'))
+allIFAS.append(model.getOutcome('stunting prev'))
 
 
 # ALL FORTIFICATION INTERVENTIONS AT 95%
@@ -141,14 +142,36 @@ allfoodFort.append(model.getOutcome('anemia frac pregnant'))
 allfoodFort.append(model.getOutcome('anemia frac WRA'))
 allfoodFort.append(model.getOutcome('anemia frac children'))
 allfoodFort.append(model.getOutcome('wasting prev'))
-allfoodFort.append(model.getOutcome('stunting prev'))
-allfoodFort.append(model.getOutcome('severely wasted prev'))
 allfoodFort.append(model.getOutcome('moderately wasted prev'))
+allfoodFort.append(model.getOutcome('severely wasted prev'))
+allfoodFort.append(model.getOutcome('stunting prev'))
 
-
+# ALL WASTING TREATMENTS
+allTreatment = []
+allTreatment.append('all wasting treatments')
+coverage = dcp(zeroCoverages)
+for intervention in spreadsheetData.interventionList:
+    if 'Treatment' in intervention:
+        coverage[intervention] = coverage95
+numModelSteps= 14
+model, _, _ = helper.setupModelDerivedParameters(spreadsheetData)
+model.moveModelOneYear()
+model.updateCoverages(coverage)
+for t in range(numModelSteps - 1):
+    model.moveModelOneYear()
+allTreatment.append(model.getOutcome('thrive'))
+allTreatment.append(model.getOutcome('deaths children'))
+allTreatment.append(model.getOutcome('deaths PW'))
+allTreatment.append(model.getOutcome('anemia frac pregnant'))
+allTreatment.append(model.getOutcome('anemia frac WRA'))
+allTreatment.append(model.getOutcome('anemia frac children'))
+allTreatment.append(model.getOutcome('wasting prev'))
+allTreatment.append(model.getOutcome('moderately wasted prev'))
+allTreatment.append(model.getOutcome('severely wasted prev'))
+allTreatment.append(model.getOutcome('stunting prev'))
 
 header = ['scenario', 'thrive', 'deaths children', 'deaths PW', 'anemia prev PW', 'anemia prev WRA',
-          'anemia prev children', 'wasted prev children', 'stunting prev children', 'severe wasting prev', 'moderate wasting prev']
+          'anemia prev children', 'wasted prev children','moderate wasting prev', 'severe wasting prev', 'stunting prev children']
 import csv
 
 outfilename = 'anemiaWithWasting.csv'
@@ -167,6 +190,7 @@ with open(outfilename, "wb") as f:
         writer.writerow(output[intervention])
     writer.writerow(allIFAS)
     writer.writerow(allfoodFort)
+    writer.writerow(allTreatment)
 
 
 
