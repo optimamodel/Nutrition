@@ -49,7 +49,8 @@ class Params:
         self.rawTargetPop = dcp(data.targetPopulation)
         self.attendance = dcp(data.demographics['school attendance WRA 15-19'])
         self.interventionCompleteList = dcp(data.interventionCompleteList)
-        self.fracSAMtreatmentToMAM = dcp(data.fracSAMtreatmentToMAM)
+        self.fracSAMtoMAM = dcp(data.fracSAMtoMAM)
+        self.fracMAMtoSAM = dcp(data.fracMAMtoSAM)
     
 
 # Add all functions for updating parameters due to interventions here....
@@ -155,14 +156,17 @@ class Params:
                 anemiaUpdate[pop] *= 1. - reduction
         return anemiaUpdate
 
-    def getWastingUpdate(self, newCoverage):
-        wastingUpdate = {}
-        fromSAMtoMAMupdate = {} # accounts for children moving from SAM to MAM after treatment
+    def getWastingPrevalenceUpdate(self, newCoverage):
+        wastingUpdate = {} # overall update to prevalence of MAM and SAM
+        fromSAMtoMAMupdate = {} # accounts for children moving from SAM to MAM after SAM treatment
+        fromMAMtoSAMupdate = {} # accounts for children moving from MAM to SAM after MAM treatment
         for ageName in self.ages:
             fromSAMtoMAMupdate[ageName] = {}
+            fromMAMtoSAMupdate[ageName] = {}
             wastingUpdate[ageName] = {}
             for wastingCat in self.wastedList:
                 fromSAMtoMAMupdate[ageName][wastingCat] = 1.
+                fromMAMtoSAMupdate[ageName][wastingCat] = 1.
                 wastingUpdate[ageName][wastingCat] = 1.
                 oldProbWasting = self.wastingDistribution[ageName][wastingCat]
                 for intervention in newCoverage.keys():
@@ -171,9 +175,9 @@ class Params:
                     newProbWasting = newCoverage[intervention]*probWastingIfCovered + (1.-newCoverage[intervention])*probWastingIfNotCovered
                     reduction = (oldProbWasting - newProbWasting) / oldProbWasting
                     wastingUpdate[ageName][wastingCat] *= 1. - reduction
-            fromSAMtoMAMupdate[ageName]['moderate'] = (1. + (1.-wastingUpdate[ageName]['high']) * self.fracSAMtreatmentToMAM)
-        return wastingUpdate, fromSAMtoMAMupdate
-
+            fromSAMtoMAMupdate[ageName]['moderate'] = (1. + (1.-wastingUpdate[ageName]['high']) * self.fracSAMtoMAM)
+            fromMAMtoSAMupdate[ageName]['high'] = (1. - (1.-wastingUpdate[ageName]['moderate']) * self.fracMAMtoSAM)
+        return wastingUpdate, fromSAMtoMAMupdate, fromMAMtoSAMupdate
 
     def addCoverageConstraints(self, newCoverages, listOfAgeCompartments, listOfReproductiveAgeCompartments):
         from copy import deepcopy as dcp
