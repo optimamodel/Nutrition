@@ -22,7 +22,7 @@ class Data:
                  projectedWRApop, projectedWRApopByAge, projectedPWpop,
                  projectedGeneralPop, PWageDistribution, fracExposedMalaria,
                  ORanemiaCondition, fracSevereDia, ORwastingCondition,
-                 ORwastingIntervention, ORwastingBirthOutcome, fracSAMtreatmentToMAM):
+                 ORwastingIntervention, ORwastingBirthOutcome, fracSAMtoMAM, fracMAMtoSAM):
 
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
@@ -72,7 +72,8 @@ class Data:
         self.ORanemiaCondition = ORanemiaCondition
         self.ORwastingCondition = ORwastingCondition
         self.fracSevereDia = fracSevereDia
-        self.fracSAMtreatmentToMAM = fracSAMtreatmentToMAM
+        self.fracSAMtoMAM= fracSAMtoMAM
+        self.fracMAMtoSAM = fracMAMtoSAM
 
 def readSheetWithOneIndexCol(sheet, scaleFactor=1.):
     resultDict = {}
@@ -459,7 +460,8 @@ def readSpreadsheet(fileName, keyList):
     fracExposedMalaria = demographics['fraction at risk of malaria']
     ORanemiaCondition = {age:{condition:1. for condition in conditionsList} for age in ages}
     fracSevereDia = 0.2 # made up value
-    fracSAMtreatmentToMAM = 0.1 # fictional
+    fracSAMtoMAM = 0.1 # fictional
+    fracMAMtoSAM = 0.1 # dictional
 
     spreadsheetData = Data(causesOfDeathList, conditionsList, interventionList, interventionCompleteList,
                            demographics, projectedBirths, rawMortality,
@@ -476,6 +478,6 @@ def readSpreadsheet(fileName, keyList):
                            projectedWRApop, projectedWRApopByAge, projectedPWpop, projectedGeneralPop,
                            PWageDistribution, fracExposedMalaria, ORanemiaCondition, fracSevereDia,
                            ORwastingCondition, ORwastingIntervention, ORwastingBirthOutcome,
-                           fracSAMtreatmentToMAM)
+                           fracSAMtoMAM, fracMAMtoSAM)
     return spreadsheetData
                   
