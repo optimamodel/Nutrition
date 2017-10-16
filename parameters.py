@@ -145,6 +145,11 @@ class Params:
                     fractionTargeted = fracTargetedIFAS[pop][intervention]
                     fractionNotTargeted = 1. - fractionTargeted
                     newProbAnemic = fractionNotTargeted * oldProbAnemic + newProbAnemic * fractionTargeted
+                # bed nets
+                if "insecticide-treated bednets" in intervention:
+                    fractionTargeted = self.fracExposedMalaria
+                    fractionNotTargeted = 1. - fractionTargeted
+                    newProbAnemic = fractionNotTargeted * oldProbAnemic + newProbAnemic * fractionTargeted
                 # now calculate reduction    
                 reduction = (oldProbAnemic - newProbAnemic)/oldProbAnemic
                 anemiaUpdate[pop] *= 1. - reduction
@@ -266,9 +271,18 @@ class Params:
                     constrainedCoverages[intervention] = 0.
                     
             # add food fortification constraints
-            if ("fortification" in intervention) and ("salt" not in intervention):
-                constrainedCoverages[intervention] = newCoverages[intervention] * (1.- self.demographics['fraction of subsistence farming'])
-
+            if ("IFA fortification" in intervention):
+                # cannot give iron fortification to those already receiving IFA fortification
+                maxAllowedCovIron = 1.-newCoverages[intervention]
+                IFAend = intervention.replace('IFA ', '')
+                ironIntName = 'Iron ' + IFAend
+                ironCov = newCoverages[ironIntName]
+                if ironCov > maxAllowedCovIron:
+                    constrainedCoverages[ironIntName] = maxAllowedCovIron
+                # only cover those not growing own food
+                fracNotFarming = 1.- self.demographics['fraction of subsistence farming']
+                constrainedCoverages[intervention] = newCoverages[intervention] * fracNotFarming
+                constrainedCoverages[ironIntName] *= fracNotFarming
         return constrainedCoverages
 
     def getAppropriateBFNew(self, newCoverage):

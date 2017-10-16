@@ -49,9 +49,9 @@ def runModelGivenCoverage(intervention, coverage, spreadsheetData, zeroCoverages
 
 spreadsheet = rootpath + 'input_spreadsheets/Bangladesh/2017Aug/InputForCode_Bangladesh.xlsx'
 spreadsheetData = data.readSpreadsheet(spreadsheet, helper.keyList)
-malariaFracList = [0.1, 0.5, 0.7, 1.0]
+malariaFracList = [0.0, 0.1, 0.5, 0.7, 1.0]
 poorFracList = [0.1, 0.36, 0.7]
-IPTpFracList = [0.0, 0.5, 0.9]
+IPTpFracList = [0.0, 0.5, 0.9, 1.0]
 bedNetList = [0.0, 0.5, 0.9]
 # set all coverages to zero    
 zeroCoverages = {}    
