@@ -14,6 +14,8 @@ numModelSteps = 180
 MCSampleSize = 25
 geoMCSampleSize = 25
 cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]  
+costCurveType = 'standard'
+haveFixedProgCosts = 'False'
 optimise = 'deaths'
 regionNameList = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
 spreadsheetFileStem = '../input_spreadsheets/Bangladesh/2016Jul26/subregionSpreadsheets/'
@@ -32,7 +34,7 @@ GAresultsFileStem = 'Results2016Jul/deaths/geospatial/GAResult'
 nCores = 4
 
 # instantiate a geospatial object
-geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
+geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem, costCurveType)
 
 # use it to genarate geospatial cascades if they're not already there (these will be stored in the resultsFileStem location)
 geospatialOptimisation.generateParallelResultsForGeospatialCascades(nCores, MCSampleSize)
@@ -41,7 +43,7 @@ geospatialOptimisation.generateParallelResultsForGeospatialCascades(nCores, MCSa
 geospatialOptimisation.plotReallocationByRegion()
 
 # now harvest those results to perform the geospatial optimisation
-geospatialOptimisation.performGeospatialOptimisation(geoMCSampleSize, MCSampleSize, GAresultsFileStem)
+geospatialOptimisation.performGeospatialOptimisation(geoMCSampleSize, MCSampleSize, GAresultsFileStem, haveFixedProgCosts)
 
 
 
