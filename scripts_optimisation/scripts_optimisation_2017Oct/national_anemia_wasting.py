@@ -19,7 +19,7 @@ numCores = 24
 
 for optimise in ['wasting prev', 'severely wasted prev', 'moderately wasted prev']:
 
-    resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+country+'/'+country
+    resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+country
 
     thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem)
     thisOptimisation.performParallelCascadeOptimisation(MCSampleSize, cascadeValues, numCores, haveFixedProgCosts)
