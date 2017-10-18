@@ -13,13 +13,13 @@ spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+date+'/InputForCode_'+
 
 numModelSteps = 14
 MCSampleSize = 15
-cascadeValues = [0.25, 0.75, 1.0, 2.0, 3.0, 4.0, 8.0, 15.0]
+cascadeValues = [0.25, 0.75, 1.0, 2.0, 3.0, 4.0, 8.0, 15.0, 30.0]
 haveFixedProgCosts = False
-numCores = 24
+numCores = 9
 
-for optimise in ['wasting prev', 'severely wasted prev', 'moderately wasted prev']:
+for optimise in ['wasting prev', 'SAM prev', 'MAM prev']:
 
-    resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+country
+    resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+'18_10/'+country
 
     thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem)
     thisOptimisation.performParallelCascadeOptimisation(MCSampleSize, cascadeValues, numCores, haveFixedProgCosts)
