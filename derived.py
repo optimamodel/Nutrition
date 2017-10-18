@@ -240,8 +240,7 @@ class Derived:
         Zt = Z0 # true for initialisation
         beta = self.getFracDiarrhea(Z0, Zt)
         for wastingCat in self.wastedList:
-            risk = 'Wasting (%s)' %wastingCat
-            AO = self.getAverageOR(Zt, risk)
+            AO = self.getAverageOR(Zt, wastingCat)
             numAgeGroups = len(self.ages)
             self.fracWastedIfDiarrhea[wastingCat] = {}
             self.fracWastedIfDiarrhea[wastingCat]["nodia"] = {}
@@ -261,7 +260,7 @@ class Derived:
         AOStunting = self.getAverageOR(Zt, 'stunting')
         AOwasting = {}
         for wastingCat in self.wastedList:
-            AOwasting[wastingCat] = self.getAverageOR(Zt, 'Wasting (%s)'%wastingCat)
+            AOwasting[wastingCat] = self.getAverageOR(Zt, wastingCat)
         Yt = {}
         for ageName in self.ages:
             Yt[ageName] = Zt[ageName] * self.data.fracSevereDia
@@ -314,7 +313,7 @@ class Derived:
                 OR = self.data.ORstuntingCondition[ageName]['Diarrhea']
             elif risk == 'anemia':
                 OR = self.data.ORanemiaCondition[ageName]['Diarrhea']
-            elif 'Wasting' in risk:
+            elif risk == 'MAM' or risk == 'SAM':
                 OR = self.data.ORwastingCondition[risk][ageName]['Diarrhea']
             else:
                 print 'risk factor is invalid'
@@ -391,7 +390,7 @@ class Derived:
     # calculate probability of wasting in current age group given coverage by intervention
     def setProbWastedIfCovered(self, coverage, wastingDistribution):
         numAgeGroups = len(self.ages)
-        for wastingCat in ["high", "moderate"]:
+        for wastingCat in self.wastedList:
             self.probWastedIfCovered[wastingCat] = {}
             for intervention in self.data.interventionCompleteList:
                 self.probWastedIfCovered[wastingCat][intervention] = {}

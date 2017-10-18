@@ -314,13 +314,13 @@ def readSpreadsheet(fileName, keyList):
     birthOutcomeDistribution = splitSpreadsheetWithTwoIndexCols(birthOutcomesSheet, "Distribution")
     ORstuntingBirthOutcome = {}
     ORwastingBirthOutcome = {}
-    ORwastingBirthOutcome['high'] = {}
-    ORwastingBirthOutcome['moderate'] = {}
+    ORwastingBirthOutcome['SAM'] = {}
+    ORwastingBirthOutcome['MAM'] = {}
     birthOutcomeDist = {}
     for birthOutcome in birthOutcomeDistribution.keys():
         ORstuntingBirthOutcome[birthOutcome] = birthOutcomeDistribution[birthOutcome]['OR stunting']
-        ORwastingBirthOutcome['high'][birthOutcome] = birthOutcomeDistribution[birthOutcome]['OR wasting (high)']
-        ORwastingBirthOutcome['moderate'][birthOutcome] = birthOutcomeDistribution[birthOutcome]['OR wasting (moderate)']
+        ORwastingBirthOutcome['SAM'][birthOutcome] = birthOutcomeDistribution[birthOutcome]['OR SAM']
+        ORwastingBirthOutcome['MAM'][birthOutcome] = birthOutcomeDistribution[birthOutcome]['OR MAM']
         birthOutcomeDist[birthOutcome] = birthOutcomeDistribution[birthOutcome]["Fraction of births"]
 
     # RR of death by birth outcome
@@ -392,12 +392,12 @@ def readSpreadsheet(fileName, keyList):
     wastingInterventionSheet = pd.read_excel(location, "Interventions wasting", index_col=[0,1])
     wastingInterventionSheet = wastingInterventionSheet.dropna(axis=0, how='all')
     ORwastingIntervention = {}
-    ORwastingIntervention['high'] = splitSpreadsheetWithTwoIndexCols(wastingInterventionSheet, "OR severe wasting by intervention", rowList=interventionCompleteList)
-    ORwastingIntervention['moderate'] = splitSpreadsheetWithTwoIndexCols(wastingInterventionSheet, "OR moderate wasting by intervention", rowList=interventionCompleteList)
+    ORwastingIntervention['SAM'] = splitSpreadsheetWithTwoIndexCols(wastingInterventionSheet, "OR SAM by intervention", rowList=interventionCompleteList)
+    ORwastingIntervention['MAM'] = splitSpreadsheetWithTwoIndexCols(wastingInterventionSheet, "OR MAM by intervention", rowList=interventionCompleteList)
     # wasting by condition
     ORwastingCondition = {}
-    ORwastingCondition['Wasting (high)'] = splitSpreadsheetWithTwoIndexCols(ORsheet, 'OR severe wasting by condition', rowList=conditionsList)
-    ORwastingCondition['Wasting (moderate)'] = splitSpreadsheetWithTwoIndexCols(ORsheet, 'OR moderate wasting by condition', rowList=conditionsList)
+    ORwastingCondition['SAM'] = splitSpreadsheetWithTwoIndexCols(ORsheet, 'OR SAM by condition', rowList=conditionsList)
+    ORwastingCondition['MAM'] = splitSpreadsheetWithTwoIndexCols(ORsheet, 'OR MAM by condition', rowList=conditionsList)
 
     # correct breastfeeding
     ORappropriatebfIntervention = splitSpreadsheetWithTwoIndexCols(ORsheet, "OR for correct breastfeeding by intervention", rowList=interventionCompleteList)
@@ -451,7 +451,7 @@ def readSpreadsheet(fileName, keyList):
     # children
     # warning: currently this applied to all population groups (no tabs for them yet)
     interventionsForChildren = pd.read_excel(location, sheetname='Interventions for children', index_col=[0, 1, 2])
-    affectedFraction = readInterventionsByPopulationTabs(interventionsForChildren, 'Affected fraction', interventionCompleteList, allPops, causesOfDeathList + ['Severe diarrhea', 'Wasting (high)', 'Wasting (moderate)']) # TODO: warning: severe diarrhea is not listed in 'causes of death' and so causes issues
+    affectedFraction = readInterventionsByPopulationTabs(interventionsForChildren, 'Affected fraction', interventionCompleteList, allPops, causesOfDeathList + ['Severe diarrhea', 'SAM', 'MAM']) # TODO: warning: severe diarrhea is not listed in 'causes of death' and so causes issues
     effectivenessMortality = readInterventionsByPopulationTabs(interventionsForChildren, 'Effectiveness mortality', interventionCompleteList, allPops, causesOfDeathList)
     effectivenessIncidence = readInterventionsByPopulationTabs(interventionsForChildren, 'Effectiveness incidence', interventionCompleteList, ages, conditionsList) # children only
 

@@ -178,10 +178,10 @@ class Model:
             outcomeValue = self.getCumulativeAgingOutNotStunted()
         elif outcome == 'wasting prev':
             outcomeValue = self.getTotalWastedFraction()
-        elif outcome == 'severely wasted prev':
-            outcomeValue = self.getFractionInWastingCat('high')
-        elif outcome == 'moderately wasted prev':
-            outcomeValue = self.getFractionInWastingCat('moderate')
+        elif outcome == 'SAM prev':
+            outcomeValue = self.getFractionInWastingCat('SAM')
+        elif outcome == 'MAM prev':
+            outcomeValue = self.getFractionInWastingCat('MAM')
         elif outcome == 'DALYs':
             outcomeValue = self.getDALYs()
         elif outcome == 'stunting prev':
@@ -268,7 +268,7 @@ class Model:
         # DIARRHEA AND WASTING INCIDENCE
         incidencesBefore = {}
         incidencesAfter = {}
-        for condition in ['Diarrhea', 'Wasting (moderate)', 'Wasting (high)']:
+        for condition in ['Diarrhea', 'MAM', 'SAM']:
             incidencesBefore[condition] = {}
             incidencesAfter[condition] = {}
             for ageGroup in self.listOfAgeCompartments:
@@ -288,7 +288,7 @@ class Model:
         stuntingUpdateDueToIncidence, anemiaUpdateDueToIncidence, wastingUpdateDueToDiarrheaIncidence = self.params.getUpdatesDueToIncidence(beta)
         # wasting
         wastingUpdateDueToWastingIncidence = {}
-        for wastingCat in ['Wasting (moderate)', 'Wasting (high)']:
+        for wastingCat in self.wastedList:
             wastingIncidenceBefore = incidencesBefore[wastingCat]
             wastingIncidenceAfter = incidencesAfter[wastingCat]
             # impact of wasting incidence on wasting prevalence (prevention interventions)
