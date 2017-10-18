@@ -175,8 +175,8 @@ class Params:
                     newProbWasting = newCoverage[intervention]*probWastingIfCovered + (1.-newCoverage[intervention])*probWastingIfNotCovered
                     reduction = (oldProbWasting - newProbWasting) / oldProbWasting
                     wastingUpdate[ageName][wastingCat] *= 1. - reduction
-            fromSAMtoMAMupdate[ageName]['moderate'] = (1. + (1.-wastingUpdate[ageName]['high']) * self.fracSAMtoMAM)
-            fromMAMtoSAMupdate[ageName]['high'] = (1. - (1.-wastingUpdate[ageName]['moderate']) * self.fracMAMtoSAM)
+            fromSAMtoMAMupdate[ageName]['MAM'] = (1. + (1.-wastingUpdate[ageName]['SAM']) * self.fracSAMtoMAM)
+            fromMAMtoSAMupdate[ageName]['SAM'] = (1. - (1.-wastingUpdate[ageName]['MAM']) * self.fracMAMtoSAM)
         return wastingUpdate, fromSAMtoMAMupdate, fromMAMtoSAMupdate
 
     def addCoverageConstraints(self, newCoverages, listOfAgeCompartments, listOfReproductiveAgeCompartments):
@@ -288,6 +288,22 @@ class Params:
                 constrainedCoverages[intervention] = newCoverages[intervention] * fracNotFarming
                 constrainedCoverages[ironIntName] *= fracNotFarming
         return constrainedCoverages
+
+    def addWastingInterventionConstraints(self, newCoverages, wastingUpdateDueToWastingIncidence):
+        constrainedWastingUpdate = {}
+        for ageName in self.ages:
+            constrainedWastingUpdate[ageName] = {}
+            for wastingCat in self.wastedList:
+                constrainedWastingUpdate[ageName][wastingCat] = 1.
+                fracTargeted = self.fracPoor
+                fracNotTargeted = 1.-fracTargeted
+                oldProbThisCat = self.wastingDistribution[ageName][wastingCat]
+                newProbThisCat = oldProbThisCat * wastingUpdateDueToWastingIncidence[wastingCat][ageName]
+                newProbThisCat = fracTargeted * newProbThisCat + fracNotTargeted * oldProbThisCat
+                # convert back into an update
+                reduction  = (oldProbThisCat - newProbThisCat) / oldProbThisCat
+                constrainedWastingUpdate[ageName][wastingCat] *= 1.-reduction
+        return constrainedWastingUpdate
 
     def getAppropriateBFNew(self, newCoverage):
         correctbfFracNew = {}
