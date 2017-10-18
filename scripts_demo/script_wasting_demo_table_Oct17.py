@@ -67,8 +67,8 @@ baseline.append(model.getOutcome('anemia frac pregnant'))
 baseline.append(model.getOutcome('anemia frac WRA'))
 baseline.append(model.getOutcome('anemia frac children'))
 baseline.append(model.getOutcome('wasting prev'))
-baseline.append(model.getOutcome('moderately wasted prev'))
-baseline.append(model.getOutcome('severely wasted prev'))
+baseline.append(model.getOutcome('MAM prev'))
+baseline.append(model.getOutcome('SAM prev'))
 baseline.append(model.getOutcome('stunting prev'))
 
 # EVERYTHING ELSE
@@ -95,8 +95,8 @@ for intervention in spreadsheetData.interventionList:
     output[intervention].append(model.getOutcome('anemia frac WRA'))
     output[intervention].append(model.getOutcome('anemia frac children'))
     output[intervention].append(model.getOutcome('wasting prev'))
-    output[intervention].append(model.getOutcome('moderately wasted prev'))
-    output[intervention].append(model.getOutcome('severely wasted prev'))
+    output[intervention].append(model.getOutcome('MAM prev'))
+    output[intervention].append(model.getOutcome('SAM prev'))
     output[intervention].append(model.getOutcome('stunting prev'))
 # ALL IFAS INTERVENTIONS AT 95%
 allIFAS = []
@@ -117,8 +117,8 @@ allIFAS.append(model.getOutcome('anemia frac pregnant'))
 allIFAS.append(model.getOutcome('anemia frac WRA'))
 allIFAS.append(model.getOutcome('anemia frac children'))
 allIFAS.append(model.getOutcome('wasting prev'))
-allIFAS.append(model.getOutcome('moderately wasted prev'))
-allIFAS.append(model.getOutcome('severely wasted prev'))
+allIFAS.append(model.getOutcome('MAM prev'))
+allIFAS.append(model.getOutcome('SAM prev'))
 allIFAS.append(model.getOutcome('stunting prev'))
 
 
@@ -142,8 +142,8 @@ allfoodFort.append(model.getOutcome('anemia frac pregnant'))
 allfoodFort.append(model.getOutcome('anemia frac WRA'))
 allfoodFort.append(model.getOutcome('anemia frac children'))
 allfoodFort.append(model.getOutcome('wasting prev'))
-allfoodFort.append(model.getOutcome('moderately wasted prev'))
-allfoodFort.append(model.getOutcome('severely wasted prev'))
+allfoodFort.append(model.getOutcome('MAM prev'))
+allfoodFort.append(model.getOutcome('SAM prev'))
 allfoodFort.append(model.getOutcome('stunting prev'))
 
 # ALL WASTING TREATMENTS
@@ -166,8 +166,8 @@ allTreatment.append(model.getOutcome('anemia frac pregnant'))
 allTreatment.append(model.getOutcome('anemia frac WRA'))
 allTreatment.append(model.getOutcome('anemia frac children'))
 allTreatment.append(model.getOutcome('wasting prev'))
-allTreatment.append(model.getOutcome('moderately wasted prev'))
-allTreatment.append(model.getOutcome('severely wasted prev'))
+allTreatment.append(model.getOutcome('MAM prev'))
+allTreatment.append(model.getOutcome('SAM prev'))
 allTreatment.append(model.getOutcome('stunting prev'))
 
 header = ['scenario', 'thrive', 'deaths children', 'deaths PW', 'anemia prev PW', 'anemia prev WRA',
