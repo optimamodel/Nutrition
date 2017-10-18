@@ -110,7 +110,7 @@ class AgeCompartment:
         for stuntingCat in self.stuntingList:
             for breastfeedingCat in self.breastfeedingList:
                 for anemiaCat in self.anemiaList:
-                    for wastingCat in ['high', 'moderate']:
+                    for wastingCat in ['SAM', 'MAM']:
                         numberWasted += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaCat].populationSize
         return numberWasted
 
