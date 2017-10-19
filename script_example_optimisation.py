@@ -10,13 +10,13 @@ Use as a reference, do not edit.
 
 import optimisation
 
-dataSpreadsheetName = '../input_spreadsheets/Bangladesh/2016Jul26/InputForCode_Bangladesh.xlsx'
-numModelSteps = 24 #180
-MCSampleSize = 25
+dataSpreadsheetName = 'input_spreadsheets/Bangladesh/2016Oct/InputForCode_Bangladesh.xlsx'
+numModelSteps = 180
+MCSampleSize = 4
 cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]
 optimise = 'stunting'  
 costCurveType = 'standard'
-haveFixedProgCosts = 'False'
+haveFixedProgCosts = False
 
 # this is the location of the optimisation results per region (to be generated or harvested)
 resultsFileStem = 'ResultsExample/'+optimise+'/national/Bangladesh'
@@ -38,7 +38,7 @@ thisOptimisation.performCascadeOptimisation(MCSampleSize, cascadeValues, haveFix
 # perform one optimisation of the curent budget
 # the output file will be (resultsFileStem):
 # resultsFileStem = ../ResultsExampleParallel/'+optimise+'/national/Bangladesh.pkl
-thisOptimisation.performSingleOptimisation(MCSampleSize)
+thisOptimisation.performSingleOptimisation(MCSampleSize, haveFixedProgCosts)
 
 # perform one optimisation with any given total budget 
 # (this example uses getInitialAllocationDictionary() to get
@@ -46,13 +46,14 @@ thisOptimisation.performSingleOptimisation(MCSampleSize)
 # e.g. read a budget from a file)
 # the output file will be (resultsFileStem + filename): 
 # ../ResultsExampleParallel/'+optimise+'/national/Bangladesh_example_given_budget.pkl
-totalBudget = thisOptimisation.getInitialAllocationDictionary()
+allocation = thisOptimisation.getInitialAllocationDictionary()
+totalBudget = sum(allocation.values())
 filename = 'example_given_budget'
 thisOptimisation.performSingleOptimisationForGivenTotalBudget(MCSampleSize, totalBudget, filename, haveFixedProgCosts)
 
 # run the model for a given starting budget 
 # output can be used to access time series qualities of the model run
-modelOutput = thisOptimisation.oneModelRunWithOutput(totalBudget)
+modelOutput = thisOptimisation.oneModelRunWithOutput(allocation)
 
 
 

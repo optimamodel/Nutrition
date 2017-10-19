@@ -168,7 +168,7 @@ class Optimisation:
         if not os.path.exists(resultsFileStem):
             os.makedirs(resultsFileStem)
         
-    def performSingleOptimisation(self, MCSampleSize):
+    def performSingleOptimisation(self, MCSampleSize, haveFixedProgCosts):
         import data 
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         costCoverageInfo = self.getCostCoverageInfo()  
@@ -176,7 +176,18 @@ class Optimisation:
         initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
         totalBudget = sum(initialAllocation)
         xmin = [0.] * len(initialAllocation)
-        args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
+        #args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
+        # set up and run the model prior to optimising
+        fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation)
+        timestepsPre = 12
+        model = runModelForNTimeSteps(timestepsPre, spreadsheetData, model=None)[0]
+        # generate cost curves for each intervention
+        costCurves = generateCostCurves(spreadsheetData, model, self.helper.keyList, self.dataSpreadsheetName,
+                                        costCoverageInfo, self.costCurveType)        
+        args = {'costCurves': costCurves, 'model': model, 'timestepsPre': timestepsPre,
+                'totalBudget': totalBudget, 'fixedCosts': fixedCosts, 'costCoverageInfo': costCoverageInfo,
+                'optimise': self.optimise, 'numModelSteps': self.numModelSteps,
+                'dataSpreadsheetName': self.dataSpreadsheetName, 'data': spreadsheetData}        
         self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, self.resultsFileStem+'.pkl')
         
     def performSingleOptimisationForGivenTotalBudget(self, MCSampleSize, totalBudget, filename, haveFixedProgCosts):
@@ -868,7 +879,7 @@ class GeospatialOptimisation:
             regionName = self.regionNameList[region]
             print 'optimising for individual region ', regionName
             thisSpreadsheet = self.regionSpreadsheetList[region]
-            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, self.resultsFileStem) 
+            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, self.resultsFileStem, self.costCurveType) 
             thisBudget = optimisedRegionalBudgetList[region]
             thisOptimisation.performSingleOptimisationForGivenTotalBudget(MCSampleSize, thisBudget, GAFile+'_'+regionName, haveFixedProgCosts)
             
@@ -921,7 +932,7 @@ class GeospatialOptimisation:
         for iReg in range(self.numRegions):
             regionName = self.regionNameList[iReg]
             print regionName
-            thisOptimisation = optimisation.Optimisation(self.regionSpreadsheetList[iReg], self.numModelSteps, self.optimise, 'dummyFilename')
+            thisOptimisation = optimisation.Optimisation(self.regionSpreadsheetList[iReg], self.numModelSteps, self.optimise, 'dummyFilename', self.costCurveType)
             geospatialAllocations[regionName] = {}
             geospatialAllocations[regionName]['baseline'] = thisOptimisation.getInitialAllocationDictionary()
             filename = '%s%s_cascade_%s_1.0.pkl'%(self.resultsFileStem, regionName, self.optimise)
@@ -940,7 +951,7 @@ class GeospatialOptimisation:
         for iReg in range(self.numRegions):
             regionName = self.regionNameList[iReg]
             print regionName
-            thisOptimisation = optimisation.Optimisation(self.regionSpreadsheetList[iReg], self.numModelSteps, self.optimise, 'dummyFilename')
+            thisOptimisation = optimisation.Optimisation(self.regionSpreadsheetList[iReg], self.numModelSteps, self.optimise, 'dummyFilename', self.costCurveType)
             geospatialAllocations[regionName] = {}
             geospatialAllocations[regionName]['baseline'] = thisOptimisation.getInitialAllocationDictionary()
             filename = '%s%s_%s.pkl'%(self.resultsFileStem, GAFile, regionName)

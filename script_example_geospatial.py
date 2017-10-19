@@ -11,14 +11,15 @@ Use as a reference, do not edit.
 import optimisation
 
 numModelSteps = 180
-MCSampleSize = 25
-geoMCSampleSize = 25
-cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]  
+MCSampleSize = 4
+geoMCSampleSize = 4
+cascadeValues = [0.25, 1.0, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]  
 costCurveType = 'standard'
-haveFixedProgCosts = 'False'
+haveFixedProgCosts = False
+splitCascade = True
 optimise = 'deaths'
 regionNameList = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
-spreadsheetFileStem = '../input_spreadsheets/Bangladesh/2016Jul26/subregionSpreadsheets/'
+spreadsheetFileStem = 'input_spreadsheets/Bangladesh/2016Oct/subregionSpreadsheets/'
 spreadsheetList = []
 for regionName in regionNameList:
     spreadsheet = spreadsheetFileStem + regionName + '.xlsx'
@@ -28,24 +29,23 @@ for regionName in regionNameList:
 resultsFileStem = 'ResultsExample/'+optimise+'/geospatial/'
 
 # this is the location of the results from the geospatial analysis
-GAresultsFileStem = 'Results2016Jul/deaths/geospatial/GAResult'
+GAFile = 'GA_'
 
 # check athena and then specify how many cores you are going to use (this translates into the number of jobs as we assume 1 core per job)
-nCores = 4
+nCores = 56
 
 # instantiate a geospatial object
 geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem, costCurveType)
 
 # use it to genarate geospatial cascades if they're not already there (these will be stored in the resultsFileStem location)
-geospatialOptimisation.generateParallelResultsForGeospatialCascades(nCores, MCSampleSize)
+geospatialOptimisation.generateParallelResultsForGeospatialCascades(nCores, MCSampleSize, haveFixedProgCosts, splitCascade)
+
+# now use those results to perform the geospatial optimisation
+nCores = 7
+geospatialOptimisation.performParallelGeospatialOptimisation(geoMCSampleSize, MCSampleSize, GAFile, nCores, haveFixedProgCosts)
 
 # plot the reallocation of spending per region
-geospatialOptimisation.plotReallocationByRegion()
-
-# now harvest those results to perform the geospatial optimisation
-geospatialOptimisation.performGeospatialOptimisation(geoMCSampleSize, MCSampleSize, GAresultsFileStem, haveFixedProgCosts)
-
-
+geospatialOptimisation.plotPostGAReallocationByRegion(GAFile)
 
 
 
