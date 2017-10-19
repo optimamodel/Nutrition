@@ -4,6 +4,31 @@ Created on Wed Jun  8 13:58:29 2016
 
 @author: ruth
 """
+def tanzaniaConstraints(proposalSpendingList, totalBudget):
+    import numpy as np
+    numRegions = len(proposalSpendingList)
+    newScaledSpendingList = [0] * numRegions
+    regionIndexList1 = [6, 11, 7, 12, 17] # very low
+    regionIndexList2 = [3, 26, 0, 10, 9, 23, 21, 24, 19, 1, 22]  # below $1m
+    regionIndexList3 = [2, 4, 5, 8, 13, 14, 15, 16, 18, 20, 25, 27, 28, 29] #everything remaining
+    # very low first $0-0.5m
+    for region in regionIndexList1:
+        newScaledSpendingList[region] = np.random.uniform(0.0, 500000)
+    # now below $1m: ($0-2m)
+    for region in regionIndexList2:
+        newScaledSpendingList[region] = np.random.uniform(0.0, 2000000)
+    # fill in the remaining regions 
+    newTotalBudget = totalBudget - sum(newScaledSpendingList)    
+    remainingRegions = len(regionIndexList3)
+    unScaledList = np.random.rand(remainingRegions)
+    scaledList = rescaleAllocation(newTotalBudget, unScaledList)
+    i = 0
+    for region in regionIndexList3:
+        newScaledSpendingList[region] = scaledList[i]
+        i += 1
+    # don't need to unscale as scaleRatio will just be 1    
+    return newScaledSpendingList    
+
 def returnAlphabeticalDictionary(dictionary):
     from collections import OrderedDict
     dictionaryOrdered = OrderedDict([])
@@ -831,6 +856,9 @@ class GeospatialOptimisation:
         scenarioMonteCarloOutput = []
         for r in range(0, geoMCSampleSize):
             proposalSpendingList = np.random.rand(self.numRegions)
+            # only call this next line for Tanzania analysis constraints
+            proposalSpendingList = tanzaniaConstraints(proposalSpendingList, totalBudget)
+            #
             args = {'regionalBOCs':self.regionalBOCs, 'totalBudget':totalBudget, 'optimise':self.optimise}
             budgetBest, fval, exitflag, output = asd.asd(geospatialObjectiveFunction, proposalSpendingList, args, xmin = xmin, verbose = 2)  
             outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval, output.x)        
