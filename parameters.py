@@ -289,12 +289,12 @@ class Params:
                 constrainedCoverages[ironIntName] *= fracNotFarming
         return constrainedCoverages
 
-    def addWastingInterventionConstraints(self, newCoverages, wastingUpdateDueToWastingIncidence):
+    def addWastingInterventionConstraints(self, wastingUpdateDueToWastingIncidence):
+        # cash transfers and PPCF only target the fraction poor
         constrainedWastingUpdate = {}
         for ageName in self.ages:
             constrainedWastingUpdate[ageName] = {}
             for wastingCat in self.wastedList:
-                constrainedWastingUpdate[ageName][wastingCat] = 1.
                 fracTargeted = self.fracPoor
                 fracNotTargeted = 1.-fracTargeted
                 oldProbThisCat = self.wastingDistribution[ageName][wastingCat]
@@ -302,7 +302,7 @@ class Params:
                 newProbThisCat = fracTargeted * newProbThisCat + fracNotTargeted * oldProbThisCat
                 # convert back into an update
                 reduction  = (oldProbThisCat - newProbThisCat) / oldProbThisCat
-                constrainedWastingUpdate[ageName][wastingCat] *= 1.-reduction
+                constrainedWastingUpdate[ageName][wastingCat] = 1.-reduction
         return constrainedWastingUpdate
 
     def getAppropriateBFNew(self, newCoverage):
