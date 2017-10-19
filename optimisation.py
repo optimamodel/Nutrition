@@ -231,8 +231,7 @@ class Optimisation:
     def performParallelCascadeOptimisation(self, MCSampleSize, cascadeValues, numCores, haveFixedProgCosts):
         import data 
         from multiprocessing import Process
-        import pickle
-        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
+        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
         costCoverageInfo = self.getCostCoverageInfo()  
         initialTargetPopSize = self.getInitialTargetPopSize()          
         initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
@@ -249,16 +248,7 @@ class Optimisation:
                     target=self.cascadeParallelRunFunction, 
                     args=(value, currentTotalBudget, fixedCosts, spreadsheetData, costCoverageInfo, MCSampleSize, xmin))
                 prc.start()
-            prc.join()
-        # read the cascade files into a dictionary to be returned
-        cascade = {}    
-        for value in cascadeValues: 
-            filename = self.resultsFileStem+'_cascade_'+str(self.optimise)+'_'+str(value)+'.pkl'
-            infile = open(filename, 'rb')
-            cascade[value] = pickle.load(infile)         
-        return cascade    
-             
-                
+
         
     def performParallelSampling(self, MCSampleSize, haveFixedProgCosts, numRuns, filename):
         import data 
