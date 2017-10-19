@@ -66,9 +66,9 @@ baseline.append(model.getOutcome('deaths PW'))
 baseline.append(model.getOutcome('anemia frac pregnant'))
 baseline.append(model.getOutcome('anemia frac WRA'))
 baseline.append(model.getOutcome('anemia frac children'))
-baseline.append(model.getOutcome('wasting prev'))
-baseline.append(model.getOutcome('MAM prev'))
-baseline.append(model.getOutcome('SAM prev'))
+baseline.append(model.getOutcome('wasting_prev'))
+baseline.append(model.getOutcome('MAM_prev'))
+baseline.append(model.getOutcome('SAM_prev'))
 baseline.append(model.getOutcome('stunting prev'))
 
 # EVERYTHING ELSE
@@ -94,9 +94,9 @@ for intervention in spreadsheetData.interventionList:
     output[intervention].append(model.getOutcome('anemia frac pregnant'))
     output[intervention].append(model.getOutcome('anemia frac WRA'))
     output[intervention].append(model.getOutcome('anemia frac children'))
-    output[intervention].append(model.getOutcome('wasting prev'))
-    output[intervention].append(model.getOutcome('MAM prev'))
-    output[intervention].append(model.getOutcome('SAM prev'))
+    output[intervention].append(model.getOutcome('wasting_prev'))
+    output[intervention].append(model.getOutcome('MAM_prev'))
+    output[intervention].append(model.getOutcome('SAM_prev'))
     output[intervention].append(model.getOutcome('stunting prev'))
 # ALL IFAS INTERVENTIONS AT 95%
 allIFAS = []
@@ -116,9 +116,9 @@ allIFAS.append(model.getOutcome('deaths PW'))
 allIFAS.append(model.getOutcome('anemia frac pregnant'))
 allIFAS.append(model.getOutcome('anemia frac WRA'))
 allIFAS.append(model.getOutcome('anemia frac children'))
-allIFAS.append(model.getOutcome('wasting prev'))
-allIFAS.append(model.getOutcome('MAM prev'))
-allIFAS.append(model.getOutcome('SAM prev'))
+allIFAS.append(model.getOutcome('wasting_prev'))
+allIFAS.append(model.getOutcome('MAM_prev'))
+allIFAS.append(model.getOutcome('SAM_prev'))
 allIFAS.append(model.getOutcome('stunting prev'))
 
 
@@ -141,9 +141,9 @@ allfoodFort.append(model.getOutcome('deaths PW'))
 allfoodFort.append(model.getOutcome('anemia frac pregnant'))
 allfoodFort.append(model.getOutcome('anemia frac WRA'))
 allfoodFort.append(model.getOutcome('anemia frac children'))
-allfoodFort.append(model.getOutcome('wasting prev'))
-allfoodFort.append(model.getOutcome('MAM prev'))
-allfoodFort.append(model.getOutcome('SAM prev'))
+allfoodFort.append(model.getOutcome('wasting_prev'))
+allfoodFort.append(model.getOutcome('MAM_prev'))
+allfoodFort.append(model.getOutcome('SAM_prev'))
 allfoodFort.append(model.getOutcome('stunting prev'))
 
 # ALL WASTING TREATMENTS
@@ -165,10 +165,59 @@ allTreatment.append(model.getOutcome('deaths PW'))
 allTreatment.append(model.getOutcome('anemia frac pregnant'))
 allTreatment.append(model.getOutcome('anemia frac WRA'))
 allTreatment.append(model.getOutcome('anemia frac children'))
-allTreatment.append(model.getOutcome('wasting prev'))
-allTreatment.append(model.getOutcome('MAM prev'))
-allTreatment.append(model.getOutcome('SAM prev'))
+allTreatment.append(model.getOutcome('wasting_prev'))
+allTreatment.append(model.getOutcome('MAM_prev'))
+allTreatment.append(model.getOutcome('SAM_prev'))
 allTreatment.append(model.getOutcome('stunting prev'))
+
+# ALL IFA FORTIFICATION
+allIFA = []
+allIFA.append('all IFA fortification')
+coverage = dcp(zeroCoverages)
+for intervention in spreadsheetData.interventionList:
+    if 'IFA fortification' in intervention:
+        coverage[intervention] = coverage95
+numModelSteps= 14
+model, _, _ = helper.setupModelDerivedParameters(spreadsheetData)
+model.moveModelOneYear()
+model.updateCoverages(coverage)
+for t in range(numModelSteps - 1):
+    model.moveModelOneYear()
+allIFA.append(model.getOutcome('thrive'))
+allIFA.append(model.getOutcome('deaths children'))
+allIFA.append(model.getOutcome('deaths PW'))
+allIFA.append(model.getOutcome('anemia frac pregnant'))
+allIFA.append(model.getOutcome('anemia frac WRA'))
+allIFA.append(model.getOutcome('anemia frac children'))
+allIFA.append(model.getOutcome('wasting_prev'))
+allIFA.append(model.getOutcome('MAM_prev'))
+allIFA.append(model.getOutcome('SAM_prev'))
+allIFA.append(model.getOutcome('stunting prev'))
+
+# ALL IRON FORTIFICATION
+allIron = []
+allIron.append('all iron fortification')
+coverage = dcp(zeroCoverages)
+for intervention in spreadsheetData.interventionList:
+    if 'Iron fortification' in intervention:
+        coverage[intervention] = coverage95
+numModelSteps= 14
+model, _, _ = helper.setupModelDerivedParameters(spreadsheetData)
+model.moveModelOneYear()
+model.updateCoverages(coverage)
+for t in range(numModelSteps - 1):
+    model.moveModelOneYear()
+allIron.append(model.getOutcome('thrive'))
+allIron.append(model.getOutcome('deaths children'))
+allIron.append(model.getOutcome('deaths PW'))
+allIron.append(model.getOutcome('anemia frac pregnant'))
+allIron.append(model.getOutcome('anemia frac WRA'))
+allIron.append(model.getOutcome('anemia frac children'))
+allIron.append(model.getOutcome('wasting_prev'))
+allIron.append(model.getOutcome('MAM_prev'))
+allIron.append(model.getOutcome('SAM_prev'))
+allIron.append(model.getOutcome('stunting prev'))
+
 
 header = ['scenario', 'thrive', 'deaths children', 'deaths PW', 'anemia prev PW', 'anemia prev WRA',
           'anemia prev children', 'wasted prev children','moderate wasting prev', 'severe wasting prev', 'stunting prev children']
@@ -191,6 +240,9 @@ with open(outfilename, "wb") as f:
     writer.writerow(allIFAS)
     writer.writerow(allfoodFort)
     writer.writerow(allTreatment)
+    writer.writerow(allIFA)
+    writer.writerow(allIron)
+
 
 
 
