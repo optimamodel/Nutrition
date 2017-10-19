@@ -171,7 +171,9 @@ class Model:
         if outcome == 'deaths children':
             outcomeValue = self.getTotalCumulativeDeathsChildren()
         elif outcome == 'deaths PW':
-            outcomeValue = self.getTotalCumulativeDeathsPW()    
+            outcomeValue = self.getTotalCumulativeDeathsPW()
+        elif outcome == 'deaths':
+            outcomeValue = self.getTotalCumulativeDeathsChildren() + self.getTotalCumulativeDeathsPW()
         elif outcome == 'stunting':
             outcomeValue = self.getCumulativeAgingOutStunted()
         elif outcome == 'thrive':
