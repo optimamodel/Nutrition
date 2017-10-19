@@ -176,11 +176,11 @@ class Model:
             outcomeValue = self.getCumulativeAgingOutStunted()
         elif outcome == 'thrive':
             outcomeValue = self.getCumulativeAgingOutNotStunted()
-        elif outcome == 'wasting prev':
+        elif outcome == 'wasting_prev':
             outcomeValue = self.getTotalWastedFraction()
-        elif outcome == 'SAM prev':
+        elif outcome == 'SAM_prev':
             outcomeValue = self.getFractionInWastingCat('SAM')
-        elif outcome == 'MAM prev':
+        elif outcome == 'MAM_prev':
             outcomeValue = self.getFractionInWastingCat('MAM')
         elif outcome == 'DALYs':
             outcomeValue = self.getDALYs()
@@ -335,7 +335,7 @@ class Model:
             ageGroup.distributePopulation(self.params.anemiaDistribution)
         
         # WASTING
-        constrainedWastingUpdate = self.params.addWastingInterventionConstraints(newCoverage, wastingUpdateDueToWastingIncidence)
+        constrainedWastingUpdate = self.params.addWastingInterventionConstraints(wastingUpdateDueToWastingIncidence)
         for ageGroup in self.listOfAgeCompartments:
             newProbWasted = 0.
             ageName = ageGroup.name
