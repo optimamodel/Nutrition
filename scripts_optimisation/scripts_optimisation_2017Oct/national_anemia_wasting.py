@@ -17,7 +17,7 @@ cascadeValues = [0.25, 0.75, 1.0, 2.0, 3.0, 4.0, 8.0, 15.0, 30.0]
 haveFixedProgCosts = False
 numCores = 9
 
-for optimise in ['wasting_prev', 'SAM_prev', 'MAM_prev', 'deaths']:
+for optimise in ['wasting_prev', 'MAM_prev']:
 
     resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+country
 
