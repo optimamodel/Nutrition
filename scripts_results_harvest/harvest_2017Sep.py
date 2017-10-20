@@ -38,7 +38,7 @@ for optimise in optimiseList:
     geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem, costCurveType)
     #geospatialOptimisation.outputRegionalCurrentSpendingToCSV()
     geospatialOptimisation.outputRegionalPostGAOptimisedSpendingToCSV(GAFile)
-    geospatialOptimisation.outputTradeOffCurves()
+    #geospatialOptimisation.outputTradeOffCurves()
 #    for outcome in outcomeOfInterestList:
 #        geospatialOptimisation.outputRegionalCascadesAndOutcomeToCSV(outcome)
         
