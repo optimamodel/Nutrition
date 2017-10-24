@@ -221,11 +221,20 @@ class Params:
                     if newCoverages[intervention] > bednetCoverage:
                         constrainedCoverages[intervention] = bednetCoverage
                         
-            # add constraint on PPCF + iron in malaria area to allow maximum coverage to equal bednet coverage - do this before sprinkles constraint!        
+            # add constraint on PPCF + iron in malaria area to allow maximum coverage to equal bednet coverage - do this before sprinkles constraint!
             if 'Public provision of complementary foods with iron (malaria area)' in intervention:
                 if newCoverages[intervention] > bednetCoverage:
                     constrainedCoverages[intervention] = bednetCoverage
-            
+
+            # constrain PPCF to target only those not covered by PPCF + iron
+            if 'Public provision of complementary foods' == intervention:
+                totalPPCFCoverage = self.fracExposedMalaria * newCoverages['Public provision of complementary foods with iron (malaria area)'] + \
+                               (1.-self.fracExposedMalaria) * newCoverages['Public provision of complementary foods with iron']
+                if newCoverages[intervention] > (1.-totalPPCFCoverage):
+                    constrainedCoverages[intervention] = (1. - totalPPCFCoverage)
+
+            # TODO: If including a PPCF (malaria area) then put constraint here to prevent scaling up aove PPCF + iron (malaria area)
+
             # add constraints on sprinkles coverage                
             # prioritise PPCF+iron over sprinkles, taking into account extra pop which can be covered by sprinkles
             if 'Sprinkles' in intervention:
