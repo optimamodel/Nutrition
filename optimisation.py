@@ -913,7 +913,6 @@ class GeospatialOptimisation:
         scenarioMonteCarloOutput = []
         paramBounds = [(0., totalBudget)] * self.numRegions
         GeneticArgs = (regionalBOCs, totalBudget, self.optimise)
-        print totalBudget
         ASDargs = {'regionalBOCs': regionalBOCs, 'totalBudget': totalBudget, 'optimise': self.optimise}
         for r in range(0, geoMCSampleSize):
             result = differential_evolution(geospatialObjectiveFunction, bounds=paramBounds, args=GeneticArgs, popsize=popSize, maxiter=geneticIter)
