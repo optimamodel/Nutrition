@@ -137,25 +137,20 @@ def objectiveFunction(allocation, costCurves, model, totalBudget, fixedCosts, co
 def geospatialObjectiveFunction(spendingList, regionalBOCs, totalBudget, optimise):
     from copy import deepcopy as dcp
     numRegions = len(spendingList)
-    currentAllocation = dcp(spendingList)
     if sum(spendingList) == 0:
-        currentAllocation = dcp(spendingList)
+        scaledAllocation = dcp(spendingList)
     else:
-        currentAllocation = rescaleAllocation(totalBudget, spendingList)
+        scaledAllocation = rescaleAllocation(totalBudget, spendingList)
     outcomeList = []
     for regionIndx in range(numRegions):
         regionalBOC = regionalBOCs[regionIndx]
-        regionalSpending = currentAllocation[regionIndx]
+        regionalSpending = scaledAllocation[regionIndx]
         regionalOutcome = regionalBOC(regionalSpending)
-    # for region in range(0, numRegions):
-    #     regionalBOC = regionalBOCs[region]
-    #     regionalOutcome = regionalBOC(scaledSpendingDict[region])
-    #     #outcome = pchip.pchip(regionalBOCs['spending'][region], regionalBOCs['outcome'][region], scaledSpendingList[region], deriv = False, method='pchip')
         outcomeList.append(regionalOutcome)
     nationalOutcome = sum(outcomeList)
     if optimise == 'thrive':
         nationalOutcome = - nationalOutcome
-    performanceMeasure = nationalOutcome# + penalty
+    performanceMeasure = nationalOutcome
     return performanceMeasure
 
 def geospatialObjectiveFunctionExtraMoney(spendingList, regionalBOCs, currentRegionalSpendingList, extraMoney, optimise):
@@ -713,9 +708,6 @@ class GeospatialOptimisation:
         import math
         from copy import deepcopy as dcp
         regionalBOCs = []
-        #regionalBOCs['spending'] = []
-        #regionalBOCs['outcome'] = []
-        #interpolatedBOCs = {}
         totalNationalBudget = self.getTotalNationalBudget()
         for region in range(0, self.numRegions):
             print 'generating BOC for region: ', self.regionNameList[region]
@@ -728,11 +720,10 @@ class GeospatialOptimisation:
                 regionalTotalBudget = thisOptimisation.getTotalInitialBudget()
                 thisCascade[-1] = math.ceil(totalNationalBudget / regionalTotalBudget)            
             spending, outcome = thisOptimisation.generateBOCVectors(thisCascade, self.optimise, totalNationalBudget)
+            # TODO: this line will save BOCs every time it runs
             self.saveBOCcurves(spending, outcome, self.regionNameList[region]) # save so can directly optimise next time
             BOCthisRegion = pchip(spending, outcome)
             regionalBOCs.append(BOCthisRegion)
-            #regionalBOCs['spending'].append(spending)
-            #regionalBOCs['outcome'].append(outcome)
         print 'finished generating regional BOCs from files'
         self.regionalBOCs = regionalBOCs
 
@@ -889,10 +880,9 @@ class GeospatialOptimisation:
 
     def getOptimisedRegionalBudgetList(self, geoMCSampleSize):
         import asd
-        import numpy as np
         xmin = [0.] * self.numRegions
         # if BOCs not generated, generate them
-        if self.regionalBOCs == None:
+        if self.regionalBOCs == None: # TODO: THIS WILL GENERATE ALL THE BOCs. Will need to build in condition that read them in instead if they are available
             self.generateAllRegionsBOC()
         totalBudget = self.getTotalNationalBudget()
         xmax = [totalBudget] * self.numRegions
@@ -901,16 +891,8 @@ class GeospatialOptimisation:
         GeneticArgs = (self.regionalBOCs, [totalBudget], [self.optimise])
         ASDargs = {'regionalBOCs': self.regionalBOCs, 'totalBudget': totalBudget, 'optimise': self.optimise}
         for r in range(0, geoMCSampleSize):
-            #proposalSpendingDict = {}
-            #for region in self.regionNameList:
-                #proposalSpendingDict[region] = np.random.rand(1)
-            #proposalSpendingList = np.random.rand(self.numRegions)
-            # only call this next line for Tanzania analysis constraints
-            #proposalSpendingList = tanzaniaConstraints(proposalSpendingList, totalBudget)
-            #
             result = differential_evolution(geospatialObjectiveFunction, bounds=paramBounds, args=GeneticArgs, maxiter=10)
             proposalSpendingList = result.x
-            #proposalSpendingList = rescaleAllocation(totalBudget, proposalSpendingList)
             budgetBest, fval, exitflag, output = asd.asd(geospatialObjectiveFunction, proposalSpendingList, ASDargs, xmin = xmin, xmax = xmax, verbose = 2)
             outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval, output.x)        
             scenarioMonteCarloOutput.append(outputOneRun)         
@@ -923,22 +905,19 @@ class GeospatialOptimisation:
         optimisedRegionalBudgetList = bestSampleScaled  
         return optimisedRegionalBudgetList
 
-    def getOptimisedRegionalBudgetListGivenBOCs(self, geoMCSampleSize, regionalBOCs, geneticIter, popSize, learningRate, error):
+    def getOptimisedRegionalBudgetListGivenBOCs(self, geoMCSampleSize, regionalBOCs, geneticIter, popSize):
         import asd
         xmin = [0.] * self.numRegions
         totalBudget = self.getTotalNationalBudget()
         xmax = [totalBudget] * self.numRegions
         scenarioMonteCarloOutput = []
         paramBounds = [(0., totalBudget)] * self.numRegions
-        GeneticArgs = (regionalBOCs, totalBudget, self.optimise, learningRate, error)
+        GeneticArgs = (regionalBOCs, totalBudget, self.optimise)
         print totalBudget
-        ASDargs = {'regionalBOCs': regionalBOCs, 'totalBudget': totalBudget, 'optimise': self.optimise, 'learningRate': learningRate, 'error': error}
+        ASDargs = {'regionalBOCs': regionalBOCs, 'totalBudget': totalBudget, 'optimise': self.optimise}
         for r in range(0, geoMCSampleSize):
             result = differential_evolution(geospatialObjectiveFunction, bounds=paramBounds, args=GeneticArgs, popsize=popSize, maxiter=geneticIter)
             proposalSpendingList = result.x
-            print "proposal"
-            print proposalSpendingList
-            #proposalSpendingList = rescaleAllocation(totalBudget, proposalSpendingList)
             budgetBest, fval, exitflag, output = asd.asd(geospatialObjectiveFunction, proposalSpendingList, ASDargs, xmin = xmin, xmax = xmax, verbose = 2)
             outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval, output.x)
             scenarioMonteCarloOutput.append(outputOneRun)
@@ -1003,9 +982,11 @@ class GeospatialOptimisation:
         import csv
         from itertools import izip
 
-        with open('newRegionalAllocations_600MC_60Gen.csv', 'wb') as f:
+        # TODO: this file can be generated by using the 'rerunGeoSpatialOptimisation.py' script
+        with open('newRegionalAllocations.csv', 'wb') as f:
             writer = csv.writer(f)
             writer.writerows(izip(self.regionNameList, optimisedRegionalBudgetList))
+        # TODO: I commented this out so that I didn't need to optimise within each region but just get the allocations for each region
         # if self.numRegions >numCores:
         #     print "not enough cores to parallelise"
         # else:
