@@ -51,7 +51,7 @@ for region in range(len(regionNameList)):
     pop_24_59.append(modelList[stepFinal].listOfAgeCompartments[4].getTotalPopulation())
     print ((pop_1[len(pop_1)-1] + pop_1_5[len(pop_1_5)-1] + pop_6_11[len(pop_6_11)-1] + pop_12_23[len(pop_12_23)-1]) / ((pop_1[len(pop_1)-1] + pop_1_5[len(pop_1_5)-1] + pop_6_11[len(pop_6_11)-1] + pop_12_23[len(pop_12_23)-1] + pop_24_59[len(pop_24_59)-1])))
     percentlist.append((pop_1[len(pop_1)-1] + pop_1_5[len(pop_1_5)-1] + pop_6_11[len(pop_6_11)-1] + pop_12_23[len(pop_12_23)-1]) / ((pop_1[len(pop_1)-1] + pop_1_5[len(pop_1_5)-1] + pop_6_11[len(pop_6_11)-1] + pop_12_23[len(pop_12_23)-1] + pop_24_59[len(pop_24_59)-1])))
-    U5_init.append(pop_1[0] + pop_1_5[0] + pop_6_11[0] + pop_12_23[0] + pop_24_59[0])
+    U5_init.append(modelList[0].listOfAgeCompartments[0].getTotalPopulation() + modelList[0].listOfAgeCompartments[1].getTotalPopulation() + modelList[0].listOfAgeCompartments[2].getTotalPopulation() + modelList[0].listOfAgeCompartments[3].getTotalPopulation() + modelList[0].listOfAgeCompartments[4].getTotalPopulation())
 
 export = pd.DataFrame(regionNameList)
 export['population < 1 month'] = pd.DataFrame(pop_1)
