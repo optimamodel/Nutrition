@@ -141,16 +141,49 @@ class Model:
         totalNumberAnemic += self.getAnemiaNumberPregnant()
         return totalNumberAnemic    
 
+    def getTotalNumberWasted(self):
+        totalWasted = 0.
+        for ageGroup in self.listOfAgeCompartments:
+            totalWasted += ageGroup.getNumberWasted()
+        return totalWasted
+
+    def getTotalWastedFraction(self):
+        totalNumberWasted = self.getTotalNumberWasted()
+        totalPopSize = self.getTotalPopChildren()
+        return float(totalNumberWasted)/float(totalPopSize)
+
+    def getTotalInWastingCat(self, wastingCat):
+        totalNumber = 0.
+        for ageGroup in self.listOfAgeCompartments:
+            totalNumber += ageGroup.getNumberInWastingCat(wastingCat)
+        return totalNumber
+
+    def getFractionInWastingCat(self, wastingCat):
+        totalInCat = self.getTotalInWastingCat(wastingCat)
+        totalPopSize = self.getTotalPopChildren()
+        return float(totalInCat)/float(totalPopSize)
+
+    def getWastingIncidence(self):
+        return self.params.incidences
+
     def getOutcome(self, outcome):
         outcomeValue = None
         if outcome == 'deaths children':
             outcomeValue = self.getTotalCumulativeDeathsChildren()
         elif outcome == 'deaths PW':
-            outcomeValue = self.getTotalCumulativeDeathsPW()    
+            outcomeValue = self.getTotalCumulativeDeathsPW()
+        elif outcome == 'deaths':
+            outcomeValue = self.getTotalCumulativeDeathsChildren() + self.getTotalCumulativeDeathsPW()
         elif outcome == 'stunting':
             outcomeValue = self.getCumulativeAgingOutStunted()
         elif outcome == 'thrive':
-            outcomeValue = self.getCumulativeAgingOutNotStunted()    
+            outcomeValue = self.getCumulativeAgingOutNotStunted()
+        elif outcome == 'wasting_prev':
+            outcomeValue = self.getTotalWastedFraction()
+        elif outcome == 'SAM_prev':
+            outcomeValue = self.getFractionInWastingCat('SAM')
+        elif outcome == 'MAM_prev':
+            outcomeValue = self.getFractionInWastingCat('MAM')
         elif outcome == 'DALYs':
             outcomeValue = self.getDALYs()
         elif outcome == 'stunting prev':
@@ -182,11 +215,13 @@ class Model:
 
         # call initialisation of probabilities related to interventions
         self.derived.setProbStuntedIfCovered(self.params.coverage, self.params.stuntingDistribution)
+        self.derived.setProbAnemicIfCovered(self.params.coverage, self.params.anemiaDistribution)
+        self.derived.setProbWastedIfCovered(self.params.coverage, self.params.wastingDistribution)
         self.derived.setProbCorrectlyBreastfedIfCovered(self.params.coverage, self.params.breastfeedingDistribution)
         self.derived.setProbStuntedIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.stuntingDistribution)
         self.derived.setProbAnemicIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
+        self.derived.setProbWastedIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.wastingDistribution)
         self.derived.setProbStuntedComplementaryFeeding(self.params.stuntingDistribution, self.params.coverage)
-        self.derived.setProbAnemicIfCovered(self.params.coverage, self.params.anemiaDistribution)
 
         # add all constraints to coverages
         constrainedCoverage = self.params.addCoverageConstraints(newCoverage, self.listOfAgeCompartments, self.listOfReproductiveAgeCompartments)
@@ -196,11 +231,11 @@ class Model:
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
         stuntingUpdate = self.params.getStuntingUpdate(newCoverage)
         anemiaUpdate = self.params.getAnemiaUpdate(newCoverage, self.thisHelper)
+        wastingUpdate, fromSAMtoMAMupdate, fromMAMtoSAMupdate = self.params.getWastingPrevalenceUpdate(newCoverage)
         incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
         birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)
         newFracCorrectlyBreastfed = self.params.getAppropriateBFNew(newCoverage)
         stuntingUpdateComplementaryFeeding = self.params.getStuntingUpdateComplementaryFeeding(newCoverage)
-        
 
         # MORTALITY
         #update mortality for each population
@@ -230,25 +265,37 @@ class Model:
             SumAfter = self.derived.getDiarrheaRiskSum(ageName, self.params.breastfeedingDistribution)
             self.params.incidences[ageName]['Diarrhea'] *= SumAfter / SumBefore # update incidence of diarrhea
         beta = self.derived.getFracDiarrheaFixedZ()
-        stuntingUpdateDueToBreastfeeding, dummyAnemia = self.params.getUpdatesDueToIncidence(beta)
+        stuntingUpdateDueToBreastfeeding, dummyAnemia, dummyWasting = self.params.getUpdatesDueToIncidence(beta)
 
-        # INCIDENCE
+        # DIARRHEA AND WASTING INCIDENCE
         incidencesBefore = {}
-        incidencesAfter = {}  
-        for ageGroup in self.listOfAgeCompartments:
-            ageName = ageGroup.name
-            #update incidence
-            incidencesBefore[ageName] = self.params.incidences[ageName]['Diarrhea']
-            self.params.incidences[ageName]['Diarrhea'] *= incidenceUpdate[ageName]['Diarrhea']
-            incidencesAfter[ageName] = self.params.incidences[ageName]['Diarrhea']
-        # get flow on effects to stunting and anemia due to changing incidence
-        Z0 = self.derived.getZa(incidencesBefore, self.params.breastfeedingDistribution)
-        Zt = self.derived.getZa(incidencesAfter,  self.params.breastfeedingDistribution)
+        incidencesAfter = {}
+        for condition in ['Diarrhea', 'MAM', 'SAM']:
+            incidencesBefore[condition] = {}
+            incidencesAfter[condition] = {}
+            for ageGroup in self.listOfAgeCompartments:
+                ageName = ageGroup.name
+                incidencesBefore[condition][ageName] = self.params.incidences[ageName][condition]
+                self.params.incidences[ageName][condition] *= incidenceUpdate[ageName][condition]
+                incidencesAfter[condition][ageName] = self.params.incidences[ageName][condition]
+        # diarrhea
+        diaIncidenceBefore = incidencesBefore['Diarrhea']
+        diaIncidenceAfter = incidencesAfter['Diarrhea']
+        # get flow on effects to stunting, anemia and wasting due to changing diarrhea incidence
+        Z0 = self.derived.getZa(diaIncidenceBefore, self.params.breastfeedingDistribution)
+        Zt = self.derived.getZa(diaIncidenceAfter,  self.params.breastfeedingDistribution)
         beta = self.derived.getFracDiarrhea(Z0, Zt)
-        # update probabilities given new incidence 
-        self.derived.updateDiarrheaProbsNewZa(Zt) 
-        stuntingUpdateDueToIncidence, anemiaUpdateDueToIncidence = self.params.getUpdatesDueToIncidence(beta)  
-        
+        # update probabilities given new incidence
+        self.derived.updateDiarrheaProbsNewZa(Zt)
+        stuntingUpdateDueToIncidence, anemiaUpdateDueToIncidence, wastingUpdateDueToDiarrheaIncidence = self.params.getUpdatesDueToIncidence(beta)
+        # wasting
+        wastingUpdateDueToWastingIncidence = {}
+        for wastingCat in self.wastedList:
+            wastingIncidenceBefore = incidencesBefore[wastingCat]
+            wastingIncidenceAfter = incidencesAfter[wastingCat]
+            # impact of wasting incidence on wasting prevalence (prevention interventions)
+            wastingUpdateDueToWastingIncidence[wastingCat] = self.params.getWastingUpdateDueToWastingIncidence(wastingIncidenceBefore, wastingIncidenceAfter)
+
         # STUNTING
         for ageGroup in self.listOfAgeCompartments:
             ageName = ageGroup.name
@@ -289,7 +336,27 @@ class Model:
             self.params.anemiaDistribution[ageName]['not anemic'] = 1. - newProbAnemia
             ageGroup.distributePopulation(self.params.anemiaDistribution)
         
-
+        # WASTING
+        constrainedWastingUpdate = self.params.addWastingInterventionConstraints(wastingUpdateDueToWastingIncidence)
+        for ageGroup in self.listOfAgeCompartments:
+            newProbWasted = 0.
+            ageName = ageGroup.name
+            # probability of being in either SAM or MAM for this age
+            for wastingCat in self.wastedList: # 'SAM' must come first
+                totalUpdateThisCatAndAge = wastingUpdate[ageName][wastingCat] * wastingUpdateDueToDiarrheaIncidence[ageName][wastingCat] * constrainedWastingUpdate[ageName][wastingCat] * \
+                                            fromSAMtoMAMupdate[ageName][wastingCat] * fromMAMtoSAMupdate[ageName][wastingCat]
+                # save for use in apply births
+                self.derived.wastingUpdateAfterInterventions[ageName][wastingCat] *= totalUpdateThisCatAndAge
+                # update overall wasting in this category
+                oldProbThisCat = ageGroup.getWastedFraction(wastingCat)
+                newProbThisCat = oldProbThisCat * totalUpdateThisCatAndAge
+                self.params.wastingDistribution[ageName][wastingCat] = newProbThisCat
+                newProbWasted += newProbThisCat
+            # normality constraint on non-wasted proportions
+            wastingDist = self.thisHelper.restratify(newProbWasted)
+            for nonWastingCat in self.nonWastedList:
+                self.params.wastingDistribution[ageName][nonWastingCat] = wastingDist[nonWastingCat]
+            ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
         # BIRTH OUTCOME
         for outcome in self.birthOutcomes:
             self.params.birthOutcomeDist[outcome] *= birthUpdate[outcome]
@@ -476,23 +543,41 @@ class Model:
         # convenient names
         ageGroup = self.listOfAgeCompartments[0]
         ageName  = ageGroup.name
-        # restratify Stunting
+        # restratify stunting and wasting
         restratifiedStuntingAtBirth = {}
+        restratifiedWastingAtBirth = {}
         for outcome in self.birthOutcomes:
             totalProbStunted = self.derived.probStuntedAtBirth[outcome] * self.derived.stuntingUpdateAfterInterventions['<1 month']
             restratifiedStuntingAtBirth[outcome] = self.thisHelper.restratify(totalProbStunted)
-        # sum over birth outcome for full stratified stunting fractions, then apply to birth distribution
+            restratifiedWastingAtBirth[outcome] = {}
+            totalProbWasted = 0.
+            # distribute proportions for wasting categories
+            for wastingCat in self.wastedList:
+                probWastedThisCat = self.derived.probWastedAtBirth[wastingCat][outcome] * self.derived.wastingUpdateAfterInterventions['<1 month'][wastingCat]
+                restratifiedWastingAtBirth[outcome][wastingCat] = probWastedThisCat
+                totalProbWasted += probWastedThisCat
+            # normality constraint on non-wasted proportions
+            for nonWastingCat in self.nonWastedList:
+                wastingDist = self.thisHelper.restratify(totalProbWasted)
+                restratifiedWastingAtBirth[outcome][nonWastingCat] = wastingDist[nonWastingCat]
+        # sum over birth outcome for full stratified stunting and wasting fractions, then apply to birth distribution
         stuntingFractions = {}
+        wastingFractions = {}
+        for wastingCat in self.wastingList:
+            wastingFractions[wastingCat] = 0.
+            for outcome in self.birthOutcomes:
+                wastingFractions[wastingCat] += restratifiedWastingAtBirth[outcome][wastingCat] * self.params.birthOutcomeDist[outcome]
         for stuntingCat in self.stuntingList:
             stuntingFractions[stuntingCat] = 0.
             for outcome in self.birthOutcomes:
                 stuntingFractions[stuntingCat] += restratifiedStuntingAtBirth[outcome][stuntingCat] * self.params.birthOutcomeDist[outcome]
-            for wastingCat in self.wastingList:
+        for wastingCat in self.wastingList:
+            for stuntingCat in self.stuntingList:
                 for breastfeedingCat in self.breastfeedingList:
                     for anemiaStatus in self.anemiaList:
-                        ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].populationSize += numNewBabies * self.params.wastingDistribution[ageName][wastingCat] * \
-                                                                                                                        self.params.breastfeedingDistribution[ageName][breastfeedingCat] * self.params.anemiaDistribution[ageName][anemiaStatus] *\
-                                                                                                                        stuntingFractions[stuntingCat]
+                        ageGroup.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].populationSize += numNewBabies * self.params.breastfeedingDistribution[ageName][breastfeedingCat] * \
+                                                                                                                            self.params.anemiaDistribution[ageName][anemiaStatus] *\
+                                                                                                                            stuntingFractions[stuntingCat] * wastingFractions[wastingCat]
 
     def applyAgingAndBirths(self):
         # aging must happen before births

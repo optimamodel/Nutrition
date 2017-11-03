@@ -95,7 +95,34 @@ class AgeCompartment:
                 for breastfeedingCat in self.breastfeedingList:
                     numberAnemic += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat]["anemic"].populationSize
         return float(numberAnemic)/float(numberTotal)
-        
+
+    def getWastedFraction(self, wastingCat):
+        numberWasted = 0.
+        numberTotal = self.getTotalPopulation()
+        for stuntingCat in self.stuntingList:
+            for breastfeedingCat in self.breastfeedingList:
+                for anemiaCat in self.anemiaList:
+                    numberWasted += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaCat].populationSize
+        return float(numberWasted)/float(numberTotal)
+
+    def getNumberWasted(self):
+        numberWasted = 0.
+        for stuntingCat in self.stuntingList:
+            for breastfeedingCat in self.breastfeedingList:
+                for anemiaCat in self.anemiaList:
+                    for wastingCat in ['SAM', 'MAM']:
+                        numberWasted += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaCat].populationSize
+        return numberWasted
+
+    def getNumberInWastingCat(self, wastingCat):
+        numberWasted = 0.
+        for stuntingCat in self.stuntingList:
+            for breastfeedingCat in self.breastfeedingList:
+                for anemiaCat in self.anemiaList:
+                    numberWasted += self.dictOfBoxes[stuntingCat][wastingCat][breastfeedingCat][anemiaCat].populationSize
+        return numberWasted
+
+
     def getNumberAnemic(self):
         numberAnemic = 0.
         for stuntingCat in self.stuntingList:

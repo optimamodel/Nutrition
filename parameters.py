@@ -49,6 +49,8 @@ class Params:
         self.rawTargetPop = dcp(data.targetPopulation)
         self.attendance = dcp(data.demographics['school attendance WRA 15-19'])
         self.interventionCompleteList = dcp(data.interventionCompleteList)
+        self.fracSAMtoMAM = dcp(data.fracSAMtoMAM)
+        self.fracMAMtoSAM = dcp(data.fracMAMtoSAM)
     
 
 # Add all functions for updating parameters due to interventions here....
@@ -154,6 +156,29 @@ class Params:
                 anemiaUpdate[pop] *= 1. - reduction
         return anemiaUpdate
 
+    def getWastingPrevalenceUpdate(self, newCoverage):
+        wastingUpdate = {} # overall update to prevalence of MAM and SAM
+        fromSAMtoMAMupdate = {} # accounts for children moving from SAM to MAM after SAM treatment
+        fromMAMtoSAMupdate = {} # accounts for children moving from MAM to SAM after MAM treatment
+        for ageName in self.ages:
+            fromSAMtoMAMupdate[ageName] = {}
+            fromMAMtoSAMupdate[ageName] = {}
+            wastingUpdate[ageName] = {}
+            for wastingCat in self.wastedList:
+                fromSAMtoMAMupdate[ageName][wastingCat] = 1.
+                fromMAMtoSAMupdate[ageName][wastingCat] = 1.
+                wastingUpdate[ageName][wastingCat] = 1.
+                oldProbWasting = self.wastingDistribution[ageName][wastingCat]
+                for intervention in newCoverage.keys():
+                    probWastingIfCovered = self.derived.probWastedIfCovered[wastingCat][intervention]["covered"][ageName]
+                    probWastingIfNotCovered = self.derived.probWastedIfCovered[wastingCat][intervention]["not covered"][ageName]
+                    newProbWasting = newCoverage[intervention]*probWastingIfCovered + (1.-newCoverage[intervention])*probWastingIfNotCovered
+                    reduction = (oldProbWasting - newProbWasting) / oldProbWasting
+                    wastingUpdate[ageName][wastingCat] *= 1. - reduction
+            fromSAMtoMAMupdate[ageName]['MAM'] = (1. + (1.-wastingUpdate[ageName]['SAM']) * self.fracSAMtoMAM)
+            fromMAMtoSAMupdate[ageName]['SAM'] = (1. - (1.-wastingUpdate[ageName]['MAM']) * self.fracMAMtoSAM)
+        return wastingUpdate, fromSAMtoMAMupdate, fromMAMtoSAMupdate
+
     def addCoverageConstraints(self, newCoverages, listOfAgeCompartments, listOfReproductiveAgeCompartments):
         from copy import deepcopy as dcp
         constrainedCoverages = dcp(newCoverages)
@@ -196,11 +221,20 @@ class Params:
                     if newCoverages[intervention] > bednetCoverage:
                         constrainedCoverages[intervention] = bednetCoverage
                         
-            # add constraint on PPCF + iron in malaria area to allow maximum coverage to equal bednet coverage - do this before sprinkles constraint!        
+            # add constraint on PPCF + iron in malaria area to allow maximum coverage to equal bednet coverage - do this before sprinkles constraint!
             if 'Public provision of complementary foods with iron (malaria area)' in intervention:
                 if newCoverages[intervention] > bednetCoverage:
                     constrainedCoverages[intervention] = bednetCoverage
-            
+
+            # constrain PPCF to target only those not covered by PPCF + iron
+            if 'Public provision of complementary foods' == intervention:
+                totalPPCFCoverage = self.fracExposedMalaria * newCoverages['Public provision of complementary foods with iron (malaria area)'] + \
+                               (1.-self.fracExposedMalaria) * newCoverages['Public provision of complementary foods with iron']
+                if newCoverages[intervention] > (1.-totalPPCFCoverage):
+                    constrainedCoverages[intervention] = (1. - totalPPCFCoverage)
+
+            # TODO: If including a PPCF (malaria area) then put constraint here to prevent scaling up aove PPCF + iron (malaria area)
+
             # add constraints on sprinkles coverage                
             # prioritise PPCF+iron over sprinkles, taking into account extra pop which can be covered by sprinkles
             if 'Sprinkles' in intervention:
@@ -264,6 +298,22 @@ class Params:
                 constrainedCoverages[ironIntName] *= fracNotFarming
         return constrainedCoverages
 
+    def addWastingInterventionConstraints(self, wastingUpdateDueToWastingIncidence):
+        # cash transfers and PPCF only target the fraction poor
+        constrainedWastingUpdate = {}
+        for ageName in self.ages:
+            constrainedWastingUpdate[ageName] = {}
+            for wastingCat in self.wastedList:
+                fracTargeted = self.fracPoor
+                fracNotTargeted = 1.-fracTargeted
+                oldProbThisCat = self.wastingDistribution[ageName][wastingCat]
+                newProbThisCat = oldProbThisCat * wastingUpdateDueToWastingIncidence[wastingCat][ageName]
+                newProbThisCat = fracTargeted * newProbThisCat + fracNotTargeted * oldProbThisCat
+                # convert back into an update
+                reduction  = (oldProbThisCat - newProbThisCat) / oldProbThisCat
+                constrainedWastingUpdate[ageName][wastingCat] = 1.-reduction
+        return constrainedWastingUpdate
+
     def getAppropriateBFNew(self, newCoverage):
         correctbfFracNew = {}
         for ageName in self.ages:
@@ -323,9 +373,32 @@ class Params:
             stuntingUpdate[ageName] *= 1. - reductionStunting
             # anemia
             reductionAnemia = (oldProbAnemia - newProbAnemia)/oldProbAnemia
-            anemiaUpdate[ageName] *= 1. - reductionAnemia                
-        return stuntingUpdate, anemiaUpdate
-        
+            anemiaUpdate[ageName] *= 1. - reductionAnemia
+        # wasting (SAM and MAM)
+        wastingUpdate = {}
+        for ageName in self.ages:
+            wastingUpdate[ageName] = {}
+            for wastingCat in self.wastedList:
+                wastingUpdate[ageName][wastingCat] = 1.
+                newProbWasting = 0.
+                oldProbWasting = self.wastingDistribution[ageName][wastingCat]
+                for breastfeedingCat in self.breastfeedingList:
+                    pab = self.breastfeedingDistribution[ageName][breastfeedingCat]
+                    t1 = beta[ageName][breastfeedingCat] * self.derived.fracWastedIfDiarrhea[wastingCat]["dia"][ageName]
+                    t2 = (1. - beta[ageName][breastfeedingCat]) * \
+                         self.derived.fracWastedIfDiarrhea[wastingCat]["nodia"][ageName]
+                    newProbWasting += pab * (t1 + t2)
+                reductionWasting = (oldProbWasting - newProbWasting) / oldProbWasting
+                wastingUpdate[ageName][wastingCat] *= 1. - reductionWasting
+        return stuntingUpdate, anemiaUpdate, wastingUpdate
+
+    def getWastingUpdateDueToWastingIncidence(self, incidenceBefore, incidenceAfter):
+        wastingUpdate = {}
+        for age in self.ages:
+            reduction = (incidenceBefore[age] - incidenceAfter[age])/incidenceAfter[age]
+            wastingUpdate[age] = 1. - reduction
+        return wastingUpdate
+
     def getStuntingUpdateComplementaryFeeding(self, newCoverage):
         stuntingUpdate = {}
         for ageName in self.ages:

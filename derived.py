@@ -24,19 +24,27 @@ class Derived:
         self.probStuntedIfPrevStunted = {}
         self.fracStuntedIfDiarrhea = {}
         self.fracAnemicIfDiarrhea = {}
+        self.fracWastedIfDiarrhea = {}
         self.probStuntedIfCovered = {}
         self.probCorrectlyBreastfedIfCovered = {}
         self.probStuntedComplementaryFeeding = {}
         self.probStuntedAtBirth = {}
+        self.probWastedAtBirth = {}
         self.probAnemicIfCovered = {}
-        
+        self.probWastedIfCovered = {}
+
         self.stuntingUpdateAfterInterventions = {}
+        self.wastingUpdateAfterInterventions = {}
         for ageName in self.ages:
             self.stuntingUpdateAfterInterventions[ageName] = 1.
+            self.wastingUpdateAfterInterventions[ageName] = {}
+            for wastingCat in self.wastedList:
+                self.wastingUpdateAfterInterventions[ageName][wastingCat] = 1.
 
         self.setReferenceMortality()
         self.setProbStuntingProgression()
         self.setProbStuntedAtBirth()
+        self.setProbWastedAtBirth()
 
 
 
@@ -224,8 +232,35 @@ class Derived:
             self.fracAnemicIfDiarrhea["nodia"][ageName] = pn
             self.fracAnemicIfDiarrhea["dia"][ageName]   = pc
 
-    def updateDiarrheaProbsNewZa(self, Zt):    
+    def setProbWastedIfDiarrhea(self, currentIncidences, breastfeedingDistribution, wastingDistribution):
+        incidence = {}
+        for ageName in self.ages:
+            incidence[ageName] = currentIncidences[ageName]['Diarrhea']
+        Z0 = self.getZa(incidence, breastfeedingDistribution)
+        Zt = Z0 # true for initialisation
+        beta = self.getFracDiarrhea(Z0, Zt)
+        for wastingCat in self.wastedList:
+            AO = self.getAverageOR(Zt, wastingCat)
+            numAgeGroups = len(self.ages)
+            self.fracWastedIfDiarrhea[wastingCat] = {}
+            self.fracWastedIfDiarrhea[wastingCat]["nodia"] = {}
+            self.fracWastedIfDiarrhea[wastingCat]["dia"] = {}
+            for iAge in range(0, numAgeGroups):
+                ageName = self.ages[iAge]
+                fracDiarrhea = 0.
+                for breastfeedingCat in self.breastfeedingList:
+                    fracDiarrhea += beta[ageName][breastfeedingCat] * breastfeedingDistribution[ageName][breastfeedingCat]
+                # fraction wasted
+                fracThisCatThisAge = wastingDistribution[ageName][wastingCat]
+                pn, pc = self.solveQuadratic(AO[ageName], fracDiarrhea, fracThisCatThisAge)
+                self.fracWastedIfDiarrhea[wastingCat]["nodia"][ageName] = pn
+                self.fracWastedIfDiarrhea[wastingCat]["dia"][ageName]   = pc
+
+    def updateDiarrheaProbsNewZa(self, Zt):
         AOStunting = self.getAverageOR(Zt, 'stunting')
+        AOwasting = {}
+        for wastingCat in self.wastedList:
+            AOwasting[wastingCat] = self.getAverageOR(Zt, wastingCat)
         Yt = {}
         for ageName in self.ages:
             Yt[ageName] = Zt[ageName] * self.data.fracSevereDia
@@ -236,7 +271,12 @@ class Derived:
             # stunting
             AO = AOStunting
             Omega0  = self.fracStuntedIfDiarrhea["nodia"][ageName]
-            self.fracStuntedIfDiarrhea["dia"][ageName] = Omega0 * AO[ageName] / (1. - Omega0 + AO[ageName]*Omega0)
+            self.fracStuntedIfDiarrhea["dia"][ageName] = Omega0 * AO[ageName] / (1. - Omega0 + AO[ageName]*Omega0) # TODO: is there an error in the '+' here? Says '-' in appendix
+            # wasting
+            for wastingCat in self.wastedList:
+                AO = AOwasting[wastingCat]
+                Omega0 = self.fracWastedIfDiarrhea[wastingCat]["nodia"][ageName]
+                self.fracWastedIfDiarrhea[wastingCat]["dia"][ageName] = Omega0 * AO[ageName] / (1. - Omega0 + AO[ageName]*Omega0)
             # anemia
             AO = AOAnemia
             Omega0  = self.fracAnemicIfDiarrhea["nodia"][ageName]
@@ -273,6 +313,8 @@ class Derived:
                 OR = self.data.ORstuntingCondition[ageName]['Diarrhea']
             elif risk == 'anemia':
                 OR = self.data.ORanemiaCondition[ageName]['Diarrhea']
+            elif risk == 'MAM' or risk == 'SAM':
+                OR = self.data.ORwastingCondition[risk][ageName]['Diarrhea']
             else:
                 print 'risk factor is invalid'
             AO[ageName] = pow(OR, RRnot * Za[ageName] * self.ageGroupSpans[i])
@@ -345,6 +387,23 @@ class Derived:
                 self.probAnemicIfCovered[intervention]["not covered"][pop] = pn
                 self.probAnemicIfCovered[intervention]["covered"][pop] = pc
 
+    # calculate probability of wasting in current age group given coverage by intervention
+    def setProbWastedIfCovered(self, coverage, wastingDistribution):
+        numAgeGroups = len(self.ages)
+        for wastingCat in self.wastedList:
+            self.probWastedIfCovered[wastingCat] = {}
+            for intervention in self.data.interventionCompleteList:
+                self.probWastedIfCovered[wastingCat][intervention] = {}
+                self.probWastedIfCovered[wastingCat][intervention]["covered"] = {}
+                self.probWastedIfCovered[wastingCat][intervention]["not covered"] = {}
+                for iAge in range(numAgeGroups):
+                        ageName = self.ages[iAge]
+                        oddsRatio = self.data.ORwastingIntervention[wastingCat][ageName][intervention]
+                        fracCovered = coverage[intervention]
+                        fracThisCatThisAge = wastingDistribution[ageName][wastingCat]
+                        pn, pc = self.solveQuadratic(oddsRatio, fracCovered, fracThisCatThisAge)
+                        self.probWastedIfCovered[wastingCat][intervention]["not covered"][ageName] = pn
+                        self.probWastedIfCovered[wastingCat][intervention]["covered"][ageName] = pc
 
     # Calculate probability of stunting in current age-group given coverage by intervention
     def setProbCorrectlyBreastfedIfCovered(self, coverage, breastfeedingDistribution):
@@ -411,7 +470,32 @@ class Derived:
         E = -FracStunted
         return [A,B,C,D,E]
         
-
+    def getBirthWastingQuarticCoefficients(self, wastingCat):
+        FracBO = [0.]*4
+        FracBO[1] = self.data.birthOutcomeDist["Term SGA"]
+        FracBO[2] = self.data.birthOutcomeDist["Pre-term AGA"]
+        FracBO[3] = self.data.birthOutcomeDist["Pre-term SGA"]
+        FracBO[0] = 1. - sum(FracBO[1:3])
+        OR = [1.]*4
+        OR[0] = 1.
+        OR[1] = self.data.ORwastingBirthOutcome[wastingCat]["Term SGA"]
+        OR[2] = self.data.ORwastingBirthOutcome[wastingCat]["Pre-term AGA"]
+        OR[3] = self.data.ORwastingBirthOutcome[wastingCat]["Pre-term SGA"]
+        FracWasted = self.initialModel.listOfAgeCompartments[0].getWastedFraction(wastingCat)
+        # [i] will refer to the three non-baseline birth outcomes
+        A = FracBO[0]*(OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.)
+        B = (OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.) * ( \
+            sum( FracBO[0] / (OR[i]-1.)         for i in (1,2,3)) + \
+            sum( OR[i] * FracBO[i] / (OR[i]-1.) for i in (1,2,3)) - \
+            FracWasted )
+        C = sum( FracBO[0] * (OR[i]-1.)         for i in (1,2,3)) + \
+            sum( OR[i] * FracBO[i] * ((OR[1]-1.)+(OR[2]-1.)+(OR[3]-1.)-(OR[i]-1.)) for i in (1,2,3) ) - \
+            sum( FracWasted*(OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.)/(OR[i]-1.) for i in (1,2,3))
+        D = FracBO[0] + \
+            sum( OR[i] * FracBO[i] for i in (1,2,3)) - \
+            sum( FracWasted * (OR[i]-1.) for i in (1,2,3))
+        E = -FracWasted
+        return [A,B,C,D,E]
         
     def getComplementaryFeedingQuarticCoefficients(self, stuntingDistribution, coverageArg):
         coverage = dcp(coverageArg)
@@ -464,7 +548,7 @@ class Derived:
 
 
     # SOLVE QUARTIC
-    # p0 = Probability of Stunting at birth if Birth outcome = Term AGA
+    # p0 = Probability of Stunting/wasting at birth if Birth outcome = Term AGA
     def getBaselineProbabilityViaQuartic(self, coEffs):
         from numpy import sqrt, isnan
         baselineProbability = 0        
@@ -534,7 +618,22 @@ class Derived:
                 raise ValueError("probability of stunting at birth, at outcome %s, is out of range (%f)"%(birthOutcome, pi))
         self.probStuntedAtBirth = probStuntedAtBirth        
            
-     
+    def setProbWastedAtBirth(self):
+        probWastedAtBirth = {}
+        for wastingCat in self.wastedList:
+            coEffs = self.getBirthWastingQuarticCoefficients(wastingCat)
+            p0 = self.getBaselineProbabilityViaQuartic(coEffs)
+            probWastedAtBirth[wastingCat] = {}
+            probWastedAtBirth[wastingCat]['Term AGA'] = p0
+            for birthOutcome in ["Pre-term SGA","Pre-term AGA","Term SGA"]:
+                probWastedAtBirth[wastingCat][birthOutcome] = {}
+                OR = self.data.ORwastingBirthOutcome[wastingCat][birthOutcome]
+                probWastedAtBirth[wastingCat][birthOutcome] = p0*OR / (1.-p0+OR*p0)
+                pi = p0*OR / (1.-p0+OR*p0)
+                if(pi<0. or pi>1.):
+                    raise ValueError("probability of wasting at birth, at outcome %s, is out of range (%f)"%(birthOutcome, pi))
+        self.probWastedAtBirth = probWastedAtBirth
+
     def setProbStuntedComplementaryFeeding(self, stuntingDistributionArg, coverageArg):
         coverage = dcp(coverageArg)
         stuntingDistribution  = dcp(stuntingDistributionArg)
@@ -551,5 +650,4 @@ class Derived:
                 pi = probStuntedComplementaryFeeding[ageName][group]
                 if(pi<0. or pi>1.):
                     raise ValueError("probability of stunting complementary feeding, at outcome %s, age %s, is out of range (%f)"%(group, ageName, pi))
-        self.probStuntedComplementaryFeeding = probStuntedComplementaryFeeding    
-            
+        self.probStuntedComplementaryFeeding = probStuntedComplementaryFeeding
