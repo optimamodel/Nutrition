@@ -1,4 +1,5 @@
 # files we don't need to track
+*.csv
 *.pyc
 *.pkl
 *.rds

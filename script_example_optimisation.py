@@ -28,6 +28,8 @@ cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0]
 
 # the objective of the optimisation
 optimise = 'stunting'  
+costCurveType = 'standard'
+haveFixedProgCosts = False
 
 # this is the location of the optimisation results per region (to be generated or harvested)
 resultsFileStem = 'Results/'+date+'/'+optimise+'/national/'+country
@@ -40,7 +42,7 @@ numCores = 8
 haveFixedProgCosts = False
 
 # instantiate an optimisation object
-thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise, resultsFileStem)
+thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise, resultsFileStem, costCurveType)
 
 # use it to genarate the cascade files if they're not already there (these will be stored in the resultsFileStem location)
 # this example generates the cascade in parallel (e.g. on athena)
@@ -52,7 +54,7 @@ thisOptimisation.performCascadeOptimisation(MCSampleSize, cascadeValues, numCore
 # perform one optimisation of the curent budget
 # the output file will be (resultsFileStem):
 # resultsFileStem = ../ResultsExampleParallel/'+optimise+'/national/Bangladesh.pkl
-thisOptimisation.performSingleOptimisation(MCSampleSize)
+thisOptimisation.performSingleOptimisation(MCSampleSize, haveFixedProgCosts)
 
 # perform one optimisation with any given total budget 
 # (this example uses getInitialAllocationDictionary() to get
@@ -60,13 +62,14 @@ thisOptimisation.performSingleOptimisation(MCSampleSize)
 # e.g. read a budget from a file)
 # the output file will be (resultsFileStem + filename): 
 # ../ResultsExampleParallel/'+optimise+'/national/Bangladesh_example_given_budget.pkl
-totalBudget = thisOptimisation.getInitialAllocationDictionary()
+allocation = thisOptimisation.getInitialAllocationDictionary()
+totalBudget = sum(allocation.values())
 filename = 'example_given_budget'
 thisOptimisation.performSingleOptimisationForGivenTotalBudget(MCSampleSize, totalBudget, filename, haveFixedProgCosts)
 
 # run the model for a given starting budget 
 # output can be used to access time series qualities of the model run
-modelOutput = thisOptimisation.oneModelRunWithOutput(totalBudget)
+modelOutput = thisOptimisation.oneModelRunWithOutput(allocation)
 
 # using functions to generate output from the .pkl results files (harvesting results)
 # if this is done in a separate script, the optimisation instance is setup as above

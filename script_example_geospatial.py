@@ -16,7 +16,6 @@ date = '2016Oct'
 
 # how long to run the analysis for (1 step = 1 month)
 numModelSteps = 180
-
 # the multiples of the current budget to run the budget cascades for
 cascadeValues = [1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 'extreme']  
 
@@ -25,9 +24,6 @@ optimise = 'deaths'
 
 # the list of names of each region in the geospatial analysis 
 regionNameList = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
-
-# create a list of the spreadsheet names for each region
-spreadsheetFileStem = 'input_spreadsheets/' + country + '/' + date + '/subregionSpreadsheets/'
 spreadsheetList = []
 for regionName in regionNameList:
     spreadsheet = spreadsheetFileStem + regionName + '.xlsx'
@@ -49,7 +45,7 @@ nCores = 49
 MCSampleSize = 25
 
 # instantiate a geospatial object
-geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem)
+geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem, costCurveType)
 
 # use it to genarate geospatial cascades if they're not already there (these will be stored in the resultsFileStem location)
 geospatialOptimisation.generateParallelResultsForGeospatialCascades(nCores, MCSampleSize, haveFixedProgCosts)

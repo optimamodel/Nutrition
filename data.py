@@ -208,8 +208,7 @@ def readSpreadsheet(fileName, keyList):
         thisCoverage = coverage[correspondingIntervention]
         coverage.update({intervention : thisCoverage})
         thisCostSaturation = costSaturation[correspondingIntervention]
-        costSaturation.update({intervention : thisCostSaturation})
-    
+        costSaturation.update({intervention : thisCostSaturation}
 
 
     ### BASELINE YEAR DEMOGRAPHICS
