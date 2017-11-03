@@ -4,22 +4,30 @@ Created on Fri Feb 26 15:57:07 2016
 
 @author: ruth
 """
+import pandas as pd
 
 class Data:
-    def __init__(self, causesOfDeath, conditions, interventionList, 
-                 demographics, projectedBirths, rawMortality, causeOfDeathDist,
+    def __init__(self, causesOfDeath, conditions, interventionList, interventionCompleteList,
+                 demographics, projectedBirths, rawMortality, causeOfDeathDist, RRdeathAnemia,
                  RRdeathStunting, RRdeathWasting, RRdeathBreastfeeding, 
                  RRdeathByBirthOutcome, stuntingDistribution, wastingDistribution,
                  breastfeedingDistribution, incidences, RRdiarrhea, ORstuntingCondition,
                  birthOutcomeDist, ORstuntingProgression, ORstuntingBirthOutcome,
-                 ORstuntingIntervention, ORappropriatebfIntervention, 
+                 ORstuntingIntervention, RRanemiaIntervention, ORanemiaIntervention,
+                 ORappropriatebfIntervention,
                  ageAppropriateBreastfeeding, coverage, costSaturation,
                  targetPopulation, affectedFraction, effectivenessMortality,
-                 effectivenessIncidence, interventionsMaternal, foodSecurityGroups,
-                 ORstuntingComplementaryFeeding):
+                 effectivenessIncidence, interventionsBirthOutcome, foodSecurityGroups,
+                 ORstuntingComplementaryFeeding, anemiaDistribution,
+                 projectedWRApop, projectedWRApopByAge, projectedPWpop,
+                 projectedGeneralPop, PWageDistribution, fracExposedMalaria,
+                 ORanemiaCondition, fracSevereDia, ORwastingCondition,
+                 ORwastingIntervention, ORwastingBirthOutcome, fracSAMtoMAM, fracMAMtoSAM):
+
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
         self.interventionList = interventionList
+        self.interventionCompleteList = interventionCompleteList
         self.demographics = demographics
         self.projectedBirths = projectedBirths
         self.rawMortality = rawMortality
@@ -27,6 +35,7 @@ class Data:
         self.stuntingDistribution = stuntingDistribution
         self.wastingDistribution = wastingDistribution
         self.breastfeedingDistribution = breastfeedingDistribution
+        self.RRdeathAnemia = RRdeathAnemia
         self.RRdeathStunting = RRdeathStunting
         self.RRdeathWasting = RRdeathWasting
         self.RRdeathBreastfeeding = RRdeathBreastfeeding
@@ -36,8 +45,12 @@ class Data:
         self.RRdiarrhea = RRdiarrhea
         self.ORstuntingCondition = ORstuntingCondition
         self.ORstuntingBirthOutcome = ORstuntingBirthOutcome
+        self.ORwastingBirthOutcome = ORwastingBirthOutcome
         self.birthOutcomeDist = birthOutcomeDist
         self.ORstuntingIntervention = ORstuntingIntervention
+        self.RRanemiaIntervention = RRanemiaIntervention
+        self.ORanemiaIntervention = ORanemiaIntervention
+        self.ORwastingIntervention = ORwastingIntervention
         self.ORappropriatebfIntervention = ORappropriatebfIntervention
         self.ageAppropriateBreastfeeding = ageAppropriateBreastfeeding
         self.coverage = coverage
@@ -46,426 +59,424 @@ class Data:
         self.affectedFraction = affectedFraction
         self.effectivenessMortality = effectivenessMortality
         self.effectivenessIncidence = effectivenessIncidence
-        self.interventionsMaternal = interventionsMaternal
+        self.interventionsBirthOutcome = interventionsBirthOutcome
         self.foodSecurityGroups = foodSecurityGroups
         self.ORstuntingComplementaryFeeding = ORstuntingComplementaryFeeding
-    
+        self.anemiaDistribution = anemiaDistribution
+        self.projectedWRApop = projectedWRApop
+        self.projectedWRApopByAge = projectedWRApopByAge
+        self.projectedPWpop = projectedPWpop
+        self.projectedGeneralPop = projectedGeneralPop
+        self.PWageDistribution = PWageDistribution
+        self.fracExposedMalaria = fracExposedMalaria
+        self.ORanemiaCondition = ORanemiaCondition
+        self.ORwastingCondition = ORwastingCondition
+        self.fracSevereDia = fracSevereDia
+        self.fracSAMtoMAM= fracSAMtoMAM
+        self.fracMAMtoSAM = fracMAMtoSAM
 
-    
+def readSheetWithOneIndexCol(sheet, scaleFactor=1.):
+    resultDict = {}
+    for columnName in sheet:
+        resultDict[columnName] = dict(sheet[columnName] / scaleFactor)
+    return resultDict
+
+def readSheetWithTwoIndexCols(location, sheetname, indexList):
+    # always ignore the first col when creating dictionary
+    sheet = pd.read_excel(location, sheetname=sheetname, index_col=indexList)
+    sheet = sheet.dropna()
+    firstColList = sheet.index.levels[0]
+    secondColList = sheet.index.levels[1]
+    resultDict = {}
+    for outerLevel in firstColList:
+        for innerLevel in secondColList:
+            for columnName in sheet:
+                try:
+                    resultDict[innerLevel] = sheet.loc[outerLevel][columnName][innerLevel]
+                except KeyError: # do nothing if this combination doesn't exist
+                    pass
+    return resultDict
+
+def splitSpreadsheetWithTwoIndexCols(sheet, keyForSplitting, rowList=None, scaleFactor=1., defaultValue=1., switchKeys=False):
+    """rowList: a list of rows to iterate over, usually interventions or causes of death.
+    If switchKeys==True, then first index col will be the outer key, else remaining cols are outer keys.
+    scaleFactor: common factor to scale all values by.
+    """
+    subsheet = sheet.loc[keyForSplitting]
+    resultDict = {}
+    if rowList is None: # use rows only in subsheet
+        rowList = subsheet.index
+    if switchKeys:
+        for row in rowList:
+            resultDict[row] = {}
+            for colName in subsheet:
+                column = subsheet[colName]
+                try:
+                    resultDict[row][colName] = column[row] / scaleFactor
+                except KeyError:
+                    resultDict[row][colName] = defaultValue
+    else: # don't switch
+        for colName in subsheet:
+            resultDict[colName] = {}
+            column = subsheet[colName]
+            for row in rowList:
+                try:
+                    resultDict[colName][row] = column[row] / scaleFactor
+                except KeyError:
+                    resultDict[colName][row] = defaultValue
+    return resultDict
+
+def readRelativeRisks(sheet, risk, statusList, causesOfDeath):
+    resultDict = {}
+    subsheet = sheet.loc[risk]
+    for columnName in subsheet:
+        column = subsheet[columnName]
+        resultDict[columnName] = {}
+        for cause in causesOfDeath:
+            resultDict[columnName][cause] = {}
+            for status in statusList:
+                try:
+                    resultDict[columnName][cause][status] = column[cause][status]
+                except KeyError: # RR set to 1 if cause not in spreadsheet
+                    resultDict[columnName][cause][status] = 1
+    return resultDict
+
+def readInterventionsByPopulationTabs(sheet, outcome, interventionList, pops, causesOfDeath):
+    outcomeDict = {}
+    for intervention in interventionList:
+        outcomeDict[intervention] = {}
+        for pop in pops:
+            outcomeDict[intervention][pop] = {}
+            for cause in causesOfDeath:
+                try:
+                    outcomeDict[intervention][pop][cause] = sheet[pop][intervention][cause][outcome]
+                except KeyError:
+                    outcomeDict[intervention][pop][cause] = 0.
+    return outcomeDict
+
+def mapAgeKeys(firstDict, secondDict):
+    """Solves the problem of the data workbook not having the correct age band keys"""
+    resultDict = {}
+    for pop in secondDict.keys():
+        dataDict = firstDict[pop]
+        mappingList = secondDict[pop]
+        for age in dataDict.keys():
+            resultDict.update({key: dataDict[age] for key in mappingList if age in key})
+    return resultDict
+
+def stratifyPopIntoAgeGroups(dictToUpdate, keyList, listOfAgeGroups, population, keyLevel=0):
+    """Solves the problem of data having only 'maternal' or 'WRA' for all age bands.
+    Copies single value and creates age groups."""
+    for key in keyList: # could be intervention, ages
+        if keyLevel == 0:
+            subDict = dictToUpdate.pop(population, None)
+            newAgeGroups = {age: subDict for age in listOfAgeGroups}
+            dictToUpdate.update(newAgeGroups)
+        elif keyLevel == 1:
+            subDict = dictToUpdate[key].pop(population, None)
+            newAgeGroups = {age:subDict for age in listOfAgeGroups}
+            dictToUpdate[key].update(newAgeGroups)
+    return dictToUpdate
+
 def readSpreadsheet(fileName, keyList):
-    import pandas
-    Location = fileName
+    from copy import deepcopy as dcp
+    location = fileName
     ages = keyList['ages']
     birthOutcomes = keyList['birthOutcomes']
     wastingList = keyList['wastingList']
     stuntingList = keyList['stuntingList']
     breastfeedingList = keyList['breastfeedingList']
-    
-    #get list of ages and causesOfDeath
-    df = pandas.read_excel(Location, sheetname = 'causes of death')
-    causesOfDeath = list(df['Cause'])
-    #get list of conditions
-    df = pandas.read_excel(Location, sheetname = 'Incidence of conditions')
-    conditions = list(df['Condition'])
-    #get list of interventions
-    df = pandas.read_excel(Location, sheetname = 'Interventions cost and coverage')
-    interventionList = list(df['Intervention'])
-    
-    # WARNING HARD CODED CHANGE BACK
-    if 'Vitamin A fortification of food' in interventionList: interventionList.remove('Vitamin A fortification of food')
-    # WARNING
-    
-    #get list of projection years
-    df = pandas.read_excel(Location, sheetname = 'projected births')
-    projectionYearList = list(df['year'])
-    # put all populations in a list
-    allPops = ages[:]
-    allPops.append('pregnant women')
+    allPops = keyList['allPops']
+    anemiaList = keyList['anemiaList']
+    PWages = keyList['pregnantWomenAges']
+    WRAages = keyList['reproductiveAges']
 
-    # READ demographics SHEET
-    # sets:
-    # - demographics
-    df = pandas.read_excel(Location, sheetname = 'demographics')
-    indicatorsList = list(df['indicators'])
-    df = pandas.read_excel(Location, sheetname = 'demographics', index_col = 'indicators')
-    demographics = {}
-    for indicator in indicatorsList:
-        demographics[indicator] = df.loc[indicator,'data']
+    ### INTERVENTIONS COST AND COVERAGE
+    interventionsSheet = pd.read_excel(location, sheetname = 'Interventions cost and coverage', index_col=0)
+    interventionList = list(interventionsSheet.index)
+    interventionCompleteList =  dcp(interventionList)
+    for intervention in interventionList:
+        if "IFAS" in intervention:
+            if "malaria" in intervention:
+                interventionCompleteList.append(intervention + " with bed nets")
+    coverage = dict(interventionsSheet["Baseline coverage"])
+    costSaturation = interventionsSheet[["saturation coverage", "unit cost"]].to_dict(orient='index')
+    # add hidden intervention data to coverage and cost saturation
+    hiddenInterventionList = list(set(interventionCompleteList) - set(interventionList))
+    for intervention in hiddenInterventionList:
+        correspondingIntervention = intervention.replace(" with bed nets", "")
+        thisCoverage = coverage[correspondingIntervention]
+        coverage.update({intervention : thisCoverage})
+        thisCostSaturation = costSaturation[correspondingIntervention]
+        costSaturation.update({intervention : thisCostSaturation}
 
-    # READ projected births SHEET
-    # sets:
-    # - projectedBirths
-    df = pandas.read_excel(Location, sheetname = 'projected births')
-    projectedBirths = list(df['number of births'])
 
-    #  READ TOTAL MORTALITY SHEET
-    #  sets:
-    #  - rawMortality
-    df = pandas.read_excel(Location, sheetname = 'mortality rates')
-    rawMortality = dict(zip(list(df.columns.values), df.iloc[0]))
+    ### BASELINE YEAR DEMOGRAPHICS
+    demographicsSheet = pd.read_excel(location, sheetname='Baseline year demographics', index_col=[0, 1])
+    demographicsSheet = demographicsSheet.dropna(how='all')
+    # population
+    population = splitSpreadsheetWithTwoIndexCols(demographicsSheet, "Current year")
+    populationDict = population['Values']
+    # mortality
+    mortality = splitSpreadsheetWithTwoIndexCols(demographicsSheet, "Mortality rates")
+    rawMortality = mortality['Values']
+    # food
+    food = splitSpreadsheetWithTwoIndexCols(demographicsSheet, "Food")
+    foodDemographicsDict = food['Values']
+    # join to demographics dict
+    populationDict.update(foodDemographicsDict)
+    demographics = populationDict
+    # WRA age distribution
+    WRAageDistribution = splitSpreadsheetWithTwoIndexCols(demographicsSheet, "Women of reproductive age")
+    mappingDict = {"Values": WRAages} # make age bands consistent
+    WRAageDistribution = mapAgeKeys(WRAageDistribution, mappingDict)
+    demographics['population reproductive age'] = WRAageDistribution
+    # PW age distribution
+    PWageDistribution = splitSpreadsheetWithTwoIndexCols(demographicsSheet, "Age distribution pregnant")
+    mappingDict = {'Values': PWages}
+    PWageDistribution = mapAgeKeys(PWageDistribution, mappingDict)
 
-    #  READ MORTALITY SHEET
-    #  sets:
-    #  - causeOfDeathDist
-    df = pandas.read_excel(Location, sheetname = 'causes of death', index_col = 'Cause')
-    causeOfDeathDist = {}
-    for ageName in ages:
-        causeOfDeathDist[ageName] = {}
-        for cause in causesOfDeath:
-            causeOfDeathDist[ageName][cause] = df.loc[cause, ageName]
-            
-    #  READ RRStunting SHEET
-    #  sets:
-    #  - RRdeathStunting
-    df = pandas.read_excel(Location, sheetname = 'RR death by stunting', index_col = [0])
-    #get the list of causes for which we have relative risks
-    mylist = list(df.index.values)
-    myset = set(mylist)
-    listCausesRRdeathStunting = list(myset)
-    #put the RR into RRdeathStunting
-    df = pandas.read_excel(Location, sheetname = 'RR death by stunting', index_col = [0, 1])
-    RRdeathStunting = {}
-    for ageName in ages:
-        RRdeathStunting[ageName] = {}
-        for cause in causesOfDeath:
-            RRdeathStunting[ageName][cause] = {}
-            for stuntingCat in stuntingList:
-                if cause in listCausesRRdeathStunting: #if no RR given for this cause then set to 1
-                    RRdeathStunting[ageName][cause][stuntingCat] = df.loc[cause][ageName][stuntingCat]
-                else:
-                    RRdeathStunting[ageName][cause][stuntingCat] = 1
-                   
-    #  READ RRWasting SHEET
-    #  sets:
-    #  - RRdeathWasting
-    df = pandas.read_excel(Location, sheetname = 'RR death by wasting', index_col = [0])
-    #get the list of causes for which we have relative risks
-    mylist = list(df.index.values)
-    myset = set(mylist)
-    listCausesRRdeathWasting = list(myset)
-    #put the RR into RRdeathWasting
-    df = pandas.read_excel(Location, sheetname = 'RR death by wasting', index_col = [0, 1])
-    RRdeathWasting = {}
-    for ageName in ages:
-        RRdeathWasting[ageName] = {}
-        for cause in causesOfDeath:
-            RRdeathWasting[ageName][cause] = {}
-            for wastingCat in wastingList:
-                if cause in listCausesRRdeathWasting: #if no RR given for this cause then set to 1
-                    RRdeathWasting[ageName][cause][wastingCat] = df.loc[cause][ageName][wastingCat]
-                else:
-                    RRdeathWasting[ageName][cause][wastingCat] = 1        
+    ### DEMOGRAPHIC PROJECTIONS
+    projectionsSheet = pd.read_excel(location, sheetname='Demographic projections', index_col=[0])
+    projectionsDict = readSheetWithOneIndexCol(projectionsSheet)
+    projectedBirths = projectionsDict['number of births']
+    projectedWRApop = projectionsDict['total WRA']
+    projectedWRApopByWrongAge = {age: projectionsDict[age] for age in projectionsDict.keys() if age.startswith('women')}
+    # map to correct keys by string operations
+    projectedWRApopByAge = {}
+    for ageName in projectedWRApopByWrongAge.keys():
+        newAgeName = ageName.partition(' ')[2]
+        newAgeName = "WRA: " + newAgeName
+        projectedWRApopByAge[newAgeName] = projectedWRApopByWrongAge[ageName]
+    projectedPWpop = projectionsDict['pregnant women']
+    # general population size
+    projectedGeneralPop = projectionsDict['total population']
 
-    #  READ RRBreastfeeding SHEET
-    #  sets:
-    #  - RRdeathBreastfeeding
-    df = pandas.read_excel(Location, sheetname = 'RR death by breastfeeding', index_col = [0])
-    #get the list of causes for which we have relative risks
-    mylist = list(df.index.values)
-    myset = set(mylist)
-    listCausesRRdeathBreastfeeding = list(myset)
-    #put the RR into RRdeathBreastfeeding
-    df = pandas.read_excel(Location, sheetname = 'RR death by breastfeeding', index_col = [0, 1])
-    RRdeathBreastfeeding = {}
-    for ageName in ages:
-        RRdeathBreastfeeding[ageName] = {}
-        for cause in causesOfDeath: 
-            RRdeathBreastfeeding[ageName][cause] = {}
-            for breastfeedingCat in breastfeedingList:
-                if cause in listCausesRRdeathBreastfeeding: #if no RR given for this cause then set to 1
-                    RRdeathBreastfeeding[ageName][cause][breastfeedingCat] = df.loc[cause][ageName][breastfeedingCat]
-                else:
-                    RRdeathBreastfeeding[ageName][cause][breastfeedingCat] = 1  
-        
-    #  READ RR Death by Birth Outcome SHEET
-    #  sets:
-    #  - RRdeathByBirthOutcome
-    df = pandas.read_excel(Location, sheetname = 'RR death by birth outcome')
-    #get list of causesOfDeath
-    causesListedHere = list(df['Cause'])
-    #get the nested list of causeOfDeathDist
-    df = pandas.read_excel(Location, sheetname = 'RR death by birth outcome', index_col = 'Cause')
-    RRdeathByBirthOutcome = {}
-    for cause in causesOfDeath:
-        RRdeathByBirthOutcome[cause] = {}
-        if cause in causesListedHere:
-            for birthoutcome in birthOutcomes:
-                RRdeathByBirthOutcome[cause][birthoutcome] = df.loc[cause, birthoutcome]
-        else:
-            for birthoutcome in birthOutcomes:
-                RRdeathByBirthOutcome[cause][birthoutcome] = 1.
+    ### CAUSES OF DEATH
+    causesOfDeathSheet = pd.read_excel(location, sheetname='Causes of death', index_col=[0])
+    causeOfDeathDist = readSheetWithOneIndexCol(causesOfDeathSheet)
+    causeOfDeathDist = stratifyPopIntoAgeGroups(causeOfDeathDist, ['maternal'], PWages, 'maternal')
+    causesOfDeathList = list(causesOfDeathSheet.index)
 
-    #  READ distributions SHEET
-    #  sets:
-    #  - stuntingDistribution
-    #  - wastingDistribution
-    #  - breastfeedingDistribution
-    df = pandas.read_excel(Location, sheetname = 'distributions', index_col = [0, 1])
-    stuntingDistribution = {}
-    wastingDistribution = {}
-    breastfeedingDistribution = {}
-    #stunting
-    for ageName in ages:
-        stuntingDistribution[ageName] = {}
-        for status in stuntingList:
-            stuntingDistribution[ageName][status] = df.loc['Stunting'][ageName][status] / 100.
-    #wasting        
-    for ageName in ages:
-        wastingDistribution[ageName] = {}
-        for status in wastingList:
-            wastingDistribution[ageName][status] = df.loc['Wasting'][ageName][status] / 100.
-    #breastfeeding  
-    for ageName in ages:
-        breastfeedingDistribution[ageName] = {}
-        for status in breastfeedingList:
-            breastfeedingDistribution[ageName][status] = df.loc['Breastfeeding'][ageName][status] / 100.
-            
-    #  READ OR stunting progression SHEET
-    #  sets:
-    #  - ORstuntingProgression
-    df = pandas.read_excel(Location, sheetname = 'OR stunting progression')
-    ORstuntingProgression = dict(zip(list(df.columns.values), df.iloc[0]))    
+    ### INCIDENCE OF CONDITIONS
+    incidencesSheet = pd.read_excel(location, sheetname='Incidence of conditions', index_col=[0])
+    incidences = readSheetWithOneIndexCol(incidencesSheet, scaleFactor=12.) #WARNING HACK should multiply by timestep within code
+    conditionsList = list(incidencesSheet.index)
 
-    # READ Incidence of conditions SHEET
-    # sets:
-    # - incidences
-    df = pandas.read_excel(Location, sheetname = 'Incidence of conditions', index_col = 'Condition')
-    incidences = {}
-    for ageName in ages:
-        incidences[ageName] = {}
-        for condition in conditions:
-            incidences[ageName][condition] = df.loc[condition, ageName] / 12. #WARNING HACK should multiply by timestep within code
+    ### PREVALENCE OF ANEMIA
+    # done by anemia type: anemic, not anemic, iron deficiency anemia, severe
+    anemiaPrevalenceSheet = pd.read_excel(location, sheetname='Prevalence of anemia', index_col=[0,1])
+    anemiaPrevalenceSheet = anemiaPrevalenceSheet.dropna(how='all')
+    anemiaTypes = list(anemiaPrevalenceSheet.index.levels[0])
+    ageNames = list(anemiaPrevalenceSheet.index.levels[1])
+    ageNames = [age for age in ageNames if age != 'All'] # remove 'All'
+    anemiaPrevalence = {}
+    for colName in anemiaPrevalenceSheet:
+        anemiaPrevalence[colName] = {}
+        column = anemiaPrevalenceSheet[colName]
+        for ageName in ageNames:
+            anemiaPrevalence[colName][ageName] = {}
+            for anemiaType in anemiaTypes:
+                try:
+                    if anemiaType == 'Fraction anemia that is severe': # assume uniformly distributed across ages
+                        anemiaPrevalence[colName][ageName][anemiaType] = column[anemiaType]['All']
+                    else:
+                        anemiaPrevalence[colName][ageName][anemiaType] = column[anemiaType][ageName]
+                except KeyError:
+                    pass
+            # no anemia
+            anemiaPrevalence[colName][ageName]['not anemic'] = 1. - anemiaPrevalence[colName][ageName]['All anemia']
+    # convert age groups to those used in model
+    mappingDict = {"Children": ages, "WRA not pregnant": WRAages, "Pregnant women": PWages}
+    anemiaDistribution = mapAgeKeys(anemiaPrevalence, mappingDict)
+    #rename
+    for ageName in ages + WRAages + PWages:
+        anemiaThisAge = anemiaDistribution[ageName]
+        anemiaThisAge['anemic'] = anemiaThisAge.pop('All anemia')
+    # TODO: These are fake values b/c spredsheet has blank
+    anemiaDistribution["<1 month"]['anemic'] = .1
+    anemiaDistribution["<1 month"]['not anemic'] = .9
+    anemiaDistribution["1-5 months"]['anemic'] = .1
+    anemiaDistribution["1-5 months"]['not anemic'] = .9
 
-    # READ RR diarrhea SHEET
-    # sets:
-    # - RRdiarrhea
-    df = pandas.read_excel(Location, sheetname = 'RR diarrhoea', index_col = [0])
+    ### DISTRIBUTIONS
+    distributionsSheet = pd.read_excel(location, sheetname='Distributions', index_col=[0,1])
+    distributionsSheet = distributionsSheet.dropna()
+    stuntingDistribution = splitSpreadsheetWithTwoIndexCols(distributionsSheet, 'Stunting', scaleFactor=100.)
+    wastingDistribution = splitSpreadsheetWithTwoIndexCols(distributionsSheet, 'Wasting', scaleFactor=100.)
+    breastfeedingDistribution = splitSpreadsheetWithTwoIndexCols(distributionsSheet, 'Breastfeeding', scaleFactor=100.)
+
+    ### BIRTH OUTCOMES AND RISKS
+    birthOutcomesSheet = pd.read_excel(location, sheetname='Birth outcomes & risks', index_col=[0,1])
+    birthOutcomesSheet = birthOutcomesSheet.dropna()
+    # distribution
+    birthOutcomeDistribution = splitSpreadsheetWithTwoIndexCols(birthOutcomesSheet, "Distribution")
+    ORstuntingBirthOutcome = {}
+    ORwastingBirthOutcome = {}
+    ORwastingBirthOutcome['SAM'] = {}
+    ORwastingBirthOutcome['MAM'] = {}
+    birthOutcomeDist = {}
+    for birthOutcome in birthOutcomeDistribution.keys():
+        ORstuntingBirthOutcome[birthOutcome] = birthOutcomeDistribution[birthOutcome]['OR stunting']
+        ORwastingBirthOutcome['SAM'][birthOutcome] = birthOutcomeDistribution[birthOutcome]['OR SAM']
+        ORwastingBirthOutcome['MAM'][birthOutcome] = birthOutcomeDistribution[birthOutcome]['OR MAM']
+        birthOutcomeDist[birthOutcome] = birthOutcomeDistribution[birthOutcome]["Fraction of births"]
+
+    # RR of death by birth outcome
+    RRdeathByBirthOutcome = splitSpreadsheetWithTwoIndexCols(birthOutcomesSheet, "RR of death", rowList=causesOfDeathList, switchKeys=True)
+
+    ### RELATIVE RISKS
+    RRsheet = pd.read_excel(location, sheetname='Relative risks', index_col=[0,1,2])
+    RRsheet = RRsheet.dropna()
+    RRdeathStunting = readRelativeRisks(RRsheet, 'Stunting', stuntingList, causesOfDeathList)
+    RRdeathWasting = readRelativeRisks(RRsheet, 'Wasting', wastingList, causesOfDeathList)
+    RRdeathBreastfeeding = readRelativeRisks(RRsheet, 'Breastfeeding', breastfeedingList, causesOfDeathList)
+    # child diarrhea
+    RRsheet = pd.read_excel(location, sheetname='Relative risks', index_col=[0,1,2])
+    childDia = RRsheet.loc['RR child diarrhea'].dropna(axis=1, how = 'all') # drop maternal
+    childDia = childDia.loc['Diarrhea incidence'].dropna() # remove rows with NaN
     RRdiarrhea = {}
-    for ageName in ages:
+    for ageName in childDia:
+        column = childDia[ageName]
         RRdiarrhea[ageName] = {}
         for breastfeedingCat in breastfeedingList:
-            RRdiarrhea[ageName][breastfeedingCat] = df[ageName][breastfeedingCat]       
+            RRdiarrhea[ageName][breastfeedingCat] = column[breastfeedingCat]
+    # maternal anemia
+    RRsheet = pd.read_excel(location, sheetname='Relative risks', index_col=[0,1,2])
+    RRsheet = RRsheet.dropna()
+    maternalAnemia = RRsheet.loc['Maternal anemia - death risk']
+    RRdeathMaternal = {}
+    column = maternalAnemia['maternal']
+    for cause in causesOfDeathList:
+        RRdeathMaternal[cause] = {}
+        for anemiaStatus in anemiaList:
+            try:
+                RRdeathMaternal[cause][anemiaStatus] = column[cause][anemiaStatus]
+            except KeyError: # if cause not in shet, RR=1
+                RRdeathMaternal[cause][anemiaStatus] = 1
+    RRdeathMaternalAnemia = {age: RRdeathMaternal for age in PWages}
+    # women of reproductive age, assume no direct impact of interventions (RR=1). Also no data on children (RR=1)
+    RRdeathChildrenWRanemia = {age: {cause: {status: 1. for status in anemiaList} for cause in causesOfDeathList} for age in WRAages + ages}
+    # combine all groups into single dictionary
+    RRdeathMaternalAnemia.update(RRdeathChildrenWRanemia)
+    RRdeathAnemia = RRdeathMaternalAnemia
 
-    # READ OR Diarrhea SHEET
-    # sets:
-    # - ORstuntingCondition
-    df = pandas.read_excel(Location, sheetname = 'OR stunting by condition')
-    conditionsHere = list(df['Condition'])
-    df = pandas.read_excel(Location, sheetname = 'OR stunting by condition', index_col = 'Condition')
-    ORstuntingCondition = {}
-    for ageName in ages:
-        ORstuntingCondition[ageName] = {}
-        for condition in conditions:
-            ORstuntingCondition[ageName][condition] = 1.
-        for condition in conditionsHere:
-            ORstuntingCondition[ageName][condition] = df.loc[condition, ageName]
+    # TODO: need RR/OR anemia by intervention, no longer using general population. Also account for having a mix of OR and RR for interventions
 
-    # READ OR Stunting given Intervention Coverage SHEET
-    # sets:
-    # - ORstuntingIntervention
-    df = pandas.read_excel(Location, sheetname = 'OR stunting by intervention')
-    interventionsHere = list(df['Intervention'])
-    df = pandas.read_excel(Location, sheetname = 'OR stunting by intervention', index_col = 'Intervention')
-    ORstuntingIntervention = {}
-    for ageName in ages:
-        ORstuntingIntervention[ageName] = {}
-        for intervention in interventionList:
-            ORstuntingIntervention[ageName][intervention] = 1.
-        for intervention in interventionsHere:
-            ORstuntingIntervention[ageName][intervention] = df.loc[intervention, ageName]
 
-    # READ OR Appropriate Breastfeeding given OR Appropriate Breastfeeding SHEET
-    # sets:
-    # - ORappropriatebfIntervention
-    df = pandas.read_excel(Location, sheetname = 'OR correctBF by interventn')
-    interventionsHere = list(df['Intervention'])
-    df = pandas.read_excel(Location, sheetname = 'OR correctBF by interventn', index_col = 'Intervention')
-    ORappropriatebfIntervention = {}
-    for ageName in ages:
-        ORappropriatebfIntervention[ageName] = {}
-        for intervention in interventionList:
-            ORappropriatebfIntervention[ageName][intervention] = 1.
-        for intervention in interventionsHere:
-            ORappropriatebfIntervention[ageName][intervention] = df.loc[intervention, ageName]
 
-    #  READ Appropriate Breastfeeding Practice SHEET
-    #  sets:
-    #  - ageAppropriateBreastfeeding
-    df = pandas.read_excel(Location, sheetname = 'Appropriate breastfeeding')
-    ageAppropriateBreastfeeding = dict(zip(list(df.columns.values), df.iloc[0]))    
-
-    #  READ birth outcome distribution SHEET
-    #  sets:
-    #  - birthOutcomeDist (partial)
-    df = pandas.read_excel(Location, sheetname = 'birth outcome distribution')
-    birthOutcomeDist_partial = dict(zip(list(df.columns.values), df.iloc[0]))    
-    # construct full birthOutcome distribution
-    birthOutcomeDist = {}
-    BOsum = 0.
-    for birthOutcome in ["Pre-term SGA", "Pre-term AGA", "Term SGA"]:
-        birthOutcomeDist[birthOutcome] = birthOutcomeDist_partial[birthOutcome]
-        BOsum += birthOutcomeDist[birthOutcome]
-    birthOutcomeDist["Term AGA"] = 1. - BOsum
-
-    #  READ OR birth outcome stunting SHEET
-    #  sets:
-    #  - ORstuntingBirthOutcome
-    df = pandas.read_excel(Location, sheetname = 'OR stunting by birth outcome')
-    ORstuntingBirthOutcome = dict(zip(list(df.columns.values), df.iloc[0]))   
-
-    #  READ Current Intervention Coverages SHEET
-    #  sets:
-    #  - coverage
-    #  - costSaturation
-    df = pandas.read_excel(Location, sheetname = 'Interventions cost and coverage', index_col = 'Intervention')
-    coverage = {}
-    costSaturation = {}
-    costinfoList = ["unit cost","saturation coverage"]
-    for intervention in interventionList:
-        coverage[intervention] = df.loc[intervention, "baseline coverage"]
-        costSaturation[intervention] = {}
-        for costinfo in costinfoList:
-            costSaturation[intervention][costinfo] = df.loc[intervention, costinfo]
-            
-    # WARNING HARD CODED FOR TANZANIA GEO ANALYSIS - CHANGE BACK!  
-    costSaturation['Vitamin A supplementation']["saturation coverage"] = 1.1        
-            
-
-    # READ Intervention Target Population Matrix SHEET
-    # sets:
-    # - targetPopulation
-    df = pandas.read_excel(Location, sheetname = 'Interventions target population', index_col = 'Intervention')
-    targetPopulation = {}
-    for intervention in interventionList:
-        targetPopulation[intervention] = {}
-        for pop in allPops:
-            targetPopulation[intervention][pop] = df.loc[intervention, pop]
-    
-    # READ Interventions maternal SHEET
-    # sets:
-    # - interventionsMaternal
-    df = pandas.read_excel(Location, sheetname = 'Interventions maternal', index_col = [0]) 
-    #get the list of interventions
-    mylist = list(df.index.values)
-    myset = set(mylist)
-    interventionsHere = list(myset)
-    #do the rest
-    df = pandas.read_excel(Location, sheetname = 'Interventions maternal', index_col = [0, 1]) 
-    interventionsMaternal = {}
-    # initialise
-    for intervention in interventionList:
-        interventionsMaternal[intervention] = {}
-        for outcome in birthOutcomes:
-            interventionsMaternal[intervention][outcome] = {}
-            for value in ['effectiveness', 'affected fraction']:
-                interventionsMaternal[intervention][outcome][value] = 0.
-    # complete # WARNING allowing for all causes of death, but completing according to condition
-    for intervention in interventionsHere:
-        for outcome in birthOutcomes:
-            for value in ['effectiveness', 'affected fraction']:
-                interventionsMaternal[intervention][outcome][value] = df.loc[intervention][outcome][value]
-
-    # READ Interventions affected fraction SHEET
-    # sets:
-    # - affectedFraction
-    df = pandas.read_excel(Location, sheetname = 'Interventions affected fraction', index_col = [0])
-    #get the list of interventions
-    mylist = list(df.index.values)
-    myset = set(mylist)
-    interventionsHere = list(myset)
-    interventionsHere.remove('Vitamin A fortification of food') #WARNING: HARD CODED, REMOVE THIS
-    #do the rest
-    df = pandas.read_excel(Location, sheetname = 'Interventions affected fraction', index_col = [0, 1])
-    affectedFraction = {}
-    # initialise
-    for intervention in interventionList:
-        affectedFraction[intervention] = {}
-        for ageName in ages:
-            affectedFraction[intervention][ageName] = {}
-            for cause in causesOfDeath:
-                affectedFraction[intervention][ageName][cause] = 0.
-    # complete # WARNING allowing for all causes of death, but completing according to condition
-    for intervention in interventionsHere:
-        for ageName in ages:
-            conditionsHere = df.loc[intervention][ageName].keys()
-            for condition in conditionsHere:    
-                affectedFraction[intervention][ageName][condition] = df.loc[intervention][ageName][condition]
-                
-    # READ Interventions mortality effectiveness SHEET
-    # sets:
-    # - effectivenessMortality
-    df = pandas.read_excel(Location, sheetname = 'Interventions mortality eff', index_col = [0])
-    #get the list of interventions
-    mylist = list(df.index.values)
-    myset = set(mylist)
-    interventionsHere = list(myset)
-    interventionsHere.remove('Vitamin A fortification of food') #WARNING: HARD CODED, REMOVE THIS
-    #do the rest
-    df = pandas.read_excel(Location, sheetname = 'Interventions mortality eff', index_col = [0, 1])
-    effectivenessMortality = {}
-    # initialise
-    for intervention in interventionList:
-        effectivenessMortality[intervention] = {}
-        for ageName in ages:
-            effectivenessMortality[intervention][ageName] = {}
-            for cause in causesOfDeath:
-                effectivenessMortality[intervention][ageName][cause] = 0.
-    # complete
-    for intervention in interventionsHere:
-        for ageName in ages:
-            causesHere = df.loc[intervention][ageName].keys()
-            for cause in causesHere:    
-                effectivenessMortality[intervention][ageName][cause] = df.loc[intervention][ageName][cause]
-
-    # READ Interventions incidence effectiveness SHEET
-    # sets
-    # - effectivenessIncidence
-    df = pandas.read_excel(Location, sheetname = 'Interventions incidence eff', index_col = [0])
-    #get the list of interventions
-    mylist = list(df.index.values)
-    myset = set(mylist)
-    interventionsHere = list(myset)
-    interventionsHere.remove('Vitamin A fortification of food') #WARNING: HARD CODED, REMOVE THIS
-    #do the rest
-    df = pandas.read_excel(Location, sheetname = 'Interventions incidence eff', index_col = [0, 1])
-    effectivenessIncidence = {}
-    # initialise
-    for intervention in interventionList:
-        effectivenessIncidence[intervention] = {}
-        for ageName in ages:
-            effectivenessIncidence[intervention][ageName] = {}
-            for condition in conditions:
-                effectivenessIncidence[intervention][ageName][condition] = 0.
-    # complete
-    for intervention in interventionsHere:
-        for ageName in ages:
-            conditionsHere = df.loc[intervention][ageName].keys()
-            for condition in conditionsHere:    
-                effectivenessIncidence[intervention][ageName][condition] = df.loc[intervention][ageName][condition]
-
-    # READ OR stunting for complements SHEET
-    # sets:
-    # - ORstuntingComplementaryFeeding
-    df = pandas.read_excel(Location, sheetname = 'OR stunting by compfeeding') 
-    foodSecurityGroups = list(df['Food security & education'])
-    df = pandas.read_excel(Location, sheetname = 'OR stunting by compfeeding', index_col = 'Food security & education') 
+    ### ODDS RATIOS
+    # stunting
+    ORsheet = pd.read_excel(location, sheetname='Odds ratios', index_col=[0,1])
+    ORsheet = ORsheet.dropna(axis=0, how='all') # drop rows of all NaN
+    # progression
+    ORstuntingProgression = dict(ORsheet.loc['OR stunting progression and condition','Stunting progression'])
+    del ORstuntingProgression['<1 month'] # not applicable to <1 month
+    # by condition
+    ORstuntingDia = dict(ORsheet.loc['OR stunting progression and condition','Diarrhea'])
+    ORstuntingCondition = {age:{condition: ORstuntingDia[age] for condition in ['Diarrhea']} for age in ages}
+    # by intervention
+    ORstuntingIntervention = splitSpreadsheetWithTwoIndexCols(ORsheet, "OR stunting by intervention", rowList=interventionCompleteList)
     ORstuntingComplementaryFeeding = {}
-    for ageName in ages:
-        ORstuntingComplementaryFeeding[ageName] = {}
-        for group in foodSecurityGroups:
-            ORstuntingComplementaryFeeding[ageName][group] = df.loc[group, ageName]    
+    interventionsHere = ORsheet.loc['OR stunting by intervention'].index
+    foodSecurityGroups = []
+    for age in ages:
+        ORstuntingComplementaryFeeding[age] = {}
+        for intervention in interventionsHere:
+            if "Complementary" in intervention and 'iron' not in intervention:
+                ORstuntingComplementaryFeeding[age][intervention] = ORsheet[age]['OR stunting by intervention'][intervention]
+                if intervention not in foodSecurityGroups:
+                    foodSecurityGroups += [intervention]
+    # wasting by intervention
+    wastingInterventionSheet = pd.read_excel(location, "Interventions wasting", index_col=[0,1])
+    wastingInterventionSheet = wastingInterventionSheet.dropna(axis=0, how='all')
+    ORwastingIntervention = {}
+    ORwastingIntervention['SAM'] = splitSpreadsheetWithTwoIndexCols(wastingInterventionSheet, "OR SAM by intervention", rowList=interventionCompleteList)
+    ORwastingIntervention['MAM'] = splitSpreadsheetWithTwoIndexCols(wastingInterventionSheet, "OR MAM by intervention", rowList=interventionCompleteList)
+    # wasting by condition
+    ORwastingCondition = {}
+    ORwastingCondition['SAM'] = splitSpreadsheetWithTwoIndexCols(ORsheet, 'OR SAM by condition', rowList=conditionsList)
+    ORwastingCondition['MAM'] = splitSpreadsheetWithTwoIndexCols(ORsheet, 'OR MAM by condition', rowList=conditionsList)
 
-            
-    spreadsheetData = Data(causesOfDeath, conditions, interventionList, demographics,
-                           projectedBirths, rawMortality, causeOfDeathDist, RRdeathStunting,
+    # correct breastfeeding
+    ORappropriatebfIntervention = splitSpreadsheetWithTwoIndexCols(ORsheet, "OR for correct breastfeeding by intervention", rowList=interventionCompleteList)
+
+    # APPROPRIATE BREASTFEEDING
+    breastfeedingSheet = pd.read_excel(location, sheetname='Appropriate breastfeeding')
+    ageAppropriateBreastfeeding = dict(breastfeedingSheet.iloc[0])
+
+    # INTERVENTIONS TARGET POPULATION
+    targetPopSheet = pd.read_excel(location, sheetname='Interventions target population', index_col=[0,1])
+    targetPopSheet = targetPopSheet.dropna(how='all')
+    # children
+    targetPopulation = splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'Children', switchKeys=True)
+    # pregnant women
+    targetPopulation.update(splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'Pregnant women', switchKeys=True))
+    # non-pregnant WRA
+    targetPopulation.update(splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'Non-pregnant WRA', switchKeys=True))
+    # general pop
+    #  NO MORE GENERAL POP!
+    targetPopulation.update(splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'General population', switchKeys=True))
+    # change PW & WRA to age groups
+    targetPopulation = stratifyPopIntoAgeGroups(targetPopulation, interventionList, WRAages, 'Non-pregnant WRA', keyLevel=1)
+    targetPopulation = stratifyPopIntoAgeGroups(targetPopulation, interventionList, PWages, 'Pregnant women', keyLevel=1)
+
+    # INTERVENTIONS BIRTH OUTCOMES
+    interventionsBirthOutcomeSheet = pd.read_excel(location, sheetname='Interventions birth outcomes', index_col=[0,1])
+    interventionsBirthOutcome = {}
+    for intervention in interventionCompleteList:
+        interventionsBirthOutcome[intervention] = {}
+        for birthOutcome in birthOutcomes:
+            column = interventionsBirthOutcomeSheet[birthOutcome]
+            interventionsBirthOutcome[intervention][birthOutcome] = {}
+            for value in ['effectiveness', 'affected fraction']:
+                try:
+                    interventionsBirthOutcome[intervention][birthOutcome][value] = column[intervention][value]
+                except KeyError:
+                    interventionsBirthOutcome[intervention][birthOutcome][value] = 0.
+
+    ### INTERVENTIONS ANEMIA
+    # relative risks
+    interventionsAnemiaSheet = pd.read_excel(location, sheetname='Interventions anemia', index_col=[0,1])
+    interventionsAnemiaSheet = interventionsAnemiaSheet.dropna(how='all')
+    # remove interventions from RR if we have OR
+    interventionsOR = list(interventionsAnemiaSheet.loc["Odds Ratios"].index)
+    interventionsRR = [intervention for intervention in interventionCompleteList if intervention not in interventionsOR]
+    RRanemiaIntervention = splitSpreadsheetWithTwoIndexCols(interventionsAnemiaSheet, 'Relative Risks', rowList=interventionsRR)
+    # odds ratios
+    ORanemiaIntervention = splitSpreadsheetWithTwoIndexCols(interventionsAnemiaSheet, 'Odds Ratios', rowList=interventionsOR)
+
+    # INTERVENTIONS AFFECTED FRACTION AND EFFECTIVENESS
+    # children
+    # warning: currently this applied to all population groups (no tabs for them yet)
+    interventionsForChildren = pd.read_excel(location, sheetname='Interventions for children', index_col=[0, 1, 2])
+    affectedFraction = readInterventionsByPopulationTabs(interventionsForChildren, 'Affected fraction', interventionCompleteList, allPops, causesOfDeathList + ['Severe diarrhea', 'SAM', 'MAM']) # TODO: warning: severe diarrhea is not listed in 'causes of death' and so causes issues
+    effectivenessMortality = readInterventionsByPopulationTabs(interventionsForChildren, 'Effectiveness mortality', interventionCompleteList, allPops, causesOfDeathList)
+    effectivenessIncidence = readInterventionsByPopulationTabs(interventionsForChildren, 'Effectiveness incidence', interventionCompleteList, ages, conditionsList) # children only
+
+
+    # TODO: not currently available in spreadsheet
+    fracExposedMalaria = demographics['fraction at risk of malaria']
+    ORanemiaCondition = {age:{condition:1. for condition in conditionsList} for age in ages}
+    fracSevereDia = 0.2 # made up value
+    fracSAMtoMAM = 0.1 # fictional
+    fracMAMtoSAM = 0.1 # dictional
+
+    spreadsheetData = Data(causesOfDeathList, conditionsList, interventionList, interventionCompleteList,
+                           demographics, projectedBirths, rawMortality,
+                           causeOfDeathDist, RRdeathAnemia, RRdeathStunting,
                            RRdeathWasting, RRdeathBreastfeeding, RRdeathByBirthOutcome,
                            stuntingDistribution, wastingDistribution, breastfeedingDistribution,
-                           incidences, RRdiarrhea, ORstuntingCondition, birthOutcomeDist, 
+                           incidences, RRdiarrhea, ORstuntingCondition, birthOutcomeDist,
                            ORstuntingProgression, ORstuntingBirthOutcome, ORstuntingIntervention,
+                           RRanemiaIntervention, ORanemiaIntervention,
                            ORappropriatebfIntervention, ageAppropriateBreastfeeding, coverage,
                            costSaturation, targetPopulation, affectedFraction,
-                           effectivenessMortality, effectivenessIncidence, interventionsMaternal,
-                           foodSecurityGroups, ORstuntingComplementaryFeeding)
-
+                           effectivenessMortality, effectivenessIncidence, interventionsBirthOutcome,
+                           foodSecurityGroups, ORstuntingComplementaryFeeding, anemiaDistribution,
+                           projectedWRApop, projectedWRApopByAge, projectedPWpop, projectedGeneralPop,
+                           PWageDistribution, fracExposedMalaria, ORanemiaCondition, fracSevereDia,
+                           ORwastingCondition, ORwastingIntervention, ORwastingBirthOutcome,
+                           fracSAMtoMAM, fracMAMtoSAM)
     return spreadsheetData
                   

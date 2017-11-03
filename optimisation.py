@@ -4,31 +4,6 @@ Created on Wed Jun  8 13:58:29 2016
 
 @author: ruth
 """
-def tanzaniaConstraints(proposalSpendingList, totalBudget):
-    import numpy as np
-    numRegions = len(proposalSpendingList)
-    newScaledSpendingList = [0] * numRegions
-    regionIndexList1 = [6, 11, 7, 12, 17] # very low
-    regionIndexList2 = [3, 26, 0, 10, 9, 23, 21, 24, 19, 1, 22]  # below $1m
-    regionIndexList3 = [2, 4, 5, 8, 13, 14, 15, 16, 18, 20, 25, 27, 28, 29] #everything remaining
-    # very low first $0-0.5m
-    for region in regionIndexList1:
-        newScaledSpendingList[region] = np.random.uniform(0.0, 500000)
-    # now below $1m: ($0-2m)
-    for region in regionIndexList2:
-        newScaledSpendingList[region] = np.random.uniform(0.0, 2000000)
-    # fill in the remaining regions 
-    newTotalBudget = totalBudget - sum(newScaledSpendingList)    
-    remainingRegions = len(regionIndexList3)
-    unScaledList = np.random.rand(remainingRegions)
-    scaledList = rescaleAllocation(newTotalBudget, unScaledList)
-    i = 0
-    for region in regionIndexList3:
-        newScaledSpendingList[region] = scaledList[i]
-        i += 1
-    # don't need to unscale as scaleRatio will just be 1    
-    return newScaledSpendingList    
-
 def returnAlphabeticalDictionary(dictionary):
     from collections import OrderedDict
     dictionaryOrdered = OrderedDict([])
@@ -86,15 +61,45 @@ def runModelForNTimeSteps(timesteps, spreadsheetData, model, saveEachStep=False)
 
 def getTargetPopSizeFromModelInstance(dataSpreadsheetName, keyList, model):    
     import data 
+    import helper
+    thisHelper = helper.Helper()
     spreadsheetData = data.readSpreadsheet(dataSpreadsheetName, keyList)        
-    numAgeGroups = len(keyList['ages'])
     targetPopSize = {}
-    for intervention in spreadsheetData.interventionList:
+    for intervention in spreadsheetData.interventionCompleteList:
         targetPopSize[intervention] = 0.
+        # children
+        numAgeGroups = len(keyList['ages'])
         for iAge in range(numAgeGroups):
             ageName = keyList['ages'][iAge]
-            targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * model.listOfAgeCompartments[iAge].getTotalPopulation()
-        targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['pregnant women'] * model.pregnantWomen.populationSize
+            if "IFAS" in intervention:
+                target = 0.
+            else:
+                target = spreadsheetData.targetPopulation[intervention][ageName]
+            targetPopSize[intervention] += target * model.listOfAgeCompartments[iAge].getTotalPopulation()
+        # pregnant women
+        numAgeGroups = len(keyList['pregnantWomenAges'])    
+        for iAge in range(numAgeGroups):
+            ageName = keyList['pregnantWomenAges'][iAge]  
+            if "IFAS" in intervention:
+                target = 0.
+            else:
+                target = spreadsheetData.targetPopulation[intervention][ageName]
+            targetPopSize[intervention] += target * model.listOfPregnantWomenAgeCompartments[iAge].getTotalPopulation()
+        # women of reproductive age
+        numAgeGroups = len(keyList['reproductiveAges'])    
+        for iAge in range(numAgeGroups):
+            ageName = keyList['reproductiveAges'][iAge]  
+            if "IFAS" in intervention:
+                target = 0.
+            else:
+                target = spreadsheetData.targetPopulation[intervention][ageName]
+            targetPopSize[intervention] += target * model.listOfReproductiveAgeCompartments[iAge].getTotalPopulation()
+        # for food fortification set target population size as entire population
+        if "fortification" in intervention:
+           targetPopSize[intervention] =  spreadsheetData.demographics['total population'] #TODO: consider changing to demographic projection rather than baseline value
+    # get IFAS target populations seperately
+    fromModel = True       
+    targetPopSize.update(thisHelper.setIFASTargetPopWRA(spreadsheetData, model, fromModel))       
     return targetPopSize    
 
     
@@ -195,13 +200,13 @@ class Optimisation:
         
     def performSingleOptimisation(self, MCSampleSize, haveFixedProgCosts):
         import data 
+        import pickle
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         costCoverageInfo = self.getCostCoverageInfo()  
         initialTargetPopSize = self.getInitialTargetPopSize()
         initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
         totalBudget = sum(initialAllocation)
         xmin = [0.] * len(initialAllocation)
-        #args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}    
         # set up and run the model prior to optimising
         fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation)
         timestepsPre = 12
@@ -217,6 +222,7 @@ class Optimisation:
         
     def performSingleOptimisationForGivenTotalBudget(self, MCSampleSize, totalBudget, filename, haveFixedProgCosts):
         import data 
+        import pickle
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         costCoverageInfo = self.getCostCoverageInfo()  
         xmin = [0.] * len(spreadsheetData.interventionList)
@@ -297,6 +303,7 @@ class Optimisation:
                     args=(costCurves, model, timestepsPre, value, currentTotalBudget, fixedCosts, spreadsheetData,
                             costCoverageInfo, MCSampleSize, xmin))
                 prc.start()
+
         
     def performParallelSampling(self, MCSampleSize, haveFixedProgCosts, numRuns, filename):
         import data 
@@ -421,7 +428,6 @@ class Optimisation:
                 writer = csv.writer(f)
                 writer.writerow(header)
                 writer.writerows(rows)
-            
         
     def getInitialAllocationDictionary(self):
         import data 
@@ -479,17 +485,48 @@ class Optimisation:
         
     def getInitialTargetPopSize(self):
         import data 
+        import helper
+        thisHelper = helper.Helper()
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
-        mothers = self.helper.makePregnantWomen(spreadsheetData) 
-        numAgeGroups = len(self.helper.keyList['ages'])
-        agePopSizes  = self.helper.makeAgePopSizes(spreadsheetData)  
         targetPopSize = {}
-        for intervention in spreadsheetData.interventionList:
+        for intervention in spreadsheetData.interventionCompleteList:
             targetPopSize[intervention] = 0.
+            # children
+            agePopSizes  = self.helper.makeAgePopSizes(spreadsheetData)
+            numAgeGroups = len(self.helper.keyList['ages'])
             for iAge in range(numAgeGroups):
                 ageName = self.helper.keyList['ages'][iAge]
-                targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention][ageName] * agePopSizes[iAge]
-            targetPopSize[intervention] += spreadsheetData.targetPopulation[intervention]['pregnant women'] * mothers.populationSize
+                if "IFAS" in intervention:
+                    target = 0.
+                else:    
+                    target = spreadsheetData.targetPopulation[intervention][ageName]
+                targetPopSize[intervention] += target * agePopSizes[iAge]
+            # pregnant women
+            agePopSizes = self.helper.makePregnantWomenAgePopSizes(spreadsheetData)
+            numAgeGroups = len(self.helper.keyList['pregnantWomenAges'])    
+            for iAge in range(numAgeGroups):
+                ageName = self.helper.keyList['pregnantWomenAges'][iAge] 
+                if "IFAS" in intervention:
+                    target = 0.
+                else:    
+                    target = spreadsheetData.targetPopulation[intervention][ageName]
+                targetPopSize[intervention] += target * agePopSizes[iAge]
+            # women of reproductive age
+            agePopSizes = self.helper.makeWRAAgePopSizes(spreadsheetData)
+            numAgeGroups = len(self.helper.keyList['reproductiveAges'])    
+            for iAge in range(numAgeGroups):
+                ageName = self.helper.keyList['reproductiveAges'][iAge] 
+                if "IFAS" in intervention:
+                    target = 0.
+                else:
+                    target = spreadsheetData.targetPopulation[intervention][ageName]
+                targetPopSize[intervention] += target * agePopSizes[iAge]
+            # for food fortification set target population size as entire population
+            if "fortification" in intervention:
+               targetPopSize[intervention] =  spreadsheetData.demographics['total population'] #TODO: consider changing to demographic projection rather than baseline value    
+        #add IFAS intervention target pop sizes to dictionary  
+        fromModel = False       
+        targetPopSize.update(thisHelper.setIFASTargetPopWRA(spreadsheetData, "dummyModel", fromModel))        
         return targetPopSize    
     
     
@@ -856,9 +893,6 @@ class GeospatialOptimisation:
         scenarioMonteCarloOutput = []
         for r in range(0, geoMCSampleSize):
             proposalSpendingList = np.random.rand(self.numRegions)
-            # only call this next line for Tanzania analysis constraints
-            proposalSpendingList = tanzaniaConstraints(proposalSpendingList, totalBudget)
-            #
             args = {'regionalBOCs':self.regionalBOCs, 'totalBudget':totalBudget, 'optimise':self.optimise}
             budgetBest, fval, exitflag, output = asd.asd(geospatialObjectiveFunction, proposalSpendingList, args, xmin = xmin, verbose = 2)  
             outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval, output.x)        
@@ -930,6 +964,7 @@ class GeospatialOptimisation:
                     target=thisOptimisation.performSingleOptimisationForGivenTotalBudget, 
                     args=(MCSampleSize, thisBudget, GAFile+'_'+regionName, haveFixedProgCosts))
                 prc.start()
+            prc.join()    
                 
     def performParallelGeospatialOptimisationExtraMoney(self, geoMCSampleSize, MCSampleSize, GAFile, numCores, extraMoney, haveFixedProgCosts):
         # this optimisation keeps current regional spending the same and optimises only additional spending across regions        
@@ -950,7 +985,8 @@ class GeospatialOptimisation:
                 prc = Process(
                     target=thisOptimisation.performSingleOptimisationForGivenTotalBudget, 
                     args=(MCSampleSize, thisBudget, GAFile+'_'+regionName, haveFixedProgCosts))
-                prc.start()            
+                prc.start()    
+            prc.join()    
         
     def plotReallocationByRegion(self):
         from plotting import plotallocations 

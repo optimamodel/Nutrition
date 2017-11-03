@@ -31,7 +31,7 @@ class TestsForsetupDataModelDerivedParameters(unittest.TestCase):
         self.assertAlmostEqual(sumPopAge1, 32000)     
     
 
-class TestsForConstantsClass(unittest.TestCase):
+class TestsForDerivedClass(unittest.TestCase):
     def setUp(self):
         [self.testData, self.testModel, self.testDerived, self.testParams, self.keyList] = setupDataModelDerivedParameters()
         
