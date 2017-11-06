@@ -1,7 +1,7 @@
 """
 guidemo1.py -- script for running functionality for the Nutrition GUI demo
     
-Last update: 11/3/17 (gchadder3)
+Last update: 11/6/17 (gchadder3)
 """
 
 def pctChange(startVal, endVal):
@@ -86,6 +86,8 @@ SCintervCovs[3] = 0.0
 SCintervCovs[4] = 0.0 # 0.75
 SCintervCovs[-1] = 0.0
 
+numYearsToRun = 14
+
 #
 # CLIENT: Validate user entries
 #
@@ -96,9 +98,16 @@ for ind, intervLabel in enumerate(intervLabels):
     elif SCintervCovs[ind] < 0.0:
         print 'ERROR: %s coverage value is set to a negative value' % intervLabel
 
+if numYearsToRun < 1:
+    print 'ERROR: This needs to run at least 1 year.'
+elif numYearsToRun > 14:
+    print 'ERROR: There is not enough data here to run for %d years.' % numYearsToRun
 #
 # SERVER: Response to user Simulate button press
 #
+
+# Set the model number of years.
+theOpt.numModelSteps = numYearsToRun
 
 SCintervSpending = []
 SCallocationDict = {}
