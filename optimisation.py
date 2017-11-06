@@ -53,7 +53,7 @@ def runModelForNTimeSteps(timesteps, spreadsheetData, model, saveEachStep=False)
     if model is None:   # instantiate a model
         model = helper.setupModelDerivedParameters(spreadsheetData)[0]
     for step in range(timesteps):
-        model.moveOneTimeStep()
+        model.moveModelOneYear()
         if saveEachStep:
             modelThisTimeStep = dc(model)
             modelList.append(modelThisTimeStep)
