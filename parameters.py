@@ -145,7 +145,7 @@ class Params:
         stuntingUpdate = {}
         for ageName in self.ages:
             stuntingUpdate[ageName] = 1.      
-        key1 = 'Complementary feeding education'
+        key1 = 'IYCF'
         key2 = 'Public provision of complementary foods'
         # collect data
         X1 = self.demographics['fraction poor']
