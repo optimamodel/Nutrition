@@ -894,7 +894,7 @@ class GeospatialOptimisation:
         for r in range(0, geoMCSampleSize):
             proposalSpendingList = np.random.rand(self.numRegions)
             # only call this next line for Tanzania analysis constraints
-            proposalSpendingList = tanzaniaConstraints(proposalSpendingList, totalBudget)
+            #proposalSpendingList = tanzaniaConstraints(proposalSpendingList, totalBudget)
             #
             args = {'regionalBOCs':self.regionalBOCs, 'totalBudget':totalBudget, 'optimise':self.optimise}
             budgetBest, fval, exitflag, output = asd.asd(geospatialObjectiveFunction, proposalSpendingList, args, xmin = xmin, verbose = 2)  
