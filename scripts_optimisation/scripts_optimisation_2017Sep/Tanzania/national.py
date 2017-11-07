@@ -9,6 +9,7 @@ date = '2017Sep'
 spreadsheetDate = '2017Sep'
 # use the spreadsheet which has the IYCF baseline coverage so that it calculated cost including it
 spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/InputForCode_'+country+'_IYCF.xlsx'
+costCurveType = 'standard'
 
 numModelSteps = 180
 MCSampleSize = 25
@@ -18,5 +19,5 @@ numCores = 8
 
 for optimise in ['deaths', 'thrive']:
     resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+country
-    thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem)
+    thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem, costCurveType)
     thisOptimisation.performParallelCascadeOptimisation(MCSampleSize, cascadeValues, numCores, haveFixedProgCosts)
