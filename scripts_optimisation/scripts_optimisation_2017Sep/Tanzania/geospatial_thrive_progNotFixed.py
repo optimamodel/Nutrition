@@ -10,13 +10,13 @@ date = '2017Sep'
 spreadsheetDate = '2017Sep'
 
 optimise = 'thrive'
-haveFixedProgCosts = False
-nCores = 360 #(12*30 - not actually using all these)
+haveFixedProgCosts = False #intervention spending not fixed, only overall regional spending fixed
+nCores =660 #(22*30 - not actually using all these, only using 30)
 
 costCurveType = 'standard'
 numModelSteps = 180
 MCSampleSize = 4
-cascadeValues = [15.0, 20.0, 50.0, 100.0, 200.0, 400.0, 600.0] #[0.0, 0.1, 0.2, 0.4, 0.8, 1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 3., 4., 5., 6., 8., 10., 'extreme']
+cascadeValues = [0.0, 0.1, 0.2, 0.4, 0.8, 1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 3., 4., 5., 6., 8., 10., 15.0, 20.0, 50.0, 100.0, 'extreme']
 splitCascade = False
 
 
