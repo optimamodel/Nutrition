@@ -19,7 +19,7 @@ date = '2017Sep'
 spreadsheetDate = '2017Sep'
 spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/InputForCode_'+country+'.xlsx'
 numModelSteps = 180
-optimise = ['thrive']
+optimise = 'dummy'
 costCurveType = 'standard'
 resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+country
 IYCF_cov = 0.15
@@ -33,7 +33,7 @@ for i in range(0, len(spreadsheetData.interventionList)):
     zeroSpending[intervention] = 0.        
  
 # zero scenario   
-outfilename = 'zero_spending.csv'  
+outfilename = 'zero_spending_national.csv'  
 header1 = ['thrive', 'deaths', 'stunting prev']  
 with open(outfilename, "wb") as f:
     writer = csv.writer(f)
@@ -44,8 +44,8 @@ with open(outfilename, "wb") as f:
     writer.writerow(row)
 
 # baseline 1 with IYCF manually scaled up
-outfilename = 'current_spending.csv'  
-header1 = ['region', 'thrive', 'deaths', 'stunting prev']  
+outfilename = 'baseline1_national.csv'  
+header1 = ['thrive', 'deaths', 'stunting prev']  
 with open(outfilename, "wb") as f:
     writer = csv.writer(f)
     writer.writerow(header1)
@@ -57,8 +57,8 @@ with open(outfilename, "wb") as f:
     
 # baseline 2 with custom coverages
 customCoverages = {'Vitamin A supplementation':0.9, 'Antenatal micronutrient supplementation':0.58, 'IYCF':0.65}
-outfilename = 'current_spending.csv'  
-header1 = ['region', 'thrive', 'deaths', 'stunting prev']  
+outfilename = 'baseline2_national.csv'  
+header1 = ['thrive', 'deaths', 'stunting prev']  
 with open(outfilename, "wb") as f:
     writer = csv.writer(f)
     writer.writerow(header1)
