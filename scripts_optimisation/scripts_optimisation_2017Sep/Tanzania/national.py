@@ -7,8 +7,8 @@ rootpath = '../../..'
 country = 'Tanzania'
 date = '2017Sep'
 spreadsheetDate = '2017Sep'
-
-spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/InputForCode_'+country+'.xlsx'
+# use the spreadsheet which has the IYCF baseline coverage so that it calculated cost including it
+spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/InputForCode_'+country+'_IYCF.xlsx'
 
 numModelSteps = 180
 MCSampleSize = 25
