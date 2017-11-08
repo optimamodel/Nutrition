@@ -131,54 +131,8 @@ def objectiveFunction(allocation, costCurves, model, totalBudget, fixedCosts, co
     if optimise == 'thrive':
         performanceMeasure = - performanceMeasure
     return performanceMeasure
-    
-def geospatialObjectiveFunction(spendingList, regionalBOCs, totalBudget, optimise):
-    from copy import deepcopy as dcp
-    numRegions = len(spendingList)
-    if sum(spendingList) == 0:
-        scaledAllocation = dcp(spendingList)
-    else:
-        scaledAllocation = rescaleAllocation(totalBudget, spendingList)
-    outcomeList = []
-    for regionIdx in range(numRegions):
-        regionalBOC = regionalBOCs[regionIdx]
-        regionalSpending = scaledAllocation[regionIdx]
-        regionalOutcome = regionalBOC(regionalSpending)
-        outcomeList.append(regionalOutcome)
-    nationalOutcome = sum(outcomeList)
-    if optimise == 'thrive':
-        nationalOutcome = - nationalOutcome
-    performanceMeasure = nationalOutcome
-    return performanceMeasure
 
-def geospatialObjectiveFunctionExtraMoney(spendingList, regionalBOCs, currentRegionalSpendingList, extraMoney, optimise):
-    from copy import deepcopy as dcp
-    numRegions = len(spendingList)
-    if sum(spendingList) == 0: 
-        scaledSpendingList = dcp(spendingList)
-    else:    
-        scaledSpendingList = rescaleAllocation(extraMoney, spendingList)    
-    outcomeList = []
-    for regionIdx in range(numRegions):
-        regionalBOC = regionalBOCs[regionIdx]
-        regionalSpending = scaledSpendingList[regionIdx]
-        regionalOutcome = regionalBOC(regionalSpending)
-        outcomeList.append(regionalOutcome)
-    nationalOutcome = sum(outcomeList)
-    if optimise == 'thrive':
-        nationalOutcome = - nationalOutcome
-    return nationalOutcome
 
-    # for region in range(0, numRegions):
-    #     newTotalSpending = currentRegionalSpendingList[region] + scaledSpendingList[region]
-    #     outcome = pchip.pchip(regionalBOCs['spending'][region], regionalBOCs['outcome'][region], newTotalSpending, deriv = False, method='pchip')
-    #     outcomeList.append(outcome)
-    # nationalOutcome = sum(outcomeList)
-    # if optimise == 'thrive':
-    #     nationalOutcome = - nationalOutcome
-    # return nationalOutcome
-
-            
 class OutputClass:
     def __init__(self, budgetBest, fval, exitflag, cleanOutputIterations, cleanOutputFuncCount, cleanOutputFvalVector, cleanOutputXVector):
         self.budgetBest = budgetBest
