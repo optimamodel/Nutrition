@@ -4,8 +4,6 @@ Created on Wed Jun  8 13:58:29 2016
 
 @author: ruth
 """
-from scipy.optimize import differential_evolution
-from scipy.interpolate import pchip
 
 def tanzaniaConstraints(proposalSpendingList, totalBudget):
     import numpy as np
@@ -142,9 +140,9 @@ def geospatialObjectiveFunction(spendingList, regionalBOCs, totalBudget, optimis
     else:
         scaledAllocation = rescaleAllocation(totalBudget, spendingList)
     outcomeList = []
-    for regionIndx in range(numRegions):
-        regionalBOC = regionalBOCs[regionIndx]
-        regionalSpending = scaledAllocation[regionIndx]
+    for regionIdx in range(numRegions):
+        regionalBOC = regionalBOCs[regionIdx]
+        regionalSpending = scaledAllocation[regionIdx]
         regionalOutcome = regionalBOC(regionalSpending)
         outcomeList.append(regionalOutcome)
     nationalOutcome = sum(outcomeList)
@@ -154,7 +152,6 @@ def geospatialObjectiveFunction(spendingList, regionalBOCs, totalBudget, optimis
     return performanceMeasure
 
 def geospatialObjectiveFunctionExtraMoney(spendingList, regionalBOCs, currentRegionalSpendingList, extraMoney, optimise):
-    import pchip
     from copy import deepcopy as dcp
     numRegions = len(spendingList)
     if sum(spendingList) == 0: 
@@ -162,14 +159,24 @@ def geospatialObjectiveFunctionExtraMoney(spendingList, regionalBOCs, currentReg
     else:    
         scaledSpendingList = rescaleAllocation(extraMoney, spendingList)    
     outcomeList = []
-    for region in range(0, numRegions):
-        newTotalSpending = currentRegionalSpendingList[region] + scaledSpendingList[region]
-        outcome = pchip.pchip(regionalBOCs['spending'][region], regionalBOCs['outcome'][region], newTotalSpending, deriv = False, method='pchip')        
-        outcomeList.append(outcome)
+    for regionIdx in range(numRegions):
+        regionalBOC = regionalBOCs[regionIdx]
+        regionalSpending = scaledSpendingList[regionIdx]
+        regionalOutcome = regionalBOC(regionalSpending)
+        outcomeList.append(regionalOutcome)
     nationalOutcome = sum(outcomeList)
     if optimise == 'thrive':
         nationalOutcome = - nationalOutcome
-    return nationalOutcome        
+    return nationalOutcome
+
+    # for region in range(0, numRegions):
+    #     newTotalSpending = currentRegionalSpendingList[region] + scaledSpendingList[region]
+    #     outcome = pchip.pchip(regionalBOCs['spending'][region], regionalBOCs['outcome'][region], newTotalSpending, deriv = False, method='pchip')
+    #     outcomeList.append(outcome)
+    # nationalOutcome = sum(outcomeList)
+    # if optimise == 'thrive':
+    #     nationalOutcome = - nationalOutcome
+    # return nationalOutcome
 
             
 class OutputClass:
@@ -368,12 +375,12 @@ class Optimisation:
     def runOnce(self, MCSampleSize, xmin, args, interventionList, totalBudget, filename):
         import asd as asd
         import pickle
-        import numpy as np
+        from numpy import random
         from operator import add
         numInterventions = len(interventionList)
         scenarioMonteCarloOutput = []
         for r in range(0, MCSampleSize):
-            proposalAllocation = np.random.rand(numInterventions)
+            proposalAllocation = random.rand(numInterventions)
             budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, proposalAllocation, args, xmin = xmin, verbose = 0)
             outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval, output.x)
             scenarioMonteCarloOutput.append(outputOneRun)
@@ -399,7 +406,7 @@ class Optimisation:
     def runOnceDumpFullOutputToFile(self, MCSampleSize, xmin, args, interventionList, totalBudget, filename):        
         # Ruth wrote this function to aid in creating data for the Health Hack weekend        
         import asd as asd 
-        import numpy as np
+        from numpy import random
         from operator import add
         import csv
         numInterventions = len(interventionList)
@@ -407,7 +414,7 @@ class Optimisation:
         fvalVector = []
         availableBudget = totalBudget - sum(args['fixedCosts'])
         for r in range(0, MCSampleSize):
-            proposalAllocation = np.random.rand(numInterventions)
+            proposalAllocation = random.rand(numInterventions)
             budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, proposalAllocation, args, xmin = xmin, verbose = 0) 
             # add each of the samples to the big vectors   
             for sample in range(len(output.fval)):
@@ -500,8 +507,8 @@ class Optimisation:
         from copy import deepcopy as dcp
         import pickle
         import data
-        import numpy as np
-        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList) 
+        from numpy import array
+        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
         costCoverageInfo = self.getCostCoverageInfo()
         targetPopSize = self.getInitialTargetPopSize()
         initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)
@@ -531,8 +538,8 @@ class Optimisation:
         # remove duplicate tuples
         uniqueTuples = list(set(xyTuple))
         sortedTuples = sorted(uniqueTuples)
-        xs = np.array([a for a, b in sortedTuples])
-        ys = np.array([b for a, b in sortedTuples])
+        xs = array([a for a, b in sortedTuples])
+        ys = array([b for a, b in sortedTuples])
         spendingVector = dcp(xs)
         outcomeVector = dcp(ys)
         return spendingVector, outcomeVector
@@ -685,28 +692,63 @@ class Optimisation:
 
 
 class GeospatialOptimisation:
-    def __init__(self, regionSpreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem, costCurveType):
+    def __init__(self, regionSpreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem, costCurveType, BOCsFileStem):
         self.regionSpreadsheetList = regionSpreadsheetList
         self.regionNameList = regionNameList
         self.numModelSteps = numModelSteps
         self.cascadeValues = cascadeValues
         self.optimise = optimise
         self.resultsFileStem = resultsFileStem
+        self.BOCsFileStem = BOCsFileStem
         self.costCurveType = costCurveType
         self.numRegions = len(regionSpreadsheetList)        
-        self.regionalBOCs = None 
         self.tradeOffCurves = None
         self.postGATimeSeries = None
-        # check that results directory exists and if not then create it
         import os
+        # check that results directory exists and if not then create it
         if not os.path.exists(resultsFileStem):
-            os.makedirs(resultsFileStem)        
-        
-    def generateAllRegionsBOC(self):
+            os.makedirs(resultsFileStem)
+        if BOCsFileStem is not None: # None when optimising regions independently
+            self.checkForRegionalBOCs()
+
+    def checkForRegionalBOCs(self):
+        import os
+        if os.path.exists(self.BOCsFileStem):
+            BOCsList = [self.BOCsFileStem + region + '_BOC.csv' for region in self.regionNameList]
+            if all([os.path.isfile(f) for f in BOCsList]): # all files must exist
+                self.regionalBOCs = self.readRegionalBOCs()
+            else:
+                self.regionalBOCs = None
+        else:
+            os.makedirs(self.BOCsFileStem)
+            self.regionalBOCs = None
+
+    def readRegionalBOCs(self):
+        import csv
+        from numpy import array
+        from scipy.interpolate import pchip
+        # get BOC curve
+        regionalBOCs = []
+        for region in self.regionNameList:
+            with open(self.BOCsFileStem + region + "_BOC.csv", 'rb') as f:
+                regionalSpending = []
+                regionalOutcome = []
+                reader = csv.reader(f)
+                for row in reader:
+                    regionalSpending.append(row[0])
+                    regionalOutcome.append(row[1])
+            # remove column headers
+            regionalSpending = array(regionalSpending[1:])
+            regionalOutcome = array(regionalOutcome[1:])
+            regionalBOCs.append(pchip(regionalSpending, regionalOutcome))
+        return regionalBOCs
+
+    def generateAllRegionsBOC(self): # TODO: there will be a problem here if (extraFunds + current) > (largestCascade * current)
         print 'reading files to generate regional BOCs..'
         import optimisation
         import math
         from copy import deepcopy as dcp
+        from scipy.interpolate import pchip
         regionalBOCs = []
         totalNationalBudget = self.getTotalNationalBudget()
         for region in range(0, self.numRegions):
@@ -715,12 +757,11 @@ class GeospatialOptimisation:
             filename = self.resultsFileStem + self.regionNameList[region]
             thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, filename, 'dummyCostCurve')
             # if final cascade value is 'extreme' replace it with value we used to generate .pkl file
-            thisCascade = dcp(self.cascadeValues)            
+            thisCascade = dcp(self.cascadeValues)
+            regionalTotalBudget = thisOptimisation.getTotalInitialBudget()
             if self.cascadeValues[-1] == 'extreme':
-                regionalTotalBudget = thisOptimisation.getTotalInitialBudget()
-                thisCascade[-1] = math.ceil(totalNationalBudget / regionalTotalBudget)            
+                thisCascade[-1] = math.ceil(totalNationalBudget / regionalTotalBudget)
             spending, outcome = thisOptimisation.generateBOCVectors(thisCascade, self.optimise, totalNationalBudget)
-            # TODO: this line will save BOCs every time it runs
             self.saveBOCcurves(spending, outcome, self.regionNameList[region]) # save so can directly optimise next time
             BOCthisRegion = pchip(spending, outcome)
             regionalBOCs.append(BOCthisRegion)
@@ -730,7 +771,7 @@ class GeospatialOptimisation:
     def saveBOCcurves(self, spending, outcome, regionName):
         import csv
         from itertools import izip
-        with open(regionName+'_regionalBOC.csv', 'wb') as f:
+        with open(self.BOCsFileStem + regionName+'_BOC.csv', 'wb') as f:
             writer = csv.writer(f)
             writer.writerow(['spending', 'outcome'])
             writer.writerows(izip(spending, outcome))
@@ -808,7 +849,7 @@ class GeospatialOptimisation:
         import plotting
         plotting.plotRegionalBOCs(self.regionalBOCs, self.regionNameList, self.optimise)
         
-    def getTotalNationalBudget(self): # TODO: only need cost curves for this, why create optimisation class?
+    def getTotalNationalBudget(self):
         import optimisation
         regionalBudgets = []
         for region in range(0, self.numRegions):
@@ -875,91 +916,116 @@ class GeospatialOptimisation:
                 else:
                     prc = Process(target=thisOptimisation.performCascadeOptimisation, args=(MCSampleSize, thisCascade, haveFixedProgCosts))
                     prc.start()
-                
-                
 
-    def getOptimisedRegionalBudgetList(self, geoMCSampleSize):
-        import asd
-        xmin = [0.] * self.numRegions
-        # if BOCs not generated, generate them
-        if self.regionalBOCs == None: # TODO: THIS WILL GENERATE ALL THE BOCs. Will need to build in condition that read them in instead if they are available
+    def getOptimisedRegionalBudgetList(self):
+        """Allocates funds to regions by ranking derivatives of BOCs (grid search)"""
+        if self.regionalBOCs == None:
             self.generateAllRegionsBOC()
-        totalBudget = self.getTotalNationalBudget()
-        xmax = [totalBudget] * self.numRegions
-        scenarioMonteCarloOutput = []
-        paramBounds = [(0., totalBudget)] * self.numRegions
-        GeneticArgs = (self.regionalBOCs, [totalBudget], [self.optimise])
-        ASDargs = {'regionalBOCs': self.regionalBOCs, 'totalBudget': totalBudget, 'optimise': self.optimise}
-        for r in range(0, geoMCSampleSize):
-            result = differential_evolution(geospatialObjectiveFunction, bounds=paramBounds, args=GeneticArgs, maxiter=10)
-            proposalSpendingList = result.x
-            budgetBest, fval, exitflag, output = asd.asd(geospatialObjectiveFunction, proposalSpendingList, ASDargs, xmin = xmin, xmax = xmax, verbose = 2)
-            outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval, output.x)        
-            scenarioMonteCarloOutput.append(outputOneRun)         
-        # find the best
-        bestSample = scenarioMonteCarloOutput[0]
-        for sample in range(0, len(scenarioMonteCarloOutput)):
-            if scenarioMonteCarloOutput[sample].fval < bestSample.fval:
-                bestSample = scenarioMonteCarloOutput[sample]
-        bestSampleScaled = rescaleAllocation(totalBudget, bestSample.budgetBest)        
-        optimisedRegionalBudgetList = bestSampleScaled  
-        return optimisedRegionalBudgetList
+        currentRegionalSpending = self.getCurrentRegionalBudgets()
+        regionalAllocation = self.runGridSearch(currentRegionalSpending)
+        return regionalAllocation
 
-    def getOptimisedRegionalBudgetListGivenBOCs(self, geoMCSampleSize, regionalBOCs, geneticIter, popSize):
-        import asd
-        xmin = [0.] * self.numRegions
-        totalBudget = self.getTotalNationalBudget()
-        xmax = [totalBudget] * self.numRegions
-        scenarioMonteCarloOutput = []
-        paramBounds = [(0., totalBudget)] * self.numRegions
-        GeneticArgs = (regionalBOCs, totalBudget, self.optimise)
-        ASDargs = {'regionalBOCs': regionalBOCs, 'totalBudget': totalBudget, 'optimise': self.optimise}
-        for r in range(0, geoMCSampleSize):
-            result = differential_evolution(geospatialObjectiveFunction, bounds=paramBounds, args=GeneticArgs, popsize=popSize, maxiter=geneticIter)
-            proposalSpendingList = result.x
-            budgetBest, fval, exitflag, output = asd.asd(geospatialObjectiveFunction, proposalSpendingList, ASDargs, xmin = xmin, xmax = xmax, verbose = 2)
-            outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval, output.x)
-            scenarioMonteCarloOutput.append(outputOneRun)
-        # find the best
-        bestSample = scenarioMonteCarloOutput[0]
-        for sample in range(0, len(scenarioMonteCarloOutput)):
-            if scenarioMonteCarloOutput[sample].fval < bestSample.fval:
-                bestSample = scenarioMonteCarloOutput[sample]
-        bestSampleScaled = rescaleAllocation(totalBudget, bestSample.budgetBest)
-        optimisedRegionalBudgetList = bestSampleScaled
-        return optimisedRegionalBudgetList, bestSample.fval
-
-
-    def getOptimisedRegionalBudgetListExtraMoney(self, geoMCSampleSize, extraMoney):
-        import asd
-        import numpy as np
-        from operator import add
-        xmin = [0.] * self.numRegions
+    def getOptimisedRegionalBudgetListExtraMoney(self, extraMoney):
         # if BOCs not generated, generate them
         if self.regionalBOCs == None:
             self.generateAllRegionsBOC()
-        currentRegionalSpendingList = self.getCurrentRegionalBudgets()
-        scenarioMonteCarloOutput = []
-        for r in range(0, geoMCSampleSize):
-            proposalSpendingList = np.random.rand(self.numRegions)
-            args = {'regionalBOCs':self.regionalBOCs, 'currentRegionalSpendingList':currentRegionalSpendingList, 'extraMoney':extraMoney, 'optimise':self.optimise}
-            budgetBest, fval, exitflag, output = asd.asd(geospatialObjectiveFunctionExtraMoney, proposalSpendingList, args, xmin = xmin, verbose = 2)  
-            outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval, output.x)        
-            scenarioMonteCarloOutput.append(outputOneRun)         
-        # find the best
-        bestSample = scenarioMonteCarloOutput[0]
-        for sample in range(0, len(scenarioMonteCarloOutput)):
-            if scenarioMonteCarloOutput[sample].fval < bestSample.fval:
-                bestSample = scenarioMonteCarloOutput[sample]
-        bestSampleScaled = rescaleAllocation(extraMoney, bestSample.budgetBest) 
-        # to get the total optimised regional budgets add the optimised allocation of the extra money to the regional baseline amounts
-        optimisedRegionalBudgetList = map(add, bestSampleScaled, currentRegionalSpendingList)
-        return optimisedRegionalBudgetList    
+        currentRegionalSpending = self.getCurrentRegionalBudgets()
+        regionalAllocationExtra = self.runGridSearch(currentRegionalSpending, extraMoney)
+        # add additional funds to current
+        regionalAllocation = [sum(x) for x in zip(currentRegionalSpending, regionalAllocationExtra)]
+        return regionalAllocation
+
+    def getBOCderivatives(self, currentRegionalSpending, extraFunds):
+        from numpy import linspace
+        numPoints = 2000
+        spendingVec = []
+        outcomeVec = []
+        costEffVecs = []
+        # calculate cost effectiveness vectors for each region
+        for regionIdx in range(self.numRegions):
+            if extraFunds: # only consider additional funds
+                regionalMaxBudget = currentRegionalSpending[regionIdx] + extraFunds
+                regionalMinBudget = currentRegionalSpending[regionIdx]
+            else:
+                regionalMaxBudget = sum(currentRegionalSpending)
+                regionalMinBudget = 0.
+            spending = linspace(regionalMinBudget, regionalMaxBudget, numPoints)
+            spendingThisRegion = spending[1:] # exclude 0 to avoid division error
+            adjustedRegionalSpending = spendingThisRegion - regionalMinBudget # centers spending if extra funds
+            spendingVec.append(adjustedRegionalSpending)
+            regionalBOC = self.regionalBOCs[regionIdx]
+            outcomeThisRegion = regionalBOC(spendingThisRegion)
+            outcomeVec.append(outcomeThisRegion)
+            costEffThisRegion = outcomeThisRegion / spendingThisRegion
+            costEffVecs.append(costEffThisRegion)
+        return costEffVecs, spendingVec, outcomeVec
+
+    def getOptimalOutcomeFromBOCs(self, allocations):
+        nationalOutcome = 0.
+        for regionIdx in range(self.numRegions):
+            regionalBOC = self.regionalBOCs[regionIdx]
+            regionalOutcome = regionalBOC(allocations[regionIdx])
+            nationalOutcome += regionalOutcome
+        return nationalOutcome
+
+    def runGridSearch(self, currentRegionalSpending, extraFunds=None):
+        from numpy import zeros, inf, nonzero, argmax
+        from copy import deepcopy as dcp
+        costEffVecs, spendingVec, outcomeVec = self.getBOCderivatives(currentRegionalSpending, extraFunds=extraFunds)
+        if extraFunds:
+            totalBudget = extraFunds
+        else:
+            totalBudget = sum(currentRegionalSpending)
+        maxIters = int(1e6) # loop should break before this is reached
+        remainingFunds = dcp(totalBudget)
+        regionalAllocations = zeros(self.numRegions)
+        percentBudgetSpent = 0.
+
+        for i in range(maxIters):
+            # find the most cost-effective region to fund
+            bestEff = -inf
+            bestRegion = None
+            for regionIdx in range(self.numRegions):
+                # find most effective spending in each region
+                costEffThisRegion = costEffVecs[regionIdx]
+                if len(costEffThisRegion):
+                    maxIdx = argmax(costEffThisRegion)
+                    maxEff = costEffThisRegion[maxIdx]
+                    if maxEff > bestEff:
+                        bestEff = maxEff
+                        bestEffIdx = maxIdx
+                        bestRegion = regionIdx
+
+            # once the most cost-effective spending is found, adjust all spending and outcome vectors, update available funds and regional allocation
+            if bestRegion is not None:
+                fundsSpent = spendingVec[bestRegion][bestEffIdx]
+                remainingFunds -= fundsSpent
+                spendingVec[bestRegion] -= fundsSpent
+                outcomeVec[bestRegion] -= outcomeVec[bestRegion][bestEffIdx]
+                regionalAllocations[bestRegion] += fundsSpent
+                # remove funds and outcomes at or below zero
+                spendingVec[bestRegion] = spendingVec[bestRegion][bestEffIdx+1: ]
+                outcomeVec[bestRegion] = outcomeVec[bestRegion][bestEffIdx+1: ]
+                # ensure regional spending doesn't exceed remaining funds
+                for regionIdx in range(self.numRegions):
+                    withinBudget = nonzero(spendingVec[regionIdx] <= remainingFunds)[0]
+                    spendingVec[regionIdx] = spendingVec[regionIdx][withinBudget]
+                    outcomeVec[regionIdx] = outcomeVec[regionIdx][withinBudget]
+                    costEffVecs[regionIdx] = outcomeVec[regionIdx] / spendingVec[regionIdx]
+                newPercentBudgetSpent = (totalBudget - remainingFunds) / totalBudget * 100.
+                if not(i%100) or (newPercentBudgetSpent - percentBudgetSpent) > 1.:
+                    percentBudgetSpent = newPercentBudgetSpent
+            else:
+                break # nothing more to allocate
+
+        # scale to ensure correct budget
+        scaledRegionalAllocations = rescaleAllocation(totalBudget, regionalAllocations)
+        return scaledRegionalAllocations
         
-    def performGeospatialOptimisation(self, geoMCSampleSize, MCSampleSize, GAFile, haveFixedProgCosts):
+    def performGeospatialOptimisation(self, MCSampleSize, GAFile, haveFixedProgCosts):
         import optimisation  
         print 'beginning geospatial optimisation..'
-        optimisedRegionalBudgetList = self.getOptimisedRegionalBudgetList(geoMCSampleSize)
+        optimisedRegionalBudgetList = self.getOptimisedRegionalBudgetList()
         print 'finished geospatial optimisation'
         for region in range(0, self.numRegions):
             regionName = self.regionNameList[region]
@@ -969,43 +1035,34 @@ class GeospatialOptimisation:
             thisBudget = optimisedRegionalBudgetList[region]
             thisOptimisation.performSingleOptimisationForGivenTotalBudget(MCSampleSize, thisBudget, GAFile+'_'+regionName, haveFixedProgCosts)
             
-    def performParallelGeospatialOptimisation(self, geoMCSampleSize, MCSampleSize, GAFile, numCores, haveFixedProgCosts):
+    def performParallelGeospatialOptimisation(self, MCSampleSize, GAFile, numCores, haveFixedProgCosts):
         import optimisation  
         from multiprocessing import Process
         print 'beginning geospatial optimisation..'
-        optimisedRegionalBudgetList = self.getOptimisedRegionalBudgetList(geoMCSampleSize)
-        print self.regionNameList
-        print optimisedRegionalBudgetList
+        optimisedRegionalBudgetList = self.getOptimisedRegionalBudgetList()
         print 'finished geospatial optimisation'
+        print optimisedRegionalBudgetList
+        if self.numRegions >numCores:
+            print "not enough cores to parallelise"
+        else:
+            for region in range(self.numRegions):
+                regionName = self.regionNameList[region]
+                print 'optimising for individual region ', regionName
+                thisSpreadsheet = self.regionSpreadsheetList[region]
+                thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, self.resultsFileStem, self.costCurveType)
+                thisBudget = optimisedRegionalBudgetList[region]
+                prc = Process(
+                    target=thisOptimisation.performSingleOptimisationForGivenTotalBudget,
+                    args=(MCSampleSize, thisBudget, GAFile+'_'+regionName, haveFixedProgCosts))
+                prc.start()
 
-        import csv
-        from itertools import izip
 
-        # TODO: this file can be generated by using the 'rerunGeoSpatialOptimisation.py' script
-        with open('newRegionalAllocations.csv', 'wb') as f:
-            writer = csv.writer(f)
-            writer.writerows(izip(self.regionNameList, optimisedRegionalBudgetList))
-        # TODO: I commented this out so that I didn't need to optimise within each region but just get the allocations for each region
-        # if self.numRegions >numCores:
-        #     print "not enough cores to parallelise"
-        # else:
-        #     for region in range(0, self.numRegions):
-        #         regionName = self.regionNameList[region]
-        #         print 'optimising for individual region ', regionName
-        #         thisSpreadsheet = self.regionSpreadsheetList[region]
-        #         thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, self.resultsFileStem, self.costCurveType)
-        #         thisBudget = optimisedRegionalBudgetList[region]
-        #         prc = Process(
-        #             target=thisOptimisation.performSingleOptimisationForGivenTotalBudget,
-        #             args=(MCSampleSize, thisBudget, GAFile+'_'+regionName, haveFixedProgCosts))
-        #         prc.start()
-                
-    def performParallelGeospatialOptimisationExtraMoney(self, geoMCSampleSize, MCSampleSize, GAFile, numCores, extraMoney, haveFixedProgCosts):
+    def performParallelGeospatialOptimisationExtraMoney(self, MCSampleSize, GAFile, numCores, extraMoney, haveFixedProgCosts):
         # this optimisation keeps current regional spending the same and optimises only additional spending across regions        
         import optimisation  
         from multiprocessing import Process
         print 'beginning geospatial optimisation..'
-        optimisedRegionalBudgetList = self.getOptimisedRegionalBudgetListExtraMoney(geoMCSampleSize, extraMoney)
+        optimisedRegionalBudgetList = self.getOptimisedRegionalBudgetListExtraMoney(extraMoney)
         print 'finished geospatial optimisation'
         if self.numRegions >numCores:
             print "not enough cores to parallelise"
@@ -1014,13 +1071,13 @@ class GeospatialOptimisation:
                 regionName = self.regionNameList[region]
                 print 'optimising for individual region ', regionName
                 thisSpreadsheet = self.regionSpreadsheetList[region]
-                thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, self.resultsFileStem) 
+                thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, self.resultsFileStem, 'dummyCurveType')
                 thisBudget = optimisedRegionalBudgetList[region]
                 prc = Process(
                     target=thisOptimisation.performSingleOptimisationForGivenTotalBudget, 
                     args=(MCSampleSize, thisBudget, GAFile+'_'+regionName, haveFixedProgCosts))
-                prc.start()            
-        
+                prc.start()
+
     def plotReallocationByRegion(self):
         from plotting import plotallocations 
         import pickle
