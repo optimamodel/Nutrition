@@ -35,10 +35,11 @@ for optimise in ['thrive', 'deaths']:
     print 'running GA for:  ', optimise
 
     resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixed/'
+    BOCsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixed/' + 'regionalBOCs/'
     GAFile = 'GA_progNotFixed'
 
     geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps,
-                                                                 cascadeValues, optimise, resultsFileStem, costCurveType)
+                                                                 cascadeValues, optimise, resultsFileStem, costCurveType, BOCsFileStem)
     # parallel for each optimise                                                             
     prc = Process(target=geospatialOptimisation.performParallelGeospatialOptimisation, args=(geoMCSampleSize, rerunMCSampleSize, GAFile, numCores, haveFixedProgCosts))
     prc.start()                                                                 
