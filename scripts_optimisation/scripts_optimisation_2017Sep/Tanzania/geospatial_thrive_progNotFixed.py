@@ -33,7 +33,7 @@ for regionName in regionNameList:
     spreadsheetList.append(spreadsheet)
 
 resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixed/'
-BOCsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixed/' + 'regionalBOCs/'
+BOCsFileStem = None
 
 geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps,
                                                              cascadeValues, optimise, resultsFileStem, costCurveType, BOCsFileStem)

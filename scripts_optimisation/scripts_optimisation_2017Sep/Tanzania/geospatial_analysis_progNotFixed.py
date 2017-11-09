@@ -35,7 +35,7 @@ for optimise in ['thrive', 'deaths']:
     print 'running GA for:  ', optimise
 
     resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixed/'
-    BOCsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixed/' + 'regionalBOCs/'
+    BOCsFileStem = resultsFileStem + 'regionalBOCs/'
     GAFile = 'GA_progNotFixed'
 
     geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps,
