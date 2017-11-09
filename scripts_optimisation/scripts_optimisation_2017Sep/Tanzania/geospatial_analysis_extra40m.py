@@ -13,7 +13,6 @@ spreadsheetDate = '2017Sep'
 haveFixedProgCosts = False  # programs are not fixed, adding extra money automatically fixes regional spending and distributes the extra
 
 rerunMCSampleSize = 4
-geoMCSampleSize = 4
 numModelSteps = 180
 cascadeValues = [0.0, 0.1, 0.2, 0.4, 0.8, 1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 3., 4., 5., 6., 8., 10., 15.0, 20.0, 50.0, 100.0, 'extreme']
 costCurveType = 'standard'
@@ -34,11 +33,12 @@ extraMoney = 40000000
 for optimise in ['thrive', 'deaths']:
     print 'running GA for:  ', optimise
     resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixed/'
+    BOCsFileStem = resultsFileStem + 'regionalBOCs/'
     GAFile = 'GA_progNotFixed'
     geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps,
-                                                                 cascadeValues, optimise, resultsFileStem, costCurveType)
+                                                                 cascadeValues, optimise, resultsFileStem, costCurveType, BOCsFileStem)
     # parallel for each optimise                                                             
-    prc = Process(target=geospatialOptimisation.performParallelGeospatialOptimisationExtraMoney, args=(geoMCSampleSize, rerunMCSampleSize, GAFile, numCores, extraMoney, haveFixedProgCosts))
+    prc = Process(target=geospatialOptimisation.performParallelGeospatialOptimisationExtraMoney, args=(rerunMCSampleSize, GAFile, numCores, extraMoney, haveFixedProgCosts))
     prc.start()                                                                 
                               
     #geospatialOptimisation.performParallelGeospatialOptimisationExtraMoney(geoMCSampleSize, rerunMCSampleSize, GAFile, numCores, extraMoney, haveFixedProgCosts)
