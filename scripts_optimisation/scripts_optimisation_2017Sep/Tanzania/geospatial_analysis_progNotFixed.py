@@ -13,7 +13,6 @@ spreadsheetDate = '2017Sep'
 haveFixedProgCosts = False
 
 rerunMCSampleSize = 4
-geoMCSampleSize = 50
 # WARNING: these must match values used in the other geospatial scripts
 numModelSteps = 180
 cascadeValues = [0.0, 0.1, 0.2, 0.4, 0.8, 1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 3., 4., 5., 6., 8., 10., 15.0, 20.0, 50.0, 100.0, 200.0, 400.0, 600.0, 'extreme']
@@ -41,7 +40,7 @@ for optimise in ['thrive', 'deaths']:
     geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps,
                                                                  cascadeValues, optimise, resultsFileStem, costCurveType, BOCsFileStem)
     # parallel for each optimise                                                             
-    prc = Process(target=geospatialOptimisation.performParallelGeospatialOptimisation, args=(geoMCSampleSize, rerunMCSampleSize, GAFile, numCores, haveFixedProgCosts))
+    prc = Process(target=geospatialOptimisation.performParallelGeospatialOptimisation, args=(rerunMCSampleSize, GAFile, numCores, haveFixedProgCosts))
     prc.start()                                                                 
                                                                  
 #    geospatialOptimisation.performParallelGeospatialOptimisation(geoMCSampleSize, rerunMCSampleSize, GAFile,
