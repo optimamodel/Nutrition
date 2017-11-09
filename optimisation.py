@@ -409,9 +409,27 @@ class Optimisation:
         initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)        
         return sum(initialAllocation)     
         
+    def oneModelRunWithOutput(self, allocationDictionary):
+        import data
+        from numpy import maximum
+        eps = 1.e-3  ## WARNING: using project non-specific eps
+        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
+        costCoverageInfo = self.getCostCoverageInfo()
+        timestepsPre = 12
+        model, modelList = runModelForNTimeSteps(timestepsPre, spreadsheetData, model=None, saveEachStep=True)
+        costCurves = generateCostCurves(spreadsheetData, model, self.helper.keyList, self.dataSpreadsheetName,
+                                       costCoverageInfo, self.costCurveType)
+        newCoverages = {}
+        for i in range(0, len(spreadsheetData.interventionList)):
+            intervention = spreadsheetData.interventionList[i]
+            costCurveThisIntervention = costCurves[intervention]
+            newCoverages[intervention] = maximum(costCurveThisIntervention(allocationDictionary[intervention]), eps)
+        model.updateCoverages(newCoverages)
+        steps = self.numModelSteps - timestepsPre
+        modelList += runModelForNTimeSteps(steps, spreadsheetData, model, saveEachStep=True)[1]
+        return modelList
         
-        
-    def oneModelRunWithOutput(self, allocationDictionary, model, spreadsheetData, costCurves, timestepsPre):
+    def oneModelRunWithOutputForFuture(self, allocationDictionary, model, spreadsheetData, costCurves, timestepsPre): # TODO: this is the way forward regarding this function for master (it is faster)
         from numpy import maximum
         eps = 1.e-3  ## WARNING: using project non-specific eps
         newCoverages = {}
@@ -954,6 +972,7 @@ class GeospatialOptimisation:
         return nationalOutcome
 
     def runGridSearch(self, currentRegionalSpending, extraFunds=None):
+        """If specified, extraFunds is a scalar value which represents funds to be distributed on top of fixed current regional spending"""
         from numpy import zeros, inf, nonzero, argmax
         from copy import deepcopy as dcp
         costEffVecs, spendingVec, outcomeVec = self.getBOCderivatives(currentRegionalSpending, extraFunds=extraFunds)
