@@ -77,8 +77,8 @@ for optimise in optimiseList:
             thisSpending = pickle.load(infile)
             infile.close()  
             if i<1: #do this once
-                writer.writerow(['region'] + [thisSpending.keys()])
-            row = [region] + [thisSpending.values()]
+                writer.writerow(['region'] + [key for key in thisSpending.keys()])
+            row = [regionName] + [value for value in thisSpending.values()]
             i+=1
             writer.writerow(row)                
         
@@ -118,23 +118,8 @@ for optimise in optimiseList:
             thisSpending = pickle.load(infile)
             infile.close()  
             if i<1: #do this once
-                writer.writerow(['region'] + [thisSpending.keys()])
-            row = [region] + [thisSpending.values()]
+                writer.writerow(['region'] + [key for key in thisSpending.keys()])
+            row = [regionName] + [value for value in thisSpending.values()]
             i+=1
             writer.writerow(row)          
         
-# put regional current spending into csv   
-i=0     
-outfilename = 'regional_current_spending.csv'  
-with open(outfilename, "wb") as f:
-    writer = csv.writer(f)
-    for region in range(len(regionNameList)):
-        regionName = regionNameList[region]
-        spreadsheet = spreadsheetList[region]
-        thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, 'dummy', resultsFileStem, costCurveType)    
-        thisSpending = thisOptimisation.getInitialAllocationDictionary()
-        if i<1: #do this once
-            writer.writerow(['region'] + [thisSpending.keys()])
-        row = [region] + [thisSpending.values()]
-        i+=1
-        writer.writerow(row)   
