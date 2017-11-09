@@ -18,12 +18,23 @@ outcomeOfInterestList = ['thrive', 'deaths']
 optimiseList = ['deaths', 'thrive']
 
 # -------------- NATIONAL   -----------------
+#baseline 1
 spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/InputForCode_'+country+'_IYCF.xlsx'
 cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0]
 
 for optimise in optimiseList:
     for outcomeOfInterest in outcomeOfInterestList:
         resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+country
+        thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem, costCurveType) 
+        thisOptimisation.outputCurrentSpendingToCSV()
+        thisOptimisation.outputCascadeAndOutcomeToCSV(cascadeValues, outcomeOfInterest)
+
+#baseline 2
+spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/InputForCode_'+country+'_baseline2.xlsx'
+
+for optimise in optimiseList:
+    for outcomeOfInterest in outcomeOfInterestList:
+        resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national_baseline2/'+country
         thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem, costCurveType) 
         thisOptimisation.outputCurrentSpendingToCSV()
         thisOptimisation.outputCascadeAndOutcomeToCSV(cascadeValues, outcomeOfInterest)
