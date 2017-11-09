@@ -35,10 +35,10 @@ regionNameList = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Geita', 'Iringa', 'Kager
 spreadsheetFileStem = rootpath + '/input_spreadsheets/' + country + '/' + spreadsheetDate + '/regions/'
 spreadsheetList = []
 for regionName in regionNameList:
-    spreadsheet = spreadsheetFileStem + '/InputForCode_' + regionName + '.xlsx'
+    spreadsheet = spreadsheetFileStem + '/InputForCode_' + regionName + 'IYCF.xlsx'
     spreadsheetList.append(spreadsheet)
 
-resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixed/'
+resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixedIYCF/'
 BOCsFileStem = None
 
 geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps,
