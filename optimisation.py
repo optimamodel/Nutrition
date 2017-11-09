@@ -532,11 +532,11 @@ class Optimisation:
             infile = open(filename, 'rb')
             thisAllocation = pickle.load(infile)
             infile.close()
-            modelThisAllocation = self.oneModelRunWithOutput(thisAllocation, thisModel, spreadsheetData,
+            modelThisAllocation = self.oneModelRunWithOutputForFuture(thisAllocation, thisModel, spreadsheetData,
                                                          costCurves, timeStepsPre)
             modelOutcome = modelThisAllocation.getOutcome(outcome)
             outcomeVector.append(modelOutcome)
-        # order vectors and check for duplicates for pchip
+        # order vectors and remove duplicates for pchip
         xyTuple = zip(spendingVector, outcomeVector)
         # remove duplicate tuples
         uniqueTuples = list(set(xyTuple))
