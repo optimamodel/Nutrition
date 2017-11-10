@@ -17,27 +17,27 @@ costCurveType = 'standard'
 outcomeOfInterestList = ['thrive', 'deaths']
 optimiseList = ['deaths', 'thrive']
 
-# -------------- NATIONAL   -----------------
-#baseline 1
-spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/InputForCode_'+country+'_IYCF.xlsx'
-cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0]
-
-for optimise in optimiseList:
-    for outcomeOfInterest in outcomeOfInterestList:
-        resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+country
-        thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem, costCurveType) 
-        thisOptimisation.outputCurrentSpendingToCSV()
-        thisOptimisation.outputCascadeAndOutcomeToCSV(cascadeValues, outcomeOfInterest)
-
-#baseline 2
-spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/InputForCode_'+country+'_baseline2.xlsx'
-
-for optimise in optimiseList:
-    for outcomeOfInterest in outcomeOfInterestList:
-        resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national_baseline2/'+country
-        thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem, costCurveType) 
-        thisOptimisation.outputCurrentSpendingToCSV()
-        thisOptimisation.outputCascadeAndOutcomeToCSV(cascadeValues, outcomeOfInterest)
+## -------------- NATIONAL   -----------------
+##baseline 1
+#spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/InputForCode_'+country+'_IYCF.xlsx'
+#cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0]
+#
+#for optimise in optimiseList:
+#    for outcomeOfInterest in outcomeOfInterestList:
+#        resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+country
+#        thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem, costCurveType) 
+#        thisOptimisation.outputCurrentSpendingToCSV()
+#        thisOptimisation.outputCascadeAndOutcomeToCSV(cascadeValues, outcomeOfInterest)
+#
+##baseline 2
+#spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/InputForCode_'+country+'_baseline2.xlsx'
+#
+#for optimise in optimiseList:
+#    for outcomeOfInterest in outcomeOfInterestList:
+#        resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national_baseline2/'+country
+#        thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem, costCurveType) 
+#        thisOptimisation.outputCurrentSpendingToCSV()
+#        thisOptimisation.outputCascadeAndOutcomeToCSV(cascadeValues, outcomeOfInterest)
 
 ## --------------- GEOSPATIAL ---------------- 
 cascadeValues = [0.0, 0.1, 0.2, 0.4, 0.8, 1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 3., 4., 5., 6., 8., 10., 15.0, 20.0, 50.0, 100.0, 'extreme']
@@ -57,7 +57,8 @@ for regionName in regionNameList:
 # get trade off curves
 for optimise in optimiseList:
     resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixedIYCF/'
-    geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem, costCurveType)
+    BOCsFileStem = resultsFileStem + 'regionalBOCs/'
+    geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem, costCurveType, BOCsFileStem)
     geospatialOptimisation.outputTradeOffCurves()
         
         
