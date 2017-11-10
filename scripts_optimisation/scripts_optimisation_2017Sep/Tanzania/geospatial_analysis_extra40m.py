@@ -25,14 +25,14 @@ regionNameList = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Geita', 'Iringa', 'Kager
 spreadsheetFileStem = rootpath + '/input_spreadsheets/' + country + '/' + spreadsheetDate + '/regions/InputForCode_'
 spreadsheetList = []
 for regionName in regionNameList:
-    spreadsheet = spreadsheetFileStem + regionName + '.xlsx'
+    spreadsheet = spreadsheetFileStem + regionName + '_IYCF.xlsx'
     spreadsheetList.append(spreadsheet)
 
 numCores = 30  # need this number times the number of outcomes you're optimising for
 extraMoney = 40000000
 for optimise in ['thrive', 'deaths']:
     print 'running GA for:  ', optimise
-    resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixed/'
+    resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixedIYCF/'
     BOCsFileStem = resultsFileStem + 'regionalBOCs/'
     GAFile = 'GA_progNotFixed'
     geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps,
