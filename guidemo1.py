@@ -1,7 +1,7 @@
 """
 guidemo1.py -- script for running functionality for the Nutrition GUI demo
     
-Last update: 11/6/17 (gchadder3)
+Last update: 11/9/17 (gchadder3)
 """
 
 #
@@ -11,7 +11,7 @@ Last update: 11/6/17 (gchadder3)
 import data
 import helper
 import costcov
-import optimisation
+import optimisation2
 from copy import deepcopy as dcp
 
 #
@@ -40,7 +40,7 @@ def getInterventions():
     spreadsheetData = data.readSpreadsheet(spreadsheet, theHelper.keyList)
     
     costCov = costcov.Costcov()
-    theOpt = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, 
+    theOpt = optimisation2.Optimisation(spreadsheet, numModelSteps, optimise, 
         resultsFileStem, costCurveType)
     
     costCoverageInfo = theOpt.getCostCoverageInfo()   # reads from the spreadsheet
@@ -77,7 +77,7 @@ def runModel(interventionCoverages, yearsToRun):
     spreadsheetData = data.readSpreadsheet(spreadsheet, theHelper.keyList)
     
     costCov = costcov.Costcov()
-    theOpt = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, 
+    theOpt = optimisation2.Optimisation(spreadsheet, numModelSteps, optimise, 
         resultsFileStem, costCurveType)
     
     costCoverageInfo = theOpt.getCostCoverageInfo()   # reads from the spreadsheet
@@ -181,7 +181,7 @@ if __name__ == '__main__':
     spreadsheetData = data.readSpreadsheet(spreadsheet, theHelper.keyList)
     
     costCov = costcov.Costcov()
-    theOpt = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, 
+    theOpt = optimisation2.Optimisation(spreadsheet, numModelSteps, optimise, 
         resultsFileStem, costCurveType)
     
     costCoverageInfo = theOpt.getCostCoverageInfo()   # reads from the spreadsheet
