@@ -72,7 +72,7 @@ def readSpreadsheet(fileName, keyList):
     interventionList = list(df['Intervention'])
     
     # WARNING HARD CODED CHANGE BACK
-    if 'Vitamin A fortification of food' in interventionList: interventionList.remove('Vitamin A fortification of food')
+    #if 'Vitamin A fortification of food' in interventionList: interventionList.remove('Vitamin A fortification of food')
     # WARNING
     
     #get list of projection years
@@ -328,7 +328,7 @@ def readSpreadsheet(fileName, keyList):
             costSaturation[intervention][costinfo] = df.loc[intervention, costinfo]
             
     # WARNING HARD CODED FOR TANZANIA GEO ANALYSIS - CHANGE BACK!  
-    costSaturation['Vitamin A supplementation']["saturation coverage"] = 1.1        
+    #costSaturation['Vitamin A supplementation']["saturation coverage"] = 1.1
             
 
     # READ Intervention Target Population Matrix SHEET
@@ -373,7 +373,7 @@ def readSpreadsheet(fileName, keyList):
     mylist = list(df.index.values)
     myset = set(mylist)
     interventionsHere = list(myset)
-    interventionsHere.remove('Vitamin A fortification of food') #WARNING: HARD CODED, REMOVE THIS
+    #interventionsHere.remove('Vitamin A fortification of food') #WARNING: HARD CODED, REMOVE THIS
     #do the rest
     df = pandas.read_excel(Location, sheetname = 'Interventions affected fraction', index_col = [0, 1])
     affectedFraction = {}
@@ -399,7 +399,7 @@ def readSpreadsheet(fileName, keyList):
     mylist = list(df.index.values)
     myset = set(mylist)
     interventionsHere = list(myset)
-    interventionsHere.remove('Vitamin A fortification of food') #WARNING: HARD CODED, REMOVE THIS
+    #interventionsHere.remove('Vitamin A fortification of food') #WARNING: HARD CODED, REMOVE THIS
     #do the rest
     df = pandas.read_excel(Location, sheetname = 'Interventions mortality eff', index_col = [0, 1])
     effectivenessMortality = {}
@@ -425,7 +425,7 @@ def readSpreadsheet(fileName, keyList):
     mylist = list(df.index.values)
     myset = set(mylist)
     interventionsHere = list(myset)
-    interventionsHere.remove('Vitamin A fortification of food') #WARNING: HARD CODED, REMOVE THIS
+    #interventionsHere.remove('Vitamin A fortification of food') #WARNING: HARD CODED, REMOVE THIS
     #do the rest
     df = pandas.read_excel(Location, sheetname = 'Interventions incidence eff', index_col = [0, 1])
     effectivenessIncidence = {}

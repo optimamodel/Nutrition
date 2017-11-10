@@ -8,7 +8,7 @@ country = 'Tanzania'
 date = '2017Sep'
 spreadsheetDate = '2017Sep'
 
-spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/TanzaniaHatSheets'+'/InputForCode_'+country+'Hat_VitASuppOnly.xlsx'
+spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/TanzaniaHatSheets'+'/InputForCode_'+country+'Hat_VitASuppOnly_IYCF.xlsx'
 
 costCurveType = 'standard'
 numModelSteps = 180
@@ -18,6 +18,6 @@ haveFixedProgCosts = False
 numCores = 1
 
 for optimise in ['thrive']:
-    resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+country+'Hat/'+'VitASuppOnly/'
+    resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+country+'Hat/'+'VitASuppOnly_IYCF/'
     thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem, costCurveType)
     thisOptimisation.performParallelCascadeOptimisation(MCSampleSize, cascadeValues, numCores, haveFixedProgCosts)
