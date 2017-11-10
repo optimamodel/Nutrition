@@ -13,12 +13,12 @@ costCurveType = 'standard'
 numModelSteps = 180
 
 # NATIONAL
-dataSpreadsheetName = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/TanzaniaHatSheets'+'/InputForCode_'+country+'Hat_VitASuppOnly.xlsx'
+dataSpreadsheetName = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/TanzaniaHatSheets'+'/InputForCode_'+country+'Hat_VitASuppOnly_IYCF.xlsx'
 outcomeOfInterestList = ['thrive']
 cascadeValues = [1.0]
 
 for optimise in outcomeOfInterestList:
-    resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/national/' + country + 'Hat/' + 'VitASuppOnly/'
+    resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/national/' + country + 'Hat/' + 'VitASuppOnly_IYCF/'
     # both time series when optimising for thrive
     thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise, resultsFileStem, costCurveType)
     thisOptimisation.outputCurrentSpendingToCSV()
