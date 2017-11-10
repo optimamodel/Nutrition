@@ -51,12 +51,12 @@ regionNameList = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Geita', 'Iringa', 'Kager
 spreadsheetFileStem = rootpath + '/input_spreadsheets/' + country + '/' + spreadsheetDate + '/regions/InputForCode_'
 spreadsheetList = []
 for regionName in regionNameList:
-    spreadsheet = spreadsheetFileStem + regionName + '.xlsx'
+    spreadsheet = spreadsheetFileStem + regionName + '_IYCF.xlsx'
     spreadsheetList.append(spreadsheet)
 
 # get trade off curves
 for optimise in optimiseList:
-    resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixed/'
+    resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixedIYCF/'
     geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem, costCurveType)
     geospatialOptimisation.outputTradeOffCurves()
         
@@ -64,7 +64,7 @@ for optimise in optimiseList:
 # get individual regions optimised spending (from the cascade)
 i=0     
 for optimise in optimiseList:
-    resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixed/'        
+    resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixedIYCF/'        
     outfilename = 'individual_region_optimised_spending'+optimise+'.csv'  
     with open(outfilename, "wb") as f:
         writer = csv.writer(f)
@@ -84,7 +84,7 @@ for optimise in optimiseList:
         
 # get outcomes for optimised spending
 for optimise in optimiseList:
-    resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixed/'        
+    resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixedIYCF/'        
     outfilename = 'optimised_'+optimise+'_regional_output.csv'  
     header1 = ['region', 'thrive', 'deaths', 'stunting prev']  
     with open(outfilename, "wb") as f:
@@ -105,7 +105,7 @@ for optimise in optimiseList:
 # put regional optimised spending into csv  (this is post GA) 
 i=0     
 for optimise in optimiseList:
-    resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixed/'        
+    resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixedIYCF/'        
     outfilename = 'regional_postGA_optimised_spending'+optimise+'.csv'  
     with open(outfilename, "wb") as f:
         writer = csv.writer(f)
