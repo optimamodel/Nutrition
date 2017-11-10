@@ -198,6 +198,11 @@ class Optimisation:
         import os
         if not os.path.exists(resultsFileStem):
             os.makedirs(resultsFileStem)
+            
+    def loadData(self):
+        import data
+        if self.spreadsheetData is None:
+            self.spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         
     def performSingleOptimisation(self, MCSampleSize, haveFixedProgCosts):
         import data 

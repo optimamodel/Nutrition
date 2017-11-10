@@ -1,15 +1,13 @@
 """
 guidemo1.py -- script for running functionality for the Nutrition GUI demo
     
-Last update: 11/9/17 (gchadder3)
+Last update: 11/10/17 (gchadder3)
 """
 
 #
 # Imports
 #
 
-import data
-import helper
 import costcov
 import optimisation2
 from copy import deepcopy as dcp
@@ -28,6 +26,7 @@ def pctChange(startVal, endVal):
         return (endVal - startVal) * 100.0 / startVal
     
 def getInterventions():
+    # Set up Optimisation object to work with.
     #rootpath = './'
     rootpath = '../../Nutrition/'
     spreadsheet = rootpath + 'input_spreadsheets/Bangladesh/2017Oct/InputForCode_Bangladesh.xlsx'
@@ -35,16 +34,24 @@ def getInterventions():
     optimise = 'dummy'
     resultsFileStem = 'dummy'
     costCurveType = 'dummy'
-    
-    theHelper = helper.Helper()
-    spreadsheetData = data.readSpreadsheet(spreadsheet, theHelper.keyList)
-    
-    costCov = costcov.Costcov()
     theOpt = optimisation2.Optimisation(spreadsheet, numModelSteps, optimise, 
-        resultsFileStem, costCurveType)
+        resultsFileStem, costCurveType)    
     
-    costCoverageInfo = theOpt.getCostCoverageInfo()   # reads from the spreadsheet
-    targetPopSize = theOpt.getInitialTargetPopSize()  # reads from the spreadsheet
+    # Load the spreadsheet data in the Optimisation object and make a link to 
+    # this.
+    theOpt.loadData()
+    spreadsheetData = theOpt.spreadsheetData
+    
+    # Create a Costcov object to use for calculating spendings from coverage
+    # percentages.
+    costCov = costcov.Costcov()
+
+    # Get the cost coverage info from the Optimisation object.
+    costCoverageInfo = theOpt.getCostCoverageInfo()
+    
+    # Get the initial target population sizes for each intervention from the 
+    # Optimisation object.
+    targetPopSize = theOpt.getInitialTargetPopSize()
     
     # Get the intervention labels and default coverages (in spreadsheet order).
     intervLabels = []
@@ -65,6 +72,7 @@ def getInterventions():
     return [intervLabels, intervCovDefs, intervDefSpending, intervMaxCovs]
 
 def runModel(interventionCoverages, yearsToRun):
+    # Set up Optimisation object to work with.    
     #rootpath = './'
     rootpath = '../../Nutrition/'
     spreadsheet = rootpath + 'input_spreadsheets/Bangladesh/2017Oct/InputForCode_Bangladesh.xlsx'
@@ -72,16 +80,24 @@ def runModel(interventionCoverages, yearsToRun):
     optimise = 'dummy'
     resultsFileStem = 'dummy'
     costCurveType = 'dummy'
-    
-    theHelper = helper.Helper()
-    spreadsheetData = data.readSpreadsheet(spreadsheet, theHelper.keyList)
-    
-    costCov = costcov.Costcov()
     theOpt = optimisation2.Optimisation(spreadsheet, numModelSteps, optimise, 
         resultsFileStem, costCurveType)
     
-    costCoverageInfo = theOpt.getCostCoverageInfo()   # reads from the spreadsheet
-    targetPopSize = theOpt.getInitialTargetPopSize()  # reads from the spreadsheet
+    # Load the spreadsheet data in the Optimisation object and make a link to 
+    # this.
+    theOpt.loadData()
+    spreadsheetData = theOpt.spreadsheetData
+    
+    # Create a Costcov object to use for calculating spendings from coverage
+    # percentages.    
+    costCov = costcov.Costcov()
+
+    # Get the cost coverage info from the Optimisation object.
+    costCoverageInfo = theOpt.getCostCoverageInfo()
+    
+    # Get the initial target population sizes for each intervention from the 
+    # Optimisation object.
+    targetPopSize = theOpt.getInitialTargetPopSize()
     
     # Set the model number of years.
     theOpt.numModelSteps = yearsToRun
@@ -170,22 +186,31 @@ if __name__ == '__main__':
     # SERVER: Setup and initial GUI info
     #
     
+    # Set up Optimisation object to work with.
     rootpath = './'
     spreadsheet = rootpath + 'input_spreadsheets/Bangladesh/2017Oct/InputForCode_Bangladesh.xlsx'
     numModelSteps = 14
     optimise = 'dummy'
     resultsFileStem = 'dummy'
     costCurveType = 'dummy'
-    
-    theHelper = helper.Helper()
-    spreadsheetData = data.readSpreadsheet(spreadsheet, theHelper.keyList)
-    
-    costCov = costcov.Costcov()
     theOpt = optimisation2.Optimisation(spreadsheet, numModelSteps, optimise, 
-        resultsFileStem, costCurveType)
+        resultsFileStem, costCurveType)    
     
-    costCoverageInfo = theOpt.getCostCoverageInfo()   # reads from the spreadsheet
-    targetPopSize = theOpt.getInitialTargetPopSize()  # reads from the spreadsheet
+    # Load the spreadsheet data in the Optimisation object and make a link to 
+    # this.
+    theOpt.loadData()
+    spreadsheetData = theOpt.spreadsheetData
+    
+    # Create a Costcov object to use for calculating spendings from coverage
+    # percentages.    
+    costCov = costcov.Costcov()
+
+    # Get the cost coverage info from the Optimisation object.
+    costCoverageInfo = theOpt.getCostCoverageInfo()
+    
+    # Get the initial target population sizes for each intervention from the 
+    # Optimisation object.
+    targetPopSize = theOpt.getInitialTargetPopSize()
     
     # Get the intervention labels and default coverages (in spreadsheet order).
     intervLabels = []
