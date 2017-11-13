@@ -75,8 +75,7 @@ with open(outfilename, "wb") as f:
         print regionName
         spreadsheet = spreadsheetList[region]
         thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, 'dummy', 'dummy', costCurveType)    
-        thisSpending = thisOptimisation.getInitialAllocationDictionary()        
-        modelList = thisOptimisation.oneModelRunWithOutputManuallyScaleIYCF(thisSpending, IYCF_cov_regional[region])
+        modelList = thisOptimisation.oneModelRunWithOutputManuallyScaleIYCF(IYCF_cov_regional[region])
         row =[regionName, modelList[numModelSteps-1].getOutcome('thrive'), modelList[numModelSteps-1].getOutcome('deaths'), modelList[numModelSteps-1].getOutcome('stunting prev')]
         writer.writerow(row)    
     
