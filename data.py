@@ -235,6 +235,8 @@ def readSpreadsheet(fileName, keyList):
     PWageDistribution = splitSpreadsheetWithTwoIndexCols(demographicsSheet, "Age distribution pregnant")
     mappingDict = {'Values': PWages}
     PWageDistribution = mapAgeKeys(PWageDistribution, mappingDict)
+    # malaria exposure
+    fracExposedMalaria = demographics['fraction at risk of malaria']
 
     ### DEMOGRAPHIC PROJECTIONS
     projectionsSheet = pd.read_excel(location, sheetname='Demographic projections', index_col=[0])
@@ -454,13 +456,11 @@ def readSpreadsheet(fileName, keyList):
     effectivenessMortality = readInterventionsByPopulationTabs(interventionsForChildren, 'Effectiveness mortality', interventionCompleteList, allPops, causesOfDeathList)
     effectivenessIncidence = readInterventionsByPopulationTabs(interventionsForChildren, 'Effectiveness incidence', interventionCompleteList, ages, conditionsList) # children only
 
-
-    # TODO: not currently available in spreadsheet
-    fracExposedMalaria = demographics['fraction at risk of malaria']
+    # TODO: not currently available in spreadsheet. Need to decide on location
     ORanemiaCondition = {age:{condition:1. for condition in conditionsList} for age in ages}
     fracSevereDia = 0.2 # made up value
     fracSAMtoMAM = 0.1 # fictional
-    fracMAMtoSAM = 0.1 # dictional
+    fracMAMtoSAM = 0.9 # from Jakub
 
     spreadsheetData = Data(causesOfDeathList, conditionsList, interventionList, interventionCompleteList,
                            demographics, projectedBirths, rawMortality,
