@@ -493,6 +493,29 @@ class Optimisation:
         modelList = runModelForNTimeSteps(self.numModelSteps, spreadsheetData, model=model, saveEachStep=True)[1]
         return modelList
         
+        def oneModelRunWithOutputCustomOptimised(self, allocationDictionary, customCoverages):
+            import data
+            from numpy import maximum
+            eps = 1.e-3  ## WARNING: using project non-specific eps
+            timestepsPre = 12
+            spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
+            model = self.helper.setupModelDerivedParameters(spreadsheetData)[0]        
+            newCoverages = customCoverages    
+            model.updateCoverages(newCoverages)
+            modelList = runModelForNTimeSteps(timestepsPre, spreadsheetData, model=model, saveEachStep=True)[1]
+            costCoverageInfo = self.getCostCoverageInfo()
+            costCurves = generateCostCurves(spreadsheetData, model, self.helper.keyList, self.dataSpreadsheetName,
+                                           costCoverageInfo, self.costCurveType)
+            newCoverages = {}
+            for i in range(0, len(spreadsheetData.interventionList)):
+                intervention = spreadsheetData.interventionList[i]
+                costCurveThisIntervention = costCurves[intervention]
+                newCoverages[intervention] = maximum(costCurveThisIntervention(allocationDictionary[intervention]), eps)
+            model.updateCoverages(newCoverages)
+            steps = self.numModelSteps - timestepsPre
+            modelList += runModelForNTimeSteps(steps, spreadsheetData, model, saveEachStep=True)[1]
+            return modelList
+        
         
     def getCostCoverageInfo(self):
         import data 
@@ -636,7 +659,7 @@ class Optimisation:
             writer.writerow(headings)
             writer.writerows(rows)   
             
-    def outputCascadeAndOutcomeToCSV(self, cascadeValues, outcomeOfInterest):
+    def outputCascadeAndOutcomeToCSV(self, cascadeValues, outcomeOfInterest, customCoverage = None):
             import csv
             import pickle
             from copy import deepcopy as dcp
@@ -649,7 +672,11 @@ class Optimisation:
                 allocation = pickle.load(infile)
                 cascadeData[multiple] = allocation
                 infile.close()
-                modelOutput = self.oneModelRunWithOutput(allocation)
+                if customCoverage is None:
+                    modelOutput = self.oneModelRunWithOutput(allocation)
+                else:
+                    # custom coverage is used to run for 12 months, then allocation is used to scale funding for remaining time steps
+                    modelOutput = self.oneModelRunWithOutputCustomOptimised(allocation, customCoverage)
                 outcome[multiple] = modelOutput[self.numModelSteps-1].getOutcome(outcomeOfInterest)
             # write the cascade csv
             prognames = returnAlphabeticalDictionary(cascadeData[cascadeValues[0]]).keys()            

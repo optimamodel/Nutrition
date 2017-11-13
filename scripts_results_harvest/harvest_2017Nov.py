@@ -8,6 +8,8 @@ import helper
 thisHelper = helper.Helper()
 import csv
 import pickle
+import data
+from copy import deepcopy as dcp
 
 country = 'Tanzania'
 date = '2017Sep'
@@ -17,29 +19,38 @@ costCurveType = 'standard'
 outcomeOfInterestList = ['thrive', 'deaths']
 optimiseList = ['deaths', 'thrive']
 
-## -------------- NATIONAL   -----------------
-##baseline 1
-#spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/InputForCode_'+country+'_IYCF.xlsx'
-#cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0]
-#
-#for optimise in optimiseList:
-#    for outcomeOfInterest in outcomeOfInterestList:
-#        resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+country
-#        thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem, costCurveType) 
-#        thisOptimisation.outputCurrentSpendingToCSV()
-#        thisOptimisation.outputCascadeAndOutcomeToCSV(cascadeValues, outcomeOfInterest)
-#
-##baseline 2
-#spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/InputForCode_'+country+'_baseline2.xlsx'
-#
-#for optimise in optimiseList:
-#    for outcomeOfInterest in outcomeOfInterestList:
-#        resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national_baseline2/'+country
-#        thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem, costCurveType) 
-#        thisOptimisation.outputCurrentSpendingToCSV()
-#        thisOptimisation.outputCascadeAndOutcomeToCSV(cascadeValues, outcomeOfInterest)
+# -------------- NATIONAL   -----------------
+spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/InputForCode_'+country+'.xlsx'
+cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0]
+spreadsheetData = data.readSpreadsheet(spreadsheet, thisHelper.keyList)
 
-## --------------- GEOSPATIAL ---------------- 
+#baseline 1
+# for baseline 1 custom coverages are those in spreadshhet plus IYCF
+customCoverages = dcp(spreadsheetData.coverage)
+customCoverages['IYCF'] = 0.15
+
+for optimise in optimiseList:
+    for outcomeOfInterest in outcomeOfInterestList:
+        resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+country
+        thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem, costCurveType) 
+        thisOptimisation.outputCurrentSpendingToCSV()
+        thisOptimisation.outputCascadeAndOutcomeToCSV(cascadeValues, outcomeOfInterest, customCoverages)
+
+#baseline 2
+# for baseline 2 custom coverages are these (interventions not modified are zero anyway)
+customCoverages = dcp(spreadsheetData.coverage)
+customCoverages['IYCF'] = 0.65
+customCoverages['Vitamin A supplementation'] = 0.9 
+customCoverages['Antenatal micronutrient supplementation'] = 0.58 
+
+for optimise in optimiseList:
+    for outcomeOfInterest in outcomeOfInterestList:
+        resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national_baseline2/'+country
+        thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem, costCurveType) 
+        thisOptimisation.outputCurrentSpendingToCSV()
+        thisOptimisation.outputCascadeAndOutcomeToCSV(cascadeValues, outcomeOfInterest, customCoverages)
+
+# --------------- GEOSPATIAL ---------------- 
 cascadeValues = [0.0, 0.1, 0.2, 0.4, 0.8, 1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 3., 4., 5., 6., 8., 10., 15.0, 20.0, 50.0, 100.0, 'extreme']
 GAFile = 'GA_progNotFixed'
 regionNameList = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Geita', 'Iringa', 'Kagera',
