@@ -54,12 +54,13 @@ for regionName in regionNameList:
     spreadsheet = spreadsheetFileStem + regionName + '_IYCF.xlsx'
     spreadsheetList.append(spreadsheet)
 
-# get trade off curves
+# get trade off curves and BOCs
 for optimise in optimiseList:
     resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixedIYCF/'
     BOCsFileStem = resultsFileStem + 'regionalBOCs/'
     geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem, costCurveType, BOCsFileStem)
     geospatialOptimisation.outputTradeOffCurves()
+    geospatialOptimisation.outputBOCs()
         
         
 # get individual regions optimised spending (from the cascade)
