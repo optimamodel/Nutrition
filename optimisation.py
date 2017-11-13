@@ -885,7 +885,7 @@ class GeospatialOptimisation:
         if self.regionalBOCs == None:
             self.generateAllRegionsBOC()
         tradeOffCurves = {}
-        spendingVec = linspace(0., self.nationalBudget, 10000)
+        spendingVec = linspace(0., self.nationalBudget, 1000)
         for region in range(0, self.numRegions):
             regionName = self.regionNameList[region]
             regionalBOC = self.regionalBOCs[region]
