@@ -4,6 +4,7 @@ import os, sys
 moduleDir = os.path.join(os.path.dirname(__file__), rootpath)
 sys.path.append(moduleDir)
 import optimisation
+import pandas
 
 country = 'Tanzania'
 date = '2017Sep'
@@ -18,6 +19,10 @@ numModelSteps = 180
 MCSampleSize = 4
 cascadeValues = [0.0, 0.1, 0.2, 0.4, 0.8, 1.0, 1.1, 1.25, 1.5, 1.7, 2.0, 3., 4., 5., 6., 8., 10., 15.0, 20.0, 50.0, 100.0, 'extreme']
 splitCascade = False
+
+Location = 'IYCF_coverage.xlsx'
+df = pandas.read_excel(Location, sheetname = 'Sheet1')
+IYCF_cov_regional = list(df['Coverage'])
 
 
 regionNameList = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Geita', 'Iringa', 'Kagera',
@@ -37,4 +42,4 @@ BOCsFileStem = None
 
 geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps,
                                                              cascadeValues, optimise, resultsFileStem, costCurveType, BOCsFileStem)
-geospatialOptimisation.generateParallelResultsForGeospatialCascades(nCores, MCSampleSize, haveFixedProgCosts, splitCascade)
+geospatialOptimisation.generateParallelResultsForGeospatialCascades(nCores, MCSampleSize, haveFixedProgCosts, splitCascade, IYCF_cov_regional)

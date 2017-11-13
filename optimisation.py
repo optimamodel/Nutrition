@@ -78,12 +78,14 @@ def runModelForNTimeSteps(timesteps, spreadsheetData, model, saveEachStep=False)
     modelList = []
     if model is None:   # instantiate a model
         model = helper.setupModelDerivedParameters(spreadsheetData)[0]
+    # be careful when doing this for cascade- need deep copies
+    thisModel = dc(model)    
     for step in range(timesteps):
-        model.moveOneTimeStep()
+        thisModel.moveOneTimeStep()
         if saveEachStep:
-            modelThisTimeStep = dc(model)
+            modelThisTimeStep = dc(thisModel)
             modelList.append(modelThisTimeStep)
-    return model, modelList
+    return thisModel, modelList
 
 def getTargetPopSizeFromModelInstance(dataSpreadsheetName, keyList, model):    
     import data 
@@ -296,6 +298,33 @@ class Optimisation:
                             costCoverageInfo, MCSampleSize, xmin))
                 prc.start()            
         
+    def performCascadeOptimisationCustomCoverageIYCF(self, MCSampleSize, cascadeValues, haveFixedProgCosts, customCoverageIYCF):
+        import data
+        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
+        timestepsPre = 12
+        costCoverageInfo = self.getCostCoverageInfo()
+        initialTargetPopSize = self.getInitialTargetPopSize()
+        initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
+        currentTotalBudget = sum(initialAllocation)
+        xmin = [0.] * len(initialAllocation)
+        # set fixed costs if you have them
+        fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation)
+        # set up and run the model prior to optimising
+        model = self.helper.setupModelDerivedParameters(spreadsheetData)[0]
+        model.updateCoverages(customCoverageIYCF)
+        model = runModelForNTimeSteps(timestepsPre, spreadsheetData, model=model)[0]
+        # generate cost curves for each intervention
+        costCurves = generateCostCurves(spreadsheetData, model, self.helper.keyList, self.dataSpreadsheetName, costCoverageInfo,
+                                        self.costCurveType)
+        for cascade in cascadeValues:
+            totalBudget = currentTotalBudget * cascade
+            args = {'costCurves': costCurves, 'model': model, 'timestepsPre': timestepsPre,
+                    'totalBudget':totalBudget, 'fixedCosts':fixedCosts, 'costCoverageInfo':costCoverageInfo,
+                    'optimise':self.optimise, 'numModelSteps':self.numModelSteps,
+                    'dataSpreadsheetName':self.dataSpreadsheetName, 'data':spreadsheetData}
+            outFile = self.resultsFileStem+'_cascade_'+str(self.optimise)+'_'+str(cascade)+'.pkl'
+            self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, outFile)    
+    
     def performParallelSampling(self, MCSampleSize, haveFixedProgCosts, numRuns, filename):
         import data 
         from multiprocessing import Process
@@ -951,7 +980,7 @@ class GeospatialOptimisation:
                 thisCascade[-1] = math.ceil(totalNationalBudget / regionalTotalBudget) # this becomes a file name so keep it as an integer
             thisOptimisation.performCascadeOptimisation(MCSampleSize, thisCascade)
             
-    def generateParallelResultsForGeospatialCascades(self, numCores, MCSampleSize, haveFixedProgCosts, splitCascade):
+    def generateParallelResultsForGeospatialCascades(self, numCores, MCSampleSize, haveFixedProgCosts, splitCascade, regionCovIYCF):
         import optimisation  
         import math
         from copy import deepcopy as dcp
@@ -969,6 +998,7 @@ class GeospatialOptimisation:
                 thisOptimisation = optimisation.Optimisation(spreadsheet, self.numModelSteps, self.optimise, filename, self.costCurveType)
                 subNumCores = len(self.cascadeValues)
                 thisCascade = dcp(self.cascadeValues)
+                customCoveragesIYCF = {'IYCF':regionCovIYCF[region]}
                 # if final cascade value is 'extreme' replace it with totalNationalBudget / current regional total budget
                 if self.cascadeValues[-1] == 'extreme':
                     regionalBudget = self.currentRegionalBudgets[region]
@@ -976,7 +1006,7 @@ class GeospatialOptimisation:
                 if splitCascade:    
                     thisOptimisation.performParallelCascadeOptimisation(MCSampleSize, thisCascade, subNumCores, haveFixedProgCosts)  
                 else:
-                    prc = Process(target=thisOptimisation.performCascadeOptimisation, args=(MCSampleSize, thisCascade, haveFixedProgCosts))
+                    prc = Process(target=thisOptimisation.performCascadeOptimisationCustomCoverageIYCF, args=(MCSampleSize, thisCascade, haveFixedProgCosts, customCoveragesIYCF))
                     prc.start()
 
     def getOptimisedRegionalBudgetList(self):
