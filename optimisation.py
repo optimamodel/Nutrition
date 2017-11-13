@@ -544,7 +544,7 @@ class Optimisation:
         return targetPopSize    
     
     
-    def generateBOCVectors(self, cascadeValues, outcome, nationalBudget):
+    def generateBOCVectors(self, cascadeValues, outcome):
         from copy import deepcopy as dcp
         import pickle
         import data
@@ -552,7 +552,7 @@ class Optimisation:
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
         costCoverageInfo = self.getCostCoverageInfo()
         targetPopSize = self.getInitialTargetPopSize()
-        initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)
+        initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize) # TODO: may be able to remove these if saved as attribute
         currentTotalBudget = sum(initialAllocation)
         # get model instance and cost curves for this region
         timeStepsPre = 12
@@ -741,11 +741,14 @@ class GeospatialOptimisation:
         self.regionSpreadsheetList = regionSpreadsheetList
         self.regionNameList = regionNameList
         self.numModelSteps = numModelSteps
+        self.numRegions = len(regionSpreadsheetList)
         self.cascadeValues = cascadeValues
         self.optimise = optimise
         self.resultsFileStem = resultsFileStem
         self.BOCsFileStem = BOCsFileStem
         self.costCurveType = costCurveType
+        self.currentRegionalBudgets = self.getCurrentRegionalBudgets()
+        self.nationalBudget = sum(self.currentRegionalBudgets)
         self.numRegions = len(regionSpreadsheetList)        
         self.tradeOffCurves = None
         self.postGATimeSeries = None
@@ -795,7 +798,6 @@ class GeospatialOptimisation:
         from copy import deepcopy as dcp
         from scipy.interpolate import pchip
         regionalBOCs = []
-        totalNationalBudget = self.getTotalNationalBudget()
         for region in range(0, self.numRegions):
             print 'generating BOC for region: ', self.regionNameList[region]
             thisSpreadsheet = self.regionSpreadsheetList[region]
@@ -803,10 +805,10 @@ class GeospatialOptimisation:
             thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, filename, 'dummyCostCurve')
             # if final cascade value is 'extreme' replace it with value we used to generate .pkl file
             thisCascade = dcp(self.cascadeValues)
-            regionalTotalBudget = thisOptimisation.getTotalInitialBudget()
+            regionalTotalBudget = self.currentRegionalBudgets[region]
             if self.cascadeValues[-1] == 'extreme':
-                thisCascade[-1] = math.ceil(totalNationalBudget / regionalTotalBudget)
-            spending, outcome = thisOptimisation.generateBOCVectors(thisCascade, self.optimise, totalNationalBudget)
+                thisCascade[-1] = math.ceil(self.nationalBudget / regionalTotalBudget)
+            spending, outcome = thisOptimisation.generateBOCVectors(thisCascade, self.optimise)
             self.saveBOCcurves(spending, outcome, self.regionNameList[region]) # save so can directly optimise next time
             BOCthisRegion = pchip(spending, outcome)
             regionalBOCs.append(BOCthisRegion)
@@ -844,45 +846,61 @@ class GeospatialOptimisation:
             self.getTradeOffCurves()
         #outfile = open(filename, 'wb')
         #pickle.dump(self.tradeOffCurves, outfile)
-        #outfile.close()  
-        outfilename = '%strade_off_curves.csv'%(self.resultsFileStem)    
-        with open(outfilename, "wb") as f:        
-            writer = csv.writer(f)            
+        #outfile.close()
+        outfilename = '%strade_off_curves.csv'%(self.resultsFileStem)
+        with open(outfilename, "wb") as f:
+            writer = csv.writer(f)
             for region in range(self.numRegions):
                 regionName = self.regionNameList[region]
-                row1 = ['spending'] + self.tradeOffCurves[regionName]['spending']
-                row2 = ['outcome'] + self.tradeOffCurves[regionName]['outcome']
+                spending = self.tradeOffCurves[regionName]['spending'].tolist()
+                outcome = self.tradeOffCurves[regionName]['outcome'].tolist()
+                row1 = ['spending'] + spending
+                row2 = ['outcome'] + outcome
                 writer.writerow([regionName])
                 writer.writerow(row1)
                 writer.writerow(row2)
-        
+
+    def outputBOCs(self):
+        from numpy import linspace
+        import csv
+        if self.regionalBOCs == None:
+            self.generateAllRegionsBOC()
+        spendingVec = linspace(0., self.nationalBudget, 10000)
+        outfilename = '%sBOCs.csv' % (self.resultsFileStem)
+        with open(outfilename, 'wb') as f:
+            writer = csv.writer(f)
+            headers = ['spending'] + self.regionNameList
+            writer.writerow(headers)
+            regionalOutcomes = []
+            for region in range(self.numRegions):
+                regionalBOC = self.regionalBOCs[region]
+                regionalOutcomes.append(regionalBOC(spendingVec))
+            columnLists = [spendingVec] + regionalOutcomes
+            writer.writerows(zip(*columnLists))
+
+
     def getTradeOffCurves(self):
+        from numpy import linspace
         # if BOCs not generated, generate them
         if self.regionalBOCs == None:
             self.generateAllRegionsBOC()
-        # get index for cascade value of 1.0
-        i = 0
-        for value in self.cascadeValues:
-            if (value == 1.0):
-                index = i
-            i += 1    
         tradeOffCurves = {}
+        spendingVec = linspace(0., self.nationalBudget, 10000)
         for region in range(0, self.numRegions):
             regionName = self.regionNameList[region]
-            currentSpending = self.regionalBOCs['spending'][region][index]
-            currentOutcome = self.regionalBOCs['outcome'][region][index]
+            regionalBOC = self.regionalBOCs[region]
+            # transform BOC
+            currentSpending = self.currentRegionalBudgets[region]
+            baselineOutcome = regionalBOC(currentSpending)
+            outcomeVec = regionalBOC(spendingVec)
+            regionalImprovement = baselineOutcome - outcomeVec
+            if self.optimise == 'thrive':
+                regionalImprovement = -regionalImprovement
+            additionalSpending = spendingVec - currentSpending
             tradeOffCurves[regionName] = {}
-            spendDifference = []
-            outcomeAverted = []            
-            for i in range(len(self.cascadeValues)):
-                spendDifference.append( self.regionalBOCs['spending'][region][i] - currentSpending )
-                if self.optimise == 'thrive':
-                    outcomeAverted.append( self.regionalBOCs['outcome'][region][i] - currentOutcome )
-                else:
-                    outcomeAverted.append( currentOutcome - self.regionalBOCs['outcome'][region][i]  )
-            tradeOffCurves[regionName]['spending'] = spendDifference
-            tradeOffCurves[regionName]['outcome'] = outcomeAverted
-        self.tradeOffCurves = tradeOffCurves    
+            tradeOffCurves[regionName]['spending'] = additionalSpending
+            tradeOffCurves[regionName]['outcome'] = regionalImprovement
+        self.tradeOffCurves = tradeOffCurves
     
     def plotTradeOffCurves(self):
         import plotting
@@ -944,7 +962,6 @@ class GeospatialOptimisation:
         if numCores < numParallelCombinations:
             print "num cores is not enough"
         else:   
-            totalNationalBudget = self.getTotalNationalBudget()
             for region in range(0, self.numRegions):
                 regionName = self.regionNameList[region]
                 spreadsheet = self.regionSpreadsheetList[region]
@@ -954,8 +971,8 @@ class GeospatialOptimisation:
                 thisCascade = dcp(self.cascadeValues)
                 # if final cascade value is 'extreme' replace it with totalNationalBudget / current regional total budget
                 if self.cascadeValues[-1] == 'extreme':
-                    regionalTotalBudget = thisOptimisation.getTotalInitialBudget()
-                    thisCascade[-1] = math.ceil(totalNationalBudget / regionalTotalBudget) # this becomes a file name so keep it as an integer
+                    regionalBudget = self.currentRegionalBudgets[region]
+                    thisCascade[-1] = math.ceil(self.nationalBudget / regionalBudget) # this becomes a file name so keep it as an integer
                 if splitCascade:    
                     thisOptimisation.performParallelCascadeOptimisation(MCSampleSize, thisCascade, subNumCores, haveFixedProgCosts)  
                 else:
@@ -966,18 +983,16 @@ class GeospatialOptimisation:
         """Allocates funds to regions by ranking derivatives of BOCs (grid search)"""
         if self.regionalBOCs == None:
             self.generateAllRegionsBOC()
-        currentRegionalSpending = self.getCurrentRegionalBudgets()
-        regionalAllocation = self.runGridSearch(currentRegionalSpending)
+        regionalAllocation = self.runGridSearch(self.currentRegionalBudgets)
         return regionalAllocation
         
     def getOptimisedRegionalBudgetListExtraMoney(self, extraMoney):
         # if BOCs not generated, generate them
         if self.regionalBOCs == None:
             self.generateAllRegionsBOC()
-        currentRegionalSpending = self.getCurrentRegionalBudgets()
-        regionalAllocationExtra = self.runGridSearch(currentRegionalSpending, extraMoney)
+        regionalAllocationExtra = self.runGridSearch(self.currentRegionalBudgets, extraMoney)
         # add additional funds to current
-        regionalAllocation = [sum(x) for x in zip(currentRegionalSpending, regionalAllocationExtra)]
+        regionalAllocation = [sum(x) for x in zip(self.currentRegionalBudgets, regionalAllocationExtra)]
         return regionalAllocation
 
     def getBOCderivatives(self, currentRegionalSpending, extraFunds):
@@ -1241,7 +1256,6 @@ class GeospatialOptimisation:
         from copy import deepcopy as dcp
         import math
         import optimisation
-        totalNationalBudget = self.getTotalNationalBudget()
         for region in range(self.numRegions):
             regionName = self.regionNameList[region]
             print regionName
@@ -1251,8 +1265,8 @@ class GeospatialOptimisation:
             thisCascade = dcp(self.cascadeValues)      
             # if final cascade value is 'extreme' replace it with value we used to generate .pkl file
             if self.cascadeValues[-1] == 'extreme':
-                regionalTotalBudget = thisOptimisation.getTotalInitialBudget()
-                thisCascade[-1] = math.ceil(totalNationalBudget / regionalTotalBudget)            
+                regionalBudget = self.currentRegionalBudgets[region]
+                thisCascade[-1] = math.ceil(self.nationalBudget / regionalBudget)
             thisOptimisation.outputCascadeAndOutcomeToCSV(thisCascade, outcomeOfInterest)
         
     def outputRegionalCurrentSpendingToCSV(self):
