@@ -263,6 +263,38 @@ class Optimisation:
                     args=(costCurves, model, timestepsPre, value, currentTotalBudget, fixedCosts, spreadsheetData,
                             costCoverageInfo, MCSampleSize, xmin))
                 prc.start()
+                
+    def performParallelCascadeOptimisationCustomCoverage(self, MCSampleSize, cascadeValues, numCores, haveFixedProgCosts, customCoverage):
+        # this function is for changing the coverages in the model from those in the spreadsheet
+        # use this when you want derived calculated from spreadsheet values but then the model run from custom coverages
+        import data
+        from multiprocessing import Process
+        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
+        costCoverageInfo = self.getCostCoverageInfo()
+        initialTargetPopSize = self.getInitialTargetPopSize()
+        initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
+        currentTotalBudget = sum(initialAllocation)
+        xmin = [0.] * len(initialAllocation)
+        timestepsPre = 12
+        # set fixed costs if you have them
+        fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation)
+        # set up and run the model prior to optimising
+        model = self.helper.setupModelDerivedParameters(spreadsheetData)[0]
+        model.updateCoverages(customCoverage)
+        model = runModelForNTimeSteps(timestepsPre, spreadsheetData, model=model)[0]
+        # generate cost curves for each intervention
+        costCurves = generateCostCurves(spreadsheetData, model, self.helper.keyList, self.dataSpreadsheetName,
+                                        costCoverageInfo, self.costCurveType)
+        # check that you have enough cores and don't parallelise if you don't
+        if numCores < len(cascadeValues):
+            print "numCores is not enough"
+        else:
+            for value in cascadeValues:
+                prc = Process(
+                    target=self.cascadeParallelRunFunction,
+                    args=(costCurves, model, timestepsPre, value, currentTotalBudget, fixedCosts, spreadsheetData,
+                            costCoverageInfo, MCSampleSize, xmin))
+                prc.start()            
         
     def performParallelSampling(self, MCSampleSize, haveFixedProgCosts, numRuns, filename):
         import data 
