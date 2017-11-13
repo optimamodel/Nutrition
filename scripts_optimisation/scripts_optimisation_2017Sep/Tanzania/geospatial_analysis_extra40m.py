@@ -29,7 +29,7 @@ for regionName in regionNameList:
     spreadsheetList.append(spreadsheet)
 
 numCores = 30  # need this number times the number of outcomes you're optimising for
-extraMoney = 40000000
+extraMoney = 45695801
 for optimise in ['thrive', 'deaths']:
     print 'running GA for:  ', optimise
     resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixedIYCF/'
