@@ -50,8 +50,7 @@ with open(outfilename, "wb") as f:
     writer = csv.writer(f)
     writer.writerow(header1)
     thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, 'dummy', resultsFileStem, costCurveType)    
-    thisSpending = thisOptimisation.getInitialAllocationDictionary()  
-    modelList = thisOptimisation.oneModelRunWithOutputManuallyScaleIYCF(thisSpending, IYCF_cov)    
+    modelList = thisOptimisation.oneModelRunWithOutputManuallyScaleIYCF(IYCF_cov)    
     row =[modelList[numModelSteps-1].getOutcome('thrive'), modelList[numModelSteps-1].getOutcome('deaths'), modelList[numModelSteps-1].getOutcome('stunting prev')]
     writer.writerow(row)
     

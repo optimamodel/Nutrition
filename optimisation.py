@@ -441,43 +441,26 @@ class Optimisation:
         lastmodelInstance = runModelForNTimeSteps(steps, spreadsheetData, model, saveEachStep=True)[0]
         return lastmodelInstance
         
-    def oneModelRunWithOutputManuallyScaleIYCF(self, allocationDictionary, IYCF_cov):
+    def oneModelRunWithOutputManuallyScaleIYCF(self, IYCF_cov):
         import data
-        from numpy import maximum
-        eps = 1.e-3  ## WARNING: using project non-specific eps
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
-        costCoverageInfo = self.getCostCoverageInfo()
-        timestepsPre = 12
-        model, modelList = runModelForNTimeSteps(timestepsPre, spreadsheetData, model=None, saveEachStep=True)
-        costCurves = generateCostCurves(spreadsheetData, model, self.helper.keyList, self.dataSpreadsheetName,
-                                       costCoverageInfo, self.costCurveType)
-        newCoverages = {}
-        for i in range(0, len(spreadsheetData.interventionList)):
-            intervention = spreadsheetData.interventionList[i]
-            costCurveThisIntervention = costCurves[intervention]
-            newCoverages[intervention] = maximum(costCurveThisIntervention(allocationDictionary[intervention]), eps)
-        # manually scale up IYCF coverage   
+        model = self.helper.setupModelDerivedParameters(spreadsheetData)[0]
+        newCoverages = {}        
         newCoverages['IYCF'] = IYCF_cov    
-        # continue as normal    
         model.updateCoverages(newCoverages)
-        steps = self.numModelSteps - timestepsPre
-        modelList += runModelForNTimeSteps(steps, spreadsheetData, model, saveEachStep=True)[1]
+        modelList = runModelForNTimeSteps(self.numModelSteps, spreadsheetData, model=model, saveEachStep=True)[1]
         return modelList    
         
         
     def oneModelRunWithOutputCustomCoverages(self, customCoverages):
         import data
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
-        timestepsPre = 12
-        model, modelList = runModelForNTimeSteps(timestepsPre, spreadsheetData, model=None, saveEachStep=True)
-        # scale up to custom coverages   
+        model = self.helper.setupModelDerivedParameters(spreadsheetData)[0]        
         newCoverages = customCoverages    
-        # continue as normal    
         model.updateCoverages(newCoverages)
-        steps = self.numModelSteps - timestepsPre
-        modelList += runModelForNTimeSteps(steps, spreadsheetData, model, saveEachStep=True)[1]
+        modelList = runModelForNTimeSteps(self.numModelSteps, spreadsheetData, model=model, saveEachStep=True)[1]
         return modelList
-    
+        
         
     def getCostCoverageInfo(self):
         import data 
