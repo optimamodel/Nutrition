@@ -1,7 +1,7 @@
 """
 guidemo1.py -- script for running functionality for the Nutrition GUI demo
     
-Last update: 11/10/17 (gchadder3)
+Last update: 11/13/17 (gchadder3)
 """
 
 #
@@ -11,10 +11,62 @@ Last update: 11/10/17 (gchadder3)
 import costcov
 import optimisation2
 from copy import deepcopy as dcp
+import uuid
+
+#
+# Classes
+#
+
+# Provisional Project class.
+class Project(object):
+    def  __init__(self, spreadsheetPath, theUID=None):        
+        # If a UUID was passed in...
+        if theUID is not None:
+            # Make sure the argument is a valid UUID, converting a hex text to a
+            # UUID object, if needed.        
+            validUID = getValidUUID(theUID) 
+            
+            # If a validUID was found, use it.
+            if validUID is not None:
+                self.uid = validUID
+            # Otherwise, generate a new random UUID using uuid4().
+            else:
+                self.uid = uuid.uuid4()
+        # Otherwise, generate a new random UUID using uuid4().
+        else:
+            self.uid = uuid.uuid4()
+     
+        # Set the spreadsheetPath.
+        self.spreadsheetPath = spreadsheetPath
+    
+        # Set up Optimisation object to work with and save this.
+        numModelSteps = 14
+        optimise = 'dummy'
+        resultsFileStem = 'dummy'
+        costCurveType = 'dummy'
+        self.theOptimisation = optimisation2.Optimisation(spreadsheetPath, 
+            numModelSteps, optimise, resultsFileStem, costCurveType)    
 
 #
 # Functions
 #
+
+def getValidUUID(uidParam):
+    # Get the type of the parameter passed in.
+    paramType = type(uidParam)
+    
+    # Return what was passed in if it is already the right type.
+    if paramType == uuid.UUID:
+        return uidParam
+    
+    # Try to do the conversion and if it fails, set the conversion to None.
+    try:
+        convertParam = uuid.UUID(uidParam)
+    except:
+        convertParam = None
+    
+    # Return the converted value.
+    return convertParam 
 
 def pctChange(startVal, endVal):
     if startVal == 0.0:
@@ -25,17 +77,9 @@ def pctChange(startVal, endVal):
     else:
         return (endVal - startVal) * 100.0 / startVal
     
-def getInterventions():
+def getInterventions(theProject):
     # Set up Optimisation object to work with.
-    #rootpath = './'
-    rootpath = '../../Nutrition/'
-    spreadsheet = rootpath + 'input_spreadsheets/Bangladesh/2017Oct/InputForCode_Bangladesh.xlsx'
-    numModelSteps = 14
-    optimise = 'dummy'
-    resultsFileStem = 'dummy'
-    costCurveType = 'dummy'
-    theOpt = optimisation2.Optimisation(spreadsheet, numModelSteps, optimise, 
-        resultsFileStem, costCurveType)    
+    theOpt = theProject.theOptimisation 
     
     # Load the spreadsheet data in the Optimisation object and make a link to 
     # this.
@@ -71,17 +115,9 @@ def getInterventions():
     # Pass the results back.
     return [intervLabels, intervCovDefs, intervDefSpending, intervMaxCovs]
 
-def runModel(interventionCoverages, yearsToRun):
+def runModel(theProject, interventionCoverages, yearsToRun):
     # Set up Optimisation object to work with.    
-    #rootpath = './'
-    rootpath = '../../Nutrition/'
-    spreadsheet = rootpath + 'input_spreadsheets/Bangladesh/2017Oct/InputForCode_Bangladesh.xlsx'
-    numModelSteps = 14
-    optimise = 'dummy'
-    resultsFileStem = 'dummy'
-    costCurveType = 'dummy'
-    theOpt = optimisation2.Optimisation(spreadsheet, numModelSteps, optimise, 
-        resultsFileStem, costCurveType)
+    theOpt = theProject.theOptimisation
     
     # Load the spreadsheet data in the Optimisation object and make a link to 
     # this.
@@ -188,13 +224,10 @@ if __name__ == '__main__':
     
     # Set up Optimisation object to work with.
     rootpath = './'
-    spreadsheet = rootpath + 'input_spreadsheets/Bangladesh/2017Oct/InputForCode_Bangladesh.xlsx'
-    numModelSteps = 14
-    optimise = 'dummy'
-    resultsFileStem = 'dummy'
-    costCurveType = 'dummy'
-    theOpt = optimisation2.Optimisation(spreadsheet, numModelSteps, optimise, 
-        resultsFileStem, costCurveType)    
+    #spreadsheet = rootpath + 'input_spreadsheets/Bangladesh/2017Oct/InputForCode_Bangladesh.xlsx'
+    spreadsheet = rootpath + 'input_spreadsheets/Bangladesh/gchadder3Test/InputForCode_Bangladesh.xlsx'    
+    theProj = Project(spreadsheet)  
+    theOpt = theProj.theOptimisation
     
     # Load the spreadsheet data in the Optimisation object and make a link to 
     # this.
