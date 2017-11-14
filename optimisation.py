@@ -522,28 +522,28 @@ class Optimisation:
         modelList = runModelForNTimeSteps(self.numModelSteps, spreadsheetData, model=model, saveEachStep=True)[1]
         return modelList
         
-        def oneModelRunWithOutputCustomOptimised(self, allocationDictionary, customCoverages):
-            import data
-            from numpy import maximum
-            eps = 1.e-3  ## WARNING: using project non-specific eps
-            timestepsPre = 12
-            spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
-            model = self.helper.setupModelDerivedParameters(spreadsheetData)[0]        
-            newCoverages = customCoverages    
-            model.updateCoverages(newCoverages)
-            modelList = runModelForNTimeSteps(timestepsPre, spreadsheetData, model=model, saveEachStep=True)[1]
-            costCoverageInfo = self.getCostCoverageInfo()
-            costCurves = generateCostCurves(spreadsheetData, model, self.helper.keyList, self.dataSpreadsheetName,
-                                           costCoverageInfo, self.costCurveType)
-            newCoverages = {}
-            for i in range(0, len(spreadsheetData.interventionList)):
-                intervention = spreadsheetData.interventionList[i]
-                costCurveThisIntervention = costCurves[intervention]
-                newCoverages[intervention] = maximum(costCurveThisIntervention(allocationDictionary[intervention]), eps)
-            model.updateCoverages(newCoverages)
-            steps = self.numModelSteps - timestepsPre
-            modelList += runModelForNTimeSteps(steps, spreadsheetData, model, saveEachStep=True)[1]
-            return modelList
+    def oneModelRunWithOutputCustomOptimised(self, allocationDictionary, customCoverages):
+        import data
+        from numpy import maximum
+        eps = 1.e-3  ## WARNING: using project non-specific eps
+        timestepsPre = 12
+        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
+        model = self.helper.setupModelDerivedParameters(spreadsheetData)[0]
+        newCoverages = customCoverages
+        model.updateCoverages(newCoverages)
+        modelList = runModelForNTimeSteps(timestepsPre, spreadsheetData, model=model, saveEachStep=True)[1]
+        costCoverageInfo = self.getCostCoverageInfo()
+        costCurves = generateCostCurves(spreadsheetData, model, self.helper.keyList, self.dataSpreadsheetName,
+                                        costCoverageInfo, self.costCurveType)
+        newCoverages = {}
+        for i in range(0, len(spreadsheetData.interventionList)):
+            intervention = spreadsheetData.interventionList[i]
+            costCurveThisIntervention = costCurves[intervention]
+            newCoverages[intervention] = maximum(costCurveThisIntervention(allocationDictionary[intervention]), eps)
+        model.updateCoverages(newCoverages)
+        steps = self.numModelSteps - timestepsPre
+        modelList += runModelForNTimeSteps(steps, spreadsheetData, model, saveEachStep=True)[1]
+        return modelList
         
         
     def getCostCoverageInfo(self):
