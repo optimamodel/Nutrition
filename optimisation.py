@@ -202,6 +202,29 @@ class Optimisation:
                 'optimise': self.optimise, 'numModelSteps': self.numModelSteps,
                 'dataSpreadsheetName': self.dataSpreadsheetName, 'data': spreadsheetData}
         self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, self.resultsFileStem+filename+'.pkl')
+        
+    def performSingleOptimisationForGivenTotalBudgetIYCF(self, MCSampleSize, totalBudget, filename, haveFixedProgCosts, covIYCF):
+        import data 
+        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
+        costCoverageInfo = self.getCostCoverageInfo()  
+        xmin = [0.] * len(spreadsheetData.interventionList)
+        initialTargetPopSize = self.getInitialTargetPopSize() 
+        initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
+        fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation)
+        timestepsPre = 12
+        # set up and run the model prior to optimising
+        model = self.helper.setupModelDerivedParameters(spreadsheetData)[0]
+        newCoverages = {'IYCF': covIYCF}
+        model.updateCoverages(newCoverages)
+        model = runModelForNTimeSteps(timestepsPre, spreadsheetData, model=model)[0]
+        # generate cost curves for each intervention
+        costCurves = generateCostCurves(spreadsheetData, model, self.helper.keyList, self.dataSpreadsheetName,
+                                        costCoverageInfo, self.costCurveType)
+        args = {'costCurves': costCurves, 'model': model, 'timestepsPre': timestepsPre,
+                'totalBudget': totalBudget, 'fixedCosts': fixedCosts, 'costCoverageInfo': costCoverageInfo,
+                'optimise': self.optimise, 'numModelSteps': self.numModelSteps,
+                'dataSpreadsheetName': self.dataSpreadsheetName, 'data': spreadsheetData}
+        self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, self.resultsFileStem+filename+'.pkl')    
 
         
     def performCascadeOptimisation(self, MCSampleSize, cascadeValues, haveFixedProgCosts):
@@ -462,9 +485,11 @@ class Optimisation:
             initialAllocationDictionary[intervention] = initialAllocation[i]
         return initialAllocationDictionary 
         
-    def getTotalInitialBudget(self):
+    def getTotalInitialBudget(self, covIYCF = None):
         import data 
-        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
+        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)  
+        if covIYCF is not None:        
+            spreadsheetData.coverage['IYCF'] = covIYCF
         costCoverageInfo = self.getCostCoverageInfo()
         targetPopSize = self.getInitialTargetPopSize()        
         initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)        
@@ -952,13 +977,15 @@ class GeospatialOptimisation:
         nationalTotalBudget = sum(regionalBudgets)
         return nationalTotalBudget
         
-    def getCurrentRegionalBudgets(self):
+    def getCurrentRegionalBudgets(self, IYCF_cov_regional = None):
         import optimisation
         regionalBudgets = []
         for region in range(0, self.numRegions):
             thisSpreadsheet = self.regionSpreadsheetList[region]
-            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, 'dummyFileName', 'dummyCurve')        
-            regionTotalBudget = thisOptimisation.getTotalInitialBudget()
+            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, 'dummyFileName', 'dummyCurve')   
+            if IYCF_cov_regional is not None:            
+                covIYCF = IYCF_cov_regional[region]
+            regionTotalBudget = thisOptimisation.getTotalInitialBudget(covIYCF)
             regionalBudgets.append(regionTotalBudget)
         return regionalBudgets    
     
@@ -1016,11 +1043,13 @@ class GeospatialOptimisation:
         regionalAllocation = self.runGridSearch(self.currentRegionalBudgets)
         return regionalAllocation
         
-    def getOptimisedRegionalBudgetListExtraMoney(self, extraMoney):
+    def getOptimisedRegionalBudgetListExtraMoney(self, extraMoney, IYCF_cov_regional):
+        #WARNING: HARD CODE: directly modified for Tanzania to use the correct regional budgets which include IYCF
         # if BOCs not generated, generate them
         if self.regionalBOCs == None:
             self.generateAllRegionsBOC()
-        regionalAllocationExtra = self.runGridSearch(self.currentRegionalBudgets, extraMoney)
+        theseCurrentRegionalBudgets = self.getCurrentRegionalBudgets(IYCF_cov_regional)
+        regionalAllocationExtra = self.runGridSearch(theseCurrentRegionalBudgets, extraMoney)
         # add additional funds to current
         regionalAllocation = [sum(x) for x in zip(self.currentRegionalBudgets, regionalAllocationExtra)]
         return regionalAllocation
@@ -1148,12 +1177,13 @@ class GeospatialOptimisation:
                 prc.start()
 
 
-    def performParallelGeospatialOptimisationExtraMoney(self, MCSampleSize, GAFile, numCores, extraMoney, haveFixedProgCosts):
+    def performParallelGeospatialOptimisationExtraMoney(self, MCSampleSize, GAFile, numCores, extraMoney, haveFixedProgCosts, IYCF_cov_regional):
+        # WARNING: HARD CODE: has been edited for Tanzania specifically
         # this optimisation keeps current regional spending the same and optimises only additional spending across regions        
         import optimisation  
         from multiprocessing import Process
         print 'beginning geospatial optimisation..'
-        optimisedRegionalBudgetList = self.getOptimisedRegionalBudgetListExtraMoney(extraMoney)
+        optimisedRegionalBudgetList = self.getOptimisedRegionalBudgetListExtraMoney(extraMoney, IYCF_cov_regional)
         print 'finished geospatial optimisation'
         if self.numRegions >numCores:
             print "not enough cores to parallelise"
@@ -1161,12 +1191,13 @@ class GeospatialOptimisation:
             for region in range(0, self.numRegions):
                 regionName = self.regionNameList[region]
                 print 'optimising for individual region ', regionName
+                covIYCF = IYCF_cov_regional[region]
                 thisSpreadsheet = self.regionSpreadsheetList[region]
                 thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, self.resultsFileStem, 'dummyCurveType')
                 thisBudget = optimisedRegionalBudgetList[region]
                 prc = Process(
-                    target=thisOptimisation.performSingleOptimisationForGivenTotalBudget, 
-                    args=(MCSampleSize, thisBudget, GAFile+'_'+regionName, haveFixedProgCosts))
+                    target=thisOptimisation.performSingleOptimisationForGivenTotalBudgetIYCF, 
+                    args=(MCSampleSize, thisBudget, GAFile+'_'+regionName, haveFixedProgCosts, covIYCF))
                 prc.start()
 
     def plotReallocationByRegion(self):

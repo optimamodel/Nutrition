@@ -6,6 +6,7 @@ moduleDir = os.path.join(os.path.dirname(__file__), rootpath)
 sys.path.append(moduleDir)
 import optimisation
 from multiprocessing import Process
+import pandas
 
 country = 'Tanzania'
 date = '2017Sep'
@@ -25,8 +26,12 @@ regionNameList = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Geita', 'Iringa', 'Kager
 spreadsheetFileStem = rootpath + '/input_spreadsheets/' + country + '/' + spreadsheetDate + '/regions/InputForCode_'
 spreadsheetList = []
 for regionName in regionNameList:
-    spreadsheet = spreadsheetFileStem + regionName + '_IYCF.xlsx'
+    spreadsheet = spreadsheetFileStem + regionName + '.xlsx'
     spreadsheetList.append(spreadsheet)
+    
+Location = 'IYCF_coverage.xlsx'
+df = pandas.read_excel(Location, sheetname = 'Sheet1')
+IYCF_cov_regional = list(df['Coverage'])
 
 numCores = 30  # need this number times the number of outcomes you're optimising for
 extraMoney = 45695801
@@ -38,7 +43,7 @@ for optimise in ['thrive', 'deaths']:
     geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps,
                                                                  cascadeValues, optimise, resultsFileStem, costCurveType, BOCsFileStem)
     # parallel for each optimise                                                             
-    prc = Process(target=geospatialOptimisation.performParallelGeospatialOptimisationExtraMoney, args=(rerunMCSampleSize, GAFile, numCores, extraMoney, haveFixedProgCosts))
+    prc = Process(target=geospatialOptimisation.performParallelGeospatialOptimisationExtraMoney, args=(rerunMCSampleSize, GAFile, numCores, extraMoney, haveFixedProgCosts, IYCF_cov_regional))
     prc.start()                                                                 
                               
     #geospatialOptimisation.performParallelGeospatialOptimisationExtraMoney(geoMCSampleSize, rerunMCSampleSize, GAFile, numCores, extraMoney, haveFixedProgCosts)
