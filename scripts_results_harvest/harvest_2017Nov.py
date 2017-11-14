@@ -10,6 +10,7 @@ import csv
 import pickle
 import data
 from copy import deepcopy as dcp
+import pandas
 
 country = 'Tanzania'
 date = '2017Sep'
@@ -64,8 +65,12 @@ spreadsheetList = []
 for regionName in regionNameList:
     spreadsheet = spreadsheetFileStem + regionName + '_IYCF.xlsx'
     spreadsheetList.append(spreadsheet)
+    
+Location = 'IYCF_coverage.xlsx'
+df = pandas.read_excel(Location, sheetname = 'Sheet1')
+IYCF_cov_regional = list(df['Coverage'])    
 
-# get trade off curves and BOCs
+# get trade off curves and BOCs (spreadsheet here should be teh IYCF one)
 for optimise in optimiseList:
     resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixedIYCF/'
     BOCsFileStem = resultsFileStem + 'regionalBOCs/'
@@ -95,7 +100,7 @@ for optimise in optimiseList:
             i+=1
             writer.writerow(row)                
         
-# get outcomes for optimised spending
+# get outcomes for optimised spending (post GA)
 for optimise in optimiseList:
     resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixedIYCF/'        
     outfilename = 'optimised_'+optimise+'_regional_output.csv'  
@@ -111,7 +116,7 @@ for optimise in optimiseList:
             infile = open(filename, 'rb')
             thisSpending = pickle.load(infile)
             infile.close()        
-            modelList = thisOptimisation.oneModelRunWithOutput(thisSpending)    
+            modelList = thisOptimisation.oneModelRunWithOutputCustomOptimised(thisSpending, {'IYCF':IYCF_cov_regional[region]})
             row =[regionName, modelList[numModelSteps-1].getOutcome('thrive'), modelList[numModelSteps-1].getOutcome('deaths'), modelList[numModelSteps-1].getOutcome('stunting prev')]
             writer.writerow(row)        
 

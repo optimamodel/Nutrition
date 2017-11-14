@@ -599,6 +599,7 @@ class Optimisation:
     
     
     def generateBOCVectors(self, cascadeValues, outcome):
+        #WARNING: HARD CODE: directly modified for Tanzania beline 1 - assumes spreadsheets included non-zero IYCF values        
         from copy import deepcopy as dcp
         import pickle
         import data
@@ -610,7 +611,13 @@ class Optimisation:
         currentTotalBudget = sum(initialAllocation)
         # get model instance and cost curves for this region
         timeStepsPre = 12
-        model = runModelForNTimeSteps(timeStepsPre, spreadsheetData, model=None, saveEachStep=True)[0]
+        # before model gets instantiated set coverage of IYCF to zero
+        saveIYCF = dcp(spreadsheetData.coverage['IYCF'])
+        spreadsheetData.coverage['IYCF'] = 0.0
+        model = self.helper.setupModelDerivedParameters(spreadsheetData)[0]
+        # now put the IYCF coverage back to what it was
+        model.params.coverage['ICYF'] = saveIYCF
+        model = runModelForNTimeSteps(timeStepsPre, spreadsheetData, model=model, saveEachStep=True)[0]
         costCurves = generateCostCurves(spreadsheetData, model, self.helper.keyList, self.dataSpreadsheetName,
                                         costCoverageInfo, self.costCurveType)
         spendingVector = []
