@@ -34,7 +34,7 @@ regionNameList = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Geita', 'Iringa', 'Kager
 spreadsheetFileStem = rootpath + '/input_spreadsheets/' + country + '/' + spreadsheetDate + '/regions'
 spreadsheetList = []
 for regionName in regionNameList:
-    spreadsheet = spreadsheetFileStem + '/InputForCode_' + regionName + '_IYCF.xlsx'
+    spreadsheet = spreadsheetFileStem + '/InputForCode_' + regionName + '.xlsx'
     spreadsheetList.append(spreadsheet)
 
 resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixedIYCF/'
