@@ -1,7 +1,7 @@
 """
 guidemo1.py -- script for running functionality for the Nutrition GUI demo
     
-Last update: 11/13/17 (gchadder3)
+Last update: 11/14/17 (gchadder3)
 """
 
 #
@@ -19,7 +19,7 @@ import uuid
 
 # Provisional Project class.
 class Project(object):
-    def  __init__(self, spreadsheetPath, theUID=None):        
+    def  __init__(self, spreadsheetPath, name, theUID=None):        
         # If a UUID was passed in...
         if theUID is not None:
             # Make sure the argument is a valid UUID, converting a hex text to a
@@ -38,6 +38,9 @@ class Project(object):
      
         # Set the spreadsheetPath.
         self.spreadsheetPath = spreadsheetPath
+        
+        # Set the project name.
+        self.name = name
     
         # Set up Optimisation object to work with and save this.
         numModelSteps = 14
