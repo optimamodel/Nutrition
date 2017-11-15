@@ -616,7 +616,7 @@ class Optimisation:
         spreadsheetData.coverage['IYCF'] = 0.0
         model = self.helper.setupModelDerivedParameters(spreadsheetData)[0]
         # now put the IYCF coverage back to what it was
-        model.params.coverage['ICYF'] = saveIYCF
+        model.params.coverage['IYCF'] = saveIYCF
         model = runModelForNTimeSteps(timeStepsPre, spreadsheetData, model=model, saveEachStep=True)[0]
         costCurves = generateCostCurves(spreadsheetData, model, self.helper.keyList, self.dataSpreadsheetName,
                                         costCoverageInfo, self.costCurveType)
@@ -992,7 +992,9 @@ class GeospatialOptimisation:
             thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, 'dummyFileName', 'dummyCurve')   
             if IYCF_cov_regional is not None:            
                 covIYCF = IYCF_cov_regional[region]
-            regionTotalBudget = thisOptimisation.getTotalInitialBudget(covIYCF)
+                regionTotalBudget = thisOptimisation.getTotalInitialBudget(covIYCF)
+            else:
+                regionTotalBudget = thisOptimisation.getTotalInitialBudget()
             regionalBudgets.append(regionTotalBudget)
         return regionalBudgets    
     
