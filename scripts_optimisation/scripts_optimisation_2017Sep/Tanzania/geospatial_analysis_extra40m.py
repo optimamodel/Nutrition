@@ -41,7 +41,7 @@ for optimise in ['thrive', 'deaths']:
     BOCsFileStem = resultsFileStem + 'regionalBOCs/'
     GAFile = 'GA_progNotFixed'
     geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps,
-                                                                 cascadeValues, optimise, resultsFileStem, costCurveType, BOCsFileStem)
+                                                                 cascadeValues, optimise, resultsFileStem, costCurveType, BOCsFileStem, IYCF_cov_regional)
     # parallel for each optimise                                                             
     prc = Process(target=geospatialOptimisation.performParallelGeospatialOptimisationExtraMoney, args=(rerunMCSampleSize, GAFile, numCores, extraMoney, haveFixedProgCosts, IYCF_cov_regional))
     prc.start()                                                                 

@@ -798,7 +798,7 @@ class Optimisation:
 
 
 class GeospatialOptimisation:
-    def __init__(self, regionSpreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem, costCurveType, BOCsFileStem):
+    def __init__(self, regionSpreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem, costCurveType, BOCsFileStem, IYCF_cov_regional=None):
         self.regionSpreadsheetList = regionSpreadsheetList
         self.regionNameList = regionNameList
         self.numModelSteps = numModelSteps
@@ -808,7 +808,7 @@ class GeospatialOptimisation:
         self.resultsFileStem = resultsFileStem
         self.BOCsFileStem = BOCsFileStem
         self.costCurveType = costCurveType
-        self.currentRegionalBudgets = self.getCurrentRegionalBudgets()
+        self.currentRegionalBudgets = self.getCurrentRegionalBudgets(IYCF_cov_regional=IYCF_cov_regional)
         self.nationalBudget = sum(self.currentRegionalBudgets)
         self.numRegions = len(regionSpreadsheetList)        
         self.tradeOffCurves = None
