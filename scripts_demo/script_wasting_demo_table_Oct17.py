@@ -9,6 +9,8 @@ from copy import deepcopy as dcp
 import helper
 helper = helper.Helper()
 
+date = '16_11_17'
+
 def runModelGivenCoverage(intervention, coverage, spreadsheetData, zeroCoverages):
     interventionsCombine = ['Public provision of complementary foods with iron', 'Sprinkles', 'Multiple micronutrient supplementation', 'Iron and folic acid supplementation for pregnant women']
     numModelSteps = 14
@@ -218,12 +220,38 @@ allIron.append(model.getOutcome('MAM_prev'))
 allIron.append(model.getOutcome('SAM_prev'))
 allIron.append(model.getOutcome('stunting prev'))
 
+# scaling-up treatment of MAM/SAM incrementally and look at reduction in SAM prev
+coverages = dcp(zeroCoverages)
+coverageList = [0., 0.2, 0.4, 0.6, 0.8]
 
+MAMtreatment = {}
+SAMtreatment = {}
+for covValue in coverageList:
+    # MAM
+    thisName = 'Treatment of MAM ' + str(covValue * 100) + '%'
+    MAMmodel = runModelGivenCoverage('Treatment of MAM', covValue, spreadsheetData, zeroCoverages)
+    tmp = [thisName, MAMmodel.getOutcome('thrive'), MAMmodel.getOutcome('deaths children'), MAMmodel.getOutcome('deaths PW'), MAMmodel.getOutcome('anemia frac pregnant'),
+           MAMmodel.getOutcome('anemia frac WRA'), MAMmodel.getOutcome('anemia frac children'), MAMmodel.getOutcome('wasting_prev'), MAMmodel.getOutcome('MAM_prev'),
+           MAMmodel.getOutcome('SAM_prev'), MAMmodel.getOutcome('stunting prev')]
+    MAMtreatment[covValue] = tmp
+    # SAM
+    thisName = 'Treatment of SAM ' + str(covValue * 100) + '%'
+    SAMmodel = runModelGivenCoverage('Treatment of SAM', covValue, spreadsheetData, zeroCoverages)
+    tmp = [thisName, SAMmodel.getOutcome('thrive'), SAMmodel.getOutcome('deaths children'), SAMmodel.getOutcome('deaths PW'),
+           SAMmodel.getOutcome('anemia frac pregnant'),
+           SAMmodel.getOutcome('anemia frac WRA'), SAMmodel.getOutcome('anemia frac children'),
+           SAMmodel.getOutcome('wasting_prev'), SAMmodel.getOutcome('MAM_prev'),
+           SAMmodel.getOutcome('SAM_prev'), SAMmodel.getOutcome('stunting prev')]
+    SAMtreatment[covValue] = tmp
+
+
+
+# WRITE TO CSV
 header = ['scenario', 'thrive', 'deaths children', 'deaths PW', 'anemia prev PW', 'anemia prev WRA',
-          'anemia prev children', 'wasted prev children','moderate wasting prev', 'severe wasting prev', 'stunting prev children']
+          'anemia prev children', 'wasted prev children','MAM prev', 'SAM prev', 'stunting prev children']
 import csv
 
-outfilename = 'anemiaWithWasting.csv'
+outfilename = 'anemiaWithWasting_' + date +'.csv'
 with open(outfilename, "wb") as f:
     writer = csv.writer(f)
     writer.writerow(header)
@@ -242,6 +270,11 @@ with open(outfilename, "wb") as f:
     writer.writerow(allTreatment)
     writer.writerow(allIFA)
     writer.writerow(allIron)
+    for covValue in coverageList:
+        thisMAMcov = MAMtreatment[covValue]
+        thisSAMcov = SAMtreatment[covValue]
+        writer.writerow(thisMAMcov)
+        writer.writerow(thisSAMcov)
 
 
 
