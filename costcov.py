@@ -28,7 +28,10 @@ class Costcov():
 
     def getCostCoverageCurveSpecifyingParameters(self, A, B, C, D, popSize):
         '''This is a logistic curve with each parameter (A,B,C,D) provided by the user'''
-        logisticCurve = lambda x: (A + (B-A)/(1 + exp(-(x-C)/D))) / popSize
+        if D == 0.: # this is for the special case when saturation/unitcost = 0.
+            logisticCurve = lambda x: 0.
+        else:
+            logisticCurve = lambda x: (A + (B - A) / (1 + exp(-(x - C) / D))) / popSize
         return logisticCurve
 
     def linearCostCurve(self, unitCost, saturation, popSize):
