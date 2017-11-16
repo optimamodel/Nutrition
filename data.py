@@ -178,7 +178,8 @@ def stratifyPopIntoAgeGroups(dictToUpdate, keyList, listOfAgeGroups, population,
             dictToUpdate[key].update(newAgeGroups)
     return dictToUpdate
 
-def readSpreadsheet(fileName, keyList):
+
+def readSpreadsheet(fileName, keyList, interventionsToRemove=None):
     from copy import deepcopy as dcp
     location = fileName
     ages = keyList['ages']
@@ -201,6 +202,10 @@ def readSpreadsheet(fileName, keyList):
                 interventionCompleteList.append(intervention + " with bed nets")
     coverage = dict(interventionsSheet["Baseline coverage"])
     costSaturation = interventionsSheet[["saturation coverage", "unit cost"]].to_dict(orient='index')
+    if interventionsToRemove is not None: # This is a temporary way not to consider interventions - not a long-term fix
+        for program in interventionsToRemove:
+            costSaturation[program]['saturation coverage'] = 0.
+
     # add hidden intervention data to coverage and cost saturation
     hiddenInterventionList = list(set(interventionCompleteList) - set(interventionList))
     for intervention in hiddenInterventionList:
