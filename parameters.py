@@ -233,8 +233,6 @@ class Params:
                 if newCoverages[intervention] > (1.-totalPPCFCoverage):
                     constrainedCoverages[intervention] = (1. - totalPPCFCoverage)
 
-            # TODO: If including a PPCF (malaria area) then put constraint here to prevent scaling up aove PPCF + iron (malaria area)
-
             # add constraints on sprinkles coverage                
             # prioritise PPCF+iron over sprinkles, taking into account extra pop which can be covered by sprinkles
             if 'Sprinkles' in intervention:
