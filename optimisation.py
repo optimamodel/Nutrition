@@ -322,13 +322,14 @@ class Optimisation:
                             costCoverageInfo, MCSampleSize, xmin))
                 prc.start()            
         
-    def performCascadeOptimisationCustomCoverageIYCF(self, MCSampleSize, cascadeValues, haveFixedProgCosts, customCoverageIYCF):
+    def performCascadeOptimisationCustomCoverageIYCF(self, MCSampleSize, cascadeValues, haveFixedProgCosts, customCoverageIYCF, dataSpreadsheetName2):
         import data
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
+        spreadsheetData2 = data.readSpreadsheet(dataSpreadsheetName2, self.helper.keyList)
         timestepsPre = 12
         costCoverageInfo = self.getCostCoverageInfo()
         initialTargetPopSize = self.getInitialTargetPopSize()
-        initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
+        initialAllocation = getTotalInitialAllocation(spreadsheetData2, costCoverageInfo, initialTargetPopSize)
         currentTotalBudget = sum(initialAllocation)
         xmin = [0.] * len(initialAllocation)
         # set fixed costs if you have them
@@ -1017,7 +1018,7 @@ class GeospatialOptimisation:
                 thisCascade[-1] = math.ceil(totalNationalBudget / regionalTotalBudget) # this becomes a file name so keep it as an integer
             thisOptimisation.performCascadeOptimisation(MCSampleSize, thisCascade)
             
-    def generateParallelResultsForGeospatialCascades(self, numCores, MCSampleSize, haveFixedProgCosts, splitCascade, regionCovIYCF):
+    def generateParallelResultsForGeospatialCascades(self, numCores, MCSampleSize, haveFixedProgCosts, splitCascade, regionCovIYCF, spreadsheet2List):
         import optimisation  
         import math
         from copy import deepcopy as dcp
@@ -1031,6 +1032,7 @@ class GeospatialOptimisation:
             for region in range(0, self.numRegions):
                 regionName = self.regionNameList[region]
                 spreadsheet = self.regionSpreadsheetList[region]
+                spreadsheet2 = spreadsheet2List[region]
                 filename = self.resultsFileStem + regionName
                 thisOptimisation = optimisation.Optimisation(spreadsheet, self.numModelSteps, self.optimise, filename, self.costCurveType)
                 subNumCores = len(self.cascadeValues)
@@ -1043,7 +1045,7 @@ class GeospatialOptimisation:
                 if splitCascade:    
                     thisOptimisation.performParallelCascadeOptimisation(MCSampleSize, thisCascade, subNumCores, haveFixedProgCosts)  
                 else:
-                    prc = Process(target=thisOptimisation.performCascadeOptimisationCustomCoverageIYCF, args=(MCSampleSize, thisCascade, haveFixedProgCosts, customCoveragesIYCF))
+                    prc = Process(target=thisOptimisation.performCascadeOptimisationCustomCoverageIYCF, args=(MCSampleSize, thisCascade, haveFixedProgCosts, customCoveragesIYCF, spreadsheet2))
                     prc.start()
 
     def getOptimisedRegionalBudgetList(self):

@@ -33,13 +33,16 @@ regionNameList = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Geita', 'Iringa', 'Kager
 
 spreadsheetFileStem = rootpath + '/input_spreadsheets/' + country + '/' + spreadsheetDate + '/regions'
 spreadsheetList = []
+spreadsheet2List = []
 for regionName in regionNameList:
     spreadsheet = spreadsheetFileStem + '/InputForCode_' + regionName + '.xlsx'
+    spreadsheet2 = spreadsheetFileStem + '/InputForCode_' + regionName + '_IYCF.xlsx'
     spreadsheetList.append(spreadsheet)
+    spreadsheet2List.append(spreadsheet2)
 
 resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixedIYCF/'
 BOCsFileStem = None
 
 geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps,
                                                              cascadeValues, optimise, resultsFileStem, costCurveType, BOCsFileStem)
-geospatialOptimisation.generateParallelResultsForGeospatialCascades(nCores, MCSampleSize, haveFixedProgCosts, splitCascade, IYCF_cov_regional)
+geospatialOptimisation.generateParallelResultsForGeospatialCascades(nCores, MCSampleSize, haveFixedProgCosts, splitCascade, IYCF_cov_regional, spreadsheet2List)
