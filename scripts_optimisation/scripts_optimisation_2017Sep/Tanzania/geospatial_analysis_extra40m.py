@@ -25,9 +25,12 @@ regionNameList = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Geita', 'Iringa', 'Kager
 
 spreadsheetFileStem = rootpath + '/input_spreadsheets/' + country + '/' + spreadsheetDate + '/regions/InputForCode_'
 spreadsheetList = []
+spreadsheet2List = []
 for regionName in regionNameList:
-    spreadsheet = spreadsheetFileStem + regionName + '.xlsx'
+    spreadsheet = spreadsheetFileStem + '/InputForCode_' + regionName + '.xlsx'
+    spreadsheet2 = spreadsheetFileStem + '/InputForCode_' + regionName + '_IYCF.xlsx'
     spreadsheetList.append(spreadsheet)
+    spreadsheet2List.append(spreadsheet2)
     
 Location = 'IYCF_coverage.xlsx'
 df = pandas.read_excel(Location, sheetname = 'Sheet1')
@@ -43,7 +46,7 @@ for optimise in ['thrive', 'deaths']:
     geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps,
                                                                  cascadeValues, optimise, resultsFileStem, costCurveType, BOCsFileStem, IYCF_cov_regional)
     # parallel for each optimise                                                             
-    prc = Process(target=geospatialOptimisation.performParallelGeospatialOptimisationExtraMoney, args=(rerunMCSampleSize, GAFile, numCores, extraMoney, haveFixedProgCosts, IYCF_cov_regional))
+    prc = Process(target=geospatialOptimisation.performParallelGeospatialOptimisationExtraMoney, args=(rerunMCSampleSize, GAFile, numCores, extraMoney, haveFixedProgCosts, IYCF_cov_regional, spreadsheet2List))
     prc.start()                                                                 
                               
     #geospatialOptimisation.performParallelGeospatialOptimisationExtraMoney(geoMCSampleSize, rerunMCSampleSize, GAFile, numCores, extraMoney, haveFixedProgCosts)

@@ -203,13 +203,14 @@ class Optimisation:
                 'dataSpreadsheetName': self.dataSpreadsheetName, 'data': spreadsheetData}
         self.runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, self.resultsFileStem+filename+'.pkl')
         
-    def performSingleOptimisationForGivenTotalBudgetIYCF(self, MCSampleSize, totalBudget, filename, haveFixedProgCosts, covIYCF):
+    def performSingleOptimisationForGivenTotalBudgetIYCF(self, MCSampleSize, totalBudget, filename, haveFixedProgCosts, covIYCF, spreadsheet2):
         import data 
-        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
+        spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)   
+        spreadsheetData2 = data.readSpreadsheet(spreadsheet2, self.helper.keyList)   
         costCoverageInfo = self.getCostCoverageInfo()  
         xmin = [0.] * len(spreadsheetData.interventionList)
         initialTargetPopSize = self.getInitialTargetPopSize() 
-        initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
+        initialAllocation = getTotalInitialAllocation(spreadsheetData2, costCoverageInfo, initialTargetPopSize)
         fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation)
         timestepsPre = 12
         # set up and run the model prior to optimising
@@ -1189,7 +1190,7 @@ class GeospatialOptimisation:
                 prc.start()
 
 
-    def performParallelGeospatialOptimisationExtraMoney(self, MCSampleSize, GAFile, numCores, extraMoney, haveFixedProgCosts, IYCF_cov_regional):
+    def performParallelGeospatialOptimisationExtraMoney(self, MCSampleSize, GAFile, numCores, extraMoney, haveFixedProgCosts, IYCF_cov_regional, spreadsheet2List):
         # WARNING: HARD CODE: has been edited for Tanzania specifically
         # this optimisation keeps current regional spending the same and optimises only additional spending across regions        
         import optimisation  
@@ -1205,11 +1206,12 @@ class GeospatialOptimisation:
                 print 'optimising for individual region ', regionName
                 covIYCF = IYCF_cov_regional[region]
                 thisSpreadsheet = self.regionSpreadsheetList[region]
+                spreadsheet2 = spreadsheet2List[region]
                 thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, self.resultsFileStem, 'dummyCurveType')
                 thisBudget = optimisedRegionalBudgetList[region]
                 prc = Process(
                     target=thisOptimisation.performSingleOptimisationForGivenTotalBudgetIYCF, 
-                    args=(MCSampleSize, thisBudget, GAFile+'_'+regionName, haveFixedProgCosts, covIYCF))
+                    args=(MCSampleSize, thisBudget, GAFile+'_'+regionName, haveFixedProgCosts, covIYCF, spreadsheet2))
                 prc.start()
 
     def plotReallocationByRegion(self):
