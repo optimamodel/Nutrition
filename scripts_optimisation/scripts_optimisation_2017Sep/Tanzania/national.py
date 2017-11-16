@@ -12,6 +12,7 @@ country = 'Tanzania'
 date = '2017Sep'
 spreadsheetDate = '2017Sep'
 spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/InputForCode_'+country+'.xlsx'
+spreadsheet2 = rootpath+'/input_spreadsheets/'+country+'/'+spreadsheetDate+'/InputForCode_'+country+'_IYCF.xlsx' #includes non-zero IYCF spending
 costCurveType = 'standard'
 
 numModelSteps = 180
@@ -28,4 +29,4 @@ customCoverages['IYCF'] = 0.15
 for optimise in ['deaths', 'thrive']:
     resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+country
     thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem, costCurveType)
-    thisOptimisation.performParallelCascadeOptimisationCustomCoverage(MCSampleSize, cascadeValues, numCores, haveFixedProgCosts, customCoverages)
+    thisOptimisation.performParallelCascadeOptimisationCustomCoverage(MCSampleSize, cascadeValues, numCores, haveFixedProgCosts, customCoverages, spreadsheet2)

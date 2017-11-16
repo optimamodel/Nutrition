@@ -289,15 +289,16 @@ class Optimisation:
                             costCoverageInfo, MCSampleSize, xmin))
                 prc.start()
                 
-    def performParallelCascadeOptimisationCustomCoverage(self, MCSampleSize, cascadeValues, numCores, haveFixedProgCosts, customCoverage):
+    def performParallelCascadeOptimisationCustomCoverage(self, MCSampleSize, cascadeValues, numCores, haveFixedProgCosts, customCoverage, dataSpreadsheetName2):
         # this function is for changing the coverages in the model from those in the spreadsheet
         # use this when you want derived calculated from spreadsheet values but then the model run from custom coverages
         import data
         from multiprocessing import Process
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
+        spreadsheetData2 = data.readSpreadsheet(dataSpreadsheetName2, self.helper.keyList)
         costCoverageInfo = self.getCostCoverageInfo()
         initialTargetPopSize = self.getInitialTargetPopSize()
-        initialAllocation = getTotalInitialAllocation(spreadsheetData, costCoverageInfo, initialTargetPopSize)
+        initialAllocation = getTotalInitialAllocation(spreadsheetData2, costCoverageInfo, initialTargetPopSize)
         currentTotalBudget = sum(initialAllocation)
         xmin = [0.] * len(initialAllocation)
         timestepsPre = 12
