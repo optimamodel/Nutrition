@@ -1,7 +1,7 @@
 """
 guidemo1.py -- script for running functionality for the Nutrition GUI demo
     
-Last update: 11/14/17 (gchadder3)
+Last update: 11/15/17 (gchadder3)
 """
 
 #
@@ -41,6 +41,9 @@ class Project(object):
         
         # Set the project name.
         self.name = name
+        
+        # Set the creation time for now.
+        self.createdTime = today()
     
         # Set up Optimisation object to work with and save this.
         numModelSteps = 14
@@ -70,6 +73,13 @@ def getValidUUID(uidParam):
     
     # Return the converted value.
     return convertParam 
+
+def today():
+    ''' Get the current time, in UTC time '''
+    import datetime # today = datetime.today
+    import dateutil
+    now = datetime.datetime.now(dateutil.tz.tzutc())
+    return now
 
 def pctChange(startVal, endVal):
     if startVal == 0.0:
