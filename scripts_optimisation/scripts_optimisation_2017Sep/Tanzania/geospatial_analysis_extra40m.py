@@ -27,8 +27,8 @@ spreadsheetFileStem = rootpath + '/input_spreadsheets/' + country + '/' + spread
 spreadsheetList = []
 spreadsheet2List = []
 for regionName in regionNameList:
-    spreadsheet = spreadsheetFileStem + '/InputForCode_' + regionName + '.xlsx'
-    spreadsheet2 = spreadsheetFileStem + '/InputForCode_' + regionName + '_IYCF.xlsx'
+    spreadsheet = spreadsheetFileStem + regionName + '.xlsx'
+    spreadsheet2 = spreadsheetFileStem + regionName + '_IYCF.xlsx'
     spreadsheetList.append(spreadsheet)
     spreadsheet2List.append(spreadsheet2)
     
