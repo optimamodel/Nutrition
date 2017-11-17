@@ -40,7 +40,7 @@ numCores = 30  # need this number times the number of outcomes you're optimising
 extraMoney = 45695801
 for optimise in ['thrive', 'deaths']:
     print 'running GA for:  ', optimise
-    resultsFileStem = rootpath + '/Results/' + date + '/novIYCFreRun/' + optimise + '/geospatialProgNotFixedIYCF/'
+    resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixedIYCF/'
     BOCsFileStem = resultsFileStem + 'regionalBOCs/'
     GAFile = 'GA_progNotFixed'
     geospatialOptimisation = optimisation.GeospatialOptimisation(spreadsheetList, regionNameList, numModelSteps,
