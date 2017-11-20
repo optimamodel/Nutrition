@@ -1,17 +1,29 @@
 """
 guidemo1.py -- script for running functionality for the Nutrition GUI demo
     
-Last update: 11/15/17 (gchadder3)
+Last update: 11/20/17 (gchadder3)
 """
 
 #
 # Imports
 #
 
+# Import cPickle if it is available in your Python setup because it is a 
+# faster method.  If it's not available, import the regular pickle library.
+try: 
+    import cPickle as pickle
+except: 
+    import pickle
+    
+from gzip import GzipFile
+from cStringIO import StringIO
+from contextlib import closing
+
 import costcov
 import optimisation2
 from copy import deepcopy as dcp
 import uuid
+import os
 
 #
 # Classes
@@ -19,7 +31,7 @@ import uuid
 
 # Provisional Project class.
 class Project(object):
-    def  __init__(self, spreadsheetPath, name, theUID=None):        
+    def  __init__(self, name, theUID=None, spreadsheetPath=None):        
         # If a UUID was passed in...
         if theUID is not None:
             # Make sure the argument is a valid UUID, converting a hex text to a
@@ -35,26 +47,127 @@ class Project(object):
         # Otherwise, generate a new random UUID using uuid4().
         else:
             self.uid = uuid.uuid4()
-     
-        # Set the spreadsheetPath.
-        self.spreadsheetPath = spreadsheetPath
-        
+            
         # Set the project name.
         self.name = name
         
+        # Set the spreadsheetPath.
+        self.spreadsheetPath = spreadsheetPath
+        
+        # Start the optimisation object as being None.
+        self.theOptimisation = None
+                
         # Set the creation time for now.
         self.createdTime = today()
+        
+        # Set the updating time to None.
+        self.updatedTime = None
+        
+        # Set the spreadsheet upload time to None.
+        self.dataUploadTime = None
+        
+        # If we have passed in a spreadsheet path...
+        if self.spreadsheetPath is not None:
+            # Set up Optimisation object to work with and save this.
+            numModelSteps = 14
+            optimise = 'dummy'
+            resultsFileStem = 'dummy'
+            costCurveType = 'dummy'
+            self.theOptimisation = optimisation2.Optimisation(spreadsheetPath, 
+                numModelSteps, optimise, resultsFileStem, costCurveType)
+            
+            # Set the creation time for now.
+            self.dataUploadTime = today()
+            
+    def updateName(self, newName):
+        # Set the project name.
+        self.name = newName
+        
+        # Set the updating time to now.
+        self.updatedTime = today()
+        
+    def saveToPrjFile(self, dirPath, saveResults=False):
+        # Create a filename containing the project name followed by a .prj 
+        # suffix.
+        fileName = '%s.prj' % self.name
+        
+        # Generate the full file name with path.
+        fullFileName = '%s%s%s' % (dirPath, os.sep, fileName)
+        
+        # Write the object to a Gzip string pickle file.
+        objectToGzipStringPickleFile(fullFileName, self)
+        
+        # Return the full file name.
+        return fullFileName
     
-        # Set up Optimisation object to work with and save this.
-        numModelSteps = 14
-        optimise = 'dummy'
-        resultsFileStem = 'dummy'
-        costCurveType = 'dummy'
-        self.theOptimisation = optimisation2.Optimisation(spreadsheetPath, 
-            numModelSteps, optimise, resultsFileStem, costCurveType)    
-
+def loadProjectFromPrjFile(prj_filename):
+    # Return object from the Gzip string pickle file.
+    return gzipStringPickleFileToObject(prj_filename)  
+      
 #
-# Functions
+# Pickle / unpickle functions
+#
+
+def objectToStringPickle(theObject):
+    return pickle.dumps(theObject, protocol=-1)
+
+def stringPickleToObject(theStringPickle):
+    return pickle.loads(theStringPickle)
+
+def objectToGzipStringPickleFile(fullFileName, theObject, compresslevel=5):
+    # Object a Gzip file object to write to and set the compression level 
+    # (which the function defaults to 5, since higher is much slower, but 
+    # not much more compact).
+    with GzipFile(fullFileName, 'wb', compresslevel=compresslevel) as fileobj:
+        # Write the string pickle conversion of the object to the file.
+        fileobj.write(objectToStringPickle(theObject))
+
+def gzipStringPickleFileToObject(fullFileName):
+    # Object a Gzip file object to read from.
+    with GzipFile(fullFileName, 'rb') as fileobj:
+        # Read the string pickle from the file.
+        theStringPickle = fileobj.read()
+        
+    # Return the object gotten from the string pickle.    
+    return stringPickleToObject(theStringPickle)
+
+def objectToGzipStringPickle(theObject):
+    # Start with a null result.
+    result = None
+    
+    # Open a "fake file."
+    with closing(StringIO()) as output:
+        # Open a Gzip-compressing way to write to this "file."
+        with GzipFile(fileobj=output, mode='wb') as fileobj: 
+            # Write the string pickle conversion of the object to the "file."
+            fileobj.write(objectToStringPickle(theObject))
+            
+        # Move the mark to the beginning of the "file."
+        output.seek(0)
+        
+        # Read all of the content into result.
+        result = output.read()
+        
+    # Return the read-in result.
+    return result
+
+def gzipStringPickleToObject(theGzipStringPickle):
+    # Open a "fake file" with the Gzip string pickle in it.
+    with closing(StringIO(theGzipStringPickle)) as output:
+        # Set a Gzip reader to pull from the "file."
+        with GzipFile(fileobj=output, mode='rb') as fileobj: 
+            # Read the string pickle from the "file" (applying Gzip 
+            # decompression).
+            theStringPickle = fileobj.read()  
+            
+            # Extract the object from the string pickle.
+            theObject = stringPickleToObject(theStringPickle)
+            
+    # Return the object.
+    return theObject
+        
+#
+# Misc functions
 #
 
 def getValidUUID(uidParam):
@@ -90,9 +203,17 @@ def pctChange(startVal, endVal):
     else:
         return (endVal - startVal) * 100.0 / startVal
     
+#
+# GUI server functions
+#
+
 def getInterventions(theProject):
     # Set up Optimisation object to work with.
     theOpt = theProject.theOptimisation 
+    
+    # If the optimisation is None, return an empty list.
+    if theOpt is None:
+        return []
     
     # Load the spreadsheet data in the Optimisation object and make a link to 
     # this.
@@ -131,6 +252,10 @@ def getInterventions(theProject):
 def runModel(theProject, interventionCoverages, yearsToRun):
     # Set up Optimisation object to work with.    
     theOpt = theProject.theOptimisation
+    
+    # If the optimisation is None, return an empty list.
+    if theOpt is None:
+        return []
     
     # Load the spreadsheet data in the Optimisation object and make a link to 
     # this.
@@ -239,7 +364,7 @@ if __name__ == '__main__':
     rootpath = './'
     #spreadsheet = rootpath + 'input_spreadsheets/Bangladesh/2017Oct/InputForCode_Bangladesh.xlsx'
     spreadsheet = rootpath + 'input_spreadsheets/Bangladesh/gchadder3Test/InputForCode_Bangladesh.xlsx'    
-    theProj = Project(spreadsheet)  
+    theProj = Project('demo', spreadsheetPath=spreadsheet)
     theOpt = theProj.theOptimisation
     
     # Load the spreadsheet data in the Optimisation object and make a link to 
