@@ -310,10 +310,9 @@ class Optimisation:
         bounds = [(0., totalBudget)] * numInterventions
         xmax = [totalBudget] * numInterventions
         for r in range(0, MCSampleSize):
-            #proposalAllocation = np.random.rand(numInterventions)
             result = differential_evolution(objectiveFunction, bounds=bounds,args=geneticArgs, maxiter=3, popsize=15, disp=True)
             proposalAllocation = result.x
-            budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, proposalAllocation, asdArgs, xmin = xmin, xmax = xmax, verbose = 0)
+            budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, proposalAllocation, asdArgs, xmin = xmin, xmax=xmax, verbose = 1)
             outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval, output.x)
             scenarioMonteCarloOutput.append(outputOneRun)
         # find the best

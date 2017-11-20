@@ -21,5 +21,5 @@ for optimise in optimiseList:
     thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise, resultsFileStem)
     thisOptimisation.outputCurrentSpendingToCSV()
     for outcomeOfInterest in outcomeOfInterestList:
-        thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise, resultsFileStem)
+        thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise, resultsFileStem, 'dummyCurve')
         thisOptimisation.outputCascadeAndOutcomeToCSV(cascadeValues, outcomeOfInterest)
