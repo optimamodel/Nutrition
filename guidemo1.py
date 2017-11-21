@@ -76,12 +76,30 @@ class Project(object):
             self.theOptimisation = optimisation2.Optimisation(spreadsheetPath, 
                 numModelSteps, optimise, resultsFileStem, costCurveType)
             
-            # Set the creation time for now.
+            # Set the data spreadsheet upload time for now.
             self.dataUploadTime = today()
             
     def updateName(self, newName):
         # Set the project name.
         self.name = newName
+        
+        # Set the updating time to now.
+        self.updatedTime = today()
+        
+    def updateSpreadsheet(self, spreadsheetPath):
+        # Set the spreadsheetPath from what's passed in.
+        self.spreadsheetPath = spreadsheetPath
+        
+        # Set up Optimisation object to work with and save this.
+        numModelSteps = 14
+        optimise = 'dummy'
+        resultsFileStem = 'dummy'
+        costCurveType = 'dummy'
+        self.theOptimisation = optimisation2.Optimisation(spreadsheetPath, 
+            numModelSteps, optimise, resultsFileStem, costCurveType)
+        
+        # Set the data spreadsheet upload time for now.
+        self.dataUploadTime = today()
         
         # Set the updating time to now.
         self.updatedTime = today()
