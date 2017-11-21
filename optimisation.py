@@ -449,7 +449,7 @@ class Optimisation:
         costCoverageInfo = self.getCostCoverageInfo()
         timestepsPre = 12
         model, modelList = runModelForNTimeSteps(timestepsPre, self.spreadsheetData, model=None, saveEachStep=True)
-        costCurves = self.generateCostCurves(model, self.helper.keyList, costCoverageInfo, self.costCurveType)
+        costCurves = self.generateCostCurves(model)
         newCoverages = {}
         for i in range(0, len(self.spreadsheetData.interventionList)):
             intervention = self.spreadsheetData.interventionList[i]
@@ -662,17 +662,6 @@ class Optimisation:
                 writer.writerow(currentSpending.keys())
                 writer.writerow(currentSpending.values())                
              
-
-    def outputCostCurvesAsPNG(self, resultsFileStem, cascade, scale=True):
-        timestepsPre = 12
-        costCoverageInfo = self.getCostCoverageInfo()
-        # run the model 
-        model = runModelForNTimeSteps(timestepsPre, self.spreadsheetData, model=None)[0]
-        initialTargetPopSize = self.getInitialTargetPopSize()
-        initialAllocation = getTotalInitialAllocation(self.spreadsheetData, costCoverageInfo, initialTargetPopSize)
-        budget = sum(initialAllocation)
-        # generate cost curves for each intervention
-        self.generateCostCurves(model, resultsFileStem, budget, cascade, scale)
 
 
 
