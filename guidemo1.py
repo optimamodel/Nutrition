@@ -1,7 +1,7 @@
 """
 guidemo1.py -- script for running functionality for the Nutrition GUI demo
     
-Last update: 11/20/17 (gchadder3)
+Last update: 11/21/17 (gchadder3)
 """
 
 #
@@ -24,7 +24,9 @@ import optimisation2
 from copy import deepcopy as dcp
 import uuid
 import os
-
+import datetime
+import dateutil
+    
 #
 # Classes
 #
@@ -207,8 +209,8 @@ def getValidUUID(uidParam):
 
 def today():
     ''' Get the current time, in UTC time '''
-    import datetime # today = datetime.today
-    import dateutil
+#    import datetime # today = datetime.today
+#    import dateutil
     now = datetime.datetime.now(dateutil.tz.tzutc())
     return now
 
