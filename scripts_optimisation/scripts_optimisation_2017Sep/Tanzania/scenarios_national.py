@@ -89,3 +89,24 @@ with open(outfilename, "wb") as f:
     writer.writerow(initialAllocationDictionary.keys()) 
     writer.writerow(initialAllocationDictionary.values()) 
     
+    
+# get spending for baseline 1 custom coverages in a csv
+myHelper = helper.Helper()
+thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, 'dummy', resultsFileStem, costCurveType)    
+spreadsheetData = data.readSpreadsheet(spreadsheet, myHelper.keyList)  
+# manually modify coverages in data object
+spreadsheetData.coverage['IYCF'] = IYCF_cov
+# carry on     
+costCoverageInfo = thisOptimisation.getCostCoverageInfo()
+targetPopSize = thisOptimisation.getInitialTargetPopSize()        
+initialAllocation = optimisation.getTotalInitialAllocation(spreadsheetData, costCoverageInfo, targetPopSize)        
+initialAllocationDictionary = {}
+for i in range(0, len(spreadsheetData.interventionList)):
+    intervention = spreadsheetData.interventionList[i]
+    initialAllocationDictionary[intervention] = initialAllocation[i]
+outfilename = 'baseline1_spending.csv'  
+with open(outfilename, "wb") as f:
+    writer = csv.writer(f)
+    writer.writerow(initialAllocationDictionary.keys()) 
+    writer.writerow(initialAllocationDictionary.values()) 
+        
