@@ -34,7 +34,6 @@ for optimise in optimiseList:
     for outcomeOfInterest in outcomeOfInterestList:
         resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+country
         thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem, costCurveType) 
-        thisOptimisation.outputCurrentSpendingToCSV()
         thisOptimisation.outputCascadeAndOutcomeToCSV(cascadeValues, outcomeOfInterest, customCoverages)
 
 #baseline 2
@@ -48,7 +47,6 @@ for optimise in optimiseList:
     for outcomeOfInterest in outcomeOfInterestList:
         resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national_baseline2/'+country
         thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem, costCurveType) 
-        thisOptimisation.outputCurrentSpendingToCSV()
         thisOptimisation.outputCascadeAndOutcomeToCSV(cascadeValues, outcomeOfInterest, customCoverages)
 
 # --------------- GEOSPATIAL ---------------- 
