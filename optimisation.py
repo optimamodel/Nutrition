@@ -306,9 +306,9 @@ class Optimisation:
         # set fixed costs if you have them
         fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation)
         # set up and run the model prior to optimising
-        model = self.helper.setupModelDerivedParameters(spreadsheetData)[0]
-        model.updateCoverages(customCoverage)
-        model = runModelForNTimeSteps(timestepsPre, spreadsheetData, model=model)[0]
+        thisModel = self.helper.setupModelDerivedParameters(spreadsheetData)[0]
+        thisModel.updateCoverages(customCoverage)
+        model = runModelForNTimeSteps(timestepsPre, spreadsheetData, model=thisModel)[0]
         # generate cost curves for each intervention
         costCurves = generateCostCurves(spreadsheetData, model, self.helper.keyList, self.dataSpreadsheetName,
                                         costCoverageInfo, self.costCurveType)
