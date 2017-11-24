@@ -271,7 +271,7 @@ class Derived:
             # stunting
             AO = AOStunting
             Omega0  = self.fracStuntedIfDiarrhea["nodia"][ageName]
-            self.fracStuntedIfDiarrhea["dia"][ageName] = Omega0 * AO[ageName] / (1. - Omega0 + AO[ageName]*Omega0) # TODO: is there an error in the '+' here? Says '-' in appendix
+            self.fracStuntedIfDiarrhea["dia"][ageName] = Omega0 * AO[ageName] / (1. - Omega0 + AO[ageName]*Omega0)
             # wasting
             for wastingCat in self.wastedList:
                 AO = AOwasting[wastingCat]
@@ -414,7 +414,7 @@ class Derived:
             self.probCorrectlyBreastfedIfCovered[intervention]["covered"]     = {}
             for i in range(numAgeGroups):
                 ageName = self.ages[i]
-                OddsRatio = self.data.ORappropriatebfIntervention[ageName][intervention]
+                OddsRatio = self.data.ORappropriatebfIntervention[intervention][ageName]
                 fracCovered = coverage[intervention]
                 appropriatePractice = self.data.ageAppropriateBreastfeeding[ageName]
                 fracCorrectlyBreastfedThisAge = breastfeedingDistribution[ageName][appropriatePractice]
