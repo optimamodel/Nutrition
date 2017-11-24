@@ -450,7 +450,7 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None):
         for anemiaStatus in anemiaList:
             try:
                 RRdeathMaternal[cause][anemiaStatus] = column[cause][anemiaStatus]
-            except KeyError: # if cause not in shet, RR=1
+            except KeyError: # if cause not in sheet, RR=1
                 RRdeathMaternal[cause][anemiaStatus] = 1
     RRdeathMaternalAnemia = {age: RRdeathMaternal for age in PWages}
     # women of reproductive age, assume no direct impact of interventions (RR=1). Also no data on children (RR=1)
