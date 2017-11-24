@@ -254,15 +254,33 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None):
     IYCFpackages = readSheet(location, 'IYCF packages', [0,1])
     ORappropriatebfIntervention = createIYCFpackages(IYCFpackages, IYCFeffects, 'breastfeeding', ages)
     IYCFnames = ORappropriatebfIntervention.keys()
+    # get interventions list
+    interventionsSheet = pd.read_excel(location, sheetname = 'Interventions cost and coverage', index_col=0)
+    interventionList = list(interventionsSheet.index)
+
+    # INTERVENTIONS TARGET POPULATION
+    targetPopSheet = readSheet(location, 'Interventions target population', [0, 1])
+    # children
+    targetPopulation = splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'Children', switchKeys=True)
+    # pregnant women
+    targetPopulation.update(splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'Pregnant women', switchKeys=True))
+    # non-pregnant WRA
+    targetPopulation.update(splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'Non-pregnant WRA', switchKeys=True))
+    # general pop
+    targetPopulation.update(splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'General population', switchKeys=True))
+    # add target pop for IYCF packages
+    IYCFtarget = getIYCFtargetPop(ORappropriatebfIntervention, IYCFnames, allPops)
+    targetPopulation.update(IYCFtarget)
+    # change PW & WRA to age groups for interventions other than iYCF
+    targetPopulation = stratifyPopIntoAgeGroups(targetPopulation, interventionList, WRAages, 'Non-pregnant WRA', keyLevel=1)
+    targetPopulation = stratifyPopIntoAgeGroups(targetPopulation, interventionList, PWages, 'Pregnant women', keyLevel=1)
+
+    ### INTERVENTIONS COST AND COVERAGE
     # TODO: don't know what the costs or baseline coverages are, so need to get this. Temporary substitute below
     IYCFcostSaturation = {program: {'unit cost': 1., 'saturation': 0.95} for program in IYCFnames}
     IYCFcoverage = {program: 0. for program in IYCFnames}
     #IYCFcostSaturation, IYCFcoverage = getIYCFcostCoverageSaturation()
 
-
-    ### INTERVENTIONS COST AND COVERAGE
-    interventionsSheet = pd.read_excel(location, sheetname = 'Interventions cost and coverage', index_col=0)
-    interventionList = list(interventionsSheet.index)
     # include IYCF interventions
     interventionList += IYCFnames
     interventionCompleteList =  dcp(interventionList)
@@ -476,22 +494,6 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None):
     breastfeedingSheet = pd.read_excel(location, sheetname='Appropriate breastfeeding')
     ageAppropriateBreastfeeding = dict(breastfeedingSheet.iloc[0])
 
-    # INTERVENTIONS TARGET POPULATION
-    targetPopSheet = readSheet(location, 'Interventions target population', [0,1])
-    # children
-    targetPopulation = splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'Children', switchKeys=True)
-    # pregnant women
-    targetPopulation.update(splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'Pregnant women', switchKeys=True))
-    # non-pregnant WRA
-    targetPopulation.update(splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'Non-pregnant WRA', switchKeys=True))
-    # general pop
-    targetPopulation.update(splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'General population', switchKeys=True))
-    # add target pop for IYCF packages
-    IYCFtarget = getIYCFtargetPop(ORappropriatebfIntervention, IYCFnames, allPops)
-    targetPopulation.update(IYCFtarget)
-    # change PW & WRA to age groups
-    targetPopulation = stratifyPopIntoAgeGroups(targetPopulation, interventionList, WRAages, 'Non-pregnant WRA', keyLevel=1)
-    targetPopulation = stratifyPopIntoAgeGroups(targetPopulation, interventionList, PWages, 'Pregnant women', keyLevel=1)
 
     # INTERVENTIONS BIRTH OUTCOMES
     interventionsBirthOutcomeSheet = pd.read_excel(location, sheetname='Interventions birth outcomes', index_col=[0,1])
