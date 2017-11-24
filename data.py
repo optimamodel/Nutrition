@@ -75,6 +75,37 @@ class Data:
         self.fracSAMtoMAM= fracSAMtoMAM
         self.fracMAMtoSAM = fracMAMtoSAM
 
+def createIYCFpackages(IYCFpackages, IYCFeffect, practices, ages):
+    '''Creates IYCF packages based on user input in 'IYCFpackages'
+    practices can be either 'breastfeeding' or 'complementary feeding' '''
+    # non-empty cells denote program combination
+    # get package combinations
+    packagesDict = {}
+    for packageName, package in IYCFpackages.groupby(level=[0,1]):
+        if packagesDict.get(packageName[0]) is None:
+            packagesDict[packageName[0]] = []
+        for mode in package:
+            col = package[mode]
+            if col.notnull()[0]:
+                packagesDict[packageName[0]].append((packageName[1], mode))
+    # create new intervention
+    effects = IYCFeffect.loc['OR for correct ' + practices]
+    newInterventions = {}
+    ORs = {}
+    for key, item in packagesDict.items():
+        if newInterventions.get(key) is None:
+            newInterventions[key] = {}
+        for age in ages:
+            ORs[age] = 1.
+            for pop, mode in item:
+                row = effects.loc[pop, mode]
+                thisOR = row[age]
+                ORs[age] *= thisOR
+        newInterventions[key].update(ORs)
+
+    return newInterventions
+
+
 def readSheetWithOneIndexCol(sheet, scaleFactor=1.):
     resultDict = {}
     for columnName in sheet:
@@ -178,6 +209,32 @@ def stratifyPopIntoAgeGroups(dictToUpdate, keyList, listOfAgeGroups, population,
             dictToUpdate[key].update(newAgeGroups)
     return dictToUpdate
 
+def readSheet(location, sheetName, indexCols, dropna=True):
+    mysheet = pd.read_excel(location, sheetName, index_col=indexCols)
+    if dropna:
+        mysheet = mysheet.dropna(axis=0, how='all')
+    return mysheet
+
+
+def getIYCFtargetPop(ORs, interventionsList, allPops):
+    ''' Target pop if OR exists and is not == 1.'''
+    targetPop = {}
+    for intervention in interventionsList:
+        targetPop[intervention] = {}
+        for pop in allPops:
+            thisOR = ORs[intervention].get(pop)
+            if thisOR is not None:
+                if abs(thisOR - 1.) > 0.001:
+                    targetPop[intervention][pop] = 1
+            else:
+                targetPop[intervention][pop] = 0
+    return targetPop
+
+def getIYCFcostSaturation(ORs):
+    # TODO: this is subject to advice on cost and coverage
+    return
+
+
 
 def readSpreadsheet(fileName, keyList, interventionsToRemove=None):
     from copy import deepcopy as dcp
@@ -192,16 +249,32 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None):
     PWages = keyList['pregnantWomenAges']
     WRAages = keyList['reproductiveAges']
 
+    # create user-defined IYCF packages
+    IYCFeffects = readSheet(location, 'IYCF package odds ratios', [0,1,2])
+    IYCFpackages = readSheet(location, 'IYCF packages', [0,1])
+    ORappropriatebfIntervention = createIYCFpackages(IYCFpackages, IYCFeffects, 'breastfeeding', ages)
+    IYCFnames = ORappropriatebfIntervention.keys()
+    # TODO: don't know what the costs or baseline coverages are, so need to get this. Temporary substitute below
+    IYCFcostSaturation = {program: {'unit cost': 1., 'saturation': 0.95} for program in IYCFnames}
+    IYCFcoverage = {program: 0. for program in IYCFnames}
+    #IYCFcostSaturation, IYCFcoverage = getIYCFcostCoverageSaturation()
+
+
     ### INTERVENTIONS COST AND COVERAGE
     interventionsSheet = pd.read_excel(location, sheetname = 'Interventions cost and coverage', index_col=0)
     interventionList = list(interventionsSheet.index)
+    # include IYCF interventions
+    interventionList += IYCFnames
     interventionCompleteList =  dcp(interventionList)
     for intervention in interventionList:
         if "IFAS" in intervention:
             if "malaria" in intervention:
                 interventionCompleteList.append(intervention + " with bed nets")
     coverage = dict(interventionsSheet["Baseline coverage"])
+    coverage.update(IYCFcoverage)
     costSaturation = interventionsSheet[["saturation coverage", "unit cost"]].to_dict(orient='index')
+    costSaturation.update(IYCFcostSaturation)
+
     if interventionsToRemove is not None: # This is a temporary way not to consider interventions - not a long-term fix
         for program in interventionsToRemove:
             costSaturation[program]['saturation coverage'] = 0.
@@ -215,10 +288,15 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None):
         thisCostSaturation = costSaturation[correspondingIntervention]
         costSaturation.update({intervention : thisCostSaturation})
 
+    # fill in the remaining ORs for BF practices
+    for intervention in list(set(interventionCompleteList) - set(IYCFnames)):
+        ORappropriatebfIntervention[intervention] = {}
+        for age in ages:
+            ORappropriatebfIntervention[intervention][age] = 1.
+
 
     ### BASELINE YEAR DEMOGRAPHICS
-    demographicsSheet = pd.read_excel(location, sheetname='Baseline year demographics', index_col=[0, 1])
-    demographicsSheet = demographicsSheet.dropna(how='all')
+    demographicsSheet = readSheet(location, 'Baseline year demographics', [0,1])
     # population
     population = splitSpreadsheetWithTwoIndexCols(demographicsSheet, "Current year")
     populationDict = population['Values']
@@ -272,8 +350,7 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None):
 
     ### PREVALENCE OF ANEMIA
     # done by anemia type: anemic, not anemic, iron deficiency anemia, severe
-    anemiaPrevalenceSheet = pd.read_excel(location, sheetname='Prevalence of anemia', index_col=[0,1])
-    anemiaPrevalenceSheet = anemiaPrevalenceSheet.dropna(how='all')
+    anemiaPrevalenceSheet = readSheet(location, 'Prevalence of anemia', [0,1])
     anemiaTypes = list(anemiaPrevalenceSheet.index.levels[0])
     ageNames = list(anemiaPrevalenceSheet.index.levels[1])
     ageNames = [age for age in ageNames if age != 'All'] # remove 'All'
@@ -307,15 +384,13 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None):
     anemiaDistribution["1-5 months"]['not anemic'] = .9
 
     ### DISTRIBUTIONS
-    distributionsSheet = pd.read_excel(location, sheetname='Distributions', index_col=[0,1])
-    distributionsSheet = distributionsSheet.dropna()
+    distributionsSheet = readSheet(location, 'Distributions', [0,1])
     stuntingDistribution = splitSpreadsheetWithTwoIndexCols(distributionsSheet, 'Stunting', scaleFactor=100.)
     wastingDistribution = splitSpreadsheetWithTwoIndexCols(distributionsSheet, 'Wasting', scaleFactor=100.)
     breastfeedingDistribution = splitSpreadsheetWithTwoIndexCols(distributionsSheet, 'Breastfeeding', scaleFactor=100.)
 
     ### BIRTH OUTCOMES AND RISKS
-    birthOutcomesSheet = pd.read_excel(location, sheetname='Birth outcomes & risks', index_col=[0,1])
-    birthOutcomesSheet = birthOutcomesSheet.dropna()
+    birthOutcomesSheet = readSheet(location, 'Birth outcomes & risks', [0,1])
     # distribution
     birthOutcomeDistribution = splitSpreadsheetWithTwoIndexCols(birthOutcomesSheet, "Distribution")
     ORstuntingBirthOutcome = {}
@@ -333,8 +408,7 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None):
     RRdeathByBirthOutcome = splitSpreadsheetWithTwoIndexCols(birthOutcomesSheet, "RR of death", rowList=causesOfDeathList, switchKeys=True)
 
     ### RELATIVE RISKS
-    RRsheet = pd.read_excel(location, sheetname='Relative risks', index_col=[0,1,2])
-    RRsheet = RRsheet.dropna()
+    RRsheet = readSheet(location, 'Relative risks', [0,1,2])
     RRdeathStunting = readRelativeRisks(RRsheet, 'Stunting', stuntingList, causesOfDeathList)
     RRdeathWasting = readRelativeRisks(RRsheet, 'Wasting', wastingList, causesOfDeathList)
     RRdeathBreastfeeding = readRelativeRisks(RRsheet, 'Breastfeeding', breastfeedingList, causesOfDeathList)
@@ -349,8 +423,7 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None):
         for breastfeedingCat in breastfeedingList:
             RRdiarrhea[ageName][breastfeedingCat] = column[breastfeedingCat]
     # maternal anemia
-    RRsheet = pd.read_excel(location, sheetname='Relative risks', index_col=[0,1,2])
-    RRsheet = RRsheet.dropna()
+    RRsheet = readSheet(location, 'Relative risks', [0,1,2])
     maternalAnemia = RRsheet.loc['Maternal anemia - death risk']
     RRdeathMaternal = {}
     column = maternalAnemia['maternal']
@@ -368,14 +441,9 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None):
     RRdeathMaternalAnemia.update(RRdeathChildrenWRanemia)
     RRdeathAnemia = RRdeathMaternalAnemia
 
-    # TODO: need RR/OR anemia by intervention, no longer using general population. Also account for having a mix of OR and RR for interventions
-
-
-
     ### ODDS RATIOS
     # stunting
-    ORsheet = pd.read_excel(location, sheetname='Odds ratios', index_col=[0,1])
-    ORsheet = ORsheet.dropna(axis=0, how='all') # drop rows of all NaN
+    ORsheet = readSheet(location, 'Odds ratios', [0,1])
     # progression
     ORstuntingProgression = dict(ORsheet.loc['OR stunting progression and condition','Stunting progression'])
     del ORstuntingProgression['<1 month'] # not applicable to <1 month
@@ -395,8 +463,7 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None):
                 if intervention not in foodSecurityGroups:
                     foodSecurityGroups += [intervention]
     # wasting by intervention
-    wastingInterventionSheet = pd.read_excel(location, "Interventions wasting", index_col=[0,1])
-    wastingInterventionSheet = wastingInterventionSheet.dropna(axis=0, how='all')
+    wastingInterventionSheet = readSheet(location, 'Interventions wasting', [0,1])
     ORwastingIntervention = {}
     ORwastingIntervention['SAM'] = splitSpreadsheetWithTwoIndexCols(wastingInterventionSheet, "OR SAM by intervention", rowList=interventionCompleteList)
     ORwastingIntervention['MAM'] = splitSpreadsheetWithTwoIndexCols(wastingInterventionSheet, "OR MAM by intervention", rowList=interventionCompleteList)
@@ -405,16 +472,12 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None):
     ORwastingCondition['SAM'] = splitSpreadsheetWithTwoIndexCols(ORsheet, 'OR SAM by condition', rowList=conditionsList)
     ORwastingCondition['MAM'] = splitSpreadsheetWithTwoIndexCols(ORsheet, 'OR MAM by condition', rowList=conditionsList)
 
-    # correct breastfeeding
-    ORappropriatebfIntervention = splitSpreadsheetWithTwoIndexCols(ORsheet, "OR for correct breastfeeding by intervention", rowList=interventionCompleteList)
-
     # APPROPRIATE BREASTFEEDING
     breastfeedingSheet = pd.read_excel(location, sheetname='Appropriate breastfeeding')
     ageAppropriateBreastfeeding = dict(breastfeedingSheet.iloc[0])
 
     # INTERVENTIONS TARGET POPULATION
-    targetPopSheet = pd.read_excel(location, sheetname='Interventions target population', index_col=[0,1])
-    targetPopSheet = targetPopSheet.dropna(how='all')
+    targetPopSheet = readSheet(location, 'Interventions target population', [0,1])
     # children
     targetPopulation = splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'Children', switchKeys=True)
     # pregnant women
@@ -422,8 +485,10 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None):
     # non-pregnant WRA
     targetPopulation.update(splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'Non-pregnant WRA', switchKeys=True))
     # general pop
-    #  NO MORE GENERAL POP!
     targetPopulation.update(splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'General population', switchKeys=True))
+    # add target pop for IYCF packages
+    IYCFtarget = getIYCFtargetPop(ORappropriatebfIntervention, IYCFnames, allPops)
+    targetPopulation.update(IYCFtarget)
     # change PW & WRA to age groups
     targetPopulation = stratifyPopIntoAgeGroups(targetPopulation, interventionList, WRAages, 'Non-pregnant WRA', keyLevel=1)
     targetPopulation = stratifyPopIntoAgeGroups(targetPopulation, interventionList, PWages, 'Pregnant women', keyLevel=1)
@@ -444,8 +509,7 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None):
 
     ### INTERVENTIONS ANEMIA
     # relative risks
-    interventionsAnemiaSheet = pd.read_excel(location, sheetname='Interventions anemia', index_col=[0,1])
-    interventionsAnemiaSheet = interventionsAnemiaSheet.dropna(how='all')
+    interventionsAnemiaSheet = readSheet(location, 'Interventions anemia', [0,1])
     # remove interventions from RR if we have OR
     interventionsOR = list(interventionsAnemiaSheet.loc["Odds Ratios"].index)
     interventionsRR = [intervention for intervention in interventionCompleteList if intervention not in interventionsOR]
@@ -467,6 +531,7 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None):
     fracSAMtoMAM = 0.1 # fictional
     fracMAMtoSAM = 0.9 # from Jakub
 
+
     spreadsheetData = Data(causesOfDeathList, conditionsList, interventionList, interventionCompleteList,
                            demographics, projectedBirths, rawMortality,
                            causeOfDeathDist, RRdeathAnemia, RRdeathStunting,
@@ -483,5 +548,6 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None):
                            PWageDistribution, fracExposedMalaria, ORanemiaCondition, fracSevereDia,
                            ORwastingCondition, ORwastingIntervention, ORwastingBirthOutcome,
                            fracSAMtoMAM, fracMAMtoSAM)
+
     return spreadsheetData
-                  
+
