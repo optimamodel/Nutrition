@@ -226,6 +226,8 @@ def getIYCFtargetPop(ORs, interventionsList, allPops):
             if thisOR is not None:
                 if abs(thisOR - 1.) > 0.001:
                     targetPop[intervention][pop] = 1
+                else:
+                    targetPop[intervention][pop] = 0
             else:
                 targetPop[intervention][pop] = 0
     return targetPop
@@ -277,7 +279,7 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None):
 
     ### INTERVENTIONS COST AND COVERAGE
     # TODO: don't know what the costs or baseline coverages are, so need to get this. Temporary substitute below
-    IYCFcostSaturation = {program: {'unit cost': 1., 'saturation': 0.95} for program in IYCFnames}
+    IYCFcostSaturation = {program: {'unit cost': 1., 'saturation coverage': 0.95} for program in IYCFnames}
     IYCFcoverage = {program: 0. for program in IYCFnames}
     #IYCFcostSaturation, IYCFcoverage = getIYCFcostCoverageSaturation()
 
