@@ -1,12 +1,19 @@
 """
 guidemo1.py -- script for running functionality for the Nutrition GUI demo
     
-Last update: 11/21/17 (gchadder3)
+Last update: 11/23/17 (gchadder3)
 """
 
 #
 # Imports
 #
+
+import os
+import uuid
+from copy import deepcopy as dcp
+import datetime
+import dateutil
+import dateutil.tz
 
 # Import cPickle if it is available in your Python setup because it is a 
 # faster method.  If it's not available, import the regular pickle library.
@@ -21,11 +28,6 @@ from contextlib import closing
 
 import costcov
 import optimisation2
-from copy import deepcopy as dcp
-import uuid
-import os
-import datetime
-import dateutil
     
 #
 # Classes
@@ -33,6 +35,35 @@ import dateutil
 
 # Provisional Project class.
 class Project(object):
+    """
+    A Nutrition Project.
+    
+    Methods:
+        __init__(name: str, theUID: UUID [None], spreadsheetPath: str [None]):
+            void -- constructor 
+        updateName(newName: str): void -- change the project name to newName
+        updateSpreadsheet(spreadsheetPath: str): void -- change the 
+            spreadsheet the project is using
+        saveToPrjFile(dirPath: str, saveResults: bool [False]) -- save the 
+            project to a .prj file and return the full path
+            
+    Attributes:
+        uid (UUID) -- the UID of the Project
+        name (str) -- the Project's name
+        spreadsheetPath (str) -- the full path name for the Excel spreadsheet
+        theOptimisation (Optimisation2) -- the Optimisation object used for 
+            simulations
+        createdTime (datetime.datetime) -- the time that the Project was 
+            created
+        updatedTime (datetime.datetime) -- the time that the Project was last 
+            updated
+        dataUploadTime (datetime.datetime) -- the time that the Project's 
+            spreadsheet was last updated
+        
+    Usage:
+        >>> theProj = Project('myproject', uuid.UUID('12345678123456781234567812345678'))                      
+    """ 
+    
     def  __init__(self, name, theUID=None, spreadsheetPath=None):        
         # If a UUID was passed in...
         if theUID is not None:
@@ -209,8 +240,6 @@ def getValidUUID(uidParam):
 
 def today():
     ''' Get the current time, in UTC time '''
-#    import datetime # today = datetime.today
-#    import dateutil
     now = datetime.datetime.now(dateutil.tz.tzutc())
     return now
 
@@ -372,7 +401,7 @@ def runModel(theProject, interventionCoverages, yearsToRun):
     return [SCintervSpending, outcomeLabels, BLoutcomes, SCoutcomes, pctChanges]
     
 #
-# Script
+# Script code
 #
 
 if __name__ == '__main__':
