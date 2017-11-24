@@ -397,7 +397,7 @@ class Params:
             wastingUpdate[age] = 1. - reduction
         return wastingUpdate
 
-    def getStuntingUpdateComplementaryFeeding(self, newCoverage):
+    def getStuntingUpdateComplementaryFeeding(self, newCoverage): # TODO: WHEN CFE IS GONE THIS FUNCTION WILL BREAK
         stuntingUpdate = {}
         for ageName in self.ages:
             stuntingUpdate[ageName] = 1.      

@@ -12,20 +12,6 @@ def returnAlphabeticalDictionary(dictionary):
         dictionaryOrdered[order[i]] = dictionary[order[i]]    
     return dictionaryOrdered 
 
-def getTotalInitialAllocation(data, costCoverageInfo, targetPopSize):
-    import costcov
-    from copy import deepcopy as dcp
-    costCov = costcov.Costcov()
-    allocation = []
-    for intervention in data.interventionList:
-        coverageFraction = dcp(data.coverage[intervention])
-        coverageNumber = coverageFraction * targetPopSize[intervention]
-        if coverageNumber == 0:
-            spending = 0.
-        else:
-            spending = costCov.getSpending(coverageNumber, costCoverageInfo[intervention], targetPopSize[intervention])
-        allocation.append(spending)
-    return allocation
 
 def rescaleAllocation(totalBudget, allocation):
     scaleRatio = totalBudget / sum(allocation)
@@ -128,71 +114,129 @@ class OutputClass:
         self.cleanOutputFvalVector = cleanOutputFvalVector
         self.cleanOutputXVector = cleanOutputXVector      
 
+class NotEnoughCoresError(Exception):
+    "Not enough physical cores to parallelise for num objectives * num cascades"
+    pass
 
 class Optimisation:
-    def __init__(self, dataSpreadsheetName, numModelSteps, optimise, resultsFileStem, costCurveType, interventionsToRemove=None):
+    def __init__(self, dataSpreadsheetName, numModelSteps, optimise, resultsFileStem, costCurveType,
+                 parallel=False, numSims=10, haveFixedCosts=False, interventionsToRemove=None):
         import helper
         import data
         self.dataSpreadsheetName = dataSpreadsheetName
         self.numModelSteps = numModelSteps
         self.optimise = optimise
+        self.parallel = parallel
+        self.numSims = numSims
         self.resultsFileStem = resultsFileStem
         self.costCurveType = costCurveType
         self.helper = helper.Helper()
-        self.spreadsheetData = data.readSpreadsheet(dataSpreadsheetName, self.helper.keyList, interventionsToRemove=interventionsToRemove)
+        self.data = data.readSpreadsheet(dataSpreadsheetName, self.helper.keyList, interventionsToRemove=interventionsToRemove)
         self.timeSeries = None
+        self.costCoverageInfo = self.getCostCoverageInfo()
+        self.targetPopSize = self.getInitialTargetPopSize()
+        self.inititalProgramAllocations = self.getTotalInitialAllocation()
+        self.totalBudget = sum(self.inititalProgramAllocations)
+        self.fixedCosts = self.getFixedCosts(haveFixedCosts, self.inititalProgramAllocations)
+        self.timeStepsPre = 12
+        self.model = runModelForNTimeSteps(self.timeStepsPre, self.data, model=None)[0]
+        self.costCurves = self.generateCostCurves(self.model)
         # check that results directory exists and if not then create it
         import os
         if not os.path.exists(resultsFileStem):
             os.makedirs(resultsFileStem)
-        
+            
+    def optimiseThis(self, cascadeValues):
+        if self.parallel:
+            self.parallelRun(cascadeValues)
+        return
+
+    def parallelRun(self, cascadeValues):
+        from multiprocessing import Process, cpu_count
+        numCores = cpu_count()
+        numCascades = len(cascadeValues)
+        terminate = self.checkParallel(numCores, numCascades)
+        if terminate:
+            return
+        for value in cascadeValues:
+            p = Process(target=self.runSimulation, args=([value]))
+            p.start()
+            #p.join()
+
+    def checkParallel(self, numCores, numCascades):
+        terminate = False
+        try:
+            if numCascades >  numCores: # TODO: need to incorporate optimise objectives. Could input this as a list param
+                raise NotEnoughCoresError
+        except NotEnoughCoresError:
+            print "There aren't enough physical cores to parallelise (num objectives * num cascades) optimisations"
+            terminate = True
+        return terminate
+
+    def runSimulation(self, multiple):
+        import asd as asd
+        import numpy
+        args = {'costCurves': self.costCurves, 'model': self.model, 'timestepsPre': self.timeStepsPre,
+                'totalBudget': self.totalBudget * multiple, 'fixedCosts': self.fixedCosts, 'costCoverageInfo': self.costCoverageInfo,
+                'optimise': self.optimise, 'numModelSteps': self.numModelSteps,
+                'dataSpreadsheetName': self.dataSpreadsheetName, 'data': self.data}
+        x0 = numpy.random.rand(len(self.data.interventionList))
+        xmin = [0.] * len(self.data.interventionList)
+        result = asd.asd(objectiveFunction, x0, args=args, xmin=xmin, verbose = 2)
+
+
+
+
+
+
+
     def performSingleOptimisation(self, MCSampleSize, haveFixedProgCosts):
         costCoverageInfo = self.getCostCoverageInfo()
         initialTargetPopSize = self.getInitialTargetPopSize()
-        initialAllocation = getTotalInitialAllocation(self.spreadsheetData, costCoverageInfo, initialTargetPopSize)
+        initialAllocation = getTotalInitialAllocation(self.data, costCoverageInfo, initialTargetPopSize)
         totalBudget = sum(initialAllocation)
         xmin = [0.] * len(initialAllocation)
         # set up and run the model prior to optimising
         fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation)
         timestepsPre = 12
-        model = runModelForNTimeSteps(timestepsPre, self.spreadsheetData, model=None)[0]
+        model = runModelForNTimeSteps(timestepsPre, self.data, model=None)[0]
         # generate cost curves for each intervention
         costCurves = self.generateCostCurves(model)
         args = {'costCurves': costCurves, 'model': model, 'timestepsPre': timestepsPre,
                 'totalBudget': totalBudget, 'fixedCosts': fixedCosts, 'costCoverageInfo': costCoverageInfo,
                 'optimise': self.optimise, 'numModelSteps': self.numModelSteps,
-                'dataSpreadsheetName': self.dataSpreadsheetName, 'data': self.spreadsheetData}
-        self.runOnce(MCSampleSize, xmin, args, self.spreadsheetData.interventionList, totalBudget, self.resultsFileStem+'.pkl')
+                'dataSpreadsheetName': self.dataSpreadsheetName, 'data': self.data}
+        self.runOnce(MCSampleSize, xmin, args, self.data.interventionList, totalBudget, self.resultsFileStem+'.pkl')
         
     def performSingleOptimisationForGivenTotalBudget(self, MCSampleSize, totalBudget, filename, haveFixedProgCosts):
         costCoverageInfo = self.getCostCoverageInfo()
-        xmin = [0.] * len(self.spreadsheetData.interventionList)
+        xmin = [0.] * len(self.data.interventionList)
         initialTargetPopSize = self.getInitialTargetPopSize() 
-        initialAllocation = getTotalInitialAllocation(self.spreadsheetData, costCoverageInfo, initialTargetPopSize)
+        initialAllocation = getTotalInitialAllocation(self.data, costCoverageInfo, initialTargetPopSize)
         fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation)
         timestepsPre = 12
         # set up and run the model prior to optimising
-        model = runModelForNTimeSteps(timestepsPre, self.spreadsheetData, model=None)[0]
+        model = runModelForNTimeSteps(timestepsPre, self.data, model=None)[0]
         # generate cost curves for each intervention
         costCurves = self.generateCostCurves(model)
         args = {'costCurves': costCurves, 'model': model, 'timestepsPre': timestepsPre,
                 'totalBudget': totalBudget, 'fixedCosts': fixedCosts, 'costCoverageInfo': costCoverageInfo,
                 'optimise': self.optimise, 'numModelSteps': self.numModelSteps,
-                'dataSpreadsheetName': self.dataSpreadsheetName, 'data': self.spreadsheetData}
-        self.runOnce(MCSampleSize, xmin, args, self.spreadsheetData.interventionList, totalBudget, self.resultsFileStem+filename+'.pkl')
+                'dataSpreadsheetName': self.dataSpreadsheetName, 'data': self.data}
+        self.runOnce(MCSampleSize, xmin, args, self.data.interventionList, totalBudget, self.resultsFileStem+filename+'.pkl')
 
         
     def performCascadeOptimisation(self, MCSampleSize, cascadeValues, haveFixedProgCosts):
         timestepsPre = 12
         costCoverageInfo = self.getCostCoverageInfo()
         initialTargetPopSize = self.getInitialTargetPopSize()
-        initialAllocation = getTotalInitialAllocation(self.spreadsheetData, costCoverageInfo, initialTargetPopSize)
+        initialAllocation = getTotalInitialAllocation(self.data, costCoverageInfo, initialTargetPopSize)
         currentTotalBudget = sum(initialAllocation)
         xmin = [0.] * len(initialAllocation)
         # set fixed costs if you have them
         fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation)
         # run the model prior to optimising
-        model = runModelForNTimeSteps(timestepsPre, self.spreadsheetData, model=None)[0]
+        model = runModelForNTimeSteps(timestepsPre, self.data, model=None)[0]
         # generate cost curves for each intervention
         costCurves = self.generateCostCurves(model)
         for cascade in cascadeValues:
@@ -200,9 +244,9 @@ class Optimisation:
             args = {'costCurves': costCurves, 'model': model, 'timestepsPre': timestepsPre,
                     'totalBudget':totalBudget, 'fixedCosts':fixedCosts, 'costCoverageInfo':costCoverageInfo,
                     'optimise':self.optimise, 'numModelSteps':self.numModelSteps,
-                    'dataSpreadsheetName':self.dataSpreadsheetName, 'data':self.spreadsheetData}
+                    'dataSpreadsheetName':self.dataSpreadsheetName, 'data':self.data}
             outFile = self.resultsFileStem+'_cascade_'+str(self.optimise)+'_'+str(cascade)+'.pkl'
-            self.runOnce(MCSampleSize, xmin, args, self.spreadsheetData.interventionList, totalBudget, outFile)
+            self.runOnce(MCSampleSize, xmin, args, self.data.interventionList, totalBudget, outFile)
 
     def cascadeParallelRunFunction(self, costCurves, model, timestepsPre, cascadeValue, currentTotalBudget, fixedCosts, spreadsheetData, costCoverageInfo, MCSampleSize, xmin):
         totalBudget = currentTotalBudget * cascadeValue
@@ -218,18 +262,10 @@ class Optimisation:
 
     def performParallelCascadeOptimisation(self, MCSampleSize, cascadeValues, numCores, haveFixedProgCosts):
         from multiprocessing import Process
-        costCoverageInfo = self.getCostCoverageInfo()
-        initialTargetPopSize = self.getInitialTargetPopSize()
-        initialAllocation = getTotalInitialAllocation(self.spreadsheetData, costCoverageInfo, initialTargetPopSize)
-        currentTotalBudget = sum(initialAllocation)
-        xmin = [0.] * len(initialAllocation)
+        xmin = [0.] * len(self.inititalProgramAllocations)
         timestepsPre = 12
         # set fixed costs if you have them
-        fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation)
-        # set up and run the model prior to optimising
-        model = runModelForNTimeSteps(timestepsPre, self.spreadsheetData, model=None)[0]
-        # generate cost curves for each intervention
-        costCurves = self.generateCostCurves(model)
+        fixedCosts = self.getFixedCosts(haveFixedProgCosts, self.inititalProgramAllocations)
         # check that you have enough cores and don't parallelise if you don't
         if numCores < len(cascadeValues):
             print "numCores is not enough"
@@ -237,8 +273,8 @@ class Optimisation:
             for value in cascadeValues:
                 prc = Process(
                     target=self.cascadeParallelRunFunction,
-                    args=(costCurves, model, timestepsPre, value, currentTotalBudget, fixedCosts, self.spreadsheetData,
-                            costCoverageInfo, MCSampleSize, xmin))
+                    args=(self.costCurves, self.model, timestepsPre, value, self.totalBudget, fixedCosts, self.data,
+                            self.costCoverageInfo, MCSampleSize, xmin))
                 prc.start()
 
         
@@ -246,24 +282,24 @@ class Optimisation:
         from multiprocessing import Process
         costCoverageInfo = self.getCostCoverageInfo()
         initialTargetPopSize = self.getInitialTargetPopSize()          
-        initialAllocation = getTotalInitialAllocation(self.spreadsheetData, costCoverageInfo, initialTargetPopSize)
+        initialAllocation = getTotalInitialAllocation(self.data, costCoverageInfo, initialTargetPopSize)
         currentTotalBudget = sum(initialAllocation)
         xmin = [0.] * len(initialAllocation)
         # set fixed costs if you have them
         fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation) 
         runOnceArgs = {'totalBudget':currentTotalBudget, 'fixedCosts':fixedCosts, 'costCoverageInfo':costCoverageInfo,
-                       'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':self.spreadsheetData}
+                       'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':self.data}
         for i in range(numRuns):
             prc = Process(
                 target=self.runOnceDumpFullOutputToFile, 
-                args=(MCSampleSize, xmin, runOnceArgs, self.spreadsheetData.interventionList, currentTotalBudget, filename+"_"+str(i)))
+                args=(MCSampleSize, xmin, runOnceArgs, self.data.interventionList, currentTotalBudget, filename+"_"+str(i)))
             prc.start()    
 
     def performParallelCascadeOptimisationAlteredInterventionEffectiveness(self, MCSampleSize, cascadeValues, numCores, haveFixedProgCosts, intervention, effectiveness, savePlot):
         from multiprocessing import Process
         costCoverageInfo = self.getCostCoverageInfo()
         initialTargetPopSize = self.getInitialTargetPopSize()
-        initialAllocation = getTotalInitialAllocation(self.spreadsheetData, costCoverageInfo, initialTargetPopSize)
+        initialAllocation = getTotalInitialAllocation(self.data, costCoverageInfo, initialTargetPopSize)
         currentTotalBudget = sum(initialAllocation)
         xmin = [0.] * len(initialAllocation)
         timestepsPre = 12
@@ -271,10 +307,10 @@ class Optimisation:
         fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation)
         # alter mortality & incidence effectiveness
         for ageName in self.helper.keyList['ages']:
-            self.spreadsheetData.effectivenessMortality[intervention][ageName]['Diarrhea'] *= effectiveness
-            self.spreadsheetData.effectivenessIncidence[intervention][ageName]['Diarrhea'] *= effectiveness
+            self.data.effectivenessMortality[intervention][ageName]['Diarrhea'] *= effectiveness
+            self.data.effectivenessIncidence[intervention][ageName]['Diarrhea'] *= effectiveness
         # set up and run the model prior to optimising
-        model = runModelForNTimeSteps(timestepsPre, self.spreadsheetData, model=None)[0]
+        model = runModelForNTimeSteps(timestepsPre, self.data, model=None)[0]
         # generate cost curves for each intervention
         if savePlot:
             resultsPath = self.resultsFileStem
@@ -288,7 +324,7 @@ class Optimisation:
             for value in cascadeValues:
                 prc = Process(
                     target=self.cascadeParallelRunFunction,
-                    args=(costCurves, model, timestepsPre, value, currentTotalBudget, fixedCosts, self.spreadsheetData,
+                    args=(costCurves, model, timestepsPre, value, currentTotalBudget, fixedCosts, self.data,
                             costCoverageInfo, MCSampleSize, xmin))
                 prc.start()
         
@@ -298,8 +334,20 @@ class Optimisation:
             fixedCosts = dcp(initialAllocation)
         else:
             fixedCosts = [0.] * len(initialAllocation)
-        return fixedCosts    
+        return fixedCosts
 
+    def getTotalInitialAllocation(self):
+        import costcov
+        costCov = costcov.Costcov()
+        allocations = []
+        for intervention in self.data.interventionList:
+            coverageFraction = self.data.coverage[intervention]
+            coverageNumber = coverageFraction * self.targetPopSize[intervention]
+            spending = costCov.getSpending(coverageNumber, self.costCoverageInfo[intervention],
+                                               self.targetPopSize[intervention])
+            allocations.append(spending)
+        return allocations
+    
     def runOnce(self, MCSampleSize, xmin, geneticArgs, asdArgs, interventionList, totalBudget, filename):
         import asd as asd
         import pickle
@@ -334,11 +382,10 @@ class Optimisation:
         pickle.dump(bestSampleBudgetScaledDict, outfile)
         outfile.close()
 
-    def getTargetPopSizeFromModelInstance(self, keyList, model): # TODO; can remove keylist if have helper in function
-        import helper
-        thisHelper = helper.Helper()
+    def getTargetPopSizeFromModelInstance(self, model):
         targetPopSize = {}
-        for intervention in self.spreadsheetData.interventionCompleteList:
+        keyList = self.helper.keyList
+        for intervention in self.data.interventionCompleteList:
             targetPopSize[intervention] = 0.
             # children
             numAgeGroups = len(keyList['ages'])
@@ -347,7 +394,7 @@ class Optimisation:
                 if "IFAS" in intervention:
                     target = 0.
                 else:
-                    target = self.spreadsheetData.targetPopulation[intervention][ageName]
+                    target = self.data.targetPopulation[intervention][ageName]
                 targetPopSize[intervention] += target * model.listOfAgeCompartments[iAge].getTotalPopulation()
             # pregnant women
             numAgeGroups = len(keyList['pregnantWomenAges'])
@@ -356,7 +403,7 @@ class Optimisation:
                 if "IFAS" in intervention:
                     target = 0.
                 else:
-                    target = self.spreadsheetData.targetPopulation[intervention][ageName]
+                    target = self.data.targetPopulation[intervention][ageName]
                 targetPopSize[intervention] += target * model.listOfPregnantWomenAgeCompartments[
                     iAge].getTotalPopulation()
             # women of reproductive age
@@ -366,15 +413,15 @@ class Optimisation:
                 if "IFAS" in intervention:
                     target = 0.
                 else:
-                    target = self.spreadsheetData.targetPopulation[intervention][ageName]
+                    target = self.data.targetPopulation[intervention][ageName]
                 targetPopSize[intervention] += target * model.listOfReproductiveAgeCompartments[
                     iAge].getTotalPopulation()
             # for food fortification set target population size as entire population
             if "fortification" in intervention:
-                targetPopSize[intervention] = self.spreadsheetData.demographics['total population']
+                targetPopSize[intervention] = self.data.demographics['total population']
         # get IFAS target populations seperately
         fromModel = True
-        targetPopSize.update(thisHelper.setIFASTargetPopWRA(self.spreadsheetData, model, fromModel))
+        targetPopSize.update(self.helper.setIFASTargetPopWRA(self.data, model, fromModel))
         return targetPopSize
 
     def runOnceDumpFullOutputToFile(self, MCSampleSize, xmin, args, interventionList, totalBudget, filename):        
@@ -411,34 +458,32 @@ class Optimisation:
     def getInitialAllocationDictionary(self):
         costCoverageInfo = self.getCostCoverageInfo()
         targetPopSize = self.getInitialTargetPopSize()        
-        initialAllocation = getTotalInitialAllocation(self.spreadsheetData, costCoverageInfo, targetPopSize)
+        initialAllocation = getTotalInitialAllocation(self.data, costCoverageInfo, targetPopSize)
         initialAllocationDictionary = {}
-        for i in range(0, len(self.spreadsheetData.interventionList)):
-            intervention = self.spreadsheetData.interventionList[i]
+        for i in range(0, len(self.data.interventionList)):
+            intervention = self.data.interventionList[i]
             initialAllocationDictionary[intervention] = initialAllocation[i]
         return initialAllocationDictionary 
         
     def getTotalInitialBudget(self):
         costCoverageInfo = self.getCostCoverageInfo()
         targetPopSize = self.getInitialTargetPopSize()        
-        initialAllocation = getTotalInitialAllocation(self.spreadsheetData, costCoverageInfo, targetPopSize)
+        initialAllocation = getTotalInitialAllocation(self.data, costCoverageInfo, targetPopSize)
         return sum(initialAllocation)
 
     def generateCostCurves(self, model, resultsFileStem=None,
                            budget=None, cascade=None, scale=True):
         '''Generates & stores cost curves in dictionary by intervention.'''
         import costcov
-        costCoverageInfo = self.getCostCoverageInfo()
         costCov = costcov.Costcov()
-        targetPopSize = self.getTargetPopSizeFromModelInstance(self.helper.keyList, model)
+        targetPopSize = self.getTargetPopSizeFromModelInstance(model)
         costCurvesDict = {}
-        for i in range(0, len(self.spreadsheetData.interventionList)):
-            intervention = self.spreadsheetData.interventionList[i]
-            costCurvesDict[intervention] = costCov.getCostCoverageCurve(costCoverageInfo[intervention],
+        for intervention in self.data.interventionList:
+            costCurvesDict[intervention] = costCov.getCostCoverageCurve(self.costCoverageInfo[intervention],
                                                                         targetPopSize[intervention], self.costCurveType,
                                                                         intervention)
         if resultsFileStem is not None:  # save plot
-            costCov.saveCurvesToPNG(costCurvesDict, self.costCurveType, self.spreadsheetData.interventionList, targetPopSize, resultsFileStem,
+            costCov.saveCurvesToPNG(costCurvesDict, self.costCurveType, self.data.interventionList, targetPopSize, resultsFileStem,
                                     budget, cascade, scale=scale)
         return costCurvesDict
         
@@ -448,70 +493,70 @@ class Optimisation:
         eps = 1.e-3  ## WARNING: using project non-specific eps
         costCoverageInfo = self.getCostCoverageInfo()
         timestepsPre = 12
-        model, modelList = runModelForNTimeSteps(timestepsPre, self.spreadsheetData, model=None, saveEachStep=True)
+        model, modelList = runModelForNTimeSteps(timestepsPre, self.data, model=None, saveEachStep=True)
         costCurves = self.generateCostCurves(model)
         newCoverages = {}
-        for i in range(0, len(self.spreadsheetData.interventionList)):
-            intervention = self.spreadsheetData.interventionList[i]
+        for i in range(0, len(self.data.interventionList)):
+            intervention = self.data.interventionList[i]
             costCurveThisIntervention = costCurves[intervention]
             newCoverages[intervention] = maximum(costCurveThisIntervention(allocationDictionary[intervention]), eps)
         model.updateCoverages(newCoverages)
         steps = self.numModelSteps - timestepsPre
-        modelList += runModelForNTimeSteps(steps, self.spreadsheetData, model, saveEachStep=True)[1]
+        modelList += runModelForNTimeSteps(steps, self.data, model, saveEachStep=True)[1]
         return modelList
     
         
     def getCostCoverageInfo(self):
         from copy import deepcopy as dcp
         costCoverageInfo = {}
-        for intervention in self.spreadsheetData.interventionList:
+        for intervention in self.data.interventionList:
             costCoverageInfo[intervention] = {}
-            costCoverageInfo[intervention]['unitcost']   = dcp(self.spreadsheetData.costSaturation[intervention]["unit cost"])
-            costCoverageInfo[intervention]['saturation'] = dcp(self.spreadsheetData.costSaturation[intervention]["saturation coverage"])
+            costCoverageInfo[intervention]['unitcost']   = dcp(self.data.costSaturation[intervention]["unit cost"])
+            costCoverageInfo[intervention]['saturation'] = dcp(self.data.costSaturation[intervention]["saturation coverage"])
         return costCoverageInfo
         
     def getInitialTargetPopSize(self):
         import helper
         thisHelper = helper.Helper()
         targetPopSize = {}
-        for intervention in self.spreadsheetData.interventionCompleteList:
+        for intervention in self.data.interventionCompleteList:
             targetPopSize[intervention] = 0.
             # children
-            agePopSizes  = self.helper.makeAgePopSizes(self.spreadsheetData)
+            agePopSizes  = self.helper.makeAgePopSizes(self.data)
             numAgeGroups = len(self.helper.keyList['ages'])
             for iAge in range(numAgeGroups):
                 ageName = self.helper.keyList['ages'][iAge]
                 if "IFAS" in intervention:
                     target = 0.
                 else:    
-                    target = self.spreadsheetData.targetPopulation[intervention][ageName]
+                    target = self.data.targetPopulation[intervention][ageName]
                 targetPopSize[intervention] += target * agePopSizes[iAge]
             # pregnant women
-            agePopSizes = self.helper.makePregnantWomenAgePopSizes(self.spreadsheetData)
+            agePopSizes = self.helper.makePregnantWomenAgePopSizes(self.data)
             numAgeGroups = len(self.helper.keyList['pregnantWomenAges'])    
             for iAge in range(numAgeGroups):
                 ageName = self.helper.keyList['pregnantWomenAges'][iAge] 
                 if "IFAS" in intervention:
                     target = 0.
                 else:    
-                    target = self.spreadsheetData.targetPopulation[intervention][ageName]
+                    target = self.data.targetPopulation[intervention][ageName]
                 targetPopSize[intervention] += target * agePopSizes[iAge]
             # women of reproductive age
-            agePopSizes = self.helper.makeWRAAgePopSizes(self.spreadsheetData)
+            agePopSizes = self.helper.makeWRAAgePopSizes(self.data)
             numAgeGroups = len(self.helper.keyList['reproductiveAges'])    
             for iAge in range(numAgeGroups):
                 ageName = self.helper.keyList['reproductiveAges'][iAge] 
                 if "IFAS" in intervention:
                     target = 0.
                 else:
-                    target = self.spreadsheetData.targetPopulation[intervention][ageName]
+                    target = self.data.targetPopulation[intervention][ageName]
                 targetPopSize[intervention] += target * agePopSizes[iAge]
             # for food fortification set target population size as entire population
             if "fortification" in intervention:
-               targetPopSize[intervention] =  self.spreadsheetData.demographics['total population']
+               targetPopSize[intervention] =  self.data.demographics['total population']
         #add IFAS intervention target pop sizes to dictionary  
         fromModel = False       
-        targetPopSize.update(thisHelper.setIFASTargetPopWRA(self.spreadsheetData, "dummyModel", fromModel))
+        targetPopSize.update(thisHelper.setIFASTargetPopWRA(self.data, "dummyModel", fromModel))
         return targetPopSize    
     
     
@@ -519,7 +564,7 @@ class Optimisation:
         import pickle
         costCoverageInfo = self.getCostCoverageInfo()
         targetPopSize = self.getInitialTargetPopSize()
-        initialAllocation = getTotalInitialAllocation(self.spreadsheetData, costCoverageInfo, targetPopSize)
+        initialAllocation = getTotalInitialAllocation(self.data, costCoverageInfo, targetPopSize)
         currentTotalBudget = sum(initialAllocation)            
         spendingVector = []        
         outcomeVector = []
