@@ -412,7 +412,8 @@ if __name__ == '__main__':
     # Set up Optimisation object to work with.
     rootpath = './'
     #spreadsheet = rootpath + 'input_spreadsheets/Bangladesh/2017Oct/InputForCode_Bangladesh.xlsx'
-    spreadsheet = rootpath + 'input_spreadsheets/Bangladesh/gchadder3Test/InputForCode_Bangladesh.xlsx'    
+    #spreadsheet = rootpath + 'input_spreadsheets/Bangladesh/gchadder3Test/InputForCode_Bangladesh.xlsx'  
+    spreadsheet = rootpath + 'input_spreadsheets/Bangladesh/gchadder3Test/InputForCode_Bangladesh2.xlsx'  
     theProj = Project('demo', spreadsheetPath=spreadsheet)
     theOpt = theProj.theOptimisation
     
