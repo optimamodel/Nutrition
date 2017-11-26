@@ -533,11 +533,11 @@ class Optimisation:
     def oneModelRunWithOutputManuallyScaleIYCF(self, IYCF_cov):
         import data
         spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)
-        model = self.helper.setupModelDerivedParameters(spreadsheetData)[0]
+        thisModel = self.helper.setupModelDerivedParameters(spreadsheetData)[0]
         newCoverages = {}        
         newCoverages['IYCF'] = IYCF_cov    
-        model.updateCoverages(newCoverages)
-        modelList = runModelForNTimeSteps(self.numModelSteps, spreadsheetData, model=model, saveEachStep=True)[1]
+        thisModel.updateCoverages(newCoverages)
+        modelList = runModelForNTimeSteps(self.numModelSteps, spreadsheetData, model=thisModel, saveEachStep=True)[1]
         return modelList    
         
         

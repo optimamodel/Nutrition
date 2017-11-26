@@ -37,7 +37,7 @@ df = pandas.read_excel(Location, sheetname = 'Sheet1')
 IYCF_cov_regional = list(df['Coverage'])
 
 numCores = 30  # need this number times the number of outcomes you're optimising for
-extraMoney = 45695801
+extraMoney = 20000000 #45695801
 for optimise in ['thrive', 'deaths']:
     print 'running GA for:  ', optimise
     resultsFileStem = rootpath + '/Results/' + date + '/' + optimise + '/geospatialProgNotFixedIYCF/'
