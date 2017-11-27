@@ -35,7 +35,7 @@ def runModelForNTimeSteps(timesteps, spreadsheetData, model, saveEachStep=False)
 
 
     
-def objectiveFunction(allocation, costCurves, model, totalBudget, fixedCosts, costCoverageInfo, optimise, numModelSteps, dataSpreadsheetName, data, timestepsPre):
+def objectiveFunction(allocation, costCurves, model, totalBudget, fixedCosts, costCoverageInfo, objective, numModelSteps, dataSpreadsheetName, data, timestepsPre):
     from copy import deepcopy as dcp
     from operator import add
     from numpy import maximum, minimum
@@ -63,8 +63,8 @@ def objectiveFunction(allocation, costCurves, model, totalBudget, fixedCosts, co
     modelThisRun.updateCoverages(newCoverages)
     steps = numModelSteps - timestepsPre
     modelThisRun = runModelForNTimeSteps(steps, data, modelThisRun)[0]
-    performanceMeasure = modelThisRun.getOutcome(optimise)
-    if optimise == 'thrive':
+    performanceMeasure = modelThisRun.getOutcome(objective)
+    if objective == 'thrive':
         performanceMeasure = - performanceMeasure
     return performanceMeasure
     
@@ -119,16 +119,19 @@ class NotEnoughCoresError(Exception):
     pass
 
 class Optimisation:
-    def __init__(self, dataSpreadsheetName, numModelSteps, optimise, resultsFileStem, costCurveType,
-                 parallel=False, numSims=10, haveFixedCosts=False, interventionsToRemove=None):
+    def __init__(self, cascadeValues, objectivesList, dataSpreadsheetName, resultsFileStem, country, costCurveType='standard',
+                 parallel=False, numRuns=10, numModelSteps=14, haveFixedCosts=False, interventionsToRemove=None):
         import helper
         import data
+        from multiprocessing import cpu_count
+        self.cascadeValues = cascadeValues
+        self.objectivesList = objectivesList
+        self.country = country
         self.dataSpreadsheetName = dataSpreadsheetName
         self.numModelSteps = numModelSteps
-        self.optimise = optimise
         self.parallel = parallel
-        self.numSims = numSims
-        self.resultsFileStem = resultsFileStem
+        self.numCPUs = cpu_count()
+        self.numRuns = numRuns
         self.costCurveType = costCurveType
         self.helper = helper.Helper()
         self.data = data.readSpreadsheet(dataSpreadsheetName, self.helper.keyList, interventionsToRemove=interventionsToRemove)
@@ -141,53 +144,117 @@ class Optimisation:
         self.timeStepsPre = 12
         self.model = runModelForNTimeSteps(self.timeStepsPre, self.data, model=None)[0]
         self.costCurves = self.generateCostCurves(self.model)
+        self.kwargs = {'costCurves': self.costCurves, 'model': self.model, 'timestepsPre': self.timeStepsPre,
+                'totalBudget': self.totalBudget, 'fixedCosts': self.fixedCosts, 'costCoverageInfo': self.costCoverageInfo,
+                'numModelSteps': self.numModelSteps,
+                'dataSpreadsheetName': self.dataSpreadsheetName, 'data': self.data}
         # check that results directory exists and if not then create it
         import os
-        if not os.path.exists(resultsFileStem):
-            os.makedirs(resultsFileStem)
+        self.resultsFileStems = {}
+        for objective in self.objectivesList:
+            self.resultsFileStems[objective] = resultsFileStem +'/'+objective
+            if not os.path.exists(self.resultsFileStems[objective]):
+                os.makedirs(self.resultsFileStems[objective])
             
-    def optimiseThis(self, cascadeValues):
+    def optimiseThis(self):
         if self.parallel:
-            self.parallelRun(cascadeValues)
+            self.parallelRun()
+        else:
+            self.seriesRun()
         return
 
-    def parallelRun(self, cascadeValues):
-        from multiprocessing import Process, cpu_count
-        numCores = cpu_count()
-        numCascades = len(cascadeValues)
-        terminate = self.checkParallel(numCores, numCascades)
-        if terminate:
-            return
-        for value in cascadeValues:
-            p = Process(target=self.runSimulation, args=([value]))
-            p.start()
-            #p.join()
+    def parallelRun(self):
+        jobs = self.getJobs()
+        self.runJobs(jobs)
+        return
+
+    def seriesRun(self):
+        for objective in self.objectivesList:
+            for multiple in self.cascadeValues:
+                self.runOptimisation(multiple, objective)
+
+    def getJobs(self):
+        from multiprocessing import Process
+        jobs = []
+        for objective in self.objectivesList:
+            for multiple in self.cascadeValues:
+                p = Process(target=self.runOptimisation, args=(multiple, objective))
+                jobs.append(p)
+        return jobs
+
+    def runJobs(self, jobs):
+        while jobs:
+            thisRound = min(self.numCPUs, len(jobs))
+            for process in range(thisRound):
+                p = jobs[process]
+                p.start()
+            for process in range(thisRound): # this loop ensures process group waits
+                p = jobs[process]
+                p.join()
+            jobs = jobs[thisRound:]
+        return
+
+    def runOptimisation(self, multiple, objective):
+        from pyswarm import pso
+        import asd as asd
+        from copy import deepcopy as dcp
+        kwargs = dcp(self.kwargs)
+        kwargs['totalBudget'] *= multiple
+        kwargs['objective'] = objective
+        xmin = [0.] * len(self.data.interventionList)
+        xmax = [self.totalBudget] * len(self.data.interventionList)
+        runOutputs = []
+        for run in range(self.numRuns):
+            x0, fopt = pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=15, swarmsize=100)
+            print " "
+            print "THIS IS RUN " + str(run)
+            print "x0: " + str(fopt)
+            budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
+                                                         xmax=xmax, verbose=0)
+            outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval,
+                                       output.x)
+            runOutputs.append(outputOneRun)
+        bestAllocation = self.findBestAllocation(runOutputs)
+        scaledAllocation = self.adjustAllocation(bestAllocation, kwargs)
+        bestAllocationDict = self.createDictionary(scaledAllocation)
+        self.writeResults(bestAllocationDict, multiple, objective)
+        return
+
+    def findBestAllocation(self, outputs):
+        bestSample = max(outputs, key=lambda item: item.fval)
+        return bestSample.budgetBest
+
+    def adjustAllocation(self, bestOutput, kwargs):
+        availableBudget = kwargs['totalBudget'] - sum(kwargs['fixedCosts'])
+        scaledAllocation = rescaleAllocation(availableBudget, bestOutput)
+        return scaledAllocation
+
+    def createDictionary(self, bestAllocation):
+        interventionDict = {}
+        for idx in range(len(self.data.interventionList)):
+            intervention = self.data.interventionList[idx]
+            interventionDict[intervention] = bestAllocation[idx]
+        return interventionDict
+
+    def writeResults(self, allocation, multiple, objective):
+        import pickle
+        fileName = self.resultsFileStems[objective]+'/'+ self.country+'_cascade_'+str(objective)+'_'+str(multiple)+'.pkl'
+        outfile = open(fileName, 'wb')
+        pickle.dump(allocation, outfile)
+        return
 
     def checkParallel(self, numCores, numCascades):
         terminate = False
         try:
-            if numCascades >  numCores: # TODO: need to incorporate optimise objectives. Could input this as a list param
+            if numCascades * len(self.objectivesList) >  numCores:
                 raise NotEnoughCoresError
         except NotEnoughCoresError:
             print "There aren't enough physical cores to parallelise (num objectives * num cascades) optimisations"
             terminate = True
         return terminate
 
-    def runSimulation(self, multiple):
-        import asd as asd
-        import numpy
-        args = {'costCurves': self.costCurves, 'model': self.model, 'timestepsPre': self.timeStepsPre,
-                'totalBudget': self.totalBudget * multiple, 'fixedCosts': self.fixedCosts, 'costCoverageInfo': self.costCoverageInfo,
-                'optimise': self.optimise, 'numModelSteps': self.numModelSteps,
-                'dataSpreadsheetName': self.dataSpreadsheetName, 'data': self.data}
-        x0 = numpy.random.rand(len(self.data.interventionList))
-        xmin = [0.] * len(self.data.interventionList)
-        result = asd.asd(objectiveFunction, x0, args=args, xmin=xmin, verbose = 2)
 
-
-
-
-
+############# OLD CODE BELOW #############
 
 
     def performSingleOptimisation(self, MCSampleSize, haveFixedProgCosts):
@@ -377,7 +444,7 @@ class Optimisation:
         for i in range(0, len(interventionList)):
             intervention = interventionList[i]
             bestSampleBudgetScaledDict[intervention] = bestSampleBudgetScaled[i]
-        # put it in a file
+        # put it in a filex
         outfile = open(filename, 'wb')
         pickle.dump(bestSampleBudgetScaledDict, outfile)
         outfile.close()
