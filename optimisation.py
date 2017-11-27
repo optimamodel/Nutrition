@@ -156,7 +156,7 @@ class Optimisation:
             if not os.path.exists(self.resultsFileStems[objective]):
                 os.makedirs(self.resultsFileStems[objective])
             
-    def optimiseThis(self):
+    def optimise(self):
         if self.parallel:
             self.parallelRun()
         else:

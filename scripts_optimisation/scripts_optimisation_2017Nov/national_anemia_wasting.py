@@ -7,16 +7,12 @@ import optimisation
 rootpath = '../..'
 
 country = 'Bangladesh'
-date = '2017Oct'
+date = '2017Nov'
+sheetDate = '2017Oct'
 
-spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+date+'/InputForCode_'+country+'.xlsx'
+spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+sheetDate+'/InputForCode_'+country+'.xlsx'
 
-numModelSteps = 14
-MCSampleSize = 5
-cascadeValues = [0.25, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0, 8.0, 12.0]
-haveFixedProgCosts = False
-numCores = 9
-costCurve = 'standard'
+cascadeValues = [0.25, 1.0, 2.0, 4.0]
 
 interventionsToRemove = ['Public provision of complementary foods with iron',
                          'Public provision of complementary foods with iron (malaria area)',
@@ -24,9 +20,10 @@ interventionsToRemove = ['Public provision of complementary foods with iron',
                          'Iron and iodine fortification of salt', 'Iron fortification of wheat flour', 'Iron fortification of maize',
                          'Iron fortification of rice', 'IFA fortification of maize']
 
-for optimise in ['wasting_prev', 'MAM_prev']:
+objectiveList = ['wasting_prev', 'MAM_prev']
 
-    resultsFileStem = rootpath+'/Results/'+date+'/'+optimise+'/national/'+country
 
-    thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, optimise, resultsFileStem, costCurve, interventionsToRemove=interventionsToRemove)
-    thisOptimisation.performParallelCascadeOptimisation(MCSampleSize, cascadeValues, numCores, haveFixedProgCosts)
+resultsFileStem = rootpath+'/Results/'+date+'/'+country+'/national'
+
+thisOptimisation = optimisation.Optimisation(cascadeValues, objectiveList, spreadsheet, resultsFileStem, country, parallel=True, numRuns=10, interventionsToRemove=interventionsToRemove)
+thisOptimisation.optimise()
