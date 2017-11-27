@@ -58,7 +58,10 @@ class Costcov():
         return spending
 
     def inverseLogistic(self, A, B, C, D):
-        inverseCurve = lambda y: -D * log((B - y) / (y - A)) + C
+        if D == 0.: # this is a temp fix for removing interventions
+            inverseCurve = lambda y: 0.
+        else:
+            inverseCurve = lambda y: -D * log((B - y) / (y - A)) + C
         return inverseCurve
 
     def saveCurvesToPNG(self, curves, name, interventionList, popSize, resultsFileStem, budget, cascade, scale=True):
