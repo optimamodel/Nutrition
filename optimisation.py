@@ -210,9 +210,6 @@ class Optimisation:
         runOutputs = []
         for run in range(self.numRuns):
             x0, fopt = pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=20, swarmsize=200)
-            print " "
-            print "THIS IS RUN " + str(run)
-            print "x0: " + str(fopt)
             budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
                                                          xmax=xmax, verbose=0)
             outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval,
