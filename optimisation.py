@@ -135,6 +135,7 @@ class Optimisation:
         self.costCurveType = costCurveType
         self.helper = helper.Helper()
         self.data = data.readSpreadsheet(dataSpreadsheetName, self.helper.keyList, interventionsToRemove=interventionsToRemove)
+        self.programList = self.data.interventionList
         self.timeSeries = None
         self.costCoverageInfo = self.getCostCoverageInfo()
         self.targetPopSize = self.getInitialTargetPopSize()
@@ -150,12 +151,15 @@ class Optimisation:
                 'dataSpreadsheetName': self.dataSpreadsheetName, 'data': self.data}
         # check that results directory exists and if not then create it
         import os
-        self.resultsFileStems = {}
-        for objective in self.objectivesList:
-            self.resultsFileStems[objective] = resultsFileStem +'/'+objective
-            if not os.path.exists(self.resultsFileStems[objective]):
-                os.makedirs(self.resultsFileStems[objective])
-            
+        self.resultDirectories = {}
+        for objective in self.objectivesList + ['results']:
+            self.resultDirectories[objective] = resultsFileStem +'/'+objective
+            if not os.path.exists(self.resultDirectories[objective]):
+                os.makedirs(self.resultDirectories[objective])
+
+
+    ######### OPTIMISATION ##########
+
     def optimise(self):
         if self.parallel:
             self.parallelRun()
@@ -201,11 +205,11 @@ class Optimisation:
         kwargs = dcp(self.kwargs)
         kwargs['totalBudget'] *= multiple
         kwargs['objective'] = objective
-        xmin = [0.] * len(self.data.interventionList)
-        xmax = [self.totalBudget] * len(self.data.interventionList)
+        xmin = [0.] * len(self.programList)
+        xmax = [kwargs['totalBudget']] * len(self.programList)
         runOutputs = []
         for run in range(self.numRuns):
-            x0, fopt = pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=15, swarmsize=100)
+            x0, fopt = pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=20, swarmsize=200)
             print " "
             print "THIS IS RUN " + str(run)
             print "x0: " + str(fopt)
@@ -216,8 +220,8 @@ class Optimisation:
             runOutputs.append(outputOneRun)
         bestAllocation = self.findBestAllocation(runOutputs)
         scaledAllocation = self.adjustAllocation(bestAllocation, kwargs)
-        bestAllocationDict = self.createDictionary(scaledAllocation)
-        self.writeResults(bestAllocationDict, multiple, objective)
+        bestAllocationDict = self.createDictionary(scaledAllocation, self.programList)
+        self.writeToPickle(bestAllocationDict, multiple, objective)
         return
 
     def findBestAllocation(self, outputs):
@@ -229,16 +233,21 @@ class Optimisation:
         scaledAllocation = rescaleAllocation(availableBudget, bestOutput)
         return scaledAllocation
 
-    def createDictionary(self, bestAllocation):
-        interventionDict = {}
-        for idx in range(len(self.data.interventionList)):
-            intervention = self.data.interventionList[idx]
-            interventionDict[intervention] = bestAllocation[idx]
-        return interventionDict
+    def createDictionary(self, values, keys):
+        """Ensure keys and values have matching orders"""
+        returnDict = {}
+        for idx in range(len(keys)):
+            key = keys[idx]
+            returnDict[key] = values[idx]
+        return returnDict
 
-    def writeResults(self, allocation, multiple, objective):
+
+
+    ########### FILE HANDLING ############
+
+    def writeToPickle(self, allocation, multiple, objective):
         import pickle
-        fileName = self.resultsFileStems[objective]+'/'+ self.country+'_cascade_'+str(objective)+'_'+str(multiple)+'.pkl'
+        fileName = self.resultDirectories[objective]+'/'+ self.country+'_cascade_'+str(objective)+'_'+str(multiple)+'.pkl'
         outfile = open(fileName, 'wb')
         pickle.dump(allocation, outfile)
         return
@@ -252,6 +261,108 @@ class Optimisation:
             print "There aren't enough physical cores to parallelise (num objectives * num cascades) optimisations"
             terminate = True
         return terminate
+
+    def readPickles(self):
+        import pickle
+        allocations = {}
+        for objective in self.objectivesList:
+            allocations[objective] = {}
+            direc = self.resultDirectories[objective]
+            for multiple in self.cascadeValues:
+                filename = '%s/%s_cascade_%s_%s.pkl' % (direc, self.country, objective, str(multiple))
+                f = open(filename, 'rb')
+                allocations[objective][multiple] = pickle.load(f)
+                f.close()
+        return allocations
+
+    def getOutcome(self, allocation, objective):
+        modelList = self.oneModelRunWithOutput(allocation)
+        outcome = modelList[-1].getOutcome(objective)
+        return outcome
+
+    def getOptimisedOutcomes(self, allocations):
+        outcomes = {}
+        for objective in self.objectivesList:
+            outcomes[objective] = {}
+            for multiple in self.cascadeValues:
+                thisAllocation = allocations[objective][multiple]
+                outcomes[objective][multiple] = self.getOutcome(thisAllocation, objective)
+        return outcomes
+
+    def getCurrentOutcome(self, currentSpending):
+        currentOutcome = {}
+        for objective in self.objectivesList:
+            currentOutcome[objective] = {}
+            currentOutcome[objective]['current'] = self.getOutcome(currentSpending, objective)
+        return currentOutcome
+
+    def getBaselineOutcome(self):
+        zeroSpending = {program: 0 for program in self.programList}
+        baseline = {}
+        for objective in self.objectivesList:
+            baseline[objective] = {}
+            baseline[objective]['baseline'] = self.getOutcome(zeroSpending, objective)
+        return baseline
+
+    def writeAllResults(self):
+        baselineOutcome = self.getBaselineOutcome()
+        currentSpending = self.createDictionary(self.inititalProgramAllocations, self.programList)
+        currentOutcome = self.getCurrentOutcome(currentSpending)
+        optimisedAllocations = self.readPickles()
+        optimisedOutcomes = self.getOptimisedOutcomes(optimisedAllocations)
+        self.writeOutcomesToCSV(baselineOutcome,currentOutcome, optimisedOutcomes)
+        self.writeAllocationsToCSV(currentSpending, optimisedAllocations)
+
+    def writeOutcomesToCSV(self, baseline, current, optimised):
+        import csv
+        allOutcomes = {}
+        for objective in self.objectivesList:
+            allOutcomes[objective] = {}
+            allOutcomes[objective].update(baseline[objective])
+            allOutcomes[objective].update(current[objective])
+            allOutcomes[objective].update(optimised[objective])
+        direc = self.resultDirectories['results']
+        filename = '%s/%s_outcomes.csv'%(direc, self.country)
+        budgets =  ['baseline','current'] + self.cascadeValues
+        with open(filename, 'wb') as f:
+            w = csv.writer(f)
+            for objective in self.objectivesList:
+                w.writerow([objective])
+                for multiple in budgets:
+                    outcome = allOutcomes[objective][multiple]
+                    w.writerow(['',multiple, outcome])
+
+    def writeAllocationsToCSV(self, current, optimised):
+        import csv
+        from collections import OrderedDict
+        allSpending = {}
+        for objective in self.objectivesList:
+            allSpending[objective] = {}
+            allSpending[objective].update(current)
+            allSpending[objective].update(optimised[objective])
+        direc = self.resultDirectories['results']
+        filename = '%s/%s_allocations.csv'%(direc, self.country)
+
+        with open(filename, 'wb') as f:
+            w = csv.writer(f)
+            sortedCurrent = OrderedDict(sorted(current.items()))
+            w.writerow(sortedCurrent.keys())
+            w.writerow(['current'])
+            w.writerow(['']+ sortedCurrent.values())
+            for objective in self.objectivesList:
+                w.writerow([''])
+                w.writerow([objective] + sorted(optimised[objective[0]][self.cascadeValues[0]].keys()))
+                for multiple in self.cascadeValues:
+                    allocation = OrderedDict(sorted(optimised[objective][multiple].items()))
+                    w.writerow([multiple] + allocation.values())
+
+    def getCoverages(self, allocations):
+        newCoverages = {}
+        for program in self.programList:
+            costCurve = self.costCurves[program]
+            newCoverages[program] = costCurve(allocations[program])
+        return newCoverages
+
 
 
 ############# OLD CODE BELOW #############
@@ -556,19 +667,10 @@ class Optimisation:
         
         
     def oneModelRunWithOutput(self, allocationDictionary):
-        from numpy import maximum
-        eps = 1.e-3  ## WARNING: using project non-specific eps
-        costCoverageInfo = self.getCostCoverageInfo()
-        timestepsPre = 12
-        model, modelList = runModelForNTimeSteps(timestepsPre, self.data, model=None, saveEachStep=True)
-        costCurves = self.generateCostCurves(model)
-        newCoverages = {}
-        for i in range(0, len(self.data.interventionList)):
-            intervention = self.data.interventionList[i]
-            costCurveThisIntervention = costCurves[intervention]
-            newCoverages[intervention] = maximum(costCurveThisIntervention(allocationDictionary[intervention]), eps)
+        model, modelList = runModelForNTimeSteps(self.timeStepsPre, self.data, model=None, saveEachStep=True)
+        newCoverages = self.getCoverages(allocationDictionary)
         model.updateCoverages(newCoverages)
-        steps = self.numModelSteps - timestepsPre
+        steps = self.numModelSteps - self.timeStepsPre
         modelList += runModelForNTimeSteps(steps, self.data, model, saveEachStep=True)[1]
         return modelList
     
@@ -719,7 +821,7 @@ class Optimisation:
             writer.writerow(headings)
             writer.writerows(rows)   
             
-    def outputCascadeAndOutcomeToCSV(self, cascadeValues, outcomeOfInterest):
+    def outputCascadeAndOutcomeToCSV(self, cascadeValues, outcomeOfInterest): # TODO: need to fix this, but maybe should start with 0.0 as the baseline value
             import csv
             import pickle
             from copy import deepcopy as dcp
@@ -746,7 +848,7 @@ class Optimisation:
                 rows.append(valarray)
             rows.sort()                
             outfilename = '%s_cascade_min_%s.csv'%(self.resultsFileStem, self.optimise)
-            with open(outfilename, "wb") as f:
+            with open(outfilename, "wb") as f: # TODO: THIS WRITEs THE BUDGET CASCADE with allocations
                 writer = csv.writer(f)
                 writer.writerow(prognames)
                 writer.writerows(rows)
@@ -768,11 +870,12 @@ class Optimisation:
         import csv
         currentSpending = self.getInitialAllocationDictionary()
         currentSpending = returnAlphabeticalDictionary(currentSpending)
-        outfilename = '%s_current_spending.csv'%(self.resultsFileStem)
-        with open(outfilename, "wb") as f:
-                writer = csv.writer(f)
-                writer.writerow(currentSpending.keys())
-                writer.writerow(currentSpending.values())                
+        for objective in self.objectivesList:
+            outfilename = '%s_current_spending.csv'%(self.resultsFileStem[objective]) # TODO: change this for dictionary
+            with open(outfilename, "wb") as f:
+                    writer = csv.writer(f)
+                    writer.writerow(currentSpending.keys())
+                    writer.writerow(currentSpending.values())
              
 
 
