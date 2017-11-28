@@ -58,8 +58,11 @@ with open(outfilename, "wb") as f:
         regionName = regionNameList[region]
         print regionName
         spreadsheet = spreadsheetList[region]
-        thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, 'dummy', 'dummy', costCurveType)    
-        modelList = thisOptimisation.oneModelRunWithOutput(zeroSpending)    
+        spreadsheetData = data.readSpreadsheet(spreadsheet, thisHelper.keyList)
+        thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, 'dummy', 'dummy', costCurveType)  
+        customCoverages = spreadsheetData.coverage
+        customCoverages['IYCF'] = IYCF_cov_regional[region]
+        modelList = thisOptimisation.oneModelRunWithOutputCustomOptimised(zeroSpending, customCoverages)        
         row =[regionName, modelList[numModelSteps-1].getOutcome('thrive'), modelList[numModelSteps-1].getOutcome('deaths'), modelList[numModelSteps-1].getOutcome('stunting prev')]
         writer.writerow(row)
 

@@ -33,13 +33,16 @@ for i in range(0, len(spreadsheetData.interventionList)):
     zeroSpending[intervention] = 0.        
  
 # zero scenario   
+spreadsheetData = data.readSpreadsheet(spreadsheet, thisHelper.keyList)
 outfilename = 'zero_spending_national.csv'  
 header1 = ['thrive', 'deaths', 'stunting prev']  
 with open(outfilename, "wb") as f:
     writer = csv.writer(f)
     writer.writerow(header1)
     thisOptimisation = optimisation.Optimisation(spreadsheet, numModelSteps, 'dummy', resultsFileStem, costCurveType)    
-    modelList = thisOptimisation.oneModelRunWithOutput(zeroSpending)    
+    customCoverages = spreadsheetData.coverage
+    customCoverages['IYCF'] = IYCF_cov
+    modelList = thisOptimisation.oneModelRunWithOutputCustomOptimised(zeroSpending, customCoverages)
     row =[modelList[numModelSteps-1].getOutcome('thrive'), modelList[numModelSteps-1].getOutcome('deaths'), modelList[numModelSteps-1].getOutcome('stunting prev')]
     writer.writerow(row)
 
