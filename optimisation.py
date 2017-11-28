@@ -199,7 +199,7 @@ class Optimisation:
         return
 
     def runOptimisation(self, multiple, objective):
-        from pyswarm import pso
+        import pso as pso
         import asd as asd
         from copy import deepcopy as dcp
         kwargs = dcp(self.kwargs)
@@ -209,7 +209,9 @@ class Optimisation:
         xmax = [kwargs['totalBudget']] * len(self.programList)
         runOutputs = []
         for run in range(self.numRuns):
-            x0, fopt = pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=20, swarmsize=200)
+            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=50, swarmsize=500)
+            print "Objective: " + str(objective)
+            print "x0: " + str(x0)
             budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
                                                          xmax=xmax, verbose=0)
             outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval,
