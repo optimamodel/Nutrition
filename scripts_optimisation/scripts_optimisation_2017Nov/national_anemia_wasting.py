@@ -20,7 +20,7 @@ interventionsToRemove = ['Public provision of complementary foods with iron',
                          'Iron and iodine fortification of salt', 'Iron fortification of wheat flour', 'Iron fortification of maize',
                          'Iron fortification of rice', 'IFA fortification of maize']
 
-objectiveList = ['SAM_prev', 'deaths']
+objectiveList = ['wasting_prev', 'SAM_prev', 'MAM_prev', 'deaths']
 
 
 resultsFileStem = rootpath+'/Results/'+date+'/'+country+'/national'
