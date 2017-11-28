@@ -1,18 +1,17 @@
 import os, sys
-moduleDir = os.path.join(os.path.dirname(__file__), '../..')
+rootpath = '..'
+moduleDir = os.path.join(os.path.dirname(__file__), rootpath)
 sys.path.append(moduleDir)
 import optimisation
-
-
-rootpath = '../..'
 
 country = 'Bangladesh'
 date = '2017Nov'
 sheetDate = '2017Oct'
 
-spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+sheetDate+'/InputForCode_'+country+'.xlsx'
-
-cascadeValues = [0.25, 1.0, 2.0, 3.0, 4.0]
+# NATIONAL
+spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+sheetDate+'/InputForCode_Bangladesh.xlsx'
+objectiveList = ['wasting_prev', 'SAM_prev', 'MAM_prev', 'deaths']
+cascadeValues = [0.25, 1.0, 2.0, 4.0]
 
 interventionsToRemove = ['Public provision of complementary foods with iron',
                          'Public provision of complementary foods with iron (malaria area)',
@@ -20,10 +19,11 @@ interventionsToRemove = ['Public provision of complementary foods with iron',
                          'Iron and iodine fortification of salt', 'Iron fortification of wheat flour', 'Iron fortification of maize',
                          'Iron fortification of rice', 'IFA fortification of maize']
 
-objectiveList = ['SAM_prev', 'deaths']
-
-
 resultsFileStem = rootpath+'/Results/'+date+'/'+country+'/national'
 
-thisOptimisation = optimisation.Optimisation(cascadeValues, objectiveList, spreadsheet, resultsFileStem, country, parallel=True, numRuns=1, interventionsToRemove=interventionsToRemove)
-thisOptimisation.optimise()
+thisOptimisation = optimisation.Optimisation(cascadeValues, objectiveList, spreadsheet, resultsFileStem, country, interventionsToRemove=interventionsToRemove)
+thisOptimisation.writeAllResults()
+
+
+
+
