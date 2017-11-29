@@ -192,7 +192,7 @@ class Optimisation:
             for process in range(thisRound):
                 p = jobs[process]
                 p.start()
-            for process in range(thisRound): # this loop ensures process group waits
+            for process in range(thisRound): # this loop ensures this round waits until processes are finished
                 p = jobs[process]
                 p.join()
             jobs = jobs[thisRound:]
@@ -350,7 +350,7 @@ class Optimisation:
             w.writerow(['']+ sortedCurrent.values())
             for objective in self.objectivesList:
                 w.writerow([''])
-                w.writerow([objective] + sorted(optimised[objective[0]][self.cascadeValues[0]].keys()))
+                w.writerow([objective] + sorted(optimised[objective][self.cascadeValues[0]].keys()))
                 for multiple in self.cascadeValues:
                     allocation = OrderedDict(sorted(optimised[objective][multiple].items()))
                     w.writerow([multiple] + allocation.values())
