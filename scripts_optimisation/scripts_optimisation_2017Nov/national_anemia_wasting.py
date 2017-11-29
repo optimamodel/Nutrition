@@ -23,7 +23,7 @@ interventionsToRemove = ['Public provision of complementary foods with iron',
 objectiveList = ['wasting_prev', 'SAM_prev', 'MAM_prev', 'deaths']
 
 
-resultsFileStem = rootpath+'/Results/'+date+'/'+country+'/national'
+resultsFileStem = rootpath+'/Results/'+country+'/national/'+date
 
 thisOptimisation = optimisation.Optimisation(cascadeValues, objectiveList, spreadsheet, resultsFileStem, country, parallel=True, numRuns=1, interventionsToRemove=interventionsToRemove)
 thisOptimisation.optimise()
