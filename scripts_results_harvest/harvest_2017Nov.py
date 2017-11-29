@@ -11,7 +11,7 @@ sheetDate = '2017Oct'
 # NATIONAL
 spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+sheetDate+'/InputForCode_Bangladesh.xlsx'
 objectiveList = ['wasting_prev', 'SAM_prev', 'MAM_prev', 'deaths']
-cascadeValues = [0.25, 1.0, 2.0, 4.0]
+cascadeValues = [0.25, 1.0, 2.0, 3.0, 4.0]
 
 interventionsToRemove = ['Public provision of complementary foods with iron',
                          'Public provision of complementary foods with iron (malaria area)',
