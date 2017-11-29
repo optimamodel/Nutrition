@@ -345,8 +345,7 @@ class Optimisation:
         with open(filename, 'wb') as f:
             w = csv.writer(f)
             sortedCurrent = OrderedDict(sorted(current.items()))
-            w.writerow(sortedCurrent.keys())
-            w.writerow(['current'])
+            w.writerow(['current'] + sortedCurrent.keys())
             w.writerow(['']+ sortedCurrent.values())
             for objective in self.objectivesList:
                 w.writerow([''])
