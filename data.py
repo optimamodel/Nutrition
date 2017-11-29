@@ -536,6 +536,17 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: coul
     fracMAMtoSAM = 0.9 # from Jakub
 
 
+
+
+    # TODO: THIS IS ONLY FOR THE WASTING RE-RUN DELETE AFTERWARDS
+    ORsheet = readSheet(location, 'Odds ratios', [0, 1])
+    ORappropriatebfIntervention = splitSpreadsheetWithTwoIndexCols(ORsheet, 'OR for correct breastfeeding by intervention', rowList=interventionCompleteList)
+
+
+
+
+
+
     spreadsheetData = Data(causesOfDeathList, conditionsList, interventionList, interventionCompleteList,
                            demographics, projectedBirths, rawMortality,
                            causeOfDeathDist, RRdeathAnemia, RRdeathStunting,

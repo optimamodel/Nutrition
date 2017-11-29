@@ -19,7 +19,7 @@ interventionsToRemove = ['Public provision of complementary foods with iron',
                          'Iron and iodine fortification of salt', 'Iron fortification of wheat flour', 'Iron fortification of maize',
                          'Iron fortification of rice', 'IFA fortification of maize']
 
-resultsFileStem = rootpath+'/Results/'+date+'/'+country+'/national'
+resultsFileStem = rootpath+'/Results/'+country+'/national/'+date
 
 thisOptimisation = optimisation.Optimisation(cascadeValues, objectiveList, spreadsheet, resultsFileStem, country, interventionsToRemove=interventionsToRemove)
 thisOptimisation.writeAllResults()
