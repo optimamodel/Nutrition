@@ -22,7 +22,8 @@ class Data:
                  projectedWRApop, projectedWRApopByAge, projectedPWpop,
                  projectedGeneralPop, PWageDistribution, fracExposedMalaria,
                  ORanemiaCondition, fracSevereDia, ORwastingCondition,
-                 ORwastingIntervention, ORwastingBirthOutcome, fracSAMtoMAM, fracMAMtoSAM):
+                 ORwastingIntervention, ORwastingBirthOutcome, fracSAMtoMAM, fracMAMtoSAM,
+                 effectivenessFP):
 
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
@@ -74,6 +75,7 @@ class Data:
         self.fracSevereDia = fracSevereDia
         self.fracSAMtoMAM= fracSAMtoMAM
         self.fracMAMtoSAM = fracMAMtoSAM
+        self.effectivenessFP = effectivenessFP
 
 def createIYCFpackages(IYCFpackages, IYCFeffect, practices, ages):
     '''Creates IYCF packages based on user input in 'IYCFpackages'
@@ -535,7 +537,9 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: coul
     fracSAMtoMAM = 0.1 # fictional
     fracMAMtoSAM = 0.9 # from Jakub
 
-
+    # FAMILY PLANNING
+    sheet = pd.read_excel(location, sheetname='Interventions family planning')
+    effectivenessFP = readSheetWithOneIndexCol(sheet, scaleFactor=1.)
 
 
     # TODO: THIS IS ONLY FOR THE WASTING RE-RUN DELETE AFTERWARDS
@@ -562,7 +566,7 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: coul
                            projectedWRApop, projectedWRApopByAge, projectedPWpop, projectedGeneralPop,
                            PWageDistribution, fracExposedMalaria, ORanemiaCondition, fracSevereDia,
                            ORwastingCondition, ORwastingIntervention, ORwastingBirthOutcome,
-                           fracSAMtoMAM, fracMAMtoSAM)
+                           fracSAMtoMAM, fracMAMtoSAM, effectivenessFP)
 
     return spreadsheetData
 
