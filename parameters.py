@@ -312,6 +312,11 @@ class Params:
                 constrainedWastingUpdate[ageName][wastingCat] = 1.-reduction
         return constrainedWastingUpdate
 
+    def addIYCFconstraints(self, newCoverage):
+        # TODO: will need to weight coverage by those attending health facility, if included in package. In this way we should include this the targetPop data structure
+        return
+
+
     def getAppropriateBFNew(self, newCoverage):
         correctbfFracNew = {}
         for ageName in self.ages:
