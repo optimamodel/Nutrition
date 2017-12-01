@@ -689,7 +689,7 @@ class Optimisation:
                 if "IFAS" in intervention:
                     target = 0.
                 else:    
-                    target = self.data.targetPopulation[intervention][ageName]
+                    target = self.data.targetPopulation[intervention][ageName] # TODO: need to exclude IYCF from these calculations b/c target pop works differently. Will need to call helper function below, just like for IFAS.
                 targetPopSize[intervention] += target * agePopSizes[iAge]
             # pregnant women
             agePopSizes = self.helper.makePregnantWomenAgePopSizes(self.data)
