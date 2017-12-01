@@ -539,7 +539,7 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: coul
 
     # FAMILY PLANNING
     sheet = pd.read_excel(location, sheetname='Interventions family planning')
-    effectivenessFP = readSheetWithOneIndexCol(sheet, scaleFactor=1.)
+    effectivenessFP = dict(zip(sheet.Method, sheet.Effectiveness))
 
 
     # TODO: THIS IS ONLY FOR THE WASTING RE-RUN DELETE AFTERWARDS
