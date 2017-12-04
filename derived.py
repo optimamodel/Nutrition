@@ -189,7 +189,6 @@ class Derived:
         maxCovFP = self.baselineCoverageFP + unMetNeedFP
         newTotalCoverage = 0
         for intervention in self.data.effectivenessFP:
-            #newFractionAverted += self.data.effectivenessFP[intervention] * newCoverage[intervention]
             newTotalCoverage += newCoverage[intervention]
         if newTotalCoverage > maxCovFP:
             extraCoverage = newTotalCoverage - maxCovFP
@@ -198,7 +197,7 @@ class Derived:
             fractionalReduction = extraCoverage/adjustedCoverage
             for intervention in self.data.effectivenessFP:
                 if 'sterilization' not in intervention:
-                    newCoverage[intervention] *= fractionalReduction
+                    newCoverage[intervention] *= (1. - fractionalReduction)
         # now calculate the new fraction of averted pregnancies 
         newFractionAverted = 0.            
         for intervention in self.data.effectivenessFP:
