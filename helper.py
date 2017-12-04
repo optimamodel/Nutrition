@@ -224,8 +224,7 @@ class Helper:
         popSizes = {item: compartments[i].getTotalPopulation() for i, item in idxs}
         return popSizes
 
-    def setIYCFTargetPopSize(self, data, model, fromModel=True): # TODO: this function will use equation for combining the coverages of sub-programs into a single program.
-        # TODO: should we store raw pop size or %? Need to look later to see which is easier
+    def setIYCFTargetPopSize(self, data, model, fromModel=True):
         targetPop = data.IYCFtargetPop
         allPopSizes = {}
         PWages = self.keyList['pregnantWomenAges']
