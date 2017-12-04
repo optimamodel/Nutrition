@@ -244,12 +244,9 @@ class Helper:
         maxCov = {}
         for name, package in targetPop.iteritems():
             maxCov[name] = 0.
-            totalPop =0
             for pop, modeFrac in package.iteritems():
                 for mode, frac in modeFrac.iteritems():
                     maxCov[name] += frac * allPopSizes[pop]
-                    totalPop += allPopSizes[pop]
-            #maxCov[name] /=totalPop
         return maxCov
 
         

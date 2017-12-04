@@ -51,6 +51,7 @@ class Params:
         self.interventionCompleteList = dcp(data.interventionCompleteList)
         self.fracSAMtoMAM = dcp(data.fracSAMtoMAM)
         self.fracMAMtoSAM = dcp(data.fracMAMtoSAM)
+        self.IYCFprograms = dcp(data.IYCFprograms)
     
 
 # Add all functions for updating parameters due to interventions here....
@@ -402,19 +403,23 @@ class Params:
             wastingUpdate[age] = 1. - reduction
         return wastingUpdate
 
-    def getStuntingUpdateComplementaryFeeding(self, newCoverage): # TODO: WHEN CFE IS GONE THIS FUNCTION WILL BREAK
+    def getStuntingUpdateComplementaryFeeding(self, newCoverage):
         stuntingUpdate = {}
         for ageName in self.ages:
-            stuntingUpdate[ageName] = 1.      
-        key1 = 'Complementary feeding education'
-        key2 = 'Public provision of complementary foods'
-        key3 = 'Public provision of complementary foods with iron'
+            stuntingUpdate[ageName] = 1.
+        Ce = 0
+        for program in self.IYCFprograms:
+            Ce += newCoverage[program]
+        if Ce > 0.95:
+            Ce = 0.95
+        print Ce
+        key1 = 'Public provision of complementary foods'
+        key2 = 'Public provision of complementary foods with iron'
         # collect data
         X1 = self.demographics['fraction food insecure (default poor)']
         X2 = 1.0 
         X3 = 0.0 
-        Ce  = newCoverage[key1]
-        Cse = newCoverage[key2] + newCoverage[key3]
+        Cse = newCoverage[key1] + newCoverage[key2]
         if Cse > 0.95: #::warning:: this is current saturation coverage
             Cse = 0.95
         # calculate fraction of children in each of the food security/access to intervention groups
@@ -432,4 +437,5 @@ class Params:
                 newProbStunting += probStuntedThisGroup * Frac[i]
             reduction = (oldProbStunting - newProbStunting)/oldProbStunting
             stuntingUpdate[ageName] *= 1. - reduction
+        print stuntingUpdate
         return stuntingUpdate           
