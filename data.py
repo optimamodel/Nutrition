@@ -17,8 +17,7 @@ class Data:
                  ORappropriatebfIntervention,
                  ageAppropriateBreastfeeding, coverage, costSaturation,
                  targetPopulation, affectedFraction, effectivenessMortality,
-                 effectivenessIncidence, interventionsBirthOutcome, foodSecurityGroups,
-                 ORstuntingComplementaryFeeding, anemiaDistribution,
+                 effectivenessIncidence, interventionsBirthOutcome, anemiaDistribution,
                  projectedWRApop, projectedWRApopByAge, projectedPWpop,
                  projectedGeneralPop, PWageDistribution, fracExposedMalaria,
                  ORanemiaCondition, fracSevereDia, ORwastingCondition,
@@ -62,8 +61,6 @@ class Data:
         self.effectivenessMortality = effectivenessMortality
         self.effectivenessIncidence = effectivenessIncidence
         self.interventionsBirthOutcome = interventionsBirthOutcome
-        self.foodSecurityGroups = foodSecurityGroups
-        self.ORstuntingComplementaryFeeding = ORstuntingComplementaryFeeding
         self.anemiaDistribution = anemiaDistribution
         self.projectedWRApop = projectedWRApop
         self.projectedWRApopByAge = projectedWRApopByAge
@@ -480,17 +477,23 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: coul
     ORstuntingDia = dict(ORsheet.loc['OR stunting progression and condition','Diarrhea'])
     ORstuntingCondition = {age:{condition: ORstuntingDia[age] for condition in ['Diarrhea']} for age in ages}
     # by intervention
-    ORstuntingIntervention = splitSpreadsheetWithTwoIndexCols(ORsheet, "OR stunting by intervention", rowList=interventionCompleteList)
-    ORstuntingComplementaryFeeding = {}
-    interventionsHere = ORsheet.loc['OR stunting by intervention'].index
-    foodSecurityGroups = []
+    ORstuntingIntervention = splitSpreadsheetWithTwoIndexCols(ORsheet, "OR stunting by intervention", rowList=interventionCompleteList + ['Complementary feeding education'])
+    # give each IYCF program the CFE ORs
     for age in ages:
-        ORstuntingComplementaryFeeding[age] = {}
-        for intervention in interventionsHere:
-            if "Complementary" in intervention and 'iron' not in intervention:
-                ORstuntingComplementaryFeeding[age][intervention] = ORsheet[age]['OR stunting by intervention'][intervention]
-                if intervention not in foodSecurityGroups:
-                    foodSecurityGroups += [intervention]
+        ORcfe = ORstuntingIntervention[age].pop('Complementary feeding education')
+        for program in IYCFnames:
+            ORstuntingIntervention[age][program] = ORcfe
+    # TODO: we are removing food security group stuff, this can probably go
+    # ORstuntingComplementaryFeeding = {}
+    # interventionsHere = ORsheet.loc['OR stunting by intervention'].index
+    # foodSecurityGroups = []
+    # for age in ages:
+    #     ORstuntingComplementaryFeeding[age] = {}
+    #     for intervention in interventionsHere:
+    #         if "Complementary" in intervention and 'iron' not in intervention:
+    #             ORstuntingComplementaryFeeding[age][intervention] = ORsheet[age]['OR stunting by intervention'][intervention]
+    #             if intervention not in foodSecurityGroups:
+    #                 foodSecurityGroups += [intervention]
     # wasting by intervention
     wastingInterventionSheet = readSheet(location, 'Interventions wasting', [0,1])
     ORwastingIntervention = {}
@@ -560,8 +563,7 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: coul
                            ORappropriatebfIntervention, ageAppropriateBreastfeeding, coverage,
                            costSaturation, targetPopulation, affectedFraction,
                            effectivenessMortality, effectivenessIncidence, interventionsBirthOutcome,
-                           foodSecurityGroups, ORstuntingComplementaryFeeding, anemiaDistribution,
-                           projectedWRApop, projectedWRApopByAge, projectedPWpop, projectedGeneralPop,
+                           anemiaDistribution, projectedWRApop, projectedWRApopByAge, projectedPWpop, projectedGeneralPop,
                            PWageDistribution, fracExposedMalaria, ORanemiaCondition, fracSevereDia,
                            ORwastingCondition, ORwastingIntervention, ORwastingBirthOutcome,
                            fracSAMtoMAM, fracMAMtoSAM, effectivenessFP, IYCFtargetPop, IYCFnames)
