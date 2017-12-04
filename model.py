@@ -207,7 +207,6 @@ class Model:
         return outcomeValue
 
 
-
     def updateCoverages(self, newCoverageArg):
         # newCoverage is a dictionary of coverages by intervention        
         newCoverage = dcp(self.params.coverage)
@@ -221,7 +220,7 @@ class Model:
         self.derived.setProbStuntedIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.stuntingDistribution)
         self.derived.setProbAnemicIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
         self.derived.setProbWastedIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.wastingDistribution)
-        self.derived.setProbStuntedComplementaryFeeding(self.params.stuntingDistribution, self.params.coverage)
+        #self.derived.setProbStuntedComplementaryFeeding(self.params.stuntingDistribution, self.params.coverage)
         self.derived.updateFractionPregnaciesAverted(self.params.coverage, self.params.demographics['unmet need for family planning'])
 
         # add all constraints to coverages
@@ -236,7 +235,7 @@ class Model:
         incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
         birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)
         newFracCorrectlyBreastfed = self.params.getAppropriateBFNew(newCoverage)
-        stuntingUpdateComplementaryFeeding = self.params.getStuntingUpdateComplementaryFeeding(newCoverage)
+        #stuntingUpdateComplementaryFeeding = self.params.getStuntingUpdateComplementaryFeeding(newCoverage)
 
         # MORTALITY
         #update mortality for each population
@@ -300,7 +299,7 @@ class Model:
         # STUNTING
         for ageGroup in self.listOfAgeCompartments:
             ageName = ageGroup.name
-            totalUpdate = stuntingUpdate[ageName] * stuntingUpdateDueToIncidence[ageName] * stuntingUpdateComplementaryFeeding[ageName] *stuntingUpdateDueToBreastfeeding[ageName]
+            totalUpdate = stuntingUpdate[ageName] * stuntingUpdateDueToIncidence[ageName] *stuntingUpdateDueToBreastfeeding[ageName] #* stuntingUpdateComplementaryFeeding[ageName]
             #save total stunting update for use in apply births and apply aging
             self.derived.stuntingUpdateAfterInterventions[ageName] *= totalUpdate
             #update stunting    
