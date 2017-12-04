@@ -88,7 +88,7 @@ class Params:
         return birthOutcomeUpdate               
 
     def addSubpopConstraints(self, subpopProb, oldProb, fracTargeted):
-        '''Uses law of total probability: Pr(A) = sum(Pr(A|B)*Pr(B)) for all events B'''
+        '''Uses law of total probability: Pr(A) = sum(Pr(A|B)*Pr(B))'''
         newProb = subpopProb * fracTargeted + oldProb * (1-fracTargeted)
         return newProb
         
