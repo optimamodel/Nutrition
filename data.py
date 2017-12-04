@@ -231,7 +231,7 @@ def createIYCFpackages(IYCFpackages, IYCFeffect, practices, childAges):
         newInterventions[key].update(ORs)
     return newInterventions, packagesDict
 
-def getIYCFtargetPop(packageModalities, location, childAges, PWages, WRAages):
+def getIYCFtargetPop(packageModalities, location, PWages):
     import pandas as pd
     targetPops = pd.read_excel(location, 'IYCF target pop', index_col=[0])
     newTargetPops = {}
@@ -280,7 +280,7 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: coul
     # general pop
     targetPopulation.update(splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'General population', switchKeys=True))
     # add target pop for IYCF packages
-    IYCFtargetPop = getIYCFtargetPop(packageModalities, location, ages, PWages, WRAages)
+    IYCFtargetPop = getIYCFtargetPop(packageModalities, location, PWages)
     # change PW & WRA to age groups for interventions other than iYCF
     targetPopulation = stratifyPopIntoAgeGroups(targetPopulation, interventionList, WRAages, 'Non-pregnant WRA', keyLevel=1)
     targetPopulation = stratifyPopIntoAgeGroups(targetPopulation, interventionList, PWages, 'Pregnant women', keyLevel=1)

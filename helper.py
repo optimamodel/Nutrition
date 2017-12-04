@@ -186,7 +186,7 @@ class Helper:
             probStunting = self.sumStuntedComponents(inputData.stuntingDistribution[ageName])
             inputData.stuntingDistribution[ageName] = self.restratify(probStunting)
         listOfAgeCompartments = self.makeAgeCompartments(inputData)
-        listOfPregnantWomenAgeCompartments = self.makePregnantWomenAgeCompartments(inputData) 
+        listOfPregnantWomenAgeCompartments = self.makePregnantWomenAgeCompartments(inputData)
         listOfReproductiveAgeCompartments = self.makeReproductiveAgeCompartments(inputData)
         model = model.Model(listOfPregnantWomenAgeCompartments, listOfAgeCompartments, listOfReproductiveAgeCompartments, self.keyList)
         derived = derived.Derived(inputData, model, self.keyList)
@@ -218,12 +218,40 @@ class Helper:
         model.updateMortalityRate()
         return model, derived, parameters
 
-    def setIYCFTargetPopSize(self, spreadsheetData, model, fromModel=True): # TODO: this function will use equation for combining the coverages of sub-programs into a single program.
-        targetPop = spreadsheetData.IYCFtargetPop
-        if fromModel: # get pop sizes from model instance
-            PWcomps = model.listOfPregnantWomanAgeCompartments
-            popSizesPW = sum([PWcomps[pop].getTotalPopulation() for pop in PWcomps])
+    def getPopSizeOfAgeGroups(self, myAgeGroups, allAgeGroups, compartments):
+        groups = set(myAgeGroups)
+        idxs = [(i,item) for i, item in enumerate(allAgeGroups) if item in groups]
+        popSizes = {item: compartments[i].getTotalPopulation() for i, item in idxs}
+        return popSizes
 
+    def setIYCFTargetPopSize(self, data, model, fromModel=True): # TODO: this function will use equation for combining the coverages of sub-programs into a single program.
+        # TODO: should we store raw pop size or %? Need to look later to see which is easier
+        targetPop = data.IYCFtargetPop
+        allPopSizes = {}
+        PWages = self.keyList['pregnantWomenAges']
+        childAges = self.keyList['ages']
+        if fromModel: # get pop sizes from model instance
+            PWpopSize = self.getPopSizeOfAgeGroups(PWages, PWages, model.listOfPregnantWomenAgeCompartments)
+            allPopSizes.update(PWpopSize)
+            # excldude 24-59 months
+            childPopSize = self.getPopSizeOfAgeGroups(childAges, childAges, model.listOfAgeCompartments)
+            allPopSizes.update(childPopSize)
+        else:
+            # initial pop sizes
+            PWpopSize = self.makePregnantWomenAgePopSizes(data)
+            childPopSize = self.makeAgePopSizes(data)
+            allPopSizes = {age: popSize for age in childAges+PWages for popSize in childPopSize+PWpopSize}
+        # equation: maxCovIYCF = sum(popSize * fracExposed) / sum(popSize)
+        maxCov = {}
+        for name, package in targetPop.iteritems():
+            maxCov[name] = 0.
+            totalPop =0
+            for pop, modeFrac in package.iteritems():
+                for mode, frac in modeFrac.iteritems():
+                    maxCov[name] += frac * allPopSizes[pop]
+                    totalPop += allPopSizes[pop]
+            #maxCov[name] /=totalPop
+        return maxCov
 
         
     def setIFASTargetPopWRA(self, spreadsheetData, model, fromModel):

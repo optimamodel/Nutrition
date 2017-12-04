@@ -35,7 +35,7 @@ def runModelForNTimeSteps(timesteps, spreadsheetData, model, saveEachStep=False)
 
 
     
-def objectiveFunction(allocation, costCurves, model, totalBudget, fixedCosts, costCoverageInfo, objective, numModelSteps, dataSpreadsheetName, data, timestepsPre):
+def objectiveFunction(allocation, costCurves, model, totalBudget, fixedCosts, objective, numModelSteps, data, timestepsPre):
     from copy import deepcopy as dcp
     from operator import add
     from numpy import maximum, minimum
@@ -143,9 +143,8 @@ class Optimisation:
         self.model = runModelForNTimeSteps(self.timeStepsPre, self.data, model=None)[0]
         self.costCurves = self.generateCostCurves(self.model)
         self.kwargs = {'costCurves': self.costCurves, 'model': self.model, 'timestepsPre': self.timeStepsPre,
-                'totalBudget': self.totalBudget, 'fixedCosts': self.fixedCosts, 'costCoverageInfo': self.costCoverageInfo,
-                'numModelSteps': self.numModelSteps,
-                'dataSpreadsheetName': self.dataSpreadsheetName, 'data': self.data}
+                'totalBudget': self.totalBudget, 'fixedCosts': self.fixedCosts,
+                'numModelSteps': self.numModelSteps, 'data': self.data}
         # check that results directory exists and if not then create it
         import os
         self.resultDirectories = {}
@@ -560,7 +559,7 @@ class Optimisation:
             numAgeGroups = len(keyList['ages'])
             for iAge in range(numAgeGroups):
                 ageName = keyList['ages'][iAge]
-                if "IFAS" in intervention:
+                if ("IFAS" in intervention) or ("IYCF" in intervention):
                     target = 0.
                 else:
                     target = self.data.targetPopulation[intervention][ageName]
@@ -569,7 +568,7 @@ class Optimisation:
             numAgeGroups = len(keyList['pregnantWomenAges'])
             for iAge in range(numAgeGroups):
                 ageName = keyList['pregnantWomenAges'][iAge]
-                if "IFAS" in intervention:
+                if ("IFAS" in intervention) or ("IYCF" in intervention):
                     target = 0.
                 else:
                     target = self.data.targetPopulation[intervention][ageName]
@@ -579,7 +578,7 @@ class Optimisation:
             numAgeGroups = len(keyList['reproductiveAges'])
             for iAge in range(numAgeGroups):
                 ageName = keyList['reproductiveAges'][iAge]
-                if "IFAS" in intervention:
+                if ("IFAS" in intervention) or ("IYCF" in intervention):
                     target = 0.
                 else:
                     target = self.data.targetPopulation[intervention][ageName]
@@ -588,9 +587,11 @@ class Optimisation:
             # for food fortification set target population size as entire population
             if "fortification" in intervention:
                 targetPopSize[intervention] = self.data.demographics['total population']
-        # get IFAS target populations seperately
+        # get IFAS target populations separately
         fromModel = True
         targetPopSize.update(self.helper.setIFASTargetPopWRA(self.data, model, fromModel))
+        # IYCF target pops
+        targetPopSize.update(self.helper.setIYCFTargetPopSize(self.data, model))
         return targetPopSize
 
     def runOnceDumpFullOutputToFile(self, MCSampleSize, xmin, args, interventionList, totalBudget, filename):        
@@ -686,17 +687,17 @@ class Optimisation:
             numAgeGroups = len(self.helper.keyList['ages'])
             for iAge in range(numAgeGroups):
                 ageName = self.helper.keyList['ages'][iAge]
-                if "IFAS" in intervention:
+                if ("IFAS" in intervention) or ("IYCF" in intervention):
                     target = 0.
                 else:    
-                    target = self.data.targetPopulation[intervention][ageName] # TODO: need to exclude IYCF from these calculations b/c target pop works differently. Will need to call helper function below, just like for IFAS.
+                    target = self.data.targetPopulation[intervention][ageName]
                 targetPopSize[intervention] += target * agePopSizes[iAge]
             # pregnant women
             agePopSizes = self.helper.makePregnantWomenAgePopSizes(self.data)
             numAgeGroups = len(self.helper.keyList['pregnantWomenAges'])    
             for iAge in range(numAgeGroups):
                 ageName = self.helper.keyList['pregnantWomenAges'][iAge] 
-                if "IFAS" in intervention:
+                if ("IFAS" in intervention) or ("IYCF" in intervention):
                     target = 0.
                 else:    
                     target = self.data.targetPopulation[intervention][ageName]
@@ -706,7 +707,7 @@ class Optimisation:
             numAgeGroups = len(self.helper.keyList['reproductiveAges'])    
             for iAge in range(numAgeGroups):
                 ageName = self.helper.keyList['reproductiveAges'][iAge] 
-                if "IFAS" in intervention:
+                if ("IFAS" in intervention) or ("IYCF" in intervention):
                     target = 0.
                 else:
                     target = self.data.targetPopulation[intervention][ageName]
@@ -717,7 +718,9 @@ class Optimisation:
         #add IFAS intervention target pop sizes to dictionary  
         fromModel = False       
         targetPopSize.update(thisHelper.setIFASTargetPopWRA(self.data, "dummyModel", fromModel))
-        return targetPopSize    
+        # IYCF pop size
+        targetPopSize.update(thisHelper.setIYCFTargetPopSize(self.data, 'dummyModel', fromModel))
+        return targetPopSize
     
     
     def generateBOCVectors(self, regionNameList, cascadeValues, outcome):
