@@ -188,9 +188,19 @@ def readSheet(location, sheetName, indexCols, dropna=True):
     return mysheet
 
 
-def getIYCFcostSaturation(ORs):
-    # TODO: this is subject to advice on cost and coverage
-    return
+def getIYCFcostCoverageSaturation(IYCFpackages, IYCFcost):
+    packageCostSaturation = {}
+    coverage = {}
+    for name, package in IYCFpackages.iteritems():
+        cost = 0
+        packageCostSaturation[name] = {}
+        for pop, mode in package:
+            cost += IYCFcost[mode][pop]
+        packageCostSaturation[name]['unit cost'] = cost
+        packageCostSaturation[name]['saturation coverage'] = 0.95
+        # tmp baseline coverage
+        coverage[name] = 0
+    return packageCostSaturation, coverage
 
 def defineIYCFpackages(IYCFpackages, thesePops):
     packagesDict = {}
@@ -229,9 +239,7 @@ def createIYCFpackages(IYCFpackages, IYCFeffect, practices, childAges):
         newInterventions[key].update(ORs)
     return newInterventions, packagesDict
 
-def getIYCFtargetPop(packageModalities, location, PWages):
-    import pandas as pd
-    targetPops = pd.read_excel(location, 'IYCF target pop', index_col=[0])
+def getIYCFtargetPop(packageModalities, targetPops, PWages):
     newTargetPops = {}
     for name, package in packageModalities.items():
         newTargetPops[name] = {}
@@ -278,16 +286,17 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: coul
     # general pop
     targetPopulation.update(splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'General population', switchKeys=True))
     # add target pop for IYCF packages
-    IYCFtargetPop = getIYCFtargetPop(packageModalities, location, PWages)
+    IYCFcostCovSheet = readSheet(location, 'IYCF cost & coverage', [0,1])
+    IYCFtarget = splitSpreadsheetWithTwoIndexCols(IYCFcostCovSheet, 'Target populations')
+    IYCFcost = splitSpreadsheetWithTwoIndexCols(IYCFcostCovSheet, 'Unit costs')
+
+    IYCFtargetPop = getIYCFtargetPop(packageModalities, IYCFtarget, PWages)
     # change PW & WRA to age groups for interventions other than iYCF
     targetPopulation = stratifyPopIntoAgeGroups(targetPopulation, interventionList, WRAages, 'Non-pregnant WRA', keyLevel=1)
     targetPopulation = stratifyPopIntoAgeGroups(targetPopulation, interventionList, PWages, 'Pregnant women', keyLevel=1)
 
     ### INTERVENTIONS COST AND COVERAGE
-    # TODO: don't know what the costs or baseline coverages are, so need to get this. Temporary substitute below
-    IYCFcostSaturation = {program: {'unit cost': 1., 'saturation coverage': 0.95} for program in IYCFnames}
-    IYCFcoverage = {program: 0. for program in IYCFnames}
-    #IYCFcostSaturation, IYCFcoverage = getIYCFcostCoverageSaturation()
+    IYCFcostSaturation, IYCFcoverage = getIYCFcostCoverageSaturation(packageModalities, IYCFcost)
 
     # include IYCF interventions
     interventionList += IYCFnames
