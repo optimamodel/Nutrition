@@ -222,6 +222,7 @@ class Model:
         self.derived.setProbAnemicIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
         self.derived.setProbWastedIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.wastingDistribution)
         self.derived.setProbStuntedComplementaryFeeding(self.params.stuntingDistribution, self.params.coverage)
+        self.derived.updateFractionPregnaciesAverted(self.params.coverage)
 
         # add all constraints to coverages
         constrainedCoverage = self.params.addCoverageConstraints(newCoverage, self.listOfAgeCompartments, self.listOfReproductiveAgeCompartments)
@@ -522,14 +523,15 @@ class Model:
                 WRAbox.populationSize = nonpregnantWRApopThisAgeAndYear * anemiaDistribution[anemiaStatus]
 
     def updatePWpopulation(self):
-        """Use PW projections to distribute PW into age groups.
+        """Use prenancy rate to distribute PW into age groups.
         Distribute into age bands by age distribution, assumed constant over time."""
         numCompartments = len(self.listOfPregnantWomenAgeCompartments)
-        projectedPWPop = self.params.projectedPWpop[self.year]
+        numWRA = self.getTotalPopWRA()
+        PWPop = self.derived.pregnancyRate * numWRA * (1. - self.derived.fractionPregnancyAverted)
         for index in range(numCompartments):
             thisCompartment = self.listOfPregnantWomenAgeCompartments[index]
             ageName = thisCompartment.name
-            popThisAge = projectedPWPop * self.params.PWageDistribution[ageName]
+            popThisAge = PWPop * self.params.PWageDistribution[ageName]
             anemiaDistribution = thisCompartment.getAnemiaDistribution()
             for anemiaStatus in self.anemiaList:
                 thisBox = thisCompartment.dictOfBoxes[anemiaStatus]
@@ -537,8 +539,10 @@ class Model:
 
 
     def applyBirths(self):
+        # num annual births = birth rate x num WRA x (1 - frac preg averted)
+        numWRA = self.getTotalPopWRA()
+        annualBirths = self.derived.birthRate * numWRA * (1. - self.derived.fractionPregnancyAverted)
         # calculate total number of new babies
-        annualBirths = self.params.projectedBirths[self.year]
         numNewBabies = annualBirths * self.timestep
         # convenient names
         ageGroup = self.listOfAgeCompartments[0]

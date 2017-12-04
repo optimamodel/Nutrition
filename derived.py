@@ -45,6 +45,10 @@ class Derived:
         self.setProbStuntingProgression()
         self.setProbStuntedAtBirth()
         self.setProbWastedAtBirth()
+        self.birthRate = 0.0
+        self.pregnancyRate = 0.0
+        self.fractionPregnancyAverted = 0.0
+        self.setBirthPregnancyInfo()
 
 
 
@@ -162,7 +166,28 @@ class Derived:
                 Xdictionary[ageName][cause] = LHS_age_cause / RHS[ageName][cause]
         # add pregnant women reference mortality to dictionary
         self.referenceMortality.update(Xdictionary)
-
+        
+    def setBirthPregnancyInfo(self):
+        for intervention in self.data.effectivenessFP:
+            self.fractionPregnancyAverted += self.data.effectivenessFP[intervention] * self.data.coverage[intervention]
+        numPregnant = dcp(self.data.demographics['number of pregnant women'])
+        numWRA = dcp(self.initialModel.getTotalPopWRA())
+        # num pregnant = rate * num WRA * (1 - fractionPregnancyAverted)
+        rate = numPregnant/numWRA/(1.- self.fractionPregnancyAverted)
+        # reduce rate by % difference between births and pregnancies to get birth rate
+        projectedBirths = dcp(self.data.projectedBirths.values()) 
+        projectedPWpop = dcp(self.data.projectedPWpop.values())
+        percentDiff = [ai/bi for ai,bi in zip(projectedBirths, projectedPWpop)]
+        averagePercentDiff = sum(percentDiff) / float(len(percentDiff))
+        self.pregnancyRate = rate        
+        self.birthRate = averagePercentDiff * rate  
+        
+        
+    def updateFractionPregnaciesAverted(self, newCoverage):
+        newFractionAverted = 0
+        for intervention in self.data.effectivenessFP:
+            newFractionAverted += self.data.effectivenessFP[intervention] * newCoverage[intervention]
+        self.fractionPregnancyAverted = newFractionAverted
 
     # Calculate probability of stunting in this age group given stunting in previous age-group
     def setProbStuntingProgression(self):
