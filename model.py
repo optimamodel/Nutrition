@@ -222,7 +222,7 @@ class Model:
         self.derived.setProbAnemicIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
         self.derived.setProbWastedIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.wastingDistribution)
         self.derived.setProbStuntedComplementaryFeeding(self.params.stuntingDistribution, self.params.coverage)
-        self.derived.updateFractionPregnaciesAverted(self.params.coverage)
+        self.derived.updateFractionPregnaciesAverted(self.params.coverage, self.params.demographics['unmet need for family planning'])
 
         # add all constraints to coverages
         constrainedCoverage = self.params.addCoverageConstraints(newCoverage, self.listOfAgeCompartments, self.listOfReproductiveAgeCompartments)
