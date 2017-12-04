@@ -23,7 +23,7 @@ class Data:
                  projectedGeneralPop, PWageDistribution, fracExposedMalaria,
                  ORanemiaCondition, fracSevereDia, ORwastingCondition,
                  ORwastingIntervention, ORwastingBirthOutcome, fracSAMtoMAM, fracMAMtoSAM,
-                 effectivenessFP, IYCFtargetPop):
+                 effectivenessFP, IYCFtargetPop, IYCFprograms):
 
 
         self.causesOfDeath = causesOfDeath
@@ -78,6 +78,7 @@ class Data:
         self.fracMAMtoSAM = fracMAMtoSAM
         self.effectivenessFP = effectivenessFP
         self.IYCFtargetPop = IYCFtargetPop
+        self.IYCFprograms = IYCFprograms
 
 
 def readSheetWithOneIndexCol(sheet, scaleFactor=1.):
@@ -563,7 +564,7 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: coul
                            projectedWRApop, projectedWRApopByAge, projectedPWpop, projectedGeneralPop,
                            PWageDistribution, fracExposedMalaria, ORanemiaCondition, fracSevereDia,
                            ORwastingCondition, ORwastingIntervention, ORwastingBirthOutcome,
-                           fracSAMtoMAM, fracMAMtoSAM, effectivenessFP, IYCFtargetPop)
+                           fracSAMtoMAM, fracMAMtoSAM, effectivenessFP, IYCFtargetPop, IYCFnames)
 
     return spreadsheetData
 
