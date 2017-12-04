@@ -114,9 +114,6 @@ class OutputClass:
         self.cleanOutputFvalVector = cleanOutputFvalVector
         self.cleanOutputXVector = cleanOutputXVector      
 
-class NotEnoughCoresError(Exception):
-    "Not enough physical cores to parallelise for num objectives * num cascades"
-    pass
 
 class Optimisation:
     def __init__(self, cascadeValues, objectivesList, dataSpreadsheetName, resultsFileStem, country, costCurveType='standard',
@@ -234,10 +231,7 @@ class Optimisation:
 
     def createDictionary(self, values, keys):
         """Ensure keys and values have matching orders"""
-        returnDict = {}
-        for idx in range(len(keys)):
-            key = keys[idx]
-            returnDict[key] = values[idx]
+        returnDict = {key: value for key, value in zip(keys, values)}
         return returnDict
 
 
@@ -303,6 +297,13 @@ class Optimisation:
             baseline[objective]['baseline'] = self.getOutcome(zeroSpending, objective)
         return baseline
 
+    def getCoverages(self, allocations):
+        newCoverages = {}
+        for program in self.programList:
+            costCurve = self.costCurves[program]
+            newCoverages[program] = costCurve(allocations[program])
+        return newCoverages
+
     def writeAllResults(self):
         baselineOutcome = self.getBaselineOutcome()
         currentSpending = self.createDictionary(self.inititalProgramAllocations, self.programList)
@@ -341,7 +342,6 @@ class Optimisation:
             allSpending[objective].update(optimised[objective])
         direc = self.resultDirectories['results']
         filename = '%s/%s_allocations.csv'%(direc, self.country)
-
         with open(filename, 'wb') as f:
             w = csv.writer(f)
             sortedCurrent = OrderedDict(sorted(current.items()))
@@ -353,13 +353,6 @@ class Optimisation:
                 for multiple in self.cascadeValues:
                     allocation = OrderedDict(sorted(optimised[objective][multiple].items()))
                     w.writerow([multiple] + allocation.values())
-
-    def getCoverages(self, allocations):
-        newCoverages = {}
-        for program in self.programList:
-            costCurve = self.costCurves[program]
-            newCoverages[program] = costCurve(allocations[program])
-        return newCoverages
 
 
 
@@ -696,7 +689,7 @@ class Optimisation:
                 if "IFAS" in intervention:
                     target = 0.
                 else:    
-                    target = self.data.targetPopulation[intervention][ageName]
+                    target = self.data.targetPopulation[intervention][ageName] # TODO: need to exclude IYCF from these calculations b/c target pop works differently. Will need to call helper function below, just like for IFAS.
                 targetPopSize[intervention] += target * agePopSizes[iAge]
             # pregnant women
             agePopSizes = self.helper.makePregnantWomenAgePopSizes(self.data)

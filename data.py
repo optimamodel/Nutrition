@@ -23,7 +23,8 @@ class Data:
                  projectedGeneralPop, PWageDistribution, fracExposedMalaria,
                  ORanemiaCondition, fracSevereDia, ORwastingCondition,
                  ORwastingIntervention, ORwastingBirthOutcome, fracSAMtoMAM, fracMAMtoSAM,
-                 effectivenessFP):
+                 effectivenessFP, IYCFtargetPop):
+
 
         self.causesOfDeath = causesOfDeath
         self.conditions = conditions
@@ -76,36 +77,7 @@ class Data:
         self.fracSAMtoMAM= fracSAMtoMAM
         self.fracMAMtoSAM = fracMAMtoSAM
         self.effectivenessFP = effectivenessFP
-
-def createIYCFpackages(IYCFpackages, IYCFeffect, practices, ages):
-    '''Creates IYCF packages based on user input in 'IYCFpackages'
-    practices can be either 'breastfeeding' or 'complementary feeding' '''
-    # non-empty cells denote program combination
-    # get package combinations
-    packagesDict = {}
-    for packageName, package in IYCFpackages.groupby(level=[0,1]):
-        if packagesDict.get(packageName[0]) is None:
-            packagesDict[packageName[0]] = []
-        for mode in package:
-            col = package[mode]
-            if col.notnull()[0]:
-                packagesDict[packageName[0]].append((packageName[1], mode))
-    # create new intervention
-    effects = IYCFeffect.loc['OR for correct ' + practices]
-    newInterventions = {}
-    ORs = {}
-    for key, item in packagesDict.items():
-        if newInterventions.get(key) is None:
-            newInterventions[key] = {}
-        for age in ages:
-            ORs[age] = 1.
-            for pop, mode in item:
-                row = effects.loc[pop, mode]
-                thisOR = row[age]
-                ORs[age] *= thisOR
-        newInterventions[key].update(ORs)
-
-    return newInterventions
+        self.IYCFtargetPop = IYCFtargetPop
 
 
 def readSheetWithOneIndexCol(sheet, scaleFactor=1.):
@@ -207,7 +179,7 @@ def stratifyPopIntoAgeGroups(dictToUpdate, keyList, listOfAgeGroups, population,
             dictToUpdate.update(newAgeGroups)
         elif keyLevel == 1:
             subDict = dictToUpdate[key].pop(population, None)
-            newAgeGroups = {age:subDict for age in listOfAgeGroups}
+            newAgeGroups = {age:subDict for age in listOfAgeGroups if subDict is not None}
             dictToUpdate[key].update(newAgeGroups)
     return dictToUpdate
 
@@ -218,26 +190,60 @@ def readSheet(location, sheetName, indexCols, dropna=True):
     return mysheet
 
 
-def getIYCFtargetPop(ORs, interventionsList, allPops):
-    ''' Target pop if OR exists and is not == 1.'''
-    targetPop = {}
-    for intervention in interventionsList:
-        targetPop[intervention] = {}
-        for pop in allPops:
-            thisOR = ORs[intervention].get(pop)
-            if thisOR is not None:
-                if abs(thisOR - 1.) > 0.001:
-                    targetPop[intervention][pop] = 1
-                else:
-                    targetPop[intervention][pop] = 0
-            else:
-                targetPop[intervention][pop] = 0
-    return targetPop
-
 def getIYCFcostSaturation(ORs):
     # TODO: this is subject to advice on cost and coverage
     return
 
+def defineIYCFpackages(IYCFpackages, thesePops):
+    packagesDict = {}
+    for packageName, package in IYCFpackages.groupby(level=[0, 1]):
+        if packagesDict.get(packageName[0]) is None:
+            packagesDict[packageName[0]] = []
+        for mode in package:
+            col = package[mode]
+            if col.notnull()[0]:
+                if mode == 'Mass media':
+                    ageModeTuple = [(pop, mode) for pop in thesePops]
+                else:
+                    ageModeTuple = [(packageName[1], mode)]
+                packagesDict[packageName[0]] += ageModeTuple
+    return packagesDict
+
+def createIYCFpackages(IYCFpackages, IYCFeffect, practices, childAges):
+    '''Creates IYCF packages based on user input in 'IYCFpackages'
+    practices can be either 'breastfeeding' or 'complementary feeding' '''
+    # non-empty cells denote program combination
+    # get package combinations
+    packagesDict = defineIYCFpackages(IYCFpackages, childAges[:-1] + ['Pregnant women'])
+    # create new intervention
+    effects = IYCFeffect.loc['OR for correct ' + practices]
+    newInterventions = {}
+    ORs = {}
+    for key, item in packagesDict.items():
+        if newInterventions.get(key) is None:
+            newInterventions[key] = {}
+        for age in childAges:
+            ORs[age] = 1.
+            for pop, mode in item:
+                row = effects.loc[pop, mode]
+                thisOR = row[age]
+                ORs[age] *= thisOR
+        newInterventions[key].update(ORs)
+    return newInterventions, packagesDict
+
+def getIYCFtargetPop(packageModalities, location, childAges, PWages, WRAages):
+    import pandas as pd
+    targetPops = pd.read_excel(location, 'IYCF target pop', index_col=[0])
+    newTargetPops = {}
+    for name, package in packageModalities.items():
+        newTargetPops[name] = {}
+        for pop, mode in package:
+            if newTargetPops[name].get(pop) is None:
+                newTargetPops[name][pop] = {}
+            newTargetPops[name][pop][mode] = targetPops[mode][pop]
+    # convert 'pregnant women' to its age bands
+    newTargetPops = stratifyPopIntoAgeGroups(newTargetPops, packageModalities.keys(), PWages, 'Pregnant women', keyLevel=1)
+    return newTargetPops
 
 
 def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: could get all spreadsheet names and iterate with a general 'readSheet' function, then tinker from there.
@@ -256,7 +262,8 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: coul
     # create user-defined IYCF packages
     IYCFeffects = readSheet(location, 'IYCF package odds ratios', [0,1,2])
     IYCFpackages = readSheet(location, 'IYCF packages', [0,1])
-    ORappropriatebfIntervention = createIYCFpackages(IYCFpackages, IYCFeffects, 'breastfeeding', ages)
+
+    ORappropriatebfIntervention, packageModalities = createIYCFpackages(IYCFpackages, IYCFeffects, 'breastfeeding', ages)
     IYCFnames = ORappropriatebfIntervention.keys()
     # get interventions list
     interventionsSheet = pd.read_excel(location, sheetname = 'Interventions cost and coverage', index_col=0)
@@ -273,8 +280,7 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: coul
     # general pop
     targetPopulation.update(splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'General population', switchKeys=True))
     # add target pop for IYCF packages
-    IYCFtarget = getIYCFtargetPop(ORappropriatebfIntervention, IYCFnames, allPops)
-    targetPopulation.update(IYCFtarget)
+    IYCFtargetPop = getIYCFtargetPop(packageModalities, location, ages, PWages, WRAages)
     # change PW & WRA to age groups for interventions other than iYCF
     targetPopulation = stratifyPopIntoAgeGroups(targetPopulation, interventionList, WRAages, 'Non-pregnant WRA', keyLevel=1)
     targetPopulation = stratifyPopIntoAgeGroups(targetPopulation, interventionList, PWages, 'Pregnant women', keyLevel=1)
@@ -457,7 +463,7 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: coul
             except KeyError: # if cause not in sheet, RR=1
                 RRdeathMaternal[cause][anemiaStatus] = 1
     RRdeathMaternalAnemia = {age: RRdeathMaternal for age in PWages}
-    # women of reproductive age, assume no direct impact of interventions (RR=1). Also no data on children (RR=1)
+    # women of reproductive age, assume no direct impact of interventions (RR=1). Also no data on children (RR=1) # TODO: probably need to update children.
     RRdeathChildrenWRanemia = {age: {cause: {status: 1. for status in anemiaList} for cause in causesOfDeathList} for age in WRAages + ages}
     # combine all groups into single dictionary
     RRdeathMaternalAnemia.update(RRdeathChildrenWRanemia)
@@ -542,15 +548,6 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: coul
     effectivenessFP = dict(zip(sheet.Method, sheet.Effectiveness))
 
 
-    # TODO: THIS IS ONLY FOR THE WASTING RE-RUN DELETE AFTERWARDS
-    ORsheet = readSheet(location, 'Odds ratios', [0, 1])
-    ORappropriatebfIntervention = splitSpreadsheetWithTwoIndexCols(ORsheet, 'OR for correct breastfeeding by intervention', rowList=interventionCompleteList)
-
-
-
-
-
-
     spreadsheetData = Data(causesOfDeathList, conditionsList, interventionList, interventionCompleteList,
                            demographics, projectedBirths, rawMortality,
                            causeOfDeathDist, RRdeathAnemia, RRdeathStunting,
@@ -566,7 +563,7 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: coul
                            projectedWRApop, projectedWRApopByAge, projectedPWpop, projectedGeneralPop,
                            PWageDistribution, fracExposedMalaria, ORanemiaCondition, fracSevereDia,
                            ORwastingCondition, ORwastingIntervention, ORwastingBirthOutcome,
-                           fracSAMtoMAM, fracMAMtoSAM, effectivenessFP)
+                           fracSAMtoMAM, fracMAMtoSAM, effectivenessFP, IYCFtargetPop)
 
     return spreadsheetData
 

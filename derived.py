@@ -439,12 +439,7 @@ class Derived:
             self.probCorrectlyBreastfedIfCovered[intervention]["covered"]     = {}
             for i in range(numAgeGroups):
                 ageName = self.ages[i]
-
-
-                # TODO: CHANGE THE KEY ORDER FOR THIS ONCE FINISHED
-                OddsRatio = self.data.ORappropriatebfIntervention[ageName][intervention]
-
-
+                OddsRatio = self.data.ORappropriatebfIntervention[intervention][ageName]
                 fracCovered = coverage[intervention]
                 appropriatePractice = self.data.ageAppropriateBreastfeeding[ageName]
                 fracCorrectlyBreastfedThisAge = breastfeedingDistribution[ageName][appropriatePractice]

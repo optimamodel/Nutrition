@@ -217,6 +217,14 @@ class Helper:
         model.setParams(parameters)
         model.updateMortalityRate()
         return model, derived, parameters
+
+    def setIYCFTargetPopSize(self, spreadsheetData, model, fromModel=True): # TODO: this function will use equation for combining the coverages of sub-programs into a single program.
+        targetPop = spreadsheetData.IYCFtargetPop
+        if fromModel: # get pop sizes from model instance
+            PWcomps = model.listOfPregnantWomanAgeCompartments
+            popSizesPW = sum([PWcomps[pop].getTotalPopulation() for pop in PWcomps])
+
+
         
     def setIFASTargetPopWRA(self, spreadsheetData, model, fromModel):
         attendance = spreadsheetData.demographics['school attendance WRA 15-19']
