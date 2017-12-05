@@ -489,13 +489,6 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: coul
     # by condition
     ORstuntingDia = dict(ORsheet.loc['OR stunting progression and condition','Diarrhea'])
     ORstuntingCondition = {age:{condition: ORstuntingDia[age] for condition in ['Diarrhea']} for age in ages}
-    # by intervention
-    #ORstuntingIntervention = splitSpreadsheetWithTwoIndexCols(ORsheet, "OR stunting by intervention", rowList=interventionCompleteList + ['Complementary feeding education'])
-    # give each IYCF program the CFE ORs
-    # for age in ages: # TODO: this needs to be package specific, so we need ORs for stunting given delivery mode, and then implement just as OR for correct BF given delivery mode.
-    #     ORcfe = ORstuntingIntervention[age].pop('Complementary feeding education')
-    #     for program in IYCFnames:
-    #         ORstuntingIntervention[age][program] = ORcfe
 
     # TODO: we are removing food security group stuff, this can probably go
     # ORstuntingComplementaryFeeding = {}
