@@ -11,7 +11,7 @@ sheetDate = '2017Nov'
 
 spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+sheetDate+'/InputForCode_'+country+'.xlsx'
 
-cascadeValues = [0.25, 1.0, 2.0, 3.0, 4.0]
+cascadeValues = [0.25, 0.5, 1.0, 2.0, 3.0, 4.0, 8.0]
 totalBudget = 20000000.
 
 interventionsToRemove = ['Public provision of complementary foods with iron',
@@ -20,7 +20,7 @@ interventionsToRemove = ['Public provision of complementary foods with iron',
                          'Iron and iodine fortification of salt', 'Iron fortification of wheat flour', 'Iron fortification of maize',
                          'Iron fortification of rice', 'IFA fortification of maize']
 
-objectiveList = ['wasting_prev', 'SAM_prev', 'MAM_prev', 'deaths']
+objectiveList = ['thrive', 'deaths']
 
 resultsFileStem = rootpath+'/Results/'+country+'/national/'+date
 
