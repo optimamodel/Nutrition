@@ -385,7 +385,7 @@ class Derived:
             self.probStuntedIfCovered[intervention]["covered"]     = {}
             for iAge in range(numAgeGroups):
                 ageName = self.ages[iAge]
-                OddsRatio = self.data.ORstuntingIntervention[ageName][intervention]
+                OddsRatio = self.data.ORstuntingIntervention[intervention][ageName]
                 fracCovered = coverage[intervention]
                 fracStuntedThisAge = self.helper.sumStuntedComponents(stuntingDistribution[ageName])
                 pn, pc = self.solveQuadratic(OddsRatio, fracCovered, fracStuntedThisAge)
