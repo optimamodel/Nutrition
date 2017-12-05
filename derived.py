@@ -170,8 +170,8 @@ class Derived:
         
     def setBirthPregnancyInfo(self):
         for intervention in self.data.effectivenessFP:
-            self.fractionPregnancyAverted += self.data.effectivenessFP[intervention] * self.data.coverage[intervention]
-            self.baselineCoverageFP += self.data.coverage[intervention]
+            self.fractionPregnancyAverted += self.data.effectivenessFP[intervention] * self.data.distributionFP[intervention] * self.data.coverage['Family Planning']
+            self.baselineCoverageFP = dcp(self.data.coverage['Family Planning'])
         numPregnant = dcp(self.data.demographics['number of pregnant women'])
         numWRA = dcp(self.initialModel.getTotalPopWRA())
         # num pregnant = rate * num WRA * (1 - fractionPregnancyAverted)
@@ -187,21 +187,12 @@ class Derived:
         
     def updateFractionPregnaciesAverted(self, newCoverage, unMetNeedFP):
         maxCovFP = self.baselineCoverageFP + unMetNeedFP
-        newTotalCoverage = 0
-        for intervention in self.data.effectivenessFP:
-            newTotalCoverage += newCoverage[intervention]
-        if newTotalCoverage > maxCovFP:
-            extraCoverage = newTotalCoverage - maxCovFP
-            # calculate fractional reduction required once baseline irreversable interventions have been removed
-            adjustedCoverage = newTotalCoverage - self.data.coverage['Male sterilization'] - self.data.coverage['Female sterilization']
-            fractionalReduction = extraCoverage/adjustedCoverage
-            for intervention in self.data.effectivenessFP:
-                if 'sterilization' not in intervention:
-                    newCoverage[intervention] *= (1. - fractionalReduction)
+        if newCoverage['Family Planning'] > maxCovFP:
+            newCoverage['Family Planning'] = maxCovFP            
         # now calculate the new fraction of averted pregnancies 
         newFractionAverted = 0.            
         for intervention in self.data.effectivenessFP:
-            newFractionAverted += self.data.effectivenessFP[intervention] * newCoverage[intervention]                
+            newFractionAverted += self.data.effectivenessFP[intervention] * self.data.distributionFP[intervention] * newCoverage['Family Planning']                
         self.fractionPregnancyAverted = newFractionAverted
 
     # Calculate probability of stunting in this age group given stunting in previous age-group
