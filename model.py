@@ -21,6 +21,7 @@ class Model:
         self.thisHelper = helper.Helper()
         self.cumulativeAgingOutStunted = 0.0
         self.cumulativeAgingOutNotStunted = 0.0
+        self.cumulativeBirths = 0.0
         
     def setDerived(self, inputDerived):
         self.derived = inputDerived
@@ -221,8 +222,8 @@ class Model:
         self.derived.setProbStuntedIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.stuntingDistribution)
         self.derived.setProbAnemicIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
         self.derived.setProbWastedIfDiarrhea(self.params.incidences, self.params.breastfeedingDistribution, self.params.wastingDistribution)
-        self.derived.setProbStuntedComplementaryFeeding(self.params.stuntingDistribution, self.params.coverage)
-        self.derived.updateFractionPregnaciesAverted(self.params.coverage, self.params.demographics['unmet need for family planning'])
+        #self.derived.setProbStuntedComplementaryFeeding(self.params.stuntingDistribution, self.params.coverage)
+        self.derived.updateFractionPregnaciesAverted(newCoverage, self.params.demographics['unmet need for family planning'])
 
         # add all constraints to coverages
         constrainedCoverage = self.params.addCoverageConstraints(newCoverage, self.listOfAgeCompartments, self.listOfReproductiveAgeCompartments)
@@ -236,7 +237,7 @@ class Model:
         incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
         birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)
         newFracCorrectlyBreastfed = self.params.getAppropriateBFNew(newCoverage)
-        stuntingUpdateComplementaryFeeding = self.params.getStuntingUpdateComplementaryFeeding(newCoverage)
+        #stuntingUpdateComplementaryFeeding = self.params.getStuntingUpdateComplementaryFeeding(newCoverage)
 
         # MORTALITY
         #update mortality for each population
@@ -300,7 +301,7 @@ class Model:
         # STUNTING
         for ageGroup in self.listOfAgeCompartments:
             ageName = ageGroup.name
-            totalUpdate = stuntingUpdate[ageName] * stuntingUpdateDueToIncidence[ageName] * stuntingUpdateComplementaryFeeding[ageName] *stuntingUpdateDueToBreastfeeding[ageName]
+            totalUpdate = stuntingUpdate[ageName] * stuntingUpdateDueToIncidence[ageName] *stuntingUpdateDueToBreastfeeding[ageName]
             #save total stunting update for use in apply births and apply aging
             self.derived.stuntingUpdateAfterInterventions[ageName] *= totalUpdate
             #update stunting    
@@ -542,8 +543,9 @@ class Model:
         # num annual births = birth rate x num WRA x (1 - frac preg averted)
         numWRA = self.getTotalPopWRA()
         annualBirths = self.derived.birthRate * numWRA * (1. - self.derived.fractionPregnancyAverted)
-        # calculate total number of new babies
+        # calculate total number of new babies and add to cumulative births
         numNewBabies = annualBirths * self.timestep
+        self.cumulativeBirths += numNewBabies
         # convenient names
         ageGroup = self.listOfAgeCompartments[0]
         ageName  = ageGroup.name
