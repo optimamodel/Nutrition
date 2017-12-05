@@ -30,5 +30,5 @@ interventionsToKeep = ['Vitamin A supplementation',
 resultsFileStem = rootpath+'/Results/'+country+'/national/'+date
 
 thisOptimisation = optimisation.Optimisation(cascadeValues, objectiveList, spreadsheet, resultsFileStem, country,
-                                             totalBudget=totalBudget, parallel=True, numRuns=2, interventionsToKeep=interventionsToKeep)
+                                             totalBudget=totalBudget, parallel=True, numRuns=1, interventionsToKeep=interventionsToKeep)
 thisOptimisation.optimise()

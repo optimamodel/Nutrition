@@ -205,7 +205,7 @@ class Optimisation:
         xmax = [kwargs['totalBudget']] * len(self.programList)
         runOutputs = []
         for run in range(self.numRuns):
-            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=60, swarmsize=600)
+            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=50, swarmsize=600)
             print "Objective: " + str(objective)
             print "value * 1000: " + str(fopt)
             budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
