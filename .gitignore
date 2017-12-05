@@ -6,6 +6,7 @@
 *.png
 .*
 .pkl
+*.xls
 *.csv
 ~$*
 
