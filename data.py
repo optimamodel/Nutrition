@@ -251,7 +251,7 @@ def getIYCFtargetPop(packageModalities, targetPops, PWages):
     return newTargetPops
 
 
-def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: could get all spreadsheet names and iterate with a general 'readSheet' function, then tinker from there.
+def readSpreadsheet(fileName, keyList, interventionsToKeep=None): # TODO: could get all spreadsheet names and iterate with a general 'readSheet' function, then tinker from there.
     from copy import deepcopy as dcp
     location = fileName
     ages = keyList['ages']
@@ -312,9 +312,11 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: coul
     costSaturation = interventionsSheet[["saturation coverage", "unit cost"]].to_dict(orient='index')
     costSaturation.update(IYCFcostSaturation)
 
-    if interventionsToRemove is not None: # This is a temporary way not to consider interventions - not a long-term fix
-        for program in interventionsToRemove:
-            costSaturation[program]['saturation coverage'] = 0.
+    if interventionsToKeep is not None: # This is a temporary way not use subset of programs - not a long-term fix
+        interventionList = interventionsToKeep
+        interventionCompleteList = interventionsToKeep
+        coverage = {program: cov for program, cov in coverage.iteritems() if program in interventionsToKeep}
+        costSaturation = {program:value for program, value in costSaturation.iteritems() if program in interventionsToKeep}
 
     # add hidden intervention data to coverage and cost saturation
     hiddenInterventionList = list(set(interventionCompleteList) - set(interventionList))
