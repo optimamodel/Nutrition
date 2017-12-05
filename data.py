@@ -328,13 +328,18 @@ def readSpreadsheet(fileName, keyList, interventionsToKeep=None): # TODO: could 
         costSaturation.update({intervention : thisCostSaturation})
 
     # fill in the remaining ORs for BF practices & for stunting
+    # need to add effect of PPCF on stunting
+    ORsheet = readSheet(location, 'Odds ratios', [0,1] )
+    ORstunting = dict(ORsheet.loc['OR stunting by intervention'])
     for intervention in list(set(interventionCompleteList) - set(IYCFnames)):
         ORappropriatebfIntervention[intervention] = {}
         ORstuntingIntervention[intervention] = {}
         for age in ages:
             ORappropriatebfIntervention[intervention][age] = 1.
-            ORstuntingIntervention[intervention][age] = 1.
-
+            if "Public provision" in intervention:
+                ORstuntingIntervention[intervention][age] = ORstunting[age][intervention]
+            else:
+                ORstuntingIntervention[intervention][age] = 1.
 
     ### BASELINE YEAR DEMOGRAPHICS
     demographicsSheet = readSheet(location, 'Baseline year demographics', [0,1])
