@@ -22,7 +22,7 @@ class Data:
                  projectedGeneralPop, PWageDistribution, fracExposedMalaria,
                  ORanemiaCondition, fracSevereDia, ORwastingCondition,
                  ORwastingIntervention, ORwastingBirthOutcome, fracSAMtoMAM, fracMAMtoSAM,
-                 effectivenessFP, IYCFtargetPop, IYCFprograms):
+                 effectivenessFP, distributionFP, IYCFtargetPop, IYCFprograms):
 
 
         self.causesOfDeath = causesOfDeath
@@ -74,6 +74,7 @@ class Data:
         self.fracSAMtoMAM= fracSAMtoMAM
         self.fracMAMtoSAM = fracMAMtoSAM
         self.effectivenessFP = effectivenessFP
+        self.distributionFP = distributionFP
         self.IYCFtargetPop = IYCFtargetPop
         self.IYCFprograms = IYCFprograms
 
@@ -559,6 +560,7 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: coul
     # FAMILY PLANNING
     sheet = pd.read_excel(location, sheetname='Interventions family planning')
     effectivenessFP = dict(zip(sheet.Method, sheet.Effectiveness))
+    distributionFP = dict(zip(sheet.Method, sheet.Distribution))
 
 
     spreadsheetData = Data(causesOfDeathList, conditionsList, interventionList, interventionCompleteList,
@@ -575,7 +577,7 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: coul
                            anemiaDistribution, projectedWRApop, projectedWRApopByAge, projectedPWpop, projectedGeneralPop,
                            PWageDistribution, fracExposedMalaria, ORanemiaCondition, fracSevereDia,
                            ORwastingCondition, ORwastingIntervention, ORwastingBirthOutcome,
-                           fracSAMtoMAM, fracMAMtoSAM, effectivenessFP, IYCFtargetPop, IYCFnames)
+                           fracSAMtoMAM, fracMAMtoSAM, effectivenessFP, distributionFP, IYCFtargetPop, IYCFnames)
 
     return spreadsheetData
 
