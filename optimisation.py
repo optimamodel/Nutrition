@@ -117,7 +117,7 @@ class OutputClass:
 
 class Optimisation:
     def __init__(self, cascadeValues, objectivesList, dataSpreadsheetName, resultsFileStem, country, costCurveType='standard',
-                 totalBudget=None, parallel=True, numRuns=10, numModelSteps=14, haveFixedCosts=False, interventionsToRemove=None):
+                 totalBudget=None, parallel=True, numRuns=10, numModelSteps=14, haveFixedCosts=False, interventionsToKeep=None):
         import helper
         import data
         from multiprocessing import cpu_count
@@ -131,7 +131,7 @@ class Optimisation:
         self.numRuns = numRuns
         self.costCurveType = costCurveType
         self.helper = helper.Helper()
-        self.data = data.readSpreadsheet(dataSpreadsheetName, self.helper.keyList, interventionsToRemove=interventionsToRemove)
+        self.data = data.readSpreadsheet(dataSpreadsheetName, self.helper.keyList, interventionsToKeep=interventionsToKeep)
         self.programList = self.data.interventionList
         self.timeSeries = None
         self.costCoverageInfo = self.getCostCoverageInfo()
