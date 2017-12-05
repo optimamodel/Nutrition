@@ -117,7 +117,7 @@ class OutputClass:
 
 class Optimisation:
     def __init__(self, cascadeValues, objectivesList, dataSpreadsheetName, resultsFileStem, country, costCurveType='standard',
-                 parallel=False, numRuns=10, numModelSteps=14, haveFixedCosts=False, interventionsToRemove=None):
+                 totalBudget=None, parallel=True, numRuns=10, numModelSteps=14, haveFixedCosts=False, interventionsToRemove=None):
         import helper
         import data
         from multiprocessing import cpu_count
@@ -137,7 +137,6 @@ class Optimisation:
         self.costCoverageInfo = self.getCostCoverageInfo()
         self.targetPopSize = self.getInitialTargetPopSize()
         self.inititalProgramAllocations = self.getTotalInitialAllocation()
-        self.totalBudget = sum(self.inititalProgramAllocations)
         self.fixedCosts = self.getFixedCosts(haveFixedCosts, self.inititalProgramAllocations)
         self.timeStepsPre = 12
         self.model = runModelForNTimeSteps(self.timeStepsPre, self.data, model=None)[0]
@@ -145,6 +144,7 @@ class Optimisation:
         self.kwargs = {'costCurves': self.costCurves, 'model': self.model, 'timestepsPre': self.timeStepsPre,
                 'totalBudget': self.totalBudget, 'fixedCosts': self.fixedCosts,
                 'numModelSteps': self.numModelSteps, 'data': self.data}
+        self.totalBudget = totalBudget if totalBudget else sum(self.inititalProgramAllocations)
         # check that results directory exists and if not then create it
         import os
         self.resultDirectories = {}
