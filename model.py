@@ -300,11 +300,7 @@ class Model:
         # STUNTING
         for ageGroup in self.listOfAgeCompartments:
             ageName = ageGroup.name
-<<<<<<< HEAD
             totalUpdate = stuntingUpdate[ageName] * stuntingUpdateDueToIncidence[ageName] *stuntingUpdateDueToBreastfeeding[ageName]
-=======
-            totalUpdate = stuntingUpdate[ageName] * stuntingUpdateDueToIncidence[ageName] *stuntingUpdateDueToBreastfeeding[ageName] #* stuntingUpdateComplementaryFeeding[ageName]
->>>>>>> 44b8f771f3568380e1db0fc90d48d771e6ad961a
             #save total stunting update for use in apply births and apply aging
             self.derived.stuntingUpdateAfterInterventions[ageName] *= totalUpdate
             #update stunting    
