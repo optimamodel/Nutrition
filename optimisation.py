@@ -141,10 +141,10 @@ class Optimisation:
         self.timeStepsPre = 12
         self.model = runModelForNTimeSteps(self.timeStepsPre, self.data, model=None)[0]
         self.costCurves = self.generateCostCurves(self.model)
+        self.totalBudget = totalBudget if totalBudget else sum(self.inititalProgramAllocations)
         self.kwargs = {'costCurves': self.costCurves, 'model': self.model, 'timestepsPre': self.timeStepsPre,
                 'totalBudget': self.totalBudget, 'fixedCosts': self.fixedCosts,
                 'numModelSteps': self.numModelSteps, 'data': self.data}
-        self.totalBudget = totalBudget if totalBudget else sum(self.inititalProgramAllocations)
         # check that results directory exists and if not then create it
         import os
         self.resultDirectories = {}
