@@ -17,8 +17,7 @@ class Data:
                  ORappropriatebfIntervention,
                  ageAppropriateBreastfeeding, coverage, costSaturation,
                  targetPopulation, affectedFraction, effectivenessMortality,
-                 effectivenessIncidence, interventionsBirthOutcome, foodSecurityGroups,
-                 ORstuntingComplementaryFeeding, anemiaDistribution,
+                 effectivenessIncidence, interventionsBirthOutcome, anemiaDistribution,
                  projectedWRApop, projectedWRApopByAge, projectedPWpop,
                  projectedGeneralPop, PWageDistribution, fracExposedMalaria,
                  ORanemiaCondition, fracSevereDia, ORwastingCondition,
@@ -62,8 +61,6 @@ class Data:
         self.effectivenessMortality = effectivenessMortality
         self.effectivenessIncidence = effectivenessIncidence
         self.interventionsBirthOutcome = interventionsBirthOutcome
-        self.foodSecurityGroups = foodSecurityGroups
-        self.ORstuntingComplementaryFeeding = ORstuntingComplementaryFeeding
         self.anemiaDistribution = anemiaDistribution
         self.projectedWRApop = projectedWRApop
         self.projectedWRApopByAge = projectedWRApopByAge
@@ -191,9 +188,19 @@ def readSheet(location, sheetName, indexCols, dropna=True):
     return mysheet
 
 
-def getIYCFcostSaturation(ORs):
-    # TODO: this is subject to advice on cost and coverage
-    return
+def getIYCFcostCoverageSaturation(IYCFpackages, IYCFcost):
+    packageCostSaturation = {}
+    coverage = {}
+    for name, package in IYCFpackages.iteritems():
+        cost = 0
+        packageCostSaturation[name] = {}
+        for pop, mode in package:
+            cost += IYCFcost[mode][pop]
+        packageCostSaturation[name]['unit cost'] = cost
+        packageCostSaturation[name]['saturation coverage'] = 0.95
+        # tmp baseline coverage
+        coverage[name] = 0
+    return packageCostSaturation, coverage
 
 def defineIYCFpackages(IYCFpackages, thesePops):
     packagesDict = {}
@@ -232,9 +239,7 @@ def createIYCFpackages(IYCFpackages, IYCFeffect, practices, childAges):
         newInterventions[key].update(ORs)
     return newInterventions, packagesDict
 
-def getIYCFtargetPop(packageModalities, location, PWages):
-    import pandas as pd
-    targetPops = pd.read_excel(location, 'IYCF target pop', index_col=[0])
+def getIYCFtargetPop(packageModalities, targetPops, PWages):
     newTargetPops = {}
     for name, package in packageModalities.items():
         newTargetPops[name] = {}
@@ -281,16 +286,17 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: coul
     # general pop
     targetPopulation.update(splitSpreadsheetWithTwoIndexCols(targetPopSheet, 'General population', switchKeys=True))
     # add target pop for IYCF packages
-    IYCFtargetPop = getIYCFtargetPop(packageModalities, location, PWages)
+    IYCFcostCovSheet = readSheet(location, 'IYCF cost & coverage', [0,1])
+    IYCFtarget = splitSpreadsheetWithTwoIndexCols(IYCFcostCovSheet, 'Target populations')
+    IYCFcost = splitSpreadsheetWithTwoIndexCols(IYCFcostCovSheet, 'Unit costs')
+
+    IYCFtargetPop = getIYCFtargetPop(packageModalities, IYCFtarget, PWages)
     # change PW & WRA to age groups for interventions other than iYCF
     targetPopulation = stratifyPopIntoAgeGroups(targetPopulation, interventionList, WRAages, 'Non-pregnant WRA', keyLevel=1)
     targetPopulation = stratifyPopIntoAgeGroups(targetPopulation, interventionList, PWages, 'Pregnant women', keyLevel=1)
 
     ### INTERVENTIONS COST AND COVERAGE
-    # TODO: don't know what the costs or baseline coverages are, so need to get this. Temporary substitute below
-    IYCFcostSaturation = {program: {'unit cost': 1., 'saturation coverage': 0.95} for program in IYCFnames}
-    IYCFcoverage = {program: 0. for program in IYCFnames}
-    #IYCFcostSaturation, IYCFcoverage = getIYCFcostCoverageSaturation()
+    IYCFcostSaturation, IYCFcoverage = getIYCFcostCoverageSaturation(packageModalities, IYCFcost)
 
     # include IYCF interventions
     interventionList += IYCFnames
@@ -480,17 +486,23 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: coul
     ORstuntingDia = dict(ORsheet.loc['OR stunting progression and condition','Diarrhea'])
     ORstuntingCondition = {age:{condition: ORstuntingDia[age] for condition in ['Diarrhea']} for age in ages}
     # by intervention
-    ORstuntingIntervention = splitSpreadsheetWithTwoIndexCols(ORsheet, "OR stunting by intervention", rowList=interventionCompleteList)
-    ORstuntingComplementaryFeeding = {}
-    interventionsHere = ORsheet.loc['OR stunting by intervention'].index
-    foodSecurityGroups = []
+    ORstuntingIntervention = splitSpreadsheetWithTwoIndexCols(ORsheet, "OR stunting by intervention", rowList=interventionCompleteList + ['Complementary feeding education'])
+    # give each IYCF program the CFE ORs
     for age in ages:
-        ORstuntingComplementaryFeeding[age] = {}
-        for intervention in interventionsHere:
-            if "Complementary" in intervention and 'iron' not in intervention:
-                ORstuntingComplementaryFeeding[age][intervention] = ORsheet[age]['OR stunting by intervention'][intervention]
-                if intervention not in foodSecurityGroups:
-                    foodSecurityGroups += [intervention]
+        ORcfe = ORstuntingIntervention[age].pop('Complementary feeding education')
+        for program in IYCFnames:
+            ORstuntingIntervention[age][program] = ORcfe
+    # TODO: we are removing food security group stuff, this can probably go
+    # ORstuntingComplementaryFeeding = {}
+    # interventionsHere = ORsheet.loc['OR stunting by intervention'].index
+    # foodSecurityGroups = []
+    # for age in ages:
+    #     ORstuntingComplementaryFeeding[age] = {}
+    #     for intervention in interventionsHere:
+    #         if "Complementary" in intervention and 'iron' not in intervention:
+    #             ORstuntingComplementaryFeeding[age][intervention] = ORsheet[age]['OR stunting by intervention'][intervention]
+    #             if intervention not in foodSecurityGroups:
+    #                 foodSecurityGroups += [intervention]
     # wasting by intervention
     wastingInterventionSheet = readSheet(location, 'Interventions wasting', [0,1])
     ORwastingIntervention = {}
@@ -560,8 +572,7 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: coul
                            ORappropriatebfIntervention, ageAppropriateBreastfeeding, coverage,
                            costSaturation, targetPopulation, affectedFraction,
                            effectivenessMortality, effectivenessIncidence, interventionsBirthOutcome,
-                           foodSecurityGroups, ORstuntingComplementaryFeeding, anemiaDistribution,
-                           projectedWRApop, projectedWRApopByAge, projectedPWpop, projectedGeneralPop,
+                           anemiaDistribution, projectedWRApop, projectedWRApopByAge, projectedPWpop, projectedGeneralPop,
                            PWageDistribution, fracExposedMalaria, ORanemiaCondition, fracSevereDia,
                            ORwastingCondition, ORwastingIntervention, ORwastingBirthOutcome,
                            fracSAMtoMAM, fracMAMtoSAM, effectivenessFP, IYCFtargetPop, IYCFnames)

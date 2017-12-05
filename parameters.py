@@ -38,7 +38,6 @@ class Params:
         self.affectedFraction = dcp(data.affectedFraction)
         self.effectivenessIncidence = dcp(data.effectivenessIncidence)
         self.interventionsBirthOutcome = dcp(data.interventionsBirthOutcome)
-        self.foodSecurityGroups = dcp(data.foodSecurityGroups)
         self.projectedBirths = dcp(data.projectedBirths)
         self.projectedWRApop = dcp(data.projectedWRApop)
         self.projectedWRApopByAge = dcp(data.projectedWRApopByAge)
@@ -87,7 +86,11 @@ class Params:
                 reduction = affectedFrac * effectiveness * (newCoverageVal - oldCoverage) / (1. - effectiveness*oldCoverage)
                 birthOutcomeUpdate[outcome] *= 1. - reduction
         return birthOutcomeUpdate               
-        
+
+    def addSubpopConstraints(self, subpopProb, oldProb, fracTargeted):
+        '''Uses law of total probability: Pr(A) = sum(Pr(A|B)*Pr(B))'''
+        newProb = subpopProb * fracTargeted + oldProb * (1-fracTargeted)
+        return newProb
         
     def getStuntingUpdate(self, newCoverage):
         stuntingUpdate = {}
@@ -98,6 +101,8 @@ class Params:
                 probStuntingIfCovered    = self.derived.probStuntedIfCovered[intervention]["covered"][ageName]
                 probStuntingIfNotCovered = self.derived.probStuntedIfCovered[intervention]["not covered"][ageName]
                 newProbStunting = newCoverage[intervention]*probStuntingIfCovered + (1.-newCoverage[intervention])*probStuntingIfNotCovered
+                if "Public provision" in intervention: # only give to fraction poor
+                    newProbStunting = self.addSubpopConstraints(newProbStunting, oldProbStunting, self.fracPoor)
                 reduction = (oldProbStunting - newProbStunting)/oldProbStunting
                 stuntingUpdate[ageName] *= 1. - reduction
         return stuntingUpdate
@@ -410,9 +415,8 @@ class Params:
         Ce = 0
         for program in self.IYCFprograms:
             Ce += newCoverage[program]
-        if Ce > 0.95:
+        if Ce > 0.95: # TODO: don't actually want this restriction, b/c we are going to be targetting different target populations
             Ce = 0.95
-        print Ce
         key1 = 'Public provision of complementary foods'
         key2 = 'Public provision of complementary foods with iron'
         # collect data
@@ -437,5 +441,4 @@ class Params:
                 newProbStunting += probStuntedThisGroup * Frac[i]
             reduction = (oldProbStunting - newProbStunting)/oldProbStunting
             stuntingUpdate[ageName] *= 1. - reduction
-        print stuntingUpdate
-        return stuntingUpdate           
+        return stuntingUpdate
