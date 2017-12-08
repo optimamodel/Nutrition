@@ -19,7 +19,7 @@ class Project:
 
     #####--- WRAPPER METHODS ---######
 
-    def readProgramData(self): # TODO: should get all this data to have the outer-most key as programs, so can create objects and pass it this data. Wasting may cause an issue given it has two 'types'
+    def readProgramData(self):
         self.getStuntingProgram()
         self.getBirthOutcomes()
         self.getAnaemiaProgram()
@@ -171,7 +171,7 @@ class Project:
         IYCFpackages = self.readSheet('IYCF packages', [0,1])
         packagesDict = self.defineIYCFpackages(IYCFpackages)
         self.ORappropriateBFprogram = self.createIYCFpackages(BFeffects, packagesDict)
-        self.ORstuntingProgram = self.createIYCFpackages(stuntingEffects, packagesDict)
+        self.ORstuntingProgram.update(self.createIYCFpackages(stuntingEffects, packagesDict))
         self.programList += packagesDict.keys()
 
     def createIYCFpackages(self, effects, packagesDict):
