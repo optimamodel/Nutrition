@@ -46,10 +46,10 @@ row1 = ['zero', m.listOfAgeCompartments[0].getCumulativeDeaths(), m.getTotalCumu
 # run with each intervention scaled to 0.85
 rows = []
 for intervention in thisData.effectivenessFP:
-    thisData.distributionFP = dcp(zeroDist)
-    thisData.distributionFP[intervention] = 1.0
     m,d,p = thisHelper.setupModelDerivedParameters(thisData)
     m.moveModelOneYear()
+    m.derived.data.distributionFP = dcp(zeroDist)
+    m.derived.data.distributionFP[intervention] = 1.0
     cov = {}
     cov['Family Planning'] = 0.85
     m.updateCoverages(cov)
