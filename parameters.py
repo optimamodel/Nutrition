@@ -218,7 +218,7 @@ class Params:
         
         # NOW ADD ALL CONSTRAINTS
         for intervention in newCoverages.keys():
-            # set bed net constraints for all WRA IFAS interventions            
+            # set bed net constraints for all WRA IFAS interventions
             if ('IFAS' in intervention) and ('malaria' in intervention):
                 if 'bed nets' in intervention:
                     if newCoverages[intervention] > (1. - bednetCoverage):
@@ -293,13 +293,16 @@ class Params:
                 maxAllowedCovIron = 1.-newCoverages[intervention]
                 IFAend = intervention.replace('IFA ', '')
                 ironIntName = 'Iron ' + IFAend
-                ironCov = newCoverages[ironIntName]
-                if ironCov > maxAllowedCovIron:
-                    constrainedCoverages[ironIntName] = maxAllowedCovIron
-                # only cover those not growing own food
-                fracNotFarming = 1.- self.demographics['fraction of subsistence farming']
-                constrainedCoverages[intervention] = newCoverages[intervention] * fracNotFarming
-                constrainedCoverages[ironIntName] *= fracNotFarming
+                ironCov = newCoverages.get(ironIntName)
+                if ironCov is None: # TODO: HACKY WAY TO GET AROUND REMOVING IRON FORTIFICATION -- not long-term solution
+                    pass
+                else:
+                    if ironCov > maxAllowedCovIron:
+                        constrainedCoverages[ironIntName] = maxAllowedCovIron
+                    # only cover those not growing own food
+                    fracNotFarming = 1.- self.demographics['fraction of subsistence farming']
+                    constrainedCoverages[intervention] = newCoverages[intervention] * fracNotFarming
+                    constrainedCoverages[ironIntName] *= fracNotFarming
         return constrainedCoverages
 
     def addWastingInterventionConstraints(self, wastingUpdateDueToWastingIncidence):
@@ -317,11 +320,6 @@ class Params:
                 reduction  = (oldProbThisCat - newProbThisCat) / oldProbThisCat
                 constrainedWastingUpdate[ageName][wastingCat] = 1.-reduction
         return constrainedWastingUpdate
-
-    def addIYCFconstraints(self, newCoverage):
-        # TODO: will need to weight coverage by those attending health facility, if included in package. In this way we should include this the targetPop data structure
-        return
-
 
     def getAppropriateBFNew(self, newCoverage):
         correctbfFracNew = {}

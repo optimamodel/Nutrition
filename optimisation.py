@@ -117,7 +117,7 @@ class OutputClass:
 
 class Optimisation:
     def __init__(self, cascadeValues, objectivesList, dataSpreadsheetName, resultsFileStem, country, costCurveType='standard',
-                 parallel=False, numRuns=10, numModelSteps=14, haveFixedCosts=False, interventionsToRemove=None):
+                 totalBudget=None, parallel=True, numRuns=10, numModelSteps=14, haveFixedCosts=False, interventionsToKeep=None):
         import helper
         import data
         from multiprocessing import cpu_count
@@ -131,13 +131,13 @@ class Optimisation:
         self.numRuns = numRuns
         self.costCurveType = costCurveType
         self.helper = helper.Helper()
-        self.data = data.readSpreadsheet(dataSpreadsheetName, self.helper.keyList, interventionsToRemove=interventionsToRemove)
+        self.data = data.readSpreadsheet(dataSpreadsheetName, self.helper.keyList, interventionsToKeep=interventionsToKeep)
         self.programList = self.data.interventionList
         self.timeSeries = None
         self.costCoverageInfo = self.getCostCoverageInfo()
         self.targetPopSize = self.getInitialTargetPopSize()
         self.inititalProgramAllocations = self.getTotalInitialAllocation()
-        self.totalBudget = sum(self.inititalProgramAllocations)
+        self.totalBudget = totalBudget if totalBudget else sum(self.inititalProgramAllocations)
         self.fixedCosts = self.getFixedCosts(haveFixedCosts, self.inititalProgramAllocations)
         self.timeStepsPre = 12
         self.model = runModelForNTimeSteps(self.timeStepsPre, self.data, model=None)[0]
@@ -205,7 +205,7 @@ class Optimisation:
         xmax = [kwargs['totalBudget']] * len(self.programList)
         runOutputs = []
         for run in range(self.numRuns):
-            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=60, swarmsize=600)
+            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=50, swarmsize=600)
             print "Objective: " + str(objective)
             print "value * 1000: " + str(fopt)
             budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,

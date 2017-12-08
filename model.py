@@ -231,7 +231,7 @@ class Model:
         # get combined reductions from all interventions
         mortalityUpdate = self.params.getMortalityUpdate(newCoverage)
         stuntingUpdate = self.params.getStuntingUpdate(newCoverage)
-        anemiaUpdate = self.params.getAnemiaUpdate(newCoverage, self.thisHelper)
+        anemiaUpdate = self.params.getAnemiaUpdate(newCoverage, self.thisHelper) # TODO: THIS WILL NOT CONSTRAIN PPCF+IRON (MALARIA AREA) FOR STUNTING & WASTING. BUG
         wastingUpdate, fromSAMtoMAMupdate, fromMAMtoSAMupdate = self.params.getWastingPrevalenceUpdate(newCoverage)
         incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
         birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)

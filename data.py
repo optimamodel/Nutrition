@@ -218,14 +218,12 @@ def defineIYCFpackages(IYCFpackages, thesePops):
                 packagesDict[packageName[0]] += ageModeTuple
     return packagesDict
 
-def createIYCFpackages(IYCFpackages, IYCFeffect, practices, childAges):
-    '''Creates IYCF packages based on user input in 'IYCFpackages'
-    practices can be either 'breastfeeding' or 'complementary feeding' '''
+def createIYCFpackages(IYCFpackages, effects, childAges):
+    '''Creates IYCF packages based on user input in 'IYCFpackages' '''
     # non-empty cells denote program combination
     # get package combinations
     packagesDict = defineIYCFpackages(IYCFpackages, childAges[:-1] + ['Pregnant women'])
     # create new intervention
-    effects = IYCFeffect.loc['OR for correct ' + practices]
     newInterventions = {}
     ORs = {}
     for key, item in packagesDict.items():
@@ -253,7 +251,7 @@ def getIYCFtargetPop(packageModalities, targetPops, PWages):
     return newTargetPops
 
 
-def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: could get all spreadsheet names and iterate with a general 'readSheet' function, then tinker from there.
+def readSpreadsheet(fileName, keyList, interventionsToKeep=None): # TODO: could get all spreadsheet names and iterate with a general 'readSheet' function, then tinker from there.
     from copy import deepcopy as dcp
     location = fileName
     ages = keyList['ages']
@@ -268,9 +266,12 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: coul
 
     # create user-defined IYCF packages
     IYCFeffects = readSheet(location, 'IYCF package odds ratios', [0,1,2])
+    IYCFeffectBF = IYCFeffects.loc['OR for correct breastfeeding']
+    IYCFeffectStunting = IYCFeffects.loc['OR for stunting']
     IYCFpackages = readSheet(location, 'IYCF packages', [0,1])
 
-    ORappropriatebfIntervention, packageModalities = createIYCFpackages(IYCFpackages, IYCFeffects, 'breastfeeding', ages)
+    ORappropriatebfIntervention, packageModalities = createIYCFpackages(IYCFpackages, IYCFeffectBF, ages)
+    ORstuntingIntervention = createIYCFpackages(IYCFpackages, IYCFeffectStunting, ages)[0]
     IYCFnames = ORappropriatebfIntervention.keys()
     # get interventions list
     interventionsSheet = pd.read_excel(location, sheetname = 'Interventions cost and coverage', index_col=0)
@@ -311,9 +312,11 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: coul
     costSaturation = interventionsSheet[["saturation coverage", "unit cost"]].to_dict(orient='index')
     costSaturation.update(IYCFcostSaturation)
 
-    if interventionsToRemove is not None: # This is a temporary way not to consider interventions - not a long-term fix
-        for program in interventionsToRemove:
-            costSaturation[program]['saturation coverage'] = 0.
+    if interventionsToKeep is not None: # This is a temporary way not use subset of programs - not a long-term fix
+        interventionList = interventionsToKeep
+        interventionCompleteList = interventionsToKeep
+        coverage = {program: cov for program, cov in coverage.iteritems() if program in interventionsToKeep}
+        costSaturation = {program:value for program, value in costSaturation.iteritems() if program in interventionsToKeep}
 
     # add hidden intervention data to coverage and cost saturation
     hiddenInterventionList = list(set(interventionCompleteList) - set(interventionList))
@@ -324,12 +327,19 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: coul
         thisCostSaturation = costSaturation[correspondingIntervention]
         costSaturation.update({intervention : thisCostSaturation})
 
-    # fill in the remaining ORs for BF practices
+    # fill in the remaining ORs for BF practices & for stunting
+    # need to add effect of PPCF on stunting
+    ORsheet = readSheet(location, 'Odds ratios', [0,1] )
+    ORstunting = dict(ORsheet.loc['OR stunting by intervention'])
     for intervention in list(set(interventionCompleteList) - set(IYCFnames)):
         ORappropriatebfIntervention[intervention] = {}
+        ORstuntingIntervention[intervention] = {}
         for age in ages:
             ORappropriatebfIntervention[intervention][age] = 1.
-
+            if "Public provision" in intervention:
+                ORstuntingIntervention[intervention][age] = ORstunting[age][intervention]
+            else:
+                ORstuntingIntervention[intervention][age] = 1.
 
     ### BASELINE YEAR DEMOGRAPHICS
     demographicsSheet = readSheet(location, 'Baseline year demographics', [0,1])
@@ -486,13 +496,7 @@ def readSpreadsheet(fileName, keyList, interventionsToRemove=None): # TODO: coul
     # by condition
     ORstuntingDia = dict(ORsheet.loc['OR stunting progression and condition','Diarrhea'])
     ORstuntingCondition = {age:{condition: ORstuntingDia[age] for condition in ['Diarrhea']} for age in ages}
-    # by intervention
-    ORstuntingIntervention = splitSpreadsheetWithTwoIndexCols(ORsheet, "OR stunting by intervention", rowList=interventionCompleteList + ['Complementary feeding education'])
-    # give each IYCF program the CFE ORs
-    for age in ages:
-        ORcfe = ORstuntingIntervention[age].pop('Complementary feeding education')
-        for program in IYCFnames:
-            ORstuntingIntervention[age][program] = ORcfe
+
     # TODO: we are removing food security group stuff, this can probably go
     # ORstuntingComplementaryFeeding = {}
     # interventionsHere = ORsheet.loc['OR stunting by intervention'].index
