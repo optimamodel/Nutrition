@@ -2,7 +2,8 @@ class Program:
     '''Each instance of this class is an intervention,
     and all necessary data will be stored as attributes. Will store name, targetpop, popsize,coverage,edges,ORs etc
     Also want it to set absolute number covered, coverage frac (coverage amongst entire pop), normalised coverage (coverage amongst target pop)'''
-    def __init__(self, kwargs): # TODO: set the effectiveness of each intervention to no effect unless specified otherwise
+    def __init__(self, kwargs): # TODO: need a way to identify what to pass from project class. Perhaps collect all program data in Project and pass it in
+        # TODO: set the effectiveness of each intervention to no effect unless specified otherwise
         for key in kwargs.keys():
             setattr(self, key, kwargs[key])
 
@@ -10,7 +11,7 @@ class Program:
         '''Edges denote dependence upon adjacent nodes'''
         self.edges.append(node)
 
-
+# TODO: could make child classes which are interventions specific to each mortality risk factor
 
 
 
