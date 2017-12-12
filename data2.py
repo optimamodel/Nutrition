@@ -1,6 +1,6 @@
 import pandas as pd
 
-class Project: # TODO: may not even need to convert data in here - could just pass it to required classes and process values
+class Project:
     def __init__(self, filepath, programsToKeep=None):
         self.filename = filepath
         self.workbook = pd.ExcelFile(filepath)
@@ -15,7 +15,6 @@ class Project: # TODO: may not even need to convert data in here - could just pa
 
     def readAllData(self):
         self.readProgramData()
-        self.readMortalityData()
         self.readMortalityData()
         self.readDemographicsData()
         self.getAllIYCFpackages()
@@ -94,6 +93,8 @@ class Project: # TODO: may not even need to convert data in here - could just pa
 
     def getDeathDist(self):
         self.deathDist = self.readSheet('Causes of death', [0], 'index')
+        self.causesOfDeath = self.deathDist.keys()
+        print self.causesOfDeath
 
     def getIncidences(self):
         self.incidences = self.readSheet('Incidence of conditions', [0], 'index')
