@@ -1,6 +1,6 @@
 import pandas as pd
 
-class Project:
+class Project: # TODO: may not even need to convert data in here - could just pass it to required classes and process values
     def __init__(self, filepath, programsToKeep=None):
         self.filename = filepath
         self.workbook = pd.ExcelFile(filepath)
@@ -8,16 +8,17 @@ class Project:
         self.childAges = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
         self.WRAages = ['WRA: 15-19 years', 'WRA: 20-29 years', 'WRA: 30-39 years', 'WRA: 40-49 years']
         self.PWages = ["PW: 15-19 years", "PW: 20-29 years", "PW: 30-39 years", "PW: 40-49 years"]
-        self.programList = list(self.workbook.parse('Interventions cost and coverage', index_col=[0]).index) if not programsToKeep else programsToKeep
+        self.programList = list(self.readSheet('Interventions cost and coverage', [0]).index) if not programsToKeep else programsToKeep
         self.readAllData()
+
+    #####--- WRAPPER METHODS ---######
 
     def readAllData(self):
         self.readProgramData()
         self.readMortalityData()
         self.readMortalityData()
+        self.readDemographicsData()
         self.getAllIYCFpackages()
-
-    #####--- WRAPPER METHODS ---######
 
     def readProgramData(self):
         self.getStuntingProgram()
@@ -34,7 +35,6 @@ class Project:
         self.getBOrisks()
         self.getDeathDist()
         self.getIncidences()
-        self.getAnaemiaDist()
         self.getORforCondition()
         self.getMortalityRates()
 
@@ -42,6 +42,7 @@ class Project:
         self.getDemographics()
         self.getAgeDist()
         self.getRiskDist()
+        self.getAnaemiaDist()
         self.getProjections()
 
     #####--- WORKER METHODS ---######
@@ -57,16 +58,25 @@ class Project:
     def getAgeDist(self):
         baseline = self.readSheet('Baseline year demographics', [0,1])
         ageDist = {}
-        for field in ['Women of reproductive age', 'Age distribution pregnant']:
+        for field in ['Non-pregnant women population', 'PW population']:
             ageDist.update(baseline.loc[field].to_dict('index'))
         self.ageDistributions = {key: item['Values'] for key, item in ageDist.iteritems()}
 
     def getRiskDist(self):
-        dist = self.readSheet('Distributions', [0,1], 'index')
+        dist = self.readSheet('Distributions', [0,1])
         riskDist = {}
-        for field in ['Women of reproductive age', 'Age distribution pregnant']:
-            riskDist.update(dist.loc[field].to_dict('index'))
-        self.riskDistributions = {key: item['Values'] for key, item in riskDist.iteritems()}
+        self.riskCategories = {}
+        for field in ['Stunting', 'Wasting', 'Breastfeeding']:
+            riskDist[field] = dist.loc[field].to_dict('index')
+            self.riskCategories[field] = list(dist.loc[field].index)
+        self.riskDistributions = riskDist
+
+    def getAnaemiaDist(self):
+        field = 'Anaemia'
+        dist = self.readSheet('Prevalence of anaemia', [0,1])
+        anaemiaDist = dist.loc[field].to_dict('index')
+        self.riskCategories[field] = list(dist.loc[field].index)
+        self.riskDistributions[field] = anaemiaDist
 
     def getProjections(self):
         self.projections = self.readSheet('Demographic projections', [0], 'dict')
@@ -88,8 +98,6 @@ class Project:
     def getIncidences(self):
         self.incidences = self.readSheet('Incidence of conditions', [0], 'index')
 
-    def getAnaemiaDist(self): # TODO: need to check which kind of anaemia we want to model, severe or all
-        self.anemiaDist = self.readSheet('Prevalence of anemia', [0], 'index')
 
     def getORforCondition(self):
         ORsheet = self.readSheet('Odds ratios', [0,1])
