@@ -50,6 +50,7 @@ class Derived:
         self.fractionPregnancyAverted = 0.0
         self.baselineCoverageFP = 0.0
         self.setBirthPregnancyInfo()
+        self.setBirthProbs()
 
 
 
@@ -194,6 +195,20 @@ class Derived:
         for intervention in self.data.effectivenessFP:
             newFractionAverted += self.data.effectivenessFP[intervention] * self.data.distributionFP[intervention] * newCoverage['Family Planning']                
         self.fractionPregnancyAverted = newFractionAverted
+        
+    def setBirthProbs(self):
+        birthProb = {}
+        for status in self.data.birthOutcomeDist:
+            fracThisStatus = self.data.birthOutcomeDist[status]
+            thisSum = 0.
+            for ageOrder in self.data.ageOrderDist:
+                fracAO = self.data.ageOrderDist[ageOrder]
+                RRAO = self.data.RRageOrder[ageOrder]
+                for interval in self.data.intervalDist:
+                    fracInterval = self.data.intervalDist[interval]
+                    RRinterval = self.data.RRinterval
+                    thisSum += fracAO * RRAO * fracInterval * RRinterval
+            birthProb[status] = fracThisStatus/thisSum        
 
     # Calculate probability of stunting in this age group given stunting in previous age-group
     def setProbStuntingProgression(self):
