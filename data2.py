@@ -8,6 +8,7 @@ class Project:
         self.childAges = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
         self.WRAages = ['WRA: 15-19 years', 'WRA: 20-29 years', 'WRA: 30-39 years', 'WRA: 40-49 years']
         self.PWages = ["PW: 15-19 years", "PW: 20-29 years", "PW: 30-39 years", "PW: 40-49 years"]
+        self.BO = ['Term AGA', 'Term SGA', 'Pre-term AGA', 'Pre-term SGA']
         self.programList = list(self.readSheet('Interventions cost and coverage', [0]).index) if not programsToKeep else programsToKeep
         self.readAllData()
 
@@ -15,8 +16,8 @@ class Project:
 
     def readAllData(self):
         self.readProgramData()
-        self.readMortalityData()
         self.readDemographicsData()
+        self.readMortalityData()
         self.getAllIYCFpackages()
 
     def readProgramData(self):
@@ -29,20 +30,22 @@ class Project:
         self.getCostCoverageInfo()
         self.getProgramTargetPop()
 
-    def readMortalityData(self):
-        self.getRelativeRisks()
-        self.getBOrisks()
-        self.getDeathDist()
-        self.getIncidences()
-        self.getORforCondition()
-        self.getMortalityRates()
-
     def readDemographicsData(self):
         self.getDemographics()
         self.getAgeDist()
         self.getRiskDist()
         self.getAnaemiaDist()
         self.getProjections()
+
+    def readMortalityData(self):
+        self.getDeathDist()
+        self.getRelativeRisks()
+        self.getBOrisks()
+        self.getIncidences()
+        self.getORforCondition()
+        self.getMortalityRates()
+        self.padRelativeRisks()
+
 
     #####--- WORKER METHODS ---######
 
@@ -68,6 +71,7 @@ class Project:
         for field in ['Stunting', 'Wasting', 'Breastfeeding']:
             riskDist[field] = dist.loc[field].to_dict('index')
             self.riskCategories[field] = list(dist.loc[field].index)
+        self.riskCategories['Birth outcomes'] = self.BO
         self.riskDistributions = riskDist
 
     def getAnaemiaDist(self):
@@ -81,24 +85,23 @@ class Project:
         self.projections = self.readSheet('Demographic projections', [0], 'dict')
 
     ### MORTALITY ###
+
+    def getDeathDist(self):
+        self.deathDist = self.readSheet('Causes of death', [0], 'index')
+        self.causesOfDeath = self.deathDist.keys()
+
     def getRelativeRisks(self):
         RRsheet = self.readSheet('Relative risks', [0,1,2], 'index')
         self.RRdeath = self.makeDict(RRsheet)
 
     def getBOrisks(self):
         BOsheet = self.readSheet('Birth outcomes & risks', [0,1])
-        self.birthDist = BOsheet.loc['Distribution'].to_dict('index')
+        self.birthDist = BOsheet.loc['Distribution'].to_dict('index')['Fraction of births']
         self.ORconditionBirth = BOsheet.loc['OR for condition'].to_dict('index')
-        self.RRdeathBirth = BOsheet.loc['RR of death by cause'].to_dict('index')
-
-    def getDeathDist(self):
-        self.deathDist = self.readSheet('Causes of death', [0], 'index')
-        self.causesOfDeath = self.deathDist.keys()
-        print self.causesOfDeath
+        self.RRdeath['Birth outcomes'] = BOsheet.loc['RR of death by cause'].to_dict('index')
 
     def getIncidences(self):
         self.incidences = self.readSheet('Incidence of conditions', [0], 'index')
-
 
     def getORforCondition(self):
         ORsheet = self.readSheet('Odds ratios', [0,1])
@@ -112,6 +115,26 @@ class Project:
         baseline = self.readSheet('Baseline year demographics', [0,1])
         mortalityRates = baseline.loc['Mortality rates'].to_dict(orient='index')
         self.mortalityRates = {key: item['Values'] for key, item in mortalityRates.iteritems()}
+
+    def padRelativeRisks(self):
+        # pad with 1's for causes not included
+        for risk in ['Stunting', 'Wasting', 'Anaemia', 'Breastfeeding']:
+            RRs = self.RRdeath[risk]
+            for cause in self.causesOfDeath:
+                if RRs.get(cause) is None:
+                    RRs[cause] = {}
+                    for status in self.riskCategories[risk]:
+                        RRs[cause][status] = {}
+                        for age in self.childAges + self.WRAages + self.PWages:
+                            RRs[cause][status][age] = 1.
+                self.RRdeath[risk].update(RRs)
+        RRs = self.RRdeath['Birth outcomes']
+        for cause in self.causesOfDeath:
+            if RRs.get(cause) is None:
+                RRs[cause] = {}
+                for status in self.riskCategories['Birth outcomes']:
+                    RRs[cause][status] = 1.
+            self.RRdeath['Birth outcomes'].update(RRs)
 
     ####--- PROGRAMS ---####
     def getStuntingProgram(self):
@@ -162,7 +185,12 @@ class Project:
         '''myDict is a spreadsheet with 3 index cols, converted to dict using orient='index' '''
         resultDict = {}
         for key in mydict.keys():
-            resultDict.update({key[0]:{key[1]:{key[2]:mydict[key]}}})
+            if resultDict.get(key[0]) is None:
+                resultDict[key[0]] = {}
+                if resultDict.get(key[1]) is None:
+                    resultDict[key[1]] = {}
+                    if resultDict.get(key[2]) is None:
+                        resultDict[key[2]] = mydict[key]
         return resultDict
 
     def readSheet(self, name, cols, dictOrient=None):
