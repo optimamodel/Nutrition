@@ -51,6 +51,10 @@ class Params:
         self.fracSAMtoMAM = dcp(data.fracSAMtoMAM)
         self.fracMAMtoSAM = dcp(data.fracMAMtoSAM)
         self.IYCFprograms = dcp(data.IYCFprograms)
+        self.ageOrderDist = dcp(data.ageOrderDist)
+        self.intervalDist = dcp(data.intervalDist)
+        self.RRageOrder = dcp(data.RRageOrder)
+        self.RRinterval = dcp(data.RRinterval)
     
 
 # Add all functions for updating parameters due to interventions here....
