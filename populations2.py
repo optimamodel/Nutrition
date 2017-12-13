@@ -53,6 +53,7 @@ class Children(Population):
         self._makePopSizes()
         self._makeBoxes()
         self._setChildrenReferenceMortality()
+        self._updateMortalityRates()
 
     def _makePopSizes(self):
         # for children less than 1 year, annual live births
@@ -82,7 +83,7 @@ class Children(Population):
                             boxes[stuntingCat][wastingCat][bfCat][anaemiaCat] = Box(thisPop)
             self.ageGroups.append(AgeGroup(age, popSize, boxes))
 
-    def _setChildrenReferenceMortality(self):
+    def _setChildrenReferenceMortality(self): # TODO: TEST
         # Equation is:  LHS = RHS * X
         # we are solving for X
         # Calculate RHS for each age and cause
@@ -156,7 +157,39 @@ class Children(Population):
                 Xdictionary[age][cause] = LHS_age_cause / RHS[age][cause]
         self.referenceMortality = Xdictionary
 
-    #def setMortalityRates(self):
+    def _updateMortalityRates(self): # TODO: TEST
+        # Newborns first
+        ageGroup = self.ageGroups[0]
+        age = ageGroup.name
+        for bfCat in self.bfList:
+            count = 0.
+            for cause in self.project.causesOfDeath:
+                Rb = self.project.RRdeath['Breastfeeding'][cause][bfCat][age]
+                for outcome in self.birthOutcomes:
+                    pbo = self.project.birthDist[outcome]
+                    Rbo = self.project.RRdeath['Birth outcomes'][cause][outcome]
+                    count += Rb * pbo * Rbo * self.referenceMortality[age][cause]
+            for stuntingCat in self.stuntingList:
+                for wastingCat in self.wastingList:
+                    for anaemiaCat in self.anaemiaList:
+                        ageGroup.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat].mortalityRate = count
+        # over 1 months
+        for ageGroup in self.ageGroups[1:]:
+            age = ageGroup.name
+            for stuntingCat in self.stuntingList:
+                for wastingCat in self.wastingList:
+                    for bfCat in self.bfList:
+                        for anemiaStatus in self.anaemiaList:
+                            count = 0.
+                            for cause in self.project.causesOfDeath:
+                                t1 = self.referenceMortality[age][cause]
+                                t2 = self.project.RRdeath['Stunting'][cause][stuntingCat][age]
+                                t3 = self.project.RRdeath['Wasting'][cause][wastingCat][age]
+                                t4 = self.project.RRdeath['Breastfeeding'][cause][bfCat][age]
+                                t5 = self.project.RRdeath['Anaemia'][cause][anemiaStatus][age]
+                                count += t1 * t2 * t3 * t4 * t5
+                            ageGroup.boxes[stuntingCat][wastingCat][bfCat][anemiaStatus].mortalityRate = count
+
 
 
 
@@ -223,6 +256,17 @@ class PW(Population):
             for anaemiaCat in self.anaemiaList:
                 thisPop = popSize * self.anaemiaDist[anaemiaCat][ageName]
                 self.boxes[ageName][anaemiaCat] = Box(thisPop)
+
+    # def _updateMortalityRates(self): # TODO: needs to be adjusted
+    #     for ageGroup in self.listOfPregnantWomenAgeCompartments:
+    #         ageName = ageGroup.name
+    #         for anemiaStatus in self.anemiaList:
+    #             count = 0
+    #             for cause in self.params.causesOfDeath:
+    #                 t1 = self.derived.referenceMortality[ageName][cause]
+    #                 t2 = self.params.RRdeathAnemia[ageName][cause][anemiaStatus]
+    #                 count += t1 * t2
+    #             ageGroup.dictOfBoxes[anemiaStatus].mortalityRate = count
 
 
 class WRA(Population):
