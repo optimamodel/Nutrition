@@ -55,6 +55,7 @@ class Params:
         self.intervalDist = dcp(data.intervalDist)
         self.RRageOrder = dcp(data.RRageOrder)
         self.RRinterval = dcp(data.RRinterval)
+        self.interventionsBirthAge = dcp(data.interventionsBirthAge)
     
 
 # Add all functions for updating parameters due to interventions here....
@@ -89,7 +90,25 @@ class Params:
                 oldCoverage = self.coverage[intervention]
                 reduction = affectedFrac * effectiveness * (newCoverageVal - oldCoverage) / (1. - effectiveness*oldCoverage)
                 birthOutcomeUpdate[outcome] *= 1. - reduction
-        return birthOutcomeUpdate               
+        return birthOutcomeUpdate  
+
+    def getBirthAgeUpdate(self, newCoverage):
+        birthAgeUpdate = {}
+        birthAges = []
+        for value in self.ageOrderDist:
+            if 'Less than 18' in value:
+                birthAges.append(value)
+        for birthAge in birthAges:
+            birthAgeUpdate[birthAge] = 1.
+        for intervention in newCoverage.keys():
+            for birthAge in birthAges:
+                affectedFrac = self.interventionsBirthAge[intervention][birthAge]['affected fraction']
+                effectiveness = self.interventionsBirthAge[intervention][birthAge]['effectiveness']
+                newCoverageVal = newCoverage[intervention]
+                oldCoverage = self.coverage[intervention]
+                reduction = affectedFrac * effectiveness * (newCoverageVal - oldCoverage) / (1. - effectiveness*oldCoverage)
+                birthAgeUpdate[birthAge] *= 1. - reduction
+        return birthAgeUpdate               
 
     def addSubpopConstraints(self, subpopProb, oldProb, fracTargeted):
         '''Uses law of total probability: Pr(A) = sum(Pr(A|B)*Pr(B))'''
