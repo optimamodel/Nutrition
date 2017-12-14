@@ -359,7 +359,24 @@ class Model:
             for nonWastingCat in self.nonWastedList:
                 self.params.wastingDistribution[ageName][nonWastingCat] = wastingDist[nonWastingCat]
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
+        
+        # BIRTH AGE, ORDER, INTERVAL        
+        
         # BIRTH OUTCOME
+        newBirthOutcomeDist = {}
+        for outcome in self.birthOutcomes:
+            thisSum = 0.
+            for ageOrder in self.params.ageOrderDist:
+                fracAO = self.params.ageOrderDist[ageOrder]
+                RRAO = self.params.RRageOrder[ageOrder]
+                for interval in self.params.intervalDist:
+                    fracInterval = self.params.intervalDist[interval]
+                    RRinterval = self.params.RRinterval
+                    thisSum += fracAO * RRAO * fracInterval * RRinterval
+            # now set the new dist
+            newBirthOutcomeDist[outcome] = thisSum * self.derived.birthProb[outcome]
+        self.params.birthOutcomeDist = newBirthOutcomeDist
+        # now add the birth update on top            
         for outcome in self.birthOutcomes:
             self.params.birthOutcomeDist[outcome] *= birthUpdate[outcome]
         self.params.birthOutcomeDist['Term AGA'] = 1 - (self.params.birthOutcomeDist['Pre-term SGA'] + self.params.birthOutcomeDist['Pre-term AGA'] + self.params.birthOutcomeDist['Term SGA'])    
