@@ -203,10 +203,10 @@ class Derived:
             thisSum = 0.
             for ageOrder in ageOrderDist:
                 fracAO = ageOrderDist[ageOrder]
-                RRAO = self.data.RRageOrder[ageOrder]
+                RRAO = self.data.RRageOrder[ageOrder][status]
                 for interval in intervalDist:
                     fracInterval = intervalDist[interval]
-                    RRinterval = self.data.RRinterval
+                    RRinterval = self.data.RRinterval[interval][status]
                     thisSum += fracAO * RRAO * fracInterval * RRinterval
             self.birthProb[status] = fracThisStatus/thisSum        
 
