@@ -22,7 +22,8 @@ class Data:
                  projectedGeneralPop, PWageDistribution, fracExposedMalaria,
                  ORanemiaCondition, fracSevereDia, ORwastingCondition,
                  ORwastingIntervention, ORwastingBirthOutcome, fracSAMtoMAM, fracMAMtoSAM,
-                 effectivenessFP, distributionFP, IYCFtargetPop, IYCFprograms):
+                 effectivenessFP, distributionFP, IYCFtargetPop, IYCFprograms, ageOrderDist, 
+                 intervalDist, RRageOrder, RRinterval, interventionsBirthAge):
 
 
         self.causesOfDeath = causesOfDeath
@@ -77,6 +78,11 @@ class Data:
         self.distributionFP = distributionFP
         self.IYCFtargetPop = IYCFtargetPop
         self.IYCFprograms = IYCFprograms
+        self.ageOrderDist = ageOrderDist
+        self.intervalDist = intervalDist
+        self.RRageOrder = RRageOrder
+        self.RRinterval = RRinterval
+        self.interventionsBirthAge = interventionsBirthAge
 
 
 def readSheetWithOneIndexCol(sheet, scaleFactor=1.):
@@ -434,6 +440,14 @@ def readSpreadsheet(fileName, keyList, interventionsToKeep=None): # TODO: could 
     stuntingDistribution = splitSpreadsheetWithTwoIndexCols(distributionsSheet, 'Stunting', scaleFactor=100.)
     wastingDistribution = splitSpreadsheetWithTwoIndexCols(distributionsSheet, 'Wasting', scaleFactor=100.)
     breastfeedingDistribution = splitSpreadsheetWithTwoIndexCols(distributionsSheet, 'Breastfeeding', scaleFactor=100.)
+    
+    ### DISTRIBUTIONS BIRTHS
+    birthDistSheet = readSheet(location, 'Distributions births', [0,1])
+    ageOrderDist = splitSpreadsheetWithTwoIndexCols(birthDistSheet, "Birth age order")
+    ageOrderDist = ageOrderDist['Fraction']
+    intervalDist = splitSpreadsheetWithTwoIndexCols(birthDistSheet, "Birth intervals")
+    intervalDist = intervalDist['Fraction']
+    
 
     ### BIRTH OUTCOMES AND RISKS
     birthOutcomesSheet = readSheet(location, 'Birth outcomes & risks', [0,1])
@@ -452,6 +466,12 @@ def readSpreadsheet(fileName, keyList, interventionsToKeep=None): # TODO: could 
 
     # RR of death by birth outcome
     RRdeathByBirthOutcome = splitSpreadsheetWithTwoIndexCols(birthOutcomesSheet, "RR of death", rowList=causesOfDeathList, switchKeys=True)
+    
+    # RR bo by birth age order
+    RRageOrder = splitSpreadsheetWithTwoIndexCols(birthOutcomesSheet, "RR age order", rowList=ageOrderDist.keys(), switchKeys=True)
+    
+    # RR bo by birth age order
+    RRinterval = splitSpreadsheetWithTwoIndexCols(birthOutcomesSheet, "RR interval", rowList=intervalDist.keys(), switchKeys=True)
 
     ### RELATIVE RISKS
     RRsheet = readSheet(location, 'Relative risks', [0,1,2])
@@ -536,6 +556,21 @@ def readSpreadsheet(fileName, keyList, interventionsToKeep=None): # TODO: could 
                     interventionsBirthOutcome[intervention][birthOutcome][value] = column[intervention][value]
                 except KeyError:
                     interventionsBirthOutcome[intervention][birthOutcome][value] = 0.
+                    
+    # INTERVENTIONS BIRTH AGE
+    sheet = pd.read_excel(location, sheetname='Interventions birth age', index_col=[0,1])
+    interventionsBirthAge = {}
+    for intervention in interventionCompleteList:
+        interventionsBirthAge[intervention] = {}
+        for birthAge in ageOrderDist.keys():
+            if 'Less than 18' in birthAge:
+                column = sheet[birthAge]
+                interventionsBirthAge[intervention][birthAge] = {}
+                for value in ['effectiveness', 'affected fraction']:
+                    try:
+                        interventionsBirthAge[intervention][birthAge][value] = column[intervention][value]
+                    except KeyError:
+                        interventionsBirthAge[intervention][birthAge][value] = 0.                
 
     ### INTERVENTIONS ANEMIA
     # relative risks
@@ -581,7 +616,8 @@ def readSpreadsheet(fileName, keyList, interventionsToKeep=None): # TODO: could 
                            anemiaDistribution, projectedWRApop, projectedWRApopByAge, projectedPWpop, projectedGeneralPop,
                            PWageDistribution, fracExposedMalaria, ORanemiaCondition, fracSevereDia,
                            ORwastingCondition, ORwastingIntervention, ORwastingBirthOutcome,
-                           fracSAMtoMAM, fracMAMtoSAM, effectivenessFP, distributionFP, IYCFtargetPop, IYCFnames)
+                           fracSAMtoMAM, fracMAMtoSAM, effectivenessFP, distributionFP, IYCFtargetPop, IYCFnames, ageOrderDist,
+                           intervalDist, RRageOrder, RRinterval, interventionsBirthAge)
 
     return spreadsheetData
 
