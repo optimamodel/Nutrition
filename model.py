@@ -237,6 +237,7 @@ class Model:
         incidenceUpdate = self.params.getIncidenceUpdate(newCoverage)
         birthUpdate = self.params.getBirthOutcomeUpdate(newCoverage)
         newFracCorrectlyBreastfed = self.params.getAppropriateBFNew(newCoverage)
+        birthAgeUpdate = self.params.getBirthAgeUpdate(newCoverage)
         #stuntingUpdateComplementaryFeeding = self.params.getStuntingUpdateComplementaryFeeding(newCoverage)
 
         # MORTALITY
@@ -360,7 +361,13 @@ class Model:
                 self.params.wastingDistribution[ageName][nonWastingCat] = wastingDist[nonWastingCat]
             ageGroup.distribute(self.params.stuntingDistribution, self.params.wastingDistribution, self.params.breastfeedingDistribution, self.params.anemiaDistribution)
         
-        # BIRTH AGE, ORDER, INTERVAL        
+        # BIRTH AGE, ORDER, INTERVAL  
+        ageOrderDistBefore = dcp(self.params.ageOrderDist)
+        for birthAge in birthAgeUpdate:
+            self.params.ageOrderDist[birthAge] *= birthAgeUpdate[birthAge]
+            ageAbove = '18 - 34 years old' + birthAge[18:]
+            # adjust so that the deficit moves into 18-34 group 
+            self.params.ageOrderDist[ageAbove] += ageOrderDistBefore[birthAge] * (1. - birthAgeUpdate[birthAge])
         
         # BIRTH OUTCOME
         newBirthOutcomeDist = {}
@@ -368,10 +375,10 @@ class Model:
             thisSum = 0.
             for ageOrder in self.params.ageOrderDist:
                 fracAO = self.params.ageOrderDist[ageOrder]
-                RRAO = self.params.RRageOrder[ageOrder]
+                RRAO = self.params.RRageOrder[ageOrder][outcome]
                 for interval in self.params.intervalDist:
                     fracInterval = self.params.intervalDist[interval]
-                    RRinterval = self.params.RRinterval
+                    RRinterval = self.params.RRinterval[interval][outcome]
                     thisSum += fracAO * RRAO * fracInterval * RRinterval
             # now set the new dist
             newBirthOutcomeDist[outcome] = thisSum * self.derived.birthProb[outcome]
