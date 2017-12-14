@@ -32,6 +32,7 @@ class Derived:
         self.probWastedAtBirth = {}
         self.probAnemicIfCovered = {}
         self.probWastedIfCovered = {}
+        self.birthProb = {}
 
         self.stuntingUpdateAfterInterventions = {}
         self.wastingUpdateAfterInterventions = {}
@@ -197,7 +198,6 @@ class Derived:
         self.fractionPregnancyAverted = newFractionAverted
         
     def setBirthProbs(self, birthOutcomeDist, ageOrderDist, intervalDist):
-        birthProb = {}
         for status in birthOutcomeDist:
             fracThisStatus = birthOutcomeDist[status]
             thisSum = 0.
@@ -208,7 +208,7 @@ class Derived:
                     fracInterval = intervalDist[interval]
                     RRinterval = self.data.RRinterval
                     thisSum += fracAO * RRAO * fracInterval * RRinterval
-            birthProb[status] = fracThisStatus/thisSum        
+            self.birthProb[status] = fracThisStatus/thisSum        
 
     # Calculate probability of stunting in this age group given stunting in previous age-group
     def setProbStuntingProgression(self):
