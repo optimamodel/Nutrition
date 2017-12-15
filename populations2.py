@@ -120,9 +120,7 @@ class Children(Population):
                         RRan = self.project.RRdeath['Anaemia'][cause][anemiaStatus][age]
                         RHS[age][cause] += Pbf * RRbf * Pbo * RRbo * Pan * RRan
         # calculate total mortality by age (corrected for units)
-        AgePop = []
-        for age in self.ageGroups:
-            AgePop.append(age.populationSize)
+        AgePop = [age.populationSize for age in self.ageGroups]
         MortalityCorrected = {}
         LiveBirths = self.project.demographics["number of live births"]
         Mnew = self.project.mortalityRates["neonatal mortality"]
@@ -246,16 +244,15 @@ class PW(Population):
 
     def _makePopSizes(self):
         PWpop = self.project.ageDistributions
-        self.popSizes = {age:pop for age, pop in zip(self.project.PWages, PWpop)}
+        self.popSizes = {age:pop for age, pop in PWpop.iteritems()}
 
     def _makeBoxes(self):
-        for idx in range(len(self.popSizes)):
-            ageName = self.project.PWages[idx]
-            popSize = self.popSizes[idx]
-            self.boxes[ageName] = {}
+        for age in self.project.PWages:
+            popSize = self.popSizes[age]
+            self.boxes[age] = {}
             for anaemiaCat in self.anaemiaList:
-                thisPop = popSize * self.anaemiaDist[anaemiaCat][ageName]
-                self.boxes[ageName][anaemiaCat] = Box(thisPop)
+                thisPop = popSize * self.anaemiaDist[anaemiaCat][age]
+                self.boxes[age][anaemiaCat] = Box(thisPop)
 
     # def _updateMortalityRates(self): # TODO: needs to be adjusted
     #     for ageGroup in self.listOfPregnantWomenAgeCompartments:
