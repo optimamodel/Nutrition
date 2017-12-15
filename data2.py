@@ -119,13 +119,17 @@ class Project:
     def padRelativeRisks(self):
         # pad with 1's for causes not included
         for risk in ['Stunting', 'Wasting', 'Anaemia', 'Breastfeeding']:
+            if risk == 'Anaemia': # only risk across all pops
+                ages = self.childAges + self.WRAages + self.PWages
+            else:
+                ages = self.childAges
             RRs = self.RRdeath[risk]
             for cause in self.causesOfDeath:
                 if RRs.get(cause) is None:
                     RRs[cause] = {}
                     for status in self.riskCategories[risk]:
                         RRs[cause][status] = {}
-                        for age in self.childAges + self.WRAages + self.PWages:
+                        for age in ages:
                             RRs[cause][status][age] = 1.
                 self.RRdeath[risk].update(RRs)
         RRs = self.RRdeath['Birth outcomes']
@@ -185,12 +189,18 @@ class Project:
         '''myDict is a spreadsheet with 3 index cols, converted to dict using orient='index' '''
         resultDict = {}
         for key in mydict.keys():
-            if resultDict.get(key[0]) is None:
-                resultDict[key[0]] = {}
-                if resultDict.get(key[1]) is None:
-                    resultDict[key[1]] = {}
-                    if resultDict.get(key[2]) is None:
-                        resultDict[key[2]] = mydict[key]
+            first = key[0]
+            sec = key[1]
+            third = key[2]
+            if resultDict.get(first) is None:
+                resultDict[first] = {}
+                resultDict[first][sec] = {}
+                resultDict[first][sec][third] = mydict[key]
+            if resultDict[first].get(sec) is None:
+                resultDict[first][sec] = {}
+                resultDict[first][sec][third] = mydict[key]
+            if resultDict[first][sec].get(third) is None:
+                    resultDict[first][sec][third] = mydict[key]
         return resultDict
 
     def readSheet(self, name, cols, dictOrient=None):
