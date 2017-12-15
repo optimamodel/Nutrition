@@ -241,6 +241,8 @@ class PW(Population):
         super(PW, self).__init__(name, project)
         self._makePopSizes()
         self._makeBoxes()
+        self._setPWReferenceMortality()
+        self._updateMortalityRates()
 
     def _makePopSizes(self):
         PWpop = self.project.ageDistributions
@@ -249,21 +251,11 @@ class PW(Population):
     def _makeBoxes(self):
         for age in self.project.PWages:
             popSize = self.popSizes[age]
-            self.boxes[age] = {}
+            boxes = {}
             for anaemiaCat in self.anaemiaList:
                 thisPop = popSize * self.anaemiaDist[anaemiaCat][age]
-                self.boxes[age][anaemiaCat] = Box(thisPop)
-
-    # def _updateMortalityRates(self): # TODO: needs to be adjusted
-    #     for ageGroup in self.listOfPregnantWomenAgeCompartments:
-    #         ageName = ageGroup.name
-    #         for anemiaStatus in self.anemiaList:
-    #             count = 0
-    #             for cause in self.params.causesOfDeath:
-    #                 t1 = self.derived.referenceMortality[ageName][cause]
-    #                 t2 = self.params.RRdeathAnemia[ageName][cause][anemiaStatus]
-    #                 count += t1 * t2
-    #             ageGroup.dictOfBoxes[anemiaStatus].mortalityRate = count
+                boxes[anaemiaCat] = Box(thisPop)
+            self.ageGroups.append(AgeGroup(age, popSize, boxes))
 
 
 class WRA(Population):
