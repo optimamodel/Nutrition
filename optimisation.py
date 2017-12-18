@@ -587,6 +587,9 @@ class Optimisation:
             # for food fortification set target population size as entire population
             if "fortification" in intervention:
                 targetPopSize[intervention] = self.data.demographics['total population']
+            # for WASH interventions set target population size as entire population
+            if "WASH" in intervention:
+               targetPopSize[intervention] =  self.data.demographics['total population']    
         # get IFAS target populations separately
         fromModel = True
         targetPopSize.update(self.helper.setIFASTargetPopWRA(self.data, model, fromModel))
@@ -715,6 +718,9 @@ class Optimisation:
             # for food fortification set target population size as entire population
             if "fortification" in intervention:
                targetPopSize[intervention] =  self.data.demographics['total population']
+            # for WASH interventions set target population size as entire population
+            if "WASH" in intervention:
+               targetPopSize[intervention] =  self.data.demographics['total population']   
         #add IFAS intervention target pop sizes to dictionary  
         fromModel = False       
         targetPopSize.update(thisHelper.setIFASTargetPopWRA(self.data, "dummyModel", fromModel))
