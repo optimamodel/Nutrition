@@ -52,10 +52,6 @@ class Project:
         self.padWastingORprograms()
 
 
-
-
-
-
     #####--- WORKER METHODS ---######
 
     ## DEMOGRAPHICS ##
@@ -65,6 +61,7 @@ class Project:
         for field in ['Current year', 'Food']:
             demographics.update(baseline.loc[field].to_dict('index'))
         self.demographics = {key: item['Values'] for key, item in demographics.iteritems()}
+        print self.demographics
 
     def getAgeDist(self):
         baseline = self.readSheet('Baseline year demographics', [0,1])
@@ -116,8 +113,9 @@ class Project:
         ORsheet = self.readSheet('Odds ratios', [0,1])
         ORs = ORsheet.loc['OR stunting progression'].to_dict(orient='index')
         del ORs['Stunting progression']['<1 month']
-        for field in ['OR stunting condition', 'OR SAM by condition', 'OR MAM by condition']:
-            ORs.update(ORsheet.loc[field].to_dict(orient='index'))
+        for field in ['OR stunting by condition', 'OR SAM by condition', 'OR MAM by condition', 'OR anaemia by condition']:
+            ORs[field] = {}
+            ORs[field].update(ORsheet.loc[field].to_dict(orient='index'))
         self.ORcondition = ORs
 
     def getMortalityRates(self):
