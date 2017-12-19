@@ -19,6 +19,7 @@ class Project:
         self.readDemographicsData()
         self.readMortalityData()
         self.getAllIYCFpackages()
+        self.padRequiredFields()
 
     def readProgramData(self):
         self.getStuntingProgram()
@@ -44,7 +45,15 @@ class Project:
         self.getIncidences()
         self.getORforCondition()
         self.getMortalityRates()
+
+    def padRequiredFields(self):
         self.padRelativeRisks()
+        self.padStuntingORprograms()
+        self.padWastingORprograms()
+
+
+
+
 
 
     #####--- WORKER METHODS ---######
@@ -132,6 +141,7 @@ class Project:
                         for age in ages:
                             RRs[cause][status][age] = 1.
                 self.RRdeath[risk].update(RRs)
+        # treat BO differently
         RRs = self.RRdeath['Birth outcomes']
         for cause in self.causesOfDeath:
             if RRs.get(cause) is None:
@@ -143,7 +153,7 @@ class Project:
     ####--- PROGRAMS ---####
     def getStuntingProgram(self):
         ORsheet = self.readSheet('Odds ratios', [0,1])
-        self.ORstuntingProgram = ORsheet.loc['OR stunting by intervention'].to_dict(orient='index') # TODO: careful - this needs to include IYCF
+        self.ORstuntingProgram = ORsheet.loc['OR stunting by intervention'].to_dict(orient='index')
 
     def getProgramTargetPop(self):
         targetPopSheet = self.readSheet('Interventions target population', [0,1])
@@ -153,7 +163,8 @@ class Project:
         self.programTargetPop = targetPop
 
     def getCostCoverageInfo(self):
-        self.costCurveInfo = self.readSheet('Interventions cost and coverage', [0], 'index')
+        self.costCurveInfo = self.readSheet('Interventions cost and coverage', [0], 'dict')
+        #self.baselineCov = {program: info['Baseline coverage'] for program, info in self.costCurveInfo.iteritems()}
 
     def getFamilyPrograms(self):
         self.familyPlanningMethods = self.readSheet('Interventions family planning', [0])
@@ -209,16 +220,42 @@ class Project:
             df = df.to_dict(dictOrient)
         return df
 
+    def padStuntingORprograms(self):
+        '''Pads missing values with 1s'''
+        from copy import deepcopy as dcp
+        ORs = dcp(self.ORstuntingProgram)
+        for program in self.programList:
+            if program not in ORs:
+                ORs[program] = {}
+                for age in self.childAges:
+                    ORs[program][age] = 1.
+        self.ORstuntingProgram = ORs
+
+    def padWastingORprograms(self):
+        '''Pads missing values with 1s'''
+        from copy import deepcopy as dcp
+        ORs = dcp(self.ORwastingProgram)
+        for wastingCat in ['SAM', 'MAM']:
+            for program in self.programList:
+                if program not in ORs[wastingCat]:
+                    ORs[wastingCat][program] = {}
+                    for age in self.childAges:
+                        ORs[wastingCat][program][age] = 1.
+        self.ORwastingProgram = ORs
+
+
     ### IYCF ###
 
     def getAllIYCFpackages(self):
         effects = self.readSheet('IYCF package odds ratios', [0,1,2])
         BFeffects = effects.loc['OR for correct breastfeeding']
         stuntingEffects = effects.loc['OR for stunting']
-        IYCFpackages = self.readSheet('IYCF packages', [0,1])
-        packagesDict = self.defineIYCFpackages(IYCFpackages)
+        packagesDict = self.defineIYCFpackages()
+        costCurveInfo = self.getIYCFcostCoverageSaturation(packagesDict)
         self.ORappropriateBFprogram = self.createIYCFpackages(BFeffects, packagesDict)
         self.ORstuntingProgram.update(self.createIYCFpackages(stuntingEffects, packagesDict))
+        for field in ['unit cost', 'saturation coverage', 'baseline coverage']:
+            self.costCurveInfo[field].update(costCurveInfo[field])
         self.programList += packagesDict.keys()
 
     def createIYCFpackages(self, effects, packagesDict):
@@ -240,10 +277,11 @@ class Project:
             newInterventions[key].update(ORs)
         return newInterventions
 
-    def defineIYCFpackages(self, IYCFpackages):
+    def defineIYCFpackages(self):
+        IYCFpackages = self.readSheet('IYCF packages', [0,1])
         packagesDict = {}
         for packageName, package in IYCFpackages.groupby(level=[0, 1]):
-            if packagesDict.get(packageName[0]) is None:
+            if packageName[0] not in packagesDict:
                 packagesDict[packageName[0]] = []
             for mode in package:
                 col = package[mode]
@@ -255,4 +293,37 @@ class Project:
                     packagesDict[packageName[0]] += ageModeTuple
         return packagesDict
 
+    def getIYCFcostCoverageSaturation(self, IYCFpackages):
+        IYCFcost = self.readSheet('IYCF cost & coverage', [0,1]).loc['Unit costs']
+        infoList = ['unit cost', 'saturation coverage', 'baseline coverage']
+        packageCostSaturation = {}
+        for field in infoList:
+            packageCostSaturation[field] = {}
+        for name, package in IYCFpackages.iteritems():
+            cost = 0
+            for pop, mode in package:
+                cost += IYCFcost[mode][pop]
+            packageCostSaturation['unit cost'][name] = cost
+            # TEMP VALUES
+            packageCostSaturation['saturation coverage'][name] = 0.95
+            packageCostSaturation['baseline coverage'][name] = 0.
+        return packageCostSaturation
 
+    def getIYCFtargetPop(self, packageModalities, targetPops, PWages):
+        newTargetPops = {}
+        for name, package in packageModalities.items():
+            newTargetPops[name] = {}
+            for pop, mode in package:
+                if pop not in newTargetPops[name]:
+                    newTargetPops[name][pop] = {}
+                newTargetPops[name][pop][mode] = targetPops[mode][pop]
+        # convert 'pregnant women' to its age bands
+        newTargetPops = self.createAgeBands(newTargetPops, packageModalities.keys(), PWages, 'Pregnant women')
+        return newTargetPops
+
+    def createAgeBands(self, dictToUpdate, keyList, listOfAges, pop):
+        for key in keyList:  # could be intervention, ages
+            subDict = dictToUpdate[key].pop(pop, None)
+            newAgeGroups = {age:subDict for age in listOfAges if subDict is not None}
+            dictToUpdate[key].update(newAgeGroups)
+        return dictToUpdate
