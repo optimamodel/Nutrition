@@ -653,14 +653,13 @@ class WRA(Population):
 
     def _makePopSizes(self):
         WRApop = self.project.ageDistributions
-        self.popSizes = {age:pop for age, pop in zip(self.project.WRAages, WRApop)}
+        self.popSizes = {age:pop for age, pop in WRApop.iteritems()}
 
     def _makeBoxes(self):
-        for idx in range(len(self.popSizes)):
-            ageName = self.project.PWages[idx]
-            popSize = self.popSizes[idx]
-            self.boxes[ageName] = {}
-            for anaemiaCat in self.anaemiaList:
-                thisPop = popSize * self.anaemiaDist[anaemiaCat][ageName]
-                self.boxes[ageName][anaemiaCat] = Box(thisPop)
-
+        for age in self.project.WRAages:
+            popSize = self.popSizes[age]
+            boxes = {}
+            for anaemiaCat in self.anaemicList:
+                thisPop = popSize * self.anaemiaDist[anaemiaCat][age]
+                boxes[anaemiaCat] = Box(thisPop)
+            self.ageGroups.append(AgeGroup(age, popSize, boxes))
