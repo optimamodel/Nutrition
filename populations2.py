@@ -43,20 +43,14 @@ class Population(object):
         self.ORcondition = project.ORcondition
         self.boxes = {}
 
-    def _getPopulation(self, ages, riskLists):
-        from itertools import product
-        allCombinations = product(*[ages, riskLists])
-        populationSize = sum([self.boxes[age][cat] for age, cat in allCombinations])
-        return populationSize
-
     def getDistribution(self, risk):
         return self.project.riskDistributions[risk]
 
-    def solveQuadratic(self, oddsRatio, fracA, fracB):
+    def _solveQuadratic(self, oddsRatio, fracA, fracB):
         # solves quadratic to calculate probabilities where e.g.:
         # fracA is fraction covered by intervention
         # fracB is fraction of pop. in a particular risk status
-        from numpy import sqrt, roots
+        from numpy import sqrt
         eps = 1.e-5
         a = (1. - fracA) * (1. - oddsRatio)
         b = (oddsRatio - 1) * fracB - oddsRatio * fracA - (1. - fracA)
@@ -77,16 +71,17 @@ class Children(Population):
         super(Children, self).__init__(name, project)
         self.ageSpans = [1., 5., 6., 12., 36.]
         self.ageGroups = []
+        self.probRiskAtBirth = {}
         self._makePopSizes()
         self._makeBoxes()
         self._setChildrenReferenceMortality()
         self._updateMortalityRates()
+        self._setProbConditionalStunting()
         self._setProbConditionalCoverage()
         self._setProbWastedIfCovered()
         self._setProbStuntedAtBirth()
         self._setProbWastedAtBirth()
         self._setProbConditionalDiarrhoea()
-
 
     def _makePopSizes(self):
         # for children less than 1 year, annual live births
@@ -242,6 +237,13 @@ class Children(Population):
         firstComp = self.ageGroups[0]
         return self._getPopulation([firstComp], risks) / firstComp.populationSize
 
+    def getFracStuntedGivenAge(self, age):
+        ageMap = {'<1 month': 0, '1-5 months': 1, '6-11 months': 2, '12-23 months': 3, '24-59 months': 4}
+        indx = ageMap[age]
+        risks = self._replaceRiskList(0, self.stuntedList)
+        thisAge = self.ageGroups[indx]
+        return self._getPopulation([thisAge], risks) / thisAge.populationSize
+
     def getTotalWasted(self):
         risks = self._replaceRiskList(1, self.wastedList)
         return self._getPopulation(self.ageGroups, risks)
@@ -261,26 +263,46 @@ class Children(Population):
         alteredList[index] = newList
         return alteredList
 
+    def _setProbConditionalStunting(self):
+        """Calculate the probability of stunting given previous stunting between age groups"""
+        self.probConditionalStunting = {}
+        self.probConditionalStunting['stunted'] = {}
+        self.probConditionalStunting['not stunted'] = {}
+        for indx in range(1, len(self.ageGroups)):
+            ageGroup = self.ageGroups[indx]
+            thisAge = ageGroup.name
+            prevAgeGroup = self.ageGroups[indx-1]
+            prevAge = prevAgeGroup.name
+            OR = self.project.ORcondition['Stunting progression'][thisAge]
+            fracStuntedThisAge = self.getFracStuntedGivenAge(thisAge)
+            fracStuntedPrev = self.getFracStuntedGivenAge(prevAge)
+            pn, pc = self._solveQuadratic(OR, fracStuntedPrev, fracStuntedThisAge)
+            self.probConditionalStunting['stunted'][thisAge] = pc
+            self.probConditionalStunting['not stunted'][thisAge] = pn
+
     def _setProbConditionalCoverage(self):
         """Set the conditional probabilities of a risk factor (except wasting) given program coverage.
         Note that this value is dependent upon the baseline coverage of the program"""
         risks = [risk for i, risk in enumerate(self.risks) if i !=1 ] # remove wasting
-        conditionalProb = {}
         for risk in risks:
             cats = self.project.riskCategories[risk]# TODO: Could use a better data construction back in the Population class
             middle = len(cats) / 2
             relevantCats = cats[middle:] # assumes list is symmetric
             dist = self.project.riskDistributions[risk]
-            conditionalProb[risk] = {}
             for ageGroup in self.ageGroups:
                 age = ageGroup.name
                 ageGroup.probConditionalCoverage[risk] = {}
                 for program in self.project.programList:
                     ageGroup.probConditionalCoverage[risk][program] = {}
-                    OR = self.project.ORstuntingProgram[program][age]
                     fracCovered = self.baselineCov[program]
                     fracImpacted = sum(dist[cat][age] for cat in relevantCats)
-                    pn, pc = self.solveQuadratic(OR, fracCovered, fracImpacted)
+                    if self.project.RRprograms[risk].get(program) is not None:
+                        RR = self.project.RRprograms[risk][program][age]
+                        pn = fracImpacted/(RR*fracCovered + (1.-fracCovered))
+                        pc = RR * pn
+                    else: # OR
+                        OR = self.project.ORprograms[risk][program][age]
+                        pn, pc = self._solveQuadratic(OR, fracCovered, fracImpacted)
                     ageGroup.probConditionalCoverage[risk][program]['covered'] = pc
                     ageGroup.probConditionalCoverage[risk][program]['not covered'] = pn
 
@@ -294,7 +316,7 @@ class Children(Population):
                     OR = self.project.ORwastingProgram[wastingCat][program][age]
                     fracCovered = self.baselineCov[program]
                     fracThisCatAge =  self.wastingDist[wastingCat][age]
-                    pn, pc = self.solveQuadratic(OR, fracCovered, fracThisCatAge)
+                    pn, pc = self._solveQuadratic(OR, fracCovered, fracThisCatAge)
                     conditionalProb[wastingCat][program] = {}
                     conditionalProb[wastingCat][program]['covered'] = pc
                     conditionalProb[wastingCat][program]['not covered'] = pn
@@ -308,27 +330,27 @@ class Children(Population):
             middle = len(cats)/2
             relelvantCats = cats[middle:]
             dist = self.project.riskDistributions[risk]
-            Z0 = self.getZa(incidence)
+            Z0 = self._getZa(incidence)
             Zt = Z0  # true for initialisation
-            beta = self.getFracDiarrhea(Z0, Zt)
+            beta = self._getFracDiarrhea(Z0, Zt)
             if risk == 'anaemia': # anaemia only cause by severe diarrhea
                 Zt = [Zt[age] * self.project.demographics['fraction severe diarrhoea'] for age in self.childAges]
-            AO = self.getAverageOR(Zt, risk)
+            AO = self._getAverageOR(Zt, risk)
             for ageGroup in self.ageGroups:
                 ageGroup.probConditionalDiarrhoea[risk] = {}
                 age = ageGroup.name
                 fracDiarrhoea = sum([beta[age][bfCat] * self.bfDist[bfCat][age] for bfCat in self.bfList])
                 fracImpactedThisAge = sum(dist[cat][age] for cat in relelvantCats)
-                pn, pc = self.solveQuadratic(AO[age], fracDiarrhoea, fracImpactedThisAge)
+                pn, pc = self._solveQuadratic(AO[age], fracDiarrhoea, fracImpactedThisAge)
                 ageGroup.probConditionalDiarrhoea[risk]['diarrhoea'] = pc
                 ageGroup.probConditionalDiarrhoea[risk]['no diarrhoea'] = pn
 
     def _setProbStuntedAtBirth(self):
         """Sets the probabilty of stunting conditional on birth outcome"""
         #from numpy import roots
-        coeffs = self.getBirthStuntingQuarticCoefficients()
+        coeffs = self._getBirthStuntingQuarticCoefficients()
         #p0 = roots(coeffs) # TODO: the same solution can be found with in-built solver, but need to look into all the checks from manual function
-        p0 = self.getBaselineProbabilityViaQuartic(coeffs)
+        p0 = self._getBaselineProbabilityViaQuartic(coeffs)
         probStuntedAtBirth = {}
         probStuntedAtBirth['Term AGA'] = p0
         for BO in ["Pre-term SGA","Pre-term AGA","Term SGA"]:
@@ -337,13 +359,13 @@ class Children(Population):
             pi = probStuntedAtBirth[BO]
             if(pi<0. or pi>1.):
                 raise ValueError("probability of stunting at birth, at outcome %s, is out of range (%f)"%(BO, pi))
-            # TODO: assign this to ageGroup.
+        self.probRiskAtBirth['Stunting'] = probStuntedAtBirth
 
     def _setProbWastedAtBirth(self):
         probWastedAtBirth = {}
         for wastingCat in self.wastedList:
-            coEffs = self.getBirthWastingQuarticCoefficients(wastingCat)
-            p0 = self.getBaselineProbabilityViaQuartic(coEffs)
+            coEffs = self._getBirthWastingQuarticCoefficients(wastingCat)
+            p0 = self._getBaselineProbabilityViaQuartic(coEffs)
             probWastedAtBirth[wastingCat] = {}
             probWastedAtBirth[wastingCat]['Term AGA'] = p0
             for birthOutcome in ["Pre-term SGA","Pre-term AGA","Term SGA"]:
@@ -353,9 +375,9 @@ class Children(Population):
                 pi = p0*OR / (1.-p0+OR*p0)
                 if(pi<0. or pi>1.):
                     raise ValueError("probability of wasting at birth, at outcome %s, is out of range (%f)"%(birthOutcome, pi))
-        # TODO: assign to this ageGroup
+        self.probRiskAtBirth['Wasting'] = probWastedAtBirth
 
-    def getBirthStuntingQuarticCoefficients(self):
+    def _getBirthStuntingQuarticCoefficients(self):
         OR = [1.]*4
         OR[0] = 1.
         OR[1] = self.ORstuntingBO["Term SGA"]
@@ -366,7 +388,7 @@ class Children(Population):
         FracBO[2] = self.project.birthDist["Pre-term AGA"]
         FracBO[3] = self.project.birthDist["Pre-term SGA"]
         FracBO[0] = 1. - sum(FracBO[1:3])
-        fracStunted = self.getFracStuntedFirstCompartment()
+        fracStunted = self.getFracStuntedGivenAge('<1 month')
         # [i] will refer to the three non-baseline birth outcomes
         A = FracBO[0]*(OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.)
         B = (OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.) * ( \
@@ -382,7 +404,7 @@ class Children(Population):
         E = -fracStunted
         return [A,B,C,D,E]
 
-    def getBirthWastingQuarticCoefficients(self, wastingCat):
+    def _getBirthWastingQuarticCoefficients(self, wastingCat):
         FracBO = [0.]*4
         FracBO[1] = self.project.birthDist["Term SGA"]
         FracBO[2] = self.project.birthDist["Pre-term AGA"]
@@ -393,7 +415,7 @@ class Children(Population):
         OR[1] = self.project.ORconditionBirth[wastingCat]["Term SGA"]
         OR[2] = self.project.ORconditionBirth[wastingCat]["Pre-term AGA"]
         OR[3] = self.project.ORconditionBirth[wastingCat]["Pre-term SGA"]
-        fracWasted = self.getFracWastedFirstCompartment()
+        fracWasted = self.getFracStuntedGivenAge('<1 month')
         # [i] will refer to the three non-baseline birth outcomes
         A = FracBO[0]*(OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.)
         B = (OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.) * ( \
@@ -409,7 +431,7 @@ class Children(Population):
         E = -fracWasted
         return [A,B,C,D,E]
 
-    def getBaselineProbabilityViaQuartic(self, coEffs):
+    def _getBaselineProbabilityViaQuartic(self, coEffs):
         from numpy import sqrt, isnan
         baselineProbability = 0
         # if any CoEffs are nan then baseline prob is -E (initial % stunted)
@@ -420,25 +442,25 @@ class Children(Population):
         p0min = 0.
         p0max = 1.
         interval = p0max - p0min
-        if self.evalQuartic(p0min, coEffs)==0:
+        if self._evalQuartic(p0min, coEffs)==0:
             baselineProbability = p0min
             return baselineProbability
-        if self.evalQuartic(p0max, coEffs)==0:
+        if self._evalQuartic(p0max, coEffs)==0:
             baselineProbability = p0max
             return baselineProbability
-        PositiveAtMin = self.evalQuartic(p0min, coEffs)>0
-        PositiveAtMax = self.evalQuartic(p0max, coEffs)>0
+        PositiveAtMin = self._evalQuartic(p0min, coEffs)>0
+        PositiveAtMax = self._evalQuartic(p0max, coEffs)>0
         if(PositiveAtMin == PositiveAtMax):
             raise ValueError("ERROR: Quartic function evaluated at 0 & 1 both on the same side")
         while interval > tolerance:
             p0x = (p0max+p0min)/2.
-            PositiveAtP0 = self.evalQuartic(p0x, coEffs)>0
+            PositiveAtP0 = self._evalQuartic(p0x, coEffs)>0
             if(PositiveAtP0 == PositiveAtMin):
                 p0min = p0x
-                PositiveAtMin = self.evalQuartic(p0min, coEffs)>0
+                PositiveAtMin = self._evalQuartic(p0min, coEffs)>0
             else:
                 p0max = p0x
-                PositiveAtMax = self.evalQuartic(p0max, coEffs)>0
+                PositiveAtMax = self._evalQuartic(p0max, coEffs)>0
             interval = p0max - p0min
         baselineProbability = p0x
         # Check 2nd deriv has no solutions between 0 and 1
@@ -455,12 +477,12 @@ class Children(Population):
             print "Warning problem with solving Quartic, see soln2"
         return baselineProbability
 
-    def evalQuartic(self, p0, coEffs):
+    def _evalQuartic(self, p0, coEffs):
         from math import pow
         A,B,C,D,E = coEffs
         return A*pow(p0,4) + B*pow(p0,3) + C*pow(p0,2) + D*p0 + E
 
-    def getDiarrheaRiskSum(self, age):
+    def _getDiarrheaRiskSum(self, age):
         riskSum = 0.
         for bfCat in self.bfList:
             RDa = self.RRdiarrhoea[bfCat][age]
@@ -468,14 +490,14 @@ class Children(Population):
             riskSum += RDa * pab
         return riskSum
 
-    def getZa(self, incidence):
+    def _getZa(self, incidence):
         Za = {}
         for age in self.childAges:
-            riskSum = self.getDiarrheaRiskSum(age)
+            riskSum = self._getDiarrheaRiskSum(age)
             Za[age] = incidence[age] / riskSum
         return Za
 
-    def getAverageOR(self, Za, risk):
+    def _getAverageOR(self, Za, risk):
         from math import pow
         AO = {}
         for idx in range(len(self.childAges)):
@@ -492,7 +514,7 @@ class Children(Population):
             AO[age] = pow(OR, RRnot * Za[age] * self.ageSpans[idx])
         return AO
 
-    def getFracDiarrhea(self, Z0, Zt):
+    def _getFracDiarrhea(self, Z0, Zt):
         beta = {}
         for age in self.childAges:
             beta[age] = {}
@@ -504,7 +526,7 @@ class Children(Population):
                 # RDa * Zt[age] / (RRnot * Z0[age])
         return beta
 
-    def getFracDiarrheaFixedZ(self):
+    def _getFracDiarrheaFixedZ(self):
         beta = {}
         for age in self.childAges:
             beta[age] = {}
@@ -541,6 +563,7 @@ class PW(Population):
         self._makeBoxes()
         self._setPWReferenceMortality()
         self._updateMortalityRates()
+        self._setProbAnaemicIfCovered()
 
     def _makePopSizes(self):
         PWpop = self.project.ageDistributions
@@ -601,6 +624,24 @@ class PW(Population):
                     t2 = self.project.RRdeath['Anaemia'][cause][anaemiaCat][age]
                     count += t1 * t2
                 ageGroup.boxes[anaemiaCat].mortalityRate = count
+
+    def _setProbAnaemicIfCovered(self):
+        risk = 'Anaemia'
+        for ageGroup in self.ageGroups:
+            age = ageGroup.name
+            for program in self.project.programList:
+                ageGroup.probConditionalCoverage[program] = {}
+                fracCovered = self.baselineCov[program]
+                fracImpacted = sum(self.anaemiaDist[cat][age] for cat in self.anaemicList)
+                if self.project.ORprograms[risk].get(program) is None:
+                    RR = self.project.RRprograms[risk][program][age]
+                    pn = fracImpacted / (RR * fracCovered + (1. - fracCovered))
+                    pc = RR * pn
+                else:
+                    OR = self.project.ORprograms[risk][program][age]
+                    pn, pc = self._solveQuadratic(OR, fracCovered, fracImpacted)
+                ageGroup.probConditionalCoverage[program]['covered'] = pc
+                ageGroup.probConditionalCoverage[program]['not covered'] = pn
 
 
 class WRA(Population):
