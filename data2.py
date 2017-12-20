@@ -20,12 +20,13 @@ class Project:
         self.readMortalityData()
         self.getAllIYCFpackages()
         self.padRequiredFields()
+        self.combineRelatedData()
 
     def readProgramData(self):
         self.getStuntingProgram()
         self.getBirthOutcomes()
         self.getAnaemiaProgram()
-        self.getwastingProgram()
+        self.getWastingProgram()
         self.getChildProgram()
         self.getFamilyPrograms()
         self.getCostCoverageInfo()
@@ -50,6 +51,11 @@ class Project:
         self.padRelativeRisks()
         self.padStuntingORprograms()
         self.padWastingORprograms()
+        self.padBForPrograms()
+        self.padAnaemiaORprograms()
+
+    def combineRelatedData(self):
+        self.combineORprogram()
 
 
     #####--- WORKER METHODS ---######
@@ -61,7 +67,6 @@ class Project:
         for field in ['Current year', 'Food']:
             demographics.update(baseline.loc[field].to_dict('index'))
         self.demographics = {key: item['Values'] for key, item in demographics.iteritems()}
-        print self.demographics
 
     def getAgeDist(self):
         baseline = self.readSheet('Baseline year demographics', [0,1])
@@ -174,14 +179,26 @@ class Project:
 
     def getAnaemiaProgram(self):
         anaemiaSheet = self.readSheet('Interventions anemia', [0,1])
-        self.RRanaemia = anaemiaSheet.loc['Relative risks'].to_dict(orient='index')
-        self.ORanaemia = anaemiaSheet.loc['Odds ratios'].to_dict(orient='index')
+        self.RRanaemiaProgram = anaemiaSheet.loc['Relative risks'].to_dict(orient='index')
+        self.ORanaemiaProgram = anaemiaSheet.loc['Odds ratios'].to_dict(orient='index')
 
-    def getwastingProgram(self):
+    def getWastingProgram(self):
         self.ORwastingProgram = {}
         wastingSheet = self.readSheet('Interventions wasting', [0,1])
         self.ORwastingProgram['SAM'] = wastingSheet.loc['OR SAM by intervention'].to_dict(orient='index')
         self.ORwastingProgram['MAM'] = wastingSheet.loc['OR MAM by intervention'].to_dict(orient='index')
+
+    def combineORprogram(self):
+        self.ORprograms = {}
+        self.RRprograms = {} # to accommodate anaemia data
+        self.ORprograms['Stunting'] = self.ORstuntingProgram
+        self.ORprograms['Wasting'] = self.ORwastingProgram
+        self.ORprograms['Anaemia'] = self.ORanaemiaProgram
+        self.ORprograms['Breastfeeding'] = self.ORappropriateBFprogram
+        self.RRprograms['Anaemia'] = self.RRanaemiaProgram
+        self.RRprograms['Stunting'] = {}
+        self.RRprograms['Wasting'] = {}
+        self.RRprograms['Breastfeeding'] = {}
 
     def getBirthOutcomes(self):
         BOprograms = self.readSheet('Interventions birth outcomes', [0,1], 'index')
@@ -240,6 +257,22 @@ class Project:
                     for age in self.childAges:
                         ORs[wastingCat][program][age] = 1.
         self.ORwastingProgram = ORs
+
+    def padBForPrograms(self):
+        from copy import deepcopy as dcp
+        ORs = dcp(self.ORappropriateBFprogram)
+        missingProgs = set(self.programList) - set(ORs.keys())
+        padded = {program:{age:1. for age in self.childAges} for program in missingProgs}
+        ORs.update(padded)
+        self.ORappropriateBFprogram = ORs
+
+    def padAnaemiaORprograms(self):
+        from copy import deepcopy as dcp
+        ORs = dcp(self.ORanaemiaProgram)
+        missingProgs = set(self.programList) - set(ORs.keys()) - set(self.RRanaemiaProgram.keys())
+        padded = {program:{age:1. for age in self.childAges + self.PWages} for program in missingProgs}
+        ORs.update(padded)
+        self.ORanaemiaProgram = ORs
 
 
     ### IYCF ###
