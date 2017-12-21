@@ -174,10 +174,11 @@ class Project:
         booleanFrame = areas.isnull()
         self.programAreas = {}
         for program, areas in booleanFrame.iterrows():
-            self.programAreas[program] = []
             for risk, value in areas.iteritems():
+                if self.programAreas.get(risk) is None:
+                    self.programAreas[risk] = []
                 if not value:
-                    self.programAreas[program].append(risk)
+                    self.programAreas[risk].append(program)
 
     def getCostCoverageInfo(self):
         self.costCurveInfo = self.readSheet('Interventions cost and coverage', [0], 'dict')
