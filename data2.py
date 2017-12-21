@@ -1,4 +1,5 @@
 import pandas as pd
+from copy import deepcopy as dcp
 
 class Project:
     def __init__(self, filepath, programsToKeep=None):
@@ -31,6 +32,7 @@ class Project:
         self.getFamilyPrograms()
         self.getCostCoverageInfo()
         self.getProgramTargetPop()
+        self.getMorbidityAreas()
 
     def readDemographicsData(self):
         self.getDemographics()
@@ -38,6 +40,7 @@ class Project:
         self.getRiskDist()
         self.getAnaemiaDist()
         self.getProjections()
+        self.getAppropriateBF()
 
     def readMortalityData(self):
         self.getDeathDist()
@@ -53,6 +56,7 @@ class Project:
         self.padWastingORprograms()
         self.padBForPrograms()
         self.padAnaemiaORprograms()
+        self.padChildPrograms()
 
     def combineRelatedData(self):
         self.combineORprogram()
@@ -80,7 +84,7 @@ class Project:
         riskDist = {}
         self.riskCategories = {}
         for field in ['Stunting', 'Wasting', 'Breastfeeding']:
-            riskDist[field] = dist.loc[field].to_dict('index')
+            riskDist[field] = dist.loc[field].to_dict('dict')
             self.riskCategories[field] = list(dist.loc[field].index)
         self.riskCategories['Birth outcomes'] = self.BO
         self.riskDistributions = riskDist
@@ -88,7 +92,7 @@ class Project:
     def getAnaemiaDist(self):
         field = 'Anaemia'
         dist = self.readSheet('Prevalence of anaemia', [0,1])
-        anaemiaDist = dist.loc[field].to_dict('index')
+        anaemiaDist = dist.loc[field].to_dict('dict')
         self.riskCategories[field] = list(dist.loc[field].index)
         self.riskDistributions[field] = anaemiaDist
 
@@ -165,6 +169,16 @@ class Project:
             targetPop.update(targetPopSheet.loc[pop].to_dict(orient='index'))
         self.programTargetPop = targetPop
 
+    def getMorbidityAreas(self):
+        areas = self.readSheet('Program areas', [0])
+        booleanFrame = areas.isnull()
+        self.programAreas = {}
+        for program, areas in booleanFrame.iterrows():
+            self.programAreas[program] = []
+            for risk, value in areas.iteritems():
+                if not value:
+                    self.programAreas[program].append(risk)
+
     def getCostCoverageInfo(self):
         self.costCurveInfo = self.readSheet('Interventions cost and coverage', [0], 'dict')
         #self.baselineCov = {program: info['Baseline coverage'] for program, info in self.costCurveInfo.iteritems()}
@@ -237,7 +251,6 @@ class Project:
 
     def padStuntingORprograms(self):
         '''Pads missing values with 1s'''
-        from copy import deepcopy as dcp
         ORs = dcp(self.ORstuntingProgram)
         for program in self.programList:
             if program not in ORs:
@@ -248,7 +261,6 @@ class Project:
 
     def padWastingORprograms(self):
         '''Pads missing values with 1s'''
-        from copy import deepcopy as dcp
         ORs = dcp(self.ORwastingProgram)
         for wastingCat in ['SAM', 'MAM']:
             for program in self.programList:
@@ -259,7 +271,6 @@ class Project:
         self.ORwastingProgram = ORs
 
     def padBForPrograms(self):
-        from copy import deepcopy as dcp
         ORs = dcp(self.ORappropriateBFprogram)
         missingProgs = set(self.programList) - set(ORs.keys())
         padded = {program:{age:1. for age in self.childAges} for program in missingProgs}
@@ -267,12 +278,36 @@ class Project:
         self.ORappropriateBFprogram = ORs
 
     def padAnaemiaORprograms(self):
-        from copy import deepcopy as dcp
         ORs = dcp(self.ORanaemiaProgram)
         missingProgs = set(self.programList) - set(ORs.keys()) - set(self.RRanaemiaProgram.keys())
         padded = {program:{age:1. for age in self.childAges + self.PWages} for program in missingProgs}
         ORs.update(padded)
         self.ORanaemiaProgram = ORs
+
+    def padChildPrograms(self):
+        '''Need all causes to have a value for the present programs'''
+        fields = ['Affected fraction', 'Effectiveness mortality', 'Effectiveness incidence']
+        programsPresent = self.childPrograms.keys()
+        effectiveness = {}
+        for age in self.childAges:
+            effectiveness[age] = {}
+            for program in programsPresent:
+                effectiveness[age][program] = {}
+                for cause in self.causesOfDeath:
+                    effectiveness[age][program][cause] = {}
+                    for field in fields:
+                            try:
+                                effectiveness[age][program][cause][field] = self.childPrograms[program][cause][field][age]
+                            except KeyError:
+                                effectiveness[age][program][cause][field] = 0
+        self.childPrograms = effectiveness
+
+
+    def _getMissingElements(self, listA, listB):
+        missingElements = set(listA) - set(listB)
+        return missingElements
+
+
 
 
     ### IYCF ###
