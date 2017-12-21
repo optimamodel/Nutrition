@@ -118,3 +118,10 @@ class Program(object):
     #         fromMAMtoSAMupdate[ageName]['SAM'] = (1. - (1.-wastingUpdate[ageName]['MAM']) * self.fracMAMtoSAM)
     #     return wastingUpdate, fromSAMtoMAMupdate, fromMAMtoSAMupdate
 
+def setUpPrograms(project):
+    programAreas = {}
+    for risk, programList in project.programAreas.iteritems():
+        programAreas[risk] = []
+        for program in programList:
+            programAreas[risk].append(Program(program, project))
+    return programAreas

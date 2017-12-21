@@ -586,9 +586,9 @@ class Children(Population):
 
 
 
-class PW(Population):
+class PregnantWomen(Population):
     def __init__(self, name, project):
-        super(PW, self).__init__(name, project)
+        super(PregnantWomen, self).__init__(name, project)
         self.ageGroups = []
         self._makePopSizes()
         self._makeBoxes()
@@ -675,9 +675,9 @@ class PW(Population):
                 ageGroup.probConditionalCoverage[program]['covered'] = pc
                 ageGroup.probConditionalCoverage[program]['not covered'] = pn
 
-class WRA(Population):
+class NonPregnantWomen(Population):
     def __init__(self, name, project):
-        super(WRA, self).__init__(name, project)
+        super(NonPregnantWomen, self).__init__(name, project)
         self.ageGroups = []
         self._makePopSizes()
         self._makeBoxes()
@@ -695,3 +695,11 @@ class WRA(Population):
                 thisPop = popSize * anaemiaDist[anaemiaCat]
                 boxes[anaemiaCat] = Box(thisPop)
             self.ageGroups.append(AgeGroup(age, popSize, boxes, anaemiaDist))
+
+
+
+def setUpPopulations(project):
+    children = Children('Children', project)
+    pregnantWomen = PregnantWomen('Pregnant women', project)
+    nonPregnantWomen = NonPregnantWomen('Non-pregnant women', project)
+    return [children, pregnantWomen, nonPregnantWomen]

@@ -394,3 +394,7 @@ class Project:
             newAgeGroups = {age:subDict for age in listOfAges if subDict is not None}
             dictToUpdate[key].update(newAgeGroups)
         return dictToUpdate
+
+def setUpProject(filePath):
+    project = Project(filePath)
+    return project

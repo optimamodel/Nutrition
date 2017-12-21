@@ -2,27 +2,21 @@ import data2 as data
 import populations2 as pops
 import programs as progs
 
-def setUpPopulations(project):
-    children = pops.Children('children', project)
-    PW = pops.PW('PW', project)
-    WRA = pops.WRA('WRA', project)
-    return [children, PW, WRA]
 
-def setUpProject(filePath):
-    project = data.Project(filePath)
-    return project
+def setUpModel(filePath):
+    project = data.setUpProject(filePath)
+    populations = pops.setUpPopulations(project)
+    programs = progs.setUpPrograms(project)
+    # TODO: setup model function here
+    return populations, programs
 
-def setUpPrograms(project):
-    programAreas = {}
-    for risk, programList in project.programAreas.iteritems():
-        programAreas[risk] = []
-        for program in programList:
-            programAreas[risk].append(progs.Program(program, project))
-    return programAreas
-
+def getFilePath(root, bookDate, country):
+    import os, sys
+    moduleDir = os.path.join(os.path.dirname(__file__), root)
+    sys.path.append(moduleDir)
+    filePath = root + 'input_spreadsheets/' + country + '/' + bookDate + '/InputForCode_' + country + '.xlsx'
+    return filePath
 
 if __name__ == '__main__':
-    filePath = '/Users/samhainsworth/Desktop/Github Projects/Nutrition/input_spreadsheets/Bangladesh/2017Nov/InputForCode_Bangladesh.xlsx'
-    project = setUpProject(filePath)
-    populations = setUpPopulations(project)
-    programs = setUpPrograms(project)
+    filePath = getFilePath('', '2017Nov',  'Bangladesh')
+    populations, programs = setUpModel(filePath)
