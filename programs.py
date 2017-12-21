@@ -1,4 +1,3 @@
-from copy import deepcopy as dcp
 
 class Program(object):
     '''Each instance of this class is an intervention,
@@ -90,6 +89,7 @@ class Program(object):
             fracChange = probNew - correctFracOld
             correctFracBF[age] = correctFracOld + fracChange
         return correctFracBF
+
 
 
 # TODO: don't forget the MAM to SAM updates & the wasting incidence.
