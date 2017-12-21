@@ -7,14 +7,14 @@ class Box:
         self.cumulativeDeaths = 0
 
 class AgeGroup:
-    def __init__(self, age, populationSize, boxes, stuntingDist, anaemiaDist, wastingDist, BFdist):
+    def __init__(self, age, populationSize, boxes, anaemiaDist, stuntingDist=None, wastingDist=None, BFdist=None):
         self.name = age
         self.populationSize = populationSize
         self.boxes = boxes
         self.stuntingDist = stuntingDist
         self.anaemiaDist = anaemiaDist
         self.wastingDist = wastingDist
-        self.BFdist = BFdist
+        self.bfDist = BFdist
         self.probConditionalCoverage = {}
         self.probConditionalDiarrhoea = {}
         self.probConditionalStunting = {}
@@ -127,7 +127,7 @@ class Children(Population):
                                       wastingDist[wastingCat] * bfDist[bfCat]
                             boxes[stuntingCat][wastingCat][bfCat][anaemiaCat] = Box(thisPop)
             self.ageGroups.append(AgeGroup(age, popSize, boxes,
-                                           stuntingDist, anaemiaDist, wastingDist, bfDist))
+                                           anaemiaDist, stuntingDist, wastingDist, bfDist))
 
     def _setChildrenReferenceMortality(self):
         # Equation is:  LHS = RHS * X
@@ -604,10 +604,11 @@ class PW(Population):
         for age in self.project.PWages:
             popSize = self.popSizes[age]
             boxes = {}
+            anaemiaDist = self.anaemiaDist[age]
             for anaemiaCat in self.anaemiaList:
-                thisPop = popSize * self.anaemiaDist[anaemiaCat][age]
+                thisPop = popSize * anaemiaDist[anaemiaCat]
                 boxes[anaemiaCat] = Box(thisPop)
-            self.ageGroups.append(AgeGroup(age, popSize, boxes))
+            self.ageGroups.append(AgeGroup(age, popSize, boxes, anaemiaDist))
 
     def _setPWReferenceMortality(self):
         #Equation is:  LHS = RHS * X
@@ -619,7 +620,7 @@ class PW(Population):
             for cause in self.project.causesOfDeath:
                 RHS[age][cause] = 0.
                 for anaemiaCat in self.anaemiaList:
-                    t1 = self.anaemiaDist[anaemiaCat][age]
+                    t1 = self.anaemiaDist[age][anaemiaCat]
                     t2 = self.project.RRdeath['Anaemia'][cause][anaemiaCat][age]
                     RHS[age][cause] += t1 * t2
         # get age populations
@@ -663,7 +664,7 @@ class PW(Population):
             for program in self.project.programList:
                 ageGroup.probConditionalCoverage[program] = {}
                 fracCovered = self.baselineCov[program]
-                fracImpacted = sum(self.anaemiaDist[cat][age] for cat in self.anaemicList)
+                fracImpacted = sum(self.anaemiaDist[age][cat] for cat in self.anaemicList)
                 if self.project.ORprograms[risk].get(program) is None:
                     RR = self.project.RRprograms[risk][program][age]
                     pn = fracImpacted / (RR * fracCovered + (1. - fracCovered))
@@ -689,7 +690,8 @@ class WRA(Population):
         for age in self.project.WRAages:
             popSize = self.popSizes[age]
             boxes = {}
+            anaemiaDist = self.anaemiaDist[age]
             for anaemiaCat in self.anaemicList:
-                thisPop = popSize * self.anaemiaDist[anaemiaCat][age]
+                thisPop = popSize * anaemiaDist[anaemiaCat]
                 boxes[anaemiaCat] = Box(thisPop)
-            self.ageGroups.append(AgeGroup(age, popSize, boxes))
+            self.ageGroups.append(AgeGroup(age, popSize, boxes, anaemiaDist))
