@@ -589,6 +589,17 @@ def readSpreadsheet(fileName, keyList, interventionsToKeep=None): # TODO: could 
     affectedFraction = readInterventionsByPopulationTabs(interventionsForChildren, 'Affected fraction', interventionCompleteList, allPops, causesOfDeathList + ['Severe diarrhea', 'SAM', 'MAM']) # TODO: warning: severe diarrhea is not listed in 'causes of death' and so causes issues
     effectivenessMortality = readInterventionsByPopulationTabs(interventionsForChildren, 'Effectiveness mortality', interventionCompleteList, allPops, causesOfDeathList)
     effectivenessIncidence = readInterventionsByPopulationTabs(interventionsForChildren, 'Effectiveness incidence', interventionCompleteList, ages, conditionsList) # children only
+    # pregnant women
+    interventionsForPW = pd.read_excel(location, sheetname='Interventions for PW', index_col=[0, 1, 2])
+    interventionsHere = list(interventionsForPW.index.levels[0])
+    causesHere = list(interventionsForPW.index.levels[1])
+    # update effectivenessMortality and affectedFraction
+    for intervention in interventionsHere:
+        for cause in causesHere:
+            for pop in PWages:           
+                affectedFraction[intervention][pop][cause] = interventionsForPW['Pregnant women'][intervention][cause]['Affected fraction']
+                effectivenessMortality[intervention][pop][cause] = interventionsForPW['Pregnant women'][intervention][cause]['Effectiveness mortality']
+
 
     # TODO: not currently available in spreadsheet. Need to decide on location
     ORanemiaCondition = {age:{condition:1. for condition in conditionsList} for age in ages}
