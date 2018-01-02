@@ -1,4 +1,5 @@
 from itertools import product
+from copy import deepcopy as dcp
 
 class Box:
     def __init__(self, populationSize):
@@ -24,11 +25,11 @@ class AgeGroup:
 class Population(object):
     def __init__(self, name, project):
         self.name = name
-        self.project = project
+        self.project = dcp(project)
         self.childAges = project.childAges
         self.PWages = project.PWages
         self.WRAages = project.WRAages
-        self.risks = ['Stunting', 'Wasting', 'Breastfeeding', 'Anaemia']
+        self.risks = ['Stunting', 'Wasting', 'Breastfeeding', 'Anaemia'] # TODO: can read these from the spreadsheet (program areas)
         self.stuntingDist = project.riskDistributions['Stunting']
         self.wastingDist = project.riskDistributions['Wasting']
         self.bfDist = project.riskDistributions['Breastfeeding']
@@ -48,10 +49,16 @@ class Population(object):
         self.RRdiarrhoea = project.RRdeath['Child diarrhoea']['Diarrhoea incidence']
         self.ORcondition = project.ORcondition
         self.boxes = {}
-        self.update = {}
-        self.wastingUpdate = {}
-        self.incidenceUpdate = {}
-        self.bfUpdate = {}
+
+        # self.update = {}
+        # self.wastingUpdate = {}
+        # self.incidenceUpdate = {}
+        # self.bfUpdate = {}
+
+    def _getApplicablePrograms(self, risk, programInfo):
+        applicableProgNames = programInfo.programAreas[risk]
+        programs = list(filter(lambda x: x.name in applicableProgNames, programInfo.programs))
+        return programs
 
     # TODO: could put methods here for 'getFrac_' etc.
 
@@ -96,6 +103,27 @@ class Children(Population):
         self._setProbConditionalDiarrhoea()
         self._setProgramEffectiveness()
         self._setCorrectBFpractice()
+
+
+    ##### PROGRAM UPDATES #####
+
+    def _update(self, programInfo): # TODO: may not need this here, but put it in Model
+        """Update all the age group parameters based upon risk area.  """
+        for risk in self.risks:
+            # first get relevant programs, determined by risk area
+            applicableProgs = self._getApplicablePrograms(risk, programInfo)
+            for ageGroup in self.ageGroups:
+                update = 1.
+                # TODO: we need to combine all the program impacts on this risk
+                for program in applicableProgs:
+                    # TODO: could put in check to see if ageGroup is impacted by program or not...
+                    program._updateAgeGroup(ageGroup, risk)
+
+        self._updateMortalityRates()
+    # def _getRelevantAgeGroups(self, risk):
+
+
+    ##### DATA WRANGLING ######
 
     def _makePopSizes(self):
         # for children less than 1 year, annual live births
@@ -564,7 +592,8 @@ class Children(Population):
             ageGroup.correctBFpractice = self.project.appropriateBF[age]
 
     def _getUpdateDueToDiarrhoeaIncidence(self, beta):
-        pass # TODO: this update is not tied to a particular intervention
+        """ This update is not directly program-dependent, which makes it different from the other"""
+
 
 
     # Going from binary stunting/wasting to four fractions
@@ -595,6 +624,21 @@ class PregnantWomen(Population):
         self._setPWReferenceMortality()
         self._updateMortalityRates()
         self._setProbAnaemicIfCovered()
+
+    ##### PROGRAM UPDATES #####
+
+    def _update(self, programInfo):
+        """Update all the age group parameters based upon risk area.  """
+        for risk in self.risks:
+            # first get relevant programs, determined by risk area
+            applicableProgs = self._getApplicablePrograms(risk, programInfo)
+            for ageGroup in self.ageGroups:
+                for program in applicableProgs:
+                    # TODO: could put in check to see if ageGroup is impacted by program or not...
+                    program._updateAgeGroup(ageGroup, risk)
+        self._updateMortalityRates()
+
+    ##### DATA WRANGLING ######
 
     def _makePopSizes(self):
         PWpop = self.project.ageDistributions
@@ -681,6 +725,21 @@ class NonPregnantWomen(Population):
         self.ageGroups = []
         self._makePopSizes()
         self._makeBoxes()
+
+    ##### PROGRAM UPDATES #####
+
+    def _update(self, programInfo):
+        """Update all the age group parameters based upon risk area.  """
+        for risk in self.risks:
+            # first get relevant programs, determined by risk area
+            applicableProgs = self._getApplicablePrograms(risk, programInfo)
+            for ageGroup in self.ageGroups:
+                for program in applicableProgs:
+                    # TODO: could put in check to see if ageGroup is impacted by program or not...
+                    program._updateAgeGroup(ageGroup, risk)
+
+
+    ##### DATA WRANGLING ######
 
     def _makePopSizes(self):
         WRApop = self.project.ageDistributions
