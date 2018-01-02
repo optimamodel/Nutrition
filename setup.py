@@ -1,14 +1,9 @@
-import data2 as data
-import populations2 as pops
-import programs as progs
+import model2
 
 
 def setUpModel(filePath):
-    project = data.setUpProject(filePath)
-    populations = pops.setUpPopulations(project)
-    programs = progs.setUpPrograms(project)
-    # TODO: setup model function here
-    return populations, programs
+    model = model2.Model(filePath)
+    return model
 
 def getFilePath(root, bookDate, country):
     import os, sys
@@ -19,4 +14,5 @@ def getFilePath(root, bookDate, country):
 
 if __name__ == '__main__':
     filePath = getFilePath('', '2017Nov',  'Bangladesh')
-    populations, programs = setUpModel(filePath)
+    model = setUpModel(filePath)
+    #model.applyUpdates({'Zinc supplementation': .5})
