@@ -9,13 +9,10 @@ class Model:
         #self._setIYCFtargetPop(self.populations) # TODO: This is not complete
         self.programInfo = program_info.ProgramInfo(self.project)
 
-        self.year = None # TODO: get this from spreadsheet
+        self.year = int(self.project.year)
         self.newCoverages = self.project.costCurveInfo['baseline coverage']
         # initialise baseline coverages
         self._updateCoverages()
-
-    # Pass in the program info as argument to the update method of populations
-
 
     def _updateCoverages(self):
         for program in self.programInfo.programs:
@@ -69,28 +66,34 @@ class Model:
         for risk in self.programInfo.programAreas.keys():
             # get relevant programs, determined by risk area
             applicableProgs = self._getApplicablePrograms(risk)
-            # TODO: could get applicable ageGroups here from a new sheet which maps pop and risks.
             for ageGroup in population.ageGroups:
                 updates = []
-                for program in applicableProgs: # TODO: could check if worth considering an ageGroup by looking at 'applicableAgeGroups' in program attribute.
-                    print program.name
-                    if risk == 'Stunting':
-                        program._getStuntingUpdate(ageGroup)
-                    elif risk == 'Anaemia':
-                        program._getAnaemiaUpdate(ageGroup)
-                    elif risk == 'Wasting prevention':
-                        program._getWastingUpdateFromWastingIncidence(ageGroup)
-                    elif risk == 'Wasting treatment':
-                        program._getWastingPrevalenceUpdate(ageGroup)
-                    # elif risk == 'Breastfeeding':
-                    # elif risk == 'Diarrhoea':  # TODO: these updates which don't directly impact distributions will have to be treated carefully
-                    # elif risk == 'Mortality':
-                    # elif risk == 'Birth outcomes':
-                    # elif risk == 'Family planning':
-                    # elif risk == 'None':
-                    #     pass
+                for program in applicableProgs:
+                    if ageGroup.name in program.relevantAges:
+                        if risk == 'Stunting':
+                            program._getStuntingUpdate(ageGroup)
+                        elif risk == 'Anaemia':
+                            program._getAnaemiaUpdate(ageGroup)
+                        elif risk == 'Wasting prevention':
+                            program._getWastingUpdateFromWastingIncidence(ageGroup)
+                        elif risk == 'Wasting treatment':
+                            program._getWastingPrevalenceUpdate(ageGroup)
+                        # elif risk == 'Breastfeeding':
+
+
+                        # elif risk == 'Diarrhoea':
+                        elif risk == 'Mortality':
+                            program._getMortalityUpdate(ageGroup)
+                        elif risk == 'Birth outcomes':
+                            program._getBirthOutcomeUpdate(ageGroup)
+                        # elif risk == 'Family planning':
+                        elif risk == 'None':
+                            continue
+                        else:
+                            print ":: Risk _{}_ not found. No update applied ::".format(risk)
+                            continue
                     else:
-                        print "::risk not found for updating::"
+                        continue
 
                 # AT THIS POINT THIS AGE GROUP WILL HAVE THE TOTAL UPDATE FOR A PARTICULAR RISK
                 # TODO: combine the updates above in a Model method which also updates distributions

@@ -131,12 +131,19 @@ class Program(object):
         Programs which directly impact mortality rates
         :return:
         """
+        # TODO: this update must be used to scale the reference mortality
+        update = self._getEffectivenessUpdate(ageGroup, 'Effectiveness mortality')
+        for cause in self.project.causesOfDeath:
+            ageGroup.mortalityUpdate[cause] *= update[cause]
 
-    #def _getBirthOutcomeUpdate(self, ageGroup): # TODO: method with same name below
-        # """
-        # Programs which directly impact birth outcomes
-        # :return:
-        # """
+    def _getBirthOutcomeUpdate(self, ageGroup):
+        """
+        Programs which directly impact birth outcomes
+        :return:
+        """
+        update = self._getBOUpdate()
+        for BO in ageGroup.birthOutcomes:
+            ageGroup.birthUpdate[BO] *= update[BO]
 
     def _getFamilyPlanningUpdate(self, ageGroup):
         """
@@ -159,20 +166,24 @@ class Program(object):
 
     def _getWastingPrevalenceUpdate(self, ageGroup):
         # overall update to prevalence of MAM and SAM
+        update = {}
         for wastingCat in ['SAM', 'MAM']:
             oldProb = ageGroup.getFracWasted(wastingCat)
             probWastedIfCovered = ageGroup.probConditionalCoverage[wastingCat][self.name]['covered']
             probWastedIfNotCovered = ageGroup.probConditionalCoverage[wastingCat][self.name]['not covered']
             newProb = self._getNewProb(self.proposedCoverageFrac, probWastedIfCovered, probWastedIfNotCovered)
             reduction = (oldProb - newProb) / oldProb
-            ageGroup.wastingUpdate[wastingCat] *= 1-reduction
+            update[wastingCat] = 1-reduction
+        return update
 
     def _getWastingUpdateFromWastingIncidence(self, ageGroup):
         incidenceUpdate = self._getWastingIncidenceUpdate(ageGroup)
+        update = {}
         for condition in ['SAM', 'MAM']:
             newIncidence = ageGroup.incidences[condition] * incidenceUpdate[condition]
             reduction = (ageGroup.incidences[condition] - newIncidence)/newIncidence
-            ageGroup.wastingUpdate[condition] *= 1.-reduction
+            update[condition] = 1-reduction
+        return update
 
     def _getWastingIncidenceUpdate(self, ageGroup):
         update = {}
@@ -195,7 +206,7 @@ class Program(object):
             update[cause] *= 1. - reduction
         return update
 
-    def _getBirthOutcomeUpdate(self):
+    def _getBOUpdate(self):
         BOupdate = {BO: 1. for BO in self.project.BO}
         for outcome in self.project.BO:
             affFrac = self.project.BOprograms[self.name]['affected fraction'][outcome]
