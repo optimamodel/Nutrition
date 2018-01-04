@@ -6,61 +6,75 @@ class Program(object):
     def __init__(self, name, project):
         self.name = name
         self.project = dcp(project)
-        self.targetPopSize = None # TODO: read-in from workbook
+        self.ages = self.project.childAges + self.project.PWages + self.project.WRAages
 
-        self.relevantAgeGroups = None # TODO: get this from 'intervention target pop' sheet, where non-zero implies relevance
+        self.baselineCoverage = self.project.costCurveInfo['baseline coverage'][self.name]
+        self.targetPopulations = self.project.programTargetPop[self.name] # frac of each population which is targeted
 
+        self._setRelevantAges()
+        self._setExclusionDependencies()
+        self._setThresholdDependencies()
+        self._setCostCurve()
 
-        # TODO: The following must be set after a proposed coverage (initially baseline)
-        self.numCovered = None
-        self.overallCov = None # coverage amongst entire pop. This will be the main coverage metric used in Model
-        self.targetCov = None # coverage amongst target pop
-        self.newOverallCoverage = None # TODO: this will be updated when new coverage is suggested
-        self.exclusionDepedencies = []
-        self.thresholdDependencies = []
+    def updateCoverage(self, newCoverage, populations):
+        """Update all values pertaining to coverage for a program"""
+        self.proposedCoverageNum = newCoverage
+        self._setUnrestrictedPopSize(populations)
+        self._setRestrictedPopSize(populations)
+        self.proposedCoverageFrac = self.proposedCoverageNum / self.unrestrictedPopSize
 
-        # TODO: can write method to assign a cost-curve function to this class
-
-    def _addExclusionDependency(self, program):
-        '''Adds links to programs that limit the coverage of this program to target pop not already covered'''
-        self.exclusionDepedencies.append(program)
-
-    def _addThresholdDependency(self, program):
-        '''Adds links to programs whose coverage acts as a threshold'''
-        self.thresholdDependencies.append(program)
-
-    def _updateCoverage(self, newCoverage): # TODO: for now, don't need to update the baseline coverages
-        self.newOverallCoverage = newCoverage
-
-    def _updateAgeGroup(self, ageGroup, risk):
+    def _setRelevantAges(self):
         """
-        Each update method accounts for a program's _direct_ impact on each risk area.
-        The relevant risk distribution or incidence will be updated for the given age group
-        :param ageGroup:
-        :param risk:
+        Construct list which contains only those age groups to which this program applies
         :return:
         """
+        self.relevantAges = []
+        for age in self.ages:
+            fracTargeted = self.targetPopulations[age]
+            if fracTargeted > 0.001: # floating point tolerance
+                self.relevantAges.append(age)
 
-        # TODO: may want to create a mapping in order to call relevant update
-        # TODO: these functions will ultimately update the relevant distribution of each age group
-        if risk == 'Stunting':
-            self._getStuntingUpdate(ageGroup)
-        elif risk == 'Anaemia':
-            self._getAnaemiaUpdate(ageGroup)
-        elif risk == 'Wasting':
-            self._getWastingUpdate(ageGroup)
-        elif risk == 'Breastfeeding':
-            self._getBFupdate(ageGroup)
-        elif risk == 'Diarrhoea':
-            self._getDiarrhoeaUpdate(ageGroup)
-        elif risk == 'Mortality':
-            self._getMortalityUpdate(ageGroup)
-        elif risk == 'Birth outcomes':
-            self._getBOupdate(ageGroup)
-        elif risk == 'Family planning':
-            self._getFPupdate(ageGroup)
-        elif risk == 'None':
-            pass
+    def _setUnrestrictedPopSize(self, populations):
+        """
+        sum of the total pop for each targeted age group
+        """
+        self.unrestrictedPopSize = 0.
+        for pop in populations:
+            self.unrestrictedPopSize += sum(age.populationSize for age in pop.ageGroups
+                                           if age.name in self.relevantAges)
+
+    def _setRestrictedPopSize(self, populations):
+        self.restrictedPopSize = 0.
+        for pop in populations:
+            self.restrictedPopSize += sum(age.populationSize * self.targetPopulations[age.name] for age in pop.ageGroups
+                                         if age.name in self.relevantAges )
+
+    def _setExclusionDependencies(self):
+        """
+        List containing the names of programs which restrict the coverage of this program to (1 - coverage of independent program)
+        :return:
+        """
+        self.exclusionDepedencies = []
+        dependencies = self.project.programDependency[self.name]['Exclusion dependency']
+        for program in dependencies:
+            self.exclusionDepedencies.append(program)
+
+    def _setThresholdDependencies(self):
+        """
+        List containing the name of programs which restrict the coverage of this program to coverage of independent program
+        :return:
+        """
+        self.thresholdDependencies = []
+        dependencies = self.project.programDependency[self.name]['Threshold dependency']
+        for program in dependencies:
+            self.thresholdDependencies.append(program)
+
+    def _setCostCurve(self):
+        """
+        Sets the cost-coverage curve of this program as a lambda function
+        :return:
+        """
+        self.costCurve = None # TODO: set this
 
     def _getStuntingUpdate(self, ageGroup):
         """
@@ -69,24 +83,40 @@ class Program(object):
         and across programs (that is, after we have accounted for dependencies),
         the order of multiplication of updates does not matter.
         """
+        ageGroup.stuntingUpdate *= self._getConditionalProbUpdate(ageGroup, 'Stunting')
 
-        # TODO: currently BF and direct diarrhoea incidence are modelled separately. Should this be the case? I.e is BF practices are better, diarrhoea incidence decreases, and this should have impact on both anaemi and wasting!
-        risk = 'Stunting'
-        update = self._getConditionalProbUpdate(ageGroup, risk)
-        # UPDATE STUNTING DISTRIBUTION
-        oldProbStunting = ageGroup.getFracRisk(risk)
-        newProbStunting = oldProbStunting * update
-        #ageGroup.restratify(newProbStunting) # write this
-        # redistribute population based on new distribution
-        # ageGroup.redistribute() # use distributions of ageGroups
+    def _getAnaemiaUpdate(self, ageGroup):
+        """
+        Program which directly impact anaemia.
+        :param ageGroup: instance of AgeGroup class
+        """
+        ageGroup.anaemiaUpdate *= self._getConditionalProbUpdate(ageGroup, 'Anaemia')
 
-    def _getDiarrhoeaUpdate(self, ageGroup): # TODO: linking this and BF update will be tricky b/c incidence changes
+    def _getWastingUpdate(self, ageGroup):
+        """
+        Programs which directly impact wasting prevalence or incidence.
+        Wasting update is comprised of two parts:
+            1. Prevention interventions, which alter the incidence of wasting
+            2. Treatment interventions, which alter the prevalence of wasting
+        Update of type 1. is converted into a prevalence update.
+        The total update is the product of these two.
+        :param ageGroup:
+        :return:
+        """
+        prevUpdate = self._getWastingPrevalenceUpdate(ageGroup)
+        incidUpdate = self._getWastingUpdateFromWastingIncidence(ageGroup)
+        for wastingCat in ['MAM', 'SAM']:
+            combined = prevUpdate[wastingCat] * incidUpdate[wastingCat]
+            ageGroup.wastingUpdate[wastingCat] *= combined
+
+
+    def _getDiarrhoeaUpdate(self, ageGroup):
         """
         This function accounts for the _direct_ impact of programs on diarrhoea incidence
         :param ageGroup:
         :return:
         """
-        update = self._getEffectivenessUpdate(ageGroup, 'Effectiveness incidence')
+        ageGroup.diarrhoeaUpdate *= self._getEffectivenessUpdate(ageGroup, 'Effectiveness incidence')
 
 
     def _getBFupdate(self, ageGroup):
@@ -96,56 +126,72 @@ class Program(object):
         :return:
         """
 
-
-    def _getAnaemiaUpdate(self, ageGroup):
+    def _getMortalityUpdate(self, ageGroup):
         """
-        Get the total anaemia update for a single program.
-
-        Programs can impact anaemia:
-            1. directly
-            2. indirectly through diarrhoea
-
-        :param ageGroup: instance of AgeGroup class
+        Programs which directly impact mortality rates
+        :return:
         """
-        update = self._getConditionalProbUpdate(ageGroup, 'Anaemia')
-    
-    def _getWastingUpdate(self, ageGroup):
-        pass
 
+    #def _getBirthOutcomeUpdate(self, ageGroup): # TODO: method with same name below
+        # """
+        # Programs which directly impact birth outcomes
+        # :return:
+        # """
+
+    def _getFamilyPlanningUpdate(self, ageGroup):
+        """
+        Programs which directly impact family planning
+        :return:
+        """
     def _getNewProb(self, coverage, probCovered, probNotCovered):
         return coverage * probCovered + (1.-coverage) * probNotCovered
 
     def _getConditionalProbUpdate(self, ageGroup, risk):
         """This uses law of total probability to update a given age groups for risk types
         Possible risk types are 'Stunting' & 'Anaemia' """
-        oldProb = ageGroup.getFracRisk(risk) # TODO: need to write this
+        oldProb = ageGroup.getFracRisk(risk)
         probIfCovered = ageGroup.probConditionalCoverage[risk][self.name]['covered']
         probIfNotCovered = ageGroup.probConditionalCoverage[risk][self.name]['not covered']
-        newProb = self._getNewProb(self.newOverallCoverage, probIfCovered, probIfNotCovered)
+        newProb = self._getNewProb(self.proposedCoverageFrac, probIfCovered, probIfNotCovered)
         reduction = (oldProb - newProb) / oldProb
         update = 1.-reduction
         return update
 
-
     def _getWastingPrevalenceUpdate(self, ageGroup):
-        wastingUpdate = {} # overall update to prevalence of MAM and SAM
-        for wastingCat in self.project.wastedList:
-            oldProb = ageGroup.getFracWasted('Wasting', wastingCat) # TODO: WRITE THIS
-            probWastedIfCovered = ageGroup.probConditionalCoverage['Wasting'][wastingUpdate][self.name]['covered']
-            probWastedIfNotCovered = ageGroup.probConditionalCoverage['Wasting'][wastingUpdate][self.name]['not covered']
-            newProb = self._getNewProb(self.newOverallCoverage, probWastedIfCovered, probWastedIfNotCovered)
+        # overall update to prevalence of MAM and SAM
+        for wastingCat in ['SAM', 'MAM']:
+            oldProb = ageGroup.getFracWasted(wastingCat)
+            probWastedIfCovered = ageGroup.probConditionalCoverage[wastingCat][self.name]['covered']
+            probWastedIfNotCovered = ageGroup.probConditionalCoverage[wastingCat][self.name]['not covered']
+            newProb = self._getNewProb(self.proposedCoverageFrac, probWastedIfCovered, probWastedIfNotCovered)
             reduction = (oldProb - newProb) / oldProb
-            wastingUpdate[wastingCat] = 1.-reduction
-        return wastingUpdate # TODO: the SAM to MAM etc update needs to be done after combining all the updates
+            ageGroup.wastingUpdate[wastingCat] *= 1-reduction
+
+    def _getWastingUpdateFromWastingIncidence(self, ageGroup):
+        incidenceUpdate = self._getWastingIncidenceUpdate(ageGroup)
+        for condition in ['SAM', 'MAM']:
+            newIncidence = ageGroup.incidences[condition] * incidenceUpdate[condition]
+            reduction = (ageGroup.incidences[condition] - newIncidence)/newIncidence
+            ageGroup.wastingUpdate[condition] *= 1.-reduction
+
+    def _getWastingIncidenceUpdate(self, ageGroup):
+        update = {}
+        for condition in ['SAM', 'MAM']:
+            affFrac = ageGroup.programEffectiveness[self.name][condition]['Affected fraction']
+            effectiveness = ageGroup.programEffectiveness[self.name][condition]['Effectiveness incidence']
+            oldCov = self.baselineCoverage
+            reduction = affFrac * effectiveness * (self.proposedCoverageFrac - oldCov) / (1. - effectiveness*oldCov)
+            update[condition] = 1.-reduction
+        return update
 
     def _getEffectivenessUpdate(self, ageGroup, effType):
-        """This covers mortality and incidence updates"""
+        """This covers mortality and incidence updates (except wasting)"""
         update = {cause: 1. for cause in self.project.causesOfDeath}
         for cause in self.project.causesOfDeath:
             affFrac = ageGroup.programEffectiveness[self.name][cause]['Affected fraction']
             effectiveness = ageGroup.programEffectiveness[self.name][cause][effType]
-            oldCov = self.overallCov
-            reduction = affFrac * effectiveness * (self.newOverallCoverage - oldCov) / (1. - effectiveness*oldCov)
+            oldCov = self.baselineCoverage
+            reduction = affFrac * effectiveness * (self.proposedCoverageFrac - oldCov) / (1. - effectiveness*oldCov)
             update[cause] *= 1. - reduction
         return update
 
@@ -154,8 +200,8 @@ class Program(object):
         for outcome in self.project.BO:
             affFrac = self.project.BOprograms[self.name]['affected fraction'][outcome]
             eff = self.project.BOprograms[self.name]['effectiveness'][outcome]
-            oldCov = self.overallCov
-            reduction = affFrac * eff * (self.newOverallCoverage - oldCov) / (1. - eff*oldCov)
+            oldCov = self.baselineCoverage
+            reduction = affFrac * eff * (self.proposedCoverageFrac - oldCov) / (1. - eff*oldCov)
             BOupdate[outcome] = 1. - reduction
         return BOupdate
 
@@ -164,14 +210,11 @@ class Program(object):
         correctFracOld = ageGroup.bfDist[correctPrac]
         probCorrectCovered = ageGroup.probConditionalCoverage['Breastfeeding'][self.name]['covered']
         probCorrectNotCovered = ageGroup.probConditionalCoverage['Breastfeeding'][self.name]['not covered']
-        probNew = self._getNewProb(self.newOverallCoverage, probCorrectCovered, probCorrectNotCovered)
+        probNew = self._getNewProb(self.proposedCoverageFrac, probCorrectCovered, probCorrectNotCovered)
         fracChange = probNew - correctFracOld
         correctFracBF = correctFracOld + fracChange
         return correctFracBF
 
-
-
-# TODO: don't forget the MAM to SAM updates & the wasting incidence.
 
 
 def setUpPrograms(project):
