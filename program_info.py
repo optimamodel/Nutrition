@@ -13,4 +13,4 @@ class ProgramInfo:
         :type project: instance of Project class
         """
         import programs as progs
-        self.programs, self.programAreas = progs.setUpPrograms(project)
+        self.programs, self.programAreas = progs.setUpPrograms(project) # TODO: could sort programs by dependency in here.
