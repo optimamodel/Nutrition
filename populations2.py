@@ -20,7 +20,7 @@ class WomenAgeGroup:
         self.programEffectiveness = {}
 
 class ChildAgeGroup:
-    def __init__(self, age, populationSize, boxes, anaemiaDist, incidences, stuntingDist, wastingDist, BFdist, ageingRate, allRisks):
+    def __init__(self, age, populationSize, boxes, anaemiaDist, incidences, stuntingDist, wastingDist, BFdist, ageingRate, allRisks, causesOfDeath):
         self.name = age
         self.populationSize = populationSize
         self.boxes = boxes
@@ -33,6 +33,7 @@ class ChildAgeGroup:
         self.stuntedList = ['high', 'moderate']
         self.anaemicList = ['anaemic']
         self.wastedList = ['SAM', 'MAM']
+        self.birthOutcomes = ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"] # TODO: tidy this referencing style
         self.allRisks = allRisks
         self.probConditionalCoverage = {}
         self.probConditionalDiarrhoea = {}
@@ -40,10 +41,14 @@ class ChildAgeGroup:
         self.programEffectiveness = {}
         self.stuntingUpdate = 1.
         self.anaemiaUpdate = 1.
-        self.birthUpdate = 1.
         self.bfUpdate = 1.
-        self.mortalityUpdate = 1.
+        self.mortalityUpdate = {}
+        for cause in causesOfDeath: # TODO: do not want to input causes of death this way. Idea to declare all these variables availble in module scope
+            self.mortalityUpdate[cause] = 1.
         self.diarrhoeaUpdate = 1.
+        self.birthUpdate = {}
+        for BO in self.birthOutcomes:
+            self.birthUpdate[BO] = 1.
         self.wastingUpdate = {}
         for wastingCat in ['SAM', 'MAM']:
             self.wastingUpdate[wastingCat] = 1.
@@ -194,7 +199,8 @@ class Children(Population):
                                       wastingDist[wastingCat] * bfDist[bfCat]
                             boxes[stuntingCat][wastingCat][bfCat][anaemiaCat] = Box(thisPop)
             self.ageGroups.append(ChildAgeGroup(age, popSize, boxes,
-                                           anaemiaDist, incidences, stuntingDist, wastingDist, bfDist, ageingRate, self.allRisks))
+                                           anaemiaDist, incidences, stuntingDist, wastingDist, bfDist, ageingRate,
+                                                self.allRisks, self.project.causesOfDeath))
 
     def _setChildrenReferenceMortality(self):
         # Equation is:  LHS = RHS * X
