@@ -16,7 +16,7 @@ class Project:
     #####--- WRAPPER METHODS ---######
 
     def readAllData(self):
-        self.readProgramData()
+        self.readProgramData() # TODO: program dependencies for IYCF not set properly b/c they are set-up later. Order may matter, need to check. Hacky fix is to add them to program dependcies sheet.
         self.readDemographicsData()
         self.readMortalityData()
         self.getAllIYCFpackages()
@@ -33,6 +33,7 @@ class Project:
         self.getCostCoverageInfo()
         self.getProgramTargetPop()
         self.getMorbidityAreas()
+        self.getProgramDependencies()
 
     def readDemographicsData(self):
         self.getDemographics()
@@ -116,7 +117,7 @@ class Project:
         self.RRdeath['Birth outcomes'] = BOsheet.loc['RR of death by cause'].to_dict('index')
 
     def getIncidences(self):
-        self.incidences = self.readSheet('Incidence of conditions', [0], 'index')
+        self.incidences = self.readSheet('Incidence of conditions', [0], 'dict')
 
     def getORforCondition(self):
         ORsheet = self.readSheet('Odds ratios', [0,1])
@@ -158,6 +159,7 @@ class Project:
             self.RRdeath['Birth outcomes'].update(RRs)
 
     ####--- PROGRAMS ---####
+
     def getStuntingProgram(self):
         ORsheet = self.readSheet('Odds ratios', [0,1])
         self.ORstuntingProgram = ORsheet.loc['OR stunting by intervention'].to_dict(orient='index')
@@ -183,6 +185,24 @@ class Project:
     def getCostCoverageInfo(self):
         self.costCurveInfo = self.readSheet('Interventions cost and coverage', [0], 'dict')
         #self.baselineCov = {program: info['Baseline coverage'] for program, info in self.costCurveInfo.iteritems()}
+
+    def getProgramDependencies(self): # TODO: will need to put IYCF dependencies in (maybe have them in the spreadsheet, but will be ignored if not selected by user)
+        dependencies = self.readSheet('Program dependencies', [0])
+        programDep = {}
+        for program, dependency in dependencies.iterrows():
+            programDep[program] = {}
+            for dependType, value in dependency.iteritems():
+                if isinstance(value, unicode): # cell not empty
+                    programDep[program][dependType] = value.replace(", ", ",").split(',') # assumes programs separated by ", "
+                else:
+                    programDep[program][dependType] = []
+        # pad the remaining programs
+        missingProgs = list(set(self.programList) - set(programDep.keys()))
+        for program in missingProgs:
+            programDep[program] = {}
+            for field in dependencies.columns:
+                programDep[program][field] = []
+        self.programDependency = programDep
 
     def getFamilyPrograms(self):
         self.familyPlanningMethods = self.readSheet('Interventions family planning', [0])
@@ -294,7 +314,7 @@ class Project:
             effectiveness[age] = {}
             for program in programsPresent:
                 effectiveness[age][program] = {}
-                for cause in self.causesOfDeath:
+                for cause in self.causesOfDeath + ['MAM', 'SAM']:
                     effectiveness[age][program][cause] = {}
                     for field in fields:
                             try:
@@ -319,6 +339,7 @@ class Project:
         stuntingEffects = effects.loc['OR for stunting']
         packagesDict = self.defineIYCFpackages()
         costCurveInfo = self.getIYCFcostCoverageSaturation(packagesDict)
+        self.IYCFtargetPop = self.getIYCFtargetPop(packagesDict)
         self.ORappropriateBFprogram = self.createIYCFpackages(BFeffects, packagesDict)
         self.ORstuntingProgram.update(self.createIYCFpackages(stuntingEffects, packagesDict))
         for field in ['unit cost', 'saturation coverage', 'baseline coverage']:
@@ -376,16 +397,17 @@ class Project:
             packageCostSaturation['baseline coverage'][name] = 0.
         return packageCostSaturation
 
-    def getIYCFtargetPop(self, packageModalities, targetPops, PWages):
+    def getIYCFtargetPop(self, packageModalities):
+        IYCFtargetPop = self.readSheet('IYCF cost & coverage', [0, 1]).loc['Target populations']
         newTargetPops = {}
-        for name, package in packageModalities.items():
+        for name, package in packageModalities.iteritems():
             newTargetPops[name] = {}
             for pop, mode in package:
                 if pop not in newTargetPops[name]:
                     newTargetPops[name][pop] = {}
-                newTargetPops[name][pop][mode] = targetPops[mode][pop]
+                newTargetPops[name][pop][mode] = IYCFtargetPop[mode][pop]
         # convert 'pregnant women' to its age bands
-        newTargetPops = self.createAgeBands(newTargetPops, packageModalities.keys(), PWages, 'Pregnant women')
+        newTargetPops = self.createAgeBands(newTargetPops, packageModalities.keys(), self.PWages, 'Pregnant women')
         return newTargetPops
 
     def createAgeBands(self, dictToUpdate, keyList, listOfAges, pop):
