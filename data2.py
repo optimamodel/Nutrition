@@ -72,6 +72,7 @@ class Project:
         for field in ['Current year', 'Food']:
             demographics.update(baseline.loc[field].to_dict('index'))
         self.demographics = {key: item['Values'] for key, item in demographics.iteritems()}
+        self.year = self.demographics['year']
 
     def getAgeDist(self):
         baseline = self.readSheet('Baseline year demographics', [0,1])
@@ -239,7 +240,8 @@ class Project:
         BOprograms = self.readSheet('Interventions birth outcomes', [0,1], 'index')
         newBOprograms = {}
         for program in BOprograms.keys():
-            newBOprograms[program[0]] = {}
+            if not newBOprograms.get(program[0]):
+                newBOprograms[program[0]] = {}
             newBOprograms[program[0]][program[1]] = BOprograms[program]
         self.BOprograms = newBOprograms
 
