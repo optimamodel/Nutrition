@@ -13,6 +13,7 @@ def getFilePath(root, bookDate, country):
     return filePath
 
 if __name__ == '__main__':
-    filePath = getFilePath('', '2017Nov',  'Bangladesh')
+    filePath = getFilePath(root='', bookDate='2017Nov',  country='Bangladesh')
     model = setUpModel(filePath)
+    model.applyNewProgramCoverages(model.project.costCurveInfo['baseline coverage'])
     #model.applyUpdates({'Zinc supplementation': .5})
