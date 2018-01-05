@@ -20,7 +20,8 @@ class WomenAgeGroup:
         self.programEffectiveness = {}
 
 class ChildAgeGroup:
-    def __init__(self, age, populationSize, boxes, anaemiaDist, incidences, stuntingDist, wastingDist, BFdist, ageingRate, allRisks, causesOfDeath):
+    def __init__(self, age, populationSize, boxes, anaemiaDist, incidences, stuntingDist, wastingDist, BFdist,
+                 ageSpan, constants):
         self.name = age
         self.populationSize = populationSize
         self.boxes = boxes
@@ -29,28 +30,25 @@ class ChildAgeGroup:
         self.wastingDist = wastingDist
         self.bfDist = BFdist
         self.incidences = incidences
-        self.ageingRate = ageingRate
-        self.stuntedList = ['high', 'moderate']
-        self.anaemicList = ['anaemic']
-        self.wastedList = ['SAM', 'MAM']
-        self.birthOutcomes = ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"] # TODO: tidy this referencing style
-        self.allRisks = allRisks
+        self.const = constants
+        self.ageingRate = 1./ageSpan
         self.probConditionalCoverage = {}
         self.probConditionalDiarrhoea = {}
         self.probConditionalStunting = {}
         self.programEffectiveness = {}
+        # storing updates
         self.stuntingUpdate = 1.
         self.anaemiaUpdate = 1.
         self.bfUpdate = 1.
         self.mortalityUpdate = {}
-        for cause in causesOfDeath: # TODO: do not want to input causes of death this way. Idea to declare all these variables availble in module scope
+        for cause in self.const.causesOfDeath:
             self.mortalityUpdate[cause] = 1.
         self.diarrhoeaUpdate = 1.
         self.birthUpdate = {}
-        for BO in self.birthOutcomes:
+        for BO in self.const.birthOutcomes:
             self.birthUpdate[BO] = 1.
         self.wastingUpdate = {}
-        for wastingCat in ['SAM', 'MAM']:
+        for wastingCat in self.const.wastedList:
             self.wastingUpdate[wastingCat] = 1.
 
     def _getPopulation(self, risks):
@@ -61,19 +59,19 @@ class ChildAgeGroup:
 
     def _replaceRiskList(self, index, newList):
         """replaces one risk list in a list of risk lists. index is the position of list to replace """
-        alteredList = self.allRisks[:]
+        alteredList = self.const.allRisks[:]
         alteredList[index] = newList
         return alteredList
 
     def getNumberStunted(self):
-        risks = self._replaceRiskList(0, self.stuntedList)
+        risks = self._replaceRiskList(0, self.const.stuntedList)
         return self._getPopulation(risks)
 
     def getStuntedFrac(self):
         return self.getNumberStunted() / self.populationSize
 
     def getNumberAnaemic(self):
-        risks = self._replaceRiskList(3, self.anaemicList)
+        risks = self._replaceRiskList(3, self.const.anaemicList)
         return self._getPopulation(risks)
 
     def getAnaemicFrac(self):
@@ -94,32 +92,20 @@ class ChildAgeGroup:
 
 
 class Population(object):
-    def __init__(self, name, project):
+    def __init__(self, name, project, constants):
         self.name = name
         self.project = dcp(project)
-        self.childAges = project.childAges
-        self.PWages = project.PWages
-        self.WRAages = project.WRAages
-        self.risks = ['Stunting', 'Wasting', 'Breastfeeding', 'Anaemia'] # TODO: can read these from the spreadsheet (program areas)
-        self.stuntingDist = project.riskDistributions['Stunting']
-        self.wastingDist = project.riskDistributions['Wasting']
-        self.bfDist = project.riskDistributions['Breastfeeding']
-        self.anaemiaDist = project.riskDistributions['Anaemia']
-        self.birthDist = project.birthDist
-        self.stuntingList = project.riskCategories['Stunting']
-        self.wastingList = project.riskCategories['Wasting']
-        self.bfList = project.riskCategories['Breastfeeding']
-        self.anaemiaList = project.riskCategories['Anaemia']
-        self.stuntedList = self.stuntingList[2:] # TODO: the structuring of this data could be improved depending on usage below
-        self.wastedList = self.wastingList[2:]
-        self.anaemicList = self.anaemiaList[1:]
-        self.allRisks = [self.stuntingList, self.wastingList, self.bfList, self.anaemiaList]
-        self.ORstuntingBO = project.ORconditionBirth['stunting']
-        self.birthOutcomes = ["Pre-term SGA", "Pre-term AGA", "Term SGA", "Term AGA"]
-        self.baselineCov = project.costCurveInfo['baseline coverage']
-        self.incidences = project.incidences
-        self.RRdiarrhoea = project.RRdeath['Child diarrhoea']['Diarrhoea incidence']
-        self.ORcondition = project.ORcondition
+        self.const = constants
+        self.stuntingDist = self.project.riskDistributions['Stunting']
+        self.wastingDist = self.project.riskDistributions['Wasting']
+        self.bfDist = self.project.riskDistributions['Breastfeeding']
+        self.anaemiaDist = self.project.riskDistributions['Anaemia']
+        self.birthDist = self.project.birthDist
+        self.ORstuntingBO = self.project.ORconditionBirth['stunting']
+        self.baselineCov = self.project.costCurveInfo['baseline coverage']
+        self.incidences = self.project.incidences
+        self.RRdiarrhoea = self.project.RRdeath['Child diarrhoea']['Diarrhoea incidence']
+        self.ORcondition = self.project.ORcondition
         self.boxes = {}
 
     def getDistribution(self, risk):
@@ -146,9 +132,8 @@ class Population(object):
         return p0, p1
 
 class Children(Population):
-    def __init__(self, name, project):
-        super(Children, self).__init__(name, project)
-        self.ageSpans = [1., 5., 6., 12., 36.]
+    def __init__(self, name, project, constants):
+        super(Children, self).__init__(name, project, constants)
         self.ageGroups = []
         self.probRiskAtBirth = {}
         self._makePopSizes()
@@ -169,12 +154,12 @@ class Children(Population):
     def _makePopSizes(self):
         # for children less than 1 year, annual live births
         monthlyBirths = self.project.demographics['number of live births'] / 12.
-        popSize = [pop * monthlyBirths for pop in self.ageSpans[:3]]
+        popSize = [pop * monthlyBirths for pop in self.const.childAgeSpans[:3]]
         # children > 1 year, who are not counted in annual 'live births'
-        months = sum(self.ageSpans[3:])
+        months = sum(self.const.childAgeSpans[3:])
         popRemainder = self.project.demographics['population U5'] - monthlyBirths * 12.
         monthlyRate = popRemainder/months
-        popSize += [pop * monthlyRate for pop in self.ageSpans[3:]]
+        popSize += [pop * monthlyRate for pop in self.const.childAgeSpans[3:]]
         self.popSizes = {age:pop for age, pop in zip(self.project.childAges, popSize)}
 
     def _makeBoxes(self):
@@ -187,34 +172,34 @@ class Children(Population):
             wastingDist = self.wastingDist[age]
             bfDist = self.bfDist[age]
             incidences = self.project.incidences[age]
-            ageingRate = 1./self.ageSpans[idx]
-            for stuntingCat in self.stuntingList:
+            ageingRate = 1./self.const.childAgeSpans[idx]
+            for stuntingCat in self.const.stuntingList:
                 boxes[stuntingCat] = {}
-                for wastingCat in self.wastingList:
+                for wastingCat in self.const.wastingList:
                     boxes[stuntingCat][wastingCat] = {}
-                    for bfCat in self.bfList:
+                    for bfCat in self.const.bfList:
                         boxes[stuntingCat][wastingCat][bfCat] = {}
-                        for anaemiaCat in self.anaemiaList:
+                        for anaemiaCat in self.const.anaemiaList:
                             thisPop = popSize * stuntingDist[stuntingCat] * anaemiaDist[anaemiaCat] * \
                                       wastingDist[wastingCat] * bfDist[bfCat]
                             boxes[stuntingCat][wastingCat][bfCat][anaemiaCat] = Box(thisPop)
             self.ageGroups.append(ChildAgeGroup(age, popSize, boxes,
-                                           anaemiaDist, incidences, stuntingDist, wastingDist, bfDist, ageingRate,
-                                                self.allRisks, self.project.causesOfDeath))
+                                           anaemiaDist, incidences, stuntingDist, wastingDist, bfDist,
+                                                ageingRate, self.const))
 
     def _setChildrenReferenceMortality(self):
         # Equation is:  LHS = RHS * X
         # we are solving for X
         # Calculate RHS for each age and cause
         RHS = {}
-        for age in self.childAges:
+        for age in self.const.childAges:
             RHS[age] = {}
             for cause in self.project.causesOfDeath:
                 RHS[age][cause] = 0.
-                for stuntingCat in self.stuntingList:
-                    for wastingCat in self.wastingList:
-                        for bfCat in self.bfList:
-                            for anaemiaCat in self.anaemiaList:
+                for stuntingCat in self.const.stuntingList:
+                    for wastingCat in self.const.wastingList:
+                        for bfCat in self.const.bfList:
+                            for anaemiaCat in self.const.anaemiaList:
                                 t1 = self.stuntingDist[age][stuntingCat]
                                 t2 = self.wastingDist[age][wastingCat]
                                 t3 = self.bfDist[age][bfCat]
@@ -228,13 +213,13 @@ class Children(Population):
         age = '<1 month'
         for cause in self.project.causesOfDeath:
             RHS[age][cause] = 0.
-            for breastfeedingCat in self.bfList:
+            for breastfeedingCat in self.const.bfList:
                 Pbf = self.bfDist[age][breastfeedingCat]
                 RRbf = self.project.RRdeath['Breastfeeding'][cause][breastfeedingCat][age]
-                for birthoutcome in self.birthOutcomes:
+                for birthoutcome in self.const.birthOutcomes:
                     Pbo = self.birthDist[birthoutcome]
                     RRbo = self.project.RRdeath['Birth outcomes'][cause][birthoutcome]
-                    for anemiaStatus in self.anaemiaList:
+                    for anemiaStatus in self.const.anaemiaList:
                         Pan = self.anaemiaDist[age][anemiaStatus]
                         RRan = self.project.RRdeath['Anaemia'][cause][anemiaStatus][age]
                         RHS[age][cause] += Pbf * RRbf * Pbo * RRbo * Pan * RRan
@@ -267,7 +252,7 @@ class Children(Population):
         MortalityCorrected[ageName] = m4
         # Calculate LHS for each age and cause of death then solve for X
         Xdictionary = {}
-        for age in self.childAges:
+        for age in self.const.childAges:
             Xdictionary[age] = {}
             for cause in self.project.causesOfDeath:
                 LHS_age_cause = MortalityCorrected[age] * self.project.deathDist[cause][age]
@@ -278,25 +263,25 @@ class Children(Population):
         # Newborns first
         ageGroup = self.ageGroups[0]
         age = ageGroup.name
-        for bfCat in self.bfList:
+        for bfCat in self.const.bfList:
             count = 0.
             for cause in self.project.causesOfDeath:
                 Rb = self.project.RRdeath['Breastfeeding'][cause][bfCat][age]
-                for outcome in self.birthOutcomes:
+                for outcome in self.const.birthOutcomes:
                     pbo = self.birthDist[outcome]
                     Rbo = self.project.RRdeath['Birth outcomes'][cause][outcome]
                     count += Rb * pbo * Rbo * self.referenceMortality[age][cause]
-            for stuntingCat in self.stuntingList:
-                for wastingCat in self.wastingList:
-                    for anaemiaCat in self.anaemiaList:
+            for stuntingCat in self.const.stuntingList:
+                for wastingCat in self.const.wastingList:
+                    for anaemiaCat in self.const.anaemiaList:
                         ageGroup.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat].mortalityRate = count
         # over 1 months
         for ageGroup in self.ageGroups[1:]:
             age = ageGroup.name
-            for stuntingCat in self.stuntingList:
-                for wastingCat in self.wastingList:
-                    for bfCat in self.bfList:
-                        for anemiaStatus in self.anaemiaList:
+            for stuntingCat in self.const.stuntingList:
+                for wastingCat in self.const.wastingList:
+                    for bfCat in self.const.bfList:
+                        for anemiaStatus in self.const.anaemiaList:
                             count = 0.
                             for cause in self.project.causesOfDeath:
                                 t1 = self.referenceMortality[age][cause]
@@ -316,7 +301,7 @@ class Children(Population):
     #TODO: all these functions cn now use the fact that each age group has distribution stored
 
     def getTotalPopulation(self):
-        return self._getPopulation(self.ageGroups, self.allRisks)
+        return self._getPopulation(self.ageGroups, self.const.allRisks)
 
 
     def getFracRisk(self, risk):
@@ -327,40 +312,40 @@ class Children(Population):
         #     return self.getTotalFracAnaemic()
 
     def getTotalNumberStunted(self):
-        risks = self._replaceRiskList(0, self.stuntedList)
+        risks = self._replaceRiskList(0, self.const.stuntedList)
         return self._getPopulation(self.ageGroups, risks)
 
     def getTotalFracStunted(self):
         return self.getTotalNumberStunted() / self.getTotalPopulation()
 
     def getFracStuntedFirstCompartment(self):
-        risks = self._replaceRiskList(0, self.stuntedList)
+        risks = self._replaceRiskList(0, self.const.stuntedList)
         firstComp = self.ageGroups[0]
         return self._getPopulation([firstComp], risks) / firstComp.populationSize
 
     def getFracStuntedGivenAge(self, age):
         ageMap = {'<1 month': 0, '1-5 months': 1, '6-11 months': 2, '12-23 months': 3, '24-59 months': 4}
         indx = ageMap[age]
-        risks = self._replaceRiskList(0, self.stuntedList)
+        risks = self._replaceRiskList(0, self.const.stuntedList)
         thisAge = self.ageGroups[indx]
         return self._getPopulation([thisAge], risks) / thisAge.populationSize
 
     def getTotalWasted(self):
-        risks = self._replaceRiskList(1, self.wastedList)
+        risks = self._replaceRiskList(1, self.const.wastedList)
         return self._getPopulation(self.ageGroups, risks)
 
     def getFracWastedFirstCompartment(self):
-        risks = self._replaceRiskList(1, self.wastedList)
+        risks = self._replaceRiskList(1, self.const.wastedList)
         firstComp = self.ageGroups[0]
         return self._getPopulation([firstComp], risks) / firstComp.populationSize
 
     def getTotalAnaemic(self):
-        risks = self._replaceRiskList(3, self.anaemicList)
+        risks = self._replaceRiskList(3, self.const.anaemicList)
         return self._getPopulation(self.ageGroups, risks)
 
     def _replaceRiskList(self, index, newList):
         """replaces one risk list in a list of risk lists. index is the position of list to replace """
-        alteredList = self.allRisks[:]
+        alteredList = self.const.allRisks[:]
         alteredList[index] = newList
         return alteredList
 
@@ -381,7 +366,7 @@ class Children(Population):
     def _setProbConditionalCoverage(self):
         """Set the conditional probabilities of a risk factor (except wasting) given program coverage.
         Note that this value is dependent upon the baseline coverage of the program"""
-        risks = [risk for i, risk in enumerate(self.risks) if i !=1 ] # remove wasting
+        risks = [risk for i, risk in enumerate(self.const.risks) if i !=1 ] # remove wasting
         for risk in risks:
             cats = self.project.riskCategories[risk]# TODO: Could use a better data construction back in the Population class
             middle = len(cats) / 2
@@ -405,7 +390,7 @@ class Children(Population):
                     ageGroup.probConditionalCoverage[risk][program]['not covered'] = pn
 
     def _setProbWastedIfCovered(self):
-        for wastingCat in self.wastedList:
+        for wastingCat in self.const.wastedList:
             conditionalProb = {}
             conditionalProb[wastingCat] = {}
             for ageGroup in self.ageGroups:
@@ -437,7 +422,7 @@ class Children(Population):
                 if risk == 'Anaemia':  # anaemia only caused by severe diarrhea
                     Zt = Zt * self.project.demographics['fraction severe diarrhoea']
                 AO = self._getAverageORnew(Zt, risk, ageGroup)
-                fracDiarrhoea = sum([beta[bfCat] * ageGroup.bfDist[bfCat] for bfCat in self.bfList])
+                fracDiarrhoea = sum([beta[bfCat] * ageGroup.bfDist[bfCat] for bfCat in self.const.bfList])
                 fracImpactedThisAge = sum(dist[age][cat] for cat in relevantCats)
                 pn, pc = self._solveQuadratic(AO, fracDiarrhoea, fracImpactedThisAge)
                 ageGroup.probConditionalDiarrhoea[risk]['diarrhoea'] = pc
@@ -447,12 +432,12 @@ class Children(Population):
         riskSum = self._getDiarrheaRiskSum(age)
         return incidence / riskSum
 
-    def _getZa(self, incidence):
-        Za = {}
-        for age in self.childAges:
-            riskSum = self._getDiarrheaRiskSum(age)
-            Za[age] = incidence[age] / riskSum
-        return Za
+    # def _getZa(self, incidence):
+    #     Za = {}
+    #     for age in self.const.childAges:
+    #         riskSum = self._getDiarrheaRiskSum(age)
+    #         Za[age] = incidence[age] / riskSum
+    #     return Za
 
     def _setProbStuntedAtBirth(self):
         """Sets the probabilty of stunting conditional on birth outcome"""
@@ -470,7 +455,7 @@ class Children(Population):
 
     def _setProbWastedAtBirth(self):
         probWastedAtBirth = {}
-        for wastingCat in self.wastedList:
+        for wastingCat in self.const.wastedList:
             coEffs = self._getBirthWastingQuarticCoefficients(wastingCat)
             p0 = self._getBaselineProbabilityViaQuartic(coEffs)
             probWastedAtBirth[wastingCat] = {}
@@ -591,7 +576,7 @@ class Children(Population):
 
     def _getDiarrheaRiskSum(self, age):
         riskSum = 0.
-        for bfCat in self.bfList:
+        for bfCat in self.const.bfList:
             RDa = self.RRdiarrhoea[bfCat][age]
             pab  = self.bfDist[age][bfCat]
             riskSum += RDa * pab
@@ -599,7 +584,7 @@ class Children(Population):
 
     def _getZa(self, incidence):
         Za = {}
-        for age in self.childAges:
+        for age in self.const.childAges:
             riskSum = self._getDiarrheaRiskSum(age)
             Za[age] = incidence[age] / riskSum
         return Za
@@ -607,8 +592,8 @@ class Children(Population):
     def _getAverageOR(self, Za, risk):
         from math import pow
         AO = {}
-        for idx in range(len(self.childAges)):
-            age = self.childAges[idx]
+        for idx in range(len(self.const.childAges)):
+            age = self.const.childAges[idx]
             RRnot = self.RRdiarrhoea['none'][age]
             if risk == 'Stunting':
                 OR = self.ORcondition['OR stunting by condition']['Diarrhoea'][age]
@@ -618,13 +603,12 @@ class Children(Population):
                 OR = self.ORcondition['OR '+risk+' by condition']['Diarrhea'][age]
             else:
                 print 'risk factor is invalid'
-            AO[age] = pow(OR, RRnot * Za[age] * self.ageSpans[idx])
+            AO[age] = pow(OR, RRnot * Za[age] * self.const.childAgeSpans[idx])
         return AO
 
     def _getAverageORnew(self, Za, risk, ageGroup):
         from math import pow
         age = ageGroup.name
-        ageSpan = 1./ageGroup.ageingRate
         RRnot = self.RRdiarrhoea['none'][age]
         if risk == 'Stunting':
             OR = self.ORcondition['OR stunting by condition']['Diarrhoea'][age]
@@ -634,16 +618,16 @@ class Children(Population):
             OR = self.ORcondition['OR '+risk+' by condition']['Diarrhea'][age]
         else:
             print 'risk factor is invalid'
-        AO = pow(OR, RRnot * Za * ageSpan) # TODO: need to get age span but don't have indx anymore
+        AO = pow(OR, RRnot * Za * 1./ageGroup.ageingRate)
         return AO
 
 
     def _getFracDiarrhea(self, Z0, Zt):
         beta = {}
-        for age in self.childAges:
+        for age in self.const.childAges:
             beta[age] = {}
             RRnot = self.RRdiarrhoea["none"][age]
-            for bfCat in self.bfList:
+            for bfCat in self.const.bfList:
                 RDa = self.RRdiarrhoea[bfCat][age]
                 beta[age][bfCat] = 1. - (RRnot * Z0[age] - RDa * Zt[age]) / (
                         RRnot * Z0[age])
@@ -653,7 +637,7 @@ class Children(Population):
     def _getFracDiarrheaNew(self, Z0, Zt, age):
         beta = {}
         RRnot = self.RRdiarrhoea["none"][age]
-        for bfCat in self.bfList:
+        for bfCat in self.const.bfList:
             RDa = self.RRdiarrhoea[bfCat][age]
             beta[bfCat] = 1. - (RRnot * Z0 - RDa * Zt) / (
                     RRnot * Z0)
@@ -662,10 +646,10 @@ class Children(Population):
 
     def _getFracDiarrheaFixedZ(self):
         beta = {}
-        for age in self.childAges:
+        for age in self.const.childAges:
             beta[age] = {}
             RRnot = self.RRdiarrhoea["none"][age]
-            for bfCat in self.bfList:
+            for bfCat in self.const.bfList:
                 RDa = self.RRdiarrhoea[bfCat][age]
                 beta[age][bfCat] = RDa / RRnot  # 1. - ((RRnot - RDa) / RRnot)
         return beta
@@ -705,8 +689,8 @@ class Children(Population):
 
 
 class PregnantWomen(Population):
-    def __init__(self, name, project):
-        super(PregnantWomen, self).__init__(name, project)
+    def __init__(self, name, project, constants):
+        super(PregnantWomen, self).__init__(name, project, constants)
         self.ageGroups = []
         self._makePopSizes()
         self._makeBoxes()
@@ -718,7 +702,7 @@ class PregnantWomen(Population):
 
     def _update(self, programInfo):
         """Update all the age group parameters based upon risk area.  """
-        for risk in self.risks:
+        for risk in self.const.risks:
             # first get relevant programs, determined by risk area
             applicableProgs = self._getApplicablePrograms(risk, programInfo)
             for ageGroup in self.ageGroups:
@@ -738,7 +722,7 @@ class PregnantWomen(Population):
             popSize = self.popSizes[age]
             boxes = {}
             anaemiaDist = self.anaemiaDist[age]
-            for anaemiaCat in self.anaemiaList:
+            for anaemiaCat in self.const.anaemiaList:
                 thisPop = popSize * anaemiaDist[anaemiaCat]
                 boxes[anaemiaCat] = Box(thisPop)
             self.ageGroups.append(WomenAgeGroup(age, popSize, boxes, anaemiaDist))
@@ -748,11 +732,11 @@ class PregnantWomen(Population):
         #we are solving for X
         # Calculate RHS for each age and cause
         RHS = {}
-        for age in self.PWages:
+        for age in self.const.PWages:
             RHS[age] = {}
             for cause in self.project.causesOfDeath:
                 RHS[age][cause] = 0.
-                for anaemiaCat in self.anaemiaList:
+                for anaemiaCat in self.const.anaemiaList:
                     t1 = self.anaemiaDist[age][anaemiaCat]
                     t2 = self.project.RRdeath['Anaemia'][cause][anaemiaCat][age]
                     RHS[age][cause] += t1 * t2
@@ -763,8 +747,8 @@ class PregnantWomen(Population):
         # The following assumes we only have a single mortality rate for PW
         mortalityRate = self.project.mortalityRates['maternal mortality']
         mortalityCorrected = {}
-        for index in range(len(self.PWages)):
-            age = self.PWages[index]
+        for index in range(len(self.const.PWages)):
+            age = self.const.PWages[index]
             if index == 0:
                 mortalityCorrected[age] = (mortalityRate * liveBirths / 1000.) * (4. / 34.) / agePop[index]
             else:
@@ -772,7 +756,7 @@ class PregnantWomen(Population):
 
         # Calculate LHS for each age and cause of death then solve for X
         Xdictionary = {}
-        for age in self.PWages:
+        for age in self.const.PWages:
             Xdictionary[age] = {}
             for cause in self.project.causesOfDeath:
                 LHS_age_cause = mortalityCorrected[age] * self.project.deathDist[cause][age]
@@ -782,7 +766,7 @@ class PregnantWomen(Population):
     def _updateMortalityRates(self):
         for ageGroup in self.ageGroups:
             age = ageGroup.name
-            for anaemiaCat in self.anaemiaList:
+            for anaemiaCat in self.const.anaemiaList:
                 count = 0
                 for cause in self.project.causesOfDeath:
                     t1 = self.referenceMortality[age][cause]
@@ -797,7 +781,7 @@ class PregnantWomen(Population):
             for program in self.project.programList:
                 ageGroup.probConditionalCoverage[program] = {}
                 fracCovered = self.baselineCov[program]
-                fracImpacted = sum(self.anaemiaDist[age][cat] for cat in self.anaemicList)
+                fracImpacted = sum(self.anaemiaDist[age][cat] for cat in self.const.anaemicList)
                 if self.project.ORprograms[risk].get(program) is None:
                     RR = self.project.RRprograms[risk][program][age]
                     pn = fracImpacted / (RR * fracCovered + (1. - fracCovered))
@@ -809,8 +793,8 @@ class PregnantWomen(Population):
                 ageGroup.probConditionalCoverage[program]['not covered'] = pn
 
 class NonPregnantWomen(Population):
-    def __init__(self, name, project):
-        super(NonPregnantWomen, self).__init__(name, project)
+    def __init__(self, name, project, constants):
+        super(NonPregnantWomen, self).__init__(name, project, constants)
         self.ageGroups = []
         self._makePopSizes()
         self._makeBoxes()
@@ -819,7 +803,7 @@ class NonPregnantWomen(Population):
 
     def _update(self, programInfo):
         """Update all the age group parameters based upon risk area.  """
-        for risk in self.risks:
+        for risk in self.const.risks:
             # first get relevant programs, determined by risk area
             applicableProgs = self._getApplicablePrograms(risk, programInfo)
             for ageGroup in self.ageGroups:
@@ -835,19 +819,19 @@ class NonPregnantWomen(Population):
         self.popSizes = {age:pop for age, pop in WRApop.iteritems()}
 
     def _makeBoxes(self):
-        for age in self.project.WRAages:
+        for age in self.const.WRAages:
             popSize = self.popSizes[age]
             boxes = {}
             anaemiaDist = self.anaemiaDist[age]
-            for anaemiaCat in self.anaemicList:
+            for anaemiaCat in self.const.anaemicList:
                 thisPop = popSize * anaemiaDist[anaemiaCat]
                 boxes[anaemiaCat] = Box(thisPop)
             self.ageGroups.append(WomenAgeGroup(age, popSize, boxes, anaemiaDist))
 
 
 
-def setUpPopulations(project):
-    children = Children('Children', project)
-    pregnantWomen = PregnantWomen('Pregnant women', project)
-    nonPregnantWomen = NonPregnantWomen('Non-pregnant women', project)
+def setUpPopulations(project, constants):
+    children = Children('Children', project, constants)
+    pregnantWomen = PregnantWomen('Pregnant women', project, constants)
+    nonPregnantWomen = NonPregnantWomen('Non-pregnant women', project, constants)
     return [children, pregnantWomen, nonPregnantWomen]

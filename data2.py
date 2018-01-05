@@ -9,7 +9,7 @@ class Project:
         self.childAges = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
         self.WRAages = ['WRA: 15-19 years', 'WRA: 20-29 years', 'WRA: 30-39 years', 'WRA: 40-49 years']
         self.PWages = ["PW: 15-19 years", "PW: 20-29 years", "PW: 30-39 years", "PW: 40-49 years"]
-        self.BO = ['Term AGA', 'Term SGA', 'Pre-term AGA', 'Pre-term SGA']
+        self.birthOutcomes = ['Term AGA', 'Term SGA', 'Pre-term AGA', 'Pre-term SGA']
         self.programList = list(self.readSheet('Interventions cost and coverage', [0]).index) if not programsToKeep else programsToKeep
         self.readAllData()
 
@@ -88,7 +88,7 @@ class Project:
         for field in ['Stunting', 'Wasting', 'Breastfeeding']:
             riskDist[field] = dist.loc[field].to_dict('dict')
             self.riskCategories[field] = list(dist.loc[field].index)
-        self.riskCategories['Birth outcomes'] = self.BO
+        self.riskCategories['Birth outcomes'] = self.birthOutcomes
         self.riskDistributions = riskDist
 
     def getAnaemiaDist(self):

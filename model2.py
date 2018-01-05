@@ -4,8 +4,10 @@ class Model:
         import data2 as data
         import populations2 as pops
         import program_info
+        from constants import Constants
         self.project = data.setUpProject(filePath) # one modification comes below for IYCF target pops
-        self.populations = pops.setUpPopulations(self.project)
+        self.constants = Constants(self.project)
+        self.populations = pops.setUpPopulations(self.project, self.constants)
         #self._setIYCFtargetPop(self.populations) # TODO: This is not complete
         self.programInfo = program_info.ProgramInfo(self.project)
 
