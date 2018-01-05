@@ -1,4 +1,6 @@
 from copy import deepcopy as dcp
+from numpy import exp, log
+
 class Program(object):
     '''Each instance of this class is an intervention,
     and all necessary data will be stored as attributes. Will store name, targetpop, popsize, coverage, edges etc
@@ -142,7 +144,7 @@ class Program(object):
         :return:
         """
         update = self._getBOUpdate()
-        for BO in ageGroup.birthOutcomes:
+        for BO in self.project.birthOutcomes:
             ageGroup.birthUpdate[BO] *= update[BO]
 
     def _getFamilyPlanningUpdate(self, ageGroup):
@@ -207,8 +209,8 @@ class Program(object):
         return update
 
     def _getBOUpdate(self):
-        BOupdate = {BO: 1. for BO in self.project.BO}
-        for outcome in self.project.BO:
+        BOupdate = {BO: 1. for BO in self.project.birthOutcomes}
+        for outcome in self.project.birthOutcomes:
             affFrac = self.project.BOprograms[self.name]['affected fraction'][outcome]
             eff = self.project.BOprograms[self.name]['effectiveness'][outcome]
             oldCov = self.baselineCoverage
@@ -225,6 +227,38 @@ class Program(object):
         fracChange = probNew - correctFracOld
         correctFracBF = correctFracOld + fracChange
         return correctFracBF
+
+    def _getCostCoverageCurve(self):
+        costCurve = CostCovCurve(self.project.costCurveInfo['unit cost'][self.name], )
+
+
+
+
+class CostCovCurve:
+    def __init__(self, costCovInfo, restrictedPop, unrestrictedPop):
+        self.type = 'standard' # leave room for curve types
+        self.costCovInfo = costCovInfo
+        self.restrictedPop = restrictedPop
+        self.unrestrictedPop = unrestrictedPop
+
+    def _setCostCovCurve(self):
+        unitCost = self.costCovInfo['unit cost']
+        saturation = self.costCovInfo['saturation']
+        curve = self._increasingCostsLogisticCurve(unitCost, saturation)
+        return curve
+
+    def _increasingCostsLogisticCurve(self, unitCost, saturation):
+        B = saturation * self.restrictedPop
+        A = -B
+        C = 0.
+        D = unitCost*B/2.
+        curve = self.getCostCoverageCurveSpecifyingParameters(A, B, C, D)
+        return curve
+
+    def getCostCoverageCurveSpecifyingParameters(self, A, B, C, D):
+        '''This is a logistic curve with each parameter (A,B,C,D) provided by the user'''
+        logisticCurve = lambda x: (A + (B - A) / (1 + exp(-(x - C) / D)))
+        return logisticCurve
 
 
 
