@@ -12,11 +12,13 @@ class Program(object):
 
         self.baselineCoverage = self.project.costCurveInfo['baseline coverage'][self.name]
         self.targetPopulations = self.project.programTargetPop[self.name] # frac of each population which is targeted
+        self.unitCost = self.project.costCurveInfo['unit cost'][self.name] # TODO: consider putting these in and retrieving from the Constants class
+        self.saturation = self.project.costCurveInfo['saturation'][self.name]
 
         self._setRelevantAges()
         self._setExclusionDependencies()
         self._setThresholdDependencies()
-        self._setCostCurve()
+        self._setCostCoverageCurve()
 
     def updateCoverage(self, newCoverage, populations):
         """Update all values pertaining to coverage for a program"""
@@ -228,30 +230,31 @@ class Program(object):
         correctFracBF = correctFracOld + fracChange
         return correctFracBF
 
-    def _getCostCoverageCurve(self):
-        costCurve = CostCovCurve(self.project.costCurveInfo['unit cost'][self.name], )
+    def _setCostCoverageCurve(self):
+        self.costCurve = CostCovCurve(self.unitCost, self.saturation, self.restrictedPopSize, self.unrestrictedPopSize)
 
+    def getSpending(self, covNumber):
+        return self.costCurve.getSpending(covNumber)
 
 
 
 class CostCovCurve:
-    def __init__(self, costCovInfo, restrictedPop, unrestrictedPop):
-        self.type = 'standard' # leave room for curve types
-        self.costCovInfo = costCovInfo
+    def __init__(self, unitCost, saturation, restrictedPop, unrestrictedPop):
+        self.type = 'standard'
+        self.unitCost = unitCost
+        self.saturation = saturation
         self.restrictedPop = restrictedPop
         self.unrestrictedPop = unrestrictedPop
 
     def _setCostCovCurve(self):
-        unitCost = self.costCovInfo['unit cost']
-        saturation = self.costCovInfo['saturation']
-        curve = self._increasingCostsLogisticCurve(unitCost, saturation)
+        curve = self._increasingCostsLogisticCurve()
         return curve
 
-    def _increasingCostsLogisticCurve(self, unitCost, saturation):
-        B = saturation * self.restrictedPop
+    def _increasingCostsLogisticCurve(self):
+        B = self.saturation * self.restrictedPop
         A = -B
         C = 0.
-        D = unitCost*B/2.
+        D = self.unitCost*B/2.
         curve = self.getCostCoverageCurveSpecifyingParameters(A, B, C, D)
         return curve
 
@@ -260,7 +263,22 @@ class CostCovCurve:
         logisticCurve = lambda x: (A + (B - A) / (1 + exp(-(x - C) / D)))
         return logisticCurve
 
+    def getSpending(self, covNumber):
+        '''Assumes standard increasing marginal costs curve '''
+        B = self.saturation * self.restrictedPop
+        A = -B
+        C = 0.
+        D = self.unitCost * B / 2.
+        curve = self.inverseLogistic(A, B, C, D)
+        spending = curve(covNumber)
+        return spending
 
+    def inverseLogistic(self, A, B, C, D):
+        if D == 0.: # this is a temp fix for removing interventions
+            inverseCurve = lambda y: 0.
+        else:
+            inverseCurve = lambda y: -D * log((B - y) / (y - A)) + C
+        return inverseCurve
 
 def setUpPrograms(project):
     programs = [Program(program, project) for program in project.programList] # list of all programs
