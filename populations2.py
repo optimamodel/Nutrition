@@ -22,7 +22,7 @@ class WomenAgeGroup:
 class ChildAgeGroup:
     def __init__(self, age, populationSize, boxes, anaemiaDist, incidences, stuntingDist, wastingDist, BFdist,
                  ageSpan, constants):
-        self.name = age
+        self.age = age
         self.populationSize = populationSize
         self.boxes = boxes
         self.anaemiaDist = anaemiaDist
@@ -31,6 +31,8 @@ class ChildAgeGroup:
         self.bfDist = BFdist
         self.incidences = incidences
         self.const = constants
+        self.correctBF = self.const.correctBF[age]
+        self.incorrectBF = list(set(self.const.bfList) - set(self.correctBF))
         self.ageingRate = 1./ageSpan
         self.probConditionalCoverage = {}
         self.probConditionalDiarrhoea = {}
@@ -39,7 +41,9 @@ class ChildAgeGroup:
         # storing updates
         self.stuntingUpdate = 1.
         self.anaemiaUpdate = 1.
-        self.bfUpdate = 1.
+        self.bfUpdate = {}
+        for risk in ['Stunting', 'Wasting', 'Anaemia']:
+            self.bfUpdate[risk] = 1.
         self.mortalityUpdate = {}
         for cause in self.const.causesOfDeath:
             self.mortalityUpdate[cause] = 1.
@@ -89,6 +93,29 @@ class ChildAgeGroup:
     def getNumberWasted(self, wastingCat):
         risks = self._replaceRiskList(1, [wastingCat])
         return self._getPopulation(risks)
+
+    def getNumberCorrectlyBF(self):
+        risks = self._replaceRiskList(2, [self.correctBF])
+        return self._getPopulation(risks)
+
+    def redistributePopulation(self):
+        for stuntingCat in self.const.stuntingList:
+            for wastingCat in self.const.wastingList:
+                for bfCat in self.const.bfList:
+                    for anaemiaCat in self.const.anaemiaList:
+                        self.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat].populationSize = self.stuntingDist[stuntingCat] * \
+                                                                                                self.wastingDist[wastingCat] * \
+                                                                                                self.bfDist[bfCat] * \
+                                                                                                self.anaemiaDist[anaemiaCat] * \
+                                                                                                self.populationSize
+
+    def _getFracDiarrhoeaFixedZ(self):
+        beta = {}
+        RRnot = self.RRdiarrhoea['none'][self.age]
+        for bfCat in self.const.bfList:
+            RDa = self.RRdiarrhoea[bfCat][self.age]
+            beta[bfCat] = RDa/RRnot
+        return beta
 
 
 class Population(object):
@@ -145,7 +172,7 @@ class Children(Population):
         self._setProbWastedIfCovered()
         self._setProbStuntedAtBirth()
         self._setProbWastedAtBirth()
-        self._setProbConditionalDiarrhoea()
+        self._setProbConditionalDiarrhoea() # TODO: don't have wasting yet
         self._setProgramEffectiveness()
         self._setCorrectBFpractice()
 
@@ -642,16 +669,6 @@ class Children(Population):
             beta[bfCat] = 1. - (RRnot * Z0 - RDa * Zt) / (
                     RRnot * Z0)
             # RDa * Zt[age] / (RRnot * Z0[age])
-        return beta
-
-    def _getFracDiarrheaFixedZ(self):
-        beta = {}
-        for age in self.const.childAges:
-            beta[age] = {}
-            RRnot = self.RRdiarrhoea["none"][age]
-            for bfCat in self.const.bfList:
-                RDa = self.RRdiarrhoea[bfCat][age]
-                beta[age][bfCat] = RDa / RRnot  # 1. - ((RRnot - RDa) / RRnot)
         return beta
 
     def _setProgramEffectiveness(self):
