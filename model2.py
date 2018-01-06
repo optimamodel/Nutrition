@@ -44,8 +44,6 @@ class Model:
         # update in project
         self.project.programTargetPop.update(maxCov)
 
-
-
     def applyNewProgramCoverages(self, newCoverages):
         '''newCoverages is required to be the overall coverage % (i.e. people covered / entire target pop) '''
         self.newCoverages = dcp(newCoverages)
@@ -80,10 +78,10 @@ class Model:
                             program._getWastingUpdateFromWastingIncidence(ageGroup)
                         elif risk == 'Wasting treatment':
                             program._getWastingPrevalenceUpdate(ageGroup)
-                        # elif risk == 'Breastfeeding':
-
-
-                        # elif risk == 'Diarrhoea':
+                        elif risk == 'Breastfeeding':
+                            program._getBFpracticeUpdate(ageGroup)
+                        elif risk == 'Diarrhoea':
+                            program._getDiarrhoeaUpdate(ageGroup)
                         elif risk == 'Mortality':
                             program._getMortalityUpdate(ageGroup)
                         elif risk == 'Birth outcomes':

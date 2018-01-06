@@ -120,15 +120,72 @@ class Program(object):
         :param ageGroup:
         :return:
         """
-        ageGroup.diarrhoeaUpdate *= self._getEffectivenessUpdate(ageGroup, 'Effectiveness incidence')
+        update = self._getEffectivenessUpdate(ageGroup, 'Effectiveness incidence')
+        newIncidence = ageGroup.incidences['Diarrhoea'] * update
+        # get flow-on effects to stunting, anaemia and wasting
+        Z0 = ageGroup._getZa(ageGroup.incidences['Diarrhoea']) # TODO: currently in children class, would like it in ageGroup class
+        Zt = ageGroup._getZa(newIncidence)
+        beta = ageGroup.getFracDiarrhoea(Z0, Zt)
+        ageGroup.updateProbConditionalDiarrhoea(Zt) # TODO: make this a method of ageGroup
+        for risk in ['Stunting', 'Anaemia']:
+            ageGroup.diarrhoeaUpdate[risk] *= self._getUpdatesFromDiarrhoeaIncidence(beta, ageGroup, risk)
+        ageGroup.diarrhoeaUpdate['Wasting'] *= self._getWastingUpdateFromDiarrhoea(beta, ageGroup)
 
-
-    def _getBFupdate(self, ageGroup):
+    def _getBreastfeedingupdate(self, ageGroup):
         """
         Accounts for the program's direct impact on breastfeeding practices
         :param ageGroup:
         :return:
         """
+        # TODO: do we even need to consider incidence here at all??
+        update = self._getBFpracticeUpdate(ageGroup)
+        # update correct BF distribution
+        ageGroup.bfDist[ageGroup.correctBF] = update
+        # update distribution of incorrect practices
+        popSize = ageGroup.populationSize
+        numCorrectBefore = ageGroup.getNumberCorrectlyBF()
+        numCorrectAfter = popSize * update
+        numShifting = numCorrectAfter - numCorrectBefore
+        numIncorrectBefore = popSize - numCorrectBefore
+        fracCorrecting = numShifting / numIncorrectBefore if numIncorrectBefore > 0.01 else 0.
+        for practice in ageGroup.incorrectBF:
+            ageGroup.bfDist[practice] *= 1. - fracCorrecting
+        ageGroup.redistributePopulation()
+        # TODO: not updating diarrhoea incidence here b/c not sure if necessary
+        beta = ageGroup._getFracDiarrhoeaFixedZ() #  TODO: this could probably be calculated prior to update coverages
+        for risk in ['Stunting', 'Anaemia']:
+            ageGroup.bfUpdate[risk] *= self._getUpdatesFromDiarrhoeaIncidence(beta, ageGroup, risk)
+        ageGroup.bfUpdate['Wasting'] *= self._getWastingUpdateFromDiarrhoea(beta, ageGroup)
+
+    def _getUpdatesFromDiarrhoeaIncidence(self, beta, ageGroup, risk):
+        oldProb = ageGroup.getFracRisk(risk)
+        newProb = 0.
+        probThisRisk = ageGroup.probConditionalDiarrhoea[risk]
+        for bfCat in ageGroup.const.bfList:
+            pab = ageGroup.bfDist[bfCat]
+            t1 = beta[bfCat] * probThisRisk['diarrhoea']
+            t2 = (1.-beta[bfCat]) * probThisRisk['no diarrhoea']
+            newProb += pab * (t1 + t2)
+        reduction = (oldProb - newProb) / oldProb
+        update = 1. - reduction
+        return update
+
+    def _getWastingUpdateFromDiarrhoea(self, beta, ageGroup):
+        update = {}
+        probWasted = ageGroup.probConditionalDiarrhoea['Wasting'] # TODO: this has not been created
+        for wastingCat in ageGroup.cont.wastingList:
+            update[wastingCat] = 1.
+            oldProb = ageGroup.wasingDist[wastingCat]
+            newProb = 0.
+            for bfCat in ageGroup.bfList:
+                pab = ageGroup.bfDist[bfCat]
+                t1 = beta[bfCat] * probWasted[wastingCat]['diarrhoea']
+                t2 = (1.-beta[bfCat]) * probWasted[wastingCat['diarrhoea']]
+                newProb += pab*(t1+t2)
+            reduction = (oldProb - newProb)/oldProb
+            update[wastingCat] *= 1. - reduction
+        return update
+
 
     def _getMortalityUpdate(self, ageGroup):
         """
