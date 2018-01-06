@@ -246,7 +246,7 @@ class Project:
         self.BOprograms = newBOprograms
 
     def getAppropriateBF(self):
-        self.appropriateBF = self.readSheet('Appropriate breastfeeding', [0], 'dict')['Practice']
+        self.correctBF = self.readSheet('Appropriate breastfeeding', [0], 'dict')['Practice']
 
     def makeDict(self, mydict):
         '''myDict is a spreadsheet with 3 index cols, converted to dict using orient='index' '''

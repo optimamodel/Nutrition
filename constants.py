@@ -17,3 +17,4 @@ class Constants:
         self.causesOfDeath = dcp(project.causesOfDeath)
         self.risks = ['Stunting', 'Wasting', 'Breastfeeding', 'Anaemia'] # TODO: read from spreadsheet
         self.childAgeSpans = [1., 5., 6., 12., 36.]
+        self.correctBF = dcp(project.correctBF)
