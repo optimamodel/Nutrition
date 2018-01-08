@@ -80,103 +80,99 @@ rows2.append(row1)
 
 #remove some interventions from complete list
 newInterventionList = dcp(thisData.interventionCompleteList)
-print newInterventionList
-for intervention in newInterventionList:
-    print intervention
+for intervention in thisData.interventionCompleteList:
     if intervention in removeThese:
         newInterventionList.remove(intervention)
-        print intervention + 'removed'
     if 'with bed nets' in intervention:
         newInterventionList.remove(intervention)
-        print intervention + 'removed'
 
 
-#for intervention in newInterventionList:
-#    m,d,p = thisHelper.setupModelDerivedParameters(thisData)
-#    m.moveModelOneYear()
-#    covDict = dcp(zero_cov)
-#    covDict[intervention] = 0.95
-#    m.updateCoverages(covDict)
-#    for i in range(numSteps):
-#        m.moveModelOneYear()
-#    row = [intervention + ' 95%', m.getOutcome('thrive'), m.getOutcome('stunting prev'), m.getTotalCumulativeDeathsChildren(),  m.getTotalCumulativeDeathsPW(), m.listOfAgeCompartments[0].getCumulativeDeaths(), m.cumulativeBirths, m.getOutcome('anemia frac pregnant'), m.getOutcome('anemia frac WRA'), m.getOutcome('anemia frac children'), m.getOutcome('wasting_prev'), m.getOutcome('MAM_prev'), m.getOutcome('SAM_prev')]
-#    rows.append(row)
-#    
-## fortification bundle
-#row = getRowForBundledInterventions('all fortification 95%', fortificationInterventions, zero_cov)
-#rows.append(row)
-#
-## IFAS bundle
-#row = getRowForBundledInterventions('all IFAS 95%', allIFAS, zero_cov)
-#rows.append(row)
-#
-## wasting bundle
-#row = getRowForBundledInterventions('MAM + SAM 95%', wastingInterventions, zero_cov)
-#rows.append(row)
-#
-## PPCF + iron bundle
-#row = getRowForBundledInterventions('Public provision of complementary foods with iron 95%',PPCF_iron , zero_cov)
-#rows.append(row)
-#
-## sprinkles
-#row = getRowForBundledInterventions('Sprinkles 95%', sprinkles, zero_cov)
-#rows.append(row)
-#
-## MMS
-#row = getRowForBundledInterventions('Multiple micronutrient supplementation 95%', MMS, zero_cov)
-#rows.append(row)
-#
-## IFAS PW
-#row = getRowForBundledInterventions('Iron and folic acid supplementation for pregnant women 95%', IFAS_PW, zero_cov)
-#rows.append(row)
-#
-## school
-#row = getRowForBundledInterventions('IFAS: school 95%',school , zero_cov)
-#rows.append(row)
-#
-## community
-#row = getRowForBundledInterventions('IFAS: community 95%', community, zero_cov)
-#rows.append(row)
-#
-## hospital
-#row = getRowForBundledInterventions('IFAS: hospital 95%', hospital, zero_cov)
-#rows.append(row)
-#
-## retailer
-#row = getRowForBundledInterventions('IFAS: retailer 95%', retailer, zero_cov)
-#rows.append(row)
-#
-#
-#
-#    
-#    
-## also get % difference  
-#for row in rows:      
-#    rowVals = row[1:]        
-#    rowPercent = [row[0]]
-#    i = 1        
-#    for val in rowVals:
-#        percentChange = (val - row1[i]) / row1[i]
-#        i += 1
-#        rowPercent.append(percentChange)
-#    rows2.append(rowPercent)    
-#            
-#        
-#    
-#    
-#print 'writing file...'    
-#filename = 'demo_all_interventions_absolute.csv'
-#with open(filename, 'wb') as f:
-#    w = csv.writer(f)
-#    w.writerow(header)
-#    for row in rows:
-#        w.writerow(row)
-#        
-#    
-#print 'writing file 2 ...'    
-#filename = 'demo_all_interventions_percent_change.csv'
-#with open(filename, 'wb') as f:
-#    w = csv.writer(f)
-#    w.writerow(header)
-#    for row in rows2:
-#        w.writerow(row)        
+for intervention in newInterventionList:
+    m,d,p = thisHelper.setupModelDerivedParameters(thisData)
+    m.moveModelOneYear()
+    covDict = dcp(zero_cov)
+    covDict[intervention] = 0.95
+    m.updateCoverages(covDict)
+    for i in range(numSteps):
+        m.moveModelOneYear()
+    row = [intervention + ' 95%', m.getOutcome('thrive'), m.getOutcome('stunting prev'), m.getTotalCumulativeDeathsChildren(),  m.getTotalCumulativeDeathsPW(), m.listOfAgeCompartments[0].getCumulativeDeaths(), m.cumulativeBirths, m.getOutcome('anemia frac pregnant'), m.getOutcome('anemia frac WRA'), m.getOutcome('anemia frac children'), m.getOutcome('wasting_prev'), m.getOutcome('MAM_prev'), m.getOutcome('SAM_prev')]
+    rows.append(row)
+    
+# fortification bundle
+row = getRowForBundledInterventions('all fortification 95%', fortificationInterventions, zero_cov)
+rows.append(row)
+
+# IFAS bundle
+row = getRowForBundledInterventions('all IFAS 95%', allIFAS, zero_cov)
+rows.append(row)
+
+# wasting bundle
+row = getRowForBundledInterventions('MAM + SAM 95%', wastingInterventions, zero_cov)
+rows.append(row)
+
+# PPCF + iron bundle
+row = getRowForBundledInterventions('Public provision of complementary foods with iron 95%',PPCF_iron , zero_cov)
+rows.append(row)
+
+# sprinkles
+row = getRowForBundledInterventions('Sprinkles 95%', sprinkles, zero_cov)
+rows.append(row)
+
+# MMS
+row = getRowForBundledInterventions('Multiple micronutrient supplementation 95%', MMS, zero_cov)
+rows.append(row)
+
+# IFAS PW
+row = getRowForBundledInterventions('Iron and folic acid supplementation for pregnant women 95%', IFAS_PW, zero_cov)
+rows.append(row)
+
+# school
+row = getRowForBundledInterventions('IFAS: school 95%',school , zero_cov)
+rows.append(row)
+
+# community
+row = getRowForBundledInterventions('IFAS: community 95%', community, zero_cov)
+rows.append(row)
+
+# hospital
+row = getRowForBundledInterventions('IFAS: hospital 95%', hospital, zero_cov)
+rows.append(row)
+
+# retailer
+row = getRowForBundledInterventions('IFAS: retailer 95%', retailer, zero_cov)
+rows.append(row)
+
+
+
+    
+    
+# also get % difference  
+for row in rows:      
+    rowVals = row[1:]        
+    rowPercent = [row[0]]
+    i = 1        
+    for val in rowVals:
+        percentChange = (val - row1[i]) / row1[i]
+        i += 1
+        rowPercent.append(percentChange)
+    rows2.append(rowPercent)    
+            
+        
+    
+    
+print 'writing file...'    
+filename = 'demo_all_interventions_absolute.csv'
+with open(filename, 'wb') as f:
+    w = csv.writer(f)
+    w.writerow(header)
+    for row in rows:
+        w.writerow(row)
+        
+    
+print 'writing file 2 ...'    
+filename = 'demo_all_interventions_percent_change.csv'
+with open(filename, 'wb') as f:
+    w = csv.writer(f)
+    w.writerow(header)
+    for row in rows2:
+        w.writerow(row)        
