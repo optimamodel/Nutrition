@@ -125,7 +125,13 @@ class Params:
                 probStuntingIfNotCovered = self.derived.probStuntedIfCovered[intervention]["not covered"][ageName]
                 newProbStunting = newCoverage[intervention]*probStuntingIfCovered + (1.-newCoverage[intervention])*probStuntingIfNotCovered
                 if "Public provision" in intervention: # only give to fraction poor
-                    newProbStunting = self.addSubpopConstraints(newProbStunting, oldProbStunting, self.fracPoor)
+                    newProbStunting = self.addSubpopConstraints(newProbStunting, oldProbStunting, self.fracPoor)    
+                if intervention == "Public provision of complementary foods with iron":
+                    frac = (1. - self.fracExposedMalaria) * self.fracPoor
+                    newProbStunting = self.addSubpopConstraints(newProbStunting, oldProbStunting, frac) 
+                if intervention == "Public provision of complementary foods with iron (malaria area)":
+                    frac = self.fracExposedMalaria * self.fracPoor
+                    newProbStunting = self.addSubpopConstraints(newProbStunting, oldProbStunting, frac)     
                 reduction = (oldProbStunting - newProbStunting)/oldProbStunting
                 stuntingUpdate[ageName] *= 1. - reduction
         return stuntingUpdate
