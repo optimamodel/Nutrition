@@ -48,6 +48,7 @@ class Project:
         self.getRelativeRisks()
         self.getBOrisks()
         self.getIncidences()
+        self.getConditions()
         self.getORforCondition()
         self.getMortalityRates()
 
@@ -119,6 +120,9 @@ class Project:
 
     def getIncidences(self):
         self.incidences = self.readSheet('Incidence of conditions', [0], 'dict')
+
+    def getConditions(self):
+        self.conditions = self.readSheet('Incidence of conditions', [0], 'index').keys()
 
     def getORforCondition(self):
         ORsheet = self.readSheet('Odds ratios', [0,1])
