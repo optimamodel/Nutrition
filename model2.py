@@ -9,7 +9,7 @@ class Model:
         self.constants = Constants(self.project)
         self.populations = pops.setUpPopulations(self.project, self.constants)
         #self._setIYCFtargetPop(self.populations) # TODO: This is not complete
-        self.programInfo = program_info.ProgramInfo(self.project)
+        self.programInfo = program_info.ProgramInfo(self.constants)
 
         self.year = int(self.project.year)
         self.newCoverages = self.project.costCurveInfo['baseline coverage']
@@ -69,7 +69,7 @@ class Model:
             for ageGroup in population.ageGroups:
                 updates = []
                 for program in applicableProgs:
-                    if ageGroup.name in program.relevantAges:
+                    if ageGroup.age in program.relevantAges:
                         if risk == 'Stunting':
                             program._getStuntingUpdate(ageGroup)
                         elif risk == 'Anaemia':
@@ -79,7 +79,7 @@ class Model:
                         elif risk == 'Wasting treatment':
                             program._getWastingPrevalenceUpdate(ageGroup)
                         elif risk == 'Breastfeeding':
-                            program._getBFpracticeUpdate(ageGroup)
+                            program._getBreastfeedingupdate(ageGroup)
                         elif risk == 'Diarrhoea':
                             program._getDiarrhoeaUpdate(ageGroup)
                         elif risk == 'Mortality':

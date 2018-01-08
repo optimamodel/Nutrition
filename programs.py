@@ -1,24 +1,23 @@
-from copy import deepcopy as dcp
 from numpy import exp, log
 
 class Program(object):
     '''Each instance of this class is an intervention,
     and all necessary data will be stored as attributes. Will store name, targetpop, popsize, coverage, edges etc
     Also want it to set absolute number covered, coverage frac (coverage amongst entire pop), normalised coverage (coverage amongst target pop)'''
-    def __init__(self, name, project):
+    def __init__(self, name, constants):
         self.name = name
-        self.project = dcp(project)
-        self.ages = self.project.childAges + self.project.PWages + self.project.WRAages
+        self.const = constants
+        self.ages = self.const.childAges + self.const.PWages + self.const.WRAages
 
-        self.baselineCoverage = self.project.costCurveInfo['baseline coverage'][self.name]
-        self.targetPopulations = self.project.programTargetPop[self.name] # frac of each population which is targeted
-        self.unitCost = self.project.costCurveInfo['unit cost'][self.name] # TODO: consider putting these in and retrieving from the Constants class
-        self.saturation = self.project.costCurveInfo['saturation'][self.name]
+        self.baselineCoverage = self.const.costCurveInfo['baseline coverage'][self.name]
+        self.targetPopulations = self.const.programTargetPop[self.name] # frac of each population which is targeted
+        self.unitCost = self.const.costCurveInfo['unit cost'][self.name]
+        self.saturation = self.const.costCurveInfo['saturation coverage'][self.name]
 
         self._setRelevantAges()
         self._setExclusionDependencies()
         self._setThresholdDependencies()
-        self._setCostCoverageCurve()
+        #self._setCostCoverageCurve() # TODO: this cannot be sit until 1 year of simulation run
 
     def updateCoverage(self, newCoverage, populations):
         """Update all values pertaining to coverage for a program"""
@@ -45,13 +44,13 @@ class Program(object):
         self.unrestrictedPopSize = 0.
         for pop in populations:
             self.unrestrictedPopSize += sum(age.populationSize for age in pop.ageGroups
-                                           if age.name in self.relevantAges)
+                                           if age.age in self.relevantAges)
 
     def _setRestrictedPopSize(self, populations):
         self.restrictedPopSize = 0.
         for pop in populations:
-            self.restrictedPopSize += sum(age.populationSize * self.targetPopulations[age.name] for age in pop.ageGroups
-                                         if age.name in self.relevantAges )
+            self.restrictedPopSize += sum(age.populationSize * self.targetPopulations[age.age] for age in pop.ageGroups
+                                         if age.age in self.relevantAges )
 
     def _setExclusionDependencies(self):
         """
@@ -59,7 +58,7 @@ class Program(object):
         :return:
         """
         self.exclusionDepedencies = []
-        dependencies = self.project.programDependency[self.name]['Exclusion dependency']
+        dependencies = self.const.programDependency[self.name]['Exclusion dependency']
         for program in dependencies:
             self.exclusionDepedencies.append(program)
 
@@ -69,7 +68,7 @@ class Program(object):
         :return:
         """
         self.thresholdDependencies = []
-        dependencies = self.project.programDependency[self.name]['Threshold dependency']
+        dependencies = self.const.programDependency[self.name]['Threshold dependency']
         for program in dependencies:
             self.thresholdDependencies.append(program)
 
@@ -121,15 +120,17 @@ class Program(object):
         :return:
         """
         update = self._getEffectivenessUpdate(ageGroup, 'Effectiveness incidence')
-        newIncidence = ageGroup.incidences['Diarrhoea'] * update
         # get flow-on effects to stunting, anaemia and wasting
-        Z0 = ageGroup._getZa(ageGroup.incidences['Diarrhoea']) # TODO: currently in children class, would like it in ageGroup class
-        Zt = ageGroup._getZa(newIncidence)
-        beta = ageGroup.getFracDiarrhoea(Z0, Zt)
-        ageGroup.updateProbConditionalDiarrhoea(Zt) # TODO: make this a method of ageGroup
+        Z0 = ageGroup._getZa()
+        ageGroup.incidences['Diarrhoea'] *= update['Diarrhoea']
+        Zt = ageGroup._getZa() # updated incidence
+        beta = ageGroup._getFracDiarrhoea(Z0, Zt)
+        ageGroup._updateProbConditionalDiarrhoea(Zt)
         for risk in ['Stunting', 'Anaemia']:
             ageGroup.diarrhoeaUpdate[risk] *= self._getUpdatesFromDiarrhoeaIncidence(beta, ageGroup, risk)
-        ageGroup.diarrhoeaUpdate['Wasting'] *= self._getWastingUpdateFromDiarrhoea(beta, ageGroup)
+        wastingUpdate = self._getWastingUpdateFromDiarrhoea(beta, ageGroup)
+        for wastingCat in self.const.wastedList:
+            ageGroup.diarrhoeaUpdate[wastingCat] *= wastingUpdate[wastingCat]
 
     def _getBreastfeedingupdate(self, ageGroup):
         """
@@ -137,7 +138,8 @@ class Program(object):
         :param ageGroup:
         :return:
         """
-        # TODO: do we even need to consider incidence here at all??
+        # get number at risk before
+        sumBefore = ageGroup._getDiarrhoeaRiskSum()
         update = self._getBFpracticeUpdate(ageGroup)
         # update correct BF distribution
         ageGroup.bfDist[ageGroup.correctBF] = update
@@ -151,7 +153,10 @@ class Program(object):
         for practice in ageGroup.incorrectBF:
             ageGroup.bfDist[practice] *= 1. - fracCorrecting
         ageGroup.redistributePopulation()
-        # TODO: not updating diarrhoea incidence here b/c not sure if necessary
+        # number at risk after
+        sumAfter = ageGroup._getDiarrhoeaRiskSum()
+        # update diarrhoea incidence baseline, even though not directly used in this calculation
+        ageGroup.incidences['Diarrhoea'] *= sumAfter / sumBefore
         beta = ageGroup._getFracDiarrhoeaFixedZ() #  TODO: this could probably be calculated prior to update coverages
         for risk in ['Stunting', 'Anaemia']:
             ageGroup.bfUpdate[risk] *= self._getUpdatesFromDiarrhoeaIncidence(beta, ageGroup, risk)
@@ -172,15 +177,15 @@ class Program(object):
 
     def _getWastingUpdateFromDiarrhoea(self, beta, ageGroup):
         update = {}
-        probWasted = ageGroup.probConditionalDiarrhoea['Wasting'] # TODO: this has not been created
-        for wastingCat in ageGroup.cont.wastingList:
+        for wastingCat in self.const.wastedList:
             update[wastingCat] = 1.
-            oldProb = ageGroup.wasingDist[wastingCat]
+            probWasted = ageGroup.probConditionalDiarrhoea[wastingCat]
+            oldProb = ageGroup.wastingDist[wastingCat]
             newProb = 0.
-            for bfCat in ageGroup.bfList:
+            for bfCat in self.const.bfList:
                 pab = ageGroup.bfDist[bfCat]
-                t1 = beta[bfCat] * probWasted[wastingCat]['diarrhoea']
-                t2 = (1.-beta[bfCat]) * probWasted[wastingCat['diarrhoea']]
+                t1 = beta[bfCat] * probWasted['diarrhoea']
+                t2 = (1.-beta[bfCat]) * probWasted['diarrhoea']
                 newProb += pab*(t1+t2)
             reduction = (oldProb - newProb)/oldProb
             update[wastingCat] *= 1. - reduction
@@ -194,7 +199,7 @@ class Program(object):
         """
         # TODO: this update must be used to scale the reference mortality
         update = self._getEffectivenessUpdate(ageGroup, 'Effectiveness mortality')
-        for cause in self.project.causesOfDeath:
+        for cause in self.const.causesOfDeath:
             ageGroup.mortalityUpdate[cause] *= update[cause]
 
     def _getBirthOutcomeUpdate(self, ageGroup):
@@ -203,7 +208,7 @@ class Program(object):
         :return:
         """
         update = self._getBOUpdate()
-        for BO in self.project.birthOutcomes:
+        for BO in self.const.birthOutcomes:
             ageGroup.birthUpdate[BO] *= update[BO]
 
     def _getFamilyPlanningUpdate(self, ageGroup):
@@ -258,8 +263,12 @@ class Program(object):
 
     def _getEffectivenessUpdate(self, ageGroup, effType):
         """This covers mortality and incidence updates (except wasting)"""
-        update = {cause: 1. for cause in self.project.causesOfDeath}
-        for cause in self.project.causesOfDeath:
+        if 'incidence' in effType:
+            toIterate = self.const.conditions
+        else: # mortality
+            toIterate = self.const.causesOfDeath
+        update = {cause: 1. for cause in toIterate}
+        for cause in toIterate:
             affFrac = ageGroup.programEffectiveness[self.name][cause]['Affected fraction']
             effectiveness = ageGroup.programEffectiveness[self.name][cause][effType]
             oldCov = self.baselineCoverage
@@ -268,10 +277,10 @@ class Program(object):
         return update
 
     def _getBOUpdate(self):
-        BOupdate = {BO: 1. for BO in self.project.birthOutcomes}
-        for outcome in self.project.birthOutcomes:
-            affFrac = self.project.BOprograms[self.name]['affected fraction'][outcome]
-            eff = self.project.BOprograms[self.name]['effectiveness'][outcome]
+        BOupdate = {BO: 1. for BO in self.const.birthOutcomes}
+        for outcome in self.const.birthOutcomes:
+            affFrac = self.const.BOprograms[self.name]['affected fraction'][outcome]
+            eff = self.const.BOprograms[self.name]['effectiveness'][outcome]
             oldCov = self.baselineCoverage
             reduction = affFrac * eff * (self.proposedCoverageFrac - oldCov) / (1. - eff*oldCov)
             BOupdate[outcome] = 1. - reduction
@@ -337,7 +346,6 @@ class CostCovCurve:
             inverseCurve = lambda y: -D * log((B - y) / (y - A)) + C
         return inverseCurve
 
-def setUpPrograms(project):
-    programs = [Program(program, project) for program in project.programList] # list of all programs
-    programAreas = dcp(project.programAreas)
-    return programs, programAreas
+def setUpPrograms(constants):
+    programs = [Program(program, constants) for program in constants.programList] # list of all programs
+    return programs

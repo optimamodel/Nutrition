@@ -7,10 +7,11 @@ class ProgramInfo:
         programs: list of all program objects
         programAreas: Risks are keys with lists containing applicable program names (dict of lists)
     """
-    def __init__(self, project):
+    def __init__(self, constants):
         """
         :param project: container for all data read in from workbook
         :type project: instance of Project class
         """
         import programs as progs
-        self.programs, self.programAreas = progs.setUpPrograms(project) # TODO: could sort programs by dependency in here.
+        self.programs = progs.setUpPrograms(constants) # TODO: could sort programs by dependency in here.
+        self.programAreas = constants.programAreas
