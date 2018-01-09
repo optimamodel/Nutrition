@@ -9,6 +9,7 @@ class Constants:
         self.birthOutcomes = dcp(project.riskCategories['Birth outcomes'])
         self.stuntedList = self.stuntingList[2:]
         self.wastedList = self.wastingList[2:]
+        self.nonWastedList = self.wastingList[:2]
         self.anaemicList = self.anaemiaList[1:]
         self.allRisks = [self.stuntingList, self.wastingList, self.bfList, self.anaemiaList]
         self.childAges = dcp(project.childAges)
