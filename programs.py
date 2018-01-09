@@ -15,7 +15,7 @@ class Program(object):
         self.saturation = self.const.costCurveInfo['saturation coverage'][self.name]
 
         self._setRelevantAges()
-        self._setExclusionDependencies()
+        self._setExclusionDependencies() # TODO: need to model this
         self._setThresholdDependencies()
         #self._setCostCoverageCurve() # TODO: this cannot be sit until 1 year of simulation run
 
@@ -112,6 +112,16 @@ class Program(object):
             combined = prevUpdate[wastingCat] * incidUpdate[wastingCat]
             ageGroup.wastingUpdate[wastingCat] *= combined
 
+    def _getWastingPreventionUpdate(self, ageGroup):
+        update = self._getWastingIncidenceUpdate(ageGroup)
+        for wastingCat in self.const.wastedList:
+            ageGroup.wastingPreventionUpdate[wastingCat] *= update[wastingCat]
+
+    def _getWastingTreatmentUpdate(self, ageGroup):
+        update = self._getWastingPrevalenceUpdate(ageGroup)
+        for wastingCat in self.const.wastedList:
+            ageGroup.wastingTreatmentUpdate[wastingCat] *= update[wastingCat]
+
 
     def _getDiarrhoeaUpdate(self, ageGroup):
         """
@@ -191,7 +201,6 @@ class Program(object):
             update[wastingCat] *= 1. - reduction
         return update
 
-
     def _getMortalityUpdate(self, ageGroup):
         """
         Programs which directly impact mortality rates
@@ -233,7 +242,7 @@ class Program(object):
     def _getWastingPrevalenceUpdate(self, ageGroup):
         # overall update to prevalence of MAM and SAM
         update = {}
-        for wastingCat in ['SAM', 'MAM']:
+        for wastingCat in self.const.wastedList:
             oldProb = ageGroup.getFracWasted(wastingCat)
             probWastedIfCovered = ageGroup.probConditionalCoverage[wastingCat][self.name]['covered']
             probWastedIfNotCovered = ageGroup.probConditionalCoverage[wastingCat][self.name]['not covered']
@@ -245,7 +254,7 @@ class Program(object):
     def _getWastingUpdateFromWastingIncidence(self, ageGroup):
         incidenceUpdate = self._getWastingIncidenceUpdate(ageGroup)
         update = {}
-        for condition in ['SAM', 'MAM']:
+        for condition in self.const.wastedList:
             newIncidence = ageGroup.incidences[condition] * incidenceUpdate[condition]
             reduction = (ageGroup.incidences[condition] - newIncidence)/newIncidence
             update[condition] = 1-reduction
@@ -253,7 +262,7 @@ class Program(object):
 
     def _getWastingIncidenceUpdate(self, ageGroup):
         update = {}
-        for condition in ['SAM', 'MAM']:
+        for condition in self.const.wastedList:
             affFrac = ageGroup.programEffectiveness[self.name][condition]['Affected fraction']
             effectiveness = ageGroup.programEffectiveness[self.name][condition]['Effectiveness incidence']
             oldCov = self.baselineCoverage
