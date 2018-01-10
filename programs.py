@@ -122,7 +122,6 @@ class Program(object):
         for wastingCat in self.const.wastedList:
             ageGroup.wastingTreatmentUpdate[wastingCat] *= update[wastingCat]
 
-
     def _getDiarrhoeaUpdate(self, ageGroup):
         """
         This function accounts for the _direct_ impact of programs on diarrhoea incidence
