@@ -52,7 +52,8 @@ class Model:
             self._updatePopulation(pop)
             # combine direct and indirect updates to each risk area that we model
             self._combineUpdates(pop) # This only needs to be called for children
-            self._updateDistributions(pop) # TODO: remember to move the population around after updating distributions
+            self._updateDistributions(pop)
+            pop._updateMortalityRates()
 
     def _getApplicablePrograms(self, risk):
         applicableProgNames = self.programInfo.programAreas[risk]
@@ -84,10 +85,6 @@ class Model:
                                                   * ageGroup.fromSAMtoMAMupdate[wastingCat]
         # elif population.name is 'Pregnant women': # only anaemia
 
-
-
-
-
     def _updateDistributions(self, population):
         """
         Uses assumption that each ageGroup in a population has a default update
@@ -95,7 +92,7 @@ class Model:
         :param ageGroup:
         :return:
         """
-        if population.name is 'Children':
+        if population.name is 'Children': # TODO: could map these things using a dictionary of risks with corresponding disttributions & outcomes. Then function could be made to call.
             for ageGroup in population.ageGroups:
                 # mortality
                 for cause in self.constants.causesOfDeath:
@@ -111,7 +108,7 @@ class Model:
                 ageGroup.anaemiaDist['not anaemic'] = 1.-newProbAnaemia
                 # wasting
                 newProbWasted = 0.
-                for wastingCat in self.constants.wastedList: # TODO: does order of SAM/MAM matter? Check distribution update
+                for wastingCat in self.constants.wastedList:
                     oldProbThisCat = ageGroup.getFracWasted(wastingCat)
                     newProbThisCat = oldProbThisCat * ageGroup.totalWastingUpdate[wastingCat]
                     ageGroup.wastingDist[wastingCat] = newProbThisCat
@@ -129,7 +126,6 @@ class Model:
                                                           for BO in self.constants.birthOutcomes if BO is not 'Term AGA')
         else: # PW or non-PW -- anaemia only
             for ageGroup in population.ageGroups:
-                # TODO: this update is exactly the same as for children -- make function?
                 oldProbAnaemia = ageGroup.getFracRisk('Anaemia')
                 newProbAnaemia = oldProbAnaemia * ageGroup.totalAnaemiaUpdate
                 ageGroup.anaemiaDist['anaemic'] = newProbAnaemia
