@@ -25,7 +25,7 @@ class ProgramInfo:
         (root, first level, second level etc..)
         :return:
         """
-        self._thresholdSort()
+        self._thresholdSort() # TODO: would like to have only one function to do both sortings
         self._exclusionSort()
 
     def _getThresholdRoots(self):
@@ -36,14 +36,14 @@ class ProgramInfo:
 
     def _getExclusionRoots(self):
         openSet = self.programs[:]
-        closedSet = [program for program in openSet if not program.exclusionDepedencies] # independence
+        closedSet = [program for program in openSet if not program.exclusionDependencies] # independence
         openSet = [program for program in openSet if program not in closedSet]
         return openSet, closedSet
 
     def _exclusionSort(self):
         openSet, closedSet = self._getExclusionRoots()
         for program in openSet:
-            dependentNames = set(program.exclusionDepedencies)
+            dependentNames = set(program.exclusionDependencies)
             closedSetNames = set([prog.name for prog in closedSet])
             if dependentNames.issubset(closedSetNames):  # all parent programs in closed set
                 closedSet += [program]
@@ -57,3 +57,30 @@ class ProgramInfo:
             if dependentNames.issubset(closedSetNames):  # all parent programs in closed set
                 closedSet += [program]
         self.thresholdOrder = closedSet[:]
+
+    def _restrictCoverages(self, newCoverages):
+        """
+        Uses the ordering of both dependency lists to restrict the coverage of programs.
+        Since the order of dependencies matters, was decided to apply threshold first then exclusion dependencies
+        :param newCoverages:
+        :return:
+        """
+        # TODO: currently assuming coverage is dictionary.
+
+        # TODO: this structure is correct but need to calculate the proper coverage comparison
+        #threshold
+        for child in self.thresholdOrder:
+            childName = child.name
+            for parentName in child.thresholdDependencies:
+                maxCov = newCoverages[parentName]
+                if newCoverages[childName] > maxCov: # TODO: this does not account for the mis-match in coverages -- need to calculate this
+                    newCoverages[childName] = maxCov
+        #exclusion
+        for child in self.exclusionOrder:
+            childName = child.name
+            for parentName in child.exclusionDependencies:
+                maxCov = 1.-newCoverages[parentName]
+                if newCoverages[childName] > maxCov:
+                    newCoverages[childName] = maxCov
+        return newCoverages
+

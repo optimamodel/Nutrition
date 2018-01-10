@@ -57,10 +57,10 @@ class Program(object):
         List containing the names of programs which restrict the coverage of this program to (1 - coverage of independent program)
         :return:
         """
-        self.exclusionDepedencies = []
+        self.exclusionDependencies = []
         dependencies = self.const.programDependency[self.name]['Exclusion dependency']
         for program in dependencies:
-            self.exclusionDepedencies.append(program)
+            self.exclusionDependencies.append(program)
 
     def _setThresholdDependencies(self):
         """
