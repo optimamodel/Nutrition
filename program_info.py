@@ -85,11 +85,11 @@ class ProgramInfo:
                 parentPopSize = 0. # TODO: could probably tidy this up
                 for pop in populations:
                     parentPopSize += sum(age.populationSize for age in pop.ageGroups if age.age in commonAges)
-                numCoveredInOverlap = parent.proposedCoverageNum * parentPopSize # TODO: be careful to use % covered here
+                numCoveredInOverlap = parent.proposedCoverageFrac * parentPopSize
                 percentCoveredByParent = numCoveredInOverlap / child.restrictedPopSize
                 if percentCoveredByParent < 1:
                     childMaxCov = numCoveredInOverlap / child.unrestrictedPopSize
                 else:
                     childMaxCov = child.restrictedPopSize / child.unrestrictedPopSize
-                if child.proposedCoverageNum > childMaxCov:
-                    child.proposedCoverageNum = childMaxCov
+                if child.proposedCoverageFrac > childMaxCov:
+                    child.proposedCoverageFrac = childMaxCov
