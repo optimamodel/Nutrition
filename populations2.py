@@ -31,7 +31,7 @@ class ChildAgeGroup:
         self.bfDist = BFdist
         self.birthDist = birthDist
         self.incidences = incidences
-        self.const = constants # TODO: consider getting OR and RR for various outcomes as a function of age from constants
+        self.const = constants
         self.correctBF = self.const.correctBF[age]
         self.incorrectBF = list(set(self.const.bfList) - set(self.correctBF))
         self.ageingRate = 1./ageSpan

@@ -186,24 +186,3 @@ class Model:
                 if risk == 'Wasting treatment':
                     # need to account for flow between MAM and SAM
                     self._getFlowBetweenMAMandSAM(ageGroup)
-
-
-                # TODO: need to update distributions etc here.
-                # TODO: update mortality
-                # UPDATE STUNTING DISTRIBUTION
-                # oldProbStunting = ageGroup.getFracRisk(risk)
-                # newProbStunting = oldProbStunting * update
-                # ageGroup.restratify(newProbStunting) # write this
-                # redistribute population based on new distribution
-                # ageGroup.redistribute() # use distributions of ageGroups
-
-
-
-
-
-
-
-
-
-
-
