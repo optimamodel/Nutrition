@@ -7,7 +7,6 @@ class Program(object):
     def __init__(self, name, constants):
         self.name = name
         self.const = constants
-        self.ages = self.const.childAges + self.const.PWages + self.const.WRAages
 
         self.baselineCoverage = self.const.costCurveInfo['baseline coverage'][self.name]
         self.targetPopulations = self.const.programTargetPop[self.name] # frac of each population which is targeted
@@ -15,7 +14,7 @@ class Program(object):
         self.saturation = self.const.costCurveInfo['saturation coverage'][self.name]
 
         self._setRelevantAges()
-        self._setExclusionDependencies() # TODO: need to model this
+        self._setExclusionDependencies()
         self._setThresholdDependencies()
         #self._setCostCoverageCurve() # TODO: this cannot be sit until 1 year of simulation run
 
@@ -32,7 +31,7 @@ class Program(object):
         :return:
         """
         self.relevantAges = []
-        for age in self.ages:
+        for age in self.const.allAges:
             fracTargeted = self.targetPopulations[age]
             if fracTargeted > 0.001: # floating point tolerance
                 self.relevantAges.append(age)

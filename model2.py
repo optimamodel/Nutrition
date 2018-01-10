@@ -17,9 +17,9 @@ class Model:
         self._updateCoverages()
 
     def _updateCoverages(self):
-        self.programInfo._restrictCoverages(self.newCoverages)
         for program in self.programInfo.programs:
             program.updateCoverage(self.newCoverages[program.name], self.populations)
+        self.programInfo._restrictCoverages(self.populations)
 
 
     # TODO: TBC

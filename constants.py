@@ -15,6 +15,7 @@ class Constants:
         self.childAges = dcp(project.childAges)
         self.PWages = dcp(project.PWages)
         self.WRAages = dcp(project.WRAages)
+        self.allAges = self.childAges + self.PWages + self.WRAages
         self.causesOfDeath = dcp(project.causesOfDeath)
         self.conditions = dcp(project.conditions)
         self.risks = ['Stunting', 'Wasting', 'Breastfeeding', 'Anaemia'] # TODO: read from spreadsheet
