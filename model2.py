@@ -342,10 +342,25 @@ class Model:
         numWRA = self.populations[2].getTotalPopulation()
         PWpop = self.derived.pregnancyRate * numWRA * (1. - self.constants.fracPregnancyAverted)
         for ageGroup in ageGroups:
-            popSize = PWpop * self.const.PWageDistribution[ageGroup.age]
+            popSize = PWpop * self.constants.PWageDistribution[ageGroup.age]
             for anaemiaCat in self.constants.anaemiaList:
                 thisBox = ageGroup.boxes[anaemiaCat]
                 thisBox.populationSize = popSize * ageGroup.anaemiaDist[anaemiaCat]
+
+    def _updateWRApopulation(self):
+        """Uses projected figures to determine the population of WRA not pregnant in a given age band and year
+        warning: PW pop must be updated first."""
+        #assuming WRA and PW have same age bands
+        ageGroups = self.populations[2]
+        for idx in range(len(ageGroups)):
+            ageGroup = ageGroups[idx]
+            projectedWRApop = self.constants.popProjections[ageGroup.age][self.year]
+            PWpop = self.populations[1].ageGroups[idx].getTotalPopulation()
+            nonPW = projectedWRApop - PWpop
+            #distribute over risk factors
+            for anaemiaCat in self.constants.anaemiaList:
+                thisBox = ageGroup.boxes[anaemiaCat]
+                thisBox.populationSize = nonPW * ageGroup.anaemiaDist[anaemiaCat]
 
     def restratify(self, fractionYes):
         # Going from binary stunting/wasting to four fractions
@@ -384,8 +399,8 @@ class Model:
         for month in range(12):
             self.moveModelOneTimeStep()
         self._applyPWMortality()
-        self.updatePWpopulation()
-        self.updateWRApopulation()
+        self._updatePWpopulation()
+        self._updateWRApopulation()
         self.updateYearlyRiskDistributions()
         self.year += 1
 

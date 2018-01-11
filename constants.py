@@ -23,6 +23,7 @@ class Constants:
         self.childAgeSpans = [1., 5., 6., 12., 36.]
         self.womenAgeingRates = [1./5., 1./10., 1./10., 1./10.] # this is in years
         self.PWageDistribution = dcp(project.PWageDistribution)
+        self.popProjections = dcp(project.projections)
         self.correctBF = dcp(project.correctBF)
         self.RRdiarrhoea = dcp(project.RRdeath['Child diarrhoea']['Diarrhoea incidence'])
         self.RRdeath = dcp(project.RRdeath)
