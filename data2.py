@@ -40,6 +40,7 @@ class Project:
         self.getAgeDist()
         self.getRiskDist()
         self.getAnaemiaDist()
+        self.getBirthDist()
         self.getProjections()
         self.getAppropriateBF()
 
@@ -102,6 +103,12 @@ class Project:
         anaemiaDist = dist.loc[field].to_dict('dict')
         self.riskCategories[field] = list(dist.loc[field].index)
         self.riskDistributions[field] = anaemiaDist
+
+    def getBirthDist(self):
+        birthsSheet = self.readSheet('Distribution births', [0, 1])
+        self.birthDist = {}
+        for field in ['Birth age order', 'Birth intervals']:
+            self.birthDist[field] = birthsSheet.loc[field].to_dict('dict')['Fraction']
 
     def getProjections(self):
         self.projections = self.readSheet('Demographic projections', [0], 'dict')
@@ -214,7 +221,7 @@ class Project:
         self.programDependency = programDep
 
     def getFamilyPrograms(self):
-        self.familyPlanningMethods = self.readSheet('Interventions family planning', [0])
+        self.famPlanMethods = self.readSheet('Interventions family planning', [0], 'index')
 
     def getChildProgram(self):
         childSheet = self.readSheet('Interventions for children', [0,1,2])

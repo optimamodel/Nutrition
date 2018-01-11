@@ -791,6 +791,22 @@ class PregnantWomen(Population):
                 ageGroup.probConditionalCoverage[program]['covered'] = pc
                 ageGroup.probConditionalCoverage[program]['not covered'] = pn
 
+    def _setBirthPregnancyInfo(self):
+        self.fracPregnancyAverted = sum(self.const.famPlanMethods[prog]['Effectiveness'] *
+                                        self.const.famPlanMethods[prog]['Distribution'] *
+                                        self.const.costCurveInfo['baseline coverage']['Family planning']
+                                        for prog in self.const.famPlanMethods.iterkeys())
+        numPregnant = self.const.demographics['number of pregnant women']
+        numWRA = sum(pop for key, pop in self.project.populationByAge.iteritems() if 'WRA' in key)
+        rate = numPregnant/numWRA/(1.- self.fracPregnancyAverted)
+        # reduce rate by % difference between births and pregnancies to get birth rate
+        projectedBirths = self.const.popProjections['number of births']
+        projectedPWpop = self.const.popProjections['pregnant women']
+        percentDiff = [ai/bi for ai,bi in zip(projectedBirths, projectedPWpop)]
+        averagePercentDiff = sum(percentDiff) / float(len(percentDiff))
+        self.pregnancyRate = rate
+        self.birthRate = averagePercentDiff * rate
+
 class NonPregnantWomen(Population):
     def __init__(self, name, project, constants):
         super(NonPregnantWomen, self).__init__(name, project, constants)

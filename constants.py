@@ -32,6 +32,7 @@ class Constants:
         self.ORconditionBirth = dcp(project.ORconditionBirth)
         self.BOprograms = dcp(project.BOprograms)
         self.demographics = dcp(project.demographics)
+        self.famPlanMethods = dcp(project.famPlanMethods)
         # self.mortalityRates = dcp(project.mortalityRates)
         self.programList = dcp(project.programList)
         self.costCurveInfo = dcp(project.costCurveInfo)
