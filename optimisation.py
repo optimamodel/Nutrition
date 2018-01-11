@@ -514,6 +514,7 @@ class Optimisation:
                 fixedCosts.append(self.inititalProgramAllocations[intervention])
             else:
                 fixedCosts.append(0.)
+        self.fixedCosts = fixedCosts        
 
     def getTotalInitialAllocation(self):
         import costcov
