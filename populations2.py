@@ -17,9 +17,6 @@ class WomenAgeGroup:
         self.const = constants
         self.anaemiaUpdate = 1.
         self.probConditionalCoverage = {}
-        self.probConditionalDiarrhoea = {}
-        self.probConditionalStunting = {}
-        self.programEffectiveness = {}
 
 class ChildAgeGroup:
     def __init__(self, age, populationSize, boxes, anaemiaDist, incidences, stuntingDist, wastingDist, BFdist, birthDist,
@@ -43,7 +40,6 @@ class ChildAgeGroup:
         self.programEffectiveness = {}
         self._setUpdateStorage()
 
-
     def _setUpdateStorage(self):
         # storing updates
         self.stuntingUpdate = 1.
@@ -66,6 +62,8 @@ class ChildAgeGroup:
         for wastingCat in self.const.wastedList:
             self.wastingPreventionUpdate[wastingCat] = 1.
             self.wastingTreatmentUpdate[wastingCat] = 1.
+        self.totalStuntingUpdate = 1.
+        self.totalWastingUpdate = 1.
 
     def _getPopulation(self, risks):
         """ Get population size for given age groups and combinations of given risks"""
@@ -395,18 +393,6 @@ class Children(Population):
                                 count += t1 * t2 * t3 * t4 * t5
                             ageGroup.boxes[stuntingCat][wastingCat][bfCat][anemiaStatus].mortalityRate = count
 
-    def _applyMortality(self):
-        for ageGroup in self.ageGroups:
-            for stuntingCat in self.const.stuntingList:
-                for wastingCat in self.const.wastingList:
-                    for bfCat in self.const.bfList:
-                        for anaemiaCat in self.const.anaemiaList:
-                            thisBox = ageGroup.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat]
-                            deaths = thisBox.populationSize * thisBox.mortalityRate * self.const.timestep # monthly deaths
-                            thisBox.populationSize -= deaths
-                            thisBox.cumulativeDeaths += deaths
-
-
 
 
     # TODO: do we need the below since we have it in age groups? Could make wrapper functions
@@ -467,14 +453,6 @@ class Children(Population):
         alteredList = self.const.allRisks[:]
         alteredList[index] = newList
         return alteredList
-
-
-
-
-
-
-
-
 
 
     def _setProbConditionalStunting(self):
@@ -727,18 +705,8 @@ class PregnantWomen(Population):
         self._updateMortalityRates()
         self._setProbAnaemicIfCovered()
 
-    # ##### PROGRAM UPDATES #####
-    #
-    # def _update(self, programInfo):
-    #     """Update all the age group parameters based upon risk area.  """
-    #     for risk in self.const.risks:
-    #         # first get relevant programs, determined by risk area
-    #         applicableProgs = self._getApplicablePrograms(risk, programInfo)
-    #         for ageGroup in self.ageGroups:
-    #             for program in applicableProgs:
-    #                 # TODO: could put in check to see if ageGroup is impacted by program or not...
-    #                 program._updateAgeGroup(ageGroup, risk)
-    #     self._updateMortalityRates()
+    def getTotalPopulation(self):
+        return sum(ageGroup.populationSize for ageGroup in self.ageGroups)
 
     ##### DATA WRANGLING ######
 
@@ -830,18 +798,8 @@ class NonPregnantWomen(Population):
         self._makePopSizes()
         self._makeBoxes()
 
-    ##### PROGRAM UPDATES #####
-
-    def _update(self, programInfo):
-        """Update all the age group parameters based upon risk area.  """
-        for risk in self.const.risks:
-            # first get relevant programs, determined by risk area
-            applicableProgs = self._getApplicablePrograms(risk, programInfo)
-            for ageGroup in self.ageGroups:
-                for program in applicableProgs:
-                    # TODO: could put in check to see if ageGroup is impacted by program or not...
-                    program._updateAgeGroup(ageGroup, risk)
-
+    def getTotalPopulation(self):
+        return sum(ageGroup.populationSize for ageGroup in self.ageGroups)
 
     ##### DATA WRANGLING ######
 
@@ -857,7 +815,7 @@ class NonPregnantWomen(Population):
             for anaemiaCat in self.const.anaemicList:
                 thisPop = popSize * anaemiaDist[anaemiaCat]
                 boxes[anaemiaCat] = Box(thisPop)
-            self.ageGroups.append(WomenAgeGroup(age, popSize, boxes, anaemiaDist))
+            self.ageGroups.append(WomenAgeGroup(age, popSize, boxes, anaemiaDist, 1, None))
 
 
 

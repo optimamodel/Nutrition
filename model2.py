@@ -204,6 +204,17 @@ class Model:
                     # need to account for flow between MAM and SAM
                     self._getFlowBetweenMAMandSAM(ageGroup)
 
+    def _applyChildMortality(self):
+        ageGroups = self.populations[0].ageGroups
+        for ageGroup in ageGroups:
+            for stuntingCat in self.constants.stuntingList:
+                for wastingCat in self.constants.wastingList:
+                    for bfCat in self.constants.bfList:
+                        for anaemiaCat in self.constants.anaemiaList:
+                            thisBox = ageGroup.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat]
+                            deaths = thisBox.populationSize * thisBox.mortalityRate * self.constants.timestep # monthly deaths
+                            thisBox.populationSize -= deaths
+                            thisBox.cumulativeDeaths += deaths
 
     def _applyChildAgeing(self):
         # TODO: longer term, I think this should be re-written
@@ -211,7 +222,7 @@ class Model:
         # TODO: then update boxes popsize once at end based on distribution.
 
         # get number ageing out of each age group
-        ageGroups = self.populations[0]
+        ageGroups = self.populations[0].ageGroups
         numAgeGroups = len(ageGroups)
         ageingOut = [None] * numAgeGroups
         for idx in range(numAgeGroups):
@@ -240,7 +251,7 @@ class Model:
                         newbornBox = newborns.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat]
                         newbornBox.populationSize -= ageingOut[0][stuntingCat][wastingCat][bfCat][anaemiaCat]
         # for older age groups, account for previous stunting (binary)
-        for idx in range(numAgeGroups):
+        for idx in range(1, numAgeGroups):
             ageGroup = ageGroups[idx]
             numAgeingIn = {}
             numAgeingIn['stunted'] = 0.
@@ -271,7 +282,7 @@ class Model:
                             thisBox.populationSize -= ageingOut[idx][stuntingCat][wastingCat][bfCat][anaemiaCat]
                             thisBox.populationSize += numAgeingInStratified[stuntingCat] * pw * pbf * pa
             # gaussianise
-            probStunting = ageGroup.getFracStunted() # TODO; this should be impacted by change in box pops
+            probStunting = ageGroup.getStuntedFrac() # TODO; this should be impacted by change in box pops
             ageGroup.stuntingDist = ageGroup.restratify(probStunting)
             ageGroup.redistributePopulation()
 
@@ -379,17 +390,15 @@ class Model:
         restratification["high"] = fractionHigh
         return restratification
 
-
-
     def moveModelOneTimeStep(self):
         """
         Responsible for updating children since they have monthly time steps
         :return:
         """
-        self._applyChildrenMortality()
+        self._applyChildMortality()
         self._applyChildAgeing()
         self._applyBirths()
-        self.updateRiskDistributions()
+        # self.updateRiskDistributions() # TODO: don't think I need this b/c distributions already updated (stored in age groups)
 
     def moveModelOneYear(self):
         """
@@ -401,7 +410,7 @@ class Model:
         self._applyPWMortality()
         self._updatePWpopulation()
         self._updateWRApopulation()
-        self.updateYearlyRiskDistributions()
+        # self.updateYearlyRiskDistributions() # TODO: don't think I need this
         self.year += 1
 
 
