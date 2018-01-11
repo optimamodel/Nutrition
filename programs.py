@@ -8,7 +8,7 @@ class Program(object):
         self.name = name
         self.const = constants
 
-        self.baselineCoverage = self.const.costCurveInfo['baseline coverage'][self.name]
+        self.restrictedBaselineCov = self.const.costCurveInfo['baseline coverage'][self.name]
         self.targetPopulations = self.const.programTargetPop[self.name] # frac of each population which is targeted
         self.unitCost = self.const.costCurveInfo['unit cost'][self.name]
         self.saturation = self.const.costCurveInfo['saturation coverage'][self.name]
@@ -24,6 +24,16 @@ class Program(object):
         self._setUnrestrictedPopSize(populations)
         self._setRestrictedPopSize(populations)
         self.proposedCoverageFrac = self.proposedCoverageNum / self.unrestrictedPopSize
+
+    # def updateCoverageFrac(self, newCoverage, populations):
+    #     """
+    #     Updates coverage values based on % of the target pop covered
+    #     """
+    #     self.proposedTargetCoverage = newCoverage
+    #     # convert to appropriate coverage metrics
+    #     self.
+
+
 
     def _setRelevantAges(self):
         """
