@@ -117,7 +117,7 @@ class OutputClass:
 
 class Optimisation:
     def __init__(self, cascadeValues, objectivesList, dataSpreadsheetName, resultsFileStem, country, costCurveType='standard',
-                 totalBudget=None, parallel=True, numRuns=10, numModelSteps=14, haveFixedCosts=False, interventionsToKeep=None):
+                 totalBudget=None, parallel=True, numRuns=10, numModelSteps=14, haveFixedCosts=False, fixedCostsCustom=None, interventionsToKeep=None):
         import helper
         import data
         from multiprocessing import cpu_count
@@ -497,12 +497,23 @@ class Optimisation:
                 prc.start()
         
     def getFixedCosts(self, haveFixedProgCosts, initialAllocation):
+        # warning! if there are custom costs  haveFixedProgCosts must be False
         from copy import deepcopy as dcp
         if haveFixedProgCosts:
             fixedCosts = dcp(initialAllocation)
         else:
             fixedCosts = [0.] * len(initialAllocation)
         return fixedCosts
+        
+    def setCustomFixedCosts(self, customInterventionList):
+        # fixes costs so interventions in interventionsList can not be defunded
+        fixedCosts = []
+        for intervention in range(len(self.data.interventionList)):
+            thisIntervention = self.data.interventionList[intervention]
+            if thisIntervention in customInterventionList:
+                fixedCosts.append(self.inititalProgramAllocations[intervention])
+            else:
+                fixedCosts.append(0.)
 
     def getTotalInitialAllocation(self):
         import costcov

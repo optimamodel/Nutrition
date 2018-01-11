@@ -36,7 +36,7 @@ def getRowForBundledInterventions(name, thisBundle, ref_cov):
 header = ['scenario', 'thrive', 'stunting prev', 'deaths: child', 'deaths: PW', 'deaths: neonatal', 'cumulative births', 'anemia: PW', 'anemia: WRA', 'anemia: children', 'wasting: all', 'wasting: MAM', 'wasting: SAM']   
 
 # make lists of intervention bundles
-fortificationInterventions = ['Iron fortification of wheat flour', 'Iron fortification of maize', 'Iron fortification of rice', 'Iron and iodine fortification of salt']
+fortificationInterventions = ['IFA fortification of wheat flour', 'IFA fortification of maize', 'IFA fortification of rice', 'Iron and iodine fortification of salt']
 allIFAS = []
 for intervention in thisData.interventionCompleteList:
     if 'IFAS' in intervention:
