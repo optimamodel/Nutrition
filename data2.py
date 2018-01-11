@@ -77,10 +77,14 @@ class Project:
 
     def getAgeDist(self):
         baseline = self.readSheet('Baseline year demographics', [0,1])
-        ageDist = {}
+        agePop = {}
         for field in ['Non-pregnant women population', 'PW population']:
+            agePop.update(baseline.loc[field].to_dict('index'))
+        self.populationByAge = {key: item['Values'] for key, item in agePop.iteritems()}
+        ageDist = {}
+        for field in ['Age distribution pregnant']:
             ageDist.update(baseline.loc[field].to_dict('index'))
-        self.ageDistributions = {key: item['Values'] for key, item in ageDist.iteritems()}
+        self.PWageDistribution = {key: item['Values'] for key, item in ageDist.iteritems()}
 
     def getRiskDist(self):
         dist = self.readSheet('Distributions', [0,1])

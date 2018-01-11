@@ -8,11 +8,13 @@ class Box:
         self.cumulativeDeaths = 0
 
 class WomenAgeGroup:
-    def __init__(self, age, populationSize, boxes, anaemiaDist):
+    def __init__(self, age, populationSize, boxes, anaemiaDist, ageSpan, constants):
         self.age = age
         self.populationSize = populationSize
         self.boxes = boxes
         self.anaemiaDist = anaemiaDist
+        self.ageingRate = 1./ageSpan
+        self.const = constants
         self.anaemiaUpdate = 1.
         self.probConditionalCoverage = {}
         self.probConditionalDiarrhoea = {}
@@ -175,7 +177,7 @@ class ChildAgeGroup:
             Omega0 = self.probConditionalDiarrhoea[wastingCat]['no diarrhoea']
             self.probConditionalDiarrhoea[wastingCat]['diarrhoea'] = Omega0 * AO / (1. - Omega0 + AO * Omega0)
 
-    def restratify(self, fractionYes):
+    def restratify(self, fractionYes): # TODO: may not be the best place for this. Model?
         # Going from binary stunting/wasting to four fractions
         # Yes refers to more than 2 standard deviations below the global mean/median
         # in our notes, fractionYes = alpha
@@ -393,6 +395,22 @@ class Children(Population):
                                 count += t1 * t2 * t3 * t4 * t5
                             ageGroup.boxes[stuntingCat][wastingCat][bfCat][anemiaStatus].mortalityRate = count
 
+    def _applyMortality(self):
+        for ageGroup in self.ageGroups:
+            for stuntingCat in self.const.stuntingList:
+                for wastingCat in self.const.wastingList:
+                    for bfCat in self.const.bfList:
+                        for anaemiaCat in self.const.anaemiaList:
+                            thisBox = ageGroup.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat]
+                            deaths = thisBox.populationSize * thisBox.mortalityRate * self.const.timestep # monthly deaths
+                            thisBox.populationSize -= deaths
+                            thisBox.cumulativeDeaths += deaths
+
+
+
+
+    # TODO: do we need the below since we have it in age groups? Could make wrapper functions
+
     def _getPopulation(self, ageGroups, risks):
         """ Get population size for given age groups and combinations of given risks"""
         populationSize = sum([group.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat].populationSize
@@ -449,6 +467,15 @@ class Children(Population):
         alteredList = self.const.allRisks[:]
         alteredList[index] = newList
         return alteredList
+
+
+
+
+
+
+
+
+
 
     def _setProbConditionalStunting(self):
         """Calculate the probability of stunting given previous stunting between age groups"""
@@ -700,34 +727,36 @@ class PregnantWomen(Population):
         self._updateMortalityRates()
         self._setProbAnaemicIfCovered()
 
-    ##### PROGRAM UPDATES #####
-
-    def _update(self, programInfo):
-        """Update all the age group parameters based upon risk area.  """
-        for risk in self.const.risks:
-            # first get relevant programs, determined by risk area
-            applicableProgs = self._getApplicablePrograms(risk, programInfo)
-            for ageGroup in self.ageGroups:
-                for program in applicableProgs:
-                    # TODO: could put in check to see if ageGroup is impacted by program or not...
-                    program._updateAgeGroup(ageGroup, risk)
-        self._updateMortalityRates()
+    # ##### PROGRAM UPDATES #####
+    #
+    # def _update(self, programInfo):
+    #     """Update all the age group parameters based upon risk area.  """
+    #     for risk in self.const.risks:
+    #         # first get relevant programs, determined by risk area
+    #         applicableProgs = self._getApplicablePrograms(risk, programInfo)
+    #         for ageGroup in self.ageGroups:
+    #             for program in applicableProgs:
+    #                 # TODO: could put in check to see if ageGroup is impacted by program or not...
+    #                 program._updateAgeGroup(ageGroup, risk)
+    #     self._updateMortalityRates()
 
     ##### DATA WRANGLING ######
 
     def _makePopSizes(self):
-        PWpop = self.project.ageDistributions
+        PWpop = self.project.populationByAge
         self.popSizes = {age:pop for age, pop in PWpop.iteritems()}
 
     def _makeBoxes(self):
-        for age in self.project.PWages:
+        for idx in range(len(self.const.PWages)):
+            age = self.const.PWages[idx]
             popSize = self.popSizes[age]
             boxes = {}
             anaemiaDist = self.anaemiaDist[age]
+            ageingRate = self.const.womenAgeingRates[idx]
             for anaemiaCat in self.const.anaemiaList:
                 thisPop = popSize * anaemiaDist[anaemiaCat]
                 boxes[anaemiaCat] = Box(thisPop)
-            self.ageGroups.append(WomenAgeGroup(age, popSize, boxes, anaemiaDist))
+            self.ageGroups.append(WomenAgeGroup(age, popSize, boxes, anaemiaDist, ageingRate, self.const))
 
     def _setPWReferenceMortality(self):
         #Equation is:  LHS = RHS * X
@@ -817,7 +846,7 @@ class NonPregnantWomen(Population):
     ##### DATA WRANGLING ######
 
     def _makePopSizes(self):
-        WRApop = self.project.ageDistributions
+        WRApop = self.project.populationByAge
         self.popSizes = {age:pop for age, pop in WRApop.iteritems()}
 
     def _makeBoxes(self):
