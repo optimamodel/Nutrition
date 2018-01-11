@@ -320,7 +320,7 @@ class Model:
         wastingFractions = {}
         for wastingCat in self.constants.wastingList:
             wastingFractions[wastingCat] = 0.
-            for outcomes in self.constants.birthOutcomes:
+            for outcome in self.constants.birthOutcomes:
                 wastingFractions[wastingCat] += restratifiedWastingAtBirth[outcome][wastingCat] * newBorns.birthDist[outcome] # TODO: consider moving to model
         for stuntingCat in self.constants.stuntingList:
             stuntingFractions[stuntingCat] = 0
