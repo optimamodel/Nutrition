@@ -67,10 +67,11 @@ class Model:
         '''newCoverages is required to be the overall coverage % (i.e. people covered / entire target pop) '''
         self.newCoverages = dcp(newCoverages)
         self._updateCoverages()
-        for pop in self.populations[:1]: # update all the populations # TODO: UNDO SPLICING
+        for pop in self.populations: # update all the populations
             self._updatePopulation(pop)
-            # combine direct and indirect updates to each risk area that we model
-            self._combineUpdates(pop) # This only needs to be called for children
+            if pop.name == 'Children':
+                # combine direct and indirect updates to each risk area that we model
+                self._combineUpdates(pop) # This only needs to be called for children
             self._updateDistributions(pop)
             pop._updateMortalityRates()
 
@@ -79,30 +80,65 @@ class Model:
         programs = list(filter(lambda x: x.name in applicableProgNames, self.programInfo.programs))
         return programs
 
+    def _updatePopulation(self, population):
+        for risk in self.programInfo.programAreas.keys():
+            # get relevant programs, determined by risk area
+            applicableProgs = self._getApplicablePrograms(risk)
+            for ageGroup in population.ageGroups:
+                for program in applicableProgs:
+                    if ageGroup.age in program.relevantAges:
+                        if risk == 'Stunting':
+                            program._getStuntingUpdate(ageGroup)
+                        elif risk == 'Anaemia':
+                            program._getAnaemiaUpdate(ageGroup)
+                        elif risk == 'Wasting prevention':
+                            program._getWastingPreventionUpdate(ageGroup)
+                        elif risk == 'Wasting treatment':
+                            program._getWastingTreatmentUpdate(ageGroup)
+                        elif risk == 'Breastfeeding':
+                            program._getBreastfeedingupdate(ageGroup)
+                        elif risk == 'Diarrhoea':
+                            program._getDiarrhoeaUpdate(ageGroup)
+                        elif risk == 'Mortality':
+                            program._getMortalityUpdate(ageGroup)
+                        elif risk == 'Birth outcomes':
+                            program._getBirthOutcomeUpdate(ageGroup)
+                        # elif risk == 'Family planning':
+                        elif risk == 'None':
+                            continue
+                        else:
+                            print ":: Risk _{}_ not found. No update applied ::".format(risk)
+                            continue
+                    else:
+                        continue
+
+                # AT THIS POINT THIS AGE GROUP WILL HAVE THE TOTAL UPDATE FOR A PARTICULAR RISK
+                if risk == 'Wasting treatment':
+                    # need to account for flow between MAM and SAM
+                    self._getFlowBetweenMAMandSAM(ageGroup)
+
     def _combineUpdates(self, population):
         """
         Each risk area modelled can be impacted from direct and indirect pathways, so we combine these here
         :param population:
         :return:
         """
-        if population.name is 'Children':
-            for ageGroup in population.ageGroups:
-                # stunting: direct, diarrhoea, breatfeeding
-                ageGroup.totalStuntingUpdate = ageGroup.stuntingUpdate * ageGroup.diarrhoeaUpdate['Stunting'] \
-                                               * ageGroup.bfUpdate['Stunting']
-                # anaemia: direct, diarrhoea, breastfeeding
-                ageGroup.totalAnaemiaUpdate = ageGroup.anaemiaUpdate * ageGroup.diarrhoeaUpdate['Anaemia'] \
-                                              * ageGroup.bfUpdate['Anaemia']
-                # wasting: direct (prevalence, incidence), flow between MAM & SAM, diarrhoea, breastfeeding
-                ageGroup.totalWastingUpdate = {}
-                for wastingCat in self.constants.wastedList:
-                    ageGroup.totalWastingUpdate[wastingCat] = ageGroup.wastingTreatmentUpdate[wastingCat] \
-                                                  * ageGroup.wastingPreventionUpdate[wastingCat] \
-                                                  * ageGroup.bfUpdate[wastingCat] \
-                                                  * ageGroup.diarrhoeaUpdate[wastingCat] \
-                                                  * ageGroup.fromMAMtoSAMupdate[wastingCat] \
-                                                  * ageGroup.fromSAMtoMAMupdate[wastingCat]
-        # elif population.name is 'Pregnant women': # only anaemia
+        for ageGroup in population.ageGroups:
+            # stunting: direct, diarrhoea, breatfeeding
+            ageGroup.totalStuntingUpdate = ageGroup.stuntingUpdate * ageGroup.diarrhoeaUpdate['Stunting'] \
+                                           * ageGroup.bfUpdate['Stunting']
+            # anaemia: direct, diarrhoea, breastfeeding
+            ageGroup.totalAnaemiaUpdate = ageGroup.anaemiaUpdate * ageGroup.diarrhoeaUpdate['Anaemia'] \
+                                          * ageGroup.bfUpdate['Anaemia']
+            # wasting: direct (prevalence, incidence), flow between MAM & SAM, diarrhoea, breastfeeding
+            ageGroup.totalWastingUpdate = {}
+            for wastingCat in self.constants.wastedList:
+                ageGroup.totalWastingUpdate[wastingCat] = ageGroup.wastingTreatmentUpdate[wastingCat] \
+                                              * ageGroup.wastingPreventionUpdate[wastingCat] \
+                                              * ageGroup.bfUpdate[wastingCat] \
+                                              * ageGroup.diarrhoeaUpdate[wastingCat] \
+                                              * ageGroup.fromMAMtoSAMupdate[wastingCat] \
+                                              * ageGroup.fromSAMtoMAMupdate[wastingCat]
 
     def _updateDistributions(self, population):
         """
@@ -143,7 +179,23 @@ class Model:
                     ageGroup.birthDist[BO] *= ageGroup.birthUpdate[BO]
                 ageGroup.birthDist['Term AGA'] = 1. - sum(ageGroup.birthDist[BO]
                                                           for BO in self.constants.birthOutcomes if BO is not 'Term AGA')
-        else: # PW or non-PW -- anaemia only
+        elif population.name is 'Pregnant women':
+            # update PW anaemia but also birth distribution for <1 month age group
+            # update birth distribution
+            newBorns = self.populations[0].ageGroups[0]
+            PWpopSize = population.getTotalPopulation()
+            # weighted sum accounts for different effects and target pops across PW age groups.
+            for BO in self.constants.birthOutcomes:
+                newBorns.birthDist[BO] *= sum(PWage.birthUpdate[BO]*PWage.populationSize for PWage in population.ageGroups) / PWpopSize
+            # update anaemia distribution
+            for ageGroup in population.ageGroups:
+                oldProbAnaemia = ageGroup.getFracRisk('Anaemia')
+                newProbAnaemia = oldProbAnaemia * ageGroup.totalAnaemiaUpdate
+                ageGroup.anaemiaDist['anaemic'] = newProbAnaemia
+                ageGroup.anaemiaDist['not anaemic'] = 1.-newProbAnaemia
+                ageGroup.redistributePopulation()
+
+        else: # non-PW -- anaemia only
             for ageGroup in population.ageGroups:
                 oldProbAnaemia = ageGroup.getFracRisk('Anaemia')
                 newProbAnaemia = oldProbAnaemia * ageGroup.totalAnaemiaUpdate
@@ -166,43 +218,6 @@ class Model:
                 fromMAMtoSAMupdate[wastingCat] = (1. + (1. - ageGroup.wastingTreatmentUpdate[wastingCat]) * fracMovingOut[wastingCat])
         ageGroup.fromSAMtoMAMupdate = fromSAMtoMAMupdate
         ageGroup.fromMAMtoSAMupdate = fromMAMtoSAMupdate
-
-    def _updatePopulation(self, population):
-        for risk in self.programInfo.programAreas.keys():
-            # get relevant programs, determined by risk area
-            applicableProgs = self._getApplicablePrograms(risk)
-            for ageGroup in population.ageGroups:
-                for program in applicableProgs:
-                    if ageGroup.age in program.relevantAges:
-                        if risk == 'Stunting':
-                            program._getStuntingUpdate(ageGroup)
-                        elif risk == 'Anaemia':
-                            program._getAnaemiaUpdate(ageGroup)
-                        elif risk == 'Wasting prevention':
-                            program._getWastingPreventionUpdate(ageGroup)
-                        elif risk == 'Wasting treatment':
-                            program._getWastingTreatmentUpdate(ageGroup)
-                        elif risk == 'Breastfeeding':
-                            program._getBreastfeedingupdate(ageGroup)
-                        elif risk == 'Diarrhoea':
-                            program._getDiarrhoeaUpdate(ageGroup)
-                        elif risk == 'Mortality':
-                            program._getMortalityUpdate(ageGroup)
-                        elif risk == 'Birth outcomes':
-                            program._getBirthOutcomeUpdate(ageGroup)
-                        # elif risk == 'Family planning':
-                        elif risk == 'None':
-                            continue
-                        else:
-                            print ":: Risk _{}_ not found. No update applied ::".format(risk)
-                            continue
-                    else:
-                        continue
-
-                # AT THIS POINT THIS AGE GROUP WILL HAVE THE TOTAL UPDATE FOR A PARTICULAR RISK
-                if risk == 'Wasting treatment':
-                    # need to account for flow between MAM and SAM
-                    self._getFlowBetweenMAMandSAM(ageGroup)
 
     def _applyChildMortality(self):
         ageGroups = self.populations[0].ageGroups

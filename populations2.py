@@ -7,7 +7,7 @@ class Box:
         self.mortalityRate = None
         self.cumulativeDeaths = 0
 
-class WomenAgeGroup:
+class PWAgeGroup:
     def __init__(self, age, populationSize, boxes, anaemiaDist, ageSpan, constants):
         self.age = age
         self.populationSize = populationSize
@@ -15,8 +15,24 @@ class WomenAgeGroup:
         self.anaemiaDist = anaemiaDist
         self.ageingRate = 1./ageSpan
         self.const = constants
+        self.probConditionalCoverage = {}
+
+    def _setStorageForUpdates(self):
+        self.anaemiaUpdate = 1.
+        # this update will impact Newborn age group
+        self.birthUpdate = {}
+        for BO in self.const.birthOutcomes:
+            self.birthUpdate[BO] = 1.
+
+class NonPWAgeGroup:
+    def __init__(self, age, populationSize, boxes, anaemiaDist):
+        self.age = age
+        self.populationSize = populationSize
+        self.boxes = boxes
+        self.anaemiaDist = anaemiaDist
         self.anaemiaUpdate = 1.
         self.probConditionalCoverage = {}
+
 
 class ChildAgeGroup(object):
     def __init__(self, age, populationSize, boxes, anaemiaDist, incidences, stuntingDist, wastingDist, BFdist,
@@ -727,20 +743,12 @@ class PregnantWomen(Population):
     def __init__(self, name, project, constants):
         super(PregnantWomen, self).__init__(name, project, constants)
         self.ageGroups = []
-        self._setStorageForUpdates()
         self._makePopSizes()
         self._makeBoxes()
         self._setPWReferenceMortality()
         self._updateMortalityRates()
         self._setProbAnaemicIfCovered()
         self._setBirthPregnancyInfo()
-
-    def _setStorageForUpdates(self):
-        self.anaemiaUpdate = 1.
-        # this update will impact Newborn age group
-        self.birthUpdate = {}
-        for BO in self.const.birthOutcomes:
-            self.birthUpdate[BO] = 1.
 
     def getTotalPopulation(self):
         return sum(ageGroup.populationSize for ageGroup in self.ageGroups)
@@ -761,7 +769,7 @@ class PregnantWomen(Population):
             for anaemiaCat in self.const.anaemiaList:
                 thisPop = popSize * anaemiaDist[anaemiaCat]
                 boxes[anaemiaCat] = Box(thisPop)
-            self.ageGroups.append(WomenAgeGroup(age, popSize, boxes, anaemiaDist, ageingRate, self.const))
+            self.ageGroups.append(PWAgeGroup(age, popSize, boxes, anaemiaDist, ageingRate, self.const))
 
     def _setPWReferenceMortality(self):
         #Equation is:  LHS = RHS * X
@@ -872,7 +880,7 @@ class NonPregnantWomen(Population):
             for anaemiaCat in self.const.anaemiaList:
                 thisPop = popSize * anaemiaDist[anaemiaCat]
                 boxes[anaemiaCat] = Box(thisPop)
-            self.ageGroups.append(WomenAgeGroup(age, popSize, boxes, anaemiaDist, 1, None))
+            self.ageGroups.append(NonPWAgeGroup(age, popSize, boxes, anaemiaDist))
 
 
 
