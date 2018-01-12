@@ -597,7 +597,7 @@ class Optimisation:
                 targetPopSize[intervention] += target * model.listOfReproductiveAgeCompartments[
                     iAge].getTotalPopulation()
             # for food fortification set target population size as entire population
-            if "fortification" in intervention:
+            if "IFA fortification" in intervention:
                 targetPopSize[intervention] = self.data.demographics['total population']
             # for WASH interventions set target population size as entire population
             if "WASH" in intervention:
