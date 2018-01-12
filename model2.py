@@ -68,9 +68,8 @@ class Model:
         self._updateCoverages()
         for pop in self.populations: # update all the populations
             self._updatePopulation(pop)
-            if pop.name == 'Children':
-                # combine direct and indirect updates to each risk area that we model
-                self._combineUpdates(pop) # This only needs to be called for children
+            # combine direct and indirect updates to each risk area that we model
+            self._combineUpdates(pop)
             self._updateDistributions(pop)
             self._updateMortalityRates(pop)
 
@@ -126,22 +125,26 @@ class Model:
         :param population:
         :return:
         """
-        for ageGroup in population.ageGroups:
-            # stunting: direct, diarrhoea, breatfeeding
-            ageGroup.totalStuntingUpdate = ageGroup.stuntingUpdate * ageGroup.diarrhoeaUpdate['Stunting'] \
-                                           * ageGroup.bfUpdate['Stunting']
-            # anaemia: direct, diarrhoea, breastfeeding
-            ageGroup.totalAnaemiaUpdate = ageGroup.anaemiaUpdate * ageGroup.diarrhoeaUpdate['Anaemia'] \
-                                          * ageGroup.bfUpdate['Anaemia']
-            # wasting: direct (prevalence, incidence), flow between MAM & SAM, diarrhoea, breastfeeding
-            ageGroup.totalWastingUpdate = {}
-            for wastingCat in self.constants.wastedList:
-                ageGroup.totalWastingUpdate[wastingCat] = ageGroup.wastingTreatmentUpdate[wastingCat] \
-                                              * ageGroup.wastingPreventionUpdate[wastingCat] \
-                                              * ageGroup.bfUpdate[wastingCat] \
-                                              * ageGroup.diarrhoeaUpdate[wastingCat] \
-                                              * ageGroup.fromMAMtoSAMupdate[wastingCat] \
-                                              * ageGroup.fromSAMtoMAMupdate[wastingCat]
+        if population.name == 'Children':
+            for ageGroup in population.ageGroups:
+                # stunting: direct, diarrhoea, breatfeeding
+                ageGroup.totalStuntingUpdate = ageGroup.stuntingUpdate * ageGroup.diarrhoeaUpdate['Stunting'] \
+                                               * ageGroup.bfUpdate['Stunting']
+                # anaemia: direct, diarrhoea, breastfeeding
+                ageGroup.totalAnaemiaUpdate = ageGroup.anaemiaUpdate * ageGroup.diarrhoeaUpdate['Anaemia'] \
+                                              * ageGroup.bfUpdate['Anaemia']
+                # wasting: direct (prevalence, incidence), flow between MAM & SAM, diarrhoea, breastfeeding
+                ageGroup.totalWastingUpdate = {}
+                for wastingCat in self.constants.wastedList:
+                    ageGroup.totalWastingUpdate[wastingCat] = ageGroup.wastingTreatmentUpdate[wastingCat] \
+                                                  * ageGroup.wastingPreventionUpdate[wastingCat] \
+                                                  * ageGroup.bfUpdate[wastingCat] \
+                                                  * ageGroup.diarrhoeaUpdate[wastingCat] \
+                                                  * ageGroup.fromMAMtoSAMupdate[wastingCat] \
+                                                  * ageGroup.fromSAMtoMAMupdate[wastingCat]
+        else: #PW or non-PW
+            for ageGroup in population.ageGroups:
+                ageGroup.totalAnaemiaUpdate = ageGroup.anaemiaUpdate
 
     def _updateDistributions(self, population):
         """
