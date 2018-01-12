@@ -35,6 +35,9 @@ class PWAgeGroup:
     def getFracRisk(self, risk):
         return self.getFracAnaemic()
 
+    def redistributePopulation(self):
+        for anaemiaCat in self.const.anaemiaList:
+            self.boxes[anaemiaCat].populationSize =self.anaemiaDist[anaemiaCat] * self.populationSize
 
 class NonPWAgeGroup:
     def __init__(self, age, populationSize, boxes, anaemiaDist, constants):
@@ -56,6 +59,9 @@ class NonPWAgeGroup:
     def getFracRisk(self, risk):
         return self.getFracAnaemic()
 
+    def redistributePopulation(self):
+        for anaemiaCat in self.const.anaemiaList:
+            self.boxes[anaemiaCat].populationSize =self.anaemiaDist[anaemiaCat] * self.populationSize
 
 class ChildAgeGroup(object):
     def __init__(self, age, populationSize, boxes, anaemiaDist, incidences, stuntingDist, wastingDist, BFdist,
