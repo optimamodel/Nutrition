@@ -16,6 +16,7 @@ class PWAgeGroup:
         self.ageingRate = 1./ageSpan
         self.const = constants
         self.probConditionalCoverage = {}
+        self._setStorageForUpdates()
 
     def _setStorageForUpdates(self):
         self.anaemiaUpdate = 1.
@@ -24,14 +25,36 @@ class PWAgeGroup:
         for BO in self.const.birthOutcomes:
             self.birthUpdate[BO] = 1.
 
+    def getNumberAnaemic(self):
+        for anaemiaCat in self.const.anaemicList:
+            return self.boxes[anaemiaCat].populationSize
+
+    def getFracAnaemic(self):
+        return self.getNumberAnaemic() / self.populationSize
+
+    def getFracRisk(self, risk):
+        return self.getFracAnaemic()
+
+
 class NonPWAgeGroup:
-    def __init__(self, age, populationSize, boxes, anaemiaDist):
+    def __init__(self, age, populationSize, boxes, anaemiaDist, constants):
         self.age = age
         self.populationSize = populationSize
         self.boxes = boxes
         self.anaemiaDist = anaemiaDist
+        self.const = constants
         self.anaemiaUpdate = 1.
         self.probConditionalCoverage = {}
+
+    def getNumberAnaemic(self):
+        for anaemiaCat in self.const.anaemicList:
+            return self.boxes[anaemiaCat].populationSize
+
+    def getFracAnaemic(self):
+        return self.getNumberAnaemic() / self.populationSize
+
+    def getFracRisk(self, risk):
+        return self.getFracAnaemic()
 
 
 class ChildAgeGroup(object):
@@ -215,6 +238,9 @@ class Newborn(ChildAgeGroup):
                  ageSpan, constants)
         self.birthDist = birthDist
         self._setBirthProbs()
+        self.birthUpdate = {}
+        for BO in self.const.birthOutcomes:
+            self.birthUpdate[BO] = 1.
 
     def _setBirthProbs(self):
         """
@@ -236,6 +262,7 @@ class Population(object):
         self.name = name
         self.project = dcp(project) # TODO: may not want to dcp all this -- only really want to get distribution data from project
         self.const = constants
+        self.populationAreas = self.project.populationAreas
         self.stuntingDist = self.project.riskDistributions['Stunting']
         self.wastingDist = self.project.riskDistributions['Wasting']
         self.bfDist = self.project.riskDistributions['Breastfeeding']
@@ -822,8 +849,9 @@ class PregnantWomen(Population):
         risk = 'Anaemia'
         for ageGroup in self.ageGroups:
             age = ageGroup.age
+            ageGroup.probConditionalCoverage[risk] = {}
             for program in self.project.programList:
-                ageGroup.probConditionalCoverage[program] = {}
+                ageGroup.probConditionalCoverage[risk][program] = {}
                 fracCovered = self.baselineCov[program]
                 fracImpacted = sum(self.anaemiaDist[age][cat] for cat in self.const.anaemicList)
                 if self.project.ORprograms[risk].get(program) is None:
@@ -833,8 +861,8 @@ class PregnantWomen(Population):
                 else:
                     OR = self.project.ORprograms[risk][program][age]
                     pn, pc = self._solveQuadratic(OR, fracCovered, fracImpacted)
-                ageGroup.probConditionalCoverage[program]['covered'] = pc
-                ageGroup.probConditionalCoverage[program]['not covered'] = pn
+                ageGroup.probConditionalCoverage[risk][program]['covered'] = pc
+                ageGroup.probConditionalCoverage[risk][program]['not covered'] = pn
 
     def _setBirthPregnancyInfo(self):
         self.fracPregnancyAverted = sum(self.const.famPlanMethods[prog]['Effectiveness'] *
@@ -852,12 +880,13 @@ class PregnantWomen(Population):
         self.pregnancyRate = rate
         self.birthRate = averagePercentDiff * rate
 
-class NonPregnantWomen(Population):
+class NonPregnantWomen(Population): # TODO: there is a fair bit of overlap between nonpregnant women and pregnant women, could use inheritance to avoid re-writing code
     def __init__(self, name, project, constants):
         super(NonPregnantWomen, self).__init__(name, project, constants)
         self.ageGroups = []
         self._makePopSizes()
         self._makeBoxes()
+        self._setProbAnaemicIfCovered()
         self._setStorageForUpdates()
 
     def _setStorageForUpdates(self):
@@ -880,8 +909,26 @@ class NonPregnantWomen(Population):
             for anaemiaCat in self.const.anaemiaList:
                 thisPop = popSize * anaemiaDist[anaemiaCat]
                 boxes[anaemiaCat] = Box(thisPop)
-            self.ageGroups.append(NonPWAgeGroup(age, popSize, boxes, anaemiaDist))
+            self.ageGroups.append(NonPWAgeGroup(age, popSize, boxes, anaemiaDist, self.const))
 
+    def _setProbAnaemicIfCovered(self):
+        risk = 'Anaemia'
+        for ageGroup in self.ageGroups:
+            age = ageGroup.age
+            ageGroup.probConditionalCoverage[risk] = {}
+            for program in self.project.programList:
+                ageGroup.probConditionalCoverage[risk][program] = {}
+                fracCovered = self.baselineCov[program]
+                fracImpacted = sum(self.anaemiaDist[age][cat] for cat in self.const.anaemicList)
+                if self.project.ORprograms[risk].get(program) is None:
+                    RR = self.project.RRprograms[risk][program][age]
+                    pn = fracImpacted / (RR * fracCovered + (1. - fracCovered))
+                    pc = RR * pn
+                else:
+                    OR = self.project.ORprograms[risk][program][age]
+                    pn, pc = self._solveQuadratic(OR, fracCovered, fracImpacted)
+                ageGroup.probConditionalCoverage[risk][program]['covered'] = pc
+                ageGroup.probConditionalCoverage[risk][program]['not covered'] = pn
 
 
 def setUpPopulations(project, constants):

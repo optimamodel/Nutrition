@@ -32,7 +32,7 @@ class Project:
         self.getFamilyPrograms()
         self.getCostCoverageInfo()
         self.getProgramTargetPop()
-        self.getMorbidityAreas()
+        self.getProgramRiskAreas()
         self.getProgramDependencies()
 
     def readDemographicsData(self):
@@ -43,6 +43,7 @@ class Project:
         self.getBirthDist()
         self.getProjections()
         self.getAppropriateBF()
+        self.getPopulationRiskAreas()
 
     def readMortalityData(self):
         self.getDeathDist()
@@ -188,8 +189,8 @@ class Project:
             targetPop.update(targetPopSheet.loc[pop].to_dict(orient='index'))
         self.programTargetPop = targetPop
 
-    def getMorbidityAreas(self):
-        areas = self.readSheet('Program areas', [0])
+    def getProgramRiskAreas(self):
+        areas = self.readSheet('Program risk areas', [0])
         booleanFrame = areas.isnull()
         self.programAreas = {}
         for program, areas in booleanFrame.iterrows():
@@ -264,6 +265,17 @@ class Project:
     def getAppropriateBF(self):
         self.correctBF = self.readSheet('Appropriate breastfeeding', [0], 'dict')['Practice']
 
+    def getPopulationRiskAreas(self):
+        areas = self.readSheet('Population risk areas', [0])
+        booleanFrame = areas.isnull()
+        self.populationAreas = {}
+        for program, areas in booleanFrame.iterrows():
+            for risk, value in areas.iteritems():
+                if self.populationAreas.get(risk) is None:
+                    self.populationAreas[risk] = []
+                if not value:
+                    self.populationAreas[risk].append(program)
+
     def makeDict(self, mydict):
         '''myDict is a spreadsheet with 3 index cols, converted to dict using orient='index' '''
         resultDict = {}
@@ -319,7 +331,7 @@ class Project:
     def padAnaemiaORprograms(self):
         ORs = dcp(self.ORanaemiaProgram)
         missingProgs = set(self.programList) - set(ORs.keys()) - set(self.RRanaemiaProgram.keys())
-        padded = {program:{age:1. for age in self.childAges + self.PWages} for program in missingProgs}
+        padded = {program:{age:1. for age in self.childAges + self.PWages + self.WRAages} for program in missingProgs}
         ORs.update(padded)
         self.ORanaemiaProgram = ORs
 

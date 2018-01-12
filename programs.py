@@ -18,6 +18,12 @@ class Program(object):
         self._setThresholdDependencies()
         #self._setCostCoverageCurve() # TODO: this cannot be sit until 1 year of simulation run
 
+    def _setBaselineCoverage(self, populations):
+        self._setRestrictedPopSize(populations)
+        self._setUnrestrictedPopSize(populations)
+        self.unrestrictedBaselineCov = (self.restrictedBaselineCov * self.restrictedPopSize) / \
+                                          self.unrestrictedPopSize
+
     def updateCoverage(self, newCoverage, populations):
         """Update all values pertaining to coverage for a program"""
         self.proposedCoverageNum = newCoverage
@@ -273,7 +279,7 @@ class Program(object):
         for condition in self.const.wastedList:
             affFrac = ageGroup.programEffectiveness[self.name][condition]['Affected fraction']
             effectiveness = ageGroup.programEffectiveness[self.name][condition]['Effectiveness incidence']
-            oldCov = self.baselineCoverage
+            oldCov = self.unrestrictedBaselineCov
             reduction = affFrac * effectiveness * (self.proposedCoverageFrac - oldCov) / (1. - effectiveness*oldCov)
             update[condition] = 1.-reduction
         return update
@@ -288,7 +294,7 @@ class Program(object):
         for cause in toIterate:
             affFrac = ageGroup.programEffectiveness[self.name][cause]['Affected fraction']
             effectiveness = ageGroup.programEffectiveness[self.name][cause][effType]
-            oldCov = self.baselineCoverage
+            oldCov = self.unrestrictedBaselineCov
             reduction = affFrac * effectiveness * (self.proposedCoverageFrac - oldCov) / (1. - effectiveness*oldCov)
             update[cause] *= 1. - reduction
         return update
@@ -298,7 +304,7 @@ class Program(object):
         for outcome in self.const.birthOutcomes:
             affFrac = self.const.BOprograms[self.name]['affected fraction'][outcome]
             eff = self.const.BOprograms[self.name]['effectiveness'][outcome]
-            oldCov = self.baselineCoverage
+            oldCov = self.unrestrictedBaselineCov
             reduction = affFrac * eff * (self.proposedCoverageFrac - oldCov) / (1. - eff*oldCov)
             BOupdate[outcome] = 1. - reduction
         return BOupdate

@@ -27,11 +27,10 @@ class Model:
         Requires population sizes at time t=0.
         :return:
         """
+        self.baselineCoverage = {}
         for program in self.programInfo.programs:
-            program._setRestrictedPopSize(self.populations)
-            program._setUnrestrictedPopSize(self.populations)
-            program.unrestrictedBaselineCov = (program.restrictedBaselineCov * program.restrictedPopSize) / \
-                                              program.unrestrictedPopSize
+            program._setBaselineCoverage(self.populations)
+            self.baselineCoverage[program.name] = program.restrictedBaselineCov
 
     def _updateCoverages(self):
         for program in self.programInfo.programs:
@@ -73,6 +72,10 @@ class Model:
                 # combine direct and indirect updates to each risk area that we model
                 self._combineUpdates(pop) # This only needs to be called for children
             self._updateDistributions(pop)
+            self._updateMortalityRates(pop)
+
+    def _updateMortalityRates(self, pop):
+        if pop.name != 'Non-pregnant women':
             pop._updateMortalityRates()
 
     def _getApplicablePrograms(self, risk):
@@ -80,13 +83,18 @@ class Model:
         programs = list(filter(lambda x: x.name in applicableProgNames, self.programInfo.programs))
         return programs
 
-    def _updatePopulation(self, population):
+    def _getApplicableAgeGroups(self, population, risk):
+        applicableAgeNames = population.populationAreas[risk]
+        ageGroups = list(filter(lambda x: x.age in applicableAgeNames, population.ageGroups))
+        return ageGroups
+
+    def _updatePopulation(self, population): # TODO: could put all populations in here, would make for cleaner searching
         for risk in self.programInfo.programAreas.keys():
-            # get relevant programs, determined by risk area
+            # get relevant programs and age groups, determined by risk area
             applicableProgs = self._getApplicablePrograms(risk)
-            for ageGroup in population.ageGroups:
+            ageGroups = self._getApplicableAgeGroups(population, risk)
+            for ageGroup in ageGroups:
                 for program in applicableProgs:
-                    if ageGroup.age in program.relevantAges:
                         if risk == 'Stunting':
                             program._getStuntingUpdate(ageGroup)
                         elif risk == 'Anaemia':
@@ -104,15 +112,10 @@ class Model:
                         elif risk == 'Birth outcomes':
                             program._getBirthOutcomeUpdate(ageGroup)
                         # elif risk == 'Family planning':
-                        elif risk == 'None':
-                            continue
                         else:
                             print ":: Risk _{}_ not found. No update applied ::".format(risk)
                             continue
-                    else:
-                        continue
 
-                # AT THIS POINT THIS AGE GROUP WILL HAVE THE TOTAL UPDATE FOR A PARTICULAR RISK
                 if risk == 'Wasting treatment':
                     # need to account for flow between MAM and SAM
                     self._getFlowBetweenMAMandSAM(ageGroup)
@@ -147,7 +150,7 @@ class Model:
         :param ageGroup:
         :return:
         """
-        if population.name is 'Children': # TODO: could map these things using a dictionary of risks with corresponding disttributions & outcomes. Then function could be made to call.
+        if population.name == 'Children': # TODO: could map these things using a dictionary of risks with corresponding disttributions & outcomes. Then function could be made to call.
             for ageGroup in population.ageGroups:
                 # mortality
                 for cause in self.constants.causesOfDeath:
@@ -173,13 +176,7 @@ class Model:
                 for nonWastedCat in self.constants.nonWastedList:
                     ageGroup.wastingDist[nonWastedCat] = nonWastedDist[nonWastedCat]
                 ageGroup.redistributePopulation()
-                # birth outcomes
-                # each ageGroup needs access to the distribution for 'updateMortalityRate()', so need to update for each
-                for BO in self.constants.birthOutcomes:
-                    ageGroup.birthDist[BO] *= ageGroup.birthUpdate[BO]
-                ageGroup.birthDist['Term AGA'] = 1. - sum(ageGroup.birthDist[BO]
-                                                          for BO in self.constants.birthOutcomes if BO is not 'Term AGA')
-        elif population.name is 'Pregnant women':
+        elif population.name == 'Pregnant women':
             # update PW anaemia but also birth distribution for <1 month age group
             # update birth distribution
             newBorns = self.populations[0].ageGroups[0]
@@ -194,8 +191,7 @@ class Model:
                 ageGroup.anaemiaDist['anaemic'] = newProbAnaemia
                 ageGroup.anaemiaDist['not anaemic'] = 1.-newProbAnaemia
                 ageGroup.redistributePopulation()
-
-        else: # non-PW -- anaemia only
+        elif population.name == 'Non-pregnant women':
             for ageGroup in population.ageGroups:
                 oldProbAnaemia = ageGroup.getFracRisk('Anaemia')
                 newProbAnaemia = oldProbAnaemia * ageGroup.totalAnaemiaUpdate
