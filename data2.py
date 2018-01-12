@@ -106,9 +106,8 @@ class Project:
 
     def getBirthDist(self):
         birthsSheet = self.readSheet('Distribution births', [0, 1])
-        self.birthDist = {}
-        for field in ['Birth age order', 'Birth intervals']:
-            self.birthDist[field] = birthsSheet.loc[field].to_dict('dict')['Fraction']
+        self.birthAgeOrder = birthsSheet.loc['Birth age order']
+        self.birthIntervals = birthsSheet.loc['Birth intervals']
 
     def getProjections(self):
         self.projections = self.readSheet('Demographic projections', [0], 'dict')
@@ -128,6 +127,8 @@ class Project:
         self.birthDist = BOsheet.loc['Distribution'].to_dict('index')['Fraction of births']
         self.ORconditionBirth = BOsheet.loc['OR for condition'].to_dict('index')
         self.RRdeath['Birth outcomes'] = BOsheet.loc['RR of death by cause'].to_dict('index')
+        self.RRageOrder = BOsheet.loc['RR age order'].to_dict('index')
+        self.RRinterval = BOsheet.loc['RR interval'].to_dict('index')
 
     def getIncidences(self):
         self.incidences = self.readSheet('Incidence of conditions', [0], 'dict')
