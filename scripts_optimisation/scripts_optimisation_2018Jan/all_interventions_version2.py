@@ -16,9 +16,9 @@ country = 'Bangladesh'
 date = '2018Jan'
 sheetDate = '2017Nov'
 spreadsheet = rootpath+'/input_spreadsheets/'+country+'/'+sheetDate+'/InputForCode_'+country+'.xlsx'
-totalBudget = 50000000
+totalBudget = 10000000
 cascadeValues = [0.25, 0.5, 1.0, 2.0, 3.0, 4.0, 8.0]
-objectiveList = ['thrive', 'deaths', 'anemia everyone', 'wasting_prev']
+objectiveList = ['thrive', 'deaths', 'anemia frac everyone', 'wasting_prev']
              
 # list of interventions not to be defunded             
 customInterventionList =['IPTp', 'Long-lasting insecticide-treated bednets', 'Family Planning']  
