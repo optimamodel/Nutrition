@@ -106,8 +106,8 @@ class Project:
 
     def getBirthDist(self):
         birthsSheet = self.readSheet('Distribution births', [0, 1])
-        self.birthAgeOrder = birthsSheet.loc['Birth age order']
-        self.birthIntervals = birthsSheet.loc['Birth intervals']
+        self.birthAgeOrder = birthsSheet.loc['Birth age order'].to_dict('dict')['Fraction']
+        self.birthIntervals = birthsSheet.loc['Birth intervals'].to_dict('dict')['Fraction']
 
     def getProjections(self):
         self.projections = self.readSheet('Demographic projections', [0], 'dict')

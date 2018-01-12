@@ -290,7 +290,8 @@ class Model:
     def _applyBirths(self): # TODO; re-write this function in future
         # num annual births = birth rate x num WRA x (1 - frac preg averted)
         numWRA = self.populations[2].getTotalPopulation() # TODO: best way to get total WRA pop?
-        annualBirths = self.constants.birthRate * numWRA * (1. - self.constants.fracPregnancyAverted) # TODO: this is FP stuff, so need to get that
+        PW = self.populations[1]
+        annualBirths = PW.birthRate * numWRA * (1. - PW.fracPregnancyAverted)
         # calculate total number of new babies and add to cumulative births
         numNewBabies = annualBirths * self.constants.timestep
         self.cumulativeBirths += numNewBabies
@@ -308,7 +309,7 @@ class Model:
             totalProbWasted = 0
             # distribute proportions for wasted categories
             for wastingCat in self.constants.wastedList:
-                probWastedThisCat = probWastedAtBirth[wastingCat] * newBorns.totalWastingUpdate
+                probWastedThisCat = probWastedAtBirth[wastingCat][outcome] * newBorns.totalWastingUpdate
                 restratifiedWastingAtBirth[outcome][wastingCat] = probWastedThisCat
                 totalProbWasted += probWastedThisCat
             # normality constraint on non-wasted proportions
@@ -321,11 +322,11 @@ class Model:
         for wastingCat in self.constants.wastingList:
             wastingFractions[wastingCat] = 0.
             for outcome in self.constants.birthOutcomes:
-                wastingFractions[wastingCat] += restratifiedWastingAtBirth[outcome][wastingCat] * newBorns.birthDist[outcome] # TODO: consider moving to model
+                wastingFractions[wastingCat] += restratifiedWastingAtBirth[outcome][wastingCat] * newBorns.birthDist[outcome]
         for stuntingCat in self.constants.stuntingList:
             stuntingFractions[stuntingCat] = 0
             for outcome in self.constants.birthOutcomes:
-                stuntingFractions += restratifiedStuntingAtBirth[outcome][stuntingCat] * newBorns.birthDist[outcome]
+                stuntingFractions[stuntingCat] += restratifiedStuntingAtBirth[outcome][stuntingCat] * newBorns.birthDist[outcome]
         for stuntingCat in self.constants.stuntingList:
             for wastingCat in self.constants.wastingList:
                 for bfCat in self.constants.bfList:
@@ -339,8 +340,8 @@ class Model:
 
 
     def _applyPWMortality(self):
-        ageGroups = self.populations[1]
-        for ageGroup in ageGroups:
+        PW = self.populations[1]
+        for ageGroup in PW.ageGroups:
             for anaemiaCat in self.constants.anaemiaList:
                 thisBox = ageGroup.boxes[anaemiaCat]
                 deaths = thisBox.populationSize * thisBox.mortalityRate
@@ -349,11 +350,11 @@ class Model:
     def _updatePWpopulation(self):
         """Use prenancy rate to distribute PW into age groups.
         Distribute into age bands by age distribution, assumed constant over time."""
-        ageGroups = self.populations[1]
         numWRA = self.populations[2].getTotalPopulation()
-        PWpop = self.derived.pregnancyRate * numWRA * (1. - self.constants.fracPregnancyAverted)
-        for ageGroup in ageGroups:
-            popSize = PWpop * self.constants.PWageDistribution[ageGroup.age]
+        PW = self.populations[1]
+        PWpop = PW.pregnancyRate * numWRA * (1. - PW.fracPregnancyAverted)
+        for ageGroup in PW.ageGroups:
+            popSize = PWpop * self.constants.PWageDistribution[ageGroup.age] # TODO: could put this in PW age groups for easy access
             for anaemiaCat in self.constants.anaemiaList:
                 thisBox = ageGroup.boxes[anaemiaCat]
                 thisBox.populationSize = popSize * ageGroup.anaemiaDist[anaemiaCat]
@@ -362,11 +363,12 @@ class Model:
         """Uses projected figures to determine the population of WRA not pregnant in a given age band and year
         warning: PW pop must be updated first."""
         #assuming WRA and PW have same age bands
-        ageGroups = self.populations[2]
+        WRA = self.populations[2]
+        ageGroups = WRA.ageGroups
         for idx in range(len(ageGroups)):
             ageGroup = ageGroups[idx]
             projectedWRApop = self.constants.popProjections[ageGroup.age][self.year]
-            PWpop = self.populations[1].ageGroups[idx].getTotalPopulation()
+            PWpop = self.populations[1].ageGroups[idx].populationSize
             nonPW = projectedWRApop - PWpop
             #distribute over risk factors
             for anaemiaCat in self.constants.anaemiaList:
@@ -405,13 +407,13 @@ class Model:
         Responsible for updating all populations
         :return:
         """
+        self.year += 1
         for month in range(12):
             self.moveModelOneTimeStep()
         self._applyPWMortality()
         self._updatePWpopulation()
         self._updateWRApopulation()
         # self.updateYearlyRiskDistributions() # TODO: don't think I need this
-        self.year += 1
 
 
 

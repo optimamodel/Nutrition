@@ -34,7 +34,7 @@ class Constants:
         self.demographics = dcp(project.demographics)
         self.famPlanMethods = dcp(project.famPlanMethods)
         self.RRageOrder = dcp(project.RRageOrder)
-        self.RRinterval = dcp(project.interval)
+        self.RRinterval = dcp(project.RRinterval)
         self.birthAgeOrder = dcp(project.birthAgeOrder)
         self.birthIntervals = dcp(project.birthIntervals)
         # self.mortalityRates = dcp(project.mortalityRates)

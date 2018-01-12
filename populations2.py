@@ -18,8 +18,8 @@ class WomenAgeGroup:
         self.anaemiaUpdate = 1.
         self.probConditionalCoverage = {}
 
-class ChildAgeGroup:
-    def __init__(self, age, populationSize, boxes, anaemiaDist, incidences, stuntingDist, wastingDist, BFdist, birthDist,
+class ChildAgeGroup(object):
+    def __init__(self, age, populationSize, boxes, anaemiaDist, incidences, stuntingDist, wastingDist, BFdist,
                  ageSpan, constants):
         self.age = age
         self.populationSize = populationSize
@@ -28,7 +28,6 @@ class ChildAgeGroup:
         self.stuntingDist = stuntingDist
         self.wastingDist = wastingDist
         self.bfDist = BFdist
-        self.birthDist = birthDist
         self.incidences = incidences
         self.const = constants
         self.correctBF = self.const.correctBF[age]
@@ -38,9 +37,9 @@ class ChildAgeGroup:
         self.probConditionalDiarrhoea = {}
         self.probConditionalStunting = {}
         self.programEffectiveness = {}
-        self._setUpdateStorage()
+        self._setStorageForUpdates()
 
-    def _setUpdateStorage(self):
+    def _setStorageForUpdates(self):
         # storing updates
         self.stuntingUpdate = 1.
         self.anaemiaUpdate = 1.
@@ -54,9 +53,6 @@ class ChildAgeGroup:
         self.diarrhoeaUpdate = {}
         for risk in self.const.wastedList + ['Stunting', 'Anaemia']:
             self.diarrhoeaUpdate[risk] = 1.
-        self.birthUpdate = {}
-        for BO in self.const.birthOutcomes:
-            self.birthUpdate[BO] = 1.
         self.wastingPreventionUpdate = {}
         self.wastingTreatmentUpdate = {}
         for wastingCat in self.const.wastedList:
@@ -192,6 +188,33 @@ class ChildAgeGroup:
         restratification["high"] = fractionHigh
         return restratification
 
+
+class Newborn(ChildAgeGroup):
+    def __init__(self, age, populationSize, boxes, anaemiaDist, incidences, stuntingDist, wastingDist, BFdist,
+                 ageSpan, constants, birthDist):
+        """
+        This is the <1 month age group, distinguished from the other age groups by birth outcomes, spacing etc etc.
+        """
+        super(Newborn, self).__init__(age, populationSize, boxes, anaemiaDist, incidences, stuntingDist, wastingDist, BFdist,
+                 ageSpan, constants)
+        self.birthDist = birthDist
+        self._setBirthProbs()
+
+    def _setBirthProbs(self):
+        """
+        Setting the probability of each birth outcome.
+        :return:
+        """
+        self.birthProb = {}
+        for outcome, frac in self.birthDist.iteritems():
+            thisSum = 0.
+            for ageOrder, fracAO in self.const.birthAgeOrder.iteritems():
+                RRAO = self.const.RRageOrder[ageOrder][outcome]
+                for interval, fracInterval in self.const.birthIntervals.iteritems():
+                    RRinterval = self.const.RRinterval[interval][outcome]
+                    thisSum += fracAO * RRAO * fracInterval * RRinterval
+            self.birthProb[outcome] = thisSum
+
 class Population(object):
     def __init__(self, name, project, constants):
         self.name = name
@@ -202,7 +225,7 @@ class Population(object):
         self.bfDist = self.project.riskDistributions['Breastfeeding']
         self.anaemiaDist = self.project.riskDistributions['Anaemia']
         self.birthDist = self.project.birthDist
-        self.baselineCov = self.project.costCurveInfo['baseline coverage']
+        self.baselineCov = self.project.costCurveInfo['baseline coverage'] # TODO: this baseline coverage needs to first be converted into new way of calculating coverage!!!!
         self.incidences = self.project.incidences
         self.RRdiarrhoea = self.project.RRdeath['Child diarrhoea']['Diarrhoea incidence']
         self.ORcondition = self.project.ORcondition
@@ -231,7 +254,7 @@ class Population(object):
         p1 = p0 * oddsRatio / (1. - p0 + oddsRatio * p0)
         return p0, p1
 
-class Children(Population):
+class Children(Population): # TODO: all the pobability calculations need to be performed with the convert baseline coverage to accoutn for new definition!!!
     def __init__(self, name, project, constants):
         super(Children, self).__init__(name, project, constants)
         self.ageGroups = []
@@ -285,8 +308,13 @@ class Children(Population):
                             thisPop = popSize * stuntingDist[stuntingCat] * anaemiaDist[anaemiaCat] * \
                                       wastingDist[wastingCat] * bfDist[bfCat]
                             boxes[stuntingCat][wastingCat][bfCat][anaemiaCat] = Box(thisPop)
-            self.ageGroups.append(ChildAgeGroup(age, popSize, boxes,
-                                           anaemiaDist, incidences, stuntingDist, wastingDist, bfDist, birthDist,
+            if age == '<1 month': # <1 month age group has slightly different functionality
+                self.ageGroups.append(Newborn(age, popSize, boxes,
+                                           anaemiaDist, incidences, stuntingDist, wastingDist, bfDist,
+                                                ageingRate, self.const, birthDist))
+            else:
+                self.ageGroups.append(ChildAgeGroup(age, popSize, boxes,
+                                           anaemiaDist, incidences, stuntingDist, wastingDist, bfDist,
                                                 ageingRate, self.const))
 
     def _setChildrenReferenceMortality(self):
@@ -699,11 +727,20 @@ class PregnantWomen(Population):
     def __init__(self, name, project, constants):
         super(PregnantWomen, self).__init__(name, project, constants)
         self.ageGroups = []
+        self._setStorageForUpdates()
         self._makePopSizes()
         self._makeBoxes()
         self._setPWReferenceMortality()
         self._updateMortalityRates()
         self._setProbAnaemicIfCovered()
+        self._setBirthPregnancyInfo()
+
+    def _setStorageForUpdates(self):
+        self.anaemiaUpdate = 1.
+        # this update will impact Newborn age group
+        self.birthUpdate = {}
+        for BO in self.const.birthOutcomes:
+            self.birthUpdate[BO] = 1.
 
     def getTotalPopulation(self):
         return sum(ageGroup.populationSize for ageGroup in self.ageGroups)
@@ -794,8 +831,8 @@ class PregnantWomen(Population):
     def _setBirthPregnancyInfo(self):
         self.fracPregnancyAverted = sum(self.const.famPlanMethods[prog]['Effectiveness'] *
                                         self.const.famPlanMethods[prog]['Distribution'] *
-                                        self.const.costCurveInfo['baseline coverage']['Family planning']
-                                        for prog in self.const.famPlanMethods.iterkeys())
+                                        self.const.costCurveInfo['baseline coverage']['Family Planning']
+                                        for prog in self.const.famPlanMethods.iterkeys()) #TODO: could be cleaner
         numPregnant = self.const.demographics['number of pregnant women']
         numWRA = sum(pop for key, pop in self.project.populationByAge.iteritems() if 'WRA' in key)
         rate = numPregnant/numWRA/(1.- self.fracPregnancyAverted)
@@ -813,6 +850,10 @@ class NonPregnantWomen(Population):
         self.ageGroups = []
         self._makePopSizes()
         self._makeBoxes()
+        self._setStorageForUpdates()
+
+    def _setStorageForUpdates(self):
+        self.anaemiaUpdate = 1.
 
     def getTotalPopulation(self):
         return sum(ageGroup.populationSize for ageGroup in self.ageGroups)
@@ -828,7 +869,7 @@ class NonPregnantWomen(Population):
             popSize = self.popSizes[age]
             boxes = {}
             anaemiaDist = self.anaemiaDist[age]
-            for anaemiaCat in self.const.anaemicList:
+            for anaemiaCat in self.const.anaemiaList:
                 thisPop = popSize * anaemiaDist[anaemiaCat]
                 boxes[anaemiaCat] = Box(thisPop)
             self.ageGroups.append(WomenAgeGroup(age, popSize, boxes, anaemiaDist, 1, None))
