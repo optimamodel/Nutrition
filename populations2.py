@@ -7,39 +7,7 @@ class Box:
         self.mortalityRate = None
         self.cumulativeDeaths = 0
 
-class PWAgeGroup:
-    def __init__(self, age, populationSize, boxes, anaemiaDist, ageSpan, constants):
-        self.age = age
-        self.populationSize = populationSize
-        self.boxes = boxes
-        self.anaemiaDist = anaemiaDist
-        self.ageingRate = 1./ageSpan
-        self.const = constants
-        self.probConditionalCoverage = {}
-        self._setStorageForUpdates()
-
-    def _setStorageForUpdates(self):
-        self.anaemiaUpdate = 1.
-        # this update will impact Newborn age group
-        self.birthUpdate = {}
-        for BO in self.const.birthOutcomes:
-            self.birthUpdate[BO] = 1.
-
-    def getNumberAnaemic(self):
-        for anaemiaCat in self.const.anaemicList:
-            return self.boxes[anaemiaCat].populationSize
-
-    def getFracAnaemic(self):
-        return self.getNumberAnaemic() / self.populationSize
-
-    def getFracRisk(self, risk):
-        return self.getFracAnaemic()
-
-    def redistributePopulation(self):
-        for anaemiaCat in self.const.anaemiaList:
-            self.boxes[anaemiaCat].populationSize =self.anaemiaDist[anaemiaCat] * self.populationSize
-
-class NonPWAgeGroup:
+class NonPWAgeGroup(object):
     def __init__(self, age, populationSize, boxes, anaemiaDist, constants):
         self.age = age
         self.populationSize = populationSize
@@ -62,6 +30,19 @@ class NonPWAgeGroup:
     def redistributePopulation(self):
         for anaemiaCat in self.const.anaemiaList:
             self.boxes[anaemiaCat].populationSize =self.anaemiaDist[anaemiaCat] * self.populationSize
+
+class PWAgeGroup(NonPWAgeGroup):
+    def __init__(self, age, populationSize, boxes, anaemiaDist, ageSpan, constants):
+        super(PWAgeGroup, self).__init__(age, populationSize, boxes, anaemiaDist, constants)
+        self.ageingRate = 1./ageSpan
+        self.const = constants
+        self._setStorageForUpdates()
+
+    def _setStorageForUpdates(self):
+        # this update will impact Newborn age group
+        self.birthUpdate = {}
+        for BO in self.const.birthOutcomes:
+            self.birthUpdate[BO] = 1.
 
 class ChildAgeGroup(object):
     def __init__(self, age, populationSize, boxes, anaemiaDist, incidences, stuntingDist, wastingDist, BFdist,
