@@ -94,6 +94,7 @@ class Model:
             ageGroups = self._getApplicableAgeGroups(population, risk)
             for ageGroup in ageGroups:
                 for program in applicableProgs:
+                    if ageGroup.age in program.relevantAges:
                         if risk == 'Stunting':
                             program._getStuntingUpdate(ageGroup)
                         elif risk == 'Anaemia':
@@ -110,11 +111,13 @@ class Model:
                             program._getMortalityUpdate(ageGroup)
                         elif risk == 'Birth outcomes':
                             program._getBirthOutcomeUpdate(ageGroup)
-                        # elif risk == 'Family planning':
+                        elif risk == 'Family planning':
+                            program._getFamilyPlanningUpdate(ageGroup)
                         else:
                             print ":: Risk _{}_ not found. No update applied ::".format(risk)
                             continue
-
+                    else:
+                        continue
                 if risk == 'Wasting treatment':
                     # need to account for flow between MAM and SAM
                     self._getFlowBetweenMAMandSAM(ageGroup)
@@ -142,9 +145,14 @@ class Model:
                                                   * ageGroup.diarrhoeaUpdate[wastingCat] \
                                                   * ageGroup.fromMAMtoSAMupdate[wastingCat] \
                                                   * ageGroup.fromSAMtoMAMupdate[wastingCat]
-        else: #PW or non-PW
+        elif population.name == 'Pregnant women':
             for ageGroup in population.ageGroups:
                 ageGroup.totalAnaemiaUpdate = ageGroup.anaemiaUpdate
+        elif population.name == 'Non-pregnant women':
+            for ageGroup in population.ageGroups:
+                ageGroup.totalAnaemiaUpdate = ageGroup.anaemiaUpdate
+                ageGroup.totalFPUpdate = ageGroup.FPupdate
+
 
     def _updateDistributions(self, population):
         """
@@ -201,6 +209,10 @@ class Model:
                 ageGroup.anaemiaDist['anaemic'] = newProbAnaemia
                 ageGroup.anaemiaDist['not anaemic'] = 1.-newProbAnaemia
                 ageGroup.redistributePopulation()
+            # weighted sum account for different effect and target pops across nonPW age groups # TODO: is this true or need to scale by frac targeted?
+            nonPWpop = population.getTotalPopulation()
+            FPcov = sum(nonPWage.FPupdate * nonPWage.populationSize for nonPWage in population.ageGroups) / nonPWpop
+            population._updateFracPregnancyAverted(FPcov)
 
     def _getFlowBetweenMAMandSAM(self, ageGroup):
         fromSAMtoMAMupdate = {}
@@ -300,12 +312,12 @@ class Model:
             ageGroup.stuntingDist = ageGroup.restratify(probStunting)
             ageGroup.redistributePopulation()
 
-
     def _applyBirths(self): # TODO; re-write this function in future
         # num annual births = birth rate x num WRA x (1 - frac preg averted)
-        numWRA = self.populations[2].getTotalPopulation() # TODO: best way to get total WRA pop?
+        nonPW = self.populations[2]
+        numWRA = self.populations[2].getTotalPopulation() # TODO: best way to get total WRA pop? COULD BE WRONG
         PW = self.populations[1]
-        annualBirths = PW.birthRate * numWRA * (1. - PW.fracPregnancyAverted)
+        annualBirths = PW.birthRate * numWRA * (1. - nonPW.fracPregnancyAverted)
         # calculate total number of new babies and add to cumulative births
         numNewBabies = annualBirths * self.constants.timestep
         self.cumulativeBirths += numNewBabies
@@ -315,7 +327,7 @@ class Model:
         restratifiedStuntingAtBirth = {}
         restratifiedWastingAtBirth = {}
         for outcome in self.constants.birthOutcomes:
-            totalProbStunted = children.probRiskAtBirth['Stunting'][outcome] * newBorns.totalStuntingUpdate # TODO: this has to exist before this function is called
+            totalProbStunted = children.probRiskAtBirth['Stunting'][outcome] * newBorns.totalStuntingUpdate
             restratifiedStuntingAtBirth[outcome] = self.restratify(totalProbStunted)
             #wasting
             restratifiedWastingAtBirth[outcome] = {}
@@ -352,7 +364,6 @@ class Model:
                                                                                                      stuntingFractions[stuntingCat] * \
                                                                                                      wastingFractions[wastingCat]
 
-
     def _applyPWMortality(self):
         PW = self.populations[1]
         for ageGroup in PW.ageGroups:
@@ -364,9 +375,10 @@ class Model:
     def _updatePWpopulation(self):
         """Use prenancy rate to distribute PW into age groups.
         Distribute into age bands by age distribution, assumed constant over time."""
+        nonPW = self.populations[2]
         numWRA = self.populations[2].getTotalPopulation()
         PW = self.populations[1]
-        PWpop = PW.pregnancyRate * numWRA * (1. - PW.fracPregnancyAverted)
+        PWpop = PW.pregnancyRate * numWRA * (1. - nonPW.fracPregnancyAverted)
         for ageGroup in PW.ageGroups:
             popSize = PWpop * self.constants.PWageDistribution[ageGroup.age] # TODO: could put this in PW age groups for easy access
             for anaemiaCat in self.constants.anaemiaList:

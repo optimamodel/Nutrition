@@ -127,6 +127,10 @@ class Program(object):
             combined = prevUpdate[wastingCat] * incidUpdate[wastingCat]
             ageGroup.wastingUpdate[wastingCat] *= combined
 
+    def _getFamilyPlanningUpdate(self, ageGroup):
+        # this update is weighted by coverage
+        ageGroup.FPupdate *= self.proposedCoverageFrac
+
     def _getWastingPreventionUpdate(self, ageGroup):
         update = self._getWastingIncidenceUpdate(ageGroup)
         for wastingCat in self.const.wastedList:

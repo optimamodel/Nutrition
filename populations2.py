@@ -15,6 +15,7 @@ class NonPWAgeGroup(object):
         self.anaemiaDist = anaemiaDist
         self.const = constants
         self.anaemiaUpdate = 1.
+        self.FPupdate = 1.
         self.probConditionalCoverage = {}
 
     def getNumberAnaemic(self):
@@ -467,12 +468,12 @@ class Children(Population): # TODO: all the pobability calculations need to be p
         return self._getPopulation(self.ageGroups, self.const.allRisks)
 
 
-    def getFracRisk(self, risk):
-        # TODO: fix this
-        if risk == 'Stunting':
-            return self.getTotalFracStunted()
-        # elif risk == 'Anaemia':
-        #     return self.getTotalFracAnaemic()
+    # def getFracRisk(self, risk):
+    #     # TODO: fix this
+    #     if risk == 'Stunting':
+    #         return self.getTotalFracStunted()
+    #     # elif risk == 'Anaemia':
+    #     #     return self.getTotalFracAnaemic()
 
     def getTotalNumberStunted(self):
         risks = self._replaceRiskList(0, self.const.stuntedList)
@@ -511,7 +512,6 @@ class Children(Population): # TODO: all the pobability calculations need to be p
         alteredList = self.const.allRisks[:]
         alteredList[index] = newList
         return alteredList
-
 
     def _setProbConditionalStunting(self):
         """Calculate the probability of stunting given previous stunting between age groups"""
@@ -762,7 +762,6 @@ class PregnantWomen(Population):
         self._setPWReferenceMortality()
         self._updateMortalityRates()
         self._setProbAnaemicIfCovered()
-        self._setBirthPregnancyInfo()
 
     def getTotalPopulation(self):
         return sum(ageGroup.populationSize for ageGroup in self.ageGroups)
@@ -851,23 +850,7 @@ class PregnantWomen(Population):
                 ageGroup.probConditionalCoverage[risk][program]['covered'] = pc
                 ageGroup.probConditionalCoverage[risk][program]['not covered'] = pn
 
-    def _setBirthPregnancyInfo(self):
-        self.fracPregnancyAverted = sum(self.const.famPlanMethods[prog]['Effectiveness'] *
-                                        self.const.famPlanMethods[prog]['Distribution'] *
-                                        self.const.costCurveInfo['baseline coverage']['Family Planning']
-                                        for prog in self.const.famPlanMethods.iterkeys()) #TODO: could be cleaner
-        numPregnant = self.const.demographics['number of pregnant women']
-        numWRA = sum(pop for key, pop in self.project.populationByAge.iteritems() if 'WRA' in key)
-        rate = numPregnant/numWRA/(1.- self.fracPregnancyAverted)
-        # reduce rate by % difference between births and pregnancies to get birth rate
-        projectedBirths = self.const.popProjections['number of births']
-        projectedPWpop = self.const.popProjections['pregnant women']
-        percentDiff = [ai/bi for ai,bi in zip(projectedBirths, projectedPWpop)]
-        averagePercentDiff = sum(percentDiff) / float(len(percentDiff))
-        self.pregnancyRate = rate
-        self.birthRate = averagePercentDiff * rate
-
-class NonPregnantWomen(Population): # TODO: there is a fair bit of overlap between nonpregnant women and pregnant women, could use inheritance to avoid re-writing code
+class NonPregnantWomen(Population):
     def __init__(self, name, project, constants):
         super(NonPregnantWomen, self).__init__(name, project, constants)
         self.ageGroups = []
@@ -875,6 +858,7 @@ class NonPregnantWomen(Population): # TODO: there is a fair bit of overlap betwe
         self._makeBoxes()
         self._setProbAnaemicIfCovered()
         self._setStorageForUpdates()
+        self._setBirthPregnancyInfo()
 
     def _setStorageForUpdates(self):
         self.anaemiaUpdate = 1.
@@ -916,6 +900,32 @@ class NonPregnantWomen(Population): # TODO: there is a fair bit of overlap betwe
                     pn, pc = self._solveQuadratic(OR, fracCovered, fracImpacted)
                 ageGroup.probConditionalCoverage[risk][program]['covered'] = pc
                 ageGroup.probConditionalCoverage[risk][program]['not covered'] = pn
+
+    def _setBirthPregnancyInfo(self):
+        self.fracPregnancyAverted = self._getFracPregnancyAverted(self.const.costCurveInfo['baseline coverage']['Family Planning']) # TODO: need to use the adjusted baseline cov for this... could pass it in
+        numPregnant = self.const.demographics['number of pregnant women']
+        numWRA = sum(pop for key, pop in self.project.populationByAge.iteritems() if 'WRA' in key)
+        rate = numPregnant/numWRA/(1.- self.fracPregnancyAverted)
+        # reduce rate by % difference between births and pregnancies to get birth rate
+        projectedBirths = self.const.popProjections['number of births']
+        projectedPWpop = self.const.popProjections['pregnant women']
+        percentDiff = [ai/bi for ai,bi in zip(projectedBirths, projectedPWpop)]
+        averagePercentDiff = sum(percentDiff) / float(len(percentDiff))
+        self.pregnancyRate = rate
+        self.birthRate = averagePercentDiff * rate
+
+    def _updateFracPregnancyAverted(self, newCoverage):
+        # if FP is not used in this analysis, there is not change
+        program = 'Family Planning'
+        # TODO: need to use the adjusted baseline coverage!
+        maxCovFP = self.const.costCurveInfo['baseline coverage'][program] + self.const.demographics['unmet need for family planning']
+        newCoverage = maxCovFP if newCoverage > maxCovFP else newCoverage
+        self.fracPregnancyAverted = self._getFracPregnancyAverted(newCoverage)
+
+    def _getFracPregnancyAverted(self, coverage):
+        return sum(self.const.famPlanMethods[prog]['Effectiveness'] *
+            self.const.famPlanMethods[prog]['Distribution'] * coverage
+            for prog in self.const.famPlanMethods.iterkeys())
 
 
 def setUpPopulations(project, constants):
