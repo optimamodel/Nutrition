@@ -63,7 +63,7 @@ class Model:
         self.project.programTargetPop.update(maxCov)
 
     def applyNewProgramCoverages(self, newCoverages):
-        '''newCoverages is required to be the overall coverage % (i.e. people covered / entire target pop) '''
+        '''newCoverages is required to be the unrestricted coverage % (i.e. people covered / entire target pop) '''
         self.newCoverages = dcp(newCoverages)
         self._updateCoverages()
         for pop in self.populations: # update all the populations
@@ -87,7 +87,7 @@ class Model:
         ageGroups = list(filter(lambda x: x.age in applicableAgeNames, population.ageGroups))
         return ageGroups
 
-    def _updatePopulation(self, population): # TODO: could put all populations in here, would make for cleaner searching
+    def _updatePopulation(self, population):
         for risk in self.programInfo.programAreas.keys():
             # get relevant programs and age groups, determined by risk area
             applicableProgs = self._getApplicablePrograms(risk)
@@ -113,6 +113,8 @@ class Model:
                             program._getBirthOutcomeUpdate(ageGroup)
                         elif risk == 'Family planning':
                             program._getFamilyPlanningUpdate(ageGroup)
+                        # elif risk == 'Birth age': # TODO: change implementation from previous mode version -- Calculate probabilities using RR etc.
+                        #     program._getBirthAgeUpdate(ageGroup)
                         else:
                             print ":: Risk _{}_ not found. No update applied ::".format(risk)
                             continue
@@ -152,7 +154,7 @@ class Model:
             for ageGroup in population.ageGroups:
                 ageGroup.totalAnaemiaUpdate = ageGroup.anaemiaUpdate
                 ageGroup.totalFPUpdate = ageGroup.FPupdate
-
+                ageGroup.totalBAUpdate = ageGroup.birthAgeUpdate
 
     def _updateDistributions(self, population):
         """
@@ -161,7 +163,7 @@ class Model:
         :param ageGroup:
         :return:
         """
-        if population.name == 'Children': # TODO: could map these things using a dictionary of risks with corresponding disttributions & outcomes. Then function could be made to call.
+        if population.name == 'Children': # TODO: could map these things using a dictionary of risks with corresponding distributions & outcomes. Then function could be made to call.
             for ageGroup in population.ageGroups:
                 # mortality
                 for cause in self.constants.causesOfDeath:
@@ -204,6 +206,7 @@ class Model:
                 ageGroup.redistributePopulation()
         elif population.name == 'Non-pregnant women':
             for ageGroup in population.ageGroups:
+                # anaemia
                 oldProbAnaemia = ageGroup.getFracRisk('Anaemia')
                 newProbAnaemia = oldProbAnaemia * ageGroup.totalAnaemiaUpdate
                 ageGroup.anaemiaDist['anaemic'] = newProbAnaemia

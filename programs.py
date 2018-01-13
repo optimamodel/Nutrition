@@ -31,15 +31,11 @@ class Program(object):
         self._setRestrictedPopSize(populations)
         self.proposedCoverageFrac = self.proposedCoverageNum / self.unrestrictedPopSize
 
-    # def updateCoverageFrac(self, newCoverage, populations):
-    #     """
-    #     Updates coverage values based on % of the target pop covered
-    #     """
-    #     self.proposedTargetCoverage = newCoverage
-    #     # convert to appropriate coverage metrics
-    #     self.
-
-
+    def updateCoverageTMP(self, newCoverage, populations):
+        """Update all values pertaining to coverage for a program"""
+        self.proposedCoverageFrac = newCoverage
+        self._setUnrestrictedPopSize(populations)
+        self._setRestrictedPopSize(populations)
 
     def _setRelevantAges(self):
         """
@@ -128,7 +124,6 @@ class Program(object):
             ageGroup.wastingUpdate[wastingCat] *= combined
 
     def _getFamilyPlanningUpdate(self, ageGroup):
-        # this update is weighted by coverage
         ageGroup.FPupdate *= self.proposedCoverageFrac
 
     def _getWastingPreventionUpdate(self, ageGroup):
@@ -238,11 +233,11 @@ class Program(object):
         for BO in self.const.birthOutcomes:
             ageGroup.birthUpdate[BO] *= update[BO]
 
-    def _getFamilyPlanningUpdate(self, ageGroup):
-        """
-        Programs which directly impact family planning
-        :return:
-        """
+    def _getBirthAgeUpdate(self, ageGroup):
+        update = self._getBAUpdate()
+        for BA in self.const.birthAges:
+            ageGroup.birthUpdate[BA] *= update[BA]
+
     def _getNewProb(self, coverage, probCovered, probNotCovered):
         return coverage * probCovered + (1.-coverage) * probNotCovered
 
@@ -312,6 +307,16 @@ class Program(object):
             reduction = affFrac * eff * (self.proposedCoverageFrac - oldCov) / (1. - eff*oldCov)
             BOupdate[outcome] = 1. - reduction
         return BOupdate
+
+    def _getBAUpdate(self): # TODO: need to link this to birth outcomes in children.
+        BAupdate = {BA: 1. for BA in self.const.birthAges}
+        for BA in self.const.birthAges:
+            affFrac = self.const.birthAgeProgram[BA]['affected fraction']
+            eff = self.const.birthAgeProgram[BA]['effectiveness']
+            oldCov = self.unrestrictedBaselineCov
+            reduction = affFrac * eff * (self.proposedCoverageFrac - oldCov) / (1. - eff*oldCov)
+            BAupdate[BA] = 1. - reduction
+        return BAupdate
 
     def _getBFpracticeUpdate(self, ageGroup):
         correctPrac = ageGroup.correctBFpractice

@@ -30,6 +30,7 @@ class Project:
         self.getWastingProgram()
         self.getChildProgram()
         self.getFamilyPrograms()
+        self.getBirthAgePrograms()
         self.getCostCoverageInfo()
         self.getProgramTargetPop()
         self.getProgramRiskAreas()
@@ -107,8 +108,8 @@ class Project:
 
     def getBirthDist(self):
         birthsSheet = self.readSheet('Distribution births', [0, 1])
-        self.birthAgeOrder = birthsSheet.loc['Birth age order'].to_dict('dict')['Fraction']
-        self.birthIntervals = birthsSheet.loc['Birth intervals'].to_dict('dict')['Fraction']
+        self.birthAgeDist = birthsSheet.loc['Birth age order'].to_dict('dict')['Fraction']
+        self.birthIntervalDist = birthsSheet.loc['Birth intervals'].to_dict('dict')['Fraction']
 
     def getProjections(self):
         self.projections = self.readSheet('Demographic projections', [0], 'dict')
@@ -185,7 +186,7 @@ class Project:
     def getProgramTargetPop(self):
         targetPopSheet = self.readSheet('Programs target population', [0,1])
         targetPop = {}
-        for pop in ['Children', 'Pregnant women', 'Non-pregnant WRA']:
+        for pop in ['Children', 'Pregnant women', 'Non-pregnant WRA', 'General population']:
             targetPop.update(targetPopSheet.loc[pop].to_dict(orient='index'))
         self.programTargetPop = targetPop
 
@@ -236,6 +237,11 @@ class Project:
         childSheet = self.readSheet('Programs for children', [0,1,2])
         childDict = childSheet.to_dict(orient='index')
         self.childPrograms = self.makeDict(childDict)
+
+    def getBirthAgePrograms(self):
+        programSheet = self.readSheet('Programs birth age', [0,1])
+        self.birthAgeProgram = programSheet.loc['Birth age program'].to_dict('dict')
+        self.birthAges = self.birthAgeProgram.keys()
 
     def getAnaemiaProgram(self):
         anaemiaSheet = self.readSheet('Programs anemia', [0,1])
