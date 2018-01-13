@@ -208,7 +208,7 @@ class Program(object):
             for bfCat in self.const.bfList:
                 pab = ageGroup.bfDist[bfCat]
                 t1 = beta[bfCat] * probWasted['diarrhoea']
-                t2 = (1.-beta[bfCat]) * probWasted['diarrhoea']
+                t2 = (1.-beta[bfCat]) * probWasted['no diarrhoea']
                 newProb += pab*(t1+t2)
             reduction = (oldProb - newProb)/oldProb
             update[wastingCat] *= 1. - reduction

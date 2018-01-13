@@ -132,7 +132,7 @@ class Model:
         """
         if population.name == 'Children':
             for ageGroup in population.ageGroups:
-                # stunting: direct, diarrhoea, breatfeeding
+                # stunting: direct, diarrhoea, breastfeeding
                 ageGroup.totalStuntingUpdate = ageGroup.stuntingUpdate * ageGroup.diarrhoeaUpdate['Stunting'] \
                                                * ageGroup.bfUpdate['Stunting']
                 # anaemia: direct, diarrhoea, breastfeeding
@@ -296,9 +296,9 @@ class Model:
                 numAgeingInStratified[stuntingCat] = 0.
             for prevStunt in ['stunted', 'not stunted']:
                 totalProbStunted = ageGroup.probConditionalStunting[prevStunt] * ageGroup.totalStuntingUpdate # TODO:check this is correct
-                restatifiedProb = ageGroup.restratify(min(1.,totalProbStunted))
+                restratifiedProb = ageGroup.restratify(min(1.,totalProbStunted))
                 for stuntingCat in self.constants.stuntingList:
-                    numAgeingInStratified[stuntingCat] += restatifiedProb[stuntingCat] * numAgeingIn[prevStunt]
+                    numAgeingInStratified[stuntingCat] += restratifiedProb[stuntingCat] * numAgeingIn[prevStunt]
             # distribute those ageing in amongst those stunting categories but also BF, wasting and anaemia
             for wastingCat in self.constants.wastingList:
                 pw = ageGroup.wastingDist[wastingCat]
