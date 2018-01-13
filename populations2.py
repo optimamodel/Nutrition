@@ -92,7 +92,7 @@ class PWAgeGroup:
 
 class ChildAgeGroup(object):
     def __init__(self, age, populationSize, boxes, anaemiaDist, incidences, stuntingDist, wastingDist, BFdist,
-                 ageSpan, constants):
+                 ageingRate, constants):
         self.age = age
         self.populationSize = populationSize
         self.boxes = boxes
@@ -104,7 +104,7 @@ class ChildAgeGroup(object):
         self.const = constants
         self.correctBF = self.const.correctBF[age]
         self.incorrectBF = list(set(self.const.bfList) - set(self.correctBF))
-        self.ageingRate = 1./ageSpan
+        self.ageingRate = ageingRate
         self.probConditionalCoverage = {}
         self.probConditionalDiarrhoea = {}
         self.probConditionalStunting = {}
@@ -127,11 +127,13 @@ class ChildAgeGroup(object):
             self.diarrhoeaUpdate[risk] = 1.
         self.wastingPreventionUpdate = {}
         self.wastingTreatmentUpdate = {}
+        self.totalWastingUpdate = {}
         for wastingCat in self.const.wastedList:
             self.wastingPreventionUpdate[wastingCat] = 1.
             self.wastingTreatmentUpdate[wastingCat] = 1.
+            self.totalWastingUpdate[wastingCat] = 1.
         self.totalStuntingUpdate = 1.
-        self.totalWastingUpdate = 1.
+
 
     def _getPopulation(self, risks):
         """ Get population size for given age groups and combinations of given risks"""
@@ -263,12 +265,12 @@ class ChildAgeGroup(object):
 
 class Newborn(ChildAgeGroup):
     def __init__(self, age, populationSize, boxes, anaemiaDist, incidences, stuntingDist, wastingDist, BFdist,
-                 ageSpan, constants, birthDist):
+                 ageingRate, constants, birthDist):
         """
         This is the <1 month age group, distinguished from the other age groups by birth outcomes, spacing etc etc.
         """
         super(Newborn, self).__init__(age, populationSize, boxes, anaemiaDist, incidences, stuntingDist, wastingDist, BFdist,
-                 ageSpan, constants)
+                 ageingRate, constants)
         self.birthDist = birthDist
         self.birthUpdate = {}
         for BO in self.const.birthOutcomes:

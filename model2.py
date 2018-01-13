@@ -64,7 +64,7 @@ class Model:
 
     def applyNewProgramCoverages(self, newCoverages):
         '''newCoverages is required to be the unrestricted coverage % (i.e. people covered / entire target pop) '''
-        self.newCoverages = dcp(newCoverages)
+        self.newCoverages = dcp(newCoverages) # TODO: don't like this -- should be set only after restrictions
         self._updateCoverages()
         for pop in self.populations: # update all the populations
             self._updatePopulation(pop)
@@ -269,7 +269,7 @@ class Model:
         oldest = ageGroups[-1]
         ageingOutStunted = oldest.getNumberStunted() * oldest.ageingRate
         # ageingOutNotStunted = (oldest.populationSize - oldest.getNumberStunted()) * oldest.ageingRate # not sure if we use this
-        self.cumulativeAgeingOutStunted += ageingOutStunted # TODO: this needs to be updated in Model
+        self.cumulativeAgeingOutStunted += ageingOutStunted
         # self.cumulativeAgeingOutNotStunted += ageingOutNotStunted
         # first age group does not have ageing in
         newborns = ageGroups[0]
@@ -307,6 +307,9 @@ class Model:
                     for anaemiaCat in self.constants.anaemiaList:
                         pa = ageGroup.anaemiaDist[anaemiaCat]
                         for stuntingCat in self.constants.stuntingList:
+                            print "out " + str(ageingOut[idx][stuntingCat][wastingCat][bfCat][anaemiaCat])
+                            print "in " + str(numAgeingInStratified[stuntingCat] * pw * pbf * pa)
+                            print " "
                             thisBox = ageGroup.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat]
                             thisBox.populationSize -= ageingOut[idx][stuntingCat][wastingCat][bfCat][anaemiaCat]
                             thisBox.populationSize += numAgeingInStratified[stuntingCat] * pw * pbf * pa
@@ -444,6 +447,10 @@ class Model:
         self._updateWRApopulation()
         # self.updateYearlyRiskDistributions() # TODO: don't think I need this
 
+
+    def getOutcome(self, outcome):
+        if outcome == 'total stunted':
+            return self.cumulativeAgeingOutStunted
 
 
 
