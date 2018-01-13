@@ -34,7 +34,7 @@ class Model:
 
     def _updateCoverages(self):
         for program in self.programInfo.programs:
-            program.updateCoverage(self.newCoverages[program.name], self.populations)
+            program.updateCoverageTMP(self.newCoverages[program.name], self.populations) # TODO: USING TMP JUST FOR TESTING
         self.programInfo._restrictCoverages(self.populations)
 
 
@@ -320,7 +320,7 @@ class Model:
         nonPW = self.populations[2]
         numWRA = self.populations[2].getTotalPopulation() # TODO: best way to get total WRA pop? COULD BE WRONG
         PW = self.populations[1]
-        annualBirths = PW.birthRate * numWRA * (1. - nonPW.fracPregnancyAverted)
+        annualBirths = nonPW.birthRate * numWRA * (1. - nonPW.fracPregnancyAverted)
         # calculate total number of new babies and add to cumulative births
         numNewBabies = annualBirths * self.constants.timestep
         self.cumulativeBirths += numNewBabies
@@ -338,7 +338,7 @@ class Model:
             totalProbWasted = 0
             # distribute proportions for wasted categories
             for wastingCat in self.constants.wastedList:
-                probWastedThisCat = probWastedAtBirth[wastingCat][outcome] * newBorns.totalWastingUpdate
+                probWastedThisCat = probWastedAtBirth[wastingCat][outcome] * newBorns.totalWastingUpdate[wastingCat]
                 restratifiedWastingAtBirth[outcome][wastingCat] = probWastedThisCat
                 totalProbWasted += probWastedThisCat
             # normality constraint on non-wasted proportions
@@ -381,7 +381,7 @@ class Model:
         nonPW = self.populations[2]
         numWRA = self.populations[2].getTotalPopulation()
         PW = self.populations[1]
-        PWpop = PW.pregnancyRate * numWRA * (1. - nonPW.fracPregnancyAverted)
+        PWpop = nonPW.pregnancyRate * numWRA * (1. - nonPW.fracPregnancyAverted)
         for ageGroup in PW.ageGroups:
             popSize = PWpop * self.constants.PWageDistribution[ageGroup.age] # TODO: could put this in PW age groups for easy access
             for anaemiaCat in self.constants.anaemiaList:
