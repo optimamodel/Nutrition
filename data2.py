@@ -10,7 +10,7 @@ class Project:
         self.WRAages = ['WRA: 15-19 years', 'WRA: 20-29 years', 'WRA: 30-39 years', 'WRA: 40-49 years']
         self.PWages = ["PW: 15-19 years", "PW: 20-29 years", "PW: 30-39 years", "PW: 40-49 years"]
         self.birthOutcomes = ['Term AGA', 'Term SGA', 'Pre-term AGA', 'Pre-term SGA']
-        self.programList = list(self.readSheet('Interventions cost and coverage', [0]).index) if not programsToKeep else programsToKeep
+        self.getProgramsForAnalysis()
         self.readAllData()
 
     #####--- WRAPPER METHODS ---######
@@ -180,10 +180,10 @@ class Project:
 
     def getStuntingProgram(self):
         ORsheet = self.readSheet('Odds ratios', [0,1])
-        self.ORstuntingProgram = ORsheet.loc['OR stunting by intervention'].to_dict(orient='index')
+        self.ORstuntingProgram = ORsheet.loc['OR stunting by program'].to_dict(orient='index')
 
     def getProgramTargetPop(self):
-        targetPopSheet = self.readSheet('Interventions target population', [0,1])
+        targetPopSheet = self.readSheet('Programs target population', [0,1])
         targetPop = {}
         for pop in ['Children', 'Pregnant women', 'Non-pregnant WRA']:
             targetPop.update(targetPopSheet.loc[pop].to_dict(orient='index'))
@@ -201,7 +201,7 @@ class Project:
                     self.programAreas[risk].append(program)
 
     def getCostCoverageInfo(self):
-        self.costCurveInfo = self.readSheet('Interventions cost and coverage', [0], 'dict')
+        self.costCurveInfo = self.readSheet('Programs cost and coverage', [0], 'dict')
         #self.baselineCov = {program: info['Baseline coverage'] for program, info in self.costCurveInfo.iteritems()}
 
     def getProgramDependencies(self): # TODO: will need to put IYCF dependencies in (maybe have them in the spreadsheet, but will be ignored if not selected by user)
@@ -222,24 +222,31 @@ class Project:
                 programDep[program][field] = []
         self.programDependency = programDep
 
+    def getProgramsForAnalysis(self):
+        includeSheet = self.readSheet('Programs to include', [0])
+        includeSheet = includeSheet[pd.notnull(includeSheet)]
+        self.programList = []
+        for program, value in includeSheet.iterrows():
+            self.programList.append(program)
+
     def getFamilyPrograms(self):
-        self.famPlanMethods = self.readSheet('Interventions family planning', [0], 'index')
+        self.famPlanMethods = self.readSheet('Programs family planning', [0], 'index')
 
     def getChildProgram(self):
-        childSheet = self.readSheet('Interventions for children', [0,1,2])
+        childSheet = self.readSheet('Programs for children', [0,1,2])
         childDict = childSheet.to_dict(orient='index')
         self.childPrograms = self.makeDict(childDict)
 
     def getAnaemiaProgram(self):
-        anaemiaSheet = self.readSheet('Interventions anemia', [0,1])
+        anaemiaSheet = self.readSheet('Programs anemia', [0,1])
         self.RRanaemiaProgram = anaemiaSheet.loc['Relative risks'].to_dict(orient='index')
         self.ORanaemiaProgram = anaemiaSheet.loc['Odds ratios'].to_dict(orient='index')
 
     def getWastingProgram(self):
         self.ORwastingProgram = {}
-        wastingSheet = self.readSheet('Interventions wasting', [0,1])
-        self.ORwastingProgram['SAM'] = wastingSheet.loc['OR SAM by intervention'].to_dict(orient='index')
-        self.ORwastingProgram['MAM'] = wastingSheet.loc['OR MAM by intervention'].to_dict(orient='index')
+        wastingSheet = self.readSheet('Programs wasting', [0,1])
+        self.ORwastingProgram['SAM'] = wastingSheet.loc['OR SAM by program'].to_dict(orient='index')
+        self.ORwastingProgram['MAM'] = wastingSheet.loc['OR MAM by program'].to_dict(orient='index')
 
     def combineORprogram(self):
         self.ORprograms = {}
@@ -254,7 +261,7 @@ class Project:
         self.RRprograms['Breastfeeding'] = {}
 
     def getBirthOutcomes(self):
-        BOprograms = self.readSheet('Interventions birth outcomes', [0,1], 'index')
+        BOprograms = self.readSheet('Programs birth outcomes', [0,1], 'index')
         newBOprograms = {}
         for program in BOprograms.keys():
             if not newBOprograms.get(program[0]):
@@ -380,20 +387,20 @@ class Project:
         '''Creates IYCF packages based on user input in 'IYCFpackages' '''
         # non-empty cells denote program combination
         # get package combinations
-        # create new intervention
-        newInterventions = {}
+        # create new program
+        newPrograms = {}
         ORs = {}
         for key, item in packagesDict.items():
-            if newInterventions.get(key) is None:
-                newInterventions[key] = {}
+            if newPrograms.get(key) is None:
+                newPrograms[key] = {}
             for age in self.childAges:
                 ORs[age] = 1.
                 for pop, mode in item:
                     row = effects.loc[pop, mode]
                     thisOR = row[age]
                     ORs[age] *= thisOR
-            newInterventions[key].update(ORs)
-        return newInterventions
+            newPrograms[key].update(ORs)
+        return newPrograms
 
     def defineIYCFpackages(self):
         IYCFpackages = self.readSheet('IYCF packages', [0,1])
@@ -441,7 +448,7 @@ class Project:
         return newTargetPops
 
     def createAgeBands(self, dictToUpdate, keyList, listOfAges, pop):
-        for key in keyList:  # could be intervention, ages
+        for key in keyList:  # could be program, ages
             subDict = dictToUpdate[key].pop(pop, None)
             newAgeGroups = {age:subDict for age in listOfAges if subDict is not None}
             dictToUpdate[key].update(newAgeGroups)
