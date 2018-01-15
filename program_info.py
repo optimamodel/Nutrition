@@ -58,6 +58,17 @@ class ProgramInfo:
                 closedSet += [program]
         self.thresholdOrder = closedSet[:]
 
+    def _setBaselineCov(self, populations):
+        """
+        Adjusts the baseline coverages to be unrestricted baseline coverage.
+        :param populations:
+        :return:
+        """
+        self.baselineCovs = {}
+        for program in self.programs:
+            program._setBaselineCoverage(populations)
+            self.baselineCovs[program.name] = program.unrestrictedBaselineCov
+
     def _restrictCoverages(self, populations):
         """
         Uses the ordering of both dependency lists to restrict the coverage of programs.

@@ -245,22 +245,21 @@ class ChildAgeGroup(object):
             Omega0 = self.probConditionalDiarrhoea[wastingCat]['no diarrhoea']
             self.probConditionalDiarrhoea[wastingCat]['diarrhoea'] = Omega0 * AO / (1. - Omega0 + AO * Omega0)
 
-    def restratify(self, fractionYes): # TODO: may not be the best place for this. Model?
-        # Going from binary stunting/wasting to four fractions
-        # Yes refers to more than 2 standard deviations below the global mean/median
-        # in our notes, fractionYes = alpha
-        from scipy.stats import norm
-        invCDFalpha = norm.ppf(fractionYes)
-        fractionHigh     = norm.cdf(invCDFalpha - 1.)
-        fractionModerate = fractionYes - norm.cdf(invCDFalpha - 1.)
-        fractionMild     = norm.cdf(invCDFalpha + 1.) - fractionYes
-        fractionNormal   = 1. - norm.cdf(invCDFalpha + 1.)
-        restratification = {}
-        restratification["normal"] = fractionNormal
-        restratification["mild"] = fractionMild
-        restratification["moderate"] = fractionModerate
-        restratification["high"] = fractionHigh
-        return restratification
+    # def restratify(self, fractionYes): # TODO: may not be the best place for this. Model?
+    #     # Going from binary stunting/wasting to four fractions
+    #     # Yes refers to more than 2 standard deviations below the global mean/median
+    #     # in our notes, fractionYes = alpha
+    #     invCDFalpha = norm.ppf(fractionYes)
+    #     fractionHigh     = norm.cdf(invCDFalpha - 1.)
+    #     fractionModerate = fractionYes - norm.cdf(invCDFalpha - 1.)
+    #     fractionMild     = norm.cdf(invCDFalpha + 1.) - fractionYes
+    #     fractionNormal   = 1. - norm.cdf(invCDFalpha + 1.)
+    #     restratification = {}
+    #     restratification["normal"] = fractionNormal
+    #     restratification["mild"] = fractionMild
+    #     restratification["moderate"] = fractionModerate
+    #     restratification["high"] = fractionHigh
+    #     return restratification
 
 
 class Newborn(ChildAgeGroup):
@@ -282,13 +281,13 @@ class Population(object):
         self.name = name
         self.project = dcp(project) # TODO: may not want to dcp all this -- only really want to get distribution data from project
         self.const = constants
+        self.baselineCovs = None
         self.populationAreas = self.project.populationAreas
         self.stuntingDist = self.project.riskDistributions['Stunting']
         self.wastingDist = self.project.riskDistributions['Wasting']
         self.bfDist = self.project.riskDistributions['Breastfeeding']
         self.anaemiaDist = self.project.riskDistributions['Anaemia']
         self.birthDist = self.project.birthDist
-        self.baselineCov = self.project.costCurveInfo['baseline coverage'] # TODO: this baseline coverage needs to first be converted into new way of calculating coverage!!!!
         self.incidences = self.project.incidences
         self.RRdiarrhoea = self.project.RRdeath['Child diarrhoea']['Diarrhoea incidence']
         self.ORcondition = self.project.ORcondition
@@ -317,7 +316,7 @@ class Population(object):
         p1 = p0 * oddsRatio / (1. - p0 + oddsRatio * p0)
         return p0, p1
 
-class Children(Population): # TODO: all the pobability calculations need to be performed with the convert baseline coverage to accoutn for new definition!!!
+class Children(Population):
     def __init__(self, name, project, constants):
         super(Children, self).__init__(name, project, constants)
         self.ageGroups = []
@@ -326,6 +325,12 @@ class Children(Population): # TODO: all the pobability calculations need to be p
         self._makeBoxes()
         self._setChildrenReferenceMortality()
         self._updateMortalityRates()
+        self._setProgramEffectiveness()
+        self._setCorrectBFpractice()
+
+    ##### DATA WRANGLING ######
+
+    def _setConditionalProbabilities(self):
         self._setProbConditionalStunting()
         self._setProbConditionalCoverage()
         self._setProbWastedIfCovered()
@@ -333,10 +338,6 @@ class Children(Population): # TODO: all the pobability calculations need to be p
         self._setProbWastedAtBirth()
         self._setProbConditionalDiarrhoea()
         self._setProbWastedIfDiarrhoea()
-        self._setProgramEffectiveness()
-        self._setCorrectBFpractice()
-
-    ##### DATA WRANGLING ######
 
     def _makePopSizes(self):
         # for children less than 1 year, annual live births
@@ -494,8 +495,6 @@ class Children(Population): # TODO: all the pobability calculations need to be p
                               for group in ageGroups for stuntingCat, wastingCat, bfCat, anaemiaCat in product(*risks)])
         return populationSize
 
-    #TODO: all these functions cn now use the fact that each age group has distribution stored
-
     def getTotalPopulation(self):
         return self._getPopulation(self.ageGroups, self.const.allRisks)
 
@@ -573,7 +572,7 @@ class Children(Population): # TODO: all the pobability calculations need to be p
                 ageGroup.probConditionalCoverage[risk] = {}
                 for program in self.project.programList:
                     ageGroup.probConditionalCoverage[risk][program] = {}
-                    fracCovered = self.baselineCov[program]
+                    fracCovered = self.baselineCovs[program]
                     fracImpacted = sum(dist[age][cat] for cat in relevantCats)
                     if self.project.RRprograms[risk].get(program) is not None:
                         RR = self.project.RRprograms[risk][program][age]
@@ -593,7 +592,7 @@ class Children(Population): # TODO: all the pobability calculations need to be p
                 age = ageGroup.age
                 for program in self.project.programList:
                     OR = self.project.ORwastingProgram[wastingCat][program][age]
-                    fracCovered = self.baselineCov[program]
+                    fracCovered = self.baselineCovs[program]
                     fracThisCatAge =  self.wastingDist[age][wastingCat]
                     pn, pc = self._solveQuadratic(OR, fracCovered, fracThisCatAge)
                     conditionalProb[wastingCat][program] = {}
@@ -793,12 +792,14 @@ class PregnantWomen(Population):
         self._makeBoxes()
         self._setPWReferenceMortality()
         self._updateMortalityRates()
-        self._setProbAnaemicIfCovered()
 
     def getTotalPopulation(self):
         return sum(ageGroup.populationSize for ageGroup in self.ageGroups)
 
     ##### DATA WRANGLING ######
+
+    def _setConditionalProbabilities(self):
+        self._setProbAnaemicIfCovered()
 
     def _makePopSizes(self):
         PWpop = self.project.populationByAge
@@ -870,7 +871,7 @@ class PregnantWomen(Population):
             ageGroup.probConditionalCoverage[risk] = {}
             for program in self.project.programList:
                 ageGroup.probConditionalCoverage[risk][program] = {}
-                fracCovered = self.baselineCov[program]
+                fracCovered = self.baselineCovs[program]
                 fracImpacted = sum(self.anaemiaDist[age][cat] for cat in self.const.anaemicList)
                 if self.project.ORprograms[risk].get(program) is None:
                     RR = self.project.RRprograms[risk][program][age]
@@ -888,7 +889,6 @@ class NonPregnantWomen(Population):
         self.ageGroups = []
         self._makePopSizes()
         self._makeBoxes()
-        self._setProbAnaemicIfCovered()
         self._setStorageForUpdates()
         self._setBirthPregnancyInfo()
 
@@ -899,6 +899,9 @@ class NonPregnantWomen(Population):
         return sum(ageGroup.populationSize for ageGroup in self.ageGroups)
 
     ##### DATA WRANGLING ######
+
+    def _setConditionalProbabilities(self):
+        self._setProbAnaemicIfCovered()
 
     def _makePopSizes(self):
         WRApop = self.project.populationByAge
@@ -922,7 +925,7 @@ class NonPregnantWomen(Population):
             ageGroup.probConditionalCoverage[risk] = {}
             for program in self.project.programList:
                 ageGroup.probConditionalCoverage[risk][program] = {}
-                fracCovered = self.baselineCov[program]
+                fracCovered = self.baselineCovs[program]
                 fracImpacted = sum(self.anaemiaDist[age][cat] for cat in self.const.anaemicList)
                 if self.project.ORprograms[risk].get(program) is None:
                     RR = self.project.RRprograms[risk][program][age]
