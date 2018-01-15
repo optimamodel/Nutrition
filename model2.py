@@ -1,4 +1,5 @@
 from copy import deepcopy as dcp
+from scipy.stats import norm
 class Model:
     def __init__(self, filePath):
         import data2 as data
@@ -7,36 +8,46 @@ class Model:
         from constants import Constants
         self.project = data.setUpProject(filePath) # one modification comes below for IYCF target pops
         self.constants = Constants(self.project)
-        self.populations = pops.setUpPopulations(self.project, self.constants)
-        #self._setIYCFtargetPop(self.populations) # TODO: This is not complete
         self.programInfo = program_info.ProgramInfo(self.constants)
+        self.populations = pops.setUpPopulations(self.project, self.constants)
+        # caution: maintain order below
+        # use populations to adjust the baseline coverage
+        self.programInfo._setBaselineCov(self.populations)
+        # use adjusted coverages to calculate conditional probabilities
+        self._setConditionalProbabilities()
 
-        # TODO: this may not be the best way to do this -- make it a bit more streamlined?
-        self._setInitialCoverages()
+        #self._setIYCFtargetPop(self.populations) # TODO: This is not complete
+
+        # self._setInitialCoverages()
 
         self.year = int(self.project.year)
         self.cumulativeAgeingOutStunted = 0
+        self.cumulativeThrive = 0
         self.cumulativeBirths = 0
         # self.newCoverages = self.project.costCurveInfo['baseline coverage']
         # initialise baseline coverages
         # self._updateCoverages() # superseded by code above
 
-    def _setInitialCoverages(self):
-        """
-        Convert baseline coverage to coverage metric used in model.
-        Requires population sizes at time t=0.
-        :return:
-        """
-        self.baselineCoverage = {}
-        for program in self.programInfo.programs:
-            program._setBaselineCoverage(self.populations)
-            self.baselineCoverage[program.name] = program.restrictedBaselineCov
+    def _setConditionalProbabilities(self):
+        for pop in self.populations:
+            pop.baselineCovs = self.programInfo.baselineCovs # pop has access to adjusted baseline cov
+            pop._setConditionalProbabilities()
 
-    def _updateCoverages(self):
+    # def _setInitialCoverages(self):
+    #     """
+    #     Convert baseline coverage to coverage metric used in model.
+    #     Requires population sizes at time t=0.
+    #     :return:
+    #     """
+    #     self.baselineCoverage = {}
+    #     for program in self.programInfo.programs:
+    #         program._setBaselineCoverage(self.populations)
+    #         self.baselineCoverage[program.name] = program.restrictedBaselineCov
+
+    def _updateCoverages(self, newCoverages):
         for program in self.programInfo.programs:
-            program.updateCoverageTMP(self.newCoverages[program.name], self.populations) # TODO: USING TMP JUST FOR TESTING
+            program.updateCoverageTMP(newCoverages[program.name], self.populations) # TODO: USING TMP JUST FOR TESTING
         self.programInfo._restrictCoverages(self.populations)
-
 
     # TODO: TBC
     def _setIYCFtargetPop(self, populations):
@@ -64,8 +75,7 @@ class Model:
 
     def applyNewProgramCoverages(self, newCoverages):
         '''newCoverages is required to be the unrestricted coverage % (i.e. people covered / entire target pop) '''
-        self.newCoverages = dcp(newCoverages) # TODO: don't like this -- should be set only after restrictions
-        self._updateCoverages()
+        self._updateCoverages(newCoverages)
         for pop in self.populations: # update all the populations
             self._updatePopulation(pop)
             # combine direct and indirect updates to each risk area that we model
@@ -171,7 +181,7 @@ class Model:
                 # stunting
                 oldProbStunting = ageGroup.getFracRisk('Stunting')
                 newProbStunting = oldProbStunting * ageGroup.totalStuntingUpdate
-                ageGroup.stuntingDist = ageGroup.restratify(newProbStunting)
+                ageGroup.stuntingDist = self.restratify(newProbStunting)
                 # anaemia
                 oldProbAnaemia = ageGroup.getFracRisk('Anaemia')
                 newProbAnaemia = oldProbAnaemia * ageGroup.totalAnaemiaUpdate
@@ -185,7 +195,7 @@ class Model:
                     ageGroup.wastingDist[wastingCat] = newProbThisCat
                     newProbWasted += newProbThisCat
                 # normality constraint on non-wasted proportions only
-                nonWastedDist = ageGroup.restratify(newProbWasted)
+                nonWastedDist = self.restratify(newProbWasted)
                 for nonWastedCat in self.constants.nonWastedList:
                     ageGroup.wastingDist[nonWastedCat] = nonWastedDist[nonWastedCat]
                 ageGroup.redistributePopulation()
@@ -247,9 +257,6 @@ class Model:
 
     def _applyChildAgeing(self):
         # TODO: longer term, I think this should be re-written
-        # TODO: old implementation uses boxes, but I think it is equivalent to do this with ageGroups,
-        # TODO: then update boxes popsize once at end based on distribution.
-
         # get number ageing out of each age group
         ageGroups = self.populations[0].ageGroups
         numAgeGroups = len(ageGroups)
@@ -268,9 +275,9 @@ class Model:
                             ageingOut[idx][stuntingCat][wastingCat][bfCat][anaemiaCat] = thisBox.populationSize * ageGroup.ageingRate
         oldest = ageGroups[-1]
         ageingOutStunted = oldest.getNumberStunted() * oldest.ageingRate
-        # ageingOutNotStunted = (oldest.populationSize - oldest.getNumberStunted()) * oldest.ageingRate # not sure if we use this
+        ageingOutNotStunted = (oldest.populationSize - oldest.getNumberStunted()) * oldest.ageingRate
         self.cumulativeAgeingOutStunted += ageingOutStunted
-        # self.cumulativeAgeingOutNotStunted += ageingOutNotStunted
+        self.cumulativeThrive += ageingOutNotStunted
         # first age group does not have ageing in
         newborns = ageGroups[0]
         for stuntingCat in self.constants.stuntingList:
@@ -296,7 +303,7 @@ class Model:
                 numAgeingInStratified[stuntingCat] = 0.
             for prevStunt in ['stunted', 'not stunted']:
                 totalProbStunted = ageGroup.probConditionalStunting[prevStunt] * ageGroup.totalStuntingUpdate # TODO:check this is correct
-                restratifiedProb = ageGroup.restratify(min(1.,totalProbStunted))
+                restratifiedProb = self.restratify(min(1.,totalProbStunted))
                 for stuntingCat in self.constants.stuntingList:
                     numAgeingInStratified[stuntingCat] += restratifiedProb[stuntingCat] * numAgeingIn[prevStunt]
             # distribute those ageing in amongst those stunting categories but also BF, wasting and anaemia
@@ -307,15 +314,12 @@ class Model:
                     for anaemiaCat in self.constants.anaemiaList:
                         pa = ageGroup.anaemiaDist[anaemiaCat]
                         for stuntingCat in self.constants.stuntingList:
-                            print "out " + str(ageingOut[idx][stuntingCat][wastingCat][bfCat][anaemiaCat])
-                            print "in " + str(numAgeingInStratified[stuntingCat] * pw * pbf * pa)
-                            print " "
                             thisBox = ageGroup.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat]
                             thisBox.populationSize -= ageingOut[idx][stuntingCat][wastingCat][bfCat][anaemiaCat]
                             thisBox.populationSize += numAgeingInStratified[stuntingCat] * pw * pbf * pa
             # gaussianise
             probStunting = ageGroup.getStuntedFrac() # TODO; this should be impacted by change in box pops
-            ageGroup.stuntingDist = ageGroup.restratify(probStunting)
+            ageGroup.stuntingDist = self.restratify(probStunting)
             ageGroup.redistributePopulation()
 
     def _applyBirths(self): # TODO; re-write this function in future
@@ -411,7 +415,6 @@ class Model:
         # Going from binary stunting/wasting to four fractions
         # Yes refers to more than 2 standard deviations below the global mean/median
         # in our notes, fractionYes = alpha
-        from scipy.stats import norm
         invCDFalpha = norm.ppf(fractionYes)
         fractionHigh     = norm.cdf(invCDFalpha - 1.)
         fractionModerate = fractionYes - norm.cdf(invCDFalpha - 1.)
@@ -447,10 +450,11 @@ class Model:
         self._updateWRApopulation()
         # self.updateYearlyRiskDistributions() # TODO: don't think I need this
 
-
     def getOutcome(self, outcome):
         if outcome == 'total stunted':
             return self.cumulativeAgeingOutStunted
+        elif outcome == 'thrive':
+            return self.cumulativeThrive
 
 
 
