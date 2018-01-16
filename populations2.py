@@ -466,7 +466,8 @@ class Children(Population):
                 wastingDist[cat] = nonWastingDist[cat]
             bfDist = self.bfDist[age]
             birthDist = self.birthDist
-            incidences = self.project.incidences[age]
+            incidences = self.project.incidences[age] # TODO: do this adjustment elsewhere, same as restratifying
+            incidences = {condition: incidence * self.const.timestep for condition, incidence in incidences.iteritems()}
             ageingRate = 1./self.const.childAgeSpans[idx]
             for stuntingCat in self.const.stuntingList:
                 boxes[stuntingCat] = {}

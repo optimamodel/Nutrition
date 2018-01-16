@@ -49,6 +49,7 @@ class Model:
             program.updateCoverageTMP(newCoverages[program.name], self.populations) # TODO: USING TMP JUST FOR TESTING
         self.programInfo._restrictCoverages(self.populations)
 
+
     # TODO: TBC
     def _setIYCFtargetPop(self, populations):
         """
@@ -425,6 +426,8 @@ class Model:
         # Going from binary stunting/wasting to four fractions
         # Yes refers to more than 2 standard deviations below the global mean/median
         # in our notes, fractionYes = alpha
+        if fractionYes > 1:
+            fractionYes = 1
         invCDFalpha = norm.ppf(fractionYes)
         fractionHigh     = norm.cdf(invCDFalpha - 1.)
         fractionModerate = fractionYes - norm.cdf(invCDFalpha - 1.)
