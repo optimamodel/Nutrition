@@ -460,6 +460,10 @@ class Children(Population):
             stuntingDist = self.restratify(sum(stuntingDist[cat] for cat in self.const.stuntedList))
             anaemiaDist = self.anaemiaDist[age]
             wastingDist = self.wastingDist[age]
+            probWasted = sum(wastingDist[cat] for cat in self.const.wastedList)
+            nonWastingDist = self.restratify(probWasted)
+            for cat in self.const.nonWastedList:
+                wastingDist[cat] = nonWastingDist[cat]
             bfDist = self.bfDist[age]
             birthDist = self.birthDist
             incidences = self.project.incidences[age]

@@ -171,6 +171,7 @@ class Model:
                 ageGroup.totalBAUpdate = ageGroup.birthAgeUpdate
 
     def _updateDistributions(self, population):
+        # TODO: THE ERROR IS IN HERE B/C GET SAME ANSWER IF DON"T CALL THIS
         """
         Uses assumption that each ageGroup in a population has a default update
         value which exists (not across populations though)
@@ -185,7 +186,7 @@ class Model:
                 oldProbStunting = ageGroup.getFracRisk('Stunting')
                 newProbStunting = oldProbStunting * ageGroup.totalStuntingUpdate
                 ageGroup.stuntingDist = self.restratify(newProbStunting)
-                # ageGroup.redistributePopulation()
+                ageGroup.redistributePopulation()
                 # anaemia
                 oldProbAnaemia = ageGroup.getFracRisk('Anaemia')
                 newProbAnaemia = oldProbAnaemia * ageGroup.totalAnaemiaUpdate
@@ -193,13 +194,15 @@ class Model:
                 ageGroup.anaemiaDist['not anaemic'] = 1.-newProbAnaemia
                 # wasting
                 newProbWasted = 0.
-                for wastingCat in self.constants.wastedList:
+                # print " BEFORE"
+                # print sum(ageGroup.wastingDist.values())
+                for wastingCat in ['SAM', 'MAM']:
                     oldProbThisCat = ageGroup.getWastedFrac(wastingCat)
                     newProbThisCat = oldProbThisCat * ageGroup.totalWastingUpdate[wastingCat]
                     ageGroup.wastingDist[wastingCat] = newProbThisCat
                     newProbWasted += newProbThisCat
                 # normality constraint on non-wasted proportions only
-                nonWastedDist = self.restratify(newProbWasted)
+                nonWastedDist = self.restratify(newProbWasted) # TODO: THIS IS THE ERROR IN POPULATIONS. FOR SOME REASON,
                 for nonWastedCat in self.constants.nonWastedList:
                     ageGroup.wastingDist[nonWastedCat] = nonWastedDist[nonWastedCat]
                 ageGroup.redistributePopulation()
