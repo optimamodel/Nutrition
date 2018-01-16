@@ -24,6 +24,7 @@ class Model:
         self.cumulativeAgeingOutStunted = 0
         self.cumulativeThrive = 0
         self.cumulativeBirths = 0
+        self.cumulativeDeaths = 0
         # self.newCoverages = self.project.costCurveInfo['baseline coverage']
         # initialise baseline coverages
         # self._updateCoverages() # superseded by code above
@@ -76,7 +77,7 @@ class Model:
     def applyNewProgramCoverages(self, newCoverages):
         '''newCoverages is required to be the unrestricted coverage % (i.e. people covered / entire target pop) '''
         self._updateCoverages(newCoverages)
-        for pop in self.populations[:1]: # update all the populations # TODO: UNDO SLICING
+        for pop in self.populations: # update all the populations # TODO: UNDO SLICING
             self._updatePopulation(pop)
             # combine direct and indirect updates to each risk area that we model
             self._combineUpdates(pop)
@@ -99,7 +100,7 @@ class Model:
 
     def _updatePopulation(self, population):
         # update probabilities using current risk distributions
-        self._setConditionalProbabilities() # TODO; this doesn't need to be here b/c it can be set after 1 year of model run (outside optimisation)
+        self._setConditionalProbabilities() # TODO: this doesn't need to be here b/c it can be set after 1 year of model run (outside optimisation)
 
         for risk in self.programInfo.programAreas.keys():
             # get relevant programs and age groups, determined by risk area
@@ -108,7 +109,7 @@ class Model:
             for ageGroup in ageGroups:
                 for program in applicableProgs:
                     if ageGroup.age in program.relevantAges:
-                        if risk == 'Stunting': # TODO: we have the issue that the risk distribution is not being update properly in the age groups!!!!
+                        if risk == 'Stunting':
                             program._getStuntingUpdate(ageGroup)
                         elif risk == 'Anaemia':
                             program._getAnaemiaUpdate(ageGroup)
@@ -178,16 +179,13 @@ class Model:
         """
         if population.name == 'Children': # TODO: could map these things using a dictionary of risks with corresponding distributions & outcomes. Then function could be made to call.
             for ageGroup in population.ageGroups:
-                # mortality
                 for cause in self.constants.causesOfDeath:
                     ageGroup.referenceMortality[cause] *= ageGroup.mortalityUpdate[cause]
                 # stunting
                 oldProbStunting = ageGroup.getFracRisk('Stunting')
-                print ageGroup.age
-                print oldProbStunting
                 newProbStunting = oldProbStunting * ageGroup.totalStuntingUpdate
-                print newProbStunting
                 ageGroup.stuntingDist = self.restratify(newProbStunting)
+                # ageGroup.redistributePopulation()
                 # anaemia
                 oldProbAnaemia = ageGroup.getFracRisk('Anaemia')
                 newProbAnaemia = oldProbAnaemia * ageGroup.totalAnaemiaUpdate
@@ -196,7 +194,7 @@ class Model:
                 # wasting
                 newProbWasted = 0.
                 for wastingCat in self.constants.wastedList:
-                    oldProbThisCat = ageGroup.getFracWasted(wastingCat)
+                    oldProbThisCat = ageGroup.getWastedFrac(wastingCat)
                     newProbThisCat = oldProbThisCat * ageGroup.totalWastingUpdate[wastingCat]
                     ageGroup.wastingDist[wastingCat] = newProbThisCat
                     newProbWasted += newProbThisCat
@@ -212,7 +210,7 @@ class Model:
             PWpopSize = population.getTotalPopulation()
             # weighted sum accounts for different effects and target pops across PW age groups.
             for BO in self.constants.birthOutcomes:
-                newBorns.birthDist[BO] *= sum(PWage.birthUpdate[BO]*PWage.populationSize for PWage in population.ageGroups) / PWpopSize
+                newBorns.birthDist[BO] *= sum(PWage.birthUpdate[BO]*PWage.getAgeGroupPopulation() for PWage in population.ageGroups) / PWpopSize
             # update anaemia distribution
             for ageGroup in population.ageGroups:
                 oldProbAnaemia = ageGroup.getFracRisk('Anaemia')
@@ -230,8 +228,8 @@ class Model:
                 ageGroup.redistributePopulation()
             # weighted sum account for different effect and target pops across nonPW age groups # TODO: is this true or need to scale by frac targeted?
             nonPWpop = population.getTotalPopulation()
-            FPcov = sum(nonPWage.FPupdate * nonPWage.populationSize for nonPWage in population.ageGroups) / nonPWpop
-            population._updateFracPregnancyAverted(FPcov)
+            # FPcov = sum(nonPWage.FPupdate * nonPWage.getAgeGroupPopulation() for nonPWage in population.ageGroups) / nonPWpop
+            # population._updateFracPregnancyAverted(FPcov)
 
     def _getFlowBetweenMAMandSAM(self, ageGroup):
         fromSAMtoMAMupdate = {}
@@ -260,6 +258,7 @@ class Model:
                             deaths = thisBox.populationSize * thisBox.mortalityRate * self.constants.timestep # monthly deaths
                             thisBox.populationSize -= deaths
                             thisBox.cumulativeDeaths += deaths
+                            self.cumulativeDeaths += deaths
 
     def _applyChildAgeing(self):
         # TODO: longer term, I think this should be re-written
@@ -281,7 +280,7 @@ class Model:
                             ageingOut[idx][stuntingCat][wastingCat][bfCat][anaemiaCat] = thisBox.populationSize * ageGroup.ageingRate
         oldest = ageGroups[-1]
         ageingOutStunted = oldest.getAgeGroupNumberStunted() * oldest.ageingRate
-        ageingOutNotStunted = (oldest.populationSize - oldest.getAgeGroupNumberStunted()) * oldest.ageingRate
+        ageingOutNotStunted = oldest.getAgeGroupNumberNotStunted() * oldest.ageingRate
         self.cumulativeAgeingOutStunted += ageingOutStunted
         self.cumulativeThrive += ageingOutNotStunted
         # first age group does not have ageing in
@@ -292,6 +291,7 @@ class Model:
                     for anaemiaCat in self.constants.anaemiaList:
                         newbornBox = newborns.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat]
                         newbornBox.populationSize -= ageingOut[0][stuntingCat][wastingCat][bfCat][anaemiaCat]
+
         # for older age groups, account for previous stunting (binary)
         for idx in range(1, numAgeGroups):
             ageGroup = ageGroups[idx]
@@ -324,7 +324,8 @@ class Model:
                             thisBox.populationSize -= ageingOut[idx][stuntingCat][wastingCat][bfCat][anaemiaCat]
                             thisBox.populationSize += numAgeingInStratified[stuntingCat] * pw * pbf * pa
             # gaussianise
-            probStunting = ageGroup.getStuntedFrac() # TODO; this should be impacted by change in box pops
+            distributionNow = ageGroup.getStuntingDistribution()
+            probStunting = sum(distributionNow[stuntingCat] for stuntingCat in ['high', 'moderate'])
             ageGroup.stuntingDist = self.restratify(probStunting)
             ageGroup.redistributePopulation()
 
@@ -338,16 +339,16 @@ class Model:
         numNewBabies = annualBirths * self.constants.timestep
         self.cumulativeBirths += numNewBabies
         # restratify stunting and wasting
-        children = self.populations[0]
-        newBorns = children.ageGroups[0]
+        # children = self.populations[0]
+        newBorns = self.populations[0].ageGroups[0]
         restratifiedStuntingAtBirth = {}
         restratifiedWastingAtBirth = {}
         for outcome in self.constants.birthOutcomes:
-            totalProbStunted = children.probRiskAtBirth['Stunting'][outcome] * newBorns.totalStuntingUpdate
+            totalProbStunted = newBorns.probRiskAtBirth['Stunting'][outcome] * newBorns.totalStuntingUpdate
             restratifiedStuntingAtBirth[outcome] = self.restratify(totalProbStunted)
             #wasting
             restratifiedWastingAtBirth[outcome] = {}
-            probWastedAtBirth = children.probRiskAtBirth['Wasting'] # TODO: consider removing 'wasting' and just have 'sam'/mam
+            probWastedAtBirth = newBorns.probRiskAtBirth['Wasting'] # TODO: consider removing 'wasting' and just have 'sam'/mam
             totalProbWasted = 0
             # distribute proportions for wasted categories
             for wastingCat in self.constants.wastedList:
@@ -379,6 +380,8 @@ class Model:
                                                                                                      pbf * pa * \
                                                                                                      stuntingFractions[stuntingCat] * \
                                                                                                      wastingFractions[wastingCat]
+        # newBorns.stuntingDist = self.restratify(newBorns.getStuntedFrac())
+        # newBorns.redistributePopulation() # this makes no difference
 
     def _applyPWMortality(self):
         PW = self.populations[1]
@@ -410,7 +413,7 @@ class Model:
         for idx in range(len(ageGroups)):
             ageGroup = ageGroups[idx]
             projectedWRApop = self.constants.popProjections[ageGroup.age][self.year]
-            PWpop = self.populations[1].ageGroups[idx].populationSize
+            PWpop = self.populations[1].ageGroups[idx].getAgeGroupPopulation()
             nonPW = projectedWRApop - PWpop
             #distribute over risk factors
             for anaemiaCat in self.constants.anaemiaList:
@@ -441,6 +444,11 @@ class Model:
             ageGroup.updateBFDist()
             ageGroup.updateAnaemiaDist()
 
+    def updateYearlyRiskDists(self):
+        for pop in self.populations[1:]:
+            for ageGroup in pop.ageGroups:
+                ageGroup.updateAnaemiaDist()
+
     def moveModelOneTimeStep(self):
         """
         Responsible for updating children since they have monthly time steps
@@ -459,10 +467,10 @@ class Model:
         self.year += 1
         for month in range(12):
             self.moveModelOneTimeStep()
-        # self._applyPWMortality()
-        # self._updatePWpopulation()
-        # self._updateWRApopulation()
-        # self.updateYearlyRiskDistributions()
+        self._applyPWMortality()
+        self._updatePWpopulation()
+        self._updateWRApopulation()
+        self.updateYearlyRiskDists()
 
     def getOutcome(self, outcome):
         if outcome == 'total stunted':
@@ -471,6 +479,10 @@ class Model:
             return self.populations[0].getTotalFracStunted()
         elif outcome == 'thrive':
             return self.cumulativeThrive
+        elif outcome == 'child deaths':
+            return self.cumulativeDeaths
+
+
 
 
 

@@ -54,14 +54,14 @@ class Program(object):
         """
         self.unrestrictedPopSize = 0.
         for pop in populations:
-            self.unrestrictedPopSize += sum(age.populationSize for age in pop.ageGroups
+            self.unrestrictedPopSize += sum(age.getAgeGroupPopulation() for age in pop.ageGroups
                                            if age.age in self.relevantAges)
 
     def _setRestrictedPopSize(self, populations):
         self.restrictedPopSize = 0.
         for pop in populations:
-            self.restrictedPopSize += sum(age.populationSize * self.targetPopulations[age.age] for age in pop.ageGroups
-                                         if age.age in self.relevantAges )
+            self.restrictedPopSize += sum(age.getAgeGroupPopulation() * self.targetPopulations[age.age] for age in pop.ageGroups
+                                         if age.age in self.relevantAges)
 
     def _setExclusionDependencies(self):
         """
@@ -149,7 +149,7 @@ class Program(object):
         Zt = ageGroup._getZa() # updated incidence
         beta = ageGroup._getFracDiarrhoea(Z0, Zt)
         ageGroup._updateProbConditionalDiarrhoea(Zt)
-        for risk in ['Stunting', 'Anaemia']: # TODO: ERROR HERE!!
+        for risk in ['Stunting', 'Anaemia']:
             ageGroup.diarrhoeaUpdate[risk] *= self._getUpdatesFromDiarrhoeaIncidence(beta, ageGroup, risk)
         wastingUpdate = self._getWastingUpdateFromDiarrhoea(beta, ageGroup)
         for wastingCat in self.const.wastedList:

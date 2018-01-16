@@ -95,7 +95,7 @@ class ProgramInfo:
                 commonAges = list(set(child.relevantAges).intersection(parent.relevantAges))
                 parentPopSize = 0.
                 for pop in populations:
-                    parentPopSize += sum(age.populationSize for age in pop.ageGroups if age.age in commonAges)
+                    parentPopSize += sum(age.getAgeGroupPopulation() for age in pop.ageGroups if age.age in commonAges)
                 numCoveredInOverlap = parent.proposedCoverageFrac * parentPopSize
                 percentCoveredByParent = numCoveredInOverlap / child.restrictedPopSize
                 if percentCoveredByParent < 1:
@@ -112,7 +112,7 @@ class ProgramInfo:
                 commonAges = list(set(child.relevantAges).intersection(parent.relevantAges))
                 parentPopSize = 0.
                 for pop in populations:
-                    parentPopSize += sum(age.populationSize for age in pop.ageGroups if age.age in commonAges)
+                    parentPopSize += sum(age.getAgeGroupPopulation() for age in pop.ageGroups if age.age in commonAges)
                 numCoveredInOverlap = parent.proposedCoverageFrac * parentPopSize
                 percentCoveredByParent = numCoveredInOverlap / child.restrictedPopSize
                 if percentCoveredByParent < 1:
