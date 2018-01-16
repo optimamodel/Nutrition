@@ -682,13 +682,13 @@ class Children(Population):
         risk = 'Stunting'
         for ageGroup in self.ageGroups:
             age = ageGroup.age
+            fracStunted = sum(ageGroup.stuntingDist[cat] for cat in self.const.stuntedList)
             ageGroup.probConditionalCoverage[risk] = {}
             for program in self.project.programList:
                 ageGroup.probConditionalCoverage[risk][program] = {}
                 fracCovered = self.baselineCovs[program]
-                fracImpacted = sum(ageGroup.stuntingDist[cat] for cat in self.const.stuntedList)
                 OR = self.project.ORprograms[risk][program][age]
-                pn, pc = self._solveQuadratic(OR, fracCovered, fracImpacted)
+                pn, pc = self._solveQuadratic(OR, fracCovered, fracStunted)
                 ageGroup.probConditionalCoverage[risk][program]['covered'] = pc
                 ageGroup.probConditionalCoverage[risk][program]['not covered'] = pn
 
@@ -696,21 +696,20 @@ class Children(Population):
         risk = 'Anaemia'
         for ageGroup in self.ageGroups:
             age = ageGroup.age
+            fracAnaemic = sum(ageGroup.anaemiaDist[cat] for cat in self.const.anaemicList)
             ageGroup.probConditionalCoverage[risk] = {}
             for program in self.project.programList:
                 ageGroup.probConditionalCoverage[risk][program] = {}
                 fracCovered = self.baselineCovs[program]
-                fracImpacted = sum(ageGroup.anaemiaDist[cat] for cat in self.const.anaemicList)
                 if self.project.RRprograms[risk].get(program) is not None:
                     RR = self.project.RRprograms[risk][program][age]
-                    pn = fracImpacted / (RR * fracCovered + (1. - fracCovered))
+                    pn = fracAnaemic / (RR * fracCovered + (1. - fracCovered))
                     pc = RR * pn
                 else:  # OR
                     OR = self.project.ORprograms[risk][program][age]
-                    pn, pc = self._solveQuadratic(OR, fracCovered, fracImpacted)
+                    pn, pc = self._solveQuadratic(OR, fracCovered, fracAnaemic)
                 ageGroup.probConditionalCoverage[risk][program]['covered'] = pc
                 ageGroup.probConditionalCoverage[risk][program]['not covered'] = pn
-
 
     def _setProbWastedIfCovered(self):
         for wastingCat in self.const.wastedList:
@@ -718,10 +717,10 @@ class Children(Population):
             conditionalProb[wastingCat] = {}
             for ageGroup in self.ageGroups:
                 age = ageGroup.age
+                fracThisCatAge = ageGroup.wastingDist[wastingCat]
                 for program in self.project.programList:
                     OR = self.project.ORwastingProgram[wastingCat][program][age]
                     fracCovered = self.baselineCovs[program]
-                    fracThisCatAge =  self.wastingDist[age][wastingCat]
                     pn, pc = self._solveQuadratic(OR, fracCovered, fracThisCatAge)
                     conditionalProb[wastingCat][program] = {}
                     conditionalProb[wastingCat][program]['covered'] = pc

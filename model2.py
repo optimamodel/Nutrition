@@ -29,10 +29,9 @@ class Model:
         # initialise baseline coverages
         # self._updateCoverages() # superseded by code above
 
-    def _setConditionalProbabilities(self):
-        for pop in self.populations:
-            pop.baselineCovs = self.programInfo.baselineCovs # pop has access to adjusted baseline cov
-            pop._setConditionalProbabilities()
+    def _setConditionalProbabilities(self, population):
+        population.baselineCovs = self.programInfo.baselineCovs # pop has access to adjusted baseline cov
+        population._setConditionalProbabilities()
 
     # def _setInitialCoverages(self):
     #     """
@@ -76,8 +75,11 @@ class Model:
 
     def applyNewProgramCoverages(self, newCoverages):
         '''newCoverages is required to be the unrestricted coverage % (i.e. people covered / entire target pop) '''
-        self._updateCoverages(newCoverages)
-        for pop in self.populations: # update all the populations # TODO: UNDO SLICING
+        self._updateCoverages(newCoverages) # TODO: change the call in here
+        for pop in self.populations[:1]:
+            # update probabilities using current risk distributions
+            self._setConditionalProbabilities(pop)
+        for pop in self.populations[:1]: # update all the populations
             self._updatePopulation(pop)
             # combine direct and indirect updates to each risk area that we model
             self._combineUpdates(pop)
@@ -99,9 +101,6 @@ class Model:
         return ageGroups
 
     def _updatePopulation(self, population):
-        # update probabilities using current risk distributions
-        self._setConditionalProbabilities() # TODO: this doesn't need to be here b/c it can be set after 1 year of model run (outside optimisation)
-
         for risk in self.programInfo.programAreas.keys():
             # get relevant programs and age groups, determined by risk area
             applicableProgs = self._getApplicablePrograms(risk)
@@ -171,7 +170,6 @@ class Model:
                 ageGroup.totalBAUpdate = ageGroup.birthAgeUpdate
 
     def _updateDistributions(self, population):
-        # TODO: THE ERROR IS IN HERE B/C GET SAME ANSWER IF DON"T CALL THIS
         """
         Uses assumption that each ageGroup in a population has a default update
         value which exists (not across populations though)
@@ -184,7 +182,7 @@ class Model:
                     ageGroup.referenceMortality[cause] *= ageGroup.mortalityUpdate[cause]
                 # stunting
                 oldProbStunting = ageGroup.getFracRisk('Stunting')
-                newProbStunting = oldProbStunting * ageGroup.totalStuntingUpdate
+                newProbStunting = oldProbStunting * ageGroup.totalStuntingUpdate # TODO: what happens when this results in prob > 1?
                 ageGroup.stuntingDist = self.restratify(newProbStunting)
                 ageGroup.redistributePopulation()
                 # anaemia
@@ -202,7 +200,7 @@ class Model:
                     ageGroup.wastingDist[wastingCat] = newProbThisCat
                     newProbWasted += newProbThisCat
                 # normality constraint on non-wasted proportions only
-                nonWastedDist = self.restratify(newProbWasted) # TODO: THIS IS THE ERROR IN POPULATIONS. FOR SOME REASON,
+                nonWastedDist = self.restratify(newProbWasted)
                 for nonWastedCat in self.constants.nonWastedList:
                     ageGroup.wastingDist[nonWastedCat] = nonWastedDist[nonWastedCat]
                 ageGroup.redistributePopulation()

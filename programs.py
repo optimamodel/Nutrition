@@ -256,7 +256,7 @@ class Program(object):
         # overall update to prevalence of MAM and SAM
         update = {}
         for wastingCat in self.const.wastedList:
-            oldProb = ageGroup.getFracWasted(wastingCat)
+            oldProb = ageGroup.getWastedFrac(wastingCat)
             probWastedIfCovered = ageGroup.probConditionalCoverage[wastingCat][self.name]['covered']
             probWastedIfNotCovered = ageGroup.probConditionalCoverage[wastingCat][self.name]['not covered']
             newProb = self._getNewProb(self.proposedCoverageFrac, probWastedIfCovered, probWastedIfNotCovered)
