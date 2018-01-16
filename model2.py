@@ -14,7 +14,7 @@ class Model:
         # use populations to adjust the baseline coverage
         self.programInfo._setBaselineCov(self.populations)
         # use adjusted coverages to calculate conditional probabilities
-        self._setConditionalProbabilities()
+        # self._setConditionalProbabilities()
 
         #self._setIYCFtargetPop(self.populations) # TODO: This is not complete
 
@@ -76,7 +76,7 @@ class Model:
     def applyNewProgramCoverages(self, newCoverages):
         '''newCoverages is required to be the unrestricted coverage % (i.e. people covered / entire target pop) '''
         self._updateCoverages(newCoverages)
-        for pop in self.populations: # update all the populations
+        for pop in self.populations[:1]: # update all the populations # TODO: UNDO SLICING
             self._updatePopulation(pop)
             # combine direct and indirect updates to each risk area that we model
             self._combineUpdates(pop)
@@ -98,6 +98,9 @@ class Model:
         return ageGroups
 
     def _updatePopulation(self, population):
+        # update probabilities using current risk distributions
+        self._setConditionalProbabilities() # TODO; this doesn't need to be here b/c it can be set after 1 year of model run (outside optimisation)
+
         for risk in self.programInfo.programAreas.keys():
             # get relevant programs and age groups, determined by risk area
             applicableProgs = self._getApplicablePrograms(risk)
@@ -105,7 +108,7 @@ class Model:
             for ageGroup in ageGroups:
                 for program in applicableProgs:
                     if ageGroup.age in program.relevantAges:
-                        if risk == 'Stunting':
+                        if risk == 'Stunting': # TODO: we have the issue that the risk distribution is not being update properly in the age groups!!!!
                             program._getStuntingUpdate(ageGroup)
                         elif risk == 'Anaemia':
                             program._getAnaemiaUpdate(ageGroup)
@@ -180,7 +183,10 @@ class Model:
                     ageGroup.referenceMortality[cause] *= ageGroup.mortalityUpdate[cause]
                 # stunting
                 oldProbStunting = ageGroup.getFracRisk('Stunting')
+                print ageGroup.age
+                print oldProbStunting
                 newProbStunting = oldProbStunting * ageGroup.totalStuntingUpdate
+                print newProbStunting
                 ageGroup.stuntingDist = self.restratify(newProbStunting)
                 # anaemia
                 oldProbAnaemia = ageGroup.getFracRisk('Anaemia')
@@ -274,8 +280,8 @@ class Model:
                             thisBox = ageGroup.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat]
                             ageingOut[idx][stuntingCat][wastingCat][bfCat][anaemiaCat] = thisBox.populationSize * ageGroup.ageingRate
         oldest = ageGroups[-1]
-        ageingOutStunted = oldest.getNumberStunted() * oldest.ageingRate
-        ageingOutNotStunted = (oldest.populationSize - oldest.getNumberStunted()) * oldest.ageingRate
+        ageingOutStunted = oldest.getAgeGroupNumberStunted() * oldest.ageingRate
+        ageingOutNotStunted = (oldest.populationSize - oldest.getAgeGroupNumberStunted()) * oldest.ageingRate
         self.cumulativeAgeingOutStunted += ageingOutStunted
         self.cumulativeThrive += ageingOutNotStunted
         # first age group does not have ageing in
@@ -427,6 +433,14 @@ class Model:
         restratification["high"] = fractionHigh
         return restratification
 
+
+    def updateRiskDists(self):
+        for ageGroup in self.populations[0].ageGroups:
+            ageGroup.updateStuntingDist()
+            ageGroup.updateWastingDist()
+            ageGroup.updateBFDist()
+            ageGroup.updateAnaemiaDist()
+
     def moveModelOneTimeStep(self):
         """
         Responsible for updating children since they have monthly time steps
@@ -435,7 +449,7 @@ class Model:
         self._applyChildMortality()
         self._applyChildAgeing()
         self._applyBirths()
-        # self.updateRiskDistributions() # TODO: don't think I need this b/c distributions already updated (stored in age groups)
+        self.updateRiskDists()
 
     def moveModelOneYear(self):
         """
@@ -445,14 +459,16 @@ class Model:
         self.year += 1
         for month in range(12):
             self.moveModelOneTimeStep()
-        self._applyPWMortality()
-        self._updatePWpopulation()
-        self._updateWRApopulation()
-        # self.updateYearlyRiskDistributions() # TODO: don't think I need this
+        # self._applyPWMortality()
+        # self._updatePWpopulation()
+        # self._updateWRApopulation()
+        # self.updateYearlyRiskDistributions()
 
     def getOutcome(self, outcome):
         if outcome == 'total stunted':
             return self.cumulativeAgeingOutStunted
+        elif outcome == 'stunting prev':
+            return self.populations[0].getTotalFracStunted()
         elif outcome == 'thrive':
             return self.cumulativeThrive
 

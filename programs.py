@@ -149,7 +149,7 @@ class Program(object):
         Zt = ageGroup._getZa() # updated incidence
         beta = ageGroup._getFracDiarrhoea(Z0, Zt)
         ageGroup._updateProbConditionalDiarrhoea(Zt)
-        for risk in ['Stunting', 'Anaemia']:
+        for risk in ['Stunting', 'Anaemia']: # TODO: ERROR HERE!!
             ageGroup.diarrhoeaUpdate[risk] *= self._getUpdatesFromDiarrhoeaIncidence(beta, ageGroup, risk)
         wastingUpdate = self._getWastingUpdateFromDiarrhoea(beta, ageGroup)
         for wastingCat in self.const.wastedList:
@@ -186,7 +186,7 @@ class Program(object):
         ageGroup.bfUpdate['Wasting'] *= self._getWastingUpdateFromDiarrhoea(beta, ageGroup)
 
     def _getUpdatesFromDiarrhoeaIncidence(self, beta, ageGroup, risk):
-        oldProb = ageGroup.getFracRisk(risk)
+        oldProb = ageGroup.getRiskFromDist(risk)
         newProb = 0.
         probThisRisk = ageGroup.probConditionalDiarrhoea[risk]
         for bfCat in ageGroup.const.bfList:
