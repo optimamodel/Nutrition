@@ -232,20 +232,12 @@ class Model:
             # population._updateFracPregnancyAverted(FPcov)
 
     def _getFlowBetweenMAMandSAM(self, ageGroup):
-        fromSAMtoMAMupdate = {}
-        fromMAMtoSAMupdate = {}
-        fracMovingOut = {}
-        fracMovingOut['MAM'] = self.constants.demographics['fraction MAM to SAM']
-        fracMovingOut['SAM'] = self.constants.demographics['fraction SAM to MAM']
-        for wastingCat in self.constants.wastedList:
-            if wastingCat == 'MAM':
-                fromSAMtoMAMupdate[wastingCat] = (1. + (1. - ageGroup.wastingTreatmentUpdate[wastingCat]) * fracMovingOut[wastingCat])
-                fromMAMtoSAMupdate[wastingCat] = 1.
-            elif wastingCat == 'SAM':
-                fromSAMtoMAMupdate[wastingCat] = 1.
-                fromMAMtoSAMupdate[wastingCat] = (1. + (1. - ageGroup.wastingTreatmentUpdate[wastingCat]) * fracMovingOut[wastingCat])
-        ageGroup.fromSAMtoMAMupdate = fromSAMtoMAMupdate
-        ageGroup.fromMAMtoSAMupdate = fromMAMtoSAMupdate
+        ageGroup.fromSAMtoMAMupdate = {}
+        ageGroup.fromMAMtoSAMupdate = {}
+        ageGroup.fromSAMtoMAMupdate['MAM'] = (1. + (1.-ageGroup.wastingTreatmentUpdate['SAM']) * self.constants.demographics['fraction SAM to MAM'])
+        ageGroup.fromSAMtoMAMupdate['SAM'] = 1.
+        ageGroup.fromMAMtoSAMupdate['SAM'] = (1. - (1.-ageGroup.wastingTreatmentUpdate['MAM']) * self.constants.demographics['fraction MAM to SAM'])
+        ageGroup.fromMAMtoSAMupdate['MAM'] = 1.
 
     def _applyChildMortality(self):
         ageGroups = self.populations[0].ageGroups
