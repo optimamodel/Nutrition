@@ -77,10 +77,9 @@ class Model:
     def applyNewProgramCoverages(self, newCoverages):
         '''newCoverages is required to be the unrestricted coverage % (i.e. people covered / entire target pop) '''
         self._updateCoverages(newCoverages) # TODO: change the call in here
-        for pop in self.populations[:1]:
+        for pop in self.populations: # update all the populations
             # update probabilities using current risk distributions
             self._setConditionalProbabilities(pop)
-        for pop in self.populations[:1]: # update all the populations
             self._updatePopulation(pop)
             # combine direct and indirect updates to each risk area that we model
             self._combineUpdates(pop)
@@ -134,7 +133,6 @@ class Model:
                             continue
                     else:
                         continue
-                # TODO: put diarrhoea update down here??
                 if risk == 'Breastfeeding':  # flow on effects to diarrhoea (does not diarrhoea incidence & is independent of below)
                     self._getEffectsFromBFupdate(ageGroup)
                 if risk == 'Diarrhoea': # flow-on effects from incidence
@@ -182,13 +180,13 @@ class Model:
         :param ageGroup:
         :return:
         """
-        if population.name == 'Children': # TODO: could map these things using a dictionary of risks with corresponding distributions & outcomes. Then function could be made to call.
+        if population.name == 'Children':
             for ageGroup in population.ageGroups:
                 for cause in self.constants.causesOfDeath:
                     ageGroup.referenceMortality[cause] *= ageGroup.mortalityUpdate[cause]
                 # stunting
                 oldProbStunting = ageGroup.getFracRisk('Stunting')
-                newProbStunting = oldProbStunting * ageGroup.totalStuntingUpdate # TODO: what happens when this results in prob > 1?
+                newProbStunting = oldProbStunting * ageGroup.totalStuntingUpdate
                 ageGroup.stuntingDist = self.restratify(newProbStunting)
                 ageGroup.redistributePopulation()
                 # anaemia
@@ -232,7 +230,7 @@ class Model:
                 ageGroup.anaemiaDist['not anaemic'] = 1.-newProbAnaemia
                 ageGroup.redistributePopulation()
             # weighted sum account for different effect and target pops across nonPW age groups # TODO: is this true or need to scale by frac targeted?
-            nonPWpop = population.getTotalPopulation()
+            # nonPWpop = population.getTotalPopulation()
             # FPcov = sum(nonPWage.FPupdate * nonPWage.getAgeGroupPopulation() for nonPWage in population.ageGroups) / nonPWpop
             # population._updateFracPregnancyAverted(FPcov)
 
