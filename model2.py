@@ -120,7 +120,7 @@ class Model:
                         elif risk == 'Breastfeeding':
                             program._getBreastfeedingupdate(ageGroup)
                         elif risk == 'Diarrhoea':
-                            program._getDiarrhoeaUpdate(ageGroup)
+                            program._getDiarrhoeaIncidenceUpdate(ageGroup)
                         elif risk == 'Mortality':
                             program._getMortalityUpdate(ageGroup)
                         elif risk == 'Birth outcomes':
@@ -134,6 +134,11 @@ class Model:
                             continue
                     else:
                         continue
+                # TODO: put diarrhoea update down here??
+                if risk == 'Breastfeeding':  # flow on effects to diarrhoea (does not diarrhoea incidence & is independent of below)
+                    self._getEffectsFromBFupdate(ageGroup)
+                if risk == 'Diarrhoea': # flow-on effects from incidence
+                    self._getEffectsFromDiarrhoeaIncidence(ageGroup)
                 if risk == 'Wasting treatment':
                     # need to account for flow between MAM and SAM
                     self._getFlowBetweenMAMandSAM(ageGroup)
@@ -238,6 +243,72 @@ class Model:
         ageGroup.fromSAMtoMAMupdate['SAM'] = 1.
         ageGroup.fromMAMtoSAMupdate['SAM'] = (1. - (1.-ageGroup.wastingTreatmentUpdate['MAM']) * self.constants.demographics['fraction MAM to SAM'])
         ageGroup.fromMAMtoSAMupdate['MAM'] = 1.
+
+    def _getEffectsFromDiarrhoeaIncidence(self, ageGroup):
+        # get flow-on effects to stunting, anaemia and wasting
+        Z0 = ageGroup._getZa()
+        ageGroup.incidences['Diarrhoea'] *= ageGroup.diarrhoeaIncidenceUpdate
+        Zt = ageGroup._getZa() # updated incidence
+        beta = ageGroup._getFracDiarrhoea(Z0, Zt)
+        ageGroup._updateProbConditionalDiarrhoea(Zt)
+        for risk in ['Stunting', 'Anaemia']:
+            ageGroup.diarrhoeaUpdate[risk] *= self._getUpdatesFromDiarrhoeaIncidence(beta, ageGroup, risk)
+        wastingUpdate = self._getWastingUpdateFromDiarrhoea(beta, ageGroup)
+        for wastingCat in self.constants.wastedList:
+            ageGroup.diarrhoeaUpdate[wastingCat] *= wastingUpdate[wastingCat]
+
+    def _getEffectsFromBFupdate(self, ageGroup):
+        # get number at risk before
+        sumBefore = ageGroup._getDiarrhoeaRiskSum()
+        # update correct BF distribution
+        ageGroup.bfDist[ageGroup.correctBF] *= ageGroup.bfPracticeUpdate
+        # update distribution of incorrect practices
+        popSize = ageGroup.getAgeGroupPopulation()
+        numCorrectBefore = ageGroup.getNumberCorrectlyBF()
+        numCorrectAfter = popSize * ageGroup.bfDist[ageGroup.correctBF]
+        numShifting = numCorrectAfter - numCorrectBefore
+        numIncorrectBefore = popSize - numCorrectBefore
+        fracCorrecting = numShifting / numIncorrectBefore if numIncorrectBefore > 0.01 else 0.
+        for practice in ageGroup.incorrectBF:
+            ageGroup.bfDist[practice] *= 1. - fracCorrecting
+        ageGroup.redistributePopulation()
+        # number at risk after
+        sumAfter = ageGroup._getDiarrhoeaRiskSum()
+        # update diarrhoea incidence baseline, even though not directly used in this calculation
+        ageGroup.incidences['Diarrhoea'] *= sumAfter / sumBefore
+        beta = ageGroup._getFracDiarrhoeaFixedZ()  # TODO: this could probably be calculated prior to update coverages
+        for risk in ['Stunting', 'Anaemia']:
+            ageGroup.bfUpdate[risk] = self._getUpdatesFromDiarrhoeaIncidence(beta, ageGroup, risk)
+        ageGroup.bfUpdate.update(self._getWastingUpdateFromDiarrhoea(beta, ageGroup))
+
+    def _getUpdatesFromDiarrhoeaIncidence(self, beta, ageGroup, risk):
+        oldProb = ageGroup.getRiskFromDist(risk)
+        newProb = 0.
+        probThisRisk = ageGroup.probConditionalDiarrhoea[risk]
+        for bfCat in ageGroup.const.bfList:
+            pab = ageGroup.bfDist[bfCat]
+            t1 = beta[bfCat] * probThisRisk['diarrhoea']
+            t2 = (1.-beta[bfCat]) * probThisRisk['no diarrhoea']
+            newProb += pab * (t1 + t2)
+        reduction = (oldProb - newProb) / oldProb
+        update = 1. - reduction
+        return update
+
+    def _getWastingUpdateFromDiarrhoea(self, beta, ageGroup):
+        update = {}
+        for wastingCat in self.constants.wastedList:
+            update[wastingCat] = 1.
+            probWasted = ageGroup.probConditionalDiarrhoea[wastingCat]
+            oldProb = ageGroup.wastingDist[wastingCat]
+            newProb = 0.
+            for bfCat in self.constants.bfList:
+                pab = ageGroup.bfDist[bfCat]
+                t1 = beta[bfCat] * probWasted['diarrhoea']
+                t2 = (1.-beta[bfCat]) * probWasted['no diarrhoea']
+                newProb += pab*(t1+t2)
+            reduction = (oldProb - newProb)/oldProb
+            update[wastingCat] *= 1. - reduction
+        return update
 
     def _applyChildMortality(self):
         ageGroups = self.populations[0].ageGroups

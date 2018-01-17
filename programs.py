@@ -136,24 +136,14 @@ class Program(object):
         for wastingCat in self.const.wastedList:
             ageGroup.wastingTreatmentUpdate[wastingCat] *= update[wastingCat]
 
-    def _getDiarrhoeaUpdate(self, ageGroup):
+    def _getDiarrhoeaIncidenceUpdate(self, ageGroup):
         """
         This function accounts for the _direct_ impact of programs on diarrhoea incidence
         :param ageGroup:
         :return:
         """
         update = self._getEffectivenessUpdate(ageGroup, 'Effectiveness incidence')
-        # get flow-on effects to stunting, anaemia and wasting
-        Z0 = ageGroup._getZa()
-        ageGroup.incidences['Diarrhoea'] *= update['Diarrhoea']
-        Zt = ageGroup._getZa() # updated incidence
-        beta = ageGroup._getFracDiarrhoea(Z0, Zt)
-        ageGroup._updateProbConditionalDiarrhoea(Zt)
-        for risk in ['Stunting', 'Anaemia']:
-            ageGroup.diarrhoeaUpdate[risk] *= self._getUpdatesFromDiarrhoeaIncidence(beta, ageGroup, risk)
-        wastingUpdate = self._getWastingUpdateFromDiarrhoea(beta, ageGroup)
-        for wastingCat in self.const.wastedList:
-            ageGroup.diarrhoeaUpdate[wastingCat] *= wastingUpdate[wastingCat]
+        ageGroup.diarrhoeaIncidenceUpdate *= update['Diarrhoea']
 
     def _getBreastfeedingupdate(self, ageGroup):
         """
@@ -161,58 +151,8 @@ class Program(object):
         :param ageGroup:
         :return:
         """
-        # get number at risk before
-        sumBefore = ageGroup._getDiarrhoeaRiskSum()
-        update = self._getBFpracticeUpdate(ageGroup)
-        # update correct BF distribution
-        ageGroup.bfDist[ageGroup.correctBF] = update
-        # update distribution of incorrect practices
-        popSize = ageGroup.populationSize
-        numCorrectBefore = ageGroup.getNumberCorrectlyBF()
-        numCorrectAfter = popSize * update
-        numShifting = numCorrectAfter - numCorrectBefore
-        numIncorrectBefore = popSize - numCorrectBefore
-        fracCorrecting = numShifting / numIncorrectBefore if numIncorrectBefore > 0.01 else 0.
-        for practice in ageGroup.incorrectBF:
-            ageGroup.bfDist[practice] *= 1. - fracCorrecting
-        ageGroup.redistributePopulation()
-        # number at risk after
-        sumAfter = ageGroup._getDiarrhoeaRiskSum()
-        # update diarrhoea incidence baseline, even though not directly used in this calculation
-        ageGroup.incidences['Diarrhoea'] *= sumAfter / sumBefore
-        beta = ageGroup._getFracDiarrhoeaFixedZ() #  TODO: this could probably be calculated prior to update coverages
-        for risk in ['Stunting', 'Anaemia']:
-            ageGroup.bfUpdate[risk] *= self._getUpdatesFromDiarrhoeaIncidence(beta, ageGroup, risk)
-        ageGroup.bfUpdate['Wasting'] *= self._getWastingUpdateFromDiarrhoea(beta, ageGroup)
+        ageGroup.bfPracticeUpdate *= self._getBFpracticeUpdate(ageGroup)
 
-    def _getUpdatesFromDiarrhoeaIncidence(self, beta, ageGroup, risk):
-        oldProb = ageGroup.getRiskFromDist(risk)
-        newProb = 0.
-        probThisRisk = ageGroup.probConditionalDiarrhoea[risk]
-        for bfCat in ageGroup.const.bfList:
-            pab = ageGroup.bfDist[bfCat]
-            t1 = beta[bfCat] * probThisRisk['diarrhoea']
-            t2 = (1.-beta[bfCat]) * probThisRisk['no diarrhoea']
-            newProb += pab * (t1 + t2)
-        reduction = (oldProb - newProb) / oldProb
-        update = 1. - reduction
-        return update
-
-    def _getWastingUpdateFromDiarrhoea(self, beta, ageGroup):
-        update = {}
-        for wastingCat in self.const.wastedList:
-            update[wastingCat] = 1.
-            probWasted = ageGroup.probConditionalDiarrhoea[wastingCat]
-            oldProb = ageGroup.wastingDist[wastingCat]
-            newProb = 0.
-            for bfCat in self.const.bfList:
-                pab = ageGroup.bfDist[bfCat]
-                t1 = beta[bfCat] * probWasted['diarrhoea']
-                t2 = (1.-beta[bfCat]) * probWasted['no diarrhoea']
-                newProb += pab*(t1+t2)
-            reduction = (oldProb - newProb)/oldProb
-            update[wastingCat] *= 1. - reduction
-        return update
 
     def _getMortalityUpdate(self, ageGroup):
         """
@@ -286,7 +226,7 @@ class Program(object):
     def _getEffectivenessUpdate(self, ageGroup, effType):
         """This covers mortality and incidence updates (except wasting)"""
         if 'incidence' in effType:
-            toIterate = self.const.conditions
+            toIterate = ['Diarrhoea'] # only model diarrhoea incidence
         else: # mortality
             toIterate = self.const.causesOfDeath
         update = {cause: 1. for cause in toIterate}
@@ -325,8 +265,10 @@ class Program(object):
         probCorrectNotCovered = ageGroup.probConditionalCoverage['Breastfeeding'][self.name]['not covered']
         probNew = self._getNewProb(self.proposedCoverageFrac, probCorrectCovered, probCorrectNotCovered)
         fracChange = probNew - correctFracOld
-        correctFracBF = correctFracOld + fracChange
-        return correctFracBF
+        # correctFracBF = correctFracOld + fracChange
+        percentChange = (correctFracOld - probNew)/correctFracOld
+        print percentChange
+        return 1.-percentChange
 
     def _setCostCoverageCurve(self):
         self.costCurve = CostCovCurve(self.unitCost, self.saturation, self.restrictedPopSize, self.unrestrictedPopSize)

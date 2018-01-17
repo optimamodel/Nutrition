@@ -132,11 +132,13 @@ class ChildAgeGroup(object):
         self.anaemiaUpdate = 1.
         self.bfUpdate = {}
         self.diarrhoeaUpdate = {}
+        self.bfPracticeUpdate = 1.
         for risk in ['Stunting', 'Anaemia'] + self.const.wastedList:
             self.bfUpdate[risk] = 1.
         self.mortalityUpdate = {}
         for cause in self.const.causesOfDeath:
             self.mortalityUpdate[cause] = 1.
+        self.diarrhoeaIncidenceUpdate = 1.
         self.diarrhoeaUpdate = {}
         for risk in self.const.wastedList + ['Stunting', 'Anaemia']:
             self.diarrhoeaUpdate[risk] = 1.
