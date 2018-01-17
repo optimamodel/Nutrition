@@ -118,7 +118,7 @@ class ChildAgeGroup(object):
         self.incidences = dcp(incidences)
         self.const = constants
         self.correctBF = self.const.correctBF[age]
-        self.incorrectBF = list(set(self.const.bfList) - set(self.correctBF))
+        self.incorrectBF = list(set(self.const.bfList) - set([self.correctBF]))
         self.ageingRate = ageingRate
         self.probConditionalCoverage = {}
         self.probConditionalDiarrhoea = {}
@@ -132,7 +132,7 @@ class ChildAgeGroup(object):
         self.anaemiaUpdate = 1.
         self.bfUpdate = {}
         self.diarrhoeaUpdate = {}
-        self.bfPracticeUpdate = 1.
+        self.bfPracticeUpdate = 0
         for risk in ['Stunting', 'Anaemia'] + self.const.wastedList:
             self.bfUpdate[risk] = 1.
         self.mortalityUpdate = {}
@@ -448,6 +448,7 @@ class Children(Population):
         self._setProbStuntedIfCovered()
         self._setProbAnaemicIfCovered()
         self._setProbWastedIfCovered()
+        self._setProbCorrectlyBreastfedIfCovered()
         # self._setProbConditionalDiarrhoea()
         self._setProbStuntedIfDiarrhoea()
         self._setProbAnaemicIfDiarrhoea()
@@ -722,6 +723,20 @@ class Children(Population):
                 else:  # OR
                     OR = self.project.ORprograms[risk][program][age]
                     pn, pc = self._solveQuadratic(OR, fracCovered, fracAnaemic)
+                ageGroup.probConditionalCoverage[risk][program]['covered'] = pc
+                ageGroup.probConditionalCoverage[risk][program]['not covered'] = pn
+
+    def _setProbCorrectlyBreastfedIfCovered(self):
+        risk = 'Breastfeeding'
+        for ageGroup in self.ageGroups:
+            age = ageGroup.age
+            ageGroup.probConditionalCoverage[risk] = {}
+            fracAppropriate = ageGroup.bfDist[ageGroup.correctBFpractice]
+            for program in self.project.programList:
+                ageGroup.probConditionalCoverage[risk][program] = {}
+                OR = self.project.ORappropriateBFprogram[program][age]
+                fracCovered = self.baselineCovs[program]
+                pn, pc = self._solveQuadratic(OR, fracCovered, fracAppropriate)
                 ageGroup.probConditionalCoverage[risk][program]['covered'] = pc
                 ageGroup.probConditionalCoverage[risk][program]['not covered'] = pn
 

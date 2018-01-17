@@ -13,7 +13,7 @@ class Program(object):
         self.unitCost = self.const.costCurveInfo['unit cost'][self.name]
         self.saturation = self.const.costCurveInfo['saturation coverage'][self.name]
 
-        self._setRelevantAges()
+        self._setRelevantAges() # This func could contain the info for how many multiples needed for unrestricted population calculation (IYCF)
         self._setExclusionDependencies()
         self._setThresholdDependencies()
         #self._setCostCoverageCurve() # TODO: this cannot be sit until 1 year of simulation run
@@ -52,9 +52,11 @@ class Program(object):
         """
         sum of the total pop for each targeted age group
         """
+        # TMP SOLUTION: THE DENOMINATOR FOR CALCULATING PROGRAM COVERAGE WILL USE sum(CEILING(FRAC TARGETED) * POP SIZE) over all pops targeted. I.E. FOR IYCF WITH FRAC >1, we get normalised sum
+        from math import ceil
         self.unrestrictedPopSize = 0.
         for pop in populations:
-            self.unrestrictedPopSize += sum(age.getAgeGroupPopulation() for age in pop.ageGroups
+            self.unrestrictedPopSize += sum(ceil(self.targetPopulations[age.age])*age.getAgeGroupPopulation() for age in pop.ageGroups
                                            if age.age in self.relevantAges)
 
     def _setRestrictedPopSize(self, populations):
@@ -151,7 +153,7 @@ class Program(object):
         :param ageGroup:
         :return:
         """
-        ageGroup.bfPracticeUpdate *= self._getBFpracticeUpdate(ageGroup)
+        ageGroup.bfPracticeUpdate += self._getBFpracticeUpdate(ageGroup)
 
 
     def _getMortalityUpdate(self, ageGroup):
@@ -265,10 +267,9 @@ class Program(object):
         probCorrectNotCovered = ageGroup.probConditionalCoverage['Breastfeeding'][self.name]['not covered']
         probNew = self._getNewProb(self.proposedCoverageFrac, probCorrectCovered, probCorrectNotCovered)
         fracChange = probNew - correctFracOld
-        # correctFracBF = correctFracOld + fracChange
-        percentChange = (correctFracOld - probNew)/correctFracOld
-        print percentChange
-        return 1.-percentChange
+        correctFracBF = correctFracOld + fracChange
+        # percentChange = (probNew - correctFracOld)/correctFracOld
+        return correctFracBF
 
     def _setCostCoverageCurve(self):
         self.costCurve = CostCovCurve(self.unitCost, self.saturation, self.restrictedPopSize, self.unrestrictedPopSize)

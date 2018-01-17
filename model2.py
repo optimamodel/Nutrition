@@ -16,7 +16,7 @@ class Model:
         # use adjusted coverages to calculate conditional probabilities
         # self._setConditionalProbabilities()
 
-        #self._setIYCFtargetPop(self.populations) # TODO: This is not complete
+        # self._setIYCFtargetPop(self.populations) # TODO: This is not complete
 
         # self._setInitialCoverages()
 
@@ -51,28 +51,28 @@ class Model:
 
 
     # TODO: TBC
-    def _setIYCFtargetPop(self, populations):
-        """
-        This method is placed here because population sizes are required for these calculations,
-        but are unknown until the population classes are initialised.
-        :return:
-        """
-        # get pop sizs for children & PW
-        allPopSizes = {}
-        for pop in populations[:2]: # TODO: make this a method in populations.py
-            allPopSizes.update({age.name:age.populationSize for age in pop.ageGroups})
-        targetPop = self.project.IYCFtargetPop
-        # equation: maxCovIYCF = sum(popSize * fracExposed) / sum(popSize)
-        # TODO: want this to be stratified by age (not mode)
-        # TODO: this calculation would be sum(fracExposed)/numModes (trivial case of more general equation).
-        maxCov = {}
-        for name, package in targetPop.iteritems():
-            maxCov[name] = 0.
-            for pop, modeFrac in package.iteritems():
-                for mode, frac in modeFrac.iteritems():
-                    maxCov[name] += frac * allPopSizes[pop] # TODO: should probably convert this to fraction (?)
-        # update in project
-        self.project.programTargetPop.update(maxCov)
+    # def _setIYCFtargetPop(self, populations):
+    #     """
+    #     This method is placed here because population sizes are required for these calculations,
+    #     but are unknown until the population classes are initialised.
+    #     :return:
+    #     """
+    #     # get pop sizs for children & PW
+    #     allPopSizes = {}
+    #     for pop in populations[:2]: # TODO: make this a method in populations.py
+    #         allPopSizes.update({age.name:age.populationSize for age in pop.ageGroups})
+    #     targetPop = self.project.IYCFtargetPop
+    #     # equation: maxCovIYCF = sum(popSize * fracExposed) / sum(popSize)
+    #     # TODO: want this to be stratified by age (not mode)
+    #     # TODO: this calculation would be sum(fracExposed)/numModes (trivial case of more general equation).
+    #     maxCov = {}
+    #     for name, package in targetPop.iteritems():
+    #         maxCov[name] = 0.
+    #         for pop, modeFrac in package.iteritems():
+    #             for mode, frac in modeFrac.iteritems():
+    #                 maxCov[name] += frac * allPopSizes[pop] # TODO: should probably convert this to fraction (?)
+    #     # update in project
+    #     self.project.programTargetPop.update(maxCov)
 
     def applyNewProgramCoverages(self, newCoverages):
         '''newCoverages is required to be the unrestricted coverage % (i.e. people covered / entire target pop) '''
@@ -107,7 +107,7 @@ class Model:
             ageGroups = self._getApplicableAgeGroups(population, risk)
             for ageGroup in ageGroups:
                 for program in applicableProgs:
-                    if ageGroup.age in program.relevantAges:
+                    if ageGroup.age in program.relevantAges: # TODO: theres funny business here between IYCF 1 & 2 -- 1 seems to come back
                         if risk == 'Stunting':
                             program._getStuntingUpdate(ageGroup)
                         elif risk == 'Anaemia':
@@ -256,10 +256,15 @@ class Model:
             ageGroup.diarrhoeaUpdate[wastingCat] *= wastingUpdate[wastingCat]
 
     def _getEffectsFromBFupdate(self, ageGroup):
+        oldProb = ageGroup.bfDist[ageGroup.correctBF]
+        percentIncrease = (ageGroup.bfPracticeUpdate - oldProb)/oldProb
+        if percentIncrease > 0.0001:
+            ageGroup.bfDist[ageGroup.correctBF] = ageGroup.bfPracticeUpdate
         # get number at risk before
         sumBefore = ageGroup._getDiarrhoeaRiskSum()
         # update correct BF distribution
-        ageGroup.bfDist[ageGroup.correctBF] *= ageGroup.bfPracticeUpdate
+        # newProb = ageGroup.bfDist[ageGroup.correctBF] * ageGroup.bfPracticeUpdate
+        # ageGroup.bfDist[ageGroup.correctBF] = newProb if newProb < 1. else 1.
         # update distribution of incorrect practices
         popSize = ageGroup.getAgeGroupPopulation()
         numCorrectBefore = ageGroup.getNumberCorrectlyBF()

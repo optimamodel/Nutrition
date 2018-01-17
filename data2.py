@@ -382,7 +382,7 @@ class Project:
         stuntingEffects = effects.loc['OR for stunting']
         packagesDict = self.defineIYCFpackages()
         costCurveInfo = self.getIYCFcostCoverageSaturation(packagesDict)
-        self.IYCFtargetPop = self.getIYCFtargetPop(packagesDict)
+        self.programTargetPop.update(self.getIYCFtargetPop(packagesDict))
         self.ORappropriateBFprogram = self.createIYCFpackages(BFeffects, packagesDict)
         self.ORstuntingProgram.update(self.createIYCFpackages(stuntingEffects, packagesDict))
         for field in ['unit cost', 'saturation coverage', 'baseline coverage']:
@@ -418,7 +418,7 @@ class Project:
                 col = package[mode]
                 if col.notnull()[0]:
                     if mode == 'Mass media':
-                        ageModeTuple = [(pop, mode) for pop in self.childAges]
+                        ageModeTuple = [(pop, mode) for pop in self.childAges[:-1]] # exclude 24-59 months
                     else:
                         ageModeTuple = [(packageName[1], mode)]
                     packagesDict[packageName[0]] += ageModeTuple
@@ -451,7 +451,18 @@ class Project:
                 newTargetPops[name][pop][mode] = IYCFtargetPop[mode][pop]
         # convert 'pregnant women' to its age bands
         newTargetPops = self.createAgeBands(newTargetPops, packageModalities.keys(), self.PWages, 'Pregnant women')
-        return newTargetPops
+        # target pop is sum of fractions exposed to modality for each age band
+        fracTargeted = {}
+        for program, popModes in newTargetPops.iteritems():
+            fracTargeted[program] = {}
+            for pop, modes in popModes.iteritems():
+                fracTargeted[program][pop] = sum(frac for frac in modes.values())
+        allAges = self.childAges + self.PWages + self.WRAages
+        for program, pop in fracTargeted.iteritems():
+            missingAges = self._getMissingElements(allAges, pop.keys())
+            for age in missingAges:
+                fracTargeted[program][age] = 0.
+        return fracTargeted
 
     def createAgeBands(self, dictToUpdate, keyList, listOfAges, pop):
         for key in keyList:  # could be program, ages
