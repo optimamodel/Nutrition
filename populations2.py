@@ -190,6 +190,17 @@ class ChildAgeGroup(object):
                         returnDict[stuntingCat] += self.boxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].populationSize / totalPop
         return returnDict
 
+    def getWastingDistribution(self):
+        totalPop = self.getAgeGroupPopulation()
+        returnDict = {}
+        for wastingCat in self.const.wastingList:
+            returnDict[wastingCat] = 0.
+            for stuntingCat in self.const.stuntingList:
+                for breastfeedingCat in self.const.bfList:
+                    for anemiaStatus in self.const.anaemiaList:
+                        returnDict[wastingCat] += self.boxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].populationSize / totalPop
+        return returnDict
+
     def getAgeGroupNumberAnaemic(self):
         numAnaemic = 0
         for stuntingCat in self.const.stuntingList:
@@ -714,19 +725,17 @@ class Children(Population):
 
     def _setProbWastedIfCovered(self):
         for wastingCat in self.const.wastedList:
-            conditionalProb = {}
-            conditionalProb[wastingCat] = {}
             for ageGroup in self.ageGroups:
+                ageGroup.probConditionalCoverage[wastingCat] = {}
                 age = ageGroup.age
                 fracThisCatAge = ageGroup.wastingDist[wastingCat]
                 for program in self.project.programList:
                     OR = self.project.ORwastingProgram[wastingCat][program][age]
                     fracCovered = self.baselineCovs[program]
                     pn, pc = self._solveQuadratic(OR, fracCovered, fracThisCatAge)
-                    conditionalProb[wastingCat][program] = {}
-                    conditionalProb[wastingCat][program]['covered'] = pc
-                    conditionalProb[wastingCat][program]['not covered'] = pn
-                    ageGroup.probConditionalCoverage.update(conditionalProb)
+                    ageGroup.probConditionalCoverage[wastingCat][program] = {}
+                    ageGroup.probConditionalCoverage[wastingCat][program]['covered'] = pc
+                    ageGroup.probConditionalCoverage[wastingCat][program]['not covered'] = pn
 
     def _setProbConditionalDiarrhoea(self): # TODO: this is more general version of two following methods
         risks = ['Stunting', 'Anaemia']
