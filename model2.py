@@ -193,8 +193,6 @@ class Model:
                 ageGroup.anaemiaDist['not anaemic'] = 1.-newProbAnaemia
                 # wasting
                 newProbWasted = 0.
-                # print " BEFORE"
-                # print sum(ageGroup.wastingDist.values())
                 for wastingCat in ['SAM', 'MAM']:
                     oldProbThisCat = ageGroup.getWastedFrac(wastingCat)
                     newProbThisCat = oldProbThisCat * ageGroup.totalWastingUpdate[wastingCat]
@@ -311,7 +309,7 @@ class Model:
                 numAgeingInStratified[stuntingCat] = 0.
             for prevStunt in ['stunted', 'not stunted']:
                 totalProbStunted = ageGroup.probConditionalStunting[prevStunt] * ageGroup.totalStuntingUpdate # TODO:check this is correct
-                restratifiedProb = self.restratify(min(1.,totalProbStunted))
+                restratifiedProb = self.restratify(totalProbStunted)
                 for stuntingCat in self.constants.stuntingList:
                     numAgeingInStratified[stuntingCat] += restratifiedProb[stuntingCat] * numAgeingIn[prevStunt]
             # distribute those ageing in amongst those stunting categories but also BF, wasting and anaemia
@@ -327,7 +325,7 @@ class Model:
                             thisBox.populationSize += numAgeingInStratified[stuntingCat] * pw * pbf * pa
             # gaussianise
             distributionNow = ageGroup.getStuntingDistribution()
-            probStunting = sum(distributionNow[stuntingCat] for stuntingCat in ['high', 'moderate'])
+            probStunting = sum(distributionNow[stuntingCat] for stuntingCat in self.constants.stuntedList)
             ageGroup.stuntingDist = self.restratify(probStunting)
             ageGroup.redistributePopulation()
 
@@ -341,7 +339,6 @@ class Model:
         numNewBabies = annualBirths * self.constants.timestep
         self.cumulativeBirths += numNewBabies
         # restratify stunting and wasting
-        # children = self.populations[0]
         newBorns = self.populations[0].ageGroups[0]
         restratifiedStuntingAtBirth = {}
         restratifiedWastingAtBirth = {}
@@ -382,8 +379,6 @@ class Model:
                                                                                                      pbf * pa * \
                                                                                                      stuntingFractions[stuntingCat] * \
                                                                                                      wastingFractions[wastingCat]
-        # newBorns.stuntingDist = self.restratify(newBorns.getStuntedFrac())
-        # newBorns.redistributePopulation() # this makes no difference
 
     def _applyPWMortality(self):
         PW = self.populations[1]
