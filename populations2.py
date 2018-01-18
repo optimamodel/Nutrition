@@ -46,12 +46,12 @@ class NonPWAgeGroup:
     def getAgeGroupPopulation(self):
         return sum(self.boxes[anaemiaCat].populationSize for anaemiaCat in self.const.anaemiaList)
 
-    def getNumberAnaemic(self):
+    def getAgeGroupNumberAnaemic(self):
         for anaemiaCat in self.const.anaemicList:
             return self.boxes[anaemiaCat].populationSize
 
     def getFracAnaemic(self):
-        return self.getNumberAnaemic() / self.getAgeGroupPopulation()
+        return self.getAgeGroupNumberAnaemic() / self.getAgeGroupPopulation()
 
     def getFracRisk(self, risk):
         return self.getFracAnaemic()
@@ -86,12 +86,12 @@ class PWAgeGroup:
     def getAgeGroupPopulation(self):
         return sum(self.boxes[anaemiaCat].populationSize for anaemiaCat in self.const.anaemiaList)
 
-    def getNumberAnaemic(self):
+    def getAgeGroupNumberAnaemic(self):
         for anaemiaCat in self.const.anaemicList:
             return self.boxes[anaemiaCat].populationSize
 
     def getFracAnaemic(self):
-        return self.getNumberAnaemic() / self.getAgeGroupPopulation()
+        return self.getAgeGroupNumberAnaemic() / self.getAgeGroupPopulation()
 
     def getFracRisk(self, risk):
         return self.getFracAnaemic()
@@ -118,7 +118,7 @@ class ChildAgeGroup(object):
         self.incidences = dcp(incidences)
         self.const = constants
         self.correctBF = self.const.correctBF[age]
-        self.incorrectBF = list(set(self.const.bfList) - set([self.correctBF]))
+        self.incorrectBF = list(set(self.const.bfList) - {self.correctBF})
         self.ageingRate = ageingRate
         self.probConditionalCoverage = {}
         self.probConditionalDiarrhoea = {}
@@ -625,6 +625,14 @@ class Children(Population):
         totalPop = self.getTotalPopulation()
         return totalAnaemia / totalPop
 
+    def getTotalNumberWasted(self, wastingCat):
+        return sum(ageGroup.getAgeGroupNumberWasted(wastingCat) for ageGroup in self.ageGroups)
+
+    def getTotalFracWasted(self):
+        totalWasted = sum(self.getTotalNumberWasted(wastingCat) for wastingCat in self.const.wastedList)
+        totalPop = self.getTotalPopulation()
+        return totalWasted / totalPop
+
     def restratify(self, fractionYes):
         from scipy.stats import norm
         # Going from binary stunting/wasting to four fractions
@@ -981,6 +989,14 @@ class PregnantWomen(Population):
     def getTotalPopulation(self):
         return sum(ageGroup.getAgeGroupPopulation() for ageGroup in self.ageGroups)
 
+    def getTotalNumberAnaemic(self):
+        return sum(ageGroup.getAgeGroupNumberAnaemic() for ageGroup in self.ageGroups)
+
+    def getTotalFracAnaemic(self):
+        totalAnaemia = self.getTotalNumberAnaemic()
+        totalPop = self.getTotalPopulation()
+        return totalAnaemia / totalPop
+
     ##### DATA WRANGLING ######
 
     def _setConditionalProbabilities(self):
@@ -1082,6 +1098,14 @@ class NonPregnantWomen(Population):
 
     def getTotalPopulation(self):
         return sum(ageGroup.getAgeGroupPopulation() for ageGroup in self.ageGroups)
+
+    def getTotalNumberAnaemic(self):
+        return sum(ageGroup.getAgeGroupNumberAnaemic() for ageGroup in self.ageGroups)
+
+    def getTotalFracAnaemic(self):
+        totalAnaemia = self.getTotalNumberAnaemic()
+        totalPop = self.getTotalPopulation()
+        return totalAnaemia / totalPop
 
     ##### DATA WRANGLING ######
 
