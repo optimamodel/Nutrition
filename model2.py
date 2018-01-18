@@ -10,6 +10,9 @@ class Model:
         self.constants = Constants(self.project)
         self.programInfo = program_info.ProgramInfo(self.constants)
         self.populations = pops.setUpPopulations(self.project, self.constants)
+        self.children = self.populations[0]
+        self.PW = self.populations[1]
+        self.nonPW = self.populations[2]
         # caution: maintain order below
         # use populations to adjust the baseline coverage
         self.programInfo._setBaselineCov(self.populations)
@@ -24,6 +27,8 @@ class Model:
         self.cumulativeAgeingOutStunted = 0
         self.cumulativeThrive = 0
         self.cumulativeBirths = 0
+        self.cumulativeChildDeaths = 0
+        self.cumulativePWDeaths = 0
         self.cumulativeDeaths = 0
         # self.newCoverages = self.project.costCurveInfo['baseline coverage']
         # initialise baseline coverages
@@ -46,7 +51,7 @@ class Model:
 
     def _updateCoverages(self, newCoverages):
         for program in self.programInfo.programs:
-            program.updateCoverageTMP(newCoverages[program.name], self.populations) # TODO: USING TMP JUST FOR TESTING
+            program.updateCoverageFromPercentage(newCoverages[program.name], self.populations) # TODO: USING TMP JUST FOR TESTING
         self.programInfo._restrictCoverages(self.populations)
 
 
@@ -325,6 +330,7 @@ class Model:
                             thisBox.populationSize -= deaths
                             thisBox.cumulativeDeaths += deaths
                             self.cumulativeDeaths += deaths
+                            self.cumulativeChildDeaths += deaths
 
     def _applyChildAgeing(self):
         # TODO: longer term, I think this should be re-written
@@ -453,6 +459,8 @@ class Model:
                 thisBox = ageGroup.boxes[anaemiaCat]
                 deaths = thisBox.populationSize * thisBox.mortalityRate
                 thisBox.cumulativeDeaths += deaths
+                self.cumulativePWDeaths += deaths
+                self.cumulativeDeaths += deaths
 
     def _updatePWpopulation(self):
         """Use prenancy rate to distribute PW into age groups.
@@ -538,14 +546,32 @@ class Model:
         self.updateYearlyRiskDists()
 
     def getOutcome(self, outcome):
-        if outcome == 'total stunted':
+        if outcome == 'total_stunted':
             return self.cumulativeAgeingOutStunted
-        elif outcome == 'stunting prev':
+        elif outcome == 'stunting_prev':
             return self.populations[0].getTotalFracStunted()
         elif outcome == 'thrive':
             return self.cumulativeThrive
-        elif outcome == 'child deaths':
+        elif outcome == 'deaths_children':
+            return self.cumulativeChildDeaths
+        elif outcome == 'deaths_PW':
+            return self.cumulativePWDeaths
+        elif outcome == 'total_deaths':
             return self.cumulativeDeaths
+        # elif outcome == 'anaemia_prev': # TODO
+        #     totalPrev = 0
+        #     for pop in self.populations:
+        #         totalPrev += sum(ageGroup.getTotalFracAnaemic() for ageGroup in pop.ageGroups)
+        #     return totalPrev
+        elif outcome == 'anaemia_prev_PW':
+            return self.PW.getTotalFracAnaemic()
+        elif outcome == 'anaemia_prev_WRA':
+            return self.nonPW.getTotalFracAnaemic()
+        elif outcome == 'anaemia_prev_children':
+            return self.children.getTotalFracAnaemic()
+        elif outcome == 'wasting_prev':
+            return self.children.getTotalFracWasted()
+
 
 
 

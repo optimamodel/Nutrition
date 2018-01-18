@@ -31,11 +31,13 @@ class Program(object):
         self._setRestrictedPopSize(populations)
         self.proposedCoverageFrac = self.proposedCoverageNum / self.unrestrictedPopSize
 
-    def updateCoverageTMP(self, newCoverage, populations):
-        """Update all values pertaining to coverage for a program"""
-        self.proposedCoverageFrac = newCoverage
+    def updateCoverageFromPercentage(self, newCoverage, populations):
+        """Update all values pertaining to coverage for a program.
+        Assumes new coverage is restricted coverage"""
         self._setUnrestrictedPopSize(populations)
         self._setRestrictedPopSize(populations)
+        restrictedCovNum = self.restrictedPopSize * newCoverage
+        self.proposedCoverageFrac = restrictedCovNum / self.unrestrictedPopSize
 
     def _setRelevantAges(self):
         """
