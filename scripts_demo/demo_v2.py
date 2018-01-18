@@ -22,9 +22,16 @@ def runModelGivenCoverage(model, program, coverage, zeroCovs):
         thisModel.moveModelOneYear()
     return thisModel
 
-
+fixedProgs = ['WASH: Handwashing','WASH: Hygenic disposal', 'WASH: Improved sanitation','WASH: Improved water source',
+ 'WASH: Piped water', 'Long-lasting insecticide-treated bednets', 'Family Planning', 'IPTp']
 coverage95 = 0.95
-zeroCovs = {prog: 0 for prog in model.programInfo.baselineCovs}
+referenceCovs = {}
+for prog, cov in model.programInfo.baselineCovs.iteritems():
+    if prog in fixedProgs:
+        referenceCovs[prog] = cov
+    else:
+        referenceCovs[prog] = 0.
+
 outcomes = ['thrive', 'stunting_prev', 'deaths_children', 'deaths_PW',
             'total_deaths', 'anaemia_prev_PW', 'anaemia_prev_WRA', 'anaemia_prev_children',
             'wasting_prev']
@@ -32,16 +39,16 @@ outcomes = ['thrive', 'stunting_prev', 'deaths_children', 'deaths_PW',
 # REFERENCE (ALL 0)
 reference = []
 reference.append('Reference')
-reference.append('all_zero')
-referenceModel = runModelGivenCoverage(model, None, 0, zeroCovs)
+reference.append('')
+referenceModel = runModelGivenCoverage(model, None, 0, referenceCovs)
 for outcome in outcomes:
     reference.append(referenceModel.getOutcome(outcome))
 
 # 95% ONE AT A TIME
 output = {}
-for program in zeroCovs.iterkeys():
+for program in referenceCovs.iterkeys():
     output[program] = []
-    newModel = runModelGivenCoverage(model, program, coverage95, zeroCovs)
+    newModel = runModelGivenCoverage(model, program, coverage95, referenceCovs)
     for prog in newModel.programInfo.programs:  # get unres coverage
         if prog.name == program:
             resCov = prog.proposedCoverageFrac
