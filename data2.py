@@ -387,7 +387,6 @@ class Project:
         self.ORstuntingProgram.update(self.createIYCFpackages(stuntingEffects, packagesDict))
         for field in ['unit cost', 'saturation coverage', 'baseline coverage']:
             self.costCurveInfo[field].update(costCurveInfo[field])
-        self.programList += packagesDict.keys()
 
     def createIYCFpackages(self, effects, packagesDict):
         '''Creates IYCF packages based on user input in 'IYCFpackages' '''

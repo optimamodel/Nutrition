@@ -51,7 +51,7 @@ class Model:
 
     def _updateCoverages(self, newCoverages):
         for program in self.programInfo.programs:
-            program.updateCoverageFromPercentage(newCoverages[program.name], self.populations) # TODO: USING TMP JUST FOR TESTING
+            program.updateCoverageFromPercentage(newCoverages[program.name], self.populations)
         self.programInfo._restrictCoverages(self.populations)
 
 
@@ -112,7 +112,7 @@ class Model:
             ageGroups = self._getApplicableAgeGroups(population, risk)
             for ageGroup in ageGroups:
                 for program in applicableProgs:
-                    if ageGroup.age in program.relevantAges: # TODO: theres funny business here between IYCF 1 & 2 -- 1 seems to come back
+                    if ageGroup.age in program.relevantAges:
                         if risk == 'Stunting':
                             program._getStuntingUpdate(ageGroup)
                         elif risk == 'Anaemia':
@@ -121,7 +121,7 @@ class Model:
                             program._getWastingPreventionUpdate(ageGroup)
                         elif risk == 'Wasting treatment':
                             program._getWastingTreatmentUpdate(ageGroup)
-                        elif risk == 'Breastfeeding':
+                        elif risk == 'Breastfeeding': # TODO: the targetting of PW is not registered for IYCF. Have ORs for those impacted, but we are talking about coverage of different population
                             program._getBreastfeedingupdate(ageGroup)
                         elif risk == 'Diarrhoea':
                             program._getDiarrhoeaIncidenceUpdate(ageGroup)
@@ -193,7 +193,7 @@ class Model:
                 oldProbStunting = ageGroup.getFracRisk('Stunting')
                 newProbStunting = oldProbStunting * ageGroup.totalStuntingUpdate
                 ageGroup.stuntingDist = self.restratify(newProbStunting)
-                ageGroup.redistributePopulation()
+                # ageGroup.redistributePopulation()
                 # anaemia
                 oldProbAnaemia = ageGroup.getFracRisk('Anaemia')
                 newProbAnaemia = oldProbAnaemia * ageGroup.totalAnaemiaUpdate
@@ -214,11 +214,13 @@ class Model:
         elif population.name == 'Pregnant women':
             # update PW anaemia but also birth distribution for <1 month age group
             # update birth distribution
-            newBorns = self.populations[0].ageGroups[0]
-            PWpopSize = population.getTotalPopulation()
+            newBorns = self.children.ageGroups[0]
+            #PWpopSize = population.getTotalPopulation()
             # weighted sum accounts for different effects and target pops across PW age groups.
+            firstPW = self.PW.ageGroups[0]
             for BO in self.constants.birthOutcomes:
-                newBorns.birthDist[BO] *= sum(PWage.birthUpdate[BO]*PWage.getAgeGroupPopulation() for PWage in population.ageGroups) / PWpopSize
+                newBorns.birthDist[BO] *= firstPW.birthUpdate[BO]
+            newBorns.birthDist['Term AGA'] = 1. - sum(newBorns.birthDist[BO] for BO in list(set(self.constants.birthOutcomes) - {'Term AGA'}))
             # update anaemia distribution
             for ageGroup in population.ageGroups:
                 oldProbAnaemia = ageGroup.getFracRisk('Anaemia')
