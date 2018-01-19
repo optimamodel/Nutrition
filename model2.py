@@ -121,7 +121,7 @@ class Model:
                             program._getWastingPreventionUpdate(ageGroup)
                         elif risk == 'Wasting treatment':
                             program._getWastingTreatmentUpdate(ageGroup)
-                        elif risk == 'Breastfeeding': # TODO: the targetting of PW is not registered for IYCF. Have ORs for those impacted, but we are talking about coverage of different population
+                        elif risk == 'Breastfeeding':
                             program._getBreastfeedingupdate(ageGroup)
                         elif risk == 'Diarrhoea':
                             program._getDiarrhoeaIncidenceUpdate(ageGroup)

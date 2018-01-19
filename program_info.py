@@ -15,7 +15,9 @@ class ProgramInfo:
         import programs as progs
         self.programs = progs.setUpPrograms(constants)
         self.programAreas = constants.programAreas
+        self.const = constants
         self._sortPrograms()
+        self._getTwins()
 
     def _sortPrograms(self):
         """
@@ -69,6 +71,12 @@ class ProgramInfo:
             program._setBaselineCoverage(populations)
             self.baselineCovs[program.name] = program.unrestrictedBaselineCov
 
+    def _getTwins(self):
+        # TODO: long term, exchange this for the option where we don't have these twin interventions
+        for program in self.programs:
+            malariaTwin = program.name + ' (malaria area)'
+            program.malariaTwin = True if malariaTwin in self.const.programList else False
+
     def _restrictCoverages(self, populations):
         """
         Uses the ordering of both dependency lists to restrict the coverage of programs.
@@ -92,7 +100,7 @@ class ProgramInfo:
             for parentName in child.thresholdDependencies:
                 # get overlapping age groups (intersection)
                 parent = next((prog for prog in self.programs if prog.name == parentName))
-                commonAges = list(set(child.agesTargeted).intersection(parent.agesTargeted))
+                commonAges = list(set(child.agesTargeted).intersection(parent.agesTargeted)) # TODO: ages targeted or ages impacted?
                 parentPopSize = 0.
                 for pop in populations:
                     parentPopSize += sum(age.getAgeGroupPopulation() for age in pop.ageGroups if age.age in commonAges)
