@@ -13,7 +13,8 @@ class Program(object):
         self.unitCost = self.const.costCurveInfo['unit cost'][self.name]
         self.saturation = self.const.costCurveInfo['saturation coverage'][self.name]
 
-        self._setRelevantAges() # This func could contain the info for how many multiples needed for unrestricted population calculation (IYCF)
+        self._setTargetedAges()
+        self._setImpactedAges() # This func could contain the info for how many multiples needed for unrestricted population calculation (IYCF)
         self._setExclusionDependencies()
         self._setThresholdDependencies()
         #self._setCostCoverageCurve() # TODO: this cannot be sit until 1 year of simulation run
@@ -39,16 +40,27 @@ class Program(object):
         restrictedCovNum = self.restrictedPopSize * newCoverage
         self.proposedCoverageFrac = restrictedCovNum / self.unrestrictedPopSize
 
-    def _setRelevantAges(self):
+    def _setTargetedAges(self):
         """
-        Construct list which contains only those age groups to which this program applies
+        The ages at whom programs are targeted
         :return:
         """
-        self.relevantAges = []
+        self.agesTargeted = []
         for age in self.const.allAges:
-            fracTargeted = self.targetPopulations[age]
+            fracTargeted = self.const.programTargetPop[self.name][age]
             if fracTargeted > 0.001: # floating point tolerance
-                self.relevantAges.append(age)
+                self.agesTargeted.append(age)
+
+    def _setImpactedAges(self):
+        """
+        The ages who are impacted by this program
+        :return:
+        """
+        self.agesImpacted = []
+        for age in self.const.allAges:
+            impacted = self.const.programImpactedPop[self.name][age]
+            if impacted > 0.001: # floating point tolerance
+                self.agesImpacted.append(age)
 
     def _setUnrestrictedPopSize(self, populations):
         """
@@ -59,13 +71,13 @@ class Program(object):
         self.unrestrictedPopSize = 0.
         for pop in populations:
             self.unrestrictedPopSize += sum(ceil(self.targetPopulations[age.age])*age.getAgeGroupPopulation() for age in pop.ageGroups
-                                           if age.age in self.relevantAges)
+                                           if age.age in self.agesTargeted)
 
     def _setRestrictedPopSize(self, populations):
         self.restrictedPopSize = 0.
         for pop in populations:
             self.restrictedPopSize += sum(age.getAgeGroupPopulation() * self.targetPopulations[age.age] for age in pop.ageGroups
-                                         if age.age in self.relevantAges)
+                                         if age.age in self.agesTargeted)
 
     def _setExclusionDependencies(self):
         """

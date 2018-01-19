@@ -33,6 +33,7 @@ class Project:
         self.getBirthAgePrograms()
         self.getCostCoverageInfo()
         self.getProgramTargetPop()
+        self.getProgramImpactedPop()
         self.getProgramRiskAreas()
         self.getProgramDependencies()
 
@@ -189,6 +190,13 @@ class Project:
         for pop in ['Children', 'Pregnant women', 'Non-pregnant WRA', 'General population']:
             targetPop.update(targetPopSheet.loc[pop].to_dict(orient='index'))
         self.programTargetPop = targetPop
+
+    def getProgramImpactedPop(self):
+        popSheet = self.readSheet('Programs impacted population', [0,1])
+        impacted = {}
+        for pop in ['Children', 'Pregnant women', 'Non-pregnant WRA', 'General population']:
+            impacted.update(popSheet.loc[pop].to_dict(orient='index'))
+        self.programImpactedPop = impacted
 
     def getProgramRiskAreas(self):
         areas = self.readSheet('Program risk areas', [0])

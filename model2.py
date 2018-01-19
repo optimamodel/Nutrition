@@ -112,7 +112,7 @@ class Model:
             ageGroups = self._getApplicableAgeGroups(population, risk)
             for ageGroup in ageGroups:
                 for program in applicableProgs:
-                    if ageGroup.age in program.relevantAges:
+                    if ageGroup.age in program.agesImpacted:
                         if risk == 'Stunting':
                             program._getStuntingUpdate(ageGroup)
                         elif risk == 'Anaemia':

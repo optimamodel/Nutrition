@@ -42,5 +42,6 @@ class Constants:
         self.programList = dcp(project.programList)
         self.costCurveInfo = dcp(project.costCurveInfo)
         self.programTargetPop = dcp(project.programTargetPop) # frac of each population which is targeted
+        self.programImpactedPop = dcp(project.programImpactedPop)
         self.programDependency = dcp(project.programDependency)
         self.programAreas = dcp(project.programAreas)
