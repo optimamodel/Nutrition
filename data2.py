@@ -353,6 +353,16 @@ class Project:
         fields = ['Affected fraction', 'Effectiveness mortality', 'Effectiveness incidence']
         programsPresent = self.childPrograms.keys()
         effectiveness = {}
+        for program in programsPresent:
+            for cause in self.causesOfDeath + ['MAM', 'SAM']:
+                if self.childPrograms[program].get(cause) is None:
+                    self.childPrograms[program][cause] = {}
+                for field in fields:
+                    if self.childPrograms[program][cause].get(field) is None:
+                        self.childPrograms[program][cause][field] = {}
+                    for age in self.childAges:
+                        if self.childPrograms[program][cause][field].get(age) is None:
+                            self.childPrograms[program][cause][field][age] = 0
         for age in self.childAges:
             effectiveness[age] = {}
             for program in programsPresent:
@@ -360,10 +370,7 @@ class Project:
                 for cause in self.causesOfDeath + ['MAM', 'SAM']:
                     effectiveness[age][program][cause] = {}
                     for field in fields:
-                            try:
-                                effectiveness[age][program][cause][field] = self.childPrograms[program][cause][field][age]
-                            except KeyError:
-                                effectiveness[age][program][cause][field] = 0
+                        effectiveness[age][program][cause][field] = self.childPrograms[program][cause][field][age]
         self.childPrograms = effectiveness
 
 
