@@ -513,7 +513,7 @@ class Model:
 
 
     def updateRiskDists(self):
-        for ageGroup in self.populations[0].ageGroups:
+        for ageGroup in self.children.ageGroups:
             ageGroup.updateStuntingDist()
             ageGroup.updateWastingDist()
             ageGroup.updateBFDist()

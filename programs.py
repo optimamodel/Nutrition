@@ -281,9 +281,8 @@ class Program(object):
         probCorrectNotCovered = ageGroup.probConditionalCoverage['Breastfeeding'][self.name]['not covered']
         probNew = self._getNewProb(self.proposedCoverageFrac, probCorrectCovered, probCorrectNotCovered)
         fracChange = probNew - correctFracOld
-        correctFracBF = correctFracOld + fracChange
         # percentChange = (probNew - correctFracOld)/correctFracOld
-        return correctFracBF
+        return fracChange
 
     def _setCostCoverageCurve(self):
         self.costCurve = CostCovCurve(self.unitCost, self.saturation, self.restrictedPopSize, self.unrestrictedPopSize)

@@ -132,7 +132,7 @@ class ChildAgeGroup(object):
         self.anaemiaUpdate = 1.
         self.bfUpdate = {}
         self.diarrhoeaUpdate = {}
-        self.bfPracticeUpdate = 0
+        self.bfPracticeUpdate = self.bfDist[self.correctBF]
         for risk in ['Stunting', 'Anaemia'] + self.const.wastedList:
             self.bfUpdate[risk] = 1.
         self.mortalityUpdate = {}
