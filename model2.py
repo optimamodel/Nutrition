@@ -6,22 +6,15 @@ class Model:
         import populations2 as pops
         import program_info
         from constants import Constants
-        self.project = data.setUpProject(filePath) # one modification comes below for IYCF target pops
+        self.project = data.setUpProject(filePath)
         self.constants = Constants(self.project)
         self.programInfo = program_info.ProgramInfo(self.constants)
         self.populations = pops.setUpPopulations(self.project, self.constants)
         self.children = self.populations[0]
         self.PW = self.populations[1]
         self.nonPW = self.populations[2]
-        # caution: maintain order below
         # use populations to adjust the baseline coverage
         self.programInfo._setBaselineCov(self.populations)
-        # use adjusted coverages to calculate conditional probabilities
-        # self._setConditionalProbabilities()
-
-        # self._setIYCFtargetPop(self.populations) # TODO: This is not complete
-
-        # self._setInitialCoverages()
 
         self.year = int(self.project.year)
         self.cumulativeAgeingOutStunted = 0
@@ -30,61 +23,22 @@ class Model:
         self.cumulativeChildDeaths = 0
         self.cumulativePWDeaths = 0
         self.cumulativeDeaths = 0
-        # self.newCoverages = self.project.costCurveInfo['baseline coverage']
-        # initialise baseline coverages
-        # self._updateCoverages() # superseded by code above
 
     def _setConditionalProbabilities(self, population):
         population.baselineCovs = self.programInfo.baselineCovs # pop has access to adjusted baseline cov
         population._setConditionalProbabilities()
-
-    # def _setInitialCoverages(self):
-    #     """
-    #     Convert baseline coverage to coverage metric used in model.
-    #     Requires population sizes at time t=0.
-    #     :return:
-    #     """
-    #     self.baselineCoverage = {}
-    #     for program in self.programInfo.programs:
-    #         program._setBaselineCoverage(self.populations)
-    #         self.baselineCoverage[program.name] = program.restrictedBaselineCov
 
     def _updateCoverages(self, newCoverages):
         for program in self.programInfo.programs:
             program.updateCoverageFromPercentage(newCoverages[program.name], self.populations)
         self.programInfo._restrictCoverages(self.populations)
 
-
-    # TODO: TBC
-    # def _setIYCFtargetPop(self, populations):
-    #     """
-    #     This method is placed here because population sizes are required for these calculations,
-    #     but are unknown until the population classes are initialised.
-    #     :return:
-    #     """
-    #     # get pop sizs for children & PW
-    #     allPopSizes = {}
-    #     for pop in populations[:2]: # TODO: make this a method in populations.py
-    #         allPopSizes.update({age.name:age.populationSize for age in pop.ageGroups})
-    #     targetPop = self.project.IYCFtargetPop
-    #     # equation: maxCovIYCF = sum(popSize * fracExposed) / sum(popSize)
-    #     # TODO: want this to be stratified by age (not mode)
-    #     # TODO: this calculation would be sum(fracExposed)/numModes (trivial case of more general equation).
-    #     maxCov = {}
-    #     for name, package in targetPop.iteritems():
-    #         maxCov[name] = 0.
-    #         for pop, modeFrac in package.iteritems():
-    #             for mode, frac in modeFrac.iteritems():
-    #                 maxCov[name] += frac * allPopSizes[pop] # TODO: should probably convert this to fraction (?)
-    #     # update in project
-    #     self.project.programTargetPop.update(maxCov)
-
     def applyNewProgramCoverages(self, newCoverages):
         '''newCoverages is required to be the unrestricted coverage % (i.e. people covered / entire target pop) '''
-        self._updateCoverages(newCoverages) # TODO: change the call in here
+        self._updateCoverages(newCoverages)
         for pop in self.populations: # update all the populations
             # update probabilities using current risk distributions
-            self._setConditionalProbabilities(pop)
+            self._setConditionalProbabilities(pop) # TODO: move this out of the update loop! Don't want to do this every time
             self._updatePopulation(pop)
             # combine direct and indirect updates to each risk area that we model
             self._combineUpdates(pop)
