@@ -175,7 +175,6 @@ class Program(object):
         Programs which directly impact mortality rates
         :return:
         """
-        # TODO: this update must be used to scale the reference mortality
         update = self._getEffectivenessUpdate(ageGroup, 'Effectiveness mortality')
         for cause in self.const.causesOfDeath:
             ageGroup.mortalityUpdate[cause] *= update[cause]
@@ -285,10 +284,11 @@ class Program(object):
         return fracChange
 
     def _setCostCoverageCurve(self):
-        self.costCurve = CostCovCurve(self.unitCost, self.saturation, self.restrictedPopSize, self.unrestrictedPopSize)
+        self.costCurveOb = CostCovCurve(self.unitCost, self.saturation, self.restrictedPopSize, self.unrestrictedPopSize)
+        self.costCurveFunc = self.costCurveOb._setCostCovCurve()
 
-    def getSpending(self, covNumber):
-        return self.costCurve.getSpending(covNumber)
+    def getSpending(self):
+        return self.costCurveOb.getSpending(self.unrestrictedBaselineCov)
 
 
 
@@ -317,8 +317,9 @@ class CostCovCurve:
         logisticCurve = lambda x: (A + (B - A) / (1 + exp(-(x - C) / D)))
         return logisticCurve
 
-    def getSpending(self, covNumber):
+    def getSpending(self, covFrac):
         '''Assumes standard increasing marginal costs curve '''
+        covNumber = covFrac * self.restrictedPop # TODO: is this the correct pop to use?
         B = self.saturation * self.restrictedPop
         A = -B
         C = 0.
