@@ -1,7 +1,7 @@
 from copy import deepcopy as dcp
 from operator import add
 
-def runModelForNTimeSteps(steps, model, saveEachStep=False):
+def runModelForNTimeSteps(steps, model, saveEachStep=False): # TODO: may not use the 'save each step' at all
     """
     Progresses the model a given number of steps
     :param steps: number of steps to iterate (int)
@@ -145,11 +145,11 @@ class Optimisation:
         xmax = [kwargs['totalBudget']] * len(self.programs)
         runOutputs = []
         for run in range(self.numRuns):
-            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=1, swarmsize=10)
+            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=1, swarmsize=1)
             print "Objective: " + str(objective)
             print "value * 1000: " + str(fopt)
             budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
-                                                         xmax=xmax, verbose=3, MaxIter=100)
+                                                         xmax=xmax, verbose=3, MaxIter=1)
             outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval,
                                        output.x)
             runOutputs.append(outputOneRun)
@@ -211,10 +211,18 @@ class Optimisation:
                 f.close()
         return allocations
 
-    # def getOutcome(self, allocation, objective): # TODO: what's this used for??
-    #     modelList = self.oneModelRunWithOutput(allocation)
-    #     outcome = modelList[-1].getOutcome(objective)
-    #     return outcome
+    def getOutcome(self, allocation, objective):
+        model = self.oneModelRunWithOutput(allocation)
+        outcome = model.getOutcome(objective)
+        return outcome
+
+    def oneModelRunWithOutput(self, allocationDictionary):
+        model = dcp(self.model)
+        newCoverages = self.getCoverages(allocationDictionary)
+        model.applyNewProgramCoverages(newCoverages)
+        steps = self.numModelSteps - self.timeStepsPre
+        model = runModelForNTimeSteps(steps, model)[0]
+        return model
 
     def getOptimisedOutcomes(self, allocations):
         outcomes = {}
@@ -229,26 +237,25 @@ class Optimisation:
         currentOutcome = {}
         for objective in self.objectivesList:
             currentOutcome[objective] = {}
-            currentOutcome[objective]['current'] = self.getOutcome(currentSpending, objective)
+            currentOutcome[objective]['current spending'] = self.getOutcome(currentSpending, objective)
         return currentOutcome
 
-    def getBaselineOutcome(self):
-        zeroSpending = {program: 0 for program in self.programs}
+    def getZeroSpendingOutcome(self):
+        zeroSpending = {program.name: 0 for program in self.programs}
         baseline = {}
         for objective in self.objectivesList:
             baseline[objective] = {}
-            baseline[objective]['baseline'] = self.getOutcome(zeroSpending, objective)
+            baseline[objective]['zero spending'] = self.getOutcome(zeroSpending, objective)
         return baseline
 
-    def getCoverages(self, allocations): # TODO: change cost curve usage
+    def getCoverages(self, allocations):
         newCoverages = {}
         for program in self.programs:
-            costCurve = self.costCurves[program]
-            newCoverages[program] = costCurve(allocations[program])
+            newCoverages[program.name] = program.costCurveFunc(allocations[program.name]) / program.unrestrictedPopSize
         return newCoverages
 
     def writeAllResults(self):
-        baselineOutcome = self.getBaselineOutcome()
+        baselineOutcome = self.getZeroSpendingOutcome()
         currentSpending = self.createDictionary(self.inititalProgramAllocations)
         currentOutcome = self.getCurrentOutcome(currentSpending)
         optimisedAllocations = self.readPickles()
