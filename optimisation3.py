@@ -145,17 +145,17 @@ class Optimisation:
         xmax = [kwargs['totalBudget']] * len(self.programs)
         runOutputs = []
         for run in range(self.numRuns):
-            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=1, swarmsize=1)
+            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=1, swarmsize=10)
             print "Objective: " + str(objective)
             print "value * 1000: " + str(fopt)
             budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
-                                                         xmax=xmax, verbose=3)
+                                                         xmax=xmax, verbose=3, MaxIter=100)
             outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval,
                                        output.x)
             runOutputs.append(outputOneRun)
         bestAllocation = self.findBestAllocation(runOutputs)
         scaledAllocation = self.adjustAllocation(bestAllocation, kwargs)
-        bestAllocationDict = self.createDictionary(scaledAllocation, self.programs)
+        bestAllocationDict = self.createDictionary(scaledAllocation)
         self.writeToPickle(bestAllocationDict, multiple, objective)
         return
 
@@ -168,9 +168,10 @@ class Optimisation:
         scaledAllocation = rescaleAllocation(availableBudget, bestOutput)
         return scaledAllocation
 
-    def createDictionary(self, values, keys):
+    def createDictionary(self, allocations):
         """Ensure keys and values have matching orders"""
-        returnDict = {key: value for key, value in zip(keys, values)}
+        keys = [program.name for program in self.programs]
+        returnDict = {key: value for key, value in zip(keys, allocations)}
         return returnDict
 
     def getInitialProgramAllocations(self):
@@ -248,7 +249,7 @@ class Optimisation:
 
     def writeAllResults(self):
         baselineOutcome = self.getBaselineOutcome()
-        currentSpending = self.createDictionary(self.inititalProgramAllocations, self.programs)
+        currentSpending = self.createDictionary(self.inititalProgramAllocations)
         currentOutcome = self.getCurrentOutcome(currentSpending)
         optimisedAllocations = self.readPickles()
         optimisedOutcomes = self.getOptimisedOutcomes(optimisedAllocations)

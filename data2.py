@@ -400,7 +400,7 @@ class Project:
         self.programTargetPop.update(self.getIYCFtargetPop(packagesDict))
         self.ORappropriateBFprogram = self.createIYCFpackages(BFeffects, packagesDict)
         self.ORstuntingProgram.update(self.createIYCFpackages(stuntingEffects, packagesDict))
-        for field in ['unit cost', 'saturation coverage', 'baseline coverage']:
+        for field in ['unit cost']:
             self.costCurveInfo[field].update(costCurveInfo[field])
 
     def createIYCFpackages(self, effects, packagesDict):
@@ -440,7 +440,7 @@ class Project:
 
     def getIYCFcostCoverageSaturation(self, IYCFpackages):
         IYCFcost = self.readSheet('IYCF cost & coverage', [0,1]).loc['Unit costs']
-        infoList = ['unit cost', 'saturation coverage', 'baseline coverage']
+        infoList = ['unit cost']
         packageCostSaturation = {}
         for field in infoList:
             packageCostSaturation[field] = {}
@@ -449,9 +449,6 @@ class Project:
             for pop, mode in package:
                 cost += IYCFcost[mode][pop]
             packageCostSaturation['unit cost'][name] = cost
-            # TEMP VALUES
-            packageCostSaturation['saturation coverage'][name] = 0.95
-            packageCostSaturation['baseline coverage'][name] = 0.
         return packageCostSaturation
 
     def getIYCFtargetPop(self, packageModalities):
