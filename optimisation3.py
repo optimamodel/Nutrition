@@ -23,6 +23,7 @@ def rescaleAllocation(totalBudget, allocation):
 
 
 def objectiveFunction(allocation, objective, model, totalBudget, fixedCosts, steps):
+    thisModel = dcp(model)
     availableBudget = totalBudget - sum(fixedCosts)
     #make sure fixed costs do not exceed total budget
     if totalBudget < sum(fixedCosts):
@@ -36,12 +37,12 @@ def objectiveFunction(allocation, objective, model, totalBudget, fixedCosts, ste
     # add the fixed costs to the scaled allocation of available budget
     scaledAllocation = map(add, scaledAllocation, fixedCosts)
     newCoverages = {}
-    programs = model.programInfo.programs
+    programs = thisModel.programInfo.programs
     for idx in range(len(programs)):
         program = programs[idx]
-        newCoverages[program.name] = program.costCurveFunc(scaledAllocation[idx])
-    model.applyNewProgramCoverages(newCoverages)
-    modelThisRun = runModelForNTimeSteps(steps, model)[0]
+        newCoverages[program.name] = program.costCurveFunc(scaledAllocation[idx]) / program.unrestrictedPopSize # TODO: use this or another metric?
+    thisModel.applyNewProgramCoverages(newCoverages)
+    modelThisRun = runModelForNTimeSteps(steps, thisModel)[0]
     outcome = modelThisRun.getOutcome(objective) * 1000.
     if objective == 'thrive':
         outcome *= -1
@@ -58,12 +59,15 @@ class OutputClass:
         self.cleanOutputXVector = cleanOutputXVector
 
 class Optimisation:
-    def __init__(self, model, objectivesList, budgetMultiples, resultsFileStem, country, costCurveType='standard',
+    def __init__(self, objectivesList, budgetMultiples, fileInfo, costCurveType='standard',
                  totalBudget=None, parallel=True, numRuns=10, numModelSteps=14, haveFixedCosts=False):
         from multiprocessing import cpu_count
+        import setup
+        self.country = fileInfo[2]
+        filePath, resultsPath = setup.getFilePath(root=fileInfo[0], bookDate=fileInfo[1], country=self.country)
+        model = setup.setUpModel(filePath)
         self.budgetMultiples = budgetMultiples
         self.objectivesList = objectivesList
-        self.country = country
         self.programs = model.programInfo.programs
         self.numModelSteps = numModelSteps
         self.parallel = parallel
@@ -71,9 +75,9 @@ class Optimisation:
         self.numRuns = numRuns
         self.costCurveType = costCurveType
         self.timeSeries = None
-        self.timeStepsPre = 12
+        self.timeStepsPre = 1
         self.model = runModelForNTimeSteps(self.timeStepsPre, model)[0]
-        self.steps = numModelSteps - self.timeStepsPre
+        self.steps = numModelSteps - self.timeStepsPre #  TODO: implement so that goes to the max year of projections automatically
         for program in self.programs:
             program._setCostCoverageCurve()
         self.inititalProgramAllocations = self.getInitialProgramAllocations()
@@ -85,7 +89,7 @@ class Optimisation:
         import os
         self.resultDirectories = {}
         for objective in self.objectivesList + ['results']:
-            self.resultDirectories[objective] = resultsFileStem +'/'+objective
+            self.resultDirectories[objective] = resultsPath +'/'+objective
             if not os.path.exists(self.resultDirectories[objective]):
                 os.makedirs(self.resultDirectories[objective])
 
@@ -141,11 +145,11 @@ class Optimisation:
         xmax = [kwargs['totalBudget']] * len(self.programs)
         runOutputs = []
         for run in range(self.numRuns):
-            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=50, swarmsize=600)
+            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=1, swarmsize=1)
             print "Objective: " + str(objective)
             print "value * 1000: " + str(fopt)
             budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
-                                                         xmax=xmax, verbose=0)
+                                                         xmax=xmax, verbose=3)
             outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval,
                                        output.x)
             runOutputs.append(outputOneRun)
