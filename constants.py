@@ -45,3 +45,4 @@ class Constants:
         self.programImpactedPop = dcp(project.programImpactedPop)
         self.programDependency = dcp(project.programDependency)
         self.programAreas = dcp(project.programAreas)
+        self.referencePrograms = dcp(project.referencePrograms)

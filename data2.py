@@ -36,6 +36,7 @@ class Project:
         self.getProgramImpactedPop()
         self.getProgramRiskAreas()
         self.getProgramDependencies()
+        self.getReferencePrograms()
 
     def readDemographicsData(self):
         self.getDemographics()
@@ -230,6 +231,10 @@ class Project:
             for field in dependencies.columns:
                 programDep[program][field] = []
         self.programDependency = programDep
+
+    def getReferencePrograms(self):
+        reference = self.workbook.parse('Reference programs', index_col=[0])
+        self.referencePrograms = list(reference.index)
 
     def getProgramsForAnalysis(self):
         includeSheet = self.readSheet('Programs to include', [0])

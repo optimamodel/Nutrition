@@ -15,6 +15,7 @@ class ProgramInfo:
         import programs as progs
         self.programs = progs.setUpPrograms(constants)
         self.programAreas = constants.programAreas
+        self.referencePrograms = constants.referencePrograms
         self.const = constants
         self._sortPrograms()
         self._getTwins()

@@ -38,7 +38,7 @@ class Model:
         self._updateCoverages(newCoverages)
         for pop in self.populations: # update all the populations
             # update probabilities using current risk distributions
-            self._setConditionalProbabilities(pop) # TODO: move this out of the update loop! Don't want to do this every time
+            # self._setConditionalProbabilities(pop) # TODO: move this out of the update loop! Don't want to do this every time
             self._updatePopulation(pop)
             # combine direct and indirect updates to each risk area that we model
             self._combineUpdates(pop)
