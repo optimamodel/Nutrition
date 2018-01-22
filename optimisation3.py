@@ -22,13 +22,8 @@ def rescaleAllocation(totalBudget, allocation):
     return rescaledAllocation
 
 
-def objectiveFunction(allocation, objective, model, totalBudget, fixedCosts, steps):
+def objectiveFunction(allocation, objective, model, availableBudget, fixedCosts, steps):
     thisModel = dcp(model)
-    availableBudget = totalBudget - sum(fixedCosts)
-    #make sure fixed costs do not exceed total budget
-    if totalBudget < sum(fixedCosts):
-        print "error: total budget is less than fixed costs"
-        return
     # scale the allocation appropriately
     if sum(allocation) == 0:
         scaledAllocation = dcp(allocation)
@@ -60,7 +55,7 @@ class OutputClass:
 
 class Optimisation:
     def __init__(self, objectivesList, budgetMultiples, fileInfo, costCurveType='standard',
-                 totalBudget=None, parallel=True, numRuns=10, numModelSteps=14, haveFixedCosts=False):
+                 totalBudget=None, parallel=True, numRuns=10, numModelSteps=14):
         from multiprocessing import cpu_count
         import setup
         self.country = fileInfo[2]
@@ -77,14 +72,17 @@ class Optimisation:
         self.timeSeries = None
         self.timeStepsPre = 1
         self.model = runModelForNTimeSteps(self.timeStepsPre, model)[0]
+        for pop in self.model.populations:
+            self.model._setConditionalProbabilities(pop) # TODO: include this in another function in future
         self.steps = numModelSteps - self.timeStepsPre #  TODO: implement so that goes to the max year of projections automatically
         for program in self.programs:
             program._setCostCoverageCurve()
         self.inititalProgramAllocations = self.getInitialProgramAllocations()
+        self.getFixedCosts()
         self.totalBudget = totalBudget if totalBudget else sum(self.inititalProgramAllocations)
-        self.fixedCosts = self.getFixedCosts(haveFixedCosts)
+        self.availableBudget = self.totalBudget - sum(self.fixedCosts)
         self.kwargs = {'model': self.model, 'steps': self.steps,
-                'totalBudget': self.totalBudget, 'fixedCosts': self.fixedCosts}
+                'availableBudget': self.availableBudget, 'fixedCosts': self.fixedCosts}
         # check that results directory exists and if not then create it
         import os
         self.resultDirectories = {}
@@ -138,23 +136,29 @@ class Optimisation:
         import pso as pso
         import asd as asd
         from copy import deepcopy as dcp
+        import time
         kwargs = dcp(self.kwargs)
-        kwargs['totalBudget'] *= multiple
+        kwargs['availableBudget'] *= multiple
         kwargs['objective'] = objective
         xmin = [0.] * len(self.programs)
-        xmax = [kwargs['totalBudget']] * len(self.programs)
+        xmax = [kwargs['availableBudget']] * len(self.programs)
         runOutputs = []
         for run in range(self.numRuns):
-            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=1, swarmsize=1)
+            now = time.time()
+            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=45, swarmsize=100) # 45*100 should take about 5 hours
             print "Objective: " + str(objective)
             print "value * 1000: " + str(fopt)
             budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
-                                                         xmax=xmax, verbose=3, MaxIter=1)
+                                                         xmax=xmax, verbose=1)
+            print time.time() - now
             outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval,
                                        output.x)
             runOutputs.append(outputOneRun)
         bestAllocation = self.findBestAllocation(runOutputs)
-        scaledAllocation = self.adjustAllocation(bestAllocation, kwargs)
+        # scaledAllocation = self.adjustAllocation(bestAllocation, kwargs) # PROBABLY DELETE
+        scaledAllocation = rescaleAllocation(kwargs['availableBudget'], bestAllocation)
+        # add fixed costs to optimal additional funds
+        scaledAllocation = [spending + fixedCost for spending, fixedCost in zip(scaledAllocation, self.fixedCosts)]
         bestAllocationDict = self.createDictionary(scaledAllocation)
         self.writeToPickle(bestAllocationDict, multiple, objective)
         return
@@ -163,8 +167,7 @@ class Optimisation:
         bestSample = max(outputs, key=lambda item: item.fval)
         return bestSample.budgetBest
 
-    def adjustAllocation(self, bestOutput, kwargs):
-        availableBudget = kwargs['totalBudget'] - sum(kwargs['fixedCosts'])
+    def adjustAllocation(self, bestOutput, kwargs): # TODO: probably don't need this
         scaledAllocation = rescaleAllocation(availableBudget, bestOutput)
         return scaledAllocation
 
@@ -180,13 +183,16 @@ class Optimisation:
             allocations.append(program.getSpending())
         return allocations
 
-    def getFixedCosts(self, haveFixedProgCosts):
-        from copy import deepcopy as dcp
-        if haveFixedProgCosts:
-            fixedCosts = dcp(self.inititalProgramAllocations)
-        else:
-            fixedCosts = [0.] * len(self.inititalProgramAllocations)
-        return fixedCosts
+    def getFixedCosts(self):
+        # TODO: could clean this up by seeting 'reference' as attribute of program
+        self.fixedCosts = []
+        for idx in range(len(self.programs)):
+            self.fixedCosts.append(0)
+            program = self.programs[idx]
+            for prog in self.model.programInfo.referencePrograms:
+                if program.name == prog:
+                    spending = self.inititalProgramAllocations[idx]
+                    self.fixedCosts[idx] = spending
 
 
     ########### FILE HANDLING ############
@@ -273,7 +279,7 @@ class Optimisation:
             allOutcomes[objective].update(optimised[objective])
         direc = self.resultDirectories['results']
         filename = '%s/%s_outcomes.csv'%(direc, self.country)
-        budgets =  ['baseline','current'] + self.budgetMultiples
+        budgets =  ['zero spending','current spending'] + self.budgetMultiples
         with open(filename, 'wb') as f:
             w = csv.writer(f)
             for objective in self.objectivesList:
