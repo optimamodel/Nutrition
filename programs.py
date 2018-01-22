@@ -263,7 +263,7 @@ class Program(object):
             BOupdate[outcome] = 1. - reduction
         return BOupdate
 
-    def _getBAUpdate(self): # TODO: need to link this to birth outcomes in children.
+    def _getBAUpdate(self):
         BAupdate = {BA: 1. for BA in self.const.birthAges}
         for BA in self.const.birthAges:
             affFrac = self.const.birthAgeProgram[BA]['affected fraction']
@@ -319,7 +319,7 @@ class CostCovCurve:
 
     def getSpending(self, covFrac):
         '''Assumes standard increasing marginal costs curve '''
-        covNumber = covFrac * self.restrictedPop # TODO: is this the correct pop to use?
+        covNumber = covFrac * self.restrictedPop
         B = self.saturation * self.restrictedPop
         A = -B
         C = 0.
