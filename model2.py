@@ -525,6 +525,13 @@ class Model:
             return self.nonPW.getTotalFracAnaemic()
         elif outcome == 'anaemia_prev_children':
             return self.children.getTotalFracAnaemic()
+        elif outcome == 'total_anaemia_prev':
+            totalPop = 0
+            totalAnaemic = 0
+            for pop in self.populations:
+                totalPop += pop.getTotalPopulation()
+                totalAnaemic += pop.getTotalNumberAnaemic()
+            return totalAnaemic / totalPop
         elif outcome == 'wasting_prev':
             return self.children.getTotalFracWasted()
 
