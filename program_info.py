@@ -101,7 +101,7 @@ class ProgramInfo:
             for parentName in child.thresholdDependencies:
                 # get overlapping age groups (intersection)
                 parent = next((prog for prog in self.programs if prog.name == parentName))
-                commonAges = list(set(child.agesTargeted).intersection(parent.agesTargeted)) # TODO: ages targeted or ages impacted?
+                commonAges = list(set(child.agesTargeted).intersection(parent.agesTargeted))
                 parentPopSize = 0.
                 for pop in populations:
                     parentPopSize += sum(age.getAgeGroupPopulation() for age in pop.ageGroups if age.age in commonAges)
