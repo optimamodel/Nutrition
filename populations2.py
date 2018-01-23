@@ -794,7 +794,7 @@ class Children(Population):
             beta = ageGroup._getFracDiarrhoea(Z0, Zt)
             AO = ageGroup._getAverageOR(Zt, risk)
             fracDiarrhoea = sum(beta[bfCat] * ageGroup.bfDist[bfCat] for bfCat in self.const.bfList)
-            fracImpactedThisAge = sum(ageGroup.stuntingDist[cat] for cat in self.const.stuntedList) # TODO: STILL THE WRONG DISTRIBUTION
+            fracImpactedThisAge = sum(ageGroup.stuntingDist[cat] for cat in self.const.stuntedList)
             pn, pc = self._solveQuadratic(AO, fracDiarrhoea, fracImpactedThisAge)
             ageGroup.probConditionalDiarrhoea[risk]['diarrhoea'] = pc
             ageGroup.probConditionalDiarrhoea[risk]['no diarrhoea'] = pn
