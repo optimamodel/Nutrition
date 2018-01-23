@@ -78,7 +78,7 @@ class ProgramInfo:
             malariaTwin = program.name + ' (malaria area)'
             program.malariaTwin = True if malariaTwin in self.const.programList else False
 
-    def _restrictCoverages(self, populations):
+    def _restrictCoverages(self, populations): # TODO: ensure that
         """
         Uses the ordering of both dependency lists to restrict the coverage of programs.
         Assumes that the coverage is given as peopleCovered/unrestrictedPopSize.
@@ -115,14 +115,17 @@ class ProgramInfo:
                     child.proposedCoverageFrac = childMaxCov
         #exclusion
         for child in self.exclusionOrder:
-            for parentName in child.exclusionDependencies:
-                # get overlapping age groups (intersection)
-                parent = next((prog for prog in self.programs if prog.name == parentName))
-                commonAges = list(set(child.agesTargeted).intersection(parent.agesTargeted))
-                parentPopSize = 0.
-                for pop in populations:
-                    parentPopSize += sum(age.getAgeGroupPopulation() for age in pop.ageGroups if age.age in commonAges)
-                numCoveredInOverlap = parent.proposedCoverageFrac * parentPopSize
+            if child.exclusionDependencies:
+                # get population covered by all parent nodes
+                numCoveredInOverlap = 0
+                for parentName in child.exclusionDependencies:
+                    parentPopSize = 0
+                    # get overlapping age groups (intersection)
+                    parent = next((prog for prog in self.programs if prog.name == parentName))
+                    commonAges = list(set(child.agesTargeted).intersection(parent.agesTargeted))
+                    for pop in populations:
+                        parentPopSize += sum(age.getAgeGroupPopulation() for age in pop.ageGroups if age.age in commonAges)
+                    numCoveredInOverlap += parent.proposedCoverageFrac * parentPopSize
                 percentCoveredByParent = numCoveredInOverlap / child.restrictedPopSize
                 if percentCoveredByParent < 1:
                     childMaxCov = (child.restrictedPopSize - numCoveredInOverlap) / child.unrestrictedPopSize
