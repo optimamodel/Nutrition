@@ -35,7 +35,8 @@ class Model:
         self.programInfo._restrictCoverages(self.populations)
 
     def _setBirthPregnancyInfo(self):
-        self.nonPW._setBirthPregnancyInfo()
+        FP = [prog for prog in self.programInfo.programs if prog.name == 'Family Planning'][0]
+        self.nonPW._setBirthPregnancyInfo(FP.unrestrictedBaselineCov)
 
     def applyNewProgramCoverages(self, newCoverages):
         '''newCoverages is required to be the unrestricted coverage % (i.e. people covered / entire target pop) '''

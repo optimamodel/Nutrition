@@ -1090,7 +1090,7 @@ class NonPregnantWomen(Population):
         self._makePopSizes()
         self._makeBoxes()
         self._setStorageForUpdates()
-        self._setBirthPregnancyInfo()
+        # self._setBirthPregnancyInfo()
 
     def _setStorageForUpdates(self):
         self.anaemiaUpdate = 1.
@@ -1145,8 +1145,8 @@ class NonPregnantWomen(Population):
                 ageGroup.probConditionalCoverage[risk][program]['covered'] = pc
                 ageGroup.probConditionalCoverage[risk][program]['not covered'] = pn
 
-    def _setBirthPregnancyInfo(self):
-        self._updateFracPregnancyAverted(self.const.costCurveInfo['baseline coverage']['Family Planning']) # TODO: need to use the adjusted baseline cov for this... could pass it in
+    def _setBirthPregnancyInfo(self, coverage):
+        self._updateFracPregnancyAverted(coverage)
         numPregnant = self.const.demographics['number of pregnant women']
         numWRA = sum(pop for key, pop in self.project.populationByAge.iteritems() if 'WRA' in key)
         rate = numPregnant/numWRA/(1.- self.fracPregnancyAverted)
