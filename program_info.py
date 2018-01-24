@@ -78,7 +78,7 @@ class ProgramInfo:
             malariaTwin = program.name + ' (malaria area)'
             program.malariaTwin = True if malariaTwin in self.const.programList else False
 
-    def _restrictCoverages(self, populations): # TODO: ensure that
+    def _restrictCoverages(self, populations):
         """
         Uses the ordering of both dependency lists to restrict the coverage of programs.
         Assumes that the coverage is given as peopleCovered/unrestrictedPopSize.

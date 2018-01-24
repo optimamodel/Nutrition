@@ -499,7 +499,7 @@ class Model:
         self._applyBirths()
         self.updateRiskDists()
 
-    def moveModelOneYear(self):
+    def moveModelOneYear(self): # TODO: write another function for scenario runs & for optimisation, based on projected spending & constraints
         """
         Responsible for updating all populations
         :return:
@@ -511,6 +511,7 @@ class Model:
         self._updatePWpopulation()
         self._updateWRApopulation()
         self.updateYearlyRiskDists()
+        # TODO: Want to construct linear curve through costings so that any missing fields are interpolated. If no funding given, assume
 
     def getOutcome(self, outcome):
         if outcome == 'total_stunted':

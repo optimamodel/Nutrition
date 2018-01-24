@@ -46,3 +46,4 @@ class Constants:
         self.programDependency = dcp(project.programDependency)
         self.programAreas = dcp(project.programAreas)
         self.referencePrograms = dcp(project.referencePrograms)
+        self.programAnnualSpending = dcp(project.programAnnualSpending) # TODO: b/c not really constant, pass this into programs as different param
