@@ -15,6 +15,7 @@ class Model:
         self.nonPW = self.populations[2]
         # use populations to adjust the baseline coverage
         self.programInfo._setBaselineCov(self.populations)
+        self.programInfo._setAnnualCoverage()
 
         self.year = int(self.project.year)
         self.cumulativeAgeingOutStunted = 0

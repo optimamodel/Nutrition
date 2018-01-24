@@ -1,4 +1,5 @@
 from numpy import exp, log
+from copy import deepcopy as dcp
 
 class Program(object):
     '''Each instance of this class is an intervention,
@@ -12,12 +13,31 @@ class Program(object):
         self.targetPopulations = self.const.programTargetPop[self.name] # frac of each population which is targeted
         self.unitCost = self.const.costCurveInfo['unit cost'][self.name]
         self.saturation = self.const.costCurveInfo['saturation coverage'][self.name]
+        self.coverageProjections = dcp(self.const.programAnnualSpending[self.name]) # will be altered
 
         self._setTargetedAges()
-        self._setImpactedAges() # This func could contain the info for how many multiples needed for unrestricted population calculation (IYCF)
+        self._setImpactedAges() # TODO: This func could contain the info for how many multiples needed for unrestricted population calculation (IYCF)
         self._setExclusionDependencies()
         self._setThresholdDependencies()
-        #self._setCostCoverageCurve() # TODO: this cannot be sit until 1 year of simulation run
+
+    def _setAnnualCoverage(self):
+        # TODO: just coverage % for now
+        from numpy import interp, isnan, array, logical_not
+        years = array(self.coverageProjections['Coverage'][0])
+        coverage = array(self.coverageProjections['Coverage'][1])
+        #[x1,x2...xn]
+        not_nan = logical_not(isnan(coverage))
+        # if all nan, assume constant at baseline
+        if not any(not_nan):
+            adjustedCov = [self.unrestrictedBaselineCov for x in coverage]
+        # if 1 or more values
+        else:
+            trueIndx = [i for i, x in enumerate(not_nan) if x]
+            firstTrue = trueIndx[0]
+            adjustedCov = [self.unrestrictedBaselineCov for x in coverage[:firstTrue]]
+            interpCov = list(interp(years[firstTrue:], years[not_nan], coverage[not_nan]))
+            adjustedCov += interpCov
+        self.annualCoverage = adjustedCov
 
     def _setBaselineCoverage(self, populations):
         self._setRestrictedPopSize(populations)
@@ -39,6 +59,11 @@ class Program(object):
         self._setRestrictedPopSize(populations)
         restrictedCovNum = self.restrictedPopSize * newCoverage
         self.proposedCoverageFrac = restrictedCovNum / self.unrestrictedPopSize
+
+    # def adjustCoverageForPopGrowth(self, populations):
+    #     oldUnrestrictedPop = dcp(self.unrestrictedPopSize)
+    #     self._setUnrestrictedPopSize(populations)
+    #     self.proposedCoverageFrac *= (oldUnrestrictedPop/self.unrestrictedPopSize)
 
     def _setTargetedAges(self):
         """
@@ -98,13 +123,6 @@ class Program(object):
         dependencies = self.const.programDependency[self.name]['Threshold dependency']
         for program in dependencies:
             self.thresholdDependencies.append(program)
-
-    def _setCostCurve(self):
-        """
-        Sets the cost-coverage curve of this program as a lambda function
-        :return:
-        """
-        self.costCurve = None # TODO: set this
 
     def _getStuntingUpdate(self, ageGroup):
         """

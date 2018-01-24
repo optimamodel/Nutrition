@@ -72,6 +72,10 @@ class ProgramInfo:
             program._setBaselineCoverage(populations)
             self.baselineCovs[program.name] = program.unrestrictedBaselineCov
 
+    def _setAnnualCoverage(self):
+        for program in self.programs:
+            program._setAnnualCoverage()
+
     def _getTwins(self):
         # TODO: long term, exchange this for the option where we don't have these twin interventions
         for program in self.programs:
