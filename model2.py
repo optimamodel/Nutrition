@@ -24,26 +24,37 @@ class Model:
         self.cumulativePWDeaths = 0
         self.cumulativeDeaths = 0
 
-    def _setConditionalProbabilities(self, population):
-        population.baselineCovs = self.programInfo.baselineCovs # pop has access to adjusted baseline cov
-        population._setConditionalProbabilities()
+    def _setConditionalProbabilities(self):
+        for pop in self.populations:
+            pop.baselineCovs = self.programInfo.baselineCovs # pop has access to adjusted baseline cov
+            pop._setConditionalProbabilities()
 
     def _updateCoverages(self, newCoverages):
         for program in self.programInfo.programs:
             program.updateCoverageFromPercentage(newCoverages[program.name], self.populations)
         self.programInfo._restrictCoverages(self.populations)
 
+    def _setBirthPregnancyInfo(self):
+        self.nonPW._setBirthPregnancyInfo()
+
     def applyNewProgramCoverages(self, newCoverages):
         '''newCoverages is required to be the unrestricted coverage % (i.e. people covered / entire target pop) '''
         self._updateCoverages(newCoverages)
         for pop in self.populations: # update all the populations
             # update probabilities using current risk distributions
-            # self._setConditionalProbabilities(pop) # TODO: move this out of the update loop! Don't want to do this every time
             self._updatePopulation(pop)
+            if pop.name == 'Non-pregnant women':
+                self._familyPlanningUpdate(pop)
             # combine direct and indirect updates to each risk area that we model
             self._combineUpdates(pop)
             self._updateDistributions(pop)
             self._updateMortalityRates(pop)
+
+    def _familyPlanningUpdate(self, pop):
+        """ This update is not age-specified but instead applies to all non-PW.
+        Also uses programs which are not explicitly treated elsewhere in model"""
+        prog = self._getApplicablePrograms('Family planning')[0] # returns 'Family Planning' program
+        pop._updateFracPregnancyAverted(prog.proposedCoverageFrac)
 
     def _updateMortalityRates(self, pop):
         if pop.name != 'Non-pregnant women':
@@ -83,8 +94,8 @@ class Model:
                             program._getMortalityUpdate(ageGroup)
                         elif risk == 'Birth outcomes':
                             program._getBirthOutcomeUpdate(ageGroup)
-                        elif risk == 'Family planning':
-                            program._getFamilyPlanningUpdate(ageGroup)
+                        # elif risk == 'Family planning':
+                        #     program._getFamilyPlanningUpdate(ageGroup)
                         # elif risk == 'Birth age': # TODO: change implementation from previous mode version -- Calculate probabilities using RR etc.
                         #     program._getBirthAgeUpdate(ageGroup)
                         else:
@@ -129,7 +140,6 @@ class Model:
         elif population.name == 'Non-pregnant women':
             for ageGroup in population.ageGroups:
                 ageGroup.totalAnaemiaUpdate = ageGroup.anaemiaUpdate
-                ageGroup.totalFPUpdate = ageGroup.FPupdate
                 ageGroup.totalBAUpdate = ageGroup.birthAgeUpdate
 
     def _updateDistributions(self, population):

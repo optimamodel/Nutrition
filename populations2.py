@@ -23,7 +23,6 @@ class NonPWAgeGroup:
 
     def _setStorageForUpdates(self):
         self.anaemiaUpdate = 1.
-        self.FPupdate = 1.
         self.birthAgeUpdate = {}
         for BA in self.const.birthAges:
             self.birthAgeUpdate[BA] = 1.
@@ -1147,7 +1146,7 @@ class NonPregnantWomen(Population):
                 ageGroup.probConditionalCoverage[risk][program]['not covered'] = pn
 
     def _setBirthPregnancyInfo(self):
-        self.fracPregnancyAverted = self._getFracPregnancyAverted(self.const.costCurveInfo['baseline coverage']['Family Planning']) # TODO: need to use the adjusted baseline cov for this... could pass it in
+        self._updateFracPregnancyAverted(self.const.costCurveInfo['baseline coverage']['Family Planning']) # TODO: need to use the adjusted baseline cov for this... could pass it in
         numPregnant = self.const.demographics['number of pregnant women']
         numWRA = sum(pop for key, pop in self.project.populationByAge.iteritems() if 'WRA' in key)
         rate = numPregnant/numWRA/(1.- self.fracPregnancyAverted)
@@ -1159,16 +1158,8 @@ class NonPregnantWomen(Population):
         self.pregnancyRate = rate
         self.birthRate = averagePercentDiff * rate
 
-    def _updateFracPregnancyAverted(self, newCoverage):
-        # if FP is not used in this analysis, there is not change
-        program = 'Family Planning'
-        # TODO: need to use the adjusted baseline coverage!
-        maxCovFP = self.const.costCurveInfo['baseline coverage'][program] + self.const.demographics['unmet need for family planning']
-        newCoverage = maxCovFP if newCoverage > maxCovFP else newCoverage
-        self.fracPregnancyAverted = self._getFracPregnancyAverted(newCoverage)
-
-    def _getFracPregnancyAverted(self, coverage):
-        return sum(self.const.famPlanMethods[prog]['Effectiveness'] *
+    def _updateFracPregnancyAverted(self, coverage):
+        self.fracPregnancyAverted = sum(self.const.famPlanMethods[prog]['Effectiveness'] *
             self.const.famPlanMethods[prog]['Distribution'] * coverage
             for prog in self.const.famPlanMethods.iterkeys())
 
