@@ -20,6 +20,12 @@ class Program(object):
         self._setExclusionDependencies()
         self._setThresholdDependencies()
 
+    def _setAnnualCoverageFromOptimisation(self, newCoverage, populations):
+        self.annualCoverage = {year: newCoverage for year in self.const.simulationYears}
+        # convert to unrestricted cov
+        self._setRestrictedPopSize(populations) # This only needs to be outside if not included in following function
+        self._adjustProjectedCoverage(populations)
+
     def _setAnnualCoverage(self, populations):
         # TODO: just coverage % for now
         from numpy import interp, isnan, array, logical_not
@@ -39,7 +45,7 @@ class Program(object):
             adjustedCov += interpCov
         self.annualCoverage = {year:cov for year,cov in zip(years, adjustedCov)}
         # convert to unrestricted cov
-        self._setRestrictedPopSize(populations)
+        self._setRestrictedPopSize(populations) # This only needs to be outside if not included in following function
         self._adjustProjectedCoverage(populations)
 
     def _setBaselineCoverage(self, populations):

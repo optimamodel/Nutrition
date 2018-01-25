@@ -521,7 +521,23 @@ class Model:
             self.programInfo._adjustProjectedCoverages(self.populations, year)
             self._updateConditionalProbabilities()
             self._resetUpdateStorage()
-            self.applyNewProgramCoverages(self.programInfo.currentCovs)
+            self.applyNewProgramCoverages(self.programInfo.currentCovs) # TODO: not sure if this is the best way to update coverages anymore
+
+    def _setAnnualCoveragesFromOptimisation(self, newCoverages):
+        for program in self.programInfo.programs:
+            program._setAnnualCoverageFromOptimisation(newCoverages)
+
+    def runSimulationFromOptimisation(self, newCoverages):
+        self._setAnnualCoveragesFromOptimisation(newCoverages)
+        for year in self.constanFts.simulationYears:
+            self.year = year
+            self.moveModelOneYear()
+            self.programInfo._adjustProjectedCoverages(self.populations, year)
+            self._updateConditionalProbabilities()
+            self._resetUpdateStorage()
+            self.applyNewProgramCoverages(self.programInfo.currentCovs) # TODO: not sure if this is the best way to update coverages anymore
+
+
 
     def _resetUpdateStorage(self):
         for pop in self.populations:

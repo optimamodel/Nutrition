@@ -1,5 +1,6 @@
 from copy import deepcopy as dcp
 from operator import add
+from multiprocessing import cpu_count, Process
 
 def runModelForNTimeSteps(steps, model, saveEachStep=False): # TODO: may not use the 'save each step' at all
     """
@@ -36,9 +37,8 @@ def objectiveFunction(allocation, objective, model, availableBudget, fixedCosts,
     for idx in range(len(programs)):
         program = programs[idx]
         newCoverages[program.name] = program.costCurveFunc(scaledAllocation[idx]) / program.unrestrictedPopSize # TODO: use this or another metric?
-    thisModel.applyNewProgramCoverages(newCoverages)
-    modelThisRun = runModelForNTimeSteps(steps, thisModel)[0]
-    outcome = modelThisRun.getOutcome(objective) * 1000.
+    thisModel.runSimulationFromOptimisation(newCoverages)
+    outcome = thisModel.getOutcome(objective) * 1000.
     if objective == 'thrive':
         outcome *= -1
     return outcome
@@ -53,10 +53,9 @@ class OutputClass:
         self.cleanOutputFvalVector = cleanOutputFvalVector
         self.cleanOutputXVector = cleanOutputXVector
 
-class Optimisation:
+class Optimisation: # TODO: want the opimisation to suggest funding and for this to be fixed throughout simulation
     def __init__(self, objectivesList, budgetMultiples, fileInfo, costCurveType='standard',
-                 totalBudget=None, parallel=True, numRuns=10, numModelSteps=14):
-        from multiprocessing import cpu_count
+                 totalBudget=None, parallel=True, numRuns=10):
         import setup
         self.country = fileInfo[2]
         filePath, resultsPath = setup.getFilePath(root=fileInfo[0], bookDate=fileInfo[1], country=self.country)
@@ -64,7 +63,7 @@ class Optimisation:
         self.budgetMultiples = budgetMultiples
         self.objectivesList = objectivesList
         self.programs = model.programInfo.programs
-        self.numModelSteps = numModelSteps
+        self.numModelSteps = len(self.model.constants.simulationYears) # default to period for which data is supplied
         self.parallel = parallel
         self.numCPUs = cpu_count()
         self.numRuns = numRuns
@@ -72,9 +71,8 @@ class Optimisation:
         self.timeSeries = None
         self.timeStepsPre = 1
         self.model = runModelForNTimeSteps(self.timeStepsPre, model)[0]
-        for pop in self.model.populations:
-            self.model._setConditionalProbabilities(pop) # TODO: include this in another function in future
-        self.steps = numModelSteps - self.timeStepsPre #  TODO: implement so that goes to the max year of projections automatically
+        self.model._setConditionalProbabilities()
+        self.steps = self.numModelSteps - self.timeStepsPre
         for program in self.programs:
             program._setCostCoverageCurve()
         self.inititalProgramAllocations = self.getInitialProgramAllocations()
@@ -112,7 +110,6 @@ class Optimisation:
                 self.runOptimisation(multiple, objective)
 
     def getJobs(self):
-        from multiprocessing import Process
         jobs = []
         for objective in self.objectivesList:
             for multiple in self.budgetMultiples:
@@ -132,6 +129,8 @@ class Optimisation:
             jobs = jobs[thisRound:]
         return
 
+# TODO: have optimisation specify cost, translate to coverage, adjust the time-dependent coverage
+
     def runOptimisation(self, multiple, objective):
         import pso as pso
         import asd as asd
@@ -145,7 +144,7 @@ class Optimisation:
         runOutputs = []
         for run in range(self.numRuns):
             now = time.time()
-            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=45, swarmsize=100) # 45*100 should take about 5 hours
+            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=45, swarmsize=100) # 45*100 should take about 5 hours (around 4 secs per iteration)
             print "Objective: " + str(objective)
             print "value * 1000: " + str(fopt)
             budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
@@ -155,7 +154,6 @@ class Optimisation:
                                        output.x)
             runOutputs.append(outputOneRun)
         bestAllocation = self.findBestAllocation(runOutputs)
-        # scaledAllocation = self.adjustAllocation(bestAllocation, kwargs) # PROBABLY DELETE
         scaledAllocation = rescaleAllocation(kwargs['availableBudget'], bestAllocation)
         # add fixed costs to optimal additional funds
         scaledAllocation = [spending + fixedCost for spending, fixedCost in zip(scaledAllocation, self.fixedCosts)]
