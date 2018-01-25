@@ -20,7 +20,7 @@ class Program(object):
         self._setExclusionDependencies()
         self._setThresholdDependencies()
 
-    def _setAnnualCoverage(self):
+    def _setAnnualCoverage(self, populations):
         # TODO: just coverage % for now
         from numpy import interp, isnan, array, logical_not
         years = array(self.coverageProjections['Coverage'][0])
@@ -30,20 +30,31 @@ class Program(object):
         # if all nan, assume constant at baseline
         if not any(not_nan):
             adjustedCov = [self.unrestrictedBaselineCov for x in coverage]
-        # if 1 or more values
+        # if 1 or more values, baseline up to first present value, interpolate between, then constant if end values missing
         else:
             trueIndx = [i for i, x in enumerate(not_nan) if x]
             firstTrue = trueIndx[0]
             adjustedCov = [self.unrestrictedBaselineCov for x in coverage[:firstTrue]]
             interpCov = list(interp(years[firstTrue:], years[not_nan], coverage[not_nan]))
             adjustedCov += interpCov
-        self.annualCoverage = adjustedCov
+        self.annualCoverage = {year:cov for year,cov in zip(years, adjustedCov)}
+        # convert to unrestricted cov
+        self._setRestrictedPopSize(populations)
+        self._adjustProjectedCoverage(populations)
 
     def _setBaselineCoverage(self, populations):
         self._setRestrictedPopSize(populations)
         self._setUnrestrictedPopSize(populations)
         self.unrestrictedBaselineCov = (self.restrictedBaselineCov * self.restrictedPopSize) / \
                                           self.unrestrictedPopSize
+
+    def _adjustProjectedCoverage(self, populations):
+        adjustCov = lambda cov: self.restrictedPopSize * cov / self.unrestrictedPopSize
+        # only set unrestricted pop size so coverages account for growing pop.
+        # Add '_setRestrictedPopSize()' to prevent that
+        self._setUnrestrictedPopSize(populations)
+        # TODO: probably don't need to updat all values each year
+        self.annualCoverage = {year:adjustCov(cov) for year, cov in self.annualCoverage.iteritems()}
 
     def updateCoverage(self, newCoverage, populations):
         """Update all values pertaining to coverage for a program"""

@@ -15,7 +15,8 @@ class Model:
         self.nonPW = self.populations[2]
         # use populations to adjust the baseline coverage
         self.programInfo._setBaselineCov(self.populations)
-        self.programInfo._setAnnualCoverage()
+        self.programInfo._setAnnualCoverage(self.populations)
+        self._setBirthPregnancyInfo()
 
         self.year = int(self.project.year)
         self.cumulativeAgeingOutStunted = 0
@@ -28,6 +29,11 @@ class Model:
     def _setConditionalProbabilities(self):
         for pop in self.populations:
             pop.baselineCovs = self.programInfo.baselineCovs # pop has access to adjusted baseline cov
+            pop._setConditionalProbabilities()
+
+    def _updateConditionalProbabilities(self):
+        for pop in self.populations:
+            pop.baselineCovs = self.programInfo.currentCovs # pop has access to adjusted current cov
             pop._setConditionalProbabilities()
 
     def _updateCoverages(self, newCoverages):
@@ -477,7 +483,6 @@ class Model:
         restratification["high"] = fractionHigh
         return restratification
 
-
     def updateRiskDists(self):
         for ageGroup in self.children.ageGroups:
             ageGroup.updateStuntingDist()
@@ -500,19 +505,31 @@ class Model:
         self._applyBirths()
         self.updateRiskDists()
 
-    def moveModelOneYear(self): # TODO: write another function for scenario runs & for optimisation, based on projected spending & constraints
+    def moveModelOneYear(self):
         """
         Responsible for updating all populations
         :return:
         """
-        self.year += 1
         for month in range(12):
             self.moveModelOneTimeStep()
         self._applyPWMortality()
         self._updatePWpopulation()
         self._updateWRApopulation()
         self.updateYearlyRiskDists()
-        # TODO: Want to construct linear curve through costings so that any missing fields are interpolated. If no funding given, assume
+
+    def runSimulation(self):
+        for year in self.constants.simulationYears:
+            self.year = year
+            self.moveModelOneYear()
+            self.programInfo._adjustProjectedCoverages(self.populations, year)
+            self._updateConditionalProbabilities()
+            self._resetUpdateStorage()
+            self.applyNewProgramCoverages(self.programInfo.currentCovs)
+
+    def _resetUpdateStorage(self):
+        for pop in self.populations:
+            for ageGroup in pop.ageGroups:
+                ageGroup._setStorageForUpdates()
 
     def getOutcome(self, outcome):
         if outcome == 'total_stunted':

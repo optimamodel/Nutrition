@@ -38,6 +38,7 @@ class Project:
         self.getProgramDependencies()
         self.getReferencePrograms()
         self.getProgramAnnualSpending()
+        self.getSimulationYears()
 
     def readDemographicsData(self):
         self.getDemographics()
@@ -233,7 +234,7 @@ class Project:
                 programDep[program][field] = []
         self.programDependency = programDep
 
-    def getProgramAnnualSpending(self): # TODO: want to put these time series in the program objects
+    def getProgramAnnualSpending(self):
         spending = self.workbook.parse('Programs annual spending', index_col=[0,1])
         # when no values specified, program is removed. In this case assume baseline coverage constant
         self.programAnnualSpending = {}
@@ -241,6 +242,10 @@ class Project:
             if self.programAnnualSpending.get(programType[0]) is None:
                 self.programAnnualSpending[programType[0]] = {}
             self.programAnnualSpending[programType[0]][programType[1]] = [list(yearValue.index), yearValue.tolist()]
+
+    def getSimulationYears(self):
+        projections = self.workbook.parse('Demographic projections')
+        self.simulationYears = projections['year'].tolist()
 
     def getReferencePrograms(self):
         reference = self.workbook.parse('Reference programs', index_col=[0])

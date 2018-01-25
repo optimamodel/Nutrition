@@ -1089,11 +1089,6 @@ class NonPregnantWomen(Population):
         self.ageGroups = []
         self._makePopSizes()
         self._makeBoxes()
-        self._setStorageForUpdates()
-        # self._setBirthPregnancyInfo()
-
-    def _setStorageForUpdates(self):
-        self.anaemiaUpdate = 1.
 
     def getTotalPopulation(self):
         return sum(ageGroup.getAgeGroupPopulation() for ageGroup in self.ageGroups)
