@@ -52,6 +52,7 @@ class Program(object):
         adjustCov = lambda cov: self.restrictedPopSize * cov / self.unrestrictedPopSize
         # only set unrestricted pop size so coverages account for growing pop.
         # Add '_setRestrictedPopSize()' to prevent that
+        self._setRestrictedPopSize(populations)
         self._setUnrestrictedPopSize(populations)
         # TODO: probably don't need to updat all values each year
         self.annualCoverage = {year:adjustCov(cov) for year, cov in self.annualCoverage.iteritems()}

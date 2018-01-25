@@ -241,9 +241,6 @@ class Model:
             ageGroup.bfDist[ageGroup.correctBF] = ageGroup.bfPracticeUpdate
         # get number at risk before
         sumBefore = ageGroup._getDiarrhoeaRiskSum()
-        # update correct BF distribution
-        # newProb = ageGroup.bfDist[ageGroup.correctBF] * ageGroup.bfPracticeUpdate
-        # ageGroup.bfDist[ageGroup.correctBF] = newProb if newProb < 1. else 1.
         # update distribution of incorrect practices
         popSize = ageGroup.getAgeGroupPopulation()
         numCorrectBefore = ageGroup.getNumberCorrectlyBF()
