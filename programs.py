@@ -54,7 +54,7 @@ class Program(object):
         # Add '_setRestrictedPopSize()' to prevent that
         self._setRestrictedPopSize(populations)
         self._setUnrestrictedPopSize(populations)
-        # TODO: probably don't need to updat all values each year
+        # TODO: probably don't need to update all values each year
         self.annualCoverage = {year:adjustCov(cov) for year, cov in self.annualCoverage.iteritems()}
 
     def updateCoverage(self, newCoverage, populations):
@@ -71,11 +71,6 @@ class Program(object):
         self._setRestrictedPopSize(populations)
         restrictedCovNum = self.restrictedPopSize * newCoverage
         self.proposedCoverageFrac = restrictedCovNum / self.unrestrictedPopSize
-
-    # def adjustCoverageForPopGrowth(self, populations):
-    #     oldUnrestrictedPop = dcp(self.unrestrictedPopSize)
-    #     self._setUnrestrictedPopSize(populations)
-    #     self.proposedCoverageFrac *= (oldUnrestrictedPop/self.unrestrictedPopSize)
 
     def _setTargetedAges(self):
         """

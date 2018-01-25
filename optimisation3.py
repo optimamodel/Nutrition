@@ -167,10 +167,6 @@ class Optimisation:
         bestSample = max(outputs, key=lambda item: item.fval)
         return bestSample.budgetBest
 
-    def adjustAllocation(self, bestOutput, kwargs): # TODO: probably don't need this
-        scaledAllocation = rescaleAllocation(availableBudget, bestOutput)
-        return scaledAllocation
-
     def createDictionary(self, allocations):
         """Ensure keys and values have matching orders"""
         keys = [program.name for program in self.programs]
