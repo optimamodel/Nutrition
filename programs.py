@@ -261,10 +261,10 @@ class Program(object):
 
     def _getWastingIncidenceUpdate(self, ageGroup):
         update = {}
+        oldCov = self.annualCoverage[self.year]
         for condition in self.const.wastedList:
             affFrac = ageGroup.programEffectiveness[self.name][condition]['Affected fraction']
             effectiveness = ageGroup.programEffectiveness[self.name][condition]['Effectiveness incidence']
-            oldCov = self.unrestrictedBaselineCov
             reduction = affFrac * effectiveness * (self.proposedCoverageFrac - oldCov) / (1. - effectiveness*oldCov)
             update[condition] = 1.-reduction
         return update
@@ -276,30 +276,30 @@ class Program(object):
         else: # mortality
             toIterate = self.const.causesOfDeath
         update = {cause: 1. for cause in toIterate}
+        oldCov = self.annualCoverage[self.year]
         for cause in toIterate:
             affFrac = ageGroup.programEffectiveness[self.name][cause]['Affected fraction']
             effectiveness = ageGroup.programEffectiveness[self.name][cause][effType]
-            oldCov = self.unrestrictedBaselineCov
             reduction = affFrac * effectiveness * (self.proposedCoverageFrac - oldCov) / (1. - effectiveness*oldCov)
             update[cause] *= 1. - reduction
         return update
 
     def _getBOUpdate(self):
         BOupdate = {BO: 1. for BO in self.const.birthOutcomes}
+        oldCov = self.annualCoverage[self.year]
         for outcome in self.const.birthOutcomes:
             affFrac = self.const.BOprograms[self.name]['affected fraction'][outcome]
             eff = self.const.BOprograms[self.name]['effectiveness'][outcome]
-            oldCov = self.unrestrictedBaselineCov
             reduction = affFrac * eff * (self.proposedCoverageFrac - oldCov) / (1. - eff*oldCov)
             BOupdate[outcome] = 1. - reduction
         return BOupdate
 
     def _getBAUpdate(self):
         BAupdate = {BA: 1. for BA in self.const.birthAges}
+        oldCov = self.annualCoverage[self.year]
         for BA in self.const.birthAges:
             affFrac = self.const.birthAgeProgram[BA]['affected fraction']
             eff = self.const.birthAgeProgram[BA]['effectiveness']
-            oldCov = self.unrestrictedBaselineCov
             reduction = affFrac * eff * (self.proposedCoverageFrac - oldCov) / (1. - eff*oldCov)
             BAupdate[BA] = 1. - reduction
         return BAupdate
@@ -311,7 +311,6 @@ class Program(object):
         probCorrectNotCovered = ageGroup.probConditionalCoverage['Breastfeeding'][self.name]['not covered']
         probNew = self._getNewProb(self.proposedCoverageFrac, probCorrectCovered, probCorrectNotCovered)
         fracChange = probNew - correctFracOld
-        # percentChange = (probNew - correctFracOld)/correctFracOld
         return fracChange
 
     def _setCostCoverageCurve(self):
@@ -319,7 +318,7 @@ class Program(object):
         self.costCurveFunc = self.costCurveOb._setCostCovCurve()
 
     def getSpending(self):
-        return self.costCurveOb.getSpending(self.unrestrictedBaselineCov)
+        return self.costCurveOb.getSpending(self.annualCoverage[self.year])
 
 
 
