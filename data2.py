@@ -33,8 +33,12 @@ class Project:
         self.getBirthAgePrograms()
         self.getCostCoverageInfo()
         self.getProgramTargetPop()
+        self.getProgramImpactedPop()
         self.getProgramRiskAreas()
         self.getProgramDependencies()
+        self.getReferencePrograms()
+        self.getProgramAnnualSpending()
+        self.getSimulationYears()
 
     def readDemographicsData(self):
         self.getDemographics()
@@ -190,6 +194,13 @@ class Project:
             targetPop.update(targetPopSheet.loc[pop].to_dict(orient='index'))
         self.programTargetPop = targetPop
 
+    def getProgramImpactedPop(self):
+        popSheet = self.readSheet('Programs impacted population', [0,1])
+        impacted = {}
+        for pop in ['Children', 'Pregnant women', 'Non-pregnant WRA', 'General population']:
+            impacted.update(popSheet.loc[pop].to_dict(orient='index'))
+        self.programImpactedPop = impacted
+
     def getProgramRiskAreas(self):
         areas = self.readSheet('Program risk areas', [0])
         booleanFrame = areas.isnull()
@@ -222,6 +233,23 @@ class Project:
             for field in dependencies.columns:
                 programDep[program][field] = []
         self.programDependency = programDep
+
+    def getProgramAnnualSpending(self):
+        spending = self.workbook.parse('Programs annual spending', index_col=[0,1])
+        # when no values specified, program is removed. In this case assume baseline coverage constant
+        self.programAnnualSpending = {}
+        for programType, yearValue in spending.iterrows():
+            if self.programAnnualSpending.get(programType[0]) is None:
+                self.programAnnualSpending[programType[0]] = {}
+            self.programAnnualSpending[programType[0]][programType[1]] = [list(yearValue.index), yearValue.tolist()]
+
+    def getSimulationYears(self):
+        projections = self.workbook.parse('Demographic projections')
+        self.simulationYears = projections['year'].tolist()
+
+    def getReferencePrograms(self):
+        reference = self.workbook.parse('Reference programs', index_col=[0])
+        self.referencePrograms = list(reference.index)
 
     def getProgramsForAnalysis(self):
         includeSheet = self.readSheet('Programs to include', [0])
@@ -353,6 +381,16 @@ class Project:
         fields = ['Affected fraction', 'Effectiveness mortality', 'Effectiveness incidence']
         programsPresent = self.childPrograms.keys()
         effectiveness = {}
+        for program in programsPresent:
+            for cause in self.causesOfDeath + ['MAM', 'SAM']:
+                if self.childPrograms[program].get(cause) is None:
+                    self.childPrograms[program][cause] = {}
+                for field in fields:
+                    if self.childPrograms[program][cause].get(field) is None:
+                        self.childPrograms[program][cause][field] = {}
+                    for age in self.childAges:
+                        if self.childPrograms[program][cause][field].get(age) is None:
+                            self.childPrograms[program][cause][field][age] = 0
         for age in self.childAges:
             effectiveness[age] = {}
             for program in programsPresent:
@@ -360,10 +398,7 @@ class Project:
                 for cause in self.causesOfDeath + ['MAM', 'SAM']:
                     effectiveness[age][program][cause] = {}
                     for field in fields:
-                            try:
-                                effectiveness[age][program][cause][field] = self.childPrograms[program][cause][field][age]
-                            except KeyError:
-                                effectiveness[age][program][cause][field] = 0
+                        effectiveness[age][program][cause][field] = self.childPrograms[program][cause][field][age]
         self.childPrograms = effectiveness
 
 
@@ -382,12 +417,11 @@ class Project:
         stuntingEffects = effects.loc['OR for stunting']
         packagesDict = self.defineIYCFpackages()
         costCurveInfo = self.getIYCFcostCoverageSaturation(packagesDict)
-        self.IYCFtargetPop = self.getIYCFtargetPop(packagesDict)
+        self.programTargetPop.update(self.getIYCFtargetPop(packagesDict))
         self.ORappropriateBFprogram = self.createIYCFpackages(BFeffects, packagesDict)
         self.ORstuntingProgram.update(self.createIYCFpackages(stuntingEffects, packagesDict))
-        for field in ['unit cost', 'saturation coverage', 'baseline coverage']:
+        for field in ['unit cost']:
             self.costCurveInfo[field].update(costCurveInfo[field])
-        self.programList += packagesDict.keys()
 
     def createIYCFpackages(self, effects, packagesDict):
         '''Creates IYCF packages based on user input in 'IYCFpackages' '''
@@ -418,7 +452,7 @@ class Project:
                 col = package[mode]
                 if col.notnull()[0]:
                     if mode == 'Mass media':
-                        ageModeTuple = [(pop, mode) for pop in self.childAges]
+                        ageModeTuple = [(pop, mode) for pop in self.childAges[:-1]] # exclude 24-59 months
                     else:
                         ageModeTuple = [(packageName[1], mode)]
                     packagesDict[packageName[0]] += ageModeTuple
@@ -426,7 +460,7 @@ class Project:
 
     def getIYCFcostCoverageSaturation(self, IYCFpackages):
         IYCFcost = self.readSheet('IYCF cost & coverage', [0,1]).loc['Unit costs']
-        infoList = ['unit cost', 'saturation coverage', 'baseline coverage']
+        infoList = ['unit cost']
         packageCostSaturation = {}
         for field in infoList:
             packageCostSaturation[field] = {}
@@ -435,9 +469,6 @@ class Project:
             for pop, mode in package:
                 cost += IYCFcost[mode][pop]
             packageCostSaturation['unit cost'][name] = cost
-            # TEMP VALUES
-            packageCostSaturation['saturation coverage'][name] = 0.95
-            packageCostSaturation['baseline coverage'][name] = 0.
         return packageCostSaturation
 
     def getIYCFtargetPop(self, packageModalities):
@@ -451,7 +482,18 @@ class Project:
                 newTargetPops[name][pop][mode] = IYCFtargetPop[mode][pop]
         # convert 'pregnant women' to its age bands
         newTargetPops = self.createAgeBands(newTargetPops, packageModalities.keys(), self.PWages, 'Pregnant women')
-        return newTargetPops
+        # target pop is sum of fractions exposed to modality for each age band
+        fracTargeted = {}
+        for program, popModes in newTargetPops.iteritems():
+            fracTargeted[program] = {}
+            for pop, modes in popModes.iteritems():
+                fracTargeted[program][pop] = sum(frac for frac in modes.values())
+        allAges = self.childAges + self.PWages + self.WRAages
+        for program, pop in fracTargeted.iteritems():
+            missingAges = self._getMissingElements(allAges, pop.keys())
+            for age in missingAges:
+                fracTargeted[program][age] = 0.
+        return fracTargeted
 
     def createAgeBands(self, dictToUpdate, keyList, listOfAges, pop):
         for key in keyList:  # could be program, ages

@@ -15,7 +15,10 @@ class ProgramInfo:
         import programs as progs
         self.programs = progs.setUpPrograms(constants)
         self.programAreas = constants.programAreas
+        self.referencePrograms = constants.referencePrograms
+        self.const = constants
         self._sortPrograms()
+        self._getTwins()
 
     def _sortPrograms(self):
         """
@@ -69,6 +72,22 @@ class ProgramInfo:
             program._setBaselineCoverage(populations)
             self.baselineCovs[program.name] = program.unrestrictedBaselineCov
 
+    def _setAnnualCoverage(self, populations):
+        for program in self.programs:
+            program._setAnnualCoverage(populations)
+
+    def _adjustProjectedCoverages(self, populations, year):
+        self.currentCovs = {}
+        for program in self.programs:
+            program._adjustProjectedCoverage(populations)
+            self.currentCovs[program.name] = program.annualCoverage[year]
+
+    def _getTwins(self):
+        # TODO: long term, exchange this for the option where we don't have these twin interventions
+        for program in self.programs:
+            malariaTwin = program.name + ' (malaria area)'
+            program.malariaTwin = True if malariaTwin in self.const.programList else False
+
     def _restrictCoverages(self, populations):
         """
         Uses the ordering of both dependency lists to restrict the coverage of programs.
@@ -92,10 +111,10 @@ class ProgramInfo:
             for parentName in child.thresholdDependencies:
                 # get overlapping age groups (intersection)
                 parent = next((prog for prog in self.programs if prog.name == parentName))
-                commonAges = list(set(child.relevantAges).intersection(parent.relevantAges))
+                commonAges = list(set(child.agesTargeted).intersection(parent.agesTargeted))
                 parentPopSize = 0.
                 for pop in populations:
-                    parentPopSize += sum(age.populationSize for age in pop.ageGroups if age.age in commonAges)
+                    parentPopSize += sum(age.getAgeGroupPopulation() for age in pop.ageGroups if age.age in commonAges)
                 numCoveredInOverlap = parent.proposedCoverageFrac * parentPopSize
                 percentCoveredByParent = numCoveredInOverlap / child.restrictedPopSize
                 if percentCoveredByParent < 1:
@@ -106,14 +125,17 @@ class ProgramInfo:
                     child.proposedCoverageFrac = childMaxCov
         #exclusion
         for child in self.exclusionOrder:
-            for parentName in child.exclusionDependencies:
-                # get overlapping age groups (intersection)
-                parent = next((prog for prog in self.programs if prog.name == parentName))
-                commonAges = list(set(child.relevantAges).intersection(parent.relevantAges))
-                parentPopSize = 0.
-                for pop in populations:
-                    parentPopSize += sum(age.populationSize for age in pop.ageGroups if age.age in commonAges)
-                numCoveredInOverlap = parent.proposedCoverageFrac * parentPopSize
+            if child.exclusionDependencies:
+                # get population covered by all parent nodes
+                numCoveredInOverlap = 0
+                for parentName in child.exclusionDependencies:
+                    parentPopSize = 0
+                    # get overlapping age groups (intersection)
+                    parent = next((prog for prog in self.programs if prog.name == parentName))
+                    commonAges = list(set(child.agesTargeted).intersection(parent.agesTargeted))
+                    for pop in populations:
+                        parentPopSize += sum(age.getAgeGroupPopulation() for age in pop.ageGroups if age.age in commonAges)
+                    numCoveredInOverlap += parent.proposedCoverageFrac * parentPopSize
                 percentCoveredByParent = numCoveredInOverlap / child.restrictedPopSize
                 if percentCoveredByParent < 1:
                     childMaxCov = (child.restrictedPopSize - numCoveredInOverlap) / child.unrestrictedPopSize

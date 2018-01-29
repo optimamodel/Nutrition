@@ -139,7 +139,7 @@ class Optimisation:
         self.inititalProgramAllocations = self.getTotalInitialAllocation()
         self.totalBudget = totalBudget if totalBudget else sum(self.inititalProgramAllocations)
         self.fixedCosts = self.getFixedCosts(haveFixedCosts, self.inititalProgramAllocations)
-        self.timeStepsPre = 12
+        self.timeStepsPre = 1
         self.model = runModelForNTimeSteps(self.timeStepsPre, self.data, model=None)[0]
         self.costCurves = self.generateCostCurves(self.model)
         self.kwargs = {'costCurves': self.costCurves, 'model': self.model, 'timestepsPre': self.timeStepsPre,

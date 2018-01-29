@@ -2,12 +2,14 @@ from copy import deepcopy as dcp
 class Constants:
     """Thie class contains all the constants (lists of categories mostly) to be used across many classes"""
     def __init__(self, project):
+        self.simulationYears = dcp(project.simulationYears)
         self.stuntingList = dcp(project.riskCategories['Stunting'])
         self.wastingList = dcp(project.riskCategories['Wasting'])
         self.bfList = dcp(project.riskCategories['Breastfeeding'])
         self.anaemiaList = dcp(project.riskCategories['Anaemia'])
         self.birthOutcomes = dcp(project.riskCategories['Birth outcomes'])
         self.stuntedList = self.stuntingList[2:]
+        self.notStuntedList = self.stuntingList[:2]
         self.wastedList = self.wastingList[2:]
         self.nonWastedList = self.wastingList[:2]
         self.anaemicList = self.anaemiaList[1:]
@@ -41,5 +43,8 @@ class Constants:
         self.programList = dcp(project.programList)
         self.costCurveInfo = dcp(project.costCurveInfo)
         self.programTargetPop = dcp(project.programTargetPop) # frac of each population which is targeted
+        self.programImpactedPop = dcp(project.programImpactedPop)
         self.programDependency = dcp(project.programDependency)
         self.programAreas = dcp(project.programAreas)
+        self.referencePrograms = dcp(project.referencePrograms)
+        self.programAnnualSpending = dcp(project.programAnnualSpending) # TODO: b/c not really constant, pass this into programs as different param
