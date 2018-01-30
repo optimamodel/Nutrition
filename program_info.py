@@ -28,8 +28,16 @@ class ProgramInfo:
         (root, first level, second level etc..)
         :return:
         """
+        self._removeMissingPrograms()
         self._thresholdSort() # TODO: would like to have only one function to do both sortings
         self._exclusionSort()
+
+    def _removeMissingPrograms(self):
+        """Removes programs from dependencies lists which are not included in analysis"""
+        allNames = set([prog.name for prog in self.programs])
+        for prog in self.programs:
+            prog.thresholdDependencies = [name for name in prog.thresholdDependencies if name in allNames]
+            prog.exclusionDependencies = [name for name in prog.exclusionDependencies if name in allNames]
 
     def _getThresholdRoots(self):
         openSet = self.programs[:]
@@ -49,7 +57,7 @@ class ProgramInfo:
             dependentNames = set(program.exclusionDependencies)
             closedSetNames = set([prog.name for prog in closedSet])
             if dependentNames.issubset(closedSetNames):  # all parent programs in closed set
-                closedSet += [program]
+                closedSet += [program]# TODO: above line will BREAK if not all parent nodes included in analysis. Remove those not included from exclusion list first
         self.exclusionOrder = closedSet[:]
 
     def _thresholdSort(self):
@@ -72,21 +80,29 @@ class ProgramInfo:
             program._setBaselineCoverage(populations)
             self.baselineCovs[program.name] = program.unrestrictedBaselineCov
 
-    def _setAnnualCoverage(self, populations):
+    def _setAnnualCoverages(self, populations, optimise):
         for program in self.programs:
-            program._setAnnualCoverage(populations)
+            program._setAnnualCoverage(populations, optimise)
 
-    def _adjustProjectedCoverages(self, populations, year):
-        self.currentCovs = {}
+    def _adjustCoveragesForPopGrowth(self, populations, year):
         for program in self.programs:
-            program._adjustProjectedCoverage(populations)
-            self.currentCovs[program.name] = program.annualCoverage[year]
+            program._adjustCoverage(populations, year)
 
     def _getTwins(self):
         # TODO: long term, exchange this for the option where we don't have these twin interventions
         for program in self.programs:
             malariaTwin = program.name + ' (malaria area)'
             program.malariaTwin = True if malariaTwin in self.const.programList else False
+
+    def _updateYearForPrograms(self, year):
+        for prog in self.programs:
+            prog.year = year
+
+    def _getAnnualCoverage(self, year):
+        coverages = {}
+        for prog in self.programs:
+            coverages[prog.name] = prog.annualCoverage[year]
+        return coverages
 
     def _restrictCoverages(self, populations):
         """
@@ -115,14 +131,14 @@ class ProgramInfo:
                 parentPopSize = 0.
                 for pop in populations:
                     parentPopSize += sum(age.getAgeGroupPopulation() for age in pop.ageGroups if age.age in commonAges)
-                numCoveredInOverlap = parent.proposedCoverageFrac * parentPopSize
+                numCoveredInOverlap = parent.annualCoverage[parent.year] * parentPopSize
                 percentCoveredByParent = numCoveredInOverlap / child.restrictedPopSize
                 if percentCoveredByParent < 1:
                     childMaxCov = numCoveredInOverlap / child.restrictedPopSize
                 else:
                     childMaxCov = child.restrictedPopSize / child.unrestrictedPopSize
-                if child.proposedCoverageFrac > childMaxCov:
-                    child.proposedCoverageFrac = childMaxCov
+                if child.annualCoverage[child.year] > childMaxCov:
+                    child.annualCoverage[child.year] = childMaxCov
         #exclusion
         for child in self.exclusionOrder:
             if child.exclusionDependencies:
@@ -135,11 +151,11 @@ class ProgramInfo:
                     commonAges = list(set(child.agesTargeted).intersection(parent.agesTargeted))
                     for pop in populations:
                         parentPopSize += sum(age.getAgeGroupPopulation() for age in pop.ageGroups if age.age in commonAges)
-                    numCoveredInOverlap += parent.proposedCoverageFrac * parentPopSize
+                    numCoveredInOverlap += parent.annualCoverage[parent.year] * parentPopSize
                 percentCoveredByParent = numCoveredInOverlap / child.restrictedPopSize
                 if percentCoveredByParent < 1:
                     childMaxCov = (child.restrictedPopSize - numCoveredInOverlap) / child.unrestrictedPopSize
                 else:
                     childMaxCov = 0
-                if child.proposedCoverageFrac > childMaxCov:
-                    child.proposedCoverageFrac = childMaxCov
+                if child.annualCoverage[child.year] > childMaxCov:
+                    child.annualCoverage[child.year] = childMaxCov
