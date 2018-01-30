@@ -2,7 +2,7 @@ from copy import deepcopy as dcp
 from operator import add
 from multiprocessing import cpu_count, Process
 
-def runModelForNTimeSteps(steps, model, saveEachStep=False): # TODO: may not use the 'save each step' at all
+def runModelForNTimeSteps(steps, model):
     """
     Progresses the model a given number of steps
     :param steps: number of steps to iterate (int)
@@ -10,12 +10,9 @@ def runModelForNTimeSteps(steps, model, saveEachStep=False): # TODO: may not use
     :param saveEachStep:
     :return:
     """
-    modelList = []
     for step in range(steps):
         model.moveModelOneYear()
-        if saveEachStep:
-            modelList.append(dcp(model))
-    return model, modelList
+    return model
 
 def rescaleAllocation(totalBudget, allocation):
     scaleRatio = totalBudget / sum(allocation)
@@ -36,7 +33,7 @@ def objectiveFunction(allocation, objective, model, availableBudget, fixedCosts,
     programs = thisModel.programInfo.programs
     for idx in range(len(programs)):
         program = programs[idx]
-        newCoverages[program.name] = program.costCurveFunc(scaledAllocation[idx]) / program.unrestrictedPopSize # TODO: use this or another metric?
+        newCoverages[program.name] = program.costCurveFunc(scaledAllocation[idx]) / program.unrestrictedPopSize
     thisModel.runSimulationFromOptimisation(newCoverages)
     outcome = thisModel.getOutcome(objective) * 1000.
     if objective == 'thrive':
@@ -53,16 +50,16 @@ class OutputClass:
         self.cleanOutputFvalVector = cleanOutputFvalVector
         self.cleanOutputXVector = cleanOutputXVector
 
-class Optimisation: # TODO: want the opimisation to suggest funding and for this to be fixed throughout simulation
+class Optimisation:
     def __init__(self, objectivesList, budgetMultiples, fileInfo, costCurveType='standard',
-                 totalBudget=None, parallel=True, numRuns=10):
+                 totalBudget=None, parallel=True, numRuns=1):
         import setup
         self.country = fileInfo[2]
         filePath, resultsPath = setup.getFilePath(root=fileInfo[0], bookDate=fileInfo[1], country=self.country)
-        model = setup.setUpModel(filePath)
+        self.model = setup.setUpModel(filePath, optimise=True) # model has already moved 1 year
         self.budgetMultiples = budgetMultiples
         self.objectivesList = objectivesList
-        self.programs = model.programInfo.programs
+        self.programs = self.model.programInfo.programs
         self.numModelSteps = len(self.model.constants.simulationYears) # default to period for which data is supplied
         self.parallel = parallel
         self.numCPUs = cpu_count()
@@ -70,8 +67,8 @@ class Optimisation: # TODO: want the opimisation to suggest funding and for this
         self.costCurveType = costCurveType
         self.timeSeries = None
         self.timeStepsPre = 1
-        self.model = runModelForNTimeSteps(self.timeStepsPre, model)[0]
-        self.model._setConditionalProbabilities()
+        # self.model = runModelForNTimeSteps(self.timeStepsPre, self.model)
+        # self.model._setConditionalProbabilities()
         self.steps = self.numModelSteps - self.timeStepsPre
         for program in self.programs:
             program._setCostCoverageCurve()
@@ -144,11 +141,11 @@ class Optimisation: # TODO: want the opimisation to suggest funding and for this
         runOutputs = []
         for run in range(self.numRuns):
             now = time.time()
-            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=45, swarmsize=100) # 45*100 should take about 5 hours (around 4 secs per iteration)
+            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=2, swarmsize=1)
             print "Objective: " + str(objective)
             print "value * 1000: " + str(fopt)
             budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
-                                                         xmax=xmax, verbose=1)
+                                                         xmax=xmax, verbose=3, MaxIter=10)
             print time.time() - now
             outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval,
                                        output.x)
@@ -216,12 +213,14 @@ class Optimisation: # TODO: want the opimisation to suggest funding and for this
         outcome = model.getOutcome(objective)
         return outcome
 
-    def oneModelRunWithOutput(self, allocationDictionary):
+    def oneModelRunWithOutput(self, allocationDictionary): # TODO: there could be an issue here because may not account for changing coverages
         model = dcp(self.model)
         newCoverages = self.getCoverages(allocationDictionary)
-        model.applyNewProgramCoverages(newCoverages)
-        steps = self.numModelSteps - self.timeStepsPre
-        model = runModelForNTimeSteps(steps, model)[0]
+        print newCoverages
+        model.runSimulationFromOptimisation(newCoverages)
+        # model.applyNewProgramCoverages(newCoverages)
+        # steps = self.numModelSteps - self.timeStepsPre
+        # model = runModelForNTimeSteps(steps, model)
         return model
 
     def getOptimisedOutcomes(self, allocations):
