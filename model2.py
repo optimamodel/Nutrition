@@ -1,24 +1,25 @@
 from copy import deepcopy as dcp
 from scipy.stats import norm
 class Model:
-    def __init__(self, filePath):
+    def __init__(self, filePath, optimise=False):
         import data2 as data
         import populations2 as pops
         import program_info
         from constants import Constants
         self.project = data.setUpProject(filePath)
+        self.optimise = optimise # TODO: This is a way to get optimisation to ignore 'programs annual spending', but should be improved later
         self.constants = Constants(self.project)
         self.programInfo = program_info.ProgramInfo(self.constants)
         self.populations = pops.setUpPopulations(self.project, self.constants)
         self.children = self.populations[0]
         self.PW = self.populations[1]
         self.nonPW = self.populations[2]
-        # use populations to adjust the baseline coverage
-        self.programInfo._setBaselineCov(self.populations)
-        self.programInfo._setAnnualCoverage(self.populations)
-        self._setBirthPregnancyInfo()
 
-        self.year = int(self.project.year)
+        self.year = self.constants.baselineYear
+        self._createOutcomeTrackers()
+        self.calibrate()
+
+    def _createOutcomeTrackers(self):
         self.cumulativeAgeingOutStunted = 0
         self.cumulativeThrive = 0
         self.cumulativeBirths = 0
@@ -26,14 +27,16 @@ class Model:
         self.cumulativePWDeaths = 0
         self.cumulativeDeaths = 0
 
-    def _setConditionalProbabilities(self):
-        for pop in self.populations:
-            pop.baselineCovs = self.programInfo.baselineCovs # pop has access to adjusted baseline cov
-            pop._setConditionalProbabilities()
+    # def _setConditionalProbabilities(self):
+    #     baselineCov = self.programInfo._getAnnualCoverage(self.constants.baselineYear)
+    #     for pop in self.populations:
+    #         pop.previousCov = baselineCov # pop has access to adjusted baseline cov
+    #         pop._setConditionalProbabilities()
 
     def _updateConditionalProbabilities(self):
+        previousCov = self.programInfo._getAnnualCoverage(self.year-1) # last year cov
         for pop in self.populations:
-            pop.baselineCovs = self.programInfo.currentCovs # pop has access to adjusted current cov
+            pop.previousCov = previousCov # pop has access to adjusted current cov
             pop._setConditionalProbabilities()
 
     def _updateCoverages(self, newCoverages):
@@ -42,12 +45,17 @@ class Model:
         self.programInfo._restrictCoverages(self.populations)
 
     def _setBirthPregnancyInfo(self):
-        FP = [prog for prog in self.programInfo.programs if prog.name == 'Family Planning'][0]
-        self.nonPW._setBirthPregnancyInfo(FP.unrestrictedBaselineCov)
+        FP = [prog for prog in self.programInfo.programs if prog.name == 'Family Planning']
+        if FP:
+            FPprog = FP[0]
+            self.nonPW._setBirthPregnancyInfo(FPprog.unrestrictedBaselineCov)
+        else:
+            self.nonPW._setBirthPregnancyInfo(0) # TODO: not best implementation
 
-    def applyNewProgramCoverages(self, newCoverages):
+    def applyNewProgramCoverages(self):
         '''newCoverages is required to be the unrestricted coverage % (i.e. people covered / entire target pop) '''
-        self._updateCoverages(newCoverages)
+        # self._updateCoverages(newCoverages)
+        self.programInfo._restrictCoverages(self.populations)
         for pop in self.populations: # update all the populations
             # update probabilities using current risk distributions
             self._updatePopulation(pop)
@@ -61,8 +69,10 @@ class Model:
     def _familyPlanningUpdate(self, pop):
         """ This update is not age-specified but instead applies to all non-PW.
         Also uses programs which are not explicitly treated elsewhere in model"""
-        prog = self._getApplicablePrograms('Family planning')[0] # returns 'Family Planning' program
-        pop._updateFracPregnancyAverted(prog.proposedCoverageFrac)
+        progList = self._getApplicablePrograms('Family planning') # returns 'Family Planning' program
+        if progList:
+            prog = progList[0]
+            pop._updateFracPregnancyAverted(prog.proposedCoverageFrac)
 
     def _updateMortalityRates(self, pop):
         if pop.name != 'Non-pregnant women':
@@ -102,8 +112,6 @@ class Model:
                             program._getMortalityUpdate(ageGroup)
                         elif risk == 'Birth outcomes':
                             program._getBirthOutcomeUpdate(ageGroup)
-                        # elif risk == 'Family planning':
-                        #     program._getFamilyPlanningUpdate(ageGroup)
                         # elif risk == 'Birth age': # TODO: change implementation from previous mode version -- Calculate probabilities using RR etc.
                         #     program._getBirthAgeUpdate(ageGroup)
                         else:
@@ -130,6 +138,7 @@ class Model:
                 # stunting: direct, diarrhoea, breastfeeding
                 ageGroup.totalStuntingUpdate = ageGroup.stuntingUpdate * ageGroup.diarrhoeaUpdate['Stunting'] \
                                                * ageGroup.bfUpdate['Stunting']
+                ageGroup.continuedStuntingImpact *= ageGroup.totalStuntingUpdate
                 # anaemia: direct, diarrhoea, breastfeeding
                 ageGroup.totalAnaemiaUpdate = ageGroup.anaemiaUpdate * ageGroup.diarrhoeaUpdate['Anaemia'] \
                                               * ageGroup.bfUpdate['Anaemia']
@@ -142,6 +151,7 @@ class Model:
                                                   * ageGroup.diarrhoeaUpdate[wastingCat] \
                                                   * ageGroup.fromMAMtoSAMupdate[wastingCat] \
                                                   * ageGroup.fromSAMtoMAMupdate[wastingCat]
+                    ageGroup.continuedWastingImpact[wastingCat] *= ageGroup.totalWastingUpdate[wastingCat]
         elif population.name == 'Pregnant women':
             for ageGroup in population.ageGroups:
                 ageGroup.totalAnaemiaUpdate = ageGroup.anaemiaUpdate
@@ -351,7 +361,7 @@ class Model:
             for stuntingCat in self.constants.stuntingList:
                 numAgeingInStratified[stuntingCat] = 0.
             for prevStunt in ['stunted', 'not stunted']:
-                totalProbStunted = ageGroup.probConditionalStunting[prevStunt] * ageGroup.totalStuntingUpdate # TODO:check this is correct
+                totalProbStunted = ageGroup.probConditionalStunting[prevStunt] * ageGroup.continuedStuntingImpact
                 restratifiedProb = self.restratify(totalProbStunted)
                 for stuntingCat in self.constants.stuntingList:
                     numAgeingInStratified[stuntingCat] += restratifiedProb[stuntingCat] * numAgeingIn[prevStunt]
@@ -386,7 +396,7 @@ class Model:
         restratifiedStuntingAtBirth = {}
         restratifiedWastingAtBirth = {}
         for outcome in self.constants.birthOutcomes:
-            totalProbStunted = newBorns.probRiskAtBirth['Stunting'][outcome] * newBorns.totalStuntingUpdate
+            totalProbStunted = newBorns.probRiskAtBirth['Stunting'][outcome] * newBorns.continuedStuntingImpact
             restratifiedStuntingAtBirth[outcome] = self.restratify(totalProbStunted)
             #wasting
             restratifiedWastingAtBirth[outcome] = {}
@@ -394,7 +404,7 @@ class Model:
             totalProbWasted = 0
             # distribute proportions for wasted categories
             for wastingCat in self.constants.wastedList:
-                probWastedThisCat = probWastedAtBirth[wastingCat][outcome] * newBorns.totalWastingUpdate[wastingCat]
+                probWastedThisCat = probWastedAtBirth[wastingCat][outcome] * newBorns.continuedWastingImpact[wastingCat]
                 restratifiedWastingAtBirth[outcome][wastingCat] = probWastedThisCat
                 totalProbWasted += probWastedThisCat
             # normality constraint on non-wasted proportions
@@ -514,32 +524,43 @@ class Model:
         self._updateWRApopulation()
         self.updateYearlyRiskDists()
 
-    def runSimulation(self):
-        for year in self.constants.simulationYears:
-            self.year = year
-            self.moveModelOneYear()
-            self.programInfo._adjustProjectedCoverages(self.populations, year)
-            self._updateConditionalProbabilities()
-            self._resetUpdateStorage()
-            self.applyNewProgramCoverages(self.programInfo.currentCovs) # TODO: not sure if this is the best way to update coverages anymore
+    def _updateEverything(self, year):
+        """Responsible for moving the model, updating year, adjusting coverages and conditional probabilities, applying coverages"""
+        self.year = year
+        self.moveModelOneYear()
+        self.programInfo._updateYearForPrograms(year)
+        self.programInfo._adjustCoveragesForPopGrowth(self.populations, year)
+        self._updateConditionalProbabilities()
+        # annualCovs = self.programInfo._getAnnualCoverage(year)
+        # print annualCovs
+        self._resetStorage() # this placement matters b/c total updates used in ageing, births updates
+        self.applyNewProgramCoverages()
+        for prog in self.programInfo.programs:
+            print prog.name
+            print prog.annualCoverage
+            print " "
 
-    def _setAnnualCoveragesFromOptimisation(self, newCoverages):
-        for program in self.programInfo.programs:
-            program._setAnnualCoverageFromOptimisation(newCoverages)
+    def calibrate(self):
+        # use populations to adjust the baseline coverage
+        self.programInfo._setBaselineCov(self.populations) # TODO: required?
+        self.programInfo._setAnnualCoverages(self.populations, self.optimise)
+        self._setBirthPregnancyInfo()
+        for year in self.constants.calibrationYears:
+            self._updateEverything(year)
+
+    def runSimulation(self): # TODO: coverage restrictions not working for yearly updates
+        for year in self.constants.simulationYears:
+            self._updateEverything(year)
 
     def runSimulationFromOptimisation(self, newCoverages):
         self._setAnnualCoveragesFromOptimisation(newCoverages)
-        for year in self.constanFts.simulationYears:
-            self.year = year
-            self.moveModelOneYear()
-            self.programInfo._adjustProjectedCoverages(self.populations, year)
-            self._updateConditionalProbabilities()
-            self._resetUpdateStorage()
-            self.applyNewProgramCoverages(self.programInfo.currentCovs) # TODO: not sure if this is the best way to update coverages anymore
+        self.runSimulation()
 
+    def _setAnnualCoveragesFromOptimisation(self, newCoverages):
+        for program in self.programInfo.programs:
+            program._setAnnualCoverageFromOptimisation(newCoverages[program.name])
 
-
-    def _resetUpdateStorage(self):
+    def _resetStorage(self):
         for pop in self.populations:
             for ageGroup in pop.ageGroups:
                 ageGroup._setStorageForUpdates()

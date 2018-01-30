@@ -124,6 +124,17 @@ class ChildAgeGroup(object):
         self.probConditionalStunting = {}
         self.programEffectiveness = {}
         self._setStorageForUpdates()
+        self._updatesForAgeingAndBirths()
+
+    def _updatesForAgeingAndBirths(self):
+        """
+        Stunting & wasting have impact on births and ageing, which needs to be adjusted at each time step
+        :return:
+        """
+        self.continuedStuntingImpact = 1.
+        self.continuedWastingImpact = {}
+        for wastingCat in self.const.wastedList:
+            self.continuedWastingImpact[wastingCat] = 1.
 
     def _setStorageForUpdates(self):
         # storing updates
@@ -143,12 +154,9 @@ class ChildAgeGroup(object):
             self.diarrhoeaUpdate[risk] = 1.
         self.wastingPreventionUpdate = {}
         self.wastingTreatmentUpdate = {}
-        self.totalWastingUpdate = {}
         for wastingCat in self.const.wastedList:
             self.wastingPreventionUpdate[wastingCat] = 1.
             self.wastingTreatmentUpdate[wastingCat] = 1.
-            self.totalWastingUpdate[wastingCat] = 1.
-        self.totalStuntingUpdate = 1.
 
     ###### POPULATION CALCULATIONS ######
     # TODO: would like to re-write for better implementation
@@ -390,7 +398,7 @@ class Population(object):
         self.name = name
         self.project = dcp(project) # TODO: may not want to dcp all this -- only really want to get distribution data from project
         self.const = constants
-        self.baselineCovs = None
+        self.previousCov = None
         self.populationAreas = self.project.populationAreas
         self.riskDist = {}
         self.stuntingDist = self.project.riskDistributions['Stunting'] # TODO: error here b/c not using new distributions
@@ -688,7 +696,7 @@ class Children(Population):
                 ageGroup.probConditionalCoverage[risk] = {}
                 for program in self.project.programList:
                     ageGroup.probConditionalCoverage[risk][program] = {}
-                    fracCovered = self.baselineCovs[program]
+                    fracCovered = self.previousCov[program]
                     fracImpacted = sum(dist[cat] for cat in relevantCats)
                     if self.project.RRprograms[risk].get(program) is not None:
                         RR = self.project.RRprograms[risk][program][age]
@@ -708,7 +716,7 @@ class Children(Population):
             ageGroup.probConditionalCoverage[risk] = {}
             for program in self.project.programList:
                 ageGroup.probConditionalCoverage[risk][program] = {}
-                fracCovered = self.baselineCovs[program]
+                fracCovered = self.previousCov[program]
                 OR = self.project.ORprograms[risk][program][age]
                 pn, pc = self._solveQuadratic(OR, fracCovered, fracStunted)
                 ageGroup.probConditionalCoverage[risk][program]['covered'] = pc
@@ -722,7 +730,7 @@ class Children(Population):
             ageGroup.probConditionalCoverage[risk] = {}
             for program in self.project.programList:
                 ageGroup.probConditionalCoverage[risk][program] = {}
-                fracCovered = self.baselineCovs[program]
+                fracCovered = self.previousCov[program]
                 if self.project.RRprograms[risk].get(program) is not None:
                     RR = self.project.RRprograms[risk][program][age]
                     pn = fracAnaemic / (RR * fracCovered + (1. - fracCovered))
@@ -742,7 +750,7 @@ class Children(Population):
             for program in self.project.programList:
                 ageGroup.probConditionalCoverage[risk][program] = {}
                 OR = self.project.ORappropriateBFprogram[program][age]
-                fracCovered = self.baselineCovs[program]
+                fracCovered = self.previousCov[program]
                 pn, pc = self._solveQuadratic(OR, fracCovered, fracAppropriate)
                 ageGroup.probConditionalCoverage[risk][program]['covered'] = pc
                 ageGroup.probConditionalCoverage[risk][program]['not covered'] = pn
@@ -755,7 +763,7 @@ class Children(Population):
                 fracThisCatAge = ageGroup.wastingDist[wastingCat]
                 for program in self.project.programList:
                     OR = self.project.ORwastingProgram[wastingCat][program][age]
-                    fracCovered = self.baselineCovs[program]
+                    fracCovered = self.previousCov[program]
                     pn, pc = self._solveQuadratic(OR, fracCovered, fracThisCatAge)
                     ageGroup.probConditionalCoverage[wastingCat][program] = {}
                     ageGroup.probConditionalCoverage[wastingCat][program]['covered'] = pc
@@ -1071,7 +1079,7 @@ class PregnantWomen(Population):
             ageGroup.probConditionalCoverage[risk] = {}
             for program in self.project.programList:
                 ageGroup.probConditionalCoverage[risk][program] = {}
-                fracCovered = self.baselineCovs[program]
+                fracCovered = self.previousCov[program]
                 fracImpacted = sum(ageGroup.anaemiaDist[cat] for cat in self.const.anaemicList)
                 if self.project.ORprograms[risk].get(program) is None:
                     RR = self.project.RRprograms[risk][program][age]
@@ -1128,7 +1136,7 @@ class NonPregnantWomen(Population):
             ageGroup.probConditionalCoverage[risk] = {}
             for program in self.project.programList:
                 ageGroup.probConditionalCoverage[risk][program] = {}
-                fracCovered = self.baselineCovs[program]
+                fracCovered = self.previousCov[program]
                 fracImpacted = sum(ageGroup.anaemiaDist[cat] for cat in self.const.anaemicList)
                 if self.project.ORprograms[risk].get(program) is None:
                     RR = self.project.RRprograms[risk][program][age]
