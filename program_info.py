@@ -57,7 +57,7 @@ class ProgramInfo:
             dependentNames = set(program.exclusionDependencies)
             closedSetNames = set([prog.name for prog in closedSet])
             if dependentNames.issubset(closedSetNames):  # all parent programs in closed set
-                closedSet += [program]# TODO: above line will BREAK if not all parent nodes included in analysis. Remove those not included from exclusion list first
+                closedSet += [program]
         self.exclusionOrder = closedSet[:]
 
     def _thresholdSort(self):
