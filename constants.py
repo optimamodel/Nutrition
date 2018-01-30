@@ -2,7 +2,10 @@ from copy import deepcopy as dcp
 class Constants:
     """Thie class contains all the constants (lists of categories mostly) to be used across many classes"""
     def __init__(self, project):
-        self.simulationYears = dcp(project.simulationYears)
+        self.allYears = dcp(project.simulationYears)
+        self.baselineYear = int(dcp(project.year))
+        self.calibrationYears = self.allYears[:1] # year before coverage change
+        self.simulationYears = self.allYears[1:] # year after coverage change
         self.stuntingList = dcp(project.riskCategories['Stunting'])
         self.wastingList = dcp(project.riskCategories['Wasting'])
         self.bfList = dcp(project.riskCategories['Breastfeeding'])
