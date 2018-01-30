@@ -6,8 +6,6 @@ filePath = setup.getFilePath(root=root, bookDate='2017Nov', country='Bangladesh'
 model = setup.setUpModel(filePath)
 
 def runModelGivenCoverage(model, program, coverage, zeroCovs):
-    """ Runs the model with program set at coverage, the rest at 0"""
-    # TODO: currently not accounting for threshold dependencies
     thisModel = dcp(model)
     theseCovs = dcp(zeroCovs)
     thisModel.moveModelOneYear()
@@ -16,7 +14,12 @@ def runModelGivenCoverage(model, program, coverage, zeroCovs):
         pass
     else:
         theseCovs[program] = coverage
+        for prog in model.programInfo.programs:
+            if prog.malariaTwin: # forces them to be scaled up together
+                theseCovs[program + ' (malaria area)'] = coverage
     thisModel.applyNewProgramCoverages(theseCovs)
+
+
 
     for t in range(13):
         thisModel.moveModelOneYear()
@@ -47,14 +50,15 @@ for outcome in outcomes:
 # 95% ONE AT A TIME
 output = {}
 for program in referenceCovs.iterkeys():
-    output[program] = []
-    newModel = runModelGivenCoverage(model, program, coverage95, referenceCovs)
-    for prog in newModel.programInfo.programs:  # get unres coverage
-        if prog.name == program:
-            resCov = prog.proposedCoverageFrac
-    output[program].append(resCov)
-    for outcome in outcomes:
-        output[program].append(newModel.getOutcome(outcome))
+    if 'malaria' not in program:
+        output[program] = []
+        newModel = runModelGivenCoverage(model, program, coverage95, referenceCovs)
+        for prog in newModel.programInfo.programs:  # get unres coverage
+            if prog.name == program:
+                resCov = prog.proposedCoverageFrac
+        output[program].append(resCov)
+        for outcome in outcomes:
+            output[program].append(newModel.getOutcome(outcome))
 
 header = ['scenario', 'unrestricted_cov'] + outcomes
 import csv
