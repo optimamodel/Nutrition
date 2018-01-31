@@ -52,6 +52,9 @@ class Model:
         else:
             self.nonPW._setBirthPregnancyInfo(0) # TODO: not best implementation
 
+    def _setConditionalDiarrhoea(self):
+        self.children._setConditionalDiarrhoea()
+
     def applyNewProgramCoverages(self):
         '''newCoverages is required to be the unrestricted coverage % (i.e. people covered / entire target pop) '''
         # self._updateCoverages(newCoverages)
@@ -72,7 +75,7 @@ class Model:
         progList = self._getApplicablePrograms('Family planning') # returns 'Family Planning' program
         if progList:
             prog = progList[0]
-            pop._updateFracPregnancyAverted(prog.proposedCoverageFrac)
+            pop._updateFracPregnancyAverted(prog.annualCoverage[self.year])
 
     def _updateMortalityRates(self, pop):
         if pop.name != 'Non-pregnant women':
@@ -531,26 +534,31 @@ class Model:
         self.programInfo._updateYearForPrograms(year)
         self.programInfo._adjustCoveragesForPopGrowth(self.populations, year)
         self._updateConditionalProbabilities()
-        # annualCovs = self.programInfo._getAnnualCoverage(year)
-        # print annualCovs
-        self._resetStorage() # this placement matters b/c total updates used in ageing, births updates
+        self._resetStorage() # this order matters b/c total updates used in ageing, births updates
         self.applyNewProgramCoverages()
-        for prog in self.programInfo.programs:
-            print prog.name
-            print prog.annualCoverage
-            print " "
 
     def calibrate(self):
         # use populations to adjust the baseline coverage
         self.programInfo._setBaselineCov(self.populations) # TODO: required?
-        self.programInfo._setAnnualCoverages(self.populations, self.optimise)
+        self.programInfo._callProgramMethod('_setInitialCoverage')
+        # self.programInfo._setAnnualCoverages(self.populations, self.optimise)
         self._setBirthPregnancyInfo()
+        self._setConditionalDiarrhoea()
         for year in self.constants.calibrationYears:
             self._updateEverything(year)
 
-    def runSimulation(self): # TODO: coverage restrictions not working for yearly updates
+    def runSimulation(self):
         for year in self.constants.simulationYears:
             self._updateEverything(year)
+
+    def runSimulationGivenCoverage(self, coverages, restrictedCov):
+        """coverage is restricted coverage starting after calibration year, remaining constant for run time"""
+        self.programInfo._setSimulationCoverageFromScalar(coverages, restrictedCov)
+        self.runSimulation()
+
+    def runSimulationFromWorkbook(self):
+        self.programInfo._setSimulationCoverageFromWorkbook()
+        self.runSimulation()
 
     def runSimulationFromOptimisation(self, newCoverages):
         self._setAnnualCoveragesFromOptimisation(newCoverages)

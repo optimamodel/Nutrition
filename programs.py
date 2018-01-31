@@ -1,4 +1,4 @@
-from numpy import exp, log
+from numpy import exp, log, interp, isnan, array, logical_not
 from copy import deepcopy as dcp
 
 class Program(object):
@@ -29,39 +29,42 @@ class Program(object):
         # TODO: reset the annual coverages so it ignores the 'annual spending' sheet
         self.annualCoverage.update({year: newCoverage for year in self.const.simulationYears})
 
-    def _setAnnualCoverage(self, populations, optimise):
-        # TODO: just coverage % for now
-        if optimise:
-            # this coverage if already converted to unrestricted coverages
-            self.annualCoverage = {year:self.unrestrictedBaselineCov for year in self.const.allYears+[self.const.baselineYear]}
-        else:
-            # TODO: can clean this up using the year data stored in 'Constants'
-            from numpy import interp, isnan, array, logical_not
-            years = array(self.coverageProjections['Coverage'][0])
-            coverage = array(self.coverageProjections['Coverage'][1])
-            #[x1,x2...xn]
-            not_nan = logical_not(isnan(coverage))
-            # if all nan, assume constant at baseline
-            if not any(not_nan):
-                adjustedCov = [self.restrictedBaselineCov for x in coverage]
-            # if 1 or more values, baseline up to first present value, interpolate between, then constant if end values missing
-            else:
-                trueIndx = [i for i, x in enumerate(not_nan) if x]
-                firstTrue = trueIndx[0]
-                adjustedCov = [self.restrictedBaselineCov for x in coverage[:firstTrue]]
-                interpCov = list(interp(years[firstTrue:], years[not_nan], coverage[not_nan]))
-                adjustedCov += interpCov
-            self.annualCoverage = {year:cov for year,cov in zip(years, adjustedCov)}
-            # baseline year value
-            self.annualCoverage[self.const.baselineYear] = self.restrictedBaselineCov
-            # convert to unrestricted cov
-            self._getUnrestrictedCov(populations, self.annualCoverage)
+    def _setInitialCoverage(self):
+        """
+        Sets values for 'annualCoverages' for the baseline and calibration (typically first 2 years) only.
+        :return:
+        """
+        theseYears = [self.const.baselineYear] + self.const.calibrationYears
+        self.annualCoverage = {year:self.unrestrictedBaselineCov for year in theseYears}
 
-    def _getUnrestrictedCov(self, populations, restrictedCov):
-        self._setRestrictedPopSize(populations)
-        self._setUnrestrictedPopSize(populations)
-        self.annualCoverage = {year:cov*self.restrictedPopSize / self.unrestrictedPopSize
-                               for year, cov in restrictedCov.iteritems()}
+    def _setSimulationCoverageFromScalar(self, coverages, restrictedCov=True):
+        years = self.const.simulationYears
+        if restrictedCov:
+            coverages = self._getUnrestrictedCov(coverages)
+        interpolated = {year:coverages for year in years}
+        self.annualCoverage.update(interpolated)
+
+    def _setSimulationCoverageFromWorkbook(self):
+        years = array(self.const.simulationYears)
+        coverages = dcp(self.coverageProjections['Coverage'][1])
+        coverages = array(coverages[len(self.const.calibrationYears):]) # remove calibration years
+        not_nan = logical_not(isnan(coverages))
+        if not any(not_nan):
+            # is all nan, assume constant at baseline
+            interpolated = {year: self.unrestrictedBaselineCov for year in years}
+        else:
+            # for 1 or more present values, baseline up to first present value, interpolate between, then constant if end values missing
+            trueIndx = [i for i, x in enumerate(not_nan) if x]
+            firstTrue = trueIndx[0]
+            startCov = [self.restrictedBaselineCov for x in coverages[:firstTrue]]
+            # scaledCov = coverages * self.restrictedPopSize / self.unrestrictedPopSize # convert to unrestricted coverages
+            endCov = list(interp(years[firstTrue:], years[not_nan], coverages[not_nan]))
+            # scale each coverage
+            interpolated = {year: self._getUnrestrictedCov(cov) for year, cov in zip(years, startCov+endCov)}
+        self.annualCoverage.update(interpolated)
+
+    def _getUnrestrictedCov(self, restrictedCov):
+        return restrictedCov*self.restrictedPopSize / self.unrestrictedPopSize
 
     def _setBaselineCoverage(self, populations): # TODO: CAN PROBABLY GET RID OF THIS DUE TO NEW COVERAGES LIST METHOD
         self._setRestrictedPopSize(populations)
@@ -69,17 +72,15 @@ class Program(object):
         self.unrestrictedBaselineCov = (self.restrictedBaselineCov * self.restrictedPopSize) / \
                                           self.unrestrictedPopSize
 
-    def _adjustCoverage(self, populations, thisYear):
+    def _adjustCoverage(self, populations, year): # TODO: check that this doesn't overwrite interpolated values given by user...
         # set unrestricted pop size so coverages account for growing population size
         oldURP = dcp(self.unrestrictedPopSize)
-        self._setRestrictedPopSize(populations) # TODO: is this the right place to do this?
+        self._setRestrictedPopSize(populations) # TODO: is this the optimal place to do this?
         self._setUnrestrictedPopSize(populations)
         oldURP = dcp(self.unrestrictedPopSize) # TODO: stops adjustment if executed
-        indx = self.const.allYears.index(thisYear)
-        for year in self.const.allYears[indx:]:
-            oldCov = self.annualCoverage[year]
-            newCov = oldURP * oldCov / self.unrestrictedPopSize
-            self.annualCoverage.update({year:newCov})
+        oldCov = self.annualCoverage[year]
+        newCov = oldURP * oldCov / self.unrestrictedPopSize
+        self.annualCoverage.update({year:newCov})
 
     def updateCoverage(self, newCoverage, populations):
         """Update all values pertaining to coverage for a program"""

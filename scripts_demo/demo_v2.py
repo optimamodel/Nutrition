@@ -2,38 +2,19 @@ import setup
 from copy import deepcopy as dcp
 
 root = '../'
-filePath = setup.getFilePath(root=root, bookDate='2017Nov', country='Bangladesh')
-model = setup.setUpModel(filePath)
+filePath = setup.getFilePath(root=root, bookDate='2017Nov', country='Bangladesh')[0]
+model = setup.setUpModel(filePath) # already run a year
 
-def runModelGivenCoverage(model, program, coverage, zeroCovs):
-    thisModel = dcp(model)
-    theseCovs = dcp(zeroCovs)
-    thisModel.moveModelOneYear()
-
-    if program is None:
-        pass
-    else:
-        theseCovs[program] = coverage
-        for prog in model.programInfo.programs:
-            if prog.malariaTwin: # forces them to be scaled up together
-                theseCovs[program + ' (malaria area)'] = coverage
-    thisModel.applyNewProgramCoverages(theseCovs)
-
-
-
-    for t in range(13):
-        thisModel.moveModelOneYear()
-    return thisModel
-
-fixedProgs = ['WASH: Handwashing','WASH: Hygenic disposal', 'WASH: Improved sanitation','WASH: Improved water source',
- 'WASH: Piped water', 'Long-lasting insecticide-treated bednets', 'Family Planning', 'IPTp']
+fixedProgs = model.constants.referencePrograms
 coverage95 = 0.95
+
 referenceCovs = {}
-for prog, cov in model.programInfo.baselineCovs.iteritems():
-    if prog in fixedProgs:
-        referenceCovs[prog] = cov
+for prog in model.programInfo.programs:
+    if prog.name in fixedProgs:
+        cov = prog.restrictedBaselineCov
+        referenceCovs[prog.name] = cov
     else:
-        referenceCovs[prog] = 0.
+        referenceCovs[prog.name] = 0
 
 outcomes = ['thrive', 'stunting_prev', 'deaths_children', 'deaths_PW',
             'total_deaths', 'anaemia_prev_PW', 'anaemia_prev_WRA', 'anaemia_prev_children',
@@ -43,26 +24,31 @@ outcomes = ['thrive', 'stunting_prev', 'deaths_children', 'deaths_PW',
 reference = []
 reference.append('Reference')
 reference.append('')
-referenceModel = runModelGivenCoverage(model, None, 0, referenceCovs)
+refModel = dcp(model)
+refModel.runSimulationGivenCoverage(referenceCovs, True)
 for outcome in outcomes:
-    reference.append(referenceModel.getOutcome(outcome))
+    reference.append(refModel.getOutcome(outcome))
 
 # 95% ONE AT A TIME
 output = {}
-for program in referenceCovs.iterkeys():
-    if 'malaria' not in program:
-        output[program] = []
-        newModel = runModelGivenCoverage(model, program, coverage95, referenceCovs)
-        for prog in newModel.programInfo.programs:  # get unres coverage
-            if prog.name == program:
-                resCov = prog.proposedCoverageFrac
-        output[program].append(resCov)
+# TODO: does not scale-up malaria area simultaneously
+for programName in model.constants.programList:
+    if 'malaria' not in programName:
+        output[programName] = []
+        newModel = dcp(model)
+        newCov = dcp(referenceCovs)
+        newCov[programName] = 0.95
+        newModel.runSimulationGivenCoverage(newCov, True)
+        for prog in newModel.programInfo.programs:
+            if prog.name == programName:
+                unrestrictedCov = prog.annualCoverage[newModel.constants.simulationYears[0]]
+        output[programName].append(unrestrictedCov)
         for outcome in outcomes:
-            output[program].append(newModel.getOutcome(outcome))
+            output[programName].append(newModel.getOutcome(outcome))
 
 header = ['scenario', 'unrestricted_cov'] + outcomes
 import csv
-with open('demo_v2_newCovDef.csv', 'wb') as f:
+with open('demo_v2_timecov.csv', 'wb') as f:
     w = csv.writer(f)
     w.writerow(header)
     w.writerow(reference)

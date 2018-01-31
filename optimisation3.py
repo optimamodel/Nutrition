@@ -216,7 +216,6 @@ class Optimisation:
     def oneModelRunWithOutput(self, allocationDictionary): # TODO: there could be an issue here because may not account for changing coverages
         model = dcp(self.model)
         newCoverages = self.getCoverages(allocationDictionary)
-        print newCoverages
         model.runSimulationFromOptimisation(newCoverages)
         # model.applyNewProgramCoverages(newCoverages)
         # steps = self.numModelSteps - self.timeStepsPre

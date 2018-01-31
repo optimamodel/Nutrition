@@ -80,9 +80,22 @@ class ProgramInfo:
             program._setBaselineCoverage(populations)
             self.baselineCovs[program.name] = program.unrestrictedBaselineCov
 
-    def _setAnnualCoverages(self, populations, optimise):
+    def _setSimulationCoverageFromScalar(self, coverages, restrictedCov):
         for program in self.programs:
-            program._setAnnualCoverage(populations, optimise)
+            cov = coverages[program.name]
+            program._setSimulationCoverageFromScalar(cov, restrictedCov)
+
+    def _setSimulationCoverageFromWorkbook(self):
+        for program in self.programs:
+            program._setSimulationCoverageFromWorkbook()
+
+    def _callProgramMethod(self, method):
+        """Calls method for all programs in self.programs"""
+        map(lambda prog: getattr(prog, method)(), self.programs)
+
+    def _setAnnualCoverages(self, populations, years, optimise):
+        for program in self.programs:
+            program._setAnnualCoverage(populations, years, optimise)
 
     def _adjustCoveragesForPopGrowth(self, populations, year):
         for program in self.programs:

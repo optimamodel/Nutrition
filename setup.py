@@ -17,5 +17,5 @@ def getFilePath(root, bookDate, country):
 if __name__ == '__main__':
     filePath = getFilePath('', '', 'Master')[0]
     model = setUpModel(filePath)
-    model.runSimulation()
+    model.runSimulationFromWorkbook()
     print model.getOutcome('thrive')
