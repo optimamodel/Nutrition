@@ -457,6 +457,9 @@ class Children(Population):
         self._setProbWastedIfCovered()
         self._setProbCorrectlyBreastfedIfCovered()
         # self._setProbConditionalDiarrhoea()
+        self._setProbStuntedIfDiarrhoea()
+        self._setProbAnaemicIfDiarrhoea()
+        self._setProbWastedIfDiarrhoea()
 
     def _setConditionalDiarrhoea(self):
         self._setProbStuntedIfDiarrhoea()
