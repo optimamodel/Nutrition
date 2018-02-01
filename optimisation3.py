@@ -302,8 +302,3 @@ class Optimisation:
                 for multiple in self.budgetMultiples:
                     allocation = OrderedDict(sorted(optimised[objective][multiple].items()))
                     w.writerow([multiple] + allocation.values())
-
-    def getAllPopSizes(self, model):
-        allCompartments = model.listOfAgeCompartments + model.listOfReproductiveAgeCompartments + model.listOfPregnantWomenAgeCompartments
-        popSizes = {pop.name: pop.getTotalPopulation() for pop in allCompartments}
-        return popSizes
