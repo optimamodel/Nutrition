@@ -19,4 +19,3 @@ if __name__ == '__main__':
     filePath = getFilePath('', '2017Nov', 'Bangladesh')[0]
     model = setUpModel(filePath)
     model.runSimulationFromWorkbook()
-    print model.getOutcome('thrive')
