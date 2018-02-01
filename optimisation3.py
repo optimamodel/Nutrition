@@ -74,8 +74,11 @@ class Optimisation:
             program._setCostCoverageCurve()
         self.inititalProgramAllocations = self.getInitialProgramAllocations()
         self.getFixedCosts()
-        self.totalBudget = totalBudget if totalBudget else sum(self.inititalProgramAllocations)
-        self.availableBudget = self.totalBudget - sum(self.fixedCosts)
+        # either distribute manually entered budget, or distribute costs which are not fixed
+        if totalBudget:
+            self.availableBudget = totalBudget
+        else:
+            self.availableBudget = sum(self.inititalProgramAllocations) - sum(self.fixedCosts)
         self.kwargs = {'model': self.model, 'steps': self.steps,
                 'availableBudget': self.availableBudget, 'fixedCosts': self.fixedCosts}
         # check that results directory exists and if not then create it
@@ -125,8 +128,6 @@ class Optimisation:
                 p.join()
             jobs = jobs[thisRound:]
         return
-
-# TODO: have optimisation specify cost, translate to coverage, adjust the time-dependent coverage
 
     def runOptimisation(self, multiple, objective):
         import pso as pso
@@ -213,7 +214,7 @@ class Optimisation:
         outcome = model.getOutcome(objective)
         return outcome
 
-    def oneModelRunWithOutput(self, allocationDictionary): # TODO: there could be an issue here because may not account for changing coverages
+    def oneModelRunWithOutput(self, allocationDictionary):
         model = dcp(self.model)
         newCoverages = self.getCoverages(allocationDictionary)
         model.runSimulationFromOptimisation(newCoverages)
@@ -294,7 +295,7 @@ class Optimisation:
             w = csv.writer(f)
             sortedCurrent = OrderedDict(sorted(current.items()))
             w.writerow(['current'] + sortedCurrent.keys())
-            w.writerow(['']+ sortedCurrent.values())
+            w.writerow([''] + sortedCurrent.values())
             for objective in self.objectivesList:
                 w.writerow([''])
                 w.writerow([objective] + sorted(optimised[objective][self.budgetMultiples[0]].keys()))
