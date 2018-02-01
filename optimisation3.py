@@ -56,7 +56,7 @@ class Optimisation:
         import setup
         self.country = fileInfo[2]
         filePath, resultsPath = setup.getFilePath(root=fileInfo[0], bookDate=fileInfo[1], country=self.country)
-        self.model = setup.setUpModel(filePath, optimise=True) # model has already moved 1 year
+        self.model = setup.setUpModel(filePath, adjustCoverage=False, optimise=True) # model has already moved 1 year
         self.budgetMultiples = budgetMultiples
         self.objectivesList = objectivesList
         self.programs = self.model.programInfo.programs
