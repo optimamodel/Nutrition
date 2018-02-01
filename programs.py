@@ -26,7 +26,6 @@ class Program(object):
         :param newCoverage:
         :return:
         """
-        # TODO: reset the annual coverages so it ignores the 'annual spending' sheet
         self.annualCoverage.update({year: newCoverage for year in self.const.simulationYears})
 
     def _setInitialCoverage(self):
@@ -77,7 +76,6 @@ class Program(object):
         oldURP = dcp(self.unrestrictedPopSize)
         self._setRestrictedPopSize(populations) # TODO: is this the optimal place to do this?
         self._setUnrestrictedPopSize(populations)
-        oldURP = dcp(self.unrestrictedPopSize) # TODO: stops adjustment if executed
         oldCov = self.annualCoverage[year]
         newCov = oldURP * oldCov / self.unrestrictedPopSize
         self.annualCoverage.update({year:newCov})

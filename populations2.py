@@ -81,6 +81,9 @@ class PWAgeGroup:
         self.birthUpdate = {}
         for BO in self.const.birthOutcomes:
             self.birthUpdate[BO] = 1.
+        self.mortalityUpdate = {}
+        for cause in self.const.causesOfDeath:
+            self.mortalityUpdate[cause] = 1.
 
     def getAgeGroupPopulation(self):
         return sum(self.boxes[anaemiaCat].populationSize for anaemiaCat in self.const.anaemiaList)
@@ -997,6 +1000,7 @@ class PregnantWomen(Population):
         self._makeBoxes()
         self._setPWReferenceMortality()
         self._updateMortalityRates()
+        self._setProgramEffectiveness()
 
     def getTotalPopulation(self):
         return sum(ageGroup.getAgeGroupPopulation() for ageGroup in self.ageGroups)
@@ -1010,6 +1014,11 @@ class PregnantWomen(Population):
         return totalAnaemia / totalPop
 
     ##### DATA WRANGLING ######
+
+    def _setProgramEffectiveness(self):
+        for ageGroup in self.ageGroups:
+            age = ageGroup.age
+            ageGroup.programEffectiveness = self.project.PWprograms[age]
 
     def _setConditionalProbabilities(self):
         self._setProbAnaemicIfCovered()
@@ -1059,12 +1068,12 @@ class PregnantWomen(Population):
 
         # Calculate LHS for each age and cause of death then solve for X
         Xdictionary = {}
-        for age in self.const.PWages:
-            Xdictionary[age] = {}
+        for ageGroup in self.ageGroups:
+            age = ageGroup.age
+            ageGroup.referenceMortality = {}
             for cause in self.project.causesOfDeath:
                 LHS_age_cause = mortalityCorrected[age] * self.project.deathDist[cause][age]
-                Xdictionary[age][cause] = LHS_age_cause / RHS[age][cause]
-        self.referenceMortality = Xdictionary
+                ageGroup.referenceMortality[cause] = LHS_age_cause / RHS[age][cause]
 
     def _updateMortalityRates(self):
         for ageGroup in self.ageGroups:
@@ -1072,7 +1081,7 @@ class PregnantWomen(Population):
             for anaemiaCat in self.const.anaemiaList:
                 count = 0
                 for cause in self.project.causesOfDeath:
-                    t1 = self.referenceMortality[age][cause]
+                    t1 = ageGroup.referenceMortality[cause]
                     t2 = self.project.RRdeath['Anaemia'][cause][anaemiaCat][age]
                     count += t1 * t2
                 ageGroup.boxes[anaemiaCat].mortalityRate = count

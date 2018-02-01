@@ -29,6 +29,7 @@ class Project:
         self.getAnaemiaProgram()
         self.getWastingProgram()
         self.getChildProgram()
+        self.getPWPrograms()
         self.getFamilyPrograms()
         self.getBirthAgePrograms()
         self.getCostCoverageInfo()
@@ -66,6 +67,7 @@ class Project:
         self.padBForPrograms()
         self.padAnaemiaORprograms()
         self.padChildPrograms()
+        self.padPWprograms()
 
     def combineRelatedData(self):
         self.combineORprogram()
@@ -266,6 +268,11 @@ class Project:
         childDict = childSheet.to_dict(orient='index')
         self.childPrograms = self.makeDict(childDict)
 
+    def getPWPrograms(self):
+        PWsheet= self.readSheet('Programs for PW', [0,1,2])
+        PWdict = PWsheet.to_dict(orient='index')
+        self.PWprograms = self.makeDict(PWdict)
+
     def getBirthAgePrograms(self):
         programSheet = self.readSheet('Programs birth age', [0,1])
         self.birthAgeProgram = programSheet.loc['Birth age program'].to_dict('dict')
@@ -379,9 +386,10 @@ class Project:
     def padChildPrograms(self):
         '''Need all causes to have a value for the present programs'''
         fields = ['Affected fraction', 'Effectiveness mortality', 'Effectiveness incidence']
-        programsPresent = self.childPrograms.keys()
         effectiveness = {}
-        for program in programsPresent:
+        for program in self.programList:
+            if self.childPrograms.get(program) is None:
+                self.childPrograms[program] = {}
             for cause in self.causesOfDeath + ['MAM', 'SAM']:
                 if self.childPrograms[program].get(cause) is None:
                     self.childPrograms[program][cause] = {}
@@ -393,13 +401,39 @@ class Project:
                             self.childPrograms[program][cause][field][age] = 0
         for age in self.childAges:
             effectiveness[age] = {}
-            for program in programsPresent:
+            for program in self.programList:
                 effectiveness[age][program] = {}
                 for cause in self.causesOfDeath + ['MAM', 'SAM']:
                     effectiveness[age][program][cause] = {}
                     for field in fields:
                         effectiveness[age][program][cause][field] = self.childPrograms[program][cause][field][age]
         self.childPrograms = effectiveness
+
+    def padPWprograms(self):
+        '''Need all causes to have a value for the present programs'''
+        fields = ['Affected fraction', 'Effectiveness mortality']
+        effectiveness = {} # TODO; this and above function don't need to fill for all programs, just those relevant to PW and children
+        for program in self.programList:
+            if self.PWprograms.get(program) is None:
+                self.PWprograms[program] = {}
+            for cause in self.causesOfDeath:
+                if self.PWprograms[program].get(cause) is None:
+                    self.PWprograms[program][cause] = {}
+                for field in fields:
+                    if self.PWprograms[program][cause].get(field) is None:
+                        self.PWprograms[program][cause][field] = {}
+                    for age in self.PWages:
+                        if self.PWprograms[program][cause][field].get(age) is None:
+                            self.PWprograms[program][cause][field][age] = 0
+        for age in self.PWages:
+            effectiveness[age] = {}
+            for program in self.programList:
+                effectiveness[age][program] = {}
+                for cause in self.causesOfDeath:
+                    effectiveness[age][program][cause] = {}
+                    for field in fields:
+                        effectiveness[age][program][cause][field] = self.PWprograms[program][cause][field][age]
+        self.PWprograms = effectiveness
 
 
     def _getMissingElements(self, listA, listB):

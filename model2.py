@@ -1,7 +1,7 @@
 from copy import deepcopy as dcp
 from scipy.stats import norm
 class Model:
-    def __init__(self, filePath, optimise=False):
+    def __init__(self, filePath, adjustCoverage=True, optimise=False):
         import data2 as data
         import populations2 as pops
         import program_info
@@ -14,6 +14,7 @@ class Model:
         self.children = self.populations[0]
         self.PW = self.populations[1]
         self.nonPW = self.populations[2]
+        self.adjustCoverage = adjustCoverage
 
         self.year = self.constants.baselineYear
         self._createOutcomeTrackers()
@@ -208,6 +209,9 @@ class Model:
             newBorns.birthDist['Term AGA'] = 1. - sum(newBorns.birthDist[BO] for BO in list(set(self.constants.birthOutcomes) - {'Term AGA'}))
             # update anaemia distribution
             for ageGroup in population.ageGroups:
+                # mortality
+                for cause in self.constants.causesOfDeath:
+                    ageGroup.referenceMortality[cause] *= ageGroup.mortalityUpdate[cause]
                 oldProbAnaemia = ageGroup.getFracRisk('Anaemia')
                 newProbAnaemia = oldProbAnaemia * ageGroup.totalAnaemiaUpdate
                 ageGroup.anaemiaDist['anaemic'] = newProbAnaemia
@@ -532,9 +536,10 @@ class Model:
         self.year = year
         self.moveModelOneYear()
         self.programInfo._updateYearForPrograms(year)
-        self.programInfo._adjustCoveragesForPopGrowth(self.populations, year)
+        if self.adjustCoverage:
+            self.programInfo._adjustCoveragesForPopGrowth(self.populations, year)
         self._updateConditionalProbabilities()
-        self._resetStorage() # this order matters b/c total updates used in ageing, births updates
+        self._resetStorage()
         self.applyNewProgramCoverages()
 
     def calibrate(self):

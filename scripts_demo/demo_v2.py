@@ -3,7 +3,7 @@ from copy import deepcopy as dcp
 
 root = '../'
 filePath = setup.getFilePath(root=root, bookDate='2017Nov', country='Bangladesh')[0]
-model = setup.setUpModel(filePath) # already run a year
+model = setup.setUpModel(filePath, adjustCoverage=False) # already run a year
 
 fixedProgs = model.constants.referencePrograms
 coverage95 = 0.95
@@ -38,10 +38,12 @@ for programName in model.constants.programList:
         newModel = dcp(model)
         newCov = dcp(referenceCovs)
         newCov[programName] = 0.95
+        newCov[programName + ' (malaria area)'] = 0.95
         newModel.runSimulationGivenCoverage(newCov, True)
+        unrestrictedCov = 0
         for prog in newModel.programInfo.programs:
-            if prog.name == programName:
-                unrestrictedCov = prog.annualCoverage[newModel.constants.simulationYears[0]]
+            if prog.name == programName or prog.name == programName + ' (malaria area)':
+                unrestrictedCov += prog.annualCoverage[newModel.constants.simulationYears[0]]
         output[programName].append(unrestrictedCov)
         for outcome in outcomes:
             output[programName].append(newModel.getOutcome(outcome))
@@ -62,4 +64,4 @@ with open('demo_v2_timecov.csv', 'wb') as f:
 
 
 
-
+#
