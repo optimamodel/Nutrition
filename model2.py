@@ -556,7 +556,7 @@ class Model:
         for year in self.constants.simulationYears:
             self._updateEverything(year)
 
-    def runSimulationGivenCoverage(self, coverages, restrictedCov):
+    def runSimulationGivenCoverage(self, coverages, restrictedCov=True):
         """coverage is restricted coverage starting after calibration year, remaining constant for run time"""
         self.programInfo._setSimulationCoverageFromScalar(coverages, restrictedCov)
         self.runSimulation()

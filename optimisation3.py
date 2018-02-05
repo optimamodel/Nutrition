@@ -1,5 +1,4 @@
 from copy import deepcopy as dcp
-from operator import add
 from multiprocessing import cpu_count, Process
 
 def runModelForNTimeSteps(steps, model):
@@ -20,20 +19,20 @@ def rescaleAllocation(totalBudget, allocation):
     return rescaledAllocation
 
 
-def objectiveFunction(allocation, objective, model, availableBudget, fixedCosts, steps):
+def objectiveFunction(allocation, objective, model, availableBudget, fixedCosts, indxToKeep, steps):
     thisModel = dcp(model)
+    totalSpending = dcp(fixedCosts)
     # scale the allocation appropriately
     if sum(allocation) == 0:
         scaledAllocation = dcp(allocation)
     else:
         scaledAllocation = rescaleAllocation(availableBudget, allocation)
-    # add the fixed costs to the scaled allocation of available budget
-    scaledAllocation = map(add, scaledAllocation, fixedCosts)
     newCoverages = {}
     programs = thisModel.programInfo.programs
-    for idx in range(len(programs)):
-        program = programs[idx]
-        newCoverages[program.name] = program.costCurveFunc(scaledAllocation[idx]) / program.unrestrictedPopSize
+    for idx, program in enumerate(programs):
+        if idx in indxToKeep:
+            totalSpending[idx] += scaledAllocation.pop(0) # utilising preserved order of indxToKeep
+        newCoverages[program.name] = program.costCurveFunc(totalSpending[idx]) / program.unrestrictedPopSize
     thisModel.runSimulationFromOptimisation(newCoverages)
     outcome = thisModel.getOutcome(objective) * 1000.
     if objective == 'thrive':
@@ -52,13 +51,14 @@ class OutputClass:
 
 class Optimisation:
     def __init__(self, objectivesList, budgetMultiples, fileInfo, costCurveType='standard',
-                 totalBudget=None, parallel=True, numRuns=1):
+                 totalBudget=None, parallel=True, numRuns=1, filterProgs=False):
         import setup
         self.country = fileInfo[2]
         filePath, resultsPath = setup.getFilePath(root=fileInfo[0], bookDate=fileInfo[1], country=self.country)
         self.model = setup.setUpModel(filePath, adjustCoverage=False, optimise=True) # model has already moved 1 year
         self.budgetMultiples = budgetMultiples
         self.objectivesList = objectivesList
+        self.filterProgs = filterProgs
         self.programs = self.model.programInfo.programs
         self.numModelSteps = len(self.model.constants.simulationYears) # default to period for which data is supplied
         self.parallel = parallel
@@ -67,18 +67,16 @@ class Optimisation:
         self.costCurveType = costCurveType
         self.timeSeries = None
         self.timeStepsPre = 1
-        # self.model = runModelForNTimeSteps(self.timeStepsPre, self.model)
-        # self.model._setConditionalProbabilities()
         self.steps = self.numModelSteps - self.timeStepsPre
         for program in self.programs:
             program._setCostCoverageCurve()
-        self.inititalProgramAllocations = self.getInitialProgramAllocations()
+        self.initialProgramAllocations = self.getInitialProgramAllocations()
         self.getFixedCosts()
         # either distribute manually entered budget, or distribute costs which are not fixed
         if totalBudget:
             self.availableBudget = totalBudget
         else:
-            self.availableBudget = sum(self.inititalProgramAllocations) - sum(self.fixedCosts)
+            self.availableBudget = sum(self.initialProgramAllocations) - sum(self.fixedCosts)
         self.kwargs = {'model': self.model, 'steps': self.steps,
                 'availableBudget': self.availableBudget, 'fixedCosts': self.fixedCosts}
         # check that results directory exists and if not then create it
@@ -88,7 +86,6 @@ class Optimisation:
             self.resultDirectories[objective] = resultsPath +'/'+objective
             if not os.path.exists(self.resultDirectories[objective]):
                 os.makedirs(self.resultDirectories[objective])
-
 
     ######### OPTIMISATION ##########
 
@@ -137,16 +134,23 @@ class Optimisation:
         kwargs = dcp(self.kwargs)
         kwargs['availableBudget'] *= multiple
         kwargs['objective'] = objective
-        xmin = [0.] * len(self.programs)
-        xmax = [kwargs['availableBudget']] * len(self.programs)
+        if self.filterProgs:
+            indxToKeep = self._selectProgsForObjective(objective)
+            kwargs['indxToKeep'] = indxToKeep
+            xmin = [0.] * len(indxToKeep)
+            xmax = [kwargs['availableBudget']] * len(indxToKeep)
+        else:
+            kwargs['indxToKeep'] = [i for i in range(len(self.programs))]
+            xmin = [0.] * len(self.programs)
+            xmax = [kwargs['availableBudget']] * len(self.programs)
         runOutputs = []
         for run in range(self.numRuns):
             now = time.time()
-            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=50, swarmsize=60)
+            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=90, swarmsize=90)
             print "Objective: " + str(objective)
             print "value * 1000: " + str(fopt)
             budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
-                                                         xmax=xmax, verbose=3)
+                                                         xmax=xmax)
             print time.time() - now
             outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval,
                                        output.x)
@@ -154,8 +158,14 @@ class Optimisation:
         bestAllocation = self.findBestAllocation(runOutputs)
         scaledAllocation = rescaleAllocation(kwargs['availableBudget'], bestAllocation)
         # add fixed costs to optimal additional funds
-        scaledAllocation = [spending + fixedCost for spending, fixedCost in zip(scaledAllocation, self.fixedCosts)]
-        bestAllocationDict = self.createDictionary(scaledAllocation)
+        indxToKeep = kwargs['indxToKeep']
+        totalAllocation = []
+        for idx, value in enumerate(self.fixedCosts):
+            totalAllocation.append(value)
+            if idx in indxToKeep:
+                totalAllocation[idx] += scaledAllocation.pop(0)
+        # scaledAllocation = [spending + fixedCost for spending, fixedCost in zip(scaledAllocation, self.fixedCosts)]
+        bestAllocationDict = self.createDictionary(totalAllocation)
         self.writeToPickle(bestAllocationDict, multiple, objective)
         return
 
@@ -178,14 +188,36 @@ class Optimisation:
     def getFixedCosts(self):
         # TODO: could clean this up by seeting 'reference' as attribute of program
         self.fixedCosts = []
-        for idx in range(len(self.programs)):
-            self.fixedCosts.append(0)
-            program = self.programs[idx]
-            for prog in self.model.programInfo.referencePrograms:
-                if program.name == prog:
-                    spending = self.inititalProgramAllocations[idx]
-                    self.fixedCosts[idx] = spending
+        for idx, program in enumerate(self.programs):
+            if program.name in self.model.programInfo.referencePrograms:
+                self.fixedCosts.append(self.initialProgramAllocations[idx])
+            else:
+                self.fixedCosts.append(0)
 
+    def _selectProgsForObjective(self, objective):
+        threshold = 0.5
+        newCov = 1.
+        indxToKeep = []
+        # compare with 0 case # TODO: could make this attribute for all processes to share
+        zeroCov = {prog.name: 0 for prog in self.programs}
+        zeroModel = dcp(self.model)
+        # get baseline case
+        zeroModel.runSimulationGivenCoverage(zeroCov, restrictedCov=True)
+        zeroOutcome = zeroModel.getOutcome(objective)
+        for indx, program in enumerate(self.programs):
+            thisModel = dcp(self.model)
+            thisCov = dcp(zeroCov)
+            thisCov[program.name] = newCov
+            if program.malariaTwin:
+                thisCov[program.name + ' (malaria area)'] = newCov
+            thisModel.runSimulationGivenCoverage(thisCov, restrictedCov=True)
+            outcome = thisModel.getOutcome(objective)
+            if abs((outcome - zeroOutcome) / zeroOutcome) * 100. > threshold:  # no impact
+                indxToKeep.append(indx)
+                for twinIndx, twin in enumerate(self.programs): # TODO: shouldn't have to search through twice
+                    if twin.name == program.name + ' (malaria area)':
+                        indxToKeep.append(twinIndx)
+        return indxToKeep
 
     ########### FILE HANDLING ############
 
@@ -255,7 +287,7 @@ class Optimisation:
 
     def writeAllResults(self):
         baselineOutcome = self.getZeroSpendingOutcome()
-        currentSpending = self.createDictionary(self.inititalProgramAllocations)
+        currentSpending = self.createDictionary(self.initialProgramAllocations)
         currentOutcome = self.getCurrentOutcome(currentSpending)
         optimisedAllocations = self.readPickles()
         optimisedOutcomes = self.getOptimisedOutcomes(optimisedAllocations)

@@ -1,9 +1,13 @@
 import model2
+import data2
 from datetime import date
 
 def setUpModel(filePath, adjustCoverage=True, optimise=False):
     model = model2.Model(filePath, adjustCoverage=adjustCoverage, optimise=optimise) # model has already moved 1 year
     return model
+
+def setUpProject(filePath):
+    return data2.setUpProject(filePath)
 
 def getFilePath(root, bookDate, country):
     import os, sys
@@ -16,6 +20,6 @@ def getFilePath(root, bookDate, country):
 
 
 if __name__ == '__main__':
-    filePath = getFilePath('', '2017Nov', 'Bangladesh')[0]
+    filePath = getFilePath('', '', 'Master')[0]
     model = setUpModel(filePath)
     model.runSimulationFromWorkbook()

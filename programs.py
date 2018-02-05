@@ -2,9 +2,9 @@ from numpy import exp, log, interp, isnan, array, logical_not
 from copy import deepcopy as dcp
 
 class Program(object):
-    '''Each instance of this class is an intervention,
+    """Each instance of this class is an intervention,
     and all necessary data will be stored as attributes. Will store name, targetpop, popsize, coverage, edges etc
-    Also want it to set absolute number covered, coverage frac (coverage amongst entire pop), normalised coverage (coverage amongst target pop)'''
+    Also want it to set absolute number covered, coverage frac (coverage amongst entire pop), normalised coverage (coverage amongst target pop)"""
     def __init__(self, name, constants):
         self.name = name
         self.const = constants
@@ -360,12 +360,12 @@ class CostCovCurve:
         return curve
 
     def getCostCoverageCurveSpecifyingParameters(self, A, B, C, D):
-        '''This is a logistic curve with each parameter (A,B,C,D) provided by the user'''
+        """This is a logistic curve with each parameter (A,B,C,D) provided by the user"""
         logisticCurve = lambda x: (A + (B - A) / (1 + exp(-(x - C) / D)))
         return logisticCurve
 
     def getSpending(self, covFrac):
-        '''Assumes standard increasing marginal costs curve '''
+        """Assumes standard increasing marginal costs curve """
         covNumber = covFrac * self.restrictedPop
         B = self.saturation * self.restrictedPop
         A = -B
