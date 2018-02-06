@@ -10,6 +10,6 @@ fileInfo = [root, '2017Nov', 'Bangladesh']
 totalBudget = 10000000.
 
 if __name__ == '__main__':
-    thisOptimisation = optimisation.Optimisation(objectives, budgetMultiples, fileInfo, totalBudget=totalBudget, filterProgs=True)
+    thisOptimisation = optimisation.Optimisation(objectives, budgetMultiples, fileInfo, totalBudget=totalBudget)
     thisOptimisation.optimise()
     thisOptimisation.writeAllResults()
