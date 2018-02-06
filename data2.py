@@ -48,6 +48,7 @@ class Project:
         self.getAnaemiaDist()
         self.getBirthDist()
         self.getProjections()
+        self.getAnnualPrev()
         self.getAppropriateBF()
         self.getPopulationRiskAreas()
 
@@ -119,6 +120,10 @@ class Project:
 
     def getProjections(self):
         self.projections = self.readSheet('Demographic projections', [0], 'dict')
+
+    def getAnnualPrev(self):
+        annualPrev = self.readSheet('Annual prevalence',[0,1])
+        self.annualPrev = {level: annualPrev.xs(level).to_dict('index') for level in annualPrev.index.levels[0]} # TOOO: could use this method to streamline ugly code in this script
 
     ### MORTALITY ###
 
