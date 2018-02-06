@@ -233,6 +233,15 @@ class ChildAgeGroup(object):
                     numWasted += self.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat].populationSize
         return numWasted
 
+    def getCumulativeDeaths(self):
+        deaths = 0
+        for stuntingCat in self.const.stuntingList:
+            for wastingCat in self.const.wastingList:
+                for bfCat in self.const.bfList:
+                    for anaemiaCat in self.const.anaemiaList:
+                        deaths += self.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat].cumulativeDeaths
+        return deaths
+
     def getStuntedFrac(self):
         return self.getAgeGroupNumberStunted() / self.getAgeGroupPopulation()
 
