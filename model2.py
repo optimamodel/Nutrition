@@ -622,7 +622,7 @@ class Model:
         elif outcome == 'total_deaths':
             return self.cumulativeDeaths
         elif outcome == 'mortality_rate':
-            return self.cumulativeDeaths/(self.cumulativeAgeingOutChildren + self.cumulativeAgeingOutChildren)
+            return self.cumulativeDeaths/(self.cumulativeAgeingOutChildren + self.cumulativeAgeingOutPW)
         elif outcome == 'neonatal_deaths':
             neonates = self.children.ageGroups[0]
             return neonates.getCumulativeDeaths()

@@ -71,7 +71,7 @@ class Program(object):
         self.unrestrictedBaselineCov = (self.restrictedBaselineCov * self.restrictedPopSize) / \
                                           self.unrestrictedPopSize
 
-    def _adjustCoverage(self, populations, year): # TODO: check that this doesn't overwrite interpolated values given by user...
+    def _adjustCoverage(self, populations, year):
         # set unrestricted pop size so coverages account for growing population size
         oldURP = dcp(self.unrestrictedPopSize)
         self._setRestrictedPopSize(populations) # TODO: is this the optimal place to do this?
