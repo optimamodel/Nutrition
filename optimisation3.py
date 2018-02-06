@@ -51,7 +51,7 @@ class OutputClass:
 
 class Optimisation:
     def __init__(self, objectivesList, budgetMultiples, fileInfo, costCurveType='standard',
-                 totalBudget=None, parallel=True, numRuns=1, filterProgs=False):
+                 totalBudget=None, parallel=True, numRuns=1, filterProgs=True):
         import setup
         self.country = fileInfo[2]
         filePath, resultsPath = setup.getFilePath(root=fileInfo[0], bookDate=fileInfo[1], country=self.country)
@@ -250,9 +250,6 @@ class Optimisation:
         model = dcp(self.model)
         newCoverages = self.getCoverages(allocationDictionary)
         model.runSimulationFromOptimisation(newCoverages)
-        # model.applyNewProgramCoverages(newCoverages)
-        # steps = self.numModelSteps - self.timeStepsPre
-        # model = runModelForNTimeSteps(steps, model)
         return model
 
     def getOptimisedOutcomes(self, allocations):

@@ -28,12 +28,6 @@ class Model:
         self.cumulativePWDeaths = 0
         self.cumulativeDeaths = 0
 
-    # def _setConditionalProbabilities(self):
-    #     baselineCov = self.programInfo._getAnnualCoverage(self.constants.baselineYear)
-    #     for pop in self.populations:
-    #         pop.previousCov = baselineCov # pop has access to adjusted baseline cov
-    #         pop._setConditionalProbabilities()
-
     def _updateConditionalProbabilities(self):
         previousCov = self.programInfo._getAnnualCoverage(self.year-1) # last year cov
         for pop in self.populations:
@@ -53,8 +47,8 @@ class Model:
         else:
             self.nonPW._setBirthPregnancyInfo(0) # TODO: not best implementation
 
-    def _setConditionalDiarrhoea(self):
-        self.children._setConditionalDiarrhoea()
+    # def _setConditionalDiarrhoea(self):
+    #     self.children._setConditionalDiarrhoea()
 
     def applyNewProgramCoverages(self):
         '''newCoverages is required to be the unrestricted coverage % (i.e. people covered / entire target pop) '''
@@ -179,7 +173,6 @@ class Model:
                 oldProbStunting = ageGroup.getFracRisk('Stunting')
                 newProbStunting = oldProbStunting * ageGroup.totalStuntingUpdate
                 ageGroup.stuntingDist = self.restratify(newProbStunting)
-                # ageGroup.redistributePopulation()
                 # anaemia
                 oldProbAnaemia = ageGroup.getFracRisk('Anaemia')
                 newProbAnaemia = oldProbAnaemia * ageGroup.totalAnaemiaUpdate
@@ -541,6 +534,37 @@ class Model:
         self._updateConditionalProbabilities()
         self._resetStorage()
         self.applyNewProgramCoverages()
+        self._applyPrevTimeTrends() # TODO: check the order of this is correct. Should I move 'restratify' func to end func?
+        self._redistributePopulation() # TODO: this is a replacement for doing this in _updateDistributions()
+
+    def _applyPrevTimeTrends(self):
+        for ageGroup in self.children.ageGroups:
+            # stunting
+            probStunted = sum(ageGroup.stuntingDist[cat] for cat in self.constants.stuntedList) # TODO: could put this sort of thing into function
+            newProb = probStunted * ageGroup.annualPrevChange['Stunting']
+            ageGroup.stuntingDist = self.restratify(newProb)
+            # wasting
+            probWasted = sum(ageGroup.wastingDist[cat] for cat in self.constants.wastedList)
+            newProb = probWasted * ageGroup.annualPrevChange['Wasting']
+            nonWastedProb = self.restratify(newProb)
+            for nonWastedCat in self.constants.nonWastedList:
+                ageGroup.wastingDist[nonWastedCat] = nonWastedProb[nonWastedCat]
+            # anaemia
+            probAnaemic = sum(ageGroup.anaemiaDist[cat] for cat in self.constants.anaemicList)
+            newProb = probAnaemic * ageGroup.annualPrevChange['Anaemia']
+            ageGroup.anaemiaDist['anaemic'] = newProb
+            ageGroup.anaemiaDist['not anaemic'] = 1 - newProb
+        for ageGroup in self.PW.ageGroups + self.nonPW.ageGroups:
+            probAnaemic = sum(ageGroup.anaemiaDist[cat] for cat in self.constants.anaemicList)
+            newProb = probAnaemic * ageGroup.annualPrevChange['Anaemia']
+            ageGroup.anaemiaDist['anaemic'] = newProb
+            ageGroup.anaemiaDist['not anaemic'] = 1-newProb
+
+    def _redistributePopulation(self):
+        for pop in self.populations:
+            for ageGroup in pop.ageGroups:
+                ageGroup.redistributePopulation()
+
 
     def calibrate(self):
         # use populations to adjust the baseline coverage
@@ -548,7 +572,7 @@ class Model:
         self.programInfo._callProgramMethod('_setInitialCoverage')
         # self.programInfo._setAnnualCoverages(self.populations, self.optimise)
         self._setBirthPregnancyInfo()
-        self._setConditionalDiarrhoea()
+        # self._setConditionalDiarrhoea() # TODO: this is probably unnecessary
         for year in self.constants.calibrationYears:
             self._updateEverything(year)
 

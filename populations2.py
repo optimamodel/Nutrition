@@ -18,6 +18,7 @@ class NonPWAgeGroup:
         self.birthIntervalDist = dcp(birthIntervalDist)
         self.const = constants
         self.probConditionalCoverage = {}
+        self.annualPrevChange = {}
         self._setStorageForUpdates()
         self._setBirthProbs()
 
@@ -73,6 +74,7 @@ class PWAgeGroup:
         self.ageingRate = 1./ageSpan
         self.const = constants
         self.probConditionalCoverage = {}
+        self.annualPrevChange = {}
         self._setStorageForUpdates()
 
     def _setStorageForUpdates(self):
@@ -126,6 +128,7 @@ class ChildAgeGroup(object):
         self.probConditionalDiarrhoea = {}
         self.probConditionalStunting = {}
         self.programEffectiveness = {}
+        self.annualPrevChange = {}
         self._setStorageForUpdates()
         self._updatesForAgeingAndBirths()
 
@@ -446,6 +449,7 @@ class Children(Population):
         self._setChildrenReferenceMortality()
         self._updateMortalityRates()
         self._setProgramEffectiveness()
+        self._setAnnualPrevChange()
         self._setCorrectBFpractice()
         self._setProbConditionalStunting()
         self._setProbStuntedAtBirth()
@@ -987,6 +991,21 @@ class Children(Population):
             age = ageGroup.age
             ageGroup.programEffectiveness = self.project.childPrograms[age]
 
+    def _setAnnualPrevChange(self):
+        from numpy import polyfit, isfinite, array
+        for risk in ['Stunting', 'Wasting', 'Anaemia']:
+            for ageGroup in self.ageGroups:
+                age = ageGroup.age
+                annualPrev = self.project.annualPrev[risk][age]
+                years = array(annualPrev.keys())
+                prev = array(annualPrev.values())
+                notNan = isfinite(years) & isfinite(prev)
+                if sum(notNan) <= 1: # static data
+                    ageGroup.annualPrevChange[risk] = 1
+                else:
+                    linReg = polyfit(years[notNan],prev[notNan],1)
+                    ageGroup.annualPrevChange[risk] = 1 + linReg[0]
+
     def _setCorrectBFpractice(self):
         for ageGroup in self.ageGroups:
             age = ageGroup.age
@@ -1001,6 +1020,7 @@ class PregnantWomen(Population):
         self._setPWReferenceMortality()
         self._updateMortalityRates()
         self._setProgramEffectiveness()
+        self._setAnnualPrevChange()
 
     def getTotalPopulation(self):
         return sum(ageGroup.getAgeGroupPopulation() for ageGroup in self.ageGroups)
@@ -1019,6 +1039,21 @@ class PregnantWomen(Population):
         for ageGroup in self.ageGroups:
             age = ageGroup.age
             ageGroup.programEffectiveness = self.project.PWprograms[age]
+
+    def _setAnnualPrevChange(self):
+        from numpy import polyfit, isfinite, array
+        for risk in ['Anaemia']:
+            for ageGroup in self.ageGroups:
+                age = ageGroup.age
+                annualPrev = self.project.annualPrev[risk][age]
+                years = array(annualPrev.keys())
+                prev = array(annualPrev.values())
+                notNan = isfinite(years) & isfinite(prev)
+                if sum(notNan) <= 1: # static data
+                    ageGroup.annualPrevChange[risk] = 1
+                else:
+                    linReg = polyfit(years[notNan],prev[notNan],1)
+                    ageGroup.annualPrevChange[risk] = 1 + linReg[0]
 
     def _setConditionalProbabilities(self):
         self._setProbAnaemicIfCovered()
@@ -1111,6 +1146,7 @@ class NonPregnantWomen(Population):
         self.ageGroups = []
         self._makePopSizes()
         self._makeBoxes()
+        self._setAnnualPrevChange()
 
     def getTotalPopulation(self):
         return sum(ageGroup.getAgeGroupPopulation() for ageGroup in self.ageGroups)
@@ -1179,6 +1215,21 @@ class NonPregnantWomen(Population):
         self.fracPregnancyAverted = sum(self.const.famPlanMethods[prog]['Effectiveness'] *
             self.const.famPlanMethods[prog]['Distribution'] * coverage
             for prog in self.const.famPlanMethods.iterkeys())
+
+    def _setAnnualPrevChange(self):
+        from numpy import polyfit, isfinite, array
+        for risk in ['Anaemia']:
+            for ageGroup in self.ageGroups:
+                age = ageGroup.age
+                annualPrev = self.project.annualPrev[risk][age]
+                years = array(annualPrev.keys())
+                prev = array(annualPrev.values())
+                notNan = isfinite(years) & isfinite(prev)
+                if sum(notNan) <= 1: # static data
+                    ageGroup.annualPrevChange[risk] = 1
+                else:
+                    linReg = polyfit(years[notNan],prev[notNan],1)
+                    ageGroup.annualPrevChange[risk] = 1 + linReg[0]
 
 
 def setUpPopulations(project, constants):
