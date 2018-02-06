@@ -337,7 +337,7 @@ class Model:
         oldest = ageGroups[-1]
         ageingOutStunted = oldest.getAgeGroupNumberStunted() * oldest.ageingRate
         ageingOutNotStunted = oldest.getAgeGroupNumberNotStunted() * oldest.ageingRate
-        self.cumulativeAgeingOutChildren += oldest.getAgeGroupPopulation()
+        self.cumulativeAgeingOutChildren += oldest.getAgeGroupPopulation() * oldest.ageingRate
         self.cumulativeAgeingOutStunted += ageingOutStunted
         self.cumulativeThrive += ageingOutNotStunted
         # first age group does not have ageing in
@@ -438,14 +438,16 @@ class Model:
                                                                                                      wastingFractions[wastingCat]
 
     def _applyPWMortality(self):
-        PW = self.populations[1]
-        for ageGroup in PW.ageGroups:
+        for ageGroup in self.PW.ageGroups:
             for anaemiaCat in self.constants.anaemiaList:
                 thisBox = ageGroup.boxes[anaemiaCat]
                 deaths = thisBox.populationSize * thisBox.mortalityRate
                 thisBox.cumulativeDeaths += deaths
                 self.cumulativePWDeaths += deaths
                 self.cumulativeDeaths += deaths
+        oldest = self.PW.ageGroups[-1]
+        self.cumulativeAgeingOutPW += oldest.getAgeGroupPopulation() * oldest.ageingRate
+
 
     def _updatePWpopulation(self):
         """Use pregnancy rate to distribute PW into age groups.
@@ -459,8 +461,6 @@ class Model:
             for anaemiaCat in self.constants.anaemiaList:
                 thisBox = ageGroup.boxes[anaemiaCat]
                 thisBox.populationSize = popSize * ageGroup.anaemiaDist[anaemiaCat]
-        oldest = self.PW.ageGroups[-1]
-        self.cumulativeAgeingOutPW += oldest.getAgeGroupPopulation() * oldest.ageingRate
 
     def _updateWRApopulation(self):
         """Uses projected figures to determine the population of WRA not pregnant in a given age band and year

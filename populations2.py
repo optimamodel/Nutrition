@@ -66,12 +66,12 @@ class NonPWAgeGroup:
             self.boxes[anaemiaCat].populationSize = self.anaemiaDist[anaemiaCat] * self.getAgeGroupPopulation()
 
 class PWAgeGroup:
-    def __init__(self, age, populationSize, boxes, anaemiaDist, ageSpan, constants):
+    def __init__(self, age, populationSize, boxes, anaemiaDist, ageingRate, constants):
         self.age = age
         # self.populationSize = populationSize
         self.boxes = dcp(boxes)
         self.anaemiaDist = dcp(anaemiaDist)
-        self.ageingRate = 1./ageSpan
+        self.ageingRate = ageingRate
         self.const = constants
         self.probConditionalCoverage = {}
         self.annualPrevChange = {}
