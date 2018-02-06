@@ -146,7 +146,7 @@ class Optimisation:
         runOutputs = []
         for run in range(self.numRuns):
             now = time.time()
-            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=90, swarmsize=90)
+            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=100, swarmsize=120) # should be about 13 hours for 100*120
             print "Objective: " + str(objective)
             print "value * 1000: " + str(fopt)
             budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
