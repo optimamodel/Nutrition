@@ -22,11 +22,14 @@ class Model:
 
     def _createOutcomeTrackers(self):
         self.cumulativeAgeingOutStunted = 0
+        self.cumulativeAgeingOutChildren = 0
+        self.cumulativeAgeingOutPW = 0
         self.cumulativeThrive = 0
         self.cumulativeBirths = 0
         self.cumulativeChildDeaths = 0
         self.cumulativePWDeaths = 0
         self.cumulativeDeaths = 0
+        self.cumulativeNeonatalDeaths = 0
 
     def _updateConditionalProbabilities(self):
         previousCov = self.programInfo._getAnnualCoverage(self.year-1) # last year cov
@@ -300,7 +303,7 @@ class Model:
         return update
 
     def _applyChildMortality(self):
-        ageGroups = self.populations[0].ageGroups
+        ageGroups = self.children.ageGroups
         for ageGroup in ageGroups:
             for stuntingCat in self.constants.stuntingList:
                 for wastingCat in self.constants.wastingList:
@@ -334,6 +337,7 @@ class Model:
         oldest = ageGroups[-1]
         ageingOutStunted = oldest.getAgeGroupNumberStunted() * oldest.ageingRate
         ageingOutNotStunted = oldest.getAgeGroupNumberNotStunted() * oldest.ageingRate
+        self.cumulativeAgeingOutChildren += oldest.getAgeGroupPopulation()
         self.cumulativeAgeingOutStunted += ageingOutStunted
         self.cumulativeThrive += ageingOutNotStunted
         # first age group does not have ageing in
@@ -444,7 +448,7 @@ class Model:
                 self.cumulativeDeaths += deaths
 
     def _updatePWpopulation(self):
-        """Use prenancy rate to distribute PW into age groups.
+        """Use pregnancy rate to distribute PW into age groups.
         Distribute into age bands by age distribution, assumed constant over time."""
         nonPW = self.populations[2]
         numWRA = self.populations[2].getTotalPopulation()
@@ -455,6 +459,8 @@ class Model:
             for anaemiaCat in self.constants.anaemiaList:
                 thisBox = ageGroup.boxes[anaemiaCat]
                 thisBox.populationSize = popSize * ageGroup.anaemiaDist[anaemiaCat]
+        oldest = self.PW.ageGroups[-1]
+        self.cumulativeAgeingOutPW += oldest.getAgeGroupPopulation() * oldest.ageingRate
 
     def _updateWRApopulation(self):
         """Uses projected figures to determine the population of WRA not pregnant in a given age band and year
@@ -534,7 +540,7 @@ class Model:
         self._updateConditionalProbabilities()
         self._resetStorage()
         self.applyNewProgramCoverages()
-        self._applyPrevTimeTrends() # TODO: check the order of this is correct. Should I move 'restratify' func to end func?
+        # self._applyPrevTimeTrends() # TODO: Should I move 'restratify' func to end func?
         self._redistributePopulation() # TODO: this is a replacement for doing this in _updateDistributions()
 
     def _applyPrevTimeTrends(self):
@@ -615,11 +621,11 @@ class Model:
             return self.cumulativePWDeaths
         elif outcome == 'total_deaths':
             return self.cumulativeDeaths
-        # elif outcome == 'anaemia_prev': # TODO
-        #     totalPrev = 0
-        #     for pop in self.populations:
-        #         totalPrev += sum(ageGroup.getTotalFracAnaemic() for ageGroup in pop.ageGroups)
-        #     return totalPrev
+        elif outcome == 'mortality_rate':
+            return self.cumulativeDeaths/(self.cumulativeAgeingOutChildren + self.cumulativeAgeingOutChildren)
+        elif outcome == 'neonatal_deaths':
+            neonates = self.children.ageGroups[0]
+            return neonates.getCumulativeDeaths()
         elif outcome == 'anaemia_prev_PW':
             return self.PW.getTotalFracAnaemic()
         elif outcome == 'anaemia_prev_WRA':
