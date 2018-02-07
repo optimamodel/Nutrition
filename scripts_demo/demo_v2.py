@@ -16,9 +16,11 @@ for prog in model.programInfo.programs:
     else:
         referenceCovs[prog.name] = 0
 
-outcomes = ['thrive', 'stunting_prev', 'deaths_children', 'deaths_PW',
-            'total_deaths', 'anaemia_prev_PW', 'anaemia_prev_WRA', 'anaemia_prev_children',
+outcomes = ['thrive', 'stunting_prev', 'neonatal_deaths', 'deaths_children', 'deaths_PW',
+            'total_deaths', 'mortality_rate', 'anaemia_prev_PW', 'anaemia_prev_WRA', 'anaemia_prev_children',
             'wasting_prev']
+suffix = ' (malaria area)'
+
 
 # REFERENCE (ALL 0)
 reference = []
@@ -31,26 +33,44 @@ for outcome in outcomes:
 
 # 95% ONE AT A TIME
 output = {}
-# TODO: does not scale-up malaria area simultaneously
 for programName in model.constants.programList:
     if 'malaria' not in programName:
         output[programName] = []
         newModel = dcp(model)
         newCov = dcp(referenceCovs)
         newCov[programName] = 0.95
-        newCov[programName + ' (malaria area)'] = 0.95
+        newCov[programName + suffix] = 0.95
         newModel.runSimulationGivenCoverage(newCov, True)
         unrestrictedCov = 0
         for prog in newModel.programInfo.programs:
-            if prog.name == programName or prog.name == programName + ' (malaria area)':
+            if prog.name == programName or prog.name == programName + suffix:
                 unrestrictedCov += prog.annualCoverage[newModel.constants.simulationYears[0]]
         output[programName].append(unrestrictedCov)
         for outcome in outcomes:
             output[programName].append(newModel.getOutcome(outcome))
 
+# grouping programs
+groupingFlags = ['IFAS', 'IFA fortification', 'Treatment']
+for flag in groupingFlags:
+    output[flag] = []
+    newCov = dcp(referenceCovs)
+    newModel = dcp(model)
+    for program in model.programInfo.programs:
+        name = program.name
+        if flag in name:
+            newCov[name] = 0.95
+    newModel.runSimulationGivenCoverage(newCov, True)
+    unrestrictedCov = 0
+    for program in newModel.programInfo.programs:
+        if flag in program.name:
+            unrestrictedCov += program.annualCoverage[newModel.constants.simulationYears[0]]
+    output[flag].append(unrestrictedCov)
+    for outcome in outcomes:
+        output[flag].append(newModel.getOutcome(outcome))
+
 header = ['scenario', 'unrestricted_cov'] + outcomes
 import csv
-with open('demo_v2_timecov.csv', 'wb') as f:
+with open('demo_v2_Feb06.csv', 'wb') as f:
     w = csv.writer(f)
     w.writerow(header)
     w.writerow(reference)
