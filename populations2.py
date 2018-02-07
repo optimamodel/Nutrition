@@ -1109,9 +1109,7 @@ class PregnantWomen(Population):
                 mortalityCorrected[age] = (mortalityRate * liveBirths / 1000.) * (4. / 34.) / agePop[index]
             else:
                 mortalityCorrected[age] = (mortalityRate * liveBirths / 1000.) * (9. / 34.) / agePop[index]
-
         # Calculate LHS for each age and cause of death then solve for X
-        Xdictionary = {}
         for ageGroup in self.ageGroups:
             age = ageGroup.age
             ageGroup.referenceMortality = {}
