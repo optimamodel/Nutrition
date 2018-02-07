@@ -21,15 +21,14 @@ class Model:
         self.calibrate()
 
     def _createOutcomeTrackers(self):
-        self.cumulativeAgeingOutStunted = 0
-        self.cumulativeAgeingOutChildren = 0
-        self.cumulativeAgeingOutPW = 0
-        self.cumulativeThrive = 0
-        self.cumulativeBirths = 0
-        self.cumulativeChildDeaths = 0
-        self.cumulativePWDeaths = 0
-        self.cumulativeDeaths = 0
-        self.cumulativeNeonatalDeaths = 0
+        self.annualDeathsChildren = {year: 0 for year in self.constants.allYears}
+        self.annualDeathsPW = {year: 0 for year in self.constants.allYears}
+        self.ageingOutChildren = {year: 0 for year in self.constants.allYears}
+        self.ageingOutPW = {year: 0 for year in self.constants.allYears}
+        self.annualStunted = {year: 0 for year in self.constants.allYears}
+        self.annualThrive = {year: 0 for year in self.constants.allYears}
+        self.annualNeonatalDeaths = {year: 0 for year in self.constants.allYears}
+        self.annualBirths = {year: 0 for year in self.constants.allYears}
 
     def _updateConditionalProbabilities(self):
         previousCov = self.programInfo._getAnnualCoverage(self.year-1) # last year cov
@@ -48,10 +47,7 @@ class Model:
             FPprog = FP[0]
             self.nonPW._setBirthPregnancyInfo(FPprog.unrestrictedBaselineCov)
         else:
-            self.nonPW._setBirthPregnancyInfo(0) # TODO: not best implementation
-
-    # def _setConditionalDiarrhoea(self):
-    #     self.children._setConditionalDiarrhoea()
+            self.nonPW._setBirthPregnancyInfo(0) # TODO: not best way to handle missing program
 
     def applyNewProgramCoverages(self):
         '''newCoverages is required to be the unrestricted coverage % (i.e. people covered / entire target pop) '''
@@ -165,7 +161,6 @@ class Model:
         """
         Uses assumption that each ageGroup in a population has a default update
         value which exists (not across populations though)
-        :param ageGroup:
         :return:
         """
         if population.name == 'Children':
@@ -313,8 +308,7 @@ class Model:
                             deaths = thisBox.populationSize * thisBox.mortalityRate * self.constants.timestep # monthly deaths
                             thisBox.populationSize -= deaths
                             thisBox.cumulativeDeaths += deaths
-                            self.cumulativeDeaths += deaths
-                            self.cumulativeChildDeaths += deaths
+                            self.annualDeathsChildren[self.year] += deaths
 
     def _applyChildAgeing(self):
         # TODO: longer term, I think this should be re-written
@@ -337,9 +331,9 @@ class Model:
         oldest = ageGroups[-1]
         ageingOutStunted = oldest.getAgeGroupNumberStunted() * oldest.ageingRate
         ageingOutNotStunted = oldest.getAgeGroupNumberNotStunted() * oldest.ageingRate
-        self.cumulativeAgeingOutChildren += oldest.getAgeGroupPopulation() * oldest.ageingRate
-        self.cumulativeAgeingOutStunted += ageingOutStunted
-        self.cumulativeThrive += ageingOutNotStunted
+        self.ageingOutChildren[self.year] += oldest.getAgeGroupPopulation() * oldest.ageingRate
+        self.annualStunted[self.year] += ageingOutStunted
+        self.annualThrive[self.year] += ageingOutNotStunted
         # first age group does not have ageing in
         newborns = ageGroups[0]
         for stuntingCat in self.constants.stuntingList:
@@ -388,15 +382,13 @@ class Model:
 
     def _applyBirths(self): # TODO; re-write this function in future
         # num annual births = birth rate x num WRA x (1 - frac preg averted)
-        nonPW = self.populations[2]
-        numWRA = self.populations[2].getTotalPopulation() # TODO: best way to get total WRA pop? COULD BE WRONG
-        PW = self.populations[1]
-        annualBirths = nonPW.birthRate * numWRA * (1. - nonPW.fracPregnancyAverted)
+        numWRA = self.nonPW.getTotalPopulation()
+        annualBirths = self.nonPW.birthRate * numWRA * (1. - self.nonPW.fracPregnancyAverted)
         # calculate total number of new babies and add to cumulative births
         numNewBabies = annualBirths * self.constants.timestep
-        self.cumulativeBirths += numNewBabies
+        self.annualBirths[self.year] += numNewBabies
         # restratify stunting and wasting
-        newBorns = self.populations[0].ageGroups[0]
+        newBorns = self.children.ageGroups[0]
         restratifiedStuntingAtBirth = {}
         restratifiedWastingAtBirth = {}
         for outcome in self.constants.birthOutcomes:
@@ -443,20 +435,16 @@ class Model:
                 thisBox = ageGroup.boxes[anaemiaCat]
                 deaths = thisBox.populationSize * thisBox.mortalityRate
                 thisBox.cumulativeDeaths += deaths
-                self.cumulativePWDeaths += deaths
-                self.cumulativeDeaths += deaths
+                self.annualDeathsPW[self.year] += deaths
         oldest = self.PW.ageGroups[-1]
-        self.cumulativeAgeingOutPW += oldest.getAgeGroupPopulation() * oldest.ageingRate
-
+        self.ageingOutPW[self.year] += oldest.getAgeGroupPopulation() * oldest.ageingRate
 
     def _updatePWpopulation(self):
         """Use pregnancy rate to distribute PW into age groups.
         Distribute into age bands by age distribution, assumed constant over time."""
-        nonPW = self.populations[2]
-        numWRA = self.populations[2].getTotalPopulation()
-        PW = self.populations[1]
-        PWpop = nonPW.pregnancyRate * numWRA * (1. - nonPW.fracPregnancyAverted)
-        for ageGroup in PW.ageGroups:
+        numWRA = self.nonPW.getTotalPopulation()
+        PWpop = self.nonPW.pregnancyRate * numWRA * (1. - self.nonPW.fracPregnancyAverted)
+        for ageGroup in self.PW.ageGroups:
             popSize = PWpop * self.constants.PWageDistribution[ageGroup.age] # TODO: could put this in PW age groups for easy access
             for anaemiaCat in self.constants.anaemiaList:
                 thisBox = ageGroup.boxes[anaemiaCat]
@@ -466,12 +454,11 @@ class Model:
         """Uses projected figures to determine the population of WRA not pregnant in a given age band and year
         warning: PW pop must be updated first."""
         #assuming WRA and PW have same age bands
-        WRA = self.populations[2]
-        ageGroups = WRA.ageGroups
+        ageGroups = self.nonPW.ageGroups
         for idx in range(len(ageGroups)):
             ageGroup = ageGroups[idx]
             projectedWRApop = self.constants.popProjections[ageGroup.age][self.year]
-            PWpop = self.populations[1].ageGroups[idx].getAgeGroupPopulation()
+            PWpop = self.PW.ageGroups[idx].getAgeGroupPopulation()
             nonPW = projectedWRApop - PWpop
             #distribute over risk factors
             for anaemiaCat in self.constants.anaemiaList:
@@ -533,7 +520,6 @@ class Model:
     def _updateEverything(self, year):
         """Responsible for moving the model, updating year, adjusting coverages and conditional probabilities, applying coverages"""
         self.year = year
-        self.moveModelOneYear()
         self.programInfo._updateYearForPrograms(year)
         if self.adjustCoverage:
             self.programInfo._adjustCoveragesForPopGrowth(self.populations, year)
@@ -542,6 +528,7 @@ class Model:
         self.applyNewProgramCoverages()
         # self._applyPrevTimeTrends() # TODO: Should I move 'restratify' func to end func?
         self._redistributePopulation() # TODO: this is a replacement for doing this in _updateDistributions()
+        self.moveModelOneYear() # TODO: should come before or after updates?
 
     def _applyPrevTimeTrends(self):
         for ageGroup in self.children.ageGroups:
@@ -570,7 +557,6 @@ class Model:
         for pop in self.populations:
             for ageGroup in pop.ageGroups:
                 ageGroup.redistributePopulation()
-
 
     def calibrate(self):
         # use populations to adjust the baseline coverage
@@ -610,19 +596,19 @@ class Model:
 
     def getOutcome(self, outcome):
         if outcome == 'total_stunted':
-            return self.cumulativeAgeingOutStunted
+            return sum(self.annualStunted.values())
         elif outcome == 'stunting_prev':
-            return self.populations[0].getTotalFracStunted()
+            return self.children.getTotalFracStunted()
         elif outcome == 'thrive':
-            return self.cumulativeThrive
+            return sum(self.annualThrive.values())
         elif outcome == 'deaths_children':
-            return self.cumulativeChildDeaths
+            return sum(self.annualDeathsChildren.values())
         elif outcome == 'deaths_PW':
-            return self.cumulativePWDeaths
+            return sum(self.annualDeathsPW.values())
         elif outcome == 'total_deaths':
-            return self.cumulativeDeaths
+            return sum(self.annualDeathsPW.values() + self.annualDeathsChildren.values())
         elif outcome == 'mortality_rate':
-            return self.cumulativeDeaths/(self.cumulativeAgeingOutChildren + self.cumulativeAgeingOutPW)
+            return (self.annualDeathsChildren[self.year] + self.annualDeathsPW[self.year])/(self.ageingOutChildren[self.year] + self.ageingOutPW[self.year])
         elif outcome == 'neonatal_deaths':
             neonates = self.children.ageGroups[0]
             return neonates.getCumulativeDeaths()
