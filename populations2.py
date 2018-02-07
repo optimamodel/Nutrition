@@ -661,6 +661,11 @@ class Children(Population):
         totalPop = self.getTotalPopulation()
         return totalWasted / totalPop
 
+    def getFracWastingCat(self, wastingCat):
+        totalThisCat = self.getTotalNumberWasted(wastingCat)
+        totalPop = self.getTotalPopulation()
+        return totalThisCat/totalPop
+
     def restratify(self, fractionYes):
         from scipy.stats import norm
         # Going from binary stunting/wasting to four fractions

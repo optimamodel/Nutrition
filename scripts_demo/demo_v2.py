@@ -18,7 +18,7 @@ for prog in model.programInfo.programs:
 
 outcomes = ['thrive', 'stunting_prev', 'neonatal_deaths', 'deaths_children', 'deaths_PW',
             'total_deaths', 'mortality_rate', 'anaemia_prev_PW', 'anaemia_prev_WRA', 'anaemia_prev_children',
-            'wasting_prev']
+            'wasting_prev', 'SAM_prev', 'MAM_prev']
 suffix = ' (malaria area)'
 
 
@@ -76,12 +76,3 @@ with open('demo_v2_Feb06.csv', 'wb') as f:
     w.writerow(reference)
     for program, outcomes in sorted(output.iteritems()):
         w.writerow([program] + outcomes)
-
-
-
-
-
-
-
-
-#

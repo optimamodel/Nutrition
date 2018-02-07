@@ -627,6 +627,10 @@ class Model:
             return totalAnaemic / totalPop
         elif outcome == 'wasting_prev':
             return self.children.getTotalFracWasted()
+        elif outcome == 'SAM_prev':
+            return self.children.getFracWastingCat('SAM')
+        elif outcome == 'MAM_prev':
+            return self.children.getFracWastingCat('MAM')
 
 
 
