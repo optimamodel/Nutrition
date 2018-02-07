@@ -382,7 +382,7 @@ class Model:
 
     def _applyBirths(self): # TODO; re-write this function in future
         # num annual births = birth rate x num WRA x (1 - frac preg averted)
-        numWRA = self.nonPW.getTotalPopulation()
+        numWRA = sum(self.constants.popProjections[age][self.year] for age in self.constants.WRAages)
         annualBirths = self.nonPW.birthRate * numWRA * (1. - self.nonPW.fracPregnancyAverted)
         # calculate total number of new babies and add to cumulative births
         numNewBabies = annualBirths * self.constants.timestep
@@ -442,7 +442,7 @@ class Model:
     def _updatePWpopulation(self):
         """Use pregnancy rate to distribute PW into age groups.
         Distribute into age bands by age distribution, assumed constant over time."""
-        numWRA = self.nonPW.getTotalPopulation()
+        numWRA = sum(self.constants.popProjections[age][self.year] for age in self.constants.WRAages)
         PWpop = self.nonPW.pregnancyRate * numWRA * (1. - self.nonPW.fracPregnancyAverted)
         for ageGroup in self.PW.ageGroups:
             popSize = PWpop * self.constants.PWageDistribution[ageGroup.age] # TODO: could put this in PW age groups for easy access
@@ -514,7 +514,7 @@ class Model:
             self.moveModelOneTimeStep()
         self._applyPWMortality()
         self._updatePWpopulation()
-        self._updateWRApopulation()
+        self._updateWRApopulation() # TODOL should switch these back
         self.updateYearlyRiskDists()
 
     def _updateEverything(self, year):
