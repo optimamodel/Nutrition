@@ -150,8 +150,9 @@ class Optimisation:
             print "Objective: " + str(objective)
             print "value * 1000: " + str(fopt)
             budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
-                                                         xmax=xmax)
-            print time.time() - now
+                                                         xmax=xmax, verbose=0)
+            print str((time.time() - now)/(60*60)) + ' hours'
+            print "----------"
             outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval,
                                        output.x)
             runOutputs.append(outputOneRun)
