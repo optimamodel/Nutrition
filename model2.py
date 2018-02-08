@@ -609,6 +609,10 @@ class Model:
             return sum(self.annualDeathsPW.values() + self.annualDeathsChildren.values())
         elif outcome == 'mortality_rate':
             return (self.annualDeathsChildren[self.year] + self.annualDeathsPW[self.year])/(self.ageingOutChildren[self.year] + self.ageingOutPW[self.year])
+        elif outcome == 'mortality_rate_children':
+            return self.annualDeathsChildren[self.year] / self.ageingOutChildren[self.year]
+        elif outcome == 'mortality_rate_PW':
+            return self.annualDeathsPW[self.year] / self.ageingOutPW[self.year]
         elif outcome == 'neonatal_deaths':
             neonates = self.children.ageGroups[0]
             return neonates.getCumulativeDeaths()
