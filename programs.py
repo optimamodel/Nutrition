@@ -334,21 +334,25 @@ class Program(object):
         self.costCurveOb = CostCovCurve(self.unitCost, self.saturation, self.restrictedPopSize, self.unrestrictedPopSize)
         self.costCurveFunc = self.costCurveOb._setCostCovCurve()
 
+
     def getSpending(self):
         return self.costCurveOb.getSpending(self.unrestrictedBaselineCov) # TODO: want to change this so that uses annual Coverages
 
 
 
 class CostCovCurve:
-    def __init__(self, unitCost, saturation, restrictedPop, unrestrictedPop):
-        self.type = 'standard'
+    def __init__(self, unitCost, saturation, restrictedPop, unrestrictedPop, curveType='linear'):
+        self.curveType = curveType
         self.unitCost = unitCost
         self.saturation = saturation
         self.restrictedPop = restrictedPop
         self.unrestrictedPop = unrestrictedPop
 
     def _setCostCovCurve(self):
-        curve = self._increasingCostsLogisticCurve()
+        if self.curveType == 'linear':
+            curve = self._linearCostCurve()
+        else:
+            curve = self._increasingCostsLogisticCurve()
         return curve
 
     def _increasingCostsLogisticCurve(self):
@@ -366,14 +370,43 @@ class CostCovCurve:
 
     def getSpending(self, covFrac):
         """Assumes standard increasing marginal costs curve """
-        covNumber = covFrac * self.restrictedPop
-        B = self.saturation * self.restrictedPop
-        A = -B
-        C = 0.
-        D = self.unitCost * B / 2.
-        curve = self.inverseLogistic(A, B, C, D)
-        spending = curve(covNumber)
+        if self.curveType == 'linear':
+            m = 1. / self.unitCost
+            x0, y0 = [0., 0.]  # extra point
+            if x0 == 0.:
+                c = y0
+            else:
+                c = y0 / (m * x0)
+            spending = (covFrac*self.unrestrictedPop - c)/m
+        else:
+            covNumber = covFrac * self.unrestrictedPop
+            B = self.saturation * self.restrictedPop
+            A = -B
+            C = 0.
+            D = self.unitCost * B / 2.
+            curve = self.inverseLogistic(A, B, C, D)
+            spending = curve(covNumber)
         return spending
+
+    def _linearCostCurve(self):
+        m = 1. / self.unitCost
+        x0, y0 = [0.,0.] #extra point
+        if x0 == 0.:
+            c = y0
+        else:
+            c = y0 / (m * x0)
+        maxCoverage = self.restrictedPop * self.saturation
+        linearCurve = lambda x: (min(m * x + c, maxCoverage))
+        return linearCurve
+
+    # def _plotCurve(self):
+    #     import matplotlib.pyplot as plt
+    #     from numpy import linspace
+    #     xpts = linspace(0, 100000000, 10000)
+    #     funcVal = []
+    #     for x in xpts:
+    #         funcVal.append(self.curve(x))
+    #     plt.plot(xpts, funcVal)
 
     def inverseLogistic(self, A, B, C, D):
         if D == 0.: # this is a temp fix for removing interventions
