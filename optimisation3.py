@@ -131,6 +131,7 @@ class Optimisation:
         import asd as asd
         from copy import deepcopy as dcp
         import time
+        from scipy.optimize import minimize
         kwargs = dcp(self.kwargs)
         kwargs['availableBudget'] *= multiple
         kwargs['objective'] = objective
@@ -143,20 +144,23 @@ class Optimisation:
             kwargs['indxToKeep'] = [i for i in range(len(self.programs))]
             xmin = [0.] * len(self.programs)
             xmax = [kwargs['availableBudget']] * len(self.programs)
+        args = (kwargs['objective'], kwargs['model'], kwargs['availableBudget'], kwargs['fixedCosts'], kwargs['indxToKeep'], kwargs['steps'])
         runOutputs = []
         for run in range(self.numRuns):
             now = time.time()
-            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=100, swarmsize=120) # should be about 13 hours for 100*120
+            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=10, swarmsize=1000) # should be about 13 hours for 100*120
             print "Objective: " + str(objective)
             print "value * 1000: " + str(fopt)
-            budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
-                                                         xmax=xmax, verbose=0)
+            # budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
+            #                                              xmax=xmax, verbose=0)
+            res = minimize(objectiveFunction, x0, method ='Nelder-Mead', args=args, options={'disp':True})
+            bestAllocation = res.x
             print str((time.time() - now)/(60*60)) + ' hours'
             print "----------"
-            outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval,
-                                       output.x)
-            runOutputs.append(outputOneRun)
-        bestAllocation = self.findBestAllocation(runOutputs)
+            # outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval,
+            #                            output.x)
+            # runOutputs.append(outputOneRun)
+        # bestAllocation = self.findBestAllocation(runOutputs)
         scaledAllocation = rescaleAllocation(kwargs['availableBudget'], bestAllocation)
         # add fixed costs to optimal additional funds
         indxToKeep = kwargs['indxToKeep']
