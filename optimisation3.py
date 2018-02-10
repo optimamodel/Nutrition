@@ -140,12 +140,14 @@ class Optimisation:
             kwargs['indxToKeep'] = indxToKeep
             xmin = [0.] * len(indxToKeep)
             xmax = [kwargs['availableBudget']] * len(indxToKeep)
+            bounds = [(xmin[0], xmax[0])] * len(indxToKeep)
         else:
             kwargs['indxToKeep'] = [i for i in range(len(self.programs))]
             xmin = [0.] * len(self.programs)
             xmax = [kwargs['availableBudget']] * len(self.programs)
+            bounds = [(xmin[0], xmax[0])] * len(self.programs)
         args = (kwargs['objective'], kwargs['model'], kwargs['availableBudget'], kwargs['fixedCosts'], kwargs['indxToKeep'], kwargs['steps'])
-        runOutputs = []
+        # runOutputs = []
         for run in range(self.numRuns):
             now = time.time()
             x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=10, swarmsize=1000) # should be about 13 hours for 100*120
@@ -153,7 +155,7 @@ class Optimisation:
             print "value * 1000: " + str(fopt)
             # budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
             #                                              xmax=xmax, verbose=0)
-            res = minimize(objectiveFunction, x0, method ='Nelder-Mead', args=args, options={'disp':True})
+            res = minimize(objectiveFunction, x0, method ='L-BFGS-B', args=args, options={'disp':True}, bounds=bounds)
             bestAllocation = res.x
             print str((time.time() - now)/(60*60)) + ' hours'
             print "----------"
