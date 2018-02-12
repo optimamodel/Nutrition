@@ -1,5 +1,6 @@
 from copy import deepcopy as dcp
 from multiprocessing import cpu_count, Process
+from numpy import array, all, random
 
 def runModelForNTimeSteps(steps, model):
     """
@@ -48,6 +49,17 @@ class OutputClass:
         self.cleanOutputFuncCount = cleanOutputFuncCount
         self.cleanOutputFvalVector = cleanOutputFvalVector
         self.cleanOutputXVector = cleanOutputXVector
+
+class MyBounds(object):
+    def __init__(self, xmin, xmax):
+        self.xmax = array(xmax)
+        self.xmin = array(xmin)
+    def __call__(self, **kwargs):
+        x = kwargs['x_new']
+        tmax = bool(all(x <= self.xmax))
+        tmin = bool(all(x >= self.xmin))
+        return tmax and tmin
+
 
 class Optimisation:
     def __init__(self, objectivesList, budgetMultiples, fileInfo, costCurveType='standard',
@@ -131,7 +143,8 @@ class Optimisation:
         import asd as asd
         from copy import deepcopy as dcp
         import time
-        from scipy.optimize import minimize
+        from scipy.optimize import basinhopping
+        random.seed(1)
         kwargs = dcp(self.kwargs)
         kwargs['availableBudget'] *= multiple
         kwargs['objective'] = objective
@@ -140,22 +153,24 @@ class Optimisation:
             kwargs['indxToKeep'] = indxToKeep
             xmin = [0.] * len(indxToKeep)
             xmax = [kwargs['availableBudget']] * len(indxToKeep)
-            bounds = [(xmin[0], xmax[0])] * len(indxToKeep)
+            # bounds = [(xmin[0], xmax[0])] * len(indxToKeep)
         else:
             kwargs['indxToKeep'] = [i for i in range(len(self.programs))]
             xmin = [0.] * len(self.programs)
             xmax = [kwargs['availableBudget']] * len(self.programs)
-            bounds = [(xmin[0], xmax[0])] * len(self.programs)
+            # bounds = [(xmin[0], xmax[0])] * len(self.programs)
         args = (kwargs['objective'], kwargs['model'], kwargs['availableBudget'], kwargs['fixedCosts'], kwargs['indxToKeep'], kwargs['steps'])
+        myBounds = MyBounds(xmin, xmax)
         # runOutputs = []
         for run in range(self.numRuns):
             now = time.time()
-            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=10, swarmsize=1000) # should be about 13 hours for 100*120
+            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=15, swarmsize=200) # should be about 13 hours for 100*120
             print "Objective: " + str(objective)
             print "value * 1000: " + str(fopt)
+            res = basinhopping(objectiveFunction, x0, minimizer_kwargs={'args':args, 'method':'L-BFGS-B'}, accept_test=myBounds, disp=True)
             # budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
             #                                              xmax=xmax, verbose=0)
-            res = minimize(objectiveFunction, x0, method ='L-BFGS-B', args=args, options={'disp':True}, bounds=bounds)
+            # res = minimize(objectiveFunction, x0, method ='L-BFGS-B', args=args, options={'disp':True}, bounds=bounds)
             bestAllocation = res.x
             print str((time.time() - now)/(60*60)) + ' hours'
             print "----------"
