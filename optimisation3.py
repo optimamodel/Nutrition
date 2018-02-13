@@ -149,7 +149,6 @@ class Optimisation:
         kwargs['objective'] = objective
         if self.filterProgs:
             indxToKeep = self._selectProgsForObjective(objective)
-            print len(indxToKeep)
             kwargs['indxToKeep'] = indxToKeep
             xmin = [0.] * len(indxToKeep)
             xmax = [kwargs['availableBudget']] * len(indxToKeep)
@@ -164,7 +163,7 @@ class Optimisation:
         runOutputs = []
         for run in range(self.numRuns):
             now = time.time()
-            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=300, swarmsize=100) # should be about 13 hours for 100*120
+            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=310, swarmsize=150) # should be about 13 hours for 100*120
             print "Objective: " + str(objective)
             print "value * 1000: " + str(fopt)
             budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
