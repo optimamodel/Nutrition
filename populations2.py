@@ -194,6 +194,15 @@ class ChildAgeGroup(object):
                         numNotStunted += self.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat].populationSize
         return numNotStunted
 
+    def getAgeGroupNumberHealthy(self):
+        numHealthly = 0
+        for stuntingCat in self.const.notStuntedList:
+            for wastingCat in self.const.nonWastedList:
+                for bfCat in self.const.bfList:
+                    for anaemiaCat in self.const.nonAnaemicList:
+                        numHealthly += self.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat].populationSize
+        return numHealthly
+
     def getStuntingDistribution(self):
         totalPop = self.getAgeGroupPopulation()
         returnDict = {}

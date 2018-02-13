@@ -143,13 +143,13 @@ class Optimisation:
         import asd as asd
         from copy import deepcopy as dcp
         import time
-        from scipy.optimize import basinhopping
         random.seed(1)
         kwargs = dcp(self.kwargs)
         kwargs['availableBudget'] *= multiple
         kwargs['objective'] = objective
         if self.filterProgs:
             indxToKeep = self._selectProgsForObjective(objective)
+            print len(indxToKeep)
             kwargs['indxToKeep'] = indxToKeep
             xmin = [0.] * len(indxToKeep)
             xmax = [kwargs['availableBudget']] * len(indxToKeep)
@@ -164,10 +164,9 @@ class Optimisation:
         runOutputs = []
         for run in range(self.numRuns):
             now = time.time()
-            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=300, swarmsize=50) # should be about 13 hours for 100*120
+            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=300, swarmsize=100) # should be about 13 hours for 100*120
             print "Objective: " + str(objective)
             print "value * 1000: " + str(fopt)
-            # res = basinhopping(objectiveFunction, x0, minimizer_kwargs={'args':args, 'method':'L-BFGS-B'}, accept_test=myBounds, disp=True)
             budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
                                                          xmax=xmax, verbose=0)
             # res = minimize(objectiveFunction, x0, method ='L-BFGS-B', args=args, options={'disp':True}, bounds=bounds)

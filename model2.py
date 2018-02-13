@@ -29,6 +29,7 @@ class Model:
         self.annualThrive = {year: 0 for year in self.constants.allYears}
         self.annualNeonatalDeaths = {year: 0 for year in self.constants.allYears}
         self.annualBirths = {year: 0 for year in self.constants.allYears}
+        self.annualChildrenAgeingOutHealthly = {year: 0 for year in self.constants.allYears}
 
     def _updateConditionalProbabilities(self):
         previousCov = self.programInfo._getAnnualCoverage(self.year-1) # last year cov
@@ -334,6 +335,7 @@ class Model:
         self.ageingOutChildren[self.year] += oldest.getAgeGroupPopulation() * oldest.ageingRate
         self.annualStunted[self.year] += ageingOutStunted
         self.annualThrive[self.year] += ageingOutNotStunted
+        self.annualChildrenAgeingOutHealthly[self.year] += oldest.getAgeGroupNumberHealthy() * oldest.ageingRate
         # first age group does not have ageing in
         newborns = ageGroups[0]
         for stuntingCat in self.constants.stuntingList:
@@ -597,6 +599,8 @@ class Model:
     def getOutcome(self, outcome):
         if outcome == 'total_stunted':
             return sum(self.annualStunted.values())
+        elif outcome == 'healthy_children':
+            return sum(self.annualChildrenAgeingOutHealthly.values())
         elif outcome == 'stunting_prev':
             return self.children.getTotalFracStunted()
         elif outcome == 'thrive':
