@@ -2,13 +2,13 @@
 ########################################################
 # COST COVERAGE FUNCTIONS
 ########################################################
-from numpy import array, maximum, exp, zeros, log
+from numpy import exp, log
 
 class Costcov():
     def __init__(self):
         self.foo = 0.
 
-    def getCostCoverageCurve(self, costCoverageInfo, popSize, curveType, intervention):
+    def getCostCoverageCurve(self, costCoverageInfo, targetPopSize, totalPopSize, curveType):
         unitCost = costCoverageInfo['unitcost']
         saturation = costCoverageInfo['saturation']
         if curveType == 'linear':
@@ -17,21 +17,21 @@ class Costcov():
             curve = self.increasingCostsLogisticCurve(unitCost, saturation, popSize)
         return curve
 
-    def increasingCostsLogisticCurve(self, unitCost, saturation, popSize):
+    def increasingCostsLogisticCurve(self, unitCost, saturation, popSize, totalPopSize):
         '''Produces the logistic function for increasing marginal costs, passing through origin'''
         B = saturation * popSize
         A = -B
         C = 0.
         D = unitCost*B/2.
-        curve = self.getCostCoverageCurveSpecifyingParameters(A, B, C, D, popSize)
+        curve = self.getCostCoverageCurveSpecifyingParameters(A, B, C, D) / totalPopSize
         return curve
 
-    def getCostCoverageCurveSpecifyingParameters(self, A, B, C, D, popSize):
+    def getCostCoverageCurveSpecifyingParameters(self, A, B, C, D):
         '''This is a logistic curve with each parameter (A,B,C,D) provided by the user'''
         if D == 0.: # this is for the special case when saturation/unitcost = 0.
             logisticCurve = lambda x: 0.
         else:
-            logisticCurve = lambda x: (A + (B - A) / (1 + exp(-(x - C) / D))) / popSize
+            logisticCurve = lambda x: (A + (B - A) / (1 + exp(-(x - C) / D)))
         return logisticCurve
 
     def linearCostCurve(self, unitCost, saturation, popSize):
@@ -42,7 +42,7 @@ class Costcov():
         else:
             c = y0 / (m * x0)
         maxCoverage = popSize * saturation
-        linearCurve = lambda x: (min(m * x + c, maxCoverage))/popSize
+        linearCurve = lambda x: (min(m * x + c, maxCoverage))
         return linearCurve
 
     def getSpending(self, coverage, costCoverageInfo, popSize):

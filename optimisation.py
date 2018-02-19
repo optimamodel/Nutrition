@@ -139,7 +139,7 @@ class Optimisation:
         self.inititalProgramAllocations = self.getTotalInitialAllocation()
         self.totalBudget = totalBudget if totalBudget else sum(self.inititalProgramAllocations)
         self.fixedCosts = self.getFixedCosts(haveFixedCosts, self.inititalProgramAllocations)
-        self.timeStepsPre = 12
+        self.timeStepsPre = 1
         self.model = runModelForNTimeSteps(self.timeStepsPre, self.data, model=None)[0]
         self.costCurves = self.generateCostCurves(self.model)
         self.kwargs = {'costCurves': self.costCurves, 'model': self.model, 'timestepsPre': self.timeStepsPre,
@@ -352,6 +352,27 @@ class Optimisation:
                 for multiple in self.cascadeValues:
                     allocation = OrderedDict(sorted(optimised[objective][multiple].items()))
                     w.writerow([multiple] + allocation.values())
+
+    def generateCostCurves(self, model, resultsFileStem=None,
+                           budget=None, cascade=None, scale=True):
+        '''Generates & stores cost curves in dictionary by intervention.'''
+        import costcov
+        costCov = costcov.Costcov()
+        targetPopSize = self.getTargetPopSizeFromModelInstance(model) # TODO: this function could use calculations in the spreadsheet (target pop tab)
+        totalPopSize = self.getAllPopSizes(model)
+        costCurvesDict = {}
+        for intervention in self.data.interventionList:
+            costCurvesDict[intervention] = costCov.getCostCoverageCurve(self.costCoverageInfo[intervention],
+                                                                        targetPopSize[intervention], totalPopSize, self.costCurveType)
+        if resultsFileStem is not None:  # save plot
+            costCov.saveCurvesToPNG(costCurvesDict, self.costCurveType, self.data.interventionList, targetPopSize, resultsFileStem,
+                                    budget, cascade, scale=scale)
+        return costCurvesDict
+
+    def getAllPopSizes(self, model):
+        allCompartments = model.listOfAgeCompartments + model.listOfReproductiveAgeCompartments + model.listOfPregnantWomenAgeCompartments
+        popSizes = {pop.name: pop.getTotalPopulation() for pop in allCompartments}
+        return popSizes
 
 
 
@@ -656,22 +677,6 @@ class Optimisation:
         initialAllocation = getTotalInitialAllocation(self.data, costCoverageInfo, targetPopSize)
         return sum(initialAllocation)
 
-    def generateCostCurves(self, model, resultsFileStem=None,
-                           budget=None, cascade=None, scale=True):
-        '''Generates & stores cost curves in dictionary by intervention.'''
-        import costcov
-        costCov = costcov.Costcov()
-        targetPopSize = self.getTargetPopSizeFromModelInstance(model)
-        costCurvesDict = {}
-        for intervention in self.data.interventionList:
-            costCurvesDict[intervention] = costCov.getCostCoverageCurve(self.costCoverageInfo[intervention],
-                                                                        targetPopSize[intervention], self.costCurveType,
-                                                                        intervention)
-        if resultsFileStem is not None:  # save plot
-            costCov.saveCurvesToPNG(costCurvesDict, self.costCurveType, self.data.interventionList, targetPopSize, resultsFileStem,
-                                    budget, cascade, scale=scale)
-        return costCurvesDict
-        
         
     def oneModelRunWithOutput(self, allocationDictionary):
         model, modelList = runModelForNTimeSteps(self.timeStepsPre, self.data, model=None, saveEachStep=True)

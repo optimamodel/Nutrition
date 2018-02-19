@@ -224,6 +224,8 @@ class Helper:
         popSizes = {item: compartments[i].getTotalPopulation() for i, item in idxs}
         return popSizes
 
+    ####### #TODO: ALL CODE BELOW CAN BE EXPORTED TO THE SPREADSHEET #####
+
     def setIYCFTargetPopSize(self, data, model, fromModel=True):
         targetPop = data.IYCFtargetPop
         allPopSizes = {}
