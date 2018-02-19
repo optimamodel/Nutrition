@@ -75,10 +75,12 @@ class ProgramInfo:
         :param populations:
         :return:
         """
-        self.baselineCovs = {}
         for program in self.programs:
             program._setBaselineCoverage(populations)
-            self.baselineCovs[program.name] = program.unrestrictedBaselineCov
+
+    def _setInitialCoverages(self, populations):
+        for program in self.programs:
+            program._setInitialCoverage(populations)
 
     def _setSimulationCoverageFromScalar(self, coverages, restrictedCov):
         for program in self.programs:
@@ -89,9 +91,10 @@ class ProgramInfo:
         for program in self.programs:
             program._setSimulationCoverageFromWorkbook()
 
-    def _callProgramMethod(self, method):
+    def _callProgramMethod(self, method, *args):
         """Calls method for all programs in self.programs"""
-        map(lambda prog: getattr(prog, method)(), self.programs)
+        progMethod = lambda prog: getattr(prog, method)(args) if args else lambda prog: getattr(prog, method)()
+        map(lambda prog: progMethod, self.programs)
 
     def _setAnnualCoverages(self, populations, years, optimise):
         for program in self.programs:

@@ -28,11 +28,12 @@ class Program(object):
         """
         self.annualCoverage.update({year: newCoverage for year in self.const.simulationYears})
 
-    def _setInitialCoverage(self):
+    def _setInitialCoverage(self, populations):
         """
         Sets values for 'annualCoverages' for the baseline and calibration (typically first 2 years) only.
         :return:
         """
+        self._setBaselineCoverage(populations)
         theseYears = [self.const.baselineYear] + self.const.calibrationYears
         self.annualCoverage = {year:self.unrestrictedBaselineCov for year in theseYears}
 

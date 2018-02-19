@@ -1,7 +1,9 @@
 from copy import deepcopy as dcp
-from scipy.stats import norm
+# from scipy.stats import norm
+from scipy.special import ndtri, ndtr # these are faster than calling scipy.stats.norm
+
 class Model:
-    def __init__(self, filePath, adjustCoverage=True, optimise=False):
+    def __init__(self, filePath, adjustCoverage=False, timeTrends=False, optimise=False):
         import data2 as data
         import populations2 as pops
         import program_info
@@ -15,12 +17,13 @@ class Model:
         self.PW = self.populations[1]
         self.nonPW = self.populations[2]
         self.adjustCoverage = adjustCoverage
+        self.timeTrends = timeTrends
 
         self.year = self.constants.baselineYear
         self._createOutcomeTrackers()
         self.calibrate()
 
-    def _createOutcomeTrackers(self):
+    def _createOutcomeTrackers(self): # TODO: may not need all these each run -- expensive to calculate as currently implemented. Specify at start
         self.annualDeathsChildren = {year: 0 for year in self.constants.allYears}
         self.annualDeathsPW = {year: 0 for year in self.constants.allYears}
         self.ageingOutChildren = {year: 0 for year in self.constants.allYears}
@@ -473,11 +476,11 @@ class Model:
         # in our notes, fractionYes = alpha
         if fractionYes > 1:
             fractionYes = 1
-        invCDFalpha = norm.ppf(fractionYes)
-        fractionHigh     = norm.cdf(invCDFalpha - 1.)
-        fractionModerate = fractionYes - norm.cdf(invCDFalpha - 1.)
-        fractionMild     = norm.cdf(invCDFalpha + 1.) - fractionYes
-        fractionNormal   = 1. - norm.cdf(invCDFalpha + 1.)
+        invCDFalpha = ndtri(fractionYes)
+        fractionHigh     = ndtr(invCDFalpha - 1.)
+        fractionModerate = fractionYes - ndtr(invCDFalpha - 1.)
+        fractionMild     = ndtr(invCDFalpha + 1.) - fractionYes
+        fractionNormal   = 1. - ndtr(invCDFalpha + 1.)
         restratification = {}
         restratification["normal"] = fractionNormal
         restratification["mild"] = fractionMild
@@ -521,18 +524,20 @@ class Model:
 
     def _updateEverything(self, year):
         """Responsible for moving the model, updating year, adjusting coverages and conditional probabilities, applying coverages"""
-        self.year = year
-        self.programInfo._updateYearForPrograms(year)
+        # TODO: two optional: adjust for pop growth and apply time trends
+
+        self._updateYear(year)
         if self.adjustCoverage:
             self.programInfo._adjustCoveragesForPopGrowth(self.populations, year)
         self._updateConditionalProbabilities()
         self._resetStorage()
         self.applyNewProgramCoverages()
-        # self._applyPrevTimeTrends() # TODO: Should I move 'restratify' func to end func?
+        if self.timeTrends:
+            self._applyPrevTimeTrends() # TODO: Should I move 'restratify' func to end func?
         self._redistributePopulation() # TODO: this is a replacement for doing this in _updateDistributions()
         self.moveModelOneYear() # TODO: should come before or after updates?
 
-    def _applyPrevTimeTrends(self):
+    def _applyPrevTimeTrends(self): # TODO: haven't done mortality yet
         for ageGroup in self.children.ageGroups:
             # stunting
             probStunted = sum(ageGroup.stuntingDist[cat] for cat in self.constants.stuntedList) # TODO: could put this sort of thing into function
@@ -561,14 +566,14 @@ class Model:
                 ageGroup.redistributePopulation()
 
     def calibrate(self):
-        # use populations to adjust the baseline coverage
-        self.programInfo._setBaselineCov(self.populations) # TODO: required?
-        self.programInfo._callProgramMethod('_setInitialCoverage')
-        # self.programInfo._setAnnualCoverages(self.populations, self.optimise)
+        self.programInfo._setInitialCoverages(self.populations)
         self._setBirthPregnancyInfo()
-        # self._setConditionalDiarrhoea() # TODO: this is probably unnecessary
         for year in self.constants.calibrationYears:
             self._updateEverything(year)
+
+    def _updateYear(self, year):
+        self.year = year
+        self.programInfo._updateYearForPrograms(year)
 
     def runSimulation(self):
         for year in self.constants.simulationYears:
@@ -639,11 +644,3 @@ class Model:
             return self.children.getFracWastingCat('SAM')
         elif outcome == 'MAM_prev':
             return self.children.getFracWastingCat('MAM')
-
-
-
-
-
-
-
-
