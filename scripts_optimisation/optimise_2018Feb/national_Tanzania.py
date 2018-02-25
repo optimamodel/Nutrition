@@ -6,7 +6,7 @@ import optimisation3 as optimisation
 
 objectives = ['healthy_children_rate', 'mortality_rate']
 budgetMultiples = [0.5, 1., 2., 3., 6.]
-fileInfo = [root, '2018Jan', 'Tanzania', 'allProgs']
+fileInfo = [root, '2018Jan', 'Tanzania', 'subsetProgs']
 totalBudget = 10000000.
 
 if __name__ == '__main__':
