@@ -5,7 +5,7 @@ sys.path.append(moduleDir)
 import optimisation3 as optimisation
 
 objectives = ['healthy_children', 'thrive', 'total_deaths']
-budgetMultiples = [0.5, 1., 2., 4.]
+budgetMultiples = [0.5, 1., 2., 3., 6.]
 fileInfo = [root, '2018Jan', 'Tanzania', 'subsetProgs']
 totalBudget = 10000000.
 
