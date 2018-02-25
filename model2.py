@@ -604,8 +604,8 @@ class Model:
     def getOutcome(self, outcome):
         if outcome == 'total_stunted':
             return sum(self.annualStunted.values())
-        elif outcome == 'healthy_children':
-            return sum(self.annualChildrenAgeingOutHealthly.values())
+        elif outcome == 'healthy_children_rate':
+            return sum(self.annualChildrenAgeingOutHealthly.values()) / sum(self.ageingOutChildren.values())
         elif outcome == 'stunting_prev':
             return self.children.getTotalFracStunted()
         elif outcome == 'thrive':
