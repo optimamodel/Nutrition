@@ -604,12 +604,14 @@ class Model:
     def getOutcome(self, outcome):
         if outcome == 'total_stunted':
             return sum(self.annualStunted.values())
-        elif outcome == 'healthy_children_rate':
-            return sum(self.annualChildrenAgeingOutHealthly.values()) / sum(self.ageingOutChildren.values())
+        elif outcome == 'neg_healthy_children_rate':
+            return -sum(self.annualChildrenAgeingOutHealthly.values()) / sum(self.ageingOutChildren.values())
+        elif outcome == 'neg_healthy_children':
+            return -sum(self.annualChildrenAgeingOutHealthly.values())
         elif outcome == 'stunting_prev':
             return self.children.getTotalFracStunted()
-        elif outcome == 'thrive':
-            return sum(self.annualThrive.values())
+        elif outcome == 'neg_thrive':
+            return -sum(self.annualThrive.values())
         elif outcome == 'deaths_children':
             return sum(self.annualDeathsChildren.values())
         elif outcome == 'deaths_PW':

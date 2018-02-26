@@ -4,7 +4,7 @@ moduleDir = os.path.join(os.path.dirname(__file__), root)
 sys.path.append(moduleDir)
 import optimisation3 as optimisation
 
-objectives = ['healthy_children_rate', 'mortality_rate']
+objectives = ['neg_healthy_children', 'mortality_rate']
 budgetMultiples = [0.5, 1., 2., 3., 6.]
 fileInfo = [root, '2018Jan', 'Tanzania', 'subsetProgs']
 totalBudget = 10000000.

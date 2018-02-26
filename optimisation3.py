@@ -36,8 +36,6 @@ def objectiveFunction(allocation, objective, model, availableBudget, fixedCosts,
         newCoverages[program.name] = program.costCurveFunc(totalSpending[idx]) / program.unrestrictedPopSize
     thisModel.runSimulationFromOptimisation(newCoverages)
     outcome = thisModel.getOutcome(objective) * 1000.
-    if objective == 'thrive':
-        outcome *= -1
     return outcome
 
 class OutputClass:
