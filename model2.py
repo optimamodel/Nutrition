@@ -524,8 +524,6 @@ class Model:
 
     def _updateEverything(self, year):
         """Responsible for moving the model, updating year, adjusting coverages and conditional probabilities, applying coverages"""
-        # TODO: two optional: adjust for pop growth and apply time trends
-
         self._updateYear(year)
         if self.adjustCoverage:
             self.programInfo._adjustCoveragesForPopGrowth(self.populations, year)
@@ -534,8 +532,8 @@ class Model:
         self.applyNewProgramCoverages()
         if self.timeTrends:
             self._applyPrevTimeTrends() # TODO: Should I move 'restratify' func to end func?
-        self._redistributePopulation() # TODO: this is a replacement for doing this in _updateDistributions()
-        self.moveModelOneYear() # TODO: should come before or after updates?
+        self._redistributePopulation()
+        self.moveModelOneYear()
 
     def _applyPrevTimeTrends(self): # TODO: haven't done mortality yet
         for ageGroup in self.children.ageGroups:
