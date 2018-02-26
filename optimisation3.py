@@ -36,6 +36,8 @@ def objectiveFunction(allocation, objective, model, availableBudget, fixedCosts,
         newCoverages[program.name] = program.costCurveFunc(totalSpending[idx]) / program.unrestrictedPopSize
     thisModel.runSimulationFromOptimisation(newCoverages)
     outcome = thisModel.getOutcome(objective) * 1000.
+    if objective == 'thrive' or objective == 'healthy_children':
+        outcome *= -1
     return outcome
 
 class OutputClass:
@@ -296,6 +298,13 @@ class Optimisation:
             baseline[objective]['zero spending'] = self.getOutcome(zeroSpending, objective)
         return baseline
 
+    def getReferenceOutcome(self, refSpending):
+        reference = {}
+        for objective in self.objectivesList:
+            reference[objective] = {}
+            reference[objective]['reference spending'] = self.getOutcome(refSpending, objective)
+        return reference
+
     def getCoverages(self, allocations):
         newCoverages = {}
         for program in self.programs:
@@ -303,25 +312,27 @@ class Optimisation:
         return newCoverages
 
     def writeAllResults(self):
-        baselineOutcome = self.getZeroSpendingOutcome()
+        # baselineOutcome = self.getZeroSpendingOutcome()
         currentSpending = self.createDictionary(self.initialProgramAllocations)
         currentOutcome = self.getCurrentOutcome(currentSpending)
+        referenceSpending = self.createDictionary(self.fixedCosts)
+        referenceOutcome = self.getReferenceOutcome(referenceSpending)
         optimisedAllocations = self.readPickles()
         optimisedOutcomes = self.getOptimisedOutcomes(optimisedAllocations)
-        self.writeOutcomesToCSV(baselineOutcome,currentOutcome, optimisedOutcomes)
-        self.writeAllocationsToCSV(currentSpending, optimisedAllocations)
+        self.writeOutcomesToCSV(referenceOutcome,currentOutcome, optimisedOutcomes)
+        self.writeAllocationsToCSV(referenceSpending, currentSpending, optimisedAllocations)
 
-    def writeOutcomesToCSV(self, baseline, current, optimised):
+    def writeOutcomesToCSV(self, reference, current, optimised):
         import csv
         allOutcomes = {}
         for objective in self.objectivesList:
             allOutcomes[objective] = {}
-            allOutcomes[objective].update(baseline[objective])
+            allOutcomes[objective].update(reference[objective])
             allOutcomes[objective].update(current[objective])
             allOutcomes[objective].update(optimised[objective])
         direc = self.resultDirectories['results']
         filename = '%s/%s_outcomes.csv'%(direc, self.country)
-        budgets =  ['zero spending','current spending'] + self.budgetMultiples
+        budgets =  ['reference spending', 'current spending'] + self.budgetMultiples
         with open(filename, 'wb') as f:
             w = csv.writer(f)
             for objective in self.objectivesList:
@@ -330,18 +341,23 @@ class Optimisation:
                     outcome = allOutcomes[objective][multiple]
                     w.writerow(['',multiple, outcome])
 
-    def writeAllocationsToCSV(self, current, optimised):
+    def writeAllocationsToCSV(self, reference, current, optimised):
         import csv
         from collections import OrderedDict
         allSpending = {}
         for objective in self.objectivesList:
             allSpending[objective] = {}
             allSpending[objective].update(current)
+            allSpending[objective].update(reference)
             allSpending[objective].update(optimised[objective])
         direc = self.resultDirectories['results']
         filename = '%s/%s_allocations.csv'%(direc, self.country)
         with open(filename, 'wb') as f:
             w = csv.writer(f)
+            sortedRef = OrderedDict(sorted(reference.items()))
+            w.writerow(['reference'] + sortedRef.keys())
+            w.writerow([''] + sortedRef.values())
+            w.writerow([''])
             sortedCurrent = OrderedDict(sorted(current.items()))
             w.writerow(['current'] + sortedCurrent.keys())
             w.writerow([''] + sortedCurrent.values())
