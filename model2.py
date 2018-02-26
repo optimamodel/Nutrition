@@ -608,8 +608,12 @@ class Model:
             return -sum(self.annualChildrenAgeingOutHealthly.values()) / sum(self.ageingOutChildren.values())
         elif outcome == 'neg_healthy_children':
             return -sum(self.annualChildrenAgeingOutHealthly.values())
+        elif outcome == 'healthy_children':
+            return sum(self.annualChildrenAgeingOutHealthly.values())
         elif outcome == 'stunting_prev':
             return self.children.getTotalFracStunted()
+        elif outcome == 'thrive':
+            return sum(self.annualThrive.values())
         elif outcome == 'neg_thrive':
             return -sum(self.annualThrive.values())
         elif outcome == 'deaths_children':
@@ -646,3 +650,5 @@ class Model:
             return self.children.getFracWastingCat('SAM')
         elif outcome == 'MAM_prev':
             return self.children.getFracWastingCat('MAM')
+        else:
+            raise Exception('::: ERROR: outcome string not found :::')
