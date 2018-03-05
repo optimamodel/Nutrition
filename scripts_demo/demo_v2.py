@@ -2,7 +2,7 @@ import setup
 from copy import deepcopy as dcp
 
 root = '../'
-filePath = setup.getFilePath(root=root, bookDate='2017Nov', country='Bangladesh')[0]
+filePath = setup.getFilePath(root=root, bookDate='2018Jan', country='Tanzania')[0]
 model = setup.setUpModel(filePath, adjustCoverage=False) # already run a year
 
 fixedProgs = model.constants.referencePrograms
@@ -70,7 +70,7 @@ for flag in groupingFlags:
 
 header = ['scenario', 'unrestricted_cov'] + outcomes
 import csv
-with open('demo_v2_Feb19.csv', 'wb') as f:
+with open('demo_v2_Tanzania.csv', 'wb') as f:
     w = csv.writer(f)
     w.writerow(header)
     w.writerow(reference)
