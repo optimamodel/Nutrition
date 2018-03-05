@@ -64,10 +64,10 @@ class MyBounds(object):
 class Optimisation:
     def __init__(self, objectivesList, budgetMultiples, fileInfo, costCurveType='standard',
                  totalBudget=None, parallel=True, numRuns=1, filterProgs=True):
-        import setup
+        import play
         self.country = fileInfo[2]
-        filePath, resultsPath = setup.getFilePath(root=fileInfo[0], bookDate=fileInfo[1], country=self.country)
-        self.model = setup.setUpModel(filePath, adjustCoverage=False, optimise=True) # model has already moved 1 year
+        filePath, resultsPath = play.getFilePath(root=fileInfo[0], bookDate=fileInfo[1], country=self.country)
+        self.model = play.setUpModel(filePath, adjustCoverage=False, optimise=True) # model has already moved 1 year
         self.budgetMultiples = budgetMultiples
         self.objectivesList = objectivesList
         self.filterProgs = filterProgs
