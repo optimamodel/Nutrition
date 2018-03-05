@@ -1,5 +1,3 @@
-from copy import deepcopy as dcp
-# from scipy.stats import norm
 from scipy.special import ndtri, ndtr # these are faster than calling scipy.stats.norm
 
 class Model:
