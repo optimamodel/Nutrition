@@ -154,24 +154,19 @@ class Optimisation:
             kwargs['indxToKeep'] = indxToKeep
             xmin = [0.] * len(indxToKeep)
             xmax = [kwargs['availableBudget']] * len(indxToKeep)
-            # bounds = [(xmin[0], xmax[0])] * len(indxToKeep)
         else:
             kwargs['indxToKeep'] = [i for i in range(len(self.programs))]
             xmin = [0.] * len(self.programs)
             xmax = [kwargs['availableBudget']] * len(self.programs)
-            # bounds = [(xmin[0], xmax[0])] * len(self.programs)
-        # args = (kwargs['objective'], kwargs['model'], kwargs['availableBudget'], kwargs['fixedCosts'], kwargs['indxToKeep'], kwargs['steps'])
-        # myBounds = MyBounds(xmin, xmax)
         runOutputs = []
         for run in range(self.numRuns):
             now = time.time()
-            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=110, swarmsize=160) # should be about 13 hours for 100*120
+            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=5, swarmsize=5) # should be about 13 hours for 100*120
             print "Objective: " + str(objective)
-            print "value * 1000: " + str(fopt)
+            print "Multiple: " + str(multiple)
+            print "value: " + str(fopt/1000.)
             budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
-                                                         xmax=xmax, verbose=0)
-            # res = minimize(objectiveFunction, x0, method ='L-BFGS-B', args=args, options={'disp':True}, bounds=bounds)
-            # bestAllocation = res.x
+                                                         xmax=xmax, verbose=0, MaxIter=10)
             print str((time.time() - now)/(60*60)) + ' hours'
             print "----------"
             outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval,
@@ -186,7 +181,6 @@ class Optimisation:
             totalAllocation.append(value)
             if idx in indxToKeep:
                 totalAllocation[idx] += scaledAllocation.pop(0)
-        # scaledAllocation = [spending + fixedCost for spending, fixedCost in zip(scaledAllocation, self.fixedCosts)]
         bestAllocationDict = self.createDictionary(totalAllocation)
         self.writeToPickle(bestAllocationDict, multiple, objective)
         return
@@ -312,15 +306,57 @@ class Optimisation:
         return newCoverages
 
     def writeAllResults(self):
-        # baselineOutcome = self.getZeroSpendingOutcome()
         currentSpending = self.createDictionary(self.initialProgramAllocations)
         currentOutcome = self.getCurrentOutcome(currentSpending)
         referenceSpending = self.createDictionary(self.fixedCosts)
         referenceOutcome = self.getReferenceOutcome(referenceSpending)
         optimisedAllocations = self.readPickles()
         optimisedOutcomes = self.getOptimisedOutcomes(optimisedAllocations)
-        self.writeOutcomesToCSV(referenceOutcome,currentOutcome, optimisedOutcomes)
-        self.writeAllocationsToCSV(referenceSpending, currentSpending, optimisedAllocations)
+        currentAdditionalList = [a-b for a,b in zip(self.initialProgramAllocations, self.fixedCosts)]
+        currentAdditional = self.createDictionary(currentAdditionalList)
+        optimisedAdditional = self.getOptimisedAdditional(optimisedAllocations)
+        coverages = self.getOptimalCoverages(optimisedAllocations)
+        self.writeOutcomesToCSV(referenceOutcome, currentOutcome, optimisedOutcomes)
+        self.writeAllocationsToCSV(referenceSpending, currentAdditional, optimisedAdditional)
+        self.writeCoveragesToCSV(coverages)
+
+    def getOptimisedAdditional(self, optimised):
+        fixedCostsDict = self.createDictionary(self.fixedCosts)
+        optimisedAdditional = {}
+        for objective in self.objectivesList:
+            optimisedAdditional[objective] = {}
+            for multiple in self.budgetMultiples:
+                additionalFunds = optimised[objective][multiple]
+                optimisedAdditional[objective][multiple] = {}
+                for programName in additionalFunds.iterkeys():
+                    optimisedAdditional[objective][multiple][programName] = additionalFunds[programName] - fixedCostsDict[programName]
+        return optimisedAdditional
+
+    def getOptimalCoverages(self, optimisedAllocations):
+        coverages = {}
+        for objective in self.objectivesList:
+            coverages[objective] = {}
+            for multiple in self.budgetMultiples:
+                coverages[objective][multiple] = {}
+                allocations = optimisedAllocations[objective][multiple]
+                for program in self.programs:
+                    # this gives the restricted coverage
+                    coverages[objective][multiple][program.name] = "{0:.2f}".format((program.costCurveFunc(allocations[program.name]) / program.restrictedPopSize) * 100.)
+        return coverages
+
+    def writeCoveragesToCSV(self, coverages):
+        import csv
+        from collections import OrderedDict
+        direc = self.resultDirectories['results']
+        filename = '%s/%s_coverages.csv'%(direc, self.country)
+        with open(filename, 'wb') as f:
+            w = csv.writer(f)
+            for objective in self.objectivesList:
+                w.writerow([''])
+                w.writerow([objective] + sorted(coverages[objective][self.budgetMultiples[0]].keys()))
+                for multiple in self.budgetMultiples:
+                    coverage = OrderedDict(sorted(coverages[objective][multiple].items()))
+                    w.writerow([multiple] + coverage.values())
 
     def writeOutcomesToCSV(self, reference, current, optimised):
         import csv
@@ -345,7 +381,7 @@ class Optimisation:
         import csv
         from collections import OrderedDict
         allSpending = {}
-        for objective in self.objectivesList:
+        for objective in self.objectivesList: # do i use this loop?
             allSpending[objective] = {}
             allSpending[objective].update(current)
             allSpending[objective].update(reference)

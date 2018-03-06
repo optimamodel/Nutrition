@@ -66,7 +66,7 @@ class Program(object):
     def _getUnrestrictedCov(self, restrictedCov):
         return restrictedCov*self.restrictedPopSize / self.unrestrictedPopSize
 
-    def _setBaselineCoverage(self, populations): # TODO: CAN PROBABLY GET RID OF THIS DUE TO NEW COVERAGES LIST METHOD
+    def _setBaselineCoverage(self, populations):
         self._setRestrictedPopSize(populations)
         self._setUnrestrictedPopSize(populations)
         self.unrestrictedBaselineCov = (self.restrictedBaselineCov * self.restrictedPopSize) / \
@@ -370,7 +370,8 @@ class CostCovCurve:
         return logisticCurve
 
     def getSpending(self, covFrac):
-        """Assumes standard increasing marginal costs curve """
+        """Assumes standard increasing marginal costs curve or linear """
+        covNumber = covFrac * self.unrestrictedPop
         if self.curveType == 'linear':
             m = 1. / self.unitCost
             x0, y0 = [0., 0.]  # extra point
@@ -378,9 +379,8 @@ class CostCovCurve:
                 c = y0
             else:
                 c = y0 / (m * x0)
-            spending = (covFrac*self.unrestrictedPop - c)/m
+            spending = (covNumber - c)/m
         else:
-            covNumber = covFrac * self.unrestrictedPop
             B = self.saturation * self.restrictedPop
             A = -B
             C = 0.
