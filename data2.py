@@ -284,7 +284,7 @@ class Project:
         self.birthAges = self.birthAgeProgram.keys()
 
     def getAnaemiaProgram(self):
-        anaemiaSheet = self.readSheet('Programs anemia', [0,1])
+        anaemiaSheet = self.readSheet('Programs anaemia', [0,1])
         self.RRanaemiaProgram = anaemiaSheet.loc['Relative risks'].to_dict(orient='index')
         self.ORanaemiaProgram = anaemiaSheet.loc['Odds ratios'].to_dict(orient='index')
 
