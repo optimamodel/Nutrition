@@ -1,7 +1,7 @@
 from scipy.special import ndtri, ndtr # these are faster than calling scipy.stats.norm
 
 class Model:
-    def __init__(self, filePath, adjustCoverage=False, timeTrends=False, optimise=False):
+    def __init__(self, filePath, adjustCoverage=False, timeTrends=False, optimise=False, numYears=None):
         import data2 as data
         import populations2 as pops
         import program_info
@@ -14,8 +14,13 @@ class Model:
         self.children = self.populations[0]
         self.PW = self.populations[1]
         self.nonPW = self.populations[2]
+        self.numYears = numYears
         self.adjustCoverage = adjustCoverage
         self.timeTrends = timeTrends
+        if numYears is None:
+            self.numYears = len(self.constants.simulationYears)
+        else:
+            self.numYears = numYears
 
         self.year = self.constants.baselineYear
         self._createOutcomeTrackers()
@@ -572,7 +577,7 @@ class Model:
         self.programInfo._updateYearForPrograms(year)
 
     def runSimulation(self):
-        for year in self.constants.simulationYears:
+        for year in self.constants.simulationYears[:self.numYears]:
             self._updateEverything(year)
 
     def runSimulationGivenCoverage(self, coverages, restrictedCov=True):

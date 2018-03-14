@@ -1232,10 +1232,13 @@ class NonPregnantWomen(Population):
         self.pregnancyRate = rate
         self.birthRate = averagePercentDiff * rate
 
-    def _updateFracPregnancyAverted(self, coverage):
-        self.fracPregnancyAverted = sum(self.const.famPlanMethods[prog]['Effectiveness'] *
-            self.const.famPlanMethods[prog]['Distribution'] * coverage
-            for prog in self.const.famPlanMethods.iterkeys())
+    def _updateFracPregnancyAverted(self, coverage): # TODO: we don't want this b/c not accounting for FP & don't have distribution, therefore breaks everything
+        if coverage == 0: # if missing or 0 cov
+            self.fracPregnancyAverted = 0.
+        else:
+            self.fracPregnancyAverted = sum(self.const.famPlanMethods[prog]['Effectiveness'] *
+                self.const.famPlanMethods[prog]['Distribution'] * coverage
+                for prog in self.const.famPlanMethods.iterkeys())
 
     def _setAnnualPrevChange(self):
         from numpy import polyfit, isfinite, array

@@ -4,8 +4,12 @@ class Constants:
     def __init__(self, project):
         self.allYears = dcp(project.simulationYears)
         self.baselineYear = int(dcp(project.year))
-        self.calibrationYears = self.allYears[:1] # year before coverage change
-        self.simulationYears = self.allYears[1:] # year after coverage change
+        if self.baselineYear == self.allYears[0]: # demographic projection data includes baseline
+            self.calibrationYears = self.allYears[1:2] # year before coverage change
+            self.simulationYears = self.allYears[2:] # year after coverage change
+        else:
+            self.calibrationYears = self.allYears[:1] # year before coverage change
+            self.simulationYears = self.allYears[1:] # year after coverage change
         self.stuntingList = dcp(project.riskCategories['Stunting'])
         self.wastingList = dcp(project.riskCategories['Wasting'])
         self.bfList = dcp(project.riskCategories['Breastfeeding'])
