@@ -7,9 +7,8 @@ import optimisation3 as optimisation
 objectives = ['thrive']
 budgetMultiples = [1.]
 fileInfo = [root, '', 'Master']
-totalBudget = 6.e9
 
 if __name__ == '__main__':
-    thisOptimisation = optimisation.Optimisation(objectives, budgetMultiples, fileInfo, totalBudget=totalBudget)
+    thisOptimisation = optimisation.Optimisation(objectives, budgetMultiples, fileInfo)
     thisOptimisation.optimise()
     thisOptimisation.writeAllResults()

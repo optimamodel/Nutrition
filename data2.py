@@ -33,6 +33,7 @@ class Project:
         self.getFamilyPrograms()
         self.getBirthAgePrograms()
         self.getCostCoverageInfo()
+        self.getExpenditureAndBudget()
         self.getProgramTargetPop()
         self.getProgramImpactedPop()
         self.getProgramRiskAreas()
@@ -222,6 +223,13 @@ class Project:
     def getCostCoverageInfo(self):
         self.costCurveInfo = self.readSheet('Programs cost and coverage', [0], 'dict')
         #self.baselineCov = {program: info['Baseline coverage'] for program, info in self.costCurveInfo.iteritems()}
+
+    def getExpenditureAndBudget(self):
+        thisSheet = self.workbook.parse('Expenditure & budget', index_col=[0])
+        availableBudget = thisSheet.loc['Available budget']['Value']
+        self.availableBudget = availableBudget if pd.notnull(availableBudget) else None
+        expenditure = thisSheet.loc['Current expenditure']['Value']
+        self.currentExpenditure = expenditure if pd.notnull(expenditure) else None
 
     def getProgramDependencies(self): # TODO: will need to put IYCF dependencies in (maybe have them in the spreadsheet, but will be ignored if not selected by user)
         dependencies = self.readSheet('Program dependencies', [0])

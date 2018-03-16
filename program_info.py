@@ -15,10 +15,19 @@ class ProgramInfo:
         import programs as progs
         self.programs = progs.setUpPrograms(constants)
         self.programAreas = constants.programAreas
-        self.referencePrograms = constants.referencePrograms
         self.const = constants
+        self.currentExpenditure = constants.currentExpenditure
+        self.availableBudget = constants.availableBudget
+        self.setReferencePrograms()
         self._sortPrograms()
         self._getTwins()
+
+    def setReferencePrograms(self):
+        for program in self.programs:
+            if program.name in self.const.referencePrograms:
+                program.reference = True
+            else:
+                program.reference = False
 
     def _sortPrograms(self):
         """
