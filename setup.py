@@ -2,8 +2,8 @@ import model2
 import data2
 from datetime import date
 
-def setUpModel(filePath, adjustCoverage=True, optimise=False):
-    model = model2.Model(filePath, adjustCoverage=adjustCoverage, optimise=optimise) # model has already moved 1 year
+def setUpModel(filePath, adjustCoverage=False, optimise=False, numYears=None):
+    model = model2.Model(filePath, adjustCoverage=adjustCoverage, optimise=optimise, numYears=numYears) # model has already moved 1 year
     return model
 
 def setUpProject(filePath):
