@@ -335,11 +335,12 @@ class Program(object):
         self.costCurveOb = CostCovCurve(self.unitCost, self.saturation, self.restrictedPopSize, self.unrestrictedPopSize)
         self.costCurveFunc = self.costCurveOb._setCostCovCurve()
 
-
     def getSpending(self):
         return self.costCurveOb.getSpending(self.unrestrictedBaselineCov) # TODO: want to change this so that uses annual Coverages
 
-
+    def scaleUnitCosts(self, scaleFactor):
+        self.unitCost *= scaleFactor
+        self._setCostCoverageCurve()
 
 class CostCovCurve:
     def __init__(self, unitCost, saturation, restrictedPop, unrestrictedPop, curveType='linear'):

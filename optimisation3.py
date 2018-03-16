@@ -62,8 +62,7 @@ class MyBounds(object):
 
 
 class Optimisation:
-    def __init__(self, objectivesList, budgetMultiples, fileInfo, costCurveType='standard',
-                 totalBudget=None, parallel=True, numRuns=1, filterProgs=True):
+    def __init__(self, objectivesList, budgetMultiples, fileInfo, costCurveType='standard', parallel=True, numRuns=1, filterProgs=True):
         import play
         self.country = fileInfo[2]
         filePath, resultsPath = play.getFilePath(root=fileInfo[0], bookDate=fileInfo[1], country=self.country)
@@ -72,7 +71,7 @@ class Optimisation:
         self.objectivesList = objectivesList
         self.filterProgs = filterProgs
         self.programs = self.model.programInfo.programs
-        self.numModelSteps = len(self.model.constants.simulationYears) # default to period for which data is supplied
+        self.numModelSteps = len(self.model.constants.simulationYears) # default to period for which data is supplied # TODO: see about this in term of the new param in Model.
         self.parallel = parallel
         self.numCPUs = cpu_count()
         self.numRuns = numRuns
@@ -84,11 +83,8 @@ class Optimisation:
             program._setCostCoverageCurve()
         self.initialProgramAllocations = self.getInitialProgramAllocations()
         self.getFixedCosts()
-        # either distribute manually entered budget, or distribute costs which are not fixed
-        if totalBudget:
-            self.availableBudget = totalBudget
-        else:
-            self.availableBudget = sum(self.initialProgramAllocations) - sum(self.fixedCosts)
+        self.scaleCostsForCurrentExpenditure()
+        self.setAvailableBudget()
         self.kwargs = {'model': self.model, 'steps': self.steps,
                 'availableBudget': self.availableBudget, 'fixedCosts': self.fixedCosts}
         # check that results directory exists and if not then create it
@@ -96,10 +92,29 @@ class Optimisation:
         self.resultDirectories = {}
         for objective in self.objectivesList + ['results']:
             self.resultDirectories[objective] = resultsPath +'/'+objective
-            if fileInfo[3]:
-                self.resultDirectories[objective] += '/'+fileInfo[3]
             if not os.path.exists(self.resultDirectories[objective]):
                 os.makedirs(self.resultDirectories[objective])
+
+    ######### SETUP ############
+
+    def scaleCostsForCurrentExpenditure(self): # TODO: should find out if this is all progs, or only Nutrition-specific programs to be scaled.
+        # if there is a current budget specified, scale unit costs so that current coverages yield this budget.
+        # ::WARNING:: Currently, this should only be used for LINEAR cost curves
+        # specificBudget / calculatedBudget * oldUnitCost = newUnitCost
+        if self.model.programInfo.currentExpenditure:
+            currentCalculated = sum(self.initialProgramAllocations) - sum(self.fixedCosts)
+            scaleFactor = self.model.programInfo.currentExpenditure / currentCalculated
+            for program in self.programs:
+                if not program.reference:
+                    program.scaleUnitCosts(scaleFactor)
+            self.initialProgramAllocations = self.getInitialProgramAllocations()
+
+    def setAvailableBudget(self):
+        # either distribute manually entered budget, or distribute costs which are not fixed
+        if self.model.programInfo.availableBudget:
+            self.availableBudget = self.model.project.availableBudget
+        else:
+            self.availableBudget = sum(self.initialProgramAllocations) - sum(self.fixedCosts)
 
     ######### OPTIMISATION ##########
 
@@ -161,12 +176,12 @@ class Optimisation:
         runOutputs = []
         for run in range(self.numRuns):
             now = time.time()
-            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=110, swarmsize=160) # should be about 13 hours for 100*120
+            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=1, swarmsize=10) # should be about 13 hours for 100*120
             print "Objective: " + str(objective)
             print "Multiple: " + str(multiple)
             print "value: " + str(fopt/1000.)
             budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
-                                                         xmax=xmax, verbose=0)
+                                                         xmax=xmax, verbose=0, MaxIter=10)
             print str((time.time() - now)/(60*60)) + ' hours'
             print "----------"
             outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval,
@@ -205,7 +220,7 @@ class Optimisation:
         # TODO: could clean this up by seeting 'reference' as attribute of program
         self.fixedCosts = []
         for idx, program in enumerate(self.programs):
-            if program.name in self.model.programInfo.referencePrograms:
+            if program.reference:
                 self.fixedCosts.append(self.initialProgramAllocations[idx])
             else:
                 self.fixedCosts.append(0)
