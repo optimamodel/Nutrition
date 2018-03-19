@@ -2,7 +2,7 @@ import pandas as pd
 from copy import deepcopy as dcp
 
 class Project:
-    def __init__(self, filepath, programsToKeep=None):
+    def __init__(self, filepath):
         self.filename = filepath
         self.workbook = pd.ExcelFile(filepath)
         self.sheetNames = self.workbook.sheet_names
