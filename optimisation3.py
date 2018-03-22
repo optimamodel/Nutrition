@@ -27,7 +27,10 @@ def rescaleAllocation(totalBudget, allocation):
 
 def _addFixedAllocations(allocations, fixedAllocations, indxList):
     """Assumes order is preserved from original list"""
-    return [allocations[i] + fixed for i, fixed in izip(indxList, fixedAllocations)]
+    modified = dcp(allocations)
+    for i, j in enumerate(indxList):
+        modified[j] += fixedAllocations[i]
+    return modified
 
 def objectiveFunction(allocation, objective, model, freeFunds, fixedAllocations, indxToKeep, numYears):
     thisModel = dcp(model)
