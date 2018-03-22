@@ -9,6 +9,7 @@ budgetMultiples = [1.]
 fileInfo = [root, '', 'Master']
 
 if __name__ == '__main__':
-    thisOptimisation = optimisation.Optimisation(objectives, budgetMultiples, fileInfo)
+    thisOptimisation = optimisation.Optimisation(objectives, budgetMultiples, fileInfo,
+                                                 fixCurrentAllocations=True, additionalFunds=2000000, numYears=6)
     thisOptimisation.optimise()
     thisOptimisation.writeAllResults()

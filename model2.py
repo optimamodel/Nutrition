@@ -1,7 +1,7 @@
 from scipy.special import ndtri, ndtr # these are faster than calling scipy.stats.norm
 
 class Model:
-    def __init__(self, filePath, adjustCoverage=False, timeTrends=False, optimise=False, numYears=None):
+    def __init__(self, filePath, adjustCoverage=False, timeTrends=False, optimise=False):
         import data2 as data
         import populations2 as pops
         import program_info
@@ -14,13 +14,9 @@ class Model:
         self.children = self.populations[0]
         self.PW = self.populations[1]
         self.nonPW = self.populations[2]
-        self.numYears = numYears
         self.adjustCoverage = adjustCoverage
         self.timeTrends = timeTrends
-        if numYears is None:
-            self.numYears = len(self.constants.simulationYears)
-        else:
-            self.numYears = numYears
+        self.numYears = len(self.constants.simulationYears) # default if not specified later
 
         self.year = self.constants.baselineYear
         self._createOutcomeTrackers()
@@ -522,7 +518,7 @@ class Model:
             self.moveModelOneTimeStep()
         self._applyPWMortality()
         self._updatePWpopulation()
-        self._updateWRApopulation() # TODOL should switch these back
+        self._updateWRApopulation() # TODO should switch these back
         self.updateYearlyRiskDists()
 
     def _updateEverything(self, year):
@@ -530,12 +526,12 @@ class Model:
         self._updateYear(year)
         if self.adjustCoverage:
             self.programInfo._adjustCoveragesForPopGrowth(self.populations, year)
-        self._updateConditionalProbabilities()
+        self._updateConditionalProbabilities() # TODO: need to do this every timestep?
         self._resetStorage()
-        self.applyNewProgramCoverages()
+        self.applyNewProgramCoverages() # TODO: need to do this every timestep?
         if self.timeTrends:
             self._applyPrevTimeTrends() # TODO: Should I move 'restratify' func to end func?
-        self._redistributePopulation()
+        self._redistributePopulation() # TODO: need to do this every timestep?
         self.moveModelOneYear()
 
     def _applyPrevTimeTrends(self): # TODO: haven't done mortality yet
@@ -589,13 +585,17 @@ class Model:
         self.programInfo._setSimulationCoverageFromWorkbook()
         self.runSimulation()
 
-    def runSimulationFromOptimisation(self, newCoverages):
+    def runSimulationFromOptimisation(self, newCoverages, numYears=None): #  TODO: implement numYears in the other wrapper functions.
+        self.numYears = self._setNumYears(numYears)
         self._setAnnualCoveragesFromOptimisation(newCoverages)
         self.runSimulation()
 
     def _setAnnualCoveragesFromOptimisation(self, newCoverages):
         for program in self.programInfo.programs:
             program._setAnnualCoverageFromOptimisation(newCoverages[program.name])
+
+    def _setNumYears(self, numYears):
+        return numYears if numYears is not None else self.numYears
 
     def _resetStorage(self):
         for pop in self.populations:
