@@ -1,11 +1,14 @@
+import os
 from copy import deepcopy as dcp
+import play
 import cPickle as pickle
 from multiprocessing import cpu_count, Process
-from numpy import array, all, random, append, linspace, argmax, zeros, nonzero, inf
+from numpy import array, random, append, linspace, argmax, zeros, nonzero, inf
 from scipy.interpolate import pchip
 from math import ceil
 from csv import writer
 from collections import OrderedDict
+from datetime import date
 
 def runModelForNTimeSteps(steps, model):
     """
@@ -27,7 +30,18 @@ def rescaleAllocation(totalBudget, allocation):
         rescaledAllocation = dcp(allocation)
     return rescaledAllocation
 
-# def getJobs(func, args):
+def runJobs(jobs, max_jobs):
+    while jobs:
+        thisRound = min(max_jobs, len(jobs)) # TODO: problem is this only accounts for the number of regions, not the multiples or objectives inside
+        for process in range(thisRound):
+            p = jobs[process]
+            p.start()
+        for process in range(thisRound):  # this loop ensures this round waits until processes are finished
+            p = jobs[process]
+            p.join()
+        jobs = jobs[thisRound:]
+    return
+
 
 def _addFixedAllocations(allocations, fixedAllocations, indxList):
     """Assumes order is preserved from original list"""
@@ -63,11 +77,14 @@ class OutputClass:
         self.cleanOutputXVector = cleanOutputXVector
 
 class Optimisation: # TODO: would like
-    def __init__(self, objectives, budgetMultiples, fileInfo, fixCurrentAllocations=False, optimiseCurrent=False,
+    def __init__(self, objectives, budgetMultiples, fileInfo, resultsPath=None, fixCurrentAllocations=False, optimiseCurrent=False,
                  additionalFunds=0, numYears=None, costCurveType='linear', parallel=True, numRuns=1, filterProgs=True):
-        import play # TODO: write documentation for all these params
-        self.name = fileInfo[2]
-        filePath, resultsPath = play.getFilePath(root=fileInfo[0], bookDate=fileInfo[1], country=self.name)
+        root, country, name, analysisType = fileInfo
+        self.name = name
+        filePath = play.getFilePath(root=root, country=country, name=name)
+        if not resultsPath:
+            resultsPath = play.getResultsDir(root=root, country=self.name, analysisType=analysisType)
+        self.createDirectory(resultsPath)
         self.model = play.setUpModel(filePath, adjustCoverage=False, optimise=True) # model has already moved 1 year
         self.budgetMultiples = budgetMultiples
         self.objectives = objectives
@@ -90,18 +107,14 @@ class Optimisation: # TODO: would like
         self.calculateAllocations(fixCurrentAllocations)
         self.kwargs = {'model': self.model, 'numYears': self.numYears,
                 'freeFunds': self.freeFunds, 'fixedAllocations': self.fixedAllocations}
-        self.checkDirectory(resultsPath)
 
     ######### FILE HANDLING #########
 
-    def checkDirectory(self, resultsPath):
+    def createDirectory(self, resultsPath):
         # check that results directory exists and if not then create it
-        import os # TODO: save date of creation - possible date will change will all the runs. save in Gepspatial as well
-        self.resultDirectories = {}
-        for objective in self.objectives + ['results']:
-            self.resultDirectories[objective] = resultsPath +'/'+objective
-            if not os.path.exists(self.resultDirectories[objective]):
-                os.makedirs(self.resultDirectories[objective])
+        self.resultDir = resultsPath
+        if not os.path.exists(self.resultDir):
+            os.makedirs(self.resultDir)
 
     ######### SETUP ############
 
@@ -118,7 +131,7 @@ class Optimisation: # TODO: would like
         self.currentAllocations = self.scaleCostsForCurrentExpenditure()
         self.fixedAllocations = self.getFixedAllocations(fixCurrentAllocations)
         self.freeFunds = self.getFreeFunds()
-    
+
     def getReferenceAllocations(self):
         """
         Reference programs are not included in nutrition budgets, therefore these must be removed before future calculations.
@@ -202,7 +215,7 @@ class Optimisation: # TODO: would like
                 jobs.append(p)
         return jobs
 
-    def runJobs(self, jobs):
+    def runJobs(self, jobs): # TODO: version of this in module scope now
         while jobs:
             thisRound = min(self.numCPUs, len(jobs))
             for process in range(thisRound):
@@ -214,7 +227,7 @@ class Optimisation: # TODO: would like
             jobs = jobs[thisRound:]
         return
 
-    def runOptimisation(self, multiple, objective):
+    def runOptimisation(self, multiple, objective): # TODO: don't want to handle the 0 budget in here, since it isn't even an optimisation. Just run model with 0 spending.
         import pso as pso
         import asd as asd
         from copy import deepcopy as dcp
@@ -228,6 +241,11 @@ class Optimisation: # TODO: would like
         xmin = [0.] * len(indxToKeep)
         xmax = [kwargs['freeFunds']] * len(indxToKeep) # TODO: could make this cost of saturation.
         runOutputs = []
+        print self.additionalFunds
+        print self.fixCurrentAllocations
+        print self.freeFunds
+        print multiple
+        print objective
         for run in range(self.numRuns):
             now = time.time()
             x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=1, swarmsize=10) # should be about 13 hours for 100*120
@@ -235,7 +253,7 @@ class Optimisation: # TODO: would like
             print "Multiple: " + str(multiple)
             print "value: " + str(fopt/1000.)
             budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
-                                                         xmax=xmax, verbose=2, MaxIter=10)
+                                                         xmax=xmax, verbose=2, MaxIter=5)
             print str((time.time() - now)/(60*60)) + ' hours'
             print "----------"
             outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval,
@@ -298,7 +316,7 @@ class Optimisation: # TODO: would like
         outcome = array([])
         for multiple in self.budgetMultiples:
             spending = append(spending, multiple * self.freeFunds)
-            filePath = '..'  # TODO: fix
+            filePath = '{}/{}_{}_{}.pkl'.format(self.resultDir, self.name, objective, multiple)
             f = open(filePath, 'rb')
             thisAllocation = pickle.load(f)
             f.close()
@@ -313,8 +331,8 @@ class Optimisation: # TODO: would like
 
     ########### FILE HANDLING ############
 
-    def writeToPickle(self, allocation, multiple, objective): #TODO: could put .format here
-        fileName = self.resultDirectories[objective]+ '_allocations'+'/'+ self.name+'_'+str(objective)+'_'+str(multiple)+'.pkl'
+    def writeToPickle(self, allocation, multiple, objective):
+        fileName = '{}/{}_{}_{}.pkl'.format(self.resultDir, self.name, objective, multiple)
         outfile = open(fileName, 'wb')
         pickle.dump(allocation, outfile)
         return
@@ -323,9 +341,8 @@ class Optimisation: # TODO: would like
         allocations = {}
         for objective in self.objectives:
             allocations[objective] = {}
-            direc = self.resultDirectories[objective]
             for multiple in self.budgetMultiples:
-                filename = '%s_%s/%s_%s_%s.pkl' % (direc, 'allocations', self.name, objective, str(multiple))
+                filename = '{}/{}_{}_{}.pkl'.format(self.resultDir, self.name, objective, multiple)
                 f = open(filename, 'rb')
                 allocations[objective][multiple] = pickle.load(f)
                 f.close()
@@ -421,8 +438,7 @@ class Optimisation: # TODO: would like
     def writeCoveragesToCSV(self, coverages):
         import csv
         from collections import OrderedDict
-        direc = self.resultDirectories['results']
-        filename = '%s/%s_coverages.csv'%(direc, self.name)
+        filename = '{}/{}_coverages.csv'.format(self.resultDir, self.name)
         with open(filename, 'wb') as f:
             w = csv.writer(f)
             for objective in self.objectives:
@@ -440,8 +456,7 @@ class Optimisation: # TODO: would like
             allOutcomes[objective].update(reference[objective])
             allOutcomes[objective].update(current[objective])
             allOutcomes[objective].update(optimised[objective])
-        direc = self.resultDirectories['results']
-        filename = '%s/%s_outcomes.csv'%(direc, self.name)
+        filename = '{}/{}_outcomes.csv'.format(self.resultDir, self.name)
         budgets =  ['reference spending', 'current spending'] + self.budgetMultiples
         with open(filename, 'wb') as f:
             w = csv.writer(f)
@@ -460,8 +475,7 @@ class Optimisation: # TODO: would like
             allSpending[objective].update(current)
             allSpending[objective].update(reference)
             allSpending[objective].update(optimised[objective])
-        direc = self.resultDirectories['results']
-        filename = '%s/%s_allocations.csv'%(direc, self.name)
+        filename = '{}/{}_allocations.csv'.format(self.resultDir, self.name)
         with open(filename, 'wb') as f:
             w = csv.writer(f)
             sortedRef = OrderedDict(sorted(reference.items()))
@@ -478,31 +492,17 @@ class Optimisation: # TODO: would like
                     allocation = OrderedDict(sorted(optimised[objective][multiple].items()))
                     w.writerow([multiple] + allocation.values())
 
-class GeospatialOptimisation: # TODO: could probably make optimisation inherit from this (with num regions etc just equal to 1)
+class GeospatialOptimisation:
     def __init__(self, objectives, fileInfo, BOCsFileStem, regionNames, numYears=None, costCurveType='linear'):
+        self.root, self.country = fileInfo
+        thisDate = date.today().strftime('%Y%b%d')
+        self.resultsDir = '{}/Results/{}/geospatial/{}'.format(self.root, self.country, thisDate)
         self.objectives = objectives
-        self.budgetMultiples = [0, 0.25, 0.5, 1, 3, 6, 'national']
+        self.budgetMultiples = [1., 'national'] #[0.25, 0.5, 1, 3, 6, 'national']
         self.regionNames = regionNames
         self.numYears = numYears
         self.numRegions = len(regionNames)
-        self.scenarios = BudgetScenarios().getScenarios() # TODO: need a filePath here
-
-
-
-        # TODO
-        # self.resultsFileStem = resultsFileStem
-        # self.BOCsFileStem = BOCsFileStem
-        # # self.costCurveType = costCurveType
-        # # self.currentRegionalBudgets = self.getCurrentRegionalBudgets(IYCF_cov_regional=IYCF_cov_regional) # TODO: REWRITE
-        # self.nationalBudget = sum(self.currentRegionalBudgets)
-        # self.numRegions = len(regionSpreadsheetList)
-        # self.tradeOffCurves = None
-        # self.postGATimeSeries = None
-        # self.numCPUs = cpu_count()
-        import os
-        # check that results directory exists and if not then create it
-        if not os.path.exists(resultsFileStem):
-            os.makedirs(resultsFileStem)
+        self.scenarios = BudgetScenarios(self.root+'/input_spreadsheets/'+self.country+'/optimisationBudgets.xlsx').getScenarios()  # TODO: super ugly file-finding
         if BOCsFileStem is not None: # None when optimising regions independently
             self.checkForRegionalBOCs()
 
@@ -514,46 +514,68 @@ class GeospatialOptimisation: # TODO: could probably make optimisation inherit f
         Each scenario is run in series because of the large number of parallel jobs for each regions.
         :return:
         """
-        # TODO: need to add the scenario as part of results directory.
-        # TODO: would be nice to output a text file with description of each scenario (could use the one read in from excel)
         # options: [fixedAllocations,progOpt, additionalFunds]
         for scenario, options in self.scenarios.iteritems():
-            regions = self.setUpRegionalOptimisations(options)
+            formattedScenario = scenario.lower().replace(' ', '')
+            regions = self.setUpRegionalOptimisations(formattedScenario, options)
             regions = self.getRegionalBOCs(regions)
             # distribute funds between regions
-            # TODO: consider putting objectives here
             for objective in self.objectives:
-                self.optimiseAllRegions(regions, objective, options)
-                self.collateAllResults(objective)
+                self.optimiseAllRegions(regions, objective, formattedScenario, options)
+                self.collateAllResults(objective, regions)
 
+    def setUpRegionalOptimisations(self, scenario, options):
+        fixCurrent, optimiseCurrent, additionalFunds = options
+        regions = []
+        for region in self.regionNames:
+            resultsDir = '{}/{}/independent'.format(self.resultsDir, scenario) # TODO: not happy with this way of providing directory and file info
+            fileInfo = [self.root, self.country + '/regions', region, ''] # TODO: bit of a cheat here
+            thisRegion = Optimisation(self.objectives, self.budgetMultiples, fileInfo, resultsPath=resultsDir,
+                                      fixCurrentAllocations=fixCurrent,
+                                      optimiseCurrent=optimiseCurrent, additionalFunds=additionalFunds)
+            regions.append(thisRegion)
+        regions = self.getBudgetMultiples(regions)
+        return regions
 
-    def optimiseAllRegions(self, regions, objective, options):
+    def getRegionalBOCs(self, regions):
+        from math import ceil
+        jobs = []
+        max_jobs = int(ceil(float(cpu_count()) / (float(len(self.objectives)) * float(len(self.budgetMultiples))))) # TODO: bit of a hack solution.
+        for region in regions:
+            jobs.append(Process(target=region.optimise))
+        runJobs(jobs, max_jobs)
+        for region in regions:
+            region.interpolateBOCs()
+        return regions
+
+    def optimiseAllRegions(self, regions, objective, scenario, options):
         fixCurrent, optimiseCurrent, dummyFunds = options
         optimisedRegionalBudgetList = self.gridSearch(regions, objective)
         budgetMultiple = [1]
         for i, region in enumerate(regions):
-            # TODO: want to create new optimisation class for each region, specifying budget etc. Objectives will have different budgets, so need to treat separately.
             name = region.name
             regionalFunds = optimisedRegionalBudgetList[i]
-            fileInfo = ['', '', name]  # TODO fix. need root
-            newOptim = Optimisation([objective], budgetMultiple, fileInfo, fixCurrentAllocations=fixCurrent,
+            resultsDir = '{}/{}/dependent'.format(self.resultsDir, scenario)
+            fileInfo = [self.root, self.country + '/regions', name, '']
+            newOptim = Optimisation([objective], budgetMultiple, fileInfo, resultsPath=resultsDir,
+                                    fixCurrentAllocations=fixCurrent,
                                     optimiseCurrent=optimiseCurrent, additionalFunds=regionalFunds)
             prc = Process(target=newOptim.optimise())
             prc.start()
 
-    def collateAllResults(self, objective):
+    def collateAllResults(self, objective, scenario):
         """collates all regional output from pickle files
         Uses append file method to avoid over-writing"""
 
         # write the programs to row for each objective
         # TODO: could be issue that 3 regions have additional programs to the others.
-        direc = '..' #TODO
-        fileName = '%s/regional_allocations.csv'%(direc)
-        with open(fileName, 'a') as f:
+        direc = '{}/{}/dependent/results'.format(self.resultsDir, scenario)
+        filename = '{}/regional_allocations.csv'.format(direc)
+        with open(filename, 'a') as f:
             w = writer(f)
             w.writerow(['Regions'] + 'SORTED PROGS') # TODO
-        for name in self.regionNames: # TODO: get this list and put in use appropriately
-            filePath = '...' + objective + name + '_' + objective + '_1.pkl'
+        for name in self.regionNames:
+            filePath = '{}/{}/dependent/{}_{}_{}.pkl'.format(self.resultsDir, scenario, name, objective, 1)
             infile = open(filePath, 'rb')
             thisAllocation = pickle.load(infile)
             infile.close()
@@ -561,41 +583,25 @@ class GeospatialOptimisation: # TODO: could probably make optimisation inherit f
                 w = writer(f)
                 allocations = OrderedDict(sorted(thisAllocation[objective]['1'].items()))
                 w.writerow([name] + allocations.values())
-
-    def getRegionalBOCs(self, regions):
-        for region in regions:  # TODO: this part should be run in parallel
-            region.optimise()
-            region.interpolateBOCs()
-        return regions
-
-    def setUpRegionalOptimisations(self, options):
-        fixCurrent, optimiseCurrent, additionalFunds = options
-        regions = []
-        for region in self.regionNames:
-            fileInfo = ['..', region]  # TODO: fix
-            thisRegion = Optimisation(self.objectives, self.budgetMultiples, fileInfo, fixCurrentAllocations=fixCurrent,
-                                      optimiseCurrent=optimiseCurrent, additionalFunds=additionalFunds)
-            regions.append(thisRegion)
-        regions = self.getBudgetMultiples(regions)
-        return regions
+                w.writerow([])
 
     def getBudgetMultiples(self, regions): # TODO: would like to choose multiples more specifically for each region
         """maxBudget = additionalSpending or national budget + additional, depending on whether current spending is fixed.
          always need 0 and national budget to be considered to prevent unwanted behaviour if spending in a region gets very small or large, respectively"""
-        nationalSpending = self.getCurrentNationalSpending(regions)
+        totalFreeFunds = self.getTotalFreeFunds(regions)
         for region in regions:
             theseMultiples = dcp(self.budgetMultiples)
-            maxMultiple = ceil(nationalSpending / region.freeFunds) # TODO: check we want freeFunds
+            maxMultiple = ceil(totalFreeFunds / region.freeFunds) # TODO: check we want freeFunds
             theseMultiples[-1] = maxMultiple # should replace national
             region.budgetMultiples = dcp(theseMultiples)
         return regions
 
-    def getCurrentNationalSpending(self, regions): # TODO: I think this should be renamed to 'total funds' because it is summing the wrong for current national spending...
+    def getTotalFreeFunds(self, regions):
         return sum(region.freeFunds for region in regions)
 
-    def gridSearch(self, regions, objective): # TODO: this can be done in series b/c it won't take very long
+    def gridSearch(self, regions, objective):
         costEffVecs, spendingVec, outcomeVec = self.getBOCcostEffectiveness(regions, objective)
-        totalFunds = self.getCurrentNationalSpending(regions) # TODO: check this
+        totalFunds = self.getTotalFreeFunds(regions) # TODO: check this
         remainingFunds = dcp(totalFunds)
         regionalAllocations = zeros(len(regions))
         percentBudgetSpent = 0.
@@ -609,10 +615,13 @@ class GeospatialOptimisation: # TODO: could probably make optimisation inherit f
                 costEffThisRegion = costEffVecs[regionIdx]
                 if len(costEffThisRegion):
                     maxIdx = argmax(costEffThisRegion)
-                    maxEff = costEffThisRegion
-                    if maxEff > bestEff
+                    maxEff = costEffThisRegion[maxIdx]
+                    print maxEff
+                    print bestEff
+                    if maxEff > bestEff:
                         bestEff = maxEff
                         bestEffIdx = maxIdx
+                        print regionIdx
                         bestRegion = regionIdx
 
             # once the most cost-effective spending is found, adjust all spending and outcome vectors, update available funds and regional allocation
@@ -871,10 +880,9 @@ class BudgetScenarios:
         thisSheet = pd.read_excel(self.filePath, 'Optimal funding scenario', index_col=[0])
         thisSheet = thisSheet.drop(['Current spending description', 'Additional spending description'], 1)
         scenarios = {}
-        for scenario, row in thisSheet.iteritems():
-            for funds, include in row.iteritems():
-                if pd.notnull(include):
-                    scenarios[scenario] = self.allScenarios[scenario] + [funds]
+        for scenario, row in thisSheet.iterrows():
+            if pd.notnull(row[1]):
+                scenarios[scenario] = self.allScenarios[scenario] + [row[0]] # adding funds
         return scenarios
 
 

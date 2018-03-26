@@ -521,12 +521,12 @@ class Model:
         self._updateWRApopulation() # TODO should switch these back
         self.updateYearlyRiskDists()
 
-    def _updateEverything(self, year):
+    def _updateEverything(self, year): # TODO: can speed this up by writing function which assumes things are constant.
         """Responsible for moving the model, updating year, adjusting coverages and conditional probabilities, applying coverages"""
         self._updateYear(year)
         if self.adjustCoverage:
             self.programInfo._adjustCoveragesForPopGrowth(self.populations, year)
-        self._updateConditionalProbabilities() # TODO: need to do this every timestep?
+        self._updateConditionalProbabilities() # TODO: need to do this every timestep? Not for fixed coverages (i.e same at t=n for t=1)
         self._resetStorage()
         self.applyNewProgramCoverages() # TODO: need to do this every timestep?
         if self.timeTrends:

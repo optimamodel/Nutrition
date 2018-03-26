@@ -578,10 +578,10 @@ class Children(Population):
         # calculate total mortality by age (corrected for units)
         AgePop = [age.getAgeGroupPopulation() for age in self.ageGroups]
         MortalityCorrected = {}
-        LiveBirths = self.project.demographics["number of live births"]
-        Mnew = self.project.mortalityRates["neonatal mortality"]
-        Minfant = self.project.mortalityRates["infant mortality"]
-        Mu5 = self.project.mortalityRates["under 5 mortality"]
+        LiveBirths = self.project.demographics['number of live births']
+        Mnew = self.project.mortalityRates['neonatal'] # TODO: will need to remove 'mortality' from some workbooks
+        Minfant = self.project.mortalityRates['infant']
+        Mu5 = self.project.mortalityRates['under 5']
         # Newborns
         ageName = self.ageGroups[0].age
         m0 = Mnew * LiveBirths / 1000. / AgePop[0]
