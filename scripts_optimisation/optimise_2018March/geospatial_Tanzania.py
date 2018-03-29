@@ -10,5 +10,5 @@ objectives = ['thrive']
 fileInfo = [root, 'Tanzania']
 
 if __name__ == '__main__':
-    thisOptimisation = optimisation.GeospatialOptimisation(objectives, fileInfo, None, regions, numYears=6)
+    thisOptimisation = optimisation.GeospatialOptimisation(objectives, fileInfo, regions, numYears=6)
     thisOptimisation.optimiseScenarios()
