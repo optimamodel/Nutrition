@@ -32,6 +32,7 @@ class Model:
         self.annualNeonatalDeaths = {year: 0 for year in self.constants.allYears}
         self.annualBirths = {year: 0 for year in self.constants.allYears}
         self.annualChildrenAgeingOutHealthly = {year: 0 for year in self.constants.allYears}
+        self.annualChildrenThreeConditions = {year: 0 for year in self.constants.allYears}
 
     def _updateConditionalProbabilities(self):
         previousCov = self.programInfo._getAnnualCoverage(self.year-1) # last year cov
@@ -338,6 +339,7 @@ class Model:
         self.annualStunted[self.year] += ageingOutStunted
         self.annualThrive[self.year] += ageingOutNotStunted
         self.annualChildrenAgeingOutHealthly[self.year] += oldest.getAgeGroupNumberHealthy() * oldest.ageingRate
+        self.annualChildrenThreeConditions[self.year] += oldest.getAgeGroupNumberThreeConditions() * oldest.ageingRate
         # first age group does not have ageing in
         newborns = ageGroups[0]
         for stuntingCat in self.constants.stuntingList:
@@ -651,5 +653,7 @@ class Model:
             return self.children.getFracWastingCat('SAM')
         elif outcome == 'MAM_prev':
             return self.children.getFracWastingCat('MAM')
+        elif outcome == 'min_conditions':
+            return sum(self.ageingOutChildren.values()) - sum(self.annualChildrenThreeConditions.values())
         else:
             raise Exception('::: ERROR: outcome string not found :::')

@@ -5,8 +5,10 @@ sys.path.append(moduleDir)
 import optimisation3 as optimisation
 
 
-regions = ['Dar_es_Salaam', 'Dodoma']
-objectives = ['thrive']
+regions = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Kaskazini_Pemba', 'Kaskazini_Unguja', 'Katavi',
+           'Kilimanjaro', 'Kusini_Pemba', 'Kusini_Unguja', 'Lindi', 'Manyara', 'Mara', 'Mjini_Magharibi',
+           'Morogoro', 'Mtwara', 'Pwani', 'Rukwa', 'Ruvuma', 'Simiyu', 'Singida', 'Tabora', 'Tanga']
+objectives = ['min_conditions']
 fileInfo = [root, 'Tanzania']
 
 if __name__ == '__main__':
