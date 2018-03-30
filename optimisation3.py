@@ -252,7 +252,7 @@ class Optimisation: # TODO: would like
         runOutputs = []
         for run in range(self.numRuns):
             now = time.time() # TODO: could make 9600 iterations -- 100*100
-            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=100, swarmsize=50)
+            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=100, swarmsize=40)
             print "Objective: " + str(objective)
             print "Multiple: " + str(multiple)
             print "value: " + str(fopt/1000.)
