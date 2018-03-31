@@ -656,4 +656,4 @@ class Model:
         elif outcome == 'min_conditions':
             return sum(self.ageingOutChildren.values()) - sum(self.annualChildrenThreeConditions.values())
         else:
-            raise Exception('::: ERROR: outcome string not found :::')
+            raise Exception('::: ERROR: outcome string not found ' + str(outcome) + ' :::')
