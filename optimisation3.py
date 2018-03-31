@@ -33,7 +33,7 @@ def rescaleAllocation(totalBudget, allocation):
 
 def runJobs(jobs, max_jobs):
     while jobs:
-        thisRound = min(max_jobs, len(jobs)) # TODO: problem is this only accounts for the number of regions, not the multiples or objectives inside
+        thisRound = min(max_jobs, len(jobs))
         for process in range(thisRound):
             p = jobs[process]
             p.start()
@@ -79,7 +79,7 @@ class OutputClass:
 class Optimisation: # TODO: would like
     def __init__(self, objectives, budgetMultiples, fileInfo, resultsPath=None, fixCurrentAllocations=False,
                  additionalFunds=0, removeCurrentFunds=False, numYears=None, costCurveType='linear',
-                 parallel=True, numRuns=1, filterProgs=True):
+                 parallel=True, numCPUs=None, numRuns=1, filterProgs=True):
         root, country, name, analysisType = fileInfo
         self.name = name
         filePath = play.getFilePath(root=root, country=country, name=name)
@@ -100,7 +100,10 @@ class Optimisation: # TODO: would like
         else:
             self.numYears = len(self.model.constants.simulationYears) # default to period for which data is supplied # TODO: see about this in terms of the new param in Model.
         self.parallel = parallel
-        self.numCPUs = cpu_count()
+        if numCPUs:
+            self.numCPUs = numCPUs
+        else:
+            self.numCPUs = cpu_count()
         self.numRuns = numRuns
         # self.costCurveType = costCurveType # TODO: currently doesn't do anything.
         self.timeSeries = None
@@ -566,7 +569,8 @@ class GeospatialOptimisation:
             maxKey = max(self.scenarios, key=lambda i: i[-1])
             additionalFunds = nationalFunds + self.scenarios[maxKey][-1] # national + max additional
             jobs += self.getBOCjobs(fixCurrent, optimiseCurrent, removeCurrent, additionalFunds)
-        runJobs(jobs, min(cpu_count(),50)) # TODO: should think about empty list - probably ok
+        numRegions = int(50./float(len(self.budgetMultiples)))
+        runJobs(jobs, numRegions) # TODO: should think about empty list - probably ok
 
     def getBOCjobs(self, fixCurrent, optimiseCurrent, removeCurrent, additionalFunds):
         jobs = []
@@ -619,12 +623,9 @@ class GeospatialOptimisation:
         :return:
         """
         self.getRegionalBOCs()
-
-        # options: [fixedAllocations,progOpt, additionalFunds]
-        for scenario, options in self.scenarios.iteritems(): # TODO: For scenario 1, this could actually be gotten from the generation of the BOCs
+        # options: [fixedAllocations, progOpt, removeCurrent, additionalFunds]
+        for scenario, options in self.scenarios.iteritems(): # TODO: scenario 1 can be taken directly from BOCs
             formattedScenario = scenario.lower().replace(' ', '')
-            # allPrograms = [prog.name for prog in regions[0].programs]
-            # filename = self.createCSV(formattedScenario)
             regions = self.setUpRegions(scenario, options)
             allPrograms = [prog.name for prog in regions[0].programs]
             filename = self.createCSV(formattedScenario)
