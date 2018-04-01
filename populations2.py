@@ -434,7 +434,7 @@ class Population(object):
         self.previousCov = None
         self.populationAreas = self.project.populationAreas
         self.riskDist = {}
-        self.stuntingDist = self.project.riskDistributions['Stunting'] # TODO: error here b/c not using new distributions
+        self.stuntingDist = self.project.riskDistributions['Stunting']
         self.anaemiaDist= self.project.riskDistributions['Anaemia']
         self.bfDist = self.project.riskDistributions['Breastfeeding']
         self.wastingDist = self.project.riskDistributions['Wasting']

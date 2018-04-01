@@ -24,11 +24,17 @@ def runModelForNTimeSteps(steps, model):
     return model
 
 def rescaleAllocation(totalBudget, allocation):
-    try:
-        scaleRatio = totalBudget / sum(allocation)
-        rescaledAllocation = [x * scaleRatio for x in allocation]
-    except ZeroDivisionError:
+    new = sum(allocation)
+    if new == 0:
         rescaledAllocation = dcp(allocation)
+    else:
+        scaleRatio = totalBudget / new
+        rescaledAllocation = [x * scaleRatio for x in allocation]
+    # try:
+    #     scaleRatio = totalBudget / sum(allocation)
+    #     rescaledAllocation = [x * scaleRatio for x in allocation]
+    # except ZeroDivisionError:
+    #     rescaledAllocation = dcp(allocation)
     return rescaledAllocation
 
 def runJobs(jobs, max_jobs):
@@ -50,7 +56,7 @@ def _addFixedAllocations(allocations, fixedAllocations, indxList):
         modified[j] += fixedAllocations[i]
     return modified
 
-def objectiveFunction(allocation, objective, model, freeFunds, fixedAllocations, indxToKeep, numYears):
+def objectiveFunction(allocation, objective, model, freeFunds, fixedAllocations, indxToKeep):
     thisModel = dcp(model)
     totalAllocations = dcp(fixedAllocations)
     # scale the allocation appropriately
@@ -60,9 +66,9 @@ def objectiveFunction(allocation, objective, model, freeFunds, fixedAllocations,
     totalAllocations = _addFixedAllocations(totalAllocations, scaledAllocation, indxToKeep)
     for idx, program in enumerate(programs):
         newCoverages[program.name] = program.costCurveFunc(totalAllocations[idx]) / program.unrestrictedPopSize
-    thisModel.runSimulationFromOptimisation(newCoverages, numYears)
+    thisModel.runSimulationFromOptimisation(newCoverages)
     outcome = thisModel.getOutcome(objective) * 1000.
-    if objective == 'thrive' or objective == 'healthy_children' or objective == 'min_conditions':
+    if objective == 'thrive' or objective == 'healthy_children':
         outcome *= -1
     return outcome
 
@@ -85,8 +91,8 @@ class Optimisation: # TODO: would like
         filePath = play.getFilePath(root=root, country=country, name=name)
         if not resultsPath:
             resultsPath = play.getResultsDir(root=root, country=self.name, analysisType=analysisType)
-        self.createDirectory(resultsPath)
-        self.model = play.setUpModel(filePath, adjustCoverage=False, optimise=True) # model has already moved 1 year
+        self.createDirectory(resultsPath) # TODO: probably only want this to happen when calling 'optimise'
+        self.model = play.setUpModel(filePath, adjustCoverage=False, optimise=True, numYears=numYears) # model has already moved 1 year
         self.budgetMultiples = budgetMultiples # TODO: would like if get a budget of 0, that this just runs the model w/o optimisation.
         self.objectives = objectives
         self.fixCurrentAllocations = fixCurrentAllocations
@@ -95,10 +101,6 @@ class Optimisation: # TODO: would like
         self.filterProgs = filterProgs
         self.BOCs = {}
         self.programs = self.model.programInfo.programs
-        if numYears: # TODO: new param in model specifying how long to run
-            self.numYears = numYears
-        else:
-            self.numYears = len(self.model.constants.simulationYears) # default to period for which data is supplied # TODO: see about this in terms of the new param in Model.
         self.parallel = parallel
         if numCPUs:
             self.numCPUs = numCPUs
@@ -110,7 +112,7 @@ class Optimisation: # TODO: would like
         for program in self.programs:
             program._setCostCoverageCurve()
         self.calculateAllocations(fixCurrentAllocations)
-        self.kwargs = {'model': self.model, 'numYears': self.numYears,
+        self.kwargs = {'model': self.model,
                 'freeFunds': self.freeFunds, 'fixedAllocations': self.fixedAllocations}
 
     ######### FILE HANDLING #########
@@ -133,7 +135,7 @@ class Optimisation: # TODO: would like
         :return:
         """
         self.referenceAllocations = self.getReferenceAllocations()
-        self.currentAllocations = self.scaleCostsForCurrentExpenditure()
+        self.currentAllocations, self.scaleFactor = self.scaleCostsForCurrentExpenditure()
         self.fixedAllocations = self.getFixedAllocations(fixCurrentAllocations)
         self.freeFunds = self.getFreeFunds(fixCurrentAllocations)
 
@@ -181,7 +183,7 @@ class Optimisation: # TODO: would like
             for program in self.programs:
                 if not program.reference:
                     program.scaleUnitCosts(scaleFactor)
-        return self.getCurrentAllocations()
+        return self.getCurrentAllocations(), scaleFactor
 
     def getFreeFunds(self, fixCurrent):
         """
@@ -203,6 +205,10 @@ class Optimisation: # TODO: would like
     ######### OPTIMISATION ##########
 
     def optimise(self):
+        print ""
+        print "::STARTING NEW REGION::"
+        print self.name
+        print " "
         if self.parallel:
             self.parallelRun()
         else:
@@ -255,12 +261,12 @@ class Optimisation: # TODO: would like
         runOutputs = []
         for run in range(self.numRuns):
             now = time.time() # TODO: could make 9600 iterations -- 100*100
-            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=100, swarmsize=40)
+            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=2, swarmsize=5)
             print "Objective: " + str(objective)
             print "Multiple: " + str(multiple)
             print "value: " + str(fopt/1000.)
             budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
-                                                         xmax=xmax, verbose=0)
+                                                         xmax=xmax, verbose=0, MaxIter=10)
             print str((time.time() - now)/(60*60)) + ' hours'
             print "----------"
             outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval,
@@ -569,7 +575,7 @@ class GeospatialOptimisation:
             maxKey = max(self.scenarios, key=lambda i: i[-1])
             additionalFunds = nationalFunds + self.scenarios[maxKey][-1] # national + max additional
             jobs += self.getBOCjobs(fixCurrent, optimiseCurrent, removeCurrent, additionalFunds)
-        numRegions = int(50./float(len(self.budgetMultiples)))
+        numRegions = 1
         runJobs(jobs, numRegions) # TODO: should think about empty list - probably ok
 
     def getBOCjobs(self, fixCurrent, optimiseCurrent, removeCurrent, additionalFunds):
@@ -580,7 +586,7 @@ class GeospatialOptimisation:
                 thisRegion = Optimisation([objective], self.budgetMultiples, fileInfo,
                                           resultsPath=self.BOCdir[objective],
                                           fixCurrentAllocations=fixCurrent, removeCurrentFunds=removeCurrent,
-                                          additionalFunds=additionalFunds, numYears=self.numYears)
+                                          additionalFunds=additionalFunds, numYears=self.numYears, filterProgs=False)
                 BOCexists = self.checkForBOC(name, objective, optimiseCurrent)
                 if not BOCexists:
                     prc = Process(target=self.optimiseAndWrite, args=(thisRegion, objective, optimiseCurrent))
@@ -612,7 +618,8 @@ class GeospatialOptimisation:
         for name in self.regionNames:
             fileInfo = [self.root, self.country+'/regions/', name, '']
             thisRegion = Optimisation(self.objectives, self.budgetMultiples, fileInfo, fixCurrentAllocations=fixCurrent,
-                                      removeCurrentFunds=removeCurrent, additionalFunds=additionalFunds)
+                                      removeCurrentFunds=removeCurrent, additionalFunds=additionalFunds, numYears=self.numYears,
+                                      filterProgs=False)
             regions.append(thisRegion)
         return regions
 
@@ -683,7 +690,11 @@ class GeospatialOptimisation:
 
             # once the most cost-effective spending is found, adjust all spending and outcome vectors, update available funds and regional allocation
             if bestRegion is not None:
-                fundsSpent = spendingVec[bestRegion][bestEffIdx]
+                print "BEST REGION: " + str(regions[bestRegion].name)
+                print "effect " + str(bestEff)
+                fundsSpent = spendingVec[bestRegion][bestEffIdx] # TODO: this returns way too much money once it hits a negative cost-effectiveness
+                print fundsSpent
+                print " "
                 remainingFunds -= fundsSpent
                 spendingVec[bestRegion] -= fundsSpent
                 outcomeVec[bestRegion] -= outcomeVec[bestRegion][bestEffIdx]
@@ -701,6 +712,9 @@ class GeospatialOptimisation:
                 if not(i%100) or (newPercentBudgetSpent - percentBudgetSpent) > 1.:
                     percentBudgetSpent = newPercentBudgetSpent
             else:
+                print percentBudgetSpent
+                print regionalAllocations
+                print " "
                 break # nothing more to allocate
 
         # scale to ensure correct budget
@@ -723,6 +737,7 @@ class GeospatialOptimisation:
                 maxSpending = nationalFunds + additionalFunds
             regionalSpending = linspace(minSpending, maxSpending, numPoints)[1:] # exclude 0 to avoid division error
             adjustedSpending = regionalSpending - minSpending # centers spending if current is fixed
+            print len(adjustedSpending)
             spendingVec.append(adjustedSpending)
             regionalBOC = region.BOCs[objective][optimiseCurrent]
             regionalOutcome = regionalBOC(adjustedSpending)

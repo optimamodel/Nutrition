@@ -1,7 +1,7 @@
 from scipy.special import ndtri, ndtr # these are faster than calling scipy.stats.norm
 
 class Model:
-    def __init__(self, filePath, adjustCoverage=False, timeTrends=False, optimise=False):
+    def __init__(self, filePath, adjustCoverage=False, timeTrends=False, optimise=False, numYears=None):
         import data2 as data
         import populations2 as pops
         import program_info
@@ -16,7 +16,10 @@ class Model:
         self.nonPW = self.populations[2]
         self.adjustCoverage = adjustCoverage
         self.timeTrends = timeTrends
-        self.numYears = len(self.constants.simulationYears) # default if not specified later
+        if numYears is not None:
+            self.numYears = numYears
+        else:
+            self.numYears = len(self.constants.simulationYears) # default if not specified later
 
         self.year = self.constants.baselineYear
         self._createOutcomeTrackers()
@@ -587,8 +590,7 @@ class Model:
         self.programInfo._setSimulationCoverageFromWorkbook()
         self.runSimulation()
 
-    def runSimulationFromOptimisation(self, newCoverages, numYears=None): #  TODO: implement numYears in the other wrapper functions.
-        self.numYears = self._setNumYears(numYears)
+    def runSimulationFromOptimisation(self, newCoverages): #  TODO: implement numYears in the other wrapper functions.
         self._setAnnualCoveragesFromOptimisation(newCoverages)
         self.runSimulation()
 
@@ -653,7 +655,7 @@ class Model:
             return self.children.getFracWastingCat('SAM')
         elif outcome == 'MAM_prev':
             return self.children.getFracWastingCat('MAM')
-        elif outcome == 'min_conditions':
-            return sum(self.ageingOutChildren.values()) - sum(self.annualChildrenThreeConditions.values())
+        elif outcome == 'three_conditions':
+            return sum(self.annualChildrenThreeConditions.values())
         else:
             raise Exception('::: ERROR: outcome string not found ' + str(outcome) + ' :::')
