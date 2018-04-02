@@ -266,29 +266,33 @@ class Optimisation: # TODO: would like
         random.seed(1)
         kwargs = dcp(self.kwargs)
         kwargs['freeFunds'] *= multiple
-        kwargs['objective'] = objective
-        indxToKeep = self._selectProgsForObjective(objective)
-        kwargs['indxToKeep'] = indxToKeep
-        xmin = [0.] * len(indxToKeep)
-        xmax = [kwargs['freeFunds']] * len(indxToKeep) # TODO: could make this cost of saturation.
-        runOutputs = []
-        for run in range(self.numRuns):
-            now = time.time() # TODO: could make 9600 iterations -- 100*100
-            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=2, swarmsize=5)
-            print "Objective: " + str(objective)
-            print "Multiple: " + str(multiple)
-            print "value: " + str(fopt/1000.)
-            budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
-                                                         xmax=xmax, verbose=0, MaxIter=10)
-            print str((time.time() - now)/(60*60)) + ' hours'
-            print "----------"
-            outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval,
-                                       output.x)
-            runOutputs.append(outputOneRun)
-        bestAllocation = self.findBestAllocation(runOutputs)
-        scaledAllocation = rescaleAllocation(kwargs['freeFunds'], bestAllocation)
-        totalAllocation = _addFixedAllocations(self.fixedAllocations, scaledAllocation, kwargs['indxToKeep'])
-        bestAllocationDict = self.createDictionary(totalAllocation)
+        if kwargs['freeFunds'] != 0:
+            kwargs['objective'] = objective
+            indxToKeep = self._selectProgsForObjective(objective)
+            kwargs['indxToKeep'] = indxToKeep
+            xmin = [0.] * len(indxToKeep)
+            xmax = [kwargs['freeFunds']] * len(indxToKeep) # TODO: could make this cost of saturation.
+            runOutputs = []
+            for run in range(self.numRuns):
+                now = time.time() # TODO: could make 9600 iterations -- 100*100
+                x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=2, swarmsize=5)
+                print "Objective: " + str(objective)
+                print "Multiple: " + str(multiple)
+                print "value: " + str(fopt/1000.)
+                budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
+                                                             xmax=xmax, verbose=0, MaxIter=10)
+                print str((time.time() - now)/(60*60)) + ' hours'
+                print "----------"
+                outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval,
+                                           output.x)
+                runOutputs.append(outputOneRun)
+            bestAllocation = self.findBestAllocation(runOutputs)
+            scaledAllocation = rescaleAllocation(kwargs['freeFunds'], bestAllocation)
+            totalAllocation = _addFixedAllocations(self.fixedAllocations, scaledAllocation, kwargs['indxToKeep'])
+            bestAllocationDict = self.createDictionary(totalAllocation)
+        else:
+            # if no money to distribute, return the fixed costs
+            bestAllocationDict = self.createDictionary(self.fixedAllocations)
         self.writeToPickle(bestAllocationDict, multiple, objective)
         return
 
@@ -601,7 +605,7 @@ class GeospatialOptimisation:
             maxKey = max(self.scenarios, key=lambda i: i[-1])
             additionalFunds = nationalFunds + self.scenarios[maxKey][-1] # national + max additional
             jobs += self.getBOCjobs(fixCurrent, optimiseCurrent, removeCurrent, additionalFunds)
-        numRegions = int(50/9)
+        numRegions = 2
         runJobs(jobs, numRegions)
 
     def getBOCjobs(self, fixCurrent, optimiseCurrent, removeCurrent, additionalFunds):
