@@ -275,12 +275,12 @@ class Optimisation: # TODO: would like
             runOutputs = []
             for run in range(self.numRuns):
                 now = time.time() # TODO: could make 9600 iterations -- 100*100
-                x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=2, swarmsize=5)
+                x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=10, swarmsize=10)
                 print "Objective: " + str(objective)
                 print "Multiple: " + str(multiple)
                 print "value: " + str(fopt/1000.)
                 budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
-                                                             xmax=xmax, verbose=0, MaxIter=10)
+                                                             xmax=xmax, verbose=0, MaxIter=30)
                 print str((time.time() - now)/(60*60)) + ' hours'
                 print "----------"
                 outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval,
