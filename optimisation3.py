@@ -896,7 +896,7 @@ class GeospatialOptimisation:
         # write the programs to row for each objective
         with open(filename, 'a') as f:
             w = writer(f)
-            w.writerow([objective] + allPrograms)
+            w.writerow([objective] + sorted(allPrograms))
             for region in regions:
                 name = region.name
                 filePath = '{}/{}/dependent/{}_{}_{}.pkl'.format(self.resultsDir, scenario, name, objective, 1)
