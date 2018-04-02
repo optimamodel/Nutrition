@@ -183,6 +183,8 @@ class Optimisation: # TODO: would like
             for program in self.programs:
                 if not program.reference:
                     program.scaleUnitCosts(scaleFactor)
+        else:
+            scaleFactor = 1
         return self.getCurrentAllocations(), scaleFactor
 
     def getFreeFunds(self, fixCurrent):
