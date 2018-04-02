@@ -3,8 +3,8 @@ import data2
 from datetime import date
 import os, sys
 
-def setUpModel(filePath, adjustCoverage=True, optimise=False):
-    model = model2.Model(filePath, adjustCoverage=adjustCoverage, optimise=optimise) # model has already moved 1 year
+def setUpModel(filePath, adjustCoverage=False, optimise=False, numYears=None):
+    model = model2.Model(filePath, adjustCoverage=adjustCoverage, optimise=optimise, numYears=numYears) # model has already moved 1 year
     return model
 
 def setUpProject(filePath):
@@ -22,3 +22,8 @@ def getResultsDir(root, country, analysisType):
     resultsPath = '{}Results/{}/{}/{}'.format(root, country, analysisType, thisDate)
     return resultsPath
 
+if __name__ == '__main__':
+    # filePath = getFilePath('', 'Master', 'Master')
+    filePath = '/Users/samhainsworth/Desktop/Github Projects/Nutrition/input_spreadsheets/Tanzania/regions/InputForCode_Kaskazini_Unguja.xlsx'
+    model = setUpModel(filePath)
+    model.runSimulationFromWorkbook()

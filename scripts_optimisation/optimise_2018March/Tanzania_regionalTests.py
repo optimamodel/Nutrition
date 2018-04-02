@@ -5,11 +5,11 @@ import csv
 
 root = '../..'
 
-regions = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Kaskazini_Pemba', 'Kaskazini_Unguja', 'Katavi',
-           'Kilimanjaro', 'Kusini_Pemba', 'Kusini_Unguja', 'Lindi', 'Manyara', 'Mara', 'Mjini_Magharibi',
-           'Morogoro', 'Mtwara', 'Pwani', 'Rukwa', 'Ruvuma', 'Simiyu', 'Singida', 'Tabora', 'Tanga']
-
-outcomes = ['min_conditions', 'thrive', 'stunting_prev', 'neonatal_deaths', 'deaths_children', 'deaths_PW',
+# regions = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Kaskazini_Pemba', 'Kaskazini_Unguja', 'Katavi',
+#            'Kilimanjaro', 'Kusini_Pemba', 'Kusini_Unguja', 'Lindi', 'Manyara', 'Mara', 'Mjini_Magharibi',
+#            'Morogoro', 'Mtwara', 'Pwani', 'Rukwa', 'Ruvuma', 'Simiyu', 'Singida', 'Tabora', 'Tanga']
+regions = ['Arusha']
+outcomes = ['three_conditions', 'thrive', 'stunting_prev', 'neonatal_deaths', 'deaths_children', 'deaths_PW',
             'total_deaths', 'mortality_rate', 'anaemia_prev_PW', 'anaemia_prev_WRA', 'anaemia_prev_children',
             'wasting_prev', 'SAM_prev', 'MAM_prev']
 filename = 'demo_v2_TanzaniaRegions.csv'
@@ -21,7 +21,7 @@ for region in regions:
     print " "
     print region
     filePath = play.getFilePath(root=root, country='Tanzania/regions', name=region)
-    model = play.setUpModel(filePath, adjustCoverage=False) # already run a year
+    model = play.setUpModel(filePath, adjustCoverage=False, numYears=5) # already run a year
 
     fixedProgs = model.constants.referencePrograms
     coverage95 = 0.95
