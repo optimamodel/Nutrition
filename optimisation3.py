@@ -605,7 +605,7 @@ class GeospatialOptimisation:
             maxKey = max(self.scenarios, key=lambda i: i[-1])
             additionalFunds = nationalFunds + self.scenarios[maxKey][-1] # national + max additional
             jobs += self.getBOCjobs(fixCurrent, optimiseCurrent, removeCurrent, additionalFunds)
-        numRegions = 2
+        numRegions = int(50/9)
         runJobs(jobs, numRegions)
 
     def getBOCjobs(self, fixCurrent, optimiseCurrent, removeCurrent, additionalFunds):
