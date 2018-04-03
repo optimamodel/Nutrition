@@ -526,7 +526,7 @@ class GeospatialOptimisation:
         thisDate = date.today().strftime('%Y%b%d')
         self.resultsDir = '{}/Results/{}/geospatial/{}'.format(self.root, self.country, thisDate)
         self.objectives = objectives
-        self.budgetMultiples = [0,1]#[0, 0.01, 0.025, 0.05, 0.075, 0.1, 0.2, 0.3, 0.6, 1] # these multiples are in the interval (minFreeFunds, maxFreeFunds)
+        self.budgetMultiples = [0, 0.01, 0.025, 0.05, 0.075, 0.1, 0.2, 0.3, 0.6, 1] # these multiples are in the interval (minFreeFunds, maxFreeFunds)
         self.regionNames = regionNames
         self.numYears = numYears
         self.numRegions = len(regionNames)
