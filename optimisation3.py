@@ -186,8 +186,11 @@ class Optimisation: # TODO: would like
             for program in self.programs:
                 if not program.reference:
                     program.scaleUnitCosts(scaleFactor)
-        elif any(sub in self.name for sub in specialRegions):
+        elif any(sub in self.name for sub in specialRegions): # TODO: this should be removed after Tanzania application
             scaleFactor = 0.254  # this is the median of all other regions
+            for program in self.programs:
+                if not program.reference:
+                    program.scaleUnitCosts(scaleFactor)
         else:
             scaleFactor = 1
         return self.getCurrentAllocations(), scaleFactor
@@ -861,8 +864,6 @@ class BudgetScenarios:
         self.filePath = filePath
         # [fixedRegionalSpending, optimiseCurrent, removeCurrentFunds]
         # then will get additionalFunds
-        # TODO: scenario 1 is a difficult case, b/c it's not really even geospatial. This we should treat it differently.
-        # TODO: decide if want 2 and 4, since 2 just has additionalFunds=0
         self.allScenarios = {'Scenario 1': [True, True, False], 'Scenario 2': [False, True, True],
                           'Scenario 3': [True, False, False], 'Scenario 4': [False, True, True]}
 
