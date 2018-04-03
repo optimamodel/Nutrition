@@ -179,16 +179,15 @@ class Optimisation: # TODO: would like
         # ::WARNING:: Currently, this should only be used for LINEAR cost curves
         # specificBudget / calculatedBudget * oldUnitCost = newUnitCost
         currentAllocationsBefore = self.getCurrentAllocations()
+        specialRegions = ['Kusini', 'Kaskazini', 'Mjini']  # we don't have current expenditure for these regions
         if self.model.programInfo.currentExpenditure:
             currentCalculated = sum(currentAllocationsBefore) - sum(self.referenceAllocations)
-            specialRegions = ['Kusini', 'Kaskazini', 'Mjini'] # we don't have current expenditure for these regions
-            if any(sub in self.name for sub in specialRegions):
-                scaleFactor = 0.254 # this is the median of all other regions
-            else:
-                scaleFactor = self.model.programInfo.currentExpenditure / currentCalculated
+            scaleFactor = self.model.programInfo.currentExpenditure / currentCalculated
             for program in self.programs:
                 if not program.reference:
                     program.scaleUnitCosts(scaleFactor)
+        elif any(sub in self.name for sub in specialRegions):
+            scaleFactor = 0.254  # this is the median of all other regions
         else:
             scaleFactor = 1
         return self.getCurrentAllocations(), scaleFactor
@@ -527,7 +526,7 @@ class GeospatialOptimisation:
         thisDate = date.today().strftime('%Y%b%d')
         self.resultsDir = '{}/Results/{}/geospatial/{}'.format(self.root, self.country, thisDate)
         self.objectives = objectives
-        self.budgetMultiples = [0, 0.01, 0.025, 0.05, 0.075, 0.1, 0.2, 0.3, 0.6, 1] # these multiples are in the interval (minFreeFunds, maxFreeFunds)
+        self.budgetMultiples = [0,1]#[0, 0.01, 0.025, 0.05, 0.075, 0.1, 0.2, 0.3, 0.6, 1] # these multiples are in the interval (minFreeFunds, maxFreeFunds)
         self.regionNames = regionNames
         self.numYears = numYears
         self.numRegions = len(regionNames)
