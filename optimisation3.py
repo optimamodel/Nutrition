@@ -3,13 +3,15 @@ from copy import deepcopy as dcp
 import play
 import cPickle as pickle
 from multiprocessing import cpu_count, Process
-from numpy import array, random, append, linspace, argmax, zeros, nonzero, inf, argmin
+from numpy import array, random, append, linspace, argmax, zeros, nonzero, inf
 from scipy.interpolate import pchip
-from math import ceil
 from csv import writer, reader
 from itertools import izip
 from collections import OrderedDict
 from datetime import date
+import pso as pso
+import asd2 as asd
+import time
 
 def runModelForNTimeSteps(steps, model):
     """
@@ -68,7 +70,7 @@ def objectiveFunction(allocation, objective, model, freeFunds, fixedAllocations,
         newCoverages[program.name] = program.costCurveFunc(totalAllocations[idx]) / program.unrestrictedPopSize
     thisModel.runSimulationFromOptimisation(newCoverages)
     outcome = thisModel.getOutcome(objective) * 1000.
-    if objective == 'thrive' or objective == 'healthy_children':
+    if objective == 'thrive' or objective == 'healthy_children' or objective == 'no_conditions':
         outcome *= -1
     return outcome
 
@@ -179,7 +181,11 @@ class Optimisation: # TODO: would like
         currentAllocationsBefore = self.getCurrentAllocations()
         if self.model.programInfo.currentExpenditure:
             currentCalculated = sum(currentAllocationsBefore) - sum(self.referenceAllocations)
-            scaleFactor = self.model.programInfo.currentExpenditure / currentCalculated
+            specialRegions = ['Kusini', 'Kaskazini', 'Mjini'] # we don't have current expenditure for these regions
+            if any(sub in self.name for sub in specialRegions):
+                scaleFactor = 0.254 # this is the median of all other regions
+            else:
+                scaleFactor = self.model.programInfo.currentExpenditure / currentCalculated
             for program in self.programs:
                 if not program.reference:
                     program.scaleUnitCosts(scaleFactor)
@@ -210,7 +216,6 @@ class Optimisation: # TODO: would like
         print ""
         print "::STARTING NEW REGION::"
         print self.name
-        print " "
         newBudgets = self.checkForZeroBudget()
         if self.parallel:
             self.parallelRun(newBudgets)
@@ -261,11 +266,6 @@ class Optimisation: # TODO: would like
         return
 
     def runOptimisation(self, multiple, objective):
-        import pso as pso
-        import asd as asd
-        from copy import deepcopy as dcp
-        import time
-        random.seed(1)
         kwargs = dcp(self.kwargs)
         kwargs['freeFunds'] *= multiple
         if kwargs['freeFunds'] != 0:
@@ -277,17 +277,19 @@ class Optimisation: # TODO: would like
             runOutputs = []
             for run in range(self.numRuns):
                 now = time.time() # TODO: could make 9600 iterations -- 100*100
-                x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=100, swarmsize=50)
+                x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=100, swarmsize=30)
                 print "Objective: " + str(objective)
                 print "Multiple: " + str(multiple)
                 print "value: " + str(fopt/1000.)
-                budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
-                                                             xmax=xmax, verbose=0)
+                # budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
+                #                                              xmax=xmax, verbose=0, MaxIter=30)
+                x, fval, flag = asd.asd(objectiveFunction, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=0)
+                print flag['exitreason']
                 print str((time.time() - now)/(60*60)) + ' hours'
                 print "----------"
-                outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval,
-                                           output.x)
-                runOutputs.append(outputOneRun)
+                # outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval,
+                #                            output.x)
+                runOutputs.append((x, fval[-1]))
             bestAllocation = self.findBestAllocation(runOutputs)
             scaledAllocation = rescaleAllocation(kwargs['freeFunds'], bestAllocation)
             totalAllocation = _addFixedAllocations(self.fixedAllocations, scaledAllocation, kwargs['indxToKeep'])
@@ -299,8 +301,8 @@ class Optimisation: # TODO: would like
         return
 
     def findBestAllocation(self, outputs):
-        bestSample = min(outputs, key=lambda item: item.fval)
-        return bestSample.budgetBest
+        bestSample = min(outputs, key=lambda item: item[-1])
+        return bestSample[0]
 
     def createDictionary(self, allocations):
         """Ensure keys and values have matching orders"""
@@ -525,7 +527,7 @@ class GeospatialOptimisation:
         thisDate = date.today().strftime('%Y%b%d')
         self.resultsDir = '{}/Results/{}/geospatial/{}'.format(self.root, self.country, thisDate)
         self.objectives = objectives
-        self.budgetMultiples = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1]
+        self.budgetMultiples = [0, 0.01, 0.025, 0.05, 0.075, 0.1, 0.2, 0.3, 0.6, 1] # these multiples are in the interval (minFreeFunds, maxFreeFunds)
         self.regionNames = regionNames
         self.numYears = numYears
         self.numRegions = len(regionNames)
@@ -536,7 +538,7 @@ class GeospatialOptimisation:
     def getBOCdirs(self):
         self.BOCdir = {}
         for objective in self.objectives:
-            self.BOCdir[objective] = '{}/{}/BOCs'.format(self.resultsDir, objective)
+            self.BOCdir[objective] = '{}/BOCs/{}'.format(self.resultsDir, objective)
 
     def getNationalCurrentSpending(self):
         nationalFunds = 0
@@ -547,7 +549,8 @@ class GeospatialOptimisation:
         return nationalFunds
 
     def readBOC(self, region, objective, optimiseCurrent):
-        filename = '{}/{}_optimCurr_{}.csv'.format(self.BOCdir[objective], region, optimiseCurrent)
+        filename = '{}/optimCurr_{}/{}_optimCurr_{}.csv'.format(self.BOCdir[objective], optimiseCurrent,
+                                                                region, optimiseCurrent)
         with open(filename, 'rb') as f:
             regionalSpending = []
             regionalOutcome = []
@@ -616,12 +619,12 @@ class GeospatialOptimisation:
             for name in self.regionNames:
                 fileInfo = [self.root, self.country + '/regions/', name, '']
                 resultsPath = '{}/optimCurr_{}'.format(self.BOCdir[objective], optimiseCurrent)
-                thisRegion = Optimisation([objective], self.budgetMultiples, fileInfo,
-                                          resultsPath=resultsPath,
-                                          fixCurrentAllocations=fixCurrent, removeCurrentFunds=removeCurrent,
-                                          additionalFunds=additionalFunds, numYears=self.numYears, filterProgs=False)
-                BOCexists = self.checkForBOC(name, objective, optimiseCurrent)
-                if not BOCexists:
+                missingMultiples = self.checkForBOC(name, objective, optimiseCurrent)
+                if missingMultiples:
+                    thisRegion = Optimisation([objective], missingMultiples, fileInfo,
+                                              resultsPath=resultsPath,
+                                              fixCurrentAllocations=fixCurrent, removeCurrentFunds=removeCurrent,
+                                              additionalFunds=additionalFunds, numYears=self.numYears, filterProgs=False)
                     prc = Process(target=self.optimiseAndWrite, args=(thisRegion, objective, optimiseCurrent))
                     jobs.append(prc)
         return jobs
@@ -632,18 +635,26 @@ class GeospatialOptimisation:
 
     def writeBudgetOutcome(self, region, objective, optimiseCurrent):
         spending, outcome = region.getBOCvectors(objective)
-        filename = '{}/{}_optimCurr_{}.csv'.format(self.BOCdir[objective], region.name, optimiseCurrent)
+        filename = '{}/optimCurr_{}/{}_optimCurr_{}.csv'.format(self.BOCdir[objective], optimiseCurrent,
+                                                                region.name, optimiseCurrent)
         with open(filename, 'wb') as f:
             w = writer(f)
             w.writerow(['spending', 'outcome'])
             w.writerows(izip(spending, outcome))
 
-    def checkForBOC(self, region, objective, optimiseCurrent):
-        if os.path.exists(self.BOCdir[objective]):
-            filename = '{}/{}_optimCurr_{}.csv'.format(self.BOCdir[objective], region, optimiseCurrent)
-            return os.path.isfile(filename)
-        else:
-            return False
+    def checkForBOC(self, regionName, objective, optimiseCurrent): # TODO: test this by removing one of the needed pickles
+        # first check that all pickle files are present
+        filePath = '{}/optimCurr_{}'.format(self.BOCdir[objective], optimiseCurrent)
+        missingPkls = []
+        for multiple in self.budgetMultiples:
+            filename = '{}/{}_{}_{}.pkl'.format(filePath, regionName, objective, multiple)
+            if not os.path.isfile(filename):
+                missingPkls.append(multiple)
+        if not missingPkls: # if all pickles present, check for the budget-outcome csv
+            filename = '{}/{}_optimCurr_{}.csv'.format(filePath, regionName, optimiseCurrent)
+            if not os.path.isfile(filename):
+                self.writeBudgetOutcome(regionName, objective, optimiseCurrent)
+        return missingPkls
 
     def setUpRegions(self, scenario, options):
         fixCurrent, optimiseCurrent, removeCurrent, additionalFunds = options
@@ -655,7 +666,6 @@ class GeospatialOptimisation:
                                       filterProgs=False)
             regions.append(thisRegion)
         return regions
-
 
     def optimiseScenarios(self):
         """
@@ -677,84 +687,32 @@ class GeospatialOptimisation:
                 self.collateAllResults(regions, objective, formattedScenario, allPrograms, filename)
 
     def writeRefAndCurrentAllocations(self, regions, filename, allPrograms):
+        sortedProgs = sorted(allPrograms)
         with open(filename, 'a') as f:
             w = writer(f)
-            w.writerow(['Reference'] + allPrograms)
+            w.writerow(['Reference'] + sortedProgs)
             for region in regions:
                 name = region.name
-                refAllocations = region.referenceAllocations
-                w.writerow([name] + refAllocations)
+                refDict = region.createDictionary(region.referenceAllocations)
+                sortedRef = OrderedDict(sorted(refDict.items())).values()
+                w.writerow([name] + sortedRef)
             w.writerow([])
-            w.writerow(['Current'] + allPrograms)
+            w.writerow(['Current'] + sortedProgs)
             for region in regions:
                 name = region.name
                 currentAdditional = [a-b for a,b in zip(region.currentAllocations, region.referenceAllocations)]
-                w.writerow([name] + currentAdditional)
+                currentAdditionalDict = region.createDictionary(currentAdditional)
+                sortedCurrent = OrderedDict(sorted(currentAdditionalDict.items())).values()
+                w.writerow([name] + sortedCurrent)
             w.writerow([])
 
-
     def distributeFunds(self, regions, objective, scenario, options):
-        # regionalBOCs = self.readBOCs(objective, optimiseCurrent)
-        # fixCurrent, optimiseCurrent, removeCurrent, additionalFunds = options
-        optimisedRegionalSpending = self.gridSearchTwo(regions, objective, options)
+        optimisedRegionalSpending = self.gridSearch(regions, objective, options)
         return optimisedRegionalSpending
 
-    def gridSearch(self, regions, objective, options): # TODO: I THINK ITS THE OUTCOME WHCIH IS INCORRECT>>> WE'RE TRYING TO MAXIMISE IN THIS ALGORITHM...
-        costEffVecs, spendingVec, outcomeVec = self.getBOCcostEffectiveness(regions, objective, options)
-        totalFunds = self.getTotalFreeFunds(regions) # TODO: check this
-        remainingFunds = dcp(totalFunds)
-        regionalAllocations = zeros(len(regions))
-        percentBudgetSpent = 0.
-        maxIters = int(1e6)
-
-        for i in range(maxIters):
-            bestEff = -inf
-            bestRegion = None
-            for regionIdx in range(len(regions)):
-                # find most effective spending in each region
-                costEffThisRegion = costEffVecs[regionIdx]
-                if len(costEffThisRegion):
-                    maxIdx = argmax(costEffThisRegion)
-                    maxEff = costEffThisRegion[maxIdx]
-                    if maxEff > bestEff:
-                        bestEff = maxEff
-                        bestEffIdx = maxIdx
-                        bestRegion = regionIdx
-
-            # once the most cost-effective spending is found, adjust all spending and outcome vectors, update available funds and regional allocation
-            if bestRegion is not None:
-                fundsSpent = spendingVec[bestRegion][bestEffIdx]
-                #TODO: seems to be if it hit a negative...
-                remainingFunds -= fundsSpent
-                spendingVec[bestRegion] -= fundsSpent
-                outcomeVec[bestRegion] -= outcomeVec[bestRegion][bestEffIdx] # TODO: issue could be that gradient is constant but one is being chosen, so the subtracted outcome can make it negative
-                regionalAllocations[bestRegion] += fundsSpent
-                # remove funds and outcomes at or below zero
-                spendingVec[bestRegion] = spendingVec[bestRegion][bestEffIdx+1: ]
-                outcomeVec[bestRegion] = outcomeVec[bestRegion][bestEffIdx+1: ]
-                # ensure regional spending doesn't exceed remaining funds
-                for regionIdx in range(self.numRegions):
-                    withinBudget = nonzero(spendingVec[regionIdx] <= remainingFunds)[0]
-                    spendingVec[regionIdx] = spendingVec[regionIdx][withinBudget]
-                    outcomeVec[regionIdx] = outcomeVec[regionIdx][withinBudget]
-                    costEffVecs[regionIdx] = outcomeVec[regionIdx] / spendingVec[regionIdx] # TODO could be issue here...
-                    costEffVecs[regionIdx][costEffVecs[regionIdx] < 0] = 0
-                newPercentBudgetSpent = (totalFunds - remainingFunds) / totalFunds * 100.
-                if not(i%100) or (newPercentBudgetSpent - percentBudgetSpent) > 1.:
-                    percentBudgetSpent = newPercentBudgetSpent
-            else:
-                print percentBudgetSpent
-                print regionalAllocations
-                print " "
-                break # nothing more to allocate
-
-        # scale to ensure correct budget
-        scaledRegionalAllocations = rescaleAllocation(totalFunds, regionalAllocations)
-        return scaledRegionalAllocations
-
-    def gridSearchTwo(self, regions, objective, options):
-        costEffVecs, spendingVec = self.getBOCcostEffectivenessTwo(regions, objective, options)
-        totalFunds = self.getTotalFreeFunds(regions) # TODO: check this
+    def gridSearch(self, regions, objective, options):
+        costEffVecs, spendingVec = self.getBOCcostEffectiveness(regions, objective, options)
+        totalFunds = self.getTotalFreeFunds(regions)
         remainingFunds = dcp(totalFunds)
         regionalAllocations = zeros(len(regions))
         percentBudgetSpent = 0.
@@ -803,30 +761,6 @@ class GeospatialOptimisation:
         numPoints = 10000
         costEffVecs = []
         spendingVec = []
-        outcomeVec = []
-        for region in regions:
-            if fixCurrent:
-                minSpending = sum(region.currentAllocations) - sum(region.referenceAllocations)
-                maxSpending = minSpending + additionalFunds
-            else:
-                minSpending = 0
-                maxSpending = nationalFunds + additionalFunds
-            regionalSpending = linspace(minSpending, maxSpending, numPoints)[1:] # exclude 0 to avoid division error
-            adjustedSpending = regionalSpending - minSpending # centers spending if current is fixed
-            spendingVec.append(adjustedSpending)
-            regionalBOC = region.BOCs[objective][optimiseCurrent]
-            regionalOutcome = regionalBOC(adjustedSpending)
-            outcomeVec.append(regionalOutcome)
-            regionalCostEff = regionalOutcome / adjustedSpending
-            costEffVecs.append(regionalCostEff)
-        return costEffVecs, spendingVec, outcomeVec
-
-    def getBOCcostEffectivenessTwo(self, regions, objective, options):
-        fixCurrent, optimiseCurrent, removeCurrent, additionalFunds = options
-        nationalFunds = self.getNationalCurrentSpending()
-        numPoints = 10000
-        costEffVecs = []
-        spendingVec = []
         for region in regions:
             if fixCurrent:
                 minSpending = sum(region.currentAllocations) - sum(region.referenceAllocations)
@@ -838,11 +772,9 @@ class GeospatialOptimisation:
             regionalSpending = linspace(minSpending, maxSpending, numPoints)[1:] # exclude 0 to avoid division error
             adjustedSpending = regionalSpending - minSpending # centers spending if current is fixed
             spendingVec.append(adjustedSpending)
-            costEffectiveness = -thisDeriv(adjustedSpending) # TODO: if we have a DECREASING FUNC (Like deaths etc) need to be negative
+            costEffectiveness = thisDeriv(adjustedSpending) # TODO: if we have a DECREASING FUNC (Like deaths etc) need to be negative
             costEffVecs.append(costEffectiveness)
         return costEffVecs, spendingVec
-
-
 
     def readBOCs(self, objective, optimiseCurrent):
         regionalBOCs = []
@@ -862,7 +794,7 @@ class GeospatialOptimisation:
         return regionalBOCs
 
     def createCSV(self, scenario):
-        direc = '{}/{}/dependent'.format(self.resultsDir, scenario)
+        direc = '{}/{}'.format(self.resultsDir, scenario)
         if not os.path.exists(direc):
             os.makedirs(direc)
         filename = '{}/regional_allocations.csv'.format(direc)
@@ -878,7 +810,7 @@ class GeospatialOptimisation:
         for i, region in enumerate(regions):
             name = region.name
             regionalFunds = optimisedSpending[i]
-            resultsDir = '{}/{}/dependent'.format(self.resultsDir, scenario)
+            resultsDir = '{}/{}/pickles'.format(self.resultsDir, scenario)
             fileInfo = [self.root, self.country + '/regions', name, '']
             newOptim = Optimisation([objective], budgetMultiple, fileInfo, resultsPath=resultsDir,
                                     fixCurrentAllocations=fixCurrent, additionalFunds=regionalFunds,
@@ -899,7 +831,7 @@ class GeospatialOptimisation:
             w.writerow([objective] + sorted(allPrograms))
             for region in regions:
                 name = region.name
-                filePath = '{}/{}/dependent/{}_{}_{}.pkl'.format(self.resultsDir, scenario, name, objective, 1)
+                filePath = '{}/{}/pickles/{}_{}_{}.pkl'.format(self.resultsDir, scenario, name, objective, 1)
                 infile = open(filePath, 'rb')
                 thisAllocation = pickle.load(infile)
                 infile.close()

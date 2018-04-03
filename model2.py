@@ -32,6 +32,8 @@ class Model:
         self.ageingOutPW = {year: 0 for year in self.constants.allYears}
         self.annualStunted = {year: 0 for year in self.constants.allYears}
         self.annualThrive = {year: 0 for year in self.constants.allYears}
+        self.annualNotWasted = {year: 0 for year in self.constants.allYears}
+        self.annualNotAnaemic = {year: 0 for year in self.constants.allYears}
         self.annualNeonatalDeaths = {year: 0 for year in self.constants.allYears}
         self.annualBirths = {year: 0 for year in self.constants.allYears}
         self.annualChildrenAgeingOutHealthly = {year: 0 for year in self.constants.allYears}
@@ -336,13 +338,16 @@ class Model:
                             thisBox = ageGroup.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat]
                             ageingOut[idx][stuntingCat][wastingCat][bfCat][anaemiaCat] = thisBox.populationSize * ageGroup.ageingRate
         oldest = ageGroups[-1]
-        ageingOutStunted = oldest.getAgeGroupNumberStunted() * oldest.ageingRate
-        ageingOutNotStunted = oldest.getAgeGroupNumberNotStunted() * oldest.ageingRate
-        self.ageingOutChildren[self.year] += oldest.getAgeGroupPopulation() * oldest.ageingRate
-        self.annualStunted[self.year] += ageingOutStunted
-        self.annualThrive[self.year] += ageingOutNotStunted
+        # TODO: only commented these out to improve speed (uncomment if need objectives)
+        # ageingOutStunted = oldest.getAgeGroupNumberStunted() * oldest.ageingRate
+        # ageingOutNotStunted = oldest.getAgeGroupNumberNotStunted() * oldest.ageingRate
+        # self.ageingOutChildren[self.year] += oldest.getAgeGroupPopulation() * oldest.ageingRate
+        # self.annualStunted[self.year] += ageingOutStunted
+        # self.annualThrive[self.year] += ageingOutNotStunted
+        # self.annualNotAnaemic[self.year] += oldest.getAgeGroupNumberNotAnaemic() * oldest.ageingRate
+        # self.annualNotWasted[self.year] += oldest.getAgeGroupNumberNotWasted() * oldest.ageingRate
         self.annualChildrenAgeingOutHealthly[self.year] += oldest.getAgeGroupNumberHealthy() * oldest.ageingRate
-        self.annualChildrenThreeConditions[self.year] += oldest.getAgeGroupNumberThreeConditions() * oldest.ageingRate
+        # self.annualChildrenThreeConditions[self.year] += oldest.getAgeGroupNumberThreeConditions() * oldest.ageingRate
         # first age group does not have ageing in
         newborns = ageGroups[0]
         for stuntingCat in self.constants.stuntingList:
@@ -657,5 +662,7 @@ class Model:
             return self.children.getFracWastingCat('MAM')
         elif outcome == 'three_conditions':
             return sum(self.annualChildrenThreeConditions.values())
+        elif outcome == 'no_conditions':
+            return sum(self.annualThrive.values()) + sum(self.annualNotAnaemic.values()) + sum(self.annualNotWasted.values())
         else:
             raise Exception('::: ERROR: outcome string not found ' + str(outcome) + ' :::')

@@ -194,6 +194,24 @@ class ChildAgeGroup(object):
                         numNotStunted += self.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat].populationSize
         return numNotStunted
 
+    def getAgeGroupNumberNotAnaemic(self):
+        numNotAnaemic = 0
+        for stuntingCat in self.const.stuntingList:
+            for wastingCat in self.const.wastingList:
+                for bfCat in self.const.bfList:
+                    for anaemiaCat in self.const.nonAnaemicList:
+                        numNotAnaemic += self.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat].populationSize
+        return numNotAnaemic
+
+    def getAgeGroupNumberNotWasted(self):
+        numNotWasted = 0
+        for stuntingCat in self.const.stuntingList:
+            for wastingCat in self.const.nonWastedList:
+                for bfCat in self.const.bfList:
+                    for anaemiaCat in self.const.anaemiaList:
+                        numNotWasted += self.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat].populationSize
+        return numNotWasted
+
     def getAgeGroupNumberThreeConditions(self):
         numWithThree = 0
         for stuntingCat in self.const.stuntedList:
