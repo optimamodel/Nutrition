@@ -4,12 +4,11 @@ moduleDir = os.path.join(os.path.dirname(__file__), root)
 sys.path.append(moduleDir)
 import optimisation3 as optimisation
 
-# regions = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Kaskazini_Pemba', 'Kaskazini_Unguja', 'Katavi',
-#            'Kilimanjaro', 'Kusini_Pemba', 'Kusini_Unguja', 'Lindi', 'Manyara', 'Mara', 'Mjini_Magharibi',
-#            'Morogoro', 'Mtwara', 'Pwani', 'Rukwa', 'Ruvuma', 'Simiyu', 'Singida', 'Tabora', 'Tanga']
-regions = ['Arusha']
+regions = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Kaskazini_Pemba', 'Kaskazini_Unguja', 'Katavi',
+           'Kilimanjaro', 'Kusini_Pemba', 'Kusini_Unguja', 'Lindi', 'Manyara', 'Mara', 'Mjini_Magharibi',
+           'Morogoro', 'Mtwara', 'Pwani', 'Rukwa', 'Ruvuma', 'Simiyu', 'Singida', 'Tabora', 'Tanga']
 
-objectives = ['healthy_children'] # individual programs don't have much impact, so can't filter progs
+objectives = ['healthy_children']
 fileInfo = [root, 'Tanzania']
 
 if __name__ == '__main__':
