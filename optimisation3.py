@@ -279,13 +279,13 @@ class Optimisation: # TODO: would like
             runOutputs = []
             for run in range(self.numRuns):
                 now = time.time() # TODO: could make 9600 iterations -- 100*100
-                x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=100, swarmsize=30)
+                x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=1, swarmsize=3)
                 print "Objective: " + str(objective)
                 print "Multiple: " + str(multiple)
                 print "value: " + str(fopt/1000.)
                 # budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
                 #                                              xmax=xmax, verbose=0, MaxIter=30)
-                x, fval, flag = asd.asd(objectiveFunction, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=0)
+                x, fval, flag = asd.asd(objectiveFunction, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=0, maxiters=3)
                 print flag['exitreason']
                 print str((time.time() - now)/(60*60)) + ' hours'
                 print "----------"
@@ -346,10 +346,10 @@ class Optimisation: # TODO: would like
         self.BOCs[objective] = {}
         self.BOCs[objective][optimiseCurrent] = pchip(spending, outcome, extrapolate=False)
 
-    def getBOCvectors(self, objective):
+    def getBOCvectors(self, objective, budgetMultiples):
         spending = array([])
         outcome = array([])
-        for multiple in self.budgetMultiples:
+        for multiple in budgetMultiples:
             spending = append(spending, multiple * self.freeFunds)
             filePath = '{}/{}_{}_{}.pkl'.format(self.resultDir, self.name, objective, multiple)
             f = open(filePath, 'rb')
@@ -528,8 +528,10 @@ class GeospatialOptimisation:
         self.root, self.country = fileInfo
         thisDate = date.today().strftime('%Y%b%d')
         self.resultsDir = '{}/Results/{}/geospatial/{}'.format(self.root, self.country, thisDate)
+        print "NUM CPUS"
+        print cpu_count()
         self.objectives = objectives
-        self.budgetMultiples = [0, 0.01, 0.025, 0.05, 0.075, 0.1, 0.2, 0.3, 0.6, 1] # these multiples are in the interval (minFreeFunds, maxFreeFunds)
+        self.budgetMultiples = [0, 0.01, 0.025, 0.04, 0.05, 0.075, 0.1, 0.2, 0.3, 0.6, 1] # these multiples are in the interval (minFreeFunds, maxFreeFunds)
         self.regionNames = regionNames
         self.numYears = numYears
         self.numRegions = len(regionNames)
@@ -583,7 +585,7 @@ class GeospatialOptimisation:
         with open(filename, 'wb') as f:
             w = writer(f)
             w.writerow(headers)
-            for region in regions: # TODO: where to start and end spending to generate the BOC?
+            for region in regions:
                 thisBOC = region.BOCs[objective][optimiseCurrent]
                 interpolated = thisBOC(newSpending)
                 regionalOutcomes.append(interpolated)
@@ -612,7 +614,7 @@ class GeospatialOptimisation:
             maxKey = max(self.scenarios, key=lambda i: i[-1])
             additionalFunds = nationalFunds + self.scenarios[maxKey][-1] # national + max additional
             jobs += self.getBOCjobs(fixCurrent, optimiseCurrent, removeCurrent, additionalFunds)
-        numRegions = int(50/9)
+        numRegions = int(50/(len(self.budgetMultiples)-1)/len(self.scenarios.keys()))
         runJobs(jobs, numRegions)
 
     def getBOCjobs(self, fixCurrent, optimiseCurrent, removeCurrent, additionalFunds):
@@ -621,7 +623,7 @@ class GeospatialOptimisation:
             for name in self.regionNames:
                 fileInfo = [self.root, self.country + '/regions/', name, '']
                 resultsPath = '{}/optimCurr_{}'.format(self.BOCdir[objective], optimiseCurrent)
-                missingMultiples = self.checkForBOC(name, objective, optimiseCurrent)
+                missingMultiples = self.checkForPickles(name, objective, optimiseCurrent)
                 if missingMultiples:
                     thisRegion = Optimisation([objective], missingMultiples, fileInfo,
                                               resultsPath=resultsPath,
@@ -636,7 +638,7 @@ class GeospatialOptimisation:
         self.writeBudgetOutcome(region, objective, optimiseCurrent)
 
     def writeBudgetOutcome(self, region, objective, optimiseCurrent):
-        spending, outcome = region.getBOCvectors(objective)
+        spending, outcome = region.getBOCvectors(objective, self.budgetMultiples)
         filename = '{}/optimCurr_{}/{}_optimCurr_{}.csv'.format(self.BOCdir[objective], optimiseCurrent,
                                                                 region.name, optimiseCurrent)
         with open(filename, 'wb') as f:
@@ -644,7 +646,7 @@ class GeospatialOptimisation:
             w.writerow(['spending', 'outcome'])
             w.writerows(izip(spending, outcome))
 
-    def checkForBOC(self, regionName, objective, optimiseCurrent): # TODO: test this by removing one of the needed pickles
+    def checkForPickles(self, regionName, objective, optimiseCurrent):
         # first check that all pickle files are present
         filePath = '{}/optimCurr_{}'.format(self.BOCdir[objective], optimiseCurrent)
         missingPkls = []
@@ -652,10 +654,6 @@ class GeospatialOptimisation:
             filename = '{}/{}_{}_{}.pkl'.format(filePath, regionName, objective, multiple)
             if not os.path.isfile(filename):
                 missingPkls.append(multiple)
-        if not missingPkls: # if all pickles present, check for the budget-outcome csv
-            filename = '{}/{}_optimCurr_{}.csv'.format(filePath, regionName, optimiseCurrent)
-            if not os.path.isfile(filename):
-                self.writeBudgetOutcome(regionName, objective, optimiseCurrent)
         return missingPkls
 
     def setUpRegions(self, scenario, options):

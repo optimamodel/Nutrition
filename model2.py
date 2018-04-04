@@ -664,5 +664,9 @@ class Model:
             return sum(self.annualChildrenThreeConditions.values())
         elif outcome == 'no_conditions':
             return sum(self.annualThrive.values()) + sum(self.annualNotAnaemic.values()) + sum(self.annualNotWasted.values())
+        elif outcome == 'less_two':
+            return sum(self.ageingOutChildren.values()) - sum(self.annualChildrenThreeConditions.values())
+        elif outcome == 'SHR': # illness to healthy ratio
+            return 1/(sum(self.annualChildrenThreeConditions.values()) / sum(self.annualChildrenAgeingOutHealthly.values()))
         else:
             raise Exception('::: ERROR: outcome string not found ' + str(outcome) + ' :::')
