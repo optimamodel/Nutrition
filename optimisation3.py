@@ -1,17 +1,18 @@
 import os
-from copy import deepcopy as dcp
 import play
+import pso
+import asd
+import time
 import cPickle as pickle
+from copy import deepcopy as dcp
 from multiprocessing import cpu_count, Process
-from numpy import array, random, append, linspace, argmax, zeros, nonzero, inf
+from numpy import array, append, linspace, argmax, zeros, nonzero, inf
 from scipy.interpolate import pchip
 from csv import writer, reader
 from itertools import izip
 from collections import OrderedDict
 from datetime import date
-import pso as pso
-import asd2 as asd
-import time
+
 
 def runModelForNTimeSteps(steps, model):
     """
@@ -74,17 +75,7 @@ def objectiveFunction(allocation, objective, model, freeFunds, fixedAllocations,
         outcome *= -1
     return outcome
 
-class OutputClass:
-    def __init__(self, budgetBest, fval, exitflag, cleanOutputIterations, cleanOutputFuncCount, cleanOutputFvalVector, cleanOutputXVector):
-        self.budgetBest = budgetBest
-        self.fval = fval
-        self.exitflag = exitflag
-        self.cleanOutputIterations = cleanOutputIterations
-        self.cleanOutputFuncCount = cleanOutputFuncCount
-        self.cleanOutputFvalVector = cleanOutputFvalVector
-        self.cleanOutputXVector = cleanOutputXVector
-
-class Optimisation: # TODO: would like
+class Optimisation:
     def __init__(self, objectives, budgetMultiples, fileInfo, resultsPath=None, fixCurrentAllocations=False,
                  additionalFunds=0, removeCurrentFunds=False, numYears=None, costCurveType='linear',
                  parallel=True, numCPUs=None, numRuns=1, filterProgs=True):
@@ -95,7 +86,7 @@ class Optimisation: # TODO: would like
             resultsPath = play.getResultsDir(root=root, country=self.name, analysisType=analysisType)
         self.createDirectory(resultsPath) # TODO: probably only want this to happen when calling 'optimise'
         self.model = play.setUpModel(filePath, adjustCoverage=False, optimise=True, numYears=numYears) # model has already moved 1 year
-        self.budgetMultiples = budgetMultiples # TODO: would like if get a budget of 0, that this just runs the model w/o optimisation.
+        self.budgetMultiples = budgetMultiples
         self.objectives = objectives
         self.fixCurrentAllocations = fixCurrentAllocations
         self.removeCurrentFunds = removeCurrentFunds
@@ -279,18 +270,14 @@ class Optimisation: # TODO: would like
             runOutputs = []
             for run in range(self.numRuns):
                 now = time.time() # TODO: could make 9600 iterations -- 100*100
-                x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=1, swarmsize=3)
+                x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=100, swarmsize=50)
+                x, fval, flag = asd.asd(objectiveFunction, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=0)
+                print "FINISHED OPTIMISATION FOR: "
                 print "Objective: " + str(objective)
                 print "Multiple: " + str(multiple)
-                print "value: " + str(fopt/1000.)
-                # budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
-                #                                              xmax=xmax, verbose=0, MaxIter=30)
-                x, fval, flag = asd.asd(objectiveFunction, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=0, maxiters=3)
                 print flag['exitreason']
                 print str((time.time() - now)/(60*60)) + ' hours'
                 print "----------"
-                # outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval,
-                #                            output.x)
                 runOutputs.append((x, fval[-1]))
             bestAllocation = self.findBestAllocation(runOutputs)
             scaledAllocation = rescaleAllocation(kwargs['freeFunds'], bestAllocation)
@@ -528,8 +515,6 @@ class GeospatialOptimisation:
         self.root, self.country = fileInfo
         thisDate = date.today().strftime('%Y%b%d')
         self.resultsDir = '{}/Results/{}/geospatial/{}'.format(self.root, self.country, thisDate)
-        print "NUM CPUS"
-        print cpu_count()
         self.objectives = objectives
         self.budgetMultiples = [0, 0.01, 0.025, 0.04, 0.05, 0.075, 0.1, 0.2, 0.3, 0.6, 1] # these multiples are in the interval (minFreeFunds, maxFreeFunds)
         self.regionNames = regionNames
@@ -674,14 +659,14 @@ class GeospatialOptimisation:
         """
         self.getRegionalBOCs()
         # options: [fixedAllocations, progOpt, removeCurrent, additionalFunds]
-        for scenario, options in self.scenarios.iteritems(): # TODO: scenario 1 can be taken directly from BOCs
+        for scenario, options in self.scenarios.iteritems():
             formattedScenario = scenario.lower().replace(' ', '')
             regions = self.setUpRegions(scenario, options)
             allPrograms = [prog.name for prog in regions[0].programs]
             filename = self.createCSV(formattedScenario)
             self.writeRefAndCurrentAllocations(regions, filename, allPrograms)
             for objective in self.objectives:
-                self.interpolateBOCs(regions, objective, options)
+                regions = self.interpolateBOCs(regions, objective, options)
                 optimisedRegionalSpending = self.distributeFunds(regions, objective, scenario, options)
                 regions = self.optimiseAllRegions(regions, optimisedRegionalSpending, objective, formattedScenario, options)
                 self.collateAllResults(regions, objective, formattedScenario, allPrograms, filename)
@@ -802,7 +787,7 @@ class GeospatialOptimisation:
             pass
         return filename
 
-    def optimiseAllRegions(self, regions, optimisedSpending, objective, scenario, options):
+    def optimiseAllRegions(self, regions, optimisedSpending, objective, scenario, options): # TODO: issue here is that we need scenario 1 to have current spending 'free', but 'fixed' elsewhere. MAYBE WE HAVE AN ADDITIONAL PARAM?
         fixCurrent, optimiseCurrent, removeCurrent, additionalFunds = options
         budgetMultiple = [1]
         newRegions = []
@@ -862,6 +847,7 @@ class BudgetScenarios:
         self.filePath = filePath
         # [fixedRegionalSpending, optimiseCurrent, removeCurrentFunds]
         # then will get additionalFunds
+        # TODO: FOR SCENARIO 1, PRETTY SURE CAN CHANGE FIXEDREGIONAL TO FALSE. SHOULD ACTUALLY HAVE A 'FIXED WITHIN' AND 'FIXED BETWEEN' PARAMS, TO DISTINGUISH SHARING FROM OPTIMISING CURRENT
         self.allScenarios = {'Scenario 1': [True, True, False], 'Scenario 2': [False, True, True],
                           'Scenario 3': [True, False, False], 'Scenario 4': [False, True, True]}
 

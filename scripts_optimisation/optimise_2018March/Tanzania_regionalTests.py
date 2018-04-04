@@ -21,7 +21,7 @@ for region in regions:
     print " "
     print region
     filePath = play.getFilePath(root=root, country='Tanzania/regions', name=region)
-    model = play.setUpModel(filePath, adjustCoverage=False, numYears=12) # already run a year
+    model = play.setUpModel(filePath, adjustCoverage=False, numYears=6) # already run a year
 
     fixedProgs = model.constants.referencePrograms
     coverage95 = 0.95
