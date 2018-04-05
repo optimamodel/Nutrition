@@ -514,8 +514,7 @@ class Optimisation:
 class GeospatialOptimisation:
     def __init__(self, objectives, fileInfo, regionNames, numYears=None, costCurveType='linear'):
         self.root, self.country = fileInfo
-        # thisDate = date.today().strftime('%Y%b%d')
-        thisDate = '2018Apr04'
+        thisDate = date.today().strftime('%Y%b%d')
         self.resultsDir = '{}/Results/{}/geospatial/{}'.format(self.root, self.country, thisDate)
         self.objectives = objectives
         self.budgetMultiples = [0, 0.01, 0.025, 0.04, 0.05, 0.075, 0.1, 0.2, 0.3, 0.6, 1] # these multiples are in the interval (minFreeFunds, maxFreeFunds)
