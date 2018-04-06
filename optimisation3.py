@@ -177,7 +177,7 @@ class Optimisation:
                 if not program.reference:
                     program.scaleUnitCosts(scaleFactor)
         elif any(sub in self.name for sub in specialRegions): # TODO: this should be removed after Tanzania application
-            scaleFactor = 0.139 # this is the median of all other regions
+            scaleFactor = 0.231 # this is the median of all other regions
             for program in self.programs:
                 if not program.reference:
                     program.scaleUnitCosts(scaleFactor)
