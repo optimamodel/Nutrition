@@ -42,7 +42,8 @@ resultsPath = '{}/Results/Tanzania/geospatial/{}/additionalPerCapita'.format(roo
 for i, region in enumerate(regions):
     funds = funding[i]
     fileInfo = [root, 'Tanzania/regions', region, '']
-    thisOptim = optimisation.Optimisation(objectives, budgetMultiples, fileInfo, additionalFunds=funds, resultsPath=resultsPath)
+    thisOptim = optimisation.Optimisation(objectives, budgetMultiples, fileInfo, additionalFunds=funds, resultsPath=resultsPath,
+                                          filterProgs=False)
     prc = Process(target=thisOptim.optimise)
     jobs.append(prc)
 

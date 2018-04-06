@@ -26,7 +26,7 @@ thisDate = date.today().strftime('%Y%b%d')
 resultsPath = '{}/Results/Tanzania/geospatial/{}/optimisedCurrent'.format(root, thisDate)
 for region in regions:
     fileInfo = [root, 'Tanzania/regions', region, '']
-    thisOptim = optimisation.Optimisation(objectives, budgetMultiples, fileInfo, resultsPath=resultsPath)
+    thisOptim = optimisation.Optimisation(objectives, budgetMultiples, fileInfo, resultsPath=resultsPath, filterProgs=False)
     prc = Process(target=thisOptim.optimise)
     jobs.append(prc)
 optimisation.runJobs(jobs, 50)
