@@ -1,7 +1,7 @@
 from scipy.special import ndtri, ndtr # these are faster than calling scipy.stats.norm
 
 class Model:
-    def __init__(self, filePath, adjustCoverage=False, timeTrends=False, optimise=False, numYears=None):
+    def __init__(self, filePath, adjustCoverage=False, timeTrends=False, optimise=False, numYears=None, calibrate=True):
         import data2 as data
         import populations2 as pops
         import program_info
@@ -23,7 +23,8 @@ class Model:
 
         self.year = self.constants.baselineYear
         self._createOutcomeTrackers()
-        self.calibrate()
+        if calibrate:
+            self.calibrate()
 
     def _createOutcomeTrackers(self): # TODO: may not need all these each run -- expensive to calculate as currently implemented. Specify at start
         self.annualDeathsChildren = {year: 0 for year in self.constants.allYears}
@@ -595,7 +596,7 @@ class Model:
         self.programInfo._setSimulationCoverageFromWorkbook()
         self.runSimulation()
 
-    def runSimulationFromOptimisation(self, newCoverages): #  TODO: implement numYears in the other wrapper functions.
+    def runSimulationFromOptimisation(self, newCoverages):
         self._setAnnualCoveragesFromOptimisation(newCoverages)
         self.runSimulation()
 
@@ -667,6 +668,6 @@ class Model:
         elif outcome == 'less_two':
             return sum(self.ageingOutChildren.values()) - sum(self.annualChildrenThreeConditions.values())
         elif outcome == 'SHR': # illness to healthy ratio
-            return 1/(sum(self.annualChildrenThreeConditions.values()) / sum(self.annualChildrenAgeingOutHealthly.values()))
+            return sum(self.annualChildrenThreeConditions.values()) / sum(self.annualChildrenAgeingOutHealthly.values())
         else:
             raise Exception('::: ERROR: outcome string not found ' + str(outcome) + ' :::')
