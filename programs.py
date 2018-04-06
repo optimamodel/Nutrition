@@ -9,16 +9,25 @@ class Program(object):
         self.name = name
         self.const = constants
 
-        self.restrictedBaselineCov = self.const.costCurveInfo['baseline coverage'][self.name]
         self.targetPopulations = self.const.programTargetPop[self.name] # frac of each population which is targeted
         self.unitCost = self.const.costCurveInfo['unit cost'][self.name]
         self.saturation = self.const.costCurveInfo['saturation coverage'][self.name]
         self.coverageProjections = dcp(self.const.programAnnualSpending[self.name]) # will be altered
+        self.restrictedBaselineCov, self.restrictedCalibrationCov = self.getRestrictedCovs()
 
         self._setTargetedAges()
         self._setImpactedAges() # TODO: This func could contain the info for how many multiples needed for unrestricted population calculation (IYCF)
         self._setExclusionDependencies()
         self._setThresholdDependencies()
+
+    def getRestrictedCovs(self):
+        calibrationCov = self.coverageProjections['Coverage'][1][0]
+        restrictedBaseline = self.const.costCurveInfo['baseline coverage'][self.name]
+        if isnan(calibrationCov): # if first coverage value comes after the calibration year
+            restrictedCalibration = restrictedBaseline
+        else: # user specified a calibration year coverage
+            restrictedCalibration = calibrationCov
+        return restrictedBaseline, restrictedCalibration
 
     def _setAnnualCoverageFromOptimisation(self, newCoverage):
         """
@@ -31,11 +40,14 @@ class Program(object):
     def _setInitialCoverage(self, populations):
         """
         Sets values for 'annualCoverages' for the baseline and calibration (typically first 2 years) only.
+        If a calibration coverage has been specified in the workbook, this will override the baseline coverage.
+        This feature allows different costs to be calculated from the calibration coverage
         :return:
         """
         self._setBaselineCoverage(populations)
         theseYears = [self.const.baselineYear] + self.const.calibrationYears
-        self.annualCoverage = {year:self.unrestrictedBaselineCov for year in theseYears}
+        # theseCoverages = [self.restrictedBaselineCov, self.restrictedCalibrationCov]
+        self.annualCoverage = {year:self.restrictedCalibrationCov for year in theseYears}
 
     def _setSimulationCoverageFromScalar(self, coverages, restrictedCov=True):
         years = self.const.simulationYears
@@ -48,6 +60,8 @@ class Program(object):
         years = array(self.const.simulationYears)
         coverages = dcp(self.coverageProjections['Coverage'][1])
         coverages = array(coverages[len(self.const.calibrationYears):]) # remove calibration years
+        if len(coverages) > len(years):
+            coverages = coverages[:len(years)]
         not_nan = logical_not(isnan(coverages))
         if not any(not_nan):
             # is all nan, assume constant at baseline
@@ -56,7 +70,7 @@ class Program(object):
             # for 1 or more present values, baseline up to first present value, interpolate between, then constant if end values missing
             trueIndx = [i for i, x in enumerate(not_nan) if x]
             firstTrue = trueIndx[0]
-            startCov = [self.restrictedBaselineCov for x in coverages[:firstTrue]]
+            startCov = [self.restrictedCalibrationCov for x in coverages[:firstTrue]]
             # scaledCov = coverages * self.restrictedPopSize / self.unrestrictedPopSize # convert to unrestricted coverages
             endCov = list(interp(years[firstTrue:], years[not_nan], coverages[not_nan]))
             # scale each coverage
@@ -70,6 +84,8 @@ class Program(object):
         self._setRestrictedPopSize(populations)
         self._setUnrestrictedPopSize(populations)
         self.unrestrictedBaselineCov = (self.restrictedBaselineCov * self.restrictedPopSize) / \
+                                          self.unrestrictedPopSize
+        self.unrestrictedCalibrationCov = (self.restrictedCalibrationCov * self.restrictedPopSize) / \
                                           self.unrestrictedPopSize
 
     def _adjustCoverage(self, populations, year):
@@ -336,6 +352,7 @@ class Program(object):
         self.costCurveFunc = self.costCurveOb._setCostCovCurve()
 
     def getSpending(self):
+        # spending is base on BASELINE coverages
         return self.costCurveOb.getSpending(self.unrestrictedBaselineCov) # TODO: want to change this so that uses annual Coverages
 
     def scaleUnitCosts(self, scaleFactor):
