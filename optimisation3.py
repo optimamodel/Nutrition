@@ -269,7 +269,7 @@ class Optimisation:
             runOutputs = []
             for run in range(self.numRuns):
                 now = time.time() # TODO: could make 9600 iterations -- 100*100
-                x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=100, swarmsize=60)
+                x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=100, swarmsize=40)
                 x, fval, flag = asd.asd(objectiveFunction, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=0)
                 print "FINISHED OPTIMISATION FOR: "
                 print "REGION: " + str(self.name)
