@@ -132,7 +132,6 @@ class Optimisation:
         self.fixedAllocations = self.getFixedAllocations(fixCurrentAllocations)
         self.freeFunds = self.getFreeFunds(fixCurrentAllocations)
 
-
     def getReferenceAllocations(self):
         """
         Reference programs are not included in nutrition budgets, therefore these must be removed before future calculations.
@@ -178,7 +177,7 @@ class Optimisation:
                 if not program.reference:
                     program.scaleUnitCosts(scaleFactor)
         elif any(sub in self.name for sub in specialRegions): # TODO: this should be removed after Tanzania application
-            scaleFactor = 0.254  # this is the median of all other regions
+            scaleFactor = 0.139 # this is the median of all other regions
             for program in self.programs:
                 if not program.reference:
                     program.scaleUnitCosts(scaleFactor)
@@ -270,7 +269,7 @@ class Optimisation:
             runOutputs = []
             for run in range(self.numRuns):
                 now = time.time() # TODO: could make 9600 iterations -- 100*100
-                x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=100, swarmsize=50)
+                x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=100, swarmsize=60)
                 x, fval, flag = asd.asd(objectiveFunction, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=0)
                 print "FINISHED OPTIMISATION FOR: "
                 print "REGION: " + str(self.name)
@@ -632,20 +631,13 @@ class GeospatialOptimisation:
             formScenario = scenario.lower().replace(' ', '')
             self.newResultsDir = '{}/{}/Extra_{}m'.format(self.resultsDir, formScenario, int(additionalFunds/1e6))
             regions = self.setUpRegions(fixForBOC, additionalFunds)
-            if additionalFunds == 0 and fixForBOC: # ie optimising current funds within each region separately
-                for objective in self.objectives:
-                    spendingList = [0] * len(regions)
-                    regions = self.optimiseAllRegions(regions, spendingList, objective, options)
-                    self.collateAllResults(regions, objective)
-            else:
-                self.getRegionalBOCs(fixForBOC, replaceCurrent, additionalFunds)
-                self.writeRefAndCurrentAllocations(regions)
-                for objective in self.objectives:
-                    regions = self.interpolateBOCs(regions, objective)
-                    optimisedRegionalSpending = self.distributeFunds(regions, objective, options)
-                    regions = self.optimiseAllRegions(regions, optimisedRegionalSpending, objective, options)
-                    self.collateAllResults(regions, objective)
-
+            self.getRegionalBOCs(fixForFinal, replaceCurrent, additionalFunds)
+            self.writeRefAndCurrentAllocations(regions)
+            for objective in self.objectives:
+                regions = self.interpolateBOCs(regions, objective)
+                optimisedRegionalSpending = self.distributeFunds(regions, objective, options)
+                regions = self.optimiseAllRegions(regions, optimisedRegionalSpending, objective, options)
+                self.collateAllResults(regions, objective)
 
     def writeRefAndCurrentAllocations(self, regions):
         filename = '{}/regional_allocations.csv'.format(self.newResultsDir)
@@ -718,15 +710,18 @@ class GeospatialOptimisation:
         return scaledRegionalAllocations
 
     def getBOCcostEffectiveness(self, regions, objective, options):
-        fixForBOC, _fixForFinal, removeCurrent, additionalFunds = options
+        fixForBOC, fixForFinal, removeCurrent, additionalFunds = options
         nationalFunds = self.getNationalCurrentSpending()
         numPoints = 10000
         costEffVecs = []
         spendingVec = []
         for region in regions:
-            if fixForBOC:
+            if fixForBOC and not fixForFinal:
                 minSpending = sum(region.currentAllocations) - sum(region.referenceAllocations)
                 maxSpending = minSpending + additionalFunds
+            elif fixForBOC and fixForFinal: # this is scenario 3, where the spending=0 corresponds to non-optimised current allocations
+                minSpending = 0
+                maxSpending = additionalFunds
             else:
                 minSpending = 0
                 maxSpending = nationalFunds + additionalFunds
@@ -734,26 +729,10 @@ class GeospatialOptimisation:
             regionalSpending = linspace(minSpending, maxSpending, numPoints)[1:] # exclude 0 to avoid division error
             adjustedSpending = regionalSpending - minSpending # centers spending if current is fixed
             spendingVec.append(adjustedSpending)
-            costEffectiveness = thisDeriv(adjustedSpending) # TODO: if we have a DECREASING FUNC (Like deaths etc) need to be negative
+            # use non-adjusted spending b/c we don't necessarily want to start at 0
+            costEffectiveness = thisDeriv(regionalSpending) # TODO: if we have a DECREASING FUNC (Like deaths etc) need to be negative
             costEffVecs.append(costEffectiveness)
         return costEffVecs, spendingVec
-
-    def readBOCs(self, objective, optimiseCurrent):
-        regionalBOCs = []
-        for name in self.regionNames:
-            filename = '{}/{}_optimCurr_{}.csv'.format(self.BOCdir[objective], name, optimiseCurrent)
-            with open(filename, 'r') as f:
-                regionalSpending = []
-                regionalOutcome = []
-                r = reader(f)
-                for row in r:
-                    regionalSpending.append(row[0])
-                    regionalOutcome.append(row[1])
-            # remove column headers
-            regionalSpending = array(regionalSpending[1:])
-            regionalOutcome = array(regionalOutcome[1:])
-            regionalBOCs.append(pchip(regionalSpending, regionalOutcome))
-        return regionalBOCs
 
     def optimiseAllRegions(self, regions, optimisedSpending, objective, options):
         _fixForBOC, fixForFinal, replaceCurrent, additionalFunds = options
@@ -818,7 +797,7 @@ class BudgetScenarios:
         # [fixForBOC, fixForFinal, removeCurrentFunds]
         # additionalFunds will be appended
         self.allScenarios = {'Scenario 1': [True, False, False],
-                             'Scenario 2': [False, False,  True],
+                             'Scenario 2': [False, False, True],
                              'Scenario 3': [True, True, False]}
 
     def getScenarios(self):
