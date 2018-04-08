@@ -6,7 +6,7 @@ import time
 import cPickle as pickle
 from copy import deepcopy as dcp
 from multiprocessing import cpu_count, Process
-from numpy import array, append, linspace, argmax, zeros, nonzero, inf
+from numpy import array, append, linspace, nanargmax, zeros, nonzero, inf
 from scipy.interpolate import pchip
 from csv import writer, reader
 from itertools import izip
@@ -274,9 +274,10 @@ class Optimisation:
             xmax = [kwargs['freeFunds']] * len(indxToKeep) # TODO: could make this cost of saturation.
             runOutputs = []
             for run in range(self.numRuns):
-                now = time.time() # TODO: could make 9600 iterations -- 100*100
-                x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=100, swarmsize=50)
+                now = time.time()
+                x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=100, swarmsize=40)
                 x, fval, flag = asd.asd(objectiveFunction, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=0)
+                print " "
                 print "FINISHED OPTIMISATION FOR: "
                 print "REGION: " + str(self.name)
                 print "Objective: " + str(objective)
@@ -554,7 +555,7 @@ class GeospatialOptimisation:
     def writeBOCs(self, regions, objective):
         filename = '{}/BOCs/{}/BOCs.csv'.format(self.newResultsDir, objective)
         headers = ['spending'] + [region.name for region in regions]
-        minSpend = min(regions[0].BOCs[objective].x) # all regions should have the same min and max
+        minSpend = min(regions[0].BOCs[objective].x)
         maxSpend = max(regions[0].BOCs[objective].x)
         newSpending = linspace(minSpend, maxSpend, 2000)
         regionalOutcomes = []
@@ -625,7 +626,7 @@ class GeospatialOptimisation:
     def getRegionalBOCs(self, objective, fixWithin, additionalFunds):
         regions = self.setUpRegions(objective, fixWithin, additionalFunds)
         jobs = self.getBOCjobs(regions, objective)
-        maxRegions = int(50/(len(self.budgetMultiples)-1))
+        maxRegions = 4
         runJobs(jobs, maxRegions)
 
     def interpolateBOCs(self, objective, fixBetween, additionalFunds):
@@ -678,7 +679,7 @@ class GeospatialOptimisation:
                 # find most effective spending in each region
                 costEffThisRegion = costEffVecs[regionIdx]
                 if len(costEffThisRegion):
-                    maxIdx = argmax(costEffThisRegion)
+                    maxIdx = nanargmax(costEffThisRegion)
                     maxEff = costEffThisRegion[maxIdx]
                     if maxEff > bestEff:
                         bestEff = maxEff
