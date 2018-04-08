@@ -171,7 +171,7 @@ class Optimisation:
         currentAllocationsBefore = self.getCurrentAllocations()
         specialRegions = ['Kusini', 'Kaskazini', 'Mjini']  # we don't have current expenditure for these regions
         # remove cash transfers from scaling
-        progName = 'Cash transfers'
+        progName = 'Cash transfers' # TODO: remove after Tanzania
         correctedFunds = currentAllocationsBefore[:]
         for i, prog in enumerate(self.programs):
             if prog.name == progName:
@@ -626,7 +626,7 @@ class GeospatialOptimisation:
     def getRegionalBOCs(self, objective, fixWithin, additionalFunds):
         regions = self.setUpRegions(objective, fixWithin, additionalFunds)
         jobs = self.getBOCjobs(regions, objective)
-        maxRegions = 4
+        maxRegions = int(50/(len(self.budgetMultiples)-1))
         runJobs(jobs, maxRegions)
 
     def interpolateBOCs(self, objective, fixBetween, additionalFunds):
