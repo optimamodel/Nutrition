@@ -170,16 +170,22 @@ class Optimisation:
         # specificBudget / calculatedBudget * oldUnitCost = newUnitCost
         currentAllocationsBefore = self.getCurrentAllocations()
         specialRegions = ['Kusini', 'Kaskazini', 'Mjini']  # we don't have current expenditure for these regions
+        # remove cash transfers from scaling
+        progName = 'Cash transfers'
+        correctedFunds = currentAllocationsBefore[:]
+        for i, prog in enumerate(self.programs):
+            if prog.name == progName:
+                correctedFunds[i] = 0
         if self.model.programInfo.currentExpenditure:
-            currentCalculated = sum(currentAllocationsBefore) - sum(self.referenceAllocations)
+            currentCalculated = sum(correctedFunds) - sum(self.referenceAllocations)
             scaleFactor = self.model.programInfo.currentExpenditure / currentCalculated
             for program in self.programs:
-                if not program.reference:
+                if (not program.reference) and (program.name != progName):
                     program.scaleUnitCosts(scaleFactor)
         elif any(sub in self.name for sub in specialRegions): # TODO: this should be removed after Tanzania application
-            scaleFactor = 0.231 # this is the median of all other regions
+            scaleFactor = 0.334 # this is the median of all other regions
             for program in self.programs:
-                if not program.reference:
+                if (not program.reference) and (program.name != progName):
                     program.scaleUnitCosts(scaleFactor)
         else:
             scaleFactor = 1
@@ -269,7 +275,7 @@ class Optimisation:
             runOutputs = []
             for run in range(self.numRuns):
                 now = time.time() # TODO: could make 9600 iterations -- 100*100
-                x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=100, swarmsize=60)
+                x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=100, swarmsize=50)
                 x, fval, flag = asd.asd(objectiveFunction, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=0)
                 print "FINISHED OPTIMISATION FOR: "
                 print "REGION: " + str(self.name)
