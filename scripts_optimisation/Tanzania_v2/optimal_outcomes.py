@@ -26,7 +26,7 @@ with open('optimised_outputs.csv', 'wb') as f:
     # current
     w.writerow(['Current'] + outcomes)
     for region in regions:
-        thisRegion = optim.Optimisation([objective], [1], [root, 'Tanzania/regions', region, ''])
+        thisRegion = optim.Optimisation([objective], [1], [root, 'Tanzania/regions', region, ''], numYears=6)
         currentOutputs = []
         allocationsDict = thisRegion.createDictionary(thisRegion.currentAllocations)
         thisModel = thisRegion.oneModelRunWithOutput(allocationsDict)
@@ -41,7 +41,7 @@ with open('optimised_outputs.csv', 'wb') as f:
         w.writerow([scenario])
         w.writerow(['Region'] + outcomes)
         for region in regions:
-            thisRegion = optim.Optimisation([objective], [1], [root, 'Tanzania/regions', region, ''])
+            thisRegion = optim.Optimisation([objective], [1], [root, 'Tanzania/regions', region, ''], numYears=6)
             thisPickle = '{}/Results/Tanzania/geospatial/{}/{}/{}_{}_1.pkl'.format(root, date, scenario, region, objective)
             infile = open(thisPickle, 'rb')
             thisAllocation = pickle.load(infile)
@@ -59,7 +59,7 @@ with open('optimised_outputs.csv', 'wb') as f:
         w.writerow([scenario])
         w.writerow(['Region'] + outcomes)
         for region in regions:
-            thisRegion = optim.Optimisation([objective], [1], [root, 'Tanzania/regions', region, ''])
+            thisRegion = optim.Optimisation([objective], [1], [root, 'Tanzania/regions', region, ''], numYears=6)
             thisPickle = '{}/Results/Tanzania/geospatial/{}/{}/Extra_32m/pickles/{}_{}_1.pkl'.format(root, date, scenario, region, objective)
             infile = open(thisPickle, 'rb')
             thisAllocation = pickle.load(infile)
