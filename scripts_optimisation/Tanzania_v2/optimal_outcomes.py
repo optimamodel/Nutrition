@@ -24,17 +24,17 @@ outcomes = ['healthy_children', 'total_stunted', 'wasting_prev', 'anaemia_prev_c
 with open('optimised_outputs.csv', 'wb') as f:
     w = csv.writer(f)
     # current
-    # w.writerow(['Current'] + outcomes)
-    # for region in regions:
-    #     thisRegion = optim.Optimisation([objective], [1], [root, 'Tanzania/regions', region, ''])
-    #     currentOutputs = []
-    #     allocationsDict = thisRegion.createDictionary(thisRegion.currentAllocations)
-    #     thisModel = thisRegion.oneModelRunWithOutput(allocationsDict)
-    #     for outcome in outcomes[:-1]:
-    #         currentOutputs.append(thisModel.getOutcome(outcome))
-    #     population = thisModel.children.getTotalPopulation()
-    #     w.writerow([region] + currentOutputs + [population])
-    # w.writerow([])
+    w.writerow(['Current'] + outcomes)
+    for region in regions:
+        thisRegion = optim.Optimisation([objective], [1], [root, 'Tanzania/regions', region, ''])
+        currentOutputs = []
+        allocationsDict = thisRegion.createDictionary(thisRegion.currentAllocations)
+        thisModel = thisRegion.oneModelRunWithOutput(allocationsDict)
+        for outcome in outcomes[:-1]:
+            currentOutputs.append(thisModel.getOutcome(outcome))
+        population = thisModel.children.getTotalPopulation()
+        w.writerow([region] + currentOutputs + [population])
+    w.writerow([])
 
     # first 2 scenarios
     for scenario in scenarios[:2]:
