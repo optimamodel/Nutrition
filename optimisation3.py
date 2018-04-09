@@ -128,7 +128,8 @@ class Optimisation:
         :return:
         """
         self.referenceAllocations = self.getReferenceAllocations()
-        self.currentAllocations, self.scaleFactor = self.scaleCostsForCurrentExpenditure()
+        self.currentAllocations = self.getCurrentAllocations()
+        # self.currentAllocations, self.scaleFactor = self.scaleCostsForCurrentExpenditure()
         self.fixedAllocations = self.getFixedAllocations(fixCurrentAllocations)
         self.freeFunds = self.getFreeFunds(fixCurrentAllocations)
 
@@ -551,7 +552,6 @@ class GeospatialOptimisation:
         regionalOutcome = array(regionalOutcome[1:])
         return regionalSpending, regionalOutcome
 
-
     def writeBOCs(self, regions, objective):
         filename = '{}/BOCs/{}/BOCs.csv'.format(self.newResultsDir, objective)
         headers = ['spending'] + [region.name for region in regions]
@@ -622,6 +622,7 @@ class GeospatialOptimisation:
                 # optimise within each region
                 regions = self.optimiseAllRegions(optimalDistribution, objective, options)
                 self.collateAllResults(regions, objective)
+                # self.getOptimalOutcomes(regions, objective)
 
     def getRegionalBOCs(self, objective, fixWithin, additionalFunds):
         regions = self.setUpRegions(objective, fixWithin, additionalFunds)
@@ -746,7 +747,7 @@ class GeospatialOptimisation:
             newOptim = Optimisation([objective], budgetMultiple, fileInfo, resultsPath=resultsDir,
                                     fixCurrentAllocations=fixWithin, removeCurrentFunds=replaceCurrent,
                                     additionalFunds=regionalFunds,
-                                    numYears=self.numYears)
+                                    numYears=self.numYears, filterProgs=False)
             newRegions.append(newOptim)
             p = Process(target=newOptim.optimise)
             jobs.append(p)
@@ -777,6 +778,23 @@ class GeospatialOptimisation:
                 optimisedAdditional = [a-b for a,b in zip(allocations.values(), fixedAllocations)]
                 w.writerow([name] + optimisedAdditional)
             w.writerow([])
+
+    def getOptimalOutcomes(self, regions, objective):
+        outcomes = ['total_stunted', 'wasting_prev', 'anaemia_prev_children', 'deaths_children', 'neonatal_deaths']
+        fileToWrite = '{}/optimal_outcomes_{}.csv'.format(self.newResultsDir, objective)
+        with open(fileToWrite, 'wb') as f:
+            w = writer(f)
+            w.writerow(['Region'] + outcomes)
+            for region in regions:
+                filename = '{}/pickles/{}_{}_{}.pkl'.format(self.newResultsDir, region.name, objective, 1)
+                infile = open(filename, 'rb')
+                thisAllocation = pickle.load(infile)
+                infile.close()
+                allOutputs = []
+                thisModel = region.oneModelRunWithOutput(thisAllocation)
+                for outcome in outcomes:
+                    allOutputs.append(thisModel.getOutcome(outcome))
+                w.writerow([region.name] + allOutputs)
 
     def getTotalFreeFunds(self, regions):
         """ Need to wait the additional funds by number of regions so we don't have too much money"""
