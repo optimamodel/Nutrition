@@ -30,7 +30,7 @@ for region in regions:
                                           filterProgs=False, numYears=6)
     prc = Process(target=thisOptim.optimise)
     jobs.append(prc)
-optimisation.runJobs(jobs, 3)
+optimisation.runJobs(jobs, 50)
 
 # collate results
 filename = '{}/allocations_{}.csv'.format(resultsPath, objectives[0])
