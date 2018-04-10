@@ -1,0 +1,29 @@
+// Text
+// ====
+
+@include cosmetic('text', 'text-align', left center right justify);
+
+.text-bound {
+  max-width: 48em;
+}
+
+.text-mute {
+  color: #999999;
+}
+
+.spaced-lines {
+  line-height: 1.8;
+}
+
+.text_bold_medium {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.text-error {
+  color: rgb(203,106,91);
+}
+
+.text-success {
+  color: rgb(99,194,166);
+}
