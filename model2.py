@@ -339,16 +339,15 @@ class Model:
                             thisBox = ageGroup.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat]
                             ageingOut[idx][stuntingCat][wastingCat][bfCat][anaemiaCat] = thisBox.populationSize * ageGroup.ageingRate
         oldest = ageGroups[-1]
-        # TODO: only commented these out to improve speed (uncomment if need objectives)
-        # ageingOutStunted = oldest.getAgeGroupNumberStunted() * oldest.ageingRate
-        # ageingOutNotStunted = oldest.getAgeGroupNumberNotStunted() * oldest.ageingRate
-        # self.ageingOutChildren[self.year] += oldest.getAgeGroupPopulation() * oldest.ageingRate
-        # self.annualStunted[self.year] += ageingOutStunted
-        # self.annualThrive[self.year] += ageingOutNotStunted
-        # self.annualNotAnaemic[self.year] += oldest.getAgeGroupNumberNotAnaemic() * oldest.ageingRate
-        # self.annualNotWasted[self.year] += oldest.getAgeGroupNumberNotWasted() * oldest.ageingRate
+        ageingOutStunted = oldest.getAgeGroupNumberStunted() * oldest.ageingRate
+        ageingOutNotStunted = oldest.getAgeGroupNumberNotStunted() * oldest.ageingRate
+        self.ageingOutChildren[self.year] += oldest.getAgeGroupPopulation() * oldest.ageingRate
+        self.annualStunted[self.year] += ageingOutStunted
+        self.annualThrive[self.year] += ageingOutNotStunted
+        self.annualNotAnaemic[self.year] += oldest.getAgeGroupNumberNotAnaemic() * oldest.ageingRate
+        self.annualNotWasted[self.year] += oldest.getAgeGroupNumberNotWasted() * oldest.ageingRate
         self.annualChildrenAgeingOutHealthly[self.year] += oldest.getAgeGroupNumberHealthy() * oldest.ageingRate
-        # self.annualChildrenThreeConditions[self.year] += oldest.getAgeGroupNumberThreeConditions() * oldest.ageingRate
+        self.annualChildrenThreeConditions[self.year] += oldest.getAgeGroupNumberThreeConditions() * oldest.ageingRate
         # first age group does not have ageing in
         newborns = ageGroups[0]
         for stuntingCat in self.constants.stuntingList:

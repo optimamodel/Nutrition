@@ -33,11 +33,6 @@ def rescaleAllocation(totalBudget, allocation):
     else:
         scaleRatio = totalBudget / new
         rescaledAllocation = [x * scaleRatio for x in allocation]
-    # try:
-    #     scaleRatio = totalBudget / sum(allocation)
-    #     rescaledAllocation = [x * scaleRatio for x in allocation]
-    # except ZeroDivisionError:
-    #     rescaledAllocation = dcp(allocation)
     return rescaledAllocation
 
 def runJobs(jobs, max_jobs):
