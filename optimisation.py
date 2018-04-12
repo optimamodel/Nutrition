@@ -265,8 +265,8 @@ class Optimisation:
             runOutputs = []
             for run in range(self.numRuns):
                 now = time.time()
-                x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=1, swarmsize=3)
-                x, fval, flag = asd.asd(objectiveFunction, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=0, maxiters=3)
+                x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=100, swarmsize=50)
+                x, fval, flag = asd.asd(objectiveFunction, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=0)
                 print " "
                 print "FINISHED OPTIMISATION FOR: "
                 print "REGION: " + str(self.name)
@@ -510,7 +510,7 @@ class GeospatialOptimisation:
         thisDate = date.today().strftime('%Y%b%d')
         self.resultsDir = os.path.join('results', thisDate)
         self.objectives = objectives
-        self.budgetMultiples = [0,1]#[0, 0.01, 0.025, 0.04, 0.05, 0.075, 0.1, 0.2, 0.3, 0.6, 1]  # these multiples are in the interval (minFreeFunds, maxFreeFunds)
+        self.budgetMultiples = [0, 0.01, 0.025, 0.04, 0.05, 0.075, 0.1, 0.2, 0.3, 0.6, 1]  # these multiples are in the interval (minFreeFunds, maxFreeFunds)
         self.regionNames = regionNames
         self.numYears = numYears
         self.numRegions = len(regionNames)
