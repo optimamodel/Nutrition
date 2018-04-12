@@ -4,6 +4,7 @@ import pso
 import asd
 import time
 import cPickle as pickle
+import pandas as pd
 from copy import deepcopy as dcp
 from multiprocessing import cpu_count, Process
 from numpy import array, append, linspace, nanargmax, zeros, nonzero, inf
@@ -19,8 +20,7 @@ def runModelForNTimeSteps(steps, model):
     Progresses the model a given number of steps
     :param steps: number of steps to iterate (int)
     :param model:
-    :param saveEachStep:
-    :return:
+    :return: progressed model
     """
     for step in range(steps):
         model.moveModelOneYear()
@@ -451,11 +451,9 @@ class Optimisation:
         return coverages
 
     def writeCoveragesToCSV(self, coverages):
-        import csv
-        from collections import OrderedDict
         filename = '{}/{}_coverages.csv'.format(self.resultDir, self.name)
         with open(filename, 'wb') as f:
-            w = csv.writer(f)
+            w = writer(f)
             for objective in self.objectives:
                 w.writerow([''])
                 w.writerow([objective] + sorted(coverages[objective][self.budgetMultiples[0]].keys()))
@@ -464,7 +462,6 @@ class Optimisation:
                     w.writerow([multiple] + coverage.values())
 
     def writeOutcomesToCSV(self, reference, current, optimised):
-        import csv
         allOutcomes = {}
         for objective in self.objectives:
             allOutcomes[objective] = {}
@@ -474,7 +471,7 @@ class Optimisation:
         filename = '{}/{}_outcomes.csv'.format(self.resultDir, self.name)
         budgets = ['reference spending', 'current spending'] + self.budgetMultiples
         with open(filename, 'wb') as f:
-            w = csv.writer(f)
+            w = writer(f)
             for objective in self.objectives:
                 w.writerow([objective])
                 for multiple in budgets:
@@ -482,8 +479,6 @@ class Optimisation:
                     w.writerow(['', multiple, outcome])
 
     def writeAllocationsToCSV(self, reference, current, optimised):
-        import csv
-        from collections import OrderedDict
         allSpending = {}
         for objective in self.objectives:  # do i use this loop?
             allSpending[objective] = {}
@@ -492,7 +487,7 @@ class Optimisation:
             allSpending[objective].update(optimised[objective])
         filename = '{}/{}_allocations.csv'.format(self.resultDir, self.name)
         with open(filename, 'wb') as f:
-            w = csv.writer(f)
+            w = writer(f)
             sortedRef = OrderedDict(sorted(reference.items()))
             w.writerow(['reference'] + sortedRef.keys())
             w.writerow([''] + sortedRef.values())
@@ -822,7 +817,6 @@ class BudgetScenarios:
         which details the current expenditure by region, and all the optimisation scenarios.
         :return:
         """
-        import pandas as pd
         thisSheet = pd.read_excel(self.filePath, 'Optimal funding scenario', index_col=[0])
         thisSheet = thisSheet.drop(['Current spending description', 'Additional spending description'], 1)
         scenarios = {}

@@ -1,4 +1,7 @@
 from copy import deepcopy as dcp
+from math import pow
+from numpy import sqrt, isnan, polyfit, isfinite, array
+from scipy.special import ndtri, ndtr # these are much faster than calling scipy.stats.norm
 
 class Box:
     def __init__(self, populationSize):
@@ -382,7 +385,6 @@ class ChildAgeGroup(object):
         return sum(self.const.RRdiarrhoea[bfCat][self.age] * self.bfDist[bfCat] for bfCat in self.const.bfList)
 
     def _getAverageOR(self, Za, risk):
-        from math import pow
         RRnot = self.const.RRdiarrhoea['none'][self.age]
         if risk == 'Stunting':
             OR = self.const.ORcondition['OR stunting by condition']['Diarrhoea'][self.age]
@@ -410,23 +412,6 @@ class ChildAgeGroup(object):
             AO = self._getAverageOR(Zt, wastingCat)
             Omega0 = self.probConditionalDiarrhoea[wastingCat]['no diarrhoea']
             self.probConditionalDiarrhoea[wastingCat]['diarrhoea'] = Omega0 * AO / (1. - Omega0 + AO * Omega0)
-
-    # def restratify(self, fractionYes): # TODO: may not be the best place for this. Model?
-    #     # Going from binary stunting/wasting to four fractions
-    #     # Yes refers to more than 2 standard deviations below the global mean/median
-    #     # in our notes, fractionYes = alpha
-    #     invCDFalpha = norm.ppf(fractionYes)
-    #     fractionHigh     = norm.cdf(invCDFalpha - 1.)
-    #     fractionModerate = fractionYes - norm.cdf(invCDFalpha - 1.)
-    #     fractionMild     = norm.cdf(invCDFalpha + 1.) - fractionYes
-    #     fractionNormal   = 1. - norm.cdf(invCDFalpha + 1.)
-    #     restratification = {}
-    #     restratification["normal"] = fractionNormal
-    #     restratification["mild"] = fractionMild
-    #     restratification["moderate"] = fractionModerate
-    #     restratification["high"] = fractionHigh
-    #     return restratification
-
 
 class Newborn(ChildAgeGroup):
     def __init__(self, age, populationSize, boxes, anaemiaDist, incidences, stuntingDist, wastingDist, BFdist,
@@ -468,7 +453,6 @@ class Population(object):
         # solves quadratic to calculate probabilities where e.g.:
         # fracA is fraction covered by intervention
         # fracB is fraction of pop. in a particular risk status
-        from numpy import sqrt
         eps = 1.e-5
         a = (1. - fracA) * (1. - oddsRatio)
         b = (oddsRatio - 1) * fracB - oddsRatio * fracA - (1. - fracA)
@@ -702,15 +686,16 @@ class Children(Population):
         return totalThisCat/totalPop
 
     def restratify(self, fractionYes):
-        from scipy.stats import norm
         # Going from binary stunting/wasting to four fractions
         # Yes refers to more than 2 standard deviations below the global mean/median
         # in our notes, fractionYes = alpha
-        invCDFalpha = norm.ppf(fractionYes)
-        fractionHigh     = norm.cdf(invCDFalpha - 1.)
-        fractionModerate = fractionYes - norm.cdf(invCDFalpha - 1.)
-        fractionMild     = norm.cdf(invCDFalpha + 1.) - fractionYes
-        fractionNormal   = 1. - norm.cdf(invCDFalpha + 1.)
+        if fractionYes > 1:
+            fractionYes = 1
+        invCDFalpha = ndtri(fractionYes)
+        fractionHigh     = ndtr(invCDFalpha - 1.)
+        fractionModerate = fractionYes - ndtr(invCDFalpha - 1.)
+        fractionMild     = ndtr(invCDFalpha + 1.) - fractionYes
+        fractionNormal   = 1. - ndtr(invCDFalpha + 1.)
         restratification = {}
         restratification["normal"] = fractionNormal
         restratification["mild"] = fractionMild
@@ -985,7 +970,6 @@ class Children(Population):
         return [A,B,C,D,E]
 
     def _getBaselineProbabilityViaQuartic(self, coEffs):
-        from numpy import sqrt, isnan
         baselineProbability = 0
         # if any CoEffs are nan then baseline prob is -E (initial % stunted)
         if isnan(coEffs).any():
@@ -1031,7 +1015,6 @@ class Children(Population):
         return baselineProbability
 
     def _evalQuartic(self, p0, coEffs):
-        from math import pow
         A,B,C,D,E = coEffs
         return A*pow(p0,4) + B*pow(p0,3) + C*pow(p0,2) + D*p0 + E
 
@@ -1041,7 +1024,6 @@ class Children(Population):
             ageGroup.programEffectiveness = self.project.childPrograms[age]
 
     def _setAnnualPrevChange(self):
-        from numpy import polyfit, isfinite, array
         for risk in ['Stunting', 'Wasting', 'Anaemia']:
             for ageGroup in self.ageGroups:
                 age = ageGroup.age
@@ -1090,7 +1072,6 @@ class PregnantWomen(Population):
             ageGroup.programEffectiveness = self.project.PWprograms[age]
 
     def _setAnnualPrevChange(self):
-        from numpy import polyfit, isfinite, array
         for risk in ['Anaemia']:
             for ageGroup in self.ageGroups:
                 age = ageGroup.age
@@ -1267,7 +1248,6 @@ class NonPregnantWomen(Population):
                 for prog in self.const.famPlanMethods.iterkeys())
 
     def _setAnnualPrevChange(self):
-        from numpy import polyfit, isfinite, array
         for risk in ['Anaemia']:
             for ageGroup in self.ageGroups:
                 age = ageGroup.age
