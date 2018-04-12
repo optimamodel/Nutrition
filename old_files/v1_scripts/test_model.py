@@ -3,8 +3,8 @@
 import os
 import unittest
 import data
-import helper
-from copy import deepcopy as dcp
+from old_files import helper
+
 
 def setupDataModelDerivedParameters():
     cwd = os.getcwd()

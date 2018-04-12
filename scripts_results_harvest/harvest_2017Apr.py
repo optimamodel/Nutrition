@@ -39,8 +39,8 @@ for outcomeOfInterest in outcomeOfInterestList:
     
 # GET COVERAGE INFO FOR THE CASCADE
 import pickle    
-import data 
-import costcov
+import data
+from old_files import costcov
 import csv
 costCov = costcov.Costcov()
 thisOptimisation = optimisation.Optimisation(dataSpreadsheetName, numModelSteps, optimise, resultsFileStem)

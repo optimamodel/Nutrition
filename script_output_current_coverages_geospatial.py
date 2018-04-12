@@ -7,8 +7,7 @@ Created on Tue Oct  4 11:13:27 2016
 import optimisation
 import data 
 import pickle
-import helper
-import costcov
+from old_files import costcov, helper
 
 costCov = costcov.Costcov()
 helper = helper.Helper()

@@ -12,7 +12,8 @@ how to translate a cost into a coverage
 """
 import data
 from copy import deepcopy as dcp
-import helper
+from old_files import helper
+
 helper = helper.Helper()
 
 numModelSteps = 180 # this is 12 months times 15 years

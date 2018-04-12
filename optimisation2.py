@@ -13,7 +13,7 @@ def returnAlphabeticalDictionary(dictionary):
     return dictionaryOrdered 
 
 def getTotalInitialAllocation(data, costCoverageInfo, targetPopSize):
-    import costcov
+    from old_files import costcov
     from copy import deepcopy as dcp
     costCov = costcov.Costcov()
     allocation = []
@@ -34,7 +34,7 @@ def rescaleAllocation(totalBudget, allocation):
 
 def generateCostCurves(data, model, keyList, dataSpreadsheetName, costCoverageInfo, curveType, resultsFileStem=None, budget=None, cascade=None, scale=True):
     '''Generates & stores cost curves in dictionary by intervention.'''
-    import costcov
+    from old_files import costcov
     costCov = costcov.Costcov()
     targetPopSize = getTargetPopSizeFromModelInstance(dataSpreadsheetName, keyList, model)
     costCurvesDict = {}
@@ -46,7 +46,7 @@ def generateCostCurves(data, model, keyList, dataSpreadsheetName, costCoverageIn
     return costCurvesDict
 
 def runModelForNTimeSteps(timesteps, spreadsheetData, model, saveEachStep=False):
-    import helper
+    from old_files import helper
     from copy import deepcopy as dc
     helper = helper.Helper()
     modelList = []
@@ -60,8 +60,8 @@ def runModelForNTimeSteps(timesteps, spreadsheetData, model, saveEachStep=False)
     return model, modelList
 
 def getTargetPopSizeFromModelInstance(dataSpreadsheetName, keyList, model):    
-    import data 
-    import helper
+    import data
+    from old_files import helper
     thisHelper = helper.Helper()
     spreadsheetData = data.readSpreadsheet(dataSpreadsheetName, keyList)        
     targetPopSize = {}
@@ -185,7 +185,7 @@ class OutputClass:
 
 class Optimisation:
     def __init__(self, dataSpreadsheetName, numModelSteps, optimise, resultsFileStem, costCurveType):
-        import helper       
+        from old_files import helper
         self.dataSpreadsheetName = dataSpreadsheetName
         self.spreadsheetData = None
         self.numModelSteps = numModelSteps
@@ -205,8 +205,7 @@ class Optimisation:
             self.spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         
     def performSingleOptimisation(self, MCSampleSize, haveFixedProgCosts):
-        import data 
-        import pickle
+        import data
         if self.spreadsheetData is None:
             self.spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         costCoverageInfo = self.getCostCoverageInfo()  
@@ -228,9 +227,8 @@ class Optimisation:
         self.runOnce(MCSampleSize, xmin, args, self.spreadsheetData.interventionList, totalBudget, self.resultsFileStem+'.pkl')
         
     def performSingleOptimisationForGivenTotalBudget(self, MCSampleSize, totalBudget, filename, haveFixedProgCosts):
-        import data 
-        import pickle
-        if self.spreadsheetData is None:        
+        import data
+        if self.spreadsheetData is None:
             self.spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        
         costCoverageInfo = self.getCostCoverageInfo()  
         xmin = [0.] * len(self.spreadsheetData.interventionList)
@@ -500,8 +498,8 @@ class Optimisation:
         return costCoverageInfo
         
     def getInitialTargetPopSize(self):
-        import data 
-        import helper
+        import data
+        from old_files import helper
         thisHelper = helper.Helper()
         if self.spreadsheetData is None:
             self.spreadsheetData = data.readSpreadsheet(self.dataSpreadsheetName, self.helper.keyList)        

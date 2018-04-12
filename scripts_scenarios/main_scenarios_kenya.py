@@ -5,14 +5,13 @@ Created on Wed Feb 24 13:49:18 2016
 @author: ruthpearson
 """
 from __future__ import division
-from copy import deepcopy as dcp
 import pickle as pickle
 
 import os, sys
 moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
 import data
-import helper
+from old_files import helper
 import output
 
 helper = helper.Helper()

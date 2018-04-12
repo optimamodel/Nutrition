@@ -1,7 +1,7 @@
 import os
 import unittest
 import data
-import helper
+from old_files import helper
 from copy import deepcopy as dcp
 
 # This script will test code in derived.py

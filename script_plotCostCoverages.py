@@ -5,9 +5,8 @@ Created on Tue May 16 16:28:10 2017
 @author: ruth
 """
 
-import costcov
+from old_files import costcov, helper
 import optimisation
-import helper
 import data
 costCov = costcov.Costcov()
 helper = helper.Helper()

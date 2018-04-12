@@ -1,7 +1,6 @@
 import os
 import unittest
-import numpy as np
-import helper
+from old_files import helper
 import data
 
 # This script will test code in helper.py

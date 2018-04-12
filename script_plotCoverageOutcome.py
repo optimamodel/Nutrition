@@ -7,7 +7,7 @@ Created on Thu May 18 11:51:19 2017
 import matplotlib.pyplot as plt
 import numpy as np
 from copy import deepcopy as dcp
-import helper
+from old_files import helper
 import data
 import csv
 import optimisation

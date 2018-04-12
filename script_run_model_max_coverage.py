@@ -7,7 +7,6 @@ Created on Thu Oct  6 16:59:18 2016
 
 import data
 from copy import deepcopy as dcp
-import helper
 import numpy as np
 import optimisation
 import csv
@@ -153,9 +152,9 @@ with open(outfilename, "wb") as f:
 
 
 # calculate cost of full coverage and write to CSV
-import costcov
+from old_files import costcov, helper
+
 costCov = costcov.Costcov()
-import helper
 helper = helper.Helper()
 optimise = 'dummy1'
 resultsFileStem = 'dummy2'

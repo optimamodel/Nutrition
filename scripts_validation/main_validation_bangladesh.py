@@ -5,14 +5,13 @@ Created on Wed June 15 2016
 @author: madhurakilledar
 """
 from __future__ import division
-from copy import deepcopy as dcp
 import pickle as pickle
 
 import os, sys
 moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
 import data
-import helper
+from old_files import helper
 import output
 
 helper = helper.Helper()
@@ -229,7 +228,6 @@ output.getCombinedPlots(run, plotData, startYear=startYear, filenamePrefix=filen
 
 #------------------------------------------------------------------------    
 
-import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.ticker import FuncFormatter
 from matplotlib import rcParams

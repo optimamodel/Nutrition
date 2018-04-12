@@ -8,7 +8,7 @@ import unittest
 import numpy
 
 import data as data
-import helper as helper
+from old_files import helper as helper
 
 
 def setupDataModelDerivedParameters():

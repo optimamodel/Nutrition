@@ -61,7 +61,7 @@ def getInitialTargetPopSize(dataSpreadsheetName, helper):
     return targetPopSize    
 
 def getTotalInitialAllocation(data, costCoverageInfo, targetPopSize):
-    import costcov
+    from old_files import costcov
     from copy import deepcopy as dcp
     costCov = costcov.Costcov()
     allocation = []
@@ -94,8 +94,8 @@ def getTargetPopSizeFromModelInstance(dataSpreadsheetName, keyList, model):
     return targetPopSize    
 
 def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimise, numModelSteps, dataSpreadsheetName, data):
-    import helper 
-    import costcov
+    from old_files import helper
+    from old_files import costcov
     helper = helper.Helper()
     costCov = costcov.Costcov()
     model, derived, params = helper.setupModelConstantsParameters(data)
@@ -136,9 +136,11 @@ def cascadeFunc(cascadeValue):
     print '############ CASCADE VALUE:  ', cascadeValue,'  #################'
     totalBudget = currentTotalBudget * cascadeValue
     args = {'totalBudget':totalBudget, 'costCoverageInfo':costCoverageInfo, 'optimise':optimise, 'numModelSteps':numModelSteps, 'dataSpreadsheetName':dataSpreadsheetName, 'data':spreadsheetData}    
-    runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, filename+str(cascadeValue)+'.pkl')                   
+    runOnce(MCSampleSize, xmin, args, spreadsheetData.interventionList, totalBudget, filename+str(cascadeValue)+'.pkl')
 
-import helper       
+
+from old_files import helper
+
 dataSpreadsheetName = 'input_spreadsheets/Bangladesh/subregionSpreadsheets/Barisal.xlsx'
 numModelSteps = 24
 helper = helper.Helper()

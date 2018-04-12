@@ -30,15 +30,12 @@ and cases of stunting averted relative to baseline (scenario #1)
 """
 from __future__ import division
 from copy import deepcopy as dcp
-from numpy import array
 
 import os, sys
 moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
 import data
-import helper
-import output
-import costcov
+from old_files import costcov, helper
 
 helper = helper.Helper()
 costCov = costcov.Costcov()

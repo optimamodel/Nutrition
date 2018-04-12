@@ -26,7 +26,7 @@ from gzip import GzipFile
 from cStringIO import StringIO
 from contextlib import closing
 
-import costcov
+from old_files import costcov
 import optimisation2
     
 #

@@ -7,7 +7,8 @@ sys.path.append(moduleDir)
 
 import data
 from copy import deepcopy as dcp
-import helper
+from old_files import helper
+
 helper = helper.Helper()
 
 def runModelGivenCoverage(intervention, coverage, spreadsheetData, zeroCoverages):

@@ -12,7 +12,7 @@ sys.path.append(moduleDir)
 
 import data
 from copy import deepcopy as dcp
-import helper
+from old_files import helper
 import matplotlib.pyplot as plt
 import numpy as np
 helper = helper.Helper()

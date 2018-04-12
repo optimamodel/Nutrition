@@ -12,7 +12,7 @@ moduleDir = os.path.join(os.path.dirname(__file__), rootpath)
 sys.path.append(moduleDir)
 
 import data
-import helper
+from old_files import helper
 import csv
 thisHelper = helper.Helper()
 spreadsheet = rootpath + 'input_spreadsheets/Bangladesh/2017Nov/InputForCode_Bangladesh.xlsx'
