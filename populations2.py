@@ -1,4 +1,3 @@
-from itertools import product
 from copy import deepcopy as dcp
 
 class Box:

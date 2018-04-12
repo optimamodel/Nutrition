@@ -16,7 +16,7 @@ class Project:
     #####--- WRAPPER METHODS ---######
 
     def readAllData(self):
-        self.readProgramData() # TODO: program dependencies for IYCF not set properly b/c they are set-up later. Order may matter, need to check. Hacky fix is to add them to program dependcies sheet.
+        self.readProgramData() # TODO: check program dependencies for IYCF
         self.readDemographicsData()
         self.readMortalityData()
         self.getAllIYCFpackages()
