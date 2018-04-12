@@ -19,11 +19,10 @@ def getFilePath(root, country, name):
 def getResultsDir(root, country, analysisType):
     today = date.today()
     thisDate = today.strftime('%Y%b%d')
-    resultsPath = '{}Results/{}/{}/{}'.format(root, country, analysisType, thisDate)
+    resultsPath = os.path.join(root, 'Results', country, analysisType, thisDate)
     return resultsPath
 
 if __name__ == '__main__':
     filePath = getFilePath('', 'Master', 'Master')
     model = setUpModel(filePath)
     model.runSimulationFromWorkbook()
-    print "YAY, IT WORKED!"
