@@ -219,7 +219,7 @@ class Optimisation:
 
     def parallelRun(self, newBudgets):
         jobs = self.getJobs(newBudgets)
-        self.runJobs(jobs)
+        runJobs(jobs, self.numCPUs)
         return
 
     def seriesRun(self, newBudgets):
@@ -246,18 +246,6 @@ class Optimisation:
                 p = Process(target=self.runOptimisation, args=(multiple, objective))
                 jobs.append(p)
         return jobs
-
-    def runJobs(self, jobs): # TODO: version of this in module scope now
-        while jobs:
-            thisRound = min(self.numCPUs, len(jobs))
-            for process in range(thisRound):
-                p = jobs[process]
-                p.start()
-            for process in range(thisRound): # this loop ensures this round waits until processes are finished
-                p = jobs[process]
-                p.join()
-            jobs = jobs[thisRound:]
-        return
 
     def runOptimisation(self, multiple, objective):
         kwargs = dcp(self.kwargs)
