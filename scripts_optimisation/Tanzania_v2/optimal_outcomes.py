@@ -13,9 +13,9 @@ regions = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Kaskazini_Pemba', 'Kaskazini_Un
            'Kilimanjaro', 'Kusini_Pemba', 'Kusini_Unguja', 'Lindi', 'Manyara', 'Mara', 'Mjini_Magharibi',
            'Morogoro', 'Mtwara', 'Pwani', 'Rukwa', 'Ruvuma', 'Simiyu', 'Singida', 'Tabora', 'Tanga']
 
-date = '2018Apr08'
-# scenarios = ['optimisedCurrent', 'additionalPerCapita', 'scenario1', 'scenario3']
-scenarios = ['additionalPerCapita', 'scenario1']
+date = '2018Apr10'
+scenarios = ['optimisedCurrent', 'additionalPerCapita', 'scenario1', 'scenario3']
+# scenarios = ['additionalPerCapita', 'scenario1']
 objective = 'healthy_children'
 outcomes = ['healthy_children', 'total_stunted', 'wasting_prev', 'anaemia_prev_children', 'deaths_children',
             'neonatal_deaths', 'child_population']
@@ -55,7 +55,7 @@ with open('optimised_outputs.csv', 'wb') as f:
         w.writerow([])
 
     # second 2 optimisations
-    for scenario in scenarios[2:3]: # TODO: change slice when 3 is completed
+    for scenario in scenarios[2:]:
         w.writerow([scenario])
         w.writerow(['Region'] + outcomes)
         for region in regions:
