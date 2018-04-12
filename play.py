@@ -13,7 +13,7 @@ def setUpProject(filePath):
 def getFilePath(root, country, name):
     moduleDir = os.path.join(os.path.dirname(__file__), root)
     sys.path.append(moduleDir)
-    filePath = '{}/input_spreadsheets/{}/InputForCode_{}.xlsx'.format(root, country, name)
+    filePath = os.path.join(root, 'input_spreadsheets', country, 'InputForCode_{}.xlsx'.format(name))
     return filePath
 
 def getResultsDir(root, country, analysisType):
@@ -23,7 +23,7 @@ def getResultsDir(root, country, analysisType):
     return resultsPath
 
 if __name__ == '__main__':
-    # filePath = getFilePath('', 'Master', 'Master')
-    filePath = '/Users/samhainsworth/Desktop/Github Projects/Nutrition/input_spreadsheets/Tanzania/regions/InputForCode_Kaskazini_Unguja.xlsx'
+    filePath = getFilePath('', 'Master', 'Master')
     model = setUpModel(filePath)
     model.runSimulationFromWorkbook()
+    print "YAY, IT WORKED!"
