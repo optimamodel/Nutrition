@@ -10,16 +10,16 @@ def setUpModel(filePath, numYears=None, adjustCoverage=False, optimise=False, ca
 def setUpProject(filePath):
     return data.setUpProject(filePath)
 
-def getFilePath(root, country, name):
+def getFilePath(root, analysisType, name):
     moduleDir = os.path.join(os.path.dirname(__file__), root)
     sys.path.append(moduleDir)
-    filePath = os.path.join(root, 'input_spreadsheets', country, 'InputForCode_{}.xlsx'.format(name))
+    filePath = os.path.join(root, 'data', analysisType, 'InputForCode_{}.xlsx'.format(name))
     return filePath
 
-def getResultsDir(root, country, analysisType):
+def getResultsDir(root, country, scenario):
     today = date.today()
     thisDate = today.strftime('%Y%b%d')
-    resultsPath = os.path.join(root, 'Results', country, analysisType, thisDate)
+    resultsPath = os.path.join(root, 'Results', country, scenario, thisDate)
     return resultsPath
 
 if __name__ == '__main__':
