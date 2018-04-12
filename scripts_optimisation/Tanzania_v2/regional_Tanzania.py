@@ -3,7 +3,7 @@ import os, sys
 root = '../..'
 moduleDir = os.path.join(os.path.dirname(__file__), root)
 sys.path.append(moduleDir)
-import optimisation3 as optimisation
+import optimisation
 import play
 from csv import writer
 from multiprocessing import Process
