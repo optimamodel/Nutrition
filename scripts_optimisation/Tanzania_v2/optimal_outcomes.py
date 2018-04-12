@@ -3,10 +3,8 @@ import os, sys
 root = '../..'
 moduleDir = os.path.join(os.path.dirname(__file__), root)
 sys.path.append(moduleDir)
-import play
-from copy import deepcopy as dcp
 import pickle
-import optimisation3 as optim
+import optimisation as optim
 import csv
 
 regions = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Kaskazini_Pemba', 'Kaskazini_Unguja', 'Katavi',

@@ -2,7 +2,7 @@ import os, sys
 root = '../..'
 moduleDir = os.path.join(os.path.dirname(__file__), root)
 sys.path.append(moduleDir)
-import optimisation3 as optimisation
+import optimisation
 from multiprocessing import Process
 from datetime import date
 import csv
