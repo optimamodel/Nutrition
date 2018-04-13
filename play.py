@@ -16,10 +16,10 @@ def getFilePath(root, analysisType, name):
     filePath = os.path.join(root, 'data', analysisType, 'InputForCode_{}.xlsx'.format(name))
     return filePath
 
-def getResultsDir(root, country, scenario):
+def getResultsDir(root, analysisType, scenario):
     today = date.today()
     thisDate = today.strftime('%Y%b%d')
-    resultsPath = os.path.join(root, 'Results', country, scenario, thisDate)
+    resultsPath = os.path.join(root, 'results', thisDate, analysisType, scenario)
     return resultsPath
 
 if __name__ == '__main__': # this is just for testing

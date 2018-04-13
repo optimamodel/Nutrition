@@ -86,8 +86,9 @@ class Optimisation:
         if resultsPath:
             self.resultsDir = resultsPath
         else:
-            self.resultsDir = play.getResultsDir(root='', country=self.name, scenario=scenario)
-        self.model = play.setUpModel(filePath, adjustCoverage=False, optimise=True, numYears=numYears)  # model has already moved 1 year
+            self.resultsDir = play.getResultsDir(root='', analysisType=analysisType, scenario=scenario)
+        self.model = play.setUpModel(filePath, adjustCoverage=False, optimise=True,
+                                     numYears=numYears)  # model has already moved 1 year
         self.budgetMultiples = budgetMultiples
         self.objectives = objectives
         self.fixCurrentAllocations = fixCurrentAllocations
@@ -526,7 +527,7 @@ class GeospatialOptimisation:
         return nationalFunds
 
     def readBOC(self, region, objective):
-        filename = os.path.join(self.newResultsDir, 'BOCs', objective, 'pickles', region+'.csv')
+        filename = os.path.join(self.newResultsDir, 'BOCs', objective, 'pickles', region + '.csv')
         with open(filename, 'rb') as f:
             regionalSpending = []
             regionalOutcome = []
@@ -570,7 +571,7 @@ class GeospatialOptimisation:
 
     def writeBudgetOutcome(self, region, objective, resultsPath):
         spending, outcome = region.getBOCvectors(objective, self.budgetMultiples)
-        filename = os.path.join(resultsPath, region.name+'.csv')
+        filename = os.path.join(resultsPath, region.name + '.csv')
         with open(filename, 'wb') as f:
             w = writer(f)
             w.writerow(['spending', 'outcome'])
@@ -582,9 +583,8 @@ class GeospatialOptimisation:
             fileInfo = [self.root, self.analysisType, name, '']
             resultsPath = os.path.join(self.newResultsDir, 'BOCs', objective, 'pickles')
             thisRegion = Optimisation(self.objectives, self.budgetMultiples, fileInfo, resultsPath=resultsPath,
-                                      fixCurrentAllocations=fixCurrent,
-                                      removeCurrentFunds=False, additionalFunds=additionalFunds, numYears=self.numYears,
-                                      filterProgs=False)
+                                      fixCurrentAllocations=fixCurrent, removeCurrentFunds=False,
+                                      additionalFunds=additionalFunds, numYears=self.numYears, filterProgs=False)
             regions.append(thisRegion)
         return regions
 
@@ -592,10 +592,12 @@ class GeospatialOptimisation:
         for scenario, options in self.scenarios.iteritems():
             fixBetween, fixWithin, replaceCurrent, additionalFunds = options
             formScenario = scenario.lower().replace(' ', '')
-            self.newResultsDir = os.path.join(self.resultsDir, formScenario, str(int(additionalFunds / 1e6))+'m')
+            self.newResultsDir = os.path.join(self.resultsDir, self.analysisType, formScenario,
+                                              str(int(additionalFunds / 1e6)) + 'm')
             for objective in self.objectives:
                 # first distribute funds between regions
-                self.getRegionalBOCs(objective, fixWithin, additionalFunds)  # specifies if current funding is fixed within a region
+                self.getRegionalBOCs(objective, fixWithin,
+                                     additionalFunds)  # specifies if current funding is fixed within a region
                 optimalDistribution = self.distributeFunds(objective, options)
                 # optimise within each region
                 regions = self.optimiseAllRegions(optimalDistribution, objective, options)
@@ -710,7 +712,7 @@ class GeospatialOptimisation:
             adjustedSpending = regionalSpending - minSpending  # centers spending if current is fixed
             spendingVec.append(adjustedSpending)
             # use non-adjusted spending b/c we don't necessarily want to start at 0
-            costEffectiveness = thisDeriv(regionalSpending)  # TODO: if we have a DECREASING FUNC (Like deaths etc) need to be negative
+            costEffectiveness = thisDeriv(regionalSpending)  # needs to be neg if have decreasing func
             costEffVecs.append(costEffectiveness)
         return costEffVecs, spendingVec
 
@@ -722,12 +724,11 @@ class GeospatialOptimisation:
         jobs = []
         for i, name in enumerate(self.regionNames):
             regionalFunds = optimisedSpending[i]
-            resultsDir = os.path.join(self.newResultsDir,'pickles')
-            fileInfo = [self.root, self.analysisType, name, '' ]
+            resultsDir = os.path.join(self.newResultsDir, 'pickles')
+            fileInfo = [self.root, self.analysisType, name, '']
             newOptim = Optimisation([objective], budgetMultiple, fileInfo, resultsPath=resultsDir,
                                     fixCurrentAllocations=fixWithin, removeCurrentFunds=replaceCurrent,
-                                    additionalFunds=regionalFunds,
-                                    numYears=self.numYears, filterProgs=False)
+                                    additionalFunds=regionalFunds, numYears=self.numYears, filterProgs=False)
             newRegions.append(newOptim)
             p = Process(target=newOptim.optimise)
             jobs.append(p)
@@ -737,7 +738,7 @@ class GeospatialOptimisation:
     def collateAllResults(self, regions, objective):
         """collates all regional output from pickle files
         Uses append file method to avoid over-writing"""
-        filename = os.path.join(self.newResultsDir, 'regional_allocations_'+objective+'.csv')
+        filename = os.path.join(self.newResultsDir, 'regional_allocations_' + objective + '.csv')
         # write the programs to row for each objective
         self.writeRefAndCurrentAllocations(regions, filename)
         sortedProgs = sorted([prog.name for prog in regions[0].programs])
@@ -778,8 +779,9 @@ class GeospatialOptimisation:
 
     def getTotalFreeFunds(self, regions):
         """ Need to wait the additional funds by number of regions so we don't have too much money"""
-        return sum(region.additionalFunds / len(regions) + sum(region.currentAllocations) - sum(region.fixedAllocations)
-                   for region in regions)
+        return sum(
+            region.additionalFunds / len(regions) + sum(region.currentAllocations) - sum(region.fixedAllocations) for
+            region in regions)
 
 
 class BudgetScenarios:
@@ -813,4 +815,3 @@ class BudgetScenarios:
             if pd.notnull(row[1]):
                 scenarios[scenario] = self.allScenarios[scenario] + [row[0]]  # adding funds
         return scenarios
-
