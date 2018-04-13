@@ -1,4 +1,5 @@
 import os, sys
+
 root = '..'
 moduleDir = os.path.join(os.path.dirname(__file__), root)
 sys.path.append(moduleDir)
@@ -10,7 +11,7 @@ fileInfo = [root, 'national', 'Tanzania', '']
 additionalFunds = 1e7
 
 if __name__ == '__main__':
-    thisOptimisation = optimisation.Optimisation(objectives, budgetMultiples, fileInfo,
-                                                 additionalFunds=additionalFunds, filterProgs=True)
+    thisOptimisation = optimisation.Optimisation(objectives, budgetMultiples, fileInfo, additionalFunds=additionalFunds,
+                                                 filterProgs=True)
     thisOptimisation.optimise()
     thisOptimisation.writeAllResults()
