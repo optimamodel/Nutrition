@@ -78,15 +78,15 @@ def objectiveFunction(allocation, objective, model, freeFunds, fixedAllocations,
 class Optimisation:
     def __init__(self, objectives, budgetMultiples, fileInfo, resultsPath=None, fixCurrentAllocations=False,
                  additionalFunds=0, removeCurrentFunds=False, numYears=None, costCurveType='linear',
-                 parallel=True, numCPUs=None, numRuns=1, filterProgs=True):
+                 parallel=True, numCPUs=None, numRuns=1, filterProgs=True, createResultsDir=True):
         root, analysisType, name, scenario = fileInfo
         self.name = name
         filePath = play.getFilePath(root=root, analysisType=analysisType, name=name)
-        if not resultsPath:
-            resultsPath = play.getResultsDir(root=root, country=self.name, scenario=scenario)
-        self.createDirectory(resultsPath)  # TODO: probably only want this to happen when calling 'optimise'
-        self.model = play.setUpModel(filePath, adjustCoverage=False, optimise=True,
-                                     numYears=numYears)  # model has already moved 1 year
+        if resultsPath:
+            self.resultsDir = resultsPath
+        else:
+            self.resultsDir = play.getResultsDir(root='', country=self.name, scenario=scenario)
+        self.model = play.setUpModel(filePath, adjustCoverage=False, optimise=True, numYears=numYears)  # model has already moved 1 year
         self.budgetMultiples = budgetMultiples
         self.objectives = objectives
         self.fixCurrentAllocations = fixCurrentAllocations
@@ -108,14 +108,15 @@ class Optimisation:
         self.calculateAllocations(fixCurrentAllocations)
         self.kwargs = {'model': self.model,
                        'freeFunds': self.freeFunds, 'fixedAllocations': self.fixedAllocations}
+        if createResultsDir:
+            self.createDirectory(self.resultsDir)
 
     ######### FILE HANDLING #########
 
-    def createDirectory(self, resultsPath):
-        # check that results directory exists and if not then create it
-        self.resultDir = resultsPath
-        if not os.path.exists(self.resultDir):
-            os.makedirs(self.resultDir)
+    def createDirectory(self, resultsDir):
+        # create directory if necessary
+        if not os.path.exists(resultsDir):
+            os.makedirs(resultsDir)
 
     ######### SETUP ############
 
@@ -213,9 +214,7 @@ class Optimisation:
     ######### OPTIMISATION ##########
 
     def optimise(self):
-        print ""
-        print "::STARTING NEW REGION::"
-        print self.name
+        print 'Optimising for {}'.format(self.name)
         newBudgets = self.checkForZeroBudget()
         if self.parallel:
             self.parallelRun(newBudgets)
@@ -265,17 +264,8 @@ class Optimisation:
             runOutputs = []
             for run in range(self.numRuns):
                 now = time.time()
-                x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=100, swarmsize=50)
-                x, fval, flag = asd.asd(objectiveFunction, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=0)
-                print " "
-                print "FINISHED OPTIMISATION FOR: "
-                print "REGION: " + str(self.name)
-                print "Objective: " + str(objective)
-                print "Multiple: " + str(multiple)
-                print flag['exitreason']
-                print str((time.time() - now) / (60 * 60)) + ' hours'
-                print "----------"
                 runOutputs.append((x, fval[-1]))
+                self.printMessages(objective, multiple, flag, now)
             bestAllocation = self.findBestAllocation(runOutputs)
             scaledAllocation = rescaleAllocation(kwargs['freeFunds'], bestAllocation)
             totalAllocation = _addFixedAllocations(self.fixedAllocations, scaledAllocation, kwargs['indxToKeep'])
@@ -285,6 +275,10 @@ class Optimisation:
             bestAllocationDict = self.createDictionary(self.fixedAllocations)
         self.writeToPickle(bestAllocationDict, multiple, objective)
         return
+
+    def printMessages(self, objective, multiple, flag, now):
+        print 'Finished optimisation for {} for objective {} and multiple {}'.format(self.name, objective, multiple)
+        print 'The reason is {} and it took {} hours \n'.format(flag['exitreason'], (time.time() - now) / 3600.)
 
     def findBestAllocation(self, outputs):
         bestSample = min(outputs, key=lambda item: item[-1])
@@ -334,7 +328,7 @@ class Optimisation:
         outcome = array([])
         for multiple in budgetMultiples:
             spending = append(spending, multiple * self.freeFunds)
-            filePath = '{}/{}_{}_{}.pkl'.format(self.resultDir, self.name, objective, multiple)
+            filePath = '{}/{}_{}_{}.pkl'.format(self.resultsDir, self.name, objective, multiple)
             f = open(filePath, 'rb')
             thisAllocation = pickle.load(f)
             f.close()
@@ -345,7 +339,7 @@ class Optimisation:
     ########### FILE HANDLING ############
 
     def writeToPickle(self, allocation, multiple, objective):
-        fileName = '{}/{}_{}_{}.pkl'.format(self.resultDir, self.name, objective, multiple)
+        fileName = '{}/{}_{}_{}.pkl'.format(self.resultsDir, self.name, objective, multiple)
         outfile = open(fileName, 'wb')
         pickle.dump(allocation, outfile)
         return
@@ -355,7 +349,7 @@ class Optimisation:
         for objective in self.objectives:
             allocations[objective] = {}
             for multiple in self.budgetMultiples:
-                filename = '{}/{}_{}_{}.pkl'.format(self.resultDir, self.name, objective, multiple)
+                filename = '{}/{}_{}_{}.pkl'.format(self.resultsDir, self.name, objective, multiple)
                 f = open(filename, 'rb')
                 allocations[objective][multiple] = pickle.load(f)
                 f.close()
@@ -451,7 +445,7 @@ class Optimisation:
         return coverages
 
     def writeCoveragesToCSV(self, coverages):
-        filename = '{}/{}_coverages.csv'.format(self.resultDir, self.name)
+        filename = '{}/{}_coverages.csv'.format(self.resultsDir, self.name)
         with open(filename, 'wb') as f:
             w = writer(f)
             for objective in self.objectives:
@@ -468,7 +462,7 @@ class Optimisation:
             allOutcomes[objective].update(reference[objective])
             allOutcomes[objective].update(current[objective])
             allOutcomes[objective].update(optimised[objective])
-        filename = '{}/{}_outcomes.csv'.format(self.resultDir, self.name)
+        filename = '{}/{}_outcomes.csv'.format(self.resultsDir, self.name)
         budgets = ['reference spending', 'current spending'] + self.budgetMultiples
         with open(filename, 'wb') as f:
             w = writer(f)
@@ -485,7 +479,7 @@ class Optimisation:
             allSpending[objective].update(current)
             allSpending[objective].update(reference)
             allSpending[objective].update(optimised[objective])
-        filename = '{}/{}_allocations.csv'.format(self.resultDir, self.name)
+        filename = '{}/{}_allocations.csv'.format(self.resultsDir, self.name)
         with open(filename, 'wb') as f:
             w = writer(f)
             sortedRef = OrderedDict(sorted(reference.items()))
@@ -506,7 +500,7 @@ class Optimisation:
 class GeospatialOptimisation:
     def __init__(self, objectives, root, regionNames, numYears=None, costCurveType='linear'):
         self.root = root
-        self.analysisLevel = 'regional'
+        self.analysisType = 'regional'
         thisDate = date.today().strftime('%Y%b%d')
         self.resultsDir = os.path.join('results', thisDate)
         self.objectives = objectives
@@ -521,8 +515,8 @@ class GeospatialOptimisation:
     def getNationalCurrentSpending(self):
         nationalFunds = 0
         for name in self.regionNames:
-            fileInfo = [self.root, self.analysisLevel, name, '']
-            thisRegion = Optimisation([], [], fileInfo, fixCurrentAllocations=False)
+            fileInfo = [self.root, self.analysisType, name, '']
+            thisRegion = Optimisation([], [], fileInfo, fixCurrentAllocations=False, createResultsDir=False)
             nationalFunds += thisRegion.freeFunds
         return nationalFunds
 
@@ -560,7 +554,7 @@ class GeospatialOptimisation:
     def getBOCjobs(self, regions, objective):
         jobs = []
         for region in regions:
-            resultsPath = region.resultDir
+            resultsPath = region.resultsDir
             prc = Process(target=self.optimiseAndWrite, args=(region, objective, resultsPath))
             jobs.append(prc)
         return jobs
@@ -580,7 +574,7 @@ class GeospatialOptimisation:
     def setUpRegions(self, objective, fixCurrent, additionalFunds):
         regions = []
         for name in self.regionNames:
-            fileInfo = [self.root, self.analysisLevel, name, '']
+            fileInfo = [self.root, self.analysisType, name, '']
             resultsPath = os.path.join(self.newResultsDir, 'BOCs', objective, 'pickles')
             thisRegion = Optimisation(self.objectives, self.budgetMultiples, fileInfo, resultsPath=resultsPath,
                                       fixCurrentAllocations=fixCurrent,
@@ -604,6 +598,7 @@ class GeospatialOptimisation:
                 # self.getOptimalOutcomes(regions, objective)
 
     def getRegionalBOCs(self, objective, fixWithin, additionalFunds):
+        print '...Generating BOCs... \n'
         regions = self.setUpRegions(objective, fixWithin, additionalFunds)
         jobs = self.getBOCjobs(regions, objective)
         maxRegions = int(50 / (len(self.budgetMultiples) - 1))
@@ -715,6 +710,7 @@ class GeospatialOptimisation:
         return costEffVecs, spendingVec
 
     def optimiseAllRegions(self, optimisedSpending, objective, options):
+        print '...Optimising within regions... \n'
         _fixBetween, fixWithin, replaceCurrent, additionalFunds = options
         budgetMultiple = [1]
         newRegions = []
@@ -722,7 +718,7 @@ class GeospatialOptimisation:
         for i, name in enumerate(self.regionNames):
             regionalFunds = optimisedSpending[i]
             resultsDir = os.path.join(self.newResultsDir,'pickles')
-            fileInfo = [self.root, self.analysisLevel, name, '' ]
+            fileInfo = [self.root, self.analysisType, name, '' ]
             newOptim = Optimisation([objective], budgetMultiple, fileInfo, resultsPath=resultsDir,
                                     fixCurrentAllocations=fixWithin, removeCurrentFunds=replaceCurrent,
                                     additionalFunds=regionalFunds,
