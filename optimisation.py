@@ -78,7 +78,8 @@ def objectiveFunction(allocation, objective, model, freeFunds, fixedAllocations,
 class Optimisation:
     def __init__(self, objectives, budgetMultiples, fileInfo, resultsPath=None, fixCurrentAllocations=False,
                  additionalFunds=0, removeCurrentFunds=False, numYears=None, costCurveType='linear',
-                 parallel=True, numCPUs=None, numRuns=1, filterProgs=True, createResultsDir=True):
+                 parallel=True, numCPUs=None, numRuns=1, filterProgs=True, createResultsDir=True, maxIter=100,
+                 swarmSize=50):
         root, analysisType, name, scenario = fileInfo
         self.name = name
         filePath = play.getFilePath(root=root, analysisType=analysisType, name=name)
@@ -93,6 +94,8 @@ class Optimisation:
         self.removeCurrentFunds = removeCurrentFunds
         self.additionalFunds = additionalFunds
         self.filterProgs = filterProgs
+        self.maxIter = maxIter
+        self.swarmSize = swarmSize
         self.BOCs = {}
         self.programs = self.model.programInfo.programs
         self.parallel = parallel
@@ -264,6 +267,8 @@ class Optimisation:
             runOutputs = []
             for run in range(self.numRuns):
                 now = time.time()
+                x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=self.maxIter, swarmsize=self.swarmSize)
+                x, fval, flag = asd.asd(objectiveFunction, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=0)
                 runOutputs.append((x, fval[-1]))
                 self.printMessages(objective, multiple, flag, now)
             bestAllocation = self.findBestAllocation(runOutputs)
