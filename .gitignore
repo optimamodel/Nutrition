@@ -4,7 +4,6 @@
 *.pkl
 *.rds
 *.png
-.*
 .pkl
 *.xls
 *.csv
