@@ -47,7 +47,6 @@ class Constants:
         self.RRinterval = dcp(project.RRinterval)
         self.birthAges = dcp(project.birthAges)
         self.birthAgeProgram = dcp(project.birthAgeProgram)
-        # self.mortalityRates = dcp(project.mortalityRates)
         self.programList = dcp(project.programList)
         self.costCurveInfo = dcp(project.costCurveInfo)
         self.currentExpenditure = dcp(project.currentExpenditure)

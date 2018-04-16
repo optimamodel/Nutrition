@@ -6,26 +6,13 @@ import time
 import cPickle as pickle
 import pandas as pd
 from copy import deepcopy as dcp
-from multiprocessing import cpu_count, Process
+from multiprocessing import cpu_count, Process # TODO: would like to replace with Pool
 from numpy import array, append, linspace, nanargmax, zeros, nonzero, inf
 from scipy.interpolate import pchip
 from csv import writer, reader
 from itertools import izip
 from collections import OrderedDict
 from datetime import date
-
-
-def runModelForNTimeSteps(steps, model):
-    """
-    Progresses the model a given number of steps
-    :param steps: number of steps to iterate (int)
-    :param model:
-    :return: progressed model
-    """
-    for step in range(steps):
-        model.moveModelOneYear()
-    return model
-
 
 def rescaleAllocation(totalBudget, allocation):
     new = sum(allocation)
