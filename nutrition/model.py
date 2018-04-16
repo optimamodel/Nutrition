@@ -504,7 +504,7 @@ class Model:
             ageGroup.updateBFDist()
             ageGroup.updateAnaemiaDist()
 
-    def updateYearlyRiskDists(self):
+    def _updateYearlyRiskDists(self):
         for pop in self.populations[1:]:
             for ageGroup in pop.ageGroups:
                 ageGroup.updateAnaemiaDist()
@@ -528,26 +528,28 @@ class Model:
             self.moveModelOneTimeStep()
         self._applyPWMortality()
         self._updatePWpopulation()
-        self._updateWRApopulation() # TODO should switch these back
-        self.updateYearlyRiskDists()
+        self._updateWRApopulation()
+        self._updateYearlyRiskDists()
 
-    def _updateEverything(self, year): # TODO: can speed this up by writing function which assumes things are constant.
+    def _updateEverything(self, year):
+        # TODO: there are several funcs which do not need to be done every time step unless we are updating coverages every time step.
+        # TODO: Should prevent this updating unless needed
         """Responsible for moving the model, updating year, adjusting coverages and conditional probabilities, applying coverages"""
         self._updateYear(year)
         if self.adjustCoverage:
             self.programInfo._adjustCoveragesForPopGrowth(self.populations, year)
-        self._updateConditionalProbabilities() # TODO: need to do this every timestep? Not for fixed coverages (i.e same at t=n for t=1)
+        self._updateConditionalProbabilities()
         self._resetStorage()
-        self.applyNewProgramCoverages() # TODO: need to do this every timestep?
+        self.applyNewProgramCoverages()
         if self.timeTrends:
-            self._applyPrevTimeTrends() # TODO: Should I move 'restratify' func to end func?
-        self._redistributePopulation() # TODO: need to do this every timestep?
+            self._applyPrevTimeTrends()
+        self._redistributePopulation()
         self.moveModelOneYear()
 
     def _applyPrevTimeTrends(self): # TODO: haven't done mortality yet
         for ageGroup in self.children.ageGroups:
             # stunting
-            probStunted = sum(ageGroup.stuntingDist[cat] for cat in self.constants.stuntedList) # TODO: could put this sort of thing into function
+            probStunted = sum(ageGroup.stuntingDist[cat] for cat in self.constants.stuntedList)
             newProb = probStunted * ageGroup.annualPrevChange['Stunting']
             ageGroup.stuntingDist = self.restratify(newProb)
             # wasting
