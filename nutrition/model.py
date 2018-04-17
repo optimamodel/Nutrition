@@ -26,7 +26,7 @@ class Model:
         if calibrate:
             self.calibrate()
 
-    def _createOutcomeTrackers(self): # TODO: may not need all these each run -- expensive to calculate as currently implemented. Specify at start
+    def _createOutcomeTrackers(self):
         self.annualDeathsChildren = {year: 0 for year in self.constants.allYears}
         self.annualDeathsPW = {year: 0 for year in self.constants.allYears}
         self.ageingOutChildren = {year: 0 for year in self.constants.allYears}
@@ -323,31 +323,20 @@ class Model:
     def _applyChildAgeing(self):
         # TODO: longer term, I think this should be re-written
         # get number ageing out of each age group
-        ageGroups = self.populations[0].ageGroups
-        numAgeGroups = len(ageGroups)
-        ageingOut = [None] * numAgeGroups
-        for idx in range(numAgeGroups):
-            ageGroup = ageGroups[idx]
-            ageingOut[idx] = {}
+        ageGroups = self.children.ageGroups
+        ageingOut = [None] * len(ageGroups)
+        for i, ageGroup in enumerate(ageGroups):
+            ageingOut[i] = {}
             for stuntingCat in self.constants.stuntingList:
-                ageingOut[idx][stuntingCat] = {}
+                ageingOut[i][stuntingCat] = {}
                 for wastingCat in self.constants.wastingList:
-                    ageingOut[idx][stuntingCat][wastingCat] = {}
+                    ageingOut[i][stuntingCat][wastingCat] = {}
                     for bfCat in self.constants.bfList:
-                        ageingOut[idx][stuntingCat][wastingCat][bfCat] = {}
+                        ageingOut[i][stuntingCat][wastingCat][bfCat] = {}
                         for anaemiaCat in self.constants.anaemiaList:
                             thisBox = ageGroup.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat]
-                            ageingOut[idx][stuntingCat][wastingCat][bfCat][anaemiaCat] = thisBox.populationSize * ageGroup.ageingRate
-        oldest = ageGroups[-1]
-        ageingOutStunted = oldest.getAgeGroupNumberStunted() * oldest.ageingRate
-        ageingOutNotStunted = oldest.getAgeGroupNumberNotStunted() * oldest.ageingRate
-        self.ageingOutChildren[self.year] += oldest.getAgeGroupPopulation() * oldest.ageingRate
-        self.annualStunted[self.year] += ageingOutStunted
-        self.annualThrive[self.year] += ageingOutNotStunted
-        self.annualNotAnaemic[self.year] += oldest.getAgeGroupNumberNotAnaemic() * oldest.ageingRate
-        self.annualNotWasted[self.year] += oldest.getAgeGroupNumberNotWasted() * oldest.ageingRate
-        self.annualChildrenAgeingOutHealthly[self.year] += oldest.getAgeGroupNumberHealthy() * oldest.ageingRate
-        self.annualChildrenThreeConditions[self.year] += oldest.getAgeGroupNumberThreeConditions() * oldest.ageingRate
+                            ageingOut[i][stuntingCat][wastingCat][bfCat][anaemiaCat] = thisBox.populationSize * ageGroup.ageingRate
+        self._trackOutcomes()
         # first age group does not have ageing in
         newborns = ageGroups[0]
         for stuntingCat in self.constants.stuntingList:
@@ -358,16 +347,15 @@ class Model:
                         newbornBox.populationSize -= ageingOut[0][stuntingCat][wastingCat][bfCat][anaemiaCat]
 
         # for older age groups, account for previous stunting (binary)
-        for idx in range(1, numAgeGroups):
-            ageGroup = ageGroups[idx]
+        for i, ageGroup in enumerate(ageGroups[1:], 1):
             numAgeingIn = {}
             numAgeingIn['stunted'] = 0.
             numAgeingIn['not stunted'] = 0.
             for prevBF in self.constants.bfList:
                 for prevWT in self.constants.wastingList:
                     for prevAN in self.constants.anaemiaList:
-                        numAgeingIn['stunted'] += sum(ageingOut[idx-1][stuntingCat][prevWT][prevBF][prevAN] for stuntingCat in ['high', 'moderate'])
-                        numAgeingIn['not stunted'] += sum(ageingOut[idx-1][stuntingCat][prevWT][prevBF][prevAN] for stuntingCat in ['mild', 'normal'])
+                        numAgeingIn['stunted'] += sum(ageingOut[i-1][stuntingCat][prevWT][prevBF][prevAN] for stuntingCat in ['high', 'moderate'])
+                        numAgeingIn['not stunted'] += sum(ageingOut[i-1][stuntingCat][prevWT][prevBF][prevAN] for stuntingCat in ['mild', 'normal'])
             # those ageing in moving into the 4 categories
             numAgeingInStratified = {}
             for stuntingCat in self.constants.stuntingList:
@@ -386,13 +374,23 @@ class Model:
                         pa = ageGroup.anaemiaDist[anaemiaCat]
                         for stuntingCat in self.constants.stuntingList:
                             thisBox = ageGroup.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat]
-                            thisBox.populationSize -= ageingOut[idx][stuntingCat][wastingCat][bfCat][anaemiaCat]
+                            thisBox.populationSize -= ageingOut[i][stuntingCat][wastingCat][bfCat][anaemiaCat]
                             thisBox.populationSize += numAgeingInStratified[stuntingCat] * pw * pbf * pa
             # gaussianise
             distributionNow = ageGroup.getStuntingDistribution()
             probStunting = sum(distributionNow[stuntingCat] for stuntingCat in self.constants.stuntedList)
             ageGroup.stuntingDist = self.restratify(probStunting)
             ageGroup.redistributePopulation()
+
+    def _trackOutcomes(self):
+        oldest = self.children.ageGroups[-1]
+        self.ageingOutChildren[self.year] += oldest.getAgeGroupPopulation() * oldest.ageingRate
+        self.annualStunted[self.year] += oldest.getAgeGroupNumberStunted() * oldest.ageingRate
+        self.annualThrive[self.year] += oldest.getAgeGroupNumberNotStunted() * oldest.ageingRate
+        self.annualNotAnaemic[self.year] += oldest.getAgeGroupNumberNotAnaemic() * oldest.ageingRate
+        self.annualNotWasted[self.year] += oldest.getAgeGroupNumberNotWasted() * oldest.ageingRate
+        self.annualChildrenAgeingOutHealthly[self.year] += oldest.getAgeGroupNumberHealthy() * oldest.ageingRate
+        self.annualChildrenThreeConditions[self.year] += oldest.getAgeGroupNumberThreeConditions() * oldest.ageingRate
 
     def _applyBirths(self): # TODO; re-write this function in future
         # num annual births = birth rate x num WRA x (1 - frac preg averted)
@@ -410,7 +408,7 @@ class Model:
             restratifiedStuntingAtBirth[outcome] = self.restratify(totalProbStunted)
             #wasting
             restratifiedWastingAtBirth[outcome] = {}
-            probWastedAtBirth = newBorns.probRiskAtBirth['Wasting'] # TODO: consider removing 'wasting' and just have 'sam'/mam
+            probWastedAtBirth = newBorns.probRiskAtBirth['Wasting']
             totalProbWasted = 0
             # distribute proportions for wasted categories
             for wastingCat in self.constants.wastedList:
@@ -531,20 +529,24 @@ class Model:
         self._updateWRApopulation()
         self._updateYearlyRiskDists()
 
-    def _updateEverything(self, year):
+    def _updateEverything(self):# TODO: would like a new name, but the good ones are taken
         # TODO: there are several funcs which do not need to be done every time step unless we are updating coverages every time step.
         # TODO: Should prevent this updating unless needed
         """Responsible for moving the model, updating year, adjusting coverages and conditional probabilities, applying coverages"""
-        self._updateYear(year)
         if self.adjustCoverage:
-            self.programInfo._adjustCoveragesForPopGrowth(self.populations, year)
+            self.programInfo._adjustCoveragesForPopGrowth(self.populations, self.year)
         self._updateConditionalProbabilities()
         self._resetStorage()
         self.applyNewProgramCoverages()
         if self.timeTrends:
             self._applyPrevTimeTrends()
+
+
+    def _progressModel(self):
+        # TODO: could move these to an 'update populations' function, which can be called even if the others are not called.
         self._redistributePopulation()
         self.moveModelOneYear()
+
 
     def _applyPrevTimeTrends(self): # TODO: haven't done mortality yet
         for ageGroup in self.children.ageGroups:
@@ -578,7 +580,9 @@ class Model:
         self.programInfo._setInitialCoverages(self.populations)
         self._setBirthPregnancyInfo()
         for year in self.constants.calibrationYears:
-            self._updateEverything(year)
+            self._updateYear(year)
+            self._updateEverything()
+            self._progressModel()
 
     def _updateYear(self, year):
         self.year = year
@@ -586,7 +590,9 @@ class Model:
 
     def runSimulation(self):
         for year in self.constants.simulationYears[:self.numYears]:
-            self._updateEverything(year)
+            self._updateYear(year)
+            self._updateEverything()
+            self._progressModel()
 
     def runSimulationGivenCoverage(self, coverages, restrictedCov=True):
         """coverage is restricted coverage starting after calibration year, remaining constant for run time"""
