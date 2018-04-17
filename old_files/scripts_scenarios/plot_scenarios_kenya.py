@@ -7,7 +7,7 @@ Created on Wed May 30 2016
 
 import output as output
 import pickle as pickle
-import data as dataCode
+from nutrition import data as dataCode
 
 country = 'Kenya'
 

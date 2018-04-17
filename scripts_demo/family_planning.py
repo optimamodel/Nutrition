@@ -10,7 +10,7 @@ import os, sys
 moduleDir = os.path.join(os.path.dirname(__file__), rootpath)
 sys.path.append(moduleDir)
 
-import data
+from nutrition import data
 from old_files import helper
 import csv
 from copy import deepcopy as dcp

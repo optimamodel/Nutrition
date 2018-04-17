@@ -8,7 +8,7 @@ Created on Fri Jul 22 15:44:01 2016
 import os, sys
 moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
-import optimisation
+from nutrition import optimisation
 
 optimise = 'deaths'
 numCores = 8

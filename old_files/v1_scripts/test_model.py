@@ -2,7 +2,7 @@
 
 import os
 import unittest
-import data
+from nutrition import data
 from old_files import helper
 
 

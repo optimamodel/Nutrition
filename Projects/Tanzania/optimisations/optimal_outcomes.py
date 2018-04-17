@@ -4,7 +4,7 @@ root = '../..'
 moduleDir = os.path.join(os.path.dirname(__file__), root)
 sys.path.append(moduleDir)
 import pickle
-import optimisation as optim
+from nutrition import optimisation as optim
 import csv
 
 regions = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Kaskazini_Pemba', 'Kaskazini_Unguja', 'Katavi',

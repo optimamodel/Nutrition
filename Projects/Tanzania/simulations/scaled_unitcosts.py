@@ -2,7 +2,7 @@ import os, sys
 root = '../..'
 moduleDir = os.path.join(os.path.dirname(__file__), root)
 sys.path.append(moduleDir)
-import optimisation
+from nutrition import optimisation
 from csv import writer
 
 regions = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Kaskazini_Pemba', 'Kaskazini_Unguja', 'Katavi',

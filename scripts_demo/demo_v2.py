@@ -1,4 +1,4 @@
-import play
+from nutrition import play
 from copy import deepcopy as dcp
 
 root = '../'

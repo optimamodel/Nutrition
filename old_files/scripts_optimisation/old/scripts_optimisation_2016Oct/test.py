@@ -8,8 +8,7 @@ Created on Thu Oct 27 14:10:32 2016
 import os, sys
 moduleDir = os.path.join(os.path.dirname(__file__), '../..')
 sys.path.append(moduleDir)
-import optimisation
-
+from nutrition import optimisation
 
 rootpath = '../..'
 

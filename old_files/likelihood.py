@@ -7,7 +7,7 @@ Created on Mon Feb 15 15:50:20 2016
 
 import numpy as np
 from scipy.stats import norm
-from model import steps
+from nutrition.model import steps
 
 
 def model_outcomes(C0, P, D, t_steps, pops, verbose=2):

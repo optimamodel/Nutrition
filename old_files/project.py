@@ -12,7 +12,7 @@ class Project:
         self.results = {}
         self.projectData = ProjectData(projectDataSpreadsheetName)
         # instantiate optimisation object
-        import optimisation      
+        from nutrition import optimisation
         self.thisOptimisation = optimisation.Optimisation(self.projectData.dataSpreadsheetName, self.projectData.numModelSteps, self.projectData.optimise, self.projectData.resultsFileStem)
         
     def runCascade(self):
@@ -117,7 +117,7 @@ class ProjectData:
     def readProjectDataFromSpreadsheet(self):    
         #read from csv         
         import pandas
-        import data
+        from nutrition import data
         import helper
         helper = helper.Helper()
         Location = self.projectDataSpreadsheetName     

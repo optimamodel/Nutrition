@@ -1,7 +1,8 @@
 import os
 import unittest
 from old_files import helper
-import data
+from nutrition import data
+
 
 # This script will test code in helper.py
 # Note: attributes for boxes like mortality rate not tested

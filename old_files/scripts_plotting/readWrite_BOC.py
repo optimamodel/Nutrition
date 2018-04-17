@@ -9,7 +9,7 @@ import csv
 import os, sys
 moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
-import optimisation
+from nutrition import optimisation
 
 country = 'Bangladesh'
 version = 'Results20160718'

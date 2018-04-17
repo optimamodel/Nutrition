@@ -6,8 +6,7 @@ Created on Fri Jul 22 11:39:54 2016
 """
 
 def runOnce(MCSampleSize, xmin, args, interventionList, totalBudget, filename):        
-    import asd as asd 
-    import pickle 
+    import pickle
     import numpy as np
     print ' ###############  RUNNING WITH TOTAL BUDGET: ',totalBudget,'  ###################'
     numInterventions = len(interventionList)
@@ -36,7 +35,7 @@ def runOnce(MCSampleSize, xmin, args, interventionList, totalBudget, filename):
     
     
 def getCostCoverageInfo(dataSpreadsheetName, keyList):
-    import data 
+    from nutrition import data
     from copy import deepcopy as dcp
     spreadsheetData = data.readSpreadsheet(dataSpreadsheetName, keyList)        
     costCoverageInfo = {}
@@ -47,7 +46,7 @@ def getCostCoverageInfo(dataSpreadsheetName, keyList):
     return costCoverageInfo
     
 def getInitialTargetPopSize(dataSpreadsheetName, helper):
-    import data 
+    from nutrition import data
     spreadsheetData = data.readSpreadsheet(dataSpreadsheetName, helper.keyList)        
     mothers = helper.makePregnantWomen(spreadsheetData) 
     numAgeGroups = len(helper.keyList['ages'])
@@ -82,7 +81,7 @@ def rescaleAllocation(totalBudget, proposalAllocation):
     return rescaledAllocation 
     
 def getTargetPopSizeFromModelInstance(dataSpreadsheetName, keyList, model):    
-    import data 
+    from nutrition import data
     spreadsheetData = data.readSpreadsheet(dataSpreadsheetName, keyList)        
     numAgeGroups = len(keyList['ages'])
     targetPopSize = {}
@@ -152,7 +151,8 @@ optimise = 'deaths'
 
 from multiprocessing import Process
 
-import data 
+from nutrition import data, asd as asd
+
 spreadsheetData = data.readSpreadsheet(dataSpreadsheetName, helper.keyList)        
 costCoverageInfo = getCostCoverageInfo(dataSpreadsheetName, helper.keyList)  
 initialTargetPopSize = getInitialTargetPopSize(dataSpreadsheetName, helper)          

@@ -8,7 +8,7 @@ Created on Wed Aug  3 13:03:54 2016
 import os, sys
 moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
-import optimisation
+from nutrition import optimisation
 
 optimise = 'stunting'
 

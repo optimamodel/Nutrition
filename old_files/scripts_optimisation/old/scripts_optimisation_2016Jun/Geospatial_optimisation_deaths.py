@@ -7,7 +7,7 @@ Created on Fri Jun 24 14:52:36 2016
 import os, sys
 moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
-import optimisation
+from nutrition import optimisation
 
 numModelSteps = 180
 MCSampleSize = 25

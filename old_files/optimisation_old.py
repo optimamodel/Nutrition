@@ -48,12 +48,11 @@ def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimis
             
             
             
-import output as outputPlot            
-import data as dataCode
+import output as outputPlot
+from nutrition import data as dataCode, asd as asd
 from old_files import costcov, helper as helper
 from copy import deepcopy as dcp
 from numpy import array
-import asd as asd
 import numpy as np
 helper = helper.Helper()
 costCov = costcov.Costcov()

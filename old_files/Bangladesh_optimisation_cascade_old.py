@@ -54,15 +54,13 @@ def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimis
         performanceMeasure = model.getTotalCumulativeDeaths()
     if optimise == 'stunting':        
         performanceMeasure = model.getCumulativeAgingOutStunted()
-    return performanceMeasure    
-            
-            
-            
-import data as dataCode
+    return performanceMeasure
+
+
+from nutrition import data as dataCode, asd as asd
 from old_files import costcov, helper as helper
 from copy import deepcopy as dcp
 from numpy import array
-import asd as asd
 import numpy as np
 import pickle as pickle
 helper = helper.Helper()

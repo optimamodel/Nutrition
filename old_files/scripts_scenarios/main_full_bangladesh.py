@@ -34,7 +34,7 @@ from copy import deepcopy as dcp
 import os, sys
 moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
-import data
+from nutrition import data
 from old_files import costcov, helper
 
 helper = helper.Helper()

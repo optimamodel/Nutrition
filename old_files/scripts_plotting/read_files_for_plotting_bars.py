@@ -7,7 +7,7 @@ Created on Tue Jun 28 15:15:57 2016
 import os, sys
 moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
-import optimisation
+from nutrition import optimisation
 import pickle as pickle
 cascadeValues = [0.25, 0.50, 0.75, 1.0, 1.50, 2.0, 3.0, 4.0] 
 

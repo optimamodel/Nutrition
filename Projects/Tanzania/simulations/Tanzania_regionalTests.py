@@ -1,5 +1,5 @@
 # producing table of outputs for each region to test sensibility of results
-import play
+from nutrition import play
 from copy import deepcopy as dcp
 import csv
 

@@ -5,8 +5,9 @@ Created on Thu Sep 22 10:15:43 2016
 @author: ruth
 """
 
-import optimisation
-outcomeOfInterestList = ['deaths', 'stunting', 'DALYs'] 
+from nutrition import optimisation
+
+outcomeOfInterestList = ['deaths', 'stunting', 'DALYs']
 numModelSteps = 180
 MCSampleSize = 25
 

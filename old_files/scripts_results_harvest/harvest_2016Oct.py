@@ -8,7 +8,7 @@ import os, sys
 rootpath = '..'
 moduleDir = os.path.join(os.path.dirname(__file__), rootpath)
 sys.path.append(moduleDir)
-import optimisation
+from nutrition import optimisation
 
 country = 'Bangladesh'
 date = '2016Oct'

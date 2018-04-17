@@ -7,7 +7,7 @@ Created on Tue Mar 15 15:32:21 2016
 import unittest
 import numpy
 
-import data as data
+from nutrition import data as data
 from old_files import helper as helper
 
 

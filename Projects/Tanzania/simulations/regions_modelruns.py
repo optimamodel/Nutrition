@@ -1,5 +1,5 @@
 from csv import writer
-import play
+from nutrition import play
 import os, sys
 root = '../..'
 moduleDir = os.path.join(os.path.dirname(__file__), root)

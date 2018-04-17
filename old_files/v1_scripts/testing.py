@@ -13,7 +13,7 @@ for name in dir():
 
 import numpy as np
 import pylab as pl
-from model import steps
+from nutrition.model import steps
 from likelihood import lnlike, model_outcomes
 from inputs import get_data, get_params, get_initial_conditions
 from mcmc import mcmc

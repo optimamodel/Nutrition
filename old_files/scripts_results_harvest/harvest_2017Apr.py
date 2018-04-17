@@ -8,7 +8,6 @@ import os, sys
 rootpath = '..'
 moduleDir = os.path.join(os.path.dirname(__file__), rootpath)
 sys.path.append(moduleDir)
-import optimisation
 
 country = 'Bangladesh'
 date = '2017Apr'
@@ -38,8 +37,8 @@ for outcomeOfInterest in outcomeOfInterestList:
     
     
 # GET COVERAGE INFO FOR THE CASCADE
-import pickle    
-import data
+import pickle
+from nutrition import data, optimisation
 from old_files import costcov
 import csv
 costCov = costcov.Costcov()

@@ -10,7 +10,7 @@ import pickle as pickle
 import os, sys
 moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
-import data
+from nutrition import data
 from old_files import helper
 
 helper = helper.Helper()

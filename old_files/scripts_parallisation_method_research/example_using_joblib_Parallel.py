@@ -5,8 +5,7 @@ Created on Thu Jul 21 14:03:42 2016
 @author: ruth
 """
 def runOnce(MCSampleSize, xmin, args, interventionList, totalBudget, filename):        
-    import asd as asd 
-    import pickle 
+    import pickle
     import numpy as np
     print ' ###############  RUNNING WITH TOTAL BUDGET: ',totalBudget,'  ###################'
     numInterventions = len(interventionList)
@@ -35,7 +34,7 @@ def runOnce(MCSampleSize, xmin, args, interventionList, totalBudget, filename):
     
     
 def getCostCoverageInfo(dataSpreadsheetName, keyList):
-    import data 
+    from nutrition import data
     from copy import deepcopy as dcp
     spreadsheetData = data.readSpreadsheet(dataSpreadsheetName, keyList)        
     costCoverageInfo = {}
@@ -46,7 +45,7 @@ def getCostCoverageInfo(dataSpreadsheetName, keyList):
     return costCoverageInfo
     
 def getInitialTargetPopSize(dataSpreadsheetName, helper):
-    import data 
+    from nutrition import data
     spreadsheetData = data.readSpreadsheet(dataSpreadsheetName, helper.keyList)        
     mothers = helper.makePregnantWomen(spreadsheetData) 
     numAgeGroups = len(helper.keyList['ages'])
@@ -81,7 +80,7 @@ def rescaleAllocation(totalBudget, proposalAllocation):
     return rescaledAllocation 
     
 def getTargetPopSizeFromModelInstance(dataSpreadsheetName, keyList, model):    
-    import data 
+    from nutrition import data
     spreadsheetData = data.readSpreadsheet(dataSpreadsheetName, keyList)        
     numAgeGroups = len(keyList['ages'])
     targetPopSize = {}
@@ -150,7 +149,8 @@ filename = 'parallel_test'
 optimise = 'deaths'
 
 from joblib import Parallel, delayed
-import data 
+from nutrition import data, asd as asd
+
 spreadsheetData = data.readSpreadsheet(dataSpreadsheetName, helper.keyList)        
 costCoverageInfo = getCostCoverageInfo(dataSpreadsheetName, helper.keyList)  
 initialTargetPopSize = getInitialTargetPopSize(dataSpreadsheetName, helper)          

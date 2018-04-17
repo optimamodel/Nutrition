@@ -8,7 +8,7 @@ Created on Wed Jun 29 12:34:33 2016
 import os, sys
 moduleDir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(moduleDir)
-import optimisation
+from nutrition import optimisation
 import pickle as pickle
 from copy import deepcopy as dcp
 

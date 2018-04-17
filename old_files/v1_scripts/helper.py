@@ -68,7 +68,7 @@ class Helper:
         return agePopSizes
 
     def makeBoxes(self, thisAgePopSize, ageName, inputData):
-        import populations 
+        from nutrition import populations
         wastingList = self.keyList['wastingList']
         stuntingList = self.keyList['stuntingList']
         breastfeedingList = self.keyList['breastfeedingList']
@@ -87,7 +87,7 @@ class Helper:
 
         
     def makeReproductiveAgeBoxes(self, thisAgePopSize, ageName, inputData):
-        import populations
+        from nutrition import populations
         boxes = {}
         for status in self.keyList['anemiaList']:
              thisPopSize = thisAgePopSize * inputData.anemiaDistribution[ageName][status]
@@ -95,7 +95,7 @@ class Helper:
         return boxes       
 
     def makePregnantWomenAgeBoxes(self, thisAgePopSize, ageName, inputData):
-        import populations
+        from nutrition import populations
         boxes = {}
         for anemiaStatus in self.keyList['anemiaList']:
             boxes[anemiaStatus] = {}
@@ -104,7 +104,7 @@ class Helper:
         return boxes
 
     def makeAgeCompartments(self, inputData):
-        import populations 
+        from nutrition import populations
         agePopSizes = self.makeAgePopSizes(inputData)
         ages = self.keyList['ages']
         numAgeGroups = len(ages)
@@ -132,7 +132,7 @@ class Helper:
         return agePopSizes
    
     def makeReproductiveAgeCompartments(self, inputData):
-        import populations 
+        from nutrition import populations
         agePopSizes = self.makeWRAAgePopSizes(inputData)
         ages = self.keyList['reproductiveAges']
         numAgeGroups = len(ages)
@@ -157,7 +157,7 @@ class Helper:
         return agePopSizes    
     
     def makePregnantWomenAgeCompartments(self, inputData):
-        import populations
+        from nutrition import populations
         agePopSizes = self.makePregnantWomenAgePopSizes(inputData)
         popPW = dcp(inputData.demographics['number of pregnant women'])
         ages = self.keyList['pregnantWomenAges']
@@ -176,7 +176,7 @@ class Helper:
         
         
     def setupModelDerivedParameters(self, inputData):
-        import model 
+        from nutrition import model
         import derived 
         import parameters        
         # gaussianise stunting in *data*
@@ -199,7 +199,7 @@ class Helper:
                 
     
     def setupModelSpecificPopsizes(self, inputData, agePopSizes):
-        import model 
+        from nutrition import model
         import derived 
         import parameters        
         # gaussianise stunting in *data*

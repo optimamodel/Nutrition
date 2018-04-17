@@ -8,7 +8,8 @@ Created on Fri Jul 22 14:58:46 2016
 import time
 t0 = time.time()
 
-import optimisation
+from nutrition import optimisation
+
 numModelSteps = 180
 MCSampleSize = 1
 optimise = 'deaths'
