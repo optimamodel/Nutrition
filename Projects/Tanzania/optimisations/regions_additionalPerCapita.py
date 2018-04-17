@@ -1,13 +1,14 @@
 import os, sys
-root = '../..'
-moduleDir = os.path.join(os.path.dirname(__file__), root)
-sys.path.append(moduleDir)
 from nutrition import optimisation, play
 from multiprocessing import Process
 from datetime import date
 import csv
 from collections import OrderedDict
 import pickle
+
+root = os.path.pardir
+moduleDir = os.path.join(os.path.dirname(__file__), root)
+sys.path.append(moduleDir)
 
 
 regions = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Kaskazini_Pemba', 'Kaskazini_Unguja', 'Katavi',

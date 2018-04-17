@@ -1,9 +1,9 @@
 import os, sys
+from nutrition import optimisation
 
-root = '..'
+root = os.path.pardir
 moduleDir = os.path.join(os.path.dirname(__file__), root)
 sys.path.append(moduleDir)
-from nutrition import optimisation
 
 objectives = ['healthy_children']
 budgetMultiples = [1., 2., 4., 6., 8., 10.]
