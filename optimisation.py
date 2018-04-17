@@ -1,1359 +1,817 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Jun  8 13:58:29 2016
+import os
+import play
+import pso
+import asd
+import time
+import cPickle as pickle
+import pandas as pd
+from copy import deepcopy as dcp
+from multiprocessing import cpu_count, Process
+from numpy import array, append, linspace, nanargmax, zeros, nonzero, inf
+from scipy.interpolate import pchip
+from csv import writer, reader
+from itertools import izip
+from collections import OrderedDict
+from datetime import date
 
-@author: ruth
-"""
-def returnAlphabeticalDictionary(dictionary):
-    from collections import OrderedDict
-    dictionaryOrdered = OrderedDict([])
-    order = sorted(dictionary)
-    for i in range(0, len(dictionary)):
-        dictionaryOrdered[order[i]] = dictionary[order[i]]    
-    return dictionaryOrdered 
+
+def runModelForNTimeSteps(steps, model):
+    """
+    Progresses the model a given number of steps
+    :param steps: number of steps to iterate (int)
+    :param model:
+    :return: progressed model
+    """
+    for step in range(steps):
+        model.moveModelOneYear()
+    return model
 
 
 def rescaleAllocation(totalBudget, allocation):
-    scaleRatio = totalBudget / sum(allocation)
-    rescaledAllocation = [x * scaleRatio for x in allocation]
+    new = sum(allocation)
+    if new == 0:
+        rescaledAllocation = dcp(allocation)
+    else:
+        scaleRatio = totalBudget / new
+        rescaledAllocation = [x * scaleRatio for x in allocation]
     return rescaledAllocation
 
 
-def runModelForNTimeSteps(timesteps, spreadsheetData, model, saveEachStep=False): # TODO: consider moving into optimisation class
-    import helper
-    from copy import deepcopy as dc
-    helper = helper.Helper()
-    modelList = []
-    if model is None:   # instantiate a model
-        model = helper.setupModelDerivedParameters(spreadsheetData)[0]
-    for step in range(timesteps):
-        model.moveModelOneYear()
-        if saveEachStep:
-            modelThisTimeStep = dc(model)
-            modelList.append(modelThisTimeStep)
-    return model, modelList
+def runJobs(jobs, max_jobs):
+    while jobs:
+        thisRound = min(max_jobs, len(jobs))
+        for process in range(thisRound):
+            p = jobs[process]
+            p.start()
+        for process in range(thisRound):  # this loop ensures this round waits until processes are finished
+            p = jobs[process]
+            p.join()
+        jobs = jobs[thisRound:]
+    return
 
 
-    
-def objectiveFunction(allocation, costCurves, model, totalBudget, fixedCosts, objective, numModelSteps, data, timestepsPre):
-    from copy import deepcopy as dcp
-    from operator import add
-    from numpy import maximum, minimum
-    eps = 1.e-3 ## WARNING: using project non-specific eps
-    modelThisRun = dcp(model)
-    availableBudget = totalBudget - sum(fixedCosts)
-    #make sure fixed costs do not exceed total budget
-    if totalBudget < sum(fixedCosts):
-        print "error: total budget is less than fixed costs"
-        return
+def _addFixedAllocations(allocations, fixedAllocations, indxList):
+    """Assumes order is preserved from original list"""
+    modified = dcp(allocations)
+    for i, j in enumerate(indxList):
+        modified[j] += fixedAllocations[i]
+    return modified
+
+
+def objectiveFunction(allocation, objective, model, freeFunds, fixedAllocations, indxToKeep):
+    thisModel = dcp(model)
+    totalAllocations = dcp(fixedAllocations)
     # scale the allocation appropriately
-    if sum(allocation) == 0:
-        scaledAllocation = dcp(allocation)
-    else:
-        scaledAllocation = rescaleAllocation(availableBudget, allocation)
-    # add the fixed costs to the scaled allocation of available budget
-    scaledAllocation = map(add, scaledAllocation, fixedCosts)
+    scaledAllocation = rescaleAllocation(freeFunds, allocation)
     newCoverages = {}
-    # get coverage for given allocation by intervention
-    for i in range(0, len(data.interventionList)):
-        intervention = data.interventionList[i]
-        costCurveThisIntervention = costCurves[intervention]
-        newCoverages[intervention] = maximum(costCurveThisIntervention(scaledAllocation[i]), eps)
-        newCoverages[intervention] = minimum(newCoverages[intervention], 1.0)
-    modelThisRun.updateCoverages(newCoverages)
-    steps = numModelSteps - timestepsPre
-    modelThisRun = runModelForNTimeSteps(steps, data, modelThisRun)[0]
-    performanceMeasure = modelThisRun.getOutcome(objective) * 1000.
-    if objective == 'thrive':
-        performanceMeasure = - performanceMeasure
-    return performanceMeasure
-    
-def geospatialObjectiveFunction(spendingList, regionalBOCs, totalBudget, optimise):
-    import pchip
-    from copy import deepcopy as dcp
-    numRegions = len(spendingList)
-    if sum(spendingList) == 0:
-        scaledSpendingList = dcp(spendingList)
-    else:
-        scaledSpendingList = rescaleAllocation(totalBudget, spendingList)
-    outcomeList = []
-    for region in range(0, numRegions):
-        outcome = pchip.pchip(regionalBOCs['spending'][region], regionalBOCs['outcome'][region], scaledSpendingList[region], deriv = False, method='pchip')        
-        outcomeList.append(outcome)
-    nationalOutcome = sum(outcomeList)
-    if optimise == 'thrive':
-        nationalOutcome = - nationalOutcome
-    return nationalOutcome    
-    
-def geospatialObjectiveFunctionExtraMoney(spendingList, regionalBOCs, currentRegionalSpendingList, extraMoney, optimise):
-    import pchip
-    from copy import deepcopy as dcp
-    numRegions = len(spendingList)
-    if sum(spendingList) == 0: 
-        scaledSpendingList = dcp(spendingList)
-    else:    
-        scaledSpendingList = rescaleAllocation(extraMoney, spendingList)    
-    outcomeList = []
-    for region in range(0, numRegions):
-        newTotalSpending = currentRegionalSpendingList[region] + scaledSpendingList[region]
-        outcome = pchip.pchip(regionalBOCs['spending'][region], regionalBOCs['outcome'][region], newTotalSpending, deriv = False, method='pchip')        
-        outcomeList.append(outcome)
-    nationalOutcome = sum(outcomeList)
-    if optimise == 'thrive':
-        nationalOutcome = - nationalOutcome
-    return nationalOutcome        
-
-            
-class OutputClass:
-    def __init__(self, budgetBest, fval, exitflag, cleanOutputIterations, cleanOutputFuncCount, cleanOutputFvalVector, cleanOutputXVector):
-        self.budgetBest = budgetBest
-        self.fval = fval
-        self.exitflag = exitflag
-        self.cleanOutputIterations = cleanOutputIterations
-        self.cleanOutputFuncCount = cleanOutputFuncCount
-        self.cleanOutputFvalVector = cleanOutputFvalVector
-        self.cleanOutputXVector = cleanOutputXVector      
+    programs = thisModel.programInfo.programs
+    totalAllocations = _addFixedAllocations(totalAllocations, scaledAllocation, indxToKeep)
+    for idx, program in enumerate(programs):
+        newCoverages[program.name] = program.costCurveFunc(totalAllocations[idx]) / program.unrestrictedPopSize
+    thisModel.runSimulationFromOptimisation(newCoverages)
+    outcome = thisModel.getOutcome(objective) * 1000.
+    if objective == 'thrive' or objective == 'healthy_children' or objective == 'no_conditions':
+        outcome *= -1
+    return outcome
 
 
 class Optimisation:
-    def __init__(self, cascadeValues, objectivesList, dataSpreadsheetName, resultsFileStem, country, costCurveType='standard',
-                 totalBudget=None, parallel=True, numRuns=10, numModelSteps=14, haveFixedCosts=False, fixedCostsCustom=None, interventionsToKeep=None):
-        import helper
-        import data
-        from multiprocessing import cpu_count
-        self.cascadeValues = cascadeValues
-        self.objectivesList = objectivesList
-        self.country = country
-        self.dataSpreadsheetName = dataSpreadsheetName
-        self.numModelSteps = numModelSteps
+    def __init__(self, objectives, budgetMultiples, fileInfo, resultsPath=None, fixCurrentAllocations=False,
+                 additionalFunds=0, removeCurrentFunds=False, numYears=None, costCurveType='linear',
+                 parallel=True, numCPUs=None, numRuns=1, filterProgs=True, createResultsDir=True, maxIter=100,
+                 swarmSize=50):
+        root, analysisType, name, scenario = fileInfo
+        self.name = name
+        filePath = play.getFilePath(root=root, analysisType=analysisType, name=name)
+        if resultsPath:
+            self.resultsDir = resultsPath
+        else:
+            self.resultsDir = play.getResultsDir(root='', analysisType=analysisType, scenario=scenario)
+        self.model = play.setUpModel(filePath, adjustCoverage=False, optimise=True,
+                                     numYears=numYears)  # model has already moved 1 year
+        self.budgetMultiples = budgetMultiples
+        self.objectives = objectives
+        self.fixCurrentAllocations = fixCurrentAllocations
+        self.removeCurrentFunds = removeCurrentFunds
+        self.additionalFunds = additionalFunds
+        self.filterProgs = filterProgs
+        self.maxIter = maxIter
+        self.swarmSize = swarmSize
+        self.BOCs = {}
+        self.programs = self.model.programInfo.programs
         self.parallel = parallel
-        self.numCPUs = cpu_count()
+        if numCPUs:
+            self.numCPUs = numCPUs
+        else:
+            self.numCPUs = cpu_count()
         self.numRuns = numRuns
-        self.costCurveType = costCurveType
-        self.helper = helper.Helper()
-        self.data = data.readSpreadsheet(dataSpreadsheetName, self.helper.keyList, interventionsToKeep=interventionsToKeep)
-        self.programList = self.data.interventionList
+        # self.costCurveType = costCurveType # TODO: currently doesn't do anything.
         self.timeSeries = None
-        self.costCoverageInfo = self.getCostCoverageInfo()
-        self.targetPopSize = self.getInitialTargetPopSize()
-        self.inititalProgramAllocations = self.getTotalInitialAllocation()
-        self.totalBudget = totalBudget if totalBudget else sum(self.inititalProgramAllocations)
-        self.fixedCosts = self.getFixedCosts(haveFixedCosts, self.inititalProgramAllocations)
-        self.timeStepsPre = 1
-        self.model = runModelForNTimeSteps(self.timeStepsPre, self.data, model=None)[0]
-        self.costCurves = self.generateCostCurves(self.model)
-        self.kwargs = {'costCurves': self.costCurves, 'model': self.model, 'timestepsPre': self.timeStepsPre,
-                'totalBudget': self.totalBudget, 'fixedCosts': self.fixedCosts,
-                'numModelSteps': self.numModelSteps, 'data': self.data}
-        # check that results directory exists and if not then create it
-        import os
-        self.resultDirectories = {}
-        for objective in self.objectivesList + ['results']:
-            self.resultDirectories[objective] = resultsFileStem +'/'+objective
-            if not os.path.exists(self.resultDirectories[objective]):
-                os.makedirs(self.resultDirectories[objective])
+        for program in self.programs:
+            program._setCostCoverageCurve()
+        self.calculateAllocations(fixCurrentAllocations)
+        self.kwargs = {'model': self.model,
+                       'freeFunds': self.freeFunds, 'fixedAllocations': self.fixedAllocations}
+        if createResultsDir:
+            self.createDirectory(self.resultsDir)
 
+    ######### FILE HANDLING #########
+
+    def createDirectory(self, resultsDir):
+        # create directory if necessary
+        if not os.path.exists(resultsDir):
+            os.makedirs(resultsDir)
+
+    ######### SETUP ############
+
+    def calculateAllocations(self, fixCurrentAllocations):
+        """
+        Designed so that currentAllocations >= fixedAllocations >= referenceAllocations.
+        referenceAllocations: these allocations cannot be reduced because it is impractical to do so.
+        fixedAllocations: this is funding which cannot be reduced because of the user's wishes.
+        currentAllocations: this is the total current funding (incl. reference & fixed allocations) determined by program initial coverage.
+        :param fixCurrentAllocations:
+        :return:
+        """
+        self.referenceAllocations = self.getReferenceAllocations()
+        self.currentAllocations = self.getCurrentAllocations()
+        # self.currentAllocations, self.scaleFactor = self.scaleCostsForCurrentExpenditure()
+        self.fixedAllocations = self.getFixedAllocations(fixCurrentAllocations)
+        self.freeFunds = self.getFreeFunds(fixCurrentAllocations)
+
+    def getReferenceAllocations(self):
+        """
+        Reference programs are not included in nutrition budgets, therefore these must be removed before future calculations.
+        :return: 
+        """
+        referenceAllocations = []
+        for program in self.programs:
+            if program.reference:
+                referenceAllocations.append(program.getSpending())
+            else:
+                referenceAllocations.append(0)
+        return referenceAllocations
+
+    def getCurrentAllocations(self):
+        allocations = []
+        for program in self.programs:
+            allocations.append(program.getSpending())
+        return allocations
+
+    def getFixedAllocations(self, fixCurrentAllocations):
+        """
+        Fixed allocations will contain reference allocations as well, for easy use in the objective function.
+        Reference progs stored separately for ease of model output.
+        :param fixCurrentAllocations:
+        :return:
+        """
+        if fixCurrentAllocations:
+            fixedAllocations = dcp(self.currentAllocations)
+        else:
+            fixedAllocations = dcp(self.referenceAllocations)
+        return fixedAllocations
+
+    def scaleCostsForCurrentExpenditure(self):
+        # if there is a current budget specified, scale unit costs so that current coverages yield this budget (excluding reference progs).
+        # ::WARNING:: Currently, this should only be used for LINEAR cost curves
+        # specificBudget / calculatedBudget * oldUnitCost = newUnitCost
+        currentAllocationsBefore = self.getCurrentAllocations()
+        specialRegions = ['Kusini', 'Kaskazini', 'Mjini']  # we don't have current expenditure for these regions
+        # remove cash transfers from scaling
+        progName = 'Cash transfers'  # TODO: remove after Tanzania
+        correctedFunds = currentAllocationsBefore[:]
+        for i, prog in enumerate(self.programs):
+            if prog.name == progName:
+                correctedFunds[i] = 0
+        if self.model.programInfo.currentExpenditure:
+            currentCalculated = sum(correctedFunds) - sum(self.referenceAllocations)
+            scaleFactor = self.model.programInfo.currentExpenditure / currentCalculated
+            for program in self.programs:
+                if (not program.reference) and (program.name != progName):
+                    program.scaleUnitCosts(scaleFactor)
+        elif any(sub in self.name for sub in specialRegions):  # TODO: this should be removed after Tanzania application
+            scaleFactor = 0.334  # this is the median of all other regions
+            for program in self.programs:
+                if (not program.reference) and (program.name != progName):
+                    program.scaleUnitCosts(scaleFactor)
+        else:
+            scaleFactor = 1
+        return self.getCurrentAllocations(), scaleFactor
+
+    def getFreeFunds(self, fixCurrent):
+        """
+        freeFunds = currentExpenditure + additionalFunds - fixedFunds (if not remove current funds)
+        freeFunds = additional (if want to remove current funds)
+
+        fixedFunds includes both reference programs as well as currentExpenditure, if the latter is to be fixed.
+        I.e. if all of the currentExpenditure is fixed, freeFunds = additionalFunds.
+        :return:
+        """
+        if self.removeCurrentFunds and fixCurrent:
+            raise Exception("::Error: Cannot remove current funds and fix current funds simultaneously::")
+        elif self.removeCurrentFunds and (not fixCurrent):  # this is additional to reference spending
+            freeFunds = self.additionalFunds
+        elif not self.removeCurrentFunds:
+            freeFunds = sum(self.currentAllocations) - sum(self.fixedAllocations) + self.additionalFunds
+        return freeFunds
 
     ######### OPTIMISATION ##########
 
     def optimise(self):
+        print 'Optimising for {}'.format(self.name)
+        newBudgets = self.checkForZeroBudget()
         if self.parallel:
-            self.parallelRun()
+            self.parallelRun(newBudgets)
         else:
-            self.seriesRun()
+            self.seriesRun(newBudgets)
         return
 
-    def parallelRun(self):
-        jobs = self.getJobs()
-        self.runJobs(jobs)
+    def parallelRun(self, newBudgets):
+        jobs = self.getJobs(newBudgets)
+        runJobs(jobs, self.numCPUs)
         return
 
-    def seriesRun(self):
-        for objective in self.objectivesList:
-            for multiple in self.cascadeValues:
+    def seriesRun(self, newBudgets):
+        for objective in self.objectives:
+            for multiple in newBudgets:
                 self.runOptimisation(multiple, objective)
 
-    def getJobs(self):
-        from multiprocessing import Process
+    def checkForZeroBudget(self):
+        """For 0 free funds, spending is equal to the fixed costs"""
+        if 0 in self.budgetMultiples:
+            newBudgets = filter(lambda x: x > 0, self.budgetMultiples)
+            # output fixed spending
+            for objective in self.objectives:
+                allocationDict = self.createDictionary(self.fixedAllocations)
+                self.writeToPickle(allocationDict, 0, objective)
+        else:
+            newBudgets = self.budgetMultiples
+        return newBudgets
+
+    def getJobs(self, newBudgets):
         jobs = []
-        for objective in self.objectivesList:
-            for multiple in self.cascadeValues:
+        for objective in self.objectives:
+            for multiple in newBudgets:
                 p = Process(target=self.runOptimisation, args=(multiple, objective))
                 jobs.append(p)
         return jobs
 
-    def runJobs(self, jobs):
-        while jobs:
-            thisRound = min(self.numCPUs, len(jobs))
-            for process in range(thisRound):
-                p = jobs[process]
-                p.start()
-            for process in range(thisRound): # this loop ensures this round waits until processes are finished
-                p = jobs[process]
-                p.join()
-            jobs = jobs[thisRound:]
-        return
-
     def runOptimisation(self, multiple, objective):
-        import pso as pso
-        import asd as asd
-        from copy import deepcopy as dcp
         kwargs = dcp(self.kwargs)
-        kwargs['totalBudget'] *= multiple
-        kwargs['objective'] = objective
-        xmin = [0.] * len(self.programList)
-        xmax = [kwargs['totalBudget']] * len(self.programList)
-        runOutputs = []
-        for run in range(self.numRuns):
-            x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=50, swarmsize=600)
-            print "Objective: " + str(objective)
-            print "value * 1000: " + str(fopt)
-            budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, x0, kwargs, xmin=xmin,
-                                                         xmax=xmax, verbose=0)
-            outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval,
-                                       output.x)
-            runOutputs.append(outputOneRun)
-        bestAllocation = self.findBestAllocation(runOutputs)
-        scaledAllocation = self.adjustAllocation(bestAllocation, kwargs)
-        bestAllocationDict = self.createDictionary(scaledAllocation, self.programList)
+        kwargs['freeFunds'] *= multiple
+        if kwargs['freeFunds'] != 0:
+            kwargs['objective'] = objective
+            indxToKeep = self._selectProgsForObjective(objective)
+            kwargs['indxToKeep'] = indxToKeep
+            xmin = [0.] * len(indxToKeep)
+            xmax = [kwargs['freeFunds']] * len(indxToKeep)  # TODO: could make this cost of saturation.
+            runOutputs = []
+            for run in range(self.numRuns):
+                now = time.time()
+                x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=self.maxIter, swarmsize=self.swarmSize)
+                x, fval, flag = asd.asd(objectiveFunction, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=0)
+                runOutputs.append((x, fval[-1]))
+                self.printMessages(objective, multiple, flag, now)
+            bestAllocation = self.findBestAllocation(runOutputs)
+            scaledAllocation = rescaleAllocation(kwargs['freeFunds'], bestAllocation)
+            totalAllocation = _addFixedAllocations(self.fixedAllocations, scaledAllocation, kwargs['indxToKeep'])
+            bestAllocationDict = self.createDictionary(totalAllocation)
+        else:
+            # if no money to distribute, return the fixed costs
+            bestAllocationDict = self.createDictionary(self.fixedAllocations)
         self.writeToPickle(bestAllocationDict, multiple, objective)
         return
 
+    def printMessages(self, objective, multiple, flag, now):
+        print 'Finished optimisation for {} for objective {} and multiple {}'.format(self.name, objective, multiple)
+        print 'The reason is {} and it took {} hours \n'.format(flag['exitreason'], (time.time() - now) / 3600.)
+
     def findBestAllocation(self, outputs):
-        bestSample = max(outputs, key=lambda item: item.fval)
-        return bestSample.budgetBest
+        bestSample = min(outputs, key=lambda item: item[-1])
+        return bestSample[0]
 
-    def adjustAllocation(self, bestOutput, kwargs):
-        availableBudget = kwargs['totalBudget'] - sum(kwargs['fixedCosts'])
-        scaledAllocation = rescaleAllocation(availableBudget, bestOutput)
-        return scaledAllocation
-
-    def createDictionary(self, values, keys):
+    def createDictionary(self, allocations):
         """Ensure keys and values have matching orders"""
-        returnDict = {key: value for key, value in zip(keys, values)}
+        keys = [program.name for program in self.programs]
+        returnDict = {key: value for key, value in zip(keys, allocations)}
         return returnDict
 
+    def _selectProgsForObjective(self, objective):
+        if self.filterProgs:
+            threshold = 0.5
+            newCov = 1.
+            indxToKeep = []
+            # compare with 0 case
+            zeroCov = {prog.name: 0 for prog in self.programs}
+            zeroModel = dcp(self.model)
+            # get baseline case
+            zeroModel.runSimulationGivenCoverage(zeroCov, restrictedCov=True)
+            zeroOutcome = zeroModel.getOutcome(objective)
+            for indx, program in enumerate(self.programs):
+                thisModel = dcp(self.model)
+                thisCov = dcp(zeroCov)
+                thisCov[program.name] = newCov
+                if program.malariaTwin:
+                    thisCov[program.name + ' (malaria area)'] = newCov
+                thisModel.runSimulationGivenCoverage(thisCov, restrictedCov=True)
+                outcome = thisModel.getOutcome(objective)
+                if abs((outcome - zeroOutcome) / zeroOutcome) * 100. > threshold:  # no impact
+                    indxToKeep.append(indx)
+                    for twinIndx, twin in enumerate(self.programs):  # TODO: shouldn't have to search through twice
+                        if twin.name == program.name + ' (malaria area)':
+                            indxToKeep.append(twinIndx)
+        else:  # keep all
+            indxToKeep = [i for i in range(len(self.programs))]
+        return indxToKeep
 
+    def interpolateBOC(self, objective, spending, outcome):
+        # need BOC for each objective in region
+        # spending, outcome = self.getBOCvectors(objective)
+        self.BOCs[objective] = pchip(spending, outcome, extrapolate=False)
+
+    def getBOCvectors(self, objective, budgetMultiples):
+        spending = array([])
+        outcome = array([])
+        for multiple in budgetMultiples:
+            spending = append(spending, multiple * self.freeFunds)
+            filePath = '{}/{}_{}_{}.pkl'.format(self.resultsDir, self.name, objective, multiple)
+            f = open(filePath, 'rb')
+            thisAllocation = pickle.load(f)
+            f.close()
+            output = self.oneModelRunWithOutput(thisAllocation).getOutcome(objective)
+            outcome = append(outcome, output)
+        return spending, outcome
 
     ########### FILE HANDLING ############
 
     def writeToPickle(self, allocation, multiple, objective):
-        import pickle
-        fileName = self.resultDirectories[objective]+'/'+ self.country+'_cascade_'+str(objective)+'_'+str(multiple)+'.pkl'
+        fileName = '{}/{}_{}_{}.pkl'.format(self.resultsDir, self.name, objective, multiple)
         outfile = open(fileName, 'wb')
         pickle.dump(allocation, outfile)
         return
 
-    def checkParallel(self, numCores, numCascades):
-        terminate = False
-        try:
-            if numCascades * len(self.objectivesList) >  numCores:
-                raise NotEnoughCoresError
-        except NotEnoughCoresError:
-            print "There aren't enough physical cores to parallelise (num objectives * num cascades) optimisations"
-            terminate = True
-        return terminate
-
     def readPickles(self):
-        import pickle
         allocations = {}
-        for objective in self.objectivesList:
+        for objective in self.objectives:
             allocations[objective] = {}
-            direc = self.resultDirectories[objective]
-            for multiple in self.cascadeValues:
-                filename = '%s/%s_cascade_%s_%s.pkl' % (direc, self.country, objective, str(multiple))
+            for multiple in self.budgetMultiples:
+                filename = '{}/{}_{}_{}.pkl'.format(self.resultsDir, self.name, objective, multiple)
                 f = open(filename, 'rb')
                 allocations[objective][multiple] = pickle.load(f)
                 f.close()
         return allocations
 
     def getOutcome(self, allocation, objective):
-        modelList = self.oneModelRunWithOutput(allocation)
-        outcome = modelList[-1].getOutcome(objective)
+        model = self.oneModelRunWithOutput(allocation)
+        outcome = model.getOutcome(objective)
         return outcome
+
+    def oneModelRunWithOutput(self, allocationDictionary):
+        model = dcp(self.model)
+        newCoverages = self.getCoverages(allocationDictionary)
+        model.runSimulationFromOptimisation(newCoverages)
+        return model
 
     def getOptimisedOutcomes(self, allocations):
         outcomes = {}
-        for objective in self.objectivesList:
+        for objective in self.objectives:
             outcomes[objective] = {}
-            for multiple in self.cascadeValues:
+            for multiple in self.budgetMultiples:
                 thisAllocation = allocations[objective][multiple]
                 outcomes[objective][multiple] = self.getOutcome(thisAllocation, objective)
         return outcomes
 
     def getCurrentOutcome(self, currentSpending):
         currentOutcome = {}
-        for objective in self.objectivesList:
+        for objective in self.objectives:
             currentOutcome[objective] = {}
-            currentOutcome[objective]['current'] = self.getOutcome(currentSpending, objective)
+            currentOutcome[objective]['current spending'] = self.getOutcome(currentSpending, objective)
         return currentOutcome
 
-    def getBaselineOutcome(self):
-        zeroSpending = {program: 0 for program in self.programList}
+    def getZeroSpendingOutcome(self):
+        zeroSpending = {program.name: 0 for program in self.programs}
         baseline = {}
-        for objective in self.objectivesList:
+        for objective in self.objectives:
             baseline[objective] = {}
-            baseline[objective]['baseline'] = self.getOutcome(zeroSpending, objective)
+            baseline[objective]['zero spending'] = self.getOutcome(zeroSpending, objective)
         return baseline
+
+    def getReferenceOutcome(self, refSpending):
+        reference = {}
+        for objective in self.objectives:
+            reference[objective] = {}
+            reference[objective]['reference spending'] = self.getOutcome(refSpending, objective)
+        return reference
 
     def getCoverages(self, allocations):
         newCoverages = {}
-        for program in self.programList:
-            costCurve = self.costCurves[program]
-            newCoverages[program] = costCurve(allocations[program])
+        for program in self.programs:
+            newCoverages[program.name] = program.costCurveFunc(allocations[program.name]) / program.unrestrictedPopSize
         return newCoverages
 
     def writeAllResults(self):
-        baselineOutcome = self.getBaselineOutcome()
-        currentSpending = self.createDictionary(self.inititalProgramAllocations, self.programList)
+        currentSpending = self.createDictionary(self.currentAllocations)
         currentOutcome = self.getCurrentOutcome(currentSpending)
+        referenceSpending = self.createDictionary(self.referenceAllocations)
+        referenceOutcome = self.getReferenceOutcome(referenceSpending)
         optimisedAllocations = self.readPickles()
         optimisedOutcomes = self.getOptimisedOutcomes(optimisedAllocations)
-        self.writeOutcomesToCSV(baselineOutcome,currentOutcome, optimisedOutcomes)
-        self.writeAllocationsToCSV(currentSpending, optimisedAllocations)
+        currentAdditionalList = [a - b for a, b in zip(self.currentAllocations, self.referenceAllocations)]
+        currentAdditional = self.createDictionary(currentAdditionalList)
+        optimisedAdditional = self.getOptimisedAdditional(optimisedAllocations)
+        coverages = self.getOptimalCoverages(optimisedAllocations)
+        self.writeOutcomesToCSV(referenceOutcome, currentOutcome, optimisedOutcomes)
+        self.writeAllocationsToCSV(referenceSpending, currentAdditional, optimisedAdditional)
+        self.writeCoveragesToCSV(coverages)
 
-    def writeOutcomesToCSV(self, baseline, current, optimised):
-        import csv
+    def getOptimisedAdditional(self, optimised):
+        fixedCostsDict = self.createDictionary(self.fixedAllocations)
+        optimisedAdditional = {}
+        for objective in self.objectives:
+            optimisedAdditional[objective] = {}
+            for multiple in self.budgetMultiples:
+                additionalFunds = optimised[objective][multiple]
+                optimisedAdditional[objective][multiple] = {}
+                for programName in additionalFunds.iterkeys():
+                    optimisedAdditional[objective][multiple][programName] = additionalFunds[programName] - \
+                                                                            fixedCostsDict[programName]
+        return optimisedAdditional
+
+    def getOptimalCoverages(self, optimisedAllocations):
+        coverages = {}
+        for objective in self.objectives:
+            coverages[objective] = {}
+            for multiple in self.budgetMultiples:
+                coverages[objective][multiple] = {}
+                allocations = optimisedAllocations[objective][multiple]
+                for program in self.programs:
+                    # this gives the restricted coverage
+                    coverages[objective][multiple][program.name] = "{0:.2f}".format(
+                        (program.costCurveFunc(allocations[program.name]) / program.restrictedPopSize) * 100.)
+        return coverages
+
+    def writeCoveragesToCSV(self, coverages):
+        filename = '{}/{}_coverages.csv'.format(self.resultsDir, self.name)
+        with open(filename, 'wb') as f:
+            w = writer(f)
+            for objective in self.objectives:
+                w.writerow([''])
+                w.writerow([objective] + sorted(coverages[objective][self.budgetMultiples[0]].keys()))
+                for multiple in self.budgetMultiples:
+                    coverage = OrderedDict(sorted(coverages[objective][multiple].items()))
+                    w.writerow([multiple] + coverage.values())
+
+    def writeOutcomesToCSV(self, reference, current, optimised):
         allOutcomes = {}
-        for objective in self.objectivesList:
+        for objective in self.objectives:
             allOutcomes[objective] = {}
-            allOutcomes[objective].update(baseline[objective])
+            allOutcomes[objective].update(reference[objective])
             allOutcomes[objective].update(current[objective])
             allOutcomes[objective].update(optimised[objective])
-        direc = self.resultDirectories['results']
-        filename = '%s/%s_outcomes.csv'%(direc, self.country)
-        budgets =  ['baseline','current'] + self.cascadeValues
+        filename = '{}/{}_outcomes.csv'.format(self.resultsDir, self.name)
+        budgets = ['reference spending', 'current spending'] + self.budgetMultiples
         with open(filename, 'wb') as f:
-            w = csv.writer(f)
-            for objective in self.objectivesList:
+            w = writer(f)
+            for objective in self.objectives:
                 w.writerow([objective])
                 for multiple in budgets:
                     outcome = allOutcomes[objective][multiple]
-                    w.writerow(['',multiple, outcome])
+                    w.writerow(['', multiple, outcome])
 
-    def writeAllocationsToCSV(self, current, optimised):
-        import csv
-        from collections import OrderedDict
+    def writeAllocationsToCSV(self, reference, current, optimised):
         allSpending = {}
-        for objective in self.objectivesList:
+        for objective in self.objectives:  # do i use this loop?
             allSpending[objective] = {}
             allSpending[objective].update(current)
+            allSpending[objective].update(reference)
             allSpending[objective].update(optimised[objective])
-        direc = self.resultDirectories['results']
-        filename = '%s/%s_allocations.csv'%(direc, self.country)
+        filename = '{}/{}_allocations.csv'.format(self.resultsDir, self.name)
         with open(filename, 'wb') as f:
-            w = csv.writer(f)
+            w = writer(f)
+            sortedRef = OrderedDict(sorted(reference.items()))
+            w.writerow(['reference'] + sortedRef.keys())
+            w.writerow([''] + sortedRef.values())
+            w.writerow([''])
             sortedCurrent = OrderedDict(sorted(current.items()))
             w.writerow(['current'] + sortedCurrent.keys())
-            w.writerow(['']+ sortedCurrent.values())
-            for objective in self.objectivesList:
+            w.writerow([''] + sortedCurrent.values())
+            for objective in self.objectives:
                 w.writerow([''])
-                w.writerow([objective] + sorted(optimised[objective][self.cascadeValues[0]].keys()))
-                for multiple in self.cascadeValues:
+                w.writerow([objective] + sorted(optimised[objective][self.budgetMultiples[0]].keys()))
+                for multiple in self.budgetMultiples:
                     allocation = OrderedDict(sorted(optimised[objective][multiple].items()))
                     w.writerow([multiple] + allocation.values())
 
-    def generateCostCurves(self, model, resultsFileStem=None,
-                           budget=None, cascade=None, scale=True):
-        '''Generates & stores cost curves in dictionary by intervention.'''
-        import costcov
-        costCov = costcov.Costcov()
-        targetPopSize = self.getTargetPopSizeFromModelInstance(model) # TODO: this function could use calculations in the spreadsheet (target pop tab)
-        totalPopSize = self.getAllPopSizes(model)
-        costCurvesDict = {}
-        for intervention in self.data.interventionList:
-            costCurvesDict[intervention] = costCov.getCostCoverageCurve(self.costCoverageInfo[intervention],
-                                                                        targetPopSize[intervention], totalPopSize, self.costCurveType)
-        if resultsFileStem is not None:  # save plot
-            costCov.saveCurvesToPNG(costCurvesDict, self.costCurveType, self.data.interventionList, targetPopSize, resultsFileStem,
-                                    budget, cascade, scale=scale)
-        return costCurvesDict
-
-    def getAllPopSizes(self, model):
-        allCompartments = model.listOfAgeCompartments + model.listOfReproductiveAgeCompartments + model.listOfPregnantWomenAgeCompartments
-        popSizes = {pop.name: pop.getTotalPopulation() for pop in allCompartments}
-        return popSizes
-
-
-
-############# OLD CODE BELOW #############
-
-
-    def performSingleOptimisation(self, MCSampleSize, haveFixedProgCosts):
-        costCoverageInfo = self.getCostCoverageInfo()
-        initialTargetPopSize = self.getInitialTargetPopSize()
-        initialAllocation = getTotalInitialAllocation(self.data, costCoverageInfo, initialTargetPopSize)
-        totalBudget = sum(initialAllocation)
-        xmin = [0.] * len(initialAllocation)
-        # set up and run the model prior to optimising
-        fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation)
-        timestepsPre = 12
-        model = runModelForNTimeSteps(timestepsPre, self.data, model=None)[0]
-        # generate cost curves for each intervention
-        costCurves = self.generateCostCurves(model)
-        args = {'costCurves': costCurves, 'model': model, 'timestepsPre': timestepsPre,
-                'totalBudget': totalBudget, 'fixedCosts': fixedCosts, 'costCoverageInfo': costCoverageInfo,
-                'optimise': self.optimise, 'numModelSteps': self.numModelSteps,
-                'dataSpreadsheetName': self.dataSpreadsheetName, 'data': self.data}
-        self.runOnce(MCSampleSize, xmin, args, self.data.interventionList, totalBudget, self.resultsFileStem+'.pkl')
-        
-    def performSingleOptimisationForGivenTotalBudget(self, MCSampleSize, totalBudget, filename, haveFixedProgCosts):
-        costCoverageInfo = self.getCostCoverageInfo()
-        xmin = [0.] * len(self.data.interventionList)
-        initialTargetPopSize = self.getInitialTargetPopSize() 
-        initialAllocation = getTotalInitialAllocation(self.data, costCoverageInfo, initialTargetPopSize)
-        fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation)
-        timestepsPre = 12
-        # set up and run the model prior to optimising
-        model = runModelForNTimeSteps(timestepsPre, self.data, model=None)[0]
-        # generate cost curves for each intervention
-        costCurves = self.generateCostCurves(model)
-        args = {'costCurves': costCurves, 'model': model, 'timestepsPre': timestepsPre,
-                'totalBudget': totalBudget, 'fixedCosts': fixedCosts, 'costCoverageInfo': costCoverageInfo,
-                'optimise': self.optimise, 'numModelSteps': self.numModelSteps,
-                'dataSpreadsheetName': self.dataSpreadsheetName, 'data': self.data}
-        self.runOnce(MCSampleSize, xmin, args, self.data.interventionList, totalBudget, self.resultsFileStem+filename+'.pkl')
-
-        
-    def performCascadeOptimisation(self, MCSampleSize, cascadeValues, haveFixedProgCosts):
-        timestepsPre = 12
-        costCoverageInfo = self.getCostCoverageInfo()
-        initialTargetPopSize = self.getInitialTargetPopSize()
-        initialAllocation = getTotalInitialAllocation(self.data, costCoverageInfo, initialTargetPopSize)
-        currentTotalBudget = sum(initialAllocation)
-        xmin = [0.] * len(initialAllocation)
-        # set fixed costs if you have them
-        fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation)
-        # run the model prior to optimising
-        model = runModelForNTimeSteps(timestepsPre, self.data, model=None)[0]
-        # generate cost curves for each intervention
-        costCurves = self.generateCostCurves(model)
-        for cascade in cascadeValues:
-            totalBudget = currentTotalBudget * cascade
-            args = {'costCurves': costCurves, 'model': model, 'timestepsPre': timestepsPre,
-                    'totalBudget':totalBudget, 'fixedCosts':fixedCosts, 'costCoverageInfo':costCoverageInfo,
-                    'optimise':self.optimise, 'numModelSteps':self.numModelSteps,
-                    'dataSpreadsheetName':self.dataSpreadsheetName, 'data':self.data}
-            outFile = self.resultsFileStem+'_cascade_'+str(self.optimise)+'_'+str(cascade)+'.pkl'
-            self.runOnce(MCSampleSize, xmin, args, self.data.interventionList, totalBudget, outFile)
-
-    def cascadeParallelRunFunction(self, costCurves, model, timestepsPre, cascadeValue, currentTotalBudget, fixedCosts, spreadsheetData, costCoverageInfo, MCSampleSize, xmin):
-        totalBudget = currentTotalBudget * cascadeValue
-        geneticArgs = (costCurves, model, totalBudget, fixedCosts, costCoverageInfo,
-                       self.optimise, self.numModelSteps, self.dataSpreadsheetName,
-                       spreadsheetData, timestepsPre)
-        asdArgs = {'costCurves': costCurves, 'model': model, 'timestepsPre': timestepsPre,
-                'totalBudget': totalBudget, 'fixedCosts': fixedCosts, 'costCoverageInfo': costCoverageInfo,
-                'optimise': self.optimise, 'numModelSteps': self.numModelSteps,
-                'dataSpreadsheetName': self.dataSpreadsheetName, 'data': spreadsheetData}
-        outFile = self.resultsFileStem+'_cascade_'+str(self.optimise)+'_'+str(cascadeValue)+'.pkl'
-        self.runOnce(MCSampleSize, xmin, geneticArgs, asdArgs, spreadsheetData.interventionList, totalBudget, outFile)
-
-    def performParallelCascadeOptimisation(self, MCSampleSize, cascadeValues, numCores, haveFixedProgCosts):
-        from multiprocessing import Process
-        xmin = [0.] * len(self.inititalProgramAllocations)
-        timestepsPre = 12
-        # set fixed costs if you have them
-        fixedCosts = self.getFixedCosts(haveFixedProgCosts, self.inititalProgramAllocations)
-        # check that you have enough cores and don't parallelise if you don't
-        if numCores < len(cascadeValues):
-            print "numCores is not enough"
-        else:
-            for value in cascadeValues:
-                prc = Process(
-                    target=self.cascadeParallelRunFunction,
-                    args=(self.costCurves, self.model, timestepsPre, value, self.totalBudget, fixedCosts, self.data,
-                            self.costCoverageInfo, MCSampleSize, xmin))
-                prc.start()
-
-        
-    def performParallelSampling(self, MCSampleSize, haveFixedProgCosts, numRuns, filename):
-        from multiprocessing import Process
-        costCoverageInfo = self.getCostCoverageInfo()
-        initialTargetPopSize = self.getInitialTargetPopSize()          
-        initialAllocation = getTotalInitialAllocation(self.data, costCoverageInfo, initialTargetPopSize)
-        currentTotalBudget = sum(initialAllocation)
-        xmin = [0.] * len(initialAllocation)
-        # set fixed costs if you have them
-        fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation) 
-        runOnceArgs = {'totalBudget':currentTotalBudget, 'fixedCosts':fixedCosts, 'costCoverageInfo':costCoverageInfo,
-                       'optimise':self.optimise, 'numModelSteps':self.numModelSteps, 'dataSpreadsheetName':self.dataSpreadsheetName, 'data':self.data}
-        for i in range(numRuns):
-            prc = Process(
-                target=self.runOnceDumpFullOutputToFile, 
-                args=(MCSampleSize, xmin, runOnceArgs, self.data.interventionList, currentTotalBudget, filename+"_"+str(i)))
-            prc.start()    
-
-    def performParallelCascadeOptimisationAlteredInterventionEffectiveness(self, MCSampleSize, cascadeValues, numCores, haveFixedProgCosts, intervention, effectiveness, savePlot):
-        from multiprocessing import Process
-        costCoverageInfo = self.getCostCoverageInfo()
-        initialTargetPopSize = self.getInitialTargetPopSize()
-        initialAllocation = getTotalInitialAllocation(self.data, costCoverageInfo, initialTargetPopSize)
-        currentTotalBudget = sum(initialAllocation)
-        xmin = [0.] * len(initialAllocation)
-        timestepsPre = 12
-        # set fixed costs if you have them
-        fixedCosts = self.getFixedCosts(haveFixedProgCosts, initialAllocation)
-        # alter mortality & incidence effectiveness
-        for ageName in self.helper.keyList['ages']:
-            self.data.effectivenessMortality[intervention][ageName]['Diarrhea'] *= effectiveness
-            self.data.effectivenessIncidence[intervention][ageName]['Diarrhea'] *= effectiveness
-        # set up and run the model prior to optimising
-        model = runModelForNTimeSteps(timestepsPre, self.data, model=None)[0]
-        # generate cost curves for each intervention
-        if savePlot:
-            resultsPath = self.resultsFileStem
-        else:
-            resultsPath = None
-        costCurves = self.generateCostCurves(model, resultsFileStem=resultsPath, budget=currentTotalBudget, cascade=cascadeValues)
-        # check that you have enough cores and don't parallelise if you don't
-        if numCores < len(cascadeValues):
-            print "numCores is not enough"
-        else:
-            for value in cascadeValues:
-                prc = Process(
-                    target=self.cascadeParallelRunFunction,
-                    args=(costCurves, model, timestepsPre, value, currentTotalBudget, fixedCosts, self.data,
-                            costCoverageInfo, MCSampleSize, xmin))
-                prc.start()
-        
-    def getFixedCosts(self, haveFixedProgCosts, initialAllocation):
-        # warning! if there are custom costs  haveFixedProgCosts must be False
-        from copy import deepcopy as dcp
-        if haveFixedProgCosts:
-            fixedCosts = dcp(initialAllocation)
-        else:
-            fixedCosts = [0.] * len(initialAllocation)
-        return fixedCosts
-        
-    def setCustomFixedCosts(self, customInterventionList):
-        # fixes costs so interventions in interventionsList can not be defunded
-        fixedCosts = []
-        for intervention in range(len(self.data.interventionList)):
-            thisIntervention = self.data.interventionList[intervention]
-            if thisIntervention in customInterventionList:
-                fixedCosts.append(self.inititalProgramAllocations[intervention])
-            else:
-                fixedCosts.append(0.)
-        self.fixedCosts = fixedCosts        
-
-    def getTotalInitialAllocation(self):
-        import costcov
-        costCov = costcov.Costcov()
-        allocations = []
-        for intervention in self.data.interventionList:
-            coverageFraction = self.data.coverage[intervention]
-            coverageNumber = coverageFraction * self.targetPopSize[intervention]
-            spending = costCov.getSpending(coverageNumber, self.costCoverageInfo[intervention],
-                                               self.targetPopSize[intervention])
-            allocations.append(spending)
-        return allocations
-    
-    def runOnce(self, MCSampleSize, xmin, geneticArgs, asdArgs, interventionList, totalBudget, filename):
-        import asd as asd
-        import pickle
-        from operator import add
-        from scipy.optimize import differential_evolution
-        numInterventions = len(interventionList)
-        scenarioMonteCarloOutput = []
-        bounds = [(0., totalBudget)] * numInterventions
-        xmax = [totalBudget] * numInterventions
-        for r in range(0, MCSampleSize):
-            result = differential_evolution(objectiveFunction, bounds=bounds,args=geneticArgs, maxiter=3, popsize=15, disp=True)
-            proposalAllocation = result.x
-            budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, proposalAllocation, asdArgs, xmin = xmin, xmax=xmax, verbose = 1)
-            outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval, output.x)
-            scenarioMonteCarloOutput.append(outputOneRun)
-        # find the best
-        bestSample = scenarioMonteCarloOutput[0]
-        for sample in range(0, len(scenarioMonteCarloOutput)):
-            if scenarioMonteCarloOutput[sample].fval < bestSample.fval:
-                bestSample = scenarioMonteCarloOutput[sample]
-        # scale it to available budget, add the fixed costs and make it a dictionary
-        bestSampleBudget = bestSample.budgetBest
-        availableBudget = totalBudget - sum(asdArgs['fixedCosts'])
-        bestSampleBudgetScaled = rescaleAllocation(availableBudget, bestSampleBudget)
-        bestSampleBudgetScaled = map(add, bestSampleBudgetScaled, asdArgs['fixedCosts'])
-        bestSampleBudgetScaledDict = {}
-        for i in range(0, len(interventionList)):
-            intervention = interventionList[i]
-            bestSampleBudgetScaledDict[intervention] = bestSampleBudgetScaled[i]
-        # put it in a filex
-        outfile = open(filename, 'wb')
-        pickle.dump(bestSampleBudgetScaledDict, outfile)
-        outfile.close()
-
-    def getTargetPopSizeFromModelInstance(self, model):
-        targetPopSize = {}
-        keyList = self.helper.keyList
-        for intervention in self.data.interventionCompleteList:
-            targetPopSize[intervention] = 0.
-            # children
-            numAgeGroups = len(keyList['ages'])
-            for iAge in range(numAgeGroups):
-                ageName = keyList['ages'][iAge]
-                if ("IFAS" in intervention) or ("IYCF" in intervention):
-                    target = 0.
-                else:
-                    target = self.data.targetPopulation[intervention][ageName]
-                targetPopSize[intervention] += target * model.listOfAgeCompartments[iAge].getTotalPopulation()
-            # pregnant women
-            numAgeGroups = len(keyList['pregnantWomenAges'])
-            for iAge in range(numAgeGroups):
-                ageName = keyList['pregnantWomenAges'][iAge]
-                if ("IFAS" in intervention) or ("IYCF" in intervention):
-                    target = 0.
-                else:
-                    target = self.data.targetPopulation[intervention][ageName]
-                targetPopSize[intervention] += target * model.listOfPregnantWomenAgeCompartments[
-                    iAge].getTotalPopulation()
-            # women of reproductive age
-            numAgeGroups = len(keyList['reproductiveAges'])
-            for iAge in range(numAgeGroups):
-                ageName = keyList['reproductiveAges'][iAge]
-                if ("IFAS" in intervention) or ("IYCF" in intervention):
-                    target = 0.
-                else:
-                    target = self.data.targetPopulation[intervention][ageName]
-                targetPopSize[intervention] += target * model.listOfReproductiveAgeCompartments[
-                    iAge].getTotalPopulation()
-            # for food fortification set target population size as entire population
-            if "IFA fortification" in intervention:
-                targetPopSize[intervention] = self.data.demographics['total population']
-            # for WASH interventions set target population size as entire population
-            if "WASH" in intervention:
-               targetPopSize[intervention] =  self.data.demographics['total population']    
-        # get IFAS target populations separately
-        fromModel = True
-        targetPopSize.update(self.helper.setIFASTargetPopWRA(self.data, model, fromModel))
-        # IYCF target pops
-        targetPopSize.update(self.helper.setIYCFTargetPopSize(self.data, model))
-        return targetPopSize
-
-    def runOnceDumpFullOutputToFile(self, MCSampleSize, xmin, args, interventionList, totalBudget, filename):        
-        # Ruth wrote this function to aid in creating data for the Health Hack weekend        
-        import asd as asd 
-        import numpy as np
-        from operator import add
-        import csv
-        numInterventions = len(interventionList)
-        scaledOutputX = []
-        fvalVector = []
-        availableBudget = totalBudget - sum(args['fixedCosts'])
-        for r in range(0, MCSampleSize):
-            proposalAllocation = np.random.rand(numInterventions)
-            budgetBest, fval, exitflag, output = asd.asd(objectiveFunction, proposalAllocation, args, xmin = xmin, verbose = 0) 
-            # add each of the samples to the big vectors   
-            for sample in range(len(output.fval)):
-                scaledBudget = rescaleAllocation(availableBudget, output.x[sample])
-                scaledBudget = map(add, scaledBudget, args['fixedCosts']) 
-                scaledOutputX.append(scaledBudget)
-                fvalVector.append(output.fval[sample])   
-        # output samples to csv     
-        outfilename = '%s.csv'%(filename)
-        header = ['fval'] + interventionList
-        rows = []
-        for sample in range(len(fvalVector)):
-            valArray = [fvalVector[sample]] + scaledOutputX[sample]
-            rows.append(valArray)
-        with open(outfilename, "wb") as f:
-                writer = csv.writer(f)
-                writer.writerow(header)
-                writer.writerows(rows)
-        
-    def getInitialAllocationDictionary(self):
-        costCoverageInfo = self.getCostCoverageInfo()
-        targetPopSize = self.getInitialTargetPopSize()        
-        initialAllocation = getTotalInitialAllocation(self.data, costCoverageInfo, targetPopSize)
-        initialAllocationDictionary = {}
-        for i in range(0, len(self.data.interventionList)):
-            intervention = self.data.interventionList[i]
-            initialAllocationDictionary[intervention] = initialAllocation[i]
-        return initialAllocationDictionary 
-        
-    def getTotalInitialBudget(self):
-        costCoverageInfo = self.getCostCoverageInfo()
-        targetPopSize = self.getInitialTargetPopSize()        
-        initialAllocation = getTotalInitialAllocation(self.data, costCoverageInfo, targetPopSize)
-        return sum(initialAllocation)
-
-        
-    def oneModelRunWithOutput(self, allocationDictionary):
-        model, modelList = runModelForNTimeSteps(self.timeStepsPre, self.data, model=None, saveEachStep=True)
-        newCoverages = self.getCoverages(allocationDictionary)
-        model.updateCoverages(newCoverages)
-        steps = self.numModelSteps - self.timeStepsPre
-        modelList += runModelForNTimeSteps(steps, self.data, model, saveEachStep=True)[1]
-        return modelList
-    
-        
-    def getCostCoverageInfo(self):
-        from copy import deepcopy as dcp
-        costCoverageInfo = {}
-        for intervention in self.data.interventionList:
-            costCoverageInfo[intervention] = {}
-            costCoverageInfo[intervention]['unitcost']   = dcp(self.data.costSaturation[intervention]["unit cost"])
-            costCoverageInfo[intervention]['saturation'] = dcp(self.data.costSaturation[intervention]["saturation coverage"])
-        return costCoverageInfo
-        
-    def getInitialTargetPopSize(self):
-        import helper
-        thisHelper = helper.Helper()
-        targetPopSize = {}
-        for intervention in self.data.interventionCompleteList:
-            targetPopSize[intervention] = 0.
-            # children
-            agePopSizes  = self.helper.makeAgePopSizes(self.data)
-            numAgeGroups = len(self.helper.keyList['ages'])
-            for iAge in range(numAgeGroups):
-                ageName = self.helper.keyList['ages'][iAge]
-                if ("IFAS" in intervention) or ("IYCF" in intervention):
-                    target = 0.
-                else:    
-                    target = self.data.targetPopulation[intervention][ageName]
-                targetPopSize[intervention] += target * agePopSizes[iAge]
-            # pregnant women
-            agePopSizes = self.helper.makePregnantWomenAgePopSizes(self.data)
-            numAgeGroups = len(self.helper.keyList['pregnantWomenAges'])    
-            for iAge in range(numAgeGroups):
-                ageName = self.helper.keyList['pregnantWomenAges'][iAge] 
-                if ("IFAS" in intervention) or ("IYCF" in intervention):
-                    target = 0.
-                else:    
-                    target = self.data.targetPopulation[intervention][ageName]
-                targetPopSize[intervention] += target * agePopSizes[iAge]
-            # women of reproductive age
-            agePopSizes = self.helper.makeWRAAgePopSizes(self.data)
-            numAgeGroups = len(self.helper.keyList['reproductiveAges'])    
-            for iAge in range(numAgeGroups):
-                ageName = self.helper.keyList['reproductiveAges'][iAge] 
-                if ("IFAS" in intervention) or ("IYCF" in intervention):
-                    target = 0.
-                else:
-                    target = self.data.targetPopulation[intervention][ageName]
-                targetPopSize[intervention] += target * agePopSizes[iAge]
-            # for food fortification set target population size as entire population
-            if "fortification" in intervention:
-               targetPopSize[intervention] =  self.data.demographics['total population']
-            # for WASH interventions set target population size as entire population
-            if "WASH" in intervention:
-               targetPopSize[intervention] =  self.data.demographics['total population']   
-        #add IFAS intervention target pop sizes to dictionary  
-        fromModel = False       
-        targetPopSize.update(thisHelper.setIFASTargetPopWRA(self.data, "dummyModel", fromModel))
-        # IYCF pop size
-        targetPopSize.update(thisHelper.setIYCFTargetPopSize(self.data, 'dummyModel', fromModel))
-        return targetPopSize
-    
-    
-    def generateBOCVectors(self, regionNameList, cascadeValues, outcome):
-        import pickle
-        costCoverageInfo = self.getCostCoverageInfo()
-        targetPopSize = self.getInitialTargetPopSize()
-        initialAllocation = getTotalInitialAllocation(self.data, costCoverageInfo, targetPopSize)
-        currentTotalBudget = sum(initialAllocation)            
-        spendingVector = []        
-        outcomeVector = []
-        for cascade in cascadeValues:
-            spendingVector.append(cascade * currentTotalBudget)
-            filename = self.resultsFileStem + '_cascade_' + str(self.optimise) + '_' + str(cascade)+'.pkl'
-            infile = open(filename, 'rb')
-            thisAllocation = pickle.load(infile)
-            infile.close()
-            modelOutput = self.oneModelRunWithOutput(thisAllocation)
-            outcomeVector.append(modelOutput[self.numModelSteps-1].getOutcome(outcome))
-        return spendingVector, outcomeVector    
-        
-    def plotReallocation(self):
-        from plotting import plotallocations 
-        import pickle
-        baselineAllocation = self.getInitialAllocationDictionary()
-        filename = '%s_cascade_%s_1.0.pkl'%(self.resultsFileStem, self.optimise)
-        infile = open(filename, 'rb')
-        optimisedAllocation = pickle.load(infile)
-        infile.close()
-        # plot
-        plotallocations(baselineAllocation,optimisedAllocation)    
-        
-    def getTimeSeries(self, outcomeOfInterest):
-        import pickle
-        from copy import deepcopy as dcp
-        allocation = {}
-        # Baseline
-        allocation['baseline'] = self.getInitialAllocationDictionary()
-        # read the optimal budget allocations from file
-        filename = '%s_cascade_%s_1.0.pkl'%(self.resultsFileStem, self.optimise)
-        infile = open(filename, 'rb')
-        allocation[self.optimise] = pickle.load(infile)
-        infile.close()
-        scenarios = ['baseline', dcp(self.optimise)]
-        # run models and save output 
-        print "performing model runs to generate time series..."
-        modelRun = {}
-        for scenario in scenarios:
-            modelRun[scenario] = self.oneModelRunWithOutput(allocation[scenario])
-        # get y axis
-        objective = {}    
-        objectiveYearly = {}
-        for scenario in scenarios:
-            objective[scenario] = []
-            objective[scenario].append(modelRun[scenario][0].getOutcome(outcomeOfInterest))
-            for i in range(1, self.numModelSteps):
-                difference = modelRun[scenario][i].getOutcome(outcomeOfInterest) - modelRun[scenario][i-1].getOutcome(outcomeOfInterest)
-                objective[scenario].append(difference)
-            # make it yearly
-            numYears = self.numModelSteps/12
-            objectiveYearly[scenario] = []
-            for i in range(0, numYears):
-                step = i*12
-                objectiveYearly[scenario].append( sum(objective[scenario][step:12+step]) )
-        years = range(2016, 2016 + numYears)
-        self.timeSeries = {'years':years, 'objectiveYearly':objectiveYearly}
-    
-    def plotTimeSeries(self, outcomeOfInterest):
-        from plotting import plotTimeSeries
-        if self.timeSeries == None:
-            self.getTimeSeries(outcomeOfInterest)
-        title = self.optimise
-        plotTimeSeries(self.timeSeries['years'], self.timeSeries['objectiveYearly']['baseline'], self.timeSeries['objectiveYearly'][self.optimise], title)
-
-    def outputTimeSeriesToCSV(self, outcomeOfInterest):
-        import csv
-        # WARNING: MAKE A NEW Optimisation CLASS OBJECT FOR EACH outcomeOfInterest
-        if self.timeSeries == None:
-            self.getTimeSeries(outcomeOfInterest)   
-        years = self.timeSeries['years']
-        objectiveYearly = self.timeSeries['objectiveYearly']
-        # write time series to csv    
-        headings = ['Year', outcomeOfInterest+" (baseline)", outcomeOfInterest+" (min "+self.optimise+")"]
-        rows = []
-        for i in range(len(years)):
-            year = years[i]
-            valarray = [year, objectiveYearly['baseline'][i], objectiveYearly[self.optimise][i]]
-            rows.append(valarray)
-        rows.sort()                
-        outfilename = '%s_annual_timeseries_%s_min_%s.csv'%(self.resultsFileStem, outcomeOfInterest, self.optimise)
-        with open(outfilename, "wb") as f:
-            writer = csv.writer(f)
-            writer.writerow(headings)
-            writer.writerows(rows)   
-            
-    def outputCascadeAndOutcomeToCSV(self, cascadeValues, outcomeOfInterest): # TODO: need to fix this, but maybe should start with 0.0 as the baseline value
-            import csv
-            import pickle
-            from copy import deepcopy as dcp
-            cascadeData = {}
-            outcome = {}
-            thisCascade = dcp(cascadeValues)
-            for multiple in thisCascade:
-                filename = '%s_cascade_%s_%s.pkl'%(self.resultsFileStem, self.optimise, str(multiple))
-                infile = open(filename, 'rb')
-                allocation = pickle.load(infile)
-                cascadeData[multiple] = allocation
-                infile.close()
-                modelOutput = self.oneModelRunWithOutput(allocation)
-                outcome[multiple] = modelOutput[self.numModelSteps-1].getOutcome(outcomeOfInterest)
-            # write the cascade csv
-            prognames = returnAlphabeticalDictionary(cascadeData[cascadeValues[0]]).keys()            
-            prognames.insert(0, 'Multiple of current budget')
-            rows = []
-            for i in range(len(thisCascade)):
-                allocationDict = cascadeData[cascadeValues[i]]                
-                allocationDict = returnAlphabeticalDictionary(allocationDict)
-                valarray = allocationDict.values()
-                valarray.insert(0, thisCascade[i])
-                rows.append(valarray)
-            rows.sort()                
-            outfilename = '%s_cascade_min_%s.csv'%(self.resultsFileStem, self.optimise)
-            with open(outfilename, "wb") as f: # TODO: THIS WRITEs THE BUDGET CASCADE with allocations
-                writer = csv.writer(f)
-                writer.writerow(prognames)
-                writer.writerows(rows)
-            # write the outcome csv    
-            headings = ['Multiple of current budget', outcomeOfInterest+" (min "+self.optimise+")"]
-            rows = []
-            for i in range(len(thisCascade)):
-                multiple = thisCascade[i]
-                valarray = [multiple, outcome[multiple]]
-                rows.append(valarray)
-            rows.sort()                
-            outfilename = '%s_cascade_%s_outcome_min_%s.csv'%(self.resultsFileStem, outcomeOfInterest, self.optimise)
-            with open(outfilename, "wb") as f:
-                writer = csv.writer(f)
-                writer.writerow(headings)
-                writer.writerows(rows)
-                
-    def outputCurrentSpendingToCSV(self):
-        import csv
-        currentSpending = self.getInitialAllocationDictionary()
-        currentSpending = returnAlphabeticalDictionary(currentSpending)
-        for objective in self.objectivesList:
-            outfilename = '%s_current_spending.csv'%(self.resultsFileStem[objective]) # TODO: change this for dictionary
-            with open(outfilename, "wb") as f:
-                    writer = csv.writer(f)
-                    writer.writerow(currentSpending.keys())
-                    writer.writerow(currentSpending.values())
-             
-
-
-
 
 class GeospatialOptimisation:
-    def __init__(self, regionSpreadsheetList, regionNameList, numModelSteps, cascadeValues, optimise, resultsFileStem, costCurveType):
-        self.regionSpreadsheetList = regionSpreadsheetList
-        self.regionNameList = regionNameList
-        self.numModelSteps = numModelSteps
-        self.cascadeValues = cascadeValues
-        self.optimise = optimise
-        self.resultsFileStem = resultsFileStem
-        self.costCurveType = costCurveType
-        self.numRegions = len(regionSpreadsheetList)        
-        self.regionalBOCs = None 
-        self.tradeOffCurves = None
-        self.postGATimeSeries = None
-        # check that results directory exists and if not then create it
-        import os
-        if not os.path.exists(resultsFileStem):
-            os.makedirs(resultsFileStem)        
-        
-    def generateAllRegionsBOC(self):
-        print 'reading files to generate regional BOCs..'
-        import optimisation
-        import math
-        from copy import deepcopy as dcp
-        regionalBOCs = {}
-        regionalBOCs['spending'] = []
-        regionalBOCs['outcome'] = [] 
-        totalNationalBudget = self.getTotalNationalBudget()
-        for region in range(0, self.numRegions):
-            print 'generating BOC for region: ', self.regionNameList[region]
-            thisSpreadsheet = self.regionSpreadsheetList[region]
-            filename = self.resultsFileStem + self.regionNameList[region]
-            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, filename, 'dummyCostCurve')
-            # if final cascade value is 'extreme' replace it with value we used to generate .pkl file
-            thisCascade = dcp(self.cascadeValues)            
-            if self.cascadeValues[-1] == 'extreme':
-                regionalTotalBudget = thisOptimisation.getTotalInitialBudget()
-                thisCascade[-1] = math.ceil(totalNationalBudget / regionalTotalBudget)            
-            spending, outcome = thisOptimisation.generateBOCVectors(self.regionNameList, thisCascade, self.optimise)            
-            regionalBOCs['spending'].append(spending)
-            regionalBOCs['outcome'].append(outcome)
-        print 'finished generating regional BOCs from files'    
-        self.regionalBOCs = regionalBOCs    
-        
-    def outputRegionalBOCsFile(self, filename):
-        import pickle 
-        # if BOCs not generated, generate them
-        if self.regionalBOCs == None:
-            self.generateAllRegionsBOC()
-        regionalBOCsReformat = {}
-        for region in range(0, self.numRegions):
-            regionName = self.regionNameList[region]
-            regionalBOCsReformat[regionName] = {}
-            for key in ['spending', 'outcome']:
-                regionalBOCsReformat[regionName][key] = self.regionalBOCs[key][region]
-        outfile = open(filename, 'wb')
-        pickle.dump(regionalBOCsReformat, outfile)
-        outfile.close()         
-        
-    def outputTradeOffCurves(self):
-        #import pickle
-        import csv
-        if self.tradeOffCurves == None:
-            self.getTradeOffCurves()
-        #outfile = open(filename, 'wb')
-        #pickle.dump(self.tradeOffCurves, outfile)
-        #outfile.close()  
-        outfilename = '%strade_off_curves.csv'%(self.resultsFileStem)    
-        with open(outfilename, "wb") as f:        
-            writer = csv.writer(f)            
-            for region in range(self.numRegions):
-                regionName = self.regionNameList[region]
-                row1 = ['spending'] + self.tradeOffCurves[regionName]['spending']
-                row2 = ['outcome'] + self.tradeOffCurves[regionName]['outcome']
-                writer.writerow([regionName])
-                writer.writerow(row1)
-                writer.writerow(row2)
-        
-    def getTradeOffCurves(self):
-        # if BOCs not generated, generate them
-        if self.regionalBOCs == None:
-            self.generateAllRegionsBOC()
-        # get index for cascade value of 1.0
-        i = 0
-        for value in self.cascadeValues:
-            if (value == 1.0):
-                index = i
-            i += 1    
-        tradeOffCurves = {}
-        for region in range(0, self.numRegions):
-            regionName = self.regionNameList[region]
-            currentSpending = self.regionalBOCs['spending'][region][index]
-            currentOutcome = self.regionalBOCs['outcome'][region][index]
-            tradeOffCurves[regionName] = {}
-            spendDifference = []
-            outcomeAverted = []            
-            for i in range(len(self.cascadeValues)):
-                spendDifference.append( self.regionalBOCs['spending'][region][i] - currentSpending )
-                if self.optimise == 'thrive':
-                    outcomeAverted.append( self.regionalBOCs['outcome'][region][i] - currentOutcome )
-                else:
-                    outcomeAverted.append( currentOutcome - self.regionalBOCs['outcome'][region][i]  )
-            tradeOffCurves[regionName]['spending'] = spendDifference
-            tradeOffCurves[regionName]['outcome'] = outcomeAverted
-        self.tradeOffCurves = tradeOffCurves    
-    
-    def plotTradeOffCurves(self):
-        import plotting
-        self.getTradeOffCurves()
-        plotting.plotTradeOffCurves(self.tradeOffCurves, self.regionNameList, self.optimise)     
+    def __init__(self, objectives, root, regionNames, numYears=None, costCurveType='linear'):
+        self.root = root
+        self.analysisType = 'regional'
+        thisDate = date.today().strftime('%Y%b%d')
+        self.resultsDir = os.path.join('results', thisDate)
+        self.objectives = objectives
+        self.budgetMultiples = [0, 0.01, 0.025, 0.04, 0.05, 0.075, 0.1, 0.2, 0.3, 0.6, 1]  # these multiples are in the interval (minFreeFunds, maxFreeFunds)
+        self.regionNames = regionNames
+        self.numYears = numYears
+        self.numRegions = len(regionNames)
+        budgetFilePath = os.path.join(self.root, 'data', 'optimisationBudgets.xlsx')
+        self.scenarios = BudgetScenarios(budgetFilePath).getScenarios()  # TODO: super ugly file-finding
+        self.BOCs = {}
 
-    
-    def plotRegionalBOCs(self):
-        import plotting
-        plotting.plotRegionalBOCs(self.regionalBOCs, self.regionNameList, self.optimise)
-        
-    def getTotalNationalBudget(self):
-        import optimisation
-        regionalBudgets = []
-        for region in range(0, self.numRegions):
-            thisSpreadsheet = self.regionSpreadsheetList[region]
-            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, 'dummyFileName', 'dummyCostCurve')        
-            regionTotalBudget = thisOptimisation.getTotalInitialBudget()
-            regionalBudgets.append(regionTotalBudget)
-        nationalTotalBudget = sum(regionalBudgets)
-        return nationalTotalBudget
-        
-    def getCurrentRegionalBudgets(self):
-        import optimisation
-        regionalBudgets = []
-        for region in range(0, self.numRegions):
-            thisSpreadsheet = self.regionSpreadsheetList[region]
-            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, 'dummyFileName', 'dummyCurve')        
-            regionTotalBudget = thisOptimisation.getTotalInitialBudget()
-            regionalBudgets.append(regionTotalBudget)
-        return regionalBudgets    
-    
+    def getNationalCurrentSpending(self):
+        nationalFunds = 0
+        for name in self.regionNames:
+            fileInfo = [self.root, self.analysisType, name, '']
+            thisRegion = Optimisation([], [], fileInfo, fixCurrentAllocations=False, createResultsDir=False)
+            nationalFunds += thisRegion.freeFunds
+        return nationalFunds
 
-    def generateResultsForGeospatialCascades(self, MCSampleSize):
-        import optimisation  
-        import math
-        from copy import deepcopy as dcp
-        totalNationalBudget = self.getTotalNationalBudget()
-        for region in range(0, self.numRegions):
-            regionName = self.regionNameList[region]
-            spreadsheet = self.regionSpreadsheetList[region]
-            filename = self.resultsFileStem + regionName
-            thisOptimisation = optimisation.Optimisation(spreadsheet, self.numModelSteps, self.optimise, filename)
-            thisCascade = dcp(self.cascadeValues)
-            # if final cascade value is 'extreme' replace it with totalNationalBudget / current regional total budget
-            if self.cascadeValues[-1] == 'extreme':
-                regionalTotalBudget = thisOptimisation.getTotalInitialBudget()
-                thisCascade[-1] = math.ceil(totalNationalBudget / regionalTotalBudget) # this becomes a file name so keep it as an integer
-            thisOptimisation.performCascadeOptimisation(MCSampleSize, thisCascade)
-            
-    def generateParallelResultsForGeospatialCascades(self, numCores, MCSampleSize, haveFixedProgCosts, splitCascade):
-        import optimisation  
-        import math
-        from copy import deepcopy as dcp
-        from multiprocessing import Process
-        numParallelCombinations = len(self.cascadeValues) * self.numRegions
-        #  assume 1 core per combination and then
-        # check that you've said you have enough and don't parallelise if you don't
-        if numCores < numParallelCombinations:
-            print "num cores is not enough"
-        else:   
-            totalNationalBudget = self.getTotalNationalBudget()
-            for region in range(0, self.numRegions):
-                regionName = self.regionNameList[region]
-                spreadsheet = self.regionSpreadsheetList[region]
-                filename = self.resultsFileStem + regionName
-                thisOptimisation = optimisation.Optimisation(spreadsheet, self.numModelSteps, self.optimise, filename, self.costCurveType)
-                subNumCores = len(self.cascadeValues)
-                thisCascade = dcp(self.cascadeValues)
-                # if final cascade value is 'extreme' replace it with totalNationalBudget / current regional total budget
-                if self.cascadeValues[-1] == 'extreme':
-                    regionalTotalBudget = thisOptimisation.getTotalInitialBudget()
-                    thisCascade[-1] = math.ceil(totalNationalBudget / regionalTotalBudget) # this becomes a file name so keep it as an integer
-                if splitCascade:    
-                    thisOptimisation.performParallelCascadeOptimisation(MCSampleSize, thisCascade, subNumCores, haveFixedProgCosts)  
-                else:
-                    prc = Process(target=thisOptimisation.performCascadeOptimisation, args=(MCSampleSize, thisCascade, haveFixedProgCosts))
-                    prc.start()
-                
-                
+    def readBOC(self, region, objective):
+        filename = os.path.join(self.newResultsDir, 'BOCs', objective, 'pickles', region + '.csv')
+        with open(filename, 'rb') as f:
+            regionalSpending = []
+            regionalOutcome = []
+            r = reader(f)
+            for row in r:
+                regionalSpending.append(row[0])
+                regionalOutcome.append(row[1])
+        # remove column headers
+        regionalSpending = array(regionalSpending[1:])
+        regionalOutcome = array(regionalOutcome[1:])
+        return regionalSpending, regionalOutcome
 
-    def getOptimisedRegionalBudgetList(self, geoMCSampleSize):
-        import asd
-        import numpy as np
-        xmin = [0.] * self.numRegions
-        # if BOCs not generated, generate them
-        if self.regionalBOCs == None:
-            self.generateAllRegionsBOC()
-        totalBudget = self.getTotalNationalBudget()
-        scenarioMonteCarloOutput = []
-        for r in range(0, geoMCSampleSize):
-            proposalSpendingList = np.random.rand(self.numRegions)
-            args = {'regionalBOCs':self.regionalBOCs, 'totalBudget':totalBudget, 'optimise':self.optimise}
-            budgetBest, fval, exitflag, output = asd.asd(geospatialObjectiveFunction, proposalSpendingList, args, xmin = xmin, verbose = 2)  
-            outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval, output.x)        
-            scenarioMonteCarloOutput.append(outputOneRun)         
-        # find the best
-        bestSample = scenarioMonteCarloOutput[0]
-        for sample in range(0, len(scenarioMonteCarloOutput)):
-            if scenarioMonteCarloOutput[sample].fval < bestSample.fval:
-                bestSample = scenarioMonteCarloOutput[sample]
-        bestSampleScaled = rescaleAllocation(totalBudget, bestSample.budgetBest)        
-        optimisedRegionalBudgetList = bestSampleScaled  
-        return optimisedRegionalBudgetList
-        
-    def getOptimisedRegionalBudgetListExtraMoney(self, geoMCSampleSize, extraMoney):
-        import asd
-        import numpy as np
-        from operator import add
-        xmin = [0.] * self.numRegions
-        # if BOCs not generated, generate them
-        if self.regionalBOCs == None:
-            self.generateAllRegionsBOC()
-        currentRegionalSpendingList = self.getCurrentRegionalBudgets()
-        scenarioMonteCarloOutput = []
-        for r in range(0, geoMCSampleSize):
-            proposalSpendingList = np.random.rand(self.numRegions)
-            args = {'regionalBOCs':self.regionalBOCs, 'currentRegionalSpendingList':currentRegionalSpendingList, 'extraMoney':extraMoney, 'optimise':self.optimise}
-            budgetBest, fval, exitflag, output = asd.asd(geospatialObjectiveFunctionExtraMoney, proposalSpendingList, args, xmin = xmin, verbose = 2)  
-            outputOneRun = OutputClass(budgetBest, fval, exitflag, output.iterations, output.funcCount, output.fval, output.x)        
-            scenarioMonteCarloOutput.append(outputOneRun)         
-        # find the best
-        bestSample = scenarioMonteCarloOutput[0]
-        for sample in range(0, len(scenarioMonteCarloOutput)):
-            if scenarioMonteCarloOutput[sample].fval < bestSample.fval:
-                bestSample = scenarioMonteCarloOutput[sample]
-        bestSampleScaled = rescaleAllocation(extraMoney, bestSample.budgetBest) 
-        # to get the total optimised regional budgets add the optimised allocation of the extra money to the regional baseline amounts
-        optimisedRegionalBudgetList = map(add, bestSampleScaled, currentRegionalSpendingList)
-        return optimisedRegionalBudgetList    
-        
-    def performGeospatialOptimisation(self, geoMCSampleSize, MCSampleSize, GAFile, haveFixedProgCosts):
-        import optimisation  
-        print 'beginning geospatial optimisation..'
-        optimisedRegionalBudgetList = self.getOptimisedRegionalBudgetList(geoMCSampleSize)
-        print 'finished geospatial optimisation'
-        for region in range(0, self.numRegions):
-            regionName = self.regionNameList[region]
-            print 'optimising for individual region ', regionName
-            thisSpreadsheet = self.regionSpreadsheetList[region]
-            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, self.resultsFileStem, self.costCurveType) 
-            thisBudget = optimisedRegionalBudgetList[region]
-            thisOptimisation.performSingleOptimisationForGivenTotalBudget(MCSampleSize, thisBudget, GAFile+'_'+regionName, haveFixedProgCosts)
-            
-    def performParallelGeospatialOptimisation(self, geoMCSampleSize, MCSampleSize, GAFile, numCores, haveFixedProgCosts):
-        import optimisation  
-        from multiprocessing import Process
-        print 'beginning geospatial optimisation..'
-        optimisedRegionalBudgetList = self.getOptimisedRegionalBudgetList(geoMCSampleSize)
-        print 'finished geospatial optimisation'
-        if self.numRegions >numCores:
-            print "not enough cores to parallelise"
-        else:
-            for region in range(0, self.numRegions):
-                regionName = self.regionNameList[region]
-                print 'optimising for individual region ', regionName
-                thisSpreadsheet = self.regionSpreadsheetList[region]
-                thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, self.resultsFileStem, self.costCurveType)
-                thisBudget = optimisedRegionalBudgetList[region]
-                prc = Process(
-                    target=thisOptimisation.performSingleOptimisationForGivenTotalBudget, 
-                    args=(MCSampleSize, thisBudget, GAFile+'_'+regionName, haveFixedProgCosts))
-                prc.start()
-            prc.join()    
-                
-    def performParallelGeospatialOptimisationExtraMoney(self, geoMCSampleSize, MCSampleSize, GAFile, numCores, extraMoney, haveFixedProgCosts):
-        # this optimisation keeps current regional spending the same and optimises only additional spending across regions        
-        import optimisation  
-        from multiprocessing import Process
-        print 'beginning geospatial optimisation..'
-        optimisedRegionalBudgetList = self.getOptimisedRegionalBudgetListExtraMoney(geoMCSampleSize, extraMoney)
-        print 'finished geospatial optimisation'
-        if self.numRegions >numCores:
-            print "not enough cores to parallelise"
-        else:    
-            for region in range(0, self.numRegions):
-                regionName = self.regionNameList[region]
-                print 'optimising for individual region ', regionName
-                thisSpreadsheet = self.regionSpreadsheetList[region]
-                thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, self.resultsFileStem) 
-                thisBudget = optimisedRegionalBudgetList[region]
-                prc = Process(
-                    target=thisOptimisation.performSingleOptimisationForGivenTotalBudget, 
-                    args=(MCSampleSize, thisBudget, GAFile+'_'+regionName, haveFixedProgCosts))
-                prc.start()    
-            prc.join()    
-        
-    def plotReallocationByRegion(self):
-        from plotting import plotallocations 
-        import pickle
-        import optimisation
-        geospatialAllocations = {}
-        for iReg in range(self.numRegions):
-            regionName = self.regionNameList[iReg]
-            print regionName
-            thisOptimisation = optimisation.Optimisation(self.regionSpreadsheetList[iReg], self.numModelSteps, self.optimise, 'dummyFilename', self.costCurveType)
-            geospatialAllocations[regionName] = {}
-            geospatialAllocations[regionName]['baseline'] = thisOptimisation.getInitialAllocationDictionary()
-            filename = '%s%s_cascade_%s_1.0.pkl'%(self.resultsFileStem, regionName, self.optimise)
-            infile = open(filename, 'rb')
-            allocation = pickle.load(infile)
-            geospatialAllocations[regionName][self.optimise] = allocation
-            infile.close()
-            # plot
-            plotallocations(geospatialAllocations[regionName]['baseline'],geospatialAllocations[regionName][self.optimise])
-            
-    def plotPostGAReallocationByRegion(self, GAFile):
-        from plotting import plotallocations 
-        import pickle
-        import optimisation
-        geospatialAllocations = {}
-        for iReg in range(self.numRegions):
-            regionName = self.regionNameList[iReg]
-            print regionName
-            thisOptimisation = optimisation.Optimisation(self.regionSpreadsheetList[iReg], self.numModelSteps, self.optimise, 'dummyFilename', self.costCurveType)
-            geospatialAllocations[regionName] = {}
-            geospatialAllocations[regionName]['baseline'] = thisOptimisation.getInitialAllocationDictionary()
-            filename = '%s%s_%s.pkl'%(self.resultsFileStem, GAFile, regionName)
-            infile = open(filename, 'rb')
-            allocation = pickle.load(infile)
-            geospatialAllocations[regionName][self.optimise] = allocation
-            infile.close()
-            # plot
-            plotallocations(geospatialAllocations[regionName]['baseline'],geospatialAllocations[regionName][self.optimise])       
-            
-    def getTimeSeriesPostGAReallocationByRegion(self, GAFile):    
-        import pickle
-        import optimisation
-        from copy import deepcopy as dcp
-        self.postGATimeSeries = {}
-        numYears = self.numModelSteps/12
-        years = range(2016, 2016 + numYears)
-        for region in range(len(self.regionSpreadsheetList)):
-            regionName = self.regionNameList[region]
-            spreadsheet = self.regionSpreadsheetList[region]
-            allocation = {}
-            thisOptimisation = optimisation.Optimisation(spreadsheet, self.numModelSteps, self.optimise, 'dummyFile')
-            # Baseline
-            allocation['baseline'] = thisOptimisation.getInitialAllocationDictionary()
-            # read the optimal budget allocations from file
-            filename = '%s%s_%s.pkl'%(self.resultsFileStem, GAFile, regionName)
-            infile = open(filename, 'rb')
-            allocation[self.optimise] = pickle.load(infile)
-            infile.close()
-            scenarios = ['baseline', dcp(self.optimise)]
-            # run models and save output 
-            print "performing model runs to generate time series..."
-            modelRun = {}
-            for scenario in scenarios:
-                modelRun[scenario] = thisOptimisation.oneModelRunWithOutput(allocation[scenario])
-            # get y axis
-            objective = {}    
-            objectiveYearly = {}
-            for scenario in scenarios:
-                objective[scenario] = []
-                objective[scenario].append(modelRun[scenario][0].getOutcome(self.optimise))
-                for i in range(1, self.numModelSteps):
-                    difference = modelRun[scenario][i].getOutcome(self.optimise) - modelRun[scenario][i-1].getOutcome(self.optimise)
-                    objective[scenario].append(difference)
-                # make it yearly
-                objectiveYearly[scenario] = []
-                for i in range(0, numYears):
-                    step = i*12
-                    objectiveYearly[scenario].append( sum(objective[scenario][step:12+step]) )
-            self.postGATimeSeries[regionName] = {'years':years, 'objectiveYearly':objectiveYearly}
-            
-    
-    def plotTimeSeriesPostGAReallocationByRegion(self, GAFile):
-        from plotting import plotTimeSeries
-        if self.postGATimeSeries == None:
-            self.getTimeSeriesPostGAReallocationByRegion(GAFile)
-        for region in range(len(self.regionSpreadsheetList)):
-            regionName = self.regionNameList[region]    
-            title = regionName + '  ' + self.optimise
-            plotTimeSeries(self.postGATimeSeries[regionName]['years'], self.postGATimeSeries[regionName]['objectiveYearly']['baseline'], self.postGATimeSeries[regionName]['objectiveYearly'][self.optimise], title)
+    def writeBOCs(self, regions, objective):
+        filename = os.path.join(self.newResultsDir, 'BOCs', objective, 'BOCs.csv')
+        headers = ['spending'] + [region.name for region in regions]
+        minSpend = min(regions[0].BOCs[objective].x)
+        maxSpend = max(regions[0].BOCs[objective].x)
+        newSpending = linspace(minSpend, maxSpend, 2000)
+        regionalOutcomes = []
+        with open(filename, 'wb') as f:
+            w = writer(f)
+            w.writerow(headers)
+            for region in regions:
+                thisBOC = region.BOCs[objective]
+                interpolated = thisBOC(newSpending)
+                regionalOutcomes.append(interpolated)
+            columnLists = [newSpending] + regionalOutcomes
+            w.writerows(zip(*columnLists))
 
-    def outputToCSVTimeSeriesPostGAReallocationByRegion(self, GAFile):
-        import csv
-        if self.postGATimeSeries == None:
-            self.getTimeSeriesPostGAReallocationByRegion(GAFile)   
-        for region in range(len(self.regionSpreadsheetList)):
-            regionName = self.regionNameList[region]            
-            
-            years = self.postGATimeSeries[regionName]['years']
-            objectiveYearly = self.postGATimeSeries[regionName]['objectiveYearly']
-            # write time series to csv    
-            headings = ['Year', self.optimise+" (baseline)", self.optimise+" (min "+self.optimise+")"]
-            rows = []
-            for i in range(len(years)):
-                year = years[i]
-                valarray = [year, objectiveYearly['baseline'][i], objectiveYearly[self.optimise][i]]
-                rows.append(valarray)
-            rows.sort()                
-            outfilename = '%s%s_annual_timeseries_postGA_%s_min_%s.csv'%(self.resultsFileStem, regionName, self.optimise, self.optimise)
-            with open(outfilename, "wb") as f:
-                writer = csv.writer(f)
-                writer.writerow(headings)
-                writer.writerows(rows)           
-        
-        
-    def outputRegionalCascadesAndOutcomeToCSV(self, outcomeOfInterest):
-        from copy import deepcopy as dcp
-        import math
-        import optimisation
-        totalNationalBudget = self.getTotalNationalBudget()
-        for region in range(self.numRegions):
-            regionName = self.regionNameList[region]
-            print regionName
-            thisSpreadsheet = self.regionSpreadsheetList[region]
-            filename = self.resultsFileStem+regionName
-            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, filename, self.costCurveType) 
-            thisCascade = dcp(self.cascadeValues)      
-            # if final cascade value is 'extreme' replace it with value we used to generate .pkl file
-            if self.cascadeValues[-1] == 'extreme':
-                regionalTotalBudget = thisOptimisation.getTotalInitialBudget()
-                thisCascade[-1] = math.ceil(totalNationalBudget / regionalTotalBudget)            
-            thisOptimisation.outputCascadeAndOutcomeToCSV(thisCascade, outcomeOfInterest)
-        
-    def outputRegionalCurrentSpendingToCSV(self):
-        import optimisation
-        for region in range(self.numRegions):
-            regionName = self.regionNameList[region]
-            thisSpreadsheet = self.regionSpreadsheetList[region]
-            filename = self.resultsFileStem+regionName
-            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, filename, self.costCurveType)    
-            thisOptimisation.outputCurrentSpendingToCSV()
-        
-        
-    def outputRegionalPostGAOptimisedSpendingToCSV(self, GAFile):
-        import pickle
-        import csv
-        for iReg in range(self.numRegions):
-            regionName = self.regionNameList[iReg]
-            filename = '%s%s_%s.pkl'%(self.resultsFileStem, GAFile, regionName)
-            infile = open(filename, 'rb')
-            allocation = pickle.load(infile)
-            infile.close()
-            allocation = returnAlphabeticalDictionary(allocation)
-            outfilename = '%s%s_optimised_spending.csv'%(self.resultsFileStem, regionName)
-            with open(outfilename, "wb") as f:
-                    writer = csv.writer(f)
-                    writer.writerow(allocation.keys())
-                    writer.writerow(allocation.values())  
-                    
-    def outputRegionalTimeSeriesToCSV(self, outcomeOfInterest):
-        import optimisation
-        for region in range(self.numRegions):
-            regionName = self.regionNameList[region]
-            thisSpreadsheet = self.regionSpreadsheetList[region]
-            filename = self.resultsFileStem+regionName
-            thisOptimisation = optimisation.Optimisation(thisSpreadsheet, self.numModelSteps, self.optimise, filename)   
-            thisOptimisation.outputTimeSeriesToCSV(outcomeOfInterest)
-                    
+    def getBOCjobs(self, regions, objective):
+        jobs = []
+        for region in regions:
+            resultsPath = region.resultsDir
+            prc = Process(target=self.optimiseAndWrite, args=(region, objective, resultsPath))
+            jobs.append(prc)
+        return jobs
 
-                   
+    def optimiseAndWrite(self, region, objective, resultsPath):
+        region.optimise()
+        self.writeBudgetOutcome(region, objective, resultsPath)
+
+    def writeBudgetOutcome(self, region, objective, resultsPath):
+        spending, outcome = region.getBOCvectors(objective, self.budgetMultiples)
+        filename = os.path.join(resultsPath, region.name + '.csv')
+        with open(filename, 'wb') as f:
+            w = writer(f)
+            w.writerow(['spending', 'outcome'])
+            w.writerows(izip(spending, outcome))
+
+    def setUpRegions(self, objective, fixCurrent, additionalFunds):
+        regions = []
+        for name in self.regionNames:
+            fileInfo = [self.root, self.analysisType, name, '']
+            resultsPath = os.path.join(self.newResultsDir, 'BOCs', objective, 'pickles')
+            thisRegion = Optimisation(self.objectives, self.budgetMultiples, fileInfo, resultsPath=resultsPath,
+                                      fixCurrentAllocations=fixCurrent, removeCurrentFunds=False,
+                                      additionalFunds=additionalFunds, numYears=self.numYears, filterProgs=False)
+            regions.append(thisRegion)
+        return regions
+
+    def optimiseScenarios(self):
+        for scenario, options in self.scenarios.iteritems():
+            fixBetween, fixWithin, replaceCurrent, additionalFunds = options
+            formScenario = scenario.lower().replace(' ', '')
+            self.newResultsDir = os.path.join(self.resultsDir, self.analysisType, formScenario,
+                                              str(int(additionalFunds / 1e6)) + 'm')
+            for objective in self.objectives:
+                # first distribute funds between regions
+                self.getRegionalBOCs(objective, fixWithin,
+                                     additionalFunds)  # specifies if current funding is fixed within a region
+                optimalDistribution = self.distributeFunds(objective, options)
+                # optimise within each region
+                regions = self.optimiseAllRegions(optimalDistribution, objective, options)
+                self.collateAllResults(regions, objective)
+                # self.getOptimalOutcomes(regions, objective)
+
+    def getRegionalBOCs(self, objective, fixWithin, additionalFunds):
+        print '...Generating BOCs... \n'
+        regions = self.setUpRegions(objective, fixWithin, additionalFunds)
+        jobs = self.getBOCjobs(regions, objective)
+        maxRegions = int(50 / (len(self.budgetMultiples) - 1))
+        runJobs(jobs, maxRegions)
+
+    def interpolateBOCs(self, objective, fixBetween, additionalFunds):
+        regions = self.setUpRegions(objective, fixBetween, additionalFunds)
+        for region in regions:
+            spending, outcome = self.readBOC(region.name, objective)
+            region.interpolateBOC(objective, spending, outcome)
+        self.writeBOCs(regions, objective)
+        return regions
+
+    def distributeFunds(self, objective, options):
+        fixBetween = options[0]
+        additionalFunds = options[-1]
+        regions = self.interpolateBOCs(objective, fixBetween, additionalFunds)
+        optimalDistribution = self.gridSearch(regions, objective, options)
+        return optimalDistribution
+
+    def writeRefAndCurrentAllocations(self, regions, filename):
+        sortedProgs = sorted([prog.name for prog in regions[0].programs])
+        with open(filename, 'wb') as f:
+            w = writer(f)
+            w.writerow(['Reference'] + sortedProgs)
+            for region in regions:
+                name = region.name
+                refDict = region.createDictionary(region.referenceAllocations)
+                sortedRef = OrderedDict(sorted(refDict.items())).values()
+                w.writerow([name] + sortedRef)
+            w.writerow([])
+            w.writerow(['Current'] + sortedProgs)
+            for region in regions:
+                name = region.name
+                currentAdditional = [a - b for a, b in zip(region.currentAllocations, region.referenceAllocations)]
+                currentAdditionalDict = region.createDictionary(currentAdditional)
+                sortedCurrent = OrderedDict(sorted(currentAdditionalDict.items())).values()
+                w.writerow([name] + sortedCurrent)
+            w.writerow([])
+
+    def gridSearch(self, regions, objective, options):
+        costEffVecs, spendingVec = self.getBOCcostEffectiveness(regions, objective, options)
+        totalFunds = self.getTotalFreeFunds(regions)
+        remainingFunds = dcp(totalFunds)
+        regionalAllocations = zeros(len(regions))
+        percentBudgetSpent = 0.
+        maxIters = int(1e6)
+
+        for i in range(maxIters):
+            bestEff = -inf
+            bestRegion = None
+            for regionIdx in range(len(regions)):
+                # find most effective spending in each region
+                costEffThisRegion = costEffVecs[regionIdx]
+                if len(costEffThisRegion):
+                    maxIdx = nanargmax(costEffThisRegion)
+                    maxEff = costEffThisRegion[maxIdx]
+                    if maxEff > bestEff:
+                        bestEff = maxEff
+                        bestEffIdx = maxIdx
+                        bestRegion = regionIdx
+            # once the most cost-effective spending is found, adjust all spending and outcome vectors, update available funds and regional allocation
+            if bestRegion is not None:
+                fundsSpent = spendingVec[bestRegion][bestEffIdx]
+                remainingFunds -= fundsSpent
+                spendingVec[bestRegion] -= fundsSpent
+                regionalAllocations[bestRegion] += fundsSpent
+                # remove funds and derivatives at or below zero
+                spendingVec[bestRegion] = spendingVec[bestRegion][bestEffIdx + 1:]
+                costEffVecs[bestRegion] = costEffVecs[bestRegion][bestEffIdx + 1:]
+                # ensure regional spending doesn't exceed remaining funds
+                for regionIdx in range(self.numRegions):
+                    withinBudget = nonzero(spendingVec[regionIdx] <= remainingFunds)[0]
+                    spendingVec[regionIdx] = spendingVec[regionIdx][withinBudget]
+                    costEffVecs[regionIdx] = costEffVecs[regionIdx][withinBudget]
+                newPercentBudgetSpent = (totalFunds - remainingFunds) / totalFunds * 100.
+                if not (i % 100) or (newPercentBudgetSpent - percentBudgetSpent) > 1.:
+                    percentBudgetSpent = newPercentBudgetSpent
+            else:
+                break  # nothing more to allocate
+
+        # scale to ensure correct budget
+        scaledRegionalAllocations = rescaleAllocation(totalFunds, regionalAllocations)
+        return scaledRegionalAllocations
+
+    def getBOCcostEffectiveness(self, regions, objective, options):
+        fixBetween, fixWithin, removeCurrent, additionalFunds = options
+        nationalFunds = self.getNationalCurrentSpending()
+        numPoints = 10000
+        costEffVecs = []
+        spendingVec = []
+        for region in regions:
+            if fixBetween and not fixWithin:
+                minSpending = sum(region.currentAllocations) - sum(region.referenceAllocations)
+                maxSpending = minSpending + additionalFunds
+            elif fixBetween and fixWithin:  # this is scenario 3, where the spending=0 corresponds to non-optimised current allocations
+                minSpending = 0
+                maxSpending = additionalFunds
+            else:
+                minSpending = 0
+                maxSpending = nationalFunds + additionalFunds
+            thisDeriv = region.BOCs[objective].derivative(nu=1)
+            regionalSpending = linspace(minSpending, maxSpending, numPoints)[1:]  # exclude 0 to avoid division error
+            adjustedSpending = regionalSpending - minSpending  # centers spending if current is fixed
+            spendingVec.append(adjustedSpending)
+            # use non-adjusted spending b/c we don't necessarily want to start at 0
+            costEffectiveness = thisDeriv(regionalSpending)  # needs to be neg if have decreasing func
+            costEffVecs.append(costEffectiveness)
+        return costEffVecs, spendingVec
+
+    def optimiseAllRegions(self, optimisedSpending, objective, options):
+        print '...Optimising within regions... \n'
+        _fixBetween, fixWithin, replaceCurrent, additionalFunds = options
+        budgetMultiple = [1]
+        newRegions = []
+        jobs = []
+        for i, name in enumerate(self.regionNames):
+            regionalFunds = optimisedSpending[i]
+            resultsDir = os.path.join(self.newResultsDir, 'pickles')
+            fileInfo = [self.root, self.analysisType, name, '']
+            newOptim = Optimisation([objective], budgetMultiple, fileInfo, resultsPath=resultsDir,
+                                    fixCurrentAllocations=fixWithin, removeCurrentFunds=replaceCurrent,
+                                    additionalFunds=regionalFunds, numYears=self.numYears, filterProgs=False)
+            newRegions.append(newOptim)
+            p = Process(target=newOptim.optimise)
+            jobs.append(p)
+        runJobs(jobs, min(cpu_count(), 50))
+        return newRegions
+
+    def collateAllResults(self, regions, objective):
+        """collates all regional output from pickle files
+        Uses append file method to avoid over-writing"""
+        filename = os.path.join(self.newResultsDir, 'regional_allocations_' + objective + '.csv')
+        # write the programs to row for each objective
+        self.writeRefAndCurrentAllocations(regions, filename)
+        sortedProgs = sorted([prog.name for prog in regions[0].programs])
+        with open(filename, 'a') as f:
+            w = writer(f)
+            w.writerow([''] + sortedProgs)
+            for region in regions:
+                name = region.name
+                filePath = os.path.join(self.newResultsDir, 'pickles', '{}_{}_{}.pkl'.format(name, objective, 1))
+                infile = open(filePath, 'rb')
+                thisAllocation = pickle.load(infile)
+                infile.close()
+                allocations = OrderedDict(sorted(thisAllocation.items()))
+                # remove fixed funds
+                fixedAllocations = region.fixedAllocations
+                fixedAllocationsDict = region.createDictionary(fixedAllocations)
+                fixedAllocations = OrderedDict(sorted(fixedAllocationsDict.items())).values()
+                optimisedAdditional = [a - b for a, b in zip(allocations.values(), fixedAllocations)]
+                w.writerow([name] + optimisedAdditional)
+            w.writerow([])
+
+    def getOptimalOutcomes(self, regions, objective):
+        outcomes = ['total_stunted', 'wasting_prev', 'anaemia_prev_children', 'deaths_children', 'neonatal_deaths']
+        fileToWrite = os.path.join(self.newResultsDir, 'optimal_outcomes_{}.csv'.format(objective))
+        with open(fileToWrite, 'wb') as f:
+            w = writer(f)
+            w.writerow(['Region'] + outcomes)
+            for region in regions:
+                filename = os.path.join(self.newResultsDir, 'pickles', '{}_{}_{}.pkl'.format(region.name, objective, 1))
+                infile = open(filename, 'rb')
+                thisAllocation = pickle.load(infile)
+                infile.close()
+                allOutputs = []
+                thisModel = region.oneModelRunWithOutput(thisAllocation)
+                for outcome in outcomes:
+                    allOutputs.append(thisModel.getOutcome(outcome))
+                w.writerow([region.name] + allOutputs)
+
+    def getTotalFreeFunds(self, regions):
+        """ Need to wait the additional funds by number of regions so we don't have too much money"""
+        return sum(
+            region.additionalFunds / len(regions) + sum(region.currentAllocations) - sum(region.fixedAllocations) for
+            region in regions)
+
+
+class BudgetScenarios:
+    """
+    Descriptions of budget scenarios found in the corresponding .xlsx file
+    Need to specify:
+    - is current regional spending fixed
+    - is current allocation to be programatically optimised
+    - amount of additional funds, if any.
+
+    """
+
+    def __init__(self, filePath):
+        self.filePath = filePath
+        # [fixedBetweenRegions, fixedWithinRegion, replaceCurrent]
+        # additionalFunds will be appended
+        self.allScenarios = {'Scenario 1': [True, False, False],
+                             'Scenario 2': [False, False, True],
+                             'Scenario 3': [True, True, False]}
+
+    def getScenarios(self):
+        """
+        This information should be contained in a separate .xlsx file,
+        which details the current expenditure by region, and all the optimisation scenarios.
+        :return:
+        """
+        thisSheet = pd.read_excel(self.filePath, 'Optimal funding scenario', index_col=[0])
+        thisSheet = thisSheet.drop(['Current spending description', 'Additional spending description'], 1)
+        scenarios = {}
+        for scenario, row in thisSheet.iterrows():
+            if pd.notnull(row[1]):
+                scenarios[scenario] = self.allScenarios[scenario] + [row[0]]  # adding funds
+        return scenarios

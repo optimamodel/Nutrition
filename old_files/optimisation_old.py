@@ -6,7 +6,7 @@ Created on Thu Jun 23 13:34:12 2016
 """
 
 def getTotalInitialAllocation(data, costCoverageInfo, targetPopSize):
-    import costcov
+    from old_files import costcov
     costCov = costcov.Costcov()
     allocation = []
     for intervention in data.interventionList:
@@ -25,7 +25,6 @@ def rescaleAllocation(totalBudget, proposalAllocation):
     return rescaledAllocation 
 
 def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimise, mothers, timestep, agingRateList, agePopSizes, keyList, data):
-    import helper as helper
     from numpy import array
     helper = helper.Helper()
     model, constants, params = helper.setupModelConstantsParameters('optimisation model', mothers, timestep, agingRateList, agePopSizes, keyList, data)
@@ -51,8 +50,7 @@ def objectiveFunction(proposalAllocation, totalBudget, costCoverageInfo, optimis
             
 import output as outputPlot            
 import data as dataCode
-import helper as helper
-import costcov
+from old_files import costcov, helper as helper
 from copy import deepcopy as dcp
 from numpy import array
 import asd as asd

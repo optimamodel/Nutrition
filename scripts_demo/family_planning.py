@@ -11,7 +11,7 @@ moduleDir = os.path.join(os.path.dirname(__file__), rootpath)
 sys.path.append(moduleDir)
 
 import data
-import helper
+from old_files import helper
 import csv
 from copy import deepcopy as dcp
 thisHelper = helper.Helper()
