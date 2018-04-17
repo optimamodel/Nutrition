@@ -6,7 +6,7 @@ import csv
 from collections import OrderedDict
 import pickle
 
-root = os.path.pardir
+root = os.pardir
 moduleDir = os.path.join(os.path.dirname(__file__), root)
 sys.path.append(moduleDir)
 

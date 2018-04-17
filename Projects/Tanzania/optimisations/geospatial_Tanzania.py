@@ -1,7 +1,7 @@
 import os, sys
 from nutrition import optimisation
 
-root = os.path.pardir
+root = os.pardir
 moduleDir = os.path.join(os.path.dirname(__file__), root)
 sys.path.append(moduleDir)
 

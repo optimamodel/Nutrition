@@ -1,9 +1,10 @@
 import os, sys
-root = '../..'
-moduleDir = os.path.join(os.path.dirname(__file__), root)
-sys.path.append(moduleDir)
 from nutrition import optimisation
 from csv import writer
+
+root = os.pardir
+moduleDir = os.path.join(os.path.dirname(__file__), root)
+sys.path.append(moduleDir)
 
 regions = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Kaskazini_Pemba', 'Kaskazini_Unguja', 'Katavi',
            'Kilimanjaro', 'Kusini_Pemba', 'Kusini_Unguja', 'Lindi', 'Manyara', 'Mara', 'Mjini_Magharibi',
