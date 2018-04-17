@@ -1,6 +1,18 @@
 # Optima Nutrition
 
-## Dependencies 
+## Installation
+
+Run `python setup.py develop` in the root folder.
+
+## Usage
+
+Run `python nutrition/play.py` to test.
+
+
+
+## Deprecated
+
+### Dependencies 
 Please ensure that the following are installed
 `python`
 `numpy`
@@ -8,7 +20,7 @@ Please ensure that the following are installed
 `pandas` (0.17.1 +)
 
 
-## Getting started
+### Getting started
 checkout the master branch:
 
 `>> python tests.py`

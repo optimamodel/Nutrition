@@ -23,7 +23,7 @@ def getResultsDir(root, analysisType, scenario):
     return resultsPath
 
 if __name__ == '__main__': # this is just for testing
-    root = os.path.join('Projects', 'Master')
+    root = os.path.join(os.path.pardir, 'Projects', 'Master')
     filePath = getFilePath(root=root, analysisType='national', name='Master')
     myModel = setUpModel(filePath)
     myModel.runSimulationFromWorkbook()
