@@ -1,8 +1,8 @@
 import os, sys
-root = '../..'
+root = os.pardir
 moduleDir = os.path.join(os.path.dirname(__file__), root)
 sys.path.append(moduleDir)
-import play
+from nutrition import play
 from csv import writer
 
 regions = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Kaskazini_Pemba', 'Kaskazini_Unguja', 'Katavi',
@@ -15,7 +15,7 @@ with open('prevalences.csv', 'wb') as f:
     w = writer(f)
     w.writerow(['Region'] + outcomes)
     for region in regions:
-        filePath = play.getFilePath(root, 'Tanzania/regions', region)
+        filePath = play.getFilePath(root, 'regional', region)
         model = play.setUpModel(filePath)
         row = [region]
         for outcome in outcomes:
