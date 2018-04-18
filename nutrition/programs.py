@@ -8,7 +8,6 @@ class Program(object):
     def __init__(self, name, constants):
         self.name = name
         self.const = constants
-
         self.targetPopulations = self.const.programTargetPop[self.name] # frac of each population which is targeted
         self.unitCost = self.const.costCurveInfo['unit cost'][self.name]
         self.saturation = self.const.costCurveInfo['saturation coverage'][self.name]

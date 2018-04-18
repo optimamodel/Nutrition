@@ -1,7 +1,7 @@
 import pandas as pd
 from copy import deepcopy as dcp
 
-class Project:
+class Data:
     def __init__(self, filepath):
         self.filename = filepath
         self.workbook = pd.ExcelFile(filepath)
@@ -549,6 +549,6 @@ class Project:
             dictToUpdate[key].update(newAgeGroups)
         return dictToUpdate
 
-def setUpProject(filePath):
-    project = Project(filePath)
-    return project
+def setUpData(filePath):
+    data = Data(filePath)
+    return data

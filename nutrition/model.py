@@ -6,11 +6,11 @@ from scipy.special import ndtri, ndtr # these are much faster than calling scipy
 
 class Model:
     def __init__(self, filePath, numYears=None, adjustCoverage=False, timeTrends=False, optimise=False, calibrate=True):
-        self.project = data.setUpProject(filePath)
+        self.data = data.setUpData(filePath)
         self.optimise = optimise # TODO: This is a way to get optimisation to ignore 'programs annual spending', but should be improved later
-        self.constants = Constants(self.project)
+        self.constants = Constants(self.data)
         self.programInfo = program_info.ProgramInfo(self.constants)
-        self.populations = populations.setUpPopulations(self.project, self.constants)
+        self.populations = populations.setUpPopulations(self.data, self.constants)
         self.children = self.populations[0]
         self.PW = self.populations[1]
         self.nonPW = self.populations[2]
