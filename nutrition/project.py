@@ -1,6 +1,5 @@
-from hptool import odict, uuid, today, version, gitinfo, objrepr, getdate
-from hptool import printv, makefilepath, saveobj, dcp
-from hptool import Burden, Interventions
+from sciris.core import odict, uuid, today, gitinfo, objrepr, getdate, printv, makefilepath, saveobj, dcp
+import nutrition as nut
 
 
 #######################################################################################################
@@ -11,13 +10,12 @@ class Project(object):
     """
     PROJECT
 
-    The main HealthPrior project class. Almost all functionality is provided by this class.
+    The main Nutrition project class. Almost all functionality is provided by this class.
 
-    An HP project is based around 4 major lists:
-        1. burdens -- an odict of burden data
-        2. intervs -- an odict of program sets
-        3. optims -- an odict of optimization structures
-        4. results -- an odict of results associated with the choices above
+    An Nutrition project is based around 3 major lists:
+        1. scens -- an odict of burden data
+        2. optims -- an odict of optimization structures
+        3. results -- an odict of results associated with the choices above
 
 
     Methods for structure lists:
@@ -26,7 +24,7 @@ class Project(object):
         3. copy -- copy a structure in the odict
         4. rename -- rename a structure in the odict
 
-    Version: 2017oct30
+    Version: 2018apr18
     """
 
 
@@ -39,8 +37,8 @@ class Project(object):
         ''' Initialize the project '''
 
         ## Define the structure sets
-        self.burdensets  = odict()
-        self.intersets   = odict()
+        self.models      = odict()
+        self.scens       = odict()
         self.optims      = odict()
         self.results     = odict()
 
@@ -51,7 +49,7 @@ class Project(object):
         self.created = today()
         self.modified = today()
         self.spreadsheetdate = 'Spreadsheet never loaded'
-        self.version = version
+        self.version = nut.version
         self.gitinfo = gitinfo(__file__)
         self.filename = None # File path, only present if self.save() is used
         self.warnings = None # Place to store information about warnings (mostly used during migrations)
