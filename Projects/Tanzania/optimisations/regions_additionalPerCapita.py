@@ -15,7 +15,7 @@ regions = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Kaskazini_Pemba', 'Kaskazini_Un
            'Kilimanjaro', 'Kusini_Pemba', 'Kusini_Unguja', 'Lindi', 'Manyara', 'Mara', 'Mjini_Magharibi',
            'Morogoro', 'Mtwara', 'Pwani', 'Rukwa', 'Ruvuma', 'Simiyu', 'Singida', 'Tabora', 'Tanga']
 
-objectives = ['healthy_children']
+objectives = ['nonstunted_nonwasted']
 budgetMultiples = [1]
 
 # current + additional US$40 distributed on per-capita basis, all optimised
@@ -24,7 +24,7 @@ additionalFunds = 32833333.
 # get total population
 popSizes = []
 for region in regions:
-    filePath = play.getFilePath(root=root, country='Tanzania/regions', name=region)
+    filePath = play.getFilePath(root=root, analysisType='regional', name=region)
     model = play.setUpModel(filePath, adjustCoverage=False, numYears=6, calibrate=False)
     thisPop = 0
     for pop in model.populations:
@@ -37,10 +37,10 @@ funding = [pop*dollarPerHead for pop in popSizes]
 # get funding distribution
 jobs = []
 thisDate = date.today().strftime('%Y%b%d')
-resultsPath = '{}/Results/Tanzania/geospatial/{}/additionalPerCapita'.format(root, thisDate)
+resultsPath = '{}/Results/geospatial/{}/additionalPerCapita'.format(root, thisDate)
 for i, region in enumerate(regions):
     funds = funding[i]
-    fileInfo = [root, 'Tanzania/regions', region, '']
+    fileInfo = [root, 'regional', region, '']
     thisOptim = optimisation.Optimisation(objectives, budgetMultiples, fileInfo, additionalFunds=funds,
                                           resultsPath=resultsPath,
                                           filterProgs=False, numYears=6)
@@ -66,7 +66,7 @@ with open(filename, 'a') as f:
         infile.close()
         allocations = OrderedDict(sorted(thisAllocation.items()))
         # remove fixed allocations
-        fileInfo = [root, 'Tanzania/regions', region, '']
+        fileInfo = [root, 'regional', region, '']
         thisOptim = optimisation.Optimisation(objectives, budgetMultiples, fileInfo, resultsPath='')
         fixedAllocations = thisOptim.fixedAllocations
         fixedAllocationsDict = thisOptim.createDictionary(fixedAllocations)
