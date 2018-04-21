@@ -27,7 +27,7 @@ resultsPath = '{}/Results/geospatial/{}/optimisedCurrent'.format(root, thisDate)
 for region in regions:
     fileInfo = [root, 'regional', region, '']
     thisOptim = optimisation.Optimisation(objectives, budgetMultiples, fileInfo, resultsPath=resultsPath,
-                                          filterProgs=False, numYears=6, parallel=False)
+                                          filterProgs=False, numYears=6, parallel=True)
     thisOptim.optimise()
     prc = Process(target=thisOptim.optimise)
     jobs.append(prc)
