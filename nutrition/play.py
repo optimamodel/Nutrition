@@ -7,8 +7,8 @@ def setUpModel(filePath, numYears=None, adjustCoverage=False, optimise=False, ca
     myModel = model.Model(filePath, numYears=numYears, adjustCoverage=adjustCoverage, optimise=optimise, calibrate=calibrate) # model has already moved 1 year
     return myModel
 
-def setUpProject(filePath):
-    return data.setUpProject(filePath)
+def setUpData(filePath):
+    return data.setUpData(filePath)
 
 def getFilePath(root, analysisType, name):
     moduleDir = os.path.join(os.path.dirname(__file__), root)

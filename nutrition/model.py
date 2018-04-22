@@ -6,11 +6,11 @@ from scipy.special import ndtri, ndtr # these are much faster than calling scipy
 
 class Model:
     def __init__(self, filePath, numYears=None, adjustCoverage=False, timeTrends=False, optimise=False, calibrate=True):
-        self.project = data.setUpProject(filePath)
+        self.data = data.setUpData(filePath)
         self.optimise = optimise # TODO: This is a way to get optimisation to ignore 'programs annual spending', but should be improved later
-        self.constants = Constants(self.project)
+        self.constants = Constants(self.data)
         self.programInfo = program_info.ProgramInfo(self.constants)
-        self.populations = populations.setUpPopulations(self.project, self.constants)
+        self.populations = populations.setUpPopulations(self.data, self.constants)
         self.children = self.populations[0]
         self.PW = self.populations[1]
         self.nonPW = self.populations[2]
@@ -37,6 +37,7 @@ class Model:
         self.annualNotAnaemic = {year: 0 for year in self.constants.allYears}
         self.annualNeonatalDeaths = {year: 0 for year in self.constants.allYears}
         self.annualBirths = {year: 0 for year in self.constants.allYears}
+        self.annualChildrenAgeingOutNonStuntedNonWasted = {year: 0 for year in self.constants.allYears}
         self.annualChildrenAgeingOutHealthly = {year: 0 for year in self.constants.allYears}
         self.annualChildrenThreeConditions = {year: 0 for year in self.constants.allYears}
 
@@ -389,6 +390,7 @@ class Model:
         self.annualThrive[self.year] += oldest.getAgeGroupNumberNotStunted() * oldest.ageingRate
         self.annualNotAnaemic[self.year] += oldest.getAgeGroupNumberNotAnaemic() * oldest.ageingRate
         self.annualNotWasted[self.year] += oldest.getAgeGroupNumberNotWasted() * oldest.ageingRate
+        self.annualChildrenAgeingOutNonStuntedNonWasted[self.year] += oldest.getAgeGroupNumberNonStuntedNonWasted() * oldest.ageingRate
         self.annualChildrenAgeingOutHealthly[self.year] += oldest.getAgeGroupNumberHealthy() * oldest.ageingRate
         self.annualChildrenThreeConditions[self.year] += oldest.getAgeGroupNumberThreeConditions() * oldest.ageingRate
 
@@ -628,6 +630,8 @@ class Model:
             return -sum(self.annualChildrenAgeingOutHealthly.values())
         elif outcome == 'healthy_children':
             return sum(self.annualChildrenAgeingOutHealthly.values())
+        elif outcome == 'nonstunted_nonwasted':
+            return sum(self.annualChildrenAgeingOutNonStuntedNonWasted.values())
         elif outcome == 'stunting_prev':
             return self.children.getTotalFracStunted()
         elif outcome == 'thrive':

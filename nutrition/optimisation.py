@@ -57,7 +57,7 @@ def objectiveFunction(allocation, objective, model, freeFunds, fixedAllocations,
         newCoverages[program.name] = program.costCurveFunc(totalAllocations[idx]) / program.unrestrictedPopSize
     thisModel.runSimulationFromOptimisation(newCoverages)
     outcome = thisModel.getOutcome(objective) * 1000.
-    if objective == 'thrive' or objective == 'healthy_children' or objective == 'no_conditions':
+    if objective == 'thrive' or objective == 'healthy_children' or objective == 'nonstunted_nonwasted' or objective == 'no_conditions':
         outcome *= -1
     return outcome
 

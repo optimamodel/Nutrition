@@ -8,7 +8,6 @@ class Program(object):
     def __init__(self, name, constants):
         self.name = name
         self.const = constants
-
         self.targetPopulations = self.const.programTargetPop[self.name] # frac of each population which is targeted
         self.unitCost = self.const.costCurveInfo['unit cost'][self.name]
         self.saturation = self.const.costCurveInfo['saturation coverage'][self.name]
@@ -46,8 +45,7 @@ class Program(object):
         """
         self._setBaselineCoverage(populations)
         theseYears = [self.const.baselineYear] + self.const.calibrationYears
-        # theseCoverages = [self.restrictedBaselineCov, self.restrictedCalibrationCov]
-        self.annualCoverage = {year:self.restrictedCalibrationCov for year in theseYears}
+        self.annualCoverage = {year: self.unrestrictedCalibrationCov for year in theseYears}
 
     def _setSimulationCoverageFromScalar(self, coverages, restrictedCov=True):
         years = self.const.simulationYears
