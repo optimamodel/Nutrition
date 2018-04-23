@@ -10,6 +10,9 @@ import DashboardLayout from '@/components/app/DashboardLayout.vue'
 // App views
 import NotFound from '@/components/generic/NotFoundPage.vue'
 import ProjectsPage from '@/components/app/ProjectsPage'
+import InputsPage from '@/components/app/EquityPage'
+import CalibrationPage from '@/components/app/CalibrationPage'
+import AnalysisPage from '@/components/app/AnalysisPage'
 import DiseaseBurdenPage from '@/components/app/DiseaseBurdenPage'
 import InterventionsPage from '@/components/app/InterventionsPage'
 import EquityPage from '@/components/app/EquityPage'
@@ -48,6 +51,21 @@ export default new Router({
           path: 'projects',
           name: 'Manage projects',
           component: ProjectsPage
+        },
+        {
+          path: 'inputs',
+          name: 'Inputs',
+          component: InputsPage
+        },
+        {
+          path: 'calibration',
+          name: 'Calibration',
+          component: CalibrationPage
+        },
+        {
+          path: 'analysis',
+          name: 'Analysis',
+          component: AnalysisPage
         },
         {
           path: 'bod',

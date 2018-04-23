@@ -9,6 +9,21 @@ const SidebarStore = {
       path: '/projects'
     },
     {
+      name: 'Inputs',
+      icon: 'ti-ruler',
+      path: '/inputs'
+    },
+    {
+      name: 'Calibration',
+      icon: 'ti-ruler',
+      path: '/calibration'
+    },
+    {
+      name: 'Analysis',
+      icon: 'ti-ruler',
+      path: '/analysis'
+    },
+    {
       name: 'Disease burden',
       icon: 'ti-bar-chart',
       path: '/bod'
