@@ -7,7 +7,17 @@ Last update: 2018-03-25
 <template>
   <div class="SitePage">
     <div class="PageSection">
-
+      <div class="ControlsRow">
+        <select>
+          <option v-for="demoProject in demoProjectList"
+              :value=demoProject.id :label=demoProject.name>
+            {{demoProject.name}}
+          </option>
+        </select>
+        <button class="btn" @click="addDemoProject">Add this project</button>
+      </div>
+    </div>
+    <div class="PageSection">
       <div class="ControlsRow">
         <button class="btn" @click="createNewProject">Create new project</button>
         &nbsp; &nbsp;
@@ -151,7 +161,10 @@ export default {
   data() {
     return {
       // List of projects to choose from (by project name)
-      demoProjectList: [],
+      demoProjectList: [
+        {name: 'Bangladesh', id: 'bangladesh'},
+        {name: 'Region 2', id: 'region'},
+      ],
 
       // Selected demo project (by name)
       selectedDemoProject: '',
@@ -280,23 +293,23 @@ export default {
       }) */
     },
 
-/*    addDemoProject() {
+    addDemoProject() {
       console.log('addDemoProject() called')
 
       // Find the object in the default project summaries that matches what's
       // selected in the select box.
-      let foundProject = this.demoProjectSummaries.find(demoProj =>
-        demoProj.project.name == this.selectedDemoProject)
+      // let foundProject = this.demoProjectSummaries.find(demoProj =>
+      //   demoProj.project.name == this.selectedDemoProject)
 
       // Make a deep copy of the found object by JSON-stringifying the old
       // object, and then parsing the result back into a new object.
-      let newProject = JSON.parse(JSON.stringify(foundProject));
+      // let newProject = JSON.parse(JSON.stringify(foundProject));
 
       // Push the deep copy to the projectSummaries list.
-//      this.projectSummaries.push(newProject)
+        //      this.projectSummaries.push(newProject)
 
-//      this.projectSummaries.push(this.demoProjectSummaries[0])
-    }, */
+        //      this.projectSummaries.push(this.demoProjectSummaries[0])
+    }, 
 
     createNewProject() {
       console.log('createNewProject() called')
