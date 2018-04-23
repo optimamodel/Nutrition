@@ -50,7 +50,7 @@
       },
       backgroundColor: {
         type: String,
-        default: 'black',
+        default: 'darkblue',
         validator: (value) => {
           let acceptedValues = ['white', 'black', 'darkblue']
           return acceptedValues.indexOf(value) !== -1
