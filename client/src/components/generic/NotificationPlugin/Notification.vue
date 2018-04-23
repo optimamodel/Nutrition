@@ -86,7 +86,7 @@
 
 </script>
 <style lang="scss" scoped>
-  @import "../../../assets/sass/paper/variables";
+  @import "../../../assets/sass/project/variables";
 
   .fade-enter-active,
   .fade-leave-active {

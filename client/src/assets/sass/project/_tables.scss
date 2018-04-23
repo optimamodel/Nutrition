@@ -1,7 +1,3 @@
-//
-// Tables
-// --------------------------------------------------
-
 $line-height-base:        1.428571429; // 20/14
 $line-height-computed:    floor((14px * $line-height-base)); // ~20px
 
@@ -13,41 +9,32 @@ $table-bg-accent:                    #efeff4; // for striping
 $table-bg-hover:                     #ddd; // CK: hover color for tables
 $table-bg-active:                    $table-bg-hover;
 
-$table-border-color:                 #ddd; // table and cell border
-
-
-table {
-  max-width: 100%;
-  background-color: $table-bg;
-}
-th {
-  text-align: left;
-}
-
-
-// Baseline styles
-
 .table {
+  max-width: 100%;
   width: 100%;
+  background-color: $table-bg;
   margin-bottom: $line-height-computed;
-  // Cells
-  > thead,
-  > tbody,
-  > tfoot {
-    > tr {
-      > th,
-      > td {
-        padding: $table-cell-padding;
-        line-height: $line-height-base;
-        vertical-align: middle;
-        border-top: 1px solid $table-border-color;
-      }
+
+  thead,
+  tbody,
+  tfoot {
+    tr > th,
+    tr > td {
+      border-top: 1px solid $table-line-color;
+      padding: $table-cell-padding;
+      line-height: $line-height-base;
+      vertical-align: middle;
     }
   }
-  // Bottom align for column headings
   > thead > tr > th {
+    border-bottom-width: 0;
+    font-size: $font-size-h5;
+    font-weight: $font-weight-light;
+    background-color: #666;
+    color:$white-color;
+    text-align: left;
     vertical-align: bottom;
-    border-bottom: 2px solid $table-border-color;
+    border-bottom: 2px solid $table-line-color;
   }
   // Remove top border from thead by default
   > caption + thead,
@@ -60,15 +47,61 @@ th {
       }
     }
   }
+
   // Account for multiple tbody instances
   > tbody + tbody {
-    border-top: 2px solid $table-border-color;
+    border-top: 2px solid $table-line-color;
   }
 
+  .radio,
+  .checkbox {
+    margin-top: 0;
+    margin-bottom: 22px;
+    padding: 0;
+    width: 15px;
+  }
+  > thead > tr > th,
+  > tbody > tr > th,
+  > tfoot > tr > th,
+  > thead > tr > td,
+  > tbody > tr > td,
+  > tfoot > tr > td {
+    padding: 12px;
+    vertical-align: middle;
+  }
+
+  .th-description {
+    max-width: 150px;
+  }
+  .td-price {
+    font-size: 26px;
+    font-weight: $font-weight-light;
+    margin-top: 5px;
+    text-align: right;
+  }
+  .td-total {
+    font-weight: $font-weight-bold;
+    font-size: $font-size-h5;
+    padding-top: 20px;
+    text-align: right;
+  }
+
+  .td-actions .btn {
+
+    &.btn-sm,
+    &.btn-xs {
+      padding-left: 3px;
+      padding-right: 3px;
+    }
+  }
+
+  > tbody > tr {
+    position: relative;
+  }
   > tbody tr:last-child {
     > td,
     > th {
-      border-bottom: 1px solid $table-border-color;
+      border-bottom: 1px solid $table-line-color;
     }
   }
 
@@ -87,58 +120,71 @@ th {
     }
   }
 
-  .wide {
-    width: 100px;
+  th.sortable {
+    white-space: nowrap;
   }
-}
+  
+  th.sortable:hover {
+    background: #333;
+    cursor: pointer;
+  }
 
+  // // Condensed table w/ half padding
+  // .table-condensed {
+  //   > thead,
+  //   > tbody,
+  //   > tfoot {
+  //     > tr {
+  //       > th,
+  //       > td {
+  //         padding: $table-condensed-cell-padding;
+  //       }
+  //     }
+  //   }
+  // }
 
-// Condensed table w/ half padding
+  // Bordered version
+  //
+  // Add borders all around the table and between all the columns.
 
-.table-condensed {
-  > thead,
-  > tbody,
-  > tfoot {
-    > tr {
+  .table-bordered {
+    border: 1px solid $table-line-color;
+    > thead,
+    > tbody,
+    > tfoot {
+      > tr {
+        > th,
+        > td {
+          border: 1px solid $table-line-color;
+        }
+      }
+    }
+    > thead > tr {
       > th,
       > td {
-        padding: $table-condensed-cell-padding;
+        border-bottom-width: 2px;
       }
     }
   }
+
+  
 }
-
-
-// Bordered version
-//
-// Add borders all around the table and between all the columns.
-
-.table-bordered {
-  border: 1px solid $table-border-color;
-  > thead,
-  > tbody,
-  > tfoot {
-    > tr {
-      > th,
-      > td {
-        border: 1px solid $table-border-color;
-      }
-    }
-  }
-  > thead > tr {
-    > th,
-    > td {
-      border-bottom-width: 2px;
-    }
-  }
-}
-
-
-// Zebra-striping
-//
-// Default zebra-stripe styles (alternating gray and transparent backgrounds)
 
 .table-striped {
+  tbody > tr:nth-of-type(2n+1) {
+    background-color: #fff;
+  }
+  tbody > tr:nth-of-type(2n) {
+    background-color: $pale-bg;
+  }
+  > thead > tr > th,
+  > tbody > tr > th,
+  > tfoot > tr > th,
+  > thead > tr > td,
+  > tbody > tr > td,
+  > tfoot > tr > td {
+    padding: 15px 8px;
+  }
   > tbody > tr:nth-child(odd) {
     > td,
     > th {
@@ -165,6 +211,7 @@ th {
   }
 }
 
+
 // Table cell sizing
 //
 // Reset default table behavior
@@ -185,7 +232,6 @@ table {
   }
 }
 
-
 // Responsive tables
 //
 // Wrap your tables in `.table-responsive` and we'll make them mobile friendly
@@ -199,7 +245,7 @@ table {
     overflow-y: hidden;
     overflow-x: scroll;
     -ms-overflow-style: -ms-autohiding-scrollbar;
-    border: 1px solid $table-border-color;
+    border: 1px solid $table-line-color;
     -webkit-overflow-scrolling: touch;
 
     // Tighten up spacing
@@ -256,16 +302,6 @@ table {
   }
 }
 
-th.sortable {
-  white-space: nowrap;
-}
-
-th.sortable:hover {
-  background: #333;
-  cursor: pointer;
-}
-
-
 // CK: Define a div table
 .divTable{
   display: table;
@@ -289,3 +325,4 @@ th.sortable:hover {
 .divTableBody {
   display: table-row-group;
 }
+
