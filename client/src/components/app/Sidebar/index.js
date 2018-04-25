@@ -20,7 +20,7 @@ const SidebarStore = {
     },
     {
       name: 'Interventions',
-      icon: 'ti-pulse',
+      icon: 'ti-panel',
       path: '/interventions'
     },
     {
