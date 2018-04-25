@@ -14,6 +14,11 @@ const SidebarStore = {
       path: '/demographics'
     },
     {
+      name: 'Disease Risk',
+      icon: 'ti-heart-broken',
+      path: '/disease-risk'
+    },
+    {
       name: 'Calibration',
       icon: 'ti-ruler-alt-2',
       path: '/calibration'
@@ -27,11 +32,6 @@ const SidebarStore = {
       name: 'Analysis',
       icon: 'ti-stats-up',
       path: '/analysis'
-    },
-    {
-      name: 'Disease Risk',
-      icon: 'ti-bar-chart',
-      path: '/disease-risk'
     },
     {
       name: 'Equity',
