@@ -1,8 +1,8 @@
 {
-  "name": "HealthPrior",
+  "name": "optima-nutrition",
   "version": "0.3.0",
-  "description": "HealthPrior GUI",
-  "author": "HealthPrior Working Group <info@hptool.com>",
+  "description": "Optima Nutrition GUI",
+  "author": "Optima",
   "private": true,
   "scripts": {
     "dev": "node build/dev-server.js",
