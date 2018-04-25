@@ -15,23 +15,23 @@ const SidebarStore = {
     },
     {
       name: 'Calibration',
-      icon: 'ti-ruler',
+      icon: 'ti-ruler-alt-2',
       path: '/calibration'
     },
     {
+      name: 'Interventions',
+      icon: 'ti-pulse',
+      path: '/interventions'
+    },
+    {
       name: 'Analysis',
-      icon: 'ti-ruler',
+      icon: 'ti-stats-up',
       path: '/analysis'
     },
     {
       name: 'Disease burden',
       icon: 'ti-bar-chart',
       path: '/bod'
-    },
-    {
-      name: 'Interventions',
-      icon: 'ti-pulse',
-      path: '/interventions'
     },
     {
       name: 'Equity',
