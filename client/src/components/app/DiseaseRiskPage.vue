@@ -1,15 +1,9 @@
-<!--
-Define disease burden
-
-Last update: 2018-03-25
--->
-
 <template>
   <div class="SitePage">
 
     <div v-if="activeProjectName === ''">
       <div style="font-style:italic">
-        <p>Hmm, I can't find any disease burdens...did you forget to <router-link class="link __blue" to="/projects">load a project</router-link>?</p>
+        <p>Hmm, I can't find any disease risks...did you forget to <router-link class="link __blue" to="/projects">load a project</router-link>?</p>
       </div>
     </div>
 
@@ -238,7 +232,7 @@ Last update: 2018-03-25
   import Vue from 'vue';
 
   export default {
-    name: 'DiseaseBurdenPage',
+    name: 'DiseaseRiskPage',
 //    components: {
 //        HotTable
 //    },

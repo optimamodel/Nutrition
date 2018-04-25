@@ -29,9 +29,9 @@ const SidebarStore = {
       path: '/analysis'
     },
     {
-      name: 'Disease burden',
+      name: 'Disease Risk',
       icon: 'ti-bar-chart',
-      path: '/bod'
+      path: '/disease-risk'
     },
     {
       name: 'Equity',

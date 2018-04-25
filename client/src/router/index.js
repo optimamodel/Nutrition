@@ -13,7 +13,7 @@ import ProjectsPage from '@/components/app/ProjectsPage'
 import DemographicsPage from '@/components/app/DemographicsPage'
 import CalibrationPage from '@/components/app/CalibrationPage'
 import AnalysisPage from '@/components/app/AnalysisPage'
-import DiseaseBurdenPage from '@/components/app/DiseaseBurdenPage'
+import DiseaseRiskPage from '@/components/app/DiseaseRiskPage'
 import InterventionsPage from '@/components/app/InterventionsPage'
 import EquityPage from '@/components/app/EquityPage'
 import FinancialRiskPage from '@/components/app/FinancialRiskPage'
@@ -68,9 +68,9 @@ export default new Router({
           component: AnalysisPage
         },
         {
-          path: 'bod',
-          name: 'Define burden of disease',
-          component: DiseaseBurdenPage
+          path: 'disease-risk',
+          name: 'Disease risk',
+          component: DiseaseRiskPage
         },
         {
           path: 'interventions',
