@@ -12,6 +12,7 @@ import NotFound from '@/components/generic/NotFoundPage.vue'
 import ProjectsPage from '@/components/app/ProjectsPage'
 import DemographicsPage from '@/components/app/DemographicsPage'
 import CalibrationPage from '@/components/app/CalibrationPage'
+import ScenariosPage from '@/components/app/ScenariosPage'
 import AnalysisPage from '@/components/app/AnalysisPage'
 import DiseaseRiskPage from '@/components/app/DiseaseRiskPage'
 import InterventionsPage from '@/components/app/InterventionsPage'
@@ -58,6 +59,11 @@ export default new Router({
           path: 'calibration',
           name: 'Calibration',
           component: CalibrationPage
+        },
+        {
+          path: 'scenarios',
+          name: 'Scenarios',
+          component: ScenariosPage
         },
         {
           path: 'analysis',

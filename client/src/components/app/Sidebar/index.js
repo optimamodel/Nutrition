@@ -29,6 +29,11 @@ const SidebarStore = {
       path: '/interventions'
     },
     {
+      name: 'Scenarios',
+      icon: 'ti-direction-alt',
+      path: '/scenarios'
+    },
+    {
       name: 'Analysis',
       icon: 'ti-stats-up',
       path: '/analysis'
