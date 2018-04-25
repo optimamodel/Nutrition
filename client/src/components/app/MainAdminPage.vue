@@ -6,7 +6,7 @@ Last update: 2018-03-25
 
 <template>
   <div class="SitePage">
-    <h2>HealthPrior Users</h2>
+    <h2>Users</h2>
     <table v-if="usersList[0] != undefined">
       <tr>
         <th>Username</th>
