@@ -9,9 +9,9 @@ const SidebarStore = {
       path: '/projects'
     },
     {
-      name: 'Inputs',
-      icon: 'ti-ruler',
-      path: '/inputs'
+      name: 'Demographics',
+      icon: 'ti-bar-chart',
+      path: '/demographics'
     },
     {
       name: 'Calibration',

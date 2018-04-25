@@ -10,7 +10,7 @@ import DashboardLayout from '@/components/app/DashboardLayout.vue'
 // App views
 import NotFound from '@/components/generic/NotFoundPage.vue'
 import ProjectsPage from '@/components/app/ProjectsPage'
-import InputsPage from '@/components/app/EquityPage'
+import DemographicsPage from '@/components/app/DemographicsPage'
 import CalibrationPage from '@/components/app/CalibrationPage'
 import AnalysisPage from '@/components/app/AnalysisPage'
 import DiseaseBurdenPage from '@/components/app/DiseaseBurdenPage'
@@ -53,9 +53,9 @@ export default new Router({
           component: ProjectsPage
         },
         {
-          path: 'inputs',
-          name: 'Inputs',
-          component: InputsPage
+          path: 'demographics',
+          name: 'Demographics',
+          component: DemographicsPage
         },
         {
           path: 'calibration',
