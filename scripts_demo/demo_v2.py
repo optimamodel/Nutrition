@@ -28,7 +28,7 @@ reference = []
 reference.append('Reference')
 reference.append('')
 refModel = dcp(model)
-refModel.runSimulationGivenCoverage(referenceCovs, True)
+refModel.simulateScalar(referenceCovs, True)
 for outcome in outcomes:
     reference.append(refModel.getOutcome(outcome))
 
@@ -40,7 +40,7 @@ for programName in model.constants.programList:
         newModel = dcp(model)
         newCov = dcp(referenceCovs)
         newCov[programName] = 0.95
-        newModel.runSimulationGivenCoverage(newCov, True)
+        newModel.simulateScalar(newCov, True)
         unrestrictedCov = 0
         for prog in newModel.programInfo.programs:
             if prog.name == programName:
@@ -54,7 +54,7 @@ for programName in model.constants.programList:
         newCov = dcp(referenceCovs)
         newCov[programName] = 0.95
         newCov[programName + suffix] = 0.95
-        newModel.runSimulationGivenCoverage(newCov, True)
+        newModel.simulateScalar(newCov, True)
         unrestrictedCov = 0
         for prog in newModel.programInfo.programs:
             if prog.name == programName or prog.name == programName + suffix:
@@ -73,7 +73,7 @@ for flag in groupingFlags:
         name = program.name
         if flag in name:
             newCov[name] = 0.95
-    newModel.runSimulationGivenCoverage(newCov, True)
+    newModel.simulateScalar(newCov, True)
     unrestrictedCov = 0
     for program in newModel.programInfo.programs:
         if flag in program.name:

@@ -10,7 +10,7 @@ class Model:
         self.optimise = optimise # TODO: This is a way to get optimisation to ignore 'programs annual spending', but should be improved later
         self.constants = Constants(self.data)
         self.programInfo = program_info.ProgramInfo(self.constants)
-        self.populations = populations.setUpPopulations(self.data, self.constants)
+        self.populations = populations._setPops(self.data, self.constants)
         self.children = self.populations[0]
         self.PW = self.populations[1]
         self.nonPW = self.populations[2]
@@ -22,11 +22,11 @@ class Model:
             self.numYears = len(self.constants.simulationYears) # default if not specified later
 
         self.year = self.constants.baselineYear
-        self._createOutcomeTrackers()
+        self._setTrackers()
         if calibrate:
             self.calibrate()
 
-    def _createOutcomeTrackers(self):
+    def _setTrackers(self):
         self.annualDeathsChildren = {year: 0 for year in self.constants.allYears}
         self.annualDeathsPW = {year: 0 for year in self.constants.allYears}
         self.ageingOutChildren = {year: 0 for year in self.constants.allYears}
@@ -37,14 +37,15 @@ class Model:
         self.annualNotAnaemic = {year: 0 for year in self.constants.allYears}
         self.annualNeonatalDeaths = {year: 0 for year in self.constants.allYears}
         self.annualBirths = {year: 0 for year in self.constants.allYears}
+        self.annualChildrenAgeingOutNonStuntedNonWasted = {year: 0 for year in self.constants.allYears}
         self.annualChildrenAgeingOutHealthly = {year: 0 for year in self.constants.allYears}
         self.annualChildrenThreeConditions = {year: 0 for year in self.constants.allYears}
 
-    def _updateConditionalProbabilities(self):
+    def _updateProbs(self):
         previousCov = self.programInfo._getAnnualCoverage(self.year-1) # last year cov
         for pop in self.populations:
             pop.previousCov = previousCov # pop has access to adjusted current cov
-            pop._setConditionalProbabilities()
+            pop._setProbs()
 
     def _updateCoverages(self, newCoverages):
         for program in self.programInfo.programs:
@@ -248,7 +249,7 @@ class Model:
         ageGroup._updateProbConditionalDiarrhoea(Zt)
         for risk in ['Stunting', 'Anaemia']:
             ageGroup.diarrhoeaUpdate[risk] *= self._getUpdatesFromDiarrhoeaIncidence(beta, ageGroup, risk)
-        wastingUpdate = self._getWastingUpdateFromDiarrhoea(beta, ageGroup)
+        wastingUpdate = self.__getWastingUpdateDiarrhoea(beta, ageGroup)
         for wastingCat in self.constants.wastedList:
             ageGroup.diarrhoeaUpdate[wastingCat] *= wastingUpdate[wastingCat]
 
@@ -276,7 +277,7 @@ class Model:
         beta = ageGroup._getFracDiarrhoeaFixedZ()  # TODO: this could probably be calculated prior to update coverages
         for risk in ['Stunting', 'Anaemia']:
             ageGroup.bfUpdate[risk] = self._getUpdatesFromDiarrhoeaIncidence(beta, ageGroup, risk)
-        ageGroup.bfUpdate.update(self._getWastingUpdateFromDiarrhoea(beta, ageGroup))
+        ageGroup.bfUpdate.update(self.__getWastingUpdateDiarrhoea(beta, ageGroup))
 
     def _getUpdatesFromDiarrhoeaIncidence(self, beta, ageGroup, risk):
         oldProb = ageGroup.getRiskFromDist(risk)
@@ -291,7 +292,7 @@ class Model:
         update = 1. - reduction
         return update
 
-    def _getWastingUpdateFromDiarrhoea(self, beta, ageGroup):
+    def __getWastingUpdateDiarrhoea(self, beta, ageGroup):
         update = {}
         for wastingCat in self.constants.wastedList:
             update[wastingCat] = 1.
@@ -389,6 +390,7 @@ class Model:
         self.annualThrive[self.year] += oldest.getAgeGroupNumberNotStunted() * oldest.ageingRate
         self.annualNotAnaemic[self.year] += oldest.getAgeGroupNumberNotAnaemic() * oldest.ageingRate
         self.annualNotWasted[self.year] += oldest.getAgeGroupNumberNotWasted() * oldest.ageingRate
+        self.annualChildrenAgeingOutNonStuntedNonWasted[self.year] += oldest.getAgeGroupNumberNonStuntedNonWasted() * oldest.ageingRate
         self.annualChildrenAgeingOutHealthly[self.year] += oldest.getAgeGroupNumberHealthy() * oldest.ageingRate
         self.annualChildrenThreeConditions[self.year] += oldest.getAgeGroupNumberThreeConditions() * oldest.ageingRate
 
@@ -535,7 +537,7 @@ class Model:
         """Responsible for moving the model, updating year, adjusting coverages and conditional probabilities, applying coverages"""
         if self.adjustCoverage:
             self.programInfo._adjustCoveragesForPopGrowth(self.populations, self.year)
-        self._updateConditionalProbabilities()
+        self._updateProbs()
         self._resetStorage()
         self.applyNewProgramCoverages()
         if self.timeTrends:
@@ -594,16 +596,16 @@ class Model:
             self._updateEverything()
             self._progressModel()
 
-    def runSimulationGivenCoverage(self, coverages, restrictedCov=True):
+    def simulateScalar(self, coverages, restrictedCov=True):
         """coverage is restricted coverage starting after calibration year, remaining constant for run time"""
-        self.programInfo._setSimulationCoverageFromScalar(coverages, restrictedCov)
+        self.programInfo._setSimCovScalar(coverages, restrictedCov)
         self.runSimulation()
 
-    def runSimulationFromWorkbook(self):
-        self.programInfo._setSimulationCoverageFromWorkbook()
+    def simulateWorkbook(self):
+        self.programInfo._setCovsWorkbook()
         self.runSimulation()
 
-    def runSimulationFromOptimisation(self, newCoverages):
+    def simulateOptimisation(self, newCoverages): # TODO: this is a less general version of simulateScalar, so should only have one func
         self._setAnnualCoveragesFromOptimisation(newCoverages)
         self.runSimulation()
 
@@ -628,6 +630,8 @@ class Model:
             return -sum(self.annualChildrenAgeingOutHealthly.values())
         elif outcome == 'healthy_children':
             return sum(self.annualChildrenAgeingOutHealthly.values())
+        elif outcome == 'nonstunted_nonwasted':
+            return sum(self.annualChildrenAgeingOutNonStuntedNonWasted.values())
         elif outcome == 'stunting_prev':
             return self.children.getTotalFracStunted()
         elif outcome == 'thrive':

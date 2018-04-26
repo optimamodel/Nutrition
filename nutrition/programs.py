@@ -28,7 +28,7 @@ class Program(object):
             restrictedCalibration = calibrationCov
         return restrictedBaseline, restrictedCalibration
 
-    def _setAnnualCoverageFromOptimisation(self, newCoverage):
+    def _setAnnualCoverageFromOptimisation(self, newCoverage): # TODO: this is also less general version of scalar version
         """
         newCoverage is passed from optimisation, which means it's already unrestricted coverage
         :param newCoverage:
@@ -47,14 +47,14 @@ class Program(object):
         theseYears = [self.const.baselineYear] + self.const.calibrationYears
         self.annualCoverage = {year: self.unrestrictedCalibrationCov for year in theseYears}
 
-    def _setSimulationCoverageFromScalar(self, coverages, restrictedCov=True):
+    def _setSimCovScalar(self, coverages, restrictedCov=True):
         years = self.const.simulationYears
         if restrictedCov:
             coverages = self._getUnrestrictedCov(coverages)
         interpolated = {year:coverages for year in years}
         self.annualCoverage.update(interpolated)
 
-    def _setSimulationCoverageFromWorkbook(self):
+    def _setCovWorkbook(self):
         years = array(self.const.simulationYears)
         coverages = dcp(self.coverageProjections['Coverage'][1])
         coverages = array(coverages[len(self.const.calibrationYears):]) # remove calibration years
@@ -64,7 +64,7 @@ class Program(object):
         if not any(not_nan):
             # is all nan, assume constant at baseline
             interpolated = {year: self.unrestrictedBaselineCov for year in years}
-        else:
+        else: # TODO: this could be made into a function whhich works for the 'scalar' case as well
             # for 1 or more present values, baseline up to first present value, interpolate between, then constant if end values missing
             trueIndx = [i for i, x in enumerate(not_nan) if x]
             firstTrue = trueIndx[0]
@@ -377,10 +377,10 @@ class CostCovCurve:
         A = -B
         C = 0.
         D = self.unitCost*B/2.
-        curve = self.getCostCoverageCurveSpecifyingParameters(A, B, C, D)
+        curve = self._getLogisticCurve(A, B, C, D)
         return curve
 
-    def getCostCoverageCurveSpecifyingParameters(self, A, B, C, D):
+    def _getLogisticCurve(self, A, B, C, D):
         """This is a logistic curve with each parameter (A,B,C,D) provided by the user"""
         logisticCurve = lambda x: (A + (B - A) / (1 + exp(-(x - C) / D)))
         return logisticCurve
@@ -432,6 +432,6 @@ class CostCovCurve:
             inverseCurve = lambda y: -D * log((B - y) / (y - A)) + C
         return inverseCurve
 
-def setUpPrograms(constants):
+def _setPrograms(constants):
     programs = [Program(program, constants) for program in constants.programList] # list of all programs
     return programs

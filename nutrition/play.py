@@ -26,4 +26,4 @@ if __name__ == '__main__': # this is just for testing
     root = os.path.join(os.pardir, 'Projects', 'Master')
     filePath = getFilePath(root=root, analysisType='national', name='Master')
     myModel = setUpModel(filePath)
-    myModel.runSimulationFromWorkbook()
+    myModel.simulateWorkbook()

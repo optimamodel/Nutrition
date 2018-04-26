@@ -42,7 +42,7 @@ for region in regions:
     reference.append('Reference')
     reference.append('')
     refModel = dcp(model)
-    refModel.runSimulationGivenCoverage(referenceCovs, True)
+    refModel.simulateScalar(referenceCovs, True)
     for outcome in outcomes:
         reference.append(refModel.getOutcome(outcome))
     print " "
@@ -55,7 +55,7 @@ for region in regions:
             newModel = dcp(model)
             newCov = dcp(referenceCovs)
             newCov[programName] = 0.95
-            newModel.runSimulationGivenCoverage(newCov, True)
+            newModel.simulateScalar(newCov, True)
             unrestrictedCov = 0
             for prog in newModel.programInfo.programs:
                 if prog.name == programName:
@@ -69,7 +69,7 @@ for region in regions:
             newCov = dcp(referenceCovs)
             newCov[programName] = 0.95
             newCov[programName + suffix] = 0.95
-            newModel.runSimulationGivenCoverage(newCov, True)
+            newModel.simulateScalar(newCov, True)
             unrestrictedCov = 0
             for prog in newModel.programInfo.programs:
                 if prog.name == programName or prog.name == programName + suffix:
