@@ -13,12 +13,9 @@ regions = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Kaskazini_Pemba', 'Kaskazini_Un
            'Kilimanjaro', 'Kusini_Pemba', 'Kusini_Unguja', 'Lindi', 'Manyara', 'Mara', 'Mjini_Magharibi',
            'Morogoro', 'Mtwara', 'Pwani', 'Rukwa', 'Ruvuma', 'Simiyu', 'Singida', 'Tabora', 'Tanga']
 
-objectives = ['healthy_children']
-budgetMultiples = [1]
-
 # optimised current spending
 # no geospatial optimisation necessary
-objectives = ['healthy_children']
+objectives = ['thrive']
 budgetMultiples = [1]
 
 jobs = []

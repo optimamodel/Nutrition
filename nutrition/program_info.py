@@ -9,7 +9,7 @@ class ProgramInfo:
     """
     def __init__(self, constants):
         import programs as progs
-        self.programs = progs.setUpPrograms(constants)
+        self.programs = progs._setPrograms(constants)
         self.programAreas = constants.programAreas
         self.const = constants
         self.currentExpenditure = constants.currentExpenditure
@@ -87,14 +87,14 @@ class ProgramInfo:
         for program in self.programs:
             program._setInitialCoverage(populations)
 
-    def _setSimulationCoverageFromScalar(self, coverages, restrictedCov):
+    def _setSimCovScalar(self, coverages, restrictedCov):
         for program in self.programs:
             cov = coverages[program.name]
-            program._setSimulationCoverageFromScalar(cov, restrictedCov)
+            program._setSimCovScalar(cov, restrictedCov)
 
-    def _setSimulationCoverageFromWorkbook(self):
+    def _setCovsWorkbook(self):
         for program in self.programs:
-            program._setSimulationCoverageFromWorkbook()
+            program._setCovWorkbook()
 
     def _callProgramMethod(self, method, *args):
         """Calls method for all programs in self.programs"""

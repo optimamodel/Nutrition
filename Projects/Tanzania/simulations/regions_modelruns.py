@@ -23,7 +23,7 @@ for region in regions:
     output = []
     filePath = play.getFilePath(root=root, country='Tanzania/regions', name=region)
     model = play.setUpModel(filePath, adjustCoverage=False, numYears=6)  # already run a year
-    model.runSimulationFromWorkbook()
+    model.simulateWorkbook()
     for outcome in outcomes:
         output.append(model.getOutcome(outcome))
     with open(filename, 'a') as f:

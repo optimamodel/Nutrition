@@ -19,7 +19,7 @@ output = {}
 output['reference'] = {}
 # refCase
 refModel = dcp(model)
-refModel.runSimulationGivenCoverage(refCovs, True)
+refModel.simulateScalar(refCovs, True)
 output['reference']['ref'] = []
 for outcome in outcomes:
     output['reference']['ref'].append(refModel.getOutcome(outcome))
@@ -31,7 +31,7 @@ for treatment in wastingTreatments:
         thisCov = dcp(refCovs)
         thisModel = dcp(model)
         thisCov[treatment] = increment
-        thisModel.runSimulationGivenCoverage(thisCov, True)
+        thisModel.simulateScalar(thisCov, True)
         for outcome in outcomes:
             output[treatment][increment].append(thisModel.getOutcome(outcome))
 

@@ -55,7 +55,7 @@ def objectiveFunction(allocation, objective, model, freeFunds, fixedAllocations,
     totalAllocations = _addFixedAllocations(totalAllocations, scaledAllocation, indxToKeep)
     for idx, program in enumerate(programs):
         newCoverages[program.name] = program.costCurveFunc(totalAllocations[idx]) / program.unrestrictedPopSize
-    thisModel.runSimulationFromOptimisation(newCoverages)
+    thisModel.simulateOptimisation(newCoverages)
     outcome = thisModel.getOutcome(objective) * 1000.
     if objective == 'thrive' or objective == 'healthy_children' or objective == 'no_conditions':
         outcome *= -1
@@ -292,7 +292,7 @@ class Optimisation:
             zeroCov = {prog.name: 0 for prog in self.programs}
             zeroModel = dcp(self.model)
             # get baseline case
-            zeroModel.runSimulationGivenCoverage(zeroCov, restrictedCov=True)
+            zeroModel.simulateScalar(zeroCov, restrictedCov=True)
             zeroOutcome = zeroModel.getOutcome(objective)
             for indx, program in enumerate(self.programs):
                 thisModel = dcp(self.model)
@@ -300,7 +300,7 @@ class Optimisation:
                 thisCov[program.name] = newCov
                 if program.malariaTwin:
                     thisCov[program.name + ' (malaria area)'] = newCov
-                thisModel.runSimulationGivenCoverage(thisCov, restrictedCov=True)
+                thisModel.simulateScalar(thisCov, restrictedCov=True)
                 outcome = thisModel.getOutcome(objective)
                 if abs((outcome - zeroOutcome) / zeroOutcome) * 100. > threshold:  # no impact
                     indxToKeep.append(indx)
@@ -356,7 +356,7 @@ class Optimisation:
     def oneModelRunWithOutput(self, allocationDictionary):
         model = dcp(self.model)
         newCoverages = self.getCoverages(allocationDictionary)
-        model.runSimulationFromOptimisation(newCoverages)
+        model.simulateOptimisation(newCoverages)
         return model
 
     def getOptimisedOutcomes(self, allocations):

@@ -15,7 +15,7 @@ regions = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Kaskazini_Pemba', 'Kaskazini_Un
            'Kilimanjaro', 'Kusini_Pemba', 'Kusini_Unguja', 'Lindi', 'Manyara', 'Mara', 'Mjini_Magharibi',
            'Morogoro', 'Mtwara', 'Pwani', 'Rukwa', 'Ruvuma', 'Simiyu', 'Singida', 'Tabora', 'Tanga']
 
-objectives = ['healthy_children']
+objectives = ['thrive']
 budgetMultiples = [1]
 
 # current + additional US$40 distributed on per-capita basis, all optimised
@@ -24,7 +24,7 @@ additionalFunds = 32833333.
 # get total population
 popSizes = []
 for region in regions:
-    filePath = play.getFilePath(root=root, country='Tanzania/regions', name=region)
+    filePath = play.getFilePath(root=root, analysisType='national', name=region)
     model = play.setUpModel(filePath, adjustCoverage=False, numYears=6, calibrate=False)
     thisPop = 0
     for pop in model.populations:

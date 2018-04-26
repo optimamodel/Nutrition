@@ -485,7 +485,7 @@ class Children(Population):
 
     ##### DATA WRANGLING ######
 
-    def _setConditionalProbabilities(self):
+    def _setProbs(self):
         # self._setProbConditionalCoverage()
         self._setProbStuntedIfCovered()
         self._setProbAnaemicIfCovered()
@@ -1085,7 +1085,7 @@ class PregnantWomen(Population):
                     linReg = polyfit(years[notNan],prev[notNan],1)
                     ageGroup.annualPrevChange[risk] = 1 + linReg[0]
 
-    def _setConditionalProbabilities(self):
+    def _setProbs(self):
         self._setProbAnaemicIfCovered()
 
     def _makePopSizes(self):
@@ -1189,7 +1189,7 @@ class NonPregnantWomen(Population):
 
     ##### DATA WRANGLING ######
 
-    def _setConditionalProbabilities(self):
+    def _setProbs(self):
         self._setProbAnaemicIfCovered()
 
     def _makePopSizes(self):
@@ -1262,7 +1262,7 @@ class NonPregnantWomen(Population):
                     ageGroup.annualPrevChange[risk] = 1 + linReg[0]
 
 
-def setUpPopulations(data, constants):
+def _setPops(data, constants):
     children = Children('Children', data, constants)
     pregnantWomen = PregnantWomen('Pregnant women', data, constants)
     nonPregnantWomen = NonPregnantWomen('Non-pregnant women', data, constants)
