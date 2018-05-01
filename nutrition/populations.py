@@ -488,27 +488,27 @@ class Children(Population):
         self._setProgramEffectiveness()
         self._setAnnualPrevChange()
         self._setCorrectBFpractice()
-        self._setProbConditionalStunting()
-        self._setProbStuntedAtBirth()
-        self._setProbWastedAtBirth()
+        self._setProbFutureStunting()
+        self._setProbStuntedBirth()
+        self._setProbWastedBirth()
 
     ##### DATA WRANGLING ######
 
     def _setProbs(self):
-        # self._setProbConditionalCoverage()
-        self._setProbStuntedIfCovered()
-        self._setProbAnaemicIfCovered()
-        self._setProbWastedIfCovered()
-        self._setProbCorrectlyBreastfedIfCovered()
-        # self._setProbConditionalDiarrhoea()
-        self._setProbStuntedIfDiarrhoea()
-        self._setProbAnaemicIfDiarrhoea()
-        self._setProbWastedIfDiarrhoea()
+        # self._setCondProbs()
+        self._setProbStunted()
+        self._setProbAnaemic()
+        self._setProbWasted()
+        self._setProbBF()
+        # self._setProbDia()
+        self._setProbStuntedDia()
+        self._setProbAnaemiaDia()
+        self._setProbWastedDia()
 
     def _setConditionalDiarrhoea(self):
-        self._setProbStuntedIfDiarrhoea()
-        self._setProbAnaemicIfDiarrhoea()
-        self._setProbWastedIfDiarrhoea()
+        self._setProbStuntedDia()
+        self._setProbAnaemiaDia()
+        self._setProbWastedDia()
 
     def _makePopSizes(self):
         # for children less than 1 year, annual live births
@@ -724,7 +724,7 @@ class Children(Population):
         alteredList[index] = newList
         return alteredList
 
-    def _setProbConditionalStunting(self):
+    def _setProbFutureStunting(self):
         """Calculate the probability of stunting given previous stunting between age groups"""
         for indx in range(1, len(self.ageGroups)):
             ageGroup = self.ageGroups[indx]
@@ -737,7 +737,7 @@ class Children(Population):
             ageGroup.probConditionalStunting['stunted'] = pc
             ageGroup.probConditionalStunting['not stunted'] = pn
 
-    def _setProbConditionalCoverage(self): # TODO: this is more general version of the two following methods
+    def _setCondProbs(self): # TODO: this is more general version of the two following methods
         """Set the conditional probabilities of a risk factor (except wasting) given program coverage.
         Note that this value is dependent upon the baseline coverage of the program"""
         risks = [risk for i, risk in enumerate(self.const.risks) if i !=1 ] # remove wasting
@@ -763,7 +763,7 @@ class Children(Population):
                     ageGroup.probConditionalCoverage[risk][program]['covered'] = pc
                     ageGroup.probConditionalCoverage[risk][program]['not covered'] = pn
 
-    def _setProbStuntedIfCovered(self):
+    def _setProbStunted(self):
         risk = 'Stunting'
         for ageGroup in self.ageGroups:
             age = ageGroup.age
@@ -777,7 +777,7 @@ class Children(Population):
                 ageGroup.probConditionalCoverage[risk][program]['covered'] = pc
                 ageGroup.probConditionalCoverage[risk][program]['not covered'] = pn
 
-    def _setProbAnaemicIfCovered(self):
+    def _setProbAnaemic(self):
         risk = 'Anaemia'
         for ageGroup in self.ageGroups:
             age = ageGroup.age
@@ -796,7 +796,7 @@ class Children(Population):
                 ageGroup.probConditionalCoverage[risk][program]['covered'] = pc
                 ageGroup.probConditionalCoverage[risk][program]['not covered'] = pn
 
-    def _setProbCorrectlyBreastfedIfCovered(self):
+    def _setProbBF(self):
         risk = 'Breastfeeding'
         for ageGroup in self.ageGroups:
             age = ageGroup.age
@@ -810,7 +810,7 @@ class Children(Population):
                 ageGroup.probConditionalCoverage[risk][program]['covered'] = pc
                 ageGroup.probConditionalCoverage[risk][program]['not covered'] = pn
 
-    def _setProbWastedIfCovered(self):
+    def _setProbWasted(self):
         for wastingCat in self.const.wastedList:
             for ageGroup in self.ageGroups:
                 ageGroup.probConditionalCoverage[wastingCat] = {}
@@ -824,7 +824,7 @@ class Children(Population):
                     ageGroup.probConditionalCoverage[wastingCat][program]['covered'] = pc
                     ageGroup.probConditionalCoverage[wastingCat][program]['not covered'] = pn
 
-    def _setProbConditionalDiarrhoea(self): # TODO: this is more general version of two following methods
+    def _setProbDia(self): # TODO: this is more general version of two following methods
         risks = ['Stunting', 'Anaemia']
         for ageGroup in self.ageGroups:
             for risk in risks:
@@ -847,7 +847,7 @@ class Children(Population):
                 ageGroup.probConditionalDiarrhoea[risk]['diarrhoea'] = pc
                 ageGroup.probConditionalDiarrhoea[risk]['no diarrhoea'] = pn
 
-    def _setProbStuntedIfDiarrhoea(self):
+    def _setProbStuntedDia(self):
         risk = 'Stunting'
         for ageGroup in self.ageGroups:
             ageGroup.probConditionalDiarrhoea[risk] = {}
@@ -861,7 +861,7 @@ class Children(Population):
             ageGroup.probConditionalDiarrhoea[risk]['diarrhoea'] = pc
             ageGroup.probConditionalDiarrhoea[risk]['no diarrhoea'] = pn
 
-    def _setProbAnaemicIfDiarrhoea(self):
+    def _setProbAnaemiaDia(self):
         risk = 'Anaemia'
         for ageGroup in self.ageGroups:
             ageGroup.probConditionalDiarrhoea[risk] = {}
@@ -876,7 +876,7 @@ class Children(Population):
             ageGroup.probConditionalDiarrhoea[risk]['diarrhoea'] = pc
             ageGroup.probConditionalDiarrhoea[risk]['no diarrhoea'] = pn
 
-    def _setProbWastedIfDiarrhoea(self):
+    def _setProbWastedDia(self):
         for ageGroup in self.ageGroups:
             Z0 = ageGroup._getZa()
             Zt = Z0 # true for initialisation
@@ -890,7 +890,7 @@ class Children(Population):
                 ageGroup.probConditionalDiarrhoea[wastingCat]['no diarrhoea'] = pn
                 ageGroup.probConditionalDiarrhoea[wastingCat]['diarrhoea'] = pc
 
-    def _setProbStuntedAtBirth(self):
+    def _setProbStuntedBirth(self):
         """Sets the probabilty of stunting conditional on birth outcome"""
         newborns = self.ageGroups[0]
         coeffs = self._getBirthStuntingQuarticCoefficients()
@@ -905,7 +905,7 @@ class Children(Population):
                 raise ValueError("probability of stunting at birth, at outcome %s, is out of range (%f)"%(BO, pi))
         newborns.probRiskAtBirth['Stunting'] = probStuntedAtBirth
 
-    def _setProbWastedAtBirth(self):
+    def _setProbWastedBirth(self):
         newborns = self.ageGroups[0]
         probWastedAtBirth = {}
         for wastingCat in self.const.wastedList:
@@ -1095,7 +1095,7 @@ class PregnantWomen(Population):
                     ageGroup.annualPrevChange[risk] = 1 + linReg[0]
 
     def _setProbs(self):
-        self._setProbAnaemicIfCovered()
+        self._setProbAnaemic()
 
     def _makePopSizes(self):
         PWpop = self.data.populationByAge
@@ -1158,7 +1158,7 @@ class PregnantWomen(Population):
                     count += t1 * t2
                 ageGroup.boxes[anaemiaCat].mortalityRate = count
 
-    def _setProbAnaemicIfCovered(self):
+    def _setProbAnaemic(self):
         risk = 'Anaemia'
         for ageGroup in self.ageGroups:
             age = ageGroup.age
@@ -1199,7 +1199,7 @@ class NonPregnantWomen(Population):
     ##### DATA WRANGLING ######
 
     def _setProbs(self):
-        self._setProbAnaemicIfCovered()
+        self._setProbAnaemic()
 
     def _makePopSizes(self):
         WRApop = self.data.populationByAge
@@ -1216,7 +1216,7 @@ class NonPregnantWomen(Population):
             self.ageGroups.append(NonPWAgeGroup(age, popSize, boxes, anaemiaDist, self.data.birthDist,
                                                 self.data.birthAgeDist, self.data.birthIntervalDist, self.const))
 
-    def _setProbAnaemicIfCovered(self):
+    def _setProbAnaemic(self):
         risk = 'Anaemia'
         for ageGroup in self.ageGroups:
             age = ageGroup.age
@@ -1235,7 +1235,7 @@ class NonPregnantWomen(Population):
                 ageGroup.probConditionalCoverage[risk][program]['covered'] = pc
                 ageGroup.probConditionalCoverage[risk][program]['not covered'] = pn
 
-    def _setBirthPregnancyInfo(self, coverage):
+    def _setBPInfo(self, coverage):
         self._updateFracPregnancyAverted(coverage)
         numPregnant = self.const.demographics['number of pregnant women']
         numWRA = sum(pop for key, pop in self.data.populationByAge.iteritems() if 'WRA' in key)

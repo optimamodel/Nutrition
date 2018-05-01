@@ -55,7 +55,7 @@ def objectiveFunction(allocation, objective, model, freeFunds, fixedAllocations,
     totalAllocations = _addFixedAllocations(totalAllocations, scaledAllocation, indxToKeep)
     for idx, program in enumerate(programs):
         newCoverages[program.name] = program.costCurveFunc(totalAllocations[idx]) / program.unrestrictedPopSize
-    thisModel.simulateOptimisation(newCoverages)
+    thisModel.simulateScalar(newCoverages, restrictedCov=False)
     outcome = thisModel.getOutcome(objective) * 1000.
     if objective == 'thrive' or objective == 'healthy_children' or objective == 'nonstunted_nonwasted' or objective == 'no_conditions':
         outcome *= -1
@@ -356,7 +356,7 @@ class Optimisation:
     def oneModelRunWithOutput(self, allocationDictionary):
         model = dcp(self.model)
         newCoverages = self.getCoverages(allocationDictionary)
-        model.simulateOptimisation(newCoverages)
+        model.simulateScalar(newCoverages, restrictedCov=False)
         return model
 
     def getOptimisedOutcomes(self, allocations):

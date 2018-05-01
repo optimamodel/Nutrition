@@ -37,36 +37,30 @@ class Model:
         self.annualNotAnaemic = {year: 0 for year in self.constants.allYears}
         self.annualNeonatalDeaths = {year: 0 for year in self.constants.allYears}
         self.annualBirths = {year: 0 for year in self.constants.allYears}
-        self.annualChildrenAgeingOutNonStuntedNonWasted = {year: 0 for year in self.constants.allYears}
-        self.annualChildrenAgeingOutHealthly = {year: 0 for year in self.constants.allYears}
-        self.annualChildrenThreeConditions = {year: 0 for year in self.constants.allYears}
+        self.annualNotStuntedWasted = {year: 0 for year in self.constants.allYears}
+        self.annualHealthy = {year: 0 for year in self.constants.allYears}
+        self.annualThreeCond = {year: 0 for year in self.constants.allYears}
 
     def _updateProbs(self):
-        previousCov = self.programInfo._getAnnualCoverage(self.year-1) # last year cov
+        previousCov = self.programInfo._getAnnualCovs(self.year-1) # last year cov
         for pop in self.populations:
             pop.previousCov = previousCov # pop has access to adjusted current cov
             pop._setProbs()
 
-    def _updateCoverages(self, newCoverages):
-        for program in self.programInfo.programs:
-            program.updateCoverageFromPercentage(newCoverages[program.name], self.populations)
-        self.programInfo._restrictCoverages(self.populations)
-
-    def _setBirthPregnancyInfo(self):
+    def _BPInfo(self):
         FP = [prog for prog in self.programInfo.programs if prog.name == 'Family Planning']
         if FP:
             FPprog = FP[0]
-            self.nonPW._setBirthPregnancyInfo(FPprog.unrestrictedBaselineCov)
+            self.nonPW._setBPInfo(FPprog.unrestrictedBaselineCov)
         else:
-            self.nonPW._setBirthPregnancyInfo(0) # TODO: not best way to handle missing program
+            self.nonPW._setBPInfo(0) # TODO: not best way to handle missing program
 
-    def applyNewProgramCoverages(self):
+    def applyProgCovs(self):
         '''newCoverages is required to be the unrestricted coverage % (i.e. people covered / entire target pop) '''
-        # self._updateCoverages(newCoverages)
-        self.programInfo._restrictCoverages(self.populations)
+        self.programInfo._restrictCovs(self.populations)
         for pop in self.populations: # update all the populations
             # update probabilities using current risk distributions
-            self._updatePopulation(pop)
+            self._updatePop(pop)
             if pop.name == 'Non-pregnant women':
                 self._familyPlanningUpdate(pop)
             # combine direct and indirect updates to each risk area that we model
@@ -77,7 +71,7 @@ class Model:
     def _familyPlanningUpdate(self, pop):
         """ This update is not age-specified but instead applies to all non-PW.
         Also uses programs which are not explicitly treated elsewhere in model"""
-        progList = self._getApplicablePrograms('Family planning') # returns 'Family Planning' program
+        progList = self._getApplicableProgs('Family planning') # returns 'Family Planning' program
         if progList:
             prog = progList[0]
             pop._updateFracPregnancyAverted(prog.annualCoverage[self.year])
@@ -86,36 +80,36 @@ class Model:
         if pop.name != 'Non-pregnant women':
             pop._updateMortalityRates()
 
-    def _getApplicablePrograms(self, risk):
+    def _getApplicableProgs(self, risk):
         applicableProgNames = self.programInfo.programAreas[risk]
         programs = list(filter(lambda x: x.name in applicableProgNames, self.programInfo.programs))
         return programs
 
-    def _getApplicableAgeGroups(self, population, risk):
+    def _getApplicableAges(self, population, risk):
         applicableAgeNames = population.populationAreas[risk]
         ageGroups = list(filter(lambda x: x.age in applicableAgeNames, population.ageGroups))
         return ageGroups
 
-    def _updatePopulation(self, population):
+    def _updatePop(self, population):
         for risk in self.programInfo.programAreas.keys():
             # get relevant programs and age groups, determined by risk area
-            applicableProgs = self._getApplicablePrograms(risk)
-            ageGroups = self._getApplicableAgeGroups(population, risk)
+            applicableProgs = self._getApplicableProgs(risk)
+            ageGroups = self._getApplicableAges(population, risk)
             for ageGroup in ageGroups:
                 for program in applicableProgs:
                     if ageGroup.age in program.agesImpacted:
                         if risk == 'Stunting':
-                            program._getStuntingUpdate(ageGroup)
+                            program._stuntingUpdate(ageGroup)
                         elif risk == 'Anaemia':
-                            program._getAnaemiaUpdate(ageGroup)
+                            program._anaemiaUpdate(ageGroup)
                         elif risk == 'Wasting prevention':
-                            program._getWastingPreventionUpdate(ageGroup)
+                            program.__wastingPreventUpdate(ageGroup)
                         elif risk == 'Wasting treatment':
-                            program._getWastingTreatmentUpdate(ageGroup)
+                            program.__wastingTreatUpdate(ageGroup)
                         elif risk == 'Breastfeeding':
-                            program._getBreastfeedingupdate(ageGroup)
+                            program._BFUpdate(ageGroup)
                         elif risk == 'Diarrhoea':
-                            program._getDiarrhoeaIncidenceUpdate(ageGroup)
+                            program._DiaIncidUpdate(ageGroup)
                         elif risk == 'Mortality':
                             program._getMortalityUpdate(ageGroup)
                         elif risk == 'Birth outcomes':
@@ -390,9 +384,9 @@ class Model:
         self.annualThrive[self.year] += oldest.getAgeGroupNumberNotStunted() * oldest.ageingRate
         self.annualNotAnaemic[self.year] += oldest.getAgeGroupNumberNotAnaemic() * oldest.ageingRate
         self.annualNotWasted[self.year] += oldest.getAgeGroupNumberNotWasted() * oldest.ageingRate
-        self.annualChildrenAgeingOutNonStuntedNonWasted[self.year] += oldest.getAgeGroupNumberNonStuntedNonWasted() * oldest.ageingRate
-        self.annualChildrenAgeingOutHealthly[self.year] += oldest.getAgeGroupNumberHealthy() * oldest.ageingRate
-        self.annualChildrenThreeConditions[self.year] += oldest.getAgeGroupNumberThreeConditions() * oldest.ageingRate
+        self.annualNotStuntedWasted[self.year] += oldest.getAgeGroupNumberNonStuntedNonWasted() * oldest.ageingRate
+        self.annualHealthy[self.year] += oldest.getAgeGroupNumberHealthy() * oldest.ageingRate
+        self.annualThreeCond[self.year] += oldest.getAgeGroupNumberThreeConditions() * oldest.ageingRate
 
     def _applyBirths(self): # TODO; re-write this function in future
         # num annual births = birth rate x num WRA x (1 - frac preg averted)
@@ -536,10 +530,10 @@ class Model:
         # TODO: Should prevent this updating unless needed
         """Responsible for moving the model, updating year, adjusting coverages and conditional probabilities, applying coverages"""
         if self.adjustCoverage:
-            self.programInfo._adjustCoveragesForPopGrowth(self.populations, self.year)
+            self.programInfo._adjustCovsPops(self.populations, self.year)
         self._updateProbs()
         self._resetStorage()
-        self.applyNewProgramCoverages()
+        self.applyProgCovs()
         if self.timeTrends:
             self._applyPrevTimeTrends()
 
@@ -579,8 +573,8 @@ class Model:
                 ageGroup.redistributePopulation()
 
     def calibrate(self):
-        self.programInfo._setInitialCoverages(self.populations)
-        self._setBirthPregnancyInfo()
+        self.programInfo._setInitialCovs(self.populations)
+        self._BPInfo()
         for year in self.constants.calibrationYears:
             self._updateYear(year)
             self._updateEverything()
@@ -588,7 +582,7 @@ class Model:
 
     def _updateYear(self, year):
         self.year = year
-        self.programInfo._updateYearForPrograms(year)
+        self.programInfo._updateYearProgs(year)
 
     def runSimulation(self):
         for year in self.constants.simulationYears[:self.numYears]:
@@ -597,21 +591,14 @@ class Model:
             self._progressModel()
 
     def simulateScalar(self, coverages, restrictedCov=True):
-        """coverage is restricted coverage starting after calibration year, remaining constant for run time"""
-        self.programInfo._setSimCovScalar(coverages, restrictedCov)
+        """coverage is restricted coverage starting after calibration year, remaining constant for run time.
+        """
+        self.programInfo._setCovsScalar(coverages, restrictedCov)
         self.runSimulation()
 
     def simulateWorkbook(self):
         self.programInfo._setCovsWorkbook()
         self.runSimulation()
-
-    def simulateOptimisation(self, newCoverages): # TODO: this is a less general version of simulateScalar, so should only have one func
-        self._setAnnualCoveragesFromOptimisation(newCoverages)
-        self.runSimulation()
-
-    def _setAnnualCoveragesFromOptimisation(self, newCoverages):
-        for program in self.programInfo.programs:
-            program._setAnnualCoverageFromOptimisation(newCoverages[program.name])
 
     def _setNumYears(self, numYears):
         return numYears if numYears is not None else self.numYears
@@ -625,13 +612,13 @@ class Model:
         if outcome == 'total_stunted':
             return sum(self.annualStunted.values())
         elif outcome == 'neg_healthy_children_rate':
-            return -sum(self.annualChildrenAgeingOutHealthly.values()) / sum(self.ageingOutChildren.values())
+            return -sum(self.annualHealthy.values()) / sum(self.ageingOutChildren.values())
         elif outcome == 'neg_healthy_children':
-            return -sum(self.annualChildrenAgeingOutHealthly.values())
+            return -sum(self.annualHealthy.values())
         elif outcome == 'healthy_children':
-            return sum(self.annualChildrenAgeingOutHealthly.values())
+            return sum(self.annualHealthy.values())
         elif outcome == 'nonstunted_nonwasted':
-            return sum(self.annualChildrenAgeingOutNonStuntedNonWasted.values())
+            return sum(self.annualNotStuntedWasted.values())
         elif outcome == 'stunting_prev':
             return self.children.getTotalFracStunted()
         elif outcome == 'thrive':
@@ -673,12 +660,12 @@ class Model:
         elif outcome == 'MAM_prev':
             return self.children.getFracWastingCat('MAM')
         elif outcome == 'three_conditions':
-            return sum(self.annualChildrenThreeConditions.values())
+            return sum(self.annualThreeCond.values())
         elif outcome == 'no_conditions':
             return sum(self.annualThrive.values()) + sum(self.annualNotAnaemic.values()) + sum(self.annualNotWasted.values())
         elif outcome == 'less_two':
-            return sum(self.ageingOutChildren.values()) - sum(self.annualChildrenThreeConditions.values())
+            return sum(self.ageingOutChildren.values()) - sum(self.annualThreeCond.values())
         elif outcome == 'SHR': # illness to healthy ratio
-            return sum(self.annualChildrenThreeConditions.values()) / sum(self.annualChildrenAgeingOutHealthly.values())
+            return sum(self.annualThreeCond.values()) / sum(self.annualHealthy.values())
         else:
             raise Exception('::: ERROR: outcome string not found ' + str(outcome) + ' :::')
