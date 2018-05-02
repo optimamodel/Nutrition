@@ -45,7 +45,7 @@ def _addFixedAllocations(allocations, fixedAllocations, indxList):
     return modified
 
 
-def objectiveFunction(allocation, objective, model, freeFunds, fixedAllocations, indxToKeep):
+def objectiveFunction(allocation, objective, model, freeFunds, fixedAllocations, indxToKeep, sign):
     thisModel = dcp(model)
     totalAllocations = dcp(fixedAllocations)
     # scale the allocation appropriately
@@ -56,9 +56,7 @@ def objectiveFunction(allocation, objective, model, freeFunds, fixedAllocations,
     for idx, program in enumerate(programs):
         newCoverages[program.name] = program.costCurveFunc(totalAllocations[idx]) / program.unrestrictedPopSize
     thisModel.simulateScalar(newCoverages, restrictedCov=False)
-    outcome = thisModel.getOutcome(objective) * 1000.
-    if objective == 'thrive' or objective == 'healthy_children' or objective == 'nonstunted_nonwasted' or objective == 'no_conditions':
-        outcome *= -1
+    outcome = thisModel.getOutcome(objective) * sign
     return outcome
 
 
@@ -66,7 +64,7 @@ class Optimisation:
     def __init__(self, objectives, budgetMultiples, fileInfo, resultsPath=None, fixCurrentAllocations=False,
                  additionalFunds=0, removeCurrentFunds=False, numYears=None, costCurveType='linear',
                  parallel=True, numCPUs=None, numRuns=1, filterProgs=True, createResultsDir=True, maxIter=100,
-                 swarmSize=50):
+                 swarmSize=40):
         root, analysisType, name, scenario = fileInfo
         self.name = name
         filePath = play.getFilePath(root=root, analysisType=analysisType, name=name)
@@ -97,10 +95,19 @@ class Optimisation:
         for program in self.programs:
             program._setCostCoverageCurve()
         self.calculateAllocations(fixCurrentAllocations)
-        self.kwargs = {'model': self.model,
-                       'freeFunds': self.freeFunds, 'fixedAllocations': self.fixedAllocations}
+        self.kwargs = {'model': self.model, 'freeFunds': self.freeFunds,
+                       'fixedAllocations': self.fixedAllocations}
         if createResultsDir:
             self.createDirectory(self.resultsDir)
+        self.getInitialPrevs()
+
+    def getInitialPrevs(self):
+        """Sets the initial prevs required for objective function"""
+        thisModel = dcp(self.model)
+        thisModel.simulateScalar({})
+        self.model.initWastingPrev = thisModel.getOutcome('wasting_prev')
+        self.model.thriveWeight = thisModel.getOutcome('thrive')
+        self.model.anaemiaWeight = thisModel.getOutcome('not_anaemic')
 
     ######### FILE HANDLING #########
 
@@ -246,6 +253,7 @@ class Optimisation:
     def runOptimisation(self, multiple, objective):
         kwargs = dcp(self.kwargs)
         kwargs['freeFunds'] *= multiple
+        kwargs['sign'] = ObjectiveSign().getSign(objective)
         if kwargs['freeFunds'] != 0:
             kwargs['objective'] = objective
             indxToKeep = self._selectProgsForObjective(objective)
@@ -270,8 +278,8 @@ class Optimisation:
         return
 
     def printMessages(self, objective, multiple, flag, now):
-        print 'Finished optimisation for {} for objective {} and multiple {}'.format(self.name, objective, multiple)
-        print 'The reason is {} and it took {} hours \n'.format(flag['exitreason'], (time.time() - now) / 3600.)
+        print '\nFinished optimisation for {} for objective {} and multiple {}'.format(self.name, objective, multiple)
+        print 'Reason: {}. Time: {} hours \n'.format(flag['exitreason'], (time.time() - now) / 3600.)
 
     def findBestAllocation(self, outputs):
         bestSample = min(outputs, key=lambda item: item[-1])
@@ -577,6 +585,7 @@ class GeospatialOptimisation:
 
     def optimiseScenarios(self):
         for scenario, options in self.scenarios.iteritems():
+            print "...Running {}... \n".format(scenario)
             fixBetween, fixWithin, replaceCurrent, additionalFunds = options
             formScenario = scenario.lower().replace(' ', '')
             self.newResultsDir = os.path.join(self.resultsDir, self.analysisType, formScenario,
@@ -595,7 +604,7 @@ class GeospatialOptimisation:
         print '...Generating BOCs... \n'
         regions = self.setUpRegions(objective, fixWithin, additionalFunds)
         jobs = self.getBOCjobs(regions, objective)
-        maxRegions = int(50 / (len(self.budgetMultiples) - 1))
+        maxRegions = 2 # 2 objectives * 10 budgets * 2 regions = 40 processes
         runJobs(jobs, maxRegions)
 
     def interpolateBOCs(self, objective, fixBetween, additionalFunds):
@@ -770,6 +779,17 @@ class GeospatialOptimisation:
             region.additionalFunds / len(regions) + sum(region.currentAllocations) - sum(region.fixedAllocations) for
             region in regions)
 
+class ObjectiveSign:
+    def __init__(self):
+        self.max = -1
+        self.min = 1
+
+    def getSign(self, objective):
+        maxObj = ['thrive', 'thrive2', 'healthy_children', 'nonstunted_nonwasted', 'not_anaemic', 'not_anaemic2', 'no_conditions']
+        if objective in maxObj:
+            return self.max
+        else:
+            return self.min
 
 class BudgetScenarios:
     """
