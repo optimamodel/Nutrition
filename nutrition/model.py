@@ -25,6 +25,10 @@ class Model:
         self._setTrackers()
         if calibrate:
             self.calibrate()
+        # these will be set in optimisation, used for an objective
+        self.initWastingPrev = None
+        self.thriveWeight = None
+        self.anaemiaWeight = None
 
     def _setTrackers(self):
         self.annualDeathsChildren = {year: 0 for year in self.constants.allYears}
@@ -609,10 +613,6 @@ class Model:
     def getOutcome(self, outcome):
         if outcome == 'total_stunted':
             return sum(self.annualStunted.values())
-        elif outcome == 'neg_healthy_children_rate':
-            return -sum(self.annualHealthy.values()) / sum(self.ageingOutChildren.values())
-        elif outcome == 'neg_healthy_children':
-            return -sum(self.annualHealthy.values())
         elif outcome == 'healthy_children':
             return sum(self.annualHealthy.values())
         elif outcome == 'nonstunted_nonwasted':
@@ -621,8 +621,12 @@ class Model:
             return self.children.getTotalFracStunted()
         elif outcome == 'thrive':
             return sum(self.annualThrive.values())
-        elif outcome == 'neg_thrive':
-            return -sum(self.annualThrive.values())
+        elif outcome == 'thrive2':
+            return sum(self.annualThrive.values()) + self.thriveWeight*1000*min(self.initWastingPrev - self.children.getTotalFracWasted(), 0)
+        elif outcome == 'not_anaemic':
+            return sum(self.annualNotAnaemic.values())
+        elif outcome == 'not_anaemic2':
+            return sum(self.annualNotAnaemic.values()) + self.anaemiaWeight*1000*min(self.initWastingPrev - self.children.getTotalFracWasted(), 0)
         elif outcome == 'deaths_children':
             return sum(self.annualDeathsChildren.values())
         elif outcome == 'deaths_PW':
