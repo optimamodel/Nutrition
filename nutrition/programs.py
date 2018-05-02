@@ -28,26 +28,18 @@ class Program(object):
             restrictedCalibration = calibrationCov
         return restrictedBaseline, restrictedCalibration
 
-    def _setAnnualCoverageFromOptimisation(self, newCoverage): # TODO: this is also less general version of scalar version
-        """
-        newCoverage is passed from optimisation, which means it's already unrestricted coverage
-        :param newCoverage:
-        :return:
-        """
-        self.annualCoverage.update({year: newCoverage for year in self.const.simulationYears})
-
-    def _setInitialCoverage(self, populations):
+    def _setInitialCov(self, populations):
         """
         Sets values for 'annualCoverages' for the baseline and calibration (typically first 2 years) only.
         If a calibration coverage has been specified in the workbook, this will override the baseline coverage.
         This feature allows different costs to be calculated from the calibration coverage
         :return:
         """
-        self._setBaselineCoverage(populations)
+        self._setBaselineCov(populations)
         theseYears = [self.const.baselineYear] + self.const.calibrationYears
         self.annualCoverage = {year: self.unrestrictedCalibrationCov for year in theseYears}
 
-    def _setSimCovScalar(self, coverages, restrictedCov=True):
+    def _setCovScalar(self, coverages, restrictedCov=True):
         years = self.const.simulationYears
         if restrictedCov:
             coverages = self._getUnrestrictedCov(coverages)
@@ -78,7 +70,7 @@ class Program(object):
     def _getUnrestrictedCov(self, restrictedCov):
         return restrictedCov*self.restrictedPopSize / self.unrestrictedPopSize
 
-    def _setBaselineCoverage(self, populations):
+    def _setBaselineCov(self, populations):
         self._setRestrictedPopSize(populations)
         self._setUnrestrictedPopSize(populations)
         self.unrestrictedBaselineCov = (self.restrictedBaselineCov * self.restrictedPopSize) / \
@@ -169,7 +161,7 @@ class Program(object):
         for program in dependencies:
             self.thresholdDependencies.append(program)
 
-    def _getStuntingUpdate(self, ageGroup):
+    def _stuntingUpdate(self, ageGroup):
         """
         Will get the total stunting update for a single program.
         Since we assume independence between each kind of stunting update
@@ -178,7 +170,7 @@ class Program(object):
         """
         ageGroup.stuntingUpdate *= self._getConditionalProbUpdate(ageGroup, 'Stunting')
 
-    def _getAnaemiaUpdate(self, ageGroup):
+    def _anaemiaUpdate(self, ageGroup):
         """
         Program which directly impact anaemia.
         :param ageGroup: instance of AgeGroup class
@@ -205,17 +197,17 @@ class Program(object):
     def _getFamilyPlanningUpdate(self, ageGroup):
         ageGroup.FPupdate *= self.annualCoverage[self.year]
 
-    def _getWastingPreventionUpdate(self, ageGroup):
+    def __wastingPreventUpdate(self, ageGroup):
         update = self._getWastingIncidenceUpdate(ageGroup)
         for wastingCat in self.const.wastedList:
             ageGroup.wastingPreventionUpdate[wastingCat] *= update[wastingCat]
 
-    def _getWastingTreatmentUpdate(self, ageGroup):
+    def __wastingTreatUpdate(self, ageGroup):
         update = self._getWastingPrevalenceUpdate(ageGroup)
         for wastingCat in self.const.wastedList:
             ageGroup.wastingTreatmentUpdate[wastingCat] *= update[wastingCat]
 
-    def _getDiarrhoeaIncidenceUpdate(self, ageGroup):
+    def _DiaIncidUpdate(self, ageGroup):
         """
         This function accounts for the _direct_ impact of programs on diarrhoea incidence
         :param ageGroup:
@@ -224,7 +216,7 @@ class Program(object):
         update = self._getEffectivenessUpdate(ageGroup, 'Effectiveness incidence')
         ageGroup.diarrhoeaIncidenceUpdate *= update['Diarrhoea']
 
-    def _getBreastfeedingupdate(self, ageGroup):
+    def _BFUpdate(self, ageGroup):
         """
         Accounts for the program's direct impact on breastfeeding practices
         :param ageGroup:

@@ -1,5 +1,5 @@
 import os, sys
-root = '../..'
+root = os.pardir
 moduleDir = os.path.join(os.path.dirname(__file__), root)
 sys.path.append(moduleDir)
 from nutrition import optimisation
@@ -15,16 +15,17 @@ regions = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Kaskazini_Pemba', 'Kaskazini_Un
 
 # optimised current spending
 # no geospatial optimisation necessary
-objectives = ['thrive']
+objectives = ['nonstunted_nonwasted']
 budgetMultiples = [1]
 
 jobs = []
 thisDate = date.today().strftime('%Y%b%d')
-resultsPath = '{}/Results/Tanzania/geospatial/{}/optimisedCurrent'.format(root, thisDate)
+resultsPath = '{}/Results/geospatial/{}/optimisedCurrent'.format(root, thisDate)
 for region in regions:
-    fileInfo = [root, 'Tanzania/regions', region, '']
+    fileInfo = [root, 'regional', region, '']
     thisOptim = optimisation.Optimisation(objectives, budgetMultiples, fileInfo, resultsPath=resultsPath,
-                                          filterProgs=False, numYears=6)
+                                          filterProgs=False, numYears=6, parallel=True)
+    thisOptim.optimise()
     prc = Process(target=thisOptim.optimise)
     jobs.append(prc)
 optimisation.runJobs(jobs, 50)
@@ -46,7 +47,7 @@ with open(filename, 'a') as f:
         infile.close()
         allocations = OrderedDict(sorted(thisAllocation.items()))
         # remove fixed allocations
-        fileInfo = [root, 'Tanzania/regions', region, '']
+        fileInfo = [root, 'regional', region, '']
         thisOptim = optimisation.Optimisation(objectives, budgetMultiples, fileInfo, resultsPath='',
                                               numYears=6)
         fixedAllocations = thisOptim.fixedAllocations
@@ -54,15 +55,4 @@ with open(filename, 'a') as f:
         fixedAllocations = OrderedDict(sorted(fixedAllocationsDict.items())).values()
         optimisedAdditional = [a - b for a, b in zip(allocations.values(), fixedAllocations)]
         w.writerow([region] + optimisedAdditional)
-
-
-
-
-
-
-
-
-
-
-
 

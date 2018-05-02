@@ -74,23 +74,27 @@ class ProgramInfo:
                 closedSet += [program]
         self.thresholdOrder = closedSet[:]
 
-    def _setBaselineCov(self, populations):
-        """
-        Adjusts the baseline coverages to be unrestricted baseline coverage.
-        :param populations:
-        :return:
-        """
-        for program in self.programs:
-            program._setBaselineCoverage(populations)
+    # def _setBaselineCovs(self, populations):
+    #     """
+    #     Adjusts the baseline coverages to be unrestricted baseline coverage.
+    #     :param populations:
+    #     :return:
+    #     """
+    #     for program in self.programs:
+    #         program._setBaselineCov(populations)
 
-    def _setInitialCoverages(self, populations):
+    def _setInitialCovs(self, populations):
         for program in self.programs:
-            program._setInitialCoverage(populations)
+            program._setInitialCov(populations)
 
-    def _setSimCovScalar(self, coverages, restrictedCov):
+    def _setCovsScalar(self, coverages, restrictedCov):
         for program in self.programs:
-            cov = coverages[program.name]
-            program._setSimCovScalar(cov, restrictedCov)
+            if coverages.get(program.name) is None: # remains constant
+                cov = program.annualCoverage[program.year]
+                program._setCovScalar(cov, restrictedCov=False)
+            else:
+                cov = coverages[program.name]
+                program._setCovScalar(cov, restrictedCov)
 
     def _setCovsWorkbook(self):
         for program in self.programs:
@@ -101,11 +105,7 @@ class ProgramInfo:
         progMethod = lambda prog: getattr(prog, method)(args) if args else lambda prog: getattr(prog, method)()
         map(lambda prog: progMethod, self.programs)
 
-    def _setAnnualCoverages(self, populations, years, optimise):
-        for program in self.programs:
-            program._setAnnualCoverage(populations, years, optimise)
-
-    def _adjustCoveragesForPopGrowth(self, populations, year):
+    def _adjustCovsPops(self, populations, year):
         for program in self.programs:
             program._adjustCoverage(populations, year)
 
@@ -115,17 +115,17 @@ class ProgramInfo:
             malariaTwin = program.name + ' (malaria area)'
             program.malariaTwin = True if malariaTwin in self.const.programList else False
 
-    def _updateYearForPrograms(self, year):
+    def _updateYearProgs(self, year):
         for prog in self.programs:
             prog.year = year
 
-    def _getAnnualCoverage(self, year):
+    def _getAnnualCovs(self, year):
         coverages = {}
         for prog in self.programs:
             coverages[prog.name] = prog.annualCoverage[year]
         return coverages
 
-    def _restrictCoverages(self, populations):
+    def _restrictCovs(self, populations):
         """
         Uses the ordering of both dependency lists to restrict the coverage of programs.
         Assumes that the coverage is given as peopleCovered/unrestrictedPopSize.
