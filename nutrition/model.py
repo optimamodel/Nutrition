@@ -103,9 +103,9 @@ class Model:
                         elif risk == 'Anaemia':
                             program._anaemiaUpdate(ageGroup)
                         elif risk == 'Wasting prevention':
-                            program.__wastingPreventUpdate(ageGroup)
+                            program._wastingPreventUpdate(ageGroup)
                         elif risk == 'Wasting treatment':
-                            program.__wastingTreatUpdate(ageGroup)
+                            program._wastingTreatUpdate(ageGroup)
                         elif risk == 'Breastfeeding':
                             program._BFUpdate(ageGroup)
                         elif risk == 'Diarrhoea':

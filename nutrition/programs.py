@@ -197,12 +197,12 @@ class Program(object):
     def _getFamilyPlanningUpdate(self, ageGroup):
         ageGroup.FPupdate *= self.annualCoverage[self.year]
 
-    def __wastingPreventUpdate(self, ageGroup):
+    def _wastingPreventUpdate(self, ageGroup):
         update = self._getWastingIncidenceUpdate(ageGroup)
         for wastingCat in self.const.wastedList:
             ageGroup.wastingPreventionUpdate[wastingCat] *= update[wastingCat]
 
-    def __wastingTreatUpdate(self, ageGroup):
+    def _wastingTreatUpdate(self, ageGroup):
         update = self._getWastingPrevalenceUpdate(ageGroup)
         for wastingCat in self.const.wastedList:
             ageGroup.wastingTreatmentUpdate[wastingCat] *= update[wastingCat]
