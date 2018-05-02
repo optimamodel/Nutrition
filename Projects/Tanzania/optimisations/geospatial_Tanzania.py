@@ -1,5 +1,5 @@
 import os, sys
-from nutrition import optimisation
+# from nutrition import optimisation
 
 root = os.pardir
 print root
