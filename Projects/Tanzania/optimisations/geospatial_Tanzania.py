@@ -2,7 +2,9 @@ import os, sys
 from nutrition import optimisation
 
 root = os.pardir
+print root
 moduleDir = os.path.join(os.path.dirname(__file__), root)
+print moduleDir
 sys.path.append(moduleDir)
 
 regions = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Kaskazini_Pemba', 'Kaskazini_Unguja', 'Katavi',
