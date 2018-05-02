@@ -74,15 +74,6 @@ class ProgramInfo:
                 closedSet += [program]
         self.thresholdOrder = closedSet[:]
 
-    # def _setBaselineCovs(self, populations):
-    #     """
-    #     Adjusts the baseline coverages to be unrestricted baseline coverage.
-    #     :param populations:
-    #     :return:
-    #     """
-    #     for program in self.programs:
-    #         program._setBaselineCov(populations)
-
     def _setInitialCovs(self, populations):
         for program in self.programs:
             program._setInitialCov(populations)
