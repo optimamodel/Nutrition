@@ -604,7 +604,7 @@ class GeospatialOptimisation:
         print '...Generating BOCs... \n'
         regions = self.setUpRegions(objective, fixWithin, additionalFunds)
         jobs = self.getBOCjobs(regions, objective)
-        maxRegions = 2 # 2 objectives * 10 budgets * 2 regions = 40 processes
+        maxRegions = 4 # 1 objectives * 10 budgets * 4 regions = 40 processes
         runJobs(jobs, maxRegions)
 
     def interpolateBOCs(self, objective, fixBetween, additionalFunds):
