@@ -622,11 +622,11 @@ class Model:
         elif outcome == 'thrive':
             return sum(self.annualThrive.values())
         elif outcome == 'thrive2':
-            return sum(self.annualThrive.values()) + self.thriveWeight*1000*min(self.initWastingPrev - self.children.getTotalFracWasted(), 0)
+            return sum(self.annualThrive.values()) + self.thriveWeight*100*min(self.initWastingPrev - self.children.getTotalFracWasted(), 0)
         elif outcome == 'not_anaemic':
             return sum(self.annualNotAnaemic.values())
         elif outcome == 'not_anaemic2':
-            return sum(self.annualNotAnaemic.values()) + self.anaemiaWeight*1000*min(self.initWastingPrev - self.children.getTotalFracWasted(), 0)
+            return sum(self.annualNotAnaemic.values()) + self.anaemiaWeight*100*min(self.initWastingPrev - self.children.getTotalFracWasted(), 0)
         elif outcome == 'deaths_children':
             return sum(self.annualDeathsChildren.values())
         elif outcome == 'deaths_PW':
