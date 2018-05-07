@@ -14,7 +14,7 @@ regions = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Kaskazini_Pemba', 'Kaskazini_Un
 date = '2018May03'
 scenarios = ['scenario1', 'scenario3'] #['optimisedCurrent', 'additionalPerCapita', 'scenario1', 'scenario3']
 # scenarios = ['additionalPerCapita', 'scenario1']
-objectives = ['thrive2', 'not_anaemic2']
+objectives = ['thrive_notanaemic']
 outcomes = ['healthy_children', 'thrive', 'total_stunted', 'wasting_prev', 'anaemia_prev_children', 'deaths_children',
             'neonatal_deaths', 'child_population']
 
@@ -36,38 +36,39 @@ with open('optimised_outputs.csv', 'wb') as f:
 
     for objective in objectives:
         # first 2 scenarios
-        # for scenario in scenarios[:2]:
-        #     w.writerow([scenario])
-        #     w.writerow(['Region'] + outcomes)
-        #     for region in regions:
-        #         thisRegion = optim.Optimisation([objective], [1], [root, 'regional', region, ''], numYears=6)
-        #         thisPickle = '{}/Results/Tanzania/geospatial/{}/{}/{}_{}_1.pkl'.format(root, date, scenario, region, objective)
-        #         infile = open(thisPickle, 'rb')
-        #         thisAllocation = pickle.load(infile)
-        #         infile.close()
-        #         optimalOutputs = []
-        #         thisModel = thisRegion.oneModelRunWithOutput(thisAllocation)
-        #         for outcome in outcomes[:-1]:
-        #             optimalOutputs.append(thisModel.getOutcome(outcome))
-        #         population = thisModel.children.getTotalPopulation()
-        #         w.writerow([region] + optimalOutputs + [population])
-        #     w.writerow([])
-
-        # second 2 optimisations
-        for scenario in scenarios:
+        for scenario in scenarios[:2]:
             w.writerow([objective])
             w.writerow([scenario])
             w.writerow(['Region'] + outcomes)
             for region in regions:
                 thisRegion = optim.Optimisation([objective], [1], [root, 'regional', region, ''], numYears=6)
-                thisPickle = 'results/{}/regional/{}/32m/pickles/{}_{}_1.pkl'.format(date, scenario, region, objective)
+                thisPickle = 'results/{}/regional/{}/{}_{}_1.pkl'.format(date, scenario, region, objective)
                 infile = open(thisPickle, 'rb')
                 thisAllocation = pickle.load(infile)
                 infile.close()
                 optimalOutputs = []
                 thisModel = thisRegion.oneModelRunWithOutput(thisAllocation)
-                for outcome in outcomes[:-1]: # last one isn't a model outcome
+                for outcome in outcomes[:-1]:
                     optimalOutputs.append(thisModel.getOutcome(outcome))
                 population = thisModel.children.getTotalPopulation()
                 w.writerow([region] + optimalOutputs + [population])
             w.writerow([])
+
+        # second 2 optimisations
+        # for scenario in scenarios:
+        #     w.writerow([objective])
+        #     w.writerow([scenario])
+        #     w.writerow(['Region'] + outcomes)
+        #     for region in regions:
+        #         thisRegion = optim.Optimisation([objective], [1], [root, 'regional', region, ''], numYears=6)
+        #         thisPickle = 'results/{}/regional/{}/32m/pickles/{}_{}_1.pkl'.format(date, scenario, region, objective)
+        #         infile = open(thisPickle, 'rb')
+        #         thisAllocation = pickle.load(infile)
+        #         infile.close()
+        #         optimalOutputs = []
+        #         thisModel = thisRegion.oneModelRunWithOutput(thisAllocation)
+        #         for outcome in outcomes[:-1]: # last one isn't a model outcome
+        #             optimalOutputs.append(thisModel.getOutcome(outcome))
+        #         population = thisModel.children.getTotalPopulation()
+        #         w.writerow([region] + optimalOutputs + [population])
+        #     w.writerow([])
