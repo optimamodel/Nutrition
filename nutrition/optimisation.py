@@ -785,7 +785,8 @@ class ObjectiveSign:
         self.min = 1
 
     def getSign(self, objective):
-        maxObj = ['thrive', 'thrive2', 'healthy_children', 'nonstunted_nonwasted', 'not_anaemic', 'not_anaemic2', 'no_conditions']
+        maxObj = ['thrive_notanaemic', 'thrive', 'thrive2', 'healthy_children', 'nonstunted_nonwasted', 'not_anaemic',
+                  'not_anaemic2', 'no_conditions']
         if objective in maxObj:
             return self.max
         else:

@@ -627,6 +627,9 @@ class Model:
             return sum(self.annualNotAnaemic.values())
         elif outcome == 'not_anaemic2':
             return sum(self.annualNotAnaemic.values()) + self.anaemiaWeight*100*min(self.initWastingPrev - self.children.getTotalFracWasted(), 0)
+        elif outcome == 'thrive_notanaemic':
+            return 3.3702*sum(self.annualThrive.values()) + sum(self.annualNotAnaemic.values()) + \
+                   (self.thriveWeight + self.anaemiaWeight)*100*min(self.initWastingPrev - self.children.getTotalFracWasted(), 0)
         elif outcome == 'deaths_children':
             return sum(self.annualDeathsChildren.values())
         elif outcome == 'deaths_PW':

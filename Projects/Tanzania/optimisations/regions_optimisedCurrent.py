@@ -15,17 +15,16 @@ regions = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Kaskazini_Pemba', 'Kaskazini_Un
 
 # optimised current spending
 # no geospatial optimisation necessary
-objectives = ['nonstunted_nonwasted']
+objectives = ['thrive_notanaemic']
 budgetMultiples = [1]
 
 jobs = []
 thisDate = date.today().strftime('%Y%b%d')
-resultsPath = '{}/Results/geospatial/{}/optimisedCurrent'.format(root, thisDate)
+resultsPath = 'results/{}/regional/optimisedCurrent'.format(thisDate)
 for region in regions:
     fileInfo = [root, 'regional', region, '']
     thisOptim = optimisation.Optimisation(objectives, budgetMultiples, fileInfo, resultsPath=resultsPath,
                                           filterProgs=False, numYears=6, parallel=True)
-    thisOptim.optimise()
     prc = Process(target=thisOptim.optimise)
     jobs.append(prc)
 optimisation.runJobs(jobs, 50)

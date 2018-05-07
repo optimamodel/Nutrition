@@ -15,8 +15,7 @@ regions = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Kaskazini_Pemba', 'Kaskazini_Un
            'Kilimanjaro', 'Kusini_Pemba', 'Kusini_Unguja', 'Lindi', 'Manyara', 'Mara', 'Mjini_Magharibi',
            'Morogoro', 'Mtwara', 'Pwani', 'Rukwa', 'Ruvuma', 'Simiyu', 'Singida', 'Tabora', 'Tanga']
 
-
-objectives = ['nonstunted_nonwasted']
+objectives = ['thrive_notanaemic']
 budgetMultiples = [1]
 
 # current + additional US$40 distributed on per-capita basis, all optimised
@@ -38,7 +37,7 @@ funding = [pop*dollarPerHead for pop in popSizes]
 # get funding distribution
 jobs = []
 thisDate = date.today().strftime('%Y%b%d')
-resultsPath = '{}/Results/geospatial/{}/additionalPerCapita'.format(root, thisDate)
+resultsPath = 'results/{}/regional/additionalPerCapita'.format(thisDate)
 for i, region in enumerate(regions):
     funds = funding[i]
     fileInfo = [root, 'regional', region, '']
