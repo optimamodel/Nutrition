@@ -64,7 +64,7 @@ class Optimisation:
     def __init__(self, objectives, budgetMultiples, fileInfo, resultsPath=None, fixCurrentAllocations=False,
                  additionalFunds=0, removeCurrentFunds=False, numYears=None, costCurveType='linear',
                  parallel=True, numCPUs=None, numRuns=1, filterProgs=True, createResultsDir=True, maxIter=100,
-                 swarmSize=40):
+                 swarmSize=70):
         root, analysisType, name, scenario = fileInfo
         self.name = name
         filePath = play.getFilePath(root=root, analysisType=analysisType, name=name)
@@ -604,7 +604,7 @@ class GeospatialOptimisation:
         print '...Generating BOCs... \n'
         regions = self.setUpRegions(objective, fixWithin, additionalFunds)
         jobs = self.getBOCjobs(regions, objective)
-        maxRegions = 2 # 1 objectives * 10 budgets * 2 regions = 20 processes
+        maxRegions = 4 # 1 objectives * 10 budgets * 4 regions = 40 processes
         runJobs(jobs, maxRegions)
 
     def interpolateBOCs(self, objective, fixBetween, additionalFunds):
