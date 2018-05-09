@@ -28,14 +28,15 @@ class Program(object):
             restrictedCalibration = calibrationCov
         return restrictedBaseline, restrictedCalibration
 
-    def _setInitialCov(self, populations):
+    def _setInitialCov(self, pops):
         """
         Sets values for 'annualCoverages' for the baseline and calibration (typically first 2 years) only.
         If a calibration coverage has been specified in the workbook, this will override the baseline coverage.
         This feature allows different costs to be calculated from the calibration coverage
         :return:
         """
-        self._setBaselineCov(populations)
+        self._setPopSizes(pops)
+        self._setBaselineCov()
         theseYears = [self.const.baselineYear] + self.const.calibrationYears
         self.annualCoverage = {year: self.unrestrictedCalibrationCov for year in theseYears}
 
@@ -70,35 +71,34 @@ class Program(object):
     def _getUnrestrictedCov(self, restrictedCov):
         return restrictedCov*self.restrictedPopSize / self.unrestrictedPopSize
 
-    def _setBaselineCov(self, populations):
-        self._setRestrictedPopSize(populations)
-        self._setUnrestrictedPopSize(populations)
+    def _setPopSizes(self, pops):
+        self._setRestrictedPopSize(pops)
+        self._setUnrestrictedPopSize(pops)
+
+    def _setBaselineCov(self):
         self.unrestrictedBaselineCov = (self.restrictedBaselineCov * self.restrictedPopSize) / \
                                           self.unrestrictedPopSize
         self.unrestrictedCalibrationCov = (self.restrictedCalibrationCov * self.restrictedPopSize) / \
                                           self.unrestrictedPopSize
 
-    def _adjustCoverage(self, populations, year):
+    def _adjustCoverage(self, pops, year):
         # set unrestricted pop size so coverages account for growing population size
         oldURP = dcp(self.unrestrictedPopSize)
-        self._setRestrictedPopSize(populations) # TODO: is this the optimal place to do this?
-        self._setUnrestrictedPopSize(populations)
+        self._setPopSizes(pops)# TODO: is this the optimal place to do this?
         oldCov = self.annualCoverage[year]
         newCov = oldURP * oldCov / self.unrestrictedPopSize
         self.annualCoverage.update({year:newCov})
 
-    def updateCoverage(self, newCoverage, populations):
+    def updateCoverage(self, newCoverage, pops):
         """Update all values pertaining to coverage for a program"""
         self.proposedCoverageNum = newCoverage
-        self._setUnrestrictedPopSize(populations)
-        self._setRestrictedPopSize(populations)
+        self._setPopSizes(pops)
         self.proposedCoverageFrac = self.proposedCoverageNum / self.unrestrictedPopSize
 
-    def updateCoverageFromPercentage(self, newCoverage, populations): # TODO: wrong b/c coverages already converted in UR coverages
+    def updateCoverageFromPercentage(self, newCoverage, pops): # TODO: wrong b/c coverages already converted in UR coverages
         """Update all values pertaining to coverage for a program.
         Assumes new coverage is restricted coverage"""
-        self._setUnrestrictedPopSize(populations)
-        self._setRestrictedPopSize(populations)
+        self._setPopSizes(pops)
         restrictedCovNum = self.restrictedPopSize * newCoverage
         self.proposedCoverageFrac = restrictedCovNum / self.unrestrictedPopSize
 
@@ -424,6 +424,6 @@ class CostCovCurve:
             inverseCurve = lambda y: -D * log((B - y) / (y - A)) + C
         return inverseCurve
 
-def _setPrograms(constants):
-    programs = [Program(program, constants) for program in constants.programList] # list of all programs
+def setPrograms(constants, progSet):
+    programs = [Program(prog, constants) for prog in progSet] # list of all program objects
     return programs

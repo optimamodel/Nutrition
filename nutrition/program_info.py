@@ -1,3 +1,6 @@
+import programs as progs
+from copy import deepcopy as dcp
+
 class ProgramInfo:
     """
     This class is a convenient container for all program objects and their applicable areas.
@@ -7,9 +10,8 @@ class ProgramInfo:
         programs: list of all program objects
         programAreas: Risks are keys with lists containing applicable program names (dict of lists)
     """
-    def __init__(self, constants):
-        import programs as progs
-        self.programs = progs._setPrograms(constants)
+    def __init__(self, constants, progSet):
+        self.programs = progs.setPrograms(constants, progSet)
         self.programAreas = constants.programAreas
         self.const = constants
         self.currentExpenditure = constants.currentExpenditure
@@ -74,18 +76,10 @@ class ProgramInfo:
                 closedSet += [program]
         self.thresholdOrder = closedSet[:]
 
-    # def _setBaselineCovs(self, populations):
-    #     """
-    #     Adjusts the baseline coverages to be unrestricted baseline coverage.
-    #     :param populations:
-    #     :return:
-    #     """
-    #     for program in self.programs:
-    #         program._setBaselineCov(populations)
-
-    def _setInitialCovs(self, populations):
+    def setInitialCovs(self, pops):
         for program in self.programs:
-            program._setInitialCov(populations)
+            program._setInitialCov(pops)
+        # self.restrictCovs(self.pops) ?
 
     def _setCovsScalar(self, coverages, restrictedCov):
         for program in self.programs:
@@ -125,7 +119,7 @@ class ProgramInfo:
             coverages[prog.name] = prog.annualCoverage[year]
         return coverages
 
-    def _restrictCovs(self, populations):
+    def restrictCovs(self, populations):
         """
         Uses the ordering of both dependency lists to restrict the coverage of programs.
         Assumes that the coverage is given as peopleCovered/unrestrictedPopSize.

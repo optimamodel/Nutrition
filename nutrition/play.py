@@ -10,10 +10,10 @@ def setUpModel(filePath, numYears=None, adjustCoverage=False, optimise=False, ca
 def setUpData(filePath):
     return data.setUpData(filePath)
 
-def getFilePath(root, analysisType, name):
+def getFilePath(root, analysisType, name, dataType):
     moduleDir = os.path.join(os.path.dirname(__file__), root)
     sys.path.append(moduleDir)
-    filePath = os.path.join(root, 'data', analysisType, 'InputForCode_{}.xlsx'.format(name))
+    filePath = os.path.join(root, 'data', analysisType, '{}_{}.xlsx'.format(name))
     return filePath
 
 def getResultsDir(root, analysisType, scenario):

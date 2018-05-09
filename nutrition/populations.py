@@ -1271,7 +1271,7 @@ class NonPregnantWomen(Population):
                     ageGroup.annualPrevChange[risk] = 1 + linReg[0]
 
 
-def _setPops(data, constants):
+def setPops(data, constants):
     children = Children('Children', data, constants)
     pregnantWomen = PregnantWomen('Pregnant women', data, constants)
     nonPregnantWomen = NonPregnantWomen('Non-pregnant women', data, constants)
