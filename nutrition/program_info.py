@@ -10,8 +10,8 @@ class ProgramInfo:
         programs: list of all program objects
         programAreas: Risks are keys with lists containing applicable program names (dict of lists)
     """
-    def __init__(self, constants, progSet):
-        self.programs = progs.setPrograms(constants, progSet)
+    def __init__(self, constants, prog_set):
+        self.programs = progs.setPrograms(constants, prog_set)
         self.programAreas = constants.programAreas
         self.const = constants
         self.currentExpenditure = constants.currentExpenditure
@@ -19,6 +19,11 @@ class ProgramInfo:
         self._setReferencePrograms()
         self._sortPrograms()
         self._getTwins()
+
+    def set_years(self, all_years):
+        for prog in self.programs:
+            prog.year = all_years[0]
+            prog.all_years = all_years
 
     def _setReferencePrograms(self):
         for program in self.programs:
@@ -76,10 +81,26 @@ class ProgramInfo:
                 closedSet += [program]
         self.thresholdOrder = closedSet[:]
 
-    def setInitialCovs(self, pops):
+    def set_init_covs(self, pops, all_years):
         for program in self.programs:
-            program._setInitialCov(pops)
-        # self.restrictCovs(self.pops) ?
+            program.set_init_cov(pops, all_years)
+        # self.restrictCovs(self.pops) ? # TODO
+
+    def update_prog_covs(self, pops, covs, restr_cov=True):
+        # TODO: two different types of input: dict of (prog, cov), where cov could be a scalar or a list of values (array?)
+        for prog in self.programs:
+            cov = covs[prog.name]
+            prog.update_cov(cov, restr_cov=restr_cov)
+        # restrict covs,
+        self.restrictCovs(pops) # TODO: check that restricting here is correct
+
+    def determine_cov_change(self):
+        for prog in self.programs:
+            if abs(prog.annual_cov[prog.year-1] - prog.annual_cov[prog.year]) > 1e-3:
+                return True
+            else:
+                return False
+
 
     def _setCovsScalar(self, coverages, restrictedCov):
         for program in self.programs:
@@ -109,15 +130,15 @@ class ProgramInfo:
             malariaTwin = program.name + ' (malaria area)'
             program.malariaTwin = True if malariaTwin in self.const.programList else False
 
-    def _updateYearProgs(self, year):
+    def update_prog_year(self, year):
         for prog in self.programs:
             prog.year = year
 
-    def _getAnnualCovs(self, year):
-        coverages = {}
+    def get_ann_covs(self, year):
+        covs = {}
         for prog in self.programs:
-            coverages[prog.name] = prog.annualCoverage[year]
-        return coverages
+            covs[prog.name] = prog.annual_cov[year]
+        return covs
 
     def restrictCovs(self, populations):
         """

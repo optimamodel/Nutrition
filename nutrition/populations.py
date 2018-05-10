@@ -21,10 +21,10 @@ class NonPWAgeGroup:
         self.const = constants
         self.probConditionalCoverage = {}
         self.annualPrevChange = {}
-        self._setStorageForUpdates()
+        self.set_update_storage()
         self._setBirthProbs()
 
-    def _setStorageForUpdates(self):
+    def set_update_storage(self):
         self.anaemiaUpdate = 1.
         self.birthAgeUpdate = {}
         for BA in self.const.birthAges:
@@ -77,9 +77,9 @@ class PWAgeGroup:
         self.const = constants
         self.probConditionalCoverage = {}
         self.annualPrevChange = {}
-        self._setStorageForUpdates()
+        self.set_update_storage()
 
-    def _setStorageForUpdates(self):
+    def set_update_storage(self):
         self.anaemiaUpdate = 1.
         # this update will impact Newborn age group
         self.birthUpdate = {}
@@ -131,7 +131,7 @@ class ChildAgeGroup(object):
         self.probConditionalStunting = {}
         self.programEffectiveness = {}
         self.annualPrevChange = {}
-        self._setStorageForUpdates()
+        self.set_update_storage()
         self._updatesForAgeingAndBirths()
 
     def _updatesForAgeingAndBirths(self):
@@ -144,7 +144,7 @@ class ChildAgeGroup(object):
         for wastingCat in self.const.wastedList:
             self.continuedWastingImpact[wastingCat] = 1.
 
-    def _setStorageForUpdates(self):
+    def set_update_storage(self):
         # storing updates
         self.stuntingUpdate = 1.
         self.anaemiaUpdate = 1.
@@ -489,12 +489,12 @@ class Children(Population):
         self._setAnnualPrevChange()
         self._setCorrectBFpractice()
         self._setProbFutureStunting()
-        self._setProbStuntedBirth()
+        self.set_probstuntedBirth()
         self._setProbWastedBirth()
 
     ##### DATA WRANGLING ######
 
-    def _setProbs(self):
+    def set_probs(self):
         # self._setCondProbs()
         self._setProbStunted()
         self._setProbAnaemic()

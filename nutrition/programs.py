@@ -5,100 +5,105 @@ class Program(object):
     """Each instance of this class is an intervention,
     and all necessary data will be stored as attributes. Will store name, targetpop, popsize, coverage, edges etc
     Also want it to set absolute number covered, coverage frac (coverage amongst entire pop), normalised coverage (coverage amongst target pop)"""
-    def __init__(self, name, constants):
+    def __init__(self, name, constants): # TODO: would like to put cov info into another object, read in from the relevant data book.
         self.name = name
         self.const = constants
+        self.year = None
+        self.all_years = None
+        self.annual_cov = None
+        self.unrestr_baseline_cov = None
+
+        # TODO: this should all be handed over through Project, read in from input data book
         self.targetPopulations = self.const.programTargetPop[self.name] # frac of each population which is targeted
         self.unitCost = self.const.costCurveInfo['unit cost'][self.name]
         self.saturation = self.const.costCurveInfo['saturation coverage'][self.name]
         self.coverageProjections = dcp(self.const.programAnnualSpending[self.name]) # will be altered
-        self.restrictedBaselineCov, self.restrictedCalibrationCov = self.getRestrictedCovs()
+        self.restr_baseline_cov = self.const.costCurveInfo['baseline coverage'][self.name]
 
         self._setTargetedAges()
         self._setImpactedAges() # TODO: This func could contain the info for how many multiples needed for unrestricted population calculation (IYCF)
         self._setExclusionDependencies()
         self._setThresholdDependencies()
 
-    def getRestrictedCovs(self):
-        calibrationCov = self.coverageProjections['Coverage'][1][0]
-        restrictedBaseline = self.const.costCurveInfo['baseline coverage'][self.name]
-        if isnan(calibrationCov): # if first coverage value comes after the calibration year
-            restrictedCalibration = restrictedBaseline
-        else: # user specified a calibration year coverage
-            restrictedCalibration = calibrationCov
-        return restrictedBaseline, restrictedCalibration
-
-    def _setInitialCov(self, pops):
+    def set_init_cov(self, pops, all_years):
         """
-        Sets values for 'annualCoverages' for the baseline and calibration (typically first 2 years) only.
+        Sets values for 'annual_covs' for the baseline and calibration (typically first 2 years) only.
         If a calibration coverage has been specified in the workbook, this will override the baseline coverage.
         This feature allows different costs to be calculated from the calibration coverage
         :return:
         """
-        self._setPopSizes(pops)
-        self._setBaselineCov()
-        theseYears = [self.const.baselineYear] + self.const.calibrationYears
-        self.annualCoverage = {year: self.unrestrictedCalibrationCov for year in theseYears}
+        self.set_pop_sizes(pops)
+        self.set_baseline_cov()
+        self.annual_cov = {year: self.unrestr_baseline_cov for year in all_years} # default assuming constant over time
 
-    def _setCovScalar(self, coverages, restrictedCov=True):
-        years = self.const.simulationYears
-        if restrictedCov:
-            coverages = self._getUnrestrictedCov(coverages)
-        interpolated = {year:coverages for year in years}
-        self.annualCoverage.update(interpolated)
+    def update_cov(self, cov, restr_cov):
+        """Main function for providing new coverages for a program
+        Lists must not have any missing values, so interpolate if missing"""
+        # check the data type of cov
+        if isinstance(cov, list):
+            self._interp_cov(cov, restr_cov)
+        else: # scalar
+            self._set_scalar(cov, restr_cov)
 
-    def _setCovWorkbook(self):
-        years = array(self.const.simulationYears)
-        coverages = dcp(self.coverageProjections['Coverage'][1])
-        coverages = array(coverages[len(self.const.calibrationYears):]) # remove calibration years
-        if len(coverages) > len(years):
-            coverages = coverages[:len(years)]
-        not_nan = logical_not(isnan(coverages))
-        if not any(not_nan):
-            # is all nan, assume constant at baseline
-            interpolated = {year: self.unrestrictedBaselineCov for year in years}
-        else:
+    def _interp_cov(self, cov, restr_cov):
+        """cov: a list of values with length equal to simulation period, excluding first year"""
+        years = array(self.all_years[1:]) # TODO: depends if baseline cov included in this or not.
+        cov_list = array(cov)
+        not_nan = logical_not(isnan(cov_list))
+        if any(not_nan):
             # for 1 or more present values, baseline up to first present value, interpolate between, then constant if end values missing
             trueIndx = [i for i, x in enumerate(not_nan) if x]
             firstTrue = trueIndx[0]
-            startCov = [self.restrictedCalibrationCov for x in coverages[:firstTrue]]
+            startCov = [self.restr_baseline_cov for x in cov_list[:firstTrue]]
             # scaledCov = coverages * self.restrictedPopSize / self.unrestrictedPopSize # convert to unrestricted coverages
-            endCov = list(interp(years[firstTrue:], years[not_nan], coverages[not_nan]))
+            endCov = list(interp(years[firstTrue:], years[not_nan], cov_list[not_nan]))
             # scale each coverage
-            interpolated = {year: self._getUnrestrictedCov(cov) for year, cov in zip(years, startCov+endCov)}
-        self.annualCoverage.update(interpolated)
+            if restr_cov:
+                interped = {year: self.get_unrestr_cov(cov) for year, cov in zip(years, startCov + endCov)}
+            else: # no need to scale
+                interped = {year: cov for year, cov in zip(years, startCov + endCov)}
+        else:
+            # is all nan, assume constant at baseline
+            interped = {year: self.unrestr_baseline_cov for year in years}
+        self.annual_cov.update(interped)
 
-    def _getUnrestrictedCov(self, restrictedCov):
-        return restrictedCov*self.restrictedPopSize / self.unrestrictedPopSize
+    def _set_scalar(self, cov, restr_cov):
+        if restr_cov:
+            scaled_cov = self.get_unrestr_cov(cov)
+        interpolated = {year: scaled_cov for year in self.all_years}
+        self.annual_cov.update(interpolated)
 
-    def _setPopSizes(self, pops):
+    def get_unrestr_cov(self, restr_cov):
+        return restr_cov*self.restrictedPopSize / self.unrestrictedPopSize
+
+    def set_pop_sizes(self, pops):
         self._setRestrictedPopSize(pops)
         self._setUnrestrictedPopSize(pops)
 
-    def _setBaselineCov(self):
-        self.unrestrictedBaselineCov = (self.restrictedBaselineCov * self.restrictedPopSize) / \
+    def set_baseline_cov(self):
+        self.unrestr_baseline_cov = (self.restr_baseline_cov * self.restrictedPopSize) / \
                                           self.unrestrictedPopSize
-        self.unrestrictedCalibrationCov = (self.restrictedCalibrationCov * self.restrictedPopSize) / \
-                                          self.unrestrictedPopSize
+        # self.unrestrictedCalibrationCov = (self.restrictedCalibrationCov * self.restrictedPopSize) / \
+        #                                   self.unrestrictedPopSize
 
     def _adjustCoverage(self, pops, year):
         # set unrestricted pop size so coverages account for growing population size
         oldURP = dcp(self.unrestrictedPopSize)
-        self._setPopSizes(pops)# TODO: is this the optimal place to do this?
-        oldCov = self.annualCoverage[year]
+        self.set_pop_sizes(pops)# TODO: is this the optimal place to do this?
+        oldCov = self.annual_cov[year]
         newCov = oldURP * oldCov / self.unrestrictedPopSize
-        self.annualCoverage.update({year:newCov})
+        self.annual_cov.update({year:newCov})
 
     def updateCoverage(self, newCoverage, pops):
         """Update all values pertaining to coverage for a program"""
         self.proposedCoverageNum = newCoverage
-        self._setPopSizes(pops)
+        self.set_pop_sizes(pops)
         self.proposedCoverageFrac = self.proposedCoverageNum / self.unrestrictedPopSize
 
     def updateCoverageFromPercentage(self, newCoverage, pops): # TODO: wrong b/c coverages already converted in UR coverages
         """Update all values pertaining to coverage for a program.
         Assumes new coverage is restricted coverage"""
-        self._setPopSizes(pops)
+        self.set_pop_sizes(pops)
         restrictedCovNum = self.restrictedPopSize * newCoverage
         self.proposedCoverageFrac = restrictedCovNum / self.unrestrictedPopSize
 
@@ -195,7 +200,7 @@ class Program(object):
             ageGroup.wastingUpdate[wastingCat] *= combined
 
     def _getFamilyPlanningUpdate(self, ageGroup):
-        ageGroup.FPupdate *= self.annualCoverage[self.year]
+        ageGroup.FPupdate *= self.annual_cov[self.year]
 
     def _wastingPreventUpdate(self, ageGroup):
         update = self._getWastingIncidenceUpdate(ageGroup)
@@ -257,7 +262,7 @@ class Program(object):
         oldProb = ageGroup.getFracRisk(risk)
         probIfCovered = ageGroup.probConditionalCoverage[risk][self.name]['covered']
         probIfNotCovered = ageGroup.probConditionalCoverage[risk][self.name]['not covered']
-        newProb = self._getNewProb(self.annualCoverage[self.year], probIfCovered, probIfNotCovered)
+        newProb = self._getNewProb(self.annual_cov[self.year], probIfCovered, probIfNotCovered)
         reduction = (oldProb - newProb) / oldProb
         update = 1.-reduction
         return update
@@ -269,7 +274,7 @@ class Program(object):
             oldProb = ageGroup.getWastedFrac(wastingCat)
             probWastedIfCovered = ageGroup.probConditionalCoverage[wastingCat][self.name]['covered']
             probWastedIfNotCovered = ageGroup.probConditionalCoverage[wastingCat][self.name]['not covered']
-            newProb = self._getNewProb(self.annualCoverage[self.year], probWastedIfCovered, probWastedIfNotCovered)
+            newProb = self._getNewProb(self.annual_cov[self.year], probWastedIfCovered, probWastedIfNotCovered)
             reduction = (oldProb - newProb) / oldProb
             update[wastingCat] = 1-reduction
         return update
@@ -285,11 +290,11 @@ class Program(object):
 
     def _getWastingIncidenceUpdate(self, ageGroup):
         update = {}
-        oldCov = self.annualCoverage[self.year-1]
+        oldCov = self.annual_cov[self.year-1]
         for condition in self.const.wastedList:
             affFrac = ageGroup.programEffectiveness[self.name][condition]['Affected fraction']
             effectiveness = ageGroup.programEffectiveness[self.name][condition]['Effectiveness incidence']
-            reduction = affFrac * effectiveness * (self.annualCoverage[self.year] - oldCov) / (1. - effectiveness*oldCov)
+            reduction = affFrac * effectiveness * (self.annual_cov[self.year] - oldCov) / (1. - effectiveness*oldCov)
             update[condition] = 1.-reduction
         return update
 
@@ -300,31 +305,31 @@ class Program(object):
         else: # mortality
             toIterate = self.const.causesOfDeath
         update = {cause: 1. for cause in toIterate}
-        oldCov = self.annualCoverage[self.year-1]
+        oldCov = self.annual_cov[self.year-1]
         for cause in toIterate:
             affFrac = ageGroup.programEffectiveness[self.name][cause]['Affected fraction']
             effectiveness = ageGroup.programEffectiveness[self.name][cause][effType]
-            reduction = affFrac * effectiveness * (self.annualCoverage[self.year] - oldCov) / (1. - effectiveness*oldCov)
+            reduction = affFrac * effectiveness * (self.annual_cov[self.year] - oldCov) / (1. - effectiveness*oldCov)
             update[cause] *= 1. - reduction
         return update
 
     def _getBOUpdate(self):
         BOupdate = {BO: 1. for BO in self.const.birthOutcomes}
-        oldCov = self.annualCoverage[self.year-1]
+        oldCov = self.annual_cov[self.year-1]
         for outcome in self.const.birthOutcomes:
             affFrac = self.const.BOprograms[self.name]['affected fraction'][outcome]
             eff = self.const.BOprograms[self.name]['effectiveness'][outcome]
-            reduction = affFrac * eff * (self.annualCoverage[self.year] - oldCov) / (1. - eff*oldCov)
+            reduction = affFrac * eff * (self.annual_cov[self.year] - oldCov) / (1. - eff*oldCov)
             BOupdate[outcome] = 1. - reduction
         return BOupdate
 
     def _getBAUpdate(self):
         BAupdate = {BA: 1. for BA in self.const.birthAges}
-        oldCov = self.annualCoverage[self.year-1]
+        oldCov = self.annual_cov[self.year-1]
         for BA in self.const.birthAges:
             affFrac = self.const.birthAgeProgram[BA]['affected fraction']
             eff = self.const.birthAgeProgram[BA]['effectiveness']
-            reduction = affFrac * eff * (self.annualCoverage[self.year] - oldCov) / (1. - eff*oldCov)
+            reduction = affFrac * eff * (self.annual_cov[self.year] - oldCov) / (1. - eff*oldCov)
             BAupdate[BA] = 1. - reduction
         return BAupdate
 
@@ -333,7 +338,7 @@ class Program(object):
         correctFracOld = ageGroup.bfDist[correctPrac]
         probCorrectCovered = ageGroup.probConditionalCoverage['Breastfeeding'][self.name]['covered']
         probCorrectNotCovered = ageGroup.probConditionalCoverage['Breastfeeding'][self.name]['not covered']
-        probNew = self._getNewProb(self.annualCoverage[self.year], probCorrectCovered, probCorrectNotCovered)
+        probNew = self._getNewProb(self.annual_cov[self.year], probCorrectCovered, probCorrectNotCovered)
         fracChange = probNew - correctFracOld
         return fracChange
 
@@ -343,7 +348,7 @@ class Program(object):
 
     def getSpending(self):
         # spending is base on BASELINE coverages
-        return self.costCurveOb.getSpending(self.unrestrictedBaselineCov) # TODO: want to change this so that uses annual Coverages
+        return self.costCurveOb.getSpending(self.unrestr_baseline_cov) # TODO: want to change this so that uses annual Coverages
 
     def scaleUnitCosts(self, scaleFactor):
         self.unitCost *= scaleFactor

@@ -42,10 +42,10 @@ class Model:
         self.annualThreeCond = {year: 0 for year in self.constants.allYears}
 
     def _updateProbs(self):
-        previousCov = self.programInfo._getAnnualCovs(self.year-1) # last year cov
+        previousCov = self.programInfo.get_ann_covs(self.year-1) # last year cov
         for pop in self.populations:
             pop.previousCov = previousCov # pop has access to adjusted current cov
-            pop._setProbs()
+            pop.set_probs()
 
     def _BPInfo(self):
         FP = [prog for prog in self.programInfo.programs if prog.name == 'Family Planning']
@@ -573,7 +573,7 @@ class Model:
                 ageGroup.redistributePopulation()
 
     def calibrate(self):
-        self.programInfo._setInitialCovs(self.populations)
+        self.programInfo.set_init_covs(self.populations)
         self._BPInfo()
         for year in self.constants.calibrationYears:
             self._updateYear(year)
