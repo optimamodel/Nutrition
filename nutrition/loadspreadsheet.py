@@ -3,13 +3,11 @@ import play
 from pandas import ExcelFile
 
 class DefaultParams(object):
-    def __init__(self, country):
-        # TODO: prolly need to sort this path stuff out...
-        filepath = os.path.join(os.pardir, 'applications', country, 'data', 'default_params.xlsx')
-        self.spreadsheet = ExcelFile(filepath)
-        self.readSpreadsheet()
+    def __init__(self):
+        self.spreadsheet = ExcelFile('default_params.xlsx')
+        self.read_spreadsheet()
 
-    def readSpreadsheet(self):
+    def read_spreadsheet(self):
         self.impactPop()
         self.progRisks()
         self.popRisks()
@@ -115,23 +113,16 @@ class DefaultParams(object):
 
 
 class InputData(object):
-    def __init__(self, country, analysisType, region):
-        filepath = os.path.join(os.pardir, 'applications', country, 'data', analysisType, region)
-        self.spreadsheet = ExcelFile(filepath)
+    def __init__(self, spreadsheet):
+        self.spreadsheet = ExcelFile(spreadsheet)
 
 
 class UserSettings(object):
     """Stores all the settings for each project, defined by the user"""
-    def __init__(self):
-        filepath = 'dummy'
-        self.spreadsheet = ExcelFile(filepath)
+    def __init__(self, spreadsheet):
+        self.spreadsheet = ExcelFile(spreadsheet)
+        self.prog_set=None
         pass
-
-
-mine= DefaultParams('master')
-
-
-
 
 
 

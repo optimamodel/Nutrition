@@ -8,7 +8,7 @@ class Project(object):
     """
     #TODO
     """
-    def __init__(self, name='default'):
+    def __init__(self, spreadsheet, name='default'):
 
         ## Define the structure sets
         # TODO: we don't have a 'parset', since these are stored elsewhere
@@ -22,33 +22,33 @@ class Project(object):
         self.name = name
         # self.setting = Settings() # TODO: this is essentially 'Constants'
         # self.data = odict() # TODO: currently we have the Data object...
-        self.default_params = loadspreadsheet.DefaultParams(country) # TODO: would like to specify 'filename, folder' like in HIV
-        self.data = loadspreadsheet.InputData() # assume these values fixed for all projects, since they are real life data
+        self.default_params = loadspreadsheet.DefaultParams()
+        self.data = loadspreadsheet.InputData(spreadsheet) # assume these values fixed for all projects, since they are real life data
+        self.user_settings = loadspreadsheet.UserSettings(spreadsheet)
 
         ## Define metadata
-        # self.uid = uuid() # TODO: for storing in database? from utils
         self.created = today()
         self.modified = today()
         self.spreadsheetdate = 'Spreadsheet never loaded'
-        # self.version = version
-        # self.gitbranch, self.gitversion = gitinfo()
 
-    def runScenarios(self, scenList=None, name=None):
+    def runScenarios(self, scenList=None, name=None): #TODO: should be able to run several scenarios at once, defined before-hand
         """Function for running scenarios"""
         if scenList is not None: self.addScens(scenList) # replace existing scen list with new one
         if name is None: name = 'scenarios'
 
-        self.pops = populations.setPops(self.data, self.constants) # TODO: rethink usage of constants...
-        self.prog_info = program_info.ProgramInfo(self.constants, prog_set) # none of the coverage info is set here, since it depends on pop sizes
-        # need to provide
+        pops = populations.setPops(self.data, self.constants) # TODO: rethink usage of constants...
+        prog_set = self.user_settings.prog_set # TODO: make this dynamic so can define for different scenarios
+        prog_info = program_info.ProgramInfo(self.constants, prog_set) # none of the coverage info is set here, since it depends on pop sizes
+        start_year = self.user_settings.start_year
+        end_year = self.user_settings.end_year
+        covs = self.user_settings.covs
 
-        # scenRes = runScenarios() # TODO: this is imported from another module, does all the work
-        scenRes = self.runSim() # TODO: better alternative to above?
+        scenRes = self.runSim(pops, covs, prog_info, start_year, end_year)
         self.addResult(result=scenRes[name])
         self.modified = today()
         return scenRes
 
-    def run_sim(self): # TODO: could have this called by 'runScenarios', and cut out the middle-man of 'scenarios.py'
+    def run_sim(self, pops, covs, prog_info, start_year, end_year): # TODO: could have this called by 'runScenarios', and cut out the middle-man of 'scenarios.py'
         # TODO: should specify the key requirements for a model run here
         """Performs a single run of the model for specified scenario"""
         # the things which vary between scenario runs within the same project are:
@@ -60,13 +60,14 @@ class Project(object):
 
         # set up the model
         # TODO: would like to pass in prog coverage data type, and see if scalar or sequence...
-        myModel = model2.Model() # TODO: pass in the data.
-        myModel.run_sim()
-
-
+        myModel = model2.Model(pops, prog_info, start_year, end_year)
+        myModel.run_sim(covs)
 
 
         return
+
+    def make_defaults(self):
+        progset =
 
     def optimise(self): # TODO: for optimising the model. Could call optimise in the Optimisation class
 

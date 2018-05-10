@@ -6,7 +6,7 @@ from constants import Constants
 from scipy.special import ndtri, ndtr # these are much faster than calling scipy.stats.norm
 
 class Model:
-    def __init__(self, pops, prog_info, start_year, end_year, adjustCoverage=False, timeTrends=False, optimise=False, calibrate=True):
+    def __init__(self, pops, prog_info, start_year, end_year, adjustCoverage=False, timeTrends=False, calibrate=True):
         # simpars could include data, populations, progSets
         self.pops = dcp(pops)
         self.children, self.PW, self.nonPW = self.pops
@@ -22,13 +22,11 @@ class Model:
         self.prog_info.set_years(self.all_years)
 
         # set requirements for populations -- conditional probs
-        self.set_pop_probs()
+        self._set_pop_probs()
+        self._preg_info()
 
         self.year = start_year
 
-
-
-        self.optimise = optimise # TODO: This is a way to get optimisation to ignore 'programs annual spending', but should be improved later
         self.constants = Constants(self.data)
         self.adjustCoverage = adjustCoverage
         self.timeTrends = timeTrends
@@ -50,20 +48,20 @@ class Model:
         self.births = {year: 0 for year in self.all_years}
         self.child_healthy = {year: 0 for year in self.all_years}
 
-    def set_pop_probs(self): # TODO: only want this to update if previous year is different from current
+    def _set_pop_probs(self): # TODO: only want this to update if previous year is different from current
         init_cov = self.prog_info.get_ann_covs(self.year) # TODO: check this year is correct
         for pop in self.pops:
             pop.previousCov = init_cov
             pop.set_probs()
 
-    def reset_storage(self):
+    def _reset_storage(self):
         for pop in self.pops:
             for ageGroup in pop.ageGroups:
                 ageGroup.set_update_storage()
 
     def update_year(self, year):
         self.year = year
-        self.programInfo.update_prog_year(year)
+        self.ProgramInfo.update_prog_year(year)
 
     def run_sim(self, covs):
         self.prog_info.update_prog_covs(covs)
@@ -75,9 +73,10 @@ class Model:
             change = self.prog_info.determine_cov_change()
             if change:
                 self._apply_prog_covs()
-                self.set_pop_probs()
-                self.reset_storage()
-            # integrate
+                self._set_pop_probs()
+                self._reset_storage()
+            # distribute pops according to new distributions and move model
+            self._distrib_pops()
             self.integrate()
 
     def _apply_prog_covs(self):
@@ -89,81 +88,52 @@ class Model:
             # combine direct and indirect updates to each risk area that we model
             self._combine_updates(pop)
             self._update_dists(pop)
-            self._update_mortality(pop)
+            self._update_pop_mort(pop)
 
     def integrate(self):
         # TODO: could move these to an 'update populations' function, which can be called even if the others are not called.
-        self._redistributePopulation()
-        self.moveModelOneYear()
+        for month in range(12):
+            self.move_children()
+        self._apply_pw_mort()
+        self._update_pw()
+        self._update_wra_pop()
+        self.update_women_dists()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    def _updateProbs(self):
-        previousCov = self.programInfo.get_ann_covs(self.year-1) # last year cov
-        for pop in self.pops:
-            pop.previousCov = previousCov # pop has access to adjusted current cov
-            pop.set_probs()
-
-    def _BPInfo(self):
-        FP = [prog for prog in self.programInfo.programs if prog.name == 'Family Planning']
+    def _preg_info(self):
+        FP = [prog for prog in self.prog_info.programs if prog.name == 'Family Planning']
         if FP:
             FPprog = FP[0]
             self.nonPW._setBPInfo(FPprog.unrestrictedBaselineCov)
         else:
             self.nonPW._setBPInfo(0) # TODO: not best way to handle missing program
 
-    def applyProgCovs(self):
-        '''newCoverages is required to be the unrestricted coverage % (i.e. people covered / entire target pop) '''
-        self.programInfo.restrictCovs(self.pops)
-        for pop in self.pops: # update all the populations
-            # update probabilities using current risk distributions
-            self._update_pop(pop)
-            if pop.name == 'Non-pregnant women':
-                self._famplan_update(pop)
-            # combine direct and indirect updates to each risk area that we model
-            self._combine_updates(pop)
-            self._update_dists(pop)
-            self._update_mortality(pop)
-
     def _famplan_update(self, pop):
         """ This update is not age-specified but instead applies to all non-PW.
         Also uses programs which are not explicitly treated elsewhere in model"""
-        progList = self._getApplicableProgs('Family planning') # returns 'Family Planning' program
+        progList = self._applicable_progs('Family planning') # returns 'Family Planning' program
         if progList:
             prog = progList[0]
             pop._updateFracPregnancyAverted(prog.annualCoverage[self.year])
 
-    def _update_mortality(self, pop):
+    def _update_pop_mort(self, pop):
         if pop.name != 'Non-pregnant women':
-            pop._update_mortality()
+            pop._update_mort()
 
-    def _getApplicableProgs(self, risk):
-        applicableProgNames = self.programInfo.programAreas[risk]
-        programs = list(filter(lambda x: x.name in applicableProgNames, self.programInfo.programs))
+    def _applicable_progs(self, risk):
+        applicableProgNames = self.ProgramInfo.programAreas[risk]
+        programs = list(filter(lambda x: x.name in applicableProgNames, self.ProgramInfo.programs))
         return programs
 
-    def _getApplicableAges(self, population, risk):
+    def _applicable_ages(self, population, risk):
         applicableAgeNames = population.populationAreas[risk]
         ageGroups = list(filter(lambda x: x.age in applicableAgeNames, population.ageGroups))
         return ageGroups
 
     def _update_pop(self, population):
-        for risk in self.programInfo.programAreas.keys():
+        for risk in self.ProgramInfo.programAreas.keys():
             # get relevant programs and age groups, determined by risk area
-            applicableProgs = self._getApplicableProgs(risk)
-            ageGroups = self._getApplicableAges(population, risk)
+            applicableProgs = self._applicable_progs(risk)
+            ageGroups = self._applicable_ages(population, risk)
             for ageGroup in ageGroups:
                 for program in applicableProgs:
                     if ageGroup.age in program.agesImpacted:
@@ -191,12 +161,12 @@ class Model:
                     else:
                         continue
                 if risk == 'Breastfeeding':  # flow on effects to diarrhoea (does not diarrhoea incidence & is independent of below)
-                    self._getEffectsFromBFupdate(ageGroup)
+                    self._bf_effects(ageGroup)
                 if risk == 'Diarrhoea': # flow-on effects from incidence
-                    self._getEffectsFromDiarrhoeaIncidence(ageGroup)
+                    self._dia_indirect_effects(ageGroup)
                 if risk == 'Wasting treatment':
                     # need to account for flow between MAM and SAM
-                    self._getFlowBetweenMAMandSAM(ageGroup)
+                    self._wasting_trans(ageGroup)
 
     def _combine_updates(self, population):
         """
@@ -261,7 +231,7 @@ class Model:
                 nonWastedDist = self.restratify(newProbWasted)
                 for nonWastedCat in self.constants.nonWastedList:
                     ageGroup.wastingDist[nonWastedCat] = nonWastedDist[nonWastedCat]
-                ageGroup.redistributePopulation()
+                ageGroup.distrib_pop()
         elif population.name == 'Pregnant women':
             # update PW anaemia but also birth distribution for <1 month age group
             # update birth distribution
@@ -281,7 +251,7 @@ class Model:
                 newProbAnaemia = oldProbAnaemia * ageGroup.totalAnaemiaUpdate
                 ageGroup.anaemiaDist['anaemic'] = newProbAnaemia
                 ageGroup.anaemiaDist['not anaemic'] = 1.-newProbAnaemia
-                ageGroup.redistributePopulation()
+                ageGroup.distrib_pop()
         elif population.name == 'Non-pregnant women':
             for ageGroup in population.ageGroups:
                 # anaemia
@@ -289,13 +259,14 @@ class Model:
                 newProbAnaemia = oldProbAnaemia * ageGroup.totalAnaemiaUpdate
                 ageGroup.anaemiaDist['anaemic'] = newProbAnaemia
                 ageGroup.anaemiaDist['not anaemic'] = 1.-newProbAnaemia
-                ageGroup.redistributePopulation()
+                ageGroup.distrib_pop()
             # weighted sum account for different effect and target pops across nonPW age groups # TODO: is this true or need to scale by frac targeted?
             # nonPWpop = population.getTotalPopulation()
             # FPcov = sum(nonPWage.FPupdate * nonPWage.getAgeGroupPopulation() for nonPWage in population.ageGroups) / nonPWpop
             # population._updateFracPregnancyAverted(FPcov)
 
-    def _getFlowBetweenMAMandSAM(self, ageGroup):
+    def _wasting_trans(self, ageGroup):
+        """Calculates the transitions between MAM and SAM categories"""
         ageGroup.fromSAMtoMAMupdate = {}
         ageGroup.fromMAMtoSAMupdate = {}
         ageGroup.fromSAMtoMAMupdate['MAM'] = (1. + (1.-ageGroup.wastingTreatmentUpdate['SAM']) * self.constants.demographics['fraction SAM to MAM'])
@@ -303,7 +274,7 @@ class Model:
         ageGroup.fromMAMtoSAMupdate['SAM'] = (1. - (1.-ageGroup.wastingTreatmentUpdate['MAM']) * self.constants.demographics['fraction MAM to SAM'])
         ageGroup.fromMAMtoSAMupdate['MAM'] = 1.
 
-    def _getEffectsFromDiarrhoeaIncidence(self, ageGroup):
+    def _dia_indirect_effects(self, ageGroup):
         # get flow-on effects to stunting, anaemia and wasting
         Z0 = ageGroup._getZa()
         ageGroup.incidences['Diarrhoea'] *= ageGroup.diarrhoeaIncidenceUpdate
@@ -311,12 +282,12 @@ class Model:
         beta = ageGroup._getFracDiarrhoea(Z0, Zt)
         ageGroup._updateProbConditionalDiarrhoea(Zt)
         for risk in ['Stunting', 'Anaemia']:
-            ageGroup.diarrhoeaUpdate[risk] *= self._getUpdatesFromDiarrhoeaIncidence(beta, ageGroup, risk)
-        wastingUpdate = self.__getWastingUpdateDiarrhoea(beta, ageGroup)
+            ageGroup.diarrhoeaUpdate[risk] *= self._frac_dia_update(beta, ageGroup, risk)
+        wastingUpdate = self._wasting_update_dia(beta, ageGroup)
         for wastingCat in self.constants.wastedList:
             ageGroup.diarrhoeaUpdate[wastingCat] *= wastingUpdate[wastingCat]
 
-    def _getEffectsFromBFupdate(self, ageGroup):
+    def _bf_effects(self, ageGroup):
         oldProb = ageGroup.bfDist[ageGroup.correctBF]
         percentIncrease = (ageGroup.bfPracticeUpdate - oldProb)/oldProb
         if percentIncrease > 0.0001:
@@ -332,17 +303,17 @@ class Model:
         fracCorrecting = numShifting / numIncorrectBefore if numIncorrectBefore > 0.01 else 0.
         for practice in ageGroup.incorrectBF:
             ageGroup.bfDist[practice] *= 1. - fracCorrecting
-        ageGroup.redistributePopulation()
+        ageGroup.distrib_pop()
         # number at risk after
         sumAfter = ageGroup._getDiarrhoeaRiskSum()
         # update diarrhoea incidence baseline, even though not directly used in this calculation
         ageGroup.incidences['Diarrhoea'] *= sumAfter / sumBefore
         beta = ageGroup._getFracDiarrhoeaFixedZ()  # TODO: this could probably be calculated prior to update coverages
         for risk in ['Stunting', 'Anaemia']:
-            ageGroup.bfUpdate[risk] = self._getUpdatesFromDiarrhoeaIncidence(beta, ageGroup, risk)
-        ageGroup.bfUpdate.update(self.__getWastingUpdateDiarrhoea(beta, ageGroup))
+            ageGroup.bfUpdate[risk] = self._frac_dia_update(beta, ageGroup, risk)
+        ageGroup.bfUpdate.update(self._wasting_update_dia(beta, ageGroup))
 
-    def _getUpdatesFromDiarrhoeaIncidence(self, beta, ageGroup, risk):
+    def _frac_dia_update(self, beta, ageGroup, risk): # TODO: this is static
         oldProb = ageGroup.getRiskFromDist(risk)
         newProb = 0.
         probThisRisk = ageGroup.probConditionalDiarrhoea[risk]
@@ -355,7 +326,7 @@ class Model:
         update = 1. - reduction
         return update
 
-    def __getWastingUpdateDiarrhoea(self, beta, ageGroup):
+    def _wasting_update_dia(self, beta, ageGroup):
         update = {}
         for wastingCat in self.constants.wastedList:
             update[wastingCat] = 1.
@@ -371,7 +342,7 @@ class Model:
             update[wastingCat] *= 1. - reduction
         return update
 
-    def _applyChildMortality(self):
+    def _apply_child_mort(self):
         ageGroups = self.children.ageGroups
         for ageGroup in ageGroups:
             for stuntingCat in self.constants.stuntingList:
@@ -384,7 +355,7 @@ class Model:
                             thisBox.cumulativeDeaths += deaths
                             self.child_deaths[self.year] += deaths
 
-    def _applyChildAgeing(self):
+    def _apply_child_ageing(self):
         # TODO: longer term, I think this should be re-written
         # get number ageing out of each age group
         ageGroups = self.children.ageGroups
@@ -400,7 +371,7 @@ class Model:
                         for anaemiaCat in self.constants.anaemiaList:
                             thisBox = ageGroup.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat]
                             ageingOut[i][stuntingCat][wastingCat][bfCat][anaemiaCat] = thisBox.populationSize * ageGroup.ageingRate
-        self._trackOutcomes()
+        self._track_outcomes()
         # first age group does not have ageing in
         newborns = ageGroups[0]
         for stuntingCat in self.constants.stuntingList:
@@ -444,9 +415,9 @@ class Model:
             distributionNow = ageGroup.getStuntingDistribution()
             probStunting = sum(distributionNow[stuntingCat] for stuntingCat in self.constants.stuntedList)
             ageGroup.stuntingDist = self.restratify(probStunting)
-            ageGroup.redistributePopulation()
+            ageGroup.distrib_pop()
 
-    def _trackOutcomes(self):
+    def _track_outcomes(self):
         oldest = self.children.ageGroups[-1]
         self.child_exit[self.year] += oldest.getAgeGroupPopulation() * oldest.ageingRate
         self.stunted[self.year] += oldest.getAgeGroupNumberStunted() * oldest.ageingRate
@@ -454,7 +425,7 @@ class Model:
         self.child_not_anaemic[self.year] += oldest.getAgeGroupNumberchild_not_anaemic() * oldest.ageingRate
         self.child_healthy[self.year] += oldest.getAgeGroupNumberchild_healthy() * oldest.ageingRate
 
-    def _applyBirths(self): # TODO; re-write this function in future
+    def _apply_births(self): # TODO; re-write this function in future
         # num annual births = birth rate x num WRA x (1 - frac preg averted)
         numWRA = sum(self.constants.popProjections[age][self.year] for age in self.constants.WRAages)
         births = self.nonPW.birthRate * numWRA * (1. - self.nonPW.fracPregnancyAverted)
@@ -503,7 +474,7 @@ class Model:
                                                                                                      stuntingFractions[stuntingCat] * \
                                                                                                      wastingFractions[wastingCat]
 
-    def _applyPWMortality(self):
+    def _apply_pw_mort(self):
         for ageGroup in self.PW.ageGroups:
             for anaemiaCat in self.constants.anaemiaList:
                 thisBox = ageGroup.boxes[anaemiaCat]
@@ -513,7 +484,7 @@ class Model:
         oldest = self.PW.ageGroups[-1]
         self.pw_exit[self.year] += oldest.getAgeGroupPopulation() * oldest.ageingRate
 
-    def _updatePWpopulation(self):
+    def _update_pw(self):
         """Use pregnancy rate to distribute PW into age groups.
         Distribute into age bands by age distribution, assumed constant over time."""
         numWRA = sum(self.constants.popProjections[age][self.year] for age in self.constants.WRAages)
@@ -524,7 +495,7 @@ class Model:
                 thisBox = ageGroup.boxes[anaemiaCat]
                 thisBox.populationSize = popSize * ageGroup.anaemiaDist[anaemiaCat]
 
-    def _updateWRApopulation(self):
+    def _update_wra_pop(self):
         """Uses projected figures to determine the population of WRA not pregnant in a given age band and year
         warning: PW pop must be updated first."""
         #assuming WRA and PW have same age bands
@@ -539,7 +510,7 @@ class Model:
                 thisBox = ageGroup.boxes[anaemiaCat]
                 thisBox.populationSize = nonPW * ageGroup.anaemiaDist[anaemiaCat]
 
-    def restratify(self, fractionYes):
+    def restratify(self, fractionYes): # TODO: currently have this and in 'Children'. Don't want two static methods
         # Going from binary stunting/wasting to four fractions
         # Yes refers to more than 2 standard deviations below the global mean/median
         # in our notes, fractionYes = alpha
@@ -557,58 +528,32 @@ class Model:
         restratification["high"] = fractionHigh
         return restratification
 
-    def updateRiskDists(self):
+    def update_child_dists(self):
         for ageGroup in self.children.ageGroups:
             ageGroup.updateStuntingDist()
             ageGroup.updateWastingDist()
             ageGroup.updateBFDist()
             ageGroup.updateAnaemiaDist()
 
-    def update_yearlyRiskDists(self):
+    def update_women_dists(self):
         for pop in self.pops[1:]:
             for ageGroup in pop.ageGroups:
                 ageGroup.updateAnaemiaDist()
 
-    def moveModelOneTimeStep(self):
+    def move_children(self):
         """
         Responsible for updating children since they have monthly time steps
         :return:
         """
-        self._applyChildMortality()
-        self._applyChildAgeing()
-        self._applyBirths()
-        self.updateRiskDists()
+        self._apply_child_mort()
+        self._apply_child_ageing()
+        self._apply_births()
+        self.update_child_dists()
 
-    def moveModelOneYear(self):
-        """
-        Responsible for updating all populations
-        :return:
-        """
-        for month in range(12):
-            self.moveModelOneTimeStep()
-        self._applyPWMortality()
-        self._updatePWpopulation()
-        self._updateWRApopulation()
-        self.update_yearlyRiskDists()
-
-    def _updateEverything(self):# TODO: would like a new name, but the good ones are taken
-        # TODO: there are several funcs which do not need to be done every time step unless we are updating coverages every time step.
-        # TODO: Should prevent this updating unless needed
-        """Responsible for moving the model, updating year, adjusting coverages and conditional probabilities, applying coverages"""
-        if self.adjustCoverage:
-            self.programInfo._adjustCovsPops(self.pops, self.year)
-        self._updateProbs()
-        self._resetStorage()
-        self.applyProgCovs()
-        if self.timeTrends:
-            self._applyPrevTimeTrends()
-
-
-    def _progressModel(self):
-        # TODO: could move these to an 'update populations' function, which can be called even if the others are not called.
-        self._redistributePopulation()
-        self.moveModelOneYear()
-
+    def _distrib_pops(self):
+        for pop in self.pops:
+            for ageGroup in pop.ageGroups:
+                ageGroup.distrib_pop()
 
     def _applyPrevTimeTrends(self): # TODO: haven't done mortality yet
         for ageGroup in self.children.ageGroups:
@@ -633,42 +578,14 @@ class Model:
             ageGroup.anaemiaDist['anaemic'] = newProb
             ageGroup.anaemiaDist['not anaemic'] = 1-newProb
 
-    def _redistributePopulation(self):
-        for pop in self.pops:
-            for ageGroup in pop.ageGroups:
-                ageGroup.redistributePopulation()
+    # def calibrate(self):
+    #     self.ProgramInfo.set_init_covs(self.pops)
+    #     self._BPInfo()
+    #     for year in self.constants.calibrationYears:
+    #         self.update_year(year)
+    #         self._updateEverything()
+    #         self._progressModel()
 
-    def calibrate(self):
-        self.programInfo.set_init_covs(self.pops)
-        self._BPInfo()
-        for year in self.constants.calibrationYears:
-            self.update_year(year)
-            self._updateEverything()
-            self._progressModel()
-
-
-
-
-    def runSimulation(self):
-        for year in self.sim_years[:self.num_years]:
-            self.update_year(year)
-            self._updateEverything()
-            self._progressModel()
-
-    def simulateScalar(self, coverages, restrictedCov=True):
-        """coverage is restricted coverage starting after calibration year, remaining constant for run time.
-        """
-        self.programInfo._setCovsScalar(coverages, restrictedCov)
-        self.runSimulation()
-
-    def simulateWorkbook(self):
-        self.programInfo._setCovsWorkbook()
-        self.runSimulation()
-
-    def _resetStorage(self):
-        for pop in self.pops:
-            for ageGroup in pop.ageGroups:
-                ageGroup._setStorageForUpdates()
 
     def getOutcome(self, outcome):
         if outcome == 'total_stunted':

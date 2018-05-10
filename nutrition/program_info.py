@@ -10,7 +10,7 @@ class ProgramInfo:
         programs: list of all program objects
         programAreas: Risks are keys with lists containing applicable program names (dict of lists)
     """
-    def __init__(self, constants, prog_set):
+    def __init__(self, constants, prog_set=None, name='default'):
         self.programs = progs.setPrograms(constants, prog_set)
         self.programAreas = constants.programAreas
         self.const = constants
@@ -91,7 +91,7 @@ class ProgramInfo:
         for prog in self.programs:
             cov = covs[prog.name]
             prog.update_cov(cov, restr_cov=restr_cov)
-        # restrict covs,
+        # restrict covs
         self.restrictCovs(pops) # TODO: check that restricting here is correct
 
     def determine_cov_change(self):

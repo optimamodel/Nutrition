@@ -51,7 +51,7 @@ def objectiveFunction(allocation, objective, model, freeFunds, fixedAllocations,
     # scale the allocation appropriately
     scaledAllocation = rescaleAllocation(freeFunds, allocation)
     newCoverages = {}
-    programs = thisModel.programInfo.programs
+    programs = thisModel.ProgramInfo.programs
     totalAllocations = _addFixedAllocations(totalAllocations, scaledAllocation, indxToKeep)
     for idx, program in enumerate(programs):
         newCoverages[program.name] = program.costCurveFunc(totalAllocations[idx]) / program.unrestrictedPopSize
@@ -85,7 +85,7 @@ class Optimisation:
         self.maxIter = maxIter
         self.swarmSize = swarmSize
         self.BOCs = {}
-        self.programs = self.model.programInfo.programs
+        self.programs = self.model.ProgramInfo.programs
         self.parallel = parallel
         if numCPUs:
             self.numCPUs = numCPUs
@@ -170,9 +170,9 @@ class Optimisation:
         for i, prog in enumerate(self.programs):
             if prog.name == progName:
                 correctedFunds[i] = 0
-        if self.model.programInfo.currentExpenditure:
+        if self.model.ProgramInfo.currentExpenditure:
             currentCalculated = sum(correctedFunds) - sum(self.referenceAllocations)
-            scaleFactor = self.model.programInfo.currentExpenditure / currentCalculated
+            scaleFactor = self.model.ProgramInfo.currentExpenditure / currentCalculated
             for program in self.programs:
                 if (not program.reference) and (program.name != progName):
                     program.scaleUnitCosts(scaleFactor)

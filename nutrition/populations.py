@@ -63,7 +63,7 @@ class NonPWAgeGroup:
         for anaemiaCat in self.const.anaemiaList:
             self.anaemiaDist[anaemiaCat] = self.boxes[anaemiaCat].populationSize / totalPop
 
-    def redistributePopulation(self):
+    def distrib_pop(self):
         for anaemiaCat in self.const.anaemiaList:
             self.boxes[anaemiaCat].populationSize = self.anaemiaDist[anaemiaCat] * self.getAgeGroupPopulation()
 
@@ -107,7 +107,7 @@ class PWAgeGroup:
         for anaemiaCat in self.const.anaemiaList:
             self.anaemiaDist[anaemiaCat] = self.boxes[anaemiaCat].populationSize / totalPop
 
-    def redistributePopulation(self):
+    def distrib_pop(self):
         for anaemiaCat in self.const.anaemiaList:
             self.boxes[anaemiaCat].populationSize = self.anaemiaDist[anaemiaCat] * self.getAgeGroupPopulation()
 
@@ -318,7 +318,7 @@ class ChildAgeGroup(object):
                     numCorrect += self.boxes[stuntingCat][wastingCat][self.correctBF][anaemiaCat].populationSize
         return numCorrect
 
-    def redistributePopulation(self):
+    def distrib_pop(self):
         totalPop = self.getAgeGroupPopulation()
         for stuntingCat in self.const.stuntingList:
             for wastingCat in self.const.wastingList:
