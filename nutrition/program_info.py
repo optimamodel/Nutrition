@@ -16,8 +16,8 @@ class ProgramInfo:
         self.const = constants
         self.currentExpenditure = constants.currentExpenditure
         self.availableBudget = constants.availableBudget
-        self._setReferencePrograms()
-        self._sortPrograms()
+        self._set_ref_progs()
+        self._sort_progs()
         self._getTwins()
 
     def set_years(self, all_years):
@@ -25,14 +25,14 @@ class ProgramInfo:
             prog.year = all_years[0]
             prog.all_years = all_years
 
-    def _setReferencePrograms(self):
+    def _set_ref_progs(self):
         for program in self.programs:
             if program.name in self.const.referencePrograms:
                 program.reference = True
             else:
                 program.reference = False
 
-    def _sortPrograms(self):
+    def _sort_progs(self):
         """
         Sorts the program list by dependency such that the resulting order will be most independent to least independent.
         Uses a variant of a breadth-first search,
@@ -40,31 +40,31 @@ class ProgramInfo:
         (root, first level, second level etc..)
         :return:
         """
-        self._removeMissingPrograms()
-        self._thresholdSort() # TODO: would like to have only one function to do both sortings
-        self._exclusionSort()
+        self._rem_missing_progs()
+        self._thresh_sort() # TODO: would like to have only one function to do both sortings
+        self._excl_sort()
 
-    def _removeMissingPrograms(self):
+    def _rem_missing_progs(self):
         """Removes programs from dependencies lists which are not included in analysis"""
         allNames = set([prog.name for prog in self.programs])
         for prog in self.programs:
             prog.thresholdDependencies = [name for name in prog.thresholdDependencies if name in allNames]
             prog.exclusionDependencies = [name for name in prog.exclusionDependencies if name in allNames]
 
-    def _getThresholdRoots(self):
+    def _get_thresh_roots(self):
         openSet = self.programs[:]
         closedSet = [program for program in openSet if not program.thresholdDependencies] # independence
         openSet = [program for program in openSet if program not in closedSet]
         return openSet, closedSet
 
-    def _getExclusionRoots(self):
+    def _get_excl_roots(self):
         openSet = self.programs[:]
         closedSet = [program for program in openSet if not program.exclusionDependencies] # independence
         openSet = [program for program in openSet if program not in closedSet]
         return openSet, closedSet
 
-    def _exclusionSort(self):
-        openSet, closedSet = self._getExclusionRoots()
+    def _excl_sort(self):
+        openSet, closedSet = self._get_excl_roots()
         for program in openSet:
             dependentNames = set(program.exclusionDependencies)
             closedSetNames = set([prog.name for prog in closedSet])
@@ -72,8 +72,8 @@ class ProgramInfo:
                 closedSet += [program]
         self.exclusionOrder = closedSet[:]
 
-    def _thresholdSort(self):
-        openSet, closedSet = self._getThresholdRoots()
+    def _thresh_sort(self):
+        openSet, closedSet = self._get_thresh_roots()
         for program in openSet:
             dependentNames = set(program.thresholdDependencies)
             closedSetNames = set([prog.name for prog in closedSet])
@@ -83,7 +83,7 @@ class ProgramInfo:
 
     def set_init_covs(self, pops, all_years):
         for program in self.programs:
-            program.set_init_cov(pops, all_years)
+            program.set_annual_cov(pops, all_years)
         # self.restrictCovs(self.pops) ? # TODO
 
     def update_prog_covs(self, pops, covs, restr_cov=True):

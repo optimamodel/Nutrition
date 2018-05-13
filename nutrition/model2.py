@@ -32,7 +32,6 @@ class Model:
         self.timeTrends = timeTrends
         self.num_years = len(self.sim_years)
 
-
         self._set_trackers()
 
     def _set_trackers(self):

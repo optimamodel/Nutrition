@@ -11,21 +11,21 @@ class Program(object):
         self.year = None
         self.all_years = None
         self.annual_cov = None
-        self.unrestr_baseline_cov = None
+        self.unrestr_init_cov = None
 
         # TODO: this should all be handed over through Project, read in from input data book
         self.targetPopulations = self.const.programTargetPop[self.name] # frac of each population which is targeted
         self.unitCost = self.const.costCurveInfo['unit cost'][self.name]
         self.saturation = self.const.costCurveInfo['saturation coverage'][self.name]
         self.coverageProjections = dcp(self.const.programAnnualSpending[self.name]) # will be altered
-        self.restr_baseline_cov = self.const.costCurveInfo['baseline coverage'][self.name]
+        self.restr_init_cov = self.const.costCurveInfo['baseline coverage'][self.name]
 
         self._setTargetedAges()
         self._setImpactedAges() # TODO: This func could contain the info for how many multiples needed for unrestricted population calculation (IYCF)
         self._setExclusionDependencies()
         self._setThresholdDependencies()
 
-    def set_init_cov(self, pops, all_years):
+    def set_annual_cov(self, pops, all_years):
         """
         Sets values for 'annual_covs' for the baseline and calibration (typically first 2 years) only.
         If a calibration coverage has been specified in the workbook, this will override the baseline coverage.
@@ -33,8 +33,8 @@ class Program(object):
         :return:
         """
         self.set_pop_sizes(pops)
-        self.set_baseline_cov()
-        self.annual_cov = {year: self.unrestr_baseline_cov for year in all_years} # default assuming constant over time
+        self.set_init_unrestr()
+        self.annual_cov = {year: self.unrestr_init_cov for year in all_years} # default assuming constant over time
 
     def update_cov(self, cov, restr_cov):
         """Main function for providing new coverages for a program
@@ -54,7 +54,7 @@ class Program(object):
             # for 1 or more present values, baseline up to first present value, interpolate between, then constant if end values missing
             trueIndx = [i for i, x in enumerate(not_nan) if x]
             firstTrue = trueIndx[0]
-            startCov = [self.restr_baseline_cov for x in cov_list[:firstTrue]]
+            startCov = [self.restr_init_cov for x in cov_list[:firstTrue]]
             # scaledCov = coverages * self.restrictedPopSize / self.unrestrictedPopSize # convert to unrestricted coverages
             endCov = list(interp(years[firstTrue:], years[not_nan], cov_list[not_nan]))
             # scale each coverage
@@ -64,7 +64,7 @@ class Program(object):
                 interped = {year: cov for year, cov in zip(years, startCov + endCov)}
         else:
             # is all nan, assume constant at baseline
-            interped = {year: self.unrestr_baseline_cov for year in years}
+            interped = {year: self.unrestr_init_cov for year in years}
         self.annual_cov.update(interped)
 
     def _set_scalar(self, cov, restr_cov):
@@ -80,8 +80,8 @@ class Program(object):
         self._setRestrictedPopSize(pops)
         self._setUnrestrictedPopSize(pops)
 
-    def set_baseline_cov(self):
-        self.unrestr_baseline_cov = (self.restr_baseline_cov * self.restrictedPopSize) / \
+    def set_init_unrestr(self):
+        self.unrestr_init_cov = (self.restr_init_cov * self.restrictedPopSize) / \
                                           self.unrestrictedPopSize
         # self.unrestrictedCalibrationCov = (self.restrictedCalibrationCov * self.restrictedPopSize) / \
         #                                   self.unrestrictedPopSize
@@ -348,7 +348,7 @@ class Program(object):
 
     def getSpending(self):
         # spending is base on BASELINE coverages
-        return self.costCurveOb.getSpending(self.unrestr_baseline_cov) # TODO: want to change this so that uses annual Coverages
+        return self.costCurveOb.getSpending(self.unrestr_init_cov) # TODO: want to change this so that uses annual Coverages
 
     def scaleUnitCosts(self, scaleFactor):
         self.unitCost *= scaleFactor
