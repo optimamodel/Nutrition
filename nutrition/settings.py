@@ -5,6 +5,25 @@ Store all the statis data for a project that won't change except between Optima 
 
 """
 
-class Settings(object): # TODO: currently this is like the 'Constants' class
+class Settings(object):
     def __init__(self):
-        pass
+        self.timestep = 1./12. # in months
+        self.stunting_list = ['high', 'moderate', 'mild', 'normal']
+        self.stunted_list = self.stunting_list[:2]
+        self.non_stunted_list = self.stunting_list[:2]
+        self.anaemia_list = ['anaemic', 'not anaemic']
+        self.anaemic_list = self.anaemia_list[:1]
+        self.non_anaemic_list = self.anaemia_list[:1]
+        self.wasting_list = ['SAM', 'MAM', 'mild', 'normal']
+        self.wasted_list = self.wasting_list[:2]
+        self.non_wasted_list = self.wasting_list[:2]
+        self.bf_list = ['exclusive', 'predominant', 'partial', 'none']
+        self.birth_outcomes = ['Term AGA', 'Term SGA', 'Pre-term AGA','Pre-term SGA']
+        self.all_risks = [self.stunting_list, self.wasting_list, self.bf_list, self.anaemia_list]
+        self.child_ages = ['<1 month', '1-5 months', '6-11 months', '12-23 months', '24-59 months']
+        self.pw_ages = ['15-19 years', '20-29 years', '30-39 years', '40-49 years']
+        self.wra_ages = self.pw_ages[:]
+        self.all_ages = self.child_ages + self.pw_ages + self.wra_ages
+        self.risks = ['Stunting', 'Wasting', 'Breastfeeding', 'Anaemia']
+        self.child_age_spans = [1., 5., 6., 12., 36.] # in months
+        self.women_age_rates = [1./5., 1./10., 1./10., 1./10.] # in years
