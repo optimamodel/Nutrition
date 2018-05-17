@@ -1,7 +1,7 @@
 import programs as progs
 from copy import deepcopy as dcp
 
-class ProgramInfo:
+class ProgramInfo: # TODO: WOULD LIKE TO DEFINE IYCF IMPACT IN HERE
     """
     This class is a convenient container for all program objects and their applicable areas.
     Allows centralised access to all program objects to be used in the Model class.
@@ -10,12 +10,14 @@ class ProgramInfo:
         programs: list of all program objects
         programAreas: Risks are keys with lists containing applicable program names (dict of lists)
     """
-    def __init__(self, constants, prog_set=None, name='default'):
-        self.programs = progs.setPrograms(constants, prog_set)
-        self.programAreas = constants.programAreas
-        self.const = constants
-        self.currentExpenditure = constants.currentExpenditure
-        self.availableBudget = constants.availableBudget
+    def __init__(self, data, user_settings, default_params, prog_set=None, name='default'):
+        self.prog_set = prog_set # TODO: want default behaviour to be all programs
+        self.programs = progs.set_programs(default_params, prog_set)
+        self.prog_areas = user_settings.prog_areas
+        self.ref_progs = user_settings.ref_progs
+        # TODO: below could be calculated/provided using Projects
+        # self.currentExpenditure = None
+        # self.availableBudget = None
         self._set_ref_progs()
         self._sort_progs()
         self._getTwins()
@@ -27,7 +29,7 @@ class ProgramInfo:
 
     def _set_ref_progs(self):
         for program in self.programs:
-            if program.name in self.const.referencePrograms:
+            if program.name in self.ref_progs:
                 program.reference = True
             else:
                 program.reference = False
@@ -101,7 +103,6 @@ class ProgramInfo:
             else:
                 return False
 
-
     def _setCovsScalar(self, coverages, restrictedCov):
         for program in self.programs:
             if coverages.get(program.name) is None: # remains constant
@@ -115,20 +116,20 @@ class ProgramInfo:
         for program in self.programs:
             program._setCovWorkbook()
 
-    def _callProgramMethod(self, method, *args):
-        """Calls method for all programs in self.programs"""
-        progMethod = lambda prog: getattr(prog, method)(args) if args else lambda prog: getattr(prog, method)()
-        map(lambda prog: progMethod, self.programs)
+    # def _callProgramMethod(self, method, *args):
+    #     """Calls method for all programs in self.programs"""
+    #     progMethod = lambda prog: getattr(prog, method)(args) if args else lambda prog: getattr(prog, method)()
+    #     map(lambda prog: progMethod, self.programs)
 
-    def _adjustCovsPops(self, populations, year):
+    def _adjustCovsPops(self, pops, year):
         for program in self.programs:
-            program._adjustCoverage(populations, year)
+            program._adjustCoverage(pops, year)
 
     def _getTwins(self):
         # TODO: long term, exchange this for the option where we don't have these twin interventions
         for program in self.programs:
             malariaTwin = program.name + ' (malaria area)'
-            program.malariaTwin = True if malariaTwin in self.const.programList else False
+            program.malariaTwin = True if malariaTwin in self.prog_set else False
 
     def update_prog_year(self, year):
         for prog in self.programs:
@@ -140,13 +141,11 @@ class ProgramInfo:
             covs[prog.name] = prog.annual_cov[year]
         return covs
 
-    def restrictCovs(self, populations):
+    def restrictCovs(self, pops):
         """
         Uses the ordering of both dependency lists to restrict the coverage of programs.
         Assumes that the coverage is given as peopleCovered/unrestrictedPopSize.
         Since the order of dependencies matters, was decided to apply threshold first then exclusion dependencies
-        :param newCoverages:
-        :return:
         """
         # GET OVERLAPPING AGE GROUPS BETWEEN PARENT AND CHILD NODES
         # SUM OVERLAPPING POP SIZES FOR PARENT NODE
@@ -164,7 +163,7 @@ class ProgramInfo:
                 parent = next((prog for prog in self.programs if prog.name == parentName))
                 commonAges = list(set(child.agesTargeted).intersection(parent.agesTargeted))
                 parentPopSize = 0.
-                for pop in populations:
+                for pop in pops:
                     parentPopSize += sum(age.getAgeGroupPopulation() for age in pop.ageGroups if age.age in commonAges)
                 numCoveredInOverlap = parent.annualCoverage[parent.year] * parentPopSize
                 percentCoveredByParent = numCoveredInOverlap / child.restrictedPopSize
@@ -184,7 +183,7 @@ class ProgramInfo:
                     # get overlapping age groups (intersection)
                     parent = next((prog for prog in self.programs if prog.name == parentName))
                     commonAges = list(set(child.agesTargeted).intersection(parent.agesTargeted))
-                    for pop in populations:
+                    for pop in pops:
                         parentPopSize += sum(age.getAgeGroupPopulation() for age in pop.ageGroups if age.age in commonAges)
                     numCoveredInOverlap += parent.annualCoverage[parent.year] * parentPopSize
                 percentCoveredByParent = numCoveredInOverlap / child.restrictedPopSize

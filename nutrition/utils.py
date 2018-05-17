@@ -1,3 +1,6 @@
+from scipy.special import ndtri, ndtr # these are much faster than calling scipy.stats.norm
+from numpy import sqrt
+
 ############
 # ODICT
 #########
@@ -32,6 +35,106 @@ class odict(OrderedDict):
 
 
 
+    def append(self, key=None, value=None):
+        """ Support an append method, like a list """
+        needkey = False
+        if value is None: # Assume called with a single argument
+            value = key
+            needkey = True
+        if key is None or needkey:
+            keyname = 'key'+flexstr(len(self))  # Define the key just to be the current index
+        else:
+            keyname = key
+        self.__setitem__(keyname, value)
+
+    def __setitem__(self, key, value):
+        """ Allows setitem to support strings, integers, slices, lists, or arrays """
+        if isinstance(key, (str, tuple)):
+            OrderedDict.__setitem__(self, key, value)
+        elif isinstance(key, Number):  # Convert automatically from float...dangerous?
+            thiskey = self.keys()[int(key)]
+            OrderedDict.__setitem__(self, thiskey, value)
+        elif type(key) == slice:
+            startind = self.__slicekey(key.start, 'start')
+            stopind = self.__slicekey(key.stop, 'stop')
+            if stopind < startind:
+                errormsg = 'Stop index must be >= start index (start=%i, stop=%i)' % (startind, stopind)
+                raise Exception(errormsg)
+            slicerange = range(startind, stopind)
+            enumerator = enumerate(slicerange)
+            slicelen = len(slicerange)
+            if hasattr(value, '__len__'):
+                if len(value) == slicelen:
+                    for valind, index in enumerator:
+                        self.__setitem__(index, value[valind])  # e.g. odict[:] = arr[:]
+                else:
+                    errormsg = 'Slice "%s" and values "%s" have different lengths! (%i, %i)' % (
+                        slicerange, value, slicelen, len(value))
+                    raise Exception(errormsg)
+            else:
+                for valind, index in enumerator:
+                    self.__setitem__(index, value)  # e.g. odict[:] = 4
+        elif self.__is_odict_iterable(key) and hasattr(value, '__len__'):  # Iterate over items
+            if len(key) == len(value):
+                for valind, thiskey in enumerate(key):
+                    self.__setitem__(thiskey, value[valind])
+            else:
+                errormsg = 'Keys "%s" and values "%s" have different lengths! (%i, %i)' % (
+                    key, value, len(key), len(value))
+                raise Exception(errormsg)
+        else:
+            OrderedDict.__setitem__(self, key, value)
+
+    def __slicekey(self, key, slice_end):
+        shift = int(slice_end=='stop')
+        if isinstance(key, Number): return key
+        elif type(key) is str: return self.index(key)+shift # +1 since otherwise confusing with names (CK)
+        elif key is None: return len(self) if shift else 0
+        else: raise Exception('To use a slice, %s must be either int or str (%s)' % (slice_end, key))
+
+    def __is_odict_iterable(self, key):
+        """ Check to see whether the "key" is actually an iterable """
+        output = type(key)==list or type(key)==type(array([])) # Do *not* include dict, since that would be recursive
+        return output
+
+
+# ##############################################################################
+# ### HELPER FUNCTIONS
+# ##############################################################################
+#
+def solve_quad(oddsRatio, fracA, fracB):
+    # solves quadratic to calculate probabilities where e.g.:
+    # fracA is fraction covered by intervention
+    # fracB is fraction of pop. in a particular risk status
+    eps = 1.e-5
+    a = (1. - fracA) * (1. - oddsRatio)
+    b = (oddsRatio - 1) * fracB - oddsRatio * fracA - (1. - fracA)
+    c = fracB
+    det = sqrt(b ** 2 - 4. * a * c)
+    if (abs(a) < eps):
+        p0 = -c / b
+    else:
+        soln1 = (-b + det) / (2. * a)
+        soln2 = (-b - det) / (2. * a)
+        if (soln1 > 0.) and (soln1 < 1.): p0 = soln1
+        if (soln2 > 0.) and (soln2 < 1.): p0 = soln2
+    p1 = p0 * oddsRatio / (1. - p0 + oddsRatio * p0)
+    return p0, p1
+
+def restratify(frac_yes):
+    # Going from binary stunting/wasting to four fractions
+    # Yes refers to more than 2 standard deviations below the global mean/median
+    # in our notes, frac_yes = alpha
+    if frac_yes > 1:
+        frac_yes = 1
+    invCDFalpha = ndtri(frac_yes)
+    frac_high = ndtr(invCDFalpha - 1.)
+    frac_mod = frac_yes - ndtr(invCDFalpha - 1.)
+    frac_mild = ndtr(invCDFalpha + 1.) - frac_yes
+    frac_norm = 1. - ndtr(invCDFalpha + 1.)
+    restrat = {'normal':frac_norm, 'mild': frac_mild,
+               'moderate': frac_mod, 'high':frac_high}
+    return restrat
 
 
 
@@ -39,14 +142,14 @@ class odict(OrderedDict):
 # ### TYPE FUNCTIONS
 # ##############################################################################
 #
-# def flexstr(arg):
-#     ''' Try converting to a regular string, but try unicode if it fails '''
-#     try:
-#         output = str(arg)
-#     except:
-#         output = unicode(arg)
-#     return output
-#
+def flexstr(arg):
+    ''' Try converting to a regular string, but try unicode if it fails '''
+    try:
+        output = str(arg)
+    except:
+        output = unicode(arg)
+    return output
+
 #
 # def isiterable(obj):
 #     '''

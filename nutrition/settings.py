@@ -21,8 +21,8 @@ class Settings(object):
         self.birth_outcomes = ['Term AGA', 'Term SGA', 'Pre-term AGA','Pre-term SGA']
         self.all_risks = [self.stunting_list, self.wasting_list, self.bf_list, self.anaemia_list]
         self.child_ages = ['<1 month', '1-5 months', '6-11 months', '12-23 months', '24-59 months']
-        self.pw_ages = ['15-19 years', '20-29 years', '30-39 years', '40-49 years']
-        self.wra_ages = self.pw_ages[:]
+        self.pw_ages = ['PW: 15-19 years', 'PW: 20-29 years', 'PW: 30-39 years', 'PW: 40-49 years']
+        self.wra_ages = ['WRA: 15-19 years', 'WRA: 20-29 years', 'WRA: 30-39 years', 'WRA: 40-49 years']
         self.all_ages = self.child_ages + self.pw_ages + self.wra_ages
         self.risks = ['Stunting', 'Wasting', 'Breastfeeding', 'Anaemia']
         self.child_age_spans = [1., 5., 6., 12., 36.] # in months

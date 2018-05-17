@@ -1,6 +1,6 @@
 ## For starters, should contain odicts for scenarios, optimisations, and results
 
-from nutrition import model2, populations, program_info
+from nutrition import model2, populations, program_info, settings
 from utils import odict, today
 import loadspreadsheet
 
@@ -11,44 +11,82 @@ class Project(object):
     def __init__(self, spreadsheet, name='default'):
 
         ## Define the structure sets
-        # TODO: we don't have a 'parset', since these are stored elsewhere
-        self.parsets = odict()
-        self.progsets = odict() # TODO: can come from user input, for now read from spreadsheet
-        self.scens = odict()
-        self.optims = odict()
-        self.results = odict()
+        self.parsets = {} # TODO: my version of parset would be population and program objects.
+        self.popsets = {} # TODO: with popset and progset, we replace parsets.
+        self.progsets = {} # TODO: can come from user input, for now read from spreadsheet
+        self.scens = {} # TODO: depending on usage, could just be a list?
+        self.optims = {}
+        self.results = {}
 
         ## Define other quantities
         self.name = name
-        # self.setting = Settings() # TODO: this is essentially 'Constants'
-        # self.data = odict() # TODO: currently we have the Data object...
+        self.settings = settings.Settings()
         self.default_params = loadspreadsheet.DefaultParams()
-        self.data = loadspreadsheet.InputData(spreadsheet) # assume these values fixed for all projects, since they are real life data
-        self.user_settings = loadspreadsheet.UserSettings(spreadsheet)
+        self.data = loadspreadsheet.InputData(spreadsheet) # once uploaded, assume these values are fixed for all projects
+        self.user_settings = loadspreadsheet.UserSettings('') # TODO: how to get these?
 
         ## Define metadata
         self.created = today()
         self.modified = today()
         self.spreadsheetdate = 'Spreadsheet never loaded'
 
-    def runScenarios(self, scenList=None, name=None): #TODO: should be able to run several scenarios at once, defined before-hand
-        """Function for running scenarios"""
-        if scenList is not None: self.addScens(scenList) # replace existing scen list with new one
-        if name is None: name = 'scenarios'
+    def add(self, name, item, what=None, overwrite=True):
+        """ Add an entry to a structure list """
+        structlist = self.getwhat(what=what)
+        structlist[name] = item
+        print 'Item "{}" added to "{}"'.format(name, what)
+        self.modified = today()
 
-        pops = populations.setPops(self.data, self.constants) # TODO: rethink usage of constants...
+    def remove(self, what, name):
+        structlist = self.getwhat(what=what)
+        structlist.pop(name)
+        print '{} "{}" removed'.format(what, name)
+        self.modified = today()
+
+    def getwhat(self, what):
+        '''
+        Return the requested item ('what')
+            structlist = getwhat('parameters')
+        will return P.parset.
+        '''
+        if what in ['p', 'pars', 'parset', 'parameters']: structlist = self.parsets
+        elif what in ['pr', 'progs', 'progset', 'progsets']: structlist = self.progsets
+        elif what in ['s', 'scen', 'scens', 'scenario', 'scenarios']: structlist = self.scens
+        elif what in ['o', 'opt', 'opts', 'optim', 'optims', 'optimisation', 'optimization', 'optimisations', 'optimizations']: structlist = self.optims
+        elif what in ['r', 'res', 'result', 'results']: structlist = self.results
+        else: raise Exception("Item not found")
+        return structlist
+
+    def add_scens(self, scen_list, overwrite=True):
+        if overwrite: self.scens = {} # remove exist scenarios
+        for scen in scen_list:
+            self.add(name=scen.name, item=scen, what='scen', overwrite=True)
+        self.modified = today()
+
+    def add_result(self, my_model):
+        """Add result by name"""
+        keyname = my_model.name
+        self.add(name=keyname, item=my_model, what='result')
+        return
+
+    def run_scens(self, scen_list=None, name=None):
+        """Function for running scenarios"""
+        if scen_list is not None: self.addScens(scen_list) # replace existing scen list with new one
+        if name is None: name = 'scenarios'
+        pops = populations.set_pops(self.data, self.user_settings, self.default_params)
         prog_set = self.user_settings.prog_set # TODO: make this dynamic so can define for different scenarios
-        prog_info = program_info.ProgramInfo(self.constants, prog_set) # none of the coverage info is set here, since it depends on pop sizes
+        prog_info = program_info.ProgramInfo(self.data, self.user_settings, self.default_params,
+                                             prog_set=prog_set, name=name) # none of the coverage info is set here, since it depends on pop sizes
         start_year = self.user_settings.start_year
         end_year = self.user_settings.end_year
         covs = self.user_settings.covs
 
-        scenRes = self.runSim(pops, covs, prog_info, start_year, end_year)
-        self.addResult(result=scenRes[name])
+        my_model = model2.Model(name, pops, prog_info, start_year, end_year)
+        my_model.run_sim(covs)
+        self.add_result(my_model=my_model)
         self.modified = today()
-        return scenRes
 
-    def run_sim(self, pops, covs, prog_info, start_year, end_year): # TODO: could have this called by 'runScenarios', and cut out the middle-man of 'scenarios.py'
+    def run_sim(self, name, pops, covs, prog_info, start_year, end_year): # TODO: Should keep this? If so, put outside class?
         # TODO: should specify the key requirements for a model run here
         """Performs a single run of the model for specified scenario"""
         # the things which vary between scenario runs within the same project are:
@@ -59,42 +97,33 @@ class Project(object):
         # - referenceSet (?)
 
         # set up the model
-        # TODO: would like to pass in prog coverage data type, and see if scalar or sequence...
-        myModel = model2.Model(pops, prog_info, start_year, end_year)
+        myModel = model2.Model(name, pops, prog_info, start_year, end_year)
         myModel.run_sim(covs)
 
+        return myModel
 
-        return
-
-    def make_defaults(self):
-        progset =
+    # def make_defaults(self):
+    #     progset =
 
     def optimise(self): # TODO: for optimising the model. Could call optimise in the Optimisation class
 
         return
 
-    def addResult(self, result=None, overwrite=True):
-        """Add result by name"""
-        keyname = result.name
-        self.add(what='result', name=keyname, item=result, overwrite=overwrite)
-        return
-
-    def addScen(self):
-        """Add a scenario"""
-        return
-
-
-
-
-
-
 
     def sensitivity(self): # TODO: sensitivity analysis over the parameters as
         return
 
+class Test(object):
+    def __init__(self, name):
+        self.name = name
 
-
-
+if __name__ == "__main__":
+    names = ['thing1', 'thing2', 'thing3']
+    objs = [Test(name) for name in names]
+    # TESTING
+    P = Project('../applications/master/data/national/master_input.xlsx', 'test')
+    P.add_scens(objs)
+    P.run_scens()
     
 
 

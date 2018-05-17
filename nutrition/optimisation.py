@@ -95,7 +95,7 @@ class Optimisation:
         # self.costCurveType = costCurveType # TODO: currently doesn't do anything.
         self.timeSeries = None
         for program in self.programs:
-            program._setCostCoverageCurve()
+            program.set_costcov()
         self.calculateAllocations(fixCurrentAllocations)
         self.kwargs = {'model': self.model,
                        'freeFunds': self.freeFunds, 'fixedAllocations': self.fixedAllocations}
@@ -134,7 +134,7 @@ class Optimisation:
         referenceAllocations = []
         for program in self.programs:
             if program.reference:
-                referenceAllocations.append(program.getSpending())
+                referenceAllocations.append(program.get_spending())
             else:
                 referenceAllocations.append(0)
         return referenceAllocations
@@ -142,7 +142,7 @@ class Optimisation:
     def getCurrentAllocations(self):
         allocations = []
         for program in self.programs:
-            allocations.append(program.getSpending())
+            allocations.append(program.get_spending())
         return allocations
 
     def getFixedAllocations(self, fixCurrentAllocations):
@@ -175,12 +175,12 @@ class Optimisation:
             scaleFactor = self.model.ProgramInfo.currentExpenditure / currentCalculated
             for program in self.programs:
                 if (not program.reference) and (program.name != progName):
-                    program.scaleUnitCosts(scaleFactor)
+                    program.scale_unit_costs(scaleFactor)
         elif any(sub in self.name for sub in specialRegions):  # TODO: this should be removed after Tanzania application
             scaleFactor = 0.334  # this is the median of all other regions
             for program in self.programs:
                 if (not program.reference) and (program.name != progName):
-                    program.scaleUnitCosts(scaleFactor)
+                    program.scale_unit_costs(scaleFactor)
         else:
             scaleFactor = 1
         return self.getCurrentAllocations(), scaleFactor

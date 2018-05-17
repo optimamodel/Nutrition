@@ -5,25 +5,26 @@ class Program(object):
     """Each instance of this class is an intervention,
     and all necessary data will be stored as attributes. Will store name, targetpop, popsize, coverage, edges etc
     Also want it to set absolute number covered, coverage frac (coverage amongst entire pop), normalised coverage (coverage amongst target pop)"""
-    def __init__(self, name, constants): # TODO: would like to put cov info into another object, read in from the relevant data book.
+    def __init__(self, name, default_params, settings): # TODO: would like to put cov info into another object, read in from the relevant data book.
         self.name = name
-        self.const = constants
+        self.default = default_params # TODO: not all data can be found in here (i.e. prog data)
+        self.settings = settings
         self.year = None
         self.all_years = None
         self.annual_cov = None
         self.unrestr_init_cov = None
 
         # TODO: this should all be handed over through Project, read in from input data book
-        self.targetPopulations = self.const.programTargetPop[self.name] # frac of each population which is targeted
-        self.unitCost = self.const.costCurveInfo['unit cost'][self.name]
-        self.saturation = self.const.costCurveInfo['saturation coverage'][self.name]
-        self.coverageProjections = dcp(self.const.programAnnualSpending[self.name]) # will be altered
-        self.restr_init_cov = self.const.costCurveInfo['baseline coverage'][self.name]
+        self.target_pops = self.default.programTargetPop[self.name] # frac of each population which is targeted
+        self.unit_cost = self.default.costCurveInfo['unit cost'][self.name]
+        self.saturation = self.default.costCurveInfo['saturation coverage'][self.name]
+        self.coverageProjections = dcp(self.default.programAnnualSpending[self.name]) # will be altered
+        self.restr_init_cov = self.default.costCurveInfo['baseline coverage'][self.name]
 
-        self._setTargetedAges()
-        self._setImpactedAges() # TODO: This func could contain the info for how many multiples needed for unrestricted population calculation (IYCF)
-        self._setExclusionDependencies()
-        self._setThresholdDependencies()
+        self._set_target_ages()
+        self._set_impacted_ages() # TODO: This func could contain the info for how many multiples needed for unrestricted population calculation (IYCF)
+        self._set_exclusion_deps()
+        self._set_threshold_deps()
 
     def set_annual_cov(self, pops, all_years):
         """
@@ -107,25 +108,25 @@ class Program(object):
         restrictedCovNum = self.restrictedPopSize * newCoverage
         self.proposedCoverageFrac = restrictedCovNum / self.unrestrictedPopSize
 
-    def _setTargetedAges(self):
+    def _set_target_ages(self):
         """
         The ages at whom programs are targeted
         :return:
         """
         self.agesTargeted = []
-        for age in self.const.allAges:
-            fracTargeted = self.const.programTargetPop[self.name][age]
+        for age in self.default.allAges:
+            fracTargeted = self.default.programTargetPop[self.name][age]
             if fracTargeted > 0.001: # floating point tolerance
                 self.agesTargeted.append(age)
 
-    def _setImpactedAges(self):
+    def _set_impacted_ages(self):
         """
         The ages who are impacted by this program
         :return:
         """
         self.agesImpacted = []
-        for age in self.const.allAges:
-            impacted = self.const.programImpactedPop[self.name][age]
+        for age in self.default.allAges:
+            impacted = self.default.programImpactedPop[self.name][age]
             if impacted > 0.001: # floating point tolerance
                 self.agesImpacted.append(age)
 
@@ -137,52 +138,52 @@ class Program(object):
         from math import ceil
         self.unrestrictedPopSize = 0.
         for pop in populations:
-            self.unrestrictedPopSize += sum(ceil(self.targetPopulations[age.age])*age.getAgeGroupPopulation() for age in pop.ageGroups
+            self.unrestrictedPopSize += sum(ceil(self.target_pops[age.age])*age.getAgeGroupPopulation() for age in pop.ageGroups
                                            if age.age in self.agesTargeted)
 
     def _setRestrictedPopSize(self, populations):
         self.restrictedPopSize = 0.
         for pop in populations:
-            self.restrictedPopSize += sum(age.getAgeGroupPopulation() * self.targetPopulations[age.age] for age in pop.ageGroups
+            self.restrictedPopSize += sum(age.getAgeGroupPopulation() * self.target_pops[age.age] for age in pop.ageGroups
                                          if age.age in self.agesTargeted)
 
-    def _setExclusionDependencies(self):
+    def _set_exclusion_deps(self):
         """
         List containing the names of programs which restrict the coverage of this program to (1 - coverage of independent program)
         :return:
         """
         self.exclusionDependencies = []
-        dependencies = self.const.programDependency[self.name]['Exclusion dependency']
+        dependencies = self.default.programDependency[self.name]['Exclusion dependency']
         for program in dependencies:
             self.exclusionDependencies.append(program)
 
-    def _setThresholdDependencies(self):
+    def _set_threshold_deps(self):
         """
         List containing the name of programs which restrict the coverage of this program to coverage of independent program
         :return:
         """
         self.thresholdDependencies = []
-        dependencies = self.const.programDependency[self.name]['Threshold dependency']
+        dependencies = self.default.programDependency[self.name]['Threshold dependency']
         for program in dependencies:
             self.thresholdDependencies.append(program)
 
-    def _stuntingUpdate(self, ageGroup):
+    def stunting_update(self, age_group):
         """
         Will get the total stunting update for a single program.
         Since we assume independence between each kind of stunting update
         and across programs (that is, after we have accounted for dependencies),
         the order of multiplication of updates does not matter.
         """
-        ageGroup.stuntingUpdate *= self._getConditionalProbUpdate(ageGroup, 'Stunting')
+        age_group.stuntingUpdate *= self._get_cond_prob_update(age_group, 'Stunting')
 
-    def _anaemiaUpdate(self, ageGroup):
+    def anaemia_update(self, age_group):
         """
         Program which directly impact anaemia.
-        :param ageGroup: instance of AgeGroup class
+        :param age_group: instance of age_group class
         """
-        ageGroup.anaemiaUpdate *= self._getConditionalProbUpdate(ageGroup, 'Anaemia')
+        age_group.anaemiaUpdate *= self._get_cond_prob_update(age_group, 'Anaemia')
 
-    def _getWastingUpdate(self, ageGroup):
+    def get_wasting_update(self, age_group):
         """
         Programs which directly impact wasting prevalence or incidence.
         Wasting update is comprised of two parts:
@@ -190,174 +191,174 @@ class Program(object):
             2. Treatment interventions, which alter the prevalence of wasting
         Update of type 1. is converted into a prevalence update.
         The total update is the product of these two.
-        :param ageGroup:
+        :param age_group:
         :return:
         """
-        prevUpdate = self._getWastingPrevalenceUpdate(ageGroup)
-        incidUpdate = self._getWastingUpdateFromWastingIncidence(ageGroup)
+        prevUpdate = self.__wasting_prev_update(age_group)
+        incidUpdate = self._wasting_update_incid(age_group)
         for wastingCat in ['MAM', 'SAM']:
             combined = prevUpdate[wastingCat] * incidUpdate[wastingCat]
-            ageGroup.wastingUpdate[wastingCat] *= combined
+            age_group.wastingUpdate[wastingCat] *= combined
 
-    def _getFamilyPlanningUpdate(self, ageGroup):
-        ageGroup.FPupdate *= self.annual_cov[self.year]
+    def get_famplan_update(self, age_group):
+        age_group.FPupdate *= self.annual_cov[self.year]
 
-    def _wastingPreventUpdate(self, ageGroup):
-        update = self._getWastingIncidenceUpdate(ageGroup)
-        for wastingCat in self.const.wastedList:
-            ageGroup.wastingPreventionUpdate[wastingCat] *= update[wastingCat]
+    def wasting_prevent_update(self, age_group):
+        update = self._wasting_incid_update(age_group)
+        for wastingCat in self.default.wastedList:
+            age_group.wastingPreventionUpdate[wastingCat] *= update[wastingCat]
 
-    def _wastingTreatUpdate(self, ageGroup):
-        update = self._getWastingPrevalenceUpdate(ageGroup)
-        for wastingCat in self.const.wastedList:
-            ageGroup.wastingTreatmentUpdate[wastingCat] *= update[wastingCat]
+    def wasting_treat_update(self, age_group):
+        update = self.__wasting_prev_update(age_group)
+        for wastingCat in self.default.wastedList:
+            age_group.wastingTreatmentUpdate[wastingCat] *= update[wastingCat]
 
-    def _DiaIncidUpdate(self, ageGroup):
+    def dia_incidence_update(self, age_group):
         """
         This function accounts for the _direct_ impact of programs on diarrhoea incidence
-        :param ageGroup:
+        :param age_group:
         :return:
         """
-        update = self._getEffectivenessUpdate(ageGroup, 'Effectiveness incidence')
-        ageGroup.diarrhoeaIncidenceUpdate *= update['Diarrhoea']
+        update = self._effectiveness_update(age_group, 'Effectiveness incidence')
+        age_group.diarrhoeaIncidenceUpdate *= update['Diarrhoea']
 
-    def _BFUpdate(self, ageGroup):
+    def bf_update(self, age_group):
         """
         Accounts for the program's direct impact on breastfeeding practices
-        :param ageGroup:
+        :param age_group:
         :return:
         """
-        ageGroup.bfPracticeUpdate += self._getBFpracticeUpdate(ageGroup)
+        age_group.bfPracticeUpdate += self._bf_practice_update(age_group)
 
 
-    def _getMortalityUpdate(self, ageGroup):
+    def get_mortality_update(self, age_group):
         """
         Programs which directly impact mortality rates
         :return:
         """
-        update = self._getEffectivenessUpdate(ageGroup, 'Effectiveness mortality')
-        for cause in self.const.causesOfDeath:
-            ageGroup.mortalityUpdate[cause] *= update[cause]
+        update = self._effectiveness_update(age_group, 'Effectiveness mortality')
+        for cause in self.default.causesOfDeath:
+            age_group.mortalityUpdate[cause] *= update[cause]
 
-    def _getBirthOutcomeUpdate(self, ageGroup):
+    def get_bo_update(self, age_group):
         """
         Programs which directly impact birth outcomes
         :return:
         """
-        update = self._getBOUpdate()
-        for BO in self.const.birthOutcomes:
-            ageGroup.birthUpdate[BO] *= update[BO]
+        update = self._bo_update()
+        for BO in self.default.birthOutcomes:
+            age_group.birthUpdate[BO] *= update[BO]
 
-    def _getBirthAgeUpdate(self, ageGroup):
-        update = self._getBAUpdate()
-        for BA in self.const.birthAges:
-            ageGroup.birthUpdate[BA] *= update[BA]
+    def get_birthage_update(self, age_group):
+        update = self._ba_update()
+        for BA in self.default.birthAges:
+            age_group.birthUpdate[BA] *= update[BA]
 
-    def _getNewProb(self, coverage, probCovered, probNotCovered):
+    def _get_new_prob(self, coverage, probCovered, probNotCovered):
         return coverage * probCovered + (1.-coverage) * probNotCovered
 
-    def _getConditionalProbUpdate(self, ageGroup, risk):
+    def _get_cond_prob_update(self, age_group, risk):
         """This uses law of total probability to update a given age groups for risk types
         Possible risk types are 'Stunting' & 'Anaemia' """
-        oldProb = ageGroup.getFracRisk(risk)
-        probIfCovered = ageGroup.probConditionalCoverage[risk][self.name]['covered']
-        probIfNotCovered = ageGroup.probConditionalCoverage[risk][self.name]['not covered']
-        newProb = self._getNewProb(self.annual_cov[self.year], probIfCovered, probIfNotCovered)
+        oldProb = age_group.getFracRisk(risk)
+        probIfCovered = age_group.probConditionalCoverage[risk][self.name]['covered']
+        probIfNotCovered = age_group.probConditionalCoverage[risk][self.name]['not covered']
+        newProb = self._get_new_prob(self.annual_cov[self.year], probIfCovered, probIfNotCovered)
         reduction = (oldProb - newProb) / oldProb
         update = 1.-reduction
         return update
 
-    def _getWastingPrevalenceUpdate(self, ageGroup):
+    def __wasting_prev_update(self, age_group):
         # overall update to prevalence of MAM and SAM
         update = {}
-        for wastingCat in self.const.wastedList:
-            oldProb = ageGroup.getWastedFrac(wastingCat)
-            probWastedIfCovered = ageGroup.probConditionalCoverage[wastingCat][self.name]['covered']
-            probWastedIfNotCovered = ageGroup.probConditionalCoverage[wastingCat][self.name]['not covered']
-            newProb = self._getNewProb(self.annual_cov[self.year], probWastedIfCovered, probWastedIfNotCovered)
+        for wastingCat in self.default.wastedList:
+            oldProb = age_group.getWastedFrac(wastingCat)
+            probWastedIfCovered = age_group.probConditionalCoverage[wastingCat][self.name]['covered']
+            probWastedIfNotCovered = age_group.probConditionalCoverage[wastingCat][self.name]['not covered']
+            newProb = self._get_new_prob(self.annual_cov[self.year], probWastedIfCovered, probWastedIfNotCovered)
             reduction = (oldProb - newProb) / oldProb
             update[wastingCat] = 1-reduction
         return update
 
-    def _getWastingUpdateFromWastingIncidence(self, ageGroup):
-        incidenceUpdate = self._getWastingIncidenceUpdate(ageGroup)
+    def _wasting_update_incid(self, age_group):
+        incidenceUpdate = self._wasting_incid_update(age_group)
         update = {}
-        for condition in self.const.wastedList:
-            newIncidence = ageGroup.incidences[condition] * incidenceUpdate[condition]
-            reduction = (ageGroup.incidences[condition] - newIncidence)/newIncidence
+        for condition in self.default.wastedList:
+            newIncidence = age_group.incidences[condition] * incidenceUpdate[condition]
+            reduction = (age_group.incidences[condition] - newIncidence)/newIncidence
             update[condition] = 1-reduction
         return update
 
-    def _getWastingIncidenceUpdate(self, ageGroup):
+    def _wasting_incid_update(self, age_group):
         update = {}
         oldCov = self.annual_cov[self.year-1]
-        for condition in self.const.wastedList:
-            affFrac = ageGroup.programEffectiveness[self.name][condition]['Affected fraction']
-            effectiveness = ageGroup.programEffectiveness[self.name][condition]['Effectiveness incidence']
+        for condition in self.default.wastedList:
+            affFrac = age_group.programEffectiveness[self.name][condition]['Affected fraction']
+            effectiveness = age_group.programEffectiveness[self.name][condition]['Effectiveness incidence']
             reduction = affFrac * effectiveness * (self.annual_cov[self.year] - oldCov) / (1. - effectiveness*oldCov)
             update[condition] = 1.-reduction
         return update
 
-    def _getEffectivenessUpdate(self, ageGroup, effType):
+    def _effectiveness_update(self, age_group, effType):
         """This covers mortality and incidence updates (except wasting)"""
         if 'incidence' in effType:
             toIterate = ['Diarrhoea'] # only model diarrhoea incidence
         else: # mortality
-            toIterate = self.const.causesOfDeath
+            toIterate = self.default.causesOfDeath
         update = {cause: 1. for cause in toIterate}
         oldCov = self.annual_cov[self.year-1]
         for cause in toIterate:
-            affFrac = ageGroup.programEffectiveness[self.name][cause]['Affected fraction']
-            effectiveness = ageGroup.programEffectiveness[self.name][cause][effType]
+            affFrac = age_group.programEffectiveness[self.name][cause]['Affected fraction']
+            effectiveness = age_group.programEffectiveness[self.name][cause][effType]
             reduction = affFrac * effectiveness * (self.annual_cov[self.year] - oldCov) / (1. - effectiveness*oldCov)
             update[cause] *= 1. - reduction
         return update
 
-    def _getBOUpdate(self):
-        BOupdate = {BO: 1. for BO in self.const.birthOutcomes}
+    def _bo_update(self):
+        BOupdate = {BO: 1. for BO in self.default.birthOutcomes}
         oldCov = self.annual_cov[self.year-1]
-        for outcome in self.const.birthOutcomes:
-            affFrac = self.const.BOprograms[self.name]['affected fraction'][outcome]
-            eff = self.const.BOprograms[self.name]['effectiveness'][outcome]
+        for outcome in self.default.birthOutcomes:
+            affFrac = self.default.BOprograms[self.name]['affected fraction'][outcome]
+            eff = self.default.BOprograms[self.name]['effectiveness'][outcome]
             reduction = affFrac * eff * (self.annual_cov[self.year] - oldCov) / (1. - eff*oldCov)
             BOupdate[outcome] = 1. - reduction
         return BOupdate
 
-    def _getBAUpdate(self):
-        BAupdate = {BA: 1. for BA in self.const.birthAges}
+    def _ba_update(self):
+        BAupdate = {BA: 1. for BA in self.default.birthAges}
         oldCov = self.annual_cov[self.year-1]
-        for BA in self.const.birthAges:
-            affFrac = self.const.birthAgeProgram[BA]['affected fraction']
-            eff = self.const.birthAgeProgram[BA]['effectiveness']
+        for BA in self.default.birthAges:
+            affFrac = self.default.birthAgeProgram[BA]['affected fraction']
+            eff = self.default.birthAgeProgram[BA]['effectiveness']
             reduction = affFrac * eff * (self.annual_cov[self.year] - oldCov) / (1. - eff*oldCov)
             BAupdate[BA] = 1. - reduction
         return BAupdate
 
-    def _getBFpracticeUpdate(self, ageGroup):
-        correctPrac = ageGroup.correctBFpractice
-        correctFracOld = ageGroup.bfDist[correctPrac]
-        probCorrectCovered = ageGroup.probConditionalCoverage['Breastfeeding'][self.name]['covered']
-        probCorrectNotCovered = ageGroup.probConditionalCoverage['Breastfeeding'][self.name]['not covered']
-        probNew = self._getNewProb(self.annual_cov[self.year], probCorrectCovered, probCorrectNotCovered)
+    def _bf_practice_update(self, age_group):
+        correctPrac = age_group.correctBFpractice
+        correctFracOld = age_group.bfDist[correctPrac]
+        probCorrectCovered = age_group.probConditionalCoverage['Breastfeeding'][self.name]['covered']
+        probCorrectNotCovered = age_group.probConditionalCoverage['Breastfeeding'][self.name]['not covered']
+        probNew = self._get_new_prob(self.annual_cov[self.year], probCorrectCovered, probCorrectNotCovered)
         fracChange = probNew - correctFracOld
         return fracChange
 
-    def _setCostCoverageCurve(self):
-        self.costCurveOb = CostCovCurve(self.unitCost, self.saturation, self.restrictedPopSize, self.unrestrictedPopSize)
+    def set_costcov(self):
+        self.costCurveOb = CostCovCurve(self.unit_cost, self.saturation, self.restrictedPopSize, self.unrestrictedPopSize)
         self.costCurveFunc = self.costCurveOb._setCostCovCurve()
 
-    def getSpending(self):
+    def get_spending(self):
         # spending is base on BASELINE coverages
-        return self.costCurveOb.getSpending(self.unrestr_init_cov) # TODO: want to change this so that uses annual Coverages
+        return self.costCurveOb.get_spending(self.unrestr_init_cov) # TODO: want to change this so that uses annual Coverages
 
-    def scaleUnitCosts(self, scaleFactor):
-        self.unitCost *= scaleFactor
-        self._setCostCoverageCurve()
+    def scale_unit_costs(self, scaleFactor):
+        self.unit_cost *= scaleFactor
+        self.set_costcov()
 
 class CostCovCurve:
-    def __init__(self, unitCost, saturation, restrictedPop, unrestrictedPop, curveType='linear'):
+    def __init__(self, unit_cost, saturation, restrictedPop, unrestrictedPop, curveType='linear'):
         self.curveType = curveType
-        self.unitCost = unitCost
+        self.unit_cost = unit_cost
         self.saturation = saturation
         self.restrictedPop = restrictedPop
         self.unrestrictedPop = unrestrictedPop
@@ -373,7 +374,7 @@ class CostCovCurve:
         B = self.saturation * self.restrictedPop
         A = -B
         C = 0.
-        D = self.unitCost*B/2.
+        D = self.unit_cost*B/2.
         curve = self._getLogisticCurve(A, B, C, D)
         return curve
 
@@ -382,11 +383,11 @@ class CostCovCurve:
         logisticCurve = lambda x: (A + (B - A) / (1 + exp(-(x - C) / D)))
         return logisticCurve
 
-    def getSpending(self, covFrac):
+    def get_spending(self, covFrac):
         """Assumes standard increasing marginal costs curve or linear """
         covNumber = covFrac * self.unrestrictedPop
         if self.curveType == 'linear':
-            m = 1. / self.unitCost
+            m = 1. / self.unit_cost
             x0, y0 = [0., 0.]  # extra point
             if x0 == 0.:
                 c = y0
@@ -397,13 +398,13 @@ class CostCovCurve:
             B = self.saturation * self.restrictedPop
             A = -B
             C = 0.
-            D = self.unitCost * B / 2.
+            D = self.unit_cost * B / 2.
             curve = self.inverseLogistic(A, B, C, D)
             spending = curve(covNumber)
         return spending
 
     def _linearCostCurve(self):
-        m = 1. / self.unitCost
+        m = 1. / self.unit_cost
         x0, y0 = [0.,0.] #extra point
         if x0 == 0.:
             c = y0
@@ -429,6 +430,6 @@ class CostCovCurve:
             inverseCurve = lambda y: -D * log((B - y) / (y - A)) + C
         return inverseCurve
 
-def setPrograms(constants, progSet):
-    programs = [Program(prog, constants) for prog in progSet] # list of all program objects
+def set_programs(default_params, prog_set):
+    programs = [Program(prog_name, default_params) for prog_name in prog_set] # list of all program objects
     return programs
