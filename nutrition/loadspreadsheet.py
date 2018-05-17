@@ -5,7 +5,9 @@ from pandas import ExcelFile, read_excel, notnull
 import settings
 
 class DefaultParams(object):
-    def __init__(self):
+    def __init__(self, inputs):
+        self.settings = settings.Settings()
+        self.inputs = inputs
         self.impacted_pop = None
         self.prog_areas = {}
         self.pop_areas = {}
@@ -23,6 +25,7 @@ class DefaultParams(object):
         self.pw_progs = None
         self.rr_age_order = None
         self.rr_interval = None
+        self.or_bf_prog = None
         # read data
         self.spreadsheet = ExcelFile('default_params.xlsx')
         self.read_spreadsheet()
@@ -38,6 +41,7 @@ class DefaultParams(object):
         self.get_bo_progs()
         self.get_bo_risks()
         self.get_correct_bf()
+        self.iycf_effects()
 
     def impact_pop(self):
         sheet = self.read_sheet('Programs impacted population', [0,1])
@@ -138,14 +142,49 @@ class DefaultParams(object):
         self.rr_interval = bo_sheet.loc['Relative risk by birth interval'].to_dict('index')
         self.rr_death['Birth outcomes'] = bo_sheet.loc['Relative risks of neonatal causes of death'].to_dict('index')
 
-    def iycf_effects(self): # TODO: IYCF packages to be defined in Project, based on user input (packages)
+    def iycf_effects(self):
+        packages = self.define_iycf()
         effects = self.read_sheet('IYCF odds ratios', [0,1,2])
-        bf_effects = effects.loc['OR for correct breastfeeding']
-        stunt_effects = effects.loc['OR for stunting']
+        bf_effects = effects.loc['Odds ratio for correct breastfeeding']
+        stunt_effects = effects.loc['Odds ratio for stunting']
+        self.or_bf_prog = self.create_iycf(bf_effects, packages)
+        self.or_stunting_prog.update(self.create_iycf(stunt_effects, packages))
 
-    def create_iycf(self, input):
-        return
+    def create_iycf(self, effects, packages):
+        """ Creates IYCF packages based on user input in 'IYCFpackages' """
+        # non-empty cells denote program combination
+        # get package combinations
+        # create new program
+        newPrograms = {}
+        ORs = {}
+        for key, item in packages.items():
+            if newPrograms.get(key) is None:
+                newPrograms[key] = {}
+            for age in self.settings.child_ages:
+                ORs[age] = 1.
+                for pop, mode in item:
+                    row = effects.loc[pop, mode]
+                    thisOR = row[age]
+                    ORs[age] *= thisOR
+            newPrograms[key].update(ORs)
+        return newPrograms
 
+    def define_iycf(self):
+        """ Returns a dict with values as a list of two tuples (age, modality)."""
+        IYCFpackages = read_excel(self.inputs, sheet='IYCF packages', index_col=[0,1])
+        packagesDict = {}
+        for packageName, package in IYCFpackages.groupby(level=[0, 1]):
+            if packageName[0] not in packagesDict:
+                packagesDict[packageName[0]] = []
+            for mode in package:
+                col = package[mode]
+                if col.notnull()[0]:
+                    if mode == 'Mass media':
+                        ageModeTuple = [(pop, mode) for pop in self.childAges[:-1]] # exclude 24-59 months
+                    else:
+                        ageModeTuple = [(packageName[1], mode)]
+                    packagesDict[packageName[0]] += ageModeTuple
+        return packagesDict
 
     def read_sheet(self, name, cols, dictOrient=None, skiprows=None):
         df = self.spreadsheet.parse(name, index_col=cols, skiprows=skiprows).dropna(how='all')
@@ -186,9 +225,6 @@ class DefaultParams(object):
                 res_dict[first][sec] = {}
                 res_dict[first][sec] = mydict[key]
         return res_dict
-
-
-
 
 class InputData(object):
     """ Container for all the region-specific data (prevalences, mortality rates etc) read in from spreadsheet"""
@@ -305,7 +341,7 @@ class UserSettings(object):
         self.get_ref_progs()
         self.get_prog_annual()
         self.get_prog_info()
-        packages = self.create_iycf()
+        packages = self.define_iycf()
         self.get_iycf_target(packages)
         self.get_iycf_cost(packages) # TODO: don't forget to add in Programs
 
@@ -348,7 +384,7 @@ class UserSettings(object):
                 self.prog_annual_spend[programType[0]] = {}
             self.prog_annual_spend[programType[0]][programType[1]] = [list(yearValue.index), yearValue.tolist()]
 
-    def create_iycf(self):
+    def define_iycf(self):
         """ Returns a dict with values as a list of two tuples (age, modality)."""
         IYCFpackages = self.read_sheet('IYCF packages', [0,1])
         packagesDict = {}
@@ -363,7 +399,6 @@ class UserSettings(object):
                     else:
                         ageModeTuple = [(packageName[1], mode)]
                     packagesDict[packageName[0]] += ageModeTuple
-        self.iycf_pack = packagesDict
         return packagesDict
 
     def get_iycf_target(self, package_modes):
@@ -422,4 +457,5 @@ class UserSettings(object):
 
 if __name__ == "__main__":
     InputData('../applications/master/data/national/master_input.xlsx')
+    DefaultParams('../applications/master/data/national/master_settings.xlsx')
 
