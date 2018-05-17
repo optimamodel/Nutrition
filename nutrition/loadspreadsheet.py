@@ -290,12 +290,10 @@ class InputData(object):
         trends = self.spreadsheet.parse('Time trends', index_col=[0,1])
         self.time_trends = {level: trends.xs(level).to_dict('index') for level in trends.index.levels[0]}
 
-
     def get_fertility_risks(self):
         fert = self.read_sheet('Fertility risks', [0,1])
         self.birth_age = fert.loc['Birth age and order'].to_dict()['Percentage of births in category']
         self.birth_int = fert.loc['Birth intervals'].to_dict()['Percentage of births in category']
-
 
     ### MORTALITY ###
 

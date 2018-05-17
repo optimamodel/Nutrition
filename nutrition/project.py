@@ -11,10 +11,10 @@ class Project(object):
     def __init__(self, spreadsheet, name='default'):
 
         ## Define the structure sets
-        self.parsets = {} # TODO: my version of parset would be population and program objects.
-        self.popsets = {} # TODO: with popset and progset, we replace parsets.
-        self.progsets = {} # TODO: can come from user input, for now read from spreadsheet
-        self.scens = {} # TODO: depending on usage, could just be a list?
+        self.parsets = {}
+        self.popsets = {}
+        self.progsets = {}
+        self.scens = {}
         self.optims = {}
         self.results = {}
 
@@ -87,7 +87,6 @@ class Project(object):
         self.modified = today()
 
     def run_sim(self, name, pops, covs, prog_info, start_year, end_year): # TODO: Should keep this? If so, put outside class?
-        # TODO: should specify the key requirements for a model run here
         """Performs a single run of the model for specified scenario"""
         # the things which vary between scenario runs within the same project are:
         # - annual prog spending/cov
@@ -101,9 +100,6 @@ class Project(object):
         myModel.run_sim(covs)
 
         return myModel
-
-    # def make_defaults(self):
-    #     progset =
 
     def optimise(self): # TODO: for optimising the model. Could call optimise in the Optimisation class
 
