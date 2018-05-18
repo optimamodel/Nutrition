@@ -18,7 +18,6 @@ class DefaultParams(object):
         self.rr_dia = None
         self.or_stunting_prog = None
         self.bo_progs = None
-        self.correct_bf = None
         self.rr_anaem_prog = None
         self.or_anaem_prog = None
         self.child_progs = None
@@ -38,9 +37,9 @@ class DefaultParams(object):
         self.wasting_progs()
         self.relative_risks()
         self.odds_ratios()
+        self.get_child_progs()
         self.get_bo_progs()
         self.get_bo_risks()
-        self.get_correct_bf()
         self.iycf_effects()
 
     def impact_pop(self):
@@ -74,24 +73,26 @@ class DefaultParams(object):
         # risk areas hidden in spreadsheet (white text)
         # stunting
         rr_sheet = self.read_sheet('Relative risks', [0,1,2], skiprows=1)
-        rr = rr_sheet.loc['Stunting'].to_dict('index')
+        rr = rr_sheet.loc['Stunting'].to_dict()
         self.rr_death['Stunting'] = self.make_dict2(rr)
         # wasting
         rr_sheet = self.read_sheet('Relative risks', [0,1,2], skiprows=28)
-        rr = rr_sheet.loc['Wasting'].to_dict('index')
+        rr = rr_sheet.loc['Wasting'].to_dict()
         self.rr_death['Wasting'] = self.make_dict2(rr)
         # anaemia
         rr_sheet = self.read_sheet('Relative risks', [0,1,2], skiprows=55).dropna(axis=1, how='all')
-        rr = rr_sheet.loc['Anaemia'].to_dict('index')
+        rr = rr_sheet.loc['Anaemia'].to_dict()
         self.rr_death['Anaemia'] = self.make_dict2(rr)
+        # currently no impact on mortality for anaemia
+        self.rr_death['Anaemia'].update({age:{cat:{'Diarrhoea':1} for cat in self.settings.anaemia_list} for age in self.settings.child_ages})
         # breastfeeding
         rr_sheet = self.read_sheet('Relative risks', [0,1,2], skiprows=64)
-        rr = rr_sheet.loc['Breastfeeding'].to_dict('index')
+        rr = rr_sheet.loc['Breastfeeding'].to_dict()
         self.rr_death['Breastfeeding'] = self.make_dict2(rr)
         # diarrhoea
         rr_sheet = self.read_sheet('Relative risks', [0,1,2], skiprows=103).dropna(axis=1, how='all')
-        rr = rr_sheet.loc['Diarrhoea'].to_dict('index')
-        self.rr_dia = self.make_dict2(rr)['None']
+        rr = rr_sheet.loc['Diarrhoea'].to_dict()
+        self.rr_dia = self.make_dict3(rr)
 
     def odds_ratios(self):
         or_sheet = self.read_sheet('Odds ratios', [0,1], skiprows=1)
@@ -109,9 +110,6 @@ class DefaultParams(object):
             newprogs[program[0]][program[1]] = progs[program]
         self.bo_progs = newprogs
 
-    def get_correct_bf(self):
-        self.correct_bf = self.read_sheet('Appropriate breastfeeding', [0], 'dict')['Practice']
-
     def anaemia_progs(self):
         anaem_sheet = self.read_sheet('Programs anemia', [0,1])
         self.rr_anaem_prog = anaem_sheet.loc['Relative risks of anaemia when receiving intervention'].to_dict(orient='index')
@@ -122,15 +120,17 @@ class DefaultParams(object):
         self.or_wasting_prog['SAM'] = wastingSheet.loc['Odds ratio of SAM when covered by program'].to_dict(orient='index')
         self.or_wasting_prog['MAM'] = wastingSheet.loc['Odds ratio of MAM when covered by program'].to_dict(orient='index')
 
-    def child_progs(self):
+    def get_child_progs(self):
         childSheet = self.read_sheet('Programs for children', [0,1,2])
-        childDict = childSheet.to_dict(orient='index')
+        childDict = childSheet.to_dict()
         self.child_progs = self.make_dict(childDict)
+        print self.child_progs
 
     def pw_progs(self):
         pw_sheet = self.read_sheet('Programs for PW', [0,1,2])
         pw_dict = pw_sheet.to_dict(orient='index')
         self.pw_progs = self.make_dict(pw_dict)
+        # print self.pw_progs
 
     def get_bo_risks(self):
         bo_sheet = self.read_sheet('Birth outcome risks', [0,1], skiprows=[0])
@@ -140,7 +140,7 @@ class DefaultParams(object):
         self.or_cond_bo['SAM'] = ors['SAM (WHZ-score < -3)']
         self.rr_age_order = bo_sheet.loc['Relative risk by birth age and order'].to_dict('index')
         self.rr_interval = bo_sheet.loc['Relative risk by birth interval'].to_dict('index')
-        self.rr_death['Birth outcomes'] = bo_sheet.loc['Relative risks of neonatal causes of death'].to_dict('index')
+        self.rr_death['Birth outcomes'] = bo_sheet.loc['Relative risks of neonatal causes of death'].to_dict()
 
     def iycf_effects(self):
         packages = self.define_iycf()
@@ -194,36 +194,46 @@ class DefaultParams(object):
 
     def make_dict(self, mydict):
         """ myDict is a spreadsheet with 3 index cols, converted to dict using orient='index' """
-        res_dict = {}
-        for key in mydict.keys():
-            first = key[0]
-            sec = key[1]
-            third = key[2]
-            if res_dict.get(first) is None:
-                res_dict[first] = {}
-                res_dict[first][sec] = {}
-                res_dict[first][sec][third] = mydict[key]
-            if res_dict[first].get(sec) is None:
-                res_dict[first][sec] = {}
-                res_dict[first][sec][third] = mydict[key]
-            if res_dict[first][sec].get(third) is None:
-                    res_dict[first][sec][third] = mydict[key]
+        res_dict = {} # TODO: need to treat conditions
+        for age, progCatType in mydict.iteritems():
+            prog = progCatType[0]
+            cat = progCatType[1]
+            type = progCatType[2]
+            if res_dict.get(age) is None:
+                res_dict[age] = {}
+                res_dict[age][prog] = {}
+                res_dict[age][prog][type] = mydict[age][progCatType]
+            if res_dict[age].get(prog) is None:
+                res_dict[age][prog] = {}
+                res_dict[age][prog][type] = mydict[age][progCatType]
+            if res_dict[age][prog].get(type) is None:
+                res_dict[age][prog][type] = mydict[age][progCatType]
         return res_dict
 
     def make_dict2(self, mydict):
-        """ myDict is a spreadsheet with 3 index cols, converted to dict using orient='index' """
-
+        """ creating relative risk dict """
         res_dict = {}
-        for key in mydict.keys():
-            first = key[0]
-            sec = key[1]
-            if res_dict.get(first) is None:
-                res_dict[first] = {}
-                res_dict[first][sec] = {}
-                res_dict[first][sec] = mydict[key]
-            if res_dict[first].get(sec) is None:
-                res_dict[first][sec] = {}
-                res_dict[first][sec] = mydict[key]
+        for age in mydict.iterkeys():
+            res_dict[age] = {}
+            for condCat in mydict[age].iterkeys():
+                cond = condCat[0]
+                cat = condCat[1]
+                if res_dict[age].get(cat) is None:
+                    res_dict[age][cat] = {}
+                    res_dict[age][cat][cond] = mydict[age][condCat]
+                elif res_dict[age][cat].get(cond) is None:
+                    res_dict[age][cat][cond] = mydict[age][condCat]
+        return res_dict
+
+    def make_dict3(self, mydict):
+        """ for rr diarrhoea """
+        res_dict = {}
+        for age in mydict.iterkeys():
+            res_dict[age] = {}
+            for condCat in mydict[age].iterkeys():
+                cat = condCat[1]
+                if res_dict[age].get(cat) is None:
+                    res_dict[age][cat] = mydict[age][condCat]
         return res_dict
 
 class InputData(object):

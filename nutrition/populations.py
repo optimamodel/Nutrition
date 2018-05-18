@@ -425,13 +425,13 @@ class ChildAgeGroup(object):
 
 class Newborn(ChildAgeGroup):
     def __init__(self, age, populationSize, boxes, anaemia_dist, incidences, stunting_dist, wasting_dist, bf_dist,
-                 ageingRate, settingsants, birthDist, causes_death):
+                 ageingRate, settingsants, birth_dist, causes_death):
         """
         This is the <1 month age group, distinguished from the other age groups by birth outcomes, spacing etc etc.
         """
         super(Newborn, self).__init__(age, populationSize, boxes, anaemia_dist, incidences, stunting_dist, wasting_dist, bf_dist,
                  ageingRate, settingsants, causes_death)
-        self.birth_dist = birthDist
+        self.birth_dist = birth_dist
         self.probRiskAtBirth = {}
         self.birthUpdate = {}
         for BO in self.settings.birth_outcomes:
@@ -450,9 +450,9 @@ class Newborn(ChildAgeGroup):
 #         self.anaemia_dist= self.data.riskDistributions['Anaemia']
 #         self.bf_dist = self.data.riskDistributions['Breastfeeding']
 #         self.wasting_dist = self.data.riskDistributions['Wasting']
-#         self.birth_dist = self.data.birthDist
+#         self.birth_dist = self.birth_dist
 #         self.incidences = self.data.incidences
-#         self.RRdiarrhoea = self.data.RRdeath['Child diarrhoea']['Diarrhoea incidence']
+#         self.RRdiarrhoea = self.data.rr_death['Child diarrhoea']['Diarrhoea incidence']
 #         self.ORcondition = self.data.ORcondition
 #         self.boxes = {}
 #
@@ -524,7 +524,7 @@ class Children(object):
             for cat in self.settings.non_wasted_list:
                 wasting_dist[cat] = nonwasting_dist[cat]
             bf_dist = self.bf_dist[age]
-            birthDist = self.birth_dist
+            birth_dist = self.birth_dist
             incidences = self.data.incidences[age] # TODO: do this adjustment elsewhere, same as restratifying
             incidences = {condition: incidence * self.settings.timestep for condition, incidence in incidences.iteritems()}
             ageingRate = 1./self.settings.child_age_spans[i]
@@ -541,7 +541,7 @@ class Children(object):
             if age == '<1 month': # <1 month age group has slightly different functionality
                 self.age_groups.append(Newborn(age, popSize, boxes,
                                            anaemia_dist, incidences, stunting_dist, wasting_dist, bf_dist,
-                                                ageingRate, self.settings, birthDist, self.data.causes_death))
+                                                ageingRate, self.settings, birth_dist, self.data.causes_death))
             else:
                 self.age_groups.append(ChildAgeGroup(age, popSize, boxes,
                                            anaemia_dist, incidences, stunting_dist, wasting_dist, bf_dist,
@@ -560,14 +560,15 @@ class Children(object):
                     for wastingCat in self.settings.wasting_list:
                         for bfCat in self.settings.bf_list:
                             for anaemiaCat in self.settings.anaemia_list:
+                                # TODO: when cause doesn't exist, would like the default to return 1 (no contribution)
                                 t1 = self.stunting_dist[age][stuntingCat]
                                 t2 = self.wasting_dist[age][wastingCat]
                                 t3 = self.bf_dist[age][bfCat]
                                 t4 = self.anaemia_dist[age][anaemiaCat]
-                                t5 = self.default.RRdeath['Stunting'][cause][stuntingCat][age]
-                                t6 = self.default.RRdeath['Wasting'][cause][wastingCat][age]
-                                t7 = self.default.RRdeath['Breastfeeding'][cause][bfCat][age]
-                                t8 = self.default.RRdeath['Anaemia'][cause][anaemiaCat][age]
+                                t5 = self.default.rr_death['Stunting'][age][stuntingCat].get(cause,1)
+                                t6 = self.default.rr_death['Wasting'][age][wastingCat].get(cause,1)
+                                t7 = self.default.rr_death['Breastfeeding'][age][bfCat].get(cause,1)
+                                t8 = self.default.rr_death['Anaemia'][age][anaemiaCat].get(cause,1)
                                 RHS[age][cause] += t1 * t2 * t3 * t4 * t5 * t6 * t7 * t8
         # RHS for newborns only
         age = '<1 month'
@@ -575,21 +576,21 @@ class Children(object):
             RHS[age][cause] = 0.
             for breastfeedingCat in self.settings.bf_list:
                 Pbf = self.bf_dist[age][breastfeedingCat]
-                RRbf = self.default.RRdeath['Breastfeeding'][cause][breastfeedingCat][age]
+                RRbf = self.default.rr_death['Breastfeeding'][age][breastfeedingCat].get(cause,1)
                 for birthoutcome in self.settings.birth_outcomes:
                     Pbo = self.birth_dist[birthoutcome]
-                    RRbo = self.default.RRdeath['Birth outcomes'][cause][birthoutcome]
-                    for anemiaStatus in self.settings.anaemia_list:
-                        Pan = self.anaemia_dist[age][anemiaStatus]
-                        RRan = self.default.RRdeath['Anaemia'][cause][anemiaStatus][age]
+                    RRbo = self.default.rr_death['Birth outcomes'][birthoutcome].get(cause,1)
+                    for anaemiaCat in self.settings.anaemia_list:
+                        Pan = self.anaemia_dist[age][anaemiaCat]
+                        RRan = self.default.rr_death['Anaemia'][age][anaemiaCat].get(cause,1)
                         RHS[age][cause] += Pbf * RRbf * Pbo * RRbo * Pan * RRan
         # calculate total mortality by age (corrected for units)
         AgePop = [age.getAgeGroupPopulation() for age in self.age_groups]
         MortalityCorrected = {}
-        LiveBirths = self.data.demo['number of live births']
-        Mnew = self.data.mortalityRates['neonatal']
-        Minfant = self.data.mortalityRates['infant']
-        Mu5 = self.data.mortalityRates['under 5']
+        LiveBirths = self.data.proj['Number of births'][0]
+        Mnew = self.data.demo['Neonatal mortality (per 1,000 live births)']
+        Minfant = self.data.demo['Infant mortality (per 1,000 live births)']
+        Mu5 = self.data.demo['Under 5 mortality (per 1,000 live births)']
         # Newborns
         ageName = self.age_groups[0].age
         m0 = Mnew * LiveBirths / 1000. / AgePop[0]
@@ -614,8 +615,8 @@ class Children(object):
         for age_group in self.age_groups:
             age_group.referenceMortality = {}
             age = age_group.age
-            for cause in self.causes_death:
-                LHS_age_cause = MortalityCorrected[age] * self.data.deathDist[cause][age]
+            for cause in self.data.causes_death:
+                LHS_age_cause = MortalityCorrected[age] * self.data.death_dist[cause][age]
                 age_group.referenceMortality[cause] = LHS_age_cause / RHS[age][cause]
 
     def update_mortality(self):
@@ -625,10 +626,10 @@ class Children(object):
         for bfCat in self.settings.bf_list:
             count = 0.
             for cause in self.data.causes_death:
-                Rb = self.default.RRdeath['Breastfeeding'][cause][bfCat][age]
+                Rb = self.default.rr_death['Breastfeeding'][age][bfCat].get(cause,1)
                 for outcome in self.settings.birth_outcomes:
-                    pbo = age_group.birthDist[outcome]
-                    Rbo = self.default.RRdeath['Birth outcomes'][cause][outcome]
+                    pbo = age_group.birth_dist[outcome]
+                    Rbo = self.default.rr_death['Birth outcomes'][outcome].get(cause,1)
                     count += Rb * pbo * Rbo * age_group.referenceMortality[cause]
             for stuntingCat in self.settings.stunting_list:
                 for wastingCat in self.settings.wasting_list:
@@ -644,10 +645,10 @@ class Children(object):
                             count = 0.
                             for cause in self.data.causes_death:
                                 t1 = age_group.referenceMortality[cause]
-                                t2 = self.default.RRdeath['Stunting'][cause][stuntingCat][age]
-                                t3 = self.default.RRdeath['Wasting'][cause][wastingCat][age]
-                                t4 = self.default.RRdeath['Breastfeeding'][cause][bfCat][age]
-                                t5 = self.default.RRdeath['Anaemia'][cause][anaemiaCat][age]
+                                t2 = self.default.rr_death['Stunting'][age][stuntingCat].get(cause,1)
+                                t3 = self.default.rr_death['Wasting'][age][wastingCat].get(cause,1)
+                                t4 = self.default.rr_death['Breastfeeding'][age][bfCat].get(cause,1)
+                                t5 = self.default.rr_death['Anaemia'][age][anaemiaCat].get(cause,1)
                                 count += t1 * t2 * t3 * t4 * t5
                             age_group.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat].mortalityRate = count
 
@@ -895,9 +896,9 @@ class Children(object):
         OR[2] = self.settings.ORstuntingBO["Pre-term AGA"]
         OR[3] = self.settings.ORstuntingBO["Pre-term SGA"]
         FracBO = [0.]*4
-        FracBO[1] = newborns.birthDist["Term SGA"]
-        FracBO[2] = newborns.birthDist["Pre-term AGA"]
-        FracBO[3] = newborns.birthDist["Pre-term SGA"]
+        FracBO[1] = newborns.birth_dist["Term SGA"]
+        FracBO[2] = newborns.birth_dist["Pre-term AGA"]
+        FracBO[3] = newborns.birth_dist["Pre-term SGA"]
         FracBO[0] = 1. - sum(FracBO[1:3])
         fracStunted = newborns.getStuntedFrac()
         # [i] will refer to the three non-baseline birth outcomes
@@ -918,9 +919,9 @@ class Children(object):
     def _getBirthWastingQuarticCoefficients(self, wastingCat):
         newborns = self.age_groups[0]
         FracBO = [0.]*4
-        FracBO[1] = newborns.birthDist["Term SGA"]
-        FracBO[2] = newborns.birthDist["Pre-term AGA"]
-        FracBO[3] = newborns.birthDist["Pre-term SGA"]
+        FracBO[1] = newborns.birth_dist["Term SGA"]
+        FracBO[2] = newborns.birth_dist["Pre-term AGA"]
+        FracBO[3] = newborns.birth_dist["Pre-term SGA"]
         FracBO[0] = 1. - sum(FracBO[1:3])
         OR = [1.]*4
         OR[0] = 1.
@@ -995,7 +996,7 @@ class Children(object):
     def _setProgramEffectiveness(self):
         for age_group in self.age_groups:
             age = age_group.age
-            age_group.programEffectiveness = self.default.childPrograms[age]
+            age_group.programEffectiveness = self.default.child_progs[age] # TODO: totally backward in keys. fix
 
     def _setAnnualPrevChange(self):
         for risk in ['Stunting', 'Wasting', 'Anaemia']:
@@ -1092,7 +1093,7 @@ class PregnantWomen(object):
                 RHS[age][cause] = 0.
                 for anaemiaCat in self.settings.anaemia_list:
                     t1 = self.anaemia_dist[age][anaemiaCat]
-                    t2 = self.default.RRdeath['Anaemia'][cause][anaemiaCat][age]
+                    t2 = self.default.rr_death['Anaemia'][age][anaemiaCat].get(cause,1)
                     RHS[age][cause] += t1 * t2
         # get age populations
         agePop = [age.getAgeGroupPopulation() for age in self.age_groups]
@@ -1112,7 +1113,7 @@ class PregnantWomen(object):
             age = age_group.age
             age_group.referenceMortality = {}
             for cause in self.data.causes_death:
-                LHS_age_cause = mortalityCorrected[age] * self.data.deathDist[cause][age]
+                LHS_age_cause = mortalityCorrected[age] * self.data.death_dist[cause][age]
                 age_group.referenceMortality[cause] = LHS_age_cause / RHS[age][cause]
 
     def update_mortality(self):
@@ -1122,7 +1123,7 @@ class PregnantWomen(object):
                 count = 0
                 for cause in self.data.causes_death:
                     t1 = age_group.referenceMortality[cause]
-                    t2 = self.default.RRdeath['Anaemia'][cause][anaemiaCat][age]
+                    t2 = self.default.rr_death['Anaemia'][age][anaemiaCat].get(cause,1)
                     count += t1 * t2
                 age_group.boxes[anaemiaCat].mortalityRate = count
 
@@ -1184,7 +1185,7 @@ class NonPregnantWomen(object):
             for anaemiaCat in self.settings.anaemia_list:
                 thisPop = popSize * anaemia_dist[anaemiaCat]
                 boxes[anaemiaCat] = Box(thisPop)
-            self.age_groups.append(NonPWAgeGroup(age, popSize, boxes, anaemia_dist, self.data.birthDist,
+            self.age_groups.append(NonPWAgeGroup(age, popSize, boxes, anaemia_dist, self.birth_dist,
                                                 self.data.birthAgeDist, self.data.birthIntervalDist, self.settings))
 
     def _setProbAnaemic(self):

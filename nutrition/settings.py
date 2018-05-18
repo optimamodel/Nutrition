@@ -17,9 +17,9 @@ class Settings(object):
         self.wasting_list = ['SAM', 'MAM', 'Mild', 'Normal']
         self.wasted_list = self.wasting_list[:2]
         self.non_wasted_list = self.wasting_list[2:]
-        self.bf_list = ['exclusive', 'predominant', 'partial', 'none']
-        self.correct_bf = {'<1 month': 'exclusive', '1-5 months': 'exclusive', '6-11 months':'partial',
-                           '12-23 months': 'partial', '24-59 months': 'none'}
+        self.bf_list = ['Exclusive', 'Predominant', 'Partial', 'None']
+        self.correct_bf = {'<1 month': 'Exclusive', '1-5 months': 'Exclusive', '6-11 months':'Partial',
+                           '12-23 months': 'Partial', '24-59 months': 'None'}
         self.birth_outcomes = ['Term AGA', 'Term SGA', 'Pre-term AGA','Pre-term SGA']
         self.all_risks = [self.stunting_list, self.wasting_list, self.bf_list, self.anaemia_list]
         self.child_ages = ['<1 month', '1-5 months', '6-11 months', '12-23 months', '24-59 months']
