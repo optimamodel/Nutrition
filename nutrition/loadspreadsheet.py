@@ -5,9 +5,9 @@ from pandas import ExcelFile, read_excel, notnull
 import settings
 
 class DefaultParams(object):
-    def __init__(self, inputs):
+    def __init__(self):
         self.settings = settings.Settings()
-        self.inputs = inputs
+        self.inputs = '../applications/master/data/national/master_settings.xlsx'
         self.impacted_pop = None
         self.prog_areas = {}
         self.pop_areas = {}
@@ -180,7 +180,7 @@ class DefaultParams(object):
                 col = package[mode]
                 if col.notnull()[0]:
                     if mode == 'Mass media':
-                        ageModeTuple = [(pop, mode) for pop in self.childAges[:-1]] # exclude 24-59 months
+                        ageModeTuple = [(pop, mode) for pop in self.child_ages[:-1]] # exclude 24-59 months
                     else:
                         ageModeTuple = [(packageName[1], mode)]
                     packagesDict[packageName[0]] += ageModeTuple
@@ -231,7 +231,7 @@ class InputData(object):
     def __init__(self, spreadsheet):
         self.spreadsheet = ExcelFile(spreadsheet)
         self.demo = None
-        self.proj = None
+        self.proj = {}
         self.death_dist = None
         self.risk_dist = {}
         self.causes_death = None
@@ -240,6 +240,7 @@ class InputData(object):
         self.birth_int = None
         self.prog_target = None
         self.famplan_methods = None
+        self.incidences = {}
 
         self.get_demo()
         self.get_proj()
@@ -249,6 +250,7 @@ class InputData(object):
         self.get_fertility_risks()
         self.get_prog_target()
         self.get_famplan_methods()
+        self.get_incidences()
 
     ## DEMOGRAPHICS ##
 
@@ -256,14 +258,17 @@ class InputData(object):
         baseline = self.read_sheet('Baseline year population inputs', [0,1])
         demo = {}
         # the fields that group the data in spreadsheet
-        fields = ['Population data', 'Food', 'Age distribution of pregnant women', 'Mortality',
-                  'Birth outcome distribution', 'Diarrhoea incidence', 'Other risks']
+        fields = ['Population data', 'Food', 'Age distribution of pregnant women', 'Mortality', 'Other risks']
         for field in fields:
             demo.update(baseline.loc[field].to_dict('index'))
         self.demo = {key: item['Data'] for key, item in demo.iteritems()}
+        self.demo['Birth outcome distribution'] = baseline.loc['Birth outcome distribution'].to_dict()['Data']
 
     def get_proj(self):
-        self.proj = self.read_sheet('Demographic projections', [0], 'dict')
+        proj = self.read_sheet('Demographic projections', [0])
+        # dict of lists to support indexing
+        for column in proj:
+            self.proj[column] = proj[column].tolist()
 
     def get_risk_dist(self):
         dist = self.read_sheet('Nutritional status distribution', [0,1])
@@ -281,7 +286,12 @@ class InputData(object):
                     self.risk_dist[outer][age][newCat] = value
         # get anaemia
         dist = self.read_sheet('Nutritional status distribution', [0,1], skiprows=12)
-        self.risk_dist['Anaemia'] = dist.loc['Anaemia', 'Prevalence of iron deficiency anaemia'].to_dict()
+        self.risk_dist['Anaemia'] = {}
+        anaem = dist.loc['Anaemia', 'Prevalence of iron deficiency anaemia'].to_dict()
+        for age, prev in anaem.iteritems():
+            self.risk_dist['Anaemia'][age] = {}
+            self.risk_dist['Anaemia'][age]['Anaemic'] = prev
+            self.risk_dist['Anaemia'][age]['Not anaemic'] = 1.-prev
         # get breastfeeding dist
         dist = self.read_sheet('Breastfeeding distribution', [0,1])
         self.risk_dist['Breastfeeding'] = dist.loc['Breastfeeding'].to_dict()
@@ -294,6 +304,9 @@ class InputData(object):
         fert = self.read_sheet('Fertility risks', [0,1])
         self.birth_age = fert.loc['Birth age and order'].to_dict()['Percentage of births in category']
         self.birth_int = fert.loc['Birth intervals'].to_dict()['Percentage of births in category']
+
+    def get_incidences(self):
+        self.incidences = self.read_sheet('Incidence of conditions', [0], 'dict')
 
     ### MORTALITY ###
 
@@ -321,11 +334,11 @@ class InputData(object):
 
 class UserSettings(object):
     """Stores all the settings for each project, defined by the user"""
-    def __init__(self, input_spreadsheet):
+    def __init__(self):
         self.settings = settings.Settings()
         # self.spreadsheet = ExcelFile(spreadsheet)
         # TODO: temp
-        self.input = input_spreadsheet
+        self.input = '../applications/master/data/national/master_input.xlsx'
         self.spreadsheet = ExcelFile('../applications/master/data/national/master_settings.xlsx')
         self.prog_set = []
         self.ref_progs = []
@@ -393,7 +406,7 @@ class UserSettings(object):
                 col = package[mode]
                 if col.notnull()[0]:
                     if mode == 'Mass media':
-                        ageModeTuple = [(pop, mode) for pop in self.childAges[:-1]] # exclude 24-59 months
+                        ageModeTuple = [(pop, mode) for pop in self.child_ages[:-1]] # exclude 24-59 months
                     else:
                         ageModeTuple = [(packageName[1], mode)]
                     packagesDict[packageName[0]] += ageModeTuple
@@ -455,5 +468,5 @@ class UserSettings(object):
 
 if __name__ == "__main__":
     InputData('../applications/master/data/national/master_input.xlsx')
-    DefaultParams('../applications/master/data/national/master_settings.xlsx')
+    DefaultParams()
 

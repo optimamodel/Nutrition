@@ -132,8 +132,8 @@ def restratify(frac_yes):
     frac_mod = frac_yes - ndtr(invCDFalpha - 1.)
     frac_mild = ndtr(invCDFalpha + 1.) - frac_yes
     frac_norm = 1. - ndtr(invCDFalpha + 1.)
-    restrat = {'normal':frac_norm, 'mild': frac_mild,
-               'moderate': frac_mod, 'high':frac_high}
+    restrat = {'Normal':frac_norm, 'Mild': frac_mild,
+               'Moderate': frac_mod, 'High':frac_high}
     return restrat
 
 

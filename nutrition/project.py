@@ -11,9 +11,8 @@ class Project(object):
     def __init__(self, spreadsheet, name='default'):
 
         ## Define the structure sets
-        self.parsets = {}
-        self.popsets = {}
-        self.progsets = {}
+        self.parsets = {} # TODO: populated by wrapper for Model
+        self.progsets = {} # TODO: populated by wrapper for Model which extracts info for ProgramInfo
         self.scens = {}
         self.optims = {}
         self.results = {}
@@ -21,9 +20,9 @@ class Project(object):
         ## Define other quantities
         self.name = name
         self.settings = settings.Settings()
-        self.default_params = loadspreadsheet.DefaultParams()
         self.data = loadspreadsheet.InputData(spreadsheet) # once uploaded, assume these values are fixed for all projects
-        self.user_settings = loadspreadsheet.UserSettings('') # TODO: how to get these?
+        self.user_settings = loadspreadsheet.UserSettings()
+        self.default_params = loadspreadsheet.DefaultParams()
 
         ## Define metadata
         self.created = today()
@@ -71,19 +70,22 @@ class Project(object):
 
     def run_scens(self, scen_list=None, name=None):
         """Function for running scenarios"""
-        if scen_list is not None: self.addScens(scen_list) # replace existing scen list with new one
+        if scen_list is not None: self.add_scens(scen_list) # replace existing scen list with new one
         if name is None: name = 'scenarios'
-        pops = populations.set_pops(self.data, self.user_settings, self.default_params)
-        prog_set = self.user_settings.prog_set # TODO: make this dynamic so can define for different scenarios
-        prog_info = program_info.ProgramInfo(self.data, self.user_settings, self.default_params,
-                                             prog_set=prog_set, name=name) # none of the coverage info is set here, since it depends on pop sizes
-        start_year = self.user_settings.start_year
-        end_year = self.user_settings.end_year
-        covs = self.user_settings.covs
+        # TODO: currently not implemented
+        # TODO: extract information from the scen_list one at a time and run
+        for scen in self.scens:
+            pops = populations.set_pops(self.data, self.default_params, self.settings)
+            prog_set = self.user_settings.prog_set # TODO: make this dynamic so can define for different scenarios
+            prog_info = program_info.ProgramInfo(self.data, self.user_settings, self.default_params,
+                                                 prog_set=prog_set, name=name) # none of the coverage info is set here, since it depends on pop sizes
+            start_year = self.user_settings.start_year
+            end_year = self.user_settings.end_year
+            covs = self.user_settings.covs
 
-        my_model = model2.Model(name, pops, prog_info, start_year, end_year)
-        my_model.run_sim(covs)
-        self.add_result(my_model=my_model)
+            my_model = model2.Model(name, pops, prog_info, start_year, end_year)
+            my_model.run_sim(covs)
+            self.add_result(my_model=my_model)
         self.modified = today()
 
     def run_sim(self, name, pops, covs, prog_info, start_year, end_year): # TODO: Should keep this? If so, put outside class?

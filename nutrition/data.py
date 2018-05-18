@@ -6,7 +6,7 @@ class Data:
         self.filename = filepath
         self.workbook = pd.ExcelFile(filepath)
         self.sheetNames = self.workbook.sheet_names
-        self.childAges = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
+        self.child_ages = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
         self.WRAages = ['WRA: 15-19 years', 'WRA: 20-29 years', 'WRA: 30-39 years', 'WRA: 40-49 years']
         self.PWages = ["PW: 15-19 years", "PW: 20-29 years", "PW: 30-39 years", "PW: 40-49 years"]
         self.birthOutcomes = ['Term AGA', 'Term SGA', 'Pre-term AGA', 'Pre-term SGA']
@@ -168,9 +168,9 @@ class Data:
         # pad with 1's for causes not included
         for risk in ['Stunting', 'Wasting', 'Anaemia', 'Breastfeeding']:
             if risk == 'Anaemia': # only risk across all pops
-                ages = self.childAges + self.WRAages + self.PWages
+                ages = self.child_ages + self.WRAages + self.PWages
             else:
-                ages = self.childAges
+                ages = self.child_ages
             RRs = self.RRdeath[risk]
             for cause in self.causesOfDeath:
                 if RRs.get(cause) is None:
@@ -367,7 +367,7 @@ class Data:
         for program in self.programList:
             if program not in ORs:
                 ORs[program] = {}
-                for age in self.childAges:
+                for age in self.child_ages:
                     ORs[program][age] = 1.
         self.ORstuntingProgram = ORs
 
@@ -378,21 +378,21 @@ class Data:
             for program in self.programList:
                 if program not in ORs[wastingCat]:
                     ORs[wastingCat][program] = {}
-                    for age in self.childAges:
+                    for age in self.child_ages:
                         ORs[wastingCat][program][age] = 1.
         self.ORwastingProgram = ORs
 
     def padBForPrograms(self):
         ORs = dcp(self.ORappropriateBFprogram)
         missingProgs = set(self.programList) - set(ORs.keys())
-        padded = {program:{age:1. for age in self.childAges} for program in missingProgs}
+        padded = {program:{age:1. for age in self.child_ages} for program in missingProgs}
         ORs.update(padded)
         self.ORappropriateBFprogram = ORs
 
     def padAnaemiaORprograms(self):
         ORs = dcp(self.ORanaemiaProgram)
         missingProgs = set(self.programList) - set(ORs.keys()) - set(self.RRanaemiaProgram.keys())
-        padded = {program:{age:1. for age in self.childAges + self.PWages + self.WRAages} for program in missingProgs}
+        padded = {program:{age:1. for age in self.child_ages + self.PWages + self.WRAages} for program in missingProgs}
         ORs.update(padded)
         self.ORanaemiaProgram = ORs
 
@@ -409,10 +409,10 @@ class Data:
                 for field in fields:
                     if self.childPrograms[program][cause].get(field) is None:
                         self.childPrograms[program][cause][field] = {}
-                    for age in self.childAges:
+                    for age in self.child_ages:
                         if self.childPrograms[program][cause][field].get(age) is None:
                             self.childPrograms[program][cause][field][age] = 0
-        for age in self.childAges:
+        for age in self.child_ages:
             effectiveness[age] = {}
             for program in self.programList:
                 effectiveness[age][program] = {}
@@ -480,7 +480,7 @@ class Data:
         for key, item in packagesDict.items():
             if newPrograms.get(key) is None:
                 newPrograms[key] = {}
-            for age in self.childAges:
+            for age in self.child_ages:
                 ORs[age] = 1.
                 for pop, mode in item:
                     row = effects.loc[pop, mode]
@@ -499,7 +499,7 @@ class Data:
                 col = package[mode]
                 if col.notnull()[0]:
                     if mode == 'Mass media':
-                        ageModeTuple = [(pop, mode) for pop in self.childAges[:-1]] # exclude 24-59 months
+                        ageModeTuple = [(pop, mode) for pop in self.child_ages[:-1]] # exclude 24-59 months
                     else:
                         ageModeTuple = [(packageName[1], mode)]
                     packagesDict[packageName[0]] += ageModeTuple
@@ -535,7 +535,7 @@ class Data:
             fracTargeted[program] = {}
             for pop, modes in popModes.iteritems():
                 fracTargeted[program][pop] = sum(frac for frac in modes.values())
-        allAges = self.childAges + self.PWages + self.WRAages
+        allAges = self.child_ages + self.PWages + self.WRAages
         for program, pop in fracTargeted.iteritems():
             missingAges = self._getMissingElements(allAges, pop.keys())
             for age in missingAges:

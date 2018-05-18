@@ -265,9 +265,9 @@ class Model:
         """Calculates the transitions between MAM and SAM categories"""
         age_group.fromSAMtoMAMupdate = {}
         age_group.fromMAMtoSAMupdate = {}
-        age_group.fromSAMtoMAMupdate['MAM'] = (1. + (1.-age_group.wastingTreatmentUpdate['SAM']) * self.constants.demographics['fraction SAM to MAM'])
+        age_group.fromSAMtoMAMupdate['MAM'] = (1. + (1.-age_group.wastingTreatmentUpdate['SAM']) * self.constants.demo['fraction SAM to MAM'])
         age_group.fromSAMtoMAMupdate['SAM'] = 1.
-        age_group.fromMAMtoSAMupdate['SAM'] = (1. - (1.-age_group.wastingTreatmentUpdate['MAM']) * self.constants.demographics['fraction MAM to SAM'])
+        age_group.fromMAMtoSAMupdate['SAM'] = (1. - (1.-age_group.wastingTreatmentUpdate['MAM']) * self.constants.demo['fraction MAM to SAM'])
         age_group.fromMAMtoSAMupdate['MAM'] = 1.
 
     def _dia_indirect_effects(self, age_group):
