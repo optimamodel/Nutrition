@@ -8,7 +8,7 @@ import csv
 filePath = setup.getFilePath('../', '2017Nov', 'Bangladesh')[0]
 model = setup.setUpModel(filePath)
 
-refCovs = {prog.name:prog.unrestrictedBaselineCov for prog in model.programInfo.programs if prog.name in model.programInfo.referencePrograms}
+refCovs = {prog.name:prog.unrestr_init_cov for prog in model.programInfo.programs if prog.name in model.programInfo.referencePrograms}
 refCovs.update({prog.name:0 for prog in model.programInfo.programs if prog.name not in model.programInfo.referencePrograms})
 
 wastingTreatments = ['Treatment of SAM', 'Treatment of MAM']

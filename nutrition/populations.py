@@ -1,7 +1,8 @@
-from utils import solve_quad, restratify
+from utils import solve_quad, restratify, fit_poly
+from nutrition import settings
 from copy import deepcopy as dcp
 from math import pow
-from numpy import sqrt, isnan, polyfit, isfinite, array
+from numpy import sqrt, isnan
 
 class Box:
     def __init__(self, populationSize):
@@ -10,40 +11,41 @@ class Box:
         self.cumulativeDeaths = 0
 
 class NonPWAgeGroup:
-    def __init__(self, age, populationSize, boxes, anaemia_dist, birthOutcomeDist, birthAgeDist, birthIntervalDist, settingsants):
+    def __init__(self, age, populationSize, boxes, anaemia_dist, birthOutcomeDist, birth_age, birth_int, settings):
         self.age = age
         # self.populationSize = populationSize
         self.boxes = dcp(boxes)
         self.anaemia_dist = dcp(anaemia_dist)
         self.birthOutcomeDist = dcp(birthOutcomeDist)
-        self.birthAgeDist = dcp(birthAgeDist)
-        self.birthIntervalDist = dcp(birthIntervalDist)
-        self.settings = settingsants
+        self.birth_age = dcp(birth_age)
+        self.birth_int = dcp(birth_int)
+        self.settings = settings
         self.probConditionalCoverage = {}
-        self.annualPrevChange = {}
+        self.trends = {}
         self.set_update_storage()
-        self._setBirthProbs()
+        # self._setBirthProbs()
 
     def set_update_storage(self):
         self.anaemiaUpdate = 1.
         self.birthAgeUpdate = {}
-        for BA in self.settings.birthAges:
-            self.birthAgeUpdate[BA] = 1.
+        # for BA in self.settings.birthAges: # TODO: need this anymore?
+        #     self.birthAgeUpdate[BA] = 1.
 
-    def _setBirthProbs(self):
-        """
-        Setting the probability of each birth outcome.
-        :return:
-        """
-        self.birthProb = {}
-        for outcome, frac in self.birthOutcomeDist.iteritems():
-            thisSum = 0.
-            for ageOrder, fracAO in self.birthAgeDist.iteritems():
-                RRAO = self.settings.RRageOrder[ageOrder][outcome]
-                for interval, fracInterval in self.birthIntervalDist.iteritems():
-                    RRinterval = self.settings.RRinterval[interval][outcome]
-                    thisSum += fracAO * RRAO * fracInterval * RRinterval
-            self.birthProb[outcome] = thisSum
+# TODO: do we need this?
+    # def _setBirthProbs(self): # TODO: this should probably go in the NonPW class...
+    #     """
+    #     Setting the probability of each birth outcome.
+    #     :return:
+    #     """
+    #     self.birthProb = {}
+    #     for outcome, frac in self.birthOutcomeDist.iteritems():
+    #         thisSum = 0.
+    #         for ageOrder, fracAO in self.birth_age.iteritems():
+    #             RRAO = self.default.rr_age_order[ageOrder][outcome]
+    #             for interval, fracInterval in self.birth_int.iteritems():
+    #                 rr_interval = self.default.rr_interval[interval][outcome]
+    #                 thisSum += fracAO * RRAO * fracInterval * rr_interval
+    #         self.birthProb[outcome] = thisSum
 
     def getAgeGroupPopulation(self):
         return sum(self.boxes[anaemiaCat].populationSize for anaemiaCat in self.settings.anaemia_list)
@@ -58,7 +60,7 @@ class NonPWAgeGroup:
     def getFracRisk(self, risk):
         return self.getFracAnaemic()
 
-    def updateanaemia_dist(self):
+    def update_anaemia_dist(self):
         totalPop = self.getAgeGroupPopulation()
         for anaemiaCat in self.settings.anaemia_list:
             self.anaemia_dist[anaemiaCat] = self.boxes[anaemiaCat].populationSize / totalPop
@@ -68,15 +70,17 @@ class NonPWAgeGroup:
             self.boxes[anaemiaCat].populationSize = self.anaemia_dist[anaemiaCat] * self.getAgeGroupPopulation()
 
 class PWAgeGroup:
-    def __init__(self, age, populationSize, boxes, anaemia_dist, ageingRate, settingsants):
+    def __init__(self, age, populationSize, boxes, anaemia_dist, ageingRate, settings, causes_death, age_dist):
         self.age = age
-        # self.populationSize = populationSize
+        # self.populationSize = populationSize # TODO: would like to use this to good effect
         self.boxes = dcp(boxes)
         self.anaemia_dist = dcp(anaemia_dist)
         self.ageingRate = ageingRate
-        self.settings = settingsants
+        self.settings = settings
+        self.causes_death = dcp(causes_death)
+        self.age_dist = age_dist
         self.probConditionalCoverage = {}
-        self.annualPrevChange = {}
+        self.trends = {}
         self.set_update_storage()
 
     def set_update_storage(self):
@@ -102,7 +106,7 @@ class PWAgeGroup:
     def getFracRisk(self, risk):
         return self.getFracAnaemic()
 
-    def updateanaemia_dist(self):
+    def update_anaemia_dist(self):
         totalPop = self.getAgeGroupPopulation()
         for anaemiaCat in self.settings.anaemia_list:
             self.anaemia_dist[anaemiaCat] = self.boxes[anaemiaCat].populationSize / totalPop
@@ -113,7 +117,7 @@ class PWAgeGroup:
 
 class ChildAgeGroup(object):
     def __init__(self, age, populationSize, boxes, anaemia_dist, incidences, stunting_dist, wasting_dist, bf_dist,
-                 ageingRate, settingsants, causes_death):
+                 ageingRate, settings, causes_death, default_params, frac_severe_dia):
         self.age = age
         # self.populationSize = populationSize
         self.boxes = dcp(boxes)
@@ -122,16 +126,18 @@ class ChildAgeGroup(object):
         self.wasting_dist = dcp(wasting_dist)
         self.bf_dist = dcp(bf_dist)
         self.incidences = dcp(incidences)
-        self.settings = settingsants
+        self.settings = settings
         self.causes_death = dcp(causes_death)
+        self.default = default_params
+        self.frac_severe_dia = frac_severe_dia
         self.correct_bf = self.settings.correct_bf[age]
         self.incorrect_bf = list(set(self.settings.bf_list) - {self.correct_bf})
         self.ageingRate = ageingRate
         self.probConditionalCoverage = {}
         self.probConditionalDiarrhoea = {}
         self.probConditionalStunting = {}
-        self.programEffectiveness = {}
-        self.annualPrevChange = {}
+        self.prog_eff = {}
+        self.trends = {}
         self.set_update_storage()
         self._updatesForAgeingAndBirths()
 
@@ -168,7 +174,6 @@ class ChildAgeGroup(object):
             self.wastingTreatmentUpdate[wastingCat] = 1.
 
     ###### POPULATION CALCULATIONS ######
-    # TODO: would like to re-write for better implementation
 
     def getAgeGroupPopulation(self):
         totalPop = 0
@@ -190,7 +195,7 @@ class ChildAgeGroup(object):
 
     def getAgeGroupNumberNotStunted(self):
         numNotStunted = 0
-        for stuntingCat in self.settings.notStuntedList:
+        for stuntingCat in self.settings.non_stunted_list:
             for wastingCat in self.settings.wasting_list:
                 for bfCat in self.settings.bf_list:
                     for anaemiaCat in self.settings.anaemia_list:
@@ -202,7 +207,7 @@ class ChildAgeGroup(object):
         for stuntingCat in self.settings.stunting_list:
             for wastingCat in self.settings.wasting_list:
                 for bfCat in self.settings.bf_list:
-                    for anaemiaCat in self.settings.nonAnaemicList:
+                    for anaemiaCat in self.settings.non_anaemic_list:
                         numNotAnaemic += self.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat].populationSize
         return numNotAnaemic
 
@@ -226,23 +231,23 @@ class ChildAgeGroup(object):
 
     def getAgeGroupNumberHealthy(self):
         numHealthly = 0
-        for stuntingCat in self.settings.notStuntedList:
+        for stuntingCat in self.settings.non_stunted_list:
             for wastingCat in self.settings.non_wasted_list:
                 for bfCat in self.settings.bf_list:
-                    for anaemiaCat in self.settings.nonAnaemicList:
+                    for anaemiaCat in self.settings.non_anaemic_list:
                         numHealthly += self.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat].populationSize
         return numHealthly
 
     def getAgeGroupNumberNonStuntedNonWasted(self):
         numNonStuntedNonWasted = 0
-        for stuntingCat in self.settings.notStuntedList:
+        for stuntingCat in self.settings.non_stunted_list:
             for wastingCat in self.settings.non_wasted_list:
                 for bfCat in self.settings.bf_list:
                     for anaemiaCat in self.settings.anaemia_list:
                         numNonStuntedNonWasted += self.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat].populationSize
         return numNonStuntedNonWasted
 
-    def getstunting_distribution(self):
+    def get_stunting_dist(self):
         totalPop = self.getAgeGroupPopulation()
         returnDict = {}
         for stuntingCat in self.settings.stunting_list:
@@ -307,9 +312,9 @@ class ChildAgeGroup(object):
 
     def getRiskFromDist(self, risk):
         if risk == 'Stunting':
-            return self.stunting_dist['high'] + self.stunting_dist['moderate']
+            return sum([self.stunting_dist[cat] for cat in self.settings.stunted_list])
         elif risk == 'Anaemia':
-            return self.anaemia_dist['anaemic']
+            return sum([self.anaemia_dist[cat] for cat in self.settings.anaemic_list])
 
     def getNumberCorrectlyBF(self):
         numCorrect = 0
@@ -330,7 +335,7 @@ class ChildAgeGroup(object):
                                                                                                 self.bf_dist[bfCat] * \
                                                                                                 self.anaemia_dist[anaemiaCat] * totalPop
 
-    def updatestunting_dist(self):
+    def update_stunting_dist(self):
         totalPop = self.getAgeGroupPopulation()
         for stuntingCat in self.settings.stunting_list:
             self.stunting_dist[stuntingCat] = 0
@@ -339,7 +344,7 @@ class ChildAgeGroup(object):
                     for anemiaStatus in self.settings.anaemia_list:
                         self.stunting_dist[stuntingCat] += self.boxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].populationSize / totalPop
 
-    def updatewasting_dist(self):
+    def update_wasting_dist(self):
         totalPop = self.getAgeGroupPopulation()
         for wastingCat in self.settings.wasting_list:
             self.wasting_dist[wastingCat] = 0
@@ -348,7 +353,8 @@ class ChildAgeGroup(object):
                     for anaemiaCat in self.settings.anaemia_list:
                         self.wasting_dist[wastingCat] += self.boxes[stuntingCat][wastingCat][breastfeedingCat][
                                                                   anaemiaCat].populationSize / totalPop
-    def updateanaemia_dist(self):
+
+    def update_anaemia_dist(self):
         totalPop = self.getAgeGroupPopulation()
         for anaemiaCat in self.settings.anaemia_list:
             self.anaemia_dist[anaemiaCat] = 0
@@ -358,7 +364,7 @@ class ChildAgeGroup(object):
                         self.anaemia_dist[anaemiaCat] += self.boxes[stuntingCat][wastingCat][breastfeedingCat][
                                                               anaemiaCat].populationSize / totalPop
 
-    def updatebf_dist(self):
+    def update_bf_dist(self):
         totalPop = self.getAgeGroupPopulation()
         for bfCat in self.settings.bf_list:
             self.bf_dist[bfCat] = 0
@@ -370,17 +376,17 @@ class ChildAgeGroup(object):
 
     def _getFracDiarrhoeaFixedZ(self):
         beta = {}
-        RRnot = self.settings.RRdiarrhoea['none'][self.age]
+        RRnot = self.default.rr_dia[self.age]['None']
         for bfCat in self.settings.bf_list:
-            RDa = self.settings.RRdiarrhoea[bfCat][self.age]
+            RDa = self.default.rr_dia[self.age][bfCat]
             beta[bfCat] = RDa/RRnot
         return beta
 
     def _getFracDiarrhoea(self, Z0, Zt):
         beta = {}
-        RRnot = self.settings.RRdiarrhoea["none"][self.age]
+        RRnot = self.default.rr_dia[self.age]['None']
         for bfCat in self.settings.bf_list:
-            RDa = self.settings.RRdiarrhoea[bfCat][self.age]
+            RDa = self.default.rr_dia[self.age][bfCat]
             beta[bfCat] = 1. - (RRnot * Z0 - RDa * Zt) / \
                           (RRnot * Z0)
             # RDa * Zt[age] / (RRnot * Z0[age])
@@ -392,16 +398,16 @@ class ChildAgeGroup(object):
         return incidence / riskSum
 
     def _getDiarrhoeaRiskSum(self):
-        return sum(self.settings.RRdiarrhoea[bfCat][self.age] * self.bf_dist[bfCat] for bfCat in self.settings.bf_list)
+        return sum(self.default.rr_dia[self.age][bfCat] * self.bf_dist[bfCat] for bfCat in self.settings.bf_list)
 
     def _getAverageOR(self, Za, risk):
-        RRnot = self.settings.RRdiarrhoea['none'][self.age]
+        RRnot = self.default.rr_dia[self.age]['None']
         if risk == 'Stunting':
-            OR = self.settings.ORcondition['OR stunting by condition']['Diarrhoea'][self.age]
+            OR = self.default.or_cond['Stunting']['Diarrhoea'][self.age]
         elif risk == 'Anaemia':
-            OR = self.settings.ORcondition['OR anaemia by condition']['Severe diarrhoea'][self.age]
+            OR = self.default.or_cond['Anaemia']['Severe diarrhoea'][self.age]
         elif risk == 'MAM' or risk == 'SAM':
-            OR = self.settings.ORcondition['OR '+risk+' by condition']['Diarrhoea'][self.age]
+            OR = self.default.or_cond[risk]['Diarrhoea'][self.age]
         else:
             print 'risk factor is invalid'
         AO = pow(OR, RRnot * Za * 1./self.ageingRate)
@@ -412,7 +418,7 @@ class ChildAgeGroup(object):
         AO = {}
         for risk in ['Stunting', 'Anaemia']:
             if risk == 'Anaemia':
-                AO[risk] = self._getAverageOR(Zt * self.settings.demo['fraction severe diarrhoea'], risk)
+                AO[risk] = self._getAverageOR(Zt * self.frac_severe_dia, risk)
             else:
                 AO[risk] = self._getAverageOR(Zt, risk)
             Omega0 = self.probConditionalDiarrhoea[risk]['no diarrhoea']
@@ -425,72 +431,52 @@ class ChildAgeGroup(object):
 
 class Newborn(ChildAgeGroup):
     def __init__(self, age, populationSize, boxes, anaemia_dist, incidences, stunting_dist, wasting_dist, bf_dist,
-                 ageingRate, settingsants, birth_dist, causes_death):
+                 ageingRate, settingsants, birth_dist, causes_death, default_params, frac_severe_dia):
         """
         This is the <1 month age group, distinguished from the other age groups by birth outcomes, spacing etc etc.
         """
         super(Newborn, self).__init__(age, populationSize, boxes, anaemia_dist, incidences, stunting_dist, wasting_dist, bf_dist,
-                 ageingRate, settingsants, causes_death)
+                 ageingRate, settingsants, causes_death, default_params, frac_severe_dia)
         self.birth_dist = birth_dist
         self.probRiskAtBirth = {}
         self.birthUpdate = {}
         for BO in self.settings.birth_outcomes:
             self.birthUpdate[BO] = 1.
 
-
-# class Population(object):
-#     def __init__(self, name, project, settings, default_params):
-#         self.name = name
-#         self.data = dcp(project) # TODO: may not want to dcp all this -- only really want to get distribution data from project
-#         self.settings = settings
-#         self.previousCov = None
-#         self.populationAreas = self.data.populationAreas
-#         self.riskDist = {}
-#         self.stunting_dist = self.data.riskDistributions['Stunting']
-#         self.anaemia_dist= self.data.riskDistributions['Anaemia']
-#         self.bf_dist = self.data.riskDistributions['Breastfeeding']
-#         self.wasting_dist = self.data.riskDistributions['Wasting']
-#         self.birth_dist = self.birth_dist
-#         self.incidences = self.data.incidences
-#         self.RRdiarrhoea = self.data.rr_death['Child diarrhoea']['Diarrhoea incidence']
-#         self.ORcondition = self.data.ORcondition
-#         self.boxes = {}
-#
-#     def getDistribution(self, risk):
-#         return self.data.riskDistributions[risk]
-
 class Children(object):
-    def __init__(self, data, default_params, settings):
+    def __init__(self, data, default_params):
         self.name = 'Children'
-        self.data = data
-        self.birth_dist = self.data.demo['Birth outcome distribution']
+        self.data = data # TODO: need to copy all this?
+        self.proj = dcp(data.proj)
+        self.pop_areas = default_params.pop_areas
+        self.birth_dist = self.data.demo['Birth dist']
         self.stunting_dist = self.data.risk_dist['Stunting']
         self.anaemia_dist = self.data.risk_dist['Anaemia']
         self.wasting_dist = self.data.risk_dist['Wasting']
         self.bf_dist = self.data.risk_dist['Breastfeeding']
+        self.mamtosam = self.data.mamtosam
+        self.samtomam = self.data.samtomam
         self.default = default_params
-        self.settings = settings
+        self.settings = settings.Settings()
         self.age_groups = []
         self._make_pop_sizes()
         self._make_boxes()
         self._set_child_mortality()
         self.update_mortality()
         self._setProgramEffectiveness()
-        self._setAnnualPrevChange()
+        self._set_time_trends()
         self._setcorrect_bfpractice()
-        self._setProbFutureStunting()
-        self.set_probstuntedBirth()
+        self._setprob_futurestunting()
+        self._setprob_stuntedbirth()
         self._setProbWastedBirth()
 
     ##### DATA WRANGLING ######
 
-    def set_probs(self):
-        # self._setCondProbs()
-        self._setProbStunted()
-        self._setProbAnaemic()
-        self._setProbWasted()
-        self._setProbBF()
-        # self._setProbDia()
+    def set_probs(self, prog_areas):
+        self._setProbStunted(prog_areas)
+        self._set_prob_anaem(prog_areas)
+        self._setProbWasted(prog_areas)
+        self._setProbBF(prog_areas)
         self._setProbStuntedDia()
         self._setProbAnaemiaDia()
         self._setProbWastedDia()
@@ -541,11 +527,13 @@ class Children(object):
             if age == '<1 month': # <1 month age group has slightly different functionality
                 self.age_groups.append(Newborn(age, popSize, boxes,
                                            anaemia_dist, incidences, stunting_dist, wasting_dist, bf_dist,
-                                                ageingRate, self.settings, birth_dist, self.data.causes_death))
+                                                ageingRate, self.settings, birth_dist, self.data.causes_death, self.default,
+                                               self.data.demo['Percentage of diarrhea that is severe']))
             else:
                 self.age_groups.append(ChildAgeGroup(age, popSize, boxes,
                                            anaemia_dist, incidences, stunting_dist, wasting_dist, bf_dist,
-                                                ageingRate, self.settings, self.data.causes_death))
+                                                ageingRate, self.settings, self.data.causes_death, self.default,
+                                                     self.data.demo['Percentage of diarrhea that is severe']))
 
     def _set_child_mortality(self):
         # Equation is:  LHS = RHS * X
@@ -560,7 +548,6 @@ class Children(object):
                     for wastingCat in self.settings.wasting_list:
                         for bfCat in self.settings.bf_list:
                             for anaemiaCat in self.settings.anaemia_list:
-                                # TODO: when cause doesn't exist, would like the default to return 1 (no contribution)
                                 t1 = self.stunting_dist[age][stuntingCat]
                                 t2 = self.wasting_dist[age][wastingCat]
                                 t3 = self.bf_dist[age][bfCat]
@@ -690,85 +677,61 @@ class Children(object):
         alteredList[index] = newList
         return alteredList
 
-    def _setProbFutureStunting(self):
+    def _setprob_futurestunting(self):
         """Calculate the probability of stunting given previous stunting between age groups"""
-        for indx in range(1, len(self.age_groups)):
-            age_group = self.age_groups[indx]
+        for i, age_group in enumerate(self.age_groups[1:]):
             thisAge = age_group.age
-            prevAgeGroup = self.age_groups[indx-1]
-            OR = self.data.ORcondition['Stunting progression'][thisAge]
+            prevAgeGroup = self.age_groups[i-1]
+            OR = self.default.or_cond['Stunting']['Prev stunting'][thisAge]
             fracStuntedThisAge = age_group.getStuntedFrac()
             fracStuntedPrev = prevAgeGroup.getStuntedFrac()
             pn, pc = solve_quad(OR, fracStuntedPrev, fracStuntedThisAge)
             age_group.probConditionalStunting['stunted'] = pc
             age_group.probConditionalStunting['not stunted'] = pn
 
-    def _setCondProbs(self): # TODO: this is more general version of the two following methods
-        """Set the conditional probabilities of a risk factor (except wasting) given program coverage.
-        Note that this value is dependent upon the baseline coverage of the program"""
-        risks = [risk for i, risk in enumerate(self.settings.risks) if i !=1 ] # remove wasting
-        for risk in risks:
-            cats = self.data.riskCategories[risk]
-            middle = len(cats) / 2
-            relevantCats = cats[middle:] # assumes list is symmetric
-            for age_group in self.age_groups:
-                age = age_group.age
-                dist = age_group.riskDists[risk]
-                age_group.probConditionalCoverage[risk] = {}
-                for program in self.settings.programList:
-                    age_group.probConditionalCoverage[risk][program] = {}
-                    fracCovered = self.previousCov[program]
-                    fracImpacted = sum(dist[cat] for cat in relevantCats)
-                    if self.data.RRprograms[risk].get(program) is not None:
-                        RR = self.data.RRprograms[risk][program][age]
-                        pn = fracImpacted/(RR*fracCovered + (1.-fracCovered))
-                        pc = RR * pn
-                    else: # OR
-                        OR = self.default.ORprograms[risk][program][age]
-                        pn, pc = solve_quad(OR, fracCovered, fracImpacted)
-                    age_group.probConditionalCoverage[risk][program]['covered'] = pc
-                    age_group.probConditionalCoverage[risk][program]['not covered'] = pn
-
-    def _setProbStunted(self):
+    def _setProbStunted(self, prog_areas):
         risk = 'Stunting'
+        relev_progs = prog_areas[risk]
         for age_group in self.age_groups:
             age = age_group.age
             fracStunted = sum(age_group.stunting_dist[cat] for cat in self.settings.stunted_list)
             age_group.probConditionalCoverage[risk] = {}
-            for program in self.settings.programList:
+            for program in relev_progs:
                 age_group.probConditionalCoverage[risk][program] = {}
                 fracCovered = self.previousCov[program]
-                OR = self.default.ORprograms[risk][program][age]
+                OR = self.default.or_stunting_prog[program][age]
                 pn, pc = solve_quad(OR, fracCovered, fracStunted)
                 age_group.probConditionalCoverage[risk][program]['covered'] = pc
                 age_group.probConditionalCoverage[risk][program]['not covered'] = pn
 
-    def _setProbAnaemic(self):
+    def _set_prob_anaem(self, prog_areas):
         risk = 'Anaemia'
+        relev_progs = prog_areas[risk]
         for age_group in self.age_groups:
             age = age_group.age
             fracAnaemic = sum(age_group.anaemia_dist[cat] for cat in self.settings.anaemic_list)
             age_group.probConditionalCoverage[risk] = {}
-            for program in self.settings.programList:
+            for program in relev_progs:
                 age_group.probConditionalCoverage[risk][program] = {}
                 fracCovered = self.previousCov[program]
-                if self.default.RRprograms[risk].get(program) is not None:
-                    RR = self.default.RRprograms[risk][program][age]
+                if self.default.rr_anaem_prog.get(program) is not None:
+                    RR = self.default.rr_anaem_prog[program][age]
                     pn = fracAnaemic / (RR * fracCovered + (1. - fracCovered))
                     pc = RR * pn
                 else:  # OR
-                    OR = self.default.ORprograms[risk][program][age]
+                    OR = self.default.or_anaem_prog[program][age]
                     pn, pc = solve_quad(OR, fracCovered, fracAnaemic)
                 age_group.probConditionalCoverage[risk][program]['covered'] = pc
                 age_group.probConditionalCoverage[risk][program]['not covered'] = pn
 
-    def _setProbBF(self):
+    def _setProbBF(self, prog_areas):
         risk = 'Breastfeeding'
+        relev_progs = prog_areas[risk]
         for age_group in self.age_groups:
             age = age_group.age
             age_group.probConditionalCoverage[risk] = {}
             fracAppropriate = age_group.bf_dist[age_group.correct_bfpractice]
-            for program in self.settings.programList:
+            for program in relev_progs:
                 age_group.probConditionalCoverage[risk][program] = {}
                 OR = self.default.ORappropriateBFprogram[program][age]
                 fracCovered = self.previousCov[program]
@@ -776,42 +739,24 @@ class Children(object):
                 age_group.probConditionalCoverage[risk][program]['covered'] = pc
                 age_group.probConditionalCoverage[risk][program]['not covered'] = pn
 
-    def _setProbWasted(self):
+    def _setProbWasted(self, prog_areas):
+        risk = 'Wasting treatment' # only treatment have ORs for wasting
+        relev_progs = prog_areas[risk]
         for wastingCat in self.settings.wasted_list:
             for age_group in self.age_groups:
                 age_group.probConditionalCoverage[wastingCat] = {}
                 age = age_group.age
                 fracThisCatAge = age_group.wasting_dist[wastingCat]
-                for program in self.settings.programList:
-                    OR = self.default.ORwastingProgram[wastingCat][program][age]
+                for program in relev_progs:
+                    try:
+                        OR = self.default.or_wasting_prog[wastingCat][program][age]
+                    except KeyError: # if, for eg, MAM doesn't have Treatment of SAM key
+                        OR = 1
                     fracCovered = self.previousCov[program]
                     pn, pc = solve_quad(OR, fracCovered, fracThisCatAge)
                     age_group.probConditionalCoverage[wastingCat][program] = {}
                     age_group.probConditionalCoverage[wastingCat][program]['covered'] = pc
                     age_group.probConditionalCoverage[wastingCat][program]['not covered'] = pn
-
-    def _setProbDia(self): # TODO: this is more general version of two following methods
-        risks = ['Stunting', 'Anaemia']
-        for age_group in self.age_groups:
-            for risk in risks:
-                age_group.probConditionalDiarrhoea[risk] = {}
-                cats = self.settings.riskCategories[risk]
-                middle = len(cats) / 2
-                relevantCats = cats[middle:] # assumes specific order and length
-                dist = age_group.riskDists[risk]
-                Z0 = age_group._getZa()
-                Zt = Z0 # true for initialisation
-                beta = age_group._getFracDiarrhoea(Z0, Zt)
-                if risk == 'Anaemia':  # anaemia only caused by severe diarrhea
-                    Yt = Zt * self.data.demo['fraction severe diarrhoea']
-                else:
-                    Yt = Zt
-                AO = age_group._getAverageOR(Yt, risk)
-                fracDiarrhoea = sum(beta[bfCat] * age_group.bf_dist[bfCat] for bfCat in self.settings.bf_list)
-                fracImpactedThisAge = sum(dist[cat] for cat in relevantCats)
-                pn, pc = solve_quad(AO, fracDiarrhoea, fracImpactedThisAge)
-                age_group.probConditionalDiarrhoea[risk]['diarrhoea'] = pc
-                age_group.probConditionalDiarrhoea[risk]['no diarrhoea'] = pn
 
     def _setProbStuntedDia(self):
         risk = 'Stunting'
@@ -834,7 +779,7 @@ class Children(object):
             Z0 = age_group._getZa()
             Zt = Z0 # true for initialisation
             beta = age_group._getFracDiarrhoea(Z0, Zt)
-            Yt = Zt * self.data.demo['fraction severe diarrhoea']
+            Yt = Zt * self.data.demo['Percentage of diarrhea that is severe']
             AO = age_group._getAverageOR(Yt, risk)
             fracDiarrhoea = sum(beta[bfCat] * age_group.bf_dist[bfCat] for bfCat in self.settings.bf_list)
             fracImpactedThisAge = sum(age_group.anaemia_dist[cat] for cat in self.settings.anaemic_list)
@@ -856,7 +801,7 @@ class Children(object):
                 age_group.probConditionalDiarrhoea[wastingCat]['no diarrhoea'] = pn
                 age_group.probConditionalDiarrhoea[wastingCat]['diarrhoea'] = pc
 
-    def _setProbStuntedBirth(self):
+    def _setprob_stuntedbirth(self):
         """Sets the probabilty of stunting conditional on birth outcome"""
         newborns = self.age_groups[0]
         coeffs = self._getBirthStuntingQuarticCoefficients()
@@ -864,7 +809,7 @@ class Children(object):
         probStuntedAtBirth = {}
         probStuntedAtBirth['Term AGA'] = p0
         for BO in ["Pre-term SGA","Pre-term AGA","Term SGA"]:
-            OR = self.settings.ORconditionBirth['stunting'][BO]
+            OR = self.default.or_cond_bo['Stunting'][BO]
             probStuntedAtBirth[BO] = p0*OR / (1.-p0+OR*p0)
             pi = probStuntedAtBirth[BO]
             if(pi<0. or pi>1.):
@@ -881,7 +826,7 @@ class Children(object):
             probWastedAtBirth[wastingCat]['Term AGA'] = p0
             for birthOutcome in ["Pre-term SGA","Pre-term AGA","Term SGA"]:
                 probWastedAtBirth[wastingCat][birthOutcome] = {}
-                OR = self.default.ORconditionBirth[wastingCat][birthOutcome]
+                OR = self.default.or_cond_bo[wastingCat][birthOutcome]
                 probWastedAtBirth[wastingCat][birthOutcome] = p0*OR / (1.-p0+OR*p0)
                 pi = p0*OR / (1.-p0+OR*p0)
                 if(pi<0. or pi>1.):
@@ -892,9 +837,9 @@ class Children(object):
         newborns = self.age_groups[0]
         OR = [1.]*4
         OR[0] = 1.
-        OR[1] = self.settings.ORstuntingBO["Term SGA"]
-        OR[2] = self.settings.ORstuntingBO["Pre-term AGA"]
-        OR[3] = self.settings.ORstuntingBO["Pre-term SGA"]
+        OR[1] = self.default.or_cond_bo['Stunting']["Term SGA"]
+        OR[2] = self.default.or_cond_bo['Stunting']["Pre-term AGA"]
+        OR[3] = self.default.or_cond_bo['Stunting']["Pre-term SGA"]
         FracBO = [0.]*4
         FracBO[1] = newborns.birth_dist["Term SGA"]
         FracBO[2] = newborns.birth_dist["Pre-term AGA"]
@@ -925,9 +870,9 @@ class Children(object):
         FracBO[0] = 1. - sum(FracBO[1:3])
         OR = [1.]*4
         OR[0] = 1.
-        OR[1] = self.settings.ORconditionBirth[wastingCat]["Term SGA"]
-        OR[2] = self.settings.ORconditionBirth[wastingCat]["Pre-term AGA"]
-        OR[3] = self.settings.ORconditionBirth[wastingCat]["Pre-term SGA"]
+        OR[1] = self.default.or_cond_bo[wastingCat]["Term SGA"]
+        OR[2] = self.default.or_cond_bo[wastingCat]["Pre-term AGA"]
+        OR[3] = self.default.or_cond_bo[wastingCat]["Pre-term SGA"]
         fracWasted = newborns.getWastedFrac(wastingCat)
         # [i] will refer to the three non-baseline birth outcomes
         A = FracBO[0]*(OR[1]-1.)*(OR[2]-1.)*(OR[3]-1.)
@@ -996,40 +941,46 @@ class Children(object):
     def _setProgramEffectiveness(self):
         for age_group in self.age_groups:
             age = age_group.age
-            age_group.programEffectiveness = self.default.child_progs[age] # TODO: totally backward in keys. fix
+            age_group.prog_eff = self.default.child_progs[age]
 
-    def _setAnnualPrevChange(self):
+    def _set_time_trends(self):
+        trends = self.data.time_trends
         for risk in ['Stunting', 'Wasting', 'Anaemia']:
+            trend = trends[risk]
             for age_group in self.age_groups:
-                age = age_group.age
-                annualPrev = self.data.annualPrev[risk][age]
-                years = array(annualPrev.keys())
-                prev = array(annualPrev.values())
-                notNan = isfinite(years) & isfinite(prev)
-                if sum(notNan) <= 1: # static data
-                    age_group.annualPrevChange[risk] = 1
-                else:
-                    linReg = polyfit(years[notNan],prev[notNan],1)
-                    age_group.annualPrevChange[risk] = 1 + linReg[0]
+                age_group.trends[risk] = fit_poly(0, trend)
+        # breastfeeding has age dependency
+        risk = 'Breastfeeding'
+        trend = trends[risk]
+        younger = self.age_groups[:3]
+        for age_group in younger:
+            age_group.trends[risk] = fit_poly(0, trend)
+        older = self.age_groups[3:]
+        for age_group in older:
+            age_group.trends[risk] = fit_poly(1, trend)
 
     def _setcorrect_bfpractice(self):
         for age_group in self.age_groups:
             age = age_group.age
-            age_group.correct_bfpractice = self.default.correct_bf[age]
+            age_group.correct_bfpractice = self.settings.correct_bf[age]
 
 class PregnantWomen(object):
-    def __init__(self, data, default_params, settings):
+    def __init__(self, data, default_params):
         self.name = 'Pregnant women'
         self.data = data
+        self.proj = dcp(data.proj)
+        self.pop_areas = default_params.pop_areas
+        self.age_dist = data.pw_agedist
+        self.anaemia_dist = self.data.risk_dist['Anaemia']
         self.default = default_params
-        self.settings = settings
+        self.settings = settings.Settings()
         self.age_groups = []
         self._make_pop_sizes()
         self._make_boxes()
         self._setPWReferenceMortality()
         self.update_mortality()
         self._setProgramEffectiveness()
-        self._setAnnualPrevChange()
+        self._set_time_trends()
 
     def getTotalPopulation(self):
         return sum(age_group.getAgeGroupPopulation() for age_group in self.age_groups)
@@ -1047,47 +998,41 @@ class PregnantWomen(object):
     def _setProgramEffectiveness(self):
         for age_group in self.age_groups:
             age = age_group.age
-            age_group.programEffectiveness = self.default.PWprograms[age]
+            age_group.prog_eff = self.default.pw_progs[age]
 
-    def _setAnnualPrevChange(self):
-        for risk in ['Anaemia']:
-            for age_group in self.age_groups:
-                age = age_group.age
-                annualPrev = self.data.annualPrev[risk][age]
-                years = array(annualPrev.keys())
-                prev = array(annualPrev.values())
-                notNan = isfinite(years) & isfinite(prev)
-                if sum(notNan) <= 1: # static data
-                    age_group.annualPrevChange[risk] = 1
-                else:
-                    linReg = polyfit(years[notNan],prev[notNan],1)
-                    age_group.annualPrevChange[risk] = 1 + linReg[0]
+    def _set_time_trends(self):
+        risk = 'Anaemia'
+        trend = self.data.time_trends[risk]
+        for age_group in self.age_groups:
+            age_group.trends[risk] = fit_poly(1, trend)
 
-    def _setProbs(self):
-        self._setProbAnaemic()
+    def set_probs(self, prog_areas):
+        self._set_prob_anaem(prog_areas)
 
     def _make_pop_sizes(self):
-        PWpop = self.data.populationByAge
-        self.popSizes = {age:pop for age, pop in PWpop.iteritems()}
+        pw_pop = self.data.proj['Estimated pregnant women'][0] # total baseline number
+        pw_dist = self.data.pw_agedist
+        self.popSizes = [pw_pop*dist for dist in pw_dist]
 
     def _make_boxes(self):
-        for idx in range(len(self.settings.PWages)):
-            age = self.settings.PWages[idx]
-            popSize = self.popSizes[age]
+        for i, age in enumerate(self.settings.pw_ages):
+            popSize = self.popSizes[i]
             boxes = {}
             anaemia_dist = self.anaemia_dist[age]
-            ageingRate = self.settings.womenAgeingRates[idx]
+            ageingRate = self.settings.women_age_rates[i]
+            age_dist = self.data.pw_agedist[i]
             for anaemiaCat in self.settings.anaemia_list:
                 thisPop = popSize * anaemia_dist[anaemiaCat]
                 boxes[anaemiaCat] = Box(thisPop)
-            self.age_groups.append(PWAgeGroup(age, popSize, boxes, anaemia_dist, ageingRate, self.settings))
+            self.age_groups.append(PWAgeGroup(age, popSize, boxes, anaemia_dist, ageingRate, self.settings,
+                                              self.data.causes_death, age_dist))
 
     def _setPWReferenceMortality(self):
         #Equation is:  LHS = RHS * X
         #we are solving for X
         # Calculate RHS for each age and cause
         RHS = {}
-        for age in self.settings.PWages:
+        for age in self.settings.pw_ages:
             RHS[age] = {}
             for cause in self.data.causes_death:
                 RHS[age][cause] = 0.
@@ -1102,8 +1047,8 @@ class PregnantWomen(object):
         # The following assumes we only have a single mortality rate for PW
         mortalityRate = self.data.demo['Maternal mortality (per 1,000 live births)']
         mortalityCorrected = {}
-        for index in range(len(self.settings.PWages)):
-            age = self.settings.PWages[index]
+        for index in range(len(self.settings.pw_ages)):
+            age = self.settings.pw_ages[index]
             if index == 0:
                 mortalityCorrected[age] = (mortalityRate * liveBirths / 1000.) * (4. / 34.) / agePop[index]
             else:
@@ -1127,35 +1072,40 @@ class PregnantWomen(object):
                     count += t1 * t2
                 age_group.boxes[anaemiaCat].mortalityRate = count
 
-    def _setProbAnaemic(self):
+    def _set_prob_anaem(self, prog_areas):
         risk = 'Anaemia'
+        relev_progs = prog_areas[risk]
         for age_group in self.age_groups:
             age = age_group.age
             age_group.probConditionalCoverage[risk] = {}
-            for program in self.settings.programList:
+            for program in relev_progs:
                 age_group.probConditionalCoverage[risk][program] = {}
                 fracCovered = self.previousCov[program]
                 fracImpacted = sum(age_group.anaemia_dist[cat] for cat in self.settings.anaemic_list)
-                if self.default.ORprograms[risk].get(program) is None:
-                    RR = self.default.RRprograms[risk][program][age]
+                if self.default.or_anaem_prog.get(program) is None:
+                    RR = self.default.rr_anaem_prog[program][age]
                     pn = fracImpacted / (RR * fracCovered + (1. - fracCovered))
                     pc = RR * pn
                 else:
-                    OR = self.default.ORprograms[risk][program][age]
+                    OR = self.default.or_anaem_prog[program][age]
                     pn, pc = solve_quad(OR, fracCovered, fracImpacted)
                 age_group.probConditionalCoverage[risk][program]['covered'] = pc
                 age_group.probConditionalCoverage[risk][program]['not covered'] = pn
 
 class NonPregnantWomen(object):
-    def __init__(self, data, default_params, settings):
+    def __init__(self, data, default_params):
         self.name = 'Non-pregnant women'
         self.data = data
+        self.proj = dcp(data.proj)
+        self.pop_areas = default_params.pop_areas
+        self.anaemia_dist = self.data.risk_dist['Anaemia']
+        self.birth_dist = self.data.demo['Birth dist']
         self.default = default_params
-        self.settings = settings
+        self.settings = settings.Settings()
         self.age_groups = []
         self._make_pop_sizes()
         self._make_boxes()
-        self._setAnnualPrevChange()
+        self._set_time_trends()
 
     def getTotalPopulation(self):
         return sum(age_group.getAgeGroupPopulation() for age_group in self.age_groups)
@@ -1170,81 +1120,74 @@ class NonPregnantWomen(object):
 
     ##### DATA WRANGLING ######
 
-    def _setProbs(self):
-        self._setProbAnaemic()
+    def set_probs(self, prog_areas):
+        self._set_prob_anaem(prog_areas)
 
     def _make_pop_sizes(self):
-        WRApop = self.data.populationByAge
-        self.popSizes = {age:pop for age, pop in WRApop.iteritems()}
+        wra_proj = self.data.wra_proj
+        self.popSizes = [proj[0] for proj in wra_proj]
 
     def _make_boxes(self):
-        for age in self.settings.WRAages:
-            popSize = self.popSizes[age]
+        for i, age in enumerate(self.settings.wra_ages):
+            popSize = self.popSizes[i]
             boxes = {}
             anaemia_dist = self.anaemia_dist[age]
             for anaemiaCat in self.settings.anaemia_list:
                 thisPop = popSize * anaemia_dist[anaemiaCat]
                 boxes[anaemiaCat] = Box(thisPop)
             self.age_groups.append(NonPWAgeGroup(age, popSize, boxes, anaemia_dist, self.birth_dist,
-                                                self.data.birthAgeDist, self.data.birthIntervalDist, self.settings))
+                                                self.data.birth_age, self.data.birth_int, self.settings))
 
-    def _setProbAnaemic(self):
+    def _set_prob_anaem(self, prog_areas):
         risk = 'Anaemia'
+        relev_progs = prog_areas[risk]
         for age_group in self.age_groups:
             age = age_group.age
             age_group.probConditionalCoverage[risk] = {}
-            for program in self.settings.programList:
+            for program in relev_progs:
                 age_group.probConditionalCoverage[risk][program] = {}
                 fracCovered = self.previousCov[program]
                 fracImpacted = sum(age_group.anaemia_dist[cat] for cat in self.settings.anaemic_list)
-                if self.default.ORprograms[risk].get(program) is None:
-                    RR = self.default.RRprograms[risk][program][age]
+                if self.default.or_anaem_prog.get(program) is None:
+                    RR = self.default.rr_anaem_prog[program][age]
                     pn = fracImpacted / (RR * fracCovered + (1. - fracCovered))
                     pc = RR * pn
                 else:
-                    OR = self.default.ORprograms[risk][program][age]
+                    OR = self.default.or_anaem_prog[program][age]
                     pn, pc = solve_quad(OR, fracCovered, fracImpacted)
                 age_group.probConditionalCoverage[risk][program]['covered'] = pc
                 age_group.probConditionalCoverage[risk][program]['not covered'] = pn
 
     def _setBPInfo(self, coverage):
-        self._updateFracPregnancyAverted(coverage)
-        numPregnant = self.settings.demo['number of pregnant women']
-        numWRA = sum(pop for key, pop in self.data.populationByAge.iteritems() if 'WRA' in key)
+        self.update_preg_averted(coverage)
+        numPregnant = self.data.proj['Estimated pregnant women'][0]
+        numWRA = self.data.proj['Total WRA'][0]
         rate = numPregnant/numWRA/(1.- self.fracPregnancyAverted)
         # reduce rate by % difference between births and pregnancies to get birth rate
-        projectedBirths = self.settings.popProjections['number of births']
-        projectedPWpop = self.settings.popProjections['pregnant women']
+        projectedBirths = self.data.proj['Number of births']
+        projectedPWpop = self.data.proj['Estimated pregnant women']
         percentDiff = [ai/bi for ai,bi in zip(projectedBirths, projectedPWpop)]
         averagePercentDiff = sum(percentDiff) / float(len(percentDiff))
         self.pregnancyRate = rate
         self.birthRate = averagePercentDiff * rate
 
-    def _updateFracPregnancyAverted(self, coverage):
+    def update_preg_averted(self, coverage): # TODO: don't like the way this is implemented
         if coverage == 0: # if missing or 0 cov
             self.fracPregnancyAverted = 0.
         else:
-            self.fracPregnancyAverted = sum(self.settings.famPlanMethods[prog]['Effectiveness'] *
-                self.settings.famPlanMethods[prog]['Distribution'] * coverage
-                for prog in self.settings.famPlanMethods.iterkeys())
+            self.fracPregnancyAverted = sum(self.data.famplan_methods[prog]['Effectiveness'] *
+                self.data.famplan_methods[prog]['Distribution'] * coverage
+                for prog in self.data.famplan_methods.iterkeys())
 
-    def _setAnnualPrevChange(self):
-        for risk in ['Anaemia']:
-            for age_group in self.age_groups:
-                age = age_group.age
-                annualPrev = self.data.annualPrev[risk][age]
-                years = array(annualPrev.keys())
-                prev = array(annualPrev.values())
-                notNan = isfinite(years) & isfinite(prev)
-                if sum(notNan) <= 1: # static data
-                    age_group.annualPrevChange[risk] = 1
-                else:
-                    linReg = polyfit(years[notNan],prev[notNan],1)
-                    age_group.annualPrevChange[risk] = 1 + linReg[0]
+    def _set_time_trends(self):
+        risk = 'Anaemia'
+        trend = self.data.time_trends[risk]
+        for age_group in self.age_groups:
+            age_group.trends[risk] = fit_poly(1, trend)
 
 
-def set_pops(data, default_params, settings):
-    children = Children(data, default_params, settings)
-    pregnantWomen = PregnantWomen(data, default_params, settings)
-    nonPregnantWomen = NonPregnantWomen(data, default_params, settings)
+def set_pops(data, default_params):
+    children = Children(data, default_params)
+    pregnantWomen = PregnantWomen(data, default_params)
+    nonPregnantWomen = NonPregnantWomen(data, default_params)
     return [children, pregnantWomen, nonPregnantWomen]

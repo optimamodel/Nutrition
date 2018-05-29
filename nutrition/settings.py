@@ -4,6 +4,7 @@ SETTINGS
 Store all the statis data for a project that won't change except between Optima versions
 
 """
+import os
 
 class Settings(object):
     def __init__(self):
@@ -29,3 +30,24 @@ class Settings(object):
         self.risks = ['Stunting', 'Wasting', 'Breastfeeding', 'Anaemia']
         self.child_age_spans = [1., 5., 6., 12., 36.] # in months
         self.women_age_rates = [1./5., 1./10., 1./10., 1./10.] # in years
+
+def data_path(country, region, sim_type):
+    parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+    demoname = '{}_input.xlsx'.format(region)
+    subdir = os.path.join('applications', country, 'data', sim_type, demoname)
+    demopath = os.path.join(parentfolder, subdir)
+    return demopath
+
+def prog_path(country, sim_type):
+    parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+    progname = 'prog_settings.xlsx'
+    subdir = os.path.join('applications', country, 'data', sim_type, progname)
+    progpath = os.path.join(parentfolder, subdir)
+    return progpath
+
+def default_path():
+    parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+    filename = 'default_params.xlsx'
+    childpath = os.path.join('nutrition', filename)
+    filepath = os.path.join(parentfolder, childpath)
+    return filepath

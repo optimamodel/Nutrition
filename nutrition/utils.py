@@ -1,5 +1,12 @@
 from scipy.special import ndtri, ndtr # these are much faster than calling scipy.stats.norm
-from numpy import sqrt
+from numpy import sqrt, isfinite, polyfit
+import os
+
+def optimafolder(subfolder=None):
+    if subfolder is None: subfolder='nutrition'
+    parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+    folder = os.path.join(parentfolder, subfolder, '')
+    return folder
 
 ############
 # ODICT
@@ -136,7 +143,15 @@ def restratify(frac_yes):
                'Moderate': frac_mod, 'High':frac_high}
     return restrat
 
-
+def fit_poly(group_idx, trend):
+    """ Calculates the trend over time in prevalence, mortality """
+    prev = array(trend[group_idx])
+    notNan = isfinite(prev)
+    if sum(notNan) <= 1:  # static data
+        return 1
+    else:
+        linReg = polyfit(range(len(prev[notNan])), prev[notNan], 1)
+        return 1 + linReg[0]
 
 # ##############################################################################
 # ### TYPE FUNCTIONS

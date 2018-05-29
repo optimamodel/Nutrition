@@ -1,55 +1,52 @@
+from nutrition import settings, data, program_info, populations, model
+from copy import deepcopy as dcp
+
 class Scen(object):
-    """ Scenario base class -- use only through Parscen or Progscen"""
-    def __init__(self, name, parsetname, progsetname, t, active):
+    def __init__(self, scen_type, scen, name, prog_info, pops, active=True):
+        self.scen_type = scen_type
         self.name = name
-        self.parsetname = parsetname
-        self.progsetname = progsetname
-        self.t = t
+        self.t = scen.t
+        self.year_names = range(self.t[0], self.t[1]+1)
+        self.all_years = range(len(self.year_names)) # used to index lists
+
+        self.prog_info = dcp(prog_info)
+        self.pops = dcp(pops)
+        self.scen = scen
+        self.set_progs(pops, scen_type, scen)
+        self.model = model.Model(name, self.pops, self.prog_info, self.all_years)
         self.active = active
         self.resultsref = None
         self.scenparset = None
 
-    def get_results(self):
-        """ Returns the results"""
-        if self.resultsref is not None and self.projectref() is not None: # TODO: ways around projectref?
-            results = getresults(project=self.projectref(), pointer=self.resultsref) # TODO: from results.py
-            return results
-        else:
-            print "WARNING, no results associated with this scenario"
+    def set_progs(self, pops, scen_type, scen):
+        self.prog_info.set_years(self.all_years)
+        self.prog_info.set_init_covs(pops, self.all_years)
+        self.prog_info.set_costcovs() # enables getting coverage from cost
+        self.prog_info.get_cov_scen(scen_type, scen)
 
+    def run_scen(self):
+        covs = self.prog_info.collect_covs()
+        self.model.run_sim(covs)
 
-# TODO: Looks like any one of these classes defines a separate scenario. For now, implement just the budgetscen and coveragescen, and parscen for later
-class Parscen(Scen):
-    """ Object for storing a single parameter scenario"""
-    def __init__(self, pars, **defaultargs):
-        Scen.__init__(self, **defaultargs)
-        self.pars = pars
-
-class Progscen(Scen):
-    """ Program scenario base class -- don't use indirectly?"""
-    def __init__(self, progsetname, **defaultargs):
-        Scen.__init__(self, **defaultargs)
-        self.progsetname = progsetname # programset
-
-class Budgetscen(Progscen):
-    """ Stores a single budget scenario. Initialised with a budget. Coverage added during makescenarios()"""
-    def __init__(self, budget, **defaultargs):
-        Progscen.__init__(self, **defaultargs)
-        self.budget = budget
-
-class Coveragescn(Progscen):
-    """ Stores a single coverage scenario. Initialised with a coverage. Budget added during makescenarios()"""
-    def __init__(self, coverage, **defaultargs):
-        Progscen.__init__(self, **defaultargs)
-        self.coverage = coverage
-
-
-
-# TODO they have a 'make scenarios' function that does all the work
-
-
-
-
-
-
-
+def make_scens(country, region, sim_type, prog_data, scen_names, scen_types):
+    """ Define the custom scenarios by providing all necessary information.
+    Scenarios defined by user specifications given by the GUI, while the other data remains fixed.
+    These scenarios will be returned as a list so they can be added to Project
+    """
+    input_path = settings.data_path(country, region, sim_type)
+    default_path = settings.default_path()
+    # get data
+    input = data.InputData(input_path)
+    default_params = data.DefaultParams(default_path)
+    scen_list = []
+    # create all of the requested scenarios
+    for i, name in enumerate(scen_names):
+        scen_type = scen_types[i]
+        scen_progs = prog_data[i]
+        # initialise pops and progs
+        prog_info = program_info.ProgramInfo(scen_progs, default_params)
+        pops = populations.set_pops(input, default_params)
+        # set up scenarios
+        scen = Scen(scen_type, scen_progs, name, prog_info, pops)
+        scen_list.append(scen)
+    return scen_list
