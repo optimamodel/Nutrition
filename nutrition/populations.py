@@ -11,7 +11,7 @@ class Box:
         self.cumulativeDeaths = 0
 
 class NonPWAgeGroup:
-    def __init__(self, age, populationSize, boxes, anaemia_dist, birthOutcomeDist, birth_age, birth_int, settings):
+    def __init__(self, age, populationSize, boxes, anaemia_dist, birthOutcomeDist, birth_age, birth_int):
         self.age = age
         # self.populationSize = populationSize
         self.boxes = dcp(boxes)
@@ -19,7 +19,7 @@ class NonPWAgeGroup:
         self.birthOutcomeDist = dcp(birthOutcomeDist)
         self.birth_age = dcp(birth_age)
         self.birth_int = dcp(birth_int)
-        self.settings = settings
+        self.settings = settings.Settings()
         self.probConditionalCoverage = {}
         self.trends = {}
         self.set_update_storage()
@@ -70,13 +70,13 @@ class NonPWAgeGroup:
             self.boxes[anaemiaCat].populationSize = self.anaemia_dist[anaemiaCat] * self.getAgeGroupPopulation()
 
 class PWAgeGroup:
-    def __init__(self, age, populationSize, boxes, anaemia_dist, ageingRate, settings, causes_death, age_dist):
+    def __init__(self, age, populationSize, boxes, anaemia_dist, ageingRate, causes_death, age_dist):
         self.age = age
         # self.populationSize = populationSize # TODO: would like to use this to good effect
         self.boxes = dcp(boxes)
         self.anaemia_dist = dcp(anaemia_dist)
         self.ageingRate = ageingRate
-        self.settings = settings
+        self.settings = settings.Settings()
         self.causes_death = dcp(causes_death)
         self.age_dist = age_dist
         self.probConditionalCoverage = {}
@@ -343,6 +343,8 @@ class ChildAgeGroup(object):
                 for breastfeedingCat in self.settings.bf_list:
                     for anemiaStatus in self.settings.anaemia_list:
                         self.stunting_dist[stuntingCat] += self.boxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].populationSize / totalPop
+        #TODO: problem is here. after update, distribution has totally changed even if it shouldn't (i.e no coverage change)
+        # TODO: ONLY FOR THE <1month!
 
     def update_wasting_dist(self):
         totalPop = self.getAgeGroupPopulation()
@@ -651,7 +653,7 @@ class Children(object):
         return totalStunted / totalPop
 
     def getTotalNumberAnaemic(self):
-        return sum(age_group.getAgeGroupNumberAnaemic() for age_group in self.age_groups)
+        return sum(age_group.getAgeGroupNumberAnaemic() for age_group in self.age_groups[2:])
 
     def getTotalFracAnaemic(self):
         totalAnaemia = self.getTotalNumberAnaemic()
@@ -1024,7 +1026,7 @@ class PregnantWomen(object):
             for anaemiaCat in self.settings.anaemia_list:
                 thisPop = popSize * anaemia_dist[anaemiaCat]
                 boxes[anaemiaCat] = Box(thisPop)
-            self.age_groups.append(PWAgeGroup(age, popSize, boxes, anaemia_dist, ageingRate, self.settings,
+            self.age_groups.append(PWAgeGroup(age, popSize, boxes, anaemia_dist, ageingRate,
                                               self.data.causes_death, age_dist))
 
     def _setPWReferenceMortality(self):
@@ -1136,7 +1138,7 @@ class NonPregnantWomen(object):
                 thisPop = popSize * anaemia_dist[anaemiaCat]
                 boxes[anaemiaCat] = Box(thisPop)
             self.age_groups.append(NonPWAgeGroup(age, popSize, boxes, anaemia_dist, self.birth_dist,
-                                                self.data.birth_age, self.data.birth_int, self.settings))
+                                                self.data.birth_age, self.data.birth_int))
 
     def _set_prob_anaem(self, prog_areas):
         risk = 'Anaemia'

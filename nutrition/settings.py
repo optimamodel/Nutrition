@@ -11,10 +11,10 @@ class Settings(object):
         self.timestep = 1./12. # in months
         self.stunting_list = ['High', 'Moderate', 'Mild', 'Normal']
         self.stunted_list = self.stunting_list[:2]
-        self.non_stunted_list = self.stunting_list[:2]
+        self.non_stunted_list = self.stunting_list[2:]
         self.anaemia_list = ['Anaemic', 'Not anaemic']
         self.anaemic_list = self.anaemia_list[:1]
-        self.non_anaemic_list = self.anaemia_list[:1]
+        self.non_anaemic_list = self.anaemia_list[1:]
         self.wasting_list = ['SAM', 'MAM', 'Mild', 'Normal']
         self.wasted_list = self.wasting_list[:2]
         self.non_wasted_list = self.wasting_list[2:]

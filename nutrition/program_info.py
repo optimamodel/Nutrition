@@ -118,12 +118,12 @@ class ProgramInfo:
                 unrestr_cov = prog.interp_cov(unrestr_cov, restr_cov=False)
             else:
                 raise Exception("Error: scenario type '{}' is not valid".format(scen_type))
-            prog.cov_scen = unrestr_cov
+            prog.annual_cov = unrestr_cov
 
     def collect_covs(self):
         covs = {}
         for prog in self.programs:
-            covs[prog.name] = prog.cov_scen
+            covs[prog.name] = prog.annual_cov
         return covs
 
     def update_prog_covs(self, pops, covs, restr_cov=True):
@@ -138,7 +138,8 @@ class ProgramInfo:
             if abs(prog.annual_cov[prog.year-1] - prog.annual_cov[prog.year]) > 1e-3:
                 return True
             else:
-                return False
+                pass
+        return False
 
     def adjust_covs(self, pops, year):
         for program in self.programs:

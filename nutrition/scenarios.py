@@ -22,7 +22,7 @@ class Scen(object):
         self.prog_info.set_years(self.all_years)
         self.prog_info.set_init_covs(pops, self.all_years)
         self.prog_info.set_costcovs() # enables getting coverage from cost
-        self.prog_info.get_cov_scen(scen_type, scen)
+        self.prog_info.get_cov_scen(scen_type, scen) # TODO: coverages not restricted, annual_covs maybe best set elsewhere
 
     def run_scen(self):
         covs = self.prog_info.collect_covs()
