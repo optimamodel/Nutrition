@@ -2,7 +2,7 @@ from utils import restratify
 from nutrition import settings
 
 class Model:
-    def __init__(self, name, pops, prog_info, all_years, adjust_cov=False, timeTrends=False, calibrate=True):
+    def __init__(self, name, pops, prog_info, all_years, adjust_cov=False, timeTrends=False, calibrate=False):
         self.name = name
         self.pops = pops
         self.children, self.pw, self.nonpw = self.pops
@@ -11,18 +11,38 @@ class Model:
 
         # get key items
         self.all_years = all_years
-        self.sim_years = self.all_years
-        self.year = self.all_years[0]
+        self.base_year = self.all_years[0]
+        self.year = self.base_year
+        if calibrate: # one extra year without coverage change
+            self.calib_years = self.all_years[1:2]
+            self.sim_years = self.all_years[2:]
+        else:
+            self.calib_years = []
+            self.sim_years = self.all_years[1:]
+
         self._set_trackers()
 
         # set requirements for populations -- conditional probs
-        self._set_pop_probs()
-        self._track_prevs()
-        self._preg_info()
+        self.setup()
+        self.calibrate()
 
         self.adjust_cov = adjust_cov
         self.timeTrends = timeTrends
 
+    def setup(self):
+        self._set_preg_info()
+        self._set_pop_probs(self.base_year)
+        self._reset_storage()
+        self._track_prevs()
+
+    def calibrate(self):
+        for year in self.calib_years:
+            self.update_year(year)
+            self._set_pop_probs(year)
+            self._reset_storage()
+            self._apply_prog_covs()
+            self._distrib_pops()
+            self.integrate()
 
     def _set_trackers(self):
         """ Lists to store outcomes """
@@ -54,8 +74,8 @@ class Model:
         self.anaemia_prev[self.year] = [pop.getTotalNumberAnaemic() for pop in self.pops][0] / \
                                        [pop.getTotalPopulation() for pop in self.pops][0]
 
-    def _set_pop_probs(self):
-        init_cov = self.prog_info.get_ann_covs(self.year)
+    def _set_pop_probs(self, year):
+        init_cov = self.prog_info.get_ann_covs(year-1)
         prog_areas = self.prog_info.prog_areas
         for pop in self.pops:
             pop.previousCov = init_cov
@@ -71,22 +91,23 @@ class Model:
         self.prog_info.update_prog_year(year)
 
     def run_sim(self, covs, restr_cov=True):
-        # self.prog_info.update_prog_covs(self.pops, covs, restr_cov=restr_cov) # TODO: think about the use of this
-        for year in self.all_years[1:]:
+        self.prog_info.update_prog_covs(self.pops, covs, restr_cov)
+        for year in self.sim_years:
             self.update_year(year)
             # determine if there are cov changes from previous year
-            change = self.prog_info.determine_cov_change() # TODO: would like to return a list of progs that have changed cov
+            change = self.prog_info.determine_cov_change()
             if change:
-                self._apply_prog_covs()
                 # update for next year
-                self._set_pop_probs()
+                self._set_pop_probs(year)
                 self._reset_storage()
+                self._apply_prog_covs()
             if self.adjust_cov: # account for pop growth
                 self.prog_info.adjust_covs(self.pops, year)
             # distribute pops according to new distributions and move model
             self._distrib_pops()
             self.integrate()
             self._track_prevs()
+            print self.stunting_prev
 
     def _apply_prog_covs(self):
         # update populations
@@ -106,7 +127,7 @@ class Model:
         self._update_wra_pop()
         self._update_women_dists()
 
-    def _preg_info(self):
+    def _set_preg_info(self):
         FP = [prog for prog in self.prog_info.programs if prog.name == 'Family Planning']
         if FP:
             FPprog = FP[0]
@@ -225,8 +246,8 @@ class Model:
                 # anaemia
                 oldProbAnaemia = age_group.getFracRisk('Anaemia')
                 newProbAnaemia = oldProbAnaemia * age_group.totalAnaemiaUpdate
-                age_group.anaemia_dist['anaemic'] = newProbAnaemia
-                age_group.anaemia_dist['not anaemic'] = 1.-newProbAnaemia
+                age_group.anaemia_dist['Anaemic'] = newProbAnaemia
+                age_group.anaemia_dist['Not anaemic'] = 1.-newProbAnaemia
                 # wasting
                 newProbWasted = 0.
                 for wastingCat in self.settings.wasted_list:
@@ -238,7 +259,7 @@ class Model:
                 nonWastedDist = restratify(newProbWasted)
                 for nonWastedCat in self.settings.non_wasted_list:
                     age_group.wasting_dist[nonWastedCat] = nonWastedDist[nonWastedCat]
-                age_group.distrib_pop()
+                # age_group.distrib_pop()
         elif population.name == 'Pregnant women':
             # update pw anaemia but also birth distribution for <1 month age group
             # update birth distribution
@@ -256,16 +277,16 @@ class Model:
                     age_group.referenceMortality[cause] *= age_group.mortalityUpdate[cause]
                 oldProbAnaemia = age_group.getFracRisk('Anaemia')
                 newProbAnaemia = oldProbAnaemia * age_group.totalAnaemiaUpdate
-                age_group.anaemia_dist['anaemic'] = newProbAnaemia
-                age_group.anaemia_dist['not anaemic'] = 1.-newProbAnaemia
+                age_group.anaemia_dist['Anaemic'] = newProbAnaemia
+                age_group.anaemia_dist['Not anaemic'] = 1.-newProbAnaemia
                 age_group.distrib_pop()
         elif population.name == 'Non-pregnant women':
             for age_group in population.age_groups:
                 # anaemia
                 oldProbAnaemia = age_group.getFracRisk('Anaemia')
                 newProbAnaemia = oldProbAnaemia * age_group.totalAnaemiaUpdate
-                age_group.anaemia_dist['anaemic'] = newProbAnaemia
-                age_group.anaemia_dist['not anaemic'] = 1.-newProbAnaemia
+                age_group.anaemia_dist['Anaemic'] = newProbAnaemia
+                age_group.anaemia_dist['Not anaemic'] = 1.-newProbAnaemia
                 age_group.distrib_pop()
             # weighted sum account for different effect and target pops across nonpw age groups # TODO: is this true or need to scale by frac targeted?
             # nonPWpop = population.getTotalPopulation()
@@ -387,7 +408,9 @@ class Model:
                         newbornBox = newborns.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat]
                         newbornBox.populationSize -= ageingOut[0][stuntingCat][wastingCat][bfCat][anaemiaCat]
         # for older age groups, account for previous stunting (binary)
-        for i, age_group in enumerate(age_groups[1:], 1):
+        # for i, age_group in enumerate(age_groups[1:], 1):
+        for i in range(1, len(age_groups)):
+            age_group = age_groups[i]
             numAgeingIn = {}
             numAgeingIn['stunted'] = 0.
             numAgeingIn['not stunted'] = 0.
@@ -528,7 +551,7 @@ class Model:
             self._apply_child_mort()
             self._apply_child_ageing()
             self._apply_births()
-            # self.update_child_dists() # TODO: may not need this
+            # self.update_child_dists()
 
     def _distrib_pops(self):
         for pop in self.pops:
@@ -550,13 +573,13 @@ class Model:
             # anaemia
             probAnaemic = sum(age_group.anaemia_dist[cat] for cat in self.settings.anaemic_list)
             newProb = probAnaemic * age_group.trends['Anaemia']
-            age_group.anaemia_dist['anaemic'] = newProb
-            age_group.anaemia_dist['not anaemic'] = 1 - newProb
+            age_group.anaemia_dist['Anaemic'] = newProb
+            age_group.anaemia_dist['Not anaemic'] = 1 - newProb
         for age_group in self.pw.age_groups + self.nonpw.age_groups:
             probAnaemic = sum(age_group.anaemia_dist[cat] for cat in self.settings.anaemic_list)
             newProb = probAnaemic * age_group.trends['Anaemia']
-            age_group.anaemia_dist['anaemic'] = newProb
-            age_group.anaemia_dist['not anaemic'] = 1-newProb
+            age_group.anaemia_dist['Anaemic'] = newProb
+            age_group.anaemia_dist['Not anaemic'] = 1-newProb
 
     def _get_parset(self):
         """ Returns the full parameter set used by the model
@@ -565,16 +588,6 @@ class Model:
         frac poor, in food groups, attendance
         program coverages, unit costs"""
         pass
-
-
-    # def calibrate(self):
-    #     self.prog_info.set_init_covs(self.pops)
-    #     self._BPInfo()
-    #     for year in self.settings.calibrationYears:
-    #         self.update_year(year)
-    #         self._updateEverything()
-    #         self._progressModel()
-
 
     def get_outcome(self, outcome):
         if outcome == 'total_stunted':

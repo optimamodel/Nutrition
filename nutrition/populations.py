@@ -343,8 +343,6 @@ class ChildAgeGroup(object):
                 for breastfeedingCat in self.settings.bf_list:
                     for anemiaStatus in self.settings.anaemia_list:
                         self.stunting_dist[stuntingCat] += self.boxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].populationSize / totalPop
-        #TODO: problem is here. after update, distribution has totally changed even if it shouldn't (i.e no coverage change)
-        # TODO: ONLY FOR THE <1month!
 
     def update_wasting_dist(self):
         totalPop = self.getAgeGroupPopulation()

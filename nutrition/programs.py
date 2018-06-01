@@ -44,7 +44,7 @@ class Program(object):
         Lists must not have any missing values, so interpolate if missing"""
         # check the data type of cov
         if isinstance(cov, list):
-            self.annual_cov += self.interp_cov(cov, restr_cov)
+            self.annual_cov = self.interp_cov(cov, restr_cov) # TODO: want to do this??
         else: # scalar
             self._set_scalar(cov, restr_cov)
 
@@ -74,7 +74,7 @@ class Program(object):
         if restr_cov:
             scaled_cov = self.get_unrestr_cov(cov)
         interpolated = [scaled_cov] * len(self.all_years)
-        self.annual_cov.update(interpolated)
+        self.annual_cov = [self.unrestr_init_cov] + interpolated
 
     def get_unrestr_cov(self, restr_cov):
         return restr_cov*self.restrictedPopSize / self.unrestrictedPopSize

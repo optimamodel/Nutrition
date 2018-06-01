@@ -104,6 +104,7 @@ class ProgramInfo:
         """ If scen is a budget scenario, convert it to unrestricted coverage.
         If scen is a coverage object, assumed to be restricted cov and coverted
         Return: assigns attribute to each program, which are lists of unrestricted covs each year"""
+        covs = []
         for prog in self.programs:
             if 'ov' in scen_type: # coverage scen
                 # convert restricted to unrestricted coverage
@@ -118,17 +119,18 @@ class ProgramInfo:
                 unrestr_cov = prog.interp_cov(unrestr_cov, restr_cov=False)
             else:
                 raise Exception("Error: scenario type '{}' is not valid".format(scen_type))
-            prog.annual_cov = unrestr_cov
-
-    def collect_covs(self):
-        covs = {}
-        for prog in self.programs:
-            covs[prog.name] = prog.annual_cov
+            covs.append(unrestr_cov)
         return covs
 
-    def update_prog_covs(self, pops, covs, restr_cov=True):
-        for prog in self.programs:
-            cov = covs[prog.name]
+    # def collect_covs(self):
+    #     covs = {}
+    #     for prog in self.programs:
+    #         covs[prog.name] = prog.annual_cov
+    #     return covs
+
+    def update_prog_covs(self, pops, covs, restr_cov):
+        for i, prog in enumerate(self.programs):
+            cov = covs[i]
             prog.update_cov(cov, restr_cov=restr_cov)
         # restrict covs
         self.restrict_covs(pops)

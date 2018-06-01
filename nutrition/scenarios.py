@@ -12,21 +12,19 @@ class Scen(object):
         self.prog_info = dcp(prog_info)
         self.pops = dcp(pops)
         self.scen = scen
-        self.set_progs(pops, scen_type, scen)
+        self.set_progs(pops)
         self.model = model.Model(name, self.pops, self.prog_info, self.all_years)
         self.active = active
-        self.resultsref = None
-        self.scenparset = None
 
-    def set_progs(self, pops, scen_type, scen):
+    def set_progs(self, pops):
         self.prog_info.set_years(self.all_years)
         self.prog_info.set_init_covs(pops, self.all_years)
         self.prog_info.set_costcovs() # enables getting coverage from cost
-        self.prog_info.get_cov_scen(scen_type, scen) # TODO: coverages not restricted, annual_covs maybe best set elsewhere
 
     def run_scen(self):
-        covs = self.prog_info.collect_covs()
-        self.model.run_sim(covs)
+        """ Define the coverage scenario (list of lists) then run the simulation """
+        covs = self.prog_info.get_cov_scen(self.scen_type, self.scen)
+        self.model.run_sim(covs, restr_cov=False) # coverage restricted in previous func
 
 def make_scens(country, region, sim_type, prog_data, scen_names, scen_types):
     """ Define the custom scenarios by providing all necessary information.
