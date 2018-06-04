@@ -53,7 +53,7 @@ export default new Router({
         {
           path: 'optimizations',
           name: 'Create optimizations',
-          component: ScenariosPage
+          component: OptimizationsPage
         },
         {
           path: 'mainadmin',
