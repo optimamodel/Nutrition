@@ -1,7 +1,0 @@
-#!/bin/bash
-# A little script to open the client and server simultaneously.
-# Not sure why bash -c is required, but it closes immediately otherwise.
-# Version: 2018mar17
-
-gnome-terminal -x bash -c "python start_dev_client.py"
-gnome-terminal -x bash -c "python start_dev_server.py"
