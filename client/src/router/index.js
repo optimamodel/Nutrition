@@ -10,11 +10,7 @@ import DashboardLayout from '@/components/app/DashboardLayout.vue'
 // App views
 import NotFound from '@/components/generic/NotFoundPage.vue'
 import ProjectsPage from '@/components/app/ProjectsPage'
-//import DiseaseBurdenPage from '@/components/app/DiseaseBurdenPage'
-//import InterventionsPage from '@/components/app/InterventionsPage'
-//import EquityPage from '@/components/app/EquityPage'
-//import FinancialRiskPage from '@/components/app/FinancialRiskPage'
-//import HealthPackagesPage from '@/components/app/HealthPackagesPage'
+import ScenariosPage from '@/components/app/ScenariosPage'
 import LoginPage from '@/components/app/LoginPage'
 import MainAdminPage from '@/components/app/MainAdminPage'
 import RegisterPage from '@/components/app/RegisterPage'
@@ -49,31 +45,16 @@ export default new Router({
           name: 'Manage projects',
           component: ProjectsPage
         },
-        // {
-        //   path: 'bod',
-        //   name: 'Define burden of disease',
-        //   component: DiseaseBurdenPage
-        // },
-        // {
-        //   path: 'interventions',
-        //   name: 'Define interventions',
-        //   component: InterventionsPage
-        // },
-        // {
-        //   path: 'equity',
-        //   name: 'Define equity',
-        //   component: EquityPage
-        // },
-        // {
-        //   path: 'financialrisk',
-        //   name: 'Define financial risk protection',
-        //   component: FinancialRiskPage
-        // },
-        // {
-        //   path: 'healthpackages',
-        //   name: 'Define health packages',
-        //   component: HealthPackagesPage
-        // },
+        {
+          path: 'scenarios',
+          name: 'Create scenarios',
+          component: ScenariosPage
+        },
+        {
+          path: 'optimizations',
+          name: 'Create optimizations',
+          component: ScenariosPage
+        },
         {
           path: 'mainadmin',
           name: 'Admin',

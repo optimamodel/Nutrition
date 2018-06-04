@@ -14,8 +14,6 @@ Last update: 2018may28
       <p>Optima Nutrition is currently under development. Development is supported through a partnership
         between the <a href="http://www.burnet.edu.au">Burnet Institute</a> and the <a href="http://www.worldbank.org">World Bank</a>.</p>
 
-      <!--<p>The source code for HealthPrior is available on <a href="http://github.com/optimamodel/hptool">GitHub</a>.</p>-->
-
     <p>Technical information:</p>
 
     <div class="divTable">

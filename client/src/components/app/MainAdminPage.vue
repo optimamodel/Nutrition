@@ -6,7 +6,7 @@ Last update: 2018-05-28
 
 <template>
   <div class="SitePage">
-    <h2>HealthPrior Users</h2>
+    <h2>Optima Nutrition Users</h2>
     <table v-if="usersList[0] != undefined">
       <tr>
         <th>Username</th>
@@ -39,7 +39,7 @@ Last update: 2018-05-28
 
 <script>
 import rpcservice from '@/services/rpc-service'
-import userservice from '@/services/user-service' 
+import userservice from '@/services/user-service'
 import router from '@/router'
 
 export default {

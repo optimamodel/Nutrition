@@ -1,8 +1,8 @@
 {
-  "name": "HealthPrior",
-  "version": "0.5.0",
-  "description": "HealthPrior GUI",
-  "author": "HealthPrior Working Group <info@hptool.com>",
+  "name": "Optima Nutrition",
+  "version": "0.2.0",
+  "description": "Optima Nutrition GUI",
+  "author": "Optima Consortium for Decision Science <info@ocds.co>",
   "private": true,
   "scripts": {
     "dev": "node build/dev-server.js",
