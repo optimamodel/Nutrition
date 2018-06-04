@@ -51,11 +51,11 @@ def objectiveFunction(allocation, objective, model, freeFunds, fixedAllocations,
     # scale the allocation appropriately
     scaledAllocation = rescaleAllocation(freeFunds, allocation)
     newCoverages = {}
-    programs = thisModel.programInfo.programs
+    programs = thisModel.ProgramInfo.programs
     totalAllocations = _addFixedAllocations(totalAllocations, scaledAllocation, indxToKeep)
     for idx, program in enumerate(programs):
         newCoverages[program.name] = program.costCurveFunc(totalAllocations[idx]) / program.unrestrictedPopSize
-    thisModel.runSimulationFromOptimisation(newCoverages)
+    thisModel.simulateScalar(newCoverages, restrictedCov=False)
     outcome = thisModel.getOutcome(objective) * 1000.
     if objective == 'thrive' or objective == 'healthy_children' or objective == 'nonstunted_nonwasted' or objective == 'no_conditions':
         outcome *= -1
@@ -85,7 +85,7 @@ class Optimisation:
         self.maxIter = maxIter
         self.swarmSize = swarmSize
         self.BOCs = {}
-        self.programs = self.model.programInfo.programs
+        self.programs = self.model.ProgramInfo.programs
         self.parallel = parallel
         if numCPUs:
             self.numCPUs = numCPUs
@@ -95,7 +95,7 @@ class Optimisation:
         # self.costCurveType = costCurveType # TODO: currently doesn't do anything.
         self.timeSeries = None
         for program in self.programs:
-            program._setCostCoverageCurve()
+            program.set_costcov()
         self.calculateAllocations(fixCurrentAllocations)
         self.kwargs = {'model': self.model,
                        'freeFunds': self.freeFunds, 'fixedAllocations': self.fixedAllocations}
@@ -134,7 +134,7 @@ class Optimisation:
         referenceAllocations = []
         for program in self.programs:
             if program.reference:
-                referenceAllocations.append(program.getSpending())
+                referenceAllocations.append(program.get_spending())
             else:
                 referenceAllocations.append(0)
         return referenceAllocations
@@ -142,7 +142,7 @@ class Optimisation:
     def getCurrentAllocations(self):
         allocations = []
         for program in self.programs:
-            allocations.append(program.getSpending())
+            allocations.append(program.get_spending())
         return allocations
 
     def getFixedAllocations(self, fixCurrentAllocations):
@@ -170,17 +170,17 @@ class Optimisation:
         for i, prog in enumerate(self.programs):
             if prog.name == progName:
                 correctedFunds[i] = 0
-        if self.model.programInfo.currentExpenditure:
+        if self.model.ProgramInfo.currentExpenditure:
             currentCalculated = sum(correctedFunds) - sum(self.referenceAllocations)
-            scaleFactor = self.model.programInfo.currentExpenditure / currentCalculated
+            scaleFactor = self.model.ProgramInfo.currentExpenditure / currentCalculated
             for program in self.programs:
                 if (not program.reference) and (program.name != progName):
-                    program.scaleUnitCosts(scaleFactor)
+                    program.scale_unit_costs(scaleFactor)
         elif any(sub in self.name for sub in specialRegions):  # TODO: this should be removed after Tanzania application
             scaleFactor = 0.334  # this is the median of all other regions
             for program in self.programs:
                 if (not program.reference) and (program.name != progName):
-                    program.scaleUnitCosts(scaleFactor)
+                    program.scale_unit_costs(scaleFactor)
         else:
             scaleFactor = 1
         return self.getCurrentAllocations(), scaleFactor
@@ -292,7 +292,7 @@ class Optimisation:
             zeroCov = {prog.name: 0 for prog in self.programs}
             zeroModel = dcp(self.model)
             # get baseline case
-            zeroModel.runSimulationGivenCoverage(zeroCov, restrictedCov=True)
+            zeroModel.simulateScalar(zeroCov, restrictedCov=True)
             zeroOutcome = zeroModel.getOutcome(objective)
             for indx, program in enumerate(self.programs):
                 thisModel = dcp(self.model)
@@ -300,7 +300,7 @@ class Optimisation:
                 thisCov[program.name] = newCov
                 if program.malariaTwin:
                     thisCov[program.name + ' (malaria area)'] = newCov
-                thisModel.runSimulationGivenCoverage(thisCov, restrictedCov=True)
+                thisModel.simulateScalar(thisCov, restrictedCov=True)
                 outcome = thisModel.getOutcome(objective)
                 if abs((outcome - zeroOutcome) / zeroOutcome) * 100. > threshold:  # no impact
                     indxToKeep.append(indx)
@@ -356,7 +356,7 @@ class Optimisation:
     def oneModelRunWithOutput(self, allocationDictionary):
         model = dcp(self.model)
         newCoverages = self.getCoverages(allocationDictionary)
-        model.runSimulationFromOptimisation(newCoverages)
+        model.simulateScalar(newCoverages, restrictedCov=False)
         return model
 
     def getOptimisedOutcomes(self, allocations):

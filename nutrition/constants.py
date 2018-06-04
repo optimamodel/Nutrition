@@ -12,7 +12,7 @@ class Constants:
             self.simulationYears = self.allYears[1:] # year after coverage change
         self.stuntingList = dcp(data.riskCategories['Stunting'])
         self.wastingList = dcp(data.riskCategories['Wasting'])
-        self.bfList = dcp(data.riskCategories['Breastfeeding'])
+        self.bfList = dcp( data.riskCategories['Breastfeeding'])
         self.anaemiaList = dcp(data.riskCategories['Anaemia'])
         self.birthOutcomes = dcp(data.riskCategories['Birth outcomes'])
         self.stuntedList = self.stuntingList[2:]
@@ -32,6 +32,8 @@ class Constants:
         self.risks = ['Stunting', 'Wasting', 'Breastfeeding', 'Anaemia'] # TODO: read from spreadsheet
         self.childAgeSpans = [1., 5., 6., 12., 36.]
         self.womenAgeingRates = [1./5., 1./10., 1./10., 1./10.] # this is in years
+
+        # TODO: this data can go in relevant objects
         self.PWageDistribution = dcp(data.PWageDistribution)
         self.popProjections = dcp(data.projections)
         self.correctBF = dcp(data.correctBF)
@@ -48,7 +50,9 @@ class Constants:
         self.birthAges = dcp(data.birthAges)
         self.birthAgeProgram = dcp(data.birthAgeProgram)
         self.programList = dcp(data.programList)
-        self.costCurveInfo = dcp(data.costCurveInfo)
+
+        self.costCurveInfo = dcp(data.costCurveInfo) # TODO: this info will be in user settings (maybe data?)
+
         self.currentExpenditure = dcp(data.currentExpenditure)
         self.availableBudget = dcp(data.availableBudget)
         self.programTargetPop = dcp(data.programTargetPop) # frac of each population which is targeted

@@ -1,486 +1,167 @@
-import pandas as pd
 from copy import deepcopy as dcp
+from pandas import ExcelFile, read_excel, notnull
+import settings
 
-class Data:
-    def __init__(self, filepath):
-        self.filename = filepath
-        self.workbook = pd.ExcelFile(filepath)
-        self.sheetNames = self.workbook.sheet_names
-        self.childAges = ["<1 month", "1-5 months", "6-11 months", "12-23 months", "24-59 months"]
-        self.WRAages = ['WRA: 15-19 years', 'WRA: 20-29 years', 'WRA: 30-39 years', 'WRA: 40-49 years']
-        self.PWages = ["PW: 15-19 years", "PW: 20-29 years", "PW: 30-39 years", "PW: 40-49 years"]
-        self.birthOutcomes = ['Term AGA', 'Term SGA', 'Pre-term AGA', 'Pre-term SGA']
-        self.getProgramsForAnalysis()
-        self.readAllData()
+class DefaultParams(object):
+    def __init__(self, default_path):
+        self.settings = settings.Settings()
+        self.impacted_pop = None
+        self.prog_areas = {}
+        self.pop_areas = {}
+        self.rr_death = {}
+        self.or_cond = {}
+        self.or_cond_bo = {}
+        self.or_wasting_prog = {}
+        self.rr_dia = None
+        self.or_stunting_prog = None
+        self.bo_progs = None
+        self.rr_anaem_prog = None
+        self.or_anaem_prog = None
+        self.child_progs = None
+        self.pw_progs = None
+        self.rr_age_order = None
+        self.rr_interval = None
+        self.or_bf_prog = None
+        # read data
+        self.spreadsheet = ExcelFile(default_path)
+        self.read_spreadsheet()
 
-    #####--- WRAPPER METHODS ---######
+    def read_spreadsheet(self):
+        self.impact_pop()
+        self.prog_risks()
+        self.pop_risks()
+        self.anaemia_progs()
+        self.wasting_progs()
+        self.relative_risks()
+        self.odds_ratios()
+        self.get_child_progs()
+        self.get_pw_progs()
+        self.get_bo_progs()
+        self.get_bo_risks()
 
-    def readAllData(self):
-        self.readProgramData() # TODO: check program dependencies for IYCF
-        self.readDemographicsData()
-        self.readMortalityData()
-        self.getAllIYCFpackages()
-        self.padRequiredFields()
-        self.combineRelatedData()
-
-    def readProgramData(self):
-        self.getStuntingProgram()
-        self.getBirthOutcomes()
-        self.getAnaemiaProgram()
-        self.getWastingProgram()
-        self.getChildProgram()
-        self.getPWPrograms()
-        self.getFamilyPrograms()
-        self.getBirthAgePrograms()
-        self.getCostCoverageInfo()
-        self.getExpenditureAndBudget()
-        self.getProgramTargetPop()
-        self.getProgramImpactedPop()
-        self.getProgramRiskAreas()
-        self.getProgramDependencies()
-        self.getReferencePrograms()
-        self.getProgramAnnualSpending()
-        self.getSimulationYears()
-
-    def readDemographicsData(self):
-        self.getDemographics()
-        self.getAgeDist()
-        self.getRiskDist()
-        self.getAnaemiaDist()
-        self.getBirthDist()
-        self.getProjections()
-        self.getAnnualPrev()
-        self.getAppropriateBF()
-        self.getPopulationRiskAreas()
-
-    def readMortalityData(self):
-        self.getDeathDist()
-        self.getRelativeRisks()
-        self.getBOrisks()
-        self.getIncidences()
-        self.getConditions()
-        self.getORforCondition()
-        self.getMortalityRates()
-
-    def padRequiredFields(self):
-        self.padRelativeRisks()
-        self.padStuntingORprograms()
-        self.padWastingORprograms()
-        self.padBForPrograms()
-        self.padAnaemiaORprograms()
-        self.padChildPrograms()
-        self.padPWprograms()
-
-    def combineRelatedData(self):
-        self.combineORprogram()
-
-
-    #####--- WORKER METHODS ---######
-
-    ## DEMOGRAPHICS ##
-    def getDemographics(self):
-        baseline = self.readSheet('Baseline year demographics', [0,1])
-        demographics = {}
-        for field in ['Current year', 'Food']:
-            demographics.update(baseline.loc[field].to_dict('index'))
-        self.demographics = {key: item['Values'] for key, item in demographics.iteritems()}
-        self.year = self.demographics['year']
-
-    def getAgeDist(self):
-        baseline = self.readSheet('Baseline year demographics', [0,1])
-        agePop = {}
-        for field in ['Non-pregnant women population', 'PW population']:
-            agePop.update(baseline.loc[field].to_dict('index'))
-        self.populationByAge = {key: item['Values'] for key, item in agePop.iteritems()}
-        ageDist = {}
-        for field in ['Age distribution pregnant']:
-            ageDist.update(baseline.loc[field].to_dict('index'))
-        self.PWageDistribution = {key: item['Values'] for key, item in ageDist.iteritems()}
-
-    def getRiskDist(self):
-        dist = self.readSheet('Distributions', [0,1])
-        riskDist = {}
-        self.riskCategories = {}
-        for field in ['Stunting', 'Wasting', 'Breastfeeding']:
-            riskDist[field] = dist.loc[field].to_dict('dict')
-            self.riskCategories[field] = list(dist.loc[field].index)
-        self.riskCategories['Birth outcomes'] = self.birthOutcomes
-        self.riskDistributions = riskDist
-
-    def getAnaemiaDist(self):
-        field = 'Anaemia'
-        dist = self.readSheet('Prevalence of anaemia', [0,1])
-        anaemiaDist = dist.loc[field].to_dict('dict')
-        self.riskCategories[field] = list(dist.loc[field].index)
-        self.riskDistributions[field] = anaemiaDist
-
-    def getBirthDist(self):
-        birthsSheet = self.readSheet('Distribution births', [0, 1])
-        self.birthAgeDist = birthsSheet.loc['Birth age order'].to_dict('dict')['Fraction']
-        self.birthIntervalDist = birthsSheet.loc['Birth intervals'].to_dict('dict')['Fraction']
-
-    def getProjections(self):
-        self.projections = self.readSheet('Demographic projections', [0], 'dict')
-
-    def getAnnualPrev(self):
-        annualPrev = self.readSheet('Annual prevalence',[0,1])
-        self.annualPrev = {level: annualPrev.xs(level).to_dict('index') for level in annualPrev.index.levels[0]} # TOOO: could use this method to streamline ugly code in this script
-
-    ### MORTALITY ###
-
-    def getDeathDist(self):
-        self.deathDist = self.readSheet('Causes of death', [0], 'index')
-        self.causesOfDeath = self.deathDist.keys()
-
-    def getRelativeRisks(self):
-        RRsheet = self.readSheet('Relative risks', [0,1,2], 'index')
-        self.RRdeath = self.makeDict(RRsheet)
-
-    def getBOrisks(self):
-        BOsheet = self.readSheet('Birth outcomes & risks', [0,1])
-        self.birthDist = BOsheet.loc['Distribution'].to_dict('index')['Fraction of births']
-        self.ORconditionBirth = BOsheet.loc['OR for condition'].to_dict('index')
-        self.RRdeath['Birth outcomes'] = BOsheet.loc['RR of death by cause'].to_dict('index')
-        self.RRageOrder = BOsheet.loc['RR age order'].to_dict('index')
-        self.RRinterval = BOsheet.loc['RR interval'].to_dict('index')
-
-    def getIncidences(self):
-        self.incidences = self.readSheet('Incidence of conditions', [0], 'dict')
-
-    def getConditions(self):
-        self.conditions = self.readSheet('Incidence of conditions', [0], 'index').keys()
-
-    def getORforCondition(self):
-        ORsheet = self.readSheet('Odds ratios', [0,1])
-        ORs = ORsheet.loc['OR stunting progression'].to_dict(orient='index')
-        del ORs['Stunting progression']['<1 month']
-        for field in ['OR stunting by condition', 'OR SAM by condition', 'OR MAM by condition', 'OR anaemia by condition']:
-            ORs[field] = {}
-            ORs[field].update(ORsheet.loc[field].to_dict(orient='index'))
-        self.ORcondition = ORs
-
-    def getMortalityRates(self):
-        baseline = self.readSheet('Baseline year demographics', [0,1])
-        mortalityRates = baseline.loc['Mortality rates'].to_dict(orient='index')
-        self.mortalityRates = {key: item['Values'] for key, item in mortalityRates.iteritems()}
-
-    def padRelativeRisks(self):
-        # pad with 1's for causes not included
-        for risk in ['Stunting', 'Wasting', 'Anaemia', 'Breastfeeding']:
-            if risk == 'Anaemia': # only risk across all pops
-                ages = self.childAges + self.WRAages + self.PWages
-            else:
-                ages = self.childAges
-            RRs = self.RRdeath[risk]
-            for cause in self.causesOfDeath:
-                if RRs.get(cause) is None:
-                    RRs[cause] = {}
-                    for status in self.riskCategories[risk]:
-                        RRs[cause][status] = {}
-                        for age in ages:
-                            RRs[cause][status][age] = 1.
-                self.RRdeath[risk].update(RRs)
-        # treat BO differently
-        RRs = self.RRdeath['Birth outcomes']
-        for cause in self.causesOfDeath:
-            if RRs.get(cause) is None:
-                RRs[cause] = {}
-                for status in self.riskCategories['Birth outcomes']:
-                    RRs[cause][status] = 1.
-            self.RRdeath['Birth outcomes'].update(RRs)
-
-    ####--- PROGRAMS ---####
-
-    def getStuntingProgram(self):
-        ORsheet = self.readSheet('Odds ratios', [0,1])
-        self.ORstuntingProgram = ORsheet.loc['OR stunting by program'].to_dict(orient='index')
-
-    def getProgramTargetPop(self):
-        targetPopSheet = self.readSheet('Programs target population', [0,1])
-        targetPop = {}
-        for pop in ['Children', 'Pregnant women', 'Non-pregnant WRA', 'General population']:
-            targetPop.update(targetPopSheet.loc[pop].to_dict(orient='index'))
-        self.programTargetPop = targetPop
-
-    def getProgramImpactedPop(self):
-        popSheet = self.readSheet('Programs impacted population', [0,1])
+    def impact_pop(self):
+        sheet = self.read_sheet('Programs impacted population', [0,1])
         impacted = {}
         for pop in ['Children', 'Pregnant women', 'Non-pregnant WRA', 'General population']:
-            impacted.update(popSheet.loc[pop].to_dict(orient='index'))
-        self.programImpactedPop = impacted
+            impacted.update(sheet.loc[pop].to_dict(orient='index'))
+        self.impacted_pop = impacted
 
-    def getProgramRiskAreas(self):
-        areas = self.readSheet('Program risk areas', [0])
+    def prog_risks(self):
+        areas = self.read_sheet('Program risk areas', [0])
         booleanFrame = areas.isnull()
-        self.programAreas = {}
         for program, areas in booleanFrame.iterrows():
             for risk, value in areas.iteritems():
-                if self.programAreas.get(risk) is None:
-                    self.programAreas[risk] = []
+                if self.prog_areas.get(risk) is None:
+                    self.prog_areas[risk] = []
                 if not value:
-                    self.programAreas[risk].append(program)
+                    self.prog_areas[risk].append(program)
 
-    def getCostCoverageInfo(self):
-        self.costCurveInfo = self.readSheet('Programs cost and coverage', [0], 'dict')
-        #self.baselineCov = {program: info['Baseline coverage'] for program, info in self.costCurveInfo.iteritems()}
-
-    def getExpenditureAndBudget(self):
-        thisSheet = self.workbook.parse('Expenditure & budget', index_col=[0])
-        availableBudget = thisSheet.loc['Available budget']['Value']
-        self.availableBudget = availableBudget if pd.notnull(availableBudget) else None
-        expenditure = thisSheet.loc['Current expenditure']['Value']
-        self.currentExpenditure = expenditure if pd.notnull(expenditure) else None
-
-    def getProgramDependencies(self): # TODO: will need to put IYCF dependencies in (maybe have them in the spreadsheet, but will be ignored if not selected by user)
-        dependencies = self.readSheet('Program dependencies', [0])
-        programDep = {}
-        for program, dependency in dependencies.iterrows():
-            programDep[program] = {}
-            for dependType, value in dependency.iteritems():
-                if isinstance(value, unicode): # cell not empty
-                    programDep[program][dependType] = value.replace(", ", ",").split(',') # assumes programs separated by ", "
-                else:
-                    programDep[program][dependType] = []
-        # pad the remaining programs
-        missingProgs = list(set(self.programList) - set(programDep.keys()))
-        for program in missingProgs:
-            programDep[program] = {}
-            for field in dependencies.columns:
-                programDep[program][field] = []
-        self.programDependency = programDep
-
-    def getProgramAnnualSpending(self):
-        spending = self.workbook.parse('Programs annual spending', index_col=[0,1])
-        # when no values specified, program is removed. In this case assume baseline coverage constant
-        self.programAnnualSpending = {}
-        for programType, yearValue in spending.iterrows():
-            if self.programAnnualSpending.get(programType[0]) is None:
-                self.programAnnualSpending[programType[0]] = {}
-            self.programAnnualSpending[programType[0]][programType[1]] = [list(yearValue.index), yearValue.tolist()]
-
-    def getSimulationYears(self):
-        projections = self.workbook.parse('Demographic projections')
-        self.simulationYears = projections['year'].tolist()
-
-    def getReferencePrograms(self):
-        reference = self.workbook.parse('Reference programs', index_col=[0])
-        self.referencePrograms = list(reference.index)
-
-    def getProgramsForAnalysis(self):
-        includeSheet = self.readSheet('Programs to include', [0])
-        includeSheet = includeSheet[pd.notnull(includeSheet)]
-        self.programList = []
-        for program, value in includeSheet.iterrows():
-            self.programList.append(program)
-
-    def getFamilyPrograms(self):
-        self.famPlanMethods = self.readSheet('Programs family planning', [0], 'index')
-
-    def getChildProgram(self):
-        childSheet = self.readSheet('Programs for children', [0,1,2])
-        childDict = childSheet.to_dict(orient='index')
-        self.childPrograms = self.makeDict(childDict)
-
-    def getPWPrograms(self):
-        PWsheet= self.readSheet('Programs for PW', [0,1,2])
-        PWdict = PWsheet.to_dict(orient='index')
-        self.PWprograms = self.makeDict(PWdict)
-
-    def getBirthAgePrograms(self):
-        programSheet = self.readSheet('Programs birth age', [0,1])
-        self.birthAgeProgram = programSheet.loc['Birth age program'].to_dict('dict')
-        self.birthAges = self.birthAgeProgram.keys()
-
-    def getAnaemiaProgram(self):
-        anaemiaSheet = self.readSheet('Programs anaemia', [0,1])
-        self.RRanaemiaProgram = anaemiaSheet.loc['Relative risks'].to_dict(orient='index')
-        self.ORanaemiaProgram = anaemiaSheet.loc['Odds ratios'].to_dict(orient='index')
-
-    def getWastingProgram(self):
-        self.ORwastingProgram = {}
-        wastingSheet = self.readSheet('Programs wasting', [0,1])
-        self.ORwastingProgram['SAM'] = wastingSheet.loc['OR SAM by program'].to_dict(orient='index')
-        self.ORwastingProgram['MAM'] = wastingSheet.loc['OR MAM by program'].to_dict(orient='index')
-
-    def combineORprogram(self):
-        self.ORprograms = {}
-        self.RRprograms = {} # to accommodate anaemia data
-        self.ORprograms['Stunting'] = self.ORstuntingProgram
-        self.ORprograms['Wasting'] = self.ORwastingProgram
-        self.ORprograms['Anaemia'] = self.ORanaemiaProgram
-        self.ORprograms['Breastfeeding'] = self.ORappropriateBFprogram
-        self.RRprograms['Anaemia'] = self.RRanaemiaProgram
-        self.RRprograms['Stunting'] = {}
-        self.RRprograms['Wasting'] = {}
-        self.RRprograms['Breastfeeding'] = {}
-
-    def getBirthOutcomes(self):
-        BOprograms = self.readSheet('Programs birth outcomes', [0,1], 'index')
-        newBOprograms = {}
-        for program in BOprograms.keys():
-            if not newBOprograms.get(program[0]):
-                newBOprograms[program[0]] = {}
-            newBOprograms[program[0]][program[1]] = BOprograms[program]
-        self.BOprograms = newBOprograms
-
-    def getAppropriateBF(self):
-        self.correctBF = self.readSheet('Appropriate breastfeeding', [0], 'dict')['Practice']
-
-    def getPopulationRiskAreas(self):
-        areas = self.readSheet('Population risk areas', [0])
+    def pop_risks(self):
+        areas = self.read_sheet('Population risk areas', [0])
         booleanFrame = areas.isnull()
-        self.populationAreas = {}
         for program, areas in booleanFrame.iterrows():
             for risk, value in areas.iteritems():
-                if self.populationAreas.get(risk) is None:
-                    self.populationAreas[risk] = []
+                if self.pop_areas.get(risk) is None:
+                    self.pop_areas[risk] = []
                 if not value:
-                    self.populationAreas[risk].append(program)
+                    self.pop_areas[risk].append(program)
 
-    def makeDict(self, mydict):
-        '''myDict is a spreadsheet with 3 index cols, converted to dict using orient='index' '''
-        resultDict = {}
-        for key in mydict.keys():
-            first = key[0]
-            sec = key[1]
-            third = key[2]
-            if resultDict.get(first) is None:
-                resultDict[first] = {}
-                resultDict[first][sec] = {}
-                resultDict[first][sec][third] = mydict[key]
-            if resultDict[first].get(sec) is None:
-                resultDict[first][sec] = {}
-                resultDict[first][sec][third] = mydict[key]
-            if resultDict[first][sec].get(third) is None:
-                    resultDict[first][sec][third] = mydict[key]
-        return resultDict
+    def relative_risks(self):
+        # risk areas hidden in spreadsheet (white text)
+        # stunting
+        rr_sheet = self.read_sheet('Relative risks', [0,1,2], skiprows=1)
+        rr = rr_sheet.loc['Stunting'].to_dict()
+        self.rr_death['Stunting'] = self.make_dict2(rr)
+        # wasting
+        rr_sheet = self.read_sheet('Relative risks', [0,1,2], skiprows=28)
+        rr = rr_sheet.loc['Wasting'].to_dict()
+        self.rr_death['Wasting'] = self.make_dict2(rr)
+        # anaemia
+        rr_sheet = self.read_sheet('Relative risks', [0,1,2], skiprows=55).dropna(axis=1, how='all')
+        rr = rr_sheet.loc['Anaemia'].to_dict()
+        self.rr_death['Anaemia'] = self.make_dict2(rr)
+        # currently no impact on mortality for anaemia
+        self.rr_death['Anaemia'].update({age:{cat:{'Diarrhoea':1} for cat in self.settings.anaemia_list} for age in self.settings.child_ages})
+        # breastfeeding
+        rr_sheet = self.read_sheet('Relative risks', [0,1,2], skiprows=64)
+        rr = rr_sheet.loc['Breastfeeding'].to_dict()
+        self.rr_death['Breastfeeding'] = self.make_dict2(rr)
+        # diarrhoea
+        rr_sheet = self.read_sheet('Relative risks', [0,1,2], skiprows=103).dropna(axis=1, how='all')
+        rr = rr_sheet.loc['Diarrhoea'].to_dict()
+        self.rr_dia = self.make_dict3(rr)
 
-    def readSheet(self, name, cols, dictOrient=None):
-        df = self.workbook.parse(name, index_col=cols).dropna(how='all')
-        if dictOrient:
-            df = df.to_dict(dictOrient)
-        return df
+    def odds_ratios(self):
+        or_sheet = self.read_sheet('Odds ratios', [0,1], skiprows=1)
+        this_or = or_sheet.loc['Condition'].to_dict('index')
+        self.or_cond['Stunting'] = {}
+        self.or_cond['Stunting']['Prev stunting'] = this_or['Given previous stunting (HAZ < -2 in previous age band)']
+        self.or_cond['Stunting']['Diarrhoea'] = this_or['Diarrhoea (per additional episode)']
+        self.or_cond['SAM'] = {}
+        self.or_cond['SAM']['Diarrhoea'] = or_sheet.loc['Wasting'].to_dict('index')['For SAM per additional episode of diarrhoea']
+        self.or_cond['MAM'] = {}
+        self.or_cond['MAM']['Diarrhoea'] = or_sheet.loc['Wasting'].to_dict('index')['For MAM per additional episode of diarrhoea']
+        self.or_cond['Anaemia'] = {}
+        self.or_cond['Anaemia']['Severe diarrhoea'] = {}
+        self.or_cond['Anaemia']['Severe diarrhoea'] = or_sheet.loc['Anaemia'].to_dict('index')['For anaemia per additional episode of severe diarrhoea']
+        self.or_stunting_prog = or_sheet.loc['By program'].to_dict('index')
 
-    def padStuntingORprograms(self):
-        '''Pads missing values with 1s'''
-        ORs = dcp(self.ORstuntingProgram)
-        for program in self.programList:
-            if program not in ORs:
-                ORs[program] = {}
-                for age in self.childAges:
-                    ORs[program][age] = 1.
-        self.ORstuntingProgram = ORs
+    def get_bo_progs(self):
+        progs = self.read_sheet('Programs birth outcomes', [0,1], 'index')
+        newprogs = {}
+        for program in progs.keys():
+            if not newprogs.get(program[0]):
+                newprogs[program[0]] = {}
+            newprogs[program[0]][program[1]] = progs[program]
+        self.bo_progs = newprogs
 
-    def padWastingORprograms(self):
-        '''Pads missing values with 1s'''
-        ORs = dcp(self.ORwastingProgram)
-        for wastingCat in ['SAM', 'MAM']:
-            for program in self.programList:
-                if program not in ORs[wastingCat]:
-                    ORs[wastingCat][program] = {}
-                    for age in self.childAges:
-                        ORs[wastingCat][program][age] = 1.
-        self.ORwastingProgram = ORs
+    def anaemia_progs(self):
+        anaem_sheet = self.read_sheet('Programs anemia', [0,1])
+        self.rr_anaem_prog = anaem_sheet.loc['Relative risks of anaemia when receiving intervention'].to_dict(orient='index')
+        self.or_anaem_prog = anaem_sheet.loc['Odds ratios of being anaemic when covered by intervention'].to_dict(orient='index')
 
-    def padBForPrograms(self):
-        ORs = dcp(self.ORappropriateBFprogram)
-        missingProgs = set(self.programList) - set(ORs.keys())
-        padded = {program:{age:1. for age in self.childAges} for program in missingProgs}
-        ORs.update(padded)
-        self.ORappropriateBFprogram = ORs
+    def wasting_progs(self):
+        wastingSheet = self.read_sheet('Programs wasting', [0,1])
+        self.or_wasting_prog['SAM'] = wastingSheet.loc['Odds ratio of SAM when covered by program'].to_dict(orient='index')
+        self.or_wasting_prog['MAM'] = wastingSheet.loc['Odds ratio of MAM when covered by program'].to_dict(orient='index')
 
-    def padAnaemiaORprograms(self):
-        ORs = dcp(self.ORanaemiaProgram)
-        missingProgs = set(self.programList) - set(ORs.keys()) - set(self.RRanaemiaProgram.keys())
-        padded = {program:{age:1. for age in self.childAges + self.PWages + self.WRAages} for program in missingProgs}
-        ORs.update(padded)
-        self.ORanaemiaProgram = ORs
+    def get_child_progs(self):
+        self.child_progs = self.read_sheet('Programs for children', [0,1,2], 'dict')
+        # self.child_progs = self.make_dict(childDict)
 
-    def padChildPrograms(self):
-        '''Need all causes to have a value for the present programs'''
-        fields = ['Affected fraction', 'Effectiveness mortality', 'Effectiveness incidence']
-        effectiveness = {}
-        for program in self.programList:
-            if self.childPrograms.get(program) is None:
-                self.childPrograms[program] = {}
-            for cause in self.causesOfDeath + ['MAM', 'SAM']:
-                if self.childPrograms[program].get(cause) is None:
-                    self.childPrograms[program][cause] = {}
-                for field in fields:
-                    if self.childPrograms[program][cause].get(field) is None:
-                        self.childPrograms[program][cause][field] = {}
-                    for age in self.childAges:
-                        if self.childPrograms[program][cause][field].get(age) is None:
-                            self.childPrograms[program][cause][field][age] = 0
-        for age in self.childAges:
-            effectiveness[age] = {}
-            for program in self.programList:
-                effectiveness[age][program] = {}
-                for cause in self.causesOfDeath + ['MAM', 'SAM']:
-                    effectiveness[age][program][cause] = {}
-                    for field in fields:
-                        effectiveness[age][program][cause][field] = self.childPrograms[program][cause][field][age]
-        self.childPrograms = effectiveness
+    def get_pw_progs(self):
+        self.pw_progs = self.read_sheet('Programs for PW', [0,1,2], 'dict')
+        # self.pw_progs = self.make_dict(pw_dict)
 
-    def padPWprograms(self):
-        '''Need all causes to have a value for the present programs'''
-        fields = ['Affected fraction', 'Effectiveness mortality']
-        effectiveness = {} # TODO; this and above function don't need to fill for all programs, just those relevant to PW and children
-        for program in self.programList:
-            if self.PWprograms.get(program) is None:
-                self.PWprograms[program] = {}
-            for cause in self.causesOfDeath:
-                if self.PWprograms[program].get(cause) is None:
-                    self.PWprograms[program][cause] = {}
-                for field in fields:
-                    if self.PWprograms[program][cause].get(field) is None:
-                        self.PWprograms[program][cause][field] = {}
-                    for age in self.PWages:
-                        if self.PWprograms[program][cause][field].get(age) is None:
-                            self.PWprograms[program][cause][field][age] = 0
-        for age in self.PWages:
-            effectiveness[age] = {}
-            for program in self.programList:
-                effectiveness[age][program] = {}
-                for cause in self.causesOfDeath:
-                    effectiveness[age][program][cause] = {}
-                    for field in fields:
-                        effectiveness[age][program][cause][field] = self.PWprograms[program][cause][field][age]
-        self.PWprograms = effectiveness
+    def get_bo_risks(self):
+        bo_sheet = self.read_sheet('Birth outcome risks', [0,1], skiprows=[0])
+        ors = bo_sheet.loc['Odds ratios for conditions'].to_dict('index')
+        self.or_cond_bo['Stunting'] = ors['Stunting (HAZ-score < -2)']
+        self.or_cond_bo['MAM'] = ors['MAM (WHZ-score between -3 and -2)']
+        self.or_cond_bo['SAM'] = ors['SAM (WHZ-score < -3)']
+        self.rr_age_order = bo_sheet.loc['Relative risk by birth age and order'].to_dict('index')
+        self.rr_interval = bo_sheet.loc['Relative risk by birth interval'].to_dict('index')
+        self.rr_death['Birth outcomes'] = bo_sheet.loc['Relative risks of neonatal causes of death'].to_dict()
 
+    def get_iycf_effects(self, iycf_packs):
+        # TODO: need something that catches if iycf packages not included at all.
+        effects = self.read_sheet('IYCF odds ratios', [0,1,2])
+        bf_effects = effects.loc['Odds ratio for correct breastfeeding']
+        stunt_effects = effects.loc['Odds ratio for stunting']
+        self.or_bf_prog = self.create_iycf(bf_effects, iycf_packs)
+        self.or_stunting_prog.update(self.create_iycf(stunt_effects, iycf_packs))
 
-    def _getMissingElements(self, listA, listB):
-        missingElements = set(listA) - set(listB)
-        return missingElements
-
-
-
-
-    ### IYCF ###
-
-    def getAllIYCFpackages(self):
-        effects = self.readSheet('IYCF package odds ratios', [0,1,2])
-        BFeffects = effects.loc['OR for correct breastfeeding']
-        stuntingEffects = effects.loc['OR for stunting']
-        packagesDict = self.defineIYCFpackages()
-        costCurveInfo = self.getIYCFcostCoverageSaturation(packagesDict)
-        self.programTargetPop.update(self.getIYCFtargetPop(packagesDict))
-        self.ORappropriateBFprogram = self.createIYCFpackages(BFeffects, packagesDict)
-        self.ORstuntingProgram.update(self.createIYCFpackages(stuntingEffects, packagesDict))
-        for field in ['unit cost']:
-            self.costCurveInfo[field].update(costCurveInfo[field])
-
-    def createIYCFpackages(self, effects, packagesDict):
-        '''Creates IYCF packages based on user input in 'IYCFpackages' '''
+    def create_iycf(self, effects, packages):
+        """ Creates IYCF packages based on user input in 'IYCFpackages' """
         # non-empty cells denote program combination
         # get package combinations
         # create new program
         newPrograms = {}
         ORs = {}
-        for key, item in packagesDict.items():
+        for key, item in packages.items():
             if newPrograms.get(key) is None:
                 newPrograms[key] = {}
-            for age in self.childAges:
+            for age in self.settings.child_ages:
                 ORs[age] = 1.
                 for pop, mode in item:
                     row = effects.loc[pop, mode]
@@ -489,8 +170,9 @@ class Data:
             newPrograms[key].update(ORs)
         return newPrograms
 
-    def defineIYCFpackages(self):
-        IYCFpackages = self.readSheet('IYCF packages', [0,1])
+    def define_iycf(self):
+        """ Returns a dict with values as a list of two tuples (age, modality)."""
+        IYCFpackages = read_excel(self.prog_path, sheet='IYCF packages', index_col=[0,1])
         packagesDict = {}
         for packageName, package in IYCFpackages.groupby(level=[0, 1]):
             if packageName[0] not in packagesDict:
@@ -499,56 +181,337 @@ class Data:
                 col = package[mode]
                 if col.notnull()[0]:
                     if mode == 'Mass media':
-                        ageModeTuple = [(pop, mode) for pop in self.childAges[:-1]] # exclude 24-59 months
+                        ageModeTuple = [(pop, mode) for pop in self.child_ages[:-1]] # exclude 24-59 months
                     else:
                         ageModeTuple = [(packageName[1], mode)]
                     packagesDict[packageName[0]] += ageModeTuple
         return packagesDict
 
-    def getIYCFcostCoverageSaturation(self, IYCFpackages):
-        IYCFcost = self.readSheet('IYCF cost & coverage', [0,1]).loc['Unit costs']
-        infoList = ['unit cost']
-        packageCostSaturation = {}
-        for field in infoList:
-            packageCostSaturation[field] = {}
-        for name, package in IYCFpackages.iteritems():
-            cost = 0
+    def read_sheet(self, name, cols, dictOrient=None, skiprows=None):
+        df = self.spreadsheet.parse(name, index_col=cols, skiprows=skiprows).dropna(how='all')
+        if dictOrient:
+            df = df.to_dict(dictOrient)
+        return df
+
+    def make_dict(self, mydict):
+        """ myDict is a spreadsheet with 3 index cols, converted to dict using orient='index' """
+        result = {}
+        for age, progCatTypeDict in mydict.iteritems():
+            result[age] = {}
+            for progCatType in progCatTypeDict.iteritems():
+                keys = progCatType[0]
+                val = progCatType[1]
+                result[age].update({keys[0]:{keys[1]:{keys[2]:val}}})
+        return result
+
+    def make_dict2(self, mydict):
+        """ creating relative risk dict """
+        res_dict = {}
+        for age in mydict.iterkeys():
+            res_dict[age] = {}
+            for condCat in mydict[age].iterkeys():
+                cond = condCat[0]
+                cat = condCat[1]
+                if res_dict[age].get(cat) is None:
+                    res_dict[age][cat] = {}
+                    res_dict[age][cat][cond] = mydict[age][condCat]
+                elif res_dict[age][cat].get(cond) is None:
+                    res_dict[age][cat][cond] = mydict[age][condCat]
+        return res_dict
+
+    def make_dict3(self, mydict):
+        """ for rr diarrhoea """
+        res_dict = {}
+        for age in mydict.iterkeys():
+            res_dict[age] = {}
+            for condCat in mydict[age].iterkeys():
+                cat = condCat[1]
+                if res_dict[age].get(cat) is None:
+                    res_dict[age][cat] = mydict[age][condCat]
+        return res_dict
+
+class InputData(object):
+    """ Container for all the region-specific data (prevalences, mortality rates etc) read in from spreadsheet"""
+    def __init__(self, filepath):
+        self.spreadsheet = ExcelFile(filepath)
+        self.settings = settings.Settings()
+        self.demo = None
+        self.proj = {}
+        self.death_dist = {}
+        self.risk_dist = {}
+        self.causes_death = None
+        self.time_trends = {}
+        self.birth_age = None
+        self.birth_int = None
+        self.prog_target = None
+        self.famplan_methods = None
+        self.incidences = {}
+        self.pw_agedist = []
+        self.wra_proj = []
+        self.samtomam = None
+        self.mamtosam = None
+
+        self.get_demo()
+        self.get_proj()
+        self.get_risk_dist()
+        self.get_death_dist()
+        self.get_time_trends()
+        self.get_fertility_risks()
+        self.get_incidences()
+        self.get_famplan_methods()
+
+    ## DEMOGRAPHICS ##
+
+    def get_demo(self):
+        baseline = self.read_sheet('Baseline year population inputs', [0,1])
+        demo = {}
+        # the fields that group the data in spreadsheet
+        fields = ['Population data', 'Food', 'Age distribution of pregnant women', 'Mortality', 'Other risks']
+        for field in fields:
+            demo.update(baseline.loc[field].to_dict('index'))
+        self.demo = {key: item['Data'] for key, item in demo.iteritems()}
+        self.demo['Birth dist'] = baseline.loc['Birth outcome distribution'].to_dict()['Data']
+        # wasting
+        self.mamtosam = self.demo.pop('Percentage of SAM cases that develop from MAM')
+        self.samtomam = self.demo.pop('Percentage of SAM cases that only recover to MAM')
+        # fix ages for PW
+        baseline = self.read_sheet('Baseline year population inputs', [0])
+        for row in baseline.loc['Age distribution of pregnant women'].iterrows():
+            self.pw_agedist.append(row[1]['Data'])
+
+    def get_proj(self):
+        proj = self.read_sheet('Demographic projections', [0])
+        # dict of lists to support indexing
+        for column in proj:
+            self.proj[column] = proj[column].tolist()
+        # wra pop projections list in increasing age order
+        for age in self.settings.wra_ages:
+            self.wra_proj.append(proj[age].tolist())
+
+    def get_risk_dist(self):
+        dist = self.read_sheet('Nutritional status distribution', [0,1])
+        # dist = dist.drop(dist.index[[1]])
+        riskDist = {}
+        for field in ['Stunting (height-for-age)', 'Wasting (weight-for-height)']:
+            riskDist[field.split(' ',1)[0]] = dist.loc[field].dropna(axis=1, how='all').to_dict('dict')
+        # fix key refs (surprisingly hard to do in Pandas)
+        for outer, ageCat in riskDist.iteritems():
+            self.risk_dist[outer] = {}
+            for age, catValue in ageCat.iteritems():
+                self.risk_dist[outer][age] = {}
+                for cat, value in catValue.iteritems():
+                    newCat = cat.split(' ',1)[0]
+                    self.risk_dist[outer][age][newCat] = value
+        # get anaemia
+        dist = self.read_sheet('Nutritional status distribution', [0,1], skiprows=12)
+        self.risk_dist['Anaemia'] = {}
+        anaem = dist.loc['Anaemia', 'Prevalence of iron deficiency anaemia'].to_dict()
+        for age, prev in anaem.iteritems():
+            self.risk_dist['Anaemia'][age] = {}
+            self.risk_dist['Anaemia'][age]['Anaemic'] = prev
+            self.risk_dist['Anaemia'][age]['Not anaemic'] = 1.-prev
+        # get breastfeeding dist
+        dist = self.read_sheet('Breastfeeding distribution', [0,1])
+        self.risk_dist['Breastfeeding'] = dist.loc['Breastfeeding'].to_dict()
+
+    def get_time_trends(self):
+        trends = self.spreadsheet.parse('Time trends', index_col=[0,1])
+        self.time_trends['Stunting'] = trends.loc['Stunting prevalence (%)'].loc['Children 0-59 months'].values.tolist()[:1]
+        self.time_trends['Wasting'] = trends.loc['Wasting prevalence (%)'].loc['Children 0-59 months'].values.tolist()[:1]
+        self.time_trends['Anaemia'] = trends.loc['Anaemia prevalence (%)'].values.tolist()[:3] # order is (children, PW, WRA)
+        self.time_trends['Breastfeeding'] = trends.loc['Prevalence of age-appropriate breastfeeding'].values.tolist()[:2] # 0-5 months, 6-23 months
+        self.time_trends['Mortality'] = trends.loc['Mortality'].values.tolist() # under 5, maternal
+
+    def get_fertility_risks(self):
+        fert = self.read_sheet('Fertility risks', [0,1])
+        self.birth_age = fert.loc['Birth age and order'].to_dict()['Percentage of births in category']
+        self.birth_int = fert.loc['Birth intervals'].to_dict()['Percentage of births in category']
+
+    def get_incidences(self):
+        self.incidences = self.read_sheet('Incidence of conditions', [0], 'dict')
+
+    def get_famplan_methods(self):
+        self.famplan_methods = self.read_sheet('Programs family planning', [0], 'index')
+
+    ### MORTALITY ###
+
+    def get_death_dist(self):
+        death_dist = self.read_sheet('Causes of death', [0], 'index')
+        # convert 'Pregnant women' to age bands
+        for key, value in death_dist.iteritems():
+            self.death_dist[key] = {}
+            pw_val = value['Pregnant women']
+            for age in self.settings.pw_ages+self.settings.child_ages:
+                if "PW" in age:
+                    self.death_dist[key][age] = pw_val
+                else:
+                    self.death_dist[key][age] = value[age]
+        # list causes of death
+        self.causes_death = self.death_dist.keys()
+
+    def read_sheet(self, name, cols, dict_orient=None, skiprows=None):
+        df = self.spreadsheet.parse(name, index_col=cols, skiprows=skiprows).dropna(how='all')
+        if dict_orient:
+            df = df.to_dict(dict_orient)
+        return df
+
+class ProgData(object):
+    """Stores all the settings for each project, defined by the user"""
+    def __init__(self, prog_path, input_path):
+        self.settings = settings.Settings()
+        self.input = input_path
+        self.spreadsheet = ExcelFile(prog_path)
+        self.prog_set = []
+        self.ref_progs = []
+        self.prog_deps = None
+        self.cov_scen = {}
+        self.budget_scen = {}
+        self.prog_info = None
+        self.prog_target = None
+        self.famplan_methods = None
+        self.t = None
+
+        # load data
+        self.get_prog_target()
+        self.get_prog_set()
+        self.get_prog_deps()
+        self.get_ref_progs()
+        self.get_cov_scen()
+        self.get_budget_scen()
+        self.get_prog_info()
+        self.create_iycf()
+
+    def get_prog_target(self):
+        targetPopSheet = read_excel(self.input, 'Programs target population', index_col=[0,1]).dropna(how='all')
+        targetPop = {}
+        for pop in ['Children', 'Pregnant women', 'Non-pregnant WRA', 'General population']:
+            targetPop.update(targetPopSheet.loc[pop].to_dict(orient='index'))
+        self.prog_target = targetPop
+
+    def get_prog_set(self):
+        prog_sheet = self.read_sheet('Programs to include', [0])
+        prog_sheet = prog_sheet[notnull(prog_sheet)]
+        for program, value in prog_sheet.iterrows():
+            self.prog_set.append(program)
+
+    def get_ref_progs(self):
+        reference = self.spreadsheet.parse('Reference programs', index_col=[0])
+        self.ref_progs = list(reference.index)
+
+    def get_prog_deps(self):
+        deps = self.read_sheet('Program dependencies', [0])
+        programDep = {}
+        for program, dependency in deps.iterrows():
+            programDep[program] = {}
+            for dependType, value in dependency.iteritems():
+                if isinstance(value, unicode): # cell not empty
+                    programDep[program][dependType] = value.replace(", ", ",").split(',') # assumes programs separated by ", "
+                else:
+                    programDep[program][dependType] = []
+        # pad the remaining programs
+        missingProgs = list(set(self.prog_set) - set(programDep.keys()))
+        for program in missingProgs:
+            programDep[program] = {}
+            for field in deps.columns:
+                programDep[program][field] = []
+        self.prog_deps = programDep
+
+    def get_prog_info(self):
+        self.prog_info = self.read_sheet('Programs cost and coverage', [0], 'dict')
+
+    def get_cov_scen(self):
+        cov = self.spreadsheet.parse('Coverage scenario', index_col=[0,1])
+        for programType, yearValue in cov.iterrows():
+            self.cov_scen[programType[0]] = yearValue.tolist()
+        all_years = list(cov)
+        start_year = all_years[0]
+        end_year = all_years[-1]
+        self.t = [start_year, end_year]
+
+    def get_budget_scen(self):
+        budget = self.spreadsheet.parse('Budget scenario', index_col=[0,1])
+        for programType, yearValue in budget.iterrows():
+            self.budget_scen[programType[0]] = yearValue.tolist()
+        all_years = list(budget)
+        start_year = all_years[0]
+        end_year = all_years[-1]
+        self.budget_scen['Years'] = [start_year, end_year]
+
+    def create_iycf(self):
+        packages = self.define_iycf()
+        target = self.get_iycf_target(packages)
+        cost = self.get_iycf_cost(packages)
+        self.prog_target.update(target)
+        self.prog_info['unit cost'].update(cost)
+
+    def define_iycf(self):
+        """ Returns a dict with values as a list of two tuples (age, modality)."""
+        IYCFpackages = self.read_sheet('IYCF packages', [0,1])
+        packagesDict = {}
+        for packageName, package in IYCFpackages.groupby(level=[0, 1]):
+            if packageName[0] not in packagesDict:
+                packagesDict[packageName[0]] = []
+            for mode in package:
+                col = package[mode]
+                if col.notnull()[0]:
+                    if mode == 'Mass media':
+                        ageModeTuple = [(pop, mode) for pop in self.child_ages[:-1]] # exclude 24-59 months
+                    else:
+                        ageModeTuple = [(packageName[1], mode)]
+                    packagesDict[packageName[0]] += ageModeTuple
+        return packagesDict
+
+    def get_iycf_target(self, package_modes):
+        """ Creates the frac of pop targeted by each IYCF package.
+        Note that frac in community and mass media assumed to be 1.
+        Note also this fraction can exceed 1, and is adjusted for the target pop calculations of the Programs class """
+        pop_data = read_excel(self.input, sheet='Baseline year population inputs', index_col=[0,1]).loc['Population data']
+        frac_pw = float(pop_data.loc['Percentage of pregnant women attending health facility'])
+        frac_child = float(pop_data.loc['Percentage of children attending health facility'])
+        # target pop is the sum of fractions exposed to modality in each age band
+        target = {}
+        for name, package in package_modes.iteritems():
+            target[name] = {}
             for pop, mode in package:
-                cost += IYCFcost[mode][pop]
-            packageCostSaturation['unit cost'][name] = cost
-        return packageCostSaturation
+                if target[name].get(pop) is None:
+                    target[name][pop] = 0.
+                if mode == 'Health facility':
+                    if 'month' in pop: # children
+                        target[name][pop] += frac_child
+                    else: # pregnant women
+                        target[name][pop] += frac_pw
+                else: # community or mass media
+                    target[name][pop] += 1
+        # convert pw to age bands and set missing children + wra to 0
+        new_target = dcp(target)
+        for name in target.iterkeys():
+            if 'Pregnant women' in target[name]:
+                new_target[name].update({age:target[name]['Pregnant women'] for age in self.settings.pw_ages})
+                new_target[name].pop('Pregnant women')
+            for age in self.settings.all_ages:
+                if age not in target[name]:
+                    new_target[name].update({age:0})
+        return new_target
 
-    def getIYCFtargetPop(self, packageModalities):
-        IYCFtargetPop = self.readSheet('IYCF cost & coverage', [0, 1]).loc['Target populations']
-        newTargetPops = {}
-        for name, package in packageModalities.iteritems():
-            newTargetPops[name] = {}
+    def get_iycf_cost(self, package_modes):
+        iycf_cost = self.read_sheet('IYCF cost', [0,1]).loc['Field'].to_dict('index')
+        package_cost = {}
+        for name, package in package_modes.iteritems():
+            cost = 0.
             for pop, mode in package:
-                if pop not in newTargetPops[name]:
-                    newTargetPops[name][pop] = {}
-                newTargetPops[name][pop][mode] = IYCFtargetPop[mode][pop]
-        # convert 'pregnant women' to its age bands
-        newTargetPops = self.createAgeBands(newTargetPops, packageModalities.keys(), self.PWages, 'Pregnant women')
-        # target pop is sum of fractions exposed to modality for each age band
-        fracTargeted = {}
-        for program, popModes in newTargetPops.iteritems():
-            fracTargeted[program] = {}
-            for pop, modes in popModes.iteritems():
-                fracTargeted[program][pop] = sum(frac for frac in modes.values())
-        allAges = self.childAges + self.PWages + self.WRAages
-        for program, pop in fracTargeted.iteritems():
-            missingAges = self._getMissingElements(allAges, pop.keys())
-            for age in missingAges:
-                fracTargeted[program][age] = 0.
-        return fracTargeted
+                cost += iycf_cost[pop][mode]
+            package_cost[name] = cost
+        return package_cost
 
-    def createAgeBands(self, dictToUpdate, keyList, listOfAges, pop):
-        for key in keyList:  # could be program, ages
-            subDict = dictToUpdate[key].pop(pop, None)
-            newAgeGroups = {age:subDict for age in listOfAges if subDict is not None}
-            dictToUpdate[key].update(newAgeGroups)
-        return dictToUpdate
+    def create_age_bands(self, my_dict, keys, ages, pop):
+        for key in keys:  # could be program, ages
+            subDict = my_dict[key].pop(pop, None)
+            newAgeGroups = {age:subDict for age in ages if subDict is not None}
+            my_dict[key].update(newAgeGroups)
+        return my_dict
 
-def setUpData(filePath):
-    data = Data(filePath)
-    return data
+    def read_sheet(self, name, cols, dict_orient=None, skiprows=None):
+        df = self.spreadsheet.parse(name, index_col=cols, skiprows=skiprows).dropna(how='all')
+        if dict_orient:
+            df = df.to_dict(dict_orient)
+        return df
