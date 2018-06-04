@@ -668,12 +668,12 @@ def make_mpld3_graph_dict(fig):
     return mpld3_dict
 
 @register_RPC(validation_type='nonanonymous user')
-def get_project_burden_plots(project_id, burdenset_numindex, engine='matplotlib'):
+def get_default_scenario_plot():
     ''' Plot the disease burden '''
     
     # Get the Project object.
-    proj = load_project(project_id)
-    proj.default_scens()
+    proj = on.project.Project() # WARNING, just create new project
+    proj.default_scens(dorun=True)
     result = proj.get_results('test1')
     fig = on.plotting.make_plots(result) # HARDCODED EXAMPLE
     
