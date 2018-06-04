@@ -107,7 +107,6 @@ class Model:
             self._distrib_pops()
             self.integrate()
             self._track_prevs()
-            print self.stunting_prev
 
     def _apply_prog_covs(self):
         # update populations
@@ -408,9 +407,7 @@ class Model:
                         newbornBox = newborns.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat]
                         newbornBox.populationSize -= ageingOut[0][stuntingCat][wastingCat][bfCat][anaemiaCat]
         # for older age groups, account for previous stunting (binary)
-        # for i, age_group in enumerate(age_groups[1:], 1):
-        for i in range(1, len(age_groups)):
-            age_group = age_groups[i]
+        for i, age_group in enumerate(age_groups[1:], 1):
             numAgeingIn = {}
             numAgeingIn['stunted'] = 0.
             numAgeingIn['not stunted'] = 0.
@@ -447,7 +444,7 @@ class Model:
 
     def _apply_births(self):
         # num annual births = birth rate x num WRA x (1 - frac preg averted)
-        numWRA = sum(self.nonpw.proj[age][self.year] for age in self.settings.wra_ages)
+        numWRA = self.nonpw.proj['Total WRA'][self.year]
         births = self.nonpw.birthRate * numWRA * (1. - self.nonpw.fracPregnancyAverted)
         # calculate total number of new babies and add to cumulative births
         numNewBabies = births * self.settings.timestep
@@ -507,7 +504,7 @@ class Model:
     def _update_pw(self):
         """Use pregnancy rate to distribute pw into age groups.
         Distribute into age bands by age distribution, assumed constant over time."""
-        numWRA = sum(self.nonpw.proj[age][self.year] for age in self.settings.wra_ages)
+        numWRA = self.nonpw.proj['Total WRA'][self.year]
         PWpop = self.nonpw.pregnancyRate * numWRA * (1. - self.nonpw.fracPregnancyAverted)
         for age_group in self.pw.age_groups:
             popSize = PWpop * age_group.age_dist
@@ -520,10 +517,9 @@ class Model:
         warning: pw pop must be updated first."""
         #assuming WRA and pw have same age bands
         age_groups = self.nonpw.age_groups
-        for idx in range(len(age_groups)):
-            age_group = age_groups[idx]
+        for i, age_group in enumerate(age_groups):
             projectedWRApop = self.nonpw.proj[age_group.age][self.year]
-            PWpop = self.pw.age_groups[idx].getAgeGroupPopulation()
+            PWpop = self.pw.age_groups[i].getAgeGroupPopulation()
             nonpw = projectedWRApop - PWpop
             #distribute over risk factors
             for anaemiaCat in self.settings.anaemia_list:
@@ -547,7 +543,7 @@ class Model:
         Responsible for updating children since they have monthly time steps
         :return:
         """
-        for month in range(12):
+        for month in range(12): # TODO: big problems with 24-59 months distribution getting too large...
             self._apply_child_mort()
             self._apply_child_ageing()
             self._apply_births()

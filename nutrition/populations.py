@@ -466,25 +466,25 @@ class Children(object):
         self._setProgramEffectiveness()
         self._set_time_trends()
         self._setcorrect_bfpractice()
-        self._setprob_futurestunting()
-        self._setprob_stuntedbirth()
-        self._setProbWastedBirth()
+        self._set_future_stunting()
+        self._set_stunted_birth()
+        self._set_wasted_birth()
 
     ##### DATA WRANGLING ######
 
     def set_probs(self, prog_areas):
-        self._setProbStunted(prog_areas)
+        self._set_prob_stunted(prog_areas)
         self._set_prob_anaem(prog_areas)
-        self._setProbWasted(prog_areas)
-        self._setProbBF(prog_areas)
-        self._setProbStuntedDia()
-        self._setProbAnaemiaDia()
-        self._setProbWastedDia()
+        self._set_prob_wasted(prog_areas)
+        self._set_prob_bf(prog_areas)
+        self._set_stunted_dia()
+        self._set_anaemic_dia()
+        self._set_wasted_dia()
 
     def _setConditionalDiarrhoea(self):
-        self._setProbStuntedDia()
-        self._setProbAnaemiaDia()
-        self._setProbWastedDia()
+        self._set_stunted_dia()
+        self._set_anaemic_dia()
+        self._set_wasted_dia()
 
     def _make_pop_sizes(self):
         # for children less than 1 year, annual live births
@@ -677,7 +677,7 @@ class Children(object):
         alteredList[index] = newList
         return alteredList
 
-    def _setprob_futurestunting(self):
+    def _set_future_stunting(self):
         """Calculate the probability of stunting given previous stunting between age groups"""
         for i, age_group in enumerate(self.age_groups[1:],1):
             thisAge = age_group.age
@@ -689,7 +689,7 @@ class Children(object):
             age_group.probConditionalStunting['stunted'] = pc
             age_group.probConditionalStunting['not stunted'] = pn
 
-    def _setProbStunted(self, prog_areas):
+    def _set_prob_stunted(self, prog_areas):
         risk = 'Stunting'
         relev_progs = prog_areas[risk]
         for age_group in self.age_groups:
@@ -724,7 +724,7 @@ class Children(object):
                 age_group.probConditionalCoverage[risk][program]['covered'] = pc
                 age_group.probConditionalCoverage[risk][program]['not covered'] = pn
 
-    def _setProbBF(self, prog_areas):
+    def _set_prob_bf(self, prog_areas):
         risk = 'Breastfeeding'
         relev_progs = prog_areas[risk]
         for age_group in self.age_groups:
@@ -739,7 +739,7 @@ class Children(object):
                 age_group.probConditionalCoverage[risk][program]['covered'] = pc
                 age_group.probConditionalCoverage[risk][program]['not covered'] = pn
 
-    def _setProbWasted(self, prog_areas):
+    def _set_prob_wasted(self, prog_areas):
         risk = 'Wasting treatment' # only treatment have ORs for wasting
         relev_progs = prog_areas[risk]
         for wastingCat in self.settings.wasted_list:
@@ -758,7 +758,7 @@ class Children(object):
                     age_group.probConditionalCoverage[wastingCat][program]['covered'] = pc
                     age_group.probConditionalCoverage[wastingCat][program]['not covered'] = pn
 
-    def _setProbStuntedDia(self):
+    def _set_stunted_dia(self):
         risk = 'Stunting'
         for age_group in self.age_groups:
             age_group.probConditionalDiarrhoea[risk] = {}
@@ -772,7 +772,7 @@ class Children(object):
             age_group.probConditionalDiarrhoea[risk]['diarrhoea'] = pc
             age_group.probConditionalDiarrhoea[risk]['no diarrhoea'] = pn
 
-    def _setProbAnaemiaDia(self):
+    def _set_anaemic_dia(self):
         risk = 'Anaemia'
         for age_group in self.age_groups:
             age_group.probConditionalDiarrhoea[risk] = {}
@@ -787,7 +787,7 @@ class Children(object):
             age_group.probConditionalDiarrhoea[risk]['diarrhoea'] = pc
             age_group.probConditionalDiarrhoea[risk]['no diarrhoea'] = pn
 
-    def _setProbWastedDia(self):
+    def _set_wasted_dia(self):
         for age_group in self.age_groups:
             Z0 = age_group._getZa()
             Zt = Z0 # true for initialisation
@@ -801,7 +801,7 @@ class Children(object):
                 age_group.probConditionalDiarrhoea[wastingCat]['no diarrhoea'] = pn
                 age_group.probConditionalDiarrhoea[wastingCat]['diarrhoea'] = pc
 
-    def _setprob_stuntedbirth(self):
+    def _set_stunted_birth(self):
         """Sets the probabilty of stunting conditional on birth outcome"""
         newborns = self.age_groups[0]
         coeffs = self._getBirthStuntingQuarticCoefficients()
@@ -816,7 +816,7 @@ class Children(object):
                 raise ValueError("probability of stunting at birth, at outcome %s, is out of range (%f)"%(BO, pi))
         newborns.probRiskAtBirth['Stunting'] = probStuntedAtBirth
 
-    def _setProbWastedBirth(self):
+    def _set_wasted_birth(self):
         newborns = self.age_groups[0]
         probWastedAtBirth = {}
         for wastingCat in self.settings.wasted_list:
@@ -1096,12 +1096,12 @@ class NonPregnantWomen(object):
     def __init__(self, data, default_params):
         self.name = 'Non-pregnant women'
         self.data = data
-        self.proj = dcp(data.proj)
         self.pop_areas = default_params.pop_areas
         self.anaemia_dist = self.data.risk_dist['Anaemia']
         self.birth_dist = self.data.demo['Birth dist']
         self.default = default_params
         self.settings = settings.Settings()
+        self.proj = {age:pops for age, pops in data.proj.iteritems() if age in self.settings.wra_ages + ['Total WRA']}
         self.age_groups = []
         self._make_pop_sizes()
         self._make_boxes()
