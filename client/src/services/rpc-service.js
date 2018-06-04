@@ -1,6 +1,6 @@
 // rpc-service.js -- RPC functions for Vue to call
 //
-// Last update: 3/5/18 (gchadder3)
+// Last update: 5/26/18 (gchadder3)
 
 import axios from 'axios'
 var filesaver = require('file-saver')
@@ -65,7 +65,7 @@ export default {
     // Do the RPC processing, returning results as a Promise.
     return new Promise((resolve, reject) => {
       // Send the POST request for the RPC call.
-      axios.post('/api/procedure', {
+      axios.post('/api/rpcs', {
         funcname: funcname, 
         args: args, 
         kwargs: kwargs
@@ -99,7 +99,7 @@ export default {
   },
 
   // rpcPublicCall() -- publicNormalRPC() /api/publicprocedure calls in api.py.
-  rpcPublicCall (funcname, args, kwargs) {
+/*  rpcPublicCall (funcname, args, kwargs) {
     // Log the RPC call.
     consoleLogCommand("normal", funcname, args, kwargs)
 
@@ -137,7 +137,7 @@ export default {
         reject(error)
       })
     })
-  },
+  }, */
 
   // rpcDownloadCall() -- downloadRPC() /api/download calls in api.py.
   rpcDownloadCall (funcname, args, kwargs) {
@@ -147,7 +147,7 @@ export default {
     // Do the RPC processing, returning results as a Promise.
     return new Promise((resolve, reject) => {
       // Send the POST request for the RPC call.
-      axios.post('/api/download', {
+      axios.post('/api/rpcs', {
         funcname: funcname, 
         args: args, 
         kwargs: kwargs
@@ -241,7 +241,7 @@ export default {
         formData.append('kwargs', JSON.stringify(kwargs))
 
         // Use a POST request to pass along file to the server.
-        axios.post('/api/upload', formData)
+        axios.post('/api/rpcs', formData)
         .then(response => {
           // If there is an error in the POST response.
           if (typeof(response.data.error) != 'undefined') {
@@ -279,14 +279,14 @@ export default {
       // Manually click the button to open the file dialog.
       inElem.click()
     })
-  }, 
+  } 
 
   //
   // User RPCs (user.py)
   //
 
   // rpcLoginCall() -- loginRPC() /api/user/login calls in api.py.
-  rpcLoginCall (funcname, username, password) {
+/*  rpcLoginCall (funcname, username, password) {
     // Get a hex version of a hashed password using the SHA224 algorithm.
     var hashPassword = CryptoApi.hash('sha224', password, {}).stringify('hex')
 
@@ -846,6 +846,6 @@ export default {
       // Manually click the button to open the file dialog.
       inElem.click()
     })
-  }
+  } */
 
 }

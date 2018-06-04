@@ -39,6 +39,7 @@ Last update: 2018-03-25
 
 <script>
 import rpcservice from '@/services/rpc-service'
+import userservice from '@/services/user-service' 
 import router from '@/router'
 
 export default {
@@ -57,7 +58,7 @@ export default {
 
   methods: {
     getUsersInfo () {
-      rpcservice.rpcAllGetUsersInfo('get_all_users')
+      userservice.getAllUsersInfo()
       .then(response => {
         this.usersList = response.data
       })
@@ -68,7 +69,7 @@ export default {
     },
 
     activateAccount (username) {
-      rpcservice.rpcAdminUserCall('admin_activate_account', username)
+      userservice.activateUserAccount(username)
       .then(response => {
         // If the response was successful...
         if (response.data == 'success')
@@ -89,7 +90,7 @@ export default {
     },
 
     deactivateAccount (username) {
-      rpcservice.rpcAdminUserCall('admin_deactivate_account', username)
+      userservice.deactivateUserAccount(username)
       .then(response => {
         // If the response was successful...
         if (response.data == 'success')
@@ -110,7 +111,7 @@ export default {
     },
 
     grantAdmin (username) {
-      rpcservice.rpcAdminUserCall('admin_grant_admin', username)
+      userservice.grantUserAdminRights(username)
       .then(response => {
         // If the response was successful...
         if (response.data == 'success')
@@ -131,7 +132,7 @@ export default {
     },
 
     revokeAdmin (username) {
-      rpcservice.rpcAdminUserCall('admin_revoke_admin', username)
+      userservice.revokeUserAdminRights(username)
       .then(response => {
         // If the response was successful...
         if (response.data == 'success')
@@ -152,7 +153,7 @@ export default {
     },
 
     resetPassword (username) {
-      rpcservice.rpcAdminUserCall('admin_reset_password', username)
+      userservice.resetUserPassword(username)
       .then(response => {
         // If the response was successful...
         if (response.data == 'success')
@@ -173,7 +174,7 @@ export default {
     },
 
     deleteUser (username) {
-      rpcservice.rpcAdminUserCall('admin_delete_user', username)
+      userservice.deleteUser(username)
       .then(response => {
         // Give result message.
         this.adminResult = 'User deleted.'

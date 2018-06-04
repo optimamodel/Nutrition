@@ -43,7 +43,7 @@ Last update: 2018mar25
         </div>
       </div>
     </div>
-      <!--<button @click="getVersionInfo">Updakte</button>-->
+      <!--<button @click="getVersionInfo">Update</button>-->
       <br/>
       <br/>
       <div class="divTable" style="width:100%">
