@@ -679,7 +679,7 @@ class Children(object):
 
     def _setprob_futurestunting(self):
         """Calculate the probability of stunting given previous stunting between age groups"""
-        for i, age_group in enumerate(self.age_groups[1:]):
+        for i, age_group in enumerate(self.age_groups[1:],1):
             thisAge = age_group.age
             prevAgeGroup = self.age_groups[i-1]
             OR = self.default.or_cond['Stunting']['Prev stunting'][thisAge]
