@@ -14,8 +14,8 @@ import DemographicsPage from '@/components/app/DemographicsPage'
 import CalibrationPage from '@/components/app/CalibrationPage'
 import ScenariosPage from '@/components/app/ScenariosPage'
 import AnalysisPage from '@/components/app/AnalysisPage'
-import DiseaseRiskPage from '@/components/app/DiseaseRiskPage'
-import InterventionsPage from '@/components/app/InterventionsPage'
+//import DiseaseRiskPage from '@/components/app/DiseaseRiskPage'
+//import InterventionsPage from '@/components/app/InterventionsPage'
 import LoginPage from '@/components/app/LoginPage'
 import MainAdminPage from '@/components/app/MainAdminPage'
 import RegisterPage from '@/components/app/RegisterPage'
@@ -70,16 +70,16 @@ export default new Router({
           name: 'Analysis',
           component: AnalysisPage
         },
-        {
-          path: 'disease-risk',
-          name: 'Disease risk',
-          component: DiseaseRiskPage
-        },
-        {
-          path: 'interventions',
-          name: 'Define interventions',
-          component: InterventionsPage
-        },
+        // {
+        //   path: 'disease-risk',
+        //   name: 'Disease risk',
+        //   component: DiseaseRiskPage
+        // },
+        // {
+        //   path: 'interventions',
+        //   name: 'Define interventions',
+        //   component: InterventionsPage
+        // },
         {
           path: 'mainadmin',
           name: 'Admin',
