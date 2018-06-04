@@ -8,12 +8,11 @@ Last update: 2018may28
   <div class="SitePage">
     <div style="max-width:800px; margin:auto" v-model="getVersionInfo">
       <div style="text-align:center;">
-        <img src="static/img/healthpriorlogo-gray.png" width="250px">
+        <img src="static/img/optima-logo-nutrition.png" width="250px">
       </div>
       <br/><br/>
-      <p>The Health Services Prioritization Tool is currently under development. Development is supported through a partnership
-        between <a href="http://www.ucl.ac.uk">University College London</a> and the <a href="http://www.burnet.edu.au">Burnet Institute</a>,
-        under the auspices of the <a href="http://www.gatesfoundation.org">Bill and Melinda Gates Foundation</a> and the <a href="http://www.worldbank.org">World Bank</a>.</p>
+      <p>Optima Nutrition is currently under development. Development is supported through a partnership
+        between the <a href="http://www.burnet.edu.au">Burnet Institute</a> and the <a href="http://www.worldbank.org">World Bank</a>.</p>
 
       <!--<p>The source code for HealthPrior is available on <a href="http://github.com/optimamodel/hptool">GitHub</a>.</p>-->
 
@@ -48,10 +47,6 @@ Last update: 2018may28
       <br/>
       <div class="divTable" style="width:100%">
         <div class="divTableBody">
-          <div class="divTableRow">
-            <div class="divRowContent" style="text-align:center; padding-bottom:30px"><img src="static/img/ucl-logo-transparent.png" height="60px"></div>
-            <div class="divRowContent" style="text-align:center; padding-bottom:30px"><img src="static/img/gatesfoundation-logo.png" height="60px"></div>
-          </div>
           <div class="divTableRow">
             <div class="divRowContent" style="text-align:center; padding-bottom:30px"><img src="static/img/burnet-logo-transparent.png" height="60px"></div>
             <div class="divRowContent" style="text-align:center; padding-bottom:30px"><img src="static/img/world-bank-logo.png" height="60px"></div>
