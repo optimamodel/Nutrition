@@ -16,7 +16,7 @@ you use a relative path, it is interpreted as being with respect to the
 "webapp directory," that is, the directory containing this config file and the 
 main webapp script that imports it.
  
-Last update: 5/31/18 (gchadder3)
+Last update: 2018jun04 (cliffk)
 """
 
 # A secret key value used by Python Flask.
@@ -32,7 +32,7 @@ USE_DATASTORE = True
 # URL for the Redis database that the web app will use to manage 
 # persistence.  Note that the /N/ number at the end should match the 
 # database number you want to use.  (N=0 is the default Redis database.)
-REDIS_URL = 'redis://localhost:6379/5/'
+REDIS_URL = 'redis://localhost:6379/6/'
 
 # Flag for setting whether we use the users functionality provided by 
 # Sciris in the webapp.
@@ -44,7 +44,7 @@ USE_USERS = True
 REGISTER_AUTOACTIVATE = True
 
 # Default server port
-SERVER_PORT = 8091
+SERVER_PORT = 8092
 
 # Matplotlib backend
 MATPLOTLIB_BACKEND = 'Agg'
