@@ -1,5 +1,6 @@
 from sciris.core import odict, uuid, today, gitinfo, objrepr, getdate, printv, makefilepath, saveobj, dcp
 from .model import Model
+from .scenarios import default_scens
 from . import version
 
 
@@ -168,15 +169,20 @@ class Project(object):
         for scen in scens.itervalues():
             scen.run_scen()
             self.add_result(scen=scen)
-
+            
+    def default_scens(self, dorun=None):
+        default_scens(self, dorun=dorun)
+        return None
+        
     def get_results(self, result_key):
         return self.results[result_key]
 
     def optimise(self):
-
-        return
+        print('Not implemented')
+        return None
 
 
     def sensitivity(self):
-        return
+        print('Not implemented')
+        return None
 
