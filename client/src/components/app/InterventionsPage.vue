@@ -1,7 +1,7 @@
 <!--
 Define interventions
 
-Last update: 2018-03-25
+Last update: 2018-05-29
 -->
 
 <template>
@@ -9,7 +9,7 @@ Last update: 2018-03-25
 
     <div v-if="activeProjectName === ''">
       <div style="font-style:italic">
-        <p>Hmm, I can't find any interventions...did you forget to <router-link class="link __blue" to="/projects">load a project</router-link>?</p>
+        <p>Hmm, I can't find any interventions...did you forget to <router-link to="/projects">load a project</router-link>?</p>
       </div>
     </div>
 
@@ -133,52 +133,52 @@ Last update: 2018-03-25
           <tbody>
             <tr v-for="interv in interventionList">
               <td style="text-align: center">
-                <input type="checkbox" v-model="interv.active"/>
+                <input type="checkbox"
+                       v-model="interv.active"/>
               </td>
               <td>
                 <input type="text"
                        class="txbox"
-                       @keyup.enter="notImplemented('Edit name')"
+                       @keyup.enter="updateInterv(interv)"
                        v-model="interv.name"/>
               </td>
               <td>
                 <input type="text"
                        class="txbox"
-                       @keyup.enter="notImplemented('Edit platform')"
+                       @keyup.enter="updateInterv(interv)"
                        v-model="interv.platform"/>
               </td>
               <td>
                 <input type="text"
                        class="txbox"
-                       @keyup.enter="notImplemented('Edit type')"
+                       @keyup.enter="updateInterv(interv)"
                        v-model="interv.type"/>
               </td>
               <td>
                 <input type="text"
                        class="txbox"
-                       @keyup.enter="notImplemented('Edit ICER')"
+                       @keyup.enter="updateInterv(interv)"
                        v-model="interv.icer"/>
               </td>
               <td>
                 <input type="text"
                        class="txbox"
-                       @keyup.enter="notImplemented('Edit unit cost')"
+                       @keyup.enter="updateInterv(interv)"
                        v-model="interv.unitcost"/>
               </td>
               <td>
                 <input type="text"
                        class="txbox"
-                       @keyup.enter="notImplemented('Edit equity')"
+                       @keyup.enter="updateInterv(interv)"
                        v-model="interv.equity"/>
               </td>
               <td>
                 <input type="text"
                        class="txbox"
-                       @keyup.enter="notImplemented('Edit financial risk protection')"
+                       @keyup.enter="updateInterv(interv)"
                        v-model="interv.frp"/>
               </td>
               <td style="white-space: nowrap">
-                <button class="iconbtn" @click="notImplemented('Rename')"><i class="ti-pencil"></i></button>
                 <button class="iconbtn" @click="notImplemented('Copy')"><i class="ti-layers"></i></button>
                 <button class="iconbtn" @click="notImplemented('Delete')"><i class="ti-trash"></i></button>
               </td>
@@ -292,7 +292,7 @@ export default {
       // Otherwise...
       else {
         // Get the active project's intervention sets.
-        rpcservice.rpcProjectCall('get_project_interv_sets',
+        rpcservice.rpcCall('get_project_interv_sets',
           [this.$store.state.activeProject.project.id])
         .then(response => {
           // Set the intervention set list to what we received.
@@ -347,6 +347,8 @@ export default {
     },
 
     applyNameFilter(sets) {
+      console.log('CK TEST1b')
+      console.log(sets)
       return sets.filter(theSet => theSet.intervset.name.toLowerCase().indexOf(this.filterText.toLowerCase()) !== -1)
     },
 
@@ -374,24 +376,24 @@ export default {
       this.activeIntervSet = intervSet
 
       // Go to the server to get the interventions from the intervention set.
-      rpcservice.rpcProjectCall('get_project_interv_set_intervs',
+      rpcservice.rpcCall('get_project_interv_set_intervs',
         [this.$store.state.activeProject.project.id, this.activeIntervSet.intervset.numindex])
       .then(response => {
         // Set the interventions table list.
         this.interventionList = response.data.interventions
 
         // Set the active values from the loaded in data.
-        this.interventionList.forEach(theInterv => {
-		      theInterv.active = theInterv[0];
-          theInterv.name = theInterv[1];
-          theInterv.platform = theInterv[3];
-          theInterv.type = theInterv[4];
-          theInterv.icer = Number(theInterv[5]).toLocaleString();
-          theInterv.unitcost = Number(theInterv[6]).toLocaleString();
-          theInterv.equity = theInterv[7];
-          theInterv.frp = theInterv[8];
-		    })
-
+        for (let ind=0; ind < this.interventionList.length; ind++) {
+          this.interventionList[ind].numindex = ind
+		      this.interventionList[ind].active = (this.interventionList[ind][0] > 0)
+          this.interventionList[ind].name = this.interventionList[ind][1]
+          this.interventionList[ind].platform = this.interventionList[ind][3]
+          this.interventionList[ind].type = this.interventionList[ind][4]
+          this.interventionList[ind].icer = Number(this.interventionList[ind][5]).toLocaleString()
+          this.interventionList[ind].unitcost = Number(this.interventionList[ind][6]).toLocaleString()
+          this.interventionList[ind].equity = Number(this.interventionList[ind][8]).toLocaleString()
+          this.interventionList[ind].frp = Number(this.interventionList[ind][7]).toLocaleString()
+        }
       })
 
       this.$notifications.notify({
@@ -407,7 +409,7 @@ export default {
       console.log('copySet() called for ' + intervSet.intervset.name)
 
 	    // Have the server copy the intervention set, giving it a new name.
-      rpcservice.rpcProjectCall('copy_interv_set',
+      rpcservice.rpcCall('copy_interv_set',
         [this.$store.state.activeProject.project.id, intervSet.intervset.numindex])
       .then(response => {
         // Update the intervention sets so the new set shows up on the list.
@@ -426,7 +428,7 @@ export default {
 	    // Otherwise (it is to be renamed)...
 	    else {
         // Have the server change the name of the intervention set.
-        rpcservice.rpcProjectCall('rename_interv_set',
+        rpcservice.rpcCall('rename_interv_set',
           [this.$store.state.activeProject.project.id,
           intervSet.intervset.numindex, intervSet.renaming])
         .then(response => {
@@ -451,7 +453,7 @@ export default {
       console.log('deleteSet() called for ' + intervSet.intervset.name)
 
       // Go to the server to delete the intervention set.
-      rpcservice.rpcProjectCall('delete_interv_set',
+      rpcservice.rpcCall('delete_interv_set',
         [this.$store.state.activeProject.project.id, intervSet.intervset.numindex])
       .then(response => {
         // Update the intervention sets so the new set shows up on the list.
@@ -463,11 +465,44 @@ export default {
       console.log('createNewSet() called')
 
       // Go to the server to create the new intervention set.
-      rpcservice.rpcProjectCall('create_interv_set',
+      rpcservice.rpcCall('create_interv_set',
         [this.$store.state.activeProject.project.id, 'New intervention set'])
       .then(response => {
         // Update the intervention sets so the new set shows up on the list.
         this.updateIntervSets()
+      })
+    },
+
+    updateInterv(interv) {
+      console.log('Update to be made')
+      console.log('Index: ', interv.numindex)
+      console.log('Active?: ', interv.active)
+      console.log('Name: ', interv.name)
+      console.log('Platform: ', interv.platform)
+      console.log('Type: ', interv.type)
+      console.log('ICER: ', interv.icer)
+      console.log('Unit cost: ', interv.unitcost)
+      console.log('FRP: ', interv.frp)
+      console.log('Equity: ', interv.equity)
+
+      // Do format filtering to prepare the data to pass to the RPC.
+      let filterActive = interv.active ? 1 : 0
+
+      // Go to the server to update the intervention from the intervention set.
+      // Note: filter out commas in the numeric fields.
+      rpcservice.rpcCall('update_interv_set_interv',
+        [this.$store.state.activeProject.project.id,
+        this.activeIntervSet.intervset.numindex,
+        interv.numindex,
+        [filterActive, interv.name, interv.platform, interv.type,
+        interv.icer.replace(/,/g, ''),
+        interv.unitcost.replace(/,/g, ''),
+        interv.frp.replace(/,/g, ''),
+        interv.equity.replace(/,/g, '')]])
+      .then(response => {
+        // Update the display of the intervention list by rerunning the active
+        // intervention set.
+        this.viewSet(this.activeIntervSet)
       })
     },
 

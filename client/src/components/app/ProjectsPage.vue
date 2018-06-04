@@ -1,23 +1,13 @@
 <!--
 Manage projects page
 
-Last update: 2018-03-25
+Last update: 2018-05-29
 -->
 
 <template>
   <div class="SitePage">
     <div class="PageSection">
-      <div class="ControlsRow">
-        <select>
-          <option v-for="demoProject in demoProjectList"
-              :value=demoProject.id :label=demoProject.name>
-            {{demoProject.name}}
-          </option>
-        </select>
-        <button class="btn" @click="addDemoProject">Add this project</button>
-      </div>
-    </div>
-    <div class="PageSection">
+
       <div class="ControlsRow">
         <button class="btn" @click="createNewProject">Create new project</button>
         &nbsp; &nbsp;
@@ -161,10 +151,7 @@ export default {
   data() {
     return {
       // List of projects to choose from (by project name)
-      demoProjectList: [
-        {name: 'Bangladesh', id: 'bangladesh'},
-        {name: 'Region 2', id: 'region'},
-      ],
+      demoProjectList: [],
 
       // Selected demo project (by name)
       selectedDemoProject: '',

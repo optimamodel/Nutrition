@@ -1,4 +1,4 @@
-$font-color: #0c2544 !default;
+$font-color: #66615b !default;
 $fill-font-color: rgba(255, 255, 255, 0.7);
 
 $none: 0 !default;
@@ -22,8 +22,7 @@ $black-hr: #444444 !default;
 
 $white-background-color: #FFFFFF !default;
 $black-background-color: #212120 !default; // CK: this is the side panel background color
-// $darkblue-background-color: #35495E !default; // this is the dark blue color from Vue.js branding 
-$darkblue-background-color: #0c2544 !default;
+$darkblue-background-color: #35495E !default; // this is the dark blue color from Vue.js branding
 
 $light-gray: #E3E3E3 !default;
 $medium-gray: #DDDDDD !default;
@@ -36,8 +35,8 @@ $other-medium-gray: #A49E93 !default;
 $transparent-bg: transparent !default;
 $button-bg: #a5d5e9 !default;
 
-$default-color: #0c2544 !default;
-$default-bg: #0c2544 !default;
+$default-color: #66615B !default;
+$default-bg: #66615B !default;
 $default-states-color: #403D39 !default;
 
 $primary-color: #7A9E9F !default;
@@ -101,9 +100,9 @@ $margin-large-vertical: 30px !default;
 $margin-base-vertical: 15px !default;
 
 // border radius for buttons
-$border-radius-btn-small: 2px !default;
-$border-radius-btn-base: 2px !default;
-$border-radius-btn-large: 5px !default;
+$border-radius-btn-small: 26px !default;
+$border-radius-btn-base: 20px !default;
+$border-radius-btn-large: 50px !default;
 
 // Cristina: am schimbat aici si s-au modificat inputurile
 $margin-bottom: 0 0 10px 0 !default;

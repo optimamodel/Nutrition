@@ -1,7 +1,7 @@
 <!--
 User registration page
 
-Last update: 2018-03-25
+Last update: 2018-05-28
 -->
 
 
@@ -10,8 +10,11 @@ Last update: 2018-03-25
     <div style="background-color:#212120; position:absolute; height:100%; width:260px">
       <div class="logo">
         <div class="simple-text" style="font-size:20px; color:#fff; font-weight:bold; padding:20px">
+          <div class="logo-img" style="height:40px; width:40px; line-height:40px; border-radius:40px; background-color:#fff; text-align:center; display:inline-block">
+            <img src="static/favicon-96x96.png" width="21px" vertical-align="middle" alt>
+          </div>
           <span style="padding-left:10px">
-            <img src="static/img/optima-inverted-logo.png" width="130px" vertical-align="middle" alt>
+            <img src="static/img/healthpriorlogo-inverse.png" width="130px" vertical-align="middle" alt>
           </span>
           <br/><br/>
           <div style="font-size:14px; font-weight:normal">
@@ -66,7 +69,7 @@ Last update: 2018-03-25
 
           <div class="section">
             Already registered?
-            <router-link class="link __blue" to="/login">
+            <router-link to="/login">
               Login
             </router-link>
           </div>

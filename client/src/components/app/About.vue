@@ -1,7 +1,7 @@
 <!--
 About page
 
-Last update: 2018mar25
+Last update: 2018may28
 -->
 
 <template>
@@ -15,7 +15,7 @@ Last update: 2018mar25
         between <a href="http://www.ucl.ac.uk">University College London</a> and the <a href="http://www.burnet.edu.au">Burnet Institute</a>,
         under the auspices of the <a href="http://www.gatesfoundation.org">Bill and Melinda Gates Foundation</a> and the <a href="http://www.worldbank.org">World Bank</a>.</p>
 
-      <!--<p>The source code for Optima Nutrition is available on <a href="http://github.com/optimamodel/Nutrition">GitHub</a>.</p>-->
+      <!--<p>The source code for HealthPrior is available on <a href="http://github.com/optimamodel/hptool">GitHub</a>.</p>-->
 
     <p>Technical information:</p>
 
@@ -83,7 +83,7 @@ Last update: 2018mar25
 
     computed: {
       getVersionInfo() {
-        rpcservice.rpcPublicCall('get_version_info')
+        rpcservice.rpcCall('get_version_info')
           .then(response => {
             this.version = response.data['version'];
             this.date = response.data['date'];

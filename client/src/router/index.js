@@ -10,12 +10,11 @@ import DashboardLayout from '@/components/app/DashboardLayout.vue'
 // App views
 import NotFound from '@/components/generic/NotFoundPage.vue'
 import ProjectsPage from '@/components/app/ProjectsPage'
-import DemographicsPage from '@/components/app/DemographicsPage'
-import CalibrationPage from '@/components/app/CalibrationPage'
-import ScenariosPage from '@/components/app/ScenariosPage'
-import AnalysisPage from '@/components/app/AnalysisPage'
-//import DiseaseRiskPage from '@/components/app/DiseaseRiskPage'
-//import InterventionsPage from '@/components/app/InterventionsPage'
+import DiseaseBurdenPage from '@/components/app/DiseaseBurdenPage'
+import InterventionsPage from '@/components/app/InterventionsPage'
+import EquityPage from '@/components/app/EquityPage'
+import FinancialRiskPage from '@/components/app/FinancialRiskPage'
+import HealthPackagesPage from '@/components/app/HealthPackagesPage'
 import LoginPage from '@/components/app/LoginPage'
 import MainAdminPage from '@/components/app/MainAdminPage'
 import RegisterPage from '@/components/app/RegisterPage'
@@ -51,35 +50,30 @@ export default new Router({
           component: ProjectsPage
         },
         {
-          path: 'demographics',
-          name: 'Demographics',
-          component: DemographicsPage
+          path: 'bod',
+          name: 'Define burden of disease',
+          component: DiseaseBurdenPage
         },
         {
-          path: 'calibration',
-          name: 'Calibration',
-          component: CalibrationPage
+          path: 'interventions',
+          name: 'Define interventions',
+          component: InterventionsPage
         },
         {
-          path: 'scenarios',
-          name: 'Scenarios',
-          component: ScenariosPage
+          path: 'equity',
+          name: 'Define equity',
+          component: EquityPage
         },
         {
-          path: 'analysis',
-          name: 'Analysis',
-          component: AnalysisPage
+          path: 'financialrisk',
+          name: 'Define financial risk protection',
+          component: FinancialRiskPage
         },
-        // {
-        //   path: 'disease-risk',
-        //   name: 'Disease risk',
-        //   component: DiseaseRiskPage
-        // },
-        // {
-        //   path: 'interventions',
-        //   name: 'Define interventions',
-        //   component: InterventionsPage
-        // },
+        {
+          path: 'healthpackages',
+          name: 'Define health packages',
+          component: HealthPackagesPage
+        },
         {
           path: 'mainadmin',
           name: 'Admin',
