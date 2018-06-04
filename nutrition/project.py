@@ -106,6 +106,32 @@ class Project(object):
             del tmpproject # Don't need it hanging around any more
         return fullpath
 
+    def add(self, name, item, what=None, overwrite=True):
+        """ Add an entry to a structure list """
+        structlist = self.getwhat(what=what)
+        structlist[name] = item
+        print 'Item "{}" added to "{}"'.format(name, what)
+        self.modified = today()
+
+    def remove(self, what, name):
+        structlist = self.getwhat(what=what)
+        structlist.pop(name)
+        print '{} "{}" removed'.format(what, name)
+        self.modified = today()
+
+    def getwhat(self, what):
+        '''
+        Return the requested item ('what')
+            structlist = getwhat('parameters')
+        will return P.parset.
+        '''
+        if what in ['p', 'pars', 'parset', 'parameters']: structlist = self.parsets
+        elif what in ['pr', 'progs', 'progset', 'progsets']: structlist = self.progsets
+        elif what in ['s', 'scen', 'scens', 'scenario', 'scenarios']: structlist = self.scens
+        elif what in ['o', 'opt', 'opts', 'optim', 'optims', 'optimisation', 'optimization', 'optimisations', 'optimizations']: structlist = self.optims
+        elif what in ['r', 'res', 'result', 'results']: structlist = self.results
+        else: raise Exception("Item not found")
+        return structlist
 
     #######################################################################################################
     ### Utilities
