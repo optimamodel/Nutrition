@@ -1,49 +1,50 @@
-# Configuration file for Sciris
+"""
+config.py -- Configuration file for Sciris 
 
-# This file gets sourced by the Python code to extract parameters for setting 
-# which directories the web application uses, which Redis database gets used, 
-# and whether new registered accounts are automatically activated or not.
+This file gets imported by the Python code and contains settings for parameters 
+that choose which directories the web application uses, which Redis database 
+gets used, whether new registered accounts are automatically activated or not, 
+and other settings the Sciris webapp developer might want to include in the 
+configuration.
 
-# NOTE: For the _DIR parameters, you can use full absolute paths also.  If 
-# you use a relative path, it is interpreted as being with respect to the 
-# root path of the main repository.
+You can also set Flask config parameters in this file, as well as the Sciris-
+and webapp-specific ones.
 
-# Last update: 2018mar19
-
-import hptool as hp
-import os
+NOTE: For the _DIR parameters, you can use full absolute paths also (though you 
+need to make sure you use \\ for path separators under Windows OS).  If 
+you use a relative path, it is interpreted as being with respect to the 
+"webapp directory," that is, the directory containing this config file and the 
+main webapp script that imports it.
+ 
+Last update: 5/31/18 (gchadder3)
+"""
 
 # A secret key value used by Python Flask.
 SECRET_KEY = 'Pick something unique for your site here'
 
-ROOT_DIR = hp.HPpath()+os.sep
-
 # Directory containing the client code.
-CLIENT_DIR = ROOT_DIR+'client'
+CLIENT_DIR = '../../client/dist'
 
-# Directory containing the model code.  This is the primary Python code that 
-# the web app will rely on related to the actual model.
-MODEL_DIR = ROOT_DIR+'hptool'
-
-# Directory containing Python code specific to the web app.  sessionmanager 
-# (the directory this config file is in) contains general Python functionality 
-# that the web app directory code makes use of. 
-WEBAPP_DIR = ROOT_DIR+'hptool/webapp'
-
-# Directory where uploaded files will be saved, as well as files saved to be 
-# downloadable to user machines.
-UPLOADS_DIR = ROOT_DIR+'uploads'
-
-# Directory where files may be saved that the web app should be able to 
-# access.
-FILESAVEROOT_DIR = ROOT_DIR+'savedfiles'
+# Flag for setting whether we use the datastore functionality provided by 
+# Sciris in the webapp.
+USE_DATASTORE = True
 
 # URL for the Redis database that the web app will use to manage 
 # persistence.  Note that the /N/ number at the end should match the 
 # database number you want to use.  (N=0 is the default Redis database.)
 REDIS_URL = 'redis://localhost:6379/5/'
 
+# Flag for setting whether we use the users functionality provided by 
+# Sciris in the webapp.
+USE_USERS = True
+
 # Flag for setting whether registration of a new account automatically 
 # spawns a new active account.  If this is set False, then an admin user has 
 # to manually activate the account for the user.
 REGISTER_AUTOACTIVATE = True
+
+# Default server port
+SERVER_PORT = 8091
+
+# Matplotlib backend
+MATPLOTLIB_BACKEND = 'Agg'
