@@ -1,13 +1,11 @@
-import numpy as np
-import matplotlib.pyplot as plt
-
 def make_plots(results):
     """ Results is a Scen object from which all information can be extracted """
     # HARDCODED JUST FOR DEMONSTRATION PURPOSES
     ## Initialize
+    import pylab as pl
     mymodel = results.model
     years = results.year_names
-    fig = plt.figure()
+    fig = pl.figure()
 
     outcome = round_elements(mymodel.wasting_prev, 1)
     ax2 = fig.add_subplot(211)
@@ -15,9 +13,8 @@ def make_plots(results):
     ax2.set_xlabel('Year')
     ax2.plot(years, outcome)
 
-    plt.show()
-    return
-
+    pl.show()
+    return fig
 
 
 def round_elements(mylist, dec):

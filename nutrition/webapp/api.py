@@ -23,7 +23,7 @@ import mpld3
 
 import sciris.web as sw
 import sciris.core as sc
-import hptool as hp
+import nutrition as on
 
 #
 # Globals
@@ -218,49 +218,14 @@ def init_projects(app):
     
     # Else (no match)...
     else:
-        # Load the data path holding the Excel files.
-        data_path = hp.HPpath('data')
-    
         if app.config['LOGGING_MODE'] == 'FULL':
             print '>> Creating a new ProjectCollection.'   
         proj_collection.add_to_data_store()
         
         if app.config['LOGGING_MODE'] == 'FULL':
             print '>> Starting a demo project.'
-        proj = hp.Project(name='Afghanistan test 1', 
-            burdenfile=data_path + 'ihme-gbd.xlsx', 
-            interventionsfile=data_path + 'dcp-data-afg-v1.xlsx')  
+        proj = on.Project()  
         projSO = ProjectSO(proj, user.get_scirisdemo_user())
-#        projSO = ProjectSO('Afghanistan test 1', 
-#            user.get_scirisdemo_user(), 
-#            spreadsheet_path=None)
-        proj_collection.add_object(projSO)
-        
-        if app.config['LOGGING_MODE'] == 'FULL':
-            print '>> Starting a second demo project.'
-        proj = hp.Project(name='Afghanistan HBP equity')
-        projSO = ProjectSO(proj, user.get_scirisdemo_user())
-#        projSO = ProjectSO('Afghanistan HBP equity', 
-#            user.get_scirisdemo_user(), 
-#            spreadsheet_path=None)
-        proj_collection.add_object(projSO)
-        
-        if app.config['LOGGING_MODE'] == 'FULL':
-            print '>> Starting a third demo project.'
-        proj = hp.Project(name='Final Afghanistan HBP')
-        projSO = ProjectSO(proj, user.get_scirisdemo_user())
-#        projSO = ProjectSO('Final Afghanistan HBP', 
-#            user.get_scirisdemo_user(), 
-#            spreadsheet_path=None)
-        proj_collection.add_object(projSO)
-        
-        if app.config['LOGGING_MODE'] == 'FULL':
-            print '>> Starting a fourth demo project.'
-        proj = hp.Project(name='Pakistan test 1')  
-        projSO = ProjectSO(proj, user.get_scirisdemo_user())
-#        projSO = ProjectSO('Pakistan test 1', 
-#            user.get_scirisdemo_user(), 
-#            spreadsheet_path=None)
         proj_collection.add_object(projSO)
         
     if app.config['LOGGING_MODE'] == 'FULL':
@@ -596,22 +561,13 @@ def load_zip_of_prj_files(project_ids):
 @register_RPC(validation_type='nonanonymous user')
 def create_new_project(user_id):
     """
-    Create a new HealthPrior project.
+    Create a new Optima Nutrition project.
     """
-    
-    # Load the data path holding the Excel files.
-    data_path = hp.HPpath('data')
-    
     # Get a unique name for the project to be added.
     new_proj_name = get_unique_name('New project', other_names=None)
     
     # Create the project, loading in the desired spreadsheets.
-    proj = hp.Project(name=new_proj_name, 
-        burdenfile=data_path + 'ihme-gbd.xlsx', 
-        interventionsfile=data_path + 'dcp-data-afg-v1.xlsx')  
-    
-    # Set the burden population size.
-    proj.burden().popsize = 36373.176 # From UN population division 
+    proj = on.Project(name=new_proj_name)  
     
     # Display the call information.
     # TODO: have this so that it doesn't show when logging is turned off
@@ -701,125 +657,6 @@ def create_project_from_prj_file(prj_filename, user_id):
     # Return the new project UID in the return message.
     return { 'projectId': str(proj.uid) }
 
-##
-## Burden set RPCs
-##  
-    
-@register_RPC(validation_type='nonanonymous user')     
-def get_project_burden_sets(project_id):
-    # Get the Project object.
-    proj = load_project(project_id)
-    
-    # Get a list of the Burden objects.
-    burdensets = [proj.burdensets[ind] for ind in range(len(proj.burdensets))] 
-    
-    # Return the JSON-friendly result.
-    return {'burdensets': map(get_burden_set_fe_repr, burdensets)}
-
-@register_RPC(validation_type='nonanonymous user')
-def get_project_burden_set_diseases(project_id, burdenset_numindex):
-    # Get the Project object.
-    proj = load_project(project_id)
-    
-    # Get the burden set that matches burdenset_numindex.
-    burdenset = proj.burden(key=burdenset_numindex)
-    
-    # Return an empty list if no data is present.
-    if burdenset.data is None:
-        return { 'diseases': [] }
-
-    # Gather the list for all of the diseases.
-    disease_data = burdenset.export(cols=['active','cause','dalys','deaths','prevalence'], header=False)
-    
-    # Return success.
-    return { 'diseases': disease_data }
-
-@register_RPC(validation_type='nonanonymous user')    
-def create_burden_set(project_id, new_burden_set_name):
-
-    def update_project_fn(proj):
-        # Get a unique name (just in case the one provided collides with an 
-        # existing one).
-        unique_name = get_unique_name(new_burden_set_name, 
-            other_names=list(proj.burdensets))
-        
-        # Create a new (empty) burden set.
-        new_burden_set = hp.Burden(project=proj, name=unique_name)
-                
-        # Load data from the Excel spreadsheet.
-        # NOTE: We may want to take this out later in favor leaving the 
-        # new sets empty to start.
-        data_path = hp.HPpath('data')
-        new_burden_set.loaddata(data_path+'ihme-gbd.xlsx')
-        
-        # Put the new burden set in the dictionary.
-        proj.burdensets[unique_name] = new_burden_set
-        
-    # Do the project update using the internal function.
-    update_project_with_fn(project_id, update_project_fn)
-
-    # Return the new burden sets.
-    return get_project_burden_sets(project_id)
-
-@register_RPC(validation_type='nonanonymous user')
-def delete_burden_set(project_id, burdenset_numindex):
-
-    def update_project_fn(proj):
-        proj.burdensets.pop(burdenset_numindex)
-        
-    # Do the project update using the internal function.    
-    update_project_with_fn(project_id, update_project_fn)   
-
-@register_RPC(validation_type='nonanonymous user')    
-def copy_burden_set(project_id, burdenset_numindex):
-
-    def update_project_fn(proj):
-        # Get a unique name (just in case the one provided collides with an 
-        # existing one).
-        unique_name = get_unique_name(proj.burdensets[burdenset_numindex].name, 
-            other_names=list(proj.burdensets))
-        
-        # Create a new burdenset which is a copy of the old one.
-        new_burden_set = sc.dcp(proj.burdensets[burdenset_numindex])
-        
-        # Overwrite the old name with the new.
-        new_burden_set.name = unique_name
-       
-        # Put the new burden set in the dictionary.
-        proj.burdensets[unique_name] = new_burden_set
-        
-    # Do the project update using the internal function.  
-    update_project_with_fn(project_id, update_project_fn)
-    
-    # Return the new burden sets.
-    return get_project_burden_sets(project_id) 
-
-@register_RPC(validation_type='nonanonymous user')
-def rename_burden_set(project_id, burdenset_numindex, new_burden_set_name):
-
-    def update_project_fn(proj):
-        # Overwrite the old name with the new.
-        proj.burdensets[burdenset_numindex].name = new_burden_set_name
-        
-    # Do the project update using the internal function. 
-    update_project_with_fn(project_id, update_project_fn)
-
-@register_RPC(validation_type='nonanonymous user')
-def update_burden_set_disease(project_id, burdenset_numindex, 
-    disease_numindex, data):
-
-    def update_project_fn(proj):
-        # Set the data records for what gets passed in.
-        data_record = proj.burdensets[burdenset_numindex].data[disease_numindex]
-        data_record[0] = data[0]
-        data_record[7] = data[1]
-        data_record[8] = data[2]
-        data_record[9] = data[3]
-        data_record[10] = data[4]
-        
-    # Do the project update using the internal function. 
-    update_project_with_fn(project_id, update_project_fn)
-
 
 
 
@@ -836,14 +673,12 @@ def get_project_burden_plots(project_id, burdenset_numindex, engine='matplotlib'
     
     # Get the Project object.
     proj = load_project(project_id)
-    
-    # Get the burden set that matches burdenset_numindex.
-    burdenset = proj.burden(key=burdenset_numindex)
+    proj.default_scens()
+    result = proj.get_results('test1')
+    fig = on.plotting.make_plots(result) # HARDCODED EXAMPLE
     
     figs = []
-    for which in ['dalys','deaths','prevalence']:        
-        fig = burdenset.plottopcauses(which=which) # Create the figure
-        figs.append(fig)
+    figs.append(fig)
     
     # Gather the list for all of the diseases.
     graphs = []
@@ -851,252 +686,5 @@ def get_project_burden_plots(project_id, burdenset_numindex, engine='matplotlib'
         graph_dict = make_mpld3_graph_dict(fig)
         graphs.append(graph_dict)
     
-    # Return success -- WARNING, hard-coded to 3 graphs!
-    return {'graph1': graphs[0],
-            'graph2': graphs[1],
-            'graph3': graphs[2],}
-    
-##
-## Intervention set RPCs
-## 
-
-@register_RPC(validation_type='nonanonymous user')    
-def get_project_interv_sets(project_id):
-    # Get the Project object.
-    proj = load_project(project_id)
-    
-    # Get a list of the Interventions objects.
-    interv_sets = [proj.intersets[ind] for ind in range(len(proj.intersets))] 
-    
-    # Return the JSON-friendly result.
-    return {'intervsets': map(get_interv_set_fe_repr, interv_sets)}
-
-@register_RPC(validation_type='nonanonymous user')
-def get_project_interv_set_intervs(project_id, intervset_numindex):
-    # Get the Project object.
-    proj = load_project(project_id)
-    
-    # Get the intervention set that matches intervset_numindex.
-    intervset = proj.inter(key=intervset_numindex)
-    
-    # Return an empty list if no data is present.
-    if intervset.data is None:
-        return { 'interventions': [] } 
-    
-    # Gather the list for all of the interventions.
-    interv_data = [list(interv) for interv in intervset.data]
-    
-    # Return success.
-    return { 'interventions': interv_data }
-
-@register_RPC(validation_type='nonanonymous user')
-def create_interv_set(project_id, new_interv_set_name):
-
-    def update_project_fn(proj):
-        # Get a unique name (just in case the one provided collides with an 
-        # existing one).
-        unique_name = get_unique_name(new_interv_set_name, 
-            other_names=list(proj.intersets))
-        
-        # Create a new (empty) intervention set.
-        new_intervset = hp.Interventions(project=proj, name=unique_name)
-        
-        # Load data from the Excel spreadsheet.
-        # NOTE: We may want to take this out later in favor leaving the 
-        # new sets empty to start.
-        data_path = hp.HPpath('data')
-        new_intervset.loaddata(data_path+'dcp-data-afg-v1.xlsx')
-        
-        # Put the new intervention set in the dictionary.
-        proj.intersets[unique_name] = new_intervset
-        
-    # Do the project update using the internal function.
-    update_project_with_fn(project_id, update_project_fn)
-
-    # Return the new intervention sets.
-    return get_project_interv_sets(project_id)
-
-@register_RPC(validation_type='nonanonymous user')
-def delete_interv_set(project_id, intervset_numindex):
-
-    def update_project_fn(proj):
-        proj.intersets.pop(intervset_numindex)
-        
-    # Do the project update using the internal function.    
-    update_project_with_fn(project_id, update_project_fn)   
-
-@register_RPC(validation_type='nonanonymous user')    
-def copy_interv_set(project_id, intervset_numindex):
-
-    def update_project_fn(proj):
-        # Get a unique name (just in case the one provided collides with an 
-        # existing one).
-        unique_name = get_unique_name(proj.intersets[intervset_numindex].name, 
-            other_names=list(proj.intersets))
-        
-        # Create a new intervention set which is a copy of the old one.
-        new_intervset = sc.dcp(proj.intersets[intervset_numindex])
-        
-        # Overwrite the old name with the new.
-        new_intervset.name = unique_name
-       
-        # Put the new intervention set in the dictionary.
-        proj.intersets[unique_name] = new_intervset
-        
-    # Do the project update using the internal function.  
-    update_project_with_fn(project_id, update_project_fn)
-    
-    # Return the new intervention sets.
-    return get_project_interv_sets(project_id)
-
-@register_RPC(validation_type='nonanonymous user')
-def rename_interv_set(project_id, intervset_numindex, new_interv_set_name):
-
-    def update_project_fn(proj):
-        # Overwrite the old name with the new.
-        proj.intersets[intervset_numindex].name = new_interv_set_name
-        
-    # Do the project update using the internal function. 
-    update_project_with_fn(project_id, update_project_fn)
-
-@register_RPC(validation_type='nonanonymous user')    
-def update_interv_set_interv(project_id, intervset_numindex, 
-    interv_numindex, data):
-
-    def update_project_fn(proj):
-        # Set the data records for what gets passed in.
-        data_record = proj.intersets[intervset_numindex].data[interv_numindex]
-        data_record[0] = data[0]
-        data_record[1] = data[1]
-        data_record[3] = data[2]
-        data_record[4] = data[3]
-        data_record[5] = data[4]
-        data_record[6] = data[5]
-        data_record[7] = data[6]
-        data_record[8] = data[7]
-        
-    # Do the project update using the internal function. 
-    update_project_with_fn(project_id, update_project_fn)
-
-##
-## Package set RPCs
-##   
-
-@register_RPC(validation_type='nonanonymous user')    
-def get_project_package_sets(project_id):
-    # Get the Project object.
-    proj = load_project(project_id)
-    
-    # Get a list of the package objects.
-    packagesets = [proj.packagesets[ind] for ind in range(len(proj.packagesets))] 
-    
-    # Return the JSON-friendly result.
-    return {'packagesets': map(get_package_set_fe_repr, packagesets)}
-
-@register_RPC(validation_type='nonanonymous user')
-def get_project_package_set_results(project_id, packageset_numindex):
-    # Get the Project object.
-    proj = load_project(project_id)
-    
-    # Get the package set that matches packageset_numindex.
-    packageset = proj.package(key=packageset_numindex)
-    
-    # Return an empty list if no data is present.
-    if packageset.results is None:
-        return { 'results': [] }
-
-    # Gather the list for all of the diseases.
-    result_data = packageset.export(cols=['active','shortname','cause','coverage','dalys_averted'], header=False)
-    
-    # Return success.
-    return { 'results': result_data }
-
-@register_RPC(validation_type='nonanonymous user')    
-def create_package_set(project_id, new_package_set_name):
-
-    def update_project_fn(proj):
-        # Get a unique name (just in case the one provided collides with an 
-        # existing one).
-        unique_name = get_unique_name(new_package_set_name, 
-            other_names=list(proj.packagesets))
-        
-        # Create a new (empty) package set.
-        new_packageset = hp.HealthPackage(project=proj, name=unique_name)
-        
-        # Put the new package set in the dictionary.
-        proj.packagesets[unique_name] = new_packageset
-        
-    # Do the project update using the internal function.
-    update_project_with_fn(project_id, update_project_fn)
-
-    # Return the new package sets.
-    return get_project_package_sets(project_id)
-
-@register_RPC(validation_type='nonanonymous user')
-def delete_package_set(project_id, packageset_numindex):
-
-    def update_project_fn(proj):
-        proj.packagesets.pop(packageset_numindex)
-        
-    # Do the project update using the internal function.    
-    update_project_with_fn(project_id, update_project_fn)   
-
-@register_RPC(validation_type='nonanonymous user')    
-def copy_package_set(project_id, packageset_numindex):
-
-    def update_project_fn(proj):
-        # Get a unique name (just in case the one provided collides with an 
-        # existing one).
-        unique_name = get_unique_name(proj.packagesets[packageset_numindex].name, 
-            other_names=list(proj.packagesets))
-        
-        # Create a new packageset which is a copy of the old one.
-        new_packageset = sc.dcp(proj.packagesets[packageset_numindex])
-        
-        # Overwrite the old name with the new.
-        new_packageset.name = unique_name
-       
-        # Put the new package set in the dictionary.
-        proj.packagesets[unique_name] = new_packageset
-        
-    # Do the project update using the internal function.  
-    update_project_with_fn(project_id, update_project_fn)
-    
-    # Return the new package sets.
-    return get_project_package_sets(project_id) 
-
-@register_RPC(validation_type='nonanonymous user')
-def rename_package_set(project_id, packageset_numindex, new_package_set_name):
-
-    def update_project_fn(proj):
-        # Overwrite the old name with the new.
-        proj.packagesets[packageset_numindex].name = new_package_set_name
-        
-    # Do the project update using the internal function. 
-    update_project_with_fn(project_id, update_project_fn)
-
-@register_RPC(validation_type='nonanonymous user')
-def get_project_package_plots(project_id, packageset_numindex):
-    ''' Plot the health packages '''
-    
-    # Get the Project object.
-    proj = load_project(project_id)
-    
-    # Get the package set that matches packageset_numindex.
-    packageset = proj.package(key=packageset_numindex)
-    
-    figs = []
-    fig1 = packageset.plot_dalys()
-    fig2 = packageset.plot_cascade()
-    figs.append(fig1)
-    figs.append(fig2)
-    
-    # Gather the list for all of the diseases.
-    graphs = []
-    for fig in figs:
-        graph_dict = make_mpld3_graph_dict(fig)
-        graphs.append(graph_dict)
-    
-    # Return success -- WARNING, should not be hard-coded!
-    return {'graph1': graphs[0],
-            'graph2': graphs[1],}
+    # Return success -- WARNING, hard-coded
+    return {'graph1': graphs[0],}
