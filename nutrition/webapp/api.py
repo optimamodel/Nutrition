@@ -224,7 +224,7 @@ def init_projects(app):
         
         if app.config['LOGGING_MODE'] == 'FULL':
             print '>> Starting a demo project.'
-        proj = on.Project()  
+        proj = on.project.Project()  
         projSO = ProjectSO(proj, user.get_scirisdemo_user())
         proj_collection.add_object(projSO)
         
@@ -567,7 +567,7 @@ def create_new_project(user_id):
     new_proj_name = get_unique_name('New project', other_names=None)
     
     # Create the project, loading in the desired spreadsheets.
-    proj = on.Project(name=new_proj_name)  
+    proj = on.project.Project(name=new_proj_name)  
     
     # Display the call information.
     # TODO: have this so that it doesn't show when logging is turned off

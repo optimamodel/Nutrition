@@ -79,7 +79,6 @@ class ONException(Exception):
 #####################################################################################################################
 
 # Core functions
-print('Warning, fix imports')
 from . import project
 from . import scenarios
 from . import data
