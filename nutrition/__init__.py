@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-This file performs all necessary imports, so HealthPrior (HP) can be used either as
+This file performs all necessary imports, so Optima Nutrition can be used as
 
-from hptool import Project
-or
-import hptool as hp
-or
-from hptool import *
+import nutrition as on
 
 Now, the legal part:
 
@@ -58,7 +54,7 @@ def debuginfo(output=False):
     outstr += '   Branch:  %s\n' % sc.gitinfo()['branch']
     outstr += '   SHA:     %s\n' % sc.gitinfo()['hash']
     outstr += '   Date:    %s\n' % sc.gitinfo()['date']
-    outstr += '   Path:    %s\n' % HPpath()
+    outstr += '   Path:    %s\n' % ONpath()
     if output:
         return outstr
     else: 

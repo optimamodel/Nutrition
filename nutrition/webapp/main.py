@@ -4,7 +4,7 @@ main.py -- main module for the Optima Nutrition webapp.
 Last update: 2018jun04
 """
 
-import hptool as hp
+import nutrition as on
 import sciris.web as sw
 
 def make_app():
