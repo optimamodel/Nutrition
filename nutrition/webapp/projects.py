@@ -209,7 +209,7 @@ def init_projects(app):
         
         if app.config['LOGGING_MODE'] == 'FULL':
             print('>> Starting a demo project.')
-        proj = on.Project(name='Bangladesh 1')  
+        proj = on.project.Project(name='Bangladesh 1')  
         projSO = ProjectSO(proj, user.get_scirisdemo_user())
         proj_collection.add_object(projSO)
         
