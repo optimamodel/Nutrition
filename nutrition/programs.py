@@ -127,13 +127,13 @@ class Program(object):
         from math import ceil
         self.unrestrictedPopSize = 0.
         for pop in populations:
-            self.unrestrictedPopSize += sum(ceil(self.target_pops[age.age])*age.getAgeGroupPopulation() for age in pop.age_groups
+            self.unrestrictedPopSize += sum(ceil(self.target_pops[age.age])*age.pop_size for age in pop.age_groups
                                            if age.age in self.agesTargeted)
 
     def _setRestrictedPopSize(self, populations):
         self.restrictedPopSize = 0.
         for pop in populations:
-            self.restrictedPopSize += sum(age.getAgeGroupPopulation() * self.target_pops[age.age] for age in pop.age_groups
+            self.restrictedPopSize += sum(age.pop_size * self.target_pops[age.age] for age in pop.age_groups
                                          if age.age in self.agesTargeted)
 
     def _set_exclusion_deps(self):

@@ -1,12 +1,9 @@
-"""
-SETTINGS
+import os, itertools
 
-Store all the statis data for a project that won't change except between Optima versions
-
-"""
-import os
 
 class Settings(object):
+    """ Store all the statis data for a project that won't change except between Optima versions
+    WARNING: Do not change the order of these lists without checking the consequences within the code """
     def __init__(self):
         self.timestep = 1./12. # in months
         self.stunting_list = ['High', 'Moderate', 'Mild', 'Normal']
@@ -19,6 +16,8 @@ class Settings(object):
         self.wasted_list = self.wasting_list[:2]
         self.non_wasted_list = self.wasting_list[2:]
         self.bf_list = ['Exclusive', 'Predominant', 'Partial', 'None']
+        list_cats = [ self.stunting_list, self.wasting_list, self.anaemia_list, self.bf_list]
+        self.all_cats = list(itertools.product(*list_cats))
         self.correct_bf = {'<1 month': 'Exclusive', '1-5 months': 'Exclusive', '6-11 months':'Partial',
                            '12-23 months': 'Partial', '24-59 months': 'None'}
         self.birth_outcomes = ['Term AGA', 'Term SGA', 'Pre-term AGA','Pre-term SGA']
