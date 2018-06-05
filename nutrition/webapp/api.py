@@ -13,7 +13,6 @@ import sciris.scirisobjects as sobj
 import sciris.datastore as ds
 import sciris.user as user
 import os
-import uuid
 import datetime
 import dateutil
 import dateutil.tz
@@ -74,7 +73,7 @@ class ProjectSO(sobj.ScirisObject):
         
         # Make sure the owner UID argument is a valid UUID, converting a hex 
         # text to a UUID object, if needed.        
-        valid_uuid = sobj.get_valid_uuid(owner_uid)
+        valid_uuid = sc.uuid(owner_uid)
         
         # If we have a valid UUID...
         if valid_uuid is not None:       
@@ -163,7 +162,7 @@ class ProjectCollection(sobj.ScirisCollection):
     def get_user_front_end_repr(self, owner_uid):
         # Make sure the argument is a valid UUID, converting a hex text to a
         # UUID object, if needed.        
-        valid_uuid = sobj.get_valid_uuid(owner_uid)
+        valid_uuid = sc.uuid(owner_uid)
         
         # If we have a valid UUID...
         if valid_uuid is not None:               
@@ -180,7 +179,7 @@ class ProjectCollection(sobj.ScirisCollection):
     def get_project_entries_by_user(self, owner_uid):
         # Make sure the argument is a valid UUID, converting a hex text to a
         # UUID object, if needed.        
-        valid_uuid = sobj.get_valid_uuid(owner_uid)
+        valid_uuid = sc.uuid(owner_uid)
         
         # If we have a valid UUID...
         if valid_uuid is not None:    
@@ -542,7 +541,7 @@ def load_zip_of_prj_files(project_ids):
     prjs = [load_project_record(id).save_as_file(dirname) for id in project_ids]
     
     # Make the zip file name and the full server file path version of the same..
-    zip_fname = '{}.zip'.format(uuid.uuid4())
+    zip_fname = '%s.zip' % str(sc.uuid())
     server_zip_fname = os.path.join(dirname, zip_fname)
     
     # Create the zip file, putting all of the .prj files in a projects 
