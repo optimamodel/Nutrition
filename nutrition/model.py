@@ -127,7 +127,6 @@ class Model:
         self._apply_pw_mort()
         self._update_pw()
         self._update_wra_pop()
-        self._update_women_dists()
 
     def _set_preg_info(self):
         FP = [prog for prog in self.prog_info.programs if prog.name == 'Family Planning']
@@ -281,7 +280,6 @@ class Model:
                 newProbAnaemia = oldProbAnaemia * age_group.totalAnaemiaUpdate
                 age_group.anaemia_dist['Anaemic'] = newProbAnaemia
                 age_group.anaemia_dist['Not anaemic'] = 1.-newProbAnaemia
-                age_group.distrib_pop()
         elif population.name == 'Non-pregnant women':
             for age_group in population.age_groups:
                 # anaemia
@@ -289,7 +287,6 @@ class Model:
                 newProbAnaemia = oldProbAnaemia * age_group.totalAnaemiaUpdate
                 age_group.anaemia_dist['Anaemic'] = newProbAnaemia
                 age_group.anaemia_dist['Not anaemic'] = 1.-newProbAnaemia
-                age_group.distrib_pop()
             # weighted sum account for different effect and target pops across nonpw age groups # TODO: is this true or need to scale by frac targeted?
             # nonPWpop = population.get_totalpop()
             # FPcov = sum(nonPWage.FPupdate * nonPWage.getAgeGroupPopulation() for nonPWage in population.age_groups) / nonPWpop
@@ -325,7 +322,7 @@ class Model:
         # get number at risk before
         sumBefore = age_group._getDiarrhoeaRiskSum()
         # update distribution of incorrect practices
-        popSize = age_group.getAgeGroupPopulation()
+        popSize = age_group.pop_size
         numCorrectBefore = age_group.getNumberCorrectlyBF()
         numCorrectAfter = popSize * age_group.bf_dist[age_group.correct_bf]
         numShifting = numCorrectAfter - numCorrectBefore
@@ -475,13 +472,12 @@ class Model:
 
     def _apply_pw_mort(self):
         for age_group in self.pw.age_groups:
-            for anaemiaCat in self.settings.anaemia_list:
-                thisBox = age_group.boxes[anaemiaCat]
-                deaths = thisBox.pop_size * thisBox.mortalityRate
-                thisBox.cumulativeDeaths += deaths
+            for i, cat in enumerate(self.settings.anaemia_list):
+                thisPop = age_group.pop_size * age_group.anaemia_dist[cat]
+                deaths = thisPop * age_group.mortality[i]
                 self.pw_deaths[self.year] += deaths
         oldest = self.pw.age_groups[-1]
-        self.pw_exit[self.year] += oldest.getAgeGroupPopulation() * oldest.ageingRate
+        self.pw_exit[self.year] += oldest.pop_size * oldest.ageingRate
 
     def _update_pw(self):
         """Use pregnancy rate to distribute pw into age groups.
@@ -489,10 +485,7 @@ class Model:
         numWRA = self.nonpw.proj['Total WRA'][self.year]
         PWpop = self.nonpw.pregnancyRate * numWRA * (1. - self.nonpw.fracPregnancyAverted)
         for age_group in self.pw.age_groups:
-            popSize = PWpop * age_group.age_dist
-            for anaemiaCat in self.settings.anaemia_list:
-                thisBox = age_group.boxes[anaemiaCat]
-                thisBox.pop_size = popSize * age_group.anaemia_dist[anaemiaCat]
+           age_group.pop_size = PWpop * age_group.age_dist
 
     def _update_wra_pop(self):
         """Uses projected figures to determine the population of WRA not pregnant in a given age band and year
@@ -501,19 +494,9 @@ class Model:
         age_groups = self.nonpw.age_groups
         for i, age_group in enumerate(age_groups):
             projectedWRApop = self.nonpw.proj[age_group.age][self.year]
-            PWpop = self.pw.age_groups[i].getAgeGroupPopulation()
+            PWpop = self.pw.age_groups[i].pop_size
             nonpw = projectedWRApop - PWpop
-            #distribute over risk factors
-            for anaemiaCat in self.settings.anaemia_list:
-                thisBox = age_group.boxes[anaemiaCat]
-                thisBox.pop_size = nonpw * age_group.anaemia_dist[anaemiaCat]
-
-    def update_child_dists(self):
-        for age_group in self.children.age_groups:
-            age_group.update_stunting_dist()
-            age_group.update_wasting_dist()
-            age_group.update_bf_dist()
-            age_group.update_anaemia_dist()
+            age_group.pop_size = nonpw
 
     def _update_women_dists(self):
         for pop in self.pops[1:]:
