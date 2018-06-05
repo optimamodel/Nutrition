@@ -1,17 +1,13 @@
 """
-api.py -- code related to HealthPrior project management
+rpcs.py -- code related to HealthPrior project management
     
-Last update: 6/1/18 (gchadder3)
+Last update: 2018jun04 by cliffk
 """
 
 #
 # Imports
 #
 
-import sciris.fileio as fileio
-import sciris.scirisobjects as sobj
-import sciris.datastore as ds
-import sciris.user as user
 import os
 import datetime
 import dateutil
@@ -20,17 +16,13 @@ from zipfile import ZipFile
 from flask_login import current_user
 import mpld3
 
-import sciris.web as sw
+import sciris.fileio as fileio
+import sciris.user as user
 import sciris.core as sc
+import sciris.web as sw
+
 import nutrition as on
-
-#
-# Globals
-#
-
-# The ProjectCollection object for all of the app's projects.  Gets 
-# initialized by and loaded by init_projects().
-proj_collection = None
+from . import projects as prj
 
 # Dictionary to hold all of the registered RPCs in this module.
 RPC_dict = {}
@@ -38,198 +30,6 @@ RPC_dict = {}
 # RPC registration decorator factory created using call to make_register_RPC().
 register_RPC = sw.make_register_RPC(RPC_dict)
 
-#
-# Classes
-#
-
-class ProjectSO(sobj.ScirisObject):
-    """
-    A ScirisObject-wrapped Optima Nutrition Project object.
-    
-    Methods:
-        __init__(proj: Project, owner_uid: UUID, uid: UUID [None]): 
-            void -- constructor
-        load_from_copy(other_object): void -- assuming other_object is another 
-            object of our type, copy its contents to us (calls the 
-            ScirisObject superclass version of this method also)   
-        show(): void -- print the contents of the object
-        get_user_front_end_repr(): dict -- get a JSON-friendly dictionary 
-            representation of the object state the front-end uses for non-
-            admin purposes  
-        save_as_file(load_dir: str): str -- given a load dictionary, save the 
-            project in a file there and return the file name
-                    
-    Attributes:
-        proj (Project) -- the actual Project object being wrapped
-        owner_uid (UUID) -- the UID of the User that owns the Project
-        
-    Usage:
-        >>> my_project = ProjectSO(proj, owner_uid)                      
-    """
-    
-    def  __init__(self, proj, owner_uid, uid=None):
-        # NOTE: uid argument is ignored but kept here to not mess up
-        # inheritance.
-        
-        # Make sure the owner UID argument is a valid UUID, converting a hex 
-        # text to a UUID object, if needed.        
-        valid_uuid = sc.uuid(owner_uid)
-        
-        # If we have a valid UUID...
-        if valid_uuid is not None:       
-            # Set superclass parameters.
-            super(ProjectSO, self).__init__(proj.uid)
-                                   
-            # Set the project to the Optima Project that is passed in.
-            self.proj = proj
-            
-            # Set the owner (User) UID.
-            self.owner_uid = valid_uuid
-        
-    def load_from_copy(self, other_object):
-        if type(other_object) == type(self):
-            # Do the superclass copying.
-            super(ProjectSO, self).load_from_copy(other_object)
-            
-            # Copy the Project object itself.
-            self.proj = sc.dcp(other_object.proj)
-            
-            # Copy the owner UID.
-            self.owner_uid = other_object.owner_uid
-                
-    def show(self):
-        # Show superclass attributes.
-        super(ProjectSO, self).show()  
-        
-        # Show the Optima defined display text for the project.
-        print '---------------------'
-        print 'Owner User UID: %s' % self.owner_uid.hex
-        print 'Project Name: %s' % self.proj.name
-        print 'Creation Time: %s' % self.proj.created
-        print 'Update Time: %s' % self.proj.modified
-            
-    def get_user_front_end_repr(self):
-        obj_info = {
-            'project': {
-                'id': self.uid,
-                'name': self.proj.name,
-                'userId': self.owner_uid,
-                'creationTime': self.proj.created,
-                'updatedTime': self.proj.modified     
-            }
-        }
-        return obj_info
-    
-    def save_as_file(self, load_dir):
-        # Create a filename containing the project name followed by a .prj 
-        # suffix.
-        file_name = '%s.prj' % self.proj.name
-        
-        # Generate the full file name with path.
-        full_file_name = '%s%s%s' % (load_dir, os.sep, file_name)   
-     
-        # Write the object to a Gzip string pickle file.
-        ds.object_to_gzip_string_pickle_file(full_file_name, self.proj)
-        
-        # Return the filename (not the full one).
-        return self.proj.name + ".prj"
-    
-        
-class ProjectCollection(sobj.ScirisCollection):
-    """
-    A collection of Projects.
-    
-    Methods:
-        __init__(uid: UUID [None], type_prefix: str ['projectscoll'], 
-            file_suffix: str ['.pc'], 
-            instance_label: str ['Projects Collection']): void -- constructor  
-        get_user_front_end_repr(owner_uid: UUID): list -- return a list of dicts 
-            containing JSON-friendly project contents for each project that 
-            is owned by the specified user UID
-        get_project_entries_by_user(owner_uid: UUID): list -- return the ProjectSOs 
-            that match the owning User UID in a list
-        
-    Usage:
-        >>> proj_collection = ProjectCollection(uuid.UUID('12345678123456781234567812345678'))                      
-    """
-    
-    def __init__(self, uid, type_prefix='projectscoll', file_suffix='.pc', 
-        instance_label='Projects Collection'):
-        # Set superclass parameters.
-        super(ProjectCollection, self).__init__(uid, type_prefix, file_suffix, 
-             instance_label)
-            
-    def get_user_front_end_repr(self, owner_uid):
-        # Make sure the argument is a valid UUID, converting a hex text to a
-        # UUID object, if needed.        
-        valid_uuid = sc.uuid(owner_uid)
-        
-        # If we have a valid UUID...
-        if valid_uuid is not None:               
-            # Get dictionaries for each Project in the dictionary.
-            projects_info = [self.obj_dict[key].get_user_front_end_repr() \
-                for key in self.obj_dict \
-                if self.obj_dict[key].owner_uid == valid_uuid]
-            return projects_info
-        
-        # Otherwise, return an empty list.
-        else:
-            return []
-        
-    def get_project_entries_by_user(self, owner_uid):
-        # Make sure the argument is a valid UUID, converting a hex text to a
-        # UUID object, if needed.        
-        valid_uuid = sc.uuid(owner_uid)
-        
-        # If we have a valid UUID...
-        if valid_uuid is not None:    
-            # Get ProjectSO entries for each Project in the dictionary.
-            project_entries = [self.obj_dict[key] \
-                for key in self.obj_dict \
-                if self.obj_dict[key].owner_uid == valid_uuid]
-            return project_entries
-        
-        # Otherwise, return an empty list.
-        else:
-            return []
-
-
-#
-# Initialization function
-#
-
-def init_projects(app):
-    global proj_collection  # need this to allow modification within the module
-    
-    # Look for an existing ProjectCollection.
-    proj_collection_uid = ds.data_store.get_uid_from_instance('projectscoll', 
-        'Projects Collection')
-    
-    # Create the projects collection object.  Note, that if no match was found, 
-    # this will be assigned a new UID.    
-    proj_collection = ProjectCollection(proj_collection_uid)
-    
-    # If there was a match...
-    if proj_collection_uid is not None:
-        if app.config['LOGGING_MODE'] == 'FULL':
-            print '>> Loading ProjectCollection from the DataStore.'
-        proj_collection.load_from_data_store() 
-    
-    # Else (no match)...
-    else:
-        if app.config['LOGGING_MODE'] == 'FULL':
-            print '>> Creating a new ProjectCollection.'   
-        proj_collection.add_to_data_store()
-        
-        if app.config['LOGGING_MODE'] == 'FULL':
-            print '>> Starting a demo project.'
-        proj = on.project.Project()  
-        projSO = ProjectSO(proj, user.get_scirisdemo_user())
-        proj_collection.add_object(projSO)
-        
-    if app.config['LOGGING_MODE'] == 'FULL':
-        # Show what's in the ProjectCollection.    
-        proj_collection.show()
         
 #
 # Other functions (mostly helpers for the RPCs)
@@ -245,8 +45,8 @@ def load_project_record(project_id, raise_exception=True):
     Return the project DataStore reocord, given a project UID.
     """ 
     
-    # Load the matching ProjectSO object from the database.
-    project_record = proj_collection.get_object_by_uid(project_id)
+    # Load the matching prj.ProjectSO object from the database.
+    project_record = prj.proj_collection.get_object_by_uid(project_id)
 
     # If we have no match, we may want to throw an exception.
     if project_record is None:
@@ -289,10 +89,10 @@ def load_current_user_project_summaries2():
     Return project summaries for all projects the user has to the client.
     """ 
     
-    # Get the ProjectSO entries matching the user UID.
-    project_entries = proj_collection.get_project_entries_by_user(current_user.get_id())
+    # Get the prj.ProjectSO entries matching the user UID.
+    project_entries = prj.proj_collection.get_project_entries_by_user(current_user.get_id())
     
-    # Grab a list of project summaries from the list of ProjectSO objects we 
+    # Grab a list of project summaries from the list of prj.ProjectSO objects we 
     # just got.
     return {'projects': map(load_project_summary_from_project_record, 
         project_entries)}
@@ -323,7 +123,7 @@ def get_unique_name(name, other_names=None):
 
 def save_project(proj):
     """
-    Given a Project object, wrap it in a new ProjectSO object and put this 
+    Given a Project object, wrap it in a new prj.ProjectSO object and put this 
     in the project collection (either adding a new object, or updating an 
     existing one)  skip_result lets you null out saved results in the Project.
     """ 
@@ -337,8 +137,8 @@ def save_project(proj):
     # Create the new project entry and enter it into the ProjectCollection.
     # Note: We don't need to pass in project.uid as a 3rd argument because 
     # the constructor will automatically use the Project's UID.
-    projSO = ProjectSO(new_project, project_record.owner_uid)
-    proj_collection.update_object(projSO)
+    projSO = prj.ProjectSO(new_project, project_record.owner_uid)
+    prj.proj_collection.update_object(projSO)
     
 def update_project_with_fn(project_id, update_project_fn):
     """
@@ -360,7 +160,7 @@ def update_project_with_fn(project_id, update_project_fn):
     
 def save_project_as_new(proj, user_id):
     """
-    Given a Project object and a user UID, wrap the Project in a new ProjectSO 
+    Given a Project object and a user UID, wrap the Project in a new prj.ProjectSO 
     object and put this in the project collection, after getting a fresh UID
     for this Project.  Then do the actual save.
     """ 
@@ -369,8 +169,8 @@ def save_project_as_new(proj, user_id):
     proj.uid = sc.uuid()
     
     # Create the new project entry and enter it into the ProjectCollection.
-    projSO = ProjectSO(proj, user_id)
-    proj_collection.add_object(projSO)  
+    projSO = prj.ProjectSO(proj, user_id)
+    prj.proj_collection.add_object(projSO)  
 
     # Display the call information.
     # TODO: have this so that it doesn't show when logging is turned off
@@ -418,6 +218,21 @@ def get_package_set_fe_repr(packageset):
 # RPC functions
 #
 
+# RPC definitions
+@register_RPC()
+def get_version_info():
+	''' Return the information about the project. '''
+	gitinfo = sc.gitinfo(__file__)
+	version_info = {
+	       'version':   on.version,
+	       'date':      on.versiondate,
+	       'gitbranch': gitinfo['branch'],
+	       'githash':   gitinfo['hash'],
+	       'gitdate':   gitinfo['date'],
+	}
+	return version_info
+
+
 ##
 ## Project RPCs
 ##
@@ -431,8 +246,8 @@ def get_scirisdemo_projects():
     # Get the user UID for the _ScirisDemo user.
     user_id = user.get_scirisdemo_user()
    
-    # Get the ProjectSO entries matching the _ScirisDemo user UID.
-    project_entries = proj_collection.get_project_entries_by_user(user_id)
+    # Get the prj.ProjectSO entries matching the _ScirisDemo user UID.
+    project_entries = prj.proj_collection.get_project_entries_by_user(user_id)
 
     # Collect the project summaries for that user into a list.
     project_summary_list = map(load_project_summary_from_project_record, 
@@ -455,7 +270,7 @@ def load_project_summary(project_id):
     # Load the project record matching the UID of the project passed in.
     project_entry = load_project_record(project_id)
     
-    # Return a project summary from the accessed ProjectSO entry.
+    # Return a project summary from the accessed prj.ProjectSO entry.
     return load_project_summary_from_project_record(project_entry)
 
 @register_RPC(validation_type='nonanonymous user')
@@ -472,10 +287,10 @@ def load_all_project_summaries():
     Return project summaries for all projects to the client.
     """ 
     
-    # Get all of the ProjectSO entries.
-    project_entries = proj_collection.get_all_objects()
+    # Get all of the prj.ProjectSO entries.
+    project_entries = prj.proj_collection.get_all_objects()
     
-    # Grab a list of project summaries from the list of ProjectSO objects we 
+    # Grab a list of project summaries from the list of prj.ProjectSO objects we 
     # just got.
     return {'projects': map(load_project_summary_from_project_record, 
         project_entries)}
@@ -494,7 +309,7 @@ def delete_projects(project_ids):
         # If a matching record is found, delete the object from the 
         # ProjectCollection.
         if record is not None:
-            proj_collection.delete_object_by_uid(project_id)
+            prj.proj_collection.delete_object_by_uid(project_id)
 
 @register_RPC(call_type='download', validation_type='nonanonymous user')   
 def download_project(project_id):
@@ -536,7 +351,7 @@ def load_zip_of_prj_files(project_ids):
     # Use the downloads directory to put the file in.
     dirname = fileio.downloads_dir.dir_path
 
-    # Build a list of ProjectSO objects for each of the selected projects, 
+    # Build a list of prj.ProjectSO objects for each of the selected projects, 
     # saving each of them in separate .prj files.
     prjs = [load_project_record(id).save_as_file(dirname) for id in project_ids]
     
@@ -547,8 +362,8 @@ def load_zip_of_prj_files(project_ids):
     # Create the zip file, putting all of the .prj files in a projects 
     # directory.
     with ZipFile(server_zip_fname, 'w') as zipfile:
-        for prj in prjs:
-            zipfile.write(os.path.join(dirname, prj), 'projects/{}'.format(prj))
+        for project in prjs:
+            zipfile.write(os.path.join(dirname, project), 'projects/{}'.format(project))
             
     # Display the call information.
     # TODO: have this so that it doesn't show when logging is turned off

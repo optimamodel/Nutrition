@@ -1,3 +1,4 @@
 from . import config
-from . import api
+from . import projects
+from . import rpcs
 from . import main
