@@ -1,7 +1,7 @@
 <!--
 Define health packages
 
-Last update: 2018-05-29
+Last update: 2018-06-05
 -->
 
 <template>
@@ -66,6 +66,10 @@ Last update: 2018-05-29
         // Go to the server to get the results from the package set.
         rpcservice.rpcCall('get_default_scenario_plot')
           .then(response => {
+            // If we already have a figure, pop the figure object, and clear
+            // the DOM.
+            this.clearFigureWindow()
+          
             this.serverresponse = response.data // Pull out the response data.
             let theFig = response.data.graph1 // Extract hack info.
             mpld3.draw_figure('fig01', response.data.graph1) // Draw the figure.
@@ -79,7 +83,14 @@ Last update: 2018-05-29
           })
       },
 
-
+      clearFigureWindow () {
+        // If we already have a figure, pop the figure object, and clear
+        // the DOM.
+        if (mpld3.figures.length > 0) {
+          mpld3.figures.pop()
+          document.getElementById('fig01').innerHTML = ''
+        }
+      }
     }
   }
 </script>
