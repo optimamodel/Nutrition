@@ -157,7 +157,7 @@ class ChildAgeGroup(object):
     ###### POPULATION CALCULATIONS ######
 
     def get_num_stunted(self):
-        num_stunted = self.pop_size * sum(self.stunting_dist[cat] for cat in self.settings.stunted_list) # TODO: don't want to do this every time, save % stunted
+        num_stunted = self.pop_size * sum(self.stunting_dist[cat] for cat in self.settings.stunted_list)
         return num_stunted
 
     def get_num_notstunted(self):
@@ -165,7 +165,7 @@ class ChildAgeGroup(object):
         return num_notstunted
 
     def get_num_wasted(self, cat):
-        num_wasted = self.pop_size * self.wasting_dist[cat] # TODO: don't want to do this every time, save % stunted
+        num_wasted = self.pop_size * self.wasting_dist[cat]
         return num_wasted
 
     def getAgeGroupNumberNotWasted(self):
@@ -173,7 +173,7 @@ class ChildAgeGroup(object):
         return num_notwasted
 
     def get_num_anaemic(self):
-        num_anaem = self.pop_size * sum(self.anaemia_dist[cat] for cat in self.settings.anaemic_list) # TODO: don't want to do this every time, save % stunted
+        num_anaem = self.pop_size * sum(self.anaemia_dist[cat] for cat in self.settings.anaemic_list)
         return num_anaem
 
     def get_num_notanaemic(self):

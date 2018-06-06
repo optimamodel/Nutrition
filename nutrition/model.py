@@ -69,7 +69,7 @@ class Model:
         # self.child_healthy[self.year] += oldest.getAgeGroupNumberHealthy() * oldest.ageingRate
 
     def _track_prevs(self):
-        self.stunting_prev[self.year] = self.children.getTotalFracStunted() # TODO: all messed up
+        self.stunting_prev[self.year] = self.children.getTotalFracStunted()
         self.wasting_prev[self.year] = self.children.getTotalFracWasted()
         self.anaemia_prev[self.year] = [pop.getTotalNumberAnaemic() for pop in self.pops][0] / \
                                        [pop.get_totalpop() for pop in self.pops][0]
@@ -103,13 +103,9 @@ class Model:
                 self._apply_prog_covs()
             if self.adjust_cov: # account for pop growth
                 self.prog_info.adjust_covs(self.pops, year)
-            # distribute pops according to new distributions and move model
-            # self._distrib_pops() # TODO: don't need this necessarily
             self.integrate()
             self._track_prevs()
-        print self.stunting_prev
-            # TODO: pop size is wayyyy too BIG!
-            # print sum(self.children.age_groups[i].pop_size for i in range(5))
+        print self.wasting_prev
 
     def _apply_prog_covs(self):
         # update populations
@@ -260,7 +256,6 @@ class Model:
                 nonWastedDist = restratify(newProbWasted)
                 for nonWastedCat in self.settings.non_wasted_list:
                     age_group.wasting_dist[nonWastedCat] = nonWastedDist[nonWastedCat]
-                # age_group.distrib_pop()
         elif population.name == 'Pregnant women':
             # update pw anaemia but also birth distribution for <1 month age group
             # update birth distribution
@@ -372,8 +367,6 @@ class Model:
     def _apply_child_mort(self):
         age_groups = self.children.age_groups
         for age_group in age_groups:
-            # TODO: two options -- 1. use distributions to get pop sizes on the fly, or 2. put into a flattened list and updated each time step
-            # TODO: for now, go with 1., but depends upon future usage
             for i, cats in enumerate(self.settings.all_cats):
                 thisPop = age_group.pop_size * age_group.stunting_dist[cats[0]] * age_group.wasting_dist[cats[1]] * \
                           age_group.anaemia_dist[cats[2]] * age_group.bf_dist[cats[3]]
@@ -386,7 +379,7 @@ class Model:
         # get number ageing out of each age group
         age_groups = self.children.age_groups
         ageingOut = []
-        for i, age_group in enumerate(age_groups): # TODO: ageing here can be applied at an age level, rather than box level
+        for i, age_group in enumerate(age_groups):
             ageingOut.append(age_group.pop_size * age_group.ageingRate)
             # age children
             age_group.pop_size -= ageingOut[i]
@@ -416,7 +409,7 @@ class Model:
             # new distribution
             age_group.stunting_dist = restratify(probStunting)
 
-    def _apply_births(self): # TODO: problem here is that I think distributions SHOULD be updated (but arent)
+    def _apply_births(self):
         # num annual births = birth rate x num WRA x (1 - frac preg averted)
         numWRA = self.nonpw.proj['Total WRA'][self.year]
         births = self.nonpw.birthRate * numWRA * (1. - self.nonpw.fracPregnancyAverted)
@@ -508,7 +501,7 @@ class Model:
         Responsible for updating children since they have monthly time steps
         :return:
         """
-        for month in range(12): # TODO: big problems with 24-59 months distribution getting too large...
+        for month in range(12):
             self._apply_child_mort()
             self._apply_child_ageing()
             self._apply_births()
