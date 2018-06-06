@@ -9,29 +9,14 @@ const SidebarStore = {
       path: '/projects'
     },
     {
-      name: 'Disease burden',
-      icon: 'ti-bar-chart',
-      path: '/bod'
+      name: 'Scenarios',
+      icon: 'ti-control-shuffle',
+      path: '/scenarios'
     },
     {
-      name: 'Interventions',
-      icon: 'ti-pulse',
-      path: '/interventions'
-    },
-    {
-      name: 'Equity',
-      icon: 'ti-ruler',
-      path: '/equity'
-    },
-    {
-      name: 'Financial risk',
-      icon: 'ti-bolt',
-      path: '/financialrisk'
-    },
-    {
-      name: 'Health packages',
-      icon: 'ti-heart',
-      path: '/healthpackages'
+      name: 'Optimizations',
+      icon: 'ti-stats-up',
+      path: '/optimizations'
     },
     {
       name: 'Help',

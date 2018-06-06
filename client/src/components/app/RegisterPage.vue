@@ -1,20 +1,17 @@
 <!--
 User registration page
 
-Last update: 2018-03-25
+Last update: 2018-05-28
 -->
 
 
 <template>
   <div class="SitePage" style="background-color:#f8f8f4; position:fixed; min-height:100%; min-width:100%; padding:0 0 0 0" v-model="getVersionInfo"> <!-- Should match _variables.scss:$bg-nude -->
-    <div style="background-color:#212120; position:absolute; height:100%; width:260px">
+    <div style="background-color:#0c2544; position:absolute; height:100%; width:260px">
       <div class="logo">
         <div class="simple-text" style="font-size:20px; color:#fff; font-weight:bold; padding:20px">
-          <div class="logo-img" style="height:40px; width:40px; line-height:40px; border-radius:40px; background-color:#fff; text-align:center; display:inline-block">
-            <img src="static/favicon-96x96.png" width="21px" vertical-align="middle" alt>
-          </div>
           <span style="padding-left:10px">
-            <img src="static/img/healthpriorlogo-inverse.png" width="130px" vertical-align="middle" alt>
+            <img src="static/img/optima-inverted-logo.png" width="160px" vertical-align="middle" alt>
           </span>
           <br/><br/>
           <div style="font-size:14px; font-weight:normal">
@@ -69,7 +66,7 @@ Last update: 2018-03-25
 
           <div class="section">
             Already registered?
-            <router-link class="link __blue" to="/login">
+            <router-link to="/login">
               Login
             </router-link>
           </div>
@@ -83,6 +80,7 @@ Last update: 2018-03-25
 
 <script>
 import rpcservice from '@/services/rpc-service'
+import userservice from '@/services/user-service'
 import router from '@/router'
 
 export default {
@@ -102,7 +100,7 @@ export default {
 
   computed: {
     getVersionInfo() {
-      rpcservice.rpcPublicCall('get_version_info')
+      rpcservice.rpcCall('get_version_info')
         .then(response => {
           this.version = response.data['version'];
           this.date = response.data['date'];
@@ -112,8 +110,8 @@ export default {
 
   methods: {
     tryRegister () {
-      rpcservice.rpcRegisterCall('user_register', this.registerUserName,
-        this.registerPassword, this.registerDisplayName, this.registerEmail)
+      userservice.registerUser(this.registerUserName, this.registerPassword,
+        this.registerDisplayName, this.registerEmail)
       .then(response => {
         if (response.data == 'success') { // Set a success result to show.
           this.registerResult = 'Success! Please wait while you are redirected...';

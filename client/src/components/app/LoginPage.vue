@@ -1,19 +1,16 @@
 <!--
 Login page
 
-Last update: 2018-03-25
+Last update: 2018-05-26
 -->
 
 <template>
   <div class="SitePage" style="background-color:#f8f8f4; position:fixed; min-height:100%; min-width:100%; padding:0 0 0 0" v-model="getVersionInfo"> <!-- Should match _variables.scss:$bg-nude -->
-    <div style="background-color:#212120; position:absolute; height:100%; width:260px">
+    <div style="background-color:#0c2544; position:absolute; height:100%; width:260px">
       <div class="logo">
         <div class="simple-text" style="font-size:20px; color:#fff; font-weight:bold; padding:20px">
-          <div class="logo-img" style="height:40px; width:40px; line-height:40px; border-radius:40px; background-color:#fff; text-align:center; display:inline-block">
-            <img src="static/favicon-96x96.png" width="21px" vertical-align="middle" alt>
-          </div>
           <span style="padding-left:10px">
-            <img src="static/img/healthpriorlogo-inverse.png" width="130px" vertical-align="middle" alt>
+            <img src="static/img/optima-inverted-logo.png" width="160px" vertical-align="middle" alt>
           </span>
           <br/><br/>
           <div style="font-size:14px; font-weight:normal">
@@ -52,7 +49,7 @@ Last update: 2018-03-25
 
           <div class="section">
             New user?
-            <router-link class="link __blue" to="/register">
+            <router-link to="/register">
               Register here
             </router-link>
           </div>
@@ -64,6 +61,7 @@ Last update: 2018-03-25
 
 <script>
   import rpcservice from '@/services/rpc-service'
+  import userservice from '@/services/user-service'
   import router from '@/router'
 
   export default {
@@ -81,44 +79,44 @@ Last update: 2018-03-25
 
     computed: {
       getVersionInfo() {
-        rpcservice.rpcPublicCall('get_version_info')
-          .then(response => {
-            this.version = response.data['version'];
-            this.date = response.data['date'];
-          })
+        rpcservice.rpcCall('get_version_info')
+        .then(response => {
+          this.version = response.data['version'];
+          this.date = response.data['date'];
+        })
       },
     },
 
     methods: {
       tryLogin () {
-        rpcservice.rpcLoginCall('user_login', this.loginUserName, this.loginPassword)
-          .then(response => {
-            if (response.data == 'success') {
-              // Set a success result to show.
-              this.loginResult = 'Logging in...'
+        userservice.loginCall(this.loginUserName, this.loginPassword)
+        .then(response => {
+          if (response.data == 'success') {
+            // Set a success result to show.
+            this.loginResult = 'Logging in...'
 
-              // Read in the full current user information.
-              rpcservice.rpcGetCurrentUserInfo('get_current_user_info')
-                .then(response2 => {
-                  // Set the username to what the server indicates.
-                  this.$store.commit('newUser', response2.data.user)
+            // Read in the full current user information.
+            userservice.getCurrentUserInfo()
+            .then(response2 => {
+              // Set the username to what the server indicates.
+              this.$store.commit('newUser', response2.data.user)
 
-                  // Navigate automatically to the home page.
-                  router.push('/')
-                })
-                .catch(error => {
-                  // Set the username to {}.  An error probably means the
-                  // user is not logged in.
-                  this.$store.commit('newUser', {})
-                })
-            } else {
-              // Set a failure result to show.
-              this.loginResult = 'Login failed: username or password incorrect or account not activated.'
-            }
-          })
-          .catch(error => {
-            this.loginResult = 'Server error.  Please try again later.'
-          })
+              // Navigate automatically to the home page.
+              router.push('/')
+            })
+            .catch(error => {
+              // Set the username to {}.  An error probably means the
+              // user is not logged in.
+              this.$store.commit('newUser', {})
+            })
+          } else {
+            // Set a failure result to show.
+            this.loginResult = 'Login failed: username or password incorrect or account not activated.'
+          }
+        })
+        .catch(error => {
+          this.loginResult = 'Server error.  Please try again later.'
+        })
       }
     }
   }

@@ -3,16 +3,20 @@
 '''
 Small script to reset the user database -- WARNING, deletes everything!!!
 
-Version: 2018mar17
+Version: 2018jun04
 '''
 
-import sciris.datastore as ds
-from hptool.webapp import config
+import sciris.web as sw
+import nutrition as on
+import os
 
-answer = raw_input('Are you sure you want to reset the database for "%s"? (y/[n]): ' % (config.ROOT_DIR))
+webapp_dir = os.path.abspath(on.webapp.config.CLIENT_DIR)
+redis_url = on.webapp.config.REDIS_URL
+prompt = 'Are you sure you want to reset the database for the following?\n  %s\n  %s\nAnswer (y/[n]): ' % (webapp_dir, redis_url)
+answer = raw_input(prompt)
 if answer == 'y':
-	ds.theDataStore = ds.DataStore(redisDbURL=config.REDIS_URL)
-	ds.theDataStore.deleteAll()
+	theDataStore = sw.DataStore(redis_db_URL=redis_url)
+	theDataStore.delete_all()
 	print('Database reset.')
 else:
 	print('Database not reset.')

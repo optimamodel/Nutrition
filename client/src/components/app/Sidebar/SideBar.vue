@@ -10,10 +10,7 @@
     <div class="sidebar-wrapper" id="style-3">
       <div class="logo">
         <a href="#" class="simple-text">
-            <div class="logo-img">
-                <img src="static/favicon-96x96.png" alt="">
-            </div>
-            <img src="static/img/healthpriorlogo-inverse.png" width="130px" vertical-align="middle" alt>
+            <img src="static/img/optima-inverted-logo.png" width="160px" vertical-align="middle" alt>
         </a>
       </div>
       <slot>
@@ -50,7 +47,7 @@
       },
       backgroundColor: {
         type: String,
-        default: 'black',
+        default: 'darkblue',
         validator: (value) => {
           let acceptedValues = ['white', 'black', 'darkblue']
           return acceptedValues.indexOf(value) !== -1

@@ -48,3 +48,24 @@ def make_scens(country, region, sim_type, prog_data, scen_names, scen_types):
         scen = Scen(scen_type, scen_progs, name, prog_info, pops)
         scen_list.append(scen)
     return scen_list
+
+
+def default_scens(project, dorun=False):
+    country = 'master'
+    region = 'master'
+    sim_type = 'national'
+    names = ['test1']
+    scen_types = ['Coverage']
+    
+    input_path = settings.data_path(country, region, sim_type)
+    prog_path = settings.prog_path(country, sim_type) # this should come from the GUI
+    prog_data = [data.ProgData(prog_path, input_path)]
+    
+    scen_list = make_scens(country, region, sim_type, prog_data, names, scen_types)
+    project.add_scens(scen_list)
+    
+    if dorun:
+        project.run_scens()
+    
+    return None
+    

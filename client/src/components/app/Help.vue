@@ -7,7 +7,7 @@ Last update: 2018-03-25
 <template>
   <div class="SitePage">
   	<p>We are in the process of writing a user guide.</p>
-    <p>For assistance in the mean time, please email <a href="mailto:help@hptool.org">help@hptool.org</a>.</p>
+    <p>For assistance in the mean time, please email <a href="mailto:help@optimamodel.com">help@optimamodel.com</a>.</p>
   </div>
 </template>
 
