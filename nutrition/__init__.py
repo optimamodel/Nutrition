@@ -27,7 +27,6 @@ from .version import version, versiondate
 
 # Print the license
 ONlicense = 'Optima Nutrition %s (%s)' % (version, versiondate)
-print(ONlicense)
 
 
 #####################################################################################################################
@@ -81,8 +80,11 @@ from . import data
 from . import plotting
 from . import settings
 
-# Import webapp
-import webapp
+# Optionall import webapp
+try:
+    import webapp
+    webapptext = '(with webapp)'
+except Exception as E:
+    webapptext = '(without webapp)'
 
-
-
+print(ONlicense+' '+webapptext)
