@@ -1,6 +1,7 @@
 from numpy import exp, log, interp, isnan, array, logical_not
 from copy import deepcopy as dcp
 from settings import Settings
+from functools import partial
 
 class Program(object):
     """Each instance of this class is an intervention,
@@ -17,6 +18,8 @@ class Program(object):
         self.annual_cov = None
         self.unrestr_init_cov = None
         self.cov_scen = None
+        self.func = None
+        self.inv_func = None
 
         self.target_pops = prog_data.prog_target[self.name] # frac of each population which is targeted
         self.unit_cost = prog_data.prog_info['unit cost'][self.name]
@@ -334,12 +337,12 @@ class Program(object):
         return fracChange
 
     def set_costcov(self):
-        self.costCurveOb = CostCovCurve(self.unit_cost, self.saturation, self.restrictedPopSize, self.unrestrictedPopSize)
-        self.costCurveFunc = self.costCurveOb.setCostCovCurve()
+        costcurve = CostCovCurve(self.unit_cost, self.saturation, self.restrictedPopSize, self.unrestrictedPopSize)
+        self.func, self.inv_func = costcurve.set_cost_curve()
 
     def get_spending(self):
         # spending is base on BASELINE coverages
-        return self.costCurveOb.get_spending(self.unrestr_init_cov)
+        return self.inv_func(self.unrestr_init_cov)
 
     def scale_unit_costs(self, scaleFactor):
         self.unit_cost *= scaleFactor
@@ -353,72 +356,69 @@ class CostCovCurve:
         self.restrictedPop = restrictedPop
         self.unrestrictedPop = unrestrictedPop
 
-    def setCostCovCurve(self):
+    def set_cost_curve(self):
         if self.curveType == 'linear':
-            curve = self._linearCostCurve()
+            curve = self._get_lin_curve()
+            invcurve = self._get_inv_lin()
         else:
-            curve = self._increasingCostsLogisticCurve()
-        return curve
+            curve = self._get_log_curve()
+            invcurve = self._get_inv_log()
+        return curve, invcurve
 
-    def _increasingCostsLogisticCurve(self):
-        B = self.saturation * self.restrictedPop
-        A = -B
-        C = 0.
-        D = self.unit_cost*B/2.
-        curve = self._getLogisticCurve(A, B, C, D)
-        return curve
-
-    def _getLogisticCurve(self, A, B, C, D):
-        """This is a logistic curve with each parameter (A,B,C,D) provided by the user"""
-        logisticCurve = lambda x: (A + (B - A) / (1 + exp(-(x - C) / D)))
-        return logisticCurve
-
-    def get_spending(self, covFrac):
-        """Assumes standard increasing marginal costs curve or linear """
-        covNumber = covFrac * self.unrestrictedPop
-        if self.curveType == 'linear':
-            m = 1. / self.unit_cost
-            x0, y0 = [0., 0.]  # extra point
-            if x0 == 0.:
-                c = y0
-            else:
-                c = y0 / (m * x0)
-            spending = (covNumber - c)/m
-        else:
-            B = self.saturation * self.restrictedPop
-            A = -B
-            C = 0.
-            D = self.unit_cost * B / 2.
-            curve = self.inverseLogistic(A, B, C, D)
-            spending = curve(covNumber)
-        return spending
-
-    def _linearCostCurve(self):
+    def _get_lin_curve(self):
         m = 1. / self.unit_cost
-        x0, y0 = [0.,0.] #extra point
+        x0, y0 = [0., 0.]  # extra point
         if x0 == 0.:
             c = y0
         else:
             c = y0 / (m * x0)
         maxCoverage = self.restrictedPop * self.saturation
-        linearCurve = lambda x: (min(m * x + c, maxCoverage))
+        linearCurve = partial(self._lin_func, m, c, maxCoverage)
         return linearCurve
 
-    # def _plotCurve(self):
-    #     import matplotlib.pyplot as plt
-    #     from numpy import linspace
-    #     xpts = linspace(0, 100000000, 10000)
-    #     funcVal = []
-    #     for x in xpts:
-    #         funcVal.append(self.curve(x))
-    #     plt.plot(xpts, funcVal)
-
-    def inverseLogistic(self, A, B, C, D):
-        if D == 0.: # this is a temp fix for removing interventions
-            inverseCurve = lambda y: 0.
+    def _get_inv_lin(self):
+        m = 1. / self.unit_cost
+        x0, y0 = [0., 0.]  # extra point
+        if x0 == 0.:
+            c = y0
         else:
-            inverseCurve = lambda y: -D * log((B - y) / (y - A)) + C
-        return inverseCurve
+            c = y0 / (m * x0)
+        curve = partial(self._inv_lin_func, m, c)
+        return curve
+
+    def _get_log_curve(self):
+        """ Returns an increasing marginal costs logistic curve"""
+        B = self.saturation * self.restrictedPop
+        A = -B
+        C = 0.
+        D = self.unit_cost*B/2.
+        curve = partial(self._log_func, A, B, C, D)
+        return curve
+
+    def _get_inv_log(self):
+        """ Inverse of the increasing marginal costs logistic curve
+        WARNING: if coverage exceed saturation, will return infinity"""
+        B = self.saturation * self.restrictedPop
+        A = -B
+        C = 0.
+        D = self.unit_cost*B/2.
+        curve = partial(self._inv_log, A, B, C, D)
+        return curve
+
+    def _lin_func(self, m, c, max_cov, x):
+        return min(m * x + c, max_cov)
+
+    def _log_func(self, A, B, C, D, x):
+        return A + (B - A) / (1 + exp(-(x - C) / D))
+
+    def _inv_lin_func(self, m, c, cov_frac):
+        return (cov_frac*self.unrestrictedPop - c)/m
+
+    def _inv_log(self, A, B, C, D, y):
+        if D == 0:
+            return 0
+        else:
+            return -D * log((B - y) / (y - A)) + C
 
 def set_programs(prog_set, prog_data, default_params):
     programs = [Program(prog_name, prog_data, default_params) for prog_name in prog_set] # list of all program objects
