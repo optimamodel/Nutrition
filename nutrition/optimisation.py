@@ -54,7 +54,7 @@ def objectiveFunction(allocation, objective, model, freeFunds, fixedAllocations,
     programs = thisModel.ProgramInfo.programs
     totalAllocations = _addFixedAllocations(totalAllocations, scaledAllocation, indxToKeep)
     for idx, program in enumerate(programs):
-        newCoverages[program.name] = program.costCurveFunc(totalAllocations[idx]) / program.unrestrictedPopSize
+        newCoverages[program.name] = program.costcov_func(totalAllocations[idx]) / program.unrestrictedPopSize
     thisModel.simulateScalar(newCoverages, restrictedCov=False)
     outcome = thisModel.getOutcome(objective) * 1000.
     if objective == 'thrive' or objective == 'healthy_children' or objective == 'nonstunted_nonwasted' or objective == 'no_conditions':
@@ -393,7 +393,7 @@ class Optimisation:
     def getCoverages(self, allocations):
         newCoverages = {}
         for program in self.programs:
-            newCoverages[program.name] = program.costCurveFunc(allocations[program.name]) / program.unrestrictedPopSize
+            newCoverages[program.name] = program.costcov_func(allocations[program.name]) / program.unrestrictedPopSize
         return newCoverages
 
     def writeAllResults(self):
@@ -434,7 +434,7 @@ class Optimisation:
                 for program in self.programs:
                     # this gives the restricted coverage
                     coverages[objective][multiple][program.name] = "{0:.2f}".format(
-                        (program.costCurveFunc(allocations[program.name]) / program.restrictedPopSize) * 100.)
+                        (program.costcov_func(allocations[program.name]) / program.restrictedPopSize) * 100.)
         return coverages
 
     def writeCoveragesToCSV(self, coverages):

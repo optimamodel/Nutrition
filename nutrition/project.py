@@ -3,7 +3,6 @@ from .model import Model
 from .scenarios import default_scens
 from . import version
 
-
 #######################################################################################################
 ## Project class -- this contains everything else!
 #######################################################################################################

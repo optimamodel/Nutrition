@@ -25,6 +25,11 @@ class DefaultParams(object):
         # read data
         self.spreadsheet = ExcelFile(default_path)
         self.read_spreadsheet()
+        self.rem_spreadsheet()
+
+    def rem_spreadsheet(self):
+        self.spreadsheet.close()
+        self.spreadsheet = None
 
     def read_spreadsheet(self):
         self.impact_pop()
@@ -259,6 +264,11 @@ class InputData(object):
         self.get_fertility_risks()
         self.get_incidences()
         self.get_famplan_methods()
+        self.rem_spreadsheet()
+
+    def rem_spreadsheet(self):
+        self.spreadsheet.close()
+        self.spreadsheet = None
 
     ## DEMOGRAPHICS ##
 
@@ -380,6 +390,11 @@ class ProgData(object):
         self.get_budget_scen()
         self.get_prog_info()
         self.create_iycf()
+        self.rem_spreadsheet()
+
+    def rem_spreadsheet(self):
+        self.spreadsheet.close()
+        self.spreadsheet = None
 
     def get_prog_target(self):
         targetPopSheet = read_excel(self.input, 'Programs target population', index_col=[0,1]).dropna(how='all')

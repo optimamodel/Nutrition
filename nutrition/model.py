@@ -105,7 +105,6 @@ class Model:
                 self.prog_info.adjust_covs(self.pops, year)
             self.integrate()
             self._track_prevs()
-        print self.wasting_prev
 
     def _apply_prog_covs(self):
         # update populations

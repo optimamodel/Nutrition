@@ -115,7 +115,7 @@ class ProgramInfo:
                 budget_scen = scen.budget_scen[prog.name]
                 unrestr_cov = []
                 for budget in budget_scen: # each year
-                    unrestr_cov.append(prog.costCurveFunc(budget))
+                    unrestr_cov.append(prog.costcov_func(budget))
                 unrestr_cov = prog.interp_cov(unrestr_cov, restr_cov=False)
             else:
                 raise Exception("Error: scenario type '{}' is not valid".format(scen_type))
