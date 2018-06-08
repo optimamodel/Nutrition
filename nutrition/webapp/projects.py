@@ -4,8 +4,8 @@ Classes for handling projects as Sciris objects
 Version: 2018jun04 by cliffk
 '''
 
-import sciris.scirisobjects as sobj
-import sciris.datastore as ds
+import sciris.web.scirisobjects as sobj
+import sciris.web.datastore as ds
 import nutrition as on
 import sciris.user as user
 import sciris.core as sc
