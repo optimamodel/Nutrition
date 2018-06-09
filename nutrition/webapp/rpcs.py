@@ -16,8 +16,8 @@ from zipfile import ZipFile
 from flask_login import current_user
 import mpld3
 
-import sciris.fileio as fileio
-import sciris.user as user
+import sciris.corelib.fileio as fileio
+import sciris.weblib.user as user
 import sciris.core as sc
 import sciris.web as sw
 

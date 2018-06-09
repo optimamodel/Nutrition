@@ -25,11 +25,6 @@ Version: 2018jun04 by cliffk
 # Specify the version, for the purposes of figuring out which version was used to create a project
 from .version import version, versiondate
 
-# Print the license
-ONlicense = 'Optima Nutrition %s (%s)' % (version, versiondate)
-print(ONlicense)
-
-
 #####################################################################################################################
 ### Define debugging and exception functions/classes
 #####################################################################################################################
@@ -81,8 +76,17 @@ from . import data
 from . import plotting
 from . import settings
 
-# Import webapp
-import webapp
+# Import web functions
+try:
+    from . import webapp
+    webapptext = 'with webapp'
+except Exception as webapp_exception:
+    import traceback as _traceback
+    webapp_error = _traceback.format_exc()
+    webapptext = 'without webapp (see nutrition.webapp_error for details)'
 
+# Print the license
+ONlicense = 'Optima Nutrition %s (%s)' % (version, versiondate)
+print(ONlicense + ' ' + webapptext)
 
-
+del ONlicense, webapptext
