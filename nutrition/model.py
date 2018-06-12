@@ -2,7 +2,7 @@ from utils import restratify
 from nutrition import settings
 
 class Model:
-    def __init__(self, name, pops, prog_info, all_years, adjust_cov=False, timeTrends=False, calibrate=False):
+    def __init__(self, name, pops, prog_info, all_years, adjust_cov=False, timeTrends=False):
         self.name = name
         self.pops = pops
         self.children, self.pw, self.nonpw = self.pops
@@ -13,12 +13,9 @@ class Model:
         self.all_years = all_years
         self.base_year = self.all_years[0]
         self.year = self.base_year
-        if calibrate: # one extra year without coverage change
-            self.calib_years = self.all_years[1:2]
-            self.sim_years = self.all_years[2:]
-        else:
-            self.calib_years = []
-            self.sim_years = self.all_years[1:]
+
+        self.calib_years = []
+        self.sim_years = self.all_years[1:]
 
         self._set_trackers()
 
@@ -30,10 +27,16 @@ class Model:
         self.timeTrends = timeTrends
 
     def setup(self):
+        self.set_progs()
         self._set_preg_info()
         self._set_pop_probs(self.base_year)
         self._reset_storage()
         self._track_prevs()
+
+    def set_progs(self):
+        self.prog_info.set_years(self.all_years)
+        self.prog_info.set_init_covs(self.pops, self.all_years)
+        self.prog_info.set_costcovs() # enables getting coverage from cost
 
     def calibrate(self):
         for year in self.calib_years:

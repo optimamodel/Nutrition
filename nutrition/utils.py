@@ -1,6 +1,7 @@
 from scipy.special import ndtri, ndtr # these are much faster than calling scipy.stats.norm
 from numpy import sqrt, isfinite, polyfit
-import os
+import os, functools, traceback
+from multiprocessing import Pool
 
 def optimafolder(subfolder=None):
     if subfolder is None: subfolder='nutrition'
@@ -109,6 +110,40 @@ class odict(OrderedDict):
 # ### HELPER FUNCTIONS
 # ##############################################################################
 #
+
+def get_obj_sign(obj):
+    max_obj = ['thrive_notanaemic', 'thrive', 'thrive2', 'healthy_children', 'nonstunted_nonwasted', 'not_anaemic',
+                  'not_anaemic2', 'no_conditions']
+    if obj in max_obj:
+        return -1
+    else:
+        return 1
+
+def trace_exception(func):
+    """
+    Allows stacktrace in processes.
+
+    HOW TO USE: Decorate any function you wish to call with runParallel (the function func
+    references) with '@trace_exception'. Whenever an exception is thrown by the decorated function when executed
+    parallel, a stacktrace is printed; the thread terminates but the execution of other threads is not affected.
+    """
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except:
+            traceback.print_exc()
+    return wrapper
+
+def run_parallel(func, args_list, num_procs):
+    """ Uses pool.map() to distribute parallel processes.
+    args_list: an iterable of args (also iterable)
+    func: function to parallelise, must have single explicit argument (i.e an iterable) """
+
+    p = Pool(processes=num_procs)
+    res = p.map(func, args_list)
+    return res
+
 def solve_quad(oddsRatio, fracA, fracB):
     # solves quadratic to calculate probabilities where e.g.:
     # fracA is fraction covered by intervention

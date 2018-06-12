@@ -59,7 +59,6 @@ class Project(object):
             model = Model(workbookfile, **kwargs)
             self.models['default'] = model
         
-        return None
 
 
     def __repr__(self):
@@ -154,10 +153,16 @@ class Project(object):
             self.add(name=scen.name, item=scen, what='scen', overwrite=True)
         self.modified = today()
 
-    def add_result(self, scen):
+    def add_optims(self, optim_list, overwrite=True):
+        if overwrite: self.optims = {} # remove exist scenarios
+        for optim in optim_list:
+            self.add(name=optim.name, item=optim, what='optim', overwrite=True)
+        self.modified = today()
+
+    def add_result(self, result):
         """Add result by name"""
-        keyname = scen.name
-        self.add(name=keyname, item=scen, what='result')
+        keyname = result.name
+        self.add(name=keyname, item=result, what='result')
         return
 
     def run_scens(self, scen_list=None, name=None):
@@ -167,19 +172,22 @@ class Project(object):
         scens = dcp(self.scens)
         for scen in scens.itervalues():
             scen.run_scen()
-            self.add_result(scen=scen)
-            
+            self.add_result(scen)
+
     def default_scens(self, dorun=None):
         default_scens(self, dorun=dorun)
         return None
-        
+
+    def run_optims(self, optim_list=None, name=None):
+        if optim_list is not None: self.add_optims(optim_list)
+        if name is None: name = 'optimizations'
+        optims = dcp(self.optims)
+        for optim in optims.itervalues():
+            optim.run_optim()
+            self.add_result(optim)
+
     def get_results(self, result_key):
         return self.results[result_key]
-
-    def optimise(self):
-        print('Not implemented')
-        return None
-
 
     def sensitivity(self):
         print('Not implemented')

@@ -367,27 +367,20 @@ class InputData(object):
 
 class ProgData(object):
     """Stores all the settings for each project, defined by the user"""
-    def __init__(self, prog_path, input_path):
+    def __init__(self, input_path):
         self.settings = settings.Settings()
-        self.input = input_path
-        self.spreadsheet = ExcelFile(prog_path)
+        self.spreadsheet = ExcelFile(input_path)
         self.prog_set = []
         self.ref_progs = []
         self.prog_deps = None
-        self.cov_scen = {}
-        self.budget_scen = {}
         self.prog_info = None
         self.prog_target = None
         self.famplan_methods = None
-        self.t = None
 
         # load data
         self.get_prog_target()
-        self.get_prog_set()
         self.get_prog_deps()
         self.get_ref_progs()
-        self.get_cov_scen()
-        self.get_budget_scen()
         self.get_prog_info()
         self.create_iycf()
         self.rem_spreadsheet()
@@ -397,17 +390,11 @@ class ProgData(object):
         self.spreadsheet = None
 
     def get_prog_target(self):
-        targetPopSheet = read_excel(self.input, 'Programs target population', index_col=[0,1]).dropna(how='all')
+        targetPopSheet = self.read_sheet('Programs target population', [0,1])
         targetPop = {}
         for pop in ['Children', 'Pregnant women', 'Non-pregnant WRA', 'General population']:
             targetPop.update(targetPopSheet.loc[pop].to_dict(orient='index'))
         self.prog_target = targetPop
-
-    def get_prog_set(self):
-        prog_sheet = self.read_sheet('Programs to include', [0])
-        prog_sheet = prog_sheet[notnull(prog_sheet)]
-        for program, value in prog_sheet.iterrows():
-            self.prog_set.append(program)
 
     def get_ref_progs(self):
         reference = self.spreadsheet.parse('Reference programs', index_col=[0])
@@ -433,24 +420,6 @@ class ProgData(object):
 
     def get_prog_info(self):
         self.prog_info = self.read_sheet('Programs cost and coverage', [0], 'dict')
-
-    def get_cov_scen(self):
-        cov = self.spreadsheet.parse('Coverage scenario', index_col=[0,1])
-        for programType, yearValue in cov.iterrows():
-            self.cov_scen[programType[0]] = yearValue.tolist()
-        all_years = list(cov)
-        start_year = all_years[0]
-        end_year = all_years[-1]
-        self.t = [start_year, end_year]
-
-    def get_budget_scen(self):
-        budget = self.spreadsheet.parse('Budget scenario', index_col=[0,1])
-        for programType, yearValue in budget.iterrows():
-            self.budget_scen[programType[0]] = yearValue.tolist()
-        all_years = list(budget)
-        start_year = all_years[0]
-        end_year = all_years[-1]
-        self.budget_scen['Years'] = [start_year, end_year]
 
     def create_iycf(self):
         packages = self.define_iycf()
@@ -480,7 +449,7 @@ class ProgData(object):
         """ Creates the frac of pop targeted by each IYCF package.
         Note that frac in community and mass media assumed to be 1.
         Note also this fraction can exceed 1, and is adjusted for the target pop calculations of the Programs class """
-        pop_data = read_excel(self.input, sheet='Baseline year population inputs', index_col=[0,1]).loc['Population data']
+        pop_data = self.spreadsheet.parse('Baseline year population inputs', index_col=[0,1]).loc['Population data']
         frac_pw = float(pop_data.loc['Percentage of pregnant women attending health facility'])
         frac_child = float(pop_data.loc['Percentage of children attending health facility'])
         # target pop is the sum of fractions exposed to modality in each age band
@@ -524,6 +493,123 @@ class ProgData(object):
             newAgeGroups = {age:subDict for age in ages if subDict is not None}
             my_dict[key].update(newAgeGroups)
         return my_dict
+
+    def read_sheet(self, name, cols, dict_orient=None, skiprows=None):
+        df = self.spreadsheet.parse(name, index_col=cols, skiprows=skiprows).dropna(how='all')
+        if dict_orient:
+            df = df.to_dict(dict_orient)
+        return df
+
+class UserOpts(object):
+    """ Container for information provided by the front end, which are the user-defined settings for each scenario """
+    def __init__(self, name, scen_type, t, prog_set, scen):
+        self.name = name
+        self.scen_type = scen_type
+        self.t = t
+        self.prog_set = prog_set
+        self.scen = scen
+
+    def get_attr(self):
+        return self.__dict__
+
+
+class DefaultOptimOpts(object):
+    """ Only for testing purposes. """
+    def __init__(self, name):
+        self.spreadsheet = ExcelFile(settings.user_path())
+
+        self.name = name
+        self.prog_set = []
+        # self.optim_type = None # TODO: may not need this re 'national' and 'regional'. May want to know if specifying coverage or expenditure
+        self.t = None
+        self.mults = None
+        self.fix_curr = None
+        self.add_funds = None
+        self.objs = None
+        self.filter_progs = None
+        # self.country = None
+        # self.region = None
+        self.get_prog_set()
+        self.get_opts()
+
+        delattr(self, 'spreadsheet')
+
+    def get_attr(self):
+        return self.__dict__
+
+    def get_prog_set(self):
+        prog_sheet = self.read_sheet('Programs to include', [0])
+        prog_sheet = prog_sheet[notnull(prog_sheet)]
+        for program, value in prog_sheet.iterrows():
+            self.prog_set.append(program)
+
+    def get_opts(self):
+        opts = self.spreadsheet.parse('Optimisation')
+        # self.country = opts['country'][0]
+        # self.region = opts['region'][0]
+        # self.optim_type = opts['optim type'][0]
+        self.t = [opts['start year'][0], opts['end year'][0]]
+        self.objs = opts['objectives'][0].replace(' ','').split(',')
+        mults = opts['multiples'][0].replace(' ', '').split(',')
+        self.mults = [int(x) for x in mults]
+        fix_curr = opts['fix current funds'][0]
+        self.fix_curr = True if fix_curr else False
+        self.add_funds = opts['additional funds'][0]
+        filter = opts['filter programs'][0]
+        self.filter_progs = True if filter else False
+
+    def read_sheet(self, name, cols, dict_orient=None, skiprows=None):
+        df = self.spreadsheet.parse(name, index_col=cols, skiprows=skiprows).dropna(how='all')
+        if dict_orient:
+            df = df.to_dict(dict_orient)
+        return df
+
+class DefaultScenOpts(object):
+    """ Only used for testing purposes. This information should be supplied by the frontend. """
+
+    def __init__(self, name, scen_type): # TODO: update for 'scenario' tab in spreadsheet
+        self.spreadsheet = ExcelFile(settings.user_path())
+
+        self.name = name
+        self.prog_set = []
+        self.scen_type = scen_type
+        self.scen = {}
+        self.t = None
+
+        if 'ov' in scen_type: # coverage scenario
+            self.get_cov_scen()
+        else:
+            self.get_budget_scen()
+
+        self.get_prog_set()
+        delattr(self, 'spreadsheet')
+
+    def get_attr(self):
+        return self.__dict__
+
+    def get_prog_set(self):
+        prog_sheet = self.read_sheet('Programs to include', [0])
+        prog_sheet = prog_sheet[notnull(prog_sheet)]
+        for program, value in prog_sheet.iterrows():
+            self.prog_set.append(program)
+
+    def get_cov_scen(self):
+        cov = self.spreadsheet.parse('Coverage scenario', index_col=[0,1])
+        for programType, yearValue in cov.iterrows():
+            self.scen[programType[0]] = yearValue.tolist()
+        all_years = list(cov)
+        start_year = all_years[0]
+        end_year = all_years[-1]
+        self.t = [start_year, end_year]
+
+    def get_budget_scen(self):
+        budget = self.spreadsheet.parse('Budget scenario', index_col=[0,1])
+        for programType, yearValue in budget.iterrows():
+            self.scen[programType[0]] = yearValue.tolist()
+        all_years = list(budget)
+        start_year = all_years[0]
+        end_year = all_years[-1]
+        self.t = [start_year, end_year]
 
     def read_sheet(self, name, cols, dict_orient=None, skiprows=None):
         df = self.spreadsheet.parse(name, index_col=cols, skiprows=skiprows).dropna(how='all')
