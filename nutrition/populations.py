@@ -154,6 +154,12 @@ class ChildAgeGroup(object):
             self.wastingPreventionUpdate[wastingCat] = 1.
             self.wastingTreatmentUpdate[wastingCat] = 1.
 
+
+    def update_stunt_dist(self, new_dist): # TODO: would like to track fractions so don't need to calcualte on the fly. Might be easier to have distributions in lists
+        self.stunting_dist = new_dist
+        self.stunted_frac = None
+
+
     ###### POPULATION CALCULATIONS ######
 
     def get_num_stunted(self):
@@ -390,7 +396,7 @@ class Children(object):
                 wasting_dist[cat] = nonwasting_dist[cat]
             bf_dist = self.bf_dist[age]
             birth_dist = self.birth_dist
-            incidences = self.data.incidences[age] # TODO: do this adjustment elsewhere, same as restratifying
+            incidences = self.data.incidences[age]
             incidences = {condition: incidence * self.settings.timestep for condition, incidence in incidences.iteritems()}
             ageingRate = 1./self.settings.child_age_spans[i]
             if age == '<1 month': # <1 month age group has slightly different functionality

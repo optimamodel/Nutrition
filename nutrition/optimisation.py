@@ -1,18 +1,19 @@
 import os
-import play
 import pso
 import asd
 import time
 import cPickle as pickle
 import pandas as pd
 from copy import deepcopy as dcp
-from multiprocessing import cpu_count, Process # TODO: would like to replace with Pool
+from multiprocessing import cpu_count
 from numpy import array, append, linspace, nanargmax, zeros, nonzero, inf
+from itertools import product
 from scipy.interpolate import pchip
 from csv import writer, reader
 from itertools import izip
 from collections import OrderedDict
 from datetime import date
+from nutrition import settings, data, program_info, populations, model, utils
 
 def rescaleAllocation(totalBudget, allocation):
     new = sum(allocation)
@@ -23,21 +24,7 @@ def rescaleAllocation(totalBudget, allocation):
         rescaledAllocation = [x * scaleRatio for x in allocation]
     return rescaledAllocation
 
-
-def runJobs(jobs, max_jobs):
-    while jobs:
-        thisRound = min(max_jobs, len(jobs))
-        for process in range(thisRound):
-            p = jobs[process]
-            p.start()
-        for process in range(thisRound):  # this loop ensures this round waits until processes are finished
-            p = jobs[process]
-            p.join()
-        jobs = jobs[thisRound:]
-    return
-
-
-def _addFixedAllocations(allocations, fixedAllocations, indxList):
+def _addFixedAllocations(allocations, fixedAllocations, indxList): # TODO: utils...
     """Assumes order is preserved from original list"""
     modified = dcp(allocations)
     for i, j in enumerate(indxList):
@@ -45,88 +32,117 @@ def _addFixedAllocations(allocations, fixedAllocations, indxList):
     return modified
 
 
-def objectiveFunction(allocation, objective, model, freeFunds, fixedAllocations, indxToKeep):
+def obj_func(allocation, obj, model, free, fixed, keep_inds, sign):
     thisModel = dcp(model)
-    totalAllocations = dcp(fixedAllocations)
+    totalAllocations = fixed[:]
     # scale the allocation appropriately
-    scaledAllocation = rescaleAllocation(freeFunds, allocation)
-    newCoverages = {}
-    programs = thisModel.ProgramInfo.programs
-    totalAllocations = _addFixedAllocations(totalAllocations, scaledAllocation, indxToKeep)
-    for idx, program in enumerate(programs):
-        newCoverages[program.name] = program.costcov_func(totalAllocations[idx]) / program.unrestrictedPopSize
-    thisModel.simulateScalar(newCoverages, restrictedCov=False)
-    outcome = thisModel.getOutcome(objective) * 1000.
-    if objective == 'thrive' or objective == 'healthy_children' or objective == 'nonstunted_nonwasted' or objective == 'no_conditions':
-        outcome *= -1
+    scaledAllocation = rescaleAllocation(free, allocation)
+    programs = thisModel.prog_info.programs
+    totalAllocations = _addFixedAllocations(totalAllocations, scaledAllocation, keep_inds)
+    new_covs = []
+    for i, program in enumerate(programs):
+        new_covs.append( program.func(totalAllocations[i]) )
+    thisModel.run_sim(new_covs, restr_cov=False)
+    outcome = thisModel.get_outcome(obj) * sign
     return outcome
 
+def make_optims(country, region, user_opts):
+    optim_type = 'national' if country == region else 'regional'
+    input_path = settings.data_path(country, region, optim_type)
+    default_path = settings.default_path()
+    # get data
+    demo_data = data.InputData(input_path)
+    prog_data = data.ProgData(input_path)
+    default_params = data.DefaultParams(default_path)
+    optim_list = []
 
-class Optimisation:
-    def __init__(self, objectives, budgetMultiples, fileInfo, resultsPath=None, fixCurrentAllocations=False,
-                 additionalFunds=0, removeCurrentFunds=False, numYears=None, costCurveType='linear',
-                 parallel=True, numCPUs=None, numRuns=1, filterProgs=True, createResultsDir=True, maxIter=100,
-                 swarmSize=50):
-        root, analysisType, name, scenario = fileInfo
+    # create all of the requested optimizations
+    for opt in user_opts:
+        # initialise pops and progs
+        prog_info = program_info.ProgramInfo(opt.prog_set, prog_data, default_params)
+        pops = populations.set_pops(demo_data, default_params)
+        # set up optims
+        optim = Optim(prog_info, pops, **opt.get_attr())
+        optim_list.append(optim)
+    return optim_list
+
+def default_optims(project, dorun=False):
+    country = 'master'
+    region = 'master'
+
+    default_opts1 = data.DefaultOptimOpts('test1')
+    user_opts = [default_opts1]
+
+    optim_list = make_optims(country, region, user_opts)
+
+    p = project.Project()
+    p.add_optims(optim_list)
+    if dorun:
+        p.run_optims()
+
+class Optim(object):
+    def __init__(self, prog_info, pops, name, t, objs, mults, prog_set, active=True, parallel=True, num_runs=1,
+                 add_funds=0, fix_curr=False, rem_curr=False, curve_type='linear', filter_progs=True,
+                 maxiter=10, swarmsize=10, num_procs=None):
         self.name = name
-        filePath = play.getFilePath(root=root, analysisType=analysisType, name=name)
-        if resultsPath:
-            self.resultsDir = resultsPath
-        else:
-            self.resultsDir = play.getResultsDir(root='', analysisType=analysisType, scenario=scenario)
-        self.model = play.setUpModel(filePath, adjustCoverage=False, optimise=True,
-                                     numYears=numYears)  # model has already moved 1 year
-        self.budgetMultiples = budgetMultiples
-        self.objectives = objectives
-        self.fixCurrentAllocations = fixCurrentAllocations
-        self.removeCurrentFunds = removeCurrentFunds
-        self.additionalFunds = additionalFunds
-        self.filterProgs = filterProgs
-        self.maxIter = maxIter
-        self.swarmSize = swarmSize
-        self.BOCs = {}
-        self.programs = self.model.ProgramInfo.programs
+        # self.optim_type = optim_type # TODO: want this?
+        self.objs = objs
+        self.mults = mults
+        self.t = t
+        self.prog_set = prog_set
         self.parallel = parallel
-        if numCPUs:
-            self.numCPUs = numCPUs
-        else:
-            self.numCPUs = cpu_count()
-        self.numRuns = numRuns
-        # self.costCurveType = costCurveType # TODO: currently doesn't do anything.
-        self.timeSeries = None
-        for program in self.programs:
-            program.set_costcov()
-        self.calculateAllocations(fixCurrentAllocations)
-        self.kwargs = {'model': self.model,
-                       'freeFunds': self.freeFunds, 'fixedAllocations': self.fixedAllocations}
-        if createResultsDir:
-            self.createDirectory(self.resultsDir)
+        self.num_cpus = cpu_count() if parallel else 1
+        self.year_names = range(self.t[0], self.t[1] + 1)
+        self.all_years = range(len(self.year_names))  # used to index lists
+        self.num_runs = num_runs
+        self.add_funds = add_funds
+        self.fix_curr = fix_curr
+        self.rem_curr = rem_curr if not fix_curr else False # can't remove if fixed
+        self.curve_type = curve_type
+        self.filter_progs = filter_progs
+        self.maxiter = maxiter
+        self.swarmsize = swarmsize
 
-    ######### FILE HANDLING #########
+        self.prog_info = dcp(prog_info)
+        self.pops = dcp(pops)
+        self.model = model.Model(name, self.pops, self.prog_info, self.all_years)
+        self.programs = self.model.prog_info.programs
+        self.active = active
 
-    def createDirectory(self, resultsDir):
-        # create directory if necessary
-        if not os.path.exists(resultsDir):
-            os.makedirs(resultsDir)
+        self.optim_alloc = None
+        self.BOCs = {}
+        self.refs = None
+        self.curr = None
+        self.fixed = None
+        self.free = None
+        self.get_alloc(fix_curr)
 
     ######### SETUP ############
 
-    def calculateAllocations(self, fixCurrentAllocations):
+    def get_alloc(self, fix_curr):
         """
         Designed so that currentAllocations >= fixedAllocations >= referenceAllocations.
         referenceAllocations: these allocations cannot be reduced because it is impractical to do so.
         fixedAllocations: this is funding which cannot be reduced because of the user's wishes.
         currentAllocations: this is the total current funding (incl. reference & fixed allocations) determined by program initial coverage.
-        :param fixCurrentAllocations:
+        :param fix_curr:
         :return:
         """
-        self.referenceAllocations = self.getReferenceAllocations()
-        self.currentAllocations = self.getCurrentAllocations()
-        # self.currentAllocations, self.scaleFactor = self.scaleCostsForCurrentExpenditure()
-        self.fixedAllocations = self.getFixedAllocations(fixCurrentAllocations)
-        self.freeFunds = self.getFreeFunds(fixCurrentAllocations)
+        self.refs = self.get_refs()
+        self.curr = self.get_curr()
+        self.fixed = self.get_fixed(fix_curr)
+        self.free = self.get_free(fix_curr)
 
-    def getReferenceAllocations(self):
+    def get_kwargs(self, obj, mult):
+        kwargs = {'model': dcp(self.model),
+                  'free': dcp(self.free) * mult,
+                  'fixed': self.fixed[:],
+                  'obj': obj,
+                  'sign': utils.get_obj_sign(obj),
+                  'keep_inds': self._filter_progs(obj)}
+        return kwargs
+
+    def get_refs(self):
         """
         Reference programs are not included in nutrition budgets, therefore these must be removed before future calculations.
         :return: 
@@ -139,135 +155,85 @@ class Optimisation:
                 referenceAllocations.append(0)
         return referenceAllocations
 
-    def getCurrentAllocations(self):
+    def get_curr(self):
         allocations = []
         for program in self.programs:
             allocations.append(program.get_spending())
         return allocations
 
-    def getFixedAllocations(self, fixCurrentAllocations):
+    def get_fixed(self, fix_curr):
         """
         Fixed allocations will contain reference allocations as well, for easy use in the objective function.
         Reference progs stored separately for ease of model output.
-        :param fixCurrentAllocations:
+        :param fix_curr:
         :return:
         """
-        if fixCurrentAllocations:
-            fixedAllocations = dcp(self.currentAllocations)
+        if fix_curr:
+            fixed = dcp(self.curr)
         else:
-            fixedAllocations = dcp(self.referenceAllocations)
-        return fixedAllocations
+            fixed = dcp(self.refs)
+        return fixed
 
-    def scaleCostsForCurrentExpenditure(self):
-        # if there is a current budget specified, scale unit costs so that current coverages yield this budget (excluding reference progs).
-        # ::WARNING:: Currently, this should only be used for LINEAR cost curves
-        # specificBudget / calculatedBudget * oldUnitCost = newUnitCost
-        currentAllocationsBefore = self.getCurrentAllocations()
-        specialRegions = ['Kusini', 'Kaskazini', 'Mjini']  # we don't have current expenditure for these regions
-        # remove cash transfers from scaling
-        progName = 'Cash transfers'  # TODO: remove after Tanzania
-        correctedFunds = currentAllocationsBefore[:]
-        for i, prog in enumerate(self.programs):
-            if prog.name == progName:
-                correctedFunds[i] = 0
-        if self.model.ProgramInfo.currentExpenditure:
-            currentCalculated = sum(correctedFunds) - sum(self.referenceAllocations)
-            scaleFactor = self.model.ProgramInfo.currentExpenditure / currentCalculated
-            for program in self.programs:
-                if (not program.reference) and (program.name != progName):
-                    program.scale_unit_costs(scaleFactor)
-        elif any(sub in self.name for sub in specialRegions):  # TODO: this should be removed after Tanzania application
-            scaleFactor = 0.334  # this is the median of all other regions
-            for program in self.programs:
-                if (not program.reference) and (program.name != progName):
-                    program.scale_unit_costs(scaleFactor)
-        else:
-            scaleFactor = 1
-        return self.getCurrentAllocations(), scaleFactor
-
-    def getFreeFunds(self, fixCurrent):
+    def get_free(self, fix_curr):
         """
-        freeFunds = currentExpenditure + additionalFunds - fixedFunds (if not remove current funds)
+        freeFunds = currentExpenditure + add_funds - fixedFunds (if not remove current funds)
         freeFunds = additional (if want to remove current funds)
 
         fixedFunds includes both reference programs as well as currentExpenditure, if the latter is to be fixed.
-        I.e. if all of the currentExpenditure is fixed, freeFunds = additionalFunds.
+        I.e. if all of the currentExpenditure is fixed, freeFunds = add_funds.
         :return:
         """
-        if self.removeCurrentFunds and fixCurrent:
+        if self.rem_curr and fix_curr:
             raise Exception("::Error: Cannot remove current funds and fix current funds simultaneously::")
-        elif self.removeCurrentFunds and (not fixCurrent):  # this is additional to reference spending
-            freeFunds = self.additionalFunds
-        elif not self.removeCurrentFunds:
-            freeFunds = sum(self.currentAllocations) - sum(self.fixedAllocations) + self.additionalFunds
+        elif self.rem_curr and (not fix_curr):  # this is additional to reference spending
+            freeFunds = self.add_funds
+        elif not self.rem_curr:
+            freeFunds = sum(self.curr) - sum(self.fixed) + self.add_funds
         return freeFunds
 
     ######### OPTIMISATION ##########
 
-    def optimise(self):
+    def run_optim(self):
         print 'Optimising for {}'.format(self.name)
-        newBudgets = self.checkForZeroBudget()
-        if self.parallel:
-            self.parallelRun(newBudgets)
-        else:
-            self.seriesRun(newBudgets)
-        return
+        buds = self.check_budget()
+        self.optim_alloc = utils.run_parallel(self.one_optim, product(self.objs, buds), self.num_cpus)
 
-    def parallelRun(self, newBudgets):
-        jobs = self.getJobs(newBudgets)
-        runJobs(jobs, self.numCPUs)
-        return
-
-    def seriesRun(self, newBudgets):
-        for objective in self.objectives:
-            for multiple in newBudgets:
-                self.runOptimisation(multiple, objective)
-
-    def checkForZeroBudget(self):
+    def check_budget(self):
         """For 0 free funds, spending is equal to the fixed costs"""
-        if 0 in self.budgetMultiples:
-            newBudgets = filter(lambda x: x > 0, self.budgetMultiples)
+        if 0 in self.mults:
+            newBudgets = filter(lambda x: x > 0, self.mults)
             # output fixed spending
-            for objective in self.objectives:
-                allocationDict = self.createDictionary(self.fixedAllocations)
+            for objective in self.objs:
+                allocationDict = self.createDictionary(self.fixed)
                 self.writeToPickle(allocationDict, 0, objective)
         else:
-            newBudgets = self.budgetMultiples
+            newBudgets = self.mults
         return newBudgets
 
-    def getJobs(self, newBudgets):
-        jobs = []
-        for objective in self.objectives:
-            for multiple in newBudgets:
-                p = Process(target=self.runOptimisation, args=(multiple, objective))
-                jobs.append(p)
-        return jobs
-
-    def runOptimisation(self, multiple, objective):
-        kwargs = dcp(self.kwargs)
-        kwargs['freeFunds'] *= multiple
-        if kwargs['freeFunds'] != 0:
-            kwargs['objective'] = objective
-            indxToKeep = self._selectProgsForObjective(objective)
-            kwargs['indxToKeep'] = indxToKeep
-            xmin = [0.] * len(indxToKeep)
-            xmax = [kwargs['freeFunds']] * len(indxToKeep)  # TODO: could make this cost of saturation.
+    @utils.trace_exception
+    def one_optim(self, params):
+        obj = params[0]
+        mult = params[1]
+        kwargs = self.get_kwargs(obj, mult)
+        if kwargs['free'] != 0:
+            num_progs = len(kwargs['keep_inds'])
+            xmin = [0.] * num_progs
+            xmax = [kwargs['free']] * num_progs # TODO: could make this cost of saturation.
             runOutputs = []
-            for run in range(self.numRuns):
+            for run in range(self.num_runs):
                 now = time.time()
-                x0, fopt = pso.pso(objectiveFunction, xmin, xmax, kwargs=kwargs, maxiter=self.maxIter, swarmsize=self.swarmSize)
-                x, fval, flag = asd.asd(objectiveFunction, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=0)
+                x0, fopt = pso.pso(obj_func, xmin, xmax, kwargs=kwargs, maxiter=self.maxiter, swarmsize=self.swarmsize)
+                x, fval, flag = asd.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=2)
                 runOutputs.append((x, fval[-1]))
-                self.printMessages(objective, multiple, flag, now)
+                self.printMessages(obj, mult, flag, now)
             bestAllocation = self.findBestAllocation(runOutputs)
-            scaledAllocation = rescaleAllocation(kwargs['freeFunds'], bestAllocation)
-            totalAllocation = _addFixedAllocations(self.fixedAllocations, scaledAllocation, kwargs['indxToKeep'])
+            scaledAllocation = rescaleAllocation(kwargs['free'], bestAllocation)
+            totalAllocation = _addFixedAllocations(self.fixed, scaledAllocation, kwargs['keep_inds'])
             bestAllocationDict = self.createDictionary(totalAllocation)
         else:
             # if no money to distribute, return the fixed costs
-            bestAllocationDict = self.createDictionary(self.fixedAllocations)
-        self.writeToPickle(bestAllocationDict, multiple, objective)
-        return
+            bestAllocationDict = self.createDictionary(self.fixed)
+        return bestAllocationDict
 
     def printMessages(self, objective, multiple, flag, now):
         print 'Finished optimisation for {} for objective {} and multiple {}'.format(self.name, objective, multiple)
@@ -283,33 +249,32 @@ class Optimisation:
         returnDict = {key: value for key, value in zip(keys, allocations)}
         return returnDict
 
-    def _selectProgsForObjective(self, objective):
-        if self.filterProgs:
+    def _filter_progs(self, obj):
+        if self.filter_progs:
             threshold = 0.5
-            newCov = 1.
-            indxToKeep = []
+            newcov = 1.
+            keep_inds = []
             # compare with 0 case
-            zeroCov = {prog.name: 0 for prog in self.programs}
-            zeroModel = dcp(self.model)
-            # get baseline case
-            zeroModel.simulateScalar(zeroCov, restrictedCov=True)
-            zeroOutcome = zeroModel.getOutcome(objective)
-            for indx, program in enumerate(self.programs):
-                thisModel = dcp(self.model)
-                thisCov = dcp(zeroCov)
-                thisCov[program.name] = newCov
-                if program.malariaTwin:
-                    thisCov[program.name + ' (malaria area)'] = newCov
-                thisModel.simulateScalar(thisCov, restrictedCov=True)
-                outcome = thisModel.getOutcome(objective)
-                if abs((outcome - zeroOutcome) / zeroOutcome) * 100. > threshold:  # no impact
-                    indxToKeep.append(indx)
-                    for twinIndx, twin in enumerate(self.programs):  # TODO: shouldn't have to search through twice
-                        if twin.name == program.name + ' (malaria area)':
-                            indxToKeep.append(twinIndx)
-        else:  # keep all
-            indxToKeep = [i for i in range(len(self.programs))]
-        return indxToKeep
+            zero_cov = [0 for prog in self.programs]
+            zero_model = dcp(self.model)
+            zero_model.run_sim(zero_cov, restr_cov=True)
+            zero_out = zero_model.get_outcome(obj)
+            for i, prog in enumerate(self.programs):
+                thismodel = dcp(self.model)
+                thiscov = dcp(zero_cov)
+                thiscov[i] = newcov
+                # scale up twin concurrently
+                if prog.twin_ind:
+                    thiscov[prog.twin_ind] = newcov
+                thismodel.run_sim(thiscov)
+                out = thismodel.get_outcome(obj)
+                if abs((out - zero_out) / zero_out) * 100. > threshold:  # no impact
+                    keep_inds.append(i)
+                    if prog.twin_ind:
+                        keep_inds.append(prog.twin_ind)
+            return keep_inds
+        else:
+            return [i for i in range(len(self.programs))]
 
     def interpolateBOC(self, objective, spending, outcome):
         # need BOC for each objective in region
@@ -320,7 +285,7 @@ class Optimisation:
         spending = array([])
         outcome = array([])
         for multiple in budgetMultiples:
-            spending = append(spending, multiple * self.freeFunds)
+            spending = append(spending, multiple * self.free)
             filePath = '{}/{}_{}_{}.pkl'.format(self.resultsDir, self.name, objective, multiple)
             f = open(filePath, 'rb')
             thisAllocation = pickle.load(f)
@@ -330,6 +295,7 @@ class Optimisation:
         return spending, outcome
 
     ########### FILE HANDLING ############
+    # TODO: remove this, new results handling
 
     def writeToPickle(self, allocation, multiple, objective):
         fileName = '{}/{}_{}_{}.pkl'.format(self.resultsDir, self.name, objective, multiple)
@@ -397,13 +363,13 @@ class Optimisation:
         return newCoverages
 
     def writeAllResults(self):
-        currentSpending = self.createDictionary(self.currentAllocations)
+        currentSpending = self.createDictionary(self.curr)
         currentOutcome = self.getCurrentOutcome(currentSpending)
-        referenceSpending = self.createDictionary(self.referenceAllocations)
+        referenceSpending = self.createDictionary(self.refs)
         referenceOutcome = self.getReferenceOutcome(referenceSpending)
         optimisedAllocations = self.readPickles()
         optimisedOutcomes = self.getOptimisedOutcomes(optimisedAllocations)
-        currentAdditionalList = [a - b for a, b in zip(self.currentAllocations, self.referenceAllocations)]
+        currentAdditionalList = [a - b for a, b in zip(self.curr, self.refs)]
         currentAdditional = self.createDictionary(currentAdditionalList)
         optimisedAdditional = self.getOptimisedAdditional(optimisedAllocations)
         coverages = self.getOptimalCoverages(optimisedAllocations)
@@ -412,15 +378,15 @@ class Optimisation:
         self.writeCoveragesToCSV(coverages)
 
     def getOptimisedAdditional(self, optimised):
-        fixedCostsDict = self.createDictionary(self.fixedAllocations)
+        fixedCostsDict = self.createDictionary(self.fixed)
         optimisedAdditional = {}
         for objective in self.objectives:
             optimisedAdditional[objective] = {}
             for multiple in self.budgetMultiples:
-                additionalFunds = optimised[objective][multiple]
+                add_funds = optimised[objective][multiple]
                 optimisedAdditional[objective][multiple] = {}
-                for programName in additionalFunds.iterkeys():
-                    optimisedAdditional[objective][multiple][programName] = additionalFunds[programName] - \
+                for programName in add_funds.iterkeys():
+                    optimisedAdditional[objective][multiple][programName] = add_funds[programName] - \
                                                                             fixedCostsDict[programName]
         return optimisedAdditional
 
@@ -564,42 +530,42 @@ class GeospatialOptimisation:
             w.writerow(['spending', 'outcome'])
             w.writerows(izip(spending, outcome))
 
-    def setUpRegions(self, objective, fixCurrent, additionalFunds):
+    def setUpRegions(self, objective, fixCurrent, add_funds):
         regions = []
         for name in self.regionNames:
             fileInfo = [self.root, self.analysisType, name, '']
             resultsPath = os.path.join(self.newResultsDir, 'BOCs', objective, 'pickles')
             thisRegion = Optimisation(self.objectives, self.budgetMultiples, fileInfo, resultsPath=resultsPath,
-                                      fixCurrentAllocations=fixCurrent, removeCurrentFunds=False,
-                                      additionalFunds=additionalFunds, numYears=self.numYears, filterProgs=False)
+                                      fixCurrentAllocations=fixCurrent, rem_curr=False,
+                                      add_funds=add_funds, numYears=self.numYears, filterProgs=False)
             regions.append(thisRegion)
         return regions
 
     def optimiseScenarios(self):
         for scenario, options in self.scenarios.iteritems():
-            fixBetween, fixWithin, replaceCurrent, additionalFunds = options
+            fixBetween, fixWithin, replaceCurrent, add_funds = options
             formScenario = scenario.lower().replace(' ', '')
             self.newResultsDir = os.path.join(self.resultsDir, self.analysisType, formScenario,
-                                              str(int(additionalFunds / 1e6)) + 'm')
+                                              str(int(add_funds / 1e6)) + 'm')
             for objective in self.objectives:
                 # first distribute funds between regions
                 self.getRegionalBOCs(objective, fixWithin,
-                                     additionalFunds)  # specifies if current funding is fixed within a region
+                                     add_funds)  # specifies if current funding is fixed within a region
                 optimalDistribution = self.distributeFunds(objective, options)
                 # optimise within each region
                 regions = self.optimiseAllRegions(optimalDistribution, objective, options)
                 self.collateAllResults(regions, objective)
                 # self.getOptimalOutcomes(regions, objective)
 
-    def getRegionalBOCs(self, objective, fixWithin, additionalFunds):
+    def getRegionalBOCs(self, objective, fixWithin, add_funds):
         print '...Generating BOCs... \n'
-        regions = self.setUpRegions(objective, fixWithin, additionalFunds)
+        regions = self.setUpRegions(objective, fixWithin, add_funds)
         jobs = self.getBOCjobs(regions, objective)
         maxRegions = int(50 / (len(self.budgetMultiples) - 1))
         runJobs(jobs, maxRegions)
 
-    def interpolateBOCs(self, objective, fixBetween, additionalFunds):
-        regions = self.setUpRegions(objective, fixBetween, additionalFunds)
+    def interpolateBOCs(self, objective, fixBetween, add_funds):
+        regions = self.setUpRegions(objective, fixBetween, add_funds)
         for region in regions:
             spending, outcome = self.readBOC(region.name, objective)
             region.interpolateBOC(objective, spending, outcome)
@@ -608,8 +574,8 @@ class GeospatialOptimisation:
 
     def distributeFunds(self, objective, options):
         fixBetween = options[0]
-        additionalFunds = options[-1]
-        regions = self.interpolateBOCs(objective, fixBetween, additionalFunds)
+        add_funds = options[-1]
+        regions = self.interpolateBOCs(objective, fixBetween, add_funds)
         optimalDistribution = self.gridSearch(regions, objective, options)
         return optimalDistribution
 
@@ -639,9 +605,9 @@ class GeospatialOptimisation:
         remainingFunds = dcp(totalFunds)
         regionalAllocations = zeros(len(regions))
         percentBudgetSpent = 0.
-        maxIters = int(1e6)
+        maxiters = int(1e6)
 
-        for i in range(maxIters):
+        for i in range(maxiters):
             bestEff = -inf
             bestRegion = None
             for regionIdx in range(len(regions)):
@@ -679,7 +645,7 @@ class GeospatialOptimisation:
         return scaledRegionalAllocations
 
     def getBOCcostEffectiveness(self, regions, objective, options):
-        fixBetween, fixWithin, removeCurrent, additionalFunds = options
+        fixBetween, fixWithin, removeCurrent, add_funds = options
         nationalFunds = self.getNationalCurrentSpending()
         numPoints = 10000
         costEffVecs = []
@@ -687,13 +653,13 @@ class GeospatialOptimisation:
         for region in regions:
             if fixBetween and not fixWithin:
                 minSpending = sum(region.currentAllocations) - sum(region.referenceAllocations)
-                maxSpending = minSpending + additionalFunds
+                maxSpending = minSpending + add_funds
             elif fixBetween and fixWithin:  # this is scenario 3, where the spending=0 corresponds to non-optimised current allocations
                 minSpending = 0
-                maxSpending = additionalFunds
+                maxSpending = add_funds
             else:
                 minSpending = 0
-                maxSpending = nationalFunds + additionalFunds
+                maxSpending = nationalFunds + add_funds
             thisDeriv = region.BOCs[objective].derivative(nu=1)
             regionalSpending = linspace(minSpending, maxSpending, numPoints)[1:]  # exclude 0 to avoid division error
             adjustedSpending = regionalSpending - minSpending  # centers spending if current is fixed
@@ -705,7 +671,7 @@ class GeospatialOptimisation:
 
     def optimiseAllRegions(self, optimisedSpending, objective, options):
         print '...Optimising within regions... \n'
-        _fixBetween, fixWithin, replaceCurrent, additionalFunds = options
+        _fixBetween, fixWithin, replaceCurrent, add_funds = options
         budgetMultiple = [1]
         newRegions = []
         jobs = []
@@ -714,8 +680,8 @@ class GeospatialOptimisation:
             resultsDir = os.path.join(self.newResultsDir, 'pickles')
             fileInfo = [self.root, self.analysisType, name, '']
             newOptim = Optimisation([objective], budgetMultiple, fileInfo, resultsPath=resultsDir,
-                                    fixCurrentAllocations=fixWithin, removeCurrentFunds=replaceCurrent,
-                                    additionalFunds=regionalFunds, numYears=self.numYears, filterProgs=False)
+                                    fixCurrentAllocations=fixWithin, rem_curr=replaceCurrent,
+                                    add_funds=regionalFunds, numYears=self.numYears, filterProgs=False)
             newRegions.append(newOptim)
             p = Process(target=newOptim.optimise)
             jobs.append(p)
@@ -767,7 +733,7 @@ class GeospatialOptimisation:
     def getTotalFreeFunds(self, regions):
         """ Need to wait the additional funds by number of regions so we don't have too much money"""
         return sum(
-            region.additionalFunds / len(regions) + sum(region.currentAllocations) - sum(region.fixedAllocations) for
+            region.add_funds / len(regions) + sum(region.currentAllocations) - sum(region.fixedAllocations) for
             region in regions)
 
 
@@ -784,7 +750,7 @@ class BudgetScenarios:
     def __init__(self, filePath):
         self.filePath = filePath
         # [fixedBetweenRegions, fixedWithinRegion, replaceCurrent]
-        # additionalFunds will be appended
+        # add_funds will be appended
         self.allScenarios = {'Scenario 1': [True, False, False],
                              'Scenario 2': [False, False, True],
                              'Scenario 3': [True, True, False]}

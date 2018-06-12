@@ -9,14 +9,14 @@ class ProgramInfo:
         programs: list of all program objects
         programAreas: Risks are keys with lists containing applicable program names (dict of lists)
     """
-    def __init__(self, prog_data, default_params):
-        self.prog_set = prog_data.prog_set
+    def __init__(self, prog_set, prog_data, default_params):
+        self.prog_set = prog_set
         self.prog_areas = self._clean_prog_areas(default_params.prog_areas)
         self.ref_progs = prog_data.ref_progs
         self.programs = progs.set_programs(self.prog_set, prog_data, default_params)
         self._set_ref_progs()
         self._sort_progs()
-        self._getTwins()
+        self._get_twin_ind()
 
     def set_years(self, all_years):
         for prog in self.programs:
@@ -108,25 +108,19 @@ class ProgramInfo:
         for prog in self.programs:
             if 'ov' in scen_type: # coverage scen
                 # convert restricted to unrestricted coverage
-                cov_scen = scen.cov_scen[prog.name]
+                cov_scen = scen[prog.name]
                 unrestr_cov = prog.interp_cov(cov_scen, restr_cov=True)
             elif 'ud' in scen_type: # budget scen
                 # convert budget into unrestricted coverage
-                budget_scen = scen.budget_scen[prog.name]
+                budget_scen = scen[prog.name]
                 unrestr_cov = []
                 for budget in budget_scen: # each year
-                    unrestr_cov.append(prog.costcov_func(budget))
+                    unrestr_cov.append(prog.func(budget))
                 unrestr_cov = prog.interp_cov(unrestr_cov, restr_cov=False)
             else:
                 raise Exception("Error: scenario type '{}' is not valid".format(scen_type))
             covs.append(unrestr_cov)
         return covs
-
-    # def collect_covs(self):
-    #     covs = {}
-    #     for prog in self.programs:
-    #         covs[prog.name] = prog.annual_cov
-    #     return covs
 
     def update_prog_covs(self, pops, covs, restr_cov):
         for i, prog in enumerate(self.programs):
@@ -147,11 +141,16 @@ class ProgramInfo:
         for program in self.programs:
             program.adjust_cov(pops, year)
 
-    def _getTwins(self):
+    def _get_twin_ind(self):
+        """ """
         # TODO: long term, exchange this for the option where we don't have these twin interventions
         for program in self.programs:
-            malariaTwin = program.name + ' (malaria area)'
-            program.malariaTwin = True if malariaTwin in self.prog_set else False
+            twin_name = program.name + ' (malaria area)'
+            for i, name in enumerate(self.prog_set):
+                if name == twin_name:
+                    program.twin_ind = i
+                else:
+                    program.twin_ind = False
 
     def update_prog_year(self, year):
         for prog in self.programs:

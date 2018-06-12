@@ -20,6 +20,7 @@ class Program(object):
         self.cov_scen = None
         self.func = None
         self.inv_func = None
+        self.twin_ind = None
 
         self.target_pops = prog_data.prog_target[self.name] # frac of each population which is targeted
         self.unit_cost = prog_data.prog_info['unit cost'][self.name]
@@ -47,7 +48,7 @@ class Program(object):
         Lists must not have any missing values, so interpolate if missing"""
         # check the data type of cov
         if isinstance(cov, list):
-            self.annual_cov = self.interp_cov(cov, restr_cov) # TODO: want to do this??
+            self.annual_cov = self.interp_cov(cov, restr_cov)
         else: # scalar
             self._set_scalar(cov, restr_cov)
 
@@ -75,12 +76,12 @@ class Program(object):
 
     def _set_scalar(self, cov, restr_cov):
         if restr_cov:
-            scaled_cov = self.get_unrestr_cov(cov)
-        interpolated = [scaled_cov] * len(self.all_years)
+            cov = self.get_unrestr_cov(cov)
+        interpolated = [cov] * len(self.all_years)
         self.annual_cov = [self.unrestr_init_cov] + interpolated
 
     def get_unrestr_cov(self, restr_cov):
-        return restr_cov*self.restrictedPopSize / self.unrestrictedPopSize
+        return restr_cov*self.restrictedPopSize / self.unrestr_popsize
 
     def set_pop_sizes(self, pops):
         self._setRestrictedPopSize(pops)
@@ -88,16 +89,16 @@ class Program(object):
 
     def set_init_unrestr(self):
         self.unrestr_init_cov = (self.restr_init_cov * self.restrictedPopSize) / \
-                                          self.unrestrictedPopSize
+                                          self.unrestr_popsize
         # self.unrestrictedCalibrationCov = (self.restrictedCalibrationCov * self.restrictedPopSize) / \
         #                                   self.unrestrictedPopSize
 
     def adjust_cov(self, pops, year):
         # set unrestricted pop size so coverages account for growing population size
-        oldURP = dcp(self.unrestrictedPopSize)
+        oldURP = dcp(self.unrestr_popsize)
         self.set_pop_sizes(pops)# TODO: is this the optimal place to do this?
         oldCov = self.annual_cov[year]
-        newCov = oldURP * oldCov / self.unrestrictedPopSize
+        newCov = oldURP * oldCov / self.unrestr_popsize
         self.annual_cov.append(newCov)
 
     def _set_target_ages(self):
@@ -128,10 +129,10 @@ class Program(object):
         """
         # TMP SOLUTION: THE DENOMINATOR FOR CALCULATING PROGRAM COVERAGE WILL USE sum(CEILING(FRAC TARGETED) * POP SIZE) over all pops targeted. I.E. FOR IYCF WITH FRAC >1, we get normalised sum
         from math import ceil
-        self.unrestrictedPopSize = 0.
+        self.unrestr_popsize = 0.
         for pop in populations:
-            self.unrestrictedPopSize += sum(ceil(self.target_pops[age.age])*age.pop_size for age in pop.age_groups
-                                           if age.age in self.agesTargeted)
+            self.unrestr_popsize += sum(ceil(self.target_pops[age.age]) * age.pop_size for age in pop.age_groups
+                                        if age.age in self.agesTargeted)
 
     def _setRestrictedPopSize(self, populations):
         self.restrictedPopSize = 0.
@@ -145,7 +146,10 @@ class Program(object):
         :return:
         """
         self.exclusionDependencies = []
-        dependencies = self.prog_deps[self.name]['Exclusion dependency']
+        try: # TODO: don't like this, perhaps switch order or cleanup before hand?
+            dependencies = self.prog_deps[self.name]['Exclusion dependency']
+        except KeyError:
+            dependencies = []
         for program in dependencies:
             self.exclusionDependencies.append(program)
 
@@ -155,7 +159,10 @@ class Program(object):
         :return:
         """
         self.thresholdDependencies = []
-        dependencies = self.prog_deps[self.name]['Threshold dependency']
+        try:
+            dependencies = self.prog_deps[self.name]['Threshold dependency']
+        except KeyError:
+            dependencies = []
         for program in dependencies:
             self.thresholdDependencies.append(program)
 
@@ -337,7 +344,7 @@ class Program(object):
         return fracChange
 
     def set_costcov(self):
-        costcurve = CostCovCurve(self.unit_cost, self.saturation, self.restrictedPopSize, self.unrestrictedPopSize)
+        costcurve = CostCovCurve(self.unit_cost, self.saturation, self.restrictedPopSize, self.unrestr_popsize)
         self.func, self.inv_func = costcurve.set_cost_curve()
 
     def get_spending(self):
@@ -406,10 +413,11 @@ class CostCovCurve:
         return curve
 
     def _lin_func(self, m, c, max_cov, x):
-        return min(m * x + c, max_cov)
+        unres_maxcov = max_cov / self.unrestrictedPop
+        return min((m * x + c)/self.unrestrictedPop, unres_maxcov)
 
     def _log_func(self, A, B, C, D, x):
-        return A + (B - A) / (1 + exp(-(x - C) / D))
+        return (A + (B - A) / (1 + exp(-(x - C) / D))) / self.unrestrictedPop
 
     def _inv_lin_func(self, m, c, cov_frac):
         return (cov_frac*self.unrestrictedPop - c)/m

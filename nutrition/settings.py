@@ -3,7 +3,7 @@ import os, itertools
 
 class Settings(object):
     """ Store all the statis data for a project that won't change except between Optima versions
-    WARNING: Do not change the order of these lists without checking the consequences within the code """
+    WARNING: Do not change the order of these lists without checking the potential consequences within the code """
     def __init__(self):
         self.timestep = 1./12. # in months
         self.stunting_list = ['High', 'Moderate', 'Mild', 'Normal']
@@ -16,7 +16,7 @@ class Settings(object):
         self.wasted_list = self.wasting_list[:2]
         self.non_wasted_list = self.wasting_list[2:]
         self.bf_list = ['Exclusive', 'Predominant', 'Partial', 'None']
-        list_cats = [ self.stunting_list, self.wasting_list, self.anaemia_list, self.bf_list]
+        list_cats = [self.stunting_list, self.wasting_list, self.anaemia_list, self.bf_list]
         self.all_cats = list(itertools.product(*list_cats))
         self.correct_bf = {'<1 month': 'Exclusive', '1-5 months': 'Exclusive', '6-11 months':'Partial',
                            '12-23 months': 'Partial', '24-59 months': 'None'}
@@ -37,10 +37,10 @@ def data_path(country, region, sim_type):
     demopath = os.path.join(parentfolder, subdir)
     return demopath
 
-def prog_path(country, sim_type):
+def user_path():
     parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-    progname = 'prog_settings.xlsx'
-    subdir = os.path.join('applications', country, 'data', sim_type, progname)
+    progname = 'default_options.xlsx'
+    subdir = os.path.join('applications', 'master', 'data', 'national', progname)
     progpath = os.path.join(parentfolder, subdir)
     return progpath
 
