@@ -47,15 +47,8 @@ def obj_func(allocation, obj, model, free, fixed, keep_inds, sign):
     return outcome
 
 def make_optims(country, region, user_opts):
-    optim_type = 'national' if country == region else 'regional'
-    input_path = settings.data_path(country, region, optim_type)
-    default_path = settings.default_path()
-    # get data
-    demo_data = data.InputData(input_path)
-    prog_data = data.ProgData(input_path)
-    default_params = data.DefaultParams(default_path)
+    demo_data, prog_data, default_params = data.get_data(country, region)
     optim_list = []
-
     # create all of the requested optimizations
     for opt in user_opts:
         # initialise pops and progs
@@ -66,26 +59,22 @@ def make_optims(country, region, user_opts):
         optim_list.append(optim)
     return optim_list
 
-def default_optims(project, dorun=False):
+def default_optims(project, key='default1', dorun=False):
     country = 'master'
     region = 'master'
 
-    default_opts1 = data.DefaultOptimOpts('test1')
-    user_opts = [default_opts1]
-
-    optim_list = make_optims(country, region, user_opts)
-
-    p = project.Project()
-    p.add_optims(optim_list)
+    defaults = data.OptimOptsTest(key)
+    opts = [utils.OptimOpts(**defaults.get_attr())]
+    optim_list = make_optims(country, region, opts)
+    project.add_optims(optim_list)
     if dorun:
-        p.run_optims()
+        project.run_optims()
 
 class Optim(object):
     def __init__(self, prog_info, pops, name, t, objs, mults, prog_set, active=True, parallel=True, num_runs=1,
                  add_funds=0, fix_curr=False, rem_curr=False, curve_type='linear', filter_progs=True,
                  maxiter=10, swarmsize=10, num_procs=None):
         self.name = name
-        # self.optim_type = optim_type # TODO: want this?
         self.objs = objs
         self.mults = mults
         self.t = t
@@ -223,7 +212,7 @@ class Optim(object):
             for run in range(self.num_runs):
                 now = time.time()
                 x0, fopt = pso.pso(obj_func, xmin, xmax, kwargs=kwargs, maxiter=self.maxiter, swarmsize=self.swarmsize)
-                x, fval, flag = asd.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=2)
+                x, fval, flag = asd.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=0)
                 runOutputs.append((x, fval[-1]))
                 self.printMessages(obj, mult, flag, now)
             bestAllocation = self.findBestAllocation(runOutputs)

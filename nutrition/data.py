@@ -513,22 +513,19 @@ class UserOpts(object):
         return self.__dict__
 
 
-class DefaultOptimOpts(object):
+class OptimOptsTest(object):
     """ Only for testing purposes. """
-    def __init__(self, name):
-        self.spreadsheet = ExcelFile(settings.user_path())
+    def __init__(self, name, filepath=settings.default_opts_path()):
+        self.spreadsheet = ExcelFile(filepath)
 
         self.name = name
         self.prog_set = []
-        # self.optim_type = None # TODO: may not need this re 'national' and 'regional'. May want to know if specifying coverage or expenditure
         self.t = None
         self.mults = None
         self.fix_curr = None
         self.add_funds = None
         self.objs = None
         self.filter_progs = None
-        # self.country = None
-        # self.region = None
         self.get_prog_set()
         self.get_opts()
 
@@ -545,9 +542,6 @@ class DefaultOptimOpts(object):
 
     def get_opts(self):
         opts = self.spreadsheet.parse('Optimisation')
-        # self.country = opts['country'][0]
-        # self.region = opts['region'][0]
-        # self.optim_type = opts['optim type'][0]
         self.t = [opts['start year'][0], opts['end year'][0]]
         self.objs = opts['objectives'][0].replace(' ','').split(',')
         mults = opts['multiples'][0].replace(' ', '').split(',')
@@ -564,11 +558,11 @@ class DefaultOptimOpts(object):
             df = df.to_dict(dict_orient)
         return df
 
-class DefaultScenOpts(object):
+class ScenOptsTest(object):
     """ Only used for testing purposes. This information should be supplied by the frontend. """
 
-    def __init__(self, name, scen_type): # TODO: update for 'scenario' tab in spreadsheet
-        self.spreadsheet = ExcelFile(settings.user_path())
+    def __init__(self, name, scen_type, filepath=settings.default_opts_path()):
+        self.spreadsheet = ExcelFile(filepath)
 
         self.name = name
         self.prog_set = []
@@ -616,3 +610,13 @@ class DefaultScenOpts(object):
         if dict_orient:
             df = df.to_dict(dict_orient)
         return df
+
+
+def get_data(country, region):
+    sim_type = 'national' if country == region else 'regional'
+    input_path = settings.data_path(country, region, sim_type)
+    # get data
+    demo_data = InputData(input_path)
+    prog_data = ProgData(input_path)
+    default_params = DefaultParams(settings.default_params_path())
+    return demo_data, prog_data, default_params

@@ -488,7 +488,7 @@ def get_default_scenario_plot():
     # Get the Project object.
     proj = on.project.Project() # WARNING, just create new project
     proj.default_scens(dorun=True)
-    result = proj.get_results('test1')
+    result = proj.get_results('default')
     fig = on.plotting.make_plots(result) # HARDCODED EXAMPLE
     
     figs = []

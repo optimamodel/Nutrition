@@ -1,4 +1,4 @@
-from nutrition import settings, data, program_info, populations, model
+from nutrition import settings, data, program_info, populations, model, utils
 from copy import deepcopy as dcp
 
 class Scen(object):
@@ -26,13 +26,7 @@ def make_scens(country, region, user_opts):
     Scenarios defined by user specifications given by the GUI, while the other data remains fixed.
     These scenarios will be returned as a list so they can be added to Project
     """
-    sim_type = 'national' if country == region else 'regional'
-    input_path = settings.data_path(country, region, sim_type)
-    default_path = settings.default_path()
-    # get data
-    demo_data = data.InputData(input_path)
-    prog_data = data.ProgData(input_path)
-    default_params = data.DefaultParams(default_path)
+    demo_data, prog_data, default_params = data.get_data(country, region)
     scen_list = []
     # create all of the requested scenarios
     for opt in user_opts:
@@ -44,21 +38,14 @@ def make_scens(country, region, user_opts):
         scen_list.append(scen)
     return scen_list
 
-
-def default_scens(project, dorun=False):
+def default_scens(project, key='default', dorun=False):
     country = 'master'
     region = 'master'
 
-    default_opts1 = data.DefaultOpts('test1', 'Coverage')
-    user_opts = [default_opts1]
-
-    scen_list = make_scens(country, region, user_opts)
-
-    p = project.Project()
-    p.add_scens(scen_list)
+    defaults = data.ScenOptsTest(key, 'coverage')
+    opts = [utils.ScenOpts(**defaults.get_attr())]
+    scen_list = make_scens(country, region, opts)
+    project.add_scens(scen_list)
 
     if dorun:
         project.run_scens()
-    
-    return None
-    

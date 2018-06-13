@@ -105,6 +105,34 @@ class odict(OrderedDict):
         output = type(key)==list or type(key)==type(array([])) # Do *not* include dict, since that would be recursive
         return output
 
+########################
+### USER OPTIONS STORAGE CLASSES
+########################
+
+class Opts(object):
+    def __init__(self, name, prog_set, t):
+        self.name = name
+        self.prog_set = prog_set
+        self.t = t
+
+    def get_attr(self):
+        return self.__dict__
+
+class ScenOpts(Opts):
+    def __init__(self, name, prog_set, t, scen, scen_type):
+        Opts.__init__(self, name, prog_set, t)
+        self.scen = scen
+        self.scen_type = scen_type
+
+class OptimOpts(Opts):
+    def __init__(self, name, prog_set, t, mults, fix_curr, add_funds, objs, filter_progs):
+        Opts.__init__(self, name, prog_set, t)
+        # self.optim_type = optim_type
+        self.mults = mults
+        self.fix_curr = fix_curr
+        self.add_funds = add_funds
+        self.objs = objs
+        self.filter_progs = filter_progs
 
 # ##############################################################################
 # ### HELPER FUNCTIONS

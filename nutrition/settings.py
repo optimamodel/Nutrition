@@ -37,14 +37,21 @@ def data_path(country, region, sim_type):
     demopath = os.path.join(parentfolder, subdir)
     return demopath
 
-def user_path():
+def default_opts_path():
     parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
     progname = 'default_options.xlsx'
     subdir = os.path.join('applications', 'master', 'data', 'national', progname)
     progpath = os.path.join(parentfolder, subdir)
     return progpath
 
-def default_path():
+def test_opts_path():
+    parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+    progname = 'testing_options.xlsx'
+    subdir = os.path.join('applications', 'master', 'data', 'national', progname)
+    progpath = os.path.join(parentfolder, subdir)
+    return progpath
+
+def default_params_path():
     parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
     filename = 'default_params.xlsx'
     childpath = os.path.join('nutrition', filename)

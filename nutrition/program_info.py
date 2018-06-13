@@ -143,7 +143,6 @@ class ProgramInfo:
 
     def _get_twin_ind(self):
         """ """
-        # TODO: long term, exchange this for the option where we don't have these twin interventions
         for program in self.programs:
             twin_name = program.name + ' (malaria area)'
             for i, name in enumerate(self.prog_set):

@@ -174,8 +174,8 @@ class Project(object):
             scen.run_scen()
             self.add_result(scen)
 
-    def default_scens(self, dorun=None):
-        default_scens(self, dorun=dorun)
+    def default_scens(self, key='default', dorun=None):
+        default_scens(self, key=key, dorun=dorun)
         return None
 
     def run_optims(self, optim_list=None, name=None):
