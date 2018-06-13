@@ -1,8 +1,8 @@
-from nutrition import project, scenarios
+import nutrition as on
 
-p = project.Project()
-scenarios.default_scens(p, key='default', dorun=True)
-result = p.get_results('default')
+p = on.project.Project()
+p.default_scens(key='default', dorun=True)
+res = p.get_results('default')
 
 
 

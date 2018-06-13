@@ -1,6 +1,7 @@
 from sciris.core import odict, uuid, today, gitinfo, objrepr, getdate, printv, makefilepath, saveobj, dcp
 from .model import Model
 from .scenarios import default_scens
+from .optimisation import default_optims
 from . import version
 
 #######################################################################################################
@@ -145,7 +146,6 @@ class Project(object):
         ''' Remove all results '''
         for key,result in self.results.items():
             self.results.pop(key)
-        return None
 
     def add_scens(self, scen_list, overwrite=True):
         if overwrite: self.scens = {} # remove exist scenarios
@@ -163,7 +163,6 @@ class Project(object):
         """Add result by name"""
         keyname = result.name
         self.add(name=keyname, item=result, what='result')
-        return
 
     def run_scens(self, scen_list=None, name=None):
         """Function for running scenarios"""
@@ -176,7 +175,9 @@ class Project(object):
 
     def default_scens(self, key='default', dorun=None):
         default_scens(self, key=key, dorun=dorun)
-        return None
+
+    def default_optims(self, key='default', dorun=None):
+        default_optims(self, key=key, dorun=dorun)
 
     def run_optims(self, optim_list=None, name=None):
         if optim_list is not None: self.add_optims(optim_list)
@@ -191,5 +192,4 @@ class Project(object):
 
     def sensitivity(self):
         print('Not implemented')
-        return None
 

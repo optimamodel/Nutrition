@@ -1,7 +1,4 @@
-from numpy import exp, log, interp, isnan, array, logical_not
-from copy import deepcopy as dcp
-from settings import Settings
-from functools import partial
+import settings, numpy, functools
 
 class Program(object):
     """Each instance of this class is an intervention,
@@ -12,7 +9,7 @@ class Program(object):
         self.default = default_params
         self.prog_deps = prog_data.prog_deps
         self.famplan_methods = prog_data.famplan_methods
-        self.settings = Settings()
+        self.settings = settings.Settings()
         self.year = None
         self.all_years = None
         self.annual_cov = None
@@ -54,16 +51,16 @@ class Program(object):
 
     def interp_cov(self, cov, restr_cov):
         """cov: a list of values with length equal to simulation period, excluding first year"""
-        years = array(self.all_years)
-        cov_list = array(cov)
-        not_nan = logical_not(isnan(cov_list))
+        years = numpy.array(self.all_years)
+        cov_list = numpy.array(cov)
+        not_nan = numpy.logical_not(numpy.isnan(cov_list))
         if any(not_nan):
             # for 1 or more present values, baseline up to first present value, interpolate between, then constant if end values missing
             trueIndx = [i for i, x in enumerate(not_nan) if x]
             firstTrue = trueIndx[0]
             startCov = [self.restr_init_cov]*len(cov_list[:firstTrue])
             # scaledCov = coverages * self.restrictedPopSize / self.unrestrictedPopSize # convert to unrestricted coverages
-            endCov = list(interp(years[firstTrue:], years[not_nan], cov_list[not_nan]))
+            endCov = list(numpy.interp(years[firstTrue:], years[not_nan], cov_list[not_nan]))
             # scale each coverage
             if restr_cov:
                 interped = [self.get_unrestr_cov(cov) for cov in startCov + endCov]
@@ -95,7 +92,7 @@ class Program(object):
 
     def adjust_cov(self, pops, year):
         # set unrestricted pop size so coverages account for growing population size
-        oldURP = dcp(self.unrestr_popsize)
+        oldURP = self.unrestr_popsize
         self.set_pop_sizes(pops)# TODO: is this the optimal place to do this?
         oldCov = self.annual_cov[year]
         newCov = oldURP * oldCov / self.unrestr_popsize
@@ -380,7 +377,7 @@ class CostCovCurve:
         else:
             c = y0 / (m * x0)
         maxCoverage = self.restrictedPop * self.saturation
-        linearCurve = partial(self._lin_func, m, c, maxCoverage)
+        linearCurve = functools.partial(self._lin_func, m, c, maxCoverage)
         return linearCurve
 
     def _get_inv_lin(self):
@@ -390,7 +387,7 @@ class CostCovCurve:
             c = y0
         else:
             c = y0 / (m * x0)
-        curve = partial(self._inv_lin_func, m, c)
+        curve = functools.partial(self._inv_lin_func, m, c)
         return curve
 
     def _get_log_curve(self):
@@ -399,7 +396,7 @@ class CostCovCurve:
         A = -B
         C = 0.
         D = self.unit_cost*B/2.
-        curve = partial(self._log_func, A, B, C, D)
+        curve = functools.partial(self._log_func, A, B, C, D)
         return curve
 
     def _get_inv_log(self):
@@ -409,7 +406,7 @@ class CostCovCurve:
         A = -B
         C = 0.
         D = self.unit_cost*B/2.
-        curve = partial(self._inv_log, A, B, C, D)
+        curve = functools.partial(self._inv_log, A, B, C, D)
         return curve
 
     def _lin_func(self, m, c, max_cov, x):
@@ -417,7 +414,7 @@ class CostCovCurve:
         return min((m * x + c)/self.unrestrictedPop, unres_maxcov)
 
     def _log_func(self, A, B, C, D, x):
-        return (A + (B - A) / (1 + exp(-(x - C) / D))) / self.unrestrictedPop
+        return (A + (B - A) / (1 + numpy.exp(-(x - C) / D))) / self.unrestrictedPop
 
     def _inv_lin_func(self, m, c, cov_frac):
         return (cov_frac*self.unrestrictedPop - c)/m
@@ -426,7 +423,7 @@ class CostCovCurve:
         if D == 0:
             return 0
         else:
-            return -D * log((B - y) / (y - A)) + C
+            return -D * numpy.log((B - y) / (y - A)) + C
 
 def set_programs(prog_set, prog_data, default_params):
     programs = [Program(prog_name, prog_data, default_params) for prog_name in prog_set] # list of all program objects

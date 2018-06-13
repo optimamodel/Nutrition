@@ -1,8 +1,8 @@
-from nutrition import project, optimisation
+import nutrition as on
 
-p = project.Project()
-optimisation.default_optims(p, key='default1', dorun=True)
-result = p.get_results('defaul1')
+p = on.project.Project()
+p.default_optims(key='default', dorun=True)
+res = p.get_results('default')
 
 
 

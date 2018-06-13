@@ -544,7 +544,7 @@ class OptimOptsTest(object):
         opts = self.spreadsheet.parse('Optimisation')
         self.t = [opts['start year'][0], opts['end year'][0]]
         self.objs = opts['objectives'][0].replace(' ','').split(',')
-        mults = opts['multiples'][0].replace(' ', '').split(',')
+        mults = str(opts['multiples'][0]).replace(' ', '').split(',')
         self.mults = [int(x) for x in mults]
         fix_curr = opts['fix current funds'][0]
         self.fix_curr = True if fix_curr else False
