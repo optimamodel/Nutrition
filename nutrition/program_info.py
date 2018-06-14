@@ -164,7 +164,7 @@ class ProgramInfo:
     def restrict_covs(self, pops):
         """
         Uses the ordering of both dependency lists to restrict the coverage of programs.
-        Assumes that the coverage is given as peopleCovered/unrestrictedPopSize.
+        Assumes that the coverage is given as peopleCovered/unrestr_popsize.
         Since the order of dependencies matters, was decided to apply threshold first then exclusion dependencies
         Method:
         GET OVERLAPPING AGE GROUPS BETWEEN PARENT AND CHILD NODES
@@ -184,13 +184,13 @@ class ProgramInfo:
                 commonAges = list(set(child.agesTargeted).intersection(parent.agesTargeted))
                 parentPopSize = 0.
                 for pop in pops:
-                    parentPopSize += sum(age.getAgeGroupPopulation() for age in pop.age_groups if age.age in commonAges)
+                    parentPopSize += sum(age.pop_size for age in pop.age_groups if age.age in commonAges)
                 numCoveredInOverlap = parent.annual_cov[parent.year] * parentPopSize
-                percentCoveredByParent = numCoveredInOverlap / child.restrictedPopSize
+                percentCoveredByParent = numCoveredInOverlap / child.restr_popsize
                 if percentCoveredByParent < 1:
-                    childMaxCov = numCoveredInOverlap / child.restrictedPopSize
+                    childMaxCov = numCoveredInOverlap / child.restr_popsize
                 else:
-                    childMaxCov = child.restrictedPopSize / child.unrestrictedPopSize
+                    childMaxCov = child.restr_popsize / child.unrestr_popsize
                 if child.annual_cov[child.year] > childMaxCov:
                     child.annual_cov[child.year] = childMaxCov
         #exclusion
@@ -204,11 +204,11 @@ class ProgramInfo:
                     parent = next((prog for prog in self.programs if prog.name == parentName))
                     commonAges = list(set(child.agesTargeted).intersection(parent.agesTargeted))
                     for pop in pops:
-                        parentPopSize += sum(age.getAgeGroupPopulation() for age in pop.age_groups if age.age in commonAges)
+                        parentPopSize += sum(age.pop_size for age in pop.age_groups if age.age in commonAges)
                     numCoveredInOverlap += parent.annual_cov[parent.year] * parentPopSize
-                percentCoveredByParent = numCoveredInOverlap / child.restrictedPopSize
+                percentCoveredByParent = numCoveredInOverlap / child.restr_popsize
                 if percentCoveredByParent < 1:
-                    childMaxCov = (child.restrictedPopSize - numCoveredInOverlap) / child.unrestrictedPopSize
+                    childMaxCov = (child.restr_popsize - numCoveredInOverlap) / child.unrestr_popsize
                 else:
                     childMaxCov = 0
                 if child.annual_cov[child.year] > childMaxCov:

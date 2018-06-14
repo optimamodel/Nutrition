@@ -49,8 +49,9 @@ class Program(object):
         else: # scalar
             self._set_scalar(cov, restr_cov)
 
-    def interp_cov(self, cov, restr_cov):
-        """cov: a list of values with length equal to simulation period, excluding first year"""
+    def interp_cov(self, cov, restr_cov): # todo; need a way to reconcile different list lengths (in higher level function)
+        """ cov: a list of coverages with one-to-one correspondence with all_years
+        restr_cov: boolean indicating if the coverages are restricted or unrestricted """
         years = numpy.array(self.all_years)
         cov_list = numpy.array(cov)
         not_nan = numpy.logical_not(numpy.isnan(cov_list))
@@ -59,7 +60,6 @@ class Program(object):
             trueIndx = [i for i, x in enumerate(not_nan) if x]
             firstTrue = trueIndx[0]
             startCov = [self.restr_init_cov]*len(cov_list[:firstTrue])
-            # scaledCov = coverages * self.restrictedPopSize / self.unrestrictedPopSize # convert to unrestricted coverages
             endCov = list(numpy.interp(years[firstTrue:], years[not_nan], cov_list[not_nan]))
             # scale each coverage
             if restr_cov:
@@ -78,17 +78,17 @@ class Program(object):
         self.annual_cov = [self.unrestr_init_cov] + interpolated
 
     def get_unrestr_cov(self, restr_cov):
-        return restr_cov*self.restrictedPopSize / self.unrestr_popsize
+        return restr_cov*self.restr_popsize / self.unrestr_popsize
 
     def set_pop_sizes(self, pops):
         self._setRestrictedPopSize(pops)
         self._setUnrestrictedPopSize(pops)
 
     def set_init_unrestr(self):
-        self.unrestr_init_cov = (self.restr_init_cov * self.restrictedPopSize) / \
+        self.unrestr_init_cov = (self.restr_init_cov * self.restr_popsize) / \
                                           self.unrestr_popsize
-        # self.unrestrictedCalibrationCov = (self.restrictedCalibrationCov * self.restrictedPopSize) / \
-        #                                   self.unrestrictedPopSize
+        # self.unrestrictedCalibrationCov = (self.restrictedCalibrationCov * self.restr_popsize) / \
+        #                                   self.unrestr_popsize
 
     def adjust_cov(self, pops, year):
         # set unrestricted pop size so coverages account for growing population size
@@ -132,9 +132,9 @@ class Program(object):
                                         if age.age in self.agesTargeted)
 
     def _setRestrictedPopSize(self, populations):
-        self.restrictedPopSize = 0.
+        self.restr_popsize = 0.
         for pop in populations:
-            self.restrictedPopSize += sum(age.pop_size * self.target_pops[age.age] for age in pop.age_groups
+            self.restr_popsize += sum(age.pop_size * self.target_pops[age.age] for age in pop.age_groups
                                          if age.age in self.agesTargeted)
 
     def _set_exclusion_deps(self):
@@ -332,8 +332,8 @@ class Program(object):
         return BAupdate
 
     def _bf_practice_update(self, age_group):
-        correctPrac = age_group.correctBFpractice
-        correctFracOld = age_group.bfDist[correctPrac]
+        correctPrac = age_group.correct_bf
+        correctFracOld = age_group.bf_dist[correctPrac]
         probCorrectCovered = age_group.probConditionalCoverage['Breastfeeding'][self.name]['covered']
         probCorrectNotCovered = age_group.probConditionalCoverage['Breastfeeding'][self.name]['not covered']
         probNew = self._get_new_prob(self.annual_cov[self.year], probCorrectCovered, probCorrectNotCovered)
@@ -341,7 +341,7 @@ class Program(object):
         return fracChange
 
     def set_costcov(self):
-        costcurve = CostCovCurve(self.unit_cost, self.saturation, self.restrictedPopSize, self.unrestr_popsize)
+        costcurve = CostCovCurve(self.unit_cost, self.saturation, self.restr_popsize, self.unrestr_popsize)
         self.func, self.inv_func = costcurve.set_cost_curve()
 
     def get_spending(self):

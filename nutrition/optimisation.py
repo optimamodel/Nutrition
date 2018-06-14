@@ -3,7 +3,7 @@ import nutrition as on, pso, asd, time, cPickle, copy, multiprocessing, numpy, s
 class Optim(object):
     def __init__(self, prog_info, pops, name, t, objs, mults, prog_set, active=True, parallel=True, num_runs=1,
                  add_funds=0, fix_curr=False, rem_curr=False, curve_type='linear', filter_progs=True,
-                 maxiter=10, swarmsize=10, num_procs=None):
+                 maxiter=5, swarmsize=10, num_procs=None):
         self.name = name
         self.objs = objs
         self.mults = mults
@@ -114,20 +114,7 @@ class Optim(object):
 
     def run_optim(self):
         print 'Optimising for {}'.format(self.name)
-        buds = self.check_budget()
-        self.optim_alloc = on.utils.run_parallel(self.one_optim, itertools.product(self.objs, buds), self.num_cpus)
-
-    def check_budget(self):
-        """For 0 free funds, spending is equal to the fixed costs"""
-        if 0 in self.mults:
-            newBudgets = filter(lambda x: x > 0, self.mults)
-            # output fixed spending
-            for objective in self.objs:
-                allocationDict = self.createDictionary(self.fixed)
-                self.writeToPickle(allocationDict, 0, objective)
-        else:
-            newBudgets = self.mults
-        return newBudgets
+        self.optim_alloc = on.utils.run_parallel(self.one_optim, itertools.product(self.objs, self.mults), self.num_cpus)
 
     @on.utils.trace_exception
     def one_optim(self, params):
@@ -137,32 +124,32 @@ class Optim(object):
         if kwargs['free'] != 0:
             num_progs = len(kwargs['keep_inds'])
             xmin = [0.] * num_progs
-            xmax = [kwargs['free']] * num_progs # TODO: could make this cost of saturation.
+            xmax = [kwargs['free']] * num_progs
             runOutputs = []
             for run in range(self.num_runs):
                 now = time.time()
                 x0, fopt = pso.pso(obj_func, xmin, xmax, kwargs=kwargs, maxiter=self.maxiter, swarmsize=self.swarmsize)
                 x, fval, flag = asd.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=0)
                 runOutputs.append((x, fval[-1]))
-                self.printMessages(obj, mult, flag, now)
-            bestAllocation = self.findBestAllocation(runOutputs)
+                self.print_status(obj, mult, flag, now)
+            bestAllocation = self.get_best(runOutputs)
             scaledAllocation = on.utils.scale_alloc(kwargs['free'], bestAllocation)
             totalAllocation = on.utils.add_fixed_alloc(self.fixed, scaledAllocation, kwargs['keep_inds'])
-            bestAllocationDict = self.createDictionary(totalAllocation)
+            bestAllocationDict = self.create_dict(totalAllocation)
         else:
             # if no money to distribute, return the fixed costs
-            bestAllocationDict = self.createDictionary(self.fixed)
+            bestAllocationDict = self.create_dict(self.fixed)
         return bestAllocationDict
 
-    def printMessages(self, objective, multiple, flag, now):
+    def print_status(self, objective, multiple, flag, now):
         print 'Finished optimisation for {} for objective {} and multiple {}'.format(self.name, objective, multiple)
         print 'The reason is {} and it took {} minutes \n'.format(flag['exitreason'], round((time.time() - now) / 60., 2))
 
-    def findBestAllocation(self, outputs):
+    def get_best(self, outputs):
         bestSample = min(outputs, key=lambda item: item[-1])
         return bestSample[0]
 
-    def createDictionary(self, allocations):
+    def create_dict(self, allocations):
         """Ensure keys and values have matching orders"""
         keys = [program.name for program in self.programs]
         returnDict = {key: value for key, value in zip(keys, allocations)}
@@ -194,6 +181,22 @@ class Optim(object):
             return keep_inds
         else:
             return [i for i in range(len(self.programs))]
+
+    def get_optimal_model(self): # todo; won't work b/c we have multiple budgets for allocation
+        model = self.run_model(self.optim_alloc)
+        return model
+
+    def run_model(self, alloc):
+        model = copy.deepcopy(self.model)
+        covs = self.get_covs(alloc)
+        model.run_sim(covs, restrictedCov=False)
+        return model
+
+    def get_covs(self, alloc):
+        covs = []
+        for prog in self.programs:
+            covs.append(prog.func(alloc[prog.name]))
+        return covs
 
     def interpolateBOC(self, objective, spending, outcome):
         # need BOC for each objective in region
@@ -278,18 +281,18 @@ class Optim(object):
     # def getCoverages(self, allocations):
     #     newCoverages = {}
     #     for program in self.programs:
-    #         newCoverages[program.name] = program.costcov_func(allocations[program.name]) / program.unrestrictedPopSize
+    #         newCoverages[program.name] = program.costcov_func(allocations[program.name]) / program.unrestr_popsize
     #     return newCoverages
     #
     # def writeAllResults(self):
-    #     currentSpending = self.createDictionary(self.curr)
+    #     currentSpending = self.create_dict(self.curr)
     #     currentOutcome = self.getCurrentOutcome(currentSpending)
-    #     referenceSpending = self.createDictionary(self.refs)
+    #     referenceSpending = self.create_dict(self.refs)
     #     referenceOutcome = self.getReferenceOutcome(referenceSpending)
     #     optimisedAllocations = self.readPickles()
     #     optimisedOutcomes = self.getOptimisedOutcomes(optimisedAllocations)
     #     currentAdditionalList = [a - b for a, b in zip(self.curr, self.refs)]
-    #     currentAdditional = self.createDictionary(currentAdditionalList)
+    #     currentAdditional = self.create_dict(currentAdditionalList)
     #     optimisedAdditional = self.getOptimisedAdditional(optimisedAllocations)
     #     coverages = self.getOptimalCoverages(optimisedAllocations)
     #     self.writeOutcomesToCSV(referenceOutcome, currentOutcome, optimisedOutcomes)
@@ -297,7 +300,7 @@ class Optim(object):
     #     self.writeCoveragesToCSV(coverages)
     #
     # def getOptimisedAdditional(self, optimised):
-    #     fixedCostsDict = self.createDictionary(self.fixed)
+    #     fixedCostsDict = self.create_dict(self.fixed)
     #     optimisedAdditional = {}
     #     for objective in self.objectives:
     #         optimisedAdditional[objective] = {}
@@ -319,7 +322,7 @@ class Optim(object):
     #             for program in self.programs:
     #                 # this gives the restricted coverage
     #                 coverages[objective][multiple][program.name] = "{0:.2f}".format(
-    #                     (program.costcov_func(allocations[program.name]) / program.restrictedPopSize) * 100.)
+    #                     (program.costcov_func(allocations[program.name]) / program.restr_popsize) * 100.)
     #     return coverages
     #
     # def writeCoveragesToCSV(self, coverages):

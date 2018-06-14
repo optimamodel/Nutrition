@@ -217,7 +217,7 @@ class ChildAgeGroup(object):
         return self.get_num_stunted() / self.pop_size
 
     def getwasting_distribution(self):
-        totalPop = self.getAgeGroupPopulation()
+        totalPop = self.pop_size
         returnDict = {}
         for wastingCat in self.settings.wasting_list:
             returnDict[wastingCat] = 0.
@@ -600,10 +600,10 @@ class Children(object):
         for age_group in self.age_groups:
             age = age_group.age
             age_group.probConditionalCoverage[risk] = {}
-            fracAppropriate = age_group.bf_dist[age_group.correct_bfpractice]
+            fracAppropriate = age_group.bf_dist[age_group.correct_bf]
             for program in relev_progs:
                 age_group.probConditionalCoverage[risk][program] = {}
-                OR = self.default.ORappropriateBFprogram[program][age]
+                OR = self.default.or_bf_prog[program][age]
                 fracCovered = self.previousCov[program]
                 pn, pc = solve_quad(OR, fracCovered, fracAppropriate)
                 age_group.probConditionalCoverage[risk][program]['covered'] = pc
@@ -832,7 +832,7 @@ class Children(object):
     def _setcorrect_bfpractice(self):
         for age_group in self.age_groups:
             age = age_group.age
-            age_group.correct_bfpractice = self.settings.correct_bf[age]
+            age_group.correct_bf = self.settings.correct_bf[age]
 
 class PregnantWomen(object):
     def __init__(self, data, default_params):

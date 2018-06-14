@@ -65,7 +65,7 @@ class Model:
 
     def _track_outcomes(self):
         oldest = self.children.age_groups[-1]
-        # self.child_exit[self.year] += oldest.getAgeGroupPopulation() * oldest.ageingRate
+        # self.child_exit[self.year] += oldest.pop_size * oldest.ageingRate
         self.stunted[self.year] += oldest.get_num_stunted() * oldest.ageingRate
         self.child_thrive[self.year] += oldest.get_num_notstunted() * oldest.ageingRate
         self.child_not_anaemic[self.year] += oldest.get_num_notanaemic() * oldest.ageingRate
@@ -286,7 +286,7 @@ class Model:
                 age_group.anaemia_dist['Not anaemic'] = 1.-newProbAnaemia
             # weighted sum account for different effect and target pops across nonpw age groups # TODO: is this true or need to scale by frac targeted?
             # nonPWpop = population.get_totalpop()
-            # FPcov = sum(nonPWage.FPupdate * nonPWage.getAgeGroupPopulation() for nonPWage in population.age_groups) / nonPWpop
+            # FPcov = sum(nonPWage.FPupdate * nonPWage.pop_size for nonPWage in population.age_groups) / nonPWpop
             # population.update_preg_averted(FPcov)
 
     def _wasting_trans(self, age_group):
@@ -315,7 +315,7 @@ class Model:
         oldProb = age_group.bf_dist[age_group.correct_bf]
         percentIncrease = (age_group.bfPracticeUpdate - oldProb)/oldProb
         if percentIncrease > 0.0001:
-            age_group.bf_dist[age_group.correctBF] = age_group.bfPracticeUpdate
+            age_group.bf_dist[age_group.correct_bf] = age_group.bfPracticeUpdate
         # get number at risk before
         sumBefore = age_group._getDiarrhoeaRiskSum()
         # update distribution of incorrect practices
