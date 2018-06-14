@@ -133,11 +133,9 @@ class DefaultParams(object):
 
     def get_child_progs(self):
         self.child_progs = self.read_sheet('Programs for children', [0,1,2], 'dict')
-        # self.child_progs = self.make_dict(childDict)
 
     def get_pw_progs(self):
         self.pw_progs = self.read_sheet('Programs for PW', [0,1,2], 'dict')
-        # self.pw_progs = self.make_dict(pw_dict)
 
     def get_bo_risks(self):
         bo_sheet = self.read_sheet('Birth outcome risks', [0,1], skiprows=[0])
@@ -187,7 +185,7 @@ class DefaultParams(object):
                 col = package[mode]
                 if col.notnull()[0]:
                     if mode == 'Mass media':
-                        ageModeTuple = [(pop, mode) for pop in self.child_ages[:-1]] # exclude 24-59 months
+                        ageModeTuple = [(pop, mode) for pop in self.settings.child_ages[:-1]] # exclude 24-59 months
                     else:
                         ageModeTuple = [(packageName[1], mode)]
                     packagesDict[packageName[0]] += ageModeTuple
@@ -425,9 +423,7 @@ class ProgData(object):
     def create_iycf(self):
         packages = self.define_iycf()
         target = self.get_iycf_target(packages)
-        cost = self.get_iycf_cost(packages)
         self.prog_target.update(target)
-        self.prog_info['unit cost'].update(cost)
 
     def define_iycf(self):
         """ Returns a dict with values as a list of two tuples (age, modality)."""
@@ -440,7 +436,7 @@ class ProgData(object):
                 col = package[mode]
                 if col.notnull()[0]:
                     if mode == 'Mass media':
-                        ageModeTuple = [(pop, mode) for pop in self.child_ages[:-1]] # exclude 24-59 months
+                        ageModeTuple = [(pop, mode) for pop in self.settings.child_ages[:-1]] # exclude 24-59 months
                     else:
                         ageModeTuple = [(packageName[1], mode)]
                     packagesDict[packageName[0]] += ageModeTuple
@@ -477,16 +473,6 @@ class ProgData(object):
                 if age not in new_target[name]:
                     new_target[name].update({age:0})
         return new_target
-
-    def get_iycf_cost(self, package_modes):
-        iycf_cost = self.read_sheet('IYCF cost', [0,1]).loc['Field'].to_dict('index')
-        package_cost = {}
-        for name, package in package_modes.iteritems():
-            cost = 0.
-            for pop, mode in package:
-                cost += iycf_cost[pop][mode]
-            package_cost[name] = cost
-        return package_cost
 
     def create_age_bands(self, my_dict, keys, ages, pop):
         for key in keys:  # could be program, ages
