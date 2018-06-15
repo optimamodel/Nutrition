@@ -7,6 +7,7 @@ class Optim(object):
         self.name = name
         self.objs = objs
         self.mults = mults
+        self.combs = list(itertools.product(self.objs, self.mults))
         self.t = t
         self.prog_set = prog_set
         self.parallel = parallel
@@ -114,7 +115,7 @@ class Optim(object):
 
     def run_optim(self):
         print 'Optimising for {}'.format(self.name)
-        self.optim_allocs = on.utils.run_parallel(self.one_optim, itertools.product(self.objs, self.mults), self.num_cpus)
+        self.optim_allocs = on.utils.run_parallel(self.one_optim, self.combs, self.num_cpus)
 
     @on.utils.trace_exception
     def one_optim(self, params):
