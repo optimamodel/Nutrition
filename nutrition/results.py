@@ -6,7 +6,7 @@ class ScenResult(object):
         self.model = res.model
         self.programs = self.model.prog_info.programs
         self.pops = self.model.pops
-        self.t = res.t
+        self.year_names = res.year_names
 
     def get_outcomes(self, outcomes):
         """ outcomes: a list of model outcomes to return
@@ -30,7 +30,7 @@ class OptimResult(object):
         self.name = optim.name
         self.model = optim.model
         self.combs = optim.combs
-        self.t = optim.t
+        self.year_names = optim.year_names
         self.programs = optim.model.prog_info.programs
         self.optim_allocs = optim.optim_allocs
         self.curr_alloc = optim.curr
