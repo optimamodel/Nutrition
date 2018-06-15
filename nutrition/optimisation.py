@@ -28,7 +28,7 @@ class Optim(object):
         self.programs = self.model.prog_info.programs
         self.active = active
 
-        self.optim_alloc = None
+        self.optim_allocs = None
         self.BOCs = {}
         self.refs = None
         self.curr = None
@@ -114,10 +114,12 @@ class Optim(object):
 
     def run_optim(self):
         print 'Optimising for {}'.format(self.name)
-        self.optim_alloc = on.utils.run_parallel(self.one_optim, itertools.product(self.objs, self.mults), self.num_cpus)
+        self.optim_allocs = on.utils.run_parallel(self.one_optim, itertools.product(self.objs, self.mults), self.num_cpus)
 
     @on.utils.trace_exception
     def one_optim(self, params):
+        """ Runs optimisation for an objective and budget multiple.
+        Return: a list of allocations, with order corresponding to the programs list """
         obj = params[0]
         mult = params[1]
         kwargs = self.get_kwargs(obj, mult)
@@ -135,10 +137,10 @@ class Optim(object):
             bestAllocation = self.get_best(runOutputs)
             scaledAllocation = on.utils.scale_alloc(kwargs['free'], bestAllocation)
             totalAllocation = on.utils.add_fixed_alloc(self.fixed, scaledAllocation, kwargs['keep_inds'])
-            bestAllocationDict = self.create_dict(totalAllocation)
+            bestAllocationDict = totalAllocation
         else:
             # if no money to distribute, return the fixed costs
-            bestAllocationDict = self.create_dict(self.fixed)
+            bestAllocationDict = self.fixed
         return bestAllocationDict
 
     def print_status(self, objective, multiple, flag, now):
@@ -148,12 +150,6 @@ class Optim(object):
     def get_best(self, outputs):
         bestSample = min(outputs, key=lambda item: item[-1])
         return bestSample[0]
-
-    def create_dict(self, allocations):
-        """Ensure keys and values have matching orders"""
-        keys = [program.name for program in self.programs]
-        returnDict = {key: value for key, value in zip(keys, allocations)}
-        return returnDict
 
     def _filter_progs(self, obj):
         if self.filter_progs:
@@ -181,201 +177,6 @@ class Optim(object):
             return keep_inds
         else:
             return [i for i in range(len(self.programs))]
-
-    def get_optimal_model(self): # todo; won't work b/c we have multiple budgets for allocation
-        model = self.run_model(self.optim_alloc)
-        return model
-
-    def run_model(self, alloc):
-        model = copy.deepcopy(self.model)
-        covs = self.get_covs(alloc)
-        model.run_sim(covs, restrictedCov=False)
-        return model
-
-    def get_covs(self, alloc):
-        covs = []
-        for prog in self.programs:
-            covs.append(prog.func(alloc[prog.name]))
-        return covs
-
-    def interpolateBOC(self, objective, spending, outcome):
-        # need BOC for each objective in region
-        # spending, outcome = self.getBOCvectors(objective)
-        self.BOCs[objective] = scipy.interpolate.pchip(spending, outcome, extrapolate=False)
-
-    def getBOCvectors(self, objective, budgetMultiples):
-        spending = numpy.array([])
-        outcome = numpy.array([])
-        for multiple in budgetMultiples:
-            spending = numpy.append(spending, multiple * self.free)
-            filePath = '{}/{}_{}_{}.pkl'.format(self.resultsDir, self.name, objective, multiple)
-            f = open(filePath, 'rb')
-            thisAllocation = cPickle.load(f)
-            f.close()
-            output = self.oneModelRunWithOutput(thisAllocation).getOutcome(objective)
-            outcome = numpy.append(outcome, output)
-        return spending, outcome
-
-    # ########### FILE HANDLING ############
-    # # TODO: remove this, new results handling
-    #
-    # def writeToPickle(self, allocation, multiple, objective):
-    #     fileName = '{}/{}_{}_{}.pkl'.format(self.resultsDir, self.name, objective, multiple)
-    #     outfile = open(fileName, 'wb')
-    #     cPickle.dump(allocation, outfile)
-    #     return
-    #
-    # def readPickles(self):
-    #     allocations = {}
-    #     for objective in self.objectives:
-    #         allocations[objective] = {}
-    #         for multiple in self.budgetMultiples:
-    #             filename = '{}/{}_{}_{}.pkl'.format(self.resultsDir, self.name, objective, multiple)
-    #             f = open(filename, 'rb')
-    #             allocations[objective][multiple] = cPickle.load(f)
-    #             f.close()
-    #     return allocations
-    #
-    # def getOutcome(self, allocation, objective):
-    #     model = self.oneModelRunWithOutput(allocation)
-    #     outcome = model.getOutcome(objective)
-    #     return outcome
-    #
-    # def oneModelRunWithOutput(self, allocationDictionary):
-    #     model = copy.deepcopy(self.model)
-    #     newCoverages = self.getCoverages(allocationDictionary)
-    #     model.simulateScalar(newCoverages, restrictedCov=False)
-    #     return model
-    #
-    # def getOptimisedOutcomes(self, allocations):
-    #     outcomes = {}
-    #     for objective in self.objectives:
-    #         outcomes[objective] = {}
-    #         for multiple in self.budgetMultiples:
-    #             thisAllocation = allocations[objective][multiple]
-    #             outcomes[objective][multiple] = self.getOutcome(thisAllocation, objective)
-    #     return outcomes
-    #
-    # def getCurrentOutcome(self, currentSpending):
-    #     currentOutcome = {}
-    #     for objective in self.objectives:
-    #         currentOutcome[objective] = {}
-    #         currentOutcome[objective]['current spending'] = self.getOutcome(currentSpending, objective)
-    #     return currentOutcome
-    #
-    # def getZeroSpendingOutcome(self):
-    #     zeroSpending = {program.name: 0 for program in self.programs}
-    #     baseline = {}
-    #     for objective in self.objectives:
-    #         baseline[objective] = {}
-    #         baseline[objective]['zero spending'] = self.getOutcome(zeroSpending, objective)
-    #     return baseline
-    #
-    # def getReferenceOutcome(self, refSpending):
-    #     reference = {}
-    #     for objective in self.objectives:
-    #         reference[objective] = {}
-    #         reference[objective]['reference spending'] = self.getOutcome(refSpending, objective)
-    #     return reference
-    #
-    # def getCoverages(self, allocations):
-    #     newCoverages = {}
-    #     for program in self.programs:
-    #         newCoverages[program.name] = program.costcov_func(allocations[program.name]) / program.unrestr_popsize
-    #     return newCoverages
-    #
-    # def writeAllResults(self):
-    #     currentSpending = self.create_dict(self.curr)
-    #     currentOutcome = self.getCurrentOutcome(currentSpending)
-    #     referenceSpending = self.create_dict(self.refs)
-    #     referenceOutcome = self.getReferenceOutcome(referenceSpending)
-    #     optimisedAllocations = self.readPickles()
-    #     optimisedOutcomes = self.getOptimisedOutcomes(optimisedAllocations)
-    #     currentAdditionalList = [a - b for a, b in zip(self.curr, self.refs)]
-    #     currentAdditional = self.create_dict(currentAdditionalList)
-    #     optimisedAdditional = self.getOptimisedAdditional(optimisedAllocations)
-    #     coverages = self.getOptimalCoverages(optimisedAllocations)
-    #     self.writeOutcomesToCSV(referenceOutcome, currentOutcome, optimisedOutcomes)
-    #     self.writeAllocationsToCSV(referenceSpending, currentAdditional, optimisedAdditional)
-    #     self.writeCoveragesToCSV(coverages)
-    #
-    # def getOptimisedAdditional(self, optimised):
-    #     fixedCostsDict = self.create_dict(self.fixed)
-    #     optimisedAdditional = {}
-    #     for objective in self.objectives:
-    #         optimisedAdditional[objective] = {}
-    #         for multiple in self.budgetMultiples:
-    #             add_funds = optimised[objective][multiple]
-    #             optimisedAdditional[objective][multiple] = {}
-    #             for programName in add_funds.iterkeys():
-    #                 optimisedAdditional[objective][multiple][programName] = add_funds[programName] - \
-    #                                                                         fixedCostsDict[programName]
-    #     return optimisedAdditional
-    #
-    # def getOptimalCoverages(self, optimisedAllocations):
-    #     coverages = {}
-    #     for objective in self.objectives:
-    #         coverages[objective] = {}
-    #         for multiple in self.budgetMultiples:
-    #             coverages[objective][multiple] = {}
-    #             allocations = optimisedAllocations[objective][multiple]
-    #             for program in self.programs:
-    #                 # this gives the restricted coverage
-    #                 coverages[objective][multiple][program.name] = "{0:.2f}".format(
-    #                     (program.costcov_func(allocations[program.name]) / program.restr_popsize) * 100.)
-    #     return coverages
-    #
-    # def writeCoveragesToCSV(self, coverages):
-    #     filename = '{}/{}_coverages.csv'.format(self.resultsDir, self.name)
-    #     with open(filename, 'wb') as f:
-    #         w = writer(f)
-    #         for objective in self.objectives:
-    #             w.writerow([''])
-    #             w.writerow([objective] + sorted(coverages[objective][self.budgetMultiples[0]].keys()))
-    #             for multiple in self.budgetMultiples:
-    #                 coverage = OrderedDict(sorted(coverages[objective][multiple].items()))
-    #                 w.writerow([multiple] + coverage.values())
-    #
-    # def writeOutcomesToCSV(self, reference, current, optimised):
-    #     allOutcomes = {}
-    #     for objective in self.objectives:
-    #         allOutcomes[objective] = {}
-    #         allOutcomes[objective].update(reference[objective])
-    #         allOutcomes[objective].update(current[objective])
-    #         allOutcomes[objective].update(optimised[objective])
-    #     filename = '{}/{}_outcomes.csv'.format(self.resultsDir, self.name)
-    #     budgets = ['reference spending', 'current spending'] + self.budgetMultiples
-    #     with open(filename, 'wb') as f:
-    #         w = writer(f)
-    #         for objective in self.objectives:
-    #             w.writerow([objective])
-    #             for multiple in budgets:
-    #                 outcome = allOutcomes[objective][multiple]
-    #                 w.writerow(['', multiple, outcome])
-    #
-    # def writeAllocationsToCSV(self, reference, current, optimised):
-    #     allSpending = {}
-    #     for objective in self.objectives:  # do i use this loop?
-    #         allSpending[objective] = {}
-    #         allSpending[objective].update(current)
-    #         allSpending[objective].update(reference)
-    #         allSpending[objective].update(optimised[objective])
-    #     filename = '{}/{}_allocations.csv'.format(self.resultsDir, self.name)
-    #     with open(filename, 'wb') as f:
-    #         w = writer(f)
-    #         sortedRef = OrderedDict(sorted(reference.items()))
-    #         w.writerow(['reference'] + sortedRef.keys())
-    #         w.writerow([''] + sortedRef.values())
-    #         w.writerow([''])
-    #         sortedCurrent = OrderedDict(sorted(current.items()))
-    #         w.writerow(['current'] + sortedCurrent.keys())
-    #         w.writerow([''] + sortedCurrent.values())
-    #         for objective in self.objectives:
-    #             w.writerow([''])
-    #             w.writerow([objective] + sorted(optimised[objective][self.budgetMultiples[0]].keys()))
-    #             for multiple in self.budgetMultiples:
-    #                 allocation = OrderedDict(sorted(optimised[objective][multiple].items()))
-    #                 w.writerow([multiple] + allocation.values())
 
 def obj_func(allocation, obj, model, free, fixed, keep_inds, sign):
     thisModel = copy.deepcopy(model)

@@ -8,17 +8,17 @@ class Scen(object):
         self.name = name
         self.t = t
         self.prog_set = prog_set
+        self.active = active
+
         self.year_names = range(self.t[0], self.t[1]+1)
         self.all_years = range(len(self.year_names)) # used to index lists
-
-        self.prog_info = dcp(prog_info)
-        self.pops = dcp(pops)
-        self.model = model.Model(name, self.pops, self.prog_info, self.all_years)
-        self.active = active
+        prog_info = dcp(prog_info)
+        pops = dcp(pops)
+        self.model = model.Model(name, pops, prog_info, self.all_years)
 
     def run_scen(self):
         """ Define the coverage scenario (list of lists) then run the simulation """
-        covs = self.prog_info.get_cov_scen(self.scen_type, self.scen)
+        covs = self.model.prog_info.get_cov_scen(self.scen_type, self.scen)
         self.model.run_sim(covs, restr_cov=False) # coverage restricted in previous func
 
 def make_scens(country, region, user_opts):

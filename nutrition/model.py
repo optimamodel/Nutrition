@@ -537,29 +537,15 @@ class Model:
             age_group.anaemia_dist['Anaemic'] = newProb
             age_group.anaemia_dist['Not anaemic'] = 1-newProb
 
-    def _get_parset(self):
-        """ Returns the full parameter set used by the model
-        Mortality rates
-        prevalences
-        frac poor, in food groups, attendance
-        program coverages, unit costs"""
-        pass
-
     def get_outcome(self, outcome):
         if outcome == 'total_stunted':
             return sum(self.stunted)
-        elif outcome == 'neg_child_healthy_children_rate':
-            return -sum(self.child_healthy) / sum(self.child_exit)
-        elif outcome == 'neg_child_healthy_children':
-            return -sum(self.child_healthy)
         elif outcome == 'child_healthy_children':
             return sum(self.child_healthy)
         elif outcome == 'stunting_prev':
             return self.children.getTotalFracStunted()
         elif outcome == 'thrive':
             return sum(self.child_thrive)
-        elif outcome == 'neg_thrive':
-            return -sum(self.child_thrive)
         elif outcome == 'deaths_children':
             return sum(self.child_deaths)
         elif outcome == 'deaths_PW':
@@ -572,27 +558,5 @@ class Model:
             return self.child_deaths[-1] / self.child_exit[-1]
         elif outcome == 'mortality_rate_PW':
             return self.pw_deaths[-1] / self.pw_exit[-1]
-        elif outcome == 'neonatal_deaths':
-            neonates = self.children.age_groups[0]
-            return neonates.getCumulativeDeaths()
-        elif outcome == 'anaemia_prev_PW':
-            return self.pw.getTotalFracAnaemic()
-        elif outcome == 'anaemia_prev_WRA':
-            return self.nonpw.getTotalFracAnaemic()
-        elif outcome == 'anaemia_prev_children':
-            return self.children.getTotalFracAnaemic()
-        elif outcome == 'total_anaemia_prev':
-            totalPop = 0
-            totalAnaemic = 0
-            for pop in self.pops:
-                totalPop += pop.get_totalpop()
-                totalAnaemic += pop.getTotalNumberAnaemic()
-            return totalAnaemic / totalPop
-        elif outcome == 'wasting_prev':
-            return self.children.getTotalFracWasted()
-        elif outcome == 'SAM_prev':
-            return self.children.getFracWastingCat('SAM')
-        elif outcome == 'MAM_prev':
-            return self.children.getFracWastingCat('MAM')
         else:
             raise Exception('::: ERROR: outcome string not found ' + str(outcome) + ' :::')

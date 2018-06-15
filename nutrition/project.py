@@ -2,6 +2,7 @@ from sciris.core import odict, uuid, today, gitinfo, objrepr, getdate, printv, m
 from .model import Model
 from .scenarios import default_scens
 from .optimisation import default_optims
+from .results import ScenResult, OptimResult
 from . import version
 
 #######################################################################################################
@@ -171,7 +172,8 @@ class Project(object):
         scens = dcp(self.scens)
         for scen in scens.itervalues():
             scen.run_scen()
-            self.add_result(scen)
+            result = ScenResult(scen)
+            self.add_result(result)
 
     def default_scens(self, key='default', dorun=None):
         default_scens(self, key=key, dorun=dorun)
@@ -185,7 +187,8 @@ class Project(object):
         optims = dcp(self.optims)
         for optim in optims.itervalues():
             optim.run_optim()
-            self.add_result(optim)
+            result = OptimResult(optim)
+            self.add_result(result)
 
     def get_results(self, result_key):
         return self.results[result_key]
