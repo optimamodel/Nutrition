@@ -34,27 +34,27 @@ class OptimResult(object):
         self.programs = optim.model.prog_info.programs
         self.optim_allocs = optim.optim_allocs
         self.curr_alloc = optim.curr
-        self.optim_scens = self.get_optim_scens()
-        self.curr_scen = self.get_curr_scen()
+        self.optim_scens = self._get_optim_scens()
+        self.curr_scen = self._get_curr_scen()
 
-    def get_optim_scens(self):
+    def _get_optim_scens(self):
         optim_scens = []
         for i, comb in enumerate(self.combs):
             alloc = self.optim_allocs[i]
-            optim_model = self.run_model(alloc)
+            optim_model = self._run_model(alloc)
             optim_scens.append(Result(optim_model, comb, alloc))
         return optim_scens
 
-    def get_curr_scen(self):
-        curr_model = self.get_curr_model()
+    def _get_curr_scen(self):
+        curr_model = self._get_curr_model()
         curr_scen = Result(curr_model, 'curr', self.curr_alloc)
         return curr_scen
 
-    def get_curr_model(self):
-        curr_model = self.run_model(self.curr_alloc)
+    def _get_curr_model(self):
+        curr_model = self._run_model(self.curr_alloc)
         return curr_model
 
-    def run_model(self, alloc):
+    def _run_model(self, alloc):
         model = copy.deepcopy(self.model)
         covs = self.get_covs(alloc)
         model.run_sim(covs, restr_cov=False)

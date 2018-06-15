@@ -65,11 +65,9 @@ class Model:
 
     def _track_outcomes(self):
         oldest = self.children.age_groups[-1]
-        # self.child_exit[self.year] += oldest.pop_size * oldest.ageingRate
         self.stunted[self.year] += oldest.get_num_stunted() * oldest.ageingRate
         self.child_thrive[self.year] += oldest.get_num_notstunted() * oldest.ageingRate
         self.child_not_anaemic[self.year] += oldest.get_num_notanaemic() * oldest.ageingRate
-        # self.child_healthy[self.year] += oldest.getAgeGroupNumberHealthy() * oldest.ageingRate
 
     def _track_prevs(self):
         self.stunting_prev[self.year] = self.children.getTotalFracStunted()
