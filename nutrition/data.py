@@ -20,6 +20,7 @@ class DefaultParams(object):
         self.rr_age_order = None
         self.rr_interval = None
         self.or_bf_prog = None
+        self.man_mam = False
         # read data
         self.spreadsheet = pandas.ExcelFile(default_path)
         self.input_path = input_path
@@ -31,6 +32,7 @@ class DefaultParams(object):
         self.spreadsheet = None
 
     def read_spreadsheet(self):
+        self.extend_treatsam()
         self.impact_pop()
         self.prog_risks()
         self.pop_risks()
@@ -44,6 +46,12 @@ class DefaultParams(object):
         self.get_bo_risks()
         packages = self.define_iycf()
         self.get_iycf_effects(packages)
+
+    def extend_treatsam(self):
+        treatsam = pandas.read_excel(self.input_path, sheetname='Treatment of SAM')
+        add_man = treatsam.iloc[0]['Add extension']
+        if pandas.notnull(add_man):
+            self.man_mam = True
 
     def impact_pop(self):
         sheet = self.read_sheet('Programs impacted population', [0,1])
@@ -128,8 +136,11 @@ class DefaultParams(object):
 
     def wasting_progs(self):
         wastingSheet = self.read_sheet('Programs wasting', [0,1])
-        self.or_wasting_prog['SAM'] = wastingSheet.loc['Odds ratio of SAM when covered by program'].to_dict(orient='index')
-        self.or_wasting_prog['MAM'] = wastingSheet.loc['Odds ratio of MAM when covered by program'].to_dict(orient='index')
+        treatsam = wastingSheet.loc['Odds ratio of SAM when covered by program'].to_dict(orient='index')
+        manman = wastingSheet.loc['Odds ratio of MAM when covered by program'].to_dict(orient='index')
+        self.or_wasting_prog['SAM'] = treatsam
+        if self.man_mam:
+            self.or_wasting_prog['MAM'] = {'Treatment of SAM': manman['Management of MAM'] }
 
     def get_child_progs(self):
         self.child_progs = self.read_sheet('Programs for children', [0,1,2], 'dict')
