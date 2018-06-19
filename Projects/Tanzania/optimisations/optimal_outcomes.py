@@ -13,9 +13,8 @@ regions = ['Arusha', 'Dar_es_Salaam', 'Dodoma', 'Kaskazini_Pemba', 'Kaskazini_Un
 
 date = '2018May07'
 scenarios = ['optimisedCurrent', 'additionalPerCapita', 'scenario1', 'scenario3']
-# scenarios = ['additionalPerCapita', 'scenario1']
 objectives = ['thrive_notanaemic']
-outcomes = ['thrive_notanaemic', 'healthy_children', 'thrive', 'total_stunted', 'wasting_prev', 'anaemia_prev_children', 'deaths_children',
+outcomes = ['thrive_notanaemic', 'healthy_children', 'thrive', 'stunting_prev', 'total_stunted', 'wasting_prev', 'anaemia_prev_children', 'deaths_children',
             'neonatal_deaths', 'child_population']
 
 # first optimised current and additional per capita
