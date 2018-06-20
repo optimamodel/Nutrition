@@ -132,7 +132,7 @@ class Optim(object):
             for run in range(self.num_runs):
                 now = time.time()
                 x0, fopt = pso.pso(obj_func, xmin, xmax, kwargs=kwargs, maxiter=self.maxiter, swarmsize=self.swarmsize)
-                x, fval, flag = asd.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=0)
+                x, fval, flag = asd.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=0, maxtime=30)
                 runOutputs.append((x, fval[-1]))
                 self.print_status(obj, mult, flag, now)
             bestAllocation = self.get_best(runOutputs)
