@@ -10,6 +10,8 @@ def make_plots(res, toplot):
         prevfig = plot_prevs(res)
         allplots['prevs'] = prevfig
     if 'outputs' in toplot:
+        outfig = plot_outputs(res)
+        allplots['outputs'] = outfig
     return allplots
 
 def plot_prevs(res):
