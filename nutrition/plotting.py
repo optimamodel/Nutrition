@@ -8,15 +8,16 @@ def make_plots(res, toplot):
     if 'prevs' in toplot:
         prevfig = plot_prevs(res)
         allplots['prevs'] = prevfig
-    if 'outputs' in toplot:
-        outfig = plot_outputs(res)
-        allplots['outputs'] = outfig
+    # if 'outputs' in toplot: # todo: want to compare outcomes across scenarios
+    #     outfig = plot_outputs(res)
+    #     allplots['outputs'] = outfig
     if 'alloc' in toplot: # optimised allocations
         bars = plot_alloc(res)
         allplots['alloc'] = bars
     return allplots
 
 def plot_prevs(res):
+    # todo: if this is OptimResult, then need to access all the Scens to plot these prevs
     years = res.year_names
     allattr = res.model_attr()
     prevs = [attr for attr in allattr if 'prev' in attr]
@@ -33,17 +34,17 @@ def plot_prevs(res):
         row.plot(years, out)
     return fig
 
-def plot_outputs(res): # todo: this is not the desired usage
-    outcomes = ['thrive', 'child_deaths']
-    years = res.year_names
-    outputs = res.get_outputs(outcomes, seq=True)
-    fig, ax = pl.subplots(nrows=len(outputs),ncols=1, sharex=True)
-    pl.xlabel('Years')
-    pl.suptitle('Risk prevalences')
-    for i, row in enumerate(ax):
-        out = outputs[i]
-        row.plot(years, out)
-    return fig
+# def plot_outputs(res): # todo: this is not the desired usage
+#     outcomes = ['thrive', 'child_deaths'] # not all yet, since not tracking them
+#     years = res.year_names
+#     outputs = res.get_outputs(outcomes, seq=True)
+#     fig, ax = pl.subplots(nrows=len(outputs),ncols=1, sharex=True)
+#     pl.xlabel('Years')
+#     pl.suptitle('Risk prevalences')
+#     for i, row in enumerate(ax):
+#         out = outputs[i]
+#         row.plot(years, out)
+#     return fig
 
 def plot_alloc(res):
     """ Plot the program allocations from an optimization, alongside current allocation """
