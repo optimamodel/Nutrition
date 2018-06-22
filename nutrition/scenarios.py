@@ -43,7 +43,7 @@ def default_scens(project, key='default', dorun=False):
     region = 'default'
 
     defaults = data.ScenOptsTest(key, 'coverage')
-    opts = [utils.ScenOpts(**defaults.get_attr())]
+    opts = [utils.ScenOpts(**defaults.get_attr())] # todo: more than 1 default scen will require another key
     scen_list = make_scens(country, region, opts)
     project.add_scens(scen_list)
 

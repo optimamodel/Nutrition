@@ -207,8 +207,8 @@ def make_optims(country, region, user_opts):
     return optim_list
 
 def default_optims(project, key='default', dorun=False):
-    country = 'master'
-    region = 'master'
+    country = 'default'
+    region = 'default'
 
     defaults = on.data.OptimOptsTest(key)
     opts = [on.utils.OptimOpts(**defaults.get_attr())]

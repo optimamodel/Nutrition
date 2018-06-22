@@ -566,7 +566,7 @@ class ScenOptsTest(object):
         self.prog_set = []
         self.scen_type = scen_type
         self.scen = {}
-        self.t = [2017, 2030]
+        self.t = [2017, 2025]
 
         self.get_prog_set()
         if 'ov' in scen_type: # coverage scenario
