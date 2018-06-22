@@ -161,7 +161,7 @@ class Optim(object):
             zero_cov = [0 for prog in self.programs]
             zero_model = copy.deepcopy(self.model)
             zero_model.run_sim(zero_cov, restr_cov=True)
-            zero_out = zero_model.get_outcome(obj)
+            zero_out = zero_model.get_output(obj)
             for i, prog in enumerate(self.programs):
                 thismodel = copy.deepcopy(self.model)
                 thiscov = copy.deepcopy(zero_cov)
@@ -170,7 +170,7 @@ class Optim(object):
                 if prog.twin_ind:
                     thiscov[prog.twin_ind] = newcov
                 thismodel.run_sim(thiscov)
-                out = thismodel.get_outcome(obj)
+                out = thismodel.get_output(obj)
                 if abs((out - zero_out) / zero_out) * 100. > threshold:  # no impact
                     keep_inds.append(i)
                     if prog.twin_ind:
@@ -190,7 +190,7 @@ def obj_func(allocation, obj, model, free, fixed, keep_inds, sign):
     for i, program in enumerate(programs):
         new_covs.append( program.func(totalAllocations[i]) )
     thisModel.run_sim(new_covs, restr_cov=False)
-    outcome = thisModel.get_outcome(obj) * sign
+    outcome = thisModel.get_output(obj) * sign
     return outcome
 
 def make_optims(country, region, user_opts):

@@ -1,25 +1,45 @@
-def make_plots(results):
+import pylab as pl, numpy as np, matplotlib.ticker as tk
+
+
+def make_plots(res, toplot):
     """ Results is a Scen object from which all information can be extracted """
-    # HARDCODED JUST FOR DEMONSTRATION PURPOSES
+    # TODO: generate all plots, only show those requested
     ## Initialize
-    import pylab as pl
-    mymodel = results.model
-    years = results.year_names
-    figsize = (5,3)
-    axsize = (0.15, 0.15, 0.8, 0.8)
-    fig = pl.figure(facecolor='none', figsize=figsize)
+    allplots = {}
+    if 'prevs' in toplot:
+        prevfig = plot_prevs(res)
+        allplots['prevs'] = prevfig
+    if 'outputs' in toplot:
+    return allplots
 
-    outcome = round_elements(mymodel.wasting_prev, 1)
-    ax2 = fig.add_axes(axsize)
-    ax2.set_ylabel('Wasting prevalence (%)')
-    ax2.set_xlabel('Year')
-    ax2.plot(years, outcome)
-    ax2.set_facecolor('none')
-    ax2.set_ylim((0,pl.ylim()[1]))
-
-    pl.show()
+def plot_prevs(res):
+    years = res.year_names
+    allattr = res.model_attr()
+    prevs = [attr for attr in allattr if 'prev' in attr]
+    outputs = res.get_outputs(prevs, seq=True)
+    fig, ax = pl.subplots(nrows=len(prevs),ncols=1, sharex=True)
+    pl.xlabel('Years')
+    pl.suptitle('Risk prevalences')
+    for i, row in enumerate(ax):
+        out = outputs[i]
+        # out = round_elements(out)
+        label = prevs[i]
+        row.yaxis.set_major_formatter(tk.FormatStrFormatter('%.1f'))
+        row.set_ylabel(label)
+        row.plot(years, out)
     return fig
 
+def plot_outputs(res): # todo: this is not the desired usage
+    outcomes = ['thrive', 'child_deaths']
+    years = res.year_names
+    outputs = res.get_outputs(outcomes, seq=True)
+    fig, ax = pl.subplots(nrows=len(outputs),ncols=1, sharex=True)
+    pl.xlabel('Years')
+    pl.suptitle('Risk prevalences')
+    for i, row in enumerate(ax):
+        out = outputs[i]
+        row.plot(years, out)
+    return fig
 
 def round_elements(mylist, dec):
     return [round(x * 100, dec) for x in mylist]

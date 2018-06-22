@@ -57,7 +57,7 @@ class Model:
         self.child_exit = [0]*len(self.all_years)
         self.pw_exit = [0]*len(self.all_years)
         self.stunted = [0]*len(self.all_years)
-        self.child_thrive = [0]*len(self.all_years)
+        self.thrive = [0]*len(self.all_years)
         self.child_not_anaemic = [0]*len(self.all_years)
         self.neo_deaths = [0]*len(self.all_years)
         self.births = [0]*len(self.all_years)
@@ -66,7 +66,7 @@ class Model:
     def _track_outcomes(self):
         oldest = self.children.age_groups[-1]
         self.stunted[self.year] += oldest.get_num_stunted() * oldest.ageingRate
-        self.child_thrive[self.year] += oldest.get_num_notstunted() * oldest.ageingRate
+        self.thrive[self.year] += oldest.get_num_notstunted() * oldest.ageingRate
         self.child_not_anaemic[self.year] += oldest.get_num_notanaemic() * oldest.ageingRate
 
     def _track_prevs(self):
@@ -535,26 +535,19 @@ class Model:
             age_group.anaemia_dist['Anaemic'] = newProb
             age_group.anaemia_dist['Not anaemic'] = 1-newProb
 
-    def get_outcome(self, outcome):
-        if outcome == 'total_stunted':
-            return sum(self.stunted)
-        elif outcome == 'child_healthy_children':
-            return sum(self.child_healthy)
-        elif outcome == 'stunting_prev':
-            return self.children.getTotalFracStunted()
-        elif outcome == 'thrive':
-            return sum(self.child_thrive)
-        elif outcome == 'deaths_children':
-            return sum(self.child_deaths)
-        elif outcome == 'deaths_PW':
-            return sum(self.pw_deaths)
-        elif outcome == 'total_deaths':
-            return sum(self.pw_deaths + self.child_deaths)
-        elif outcome == 'mortality_rate':
-            return (self.child_deaths[-1] + self.pw_deaths[-1])/(self.child_exit[-1] + self.pw_exit[-1])
-        elif outcome == 'mortality_rate_children':
-            return self.child_deaths[-1] / self.child_exit[-1]
-        elif outcome == 'mortality_rate_PW':
-            return self.pw_deaths[-1] / self.pw_exit[-1]
+    def get_seq(self, outcome):
+        try:
+            return getattr(self, outcome)
+        except AttributeError:
+            raise Exception(" ::ERROR:: {} not an attribute of Model class ".format(outcome))
+
+    def get_output(self, outcome, seq=False):
+        # todo: could add in __dict__ call to list all attributes, then do partial string matching to find the correct one
+        outlist = self.get_seq(outcome)
+        if seq: # return entire list
+            return outlist
         else:
-            raise Exception('::: ERROR: outcome string not found ' + str(outcome) + ' :::')
+            if 'prev' in outcome: # only want final entry
+                return outlist[-1]
+            else: # want total
+                return sum(outlist)

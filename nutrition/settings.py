@@ -40,7 +40,7 @@ def data_path(country, region, sim_type):
 def default_opts_path():
     parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
     progname = 'default_options.xlsx'
-    subdir = os.path.join('applications', 'master', 'data', 'national', progname)
+    subdir = os.path.join('applications', 'default', 'data', 'national', progname)
     progpath = os.path.join(parentfolder, subdir)
     return progpath
 

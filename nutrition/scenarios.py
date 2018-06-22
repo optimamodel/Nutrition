@@ -39,8 +39,8 @@ def make_scens(country, region, user_opts):
     return scen_list
 
 def default_scens(project, key='default', dorun=False):
-    country = 'master'
-    region = 'master'
+    country = 'default'
+    region = 'default'
 
     defaults = data.ScenOptsTest(key, 'coverage')
     opts = [utils.ScenOpts(**defaults.get_attr())]
