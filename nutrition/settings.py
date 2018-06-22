@@ -1,6 +1,5 @@
 import os, itertools
 
-
 class Settings(object):
     """ Store all the statis data for a project that won't change except between Optima versions
     WARNING: Do not change the order of these lists without checking the potential consequences within the code """
@@ -40,13 +39,13 @@ def data_path(country, region, sim_type):
 def default_opts_path():
     parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
     progname = 'default_options.xlsx'
-    subdir = os.path.join('applications', 'master', 'data', 'national', progname)
+    subdir = os.path.join('applications', 'default', 'data', 'national', progname)
     progpath = os.path.join(parentfolder, subdir)
     return progpath
 
 def test_opts_path():
     parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-    progname = 'testing_options.xlsx'
+    progname = 'test_options.xlsx'
     subdir = os.path.join('applications', 'master', 'data', 'national', progname)
     progpath = os.path.join(parentfolder, subdir)
     return progpath

@@ -186,55 +186,8 @@ class ChildAgeGroup(object):
         num_notanamic = self.pop_size - (self.get_num_anaemic())
         return num_notanamic
 
-    def getAgeGroupNumberThreeConditions(self):
-        numWithThree = 0
-        for stuntingCat in self.settings.stunted_list:
-            for wastingCat in self.settings.wasted_list:
-                for bfCat in self.settings.bf_list:
-                    for anaemiaCat in self.settings.anaemic_list:
-                        numWithThree += self.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat].pop_size
-        return numWithThree
-
-    def getAgeGroupNumberHealthy(self):
-        numHealthly = 0
-        for stuntingCat in self.settings.non_stunted_list:
-            for wastingCat in self.settings.non_wasted_list:
-                for bfCat in self.settings.bf_list:
-                    for anaemiaCat in self.settings.non_anaemic_list:
-                        numHealthly += self.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat].pop_size
-        return numHealthly
-
-    def getAgeGroupNumberNonStuntedNonWasted(self):
-        numNonStuntedNonWasted = 0
-        for stuntingCat in self.settings.non_stunted_list:
-            for wastingCat in self.settings.non_wasted_list:
-                for bfCat in self.settings.bf_list:
-                    for anaemiaCat in self.settings.anaemia_list:
-                        numNonStuntedNonWasted += self.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat].pop_size
-        return numNonStuntedNonWasted
-
     def get_frac_stunted(self):
         return self.get_num_stunted() / self.pop_size
-
-    def getwasting_distribution(self):
-        totalPop = self.pop_size
-        returnDict = {}
-        for wastingCat in self.settings.wasting_list:
-            returnDict[wastingCat] = 0.
-            for stuntingCat in self.settings.stunting_list:
-                for breastfeedingCat in self.settings.bf_list:
-                    for anemiaStatus in self.settings.anaemia_list:
-                        returnDict[wastingCat] += self.boxes[stuntingCat][wastingCat][breastfeedingCat][anemiaStatus].pop_size / totalPop
-        return returnDict
-
-    def getCumulativeDeaths(self):
-        deaths = 0
-        for stuntingCat in self.settings.stunting_list:
-            for wastingCat in self.settings.wasting_list:
-                for bfCat in self.settings.bf_list:
-                    for anaemiaCat in self.settings.anaemia_list:
-                        deaths += self.boxes[stuntingCat][wastingCat][bfCat][anaemiaCat].cumulativeDeaths
-        return deaths
 
     def getStuntedFrac(self):
         return sum(self.stunting_dist[cat] for cat in self.settings.stunted_list)

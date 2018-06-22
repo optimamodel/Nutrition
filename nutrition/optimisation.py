@@ -132,7 +132,7 @@ class Optim(object):
             for run in range(self.num_runs):
                 now = time.time()
                 x0, fopt = pso.pso(obj_func, xmin, xmax, kwargs=kwargs, maxiter=self.maxiter, swarmsize=self.swarmsize)
-                x, fval, flag = asd.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=0)
+                x, fval, flag = asd.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=0, maxtime=30)
                 runOutputs.append((x, fval[-1]))
                 self.print_status(obj, mult, flag, now)
             bestAllocation = self.get_best(runOutputs)
@@ -161,7 +161,7 @@ class Optim(object):
             zero_cov = [0 for prog in self.programs]
             zero_model = copy.deepcopy(self.model)
             zero_model.run_sim(zero_cov, restr_cov=True)
-            zero_out = zero_model.get_outcome(obj)
+            zero_out = zero_model.get_output(obj)
             for i, prog in enumerate(self.programs):
                 thismodel = copy.deepcopy(self.model)
                 thiscov = copy.deepcopy(zero_cov)
@@ -170,7 +170,7 @@ class Optim(object):
                 if prog.twin_ind:
                     thiscov[prog.twin_ind] = newcov
                 thismodel.run_sim(thiscov)
-                out = thismodel.get_outcome(obj)
+                out = thismodel.get_output(obj)
                 if abs((out - zero_out) / zero_out) * 100. > threshold:  # no impact
                     keep_inds.append(i)
                     if prog.twin_ind:
@@ -190,7 +190,7 @@ def obj_func(allocation, obj, model, free, fixed, keep_inds, sign):
     for i, program in enumerate(programs):
         new_covs.append( program.func(totalAllocations[i]) )
     thisModel.run_sim(new_covs, restr_cov=False)
-    outcome = thisModel.get_outcome(obj) * sign
+    outcome = thisModel.get_output(obj) * sign
     return outcome
 
 def make_optims(country, region, user_opts):
@@ -207,8 +207,8 @@ def make_optims(country, region, user_opts):
     return optim_list
 
 def default_optims(project, key='default', dorun=False):
-    country = 'master'
-    region = 'master'
+    country = 'default'
+    region = 'default'
 
     defaults = on.data.OptimOptsTest(key)
     opts = [on.utils.OptimOpts(**defaults.get_attr())]

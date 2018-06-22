@@ -196,3 +196,7 @@ class Project(object):
     def sensitivity(self):
         print('Not implemented')
 
+def default_project():
+    name = 'default'
+    p = Project(name)
+    return p

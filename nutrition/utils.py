@@ -116,7 +116,7 @@ class ScenOpts(Opts):
         self.scen_type = scen_type
 
 class OptimOpts(Opts):
-    def __init__(self, name, prog_set, t, mults, fix_curr, add_funds, objs, filter_progs):
+    def __init__(self, name, prog_set, t, mults, fix_curr, add_funds, objs, filter_progs=False):
         Opts.__init__(self, name, prog_set, t)
         # self.optim_type = optim_type
         self.mults = mults

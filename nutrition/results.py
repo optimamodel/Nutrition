@@ -8,11 +8,14 @@ class ScenResult(object):
         self.pops = self.model.pops
         self.year_names = res.year_names
 
-    def get_outcomes(self, outcomes):
+    def get_outputs(self, outcomes, seq=False):
         """ outcomes: a list of model outcomes to return
          return: a dict of (outcome,output) pairs"""
-        outs = {name:self.model.get_outcome(name) for name in outcomes}
+        outs = [self.model.get_output(name, seq=seq) for name in outcomes]
         return outs
+
+    def model_attr(self):
+        return self.model.__dict__
 
 class Result(object):
     def __init__(self, model, comb, alloc):
@@ -21,14 +24,18 @@ class Result(object):
         self.comb = comb
         self.alloc = alloc
 
-    def get_outcomes(self, outcomes):
-        outs = {name:self.model.get_outcome(name) for name in outcomes}
+    def get_outputs(self, outcomes, seq=False):
+        outs = [self.model.get_output(name, seq=seq) for name in outcomes]
         return outs
+
+    def model_attr(self):
+        return self.model.__dict__
 
 class OptimResult(object):
     def __init__(self, optim):
         self.name = optim.name
         self.model = optim.model
+        self.mults = optim.mults
         self.combs = optim.combs
         self.year_names = optim.year_names
         self.programs = optim.model.prog_info.programs
