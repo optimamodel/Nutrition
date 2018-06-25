@@ -28,9 +28,11 @@ def plot_prevs(res):
     for i, row in enumerate(ax):
         out = outputs[i]
         # out = round_elements(out)
+        out = round_elements(out, dec=1)
         label = prevs[i]
+        row.set_ylim([0, max(out)+max(out)*.1])
         row.yaxis.set_major_formatter(tk.FormatStrFormatter('%.1f'))
-        row.set_ylabel(label)
+        row.set_ylabel('{} (%)'.format(label))
         row.plot(years, out)
     return fig
 
