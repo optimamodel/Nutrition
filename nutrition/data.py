@@ -27,6 +27,10 @@ class DefaultParams(object):
         self.input_path = input_path
         self.read_spreadsheet()
         self.rem_spreadsheet()
+    
+    def __repr__(self):
+        output  = sc.desc(self)
+        return output
 
     def rem_spreadsheet(self):
         self.spreadsheet.close()
@@ -276,6 +280,10 @@ class InputData(object):
         self.get_incidences()
         self.get_famplan_methods()
         self.rem_spreadsheet()
+    
+    def __repr__(self):
+        output  = sc.desc(self)
+        return output
 
     def rem_spreadsheet(self):
         self.spreadsheet.close()
@@ -395,6 +403,10 @@ class ProgData(object):
         self.get_prog_info()
         self.create_iycf()
         self.rem_spreadsheet()
+    
+    def __repr__(self):
+        output  = sc.desc(self)
+        return output
 
     def rem_spreadsheet(self):
         self.spreadsheet.close()
@@ -507,6 +519,10 @@ class UserOpts(object):
         self.t = t
         self.prog_set = prog_set
         self.scen = scen
+    
+    def __repr__(self):
+        output  = sc.desc(self)
+        return output
 
     def get_attr(self):
         return self.__dict__
@@ -529,6 +545,10 @@ class OptimOptsTest(object):
         self.get_opts()
 
         delattr(self, 'spreadsheet')
+    
+    def __repr__(self):
+        output  = sc.desc(self)
+        return output
 
     def get_attr(self):
         return self.__dict__
@@ -576,6 +596,10 @@ class ScenOptsTest(object):
             self.get_budget_scen()
 
         delattr(self, 'spreadsheet')
+    
+    def __repr__(self):
+        output  = sc.desc(self)
+        return output
 
     def get_attr(self):
         return self.__dict__
@@ -617,6 +641,10 @@ class Dataset(object):
         if doload:
             self.load()
         return None
+    
+    def __repr__(self):
+        output  = sc.desc(self)
+        return output
     
     def load(self):
         demo_data, prog_data, default_params = get_data(self.country, self.region)

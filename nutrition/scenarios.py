@@ -1,5 +1,5 @@
 from nutrition import data, program_info, populations, model, utils
-from copy import deepcopy as dcp
+import sciris.core as sc
 
 class Scen(object):
     def __init__(self, prog_info, pops, scen_type, scen, name, t, prog_set, active=True):
@@ -12,9 +12,13 @@ class Scen(object):
 
         self.year_names = range(self.t[0], self.t[1]+1)
         self.all_years = range(len(self.year_names)) # used to index lists
-        prog_info = dcp(prog_info)
-        pops = dcp(pops)
+        prog_info = sc.dcp(prog_info)
+        pops = sc.dcp(pops)
         self.model = model.Model(name, pops, prog_info, self.all_years)
+    
+    def __repr__(self):
+        output  = sc.desc(self)
+        return output
 
     def run_scen(self):
         """ Define the coverage scenario (list of lists) then run the simulation """

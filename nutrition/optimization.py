@@ -1,4 +1,5 @@
-import nutrition as on, pso, asd, time, cPickle, copy, multiprocessing, numpy, scipy.interpolate, scipy.optimize, itertools
+import nutrition as on, pso, asd, time, copy, multiprocessing, itertools
+import sciris.core as sc
 
 class Optim(object):
     def __init__(self, prog_info, pops, name, t, objs, mults, prog_set, active=True, parallel=True, num_runs=1,
@@ -36,6 +37,10 @@ class Optim(object):
         self.fixed = None
         self.free = None
         self.get_alloc(fix_curr)
+    
+    def __repr__(self):
+        output  = sc.desc(self)
+        return output
 
     ######### SETUP ############
 
