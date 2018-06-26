@@ -2,7 +2,7 @@ from nutrition import data, program_info, populations, model, utils
 import sciris.core as sc
 
 class Scen(object):
-    def __init__(self, prog_info, pops, scen_type, scen, name, t, prog_set, active=True):
+    def __init__(self, prog_info=None, pops=None, scen_type=None, scen=None, name=None, t=None, prog_set=None, active=True):
         self.scen_type = scen_type
         self.scen = scen
         self.name = name
@@ -45,6 +45,7 @@ def make_scens(country=None, region=None, user_opts=None, json=None, project=Non
             scen = Scen(prog_info, pops, **opt.get_attr())
             scen_list.append(scen)
     if json is not None:
+        json = sc.dcp(json) # Just to be sure, probably unnecessary
         prog_info = program_info.ProgramInfo(json['prog_set'], prog_data, default_params)
         scen = Scen(prog_info, pops, json['scen_type'], json['scen'], json['name'], json['t'], json['prog_set'], active=True)
         scen_list.append(scen)

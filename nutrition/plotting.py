@@ -11,15 +11,15 @@ def make_plots(all_res, toplot=None):
     all_res = sc.promotetolist(all_res)
     allplots = sc.odict()
     if 'prevs' in toplot:
-        prevfig = plot_prevs(all_res)
-        allplots['prevs'] = prevfig
+        prevfigs = plot_prevs(all_res)
+        allplots.update(prevfigs)
     if 'outputs' in toplot:
-        outfig = plot_outputs(all_res)
-        allplots['outputs'] = outfig
+        outfigs = plot_outputs(all_res)
+        allplots.update(outfigs)
     if 'alloc' in toplot: # optimized allocations
         try:
             bars = plot_alloc(all_res)
-            allplots['alloc'] = bars
+            allplots.update(bars)
         except Exception as E:
             print('WARNING, could not plot allocation: %s' % repr(E))
     return allplots
@@ -29,11 +29,13 @@ def plot_prevs(all_res):
     """ Plot prevs for each scenario"""
     allattr = all_res[0].model_attr()
     prevs = [attr for attr in allattr if 'prev' in attr]
-    fig, ax = pl.subplots(nrows=len(prevs), ncols=1, sharex=True)
-    pl.xlabel('Years')
-    pl.suptitle('Risk prevalences')
+    
+    
     lines = []
-    for i, row in enumerate(ax):
+    figs = sc.odict()
+    for i in range(len(prevs)):
+        fig = pl.figure()
+        row = fig.add_subplot(111)
         #settings
         row.yaxis.set_major_formatter(tk.FormatStrFormatter('%.1f'))
         label = prevs[i]
@@ -52,47 +54,21 @@ def plot_prevs(all_res):
             lines.append(line)
             leglabels.append(res.name)
         row.set_ylim([0, ymax + ymax*0.1])
-    pl.figlegend(lines, [res.name for res in all_res], loc='right', ncol=1)
+        pl.xlabel('Years')
+        pl.title('Risk prevalences')
+        pl.legend(lines, [res.name for res in all_res], loc='right', ncol=1)
+        figs['prevs_%0i'%i] = fig
     
-#    fig = pl.figure()
-#    pl.plot([0,1,2,3],[2,3,4,2])
-#    pl.xlabel('foo')
-#    pl.ylabel('bar')
-#    pl.title('cat')
-    
-    # Create plot
-#    axsize  = (0.45, 0.15, 0.5, 0.8)
-#    figsize = (12,5)
-#    barw     = 0.8
-#    barcolor = (0.7,0,0.3)
-#    barvals = [4,6,3,5]
-#    thisxlabel = 'fooo'
-#    barlabels = ['foo','bar','foo','bar']
-#    unitstr = 'au'
-#    thistitle = 'oosh'
-#    fig = pl.figure(facecolor='none', figsize=figsize)
-#    ax = fig.add_axes(axsize)
-#    ax.set_facecolor('none')
-#    
-#    yaxis = pl.arange(len(barvals), 0, -1)
-#    pl.barh(yaxis, barvals, height=barw, facecolor=barcolor, edgecolor='none')
-#    ax.set_yticks(pl.arange(4, 0, -1))    
-#    ax.set_yticklabels(barlabels)
-#    
-#    sc.SIticks(ax=ax,axis='x')
-#    ax.set_xlabel(thisxlabel+unitstr)
-#    ax.set_title(thistitle)
-#    sc.boxoff()
-    return fig
+    return figs
 
 def plot_outputs(all_res):
     outcomes = ['thrive', 'child_deaths']
-    fig, ax = pl.subplots(nrows=len(outcomes),ncols=1, sharex=True)
-    pl.xlabel('Years')
-    pl.suptitle('Annual outcomes')
     width = 0.1
     bars = []
-    for i, row in enumerate(ax):
+    figs = sc.odict()
+    for i in range(len(outcomes)):
+        fig = pl.figure()
+        row = fig.add_subplot(111)
         ymax = 0
         offset = 0
         outcome = outcomes[i]
@@ -108,8 +84,11 @@ def plot_outputs(all_res):
             bars.append(bar)
         row.set_ylim([0, ymax + ymax*.1])
         pl.xticks([year + width for year in years], years)
-    pl.figlegend(bars, [res.name for res in all_res], loc='right', ncol=1)
-    return fig
+        pl.legend(bars, [res.name for res in all_res], loc='right', ncol=1)
+        pl.xlabel('Years')
+        pl.title('Annual outcomes')
+        figs['outputs_%0i'%i] = fig
+    return figs
 
 # TODO: want to compare the total outcomes across scenarios
 
@@ -123,7 +102,7 @@ def plot_alloc(all_res):
     x = np.arange(len(xlabs))
     width = 0.35
     allocs = [res.curr_alloc] + res.optim_allocs
-    charts = []
+    figs = sc.odict()
     all_y = []
     bottom = np.zeros(len(xlabs))
     for i, prog in enumerate(res.programs):
@@ -133,14 +112,16 @@ def plot_alloc(all_res):
             alloc = allocs[j]
             y = np.append(y, alloc[i])
         all_y.append(y)
-        charts.append(pl.bar(x, all_y[i], width=width, bottom=bottom))
+        fig = pl.bar(x, all_y[i], width=width, bottom=bottom)
+        
         bottom += all_y[i]
-    pl.ylabel('Funding')
-    pl.xticks(x, xlabs)
-    legendart = [p[0] for p in charts]
-    legendlab = [prog.name for prog in res.programs]
-    pl.legend(legendart, legendlab)
-    return charts
+        pl.ylabel('Funding')
+        pl.xticks(x, xlabs)
+        legendart = [p[0] for p in figs.values()]
+        legendlab = [prog.name for prog in res.programs]
+        pl.legend(legendart, legendlab)
+        figs['alloc_%0i'%i] = fig
+    return figs
 
 def round_elements(mylist, dec=1):
     return [round(x * 100, dec) for x in mylist]

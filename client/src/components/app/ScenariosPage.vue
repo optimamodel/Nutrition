@@ -16,7 +16,7 @@ Last update: 2018-05-29
     <div style="float:left">
     </div>
     <div>
-      <div v-for="index in placeholders" :id="'fig'+index" style="width:850px; float:left;">
+      <div v-for="index in placeholders" :id="'fig'+index" style="width:650px; float:left;">
         <!--mpld3 content goes here-->
       </div>
     </div>

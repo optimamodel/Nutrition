@@ -1,10 +1,12 @@
 import sciris.core as sc
+from .version import version
 from .model import Model
 from .scenarios import default_scens, make_scens
 from .optimization import default_optims
 from .results import ScenResult, OptimResult
 from .data import Dataset
-from .version import version
+from .plotting import make_plots
+
 
 #######################################################################################################
 ## Project class -- this contains everything else!
@@ -167,7 +169,7 @@ class Project(object):
         self.add_scens(scen_list)
         return None
 
-    def add_scens(self, scen_list, overwrite=True):
+    def add_scens(self, scen_list, overwrite=False):
         if overwrite: self.scens = sc.odict() # remove exist scenarios
         for scen in scen_list:
             self.add(name=scen.name, item=scen, what='scen', overwrite=True)
@@ -179,19 +181,24 @@ class Project(object):
             self.add(name=optim.name, item=optim, what='optim', overwrite=True)
         self.modified = sc.today()
 
-    def add_result(self, result):
+    def add_result(self, result, name=None):
         """Add result by name"""
-        keyname = result.name
+        try:
+            keyname = result.name
+        except:
+            keyname = name
         self.add(name=keyname, item=result, what='result')
 
     def run_scens(self, scen_list=None):
         """Function for running scenarios"""
         if scen_list is not None: self.add_scens(scen_list) # replace existing scen list with new one
         scens = sc.dcp(self.scens)
+        results = []
         for scen in scens.itervalues():
             scen.run_scen()
             result = ScenResult(scen)
-            self.add_result(result)
+            results.append(result)
+        self.add_result(results, name='Scenarios')
         return None
 
     def default_scens(self, key='default', dorun=None):
@@ -218,6 +225,11 @@ class Project(object):
 
     def sensitivity(self):
         print('Not implemented')
+    
+    
+    def plot(self, key=None, toplot=None):
+        figs = make_plots(self.result(key), toplot=toplot)
+        return figs
 
 def demo():
     ''' Create a demo project with default settings '''

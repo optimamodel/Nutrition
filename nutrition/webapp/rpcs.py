@@ -504,25 +504,23 @@ def run_default_scenario(project_id):
     print('Running default scenario...')
     proj = load_project(project_id, raise_exception=True)
     
+    from numpy import nan
+    
     json = sc.odict()
-    json['name'] = 'API test'
+    json['name'] = 'API test 1'
     json['scen_type'] = 'coverage'
     json['t'] = [2017,2025]
     json['prog_set'] = ['Cash transfers', 'IFA fortification of maize', 'IFAS for pregnant women (community)', 'IPTp', 'IYCF 1', 'Micronutrient powders', 'Treatment of SAM', 'Vitamin A supplementation', 'Zinc for treatment + ORS']
-    json['scen'] = {
-        'Vitamin A supplementation': [None, 0.94999999999999996, None, None, None, None, None, None, None], 
-        'IYCF 1': [None, 0.94999999999999996, None, None, None, None, None, None, None], 
-        'IPTp': [None, None, None, None, None, None, None, None, None], 
-        'IFA fortification of maize': [None, None, None, None, None, None, None, None, None], 
-        'Zinc for treatment + ORS': [None, None, None, None, None, None, None, None, None], 
-        'IFAS for pregnant women (community)': [None, 0.94999999999999996, None, None, None, None, None, None, None], 
-        'Treatment of SAM': [None, 0.94999999999999996, None, None, None, None, None, None, None], 
-        'Micronutrient powders': [None, None, None, None, None, None, None, None, None], 
-        'Cash transfers': [None, None, None, None, None, None, None, None, None]}
+    json['scen'] = {'Vitamin A supplementation': [nan, 0.94996, nan, nan, nan, nan, nan, nan, nan], 'IYCF 1': [nan, 0.94996, nan, nan, nan, nan, nan, nan, nan], 'IPTp': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'IFA fortification of maize': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'Zinc for treatment + ORS': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'IFAS for pregnant women (community)': [nan, 0.94996, nan, nan, nan, nan, nan, nan, nan], 'Treatment of SAM': [nan, 0.94996, nan, nan, nan, nan, nan, nan, nan], 'Micronutrient powders': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'Cash transfers': [nan, nan, nan, nan, nan, nan, nan, nan, nan]}
     proj.add_scen(json=json)
-    proj.run_scens()
     
-    figs = proj.result().plot()
+    json2 = sc.dcp(json)
+    json2['name'] = 'API test 2'
+    json2['scen'] = {'Vitamin A supplementation': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'IYCF 1': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'IPTp': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'IFA fortification of maize': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'Zinc for treatment + ORS': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'IFAS for pregnant women (community)': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'Treatment of SAM': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'Micronutrient powders': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'Cash transfers': [nan, nan, nan, nan, nan, nan, nan, nan, nan]}
+    proj.add_scen(json=json2)
+    
+    proj.run_scens()
+    figs = proj.plot()
     graphs = []
     for f,fig in enumerate(figs.values()):
         for ax in fig.get_axes():
@@ -530,14 +528,6 @@ def run_default_scenario(project_id):
         graph_dict = make_mpld3_graph_dict(fig)
         graphs.append(graph_dict)
         print('Converted figure %s of %s' % (f+1, len(figs)))
-        print('\n'*10+"TESSSSSSSSSSSSSSSSSSSSSSSSTTTTTTTTTTTTTTTTTTTTTTTTTT")
-        print('#####################################################################')
-        print('#####################################################################')
-        print('#####################################################################')
-        print(graph_dict)
-        print('#####################################################################')
-        print('#####################################################################')
-        print('#####################################################################')
     
     print('Saving project...')
     save_project(proj)    
