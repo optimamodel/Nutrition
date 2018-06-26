@@ -96,6 +96,11 @@ Last update: 2018-05-29
 
     methods: {
 
+      dcp(input) {
+        var output = JSON.parse(JSON.stringify(input))
+        return output
+      },
+
       projectID() {
         var id = this.$store.state.activeProject.project.id // Shorten this
         return id
@@ -103,7 +108,6 @@ Last update: 2018-05-29
 
       getScenSummaries() {
         console.log('getScenSummaries() called')
-
         // Get the current user's scenaro summaries from the server.
         rpcservice.rpcCall('get_scenario_info', [this.projectID()])
           .then(response => {
@@ -121,12 +125,27 @@ Last update: 2018-05-29
 
       setScenSummaries() {
         console.log('setScenSummaries() called')
-
-        // Get the current user's scenaro summaries from the server.
         rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
           .then( response => {
             this.$notifications.notify({
               message: 'Scenarios saved',
+              icon: 'ti-check',
+              type: 'success',
+              verticalAlign: 'top',
+              horizontalAlign: 'center',
+            });
+          })
+      },
+
+      copyScen(scenSummary) {
+        console.log('copyScen() called')
+        var newScen = this.dcp(scenSummary); // You've got to be kidding me, buster
+        newScen.name = newScen.name + ' (copy)'
+        this.scenSummaries.push(newScen)
+        rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
+          .then( response => {
+            this.$notifications.notify({
+              message: 'Scenario copied',
               icon: 'ti-check',
               type: 'success',
               verticalAlign: 'top',
