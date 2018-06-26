@@ -200,12 +200,8 @@ def obj_func(allocation, obj, model, free, fixed, keep_inds, sign):
 
 def make_optims(country=None, region=None, user_opts=None, json=None, project=None, dataset=None):
     # WARNING, consolidate boilerplate with make_scens
-    if project is None:
-        demo_data, prog_data, default_params = on.data.get_data(country, region)
-    else:
-        demo_data, prog_data, default_params = project.dataset(dataset).spit()
+    demo_data, prog_data, default_params, pops = on.data.get_data(country=country, region=region, project=project, dataset=dataset, withpops=True)
     optim_list = []
-    pops = on.populations.set_pops(demo_data, default_params)
     if user_opts is not None:
         for opt in user_opts: # create all of the requested optimizations
             prog_info = on.program_info.ProgramInfo(opt.prog_set, prog_data, default_params) # initialise pops and progs

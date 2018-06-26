@@ -69,6 +69,7 @@ class ONException(Exception):
 # Core functions
 from .version import version, versiondate # Specify the version, for the purposes of figuring out which version was used to create a project
 from . import utils
+from . import populations
 from . import data
 from . import settings
 from . import scenarios

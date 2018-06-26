@@ -30,13 +30,9 @@ def make_scens(country=None, region=None, user_opts=None, json=None, project=Non
     Scenarios defined by user specifications given by the GUI, while the other data remains fixed.
     These scenarios will be returned as a list so they can be added to Project
     """
-    if project is None:
-        demo_data, prog_data, default_params = data.get_data(country, region)
-    else:
-        demo_data, prog_data, default_params = project.dataset(dataset).spit()
+    demo_data, prog_data, default_params, pops = data.get_data(country=country, region=region, project=project, dataset=dataset, withpops=True)
     scen_list = []
     # create all of the requested scenarios
-    pops = populations.set_pops(demo_data, default_params)
     if user_opts is not None:
         for opt in user_opts:
             # initialise pops and progs

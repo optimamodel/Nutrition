@@ -1,5 +1,6 @@
 import settings, pandas, copy
 import sciris.core as sc
+from . import populations
 
 class DefaultParams(object):
     def __init__(self, default_path, input_path):
@@ -637,12 +638,13 @@ class ScenOptsTest(object):
 class Dataset(object):
     ''' Store all the data for a project '''
     
-    def __init__(self, country='default', region='default', demo_data=None, prog_data=None, default_params=None, name=None, doload=False):
+    def __init__(self, country='default', region='default', demo_data=None, prog_data=None, default_params=None, pops=None, name=None, doload=False):
         self.country = country
         self.region = region
         self.demo_data = demo_data
         self.prog_data = prog_data
         self.default_params = default_params
+        self.pops = pops
         if name is None: name = country+'_'+region
         self.name = name
         self.modified = sc.today()
@@ -655,16 +657,20 @@ class Dataset(object):
         return output
     
     def load(self):
-        demo_data, prog_data, default_params = get_data(self.country, self.region)
+        demo_data, prog_data, default_params, pops = get_data(self.country, self.region, withpops=True)
         self.demo_data = demo_data
         self.prog_data = prog_data
         self.default_params = default_params
+        self.pops = pops
         self.modified = sc.today()
         return None
     
-    def spit(self):
+    def spit(self, withpops=False):
         ''' Hopefully temporary method to spit out a tuple, to match get_data '''
-        output = (self.demo_data, self.prog_data, self.default_params)
+        if withpops:
+            output = (self.demo_data, self.prog_data, self.default_params)
+        else:
+            output = (self.demo_data, self.prog_data, self.default_params, self.pops)
         return output
     
     def prog_names(self):
@@ -672,18 +678,25 @@ class Dataset(object):
         return names
 
 
-def get_data(country=None, region=None, filepath=None, asobj=False):
-    sim_type = 'national' if country == region else 'regional'
-    if filepath is None:
-        input_path = settings.data_path(country, region, sim_type)
+def get_data(country=None, region=None, project=None, dataset=None, filepath=None, asobj=False, withpops=False):
+    if project is not None:
+        demo_data, prog_data, default_params, pops = project.dataset(dataset).spit()
     else:
-        input_path = filepath
-    # get data
-    demo_data = InputData(input_path)
-    prog_data = ProgData(input_path)
-    default_params = DefaultParams(settings.default_params_path(), input_path)
+        sim_type = 'national' if country == region else 'regional'
+        if filepath is None:
+            input_path = settings.data_path(country, region, sim_type)
+        else:
+            input_path = filepath
+        # get data
+        demo_data = InputData(input_path)
+        prog_data = ProgData(input_path)
+        default_params = DefaultParams(settings.default_params_path(), input_path)
+        pops = populations.set_pops(demo_data, default_params)
     if asobj:
-        output = Dataset(country, region, demo_data, prog_data, default_params)
+        output = Dataset(country, region, demo_data, prog_data, default_params, pops)
         return output
     else:
-        return demo_data, prog_data, default_params
+        if withpops:
+            return demo_data, prog_data, default_params, pops
+        else:
+            return demo_data, prog_data, default_params
