@@ -7,9 +7,42 @@ Last update: 2018-05-29
 <template>
   <div class="SitePage">
 
+    <table class="table table-bordered table-hover table-striped" style="width: 100%">
+      <thead>
+      <tr>
+        <th>
+          <input type="checkbox" @click="selectAll()" v-model="allSelected"/>
+        </th>
+        <th>Active</th>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="scenSummary in scenSummaries">
+        <td>
+          <input type="checkbox" v-model="scenSummary.active"/>
+        </td>
+        <td>
+          {{ scenSummary.name }}
+        </td>
+        <td>
+          {{ scenSummary.scen_type }}
+        </td>
+        <td style="white-space: nowrap">
+          <button class="btn" @click="editScen(scenSummary)">Edit</button>
+          <button class="btn" @click="copyScen(scenSummary)">Copy</button>
+          <button class="btn" @click="deleteScen(scenSummary)">Delete</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+
     <div>
-      <button class="btn __green" @click="defaultScenario(activeProjectID)">Plot default scenario</button>
-      <button class="btn" @click="clearGraphs()">Clear plots</button>
+      <button class="btn __blue" @click="defaultScenario(activeProjectID)">Add scenario</button>
+      <button class="btn __green" @click="defaultScenario(activeProjectID)">Run scenarios</button>
+      <button class="btn" @click="clearGraphs()">Clear graphs</button>
     </div>
     <br>
 
