@@ -145,6 +145,7 @@ Last update: 2018-05-29
             // Go to the server to get the results from the package set.
             rpcservice.rpcCall('run_scenarios', [this.projectID()])
               .then(response => {
+                this.clearGraphs() // Once we receive a response, we can work with a clean slate
                 this.serverresponse = response.data // Pull out the response data.
                 var n_plots = response.data.graphs.length
                 console.log('Rendering ' + n_plots + ' graphs')
