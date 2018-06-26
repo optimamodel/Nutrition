@@ -63,9 +63,9 @@ class Program(object):
             endCov = list(numpy.interp(years[firstTrue:], years[not_nan], cov_list[not_nan]))
             # scale each coverage
             if restr_cov:
-                interped = [self.get_unrestr_cov(cov) for cov in startCov + endCov]
+                interped = [self.get_unrestr_cov(_cov) for _cov in startCov + endCov]
             else: # no need to scale
-                interped = [cov for cov in startCov + endCov]
+                interped = [_cov for _cov in startCov + endCov]
         else:
             # is all nan, assume constant at baseline
             interped = [self.unrestr_init_cov] * len(years)
@@ -145,7 +145,7 @@ class Program(object):
         self.exclusionDependencies = []
         try: # TODO: don't like this, perhaps switch order or cleanup before hand?
             dependencies = self.prog_deps[self.name]['Exclusion dependency']
-        except KeyError:
+        except:
             dependencies = []
         for program in dependencies:
             self.exclusionDependencies.append(program)
@@ -158,7 +158,7 @@ class Program(object):
         self.thresholdDependencies = []
         try:
             dependencies = self.prog_deps[self.name]['Threshold dependency']
-        except KeyError:
+        except:
             dependencies = []
         for program in dependencies:
             self.thresholdDependencies.append(program)

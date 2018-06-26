@@ -5,12 +5,12 @@ class DefaultParams(object):
     def __init__(self, default_path, input_path):
         self.settings = settings.Settings()
         self.impacted_pop = None
-        self.prog_areas = {}
-        self.pop_areas = {}
-        self.rr_death = {}
-        self.or_cond = {}
-        self.or_cond_bo = {}
-        self.or_wasting_prog = {}
+        self.prog_areas = sc.odict()
+        self.pop_areas = sc.odict()
+        self.rr_death = sc.odict()
+        self.or_cond = sc.odict()
+        self.or_cond_bo = sc.odict()
+        self.or_wasting_prog = sc.odict()
         self.rr_dia = None
         self.or_stunting_prog = None
         self.bo_progs = None
@@ -60,7 +60,7 @@ class DefaultParams(object):
 
     def impact_pop(self):
         sheet = self.read_sheet('Programs impacted population', [0,1])
-        impacted = {}
+        impacted = sc.odict()
         for pop in ['Children', 'Pregnant women', 'Non-pregnant WRA', 'General population']:
             impacted.update(sheet.loc[pop].to_dict(orient='index'))
         self.impacted_pop = impacted
@@ -113,24 +113,24 @@ class DefaultParams(object):
     def odds_ratios(self):
         or_sheet = self.read_sheet('Odds ratios', [0,1], skiprows=1)
         this_or = or_sheet.loc['Condition'].to_dict('index')
-        self.or_cond['Stunting'] = {}
+        self.or_cond['Stunting'] = sc.odict()
         self.or_cond['Stunting']['Prev stunting'] = this_or['Given previous stunting (HAZ < -2 in previous age band)']
         self.or_cond['Stunting']['Diarrhoea'] = this_or['Diarrhoea (per additional episode)']
-        self.or_cond['SAM'] = {}
+        self.or_cond['SAM'] = sc.odict()
         self.or_cond['SAM']['Diarrhoea'] = or_sheet.loc['Wasting'].to_dict('index')['For SAM per additional episode of diarrhoea']
-        self.or_cond['MAM'] = {}
+        self.or_cond['MAM'] = sc.odict()
         self.or_cond['MAM']['Diarrhoea'] = or_sheet.loc['Wasting'].to_dict('index')['For MAM per additional episode of diarrhoea']
-        self.or_cond['Anaemia'] = {}
-        self.or_cond['Anaemia']['Severe diarrhoea'] = {}
+        self.or_cond['Anaemia'] = sc.odict()
+        self.or_cond['Anaemia']['Severe diarrhoea'] = sc.odict()
         self.or_cond['Anaemia']['Severe diarrhoea'] = or_sheet.loc['Anaemia'].to_dict('index')['For anaemia per additional episode of severe diarrhoea']
         self.or_stunting_prog = or_sheet.loc['By program'].to_dict('index')
 
     def get_bo_progs(self):
         progs = self.read_sheet('Programs birth outcomes', [0,1], 'index')
-        newprogs = {}
+        newprogs = sc.odict()
         for program in progs.keys():
             if not newprogs.get(program[0]):
-                newprogs[program[0]] = {}
+                newprogs[program[0]] = sc.odict()
             newprogs[program[0]][program[1]] = progs[program]
         self.bo_progs = newprogs
 
@@ -176,11 +176,11 @@ class DefaultParams(object):
         # non-empty cells denote program combination
         # get package combinations
         # create new program
-        newPrograms = {}
-        ORs = {}
+        newPrograms = sc.odict()
+        ORs = sc.odict()
         for key, item in packages.items():
             if newPrograms.get(key) is None:
-                newPrograms[key] = {}
+                newPrograms[key] = sc.odict()
             for age in self.settings.child_ages:
                 ORs[age] = 1.
                 for pop, mode in item:
@@ -193,7 +193,7 @@ class DefaultParams(object):
     def define_iycf(self):
         """ Returns a dict with values as a list of two tuples (age, modality)."""
         IYCFpackages = pandas.read_excel(self.input_path, 'IYCF packages', index_col=[0,1])
-        packagesDict = {}
+        packagesDict = sc.odict()
         for packageName, package in IYCFpackages.groupby(level=[0, 1]):
             if packageName[0] not in packagesDict:
                 packagesDict[packageName[0]] = []
@@ -215,9 +215,9 @@ class DefaultParams(object):
 
     def make_dict(self, mydict):
         """ myDict is a spreadsheet with 3 index cols, converted to dict using orient='index' """
-        result = {}
+        result = sc.odict()
         for age, progCatTypeDict in mydict.iteritems():
-            result[age] = {}
+            result[age] = sc.odict()
             for progCatType in progCatTypeDict.iteritems():
                 keys = progCatType[0]
                 val = progCatType[1]
@@ -226,14 +226,14 @@ class DefaultParams(object):
 
     def make_dict2(self, mydict):
         """ creating relative risk dict """
-        res_dict = {}
+        res_dict = sc.odict()
         for age in mydict.iterkeys():
-            res_dict[age] = {}
+            res_dict[age] = sc.odict()
             for condCat in mydict[age].iterkeys():
                 cond = condCat[0]
                 cat = condCat[1]
                 if res_dict[age].get(cat) is None:
-                    res_dict[age][cat] = {}
+                    res_dict[age][cat] = sc.odict()
                     res_dict[age][cat][cond] = mydict[age][condCat]
                 elif res_dict[age][cat].get(cond) is None:
                     res_dict[age][cat][cond] = mydict[age][condCat]
@@ -241,9 +241,9 @@ class DefaultParams(object):
 
     def make_dict3(self, mydict):
         """ for rr diarrhoea """
-        res_dict = {}
+        res_dict = sc.odict()
         for age in mydict.iterkeys():
-            res_dict[age] = {}
+            res_dict[age] = sc.odict()
             for condCat in mydict[age].iterkeys():
                 cat = condCat[1]
                 if res_dict[age].get(cat) is None:
@@ -256,16 +256,16 @@ class InputData(object):
         self.spreadsheet = pandas.ExcelFile(filepath)
         self.settings = settings.Settings()
         self.demo = None
-        self.proj = {}
-        self.death_dist = {}
-        self.risk_dist = {}
+        self.proj = sc.odict()
+        self.death_dist = sc.odict()
+        self.risk_dist = sc.odict()
         self.causes_death = None
-        self.time_trends = {}
+        self.time_trends = sc.odict()
         self.birth_age = None
         self.birth_int = None
         self.prog_target = None
         self.famplan_methods = None
-        self.incidences = {}
+        self.incidences = sc.odict()
         self.pw_agedist = []
         self.wra_proj = []
         self.samtomam = None
@@ -293,7 +293,7 @@ class InputData(object):
 
     def get_demo(self):
         baseline = self.read_sheet('Baseline year population inputs', [0,1])
-        demo = {}
+        demo = sc.odict()
         # the fields that group the data in spreadsheet
         fields = ['Population data', 'Food', 'Age distribution of pregnant women', 'Mortality', 'Other risks']
         for field in fields:
@@ -320,23 +320,23 @@ class InputData(object):
     def get_risk_dist(self):
         dist = self.read_sheet('Nutritional status distribution', [0,1])
         # dist = dist.drop(dist.index[[1]])
-        riskDist = {}
+        riskDist = sc.odict()
         for field in ['Stunting (height-for-age)', 'Wasting (weight-for-height)']:
             riskDist[field.split(' ',1)[0]] = dist.loc[field].dropna(axis=1, how='all').to_dict('dict')
         # fix key refs (surprisingly hard to do in Pandas)
         for outer, ageCat in riskDist.iteritems():
-            self.risk_dist[outer] = {}
+            self.risk_dist[outer] = sc.odict()
             for age, catValue in ageCat.iteritems():
-                self.risk_dist[outer][age] = {}
+                self.risk_dist[outer][age] = sc.odict()
                 for cat, value in catValue.iteritems():
                     newCat = cat.split(' ',1)[0]
                     self.risk_dist[outer][age][newCat] = value
         # get anaemia
         dist = self.read_sheet('Nutritional status distribution', [0,1], skiprows=12)
-        self.risk_dist['Anaemia'] = {}
+        self.risk_dist['Anaemia'] = sc.odict()
         anaem = dist.loc['Anaemia', 'Prevalence of iron deficiency anaemia'].to_dict()
         for age, prev in anaem.iteritems():
-            self.risk_dist['Anaemia'][age] = {}
+            self.risk_dist['Anaemia'][age] = sc.odict()
             self.risk_dist['Anaemia'][age]['Anaemic'] = prev
             self.risk_dist['Anaemia'][age]['Not anaemic'] = 1.-prev
         # get breastfeeding dist
@@ -368,7 +368,7 @@ class InputData(object):
         death_dist = self.read_sheet('Causes of death', [0], 'index')
         # convert 'Pregnant women' to age bands
         for key, value in death_dist.iteritems():
-            self.death_dist[key] = {}
+            self.death_dist[key] = sc.odict()
             pw_val = value['Pregnant women']
             for age in self.settings.pw_ages+self.settings.child_ages:
                 if "PW" in age:
@@ -414,7 +414,7 @@ class ProgData(object):
 
     def get_prog_target(self):
         targetPopSheet = self.read_sheet('Programs target population', [0,1])
-        targetPop = {}
+        targetPop = sc.odict()
         for pop in ['Children', 'Pregnant women', 'Non-pregnant WRA', 'General population']:
             targetPop.update(targetPopSheet.loc[pop].to_dict(orient='index'))
         self.prog_target = targetPop
@@ -425,9 +425,9 @@ class ProgData(object):
 
     def get_prog_deps(self):
         deps = self.read_sheet('Program dependencies', [0])
-        programDep = {}
+        programDep = sc.odict()
         for program, dependency in deps.iterrows():
-            programDep[program] = {}
+            programDep[program] = sc.odict()
             for dependType, value in dependency.iteritems():
                 if isinstance(value, unicode): # cell not empty
                     programDep[program][dependType] = value.replace(", ", ",").split(',') # assumes programs separated by ", "
@@ -436,7 +436,7 @@ class ProgData(object):
         # pad the remaining programs
         missingProgs = list(set(self.prog_set) - set(programDep.keys()))
         for program in missingProgs:
-            programDep[program] = {}
+            programDep[program] = sc.odict()
             for field in deps.columns:
                 programDep[program][field] = []
         self.prog_deps = programDep
@@ -452,7 +452,7 @@ class ProgData(object):
     def define_iycf(self):
         """ Returns a dict with values as a list of two tuples (age, modality)."""
         IYCFpackages = self.read_sheet('IYCF packages', [0,1])
-        packagesDict = {}
+        packagesDict = sc.odict()
         for packageName, package in IYCFpackages.groupby(level=[0, 1]):
             if packageName[0] not in packagesDict:
                 packagesDict[packageName[0]] = []
@@ -474,9 +474,9 @@ class ProgData(object):
         frac_pw = float(pop_data.loc['Percentage of pregnant women attending health facility'])
         frac_child = float(pop_data.loc['Percentage of children attending health facility'])
         # target pop is the sum of fractions exposed to modality in each age band
-        target = {}
+        target = sc.odict()
         for name, package in package_modes.iteritems():
-            target[name] = {}
+            target[name] = sc.odict()
             for pop, mode in package:
                 if target[name].get(pop) is None:
                     target[name][pop] = 0.
@@ -586,7 +586,7 @@ class ScenOptsTest(object):
         self.name = name
         self.prog_set = []
         self.scen_type = scen_type
-        self.scen = {}
+        self.scen = sc.odict()
         self.t = [2017, 2025]
 
         self.get_prog_set()
