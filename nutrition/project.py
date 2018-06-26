@@ -201,4 +201,6 @@ class Project(object):
 def default_project():
     name = 'default'
     p = Project(name)
-    return p
+    p.default_scens()
+    p.default_optims()
+    return pc
