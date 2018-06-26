@@ -655,13 +655,17 @@ class Dataset(object):
         return None
     
     def spit(self):
-        ''' Hopefully temporary function to spit out a tuple '''
-        return self.demo_data, self.prog_data, self.default_params
+        ''' Hopefully temporary method to spit out a tuple, to match get_data '''
+        output = (self.demo_data, self.prog_data, self.default_params)
+        return output
 
 
-def get_data(country, region, asobj=False):
+def get_data(country=None, region=None, filepath=None, asobj=False):
     sim_type = 'national' if country == region else 'regional'
-    input_path = settings.data_path(country, region, sim_type)
+    if filepath is None:
+        input_path = settings.data_path(country, region, sim_type)
+    else:
+        input_path = filepath
     # get data
     demo_data = InputData(input_path)
     prog_data = ProgData(input_path)
