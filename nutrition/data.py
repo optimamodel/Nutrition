@@ -605,12 +605,15 @@ class ScenOptsTest(object):
 class Data(object):
     ''' Store all the data for a project '''
     
-    def __init__(self, country='default', region='default', demo_data=None, prog_data=None, default_params=None):
+    def __init__(self, country='default', region='default', demo_data=None, prog_data=None, default_params=None, name=None):
         self.country = country
         self.region = region
         self.demo_data = demo_data
         self.prog_data = prog_data
         self.default_params = default_params
+        if name is None: name = country+'_'+region
+        self.name = name
+        self.modified = sc.today()
         return None
     
     def load(self):
@@ -618,6 +621,7 @@ class Data(object):
         self.demo_data = demo_data
         self.prog_data = prog_data
         self.default_params = default_params
+        self.modified = sc.today()
         return None
 
 
