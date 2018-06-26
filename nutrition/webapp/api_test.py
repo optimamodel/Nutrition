@@ -10,8 +10,8 @@ import nutrition.ui as nu
 
 #%% Setup
 sc.tic()
-doplot = True
-run_scens = True
+doplot     = True
+run_scens  = True
 run_optims = True
 
 

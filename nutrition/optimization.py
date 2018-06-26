@@ -217,13 +217,3 @@ def make_optims(country=None, region=None, user_opts=None, json=None, project=No
         optim = Optim(prog_info, pops, json['scen_type'], json['scen'], json['name'], json['t'], json['prog_set'], active=True)
         optim_list.append(optim)
     return optim_list
-
-
-def default_optims(project, key='default', dorun=False):
-    defaults = on.data.OptimOptsTest(key)
-    opts = [on.utils.OptimOpts(**defaults.get_attr())]
-    optim_list = make_optims(user_opts=opts, project=project)
-    project.add_optims(optim_list)
-    if dorun:
-        project.run_optims()
-    return None

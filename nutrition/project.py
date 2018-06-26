@@ -1,15 +1,20 @@
+#######################################################################################################
+#%% Imports
+#######################################################################################################
+
 import sciris.core as sc
 from .version import version
 from .model import Model
-from .scenarios import default_scens, make_scens
-from .optimization import default_optims
+from .scenarios import make_scens
+from .optimization import make_optims
 from .results import ScenResult, OptimResult
-from .data import Dataset
+from .data import Dataset, ScenOptsTest, OptimOptsTest
+from .utils import ScenOpts, OptimOpts
 from .plotting import make_plots
 
 
 #######################################################################################################
-## Project class -- this contains everything else!
+#%% Project class -- this contains everything else!
 #######################################################################################################
 
 class Project(object):
@@ -90,10 +95,9 @@ class Project(object):
     def getinfo(self):
         ''' Return an odict with basic information about the project'''
         info = sc.odict()
-        for attr in ['name', 'version', 'created', 'modified', 'gitbranch', 'gitversion', 'uid']:
+        attrs = ['name', 'version', 'created', 'modified', 'gitbranch', 'gitversion', 'uid']
+        for attr in attrs:
             info[attr] = getattr(self, attr) # Populate the dictionary
-#        info['parsetkeys'] = self.parsets.keys()
-#        info['progsetkeys'] = self.parsets.keys()
         return info
     
     
@@ -168,6 +172,12 @@ class Project(object):
         scen_list = make_scens(project=self, json=json)
         self.add_scens(scen_list)
         return None
+    
+    def add_optim(self, json=None):
+        ''' Super roundabout way to add a scenario '''
+        optim_list = make_optims(project=self, json=json)
+        self.add_optims(optim_list)
+        return None
 
     def add_scens(self, scen_list, overwrite=False):
         if overwrite: self.scens = sc.odict() # remove exist scenarios
@@ -185,15 +195,30 @@ class Project(object):
         """Add result by name"""
         try:
             keyname = result.name
-        except:
+        except Exception as E:
+            if name is None:
+                print('WARNING, could not extract result name: %s' % repr(E))
+                name = 'default_result'
             keyname = name
         self.add(name=keyname, item=result, what='result')
 
     def default_scens(self, key='default', dorun=None):
-        default_scens(self, key=key, dorun=dorun)
-
-    def default_optims(self, key='default', dorun=None):
-        default_optims(self, key=key, dorun=dorun)
+        defaults = ScenOptsTest(key, 'coverage')
+        opts = [ScenOpts(**defaults.get_attr())] # todo: more than 1 default scen will require another key
+        scen_list = make_scens(user_opts=opts, project=self)
+        self.add_scens(scen_list)
+        if dorun:
+            self.run_scens()
+        return None
+    
+    def default_optims(self, key='default', dorun=False):
+        defaults = OptimOptsTest(key)
+        opts = [OptimOpts(**defaults.get_attr())]
+        optim_list = make_optims(user_opts=opts, project=self)
+        self.add_optims(optim_list)
+        if dorun:
+            self.run_optims()
+        return None
     
     def run_scens(self, scen_list=None):
         """Function for running scenarios"""
@@ -215,8 +240,6 @@ class Project(object):
             optim.run_optim()
             result = OptimResult(optim)
             self.add_result(result)
-
-    
     
     def get_results(self, result_keys):
         """ result_keys is a list of keys corresponding to the desired result.

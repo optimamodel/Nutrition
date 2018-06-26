@@ -50,12 +50,3 @@ def make_scens(country=None, region=None, user_opts=None, json=None, project=Non
         scen = Scen(prog_info, pops, json['scen_type'], json['scen'], json['name'], json['t'], json['prog_set'], active=True)
         scen_list.append(scen)
     return scen_list
-
-def default_scens(project, key='default', dorun=False):
-    defaults = data.ScenOptsTest(key, 'coverage')
-    opts = [utils.ScenOpts(**defaults.get_attr())] # todo: more than 1 default scen will require another key
-    scen_list = make_scens(user_opts=opts, project=project)
-    project.add_scens(scen_list)
-    if dorun:
-        project.run_scens()
-    return None
