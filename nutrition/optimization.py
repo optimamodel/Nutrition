@@ -127,8 +127,15 @@ class Optim(object):
     ######### OPTIMISATION ##########
 
     def run_optim(self):
-        print 'Optimizing for {}'.format(self.name)
-        self.optim_allocs = utils.run_parallel(self.one_optim, self.combs, self.num_cpus)
+        print('Optimizing for %s' % self.name)
+        if self.num_cpus>1:
+            self.optim_allocs = utils.run_parallel(self.one_optim, self.combs, self.num_cpus)
+        else:
+            self.optim_allocs = []
+            for comb in self.combs:
+                res = self.one_optim(comb)
+                self.optim_allocs.append(res)
+        return None
 
     @utils.trace_exception
     def one_optim(self, params):
@@ -159,7 +166,7 @@ class Optim(object):
 
     def print_status(self, objective, multiple, flag, now):
         print('Finished optimization for %s for objective %s and multiple %s' % (self.name, objective, multiple))
-        print('The reason is %s and it took %s minutes \n' % (flag['exitreason'], sc.toc(now, output=True)))
+        print('The reason is %s and it took %0.1f s \n' % (flag['exitreason'], sc.toc(now, output=True)))
    
     def get_best(self, outputs):
         bestSample = min(outputs, key=lambda item: item[-1])
@@ -218,6 +225,6 @@ def make_optims(country=None, region=None, user_opts=None, json=None, project=No
     if json is not None:
         json = sc.dcp(json) # Just to be sure, probably unnecessary
         prog_info = programs.ProgramInfo(json['prog_set'], prog_data, default_params)
-        optim = Optim(prog_info, pops, json['scen_type'], json['scen'], json['name'], json['t'], json['prog_set'], active=True)
+        optim = Optim(prog_info=prog_info, pops=pops, name=json['name'], t=json['t'], objs=json['objs'], mults=json['mults'], prog_set=json['prog_set'], active=True, add_funds=json['add_funds'], fix_curr=json['fix_curr'])
         optim_list.append(optim)
     return optim_list

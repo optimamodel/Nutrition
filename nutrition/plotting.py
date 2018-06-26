@@ -124,7 +124,7 @@ def plot_alloc(all_res):
     return figs
 
 def round_elements(mylist, dec=1):
-    return [round(x * 100, dec) for x in mylist]
+    return [round(np.float64(x) * 100, dec) for x in mylist] # Type conversion to handle None
 
 
 
