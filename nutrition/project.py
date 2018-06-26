@@ -127,8 +127,7 @@ class Project(object):
             structlist = getwhat('parameters')
         will return P.parset.
         '''
-        if what in ['p', 'pars', 'parset', 'parameters']: structlist = self.parsets
-        elif what in ['pr', 'progs', 'progset', 'progsets']: structlist = self.progsets
+        if what in ['d', 'ds', 'dataset', 'datasets']: structlist = self.datasets
         elif what in ['s', 'scen', 'scens', 'scenario', 'scenarios']: structlist = self.scens
         elif what in ['o', 'opt', 'opts', 'optim', 'optims', 'optimization', 'optimization', 'optimizations', 'optimizations']: structlist = self.optims
         elif what in ['r', 'res', 'result', 'results']: structlist = self.results
@@ -139,10 +138,11 @@ class Project(object):
     ### Utilities
     #######################################################################################################
 
-    def dataset(self, key=-1, verbose=2):
+    def dataset(self, key=None, verbose=2):
         ''' Shortcut for getting the latest model, i.e. self.datasets[-1] '''
+        if key is None: key = -1
         try:    return self.datasets[key]
-        except: return printv('Warning, burden set not found!', 1, verbose) # Returns None
+        except: return printv('Warning, dataset set not found!', 1, verbose) # Returns None
     
     def cleanresults(self):
         ''' Remove all results '''
