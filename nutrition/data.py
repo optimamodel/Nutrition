@@ -539,7 +539,7 @@ class OptimOptsTest(object):
             self.prog_set.append(program)
 
     def get_opts(self):
-        opts = self.spreadsheet.parse('Optimisation options')
+        opts = self.spreadsheet.parse('Optimization options')
         self.t = [opts['start year'][0], opts['end year'][0]]
         self.objs = opts['objectives'][0].replace(' ','').split(',')
         mults = str(opts['multiples of flexible funding'][0]).replace(' ', '').split(',')

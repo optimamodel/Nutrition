@@ -72,7 +72,7 @@ from . import utils
 from . import data
 from . import settings
 from . import scenarios
-from . import optimisation
+from . import optimization
 from . import project
 from . import plotting
 

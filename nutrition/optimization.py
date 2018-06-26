@@ -114,12 +114,12 @@ class Optim(object):
     ######### OPTIMISATION ##########
 
     def run_optim(self):
-        print 'Optimising for {}'.format(self.name)
+        print 'Optimizing for {}'.format(self.name)
         self.optim_allocs = on.utils.run_parallel(self.one_optim, self.combs, self.num_cpus)
 
     @on.utils.trace_exception
     def one_optim(self, params):
-        """ Runs optimisation for an objective and budget multiple.
+        """ Runs optimization for an objective and budget multiple.
         Return: a list of allocations, with order corresponding to the programs list """
         obj = params[0]
         mult = params[1]
@@ -145,7 +145,7 @@ class Optim(object):
         return bestAllocationDict
 
     def print_status(self, objective, multiple, flag, now):
-        print 'Finished optimisation for {} for objective {} and multiple {}'.format(self.name, objective, multiple)
+        print 'Finished optimization for {} for objective {} and multiple {}'.format(self.name, objective, multiple)
         print 'The reason is {} and it took {} minutes \n'.format(flag['exitreason'], round((time.time() - now) / 60., 2))
 
     def get_best(self, outputs):

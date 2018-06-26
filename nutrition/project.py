@@ -1,7 +1,7 @@
 from sciris.core import odict, uuid, today, gitinfo, objrepr, getdate, printv, makefilepath, saveobj, dcp
 from .model import Model
 from .scenarios import default_scens
-from .optimisation import default_optims
+from .optimization import default_optims
 from .results import ScenResult, OptimResult
 from . import version
 
@@ -129,7 +129,7 @@ class Project(object):
         if what in ['p', 'pars', 'parset', 'parameters']: structlist = self.parsets
         elif what in ['pr', 'progs', 'progset', 'progsets']: structlist = self.progsets
         elif what in ['s', 'scen', 'scens', 'scenario', 'scenarios']: structlist = self.scens
-        elif what in ['o', 'opt', 'opts', 'optim', 'optims', 'optimisation', 'optimization', 'optimisations', 'optimizations']: structlist = self.optims
+        elif what in ['o', 'opt', 'opts', 'optim', 'optims', 'optimization', 'optimization', 'optimizations', 'optimizations']: structlist = self.optims
         elif what in ['r', 'res', 'result', 'results']: structlist = self.results
         else: raise Exception("Item not found")
         return structlist

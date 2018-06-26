@@ -10,7 +10,7 @@ def make_plots(all_res, toplot):
     if 'outputs' in toplot:
         outfig = plot_outputs(all_res)
         allplots['outputs'] = outfig
-    if 'alloc' in toplot: # optimised allocations
+    if 'alloc' in toplot: # optimized allocations
         bars = plot_alloc(all_res)
         allplots['alloc'] = bars
     return allplots
