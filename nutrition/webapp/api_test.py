@@ -32,7 +32,7 @@ if run_scens:
     
     json = sc.odict()
     json['name'] = 'API test 1'
-    json['scen_type'] = 'coverage'
+    json['scen_type'] = 'coverage' # ['coverage', 'budget']
     json['t'] = [2017,2025]
     json['prog_set'] = ['Cash transfers', 'IFA fortification of maize', 'IFAS for pregnant women (community)', 'IPTp', 'IYCF 1', 'Micronutrient powders', 'Treatment of SAM', 'Vitamin A supplementation', 'Zinc for treatment + ORS']
     json['scen'] = sc.odict({'Vitamin A supplementation': [nan, 0.94999999999999996, nan, nan, nan, nan, nan, nan, nan], 'IYCF 1': [nan, 0.94999999999999996, nan, nan, nan, nan, nan, nan, nan], 'IPTp': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'IFA fortification of maize': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'Zinc for treatment + ORS': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'IFAS for pregnant women (community)': [nan, 0.94999999999999996, nan, nan, nan, nan, nan, nan, nan], 'Treatment of SAM': [nan, 0.94999999999999996, nan, nan, nan, nan, nan, nan, nan], 'Micronutrient powders': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'Cash transfers': [nan, nan, nan, nan, nan, nan, nan, nan, nan]})
@@ -50,7 +50,21 @@ if run_scens:
 
 #%% Optimizations
 if run_optims:
-    pass
+    D.optims.clear() # Reset the odict
+    
+    json = sc.odict()
+    json['name'] = 'Optimization test 1'
+    json['prog_set'] = ['Cash transfers', 'IFA fortification of maize', 'IFAS for pregnant women (community)', 'IPTp', 'IYCF 1', 'Micronutrient powders', 'Treatment of SAM', 'Vitamin A supplementation', 'Zinc for treatment + ORS']
+    json['t'] = [2017,2025]
+    json['mults'] = [1,2]
+    json['fix_curr'] = False
+    json['add_funds'] = 10e6
+    json['objs'] = ['thrive', 'child_deaths'] # ['thrive', 'child_deaths', 'stunting_prev', 'wasting_prev', 'anaemia_prev']
+    D.add_optim(json=json)
+    
+    D.run_optims()
+    if doplot:
+        figs = D.plot()
 
 
 
