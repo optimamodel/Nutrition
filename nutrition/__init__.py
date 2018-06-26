@@ -72,6 +72,7 @@ from . import utils
 from . import populations
 from . import data
 from . import settings
+from . import programs
 from . import scenarios
 from . import optimization
 from . import project

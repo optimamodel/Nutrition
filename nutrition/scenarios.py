@@ -1,4 +1,6 @@
-from nutrition import data, program_info, populations, model, utils
+from . import data
+from . import programs
+from . import model
 import sciris.core as sc
 
 class Scen(object):
@@ -15,6 +17,7 @@ class Scen(object):
         prog_info = sc.dcp(prog_info)
         pops = sc.dcp(pops)
         self.model = model.Model(name, pops, prog_info, self.all_years)
+        return None
     
     def __repr__(self):
         output  = sc.desc(self)
@@ -24,6 +27,7 @@ class Scen(object):
         """ Define the coverage scenario (list of lists) then run the simulation """
         covs = self.model.prog_info.get_cov_scen(self.scen_type, self.scen)
         self.model.run_sim(covs, restr_cov=False) # coverage restricted in previous func
+        return None
 
 def make_scens(country=None, region=None, user_opts=None, json=None, project=None, dataset=None):
     """ Define the custom scenarios by providing all necessary information.
@@ -36,13 +40,13 @@ def make_scens(country=None, region=None, user_opts=None, json=None, project=Non
     if user_opts is not None:
         for opt in user_opts:
             # initialise pops and progs
-            prog_info = program_info.ProgramInfo(opt.prog_set, prog_data, default_params)
+            prog_info = programs.ProgramInfo(opt.prog_set, prog_data, default_params)
             # set up scenarios
             scen = Scen(prog_info, pops, **opt.get_attr())
             scen_list.append(scen)
     if json is not None:
         json = sc.dcp(json) # Just to be sure, probably unnecessary
-        prog_info = program_info.ProgramInfo(json['prog_set'], prog_data, default_params)
+        prog_info = programs.ProgramInfo(json['prog_set'], prog_data, default_params)
         scen = Scen(prog_info, pops, json['scen_type'], json['scen'], json['name'], json['t'], json['prog_set'], active=True)
         scen_list.append(scen)
     return scen_list

@@ -1,9 +1,13 @@
-import nutrition as on
-from . import pso
-from . import asd
 import multiprocessing
 import itertools
 import sciris.core as sc
+from . import pso
+from . import asd
+from . import utils
+from . import data
+from . import programs
+from . import model
+
 
 class Optim(object):
     def __init__(self, prog_info=None, pops=None, name=None, t=None, objs=None, mults=None, prog_set=None, active=True, 
@@ -30,7 +34,7 @@ class Optim(object):
 
         self.prog_info = sc.dcp(prog_info)
         self.pops = sc.dcp(pops)
-        self.model = on.model.Model(name, self.pops, self.prog_info, self.all_years)
+        self.model = model.Model(name, self.pops, self.prog_info, self.all_years)
         self.programs = self.model.prog_info.programs
         self.active = active
 
@@ -67,7 +71,7 @@ class Optim(object):
                   'free': sc.dcp(self.free) * mult,
                   'fixed': self.fixed[:],
                   'obj': obj,
-                  'sign': on.utils.get_obj_sign(obj),
+                  'sign': utils.get_obj_sign(obj),
                   'keep_inds': self._filter_progs(obj)}
         return kwargs
 
@@ -124,9 +128,9 @@ class Optim(object):
 
     def run_optim(self):
         print 'Optimizing for {}'.format(self.name)
-        self.optim_allocs = on.utils.run_parallel(self.one_optim, self.combs, self.num_cpus)
+        self.optim_allocs = utils.run_parallel(self.one_optim, self.combs, self.num_cpus)
 
-    @on.utils.trace_exception
+    @utils.trace_exception
     def one_optim(self, params):
         """ Runs optimization for an objective and budget multiple.
         Return: a list of allocations, with order corresponding to the programs list """
@@ -145,8 +149,8 @@ class Optim(object):
                 runOutputs.append((x, fval[-1]))
                 self.print_status(obj, mult, flag, now)
             bestAllocation = self.get_best(runOutputs)
-            scaledAllocation = on.utils.scale_alloc(kwargs['free'], bestAllocation)
-            totalAllocation = on.utils.add_fixed_alloc(self.fixed, scaledAllocation, kwargs['keep_inds'])
+            scaledAllocation = utils.scale_alloc(kwargs['free'], bestAllocation)
+            totalAllocation = utils.add_fixed_alloc(self.fixed, scaledAllocation, kwargs['keep_inds'])
             bestAllocationDict = totalAllocation
         else:
             # if no money to distribute, return the fixed costs
@@ -192,9 +196,9 @@ def obj_func(allocation, obj, model, free, fixed, keep_inds, sign):
     thisModel = sc.dcp(model)
     totalAllocations = fixed[:]
     # scale the allocation appropriately
-    scaledAllocation = on.utils.scale_alloc(free, allocation)
+    scaledAllocation = utils.scale_alloc(free, allocation)
     programs = thisModel.prog_info.programs
-    totalAllocations = on.utils.add_fixed_alloc(totalAllocations, scaledAllocation, keep_inds)
+    totalAllocations = utils.add_fixed_alloc(totalAllocations, scaledAllocation, keep_inds)
     new_covs = []
     for i, program in enumerate(programs):
         new_covs.append( program.func(totalAllocations[i]) )
@@ -204,16 +208,16 @@ def obj_func(allocation, obj, model, free, fixed, keep_inds, sign):
 
 def make_optims(country=None, region=None, user_opts=None, json=None, project=None, dataset=None):
     # WARNING, consolidate boilerplate with make_scens
-    demo_data, prog_data, default_params, pops = on.data.get_data(country=country, region=region, project=project, dataset=dataset, withpops=True)
+    demo_data, prog_data, default_params, pops = data.get_data(country=country, region=region, project=project, dataset=dataset, withpops=True)
     optim_list = []
     if user_opts is not None:
         for opt in user_opts: # create all of the requested optimizations
-            prog_info = on.program_info.ProgramInfo(opt.prog_set, prog_data, default_params) # initialise pops and progs
+            prog_info = programs.ProgramInfo(opt.prog_set, prog_data, default_params) # initialise pops and progs
             optim = Optim(prog_info, pops, **opt.get_attr()) # set up optims
             optim_list.append(optim)
     if json is not None:
         json = sc.dcp(json) # Just to be sure, probably unnecessary
-        prog_info = on.program_info.ProgramInfo(json['prog_set'], prog_data, default_params)
+        prog_info = programs.ProgramInfo(json['prog_set'], prog_data, default_params)
         optim = Optim(prog_info, pops, json['scen_type'], json['scen'], json['name'], json['t'], json['prog_set'], active=True)
         optim_list.append(optim)
     return optim_list
