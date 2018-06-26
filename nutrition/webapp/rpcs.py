@@ -487,12 +487,6 @@ def create_project_from_prj_file(prj_filename, user_id):
 ##################################################################################
 
 
-
-# TODO: move this into the helper functions.  It's here now for testing 
-# purposes.  Or, maybe remove dependency on this entirely, since it's a one-
-# liner.
-
-
 @register_RPC(validation_type='nonanonymous user')    
 def get_scenario_info(project_id):
 

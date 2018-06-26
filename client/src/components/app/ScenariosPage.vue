@@ -67,6 +67,7 @@ Last update: 2018-05-29
     data() {
       return {
         serverresponse: 'no response',
+        scenSummaries: [],
       }
     },
 
@@ -94,10 +95,24 @@ Last update: 2018-05-29
       if (this.$store.state.currentUser.displayname == undefined) {
         router.push('/login')
       }
+      else { // Otherwise...
+        // Load the project summaries of the current user.
+        this.updateScenSummaries()
+      }
 
     },
 
     methods: {
+
+      updateScenSummaries() {
+        console.log('updateScenSummaries() called')
+
+        // Get the current user's scenaro summaries from the server.
+        rpcservice.rpcCall('get_scenario_info', [this.$store.state.activeProject.project.id])
+          .then(response => {
+            this.scenSummaries = response.data // Set the scenarios to what we received.
+          })
+      },
 
       defaultScenario(project_id) {
         console.log('defaultScenario() called')
