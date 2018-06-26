@@ -175,8 +175,8 @@ class Project(object):
             self.add(name=scen.name, item=scen, what='scen', overwrite=True)
         self.modified = sc.today()
 
-    def add_optims(self, optim_list, overwrite=True):
-        if overwrite: self.optims = {} # remove exist scenarios
+    def add_optims(self, optim_list, overwrite=False):
+        if overwrite: self.optims = sc.odict() # remove exist scenarios
         for optim in optim_list:
             self.add(name=optim.name, item=optim, what='optim', overwrite=True)
         self.modified = sc.today()
@@ -189,6 +189,12 @@ class Project(object):
             keyname = name
         self.add(name=keyname, item=result, what='result')
 
+    def default_scens(self, key='default', dorun=None):
+        default_scens(self, key=key, dorun=dorun)
+
+    def default_optims(self, key='default', dorun=None):
+        default_optims(self, key=key, dorun=dorun)
+    
     def run_scens(self, scen_list=None):
         """Function for running scenarios"""
         if scen_list is not None: self.add_scens(scen_list) # replace existing scen list with new one
@@ -200,12 +206,6 @@ class Project(object):
             results.append(result)
         self.add_result(results, name='Scenarios')
         return None
-
-    def default_scens(self, key='default', dorun=None):
-        default_scens(self, key=key, dorun=dorun)
-
-    def default_optims(self, key='default', dorun=None):
-        default_optims(self, key=key, dorun=dorun)
 
     def run_optims(self, optim_list=None, name=None):
         if optim_list is not None: self.add_optims(optim_list)

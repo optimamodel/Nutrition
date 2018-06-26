@@ -198,26 +198,32 @@ def obj_func(allocation, obj, model, free, fixed, keep_inds, sign):
     outcome = thisModel.get_output(obj) * sign
     return outcome
 
-def make_optims(country, region, user_opts):
-    demo_data, prog_data, default_params = on.data.get_data(country, region)
+def make_optims(country=None, region=None, user_opts=None, json=None, project=None, dataset=None):
+    # WARNING, consolidate boilerplate with make_scens
+    if project is None:
+        demo_data, prog_data, default_params = on.data.get_data(country, region)
+    else:
+        demo_data, prog_data, default_params = project.dataset(dataset).spit()
     optim_list = []
-    # create all of the requested optimizations
-    for opt in user_opts:
-        # initialise pops and progs
-        prog_info = on.program_info.ProgramInfo(opt.prog_set, prog_data, default_params)
-        pops = on.populations.set_pops(demo_data, default_params)
-        # set up optims
-        optim = Optim(prog_info, pops, **opt.get_attr())
+    pops = on.populations.set_pops(demo_data, default_params)
+    if user_opts is not None:
+        for opt in user_opts: # create all of the requested optimizations
+            prog_info = on.program_info.ProgramInfo(opt.prog_set, prog_data, default_params) # initialise pops and progs
+            optim = Optim(prog_info, pops, **opt.get_attr()) # set up optims
+            optim_list.append(optim)
+    if json is not None:
+        json = sc.dcp(json) # Just to be sure, probably unnecessary
+        prog_info = on.program_info.ProgramInfo(json['prog_set'], prog_data, default_params)
+        optim = Optim(prog_info, pops, json['scen_type'], json['scen'], json['name'], json['t'], json['prog_set'], active=True)
         optim_list.append(optim)
     return optim_list
 
-def default_optims(project, key='default', dorun=False):
-    country = 'default'
-    region = 'default'
 
+def default_optims(project, key='default', dorun=False):
     defaults = on.data.OptimOptsTest(key)
     opts = [on.utils.OptimOpts(**defaults.get_attr())]
-    optim_list = make_optims(country, region, opts)
+    optim_list = make_optims(user_opts=opts, project=project)
     project.add_optims(optim_list)
     if dorun:
         project.run_optims()
+    return None
