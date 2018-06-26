@@ -145,10 +145,16 @@ class Project(object):
         except: return sc.printv('Warning, dataset set not found!', 1, verbose) # Returns None
     
     def scen(self, key=None, verbose=2):
-        ''' Shortcut for getting the latest model, i.e. self.datasets[-1] '''
+        ''' Shortcut for getting the latest scenari, i.e. self.scen[-1] '''
         if key is None: key = -1
         try:    return self.scens[key]
         except: return sc.printv('Warning, scenario not found!', 1, verbose) # Returns None
+    
+    def result(self, key=None, verbose=2):
+        ''' Shortcut for getting the latest result, i.e. self.results[-1] '''
+        if key is None: key = -1
+        try:    return self.results[key]
+        except: return sc.printv('Warning, result not found!', 1, verbose) # Returns None
     
     def cleanresults(self):
         ''' Remove all results '''
@@ -203,6 +209,8 @@ class Project(object):
             result = OptimResult(optim)
             self.add_result(result)
 
+    
+    
     def get_results(self, result_keys):
         """ result_keys is a list of keys corresponding to the desired result.
         Return: a list of result objects """

@@ -658,6 +658,10 @@ class Dataset(object):
         ''' Hopefully temporary method to spit out a tuple, to match get_data '''
         output = (self.demo_data, self.prog_data, self.default_params)
         return output
+    
+    def prog_names(self):
+        names = self.prog_data.prog_info['baseline coverage'].keys()
+        return names
 
 
 def get_data(country=None, region=None, filepath=None, asobj=False):

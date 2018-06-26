@@ -75,6 +75,7 @@ from . import scenarios
 from . import optimization
 from . import project
 from . import plotting
+from . import results
 
 # Import web functions
 try:

@@ -1,37 +1,51 @@
-import copy
+import sciris.core as sc
+from .plotting import make_plots
 
-class ScenResult(object):
+class BaseResult(object):
+    def __init__(self, name=None):
+        self.name = name
+        self.uid = sc.uuid()
+        self.created = sc.today()
+        self.modified = sc.today()
+    
+    def __repr__(self):
+        output = sc.desc(self)
+        return output
+    
+    def model_attr(self):
+        return self.model.__dict__
+    
+    def get_outputs(self, outcomes, seq=False):
+        """ outcomes: a list of model outcomes to return
+         return: a dict of (outcome,output) pairs"""
+        outs = [self.model.get_output(name, seq=seq) for name in outcomes]
+        return outs
+    
+    def plot(self, toplot=None):
+        figs = make_plots(self, toplot=toplot)
+        return figs
+
+
+class ScenResult(BaseResult):
     def __init__(self, res):
+        BaseResult.__init__(self)
         self.name = res.name
         self.model = res.model
         self.programs = self.model.prog_info.programs
         self.pops = self.model.pops
         self.year_names = res.year_names
 
-    def get_outputs(self, outcomes, seq=False):
-        """ outcomes: a list of model outcomes to return
-         return: a dict of (outcome,output) pairs"""
-        outs = [self.model.get_output(name, seq=seq) for name in outcomes]
-        return outs
+    
 
-    def model_attr(self):
-        return self.model.__dict__
-
-class Result(object):
+class Result(BaseResult):
     def __init__(self, model, comb, alloc):
         self.name = model.name
         self.model = model
         self.comb = comb
         self.alloc = alloc
 
-    def get_outputs(self, outcomes, seq=False):
-        outs = [self.model.get_output(name, seq=seq) for name in outcomes]
-        return outs
 
-    def model_attr(self):
-        return self.model.__dict__
-
-class OptimResult(object):
+class OptimResult(BaseResult):
     def __init__(self, optim):
         self.name = optim.name
         self.model = optim.model
@@ -62,7 +76,7 @@ class OptimResult(object):
         return curr_model
 
     def _run_model(self, alloc):
-        model = copy.deepcopy(self.model)
+        model = sc.dcp(self.model)
         covs = self.get_covs(alloc)
         model.run_sim(covs, restr_cov=False)
         return model

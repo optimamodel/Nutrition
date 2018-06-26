@@ -1,9 +1,15 @@
-import pylab as pl, numpy as np, matplotlib.ticker as tk
+import pylab as pl
+import numpy as np
+import matplotlib.ticker as tk
+import sciris.core as sc
 
-def make_plots(all_res, toplot):
+def make_plots(all_res, toplot=None):
     """ res is a ScenResult or Result object (could be a list of these objects) from which all information can be extracted """
     ## Initialize
-    allplots = {}
+    if toplot is None: toplot = ['prevs', 'outputs', 'alloc']
+    toplot = sc.promotetolist(toplot)
+    all_res = sc.promotetolist(all_res)
+    allplots = sc.odict()
     if 'prevs' in toplot:
         prevfig = plot_prevs(all_res)
         allplots['prevs'] = prevfig
@@ -11,9 +17,13 @@ def make_plots(all_res, toplot):
         outfig = plot_outputs(all_res)
         allplots['outputs'] = outfig
     if 'alloc' in toplot: # optimized allocations
-        bars = plot_alloc(all_res)
-        allplots['alloc'] = bars
+        try:
+            bars = plot_alloc(all_res)
+            allplots['alloc'] = bars
+        except Exception as E:
+            print('WARNING, could not plot allocation: %s' % repr(E))
     return allplots
+
 
 def plot_prevs(all_res):
     """ Plot prevs for each scenario"""
@@ -73,9 +83,12 @@ def plot_outputs(all_res):
 
 # TODO: want to compare the total outcomes across scenarios
 
-def plot_alloc(res):
+def plot_alloc(all_res):
     """ Plot the program allocations from an optimization, alongside current allocation """
     # TODO: WARNING: Cannot plot multiple objectives. Would like Optim to only take 1 objective each, then this will be resolved.
+    if len(all_res)>1:
+        print('WARNING, not currently enabled to plot more than one allocation, you have asked for %s' % len(all_res))
+    res = all_res[0]
     xlabs = ['current'] + res.mults
     x = np.arange(len(xlabs))
     width = 0.35
