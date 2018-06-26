@@ -148,10 +148,10 @@ class DefaultParams(object):
             self.or_wasting_prog['MAM'] = {'Treatment of SAM': manman['Management of MAM'] }
 
     def get_child_progs(self):
-        self.child_progs = self.read_sheet('Programs for children', [0,1,2], 'dict')
+        self.child_progs = self.read_sheet('Programs for children', [0,1,2], to_odict=True)
 
     def get_pw_progs(self):
-        self.pw_progs = self.read_sheet('Programs for PW', [0,1,2], 'dict')
+        self.pw_progs = self.read_sheet('Programs for PW', [0,1,2], to_odict=True)
 
     def get_bo_risks(self):
         bo_sheet = self.read_sheet('Birth outcome risks', [0,1], skiprows=[0])
@@ -207,10 +207,12 @@ class DefaultParams(object):
                     packagesDict[packageName[0]] += ageModeTuple
         return packagesDict
 
-    def read_sheet(self, name, cols, dictOrient=None, skiprows=None):
+    def read_sheet(self, name, cols, dictOrient=None, skiprows=None, to_odict=False):
         df = self.spreadsheet.parse(name, index_col=cols, skiprows=skiprows).dropna(how='all')
         if dictOrient:
             df = df.to_dict(dictOrient)
+        elif to_odict:
+            df = df.to_dict(into=sc.odict)
         return df
 
     def make_dict(self, mydict):
@@ -357,7 +359,7 @@ class InputData(object):
         self.birth_int = fert.loc['Birth intervals'].to_dict()['Percentage of births in category']
 
     def get_incidences(self):
-        self.incidences = self.read_sheet('Incidence of conditions', [0], 'dict')
+        self.incidences = self.read_sheet('Incidence of conditions', [0], to_odict=True)
 
     def get_famplan_methods(self):
         self.famplan_methods = self.read_sheet('Programs family planning', [0], 'index')
@@ -378,7 +380,7 @@ class InputData(object):
         # list causes of death
         self.causes_death = self.death_dist.keys()
 
-    def read_sheet(self, name, cols, dict_orient=None, skiprows=None):
+    def read_sheet(self, name, cols, dict_orient=None, skiprows=None, to_odict=False):
         df = self.spreadsheet.parse(name, index_col=cols, skiprows=skiprows).dropna(how='all')
         if dict_orient:
             df = df.to_dict(dict_orient)
@@ -442,7 +444,7 @@ class ProgData(object):
         self.prog_deps = programDep
 
     def get_prog_info(self):
-        self.prog_info = self.read_sheet('Programs cost and coverage', [0], 'dict')
+        self.prog_info = self.read_sheet('Programs cost and coverage', [0], to_odict=True)
 
     def create_iycf(self):
         packages = self.define_iycf()
@@ -505,10 +507,12 @@ class ProgData(object):
             my_dict[key].update(newAgeGroups)
         return my_dict
 
-    def read_sheet(self, name, cols, dict_orient=None, skiprows=None):
+    def read_sheet(self, name, cols, dict_orient=None, skiprows=None, to_odict=False):
         df = self.spreadsheet.parse(name, index_col=cols, skiprows=skiprows).dropna(how='all')
         if dict_orient:
             df = df.to_dict(dict_orient)
+        elif to_odict:
+            df = df.to_dict(into=sc.odict)
         return df
 
 class UserOpts(object):
@@ -571,10 +575,12 @@ class OptimOptsTest(object):
         filter = opts['filter programs'][0]
         self.filter_progs = True if filter else False
 
-    def read_sheet(self, name, cols, dict_orient=None, skiprows=None):
+    def read_sheet(self, name, cols, dict_orient=None, skiprows=None, to_odict=False):
         df = self.spreadsheet.parse(name, index_col=cols, skiprows=skiprows).dropna(how='all')
         if dict_orient:
             df = df.to_dict(dict_orient)
+        elif to_odict:
+            df = df.to_dict(into=sc.odict)
         return df
 
 class ScenOptsTest(object):
@@ -620,10 +626,12 @@ class ScenOptsTest(object):
         for prog in self.prog_set: # only programs included
             self.scen[prog] = budget.loc[prog,'Spending'].tolist()
 
-    def read_sheet(self, name, cols, dict_orient=None, skiprows=None):
+    def read_sheet(self, name, cols, dict_orient=None, skiprows=None, to_odict=False):
         df = self.spreadsheet.parse(name, index_col=cols, skiprows=skiprows).dropna(how='all')
         if dict_orient:
             df = df.to_dict(dict_orient)
+        elif to_odict:
+            df = df.to_dict(into=sc.odict)
         return df
 
 class Dataset(object):
