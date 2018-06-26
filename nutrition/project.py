@@ -190,8 +190,10 @@ class Project(object):
             result = OptimResult(optim)
             self.add_result(result)
 
-    def get_results(self, result_key):
-        return self.results[result_key]
+    def get_results(self, result_keys):
+        """ result_keys is a list of keys corresponding to the desired result.
+        Return: a list of result objects """
+        return [self.results[key] for key in result_keys]
 
     def sensitivity(self):
         print('Not implemented')
