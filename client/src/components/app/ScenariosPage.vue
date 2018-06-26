@@ -139,46 +139,47 @@ Last update: 2018-05-29
         console.log('runScenarios() called')
 
         // Make sure they're saved first
-        this.setScenSummaries()
-
-        // Go to the server to get the results from the package set.
-        rpcservice.rpcCall('run_scenarios', [this.projectID()])
+        rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
           .then(response => {
-            this.serverresponse = response.data // Pull out the response data.
-            var n_plots = response.data.graphs.length
-            console.log('Rendering ' + n_plots + ' graphs')
 
-            for (var index = 0; index <= n_plots; index++) {
-              console.log('Rendering plot ' + index)
-              var divlabel = 'fig' + index
-              var div = document.getElementById(divlabel); // CK: Not sure if this is necessary? To ensure the div is clear first
-              while (div.firstChild) {
-                div.removeChild(div.firstChild);
-              }
-              try {
-                mpld3.draw_figure(divlabel, response.data.graphs[index]); // Draw the figure.
-              }
-              catch (err) {
-                console.log('failled:' + err.message);
-              }
-            }
+            // Go to the server to get the results from the package set.
+            rpcservice.rpcCall('run_scenarios', [this.projectID()])
+              .then(response => {
+                this.serverresponse = response.data // Pull out the response data.
+                var n_plots = response.data.graphs.length
+                console.log('Rendering ' + n_plots + ' graphs')
+
+                for (var index = 0; index <= n_plots; index++) {
+                  console.log('Rendering plot ' + index)
+                  var divlabel = 'fig' + index
+                  var div = document.getElementById(divlabel); // CK: Not sure if this is necessary? To ensure the div is clear first
+                  while (div.firstChild) {
+                    div.removeChild(div.firstChild);
+                  }
+                  try {
+                    mpld3.draw_figure(divlabel, response.data.graphs[index]); // Draw the figure.
+                  }
+                  catch (err) {
+                    console.log('failled:' + err.message);
+                  }
+                }
+              })
+              .catch(error => {
+                // Pull out the error message.
+                this.serverresponse = 'There was an error: ' + error.message
+
+                // Set the server error.
+                this.servererror = error.message
+              }).then(response => {
+              this.$notifications.notify({
+                message: 'Graphs created',
+                icon: 'ti-check',
+                type: 'success',
+                verticalAlign: 'top',
+                horizontalAlign: 'center',
+              });
+            })
           })
-          .catch(error => {
-            // Pull out the error message.
-            this.serverresponse = 'There was an error: ' + error.message
-
-            // Set the server error.
-            this.servererror = error.message
-          }).then( response => {
-          this.$notifications.notify({
-            message: 'Graphs created',
-            icon: 'ti-check',
-            type: 'success',
-            verticalAlign: 'top',
-            horizontalAlign: 'center',
-          });
-        })
-
       },
 
       clearGraphs() {
