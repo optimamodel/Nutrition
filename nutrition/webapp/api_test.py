@@ -21,6 +21,7 @@ D = nu.demo()
 
 #%% Scenarios
 
+
 #%% Optimizations
 
 

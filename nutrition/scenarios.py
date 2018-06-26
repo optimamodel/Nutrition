@@ -25,12 +25,15 @@ class Scen(object):
         covs = self.model.prog_info.get_cov_scen(self.scen_type, self.scen)
         self.model.run_sim(covs, restr_cov=False) # coverage restricted in previous func
 
-def make_scens(country, region, user_opts):
+def make_scens(country=None, region=None, user_opts=None, project=None, dataset=None):
     """ Define the custom scenarios by providing all necessary information.
     Scenarios defined by user specifications given by the GUI, while the other data remains fixed.
     These scenarios will be returned as a list so they can be added to Project
     """
-    demo_data, prog_data, default_params = data.get_data(country, region)
+    if project is None:
+        demo_data, prog_data, default_params = data.get_data(country, region)
+    else:
+        demo_data, prog_data, default_params = project.dataset(dataset).spit()
     scen_list = []
     # create all of the requested scenarios
     for opt in user_opts:

@@ -653,6 +653,10 @@ class Dataset(object):
         self.default_params = default_params
         self.modified = sc.today()
         return None
+    
+    def spit(self):
+        ''' Hopefully temporary function to spit out a tuple '''
+        return self.demo_data, self.prog_data, self.default_params
 
 
 def get_data(country, region, asobj=False):
