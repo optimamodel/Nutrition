@@ -1,6 +1,6 @@
 import sciris.core as sc
 from .model import Model
-from .scenarios import default_scens
+from .scenarios import default_scens, make_scens
 from .optimization import default_optims
 from .results import ScenResult, OptimResult
 from .data import Dataset
@@ -154,6 +154,12 @@ class Project(object):
         ''' Remove all results '''
         for key,result in self.results.items():
             self.results.pop(key)
+        
+    def add_scen(self, json=None):
+        ''' Super roundabout way to add a scenario '''
+        scen_list = make_scens(project=self, json=json)
+        self.add_scens(scen_list)
+        return None
 
     def add_scens(self, scen_list, overwrite=True):
         if overwrite: self.scens = sc.odict() # remove exist scenarios
@@ -172,15 +178,15 @@ class Project(object):
         keyname = result.name
         self.add(name=keyname, item=result, what='result')
 
-    def run_scens(self, scen_list=None, name=None):
+    def run_scens(self, scen_list=None):
         """Function for running scenarios"""
         if scen_list is not None: self.add_scens(scen_list) # replace existing scen list with new one
-        if name is None: name = 'scenarios'
         scens = sc.dcp(self.scens)
         for scen in scens.itervalues():
             scen.run_scen()
             result = ScenResult(scen)
             self.add_result(result)
+        return None
 
     def default_scens(self, key='default', dorun=None):
         default_scens(self, key=key, dorun=dorun)

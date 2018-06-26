@@ -25,7 +25,7 @@ class Scen(object):
         covs = self.model.prog_info.get_cov_scen(self.scen_type, self.scen)
         self.model.run_sim(covs, restr_cov=False) # coverage restricted in previous func
 
-def make_scens(country=None, region=None, user_opts=None, project=None, dataset=None):
+def make_scens(country=None, region=None, user_opts=None, json=None, project=None, dataset=None):
     """ Define the custom scenarios by providing all necessary information.
     Scenarios defined by user specifications given by the GUI, while the other data remains fixed.
     These scenarios will be returned as a list so they can be added to Project
@@ -36,12 +36,17 @@ def make_scens(country=None, region=None, user_opts=None, project=None, dataset=
         demo_data, prog_data, default_params = project.dataset(dataset).spit()
     scen_list = []
     # create all of the requested scenarios
-    for opt in user_opts:
-        # initialise pops and progs
-        prog_info = program_info.ProgramInfo(opt.prog_set, prog_data, default_params)
-        pops = populations.set_pops(demo_data, default_params)
-        # set up scenarios
-        scen = Scen(prog_info, pops, **opt.get_attr())
+    pops = populations.set_pops(demo_data, default_params)
+    if user_opts is not None:
+        for opt in user_opts:
+            # initialise pops and progs
+            prog_info = program_info.ProgramInfo(opt.prog_set, prog_data, default_params)
+            # set up scenarios
+            scen = Scen(prog_info, pops, **opt.get_attr())
+            scen_list.append(scen)
+    if json is not None:
+        prog_info = program_info.ProgramInfo(json['prog_set'], prog_data, default_params)
+        scen = Scen(prog_info, pops, json['scen_type'], json['scen'], json['name'], json['t'], json['prog_set'], active=True)
         scen_list.append(scen)
     return scen_list
 
