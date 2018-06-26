@@ -10,9 +10,6 @@ Last update: 2018-05-29
     <table class="table table-bordered table-hover table-striped" style="width: 100%">
       <thead>
       <tr>
-        <th>
-          <input type="checkbox" @click="selectAll()" v-model="allSelected"/>
-        </th>
         <th>Active</th>
         <th>Name</th>
         <th>Type</th>
@@ -40,8 +37,8 @@ Last update: 2018-05-29
     </table>
 
     <div>
-      <button class="btn __blue" @click="defaultScenario(activeProjectID)">Add scenario</button>
-      <button class="btn __green" @click="defaultScenario(activeProjectID)">Run scenarios</button>
+      <button class="btn __blue" @click="addScenario()">Add scenario</button>
+      <button class="btn __green" @click="runScenarios()">Run scenarios</button>
       <button class="btn" @click="clearGraphs()">Clear graphs</button>
     </div>
     <br>

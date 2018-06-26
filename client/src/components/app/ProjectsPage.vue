@@ -9,11 +9,11 @@ Last update: 2018-05-29
     <div class="PageSection">
 
       <div class="ControlsRow">
-        <button class="btn" @click="addDemoProject">Add demo project</button>
+        <button class="btn __blue" @click="addDemoProject">Create demo project</button>
         &nbsp; &nbsp;
-        <button class="btn" @click="createNewProjectModal">Create blank project</button>
+        <button class="btn __blue" @click="createNewProjectModal">Create blank project</button>
         &nbsp; &nbsp;
-        <button class="btn" @click="uploadProjectFromFile">Upload project from file</button>
+        <button class="btn __blue" @click="uploadProjectFromFile">Upload project from file</button>
         &nbsp; &nbsp;
       </div>
     </div>
@@ -97,10 +97,10 @@ Last update: 2018-05-29
             <td>{{ projectSummary.project.updatedTime ? projectSummary.project.updatedTime:
               'No modification' }}</td>
             <td style="white-space: nowrap">
+              <button class="btn __blue" @click="uploadDatabook(projectSummary.project.id)">Upload databook</button>
               <button class="btn" @click="copyProject(projectSummary.project.id)">Copy</button>
               <button class="btn" @click="renameProject(projectSummary)">Rename</button>
               <button class="btn" @click="downloadProjectFile(projectSummary.project.id)">Download</button>
-              <button class="btn" @click="uploadDatabook(projectSummary.project.id)">Upload databook</button>
             </td>
           </tr>
         </tbody>
