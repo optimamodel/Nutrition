@@ -28,6 +28,8 @@ D = nu.demo()
 
 #%% Scenarios
 if run_scens:
+    D.scens.clear() # Reset the odict
+    
     json = sc.odict()
     json['name'] = 'API test 1'
     json['scen_type'] = 'coverage'

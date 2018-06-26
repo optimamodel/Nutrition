@@ -53,7 +53,7 @@ class DefaultParams(object):
         self.get_iycf_effects(packages)
 
     def extend_treatsam(self):
-        treatsam = pandas.read_excel(self.input_path, sheetname='Treatment of SAM')
+        treatsam = pandas.read_excel(self.input_path, 'Treatment of SAM')
         add_man = treatsam.iloc[0]['Add extension']
         if pandas.notnull(add_man):
             self.man_mam = True
