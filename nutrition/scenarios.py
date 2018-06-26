@@ -7,7 +7,7 @@ from . import settings
 class Scen(object):
     def __init__(self, prog_info=None, pops=None, scen_type=None, scen=None, name=None, t=None, prog_set=None, active=True):
         
-        if t is None: t = settings.Settings.t
+        if t is None: t = settings.Settings().t
         
         self.scen_type = scen_type
         self.scen = scen
@@ -56,6 +56,6 @@ def make_scens(country=None, region=None, user_opts=None, json=None, project=Non
     if json is not None:
         json = sc.dcp(json) # Just to be sure, probably unnecessary
         prog_info = programs.ProgramInfo(json['prog_set'], prog_data, default_params)
-        scen = Scen(prog_info, pops, json['scen_type'], json['scen'], json['name'], json['t'], json['prog_set'], active=True)
+        scen = Scen(prog_info=prog_info, pops=pops, scen_type=json['scen_type'], scen=json['scen'], name=json['name'], prog_set=json['prog_set'], active=json['active'])
         scen_list.append(scen)
     return scen_list

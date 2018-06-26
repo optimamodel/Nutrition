@@ -25,7 +25,7 @@ Last update: 2018-05-29
           {{ scenSummary.scen_type }}
         </td>
         <td>
-          <input type="checkbox" @click="setScenSummaries" v-model="scenSummary.active"/>
+          <input type="checkbox" v-model="scenSummary.active"/>
         </td>
         <td style="white-space: nowrap">
           <button class="btn" @click="editScen(scenSummary)">Edit</button>
@@ -72,14 +72,6 @@ Last update: 2018-05-29
     },
 
     computed: {
-      activeProjectID() {
-        if (this.$store.state.activeProject.project === undefined) {
-          return ''
-        } else {
-          return this.$store.state.activeProject.project.id
-        }
-      },
-
       placeholders() {
         var indices = []
         for (var i = 0; i <= 100; i++) {
@@ -104,11 +96,16 @@ Last update: 2018-05-29
 
     methods: {
 
+      projectID() {
+        var id = this.$store.state.activeProject.project.id // Shorten this
+        return id
+      },
+
       getScenSummaries() {
         console.log('getScenSummaries() called')
 
         // Get the current user's scenaro summaries from the server.
-        rpcservice.rpcCall('get_scenario_info', [this.$store.state.activeProject.project.id])
+        rpcservice.rpcCall('get_scenario_info', [this.projectID()])
           .then(response => {
             this.scenSummaries = response.data // Set the scenarios to what we received.
 
@@ -126,7 +123,7 @@ Last update: 2018-05-29
         console.log('setScenSummaries() called')
 
         // Get the current user's scenaro summaries from the server.
-        rpcservice.rpcCall('set_scenario_info', [this.$store.state.activeProject.project.id, this.scenSummaries])
+        rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
           .then( response => {
             this.$notifications.notify({
               message: 'Scenarios saved',
@@ -138,11 +135,14 @@ Last update: 2018-05-29
           })
       },
 
-      defaultScenario(project_id) {
-        console.log('defaultScenario() called')
+      runScenarios() {
+        console.log('runScenarios() called')
+
+        // Make sure they're saved first
+        this.setScenSummaries()
 
         // Go to the server to get the results from the package set.
-        rpcservice.rpcCall('run_default_scenario', [project_id])
+        rpcservice.rpcCall('run_scenarios', [this.projectID()])
           .then(response => {
             this.serverresponse = response.data // Pull out the response data.
             var n_plots = response.data.graphs.length

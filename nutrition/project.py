@@ -226,9 +226,10 @@ class Project(object):
         scens = sc.dcp(self.scens)
         results = []
         for scen in scens.itervalues():
-            scen.run_scen()
-            result = ScenResult(scen)
-            results.append(result)
+            if scen.active:
+                scen.run_scen()
+                result = ScenResult(scen)
+                results.append(result)
         self.add_result(results, name='Scenarios')
         return None
 

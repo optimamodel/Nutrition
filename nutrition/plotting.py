@@ -3,13 +3,17 @@ import numpy as np
 import matplotlib.ticker as tk
 import sciris.core as sc
 
-def make_plots(all_res, toplot=None):
+def make_plots(all_res=None, toplot=None):
     """ res is a ScenResult or Result object (could be a list of these objects) from which all information can be extracted """
     ## Initialize
+    allplots = sc.odict()
     if toplot is None: toplot = ['prevs', 'outputs', 'alloc']
+    if all_res is None or all_res == []:
+        print('WARNING, no results selected to plot')
+        return allplots
+    
     toplot = sc.promotetolist(toplot)
     all_res = sc.promotetolist(all_res)
-    allplots = sc.odict()
     if 'prevs' in toplot: # WARNING, Does not work for OptimResult
         prevfigs = plot_prevs(all_res)
         allplots.update(prevfigs)

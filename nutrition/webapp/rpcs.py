@@ -127,6 +127,7 @@ def save_project(proj):
     
     # Copy the project, only save what we want...
     new_project = sc.dcp(proj)
+    new_project.modified = sc.today()
          
     # Create the new project entry and enter it into the ProjectCollection.
     # Note: We don't need to pass in project.uid as a 3rd argument because 
@@ -512,7 +513,7 @@ def get_scenario_info(project_id):
             js_scen['spec'].append(this_spec)
         scenario_summaries.append(js_scen)
     
-    print('\n\n\nScenario info:')
+    print('JavaScript scenario info:')
     print(scenario_summaries)
 
     return scenario_summaries
@@ -529,43 +530,34 @@ def set_scenario_info(project_id, scenario_summaries):
     for j,js_scen in enumerate(scenario_summaries):
         print('Setting scenario %s of %s...' % (j+1, len(scenario_summaries)))
         json = sc.odict()
-        json['name'] = js_scen['name']
-        json['scen_type'] = js_scen['scen_type']
-        json['prog_set'] = []
+        for attr in ['name', 'scen_type', 'active']: # Copy these directly
+            json[attr] = js_scen[attr]
+        json['prog_set'] = [] # These require more TLC
         json['scen'] = sc.odict()
         for js_spec in js_scen['spec']:
             if js_spec['included']:
                 json['prog_set'].append(js_spec['name'])
                 json['scen'][js_spec['name']] = js_spec['vals']
         
+        print('Python scenario info for scenario %s:' % (j+1))
+        print(json)
+        
         proj.add_scen(json=json)
+    
+    print('Saving project...')
+    save_project(proj)   
     
     return None
 
 
 @register_RPC(validation_type='nonanonymous user')    
-def run_default_scenario(project_id):
+def run_scenarios(project_id):
     
-    print('Running default scenario...')
+    print('Running scenarios...')
     proj = load_project(project_id, raise_exception=True)
     
-    from numpy import nan
-    
-    json = sc.odict()
-    json['name'] = 'API test 1'
-    json['scen_type'] = 'coverage'
-    json['t'] = [2017,2025]
-    json['prog_set'] = ['Cash transfers', 'IFA fortification of maize', 'IFAS for pregnant women (community)', 'IPTp', 'IYCF 1', 'Micronutrient powders', 'Treatment of SAM', 'Vitamin A supplementation', 'Zinc for treatment + ORS']
-    json['scen'] = {'Vitamin A supplementation': [nan, 0.94996, nan, nan, nan, nan, nan, nan, nan], 'IYCF 1': [nan, 0.94996, nan, nan, nan, nan, nan, nan, nan], 'IPTp': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'IFA fortification of maize': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'Zinc for treatment + ORS': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'IFAS for pregnant women (community)': [nan, 0.94996, nan, nan, nan, nan, nan, nan, nan], 'Treatment of SAM': [nan, 0.94996, nan, nan, nan, nan, nan, nan, nan], 'Micronutrient powders': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'Cash transfers': [nan, nan, nan, nan, nan, nan, nan, nan, nan]}
-    proj.add_scen(json=json)
-    
-    json2 = sc.dcp(json)
-    json2['name'] = 'API test 2'
-    json2['scen'] = {'Vitamin A supplementation': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'IYCF 1': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'IPTp': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'IFA fortification of maize': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'Zinc for treatment + ORS': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'IFAS for pregnant women (community)': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'Treatment of SAM': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'Micronutrient powders': [nan, nan, nan, nan, nan, nan, nan, nan, nan], 'Cash transfers': [nan, nan, nan, nan, nan, nan, nan, nan, nan]}
-    proj.add_scen(json=json2)
-    
     proj.run_scens()
-    figs = proj.plot()
+    figs = proj.plot(toplot=['prevs', 'outputs']) # Do not plot allocation
     graphs = []
     for f,fig in enumerate(figs.values()):
         for ax in fig.get_axes():
