@@ -522,42 +522,7 @@ def make_mpld3_graph_dict(fig):
     return mpld3_dict
 
 
-def supported_plots_func():
-    
-    supported_plots = {
-            'Population size':'alive',
-            'Latent infections':'lt_inf',
-            'Active TB':'ac_inf',
-            'Active DS-TB':'ds_inf',
-            'Active MDR-TB':'mdr_inf',
-            'Active XDR-TB':'xdr_inf',
-            'New active DS-TB':{'New active DS-TB':['pd_div:flow','nd_div:flow']},
-            'New active MDR-TB':{'New active MDR-TB':['pm_div:flow','nm_div:flow']},
-            'New active XDR-TB':{'New active XDR-TB':['px_div:flow','nx_div:flow']},
-            'Smear negative active TB':'sn_inf',
-            'Smear positive active TB':'sp_inf',
-            'Latent diagnoses':{'Latent diagnoses':['le_treat:flow','ll_treat:flow']},
-            'New active TB diagnoses':{'Active TB diagnos4es':['pd_diag:flow','pm_diag:flow','px_diag:flow','nd_diag:flow','nm_diag:flow','nx_diag:flow']},
-            'New active DS-TB diagnoses':{'Active DS-TB diagnoses':['pd_diag:flow','nd_diag:flow']},
-            'New active MDR-TB diagnoses':{'Active MDR-TB diagnoses':['pm_diag:flow','nm_diag:flow']},
-            'New active XDR-TB diagnoses':{'Active XDR-TB diagnoses':['px_diag:flow','nx_diag:flow']},
-            'Latent treatment':'ltt_inf',
-            'Active treatment':'num_treat',
-            'TB-related deaths':':ddis',
-            }
-    
-    return supported_plots
 
-
-@register_RPC(validation_type='nonanonymous user')    
-def get_supported_plots(only_keys=False):
-    
-    supported_plots = supported_plots_func()
-    
-    if only_keys:
-        return supported_plots.keys()
-    else:
-        return supported_plots
 
 
 def get_plots(project_id, plot_names=None, pops='all'):
