@@ -92,12 +92,12 @@ def plot_outputs(all_res):
 
 # TODO: want to compare the total outcomes across scenarios
 
-def plot_alloc(all_res):
+def plot_alloc(res):
     """ Plot the program allocations from an optimization, alongside current allocation """
     # TODO: WARNING: Cannot plot multiple objectives. Would like Optim to only take 1 objective each, then this will be resolved.
-    if len(all_res)>1:
-        print('WARNING, not currently enabled to plot more than one allocation, you have asked for %s' % len(all_res))
-    res = all_res[0]
+#    if len(all_res)>1:
+#        print('WARNING, not currently enabled to plot more than one allocation, you have asked for %s' % len(all_res))
+#    res = all_res[0]
     xlabs = ['current'] + res.mults
     x = np.arange(len(xlabs))
     width = 0.35

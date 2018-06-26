@@ -29,7 +29,7 @@ register_RPC = sw.make_register_RPC(RPC_dict)
 
         
 #
-# Other functions (mostly helpers for the RPCs)
+#%% Other functions (mostly helpers for the RPCs)
 #
     
 

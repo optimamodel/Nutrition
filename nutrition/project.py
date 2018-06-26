@@ -264,8 +264,8 @@ def demo():
     
     # Create project and data
     P = Project(name)
-    D = Dataset(country, region, doload=True)
-    P.datasets[D.name] = D
+    dataset = Dataset(country, region, doload=True)
+    P.datasets[dataset.name] = dataset
     
     # Create scenarios and optimizations
     P.default_scens()

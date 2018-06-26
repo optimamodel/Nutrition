@@ -6,6 +6,8 @@ import os
 from numpy import nan
 import sciris.core as sc
 import nutrition.ui as nu
+import nutrition as on
+
 
 
 #%% Setup
@@ -64,7 +66,9 @@ if run_optims:
     
     D.run_optims()
     if doplot:
-        figs = D.plot()
+#        res = D.get_results(['Optimization test 1'])
+#        allplots = on.plotting.make_plots(res, toplot=['alloc'])
+        figs = D.plot(toplot='alloc')
 
 
 
