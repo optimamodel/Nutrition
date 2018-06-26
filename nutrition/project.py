@@ -1,4 +1,4 @@
-from sciris.core import odict, uuid, today, gitinfo, objrepr, getdate, printv, makefilepath, saveobj, dcp
+import sciris.core as sc
 from .model import Model
 from .scenarios import default_scens
 from .optimization import default_optims
@@ -42,18 +42,18 @@ class Project(object):
         ''' Initialize the project '''
 
         ## Define the structure sets
-        self.datasets    = odict()
-        self.scens       = odict()
-        self.optims      = odict()
-        self.results     = odict()
+        self.datasets    = sc.odict()
+        self.scens       = sc.odict()
+        self.optims      = sc.odict()
+        self.results     = sc.odict()
 
         ## Define other quantities
         self.name = name
-        self.uid = uuid()
-        self.created = today()
-        self.modified = today()
+        self.uid = sc.uuid()
+        self.created = sc.today()
+        self.modified = sc.today()
         self.version = version
-        self.gitinfo = gitinfo(__file__)
+        self.gitinfo = sc.gitinfo(__file__)
         self.filename = None # File path, only present if self.save() is used
         self.warnings = None # Place to store information about warnings (mostly used during migrations)
 
@@ -66,7 +66,7 @@ class Project(object):
 
     def __repr__(self):
         ''' Print out useful information when called '''
-        output = objrepr(self)
+        output = sc.objrepr(self)
         output += '      Project name: %s\n'    % self.name
         output += '\n'
         output += '          Datasets: %i\n'    % len(self.datasets)
@@ -74,8 +74,8 @@ class Project(object):
         output += '     Optimizations: %i\n'    % len(self.optims)
         output += '      Results sets: %i\n'    % len(self.results)
         output += '\n'
-        output += '      Date created: %s\n'    % getdate(self.created)
-        output += '     Date modified: %s\n'    % getdate(self.modified)
+        output += '      Date created: %s\n'    % sc.getdate(self.created)
+        output += '     Date modified: %s\n'    % sc.getdate(self.modified)
         output += '               UID: %s\n'    % self.uid
         output += '  Optima Nutrition: v%s\n'   % self.version
         output += '        Git branch: %s\n'    % self.gitinfo['branch']
@@ -87,7 +87,7 @@ class Project(object):
     
     def getinfo(self):
         ''' Return an odict with basic information about the project'''
-        info = odict()
+        info = sc.odict()
         for attr in ['name', 'version', 'created', 'modified', 'gitbranch', 'gitversion', 'uid']:
             info[attr] = getattr(self, attr) # Populate the dictionary
 #        info['parsetkeys'] = self.parsets.keys()
@@ -97,14 +97,14 @@ class Project(object):
     
     def save(self, filename=None, folder=None, saveresults=False, verbose=2):
         ''' Save the current project, by default using its name, and without results '''
-        fullpath = makefilepath(filename=filename, folder=folder, default=[self.filename, self.name], ext='prj', sanitize=True)
+        fullpath = sc.makefilepath(filename=filename, folder=folder, default=[self.filename, self.name], ext='prj', sanitize=True)
         self.filename = fullpath # Store file path
         if saveresults:
-            saveobj(fullpath, self, verbose=verbose)
+            sc.saveobj(fullpath, self, verbose=verbose)
         else:
-            tmpproject = dcp(self) # Need to do this so we don't clobber the existing results
+            tmpproject = sc.dcp(self) # Need to do this so we don't clobber the existing results
             tmpproject.cleanresults() # Get rid of all results
-            saveobj(fullpath, tmpproject, verbose=verbose) # Save it to file
+            sc.saveobj(fullpath, tmpproject, verbose=verbose) # Save it to file
             del tmpproject # Don't need it hanging around any more
         return fullpath
 
@@ -113,13 +113,13 @@ class Project(object):
         structlist = self.getwhat(what=what)
         structlist[name] = item
         print 'Item "{}" added to "{}"'.format(name, what)
-        self.modified = today()
+        self.modified = sc.today()
 
     def remove(self, what, name):
         structlist = self.getwhat(what=what)
         structlist.pop(name)
         print '{} "{}" removed'.format(what, name)
-        self.modified = today()
+        self.modified = sc.today()
 
     def getwhat(self, what):
         '''
@@ -142,7 +142,13 @@ class Project(object):
         ''' Shortcut for getting the latest model, i.e. self.datasets[-1] '''
         if key is None: key = -1
         try:    return self.datasets[key]
-        except: return printv('Warning, dataset set not found!', 1, verbose) # Returns None
+        except: return sc.printv('Warning, dataset set not found!', 1, verbose) # Returns None
+    
+    def scen(self, key=None, verbose=2):
+        ''' Shortcut for getting the latest model, i.e. self.datasets[-1] '''
+        if key is None: key = -1
+        try:    return self.scens[key]
+        except: return sc.printv('Warning, scenario not found!', 1, verbose) # Returns None
     
     def cleanresults(self):
         ''' Remove all results '''
@@ -150,16 +156,16 @@ class Project(object):
             self.results.pop(key)
 
     def add_scens(self, scen_list, overwrite=True):
-        if overwrite: self.scens = {} # remove exist scenarios
+        if overwrite: self.scens = sc.odict() # remove exist scenarios
         for scen in scen_list:
             self.add(name=scen.name, item=scen, what='scen', overwrite=True)
-        self.modified = today()
+        self.modified = sc.today()
 
     def add_optims(self, optim_list, overwrite=True):
         if overwrite: self.optims = {} # remove exist scenarios
         for optim in optim_list:
             self.add(name=optim.name, item=optim, what='optim', overwrite=True)
-        self.modified = today()
+        self.modified = sc.today()
 
     def add_result(self, result):
         """Add result by name"""
@@ -170,7 +176,7 @@ class Project(object):
         """Function for running scenarios"""
         if scen_list is not None: self.add_scens(scen_list) # replace existing scen list with new one
         if name is None: name = 'scenarios'
-        scens = dcp(self.scens)
+        scens = sc.dcp(self.scens)
         for scen in scens.itervalues():
             scen.run_scen()
             result = ScenResult(scen)
@@ -185,7 +191,7 @@ class Project(object):
     def run_optims(self, optim_list=None, name=None):
         if optim_list is not None: self.add_optims(optim_list)
         if name is None: name = 'optimizations'
-        optims = dcp(self.optims)
+        optims = sc.dcp(self.optims)
         for optim in optims.itervalues():
             optim.run_optim()
             result = OptimResult(optim)
