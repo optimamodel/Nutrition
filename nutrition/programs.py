@@ -53,7 +53,7 @@ class Program(object):
         """ cov: a list of coverages with one-to-one correspondence with all_years
         restr_cov: boolean indicating if the coverages are restricted or unrestricted """
         years = numpy.array(self.all_years)
-        cov_list = numpy.array(cov)
+        cov_list = numpy.array(cov, dtype=float) # Force type conversion to handle None instead of nan
         not_nan = numpy.logical_not(numpy.isnan(cov_list))
         if any(not_nan):
             # for 1 or more present values, baseline up to first present value, interpolate between, then constant if end values missing

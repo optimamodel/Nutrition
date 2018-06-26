@@ -53,6 +53,36 @@ def plot_prevs(all_res):
             leglabels.append(res.name)
         row.set_ylim([0, ymax + ymax*0.1])
     pl.figlegend(lines, [res.name for res in all_res], loc='right', ncol=1)
+    
+#    fig = pl.figure()
+#    pl.plot([0,1,2,3],[2,3,4,2])
+#    pl.xlabel('foo')
+#    pl.ylabel('bar')
+#    pl.title('cat')
+    
+    # Create plot
+#    axsize  = (0.45, 0.15, 0.5, 0.8)
+#    figsize = (12,5)
+#    barw     = 0.8
+#    barcolor = (0.7,0,0.3)
+#    barvals = [4,6,3,5]
+#    thisxlabel = 'fooo'
+#    barlabels = ['foo','bar','foo','bar']
+#    unitstr = 'au'
+#    thistitle = 'oosh'
+#    fig = pl.figure(facecolor='none', figsize=figsize)
+#    ax = fig.add_axes(axsize)
+#    ax.set_facecolor('none')
+#    
+#    yaxis = pl.arange(len(barvals), 0, -1)
+#    pl.barh(yaxis, barvals, height=barw, facecolor=barcolor, edgecolor='none')
+#    ax.set_yticks(pl.arange(4, 0, -1))    
+#    ax.set_yticklabels(barlabels)
+#    
+#    sc.SIticks(ax=ax,axis='x')
+#    ax.set_xlabel(thisxlabel+unitstr)
+#    ax.set_title(thistitle)
+#    sc.boxoff()
     return fig
 
 def plot_outputs(all_res):

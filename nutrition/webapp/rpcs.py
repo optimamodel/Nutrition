@@ -79,7 +79,7 @@ def load_project_summary_from_project_record(project_record):
   
 def load_current_user_project_summaries2():
     """
-    Return project summaries for all projects the user has to the client.
+    Return project summaries for all projects the user has to the client. -- WARNING, fix!
     """ 
     
     # Get the prj.ProjectSO entries matching the user UID.
@@ -89,6 +89,14 @@ def load_current_user_project_summaries2():
     # just got.
     return {'projects': map(load_project_summary_from_project_record, 
         project_entries)}
+
+@register_RPC(validation_type='nonanonymous user')
+def load_current_user_project_summaries():
+    """
+    Return project summaries for all projects the user has to the client.
+    """ 
+    
+    return load_current_user_project_summaries2()
                 
 def get_unique_name(name, other_names=None):
     """
@@ -157,38 +165,7 @@ def save_project_as_new(proj, user_id):
     
     return None
 
-def get_burden_set_fe_repr(burdenset):
-    obj_info = {
-        'burdenset': {
-            'name': burdenset.name,
-            'uid': burdenset.uid,
-            'creationTime': burdenset.created,
-            'updateTime': burdenset.modified
-        }
-    }
-    return obj_info
 
-def get_interv_set_fe_repr(interv_set):
-    obj_info = {
-        'intervset': {
-            'name': interv_set.name,
-            'uid': interv_set.uid,
-            'creationTime': interv_set.created,
-            'updateTime': interv_set.modified
-        }
-    }
-    return obj_info
-
-def get_package_set_fe_repr(packageset):
-    obj_info = {
-        'packageset': {
-            'name': packageset.name,
-            'uid': packageset.uid,
-            'creationTime': packageset.created,
-            'updateTime': packageset.modified
-        }
-    }
-    return obj_info
 
 #
 # RPC functions
@@ -249,13 +226,6 @@ def load_project_summary(project_id):
     # Return a project summary from the accessed prj.ProjectSO entry.
     return load_project_summary_from_project_record(project_entry)
 
-@register_RPC(validation_type='nonanonymous user')
-def load_current_user_project_summaries():
-    """
-    Return project summaries for all projects the user has to the client.
-    """ 
-    
-    return load_current_user_project_summaries2()
 
 @register_RPC(validation_type='nonanonymous user')                
 def load_all_project_summaries():
@@ -525,116 +495,49 @@ def make_mpld3_graph_dict(fig):
 
 
 
-def get_plots(project_id, plot_names=None, pops='all'):
-    
-    import pylab as pl
-    
-    supported_plots = supported_plots_func() 
-    
-    if plot_names is None: plot_names = supported_plots.keys()
 
-    proj = load_project(project_id, raise_exception=True)
-    
-    plot_names = sc.promotetolist(plot_names)
-    result = proj.results[-1]
-
-    figs = []
-    graphs = []
-    for plot_name in plot_names:
-        try:
-            plotdata = on.PlotData([result], outputs=supported_plots[plot_name], project=proj, pops=pops)
-            figs += on.plot_series(plotdata, data=proj.data) # Todo - customize plot formatting here
-            pl.gca().set_facecolor('none')
-            print('Plot %s succeeded' % (plot_name))
-        except Exception as E:
-            print('WARNING: plot %s failed (%s)' % (plot_name, repr(E)))
-    
-    for f,fig in enumerate(figs):
-        graph_dict = make_mpld3_graph_dict(fig)
-        graphs.append(graph_dict)
-        print('Converted figure %s of %s' % (f+1, len(figs)))
-
-    return {'graphs':graphs}
-
-
-@register_RPC(validation_type='nonanonymous user')    
-def get_y_factors(project_id, parsetname=-1):
-    print('Getting y factors...')
-    y_factors = []
-    proj = load_project(project_id, raise_exception=True)
-    parset = proj.parsets[parsetname]
-    for par_type in ["cascade", "comps", "characs"]:
-        for parname in parset.par_ids[par_type].keys():
-            thispar = parset.get_par(parname)
-            for popname,y_factor in thispar.y_factor.items():
-                thisdict = {'parname':parname, 'popname':popname, 'value':y_factor}
-                y_factors.append(thisdict)
-                print(thisdict)
-    print('Returning %s y-factors' % len(y_factors))
-    return y_factors
-
-
-@register_RPC(validation_type='nonanonymous user')    
-def set_y_factors(project_id, y_factors, parsetname=-1):
-    print('Setting y factors...')
-    proj = load_project(project_id, raise_exception=True)
-    parset = proj.parsets[parsetname]
-    for par in y_factors:
-        value = float(par['value'])
-        parset.get_par(par['parname']).y_factor[par['popname']] = value
-        if value != 1:
-            print('Modified: %s' % par)
-    
-    proj.modified = sc.today()
-    proj.run_sim(parset=parsetname, store_results=True)
-    save_project(proj)    
-    output = get_plots(proj.uid)
-    return output
 
 
 @register_RPC(validation_type='nonanonymous user')    
 def run_default_scenario(project_id):
     
-    import pylab as pl
-    
     print('Running default scenario...')
     proj = load_project(project_id, raise_exception=True)
     
-    scvalues = dict()
-
-    scen_par = "spd_infxness"
-    scen_pop = "15-64"
-    scen_outputs = ["lt_inf", "ac_inf"]
-
-    scvalues[scen_par] = dict()
-    scvalues[scen_par][scen_pop] = dict()
-
-    # Insert (or possibly overwrite) one value.
-    scvalues[scen_par][scen_pop]["y"] = [0.125]
-    scvalues[scen_par][scen_pop]["t"] = [2015.]
-    scvalues[scen_par][scen_pop]["smooth_onset"] = [2]
-
-    proj.make_scenario(name="varying_infections", instructions=scvalues)
-    proj.run_scenario(scenario="varying_infections", parset="default", result_name="scen1")
-
-    # Insert two values and eliminate everything between them.
-    scvalues[scen_par][scen_pop]["y"] = [0.125, 0.5]
-    scvalues[scen_par][scen_pop]["t"] = [2015., 2020.]
-    scvalues[scen_par][scen_pop]["smooth_onset"] = [2, 3]
-
-    proj.make_scenario(name="varying_infections2", instructions=scvalues)
-    proj.run_scenario(scenario="varying_infections2", parset="default", result_name="scen2")
+    json = sc.odict()
+    json['name'] = 'API test'
+    json['scen_type'] = 'coverage'
+    json['t'] = [2017,2025]
+    json['prog_set'] = ['Cash transfers', 'IFA fortification of maize', 'IFAS for pregnant women (community)', 'IPTp', 'IYCF 1', 'Micronutrient powders', 'Treatment of SAM', 'Vitamin A supplementation', 'Zinc for treatment + ORS']
+    json['scen'] = {
+        'Vitamin A supplementation': [None, 0.94999999999999996, None, None, None, None, None, None, None], 
+        'IYCF 1': [None, 0.94999999999999996, None, None, None, None, None, None, None], 
+        'IPTp': [None, None, None, None, None, None, None, None, None], 
+        'IFA fortification of maize': [None, None, None, None, None, None, None, None, None], 
+        'Zinc for treatment + ORS': [None, None, None, None, None, None, None, None, None], 
+        'IFAS for pregnant women (community)': [None, 0.94999999999999996, None, None, None, None, None, None, None], 
+        'Treatment of SAM': [None, 0.94999999999999996, None, None, None, None, None, None, None], 
+        'Micronutrient powders': [None, None, None, None, None, None, None, None, None], 
+        'Cash transfers': [None, None, None, None, None, None, None, None, None]}
+    proj.add_scen(json=json)
+    proj.run_scens()
     
-    figs = []
+    figs = proj.result().plot()
     graphs = []
-    d = on.PlotData([proj.results["scen1"],proj.results["scen2"]], outputs=scen_outputs, pops=[scen_pop])
-    figs += on.plot_series(d, axis="results")
-    pl.gca().set_facecolor('none')
-    
-    for f,fig in enumerate(figs):
+    for f,fig in enumerate(figs.values()):
+        for ax in fig.get_axes():
+            ax.set_facecolor('none')
         graph_dict = make_mpld3_graph_dict(fig)
         graphs.append(graph_dict)
         print('Converted figure %s of %s' % (f+1, len(figs)))
+        print('\n'*10+"TESSSSSSSSSSSSSSSSSSSSSSSSTTTTTTTTTTTTTTTTTTTTTTTTTT")
+        print('#####################################################################')
+        print('#####################################################################')
+        print('#####################################################################')
+        print(graph_dict)
+        print('#####################################################################')
+        print('#####################################################################')
+        print('#####################################################################')
     
     print('Saving project...')
     save_project(proj)    
