@@ -5,6 +5,9 @@ import sciris.core as sc
 
 class Scen(object):
     def __init__(self, prog_info=None, pops=None, scen_type=None, scen=None, name=None, t=None, prog_set=None, active=True):
+        
+        if t is None: t = [2017,2025] # WARNING, find a better way of doing this!
+        
         self.scen_type = scen_type
         self.scen = scen
         self.name = name
@@ -28,6 +31,11 @@ class Scen(object):
         covs = self.model.prog_info.get_cov_scen(self.scen_type, self.scen)
         self.model.run_sim(covs, restr_cov=False) # coverage restricted in previous func
         return None
+    
+    def n_years(self):
+        ''' Count how many years the scenario is '''
+        output = len(self.all_years)
+        return output
 
 def make_scens(country=None, region=None, user_opts=None, json=None, project=None, dataset=None):
     """ Define the custom scenarios by providing all necessary information.

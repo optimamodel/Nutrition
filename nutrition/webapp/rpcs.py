@@ -27,10 +27,11 @@ RPC_dict = {}
 # RPC registration decorator factory created using call to make_register_RPC().
 register_RPC = sw.make_register_RPC(RPC_dict)
 
+
         
-#
+###############################################################
 #%% Other functions (mostly helpers for the RPCs)
-#
+##############################################################
     
 
 def load_project_record(project_id, raise_exception=True):
@@ -89,14 +90,6 @@ def load_current_user_project_summaries2():
     # just got.
     return {'projects': map(load_project_summary_from_project_record, 
         project_entries)}
-
-@register_RPC(validation_type='nonanonymous user')
-def load_current_user_project_summaries():
-    """
-    Return project summaries for all projects the user has to the client.
-    """ 
-    
-    return load_current_user_project_summaries2()
                 
 def get_unique_name(name, other_names=None):
     """
@@ -167,11 +160,13 @@ def save_project_as_new(proj, user_id):
 
 
 
-#
-# RPC functions
-#
 
-# RPC definitions
+
+##################################################################################
+#%% Project RPCs
+##################################################################################
+
+# Not a project RPC, but doesn't really belong
 @register_RPC()
 def get_version_info():
 	''' Return the information about the project. '''
@@ -185,10 +180,6 @@ def get_version_info():
 	}
 	return version_info
 
-
-##
-## Project RPCs
-##
     
 @register_RPC(validation_type='nonanonymous user')
 def get_scirisdemo_projects():
@@ -225,6 +216,15 @@ def load_project_summary(project_id):
     
     # Return a project summary from the accessed prj.ProjectSO entry.
     return load_project_summary_from_project_record(project_entry)
+
+
+@register_RPC(validation_type='nonanonymous user')
+def load_current_user_project_summaries():
+    """
+    Return project summaries for all projects the user has to the client.
+    """ 
+    
+    return load_current_user_project_summaries2()
 
 
 @register_RPC(validation_type='nonanonymous user')                
@@ -482,20 +482,71 @@ def create_project_from_prj_file(prj_filename, user_id):
     return { 'projectId': str(proj.uid) }
 
 
+##################################################################################
+#%% Analysis RPCs
+##################################################################################
+
 
 
 # TODO: move this into the helper functions.  It's here now for testing 
 # purposes.  Or, maybe remove dependency on this entirely, since it's a one-
 # liner.
-def make_mpld3_graph_dict(fig):
-    mpld3_dict = mpld3.fig_to_dict(fig)
-    return mpld3_dict
+
+
+@register_RPC(validation_type='nonanonymous user')    
+def get_scenario_info(project_id):
+
+    print('Getting scenario info...')
+    proj = load_project(project_id, raise_exception=True)
+    
+    scenario_summaries = []
+    attrs = ['name', 'active', 'scen_type']
+    for py_scen in proj.scens.values():
+        js_scen = {}
+        for attr in attrs:
+            js_scen[attr] = getattr(py_scen, attr) # Copy the attributes into a dictionary
+        js_scen['spec'] = []
+        for prog_name in proj.dataset().prog_names():
+            this_spec = {}
+            this_spec['name'] = prog_name
+            this_spec['included'] = True if prog_name in py_scen.prog_set else False
+            this_spec['vals'] = []
+            if prog_name in py_scen.scen:
+                this_spec['vals'] = py_scen.scen[prog_name]
+            else:
+                this_spec['vals'] = [None]*py_scen.n_years()
+            js_scen['spec'].append(this_spec)
+        scenario_summaries.append(js_scen)
+    
+    print('\n\n\nScenario info:')
+    print(scenario_summaries)
+
+    return scenario_summaries
 
 
 
+@register_RPC(validation_type='nonanonymous user')    
+def set_scenario_info(project_id, scenario_summaries):
 
-
-
+    print('Setting scenario info...')
+    proj = load_project(project_id, raise_exception=True)
+    proj.scens.clear()
+    
+    for j,js_scen in enumerate(scenario_summaries):
+        print('Setting scenario %s of %s...' % (j+1, len(scenario_summaries)))
+        json = sc.odict()
+        json['name'] = js_scen['name']
+        json['scen_type'] = js_scen['scen_type']
+        json['prog_set'] = []
+        json['scen'] = sc.odict()
+        for js_spec in js_scen['spec']:
+            if js_spec['included']:
+                json['prog_set'].append(js_spec['name'])
+                json['scen'][js_spec['name']] = js_spec['vals']
+        
+        proj.add_scen(json=json)
+    
+    return None
 
 
 @register_RPC(validation_type='nonanonymous user')    
@@ -525,7 +576,7 @@ def run_default_scenario(project_id):
     for f,fig in enumerate(figs.values()):
         for ax in fig.get_axes():
             ax.set_facecolor('none')
-        graph_dict = make_mpld3_graph_dict(fig)
+        graph_dict = mpld3.fig_to_dict(fig)
         graphs.append(graph_dict)
         print('Converted figure %s of %s' % (f+1, len(figs)))
     

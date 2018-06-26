@@ -13,6 +13,9 @@ class Optim(object):
     def __init__(self, prog_info=None, pops=None, name=None, t=None, objs=None, mults=None, prog_set=None, active=True, 
                  parallel=True, num_runs=1, add_funds=0, fix_curr=False, rem_curr=False, curve_type='linear', 
                  filter_progs=True, maxiter=5, swarmsize=10, num_procs=None):
+        
+        if t is None: t = [2017,2025] # WARNING, find a better way of doing this!
+        
         self.name = name
         self.objs = objs
         self.mults = mults
