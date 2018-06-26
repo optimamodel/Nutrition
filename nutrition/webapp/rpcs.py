@@ -18,7 +18,7 @@ import sciris.weblib.user as user
 import sciris.core as sc
 import sciris.web as sw
 
-import nutrition as on
+import nutrition.ui as nu
 from . import projects as prj
 
 # Dictionary to hold all of the registered RPCs in this module.
@@ -200,8 +200,8 @@ def get_version_info():
 	''' Return the information about the project. '''
 	gitinfo = sc.gitinfo(__file__)
 	version_info = {
-	       'version':   on.version,
-	       'date':      on.versiondate,
+	       'version':   nu.version,
+	       'date':      nu.versiondate,
 	       'gitbranch': gitinfo['branch'],
 	       'githash':   gitinfo['hash'],
 	       'gitdate':   gitinfo['date'],
@@ -357,7 +357,7 @@ def add_demo_project(user_id):
     new_proj_name = get_unique_name('Demo project', other_names=None)
     
     # Create the project, loading in the desired spreadsheets.
-    proj = on.demo() 
+    proj = nu.demo() 
     proj.name = new_proj_name
     
     # Display the call information.
@@ -383,7 +383,7 @@ def create_new_project(user_id, proj_name, num_pops, data_start, data_end):
     new_proj_name = get_unique_name(proj_name, other_names=None)
     
     # Create the project, loading in the desired spreadsheets.
-    proj = on.Project(name=new_proj_name)
+    proj = nu.Project(name=new_proj_name)
     
     # Display the call information.
     # TODO: have this so that it doesn't show when logging is turned off
@@ -537,7 +537,7 @@ def supported_plots_func():
             'Smear negative active TB':'sn_inf',
             'Smear positive active TB':'sp_inf',
             'Latent diagnoses':{'Latent diagnoses':['le_treat:flow','ll_treat:flow']},
-            'New active TB diagnoses':{'Active TB diagnoses':['pd_diag:flow','pm_diag:flow','px_diag:flow','nd_diag:flow','nm_diag:flow','nx_diag:flow']},
+            'New active TB diagnoses':{'Active TB diagnos4es':['pd_diag:flow','pm_diag:flow','px_diag:flow','nd_diag:flow','nm_diag:flow','nx_diag:flow']},
             'New active DS-TB diagnoses':{'Active DS-TB diagnoses':['pd_diag:flow','nd_diag:flow']},
             'New active MDR-TB diagnoses':{'Active MDR-TB diagnoses':['pm_diag:flow','nm_diag:flow']},
             'New active XDR-TB diagnoses':{'Active XDR-TB diagnoses':['px_diag:flow','nx_diag:flow']},

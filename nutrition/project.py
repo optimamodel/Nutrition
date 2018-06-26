@@ -198,9 +198,9 @@ class Project(object):
     def sensitivity(self):
         print('Not implemented')
 
-def default_project():
-    name = 'default'
-    p = Project(name)
-    p.default_scens()
-    p.default_optims()
-    return pc
+def demo():
+    name = 'Demo project'
+    P = Project(name)
+    P.default_scens()
+    P.default_optims()
+    return P

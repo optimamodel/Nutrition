@@ -19,11 +19,8 @@ Now, the legal part:
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-Version: 2018jun04 by cliffk
+Version: 2018jun26 by cliffk
 """
-
-# Specify the version, for the purposes of figuring out which version was used to create a project
-from .version import version, versiondate
 
 #####################################################################################################################
 ### Define debugging and exception functions/classes
@@ -70,11 +67,14 @@ class ONException(Exception):
 #####################################################################################################################
 
 # Core functions
-from . import project
-from . import scenarios
+from .version import version, versiondate # Specify the version, for the purposes of figuring out which version was used to create a project
+from . import utils
 from . import data
-from . import plotting
 from . import settings
+from . import scenarios
+from . import optimisation
+from . import project
+from . import plotting
 
 # Import web functions
 try:
