@@ -1,58 +1,84 @@
 import pylab as pl, numpy as np, matplotlib.ticker as tk
 
-def make_plots(res, toplot):
-    """ Results is a Scen object from which all information can be extracted """
-    # TODO: generate all plots, only show those requested
+def make_plots(all_res, toplot):
+    """ res is a ScenResult or Result object (could be a list of these objects) from which all information can be extracted """
     ## Initialize
     allplots = {}
     if 'prevs' in toplot:
-        prevfig = plot_prevs(res)
+        prevfig = plot_prevs(all_res)
         allplots['prevs'] = prevfig
-    # if 'outputs' in toplot: # todo: want to compare outcomes across scenarios
-    #     outfig = plot_outputs(res)
-    #     allplots['outputs'] = outfig
+    if 'outputs' in toplot:
+        outfig = plot_outputs(all_res)
+        allplots['outputs'] = outfig
     if 'alloc' in toplot: # optimised allocations
-        bars = plot_alloc(res)
+        bars = plot_alloc(all_res)
         allplots['alloc'] = bars
     return allplots
 
-def plot_prevs(res):
-    # todo: if this is OptimResult, then need to access all the Scens to plot these prevs
-    years = res.year_names
-    allattr = res.model_attr()
+def plot_prevs(all_res):
+    """ Plot prevs for each scenario"""
+    allattr = all_res[0].model_attr()
     prevs = [attr for attr in allattr if 'prev' in attr]
-    outputs = res.get_outputs(prevs, seq=True)
-    fig, ax = pl.subplots(nrows=len(prevs),ncols=1, sharex=True)
+    fig, ax = pl.subplots(nrows=len(prevs), ncols=1, sharex=True)
     pl.xlabel('Years')
     pl.suptitle('Risk prevalences')
+    lines = []
     for i, row in enumerate(ax):
-        out = outputs[i]
-        # out = round_elements(out)
-        label = prevs[i]
+        #settings
         row.yaxis.set_major_formatter(tk.FormatStrFormatter('%.1f'))
-        row.set_ylabel(label)
-        row.plot(years, out)
+        label = prevs[i]
+        row.set_ylabel('{} (%)'.format(label))
+        ymax = 0
+        leglabels = []
+        # plot results
+        for res in all_res:
+            years = res.year_names
+            output = res.get_outputs([label], seq=True)[0]
+            out = round_elements(output, dec=1)
+            thismax = max(out)
+            if thismax > ymax:
+                ymax = thismax
+            line, = row.plot(years, out)
+            lines.append(line)
+            leglabels.append(res.name)
+        row.set_ylim([0, ymax + ymax*0.1])
+    pl.figlegend(lines, [res.name for res in all_res], loc='right', ncol=1)
     return fig
 
-# def plot_outputs(res): # todo: this is not the desired usage
-#     outcomes = ['thrive', 'child_deaths'] # not all yet, since not tracking them
-#     years = res.year_names
-#     outputs = res.get_outputs(outcomes, seq=True)
-#     fig, ax = pl.subplots(nrows=len(outputs),ncols=1, sharex=True)
-#     pl.xlabel('Years')
-#     pl.suptitle('Risk prevalences')
-#     for i, row in enumerate(ax):
-#         out = outputs[i]
-#         row.plot(years, out)
-#     return fig
+def plot_outputs(all_res):
+    outcomes = ['thrive', 'child_deaths']
+    fig, ax = pl.subplots(nrows=len(outcomes),ncols=1, sharex=True)
+    pl.xlabel('Years')
+    pl.suptitle('Annual outcomes')
+    width = 0.1
+    bars = []
+    for i, row in enumerate(ax):
+        ymax = 0
+        offset = 0
+        outcome = outcomes[i]
+        row.set_ylabel(outcome)
+        for res in all_res:
+            years = res.year_names
+            output = res.get_outputs([outcome], seq=True)[0]
+            thismax = max(output)
+            if thismax > ymax:
+                ymax = thismax
+            bar = row.bar([year + offset for year in years], output, width=width)
+            offset += width
+            bars.append(bar)
+        row.set_ylim([0, ymax + ymax*.1])
+        pl.xticks([year + width for year in years], years)
+    pl.figlegend(bars, [res.name for res in all_res], loc='right', ncol=1)
+    return fig
+
+# TODO: want to compare the total outcomes across scenarios
 
 def plot_alloc(res):
     """ Plot the program allocations from an optimization, alongside current allocation """
-    # TODO: WARNING: does not account for multiple objectives, accout for in future
+    # TODO: WARNING: Cannot plot multiple objectives. Would like Optim to only take 1 objective each, then this will be resolved.
     xlabs = ['current'] + res.mults
     x = np.arange(len(xlabs))
     width = 0.35
-    # over the programs
     allocs = [res.curr_alloc] + res.optim_allocs
     charts = []
     all_y = []

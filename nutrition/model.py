@@ -312,20 +312,20 @@ class Model:
     def _bf_effects(self, age_group):
         oldProb = age_group.bf_dist[age_group.correct_bf]
         percentIncrease = (age_group.bfPracticeUpdate - oldProb)/oldProb
-        if percentIncrease > 0.0001:
-            age_group.bf_dist[age_group.correct_bf] = age_group.bfPracticeUpdate
         # get number at risk before
         sumBefore = age_group._getDiarrhoeaRiskSum()
         # update distribution of incorrect practices
         popSize = age_group.pop_size
         numCorrectBefore = age_group.getNumberCorrectlyBF()
-        numCorrectAfter = popSize * age_group.bf_dist[age_group.correct_bf]
+        numCorrectAfter = popSize * age_group.bfPracticeUpdate
         numShifting = numCorrectAfter - numCorrectBefore
         numIncorrectBefore = popSize - numCorrectBefore
         fracCorrecting = numShifting / numIncorrectBefore if numIncorrectBefore > 0.01 else 0.
+        # update breastfeeding distribution
         for practice in age_group.incorrect_bf:
             age_group.bf_dist[practice] *= 1. - fracCorrecting
-        # age_group.distrib_pop()
+        if percentIncrease > 0.0001:
+            age_group.bf_dist[age_group.correct_bf] = age_group.bfPracticeUpdate
         # number at risk after
         sumAfter = age_group._getDiarrhoeaRiskSum()
         # update diarrhoea incidence baseline, even though not directly used in this calculation
@@ -461,7 +461,7 @@ class Model:
         for cat in self.settings.wasted_list:
             wast_dist[cat] = wastingFractions[cat]
         newBorns.stunting_dist = stunt_dist
-        newBorns.wasting_dsit = wast_dist
+        newBorns.wasting_dist = wast_dist
 
     def _apply_pw_mort(self):
         for age_group in self.pw.age_groups:
