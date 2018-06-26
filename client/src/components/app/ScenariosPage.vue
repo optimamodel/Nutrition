@@ -19,7 +19,7 @@ Last update: 2018-05-29
       <tbody>
       <tr v-for="scenSummary in scenSummaries">
         <td>
-          {{ scenSummary.name }}
+          <b>{{ scenSummary.name }}</b>
         </td>
         <td>
           {{ scenSummary.scen_type }}
