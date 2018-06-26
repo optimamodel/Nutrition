@@ -602,10 +602,10 @@ class ScenOptsTest(object):
             df = df.to_dict(dict_orient)
         return df
 
-class Data(object):
+class Dataset(object):
     ''' Store all the data for a project '''
     
-    def __init__(self, country='default', region='default', demo_data=None, prog_data=None, default_params=None, name=None):
+    def __init__(self, country='default', region='default', demo_data=None, prog_data=None, default_params=None, name=None, doload=False):
         self.country = country
         self.region = region
         self.demo_data = demo_data
@@ -614,6 +614,8 @@ class Data(object):
         if name is None: name = country+'_'+region
         self.name = name
         self.modified = sc.today()
+        if doload:
+            self.load()
         return None
     
     def load(self):
@@ -633,7 +635,7 @@ def get_data(country, region, asobj=False):
     prog_data = ProgData(input_path)
     default_params = DefaultParams(settings.default_params_path(), input_path)
     if asobj:
-        output = Data(country, region, demo_data, prog_data, default_params)
+        output = Dataset(country, region, demo_data, prog_data, default_params)
         return output
     else:
         return demo_data, prog_data, default_params

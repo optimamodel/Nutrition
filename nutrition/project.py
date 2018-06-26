@@ -3,7 +3,7 @@ from .model import Model
 from .scenarios import default_scens
 from .optimization import default_optims
 from .results import ScenResult, OptimResult
-from .data import get_data
+from .data import Dataset
 from .version import version
 
 #######################################################################################################
@@ -17,7 +17,7 @@ class Project(object):
     The main Nutrition project class. Almost all functionality is provided by this class.
 
     An Nutrition project is based around 4 major lists:
-        1. models -- an odict of model/workbook objects
+        1. datasets -- an odict of model/workbook objects
         2. scens -- an odict of scenario structures
         3. optims -- an odict of optimization structures
         4. results -- an odict of results associated with the choices above
@@ -42,7 +42,7 @@ class Project(object):
         ''' Initialize the project '''
 
         ## Define the structure sets
-        self.models      = odict()
+        self.datasets    = odict()
         self.scens       = odict()
         self.optims      = odict()
         self.results     = odict()
@@ -69,7 +69,7 @@ class Project(object):
         output = objrepr(self)
         output += '      Project name: %s\n'    % self.name
         output += '\n'
-        output += '            Models: %i\n'    % len(self.models)
+        output += '          Datasets: %i\n'    % len(self.datasets)
         output += '         Scenarios: %i\n'    % len(self.scens)
         output += '     Optimizations: %i\n'    % len(self.optims)
         output += '      Results sets: %i\n'    % len(self.results)
@@ -139,9 +139,9 @@ class Project(object):
     ### Utilities
     #######################################################################################################
 
-    def model(self, key=-1, verbose=2):
-        ''' Shortcut for getting the latest model, i.e. self.models[-1] '''
-        try:    return self.models[key]
+    def dataset(self, key=-1, verbose=2):
+        ''' Shortcut for getting the latest model, i.e. self.datasets[-1] '''
+        try:    return self.datasets[key]
         except: return printv('Warning, burden set not found!', 1, verbose) # Returns None
     
     def cleanresults(self):
@@ -200,9 +200,19 @@ class Project(object):
         print('Not implemented')
 
 def demo():
+    ''' Create a demo project with default settings '''
+    
+    # Parameters
     name = 'Demo project'
+    country = 'default'
+    region = 'default'
+    
+    # Create project and data
     P = Project(name)
-    demo_data, prog_data, default_params = get_data(country, region)
+    D = Dataset(country, region, doload=True)
+    P.datasets[D.name] = D
+    
+    # Create scenarios and optimizations
     P.default_scens()
     P.default_optims()
     return P

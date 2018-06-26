@@ -47,7 +47,5 @@ def default_scens(project, key='default', dorun=False):
     scen_list = make_scens(country, region, opts)
     project.add_scens(scen_list)
     
-    import traceback; traceback.print_exc(); import pdb; pdb.set_trace()
-
     if dorun:
         project.run_scens()
