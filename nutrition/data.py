@@ -28,6 +28,7 @@ class DefaultParams(object):
         self.input_path = input_path
         self.read_spreadsheet()
         self.rem_spreadsheet()
+        return None
     
     def __repr__(self):
         output  = sc.desc(self)

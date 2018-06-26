@@ -10,22 +10,22 @@ Last update: 2018-05-29
     <table class="table table-bordered table-hover table-striped" style="width: 100%">
       <thead>
       <tr>
-        <th>Active</th>
         <th>Name</th>
         <th>Type</th>
+        <th>Active?</th>
         <th>Actions</th>
       </tr>
       </thead>
       <tbody>
       <tr v-for="scenSummary in scenSummaries">
         <td>
-          <input type="checkbox" v-model="scenSummary.active"/>
-        </td>
-        <td>
           {{ scenSummary.name }}
         </td>
         <td>
           {{ scenSummary.scen_type }}
+        </td>
+        <td>
+          <input type="checkbox" @click="setScenSummaries" v-model="scenSummary.active"/>
         </td>
         <td style="white-space: nowrap">
           <button class="btn" @click="editScen(scenSummary)">Edit</button>
@@ -97,20 +97,44 @@ Last update: 2018-05-29
       }
       else { // Otherwise...
         // Load the project summaries of the current user.
-        this.updateScenSummaries()
+        this.getScenSummaries()
       }
 
     },
 
     methods: {
 
-      updateScenSummaries() {
-        console.log('updateScenSummaries() called')
+      getScenSummaries() {
+        console.log('getScenSummaries() called')
 
         // Get the current user's scenaro summaries from the server.
         rpcservice.rpcCall('get_scenario_info', [this.$store.state.activeProject.project.id])
           .then(response => {
             this.scenSummaries = response.data // Set the scenarios to what we received.
+
+            this.$notifications.notify({
+              message: 'Scenarios loaded',
+              icon: 'ti-check',
+              type: 'success',
+              verticalAlign: 'top',
+              horizontalAlign: 'center',
+            });
+          })
+      },
+
+      setScenSummaries() {
+        console.log('setScenSummaries() called')
+
+        // Get the current user's scenaro summaries from the server.
+        rpcservice.rpcCall('set_scenario_info', [this.$store.state.activeProject.project.id, this.scenSummaries])
+          .then( response => {
+            this.$notifications.notify({
+              message: 'Scenarios saved',
+              icon: 'ti-check',
+              type: 'success',
+              verticalAlign: 'top',
+              horizontalAlign: 'center',
+            });
           })
       },
 

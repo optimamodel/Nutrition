@@ -1,12 +1,13 @@
+import sciris.core as sc
 from . import data
 from . import programs
 from . import model
-import sciris.core as sc
+from . import settings
 
 class Scen(object):
     def __init__(self, prog_info=None, pops=None, scen_type=None, scen=None, name=None, t=None, prog_set=None, active=True):
         
-        if t is None: t = [2017,2025] # WARNING, find a better way of doing this!
+        if t is None: t = settings.Settings.t
         
         self.scen_type = scen_type
         self.scen = scen

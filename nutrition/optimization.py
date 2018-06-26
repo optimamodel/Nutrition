@@ -7,6 +7,7 @@ from . import utils
 from . import data
 from . import programs
 from . import model
+from . import settings
 
 
 class Optim(object):
@@ -14,7 +15,7 @@ class Optim(object):
                  parallel=True, num_runs=1, add_funds=0, fix_curr=False, rem_curr=False, curve_type='linear', 
                  filter_progs=True, maxiter=5, swarmsize=10, num_procs=None):
         
-        if t is None: t = [2017,2025] # WARNING, find a better way of doing this!
+        if t is None: t = settings.Settings.t
         
         self.name = name
         self.objs = objs
