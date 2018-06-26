@@ -3,7 +3,8 @@ from .model import Model
 from .scenarios import default_scens
 from .optimization import default_optims
 from .results import ScenResult, OptimResult
-from . import version
+from .data import get_data
+from .version import version
 
 #######################################################################################################
 ## Project class -- this contains everything else!
@@ -201,6 +202,7 @@ class Project(object):
 def demo():
     name = 'Demo project'
     P = Project(name)
+    demo_data, prog_data, default_params = get_data(country, region)
     P.default_scens()
     P.default_optims()
     return P

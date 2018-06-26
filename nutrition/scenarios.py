@@ -1,4 +1,4 @@
-from nutrition import settings, data, program_info, populations, model, utils
+from nutrition import data, program_info, populations, model, utils
 from copy import deepcopy as dcp
 
 class Scen(object):

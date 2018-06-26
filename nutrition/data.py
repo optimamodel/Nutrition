@@ -1,4 +1,5 @@
 import settings, pandas, copy
+import sciris.core as sc
 
 class DefaultParams(object):
     def __init__(self, default_path, input_path):
@@ -601,12 +602,34 @@ class ScenOptsTest(object):
             df = df.to_dict(dict_orient)
         return df
 
+class Data(object):
+    ''' Store all the data for a project '''
+    
+    def __init__(self, country='default', region='default', demo_data=None, prog_data=None, default_params=None):
+        self.country = country
+        self.region = region
+        self.demo_data = demo_data
+        self.prog_data = prog_data
+        self.default_params = default_params
+        return None
+    
+    def load(self):
+        demo_data, prog_data, default_params = get_data(self.country, self.region)
+        self.demo_data = demo_data
+        self.prog_data = prog_data
+        self.default_params = default_params
+        return None
 
-def get_data(country, region):
+
+def get_data(country, region, asobj=False):
     sim_type = 'national' if country == region else 'regional'
     input_path = settings.data_path(country, region, sim_type)
     # get data
     demo_data = InputData(input_path)
     prog_data = ProgData(input_path)
     default_params = DefaultParams(settings.default_params_path(), input_path)
-    return demo_data, prog_data, default_params
+    if asobj:
+        output = Data(country, region, demo_data, prog_data, default_params)
+        return output
+    else:
+        return demo_data, prog_data, default_params
