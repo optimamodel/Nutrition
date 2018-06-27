@@ -34,6 +34,48 @@ Last update: 2018-06-26
       <button class="btn __green" @click="runOptim()">Run</button>
       <button class="btn" @click="clearGraphs()">Clear graphs</button>
     </div>
+
+
+    <modal name="add-optim"
+           height="auto"
+           :classes="['v--modal', 'vue-dialog']"
+           :width="width"
+           :pivot-y="0.3"
+           :adaptive="true"
+           :clickToClose="clickToClose"
+           :transition="transition">
+
+      <div class="dialog-content">
+        <div class="dialog-c-title">
+          Add/edit optimization
+        </div>
+        <div class="dialog-c-text">
+          Optimization name:<br>
+          <input type="text"
+                 class="txbox"
+                 v-model="defaultOptim.name"/><br>
+          Scenario type:<br>
+          <input type="text"
+                 class="txbox"
+                 v-model="defaultScen.scen_type"/><br>
+          Foogie
+        </div>
+        <div style="text-align:justify">
+          <button @click="addOptim()" class='btn __green' style="display:inline-block">
+            Save optimization
+          </button>
+
+          <button @click="$modal.hide('add-optim')" class='btn __red' style="display:inline-block">
+            Cancel
+          </button>
+        </div>
+      </div>
+
+
+      <div>
+
+      </div>
+    </modal>
     
   </div>
 </template>

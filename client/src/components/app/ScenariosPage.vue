@@ -81,7 +81,7 @@ Last update: 2018-05-29
             Save scenario
           </button>
 
-          <button @click="$modal.hide('add-senario')" class='btn __red' style="display:inline-block">
+          <button @click="$modal.hide('add-scenario')" class='btn __red' style="display:inline-block">
             Cancel
           </button>
         </div>
