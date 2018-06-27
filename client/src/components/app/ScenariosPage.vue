@@ -100,6 +100,16 @@ Last update: 2018-05-29
         var output = JSON.parse(JSON.stringify(input))
         return output
       },
+      
+      getUniqueName(fileName, otherNames) {
+        let tryName = fileName
+        let numAdded = 0        
+        while (otherNames.indexOf(tryName) > -1) {
+          numAdded = numAdded + 1
+          tryName = fileName + ' (' + numAdded + ')'
+        }
+        return tryName
+      },
 
       projectID() {
         var id = this.$store.state.activeProject.project.id // Shorten this
@@ -140,7 +150,11 @@ Last update: 2018-05-29
       copyScen(scenSummary) {
         console.log('copyScen() called')
         var newScen = this.dcp(scenSummary); // You've got to be kidding me, buster
-        newScen.name = newScen.name + ' (copy)'
+        var otherNames = []
+        this.scenSummaries.forEach(scenSum => {
+          otherNames.push(scenSum.name)
+        })
+        newScen.name = this.getUniqueName(newScen.name, otherNames)
         this.scenSummaries.push(newScen)
         rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
           .then( response => {
@@ -153,7 +167,11 @@ Last update: 2018-05-29
             });
           })
       },
-
+      
+      deleteScen(scenSummary) {
+        console.log('deleteScen() called')
+      },
+      
       runScenarios() {
         console.log('runScenarios() called')
 
