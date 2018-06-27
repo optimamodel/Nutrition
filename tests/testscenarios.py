@@ -1,7 +1,4 @@
-import nutrition as on
-
-p = on.project.demo()
+import nutrition.ui as nu
+p = nu.demo()
 p.run_scens()
-#p.run_optims()
-p.plot(key='Scenarios', toplot='outputs')
-#res = p.get_results(['Scenarios'])
+p.plot(key='Scenarios', toplot=['prevs','outputs'])
