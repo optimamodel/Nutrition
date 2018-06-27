@@ -156,7 +156,7 @@ class Optim(object):
             for run in range(self.num_runs):
                 now = sc.tic()
                 x0, fopt = pso.pso(obj_func, xmin, xmax, kwargs=kwargs, maxiter=self.maxiter, swarmsize=self.swarmsize)
-                x, fval, flag = asd.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=0, maxtime=30)
+                x, fval, flag = asd.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=0, maxtime=10)
                 runOutputs.append((x, fval[-1]))
                 self.print_status(obj, mult, flag, now)
             bestAllocation = self.get_best(runOutputs)
