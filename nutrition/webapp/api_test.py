@@ -64,7 +64,7 @@ if run_optims:
     
     D.run_optims()
     if doplot:
-        figs = D.plot()
+        figs = D.plot(toplot=['alloc'])
 
 
 

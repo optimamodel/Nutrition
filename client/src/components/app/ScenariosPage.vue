@@ -69,26 +69,19 @@ Last update: 2018-05-29
           Scenario name:<br>
           <input type="text"
                  class="txbox"
-                 v-model="proj_name"/><br>
+                 v-model="defaultScen.name"/><br>
           Scenario type:<br>
           <input type="text"
                  class="txbox"
-                 v-model="num_pops"/><br>
-          First year for data entry:<br>
-          <input type="text"
-                 class="txbox"
-                 v-model="data_start"/><br>
-          Final year for data entry:<br>
-          <input type="text"
-                 class="txbox"
-                 v-model="data_end"/><br>
+                 v-model="defaultScen.scen_type"/><br>
+          Foogie
         </div>
         <div style="text-align:justify">
-          <button @click="createNewProject()" class='btn __green' style="display:inline-block">
-            Create project and download data entry spreadsheet
+          <button @click="addScenario()" class='btn __green' style="display:inline-block">
+            Save scenario
           </button>
 
-          <button @click="$modal.hide('create-project')" class='btn __red' style="display:inline-block">
+          <button @click="$modal.hide('add-senario')" class='btn __red' style="display:inline-block">
             Cancel
           </button>
         </div>
