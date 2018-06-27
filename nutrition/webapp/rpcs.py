@@ -673,22 +673,22 @@ def set_optim_info(project_id, optim_summaries):
     return None
 
 
-#@register_RPC(validation_type='nonanonymous user')    
-#def run_optims(project_id):
-#    
-#    print('Running scenarios...')
-#    proj = load_project(project_id, raise_exception=True)
-#    
-#    proj.run_scens()
-#    figs = proj.plot(toplot=['prevs', 'outputs']) # Do not plot allocation
-#    graphs = []
-#    for f,fig in enumerate(figs.values()):
-#        for ax in fig.get_axes():
-#            ax.set_facecolor('none')
-#        graph_dict = mpld3.fig_to_dict(fig)
-#        graphs.append(graph_dict)
-#        print('Converted figure %s of %s' % (f+1, len(figs)))
-#    
-#    print('Saving project...')
-#    save_project(proj)    
-#    return {'graphs':graphs}
+@register_RPC(validation_type='nonanonymous user')    
+def run_optim(project_id, optim_name):
+    
+    print('Running optimization...')
+    proj = load_project(project_id, raise_exception=True)
+    
+    proj.run_optim(key=optim_name)
+    figs = proj.plot(toplot=['alloc']) # Do not plot allocation
+    graphs = []
+    for f,fig in enumerate(figs.values()):
+        for ax in fig.get_axes():
+            ax.set_facecolor('none')
+        graph_dict = mpld3.fig_to_dict(fig)
+        graphs.append(graph_dict)
+        print('Converted figure %s of %s' % (f+1, len(figs)))
+    
+    print('Saving project...')
+    save_project(proj)    
+    return {'graphs':graphs}

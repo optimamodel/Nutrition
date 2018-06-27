@@ -21,11 +21,12 @@ def make_plots(all_res=None, toplot=None):
         outfigs = plot_outputs(all_res)
         allplots.update(outfigs)
     if 'alloc' in toplot: # optimized allocations
-        try:
-            bars = plot_alloc(all_res)
-            allplots.update(bars)
-        except Exception as E:
-            print('WARNING, could not plot allocation: %s' % repr(E))
+        outfigs = plot_alloc(all_res)
+        allplots.update(outfigs)
+#        try:
+#            
+#        except Exception as E:
+#            print('WARNING, could not plot allocation: %s' % repr(E))
     return allplots
 
 
@@ -109,6 +110,7 @@ def plot_alloc(all_res):
     figs = sc.odict()
     all_y = []
     bottom = np.zeros(len(xlabs))
+    fig = pl.figure()
     for i, prog in enumerate(res.programs):
         y = []
         # get allocation for each multiple
@@ -116,14 +118,14 @@ def plot_alloc(all_res):
             alloc = allocs[j]
             y = np.append(y, alloc[i])
         all_y.append(y)
-        fig = pl.bar(x, all_y[i], width=width, bottom=bottom)
-        
+        pl.bar(x, all_y[i], width=width, bottom=bottom)
         bottom += all_y[i]
         pl.ylabel('Funding')
         pl.xticks(x, xlabs)
-        legendart = [p[0] for p in figs.values()]
+#        legendart = [p[0] for p in figs.values()]
         legendlab = [prog.name for prog in res.programs]
-        pl.legend(legendart, legendlab)
+#        pl.legend(legendart, legendlab)
+        pl.legend(legendlab)
         figs['alloc_%0i'%i] = fig
     return figs
 

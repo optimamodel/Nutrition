@@ -246,9 +246,8 @@ class Project(object):
         self.add_result(results, name='Scenarios')
         return None
 
-    def run_optim(self, key=None, optim_list=None, name=None, parallel=None):
+    def run_optim(self, key=None, optim_list=None, parallel=None):
         if optim_list is not None: self.add_optims(optim_list)
-        if name is None: name = 'optimizations'
         self.optim(key).run_optim(parallel=parallel)
         result = OptimResult(self.optim(key))
         self.add_result(result)
