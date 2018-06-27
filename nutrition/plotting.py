@@ -67,7 +67,7 @@ def plot_prevs(all_res):
 
 def plot_outputs(all_res):
     outcomes = ['thrive', 'child_deaths']
-    width = 0.1
+    width = 0.15
     bars = []
     figs = sc.odict()
     for i in range(len(outcomes)):
@@ -78,16 +78,17 @@ def plot_outputs(all_res):
         outcome = outcomes[i]
         row.set_ylabel(outcome)
         for res in all_res:
-            years = res.year_names
+            years = np.array(res.year_names)
             output = res.get_outputs([outcome], seq=True)[0]
             thismax = max(output)
             if thismax > ymax:
                 ymax = thismax
-            bar = row.bar([year + offset for year in years], output, width=width)
+            bar = row.bar(years+offset, output, width=width)
             offset += width
             bars.append(bar)
+        offset -= width
         row.set_ylim([0, ymax + ymax*.1])
-        pl.xticks([year + width for year in years], years)
+        pl.xticks(years+offset/2, years)
         pl.legend(bars, [res.name for res in all_res], loc='right', ncol=1)
         pl.xlabel('Years')
         pl.title('Annual outcomes')
