@@ -54,8 +54,8 @@ Last update: 2018-05-29
 
     <modal name="add-scenario"
            height="auto"
+           :width="900"
            :classes="['v--modal', 'vue-dialog']"
-           :width="width"
            :pivot-y="0.3"
            :adaptive="true"
            :clickToClose="clickToClose"
@@ -74,7 +74,30 @@ Last update: 2018-05-29
           <input type="text"
                  class="txbox"
                  v-model="defaultScen.scen_type"/><br>
-          [Placeholder for table for entry of scenario data]
+          <table class="table table-bordered table-hover table-striped" style="width: 100%">
+            <thead>
+            <tr>
+              <th>Name</th>
+              <th>Include?</th>
+              <th v-for="year in defaultScenYears">{{ year }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="prog_spec in defaultScen.spec">
+              <td>
+                {{ prog_spec.name }}
+              </td>
+              <td>
+                {{ prog_spec.included }}
+              </td>
+              <td v-for="val in prog_spec.vals">
+                <input type="text"
+                       class="txbox"
+                       v-model="prog_spec.vals"/>
+              </td>
+            </tr>
+            </tbody>
+          </table>
         </div>
         <div style="text-align:justify">
           <button @click="addScenario()" class='btn __green' style="display:inline-block">
@@ -111,6 +134,7 @@ Last update: 2018-05-29
         serverresponse: 'no response',
         scenSummaries: [],
         defaultScen: [],
+        defaultScenYears: [],
         graphData: [],
       }
     },
@@ -142,7 +166,7 @@ Last update: 2018-05-29
     methods: {
 
       dcp(input) {
-        var output = JSON.parse(JSON.stringify(input))
+        let output = JSON.parse(JSON.stringify(input))
         return output
       },
       
@@ -157,7 +181,7 @@ Last update: 2018-05-29
       },
 
       projectID() {
-        var id = this.$store.state.activeProject.project.id // Shorten this
+        let id = this.$store.state.activeProject.project.id // Shorten this
         return id
       },
 
@@ -184,6 +208,10 @@ Last update: 2018-05-29
         rpcservice.rpcCall('get_default_scenario', [this.projectID()])
           .then(response => {
             this.defaultScen = response.data // Set the scenarios to what we received.
+            this.defaultScenYears = []
+            for (let year = this.defaultScen.t[0]; year <= this.defaultScen.t[1]; year++) {
+              this.defaultScenYears.push(year);
+            }
           });
       },
 
