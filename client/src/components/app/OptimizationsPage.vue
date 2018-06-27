@@ -54,11 +54,18 @@ Last update: 2018-06-26
           <input type="text"
                  class="txbox"
                  v-model="defaultOptim.name"/><br>
-          Scenario type:<br>
+          Optimization objectives:<br>
           <input type="text"
                  class="txbox"
-                 v-model="defaultScen.scen_type"/><br>
-          Foogie
+                 v-model="defaultOptim.objs"/><br>
+          Multipliers:<br>
+          <input type="text"
+                 class="txbox"
+                 v-model="defaultOptim.mults"/><br>
+          Additional funds:<br>
+          <input type="text"
+                 class="txbox"
+                 v-model="defaultOptim.add_funds"/><br>
         </div>
         <div style="text-align:justify">
           <button @click="addOptim()" class='btn __green' style="display:inline-block">

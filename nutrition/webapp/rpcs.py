@@ -656,7 +656,7 @@ def set_optim_info(project_id, optim_summaries):
     for j,js_optim in enumerate(optim_summaries):
         print('Setting optimization %s of %s...' % (j+1, len(optim_summaries)))
         json = sc.odict()
-        for attr in ['name', 'mults', 'fix_curr', 'add_funds', 'objs']: # Copy these directly -- WARNING, copy-pasted
+        for attr in ['name', 'mults', 'add_funds', 'objs']: # Copy these directly -- WARNING, copy-pasted
             json[attr] = js_optim[attr]
         json['prog_set'] = [] # These require more TLC
         for js_spec in js_optim['spec']:
