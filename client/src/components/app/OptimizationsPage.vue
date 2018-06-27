@@ -57,8 +57,11 @@ Last update: 2018-06-26
                  v-model="defaultOptim.name"/><br>
           Optimization objectives:<br>
           <select v-model='defaultOptim.objs' multiple>
-            <option v-for='obj in defaultOptim.objective_options'>{{ obj }}</option>
+            <option v-for='obj in defaultOptim.objective_options'>
+              {{ obj }}
+            </option>
           </select><br>
+          {{ defaultOptim.objs }}
           <!--<select v-model="defaultOptim.objs">-->
             <!--<option v-for="obj in defaultOptim.objectiveOptions" value="obj">{{obj}}</option>-->
           <!--</select><br>-->
@@ -259,6 +262,7 @@ Last update: 2018-06-26
         // Open a model dialog for creating a new project
         console.log('editOptim() called');
         this.defaultOptim = optimSummary
+        console.log('defaultOptim', this.defaultOptim.objs)
         this.$modal.show('add-optim');
       },
 
