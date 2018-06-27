@@ -94,7 +94,7 @@ Last update: 2018-05-29
               <td v-for="val in prog_spec.vals">
                 <input type="text"
                        class="txbox"
-                       v-model="val"/>
+                       v-model="prog_spec.vals"/>
               </td>
             </tr>
             </tbody>
