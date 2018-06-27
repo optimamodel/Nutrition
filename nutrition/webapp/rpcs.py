@@ -598,7 +598,7 @@ def run_scenarios(project_id):
 
 def py_to_js_optim(py_optim, prog_names):
     ''' Convert a Python to JSON representation of an optimization '''
-    attrs = ['name', 'mults', 'fix_curr', 'add_funds', 'objs']
+    attrs = ['name', 'mults', 'add_funds', 'objs']
     js_optim = {}
     for attr in attrs:
         js_optim[attr] = getattr(py_optim, attr) # Copy the attributes into a dictionary
@@ -629,21 +629,19 @@ def get_optim_info(project_id):
     return optim_summaries
 
 
-#@register_RPC(validation_type='nonanonymous user')    
-#def get_default_optim(project_id):
-#
-#    print('Getting scenario info...')
-#    proj = load_project(project_id, raise_exception=True)
-#    
-#    scenario_summaries = []
-#    for py_scen in proj.scens.values():
-#        js_scen = py_to_js_scen(py_scen, proj.dataset().prog_names())
-#        scenario_summaries.append(js_scen)
-#    
-#    print('JavaScript scenario info:')
-#    print(scenario_summaries)
-#
-#    return scenario_summaries
+@register_RPC(validation_type='nonanonymous user')    
+def get_default_optim(project_id):
+
+    print('Getting default optimization...')
+    proj = load_project(project_id, raise_exception=True)
+    
+    py_optim = proj.default_optims(doadd=False)[0]
+    js_optim = py_to_js_scen(py_optim, proj.dataset().prog_names())
+    
+    print('Created default JavaScript optimization:')
+    print(js_optim)
+    return js_optim
+
 
 
 @register_RPC(validation_type='nonanonymous user')    
