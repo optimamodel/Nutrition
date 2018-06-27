@@ -12,6 +12,7 @@ import os
 from zipfile import ZipFile
 from flask_login import current_user
 import mpld3
+import numpy as np
 
 import sciris.corelib.fileio as fileio
 import sciris.weblib.user as user
@@ -537,9 +538,24 @@ def get_default_scenario(project_id):
     print('Created default JavaScript scenario:')
     print(js_scen)
     return js_scen
+
+
+def sanitize(vals):
+    output = []
+    for val in vals:
+        if val=='':
+            sanival = np.nan
+        elif val==None:
+            sanival = np.nan
+        else:
+            try:
+                sanival = float(val)
+            except Exception as E:
+                print('Could not sanitize value "%s": %s; returning nan' % (val, repr(E)))
+                sanival = np.nan
+        output.append(sanival)
+    return output
     
-
-
 @register_RPC(validation_type='nonanonymous user')    
 def set_scenario_info(project_id, scenario_summaries):
 
@@ -557,7 +573,7 @@ def set_scenario_info(project_id, scenario_summaries):
         for js_spec in js_scen['spec']:
             if js_spec['included']:
                 json['prog_set'].append(js_spec['name'])
-                json['scen'][js_spec['name']] = js_spec['vals']
+                json['scen'][js_spec['name']] = sanitize(js_spec['vals'])
         
         print('Python scenario info for scenario %s:' % (j+1))
         print(json)
@@ -565,7 +581,7 @@ def set_scenario_info(project_id, scenario_summaries):
         proj.add_scen(json=json)
     
     print('Saving project...')
-    save_project(proj)   
+    save_project(proj)
     
     return None
 
