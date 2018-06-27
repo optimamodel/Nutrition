@@ -56,7 +56,6 @@ if run_optims:
     json = sc.odict()
     json['name'] = 'Optimization test 1'
     json['prog_set'] = ['Cash transfers', 'IFA fortification of maize', 'IFAS for pregnant women (community)', 'IPTp', 'IYCF 1', 'Micronutrient powders', 'Treatment of SAM', 'Vitamin A supplementation', 'Zinc for treatment + ORS']
-    json['t'] = [2017,2025]
     json['mults'] = [1,2]
     json['fix_curr'] = False
     json['add_funds'] = 10e6
