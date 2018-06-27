@@ -1,5 +1,4 @@
-import nutrition as on
-
-p = on.project.demo()
+import nutrition.ui as nu
+p = nu.demo()
 p.run_scens()
-fig = p.plot(key='Scenarios', toplot='outputs')
+p.plot(key='Scenarios', toplot=['prevs','outputs'])

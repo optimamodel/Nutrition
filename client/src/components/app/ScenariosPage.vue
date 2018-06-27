@@ -110,7 +110,7 @@ Last update: 2018-05-29
       return {
         serverresponse: 'no response',
         scenSummaries: [],
-        defaultScen: {},
+        defaultScen: [],
       }
     },
 
@@ -207,6 +207,7 @@ Last update: 2018-05-29
           .then(response => {
             this.defaultScen = response.data // Set the scenarios to what we received.
             this.$modal.show('add-scenario');
+            console.log(this.defaultScen)
           });
       },
 
@@ -225,6 +226,7 @@ Last update: 2018-05-29
         else {
           this.scenSummaries[index] = newScen
         }
+        console.log(newScen)
         rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
           .then( response => {
             this.$notifications.notify({
