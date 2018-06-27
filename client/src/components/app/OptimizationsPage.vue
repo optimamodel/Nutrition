@@ -30,7 +30,7 @@ Last update: 2018-06-26
     </table>
 
     <div>
-      <button class="btn __blue" @click="addOptim()">Add optimization</button>
+      <button class="btn __blue" @click="addOptimModal()">Add optimization</button>
       <button class="btn __green" @click="runOptim()">Run</button>
       <button class="btn" @click="clearGraphs()">Clear graphs</button>
     </div>
@@ -228,6 +228,19 @@ Last update: 2018-06-26
               horizontalAlign: 'center',
             });
           })
+      },
+
+      openOptim(optimSummary) {
+        // Open a model dialog for creating a new project
+        console.log('openOptim() called');
+        this.currentOptim = optimSummary.name
+      },
+
+      editOptim(optimSummary) {
+        // Open a model dialog for creating a new project
+        console.log('editOptim() called');
+        this.defaultOptim = optimSummary
+        this.$modal.show('add-optim');
       },
 
       copyOptim(optimSummary) {

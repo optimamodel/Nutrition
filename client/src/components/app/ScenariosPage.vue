@@ -74,7 +74,7 @@ Last update: 2018-05-29
           <input type="text"
                  class="txbox"
                  v-model="defaultScen.scen_type"/><br>
-          Foogie
+          [Placeholder for table for entry of scenario data]
         </div>
         <div style="text-align:justify">
           <button @click="addScenario()" class='btn __green' style="display:inline-block">

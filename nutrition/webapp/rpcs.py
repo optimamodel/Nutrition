@@ -636,7 +636,7 @@ def get_default_optim(project_id):
     proj = load_project(project_id, raise_exception=True)
     
     py_optim = proj.default_optims(doadd=False)[0]
-    js_optim = py_to_js_scen(py_optim, proj.dataset().prog_names())
+    js_optim = py_to_js_optim(py_optim, proj.dataset().prog_names())
     
     print('Created default JavaScript optimization:')
     print(js_optim)
@@ -647,7 +647,7 @@ def get_default_optim(project_id):
 @register_RPC(validation_type='nonanonymous user')    
 def set_optim_info(project_id, optim_summaries):
 
-    print('Setting scenario info...')
+    print('Setting optimization info...')
     proj = load_project(project_id, raise_exception=True)
     proj.optims.clear()
     
@@ -661,7 +661,7 @@ def set_optim_info(project_id, optim_summaries):
             if js_spec['included']:
                 json['prog_set'].append(js_spec['name'])
         
-        print('Python scenario info for optimization %s:' % (j+1))
+        print('Python optimization info for optimization %s:' % (j+1))
         print(json)
         
         proj.add_optim(json=json)
