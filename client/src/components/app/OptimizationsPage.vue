@@ -85,6 +85,12 @@ Last update: 2018-06-26
       </div>
     </modal>
     
+    <div>
+      <div v-for="index in placeholders" :id="'fig'+index" style="width:650px; float:left;">
+        <!--mpld3 content goes here-->
+      </div>
+    </div>
+    
   </div>
 </template>
 
