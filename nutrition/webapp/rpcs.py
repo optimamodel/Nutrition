@@ -615,7 +615,7 @@ def py_to_js_optim(py_optim, prog_names):
 @register_RPC(validation_type='nonanonymous user')    
 def get_optim_info(project_id):
 
-    print('Getting scenario info...')
+    print('Getting optimization info...')
     proj = load_project(project_id, raise_exception=True)
     
     optim_summaries = []
