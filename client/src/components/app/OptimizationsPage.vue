@@ -52,6 +52,7 @@ Last update: 2018-06-26
       return {
         serverresponse: 'no response',
         optimSummaries: [],
+        defaultOptim: [],
         currentOptim: '',
       }
     },
@@ -75,6 +76,7 @@ Last update: 2018-06-26
       else { // Otherwise...
         // Load the optimization summaries of the current project.
         this.getOptimSummaries()
+        this.getDefaultOptim()
       }
     },
 
@@ -100,13 +102,20 @@ Last update: 2018-06-26
         return id
       },
 
+      getDefaultOptim() {
+        console.log('getDefaultOptim() called')
+        rpcservice.rpcCall('get_default_optim', [this.projectID()])
+          .then(response => {
+            this.defaultOptim = response.data // Set the optimization to what we received.
+          });
+      },
+
       getOptimSummaries() {
         console.log('getOptimSummaries() called')
         // Get the current project's optimization summaries from the server.
         rpcservice.rpcCall('get_optim_info', [this.projectID()])
           .then(response => {
             this.optimSummaries = response.data // Set the optimizations to what we received.
-
             this.$notifications.notify({
               message: 'Optimizations loaded',
               icon: 'ti-check',
