@@ -540,7 +540,10 @@ def get_default_scenario(project_id):
     return js_scen
 
 
-def sanitize(vals):
+def sanitize(vals, skip=False):
+    ''' Make sure values are numeric, and either return nans or skip vals that aren't '''
+    if sc.isiterable(vals):
+        as_array = True
     output = []
     for val in vals:
         if val=='':
@@ -553,8 +556,15 @@ def sanitize(vals):
             except Exception as E:
                 print('Could not sanitize value "%s": %s; returning nan' % (val, repr(E)))
                 sanival = np.nan
-        output.append(sanival)
-    return output
+        if skip and not np.isnan(sanival):
+            output.append(sanival)
+        else:
+            output.append(sanival)
+    if as_array:
+        return output
+    else:
+        return output[0]
+    
     
 @register_RPC(validation_type='nonanonymous user')    
 def set_scenario_info(project_id, scenario_summaries):
@@ -674,6 +684,10 @@ def set_optim_info(project_id, optim_summaries):
         json = sc.odict()
         for attr in ['name', 'mults', 'add_funds', 'objs']: # Copy these directly -- WARNING, copy-pasted
             json[attr] = js_optim[attr]
+        json['name'] = js_optim['name']
+        vals = js_optim['mults'].split(',')
+        json['mults'] = sanitize(vals, skip=True)
+        json['add_funds'] = sanitize(js_optim['add_funds'])
         json['prog_set'] = [] # These require more TLC
         for js_spec in js_optim['spec']:
             if js_spec['included']:
