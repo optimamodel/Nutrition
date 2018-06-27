@@ -56,7 +56,9 @@ Last update: 2018-06-26
                  class="txbox"
                  v-model="defaultOptim.name"/><br>
           Optimization objectives:<br>
-          <select v-model="objectiveOptions"/><br>
+          <select v-model="defaultOptim.objs">
+            <option v-for="obj in objectiveOptions" value="obj">{{obj}}</option>
+          </select>
           Multipliers:<br>
           <input type="text"
                  class="txbox"
