@@ -59,7 +59,7 @@ if run_optims:
     json['mults'] = [1,2]
     json['fix_curr'] = False
     json['add_funds'] = 10e6
-    json['objs'] = ['thrive', 'child_deaths'] # ['thrive', 'child_deaths', 'stunting_prev', 'wasting_prev', 'anaemia_prev']
+    json['objs'] = ['thrive'] # ['thrive', 'child_deaths', 'stunting_prev', 'wasting_prev', 'anaemia_prev']
     D.add_optim(json=json)
     
     D.run_optims()

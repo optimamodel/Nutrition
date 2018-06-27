@@ -489,7 +489,7 @@ def create_project_from_prj_file(prj_filename, user_id):
 
 def py_to_js_scen(py_scen, prog_names):
     ''' Convert a Python to JSON representation of a scenario '''
-    attrs = ['name', 'active', 'scen_type']
+    attrs = ['name', 'active', 'scen_type', 't']
     js_scen = {}
     for attr in attrs:
         js_scen[attr] = getattr(py_scen, attr) # Copy the attributes into a dictionary
@@ -615,7 +615,7 @@ def py_to_js_optim(py_optim, prog_names):
 @register_RPC(validation_type='nonanonymous user')    
 def get_optim_info(project_id):
 
-    print('Getting scenario info...')
+    print('Getting optimization info...')
     proj = load_project(project_id, raise_exception=True)
     
     optim_summaries = []
