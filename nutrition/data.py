@@ -681,7 +681,9 @@ class Dataset(object):
         self.prog_data = prog_data
         self.default_params = default_params
         self.pops = pops
-        if name is None: name = country+'_'+region
+        if name is None:
+            try:    name = country+'_'+region
+            except: name = 'default'
         self.name = name
         self.modified = sc.today()
         if doload:
@@ -693,7 +695,7 @@ class Dataset(object):
         return output
     
     def load(self, filepath=None):
-        demo_data, prog_data, default_params, pops = get_data(country=self.country, country=self.region, filepath=filepath, withpops=True)
+        demo_data, prog_data, default_params, pops = get_data(country=self.country, region=self.region, filepath=filepath, withpops=True)
         self.demo_data = demo_data
         self.prog_data = prog_data
         self.default_params = default_params

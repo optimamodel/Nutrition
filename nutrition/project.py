@@ -4,7 +4,6 @@
 
 import sciris.core as sc
 from .version import version
-from .model import Model
 from .scenarios import make_scens
 from .optimization import make_optims
 from .results import ScenResult, OptimResult
