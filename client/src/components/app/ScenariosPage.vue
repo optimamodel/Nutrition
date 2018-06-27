@@ -154,6 +154,25 @@ Last update: 2018-05-29
           })
       },
 
+      deleteScen(scenSummary) {
+        console.log('deleteScen() called')
+        for(var i = 0; i< this.scenSummaries.length; i++) {
+          if(this.scenSummaries[i].name === scenSummary.name) {
+            this.scenSummaries.splice(i, 1);
+          }
+        }
+        rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
+          .then( response => {
+            this.$notifications.notify({
+              message: 'Scenario deleted',
+              icon: 'ti-check',
+              type: 'success',
+              verticalAlign: 'top',
+              horizontalAlign: 'center',
+            });
+          })
+      },
+
       runScenarios() {
         console.log('runScenarios() called')
 
