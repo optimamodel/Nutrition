@@ -66,11 +66,11 @@ Last update: 2018-05-29
           Add/edit scenario
         </div>
         <div class="dialog-c-text">
-          Project name:<br>
+          Scenario name:<br>
           <input type="text"
                  class="txbox"
                  v-model="proj_name"/><br>
-          Number of populations:<br>
+          Scenario type:<br>
           <input type="text"
                  class="txbox"
                  v-model="num_pops"/><br>
@@ -210,12 +210,28 @@ Last update: 2018-05-29
       addScenarioModal() {
         // Open a model dialog for creating a new project
         console.log('addScenarioModal() called');
-        this.$modal.show('add-scenario');
+        rpcservice.rpcCall('get_default_scenario', [this.projectID()])
+          .then(response => {
+            this.defaultScen = response.data // Set the scenarios to what we received.
+            this.$modal.show('add-scenario');
+          });
       },
 
       addScenario() {
         console.log('addScenario() called')
         this.$modal.hide('add-scenario')
+        let newScen = this.dcp(this.defaultScen); // You've got to be kidding me, buster
+        let otherNames = []
+        this.scenSummaries.forEach(scenSum => {
+          otherNames.push(scenSum.name)
+        });
+        let index = otherNames.indexOf(newScen.name);
+        if (index > -1) {
+          this.scenSummaries.push(newScen)
+        }
+        else {
+          this.scenSummaries[index] = newScen
+        }
         rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
           .then( response => {
             this.$notifications.notify({
@@ -226,6 +242,13 @@ Last update: 2018-05-29
               horizontalAlign: 'center',
             });
           })
+      },
+
+      editScen(scenSummary) {
+        // Open a model dialog for creating a new project
+        console.log('editScen() called');
+        this.defaultScen = scenSummary
+        this.$modal.show('add-scenario');
       },
 
       copyScen(scenSummary) {
