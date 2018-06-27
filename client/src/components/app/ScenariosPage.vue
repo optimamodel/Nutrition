@@ -91,10 +91,10 @@ Last update: 2018-05-29
               <td>
                 {{ prog_spec.included }}
               </td>
-              <td v-for="val in prog_spec.vals">
+              <td v-for="(val, index) in prog_spec.vals">
                 <input type="text"
                        class="txbox"
-                       v-model="prog_spec.vals"/>
+                       v-model="prog_spec.vals[index]"/>
               </td>
             </tr>
             </tbody>
