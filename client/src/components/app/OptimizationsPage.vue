@@ -40,11 +40,11 @@ Last update: 2018-06-26
 
 
 <script>
-//  import axios from 'axios'
-//  var filesaver = require('file-saver')
+  import axios from 'axios'
+  var filesaver = require('file-saver')
   import rpcservice from '@/services/rpc-service'
-//  import router from '@/router'
-//  import Vue from 'vue';
+  import router from '@/router'
+  import Vue from 'vue';
 
   export default {
     name: 'OptimizationPage',
@@ -52,10 +52,11 @@ Last update: 2018-06-26
       return {
         serverresponse: 'no response',
         optimSummaries: [],
+        currentOptim: '',
       }
     },
 
- /*   computed: {
+    computed: {
       placeholders() {
         var indices = []
         for (var i = 0; i <= 100; i++) {
@@ -64,7 +65,7 @@ Last update: 2018-06-26
         return indices;
       },
 
-    }, */
+    },
 
     created() {
       // If we have no user logged in, automatically redirect to the login page.
@@ -104,7 +105,7 @@ Last update: 2018-06-26
         // Get the current project's optimization summaries from the server.
         rpcservice.rpcCall('get_optim_info', [this.projectID()])
           .then(response => {
-            this.scenSummaries = response.data // Set the scenarios to what we received.
+            this.optimSummaries = response.data // Set the optimizations to what we received.
 
             this.$notifications.notify({
               message: 'Optimizations loaded',
@@ -116,12 +117,12 @@ Last update: 2018-06-26
           })
       },
 
-/*      setScenSummaries() {
-        console.log('setScenSummaries() called')
-        rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
+      setOptimSummaries() {
+        console.log('setOptimSummaries() called')
+        rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
           .then( response => {
             this.$notifications.notify({
-              message: 'Scenarios saved',
+              message: 'Optimizations saved',
               icon: 'ti-check',
               type: 'success',
               verticalAlign: 'top',
@@ -130,19 +131,19 @@ Last update: 2018-06-26
           })
       },
 
-      copyScen(scenSummary) {
-        console.log('copyScen() called')
-        var newScen = this.dcp(scenSummary); // You've got to be kidding me, buster
+      copyOptim(optimSummary) {
+        console.log('copyOptim() called')
+        var newOptim = this.dcp(optimSummary); // You've got to be kidding me, buster
         var otherNames = []
-        this.scenSummaries.forEach(scenSum => {
-          otherNames.push(scenSum.name)
+        this.optimSummaries.forEach(optimSum => {
+          otherNames.push(optimSum.name)
         })
-        newScen.name = this.getUniqueName(newScen.name, otherNames)
-        this.scenSummaries.push(newScen)
-        rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
+        newOptim.name = this.getUniqueName(newOptim.name, otherNames)
+        this.optimSummaries.push(newOptim)
+        rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
           .then( response => {
             this.$notifications.notify({
-              message: 'Scenario copied',
+              message: 'Opimization copied',
               icon: 'ti-check',
               type: 'success',
               verticalAlign: 'top',
@@ -151,17 +152,17 @@ Last update: 2018-06-26
           })
       },
 
-      deleteScen(scenSummary) {
-        console.log('deleteScen() called')
-        for(var i = 0; i< this.scenSummaries.length; i++) {
-          if(this.scenSummaries[i].name === scenSummary.name) {
-            this.scenSummaries.splice(i, 1);
+      deleteOptim(optimSummary) {
+        console.log('deleteOptim() called')
+        for(var i = 0; i< this.optimSummaries.length; i++) {
+          if(this.optimSummaries[i].name === optimSummary.name) {
+            this.optimSummaries.splice(i, 1);
           }
         }
-        rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
+        rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
           .then( response => {
             this.$notifications.notify({
-              message: 'Scenario deleted',
+              message: 'Optimization deleted',
               icon: 'ti-check',
               type: 'success',
               verticalAlign: 'top',
@@ -170,15 +171,15 @@ Last update: 2018-06-26
           })
       },
 
-      runScenarios() {
-        console.log('runScenarios() called')
+      runOptim() {
+        console.log('runOptim() called')
 
         // Make sure they're saved first
-        rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
+        rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
           .then(response => {
 
             // Go to the server to get the results from the package set.
-            rpcservice.rpcCall('run_scenarios', [this.projectID()])
+            rpcservice.rpcCall('run_optims', [this.projectID()])
               .then(response => {
                 this.clearGraphs() // Once we receive a response, we can work with a clean slate
                 this.serverresponse = response.data // Pull out the response data.
@@ -227,7 +228,7 @@ Last update: 2018-06-26
             div.removeChild(div.firstChild);
           }
         }
-      } */
+      }
       
     }
   }

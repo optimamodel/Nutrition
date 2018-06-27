@@ -34,7 +34,6 @@ def plot_prevs(all_res):
     allattr = all_res[0].model_attr()
     prevs = [attr for attr in allattr if 'prev' in attr]
     
-    
     lines = []
     figs = sc.odict()
     for i in range(len(prevs)):
