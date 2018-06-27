@@ -212,19 +212,21 @@ class Project(object):
             self.add_scens(scen_list)
             if dorun:
                 self.run_scens()
+            return None
         else:
             return scen_list
-        return None
-    
-    def default_optims(self, key='default', dorun=False):
         
+    def default_optims(self, key='default', dorun=False, doadd=True):
         defaults = OptimOptsTest(key)
         opts = [OptimOpts(**defaults.get_attr())]
         optim_list = make_optims(user_opts=opts, project=self)
-        self.add_optims(optim_list)
-        if dorun:
-            self.run_optims()
-        return None
+        if doadd:
+            self.add_optims(optim_list)
+            if dorun:
+                self.run_optims()
+            return None
+        else:
+            return optim_list
     
     def run_scens(self, scen_list=None):
         """Function for running scenarios"""

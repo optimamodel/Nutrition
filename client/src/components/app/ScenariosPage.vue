@@ -68,6 +68,7 @@ Last update: 2018-05-29
       return {
         serverresponse: 'no response',
         scenSummaries: [],
+        defaultScen: {},
       }
     },
 
@@ -90,6 +91,7 @@ Last update: 2018-05-29
       else { // Otherwise...
         // Load the project summaries of the current user.
         this.getScenSummaries()
+        this.getDefaultScenario()
       }
 
     },
@@ -118,7 +120,7 @@ Last update: 2018-05-29
 
       getScenSummaries() {
         console.log('getScenSummaries() called')
-        // Get the current user's scenaro summaries from the server.
+        // Get the current user's scenario summaries from the server.
         rpcservice.rpcCall('get_scenario_info', [this.projectID()])
           .then(response => {
             this.scenSummaries = response.data // Set the scenarios to what we received.
@@ -131,6 +133,15 @@ Last update: 2018-05-29
               horizontalAlign: 'center',
             });
           })
+      },
+
+      getDefaultScen() {
+        console.log('getDefaultScen() called')
+        // Get the current user's scenario summaries from the server.
+        rpcservice.rpcCall('get_default_scenario', [this.projectID()])
+          .then(response => {
+            this.defaultScen = response.data // Set the scenarios to what we received.
+          });
       },
 
       setScenSummaries() {

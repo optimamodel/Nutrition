@@ -527,18 +527,16 @@ def get_scenario_info(project_id):
 @register_RPC(validation_type='nonanonymous user')    
 def get_default_scenario(project_id):
 
-    print('Getting scenario info...')
+    print('Creating default scenario...')
     proj = load_project(project_id, raise_exception=True)
     
-    scenario_summaries = []
-    for py_scen in proj.scens.values():
-        js_scen = py_to_js_scen(py_scen, proj.dataset().prog_names())
-        scenario_summaries.append(js_scen)
+    py_scen = proj.default_scens(doadd=False)[0]
+    js_scen = py_to_js_scen(py_scen, proj.dataset().prog_names())
     
-    print('JavaScript scenario info:')
-    print(scenario_summaries)
-
-    return scenario_summaries
+    print('Created default JavaScript scenario:')
+    print(js_scen)
+    return js_scen
+    
 
 
 @register_RPC(validation_type='nonanonymous user')    
