@@ -128,10 +128,17 @@ class Optim(object):
             freeFunds = sum(self.curr) - sum(self.fixed) + self.add_funds
         return freeFunds
 
-    ######### OPTIMISATION ##########
+    ######### OPTIMIZATION ##########
 
-    def run_optim(self):
-        print('Optimizing for %s' % self.name)
+    def run_optim(self, parallel=None):
+        if parallel is None:
+            parallel = True
+        if parallel:
+            how = 'parallel'
+        else:
+            how = 'serial'
+            self.num_cpus = 1
+        print('Optimizing for %s in %s' % (self.name, how))
         if self.num_cpus>1:
             self.optim_allocs = utils.run_parallel(self.one_optim, self.combs, self.num_cpus)
         else:

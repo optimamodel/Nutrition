@@ -150,10 +150,16 @@ class Project(object):
         except: return sc.printv('Warning, dataset set not found!', 1, verbose) # Returns None
     
     def scen(self, key=None, verbose=2):
-        ''' Shortcut for getting the latest scenari, i.e. self.scen[-1] '''
+        ''' Shortcut for getting the latest scenario, i.e. self.scen[-1] '''
         if key is None: key = -1
         try:    return self.scens[key]
         except: return sc.printv('Warning, scenario not found!', 1, verbose) # Returns None
+    
+    def optim(self, key=None, verbose=2):
+        ''' Shortcut for getting the latest optim, i.e. self.scen[-1] '''
+        if key is None: key = -1
+        try:    return self.optims[key]
+        except: return sc.printv('Warning, optimization not found!', 1, verbose) # Returns None
     
     def result(self, key=None, verbose=2):
         ''' Shortcut for getting the latest result, i.e. self.results[-1] '''
@@ -240,14 +246,13 @@ class Project(object):
         self.add_result(results, name='Scenarios')
         return None
 
-    def run_optims(self, optim_list=None, name=None):
+    def run_optim(self, key=None, optim_list=None, name=None, parallel=None):
         if optim_list is not None: self.add_optims(optim_list)
         if name is None: name = 'optimizations'
-        optims = sc.dcp(self.optims)
-        for optim in optims.itervalues():
-            optim.run_optim()
-            result = OptimResult(optim)
-            self.add_result(result)
+        self.optim(key).run_optim(parallel=parallel)
+        result = OptimResult(self.optim(key))
+        self.add_result(result)
+        return None
     
     def get_results(self, result_keys):
         """ result_keys is a list of keys corresponding to the desired result.

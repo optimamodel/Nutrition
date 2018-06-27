@@ -12,8 +12,8 @@ import nutrition.ui as nu
 #%% Setup
 sc.tic()
 doplot     = 1
-run_scens  = 1
-run_optims = 0
+run_scens  = 0
+run_optims = 1
 
 
 #%% Projects
@@ -61,7 +61,7 @@ if run_optims:
     json['objs'] = ['thrive'] # ['thrive', 'child_deaths', 'stunting_prev', 'wasting_prev', 'anaemia_prev']
     D.add_optim(json=json)
     
-    D.run_optims()
+    D.run_optim(parallel=False)
     if doplot:
         figs = D.plot(toplot=['alloc'])
 
