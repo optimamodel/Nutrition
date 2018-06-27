@@ -89,7 +89,7 @@ Last update: 2018-05-29
                 {{ prog_spec.name }}
               </td>
               <td>
-                {{ prog_spec.included }}
+                <input type="checkbox" v-model="prog_spec.included"/>
               </td>
               <td v-for="(val, index) in prog_spec.vals">
                 <input type="text"
