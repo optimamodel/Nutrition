@@ -37,7 +37,7 @@ Last update: 2018-05-29
     </table>
 
     <div>
-      <button class="btn __blue" @click="addScenario()">Add scenario</button>
+      <button class="btn __blue" @click="addScenarioModal()">Add scenario</button>
       <button class="btn __green" @click="runScenarios()">Run scenarios</button>
       <button class="btn" @click="clearGraphs()">Clear graphs</button>
     </div>
@@ -50,6 +50,55 @@ Last update: 2018-05-29
         <!--mpld3 content goes here-->
       </div>
     </div>
+
+
+    <modal name="add-scenario"
+           height="auto"
+           :classes="['v--modal', 'vue-dialog']"
+           :width="width"
+           :pivot-y="0.3"
+           :adaptive="true"
+           :clickToClose="clickToClose"
+           :transition="transition">
+
+      <div class="dialog-content">
+        <div class="dialog-c-title">
+          Add/edit scenario
+        </div>
+        <div class="dialog-c-text">
+          Project name:<br>
+          <input type="text"
+                 class="txbox"
+                 v-model="proj_name"/><br>
+          Number of populations:<br>
+          <input type="text"
+                 class="txbox"
+                 v-model="num_pops"/><br>
+          First year for data entry:<br>
+          <input type="text"
+                 class="txbox"
+                 v-model="data_start"/><br>
+          Final year for data entry:<br>
+          <input type="text"
+                 class="txbox"
+                 v-model="data_end"/><br>
+        </div>
+        <div style="text-align:justify">
+          <button @click="createNewProject()" class='btn __green' style="display:inline-block">
+            Create project and download data entry spreadsheet
+          </button>
+
+          <button @click="$modal.hide('create-project')" class='btn __red' style="display:inline-block">
+            Cancel
+          </button>
+        </div>
+      </div>
+
+
+      <div>
+
+      </div>
+    </modal>
 
   </div>
 </template>
@@ -91,7 +140,7 @@ Last update: 2018-05-29
       else { // Otherwise...
         // Load the project summaries of the current user.
         this.getScenSummaries()
-        this.getDefaultScenario()
+        this.getDefaultScen()
       }
 
     },
@@ -150,6 +199,27 @@ Last update: 2018-05-29
           .then( response => {
             this.$notifications.notify({
               message: 'Scenarios saved',
+              icon: 'ti-check',
+              type: 'success',
+              verticalAlign: 'top',
+              horizontalAlign: 'center',
+            });
+          })
+      },
+
+      addScenarioModal() {
+        // Open a model dialog for creating a new project
+        console.log('addScenarioModal() called');
+        this.$modal.show('add-scenario');
+      },
+
+      addScenario() {
+        console.log('addScenario() called')
+        this.$modal.hide('add-scenario')
+        rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
+          .then( response => {
+            this.$notifications.notify({
+              message: 'Scenario added',
               icon: 'ti-check',
               type: 'success',
               verticalAlign: 'top',
