@@ -229,6 +229,6 @@ def make_optims(country=None, region=None, user_opts=None, json=None, project=No
     if json is not None:
         json = sc.dcp(json) # Just to be sure, probably unnecessary
         prog_info = programs.ProgramInfo(json['prog_set'], prog_data, default_params)
-        optim = Optim(prog_info=prog_info, pops=pops, name=json['name'], t=json['t'], objs=json['objs'], mults=json['mults'], prog_set=json['prog_set'], active=True, add_funds=json['add_funds'], fix_curr=json['fix_curr'])
+        optim = Optim(prog_info=prog_info, pops=pops, name=json['name'], objs=json['objs'], mults=json['mults'], prog_set=json['prog_set'], active=True, add_funds=json['add_funds'], fix_curr=json['fix_curr'])
         optim_list.append(optim)
     return optim_list

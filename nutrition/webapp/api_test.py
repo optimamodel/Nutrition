@@ -12,8 +12,8 @@ import nutrition.ui as nu
 #%% Setup
 sc.tic()
 doplot     = 1
-run_scens  = 1
-run_optims = 0
+run_scens  = 0
+run_optims = 1
 
 
 #%% Projects
@@ -55,7 +55,7 @@ if run_optims:
     
     json = sc.odict()
     json['name'] = 'Optimization test 1'
-    json['prog_set'] = ['Cash transfers', 'IFA fortification of maize', 'IFAS for pregnant women (community)', 'IPTp', 'IYCF 1', 'Micronutrient powders', 'Treatment of SAM', 'Vitamin A supplementation', 'Zinc for treatment + ORS']
+    json['prog_set'] = D.dataset().prog_names() # ['Cash transfers', 'IFA fortification of maize', 'IFAS for pregnant women (community)', 'IPTp', 'IYCF 1', 'Micronutrient powders', 'Treatment of SAM', 'Vitamin A supplementation', 'Zinc for treatment + ORS']
     json['mults'] = [1,2]
     json['fix_curr'] = False
     json['add_funds'] = 10e6
