@@ -221,10 +221,12 @@ Last update: 2018-05-29
         });
         let index = otherNames.indexOf(newScen.name);
         if (index > -1) {
-          this.scenSummaries.push(newScen)
+          console.log('Scenario named '+newScen.name+' exists, overwriting...')
+          this.scenSummaries[index] = newScen
         }
         else {
-          this.scenSummaries[index] = newScen
+          console.log('Scenario named '+newScen.name+' does not exist, creating new...')
+          this.scenSummaries.push(newScen)
         }
         console.log(newScen)
         rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])

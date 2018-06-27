@@ -131,6 +131,47 @@ Last update: 2018-06-26
           })
       },
 
+      addOptimModal() {
+        // Open a model dialog for creating a new project
+        console.log('addOptimModal() called');
+        rpcservice.rpcCall('get_default_optim', [this.projectID()])
+          .then(response => {
+            this.defaultOptim = response.data // Set the optimization to what we received.
+            this.$modal.show('add-optim');
+            console.log(this.defaultOptim)
+          });
+      },
+
+      addOptim() {
+        console.log('addOptim() called')
+        this.$modal.hide('add-optim')
+        let newOptim = this.dcp(this.defaultOptim); // You've got to be kidding me, buster
+        let otherNames = []
+        this.optimSummaries.forEach(optimSum => {
+          otherNames.push(optimSum.name)
+        });
+        let index = otherNames.indexOf(newOptim.name);
+        if (index > -1) {
+          console.log('Optimization named '+newOptim.name+' exists, overwriting...')
+          this.optimSummaries[index] = newOptim
+        }
+        else {
+          console.log('Optimization named '+newOptim.name+' does not exist, creating new...')
+          this.optimSummaries.push(newOptim)
+        }
+        console.log(newOptim)
+        rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
+          .then( response => {
+            this.$notifications.notify({
+              message: 'Optimization added',
+              icon: 'ti-check',
+              type: 'success',
+              verticalAlign: 'top',
+              horizontalAlign: 'center',
+            });
+          })
+      },
+
       copyOptim(optimSummary) {
         console.log('copyOptim() called')
         var newOptim = this.dcp(optimSummary); // You've got to be kidding me, buster
