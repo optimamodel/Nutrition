@@ -484,7 +484,7 @@ def create_project_from_prj_file(prj_filename, user_id):
 
 
 ##################################################################################
-#%% Analysis functions and RPCs
+#%% Scenario functions and RPCs
 ##################################################################################
 
 def py_to_js_scen(py_scen, prog_names):
@@ -590,3 +590,108 @@ def run_scenarios(project_id):
     print('Saving project...')
     save_project(proj)    
     return {'graphs':graphs}
+
+
+
+
+##################################################################################
+#%% Optimization functions and RPCs
+##################################################################################
+
+def py_to_js_optim(py_optim, prog_names):
+    ''' Convert a Python to JSON representation of an optimization '''
+    attrs = ['name', 'mults', 'fix_curr', 'add_funds', 'objs']
+    js_optim = {}
+    for attr in attrs:
+        js_optim[attr] = getattr(py_optim, attr) # Copy the attributes into a dictionary
+    js_optim['spec'] = []
+    for prog_name in prog_names:
+        this_spec = {}
+        this_spec['name'] = prog_name
+        this_spec['included'] = True if prog_name in py_optim.prog_set else False
+        this_spec['vals'] = []
+        js_optim['spec'].append(this_spec)
+    return js_optim
+    
+
+@register_RPC(validation_type='nonanonymous user')    
+def get_optim_info(project_id):
+
+    print('Getting scenario info...')
+    proj = load_project(project_id, raise_exception=True)
+    
+    optim_summaries = []
+    for py_optim in proj.optims.values():
+        js_optim = py_to_js_optim(py_optim, proj.dataset().prog_names())
+        optim_summaries.append(js_optim)
+    
+    print('JavaScript optimization info:')
+    print(optim_summaries)
+
+    return optim_summaries
+
+
+#@register_RPC(validation_type='nonanonymous user')    
+#def get_default_optim(project_id):
+#
+#    print('Getting scenario info...')
+#    proj = load_project(project_id, raise_exception=True)
+#    
+#    scenario_summaries = []
+#    for py_scen in proj.scens.values():
+#        js_scen = py_to_js_scen(py_scen, proj.dataset().prog_names())
+#        scenario_summaries.append(js_scen)
+#    
+#    print('JavaScript scenario info:')
+#    print(scenario_summaries)
+#
+#    return scenario_summaries
+
+
+@register_RPC(validation_type='nonanonymous user')    
+def set_optim_info(project_id, optim_summaries):
+
+    print('Setting scenario info...')
+    proj = load_project(project_id, raise_exception=True)
+    proj.optims.clear()
+    
+    for j,js_optim in enumerate(optim_summaries):
+        print('Setting optimization %s of %s...' % (j+1, len(optim_summaries)))
+        json = sc.odict()
+        for attr in ['name', 'mults', 'fix_curr', 'add_funds', 'objs']: # Copy these directly -- WARNING, copy-pasted
+            json[attr] = js_optim[attr]
+        json['prog_set'] = [] # These require more TLC
+        for js_spec in js_optim['spec']:
+            if js_spec['included']:
+                json['prog_set'].append(js_spec['name'])
+        
+        print('Python scenario info for optimization %s:' % (j+1))
+        print(json)
+        
+        proj.add_optim(json=json)
+    
+    print('Saving project...')
+    save_project(proj)   
+    
+    return None
+
+
+#@register_RPC(validation_type='nonanonymous user')    
+#def run_optims(project_id):
+#    
+#    print('Running scenarios...')
+#    proj = load_project(project_id, raise_exception=True)
+#    
+#    proj.run_scens()
+#    figs = proj.plot(toplot=['prevs', 'outputs']) # Do not plot allocation
+#    graphs = []
+#    for f,fig in enumerate(figs.values()):
+#        for ax in fig.get_axes():
+#            ax.set_facecolor('none')
+#        graph_dict = mpld3.fig_to_dict(fig)
+#        graphs.append(graph_dict)
+#        print('Converted figure %s of %s' % (f+1, len(figs)))
+#    
+#    print('Saving project...')
+#    save_project(proj)    
+#    return {'graphs':graphs}
