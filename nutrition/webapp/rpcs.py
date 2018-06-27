@@ -484,9 +484,28 @@ def create_project_from_prj_file(prj_filename, user_id):
 
 
 ##################################################################################
-#%% Analysis RPCs
+#%% Analysis functions and RPCs
 ##################################################################################
 
+def py_to_js_scen(py_scen, prog_names):
+    ''' Convert a Python to JSON representation of a scenario '''
+    attrs = ['name', 'active', 'scen_type']
+    js_scen = {}
+    for attr in attrs:
+        js_scen[attr] = getattr(py_scen, attr) # Copy the attributes into a dictionary
+    js_scen['spec'] = []
+    for prog_name in prog_names:
+        this_spec = {}
+        this_spec['name'] = prog_name
+        this_spec['included'] = True if prog_name in py_scen.prog_set else False
+        this_spec['vals'] = []
+        if prog_name in py_scen.scen:
+            this_spec['vals'] = py_scen.scen[prog_name]
+        else:
+            this_spec['vals'] = [None]*py_scen.n_years()
+        js_scen['spec'].append(this_spec)
+    return js_scen
+    
 
 @register_RPC(validation_type='nonanonymous user')    
 def get_scenario_info(project_id):
@@ -495,22 +514,8 @@ def get_scenario_info(project_id):
     proj = load_project(project_id, raise_exception=True)
     
     scenario_summaries = []
-    attrs = ['name', 'active', 'scen_type']
     for py_scen in proj.scens.values():
-        js_scen = {}
-        for attr in attrs:
-            js_scen[attr] = getattr(py_scen, attr) # Copy the attributes into a dictionary
-        js_scen['spec'] = []
-        for prog_name in proj.dataset().prog_names():
-            this_spec = {}
-            this_spec['name'] = prog_name
-            this_spec['included'] = True if prog_name in py_scen.prog_set else False
-            this_spec['vals'] = []
-            if prog_name in py_scen.scen:
-                this_spec['vals'] = py_scen.scen[prog_name]
-            else:
-                this_spec['vals'] = [None]*py_scen.n_years()
-            js_scen['spec'].append(this_spec)
+        js_scen = py_to_js_scen(py_scen, proj.dataset().prog_names())
         scenario_summaries.append(js_scen)
     
     print('JavaScript scenario info:')
@@ -518,6 +523,22 @@ def get_scenario_info(project_id):
 
     return scenario_summaries
 
+
+@register_RPC(validation_type='nonanonymous user')    
+def get_default_scenario(project_id):
+
+    print('Getting scenario info...')
+    proj = load_project(project_id, raise_exception=True)
+    
+    scenario_summaries = []
+    for py_scen in proj.scens.values():
+        js_scen = py_to_js_scen(py_scen, proj.dataset().prog_names())
+        scenario_summaries.append(js_scen)
+    
+    print('JavaScript scenario info:')
+    print(scenario_summaries)
+
+    return scenario_summaries
 
 
 @register_RPC(validation_type='nonanonymous user')    

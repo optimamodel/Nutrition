@@ -202,16 +202,22 @@ class Project(object):
             keyname = name
         self.add(name=keyname, item=result, what='result')
 
-    def default_scens(self, key='default', dorun=None):
-        defaults = ScenOptsTest(key, 'coverage')
+    def default_scens(self, key='default', dorun=None, doadd=True, which=None):
+        if which is None:
+            which = 'coverage'
+        defaults = ScenOptsTest(key, which)
         opts = [ScenOpts(**defaults.get_attr())] # todo: more than 1 default scen will require another key
         scen_list = make_scens(user_opts=opts, project=self)
-        self.add_scens(scen_list)
-        if dorun:
-            self.run_scens()
+        if doadd:
+            self.add_scens(scen_list)
+            if dorun:
+                self.run_scens()
+        else:
+            return scen_list
         return None
     
     def default_optims(self, key='default', dorun=False):
+        
         defaults = OptimOptsTest(key)
         opts = [OptimOpts(**defaults.get_attr())]
         optim_list = make_optims(user_opts=opts, project=self)
