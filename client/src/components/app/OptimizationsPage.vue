@@ -56,7 +56,7 @@ Last update: 2018-06-26
                  class="txbox"
                  v-model="defaultOptim.name"/><br>
           Optimization objectives:<br>
-          <select v-model='defaultOptim.objs'>
+          <select v-model='defaultOptim.objs' multiple>
             <option v-for='obj in defaultOptim.objective_options'>{{ obj }}</option>
           </select><br>
           <!--<select v-model="defaultOptim.objs">-->
