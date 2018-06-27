@@ -100,7 +100,9 @@ Last update: 2018-05-29
               <button class="btn __blue" @click="uploadDatabook(projectSummary.project.id)">Upload databook</button>
               <button class="btn" @click="copyProject(projectSummary.project.id)">Copy</button>
               <button class="btn" @click="renameProject(projectSummary)">Rename</button>
-              <button class="btn" @click="downloadProjectFile(projectSummary.project.id)">Download</button>
+              <button class="btn" @click="downloadProjectFile(projectSummary.project.id)">Download project</button>
+              <button class="btn" @click="downloadDatabook(projectSummary.project.id)">Download databook</button>
+              <button class="btn" @click="downloadDefaults(projectSummary.project.id)">Download defaults</button>
             </td>
           </tr>
         </tbody>
@@ -461,6 +463,26 @@ export default {
 
 	    // Make the server call to download the project to a .prj file.
       rpcservice.rpcDownloadCall('download_project', [uid])
+    },
+
+    downloadDatabook(uid) {
+      // Find the project that matches the UID passed in.
+      let matchProject = this.projectSummaries.find(theProj => theProj.project.id === uid)
+
+      console.log('downloadDatabook() called for ' + matchProject.project.name)
+
+      // Make the server call to download the project to a .prj file.
+      rpcservice.rpcDownloadCall('download_databook', [uid])
+    },
+
+    downloadDefaults(uid) {
+      // Find the project that matches the UID passed in.
+      let matchProject = this.projectSummaries.find(theProj => theProj.project.id === uid)
+
+      console.log('downloadDefaults() called for ' + matchProject.project.name)
+
+      // Make the server call to download the project to a .prj file.
+      rpcservice.rpcDownloadCall('download_defaults', [uid])
     },
 
     uploadDatabook(uid) {

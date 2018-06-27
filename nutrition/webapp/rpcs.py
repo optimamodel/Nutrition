@@ -264,29 +264,41 @@ def download_project(project_id):
     For the passed in project UID, get the Project on the server, save it in a 
     file, minus results, and pass the full path of this file back.
     """
-    
-    # Load the project with the matching UID.
-    proj = load_project(project_id, raise_exception=True)
-    
-    # Use the downloads directory to put the file in.
-    dirname = fileio.downloads_dir.dir_path
-        
-    # Create a filename containing the project name followed by a .prj 
-    # suffix.
-    file_name = '%s.prj' % proj.name
-        
-    # Generate the full file name with path.
-    full_file_name = '%s%s%s' % (dirname, os.sep, file_name)
-        
-    # Write the object to a Gzip string pickle file.
-    fileio.object_to_gzip_string_pickle_file(full_file_name, proj)
-    
-    # Display the call information.
-    # TODO: have this so that it doesn't show when logging is turned off
-    print(">> download_project %s" % (full_file_name))
-    
-    # Return the full filename.
-    return full_file_name
+    proj = load_project(project_id, raise_exception=True) # Load the project with the matching UID.
+    dirname = fileio.downloads_dir.dir_path # Use the downloads directory to put the file in.
+    file_name = '%s.prj' % proj.name # Create a filename containing the project name followed by a .prj suffix.
+    full_file_name = '%s%s%s' % (dirname, os.sep, file_name) # Generate the full file name with path.
+    fileio.object_to_gzip_string_pickle_file(full_file_name, proj) # Write the object to a Gzip string pickle file.
+    print(">> download_project %s" % (full_file_name)) # Display the call information.
+    return full_file_name # Return the full filename.
+
+@register_RPC(call_type='download', validation_type='nonanonymous user')   
+def download_databook(project_id):
+    """
+    Download databook
+    """
+    proj = load_project(project_id, raise_exception=True) # Load the project with the matching UID.
+    dirname = fileio.downloads_dir.dir_path # Use the downloads directory to put the file in.
+    file_name = '%s_databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
+    full_file_name = '%s%s%s' % (dirname, os.sep, file_name) # Generate the full file name with path.
+    proj.dataset().demo_data.spreadsheet.save(full_file_name)
+    print(">> download_databook %s" % (full_file_name)) # Display the call information.
+    return full_file_name # Return the full filename.
+
+
+@register_RPC(call_type='download', validation_type='nonanonymous user')   
+def download_defaults(project_id):
+    """
+    Download defaults
+    """
+    proj = load_project(project_id, raise_exception=True) # Load the project with the matching UID.
+    dirname = fileio.downloads_dir.dir_path # Use the downloads directory to put the file in.
+    file_name = '%s_defaults.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
+    full_file_name = '%s%s%s' % (dirname, os.sep, file_name) # Generate the full file name with path.
+    proj.dataset().default_params.spreadsheet.save(full_file_name)
+    print(">> download_defaults %s" % (full_file_name)) # Display the call information.
+    return full_file_name # Return the full filename.
+
 
 @register_RPC(call_type='download', validation_type='nonanonymous user')
 def load_zip_of_prj_files(project_ids):
@@ -384,24 +396,13 @@ def create_new_project(user_id, proj_name, num_pops, data_start, data_end):
 
 @register_RPC(call_type='upload', validation_type='nonanonymous user')
 def upload_databook(databook_filename, project_id):
-    """
-    Upload a databook to a project.
-    """
-    
-    # Display the call information.
+    """ Upload a databook to a project. """
     print(">> upload_databook '%s'" % databook_filename)
-    
     proj = load_project(project_id, raise_exception=True)
-    
-    # Reset the project name to a new project name that is unique.
-    proj.load_databook(databook_path=databook_filename)
+    proj.load_data(filepath=databook_filename) # Reset the project name to a new project name that is unique.
     proj.modified = sc.today()
-    
-    # Save the new project in the DataStore.
-    save_project(proj)
-    
-    # Return the new project UID in the return message.
-    return { 'projectId': str(proj.uid) }
+    save_project(proj) # Save the new project in the DataStore.
+    return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
 
 
 @register_RPC(validation_type='nonanonymous user')

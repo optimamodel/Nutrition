@@ -45,7 +45,7 @@ class Project(object):
     ### Built-in methods -- initialization, and the thing to print if you call a project
     #######################################################################################################
 
-    def __init__(self, name='default', workbookfile=None, **kwargs):
+    def __init__(self, name='default', **kwargs):
         ''' Initialize the project '''
 
         ## Define the structure sets
@@ -62,14 +62,7 @@ class Project(object):
         self.version = version
         self.gitinfo = sc.gitinfo(__file__)
         self.filename = None # File path, only present if self.save() is used
-        self.warnings = None # Place to store information about warnings (mostly used during migrations)
-
-        ## Load burden spreadsheet, if available
-        if workbookfile:
-            model = Model(workbookfile, **kwargs)
-            self.models['default'] = model
-        
-
+        return None
 
     def __repr__(self):
         ''' Print out useful information when called '''
@@ -99,6 +92,13 @@ class Project(object):
         for attr in attrs:
             info[attr] = getattr(self, attr) # Populate the dictionary
         return info
+    
+    
+    def load_data(self, name=None, country=None, region=None, filepath=None):
+        dataset = Dataset(country=region, region=region, filepath=filepath, doload=True)
+        if name is not None: dataset.name = name
+        self.datasets[dataset.name] = dataset
+        return None
     
     
     def save(self, filename=None, folder=None, saveresults=False, verbose=2):
@@ -262,6 +262,7 @@ class Project(object):
     def plot(self, key=None, toplot=None):
         figs = make_plots(self.result(key), toplot=toplot)
         return figs
+
 
 def demo():
     ''' Create a demo project with default settings '''

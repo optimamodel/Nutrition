@@ -1,6 +1,41 @@
-import settings, pandas, copy
+import pandas
 import sciris.core as sc
+from . import settings
 from . import populations
+
+class Spreadsheet(object):
+    ''' A class for reading and writing spreadsheet data in binary format, so a project contains the spreadsheet loaded '''
+    
+    def __init__(self, filename=None):
+        self.data = None
+        self.filename = None
+        if filename is not None: self.load(filename)
+        return None
+    
+    def __repr__(self):
+        output  = sc.desc(self)
+        return output
+    
+    def load(self, filename=None):
+        if filename is not None:
+            filepath = sc.makefilepath(filename=filename)
+            self.filename = filepath
+            with open(filepath, mode='rb') as f: 
+                self.data = f.read()
+        else:
+            print('No filename specified; aborting.')
+        return None
+    
+    def save(self, filename=None):
+        if filename is None:
+            if self.filename is not None: filename = self.filename
+        if filename is not None:
+            filepath = sc.makefilepath(filename=filename)
+            with open(filepath, mode='wb') as f:
+                f.write(self.data)
+            print('Spreadsheet saved to %s.' % filepath)
+        return filepath
+            
 
 class DefaultParams(object):
     def __init__(self, default_path, input_path):
@@ -27,16 +62,16 @@ class DefaultParams(object):
         self.spreadsheet = pandas.ExcelFile(default_path)
         self.input_path = input_path
         self.read_spreadsheet()
-        self.rem_spreadsheet()
+        self.rem_spreadsheet(default_path)
         return None
     
     def __repr__(self):
         output  = sc.desc(self)
         return output
 
-    def rem_spreadsheet(self):
+    def rem_spreadsheet(self, default_path):
         self.spreadsheet.close()
-        self.spreadsheet = None
+        self.spreadsheet = Spreadsheet(default_path) # Load spreadsheet binary file into project -- WARNING, only partly implemented since not sure how to read from
 
     def read_spreadsheet(self):
         self.extend_treatsam()
@@ -283,15 +318,15 @@ class InputData(object):
         self.get_fertility_risks()
         self.get_incidences()
         self.get_famplan_methods()
-        self.rem_spreadsheet()
+        self.rem_spreadsheet(filepath)
     
     def __repr__(self):
         output  = sc.desc(self)
         return output
 
-    def rem_spreadsheet(self):
+    def rem_spreadsheet(self, filepath):
         self.spreadsheet.close()
-        self.spreadsheet = None
+        self.spreadsheet = Spreadsheet(filepath)
 
     ## DEMOGRAPHICS ##
 
@@ -492,7 +527,7 @@ class ProgData(object):
                 else: # community or mass media
                     target[name][pop] += 1
         # convert pw to age bands and set missing children + wra to 0
-        new_target = copy.deepcopy(target)
+        new_target = sc.dcp(target)
         for name in target.iterkeys():
             if 'Pregnant women' in target[name]:
                 new_target[name].update({age:target[name]['Pregnant women'] for age in self.settings.pw_ages})
@@ -639,7 +674,7 @@ class ScenOptsTest(object):
 class Dataset(object):
     ''' Store all the data for a project '''
     
-    def __init__(self, country='default', region='default', demo_data=None, prog_data=None, default_params=None, pops=None, name=None, doload=False):
+    def __init__(self, country='default', region='default', demo_data=None, prog_data=None, default_params=None, pops=None, name=None, doload=False, filepath=None):
         self.country = country
         self.region = region
         self.demo_data = demo_data
@@ -650,15 +685,15 @@ class Dataset(object):
         self.name = name
         self.modified = sc.today()
         if doload:
-            self.load()
+            self.load(filepath=filepath)
         return None
     
     def __repr__(self):
         output  = sc.desc(self)
         return output
     
-    def load(self):
-        demo_data, prog_data, default_params, pops = get_data(self.country, self.region, withpops=True)
+    def load(self, filepath=None):
+        demo_data, prog_data, default_params, pops = get_data(country=self.country, country=self.region, filepath=filepath, withpops=True)
         self.demo_data = demo_data
         self.prog_data = prog_data
         self.default_params = default_params
