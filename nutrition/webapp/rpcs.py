@@ -654,6 +654,7 @@ def get_default_optim(project_id):
     
     py_optim = proj.default_optims(doadd=False)[0]
     js_optim = py_to_js_optim(py_optim, proj.dataset().prog_names())
+    js_optim['objective_options'] = ['thrive', 'child_deaths', 'stunting_prev', 'wasting_prev', 'anaemia_prev'] # WARNING, stick allowable optimization options here
     
     print('Created default JavaScript optimization:')
     print(js_optim)

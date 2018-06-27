@@ -56,9 +56,7 @@ Last update: 2018-06-26
                  class="txbox"
                  v-model="defaultOptim.name"/><br>
           Optimization objectives:<br>
-          <input type="text"
-                 class="txbox"
-                 v-model="defaultOptim.objs"/><br>
+          <select v-model="objectiveOptions"/><br>
           Multipliers:<br>
           <input type="text"
                  class="txbox"
@@ -110,6 +108,7 @@ Last update: 2018-06-26
         optimSummaries: [],
         defaultOptim: [],
         currentOptim: '',
+        objectiveOptions: [],
       }
     },
 
@@ -163,6 +162,7 @@ Last update: 2018-06-26
         rpcservice.rpcCall('get_default_optim', [this.projectID()])
           .then(response => {
             this.defaultOptim = response.data // Set the optimization to what we received.
+            this.objectiveOptions = response.data.objective_options
           });
       },
 
