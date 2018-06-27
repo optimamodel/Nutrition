@@ -110,7 +110,7 @@ Last update: 2018-05-29
       return {
         serverresponse: 'no response',
         scenSummaries: [],
-        defaultScen: {},
+        defaultScen: null,
       }
     },
 
