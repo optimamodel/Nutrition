@@ -54,6 +54,7 @@ Last update: 2018-05-29
 
     <modal name="add-scenario"
            height="auto"
+           :scrollable="true"
            :width="900"
            :classes="['v--modal', 'vue-dialog']"
            :pivot-y="0.3"
@@ -93,7 +94,7 @@ Last update: 2018-05-29
               <td v-for="val in prog_spec.vals">
                 <input type="text"
                        class="txbox"
-                       v-model="prog_spec.vals"/>
+                       v-model="val"/>
               </td>
             </tr>
             </tbody>
