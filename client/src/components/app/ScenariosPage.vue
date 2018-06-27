@@ -111,6 +111,7 @@ Last update: 2018-05-29
         serverresponse: 'no response',
         scenSummaries: [],
         defaultScen: [],
+        graphData: [],
       }
     },
 

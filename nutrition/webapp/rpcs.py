@@ -680,7 +680,7 @@ def run_optim(project_id, optim_name):
     proj = load_project(project_id, raise_exception=True)
     
     proj.run_optim(key=optim_name)
-    figs = proj.plot(toplot=['alloc']) # Do not plot allocation
+    figs = proj.plot(toplot=['alloc']) # Only plot allocation
     graphs = []
     for f,fig in enumerate(figs.values()):
         for ax in fig.get_axes():

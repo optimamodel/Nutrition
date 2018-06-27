@@ -32,6 +32,7 @@ Last update: 2018-06-26
     <div>
       <button class="btn __blue" @click="addOptimModal()">Add optimization</button>
       <button class="btn __green" @click="runOptim()">Run</button>
+      <button class="btn" @click="reloadGraphs()">Reload graphs</button>
       <button class="btn" @click="clearGraphs()">Clear graphs</button>
     </div>
 
@@ -234,6 +235,13 @@ Last update: 2018-06-26
         // Open a model dialog for creating a new project
         console.log('openOptim() called');
         this.currentOptim = optimSummary.name
+        this.$notifications.notify({
+          message: 'Optimization "'+optimSummary.name+'" opened',
+          icon: 'ti-check',
+          type: 'success',
+          verticalAlign: 'top',
+          horizontalAlign: 'center',
+        });
       },
 
       editOptim(optimSummary) {
@@ -294,8 +302,8 @@ Last update: 2018-06-26
             rpcservice.rpcCall('run_optim', [this.projectID(), this.currentOptim])
               .then(response => {
                 this.clearGraphs() // Once we receive a response, we can work with a clean slate
-                this.serverresponse = response.data // Pull out the response data.
-                var n_plots = response.data.graphs.length
+                this.graphData = response.data.graphs // Pull out the response data.
+                let n_plots = this.graphData.length
                 console.log('Rendering ' + n_plots + ' graphs')
 
                 for (var index = 0; index <= n_plots; index++) {
@@ -331,7 +339,25 @@ Last update: 2018-06-26
           })
       },
 
+      reloadGraphs() {
+        console.log('Reload graphs')
+        let n_plots = this.graphData.length
+        console.log('Rendering ' + n_plots + ' graphs')
+        for (let index = 0; index <= n_plots; index++) {
+          console.log('Rendering plot ' + index)
+          var divlabel = 'fig' + index
+          try {
+            mpld3.draw_figure(divlabel, response.data.graphs[index]); // Draw the figure.
+          }
+          catch (err) {
+            console.log('failled:' + err.message);
+          }
+        }
+      },
+
       clearGraphs() {
+        console.log('Clear graphs')
+        this.graphData = []
         for (var index = 0; index <= 100; index++) {
           console.log('Clearing plot ' + index)
           var divlabel = 'fig' + index
