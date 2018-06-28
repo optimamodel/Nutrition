@@ -57,14 +57,14 @@ def profile():
     
     
     
-    @do_profile(follow=[eval(functiontoprofile)]) # Add decorator to runmodel function
-    def runsimwrapper(): 
-        P.runsim()
-    runsimwrapper()
+    @do_profile(follow=[nu.demo]) # Add decorator to function being profiled
+    def runwrapper(): 
+        nu.demo()
+    runwrapper()
     
     print('Done.')
 
-#profile()
+profile()
 
 print("CPU benchmark:%0.2f million flops" % (CPUperformance))
 print('Model runtime: %s s' % elapsed)
