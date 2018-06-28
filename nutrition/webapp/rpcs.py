@@ -625,10 +625,11 @@ def run_scenarios(project_id):
 
 def py_to_js_optim(py_optim, prog_names):
     ''' Convert a Python to JSON representation of an optimization '''
-    attrs = ['name', 'mults', 'add_funds', 'objs']
+    attrs = ['name', 'mults', 'add_funds']
     js_optim = {}
     for attr in attrs:
         js_optim[attr] = getattr(py_optim, attr) # Copy the attributes into a dictionary
+    js_optim['objs'] = py_optim.objs[0]
     js_optim['spec'] = []
     for prog_name in prog_names:
         this_spec = {}

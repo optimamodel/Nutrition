@@ -20,7 +20,7 @@ Last update: 2018-06-26
           <b>{{ optimSummary.name }}</b>
         </td>
         <td style="white-space: nowrap">
-          <button class="btn __green" @click="openOptim(optimSummary)">Open</button>        
+          <button class="btn __green" @click="runOptim(optimSummary)">Run</button>
           <button class="btn" @click="editOptim(optimSummary)">Edit</button>
           <button class="btn" @click="copyOptim(optimSummary)">Copy</button>
           <button class="btn" @click="deleteOptim(optimSummary)">Delete</button>
@@ -31,8 +31,6 @@ Last update: 2018-06-26
 
     <div>
       <button class="btn __blue" @click="addOptimModal()">Add optimization</button>
-      <button class="btn __green" @click="runOptim()">Run</button>
-      <button class="btn" @click="reloadGraphs()">Reload graphs</button>
       <button class="btn" @click="clearGraphs()">Clear graphs</button>
     </div>
 
@@ -56,15 +54,12 @@ Last update: 2018-06-26
                  class="txbox"
                  v-model="defaultOptim.name"/><br>
           Optimization objectives:<br>
-          <select v-model='defaultOptim.objs' multiple>
+          <select v-model="defaultOptim.objs">
             <option v-for='obj in defaultOptim.objective_options'>
               {{ obj }}
             </option>
-          </select><br>
+          </select><br><br>
           {{ defaultOptim.objs }}
-          <!--<select v-model="defaultOptim.objs">-->
-            <!--<option v-for="obj in defaultOptim.objectiveOptions" value="obj">{{obj}}</option>-->
-          <!--</select><br>-->
           Multipliers:<br>
           <input type="text"
                  class="txbox"
@@ -115,8 +110,6 @@ Last update: 2018-06-26
         serverresponse: 'no response',
         optimSummaries: [],
         defaultOptim: [],
-        currentOptim: '',
-        objectiveOptions: [],
       }
     },
 
@@ -306,7 +299,7 @@ Last update: 2018-06-26
           })
       },
 
-      runOptim() {
+      runOptim(optimSummary) {
         console.log('runOptim() called for '+this.currentOptim)
 
         // Make sure they're saved first
@@ -314,7 +307,7 @@ Last update: 2018-06-26
           .then(response => {
 
             // Go to the server to get the results from the package set.
-            rpcservice.rpcCall('run_optim', [this.projectID(), this.currentOptim])
+            rpcservice.rpcCall('run_optim', [this.projectID(), optimSummary.name])
               .then(response => {
                 this.clearGraphs() // Once we receive a response, we can work with a clean slate
                 this.graphData = response.data.graphs // Pull out the response data.
