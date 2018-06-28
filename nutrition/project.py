@@ -236,9 +236,8 @@ class Project(object):
     def run_scens(self, scen_list=None):
         """Function for running scenarios"""
         if scen_list is not None: self.add_scens(scen_list) # replace existing scen list with new one
-        scens = sc.dcp(self.scens)
         results = []
-        for scen in scens.itervalues():
+        for scen in self.scens.itervalues():
             if scen.active:
                 scen.run_scen()
                 result = ScenResult(scen)
