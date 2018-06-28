@@ -1,30 +1,17 @@
-# user_interface
+# Bin folder
 
-> Sciris Framework
+This folder contains the executable files for various tasks. On Mac/Linux, files have executable permission, so you can just type `./the-file.py`; you don't need to type `python the-file.py` (although that works too).
 
-## Build Setup
+## Setup scripts
 
-``` bash
-# install dependencies
-npm install
+* `install_client.py` installs the node modules; it's simply a link to `npm install` in the client folder.
 
-# serve with hot reload at localhost:8080
-npm run dev
+* `build_client.py` builds the client; it's a link to `npm run build` in the client folder.
 
-# build for production with minification
-npm run build
+## Run scripts
 
-# build for production and view the bundle analyzer report
-npm run build --report
+* `start_server.py` starts the main server. Note, this will only work after `build_client.py` has been run.
 
-# run unit tests
-npm run unit
+## Other
 
-# run e2e tests
-npm run e2e
-
-# run all tests
-npm test
-```
-
-For detailed explanation on how things work, checkout the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+* `reset_database.py` deletes all data from the database: all users, projects, blobs, etc.

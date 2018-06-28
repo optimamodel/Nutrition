@@ -63,7 +63,7 @@
   }
   .navbar-nav {
     > li > a:not(.btn) {
-      color: $dark-gray;
+      color: $black-color;
     }
 
     > .active > a,
@@ -104,7 +104,7 @@
   &:not(.navbar-transparent) .btn-neutral,
   &:not(.navbar-transparent) .btn-neutral:hover,
   &:not(.navbar-transparent) .btn-neutral:active {
-    color: $dark-gray;
+    color: $black-color;
   }
 }
 
@@ -262,7 +262,7 @@
 
   .btn-default.btn-fill {
 
-    color: $dark-gray;
+    color: $black-color;
 
     background-color: $white-color;
 

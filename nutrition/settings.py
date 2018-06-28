@@ -1,9 +1,12 @@
-import os, itertools
+import os
+import itertools
+import sciris.core as sc
 
 class Settings(object):
     """ Store all the statis data for a project that won't change except between Optima versions
     WARNING: Do not change the order of these lists without checking the potential consequences within the code """
     def __init__(self):
+        self.t = [2017, 2025]
         self.timestep = 1./12. # in months
         self.stunting_list = ['High', 'Moderate', 'Mild', 'Normal']
         self.stunted_list = self.stunting_list[:2]
@@ -28,6 +31,10 @@ class Settings(object):
         self.risks = ['Stunting', 'Wasting', 'Breastfeeding', 'Anaemia']
         self.child_age_spans = [1., 5., 6., 12., 36.] # in months
         self.women_age_rates = [1./5., 1./10., 1./10., 1./10.] # in years
+    
+    def __repr__(self):
+        output  = sc.desc(self)
+        return output
 
 def data_path(country, region, sim_type):
     parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))

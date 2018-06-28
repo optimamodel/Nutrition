@@ -1,12 +1,19 @@
-from sciris.core import odict, uuid, today, gitinfo, objrepr, getdate, printv, makefilepath, saveobj, dcp
-from .model import Model
-from .scenarios import default_scens
-from .optimisation import default_optims
+#######################################################################################################
+#%% Imports
+#######################################################################################################
+
+import sciris.core as sc
+from .version import version
+from .scenarios import make_scens
+from .optimization import make_optims
 from .results import ScenResult, OptimResult
-from . import version
+from .data import Dataset, ScenOptsTest, OptimOptsTest
+from .utils import ScenOpts, OptimOpts
+from .plotting import make_plots
+
 
 #######################################################################################################
-## Project class -- this contains everything else!
+#%% Project class -- this contains everything else!
 #######################################################################################################
 
 class Project(object):
@@ -16,7 +23,7 @@ class Project(object):
     The main Nutrition project class. Almost all functionality is provided by this class.
 
     An Nutrition project is based around 4 major lists:
-        1. models -- an odict of model/workbook objects
+        1. datasets -- an odict of model/workbook objects
         2. scens -- an odict of scenario structures
         3. optims -- an odict of optimization structures
         4. results -- an odict of results associated with the choices above
@@ -37,44 +44,37 @@ class Project(object):
     ### Built-in methods -- initialization, and the thing to print if you call a project
     #######################################################################################################
 
-    def __init__(self, name='default', workbookfile=None, **kwargs):
+    def __init__(self, name='default', **kwargs):
         ''' Initialize the project '''
 
         ## Define the structure sets
-        self.models      = odict()
-        self.scens       = odict()
-        self.optims      = odict()
-        self.results     = odict()
+        self.datasets    = sc.odict()
+        self.scens       = sc.odict()
+        self.optims      = sc.odict()
+        self.results     = sc.odict()
 
         ## Define other quantities
         self.name = name
-        self.uid = uuid()
-        self.created = today()
-        self.modified = today()
+        self.uid = sc.uuid()
+        self.created = sc.today()
+        self.modified = sc.today()
         self.version = version
-        self.gitinfo = gitinfo(__file__)
+        self.gitinfo = sc.gitinfo(__file__)
         self.filename = None # File path, only present if self.save() is used
-        self.warnings = None # Place to store information about warnings (mostly used during migrations)
-
-        ## Load burden spreadsheet, if available
-        if workbookfile:
-            model = Model(workbookfile, **kwargs)
-            self.models['default'] = model
-        
-
+        return None
 
     def __repr__(self):
         ''' Print out useful information when called '''
-        output = objrepr(self)
+        output = sc.objrepr(self)
         output += '      Project name: %s\n'    % self.name
         output += '\n'
-        output += '            Models: %i\n'    % len(self.models)
+        output += '          Datasets: %i\n'    % len(self.datasets)
         output += '         Scenarios: %i\n'    % len(self.scens)
         output += '     Optimizations: %i\n'    % len(self.optims)
         output += '      Results sets: %i\n'    % len(self.results)
         output += '\n'
-        output += '      Date created: %s\n'    % getdate(self.created)
-        output += '     Date modified: %s\n'    % getdate(self.modified)
+        output += '      Date created: %s\n'    % sc.getdate(self.created)
+        output += '     Date modified: %s\n'    % sc.getdate(self.modified)
         output += '               UID: %s\n'    % self.uid
         output += '  Optima Nutrition: v%s\n'   % self.version
         output += '        Git branch: %s\n'    % self.gitinfo['branch']
@@ -86,24 +86,30 @@ class Project(object):
     
     def getinfo(self):
         ''' Return an odict with basic information about the project'''
-        info = odict()
-        for attr in ['name', 'version', 'created', 'modified', 'gitbranch', 'gitversion', 'uid']:
+        info = sc.odict()
+        attrs = ['name', 'version', 'created', 'modified', 'gitbranch', 'gitversion', 'uid']
+        for attr in attrs:
             info[attr] = getattr(self, attr) # Populate the dictionary
-#        info['parsetkeys'] = self.parsets.keys()
-#        info['progsetkeys'] = self.parsets.keys()
         return info
+    
+    
+    def load_data(self, name=None, country=None, region=None, filepath=None):
+        dataset = Dataset(country=region, region=region, filepath=filepath, doload=True)
+        if name is not None: dataset.name = name
+        self.datasets[dataset.name] = dataset
+        return None
     
     
     def save(self, filename=None, folder=None, saveresults=False, verbose=2):
         ''' Save the current project, by default using its name, and without results '''
-        fullpath = makefilepath(filename=filename, folder=folder, default=[self.filename, self.name], ext='prj', sanitize=True)
+        fullpath = sc.makefilepath(filename=filename, folder=folder, default=[self.filename, self.name], ext='prj', sanitize=True)
         self.filename = fullpath # Store file path
         if saveresults:
-            saveobj(fullpath, self, verbose=verbose)
+            sc.saveobj(fullpath, self, verbose=verbose)
         else:
-            tmpproject = dcp(self) # Need to do this so we don't clobber the existing results
+            tmpproject = sc.dcp(self) # Need to do this so we don't clobber the existing results
             tmpproject.cleanresults() # Get rid of all results
-            saveobj(fullpath, tmpproject, verbose=verbose) # Save it to file
+            sc.saveobj(fullpath, tmpproject, verbose=verbose) # Save it to file
             del tmpproject # Don't need it hanging around any more
         return fullpath
 
@@ -112,13 +118,13 @@ class Project(object):
         structlist = self.getwhat(what=what)
         structlist[name] = item
         print 'Item "{}" added to "{}"'.format(name, what)
-        self.modified = today()
+        self.modified = sc.today()
 
     def remove(self, what, name):
         structlist = self.getwhat(what=what)
         structlist.pop(name)
         print '{} "{}" removed'.format(what, name)
-        self.modified = today()
+        self.modified = sc.today()
 
     def getwhat(self, what):
         '''
@@ -126,10 +132,9 @@ class Project(object):
             structlist = getwhat('parameters')
         will return P.parset.
         '''
-        if what in ['p', 'pars', 'parset', 'parameters']: structlist = self.parsets
-        elif what in ['pr', 'progs', 'progset', 'progsets']: structlist = self.progsets
+        if what in ['d', 'ds', 'dataset', 'datasets']: structlist = self.datasets
         elif what in ['s', 'scen', 'scens', 'scenario', 'scenarios']: structlist = self.scens
-        elif what in ['o', 'opt', 'opts', 'optim', 'optims', 'optimisation', 'optimization', 'optimisations', 'optimizations']: structlist = self.optims
+        elif what in ['o', 'opt', 'opts', 'optim', 'optims', 'optimization', 'optimization', 'optimizations', 'optimizations']: structlist = self.optims
         elif what in ['r', 'res', 'result', 'results']: structlist = self.results
         else: raise Exception("Item not found")
         return structlist
@@ -138,65 +143,144 @@ class Project(object):
     ### Utilities
     #######################################################################################################
 
-    def model(self, key=-1, verbose=2):
-        ''' Shortcut for getting the latest model, i.e. self.models[-1] '''
-        try:    return self.models[key]
-        except: return printv('Warning, burden set not found!', 1, verbose) # Returns None
+    def dataset(self, key=None, verbose=2):
+        ''' Shortcut for getting the latest model, i.e. self.datasets[-1] '''
+        if key is None: key = -1
+        try:    return self.datasets[key]
+        except: return sc.printv('Warning, dataset set not found!', 1, verbose) # Returns None
+    
+    def scen(self, key=None, verbose=2):
+        ''' Shortcut for getting the latest scenario, i.e. self.scen[-1] '''
+        if key is None: key = -1
+        try:    return self.scens[key]
+        except: return sc.printv('Warning, scenario not found!', 1, verbose) # Returns None
+    
+    def optim(self, key=None, verbose=2):
+        ''' Shortcut for getting the latest optim, i.e. self.scen[-1] '''
+        if key is None: key = -1
+        try:    return self.optims[key]
+        except: return sc.printv('Warning, optimization not found!', 1, verbose) # Returns None
+    
+    def result(self, key=None, verbose=2):
+        ''' Shortcut for getting the latest result, i.e. self.results[-1] '''
+        if key is None: key = -1
+        try:    return self.results[key]
+        except: return sc.printv('Warning, result not found!', 1, verbose) # Returns None
     
     def cleanresults(self):
         ''' Remove all results '''
         for key,result in self.results.items():
             self.results.pop(key)
+        
+    def add_scen(self, json=None):
+        ''' Super roundabout way to add a scenario '''
+        scen_list = make_scens(project=self, json=json)
+        self.add_scens(scen_list)
+        return None
+    
+    def add_optim(self, json=None):
+        ''' Super roundabout way to add a scenario '''
+        optim_list = make_optims(project=self, json=json)
+        self.add_optims(optim_list)
+        return None
 
-    def add_scens(self, scen_list, overwrite=True):
-        if overwrite: self.scens = {} # remove exist scenarios
+    def add_scens(self, scen_list, overwrite=False):
+        if overwrite: self.scens = sc.odict() # remove exist scenarios
         for scen in scen_list:
             self.add(name=scen.name, item=scen, what='scen', overwrite=True)
-        self.modified = today()
+        self.modified = sc.today()
 
-    def add_optims(self, optim_list, overwrite=True):
-        if overwrite: self.optims = {} # remove exist scenarios
+    def add_optims(self, optim_list, overwrite=False):
+        if overwrite: self.optims = sc.odict() # remove exist scenarios
         for optim in optim_list:
             self.add(name=optim.name, item=optim, what='optim', overwrite=True)
-        self.modified = today()
+        self.modified = sc.today()
 
-    def add_result(self, result):
+    def add_result(self, result, name=None):
         """Add result by name"""
-        keyname = result.name
+        try:
+            keyname = result.name
+        except Exception as E:
+            if name is None:
+                print('WARNING, could not extract result name: %s' % repr(E))
+                name = 'default_result'
+            keyname = name
         self.add(name=keyname, item=result, what='result')
 
-    def run_scens(self, scen_list=None, name=None):
+    def default_scens(self, key='default', dorun=None, doadd=True, which=None):
+        if which is None:
+            which = 'coverage'
+        defaults = ScenOptsTest(key, which)
+        opts = [ScenOpts(**defaults.get_attr())] # todo: more than 1 default scen will require another key
+        scen_list = make_scens(user_opts=opts, project=self)
+        if doadd:
+            self.add_scens(scen_list)
+            if dorun:
+                self.run_scens()
+            return None
+        else:
+            return scen_list
+        
+    def default_optims(self, key='default', dorun=False, doadd=True):
+        defaults = OptimOptsTest(key)
+        opts = [OptimOpts(**defaults.get_attr())]
+        optim_list = make_optims(user_opts=opts, project=self)
+        if doadd:
+            self.add_optims(optim_list)
+            if dorun:
+                self.run_optims()
+            return None
+        else:
+            return optim_list
+    
+    def run_scens(self, scen_list=None):
         """Function for running scenarios"""
         if scen_list is not None: self.add_scens(scen_list) # replace existing scen list with new one
-        if name is None: name = 'scenarios'
-        scens = dcp(self.scens)
+        scens = sc.dcp(self.scens)
+        results = []
         for scen in scens.itervalues():
-            scen.run_scen()
-            result = ScenResult(scen)
-            self.add_result(result)
+            if scen.active:
+                scen.run_scen()
+                result = ScenResult(scen)
+                results.append(result)
+        self.add_result(results, name='Scenarios')
+        return None
 
-    def default_scens(self, key='default', dorun=None):
-        default_scens(self, key=key, dorun=dorun)
-
-    def default_optims(self, key='default', dorun=None):
-        default_optims(self, key=key, dorun=dorun)
-
-    def run_optims(self, optim_list=None, name=None):
+    def run_optim(self, key=None, optim_list=None, parallel=None):
         if optim_list is not None: self.add_optims(optim_list)
-        if name is None: name = 'optimizations'
-        optims = dcp(self.optims)
-        for optim in optims.itervalues():
-            optim.run_optim()
-            result = OptimResult(optim)
-            self.add_result(result)
-
-    def get_results(self, result_key):
-        return self.results[result_key]
+        self.optim(key).run_optim(parallel=parallel)
+        result = OptimResult(self.optim(key))
+        self.add_result(result)
+        return None
+    
+    def get_results(self, result_keys):
+        """ result_keys is a list of keys corresponding to the desired result.
+        Return: a list of result objects """
+        return [self.results[key] for key in result_keys]
 
     def sensitivity(self):
         print('Not implemented')
+    
+    
+    def plot(self, key=None, toplot=None):
+        figs = make_plots(self.result(key), toplot=toplot)
+        return figs
 
-def default_project():
-    name = 'default'
-    p = Project(name)
-    return p
+
+def demo():
+    ''' Create a demo project with default settings '''
+    
+    # Parameters
+    name = 'Demo project'
+    country = 'default'
+    region = 'default'
+    
+    # Create project and data
+    P = Project(name)
+    dataset = Dataset(country, region, doload=True)
+    P.datasets[dataset.name] = dataset
+    
+    # Create scenarios and optimizations
+    P.default_scens()
+    P.default_optims()
+    return P

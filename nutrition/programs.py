@@ -53,7 +53,7 @@ class Program(object):
         """ cov: a list of coverages with one-to-one correspondence with all_years
         restr_cov: boolean indicating if the coverages are restricted or unrestricted """
         years = numpy.array(self.all_years)
-        cov_list = numpy.array(cov)
+        cov_list = numpy.array(cov, dtype=float) # Force type conversion to handle None instead of nan
         not_nan = numpy.logical_not(numpy.isnan(cov_list))
         if any(not_nan):
             # for 1 or more present values, baseline up to first present value, interpolate between, then constant if end values missing
@@ -63,9 +63,9 @@ class Program(object):
             endCov = list(numpy.interp(years[firstTrue:], years[not_nan], cov_list[not_nan]))
             # scale each coverage
             if restr_cov:
-                interped = [self.get_unrestr_cov(cov) for cov in startCov + endCov]
+                interped = [self.get_unrestr_cov(_cov) for _cov in startCov + endCov]
             else: # no need to scale
-                interped = [cov for cov in startCov + endCov]
+                interped = [_cov for _cov in startCov + endCov]
         else:
             # is all nan, assume constant at baseline
             interped = [self.unrestr_init_cov] * len(years)
@@ -145,7 +145,7 @@ class Program(object):
         self.exclusionDependencies = []
         try: # TODO: don't like this, perhaps switch order or cleanup before hand?
             dependencies = self.prog_deps[self.name]['Exclusion dependency']
-        except KeyError:
+        except:
             dependencies = []
         for program in dependencies:
             self.exclusionDependencies.append(program)
@@ -158,7 +158,7 @@ class Program(object):
         self.thresholdDependencies = []
         try:
             dependencies = self.prog_deps[self.name]['Threshold dependency']
-        except KeyError:
+        except:
             dependencies = []
         for program in dependencies:
             self.thresholdDependencies.append(program)
@@ -425,6 +425,224 @@ class CostCovCurve:
         else:
             return -D * numpy.log((B - y) / (y - A)) + C
 
+
 def set_programs(prog_set, prog_data, default_params):
     programs = [Program(prog_name, prog_data, default_params) for prog_name in prog_set] # list of all program objects
     return programs
+    
+
+
+
+class ProgramInfo:
+    """
+    This class is a convenient container for all program objects and their applicable areas.
+    Allows centralised access to all program objects to be used in the Model class.
+
+    Attributes:
+        programs: list of all program objects
+        programAreas: Risks are keys with lists containing applicable program names (dict of lists)
+    """
+    def __init__(self, prog_set, prog_data, default_params):
+        self.prog_set = prog_set
+        self.prog_areas = self._clean_prog_areas(default_params.prog_areas)
+        self.ref_progs = prog_data.ref_progs
+        self.programs = set_programs(self.prog_set, prog_data, default_params)
+        self._set_ref_progs()
+        self._sort_progs()
+        self._get_twin_ind()
+
+    def set_years(self, all_years):
+        for prog in self.programs:
+            prog.year = all_years[0]
+            prog.all_years = all_years
+
+    def _set_ref_progs(self):
+        for program in self.programs:
+            if program.name in self.ref_progs:
+                program.reference = True
+            else:
+                program.reference = False
+
+    def _sort_progs(self):
+        """
+        Sorts the program list by dependency such that the resulting order will be most independent to least independent.
+        Uses a variant of a breadth-first search,
+        whereby the order of the sorted list is a flattened tree structure
+        (root, first level, second level etc..)
+        :return:
+        """
+        self._rem_missing_progs()
+        self._thresh_sort()
+        self._excl_sort()
+
+    def _rem_missing_progs(self):
+        """ Removes programs from dependencies lists which are not included in analysis """
+        allNames = set([prog.name for prog in self.programs])
+        for prog in self.programs:
+            prog.thresholdDependencies = [name for name in prog.thresholdDependencies if name in allNames]
+            prog.exclusionDependencies = [name for name in prog.exclusionDependencies if name in allNames]
+
+    def _clean_prog_areas(self, prog_areas):
+        """ Removed programs from program area list if not included in analysis """
+        retain = {}
+        for risk, names in prog_areas.iteritems():
+            retain[risk] = [prog for prog in names if prog in self.prog_set]
+        return retain
+
+
+    def _get_thresh_roots(self):
+        openSet = self.programs[:]
+        closedSet = [program for program in openSet if not program.thresholdDependencies] # independence
+        openSet = [program for program in openSet if program not in closedSet]
+        return openSet, closedSet
+
+    def _get_excl_roots(self):
+        openSet = self.programs[:]
+        closedSet = [program for program in openSet if not program.exclusionDependencies] # independence
+        openSet = [program for program in openSet if program not in closedSet]
+        return openSet, closedSet
+
+    def _excl_sort(self):
+        openSet, closedSet = self._get_excl_roots()
+        for program in openSet:
+            dependentNames = set(program.exclusionDependencies)
+            closedSetNames = set([prog.name for prog in closedSet])
+            if dependentNames.issubset(closedSetNames):  # all parent programs in closed set
+                closedSet += [program]
+        self.exclusionOrder = closedSet[:]
+
+    def _thresh_sort(self):
+        openSet, closedSet = self._get_thresh_roots()
+        for program in openSet:
+            dependentNames = set(program.thresholdDependencies)
+            closedSetNames = set([prog.name for prog in closedSet])
+            if dependentNames.issubset(closedSetNames):  # all parent programs in closed set
+                closedSet += [program]
+        self.thresholdOrder = closedSet[:]
+
+    def set_init_covs(self, pops, all_years):
+        for program in self.programs:
+            program.set_annual_cov(pops, all_years)
+        self.restrict_covs(pops)
+
+    def set_init_pops(self, pops):
+        for prog in self.programs:
+            prog.set_pop_sizes(pops)
+
+    def set_costcovs(self):
+        for prog in self.programs:
+            prog.set_costcov()
+
+    def get_cov_scen(self, scen_type, scen):
+        """ If scen is a budget scenario, convert it to unrestricted coverage.
+        If scen is a coverage object, assumed to be restricted cov and coverted
+        Return: assigns attribute to each program, which are lists of unrestricted covs each year"""
+        covs = []
+        for prog in self.programs:
+            if 'ov' in scen_type: # coverage scen
+                # convert restricted to unrestricted coverage
+                cov_scen = scen[prog.name]
+                unrestr_cov = prog.interp_cov(cov_scen, restr_cov=True)
+            elif 'ud' in scen_type: # budget scen
+                # convert budget into unrestricted coverage
+                budget_scen = scen[prog.name]
+                unrestr_cov = []
+                for budget in budget_scen: # each year
+                    unrestr_cov.append(prog.func(budget))
+                unrestr_cov = prog.interp_cov(unrestr_cov, restr_cov=False)
+            else:
+                raise Exception("Error: scenario type '{}' is not valid".format(scen_type))
+            covs.append(unrestr_cov)
+        return covs
+
+    def update_prog_covs(self, pops, covs, restr_cov):
+        for i, prog in enumerate(self.programs):
+            cov = covs[i]
+            prog.update_cov(cov, restr_cov=restr_cov)
+        # restrict covs
+        self.restrict_covs(pops)
+
+    def determine_cov_change(self):
+        for prog in self.programs:
+            if abs(prog.annual_cov[prog.year-1] - prog.annual_cov[prog.year]) > 1e-3:
+                return True
+            else:
+                pass
+        return False
+
+    def adjust_covs(self, pops, year):
+        for program in self.programs:
+            program.adjust_cov(pops, year)
+
+    def _get_twin_ind(self):
+        """ """
+        for program in self.programs:
+            twin_name = program.name + ' (malaria area)'
+            for i, name in enumerate(self.prog_set):
+                if name == twin_name:
+                    program.twin_ind = i
+                else:
+                    program.twin_ind = False
+
+    def update_prog_year(self, year):
+        for prog in self.programs:
+            prog.year = year
+
+    def get_ann_covs(self, year):
+        covs = {}
+        for prog in self.programs:
+            covs[prog.name] = prog.annual_cov[year]
+        return covs
+
+    def restrict_covs(self, pops):
+        """
+        Uses the ordering of both dependency lists to restrict the coverage of programs.
+        Assumes that the coverage is given as peopleCovered/unrestr_popsize.
+        Since the order of dependencies matters, was decided to apply threshold first then exclusion dependencies
+        Method:
+        GET OVERLAPPING AGE GROUPS BETWEEN PARENT AND CHILD NODES
+        SUM OVERLAPPING POP SIZES FOR PARENT NODE
+        MULTIPLY BY COVERAGE % TO GET NUMBER OF PEOPLE IN OVERLAPPING POP WHO ARE ALREADY COVERED BY PARENT
+        DIVIDE THIS BY RESTRICTED POP SIZE FOR CHILD NODE
+        BEHAVIOUR DEPENDENT UPON RESTRICTION TYPE & SIZE OF RATIO.
+        """
+
+        # Need to get the overlapping pop because the numCovered generated by cost curves
+        # potentially includes populations which are not common to both
+        # threshold
+        for child in self.thresholdOrder:
+            for parentName in child.thresholdDependencies:
+                # get overlapping age groups (intersection)
+                parent = next((prog for prog in self.programs if prog.name == parentName))
+                commonAges = list(set(child.agesTargeted).intersection(parent.agesTargeted))
+                parentPopSize = 0.
+                for pop in pops:
+                    parentPopSize += sum(age.pop_size for age in pop.age_groups if age.age in commonAges)
+                numCoveredInOverlap = parent.annual_cov[parent.year] * parentPopSize
+                percentCoveredByParent = numCoveredInOverlap / child.restr_popsize
+                if percentCoveredByParent < 1:
+                    childMaxCov = numCoveredInOverlap / child.restr_popsize
+                else:
+                    childMaxCov = child.restr_popsize / child.unrestr_popsize
+                if child.annual_cov[child.year] > childMaxCov:
+                    child.annual_cov[child.year] = childMaxCov
+        #exclusion
+        for child in self.exclusionOrder:
+            if child.exclusionDependencies:
+                # get population covered by all parent nodes
+                numCoveredInOverlap = 0
+                for parentName in child.exclusionDependencies:
+                    parentPopSize = 0
+                    # get overlapping age groups (intersection)
+                    parent = next((prog for prog in self.programs if prog.name == parentName))
+                    commonAges = list(set(child.agesTargeted).intersection(parent.agesTargeted))
+                    for pop in pops:
+                        parentPopSize += sum(age.pop_size for age in pop.age_groups if age.age in commonAges)
+                    numCoveredInOverlap += parent.annual_cov[parent.year] * parentPopSize
+                percentCoveredByParent = numCoveredInOverlap / child.restr_popsize
+                if percentCoveredByParent < 1:
+                    childMaxCov = (child.restr_popsize - numCoveredInOverlap) / child.unrestr_popsize
+                else:
+                    childMaxCov = 0
+                if child.annual_cov[child.year] > childMaxCov:
+                    child.annual_cov[child.year] = childMaxCov

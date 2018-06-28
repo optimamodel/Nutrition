@@ -400,7 +400,7 @@ class Children(object):
                         RRan = self.default.rr_death['Anaemia'][age][anaemiaCat].get(cause,1)
                         RHS[age][cause] += Pbf * RRbf * Pbo * RRbo * Pan * RRan
         # calculate total mortality by age (corrected for units)
-        AgePop = [age.pop_size for age in self.age_groups]
+        AgePop = [_age.pop_size for _age in self.age_groups]
         MortalityCorrected = {}
         LiveBirths = self.data.proj['Number of births'][0]
         Mnew = self.data.demo['Neonatal mortality (per 1,000 live births)']

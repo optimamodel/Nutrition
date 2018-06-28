@@ -9,19 +9,17 @@ Last update: 2018jun04 by cliffk
 #
 
 import os
-import datetime
-import dateutil
-import dateutil.tz
 from zipfile import ZipFile
 from flask_login import current_user
 import mpld3
+import numpy as np
 
 import sciris.corelib.fileio as fileio
 import sciris.weblib.user as user
 import sciris.core as sc
 import sciris.web as sw
 
-import nutrition as on
+import nutrition.ui as nu
 from . import projects as prj
 
 # Dictionary to hold all of the registered RPCs in this module.
@@ -30,15 +28,12 @@ RPC_dict = {}
 # RPC registration decorator factory created using call to make_register_RPC().
 register_RPC = sw.make_register_RPC(RPC_dict)
 
+
         
-#
-# Other functions (mostly helpers for the RPCs)
-#
+###############################################################
+#%% Other functions (mostly helpers for the RPCs)
+##############################################################
     
-def now_utc():
-    ''' Get the current time, in UTC time '''
-    now = datetime.datetime.now(dateutil.tz.tzutc())
-    return now
 
 def load_project_record(project_id, raise_exception=True):
     """
@@ -86,7 +81,7 @@ def load_project_summary_from_project_record(project_record):
   
 def load_current_user_project_summaries2():
     """
-    Return project summaries for all projects the user has to the client.
+    Return project summaries for all projects the user has to the client. -- WARNING, fix!
     """ 
     
     # Get the prj.ProjectSO entries matching the user UID.
@@ -133,6 +128,7 @@ def save_project(proj):
     
     # Copy the project, only save what we want...
     new_project = sc.dcp(proj)
+    new_project.modified = sc.today()
          
     # Create the new project entry and enter it into the ProjectCollection.
     # Note: We don't need to pass in project.uid as a 3rd argument because 
@@ -140,24 +136,7 @@ def save_project(proj):
     projSO = prj.ProjectSO(new_project, project_record.owner_uid)
     prj.proj_collection.update_object(projSO)
     
-def update_project_with_fn(project_id, update_project_fn):
-    """
-    Do an update of a hptool Project, given the UID and a function that 
-    does the actual Project updating.
-    """ 
-    
-    # Load the project.
-    proj = load_project(project_id)
-    
-    # Execute the passed-in function that modifies the project.
-    update_project_fn(proj)
-    
-    # Set the updating time to now.
-    proj.modified = now_utc()
-    
-    # Save the changed project.
-    save_project(proj) 
-    
+
 def save_project_as_new(proj, user_id):
     """
     Given a Project object and a user UID, wrap the Project in a new prj.ProjectSO 
@@ -181,61 +160,28 @@ def save_project_as_new(proj, user_id):
     
     return None
 
-def get_burden_set_fe_repr(burdenset):
-    obj_info = {
-        'burdenset': {
-            'name': burdenset.name,
-            'uid': burdenset.uid,
-            'creationTime': burdenset.created,
-            'updateTime': burdenset.modified
-        }
-    }
-    return obj_info
 
-def get_interv_set_fe_repr(interv_set):
-    obj_info = {
-        'intervset': {
-            'name': interv_set.name,
-            'uid': interv_set.uid,
-            'creationTime': interv_set.created,
-            'updateTime': interv_set.modified
-        }
-    }
-    return obj_info
 
-def get_package_set_fe_repr(packageset):
-    obj_info = {
-        'packageset': {
-            'name': packageset.name,
-            'uid': packageset.uid,
-            'creationTime': packageset.created,
-            'updateTime': packageset.modified
-        }
-    }
-    return obj_info
 
-#
-# RPC functions
-#
 
-# RPC definitions
+##################################################################################
+#%% Project RPCs
+##################################################################################
+
+# Not a project RPC, but doesn't really belong
 @register_RPC()
 def get_version_info():
 	''' Return the information about the project. '''
 	gitinfo = sc.gitinfo(__file__)
 	version_info = {
-	       'version':   on.version,
-	       'date':      on.versiondate,
+	       'version':   nu.version,
+	       'date':      nu.versiondate,
 	       'gitbranch': gitinfo['branch'],
 	       'githash':   gitinfo['hash'],
 	       'gitdate':   gitinfo['date'],
 	}
 	return version_info
 
-
-##
-## Project RPCs
-##
     
 @register_RPC(validation_type='nonanonymous user')
 def get_scirisdemo_projects():
@@ -273,6 +219,7 @@ def load_project_summary(project_id):
     # Return a project summary from the accessed prj.ProjectSO entry.
     return load_project_summary_from_project_record(project_entry)
 
+
 @register_RPC(validation_type='nonanonymous user')
 def load_current_user_project_summaries():
     """
@@ -280,6 +227,7 @@ def load_current_user_project_summaries():
     """ 
     
     return load_current_user_project_summaries2()
+
 
 @register_RPC(validation_type='nonanonymous user')                
 def load_all_project_summaries():
@@ -317,29 +265,41 @@ def download_project(project_id):
     For the passed in project UID, get the Project on the server, save it in a 
     file, minus results, and pass the full path of this file back.
     """
-    
-    # Load the project with the matching UID.
-    proj = load_project(project_id, raise_exception=True)
-    
-    # Use the downloads directory to put the file in.
-    dirname = fileio.downloads_dir.dir_path
-        
-    # Create a filename containing the project name followed by a .prj 
-    # suffix.
-    file_name = '%s.prj' % proj.name
-        
-    # Generate the full file name with path.
-    full_file_name = '%s%s%s' % (dirname, os.sep, file_name)
-        
-    # Write the object to a Gzip string pickle file.
-    fileio.object_to_gzip_string_pickle_file(full_file_name, proj)
-    
-    # Display the call information.
-    # TODO: have this so that it doesn't show when logging is turned off
-    print(">> download_project %s" % (full_file_name))
-    
-    # Return the full filename.
-    return full_file_name
+    proj = load_project(project_id, raise_exception=True) # Load the project with the matching UID.
+    dirname = fileio.downloads_dir.dir_path # Use the downloads directory to put the file in.
+    file_name = '%s.prj' % proj.name # Create a filename containing the project name followed by a .prj suffix.
+    full_file_name = '%s%s%s' % (dirname, os.sep, file_name) # Generate the full file name with path.
+    fileio.object_to_gzip_string_pickle_file(full_file_name, proj) # Write the object to a Gzip string pickle file.
+    print(">> download_project %s" % (full_file_name)) # Display the call information.
+    return full_file_name # Return the full filename.
+
+@register_RPC(call_type='download', validation_type='nonanonymous user')   
+def download_databook(project_id):
+    """
+    Download databook
+    """
+    proj = load_project(project_id, raise_exception=True) # Load the project with the matching UID.
+    dirname = fileio.downloads_dir.dir_path # Use the downloads directory to put the file in.
+    file_name = '%s_databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
+    full_file_name = '%s%s%s' % (dirname, os.sep, file_name) # Generate the full file name with path.
+    proj.dataset().demo_data.spreadsheet.save(full_file_name)
+    print(">> download_databook %s" % (full_file_name)) # Display the call information.
+    return full_file_name # Return the full filename.
+
+
+@register_RPC(call_type='download', validation_type='nonanonymous user')   
+def download_defaults(project_id):
+    """
+    Download defaults
+    """
+    proj = load_project(project_id, raise_exception=True) # Load the project with the matching UID.
+    dirname = fileio.downloads_dir.dir_path # Use the downloads directory to put the file in.
+    file_name = '%s_defaults.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
+    full_file_name = '%s%s%s' % (dirname, os.sep, file_name) # Generate the full file name with path.
+    proj.dataset().default_params.spreadsheet.save(full_file_name)
+    print(">> download_defaults %s" % (full_file_name)) # Display the call information.
+    return full_file_name # Return the full filename.
+
 
 @register_RPC(call_type='download', validation_type='nonanonymous user')
 def load_zip_of_prj_files(project_ids):
@@ -373,15 +333,41 @@ def load_zip_of_prj_files(project_ids):
     return server_zip_fname
 
 @register_RPC(validation_type='nonanonymous user')
-def create_new_project(user_id):
+def add_demo_project(user_id):
+    """
+    Add a demo Optima TB project
+    """
+    # Get a unique name for the project to be added.
+    new_proj_name = get_unique_name('Demo project', other_names=None)
+    
+    # Create the project, loading in the desired spreadsheets.
+    proj = nu.demo() 
+    proj.name = new_proj_name
+    
+    # Display the call information.
+    # TODO: have this so that it doesn't show when logging is turned off
+    print(">> add_demo_project %s" % (proj.name))    
+    
+    # Save the new project in the DataStore.
+    save_project_as_new(proj, user_id)
+    
+    # Return the new project UID in the return message.
+    return { 'projectId': str(proj.uid) }
+
+
+@register_RPC(call_type='download', validation_type='nonanonymous user')
+def create_new_project(user_id, proj_name, num_pops, data_start, data_end):
     """
     Create a new Optima Nutrition project.
     """
+    
+    args = {"num_pops":int(num_pops), "data_start":int(data_start), "data_end":int(data_end)}
+    
     # Get a unique name for the project to be added.
-    new_proj_name = get_unique_name('New project', other_names=None)
+    new_proj_name = get_unique_name(proj_name, other_names=None)
     
     # Create the project, loading in the desired spreadsheets.
-    proj = on.project.Project(name=new_proj_name)  
+    proj = nu.Project(name=new_proj_name)
     
     # Display the call information.
     # TODO: have this so that it doesn't show when logging is turned off
@@ -390,9 +376,36 @@ def create_new_project(user_id):
     # Save the new project in the DataStore.
     save_project_as_new(proj, user_id)
     
+    # Use the downloads directory to put the file in.
+    dirname = fileio.downloads_dir.dir_path
+        
+    # Create a filename containing the project name followed by a .prj 
+    # suffix.
+    file_name = '%s.xlsx' % proj.name
+        
+    # Generate the full file name with path.
+    full_file_name = '%s%s%s' % (dirname, os.sep, file_name)
+    
+    # Return the databook
+    proj.create_databook(databook_path=full_file_name, **args)
+    
+    print(">> download_databook %s" % (full_file_name))
+    
     # Return the new project UID in the return message.
-    return { 'projectId': str(proj.uid) }
- 
+    return full_file_name
+
+
+@register_RPC(call_type='upload', validation_type='nonanonymous user')
+def upload_databook(databook_filename, project_id):
+    """ Upload a databook to a project. """
+    print(">> upload_databook '%s'" % databook_filename)
+    proj = load_project(project_id, raise_exception=True)
+    proj.load_data(filepath=databook_filename) # Reset the project name to a new project name that is unique.
+    proj.modified = sc.today()
+    save_project(proj) # Save the new project in the DataStore.
+    return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
+
+
 @register_RPC(validation_type='nonanonymous user')
 def update_project_from_summary(project_summary):
     """
@@ -407,7 +420,7 @@ def update_project_from_summary(project_summary):
     proj.name = project_summary['project']['name']
     
     # Set the modified time to now.
-    proj.modified = now_utc()
+    proj.modified = sc.today()
     
     # Save the changed project to the DataStore.
     save_project(proj)
@@ -472,33 +485,254 @@ def create_project_from_prj_file(prj_filename, user_id):
     return { 'projectId': str(proj.uid) }
 
 
+##################################################################################
+#%% Scenario functions and RPCs
+##################################################################################
+
+def py_to_js_scen(py_scen, prog_names):
+    ''' Convert a Python to JSON representation of a scenario '''
+    attrs = ['name', 'active', 'scen_type', 't']
+    js_scen = {}
+    for attr in attrs:
+        js_scen[attr] = getattr(py_scen, attr) # Copy the attributes into a dictionary
+    js_scen['spec'] = []
+    for prog_name in prog_names:
+        this_spec = {}
+        this_spec['name'] = prog_name
+        this_spec['included'] = True if prog_name in py_scen.prog_set else False
+        this_spec['vals'] = []
+        if prog_name in py_scen.scen:
+            this_spec['vals'] = py_scen.scen[prog_name]
+        else:
+            this_spec['vals'] = [None]*py_scen.n_years()
+        js_scen['spec'].append(this_spec)
+    return js_scen
+    
+
+@register_RPC(validation_type='nonanonymous user')    
+def get_scenario_info(project_id):
+
+    print('Getting scenario info...')
+    proj = load_project(project_id, raise_exception=True)
+    
+    scenario_summaries = []
+    for py_scen in proj.scens.values():
+        js_scen = py_to_js_scen(py_scen, proj.dataset().prog_names())
+        scenario_summaries.append(js_scen)
+    
+    print('JavaScript scenario info:')
+    print(scenario_summaries)
+
+    return scenario_summaries
 
 
-# TODO: move this into the helper functions.  It's here now for testing 
-# purposes.  Or, maybe remove dependency on this entirely, since it's a one-
-# liner.
-def make_mpld3_graph_dict(fig):
-    mpld3_dict = mpld3.fig_to_dict(fig)
-    return mpld3_dict
+@register_RPC(validation_type='nonanonymous user')    
+def get_default_scenario(project_id):
 
-@register_RPC(validation_type='nonanonymous user')
-def get_default_scenario_plot():
-    ''' Plot the disease burden '''
+    print('Creating default scenario...')
+    proj = load_project(project_id, raise_exception=True)
     
-    # Get the Project object.
-    proj = on.project.Project() # WARNING, just create new project
-    proj.default_scens(dorun=True)
-    result = proj.get_results('default')
-    fig = on.plotting.make_plots(result) # HARDCODED EXAMPLE
+    py_scen = proj.default_scens(doadd=False)[0]
+    js_scen = py_to_js_scen(py_scen, proj.dataset().prog_names())
     
-    figs = []
-    figs.append(fig)
+    print('Created default JavaScript scenario:')
+    print(js_scen)
+    return js_scen
+
+
+def sanitize(vals, skip=False, forcefloat=False):
+    ''' Make sure values are numeric, and either return nans or skip vals that aren't '''
+    if sc.isiterable(vals):
+        as_array = False if forcefloat else True
+    else:
+        vals = [vals]
+        as_array = False
+    output = []
+    for val in vals:
+        if val=='':
+            sanival = np.nan
+        elif val==None:
+            sanival = np.nan
+        else:
+            try:
+                sanival = float(val)
+            except Exception as E:
+                print('Could not sanitize value "%s": %s; returning nan' % (val, repr(E)))
+                sanival = np.nan
+        if skip and not np.isnan(sanival):
+            output.append(sanival)
+        else:
+            output.append(sanival)
+    if as_array:
+        return output
+    else:
+        return output[0]
     
-    # Gather the list for all of the diseases.
+    
+@register_RPC(validation_type='nonanonymous user')    
+def set_scenario_info(project_id, scenario_summaries):
+
+    print('Setting scenario info...')
+    proj = load_project(project_id, raise_exception=True)
+    proj.scens.clear()
+    
+    for j,js_scen in enumerate(scenario_summaries):
+        print('Setting scenario %s of %s...' % (j+1, len(scenario_summaries)))
+        json = sc.odict()
+        for attr in ['name', 'scen_type', 'active']: # Copy these directly
+            json[attr] = js_scen[attr]
+        json['prog_set'] = [] # These require more TLC
+        json['scen'] = sc.odict()
+        for js_spec in js_scen['spec']:
+            if js_spec['included']:
+                json['prog_set'].append(js_spec['name'])
+                json['scen'][js_spec['name']] = sanitize(js_spec['vals'])
+        
+        print('Python scenario info for scenario %s:' % (j+1))
+        print(json)
+        
+        proj.add_scen(json=json)
+    
+    print('Saving project...')
+    save_project(proj)
+    
+    return None
+
+
+@register_RPC(validation_type='nonanonymous user')    
+def run_scenarios(project_id):
+    
+    print('Running scenarios...')
+    proj = load_project(project_id, raise_exception=True)
+    
+    proj.run_scens()
+    figs = proj.plot(toplot=['prevs', 'outputs']) # Do not plot allocation
     graphs = []
-    for fig in figs:
-        graph_dict = make_mpld3_graph_dict(fig)
+    for f,fig in enumerate(figs.values()):
+        for ax in fig.get_axes():
+            ax.set_facecolor('none')
+        graph_dict = mpld3.fig_to_dict(fig)
         graphs.append(graph_dict)
+        print('Converted figure %s of %s' % (f+1, len(figs)))
     
-    # Return success -- WARNING, hard-coded
-    return {'graph1': graphs[0],}
+    print('Saving project...')
+    save_project(proj)    
+    return {'graphs':graphs}
+
+
+
+
+##################################################################################
+#%% Optimization functions and RPCs
+##################################################################################
+
+def py_to_js_optim(py_optim, prog_names):
+    ''' Convert a Python to JSON representation of an optimization '''
+    attrs = ['name', 'mults', 'add_funds']
+    js_optim = {}
+    for attr in attrs:
+        js_optim[attr] = getattr(py_optim, attr) # Copy the attributes into a dictionary
+    js_optim['objs'] = py_optim.objs[0]
+    js_optim['spec'] = []
+    for prog_name in prog_names:
+        this_spec = {}
+        this_spec['name'] = prog_name
+        this_spec['included'] = True if prog_name in py_optim.prog_set else False
+        this_spec['vals'] = []
+        js_optim['spec'].append(this_spec)
+    return js_optim
+    
+
+@register_RPC(validation_type='nonanonymous user')    
+def get_optim_info(project_id):
+
+    print('Getting optimization info...')
+    proj = load_project(project_id, raise_exception=True)
+    
+    optim_summaries = []
+    for py_optim in proj.optims.values():
+        js_optim = py_to_js_optim(py_optim, proj.dataset().prog_names())
+        optim_summaries.append(js_optim)
+    
+    print('JavaScript optimization info:')
+    print(optim_summaries)
+
+    return optim_summaries
+
+
+@register_RPC(validation_type='nonanonymous user')    
+def get_default_optim(project_id):
+
+    print('Getting default optimization...')
+    proj = load_project(project_id, raise_exception=True)
+    
+    py_optim = proj.default_optims(doadd=False)[0]
+    js_optim = py_to_js_optim(py_optim, proj.dataset().prog_names())
+    js_optim['objective_options'] = ['thrive', 'child_deaths', 'stunting_prev', 'wasting_prev', 'anaemia_prev'] # WARNING, stick allowable optimization options here
+    
+    print('Created default JavaScript optimization:')
+    print(js_optim)
+    return js_optim
+
+
+
+@register_RPC(validation_type='nonanonymous user')    
+def set_optim_info(project_id, optim_summaries):
+
+    print('Setting optimization info...')
+    proj = load_project(project_id, raise_exception=True)
+    proj.optims.clear()
+    
+    for j,js_optim in enumerate(optim_summaries):
+        print('Setting optimization %s of %s...' % (j+1, len(optim_summaries)))
+        json = sc.odict()
+        json['name'] = js_optim['name']
+        json['objs'] = js_optim['objs']
+        jsm = js_optim['mults']
+        if isinstance(jsm, list):
+            vals = jsm
+        elif sc.isstring(jsm):
+            try:
+                vals = [float(jsm)]
+            except Exception as E:
+                print('Cannot figure out what to do with multipliers "%s"' % jsm)
+                raise E
+        else:
+            raise Exception('Cannot figure out multipliers type "%s" for "%s"' % (type(jsm), jsm))
+        json['mults'] = vals
+        json['add_funds'] = sanitize(js_optim['add_funds'], forcefloat=True)
+        json['prog_set'] = [] # These require more TLC
+        for js_spec in js_optim['spec']:
+            if js_spec['included']:
+                json['prog_set'].append(js_spec['name'])
+        
+        print('Python optimization info for optimization %s:' % (j+1))
+        print(json)
+        
+        proj.add_optim(json=json)
+    
+    print('Saving project...')
+    save_project(proj)   
+    
+    return None
+
+
+@register_RPC(validation_type='nonanonymous user')    
+def run_optim(project_id, optim_name):
+    
+    print('Running optimization...')
+    proj = load_project(project_id, raise_exception=True)
+    
+    proj.run_optim(key=optim_name, parallel=False)
+    figs = proj.plot(toplot=['alloc']) # Only plot allocation
+    graphs = []
+    for f,fig in enumerate(figs.values()):
+        for ax in fig.get_axes():
+            ax.set_facecolor('none')
+        graph_dict = mpld3.fig_to_dict(fig)
+        graphs.append(graph_dict)
+        print('Converted figure %s of %s' % (f+1, len(figs)))
+    
+    print('Saving project...')
+    save_project(proj)    
+    return {'graphs':graphs}

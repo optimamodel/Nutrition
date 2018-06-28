@@ -9,7 +9,7 @@ from datetime import date
 
 # TODO: THIS CURRENTLY DOESNT WORK
 
-class GeospatialOptimisation:
+class GeospatialOptimization:
     def __init__(self, objectives, root, regionNames, numYears=None, costCurveType='linear'):
         self.root = root
         self.analysisType = 'regional'
@@ -20,7 +20,7 @@ class GeospatialOptimisation:
         self.regionNames = regionNames
         self.numYears = numYears
         self.numRegions = len(regionNames)
-        budgetFilePath = os.path.join(self.root, 'data', 'optimisationBudgets.xlsx')
+        budgetFilePath = os.path.join(self.root, 'data', 'optimizationBudgets.xlsx')
         self.scenarios = BudgetScenarios(budgetFilePath).getScenarios()  # TODO: super ugly file-finding
         self.BOCs = {}
 
@@ -28,7 +28,7 @@ class GeospatialOptimisation:
         nationalFunds = 0
         for name in self.regionNames:
             fileInfo = [self.root, self.analysisType, name, '']
-            thisRegion = Optimisation([], [], fileInfo, fixCurrentAllocations=False, createResultsDir=False)
+            thisRegion = Optimization([], [], fileInfo, fixCurrentAllocations=False, createResultsDir=False)
             nationalFunds += thisRegion.freeFunds
         return nationalFunds
 
@@ -67,12 +67,12 @@ class GeospatialOptimisation:
         jobs = []
         for region in regions:
             resultsPath = region.resultsDir
-            prc = Process(target=self.optimiseAndWrite, args=(region, objective, resultsPath))
+            prc = Process(target=self.optimizeAndWrite, args=(region, objective, resultsPath))
             jobs.append(prc)
         return jobs
 
-    def optimiseAndWrite(self, region, objective, resultsPath):
-        region.optimise()
+    def optimizeAndWrite(self, region, objective, resultsPath):
+        region.optimize()
         self.writeBudgetOutcome(region, objective, resultsPath)
 
     def writeBudgetOutcome(self, region, objective, resultsPath):
@@ -88,13 +88,13 @@ class GeospatialOptimisation:
         for name in self.regionNames:
             fileInfo = [self.root, self.analysisType, name, '']
             resultsPath = os.path.join(self.newResultsDir, 'BOCs', objective, 'cPickles')
-            thisRegion = Optimisation(self.objectives, self.budgetMultiples, fileInfo, resultsPath=resultsPath,
+            thisRegion = Optimization(self.objectives, self.budgetMultiples, fileInfo, resultsPath=resultsPath,
                                       fixCurrentAllocations=fixCurrent, rem_curr=False,
                                       add_funds=add_funds, numYears=self.numYears, filterProgs=False)
             regions.append(thisRegion)
         return regions
 
-    def optimiseScenarios(self):
+    def optimizeScenarios(self):
         for scenario, options in self.scenarios.iteritems():
             fixBetween, fixWithin, replaceCurrent, add_funds = options
             formScenario = scenario.lower().replace(' ', '')
@@ -105,8 +105,8 @@ class GeospatialOptimisation:
                 self.getRegionalBOCs(objective, fixWithin,
                                      add_funds)  # specifies if current funding is fixed within a region
                 optimalDistribution = self.distributeFunds(objective, options)
-                # optimise within each region
-                regions = self.optimiseAllRegions(optimalDistribution, objective, options)
+                # optimize within each region
+                regions = self.optimizeAllRegions(optimalDistribution, objective, options)
                 self.collateAllResults(regions, objective)
                 # self.getOptimalOutcomes(regions, objective)
 
@@ -207,7 +207,7 @@ class GeospatialOptimisation:
             if fixBetween and not fixWithin:
                 minSpending = sum(region.currentAllocations) - sum(region.referenceAllocations)
                 maxSpending = minSpending + add_funds
-            elif fixBetween and fixWithin:  # this is scenario 3, where the spending=0 corresponds to non-optimised current allocations
+            elif fixBetween and fixWithin:  # this is scenario 3, where the spending=0 corresponds to non-optimized current allocations
                 minSpending = 0
                 maxSpending = add_funds
             else:
@@ -222,21 +222,21 @@ class GeospatialOptimisation:
             costEffVecs.append(costEffectiveness)
         return costEffVecs, spendingVec
 
-    def optimiseAllRegions(self, optimisedSpending, objective, options):
-        print '...Optimising within regions... \n'
+    def optimizeAllRegions(self, optimizedSpending, objective, options):
+        print '...Optimizing within regions... \n'
         _fixBetween, fixWithin, replaceCurrent, add_funds = options
         budgetMultiple = [1]
         newRegions = []
         jobs = []
         for i, name in enumerate(self.regionNames):
-            regionalFunds = optimisedSpending[i]
+            regionalFunds = optimizedSpending[i]
             resultsDir = os.path.join(self.newResultsDir, 'cPickles')
             fileInfo = [self.root, self.analysisType, name, '']
-            newOptim = Optimisation([objective], budgetMultiple, fileInfo, resultsPath=resultsDir,
+            newOptim = Optimization([objective], budgetMultiple, fileInfo, resultsPath=resultsDir,
                                     fixCurrentAllocations=fixWithin, rem_curr=replaceCurrent,
                                     add_funds=regionalFunds, numYears=self.numYears, filterProgs=False)
             newRegions.append(newOptim)
-            p = Process(target=newOptim.optimise)
+            p = Process(target=newOptim.optimize)
             jobs.append(p)
         runJobs(jobs, min(cpu_count(), 50))
         return newRegions
@@ -262,8 +262,8 @@ class GeospatialOptimisation:
                 fixedAllocations = region.fixedAllocations
                 fixedAllocationsDict = region.createDictionary(fixedAllocations)
                 fixedAllocations = OrderedDict(sorted(fixedAllocationsDict.items())).values()
-                optimisedAdditional = [a - b for a, b in zip(allocations.values(), fixedAllocations)]
-                w.writerow([name] + optimisedAdditional)
+                optimizedAdditional = [a - b for a, b in zip(allocations.values(), fixedAllocations)]
+                w.writerow([name] + optimizedAdditional)
             w.writerow([])
 
     def getOptimalOutcomes(self, regions, objective):
@@ -294,7 +294,7 @@ class BudgetScenarios:
     Descriptions of budget scenarios found in the corresponding .xlsx file
     Need to specify:
     - is current regional spending fixed
-    - is current allocation to be programatically optimised
+    - is current allocation to be programatically optimized
     - amount of additional funds, if any.
 
     """
@@ -310,7 +310,7 @@ class BudgetScenarios:
     def getScenarios(self):
         """
         This information should be contained in a separate .xlsx file,
-        which details the current expenditure by region, and all the optimisation scenarios.
+        which details the current expenditure by region, and all the optimization scenarios.
         :return:
         """
         thisSheet = pd.read_excel(self.filePath, 'Optimal funding scenario', index_col=[0])

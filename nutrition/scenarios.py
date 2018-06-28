@@ -1,8 +1,14 @@
-from nutrition import settings, data, program_info, populations, model, utils
-from copy import deepcopy as dcp
+import sciris.core as sc
+from . import data
+from . import programs
+from . import model
+from . import settings
 
 class Scen(object):
-    def __init__(self, prog_info, pops, scen_type, scen, name, t, prog_set, active=True):
+    def __init__(self, prog_info=None, pops=None, scen_type=None, scen=None, name=None, t=None, prog_set=None, active=True):
+        
+        if t is None: t = settings.Settings().t
+        
         self.scen_type = scen_type
         self.scen = scen
         self.name = name
@@ -12,40 +18,44 @@ class Scen(object):
 
         self.year_names = range(self.t[0], self.t[1]+1)
         self.all_years = range(len(self.year_names)) # used to index lists
-        prog_info = dcp(prog_info)
-        pops = dcp(pops)
+        prog_info = sc.dcp(prog_info)
+        pops = sc.dcp(pops)
         self.model = model.Model(name, pops, prog_info, self.all_years)
+        return None
+    
+    def __repr__(self):
+        output  = sc.desc(self)
+        return output
 
     def run_scen(self):
         """ Define the coverage scenario (list of lists) then run the simulation """
         covs = self.model.prog_info.get_cov_scen(self.scen_type, self.scen)
         self.model.run_sim(covs, restr_cov=False) # coverage restricted in previous func
+        return None
+    
+    def n_years(self):
+        ''' Count how many years the scenario is '''
+        output = len(self.all_years)
+        return output
 
-def make_scens(country, region, user_opts):
+def make_scens(country=None, region=None, user_opts=None, json=None, project=None, dataset=None):
     """ Define the custom scenarios by providing all necessary information.
     Scenarios defined by user specifications given by the GUI, while the other data remains fixed.
     These scenarios will be returned as a list so they can be added to Project
     """
-    demo_data, prog_data, default_params = data.get_data(country, region)
+    demo_data, prog_data, default_params, pops = data.get_data(country=country, region=region, project=project, dataset=dataset, withpops=True)
     scen_list = []
     # create all of the requested scenarios
-    for opt in user_opts:
-        # initialise pops and progs
-        prog_info = program_info.ProgramInfo(opt.prog_set, prog_data, default_params)
-        pops = populations.set_pops(demo_data, default_params)
-        # set up scenarios
-        scen = Scen(prog_info, pops, **opt.get_attr())
+    if user_opts is not None:
+        for opt in user_opts:
+            # initialise pops and progs
+            prog_info = programs.ProgramInfo(opt.prog_set, prog_data, default_params)
+            # set up scenarios
+            scen = Scen(prog_info, pops, **opt.get_attr())
+            scen_list.append(scen)
+    if json is not None:
+        json = sc.dcp(json) # Just to be sure, probably unnecessary
+        prog_info = programs.ProgramInfo(json['prog_set'], prog_data, default_params)
+        scen = Scen(prog_info=prog_info, pops=pops, scen_type=json['scen_type'], scen=json['scen'], name=json['name'], prog_set=json['prog_set'], active=json['active'])
         scen_list.append(scen)
     return scen_list
-
-def default_scens(project, key='default', dorun=False):
-    country = 'default'
-    region = 'default'
-
-    defaults = data.ScenOptsTest(key, 'coverage')
-    opts = [utils.ScenOpts(**defaults.get_attr())] # todo: more than 1 default scen will require another key
-    scen_list = make_scens(country, region, opts)
-    project.add_scens(scen_list)
-
-    if dorun:
-        project.run_scens()
