@@ -301,8 +301,13 @@ Last update: 2018-06-26
       runOptim(optimSummary) {
         console.log('runOptim() called for '+this.currentOptim)
 
+        rpcservice.rpcCall('launch_task', ['my_crazy_id', 'async_add', [23, 57]])
+//        rpcservice.rpcCall('check_task', ['my_crazy_id'])
+//        rpcservice.rpcCall('get_task_result', ['my_crazy_id'])         
+//        rpcservice.rpcCall('delete_task', ['my_crazy_id'])
+        
         // Make sure they're saved first
-        rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
+/*        rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
           .then(response => {
 
             // Go to the server to get the results from the package set.
@@ -343,7 +348,7 @@ Last update: 2018-06-26
                 horizontalAlign: 'center',
               });
             })
-          })
+          }) */
       },
 
       reloadGraphs() {
