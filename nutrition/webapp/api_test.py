@@ -58,13 +58,12 @@ if run_optims:
     json['prog_set'] = D.dataset().prog_names() # ['Cash transfers', 'IFA fortification of maize', 'IFAS for pregnant women (community)', 'IPTp', 'IYCF 1', 'Micronutrient powders', 'Treatment of SAM', 'Vitamin A supplementation', 'Zinc for treatment + ORS']
     json['mults'] = [1]
     json['add_funds'] = 10e6
-    json['objs'] = ['thrive'] # ['thrive', 'child_deaths', 'stunting_prev', 'wasting_prev', 'anaemia_prev']
+    json['objs'] = 'thrive' # ['thrive', 'child_deaths', 'stunting_prev', 'wasting_prev', 'anaemia_prev']
     D.add_optim(json=json)
     
     D.run_optim()
     if doplot:
         figs = D.plot(toplot=['alloc'])
-
 
 
 sc.toc()

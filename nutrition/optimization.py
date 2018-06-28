@@ -18,7 +18,7 @@ class Optim(object):
         if t is None: t = settings.Settings().t
         
         self.name = name
-        self.objs = objs
+        self.objs = sc.promotetolist(objs)
         self.mults = mults
         self.combs = list(itertools.product(self.objs, self.mults))
         self.t = t

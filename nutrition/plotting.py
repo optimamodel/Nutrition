@@ -120,13 +120,13 @@ def plot_alloc(all_res):
         all_y.append(y)
         pl.bar(x, all_y[i], width=width, bottom=bottom)
         bottom += all_y[i]
-        pl.ylabel('Funding')
-        pl.xticks(x, xlabs)
+    pl.ylabel('Funding')
+    pl.xticks(x, xlabs)
 #        legendart = [p[0] for p in figs.values()]
-        legendlab = [prog.name for prog in res.programs]
+    legendlab = [prog.name for prog in res.programs]
 #        pl.legend(legendart, legendlab)
-        pl.legend(legendlab)
-        figs['alloc_%0i'%i] = fig
+    pl.legend(legendlab)
+    figs['alloc_%0i'%i] = fig
     return figs
 
 def round_elements(mylist, dec=1):

@@ -59,7 +59,6 @@ Last update: 2018-06-26
               {{ obj }}
             </option>
           </select><br><br>
-          {{ defaultOptim.objs }}
           Multipliers:<br>
           <input type="text"
                  class="txbox"
