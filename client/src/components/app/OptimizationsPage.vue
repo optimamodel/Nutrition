@@ -56,9 +56,15 @@ Last update: 2018-06-26
                  class="txbox"
                  v-model="defaultOptim.name"/><br>
           Optimization objectives:<br>
-          <select v-model='defaultOptim.objs'>
-            <option v-for='obj in defaultOptim.objective_options'>{{ obj }}</option>
+          <select v-model='defaultOptim.objs' multiple>
+            <option v-for='obj in defaultOptim.objective_options'>
+              {{ obj }}
+            </option>
           </select><br>
+          {{ defaultOptim.objs }}
+          <!--<select v-model="defaultOptim.objs">-->
+            <!--<option v-for="obj in defaultOptim.objectiveOptions" value="obj">{{obj}}</option>-->
+          <!--</select><br>-->
           Multipliers:<br>
           <input type="text"
                  class="txbox"
@@ -110,6 +116,7 @@ Last update: 2018-06-26
         optimSummaries: [],
         defaultOptim: [],
         currentOptim: '',
+        objectiveOptions: [],
       }
     },
 
@@ -163,6 +170,7 @@ Last update: 2018-06-26
         rpcservice.rpcCall('get_default_optim', [this.projectID()])
           .then(response => {
             this.defaultOptim = response.data // Set the optimization to what we received.
+            this.objectiveOptions = response.data.objective_options
           });
       },
 
@@ -254,6 +262,7 @@ Last update: 2018-06-26
         // Open a model dialog for creating a new project
         console.log('editOptim() called');
         this.defaultOptim = optimSummary
+        console.log('defaultOptim', this.defaultOptim.objs)
         this.$modal.show('add-optim');
       },
 
