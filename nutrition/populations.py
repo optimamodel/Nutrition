@@ -455,8 +455,8 @@ class Children(object):
             age = age_group.age
             for c,cats in enumerate(self.settings.all_cats):
                 refmort = age_group.arr_referenceMortality[:]
-                rr_deaths = self.default.arr_rr_deaths[age][c,:]
-                age_group.mortality[c] = sum(refmort*rr_deaths)
+                rr_death = self.default.arr_rr_death[age][c,:]
+                age_group.mortality[c] = sum(refmort*rr_death)
 
     def get_totalpop(self):
         return sum(age_group.pop_size for age_group in self.age_groups)
