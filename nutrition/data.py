@@ -272,7 +272,7 @@ class DefaultParams(object):
                 cond = condCat[0]
                 cat = condCat[1]
                 if res_dict[age].get(cat) is None:
-                    res_dict[age][cat] = sc.odict()
+                    res_dict[age][cat] = dict() # CK TEST
                     res_dict[age][cat][cond] = mydict[age][condCat]
                 elif res_dict[age][cat].get(cond) is None:
                     res_dict[age][cat][cond] = mydict[age][condCat]
