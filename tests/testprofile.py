@@ -56,7 +56,7 @@ Examples:
     P.scens[0].model._move_children
     P.scens[0].model._apply_child_mort
 '''
-functiontoprofile = 'P.scens[0].model.pops[0].update_mortality'
+functiontoprofile = 'P.scens[0].model.run_sim'
 def profile():
     print('Profiling %s...' % functiontoprofile)
 
