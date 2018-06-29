@@ -11,7 +11,7 @@ import sciris.core as sc
 try:
     from line_profiler import LineProfiler
 except: 
-    errormsg = 'ERROR: You need to install line_profiler! "conda install line-profiler" or something like that'
+    errormsg = 'ERROR: You need to install line_profiler! "conda install line_profiler"'
     raise Exception(errormsg)
 
 
