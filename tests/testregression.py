@@ -24,14 +24,21 @@ if docompare:
         print("WARNING, keys don't match!")
         
     for key in keys:
-        comparison = newR[key] == origR[key]
+        try:
+            comparison = sc.approx(newR[key], origR[key])
+        except:
+            comparison = newR[key] == origR[key]
         if sc.isiterable(comparison):
             comparison = np.array(comparison).all()
         if comparison:
             print('Match for %s' % key)
             matches += 1
         else:
-            print('DOES NOT MATCH for %s' % key)
+            print('DOES NOT MATCH for %s:' % key)
+            try:
+                print(newR-origR)
+            except:
+                pass
             mismatches += 1
 
 if dosave:
