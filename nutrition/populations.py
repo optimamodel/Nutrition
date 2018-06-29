@@ -453,32 +453,10 @@ class Children(object):
         
         for age_group in self.age_groups[1:]:
             age = age_group.age
-            stunting = self.default.rr_death['Stunting'][age]
-            wasting = self.default.rr_death['Wasting'][age]
-            breastfeeding = self.default.rr_death['Breastfeeding'][age]
-            anaemia = self.default.rr_death['Anaemia'][age]
-            for i, cats in enumerate(self.settings.all_cats):
-                cat0 = cats[0]
-                cat1 = cats[1]
-                cat2 = cats[2]
-                cat3 = cats[3]
-                count = 0.
-                for cause in self.data.causes_death:
-                    refmort = age_group.referenceMortality[cause]
-                    stunt = stunting[cat0].get(cause,1)
-                    wast = wasting[cat1].get(cause,1)
-                    anaem = anaemia[cat2].get(cause,1)
-                    breast = breastfeeding[cat3].get(cause,1)
-                    count += refmort * stunt * wast * anaem * breast
-                age_group.mortality[i] = count
-        
-#        n_causes = len(self.data.causes_death)
-#        n_cats = len(self.settings.all_cats)
-#        inds_cause = np.arange(n_causes)
-#        inds_cats = arange(n_cats)
-#        import traceback; traceback.print_exc(); import pdb; pdb.set_trace()
-#        arr_counts = 
-#        age_group.arr_mortality[:] = arr_counts
+            for c,cats in enumerate(self.settings.all_cats):
+                refmort = age_group.arr_referenceMortality[:]
+                rr_deaths = self.default.arr_rr_deaths[age][c,:]
+                age_group.mortality[c] = sum(refmort*rr_deaths)
 
     def get_totalpop(self):
         return sum(age_group.pop_size for age_group in self.age_groups)

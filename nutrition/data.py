@@ -1,3 +1,4 @@
+import numpy as np
 import pandas
 import sciris.core as sc
 from . import settings
@@ -146,6 +147,28 @@ class DefaultParams(object):
         rr_sheet = self.read_sheet('Relative risks', [0,1,2], skiprows=103).dropna(axis=1, how='all')
         rr = rr_sheet.loc['Diarrhoea'].to_dict()
         self.rr_dia = self.make_dict3(rr)
+        self.compute_risks()
+    
+    def compute_risks(self, input_data=None):
+        self.arr_rr_death = sc.odict()
+        age_groups = self.rr_death['Stunting'].keys() # WARNING, not robust
+        for age in age_groups[1:]:
+            stunting = self.default.rr_death['Stunting'][age]
+            wasting = self.default.rr_death['Wasting'][age]
+            breastfeeding = self.default.rr_death['Breastfeeding'][age]
+            anaemia = self.default.rr_death['Anaemia'][age]
+            self.arr_rr_death[age] = np.zeros(self.settings.n_cats, input_data.causes_death)
+            for i,cats in enumerate(self.settings.all_cats):
+                cat0 = cats[0]
+                cat1 = cats[1]
+                cat2 = cats[2]
+                cat3 = cats[3]
+                for j,cause in enumerate(input_data.causes_death):
+                    stunt = stunting[cat0].get(cause,1)
+                    wast = wasting[cat1].get(cause,1)
+                    anaem = anaemia[cat2].get(cause,1)
+                    breast = breastfeeding[cat3].get(cause,1)
+                    self.arr_rr_death[age][i,j] = stunt * wast * anaem * breast
 
     def odds_ratios(self):
         or_sheet = self.read_sheet('Odds ratios', [0,1], skiprows=1)
@@ -729,6 +752,7 @@ def get_data(country=None, region=None, project=None, dataset=None, filepath=Non
         demo_data = InputData(input_path)
         prog_data = ProgData(input_path)
         default_params = DefaultParams(settings.default_params_path(), input_path)
+        default_params.compute_risks(demo_data)
         pops = populations.set_pops(demo_data, default_params)
     if asobj:
         output = Dataset(country, region, demo_data, prog_data, default_params, pops)
