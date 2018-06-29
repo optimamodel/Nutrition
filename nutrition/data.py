@@ -151,8 +151,7 @@ class DefaultParams(object):
     def compute_risks(self, input_data=None):
         ''' Take the data computed in the previous method and turn it into an array '''
         self.arr_rr_death = sc.odict()
-        age_groups = self.rr_death['Stunting'].keys() # WARNING, not robust
-        for age in age_groups[1:]:
+        for age in self.settings.child_ages:
             self.arr_rr_death[age] = np.zeros((self.settings.n_cats, len(input_data.causes_death)))
             stunting      = self.rr_death['Stunting'][age]
             wasting       = self.rr_death['Wasting'][age]
