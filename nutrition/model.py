@@ -383,6 +383,7 @@ class Model:
                 deaths = thisPop * age_group.mortality[i] * self.settings.timestep
                 age_group.pop_size -= deaths
                 self.child_deaths[self.year] += deaths
+                import traceback; traceback.print_exc(); import pdb; pdb.set_trace()
 
     def _apply_child_ageing(self):
         self._track_outcomes()
