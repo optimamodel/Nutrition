@@ -7,6 +7,7 @@ Profile the nutrition model.
 #%% Imports and settings
 import pylab as pl
 import nutrition.ui as nu
+import nutrition as on
 import sciris.core as sc
 try:
     from line_profiler import LineProfiler
@@ -58,8 +59,10 @@ Examples:
     P.run_optim
     P.optims[0].run_optim
     P.optims[0].one_optim # Warning, doesn't work for some reason
+    on.data.get_data
+    P.datasets[0].default_params.read_spreadsheet
 '''
-functiontoprofile = 'P.scens[0].model.run_sim'
+functiontoprofile = 'on.data.get_data'
 def profile():
     print('Profiling %s...' % functiontoprofile)
 
@@ -82,7 +85,7 @@ def profile():
     
     @do_profile(follow=[eval(functiontoprofile)]) # Add decorator to function being profiled
     def runwrapper(): 
-        P.run_scens()
+        nu.demo()
     runwrapper()
     
     print('Done.')
