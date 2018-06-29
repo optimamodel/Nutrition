@@ -228,7 +228,7 @@ class Project(object):
         if doadd:
             self.add_optims(optim_list)
             if dorun:
-                self.run_optims()
+                self.run_optim()
             return None
         else:
             return optim_list

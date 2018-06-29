@@ -37,7 +37,7 @@ initialization = sc.toc(start, 'out')
 
 # Calculate model un
 start = sc.tic()
-P.run_scens()
+P.run_optim(parallel=False)
 model_run = sc.toc(start, 'out')
 
 
@@ -55,8 +55,11 @@ Examples:
     P.scens[0].model.integrate
     P.scens[0].model._move_children
     P.scens[0].model._apply_child_mort
+    P.run_optim
+    P.optims[0].run_optim
+    P.optims[0].one_optim
 '''
-functiontoprofile = 'P.scens[0].model._apply_child_mort'
+functiontoprofile = 'P.run_optim'
 def profile():
     print('Profiling %s...' % functiontoprofile)
 
@@ -79,7 +82,7 @@ def profile():
     
     @do_profile(follow=[eval(functiontoprofile)]) # Add decorator to function being profiled
     def runwrapper(): 
-        P.run_scens()
+        P.run_optim(parallel=False)
     runwrapper()
     
     print('Done.')
