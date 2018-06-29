@@ -1,5 +1,24 @@
-from utils import restratify
-from nutrition import settings
+import numpy as np
+from .utils import restratify
+from . import settings
+
+def default_trackers():
+    ''' Not sure if his should be a function or just a definition -- store the key outputs of the model '''
+    output = [
+        'stunting_prev',
+        'wasting_prev',
+        'anaemia_prev',
+        'child_deaths',
+        'pw_deaths',
+        'child_exit',
+        'pw_exit',
+        'stunted',
+        'thrive',
+        'child_not_anaemic',
+        'neo_deaths',
+        'births',
+        'child_healthy']
+    return output
 
 class Model:
     def __init__(self, name, pops, prog_info, all_years, adjust_cov=False, timeTrends=False):
@@ -10,6 +29,7 @@ class Model:
         self.settings = settings.Settings()
 
         # get key items
+        self.n_years = len(all_years)
         self.all_years = all_years
         self.base_year = self.all_years[0]
         self.year = self.base_year
@@ -46,22 +66,12 @@ class Model:
             self._apply_prog_covs()
             self._distrib_pops()
             self.integrate()
-
+    
     def _set_trackers(self):
         """ Lists to store outcomes """
-        self.stunting_prev = [None]*len(self.all_years)
-        self.wasting_prev = [None]*len(self.all_years)
-        self.anaemia_prev = [None]*len(self.all_years)
-        self.child_deaths = [0]*len(self.all_years)
-        self.pw_deaths = [0]*len(self.all_years)
-        self.child_exit = [0]*len(self.all_years)
-        self.pw_exit = [0]*len(self.all_years)
-        self.stunted = [0]*len(self.all_years)
-        self.thrive = [0]*len(self.all_years)
-        self.child_not_anaemic = [0]*len(self.all_years)
-        self.neo_deaths = [0]*len(self.all_years)
-        self.births = [0]*len(self.all_years)
-        self.child_healthy = [0]*len(self.all_years)
+        for tracker in default_trackers():
+            arr = np.zeros(self.n_years)
+            setattr(self, tracker, arr)
 
     def _track_outcomes(self):
         oldest = self.children.age_groups[-1]
