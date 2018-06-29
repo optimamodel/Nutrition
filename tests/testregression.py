@@ -6,8 +6,8 @@ import numpy as np
 import nutrition.ui as nu
 import sciris.core as sc
 
-origfilename = nu.ONpath('tests')+'nutrition_2018-06-29.rslt'
-newfilename  = nu.ONpath('tests')+'nutrition_2018-06-29b.rslt'
+origfilename = nu.ONpath('tests')+'nutrition_2018-06-29b.rslt'
+newfilename  = nu.ONpath('tests')+'nutrition_2018-06-29c.rslt'
 docompare    = True
 dosave       = True
 
