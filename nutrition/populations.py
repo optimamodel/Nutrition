@@ -455,30 +455,8 @@ class Children(object):
             for c,cause in enumerate(self.data.causes_death):
                 refmort[c] = age_group.referenceMortality[cause] # Copy to an array for faster calculations
             for i,cats in enumerate(self.settings.all_cats):
-#                refmort = age_group.arr_referenceMortality[:]
                 rr_death = self.default.arr_rr_death[age][i,:]
                 age_group.mortality[i] = sum(refmort*rr_death)
-                
-                count = 0.
-                for j,cause in enumerate(self.data.causes_death):
-                    ck1 = refmort[j]
-                    ck2 = rr_death[j]
-                    
-                    t1 = age_group.referenceMortality[cause]
-                    t2 = self.default.rr_death['Stunting'][age][cats[0]].get(cause,1)
-                    t3 = self.default.rr_death['Wasting'][age][cats[1]].get(cause,1)
-                    t4 = self.default.rr_death['Breastfeeding'][age][cats[3]].get(cause,1)
-                    t5 = self.default.rr_death['Anaemia'][age][cats[2]].get(cause,1)
-                    count += t1 * t2 * t3 * t4 * t5
-                    
-                    ck_res = ck1*ck2
-                    o_res = t1 * t2 * t3 * t4 * t5
-                
-                    if sc.approx(ck_res, o_res):
-                        print('Success for %s %s %s' % (age, str(cats), cause))
-                    else:
-                        print('Failure for %s %s %s' % (age, str(cats), cause))
-                        import traceback; traceback.print_exc(); import pdb; pdb.set_trace()
 
     def get_totalpop(self):
         return sum(age_group.pop_size for age_group in self.age_groups)
