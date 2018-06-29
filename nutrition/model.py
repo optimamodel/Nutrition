@@ -396,10 +396,11 @@ class Model:
             arr_wasting = np.zeros(len(wasting))
             arr_anaemia = np.zeros(len(anaemia))
             arr_bf = np.zeros(len(bf))
-            for v,val in enumerate(stunting.values()): arr_stunting[v] = val
-            for v,val in enumerate(wasting.values()): arr_wasting[v] = val
-            for v,val in enumerate(anaemia.values()): arr_anaemia[v] = val
-            for v,val in enumerate(bf.values()): arr_bf[v] = val
+            ss = self.settings
+            for k,key in enumerate(ss.stunting_list): arr_stunting[k] = stunting[key]
+            for k,key in enumerate(ss.wasting_list):  arr_wasting[k]  = wasting[key]
+            for k,key in enumerate(ss.anaemia_list):  arr_anaemia[k]  = anaemia[key]
+            for k,key in enumerate(ss.bf_list):       arr_bf[k]       = bf[key]
             
             outer = np.einsum('i,j,k,l', arr_stunting, arr_wasting, arr_anaemia, arr_bf).flatten()
             deaths = sum(age_group.pop_size * outer[:] * age_group.mortality[:])
