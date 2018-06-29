@@ -148,7 +148,7 @@ class Optim(object):
                 self.optim_allocs.append(res)
         return None
 
-#    @utils.trace_exception
+    @utils.trace_exception
     def one_optim(self, params, maxtime=None, maxiters=None):
         """ Runs optimization for an objective and budget multiple.
         Return: a list of allocations, with order corresponding to the programs list """
