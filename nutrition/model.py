@@ -377,47 +377,12 @@ class Model:
     def _apply_child_mort(self):
         age_groups = self.children.age_groups
         for age_group in age_groups:
-            stunting = age_group.stunting_dist
-            wasting = age_group.wasting_dist
-            anaemia = age_group.anaemia_dist
-            bf = age_group.bf_dist
-            
-            allvals = []
-            for i,cats in enumerate(self.settings.all_cats):
-                stunt = stunting[cats[0]]
-                wast = wasting[cats[1]]
-                anaem = anaemia[cats[2]]
-                b = bf[cats[3]]
-                prod = stunt * wast * anaem * b
-                thisPop = age_group.pop_size * prod
-                allvals.append(prod)
+            for i, cats in enumerate(self.settings.all_cats):
+                thisPop = age_group.pop_size * age_group.stunting_dist[cats[0]] * age_group.wasting_dist[cats[1]] * \
+                          age_group.anaemia_dist[cats[2]] * age_group.bf_dist[cats[3]]
                 deaths = thisPop * age_group.mortality[i] * self.settings.timestep
                 age_group.pop_size -= deaths
                 self.child_deaths[self.year] += deaths
-#                import traceback; traceback.print_exc(); import pdb; pdb.set_trace()
-            
-#            arr_stunting = np.zeros(len(stunting))
-#            arr_wasting = np.zeros(len(wasting))
-#            arr_anaemia = np.zeros(len(anaemia))
-#            arr_bf = np.zeros(len(bf))
-#            ss = self.settings
-#            for k,key in enumerate(ss.stunting_list): arr_stunting[k] = stunting[key]
-#            for k,key in enumerate(ss.wasting_list):  arr_wasting[k]  = wasting[key]
-#            for k,key in enumerate(ss.anaemia_list):  arr_anaemia[k]  = anaemia[key]
-#            for k,key in enumerate(ss.bf_list):       arr_bf[k]       = bf[key]
-#            
-#            outer = np.einsum('i,j,k,l', arr_stunting, arr_wasting, arr_anaemia, arr_bf).flatten()
-#            deaths = sum(age_group.pop_size * outer[:] * age_group.mortality[:])
-#            age_group.pop_size -= deaths
-#            self.child_deaths[self.year] += deaths
-            
-#            for i,cats in enumerate(self.settings.all_cats):
-#                thisPop = age_group.pop_size * age_group.stunting_dist[cats[0]] * age_group.wasting_dist[cats[1]] * \
-#                          age_group.anaemia_dist[cats[2]] * age_group.bf_dist[cats[3]]
-#                deaths = thisPop * age_group.mortality[i] * self.settings.timestep
-#                age_group.pop_size -= deaths
-#                self.child_deaths[self.year] += deaths
-#                import traceback; traceback.print_exc(); import pdb; pdb.set_trace()
 
     def _apply_child_ageing(self):
         self._track_outcomes()

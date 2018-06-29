@@ -388,7 +388,7 @@ class InputData(object):
         for outer, ageCat in riskDist.iteritems():
             self.risk_dist[outer] = sc.odict()
             for age, catValue in ageCat.iteritems():
-                self.risk_dist[outer][age] = dict()
+                self.risk_dist[outer][age] = sc.odict()
                 for cat, value in catValue.iteritems():
                     newCat = cat.split(' ',1)[0]
                     self.risk_dist[outer][age][newCat] = value
@@ -397,7 +397,7 @@ class InputData(object):
         self.risk_dist['Anaemia'] = sc.odict()
         anaem = dist.loc['Anaemia', 'Prevalence of iron deficiency anaemia'].to_dict()
         for age, prev in anaem.iteritems():
-            self.risk_dist['Anaemia'][age] = dict()
+            self.risk_dist['Anaemia'][age] = sc.odict()
             self.risk_dist['Anaemia'][age]['Anaemic'] = prev
             self.risk_dist['Anaemia'][age]['Not anaemic'] = 1.-prev
         # get breastfeeding dist
