@@ -149,9 +149,10 @@ class Optim(object):
         return None
 
     @utils.trace_exception
-    def one_optim(self, params):
+    def one_optim(self, params, maxtime=None, maxiters=None):
         """ Runs optimization for an objective and budget multiple.
         Return: a list of allocations, with order corresponding to the programs list """
+        if maxiters is None: maxiters = 100
         obj = params[0]
         mult = params[1]
         kwargs = self.get_kwargs(obj, mult)
@@ -163,7 +164,7 @@ class Optim(object):
             for run in range(self.num_runs):
                 now = sc.tic()
                 x0, fopt = pso.pso(obj_func, xmin, xmax, kwargs=kwargs, maxiter=self.maxiter, swarmsize=self.swarmsize)
-                x, fval, flag = asd.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=0, maxtime=10)
+                x, fval, flag = asd.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=2, maxtime=maxtime, maxiters=maxiters)
                 runOutputs.append((x, fval[-1]))
                 self.print_status(obj, mult, flag, now)
             bestAllocation = self.get_best(runOutputs)

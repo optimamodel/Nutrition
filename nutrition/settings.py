@@ -20,6 +20,7 @@ class Settings(object):
         self.bf_list = ['Exclusive', 'Predominant', 'Partial', 'None']
         list_cats = [self.stunting_list, self.wasting_list, self.anaemia_list, self.bf_list]
         self.all_cats = list(itertools.product(*list_cats))
+        self.n_cats = len(self.all_cats)
         self.correct_bf = {'<1 month': 'Exclusive', '1-5 months': 'Exclusive', '6-11 months':'Partial',
                            '12-23 months': 'Partial', '24-59 months': 'None'}
         self.birth_outcomes = ['Term AGA', 'Term SGA', 'Pre-term AGA','Pre-term SGA']

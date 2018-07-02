@@ -1,3 +1,4 @@
+import numpy as np
 import pandas
 import sciris.core as sc
 from . import settings
@@ -146,6 +147,27 @@ class DefaultParams(object):
         rr_sheet = self.read_sheet('Relative risks', [0,1,2], skiprows=103).dropna(axis=1, how='all')
         rr = rr_sheet.loc['Diarrhoea'].to_dict()
         self.rr_dia = self.make_dict3(rr)
+    
+    def compute_risks(self, input_data=None):
+        ''' Take the data computed in the previous method and turn it into an array '''
+        self.arr_rr_death = sc.odict()
+        for age in self.settings.child_ages:
+            self.arr_rr_death[age] = np.zeros((self.settings.n_cats, len(input_data.causes_death)))
+            stunting      = self.rr_death['Stunting'][age]
+            wasting       = self.rr_death['Wasting'][age]
+            breastfeeding = self.rr_death['Breastfeeding'][age]
+            anaemia       = self.rr_death['Anaemia'][age]
+            for i,cats in enumerate(self.settings.all_cats):
+                stuntcat  = cats[0]
+                wastcat   = cats[1]
+                anaemcat  = cats[2]
+                breastcat = cats[3]
+                for j,cause in enumerate(input_data.causes_death):
+                    stunt  = stunting[stuntcat].get(cause,1)
+                    wast   = wasting[wastcat].get(cause,1)
+                    anaem  = anaemia[anaemcat].get(cause,1)
+                    breast = breastfeeding[breastcat].get(cause,1)
+                    self.arr_rr_death[age][i,j] = stunt * wast * anaem * breast
 
     def odds_ratios(self):
         or_sheet = self.read_sheet('Odds ratios', [0,1], skiprows=1)
@@ -272,7 +294,7 @@ class DefaultParams(object):
                 cond = condCat[0]
                 cat = condCat[1]
                 if res_dict[age].get(cat) is None:
-                    res_dict[age][cat] = sc.odict()
+                    res_dict[age][cat] = dict() # CK TEST
                     res_dict[age][cat][cond] = mydict[age][condCat]
                 elif res_dict[age][cat].get(cond) is None:
                     res_dict[age][cat][cond] = mydict[age][condCat]
@@ -366,7 +388,7 @@ class InputData(object):
         for outer, ageCat in riskDist.iteritems():
             self.risk_dist[outer] = sc.odict()
             for age, catValue in ageCat.iteritems():
-                self.risk_dist[outer][age] = sc.odict()
+                self.risk_dist[outer][age] = dict()
                 for cat, value in catValue.iteritems():
                     newCat = cat.split(' ',1)[0]
                     self.risk_dist[outer][age][newCat] = value
@@ -375,7 +397,7 @@ class InputData(object):
         self.risk_dist['Anaemia'] = sc.odict()
         anaem = dist.loc['Anaemia', 'Prevalence of iron deficiency anaemia'].to_dict()
         for age, prev in anaem.iteritems():
-            self.risk_dist['Anaemia'][age] = sc.odict()
+            self.risk_dist['Anaemia'][age] = dict()
             self.risk_dist['Anaemia'][age]['Anaemic'] = prev
             self.risk_dist['Anaemia'][age]['Not anaemic'] = 1.-prev
         # get breastfeeding dist
@@ -729,6 +751,7 @@ def get_data(country=None, region=None, project=None, dataset=None, filepath=Non
         demo_data = InputData(input_path)
         prog_data = ProgData(input_path)
         default_params = DefaultParams(settings.default_params_path(), input_path)
+        default_params.compute_risks(demo_data)
         pops = populations.set_pops(demo_data, default_params)
     if asobj:
         output = Dataset(country, region, demo_data, prog_data, default_params, pops)

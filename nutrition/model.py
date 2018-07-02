@@ -1,5 +1,25 @@
-from utils import restratify
-from nutrition import settings
+import numpy as np
+import sciris.core as sc
+from .utils import restratify
+from . import settings
+
+def default_trackers():
+    ''' Not sure if his should be a function or just a definition -- store the key outputs of the model '''
+    output = [
+        'stunting_prev',
+        'wasting_prev',
+        'anaemia_prev',
+        'child_deaths',
+        'pw_deaths',
+        'child_exit',
+        'pw_exit',
+        'stunted',
+        'thrive',
+        'child_not_anaemic',
+        'neo_deaths',
+        'births',
+        'child_healthy']
+    return output
 
 class Model:
     def __init__(self, name, pops, prog_info, all_years, adjust_cov=False, timeTrends=False):
@@ -10,6 +30,7 @@ class Model:
         self.settings = settings.Settings()
 
         # get key items
+        self.n_years = len(all_years)
         self.all_years = all_years
         self.base_year = self.all_years[0]
         self.year = self.base_year
@@ -46,22 +67,12 @@ class Model:
             self._apply_prog_covs()
             self._distrib_pops()
             self.integrate()
-
+    
     def _set_trackers(self):
         """ Lists to store outcomes """
-        self.stunting_prev = [None]*len(self.all_years)
-        self.wasting_prev = [None]*len(self.all_years)
-        self.anaemia_prev = [None]*len(self.all_years)
-        self.child_deaths = [0]*len(self.all_years)
-        self.pw_deaths = [0]*len(self.all_years)
-        self.child_exit = [0]*len(self.all_years)
-        self.pw_exit = [0]*len(self.all_years)
-        self.stunted = [0]*len(self.all_years)
-        self.thrive = [0]*len(self.all_years)
-        self.child_not_anaemic = [0]*len(self.all_years)
-        self.neo_deaths = [0]*len(self.all_years)
-        self.births = [0]*len(self.all_years)
-        self.child_healthy = [0]*len(self.all_years)
+        for tracker in default_trackers():
+            arr = np.zeros(self.n_years)
+            setattr(self, tracker, arr)
 
     def _track_outcomes(self):
         oldest = self.children.age_groups[-1]
@@ -367,12 +378,24 @@ class Model:
     def _apply_child_mort(self):
         age_groups = self.children.age_groups
         for age_group in age_groups:
-            for i, cats in enumerate(self.settings.all_cats):
-                thisPop = age_group.pop_size * age_group.stunting_dist[cats[0]] * age_group.wasting_dist[cats[1]] * \
-                          age_group.anaemia_dist[cats[2]] * age_group.bf_dist[cats[3]]
-                deaths = thisPop * age_group.mortality[i] * self.settings.timestep
-                age_group.pop_size -= deaths
-                self.child_deaths[self.year] += deaths
+            stunting = age_group.stunting_dist
+            wasting = age_group.wasting_dist
+            anaemia = age_group.anaemia_dist
+            bf = age_group.bf_dist
+            arr_stunting = np.zeros(len(stunting))
+            arr_wasting = np.zeros(len(wasting))
+            arr_anaemia = np.zeros(len(anaemia))
+            arr_bf = np.zeros(len(bf))
+            ss = self.settings
+            for k,key in enumerate(ss.stunting_list): arr_stunting[k] = stunting[key]
+            for k,key in enumerate(ss.wasting_list):  arr_wasting[k]  = wasting[key]
+            for k,key in enumerate(ss.anaemia_list):  arr_anaemia[k]  = anaemia[key]
+            for k,key in enumerate(ss.bf_list):       arr_bf[k]       = bf[key]
+            outer = np.einsum('i,j,k,l', arr_stunting, arr_wasting, arr_anaemia, arr_bf).flatten()
+            deaths = sum(age_group.pop_size * outer[:] * age_group.mortality[:] * self.settings.timestep)
+            age_group.pop_size -= deaths
+            self.child_deaths[self.year] += deaths
+
 
     def _apply_child_ageing(self):
         self._track_outcomes()
