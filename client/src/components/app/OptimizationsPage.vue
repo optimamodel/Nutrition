@@ -55,10 +55,18 @@ Last update: 2018-06-26
                  v-model="defaultOptim.name"/><br>
           Optimization objectives:<br>
           <select v-model="defaultOptim.objs">
-            <option v-for='obj in defaultOptim.objective_options'>
+            <option v-for='obj in objectiveOptions'>
               {{ obj }}
             </option>
           </select><br><br>
+            TEMP1:<br>
+            <input type="text"
+                 class="txbox"
+                 v-model="defaultOptim.objs"/><br>
+            TEMP2:<br>
+            <input type="text"
+                 class="txbox"
+                 v-model="objectiveOptions"/><br>
           Multipliers:<br>
           <input type="text"
                  class="txbox"
@@ -109,6 +117,7 @@ Last update: 2018-06-26
         serverresponse: 'no response',
         optimSummaries: [],
         defaultOptim: [],
+        objectiveOptions: [],
       }
     },
 
@@ -163,6 +172,7 @@ Last update: 2018-06-26
           .then(response => {
             this.defaultOptim = response.data // Set the optimization to what we received.
             this.objectiveOptions = response.data.objective_options
+            console.log('TEMPPPPPPP these are the options:'+this.objectiveOptions);
           });
       },
 
