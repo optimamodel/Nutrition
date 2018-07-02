@@ -59,14 +59,6 @@ Last update: 2018-06-26
               {{ obj }}
             </option>
           </select><br><br>
-            TEMP1:<br>
-            <input type="text"
-                 class="txbox"
-                 v-model="defaultOptim.objs"/><br>
-            TEMP2:<br>
-            <input type="text"
-                 class="txbox"
-                 v-model="objectiveOptions"/><br>
           Multipliers:<br>
           <input type="text"
                  class="txbox"
