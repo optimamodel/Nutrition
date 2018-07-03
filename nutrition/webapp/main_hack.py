@@ -1,5 +1,5 @@
 """
-main.py -- main module for the Optima Nutrition webapp.
+main_hack.py -- main module hacked up for the Optima Nutrition webapp.
     
 Last update: 2018jun04
 """
@@ -8,7 +8,7 @@ import sciris.web as sw
 #from . import config, projects, rpcs, apptasks
 import config
 #import rpcs
-#import apptasks
+import apptasks
 
 
 def make_app():
