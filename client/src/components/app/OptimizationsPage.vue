@@ -99,6 +99,7 @@ Last update: 2018-06-26
   import axios from 'axios'
   var filesaver = require('file-saver')
   import rpcservice from '@/services/rpc-service'
+  import taskservice from '@/services/task-service'  
   import router from '@/router'
   import Vue from 'vue';
 
@@ -303,11 +304,18 @@ Last update: 2018-06-26
       runOptim(optimSummary) {
         console.log('runOptim() called for '+this.currentOptim)
 
-        rpcservice.rpcCall('launch_task', ['my_crazy_id', 'async_add', [23, 57]])
+//        rpcservice.rpcCall('launch_task', ['my_crazy_id', 'async_add', [23, 57]])
 //        rpcservice.rpcCall('check_task', ['my_crazy_id'])
 //        rpcservice.rpcCall('get_task_result', ['my_crazy_id'])         
 //        rpcservice.rpcCall('delete_task', ['my_crazy_id'])
-        
+
+          // Do an async_add() and try for at most 15 sec. to get a result, polling every 5 sec.
+          // Should succeed.
+          taskservice.getTaskResultPolling('my_crazy_id', 15, 3, 'async_add', [23, 57])
+          .then(response => {
+            console.log('The result is: ' + response.data.result)          
+          }) 
+          
         // Make sure they're saved first
 /*        rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
           .then(response => {
