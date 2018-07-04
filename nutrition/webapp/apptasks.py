@@ -1,7 +1,7 @@
 """
 apptasks.py -- The Celery tasks module for this webapp
     
-Last update: 6/28/18 (gchadder3)
+Last update: 7/3/18 (gchadder3)
 """
 
 #
@@ -10,9 +10,11 @@ Last update: 6/28/18 (gchadder3)
 
 import time
 import config
-from sciris.weblib.tasks import make_celery_instance
-from sciris.weblib.tasks import add_task_funcs
-from sciris.weblib.tasks import make_register_async_task
+from sciris.weblib.tasks import make_celery_instance, add_task_funcs, \
+    make_register_async_task
+import projects as prj
+from rpcs import load_project, save_project
+import mpld3
 
 #
 # Globals
@@ -37,6 +39,32 @@ celery_instance = make_celery_instance(config=config)
 #    return 'here be dummy result'
 
 @register_async_task
+def run_optim(project_id, optim_name):
+    
+    print('Running optimization...')
+    proj = load_project(project_id, raise_exception=True)
+    
+    proj.run_optim(key=optim_name, parallel=False)
+    figs = proj.plot(toplot=['alloc']) # Only plot allocation
+    graphs = []
+    for f,fig in enumerate(figs.values()):
+        for ax in fig.get_axes():
+            ax.set_facecolor('none')
+        graph_dict = mpld3.fig_to_dict(fig)
+        graphs.append(graph_dict)
+        print('Converted figure %s of %s' % (f+1, len(figs)))
+    
+    print('Saving project...')
+    save_project(proj) 
+    
+    # Return the graphs.
+    return {'graphs': graphs}
+
+#def run_optim(x, y):
+#    time.sleep(10)
+#    return x * y
+
+@register_async_task
 def async_add(x, y):
     time.sleep(10)
     return x + y
@@ -54,3 +82,11 @@ def test_error():
 # Add the asynchronous task functions in this module to the tasks.py module 
 # so run_task() can call them.
 add_task_funcs(task_func_dict)
+
+# Only execute this if the celery worker imports it.
+if __name__ == 'apptasks':
+    # Set up the projects module so we have access to the webapp Redis data.
+    prj.apptasks_init_projects(config)
+    
+#    print('Here are my projects:')
+#    prj.proj_collection.show()

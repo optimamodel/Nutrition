@@ -69,17 +69,21 @@ class ProjectSO(sw.ScirisObject):
             
             # Set the owner (User) UID.
             self.owner_uid = valid_uuid
+            
+    # TODO: Possibly try to get rid of check_type_match parameter (presently 
+    # used to allow cases of inexact type matches when Celery is being used).            
+    def load_from_copy(self, other_object, check_type_match=True):
+        if check_type_match and type(other_object) != type(self):
+            return
+
+        # Do the superclass copying.
+        super(ProjectSO, self).load_from_copy(other_object)
         
-    def load_from_copy(self, other_object):
-        if type(other_object) == type(self):
-            # Do the superclass copying.
-            super(ProjectSO, self).load_from_copy(other_object)
-            
-            # Copy the Project object itself.
-            self.proj = sc.dcp(other_object.proj)
-            
-            # Copy the owner UID.
-            self.owner_uid = other_object.owner_uid
+        # Copy the Project object itself.
+        self.proj = sc.dcp(other_object.proj)
+        
+        # Copy the owner UID.
+        self.owner_uid = other_object.owner_uid
                 
     def show(self):
         # Show superclass attributes.
@@ -217,3 +221,36 @@ def init_projects(app):
     if app.config['LOGGING_MODE'] == 'FULL':
         # Show what's in the ProjectCollection.    
         proj_collection.show()
+        
+def apptasks_init_projects(config):
+    global proj_collection  # need this to allow modification within the module 
+    
+    # We need to load in the whole DataStore here because the Celery worker 
+    # (in which this function is running) will not know about the same context 
+    # from the datastore.py module that the server code will.
+    
+    # Create the DataStore object, setting up Redis.
+    ds.data_store = ds.DataStore(redis_db_URL=config.REDIS_URL)
+    
+    # Load the DataStore state from disk.
+    ds.data_store.load()
+    
+    # Look for an existing ProjectCollection.
+    proj_collection_uid = ds.data_store.get_uid_from_instance('projectscoll', 
+        'Projects Collection')
+    
+    # Create the projects collection object.  Note, that if no match was found, 
+    # this will be assigned a new UID.    
+    proj_collection = ProjectCollection(proj_collection_uid)
+    
+    # If there was a match...
+    if proj_collection_uid is not None:  
+        print 'doin the loading...'
+        
+        proj_collection.load_from_data_store(check_type_match=False)
+        
+        
+        print proj_collection.obj_dict
+        
+    print('Here are my projects:')
+    proj_collection.show()        

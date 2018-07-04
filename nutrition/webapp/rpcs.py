@@ -20,7 +20,8 @@ import sciris.core as sc
 import sciris.web as sw
 
 import nutrition.ui as nu
-from . import projects as prj
+#from . import projects as prj
+import projects as prj
 
 # Dictionary to hold all of the registered RPCs in this module.
 RPC_dict = {}
