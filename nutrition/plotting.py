@@ -14,10 +14,10 @@ def make_plots(all_res=None, toplot=None):
     
     toplot = sc.promotetolist(toplot)
     all_res = sc.promotetolist(all_res)
-    if 'prevs' in toplot: # WARNING, Does not work for OptimResult
+    if 'prevs' in toplot:
         prevfigs = plot_prevs(all_res)
         allplots.update(prevfigs)
-    if 'outputs' in toplot: # WARNING, Does not work for OptimResult
+    if 'outputs' in toplot:
         outfigs = plot_outputs(all_res)
         allplots.update(outfigs)
     if 'alloc' in toplot: # optimized allocations
@@ -99,34 +99,31 @@ def plot_outputs(all_res):
 
 def plot_alloc(all_res):
     """ Plot the program allocations from an optimization, alongside current allocation """
-    # TODO: WARNING: Cannot plot multiple objectives. Would like Optim to only take 1 objective each, then this will be resolved.
-#    if len(all_res)>1:
-#        print('WARNING, not currently enabled to plot more than one allocation, you have asked for %s' % len(all_res))
-    res = all_res[0]
-    xlabs = ['current'] + res.mults
-    x = np.arange(len(xlabs))
+    #initialize
     width = 0.35
-    allocs = [res.curr_alloc] + res.optim_allocs
-    figs = sc.odict()
-    all_y = []
-    bottom = np.zeros(len(xlabs))
     fig = pl.figure()
-    for i, prog in enumerate(res.programs):
+    figs = sc.odict()
+    try: ref=all_res[1]
+    except IndexError: ref = all_res[0] # baseline
+    x = np.arange(len(all_res))
+    xlabs = []
+    bottom = np.zeros(len(all_res))
+    for i, prog in enumerate(ref.programs):
         y = []
         # get allocation for each multiple
-        for j, mult in enumerate(xlabs):
-            alloc = allocs[j]
-            y = np.append(y, alloc[i])
-        all_y.append(y)
-        pl.bar(x, all_y[i], width=width, bottom=bottom)
-        bottom += all_y[i]
-        pl.ylabel('Funding')
-        pl.xticks(x, xlabs)
-#        legendart = [p[0] for p in figs.values()]
-        legendlab = [prog.name for prog in res.programs]
-#        pl.legend(legendart, legendlab)
-        pl.legend(legendlab)
-        figs['alloc_%0i'%i] = fig
+        for j, res in enumerate(all_res):
+            xlabs.append(res.mult)
+            alloc = res.programs[i].annual_spend[1] # spending is same after first year in optimization
+            y = np.append(y, alloc)
+        pl.bar(x, y, width=width, bottom=bottom)
+        bottom += y
+    pl.title(ref.obj)
+    pl.xticks(x, xlabs)
+    pl.ylabel('Funding')
+    pl.xlabel('Multiples of flexible funding')
+    leglab = [prog.name for prog in res.programs]
+    pl.legend(leglab)
+    figs['alloc_%0i'%i] = fig
     return figs
 
 def round_elements(mylist, dec=1):

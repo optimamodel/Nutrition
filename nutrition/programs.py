@@ -1,23 +1,24 @@
-import settings, numpy, functools
+import numpy as np
+from .settings import Settings
+from functools import partial
+import sciris.core as sc
 
 class Program(object):
     """Each instance of this class is an intervention,
     and all necessary data will be stored as attributes. Will store name, targetpop, popsize, coverage, edges etc
     Also want it to set absolute number covered, coverage frac (coverage amongst entire pop), normalised coverage (coverage amongst target pop)"""
-    def __init__(self, name, prog_data, default_params):
+    def __init__(self, name, prog_data, all_years):
         self.name = name
-        self.default = default_params
         self.prog_deps = prog_data.prog_deps
-        self.famplan_methods = prog_data.famplan_methods
-        self.settings = settings.Settings()
-        self.year = None
-        self.all_years = None
-        self.annual_cov = None
-        self.unrestr_init_cov = None
-        self.cov_scen = None
+        self.famplan_methods = prog_data.famplan_methods # todo: want these here or in nonPW class???
+        self.settings = Settings()
+        self.all_years = all_years # todo: may want this in ProgInfo
+        self.sim_years = all_years[1:]
+        self.year = all_years[0]
+        self.annual_cov = np.zeros(len(all_years))
+        self.annual_spend = np.zeros(len(all_years))
         self.func = None
         self.inv_func = None
-        self.twin_ind = None
 
         self.target_pops = prog_data.prog_target[self.name] # frac of each population which is targeted
         self.unit_cost = prog_data.prog_info['unit cost'][self.name]
@@ -25,57 +26,33 @@ class Program(object):
         self.restr_init_cov = prog_data.prog_info['baseline coverage'][self.name]
 
         self._set_target_ages()
-        self._set_impacted_ages() # TODO: This func could contain the info for how many multiples needed for unrestricted population calculation (IYCF)
+        self._set_impacted_ages(prog_data.impacted_pop[self.name]) # TODO: This func could contain the info for how many multiples needed for unrestricted population calculation (IYCF)
         self._set_exclusion_deps()
         self._set_threshold_deps()
 
-    def set_annual_cov(self, pops, all_years):
-        """
-        Sets values for 'annual_covs' for the baseline and calibration (typically first 2 years) only.
-        If a calibration coverage has been specified in the workbook, this will override the baseline coverage.
-        This feature allows different costs to be calculated from the calibration coverage
-        :return:
-        """
-        self.set_pop_sizes(pops)
-        self.set_init_unrestr()
-        self.annual_cov = [self.unrestr_init_cov]*len(all_years) # default assuming constant over time
+    def update_cov(self, cov, spend):
+        self.annual_cov = cov
+        self.annual_spend = spend
 
-    def update_cov(self, cov, restr_cov):
-        """Main function for providing new coverages for a program
-        Lists must not have any missing values, so interpolate if missing"""
-        # check the data type of cov
-        if isinstance(cov, list):
-            self.annual_cov = self.interp_cov(cov, restr_cov)
-        else: # scalar
-            self._set_scalar(cov, restr_cov)
-
-    def interp_cov(self, cov, restr_cov): # todo; need a way to reconcile different list lengths (in higher level function)
-        """ cov: a list of coverages with one-to-one correspondence with all_years
+    def interp_cov(self, cov, restr_cov):
+        """ cov: a list of coverages with one-to-one correspondence with sim_years
         restr_cov: boolean indicating if the coverages are restricted or unrestricted """
-        years = numpy.array(self.all_years)
-        cov_list = numpy.array(cov, dtype=float) # Force type conversion to handle None instead of nan
-        not_nan = numpy.logical_not(numpy.isnan(cov_list))
-        if any(not_nan):
-            # for 1 or more present values, baseline up to first present value, interpolate between, then constant if end values missing
-            trueIndx = [i for i, x in enumerate(not_nan) if x]
-            firstTrue = trueIndx[0]
-            startCov = [self.restr_init_cov]*len(cov_list[:firstTrue])
-            endCov = list(numpy.interp(years[firstTrue:], years[not_nan], cov_list[not_nan]))
-            # scale each coverage
-            if restr_cov:
-                interped = [self.get_unrestr_cov(_cov) for _cov in startCov + endCov]
-            else: # no need to scale
-                interped = [_cov for _cov in startCov + endCov]
-        else:
-            # is all nan, assume constant at baseline
-            interped = [self.unrestr_init_cov] * len(years)
+        if restr_cov:
+            cov = map(self.get_unrestr_cov, cov)
+        years = np.array(self.all_years)
+        cov = np.array(cov, dtype=float) # force conversion to treat None as nan
+        cov[0] = self.annual_cov[0]
+        not_nan = ~np.isnan(cov)
+        interped = np.interp(years, years[not_nan], cov[not_nan])
         return interped
 
-    def _set_scalar(self, cov, restr_cov):
-        if restr_cov:
-            cov = self.get_unrestr_cov(cov)
-        interpolated = [cov] * len(self.all_years)
-        self.annual_cov = [self.unrestr_init_cov] + interpolated
+    def check_cov(self, cov, years):
+        numyears = len(years)
+        if isinstance(cov, float):
+            new = np.full(numyears, cov)
+        elif len(cov) < numyears:
+            new = np.concatenate((cov, np.full(numyears, cov[-1])), axis=0)
+        return new
 
     def get_unrestr_cov(self, restr_cov):
         return restr_cov*self.restr_popsize / self.unrestr_popsize
@@ -85,10 +62,8 @@ class Program(object):
         self._setUnrestrictedPopSize(pops)
 
     def set_init_unrestr(self):
-        self.unrestr_init_cov = (self.restr_init_cov * self.restr_popsize) / \
-                                          self.unrestr_popsize
-        # self.unrestrictedCalibrationCov = (self.restrictedCalibrationCov * self.restr_popsize) / \
-        #                                   self.unrestr_popsize
+        unrestr_cov = (self.restr_init_cov * self.restr_popsize) / self.unrestr_popsize
+        self.annual_cov[0] = unrestr_cov
 
     def adjust_cov(self, pops, year):
         # set unrestricted pop size so coverages account for growing population size
@@ -109,14 +84,14 @@ class Program(object):
             if fracTargeted > 0.001: # floating point tolerance
                 self.agesTargeted.append(age)
 
-    def _set_impacted_ages(self):
+    def _set_impacted_ages(self, impacted_pop):
         """
         The ages who are impacted by this program
         :return:
         """
         self.agesImpacted = []
         for age in self.settings.all_ages:
-            impacted = self.default.impacted_pop[self.name][age]
+            impacted = impacted_pop[age]
             if impacted > 0.001: # floating point tolerance
                 self.agesImpacted.append(age)
 
@@ -241,14 +216,9 @@ class Program(object):
         Programs which directly impact birth outcomes
         :return:
         """
-        update = self._bo_update()
+        update = self._bo_update(age_group)
         for BO in self.settings.birth_outcomes:
             age_group.birthUpdate[BO] *= update[BO]
-
-    def get_birthage_update(self, age_group):
-        update = self._ba_update()
-        for BA in self.default.birthAges:
-            age_group.birthUpdate[BA] *= update[BA]
 
     def _get_new_prob(self, coverage, probCovered, probNotCovered):
         return coverage * probCovered + (1.-coverage) * probNotCovered
@@ -289,7 +259,6 @@ class Program(object):
         update = {}
         oldCov = self.annual_cov[self.year-1]
         for condition in self.settings.wasted_list:
-
             affFrac = age_group.prog_eff[(self.name, condition, 'Affected fraction')]
             effectiveness = age_group.prog_eff[(self.name, condition,'Effectiveness incidence')]
             reduction = affFrac * effectiveness * (self.annual_cov[self.year] - oldCov) / (1. - effectiveness*oldCov)
@@ -311,25 +280,15 @@ class Program(object):
             update[cause] *= 1. - reduction
         return update
 
-    def _bo_update(self):
+    def _bo_update(self, age_group):
         BOupdate = {BO: 1. for BO in self.settings.birth_outcomes}
         oldCov = self.annual_cov[self.year-1]
         for outcome in self.settings.birth_outcomes:
-            affFrac = self.default.bo_progs[self.name]['affected fraction'][outcome]
-            eff = self.default.bo_progs[self.name]['effectiveness'][outcome]
+            affFrac = age_group.bo_eff[self.name]['affected fraction'][outcome]
+            eff = age_group.bo_eff[self.name]['effectiveness'][outcome]
             reduction = affFrac * eff * (self.annual_cov[self.year] - oldCov) / (1. - eff*oldCov)
             BOupdate[outcome] = 1. - reduction
         return BOupdate
-
-    def _ba_update(self):
-        BAupdate = {BA: 1. for BA in self.default.birthAges}
-        oldCov = self.annual_cov[self.year-1]
-        for BA in self.default.birthAges:
-            affFrac = self.default.birthAgeProgram[BA]['affected fraction']
-            eff = self.default.birthAgeProgram[BA]['effectiveness']
-            reduction = affFrac * eff * (self.annual_cov[self.year] - oldCov) / (1. - eff*oldCov)
-            BAupdate[BA] = 1. - reduction
-        return BAupdate
 
     def _bf_practice_update(self, age_group):
         correctPrac = age_group.correct_bf
@@ -344,9 +303,21 @@ class Program(object):
         costcurve = CostCovCurve(self.unit_cost, self.saturation, self.restr_popsize, self.unrestr_popsize)
         self.func, self.inv_func = costcurve.set_cost_curve()
 
-    def get_spending(self):
-        # spending is base on BASELINE coverages
-        return self.inv_func(self.unrestr_init_cov)
+    def get_cov(self, spend):
+        """
+        Calculate the coverage for given expenditure
+        :param spend: a 1d numpy array
+        :return: a 1d numpy array
+        """
+        return self.func(spend)
+
+    def get_spending(self, covs):
+        """
+        Calculate the spending for given coverage
+        :param covs: 1d numpy array
+        :return: 1d numpy array
+        """
+        return self.inv_func(covs)
 
     def scale_unit_costs(self, scaleFactor):
         self.unit_cost *= scaleFactor
@@ -377,7 +348,7 @@ class CostCovCurve:
         else:
             c = y0 / (m * x0)
         maxCoverage = self.restrictedPop * self.saturation
-        linearCurve = functools.partial(self._lin_func, m, c, maxCoverage)
+        linearCurve = partial(self._lin_func, m, c, maxCoverage)
         return linearCurve
 
     def _get_inv_lin(self):
@@ -387,7 +358,7 @@ class CostCovCurve:
             c = y0
         else:
             c = y0 / (m * x0)
-        curve = functools.partial(self._inv_lin_func, m, c)
+        curve = partial(self._inv_lin_func, m, c)
         return curve
 
     def _get_log_curve(self):
@@ -396,7 +367,7 @@ class CostCovCurve:
         A = -B
         C = 0.
         D = self.unit_cost*B/2.
-        curve = functools.partial(self._log_func, A, B, C, D)
+        curve = partial(self._log_func, A, B, C, D)
         return curve
 
     def _get_inv_log(self):
@@ -406,59 +377,117 @@ class CostCovCurve:
         A = -B
         C = 0.
         D = self.unit_cost*B/2.
-        curve = functools.partial(self._inv_log, A, B, C, D)
+        curve = partial(self._inv_log, A, B, C, D)
         return curve
 
     def _lin_func(self, m, c, max_cov, x):
-        unres_maxcov = max_cov / self.unrestrictedPop
-        return min((m * x + c)/self.unrestrictedPop, unres_maxcov)
+        """ Expects x to be a 1D numpy array.
+         Return: a numpy array of the same length as x """
+        unres_maxcov = np.full(len(x), max_cov / self.unrestrictedPop)
+        return np.minimum((m * x[:] + c)/self.unrestrictedPop, unres_maxcov)
 
     def _log_func(self, A, B, C, D, x):
-        return (A + (B - A) / (1 + numpy.exp(-(x - C) / D))) / self.unrestrictedPop
+        return (A + (B - A) / (1 + np.exp(-(x[:] - C) / D))) / self.unrestrictedPop
 
-    def _inv_lin_func(self, m, c, cov_frac):
-        return (cov_frac*self.unrestrictedPop - c)/m
+    def _inv_lin_func(self, m, c, y):
+        """
+        :param m:
+        :param c:
+        :param y: a 1d numpy array of unrestricted coverage fractions
+        :return: a 1d numpy array with same length as y
+        """
+        return (y[:]*self.unrestrictedPop - c)/m
 
     def _inv_log(self, A, B, C, D, y):
         if D == 0:
             return 0
         else:
-            return -D * numpy.log((B - y) / (y - A)) + C
+            return -D * np.log((B - y[:]) / (y[:] - A)) + C
 
 
-def set_programs(prog_set, prog_data, default_params):
-    programs = [Program(prog_name, prog_data, default_params) for prog_name in prog_set] # list of all program objects
+def set_programs(prog_set, prog_data, all_years):
+    programs = [Program(prog_name, prog_data, all_years) for prog_name in prog_set] # list of all program objects
     return programs
     
 
 
 
-class ProgramInfo:
-    """
-    This class is a convenient container for all program objects and their applicable areas.
-    Allows centralised access to all program objects to be used in the Model class.
+class ProgramInfo: # todo: would like to incorporate spending info in here, even for scenarios... so user can get this info
+    def __init__(self, prog_data):
+        self.prog_data = prog_data
+        self.programs = None
+        self.prog_areas = None
 
-    Attributes:
-        programs: list of all program objects
-        programAreas: Risks are keys with lists containing applicable program names (dict of lists)
-    """
-    def __init__(self, prog_set, prog_data, default_params):
-        self.prog_set = prog_set
-        self.prog_areas = self._clean_prog_areas(default_params.prog_areas)
-        self.ref_progs = prog_data.ref_progs
-        self.programs = set_programs(self.prog_set, prog_data, default_params)
+        self.refs = None
+        self.curr = None
+        self.fixed = None
+        self.free = None
+
+    def get_allocs(self, add_funds, fix_curr, rem_curr):
+        self.refs = self.get_refs()
+        self.curr = self.get_curr()
+        self.fixed = self.get_fixed(fix_curr)
+        self.free = self.get_free(add_funds, fix_curr, rem_curr)
+
+    def get_refs(self):
+        ref_allocs = np.zeros(len(self.programs))
+        for i, prog in enumerate(self.programs):
+            if prog.reference:
+                ref_allocs[i] = prog.get_spending(prog.annual_cov)[0]
+            else:
+                ref_allocs[i] = 0
+        return ref_allocs
+
+    def get_curr(self):
+        allocs = np.zeros(len(self.programs))
+        for i, prog in enumerate(self.programs):
+            allocs[i] = prog.get_spending(prog.annual_cov)[0]
+        return allocs
+
+    def get_fixed(self, fix_curr):
+        """
+        Fixed allocations will contain reference allocations as well, for easy use in the objective function.
+        Reference progs stored separately for ease of model output.
+        :param fix_curr:
+        :return:
+        """
+        if fix_curr:
+            fixed = sc.dcp(self.curr)
+        else:
+            fixed = sc.dcp(self.refs)
+        return fixed
+
+    def get_free(self, add_funds, fix_curr, rem_curr):
+        """
+        freeFunds = currentExpenditure + add_funds - fixedFunds (if not remove current funds)
+        freeFunds = additional (if want to remove current funds)
+
+        fixedFunds includes both reference programs as well as currentExpenditure, if the latter is to be fixed.
+        I.e. if all of the currentExpenditure is fixed, freeFunds = add_funds.
+        :return:
+        """
+        if rem_curr and fix_curr:
+            raise Exception("::Error: Cannot remove current funds and fix current funds simultaneously::")
+        elif rem_curr and (not fix_curr):  # this is additional to reference spending
+            freeFunds = add_funds
+        elif not rem_curr:
+            freeFunds = sum(self.curr) - sum(self.fixed) + add_funds
+        return freeFunds
+
+    def make_progs(self, prog_set, all_years):
+        self.programs = set_programs(prog_set, self.prog_data, all_years)
+        self.prog_areas = self._clean_prog_areas(self.prog_data.prog_areas, prog_set)
         self._set_ref_progs()
         self._sort_progs()
-        self._get_twin_ind()
 
     def set_years(self, all_years):
         for prog in self.programs:
             prog.year = all_years[0]
-            prog.all_years = all_years
+            prog.sim_years = all_years[1:]
 
     def _set_ref_progs(self):
         for program in self.programs:
-            if program.name in self.ref_progs:
+            if program.name in self.prog_data.ref_progs:
                 program.reference = True
             else:
                 program.reference = False
@@ -482,13 +511,12 @@ class ProgramInfo:
             prog.thresholdDependencies = [name for name in prog.thresholdDependencies if name in allNames]
             prog.exclusionDependencies = [name for name in prog.exclusionDependencies if name in allNames]
 
-    def _clean_prog_areas(self, prog_areas):
+    def _clean_prog_areas(self, prog_areas, progset):
         """ Removed programs from program area list if not included in analysis """
         retain = {}
         for risk, names in prog_areas.iteritems():
-            retain[risk] = [prog for prog in names if prog in self.prog_set]
+            retain[risk] = [prog for prog in names if prog in progset]
         return retain
-
 
     def _get_thresh_roots(self):
         openSet = self.programs[:]
@@ -520,12 +548,13 @@ class ProgramInfo:
                 closedSet += [program]
         self.thresholdOrder = closedSet[:]
 
-    def set_init_covs(self, pops, all_years):
-        for program in self.programs:
-            program.set_annual_cov(pops, all_years)
-        self.restrict_covs(pops)
+    def set_init_covs(self, pops):
+        for prog in self.programs:
+            prog.set_pop_sizes(pops)
+            prog.set_init_unrestr()
 
     def set_init_pops(self, pops):
+        np.array()
         for prog in self.programs:
             prog.set_pop_sizes(pops)
 
@@ -533,32 +562,58 @@ class ProgramInfo:
         for prog in self.programs:
             prog.set_costcov()
 
-    def get_cov_scen(self, scen_type, scen):
+    def get_cov_scen(self, covs, scentype, years):
         """ If scen is a budget scenario, convert it to unrestricted coverage.
         If scen is a coverage object, assumed to be restricted cov and coverted
-        Return: assigns attribute to each program, which are lists of unrestricted covs each year"""
-        covs = []
-        for prog in self.programs:
-            if 'ov' in scen_type: # coverage scen
-                # convert restricted to unrestricted coverage
-                cov_scen = scen[prog.name]
-                unrestr_cov = prog.interp_cov(cov_scen, restr_cov=True)
-            elif 'ud' in scen_type: # budget scen
-                # convert budget into unrestricted coverage
-                budget_scen = scen[prog.name]
-                unrestr_cov = []
-                for budget in budget_scen: # each year
-                    unrestr_cov.append(prog.func(budget))
-                unrestr_cov = prog.interp_cov(unrestr_cov, restr_cov=False)
-            else:
-                raise Exception("Error: scenario type '{}' is not valid".format(scen_type))
-            covs.append(unrestr_cov)
-        return covs
+        Return: list of lists"""
+        unrestr_cov = np.zeros(shape=(len(self.programs), len(years)))
+        spend = np.zeros(shape=(len(self.programs), len(years)))
+        covs = self.check_cov(covs, years)
+        if 'ov' in scentype:
+            for i, prog in enumerate(self.programs):
+                unrestr_cov[i] = prog.interp_cov(covs[i], restr_cov=True)
+                spend[i] = prog.inv_func(unrestr_cov[i])
+        elif 'ud' in scentype:
+            for i, prog in enumerate(self.programs):
+                unrestr_cov[i] = prog.interp_cov(prog.func(covs[i]), restr_cov=False)
+                spend[i] = prog.inv_func(unrestr_cov[i])
+        else:
+            raise Exception("Error: scenario type '{}' is not valid".format(scentype))
+        return unrestr_cov, spend
 
-    def update_prog_covs(self, pops, covs, restr_cov):
+    def check_cov(self, covs, years):
+        numyears = len(years)
+        newcovs = np.zeros((len(self.programs), numyears))
+        for i, prog in enumerate(self.programs):
+            try:
+                cov = covs[i]
+                if isinstance(cov, float):
+                    newcovs[i] = np.full(numyears, cov)
+                elif len(covs) == numyears:
+                    newcovs[i] = np.array(cov)
+                elif len(cov) < numyears:
+                    newcovs[i] = np.concatenate((cov, np.full(numyears - len(cov), cov[-1])), axis=0)
+            except IndexError: # coverage scenario not specified, assume constant
+                newcovs[i] = np.full(numyears, prog.annual_cov[0])
+        #
+        # for i, cov in enumerate(covs):
+        #     if isinstance(cov, float):
+        #         newcovs[i] = np.full(numyears, cov)
+        #     elif not cov:
+        #         newcovs[i] = np.full(numyears, np.nan)
+        #     elif len(covs) == numyears:
+        #         newcovs[i] = np.array(cov)
+        #     elif len(cov) < numyears:
+        #         newcovs[i] = np.concatenate((cov, np.full(numyears-len(cov), cov[-1])), axis=0)
+        #     else:
+        #         raise Exception(":: Error :: scenario is not valid")
+        return newcovs
+
+    def update_covs(self, pops, covs, spends):
         for i, prog in enumerate(self.programs):
             cov = covs[i]
-            prog.update_cov(cov, restr_cov=restr_cov)
+            spend = spends[i]
+            prog.update_cov(cov, spend)
         # restrict covs
         self.restrict_covs(pops)
 
@@ -573,16 +628,6 @@ class ProgramInfo:
     def adjust_covs(self, pops, year):
         for program in self.programs:
             program.adjust_cov(pops, year)
-
-    def _get_twin_ind(self):
-        """ """
-        for program in self.programs:
-            twin_name = program.name + ' (malaria area)'
-            for i, name in enumerate(self.prog_set):
-                if name == twin_name:
-                    program.twin_ind = i
-                else:
-                    program.twin_ind = False
 
     def update_prog_year(self, year):
         for prog in self.programs:
