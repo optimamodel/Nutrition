@@ -4,12 +4,11 @@
 
 import sciris.core as sc
 from .version import version
-from .scenarios import make_scens
-from .optimization import make_optims
-from .results import ScenResult, OptimResult
-from .data import Dataset, ScenOptsTest, OptimOptsTest
-from .utils import ScenOpts, OptimOpts
+from .optimization import Optim
+from .data import Dataset, ScenTest, OptimTest
+from .scenarios import Scen, run_scen
 from .plotting import make_plots
+from .model import Model
 
 
 #######################################################################################################
@@ -50,6 +49,7 @@ class Project(object):
         ## Define the structure sets
         self.datasets    = sc.odict()
         self.scens       = sc.odict()
+        self.models      = sc.odict()
         self.optims      = sc.odict()
         self.results     = sc.odict()
 
@@ -61,6 +61,7 @@ class Project(object):
         self.version = version
         self.gitinfo = sc.gitinfo(__file__)
         self.filename = None # File path, only present if self.save() is used
+
         return None
 
     def __repr__(self):
@@ -113,7 +114,7 @@ class Project(object):
             del tmpproject # Don't need it hanging around any more
         return fullpath
 
-    def add(self, name, item, what=None, overwrite=True):
+    def add(self, name, item, what=None):
         """ Add an entry to a structure list """
         structlist = self.getwhat(what=what)
         structlist[name] = item
@@ -133,6 +134,7 @@ class Project(object):
         will return P.parset.
         '''
         if what in ['d', 'ds', 'dataset', 'datasets']: structlist = self.datasets
+        elif what in ['m', 'mod', 'model', 'models']: structlist = self.models
         elif what in ['s', 'scen', 'scens', 'scenario', 'scenarios']: structlist = self.scens
         elif what in ['o', 'opt', 'opts', 'optim', 'optims', 'optimization', 'optimization', 'optimizations', 'optimizations']: structlist = self.optims
         elif what in ['r', 'res', 'result', 'results']: structlist = self.results
@@ -174,26 +176,61 @@ class Project(object):
         
     def add_scen(self, json=None):
         ''' Super roundabout way to add a scenario '''
-        scen_list = make_scens(project=self, json=json)
-        self.add_scens(scen_list)
-        return None
-    
-    def add_optim(self, json=None):
-        ''' Super roundabout way to add a scenario '''
-        optim_list = make_optims(project=self, json=json)
-        self.add_optims(optim_list)
+        scens = [Scen(**json)]
+        self.add_scens(scens)
         return None
 
-    def add_scens(self, scen_list, overwrite=False):
-        if overwrite: self.scens = sc.odict() # remove exist scenarios
-        for scen in scen_list:
-            self.add(name=scen.name, item=scen, what='scen', overwrite=True)
+    def add_optim(self, json=None):
+        ''' Super roundabout way to add a scenario '''
+        optims = [Optim(**json)]
+        self.add_optims(optims)
+        return None
+
+    def add_dataset(self, dataset, overwrite=False):
+        if overwrite: self.datasets = sc.odict()
+        self.datasets[dataset.name] = dataset
+        self.add_model(dataset.name, dataset.pops, dataset.prog_info)
+        # add baseline scenario for each new model object, to be used in scenarios
+        self.add_baseline(dataset.name, dataset.prog_data.base_prog_set)
+
+    def add_model(self, name, pops, prog_info, overwrite=False):
+        """ Adds a model to the self.models odict.
+        A new model should only be instantiated if new input data is uploaded to the Project.
+        For the same input data, one model instance is used for all scenarios.
+        :param name:
+        :param pops:
+        :param prog_info:
+        :param overwrite:
+        :return:
+        """
+        if overwrite: self.models = sc.odict()
+        model = Model(pops, prog_info) # todo: add in t
+        self.add(name=name, item=model, what='model')
         self.modified = sc.today()
+
+    def add_scens(self, scen_list, overwrite=False):
+        """ Adds scenarios to the Project's self.scens odict.
+        Scenarios point to a corresponding model, accessed by key in self.models.
+        Not all model parameters initialized until model.setup() is called.
+        :param scen_list: a list of Scen objects.
+        :param overwrite: boolean, True removes all previous scenarios.
+        :return: None
+        """
+        if overwrite: self.scens = sc.odict()
+        for scen in scen_list:
+            self.add(name=scen.name, item=scen, what='scen')
+        self.modified = sc.today()
+
+    def add_baseline(self, model_name, prog_set, key='baseline', dorun=False):
+        base = [Scen(name=key, model_name=model_name, scen_type='coverage', prog_set=prog_set)]
+        self.add_scens(base)
+        if dorun:
+            self.run_scens()
 
     def add_optims(self, optim_list, overwrite=False):
         if overwrite: self.optims = sc.odict() # remove exist scenarios
         for optim in optim_list:
-            self.add(name=optim.name, item=optim, what='optim', overwrite=True)
+            self.add(name=optim.name, item=optim, what='optim')
         self.modified = sc.today()
 
     def add_result(self, result, name=None):
@@ -210,9 +247,8 @@ class Project(object):
     def default_scens(self, key='default', dorun=None, doadd=True, which=None):
         if which is None:
             which = 'coverage'
-        defaults = ScenOptsTest(key, which)
-        opts = [ScenOpts(**defaults.get_attr())] # todo: more than 1 default scen will require another key
-        scen_list = make_scens(user_opts=opts, project=self)
+        defaults = ScenTest(key, which)
+        scen_list = [Scen(**defaults.get_attr())]
         if doadd:
             self.add_scens(scen_list)
             if dorun:
@@ -220,11 +256,10 @@ class Project(object):
             return None
         else:
             return scen_list
-        
+
     def default_optims(self, key='default', dorun=False, doadd=True):
-        defaults = OptimOptsTest(key)
-        opts = [OptimOpts(**defaults.get_attr())]
-        optim_list = make_optims(user_opts=opts, project=self)
+        defaults = OptimTest(key)
+        optim_list = [Optim(**defaults.get_attr())]
         if doadd:
             self.add_optims(optim_list)
             if dorun:
@@ -233,26 +268,32 @@ class Project(object):
         else:
             return optim_list
     
-    def run_scens(self, scen_list=None):
-        """Function for running scenarios"""
-        if scen_list is not None: self.add_scens(scen_list) # replace existing scen list with new one
-        scens = sc.dcp(self.scens)
-        results = []
-        for scen in scens.itervalues():
+    def run_scens(self, scens=None):
+        """Function for running scenarios
+        If scens is specified, they are added to self.scens """
+        if scens is not None: self.add_scens(scens)
+        for scen in self.scens.itervalues():
             if scen.active:
-                scen.run_scen()
-                result = ScenResult(scen)
-                results.append(result)
-        self.add_result(results, name='Scenarios')
+                model = self.models[scen.model_name]
+                res = run_scen(scen, model)
+                self.add_result(res, name=res.name)
         return None
 
-    def run_optim(self, key=None, optim_list=None, parallel=None):
+    def run_optims(self, key=None, optim_list=None, parallel=True):
         if optim_list is not None: self.add_optims(optim_list)
-        self.optim(key).run_optim(parallel=parallel)
-        result = OptimResult(self.optim(key))
-        self.add_result(result)
+        budget_res = []
+        for optim in self.optims.itervalues():
+            # run baseline scen with given progset
+            self.add_baseline(optim.model_name, optim.prog_set, dorun=True)
+            budget_res.append(self.result('baseline'))
+            model = sc.dcp(self.models[optim.model_name])
+            model.setup(optim, setcovs=False)
+            model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
+            budget_res += optim.run_optim(model, parallel=parallel)
+            # add list of scenario results by optimisation name
+            self.add_result(budget_res, name=optim.name)
         return None
-    
+
     def get_results(self, result_keys):
         """ result_keys is a list of keys corresponding to the desired result.
         Return: a list of result objects """
@@ -277,9 +318,9 @@ def demo():
     
     # Create project and data
     P = Project(name)
-    dataset = Dataset(country, region, doload=True)
-    P.datasets[dataset.name] = dataset
-    
+    dataset = Dataset(country, region, name='default', doload=True)
+    P.add_dataset(dataset)
+
     # Create scenarios and optimizations
     P.default_scens()
     P.default_optims()
