@@ -540,7 +540,13 @@ def get_default_scenario(project_id):
     return js_scen
 
 
-def sanitize(vals):
+def sanitize(vals, skip=False, forcefloat=False):
+    ''' Make sure values are numeric, and either return nans or skip vals that aren't '''
+    if sc.isiterable(vals):
+        as_array = False if forcefloat else True
+    else:
+        vals = [vals]
+        as_array = False
     output = []
     for val in vals:
         if val=='':
@@ -553,8 +559,15 @@ def sanitize(vals):
             except Exception as E:
                 print('Could not sanitize value "%s": %s; returning nan' % (val, repr(E)))
                 sanival = np.nan
-        output.append(sanival)
-    return output
+        if skip and not np.isnan(sanival):
+            output.append(sanival)
+        else:
+            output.append(sanival)
+    if as_array:
+        return output
+    else:
+        return output[0]
+    
     
 @register_RPC(validation_type='nonanonymous user')    
 def set_scenario_info(project_id, scenario_summaries):
@@ -615,10 +628,11 @@ def run_scenarios(project_id):
 
 def py_to_js_optim(py_optim, prog_names):
     ''' Convert a Python to JSON representation of an optimization '''
-    attrs = ['name', 'mults', 'add_funds', 'objs']
+    attrs = ['name', 'mults', 'add_funds']
     js_optim = {}
     for attr in attrs:
         js_optim[attr] = getattr(py_optim, attr) # Copy the attributes into a dictionary
+    js_optim['objs'] = py_optim.objs[0]
     js_optim['spec'] = []
     for prog_name in prog_names:
         this_spec = {}
@@ -672,8 +686,21 @@ def set_optim_info(project_id, optim_summaries):
     for j,js_optim in enumerate(optim_summaries):
         print('Setting optimization %s of %s...' % (j+1, len(optim_summaries)))
         json = sc.odict()
-        for attr in ['name', 'mults', 'add_funds', 'objs']: # Copy these directly -- WARNING, copy-pasted
-            json[attr] = js_optim[attr]
+        json['name'] = js_optim['name']
+        json['objs'] = js_optim['objs']
+        jsm = js_optim['mults']
+        if isinstance(jsm, list):
+            vals = jsm
+        elif sc.isstring(jsm):
+            try:
+                vals = [float(jsm)]
+            except Exception as E:
+                print('Cannot figure out what to do with multipliers "%s"' % jsm)
+                raise E
+        else:
+            raise Exception('Cannot figure out multipliers type "%s" for "%s"' % (type(jsm), jsm))
+        json['mults'] = vals
+        json['add_funds'] = sanitize(js_optim['add_funds'], forcefloat=True)
         json['prog_set'] = [] # These require more TLC
         for js_spec in js_optim['spec']:
             if js_spec['included']:
@@ -696,7 +723,7 @@ def run_optim(project_id, optim_name):
     print('Running optimization...')
     proj = load_project(project_id, raise_exception=True)
     
-    proj.run_optim(key=optim_name)
+    proj.run_optim(key=optim_name, parallel=False)
     figs = proj.plot(toplot=['alloc']) # Only plot allocation
     graphs = []
     for f,fig in enumerate(figs.values()):
