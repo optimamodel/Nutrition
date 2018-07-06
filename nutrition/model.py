@@ -11,9 +11,9 @@ class Model:
         self.prog_info = sc.dcp(prog_info)
         self.ss = settings.Settings()
 
-        self.n_years = len(all_years)
         self.t = t if t else self.ss.t
         self.all_years = range(0, self.t[1]-self.t[0]+1)
+        self.n_years = len(self.all_years)
         self.sim_years = self.all_years[1:]
         self.year = self.all_years[0]
 
@@ -57,7 +57,7 @@ class Model:
     def _set_trackers(self):
         """ Arrays to store annual outputs """
         for tracker in default_trackers():
-            arr = np.zeros(len(self.n_years))
+            arr = np.zeros(self.n_years)
             setattr(self, tracker, arr)
 
     def _track_outcomes(self):
