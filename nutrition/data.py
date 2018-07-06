@@ -148,27 +148,6 @@ class DefaultParams(object):
         rr_sheet = utils.read_sheet(self.spreadsheet, 'Relative risks', [0,1,2], skiprows=103).dropna(axis=1, how='all')
         rr = rr_sheet.loc['Diarrhoea'].to_dict()
         self.rr_dia = self.make_dict3(rr)
-    
-    def compute_risks(self, input_data=None):
-        ''' Take the data computed in the previous method and turn it into an array '''
-        self.arr_rr_death = sc.odict()
-        for age in self.settings.child_ages:
-            self.arr_rr_death[age] = np.zeros((self.settings.n_cats, len(input_data.causes_death)))
-            stunting      = self.rr_death['Stunting'][age]
-            wasting       = self.rr_death['Wasting'][age]
-            breastfeeding = self.rr_death['Breastfeeding'][age]
-            anaemia       = self.rr_death['Anaemia'][age]
-            for i,cats in enumerate(self.settings.all_cats):
-                stuntcat  = cats[0]
-                wastcat   = cats[1]
-                anaemcat  = cats[2]
-                breastcat = cats[3]
-                for j,cause in enumerate(input_data.causes_death):
-                    stunt  = stunting[stuntcat].get(cause,1)
-                    wast   = wasting[wastcat].get(cause,1)
-                    anaem  = anaemia[anaemcat].get(cause,1)
-                    breast = breastfeeding[breastcat].get(cause,1)
-                    self.arr_rr_death[age][i,j] = stunt * wast * anaem * breast
 
     def compute_risks(self, input_data=None):
         """ Turn rr_death into an array"""
