@@ -322,6 +322,7 @@ class InputData(object):
         self.wra_proj = []
         self.samtomam = None
         self.mamtosam = None
+        self.t = None
 
         self.get_demo()
         self.get_proj()
@@ -355,13 +356,16 @@ class InputData(object):
         # wasting
         self.mamtosam = self.demo.pop('Percentage of SAM cases that develop from MAM')
         self.samtomam = self.demo.pop('Percentage of SAM cases that only recover to MAM')
+        t = baseline.loc['Projection years']
+        self.t = [int(t.loc['Baseline year (projection start year)']['Data']), int(t.loc['End year']['Data'])]
         # fix ages for PW
         baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0])
         for row in baseline.loc['Age distribution of pregnant women'].iterrows():
             self.pw_agedist.append(row[1]['Data'])
 
     def get_proj(self):
-        proj = utils.read_sheet(self.spreadsheet, 'Demographic projections', [0])
+        # drops rows with any na
+        proj = self.spreadsheet.parse(sheet_name='Demographic projections', index_col=[0]).dropna(how='any')
         # dict of lists to support indexing
         for column in proj:
             self.proj[column] = proj[column].tolist()
@@ -560,7 +564,7 @@ class ProgData(object):
 
 class OptimTest(object):
     """ Only for testing purposes. """
-    def __init__(self, name, filepath=settings.default_opts_path()):
+    def __init__(self, name, filepath=settings.demo_opts_path()):
         self.spreadsheet = pandas.ExcelFile(filepath)
 
         self.name = name
@@ -591,7 +595,6 @@ class OptimTest(object):
 
     def get_opts(self):
         opts = self.spreadsheet.parse('Optimization options')
-        self.t = [opts['start year'][0], opts['end year'][0]]
         self.obj = opts['objectives'][0]
         mults = str(opts['multiples of flexible funding'][0]).replace(' ', '').split(',')
         self.mults = [int(x) for x in mults]
@@ -604,14 +607,14 @@ class OptimTest(object):
 class ScenTest(object):
     """ Only used for testing purposes. This information should be supplied by the frontend. """
 
-    def __init__(self, name, scen_type, filepath=settings.default_opts_path()):
+    def __init__(self, name, scen_type, filepath=settings.demo_opts_path()):
         self.spreadsheet = pandas.ExcelFile(filepath)
 
         self.name = name
         self.model_name = name
         self.prog_set = []
         self.scen_type = scen_type
-        self.covs = sc.odict()
+        self.covs = []
 
         self.get_prog_set()
         if 'ov' in scen_type: # coverage scenario
@@ -620,8 +623,7 @@ class ScenTest(object):
             self.get_budget_scen()
 
         delattr(self, 'spreadsheet')
-        delattr(self, 'prog_set')
-    
+
     def __repr__(self):
         output  = sc.desc(self)
         return output
@@ -638,18 +640,18 @@ class ScenTest(object):
     def get_cov_scen(self):
         cov = self.spreadsheet.parse('Coverage scenario', index_col=[0,1])
         for prog in self.prog_set: # only programs included
-            self.covs[prog] = cov.loc[prog,'Coverage'].tolist()[1:]
+            self.covs.append(cov.loc[prog,'Coverage'].tolist()[1:])
 
     def get_budget_scen(self):
         budget = self.spreadsheet.parse('Budget scenario', index_col=[0,1])
         for prog in self.prog_set: # only programs included
-            self.covs[prog] = budget.loc[prog,'Spending'].tolist()[1:]
+            self.covs.append(budget.loc[prog,'Spending'].tolist()[1:])
 
 class Dataset(object):
     ''' Store all the data for a project '''
     
-    def __init__(self, country='default', region='default', demo_data=None, prog_data=None, default_params=None,
-                 pops=None, prog_info=None, name=None, doload=False, filepath=None):
+    def __init__(self, country='demo', region='demo', name=None, demo_data=None, prog_data=None, default_params=None,
+                 pops=None, prog_info=None, doload=False, filepath=None):
         self.country = country
         self.region = region
         self.demo_data = demo_data
@@ -657,7 +659,7 @@ class Dataset(object):
         self.default_params = default_params
         self.pops = pops
         self.prog_info = prog_info
-        self.t = [2017, 2025] # todo: need to read this in from spreadsheet
+        self.t = None
         if name is None:
             try:    name = country+'_'+region
             except: name = 'default'
@@ -678,6 +680,7 @@ class Dataset(object):
         self.default_params = default_params
         self.pops = pops
         self.prog_info = prog_info
+        self.t = demo_data.t
         self.modified = sc.today()
         return None
     
