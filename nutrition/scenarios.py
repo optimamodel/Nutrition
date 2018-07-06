@@ -17,11 +17,6 @@ class Scen(object):
     def get_attr(self):
         return self.__dict__
 
-    def n_years(self):
-        ''' Count how many years the scenario is '''
-        output = len(self.all_years)
-        return output
-
 def run_scen(scen, model, obj=None, mult=None, setcovs=True):
     model = sc.dcp(model)
     model.setup(scen, setcovs=setcovs)

@@ -9,6 +9,7 @@ from .data import Dataset, ScenTest, OptimTest
 from .scenarios import Scen, run_scen
 from .plotting import make_plots
 from .model import Model
+from .utils import trace_exception
 
 
 #######################################################################################################
@@ -295,14 +296,23 @@ class Project(object):
     def get_results(self, result_keys):
         """ result_keys is a list of keys corresponding to the desired result.
         Return: a list of result objects """
-        return [self.results[key] for key in result_keys]
+        if not result_keys: result_keys = [-1]
+        results = [self.result(key) for key in result_keys]
+        if isinstance(results[0],list): # checks if returned a list of scenarios (optimization)
+            results = results[0]
+        return results
 
     def sensitivity(self):
         print('Not implemented')
-    
-    
-    def plot(self, key=None, toplot=None):
-        figs = make_plots(self.result(key), toplot=toplot)
+
+    @trace_exception
+    def plot(self, keys=None, toplot=None, optim=False):
+        """ Plots results stored at 'keys'.
+         Warning: do not attempt to plot optimization and scenarios in a single call."""
+        if keys: keys = sc.promotetolist(keys)
+        else: keys = []
+        if not optim: keys = ['baseline'] + keys
+        figs = make_plots(self.get_results(keys), toplot=toplot, optim=optim)
         return figs
 
 

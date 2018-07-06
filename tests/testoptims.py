@@ -1,11 +1,11 @@
 import nutrition.ui as nu
-from nutrition.data import Dataset
 from nutrition.optimization import Optim
 
+# load in data to create model
 p = nu.Project('eg')
-dataset = Dataset('default', 'default', name='eg', doload=True)
-p.add_dataset(dataset)
+p.load_data('demo', 'demo', name='eg')
 
+## define custom optimization
 kwargs = {'name':'test',
           'model_name': 'eg',
           'obj':'thrive',
@@ -17,9 +17,8 @@ optims = [Optim(**kwargs)]
 p.add_optims(optims)
 p.run_optims()
 
-p.plot(key='test', toplot=['alloc'])
-import pylab as pl
-pl.show()
+p.plot(keys=['test'] ,optim=True)
+
 
 
 
