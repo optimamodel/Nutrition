@@ -23,7 +23,8 @@ class Program(object):
         self.target_pops = prog_data.prog_target[self.name] # frac of each population which is targeted
         self.unit_cost = prog_data.prog_info['unit cost'][self.name]
         self.saturation = prog_data.prog_info['saturation coverage of target population'][self.name]
-        self.restr_init_cov = prog_data.prog_info['baseline coverage'][self.name]
+        self.base_cov = prog_data.prog_info['baseline coverage'][self.name]
+        self.base_spend = None
 
         self._set_target_ages()
         self._set_impacted_ages(prog_data.impacted_pop[self.name]) # TODO: This func could contain the info for how many multiples needed for unrestricted population calculation (IYCF)
@@ -62,7 +63,7 @@ class Program(object):
         self._setUnrestrictedPopSize(pops)
 
     def set_init_unrestr(self):
-        unrestr_cov = (self.restr_init_cov * self.restr_popsize) / self.unrestr_popsize
+        unrestr_cov = (self.base_cov * self.restr_popsize) / self.unrestr_popsize
         self.annual_cov[0] = unrestr_cov
 
     def adjust_cov(self, pops, year):
@@ -412,7 +413,7 @@ def set_programs(prog_set, prog_data, all_years):
 
 
 
-class ProgramInfo: # todo: would like to incorporate spending info in here, even for scenarios... so user can get this info
+class ProgramInfo:
     def __init__(self, prog_data):
         self.prog_data = prog_data
         self.programs = None
@@ -479,6 +480,13 @@ class ProgramInfo: # todo: would like to incorporate spending info in here, even
         self.prog_areas = self._clean_prog_areas(self.prog_data.prog_areas, prog_set)
         self._set_ref_progs()
         self._sort_progs()
+
+    def get_base_spend(self):
+        for prog in self.programs:
+            prog.base_spend = prog.inv_func(prog.annual_cov[:1])[0]
+
+    def base_progset(self):
+        return self.prog_data.base_prog_set
 
     def set_years(self, all_years):
         for prog in self.programs:
@@ -589,7 +597,7 @@ class ProgramInfo: # todo: would like to incorporate spending info in here, even
                 cov = covs[i]
                 if isinstance(cov, float):
                     newcovs[i] = np.full(numyears, cov)
-                elif len(covs) == numyears:
+                elif len(cov) == numyears:
                     newcovs[i] = np.array(cov)
                 elif len(cov) < numyears:
                     newcovs[i] = np.concatenate((cov, np.full(numyears - len(cov), cov[-1])), axis=0)

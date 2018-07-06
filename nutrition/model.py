@@ -16,10 +16,13 @@ class Model:
         self.sim_years = self.all_years[1:]
         self.year = self.all_years[0]
 
+        # this is for extracting baseline coverage/spending in gui (before prog_set set)
+        self._set_progs(self.prog_info.base_progset())
+
         self.adjust_cov = adjust_cov
         self.timeTrends = timeTrends
 
-    def setup(self, scen, setcovs=True):
+    def setup(self, scen=None, setcovs=True):
         """ Sets scenario-specific parameters within the model.
         - simulation period
         - programs for scenario
@@ -27,8 +30,7 @@ class Model:
         - storage for updates
         - coverage scenario for programs
          """
-        # self._set_years(scen.t) # todo: years
-        self._set_progs(scen.prog_set)
+        self._set_progs(scen.prog_set) # overwrite baseline prog_set
         self._set_preg_info()
         self._set_pop_probs(self.year)
         self._reset_storage()
@@ -41,17 +43,11 @@ class Model:
     def get_allocs(self, add_funds, fix_curr, rem_curr):
         self.prog_info.get_allocs(add_funds, fix_curr, rem_curr)
 
-    # def _set_years(self, t):
-    #     self.t = t
-    #     self.all_years = range(0, t[1]-t[0]+1)
-    #     self.sim_years = self.all_years[1:]
-    #     self.year = self.all_years[0]
-
     def _set_progs(self, prog_set):
         self.prog_info.make_progs(prog_set, self.all_years)
-        # self.prog_info.set_years(self.all_years)
         self.prog_info.set_init_covs(self.pops)
         self.prog_info.set_costcovs() # enables getting coverage from cost
+        self.prog_info.get_base_spend()
 
     def update_covs(self, covs, scentype):
         covs, spend = self.prog_info.get_cov_scen(covs, scentype, self.all_years)
@@ -361,9 +357,9 @@ class Model:
             update[wastingCat] *= 1. - reduction
         return update
 
-    def _apply_child_mort(self): # todo: could make the distributions arrays
+    def _apply_child_mort(self):
         age_groups = self.children.age_groups
-        for age_group in age_groups: # todo: define outside loop
+        for age_group in age_groups:
             stunting = np.array([age_group.stunting_dist[k] for k in self.ss.stunting_list])
             wasting = np.array([age_group.wasting_dist[k] for k in self.ss.wasting_list])
             anaemia = np.array([age_group.anaemia_dist[k] for k in self.ss.anaemia_list])
