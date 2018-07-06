@@ -44,14 +44,14 @@ def data_path(country, region, sim_type):
     demopath = os.path.join(parentfolder, subdir)
     return demopath
 
-def default_opts_path():
+def demo_opts_path():
     parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-    progname = 'default_options.xlsx'
-    subdir = os.path.join('applications', 'default', 'data', 'national', progname)
+    name = 'demo_options.xlsx'
+    subdir = os.path.join('applications', 'demo', 'data', 'national', name)
     progpath = os.path.join(parentfolder, subdir)
     return progpath
 
-def test_opts_path():
+def test_opts_path(): # todo: update this to test folder
     parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
     progname = 'test_options.xlsx'
     subdir = os.path.join('applications', 'master', 'data', 'national', progname)

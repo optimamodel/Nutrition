@@ -1,180 +1,103 @@
 import multiprocessing
-import itertools
 import sciris.core as sc
+import numpy as np
 from . import pso
 from . import asd
 from . import utils
-from . import data
-from . import programs
-from . import model
-from . import settings
+from .scenarios import Scen, run_scen
 
 
 class Optim(object):
-    def __init__(self, prog_info=None, pops=None, name=None, t=None, objs=None, mults=None, prog_set=None, active=True, 
-                 parallel=True, num_runs=1, add_funds=0, fix_curr=False, rem_curr=False, curve_type='linear', 
-                 filter_progs=True, maxiter=5, swarmsize=10, num_procs=None):
-        
-        if t is None: t = settings.Settings().t
+    """ Stores settings for running an optimization for a single objective. """
+
+    def __init__(self, name=None, model_name=None, obj=None, mults=None, prog_set=None, active=True,
+                 num_runs=1, add_funds=0, fix_curr=False, rem_curr=False, curve_type='linear',
+                 filter_progs=True):
         
         self.name = name
-        self.objs = sc.promotetolist(objs)
+        self.model_name = model_name
+        self.obj = obj
         self.mults = mults
-        self.combs = list(itertools.product(self.objs, self.mults))
-        self.t = t
         self.prog_set = prog_set
-        self.parallel = parallel
-        self.num_cpus = multiprocessing.cpu_count() if parallel else 1
-        self.year_names = range(self.t[0], self.t[1] + 1)
-        self.all_years = range(len(self.year_names))  # used to index lists
         self.num_runs = num_runs
         self.add_funds = add_funds
         self.fix_curr = fix_curr
         self.rem_curr = rem_curr if not fix_curr else False # can't remove if fixed
         self.curve_type = curve_type
         self.filter_progs = filter_progs
-        self.maxiter = maxiter
-        self.swarmsize = swarmsize
+        self.num_cpus = multiprocessing.cpu_count()
 
-        self.prog_info = sc.dcp(prog_info)
-        self.pops = sc.dcp(pops)
-        self.model = model.Model(name, self.pops, self.prog_info, self.all_years)
-        self.programs = self.model.prog_info.programs
         self.active = active
 
-        self.optim_allocs = None
+        self.num_procs = None
+        self.optim_allocs = sc.odict
         self.BOCs = {}
-        self.refs = None
-        self.curr = None
-        self.fixed = None
-        self.free = None
-        self.get_alloc(fix_curr)
-    
+
     def __repr__(self):
         output  = sc.desc(self)
         return output
 
     ######### SETUP ############
 
-    def get_alloc(self, fix_curr):
-        """
-        Designed so that currentAllocations >= fixedAllocations >= referenceAllocations.
-        referenceAllocations: these allocations cannot be reduced because it is impractical to do so.
-        fixedAllocations: this is funding which cannot be reduced because of the user's wishes.
-        currentAllocations: this is the total current funding (incl. reference & fixed allocations) determined by program initial coverage.
-        :param fix_curr:
-        :return:
-        """
-        self.refs = self.get_refs()
-        self.curr = self.get_curr()
-        self.fixed = self.get_fixed(fix_curr)
-        self.free = self.get_free(fix_curr)
-
-    def get_kwargs(self, obj, mult):
-        kwargs = {'model': sc.dcp(self.model),
-                  'free': sc.dcp(self.free) * mult,
-                  'fixed': self.fixed[:],
+    def get_kwargs(self, model, obj, mult):
+        model = sc.dcp(model)
+        free = model.prog_info.free
+        fixed = model.prog_info.fixed
+        num_progs = len(model.prog_info.programs)
+        kwargs = { 'model': model,
+                  'free': free * mult,
+                  'fixed': fixed,
                   'obj': obj,
                   'sign': utils.get_obj_sign(obj),
-                  'keep_inds': self._filter_progs(obj)}
-        return kwargs
-
-    def get_refs(self):
-        """
-        Reference programs are not included in nutrition budgets, therefore these must be removed before future calculations.
-        :return: 
-        """
-        referenceAllocations = []
-        for program in self.programs:
-            if program.reference:
-                referenceAllocations.append(program.get_spending())
-            else:
-                referenceAllocations.append(0)
-        return referenceAllocations
-
-    def get_curr(self):
-        allocations = []
-        for program in self.programs:
-            allocations.append(program.get_spending())
-        return allocations
-
-    def get_fixed(self, fix_curr):
-        """
-        Fixed allocations will contain reference allocations as well, for easy use in the objective function.
-        Reference progs stored separately for ease of model output.
-        :param fix_curr:
-        :return:
-        """
-        if fix_curr:
-            fixed = sc.dcp(self.curr)
-        else:
-            fixed = sc.dcp(self.refs)
-        return fixed
-
-    def get_free(self, fix_curr):
-        """
-        freeFunds = currentExpenditure + add_funds - fixedFunds (if not remove current funds)
-        freeFunds = additional (if want to remove current funds)
-
-        fixedFunds includes both reference programs as well as currentExpenditure, if the latter is to be fixed.
-        I.e. if all of the currentExpenditure is fixed, freeFunds = add_funds.
-        :return:
-        """
-        if self.rem_curr and fix_curr:
-            raise Exception("::Error: Cannot remove current funds and fix current funds simultaneously::")
-        elif self.rem_curr and (not fix_curr):  # this is additional to reference spending
-            freeFunds = self.add_funds
-        elif not self.rem_curr:
-            freeFunds = sum(self.curr) - sum(self.fixed) + self.add_funds
-        return freeFunds
+                   'keep_inds': [i for i in range(num_progs)]}
+                   # 'keep_inds': self._filter_progs(obj) }
+        return kwargs, mult
 
     ######### OPTIMIZATION ##########
 
-    def run_optim(self, parallel=None):
-        if parallel is None:
-            parallel = True
+    def run_optim(self, model, parallel=True, num_procs=None):
         if parallel:
             how = 'parallel'
+            num_procs = num_procs if num_procs else self.num_cpus
         else:
             how = 'serial'
-            self.num_cpus = 1
+            num_procs = 1
         print('Optimizing for %s in %s' % (self.name, how))
-        if self.num_cpus>1:
-            self.optim_allocs = utils.run_parallel(self.one_optim, self.combs, self.num_cpus)
-        else:
-            self.optim_allocs = []
-            for comb in self.combs:
-                res = self.one_optim(comb)
-                self.optim_allocs.append(res)
-        return None
+        # list of kwargs
+        args = [self.get_kwargs(model, self.obj, mult) for mult in self.mults]
+        res = utils.run_parallel(self.one_optim, args, num_procs)
+        return res
 
     @utils.trace_exception
-    def one_optim(self, params, maxtime=None, maxiters=None):
+    def one_optim(self, args, maxiter=5, swarmsize=10, maxtime=None):
         """ Runs optimization for an objective and budget multiple.
         Return: a list of allocations, with order corresponding to the programs list """
-        if maxiters is None: maxiters = 100
-        obj = params[0]
-        mult = params[1]
-        kwargs = self.get_kwargs(obj, mult)
+        kwargs = args[0]
+        mult = args[1]
         if kwargs['free'] != 0:
             num_progs = len(kwargs['keep_inds'])
-            xmin = [0.] * num_progs
-            xmax = [kwargs['free']] * num_progs
+            xmin = np.zeros(num_progs)
+            xmax = np.full(num_progs, kwargs['free'])
             runOutputs = []
             for run in range(self.num_runs):
                 now = sc.tic()
-                x0, fopt = pso.pso(obj_func, xmin, xmax, kwargs=kwargs, maxiter=self.maxiter, swarmsize=self.swarmsize)
-                x, fval, flag = asd.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=2, maxtime=maxtime, maxiters=maxiters)
+                x0, fopt = pso.pso(obj_func, xmin, xmax, kwargs=kwargs, maxiter=maxiter, swarmsize=swarmsize)
+                x, fval, flag = asd.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=2, maxtime=maxtime)
                 runOutputs.append((x, fval[-1]))
-                self.print_status(obj, mult, flag, now)
-            bestAllocation = self.get_best(runOutputs)
-            scaledAllocation = utils.scale_alloc(kwargs['free'], bestAllocation)
-            totalAllocation = utils.add_fixed_alloc(self.fixed, scaledAllocation, kwargs['keep_inds'])
-            bestAllocationDict = totalAllocation
+                self.print_status(kwargs['obj'], mult, flag, now)
+            best_alloc = self.get_best(runOutputs)
+            scaled = utils.scale_alloc(kwargs['free'], best_alloc)
+            best_alloc = utils.add_fixed_alloc(kwargs['fixed'], scaled, kwargs['keep_inds'])
         else:
             # if no money to distribute, return the fixed costs
-            bestAllocationDict = self.fixed
-        return bestAllocationDict
+            best_alloc = kwargs['fixed']
+        # generate results
+        name = '{}_{}'.format(self.name, mult)
+        model = kwargs['model']
+        prog_set = [prog.name for prog in model.prog_info.programs]
+        scen = Scen(name=name, model_name=self.model_name, scen_type='budget', covs=best_alloc, prog_set=prog_set)
+        res = run_scen(scen, model, obj=kwargs['obj'], mult=mult)
+        return res
 
     def print_status(self, objective, multiple, flag, now):
         print('Finished optimization for %s for objective %s and multiple %s' % (self.name, objective, multiple))
@@ -184,7 +107,7 @@ class Optim(object):
         bestSample = min(outputs, key=lambda item: item[-1])
         return bestSample[0]
 
-    def _filter_progs(self, obj):
+    def _filter_progs(self, obj): # todo: put this in proginfo
         if self.filter_progs:
             threshold = 0.5
             newcov = 1.
@@ -216,27 +139,8 @@ def obj_func(allocation, obj, model, free, fixed, keep_inds, sign):
     totalAllocations = fixed[:]
     # scale the allocation appropriately
     scaledAllocation = utils.scale_alloc(free, allocation)
-    programs = thisModel.prog_info.programs
     totalAllocations = utils.add_fixed_alloc(totalAllocations, scaledAllocation, keep_inds)
-    new_covs = []
-    for i, program in enumerate(programs):
-        new_covs.append( program.func(totalAllocations[i]) )
-    thisModel.run_sim(new_covs, restr_cov=False)
+    thisModel.update_covs(totalAllocations, 'budget')
+    thisModel.run_sim()
     outcome = thisModel.get_output(obj) * sign
     return outcome
-
-def make_optims(country=None, region=None, user_opts=None, json=None, project=None, dataset=None):
-    # WARNING, consolidate boilerplate with make_scens
-    demo_data, prog_data, default_params, pops = data.get_data(country=country, region=region, project=project, dataset=dataset, withpops=True)
-    optim_list = []
-    if user_opts is not None:
-        for opt in user_opts: # create all of the requested optimizations
-            prog_info = programs.ProgramInfo(opt.prog_set, prog_data, default_params) # initialise pops and progs
-            optim = Optim(prog_info, pops, **opt.get_attr()) # set up optims
-            optim_list.append(optim)
-    if json is not None:
-        json = sc.dcp(json) # Just to be sure, probably unnecessary
-        prog_info = programs.ProgramInfo(json['prog_set'], prog_data, default_params)
-        optim = Optim(prog_info=prog_info, pops=pops, name=json['name'], objs=json['objs'], mults=json['mults'], prog_set=json['prog_set'], active=True, add_funds=json['add_funds'], fix_curr=False)
-        optim_list.append(optim)
-    return optim_list

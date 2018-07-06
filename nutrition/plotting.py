@@ -3,23 +3,29 @@ import numpy as np
 import matplotlib.ticker as tk
 import sciris.core as sc
 
-def make_plots(all_res=None, toplot=None):
+def make_plots(all_res=None, toplot=None, optim=False):
     """ res is a ScenResult or Result object (could be a list of these objects) from which all information can be extracted """
     ## Initialize
     allplots = sc.odict()
-    if toplot is None: toplot = ['prevs', 'outputs', 'alloc']
+    if toplot is None:
+        toplot = ['prevs', 'outputs', 'comp']
+        if optim:
+            toplot.append('alloc')
     if all_res is None or all_res == []:
         print('WARNING, no results selected to plot')
         return allplots
     
     toplot = sc.promotetolist(toplot)
     all_res = sc.promotetolist(all_res)
-    if 'prevs' in toplot: # WARNING, Does not work for OptimResult
+    if 'prevs' in toplot:
         prevfigs = plot_prevs(all_res)
         allplots.update(prevfigs)
-    if 'outputs' in toplot: # WARNING, Does not work for OptimResult
+    if 'outputs' in toplot:
         outfigs = plot_outputs(all_res)
         allplots.update(outfigs)
+    if 'comp' in toplot:
+        compfigs = compare_outputs(all_res)
+        allplots.update(compfigs)
     if 'alloc' in toplot: # optimized allocations
         outfigs = plot_alloc(all_res)
         allplots.update(outfigs)
@@ -52,8 +58,7 @@ def plot_prevs(all_res):
             output = res.get_outputs([label], seq=True)[0]
             out = round_elements(output, dec=1)
             thismax = max(out)
-            if thismax > ymax:
-                ymax = thismax
+            if thismax > ymax: ymax = thismax
             line, = row.plot(years, out)
             lines.append(line)
             leglabels.append(res.name)
@@ -62,7 +67,6 @@ def plot_prevs(all_res):
         pl.title('Risk prevalences')
         pl.legend(lines, [res.name for res in all_res], loc='right', ncol=1)
         figs['prevs_%0i'%i] = fig
-    
     return figs
 
 def plot_outputs(all_res):
@@ -81,8 +85,7 @@ def plot_outputs(all_res):
             years = np.array(res.year_names)
             output = res.get_outputs([outcome], seq=True)[0]
             thismax = max(output)
-            if thismax > ymax:
-                ymax = thismax
+            if thismax > ymax: ymax = thismax
             bar = row.bar(years+offset, output, width=width)
             offset += width
             bars.append(bar)
@@ -95,38 +98,72 @@ def plot_outputs(all_res):
         figs['outputs_%0i'%i] = fig
     return figs
 
-# TODO: want to compare the total outcomes across scenarios
+def compare_outputs(all_res):
+    """ Compare the results of multiple scenarios. These are aggregate values """
+    figs = sc.odict()
+    outcomes = ['thrive', 'child_deaths']
+    ind = np.arange(len(outcomes))
+    fig = pl.figure()
+    row = fig.add_subplot(111)
+    ymax = 0
+    ymin = 0
+    width = 0.35
+    offset = -width
+    base_res = all_res[0] # assumes baseline included
+    baseline = base_res.get_outputs(outcomes, seq=False)
+    bars = []
+    for res in all_res[1:]:
+        offset += width
+        output = res.get_outputs(outcomes, seq=False)
+        perc_change = [(out - base)/base for out,base in zip(output, baseline)]
+        perc_change = round_elements(perc_change, dec=2)
+        bar = row.bar(ind+offset, perc_change, width=width)
+        thismax = max(perc_change)
+        thismin = min(perc_change)
+        if thismax>ymax:ymax = thismax
+        if thismin<ymin:ymin = thismin
+        bars.append(bar)
+    row.set_ylim([min(ymin+ymin*.1,0), ymax+ymax*.1])
+    pl.xticks(ind+offset/2, outcomes)
+    pl.legend(bars, [res.name for res in all_res[1:]], loc='right', ncol=1)
+    pl.xlabel('Outcomes')
+    pl.ylabel('Change (%)')
+    pl.title('Percentage change from baseline')
+    figs['comp'] = fig
+    return figs
 
 def plot_alloc(all_res):
-    """ Plot the program allocations from an optimization, alongside current allocation """
-    # TODO: WARNING: Cannot plot multiple objectives. Would like Optim to only take 1 objective each, then this will be resolved.
-#    if len(all_res)>1:
-#        print('WARNING, not currently enabled to plot more than one allocation, you have asked for %s' % len(all_res))
-    res = all_res[0]
-    xlabs = ['current'] + res.mults
-    x = np.arange(len(xlabs))
+    """ Plot the program allocations from an optimization, alongside baseline allocation.
+     Note that scenarios not generated from optimization cannot be plotted using this function,
+     as assumed structure for spending is different """
+    #initialize
     width = 0.35
-    allocs = [res.curr_alloc] + res.optim_allocs
-    figs = sc.odict()
-    all_y = []
-    bottom = np.zeros(len(xlabs))
     fig = pl.figure()
-    for i, prog in enumerate(res.programs):
+    figs = sc.odict()
+    try: ref=all_res[1]
+    except IndexError: ref = all_res[0] # baseline
+    x = np.arange(len(all_res))
+    xlabs = []
+    bottom = np.zeros(len(all_res))
+    for i, prog in enumerate(ref.programs):
         y = []
         # get allocation for each multiple
-        for j, mult in enumerate(xlabs):
-            alloc = allocs[j]
-            y = np.append(y, alloc[i])
-        all_y.append(y)
-        pl.bar(x, all_y[i], width=width, bottom=bottom)
-        bottom += all_y[i]
-    pl.ylabel('Funding')
+        for j, res in enumerate(all_res):
+            pos = res.mult if res.mult else res.name
+            xlabs.append(pos)
+            alloc = res.programs[i].annual_spend[1] # spending is same after first year in optimization
+            y = np.append(y, alloc)
+        pl.bar(x, y, width=width, bottom=bottom)
+        bottom += y
+    ymax = max(bottom)
+    pl.title(ref.obj)
     pl.xticks(x, xlabs)
-#        legendart = [p[0] for p in figs.values()]
-    legendlab = [prog.name for prog in res.programs]
-#        pl.legend(legendart, legendlab)
-    pl.legend(legendlab)
-    figs['alloc_%0i'%i] = fig
+    pl.ylim((0, ymax+ymax*.1))
+    pl.ylabel('Funding')
+    pl.xlabel('Multiples of flexible funding')
+    leglab = [prog.name for prog in res.programs]
+    pl.legend(leglab)
+    figs['alloc'] = fig
     return figs
 
 def round_elements(mylist, dec=1):

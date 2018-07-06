@@ -1,8 +1,8 @@
 import numpy as np
 import pandas
 import sciris.core as sc
-from . import settings
-from . import populations
+from . import settings, populations, utils, programs
+import numpy as np
 
 class Spreadsheet(object):
     ''' A class for reading and writing spreadsheet data in binary format, so a project contains the spreadsheet loaded '''
@@ -39,7 +39,7 @@ class Spreadsheet(object):
             
 
 class DefaultParams(object):
-    def __init__(self, default_path, input_path):
+    def __init__(self, default_data, input_data):
         self.settings = settings.Settings()
         self.impacted_pop = None
         self.prog_areas = sc.odict()
@@ -59,11 +59,12 @@ class DefaultParams(object):
         self.rr_interval = None
         self.or_bf_prog = None
         self.man_mam = False
+        self.arr_rr_death = sc.odict()
         # read data
-        self.spreadsheet = pandas.ExcelFile(default_path)
-        self.input_path = input_path
+        self.spreadsheet = default_data
+        self.input_data = input_data
         self.read_spreadsheet()
-        self.rem_spreadsheet(default_path)
+        self.rem_spreadsheet(default_data.io)
         return None
     
     def __repr__(self):
@@ -91,20 +92,20 @@ class DefaultParams(object):
         self.get_iycf_effects(packages)
 
     def extend_treatsam(self):
-        treatsam = pandas.read_excel(self.input_path, 'Treatment of SAM')
+        treatsam = self.input_data.parse(sheet_name='Treatment of SAM')
         add_man = treatsam.iloc[0]['Add extension']
         if pandas.notnull(add_man):
             self.man_mam = True
 
     def impact_pop(self):
-        sheet = self.read_sheet('Programs impacted population', [0,1])
+        sheet = utils.read_sheet(self.spreadsheet, 'Programs impacted population', [0,1])
         impacted = sc.odict()
         for pop in ['Children', 'Pregnant women', 'Non-pregnant WRA', 'General population']:
             impacted.update(sheet.loc[pop].to_dict(orient='index'))
         self.impacted_pop = impacted
 
     def prog_risks(self):
-        areas = self.read_sheet('Program risk areas', [0])
+        areas = utils.read_sheet(self.spreadsheet, 'Program risk areas', [0])
         booleanFrame = areas.isnull()
         for program, areas in booleanFrame.iterrows():
             for risk, value in areas.iteritems():
@@ -114,7 +115,7 @@ class DefaultParams(object):
                     self.prog_areas[risk].append(program)
 
     def pop_risks(self):
-        areas = self.read_sheet('Population risk areas', [0])
+        areas = utils.read_sheet(self.spreadsheet, 'Population risk areas', [0])
         booleanFrame = areas.isnull()
         for program, areas in booleanFrame.iterrows():
             for risk, value in areas.iteritems():
@@ -126,25 +127,25 @@ class DefaultParams(object):
     def relative_risks(self):
         # risk areas hidden in spreadsheet (white text)
         # stunting
-        rr_sheet = self.read_sheet('Relative risks', [0,1,2], skiprows=1)
+        rr_sheet = utils.read_sheet(self.spreadsheet, 'Relative risks', [0,1,2], skiprows=1)
         rr = rr_sheet.loc['Stunting'].to_dict()
         self.rr_death['Stunting'] = self.make_dict2(rr)
         # wasting
-        rr_sheet = self.read_sheet('Relative risks', [0,1,2], skiprows=28)
+        rr_sheet = utils.read_sheet(self.spreadsheet, 'Relative risks', [0,1,2], skiprows=28)
         rr = rr_sheet.loc['Wasting'].to_dict()
         self.rr_death['Wasting'] = self.make_dict2(rr)
         # anaemia
-        rr_sheet = self.read_sheet('Relative risks', [0,1,2], skiprows=55).dropna(axis=1, how='all')
+        rr_sheet = utils.read_sheet(self.spreadsheet, 'Relative risks', [0,1,2], skiprows=55).dropna(axis=1, how='all')
         rr = rr_sheet.loc['Anaemia'].to_dict()
         self.rr_death['Anaemia'] = self.make_dict2(rr)
         # currently no impact on mortality for anaemia
         self.rr_death['Anaemia'].update({age:{cat:{'Diarrhoea':1} for cat in self.settings.anaemia_list} for age in self.settings.child_ages})
         # breastfeeding
-        rr_sheet = self.read_sheet('Relative risks', [0,1,2], skiprows=64)
+        rr_sheet = utils.read_sheet(self.spreadsheet, 'Relative risks', [0,1,2], skiprows=64)
         rr = rr_sheet.loc['Breastfeeding'].to_dict()
         self.rr_death['Breastfeeding'] = self.make_dict2(rr)
         # diarrhoea
-        rr_sheet = self.read_sheet('Relative risks', [0,1,2], skiprows=103).dropna(axis=1, how='all')
+        rr_sheet = utils.read_sheet(self.spreadsheet, 'Relative risks', [0,1,2], skiprows=103).dropna(axis=1, how='all')
         rr = rr_sheet.loc['Diarrhoea'].to_dict()
         self.rr_dia = self.make_dict3(rr)
     
@@ -169,8 +170,28 @@ class DefaultParams(object):
                     breast = breastfeeding[breastcat].get(cause,1)
                     self.arr_rr_death[age][i,j] = stunt * wast * anaem * breast
 
+    def compute_risks(self, input_data=None):
+        """ Turn rr_death into an array"""
+        for age in self.settings.child_ages:
+            self.arr_rr_death[age] = np.zeros((self.settings.n_cats, len(input_data.causes_death)))
+            stunting = self.rr_death['Stunting'][age]
+            wasting = self.rr_death['Wasting'][age]
+            bf = self.rr_death['Breastfeeding'][age]
+            anaemia = self.rr_death['Anaemia'][age]
+            for i, cats in enumerate(self.settings.all_cats):
+                stuntcat = cats[0]
+                wastcat = cats[1]
+                anaemcat = cats[2]
+                bfcat = cats[3]
+                for j, cause in enumerate(input_data.causes_death):
+                    stunt = stunting[stuntcat].get(cause,1)
+                    wast = wasting[wastcat].get(cause,1)
+                    anaem = anaemia[anaemcat].get(cause,1)
+                    breast = bf[bfcat].get(cause,1)
+                    self.arr_rr_death[age][i,j] = stunt*wast*anaem*breast
+
     def odds_ratios(self):
-        or_sheet = self.read_sheet('Odds ratios', [0,1], skiprows=1)
+        or_sheet = utils.read_sheet(self.spreadsheet, 'Odds ratios', [0,1], skiprows=1)
         this_or = or_sheet.loc['Condition'].to_dict('index')
         self.or_cond['Stunting'] = sc.odict()
         self.or_cond['Stunting']['Prev stunting'] = this_or['Given previous stunting (HAZ < -2 in previous age band)']
@@ -185,7 +206,7 @@ class DefaultParams(object):
         self.or_stunting_prog = or_sheet.loc['By program'].to_dict('index')
 
     def get_bo_progs(self):
-        progs = self.read_sheet('Programs birth outcomes', [0,1], 'index')
+        progs = utils.read_sheet(self.spreadsheet, 'Programs birth outcomes', [0,1], 'index')
         newprogs = sc.odict()
         for program in progs.keys():
             if not newprogs.get(program[0]):
@@ -194,12 +215,12 @@ class DefaultParams(object):
         self.bo_progs = newprogs
 
     def anaemia_progs(self):
-        anaem_sheet = self.read_sheet('Programs anemia', [0,1])
+        anaem_sheet = utils.read_sheet(self.spreadsheet, 'Programs anemia', [0,1])
         self.rr_anaem_prog = anaem_sheet.loc['Relative risks of anaemia when receiving intervention'].to_dict(orient='index')
         self.or_anaem_prog = anaem_sheet.loc['Odds ratios of being anaemic when covered by intervention'].to_dict(orient='index')
 
     def wasting_progs(self):
-        wastingSheet = self.read_sheet('Programs wasting', [0,1])
+        wastingSheet = utils.read_sheet(self.spreadsheet, 'Programs wasting', [0,1])
         treatsam = wastingSheet.loc['Odds ratio of SAM when covered by program'].to_dict(orient='index')
         manman = wastingSheet.loc['Odds ratio of MAM when covered by program'].to_dict(orient='index')
         self.or_wasting_prog['SAM'] = treatsam
@@ -207,13 +228,13 @@ class DefaultParams(object):
             self.or_wasting_prog['MAM'] = {'Treatment of SAM': manman['Management of MAM'] }
 
     def get_child_progs(self):
-        self.child_progs = self.read_sheet('Programs for children', [0,1,2], to_odict=True)
+        self.child_progs = utils.read_sheet(self.spreadsheet, 'Programs for children', [0,1,2], to_odict=True)
 
     def get_pw_progs(self):
-        self.pw_progs = self.read_sheet('Programs for PW', [0,1,2], to_odict=True)
+        self.pw_progs = utils.read_sheet(self.spreadsheet, 'Programs for PW', [0,1,2], to_odict=True)
 
     def get_bo_risks(self):
-        bo_sheet = self.read_sheet('Birth outcome risks', [0,1], skiprows=[0])
+        bo_sheet = utils.read_sheet(self.spreadsheet, 'Birth outcome risks', [0,1], skiprows=[0])
         ors = bo_sheet.loc['Odds ratios for conditions'].to_dict('index')
         self.or_cond_bo['Stunting'] = ors['Stunting (HAZ-score < -2)']
         self.or_cond_bo['MAM'] = ors['MAM (WHZ-score between -3 and -2)']
@@ -224,7 +245,7 @@ class DefaultParams(object):
 
     def get_iycf_effects(self, iycf_packs):
         # TODO: need something that catches if iycf packages not included at all.
-        effects = self.read_sheet('IYCF odds ratios', [0,1,2])
+        effects = utils.read_sheet(self.spreadsheet, 'IYCF odds ratios', [0,1,2])
         bf_effects = effects.loc['Odds ratio for correct breastfeeding']
         stunt_effects = effects.loc['Odds ratio for stunting']
         self.or_bf_prog = self.create_iycf(bf_effects, iycf_packs)
@@ -251,7 +272,7 @@ class DefaultParams(object):
 
     def define_iycf(self):
         """ Returns a dict with values as a list of two tuples (age, modality)."""
-        IYCFpackages = pandas.read_excel(self.input_path, 'IYCF packages', index_col=[0,1])
+        IYCFpackages = self.input_data.parse(sheet_name='IYCF packages', index_col=[0,1])
         packagesDict = sc.odict()
         for packageName, package in IYCFpackages.groupby(level=[0, 1]):
             if packageName[0] not in packagesDict:
@@ -265,14 +286,6 @@ class DefaultParams(object):
                         ageModeTuple = [(packageName[1], mode)]
                     packagesDict[packageName[0]] += ageModeTuple
         return packagesDict
-
-    def read_sheet(self, name, cols, dictOrient=None, skiprows=None, to_odict=False):
-        df = self.spreadsheet.parse(name, index_col=cols, skiprows=skiprows).dropna(how='all')
-        if dictOrient:
-            df = df.to_dict(dictOrient)
-        elif to_odict:
-            df = df.to_dict(into=sc.odict)
-        return df
 
     def make_dict(self, mydict):
         """ myDict is a spreadsheet with 3 index cols, converted to dict using orient='index' """
@@ -313,8 +326,8 @@ class DefaultParams(object):
 
 class InputData(object):
     """ Container for all the region-specific data (prevalences, mortality rates etc) read in from spreadsheet"""
-    def __init__(self, filepath):
-        self.spreadsheet = pandas.ExcelFile(filepath)
+    def __init__(self, data):
+        self.spreadsheet = data
         self.settings = settings.Settings()
         self.demo = None
         self.proj = sc.odict()
@@ -331,6 +344,7 @@ class InputData(object):
         self.wra_proj = []
         self.samtomam = None
         self.mamtosam = None
+        self.t = None
 
         self.get_demo()
         self.get_proj()
@@ -340,8 +354,8 @@ class InputData(object):
         self.get_fertility_risks()
         self.get_incidences()
         self.get_famplan_methods()
-        self.rem_spreadsheet(filepath)
-    
+        self.rem_spreadsheet(data.io)
+
     def __repr__(self):
         output  = sc.desc(self)
         return output
@@ -353,7 +367,7 @@ class InputData(object):
     ## DEMOGRAPHICS ##
 
     def get_demo(self):
-        baseline = self.read_sheet('Baseline year population inputs', [0,1])
+        baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0,1])
         demo = sc.odict()
         # the fields that group the data in spreadsheet
         fields = ['Population data', 'Food', 'Age distribution of pregnant women', 'Mortality', 'Other risks']
@@ -364,13 +378,16 @@ class InputData(object):
         # wasting
         self.mamtosam = self.demo.pop('Percentage of SAM cases that develop from MAM')
         self.samtomam = self.demo.pop('Percentage of SAM cases that only recover to MAM')
+        t = baseline.loc['Projection years']
+        self.t = [int(t.loc['Baseline year (projection start year)']['Data']), int(t.loc['End year']['Data'])]
         # fix ages for PW
-        baseline = self.read_sheet('Baseline year population inputs', [0])
+        baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0])
         for row in baseline.loc['Age distribution of pregnant women'].iterrows():
             self.pw_agedist.append(row[1]['Data'])
 
     def get_proj(self):
-        proj = self.read_sheet('Demographic projections', [0])
+        # drops rows with any na
+        proj = self.spreadsheet.parse(sheet_name='Demographic projections', index_col=[0]).dropna(how='any')
         # dict of lists to support indexing
         for column in proj:
             self.proj[column] = proj[column].tolist()
@@ -379,7 +396,7 @@ class InputData(object):
             self.wra_proj.append(proj[age].tolist())
 
     def get_risk_dist(self):
-        dist = self.read_sheet('Nutritional status distribution', [0,1])
+        dist = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0,1])
         # dist = dist.drop(dist.index[[1]])
         riskDist = sc.odict()
         for field in ['Stunting (height-for-age)', 'Wasting (weight-for-height)']:
@@ -393,7 +410,7 @@ class InputData(object):
                     newCat = cat.split(' ',1)[0]
                     self.risk_dist[outer][age][newCat] = value
         # get anaemia
-        dist = self.read_sheet('Nutritional status distribution', [0,1], skiprows=12)
+        dist = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0,1], skiprows=12)
         self.risk_dist['Anaemia'] = sc.odict()
         anaem = dist.loc['Anaemia', 'Prevalence of iron deficiency anaemia'].to_dict()
         for age, prev in anaem.iteritems():
@@ -401,11 +418,11 @@ class InputData(object):
             self.risk_dist['Anaemia'][age]['Anaemic'] = prev
             self.risk_dist['Anaemia'][age]['Not anaemic'] = 1.-prev
         # get breastfeeding dist
-        dist = self.read_sheet('Breastfeeding distribution', [0,1])
+        dist = utils.read_sheet(self.spreadsheet, 'Breastfeeding distribution', [0,1])
         self.risk_dist['Breastfeeding'] = dist.loc['Breastfeeding'].to_dict()
 
     def get_time_trends(self):
-        trends = self.spreadsheet.parse('Time trends', index_col=[0,1])
+        trends = self.spreadsheet.parse(sheet_name='Time trends', index_col=[0,1])
         self.time_trends['Stunting'] = trends.loc['Stunting prevalence (%)'].loc['Children 0-59 months'].values.tolist()[:1]
         self.time_trends['Wasting'] = trends.loc['Wasting prevalence (%)'].loc['Children 0-59 months'].values.tolist()[:1]
         self.time_trends['Anaemia'] = trends.loc['Anaemia prevalence (%)'].values.tolist()[:3] # order is (children, PW, WRA)
@@ -413,20 +430,20 @@ class InputData(object):
         self.time_trends['Mortality'] = trends.loc['Mortality'].values.tolist() # under 5, maternal
 
     def get_fertility_risks(self):
-        fert = self.read_sheet('Fertility risks', [0,1])
+        fert = utils.read_sheet(self.spreadsheet, 'Fertility risks', [0,1])
         self.birth_age = fert.loc['Birth age and order'].to_dict()['Percentage of births in category']
         self.birth_int = fert.loc['Birth intervals'].to_dict()['Percentage of births in category']
 
     def get_incidences(self):
-        self.incidences = self.read_sheet('Incidence of conditions', [0], to_odict=True)
+        self.incidences = utils.read_sheet(self.spreadsheet, 'Incidence of conditions', [0], to_odict=True)
 
     def get_famplan_methods(self):
-        self.famplan_methods = self.read_sheet('Programs family planning', [0], 'index')
+        self.famplan_methods = utils.read_sheet(self.spreadsheet, 'Programs family planning', [0], 'index')
 
     ### MORTALITY ###
 
     def get_death_dist(self):
-        death_dist = self.read_sheet('Causes of death', [0], 'index')
+        death_dist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0], 'index')
         # convert 'Pregnant women' to age bands
         for key, value in death_dist.iteritems():
             self.death_dist[key] = sc.odict()
@@ -439,23 +456,21 @@ class InputData(object):
         # list causes of death
         self.causes_death = self.death_dist.keys()
 
-    def read_sheet(self, name, cols, dict_orient=None, skiprows=None, to_odict=False):
-        df = self.spreadsheet.parse(name, index_col=cols, skiprows=skiprows).dropna(how='all')
-        if dict_orient:
-            df = df.to_dict(dict_orient)
-        return df
-
 class ProgData(object):
     """Stores all the settings for each project, defined by the user"""
-    def __init__(self, input_path):
+    def __init__(self, data, default_data):
         self.settings = settings.Settings()
-        self.spreadsheet = pandas.ExcelFile(input_path)
+        self.spreadsheet = data
         self.prog_set = []
+        self.base_prog_set = []
+        self.base_cov = []
         self.ref_progs = []
         self.prog_deps = None
         self.prog_info = None
         self.prog_target = None
         self.famplan_methods = None
+        self.impacted_pop = default_data.impacted_pop
+        self.prog_areas = default_data.prog_areas
 
         # load data
         self.get_prog_target()
@@ -474,18 +489,18 @@ class ProgData(object):
         self.spreadsheet = None
 
     def get_prog_target(self):
-        targetPopSheet = self.read_sheet('Programs target population', [0,1])
+        targetPopSheet = utils.read_sheet(self.spreadsheet, 'Programs target population', [0,1])
         targetPop = sc.odict()
         for pop in ['Children', 'Pregnant women', 'Non-pregnant WRA', 'General population']:
             targetPop.update(targetPopSheet.loc[pop].to_dict(orient='index'))
         self.prog_target = targetPop
 
     def get_ref_progs(self):
-        reference = self.spreadsheet.parse('Reference programs', index_col=[0])
+        reference = self.spreadsheet.parse(sheet_name='Reference programs', index_col=[0])
         self.ref_progs = list(reference.index)
 
     def get_prog_deps(self):
-        deps = self.read_sheet('Program dependencies', [0])
+        deps = utils.read_sheet(self.spreadsheet, 'Program dependencies', [0])
         programDep = sc.odict()
         for program, dependency in deps.iterrows():
             programDep[program] = sc.odict()
@@ -503,7 +518,10 @@ class ProgData(object):
         self.prog_deps = programDep
 
     def get_prog_info(self):
-        self.prog_info = self.read_sheet('Programs cost and coverage', [0], to_odict=True)
+        sheet = utils.read_sheet(self.spreadsheet, 'Programs cost and coverage', [0], to_odict=True)
+        self.prog_info = sheet
+        self.base_prog_set = sheet['baseline coverage'].keys()
+        self.base_cov = sheet['baseline coverage'].values()
 
     def create_iycf(self):
         packages = self.define_iycf()
@@ -512,7 +530,7 @@ class ProgData(object):
 
     def define_iycf(self):
         """ Returns a dict with values as a list of two tuples (age, modality)."""
-        IYCFpackages = self.read_sheet('IYCF packages', [0,1])
+        IYCFpackages = utils.read_sheet(self.spreadsheet, 'IYCF packages', [0,1])
         packagesDict = sc.odict()
         for packageName, package in IYCFpackages.groupby(level=[0, 1]):
             if packageName[0] not in packagesDict:
@@ -566,43 +584,18 @@ class ProgData(object):
             my_dict[key].update(newAgeGroups)
         return my_dict
 
-    def read_sheet(self, name, cols, dict_orient=None, skiprows=None, to_odict=False):
-        df = self.spreadsheet.parse(name, index_col=cols, skiprows=skiprows).dropna(how='all')
-        if dict_orient:
-            df = df.to_dict(dict_orient)
-        elif to_odict:
-            df = df.to_dict(into=sc.odict)
-        return df
-
-class UserOpts(object):
-    """ Container for information provided by the front end, which are the user-defined settings for each scenario """
-    def __init__(self, name, scen_type, t, prog_set, scen):
-        self.name = name
-        self.scen_type = scen_type
-        self.t = t
-        self.prog_set = prog_set
-        self.scen = scen
-    
-    def __repr__(self):
-        output  = sc.desc(self)
-        return output
-
-    def get_attr(self):
-        return self.__dict__
-
-
-class OptimOptsTest(object):
+class OptimTest(object):
     """ Only for testing purposes. """
-    def __init__(self, name, filepath=settings.default_opts_path()):
+    def __init__(self, name, filepath=settings.demo_opts_path()):
         self.spreadsheet = pandas.ExcelFile(filepath)
 
         self.name = name
+        self.model_name = name
         self.prog_set = []
-        self.t = None
         self.mults = None
         self.fix_curr = None
         self.add_funds = None
-        self.objs = None
+        self.obj = None
         self.filter_progs = None
         self.get_prog_set()
         self.get_opts()
@@ -617,15 +610,14 @@ class OptimOptsTest(object):
         return self.__dict__
 
     def get_prog_set(self):
-        prog_sheet = self.read_sheet('Programs to include', [0])
+        prog_sheet = utils.read_sheet(self.spreadsheet, 'Programs to include', [0])
         prog_sheet = prog_sheet[pandas.notnull(prog_sheet)]
         for program, value in prog_sheet.iterrows():
             self.prog_set.append(program)
 
     def get_opts(self):
         opts = self.spreadsheet.parse('Optimization options')
-        self.t = [opts['start year'][0], opts['end year'][0]]
-        self.objs = opts['objectives'][0].replace(' ','').split(',')
+        self.obj = opts['objectives'][0]
         mults = str(opts['multiples of flexible funding'][0]).replace(' ', '').split(',')
         self.mults = [int(x) for x in mults]
         fix_curr = opts['fix current funds'][0]
@@ -634,25 +626,17 @@ class OptimOptsTest(object):
         filter = opts['filter programs'][0]
         self.filter_progs = True if filter else False
 
-    def read_sheet(self, name, cols, dict_orient=None, skiprows=None, to_odict=False):
-        df = self.spreadsheet.parse(name, index_col=cols, skiprows=skiprows).dropna(how='all')
-        if dict_orient:
-            df = df.to_dict(dict_orient)
-        elif to_odict:
-            df = df.to_dict(into=sc.odict)
-        return df
-
-class ScenOptsTest(object):
+class ScenTest(object):
     """ Only used for testing purposes. This information should be supplied by the frontend. """
 
-    def __init__(self, name, scen_type, filepath=settings.default_opts_path()):
+    def __init__(self, name, scen_type, filepath=settings.demo_opts_path()):
         self.spreadsheet = pandas.ExcelFile(filepath)
 
         self.name = name
+        self.model_name = name
         self.prog_set = []
         self.scen_type = scen_type
-        self.scen = sc.odict()
-        self.t = [2017, 2025]
+        self.covs = []
 
         self.get_prog_set()
         if 'ov' in scen_type: # coverage scenario
@@ -661,7 +645,7 @@ class ScenOptsTest(object):
             self.get_budget_scen()
 
         delattr(self, 'spreadsheet')
-    
+
     def __repr__(self):
         output  = sc.desc(self)
         return output
@@ -670,7 +654,7 @@ class ScenOptsTest(object):
         return self.__dict__
 
     def get_prog_set(self):
-        prog_sheet = self.read_sheet('Programs to include', [0])
+        prog_sheet = utils.read_sheet(self.spreadsheet, 'Programs to include', [0])
         prog_sheet = prog_sheet[pandas.notnull(prog_sheet)]
         for program, value in prog_sheet.iterrows():
             self.prog_set.append(program)
@@ -678,31 +662,26 @@ class ScenOptsTest(object):
     def get_cov_scen(self):
         cov = self.spreadsheet.parse('Coverage scenario', index_col=[0,1])
         for prog in self.prog_set: # only programs included
-            self.scen[prog] = cov.loc[prog,'Coverage'].tolist()
+            self.covs.append(cov.loc[prog,'Coverage'].tolist()[1:])
 
     def get_budget_scen(self):
         budget = self.spreadsheet.parse('Budget scenario', index_col=[0,1])
         for prog in self.prog_set: # only programs included
-            self.scen[prog] = budget.loc[prog,'Spending'].tolist()
-
-    def read_sheet(self, name, cols, dict_orient=None, skiprows=None, to_odict=False):
-        df = self.spreadsheet.parse(name, index_col=cols, skiprows=skiprows).dropna(how='all')
-        if dict_orient:
-            df = df.to_dict(dict_orient)
-        elif to_odict:
-            df = df.to_dict(into=sc.odict)
-        return df
+            self.covs.append(budget.loc[prog,'Spending'].tolist()[1:])
 
 class Dataset(object):
     ''' Store all the data for a project '''
     
-    def __init__(self, country='default', region='default', demo_data=None, prog_data=None, default_params=None, pops=None, name=None, doload=False, filepath=None):
+    def __init__(self, country='demo', region='demo', name=None, demo_data=None, prog_data=None, default_params=None,
+                 pops=None, prog_info=None, doload=False, filepath=None):
         self.country = country
         self.region = region
         self.demo_data = demo_data
         self.prog_data = prog_data
         self.default_params = default_params
         self.pops = pops
+        self.prog_info = prog_info
+        self.t = None
         if name is None:
             try:    name = country+'_'+region
             except: name = 'default'
@@ -717,11 +696,13 @@ class Dataset(object):
         return output
     
     def load(self, filepath=None):
-        demo_data, prog_data, default_params, pops = get_data(country=self.country, region=self.region, filepath=filepath, withpops=True)
+        demo_data, prog_data, default_params, pops, prog_info = get_data(country=self.country, region=self.region, filepath=filepath, withpops=True)
         self.demo_data = demo_data
         self.prog_data = prog_data
         self.default_params = default_params
         self.pops = pops
+        self.prog_info = prog_info
+        self.t = demo_data.t
         self.modified = sc.today()
         return None
     
@@ -748,16 +729,19 @@ def get_data(country=None, region=None, project=None, dataset=None, filepath=Non
         else:
             input_path = filepath
         # get data
-        demo_data = InputData(input_path)
-        prog_data = ProgData(input_path)
-        default_params = DefaultParams(settings.default_params_path(), input_path)
+        input_data = pandas.ExcelFile(input_path)
+        demo_data = InputData(input_data)
+        default_data = pandas.ExcelFile(settings.default_params_path())
+        default_params = DefaultParams(default_data, input_data)
         default_params.compute_risks(demo_data)
+        prog_data = ProgData(input_data, default_params)
         pops = populations.set_pops(demo_data, default_params)
+        prog_info = programs.ProgramInfo(prog_data)
     if asobj:
         output = Dataset(country, region, demo_data, prog_data, default_params, pops)
         return output
     else:
         if withpops:
-            return demo_data, prog_data, default_params, pops
+            return demo_data, prog_data, default_params, pops, prog_info
         else:
             return demo_data, prog_data, default_params

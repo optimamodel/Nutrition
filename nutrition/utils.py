@@ -1,4 +1,7 @@
-import os, numpy, functools, traceback, scipy.special, multiprocessing, numbers, copy, collections
+import os, functools, traceback, scipy.special, multiprocessing, numbers, copy, collections
+import numpy as np
+import sciris.core as sc
+
 
 def optimafolder(subfolder=None):
     if subfolder is None: subfolder='nutrition'
@@ -93,58 +96,46 @@ class odict(collections.OrderedDict):
 
     def __is_odict_iterable(self, key):
         """ Check to see whether the "key" is actually an iterable """
-        output = type(key)==list or type(key)==type(numpy.array([])) # Do *not* include dict, since that would be recursive
+        output = type(key)==list or type(key)==type(np.array([])) # Do *not* include dict, since that would be recursive
         return output
-
-########################
-### USER OPTIONS STORAGE CLASSES
-########################
-
-class Opts(object):
-    def __init__(self, name, prog_set, t):
-        self.name = name
-        self.prog_set = prog_set
-        self.t = t
-
-    def get_attr(self):
-        return self.__dict__
-
-class ScenOpts(Opts):
-    def __init__(self, name, prog_set, t, scen, scen_type):
-        Opts.__init__(self, name, prog_set, t)
-        self.scen = scen
-        self.scen_type = scen_type
-
-class OptimOpts(Opts):
-    def __init__(self, name, prog_set, t, mults, fix_curr, add_funds, objs, filter_progs=False):
-        Opts.__init__(self, name, prog_set, t)
-        # self.optim_type = optim_type
-        self.mults = mults
-        self.fix_curr = fix_curr
-        self.add_funds = add_funds
-        self.objs = objs
-        self.filter_progs = filter_progs
 
 # ##############################################################################
 # ### HELPER FUNCTIONS
 # ##############################################################################
 #
 
-def scale_alloc(totalBudget, allocation):
-    new = sum(allocation)
+def default_trackers():
+    output = [
+        'stunting_prev',
+        'wasting_prev',
+        'anaemia_prev',
+        'child_deaths',
+        'pw_deaths',
+        'thrive']
+    return output
+
+def read_sheet(spreadsheet, name, cols, dict_orient=None, skiprows=None, to_odict=False):
+    df = spreadsheet.parse(name, index_col=cols, skiprows=skiprows).dropna(how='all')
+    if dict_orient:
+        df = df.to_dict(dict_orient)
+    elif to_odict:
+        df = df.to_dict(into=sc.odict)
+    return df
+
+def scale_alloc(free, allocation):
+    new = np.sum(allocation)
     if new == 0:
-        scaled_alloc = copy.deepcopy(allocation)
+        scaled_alloc = allocation.copy()
     else:
-        scaleRatio = totalBudget / new
-        scaled_alloc = [x * scaleRatio for x in allocation]
+        scale = free / new
+        scaled_alloc = allocation * scale
     return scaled_alloc
 
-def add_fixed_alloc(allocations, fixed, indxList):
+def add_fixed_alloc(fixed, alloc, indxList):
     """Assumes order is preserved from original list"""
-    modified = copy.deepcopy(allocations)
-    for i, j in enumerate(indxList):
-        modified[j] += fixed[i]
-    return modified
+    total_allocs = np.concatenate(([fixed[indxList]], [alloc]), axis=0)
+    total_allocs = np.sum(total_allocs, axis=0)
+    return total_allocs
 
 def get_obj_sign(obj):
     max_obj = ['thrive_notanaemic', 'thrive', 'thrive2', 'healthy_children', 'nonstunted_nonwasted', 'not_anaemic',
@@ -187,7 +178,7 @@ def solve_quad(oddsRatio, fracA, fracB):
     a = (1. - fracA) * (1. - oddsRatio)
     b = (oddsRatio - 1) * fracB - oddsRatio * fracA - (1. - fracA)
     c = fracB
-    det = numpy.sqrt(b ** 2 - 4. * a * c)
+    det = np.sqrt(b ** 2 - 4. * a * c)
     if (abs(a) < eps):
         p0 = -c / b
     else:
@@ -215,12 +206,12 @@ def restratify(frac_yes):
 
 def fit_poly(group_idx, trend):
     """ Calculates the trend over time in prevalence, mortality """
-    prev = numpy.array(trend[group_idx])
-    notNan = numpy.isfinite(prev)
+    prev = np.array(trend[group_idx])
+    notNan = np.isfinite(prev)
     if sum(notNan) <= 1:  # static data
         return 1
     else:
-        linReg = numpy.polyfit(range(len(prev[notNan])), prev[notNan], 1)
+        linReg = np.polyfit(range(len(prev[notNan])), prev[notNan], 1)
         return 1 + linReg[0]
 
 # ##############################################################################
