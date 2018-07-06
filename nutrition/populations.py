@@ -1,5 +1,5 @@
-from utils import solve_quad, restratify, fit_poly
-from nutrition import settings
+from .utils import solve_quad, restratify, fit_poly
+from . import settings
 import sciris.core as sc
 from math import pow
 import numpy as np
@@ -414,7 +414,7 @@ class Children(Population):
         for age_group in self.age_groups:
             age_group.referenceMortality = {}
             age = age_group.age
-            for cause in self.data.causes_death:
+            for c,cause in enumerate(self.data.causes_death):
                 LHS_age_cause = MortalityCorrected[age] * self.data.death_dist[cause][age]
                 age_group.referenceMortality[cause] = LHS_age_cause / RHS[age][cause]
 
@@ -432,12 +432,13 @@ class Children(Population):
                     count += Rb * pbo * Rbo * age_group.referenceMortality[cause]
             age_group.mortality[:] = count
         # over 1 months
+        
         for age_group in self.age_groups[1:]:
             age = age_group.age
             refmort = np.zeros(len(self.data.causes_death))
-            for c, cause in enumerate(self.data.causes_death):
-                refmort[c] = age_group.referenceMortality[cause]
-            for i, cats in enumerate(self.ss.all_cats):
+            for c,cause in enumerate(self.data.causes_death):
+                refmort[c] = age_group.referenceMortality[cause] # Copy to an array for faster calculations
+            for i,cats in enumerate(self.ss.all_cats):
                 rr_death = self.default.arr_rr_death[age][i,:]
                 age_group.mortality[i] = sum(refmort*rr_death)
 

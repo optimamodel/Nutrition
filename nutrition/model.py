@@ -1,5 +1,5 @@
 from utils import restratify
-from nutrition import settings
+from . import settings
 import sciris.core as sc
 from .utils import default_trackers
 import numpy as np
@@ -11,6 +11,7 @@ class Model:
         self.prog_info = sc.dcp(prog_info)
         self.ss = settings.Settings()
 
+        self.n_years = len(all_years)
         self.t = t if t else self.ss.t
         self.all_years = range(0, self.t[1]-self.t[0]+1)
         self.sim_years = self.all_years[1:]
@@ -48,7 +49,7 @@ class Model:
         self.prog_info.set_init_covs(self.pops)
         self.prog_info.set_costcovs() # enables getting coverage from cost
         self.prog_info.get_base_spend()
-
+    
     def update_covs(self, covs, scentype):
         covs, spend = self.prog_info.get_cov_scen(covs, scentype, self.all_years)
         self.prog_info.update_covs(self.pops, covs, spend)
@@ -56,7 +57,7 @@ class Model:
     def _set_trackers(self):
         """ Arrays to store annual outputs """
         for tracker in default_trackers():
-            arr = np.zeros(len(self.all_years))
+            arr = np.zeros(len(self.n_years))
             setattr(self, tracker, arr)
 
     def _track_outcomes(self):
