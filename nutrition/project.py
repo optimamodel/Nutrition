@@ -94,10 +94,15 @@ class Project(object):
         return info
     
     
-    def load_data(self, name=None, country=None, region=None, filepath=None):
-        dataset = Dataset(country=region, region=region, filepath=filepath, doload=True)
+    def load_data(self, country=None, region=None, name=None, filepath=None, addmodel=True):
+        dataset = Dataset(country=country, region=region, name=name, filepath=filepath, doload=True)
         if name is not None: dataset.name = name
         self.datasets[dataset.name] = dataset
+        if addmodel:
+            # add model associated with the dataset
+            self.add_model(dataset.name, dataset.pops, dataset.prog_info, dataset.t)
+            # add baseline scenario for each new model object, to be used in scenarios
+            self.add_baseline(dataset.name, dataset.prog_data.base_prog_set)
         return None
     
     
@@ -186,14 +191,7 @@ class Project(object):
         self.add_optims(optims)
         return None
 
-    def add_dataset(self, dataset, overwrite=False):
-        if overwrite: self.datasets = sc.odict()
-        self.datasets[dataset.name] = dataset
-        self.add_model(dataset.name, dataset.pops, dataset.prog_info)
-        # add baseline scenario for each new model object, to be used in scenarios
-        self.add_baseline(dataset.name, dataset.prog_data.base_prog_set)
-
-    def add_model(self, name, pops, prog_info, overwrite=False):
+    def add_model(self, name, pops, prog_info, t=None, overwrite=False):
         """ Adds a model to the self.models odict.
         A new model should only be instantiated if new input data is uploaded to the Project.
         For the same input data, one model instance is used for all scenarios.
@@ -204,7 +202,7 @@ class Project(object):
         :return:
         """
         if overwrite: self.models = sc.odict()
-        model = Model(pops, prog_info) # todo: add in t
+        model = Model(pops, prog_info, t)
         self.add(name=name, item=model, what='model')
         self.modified = sc.today()
 
@@ -244,11 +242,11 @@ class Project(object):
             keyname = name
         self.add(name=keyname, item=result, what='result')
 
-    def default_scens(self, key='default', dorun=None, doadd=True, which=None):
+    def demo_scens(self, key='demo', dorun=None, doadd=True, which=None):
         if which is None:
             which = 'coverage'
-        defaults = ScenTest(key, which)
-        scen_list = [Scen(**defaults.get_attr())]
+        demopts = ScenTest(key, which)
+        scen_list = [Scen(**demopts.get_attr())]
         if doadd:
             self.add_scens(scen_list)
             if dorun:
@@ -257,9 +255,9 @@ class Project(object):
         else:
             return scen_list
 
-    def default_optims(self, key='default', dorun=False, doadd=True):
-        defaults = OptimTest(key)
-        optim_list = [Optim(**defaults.get_attr())]
+    def demo_optims(self, key='demo', dorun=False, doadd=True):
+        demopts = OptimTest(key)
+        optim_list = [Optim(**demopts.get_attr())]
         if doadd:
             self.add_optims(optim_list)
             if dorun:
@@ -309,19 +307,18 @@ class Project(object):
 
 
 def demo():
-    ''' Create a demo project with default settings '''
+    """ Create a demo project with demo settings """
     
     # Parameters
     name = 'Demo project'
-    country = 'default'
-    region = 'default'
+    country = 'demo'
+    region = 'demo'
     
     # Create project and data
     P = Project(name)
-    dataset = Dataset(country, region, name='default', doload=True)
-    P.add_dataset(dataset)
+    P.load_data(country, region, name='demo')
 
     # Create scenarios and optimizations
-    P.default_scens()
-    P.default_optims()
+    P.demo_scens()
+    P.demo_optims()
     return P
