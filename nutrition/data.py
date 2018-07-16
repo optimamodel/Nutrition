@@ -410,8 +410,8 @@ class InputData(object):
 
     def get_fertility_risks(self):
         fert = utils.read_sheet(self.spreadsheet, 'Fertility risks', [0,1])
-        self.birth_age = fert.loc['Birth age and order'].to_dict()['Percentage of births in category']
-        self.birth_int = fert.loc['Birth intervals'].to_dict()['Percentage of births in category']
+        self.birth_age = fert.loc['Birth age and order'].iloc[:,0].to_dict()
+        self.birth_int = fert.loc['Birth intervals'].iloc[:,0].to_dict()
 
     def get_incidences(self):
         self.incidences = utils.read_sheet(self.spreadsheet, 'Incidence of conditions', [0], to_odict=True)
@@ -444,8 +444,9 @@ class ProgData(object):
         self.base_prog_set = []
         self.base_cov = []
         self.ref_progs = []
+        self.saturation = None
+        self.costs = None
         self.prog_deps = None
-        self.prog_info = None
         self.prog_target = None
         self.famplan_methods = None
         self.impacted_pop = default_data.impacted_pop
@@ -497,10 +498,11 @@ class ProgData(object):
         self.prog_deps = programDep
 
     def get_prog_info(self):
-        sheet = utils.read_sheet(self.spreadsheet, 'Programs cost and coverage', [0], to_odict=True)
-        self.prog_info = sheet
-        self.base_prog_set = sheet['baseline coverage'].keys()
-        self.base_cov = sheet['baseline coverage'].values()
+        sheet = utils.read_sheet(self.spreadsheet, 'Programs cost and coverage')
+        self.base_prog_set = sheet.iloc[:,0].tolist()
+        self.base_cov = sc.odict(zip(self.base_prog_set, sheet.iloc[:,1].tolist()))
+        self.saturation = sc.odict(zip(self.base_prog_set, sheet.iloc[:,2].tolist()))
+        self.costs = sc.odict(zip(self.base_prog_set, sheet.iloc[:,3].tolist()))
 
     def create_iycf(self):
         packages = self.define_iycf()

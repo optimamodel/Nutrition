@@ -114,7 +114,7 @@ def default_trackers():
         'thrive']
     return output
 
-def read_sheet(spreadsheet, name, cols, dict_orient=None, skiprows=None, to_odict=False):
+def read_sheet(spreadsheet, name, cols=None, dict_orient=None, skiprows=None, to_odict=False):
     df = spreadsheet.parse(name, index_col=cols, skiprows=skiprows).dropna(how='all')
     if dict_orient:
         df = df.to_dict(dict_orient)

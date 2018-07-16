@@ -21,9 +21,9 @@ class Program(object):
         self.inv_func = None
 
         self.target_pops = prog_data.prog_target[self.name] # frac of each population which is targeted
-        self.unit_cost = prog_data.prog_info['unit cost'][self.name]
-        self.saturation = prog_data.prog_info['saturation coverage of target population'][self.name]
-        self.base_cov = prog_data.prog_info['baseline coverage'][self.name]
+        self.unit_cost = prog_data.costs[self.name]
+        self.saturation = prog_data.saturation[self.name]
+        self.base_cov = prog_data.base_cov[self.name]
         self.base_spend = None
 
         self._set_target_ages()
