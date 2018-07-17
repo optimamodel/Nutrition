@@ -324,11 +324,11 @@ Last update: 2018-06-26
           // Go to the server to get the results from the package set.
 //          rpcservice.rpcCall('run_optim', [this.projectID(), optimSummary.name])
           taskservice.getTaskResultPolling('run_optimization', 90, 3, 'run_optim', 
-            [this.projectID(), optimSummary.name]) 
+            [this.projectID(), optimSummary.name])
           .then(response => {
             this.clearGraphs() // Once we receive a response, we can work with a clean slate
-//            this.graphData = response.data.graphs // Pull out the response data.
-            this.graphData = response.data.result.graphs // Pull out the response data.
+//            this.graphData = response.data.graphs // Pull out the response data (use with the rpcCall).
+            this.graphData = response.data.result.graphs // Pull out the response data (use with task).
             let n_plots = this.graphData.length
             console.log('Rendering ' + n_plots + ' graphs')
 
@@ -339,15 +339,16 @@ Last update: 2018-06-26
               while (div.firstChild) {
                 div.removeChild(div.firstChild);
               }
-              try {
-                mpld3.draw_figure(divlabel, response.data.result.graphs[index]); // Draw the figure.                
-//                mpld3.draw_figure(divlabel, response.data.graphs[index]); // Draw the figure.
+              try {              
+//                mpld3.draw_figure(divlabel, response.data.graphs[index]); // Draw the figure (use with the rpcCall).
+                mpld3.draw_figure(divlabel, response.data.result.graphs[index]); // Draw the figure (use with task).                 
               }
               catch (err) {
                 console.log('failled:' + err.message);
               }
             }
             
+            // Success popup.
             this.$notifications.notify({
               message: 'Graphs created',
               icon: 'ti-check',
@@ -366,7 +367,7 @@ Last update: 2018-06-26
             // Put up a failure notification.
             this.$notifications.notify({
               message: 'Optimization failed',
-              icon: 'ti-thumb-down',
+              icon: 'ti-face-sad',
               type: 'warning',
               verticalAlign: 'top',
               horizontalAlign: 'center',

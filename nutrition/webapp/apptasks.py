@@ -1,7 +1,7 @@
 """
 apptasks.py -- The Celery tasks module for this webapp
     
-Last update: 7/3/18 (gchadder3)
+Last update: 7/16/18 (gchadder3)
 """
 
 #
@@ -83,8 +83,11 @@ def test_error():
 # so run_task() can call them.
 add_task_funcs(task_func_dict)
 
+print 'My name is %s' % __name__
+
 # Only execute this if the celery worker imports it.
-if __name__ == 'apptasks':
+#if __name__ == 'apptasks':
+if __name__ == 'nutrition.webapp.apptasks':
     # Set up the projects module so we have access to the webapp Redis data.
     prj.apptasks_init_projects(config)
     

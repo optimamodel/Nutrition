@@ -70,12 +70,7 @@ class ProjectSO(sw.ScirisObject):
             # Set the owner (User) UID.
             self.owner_uid = valid_uuid
             
-    # TODO: Possibly try to get rid of check_type_match parameter (presently 
-    # used to allow cases of inexact type matches when Celery is being used).            
-    def load_from_copy(self, other_object, check_type_match=True):
-        if check_type_match and type(other_object) != type(self):
-            return
-
+    def load_from_copy(self, other_object):
         # Do the superclass copying.
         super(ProjectSO, self).load_from_copy(other_object)
         
@@ -219,6 +214,7 @@ def init_projects(app):
         proj_collection.add_object(projSO)
         
     if app.config['LOGGING_MODE'] == 'FULL':
+        print('proj_collection type (main.py): %s' % type(proj_collection))
         # Show what's in the ProjectCollection.    
         proj_collection.show()
         
@@ -247,10 +243,10 @@ def apptasks_init_projects(config):
     if proj_collection_uid is not None:  
         print 'doin the loading...'
         
-        proj_collection.load_from_data_store(check_type_match=False)
-        
+        proj_collection.load_from_data_store()        
         
         print proj_collection.obj_dict
         
+    print('proj_collection type (apptasks.py): %s' % type(proj_collection))        
     print('Here are my projects:')
     proj_collection.show()        
