@@ -40,6 +40,8 @@ celery_instance = make_celery_instance(config=config)
 
 @register_async_task
 def run_optim(project_id, optim_name):
+    # Load the projects from the DataStore.
+    prj.apptasks_load_projects(config)
     
     print('Running optimization...')
     proj = load_project(project_id, raise_exception=True)
@@ -82,14 +84,3 @@ def test_error():
 # Add the asynchronous task functions in this module to the tasks.py module 
 # so run_task() can call them.
 add_task_funcs(task_func_dict)
-
-print 'My name is %s' % __name__
-
-# Only execute this if the celery worker imports it.
-#if __name__ == 'apptasks':
-if __name__ == 'nutrition.webapp.apptasks':
-    # Set up the projects module so we have access to the webapp Redis data.
-    prj.apptasks_init_projects(config)
-    
-#    print('Here are my projects:')
-#    prj.proj_collection.show()

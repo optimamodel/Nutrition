@@ -1,7 +1,7 @@
 '''
 Classes for handling projects as Sciris objects
 
-Version: 2018jun04 by cliffk
+Version: 2018jul16 by gchadder3
 '''
 
 import os
@@ -218,7 +218,7 @@ def init_projects(app):
         # Show what's in the ProjectCollection.    
         proj_collection.show()
         
-def apptasks_init_projects(config):
+def apptasks_load_projects(config):
     global proj_collection  # need this to allow modification within the module 
     
     # We need to load in the whole DataStore here because the Celery worker 
@@ -241,12 +241,7 @@ def apptasks_init_projects(config):
     
     # If there was a match...
     if proj_collection_uid is not None:  
-        print 'doin the loading...'
-        
+        # Load the project collection from the DataStore.
         proj_collection.load_from_data_store()        
         
-        print proj_collection.obj_dict
-        
-    print('proj_collection type (apptasks.py): %s' % type(proj_collection))        
-    print('Here are my projects:')
-    proj_collection.show()        
+#        proj_collection.show()      
