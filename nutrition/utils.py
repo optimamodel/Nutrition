@@ -170,6 +170,15 @@ def run_parallel(func, args_list, num_procs):
     res = p.map(func, args_list)
     return res
 
+def get_new_prob(coverage, probCovered, probNotCovered):
+    return coverage * probCovered + (1.-coverage) * probNotCovered
+
+def get_change(old, new):
+    if abs(old-new) < 1e-3:
+        return 0
+    else:
+        return (new - old)/old
+
 def solve_quad(oddsRatio, fracA, fracB):
     # solves quadratic to calculate probabilities where e.g.:
     # fracA is fraction covered by intervention

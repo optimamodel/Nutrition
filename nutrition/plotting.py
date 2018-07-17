@@ -2,13 +2,14 @@ import pylab as pl
 import numpy as np
 import matplotlib.ticker as tk
 import sciris.core as sc
+import utils
 
 def make_plots(all_res=None, toplot=None, optim=False):
     """ res is a ScenResult or Result object (could be a list of these objects) from which all information can be extracted """
     ## Initialize
     allplots = sc.odict()
     if toplot is None:
-        toplot = ['prevs', 'outputs', 'comp']
+        toplot = ['prevs', 'ann', 'agg']
         if optim:
             toplot.append('alloc')
     if all_res is None or all_res == []:
@@ -20,12 +21,12 @@ def make_plots(all_res=None, toplot=None, optim=False):
     if 'prevs' in toplot:
         prevfigs = plot_prevs(all_res)
         allplots.update(prevfigs)
-    if 'outputs' in toplot:
-        outfigs = plot_outputs(all_res)
+    if 'ann' in toplot:
+        outfigs = plot_outputs(all_res, True, 'ann')
         allplots.update(outfigs)
-    if 'comp' in toplot:
-        compfigs = compare_outputs(all_res)
-        allplots.update(compfigs)
+    if 'agg' in toplot:
+        outfigs = plot_outputs(all_res, False, 'agg')
+        allplots.update(outfigs)
     if 'alloc' in toplot: # optimized allocations
         outfigs = plot_alloc(all_res)
         allplots.update(outfigs)
@@ -34,7 +35,6 @@ def make_plots(all_res=None, toplot=None, optim=False):
 #        except Exception as E:
 #            print('WARNING, could not plot allocation: %s' % repr(E))
     return allplots
-
 
 def plot_prevs(all_res):
     """ Plot prevs for each scenario"""
@@ -54,7 +54,7 @@ def plot_prevs(all_res):
         leglabels = []
         # plot results
         for res in all_res:
-            years = res.year_names
+            years = res.years
             output = res.get_outputs([label], seq=True)[0]
             out = round_elements(output, dec=1)
             thismax = max(out)
@@ -69,67 +69,47 @@ def plot_prevs(all_res):
         figs['prevs_%0i'%i] = fig
     return figs
 
-def plot_outputs(all_res):
+def plot_outputs(all_res, seq, name):
     outcomes = ['thrive', 'child_deaths']
-    width = 0.15
-    bars = []
+    width = 0.15 if seq else 0.35
     figs = sc.odict()
-    for i in range(len(outcomes)):
+    baseres = all_res[0]
+    years = np.array(baseres.years) # assume these scenarios over same time horizon
+    for i, outcome in enumerate(outcomes):
         fig = pl.figure()
-        row = fig.add_subplot(111)
+        ax = fig.add_subplot(111)
         ymax = 0
-        offset = 0
-        outcome = outcomes[i]
-        row.set_ylabel(outcome)
+        perchange = []
+        bars = []
+        offset = -width
+        baseout = baseres.get_outputs(outcome, seq=seq)[0]
         for res in all_res:
-            years = np.array(res.year_names)
-            output = res.get_outputs([outcome], seq=True)[0]
-            thismax = max(output)
-            if thismax > ymax: ymax = thismax
-            bar = row.bar(years+offset, output, width=width)
             offset += width
+            xpos = np.array(res.years) + offset if seq else offset
+            output = res.get_outputs(outcome, seq=seq)[0]
+            thimax = max(output)
+            if thimax > ymax: ymax = thimax
+            change = round_elements([utils.get_change(base, out) for out,base in zip(output, baseout)], dec=2)
+            perchange.append(change)
+            bar = ax.bar(xpos, output, width=width)
             bars.append(bar)
-        offset -= width
-        row.set_ylim([0, ymax + ymax*.1])
-        pl.xticks(years+offset/2, years)
-        pl.legend(bars, [res.name for res in all_res], loc='right', ncol=1)
-        pl.xlabel('Years')
-        pl.title('Annual outcomes')
-        figs['outputs_%0i'%i] = fig
-    return figs
-
-def compare_outputs(all_res):
-    """ Compare the results of multiple scenarios. These are aggregate values """
-    figs = sc.odict()
-    outcomes = ['thrive', 'child_deaths']
-    ind = np.arange(len(outcomes))
-    fig = pl.figure()
-    row = fig.add_subplot(111)
-    ymax = 0
-    ymin = 0
-    width = 0.35
-    offset = -width
-    base_res = all_res[0] # assumes baseline included
-    baseline = base_res.get_outputs(outcomes, seq=False)
-    bars = []
-    for res in all_res[1:]:
-        offset += width
-        output = res.get_outputs(outcomes, seq=False)
-        perc_change = [(out - base)/base for out,base in zip(output, baseline)]
-        perc_change = round_elements(perc_change, dec=2)
-        bar = row.bar(ind+offset, perc_change, width=width)
-        thismax = max(perc_change)
-        thismin = min(perc_change)
-        if thismax>ymax:ymax = thismax
-        if thismin<ymin:ymin = thismin
-        bars.append(bar)
-    row.set_ylim([min(ymin+ymin*.1,0), ymax+ymax*.1])
-    pl.xticks(ind+offset/2, outcomes)
-    pl.legend(bars, [res.name for res in all_res[1:]], loc='right', ncol=1)
-    pl.xlabel('Outcomes')
-    pl.ylabel('Change (%)')
-    pl.title('Percentage change from baseline')
-    figs['comp'] = fig
+        if seq:
+            ax.set_xticks(years+offset/2.)
+            ax.set_xticklabels(years)
+        else:
+            ax.set_xticks([])
+            # display percentage change
+            for j, bar in enumerate(bars[1:],1):
+                for k, rect in enumerate(bar):
+                    change = perchange[j][k]
+                    height = rect.get_height()
+                    ax.text(rect.get_x() + rect.get_width() / 2., height,'{}%'.format(change), ha='center',
+                                va='bottom')
+        ax.set_ylim([0, ymax + ymax * .1])
+        ax.set_ylabel(outcome)
+        ax.legend(bars, [res.name for res in all_res], loc='right', ncol=1)
+        ax.set_title(outcome)
+        figs['%s_out_%0i'%(name, i)] = fig
     return figs
 
 def plot_alloc(all_res):
@@ -168,10 +148,6 @@ def plot_alloc(all_res):
 
 def round_elements(mylist, dec=1):
     return [round(np.float64(x) * 100, dec) for x in mylist] # Type conversion to handle None
-
-
-
-
 
 
 

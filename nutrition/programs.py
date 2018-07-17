@@ -2,6 +2,7 @@ import numpy as np
 from .settings import Settings
 from functools import partial
 import sciris.core as sc
+from .utils import get_new_prob
 
 class Program(object):
     """Each instance of this class is an intervention,
@@ -166,7 +167,7 @@ class Program(object):
         :param age_group:
         :return:
         """
-        prevUpdate = self.__wasting_prev_update(age_group)
+        prevUpdate = self._wasting_prev_update(age_group)
         incidUpdate = self._wasting_update_incid(age_group)
         for wastingCat in ['MAM', 'SAM']:
             combined = prevUpdate[wastingCat] * incidUpdate[wastingCat]
@@ -181,7 +182,7 @@ class Program(object):
             age_group.wastingPreventionUpdate[wastingCat] *= update[wastingCat]
 
     def wasting_treat_update(self, age_group):
-        update = self.__wasting_prev_update(age_group)
+        update = self._wasting_prev_update(age_group)
         for wastingCat in self.settings.wasted_list:
             age_group.wastingTreatmentUpdate[wastingCat] *= update[wastingCat]
 
@@ -221,28 +222,25 @@ class Program(object):
         for BO in self.settings.birth_outcomes:
             age_group.birthUpdate[BO] *= update[BO]
 
-    def _get_new_prob(self, coverage, probCovered, probNotCovered):
-        return coverage * probCovered + (1.-coverage) * probNotCovered
-
     def _get_cond_prob_update(self, age_group, risk):
         """This uses law of total probability to update a given age groups for risk types
         Possible risk types are 'Stunting' & 'Anaemia' """
         oldProb = age_group.getFracRisk(risk)
         probIfCovered = age_group.probConditionalCoverage[risk][self.name]['covered']
         probIfNotCovered = age_group.probConditionalCoverage[risk][self.name]['not covered']
-        newProb = self._get_new_prob(self.annual_cov[self.year], probIfCovered, probIfNotCovered)
+        newProb = get_new_prob(self.annual_cov[self.year], probIfCovered, probIfNotCovered)
         reduction = (oldProb - newProb) / oldProb
         update = 1.-reduction
         return update
 
-    def __wasting_prev_update(self, age_group):
+    def _wasting_prev_update(self, age_group):
         # overall update to prevalence of MAM and SAM
         update = {}
         for wastingCat in self.settings.wasted_list:
             oldProb = age_group.getWastedFrac(wastingCat)
             probWastedIfCovered = age_group.probConditionalCoverage[wastingCat][self.name]['covered']
             probWastedIfNotCovered = age_group.probConditionalCoverage[wastingCat][self.name]['not covered']
-            newProb = self._get_new_prob(self.annual_cov[self.year], probWastedIfCovered, probWastedIfNotCovered)
+            newProb = get_new_prob(self.annual_cov[self.year], probWastedIfCovered, probWastedIfNotCovered)
             reduction = (oldProb - newProb) / oldProb
             update[wastingCat] = 1-reduction
         return update
@@ -296,7 +294,7 @@ class Program(object):
         correctFracOld = age_group.bf_dist[correctPrac]
         probCorrectCovered = age_group.probConditionalCoverage['Breastfeeding'][self.name]['covered']
         probCorrectNotCovered = age_group.probConditionalCoverage['Breastfeeding'][self.name]['not covered']
-        probNew = self._get_new_prob(self.annual_cov[self.year], probCorrectCovered, probCorrectNotCovered)
+        probNew = get_new_prob(self.annual_cov[self.year], probCorrectCovered, probCorrectNotCovered)
         fracChange = probNew - correctFracOld
         return fracChange
 

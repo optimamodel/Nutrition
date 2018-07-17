@@ -535,11 +535,12 @@ class Model:
             raise Exception(" ::ERROR:: {} not an attribute of Model class ".format(outcome))
 
     def get_output(self, outcome, seq=False):
+        """ Always returns a list, but of variable length"""
         outlist = self.get_seq(outcome)
         if seq: # return entire list
             return outlist
         else:
             if 'prev' in outcome: # only want final entry
-                return outlist[-1]
+                return [outlist[-1]]
             else: # want total
-                return sum(outlist)
+                return [sum(outlist)]

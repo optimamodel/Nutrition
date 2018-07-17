@@ -11,7 +11,7 @@ class ScenResult(object):
         self.pops = self.model.pops
         self.mult = mult
         self.obj = obj
-        self.year_names = range(model.t[0], model.t[1]+1)
+        self.years = range(model.t[0], model.t[1]+1)
         self.uid = sc.uuid()
         self.created = sc.today()
         self.modified = sc.today()
@@ -26,10 +26,13 @@ class ScenResult(object):
     def get_outputs(self, outcomes=None, seq=False, asdict=False):
         """
         outcomes: a list of model outcomes to return
-        return: a dict of (outcome,output) pairs
+        return: a list of outputs with same order as outcomes
         """
         if outcomes is None:
             outcomes = default_trackers()
+        if isinstance(outcomes, str):
+            outcomes = sc.promotetolist(outcomes)
+
         outs = [self.model.get_output(name, seq=seq) for name in outcomes]
         if asdict:
             output = sc.odict()
