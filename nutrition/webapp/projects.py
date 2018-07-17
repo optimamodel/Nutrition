@@ -71,14 +71,15 @@ class ProjectSO(sw.ScirisObject):
             self.owner_uid = valid_uuid
             
     def load_from_copy(self, other_object):
-        # Do the superclass copying.
-        super(ProjectSO, self).load_from_copy(other_object)
-        
-        # Copy the Project object itself.
-        self.proj = sc.dcp(other_object.proj)
-        
-        # Copy the owner UID.
-        self.owner_uid = other_object.owner_uid
+        if type(other_object) == type(self):        
+            # Do the superclass copying.
+            super(ProjectSO, self).load_from_copy(other_object)
+            
+            # Copy the Project object itself.
+            self.proj = sc.dcp(other_object.proj)
+            
+            # Copy the owner UID.
+            self.owner_uid = other_object.owner_uid
                 
     def show(self):
         # Show superclass attributes.
