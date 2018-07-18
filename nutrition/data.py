@@ -183,6 +183,7 @@ class DefaultParams(object):
         self.or_cond['Anaemia']['Severe diarrhoea'] = sc.odict()
         self.or_cond['Anaemia']['Severe diarrhoea'] = or_sheet.loc['Anaemia'].to_dict('index')['For anaemia per additional episode of severe diarrhoea']
         self.or_stunting_prog = or_sheet.loc['By program'].to_dict('index')
+        self.or_bf_prog = or_sheet.loc['Odds ratios for correct breastfeeding by program'].to_dict('index')
 
     def get_bo_progs(self):
         progs = utils.read_sheet(self.spreadsheet, 'Programs birth outcomes', [0,1], 'index')
@@ -227,7 +228,7 @@ class DefaultParams(object):
         effects = utils.read_sheet(self.spreadsheet, 'IYCF odds ratios', [0,1,2])
         bf_effects = effects.loc['Odds ratio for correct breastfeeding']
         stunt_effects = effects.loc['Odds ratio for stunting']
-        self.or_bf_prog = self.create_iycf(bf_effects, iycf_packs)
+        self.or_bf_prog.update(self.create_iycf(bf_effects, iycf_packs))
         self.or_stunting_prog.update(self.create_iycf(stunt_effects, iycf_packs))
 
     def create_iycf(self, effects, packages):
