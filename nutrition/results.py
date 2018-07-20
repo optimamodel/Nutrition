@@ -7,7 +7,8 @@ class ScenResult(object):
         self.name = name
         self.model_name = model_name
         self.model = model
-        self.programs = self.model.prog_info.programs
+        self.prog_info = self.model.prog_info # provides access to costing info
+        self.programs = self.prog_info.programs
         self.pops = self.model.pops
         self.mult = mult
         self.obj = obj
