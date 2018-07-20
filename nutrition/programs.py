@@ -18,6 +18,7 @@ class Program(object):
         self.year = all_years[0]
         self.annual_cov = np.zeros(len(all_years))
         self.annual_spend = np.zeros(len(all_years))
+        self.ref_spend = None
         self.func = None
         self.inv_func = None
 
@@ -225,7 +226,7 @@ class Program(object):
     def _get_cond_prob_update(self, age_group, risk):
         """This uses law of total probability to update a given age groups for risk types
         Possible risk types are 'Stunting' & 'Anaemia' """
-        oldProb = age_group.getFracRisk(risk)
+        oldProb = age_group.frac_risk(risk)
         probIfCovered = age_group.probConditionalCoverage[risk][self.name]['covered']
         probIfNotCovered = age_group.probConditionalCoverage[risk][self.name]['not covered']
         newProb = get_new_prob(self.annual_cov[self.year], probIfCovered, probIfNotCovered)
@@ -237,7 +238,7 @@ class Program(object):
         # overall update to prevalence of MAM and SAM
         update = {}
         for wastingCat in self.settings.wasted_list:
-            oldProb = age_group.getWastedFrac(wastingCat)
+            oldProb = age_group.frac_wasted(wastingCat)
             probWastedIfCovered = age_group.probConditionalCoverage[wastingCat][self.name]['covered']
             probWastedIfNotCovered = age_group.probConditionalCoverage[wastingCat][self.name]['not covered']
             newProb = get_new_prob(self.annual_cov[self.year], probWastedIfCovered, probWastedIfNotCovered)
@@ -600,19 +601,7 @@ class ProgramInfo:
                 elif len(cov) < numyears:
                     newcovs[i] = np.concatenate((cov, np.full(numyears - len(cov), cov[-1])), axis=0)
             except IndexError: # coverage scenario not specified, assume constant
-                newcovs[i] = np.full(numyears, prog.annual_cov[0])
-        #
-        # for i, cov in enumerate(covs):
-        #     if isinstance(cov, float):
-        #         newcovs[i] = np.full(numyears, cov)
-        #     elif not cov:
-        #         newcovs[i] = np.full(numyears, np.nan)
-        #     elif len(covs) == numyears:
-        #         newcovs[i] = np.array(cov)
-        #     elif len(cov) < numyears:
-        #         newcovs[i] = np.concatenate((cov, np.full(numyears-len(cov), cov[-1])), axis=0)
-        #     else:
-        #         raise Exception(":: Error :: scenario is not valid")
+                newcovs[i] = np.full(numyears, prog.base_cov)
         return newcovs
 
     def update_covs(self, pops, covs, spends):

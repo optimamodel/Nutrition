@@ -1,6 +1,7 @@
 import os, functools, traceback, scipy.special, multiprocessing, numbers, copy, collections
 import numpy as np
 import sciris.core as sc
+from scipy.optimize import brentq
 
 
 def optimafolder(subfolder=None):
@@ -183,18 +184,11 @@ def solve_quad(oddsRatio, fracA, fracB):
     # solves quadratic to calculate probabilities where e.g.:
     # fracA is fraction covered by intervention
     # fracB is fraction of pop. in a particular risk status
-    eps = 1.e-5
-    a = (1. - fracA) * (1. - oddsRatio)
-    b = (oddsRatio - 1) * fracB - oddsRatio * fracA - (1. - fracA)
-    c = fracB
-    det = np.sqrt(b ** 2 - 4. * a * c)
-    if (abs(a) < eps):
-        p0 = -c / b
-    else:
-        soln1 = (-b + det) / (2. * a)
-        soln2 = (-b - det) / (2. * a)
-        if (soln1 > 0.) and (soln1 < 1.): p0 = soln1
-        if (soln2 > 0.) and (soln2 < 1.): p0 = soln2
+    A = (1. - fracA) * (1. - oddsRatio)
+    B = (oddsRatio - 1) * fracB - oddsRatio * fracA - (1. - fracA)
+    C = fracB
+    f = lambda x,a,b,c: a*x**2 + b*x + c
+    p0 = brentq(f, 0, 1, args=(A,B,C))
     p1 = p0 * oddsRatio / (1. - p0 + oddsRatio * p0)
     return p0, p1
 
@@ -222,6 +216,20 @@ def fit_poly(group_idx, trend):
     else:
         linReg = np.polyfit(range(len(prev[notNan])), prev[notNan], 1)
         return 1 + linReg[0]
+
+def system(odds, bo, p0, x):
+    x0 = x[0]
+    f1 = odds[1]*x0 / (1 - x0  + odds[1]*x0 ) - x[1]
+    f2 = odds[2]*x0 / (1 - x[0] + odds[2]*x0) - x[2]
+    f3 = odds[3]*x0 / (1 - x0 + odds[3]*x0) - x[3]
+    f4 = sum(frac * x for frac, x in zip(bo, x)) - p0
+    return [f1, f2, f3, f4]
+
+def check_sol(sol):
+    try:
+        ((sol > 0) & (sol < 1)).all()
+    except:
+        raise Exception(':: Error:: birth outcome probabilities outside interval (0,1)')
 
 # ##############################################################################
 # ### TYPE FUNCTIONS

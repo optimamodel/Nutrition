@@ -69,7 +69,7 @@ class Optim(object):
         return res
 
     @utils.trace_exception
-    def one_optim(self, args, maxiter=5, swarmsize=10, maxtime=None):
+    def one_optim(self, args, maxiter=5, swarmsize=10, maxtime=50):
         """ Runs optimization for an objective and budget multiple.
         Return: a list of allocations, with order corresponding to the programs list """
         kwargs = args[0]
@@ -142,5 +142,5 @@ def obj_func(allocation, obj, model, free, fixed, keep_inds, sign):
     totalAllocations = utils.add_fixed_alloc(totalAllocations, scaledAllocation, keep_inds)
     thisModel.update_covs(totalAllocations, 'budget')
     thisModel.run_sim()
-    outcome = thisModel.get_output(obj) * sign
+    outcome = thisModel.get_output(obj)[0] * sign
     return outcome
