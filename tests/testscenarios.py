@@ -11,8 +11,8 @@ p.load_data('demo', 'demo', name='eg')
 kwargs1 = {'name':'test1',
          'model_name': 'eg',
          'scen_type': 'coverage',
-         'covs': [[.95]],
-         'prog_set': ['Vitamin A supplementation']}
+         'covs': [[.95], [0.95]],
+         'prog_set': ['Vitamin A supplementation', 'Micronutrient powders']}
 
 kwargs2 = sc.dcp(kwargs1)
 kwargs2.update({'name': 'test2',
