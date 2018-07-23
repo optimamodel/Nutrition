@@ -99,6 +99,7 @@ Last update: 2018-06-26
   import axios from 'axios'
   var filesaver = require('file-saver')
   import rpcservice from '@/services/rpc-service'
+  import taskservice from '@/services/task-service'  
   import router from '@/router'
   import Vue from 'vue';
 
@@ -303,49 +304,77 @@ Last update: 2018-06-26
       runOptim(optimSummary) {
         console.log('runOptim() called for '+this.currentOptim)
 
+//        rpcservice.rpcCall('launch_task', ['my_crazy_id', 'async_add', [23, 57]])
+//        rpcservice.rpcCall('check_task', ['my_crazy_id'])
+//        rpcservice.rpcCall('get_task_result', ['my_crazy_id'])         
+//        rpcservice.rpcCall('delete_task', ['my_crazy_id'])
+//        rpcservice.rpcCall('delete_task', ['run_optimization'])
+
+          // Do an async_add() and try for at most 15 sec. to get a result, polling every 5 sec.
+          // Should succeed.
+/*          taskservice.getTaskResultPolling('run_optimization', 15, 3, 'run_optim', [23, 57])
+          .then(response => {
+            console.log('The result is: ' + response.data.result)          
+          }) */
+          
         // Make sure they're saved first
         rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
+        .then(response => {
+
+          // Go to the server to get the results from the package set.
+//          rpcservice.rpcCall('run_optim', [this.projectID(), optimSummary.name])
+          taskservice.getTaskResultPolling('run_optimization', 90, 3, 'run_optim', 
+            [this.projectID(), optimSummary.name])
           .then(response => {
+            this.clearGraphs() // Once we receive a response, we can work with a clean slate
+//            this.graphData = response.data.graphs // Pull out the response data (use with the rpcCall).
+            this.graphData = response.data.result.graphs // Pull out the response data (use with task).
+            let n_plots = this.graphData.length
+            console.log('Rendering ' + n_plots + ' graphs')
 
-            // Go to the server to get the results from the package set.
-            rpcservice.rpcCall('run_optim', [this.projectID(), optimSummary.name])
-              .then(response => {
-                this.clearGraphs() // Once we receive a response, we can work with a clean slate
-                this.graphData = response.data.graphs // Pull out the response data.
-                let n_plots = this.graphData.length
-                console.log('Rendering ' + n_plots + ' graphs')
-
-                for (var index = 0; index <= n_plots; index++) {
-                  console.log('Rendering plot ' + index)
-                  var divlabel = 'fig' + index
-                  var div = document.getElementById(divlabel); // CK: Not sure if this is necessary? To ensure the div is clear first
-                  while (div.firstChild) {
-                    div.removeChild(div.firstChild);
-                  }
-                  try {
-                    mpld3.draw_figure(divlabel, response.data.graphs[index]); // Draw the figure.
-                  }
-                  catch (err) {
-                    console.log('failled:' + err.message);
-                  }
-                }
-              })
-              .catch(error => {
-                // Pull out the error message.
-                this.serverresponse = 'There was an error: ' + error.message
-
-                // Set the server error.
-                this.servererror = error.message
-              }).then(response => {
-              this.$notifications.notify({
-                message: 'Graphs created',
-                icon: 'ti-check',
-                type: 'success',
-                verticalAlign: 'top',
-                horizontalAlign: 'center',
-              });
-            })
+            for (var index = 0; index <= n_plots; index++) {
+              console.log('Rendering plot ' + index)
+              var divlabel = 'fig' + index
+              var div = document.getElementById(divlabel); // CK: Not sure if this is necessary? To ensure the div is clear first
+              while (div.firstChild) {
+                div.removeChild(div.firstChild);
+              }
+              try {              
+//                mpld3.draw_figure(divlabel, response.data.graphs[index]); // Draw the figure (use with the rpcCall).
+                mpld3.draw_figure(divlabel, response.data.result.graphs[index]); // Draw the figure (use with task).                 
+              }
+              catch (err) {
+                console.log('failled:' + err.message);
+              }
+            }
+            
+            // Success popup.
+            this.$notifications.notify({
+              message: 'Graphs created',
+              icon: 'ti-check',
+              type: 'success',
+              verticalAlign: 'top',
+              horizontalAlign: 'center',
+            })            
           })
+          .catch(error => {
+            // Pull out the error message.
+            this.serverresponse = 'There was an error: ' + error.message
+
+            // Set the server error.
+            this.servererror = error.message
+            
+            // Put up a failure notification.
+            this.$notifications.notify({
+              message: 'Optimization failed',
+              icon: 'ti-face-sad',
+              type: 'warning',
+              verticalAlign: 'top',
+              horizontalAlign: 'center',
+            })            
+          })
+          
+        })
       },
 
       reloadGraphs() {
