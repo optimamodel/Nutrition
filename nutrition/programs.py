@@ -14,15 +14,12 @@ class Program(object):
         self.prog_deps = prog_data.prog_deps
         self.famplan_methods = prog_data.famplan_methods # todo: want these here or in nonPW class???
         self.settings = Settings()
-        self.all_years = all_years # todo: may want this in ProgInfo
-        self.sim_years = all_years[1:]
         self.year = all_years[0]
         self.annual_cov = np.zeros(len(all_years))
         self.annual_spend = np.zeros(len(all_years))
         self.ref_spend = None
         self.func = None
         self.inv_func = None
-
         self.target_pops = prog_data.prog_target[self.name] # frac of each population which is targeted
         self.unit_cost = prog_data.costs[self.name]
         self.sat = prog_data.sat[self.name]
@@ -39,12 +36,11 @@ class Program(object):
         self.annual_cov = cov
         self.annual_spend = spend
 
-    def interp_cov(self, cov, restr_cov):
+    def interp_cov(self, cov, years, restr_cov):
         """ cov: a list of coverages with one-to-one correspondence with sim_years
         restr_cov: boolean indicating if the coverages are restricted or unrestricted """
         if restr_cov:
             cov = map(self.get_unrestr_cov, cov)
-        years = np.array(self.all_years)
         cov = np.array(cov, dtype=float) # force conversion to treat None as nan
         cov[0] = self.annual_cov[0]
         not_nan = ~np.isnan(cov)
@@ -494,11 +490,6 @@ class ProgramInfo:
     def base_progset(self):
         return self.prog_data.base_prog_set
 
-    def set_years(self, all_years):
-        for prog in self.programs:
-            prog.year = all_years[0]
-            prog.sim_years = all_years[1:]
-
     def _set_ref_progs(self):
         for program in self.programs:
             if program.name in self.prog_data.ref_progs:
@@ -581,11 +572,11 @@ class ProgramInfo:
         covs = self.check_cov(covs, years)
         if 'ov' in scentype:
             for i, prog in enumerate(self.programs):
-                unrestr_cov[i] = prog.interp_cov(covs[i], restr_cov=True)
+                unrestr_cov[i] = prog.interp_cov(covs[i], years, restr_cov=True)
                 spend[i] = prog.inv_func(unrestr_cov[i])
         elif 'ud' in scentype:
             for i, prog in enumerate(self.programs):
-                unrestr_cov[i] = prog.interp_cov(prog.func(covs[i]), restr_cov=False)
+                unrestr_cov[i] = prog.interp_cov(prog.func(covs[i]), years, restr_cov=False)
                 spend[i] = prog.inv_func(unrestr_cov[i])
         else:
             raise Exception("Error: scenario type '{}' is not valid".format(scentype))

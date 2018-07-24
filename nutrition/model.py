@@ -12,7 +12,7 @@ class Model:
         self.ss = settings.Settings()
 
         self.t = t if t else self.ss.t
-        self.all_years = range(0, self.t[1]-self.t[0]+1)
+        self.all_years = np.arange(0, self.t[1]-self.t[0]+1)
         self.n_years = len(self.all_years)
         self.sim_years = self.all_years[1:]
         self.year = self.all_years[0]
@@ -23,7 +23,7 @@ class Model:
         self.adjust_cov = adjust_cov
         self.timeTrends = timeTrends
 
-    def setup(self, scen=None, setcovs=True):
+    def setup(self, scen, setcovs=True):
         """ Sets scenario-specific parameters within the model.
         - simulation period
         - programs for scenario

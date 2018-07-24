@@ -132,11 +132,11 @@ def scale_alloc(free, allocation):
         scaled_alloc = allocation * scale
     return scaled_alloc
 
-def add_fixed_alloc(fixed, alloc, indxList):
-    """Assumes order is preserved from original list"""
-    total_allocs = np.concatenate(([fixed[indxList]], [alloc]), axis=0)
-    total_allocs = np.sum(total_allocs, axis=0)
-    return total_allocs
+def add_fixed_alloc(fixed, alloc, indx):
+    """ Adds optimized allocations (for programs included in indx) to the fixed costs """
+    total = np.copy(fixed)
+    total[indx] += alloc
+    return total
 
 def get_obj_sign(obj):
     max_obj = ['thrive_notanaemic', 'thrive', 'thrive2', 'healthy_children', 'nonstunted_nonwasted', 'not_anaemic',
