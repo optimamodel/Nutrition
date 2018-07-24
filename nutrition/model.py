@@ -52,7 +52,7 @@ class Model:
     
     def update_covs(self, covs, scentype):
         covs, spend = self.prog_info.get_cov_scen(covs, scentype, self.all_years)
-        self.prog_info.update_covs(self.pops, covs, spend)
+        self.prog_info.update_covs(covs, spend)
 
     def _set_trackers(self):
         """ Arrays to store annual outputs """

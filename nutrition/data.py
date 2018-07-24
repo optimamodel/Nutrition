@@ -445,7 +445,7 @@ class ProgData(object):
         self.base_prog_set = []
         self.base_cov = []
         self.ref_progs = []
-        self.saturation = None
+        self.sat = None
         self.costs = None
         self.prog_deps = None
         self.prog_target = None
@@ -502,7 +502,7 @@ class ProgData(object):
         sheet = utils.read_sheet(self.spreadsheet, 'Programs cost and coverage')
         self.base_prog_set = sheet.iloc[:,0].tolist()
         self.base_cov = sc.odict(zip(self.base_prog_set, sheet.iloc[:,1].tolist()))
-        self.saturation = sc.odict(zip(self.base_prog_set, sheet.iloc[:,2].tolist()))
+        self.sat = sc.odict(zip(self.base_prog_set, sheet.iloc[:,2].tolist()))
         self.costs = sc.odict(zip(self.base_prog_set, sheet.iloc[:,3].tolist()))
 
     def create_iycf(self):

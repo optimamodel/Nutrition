@@ -124,7 +124,7 @@ class ChildAgeGroup(AgeGroup):
             self.continuedWastingImpact[wastingCat] = 1
 
     def reset_storage(self):
-        super(ChildAgeGroup, self).reset_storage() # todo: does this work???
+        super(ChildAgeGroup, self).reset_storage()
         # storing updates
         self.stuntingUpdate = 1
         self.bfUpdate = {}
