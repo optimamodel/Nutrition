@@ -121,7 +121,8 @@ class Optim(object):
             best_alloc = utils.add_fixed_alloc(fixed, scaled, inds)
         else:
             # if no money to distribute, return the fixed costs
-            print('Warning: degenerate optimization, returning fixed allocations \n objective: %s '
+            if self.name != 'baseline':
+                print('Warning: degenerate optimization, returning fixed allocations \n objective: %s '
                   '\n flexible funds: %s \n impactful progs: %s' % (obj, free, numprogs))
             best_alloc = fixed
         # generate results
