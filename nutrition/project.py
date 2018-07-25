@@ -155,25 +155,25 @@ class Project(object):
         ''' Shortcut for getting the latest model, i.e. self.datasets[-1] '''
         if key is None: key = -1
         try:    return self.datasets[key]
-        except: return sc.printv('Warning, dataset set not found!', 1, verbose) # Returns None
+        except: return sc.printv('Warning, dataset "%s" set not found!' %key, 1, verbose) # Returns None
     
     def scen(self, key=None, verbose=2):
         ''' Shortcut for getting the latest scenario, i.e. self.scen[-1] '''
         if key is None: key = -1
         try:    return self.scens[key]
-        except: return sc.printv('Warning, scenario not found!', 1, verbose) # Returns None
+        except: return sc.printv('Warning, scenario "%s" not found!' %key, 1, verbose) # Returns None
     
     def optim(self, key=None, verbose=2):
         ''' Shortcut for getting the latest optim, i.e. self.scen[-1] '''
         if key is None: key = -1
         try:    return self.optims[key]
-        except: return sc.printv('Warning, optimization not found!', 1, verbose) # Returns None
+        except: return sc.printv('Warning, optimization "%s" not found!' %key, 1, verbose) # Returns None
     
     def result(self, key=None, verbose=2):
         ''' Shortcut for getting the latest result, i.e. self.results[-1] '''
         if key is None: key = -1
         try:    return self.results[key]
-        except: return sc.printv('Warning, result not found!', 1, verbose) # Returns None
+        except: return sc.printv('Warning, result "%s" not found!' %key, 1, verbose) # Returns None
     
     def cleanresults(self):
         ''' Remove all results '''
@@ -256,7 +256,7 @@ class Project(object):
         else:
             return scen_list
 
-    def demo_optims(self, key='demo', dorun=False, doadd=True):
+    def demo_optims(self, key='demo', dorun=False, doadd=True): # todo: think this is broken...
         demopts = OptimTest(key)
         optim_list = [Optim(**demopts.get_attr())]
         if doadd:
@@ -278,19 +278,24 @@ class Project(object):
                 self.add_result(res, name=res.name)
         return None
 
-    def run_optims(self, key=None, optim_list=None, parallel=True):
+    def run_optims(self, keys=None, optim_list=None, parallel=True):
+        if keys is None: keys = self.optims.keys()
         if optim_list is not None: self.add_optims(optim_list)
-        budget_res = []
-        for optim in self.optims.itervalues():
-            # run baseline scen with given progset
-            self.add_baseline(optim.model_name, optim.prog_set, dorun=True)
-            budget_res.append(self.result('baseline'))
-            model = sc.dcp(self.models[optim.model_name])
-            model.setup(optim, setcovs=False)
-            model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
-            budget_res += optim.run_optim(model, parallel=parallel)
-            # add list of scenario results by optimisation name
-            self.add_result(budget_res, name=optim.name)
+        keys = sc.promotetolist(keys)
+        for key in keys:
+            budget_res = []
+            optim = self.optim(key)
+            if optim:
+                # run baseline scen with given progset
+                self.add_baseline(optim.model_name, optim.prog_set, dorun=True)
+                budget_res.append(self.result('baseline'))
+                # run the optimization
+                model = sc.dcp(self.models[optim.model_name])
+                model.setup(optim, setcovs=False)
+                model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
+                budget_res += optim.run_optim(model, parallel=parallel)
+                # add list of scenario results by optimisation name
+                self.add_result(budget_res, name=optim.name)
         return None
 
     def get_results(self, result_keys):
@@ -298,7 +303,7 @@ class Project(object):
         Return: a list of result objects """
         if not result_keys: result_keys = [-1]
         results = [self.result(key) for key in result_keys]
-        if isinstance(results[0],list): # checks if returned a list of scenarios (optimization)
+        if isinstance(results[0], list): # checks if returned a list of scenarios (optimization)
             results = results[0]
         return results
 
@@ -308,10 +313,14 @@ class Project(object):
     @trace_exception
     def plot(self, keys=None, toplot=None, optim=False):
         """ Plots results stored at 'keys'.
-         Warning: do not attempt to plot optimization and scenarios in a single call."""
+         WARNING: do not attempt to plot optimization and scenarios or multiple optimizations in a single call.
+         Not only is this a little difficult to implement, but the plots are not compatible across optimizations & results in many plots being generated"""
         if keys: keys = sc.promotetolist(keys)
         else: keys = []
         if not optim: keys = ['baseline'] + keys
+        else: # todo: could put a loop for the optimization results...
+            if len(keys) > 1:
+                return sc.printv('Warning, cannot plot two optimizations simultaneously')
         figs = make_plots(self.get_results(keys), toplot=toplot, optim=optim)
         return figs
 
