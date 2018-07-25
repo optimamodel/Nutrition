@@ -36,16 +36,24 @@ class Program(object):
         self.annual_cov = cov
         self.annual_spend = spend
 
-    def interp_cov(self, cov, years, restr_cov):
-        """ cov: a list of coverages with one-to-one correspondence with sim_years
+    def interp_scen(self, cov, years, scentype):
+        """ cov: a list of coverages/spending with one-to-one correspondence with sim_years
         restr_cov: boolean indicating if the coverages are restricted or unrestricted """
-        if restr_cov:
-            cov = map(self.get_unrestr_cov, cov)
-        cov = np.array(cov, dtype=float) # force conversion to treat None as nan
-        cov[0] = self.annual_cov[0]
-        not_nan = ~np.isnan(cov)
-        interped = np.interp(years, years[not_nan], cov[not_nan])
-        return interped
+        if 'ov' in scentype:
+            # assume restricted cov
+            cov = self.get_unrestr_cov(cov)
+            cov[0] = self.annual_cov[0]
+            not_nan = ~np.isnan(cov)
+            interp_cov = np.interp(years, years[not_nan], cov[not_nan])
+            interp_spend = self.inv_func(interp_cov)
+        elif 'ud' in scentype: # budget
+            cov[0] = self.annual_spend[0]
+            not_nan = ~np.isnan(cov)
+            interp_spend = np.interp(years, years[not_nan], cov[not_nan])
+            interp_cov = self.func(interp_spend)
+        else:
+            raise Exception("Error: scenario type '{}' is not valid".format(scentype))
+        return interp_cov, interp_spend
 
     def check_cov(self, cov, years):
         numyears = len(years)
@@ -56,7 +64,8 @@ class Program(object):
         return new
 
     def get_unrestr_cov(self, restr_cov):
-        return restr_cov*self.restr_popsize / self.unrestr_popsize
+        """ Expects an array of restricted coverages """
+        return restr_cov[:]*self.restr_popsize / self.unrestr_popsize
 
     def set_pop_sizes(self, pops):
         self._set_restrpop(pops)
@@ -485,7 +494,9 @@ class ProgramInfo:
 
     def get_base_spend(self):
         for prog in self.programs:
-            prog.base_spend = prog.inv_func(prog.annual_cov[:1])[0]
+            spend = prog.inv_func(prog.annual_cov[:1])[0]
+            prog.base_spend = spend
+            prog.annual_spend[0] = spend
 
     def base_progset(self):
         return self.prog_data.base_prog_set
@@ -570,16 +581,8 @@ class ProgramInfo:
         unrestr_cov = np.zeros(shape=(len(self.programs), len(years)))
         spend = np.zeros(shape=(len(self.programs), len(years)))
         covs = self.check_cov(covs, years)
-        if 'ov' in scentype:
-            for i, prog in enumerate(self.programs):
-                unrestr_cov[i] = prog.interp_cov(covs[i], years, restr_cov=True)
-                spend[i] = prog.inv_func(unrestr_cov[i])
-        elif 'ud' in scentype:
-            for i, prog in enumerate(self.programs):
-                unrestr_cov[i] = prog.interp_cov(prog.func(covs[i]), years, restr_cov=False)
-                spend[i] = prog.inv_func(unrestr_cov[i])
-        else:
-            raise Exception("Error: scenario type '{}' is not valid".format(scentype))
+        for i, prog in enumerate(self.programs):
+            unrestr_cov[i], spend[i] = prog.interp_scen(covs[i], years, scentype)
         return unrestr_cov, spend
 
     def check_cov(self, covs, years):
@@ -596,6 +599,7 @@ class ProgramInfo:
                     newcovs[i] = np.concatenate((cov, np.full(numyears - len(cov), cov[-1])), axis=0)
             except IndexError: # coverage scenario not specified, assume constant
                 newcovs[i] = np.full(numyears, prog.base_cov)
+        newcovs = newcovs.astype(float) # force conversion to treat None as nan
         return newcovs
 
     def update_covs(self, covs, spends):
