@@ -13,10 +13,10 @@ def make_plots(all_res=None, toplot=None, optim=False):
         toplot = ['prevs', 'ann', 'agg']
         if optim:
             toplot.append('alloc')
-    if all_res is None or all_res == []:
-        print('WARNING, no results selected to plot')
-        return allplots
-    
+    if None in all_res:
+        all_res = [x for x in all_res if x is not None]
+        if not all_res:
+            return sc.printv('Warning, no results to plot')
     toplot = sc.promotetolist(toplot)
     all_res = sc.promotetolist(all_res)
     if 'prevs' in toplot:
@@ -31,10 +31,6 @@ def make_plots(all_res=None, toplot=None, optim=False):
     if 'alloc' in toplot: # optimized allocations
         outfigs = plot_alloc(all_res)
         allplots.update(outfigs)
-#        try:
-#            
-#        except Exception as E:
-#            print('WARNING, could not plot allocation: %s' % repr(E))
     return allplots
 
 def plot_prevs(all_res):
