@@ -33,7 +33,6 @@ class ScenResult(object):
             outcomes = default_trackers()
         if isinstance(outcomes, str):
             outcomes = sc.promotetolist(outcomes)
-
         outs = [self.model.get_output(name, seq=seq) for name in outcomes]
         if asdict:
             output = sc.odict()

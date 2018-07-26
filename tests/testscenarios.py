@@ -21,5 +21,3 @@ scen_list = [Scen(**kwargs1)]
 p.add_scens(scen_list)
 p.run_scens()
 p.plot(keys=['test1'])
-import pylab as pl
-pl.show()
