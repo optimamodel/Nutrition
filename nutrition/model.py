@@ -369,7 +369,7 @@ class Model:
             outer = np.einsum('i,j,k,l', stunting, wasting, anaemia, bf).flatten()
             deaths = sum(age_group.pop_size * outer[:] * age_group.mortality[:] * self.ss.timestep)
             age_group.pop_size -= deaths
-            self.child_deaths += deaths
+            self.child_deaths[self.year] += deaths
 
     def _apply_child_ageing(self):
         self._track_outcomes()
