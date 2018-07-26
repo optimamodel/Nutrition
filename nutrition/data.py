@@ -445,7 +445,7 @@ class ProgData(object):
         self.base_prog_set = []
         self.base_cov = []
         self.ref_progs = []
-        self.saturation = None
+        self.sat = None
         self.costs = None
         self.prog_deps = None
         self.prog_target = None
@@ -502,7 +502,7 @@ class ProgData(object):
         sheet = utils.read_sheet(self.spreadsheet, 'Programs cost and coverage')
         self.base_prog_set = sheet.iloc[:,0].tolist()
         self.base_cov = sc.odict(zip(self.base_prog_set, sheet.iloc[:,1].tolist()))
-        self.saturation = sc.odict(zip(self.base_prog_set, sheet.iloc[:,2].tolist()))
+        self.sat = sc.odict(zip(self.base_prog_set, sheet.iloc[:,2].tolist()))
         self.costs = sc.odict(zip(self.base_prog_set, sheet.iloc[:,3].tolist()))
 
     def create_iycf(self):
@@ -565,91 +565,6 @@ class ProgData(object):
             newAgeGroups = {age:subDict for age in ages if subDict is not None}
             my_dict[key].update(newAgeGroups)
         return my_dict
-
-class OptimTest(object):
-    """ Only for testing purposes. """
-    def __init__(self, name, filepath=settings.demo_opts_path()):
-        self.spreadsheet = pandas.ExcelFile(filepath)
-
-        self.name = name
-        self.model_name = name
-        self.prog_set = []
-        self.mults = None
-        self.fix_curr = None
-        self.add_funds = None
-        self.obj = None
-        self.filter_progs = None
-        self.get_prog_set()
-        self.get_opts()
-
-        delattr(self, 'spreadsheet')
-    
-    def __repr__(self):
-        output  = sc.desc(self)
-        return output
-
-    def get_attr(self):
-        return self.__dict__
-
-    def get_prog_set(self):
-        prog_sheet = utils.read_sheet(self.spreadsheet, 'Programs to include', [0])
-        prog_sheet = prog_sheet[pandas.notnull(prog_sheet)]
-        for program, value in prog_sheet.iterrows():
-            self.prog_set.append(program)
-
-    def get_opts(self):
-        opts = self.spreadsheet.parse('Optimization options')
-        self.obj = opts['objectives'][0]
-        mults = str(opts['multiples of flexible funding'][0]).replace(' ', '').split(',')
-        self.mults = [int(x) for x in mults]
-        fix_curr = opts['fix current funds'][0]
-        self.fix_curr = True if fix_curr else False
-        self.add_funds = opts['additional funds'][0]
-        filter = opts['filter programs'][0]
-        self.filter_progs = True if filter else False
-
-class ScenTest(object):
-    """ Only used for testing purposes. This information should be supplied by the frontend. """
-
-    def __init__(self, name, scen_type, filepath=settings.demo_opts_path()):
-        self.spreadsheet = pandas.ExcelFile(filepath)
-
-        self.name = name
-        self.model_name = name
-        self.prog_set = []
-        self.scen_type = scen_type
-        self.covs = []
-
-        self.get_prog_set()
-        if 'ov' in scen_type: # coverage scenario
-            self.get_cov_scen()
-        else:
-            self.get_budget_scen()
-
-        delattr(self, 'spreadsheet')
-
-    def __repr__(self):
-        output  = sc.desc(self)
-        return output
-
-    def get_attr(self):
-        return self.__dict__
-
-    def get_prog_set(self):
-        prog_sheet = utils.read_sheet(self.spreadsheet, 'Programs to include', [0])
-        prog_sheet = prog_sheet[pandas.notnull(prog_sheet)]
-        for program, value in prog_sheet.iterrows():
-            self.prog_set.append(program)
-
-    def get_cov_scen(self):
-        cov = self.spreadsheet.parse('Coverage scenario', index_col=[0,1])
-        for prog in self.prog_set: # only programs included
-            self.covs.append(cov.loc[prog,'Coverage'].tolist()[1:])
-
-    def get_budget_scen(self):
-        budget = self.spreadsheet.parse('Budget scenario', index_col=[0,1])
-        for prog in self.prog_set: # only programs included
-            self.covs.append(budget.loc[prog,'Spending'].tolist()[1:])
 
 class Dataset(object):
     ''' Store all the data for a project '''

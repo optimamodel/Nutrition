@@ -13,10 +13,10 @@ def make_plots(all_res=None, toplot=None, optim=False):
         toplot = ['prevs', 'ann', 'agg']
         if optim:
             toplot.append('alloc')
-    if all_res is None or all_res == []:
-        print('WARNING, no results selected to plot')
-        return allplots
-    
+    if None in all_res:
+        all_res = [x for x in all_res if x is not None]
+        if not all_res:
+            return sc.printv('Warning, no results to plot')
     toplot = sc.promotetolist(toplot)
     all_res = sc.promotetolist(all_res)
     if 'prevs' in toplot:
@@ -31,10 +31,6 @@ def make_plots(all_res=None, toplot=None, optim=False):
     if 'alloc' in toplot: # optimized allocations
         outfigs = plot_alloc(all_res)
         allplots.update(outfigs)
-#        try:
-#            
-#        except Exception as E:
-#            print('WARNING, could not plot allocation: %s' % repr(E))
     return allplots
 
 def plot_prevs(all_res):
@@ -64,10 +60,10 @@ def plot_prevs(all_res):
             leglabels.append(res.name)
         # formatting
         ax.yaxis.set_major_formatter(tk.FormatStrFormatter('%.1f'))
-        ax.set_ylabel('{} (%)'.format(prev))
+        ax.set_ylabel(utils.relabel(prev))
         ax.set_ylim([0, ymax + ymax*0.1])
         ax.set_xlabel('Years')
-        ax.set_title('Risk prevalences')
+        # ax.set_title('Risk prevalences') # todo: need a better title
         ax.legend(lines, [res.name for res in all_res], loc='right', ncol=1)
         figs['prevs_%0i'%i] = fig
     return figs
@@ -88,7 +84,7 @@ def plot_outputs(all_res, seq, name):
         baseout = baseres.get_outputs(outcome, seq=seq)[0]
         for res in all_res:
             offset += width
-            xpos = np.array(res.years) + offset if seq else offset
+            xpos = years + offset if seq else offset
             output = res.get_outputs(outcome, seq=seq)[0]
             thimax = max(output)
             if thimax > ymax: ymax = thimax
@@ -99,9 +95,10 @@ def plot_outputs(all_res, seq, name):
         if seq:
             ax.set_xticks(years+offset/2.)
             ax.set_xticklabels(years)
+            ax.set_xlabel('Years')
         else:
             ax.set_xticks([])
-            # display percentage change
+            # display percentage change above bars
             for j, bar in enumerate(bars[1:],1):
                 for k, rect in enumerate(bar):
                     change = perchange[j][k]
@@ -110,9 +107,10 @@ def plot_outputs(all_res, seq, name):
                                 va='bottom')
         # formatting
         ax.set_ylim([0, ymax + ymax * .1])
-        ax.set_ylabel(outcome)
+        lab = utils.relabel(outcome)
+        ax.set_ylabel(lab)
         ax.legend(bars, [res.name for res in all_res], loc='right', ncol=1)
-        ax.set_title(outcome)
+        ax.set_title(lab) # todo: how do we want to label this?
         figs['%s_out_%0i'%(name, i)] = fig
     return figs
 
@@ -122,6 +120,7 @@ def plot_alloc(all_res):
      as assumed structure for spending is different """
     #initialize
     width = 0.35
+    mag = 1e6
     fig = pl.figure()
     ax = fig.add_subplot(111)
     figs = sc.odict()
@@ -140,21 +139,25 @@ def plot_alloc(all_res):
         # get allocation for each multiple
         for j, res in enumerate(all_res):
             pos = res.mult if res.mult else res.name
-            xlabs.append(pos)
+            xlabs.append(utils.relabel(pos))
             # adjust spending so does not display reference spending
             alloc = res.programs[i].annual_spend[1] - ref_spend[i] # spending is same after first year in optimization
+            # scale for axis
+            alloc /= mag
             y = np.append(y, alloc)
         bar = ax.bar(x, y, width=width, bottom=bottom)
         bars.append(bar)
         bottom += y
     ymax = max(bottom)
     # formatting
-    ax.set_title(ref.obj)
+    title = utils.relabel(ref.obj).lower()
+    ax.set_title('To optimize the \n %s %s-%s'%(title, ref.years[0], ref.years[-1]))
     ax.set_xticks(x)
     ax.set_xticklabels(xlabs)
     ax.set_ylim((0, ymax+ymax*.1))
-    ax.set_ylabel('Funding')
-    ax.set_xlabel('Multiple of flexible funding')
+    ax.set_ylabel('Annual spending on programs (million US$)')
+    ax.set_xlabel('Total available budget (as a multiple of US$%sM)'%int(str(res.prog_info.free)[:2]))
+    ax.yaxis.set_major_formatter(tk.FormatStrFormatter('%3.0f'))
     ax.legend(bars, [prog.name for prog in ref.programs])
     figs['alloc'] = fig
     return figs

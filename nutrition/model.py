@@ -12,7 +12,7 @@ class Model:
         self.ss = settings.Settings()
 
         self.t = t if t else self.ss.t
-        self.all_years = range(0, self.t[1]-self.t[0]+1)
+        self.all_years = np.arange(0, self.t[1]-self.t[0]+1)
         self.n_years = len(self.all_years)
         self.sim_years = self.all_years[1:]
         self.year = self.all_years[0]
@@ -23,7 +23,7 @@ class Model:
         self.adjust_cov = adjust_cov
         self.timeTrends = timeTrends
 
-    def setup(self, scen=None, setcovs=True):
+    def setup(self, scen, setcovs=True):
         """ Sets scenario-specific parameters within the model.
         - simulation period
         - programs for scenario
@@ -52,7 +52,7 @@ class Model:
     
     def update_covs(self, covs, scentype):
         covs, spend = self.prog_info.get_cov_scen(covs, scentype, self.all_years)
-        self.prog_info.update_covs(self.pops, covs, spend)
+        self.prog_info.update_covs(covs, spend)
 
     def _set_trackers(self):
         """ Arrays to store annual outputs """
@@ -369,7 +369,7 @@ class Model:
             outer = np.einsum('i,j,k,l', stunting, wasting, anaemia, bf).flatten()
             deaths = sum(age_group.pop_size * outer[:] * age_group.mortality[:] * self.ss.timestep)
             age_group.pop_size -= deaths
-            self.child_deaths += deaths
+            self.child_deaths[self.year] += deaths
 
     def _apply_child_ageing(self):
         self._track_outcomes()
