@@ -5,11 +5,12 @@
 import sciris.core as sc
 from .version import version
 from .optimization import Optim
-from .data import Dataset, ScenTest, OptimTest
+from .data import Dataset
 from .scenarios import Scen, run_scen
 from .plotting import make_plots
 from .model import Model
 from .utils import trace_exception
+from .demo import demo_scens, demo_optims
 
 
 #######################################################################################################
@@ -243,29 +244,25 @@ class Project(object):
             keyname = name
         self.add(name=keyname, item=result, what='result')
 
-    def demo_scens(self, key='demo', dorun=None, doadd=True, which=None):
-        if which is None:
-            which = 'coverage'
-        demopts = ScenTest(key, which)
-        scen_list = [Scen(**demopts.get_attr())]
+    def demo_scens(self, dorun=None, doadd=True):
+        scens = demo_scens()
         if doadd:
-            self.add_scens(scen_list)
+            self.add_scens(scens)
             if dorun:
                 self.run_scens()
             return None
         else:
-            return scen_list
+            return scens
 
-    def demo_optims(self, key='demo', dorun=False, doadd=True): # todo: think this is broken...
-        demopts = OptimTest(key)
-        optim_list = [Optim(**demopts.get_attr())]
+    def demo_optims(self, dorun=False, doadd=True):
+        optims = demo_optims()
         if doadd:
-            self.add_optims(optim_list)
+            self.add_optims(optims)
             if dorun:
-                self.run_optim()
+                self.run_optims()
             return None
         else:
-            return optim_list
+            return optims
     
     def run_scens(self, scens=None):
         """Function for running scenarios
@@ -278,7 +275,7 @@ class Project(object):
                 self.add_result(res, name=res.name)
         return None
 
-    def run_optims(self, keys=None, optim_list=None, parallel=True):
+    def run_optims(self, keys=None, optim_list=None, maxiter=5, swarmsize=10, maxtime=10, parallel=True):
         if keys is None: keys = self.optims.keys()
         if optim_list is not None: self.add_optims(optim_list)
         keys = sc.promotetolist(keys)
@@ -293,7 +290,8 @@ class Project(object):
                 model = sc.dcp(self.models[optim.model_name])
                 model.setup(optim, setcovs=False)
                 model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
-                budget_res += optim.run_optim(model, parallel=parallel)
+                budget_res += optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
+                                              parallel=parallel)
                 # add list of scenario results by optimisation name
                 self.add_result(budget_res, name=optim.name)
         return None
@@ -318,7 +316,7 @@ class Project(object):
         if keys: keys = sc.promotetolist(keys)
         else: keys = []
         if not optim: keys = ['baseline'] + keys
-        else: # todo: could put a loop for the optimization results...
+        else:
             if len(keys) > 1:
                 return sc.printv('Warning, cannot plot two optimizations simultaneously')
         figs = make_plots(self.get_results(keys), toplot=toplot, optim=optim)

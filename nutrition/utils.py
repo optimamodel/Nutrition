@@ -106,14 +106,41 @@ class odict(collections.OrderedDict):
 #
 
 def default_trackers():
-    output = [
+    outcome = [
         'stunting_prev',
         'wasting_prev',
         'anaemia_prev',
         'child_deaths',
         'pw_deaths',
         'thrive']
-    return output
+    return outcome
+
+def get_obj_sign(obj):
+    max_obj = ['thrive', 'healthy_children', 'not_anaemic', 'no_conditions']
+    if obj in max_obj:
+        return -1
+    else:
+        return 1
+
+def pretty_labels(): # todo: look at Nick's labels
+    labs = sc.odict()
+    labs['thrive'] = 'Number of alive, non-stunted children'
+    labs['stunting_prev'] = 'Prevalence of stunting in children (%)'
+    labs['child_deaths'] = 'Child mortality'
+    labs['pw_deaths'] = 'Pregnant women mortality'
+    labs['anaemia_prev'] = 'Prevalence of anaemia in children \n and women of reproductive age (%)'
+    labs['wasting_prev'] = 'Prevalence of wasting in children (%)'
+    labs['baseline'] = 'Est. spending' # this is for allocation
+    return labs
+
+def relabel(old):
+    """ Turn a variable label into a user-friendly version """
+    labs = pretty_labels()
+    try:
+        new = labs[str(old)] # do not allow indexing
+    except:
+        new = old
+    return new
 
 def read_sheet(spreadsheet, name, cols=None, dict_orient=None, skiprows=None, to_odict=False):
     df = spreadsheet.parse(name, index_col=cols, skiprows=skiprows).dropna(how='all')
@@ -137,14 +164,6 @@ def add_fixed_alloc(fixed, alloc, indx):
     total = np.copy(fixed)
     total[indx] += alloc
     return total
-
-def get_obj_sign(obj):
-    max_obj = ['thrive_notanaemic', 'thrive', 'thrive2', 'healthy_children', 'nonstunted_nonwasted', 'not_anaemic',
-                  'not_anaemic2', 'no_conditions']
-    if obj in max_obj:
-        return -1
-    else:
-        return 1
 
 def trace_exception(func):
     """
