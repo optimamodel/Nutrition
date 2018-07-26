@@ -52,7 +52,7 @@ class Optim(object):
 
     ######### OPTIMIZATION ##########
 
-    def run_optim(self, model, parallel=True, num_procs=None):
+    def run_optim(self, model, maxiter=5, swarmsize=10, maxtime=10, parallel=True, num_procs=None):
         if parallel:
             how = 'parallel'
             num_procs = num_procs if num_procs else self.num_cpus
@@ -62,7 +62,8 @@ class Optim(object):
         print('Optimizing for %s in %s' % (self.name, how))
         # list of kwargs
         keep_inds = self._filter_progs(model, self.obj) # not dependent upon spending
-        args = [(self.get_kwargs(model, self.obj, mult, keep_inds), mult) for mult in self.mults]
+        optim = (maxiter, swarmsize, maxtime)
+        args = [(self.get_kwargs(model, self.obj, mult, keep_inds), mult)+optim for mult in self.mults]
         res = utils.run_parallel(self.one_optim, args, num_procs)
         return res
 
@@ -99,11 +100,12 @@ class Optim(object):
         return np.array(keep_inds)
 
     @utils.trace_exception
-    def one_optim(self, args, maxiter=5, swarmsize=10, maxtime=50):
+    def one_optim(self, args):
         """ Runs optimization for an objective and budget multiple.
         Return: a list of allocations, with order corresponding to the programs list """
         kwargs = args[0]
         mult = args[1]
+        maxiter, swarmsize, maxtime = args[2:]
         free = kwargs['free']
         inds = kwargs['keep_inds']
         obj = kwargs['obj']
