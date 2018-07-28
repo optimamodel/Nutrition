@@ -94,7 +94,8 @@ Last update: 2018-07-28
       </div>
       
       <!-- Popup spinner -->
-      <modal name="popup-spinner" 
+      <popup-spinner></popup-spinner>
+<!--      <modal name="popup-spinner" 
              height="80px" 
              width="85px" 
              style="opacity: 0.6">
@@ -102,7 +103,7 @@ Last update: 2018-07-28
                      size="50px" 
                      style="padding: 15px">
         </clip-loader>
-      </modal> 
+      </modal> -->
     
     </div>
   </div>
@@ -116,13 +117,14 @@ Last update: 2018-07-28
   import taskservice from '@/services/task-service'  
   import router from '@/router'
   import Vue from 'vue';
-  import ClipLoader from 'vue-spinner/src/ClipLoader.vue'
+//  import ClipLoader from 'vue-spinner/src/ClipLoader.vue'
+  import PopupSpinner from './Spinner.vue'
 
   export default {
     name: 'OptimizationPage',
     
     components: {
-      ClipLoader
+      PopupSpinner
     },
   
     data() {
