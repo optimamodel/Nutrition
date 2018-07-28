@@ -1,122 +1,131 @@
 <!--
 Define health packages
 
-Last update: 2018-05-29
+Last update: 2018-07-26
 -->
 
 <template>
   <div class="SitePage">
-
-    <table class="table table-bordered table-hover table-striped" style="width: 100%">
-      <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Active?</th>
-        <th>Actions</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr v-for="scenSummary in scenSummaries">
-        <td>
-          <b>{{ scenSummary.name }}</b>
-        </td>
-        <td>
-          {{ scenSummary.scen_type }}
-        </td>
-        <td>
-          <input type="checkbox" v-model="scenSummary.active"/>
-        </td>
-        <td style="white-space: nowrap">
-          <button class="btn" @click="editScen(scenSummary)">Edit</button>
-          <button class="btn" @click="copyScen(scenSummary)">Copy</button>
-          <button class="btn" @click="deleteScen(scenSummary)">Delete</button>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-
-    <div>
-      <button class="btn __blue" @click="addScenarioModal()">Add scenario</button>
-      <button class="btn __green" @click="runScenarios()">Run scenarios</button>
-      <button class="btn" @click="clearGraphs()">Clear graphs</button>
-    </div>
-    <br>
-
-    <div style="float:left">
-    </div>
-    <div>
-      <div v-for="index in placeholders" :id="'fig'+index" style="width:650px; float:left;">
-        <!--mpld3 content goes here-->
+  
+    <div v-if="activeProjectID ==''">
+      <div style="font-style:italic">
+        <p>No project is loaded.</p>
       </div>
     </div>
+    
+    <div v-else>
+     
+      <table class="table table-bordered table-hover table-striped" style="width: 100%">
+        <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Active?</th>
+          <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="scenSummary in scenSummaries">
+          <td>
+            <b>{{ scenSummary.name }}</b>
+          </td>
+          <td>
+            {{ scenSummary.scen_type }}
+          </td>
+          <td>
+            <input type="checkbox" v-model="scenSummary.active"/>
+          </td>
+          <td style="white-space: nowrap">
+            <button class="btn" @click="editScen(scenSummary)">Edit</button>
+            <button class="btn" @click="copyScen(scenSummary)">Copy</button>
+            <button class="btn" @click="deleteScen(scenSummary)">Delete</button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
 
+      <div>
+        <button class="btn __blue" @click="addScenarioModal()">Add scenario</button>
+        <button class="btn __green" @click="runScenarios()">Run scenarios</button>
+        <button class="btn" @click="clearGraphs()">Clear graphs</button>
+      </div>
+      <br>
 
-    <modal name="add-scenario"
-           height="auto"
-           :scrollable="true"
-           :width="900"
-           :classes="['v--modal', 'vue-dialog']"
-           :pivot-y="0.3"
-           :adaptive="true"
-           :clickToClose="clickToClose"
-           :transition="transition">
-
-      <div class="dialog-content">
-        <div class="dialog-c-title">
-          Add/edit scenario
-        </div>
-        <div class="dialog-c-text">
-          Scenario name:<br>
-          <input type="text"
-                 class="txbox"
-                 v-model="defaultScen.name"/><br>
-          Scenario type:<br>
-          <input type="text"
-                 class="txbox"
-                 v-model="defaultScen.scen_type"/><br>
-          <table class="table table-bordered table-hover table-striped" style="width: 100%">
-            <thead>
-            <tr>
-              <th>Name</th>
-              <th>Include?</th>
-              <th v-for="year in defaultScenYears">{{ year }}</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr v-for="prog_spec in defaultScen.spec">
-              <td>
-                {{ prog_spec.name }}
-              </td>
-              <td>
-                <input type="checkbox" v-model="prog_spec.included"/>
-              </td>
-              <td v-for="(val, index) in prog_spec.vals">
-                <input type="text"
-                       class="txbox"
-                       v-model="prog_spec.vals[index]"/>
-              </td>
-            </tr>
-            </tbody>
-          </table>
-        </div>
-        <div style="text-align:justify">
-          <button @click="addScenario()" class='btn __green' style="display:inline-block">
-            Save scenario
-          </button>
-
-          <button @click="$modal.hide('add-scenario')" class='btn __red' style="display:inline-block">
-            Cancel
-          </button>
+      <div style="float:left">
+      </div>
+      <div>
+        <div v-for="index in placeholders" :id="'fig'+index" style="width:650px; float:left;">
+          <!--mpld3 content goes here-->
         </div>
       </div>
 
+
+      <modal name="add-scenario"
+             height="auto"
+             :scrollable="true"
+             :width="900"
+             :classes="['v--modal', 'vue-dialog']"
+             :pivot-y="0.3"
+             :adaptive="true"
+             :clickToClose="clickToClose"
+             :transition="transition">
+
+        <div class="dialog-content">
+          <div class="dialog-c-title">
+            Add/edit scenario
+          </div>
+          <div class="dialog-c-text">
+            Scenario name:<br>
+            <input type="text"
+                   class="txbox"
+                   v-model="defaultScen.name"/><br>
+            Scenario type:<br>
+            <input type="text"
+                   class="txbox"
+                   v-model="defaultScen.scen_type"/><br>
+            <table class="table table-bordered table-hover table-striped" style="width: 100%">
+              <thead>
+              <tr>
+                <th>Name</th>
+                <th>Include?</th>
+                <th v-for="year in defaultScenYears">{{ year }}</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr v-for="prog_spec in defaultScen.spec">
+                <td>
+                  {{ prog_spec.name }}
+                </td>
+                <td>
+                  <input type="checkbox" v-model="prog_spec.included"/>
+                </td>
+                <td v-for="(val, index) in prog_spec.vals">
+                  <input type="text"
+                         class="txbox"
+                         v-model="prog_spec.vals[index]"/>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="text-align:justify">
+            <button @click="addScenario()" class='btn __green' style="display:inline-block">
+              Save scenario
+            </button>
+
+            <button @click="$modal.hide('add-scenario')" class='btn __red' style="display:inline-block">
+              Cancel
+            </button>
+          </div>
+        </div>
 
       <div>
 
       </div>
     </modal>
-
+    
+    </div>
+    
   </div>
 </template>
 
@@ -141,6 +150,14 @@ Last update: 2018-05-29
     },
 
     computed: {
+      activeProjectID() {
+        if (this.$store.state.activeProject.project === undefined) {
+          return ''
+        } else {
+          return this.$store.state.activeProject.project.id
+        }
+      },
+      
       placeholders() {
         var indices = []
         for (var i = 0; i <= 100; i++) {
