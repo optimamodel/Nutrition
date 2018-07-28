@@ -7,6 +7,8 @@ class Settings(object):
     WARNING: Do not change the order of these lists without checking the potential consequences within the code """
     def __init__(self):
         self.t = [2017, 2025]
+        self.years = sc.inclusiverange(self.t[0], self.t[1])
+        self.n_years = len(self.years)
         self.timestep = 1./12. # in months
         self.stunting_list = ['High', 'Moderate', 'Mild', 'Normal']
         self.stunted_list = self.stunting_list[:2]

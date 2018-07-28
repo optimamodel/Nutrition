@@ -1,7 +1,7 @@
 # Import only the functions that are actually needed for the user
 from .version import version, versiondate # analysis:ignore
 from .project import Project, demo # analysis:ignore
-
+from .settings import Settings # analysis:ignore
 
 #####################################################################################################################
 ### Define debugging and exception functions/classes

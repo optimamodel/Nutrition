@@ -150,13 +150,19 @@ def plot_alloc(all_res):
         bottom += y
     ymax = max(bottom)
     # formatting
-    title = utils.relabel(ref.obj).lower()
+    if ref.obj is not None: title = utils.relabel(ref.obj).lower()
+    else: title = '' # WARNING, should probably fix this properly
     ax.set_title('To optimize the \n %s %s-%s'%(title, ref.years[0], ref.years[-1]))
     ax.set_xticks(x)
     ax.set_xticklabels(xlabs)
     ax.set_ylim((0, ymax+ymax*.1))
     ax.set_ylabel('Annual spending on programs (million US$)')
-    ax.set_xlabel('Total available budget (as a multiple of US$%sM)'%int(str(res.prog_info.free)[:2]))
+    try:
+        valuestr = int(str(res.prog_info.free)[:2])
+        string = 'Total available budget (as a multiple of US$%sM)'%valuestr
+    except:
+        string = 'Total available budget (relative to %s)' % str(res.prog_info.free)
+    ax.set_xlabel(string)
     ax.yaxis.set_major_formatter(tk.FormatStrFormatter('%3.0f'))
     ax.legend(bars, [prog.name for prog in ref.programs])
     figs['alloc'] = fig

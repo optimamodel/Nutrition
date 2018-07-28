@@ -64,7 +64,13 @@ class Optim(object):
         keep_inds = self._filter_progs(model, self.obj) # not dependent upon spending
         optim = (maxiter, swarmsize, maxtime)
         args = [(self.get_kwargs(model, self.obj, mult, keep_inds), mult)+optim for mult in self.mults]
-        res = utils.run_parallel(self.one_optim, args, num_procs)
+        if parallel:
+            res = utils.run_parallel(self.one_optim, args, num_procs)
+        else:
+            res = []
+            for arg in args:
+                this_res = self.one_optim(arg)
+                res.append(this_res)
         return res
 
     def _filter_progs(self, model, obj):

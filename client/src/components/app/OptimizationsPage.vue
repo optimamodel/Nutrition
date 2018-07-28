@@ -1,96 +1,99 @@
 <!--
 Define equity
 
-Last update: 2018-06-26
+Last update: 2018-07-26
 -->
 
 <template>
   <div class="SitePage">
   
-     <table class="table table-bordered table-hover table-striped" style="width: 100%">
-      <thead>
-      <tr>
-        <th>Name</th>
-        <th>Actions</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr v-for="optimSummary in optimSummaries">
-        <td>
-          <b>{{ optimSummary.name }}</b>
-        </td>
-        <td style="white-space: nowrap">
-          <button class="btn __green" @click="runOptim(optimSummary)">Run</button>
-          <button class="btn" @click="editOptim(optimSummary)">Edit</button>
-          <button class="btn" @click="copyOptim(optimSummary)">Copy</button>
-          <button class="btn" @click="deleteOptim(optimSummary)">Delete</button>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-
-    <div>
-      <button class="btn __blue" @click="addOptimModal()">Add optimization</button>
-      <button class="btn" @click="clearGraphs()">Clear graphs</button>
-    </div>
-
-
-    <modal name="add-optim"
-           height="auto"
-           :classes="['v--modal', 'vue-dialog']"
-           :width="width"
-           :pivot-y="0.3"
-           :adaptive="true"
-           :clickToClose="clickToClose"
-           :transition="transition">
-
-      <div class="dialog-content">
-        <div class="dialog-c-title">
-          Add/edit optimization
-        </div>
-        <div class="dialog-c-text">
-          Optimization name:<br>
-          <input type="text"
-                 class="txbox"
-                 v-model="defaultOptim.name"/><br>
-          Optimization objectives:<br>
-          <select v-model="defaultOptim.objs">
-            <option v-for='obj in objectiveOptions'>
-              {{ obj }}
-            </option>
-          </select><br><br>
-          Multipliers:<br>
-          <input type="text"
-                 class="txbox"
-                 v-model="defaultOptim.mults"/><br>
-          Additional funds:<br>
-          <input type="text"
-                 class="txbox"
-                 v-model="defaultOptim.add_funds"/><br>
-        </div>
-        <div style="text-align:justify">
-          <button @click="addOptim()" class='btn __green' style="display:inline-block">
-            Save optimization
-          </button>
-
-          <button @click="$modal.hide('add-optim')" class='btn __red' style="display:inline-block">
-            Cancel
-          </button>
-        </div>
+    <div v-if="activeProjectID ==''">
+      <div style="font-style:italic">
+        <p>No project is loaded.</p>
       </div>
-
+    </div>
+    
+    <div v-else>    
+      <table class="table table-bordered table-hover table-striped" style="width: 100%">
+        <thead>
+        <tr>
+          <th>Name</th>
+          <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="optimSummary in optimSummaries">
+          <td>
+            <b>{{ optimSummary.name }}</b>
+          </td>
+          <td style="white-space: nowrap">
+            <button class="btn __green" @click="runOptim(optimSummary)">Run</button>
+            <button class="btn" @click="editOptim(optimSummary)">Edit</button>
+            <button class="btn" @click="copyOptim(optimSummary)">Copy</button>
+            <button class="btn" @click="deleteOptim(optimSummary)">Delete</button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
 
       <div>
+        <button class="btn __blue" @click="addOptimModal()">Add optimization</button>
+        <button class="btn" @click="clearGraphs()">Clear graphs</button>
+      </div>
 
-      </div>
-    </modal>
+
+      <modal name="add-optim"
+             height="auto"
+             :classes="['v--modal', 'vue-dialog']"
+             :width="width"
+             :pivot-y="0.3"
+             :adaptive="true"
+             :clickToClose="clickToClose"
+             :transition="transition">
+
+        <div class="dialog-content">
+          <div class="dialog-c-title">
+            Add/edit optimization
+          </div>
+          <div class="dialog-c-text">
+            Optimization name:<br>
+            <input type="text"
+                   class="txbox"
+                   v-model="defaultOptim.name"/><br>
+            Optimization objectives:<br>
+            <select v-model="defaultOptim.obj">
+              <option v-for='obj in objectiveOptions'>
+                {{ obj }}
+              </option>
+            </select><br><br>
+            Multipliers:<br>
+            <input type="text"
+                   class="txbox"
+                   v-model="defaultOptim.mults"/><br>
+            Additional funds:<br>
+            <input type="text"
+                   class="txbox"
+                   v-model="defaultOptim.add_funds"/><br>
+          </div>
+          <div style="text-align:justify">
+            <button @click="addOptim()" class='btn __green' style="display:inline-block">
+              Save optimization
+            </button>
+
+            <button @click="$modal.hide('add-optim')" class='btn __red' style="display:inline-block">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </modal>
     
-    <div>
-      <div v-for="index in placeholders" :id="'fig'+index" style="width:650px; float:left;">
-        <!--mpld3 content goes here-->
+      <div>
+        <div v-for="index in placeholders" :id="'fig'+index" style="width:650px; float:left;">
+          <!--mpld3 content goes here-->
+        </div>
       </div>
+    
     </div>
-    
   </div>
 </template>
 
@@ -115,6 +118,14 @@ Last update: 2018-06-26
     },
 
     computed: {
+      activeProjectID() {
+        if (this.$store.state.activeProject.project === undefined) {
+          return ''
+        } else {
+          return this.$store.state.activeProject.project.id
+        }
+      },
+      
       placeholders() {
         var indices = []
         for (var i = 0; i <= 100; i++) {
@@ -257,7 +268,7 @@ Last update: 2018-06-26
         // Open a model dialog for creating a new project
         console.log('editOptim() called');
         this.defaultOptim = optimSummary
-        console.log('defaultOptim', this.defaultOptim.objs)
+        console.log('defaultOptim', this.defaultOptim.obj)
         this.$modal.show('add-optim');
       },
 
