@@ -1,7 +1,7 @@
 <!--
 Define equity
 
-Last update: 2018-07-26
+Last update: 2018-07-28
 -->
 
 <template>
@@ -92,6 +92,17 @@ Last update: 2018-07-26
           <!--mpld3 content goes here-->
         </div>
       </div>
+      
+      <!-- Popup spinner -->
+      <modal name="popup-spinner" 
+             height="80px" 
+             width="85px" 
+             style="opacity: 0.6">
+        <clip-loader color="#0000ff" 
+                     size="50px" 
+                     style="padding: 15px">
+        </clip-loader>
+      </modal> 
     
     </div>
   </div>
@@ -105,9 +116,15 @@ Last update: 2018-07-26
   import taskservice from '@/services/task-service'  
   import router from '@/router'
   import Vue from 'vue';
+  import ClipLoader from 'vue-spinner/src/ClipLoader.vue'
 
   export default {
     name: 'OptimizationPage',
+    
+    components: {
+      ClipLoader
+    },
+  
     data() {
       return {
         serverresponse: 'no response',
@@ -331,6 +348,11 @@ Last update: 2018-07-26
         // Make sure they're saved first
         rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
         .then(response => {
+          // Bring up a spinner.
+          this.$modal.show('popup-spinner')
+        
+          // Start the loading bar.
+          this.$Progress.start()
 
           // Go to the server to get the results from the package set.
 //          rpcservice.rpcCall('run_optim', [this.projectID(), optimSummary.name])
@@ -359,6 +381,12 @@ Last update: 2018-07-26
               }
             }
             
+            // Dispel the spinner.
+            this.$modal.hide('popup-spinner')
+          
+            // Finish the loading bar.
+            this.$Progress.finish()
+        
             // Success popup.
             this.$notifications.notify({
               message: 'Graphs created',
@@ -375,6 +403,12 @@ Last update: 2018-07-26
             // Set the server error.
             this.servererror = error.message
             
+            // Dispel the spinner.
+            this.$modal.hide('popup-spinner')
+          
+            // Fail the loading bar.
+            this.$Progress.fail()
+        
             // Put up a failure notification.
             this.$notifications.notify({
               message: 'Optimization failed',
@@ -386,6 +420,22 @@ Last update: 2018-07-26
           })
           
         })
+        .catch(error => {
+            // Pull out the error message.
+            this.serverresponse = 'There was an error: ' + error.message
+
+            // Set the server error.
+            this.servererror = error.message
+            
+            // Put up a failure notification.
+            this.$notifications.notify({
+              message: 'Optimization failed',
+              icon: 'ti-face-sad',
+              type: 'warning',
+              verticalAlign: 'top',
+              horizontalAlign: 'center',
+            })            
+        })     
       },
 
       reloadGraphs() {
