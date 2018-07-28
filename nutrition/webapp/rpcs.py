@@ -586,11 +586,11 @@ def set_scenario_info(project_id, scenario_summaries):
         for attr in ['name', 'scen_type', 'active']: # Copy these directly
             json[attr] = js_scen[attr]
         json['prog_set'] = [] # These require more TLC
-        json['scen'] = sc.odict()
+        json['covs'] = sc.odict()
         for js_spec in js_scen['spec']:
             if js_spec['included']:
                 json['prog_set'].append(js_spec['name'])
-                json['scen'][js_spec['name']] = sanitize(js_spec['vals'])
+                json['covs'][js_spec['name']] = sanitize(js_spec['vals'])
         
         print('Python scenario info for scenario %s:' % (j+1))
         print(json)
