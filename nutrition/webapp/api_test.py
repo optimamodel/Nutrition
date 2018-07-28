@@ -61,7 +61,7 @@ if run_optims:
     json['obj'] = 'thrive' # ['thrive', 'child_deaths', 'stunting_prev', 'wasting_prev', 'anaemia_prev']
     D.add_optim(json=json)
     
-    D.run_optims()
+    D.run_optims(parallel=False)
     if doplot:
         figs = D.plot(toplot=['alloc'])
 

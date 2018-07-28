@@ -157,7 +157,12 @@ def plot_alloc(all_res):
     ax.set_xticklabels(xlabs)
     ax.set_ylim((0, ymax+ymax*.1))
     ax.set_ylabel('Annual spending on programs (million US$)')
-    ax.set_xlabel('Total available budget (as a multiple of US$%sM)'%int(str(res.prog_info.free)[:2]))
+    try:
+        valuestr = int(str(res.prog_info.free)[:2])
+        string = 'Total available budget (as a multiple of US$%sM)'%valuestr
+    except:
+        string = 'Total available budget (relative to %s)' % str(res.prog_info.free)
+    ax.set_xlabel(string)
     ax.yaxis.set_major_formatter(tk.FormatStrFormatter('%3.0f'))
     ax.legend(bars, [prog.name for prog in ref.programs])
     figs['alloc'] = fig
