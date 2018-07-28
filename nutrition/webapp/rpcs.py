@@ -20,8 +20,8 @@ import sciris.core as sc
 import sciris.web as sw
 
 import nutrition.ui as nu
-#from . import projects as prj
-import projects as prj
+from . import projects as prj
+
 
 # Dictionary to hold all of the registered RPCs in this module.
 RPC_dict = {}
@@ -486,13 +486,15 @@ def create_project_from_prj_file(prj_filename, user_id):
     return { 'projectId': str(proj.uid) }
 
 
+
 ##################################################################################
 #%% Scenario functions and RPCs
 ##################################################################################
 
 def py_to_js_scen(py_scen, prog_names):
     ''' Convert a Python to JSON representation of a scenario '''
-    attrs = ['name', 'active', 'scen_type', 't']
+    settings = nu.Settings()
+    attrs = ['name', 'active', 'scen_type']
     js_scen = {}
     for attr in attrs:
         js_scen[attr] = getattr(py_scen, attr) # Copy the attributes into a dictionary
@@ -502,11 +504,12 @@ def py_to_js_scen(py_scen, prog_names):
         this_spec['name'] = prog_name
         this_spec['included'] = True if prog_name in py_scen.prog_set else False
         this_spec['vals'] = []
-        if prog_name in py_scen.scen:
-            this_spec['vals'] = py_scen.scen[prog_name]
+        if prog_name in py_scen.covs:
+            this_spec['vals'] = py_scen.covs[prog_name]
         else:
-            this_spec['vals'] = [None]*py_scen.n_years()
+            this_spec['vals'] = [None]*settings.n_years # WARNING, kludgy way to extract the number of years
         js_scen['spec'].append(this_spec)
+        js_scen['t'] = settings.t
     return js_scen
     
 
@@ -533,7 +536,7 @@ def get_default_scenario(project_id):
     print('Creating default scenario...')
     proj = load_project(project_id, raise_exception=True)
     
-    py_scen = proj.default_scens(doadd=False)[0]
+    py_scen = proj.demo_scens(doadd=False)[0]
     js_scen = py_to_js_scen(py_scen, proj.dataset().prog_names())
     
     print('Created default JavaScript scenario:')

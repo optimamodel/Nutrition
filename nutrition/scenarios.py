@@ -4,7 +4,7 @@ from .results import ScenResult
 class Scen(object):
     def __init__(self, name=None, model_name=None, scen_type=None, covs=None, prog_set=None, active=True):
         self.name = name
-        self.model_name = model_name if model_name else name
+        self.model_name = model_name if model_name else None
         self.scen_type = scen_type
         self.covs = [] if covs is None else covs
         self.prog_set = prog_set if prog_set else []

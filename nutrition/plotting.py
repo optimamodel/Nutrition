@@ -150,7 +150,8 @@ def plot_alloc(all_res):
         bottom += y
     ymax = max(bottom)
     # formatting
-    title = utils.relabel(ref.obj).lower()
+    if ref.obj is not None: title = utils.relabel(ref.obj).lower()
+    else: title = '' # WARNING, should probably fix this properly
     ax.set_title('To optimize the \n %s %s-%s'%(title, ref.years[0], ref.years[-1]))
     ax.set_xticks(x)
     ax.set_xticklabels(xlabs)
