@@ -61,7 +61,7 @@ Last update: 2018-07-26
                    class="txbox"
                    v-model="defaultOptim.name"/><br>
             Optimization objectives:<br>
-            <select v-model="defaultOptim.objs">
+            <select v-model="defaultOptim.obj">
               <option v-for='obj in objectiveOptions'>
                 {{ obj }}
               </option>
@@ -268,7 +268,7 @@ Last update: 2018-07-26
         // Open a model dialog for creating a new project
         console.log('editOptim() called');
         this.defaultOptim = optimSummary
-        console.log('defaultOptim', this.defaultOptim.objs)
+        console.log('defaultOptim', this.defaultOptim.obj)
         this.$modal.show('add-optim');
       },
 

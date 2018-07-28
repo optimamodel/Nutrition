@@ -636,7 +636,7 @@ def py_to_js_optim(py_optim, prog_names):
     js_optim = {}
     for attr in attrs:
         js_optim[attr] = getattr(py_optim, attr) # Copy the attributes into a dictionary
-    js_optim['objs'] = py_optim.objs[0]
+    js_optim['obj'] = py_optim.obj[0]
     js_optim['spec'] = []
     for prog_name in prog_names:
         this_spec = {}
@@ -670,7 +670,7 @@ def get_default_optim(project_id):
     print('Getting default optimization...')
     proj = load_project(project_id, raise_exception=True)
     
-    py_optim = proj.default_optims(doadd=False)[0]
+    py_optim = proj.demo_optims(doadd=False)[0]
     js_optim = py_to_js_optim(py_optim, proj.dataset().prog_names())
     js_optim['objective_options'] = ['thrive', 'child_deaths', 'stunting_prev', 'wasting_prev', 'anaemia_prev'] # WARNING, stick allowable optimization options here
     
@@ -691,7 +691,7 @@ def set_optim_info(project_id, optim_summaries):
         print('Setting optimization %s of %s...' % (j+1, len(optim_summaries)))
         json = sc.odict()
         json['name'] = js_optim['name']
-        json['objs'] = js_optim['objs']
+        json['obj'] = js_optim['obj']
         jsm = js_optim['mults']
         if isinstance(jsm, list):
             vals = jsm
