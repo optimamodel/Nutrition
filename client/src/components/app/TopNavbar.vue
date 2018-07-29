@@ -6,34 +6,49 @@ Last update: 2018-07-27
 
 <template>
   <nav class="navbar navbar-default">
-    <div class="container-fluid">
-      <div class="navbar-header">
-        <button type="button" class="navbar-toggle" :class="{toggled: $sidebar.showSidebar}" @click="toggleSidebar">
-          <span class="sr-only">Toggle navigation</span>
-          <span class="icon-bar bar1"></span>
-          <span class="icon-bar bar2"></span>
-          <span class="icon-bar bar3"></span>
-        </button>
-        <a class="navbar-brand">{{routeName}}</a>
+    <div class="navbar-header">
+      <div class="logo">
+        <a href="#" class="simple-text">
+          <img src="static/img/optima-logo-nutrition.png" width="160px" vertical-align="middle" alt>
+        </a>
       </div>
-      <div class="collapse navbar-collapse">
-        <!-- If you edit this section, make sure to fix the section in App.vue for the narrow screen -->
-        <ul class="nav navbar-nav navbar-right">
-          <li>
-            <router-link to="/projects">
-              <i class="ti-view-grid"></i>
-              <p>
-                Project: <span>{{ activeProjectName }}</span>
-              </p>
-            </router-link>
-          </li>
-          <drop-down v-bind:title="activeUserName" icon="ti-user">
-            <li><a href="#/changeinfo"><i class="ti-pencil"></i>&nbsp;&nbsp;Edit account</a></li>
-            <li><a href="#/changepassword"><i class="ti-key"></i>&nbsp;&nbsp;Change password</a></li>
-            <li><a href="#" v-on:click=logOut()><i class="ti-car"></i>&nbsp;&nbsp;Log out</a></li>
-          </drop-down>
-        </ul>
-      </div>
+      <button type="button" class="navbar-toggle" :class="{toggled: $sidebar.showSidebar}" @click="toggleSidebar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar bar1"></span>
+        <span class="icon-bar bar2"></span>
+        <span class="icon-bar bar3"></span>
+      </button>
+      <a class="navbar-brand">{{routeName}}</a>
+    </div>
+    <div class="collapse navbar-collapse">
+      <!-- If you edit this section, make sure to fix the section in App.vue for the narrow screen -->
+      <ul class="nav navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="#/projects"><i class="ti-view-grid"></i> Projects</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#/scenarios"><i class="ti-control-shuffle"></i> Scenarios</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#/optimizations"><i class="ti-stats-up"></i> Optimizations</a>
+        </li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li class="nav-item">
+          <div class="nav-link">
+            <i class="ti-view-grid"></i>
+            Project: <span>{{ activeProjectName }}</span>
+          </div>
+        </li>
+        <drop-down v-bind:title="activeUserName" icon="ti-user">
+          <li><a href="#/changeinfo"><i class="ti-pencil"></i>&nbsp;&nbsp;Edit account</a></li>
+          <li><a href="#/changepassword"><i class="ti-key"></i>&nbsp;&nbsp;Change password</a></li>
+          <li><a href="#/help"><i class="ti-help"></i>&nbsp;&nbsp;Help</a></li>
+          <li><a href="#/contact"><i class="ti-comment-alt"></i>&nbsp;&nbsp;Contact</a></li>
+          <li><a href="#/about"><i class="ti-shine"></i>&nbsp;&nbsp;About</a></li>
+          <li><a href="#" v-on:click=logOut()><i class="ti-car"></i>&nbsp;&nbsp;Log out</a></li>
+        </drop-down>
+      </ul>
     </div>
   </nav>
 </template>
