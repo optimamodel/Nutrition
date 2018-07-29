@@ -137,6 +137,7 @@ Last update: 2018-07-28
   import axios from 'axios'
   var filesaver = require('file-saver')
   import rpcservice from '@/services/rpc-service'
+  import progressIndicator from '@/services/progress-indicator-service'  
   import router from '@/router'
   import Vue from 'vue';
   import PopupSpinner from './Spinner.vue'
@@ -344,17 +345,62 @@ Last update: 2018-07-28
           })
       },
 
+      progressIndicatorStart() {
+        // Bring up a spinner.
+        this.$modal.show('popup-spinner')
+      
+        // Start the loading bar.
+        this.$Progress.start()         
+      },
+      
+      progressIndicatorSucceed(successMessage) {
+        // Dispel the spinner.
+        this.$modal.hide('popup-spinner')
+      
+        // Finish the loading bar.
+        this.$Progress.finish()
+            
+        // Success popup.
+        this.$notifications.notify({
+          message: successMessage,
+          icon: 'ti-check',
+          type: 'success',
+          verticalAlign: 'top',
+          horizontalAlign: 'center',
+        })        
+      },
+      
+      progressIndicatorFail(failMessage) {
+        // Dispel the spinner.
+        this.$modal.hide('popup-spinner')
+      
+        // Fail the loading bar.
+        this.$Progress.fail()
+    
+        // Put up a failure notification.
+        this.$notifications.notify({
+          message: failMessage,
+          icon: 'ti-face-sad',
+          type: 'warning',
+          verticalAlign: 'top',
+          horizontalAlign: 'center',
+        })          
+      },
+      
       runScenarios() {
         console.log('runScenarios() called')
         
         // Make sure they're saved first
         rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
         .then(response => {
+//          this.progressIndicatorStart()
+          progressIndicator.start(this)
+          
           // Bring up a spinner.
-          this.$modal.show('popup-spinner')
+//          this.$modal.show('popup-spinner')
         
           // Start the loading bar.
-          this.$Progress.start()          
+//          this.$Progress.start()          
           
           // Go to the server to get the results from the package set.
           rpcservice.rpcCall('run_scenarios', [this.projectID()])
@@ -379,8 +425,11 @@ Last update: 2018-07-28
               }
             }
             
+//            this.progressIndicatorSucceed('Graphs created')
+            progressIndicator.succeed(this, 'Graphs created')
+            
             // Dispel the spinner.
-            this.$modal.hide('popup-spinner')
+/*            this.$modal.hide('popup-spinner')
           
             // Finish the loading bar.
             this.$Progress.finish()
@@ -392,7 +441,7 @@ Last update: 2018-07-28
               type: 'success',
               verticalAlign: 'top',
               horizontalAlign: 'center',
-            })              
+            })  */            
           })
           .catch(error => {
             // Pull out the error message.
@@ -401,8 +450,11 @@ Last update: 2018-07-28
             // Set the server error.
             this.servererror = error.message
             
+//            this.progressIndicatorFail('Scenario run failed')
+            progressIndicator.fail(this, 'Scenario run failed')
+            
             // Dispel the spinner.
-            this.$modal.hide('popup-spinner')
+/*            this.$modal.hide('popup-spinner')
           
             // Fail the loading bar.
             this.$Progress.fail()
@@ -414,7 +466,7 @@ Last update: 2018-07-28
               type: 'warning',
               verticalAlign: 'top',
               horizontalAlign: 'center',
-            })             
+            }) */            
           })
         })
         .catch(error => {
