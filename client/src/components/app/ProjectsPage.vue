@@ -81,14 +81,14 @@ Last update: 2018-07-28
               <input type="checkbox" @click="uncheckSelectAll()" v-model="projectSummary.selected"/>
             </td>
             <td v-if="projectSummary.renaming !== ''">
-			        <input type="text"
+              <input type="text"
                      class="txbox"
                      @keyup.enter="renameProject(projectSummary)"
                      v-model="projectSummary.renaming"/>
-			      </td>
-			      <td v-else>
-			        {{ projectSummary.project.name }}
-			      </td>
+            </td>
+            <td v-else>
+              {{ projectSummary.project.name }}
+            </td>
             <td>
               <button class="btn __green" @click="openProject(projectSummary.project.id)">Open</button>
             </td>
@@ -470,7 +470,7 @@ export default {
       // Start indicating progress.
       progressIndicator.start(this)
       
-	    // Have the server copy the project, giving it a new name.
+      // Have the server copy the project, giving it a new name.
       rpcservice.rpcCall('copy_project', [uid])
       .then(response => {
         // Update the project summaries so the copied program shows up on the list.
@@ -488,13 +488,13 @@ export default {
     renameProject(projectSummary) {
       console.log('renameProject() called for ' + projectSummary.project.name)
 
-	    // If the project is not in a mode to be renamed, make it so.
-	    if (projectSummary.renaming === '') {
-		    projectSummary.renaming = projectSummary.project.name
+      // If the project is not in a mode to be renamed, make it so.
+      if (projectSummary.renaming === '') {
+        projectSummary.renaming = projectSummary.project.name
       }
 
-	    // Otherwise (it is to be renamed)...
-	    else {
+      // Otherwise (it is to be renamed)...
+      else {
         // Make a deep copy of the projectSummary object by JSON-stringifying the old
         // object, and then parsing the result back into a new object.
         let newProjectSummary = JSON.parse(JSON.stringify(projectSummary))
@@ -512,8 +512,8 @@ export default {
           // Update the project summaries so the rename shows up on the list.
           this.updateProjectSummaries(newProjectSummary.project.id)
 
-		      // Turn off the renaming mode.
-		      projectSummary.renaming = ''
+          // Turn off the renaming mode.
+          projectSummary.renaming = ''
           
           // Indicate success.
           progressIndicator.succeed(this, '')  // No green popup message.      
@@ -524,10 +524,10 @@ export default {
         })      
       }        
 
-	    // This silly hack is done to make sure that the Vue component gets updated by this function call.
-	    // Something about resetting the project name informs the Vue component it needs to
-	    // update, whereas the renaming attribute fails to update it.
-	    // We should find a better way to do this.
+      // This silly hack is done to make sure that the Vue component gets updated by this function call.
+      // Something about resetting the project name informs the Vue component it needs to
+      // update, whereas the renaming attribute fails to update it.
+      // We should find a better way to do this.
       let theName = projectSummary.project.name
       projectSummary.project.name = 'newname'
       projectSummary.project.name = theName
@@ -542,7 +542,7 @@ export default {
       // Start indicating progress.
       progressIndicator.start(this)
       
-	    // Make the server call to download the project to a .prj file.
+      // Make the server call to download the project to a .prj file.
       rpcservice.rpcDownloadCall('download_project', [uid])
       .then(response => {
         // Indicate success.
@@ -649,7 +649,7 @@ export default {
       console.log('deleteSelectedProjects() called for ', selectProjectsUIDs)
       
       // Have the server delete the selected projects.
-	    if (selectProjectsUIDs.length > 0) {
+      if (selectProjectsUIDs.length > 0) {
         // Start indicating progress.
         progressIndicator.start(this)
       
@@ -681,7 +681,7 @@ export default {
           // Indicate failure.
           progressIndicator.fail(this, 'Could not delete project/s')     
         })            
-	    }
+      }
     },
 
     downloadSelectedProjects() {
@@ -692,7 +692,7 @@ export default {
       console.log('downloadSelectedProjects() called for ', selectProjectsUIDs)
       
       // Have the server download the selected projects.
-	    if (selectProjectsUIDs.length > 0) {
+      if (selectProjectsUIDs.length > 0) {
         // Start indicating progress.
         progressIndicator.start(this)
        

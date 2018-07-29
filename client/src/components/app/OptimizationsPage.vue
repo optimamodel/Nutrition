@@ -194,41 +194,41 @@ Last update: 2018-07-28
         console.log('getOptimSummaries() called')
         // Get the current project's optimization summaries from the server.
         rpcservice.rpcCall('get_optim_info', [this.projectID()])
-          .then(response => {
-            this.optimSummaries = response.data // Set the optimizations to what we received.
-            this.$notifications.notify({
-              message: 'Optimizations loaded',
-              icon: 'ti-check',
-              type: 'success',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            });
+        .then(response => {
+          this.optimSummaries = response.data // Set the optimizations to what we received.
+          this.$notifications.notify({
+            message: 'Optimizations loaded',
+            icon: 'ti-check',
+            type: 'success',
+            verticalAlign: 'top',
+            horizontalAlign: 'center',
           })
+        })
       },
 
       setOptimSummaries() {
         console.log('setOptimSummaries() called')
         rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
-          .then( response => {
-            this.$notifications.notify({
-              message: 'Optimizations saved',
-              icon: 'ti-check',
-              type: 'success',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            });
+        .then( response => {
+          this.$notifications.notify({
+            message: 'Optimizations saved',
+            icon: 'ti-check',
+            type: 'success',
+            verticalAlign: 'top',
+            horizontalAlign: 'center',
           })
+        })
       },
 
       addOptimModal() {
         // Open a model dialog for creating a new project
         console.log('addOptimModal() called');
         rpcservice.rpcCall('get_default_optim', [this.projectID()])
-          .then(response => {
-            this.defaultOptim = response.data // Set the optimization to what we received.
-            this.$modal.show('add-optim');
-            console.log(this.defaultOptim)
-          });
+        .then(response => {
+          this.defaultOptim = response.data // Set the optimization to what we received.
+          this.$modal.show('add-optim');
+          console.log(this.defaultOptim)
+        })
       },
 
       addOptim() {
@@ -250,15 +250,15 @@ Last update: 2018-07-28
         }
         console.log(newOptim)
         rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
-          .then( response => {
-            this.$notifications.notify({
-              message: 'Optimization added',
-              icon: 'ti-check',
-              type: 'success',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            });
+        .then( response => {
+          this.$notifications.notify({
+            message: 'Optimization added',
+            icon: 'ti-check',
+            type: 'success',
+            verticalAlign: 'top',
+            horizontalAlign: 'center',
           })
+        })
       },
 
       openOptim(optimSummary) {
@@ -292,15 +292,15 @@ Last update: 2018-07-28
         newOptim.name = this.getUniqueName(newOptim.name, otherNames)
         this.optimSummaries.push(newOptim)
         rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
-          .then( response => {
-            this.$notifications.notify({
-              message: 'Opimization copied',
-              icon: 'ti-check',
-              type: 'success',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            });
-          })
+        .then( response => {
+          this.$notifications.notify({
+            message: 'Opimization copied',
+            icon: 'ti-check',
+            type: 'success',
+            verticalAlign: 'top',
+            horizontalAlign: 'center',
+          });
+        })
       },
 
       deleteOptim(optimSummary) {
@@ -311,15 +311,15 @@ Last update: 2018-07-28
           }
         }
         rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
-          .then( response => {
-            this.$notifications.notify({
-              message: 'Optimization deleted',
-              icon: 'ti-check',
-              type: 'success',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            });
+        .then( response => {
+          this.$notifications.notify({
+            message: 'Optimization deleted',
+            icon: 'ti-check',
+            type: 'success',
+            verticalAlign: 'top',
+            horizontalAlign: 'center',
           })
+        })
       },
 
       runOptim(optimSummary) {
@@ -341,11 +341,8 @@ Last update: 2018-07-28
         // Make sure they're saved first
         rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
         .then(response => {
-          // Bring up a spinner.
-          this.$modal.show('popup-spinner')
-        
-          // Start the loading bar.
-          this.$Progress.start()
+          // Start indicating progress.
+          progressIndicator.start(this)
 
           // Go to the server to get the results from the package set.
 //          rpcservice.rpcCall('run_optim', [this.projectID(), optimSummary.name])
@@ -374,20 +371,8 @@ Last update: 2018-07-28
               }
             }
             
-            // Dispel the spinner.
-            this.$modal.hide('popup-spinner')
-          
-            // Finish the loading bar.
-            this.$Progress.finish()
-        
-            // Success popup.
-            this.$notifications.notify({
-              message: 'Graphs created',
-              icon: 'ti-check',
-              type: 'success',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            })            
+            // Indicate success.
+            progressIndicator.succeed(this, 'Graphs created')            
           })
           .catch(error => {
             // Pull out the error message.
@@ -396,20 +381,8 @@ Last update: 2018-07-28
             // Set the server error.
             this.servererror = error.message
             
-            // Dispel the spinner.
-            this.$modal.hide('popup-spinner')
-          
-            // Fail the loading bar.
-            this.$Progress.fail()
-        
-            // Put up a failure notification.
-            this.$notifications.notify({
-              message: 'Optimization failed',
-              icon: 'ti-face-sad',
-              type: 'warning',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            })            
+            // Indicate failure.
+            progressIndicator.fail(this, 'Optimization failed')   
           }) 
         })
         .catch(error => {
@@ -418,15 +391,9 @@ Last update: 2018-07-28
 
           // Set the server error.
           this.servererror = error.message
-            
+          
           // Put up a failure notification.
-          this.$notifications.notify({
-            message: 'Optimization failed',
-            icon: 'ti-face-sad',
-            type: 'warning',
-            verticalAlign: 'top',
-            horizontalAlign: 'center',
-          })            
+          progressIndicator.failurePopup(this, 'Optimization failed')            
         })     
       },
 

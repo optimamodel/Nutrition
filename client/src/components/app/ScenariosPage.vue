@@ -225,7 +225,7 @@ Last update: 2018-07-28
           this.scenSummaries = response.data // Set the scenarios to what we received.
           
           // Indicate success.
-          progressIndicator.succeed(this, 'Scenarios added')
+          progressIndicator.succeed(this, 'Scenarios loaded')
         })
         .catch(error => {
           // Indicate failure.
@@ -253,26 +253,26 @@ Last update: 2018-07-28
       setScenSummaries() {
         console.log('setScenSummaries() called')
         rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
-          .then( response => {
-            this.$notifications.notify({
-              message: 'Scenarios saved',
-              icon: 'ti-check',
-              type: 'success',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            });
-          })
+        .then( response => {
+          this.$notifications.notify({
+            message: 'Scenarios saved',
+            icon: 'ti-check',
+            type: 'success',
+            verticalAlign: 'top',
+            horizontalAlign: 'center',
+          });
+        })
       },
 
       addScenarioModal() {
         // Open a model dialog for creating a new project
         console.log('addScenarioModal() called');
         rpcservice.rpcCall('get_default_scenario', [this.projectID()])
-          .then(response => {
-            this.defaultScen = response.data // Set the scenarios to what we received.
-            this.$modal.show('add-scenario');
-            console.log(this.defaultScen)
-          });
+        .then(response => {
+          this.defaultScen = response.data // Set the scenarios to what we received.
+          this.$modal.show('add-scenario');
+          console.log(this.defaultScen)
+        })
       },
 
       addScenario() {
@@ -294,15 +294,15 @@ Last update: 2018-07-28
         }
         console.log(newScen)
         rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
-          .then( response => {
-            this.$notifications.notify({
-              message: 'Scenario added',
-              icon: 'ti-check',
-              type: 'success',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            });
+        .then(response => {
+          this.$notifications.notify({
+            message: 'Scenario added',
+            icon: 'ti-check',
+            type: 'success',
+            verticalAlign: 'top',
+            horizontalAlign: 'center',
           })
+        })
       },
 
       editScen(scenSummary) {
@@ -322,15 +322,15 @@ Last update: 2018-07-28
         newScen.name = this.getUniqueName(newScen.name, otherNames)
         this.scenSummaries.push(newScen)
         rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
-          .then( response => {
-            this.$notifications.notify({
-              message: 'Scenario copied',
-              icon: 'ti-check',
-              type: 'success',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            });
+        .then( response => {
+          this.$notifications.notify({
+            message: 'Scenario copied',
+            icon: 'ti-check',
+            type: 'success',
+            verticalAlign: 'top',
+            horizontalAlign: 'center',
           })
+        })
       },
 
       deleteScen(scenSummary) {
@@ -341,15 +341,15 @@ Last update: 2018-07-28
           }
         }
         rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
-          .then( response => {
-            this.$notifications.notify({
-              message: 'Scenario deleted',
-              icon: 'ti-check',
-              type: 'success',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            });
+        .then( response => {
+          this.$notifications.notify({
+            message: 'Scenario deleted',
+            icon: 'ti-check',
+            type: 'success',
+            verticalAlign: 'top',
+            horizontalAlign: 'center',
           })
+        })
       },
       
       runScenarios() {
