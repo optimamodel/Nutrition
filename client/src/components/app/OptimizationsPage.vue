@@ -105,7 +105,8 @@ Last update: 2018-07-28
   import axios from 'axios'
   var filesaver = require('file-saver')
   import rpcservice from '@/services/rpc-service'
-  import taskservice from '@/services/task-service'  
+  import taskservice from '@/services/task-service' 
+  import progressIndicator from '@/services/progress-indicator-service'  
   import router from '@/router'
   import Vue from 'vue';
   import PopupSpinner from './Spinner.vue'

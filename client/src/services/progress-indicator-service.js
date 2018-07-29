@@ -2,7 +2,9 @@
 //
 // Last update: 7/28/18 (gchadder3)
 
-// import rpcservice from '@/services/rpc-service'
+// Note: To use these functions, you need to pass in the Vue instance, this. 
+// Also, the caller needs to have imported the Spinner.vue PopupSpinner 
+// component and instantiated it.
 
 function start(vueInstance) {
   // Bring up a spinner.
@@ -20,13 +22,15 @@ function succeed(vueInstance, successMessage) {
   vueInstance.$Progress.finish()
       
   // Success popup.
-  vueInstance.$notifications.notify({
-    message: successMessage,
-    icon: 'ti-check',
-    type: 'success',
-    verticalAlign: 'top',
-    horizontalAlign: 'center',
-  })        
+  if (successMessage != '') {
+    vueInstance.$notifications.notify({
+      message: successMessage,
+      icon: 'ti-check',
+      type: 'success',
+      verticalAlign: 'top',
+      horizontalAlign: 'center'
+    })
+  }  
 }
 
 function fail(vueInstance, failMessage) {
@@ -37,17 +41,43 @@ function fail(vueInstance, failMessage) {
   vueInstance.$Progress.fail()
 
   // Put up a failure notification.
+  if (failMessage != '') {  
+    vueInstance.$notifications.notify({
+      message: failMessage,
+      icon: 'ti-face-sad',
+      type: 'warning',
+      verticalAlign: 'top',
+      horizontalAlign: 'center'
+    })
+  }  
+}
+
+function successPopup(vueInstance, successMessage) {
+  // Success popup.
+  vueInstance.$notifications.notify({
+    message: successMessage,
+    icon: 'ti-check',
+    type: 'success',
+    verticalAlign: 'top',
+    horizontalAlign: 'center'
+  })        
+}
+
+function failurePopup(vueInstance, failMessage) {
+  // Put up a failure notification.
   vueInstance.$notifications.notify({
     message: failMessage,
     icon: 'ti-face-sad',
     type: 'warning',
     verticalAlign: 'top',
-    horizontalAlign: 'center',
-  })          
+    horizontalAlign: 'center'
+  })         
 }
-      
+
 export default {
   start,
   succeed,
-  fail
+  fail,
+  successPopup,
+  failurePopup
 }

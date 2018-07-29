@@ -215,32 +215,39 @@ Last update: 2018-07-28
 
       getScenSummaries() {
         console.log('getScenSummaries() called')
+        
+        // Start indicating progress.
+        progressIndicator.start(this)
+      
         // Get the current user's scenario summaries from the server.
         rpcservice.rpcCall('get_scenario_info', [this.projectID()])
-          .then(response => {
-            this.scenSummaries = response.data // Set the scenarios to what we received.
-
-            this.$notifications.notify({
-              message: 'Scenarios loaded',
-              icon: 'ti-check',
-              type: 'success',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            });
-          })
+        .then(response => {
+          this.scenSummaries = response.data // Set the scenarios to what we received.
+          
+          // Indicate success.
+          progressIndicator.succeed(this, 'Scenarios added')
+        })
+        .catch(error => {
+          // Indicate failure.
+          progressIndicator.fail(this, 'Could not load scenarios')
+        })        
       },
 
       getDefaultScen() {
         console.log('getDefaultScen() called')
         // Get the current user's scenario summaries from the server.
         rpcservice.rpcCall('get_default_scenario', [this.projectID()])
-          .then(response => {
-            this.defaultScen = response.data // Set the scenarios to what we received.
-            this.defaultScenYears = []
-            for (let year = this.defaultScen.t[0]; year <= this.defaultScen.t[1]; year++) {
-              this.defaultScenYears.push(year);
-            }
-          });
+        .then(response => {
+          this.defaultScen = response.data // Set the scenarios to what we received.
+          this.defaultScenYears = []
+          for (let year = this.defaultScen.t[0]; year <= this.defaultScen.t[1]; year++) {
+            this.defaultScenYears.push(year);
+          }
+        })
+        .catch(error => {
+          // Failure popup.
+          progressIndicator.failurePopup(this, 'Could not get default scenario')
+        })        
       },
 
       setScenSummaries() {
@@ -344,48 +351,6 @@ Last update: 2018-07-28
             });
           })
       },
-
-      progressIndicatorStart() {
-        // Bring up a spinner.
-        this.$modal.show('popup-spinner')
-      
-        // Start the loading bar.
-        this.$Progress.start()         
-      },
-      
-      progressIndicatorSucceed(successMessage) {
-        // Dispel the spinner.
-        this.$modal.hide('popup-spinner')
-      
-        // Finish the loading bar.
-        this.$Progress.finish()
-            
-        // Success popup.
-        this.$notifications.notify({
-          message: successMessage,
-          icon: 'ti-check',
-          type: 'success',
-          verticalAlign: 'top',
-          horizontalAlign: 'center',
-        })        
-      },
-      
-      progressIndicatorFail(failMessage) {
-        // Dispel the spinner.
-        this.$modal.hide('popup-spinner')
-      
-        // Fail the loading bar.
-        this.$Progress.fail()
-    
-        // Put up a failure notification.
-        this.$notifications.notify({
-          message: failMessage,
-          icon: 'ti-face-sad',
-          type: 'warning',
-          verticalAlign: 'top',
-          horizontalAlign: 'center',
-        })          
-      },
       
       runScenarios() {
         console.log('runScenarios() called')
@@ -393,14 +358,8 @@ Last update: 2018-07-28
         // Make sure they're saved first
         rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
         .then(response => {
-//          this.progressIndicatorStart()
-          progressIndicator.start(this)
-          
-          // Bring up a spinner.
-//          this.$modal.show('popup-spinner')
-        
-          // Start the loading bar.
-//          this.$Progress.start()          
+          // Start indicating progress.
+          progressIndicator.start(this)         
           
           // Go to the server to get the results from the package set.
           rpcservice.rpcCall('run_scenarios', [this.projectID()])
@@ -425,23 +384,8 @@ Last update: 2018-07-28
               }
             }
             
-//            this.progressIndicatorSucceed('Graphs created')
-            progressIndicator.succeed(this, 'Graphs created')
-            
-            // Dispel the spinner.
-/*            this.$modal.hide('popup-spinner')
-          
-            // Finish the loading bar.
-            this.$Progress.finish()
-            
-            // Success popup.
-            this.$notifications.notify({
-              message: 'Graphs created',
-              icon: 'ti-check',
-              type: 'success',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            })  */            
+            // Indicate success.
+            progressIndicator.succeed(this, 'Graphs created')            
           })
           .catch(error => {
             // Pull out the error message.
@@ -450,23 +394,8 @@ Last update: 2018-07-28
             // Set the server error.
             this.servererror = error.message
             
-//            this.progressIndicatorFail('Scenario run failed')
-            progressIndicator.fail(this, 'Scenario run failed')
-            
-            // Dispel the spinner.
-/*            this.$modal.hide('popup-spinner')
-          
-            // Fail the loading bar.
-            this.$Progress.fail()
-        
-            // Put up a failure notification.
-            this.$notifications.notify({
-              message: 'Scenario run failed',
-              icon: 'ti-face-sad',
-              type: 'warning',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            }) */            
+            // Indicate failure.
+            progressIndicator.fail(this, 'Scenario run failed')           
           })
         })
         .catch(error => {
@@ -475,15 +404,9 @@ Last update: 2018-07-28
 
           // Set the server error.
           this.servererror = error.message
-            
+          
           // Put up a failure notification.
-          this.$notifications.notify({
-            message: 'Scenario run failed',
-            icon: 'ti-face-sad',
-            type: 'warning',
-            verticalAlign: 'top',
-            horizontalAlign: 'center',
-          })            
+          progressIndicator.failurePopup(this, 'Scenario run failed')      
         })         
       },
 
