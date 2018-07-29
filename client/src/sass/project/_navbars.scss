@@ -12,12 +12,15 @@
   border-radius: 0;
   font-size: $font-size-navbar;
   z-index: 0;
-  padding: 5px 45px;
+  padding: 0 60px;
 
+  .navbar-header {
+    height: 100%;
+  }
   .logo {
-    padding: 1rem;
-    float: left;
+    margin: 15px 0;
     margin-right: 2.5rem;
+    float: left;
   }
   .navbar-brand {
     font-weight: $font-weight-bold;
@@ -30,7 +33,7 @@
       line-height: 1.42857;
       margin: $navbar-margin-a;
       padding: $navbar-padding-a;
-      font-size: 1.6rem;
+      font-size: 1.7rem;
 
       i,
       p {
@@ -69,9 +72,33 @@
   .brand {
     color: $font-color !important;
   }
+  .navbar-collapse {
+    text-align: center;
+  }
   .navbar-nav {
+    display: inline-block;
+    float: none;
+
     > li > a:not(.btn) {
       color: $black-color;
+    }
+
+    &.navbar-main > li > a {
+      margin-left: 1rem;
+      margin-right: 1rem;
+      background: transparent;
+      color: #144e6b;
+      border: 1px solid #144e6b;
+    }
+
+    &.navbar-right > li {
+      margin: 5px 0;
+      > a,
+      > .nav-link,
+      > a > p,
+      > .nav-link > p {
+        font-size: 1.3rem;
+      }
     }
 
     > li > a.router-link-active,
@@ -80,9 +107,8 @@
     > .active > a:not(.btn):focus,
     > li > a:not(.btn):hover,
     > li > a:not(.btn):focus {
-      background-color: transparent;
-      border-radius: 3px;
-      color: $info-color;
+      background: #144e6b;
+      color: white;
       @include opacity(1);
     }
 

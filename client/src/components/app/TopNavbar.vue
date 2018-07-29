@@ -9,7 +9,7 @@ Last update: 2018-07-27
     <div class="navbar-header">
       <div class="logo">
         <a href="#" class="simple-text">
-          <img src="static/img/optima-logo-nutrition.png" width="160px" vertical-align="middle" alt>
+          <img src="static/img/optima-logo-nutrition.png" width="140px" vertical-align="middle" alt>
         </a>
       </div>
       <button type="button" class="navbar-toggle" :class="{toggled: $sidebar.showSidebar}" @click="toggleSidebar">
@@ -21,20 +21,20 @@ Last update: 2018-07-27
     </div>
     <div class="collapse navbar-collapse">
       <!-- If you edit this section, make sure to fix the section in App.vue for the narrow screen -->
-      <ul class="nav navbar-nav">
+      <ul class="nav navbar-nav navbar-main">
         <li class="nav-item">
           <router-link to="/projects">
-            <i class="ti-view-grid"></i><span>Projects</span>
+            <span>Projects</span>
           </router-link>
         </li>
         <li class="nav-item">
           <router-link to="/scenarios">
-            <i class="ti-control-shuffle"></i><span>Scenarios</span>
+            <span>Scenarios</span>
           </router-link>
         </li>
         <li class="nav-item">
           <router-link to="/optimizations">
-            <i class="ti-stats-up"></i><span>Optimizations</span>
+            <span>Optimizations</span>
           </router-link>
         </li>
       </ul>
