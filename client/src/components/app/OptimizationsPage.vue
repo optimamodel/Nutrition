@@ -1,7 +1,7 @@
 <!--
 Define equity
 
-Last update: 2018-07-28
+Last update: 2018-07-29
 -->
 
 <template>
@@ -183,41 +183,52 @@ Last update: 2018-07-28
       getDefaultOptim() {
         console.log('getDefaultOptim() called')
         rpcservice.rpcCall('get_default_optim', [this.projectID()])
-          .then(response => {
-            this.defaultOptim = response.data // Set the optimization to what we received.
-            this.objectiveOptions = response.data.objective_options
-            console.log('TEMPPPPPPP these are the options:'+this.objectiveOptions);
-          });
+        .then(response => {
+          this.defaultOptim = response.data // Set the optimization to what we received.
+          this.objectiveOptions = response.data.objective_options
+          console.log('TEMPPPPPPP these are the options:'+this.objectiveOptions);
+        })
+        .catch(error => {
+          // Failure popup.
+          progressIndicator.failurePopup(this, 'Could not get default optimization')
+        })          
       },
 
       getOptimSummaries() {
         console.log('getOptimSummaries() called')
+        
+        // Start indicating progress.
+        progressIndicator.start(this)
+        
         // Get the current project's optimization summaries from the server.
         rpcservice.rpcCall('get_optim_info', [this.projectID()])
         .then(response => {
           this.optimSummaries = response.data // Set the optimizations to what we received.
-          this.$notifications.notify({
-            message: 'Optimizations loaded',
-            icon: 'ti-check',
-            type: 'success',
-            verticalAlign: 'top',
-            horizontalAlign: 'center',
-          })
+          
+          // Indicate success.
+          progressIndicator.succeed(this, 'Optimizations loaded')
         })
+        .catch(error => {
+          // Indicate failure.
+          progressIndicator.fail(this, 'Could not load optimizations')
+        })         
       },
 
       setOptimSummaries() {
         console.log('setOptimSummaries() called')
+        
+        // Start indicating progress.
+        progressIndicator.start(this)
+        
         rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
         .then( response => {
-          this.$notifications.notify({
-            message: 'Optimizations saved',
-            icon: 'ti-check',
-            type: 'success',
-            verticalAlign: 'top',
-            horizontalAlign: 'center',
-          })
+          // Indicate success.
+          progressIndicator.succeed(this, 'Optimizations saved')          
         })
+        .catch(error => {
+          // Indicate failure.
+          progressIndicator.fail(this, 'Could not save optimizations') 
+        })       
       },
 
       addOptimModal() {
@@ -234,6 +245,10 @@ Last update: 2018-07-28
       addOptim() {
         console.log('addOptim() called')
         this.$modal.hide('add-optim')
+        
+        // Start indicating progress.
+        progressIndicator.start(this)
+        
         let newOptim = this.dcp(this.defaultOptim); // You've got to be kidding me, buster
         let otherNames = []
         this.optimSummaries.forEach(optimSum => {
@@ -251,27 +266,15 @@ Last update: 2018-07-28
         console.log(newOptim)
         rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
         .then( response => {
-          this.$notifications.notify({
-            message: 'Optimization added',
-            icon: 'ti-check',
-            type: 'success',
-            verticalAlign: 'top',
-            horizontalAlign: 'center',
-          })
+          // Indicate success.
+          progressIndicator.succeed(this, 'Optimization added')
         })
-      },
-
-      openOptim(optimSummary) {
-        // Open a model dialog for creating a new project
-        console.log('openOptim() called');
-        this.currentOptim = optimSummary.name
-        this.$notifications.notify({
-          message: 'Optimization "'+optimSummary.name+'" opened',
-          icon: 'ti-check',
-          type: 'success',
-          verticalAlign: 'top',
-          horizontalAlign: 'center',
-        });
+        .catch(error => {
+          // Indicate failure.
+          progressIndicator.fail(this, 'Could not add optimization') 
+          
+          // TODO: Should probably fix the corrupted this.optimSummaries.
+        })         
       },
 
       editOptim(optimSummary) {
@@ -284,6 +287,10 @@ Last update: 2018-07-28
 
       copyOptim(optimSummary) {
         console.log('copyOptim() called')
+        
+        // Start indicating progress.
+        progressIndicator.start(this)
+        
         var newOptim = this.dcp(optimSummary); // You've got to be kidding me, buster
         var otherNames = []
         this.optimSummaries.forEach(optimSum => {
@@ -293,18 +300,23 @@ Last update: 2018-07-28
         this.optimSummaries.push(newOptim)
         rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
         .then( response => {
-          this.$notifications.notify({
-            message: 'Opimization copied',
-            icon: 'ti-check',
-            type: 'success',
-            verticalAlign: 'top',
-            horizontalAlign: 'center',
-          });
+          // Indicate success.
+          progressIndicator.succeed(this, 'Opimization copied')
         })
+        .catch(error => {
+          // Indicate failure.
+          progressIndicator.fail(this, 'Could not copy optimization') 
+          
+          // TODO: Should probably fix the corrupted this.optimSummaries.
+        })        
       },
 
       deleteOptim(optimSummary) {
         console.log('deleteOptim() called')
+        
+        // Start indicating progress.
+        progressIndicator.start(this)
+        
         for(var i = 0; i< this.optimSummaries.length; i++) {
           if(this.optimSummaries[i].name === optimSummary.name) {
             this.optimSummaries.splice(i, 1);
@@ -312,14 +324,15 @@ Last update: 2018-07-28
         }
         rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
         .then( response => {
-          this.$notifications.notify({
-            message: 'Optimization deleted',
-            icon: 'ti-check',
-            type: 'success',
-            verticalAlign: 'top',
-            horizontalAlign: 'center',
-          })
+          // Indicate success.
+          progressIndicator.succeed(this, 'Optimization deleted')
         })
+        .catch(error => {
+          // Indicate failure.
+          progressIndicator.fail(this, 'Could not delete optimization') 
+          
+          // TODO: Should probably fix the corrupted this.optimSummaries.
+        })         
       },
 
       runOptim(optimSummary) {
@@ -432,5 +445,5 @@ Last update: 2018-07-28
 
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style lang="scss" scoped>
 </style>

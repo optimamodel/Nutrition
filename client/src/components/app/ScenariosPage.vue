@@ -1,7 +1,7 @@
 <!--
 Define health packages
 
-Last update: 2018-07-28
+Last update: 2018-07-29
 -->
 
 <template>
@@ -119,13 +119,10 @@ Last update: 2018-07-28
           </div>
         </div>
 
-      <div>
-
-      </div>
-    </modal>
+      </modal>
     
-    <!-- Popup spinner -->
-    <popup-spinner></popup-spinner>
+      <!-- Popup spinner -->
+      <popup-spinner></popup-spinner>
     
     </div>
     
@@ -252,16 +249,19 @@ Last update: 2018-07-28
 
       setScenSummaries() {
         console.log('setScenSummaries() called')
+        
+        // Start indicating progress.
+        progressIndicator.start(this)
+          
         rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
-        .then( response => {
-          this.$notifications.notify({
-            message: 'Scenarios saved',
-            icon: 'ti-check',
-            type: 'success',
-            verticalAlign: 'top',
-            horizontalAlign: 'center',
-          });
+        .then(response => {
+          // Indicate success.
+          progressIndicator.succeed(this, 'Scenarios saved')
         })
+        .catch(error => {
+          // Indicate failure.
+          progressIndicator.fail(this, 'Could not save scenario') 
+        })         
       },
 
       addScenarioModal() {
@@ -278,6 +278,10 @@ Last update: 2018-07-28
       addScenario() {
         console.log('addScenario() called')
         this.$modal.hide('add-scenario')
+        
+        // Start indicating progress.
+        progressIndicator.start(this)
+          
         let newScen = this.dcp(this.defaultScen); // You've got to be kidding me, buster
         let otherNames = []
         this.scenSummaries.forEach(scenSum => {
@@ -295,14 +299,15 @@ Last update: 2018-07-28
         console.log(newScen)
         rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
         .then(response => {
-          this.$notifications.notify({
-            message: 'Scenario added',
-            icon: 'ti-check',
-            type: 'success',
-            verticalAlign: 'top',
-            horizontalAlign: 'center',
-          })
+          // Indicate success.
+          progressIndicator.succeed(this, 'Scenario added')
         })
+        .catch(error => {
+          // Indicate failure.
+          progressIndicator.fail(this, 'Could not add scenario') 
+          
+          // TODO: Should probably fix the corrupted this.scenSummaries.
+        })       
       },
 
       editScen(scenSummary) {
@@ -314,6 +319,10 @@ Last update: 2018-07-28
 
       copyScen(scenSummary) {
         console.log('copyScen() called')
+        
+        // Start indicating progress.
+        progressIndicator.start(this)
+        
         var newScen = this.dcp(scenSummary); // You've got to be kidding me, buster
         var otherNames = []
         this.scenSummaries.forEach(scenSum => {
@@ -323,18 +332,23 @@ Last update: 2018-07-28
         this.scenSummaries.push(newScen)
         rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
         .then( response => {
-          this.$notifications.notify({
-            message: 'Scenario copied',
-            icon: 'ti-check',
-            type: 'success',
-            verticalAlign: 'top',
-            horizontalAlign: 'center',
-          })
+          // Indicate success.
+          progressIndicator.succeed(this, 'Scenario copied')
         })
+        .catch(error => {
+          // Indicate failure.
+          progressIndicator.fail(this, 'Could not copy scenario') 
+          
+          // TODO: Should probably fix the corrupted this.scenSummaries.
+        })      
       },
 
       deleteScen(scenSummary) {
         console.log('deleteScen() called')
+        
+        // Start indicating progress.
+        progressIndicator.start(this)
+        
         for(var i = 0; i< this.scenSummaries.length; i++) {
           if(this.scenSummaries[i].name === scenSummary.name) {
             this.scenSummaries.splice(i, 1);
@@ -342,14 +356,15 @@ Last update: 2018-07-28
         }
         rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
         .then( response => {
-          this.$notifications.notify({
-            message: 'Scenario deleted',
-            icon: 'ti-check',
-            type: 'success',
-            verticalAlign: 'top',
-            horizontalAlign: 'center',
-          })
+          // Indicate success.
+          progressIndicator.succeed(this, 'Scenario deleted')
         })
+        .catch(error => {
+          // Indicate failure.
+          progressIndicator.fail(this, 'Could not delete scenario') 
+          
+          // TODO: Should probably fix the corrupted this.scenSummaries.
+        })        
       },
       
       runScenarios() {
@@ -425,5 +440,5 @@ Last update: 2018-07-28
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style>
+<style lang="scss" scoped>
 </style>
