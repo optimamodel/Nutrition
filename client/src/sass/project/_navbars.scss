@@ -17,7 +17,7 @@
   .logo {
     padding: 1rem;
     float: left;
-    margin-right: 1rem;
+    margin-right: 2.5rem;
   }
   .navbar-brand {
     font-weight: $font-weight-bold;
@@ -30,6 +30,7 @@
       line-height: 1.42857;
       margin: $navbar-margin-a;
       padding: $navbar-padding-a;
+      font-size: 1.6rem;
 
       i,
       p {
@@ -39,6 +40,7 @@
       i {
         position: relative;
         top: 1px;
+        margin-right: 1rem;
       }
     }
     > li > a.btn {

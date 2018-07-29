@@ -18,24 +18,23 @@ Last update: 2018-07-27
         <span class="icon-bar bar2"></span>
         <span class="icon-bar bar3"></span>
       </button>
-      <a class="navbar-brand">{{routeName}}</a>
     </div>
     <div class="collapse navbar-collapse">
       <!-- If you edit this section, make sure to fix the section in App.vue for the narrow screen -->
       <ul class="nav navbar-nav">
         <li class="nav-item">
           <router-link to="/projects">
-            <i class="ti-view-grid"></i> Projects
+            <i class="ti-view-grid"></i><span>Projects</span>
           </router-link>
         </li>
         <li class="nav-item">
           <router-link to="/scenarios">
-            <i class="ti-control-shuffle"></i> Scenarios
+            <i class="ti-control-shuffle"></i><span>Scenarios</span>
           </router-link>
         </li>
         <li class="nav-item">
           <router-link to="/optimizations">
-            <i class="ti-stats-up"></i> Optimizations
+            <i class="ti-stats-up"></i><span>Optimizations</span>
           </router-link>
         </li>
       </ul>
@@ -43,7 +42,7 @@ Last update: 2018-07-27
         <li class="nav-item">
           <div class="nav-link">
             <i class="ti-view-grid"></i>
-            Project: <span>{{ activeProjectName }}</span>
+            <span>Project: {{ activeProjectName }}</span>
           </div>
         </li>
         <drop-down v-bind:title="activeUserName" icon="ti-user">
