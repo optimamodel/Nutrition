@@ -95,15 +95,6 @@ Last update: 2018-07-28
       
       <!-- Popup spinner -->
       <popup-spinner></popup-spinner>
-<!--      <modal name="popup-spinner" 
-             height="80px" 
-             width="85px" 
-             style="opacity: 0.6">
-        <clip-loader color="#0000ff" 
-                     size="50px" 
-                     style="padding: 15px">
-        </clip-loader>
-      </modal> -->
     
     </div>
   </div>
@@ -117,7 +108,6 @@ Last update: 2018-07-28
   import taskservice from '@/services/task-service'  
   import router from '@/router'
   import Vue from 'vue';
-//  import ClipLoader from 'vue-spinner/src/ClipLoader.vue'
   import PopupSpinner from './Spinner.vue'
 
   export default {
@@ -419,24 +409,23 @@ Last update: 2018-07-28
               verticalAlign: 'top',
               horizontalAlign: 'center',
             })            
-          })
-          
+          }) 
         })
         .catch(error => {
-            // Pull out the error message.
-            this.serverresponse = 'There was an error: ' + error.message
+          // Pull out the error message.
+          this.serverresponse = 'There was an error: ' + error.message
 
-            // Set the server error.
-            this.servererror = error.message
+          // Set the server error.
+          this.servererror = error.message
             
-            // Put up a failure notification.
-            this.$notifications.notify({
-              message: 'Optimization failed',
-              icon: 'ti-face-sad',
-              type: 'warning',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            })            
+          // Put up a failure notification.
+          this.$notifications.notify({
+            message: 'Optimization failed',
+            icon: 'ti-face-sad',
+            type: 'warning',
+            verticalAlign: 'top',
+            horizontalAlign: 'center',
+          })            
         })     
       },
 

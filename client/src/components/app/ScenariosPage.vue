@@ -1,7 +1,7 @@
 <!--
 Define health packages
 
-Last update: 2018-07-26
+Last update: 2018-07-28
 -->
 
 <template>
@@ -124,6 +124,9 @@ Last update: 2018-07-26
       </div>
     </modal>
     
+    <!-- Popup spinner -->
+    <popup-spinner></popup-spinner>
+    
     </div>
     
   </div>
@@ -136,9 +139,15 @@ Last update: 2018-07-26
   import rpcservice from '@/services/rpc-service'
   import router from '@/router'
   import Vue from 'vue';
+  import PopupSpinner from './Spinner.vue'
 
   export default {
     name: 'ScenariosPage',
+    
+    components: {
+      PopupSpinner
+    },
+  
     data() {
       return {
         serverresponse: 'no response',
@@ -337,50 +346,93 @@ Last update: 2018-07-26
 
       runScenarios() {
         console.log('runScenarios() called')
-
+        
         // Make sure they're saved first
         rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
+        .then(response => {
+          // Bring up a spinner.
+          this.$modal.show('popup-spinner')
+        
+          // Start the loading bar.
+          this.$Progress.start()          
+          
+          // Go to the server to get the results from the package set.
+          rpcservice.rpcCall('run_scenarios', [this.projectID()])
           .then(response => {
+            this.clearGraphs() // Once we receive a response, we can work with a clean slate
+            this.serverresponse = response.data // Pull out the response data.
+            var n_plots = response.data.graphs.length
+            console.log('Rendering ' + n_plots + ' graphs')
 
-            // Go to the server to get the results from the package set.
-            rpcservice.rpcCall('run_scenarios', [this.projectID()])
-              .then(response => {
-                this.clearGraphs() // Once we receive a response, we can work with a clean slate
-                this.serverresponse = response.data // Pull out the response data.
-                var n_plots = response.data.graphs.length
-                console.log('Rendering ' + n_plots + ' graphs')
-
-                for (var index = 0; index <= n_plots; index++) {
-                  console.log('Rendering plot ' + index)
-                  var divlabel = 'fig' + index
-                  var div = document.getElementById(divlabel); // CK: Not sure if this is necessary? To ensure the div is clear first
-                  while (div.firstChild) {
-                    div.removeChild(div.firstChild);
-                  }
-                  try {
-                    mpld3.draw_figure(divlabel, response.data.graphs[index]); // Draw the figure.
-                  }
-                  catch (err) {
-                    console.log('failled:' + err.message);
-                  }
-                }
-              })
-              .catch(error => {
-                // Pull out the error message.
-                this.serverresponse = 'There was an error: ' + error.message
-
-                // Set the server error.
-                this.servererror = error.message
-              }).then(response => {
-              this.$notifications.notify({
-                message: 'Graphs created',
-                icon: 'ti-check',
-                type: 'success',
-                verticalAlign: 'top',
-                horizontalAlign: 'center',
-              });
-            })
+            for (var index = 0; index <= n_plots; index++) {
+              console.log('Rendering plot ' + index)
+              var divlabel = 'fig' + index
+              var div = document.getElementById(divlabel); // CK: Not sure if this is necessary? To ensure the div is clear first
+              while (div.firstChild) {
+                div.removeChild(div.firstChild);
+              }
+              try {
+                mpld3.draw_figure(divlabel, response.data.graphs[index]); // Draw the figure.
+              }
+              catch (err) {
+                console.log('failled:' + err.message);
+              }
+            }
+            
+            // Dispel the spinner.
+            this.$modal.hide('popup-spinner')
+          
+            // Finish the loading bar.
+            this.$Progress.finish()
+            
+            // Success popup.
+            this.$notifications.notify({
+              message: 'Graphs created',
+              icon: 'ti-check',
+              type: 'success',
+              verticalAlign: 'top',
+              horizontalAlign: 'center',
+            })              
           })
+          .catch(error => {
+            // Pull out the error message.
+            this.serverresponse = 'There was an error: ' + error.message
+
+            // Set the server error.
+            this.servererror = error.message
+            
+            // Dispel the spinner.
+            this.$modal.hide('popup-spinner')
+          
+            // Fail the loading bar.
+            this.$Progress.fail()
+        
+            // Put up a failure notification.
+            this.$notifications.notify({
+              message: 'Scenario run failed',
+              icon: 'ti-face-sad',
+              type: 'warning',
+              verticalAlign: 'top',
+              horizontalAlign: 'center',
+            })             
+          })
+        })
+        .catch(error => {
+          // Pull out the error message.
+          this.serverresponse = 'There was an error: ' + error.message
+
+          // Set the server error.
+          this.servererror = error.message
+            
+          // Put up a failure notification.
+          this.$notifications.notify({
+            message: 'Scenario run failed',
+            icon: 'ti-face-sad',
+            type: 'warning',
+            verticalAlign: 'top',
+            horizontalAlign: 'center',
+          })            
+        })         
       },
 
       clearGraphs() {

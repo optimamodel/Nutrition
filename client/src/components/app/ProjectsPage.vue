@@ -1,7 +1,7 @@
 <!--
 Manage projects page
 
-Last update: 2018-07-27
+Last update: 2018-07-28
 -->
 
 <template>
@@ -160,15 +160,7 @@ Last update: 2018-07-27
     </modal>
     
     <!-- Popup spinner -->
-    <modal name="popup-spinner" 
-           height="80px" 
-           width="85px" 
-           style="opacity: 0.6">
-      <clip-loader color="#0000ff" 
-                   size="50px" 
-                   style="padding: 15px">
-      </clip-loader>
-    </modal> 
+    <popup-spinner></popup-spinner> 
     
   </div>
 
@@ -179,13 +171,13 @@ import axios from 'axios'
 var filesaver = require('file-saver')
 import rpcservice from '@/services/rpc-service'
 import router from '@/router'
-import ClipLoader from 'vue-spinner/src/ClipLoader.vue'
+import PopupSpinner from './Spinner.vue'
 
 export default {
   name: 'ProjectsPage',
   
   components: {
-    ClipLoader
+    PopupSpinner
   },
   
   data() {
