@@ -24,13 +24,19 @@ Last update: 2018-07-27
       <!-- If you edit this section, make sure to fix the section in App.vue for the narrow screen -->
       <ul class="nav navbar-nav">
         <li class="nav-item">
-          <a class="nav-link" href="#/projects"><i class="ti-view-grid"></i> Projects</a>
+          <router-link to="/projects">
+            <i class="ti-view-grid"></i> Projects
+          </router-link>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#/scenarios"><i class="ti-control-shuffle"></i> Scenarios</a>
+          <router-link to="/scenarios">
+            <i class="ti-control-shuffle"></i> Scenarios
+          </router-link>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#/optimizations"><i class="ti-stats-up"></i> Optimizations</a>
+          <router-link to="/optimizations">
+            <i class="ti-stats-up"></i> Optimizations
+          </router-link>
         </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
