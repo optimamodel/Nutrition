@@ -1,7 +1,7 @@
 <!--
 Define health packages
 
-Last update: 2018-07-26
+Last update: 2018-07-29
 -->
 
 <template>
@@ -119,10 +119,10 @@ Last update: 2018-07-26
           </div>
         </div>
 
-      <div>
-
-      </div>
-    </modal>
+      </modal>
+    
+      <!-- Popup spinner -->
+      <popup-spinner></popup-spinner>
     
     </div>
     
@@ -134,11 +134,18 @@ Last update: 2018-07-26
   import axios from 'axios'
   var filesaver = require('file-saver')
   import rpcservice from '@/services/rpc-service'
+  import progressIndicator from '@/services/progress-indicator-service'  
   import router from '@/router'
   import Vue from 'vue';
+  import PopupSpinner from './Spinner.vue'
 
   export default {
     name: 'ScenariosPage',
+    
+    components: {
+      PopupSpinner
+    },
+  
     data() {
       return {
         serverresponse: 'no response',
@@ -205,62 +212,76 @@ Last update: 2018-07-26
 
       getScenSummaries() {
         console.log('getScenSummaries() called')
+        
+        // Start indicating progress.
+        progressIndicator.start(this)
+      
         // Get the current user's scenario summaries from the server.
         rpcservice.rpcCall('get_scenario_info', [this.projectID()])
-          .then(response => {
-            this.scenSummaries = response.data // Set the scenarios to what we received.
-
-            this.$notifications.notify({
-              message: 'Scenarios loaded',
-              icon: 'ti-check',
-              type: 'success',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            });
-          })
+        .then(response => {
+          this.scenSummaries = response.data // Set the scenarios to what we received.
+          
+          // Indicate success.
+          progressIndicator.succeed(this, 'Scenarios loaded')
+        })
+        .catch(error => {
+          // Indicate failure.
+          progressIndicator.fail(this, 'Could not load scenarios')
+        })        
       },
 
       getDefaultScen() {
         console.log('getDefaultScen() called')
         // Get the current user's scenario summaries from the server.
         rpcservice.rpcCall('get_default_scenario', [this.projectID()])
-          .then(response => {
-            this.defaultScen = response.data // Set the scenarios to what we received.
-            this.defaultScenYears = []
-            for (let year = this.defaultScen.t[0]; year <= this.defaultScen.t[1]; year++) {
-              this.defaultScenYears.push(year);
-            }
-          });
+        .then(response => {
+          this.defaultScen = response.data // Set the scenarios to what we received.
+          this.defaultScenYears = []
+          for (let year = this.defaultScen.t[0]; year <= this.defaultScen.t[1]; year++) {
+            this.defaultScenYears.push(year);
+          }
+        })
+        .catch(error => {
+          // Failure popup.
+          progressIndicator.failurePopup(this, 'Could not get default scenario')
+        })        
       },
 
       setScenSummaries() {
         console.log('setScenSummaries() called')
+        
+        // Start indicating progress.
+        progressIndicator.start(this)
+          
         rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
-          .then( response => {
-            this.$notifications.notify({
-              message: 'Scenarios saved',
-              icon: 'ti-check',
-              type: 'success',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            });
-          })
+        .then(response => {
+          // Indicate success.
+          progressIndicator.succeed(this, 'Scenarios saved')
+        })
+        .catch(error => {
+          // Indicate failure.
+          progressIndicator.fail(this, 'Could not save scenario') 
+        })         
       },
 
       addScenarioModal() {
         // Open a model dialog for creating a new project
         console.log('addScenarioModal() called');
         rpcservice.rpcCall('get_default_scenario', [this.projectID()])
-          .then(response => {
-            this.defaultScen = response.data // Set the scenarios to what we received.
-            this.$modal.show('add-scenario');
-            console.log(this.defaultScen)
-          });
+        .then(response => {
+          this.defaultScen = response.data // Set the scenarios to what we received.
+          this.$modal.show('add-scenario');
+          console.log(this.defaultScen)
+        })
       },
 
       addScenario() {
         console.log('addScenario() called')
         this.$modal.hide('add-scenario')
+        
+        // Start indicating progress.
+        progressIndicator.start(this)
+          
         let newScen = this.dcp(this.defaultScen); // You've got to be kidding me, buster
         let otherNames = []
         this.scenSummaries.forEach(scenSum => {
@@ -277,15 +298,16 @@ Last update: 2018-07-26
         }
         console.log(newScen)
         rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
-          .then( response => {
-            this.$notifications.notify({
-              message: 'Scenario added',
-              icon: 'ti-check',
-              type: 'success',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            });
-          })
+        .then(response => {
+          // Indicate success.
+          progressIndicator.succeed(this, 'Scenario added')
+        })
+        .catch(error => {
+          // Indicate failure.
+          progressIndicator.fail(this, 'Could not add scenario') 
+          
+          // TODO: Should probably fix the corrupted this.scenSummaries.
+        })       
       },
 
       editScen(scenSummary) {
@@ -297,6 +319,10 @@ Last update: 2018-07-26
 
       copyScen(scenSummary) {
         console.log('copyScen() called')
+        
+        // Start indicating progress.
+        progressIndicator.start(this)
+        
         var newScen = this.dcp(scenSummary); // You've got to be kidding me, buster
         var otherNames = []
         this.scenSummaries.forEach(scenSum => {
@@ -305,82 +331,98 @@ Last update: 2018-07-26
         newScen.name = this.getUniqueName(newScen.name, otherNames)
         this.scenSummaries.push(newScen)
         rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
-          .then( response => {
-            this.$notifications.notify({
-              message: 'Scenario copied',
-              icon: 'ti-check',
-              type: 'success',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            });
-          })
+        .then( response => {
+          // Indicate success.
+          progressIndicator.succeed(this, 'Scenario copied')
+        })
+        .catch(error => {
+          // Indicate failure.
+          progressIndicator.fail(this, 'Could not copy scenario') 
+          
+          // TODO: Should probably fix the corrupted this.scenSummaries.
+        })      
       },
 
       deleteScen(scenSummary) {
         console.log('deleteScen() called')
+        
+        // Start indicating progress.
+        progressIndicator.start(this)
+        
         for(var i = 0; i< this.scenSummaries.length; i++) {
           if(this.scenSummaries[i].name === scenSummary.name) {
             this.scenSummaries.splice(i, 1);
           }
         }
         rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
-          .then( response => {
-            this.$notifications.notify({
-              message: 'Scenario deleted',
-              icon: 'ti-check',
-              type: 'success',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            });
-          })
+        .then( response => {
+          // Indicate success.
+          progressIndicator.succeed(this, 'Scenario deleted')
+        })
+        .catch(error => {
+          // Indicate failure.
+          progressIndicator.fail(this, 'Could not delete scenario') 
+          
+          // TODO: Should probably fix the corrupted this.scenSummaries.
+        })        
       },
-
+      
       runScenarios() {
         console.log('runScenarios() called')
-
+        
         // Make sure they're saved first
         rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
+        .then(response => {
+          // Start indicating progress.
+          progressIndicator.start(this)         
+          
+          // Go to the server to get the results from the package set.
+          rpcservice.rpcCall('run_scenarios', [this.projectID()])
           .then(response => {
+            this.clearGraphs() // Once we receive a response, we can work with a clean slate
+            this.serverresponse = response.data // Pull out the response data.
+            var n_plots = response.data.graphs.length
+            console.log('Rendering ' + n_plots + ' graphs')
 
-            // Go to the server to get the results from the package set.
-            rpcservice.rpcCall('run_scenarios', [this.projectID()])
-              .then(response => {
-                this.clearGraphs() // Once we receive a response, we can work with a clean slate
-                this.serverresponse = response.data // Pull out the response data.
-                var n_plots = response.data.graphs.length
-                console.log('Rendering ' + n_plots + ' graphs')
-
-                for (var index = 0; index <= n_plots; index++) {
-                  console.log('Rendering plot ' + index)
-                  var divlabel = 'fig' + index
-                  var div = document.getElementById(divlabel); // CK: Not sure if this is necessary? To ensure the div is clear first
-                  while (div.firstChild) {
-                    div.removeChild(div.firstChild);
-                  }
-                  try {
-                    mpld3.draw_figure(divlabel, response.data.graphs[index]); // Draw the figure.
-                  }
-                  catch (err) {
-                    console.log('failled:' + err.message);
-                  }
-                }
-              })
-              .catch(error => {
-                // Pull out the error message.
-                this.serverresponse = 'There was an error: ' + error.message
-
-                // Set the server error.
-                this.servererror = error.message
-              }).then(response => {
-              this.$notifications.notify({
-                message: 'Graphs created',
-                icon: 'ti-check',
-                type: 'success',
-                verticalAlign: 'top',
-                horizontalAlign: 'center',
-              });
-            })
+            for (var index = 0; index <= n_plots; index++) {
+              console.log('Rendering plot ' + index)
+              var divlabel = 'fig' + index
+              var div = document.getElementById(divlabel); // CK: Not sure if this is necessary? To ensure the div is clear first
+              while (div.firstChild) {
+                div.removeChild(div.firstChild);
+              }
+              try {
+                mpld3.draw_figure(divlabel, response.data.graphs[index]); // Draw the figure.
+              }
+              catch (err) {
+                console.log('failled:' + err.message);
+              }
+            }
+            
+            // Indicate success.
+            progressIndicator.succeed(this, 'Graphs created')            
           })
+          .catch(error => {
+            // Pull out the error message.
+            this.serverresponse = 'There was an error: ' + error.message
+
+            // Set the server error.
+            this.servererror = error.message
+            
+            // Indicate failure.
+            progressIndicator.fail(this, 'Scenario run failed')           
+          })
+        })
+        .catch(error => {
+          // Pull out the error message.
+          this.serverresponse = 'There was an error: ' + error.message
+
+          // Set the server error.
+          this.servererror = error.message
+          
+          // Put up a failure notification.
+          progressIndicator.failurePopup(this, 'Scenario run failed')      
+        })         
       },
 
       clearGraphs() {
@@ -398,5 +440,5 @@ Last update: 2018-07-26
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style>
+<style lang="scss" scoped>
 </style>

@@ -1,7 +1,7 @@
 <!--
 App.vue -- App component, the main page
 
-Last update: 7/25/18 (gchadder3)
+Last update: 7/29/18 (gchadder3)
 -->
 
 <template>
@@ -71,7 +71,6 @@ export default {
   }
 
 }
-
 </script>
 
 <!-- Global SCSS/SASS settings go here. -->
@@ -86,4 +85,7 @@ export default {
   color: #2c3e50;
   margin-top: 60px;
 } */
+
+  // Modal dialog styling.
+  @import './sass/_dialogs.scss';
 </style>
