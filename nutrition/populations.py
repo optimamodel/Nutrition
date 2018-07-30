@@ -670,7 +670,7 @@ class Children(Population):
             p1 = fracbo / sum(RRs[name][bo] * birth_space[name] for name in birth_space.iterkeys())
             for name in birth_space.iterkeys():
                 prob_bospace[bo][name] = RRs[name][bo] * p1
-            newborns.prob_bospace = prob_bospace
+        newborns.prob_bospace = prob_bospace
 
     def _solve_system(self, risk):
         OR = [1.] * 4
