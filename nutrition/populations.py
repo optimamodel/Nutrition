@@ -656,6 +656,22 @@ class Children(Population):
                                                         probs)}
         newborns.probRiskAtBirth['Wasting'] = probWastedAtBirth
 
+    def _set_bo_space(self):
+        """ Using law of total probability and definition of relative risks,
+         we solve for P(BOi | space1), and use this to solve for the rest"""
+        newborns = self.age_groups[0]
+        prob_bospace = sc.odict()
+        birth_space = self.data.birth_space
+        RRs = self.default.rr_space_bo
+        for bo in self.ss.birth_outcomes:
+            # get P(BO | space1)
+            prob_bospace[bo] = sc.odict()
+            fracbo = newborns.birth_dist[bo]
+            p1 = fracbo / sum(RRs[name][bo] * birth_space[name] for name in birth_space.iterkeys())
+            for name in birth_space.iterkeys():
+                prob_bospace[bo][name] = RRs[name][bo] * p1
+            newborns.prob_bospace = prob_bospace
+
     def _solve_system(self, risk):
         OR = [1.] * 4
         OR[1] = self.default.or_cond_bo[risk]["Term SGA"]
