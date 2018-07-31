@@ -330,6 +330,24 @@ class Model:
             age_group.bfUpdate[risk] = self._frac_dia_update(beta, age_group, risk)
         age_group.bfUpdate.update(self._wasting_update_dia(beta, age_group))
 
+    def _birthspace_effects(self):
+        """ From the birth space update, take from both <18 months and 18-23 month categories evenly """
+        nonpw = self.nonpw.age_groups[0] # only impacted this pop
+        newborns = self.children.age_groups[0]
+        oldprob = nonpw.birth_space[self.ss.correct_spacing]
+        num_corrbefore = oldprob * newborns.pop_size
+        num_corrafter = newborns.pop_size * nonpw.birthspace_update
+        num_shift = num_corrafter - num_corrbefore
+        num_wrongbefore = newborns.pop_size - num_corrbefore
+        frac_correcting = num_shift / num_wrongbefore if num_wrongbefore > 0.01 else 0.
+        # update birth spacing
+        for space in nonpw.birth_space:
+            nonpw.birth_space[space] *= 1 - frac_correcting
+        nonpw.birth_space[self.ss.correct_spacing] = nonpw.birthspace_update
+        # update birth outcomes
+        for bo in self.ss.birth_outcomes:
+            newborns.birth_dist[bo] = sum(newborns.prob_bospace[bo][name] * value for name, value in nonpw.birth_space.iteritems())
+
     def _frac_dia_update(self, beta, age_group, risk):
         oldProb = age_group.frac_risk(risk)
         newProb = 0.

@@ -12,8 +12,7 @@ class Program(object):
     def __init__(self, name, prog_data, all_years):
         self.name = name
         self.prog_deps = prog_data.prog_deps
-        self.famplan_methods = prog_data.famplan_methods # todo: want these here or in nonPW class???
-        self.settings = Settings()
+        self.ss = Settings()
         self.year = all_years[0]
         self.annual_cov = np.zeros(len(all_years))
         self.annual_spend = np.zeros(len(all_years))
@@ -26,6 +25,11 @@ class Program(object):
         self.sat_unrestr = None
         self.base_cov = prog_data.base_cov[self.name]
         self.base_spend = None
+        self.pregav_sum = None
+        self.famplan_methods = None
+        if 'amil' in name: # family planning program only
+            self.famplan_methods = prog_data.famplan_methods
+            self.set_pregav_sum()
 
         self._set_target_ages()
         self._set_impacted_ages(prog_data.impacted_pop[self.name]) # TODO: This func could contain the info for how many multiples needed for unrestricted population calculation (IYCF)
@@ -91,7 +95,7 @@ class Program(object):
         :return:
         """
         self.agesTargeted = []
-        for age in self.settings.all_ages:
+        for age in self.ss.all_ages:
             fracTargeted = self.target_pops[age]
             if fracTargeted > 0.001: # floating point tolerance
                 self.agesTargeted.append(age)
@@ -102,7 +106,7 @@ class Program(object):
         :return:
         """
         self.agesImpacted = []
-        for age in self.settings.all_ages:
+        for age in self.ss.all_ages:
             impacted = impacted_pop[age]
             if impacted > 0.001: # floating point tolerance
                 self.agesImpacted.append(age)
@@ -182,17 +186,28 @@ class Program(object):
             combined = prevUpdate[wastingCat] * incidUpdate[wastingCat]
             age_group.wastingUpdate[wastingCat] *= combined
 
-    def get_famplan_update(self, age_group):
-        age_group.FPupdate *= self.annual_cov[self.year]
+    def get_birthspace_update(self, age_group):
+        """ Birth spacing in non-pregnant women impacts birth outcomes for newborns """
+        age_group.birthspace_update += self._space_update(age_group)
+
+    def _space_update(self, age_group):
+        """ Update the proportion of pregnancies in the correct spacing category.
+          This will only work on WRA: 15-19 years by design, since it isn't actually age-specific """
+        correctold = age_group.birth_space[self.ss.correct_spacing]
+        probcov = age_group.probConditionalCoverage['Birth spacing'][self.name]['covered']
+        probnot = age_group.probConditionalCoverage['Birth spacing'][self.name]['not covered']
+        probnew = get_new_prob(self.annual_cov[self.year], probcov, probnot)
+        fracChange = probnew - correctold
+        return fracChange
 
     def wasting_prevent_update(self, age_group):
         update = self._wasting_incid_update(age_group)
-        for wastingCat in self.settings.wasted_list:
+        for wastingCat in self.ss.wasted_list:
             age_group.wastingPreventionUpdate[wastingCat] *= update[wastingCat]
 
     def wasting_treat_update(self, age_group):
         update = self._wasting_prev_update(age_group)
-        for wastingCat in self.settings.wasted_list:
+        for wastingCat in self.ss.wasted_list:
             age_group.wastingTreatmentUpdate[wastingCat] *= update[wastingCat]
 
     def dia_incidence_update(self, age_group):
@@ -212,7 +227,6 @@ class Program(object):
         """
         age_group.bfPracticeUpdate += self._bf_practice_update(age_group)
 
-
     def get_mortality_update(self, age_group):
         """
         Programs which directly impact mortality rates
@@ -228,8 +242,8 @@ class Program(object):
         :return:
         """
         update = self._bo_update(age_group)
-        for BO in self.settings.birth_outcomes:
-            age_group.birthUpdate[BO] *= update[BO]
+        for BO in self.ss.birth_outcomes:
+            age_group.birthUpdate[BO] *= update[BO] # todo: don't think this update should be in PWagegroup. Check
 
     def _get_cond_prob_update(self, age_group, risk):
         """This uses law of total probability to update a given age groups for risk types
@@ -245,7 +259,7 @@ class Program(object):
     def _wasting_prev_update(self, age_group):
         # overall update to prevalence of MAM and SAM
         update = {}
-        for wastingCat in self.settings.wasted_list:
+        for wastingCat in self.ss.wasted_list:
             oldProb = age_group.frac_wasted(wastingCat)
             probWastedIfCovered = age_group.probConditionalCoverage[wastingCat][self.name]['covered']
             probWastedIfNotCovered = age_group.probConditionalCoverage[wastingCat][self.name]['not covered']
@@ -257,7 +271,7 @@ class Program(object):
     def _wasting_update_incid(self, age_group):
         incidenceUpdate = self._wasting_incid_update(age_group)
         update = {}
-        for condition in self.settings.wasted_list:
+        for condition in self.ss.wasted_list:
             newIncidence = age_group.incidences[condition] * incidenceUpdate[condition]
             reduction = (age_group.incidences[condition] - newIncidence)/newIncidence
             update[condition] = 1-reduction
@@ -266,7 +280,7 @@ class Program(object):
     def _wasting_incid_update(self, age_group):
         update = {}
         oldCov = self.annual_cov[self.year-1]
-        for condition in self.settings.wasted_list:
+        for condition in self.ss.wasted_list:
             affFrac = age_group.prog_eff[(self.name, condition, 'Affected fraction')]
             effectiveness = age_group.prog_eff[(self.name, condition,'Effectiveness incidence')]
             reduction = affFrac * effectiveness * (self.annual_cov[self.year] - oldCov) / (1. - effectiveness*oldCov)
@@ -289,9 +303,9 @@ class Program(object):
         return update
 
     def _bo_update(self, age_group):
-        BOupdate = {BO: 1. for BO in self.settings.birth_outcomes}
+        BOupdate = {BO: 1. for BO in self.ss.birth_outcomes}
         oldCov = self.annual_cov[self.year-1]
-        for outcome in self.settings.birth_outcomes:
+        for outcome in self.ss.birth_outcomes:
             affFrac = age_group.bo_eff[self.name]['affected fraction'][outcome]
             eff = age_group.bo_eff[self.name]['effectiveness'][outcome]
             reduction = affFrac * eff * (self.annual_cov[self.year] - oldCov) / (1. - eff*oldCov)
