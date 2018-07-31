@@ -870,8 +870,22 @@ class NonPregnantWomen(Population):
                 age_group.probConditionalCoverage[risk][program]['covered'] = pc
                 age_group.probConditionalCoverage[risk][program]['not covered'] = pn
 
-    def _setBPInfo(self, coverage):
-        self.update_preg_averted(coverage)
+    def _set_prob_space(self, prog_areas):
+        risk = 'Birth spacing'
+        relev_progs = prog_areas[risk]
+        for age_group in self.age_groups:
+            age = age_group.age
+            age_group.probConditionalCoverage[risk] = {}
+            frac_correct = age_group.birth_space[age_group.correct_space]
+            for prog in relev_progs:
+                age_group.probConditionalCoverage[risk][prog] = {}
+                OR = self.default.or_space_prog[prog][age]
+                frac_cov = self.previousCov[prog]
+                pn, pc = solve_quad(OR, frac_cov, frac_correct)
+                age_group.probConditionalCoverage[risk][prog]['covered'] = pc
+                age_group.probConditionalCoverage[risk][prog]['not covered'] = pn
+
+    def set_pregrates(self):
         numPregnant = self.data.proj['Estimated pregnant women'][0]
         numWRA = self.data.proj['Total WRA'][0]
         rate = numPregnant/numWRA/(1.- self.fracPregnancyAverted)
