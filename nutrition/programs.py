@@ -8,7 +8,8 @@ from math import ceil
 class Program(object):
     """Each instance of this class is an intervention,
     and all necessary data will be stored as attributes. Will store name, targetpop, popsize, coverage, edges etc
-    Also want it to set absolute number covered, coverage frac (coverage amongst entire pop), normalised coverage (coverage amongst target pop)"""
+    Restricted coverage: the coverage amongst the target population (assumed given by user)
+    Unrestricted coverage: the coverage amongst the entire population """
     def __init__(self, name, prog_data, all_years):
         self.name = name
         self.prog_deps = prog_data.prog_deps
@@ -30,6 +31,7 @@ class Program(object):
         if 'amil' in name: # family planning program only
             self.famplan_methods = prog_data.famplan_methods
             self.set_pregav_sum()
+        self.null = False # detects whether target pop is 0
 
         self._set_target_ages()
         self._set_impacted_ages(prog_data.impacted_pop[self.name]) # TODO: This func could contain the info for how many multiples needed for unrestricted population calculation (IYCF)
@@ -69,16 +71,25 @@ class Program(object):
 
     def get_unrestr_cov(self, restr_cov):
         """ Expects an array of restricted coverages """
-        return restr_cov[:]*self.restr_popsize / self.unrestr_popsize
+        if self.null:
+            return restr_cov[:] * 0
+        else:
+            return restr_cov[:] * self.restr_popsize / self.unrestr_popsize
 
     def set_pop_sizes(self, pops):
         self._set_restrpop(pops)
         self._set_unrestrpop(pops)
         # this accounts for different fractions within age bands
-        self.sat_unrestr = self.restr_popsize / self.unrestr_popsize
+        if self.null:
+            self.sat_unrestr = 0
+        else:
+            self.sat_unrestr = self.restr_popsize / self.unrestr_popsize
 
     def set_init_unrestr(self):
-        unrestr_cov = (self.base_cov * self.restr_popsize) / self.unrestr_popsize
+        if self.null:
+            unrestr_cov = 0
+        else:
+            unrestr_cov = (self.base_cov * self.restr_popsize) / self.unrestr_popsize
         self.annual_cov[0] = unrestr_cov
 
     def adjust_cov(self, pops, year): # todo: needs fixing for annual_cov being an array now
@@ -126,6 +137,9 @@ class Program(object):
         for pop in populations:
             self.restr_popsize += sum(age.pop_size * self.target_pops[age.age] for age in pop.age_groups
                                          if age.age in self.agesTargeted)
+        if not self.restr_popsize:
+            self.null = True
+            print('Warning, program "%s" has zero target population size'%self.name)
 
     def _set_exclusion_deps(self):
         """
@@ -360,7 +374,7 @@ class Program(object):
 class CostCovCurve:
     def __init__(self, unit_cost, sat, restrictedPop, unrestrictedPop, curveType='linear'):
         self.curveType = curveType
-        self.unit_cost = unit_cost
+        self.unit_cost = unit_cost if unit_cost else 1
         self.sat = sat
         self.restrictedPop = restrictedPop
         self.unrestrictedPop = unrestrictedPop
@@ -417,7 +431,10 @@ class CostCovCurve:
     def _lin_func(self, m, c, max_cov, x):
         """ Expects x to be a 1D numpy array.
          Return: a numpy array of the same length as x """
-        unres_maxcov = np.full(len(x), max_cov / self.unrestrictedPop)
+        if not self.unrestrictedPop:
+            unres_maxcov = 0
+        else:
+            unres_maxcov = np.full(len(x), max_cov / self.unrestrictedPop)
         return np.minimum((m * x[:] + c)/self.unrestrictedPop, unres_maxcov)
 
     def _log_func(self, A, B, C, D, x):
