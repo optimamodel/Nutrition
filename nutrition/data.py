@@ -266,6 +266,7 @@ class DefaultParams(object):
                     else:
                         ageModeTuple = [(packageName[1], mode)]
                     packagesDict[packageName[0]] += ageModeTuple
+
         return packagesDict
 
     def make_dict(self, mydict):
@@ -317,7 +318,6 @@ class InputData(object):
         self.causes_death = None
         self.time_trends = sc.odict()
         self.birth_space = None
-        self.prog_target = None
         self.incidences = sc.odict()
         self.pw_agedist = []
         self.wra_proj = []
@@ -508,7 +508,7 @@ class ProgData(object):
 
     def define_iycf(self):
         """ Returns a dict with values as a list of two tuples (age, modality)."""
-        IYCFpackages = utils.read_sheet(self.spreadsheet, 'IYCF packages', [0,1])
+        IYCFpackages = self.spreadsheet.parse(sheet_name='IYCF packages', index_col=[0,1])
         packagesDict = sc.odict()
         for packageName, package in IYCFpackages.groupby(level=[0, 1]):
             if packageName[0] not in packagesDict:
