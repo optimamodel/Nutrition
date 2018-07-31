@@ -22,6 +22,9 @@ class Program(object):
         self.inv_func = None
         self.target_pops = prog_data.prog_target[self.name] # frac of each population which is targeted
         self.unit_cost = prog_data.costs[self.name]
+        if not self.unit_cost:
+            self.unit_cost = 1
+            print('Warning, program %s has 0 unit cost'%self.name)
         self.sat = prog_data.sat[self.name]
         self.sat_unrestr = None
         self.base_cov = prog_data.base_cov[self.name]
@@ -374,7 +377,7 @@ class Program(object):
 class CostCovCurve:
     def __init__(self, unit_cost, sat, restrictedPop, unrestrictedPop, curveType='linear'):
         self.curveType = curveType
-        self.unit_cost = unit_cost if unit_cost else 1
+        self.unit_cost = unit_cost
         self.sat = sat
         self.restrictedPop = restrictedPop
         self.unrestrictedPop = unrestrictedPop
