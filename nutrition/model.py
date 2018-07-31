@@ -108,8 +108,6 @@ class Model:
         # update populations
         for pop in self.pops:
             self._update_pop(pop)
-            if pop.name == 'Non-pregnant women': # TODO: don't like this.
-                self._famplan_update(pop)
             # combine direct and indirect updates to each risk area that we model
             self._combine_updates(pop)
             self._update_dists(pop)
@@ -122,12 +120,7 @@ class Model:
         self._update_wra_pop()
 
     def _set_preg_info(self):
-        FP = [prog for prog in self.prog_info.programs if prog.name == 'Family Planning']
-        if FP:
-            FPprog = FP[0]
-            self.nonpw._setBPInfo(FPprog.annual_cov[0])
-        else:
-            self.nonpw._setBPInfo(0) # TODO: not best way to handle missing program
+        self.nonpw.set_pregrates()
 
     def _famplan_update(self, pop):
         """ This update is not age-specified but instead applies to all non-pw.
@@ -219,7 +212,6 @@ class Model:
         elif population.name == 'Non-pregnant women':
             for age_group in population.age_groups:
                 age_group.totalAnaemiaUpdate = age_group.anaemiaUpdate
-                # age_group.totalBAUpdate = age_group.birthAgeUpdate
 
     def _update_dists(self, population):
         """
@@ -255,12 +247,11 @@ class Model:
             # update pw anaemia but also birth distribution for <1 month age group
             # update birth distribution
             newBorns = self.children.age_groups[0]
-            #PWpopSize = population.total_pop()
             # weighted sum accounts for different effects and target pops across pw age groups.
             firstPW = self.pw.age_groups[0]
             for BO in self.ss.birth_outcomes:
                 newBorns.birth_dist[BO] *= firstPW.birthUpdate[BO]
-            newBorns.birth_dist['Term AGA'] = 1. - sum(newBorns.birth_dist[BO] for BO in list(set(self.ss.birth_outcomes) - {'Term AGA'}))
+            newBorns.birth_dist['Term AGA'] = 1. - sum(newBorns.birth_dist[BO] for BO in self.ss.birth_outcomes[1:])
             # update anaemia distribution
             for age_group in population.age_groups:
                 # mortality
@@ -271,6 +262,9 @@ class Model:
                 age_group.anaemia_dist['Anaemic'] = newProbAnaemia
                 age_group.anaemia_dist['Not anaemic'] = 1.-newProbAnaemia
         elif population.name == 'Non-pregnant women':
+            # get birth outcome update from birth spacing
+            self._birthspace_effects()
+            # update dists for nonPW
             for age_group in population.age_groups:
                 # anaemia
                 oldProbAnaemia = age_group.frac_anaemic()
