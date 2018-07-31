@@ -186,6 +186,18 @@ class Program(object):
             combined = prevUpdate[wastingCat] * incidUpdate[wastingCat]
             age_group.wastingUpdate[wastingCat] *= combined
 
+    def set_pregav_sum(self):
+        self.pregav_sum = sum(self.famplan_methods[prog]['Effectiveness'] * self.famplan_methods[prog]['Distribution']
+                      for prog in self.famplan_methods.iterkeys())
+
+    def get_pregav_update(self, age_group):
+        """ Even though this isn't technically an age group-specific update,
+        for consistencies sake, this distributes the pregnancies averted uniformly across the age bands,
+        but should really only need the sum of all averted births.
+        (cov(t) - cov(t-1)) yields a symmetric update around the baseline coverage"""
+        change =  self.annual_cov[self.year] - self.annual_cov[self.year-1]
+        age_group.preg_av = self.pregav_sum * change / len(self.ss.wra_ages)
+
     def get_birthspace_update(self, age_group):
         """ Birth spacing in non-pregnant women impacts birth outcomes for newborns """
         age_group.birthspace_update += self._space_update(age_group)
@@ -243,7 +255,7 @@ class Program(object):
         """
         update = self._bo_update(age_group)
         for BO in self.ss.birth_outcomes:
-            age_group.birthUpdate[BO] *= update[BO] # todo: don't think this update should be in PWagegroup. Check
+            age_group.birthUpdate[BO] *= update[BO]
 
     def _get_cond_prob_update(self, age_group, risk):
         """This uses law of total probability to update a given age groups for risk types
