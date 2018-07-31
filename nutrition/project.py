@@ -157,6 +157,12 @@ class Project(object):
         if key is None: key = -1
         try:    return self.datasets[key]
         except: return sc.printv('Warning, dataset "%s" set not found!' %key, 1, verbose) # Returns None
+        
+    def model(self, key=None, verbose=2):
+        ''' Shortcut for getting the latest model, i.e. self.datasets[-1] '''
+        if key is None: key = -1
+        try:    return self.models[key]
+        except: return sc.printv('Warning, model "%s" set not found!' %key, 1, verbose) # Returns None
     
     def scen(self, key=None, verbose=2):
         ''' Shortcut for getting the latest scenario, i.e. self.scen[-1] '''
@@ -270,7 +276,7 @@ class Project(object):
         if scens is not None: self.add_scens(scens)
         for scen in self.scens.itervalues():
             if scen.active:
-                model = self.models[scen.model_name]
+                model = self.model(scen.model_name)
                 res = run_scen(scen, model)
                 self.add_result(res, name=res.name)
         return None
@@ -287,7 +293,7 @@ class Project(object):
                 self.add_baseline(optim.model_name, optim.prog_set, dorun=True)
                 budget_res.append(self.result('baseline'))
                 # run the optimization
-                model = sc.dcp(self.models[optim.model_name])
+                model = sc.dcp(self.model(optim.model_name))
                 model.setup(optim, setcovs=False)
                 model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
                 budget_res += optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,

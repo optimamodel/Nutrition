@@ -13,7 +13,7 @@ class Scen(object):
         :param active: whether or not the scenario is to be run (boolean)
         """
         self.name = name
-        self.model_name = model_name if model_name else name
+        self.model_name = model_name if model_name else None
         self.scen_type = scen_type
         self.covs = [] if covs is None else covs
         self.prog_set = prog_set if prog_set else []

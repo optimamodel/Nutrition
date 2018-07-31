@@ -608,7 +608,8 @@ class Dataset(object):
         return output
     
     def prog_names(self):
-        names = self.prog_data.prog_info['baseline coverage'].keys()
+        ''' WARNING, hacky function to get program names '''
+        names = self.prog_data.base_cov.keys()
         return names
 
 

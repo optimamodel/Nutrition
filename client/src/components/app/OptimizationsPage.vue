@@ -1,96 +1,102 @@
 <!--
 Define equity
 
-Last update: 2018-06-26
+Last update: 2018-07-29
 -->
 
 <template>
   <div class="SitePage">
   
-     <table class="table table-bordered table-hover table-striped" style="width: 100%">
-      <thead>
-      <tr>
-        <th>Name</th>
-        <th>Actions</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr v-for="optimSummary in optimSummaries">
-        <td>
-          <b>{{ optimSummary.name }}</b>
-        </td>
-        <td style="white-space: nowrap">
-          <button class="btn __green" @click="runOptim(optimSummary)">Run</button>
-          <button class="btn" @click="editOptim(optimSummary)">Edit</button>
-          <button class="btn" @click="copyOptim(optimSummary)">Copy</button>
-          <button class="btn" @click="deleteOptim(optimSummary)">Delete</button>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-
-    <div>
-      <button class="btn __blue" @click="addOptimModal()">Add optimization</button>
-      <button class="btn" @click="clearGraphs()">Clear graphs</button>
-    </div>
-
-
-    <modal name="add-optim"
-           height="auto"
-           :classes="['v--modal', 'vue-dialog']"
-           :width="width"
-           :pivot-y="0.3"
-           :adaptive="true"
-           :clickToClose="clickToClose"
-           :transition="transition">
-
-      <div class="dialog-content">
-        <div class="dialog-c-title">
-          Add/edit optimization
-        </div>
-        <div class="dialog-c-text">
-          Optimization name:<br>
-          <input type="text"
-                 class="txbox"
-                 v-model="defaultOptim.name"/><br>
-          Optimization objectives:<br>
-          <select v-model="defaultOptim.objs">
-            <option v-for='obj in objectiveOptions'>
-              {{ obj }}
-            </option>
-          </select><br><br>
-          Multipliers:<br>
-          <input type="text"
-                 class="txbox"
-                 v-model="defaultOptim.mults"/><br>
-          Additional funds:<br>
-          <input type="text"
-                 class="txbox"
-                 v-model="defaultOptim.add_funds"/><br>
-        </div>
-        <div style="text-align:justify">
-          <button @click="addOptim()" class='btn __green' style="display:inline-block">
-            Save optimization
-          </button>
-
-          <button @click="$modal.hide('add-optim')" class='btn __red' style="display:inline-block">
-            Cancel
-          </button>
-        </div>
+    <div v-if="activeProjectID ==''">
+      <div style="font-style:italic">
+        <p>No project is loaded.</p>
       </div>
-
+    </div>
+    
+    <div v-else>    
+      <table class="table table-bordered table-hover table-striped" style="width: 100%">
+        <thead>
+        <tr>
+          <th>Name</th>
+          <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="optimSummary in optimSummaries">
+          <td>
+            <b>{{ optimSummary.name }}</b>
+          </td>
+          <td style="white-space: nowrap">
+            <button class="btn __green" @click="runOptim(optimSummary)">Run</button>
+            <button class="btn" @click="editOptim(optimSummary)">Edit</button>
+            <button class="btn" @click="copyOptim(optimSummary)">Copy</button>
+            <button class="btn" @click="deleteOptim(optimSummary)">Delete</button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
 
       <div>
+        <button class="btn __blue" @click="addOptimModal()">Add optimization</button>
+        <button class="btn" @click="clearGraphs()">Clear graphs</button>
+      </div>
 
-      </div>
-    </modal>
+
+      <modal name="add-optim"
+             height="auto"
+             :classes="['v--modal', 'vue-dialog']"
+             :width="width"
+             :pivot-y="0.3"
+             :adaptive="true"
+             :clickToClose="clickToClose"
+             :transition="transition">
+
+        <div class="dialog-content">
+          <div class="dialog-c-title">
+            Add/edit optimization
+          </div>
+          <div class="dialog-c-text">
+            Optimization name:<br>
+            <input type="text"
+                   class="txbox"
+                   v-model="defaultOptim.name"/><br>
+            Optimization objectives:<br>
+            <select v-model="defaultOptim.obj">
+              <option v-for='obj in objectiveOptions'>
+                {{ obj }}
+              </option>
+            </select><br><br>
+            Multipliers:<br>
+            <input type="text"
+                   class="txbox"
+                   v-model="defaultOptim.mults"/><br>
+            Additional funds:<br>
+            <input type="text"
+                   class="txbox"
+                   v-model="defaultOptim.add_funds"/><br>
+          </div>
+          <div style="text-align:justify">
+            <button @click="addOptim()" class='btn __green' style="display:inline-block">
+              Save optimization
+            </button>
+
+            <button @click="$modal.hide('add-optim')" class='btn __red' style="display:inline-block">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </modal>
     
-    <div>
-      <div v-for="index in placeholders" :id="'fig'+index" style="width:650px; float:left;">
-        <!--mpld3 content goes here-->
+      <div>
+        <div v-for="index in placeholders" :id="'fig'+index" style="width:650px; float:left;">
+          <!--mpld3 content goes here-->
+        </div>
       </div>
+      
+      <!-- Popup spinner -->
+      <popup-spinner></popup-spinner>
+    
     </div>
-    
   </div>
 </template>
 
@@ -99,12 +105,19 @@ Last update: 2018-06-26
   import axios from 'axios'
   var filesaver = require('file-saver')
   import rpcservice from '@/services/rpc-service'
-  import taskservice from '@/services/task-service'  
+  import taskservice from '@/services/task-service' 
+  import progressIndicator from '@/services/progress-indicator-service'  
   import router from '@/router'
   import Vue from 'vue';
+  import PopupSpinner from './Spinner.vue'
 
   export default {
     name: 'OptimizationPage',
+    
+    components: {
+      PopupSpinner
+    },
+  
     data() {
       return {
         serverresponse: 'no response',
@@ -115,6 +128,14 @@ Last update: 2018-06-26
     },
 
     computed: {
+      activeProjectID() {
+        if (this.$store.state.activeProject.project === undefined) {
+          return ''
+        } else {
+          return this.$store.state.activeProject.project.id
+        }
+      },
+      
       placeholders() {
         var indices = []
         for (var i = 0; i <= 100; i++) {
@@ -162,57 +183,72 @@ Last update: 2018-06-26
       getDefaultOptim() {
         console.log('getDefaultOptim() called')
         rpcservice.rpcCall('get_default_optim', [this.projectID()])
-          .then(response => {
-            this.defaultOptim = response.data // Set the optimization to what we received.
-            this.objectiveOptions = response.data.objective_options
-            console.log('TEMPPPPPPP these are the options:'+this.objectiveOptions);
-          });
+        .then(response => {
+          this.defaultOptim = response.data // Set the optimization to what we received.
+          this.objectiveOptions = response.data.objective_options
+          console.log('TEMPPPPPPP these are the options:'+this.objectiveOptions);
+        })
+        .catch(error => {
+          // Failure popup.
+          progressIndicator.failurePopup(this, 'Could not get default optimization')
+        })          
       },
 
       getOptimSummaries() {
         console.log('getOptimSummaries() called')
+        
+        // Start indicating progress.
+        progressIndicator.start(this)
+        
         // Get the current project's optimization summaries from the server.
         rpcservice.rpcCall('get_optim_info', [this.projectID()])
-          .then(response => {
-            this.optimSummaries = response.data // Set the optimizations to what we received.
-            this.$notifications.notify({
-              message: 'Optimizations loaded',
-              icon: 'ti-check',
-              type: 'success',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            });
-          })
+        .then(response => {
+          this.optimSummaries = response.data // Set the optimizations to what we received.
+          
+          // Indicate success.
+          progressIndicator.succeed(this, 'Optimizations loaded')
+        })
+        .catch(error => {
+          // Indicate failure.
+          progressIndicator.fail(this, 'Could not load optimizations')
+        })         
       },
 
       setOptimSummaries() {
         console.log('setOptimSummaries() called')
+        
+        // Start indicating progress.
+        progressIndicator.start(this)
+        
         rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
-          .then( response => {
-            this.$notifications.notify({
-              message: 'Optimizations saved',
-              icon: 'ti-check',
-              type: 'success',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            });
-          })
+        .then( response => {
+          // Indicate success.
+          progressIndicator.succeed(this, 'Optimizations saved')          
+        })
+        .catch(error => {
+          // Indicate failure.
+          progressIndicator.fail(this, 'Could not save optimizations') 
+        })       
       },
 
       addOptimModal() {
         // Open a model dialog for creating a new project
         console.log('addOptimModal() called');
         rpcservice.rpcCall('get_default_optim', [this.projectID()])
-          .then(response => {
-            this.defaultOptim = response.data // Set the optimization to what we received.
-            this.$modal.show('add-optim');
-            console.log(this.defaultOptim)
-          });
+        .then(response => {
+          this.defaultOptim = response.data // Set the optimization to what we received.
+          this.$modal.show('add-optim');
+          console.log(this.defaultOptim)
+        })
       },
 
       addOptim() {
         console.log('addOptim() called')
         this.$modal.hide('add-optim')
+        
+        // Start indicating progress.
+        progressIndicator.start(this)
+        
         let newOptim = this.dcp(this.defaultOptim); // You've got to be kidding me, buster
         let otherNames = []
         this.optimSummaries.forEach(optimSum => {
@@ -229,40 +265,32 @@ Last update: 2018-06-26
         }
         console.log(newOptim)
         rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
-          .then( response => {
-            this.$notifications.notify({
-              message: 'Optimization added',
-              icon: 'ti-check',
-              type: 'success',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            });
-          })
-      },
-
-      openOptim(optimSummary) {
-        // Open a model dialog for creating a new project
-        console.log('openOptim() called');
-        this.currentOptim = optimSummary.name
-        this.$notifications.notify({
-          message: 'Optimization "'+optimSummary.name+'" opened',
-          icon: 'ti-check',
-          type: 'success',
-          verticalAlign: 'top',
-          horizontalAlign: 'center',
-        });
+        .then( response => {
+          // Indicate success.
+          progressIndicator.succeed(this, 'Optimization added')
+        })
+        .catch(error => {
+          // Indicate failure.
+          progressIndicator.fail(this, 'Could not add optimization') 
+          
+          // TODO: Should probably fix the corrupted this.optimSummaries.
+        })         
       },
 
       editOptim(optimSummary) {
         // Open a model dialog for creating a new project
         console.log('editOptim() called');
         this.defaultOptim = optimSummary
-        console.log('defaultOptim', this.defaultOptim.objs)
+        console.log('defaultOptim', this.defaultOptim.obj)
         this.$modal.show('add-optim');
       },
 
       copyOptim(optimSummary) {
         console.log('copyOptim() called')
+        
+        // Start indicating progress.
+        progressIndicator.start(this)
+        
         var newOptim = this.dcp(optimSummary); // You've got to be kidding me, buster
         var otherNames = []
         this.optimSummaries.forEach(optimSum => {
@@ -271,34 +299,40 @@ Last update: 2018-06-26
         newOptim.name = this.getUniqueName(newOptim.name, otherNames)
         this.optimSummaries.push(newOptim)
         rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
-          .then( response => {
-            this.$notifications.notify({
-              message: 'Opimization copied',
-              icon: 'ti-check',
-              type: 'success',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            });
-          })
+        .then( response => {
+          // Indicate success.
+          progressIndicator.succeed(this, 'Opimization copied')
+        })
+        .catch(error => {
+          // Indicate failure.
+          progressIndicator.fail(this, 'Could not copy optimization') 
+          
+          // TODO: Should probably fix the corrupted this.optimSummaries.
+        })        
       },
 
       deleteOptim(optimSummary) {
         console.log('deleteOptim() called')
+        
+        // Start indicating progress.
+        progressIndicator.start(this)
+        
         for(var i = 0; i< this.optimSummaries.length; i++) {
           if(this.optimSummaries[i].name === optimSummary.name) {
             this.optimSummaries.splice(i, 1);
           }
         }
         rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
-          .then( response => {
-            this.$notifications.notify({
-              message: 'Optimization deleted',
-              icon: 'ti-check',
-              type: 'success',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            });
-          })
+        .then( response => {
+          // Indicate success.
+          progressIndicator.succeed(this, 'Optimization deleted')
+        })
+        .catch(error => {
+          // Indicate failure.
+          progressIndicator.fail(this, 'Could not delete optimization') 
+          
+          // TODO: Should probably fix the corrupted this.optimSummaries.
+        })         
       },
 
       runOptim(optimSummary) {
@@ -320,6 +354,8 @@ Last update: 2018-06-26
         // Make sure they're saved first
         rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
         .then(response => {
+          // Start indicating progress.
+          progressIndicator.start(this)
 
           // Go to the server to get the results from the package set.
 //          rpcservice.rpcCall('run_optim', [this.projectID(), optimSummary.name])
@@ -348,14 +384,8 @@ Last update: 2018-06-26
               }
             }
             
-            // Success popup.
-            this.$notifications.notify({
-              message: 'Graphs created',
-              icon: 'ti-check',
-              type: 'success',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            })            
+            // Indicate success.
+            progressIndicator.succeed(this, 'Graphs created')            
           })
           .catch(error => {
             // Pull out the error message.
@@ -364,17 +394,20 @@ Last update: 2018-06-26
             // Set the server error.
             this.servererror = error.message
             
-            // Put up a failure notification.
-            this.$notifications.notify({
-              message: 'Optimization failed',
-              icon: 'ti-face-sad',
-              type: 'warning',
-              verticalAlign: 'top',
-              horizontalAlign: 'center',
-            })            
-          })
-          
+            // Indicate failure.
+            progressIndicator.fail(this, 'Optimization failed')   
+          }) 
         })
+        .catch(error => {
+          // Pull out the error message.
+          this.serverresponse = 'There was an error: ' + error.message
+
+          // Set the server error.
+          this.servererror = error.message
+          
+          // Put up a failure notification.
+          progressIndicator.failurePopup(this, 'Optimization failed')            
+        })     
       },
 
       reloadGraphs() {
@@ -412,5 +445,5 @@ Last update: 2018-06-26
 
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style lang="scss" scoped>
 </style>
