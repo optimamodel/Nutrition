@@ -885,26 +885,6 @@ class NonPregnantWomen(Population):
                 age_group.probConditionalCoverage[risk][prog]['covered'] = pc
                 age_group.probConditionalCoverage[risk][prog]['not covered'] = pn
 
-    def set_pregrates(self):
-        numPregnant = self.data.proj['Estimated pregnant women'][0]
-        numWRA = self.data.proj['Total WRA'][0]
-        rate = numPregnant/numWRA/(1.- self.fracPregnancyAverted)
-        # reduce rate by % difference between births and pregnancies to get birth rate
-        projectedBirths = self.data.proj['Number of births']
-        projectedPWpop = self.data.proj['Estimated pregnant women']
-        percentDiff = [ai/bi for ai,bi in zip(projectedBirths, projectedPWpop)]
-        averagePercentDiff = sum(percentDiff) / float(len(percentDiff))
-        self.pregnancyRate = rate
-        self.birthRate = averagePercentDiff * rate
-
-    def update_preg_averted(self, coverage): # TODO: don't like the way this is implemented
-        if coverage == 0: # if missing or 0 cov
-            self.fracPregnancyAverted = 0.
-        else:
-            self.fracPregnancyAverted = sum(self.data.famplan_methods[prog]['Effectiveness'] *
-                self.data.famplan_methods[prog]['Distribution'] * coverage
-                for prog in self.data.famplan_methods.iterkeys())
-
     def _set_time_trends(self):
         risk = 'Anaemia'
         trend = self.data.time_trends[risk]
