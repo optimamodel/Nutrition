@@ -2,7 +2,7 @@
 from .scenarios import Scen
 from .optimization import Optim
 
-def demo_scens(): # todo: want to add coverage/budget option? Nah...
+def demo_scens():
     # stunting reduction
     kwargs1 = {'name': 'stunt',
          'model_name': 'demo',
