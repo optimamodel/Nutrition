@@ -43,31 +43,18 @@ class AgeGroup(object):
         return num_notanamic
 
 class NonPWAgeGroup(AgeGroup):
-    def __init__(self, age, pop_size, anaemia_dist, birthOutcomeDist, birth_age, birth_int):
+    def __init__(self, age, pop_size, anaemia_dist, birth_space, correct_space):
         AgeGroup.__init__(self, age, pop_size, anaemia_dist)
-        self.birthOutcomeDist = sc.dcp(birthOutcomeDist)
-        self.birth_age = sc.dcp(birth_age)
-        self.birth_int = sc.dcp(birth_int)
+        self.birth_space = sc.dcp(birth_space)
+        self.correct_space = correct_space
+        self.preg_av = 0 # initially 0, but updated if coverage changes
         self.probConditionalCoverage = {}
         self.trends = {}
         self.reset_storage()
-        # self._setBirthProbs()
 
-# TODO: do we need this?
-    # def _setBirthProbs(self): # TODO: this should probably go in the NonPW class...
-    #     """
-    #     Setting the probability of each birth outcome.
-    #     :return:
-    #     """
-    #     self.birthProb = {}
-    #     for outcome, frac in self.birthOutcomeDist.iteritems():
-    #         thisSum = 0.
-    #         for ageOrder, fracAO in self.birth_age.iteritems():
-    #             RRAO = self.default.rr_age_order[ageOrder][outcome]
-    #             for interval, fracInterval in self.birth_int.iteritems():
-    #                 rr_interval = self.default.rr_interval[interval][outcome]
-    #                 thisSum += fracAO * RRAO * fracInterval * rr_interval
-    #         self.birthProb[outcome] = thisSum
+    def reset_storage(self):
+        super(NonPWAgeGroup, self).reset_storage()
+        self.birthspace_update = self.birth_space[self.ss.correct_spacing]
 
 class PWAgeGroup(AgeGroup):
     def __init__(self, age, pop_size, anaemia_dist, ageingRate, causes_death, age_dist):
@@ -264,9 +251,6 @@ class Newborn(ChildAgeGroup):
                  ageingRate, causes_death, default_params, frac_severe_dia)
         self.birth_dist = birth_dist
         self.probRiskAtBirth = {}
-        self.birthUpdate = {} # todo: using this at all? Should be in PW
-        for BO in self.ss.birth_outcomes:
-            self.birthUpdate[BO] = 1.
 
 ####### Population classes #########
 
@@ -323,6 +307,7 @@ class Children(Population):
         self._set_future_stunting()
         self._set_stunted_birth()
         self._set_wasted_birth()
+        self._set_bo_space()
 
     ##### DATA WRANGLING ######
 
@@ -644,7 +629,7 @@ class Children(Population):
         newborns = self.age_groups[0]
         probs = self._solve_system('Stunting')
         newborns.probRiskAtBirth['Stunting'] = {cat:prob for cat,prob in
-                                                zip(["Term AGA", "Term SGA", "Pre-term AGA", "Pre-term SGA"], probs)}
+                                                zip(self.ss.birth_outcomes, probs)}
 
     def _set_wasted_birth(self):
         newborns = self.age_groups[0]
@@ -652,12 +637,13 @@ class Children(Population):
         for wastingCat in self.ss.wasted_list:
             probs = self._solve_system(wastingCat)
             probWastedAtBirth[wastingCat] = {cat: prob for cat, prob in
-                                                    zip(["Term AGA", "Term SGA", "Pre-term AGA", "Pre-term SGA"],
+                                                    zip(self.ss.birth_outcomes,
                                                         probs)}
         newborns.probRiskAtBirth['Wasting'] = probWastedAtBirth
 
     def _set_bo_space(self):
-        """ Using law of total probability and definition of relative risks,
+        """ Find the probability of a birth outcome conditional on birth spacing.
+        Using law of total probability and definition of relative risks,
          we solve for P(BOi | space1), and use this to solve for the rest"""
         newborns = self.age_groups[0]
         prob_bospace = sc.odict()
@@ -828,7 +814,6 @@ class NonPregnantWomen(Population):
     def __init__(self, data, default_params):
         Population.__init__(self, 'Non-pregnant women', data, default_params)
         self.anaemia_dist = self.data.risk_dist['Anaemia']
-        self.birth_dist = self.data.demo['Birth dist']
         self.proj = {age:pops for age, pops in data.proj.iteritems() if age in self.ss.wra_ages + ['Total WRA']}
         self._make_pop_sizes()
         self._make_age_groups()
@@ -838,6 +823,10 @@ class NonPregnantWomen(Population):
 
     def set_probs(self, prog_areas):
         self._set_prob_anaem(prog_areas)
+        self._set_prob_space(prog_areas)
+
+    def get_pregav(self):
+        return sum(age_group.preg_av for age_group in self.age_groups)
 
     def _make_pop_sizes(self):
         wra_proj = self.data.wra_proj
@@ -847,8 +836,8 @@ class NonPregnantWomen(Population):
         for i, age in enumerate(self.ss.wra_ages):
             popSize = self.popSizes[i]
             anaemia_dist = self.anaemia_dist[age]
-            self.age_groups.append(NonPWAgeGroup(age, popSize, anaemia_dist, self.birth_dist,
-                                                self.data.birth_age, self.data.birth_int))
+            self.age_groups.append(NonPWAgeGroup(age, popSize, anaemia_dist, self.data.birth_space,
+                                                 self.ss.correct_spacing))
 
     def _set_prob_anaem(self, prog_areas):
         risk = 'Anaemia'
