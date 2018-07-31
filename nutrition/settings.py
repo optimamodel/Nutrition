@@ -23,13 +23,14 @@ class Settings(object):
         self.n_cats = len(self.all_cats)
         self.correct_bf = {'<1 month': 'Exclusive', '1-5 months': 'Exclusive', '6-11 months':'Partial',
                            '12-23 months': 'Partial', '24-59 months': 'None'}
+        self.optimal_space = '24 months or greater'
         self.birth_outcomes = ['Term AGA', 'Term SGA', 'Pre-term AGA','Pre-term SGA']
         self.all_risks = [self.stunting_list, self.wasting_list, self.bf_list, self.anaemia_list]
         self.child_ages = ['<1 month', '1-5 months', '6-11 months', '12-23 months', '24-59 months']
         self.pw_ages = ['PW: 15-19 years', 'PW: 20-29 years', 'PW: 30-39 years', 'PW: 40-49 years']
         self.wra_ages = ['WRA: 15-19 years', 'WRA: 20-29 years', 'WRA: 30-39 years', 'WRA: 40-49 years']
         self.all_ages = self.child_ages + self.pw_ages + self.wra_ages
-        self.risks = ['Stunting', 'Wasting', 'Breastfeeding', 'Anaemia']
+        self.risks = ['Stunting', 'Wasting', 'Breastfeeding', 'Anaemia'] # todo: even use this?
         self.child_age_spans = [1., 5., 6., 12., 36.] # in months
         self.women_age_rates = [1./5., 1./10., 1./10., 1./10.] # in years
     
@@ -43,20 +44,6 @@ def data_path(country, region, sim_type):
     subdir = os.path.join('applications', country, 'data', sim_type, demoname)
     demopath = os.path.join(parentfolder, subdir)
     return demopath
-
-def demo_opts_path():
-    parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-    name = 'demo_options.xlsx'
-    subdir = os.path.join('applications', 'demo', 'data', 'national', name)
-    progpath = os.path.join(parentfolder, subdir)
-    return progpath
-
-def test_opts_path(): # todo: update this to test folder
-    parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-    progname = 'test_options.xlsx'
-    subdir = os.path.join('applications', 'master', 'data', 'national', progname)
-    progpath = os.path.join(parentfolder, subdir)
-    return progpath
 
 def default_params_path():
     parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))

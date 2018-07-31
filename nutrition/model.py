@@ -322,7 +322,7 @@ class Model:
         """ From the birth space update, take from both <18 months and 18-23 month categories evenly """
         nonpw = self.nonpw.age_groups[0] # only impacted this pop
         newborns = self.children.age_groups[0]
-        oldprob = nonpw.birth_space[self.ss.correct_spacing]
+        oldprob = nonpw.birth_space[self.ss.optimal_space]
         num_corrbefore = oldprob * newborns.pop_size
         num_corrafter = newborns.pop_size * nonpw.birthspace_update
         num_shift = num_corrafter - num_corrbefore
@@ -331,7 +331,7 @@ class Model:
         # update birth spacing
         for space in nonpw.birth_space:
             nonpw.birth_space[space] *= 1 - frac_correcting
-        nonpw.birth_space[self.ss.correct_spacing] = nonpw.birthspace_update
+        nonpw.birth_space[self.ss.optimal_space] = nonpw.birthspace_update
         # update birth outcomes
         for bo in self.ss.birth_outcomes:
             newborns.birth_dist[bo] = sum(newborns.prob_bospace[bo][name] * value for name, value in nonpw.birth_space.iteritems())

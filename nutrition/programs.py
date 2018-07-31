@@ -205,7 +205,7 @@ class Program(object):
     def _space_update(self, age_group):
         """ Update the proportion of pregnancies in the correct spacing category.
           This will only work on WRA: 15-19 years by design, since it isn't actually age-specific """
-        correctold = age_group.birth_space[self.ss.correct_spacing]
+        correctold = age_group.birth_space[self.ss.optimal_space]
         probcov = age_group.probConditionalCoverage['Birth spacing'][self.name]['covered']
         probnot = age_group.probConditionalCoverage['Birth spacing'][self.name]['not covered']
         probnew = get_new_prob(self.annual_cov[self.year], probcov, probnot)

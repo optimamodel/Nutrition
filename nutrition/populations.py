@@ -54,7 +54,7 @@ class NonPWAgeGroup(AgeGroup):
 
     def reset_storage(self):
         super(NonPWAgeGroup, self).reset_storage()
-        self.birthspace_update = self.birth_space[self.ss.correct_spacing]
+        self.birthspace_update = self.birth_space[self.ss.optimal_space]
 
 class PWAgeGroup(AgeGroup):
     def __init__(self, age, pop_size, anaemia_dist, ageingRate, causes_death, age_dist):
@@ -837,7 +837,7 @@ class NonPregnantWomen(Population):
             popSize = self.popSizes[i]
             anaemia_dist = self.anaemia_dist[age]
             self.age_groups.append(NonPWAgeGroup(age, popSize, anaemia_dist, self.data.birth_space,
-                                                 self.ss.correct_spacing))
+                                                 self.ss.optimal_space))
 
     def _set_prob_anaem(self, prog_areas):
         risk = 'Anaemia'
