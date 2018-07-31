@@ -34,7 +34,7 @@ class Program(object):
         if 'amil' in name: # family planning program only
             self.famplan_methods = prog_data.famplan_methods
             self.set_pregav_sum()
-        self.null = False # detects whether target pop is 0
+        self.nullpop = False # flags whether target pop is 0
 
         self._set_target_ages()
         self._set_impacted_ages(prog_data.impacted_pop[self.name]) # TODO: This func could contain the info for how many multiples needed for unrestricted population calculation (IYCF)
@@ -74,7 +74,7 @@ class Program(object):
 
     def get_unrestr_cov(self, restr_cov):
         """ Expects an array of restricted coverages """
-        if self.null:
+        if self.nullpop:
             return restr_cov[:] * 0
         else:
             return restr_cov[:] * self.restr_popsize / self.unrestr_popsize
@@ -83,13 +83,13 @@ class Program(object):
         self._set_restrpop(pops)
         self._set_unrestrpop(pops)
         # this accounts for different fractions within age bands
-        if self.null:
+        if self.nullpop:
             self.sat_unrestr = 0
         else:
             self.sat_unrestr = self.restr_popsize / self.unrestr_popsize
 
     def set_init_unrestr(self):
-        if self.null:
+        if self.nullpop:
             unrestr_cov = 0
         else:
             unrestr_cov = (self.base_cov * self.restr_popsize) / self.unrestr_popsize
@@ -141,7 +141,7 @@ class Program(object):
             self.restr_popsize += sum(age.pop_size * self.target_pops[age.age] for age in pop.age_groups
                                          if age.age in self.agesTargeted)
         if not self.restr_popsize:
-            self.null = True
+            self.nullpop = True
             print('Warning, program "%s" has zero target population size'%self.name)
 
     def _set_exclusion_deps(self):
