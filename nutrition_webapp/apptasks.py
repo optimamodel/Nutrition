@@ -47,6 +47,24 @@ def run_optim(project_id, optim_name):
     print('Running optimization...')
     proj = load_project(project_id, raise_exception=True)
     
+    print('Thinking...')
+    import nutrition.ui as nu
+    p = nu.demo()
+    
+    a = proj.optim()
+    b = p.optim()
+    
+    for attr in a.__dict__.keys():
+        print('COMPARING %s' % attr)
+        a_attr = getattr(a, attr)
+        b_attr = getattr(b, attr)
+        print('A: %s' % a_attr)
+        print('B: %s' % b_attr)
+        if a_attr == b_attr:
+            print('(they match)')
+        else:
+            print('THEY DO NOT MAAATCH')
+    
     proj.run_optims(keys=[optim_name], parallel=False)
     figs = proj.plot(toplot=['alloc']) # Only plot allocation
     graphs = []
@@ -62,25 +80,6 @@ def run_optim(project_id, optim_name):
     
     # Return the graphs.
     return {'graphs': graphs}
-
-#def run_optim(x, y):
-#    time.sleep(10)
-#    return x * y
-
-@register_async_task
-def async_add(x, y):
-    time.sleep(10)
-    return x + y
-
-@register_async_task
-def async_sub(x, y):
-    time.sleep(10)
-    return x - y
-
-@register_async_task
-def test_error():
-    time.sleep(10)
-    return 1 / 0
 
 # Add the asynchronous task functions in this module to the tasks.py module 
 # so run_task() can call them.

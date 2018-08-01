@@ -228,7 +228,7 @@ class Project(object):
             self.add(name=scen.name, item=scen, what='scen')
         self.modified = sc.today()
 
-    def add_baseline(self, model_name, prog_set, key='baseline', dorun=False):
+    def add_baseline(self, model_name, prog_set, key='Baseline', dorun=False):
         base = [Scen(name=key, model_name=model_name, scen_type='coverage', prog_set=prog_set)]
         self.add_scens(base)
         if dorun:
@@ -242,14 +242,13 @@ class Project(object):
 
     def add_result(self, result, name=None):
         """Add result by name"""
-        try:
-            keyname = result.name
-        except ONException as E:
-            if name is None:
+        if name is None:
+            try:
+                name = result.name
+            except Exception as E:
                 print('WARNING, could not extract result name: %s' % repr(E))
                 name = 'default_result'
-            keyname = name
-        self.add(name=keyname, item=result, what='result')
+        self.add(name=name, item=result, what='result')
 
     def demo_scens(self, dorun=None, doadd=True):
         scens = demo_scens()
@@ -292,7 +291,7 @@ class Project(object):
             if optim:
                 # run baseline scen with given progset
                 self.add_baseline(optim.model_name, optim.prog_set, dorun=True)
-                budget_res.append(self.result('baseline'))
+                budget_res.append(self.result('Baseline'))
                 # run the optimization
                 model = sc.dcp(self.model(optim.model_name))
                 model.setup(optim, setcovs=False)
@@ -322,7 +321,7 @@ class Project(object):
          Not only is this a little difficult to implement, but the plots are not compatible across optimizations & results in many plots being generated"""
         if keys: keys = sc.promotetolist(keys)
         else:    keys = self.results.keys()
-        if baseline: keys = ['baseline'] + keys
+        if baseline: keys = ['Baseline'] + keys
         if optim and len(keys)>1:
             errormsg = 'Warning, cannot plot multiple optimizations simultaneously'
             raise ONException(errormsg)
