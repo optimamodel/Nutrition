@@ -134,7 +134,8 @@ def plot_alloc(all_res):
     xlabs = []
     bars = []
     bottom = np.zeros(len(all_res))
-    for i, prog in enumerate(ref.programs):
+    colors = sc.gridcolors(ncolors=len(ref.programs))
+    for i,prog in enumerate(ref.programs):
         y = []
         # get allocation for each multiple
         for j, res in enumerate(all_res):
@@ -145,7 +146,7 @@ def plot_alloc(all_res):
             # scale for axis
             alloc /= mag
             y = np.append(y, alloc)
-        bar = ax.bar(x, y, width=width, bottom=bottom)
+        bar = ax.bar(x, y, width=width, bottom=bottom, color=colors[i])
         bars.append(bar)
         bottom += y
     ymax = max(bottom)

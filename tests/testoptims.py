@@ -25,9 +25,4 @@ kwargs2 = {'name':'test2',
 optims = [Optim(**kwargs1), Optim(**kwargs2)]
 p.add_optims(optims)
 p.run_optims(['test1'], swarmsize=1, maxiter=1, maxtime=1)
-
 p.plot(keys=['test1'], optim=True)
-
-
-
-
