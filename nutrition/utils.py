@@ -41,7 +41,7 @@ def pretty_labels(): # todo: look at Nick's labels
     labs['pw_deaths'] = 'Pregnant women mortality'
     labs['anaemia_prev'] = 'Prevalence of anaemia in children \n and women of reproductive age (%)'
     labs['wasting_prev'] = 'Prevalence of wasting in children (%)'
-    labs['baseline'] = 'Est. spending' # this is for allocation
+    labs['Baseline'] = 'Est. spending' # this is for allocation
     return labs
 
 def relabel(old):
