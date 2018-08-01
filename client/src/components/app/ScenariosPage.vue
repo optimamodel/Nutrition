@@ -45,9 +45,9 @@ Last update: 2018-07-31
       </table>
 
       <div>
-        <button class="btn __blue" @click="addScenarioModal()">Add scenario</button>
-        <button class="btn __green" @click="runScenarios()">Run scenarios</button>
-        <button class="btn" @click="clearGraphs()">Clear graphs</button>
+        <button class="btn __blue" :disabled="!scenariosLoaded" @click="addScenarioModal()">Add scenario</button>
+        <button class="btn __green" :disabled="!scenariosLoaded" @click="runScenarios()">Run scenarios</button>
+        <button class="btn" :disabled="!scenariosLoaded" @click="clearGraphs()">Clear graphs</button>
       </div>
       <br>
 
@@ -153,6 +153,7 @@ Last update: 2018-07-31
         defaultScen: [],
         defaultScenYears: [],
         graphData: [],
+        scenariosLoaded: false        
       }
     },
 
@@ -220,6 +221,8 @@ Last update: 2018-07-31
         rpcservice.rpcCall('get_scenario_info', [this.projectID()])
         .then(response => {
           this.scenSummaries = response.data // Set the scenarios to what we received.
+          
+          this.scenariosLoaded = true
           
           // Indicate success.
           status.succeed(this, 'Scenarios loaded')
