@@ -276,6 +276,10 @@ Last update: 2018-07-31
           this.$modal.show('add-scenario');
           console.log(this.defaultScen)
         })
+        .catch(error => {
+           // Failure popup.
+          status.failurePopup(this, 'Could not open default scenario')
+        })        
       },
 
       addScenario() {
@@ -372,13 +376,10 @@ Last update: 2018-07-31
       
       runScenarios() {
         console.log('runScenarios() called')
-        
+        status.start(this)        
         // Make sure they're saved first
         rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
         .then(response => {
-          // Start indicating progress.
-          status.start(this)         
-          
           // Go to the server to get the results from the package set.
           rpcservice.rpcCall('run_scenarios', [this.projectID()])
           .then(response => {
@@ -413,7 +414,7 @@ Last update: 2018-07-31
             this.servererror = error.message
             
             // Indicate failure.
-            status.fail(this, 'Scenario run failed')           
+            status.fail(this, 'Could not make graphs')           
           })
         })
         .catch(error => {
@@ -424,7 +425,7 @@ Last update: 2018-07-31
           this.servererror = error.message
           
           // Put up a failure notification.
-          status.failurePopup(this, 'Scenario run failed')      
+          status.fail(this, 'Could not make graphs')      
         })         
       },
 
