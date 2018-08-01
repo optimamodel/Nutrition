@@ -18,6 +18,33 @@ class AgeGroup(object):
     def reset_storage(self):
         self.anaemiaUpdate = 1
 
+    def update_dist(self, risk, frac_risk, wast_frac=None):
+        """
+        :param risk: one of 'stunting', 'wasting', 'anaemia'
+        :param frac_risk: risk prevalence in age group
+        :param wast_frac: wasting distribution requires 'MAM' and 'SAM' to be included already, since these are unconstrained
+        :return: None
+        """
+        risk = risk.lower()
+        if 'stu' in risk:
+            # fraction stunted
+            self.stunting_dist = restratify(frac_risk)
+        elif 'was' in risk:
+            if wast_frac:
+                wast_dist = sc.dcp(wast_frac)
+                # fraction wasted
+                # there is no constraint on the wasted fraction, only non-wasted
+                dist = restratify(frac_risk)
+                for cat in self.ss.non_wasted_list:
+                    wast_dist[cat] = dist[cat]
+                self.wasting_dist = wast_dist
+            else:
+                raise Exception(" Error: cannot fully specify wasting distribution because the wasted categories were not specified.")
+        elif 'an' in risk:
+            # fraction anaemic
+            self.anaemia_dist['Anaemic'] = frac_risk
+            self.anaemia_dist['Not anaemic'] = 1-frac_risk
+
     def frac_risk(self, risk):
         risk = risk.lower()
         if any(sub in risk for sub in ['an', 'anaem', 'amaemia', 'amaemic']):
@@ -43,31 +70,18 @@ class AgeGroup(object):
         return num_notanamic
 
 class NonPWAgeGroup(AgeGroup):
-    def __init__(self, age, pop_size, anaemia_dist, birthOutcomeDist, birth_age, birth_int):
+    def __init__(self, age, pop_size, anaemia_dist, birth_space, correct_space):
         AgeGroup.__init__(self, age, pop_size, anaemia_dist)
-        self.birthOutcomeDist = sc.dcp(birthOutcomeDist)
-        self.birth_age = sc.dcp(birth_age)
-        self.birth_int = sc.dcp(birth_int)
+        self.birth_space = sc.dcp(birth_space)
+        self.correct_space = correct_space
+        self.preg_av = 0 # initially 0, but updated if coverage changes
         self.probConditionalCoverage = {}
         self.trends = {}
         self.reset_storage()
-        # self._setBirthProbs()
 
-# TODO: do we need this?
-    # def _setBirthProbs(self): # TODO: this should probably go in the NonPW class...
-    #     """
-    #     Setting the probability of each birth outcome.
-    #     :return:
-    #     """
-    #     self.birthProb = {}
-    #     for outcome, frac in self.birthOutcomeDist.iteritems():
-    #         thisSum = 0.
-    #         for ageOrder, fracAO in self.birth_age.iteritems():
-    #             RRAO = self.default.rr_age_order[ageOrder][outcome]
-    #             for interval, fracInterval in self.birth_int.iteritems():
-    #                 rr_interval = self.default.rr_interval[interval][outcome]
-    #                 thisSum += fracAO * RRAO * fracInterval * rr_interval
-    #         self.birthProb[outcome] = thisSum
+    def reset_storage(self):
+        super(NonPWAgeGroup, self).reset_storage()
+        self.birthspace_update = self.birth_space[self.ss.optimal_space]
 
 class PWAgeGroup(AgeGroup):
     def __init__(self, age, pop_size, anaemia_dist, ageingRate, causes_death, age_dist):
@@ -264,9 +278,6 @@ class Newborn(ChildAgeGroup):
                  ageingRate, causes_death, default_params, frac_severe_dia)
         self.birth_dist = birth_dist
         self.probRiskAtBirth = {}
-        self.birthUpdate = {} # todo: using this at all? Should be in PW
-        for BO in self.ss.birth_outcomes:
-            self.birthUpdate[BO] = 1.
 
 ####### Population classes #########
 
@@ -323,6 +334,7 @@ class Children(Population):
         self._set_future_stunting()
         self._set_stunted_birth()
         self._set_wasted_birth()
+        self._set_bo_space()
 
     ##### DATA WRANGLING ######
 
@@ -644,7 +656,7 @@ class Children(Population):
         newborns = self.age_groups[0]
         probs = self._solve_system('Stunting')
         newborns.probRiskAtBirth['Stunting'] = {cat:prob for cat,prob in
-                                                zip(["Term AGA", "Term SGA", "Pre-term AGA", "Pre-term SGA"], probs)}
+                                                zip(self.ss.birth_outcomes, probs)}
 
     def _set_wasted_birth(self):
         newborns = self.age_groups[0]
@@ -652,9 +664,26 @@ class Children(Population):
         for wastingCat in self.ss.wasted_list:
             probs = self._solve_system(wastingCat)
             probWastedAtBirth[wastingCat] = {cat: prob for cat, prob in
-                                                    zip(["Term AGA", "Term SGA", "Pre-term AGA", "Pre-term SGA"],
+                                                    zip(self.ss.birth_outcomes,
                                                         probs)}
         newborns.probRiskAtBirth['Wasting'] = probWastedAtBirth
+
+    def _set_bo_space(self):
+        """ Find the probability of a birth outcome conditional on birth spacing.
+        Using law of total probability and definition of relative risks,
+         we solve for P(BOi | space1), and use this to solve for the rest"""
+        newborns = self.age_groups[0]
+        prob_bospace = sc.odict()
+        birth_space = self.data.birth_space
+        RRs = self.default.rr_space_bo
+        for bo in self.ss.birth_outcomes:
+            # get P(BO | space1)
+            prob_bospace[bo] = sc.odict()
+            fracbo = newborns.birth_dist[bo]
+            p1 = fracbo / sum(RRs[name][bo] * birth_space[name] for name in birth_space.iterkeys())
+            for name in birth_space.iterkeys():
+                prob_bospace[bo][name] = RRs[name][bo] * p1
+        newborns.prob_bospace = prob_bospace
 
     def _solve_system(self, risk):
         OR = [1.] * 4
@@ -812,7 +841,6 @@ class NonPregnantWomen(Population):
     def __init__(self, data, default_params):
         Population.__init__(self, 'Non-pregnant women', data, default_params)
         self.anaemia_dist = self.data.risk_dist['Anaemia']
-        self.birth_dist = self.data.demo['Birth dist']
         self.proj = {age:pops for age, pops in data.proj.iteritems() if age in self.ss.wra_ages + ['Total WRA']}
         self._make_pop_sizes()
         self._make_age_groups()
@@ -822,6 +850,10 @@ class NonPregnantWomen(Population):
 
     def set_probs(self, prog_areas):
         self._set_prob_anaem(prog_areas)
+        self._set_prob_space(prog_areas)
+
+    def get_pregav(self):
+        return sum(age_group.preg_av for age_group in self.age_groups)
 
     def _make_pop_sizes(self):
         wra_proj = self.data.wra_proj
@@ -831,8 +863,8 @@ class NonPregnantWomen(Population):
         for i, age in enumerate(self.ss.wra_ages):
             popSize = self.popSizes[i]
             anaemia_dist = self.anaemia_dist[age]
-            self.age_groups.append(NonPWAgeGroup(age, popSize, anaemia_dist, self.birth_dist,
-                                                self.data.birth_age, self.data.birth_int))
+            self.age_groups.append(NonPWAgeGroup(age, popSize, anaemia_dist, self.data.birth_space,
+                                                 self.ss.optimal_space))
 
     def _set_prob_anaem(self, prog_areas):
         risk = 'Anaemia'
@@ -854,26 +886,20 @@ class NonPregnantWomen(Population):
                 age_group.probConditionalCoverage[risk][program]['covered'] = pc
                 age_group.probConditionalCoverage[risk][program]['not covered'] = pn
 
-    def _setBPInfo(self, coverage):
-        self.update_preg_averted(coverage)
-        numPregnant = self.data.proj['Estimated pregnant women'][0]
-        numWRA = self.data.proj['Total WRA'][0]
-        rate = numPregnant/numWRA/(1.- self.fracPregnancyAverted)
-        # reduce rate by % difference between births and pregnancies to get birth rate
-        projectedBirths = self.data.proj['Number of births']
-        projectedPWpop = self.data.proj['Estimated pregnant women']
-        percentDiff = [ai/bi for ai,bi in zip(projectedBirths, projectedPWpop)]
-        averagePercentDiff = sum(percentDiff) / float(len(percentDiff))
-        self.pregnancyRate = rate
-        self.birthRate = averagePercentDiff * rate
-
-    def update_preg_averted(self, coverage): # TODO: don't like the way this is implemented
-        if coverage == 0: # if missing or 0 cov
-            self.fracPregnancyAverted = 0.
-        else:
-            self.fracPregnancyAverted = sum(self.data.famplan_methods[prog]['Effectiveness'] *
-                self.data.famplan_methods[prog]['Distribution'] * coverage
-                for prog in self.data.famplan_methods.iterkeys())
+    def _set_prob_space(self, prog_areas):
+        risk = 'Birth spacing'
+        relev_progs = prog_areas[risk]
+        for age_group in self.age_groups:
+            age = age_group.age
+            age_group.probConditionalCoverage[risk] = {}
+            frac_correct = age_group.birth_space[age_group.correct_space]
+            for prog in relev_progs:
+                age_group.probConditionalCoverage[risk][prog] = {}
+                OR = self.default.or_space_prog[prog][age]
+                frac_cov = self.previousCov[prog]
+                pn, pc = solve_quad(OR, frac_cov, frac_correct)
+                age_group.probConditionalCoverage[risk][prog]['covered'] = pc
+                age_group.probConditionalCoverage[risk][prog]['not covered'] = pn
 
     def _set_time_trends(self):
         risk = 'Anaemia'

@@ -8,12 +8,12 @@ from math import ceil
 class Program(object):
     """Each instance of this class is an intervention,
     and all necessary data will be stored as attributes. Will store name, targetpop, popsize, coverage, edges etc
-    Also want it to set absolute number covered, coverage frac (coverage amongst entire pop), normalised coverage (coverage amongst target pop)"""
+    Restricted coverage: the coverage amongst the target population (assumed given by user)
+    Unrestricted coverage: the coverage amongst the entire population """
     def __init__(self, name, prog_data, all_years):
         self.name = name
         self.prog_deps = prog_data.prog_deps
-        self.famplan_methods = prog_data.famplan_methods # todo: want these here or in nonPW class???
-        self.settings = Settings()
+        self.ss = Settings()
         self.year = all_years[0]
         self.annual_cov = np.zeros(len(all_years))
         self.annual_spend = np.zeros(len(all_years))
@@ -22,10 +22,19 @@ class Program(object):
         self.inv_func = None
         self.target_pops = prog_data.prog_target[self.name] # frac of each population which is targeted
         self.unit_cost = prog_data.costs[self.name]
+        if not self.unit_cost:
+            self.unit_cost = 1
+            print('Warning, program %s has 0 unit cost'%self.name)
         self.sat = prog_data.sat[self.name]
         self.sat_unrestr = None
         self.base_cov = prog_data.base_cov[self.name]
         self.base_spend = None
+        self.pregav_sum = None
+        self.famplan_methods = None
+        if 'amil' in name: # family planning program only
+            self.famplan_methods = prog_data.famplan_methods
+            self.set_pregav_sum()
+        self.nullpop = False # flags whether target pop is 0
 
         self._set_target_ages()
         self._set_impacted_ages(prog_data.impacted_pop[self.name]) # TODO: This func could contain the info for how many multiples needed for unrestricted population calculation (IYCF)
@@ -65,16 +74,25 @@ class Program(object):
 
     def get_unrestr_cov(self, restr_cov):
         """ Expects an array of restricted coverages """
-        return restr_cov[:]*self.restr_popsize / self.unrestr_popsize
+        if self.nullpop:
+            return restr_cov[:] * 0
+        else:
+            return restr_cov[:] * self.restr_popsize / self.unrestr_popsize
 
     def set_pop_sizes(self, pops):
         self._set_restrpop(pops)
         self._set_unrestrpop(pops)
         # this accounts for different fractions within age bands
-        self.sat_unrestr = self.restr_popsize / self.unrestr_popsize
+        if self.nullpop:
+            self.sat_unrestr = 0
+        else:
+            self.sat_unrestr = self.restr_popsize / self.unrestr_popsize
 
     def set_init_unrestr(self):
-        unrestr_cov = (self.base_cov * self.restr_popsize) / self.unrestr_popsize
+        if self.nullpop:
+            unrestr_cov = 0
+        else:
+            unrestr_cov = (self.base_cov * self.restr_popsize) / self.unrestr_popsize
         self.annual_cov[0] = unrestr_cov
 
     def adjust_cov(self, pops, year): # todo: needs fixing for annual_cov being an array now
@@ -91,7 +109,7 @@ class Program(object):
         :return:
         """
         self.agesTargeted = []
-        for age in self.settings.all_ages:
+        for age in self.ss.all_ages:
             fracTargeted = self.target_pops[age]
             if fracTargeted > 0.001: # floating point tolerance
                 self.agesTargeted.append(age)
@@ -102,7 +120,7 @@ class Program(object):
         :return:
         """
         self.agesImpacted = []
-        for age in self.settings.all_ages:
+        for age in self.ss.all_ages:
             impacted = impacted_pop[age]
             if impacted > 0.001: # floating point tolerance
                 self.agesImpacted.append(age)
@@ -122,6 +140,9 @@ class Program(object):
         for pop in populations:
             self.restr_popsize += sum(age.pop_size * self.target_pops[age.age] for age in pop.age_groups
                                          if age.age in self.agesTargeted)
+        if not self.restr_popsize:
+            self.nullpop = True
+            print('Warning, program "%s" has zero target population size'%self.name)
 
     def _set_exclusion_deps(self):
         """
@@ -182,17 +203,40 @@ class Program(object):
             combined = prevUpdate[wastingCat] * incidUpdate[wastingCat]
             age_group.wastingUpdate[wastingCat] *= combined
 
-    def get_famplan_update(self, age_group):
-        age_group.FPupdate *= self.annual_cov[self.year]
+    def set_pregav_sum(self):
+        self.pregav_sum = sum(self.famplan_methods[prog]['Effectiveness'] * self.famplan_methods[prog]['Distribution']
+                      for prog in self.famplan_methods.iterkeys())
+
+    def get_pregav_update(self, age_group):
+        """ Even though this isn't technically an age group-specific update,
+        for consistencies sake, this distributes the pregnancies averted uniformly across the age bands,
+        but should really only need the sum of all averted births.
+        (cov(t) - cov(t-1)) yields a symmetric update around the baseline coverage"""
+        change =  self.annual_cov[self.year] - self.annual_cov[self.year-1]
+        age_group.preg_av = self.pregav_sum * change / len(self.ss.wra_ages)
+
+    def get_birthspace_update(self, age_group):
+        """ Birth spacing in non-pregnant women impacts birth outcomes for newborns """
+        age_group.birthspace_update += self._space_update(age_group)
+
+    def _space_update(self, age_group):
+        """ Update the proportion of pregnancies in the correct spacing category.
+          This will only work on WRA: 15-19 years by design, since it isn't actually age-specific """
+        correctold = age_group.birth_space[self.ss.optimal_space]
+        probcov = age_group.probConditionalCoverage['Birth spacing'][self.name]['covered']
+        probnot = age_group.probConditionalCoverage['Birth spacing'][self.name]['not covered']
+        probnew = get_new_prob(self.annual_cov[self.year], probcov, probnot)
+        fracChange = probnew - correctold
+        return fracChange
 
     def wasting_prevent_update(self, age_group):
         update = self._wasting_incid_update(age_group)
-        for wastingCat in self.settings.wasted_list:
+        for wastingCat in self.ss.wasted_list:
             age_group.wastingPreventionUpdate[wastingCat] *= update[wastingCat]
 
     def wasting_treat_update(self, age_group):
         update = self._wasting_prev_update(age_group)
-        for wastingCat in self.settings.wasted_list:
+        for wastingCat in self.ss.wasted_list:
             age_group.wastingTreatmentUpdate[wastingCat] *= update[wastingCat]
 
     def dia_incidence_update(self, age_group):
@@ -212,7 +256,6 @@ class Program(object):
         """
         age_group.bfPracticeUpdate += self._bf_practice_update(age_group)
 
-
     def get_mortality_update(self, age_group):
         """
         Programs which directly impact mortality rates
@@ -228,7 +271,7 @@ class Program(object):
         :return:
         """
         update = self._bo_update(age_group)
-        for BO in self.settings.birth_outcomes:
+        for BO in self.ss.birth_outcomes:
             age_group.birthUpdate[BO] *= update[BO]
 
     def _get_cond_prob_update(self, age_group, risk):
@@ -245,7 +288,7 @@ class Program(object):
     def _wasting_prev_update(self, age_group):
         # overall update to prevalence of MAM and SAM
         update = {}
-        for wastingCat in self.settings.wasted_list:
+        for wastingCat in self.ss.wasted_list:
             oldProb = age_group.frac_wasted(wastingCat)
             probWastedIfCovered = age_group.probConditionalCoverage[wastingCat][self.name]['covered']
             probWastedIfNotCovered = age_group.probConditionalCoverage[wastingCat][self.name]['not covered']
@@ -257,7 +300,7 @@ class Program(object):
     def _wasting_update_incid(self, age_group):
         incidenceUpdate = self._wasting_incid_update(age_group)
         update = {}
-        for condition in self.settings.wasted_list:
+        for condition in self.ss.wasted_list:
             newIncidence = age_group.incidences[condition] * incidenceUpdate[condition]
             reduction = (age_group.incidences[condition] - newIncidence)/newIncidence
             update[condition] = 1-reduction
@@ -266,7 +309,7 @@ class Program(object):
     def _wasting_incid_update(self, age_group):
         update = {}
         oldCov = self.annual_cov[self.year-1]
-        for condition in self.settings.wasted_list:
+        for condition in self.ss.wasted_list:
             affFrac = age_group.prog_eff[(self.name, condition, 'Affected fraction')]
             effectiveness = age_group.prog_eff[(self.name, condition,'Effectiveness incidence')]
             reduction = affFrac * effectiveness * (self.annual_cov[self.year] - oldCov) / (1. - effectiveness*oldCov)
@@ -289,9 +332,9 @@ class Program(object):
         return update
 
     def _bo_update(self, age_group):
-        BOupdate = {BO: 1. for BO in self.settings.birth_outcomes}
+        BOupdate = {BO: 1. for BO in self.ss.birth_outcomes}
         oldCov = self.annual_cov[self.year-1]
-        for outcome in self.settings.birth_outcomes:
+        for outcome in self.ss.birth_outcomes:
             affFrac = age_group.bo_eff[self.name]['affected fraction'][outcome]
             eff = age_group.bo_eff[self.name]['effectiveness'][outcome]
             reduction = affFrac * eff * (self.annual_cov[self.year] - oldCov) / (1. - eff*oldCov)
@@ -391,7 +434,10 @@ class CostCovCurve:
     def _lin_func(self, m, c, max_cov, x):
         """ Expects x to be a 1D numpy array.
          Return: a numpy array of the same length as x """
-        unres_maxcov = np.full(len(x), max_cov / self.unrestrictedPop)
+        if not self.unrestrictedPop:
+            unres_maxcov = 0
+        else:
+            unres_maxcov = np.full(len(x), max_cov / self.unrestrictedPop)
         return np.minimum((m * x[:] + c)/self.unrestrictedPop, unres_maxcov)
 
     def _log_func(self, A, B, C, D, x):

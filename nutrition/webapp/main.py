@@ -1,11 +1,11 @@
 """
 main.py -- main module for the Optima Nutrition webapp.
     
-Last update: 2018jun04
+Last update: 2018jul30
 """
 
 import sciris.web as sw
-from . import config, projects, rpcs, apptasks
+from . import config, projects, rpcs, apptasks # analysis:ignore
 
 def make_app():
     app = sw.ScirisApp(__file__, app_config=config) 	# Create the ScirisApp object.  NOTE: app.config will thereafter contain all of the configuration parameters, including for Flask.
