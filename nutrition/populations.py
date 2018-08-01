@@ -18,6 +18,33 @@ class AgeGroup(object):
     def reset_storage(self):
         self.anaemiaUpdate = 1
 
+    def update_dist(self, risk, frac_risk, wast_frac=None):
+        """
+        :param risk: one of 'stunting', 'wasting', 'anaemia'
+        :param frac_risk: risk prevalence in age group
+        :param wast_frac: wasting distribution requires 'MAM' and 'SAM' to be included already, since these are unconstrained
+        :return: None
+        """
+        risk = risk.lower()
+        if 'stu' in risk:
+            # fraction stunted
+            self.stunting_dist = restratify(frac_risk)
+        elif 'was' in risk: # todo: need to ensure we have the wasted fractions here...
+            if wast_frac:
+                wast_dist = sc.dcp(wast_frac)
+                # fraction wasted
+                # there is no constraint on the wasted fraction, only non-wasted
+                dist = restratify(frac_risk)
+                for cat in self.ss.non_wasted_list:
+                    wast_dist[cat] = dist[cat]
+                self.wasting_dist = wast_dist
+            else:
+                raise Exception(" Error: cannot fully specify wasting distribution because the wasted categories were not specified.")
+        elif 'an' in risk:
+            # fraction anaemic
+            self.anaemia_dist['Anaemic'] = frac_risk
+            self.anaemia_dist['Not anaemic'] = 1-frac_risk
+
     def frac_risk(self, risk):
         risk = risk.lower()
         if any(sub in risk for sub in ['an', 'anaem', 'amaemia', 'amaemic']):

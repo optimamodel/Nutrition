@@ -227,23 +227,21 @@ class Model:
                 # stunting
                 oldProbStunting = age_group.frac_stunted()
                 newProbStunting = oldProbStunting * age_group.totalStuntingUpdate
-                age_group.stunting_dist = restratify(newProbStunting)
+                age_group.update_dist('stunt', newProbStunting)
                 # anaemia
                 oldProbAnaemia = age_group.frac_anaemic()
                 newProbAnaemia = oldProbAnaemia * age_group.totalAnaemiaUpdate
-                age_group.anaemia_dist['Anaemic'] = newProbAnaemia
-                age_group.anaemia_dist['Not anaemic'] = 1.-newProbAnaemia
+                age_group.update_dist('anaem', newProbAnaemia)
                 # wasting
+                wast_dist = sc.odict()
                 newProbWasted = 0.
                 for wastingCat in self.ss.wasted_list:
                     oldProbThisCat = age_group.frac_wasted(wastingCat)
                     newProbThisCat = oldProbThisCat * age_group.totalWastingUpdate[wastingCat]
-                    age_group.wasting_dist[wastingCat] = newProbThisCat
+                    wast_dist[wastingCat] = newProbThisCat
                     newProbWasted += newProbThisCat
                 # normality constraint on non-wasted proportions only
-                nonWastedDist = restratify(newProbWasted)
-                for nonWastedCat in self.ss.non_wasted_list:
-                    age_group.wasting_dist[nonWastedCat] = nonWastedDist[nonWastedCat]
+                age_group.update_dist('wast', newProbWasted, wast_dist)
         elif population.name == 'Pregnant women':
             # update pw anaemia but also birth distribution for <1 month age group
             # update birth distribution
@@ -260,8 +258,7 @@ class Model:
                     age_group.referenceMortality[cause] *= age_group.mortalityUpdate[cause]
                 oldProbAnaemia = age_group.frac_anaemic()
                 newProbAnaemia = oldProbAnaemia * age_group.totalAnaemiaUpdate
-                age_group.anaemia_dist['Anaemic'] = newProbAnaemia
-                age_group.anaemia_dist['Not anaemic'] = 1.-newProbAnaemia
+                age_group.update_dist('anaem', newProbAnaemia)
         elif population.name == 'Non-pregnant women':
             # get birth outcome update from birth spacing
             self._birthspace_effects()
@@ -270,8 +267,7 @@ class Model:
                 # anaemia
                 oldProbAnaemia = age_group.frac_anaemic()
                 newProbAnaemia = oldProbAnaemia * age_group.totalAnaemiaUpdate
-                age_group.anaemia_dist['Anaemic'] = newProbAnaemia
-                age_group.anaemia_dist['Not anaemic'] = 1.-newProbAnaemia
+                age_group.update_dist('anaem', newProbAnaemia)
 
     def _wasting_trans(self, age_group):
         """Calculates the transitions between MAM and SAM categories"""
@@ -410,7 +406,7 @@ class Model:
             # add children
             age_group.pop_size += popgrowth
             # new distribution
-            age_group.stunting_dist = restratify(probStunting)
+            age_group.update_dist('stunt', probStunting)
 
     def _apply_births(self):
         # restratify stunting and wasting
@@ -450,16 +446,8 @@ class Model:
         # (new children at risk + old children at risk) / all children
         probStunted = sum(stuntingFractions[cat] for cat in self.ss.stunted_list)
         probWasted = sum(wastingFractions[cat] for cat in self.ss.wasted_list)
-        stunt_dist = restratify(probStunted)
-        # normality constraint only on non-wasted cats
-        wast_dist = {}
-        for cat in self.ss.non_wasted_list:
-            dist = restratify(probWasted)
-            wast_dist[cat] = dist[cat]
-        for cat in self.ss.wasted_list:
-            wast_dist[cat] = wastingFractions[cat]
-        newBorns.stunting_dist = stunt_dist
-        newBorns.wasting_dist = wast_dist
+        newBorns.update_dist('stunt', probStunted)
+        newBorns.update_dist('wast', probWasted, wastingFractions)
 
     def _apply_pw_mort(self):
         for age_group in self.pw.age_groups:
@@ -487,11 +475,6 @@ class Model:
             nonpw = projectedWRApop - PWpop
             age_group.pop_size = nonpw
 
-    def _update_women_dists(self):
-        for pop in self.pops[1:]:
-            for age_group in pop.age_groups:
-                age_group.update_anaemia_dist()
-
     def _move_children(self):
         """
         Responsible for updating children since they have monthly time steps
@@ -514,7 +497,7 @@ class Model:
             # stunting
             probStunted = sum(age_group.stunting_dist[cat] for cat in self.ss.stunted_list)
             newProb = probStunted * age_group.trends['Stunting']
-            age_group.stunting_dist = restratify(newProb)
+            age_group.update_dist('stunt', newProb)
             # wasting
             probWasted = sum(age_group.wasting_dist[cat] for cat in self.ss.wasted_list)
             newProb = probWasted * age_group.trends['Wasting']
@@ -524,13 +507,11 @@ class Model:
             # anaemia
             probAnaemic = sum(age_group.anaemia_dist[cat] for cat in self.ss.anaemic_list)
             newProb = probAnaemic * age_group.trends['Anaemia']
-            age_group.anaemia_dist['Anaemic'] = newProb
-            age_group.anaemia_dist['Not anaemic'] = 1 - newProb
+            age_group.update_dist('anaem', newProb)
         for age_group in self.pw.age_groups + self.nonpw.age_groups:
             probAnaemic = sum(age_group.anaemia_dist[cat] for cat in self.ss.anaemic_list)
             newProb = probAnaemic * age_group.trends['Anaemia']
-            age_group.anaemia_dist['Anaemic'] = newProb
-            age_group.anaemia_dist['Not anaemic'] = 1-newProb
+            age_group.update_dist('anaem', newProb)
 
     def get_seq(self, outcome):
         try:
