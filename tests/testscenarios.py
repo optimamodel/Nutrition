@@ -1,5 +1,4 @@
 import nutrition.ui as nu
-from nutrition.scenarios import Scen
 
 # load in data to create model
 p = nu.Project('eg')
@@ -17,7 +16,7 @@ kwargs1 = {'name':'test1',
 #                 'covs': [[.95]],
 #                 'prog_set': ['IYCF 1']})
 
-scen_list = [Scen(**kwargs1)]
+scen_list = [nu.Scen(**kwargs1)]
 p.add_scens(scen_list)
 p.run_scens()
 p.plot(keys=['test1'])

@@ -39,18 +39,7 @@ from . import optimization
 from . import project
 from . import plotting
 from . import results
-
-# Import web functions
-try:
-    from . import webapp
-    webapptext = 'with webapp'
-except Exception as webapp_exception:
-    import traceback as _traceback
-    webapp_error = _traceback.format_exc()
-    webapptext = 'without webapp (see nutrition.webapp_error for details)'
+from . import ui
 
 # Print the license
-ONlicense = 'Optima Nutrition %s (%s)' % (version, versiondate)
-print(ONlicense + ' ' + webapptext)
-
-del ONlicense, webapptext
+print('Optima Nutrition %s (%s)' % (version, versiondate))
