@@ -29,7 +29,7 @@ class AgeGroup(object):
         if 'stu' in risk:
             # fraction stunted
             self.stunting_dist = restratify(frac_risk)
-        elif 'was' in risk: # todo: need to ensure we have the wasted fractions here...
+        elif 'was' in risk:
             if wast_frac:
                 wast_dist = sc.dcp(wast_frac)
                 # fraction wasted
