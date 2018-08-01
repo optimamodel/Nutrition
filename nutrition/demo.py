@@ -4,19 +4,19 @@ from .optimization import Optim
 
 def demo_scens():
     # stunting reduction
-    kwargs1 = {'name': 'stunt',
+    kwargs1 = {'name': 'Stunting example',
          'model_name': 'demo',
          'scen_type': 'coverage',
          'covs': [[1], [1]],
          'prog_set': ['IYCF 1', 'Vitamin A supplementation']}
     # wasting reduction
-    kwargs2 = {'name': 'wast',
+    kwargs2 = {'name': 'Wasting example',
                          'model_name': 'demo',
                          'scen_type': 'coverage',
                          'covs': [[1]],
                          'prog_set': ['Treatment of SAM']}
     # anaemia reduction
-    kwargs3 = {'name': 'anaem',
+    kwargs3 = {'name': 'Anaemia example',
                          'model_name': 'demo',
                          'scen_type': 'coverage',
                          'covs': [[1], [1], [1]],
@@ -26,7 +26,7 @@ def demo_scens():
     return scens
 
 def demo_optims():
-    kwargs1 = {'name': 'thrive',
+    kwargs1 = {'name': 'Maximize thrive',
           'model_name': 'demo',
           'obj': 'thrive',
           'mults': [1,2],
