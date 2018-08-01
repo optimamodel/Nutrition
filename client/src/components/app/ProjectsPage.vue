@@ -292,7 +292,7 @@ export default {
         status.succeed(this, '')  // No green popup.        
       })
       .catch(error => {
-        status.failure(this, 'Could not load projects')
+        status.fail(this, 'Could not load projects')
       })
     },
 
