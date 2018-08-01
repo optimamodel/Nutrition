@@ -279,7 +279,6 @@ class Project(object):
                 model = self.model(scen.model_name)
                 res = run_scen(scen, model)
                 self.add_result(res, name=res.name)
-                scen.active = False
         return None
 
     def run_optims(self, keys=None, optim_list=None, maxiter=5, swarmsize=10, maxtime=10, parallel=True):
