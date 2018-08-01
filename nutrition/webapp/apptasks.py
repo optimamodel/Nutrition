@@ -1,7 +1,7 @@
 """
 apptasks.py -- The Celery tasks module for this webapp
     
-Last update: 7/16/18 (gchadder3)
+Last update: 7/31/18 (gchadder3)
 """
 
 #
@@ -10,6 +10,8 @@ Last update: 7/16/18 (gchadder3)
 
 import time
 import config
+import matplotlib.pyplot as ppl
+ppl.switch_backend(config.MATPLOTLIB_BACKEND)
 from sciris.weblib.tasks import make_celery_instance, add_task_funcs, \
     make_register_async_task
 import projects as prj
