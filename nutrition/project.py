@@ -11,6 +11,7 @@ from .plotting import make_plots
 from .model import Model
 from .utils import trace_exception
 from .demo import demo_scens, demo_optims
+from .settings import ONException
 
 
 #######################################################################################################
@@ -145,7 +146,7 @@ class Project(object):
         elif what in ['s', 'scen', 'scens', 'scenario', 'scenarios']: structlist = self.scens
         elif what in ['o', 'opt', 'opts', 'optim', 'optims', 'optimization', 'optimization', 'optimizations', 'optimizations']: structlist = self.optims
         elif what in ['r', 'res', 'result', 'results']: structlist = self.results
-        else: raise Exception("Item not found")
+        else: raise ONException("Item not found")
         return structlist
 
     #######################################################################################################
@@ -227,7 +228,7 @@ class Project(object):
             self.add(name=scen.name, item=scen, what='scen')
         self.modified = sc.today()
 
-    def add_baseline(self, model_name, prog_set, key='baseline', dorun=False):
+    def add_baseline(self, model_name, prog_set, key='Baseline', dorun=False):
         base = [Scen(name=key, model_name=model_name, scen_type='coverage', prog_set=prog_set)]
         self.add_scens(base)
         if dorun:
@@ -241,14 +242,13 @@ class Project(object):
 
     def add_result(self, result, name=None):
         """Add result by name"""
-        try:
-            keyname = result.name
-        except Exception as E:
-            if name is None:
+        if name is None:
+            try:
+                name = result.name
+            except Exception as E:
                 print('WARNING, could not extract result name: %s' % repr(E))
                 name = 'default_result'
-            keyname = name
-        self.add(name=keyname, item=result, what='result')
+        self.add(name=name, item=result, what='result')
 
     def demo_scens(self, dorun=None, doadd=True):
         scens = demo_scens()
@@ -279,7 +279,6 @@ class Project(object):
                 model = self.model(scen.model_name)
                 res = run_scen(scen, model)
                 self.add_result(res, name=res.name)
-                scen.active = False
         return None
 
     def run_optims(self, keys=None, optim_list=None, maxiter=5, swarmsize=10, maxtime=10, parallel=True):
@@ -292,7 +291,7 @@ class Project(object):
             if optim:
                 # run baseline scen with given progset
                 self.add_baseline(optim.model_name, optim.prog_set, dorun=True)
-                budget_res.append(self.result('baseline'))
+                budget_res.append(self.result('Baseline'))
                 # run the optimization
                 model = sc.dcp(self.model(optim.model_name))
                 model.setup(optim, setcovs=False)
@@ -316,21 +315,21 @@ class Project(object):
         print('Not implemented')
 
     @trace_exception
-    def plot(self, keys=None, toplot=None, optim=False): # todo: i think baseline will be overwritten when new dataset uploaded...
+    def plot(self, keys=None, toplot=None, optim=False, baseline=False): # todo: i think baseline will be overwritten when new dataset uploaded...
         """ Plots results stored at 'keys'.
          WARNING: do not attempt to plot optimization and scenarios or multiple optimizations in a single call.
          Not only is this a little difficult to implement, but the plots are not compatible across optimizations & results in many plots being generated"""
         if keys: keys = sc.promotetolist(keys)
-        else: keys = []
-        if not optim: keys = ['baseline'] + keys
-        else:
-            if len(keys) > 1:
-                return sc.printv('Warning, cannot plot two optimizations simultaneously')
+        else:    keys = self.results.keys()
+        if baseline: keys = ['Baseline'] + keys
+        if optim and len(keys)>1:
+            errormsg = 'Warning, cannot plot multiple optimizations simultaneously'
+            raise ONException(errormsg)
         figs = make_plots(self.get_results(keys), toplot=toplot, optim=optim)
         return figs
 
 
-def demo():
+def demo(scens=False, optims=False):
     """ Create a demo project with demo settings """
     
     # Parameters
@@ -343,6 +342,8 @@ def demo():
     P.load_data(country, region, name='demo')
 
     # Create scenarios and optimizations
-    P.demo_scens()
-    P.demo_optims()
+    if scens:
+        P.demo_scens()
+    if optims:
+        P.demo_optims()
     return P

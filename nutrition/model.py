@@ -517,7 +517,7 @@ class Model:
         try:
             return getattr(self, outcome)
         except AttributeError:
-            raise Exception(" ::ERROR:: {} not an attribute of Model class ".format(outcome))
+            raise Exception(" ::ERROR:: %s not an attribute of Model class " % outcome)
 
     def get_output(self, outcome, seq=False):
         """ Always returns a list, but of variable length"""
