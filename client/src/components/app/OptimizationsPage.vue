@@ -372,8 +372,12 @@ Last update: 2018-07-31
               while (div.firstChild) {
                 div.removeChild(div.firstChild);
               }
-              try {              
-                mpld3.draw_figure(divlabel, this.graphData[index]); // Draw the figure (use with the rpcCall).
+              try {  
+                mpld3.draw_figure(divlabel, this.graphData[index], function(fig, element) {
+                  fig.setXTicks(6, function(d) { return d3.format('.0f')(d); });
+                  fig.setYTicks(null, function(d) { return d3.format('.2s')(d); });
+                })                 
+//                mpld3.draw_figure(divlabel, this.graphData[index]); // Draw the figure (use with the rpcCall).
               }
               catch (err) {
                 console.log('failled:' + err.message);

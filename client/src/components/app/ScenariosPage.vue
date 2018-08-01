@@ -1,7 +1,7 @@
 <!--
 Define health packages
 
-Last update: 2018-07-31
+Last update: 2018-08-01
 -->
 
 <template>
@@ -396,13 +396,10 @@ Last update: 2018-07-31
                 div.removeChild(div.firstChild);
               }
               try {
-//                mpld3.draw_figure(divlabel, response.data.graphs[index]); // Draw the figure.
                 mpld3.draw_figure(divlabel, response.data.graphs[index], function(fig, element) {
-                  console.log(fig);
                   fig.setXTicks(6, function(d) { return d3.format('.0f')(d); });
                   fig.setYTicks(null, function(d) { return d3.format('.2s')(d); });
-                });
-                
+                })     
               }
               catch (err) {
                 console.log('failled:' + err.message);
