@@ -356,12 +356,12 @@ Last update: 2018-07-31
         rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
         .then(response => {
           // Go to the server to get the results from the package set.
-          rpcservice.rpcCall('run_optimization', [this.projectID(), optimSummary.name])
-//          taskservice.getTaskResultPolling('run_optimization', 9999, 3, 'run_optim', [this.projectID(), optimSummary.name])
+//          rpcservice.rpcCall('run_optimization', [this.projectID(), optimSummary.name])
+          taskservice.getTaskResultPolling('run_optimization', 9999, 3, 'run_optim', [this.projectID(), optimSummary.name])
           .then(response => {
             this.clearGraphs() // Once we receive a response, we can work with a clean slate
-            this.graphData = response.data.graphs // Pull out the response data (use with the rpcCall).
-//            this.graphData = response.data.result.graphs // Pull out the response data (use with task).
+//            this.graphData = response.data.graphs // Pull out the response data (use with the rpcCall).
+            this.graphData = response.data.result.graphs // Pull out the response data (use with task).
             let n_plots = this.graphData.length
             console.log('Rendering ' + n_plots + ' graphs')
 
@@ -373,8 +373,7 @@ Last update: 2018-07-31
                 div.removeChild(div.firstChild);
               }
               try {              
-//                mpld3.draw_figure(divlabel, response.data.graphs[index]); // Draw the figure (use with the rpcCall).
-                mpld3.draw_figure(divlabel, response.data.result.graphs[index]); // Draw the figure (use with task).                 
+                mpld3.draw_figure(divlabel, this.graphData[index]); // Draw the figure (use with the rpcCall).
               }
               catch (err) {
                 console.log('failled:' + err.message);

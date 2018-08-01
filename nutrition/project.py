@@ -329,7 +329,7 @@ class Project(object):
         return figs
 
 
-def demo():
+def demo(add_scens=False, add_optims=False):
     """ Create a demo project with demo settings """
     
     # Parameters

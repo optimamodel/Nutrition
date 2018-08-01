@@ -741,53 +741,53 @@ def get_default_optim(project_id):
     return js_optim
 
 
-@register_RPC(validation_type='nonanonymous user')   
-def run_optimization(project_id, optim_name):
-    # Load the projects from the DataStore.
-#    prj.apptasks_load_projects(config)
-    
-    print('Running optimization...')
-    proj = load_project(project_id, raise_exception=True)
-    
-    print('Thinking...')
-    import nutrition.ui as nu
-    p = nu.demo()
-    
-    a = proj.optim()
-    b = p.optim()
-    
-    p.optim().model_name = None
-    p.optim().prog_set = [p.optim().prog_set[1], p.optim().prog_set[0]]
-    
-    for attr in a.__dict__.keys():
-        print('COMPARING %s' % attr)
-        a_attr = getattr(a, attr)
-        b_attr = getattr(b, attr)
-        print('A: %s' % a_attr)
-        print('B: %s' % b_attr)
-        if a_attr == b_attr:
-            print('(they match)')
-        else:
-            print('###########################THEY DO NOT MAAATCH')
-    
-    proj = p
-    
-    
-    proj.run_optims(keys=[optim_name], parallel=False)
-    figs = proj.plot(keys=[optim_name], optim=True) # Only plot allocation
-    graphs = []
-    for f,fig in enumerate(figs.values()):
-        for ax in fig.get_axes():
-            ax.set_facecolor('none')
-        graph_dict = mpld3.fig_to_dict(fig)
-        graphs.append(graph_dict)
-        print('Converted figure %s of %s' % (f+1, len(figs)))
-    
-    print('Saving project...')
-    save_project(proj) 
-    
-    # Return the graphs.
-    return {'graphs': graphs}
+#@register_RPC(validation_type='nonanonymous user')   
+#def run_optimization(project_id, optim_name):
+#    # Load the projects from the DataStore.
+##    prj.apptasks_load_projects(config)
+#    
+#    print('Running optimization...')
+#    proj = load_project(project_id, raise_exception=True)
+#    
+#    print('Thinking...')
+#    import nutrition.ui as nu
+#    p = nu.demo()
+#    
+#    a = proj.optim()
+#    b = p.optim()
+#    
+#    p.optim().model_name = None
+#    p.optim().prog_set = [p.optim().prog_set[1], p.optim().prog_set[0]]
+#    
+#    for attr in a.__dict__.keys():
+#        print('COMPARING %s' % attr)
+#        a_attr = getattr(a, attr)
+#        b_attr = getattr(b, attr)
+#        print('A: %s' % a_attr)
+#        print('B: %s' % b_attr)
+#        if a_attr == b_attr:
+#            print('(they match)')
+#        else:
+#            print('###########################THEY DO NOT MAAATCH')
+#    
+##    proj = p
+#    
+#    
+#    proj.run_optims(keys=[optim_name], parallel=False)
+#    figs = proj.plot(keys=[optim_name], optim=True) # Only plot allocation
+#    graphs = []
+#    for f,fig in enumerate(figs.values()):
+#        for ax in fig.get_axes():
+#            ax.set_facecolor('none')
+#        graph_dict = mpld3.fig_to_dict(fig)
+#        graphs.append(graph_dict)
+#        print('Converted figure %s of %s' % (f+1, len(figs)))
+#    
+##    print('Saving project...')
+##    save_project(proj) 
+#    
+#    # Return the graphs.
+#    return {'graphs': graphs}
 
 
 #@register_RPC(validation_type='nonanonymous user')    
