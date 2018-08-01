@@ -11,6 +11,7 @@ Last update: 2018jun04 by cliffk
 import os
 from zipfile import ZipFile
 from flask_login import current_user
+from pprint import pprint
 import mpld3
 import numpy as np
 from matplotlib.pyplot import rc
@@ -501,18 +502,40 @@ def py_to_js_scen(py_scen, prog_names):
     for attr in attrs:
         js_scen[attr] = getattr(py_scen, attr) # Copy the attributes into a dictionary
     js_scen['spec'] = []
+    count = -1
     for prog_name in prog_names:
         this_spec = {}
         this_spec['name'] = prog_name
         this_spec['included'] = True if prog_name in py_scen.prog_set else False
         this_spec['vals'] = []
-        if prog_name in py_scen.covs:
-            this_spec['vals'] = py_scen.covs[prog_name]
+        if this_spec['included']:
+            count += 1
+            try:
+                vals = py_scen.covs[count]
+            except:
+                vals = [None]
+            if len(vals) != settings.n_years:
+                vals = [vals[0]]*settings.n_years
+            this_spec['vals'] = vals
         else:
             this_spec['vals'] = [None]*settings.n_years # WARNING, kludgy way to extract the number of years
         js_scen['spec'].append(this_spec)
         js_scen['t'] = settings.t
     return js_scen
+    
+    
+def js_to_py_scen(js_scen):
+    ''' Convert a JSON to Python representation of a scenario '''
+    py_json = sc.odict()
+    for attr in ['name', 'scen_type', 'active']: # Copy these directly
+        py_json[attr] = js_scen[attr]
+    py_json['prog_set'] = [] # These require more TLC
+    py_json['covs'] = []
+    for js_spec in js_scen['spec']:
+        if js_spec['included']:
+            py_json['prog_set'].append(js_spec['name'])
+            py_json['covs'].append(sanitize(js_spec['vals']))
+    return py_json
     
 
 @register_RPC(validation_type='nonanonymous user')    
@@ -527,9 +550,29 @@ def get_scenario_info(project_id):
         scenario_summaries.append(js_scen)
     
     print('JavaScript scenario info:')
-    print(scenario_summaries)
+    pprint(scenario_summaries)
 
     return scenario_summaries
+
+
+@register_RPC(validation_type='nonanonymous user')    
+def set_scenario_info(project_id, scenario_summaries):
+
+    print('Setting scenario info...')
+    proj = load_project(project_id, raise_exception=True)
+    proj.scens.clear()
+    
+    for j,js_scen in enumerate(scenario_summaries):
+        print('Setting scenario %s of %s...' % (j+1, len(scenario_summaries)))
+        json = js_to_py_scen(js_scen)
+        proj.add_scen(json=json)
+        print('Python scenario info for scenario %s:' % (j+1))
+        pprint(json)
+        
+    print('Saving project...')
+    save_project(proj)
+    
+    return None
 
 
 @register_RPC(validation_type='nonanonymous user')    
@@ -576,35 +619,6 @@ def sanitize(vals, skip=False, forcefloat=False, verbose=True):
         return output[0]
     
     
-@register_RPC(validation_type='nonanonymous user')    
-def set_scenario_info(project_id, scenario_summaries):
-
-    print('Setting scenario info...')
-    proj = load_project(project_id, raise_exception=True)
-    proj.scens.clear()
-    
-    for j,js_scen in enumerate(scenario_summaries):
-        print('Setting scenario %s of %s...' % (j+1, len(scenario_summaries)))
-        json = sc.odict()
-        for attr in ['name', 'scen_type', 'active']: # Copy these directly
-            json[attr] = js_scen[attr]
-        json['prog_set'] = [] # These require more TLC
-        json['covs'] = sc.odict()
-        for js_spec in js_scen['spec']:
-            if js_spec['included']:
-                json['prog_set'].append(js_spec['name'])
-                json['covs'][js_spec['name']] = sanitize(js_spec['vals'])
-        
-        print('Python scenario info for scenario %s:' % (j+1))
-        print(json)
-        
-        proj.add_scen(json=json)
-    
-    print('Saving project...')
-    save_project(proj)
-    
-    return None
-
 
 @register_RPC(validation_type='nonanonymous user')    
 def run_scenarios(project_id):

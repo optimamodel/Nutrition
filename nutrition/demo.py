@@ -19,7 +19,7 @@ def demo_scens():
     kwargs3 = {'name': 'Anaemia example',
                          'model_name': 'demo',
                          'scen_type': 'coverage',
-                         'covs': [[1], [1], [1]],
+                         'covs': [[1], [1], [1], [1]],
                          'prog_set': ['Micronutrient powders', 'IFAS (community)', 'IFAS (retailer)', 'IFAS (school)']}
 
     scens = [Scen(**kwargs) for kwargs in [kwargs1, kwargs2, kwargs3]]
