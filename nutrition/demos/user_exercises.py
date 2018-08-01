@@ -47,7 +47,7 @@ scens = [Scen(**kwargs) for kwargs in [opts1]]
 # p.plot(keys=keys) # plots all scens
 
 
-### BUDGET SCENARIOS # todo: doesn't seem to work properly
+### BUDGET SCENARIOS
 opts4 = {'name': 'IYCF at $10 mil',
          'model_name': 'Demo',
          'scen_type': 'budget',
@@ -67,8 +67,6 @@ pl.show()
 ### LOAD IN NEW DATA
 # explicitly load in the data so we can tinker with params
 
-
-# TODO: check that the baseline plots work correctly..
 
 
 ######## OPTIMIZATIONS
