@@ -627,7 +627,7 @@ def run_scenarios(project_id):
     proj = load_project(project_id, raise_exception=True)
     
     proj.run_scens()
-    figs = proj.plot() # Do not plot allocation
+    figs = proj.plot(keys=-1) # Do not plot allocation
 
     graphs = []
     for f,fig in enumerate(figs.values()):

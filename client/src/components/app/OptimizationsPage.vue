@@ -70,7 +70,7 @@ Last update: 2018-07-31
             <input type="text"
                    class="txbox"
                    v-model="defaultOptim.mults"/><br>
-            Additional funds:<br>
+            Additional funds (US$):<br>
             <input type="text"
                    class="txbox"
                    v-model="defaultOptim.add_funds"/><br>
@@ -357,7 +357,7 @@ Last update: 2018-07-31
         .then(response => {
           // Go to the server to get the results from the package set.
 //          rpcservice.rpcCall('run_optimization', [this.projectID(), optimSummary.name])
-          taskservice.getTaskResultPolling('run_optimization', 9999, 3, 'run_optim', [this.projectID(), optimSummary.name])
+          taskservice.getTaskResultPolling('run_optimization', 9999, 1, 'run_optim', [this.projectID(), optimSummary.name])
           .then(response => {
             this.clearGraphs() // Once we receive a response, we can work with a clean slate
 //            this.graphData = response.data.graphs // Pull out the response data (use with the rpcCall).

@@ -329,7 +329,7 @@ class Project(object):
         return figs
 
 
-def demo(add_scens=False, add_optims=False):
+def demo(scens=False, optims=False):
     """ Create a demo project with demo settings """
     
     # Parameters
@@ -342,6 +342,8 @@ def demo(add_scens=False, add_optims=False):
     P.load_data(country, region, name='demo')
 
     # Create scenarios and optimizations
-    P.demo_scens()
-    P.demo_optims()
+    if scens:
+        P.demo_scens()
+    if optims:
+        P.demo_optims()
     return P

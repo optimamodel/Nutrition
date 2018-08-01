@@ -5,6 +5,17 @@ import sciris.core as sc
 import utils
 import scipy.interpolate
 
+# Choose where the legend appears: outside right or inside right
+for_frontend = True
+if for_frontend:
+    legend_loc = {'bbox_to_anchor':(1,0.8)}
+    legend_loc_prev = {'loc':'best'} # No idea why this has to be different, but it does
+    ax_size = [0.2,0.12,0.50,0.75]
+else:
+    legend_loc = {'loc':'right'}
+    ax_size = [0.2,0.10,0.65,0.75]
+
+
 def make_plots(all_res=None, toplot=None, optim=False):
     """ res is a ScenResult or Result object (could be a list of these objects) from which all information can be extracted """
     ## Initialize
@@ -42,7 +53,7 @@ def plot_prevs(all_res):
     figs = sc.odict()
     for i, prev in enumerate(prevs):
         fig = pl.figure()
-        ax = fig.add_subplot(111)
+        ax = fig.add_axes(ax_size)
         ymax = 0
         leglabels = []
         # plot results
@@ -64,7 +75,7 @@ def plot_prevs(all_res):
         ax.set_ylim([0, ymax + ymax*0.1])
         ax.set_xlabel('Years')
         # ax.set_title('Risk prevalences') # todo: need a better title
-        ax.legend(lines, [res.name for res in all_res], loc='right', ncol=1)
+        ax.legend(lines, [res.name for res in all_res], **legend_loc_prev)
         figs['prevs_%0i'%i] = fig
     return figs
 
@@ -76,7 +87,7 @@ def plot_outputs(all_res, seq, name):
     years = np.array(baseres.years) # assume these scenarios over same time horizon
     for i, outcome in enumerate(outcomes):
         fig = pl.figure()
-        ax = fig.add_subplot(111)
+        ax = fig.add_axes(ax_size)
         ymax = 0
         perchange = []
         bars = []
@@ -93,8 +104,8 @@ def plot_outputs(all_res, seq, name):
             bar = ax.bar(xpos, output, width=width)
             bars.append(bar)
         if seq:
-            ax.set_xticks(years+offset/2.)
-            ax.set_xticklabels(years)
+#            ax.set_xticks(years+offset/2.)
+#            ax.set_xticklabels(years)
             ax.set_xlabel('Years')
         else:
             ax.set_xticks([])
@@ -109,7 +120,7 @@ def plot_outputs(all_res, seq, name):
         ax.set_ylim([0, ymax + ymax * .1])
         lab = utils.relabel(outcome)
         ax.set_ylabel(lab)
-        ax.legend(bars, [res.name for res in all_res], loc='right', ncol=1)
+        ax.legend(bars, [res.name for res in all_res], ncol=1, **legend_loc)
         ax.set_title(lab) # todo: how do we want to label this?
         figs['%s_out_%0i'%(name, i)] = fig
     return figs
@@ -122,7 +133,7 @@ def plot_alloc(all_res):
     width = 0.35
     mag = 1e6
     fig = pl.figure()
-    ax = fig.add_subplot(111)
+    ax = fig.add_axes(ax_size)
     figs = sc.odict()
     try:
         ref = all_res[1]
@@ -165,7 +176,7 @@ def plot_alloc(all_res):
         string = 'Total available budget (relative to %s)' % str(res.prog_info.free)
     ax.set_xlabel(string)
     ax.yaxis.set_major_formatter(tk.FormatStrFormatter('%3.0f'))
-    ax.legend(bars, [prog.name for prog in ref.programs])
+    ax.legend(bars, [prog.name for prog in ref.programs], **legend_loc)
     figs['alloc'] = fig
     return figs
 

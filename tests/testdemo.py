@@ -5,7 +5,7 @@ Version:
 import nutrition.ui as nu
 
 do_plot   = True
-run_scen  = False
+run_scen  = True
 run_optim = False
 
 P = nu.demo()
