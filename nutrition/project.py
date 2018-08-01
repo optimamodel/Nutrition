@@ -11,6 +11,7 @@ from .plotting import make_plots
 from .model import Model
 from .utils import trace_exception
 from .demo import demo_scens, demo_optims
+from .settings import ONException
 
 
 #######################################################################################################
@@ -145,7 +146,7 @@ class Project(object):
         elif what in ['s', 'scen', 'scens', 'scenario', 'scenarios']: structlist = self.scens
         elif what in ['o', 'opt', 'opts', 'optim', 'optims', 'optimization', 'optimization', 'optimizations', 'optimizations']: structlist = self.optims
         elif what in ['r', 'res', 'result', 'results']: structlist = self.results
-        else: raise Exception("Item not found")
+        else: raise ONException("Item not found")
         return structlist
 
     #######################################################################################################
@@ -243,7 +244,7 @@ class Project(object):
         """Add result by name"""
         try:
             keyname = result.name
-        except Exception as E:
+        except ONException as E:
             if name is None:
                 print('WARNING, could not extract result name: %s' % repr(E))
                 name = 'default_result'
@@ -315,16 +316,16 @@ class Project(object):
         print('Not implemented')
 
     @trace_exception
-    def plot(self, keys=None, toplot=None, optim=False): # todo: i think baseline will be overwritten when new dataset uploaded...
+    def plot(self, keys=None, toplot=None, optim=False, baseline=False): # todo: i think baseline will be overwritten when new dataset uploaded...
         """ Plots results stored at 'keys'.
          WARNING: do not attempt to plot optimization and scenarios or multiple optimizations in a single call.
          Not only is this a little difficult to implement, but the plots are not compatible across optimizations & results in many plots being generated"""
         if keys: keys = sc.promotetolist(keys)
-        else: keys = []
-        if not optim: keys = ['baseline'] + keys
-        else:
-            if len(keys) > 1:
-                return sc.printv('Warning, cannot plot two optimizations simultaneously')
+        else:    keys = self.results.keys()
+        if baseline: keys = ['baseline'] + keys
+        if optim and len(keys)>1:
+            errormsg = 'Warning, cannot plot multiple optimizations simultaneously'
+            raise ONException(errormsg)
         figs = make_plots(self.get_results(keys), toplot=toplot, optim=optim)
         return figs
 

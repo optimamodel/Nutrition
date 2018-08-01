@@ -13,6 +13,8 @@ from zipfile import ZipFile
 from flask_login import current_user
 import mpld3
 import numpy as np
+from matplotlib.pyplot import rc
+rc('font', size=14)
 
 import sciris.corelib.fileio as fileio
 import sciris.weblib.user as user
@@ -610,7 +612,7 @@ def run_scenarios(project_id):
     proj = load_project(project_id, raise_exception=True)
     
     proj.run_scens()
-    figs = proj.plot(toplot=['prevs', 'outputs']) # Do not plot allocation
+    figs = proj.plot() # Do not plot allocation
     graphs = []
     for f,fig in enumerate(figs.values()):
         for ax in fig.get_axes():
