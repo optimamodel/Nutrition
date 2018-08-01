@@ -546,8 +546,9 @@ def get_default_scenario(project_id):
     return js_scen
 
 
-def sanitize(vals, skip=False, forcefloat=False):
+def sanitize(vals, skip=False, forcefloat=False, verbose=True):
     ''' Make sure values are numeric, and either return nans or skip vals that aren't '''
+    if verbose: print('Sanitizing vals of %s: %s' % (type(vals), vals))
     if sc.isiterable(vals):
         as_array = False if forcefloat else True
     else:
