@@ -107,7 +107,7 @@ class Project(object):
             self.add_baseline(dataset.name, dataset.prog_data.base_prog_set)
         return None
     
-    
+
     def save(self, filename=None, folder=None, saveresults=False, verbose=2):
         ''' Save the current project, by default using its name, and without results '''
         fullpath = sc.makefilepath(filename=filename, folder=folder, default=[self.filename, self.name], ext='prj', sanitize=True)
@@ -279,6 +279,7 @@ class Project(object):
                 model = self.model(scen.model_name)
                 res = run_scen(scen, model)
                 self.add_result(res, name=res.name)
+                scen.active = False
         return None
 
     def run_optims(self, keys=None, optim_list=None, maxiter=5, swarmsize=10, maxtime=10, parallel=True):
@@ -315,7 +316,7 @@ class Project(object):
         print('Not implemented')
 
     @trace_exception
-    def plot(self, keys=None, toplot=None, optim=False):
+    def plot(self, keys=None, toplot=None, optim=False): # todo: i think baseline will be overwritten when new dataset uploaded...
         """ Plots results stored at 'keys'.
          WARNING: do not attempt to plot optimization and scenarios or multiple optimizations in a single call.
          Not only is this a little difficult to implement, but the plots are not compatible across optimizations & results in many plots being generated"""

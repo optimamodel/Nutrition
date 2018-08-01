@@ -55,8 +55,8 @@ class DefaultParams(object):
         self.or_anaem_prog = None
         self.child_progs = None
         self.pw_progs = None
-        self.rr_age_order = None
-        self.rr_interval = None
+        self.rr_space_bo = None
+        self.or_space_prog = None
         self.or_bf_prog = None
         self.man_mam = False
         self.arr_rr_death = sc.odict()
@@ -184,6 +184,8 @@ class DefaultParams(object):
         self.or_cond['Anaemia']['Severe diarrhoea'] = or_sheet.loc['Anaemia'].to_dict('index')['For anaemia per additional episode of severe diarrhoea']
         self.or_stunting_prog = or_sheet.loc['By program'].to_dict('index')
         self.or_bf_prog = or_sheet.loc['Odds ratios for correct breastfeeding by program'].to_dict('index')
+        or_sheet = utils.read_sheet(self.spreadsheet, 'Odds ratios', [0,1], skiprows=19).dropna(axis=1, how='all')
+        self.or_space_prog = or_sheet.loc['Odds ratios for optimal birth spacing by program'].to_dict('index')
 
     def get_bo_progs(self):
         progs = utils.read_sheet(self.spreadsheet, 'Programs birth outcomes', [0,1], 'index')
@@ -219,8 +221,7 @@ class DefaultParams(object):
         self.or_cond_bo['Stunting'] = ors['Stunting (HAZ-score < -2)']
         self.or_cond_bo['MAM'] = ors['MAM (WHZ-score between -3 and -2)']
         self.or_cond_bo['SAM'] = ors['SAM (WHZ-score < -3)']
-        self.rr_age_order = bo_sheet.loc['Relative risk by birth age and order'].to_dict('index')
-        self.rr_interval = bo_sheet.loc['Relative risk by birth interval'].to_dict('index')
+        self.rr_space_bo = bo_sheet.loc['Relative risk by birth spacing'].to_dict('index')
         self.rr_death['Birth outcomes'] = bo_sheet.loc['Relative risks of neonatal causes of death'].to_dict()
 
     def get_iycf_effects(self, iycf_packs):
@@ -265,6 +266,7 @@ class DefaultParams(object):
                     else:
                         ageModeTuple = [(packageName[1], mode)]
                     packagesDict[packageName[0]] += ageModeTuple
+
         return packagesDict
 
     def make_dict(self, mydict):
@@ -315,10 +317,7 @@ class InputData(object):
         self.risk_dist = sc.odict()
         self.causes_death = None
         self.time_trends = sc.odict()
-        self.birth_age = None
-        self.birth_int = None
-        self.prog_target = None
-        self.famplan_methods = None
+        self.birth_space = None
         self.incidences = sc.odict()
         self.pw_agedist = []
         self.wra_proj = []
@@ -331,9 +330,7 @@ class InputData(object):
         self.get_risk_dist()
         self.get_death_dist()
         self.get_time_trends()
-        self.get_fertility_risks()
         self.get_incidences()
-        self.get_famplan_methods()
         self.rem_spreadsheet(data.io)
 
     def __repr__(self):
@@ -360,6 +357,9 @@ class InputData(object):
         self.samtomam = self.demo.pop('Percentage of SAM cases that only recover to MAM')
         t = baseline.loc['Projection years']
         self.t = [int(t.loc['Baseline year (projection start year)']['Data']), int(t.loc['End year']['Data'])]
+        # birth spacing
+        self.birth_space = baseline.loc['Birth spacing'].to_dict()['Data']
+        self.birth_space.pop('Total (must be 100%)', None)
         # fix ages for PW
         baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0])
         for row in baseline.loc['Age distribution of pregnant women'].iterrows():
@@ -409,16 +409,8 @@ class InputData(object):
         self.time_trends['Breastfeeding'] = trends.loc['Prevalence of age-appropriate breastfeeding'].values.tolist()[:2] # 0-5 months, 6-23 months
         self.time_trends['Mortality'] = trends.loc['Mortality'].values.tolist() # under 5, maternal
 
-    def get_fertility_risks(self):
-        fert = utils.read_sheet(self.spreadsheet, 'Fertility risks', [0,1])
-        self.birth_age = fert.loc['Birth age and order'].iloc[:,0].to_dict()
-        self.birth_int = fert.loc['Birth intervals'].iloc[:,0].to_dict()
-
     def get_incidences(self):
         self.incidences = utils.read_sheet(self.spreadsheet, 'Incidence of conditions', [0], to_odict=True)
-
-    def get_famplan_methods(self):
-        self.famplan_methods = utils.read_sheet(self.spreadsheet, 'Programs family planning', [0], 'index')
 
     ### MORTALITY ###
 
@@ -458,6 +450,7 @@ class ProgData(object):
         self.get_prog_deps()
         self.get_ref_progs()
         self.get_prog_info()
+        self.get_famplan_methods()
         self.create_iycf()
         self.rem_spreadsheet()
     
@@ -498,6 +491,9 @@ class ProgData(object):
                 programDep[program][field] = []
         self.prog_deps = programDep
 
+    def get_famplan_methods(self):
+        self.famplan_methods = utils.read_sheet(self.spreadsheet, 'Programs family planning', [0], 'index')
+
     def get_prog_info(self):
         sheet = utils.read_sheet(self.spreadsheet, 'Programs cost and coverage')
         self.base_prog_set = sheet.iloc[:,0].tolist()
@@ -512,7 +508,7 @@ class ProgData(object):
 
     def define_iycf(self):
         """ Returns a dict with values as a list of two tuples (age, modality)."""
-        IYCFpackages = utils.read_sheet(self.spreadsheet, 'IYCF packages', [0,1])
+        IYCFpackages = self.spreadsheet.parse(sheet_name='IYCF packages', index_col=[0,1])
         packagesDict = sc.odict()
         for packageName, package in IYCFpackages.groupby(level=[0, 1]):
             if packageName[0] not in packagesDict:
