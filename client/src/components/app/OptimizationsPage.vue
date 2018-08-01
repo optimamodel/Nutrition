@@ -1,7 +1,7 @@
 <!--
 Define equity
 
-Last update: 2018-07-29
+Last update: 2018-07-31
 -->
 
 <template>
@@ -105,8 +105,8 @@ Last update: 2018-07-29
   import axios from 'axios'
   var filesaver = require('file-saver')
   import rpcservice from '@/services/rpc-service'
-  import taskservice from '@/services/task-service' 
-  import progressIndicator from '@/services/progress-indicator-service'  
+  import taskservice from '@/services/task-service'
+  import status from '@/services/status-service'  
   import router from '@/router'
   import Vue from 'vue';
   import PopupSpinner from './Spinner.vue'
@@ -190,7 +190,7 @@ Last update: 2018-07-29
         })
         .catch(error => {
           // Failure popup.
-          progressIndicator.failurePopup(this, 'Could not get default optimization')
+          status.failurePopup(this, 'Could not get default optimization')
         })          
       },
 
@@ -198,7 +198,7 @@ Last update: 2018-07-29
         console.log('getOptimSummaries() called')
         
         // Start indicating progress.
-        progressIndicator.start(this)
+        status.start(this)
         
         // Get the current project's optimization summaries from the server.
         rpcservice.rpcCall('get_optim_info', [this.projectID()])
@@ -206,11 +206,11 @@ Last update: 2018-07-29
           this.optimSummaries = response.data // Set the optimizations to what we received.
           
           // Indicate success.
-          progressIndicator.succeed(this, 'Optimizations loaded')
+          status.succeed(this, 'Optimizations loaded')
         })
         .catch(error => {
           // Indicate failure.
-          progressIndicator.fail(this, 'Could not load optimizations')
+          status.fail(this, 'Could not load optimizations')
         })         
       },
 
@@ -218,16 +218,16 @@ Last update: 2018-07-29
         console.log('setOptimSummaries() called')
         
         // Start indicating progress.
-        progressIndicator.start(this)
+        status.start(this)
         
         rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
         .then( response => {
           // Indicate success.
-          progressIndicator.succeed(this, 'Optimizations saved')          
+          status.succeed(this, 'Optimizations saved')          
         })
         .catch(error => {
           // Indicate failure.
-          progressIndicator.fail(this, 'Could not save optimizations') 
+          status.fail(this, 'Could not save optimizations') 
         })       
       },
 
@@ -247,7 +247,7 @@ Last update: 2018-07-29
         this.$modal.hide('add-optim')
         
         // Start indicating progress.
-        progressIndicator.start(this)
+        status.start(this)
         
         let newOptim = this.dcp(this.defaultOptim); // You've got to be kidding me, buster
         let otherNames = []
@@ -267,11 +267,11 @@ Last update: 2018-07-29
         rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
         .then( response => {
           // Indicate success.
-          progressIndicator.succeed(this, 'Optimization added')
+          status.succeed(this, 'Optimization added')
         })
         .catch(error => {
           // Indicate failure.
-          progressIndicator.fail(this, 'Could not add optimization') 
+          status.fail(this, 'Could not add optimization') 
           
           // TODO: Should probably fix the corrupted this.optimSummaries.
         })         
@@ -289,7 +289,7 @@ Last update: 2018-07-29
         console.log('copyOptim() called')
         
         // Start indicating progress.
-        progressIndicator.start(this)
+        status.start(this)
         
         var newOptim = this.dcp(optimSummary); // You've got to be kidding me, buster
         var otherNames = []
@@ -301,11 +301,11 @@ Last update: 2018-07-29
         rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
         .then( response => {
           // Indicate success.
-          progressIndicator.succeed(this, 'Opimization copied')
+          status.succeed(this, 'Opimization copied')
         })
         .catch(error => {
           // Indicate failure.
-          progressIndicator.fail(this, 'Could not copy optimization') 
+          status.fail(this, 'Could not copy optimization') 
           
           // TODO: Should probably fix the corrupted this.optimSummaries.
         })        
@@ -315,7 +315,7 @@ Last update: 2018-07-29
         console.log('deleteOptim() called')
         
         // Start indicating progress.
-        progressIndicator.start(this)
+        status.start(this)
         
         for(var i = 0; i< this.optimSummaries.length; i++) {
           if(this.optimSummaries[i].name === optimSummary.name) {
@@ -325,11 +325,11 @@ Last update: 2018-07-29
         rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
         .then( response => {
           // Indicate success.
-          progressIndicator.succeed(this, 'Optimization deleted')
+          status.succeed(this, 'Optimization deleted')
         })
         .catch(error => {
           // Indicate failure.
-          progressIndicator.fail(this, 'Could not delete optimization') 
+          status.fail(this, 'Could not delete optimization') 
           
           // TODO: Should probably fix the corrupted this.optimSummaries.
         })         
@@ -337,7 +337,8 @@ Last update: 2018-07-29
 
       runOptim(optimSummary) {
         console.log('runOptim() called for '+this.currentOptim)
-
+        status.start(this)
+        this.$Progress.start(5000)  // restart just the progress bar, and make it slower 
 //        rpcservice.rpcCall('launch_task', ['my_crazy_id', 'async_add', [23, 57]])
 //        rpcservice.rpcCall('check_task', ['my_crazy_id'])
 //        rpcservice.rpcCall('get_task_result', ['my_crazy_id'])         
@@ -354,9 +355,6 @@ Last update: 2018-07-29
         // Make sure they're saved first
         rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
         .then(response => {
-          // Start indicating progress.
-          progressIndicator.start(this)
-
           // Go to the server to get the results from the package set.
 //          rpcservice.rpcCall('run_optim', [this.projectID(), optimSummary.name])
           taskservice.getTaskResultPolling('run_optimization', 90, 3, 'run_optim', 
@@ -385,7 +383,7 @@ Last update: 2018-07-29
             }
             
             // Indicate success.
-            progressIndicator.succeed(this, 'Graphs created')            
+            status.succeed(this, 'Graphs created')            
           })
           .catch(error => {
             // Pull out the error message.
@@ -395,7 +393,7 @@ Last update: 2018-07-29
             this.servererror = error.message
             
             // Indicate failure.
-            progressIndicator.fail(this, 'Optimization failed')   
+            status.fail(this, 'Could not make graphs: ' + error.message)   
           }) 
         })
         .catch(error => {
@@ -406,7 +404,7 @@ Last update: 2018-07-29
           this.servererror = error.message
           
           // Put up a failure notification.
-          progressIndicator.failurePopup(this, 'Optimization failed')            
+          status.fail(this, 'Could not make graphs: ' + error.message)            
         })     
       },
 
