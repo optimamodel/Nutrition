@@ -613,6 +613,7 @@ def run_scenarios(project_id):
     
     proj.run_scens()
     figs = proj.plot() # Do not plot allocation
+
     graphs = []
     for f,fig in enumerate(figs.values()):
         for ax in fig.get_axes():
