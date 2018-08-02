@@ -47,6 +47,7 @@ def run_optim(project_id, optim_name):
     print('Running optimization...')
     proj = load_project(project_id, raise_exception=True)
     
+    proj.results.clear() # Remove any existing results
     proj.run_optims(keys=[optim_name], parallel=False)
     figs = proj.plot(keys=[optim_name], optim=True) # Only plot allocation
     graphs = []
