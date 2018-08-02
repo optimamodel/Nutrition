@@ -28,6 +28,11 @@ Last update: 2018-07-27
           </router-link>
         </li>
         <li class="nav-item">
+          <router-link to="/inputs">
+            <span>Inputs</span>
+          </router-link>
+        </li>
+        <li class="nav-item">
           <router-link to="/scenarios">
             <span>Scenarios</span>
           </router-link>

@@ -6,15 +6,21 @@ Last update: 2018-08-02
 
 <template>
   <div class="SitePage">
-  
+
     <div v-if="activeProjectID ==''">
       <div style="font-style:italic">
         <p>No project is loaded.</p>
       </div>
     </div>
-    
+
     <div v-else>
-     
+
+      <button class="btn" @click="setActive('nutritional')">Nutritional status distribution</button>
+      <button class="btn" @click="setActive('breastfeeding')">Breastfeeding distribution</button>
+      <button class="btn" @click="setActive('IYCF')">IYCF packages</button>
+      <button class="btn" @click="setActive('sam')">Treatment of SAM</button>
+      <button class="btn" @click="setActive('programs')">Program cost and coverage</button>
+
       <table class="table table-bordered table-hover table-striped" style="width: 100%">
         <thead>
         <tr>
@@ -45,11 +51,10 @@ Last update: 2018-08-02
       </table>
 
       <div>
-        <button class="btn __green" :disabled="!scenariosLoaded" @click="runScenarios()">Run scenarios</button>
-        <button class="btn __blue" :disabled="!scenariosLoaded" @click="addScenarioModal('coverage')">Add coverage scenario</button>
-        <button class="btn __blue" :disabled="!scenariosLoaded" @click="addScenarioModal('budget')">Add budget scenario</button>
-        <button class="btn" @click="exportResults()">Export results</button>
-        <button class="btn" :disabled="!scenariosLoaded" @click="clearGraphs()">Clear graphs</button>
+        <button class="btn __green" :disabled="!scenariosLoaded" @click="saveChanges()">Save changes</button>
+        <button class="btn" :disabled="!scenariosLoaded" @click="download()">Download</button>
+        <button class="btn" :disabled="!scenariosLoaded" @click="upload()">Upload</button>
+        <button class="btn __red" :disabled="!scenariosLoaded" @click="reset()">Revert</button>
       </div>
       <br>
 
@@ -130,12 +135,12 @@ Last update: 2018-08-02
         </div>
 
       </modal>
-    
+
       <!-- Popup spinner -->
       <popup-spinner></popup-spinner>
-    
+
     </div>
-    
+
   </div>
 </template>
 
@@ -155,18 +160,18 @@ Last update: 2018-08-02
 
   export default {
     name: 'ScenariosPage',
-    
+
     components: {
       PopupSpinner
     },
-  
+
     data() {
       return {
         serverresponse: 'no response',
         scenSummaries: [],
         defaultScen: [],
         defaultScenYears: [],
-        modalScenarioType: 'coverage', 
+        modalScenarioType: 'coverage',
         graphData: [],
         scenariosLoaded: false,
         graphFormatters: [
@@ -189,7 +194,7 @@ Last update: 2018-08-02
           return this.$store.state.activeProject.project.id
         }
       },
-      
+
       placeholders() {
         var indices = []
         for (var i = 0; i <= 100; i++) {
@@ -219,10 +224,10 @@ Last update: 2018-08-02
         let output = JSON.parse(JSON.stringify(input))
         return output
       },
-      
+
       getUniqueName(fileName, otherNames) {
         let tryName = fileName
-        let numAdded = 0        
+        let numAdded = 0
         while (otherNames.indexOf(tryName) > -1) {
           numAdded = numAdded + 1
           tryName = fileName + ' (' + numAdded + ')'
@@ -237,24 +242,24 @@ Last update: 2018-08-02
 
       getScenSummaries() {
         console.log('getScenSummaries() called')
-        
+
         // Start indicating progress.
         status.start(this)
-      
+
         // Get the current user's scenario summaries from the server.
         rpcservice.rpcCall('get_scenario_info', [this.projectID()])
         .then(response => {
           this.scenSummaries = response.data // Set the scenarios to what we received.
-          
+
           this.scenariosLoaded = true
-          
+
           // Indicate success.
           status.succeed(this, 'Scenarios loaded')
         })
         .catch(error => {
           // Indicate failure.
           status.fail(this, 'Could not load scenarios')
-        })        
+        })
       },
 
       getDefaultScen() {
@@ -271,15 +276,15 @@ Last update: 2018-08-02
         .catch(error => {
           // Failure popup.
           status.failurePopup(this, 'Could not get default scenario')
-        })        
+        })
       },
 
       setScenSummaries() {
         console.log('setScenSummaries() called')
-        
+
         // Start indicating progress.
         status.start(this)
-          
+
         rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
         .then(response => {
           // Indicate success.
@@ -287,8 +292,8 @@ Last update: 2018-08-02
         })
         .catch(error => {
           // Indicate failure.
-          status.fail(this, 'Could not save scenario') 
-        })         
+          status.fail(this, 'Could not save scenario')
+        })
       },
 
       addScenarioModal(scenarioType) {
@@ -305,16 +310,16 @@ Last update: 2018-08-02
         .catch(error => {
            // Failure popup.
           status.failurePopup(this, 'Could not open default scenario')
-        })        
+        })
       },
 
       addScenario() {
         console.log('addScenario() called')
         this.$modal.hide('add-scenario')
-        
+
         // Start indicating progress.
         status.start(this)
-          
+
         let newScen = this.dcp(this.defaultScen); // You've got to be kidding me, buster
         let otherNames = []
         this.scenSummaries.forEach(scenSum => {
@@ -337,10 +342,10 @@ Last update: 2018-08-02
         })
         .catch(error => {
           // Indicate failure.
-          status.fail(this, 'Could not add scenario') 
-          
+          status.fail(this, 'Could not add scenario')
+
           // TODO: Should probably fix the corrupted this.scenSummaries.
-        })       
+        })
       },
 
       editScen(scenSummary) {
@@ -353,10 +358,10 @@ Last update: 2018-08-02
 
       copyScen(scenSummary) {
         console.log('copyScen() called')
-        
+
         // Start indicating progress.
         status.start(this)
-        
+
         var newScen = this.dcp(scenSummary); // You've got to be kidding me, buster
         var otherNames = []
         this.scenSummaries.forEach(scenSum => {
@@ -371,18 +376,18 @@ Last update: 2018-08-02
         })
         .catch(error => {
           // Indicate failure.
-          status.fail(this, 'Could not copy scenario') 
-          
+          status.fail(this, 'Could not copy scenario')
+
           // TODO: Should probably fix the corrupted this.scenSummaries.
-        })      
+        })
       },
 
       deleteScen(scenSummary) {
         console.log('deleteScen() called')
-        
+
         // Start indicating progress.
         status.start(this)
-        
+
         for(var i = 0; i< this.scenSummaries.length; i++) {
           if(this.scenSummaries[i].name === scenSummary.name) {
             this.scenSummaries.splice(i, 1);
@@ -395,15 +400,15 @@ Last update: 2018-08-02
         })
         .catch(error => {
           // Indicate failure.
-          status.fail(this, 'Could not delete scenario') 
-          
+          status.fail(this, 'Could not delete scenario')
+
           // TODO: Should probably fix the corrupted this.scenSummaries.
-        })        
+        })
       },
-      
+
       runScenarios() {
         console.log('runScenarios() called')
-        status.start(this)        
+        status.start(this)
         // Make sure they're saved first
         rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
         .then(response => {
@@ -437,9 +442,9 @@ Last update: 2018-08-02
                 status.fail(this, 'Error creating graphs: ' + err.message)
               }
             }
-            
+
             // Indicate success.
-            status.succeed(this, 'Graphs created')            
+            status.succeed(this, 'Graphs created')
           })
           .catch(error => {
             // Pull out the error message.
@@ -447,9 +452,9 @@ Last update: 2018-08-02
 
             // Set the server error.
             this.servererror = error.message
-            
+
             // Indicate failure.
-            status.fail(this, 'Could not make graphs')           
+            status.fail(this, 'Could not make graphs')
           })
         })
         .catch(error => {
@@ -458,10 +463,10 @@ Last update: 2018-08-02
 
           // Set the server error.
           this.servererror = error.message
-          
+
           // Put up a failure notification.
-          status.fail(this, 'Could not make graphs')      
-        })         
+          status.fail(this, 'Could not make graphs')
+        })
       },
 
       clearGraphs() {
