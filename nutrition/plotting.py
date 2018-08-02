@@ -152,14 +152,14 @@ def plot_alloc(all_res):
     bars = []
     bottom = np.zeros(len(all_res))
     colors = sc.gridcolors(ncolors=len(ref.programs))
-    for i,prog in enumerate(ref.programs):
+    for i,prog in ref.programs.enumvals():
         y = []
         # get allocation for each multiple
         for j, res in enumerate(all_res):
             pos = res.mult if res.mult else res.name
             xlabs.append(utils.relabel(pos))
             # adjust spending so does not display reference spending
-            alloc = res.programs[i].annual_spend[1] - ref_spend[i] # spending is same after first year in optimization
+            alloc = prog.annual_spend[1] - ref_spend[i] # spending is same after first year in optimization
             # scale for axis
             alloc /= scale
             y = np.append(y, alloc)
@@ -192,7 +192,7 @@ def plot_alloc(all_res):
         ncol = 2
     customizations = {'fontsize':fontsize, 'labelspacing':labelspacing, 'ncol':ncol, 'columnspacing':columnspacing}
     customizations.update(legend_loc)
-    ax.legend(bars, [prog.name for prog in ref.programs], **customizations)
+    ax.legend(bars, ref.programs.keys(), **customizations)
     figs['alloc'] = fig
     return figs
 

@@ -133,7 +133,7 @@ class GeospatialOptimization:
         return optimalDistribution
 
     def writeRefAndCurrentAllocations(self, regions, filename):
-        sortedProgs = sorted([prog.name for prog in regions[0].programs])
+        sortedProgs = sorted([prog.name for prog in regions[0].programs.values()])
         with open(filename, 'wb') as f:
             w = writer(f)
             w.writerow(['Reference'] + sortedProgs)
@@ -247,7 +247,7 @@ class GeospatialOptimization:
         filename = os.path.join(self.newResultsDir, 'regional_allocations_' + objective + '.csv')
         # write the programs to row for each objective
         self.writeRefAndCurrentAllocations(regions, filename)
-        sortedProgs = sorted([prog.name for prog in regions[0].programs])
+        sortedProgs = sorted([prog.name for prog in regions[0].programs.values()])
         with open(filename, 'a') as f:
             w = writer(f)
             w.writerow([''] + sortedProgs)

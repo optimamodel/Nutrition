@@ -133,7 +133,7 @@ class Model:
 
     def _applicable_progs(self, risk):
         applicableProgNames = self.prog_info.prog_areas[risk]
-        programs = list(filter(lambda x: x.name in applicableProgNames, self.prog_info.programs.values()))
+        programs = self.prog_info.programs[applicableProgNames]
         return programs
 
     def _applicable_ages(self, population, risk):
