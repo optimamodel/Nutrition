@@ -90,7 +90,11 @@ Last update: 2018-07-31
               {{ projectSummary.project.name }}
             </td>
             <td>
-              <button class="btn __green" @click="openProject(projectSummary.project.id)">Open</button>
+              <button class="btn __green" :disabled="projectLoaded(projectSummary.project.id)" @click="openProject(projectSummary.project.id)">
+                <span v-if="projectLoaded(projectSummary.project.id)">Selected</span>
+                <span v-else>Open</span>
+
+              </button>
             </td>
 <!--            <td>{{ projectSummary.country }}</td> -->
             <td>{{ projectSummary.project.creationTime.toUTCString() }}</td>
@@ -239,6 +243,20 @@ export default {
       }
     },
 
+    projectLoaded(uid) {
+      console.log('projectLoaded called')
+      if (this.$store.state.activeProject.project != undefined) {
+        if (this.$store.state.activeProject.project.id === uid) {
+          console.log('Project ' + uid + ' is loaded')
+          return true
+        } else {
+          return false
+        }
+      } else {
+        return false
+      }
+    },
+
     updateProjectSummaries(setActiveID) {
       console.log('updateProjectSummaries() called')
       status.start(this)
@@ -292,7 +310,7 @@ export default {
         status.succeed(this, '')  // No green popup.        
       })
       .catch(error => {
-        status.fail(this, 'Could not load projects')
+        status.fail(this, 'Could not load projects: ' + error.message)
       })
     },
 
@@ -309,11 +327,11 @@ export default {
         this.updateProjectSummaries(response.data.projectId)
         
         // Indicate success.
-        status.succeed(this, 'Demo project added')
+        status.succeed(this, '') // No popup since will have a popop on project load
       })
       .catch(error => {
         // Indicate failure.
-        status.fail(this, 'Could not add project')    
+        status.fail(this, 'Could not add project: ' + error.message)
       })
     },
 
