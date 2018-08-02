@@ -494,7 +494,7 @@ def create_project_from_prj_file(prj_filename, user_id):
 #%% Scenario functions and RPCs
 ##################################################################################
 
-def py_to_js_scen(py_scen, prog_names):
+def py_to_js_scen(py_scen, prog_names, percentage=True):
     ''' Convert a Python to JSON representation of a scenario '''
     settings = nu.Settings()
     attrs = ['name', 'active', 'scen_type']
@@ -508,23 +508,35 @@ def py_to_js_scen(py_scen, prog_names):
         this_spec['name'] = prog_name
         this_spec['included'] = True if prog_name in py_scen.prog_set else False
         this_spec['vals'] = []
+        print('================ WORKING  ON %s' % prog_name)
         if this_spec['included']:
+            print('================ included')
             count += 1
             try:
-                vals = py_scen.covs[count]
+                print('================ trying vals')
+                this_spec['vals'] = py_scen.covs[count]
             except:
-                vals = [None]
-            if len(vals) != settings.n_years:
-                vals = [vals[0]]*settings.n_years
-            this_spec['vals'] = vals
+                print('================ failed, setting to none')
+                this_spec['vals'] = [None]
+            while len(this_spec['vals']) < settings.n_years: # Ensure it's the right length
+                print('================ appending')
+                this_spec['vals'].append(None)
         else:
+            print('================ not included')
             this_spec['vals'] = [None]*settings.n_years # WARNING, kludgy way to extract the number of years
+        if percentage and js_scen['scen_type'] == 'coverage':
+            print('================ yes is percentage')
+            for y in range(len(this_spec['vals'])):
+                print('================ looping over %s' % y)
+                if this_spec['vals'][y] is not None:
+                    print('================ not none')
+                    this_spec['vals'][y] = round(100*this_spec['vals'][y]) # Enter to the nearest percentage
         js_scen['spec'].append(this_spec)
         js_scen['t'] = settings.t
     return js_scen
     
     
-def js_to_py_scen(js_scen):
+def js_to_py_scen(js_scen, percentage=True):
     ''' Convert a JSON to Python representation of a scenario '''
     py_json = sc.odict()
     for attr in ['name', 'scen_type', 'active']: # Copy these directly
@@ -534,7 +546,12 @@ def js_to_py_scen(js_scen):
     for js_spec in js_scen['spec']:
         if js_spec['included']:
             py_json['prog_set'].append(js_spec['name'])
-            py_json['covs'].append(sanitize(js_spec['vals']))
+            vals = sanitize(js_spec['vals'])
+            if percentage and js_scen['scen_type'] == 'coverage':
+                for y in range(len(vals)):
+                    if vals[y] is not None:
+                        vals[y] = vals[y]/100. # Convert from percentage
+            py_json['covs'].append(vals)
     return py_json
     
 
@@ -585,7 +602,7 @@ def get_default_scenario(project_id):
     js_scen = py_to_js_scen(py_scen, proj.dataset().prog_names())
     
     print('Created default JavaScript scenario:')
-    print(js_scen)
+    pprint(js_scen)
     return js_scen
 
 

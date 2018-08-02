@@ -83,7 +83,7 @@ def plot_outputs(all_res, seq, name):
     outcomes = ['thrive', 'child_deaths']
     width = 0.15 if seq else 0.35
     figs = sc.odict()
-    scale = 1e6 # scales for formatting
+    scale = 1e1 # scales for formatting
     baseres = all_res[0]
     years = np.array(baseres.years) # assume these scenarios over same time horizon
     for i, outcome in enumerate(outcomes):
@@ -94,8 +94,10 @@ def plot_outputs(all_res, seq, name):
         bars = []
         offset = -width
         baseout = baseres.get_outputs(outcome, seq=seq)[0] / scale
-        for res in all_res:
-            offset += width
+        offsets = np.arange(len(all_res)+1)*width # Calculate offset so tick is in the center of the bars
+        offsets -= offsets.mean() - 0.5*width
+        for r,res in enumerate(all_res):
+            offset = offsets[r]
             xpos = years + offset if seq else offset
             output = res.get_outputs(outcome, seq=seq)[0] / scale
             thimax = max(output)
@@ -122,7 +124,7 @@ def plot_outputs(all_res, seq, name):
         # formatting
         title += ' %s \n %s-%s'%(utils.relabel(outcome).lower(), baseres.years[0], baseres.years[-1])
         ax.set_ylim([0, ymax + ymax * .1])
-        ax.set_ylabel('Number (millions)')
+        ax.set_ylabel('Number')
         ax.legend(bars, [res.name for res in all_res], ncol=1, **legend_loc)
         ax.set_title(title)
         figs['%s_out_%0i'%(name, i)] = fig
@@ -134,7 +136,7 @@ def plot_alloc(all_res):
      as assumed structure for spending is different """
     #initialize
     width = 0.35
-    mag = 1e6
+    scale = 1e1 # 1e6
     fig = pl.figure()
     ax = fig.add_axes(ax_size)
     figs = sc.odict()
@@ -158,7 +160,7 @@ def plot_alloc(all_res):
             # adjust spending so does not display reference spending
             alloc = res.programs[i].annual_spend[1] - ref_spend[i] # spending is same after first year in optimization
             # scale for axis
-            alloc /= mag
+            alloc /= scale
             y = np.append(y, alloc)
         bar = ax.bar(x, y, width=width, bottom=bottom, color=colors[i])
         bars.append(bar)
@@ -171,7 +173,7 @@ def plot_alloc(all_res):
     ax.set_xticks(x)
     ax.set_xticklabels(xlabs)
     ax.set_ylim((0, ymax+ymax*.1))
-    ax.set_ylabel('Annual spending on programs (million US$)')
+    ax.set_ylabel('Annual spending on programs (US$)')
     try:
         valuestr = int(str(res.prog_info.free)[:2])
         string = 'Total available budget (as a multiple of US$%sM)'%valuestr

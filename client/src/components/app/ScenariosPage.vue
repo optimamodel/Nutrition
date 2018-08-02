@@ -76,12 +76,18 @@ Last update: 2018-08-02
             Add/edit {{ modalScenarioType }} scenario
           </div>
           <div class="dialog-c-text">
-            Scenario name:<br>
+            <b>Scenario name:</b><br>
             <input type="text"
                    class="txbox"
-                   v-model="defaultScen.name"/><br>              
+                   v-model="defaultScen.name"/><br>
             <table class="table table-bordered table-hover table-striped" style="width: 100%">
               <thead>
+              <tr>
+                <th colspan=100><div class="dialog-header">
+                  <span v-if="modalScenarioType==='coverage'">Program coverages (%)</span>
+                  <span v-else>Program spending (US$)</span>
+                </div></th>
+              </tr>
               <tr>
                 <th>Name</th>
                 <th>Include?</th>
@@ -90,26 +96,27 @@ Last update: 2018-08-02
               </thead>
               <tbody>
               <tr v-for="prog_spec in defaultScen.spec">
-                <td>
+                <td style="min-width:200px">
                   {{ prog_spec.name }}
                 </td>
-                <td>
+                <td style="text-align: center">
                   <input type="checkbox" v-model="prog_spec.included"/>
                 </td>
                 <td v-for="(val, index) in prog_spec.vals">
                   <input type="text"
                          class="txbox"
+                         style="text-align: right"
                          v-model="prog_spec.vals[index]"/>
                 </td>
               </tr>
               </tbody>
             </table>
           </div>
-          <div style="text-align:justify">
+          <div style="text-align:center">
             <button @click="addScenario()" class='btn __green' style="display:inline-block">
               Save scenario
             </button>
-
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             <button @click="$modal.hide('add-scenario')" class='btn __red' style="display:inline-block">
               Cancel
             </button>
