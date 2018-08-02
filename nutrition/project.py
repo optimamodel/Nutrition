@@ -3,6 +3,7 @@
 #######################################################################################################
 
 import sciris.core as sc
+import numpy as np
 from .version import version
 from .optimization import Optim
 from .data import Dataset
@@ -12,7 +13,6 @@ from .model import Model
 from .utils import trace_exception, default_trackers, pretty_labels
 from .demo import demo_scens, demo_optims
 from .settings import ONException
-import numpy as np
 
 
 #######################################################################################################
@@ -145,7 +145,9 @@ class Project(object):
             'header':{'bold':True, 'bg_color':'#3c7d3e', 'color':'#ffffff'},
             'plain': {},
             'bold':   {'bold':True}}
-        formatdata = np.zeros(np.array(data, dtype=object).shape, dtype=object) # Format data needs to be the same size
+        nrows = len(data)
+        ncols = len(data[0])
+        formatdata = np.zeros((nrows, ncols), dtype=object)
         formatdata[:,:] = 'plain' # Format data as plain
         formatdata[:,0] = 'bold' # Left side bold
         formatdata[0,:] = 'header' # Top with green header
