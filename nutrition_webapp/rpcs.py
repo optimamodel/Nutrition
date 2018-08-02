@@ -668,7 +668,7 @@ def run_scenarios(project_id):
 
 def objective_mapping(key=None, val=None):
     mapping = sc.odict([
-        ('thrive',       'Maximize thriving'),
+        ('thrive',       'Maximize alive, non-stunted children'),
         ('child_deaths', 'Minimize child deaths'),
         ('stunting_prev','Minimize stunting prevalence'),
         ('wasting_prev', 'Minimize wasting prevalence'),

@@ -1,6 +1,5 @@
 import pylab as pl
 import numpy as np
-import matplotlib.ticker as tk
 import sciris.core as sc
 import utils
 import scipy.interpolate
@@ -168,10 +167,7 @@ def plot_alloc(all_res):
         bars.append(bar)
         bottom += y
     ymax = max(bottom)
-    # formatting
-    if ref.obj is not None: title = utils.relabel(ref.obj).lower()
-    else: title = '' # WARNING, should probably fix this properly
-    ax.set_title('To optimize the \n %s %s-%s'%(title, ref.years[0], ref.years[-1]))
+    ax.set_title('Optimal allocation, %s-%s'% (ref.years[0], ref.years[-1]))
     ax.set_xticks(x)
     ax.set_xticklabels(xlabs)
     ax.set_ylim((0, ymax+ymax*.1))
@@ -183,9 +179,20 @@ def plot_alloc(all_res):
         string = 'Total available budget (relative to %s)' % str(res.prog_info.free)
     ax.set_xlabel(string)
     sc.SIticks(ax=ax, axis='y')
-    fontsize = 6
+    nprogs = len(ref.programs)
     labelspacing = 0.1
-    ax.legend(bars, [prog.name for prog in ref.programs], fontsize=fontsize, labelspacing=labelspacing, **legend_loc)
+    columnspacing = 0.1
+    fontsize = None
+    ncol = 1
+    if nprogs>10:
+        fontsize = 8
+    if nprogs>12:
+        fontsize = 6
+    if nprogs>24:
+        ncol = 2
+    customizations = {'fontsize':fontsize, 'labelspacing':labelspacing, 'ncol':ncol, 'columnspacing':columnspacing}
+    customizations.update(legend_loc)
+    ax.legend(bars, [prog.name for prog in ref.programs], **customizations)
     figs['alloc'] = fig
     return figs
 
