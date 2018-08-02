@@ -68,14 +68,6 @@ class Program(object):
             raise Exception("Error: scenario type '{}' is not valid".format(scentype))
         return interp_cov, interp_spend
 
-    def check_cov(self, cov, years):
-        numyears = len(years)
-        if isinstance(cov, float):
-            new = np.full(numyears, cov)
-        elif len(cov) < numyears:
-            new = np.concatenate((cov, np.full(numyears, cov[-1])), axis=0)
-        return new
-
     def get_unrestr_cov(self, restr_cov):
         """ Expects an array of restricted coverages """
         if self.nullpop:
