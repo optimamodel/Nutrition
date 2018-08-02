@@ -45,9 +45,9 @@ Last update: 2018-08-02
       </table>
 
       <div>
+        <button class="btn __green" :disabled="!scenariosLoaded" @click="runScenarios()">Run scenarios</button>
         <button class="btn __blue" :disabled="!scenariosLoaded" @click="addScenarioModal('coverage')">Add coverage scenario</button>
         <button class="btn __blue" :disabled="!scenariosLoaded" @click="addScenarioModal('budget')">Add budget scenario</button>        
-        <button class="btn __green" :disabled="!scenariosLoaded" @click="runScenarios()">Run scenarios</button>
         <button class="btn" :disabled="!scenariosLoaded" @click="clearGraphs()">Clear graphs</button>
       </div>
       <br>
