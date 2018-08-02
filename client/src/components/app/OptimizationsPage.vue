@@ -158,6 +158,7 @@ Last update: 2018-08-02
           {x: FLOAT_FORMATTER, xTicks: 6, y: SI_FORMATTER, yTicks: null},
           {x: FLOAT_FORMATTER, xTicks: 6, y: SI_FORMATTER, yTicks: null},
         ],
+        defaultFormatter: {x: FLOAT_FORMATTER, xTicks: null, y: SI_FORMATTER, yTicks: null},
       }
     },
 
@@ -406,15 +407,19 @@ Last update: 2018-08-02
               while (div.firstChild) {
                 div.removeChild(div.firstChild);
               }
-              try {  
-                mpld3.draw_figure(divlabel, response.data.graphs[index], (fig, element) => {
-                  const formatters = this.graphFormatters[index];
+              try {
+                mpld3.draw_figure(divlabel, response.data.result.graphs[index], (fig, element) => {
+                  var formatters = this.defaultFormatter
+                  if (index<this.graphFormatters.length) {
+                    formatters = this.graphFormatters[index];
+                  }
                   fig.setXTicks(formatters.xTicks, formatters.x);
                   fig.setYTicks(formatters.yTicks, formatters.y);
                 });
               }
               catch (err) {
-                console.log('failled:' + err.message);
+                console.log('Graphs failed:' + err.message);
+                status.fail(this, 'Error creating graphs: ' + err.message)
               }
             }
             
