@@ -1,4 +1,4 @@
-<!--
+f<!--
 Define equity
 
 Last update: 2018-08-02
@@ -38,6 +38,7 @@ Last update: 2018-08-02
 
       <div>
         <button class="btn __blue" @click="addOptimModal()">Add optimization</button>
+        <button class="btn" @click="exportResults()">Export results</button>
         <button class="btn" @click="clearGraphs()">Clear graphs</button>
       </div>
 
@@ -476,7 +477,16 @@ Last update: 2018-08-02
             div.removeChild(div.firstChild);
           }
         }
-      }
+      },
+
+      exportResults() {
+        console.log('exportResults() called')
+        rpcservice.rpcDownloadCall('export_results', [this.projectID()]) // Make the server call to download the framework to a .prj file.
+          .catch(error => {
+            // Failure popup.
+            status.failurePopup(this, 'Could not export results: ' + error.message)
+          })
+      },
       
     }
   }

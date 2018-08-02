@@ -444,6 +444,7 @@ def copy_project(project_id):
     # Return the UID for the new projects record.
     return { 'projectId': copy_project_id }
 
+
 @register_RPC(call_type='upload', validation_type='nonanonymous user')
 def create_project_from_prj_file(prj_filename, user_id):
     """
@@ -468,6 +469,16 @@ def create_project_from_prj_file(prj_filename, user_id):
     
     # Return the new project UID in the return message.
     return { 'projectId': str(proj.uid) }
+
+
+@register_RPC(call_type='download', validation_type='nonanonymous user')
+def export_results(project_id):
+    proj = load_project(project_id, raise_exception=True) # Load the project with the matching UID.
+    file_name = '%s outputs.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
+    full_file_name = get_path(file_name) # Generate the full file name with path.
+    proj.write_results(full_file_name, keys=-1)
+    print(">> export_results %s" % (full_file_name)) # Display the call information.
+    return full_file_name # Return the full filename.
 
 
 
