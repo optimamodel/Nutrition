@@ -609,7 +609,7 @@ class Dataset(object):
     
     def prog_names(self):
         ''' WARNING, hacky function to get program names '''
-        names = self.prog_data.base_cov.keys()
+        names = self.prog_data.base_prog_set
         return names
 
 
