@@ -6,14 +6,14 @@ import numpy as np
 import nutrition.ui as nu
 import sciris.core as sc
 
-origfilename = nu.ONpath('tests')+'nutrition_2018-06-29b.rslt'
-newfilename  = nu.ONpath('tests')+'nutrition_2018-06-29c.rslt'
+origfilename = nu.ONpath('tests')+'nutrition_2018-08-01.rslt'
+newfilename  = nu.ONpath('tests')+'nutrition_2018-08-02.rslt'
 docompare    = True
 dosave       = True
 
 P = nu.demo()
 P.run_scens()
-newR = P.result()[0].get_outputs(seq=True, asdict=True)
+newR = P.result().get_outputs(seq=True, asdict=True)
 
 matches = 0
 mismatches = 0

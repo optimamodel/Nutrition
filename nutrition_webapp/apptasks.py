@@ -12,8 +12,7 @@ import time
 import config
 import matplotlib.pyplot as ppl
 ppl.switch_backend(config.MATPLOTLIB_BACKEND)
-from sciris.weblib.tasks import make_celery_instance, add_task_funcs, \
-    make_register_async_task
+from sciris.weblib.tasks import make_celery_instance, add_task_funcs, make_register_async_task
 import projects as prj
 from rpcs import load_project, save_project
 import mpld3
@@ -49,7 +48,7 @@ def run_optim(project_id, optim_name):
     proj = load_project(project_id, raise_exception=True)
     
     proj.run_optims(keys=[optim_name], parallel=False)
-    figs = proj.plot(toplot=['alloc']) # Only plot allocation
+    figs = proj.plot(keys=[optim_name], optim=True) # Only plot allocation
     graphs = []
     for f,fig in enumerate(figs.values()):
         for ax in fig.get_axes():

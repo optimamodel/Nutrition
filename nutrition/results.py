@@ -31,7 +31,7 @@ class ScenResult(object):
         """
         if outcomes is None:
             outcomes = default_trackers()
-        if isinstance(outcomes, str):
+        if sc.isstring(outcomes):
             outcomes = sc.promotetolist(outcomes)
         outs = [self.model.get_output(name, seq=seq) for name in outcomes]
         if asdict:

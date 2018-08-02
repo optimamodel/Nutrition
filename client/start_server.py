@@ -1,5 +1,5 @@
 #!/usr/bin/env python
 
 # Run the server
-import nutrition as on
-on.webapp.main.run()
+import nutrition_webapp as onwa
+onwa.main.run()
