@@ -4,7 +4,7 @@ Version:
 
 import nutrition.ui as nu
 
-do_plot   = False
+do_plot   = True
 run_scen  = True
 run_optim = False
 
