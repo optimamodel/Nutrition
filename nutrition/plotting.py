@@ -110,9 +110,9 @@ def plot_outputs(all_res, seq, name):
             # ax.set_xticks(years+offset/2.)
             # ax.set_xticklabels(years)
             ax.set_xlabel('Years')
-            title = 'Cumulative'
-        else:
             title = 'Annual'
+        else:
+            title = 'Cumulative'
             ax.set_xticks([])
             # display percentage change above bars
             for j, bar in enumerate(bars[1:],1):
