@@ -150,9 +150,9 @@ Last update: 2018-08-02
         defaultOptim: [],
         objectiveOptions: [],
         graphFormatters: [
-          {x: FLOAT_FORMATTER, xTicks: 6, y: PERCENT_FORMATTER, yTicks: null},
-          {x: FLOAT_FORMATTER, xTicks: 6, y: PERCENT_FORMATTER, yTicks: null},
-          {x: FLOAT_FORMATTER, xTicks: 6, y: PERCENT_FORMATTER, yTicks: null},
+          {x: FLOAT_FORMATTER, xTicks: 6, y: SI_FORMATTER, yTicks: null},
+          {x: FLOAT_FORMATTER, xTicks: 6, y: SI_FORMATTER, yTicks: null},
+          {x: FLOAT_FORMATTER, xTicks: 6, y: SI_FORMATTER, yTicks: null},
           {x: FLOAT_FORMATTER, xTicks: 6, y: SI_FORMATTER, yTicks: null},
           {x: FLOAT_FORMATTER, xTicks: 6, y: SI_FORMATTER, yTicks: null},
           {x: FLOAT_FORMATTER, xTicks: 6, y: SI_FORMATTER, yTicks: null},
