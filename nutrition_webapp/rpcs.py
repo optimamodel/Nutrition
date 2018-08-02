@@ -43,8 +43,36 @@ def get_path(filename):
     dirname = fileio.downloads_dir.dir_path # Use the downloads directory to put the file in.
     fullpath = '%s%s%s' % (dirname, os.sep, filename) # Generate the full file name with path.
     return fullpath
-    
 
+
+def sanitize(vals, skip=False, forcefloat=False, verbose=True):
+    ''' Make sure values are numeric, and either return nans or skip vals that aren't -- WARNING, duplicates lots of other things!'''
+    if verbose: print('Sanitizing vals of %s: %s' % (type(vals), vals))
+    if sc.isiterable(vals):
+        as_array = False if forcefloat else True
+    else:
+        vals = [vals]
+        as_array = False
+    output = []
+    for val in vals:
+        if val=='':
+            sanival = np.nan
+        elif val==None:
+            sanival = np.nan
+        else:
+            try:
+                sanival = float(val)
+            except Exception as E:
+                print('Could not sanitize value "%s": %s; returning nan' % (val, repr(E)))
+                sanival = np.nan
+        if not np.isnan(sanival) or not skip:
+            output.append(sanival)
+    if as_array:
+        return output
+    else:
+        return output[0]
+  
+      
 def load_project_record(project_id, raise_exception=True):
     """
     Return the project DataStore reocord, given a project UID.
@@ -486,8 +514,9 @@ def export_results(project_id):
 #%% Scenario functions and RPCs
 ##################################################################################
 
-def py_to_js_scen(py_scen, prog_names, percentage=True):
+def py_to_js_scen(py_scen, proj, key=None):
     ''' Convert a Python to JSON representation of a scenario '''
+    prog_names = proj.dataset().prog_names()
     settings = nu.Settings()
     attrs = ['name', 'active', 'scen_type']
     js_scen = {}
@@ -496,39 +525,33 @@ def py_to_js_scen(py_scen, prog_names, percentage=True):
     js_scen['spec'] = []
     count = -1
     for prog_name in prog_names:
+        program = proj.model(key).prog_info.programs[prog_name]
         this_spec = {}
         this_spec['name'] = prog_name
         this_spec['included'] = True if prog_name in py_scen.prog_set else False
         this_spec['vals'] = []
-        print('================ WORKING  ON %s' % prog_name)
         if this_spec['included']:
-            print('================ included')
             count += 1
             try:
-                print('================ trying vals')
                 this_spec['vals'] = py_scen.covs[count]
             except:
-                print('================ failed, setting to none')
                 this_spec['vals'] = [None]
             while len(this_spec['vals']) < settings.n_years: # Ensure it's the right length
-                print('================ appending')
                 this_spec['vals'].append(None)
         else:
-            print('================ not included')
             this_spec['vals'] = [None]*settings.n_years # WARNING, kludgy way to extract the number of years
-        if percentage and js_scen['scen_type'] == 'coverage':
-            print('================ yes is percentage')
+        if js_scen['scen_type'] == 'coverage': # Convert to percentage
             for y in range(len(this_spec['vals'])):
-                print('================ looping over %s' % y)
                 if this_spec['vals'][y] is not None:
-                    print('================ not none')
                     this_spec['vals'][y] = round(100*this_spec['vals'][y]) # Enter to the nearest percentage
+        this_spec['base_cov'] = round(program.base_cov*100) # Convert to percentage
+        this_spec['base_spend'] = round(program.base_spend)
         js_scen['spec'].append(this_spec)
         js_scen['t'] = settings.t
     return js_scen
     
     
-def js_to_py_scen(js_scen, percentage=True):
+def js_to_py_scen(js_scen):
     ''' Convert a JSON to Python representation of a scenario '''
     py_json = sc.odict()
     for attr in ['name', 'scen_type', 'active']: # Copy these directly
@@ -538,24 +561,24 @@ def js_to_py_scen(js_scen, percentage=True):
     for js_spec in js_scen['spec']:
         if js_spec['included']:
             py_json['prog_set'].append(js_spec['name'])
-            vals = sanitize(js_spec['vals'])
-            if percentage and js_scen['scen_type'] == 'coverage':
-                for y in range(len(vals)):
-                    if vals[y] is not None:
-                        vals[y] = vals[y]/100. # Convert from percentage
+            vals = list(sanitize(js_spec['vals'], skip=True))
+            for y in range(len(vals)):
+                if js_scen['scen_type'] == 'coverage': # Convert from percentage
+                        if vals[y] is not None:
+                            vals[y] = vals[y]/100. # Convert from percentage
             py_json['covs'].append(vals)
     return py_json
     
 
 @register_RPC(validation_type='nonanonymous user')    
-def get_scenario_info(project_id):
+def get_scenario_info(project_id, key=None):
 
     print('Getting scenario info...')
     proj = load_project(project_id, raise_exception=True)
     
     scenario_summaries = []
     for py_scen in proj.scens.values():
-        js_scen = py_to_js_scen(py_scen, proj.dataset().prog_names())
+        js_scen = py_to_js_scen(py_scen, proj, key=key)
         scenario_summaries.append(js_scen)
     
     print('JavaScript scenario info:')
@@ -591,41 +614,14 @@ def get_default_scenario(project_id):
     proj = load_project(project_id, raise_exception=True)
     
     py_scen = proj.demo_scens(doadd=False)[0]
-    js_scen = py_to_js_scen(py_scen, proj.dataset().prog_names())
+    js_scen = py_to_js_scen(py_scen, proj)
     
     print('Created default JavaScript scenario:')
     pprint(js_scen)
     return js_scen
 
 
-def sanitize(vals, skip=False, forcefloat=False, verbose=True):
-    ''' Make sure values are numeric, and either return nans or skip vals that aren't '''
-    if verbose: print('Sanitizing vals of %s: %s' % (type(vals), vals))
-    if sc.isiterable(vals):
-        as_array = False if forcefloat else True
-    else:
-        vals = [vals]
-        as_array = False
-    output = []
-    for val in vals:
-        if val=='':
-            sanival = np.nan
-        elif val==None:
-            sanival = np.nan
-        else:
-            try:
-                sanival = float(val)
-            except Exception as E:
-                print('Could not sanitize value "%s": %s; returning nan' % (val, repr(E)))
-                sanival = np.nan
-        if skip and not np.isnan(sanival):
-            output.append(sanival)
-        else:
-            output.append(sanival)
-    if as_array:
-        return output
-    else:
-        return output[0]
+
     
     
 
@@ -677,8 +673,9 @@ def objective_mapping(key=None, val=None):
         return None
 
 
-def py_to_js_optim(py_optim, prog_names):
+def py_to_js_optim(py_optim, proj, key=None):
     ''' Convert a Python to JSON representation of an optimization '''
+    prog_names = proj.dataset().prog_names()
     js_optim = {}
     attrs = ['name', 'mults', 'add_funds', 'fix_curr']
     for attr in attrs:
@@ -728,7 +725,7 @@ def get_optim_info(project_id):
     
     optim_summaries = []
     for py_optim in proj.optims.values():
-        js_optim = py_to_js_optim(py_optim, proj.dataset().prog_names())
+        js_optim = py_to_js_optim(py_optim, proj)
         optim_summaries.append(js_optim)
     
     print('JavaScript optimization info:')
@@ -764,7 +761,7 @@ def get_default_optim(project_id):
     proj = load_project(project_id, raise_exception=True)
     
     py_optim = proj.demo_optims(doadd=False)[0]
-    js_optim = py_to_js_optim(py_optim, proj.dataset().prog_names())
+    js_optim = py_to_js_optim(py_optim, proj)
     js_optim['objective_options'] = objective_mapping()
     
     print("TEST")
