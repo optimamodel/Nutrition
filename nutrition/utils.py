@@ -33,15 +33,15 @@ def get_obj_sign(obj):
     else:
         return 1
 
-def pretty_labels(): # todo: look at Nick's labels
+def pretty_labels():
     labs = sc.odict()
     labs['thrive'] = 'Number of alive, non-stunted children'
-    labs['stunting_prev'] = 'Prevalence of stunting in children (%)'
+    labs['stunting_prev'] = 'Prevalence of stunting in children'
     labs['child_deaths'] = 'Child mortality'
     labs['pw_deaths'] = 'Pregnant women mortality'
-    labs['anaemia_prev'] = 'Prevalence of anaemia in children \n and women of reproductive age (%)'
-    labs['wasting_prev'] = 'Prevalence of wasting in children (%)'
-    labs['Baseline'] = 'Est. spending' # this is for allocation
+    labs['anaemia_prev'] = 'Prevalence of anaemia in children \n and women of reproductive age'
+    labs['wasting_prev'] = 'Prevalence of wasting in children'
+    labs['Baseline'] = 'Est. spending \n baseline year' # this is for allocation
     return labs
 
 def relabel(old):
