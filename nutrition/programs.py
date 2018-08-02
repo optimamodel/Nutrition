@@ -464,7 +464,9 @@ class CostCovCurve:
 
 
 def set_programs(prog_set, prog_data, all_years):
-    programs = [Program(prog_name, prog_data, all_years) for prog_name in prog_set] # list of all program objects
+    programs = sc.odict()
+    for prog_name in prog_set:
+        programs[prog_name] = Program(prog_name, prog_data, all_years)
     return programs
     
 
