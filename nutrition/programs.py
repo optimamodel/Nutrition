@@ -468,8 +468,6 @@ def set_programs(prog_set, prog_data, all_years):
     for prog_name in prog_set:
         programs[prog_name] = Program(prog_name, prog_data, all_years)
     return programs
-    
-
 
 
 class ProgramInfo:
@@ -545,7 +543,7 @@ class ProgramInfo:
         self._sort_progs()
 
     def get_base_spend(self):
-        for prog in self.programs:
+        for prog in self.programs.values():
             spend = prog.inv_func(prog.annual_cov[:1])[0]
             prog.base_spend = spend
             prog.annual_spend[0] = spend
@@ -554,7 +552,7 @@ class ProgramInfo:
         return self.prog_data.base_prog_set
 
     def _set_ref_progs(self):
-        for program in self.programs:
+        for program in self.programs.values():
             if program.name in self.prog_data.ref_progs:
                 program.reference = True
             else:
@@ -574,8 +572,8 @@ class ProgramInfo:
 
     def _rem_missing_progs(self):
         """ Removes programs from dependencies lists which are not included in analysis """
-        allNames = set([prog.name for prog in self.programs])
-        for prog in self.programs:
+        allNames = self.programs.keys()
+        for prog in self.programs.values():
             prog.thresholdDependencies = [name for name in prog.thresholdDependencies if name in allNames]
             prog.exclusionDependencies = [name for name in prog.exclusionDependencies if name in allNames]
 
@@ -588,14 +586,14 @@ class ProgramInfo:
 
     def _get_thresh_roots(self):
         """ Makes a list of all programs with dependencies """
-        openSet = [program for program in self.programs if program.thresholdDependencies]
-        closedSet = [program for program in self.programs if program not in openSet] # independence
+        openSet = [program for program in self.programs.values() if program.thresholdDependencies]
+        closedSet = [program for program in self.programs.values() if program not in openSet] # independence
         idx = len(closedSet)
         return openSet, closedSet, idx
 
     def _get_excl_roots(self):
-        openSet = [program for program in self.programs if program.exclusionDependencies]
-        closedSet = [program for program in self.programs if program not in openSet] # independence
+        openSet = [program for program in self.programs.values() if program.exclusionDependencies]
+        closedSet = [program for program in self.programs.values() if program not in openSet] # independence
         idx = len(closedSet)
         return openSet, closedSet, idx
 
@@ -618,12 +616,12 @@ class ProgramInfo:
         self.thresholdOrder = closed_set[idx:]
 
     def set_init_covs(self, pops):
-        for prog in self.programs:
+        for prog in self.programs.values():
             prog.set_pop_sizes(pops)
             prog.set_init_unrestr()
 
     def set_costcovs(self):
-        for prog in self.programs:
+        for prog in self.programs.values():
             prog.set_costcov()
 
     def get_cov_scen(self, covs, scentype, years):
@@ -663,7 +661,7 @@ class ProgramInfo:
         self.restrict_covs()
 
     def determine_cov_change(self):
-        for prog in self.programs:
+        for prog in self.programs.values():
             if abs(prog.annual_cov[prog.year-1] - prog.annual_cov[prog.year]) > 1e-3:
                 return True
             else:
@@ -671,16 +669,16 @@ class ProgramInfo:
         return False
 
     def adjust_covs(self, pops, year):
-        for program in self.programs:
+        for program in self.programs.values():
             program.adjust_cov(pops, year)
 
     def update_prog_year(self, year):
-        for prog in self.programs:
+        for prog in self.programs.values():
             prog.year = year
 
     def get_ann_covs(self, year):
         covs = {}
-        for prog in self.programs:
+        for prog in self.programs.values():
             covs[prog.name] = prog.annual_cov[year]
         return covs
 
@@ -695,7 +693,7 @@ class ProgramInfo:
         for child in self.thresholdOrder:
             for parname in child.thresholdDependencies:
                 for year in self.all_years:
-                    par = next(prog for prog in self.programs if prog.name == parname)
+                    par = next(prog for prog in self.programs.values() if prog.name == parname)
                     # assuming uniform coverage across age bands, we can use the unrestricted coverage (NOT restricted)
                     maxcov_child = max(child.sat_unrestr - (par.sat_unrestr - par.annual_cov[year]), 0)
                     if child.annual_cov[year] > maxcov_child:
@@ -704,7 +702,7 @@ class ProgramInfo:
         for child in self.exclusionOrder:
             for parname in child.exclusionDependencies:
                 for year in self.all_years:
-                    par = next((prog for prog in self.programs if prog.name == parname))
+                    par = next((prog for prog in self.programs.values() if prog.name == parname))
                     # assuming uniform coverage across age bands, we can use the unrestricted coverage (NOT restricted)
                     maxcov_child = max(child.sat_unrestr - par.annual_cov[year], 0) # if coverage of parent exceeds child sat
                     if child.annual_cov[year] > maxcov_child:
