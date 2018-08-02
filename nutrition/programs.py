@@ -491,7 +491,7 @@ class ProgramInfo:
 
     def get_refs(self):
         ref_allocs = np.zeros(len(self.programs))
-        for i, prog in enumerate(self.programs):
+        for i, prog in enumerate(self.programs.values()):
             if prog.reference:
                 ref_allocs[i] = prog.get_spending(prog.annual_cov)[0]
             else:
@@ -500,7 +500,7 @@ class ProgramInfo:
 
     def get_curr(self):
         allocs = np.zeros(len(self.programs))
-        for i, prog in enumerate(self.programs):
+        for i, prog in enumerate(self.programs.values()):
             allocs[i] = prog.get_spending(prog.annual_cov)[0]
         return allocs
 
@@ -631,14 +631,14 @@ class ProgramInfo:
         unrestr_cov = np.zeros(shape=(len(self.programs), len(years)))
         spend = np.zeros(shape=(len(self.programs), len(years)))
         covs = self.check_cov(covs, years)
-        for i, prog in enumerate(self.programs):
+        for i,prog in enumerate(self.programs.values()):
             unrestr_cov[i], spend[i] = prog.interp_scen(covs[i], years, scentype)
         return unrestr_cov, spend
 
     def check_cov(self, covs, years):
         numyears = len(years)
         newcovs = np.zeros((len(self.programs), numyears))
-        for i, prog in enumerate(self.programs):
+        for i,prog in enumerate(self.programs.values()):
             try:
                 cov = covs[i]
                 if isinstance(cov, float):
@@ -653,7 +653,7 @@ class ProgramInfo:
         return newcovs
 
     def update_covs(self, covs, spends):
-        for i, prog in enumerate(self.programs):
+        for i,prog in enumerate(self.programs.values()):
             cov = covs[i]
             spend = spends[i]
             prog.update_cov(cov, spend)
