@@ -67,10 +67,11 @@ Last update: 2018-08-02
                 {{ obj }}
               </option>
             </select><br><br>
-            Multipliers:<br>
+            Budget multipliers (1 = current budget):<br>
             <input type="text"
                    class="txbox"
                    v-model="defaultOptim.mults"/><br>
+            <input type="checkbox" v-model="defaultOptim.fix_curr"/> Existing spending cannot be reallocated<br><br>
             Additional funds (US$):<br>
             <input type="text"
                    class="txbox"
@@ -81,7 +82,7 @@ Last update: 2018-08-02
             <thead>
             <tr>
               <th>Program name</th>
-              <th>Include?</th>
+              <th style="text-align: center">Include?</th>
             </tr>
             </thead>
             <tbody>
@@ -89,18 +90,18 @@ Last update: 2018-08-02
               <td>
                 {{ prog_spec.name }}
               </td>
-              <td>
+              <td style="text-align: center">
                 <input type="checkbox" v-model="prog_spec.included"/>
               </td>
             </tr>
             </tbody>
           </table>
             
-          <div style="text-align:justify">
+          <div style="text-align:center">
             <button @click="addOptim()" class='btn __green' style="display:inline-block">
               Save optimization
             </button>
-
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             <button @click="$modal.hide('add-optim')" class='btn __red' style="display:inline-block">
               Cancel
             </button>
@@ -109,7 +110,7 @@ Last update: 2018-08-02
       </modal>
     
       <div>
-        <div v-for="index in placeholders" :id="'fig'+index" style="width:650px; float:left;">
+        <div v-for="index in placeholders" :id="'fig'+index" style="max-width:650px; float:left;">
           <!--mpld3 content goes here-->
         </div>
       </div>

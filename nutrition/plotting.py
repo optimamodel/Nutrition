@@ -10,7 +10,8 @@ for_frontend = True
 if for_frontend:
     legend_loc = {'bbox_to_anchor':(1,0.8)}
     legend_loc_prev = {'loc':'best'} # No idea why this has to be different, but it does
-    ax_size = [0.2,0.12,0.50,0.75]
+    fig_size = (8,3)
+    ax_size = [0.2,0.12,0.40,0.75]
 else:
     legend_loc = {'loc':'right'}
     ax_size = [0.2,0.10,0.65,0.75]
@@ -52,7 +53,7 @@ def plot_prevs(all_res):
     lines = []
     figs = sc.odict()
     for i, prev in enumerate(prevs):
-        fig = pl.figure()
+        fig = pl.figure(figsize=fig_size)
         ax = fig.add_axes(ax_size)
         ymax = 0
         leglabels = []
@@ -70,7 +71,7 @@ def plot_prevs(all_res):
             lines.append(line)
             leglabels.append(res.name)
         # formatting
-        ax.yaxis.set_major_formatter(tk.FormatStrFormatter('%.1f'))
+        sc.SIticks(ax=ax, axis='y')
         ax.set_ylabel('Percentage')
         ax.set_ylim([0, ymax + ymax*0.1])
         ax.set_xlabel('Years')
@@ -87,7 +88,7 @@ def plot_outputs(all_res, seq, name):
     baseres = all_res[0]
     years = np.array(baseres.years) # assume these scenarios over same time horizon
     for i, outcome in enumerate(outcomes):
-        fig = pl.figure()
+        fig = pl.figure(figsize=fig_size)
         ax = fig.add_axes(ax_size)
         ymax = 0
         perchange = []
@@ -123,6 +124,7 @@ def plot_outputs(all_res, seq, name):
                                 va='bottom')
         # formatting
         title += ' %s \n %s-%s'%(utils.relabel(outcome).lower(), baseres.years[0], baseres.years[-1])
+        sc.SIticks(ax=ax, axis='y')
         ax.set_ylim([0, ymax + ymax * .1])
         ax.set_ylabel('Number')
         ax.legend(bars, [res.name for res in all_res], ncol=1, **legend_loc)
@@ -137,7 +139,7 @@ def plot_alloc(all_res):
     #initialize
     width = 0.35
     scale = 1e1 # 1e6
-    fig = pl.figure()
+    fig = pl.figure(figsize=fig_size)
     ax = fig.add_axes(ax_size)
     figs = sc.odict()
     try:
@@ -180,7 +182,7 @@ def plot_alloc(all_res):
     except:
         string = 'Total available budget (relative to %s)' % str(res.prog_info.free)
     ax.set_xlabel(string)
-    ax.yaxis.set_major_formatter(tk.FormatStrFormatter('%3.0f'))
+    sc.SIticks(ax=ax, axis='y')
     ax.legend(bars, [prog.name for prog in ref.programs], **legend_loc)
     figs['alloc'] = fig
     return figs

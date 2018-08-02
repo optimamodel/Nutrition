@@ -15,7 +15,7 @@ from pprint import pprint
 import mpld3
 import numpy as np
 from matplotlib.pyplot import rc
-rc('font', size=14)
+rc('font', size=12)
 
 import sciris.corelib.fileio as fileio
 import sciris.weblib.user as user
