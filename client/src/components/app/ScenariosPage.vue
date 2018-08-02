@@ -92,6 +92,7 @@ Last update: 2018-08-02
               <tr>
                 <th>Name</th>
                 <th>Include?</th>
+                <th>Baseline</th>
                 <th v-for="year in defaultScenYears">{{ year }}</th>
               </tr>
               </thead>
@@ -102,6 +103,10 @@ Last update: 2018-08-02
                 </td>
                 <td style="text-align: center">
                   <input type="checkbox" v-model="prog_spec.included"/>
+                </td>
+                <td style="text-align: right">
+                  <span v-if="modalScenarioType==='coverage'">{{ prog_spec.base_cov }}</span>
+                  <span v-else>{{ prog_spec.base_spend }}</span>
                 </td>
                 <td v-for="(val, index) in prog_spec.vals">
                   <input type="text"
