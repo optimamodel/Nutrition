@@ -43,8 +43,36 @@ def get_path(filename):
     dirname = fileio.downloads_dir.dir_path # Use the downloads directory to put the file in.
     fullpath = '%s%s%s' % (dirname, os.sep, filename) # Generate the full file name with path.
     return fullpath
-    
 
+
+def sanitize(vals, skip=False, forcefloat=False, verbose=True):
+    ''' Make sure values are numeric, and either return nans or skip vals that aren't -- WARNING, duplicates lots of other things!'''
+    if verbose: print('Sanitizing vals of %s: %s' % (type(vals), vals))
+    if sc.isiterable(vals):
+        as_array = False if forcefloat else True
+    else:
+        vals = [vals]
+        as_array = False
+    output = []
+    for val in vals:
+        if val=='':
+            sanival = np.nan
+        elif val==None:
+            sanival = np.nan
+        else:
+            try:
+                sanival = float(val)
+            except Exception as E:
+                print('Could not sanitize value "%s": %s; returning nan' % (val, repr(E)))
+                sanival = np.nan
+        if not np.isnan(sanival) or not skip:
+            output.append(sanival)
+    if as_array:
+        return output
+    else:
+        return output[0]
+  
+      
 def load_project_record(project_id, raise_exception=True):
     """
     Return the project DataStore reocord, given a project UID.
@@ -533,11 +561,11 @@ def js_to_py_scen(js_scen):
     for js_spec in js_scen['spec']:
         if js_spec['included']:
             py_json['prog_set'].append(js_spec['name'])
-            vals = sanitize(js_spec['vals'])
-            if js_scen['scen_type'] == 'coverage': # Convert from percentage
-                for y in range(len(vals)):
-                    if vals[y] is not None:
-                        vals[y] = vals[y]/100. # Convert from percentage
+            vals = list(sanitize(js_spec['vals'], skip=True))
+            for y in range(len(vals)):
+                if js_scen['scen_type'] == 'coverage': # Convert from percentage
+                        if vals[y] is not None:
+                            vals[y] = vals[y]/100. # Convert from percentage
             py_json['covs'].append(vals)
     return py_json
     
@@ -593,34 +621,7 @@ def get_default_scenario(project_id):
     return js_scen
 
 
-def sanitize(vals, skip=False, forcefloat=False, verbose=True):
-    ''' Make sure values are numeric, and either return nans or skip vals that aren't '''
-    if verbose: print('Sanitizing vals of %s: %s' % (type(vals), vals))
-    if sc.isiterable(vals):
-        as_array = False if forcefloat else True
-    else:
-        vals = [vals]
-        as_array = False
-    output = []
-    for val in vals:
-        if val=='':
-            sanival = np.nan
-        elif val==None:
-            sanival = np.nan
-        else:
-            try:
-                sanival = float(val)
-            except Exception as E:
-                print('Could not sanitize value "%s": %s; returning nan' % (val, repr(E)))
-                sanival = np.nan
-        if skip and not np.isnan(sanival):
-            output.append(sanival)
-        else:
-            output.append(sanival)
-    if as_array:
-        return output
-    else:
-        return output[0]
+
     
     
 
