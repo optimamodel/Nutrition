@@ -143,6 +143,10 @@ Last update: 2018-08-02
   import Vue from 'vue';
   import PopupSpinner from './Spinner.vue'
 
+  const FLOAT_FORMATTER = d3.format('.0f');
+  const PERCENT_FORMATTER = (d) => d3.format('.1%')(d / 100);
+  const SI_FORMATTER = (d) => d3.format('.2s')(d);
+
   export default {
     name: 'ScenariosPage',
     
@@ -158,7 +162,15 @@ Last update: 2018-08-02
         defaultScenYears: [],
         modalScenarioType: 'coverage', 
         graphData: [],
-        scenariosLoaded: false        
+        scenariosLoaded: false,
+        graphFormatters: [
+          {x: FLOAT_FORMATTER, xTicks: 6, y: PERCENT_FORMATTER, yTicks: null},
+          {x: FLOAT_FORMATTER, xTicks: 6, y: PERCENT_FORMATTER, yTicks: null},
+          {x: FLOAT_FORMATTER, xTicks: 6, y: PERCENT_FORMATTER, yTicks: null},
+          {x: FLOAT_FORMATTER, xTicks: 6, y: SI_FORMATTER, yTicks: null},
+          {x: FLOAT_FORMATTER, xTicks: 6, y: SI_FORMATTER, yTicks: null},
+          {x: FLOAT_FORMATTER, xTicks: 6, y: SI_FORMATTER, yTicks: null},
+        ],
       }
     },
 
@@ -404,10 +416,11 @@ Last update: 2018-08-02
                 div.removeChild(div.firstChild);
               }
               try {
-                mpld3.draw_figure(divlabel, response.data.graphs[index], function(fig, element) {
-                  fig.setXTicks(6, function(d) { return d3.format('.0f')(d); });
-                  fig.setYTicks(null, function(d) { return d3.format('.2s')(d); });
-                })     
+                mpld3.draw_figure(divlabel, response.data.graphs[index], (fig, element) => {
+                  const formatters = this.graphFormatters[index];
+                  fig.setXTicks(formatters.xTicks, formatters.x);
+                  fig.setYTicks(formatters.yTicks, formatters.y);
+                });
               }
               catch (err) {
                 console.log('failled:' + err.message);
