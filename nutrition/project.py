@@ -3,6 +3,7 @@
 #######################################################################################################
 
 import sciris.core as sc
+import numpy as np
 from .version import version
 from .optimization import Optim
 from .data import Dataset
@@ -138,7 +139,23 @@ class Project(object):
                 out = res.get_outputs(outcomes, seq=False)
                 outputs.append([res.name] + out) # gets all outputs
         data = [['Result name'] + headers] + outputs
-        sc.export_xlsx(filename=filename, data=data)
+        
+        # Add formatting
+        nrows = len(data)
+        ncols = len(data[0])
+        formatdata = np.zeros((nrows, ncols), dtype=object)
+        formats = {
+            'header':{
+                'bold':True, 
+                'bg_color':'#3c7d3e', 
+                'color':'#ffffff'
+            },
+           'plain': {}
+        }
+        formatdata[0,:] = 'header' # Format header
+        formatdata[1:,:] = 'plain' # Format data
+
+        sc.export_xlsx(filename=filename, data=data, formats=formats, formatdata=formatdata)       
         return filepath
 
     def add(self, name, item, what=None):
