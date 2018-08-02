@@ -14,127 +14,129 @@ Last update: 2018-08-02
     </div>
 
     <div v-else>
-
-      <button class="btn" @click="setActive('nutritional')">Nutritional status distribution</button>
       <button class="btn" @click="setActive('breastfeeding')">Breastfeeding distribution</button>
+      <button class="btn" @click="setActive('nutritional')">Nutritional status distribution</button>
       <button class="btn" @click="setActive('IYCF')">IYCF packages</button>
       <button class="btn" @click="setActive('sam')">Treatment of SAM</button>
       <button class="btn" @click="setActive('programs')">Program cost and coverage</button>
+      <br><br>
 
-      <table class="table table-bordered table-hover table-striped" style="width: 100%">
-        <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Active?</th>
-          <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr v-for="scenSummary in scenSummaries">
-          <td>
-            <b>{{ scenSummary.name }}</b>
-          </td>
-          <td>
-            {{ scenSummary.scen_type }}
-          </td>
-          <td>
-            <input type="checkbox" v-model="scenSummary.active"/>
-          </td>
-          <td style="white-space: nowrap">
-            <button class="btn" @click="editScen(scenSummary)">Edit</button>
-            <button class="btn" @click="copyScen(scenSummary)">Copy</button>
-            <button class="btn" @click="deleteScen(scenSummary)">Delete</button>
-          </td>
-        </tr>
-        </tbody>
-      </table>
+      Placeholder for {{ this.activeScreen }} input table<br><br>
+
+      <!--<table class="table table-bordered table-hover table-striped" style="width: 100%">-->
+        <!--<thead>-->
+        <!--<tr>-->
+          <!--<th>Name</th>-->
+          <!--<th>Type</th>-->
+          <!--<th>Active?</th>-->
+          <!--<th>Actions</th>-->
+        <!--</tr>-->
+        <!--</thead>-->
+        <!--<tbody>-->
+        <!--<tr v-for="scenSummary in scenSummaries">-->
+          <!--<td>-->
+            <!--<b>{{ scenSummary.name }}</b>-->
+          <!--</td>-->
+          <!--<td>-->
+            <!--{{ scenSummary.scen_type }}-->
+          <!--</td>-->
+          <!--<td>-->
+            <!--<input type="checkbox" v-model="scenSummary.active"/>-->
+          <!--</td>-->
+          <!--<td style="white-space: nowrap">-->
+            <!--<button class="btn" @click="editScen(scenSummary)">Edit</button>-->
+            <!--<button class="btn" @click="copyScen(scenSummary)">Copy</button>-->
+            <!--<button class="btn" @click="deleteScen(scenSummary)">Delete</button>-->
+          <!--</td>-->
+        <!--</tr>-->
+        <!--</tbody>-->
+      <!--</table>-->
 
       <div>
-        <button class="btn __green" :disabled="!scenariosLoaded" @click="saveChanges()">Save changes</button>
-        <button class="btn" :disabled="!scenariosLoaded" @click="download()">Download</button>
-        <button class="btn" :disabled="!scenariosLoaded" @click="upload()">Upload</button>
-        <button class="btn __red" :disabled="!scenariosLoaded" @click="reset()">Revert</button>
+        <button class="btn __green" @click="saveChanges()">Save changes</button>
+        <button class="btn"         @click="download()">Download</button>
+        <button class="btn"         @click="upload()">Upload</button>
+        <button class="btn __red"   @click="revert()">Revert</button>
       </div>
       <br>
 
-      <div style="float:left">
-      </div>
-      <div>
-        <div v-for="index in placeholders" :id="'fig'+index" style="width:650px; float:left;">
-          <!--mpld3 content goes here-->
-        </div>
-      </div>
+      <!--<div style="float:left">-->
+      <!--</div>-->
+      <!--<div>-->
+        <!--<div v-for="index in placeholders" :id="'fig'+index" style="width:650px; float:left;">-->
+          <!--&lt;!&ndash;mpld3 content goes here&ndash;&gt;-->
+        <!--</div>-->
+      <!--</div>-->
 
 
-      <modal name="add-scenario"
-             height="auto"
-             :scrollable="true"
-             :width="900"
-             :classes="['v--modal', 'vue-dialog']"
-             :pivot-y="0.3"
-             :adaptive="true"
-             :clickToClose="clickToClose"
-             :transition="transition">
+      <!--<modal name="add-scenario"-->
+             <!--height="auto"-->
+             <!--:scrollable="true"-->
+             <!--:width="900"-->
+             <!--:classes="['v&#45;&#45;modal', 'vue-dialog']"-->
+             <!--:pivot-y="0.3"-->
+             <!--:adaptive="true"-->
+             <!--:clickToClose="clickToClose"-->
+             <!--:transition="transition">-->
 
-        <div class="dialog-content">
-          <div class="dialog-c-title">
-            Add/edit {{ modalScenarioType }} scenario
-          </div>
-          <div class="dialog-c-text">
-            <b>Scenario name:</b><br>
-            <input type="text"
-                   class="txbox"
-                   v-model="defaultScen.name"/><br>
-            <table class="table table-bordered table-hover table-striped" style="width: 100%">
-              <thead>
-              <tr>
-                <th colspan=100><div class="dialog-header">
-                  <span v-if="modalScenarioType==='coverage'">Program coverages (%)</span>
-                  <span v-else>Program spending (US$)</span>
-                </div></th>
-              </tr>
-              <tr>
-                <th>Name</th>
-                <th>Include?</th>
-                <th>Baseline</th>
-                <th v-for="year in defaultScenYears">{{ year }}</th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr v-for="prog_spec in defaultScen.spec">
-                <td style="min-width:200px">
-                  {{ prog_spec.name }}
-                </td>
-                <td style="text-align: center">
-                  <input type="checkbox" v-model="prog_spec.included"/>
-                </td>
-                <td style="text-align: right">
-                  <span v-if="modalScenarioType==='coverage'">{{ prog_spec.base_cov }}</span>
-                  <span v-else>{{ prog_spec.base_spend }}</span>
-                </td>
-                <td v-for="(val, index) in prog_spec.vals">
-                  <input type="text"
-                         class="txbox"
-                         style="text-align: right"
-                         v-model="prog_spec.vals[index]"/>
-                </td>
-              </tr>
-              </tbody>
-            </table>
-          </div>
-          <div style="text-align:center">
-            <button @click="addScenario()" class='btn __green' style="display:inline-block">
-              Save scenario
-            </button>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <button @click="$modal.hide('add-scenario')" class='btn __red' style="display:inline-block">
-              Cancel
-            </button>
-          </div>
-        </div>
+        <!--<div class="dialog-content">-->
+          <!--<div class="dialog-c-title">-->
+            <!--Add/edit {{ modalScenarioType }} scenario-->
+          <!--</div>-->
+          <!--<div class="dialog-c-text">-->
+            <!--<b>Scenario name:</b><br>-->
+            <!--<input type="text"-->
+                   <!--class="txbox"-->
+                   <!--v-model="defaultScen.name"/><br>-->
+            <!--<table class="table table-bordered table-hover table-striped" style="width: 100%">-->
+              <!--<thead>-->
+              <!--<tr>-->
+                <!--<th colspan=100><div class="dialog-header">-->
+                  <!--<span v-if="modalScenarioType==='coverage'">Program coverages (%)</span>-->
+                  <!--<span v-else>Program spending (US$)</span>-->
+                <!--</div></th>-->
+              <!--</tr>-->
+              <!--<tr>-->
+                <!--<th>Name</th>-->
+                <!--<th>Include?</th>-->
+                <!--<th>Baseline</th>-->
+                <!--<th v-for="year in defaultScenYears">{{ year }}</th>-->
+              <!--</tr>-->
+              <!--</thead>-->
+              <!--<tbody>-->
+              <!--<tr v-for="prog_spec in defaultScen.spec">-->
+                <!--<td style="min-width:200px">-->
+                  <!--{{ prog_spec.name }}-->
+                <!--</td>-->
+                <!--<td style="text-align: center">-->
+                  <!--<input type="checkbox" v-model="prog_spec.included"/>-->
+                <!--</td>-->
+                <!--<td style="text-align: right">-->
+                  <!--<span v-if="modalScenarioType==='coverage'">{{ prog_spec.base_cov }}</span>-->
+                  <!--<span v-else>{{ prog_spec.base_spend }}</span>-->
+                <!--</td>-->
+                <!--<td v-for="(val, index) in prog_spec.vals">-->
+                  <!--<input type="text"-->
+                         <!--class="txbox"-->
+                         <!--style="text-align: right"-->
+                         <!--v-model="prog_spec.vals[index]"/>-->
+                <!--</td>-->
+              <!--</tr>-->
+              <!--</tbody>-->
+            <!--</table>-->
+          <!--</div>-->
+          <!--<div style="text-align:center">-->
+            <!--<button @click="addScenario()" class='btn __green' style="display:inline-block">-->
+              <!--Save scenario-->
+            <!--</button>-->
+            <!--&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-->
+            <!--<button @click="$modal.hide('add-scenario')" class='btn __red' style="display:inline-block">-->
+              <!--Cancel-->
+            <!--</button>-->
+          <!--</div>-->
+        <!--</div>-->
 
-      </modal>
+      <!--</modal>-->
 
       <!-- Popup spinner -->
       <popup-spinner></popup-spinner>
@@ -154,12 +156,8 @@ Last update: 2018-08-02
   import Vue from 'vue';
   import PopupSpinner from './Spinner.vue'
 
-  const FLOAT_FORMATTER = d3.format('.0f');
-  const PERCENT_FORMATTER = (d) => d3.format('.1%')(d / 100);
-  const SI_FORMATTER = (d) => d3.format('.2s')(d);
-
   export default {
-    name: 'ScenariosPage',
+    name: 'InputsPage',
 
     components: {
       PopupSpinner
@@ -167,22 +165,8 @@ Last update: 2018-08-02
 
     data() {
       return {
-        serverresponse: 'no response',
-        scenSummaries: [],
-        defaultScen: [],
-        defaultScenYears: [],
-        modalScenarioType: 'coverage',
-        graphData: [],
-        scenariosLoaded: false,
-        graphFormatters: [
-          {x: FLOAT_FORMATTER, xTicks: 6, y: PERCENT_FORMATTER, yTicks: null},
-          {x: FLOAT_FORMATTER, xTicks: 6, y: PERCENT_FORMATTER, yTicks: null},
-          {x: FLOAT_FORMATTER, xTicks: 6, y: PERCENT_FORMATTER, yTicks: null},
-          {x: FLOAT_FORMATTER, xTicks: 6, y: SI_FORMATTER, yTicks: null},
-          {x: FLOAT_FORMATTER, xTicks: 6, y: SI_FORMATTER, yTicks: null},
-          {x: FLOAT_FORMATTER, xTicks: 6, y: SI_FORMATTER, yTicks: null},
-        ],
-        defaultFormatter: {x: FLOAT_FORMATTER, xTicks: null, y: SI_FORMATTER, yTicks: null},
+        activeScreen: 'breastfeeding',
+        screenData: [],
       }
     },
 
@@ -194,15 +178,6 @@ Last update: 2018-08-02
           return this.$store.state.activeProject.project.id
         }
       },
-
-      placeholders() {
-        var indices = []
-        for (var i = 0; i <= 100; i++) {
-          indices.push(i);
-        }
-        return indices;
-      },
-
     },
 
     created() {
@@ -212,27 +187,20 @@ Last update: 2018-08-02
       }
       else { // Otherwise...
         // Load the project summaries of the current user.
-        this.getScenSummaries()
-        this.getDefaultScen()
+        this.getSheetData()
       }
 
     },
 
     methods: {
 
-      dcp(input) {
-        let output = JSON.parse(JSON.stringify(input))
-        return output
+      setActive(active) {
+        console.log('Setting active to ' + active)
+        this.activeScreen = active
       },
 
-      getUniqueName(fileName, otherNames) {
-        let tryName = fileName
-        let numAdded = 0
-        while (otherNames.indexOf(tryName) > -1) {
-          numAdded = numAdded + 1
-          tryName = fileName + ' (' + numAdded + ')'
-        }
-        return tryName
+      getSheetData() {
+        console.log('getSheetData() called')
       },
 
       projectID() {
@@ -240,244 +208,20 @@ Last update: 2018-08-02
         return id
       },
 
-      getScenSummaries() {
-        console.log('getScenSummaries() called')
-
-        // Start indicating progress.
-        status.start(this)
-
-        // Get the current user's scenario summaries from the server.
-        rpcservice.rpcCall('get_scenario_info', [this.projectID()])
-        .then(response => {
-          this.scenSummaries = response.data // Set the scenarios to what we received.
-
-          this.scenariosLoaded = true
-
-          // Indicate success.
-          status.succeed(this, 'Scenarios loaded')
-        })
-        .catch(error => {
-          // Indicate failure.
-          status.fail(this, 'Could not load scenarios')
-        })
+      saveChanges() {
+        status.failurePopup(this, 'Not implemented')
       },
 
-      getDefaultScen() {
-        console.log('getDefaultScen() called')
-        // Get the current user's scenario summaries from the server.
-        rpcservice.rpcCall('get_default_scenario', [this.projectID()])
-        .then(response => {
-          this.defaultScen = response.data // Set the scenarios to what we received.
-          this.defaultScenYears = []
-          for (let year = this.defaultScen.t[0]; year <= this.defaultScen.t[1]; year++) {
-            this.defaultScenYears.push(year);
-          }
-        })
-        .catch(error => {
-          // Failure popup.
-          status.failurePopup(this, 'Could not get default scenario')
-        })
+      upload() {
+        status.failurePopup(this, 'Not implemented')
       },
 
-      setScenSummaries() {
-        console.log('setScenSummaries() called')
-
-        // Start indicating progress.
-        status.start(this)
-
-        rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
-        .then(response => {
-          // Indicate success.
-          status.succeed(this, 'Scenarios saved')
-        })
-        .catch(error => {
-          // Indicate failure.
-          status.fail(this, 'Could not save scenario')
-        })
+      download() {
+        status.failurePopup(this, 'Not implemented')
       },
 
-      addScenarioModal(scenarioType) {
-        // Open a model dialog for creating a new project
-        console.log('addScenarioModal() called');
-        rpcservice.rpcCall('get_default_scenario', [this.projectID()])
-        .then(response => {
-          this.defaultScen = response.data // Set the scenarios to what we received.
-          this.defaultScen.scen_type = scenarioType
-          this.modalScenarioType = scenarioType
-          this.$modal.show('add-scenario');
-          console.log(this.defaultScen)
-        })
-        .catch(error => {
-           // Failure popup.
-          status.failurePopup(this, 'Could not open default scenario')
-        })
-      },
-
-      addScenario() {
-        console.log('addScenario() called')
-        this.$modal.hide('add-scenario')
-
-        // Start indicating progress.
-        status.start(this)
-
-        let newScen = this.dcp(this.defaultScen); // You've got to be kidding me, buster
-        let otherNames = []
-        this.scenSummaries.forEach(scenSum => {
-          otherNames.push(scenSum.name)
-        });
-        let index = otherNames.indexOf(newScen.name);
-        if (index > -1) {
-          console.log('Scenario named '+newScen.name+' exists, overwriting...')
-          this.scenSummaries[index] = newScen
-        }
-        else {
-          console.log('Scenario named '+newScen.name+' does not exist, creating new...')
-          this.scenSummaries.push(newScen)
-        }
-        console.log(newScen)
-        rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
-        .then(response => {
-          // Indicate success.
-          status.succeed(this, 'Scenario added')
-        })
-        .catch(error => {
-          // Indicate failure.
-          status.fail(this, 'Could not add scenario')
-
-          // TODO: Should probably fix the corrupted this.scenSummaries.
-        })
-      },
-
-      editScen(scenSummary) {
-        // Open a model dialog for creating a new project
-        console.log('editScen() called');
-        this.defaultScen = scenSummary
-        this.modalScenarioType = scenSummary.scen_type
-        this.$modal.show('add-scenario');
-      },
-
-      copyScen(scenSummary) {
-        console.log('copyScen() called')
-
-        // Start indicating progress.
-        status.start(this)
-
-        var newScen = this.dcp(scenSummary); // You've got to be kidding me, buster
-        var otherNames = []
-        this.scenSummaries.forEach(scenSum => {
-          otherNames.push(scenSum.name)
-        })
-        newScen.name = this.getUniqueName(newScen.name, otherNames)
-        this.scenSummaries.push(newScen)
-        rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
-        .then( response => {
-          // Indicate success.
-          status.succeed(this, 'Scenario copied')
-        })
-        .catch(error => {
-          // Indicate failure.
-          status.fail(this, 'Could not copy scenario')
-
-          // TODO: Should probably fix the corrupted this.scenSummaries.
-        })
-      },
-
-      deleteScen(scenSummary) {
-        console.log('deleteScen() called')
-
-        // Start indicating progress.
-        status.start(this)
-
-        for(var i = 0; i< this.scenSummaries.length; i++) {
-          if(this.scenSummaries[i].name === scenSummary.name) {
-            this.scenSummaries.splice(i, 1);
-          }
-        }
-        rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
-        .then( response => {
-          // Indicate success.
-          status.succeed(this, 'Scenario deleted')
-        })
-        .catch(error => {
-          // Indicate failure.
-          status.fail(this, 'Could not delete scenario')
-
-          // TODO: Should probably fix the corrupted this.scenSummaries.
-        })
-      },
-
-      runScenarios() {
-        console.log('runScenarios() called')
-        status.start(this)
-        // Make sure they're saved first
-        rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
-        .then(response => {
-          // Go to the server to get the results from the package set.
-          rpcservice.rpcCall('run_scenarios', [this.projectID()])
-          .then(response => {
-            this.clearGraphs() // Once we receive a response, we can work with a clean slate
-            this.serverresponse = response.data // Pull out the response data.
-            var n_plots = response.data.graphs.length
-            console.log('Rendering ' + n_plots + ' graphs')
-
-            for (var index = 0; index <= n_plots; index++) {
-              console.log('Rendering plot ' + index)
-              var divlabel = 'fig' + index
-              var div = document.getElementById(divlabel); // CK: Not sure if this is necessary? To ensure the div is clear first
-              while (div.firstChild) {
-                div.removeChild(div.firstChild);
-              }
-              try {
-                mpld3.draw_figure(divlabel, response.data.graphs[index], (fig, element) => {
-                  var formatters = this.defaultFormatter
-                  if (index<this.graphFormatters.length) {
-                    formatters = this.graphFormatters[index];
-                  }
-                  fig.setXTicks(formatters.xTicks, formatters.x);
-                  fig.setYTicks(formatters.yTicks, formatters.y);
-                });
-              }
-              catch (err) {
-                console.log('graphs failed failed:' + err.message);
-                status.fail(this, 'Error creating graphs: ' + err.message)
-              }
-            }
-
-            // Indicate success.
-            status.succeed(this, 'Graphs created')
-          })
-          .catch(error => {
-            // Pull out the error message.
-            this.serverresponse = 'There was an error: ' + error.message
-
-            // Set the server error.
-            this.servererror = error.message
-
-            // Indicate failure.
-            status.fail(this, 'Could not make graphs')
-          })
-        })
-        .catch(error => {
-          // Pull out the error message.
-          this.serverresponse = 'There was an error: ' + error.message
-
-          // Set the server error.
-          this.servererror = error.message
-
-          // Put up a failure notification.
-          status.fail(this, 'Could not make graphs')
-        })
-      },
-
-      clearGraphs() {
-        for (var index = 0; index <= 100; index++) {
-          console.log('Clearing plot ' + index)
-          var divlabel = 'fig' + index
-          var div = document.getElementById(divlabel); // CK: Not sure if this is necessary? To ensure the div is clear first
-          while (div.firstChild) {
-            div.removeChild(div.firstChild);
-          }
-        }
+      revert() {
+        status.failurePopup(this, 'Not implemented')
       },
 
       exportResults() {
