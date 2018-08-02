@@ -12,6 +12,7 @@ from .model import Model
 from .utils import trace_exception, default_trackers, pretty_labels
 from .demo import demo_scens, demo_optims
 from .settings import ONException
+import numpy as np
 
 
 #######################################################################################################
@@ -138,7 +139,17 @@ class Project(object):
                 out = res.get_outputs(outcomes, seq=False)
                 outputs.append([res.name] + out) # gets all outputs
         data = [['Result name'] + headers] + outputs
-        sc.export_xlsx(filename=filename, data=data)
+        
+        # Formatting
+        formats = {
+            'header':{'bold':True, 'bg_color':'#3c7d3e', 'color':'#ffffff'},
+            'plain': {},
+            'bold':   {'bold':True}}
+        formatdata = np.zeros(np.array(data, dtype=object).shape, dtype=object) # Format data needs to be the same size
+        formatdata[:,:] = 'plain' # Format data as plain
+        formatdata[:,0] = 'bold' # Left side bold
+        formatdata[0,:] = 'header' # Top with green header
+        sc.export_xlsx(filename=filename, data=data, formats=formats, formatdata=formatdata)
         return filepath
 
     def add(self, name, item, what=None):

@@ -1,6 +1,9 @@
 import nutrition.ui as nu
 import sciris.core as sc
 
+doplot = 0
+dosave = 1
+
 # load in data to create model
 p = nu.Project('eg')
 p.load_data('demo', 'demo', name='eg')
@@ -26,4 +29,5 @@ kwargs3 = {'name': 'IYCF at $10 mil',
 scen_list = [nu.Scen(**kwargs1), nu.Scen(**kwargs2), nu.Scen(**kwargs3)]
 p.add_scens(scen_list)
 p.run_scens()
-p.plot()
+if doplot: p.plot()
+if dosave: p.write_results('scen_results.xlsx')
