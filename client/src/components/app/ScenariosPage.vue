@@ -1,7 +1,7 @@
 <!--
 Define health packages
 
-Last update: 2018-07-31
+Last update: 2018-08-02
 -->
 
 <template>
@@ -45,7 +45,8 @@ Last update: 2018-07-31
       </table>
 
       <div>
-        <button class="btn __blue" :disabled="!scenariosLoaded" @click="addScenarioModal()">Add scenario</button>
+        <button class="btn __blue" :disabled="!scenariosLoaded" @click="addScenarioModal('coverage')">Add coverage scenario</button>
+        <button class="btn __blue" :disabled="!scenariosLoaded" @click="addScenarioModal('budget')">Add budget scenario</button>        
         <button class="btn __green" :disabled="!scenariosLoaded" @click="runScenarios()">Run scenarios</button>
         <button class="btn" :disabled="!scenariosLoaded" @click="clearGraphs()">Clear graphs</button>
       </div>
@@ -72,17 +73,13 @@ Last update: 2018-07-31
 
         <div class="dialog-content">
           <div class="dialog-c-title">
-            Add/edit scenario
+            Add/edit {{ modalScenarioType }} scenario
           </div>
           <div class="dialog-c-text">
             Scenario name:<br>
             <input type="text"
                    class="txbox"
-                   v-model="defaultScen.name"/><br>
-            Scenario type:<br>
-            <input type="text"
-                   class="txbox"
-                   v-model="defaultScen.scen_type"/><br>
+                   v-model="defaultScen.name"/><br>              
             <table class="table table-bordered table-hover table-striped" style="width: 100%">
               <thead>
               <tr>
@@ -152,6 +149,7 @@ Last update: 2018-07-31
         scenSummaries: [],
         defaultScen: [],
         defaultScenYears: [],
+        modalScenarioType: 'coverage', 
         graphData: [],
         scenariosLoaded: false        
       }
@@ -267,12 +265,14 @@ Last update: 2018-07-31
         })         
       },
 
-      addScenarioModal() {
+      addScenarioModal(scenarioType) {
         // Open a model dialog for creating a new project
         console.log('addScenarioModal() called');
         rpcservice.rpcCall('get_default_scenario', [this.projectID()])
         .then(response => {
           this.defaultScen = response.data // Set the scenarios to what we received.
+          this.defaultScen.scen_type = scenarioType
+          this.modalScenarioType = scenarioType
           this.$modal.show('add-scenario');
           console.log(this.defaultScen)
         })
@@ -321,6 +321,7 @@ Last update: 2018-07-31
         // Open a model dialog for creating a new project
         console.log('editScen() called');
         this.defaultScen = scenSummary
+        this.modalScenarioType = scenSummary.scen_type
         this.$modal.show('add-scenario');
       },
 
@@ -396,7 +397,10 @@ Last update: 2018-07-31
                 div.removeChild(div.firstChild);
               }
               try {
-                mpld3.draw_figure(divlabel, response.data.graphs[index]); // Draw the figure.
+                mpld3.draw_figure(divlabel, response.data.graphs[index], function(fig, element) {
+                  fig.setXTicks(6, function(d) { return d3.format('.0f')(d); });
+                  fig.setYTicks(null, function(d) { return d3.format('.2s')(d); });
+                })     
               }
               catch (err) {
                 console.log('failled:' + err.message);
