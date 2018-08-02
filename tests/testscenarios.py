@@ -15,9 +15,9 @@ kwargs1 = {'name':'test1',
 kwargs2 = sc.dcp(kwargs1)
 kwargs2.update({'name': 'test2',
                 'covs': [[.95]],
-                'prog_set': ['IYCF 1']})
+                'prog_set': ['IYCF 1', 'Treatment of SAM']})
 
-scen_list = [nu.Scen(**kwargs1), nu.Scen(**kwargs1)]
+scen_list = [nu.Scen(**kwargs1), nu.Scen(**kwargs2)]
 p.add_scens(scen_list)
 p.run_scens()
 p.plot()
