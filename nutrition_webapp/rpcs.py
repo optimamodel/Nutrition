@@ -494,7 +494,7 @@ def create_project_from_prj_file(prj_filename, user_id):
 #%% Scenario functions and RPCs
 ##################################################################################
 
-def py_to_js_scen(py_scen, prog_names):
+def py_to_js_scen(py_scen, prog_names, proj):
     ''' Convert a Python to JSON representation of a scenario '''
     settings = nu.Settings()
     attrs = ['name', 'active', 'scen_type']
@@ -507,6 +507,13 @@ def py_to_js_scen(py_scen, prog_names):
         this_spec = {}
         this_spec['name'] = prog_name
         this_spec['included'] = True if prog_name in py_scen.prog_set else False
+        
+        # Trying to get at the elusive Program.base_cov and Program.base_spend attributes
+        print '>>>>>>>>>>>>>>>>.!'
+        print proj.model(-1).prog_info.programs
+        this_spec['basecov'] = 0.0
+        this_spec['basespend'] = 0.0
+        
         this_spec['vals'] = []
         if this_spec['included']:
             count += 1
@@ -546,7 +553,7 @@ def get_scenario_info(project_id):
     
     scenario_summaries = []
     for py_scen in proj.scens.values():
-        js_scen = py_to_js_scen(py_scen, proj.dataset().prog_names())
+        js_scen = py_to_js_scen(py_scen, proj.dataset().prog_names(), proj)
         scenario_summaries.append(js_scen)
     
     print('JavaScript scenario info:')
