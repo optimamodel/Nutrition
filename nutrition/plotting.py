@@ -71,7 +71,7 @@ def plot_prevs(all_res):
             leglabels.append(res.name)
         # formatting
         sc.SIticks(ax=ax, axis='y')
-        ax.set_ylabel('Percentage')
+#        ax.set_ylabel('Percentage') # Shown as tick labels
         ax.set_ylim([0, ymax + ymax*0.1])
         ax.set_xlabel('Years')
         ax.set_title(utils.relabel(prev))
