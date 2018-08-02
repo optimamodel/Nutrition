@@ -158,6 +158,11 @@ class ChildAgeGroup(AgeGroup):
         for wastingCat in self.ss.wasted_list:
             self.wastingPreventionUpdate[wastingCat] = 1
             self.wastingTreatmentUpdate[wastingCat] = 1
+        self.fromSAMtoMAMupdate = {}
+        self.fromMAMtoSAMupdate = {}
+        for cat in self.ss.wasted_list:
+            self.fromMAMtoSAMupdate[cat] = 1
+            self.fromSAMtoMAMupdate[cat] = 1
 
     ###### POPULATION CALCULATIONS ######
 
@@ -600,7 +605,7 @@ class Children(Population):
                 for program in relev_progs:
                     try:
                         OR = self.default.or_wasting_prog[wastingCat][program][age]
-                    except KeyError: # if, for eg, MAM doesn't have Treatment of SAM key
+                    except Exception: # if, for eg, MAM doesn't have Treatment of SAM key (odict doesn't have keyerror)
                         OR = 1
                     fracCovered = self.previousCov[program]
                     pn, pc = solve_quad(OR, fracCovered, fracThisCatAge)

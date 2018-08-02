@@ -40,6 +40,10 @@ class Program(object):
         self._set_impacted_ages(prog_data.impacted_pop[self.name]) # TODO: This func could contain the info for how many multiples needed for unrestricted population calculation (IYCF)
         self._set_exclusion_deps()
         self._set_threshold_deps()
+    
+    def __repr__(self):
+        output = sc.desc(self)
+        return output
 
     def update_cov(self, cov, spend):
         self.annual_cov = cov

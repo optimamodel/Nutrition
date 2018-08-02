@@ -6,6 +6,9 @@
 // Also, the caller needs to have imported the Spinner.vue PopupSpinner 
 // component and instantiated it.
 
+const vertical_align = 'top'
+const horizontal_align = 'right'
+
 function start(vueInstance) {
   console.log('Starting progress')
   vueInstance.$modal.show('popup-spinner') // Bring up a spinner.
@@ -21,8 +24,8 @@ function succeed(vueInstance, successMessage) {
       message: successMessage,
       icon: 'ti-check',
       type: 'success',
-      verticalAlign: 'top',
-      horizontalAlign: 'center'
+      verticalAlign: vertical_align,
+      horizontalAlign: horizontal_align,
     })
   }  
 }
@@ -36,8 +39,8 @@ function fail(vueInstance, failMessage) {
       message: failMessage,
       icon: 'ti-face-sad',
       type: 'warning',
-      verticalAlign: 'top',
-      horizontalAlign: 'center'
+      verticalAlign: vertical_align,
+      horizontalAlign: horizontal_align,
     })
   }  
 }
@@ -48,8 +51,8 @@ function successPopup(vueInstance, successMessage) {
     message: successMessage,
     icon: 'ti-check',
     type: 'success',
-    verticalAlign: 'top',
-    horizontalAlign: 'center'
+    verticalAlign: vertical_align,
+    horizontalAlign: horizontal_align,
   })        
 }
 
@@ -59,8 +62,8 @@ function failurePopup(vueInstance, failMessage) {
     message: failMessage,
     icon: 'ti-face-sad',
     type: 'warning',
-    verticalAlign: 'top',
-    horizontalAlign: 'center'
+    verticalAlign: vertical_align,
+    horizontalAlign: horizontal_align,
   })         
 }
 
