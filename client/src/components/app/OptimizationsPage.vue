@@ -1,7 +1,7 @@
 <!--
 Define equity
 
-Last update: 2018-08-01
+Last update: 2018-08-02
 -->
 
 <template>
@@ -43,7 +43,8 @@ Last update: 2018-08-01
 
 
       <modal name="add-optim"
-             height="auto"
+             height="auto" 
+             :scrollable="true"
              :classes="['v--modal', 'vue-dialog']"
              :width="width"
              :pivot-y="0.3"
@@ -75,6 +76,26 @@ Last update: 2018-08-01
                    class="txbox"
                    v-model="defaultOptim.add_funds"/><br>
           </div>
+          
+          <table class="table table-bordered table-hover table-striped" style="width: 100%">
+            <thead>
+            <tr>
+              <th>Program name</th>
+              <th>Include?</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="prog_spec in defaultOptim.spec">
+              <td>
+                {{ prog_spec.name }}
+              </td>
+              <td>
+                <input type="checkbox" v-model="prog_spec.included"/>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+            
           <div style="text-align:justify">
             <button @click="addOptim()" class='btn __green' style="display:inline-block">
               Save optimization
