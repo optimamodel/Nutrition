@@ -159,7 +159,7 @@ def plot_alloc(all_res):
             pos = res.mult if res.mult else res.name
             xlabs.append(utils.relabel(pos))
             # adjust spending so does not display reference spending
-            alloc = prog.annual_spend[1] - ref_spend[i] # spending is same after first year in optimization
+            alloc = res.programs[i].annual_spend[1] - ref_spend[i] # spending is same after first year in optimization
             # scale for axis
             alloc /= scale
             y = np.append(y, alloc)
