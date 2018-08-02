@@ -80,9 +80,10 @@ Last update: 2018-08-01
                    class="txbox"
                    v-model="defaultScen.name"/><br>
             Scenario type:<br>
-            <input type="text"
-                   class="txbox"
-                   v-model="defaultScen.scen_type"/><br>
+            <select v-model="defaultScen.scen_type">
+              <option>coverage</option>
+              <option>budget</option>
+            </select><br><br>                   
             <table class="table table-bordered table-hover table-striped" style="width: 100%">
               <thead>
               <tr>
