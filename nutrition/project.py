@@ -122,21 +122,24 @@ class Project(object):
             del tmpproject # Don't need it hanging around any more
         return fullpath
 
-    def write_results(self, filename=None, keys=None):
+    def write_results(self, filename=None, folder=None, keys=None):
         outcomes = default_trackers()
         labs = pretty_labels()
         headers = [labs[out] for out in outcomes]
-        if keys is None: keys = self.scens.keys()
+        if keys is None: keys = self.results.keys()
         keys = sc.promotetolist(keys)
         if filename is None: filename = 'outputs.xlsx'
-        if 'xlsx' not in filename: filename += 'xlsx'
+        filepath = sc.makefilepath(filename=filename, folder=folder, ext='xlsx', default='%s outputs.xlsx' % self.name)
         outputs = []
         for key in keys:
-            res = self.result(key)
-            out = res.get_outputs(outcomes, seq=False)
-            outputs.append([res.name] +out) # gets all outputs
-        data = [['Scenario'] + headers] + outputs
+            reslist = self.result(key)
+            reslist = sc.promotetolist(reslist)
+            for res in reslist:
+                out = res.get_outputs(outcomes, seq=False)
+                outputs.append([res.name] + out) # gets all outputs
+        data = [['Result name'] + headers] + outputs
         sc.export_xlsx(filename=filename, data=data)
+        return filepath
 
     def add(self, name, item, what=None):
         """ Add an entry to a structure list """
