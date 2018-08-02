@@ -104,8 +104,8 @@ def plot_outputs(all_res, seq, name):
             bar = ax.bar(xpos, output, width=width)
             bars.append(bar)
         if seq:
-#            ax.set_xticks(years+offset/2.)
-#            ax.set_xticklabels(years)
+            ax.set_xticks(years+offset/2.)
+            ax.set_xticklabels(years)
             ax.set_xlabel('Years')
         else:
             ax.set_xticks([])
