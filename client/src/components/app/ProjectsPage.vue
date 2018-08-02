@@ -11,7 +11,7 @@ Last update: 2018-07-31
       <div class="ControlsRow">
         <button class="btn __blue" @click="addDemoProject">Create demo project</button>
         &nbsp; &nbsp;
-        <button class="btn __blue" @click="createNewProjectModal">Create blank project</button>
+        <button class="btn __blue" @click="createNewProjectModal">Create new project</button>
         &nbsp; &nbsp;
         <button class="btn __blue" @click="uploadProjectFromFile">Upload project from file</button>
         &nbsp; &nbsp;
@@ -136,22 +136,10 @@ Last update: 2018-07-31
           <input type="text"
                  class="txbox"
                  v-model="proj_name"/><br>
-          Number of populations:<br>
-          <input type="text"
-                 class="txbox"
-                 v-model="num_pops"/><br>
-          First year for data entry:<br>
-          <input type="text"
-                 class="txbox"
-                 v-model="data_start"/><br>
-          Final year for data entry:<br>
-          <input type="text"
-                 class="txbox"
-                 v-model="data_end"/><br>
         </div>
-        <div style="text-align:justify">
+        <div style="text-align:center">
           <button @click="createNewProject()" class='btn __green' style="display:inline-block">
-            Create project and download data entry spreadsheet
+            Create project
           </button>
 
           <button @click="$modal.hide('create-project')" class='btn __red' style="display:inline-block">
@@ -161,7 +149,7 @@ Last update: 2018-07-31
       </div>
 
     </modal>
-    
+
     <!-- Popup spinner -->
     <popup-spinner></popup-spinner> 
     
@@ -349,7 +337,7 @@ export default {
       status.start(this)
       
       // Have the server create a new project.
-      rpcservice.rpcDownloadCall('create_new_project', [this.$store.state.currentUser.UID, this.proj_name, this.num_pops, this.data_start, this.data_end])
+      rpcservice.rpcDownloadCall('create_new_project', [this.$store.state.currentUser.UID, this.proj_name])
       .then(response => {
         // Update the project summaries so the new project shows up on the list.
         // Note: There's no easy way to get the new project UID to tell the 
@@ -362,7 +350,7 @@ export default {
       })
       .catch(error => {
         // Indicate failure.
-        status.fail(this, 'Could not add new project')    
+        status.fail(this, 'Could not add new project')
       })
     },
 
