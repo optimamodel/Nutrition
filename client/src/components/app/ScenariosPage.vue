@@ -45,9 +45,10 @@ Last update: 2018-08-02
       </table>
 
       <div>
-        <button class="btn __blue" :disabled="!scenariosLoaded" @click="addScenarioModal('coverage')">Add coverage scenario</button>
-        <button class="btn __blue" :disabled="!scenariosLoaded" @click="addScenarioModal('budget')">Add budget scenario</button>        
         <button class="btn __green" :disabled="!scenariosLoaded" @click="runScenarios()">Run scenarios</button>
+        <button class="btn __blue" :disabled="!scenariosLoaded" @click="addScenarioModal('coverage')">Add coverage scenario</button>
+        <button class="btn __blue" :disabled="!scenariosLoaded" @click="addScenarioModal('budget')">Add budget scenario</button>
+        <button class="btn" @click="exportResults()">Export results</button>
         <button class="btn" :disabled="!scenariosLoaded" @click="clearGraphs()">Clear graphs</button>
       </div>
       <br>
@@ -76,12 +77,18 @@ Last update: 2018-08-02
             Add/edit {{ modalScenarioType }} scenario
           </div>
           <div class="dialog-c-text">
-            Scenario name:<br>
+            <b>Scenario name:</b><br>
             <input type="text"
                    class="txbox"
-                   v-model="defaultScen.name"/><br>              
+                   v-model="defaultScen.name"/><br>
             <table class="table table-bordered table-hover table-striped" style="width: 100%">
               <thead>
+              <tr>
+                <th colspan=100><div class="dialog-header">
+                  <span v-if="modalScenarioType==='coverage'">Program coverages (%)</span>
+                  <span v-else>Program spending (US$)</span>
+                </div></th>
+              </tr>
               <tr>
                 <th>Name</th>
                 <th>Include?</th>
@@ -90,26 +97,27 @@ Last update: 2018-08-02
               </thead>
               <tbody>
               <tr v-for="prog_spec in defaultScen.spec">
-                <td>
+                <td style="min-width:200px">
                   {{ prog_spec.name }}
                 </td>
-                <td>
+                <td style="text-align: center">
                   <input type="checkbox" v-model="prog_spec.included"/>
                 </td>
                 <td v-for="(val, index) in prog_spec.vals">
                   <input type="text"
                          class="txbox"
+                         style="text-align: right"
                          v-model="prog_spec.vals[index]"/>
                 </td>
               </tr>
               </tbody>
             </table>
           </div>
-          <div style="text-align:justify">
+          <div style="text-align:center">
             <button @click="addScenario()" class='btn __green' style="display:inline-block">
               Save scenario
             </button>
-
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             <button @click="$modal.hide('add-scenario')" class='btn __red' style="display:inline-block">
               Cancel
             </button>
@@ -136,6 +144,10 @@ Last update: 2018-08-02
   import Vue from 'vue';
   import PopupSpinner from './Spinner.vue'
 
+  const FLOAT_FORMATTER = d3.format('.0f');
+  const PERCENT_FORMATTER = (d) => d3.format('.1%')(d / 100);
+  const SI_FORMATTER = (d) => d3.format('.2s')(d);
+
   export default {
     name: 'ScenariosPage',
     
@@ -151,7 +163,16 @@ Last update: 2018-08-02
         defaultScenYears: [],
         modalScenarioType: 'coverage', 
         graphData: [],
-        scenariosLoaded: false        
+        scenariosLoaded: false,
+        graphFormatters: [
+          {x: FLOAT_FORMATTER, xTicks: 6, y: PERCENT_FORMATTER, yTicks: null},
+          {x: FLOAT_FORMATTER, xTicks: 6, y: PERCENT_FORMATTER, yTicks: null},
+          {x: FLOAT_FORMATTER, xTicks: 6, y: PERCENT_FORMATTER, yTicks: null},
+          {x: FLOAT_FORMATTER, xTicks: 6, y: SI_FORMATTER, yTicks: null},
+          {x: FLOAT_FORMATTER, xTicks: 6, y: SI_FORMATTER, yTicks: null},
+          {x: FLOAT_FORMATTER, xTicks: 6, y: SI_FORMATTER, yTicks: null},
+        ],
+        defaultFormatter: {x: FLOAT_FORMATTER, xTicks: null, y: SI_FORMATTER, yTicks: null},
       }
     },
 
@@ -397,13 +418,18 @@ Last update: 2018-08-02
                 div.removeChild(div.firstChild);
               }
               try {
-                mpld3.draw_figure(divlabel, response.data.graphs[index], function(fig, element) {
-                  fig.setXTicks(6, function(d) { return d3.format('.0f')(d); });
-                  fig.setYTicks(null, function(d) { return d3.format('.2s')(d); });
-                })     
+                mpld3.draw_figure(divlabel, response.data.graphs[index], (fig, element) => {
+                  var formatters = this.defaultFormatter
+                  if (index<this.graphFormatters.length) {
+                    formatters = this.graphFormatters[index];
+                  }
+                  fig.setXTicks(formatters.xTicks, formatters.x);
+                  fig.setYTicks(formatters.yTicks, formatters.y);
+                });
               }
               catch (err) {
-                console.log('failled:' + err.message);
+                console.log('graphs failed failed:' + err.message);
+                status.fail(this, 'Error creating graphs: ' + err.message)
               }
             }
             
@@ -442,7 +468,16 @@ Last update: 2018-08-02
             div.removeChild(div.firstChild);
           }
         }
-      }
+      },
+
+      exportResults() {
+        console.log('exportResults() called')
+        rpcservice.rpcDownloadCall('export_results', [this.projectID()]) // Make the server call to download the framework to a .prj file.
+          .catch(error => {
+            // Failure popup.
+            status.failurePopup(this, 'Could not export results: ' + error.message)
+          })
+      },
     }
   }
 </script>

@@ -1,4 +1,4 @@
-<!--
+f<!--
 Define equity
 
 Last update: 2018-08-02
@@ -38,6 +38,7 @@ Last update: 2018-08-02
 
       <div>
         <button class="btn __blue" @click="addOptimModal()">Add optimization</button>
+        <button class="btn" @click="exportResults()">Export results</button>
         <button class="btn" @click="clearGraphs()">Clear graphs</button>
       </div>
 
@@ -67,10 +68,11 @@ Last update: 2018-08-02
                 {{ obj }}
               </option>
             </select><br><br>
-            Multipliers:<br>
+            Budget multipliers (1 = current budget):<br>
             <input type="text"
                    class="txbox"
                    v-model="defaultOptim.mults"/><br>
+            <input type="checkbox" v-model="defaultOptim.fix_curr"/> Existing spending cannot be reallocated<br><br>
             Additional funds (US$):<br>
             <input type="text"
                    class="txbox"
@@ -81,7 +83,7 @@ Last update: 2018-08-02
             <thead>
             <tr>
               <th>Program name</th>
-              <th>Include?</th>
+              <th style="text-align: center">Include?</th>
             </tr>
             </thead>
             <tbody>
@@ -89,18 +91,18 @@ Last update: 2018-08-02
               <td>
                 {{ prog_spec.name }}
               </td>
-              <td>
+              <td style="text-align: center">
                 <input type="checkbox" v-model="prog_spec.included"/>
               </td>
             </tr>
             </tbody>
           </table>
             
-          <div style="text-align:justify">
+          <div style="text-align:center">
             <button @click="addOptim()" class='btn __green' style="display:inline-block">
               Save optimization
             </button>
-
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             <button @click="$modal.hide('add-optim')" class='btn __red' style="display:inline-block">
               Cancel
             </button>
@@ -109,7 +111,7 @@ Last update: 2018-08-02
       </modal>
     
       <div>
-        <div v-for="index in placeholders" :id="'fig'+index" style="width:650px; float:left;">
+        <div v-for="index in placeholders" :id="'fig'+index" style="max-width:650px; float:left;">
           <!--mpld3 content goes here-->
         </div>
       </div>
@@ -132,6 +134,10 @@ Last update: 2018-08-02
   import Vue from 'vue';
   import PopupSpinner from './Spinner.vue'
 
+  const FLOAT_FORMATTER = d3.format('.0f');
+  const PERCENT_FORMATTER = (d) => d3.format('.1%')(d / 100);
+  const SI_FORMATTER = (d) => d3.format('.2s')(d);
+
   export default {
     name: 'OptimizationPage',
     
@@ -145,6 +151,15 @@ Last update: 2018-08-02
         optimSummaries: [],
         defaultOptim: [],
         objectiveOptions: [],
+        graphFormatters: [
+          {x: FLOAT_FORMATTER, xTicks: 6, y: PERCENT_FORMATTER, yTicks: null},
+          {x: FLOAT_FORMATTER, xTicks: 6, y: PERCENT_FORMATTER, yTicks: null},
+          {x: FLOAT_FORMATTER, xTicks: 6, y: PERCENT_FORMATTER, yTicks: null},
+          {x: FLOAT_FORMATTER, xTicks: 6, y: SI_FORMATTER, yTicks: null},
+          {x: FLOAT_FORMATTER, xTicks: 6, y: SI_FORMATTER, yTicks: null},
+          {x: FLOAT_FORMATTER, xTicks: 6, y: SI_FORMATTER, yTicks: null},
+        ],
+        defaultFormatter: {x: FLOAT_FORMATTER, xTicks: null, y: SI_FORMATTER, yTicks: null},
       }
     },
 
@@ -207,7 +222,7 @@ Last update: 2018-08-02
         .then(response => {
           this.defaultOptim = response.data // Set the optimization to what we received.
           this.objectiveOptions = response.data.objective_options
-          console.log('TEMPPPPPPP these are the options:'+this.objectiveOptions);
+          console.log('These are the options:'+this.objectiveOptions);
         })
         .catch(error => {
           // Failure popup.
@@ -393,14 +408,19 @@ Last update: 2018-08-02
               while (div.firstChild) {
                 div.removeChild(div.firstChild);
               }
-              try {  
-                mpld3.draw_figure(divlabel, this.graphData[index], function(fig, element) {
-                  fig.setXTicks(6, function(d) { return d3.format('.0f')(d); });
-                  fig.setYTicks(null, function(d) { return d3.format('.2s')(d); });
-                })
+              try {
+                mpld3.draw_figure(divlabel, response.data.result.graphs[index], (fig, element) => {
+                  var formatters = this.defaultFormatter
+                  if (index<this.graphFormatters.length) {
+                    formatters = this.graphFormatters[index];
+                  }
+                  fig.setXTicks(formatters.xTicks, formatters.x);
+                  fig.setYTicks(formatters.yTicks, formatters.y);
+                });
               }
               catch (err) {
-                console.log('failled:' + err.message);
+                console.log('Graphs failed:' + err.message);
+                status.fail(this, 'Error creating graphs: ' + err.message)
               }
             }
             
@@ -457,7 +477,16 @@ Last update: 2018-08-02
             div.removeChild(div.firstChild);
           }
         }
-      }
+      },
+
+      exportResults() {
+        console.log('exportResults() called')
+        rpcservice.rpcDownloadCall('export_results', [this.projectID()]) // Make the server call to download the framework to a .prj file.
+          .catch(error => {
+            // Failure popup.
+            status.failurePopup(this, 'Could not export results: ' + error.message)
+          })
+      },
       
     }
   }

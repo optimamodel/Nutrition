@@ -9,7 +9,7 @@ from .data import Dataset
 from .scenarios import Scen, run_scen
 from .plotting import make_plots
 from .model import Model
-from .utils import trace_exception
+from .utils import trace_exception, default_trackers, pretty_labels
 from .demo import demo_scens, demo_optims
 from .settings import ONException
 
@@ -121,6 +121,25 @@ class Project(object):
             sc.saveobj(fullpath, tmpproject, verbose=verbose) # Save it to file
             del tmpproject # Don't need it hanging around any more
         return fullpath
+
+    def write_results(self, filename=None, folder=None, keys=None):
+        outcomes = default_trackers()
+        labs = pretty_labels()
+        headers = [labs[out] for out in outcomes]
+        if keys is None: keys = self.results.keys()
+        keys = sc.promotetolist(keys)
+        if filename is None: filename = 'outputs.xlsx'
+        filepath = sc.makefilepath(filename=filename, folder=folder, ext='xlsx', default='%s outputs.xlsx' % self.name)
+        outputs = []
+        for key in keys:
+            reslist = self.result(key)
+            reslist = sc.promotetolist(reslist)
+            for res in reslist:
+                out = res.get_outputs(outcomes, seq=False)
+                outputs.append([res.name] + out) # gets all outputs
+        data = [['Result name'] + headers] + outputs
+        sc.export_xlsx(filename=filename, data=data)
+        return filepath
 
     def add(self, name, item, what=None):
         """ Add an entry to a structure list """

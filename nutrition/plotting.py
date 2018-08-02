@@ -1,6 +1,5 @@
 import pylab as pl
 import numpy as np
-import matplotlib.ticker as tk
 import sciris.core as sc
 import utils
 import scipy.interpolate
@@ -8,9 +7,10 @@ import scipy.interpolate
 # Choose where the legend appears: outside right or inside right
 for_frontend = True
 if for_frontend:
-    legend_loc = {'bbox_to_anchor':(1,0.8)}
+    legend_loc = {'bbox_to_anchor':(1,1.0)}
     legend_loc_prev = {'loc':'best'} # No idea why this has to be different, but it does
-    ax_size = [0.2,0.12,0.50,0.75]
+    fig_size = (8,3)
+    ax_size = [0.2,0.12,0.40,0.75]
 else:
     legend_loc = {'loc':'right'}
     ax_size = [0.2,0.10,0.65,0.75]
@@ -52,7 +52,7 @@ def plot_prevs(all_res):
     lines = []
     figs = sc.odict()
     for i, prev in enumerate(prevs):
-        fig = pl.figure()
+        fig = pl.figure(figsize=fig_size)
         ax = fig.add_axes(ax_size)
         ymax = 0
         leglabels = []
@@ -70,11 +70,11 @@ def plot_prevs(all_res):
             lines.append(line)
             leglabels.append(res.name)
         # formatting
-        ax.yaxis.set_major_formatter(tk.FormatStrFormatter('%.1f'))
-        ax.set_ylabel(utils.relabel(prev))
+        sc.SIticks(ax=ax, axis='y')
+#        ax.set_ylabel('Percentage') # Shown as tick labels
         ax.set_ylim([0, ymax + ymax*0.1])
         ax.set_xlabel('Years')
-        # ax.set_title('Risk prevalences') # todo: need a better title
+        ax.set_title(utils.relabel(prev))
         ax.legend(lines, [res.name for res in all_res], **legend_loc_prev)
         figs['prevs_%0i'%i] = fig
     return figs
@@ -83,20 +83,23 @@ def plot_outputs(all_res, seq, name):
     outcomes = ['thrive', 'child_deaths']
     width = 0.15 if seq else 0.35
     figs = sc.odict()
+    scale = 1e1 # scales for formatting
     baseres = all_res[0]
     years = np.array(baseres.years) # assume these scenarios over same time horizon
     for i, outcome in enumerate(outcomes):
-        fig = pl.figure()
+        fig = pl.figure(figsize=fig_size)
         ax = fig.add_axes(ax_size)
         ymax = 0
         perchange = []
         bars = []
         offset = -width
-        baseout = baseres.get_outputs(outcome, seq=seq)[0]
-        for res in all_res:
-            offset += width
+        baseout = baseres.get_outputs(outcome, seq=seq)[0] / scale
+        offsets = np.arange(len(all_res)+1)*width # Calculate offset so tick is in the center of the bars
+        offsets -= offsets.mean() - 0.5*width
+        for r,res in enumerate(all_res):
+            offset = offsets[r]
             xpos = years + offset if seq else offset
-            output = res.get_outputs(outcome, seq=seq)[0]
+            output = res.get_outputs(outcome, seq=seq)[0] / scale
             thimax = max(output)
             if thimax > ymax: ymax = thimax
             change = round_elements([utils.get_change(base, out) for out,base in zip(output, baseout)], dec=1)
@@ -104,10 +107,12 @@ def plot_outputs(all_res, seq, name):
             bar = ax.bar(xpos, output, width=width)
             bars.append(bar)
         if seq:
-#            ax.set_xticks(years+offset/2.)
-#            ax.set_xticklabels(years)
+            # ax.set_xticks(years+offset/2.)
+            # ax.set_xticklabels(years)
             ax.set_xlabel('Years')
+            title = 'Annual'
         else:
+            title = 'Cumulative'
             ax.set_xticks([])
             # display percentage change above bars
             for j, bar in enumerate(bars[1:],1):
@@ -117,11 +122,12 @@ def plot_outputs(all_res, seq, name):
                     ax.text(rect.get_x() + rect.get_width() / 2., height,'{}%'.format(change), ha='center',
                                 va='bottom')
         # formatting
+        title += ' %s \n %s-%s'%(utils.relabel(outcome).lower(), baseres.years[0], baseres.years[-1])
+        sc.SIticks(ax=ax, axis='y')
         ax.set_ylim([0, ymax + ymax * .1])
-        lab = utils.relabel(outcome)
-        ax.set_ylabel(lab)
+        ax.set_ylabel('Number')
         ax.legend(bars, [res.name for res in all_res], ncol=1, **legend_loc)
-        ax.set_title(lab) # todo: how do we want to label this?
+        ax.set_title(title)
         figs['%s_out_%0i'%(name, i)] = fig
     return figs
 
@@ -131,8 +137,8 @@ def plot_alloc(all_res):
      as assumed structure for spending is different """
     #initialize
     width = 0.35
-    mag = 1e6
-    fig = pl.figure()
+    scale = 1e1 # 1e6
+    fig = pl.figure(figsize=fig_size)
     ax = fig.add_axes(ax_size)
     figs = sc.odict()
     try:
@@ -155,28 +161,38 @@ def plot_alloc(all_res):
             # adjust spending so does not display reference spending
             alloc = res.programs[i].annual_spend[1] - ref_spend[i] # spending is same after first year in optimization
             # scale for axis
-            alloc /= mag
+            alloc /= scale
             y = np.append(y, alloc)
         bar = ax.bar(x, y, width=width, bottom=bottom, color=colors[i])
         bars.append(bar)
         bottom += y
     ymax = max(bottom)
-    # formatting
-    if ref.obj is not None: title = utils.relabel(ref.obj).lower()
-    else: title = '' # WARNING, should probably fix this properly
-    ax.set_title('To optimize the \n %s %s-%s'%(title, ref.years[0], ref.years[-1]))
+    ax.set_title('Optimal allocation, %s-%s'% (ref.years[0], ref.years[-1]))
     ax.set_xticks(x)
     ax.set_xticklabels(xlabs)
     ax.set_ylim((0, ymax+ymax*.1))
-    ax.set_ylabel('Annual spending on programs (million US$)')
+    ax.set_ylabel('Annual spending on programs (US$)')
     try:
         valuestr = int(str(res.prog_info.free)[:2])
         string = 'Total available budget (as a multiple of US$%sM)'%valuestr
     except:
         string = 'Total available budget (relative to %s)' % str(res.prog_info.free)
     ax.set_xlabel(string)
-    ax.yaxis.set_major_formatter(tk.FormatStrFormatter('%3.0f'))
-    ax.legend(bars, [prog.name for prog in ref.programs], **legend_loc)
+    sc.SIticks(ax=ax, axis='y')
+    nprogs = len(ref.programs)
+    labelspacing = 0.1
+    columnspacing = 0.1
+    fontsize = None
+    ncol = 1
+    if nprogs>10:
+        fontsize = 8
+    if nprogs>12:
+        fontsize = 6
+    if nprogs>24:
+        ncol = 2
+    customizations = {'fontsize':fontsize, 'labelspacing':labelspacing, 'ncol':ncol, 'columnspacing':columnspacing}
+    customizations.update(legend_loc)
+    ax.legend(bars, [prog.name for prog in ref.programs], **customizations)
     figs['alloc'] = fig
     return figs
 

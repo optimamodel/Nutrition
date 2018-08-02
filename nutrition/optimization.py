@@ -134,7 +134,7 @@ class Optim(object):
                   '\n flexible funds: %s \n impactful progs: %s' % (obj, free, numprogs))
             best_alloc = fixed
         # generate results
-        name = '{}_{}'.format(self.name, mult)
+        name = '%s (x%s)' % (self.name, mult)
         scen = Scen(name=name, model_name=self.model_name, scen_type='budget', covs=best_alloc, prog_set=self.prog_set)
         res = run_scen(scen, model, obj=obj, mult=mult)
         return res
