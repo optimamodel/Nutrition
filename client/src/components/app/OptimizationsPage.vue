@@ -207,7 +207,7 @@ Last update: 2018-08-02
         .then(response => {
           this.defaultOptim = response.data // Set the optimization to what we received.
           this.objectiveOptions = response.data.objective_options
-          console.log('TEMPPPPPPP these are the options:'+this.objectiveOptions);
+          console.log('These are the options:'+this.objectiveOptions);
         })
         .catch(error => {
           // Failure popup.
