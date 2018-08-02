@@ -47,7 +47,8 @@ Last update: 2018-08-02
       <div>
         <button class="btn __green" :disabled="!scenariosLoaded" @click="runScenarios()">Run scenarios</button>
         <button class="btn __blue" :disabled="!scenariosLoaded" @click="addScenarioModal('coverage')">Add coverage scenario</button>
-        <button class="btn __blue" :disabled="!scenariosLoaded" @click="addScenarioModal('budget')">Add budget scenario</button>        
+        <button class="btn __blue" :disabled="!scenariosLoaded" @click="addScenarioModal('budget')">Add budget scenario</button>
+        <button class="btn" @click="exportResults()">Export results</button>
         <button class="btn" :disabled="!scenariosLoaded" @click="clearGraphs()">Clear graphs</button>
       </div>
       <br>
@@ -467,7 +468,16 @@ Last update: 2018-08-02
             div.removeChild(div.firstChild);
           }
         }
-      }
+      },
+
+      exportResults() {
+        console.log('exportResults() called')
+        rpcservice.rpcDownloadCall('export_results', [this.projectID()]) // Make the server call to download the framework to a .prj file.
+          .catch(error => {
+            // Failure popup.
+            status.failurePopup(this, 'Could not export results: ' + error.message)
+          })
+      },
     }
   }
 </script>
