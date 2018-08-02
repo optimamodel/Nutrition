@@ -677,8 +677,9 @@ def objective_mapping(key=None, val=None):
         return None
 
 
-def py_to_js_optim(py_optim, prog_names):
+def py_to_js_optim(py_optim, proj):
     ''' Convert a Python to JSON representation of an optimization '''
+    prog_names = proj.dataset().prog_names()
     js_optim = {}
     attrs = ['name', 'mults', 'add_funds', 'fix_curr']
     for attr in attrs:
@@ -728,7 +729,7 @@ def get_optim_info(project_id):
     
     optim_summaries = []
     for py_optim in proj.optims.values():
-        js_optim = py_to_js_optim(py_optim, proj.dataset().prog_names())
+        js_optim = py_to_js_optim(py_optim, proj)
         optim_summaries.append(js_optim)
     
     print('JavaScript optimization info:')
@@ -764,7 +765,7 @@ def get_default_optim(project_id):
     proj = load_project(project_id, raise_exception=True)
     
     py_optim = proj.demo_optims(doadd=False)[0]
-    js_optim = py_to_js_optim(py_optim, proj.dataset().prog_names())
+    js_optim = py_to_js_optim(py_optim, proj)
     js_optim['objective_options'] = objective_mapping()
     
     print("TEST")
