@@ -71,10 +71,10 @@ def plot_prevs(all_res):
             leglabels.append(res.name)
         # formatting
         ax.yaxis.set_major_formatter(tk.FormatStrFormatter('%.1f'))
-        ax.set_ylabel(utils.relabel(prev))
+        ax.set_ylabel('Percentage')
         ax.set_ylim([0, ymax + ymax*0.1])
         ax.set_xlabel('Years')
-        # ax.set_title('Risk prevalences') # todo: need a better title
+        ax.set_title(utils.relabel(prev))
         ax.legend(lines, [res.name for res in all_res], **legend_loc_prev)
         figs['prevs_%0i'%i] = fig
     return figs
@@ -83,6 +83,7 @@ def plot_outputs(all_res, seq, name):
     outcomes = ['thrive', 'child_deaths']
     width = 0.15 if seq else 0.35
     figs = sc.odict()
+    scale = 1e6 # scales for formatting
     baseres = all_res[0]
     years = np.array(baseres.years) # assume these scenarios over same time horizon
     for i, outcome in enumerate(outcomes):
@@ -92,11 +93,11 @@ def plot_outputs(all_res, seq, name):
         perchange = []
         bars = []
         offset = -width
-        baseout = baseres.get_outputs(outcome, seq=seq)[0]
+        baseout = baseres.get_outputs(outcome, seq=seq)[0] / scale
         for res in all_res:
             offset += width
             xpos = years + offset if seq else offset
-            output = res.get_outputs(outcome, seq=seq)[0]
+            output = res.get_outputs(outcome, seq=seq)[0] / scale
             thimax = max(output)
             if thimax > ymax: ymax = thimax
             change = round_elements([utils.get_change(base, out) for out,base in zip(output, baseout)], dec=1)
@@ -104,10 +105,12 @@ def plot_outputs(all_res, seq, name):
             bar = ax.bar(xpos, output, width=width)
             bars.append(bar)
         if seq:
-            ax.set_xticks(years+offset/2.)
-            ax.set_xticklabels(years)
+            # ax.set_xticks(years+offset/2.)
+            # ax.set_xticklabels(years)
             ax.set_xlabel('Years')
+            title = 'Cumulative'
         else:
+            title = 'Annual'
             ax.set_xticks([])
             # display percentage change above bars
             for j, bar in enumerate(bars[1:],1):
@@ -117,11 +120,11 @@ def plot_outputs(all_res, seq, name):
                     ax.text(rect.get_x() + rect.get_width() / 2., height,'{}%'.format(change), ha='center',
                                 va='bottom')
         # formatting
+        title += ' %s \n %s-%s'%(utils.relabel(outcome).lower(), baseres.years[0], baseres.years[-1])
         ax.set_ylim([0, ymax + ymax * .1])
-        lab = utils.relabel(outcome)
-        ax.set_ylabel(lab)
+        ax.set_ylabel('Number (millions)')
         ax.legend(bars, [res.name for res in all_res], ncol=1, **legend_loc)
-        ax.set_title(lab) # todo: how do we want to label this?
+        ax.set_title(title)
         figs['%s_out_%0i'%(name, i)] = fig
     return figs
 

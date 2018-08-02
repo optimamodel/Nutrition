@@ -526,6 +526,6 @@ class Model:
             return outlist
         else:
             if 'prev' in outcome: # only want final entry
-                return [outlist[-1]]
+                return np.array([outlist[-1]])
             else: # want total
-                return [sum(outlist)]
+                return np.array([sum(outlist)])
