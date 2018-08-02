@@ -158,6 +158,11 @@ class ChildAgeGroup(AgeGroup):
         for wastingCat in self.ss.wasted_list:
             self.wastingPreventionUpdate[wastingCat] = 1
             self.wastingTreatmentUpdate[wastingCat] = 1
+        self.fromSAMtoMAMupdate = {}
+        self.fromMAMtoSAMupdate = {}
+        for cat in self.ss.wasted_list:
+            self.fromMAMtoSAMupdate[cat] = 1
+            self.fromSAMtoMAMupdate[cat] = 1
 
     ###### POPULATION CALCULATIONS ######
 
