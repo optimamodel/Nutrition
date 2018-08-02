@@ -20,7 +20,6 @@ Last update: 2018-07-31
 
     <div class="PageSection"
          v-if="projectSummaries.length > 0">
-      <!--<h2>Manage projects</h2>-->
 
       <input type="text"
              class="txbox"
@@ -90,13 +89,13 @@ Last update: 2018-07-31
               {{ projectSummary.project.name }}
             </td>
             <td>
+              <!-- TO_PORT 2018-08-02-->
               <button class="btn __green" :disabled="projectLoaded(projectSummary.project.id)" @click="openProject(projectSummary.project.id)">
                 <span v-if="projectLoaded(projectSummary.project.id)">Selected</span>
                 <span v-else>Open</span>
 
               </button>
             </td>
-<!--            <td>{{ projectSummary.country }}</td> -->
             <td>{{ projectSummary.project.creationTime.toUTCString() }}</td>
             <td>{{ projectSummary.project.updatedTime ? projectSummary.project.updatedTime.toUTCString():
               'No modification' }}</td>
