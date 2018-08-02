@@ -8,7 +8,7 @@ import scipy.interpolate
 # Choose where the legend appears: outside right or inside right
 for_frontend = True
 if for_frontend:
-    legend_loc = {'bbox_to_anchor':(1,0.8)}
+    legend_loc = {'bbox_to_anchor':(1,1.0)}
     legend_loc_prev = {'loc':'best'} # No idea why this has to be different, but it does
     fig_size = (8,3)
     ax_size = [0.2,0.12,0.40,0.75]
@@ -183,7 +183,9 @@ def plot_alloc(all_res):
         string = 'Total available budget (relative to %s)' % str(res.prog_info.free)
     ax.set_xlabel(string)
     sc.SIticks(ax=ax, axis='y')
-    ax.legend(bars, [prog.name for prog in ref.programs], **legend_loc)
+    fontsize = 6
+    labelspacing = 0.1
+    ax.legend(bars, [prog.name for prog in ref.programs], fontsize=fontsize, labelspacing=labelspacing, **legend_loc)
     figs['alloc'] = fig
     return figs
 
