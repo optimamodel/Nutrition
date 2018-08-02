@@ -15,7 +15,7 @@ from pprint import pprint
 import mpld3
 import numpy as np
 from matplotlib.pyplot import rc
-rc('font', size=14)
+rc('font', size=12)
 
 import sciris.corelib.fileio as fileio
 import sciris.weblib.user as user
@@ -666,13 +666,32 @@ def run_scenarios(project_id):
 #%% Optimization functions and RPCs
 ##################################################################################
 
+def objective_mapping(key=None, val=None):
+    mapping = sc.odict([
+        ('thrive',       'Maximize alive, non-stunted children'),
+        ('child_deaths', 'Minimize child deaths'),
+        ('stunting_prev','Minimize stunting prevalence'),
+        ('wasting_prev', 'Minimize wasting prevalence'),
+        ('anaemia_prev', 'Minimize anaemia prevalence')
+        ])
+    if key is None and val is None:
+        return mapping.values()
+    elif key is not None:
+        return mapping[key]
+    elif val is not None:
+        return mapping.find(val)
+    else:
+        raise Exception('This is impossible. You are not seeing this.')
+        return None
+
+
 def py_to_js_optim(py_optim, prog_names):
     ''' Convert a Python to JSON representation of an optimization '''
-    attrs = ['name', 'mults', 'add_funds']
     js_optim = {}
+    attrs = ['name', 'mults', 'add_funds', 'fix_curr']
     for attr in attrs:
         js_optim[attr] = getattr(py_optim, attr) # Copy the attributes into a dictionary
-    js_optim['obj'] = py_optim.obj
+    js_optim['obj'] = objective_mapping(key=py_optim.obj)
     js_optim['spec'] = []
     for prog_name in prog_names:
         this_spec = {}
@@ -685,8 +704,10 @@ def py_to_js_optim(py_optim, prog_names):
 def js_to_py_optim(js_optim):
     ''' Convert a JSON to Python representation of an optimization '''
     json = sc.odict()
-    json['name'] = js_optim['name']
-    json['obj'] = js_optim['obj']
+    attrs = ['name', 'fix_curr']
+    for attr in attrs:
+        json[attr] = js_optim[attr]
+    json['obj'] = objective_mapping(val=js_optim['obj'])
     jsm = js_optim['mults']
     if isinstance(jsm, list):
         vals = jsm
@@ -719,7 +740,7 @@ def get_optim_info(project_id):
         optim_summaries.append(js_optim)
     
     print('JavaScript optimization info:')
-    print(optim_summaries)
+    pprint(optim_summaries)
 
     return optim_summaries
 
@@ -752,78 +773,11 @@ def get_default_optim(project_id):
     
     py_optim = proj.demo_optims(doadd=False)[0]
     js_optim = py_to_js_optim(py_optim, proj.dataset().prog_names())
-    js_optim['objective_options'] = ['thrive', 'child_deaths', 'stunting_prev', 'wasting_prev', 'anaemia_prev'] # WARNING, stick allowable optimization options here
+    js_optim['objective_options'] = objective_mapping()
+    
+    print("TEST")
+    print objective_mapping()
     
     print('Created default JavaScript optimization:')
-    print(js_optim)
+    pprint(js_optim)
     return js_optim
-
-
-#@register_RPC(validation_type='nonanonymous user')   
-#def run_optimization(project_id, optim_name):
-#    # Load the projects from the DataStore.
-##    prj.apptasks_load_projects(config)
-#    
-#    print('Running optimization...')
-#    proj = load_project(project_id, raise_exception=True)
-#    
-#    print('Thinking...')
-#    import nutrition.ui as nu
-#    p = nu.demo()
-#    
-#    a = proj.optim()
-#    b = p.optim()
-#    
-#    p.optim().model_name = None
-#    p.optim().prog_set = [p.optim().prog_set[1], p.optim().prog_set[0]]
-#    
-#    for attr in a.__dict__.keys():
-#        print('COMPARING %s' % attr)
-#        a_attr = getattr(a, attr)
-#        b_attr = getattr(b, attr)
-#        print('A: %s' % a_attr)
-#        print('B: %s' % b_attr)
-#        if a_attr == b_attr:
-#            print('(they match)')
-#        else:
-#            print('###########################THEY DO NOT MAAATCH')
-#    
-##    proj = p
-#    
-#    
-#    proj.run_optims(keys=[optim_name], parallel=False)
-#    figs = proj.plot(keys=[optim_name], optim=True) # Only plot allocation
-#    graphs = []
-#    for f,fig in enumerate(figs.values()):
-#        for ax in fig.get_axes():
-#            ax.set_facecolor('none')
-#        graph_dict = mpld3.fig_to_dict(fig)
-#        graphs.append(graph_dict)
-#        print('Converted figure %s of %s' % (f+1, len(figs)))
-#    
-##    print('Saving project...')
-##    save_project(proj) 
-#    
-#    # Return the graphs.
-#    return {'graphs': graphs}
-
-
-#@register_RPC(validation_type='nonanonymous user')    
-#def run_optim(project_id, optim_name):
-#    
-#    print('Running optimization...')
-#    proj = load_project(project_id, raise_exception=True)
-#    
-#    proj.run_optims(keys=[optim_name], parallel=False)
-#    figs = proj.plot(optim=True) # Only plot allocation
-#    graphs = []
-#    for f,fig in enumerate(figs.values()):
-#        for ax in fig.get_axes():
-#            ax.set_facecolor('none')
-#        graph_dict = mpld3.fig_to_dict(fig)
-#        graphs.append(graph_dict)
-#        print('Converted figure %s of %s' % (f+1, len(figs)))
-#    
-#    print('Saving project...')
-#    save_project(proj)    
-#    return {'graphs':graphs}
