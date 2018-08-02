@@ -21,36 +21,34 @@ Last update: 2018-08-02
       <button class="btn" @click="setActive('programs')">Program cost and coverage</button>
       <br><br>
 
-      Placeholder for {{ this.activeScreen }} input table<br><br>
+      <!--Placeholder for {{ this.activeScreen }} input table<br><br>-->
 
-      <!--<table class="table table-bordered table-hover table-striped" style="width: 100%">-->
-        <!--<thead>-->
-        <!--<tr>-->
-          <!--<th>Name</th>-->
-          <!--<th>Type</th>-->
-          <!--<th>Active?</th>-->
-          <!--<th>Actions</th>-->
-        <!--</tr>-->
-        <!--</thead>-->
-        <!--<tbody>-->
-        <!--<tr v-for="scenSummary in scenSummaries">-->
-          <!--<td>-->
-            <!--<b>{{ scenSummary.name }}</b>-->
-          <!--</td>-->
-          <!--<td>-->
-            <!--{{ scenSummary.scen_type }}-->
-          <!--</td>-->
-          <!--<td>-->
-            <!--<input type="checkbox" v-model="scenSummary.active"/>-->
-          <!--</td>-->
-          <!--<td style="white-space: nowrap">-->
-            <!--<button class="btn" @click="editScen(scenSummary)">Edit</button>-->
-            <!--<button class="btn" @click="copyScen(scenSummary)">Copy</button>-->
-            <!--<button class="btn" @click="deleteScen(scenSummary)">Delete</button>-->
-          <!--</td>-->
-        <!--</tr>-->
-        <!--</tbody>-->
-      <!--</table>-->
+      <table class="table table-bordered table-hover table-striped" style="width: 100%">
+        <thead>
+        <tr>
+          <th colspan="6" style="text-align: left">Percentage of children in each breastfeeding category in baseline year (2017)</th>
+        </tr>
+        <tr>
+          <th>Status</th>
+          <th><1 month</th>
+          <th>1-5 months</th>
+          <th>6-11 months</th>
+          <th>12-23 months</th>
+          <th>24-59 months</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="tmpr in tmpRows">
+          <td v-for="tmpc in tmpCols">
+            <input type="text"
+                   class="txbox"
+                   style="text-align: right"
+                   v-model="tmpData[tmpr][tmpc]"/>
+            <!--{{ r }}-->
+          </td>
+        </tr>
+        </tbody>
+      </table>
 
       <div>
         <button class="btn __green" @click="saveChanges()">Save changes</button>
@@ -90,6 +88,12 @@ Last update: 2018-08-02
       return {
         activeScreen: 'breastfeeding',
         screenData: [],
+        tmpData: [['Exclusive', '84.0%', '44.3%', '1.4%', '0.0%', '0.0%'],
+          ['Predominant', '9.2%', '21.7%', '3.3%', '0.1%', '0.0%'],
+          ['Partial', '5.8%', '31.6%', '93.5%', '72.1%', '0.0%'],
+          ['None', '1.0%', '2.4%', '1.9%', '27.8%', '100.0%']],
+        tmpRows: [0,1,2,3],
+        tmpCols: [0,1,2,3,4,5],
       }
     },
 
