@@ -516,7 +516,7 @@ def py_to_js_scen(py_scen, proj, key=None):
             for y in range(len(this_spec['vals'])):
                 if this_spec['vals'][y] is not None:
                     this_spec['vals'][y] = round(100*this_spec['vals'][y]) # Enter to the nearest percentage
-        this_spec['base_cov'] = program.base_cov
+        this_spec['base_cov'] = round(program.base_cov*100) # Convert to percentage
         this_spec['base_spend'] = round(program.base_spend)
         js_scen['spec'].append(this_spec)
         js_scen['t'] = settings.t
