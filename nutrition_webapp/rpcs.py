@@ -11,6 +11,7 @@ Last update: 2018jun04 by cliffk
 import os
 from zipfile import ZipFile
 from flask_login import current_user
+from shutil import copyfile
 from pprint import pprint
 import mpld3
 import numpy as np
@@ -360,42 +361,21 @@ def add_demo_project(user_id):
 
 
 @register_RPC(call_type='download', validation_type='nonanonymous user')
-def create_new_project(user_id, proj_name, num_pops, data_start, data_end):
+def create_new_project(user_id, proj_name):
     """
     Create a new Optima Nutrition project.
     """
-    
-    args = {"num_pops":int(num_pops), "data_start":int(data_start), "data_end":int(data_end)}
-    
-    # Get a unique name for the project to be added.
-    new_proj_name = get_unique_name(proj_name, other_names=None)
-    
-    # Create the project, loading in the desired spreadsheets.
-    proj = nu.Project(name=new_proj_name)
-    
-    # Display the call information.
-    # TODO: have this so that it doesn't show when logging is turned off
-    print(">> create_new_project %s" % (proj.name))    
-    
-    # Save the new project in the DataStore.
-    save_project_as_new(proj, user_id)
-    
-    # Use the downloads directory to put the file in.
-    dirname = fileio.downloads_dir.dir_path
-        
-    # Create a filename containing the project name followed by a .prj 
-    # suffix.
-    file_name = '%s.xlsx' % proj.name
-        
-    # Generate the full file name with path.
-    full_file_name = '%s%s%s' % (dirname, os.sep, file_name)
-    
-    # Return the databook
-    proj.create_databook(databook_path=full_file_name, **args)
-    
+    template_name = 'template_input.xlsx'
+    new_proj_name = get_unique_name(proj_name, other_names=None) # Get a unique name for the project to be added.
+    proj = nu.Project(name=new_proj_name) # Create the project
+    print(">> create_new_project %s" % (proj.name))     # Display the call information.
+    save_project_as_new(proj, user_id) # Save the new project in the DataStore.
+    databook_path = sc.makefilepath(filename=template_name, folder=nu.ONpath('applications'))
+    dirname = fileio.downloads_dir.dir_path # Use the downloads directory to put the file in.
+    file_name = '%s databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
+    full_file_name = '%s%s%s' % (dirname, os.sep, file_name) # Generate the full file name with path.
+    copyfile(databook_path, full_file_name)
     print(">> download_databook %s" % (full_file_name))
-    
-    # Return the new project UID in the return message.
     return full_file_name
 
 
