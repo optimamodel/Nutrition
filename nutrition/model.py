@@ -39,7 +39,7 @@ class Model:
         self._track_prevs()
         if setcovs:
             # scenario coverages
-            self.update_covs(scen.covs, scen.scen_type)
+            self.update_covs(scen.vals, scen.scen_type)
 
     def get_allocs(self, add_funds, fix_curr, rem_curr):
         self.prog_info.get_allocs(add_funds, fix_curr, rem_curr)
