@@ -37,8 +37,8 @@ def pretty_labels():
     labs = sc.odict()
     labs['thrive'] = 'Number of alive, non-stunted children'
     labs['stunting_prev'] = 'Prevalence of stunting in children'
-    labs['child_deaths'] = 'Child mortality'
-    labs['pw_deaths'] = 'Pregnant women mortality'
+    labs['child_deaths'] = 'Child deaths'
+    labs['pw_deaths'] = 'Pregnant women deaths'
     labs['anaemia_prev'] = 'Prevalence of anaemia in children \n and women of reproductive age'
     labs['wasting_prev'] = 'Prevalence of wasting in children'
     labs['Baseline'] = 'Est. spending \n baseline year' # this is for allocation
