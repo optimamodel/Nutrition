@@ -2,21 +2,24 @@ import sciris.core as sc
 from .results import ScenResult
 
 class Scen(object):
-    def __init__(self, name=None, model_name=None, scen_type=None, covs=None, prog_set=None, active=True):
+    def __init__(self, name=None, model_name=None, scen_type=None, progvals=None, active=True):
         """
         Structure to define a scenario which can be used to fully instantiate a model instance in the project class.
         :param name: The name of the scenario (string)
         :param model_name: The name of the corresponding model object stored in Project (string)
-        :param scen_type: Either 'coverage' or 'budget', depending on whether covs is an array of coverages or spending (string)
-        :param covs: Defines either coverage or spending for each year, defined by index (list of lists or 2d array)
-        :param prog_set: Set of programs to be used in scenario. Order must be the same as 'covs' param (list of strings)
+        :param scen_type: Either 'coverage' or 'budget', depending on whether vals is an array of coverages or spending (string)
+        :param progvals: a dict with (progname, value) pairs. Progname is a string and value is a sequence of values (array-like)
         :param active: whether or not the scenario is to be run (boolean)
         """
         self.name = name
         self.model_name = model_name if model_name else None
         self.scen_type = scen_type
-        self.covs = [] if covs is None else covs
-        self.prog_set = prog_set if prog_set else []
+        try:
+            self.vals = progvals.values()
+            self.prog_set = progvals.keys()
+        except:
+            self.vals = []
+            self.prog_set = []
         self.active = active
 
     def __repr__(self):
