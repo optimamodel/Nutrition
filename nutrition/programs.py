@@ -628,19 +628,20 @@ class ProgramInfo:
         return unrestr_cov, spend
 
     def check_cov(self, covs, years):
-        numyears = len(years)
-        newcovs = np.zeros((len(self.programs), numyears))
+        numyears = len(years)-1 # not including baseline
+        newcovs = np.zeros((len(self.programs), numyears+1))
         for i,prog in self.programs.enumvals():
             try:
                 cov = covs[i]
                 if isinstance(cov, float):
-                    newcovs[i] = np.full(numyears, cov)
+                    newcov = np.full(numyears, cov)
                 elif len(cov) == numyears:
-                    newcovs[i] = np.array(cov)
+                    newcov = np.array(cov)
                 elif len(cov) < numyears:
-                    newcovs[i] = np.concatenate((cov, np.full(numyears - len(cov), cov[-1])), axis=0)
+                    newcov = np.concatenate((cov, np.full(numyears - len(cov), cov[-1])), axis=0)
             except IndexError: # coverage scenario not specified, assume constant
-                newcovs[i] = np.full(numyears, prog.base_cov)
+                newcov = np.full(numyears, prog.base_cov)
+            newcovs[i][1:] = newcov
         newcovs = newcovs.astype(float) # force conversion to treat None as nan
         return newcovs
 
