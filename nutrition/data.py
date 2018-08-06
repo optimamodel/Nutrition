@@ -321,8 +321,6 @@ class InputData(object):
         self.incidences = sc.odict()
         self.pw_agedist = []
         self.wra_proj = []
-        self.samtomam = None
-        self.mamtosam = None
         self.t = None
 
         self.get_demo()
@@ -352,9 +350,6 @@ class InputData(object):
             demo.update(baseline.loc[field].to_dict('index'))
         self.demo = {key: item['Data'] for key, item in demo.iteritems()}
         self.demo['Birth dist'] = baseline.loc['Birth outcome distribution'].to_dict()['Data']
-        # wasting
-        self.mamtosam = self.demo.pop('Percentage of SAM cases that develop from MAM')
-        self.samtomam = self.demo.pop('Percentage of SAM cases that only recover to MAM')
         t = baseline.loc['Projection years']
         self.t = [int(t.loc['Baseline year (projection start year)']['Data']), int(t.loc['End year']['Data'])]
         # birth spacing

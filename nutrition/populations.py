@@ -327,8 +327,6 @@ class Children(Population):
         self.anaemia_dist = self.data.risk_dist['Anaemia']
         self.wasting_dist = self.data.risk_dist['Wasting']
         self.bf_dist = self.data.risk_dist['Breastfeeding']
-        self.mamtosam = self.data.mamtosam
-        self.samtomam = self.data.samtomam
         self._make_pop_sizes()
         self._make_age_groups()
         self._set_child_mortality()
