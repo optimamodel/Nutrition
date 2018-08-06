@@ -1,8 +1,8 @@
 import nutrition.ui as nu
 from nutrition.optimization import Optim
 
-doplot = 1
-dosave = 0
+doplot = 0
+dosave = 1
 
 # load in data to create model
 p = nu.Project('eg')
