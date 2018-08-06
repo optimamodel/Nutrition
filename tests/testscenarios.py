@@ -24,5 +24,3 @@ scen_list = [nu.Scen(**kwargs1), nu.Scen(**kwargs2), nu.Scen(**kwargs3)]
 p.add_scens(scen_list)
 p.run_scens()
 p.plot()
-import pylab as pl
-pl.show()
