@@ -533,7 +533,7 @@ def py_to_js_scen(py_scen, proj, key=None):
         if this_spec['included']:
             count += 1
             try:
-                this_spec['vals'] = py_scen.covs[count]
+                this_spec['vals'] = py_scen.vals[count]
             except:
                 this_spec['vals'] = [None]
             while len(this_spec['vals']) < settings.n_years: # Ensure it's the right length

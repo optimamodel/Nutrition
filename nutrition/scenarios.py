@@ -8,18 +8,14 @@ class Scen(object):
         :param name: The name of the scenario (string)
         :param model_name: The name of the corresponding model object stored in Project (string)
         :param scen_type: Either 'coverage' or 'budget', depending on whether vals is an array of coverages or spending (string)
-        :param progvals: a dict with (progname, value) pairs. Progname is a string and value is a sequence of values (array-like)
+        :param progvals: an odict of lists, structured (progname, scenario)
         :param active: whether or not the scenario is to be run (boolean)
         """
         self.name = name
         self.model_name = model_name if model_name else None
         self.scen_type = scen_type
-        try:
-            self.vals = progvals.values()
-            self.prog_set = progvals.keys()
-        except:
-            self.vals = []
-            self.prog_set = []
+        self.vals = progvals.values()
+        self.prog_set = progvals.keys()
         self.active = active
 
     def __repr__(self):

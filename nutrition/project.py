@@ -248,7 +248,7 @@ class Project(object):
         self.modified = sc.today()
 
     def add_baseline(self, model_name, prog_set, key='Baseline', dorun=False):
-        progvals = {prog:[] for prog in prog_set}
+        progvals = sc.odict({prog:[] for prog in prog_set})
         base = [Scen(name=key, model_name=model_name, scen_type='coverage', progvals=progvals)]
         self.add_scens(base)
         if dorun:
