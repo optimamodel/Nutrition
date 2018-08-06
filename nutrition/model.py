@@ -119,14 +119,6 @@ class Model:
         self._update_pw()
         self._update_wra_pop()
 
-    def _famplan_update(self, pop): # todo: change this to incorporate number and spacing. Prolly 2 functions
-        """ This update is not age-specified but instead applies to all non-pw.
-        Also uses programs which are not explicitly treated elsewhere in model"""
-        progList = self._applicable_progs('Family planning') # returns 'Family Planning' program
-        if progList:
-            prog = progList[0]
-            pop.update_preg_averted(prog.annual_cov[self.year])
-
     def _update_pop_mort(self, pop):
         if pop.name != 'Non-pregnant women':
             pop.update_mortality()
@@ -270,13 +262,11 @@ class Model:
                 age_group.update_dist('anaem', newProbAnaemia)
 
     def _wasting_trans(self, age_group):
-        """Calculates the transitions between MAM and SAM categories"""
-        age_group.fromSAMtoMAMupdate = {}
-        age_group.fromMAMtoSAMupdate = {}
-        age_group.fromSAMtoMAMupdate['MAM'] = (1. + (1.-age_group.wastingTreatmentUpdate['SAM']) * self.children.samtomam)
-        age_group.fromSAMtoMAMupdate['SAM'] = 1.
-        age_group.fromMAMtoSAMupdate['SAM'] = (1. - (1.-age_group.wastingTreatmentUpdate['MAM']) * self.children.mamtosam)
-        age_group.fromMAMtoSAMupdate['MAM'] = 1.
+        """Calculates the transitions between MAM and SAM categories
+        Currently only accounting for the movement from sam to mam, because the other direction is complicated """
+        numsam = age_group.num_risk('SAM')
+        nummam = age_group.num_risk('MAM')
+        age_group.fromSAMtoMAMupdate['MAM'] = 1 + (1. - age_group.wastingTreatmentUpdate['SAM']) * numsam / nummam
 
     def _dia_indirect_effects(self, age_group):
         # get flow-on effects to stunting, anaemia and wasting
