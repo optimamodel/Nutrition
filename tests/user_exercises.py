@@ -23,22 +23,19 @@ p.load_data('demo', 'demo', name='Demo')
 opts1 = {'name': 'IYCF at 95%',
          'model_name': 'Demo',
          'scen_type': 'coverage',
-         'covs': [[.95]],
-         'prog_set': ['IYCF 1']}
+         'progvals': {'IYCF': [0.95]}}
 
 # scale-up treatment of SAM
 opts2 = {'name': 'Treat SAM at 95%',
          'model_name': 'Demo',
          'scen_type': 'coverage',
-         'covs': [[.95]],
-         'prog_set': ['Treatment of SAM']}
+         'progvals': {'Treatment of SAM': [0.95]}}
 
 # scale-up micronutrient powders
 opts3 = {'name': 'Micro. powders at 95%',
          'model_name': 'Demo',
          'scen_type': 'coverage',
-         'covs': [[.95]],
-         'prog_set': ['Micronutrient powders']}
+         'progvals': {'Micronutrient powders': [0.95]}}
 
 # add to project
 scens = [Scen(**kwargs) for kwargs in [opts1]]
@@ -51,8 +48,8 @@ scens = [Scen(**kwargs) for kwargs in [opts1]]
 opts4 = {'name': 'IYCF at $10 mil',
          'model_name': 'Demo',
          'scen_type': 'budget',
-         'covs': [[10e6]],
-         'prog_set': ['IYCF 1']}
+         'progvals': {'IYCF 1': [10e6]}}
+
 scens = [Scen(**opts4)]
 p.run_scens(scens=scens)
 p.plot('IYCF at $10 mil')
