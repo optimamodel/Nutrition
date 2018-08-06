@@ -182,23 +182,6 @@ class Program(object):
         """
         age_group.anaemiaUpdate *= self._get_cond_prob_update(age_group, 'Anaemia')
 
-    def get_wasting_update(self, age_group):
-        """
-        Programs which directly impact wasting prevalence or incidence.
-        Wasting update is comprised of two parts:
-            1. Prevention interventions, which alter the incidence of wasting
-            2. Treatment interventions, which alter the prevalence of wasting
-        Update of type 1. is converted into a prevalence update.
-        The total update is the product of these two.
-        :param age_group:
-        :return:
-        """
-        prevUpdate = self._wasting_prev_update(age_group)
-        incidUpdate = self._wasting_update_incid(age_group)
-        for wastingCat in ['MAM', 'SAM']:
-            combined = prevUpdate[wastingCat] * incidUpdate[wastingCat]
-            age_group.wastingUpdate[wastingCat] *= combined
-
     def set_pregav_sum(self):
         self.pregav_sum = sum(self.famplan_methods[prog]['Effectiveness'] * self.famplan_methods[prog]['Distribution']
                       for prog in self.famplan_methods.iterkeys())
@@ -226,6 +209,8 @@ class Program(object):
         return fracChange
 
     def wasting_prevent_update(self, age_group):
+        """ The update we calculate here is used as a % reduction in prevalence.
+        Assumes that reduction in prevalence is same % as incidence"""
         update = self._wasting_incid_update(age_group)
         for wastingCat in self.ss.wasted_list:
             age_group.wastingPreventionUpdate[wastingCat] *= update[wastingCat]
@@ -291,15 +276,6 @@ class Program(object):
             newProb = get_new_prob(self.annual_cov[self.year], probWastedIfCovered, probWastedIfNotCovered)
             reduction = (oldProb - newProb) / oldProb
             update[wastingCat] = 1-reduction
-        return update
-
-    def _wasting_update_incid(self, age_group):
-        incidenceUpdate = self._wasting_incid_update(age_group)
-        update = {}
-        for condition in self.ss.wasted_list:
-            newIncidence = age_group.incidences[condition] * incidenceUpdate[condition]
-            reduction = (age_group.incidences[condition] - newIncidence)/newIncidence
-            update[condition] = 1-reduction
         return update
 
     def _wasting_incid_update(self, age_group):
