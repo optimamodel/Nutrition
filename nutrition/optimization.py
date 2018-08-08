@@ -80,20 +80,19 @@ class Optim(object):
             keep_inds = []
             years = len(model.sim_years)
             # compare with 0 case
-            vals = [[0] * years for prog in self.prog_set]
+            progvals = {prog:[0] for prog in self.prog_set}
             kwargs = {'scen_type': 'cov',
-                      'vals': vals,
-                      'prog_set': self.prog_set}
+                      'progvals': progvals}
             scen = Scen(**kwargs)
             zeromodel = sc.dcp(model)
             zerores = run_scen(scen, zeromodel)
             zeroout = zerores.get_outputs(obj)[0][0]
             for i, prog in enumerate(self.prog_set):
                 thismodel = sc.dcp(model)
-                thiscov = sc.dcp(vals)
-                thiscov[i] = [newcov]*years
+                thiscov = sc.dcp(progvals)
+                thiscov[prog] = [newcov]*years
                 thesekwargs = sc.dcp(kwargs)
-                thesekwargs['vals'] = thiscov
+                thesekwargs['progvals'] = thiscov
                 scen = Scen(**thesekwargs)
                 res = run_scen(scen, thismodel)
                 out = res.get_outputs(obj)[0][0]
@@ -135,7 +134,8 @@ class Optim(object):
             best_alloc = fixed
         # generate results
         name = '%s (x%s)' % (self.name, mult)
-        scen = Scen(name=name, model_name=self.model_name, scen_type='budget', vals=best_alloc, prog_set=self.prog_set)
+        progvals = {prog:spend for prog, spend in zip(self.prog_set, best_alloc)}
+        scen = Scen(name=name, model_name=self.model_name, scen_type='budget', progvals=progvals)
         res = run_scen(scen, model, obj=obj, mult=mult)
         return res
 
