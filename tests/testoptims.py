@@ -13,20 +13,20 @@ kwargs1 = {'name':'test1',
           'model_name': 'eg',
           'obj':'thrive',
           'mults':[1,2],
-          'prog_set': ['Micronutrient powders', 'IYCF 1'],
+          'prog_set': ['Vitamin A supplementation', 'IYCF 1'],
           'fix_curr': False,
-          'add_funds':10000000}
+          'add_funds':1e7}
 
 kwargs2 = {'name':'test2',
           'model_name': 'eg',
           'obj':'thrive',
           'mults':[1,2],
-          'prog_set': p.dataset().prog_names(), # ['Micronutrient powders', 'Vitamin A supplementation'],
+          'prog_set': ['Micronutrient powders', 'Vitamin A supplementation', "IYCF 1"],
           'fix_curr': False,
-          'add_funds':10000000}
+          'add_funds':4e6}
 
-optims = [Optim(**kwargs1), Optim(**kwargs2)]
+optims = [Optim(**kwargs2)]
 p.add_optims(optims)
-p.run_optims(['test2'], swarmsize=1, maxiter=1, maxtime=1)
-if doplot: p.plot(keys=['test2'], optim=True)
+p.run_optims(swarmsize=1, maxiter=1, maxtime=1)
+if doplot: p.plot(optim=True)
 if dosave: p.write_results('optim_results.xlsx')
