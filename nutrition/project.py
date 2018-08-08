@@ -316,7 +316,6 @@ class Project(object):
             model.setup(optim, setcovs=False)
             model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
             results += optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel)
-            print results
             # add by optim name
             self.add_result(results, name=optim.name)
         return None
