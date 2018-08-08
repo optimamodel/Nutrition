@@ -97,17 +97,13 @@ class Project(object):
         return info
     
     
-    def load_data(self, country=None, region=None, name=None, filepath=None, addmodel=True):
+    def load_data(self, country=None, region=None, name=None, filepath=None):
         dataset = Dataset(country=country, region=region, name=name, filepath=filepath, doload=True)
-        if name is not None: dataset.name = name
-        self.datasets[dataset.name] = dataset
-        if addmodel:
-            # add model associated with the dataset
-            self.add_model(dataset.name, dataset.pops, dataset.prog_info, dataset.t)
-            # add baseline scenario for each new model object, to be used in scenarios
-            self.add_baseline(dataset.name, dataset.prog_data.base_prog_set)
+        if name is None: name = dataset.name
+        self.datasets[name] = dataset
+        # add model associated with the dataset
+        self.add_model(name, dataset.pops, dataset.prog_info, dataset.t)
         return None
-    
 
     def save(self, filename=None, folder=None, saveresults=False, verbose=2):
         ''' Save the current project, by default using its name, and without results '''
@@ -234,25 +230,28 @@ class Project(object):
         self.add(name=name, item=model, what='model')
         self.modified = sc.today()
 
-    def add_scens(self, scen_list, overwrite=False):
+    def add_scens(self, scens, overwrite=False):
         """ Adds scenarios to the Project's self.scens odict.
         Scenarios point to a corresponding model, accessed by key in self.models.
         Not all model parameters initialized until model.setup() is called.
-        :param scen_list: a list of Scen objects.
+        :param scens: a list of Scen objects, but individual Scen object will be listified.
         :param overwrite: boolean, True removes all previous scenarios.
         :return: None
         """
         if overwrite: self.scens = sc.odict()
-        for scen in scen_list:
+        scens = sc.promotetolist(scens)
+        for scen in scens:
             self.add(name=scen.name, item=scen, what='scen')
         self.modified = sc.today()
 
-    def add_baseline(self, model_name, prog_set, key='Baseline', dorun=False):
-        progvals = sc.odict({prog:[] for prog in prog_set})
-        base = [Scen(name=key, model_name=model_name, scen_type='coverage', progvals=progvals)]
-        self.add_scens(base)
+    def run_baseline(self, model_name, prog_set, dorun=True):
+        model = sc.dcp(self.model(model_name))
+        progvals = sc.odict({prog: [] for prog in prog_set})
+        base = Scen(name='Baseline', model_name=model_name, scen_type='coverage', progvals=progvals)
         if dorun:
-            self.run_scens()
+            return run_scen(base, model)
+        else:
+            return base
 
     def add_optims(self, optim_list, overwrite=False):
         if overwrite: self.optims = sc.odict() # remove exist scenarios
@@ -289,63 +288,51 @@ class Project(object):
             return None
         else:
             return optims
-    
+
     def run_scens(self, scens=None):
         """Function for running scenarios
         If scens is specified, they are added to self.scens """
+        results = []
         if scens is not None: self.add_scens(scens)
         for scen in self.scens.itervalues():
             if scen.active:
                 model = self.model(scen.model_name)
                 res = run_scen(scen, model)
-                self.add_result(res, name=res.name)
+                results.append(res)
+        self.add_result(results, name='scens')
         return None
 
-    def run_optims(self, keys=None, optim_list=None, maxiter=5, swarmsize=10, maxtime=10, parallel=True):
-        if keys is None: keys = self.optims.keys()
-        if optim_list is not None: self.add_optims(optim_list)
-        keys = sc.promotetolist(keys)
-        for key in keys:
-            budget_res = []
-            optim = self.optim(key)
-            if optim:
-                # run baseline scen with given progset
-                self.add_baseline(optim.model_name, optim.prog_set, dorun=True)
-                budget_res.append(self.result('Baseline'))
-                # run the optimization
-                model = sc.dcp(self.model(optim.model_name))
-                model.setup(optim, setcovs=False)
-                model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
-                budget_res += optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
-                                              parallel=parallel)
-                # add list of scenario results by optimisation name
-                self.add_result(budget_res, name=optim.name)
+    def run_optims(self, optimid=None, optims=None, maxiter=5, swarmsize=10, maxtime=10, parallel=True):
+        if not optimid: optimid = -1
+        if optims is not None: self.add_optims(optims)
+        optim = self.optim(optimid)
+        results = []
+        if optim.active:
+            # run baseline
+            base = self.run_baseline(optim.model_name, optim.prog_set)
+            results.append(base)
+            # run optimization
+            model = sc.dcp(self.model(optim.model_name))
+            model.setup(optim, setcovs=False)
+            model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
+            results += optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel)
+            print results
+            # add by optim name
+            self.add_result(results, name=optim.name)
         return None
 
-    def get_results(self, result_keys):
+    def get_results(self, groupid): # todo: prolly remove
         """ result_keys is a list of keys corresponding to the desired result.
         Return: a list of result objects """
-        if not result_keys: result_keys = [-1]
-        results = [self.result(key) for key in result_keys]
-        if isinstance(results[0], list): # checks if returned a list of scenarios (optimization)
-            results = results[0]
+        results = self.result(groupid)
         return results
 
     def sensitivity(self):
         print('Not implemented')
 
     @trace_exception
-    def plot(self, keys=None, toplot=None, optim=False, baseline=False): # todo: i think baseline will be overwritten when new dataset uploaded...
-        """ Plots results stored at 'keys'.
-         WARNING: do not attempt to plot optimization and scenarios or multiple optimizations in a single call.
-         Not only is this a little difficult to implement, but the plots are not compatible across optimizations & results in many plots being generated"""
-        if keys: keys = sc.promotetolist(keys)
-        else:    keys = self.results.keys()
-        if baseline: keys = ['Baseline'] + keys
-        if optim and len(keys)>1:
-            errormsg = 'Warning, cannot plot multiple optimizations simultaneously'
-            raise ONException(errormsg)
-        figs = make_plots(self.get_results(keys), toplot=toplot, optim=optim)
+    def plot(self, groupid=-1, toplot=None, optim=False):
+        figs = make_plots(self.get_results(groupid), toplot=toplot, optim=optim)
         return figs
 
 
