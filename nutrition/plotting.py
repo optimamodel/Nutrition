@@ -24,10 +24,6 @@ def make_plots(all_res=None, toplot=None, optim=False):
         toplot = ['prevs', 'ann', 'agg']
         if optim:
             toplot.append('alloc')
-    if None in all_res:
-        all_res = [x for x in all_res if x is not None]
-        if not all_res:
-            return sc.printv('Warning, no results to plot')
     toplot = sc.promotetolist(toplot)
     all_res = sc.promotetolist(all_res)
     if 'prevs' in toplot:
@@ -60,7 +56,6 @@ def plot_prevs(all_res):
         for res in all_res:
             years = res.years
             out = res.get_outputs([prev], seq=True)[0]
-            # out = round_elements(output, dec=1)
             f = scipy.interpolate.PchipInterpolator(years, out, extrapolate=False)
             newx = np.linspace(years[0], years[-1], len(years)*10)
             out = f(newx) * 100
@@ -107,8 +102,6 @@ def plot_outputs(all_res, seq, name):
             bar = ax.bar(xpos, output, width=width)
             bars.append(bar)
         if seq:
-            # ax.set_xticks(years+offset/2.)
-            # ax.set_xticklabels(years)
             ax.set_xlabel('Years')
             title = 'Annual'
         else:
@@ -137,16 +130,12 @@ def plot_alloc(all_res):
      as assumed structure for spending is different """
     #initialize
     width = 0.35
-    scale = 1e1 # 1e6
+    scale = 1
     fig = pl.figure(figsize=fig_size)
     ax = fig.add_axes(ax_size)
     figs = sc.odict()
-    try:
-        ref = all_res[1]
-        ref_spend = ref.prog_info.refs # adjust for reference spending
-    except IndexError:
-        ref = all_res[0] # baseline
-        ref_spend = [0 for i in ref.programs] # don't adjust if only baseline
+    ref = all_res[1] # assumes baseline at index 0
+    ref_spend = ref.prog_info.refs
     x = np.arange(len(all_res))
     xlabs = []
     bars = []
@@ -159,7 +148,7 @@ def plot_alloc(all_res):
             pos = res.mult if res.mult else res.name
             xlabs.append(utils.relabel(pos))
             # adjust spending so does not display reference spending
-            alloc = prog.annual_spend[1] - ref_spend[i] # spending is same after first year in optimization
+            alloc = res.programs[i].annual_spend[1] - ref_spend[i] # spending is same after first year in optimization
             # scale for axis
             alloc /= scale
             y = np.append(y, alloc)
@@ -172,11 +161,13 @@ def plot_alloc(all_res):
     ax.set_xticklabels(xlabs)
     ax.set_ylim((0, ymax+ymax*.1))
     ax.set_ylabel('Annual spending on programs (US$)')
-    try:
-        valuestr = int(str(res.prog_info.free)[:2])
-        string = 'Total available budget (as a multiple of US$%sM)'%valuestr
-    except:
-        string = 'Total available budget (relative to %s)' % str(res.prog_info.free)
+    valuestr = str(res.prog_info.free/1e6)
+    # format x axis
+    if valuestr[1] == '.':
+        valuestr = valuestr[:3]
+    else:
+        valuestr = valuestr[:2]
+    string = 'Total available budget (relative to US$%sM)'%valuestr
     ax.set_xlabel(string)
     sc.SIticks(ax=ax, axis='y')
     nprogs = len(ref.programs)
