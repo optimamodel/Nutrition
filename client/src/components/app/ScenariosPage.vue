@@ -1,7 +1,7 @@
 <!--
 Define health packages
 
-Last update: 2018-08-02
+Last update: 2018-08-09
 -->
 
 <template>
@@ -205,7 +205,9 @@ Last update: 2018-08-02
       if (this.$store.state.currentUser.displayname == undefined) {
         router.push('/login')
       }
-      else { // Otherwise...
+      // Otherwise, if a project is active...
+      else if (this.$store.state.activeProject.project !== undefined) {
+        console.log('ducky doo!!')
         // Load the project summaries of the current user.
         this.getScenSummaries()
         this.getDefaultScen()

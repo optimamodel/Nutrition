@@ -1,7 +1,7 @@
 f<!--
 Define equity
 
-Last update: 2018-08-02
+Last update: 2018-08-09
 -->
 
 <template>
@@ -187,7 +187,8 @@ Last update: 2018-08-02
       if (this.$store.state.currentUser.displayname == undefined) {
         router.push('/login')
       }
-      else { // Otherwise...
+      // Otherwise, if a project is active...
+      else if (this.$store.state.activeProject.project !== undefined) {
         // Load the optimization summaries of the current project.
         this.getOptimSummaries()
         this.getDefaultOptim()
