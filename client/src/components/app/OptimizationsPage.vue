@@ -189,9 +189,12 @@ Last update: 2018-08-09
       }
       // Otherwise, if a project is active...
       else if (this.$store.state.activeProject.project !== undefined) {
-        // Load the optimization summaries of the current project.
-        this.getOptimSummaries()
-        this.getDefaultOptim()
+        taskservice.sleep(1)  // embedding in this allows the popup spinner to be active
+        .then(response => {
+          // Load the optimization summaries of the current project.
+          this.getOptimSummaries()
+          this.getDefaultOptim()
+        })
       }
     },
 
