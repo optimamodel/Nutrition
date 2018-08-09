@@ -87,7 +87,6 @@ def plot_outputs(all_res, seq, name):
         ymax = 0
         perchange = []
         bars = []
-        offset = -width
         baseout = baseres.get_outputs(outcome, seq=seq)[0] / scale
         offsets = np.arange(len(all_res)+1)*width # Calculate offset so tick is in the center of the bars
         offsets -= offsets.mean() - 0.5*width

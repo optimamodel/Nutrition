@@ -144,9 +144,13 @@ class Project(object):
         print 'Item "{}" added to "{}"'.format(name, what)
         self.modified = sc.today()
 
-    def remove(self, what, name):
+    def remove(self, what, name=None):
         structlist = self.getwhat(what=what)
-        structlist.pop(name)
+        if name is None: # remove all
+            structlist.clear()
+            name = 'all'
+        else:
+            structlist.pop(name)
         print '{} "{}" removed'.format(what, name)
         self.modified = sc.today()
 
@@ -320,11 +324,21 @@ class Project(object):
             self.add_result(results, name=optim.name)
         return None
 
-    def get_results(self, groupid): # todo: prolly remove
+    def get_results(self, groupid=None):
         """ result_keys is a list of keys corresponding to the desired result.
         Return: a list of result objects """
+        if groupid is None: groupid = -1
         results = self.result(groupid)
         return results
+
+    def get_output(self, outcomes=None):
+        results = self.result(-1)
+        if not outcomes: outcomes = default_trackers()
+        outcomes = sc.promotetolist(outcomes)
+        outputs = []
+        for i, res in enumerate(results):
+            outputs.append(res.get_outputs(outcomes, seq=False))
+        return outputs
 
     def sensitivity(self):
         print('Not implemented')

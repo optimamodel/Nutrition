@@ -32,3 +32,15 @@ def run_scen(scen, model, obj=None, mult=None, setcovs=True):
     model.run_sim()
     res = ScenResult(scen.name, scen.model_name, model, obj=obj, mult=mult)
     return res
+
+def make_scens(kwargs):
+    """
+    Makes the requested scenarios
+    :param kwargs: a list of key word args
+    :return: a list of scenarios
+    """
+    kwargs = sc.promotetolist(kwargs)
+    scens = []
+    for kwarg in kwargs:
+        scens.append(Scen(**kwarg))
+    return scens
