@@ -600,7 +600,11 @@ class ProgramInfo:
         spend = np.zeros(shape=(len(self.programs), len(years)))
         covs = self.check_cov(covs, years)
         for i,prog in self.programs.enumvals():
-            unrestr_cov[i], spend[i] = prog.interp_scen(covs[i], years, scentype)
+            thiscov, thisspend = prog.interp_scen(covs[i], years, scentype)
+            # ensure % cov less than 1
+            thiscov[thiscov > 1] = 1
+            unrestr_cov[i] = thiscov
+            spend[i] = thisspend
         return unrestr_cov, spend
 
     def check_cov(self, covs, years):
