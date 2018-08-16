@@ -34,37 +34,31 @@ def make_kwargs(name, progvals, modelname='Demo', scentype='coverage'):
 outcomes = default_trackers()
 
 #### baseline scenario ####
-#1a
-a = make_kwargs('Baseline', {})
+#1
+base = make_kwargs('Baseline', {})
 
 ###########################
 #### Stunting model ######
 
-# QUESTION 1
+# QUESTION 2
 
-# 1b
-b = make_kwargs('1b', {'Public provision of complementary foods': cov})
-# 1c
-c = make_kwargs('1c', {'Lipid-based nutrition supplements': cov})
-# 1d
-d = make_kwargs('1d', {'Zinc supplementation': cov})
-# 1e
-e = make_kwargs('1e', {'Public provision of complementary foods': cov,
+a = make_kwargs('2a', {'Public provision of complementary foods': cov})
+b = make_kwargs('2b', {'Lipid-based nutrition supplements': cov})
+c = make_kwargs('2c', {'Zinc supplementation': cov})
+d = make_kwargs('2d', {'Public provision of complementary foods': cov,
                                     'Lipid-based nutrition supplements': cov,
                                     'Zinc supplementation': cov})
-f = make_kwargs('1f', {'Public provision of complementary foods': cov,
+e = make_kwargs('2e', {'Public provision of complementary foods': cov,
                                     'Lipid-based nutrition supplements': cov})
 
-# QUESTION 2
+# QUESTION 3
 #todo: IYCF packages defined in spreadsheet, but would like to be able to manually do this in code. waiting on web app implementation
 
-# 2a
-aa = make_kwargs('2a', {'IYCF 1': cov})
-# 2b
-bb = make_kwargs('2b', {'IYCF 2': cov})
-cc = make_kwargs('2c', {'IYCF 3': cov})
+aa = make_kwargs('3a', {'IYCF 1': cov})
+bb = make_kwargs('3b', {'IYCF 2': cov})
+cc = make_kwargs('3c', {'IYCF 3': cov})
 
-scens = make_scens([a, b, c, d, e, f, aa, bb, cc])
+scens = make_scens([base, a, b, c, d, e, aa, bb, cc])
 
 p.run_scens(scens)
 
@@ -72,35 +66,56 @@ p.write_results(filename='stunting_ans.xlsx')
 
 p.remove('scens')
 
+################################
 ####### WASTING MODEL #########
-base = make_kwargs('Baseline', {})
-## QUESTION 1
 
-a = make_kwargs('1a', {'Cash transfers': cov,
+## QUESTION 2
+
+a = make_kwargs('2a', {'Cash transfers': cov,
                        'Public provision of complementary foods': cov})
 scens = make_scens([base, a])
 p.run_scens(scens)
 
+## QUESTION 3
 
-
-
-## QUESTION 2
-
-a = make_kwargs('2a', {'Treatment of SAM': cov})
-# todo: turn on management of mam, not currently implemented.
+a = make_kwargs('3a', {'Treatment of SAM': cov})
+# todo: turn on management of mam, waiting on webapp implementation
 # b = make
 
+## QUESTION 4
+# ToS saturation at $18 mil, so no change
+a = make_kwargs('4a', {'Treatment of SAM': 18e6})
+b = make_kwargs('4b', {'Treatment of SAM': 19e6})
+scens = make_scens([base, a, b])
+p.run_scens(scens)
 
 p.write_results(filename='wasting_ans.xlsx')
 
+p.remove('scens')
 
-#######
+#####################
+### ANAEMIA MODEL ###
+
+## QUESTION 1
+a = make_kwargs('1a', {'Micronutrient powders': cov})
+
+# spend same amount on both IFAS, see which is better. ATM both have the same OR but community is cheaper and greater reach, so this is much better
+b = make_kwargs('1c', {'IFAS for pregnant women (community)': 1e6}, scentype='budget')
+c = make_kwargs('1d', {'IFAS for pregnant women (hospital)': 1e6}, scentype='budget')
+
+scens = make_scens([base, a, b, c])
+p.run_scens(scens)
+
+p.write_results(filename='anaemia_ans.xlsx')
+
+
+# todo: run at saturation for IFAS preg women
 
 
 
-import pylab as pl
-p.plot()
-pl.show()
+# import pylab as pl
+# p.plot()
+# pl.show()
 
 
 
