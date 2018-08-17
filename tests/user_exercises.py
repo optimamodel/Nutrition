@@ -58,6 +58,10 @@ aa = make_kwargs('3a', {'IYCF 1': cov})
 bb = make_kwargs('3b', {'IYCF 2': cov})
 cc = make_kwargs('3c', {'IYCF 3': cov})
 
+## QUESTION 4
+# todo: need functionality to change baseline in web app to do this
+# aaa = make_kwargs('4a', {})
+
 scens = make_scens([base, a, b, c, d, e, aa, bb, cc])
 
 p.run_scens(scens)
@@ -103,20 +107,27 @@ a = make_kwargs('1a', {'Micronutrient powders': cov})
 b = make_kwargs('1c', {'IFAS for pregnant women (community)': 1e6}, scentype='budget')
 c = make_kwargs('1d', {'IFAS for pregnant women (hospital)': 1e6}, scentype='budget')
 
-scens = make_scens([base, a, b, c])
+## QUESTION 2
+
+# first test exclusion dependency then threshold dependency
+aa = make_kwargs('2a', {'IFAS for pregnant women (community)': cov})
+bb = make_kwargs('2b', {'Multiple micronutrient supplementation': cov})
+cc = make_kwargs('2c', {'IFAS for pregnant women (community)': cov,
+                        'Multiple micronutrient supplementation': cov})
+dd = make_kwargs('2d', {'IPTp': cov,
+                        'Multiple micronutrient supplementation': cov})
+ee = make_kwargs('2e', {'IPTp': [0],
+                        'Multiple micronutrient supplementation': cov})
+
+## QUESTION 3
+aaa = make_kwargs('3a', {'Vitamin A supplementation': cov})
+bbb = make_kwargs('3b', {'Zinc supplementation': cov})
+
+
+scens = make_scens([base,aaa, bbb])
 p.run_scens(scens)
 
 p.write_results(filename='anaemia_ans.xlsx')
-
-
-# todo: run at saturation for IFAS preg women
-
-
-
-# import pylab as pl
-# p.plot()
-# pl.show()
-
 
 
 
