@@ -17,10 +17,13 @@ def optimafolder(subfolder=None):
 #
 
 def default_trackers():
+    """ Prevalence tracker names MUST contains the string 'prev' """
     outcome = [
         'stunting_prev',
         'wasting_prev',
-        'anaemia_prev',
+        'child_anaemprev',
+        'pw_anaemprev',
+        'nonpw_anaemprev',
         'child_deaths',
         'pw_deaths',
         'thrive']
@@ -39,7 +42,9 @@ def pretty_labels():
     labs['stunting_prev'] = 'Prevalence of stunting in children'
     labs['child_deaths'] = 'Child deaths'
     labs['pw_deaths'] = 'Pregnant women deaths'
-    labs['anaemia_prev'] = 'Prevalence of anaemia in children \n and women of reproductive age'
+    labs['child_anaemprev'] = 'Prevalence of anaemia in children'
+    labs['pw_anaemprev'] = 'Prevalence of anaemia in pregnant women'
+    labs['nonpw_anaemprev'] = 'Prevalence of anaemia in non-pregnant women'
     labs['wasting_prev'] = 'Prevalence of wasting in children'
     labs['Baseline'] = 'Est. spending \n baseline year' # this is for allocation
     return labs

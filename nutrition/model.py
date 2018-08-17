@@ -70,8 +70,9 @@ class Model:
 
         self.stunting_prev[self.year] = self.children.frac_stunted()
         self.wasting_prev[self.year] = self.children.frac_risk('wast')
-        self.anaemia_prev[self.year] = sum([pop.num_anaemic() for pop in self.pops]) / \
-                                       sum([pop.total_pop() for pop in self.pops])
+        self.child_anaemprev[self.year] = self.children.frac_risk('an')
+        self.pw_anaemprev[self.year] = self.pw.frac_risk('an')
+        self.nonpw_anaemprev[self.year] = self.nonpw.frac_risk('an')
 
     def _set_pop_probs(self, year):
         init_cov = self.prog_info.get_ann_covs(year-1)
