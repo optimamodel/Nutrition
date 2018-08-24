@@ -88,12 +88,14 @@ def plot_outputs(all_res, seq, name):
         perchange = []
         bars = []
         baseout = baseres.get_outputs(outcome, seq=seq)[0] / scale
+        if not isinstance(baseout, np.ndarray): baseout = [baseout]
         offsets = np.arange(len(all_res)+1)*width # Calculate offset so tick is in the center of the bars
         offsets -= offsets.mean() - 0.5*width
         for r,res in enumerate(all_res):
             offset = offsets[r]
             xpos = years + offset if seq else offset
             output = res.get_outputs(outcome, seq=seq)[0] / scale
+            if not isinstance(output, np.ndarray): output = [output]
             thimax = max(output)
             if thimax > ymax: ymax = thimax
             change = round_elements([utils.get_change(base, out) for out,base in zip(output, baseout)], dec=1)

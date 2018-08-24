@@ -33,7 +33,7 @@ class ScenResult(object):
             outcomes = default_trackers()
         if sc.isstring(outcomes):
             outcomes = sc.promotetolist(outcomes)
-        outs = [self.model.get_output(name, seq=seq) for name in outcomes]
+        outs = self.model.get_output(outcomes, seq=seq)
         if asdict:
             output = sc.odict()
             for o,outcome in enumerate(outcomes):

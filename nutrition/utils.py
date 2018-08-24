@@ -30,11 +30,34 @@ def default_trackers():
     return outcome
 
 def get_obj_sign(obj):
-    max_obj = ['thrive', 'healthy_children', 'not_anaemic', 'no_conditions']
+    max_obj = ['thrive']
     if obj in max_obj:
         return -1
     else:
         return 1
+
+def get_vector(obj):
+    """ If a pre-defined objective is passed, this will create the corresponding weights """
+    outcomes = default_trackers()
+    try:
+        i = outcomes.index(obj)
+    except ValueError:
+        raise Exception('ERROR: objective string not found')
+    weights = np.zeros(len(outcomes))
+    sign = get_obj_sign(obj)
+    weights[i] = sign
+    return weights
+
+def get_weights(obj):
+    """ Function to process weights """
+    if isinstance(obj, str):
+        # a pre-defined objective
+        return get_vector(obj)
+    elif isinstance(obj, np.ndarray):
+        # custom weights, assume order as in default_trackers()
+        return obj
+    else:
+        raise Exception("ERROR: cannot get weights for this object type")
 
 def pretty_labels():
     labs = sc.odict()
