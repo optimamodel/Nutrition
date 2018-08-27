@@ -32,7 +32,7 @@ class Optim(object):
         self.name = name
         self.model_name = model_name
         self.obj = obj
-        self.weights = weights if weights else utils.get_weights(obj)
+        self.weights = weights if weights is not None else utils.get_weights(obj)
         self.mults = mults
         self.prog_set = prog_set
         self.add_funds = add_funds
@@ -88,7 +88,7 @@ class Optim(object):
                 res.append(this_res)
         return res
 
-    def _filter_progs(self, model, obj):
+    def _filter_progs(self, model, obj): # todo: need to update this. Could use objective function
         if self.filter_progs:
             threshold = 0.1
             newcov = 1.
@@ -128,7 +128,6 @@ class Optim(object):
         maxiter, swarmsize, maxtime = args[2:]
         free = kwargs['free']
         inds = kwargs['keep_inds']
-        # obj = kwargs['obj']
         fixed = kwargs['fixed']
         model = kwargs['model']
         numprogs = np.sum(inds)
@@ -158,18 +157,18 @@ class Optim(object):
         print('Finished optimization for %s for objective %s and multiple %s' % (self.name, objective, multiple))
         print('The reason is %s and it took %0.1f s \n' % (flag['exitreason'], sc.toc(now, output=True)))
 
-# def obj_func(allocation, obj, model, free, fixed, keep_inds, sign):
-#     thisModel = sc.dcp(model)
-#     # scale the allocation appropriately
-#     scaledAllocation = utils.scale_alloc(free, allocation)
-#     totalAllocations = utils.add_fixed_alloc(fixed, scaledAllocation, keep_inds)
-#     thisModel.update_covs(totalAllocations, 'budget')
-#     thisModel.run_sim()
-#     outcome = thisModel.get_output(obj)[0] * sign
-#     return outcome
-
 
 def obj_func(allocation, model, free, fixed, keep_inds, weights):
+    """
+    Calculates the scalar value of a model run given some program allocation. Runs as a budget scenario.
+    :param allocation:
+    :param model: a newly instantiated model object to run the budget scenario.
+    :param free: total money to be distributed across programs
+    :param fixed: fixed costs for programs
+    :param keep_inds: The indices of the programs to keep (those excluded are 'fixed programs')
+    :param weights: an array of weights for each model outcome. Order corresponding to default_trackers()
+    :return: scalar value of the model run
+    """
     thisModel = sc.dcp(model)
     # scale the allocation appropriately
     scaledAllocation = utils.scale_alloc(free, allocation)

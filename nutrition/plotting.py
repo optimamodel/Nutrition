@@ -42,9 +42,7 @@ def make_plots(all_res=None, toplot=None, optim=False):
 
 def plot_prevs(all_res):
     """ Plot prevs for each scenario"""
-    allattr = all_res[0].model_attr()
-    prevs = [attr for attr in allattr if 'prev' in attr]
-    
+    prevs = [out for out in utils.default_trackers() if 'prev' in out]
     lines = []
     figs = sc.odict()
     for i, prev in enumerate(prevs):
@@ -75,7 +73,7 @@ def plot_prevs(all_res):
     return figs
 
 def plot_outputs(all_res, seq, name):
-    outcomes = ['thrive', 'child_deaths']
+    outcomes = [out for out in utils.default_trackers() if 'prev' not in out]
     width = 0.15 if seq else 0.35
     figs = sc.odict()
     scale = 1e1 # scales for formatting
@@ -87,6 +85,7 @@ def plot_outputs(all_res, seq, name):
         ymax = 0
         perchange = []
         bars = []
+        print outcome
         baseout = baseres.get_outputs(outcome, seq=seq)[0] / scale
         if not isinstance(baseout, np.ndarray): baseout = [baseout]
         offsets = np.arange(len(all_res)+1)*width # Calculate offset so tick is in the center of the bars
