@@ -42,7 +42,7 @@ def make_plots(all_res=None, toplot=None, optim=False):
 
 def plot_prevs(all_res):
     """ Plot prevs for each scenario"""
-    prevs = [out for out in utils.default_trackers() if 'prev' in out]
+    prevs = utils.default_trackers(prev=True)
     lines = []
     figs = sc.odict()
     for i, prev in enumerate(prevs):
@@ -73,7 +73,7 @@ def plot_prevs(all_res):
     return figs
 
 def plot_outputs(all_res, seq, name):
-    outcomes = [out for out in utils.default_trackers() if 'prev' not in out]
+    outcomes = utils.default_trackers(prev=False)
     width = 0.15 if seq else 0.35
     figs = sc.odict()
     scale = 1e1 # scales for formatting
