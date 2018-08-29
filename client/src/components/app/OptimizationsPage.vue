@@ -1,7 +1,7 @@
 f<!--
 Define equity
 
-Last update: 2018-08-02
+Last update: 2018-08-09
 -->
 
 <template>
@@ -187,10 +187,14 @@ Last update: 2018-08-02
       if (this.$store.state.currentUser.displayname == undefined) {
         router.push('/login')
       }
-      else { // Otherwise...
-        // Load the optimization summaries of the current project.
-        this.getOptimSummaries()
-        this.getDefaultOptim()
+      // Otherwise, if a project is active...
+      else if (this.$store.state.activeProject.project !== undefined) {
+        taskservice.sleep(1)  // embedding in this allows the popup spinner to be active
+        .then(response => {
+          // Load the optimization summaries of the current project.
+          this.getOptimSummaries()
+          this.getDefaultOptim()
+        })
       }
     },
 

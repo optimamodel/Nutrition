@@ -1,7 +1,7 @@
 <!--
 Define health packages
 
-Last update: 2018-08-02
+Last update: 2018-08-09
 -->
 
 <template>
@@ -144,6 +144,7 @@ Last update: 2018-08-02
   import axios from 'axios'
   var filesaver = require('file-saver')
   import rpcservice from '@/services/rpc-service'
+  import taskservice from '@/services/task-service'
   import status from '@/services/status-service'
   import router from '@/router'
   import Vue from 'vue';
@@ -205,12 +206,15 @@ Last update: 2018-08-02
       if (this.$store.state.currentUser.displayname == undefined) {
         router.push('/login')
       }
-      else { // Otherwise...
-        // Load the project summaries of the current user.
-        this.getScenSummaries()
-        this.getDefaultScen()
+      // Otherwise, if a project is active...
+      else if (this.$store.state.activeProject.project !== undefined) {
+        taskservice.sleep(1)  // embedding in this allows the popup spinner to be active
+        .then(response => {
+          // Load the project summaries of the current user.
+          this.getScenSummaries()
+          this.getDefaultScen()
+        })
       }
-
     },
 
     methods: {

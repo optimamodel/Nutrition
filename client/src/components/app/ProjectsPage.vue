@@ -1,7 +1,7 @@
 <!--
 Manage projects page
 
-Last update: 2018-07-31
+Last update: 2018-08-09
 -->
 
 <template>
@@ -161,6 +161,7 @@ Last update: 2018-07-31
 import axios from 'axios'
 var filesaver = require('file-saver')
 import rpcservice from '@/services/rpc-service'
+import taskservice from '@/services/task-service'
 import status from '@/services/status-service'
 import router from '@/router'
 import PopupSpinner from './Spinner.vue'
@@ -210,7 +211,10 @@ export default {
       }
       
       // Load the project summaries of the current user.
-      this.updateProjectSummaries(projectId)
+      taskservice.sleep(1)  // embedding in this allows the popup spinner to be active
+      .then(response => {
+        this.updateProjectSummaries(projectId) 
+      })
     }
   },
 
