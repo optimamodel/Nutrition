@@ -12,6 +12,7 @@ from .model import Model
 from .utils import trace_exception, default_trackers, pretty_labels
 from .demo import demo_scens, demo_optims
 from .settings import ONException
+from .defaults import get_defaults
 
 
 #######################################################################################################
@@ -232,6 +233,9 @@ class Project(object):
         if overwrite: self.models = sc.odict()
         model = Model(pops, prog_info, t)
         self.add(name=name, item=model, what='model')
+        # get default scenarios
+        defaults = get_defaults(name, model)
+        self.add_scens(defaults)
         self.modified = sc.today()
 
     def add_scens(self, scens, overwrite=False):
