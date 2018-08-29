@@ -16,7 +16,7 @@ def get_defaults(modelname, model):
     :return: a list of default scenarios
     """
     # maintain current coverage
-    progset = model.prog_info.prog_data.base_prog_set # todo: make this easier to access
+    progset = model.prog_info.base_progset()
     progvals = {prog:[] for prog in progset}
     kwargs1 = {'name': 'Baseline',
               'model_name': modelname,
