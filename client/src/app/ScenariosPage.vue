@@ -1,13 +1,13 @@
 <!--
-Define health packages
+Scenarios Page
 
-Last update: 2018-08-09
+Last update: 2018-08-30
 -->
 
 <template>
-  <div class="SitePage">
-  
-    <div v-if="activeProjectID ==''">
+  <div>
+
+    <div v-if="projectID ==''">
       <div style="font-style:italic">
         <p>No project is loaded.</p>
       </div>
