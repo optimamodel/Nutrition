@@ -11,7 +11,7 @@ Last update: 2018-08-30
         <div class="simple-text" style="font-size:20px; color:#fff; font-weight:bold; padding:20px">
           <span style="padding-left:10px">
             <a href="http://ocds.co" target="_blank">
-              <img src="static/img/optima-inverted-logo.png" width="160px" vertical-align="middle" alt>
+              <img src="static/img/optima-inverted-logo.png" width="160px" vertical-align="middle" alt> <!-- // ATOMICA-NUTRITION DIFFERENCE -->
             </a>
           </span>
           <br/><br/>

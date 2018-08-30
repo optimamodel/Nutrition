@@ -10,7 +10,7 @@ import DashboardLayout from '@/app/DashboardLayout.vue'
 // App views
 import NotFound from '@/app/NotFoundPage.vue'
 import ProjectsPage from '@/app/ProjectsPage'
-import InputsPage from '@/app/InputsPage'
+import InputsPage from '@/app/InputsPage' // ATOMICA-NUTRITION DIFFERENCE
 import ScenariosPage from '@/app/ScenariosPage'
 import OptimizationsPage from '@/app/OptimizationsPage'
 import LoginPage from '@/app/LoginPage'
@@ -48,7 +48,7 @@ export default new Router({
           component: ProjectsPage
         },
         {
-          path: 'inputs',
+          path: 'inputs',  // ATOMICA-NUTRITION DIFFERENCE
           name: 'Inputs',
           component: InputsPage
         },

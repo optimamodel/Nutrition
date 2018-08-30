@@ -9,7 +9,7 @@ const SidebarStore = {
       path: '/projects'
     },
     {
-      name: 'Inputs',
+      name: 'Inputs', // ATOMICA-NUTRITION DIFFERENCE
       icon: 'ti-ruler-alt-2',
       path: '/inputs'
     },
