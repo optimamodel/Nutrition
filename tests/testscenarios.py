@@ -18,9 +18,11 @@ kwargs2.update({'name': 'IYCF 1 100%',
 kwargs3 = {'name': 'IYCF at $10 mil',
          'model_name': 'eg',
          'scen_type': 'budget',
-           'progvals': sc.odict({'IYCF 1': [1e10]})}
+           'progvals': sc.odict({'IYCF 1': [1e7],
+                                 'IPTp': [1e7]})}
 
-scen_list = [nu.Scen(**kwargs1), nu.Scen(**kwargs2), nu.Scen(**kwargs3)]
+scen_list = nu.make_scens([kwargs1, kwargs2, kwargs3])
 p.add_scens(scen_list)
 p.run_scens()
 p.plot()
+p.get_costeff()
