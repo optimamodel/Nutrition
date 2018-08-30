@@ -149,9 +149,6 @@ Last update: 2018-08-09
       </div>
 
     </modal>
-
-    <!-- Popup spinner -->
-    <popup-spinner></popup-spinner> 
     
   </div>
 
@@ -164,7 +161,6 @@ import rpcservice from '@/services/rpc-service'
 import taskservice from '@/services/task-service'
 import status from '@/services/status-service'
 import router from '@/router'
-import PopupSpinner from './Spinner.vue'
 
 export default {
   name: 'ProjectsPage',

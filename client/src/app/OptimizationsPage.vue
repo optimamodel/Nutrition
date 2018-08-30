@@ -116,8 +116,6 @@ Last update: 2018-08-09
         </div>
       </div>
       
-      <!-- Popup spinner -->
-      <popup-spinner></popup-spinner>
     
     </div>
   </div>
@@ -132,7 +130,6 @@ Last update: 2018-08-09
   import status from '@/services/status-service'  
   import router from '@/router'
   import Vue from 'vue';
-  import PopupSpinner from './Spinner.vue'
 
   const FLOAT_FORMATTER = d3.format('.0f');
   const PERCENT_FORMATTER = (d) => d3.format('.1%')(d / 100);
