@@ -41,7 +41,16 @@ class ScenResult(object):
         else: 
             output = outs
         return output
-    
+
+    def get_allocs(self, ref=True):
+        allocs = sc.odict()
+        for name, prog in self.programs.iteritems():
+            spend = prog.annual_spend
+            if not ref and prog.reference:
+                spend -= spend[0] # baseline year is reference spending, subtracted from every year
+            allocs[name] = spend
+        return allocs
+
     def plot(self, toplot=None):
         figs = make_plots(self, toplot=toplot)
         return figs
