@@ -12,7 +12,7 @@ import time
 import config
 import matplotlib.pyplot as ppl
 ppl.switch_backend(config.MATPLOTLIB_BACKEND)
-from sciris.weblib.tasks import make_celery_instance, add_task_funcs, make_register_async_task
+import scirisweb as sw
 import projects as prj
 from rpcs import load_project, save_project
 import mpld3
@@ -26,10 +26,10 @@ task_func_dict = {}
 
 # Task function registration decorator created using call to 
 # make_register_async_task().
-register_async_task = make_register_async_task(task_func_dict)
+register_async_task = sw.make_async_tag(task_func_dict)
 
 # Create the Celery instance for this module.
-celery_instance = make_celery_instance(config=config)
+celery_instance = sw.make_celery_instance(config=config)
 
 # This is needed in Windows using celery Version 3.1.25 in order for the
 # add_task_funcs() function below to successfully add the asynchronous task 
@@ -85,4 +85,4 @@ def test_error():
 
 # Add the asynchronous task functions in this module to the tasks.py module 
 # so run_task() can call them.
-add_task_funcs(task_func_dict)
+sw.add_task_funcs(task_func_dict)

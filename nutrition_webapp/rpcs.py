@@ -15,21 +15,19 @@ from shutil import copyfile
 from pprint import pprint
 import mpld3
 import numpy as np
-from matplotlib.pyplot import rc
-rc('font', size=12)
-
 import sciris as sc
 import scirisweb as sw
-
 import nutrition.ui as nu
 from . import projects as prj
+from matplotlib.pyplot import rc
+rc('font', size=12)
 
 
 # Dictionary to hold all of the registered RPCs in this module.
 RPC_dict = {}
 
 # RPC registration decorator factory created using call to make_register_RPC().
-register_RPC = sw.make_register_RPC(RPC_dict)
+register_RPC = sw.makeRPCtag(RPC_dict)
 
 
         
@@ -219,7 +217,7 @@ def get_version_info():
 	return version_info
 
     
-@register_RPC(validation_type='nonanonymous user')
+@register_RPC(validation='named')
 def get_scirisdemo_projects():
     """
     Return the projects associated with the Sciris Demo user.
@@ -243,7 +241,7 @@ def get_scirisdemo_projects():
     output = {'projects': sorted_summary_list}
     return output
 
-@register_RPC(validation_type='nonanonymous user')
+@register_RPC(validation='named')
 def load_project_summary(project_id):
     """
     Return the project summary, given the Project UID.
@@ -256,7 +254,7 @@ def load_project_summary(project_id):
     return load_project_summary_from_project_record(project_entry)
 
 
-@register_RPC(validation_type='nonanonymous user')
+@register_RPC(validation='named')
 def load_current_user_project_summaries():
     """
     Return project summaries for all projects the user has to the client.
@@ -265,7 +263,7 @@ def load_current_user_project_summaries():
     return load_current_user_project_summaries2()
 
 
-@register_RPC(validation_type='nonanonymous user')                
+@register_RPC(validation='named')                
 def load_all_project_summaries():
     """
     Return project summaries for all projects to the client.
@@ -279,7 +277,7 @@ def load_all_project_summaries():
     return {'projects': map(load_project_summary_from_project_record, 
         project_entries)}
             
-@register_RPC(validation_type='nonanonymous user')    
+@register_RPC(validation='named')    
 def delete_projects(project_ids):
     """
     Delete all of the projects with the passed in UIDs.
@@ -295,7 +293,7 @@ def delete_projects(project_ids):
         if record is not None:
             prj.proj_collection.delete_object_by_uid(project_id)
 
-@register_RPC(call_type='download', validation_type='nonanonymous user')   
+@register_RPC(call_type='download', validation='named')   
 def download_project(project_id):
     """
     For the passed in project UID, get the Project on the server, save it in a 
@@ -308,7 +306,7 @@ def download_project(project_id):
     print(">> download_project %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
 
-@register_RPC(call_type='download', validation_type='nonanonymous user')   
+@register_RPC(call_type='download', validation='named')   
 def download_databook(project_id):
     """
     Download databook
@@ -321,7 +319,7 @@ def download_databook(project_id):
     return full_file_name # Return the full filename.
 
 
-@register_RPC(call_type='download', validation_type='nonanonymous user')   
+@register_RPC(call_type='download', validation='named')   
 def download_defaults(project_id):
     """
     Download defaults
@@ -334,7 +332,7 @@ def download_defaults(project_id):
     return full_file_name # Return the full filename.
 
 
-@register_RPC(call_type='download', validation_type='nonanonymous user')
+@register_RPC(call_type='download', validation='named')
 def load_zip_of_prj_files(project_ids):
     """
     Given a list of project UIDs, make a .zip file containing all of these 
@@ -365,7 +363,7 @@ def load_zip_of_prj_files(project_ids):
     # Return the server file name.
     return server_zip_fname
 
-@register_RPC(validation_type='nonanonymous user')
+@register_RPC(validation='named')
 def add_demo_project(user_id):
     """
     Add a demo Optima TB project
@@ -388,7 +386,7 @@ def add_demo_project(user_id):
     return { 'projectId': str(proj.uid) }
 
 
-@register_RPC(call_type='download', validation_type='nonanonymous user')
+@register_RPC(call_type='download', validation='named')
 def create_new_project(user_id, proj_name):
     """
     Create a new Optima Nutrition project.
@@ -406,7 +404,7 @@ def create_new_project(user_id, proj_name):
     return full_file_name
 
 
-@register_RPC(call_type='upload', validation_type='nonanonymous user')
+@register_RPC(call_type='upload', validation='named')
 def upload_databook(databook_filename, project_id):
     """ Upload a databook to a project. """
     print(">> upload_databook '%s'" % databook_filename)
@@ -417,7 +415,7 @@ def upload_databook(databook_filename, project_id):
     return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
 
 
-@register_RPC(validation_type='nonanonymous user')
+@register_RPC(validation='named')
 def update_project_from_summary(project_summary):
     """
     Given the passed in project summary, update the underlying project 
@@ -436,7 +434,7 @@ def update_project_from_summary(project_summary):
     # Save the changed project to the DataStore.
     save_project(proj)
     
-@register_RPC(validation_type='nonanonymous user')    
+@register_RPC(validation='named')    
 def copy_project(project_id):
     """
     Given a project UID, creates a copy of the project with a new UID and 
@@ -471,7 +469,7 @@ def copy_project(project_id):
     return { 'projectId': copy_project_id }
 
 
-@register_RPC(call_type='upload', validation_type='nonanonymous user')
+@register_RPC(call_type='upload', validation='named')
 def create_project_from_prj_file(prj_filename, user_id):
     """
     Given a .prj file name and a user UID, create a new project from the file 
@@ -497,7 +495,7 @@ def create_project_from_prj_file(prj_filename, user_id):
     return { 'projectId': str(proj.uid) }
 
 
-@register_RPC(call_type='download', validation_type='nonanonymous user')
+@register_RPC(call_type='download', validation='named')
 def export_results(project_id):
     proj = load_project(project_id, raise_exception=True) # Load the project with the matching UID.
     file_name = '%s outputs.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
@@ -568,7 +566,7 @@ def js_to_py_scen(js_scen):
     return py_json
     
 
-@register_RPC(validation_type='nonanonymous user')    
+@register_RPC(validation='named')    
 def get_scenario_info(project_id, key=None):
 
     print('Getting scenario info...')
@@ -585,7 +583,7 @@ def get_scenario_info(project_id, key=None):
     return scenario_summaries
 
 
-@register_RPC(validation_type='nonanonymous user')    
+@register_RPC(validation='named')    
 def set_scenario_info(project_id, scenario_summaries):
 
     print('Setting scenario info...')
@@ -605,7 +603,7 @@ def set_scenario_info(project_id, scenario_summaries):
     return None
 
 
-@register_RPC(validation_type='nonanonymous user')    
+@register_RPC(validation='named')    
 def get_default_scenario(project_id):
 
     print('Creating default scenario...')
@@ -623,7 +621,7 @@ def get_default_scenario(project_id):
     
     
 
-@register_RPC(validation_type='nonanonymous user')    
+@register_RPC(validation='named')    
 def run_scenarios(project_id):
     
     print('Running scenarios...')
@@ -716,7 +714,7 @@ def js_to_py_optim(js_optim):
     return json
     
 
-@register_RPC(validation_type='nonanonymous user')    
+@register_RPC(validation='named')    
 def get_optim_info(project_id):
 
     print('Getting optimization info...')
@@ -733,7 +731,7 @@ def get_optim_info(project_id):
     return optim_summaries
 
 
-@register_RPC(validation_type='nonanonymous user')    
+@register_RPC(validation='named')    
 def set_optim_info(project_id, optim_summaries):
 
     print('Setting optimization info...')
@@ -753,7 +751,7 @@ def set_optim_info(project_id, optim_summaries):
     return None
     
 
-@register_RPC(validation_type='nonanonymous user')    
+@register_RPC(validation='named')    
 def get_default_optim(project_id):
 
     print('Getting default optimization...')

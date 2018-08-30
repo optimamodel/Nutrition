@@ -4,7 +4,7 @@ main.py -- main module for the Optima Nutrition webapp.
 Last update: 2018jul30
 """
 
-import sciris.web as sw
+import scirisweb as sw
 from . import config, projects, rpcs, apptasks # analysis:ignore
 
 def make_app():
@@ -15,7 +15,7 @@ def make_app():
 def run():
     app = make_app() # Make the app
     projects.init_projects(app) # Initialize the projects.
-    app.run_server() # Run the client page with Flask and a Twisted server.
+    app.run() # Run the client page with Flask and a Twisted server.
     return None
 
 if __name__ == '__main__':

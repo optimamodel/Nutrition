@@ -24,7 +24,7 @@ proj_collection = None
 # Classes
 #
 
-class ProjectSO(sw.ScirisObject):
+class ProjectSO(sw.Blob):
     """
     A ScirisObject-wrapped Optima Nutrition Project object.
     
@@ -118,7 +118,7 @@ class ProjectSO(sw.ScirisObject):
         return self.proj.name + ".prj"
     
         
-class ProjectCollection(sw.ScirisCollection):
+class ProjectCollection(sw.BlobDict):
     """
     A collection of Projects.
     
