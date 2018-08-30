@@ -7,7 +7,7 @@ from .version import version
 from .optimization import Optim
 from .data import Dataset
 from .scenarios import Scen, run_scen
-from .plotting import make_plots
+from .plotting import make_plots, get_costeff
 from .model import Model
 from .utils import trace_exception, default_trackers, pretty_labels
 from .demo import demo_scens, demo_optims
@@ -310,10 +310,9 @@ class Project(object):
         self.add_result(results, name='scens')
         return None
 
-    def run_optims(self, optimid=None, optims=None, maxiter=5, swarmsize=10, maxtime=10, parallel=True):
-        if not optimid: optimid = -1
+    def run_optims(self, key=-1, optims=None, maxiter=5, swarmsize=10, maxtime=10, parallel=True):
         if optims is not None: self.add_optims(optims)
-        optim = self.optim(optimid)
+        optim = self.optim(key)
         results = []
         if optim.active:
             # run baseline
@@ -328,11 +327,9 @@ class Project(object):
             self.add_result(results, name=optim.name)
         return None
 
-    def get_results(self, groupid=None):
-        """ result_keys is a list of keys corresponding to the desired result.
-        Return: a list of result objects """
-        if groupid is None: groupid = -1
-        results = self.result(groupid)
+    def get_results(self, key=-1):
+        """ Key is a string or integer """
+        results = self.result(key)
         return results
 
     def get_output(self, outcomes=None):
@@ -348,10 +345,15 @@ class Project(object):
         print('Not implemented')
 
     @trace_exception
-    def plot(self, groupid=-1, toplot=None, optim=False):
-        figs = make_plots(self.get_results(groupid), toplot=toplot, optim=optim)
+    def plot(self, key=-1, toplot=None, optim=False):
+        figs = make_plots(self.get_results(key), toplot=toplot, optim=optim)
         return figs
 
+    def get_costeff(self, key=-1):
+        """ Returns a nested odict with keys (scenario name, outcome) and value (output). Output is type string """
+        results = self.get_results(key)
+        costeff = get_costeff(results)
+        return costeff
 
 def demo(scens=False, optims=False):
     """ Create a demo project with demo settings """
