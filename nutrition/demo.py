@@ -1,35 +1,36 @@
 ### demo scenarios and optimizations
+import sciris as sc
 from .scenarios import Scen
 from .optimization import Optim
 
 def demo_scens():
     # baseline
-    kwargs0 = {'name': 'Baseline',
-         'model_name': 'demo',
-         'scen_type': 'coverage',
-         'covs': [],
-         'prog_set': []}
+    kwargs0 = {'name':       'Baseline',
+               'model_name': 'demo',
+               'scen_type':  'coverage',
+               'progvals':   sc.odict()
+               }
     
     # stunting reduction
-    kwargs1 = {'name': 'Stunting example',
-         'model_name': 'demo',
-         'scen_type': 'coverage',
-         'covs': [[1], [1]],
-         'prog_set': ['IYCF 1', 'Vitamin A supplementation']}
+    kwargs1 = {'name':       'Stunting example',
+               'model_name': 'demo',
+               'scen_type':  'coverage',
+               'progvals':   sc.odict({'IYCF 1':[1], 'Vitamin A supplementation':[1]})
+               }
     
     # wasting reduction
-    kwargs2 = {'name': 'Wasting example',
-                         'model_name': 'demo',
-                         'scen_type': 'coverage',
-                         'covs': [[1]],
-                         'prog_set': ['Treatment of SAM']}
+    kwargs2 = {'name':       'Wasting example',
+               'model_name': 'demo',
+               'scen_type':  'coverage',
+               'progvals':   sc.odict({'Treatment of SAM':[1]})
+               }
     
     # anaemia reduction
-    kwargs3 = {'name': 'Anaemia example',
-                         'model_name': 'demo',
-                         'scen_type': 'coverage',
-                         'covs': [[1], [1], [1], [1]],
-                         'prog_set': ['Micronutrient powders', 'IFAS (community)', 'IFAS (retailer)', 'IFAS (school)']}
+    kwargs3 = {'name':       'Anaemia example',
+               'model_name': 'demo',
+               'scen_type':  'coverage',
+               'progvals': sc.odict({'Micronutrient powders':[1], 'IFAS (community)':[1], 'IFAS (retailer)':[1], 'IFAS (school)':[1]})
+               }
 
     scens = [Scen(**kwargs) for kwargs in [kwargs0, kwargs1, kwargs2, kwargs3]]
     return scens
