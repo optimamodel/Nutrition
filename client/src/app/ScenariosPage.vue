@@ -140,11 +140,11 @@ Last update: 2018-08-09
 <script>
   import axios from 'axios'
   var filesaver = require('file-saver')
-  import rpcservice from '@/services/rpc-service'
-  import taskservice from '@/services/task-service'
+  import utils from '@/services/utils'
+  import rpcs from '@/services/rpc-service'
   import status from '@/services/status-service'
   import router from '@/router'
-  import Vue from 'vue';
+  import help from '@/app/HelpLink.vue'
 
   const FLOAT_FORMATTER = d3.format('.0f');
   const PERCENT_FORMATTER = (d) => d3.format('.1%')(d / 100);
@@ -212,7 +212,7 @@ Last update: 2018-08-09
         status.start(this)
       
         // Get the current user's scenario summaries from the server.
-        rpcservice.rpcCall('get_scenario_info', [this.projectID()])
+        rpcs.rpc('get_scenario_info', [this.projectID])
         .then(response => {
           this.scenSummaries = response.data // Set the scenarios to what we received.
           
@@ -230,7 +230,7 @@ Last update: 2018-08-09
       getDefaultScen() {
         console.log('getDefaultScen() called')
         // Get the current user's scenario summaries from the server.
-        rpcservice.rpcCall('get_default_scenario', [this.projectID()])
+        rpcs.rpc('get_default_scenario', [this.projectID])
         .then(response => {
           this.defaultScen = response.data // Set the scenarios to what we received.
           this.defaultScenYears = []
@@ -250,7 +250,7 @@ Last update: 2018-08-09
         // Start indicating progress.
         status.start(this)
           
-        rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
+        rpcs.rpc('set_scenario_info', [this.projectID, this.scenSummaries])
         .then(response => {
           // Indicate success.
           status.succeed(this, 'Scenarios saved')
@@ -264,7 +264,7 @@ Last update: 2018-08-09
       addScenarioModal(scenarioType) {
         // Open a model dialog for creating a new project
         console.log('addScenarioModal() called');
-        rpcservice.rpcCall('get_default_scenario', [this.projectID()])
+        rpcs.rpc('get_default_scenario', [this.projectID])
         .then(response => {
           this.defaultScen = response.data // Set the scenarios to what we received.
           this.defaultScen.scen_type = scenarioType
@@ -300,7 +300,7 @@ Last update: 2018-08-09
           this.scenSummaries.push(newScen)
         }
         console.log(newScen)
-        rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
+        rpcs.rpc('set_scenario_info', [this.projectID, this.scenSummaries])
         .then(response => {
           // Indicate success.
           status.succeed(this, 'Scenario added')
@@ -334,7 +334,7 @@ Last update: 2018-08-09
         })
         newScen.name = this.getUniqueName(newScen.name, otherNames)
         this.scenSummaries.push(newScen)
-        rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
+        rpcs.rpc('set_scenario_info', [this.projectID, this.scenSummaries])
         .then( response => {
           // Indicate success.
           status.succeed(this, 'Scenario copied')
@@ -358,7 +358,7 @@ Last update: 2018-08-09
             this.scenSummaries.splice(i, 1);
           }
         }
-        rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
+        rpcs.rpc('set_scenario_info', [this.projectID, this.scenSummaries])
         .then( response => {
           // Indicate success.
           status.succeed(this, 'Scenario deleted')
@@ -375,10 +375,10 @@ Last update: 2018-08-09
         console.log('runScenarios() called')
         status.start(this)        
         // Make sure they're saved first
-        rpcservice.rpcCall('set_scenario_info', [this.projectID(), this.scenSummaries])
+        rpcs.rpc('set_scenario_info', [this.projectID, this.scenSummaries])
         .then(response => {
           // Go to the server to get the results from the package set.
-          rpcservice.rpcCall('run_scenarios', [this.projectID()])
+          rpcs.rpc('run_scenarios', [this.projectID])
           .then(response => {
             this.clearGraphs() // Once we receive a response, we can work with a clean slate
             this.serverresponse = response.data // Pull out the response data.
@@ -447,7 +447,7 @@ Last update: 2018-08-09
 
       exportResults() {
         console.log('exportResults() called')
-        rpcservice.rpcDownloadCall('export_results', [this.projectID()]) // Make the server call to download the framework to a .prj file.
+        rpcs.download('export_results', [this.projectID]) // Make the server call to download the framework to a .prj file.
           .catch(error => {
             // Failure popup.
             status.failurePopup(this, 'Could not export results: ' + error.message)
