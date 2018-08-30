@@ -1,20 +1,22 @@
 <!--
 Login page
 
-Last update: 2018-05-26
+Last update: 2018-08-30
 -->
 
 <template>
-  <div class="SitePage" style="background-color:#f8f8f4; position:fixed; min-height:100%; min-width:100%; padding:0 0 0 0" v-model="getVersionInfo"> <!-- Should match _variables.scss:$bg-nude -->
+  <div style="background-color:#f8f8f4; position:fixed; min-height:100%; min-width:100%; padding:0 0 0 0" v-model="getVersionInfo"> <!-- Should match _variables.scss:$bg-nude -->
     <div style="background-color:#0c2544; position:absolute; height:100%; width:260px">
       <div class="logo">
         <div class="simple-text" style="font-size:20px; color:#fff; font-weight:bold; padding:20px">
           <span style="padding-left:10px">
-            <img src="static/img/optima-inverted-logo.png" width="160px" vertical-align="middle" alt>
+            <a href="http://ocds.co" target="_blank">
+              <img src="static/img/optima-inverted-logo.png" width="160px" vertical-align="middle" alt>
+            </a>
           </span>
           <br/><br/>
           <div style="font-size:14px; font-weight:normal">
-            Beta version {{ version }} ({{ date }})
+            Version {{ version }} ({{ date }})
           </div>
         </div>
       </div>
@@ -60,7 +62,7 @@ Last update: 2018-05-26
 </template>
 
 <script>
-  import rpcservice from '@/services/rpc-service'
+  import rpcs from '@/services/rpc-service'
   import userservice from '@/services/user-service'
   import router from '@/router'
 
@@ -79,7 +81,7 @@ Last update: 2018-05-26
 
     computed: {
       getVersionInfo() {
-        rpcservice.rpcCall('get_version_info')
+        rpcs.rpc('get_version_info')
         .then(response => {
           this.version = response.data['version'];
           this.date = response.data['date'];
@@ -115,7 +117,8 @@ Last update: 2018-05-26
           }
         })
         .catch(error => {
-          this.loginResult = 'Server error.  Please try again later.'
+          console.log('Login failed: ' + error.message)
+          this.loginResult = "We're sorry, it seems we're having trouble communicating with the server.  Please contact support or try again later."
         })
       }
     }

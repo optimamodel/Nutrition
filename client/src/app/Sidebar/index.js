@@ -9,6 +9,11 @@ const SidebarStore = {
       path: '/projects'
     },
     {
+      name: 'Inputs',
+      icon: 'ti-ruler-alt-2',
+      path: '/inputs'
+    },
+    {
       name: 'Scenarios',
       icon: 'ti-control-shuffle',
       path: '/scenarios'
