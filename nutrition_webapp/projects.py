@@ -207,7 +207,7 @@ def init_projects(app):
     global proj_collection  # need this to allow modification within the module
     
     # Look for an existing ProjectCollection.
-    proj_collection_uid = sw.globalvars.data_store.get_uid_from_instance('projectscoll', 
+    proj_collection_uid = sw.globalvars.data_store.get_uid('projectscoll', 
         'Projects Collection')
     
     # Create the projects collection object.  Note, that if no match was found, 
@@ -229,7 +229,7 @@ def init_projects(app):
         if app.config['LOGGING_MODE'] == 'FULL':
             print('>> Starting a demo project.')
         proj = on.project.Project(name='Demo project')  
-        projSO = ProjectSO(proj, user.get_scirisdemo_user())
+        projSO = ProjectSO(proj, sw.get_scirisdemo_user())
         proj_collection.add_object(projSO)
         
     if app.config['LOGGING_MODE'] == 'FULL':
@@ -251,7 +251,7 @@ def apptasks_load_projects(config):
     sw.globalvars.data_store.load()
     
     # Look for an existing ProjectCollection.
-    proj_collection_uid = sw.globalvars.data_store.get_uid_from_instance('projectscoll', 
+    proj_collection_uid = sw.globalvars.data_store.get_uid('projectscoll', 
         'Projects Collection')
     
     # Create the projects collection object.  Note, that if no match was found, 
