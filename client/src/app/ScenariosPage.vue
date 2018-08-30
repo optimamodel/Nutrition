@@ -154,7 +154,6 @@ Last update: 2018-08-09
     name: 'ScenariosPage',
     
     components: {
-      PopupSpinner
     },
   
     data() {

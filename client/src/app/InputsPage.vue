@@ -58,10 +58,6 @@ Last update: 2018-08-02
       </div>
       <br>
 
-
-      <!-- Popup spinner -->
-      <popup-spinner></popup-spinner>
-
     </div>
 
   </div>
@@ -75,13 +71,11 @@ Last update: 2018-08-02
   import status from '@/services/status-service'
   import router from '@/router'
   import Vue from 'vue';
-  import PopupSpinner from './Spinner.vue'
 
   export default {
     name: 'InputsPage',
 
     components: {
-      PopupSpinner
     },
 
     data() {

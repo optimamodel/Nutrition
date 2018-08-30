@@ -139,7 +139,6 @@ Last update: 2018-08-09
     name: 'OptimizationPage',
     
     components: {
-      PopupSpinner
     },
   
     data() {

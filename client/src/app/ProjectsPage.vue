@@ -166,7 +166,6 @@ export default {
   name: 'ProjectsPage',
   
   components: {
-    PopupSpinner
   },
   
   data() {
