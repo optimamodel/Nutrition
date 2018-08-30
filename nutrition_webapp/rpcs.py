@@ -631,6 +631,7 @@ def run_scenarios(project_id):
     print('Running scenarios...')
     proj = load_project(project_id, raise_exception=True)
     
+    proj.results.clear() # Remove any existing results
     proj.run_scens()    
     active_keys = [scen.name for scen in proj.scens.itervalues() if scen.active]
     figs = proj.plot(active_keys)
