@@ -1,8 +1,8 @@
-from utils import restratify
-from . import settings
-import sciris.core as sc
-from .utils import default_trackers
 import numpy as np
+import sciris as sc
+from . import settings
+from .utils import default_trackers, restratify
+
 
 class Model:
     def __init__(self, pops, prog_info, t=None, adjust_cov=False, timeTrends=False):

@@ -19,7 +19,7 @@ class Scen(object):
         self.active = active
 
     def __repr__(self):
-        output  = sc.desc(self)
+        output  = sc.prepr(self)
         return output
 
     def get_attr(self):

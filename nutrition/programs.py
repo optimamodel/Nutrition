@@ -1,9 +1,10 @@
-import numpy as np
-from .settings import Settings
 from functools import partial
-import sciris.core as sc
-from .utils import get_new_prob
 from math import ceil
+import numpy as np
+import sciris as sc
+from .settings import Settings
+from .utils import get_new_prob
+
 
 class Program(object):
     """Each instance of this class is an intervention,
@@ -42,7 +43,7 @@ class Program(object):
         self._set_threshold_deps()
     
     def __repr__(self):
-        output = sc.desc(self)
+        output = sc.prepr(self)
         return output
 
     def update_cov(self, cov, spend):

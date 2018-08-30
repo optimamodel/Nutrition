@@ -14,8 +14,8 @@ class ScenResult(object):
         self.obj = obj
         self.years = range(model.t[0], model.t[1]+1)
         self.uid = sc.uuid()
-        self.created = sc.today()
-        self.modified = sc.today()
+        self.created = sc.now()
+        self.modified = sc.now()
 
     def __repr__(self):
         output = sc.desc(self)

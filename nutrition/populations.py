@@ -1,10 +1,11 @@
-from .utils import solve_quad, restratify, fit_poly, system, check_sol
-from . import settings
-import sciris.core as sc
+from functools import partial
 from math import pow
 import numpy as np
 from scipy.optimize import fsolve
-from functools import partial
+import sciris as sc
+from . import settings
+from .utils import solve_quad, restratify, fit_poly, system, check_sol
+
 
 class AgeGroup(object):
     def __init__(self, age, pop_size, anaemia_dist):

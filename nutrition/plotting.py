@@ -1,8 +1,8 @@
 import pylab as pl
 import numpy as np
-import sciris.core as sc
-import utils
 import scipy.interpolate
+import sciris as sc
+from . import utils
 
 # Choose where the legend appears: outside right or inside right
 for_frontend = True

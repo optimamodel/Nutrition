@@ -2,8 +2,8 @@
 #%% Imports
 #######################################################################################################
 
-import sciris.core as sc
 import numpy as np
+import sciris as sc
 from .version import version
 from .optimization import Optim
 from .data import Dataset
@@ -61,8 +61,8 @@ class Project(object):
         ## Define other quantities
         self.name = name
         self.uid = sc.uuid()
-        self.created = sc.today()
-        self.modified = sc.today()
+        self.created = sc.now()
+        self.modified = sc.now()
         self.version = version
         self.gitinfo = sc.gitinfo(__file__)
         self.filename = None # File path, only present if self.save() is used
@@ -148,7 +148,7 @@ class Project(object):
         formatdata[:,:] = 'plain' # Format data as plain
         formatdata[:,0] = 'bold' # Left side bold
         formatdata[0,:] = 'header' # Top with green header
-        sc.export_xlsx(filename=filename, data=data, formats=formats, formatdata=formatdata)
+        sc.savespreadsheet(filename=filename, data=data, formats=formats, formatdata=formatdata)
         return filepath
 
     def add(self, name, item, what=None):
@@ -156,7 +156,7 @@ class Project(object):
         structlist = self.getwhat(what=what)
         structlist[name] = item
         print 'Item "{}" added to "{}"'.format(name, what)
-        self.modified = sc.today()
+        self.modified = sc.now()
 
     def remove(self, what, name=None):
         structlist = self.getwhat(what=what)
@@ -166,7 +166,7 @@ class Project(object):
         else:
             structlist.pop(name)
         print '{} "{}" removed'.format(what, name)
-        self.modified = sc.today()
+        self.modified = sc.now()
 
     def getwhat(self, what):
         '''
@@ -249,7 +249,7 @@ class Project(object):
         # get default scenarios
         defaults = get_defaults(name, model)
         self.add_scens(defaults)
-        self.modified = sc.today()
+        self.modified = sc.now()
 
     def add_scens(self, scens, overwrite=False):
         """ Adds scenarios to the Project's self.scens odict.
@@ -263,7 +263,7 @@ class Project(object):
         scens = sc.promotetolist(scens)
         for scen in scens:
             self.add(name=scen.name, item=scen, what='scen')
-        self.modified = sc.today()
+        self.modified = sc.now()
 
     def run_baseline(self, model_name, prog_set, dorun=True):
         model = sc.dcp(self.model(model_name))
@@ -278,7 +278,7 @@ class Project(object):
         if overwrite: self.optims = sc.odict() # remove exist scenarios
         for optim in optim_list:
             self.add(name=optim.name, item=optim, what='optim')
-        self.modified = sc.today()
+        self.modified = sc.now()
 
     def add_result(self, result, name=None):
         """Add result by name"""

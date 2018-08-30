@@ -1,9 +1,7 @@
-import multiprocessing
-import sciris.core as sc
 import numpy as np
-from . import pso
-from . import asd
-from . import utils
+import multiprocessing
+import sciris as sc
+from . import pso, utils
 from .scenarios import Scen, run_scen
 
 
@@ -45,11 +43,11 @@ class Optim(object):
         self.active = active
 
         self.num_procs = None
-        self.optim_allocs = sc.odict
+        self.optim_allocs = sc.odict()
         self.BOCs = {}
 
     def __repr__(self):
-        output  = sc.desc(self)
+        output  = sc.prepr(self)
         return output
 
     ######### SETUP ############
@@ -136,7 +134,7 @@ class Optim(object):
             xmax = np.full(numprogs, free)
             now = sc.tic()
             x0, fopt = pso.pso(obj_func, xmin, xmax, kwargs=kwargs, maxiter=maxiter, swarmsize=swarmsize)
-            x, fval, flag = asd.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=2, maxtime=maxtime)
+            x, fval, flag = sc.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=2, maxtime=maxtime)
             self.print_status(self.obj, mult, flag, now)
             scaled = utils.scale_alloc(free, x)
             best_alloc = utils.add_fixed_alloc(fixed, scaled, inds)
