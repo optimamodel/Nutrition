@@ -26,8 +26,9 @@ def default_trackers(prev=None):
         'nonpw_anaemprev',
         'child_deaths',
         'pw_deaths',
-        'thrive']
-    return outcome
+        'thrive',
+        'stunted',
+        'wasted']
     if prev is not None:
         if prev:
             outcomes = [out for out in outcomes if 'prev' in out]
