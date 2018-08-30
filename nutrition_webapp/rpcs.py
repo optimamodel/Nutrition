@@ -1,12 +1,12 @@
 """
-rpcs.py -- code related to HealthPrior project management
+Optima Nutrition remote procedure calls (RPCs)
     
-Last update: 2018jun04 by cliffk
+Last update: 2018aug30 by cliffk
 """
 
-#
-# Imports
-#
+###############################################################
+### Imports
+##############################################################
 
 import os
 from zipfile import ZipFile
@@ -32,7 +32,7 @@ register_RPC = sw.makeRPCtag(RPC_dict)
 
         
 ###############################################################
-#%% Other functions (mostly helpers for the RPCs)
+### Other functions (mostly helpers for the RPCs)
 ##############################################################
 
 def get_path(filename):
@@ -162,7 +162,7 @@ def save_project(proj):
     
     # Copy the project, only save what we want...
     new_project = sc.dcp(proj)
-    new_project.modified = sc.today()
+    new_project.modified = sc.now()
          
     # Create the new project entry and enter it into the ProjectCollection.
     # Note: We don't need to pass in project.uid as a 3rd argument because 
@@ -199,7 +199,7 @@ def save_project_as_new(proj, user_id):
 
 
 ##################################################################################
-#%% Project RPCs
+### Project RPCs
 ##################################################################################
 
 # Not a project RPC, but doesn't really belong
@@ -410,7 +410,7 @@ def upload_databook(databook_filename, project_id):
     print(">> upload_databook '%s'" % databook_filename)
     proj = load_project(project_id, raise_exception=True)
     proj.load_data(filepath=databook_filename) # Reset the project name to a new project name that is unique.
-    proj.modified = sc.today()
+    proj.modified = sc.now()
     save_project(proj) # Save the new project in the DataStore.
     return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
 
@@ -429,7 +429,7 @@ def update_project_from_summary(project_summary):
     proj.name = project_summary['project']['name']
     
     # Set the modified time to now.
-    proj.modified = sc.today()
+    proj.modified = sc.now()
     
     # Save the changed project to the DataStore.
     save_project(proj)
@@ -507,7 +507,7 @@ def export_results(project_id):
 
 
 ##################################################################################
-#%% Scenario functions and RPCs
+### Scenario functions and RPCs
 ##################################################################################
 
 def py_to_js_scen(py_scen, proj, key=None):
@@ -648,7 +648,7 @@ def run_scenarios(project_id):
 
 
 ##################################################################################
-#%% Optimization functions and RPCs
+### Optimization functions and RPCs
 ##################################################################################
 
 def objective_mapping(key=None, val=None):
