@@ -180,12 +180,14 @@ Last update: 2018-08-30
     },
 
     created() {
-      if (this.$store.state.currentUser.displayname === undefined) { // If we have no user logged in, automatically redirect to the login page.
+      let projectId = null
+      if (this.$store.state.currentUser.displayname == undefined) { // If we have no user logged in, automatically redirect to the login page.
         router.push('/login')
       } else {    // Otherwise...
-        if (this.projectID !== '') { // Get the active project ID if there is an active project.
-          this.updateProjectSummaries(this.projectID) // Load the project summaries of the current user.
+        if (this.$store.state.activeProject.project != undefined) { // Get the active project ID if there is an active project.
+          projectId = this.$store.state.activeProject.project.id
         }
+        this.updateProjectSummaries(projectId) // Load the project summaries of the current user.
       }
     },
 
@@ -193,8 +195,8 @@ Last update: 2018-08-30
 
       projectLoaded(uid) {
         console.log('projectLoaded called')
-        if (this.projectID !== '') {
-          if (this.projectID === uid) {
+        if (this.$store.state.activeProject.project != undefined) {
+          if (this.$store.state.activeProject.project.id === uid) {
             console.log('Project ' + uid + ' is loaded')
             return true
           } else {
