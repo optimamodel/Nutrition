@@ -2,7 +2,7 @@ import sciris as sc
 from .plotting import make_plots
 from .model import default_trackers
 
-class ScenResult(object):
+class ScenResult(sc.prettyobj):
     def __init__(self, name, model_name, model, obj=None, mult=None):
         self.name = name
         self.model_name = model_name
@@ -16,11 +16,7 @@ class ScenResult(object):
         self.uid = sc.uuid()
         self.created = sc.now()
         self.modified = sc.now()
-
-    def __repr__(self):
-        output = sc.desc(self)
-        return output
-
+        
     def model_attr(self):
         return self.model.__dict__
     

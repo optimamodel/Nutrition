@@ -4,7 +4,7 @@ from . import settings
 from .utils import default_trackers, restratify
 
 
-class Model:
+class Model(sc.prettyobj):
     def __init__(self, pops, prog_info, t=None, adjust_cov=False, timeTrends=False):
         self.pops = sc.dcp(pops)
         self.children, self.pw, self.nonpw = self.pops

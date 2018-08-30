@@ -5,7 +5,7 @@ from . import pso, utils
 from .scenarios import Scen, run_scen
 
 
-class Optim(object):
+class Optim(sc.prettyobj):
     """ Stores settings for running an optimization for a single objective. """
 
     def __init__(self, name=None, model_name=None, obj=None, weights=None, mults=None, prog_set=None, active=True,
@@ -46,9 +46,6 @@ class Optim(object):
         self.optim_allocs = sc.odict()
         self.BOCs = {}
 
-    def __repr__(self):
-        output  = sc.prepr(self)
-        return output
 
     ######### SETUP ############
 

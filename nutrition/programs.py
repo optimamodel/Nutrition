@@ -6,7 +6,7 @@ from .settings import Settings
 from .utils import get_new_prob
 
 
-class Program(object):
+class Program(sc.prettyobj):
     """Each instance of this class is an intervention,
     and all necessary data will be stored as attributes. Will store name, targetpop, popsize, coverage, edges etc
     Restricted coverage: the coverage amongst the target population (assumed given by user)
@@ -347,7 +347,7 @@ class Program(object):
         self.unit_cost *= scaleFactor
         self.set_costcov()
 
-class CostCovCurve:
+class CostCovCurve(sc.prettyobj):
     def __init__(self, unit_cost, sat, restrictedPop, unrestrictedPop, curveType='linear'):
         self.curveType = curveType
         self.unit_cost = unit_cost
@@ -439,7 +439,7 @@ def set_programs(prog_set, prog_data, all_years):
     return programs
 
 
-class ProgramInfo:
+class ProgramInfo(sc.prettyobj):
     def __init__(self, prog_data):
         self.prog_data = prog_data
         self.programs = None

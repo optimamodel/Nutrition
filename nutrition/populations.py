@@ -7,7 +7,7 @@ from . import settings
 from .utils import solve_quad, restratify, fit_poly, system, check_sol
 
 
-class AgeGroup(object):
+class AgeGroup(sc.prettyobj):
     def __init__(self, age, pop_size, anaemia_dist):
         self.age = age
         self.pop_size = pop_size
@@ -287,7 +287,7 @@ class Newborn(ChildAgeGroup):
 
 ####### Population classes #########
 
-class Population(object):
+class Population(sc.prettyobj):
     def __init__(self, name, data, default):
         self.name = name
         self.data = data
