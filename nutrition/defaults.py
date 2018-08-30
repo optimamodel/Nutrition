@@ -18,15 +18,15 @@ def get_defaults(modelname, model, basename='Baseline', zeroname='Zero cov'):
     :return: a list of default scenarios
     """
     progset = model.prog_info.base_progset()
-    # scale down to zero coverage
-    progvals = {prog: [0] for prog in progset}
-    kwargs1 = {'name': zeroname,
+    # maintain current coverage
+    progvals = {prog:[] for prog in progset}
+    kwargs1 = {'name': basename,
               'model_name': modelname,
               'scen_type': 'cov',
               'progvals': progvals}
-    # maintain current coverage
-    progvals = {prog:[] for prog in progset}
-    kwargs2 = {'name': basename,
+    # scale down to zero coverage
+    progvals = {prog: [0] for prog in progset}
+    kwargs2 = {'name': zeroname,
               'model_name': modelname,
               'scen_type': 'cov',
               'progvals': progvals}
