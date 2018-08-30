@@ -60,7 +60,7 @@ Last update: 2018-08-30
                 <i class="fas fa-caret-up" style="visibility: hidden"></i>
               </span>
             </th>
-            <th>Actions</th> <-- ATOMICA-NUTRITION DIFFERENCE -->
+            <th>Actions</th> <!-- ATOMICA-NUTRITION DIFFERENCE -->
           </tr>
           </thead>
           <tbody>
@@ -100,7 +100,7 @@ Last update: 2018-08-30
             <td style="text-align:left">
               {{ projectSummary.project.updatedTime ? projectSummary.project.updatedTime:
               'No modification' }}</td>
-            <td style="white-space: nowrap; text-align:left"> <-- ATOMICA-NUTRITION DIFFERENCE -->
+            <td style="white-space: nowrap; text-align:left"> <!-- ATOMICA-NUTRITION DIFFERENCE -->
               <button class="btn __blue" @click="uploadDatabook(projectSummary.project.id)">Upload databook</button>
               <button class="btn" @click="copyProject(projectSummary.project.id)">Copy</button>
               <button class="btn" @click="renameProject(projectSummary)">Rename</button>
@@ -138,7 +138,7 @@ Last update: 2018-08-30
           <input type="text"
                  class="txbox"
                  v-model="proj_name"/><br>
-        </div>  <-- ATOMICA-NUTRITION DIFFERENCE -->
+        </div>  <!-- ATOMICA-NUTRITION DIFFERENCE -->
         <div style="text-align:justify">
           <button @click="createNewProject()" class='btn __green' style="display:inline-block">
             Create
@@ -149,7 +149,7 @@ Last update: 2018-08-30
           </button>
         </div>
       </div>
-    </modal>  <-- ATOMICA-NUTRITION DIFFERENCE -->
+    </modal>  <!-- ATOMICA-NUTRITION DIFFERENCE -->
     
   </div>
 
@@ -179,10 +179,7 @@ Last update: 2018-08-30
         sortColumn: 'name',  // Column of table used for sorting the projects: name, country, creationTime, updatedTime, dataUploadTime
         sortReverse: false, // Sort in reverse order?
         projectSummaries: [], // List of summary objects for projects the user has
-        proj_name:  'New project', // For creating a new project: number of populations  <-- ATOMICA-NUTRITION DIFFERENCE -->
-        data_start: 2000, // For creating a new project: number of populations
-        data_end:   2035, // For creating a new project: number of populations
-        activeuid:  [], // WARNING, kludgy to get create progbook working
+        proj_name:  'New project', // For creating a new project: number of populations  // ATOMICA-NUTRITION DIFFERENCE
       }
     },
 
@@ -194,14 +191,12 @@ Last update: 2018-08-30
     },
 
     created() {
-      let projectId = null
-      if (this.$store.state.currentUser.displayname == undefined) { // If we have no user logged in, automatically redirect to the login page.
+      if (this.$store.state.currentUser.displayname === undefined) { // If we have no user logged in, automatically redirect to the login page.
         router.push('/login')
       } else {    // Otherwise...
-        if (this.$store.state.activeProject.project != undefined) { // Get the active project ID if there is an active project.
-          projectId = this.$store.state.activeProject.project.id
+        if (this.projectID !== '') { // Get the active project ID if there is an active project.
+          this.updateProjectSummaries(this.projectID) // Load the project summaries of the current user.
         }
-        this.updateProjectSummaries(projectId) // Load the project summaries of the current user.
       }
     },
 
@@ -209,8 +204,8 @@ Last update: 2018-08-30
 
       projectLoaded(uid) {
         console.log('projectLoaded called')
-        if (this.$store.state.activeProject.project != undefined) {
-          if (this.$store.state.activeProject.project.id === uid) {
+        if (this.projectID !== '') {
+          if (this.projectID === uid) {
             console.log('Project ' + uid + ' is loaded')
             return true
           } else {
@@ -249,15 +244,13 @@ Last update: 2018-08-30
             this.projectSummaries.forEach(theProj => { // Preprocess all projects.
               theProj.selected = false // Set to not selected.
               theProj.renaming = '' // Set to not being renamed.
-//          theProj.project.creationTime = new Date(theProj.project.creationTime) // Extract actual Date objects from the strings.
-//          theProj.project.updatedTime = new Date(theProj.project.updatedTime)
               if (theProj.project.creationTime >= lastCreationTime) { // Update the last creation time and ID if what se see is later.
                 lastCreationTime = theProj.project.creationTime
                 lastCreatedID = theProj.project.id
               }
             })
             if (this.projectSummaries.length > 0) { // If we have a project on the list...
-              if (setActiveID == null) { // If no ID is passed in, set the active project to the last-created project.
+              if (setActiveID === null) { // If no ID is passed in, set the active project to the last-created project.
                 this.openProject(lastCreatedID)
               } else { // Otherwise, set the active project to the one passed in.
                 this.openProject(setActiveID)
@@ -271,11 +264,11 @@ Last update: 2018-08-30
       },
 
       addDemoProject() {
-        console.log('addDemoProject() called')
-        status.start(this)
+        console.log('addDemoProject() called');
+        status.start(this);
         rpcs.rpc('add_demo_project', [this.$store.state.currentUser.UID]) // Have the server create a new project.
           .then(response => {
-            this.updateProjectSummaries(response.data.projectId) // Update the project summaries so the new project shows up on the list.
+            this.updateProjectSummaries(response.data.projectId); // Update the project summaries so the new project shows up on the list.
             status.succeed(this, '')
           })
           .catch(error => {
@@ -291,12 +284,12 @@ Last update: 2018-08-30
 
 
       createNewProject() {
-        console.log('createNewProject() called')
-        this.$modal.hide('create-project')
+        console.log('createNewProject() called');
+        this.$modal.hide('create-project');
         status.start(this) // Start indicating progress. 
         rpcs.download('create_new_project', [this.$store.state.currentUser.UID, this.proj_name]) // Have the server create a new project.
           .then(response => {
-            this.updateProjectSummaries(null) // Update the project summaries so the new project shows up on the list.
+            this.updateProjectSummaries(null); // Update the project summaries so the new project shows up on the list.
             status.succeed(this, 'New project "' + this.proj_name + '" created') // Indicate success.
           })
           .catch(error => {
@@ -400,7 +393,7 @@ Last update: 2018-08-30
         if (projectSummary.renaming === '') { // If the project is not in a mode to be renamed, make it so.
           projectSummary.renaming = projectSummary.project.name
         } else { // Otherwise (it is to be renamed)...
-          let newProjectSummary = _.deepClone(projectSummary)) // Make a deep copy of the projectSummary object by JSON-stringifying the old object, and then parsing the result back into a new object.
+          let newProjectSummary = _.deepClone(projectSummary) // Make a deep copy of the projectSummary object by JSON-stringifying the old object, and then parsing the result back into a new object.
           newProjectSummary.project.name = projectSummary.renaming // Rename the project name in the client list from what's in the textbox.
           status.start(this)
           rpcs.rpc('update_project_from_summary', [newProjectSummary]) // Have the server change the name of the project by passing in the new copy of the summary.
