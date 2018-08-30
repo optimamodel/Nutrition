@@ -178,22 +178,13 @@ Last update: 2018-08-09
     },
 
     computed: {
-      activeProjectID() {
-        if (this.$store.state.activeProject.project === undefined) {
-          return ''
-        } else {
-          return this.$store.state.activeProject.project.id
-        }
-      },
-      
-      placeholders() {
-        var indices = []
-        for (var i = 0; i <= 100; i++) {
-          indices.push(i);
-        }
-        return indices;
-      },
-
+      projectID()    { return utils.projectID(this) },
+      hasData()      { return utils.hasData(this) },
+      simStart()     { return utils.simStart(this) },
+      simEnd()       { return utils.simEnd(this) },
+      simYears()     { return utils.simYears(this) },
+      activePops()   { return utils.activePops(this) },
+      placeholders() { return utils.placeholders() },
     },
 
     created() {
@@ -203,7 +194,7 @@ Last update: 2018-08-09
       }
       // Otherwise, if a project is active...
       else if (this.$store.state.activeProject.project !== undefined) {
-        taskservice.sleep(1)  // embedding in this allows the popup spinner to be active
+        utils.sleep(1)  // embedding in this allows the popup spinner to be active
         .then(response => {
           // Load the project summaries of the current user.
           this.getScenSummaries()
@@ -213,26 +204,6 @@ Last update: 2018-08-09
     },
 
     methods: {
-
-      dcp(input) {
-        let output = JSON.parse(JSON.stringify(input))
-        return output
-      },
-      
-      getUniqueName(fileName, otherNames) {
-        let tryName = fileName
-        let numAdded = 0        
-        while (otherNames.indexOf(tryName) > -1) {
-          numAdded = numAdded + 1
-          tryName = fileName + ' (' + numAdded + ')'
-        }
-        return tryName
-      },
-
-      projectID() {
-        let id = this.$store.state.activeProject.project.id // Shorten this
-        return id
-      },
 
       getScenSummaries() {
         console.log('getScenSummaries() called')
