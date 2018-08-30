@@ -2,5 +2,5 @@
 from .version import version, versiondate # analysis:ignore
 from .project import Project, demo # analysis:ignore
 from .settings import Settings, ONpath, debuginfo, ONException # analysis:ignore
-from .scenarios import Scen # analysis:ignore
+from .scenarios import Scen, make_scens # analysis:ignore
 from .optimization import Optim # analysis:ignore

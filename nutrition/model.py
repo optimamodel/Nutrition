@@ -63,11 +63,12 @@ class Model:
     def _track_outcomes(self):
         oldest = self.children.age_groups[-1]
         self.thrive[self.year] += oldest.num_notstunted() * oldest.ageingRate
+        self.stunted[self.year] += oldest.num_stunted() * oldest.ageingRate
+        self.wasted[self.year] += sum(oldest.num_wasted(cat) for cat in self.ss.wasted_list) * oldest.ageingRate
 
     def _track_prevs(self):
         """ Tracks the prevalences of conditions over time.
          Begins at baseline year so that all scenario prevalences begin at the same point """
-
         self.stunting_prev[self.year] = self.children.frac_stunted()
         self.wasting_prev[self.year] = self.children.frac_risk('wast')
         self.child_anaemprev[self.year] = self.children.frac_risk('an')

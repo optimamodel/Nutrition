@@ -16,9 +16,9 @@ def optimafolder(subfolder=None):
 # ##############################################################################
 #
 
-def default_trackers():
+def default_trackers(prev=None):
     """ Prevalence tracker names MUST contains the string 'prev' """
-    outcome = [
+    outcomes = [
         'stunting_prev',
         'wasting_prev',
         'child_anaemprev',
@@ -26,8 +26,15 @@ def default_trackers():
         'nonpw_anaemprev',
         'child_deaths',
         'pw_deaths',
-        'thrive']
-    return outcome
+        'thrive',
+        'stunted',
+        'wasted']
+    if prev is not None:
+        if prev:
+            outcomes = [out for out in outcomes if 'prev' in out]
+        else:
+            outcomes = [out for out in outcomes if 'prev' not in out]
+    return outcomes
 
 def get_obj_sign(obj):
     max_obj = ['thrive']
