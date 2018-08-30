@@ -85,7 +85,6 @@ def plot_outputs(all_res, seq, name):
         ymax = 0
         perchange = []
         bars = []
-        print outcome
         baseout = baseres.get_outputs(outcome, seq=seq)[0] / scale
         if not isinstance(baseout, np.ndarray): baseout = [baseout]
         offsets = np.arange(len(all_res)+1)*width # Calculate offset so tick is in the center of the bars
@@ -219,7 +218,6 @@ def get_costeff(results):
                 # format
                 if costimpact > 0:
                     costimpact = '${} per additional case'.format(costimpact)
-                    # todo: additional/averted
                 elif costimpact < 0:
                     costimpact = '${} per case averted'.format(costimpact*-1)
             costeff[result.name][out] = costimpact
