@@ -187,18 +187,43 @@ def plot_alloc(all_res):
     figs['alloc'] = fig
     return figs
 
+def get_costeff(results):
+    """
+    Calculates the cost per impact of a scenario.
+    (Total money spent on all programs (baseline + new) ) / (scneario outcome - zero cov outcome)
+    :param results:
+    :return:
+    """
+    outcomes = utils.default_trackers(prev=False)
+    costeff = sc.odict()
+    zero = results.pop(0)
+    base = results.pop(0)
+    baseallocs = base.get_allocs(ref=False)
+    zeroouts = zero.get_outputs(outcomes)
+    for result in results + [zero]:
+        costeff[result.name] = sc.odict()
+        allocs = result.get_allocs(ref=False)
+        filteredbase = sc.odict({prog:spend for prog, spend in baseallocs.iteritems() if prog not in allocs})
+        if any(filteredbase): # not empty
+            totalspend = sum(sum(allocs.values())) + sum(sum(filteredbase.values()))
+        else:
+            totalspend = sum(sum(allocs.values()))
+        outputs = result.get_outputs(outcomes)
+        for i, out in enumerate(outcomes):
+            impact = outputs[i] - zeroouts[i]
+            if abs(impact) < 1e-3:
+                costimpact = 'no impact'
+            else:
+                costimpact = totalspend / impact
+                costimpact = round(costimpact, 2)
+                # format
+                if costimpact > 0:
+                    costimpact = '${} per additional case'.format(costimpact)
+                    # todo: additional/averted
+                elif costimpact < 0:
+                    costimpact = '${} per case averted'.format(costimpact*-1)
+            costeff[result.name][out] = costimpact
+    return costeff
+
 def round_elements(mylist, dec=1):
     return [round(np.float64(x) * 100, dec) for x in mylist] # Type conversion to handle None
-
-
-
-
-
-
-
-
-
-
-
-
-
