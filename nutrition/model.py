@@ -70,8 +70,9 @@ class Model:
 
         self.stunting_prev[self.year] = self.children.frac_stunted()
         self.wasting_prev[self.year] = self.children.frac_risk('wast')
-        self.anaemia_prev[self.year] = sum([pop.num_anaemic() for pop in self.pops]) / \
-                                       sum([pop.total_pop() for pop in self.pops])
+        self.child_anaemprev[self.year] = self.children.frac_risk('an')
+        self.pw_anaemprev[self.year] = self.pw.frac_risk('an')
+        self.nonpw_anaemprev[self.year] = self.nonpw.frac_risk('an')
 
     def _set_pop_probs(self, year):
         init_cov = self.prog_info.get_ann_covs(year-1)
@@ -275,7 +276,7 @@ class Model:
         Zt = age_group._getZa() # updated incidence
         beta = age_group._getFracDiarrhoea(Z0, Zt)
         age_group._updateProbConditionalDiarrhoea(Zt)
-        for risk in ['Stunting', 'Anaemia']:
+        for risk in ['Stunting', 'Anaemia']: # todo: remove link between dia and anaemia?
             age_group.diarrhoeaUpdate[risk] *= self._frac_dia_update(beta, age_group, risk)
         wastingUpdate = self._wasting_update_dia(beta, age_group)
         for wastingCat in self.ss.wasted_list:
@@ -306,6 +307,7 @@ class Model:
 
     def _birthspace_effects(self):
         """ From the birth space update, take from both <18 months and 18-23 month categories evenly """
+        # todo: I think there is an issue here b/c don't correctly account for the 'first birth' distribution. change later
         nonpw = self.nonpw.age_groups[0] # only impacted this pop
         newborns = self.children.age_groups[0]
         oldprob = nonpw.birth_space[self.ss.optimal_space]
@@ -509,13 +511,20 @@ class Model:
         except AttributeError:
             raise Exception(" ::ERROR:: %s not an attribute of Model class " % outcome)
 
-    def get_output(self, outcome, seq=False):
+    def get_output(self, outcomes=None, seq=False):
         """ Always returns a list, but of variable length"""
-        outlist = self.get_seq(outcome)
-        if seq: # return entire list
-            return outlist
+        if outcomes is None: outcomes = default_trackers()
+        if seq:
+            outputs = np.zeros((len(outcomes), self.n_years))
+            for i, out in enumerate(outcomes):
+                outputs[i] = self.get_seq(out)
         else:
-            if 'prev' in outcome: # only want final entry
-                return np.array([outlist[-1]])
-            else: # want total
-                return np.array([sum(outlist)])
+            outputs = np.zeros(len(outcomes))
+            for i, out in enumerate(outcomes):
+                outseq = self.get_seq(out)
+                if 'prev' in out: # only want final entry
+                    output = outseq[-1]
+                else: # want total
+                    output = sum(outseq)
+                outputs[i] = output
+        return outputs

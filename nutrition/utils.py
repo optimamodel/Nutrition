@@ -17,21 +17,47 @@ def optimafolder(subfolder=None):
 #
 
 def default_trackers():
+    """ Prevalence tracker names MUST contains the string 'prev' """
     outcome = [
         'stunting_prev',
         'wasting_prev',
-        'anaemia_prev',
+        'child_anaemprev',
+        'pw_anaemprev',
+        'nonpw_anaemprev',
         'child_deaths',
         'pw_deaths',
         'thrive']
     return outcome
 
 def get_obj_sign(obj):
-    max_obj = ['thrive', 'healthy_children', 'not_anaemic', 'no_conditions']
+    max_obj = ['thrive']
     if obj in max_obj:
         return -1
     else:
         return 1
+
+def get_vector(obj):
+    """ If a pre-defined objective is passed, this will create the corresponding weights """
+    outcomes = default_trackers()
+    try:
+        i = outcomes.index(obj)
+    except ValueError:
+        raise Exception('ERROR: objective string not found')
+    weights = np.zeros(len(outcomes))
+    sign = get_obj_sign(obj)
+    weights[i] = sign
+    return weights
+
+def get_weights(obj):
+    """ Function to process weights """
+    if isinstance(obj, str):
+        # a pre-defined objective
+        return get_vector(obj)
+    elif isinstance(obj, np.ndarray):
+        # custom weights, assume order as in default_trackers()
+        return obj
+    else:
+        raise Exception("ERROR: cannot get weights for this object type")
 
 def pretty_labels():
     labs = sc.odict()
@@ -39,7 +65,9 @@ def pretty_labels():
     labs['stunting_prev'] = 'Prevalence of stunting in children'
     labs['child_deaths'] = 'Child deaths'
     labs['pw_deaths'] = 'Pregnant women deaths'
-    labs['anaemia_prev'] = 'Prevalence of anaemia in children \n and women of reproductive age'
+    labs['child_anaemprev'] = 'Prevalence of anaemia in children'
+    labs['pw_anaemprev'] = 'Prevalence of anaemia in pregnant women'
+    labs['nonpw_anaemprev'] = 'Prevalence of anaemia in non-pregnant women'
     labs['wasting_prev'] = 'Prevalence of wasting in children'
     labs['Baseline'] = 'Est. spending \n baseline year' # this is for allocation
     return labs

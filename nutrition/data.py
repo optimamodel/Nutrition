@@ -184,7 +184,7 @@ class DefaultParams(object):
         self.or_cond['Anaemia']['Severe diarrhoea'] = or_sheet.loc['Anaemia'].to_dict('index')['For anaemia per additional episode of severe diarrhoea']
         self.or_stunting_prog = or_sheet.loc['By program'].to_dict('index')
         self.or_bf_prog = or_sheet.loc['Odds ratios for correct breastfeeding by program'].to_dict('index')
-        or_sheet = utils.read_sheet(self.spreadsheet, 'Odds ratios', [0,1], skiprows=19).dropna(axis=1, how='all')
+        or_sheet = utils.read_sheet(self.spreadsheet, 'Odds ratios', [0,1], skiprows=18).dropna(axis=1, how='all')
         self.or_space_prog = or_sheet.loc['Odds ratios for optimal birth spacing by program'].to_dict('index')
 
     def get_bo_progs(self):
