@@ -5,11 +5,8 @@ Version: 2018jul16 by gchadder3
 '''
 
 import os
-import sciris.core as sc
-import sciris.web as sw
-import sciris.weblib.user as user
-import sciris.weblib.datastore as ds
-import sciris.corelib.fileio as fileio
+import sciris as sc
+import scirisweb as sw
 import nutrition as on
 
 
@@ -164,7 +161,7 @@ class ProjectCollection(sw.ScirisCollection):
             else:
                 projects_info = []
                 for uid in self.ds_uuid_set:
-                    obj = ds.data_store.retrieve(uid)
+                    obj = sw.globalvars.data_store.retrieve(uid)
                     if obj.owner_uid == valid_uuid:
                         projects_info.append(obj.get_user_front_end_repr())
                 return projects_info
@@ -192,7 +189,7 @@ class ProjectCollection(sw.ScirisCollection):
             else:
                 project_entries = []
                 for uid in self.ds_uuid_set:
-                    obj = ds.data_store.retrieve(uid)
+                    obj = sw.globalvars.data_store.retrieve(uid)
                     if obj.owner_uid == valid_uuid:
                         project_entries.append(obj)
                 return project_entries
@@ -210,7 +207,7 @@ def init_projects(app):
     global proj_collection  # need this to allow modification within the module
     
     # Look for an existing ProjectCollection.
-    proj_collection_uid = ds.data_store.get_uid_from_instance('projectscoll', 
+    proj_collection_uid = sw.globalvars.data_store.get_uid_from_instance('projectscoll', 
         'Projects Collection')
     
     # Create the projects collection object.  Note, that if no match was found, 
@@ -248,13 +245,13 @@ def apptasks_load_projects(config):
     # from the datastore.py module that the server code will.
     
     # Create the DataStore object, setting up Redis.
-    ds.data_store = ds.DataStore(redis_db_URL=config.REDIS_URL)
+    sw.globalvars.data_store = sw.DataStore(redis_db_URL=config.REDIS_URL)
     
     # Load the DataStore state from disk.
-    ds.data_store.load()
+    sw.globalvars.data_store.load()
     
     # Look for an existing ProjectCollection.
-    proj_collection_uid = ds.data_store.get_uid_from_instance('projectscoll', 
+    proj_collection_uid = sw.globalvars.data_store.get_uid_from_instance('projectscoll', 
         'Projects Collection')
     
     # Create the projects collection object.  Note, that if no match was found, 

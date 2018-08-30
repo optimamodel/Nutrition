@@ -18,10 +18,8 @@ import numpy as np
 from matplotlib.pyplot import rc
 rc('font', size=12)
 
-import sciris.corelib.fileio as fileio
-import sciris.weblib.user as user
-import sciris.core as sc
-import sciris.web as sw
+import sciris as sc
+import scirisweb as sw
 
 import nutrition.ui as nu
 from . import projects as prj
@@ -40,7 +38,7 @@ register_RPC = sw.make_register_RPC(RPC_dict)
 ##############################################################
 
 def get_path(filename):
-    dirname = fileio.downloads_dir.dir_path # Use the downloads directory to put the file in.
+    dirname = sw.globalvars.downloads_dir.dir_path # Use the downloads directory to put the file in.
     fullpath = '%s%s%s' % (dirname, os.sep, filename) # Generate the full file name with path.
     return fullpath
 
@@ -228,7 +226,7 @@ def get_scirisdemo_projects():
     """
     
     # Get the user UID for the _ScirisDemo user.
-    user_id = user.get_scirisdemo_user()
+    user_id = sw.get_scirisdemo_user()
    
     # Get the prj.ProjectSO entries matching the _ScirisDemo user UID.
     project_entries = prj.proj_collection.get_project_entries_by_user(user_id)
@@ -306,7 +304,7 @@ def download_project(project_id):
     proj = load_project(project_id, raise_exception=True) # Load the project with the matching UID.
     file_name = '%s.prj' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name) # Generate the full file name with path.
-    fileio.object_to_gzip_string_pickle_file(full_file_name, proj) # Write the object to a Gzip string pickle file.
+    sc.saveobj(full_file_name, proj) # Write the object to a Gzip string pickle file.
     print(">> download_project %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
 
@@ -344,7 +342,7 @@ def load_zip_of_prj_files(project_ids):
     """
     
     # Use the downloads directory to put the file in.
-    dirname = fileio.downloads_dir.dir_path
+    dirname = sw.globalvars.downloads_dir.dir_path
 
     # Build a list of prj.ProjectSO objects for each of the selected projects, 
     # saving each of them in separate .prj files.
@@ -485,7 +483,7 @@ def create_project_from_prj_file(prj_filename, user_id):
     
     # Try to open the .prj file, and return an error message if this fails.
     try:
-        proj = fileio.gzip_string_pickle_file_to_object(prj_filename)
+        proj = sc.loadobj(prj_filename)
     except Exception:
         return { 'error': 'BadFileFormatError' }
     
