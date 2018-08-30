@@ -60,7 +60,7 @@ Last update: 2018-08-30
                 <i class="fas fa-caret-up" style="visibility: hidden"></i>
               </span>
             </th>
-            <th>Actions</th> <!-- ATOMICA-NUTRITION DIFFERENCE -->
+            <th>Databook</th> <!-- ATOMICA-NUTRITION DIFFERENCE -->
           </tr>
           </thead>
           <tbody>
@@ -84,29 +84,18 @@ Last update: 2018-08-30
               </div>
             </td>
             <td style="text-align:left">
-              <button class="btn __green" :disabled="projectLoaded(projectSummary.project.id)" @click="openProject(projectSummary.project.id)">
-                <span>Open</span>
-              </button>
-              <button class="btn btn-icon" @click="renameProject(projectSummary)" data-tooltip="Rename">
-                <i class="ti-pencil"></i>
-              </button>
-              <button class="btn btn-icon" @click="copyProject(projectSummary.project.id)" data-tooltip="Copy">
-                <i class="ti-files"></i>
-              </button>
-              <button class="btn btn-icon" @click="downloadProjectFile(projectSummary.project.id)" data-tooltip="Download">
-                <i class="ti-download"></i>
-              </button>
+              <button class="btn __green"  @click="openProject(projectSummary.project.id)"         data-tooltip="Open project" :disabled="projectLoaded(projectSummary.project.id)" ><span>Open</span></button>
+              <button class="btn btn-icon" @click="renameProject(projectSummary)"                  data-tooltip="Rename">  <i class="ti-pencil"></i></button>
+              <button class="btn btn-icon" @click="copyProject(projectSummary.project.id)"         data-tooltip="Copy">    <i class="ti-files"></i></button>
+              <button class="btn btn-icon" @click="downloadProjectFile(projectSummary.project.id)" data-tooltip="Download"><i class="ti-download"></i></button>
             </td>
             <td style="text-align:left">
               {{ projectSummary.project.updatedTime ? projectSummary.project.updatedTime:
               'No modification' }}</td>
             <td style="white-space: nowrap; text-align:left"> <!-- ATOMICA-NUTRITION DIFFERENCE -->
-              <button class="btn __blue" @click="uploadDatabook(projectSummary.project.id)">Upload databook</button>
-              <button class="btn" @click="copyProject(projectSummary.project.id)">Copy</button>
-              <button class="btn" @click="renameProject(projectSummary)">Rename</button>
-              <button class="btn" @click="downloadProjectFile(projectSummary.project.id)">Download project</button>
-              <button class="btn" @click="downloadDatabook(projectSummary.project.id)">Download databook</button>
-              <button class="btn" @click="downloadDefaults(projectSummary.project.id)">Download defaults</button>
+              <button class="btn __blue" @click="uploadDatabook(projectSummary.project.id)" data-tooltip="Upload databook"><i class="ti-upload"></i></button>
+              <button class="btn" @click="downloadDatabook(projectSummary.project.id)" data-tooltip="Download databook"><i class="ti-download"></i></button>
+              <button class="btn" @click="downloadDefaults(projectSummary.project.id)" data-tooltip="Download defaults"><i class="ti-file"></i></button>
             </td>
           </tr>
           </tbody>
@@ -393,7 +382,7 @@ Last update: 2018-08-30
         if (projectSummary.renaming === '') { // If the project is not in a mode to be renamed, make it so.
           projectSummary.renaming = projectSummary.project.name
         } else { // Otherwise (it is to be renamed)...
-          let newProjectSummary = _.deepClone(projectSummary) // Make a deep copy of the projectSummary object by JSON-stringifying the old object, and then parsing the result back into a new object.
+          let newProjectSummary = _.cloneDeep(projectSummary) // Make a deep copy of the projectSummary object by JSON-stringifying the old object, and then parsing the result back into a new object.
           newProjectSummary.project.name = projectSummary.renaming // Rename the project name in the client list from what's in the textbox.
           status.start(this)
           rpcs.rpc('update_project_from_summary', [newProjectSummary]) // Have the server change the name of the project by passing in the new copy of the summary.
