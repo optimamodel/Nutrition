@@ -1,4 +1,4 @@
-import sciris.core as sc
+import sciris as sc
 from .plotting import make_plots
 from .model import default_trackers
 

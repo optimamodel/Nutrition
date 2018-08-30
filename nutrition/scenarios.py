@@ -1,4 +1,4 @@
-import sciris.core as sc
+import sciris as sc
 from .results import ScenResult
 
 class Scen(object):

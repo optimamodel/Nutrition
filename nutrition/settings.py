@@ -1,6 +1,6 @@
 import os
 import itertools
-import sciris.core as sc
+import sciris as sc
 from .version import version
 
 class Settings(object):
