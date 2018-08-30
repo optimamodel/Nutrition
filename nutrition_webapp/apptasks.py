@@ -48,8 +48,8 @@ def run_optim(project_id, optim_name):
     proj = load_project(project_id, raise_exception=True)
     
     proj.results.clear() # Remove any existing results
-    proj.run_optims(keys=[optim_name], parallel=False)
-    figs = proj.plot(keys=[optim_name], optim=True) # Only plot allocation
+    proj.run_optim(key=optim_name, parallel=False)
+    figs = proj.plot(key=optim_name, optim=True) # Only plot allocation
     graphs = []
     for f,fig in enumerate(figs.values()):
         for ax in fig.get_axes():

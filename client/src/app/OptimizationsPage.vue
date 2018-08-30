@@ -125,11 +125,12 @@ Last update: 2018-08-09
 <script>
   import axios from 'axios'
   var filesaver = require('file-saver')
-  import rpcservice from '@/services/rpc-service'
+  import utils from '@/services/utils'
+  import rpcs from '@/services/rpc-service'
   import taskservice from '@/services/task-service'
-  import status from '@/services/status-service'  
+  import status from '@/services/status-service'
   import router from '@/router'
-  import Vue from 'vue';
+  import help from '@/app/HelpLink.vue'
 
   const FLOAT_FORMATTER = d3.format('.0f');
   const PERCENT_FORMATTER = (d) => d3.format('.1%')(d / 100);
@@ -160,6 +161,13 @@ Last update: 2018-08-09
     },
 
     computed: {
+      projectID()    { return utils.projectID(this) },
+      hasData()      { return utils.hasData(this) },
+      simStart()     { return utils.simStart(this) },
+      simEnd()       { return utils.simEnd(this) },
+      simYears()     { return utils.simYears(this) },
+      activePops()   { return utils.activePops(this) },
+      placeholders() { return utils.placeholders() },
       activeProjectID() {
         if (this.$store.state.activeProject.project === undefined) {
           return ''
@@ -185,7 +193,7 @@ Last update: 2018-08-09
       }
       // Otherwise, if a project is active...
       else if (this.$store.state.activeProject.project !== undefined) {
-        taskservice.sleep(1)  // embedding in this allows the popup spinner to be active
+        utils.sleep(1)  // embedding in this allows the popup spinner to be active
         .then(response => {
           // Load the optimization summaries of the current project.
           this.getOptimSummaries()
@@ -196,29 +204,9 @@ Last update: 2018-08-09
 
     methods: {
 
-      dcp(input) {
-        var output = JSON.parse(JSON.stringify(input))
-        return output
-      },
-      
-      getUniqueName(fileName, otherNames) {
-        let tryName = fileName
-        let numAdded = 0        
-        while (otherNames.indexOf(tryName) > -1) {
-          numAdded = numAdded + 1
-          tryName = fileName + ' (' + numAdded + ')'
-        }
-        return tryName
-      },
-
-      projectID() {
-        var id = this.$store.state.activeProject.project.id // Shorten this
-        return id
-      },
-
       getDefaultOptim() {
         console.log('getDefaultOptim() called')
-        rpcservice.rpcCall('get_default_optim', [this.projectID()])
+        rpcs.rpc('get_default_optim', [this.projectID])
         .then(response => {
           this.defaultOptim = response.data // Set the optimization to what we received.
           this.objectiveOptions = response.data.objective_options
@@ -237,7 +225,7 @@ Last update: 2018-08-09
         status.start(this)
         
         // Get the current project's optimization summaries from the server.
-        rpcservice.rpcCall('get_optim_info', [this.projectID()])
+        rpcs.rpc('get_optim_info', [this.projectID])
         .then(response => {
           this.optimSummaries = response.data // Set the optimizations to what we received.
           
@@ -256,7 +244,7 @@ Last update: 2018-08-09
         // Start indicating progress.
         status.start(this)
         
-        rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
+        rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
         .then( response => {
           // Indicate success.
           status.succeed(this, 'Optimizations saved')          
@@ -270,7 +258,7 @@ Last update: 2018-08-09
       addOptimModal() {
         // Open a model dialog for creating a new project
         console.log('addOptimModal() called');
-        rpcservice.rpcCall('get_default_optim', [this.projectID()])
+        rpcs.rpc('get_default_optim', [this.projectID])
         .then(response => {
           this.defaultOptim = response.data // Set the optimization to what we received.
           this.$modal.show('add-optim');
@@ -285,7 +273,7 @@ Last update: 2018-08-09
         // Start indicating progress.
         status.start(this)
         
-        let newOptim = this.dcp(this.defaultOptim); // You've got to be kidding me, buster
+        let newOptim = _.cloneDeep(this.defaultOptim); // You've got to be kidding me, buster
         let otherNames = []
         this.optimSummaries.forEach(optimSum => {
           otherNames.push(optimSum.name)
@@ -300,7 +288,7 @@ Last update: 2018-08-09
           this.optimSummaries.push(newOptim)
         }
         console.log(newOptim)
-        rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
+        rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
         .then( response => {
           // Indicate success.
           status.succeed(this, 'Optimization added')
@@ -327,14 +315,14 @@ Last update: 2018-08-09
         // Start indicating progress.
         status.start(this)
         
-        var newOptim = this.dcp(optimSummary); // You've got to be kidding me, buster
+        var newOptim = _.cloneDeep(optimSummary); // You've got to be kidding me, buster
         var otherNames = []
         this.optimSummaries.forEach(optimSum => {
           otherNames.push(optimSum.name)
         })
-        newOptim.name = this.getUniqueName(newOptim.name, otherNames)
+        newOptim.name = utils.getUniqueName(newOptim.name, otherNames)
         this.optimSummaries.push(newOptim)
-        rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
+        rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
         .then( response => {
           // Indicate success.
           status.succeed(this, 'Opimization copied')
@@ -358,7 +346,7 @@ Last update: 2018-08-09
             this.optimSummaries.splice(i, 1);
           }
         }
-        rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
+        rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
         .then( response => {
           // Indicate success.
           status.succeed(this, 'Optimization deleted')
@@ -375,11 +363,11 @@ Last update: 2018-08-09
         console.log('runOptim() called for '+this.currentOptim)
         status.start(this)
         this.$Progress.start(5000)  // restart just the progress bar, and make it slower 
-//        rpcservice.rpcCall('launch_task', ['my_crazy_id', 'async_add', [23, 57]])
-//        rpcservice.rpcCall('check_task', ['my_crazy_id'])
-//        rpcservice.rpcCall('get_task_result', ['my_crazy_id'])         
-//        rpcservice.rpcCall('delete_task', ['my_crazy_id'])
-//        rpcservice.rpcCall('delete_task', ['run_optimization'])
+//        rpcs.rpc('launch_task', ['my_crazy_id', 'async_add', [23, 57]])
+//        rpcs.rpc('check_task', ['my_crazy_id'])
+//        rpcs.rpc('get_task_result', ['my_crazy_id'])         
+//        rpcs.rpc('delete_task', ['my_crazy_id'])
+//        rpcs.rpc('delete_task', ['run_optimization'])
 
           // Do an async_add() and try for at most 15 sec. to get a result, polling every 5 sec.
           // Should succeed.
@@ -389,11 +377,11 @@ Last update: 2018-08-09
           }) */
           
         // Make sure they're saved first
-        rpcservice.rpcCall('set_optim_info', [this.projectID(), this.optimSummaries])
+        rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
         .then(response => {
           // Go to the server to get the results from the package set.
-//          rpcservice.rpcCall('run_optimization', [this.projectID(), optimSummary.name])
-          taskservice.getTaskResultPolling('run_optimization', 9999, 1, 'run_optim', [this.projectID(), optimSummary.name])
+//          rpcs.rpc('run_optimization', [this.projectID, optimSummary.name])
+          taskservice.getTaskResultPolling('run_optimization', 9999, 1, 'run_optim', [this.projectID, optimSummary.name])
           .then(response => {
             this.clearGraphs() // Once we receive a response, we can work with a clean slate
 //            this.graphData = response.data.graphs // Pull out the response data (use with the rpcCall).
@@ -481,7 +469,7 @@ Last update: 2018-08-09
 
       exportResults() {
         console.log('exportResults() called')
-        rpcservice.rpcDownloadCall('export_results', [this.projectID()]) // Make the server call to download the framework to a .prj file.
+        rpcservice.rpcDownloadCall('export_results', [this.projectID]) // Make the server call to download the framework to a .prj file.
           .catch(error => {
             // Failure popup.
             status.failurePopup(this, 'Could not export results: ' + error.message)
