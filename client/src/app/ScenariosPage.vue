@@ -274,7 +274,7 @@ Last update: 2018-08-09
         })
         .catch(error => {
            // Failure popup.
-          status.failurePopup(this, 'Could not open default scenario')
+          status.failurePopup(this, 'Could not open default scenario: ' + error.message)
         })        
       },
 
@@ -285,7 +285,7 @@ Last update: 2018-08-09
         // Start indicating progress.
         status.start(this)
           
-        let newScen = this.dcp(this.defaultScen); // You've got to be kidding me, buster
+        let newScen = _.cloneDeep(this.defaultScen); // You've got to be kidding me, buster
         let otherNames = []
         this.scenSummaries.forEach(scenSum => {
           otherNames.push(scenSum.name)
@@ -307,7 +307,7 @@ Last update: 2018-08-09
         })
         .catch(error => {
           // Indicate failure.
-          status.fail(this, 'Could not add scenario') 
+          status.fail(this, 'Could not add scenario: ' + error.message)
           
           // TODO: Should probably fix the corrupted this.scenSummaries.
         })       
@@ -327,7 +327,7 @@ Last update: 2018-08-09
         // Start indicating progress.
         status.start(this)
         
-        var newScen = this.dcp(scenSummary); // You've got to be kidding me, buster
+        var newScen = _.cloneDeep(scenSummary); // You've got to be kidding me, buster
         var otherNames = []
         this.scenSummaries.forEach(scenSum => {
           otherNames.push(scenSum.name)

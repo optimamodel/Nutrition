@@ -537,6 +537,8 @@ def py_to_js_scen(py_scen, proj, key=None):
         else:
             this_spec['vals'] = [None]*settings.n_years # WARNING, kludgy way to extract the number of years
         if js_scen['scen_type'] == 'coverage': # Convert to percentage
+            print('HIIIIIIIII')
+            print(this_spec['vals'])
             for y in range(len(this_spec['vals'])):
                 if this_spec['vals'][y] is not None:
                     this_spec['vals'][y] = round(100*this_spec['vals'][y]) # Enter to the nearest percentage
@@ -552,17 +554,16 @@ def js_to_py_scen(js_scen):
     py_json = sc.odict()
     for attr in ['name', 'scen_type', 'active']: # Copy these directly
         py_json[attr] = js_scen[attr]
-    py_json['prog_set'] = [] # These require more TLC
-    py_json['covs'] = []
+    py_json['progvals'] = sc.odict() # These require more TLC
     for js_spec in js_scen['spec']:
         if js_spec['included']:
-            py_json['prog_set'].append(js_spec['name'])
+            py_json['progvals'][js_spec['name']] = []
             vals = list(sanitize(js_spec['vals'], skip=True))
             for y in range(len(vals)):
                 if js_scen['scen_type'] == 'coverage': # Convert from percentage
                         if vals[y] is not None:
                             vals[y] = vals[y]/100. # Convert from percentage
-            py_json['covs'].append(vals)
+            py_json['progvals'][js_spec['name']] += vals
     return py_json
     
 
