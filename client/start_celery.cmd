@@ -1,1 +1,1 @@
-celery worker -A nutrition_webapp.apptasks -l info -P eventlet
+celery worker -A nutrition_app.apptasks -l info -P eventlet

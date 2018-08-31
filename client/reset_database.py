@@ -7,7 +7,7 @@ Version: 2018jun04
 '''
 
 import scirisweb as sw
-import nutrition_webapp as onwa
+import nutrition_app as onwa
 import os
 
 webapp_dir = os.path.abspath(onwa.config.CLIENT_DIR)
