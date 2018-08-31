@@ -44,6 +44,6 @@ kwargs3 = {'name': 'test3',
 
 optims = [Optim(**kwargs1)]
 p.add_optims(optims)
-p.run_optim(swarmsize=10, maxiter=10, maxtime=10, parallel=False)
+p.run_optim(swarmsize=10, maxiter=10, maxtime=10, parallel=True)
 if doplot: p.plot(optim=True)
 if dosave: p.write_results('optim_results.xlsx')
