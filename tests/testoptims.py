@@ -16,7 +16,8 @@ kwargs1 = {'name':'test1',
           'mults':[1,2],
           'prog_set': ['Vitamin A supplementation', 'IYCF 1'],
           'fix_curr': False,
-          'add_funds':1e7}
+          'add_funds':1e7,
+          'filter_progs':False}
 
 kwargs2 = {'name':'test2',
           'model_name': 'eg',
@@ -41,8 +42,8 @@ kwargs3 = {'name': 'test3',
           'fix_curr': False,
            'filter_progs':False}
 
-optims = [Optim(**kwargs3)]
+optims = [Optim(**kwargs1)]
 p.add_optims(optims)
-p.run_optim(swarmsize=10, maxiter=10, maxtime=10)
+p.run_optim(swarmsize=10, maxiter=10, maxtime=10, parallel=False)
 if doplot: p.plot(optim=True)
 if dosave: p.write_results('optim_results.xlsx')
