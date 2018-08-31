@@ -36,10 +36,9 @@ celery_instance = sw.make_celery_instance(config=config) # Create the Celery ins
 @register_async_task
 def run_optim(project_id, optim_name=None, online=True):
     # Load the projects from the DataStore.
-    prj.apptasks_load_projects(config)
-    
     print('Running optimization...')
     if online:
+        prj.apptasks_load_projects(config)
         proj = rpcs.load_project(project_id, raise_exception=True)
     else:
         proj = project_id

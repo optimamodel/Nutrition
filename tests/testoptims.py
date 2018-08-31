@@ -42,7 +42,7 @@ kwargs3 = {'name': 'test3',
           'fix_curr': False,
            'filter_progs':False}
 
-optims = [Optim(**kwargs1)]
+optims = [Optim(**kwargs3)]
 p.add_optims(optims)
 p.run_optim(swarmsize=10, maxiter=10, maxtime=10, parallel=True)
 if doplot: p.plot(optim=True)
