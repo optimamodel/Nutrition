@@ -55,7 +55,8 @@ def run_optim(project_id, optim_name=None, online=True):
         print('Converted figure %s of %s' % (f+1, len(figs)))
     
     print('Saving project...')
-    rpcs.save_project(proj) 
+    if online:
+        rpcs.save_project(proj) 
     
     # Return the graphs.
     return {'graphs': graphs}
