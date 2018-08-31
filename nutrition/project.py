@@ -340,11 +340,6 @@ class Project(object):
             self.add_result(results, name=optim.name)
         return None
 
-    def get_results(self, key=-1):
-        """ Key is a string or integer """
-        results = self.result(key)
-        return results
-
     def get_output(self, outcomes=None):
         results = self.result(-1)
         if not outcomes: outcomes = default_trackers()
@@ -359,12 +354,12 @@ class Project(object):
 
     @trace_exception
     def plot(self, key=-1, toplot=None, optim=False):
-        figs = make_plots(self.get_results(key), toplot=toplot, optim=optim)
+        figs = make_plots(self.result(key), toplot=toplot, optim=optim)
         return figs
 
     def get_costeff(self, key=-1):
         """ Returns a nested odict with keys (scenario name, outcome) and value (output). Output is type string """
-        results = self.get_results(key)
+        results = self.result(key)
         costeff = get_costeff(results)
         return costeff
 
