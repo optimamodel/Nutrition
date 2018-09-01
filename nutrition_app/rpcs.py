@@ -493,7 +493,7 @@ def export_results(project_id):
 ### Scenario functions and RPCs
 ##################################################################################
 
-def py_to_js_scen(py_scen, proj, key=None):
+def py_to_js_scen(py_scen, proj, key=None, default_included=False):
     ''' Convert a Python to JSON representation of a scenario '''
     prog_names = proj.dataset().prog_names()
     settings = nu.Settings()
@@ -507,7 +507,10 @@ def py_to_js_scen(py_scen, proj, key=None):
         program = proj.model(key).prog_info.programs[prog_name]
         this_spec = {}
         this_spec['name'] = prog_name
-        this_spec['included'] = True if prog_name in py_scen.prog_set else False
+        if (prog_name in py_scen.prog_set) or (program.base_cov and default_included):
+            this_spec['included'] = True
+        else: 
+            this_spec['included'] = False
         this_spec['vals'] = []
         if this_spec['included']:
             count += 1
@@ -594,7 +597,7 @@ def get_default_scen(project_id, scen_type=None):
     py_scens = proj.demo_scens(doadd=False)
     py_scen = py_scens[0] # Pull out the first one
     py_scen.scen_type = scen_type # Set the scenario type
-    js_scen = py_to_js_scen(py_scen, proj)
+    js_scen = py_to_js_scen(py_scen, proj, default_included=True)
     
     print('Created default JavaScript scenario:')
     pprint(js_scen)

@@ -123,16 +123,16 @@ Last update: 2018-09-01
             </tr>
             </thead>
             <tbody>
-            <tr v-for="progval in this.addEditModal.scenSummary.progvals">
+            <tr v-for="progvals in this.addEditModal.scenSummary.progvals">
               <td style="min-width:200px">
-                {{ progval.name }}
+                {{ progvals.name }}
               </td>
               <td style="text-align: center">
-                <input type="checkbox" v-model="addEditModal.scenSummary.progvals.included"/>
+                <input type="checkbox" v-model="progvals.included"/>
               </td>
               <td style="text-align: right">
                 <span v-if="addEditModal.modalScenarioType==='coverage'">{{ progvals.base_cov }}</span>
-                <span v-else>{{ addEditModal.scenSummary.progvals.base_spend }}</span>
+                <span v-else>                                            {{ progvals.base_spend }}</span>
               </td>
               <td v-for="(val, index) in addEditModal.scenSummary.progvals.vals">
                 <input type="text"
@@ -148,7 +148,7 @@ Last update: 2018-09-01
           <button @click="addScen()" class='btn __green' style="display:inline-block">
             Save scenario
           </button>
-          <button @click="$modal.hide('add-budget-scen')" class='btn __red' style="display:inline-block">
+          <button @click="$modal.hide('add-scen')" class='btn __red' style="display:inline-block">
             Cancel
           </button>
         </div>
@@ -278,12 +278,13 @@ Last update: 2018-09-01
 
       addScenModal(scen_type) {
         // Open a model dialog for creating a new project
-        console.log('addScenModal() called');
+        console.log('addScenModal() called for type ' + scen_type);
         rpcs.rpc('get_default_scen', [this.projectID, scen_type])
           .then(response => {
             this.addEditModal.scenSummary = response.data;
             this.addEditModal.origName = this.addEditModal.scenSummary.name;
             this.addEditModal.mode = 'add';
+            this.addEditModal.modalScenarioType = scen_type;
             this.$modal.show('add-scen');
             console.log('New scenario:');
             console.log(this.addEditModal.scenSummary)
