@@ -520,8 +520,6 @@ def py_to_js_scen(py_scen, proj, key=None):
         else:
             this_spec['vals'] = [None]*settings.n_years # WARNING, kludgy way to extract the number of years
         if js_scen['scen_type'] == 'coverage': # Convert to percentage
-            print('HIIIIIIIII')
-            print(this_spec['vals'])
             for y in range(len(this_spec['vals'])):
                 if this_spec['vals'][y] is not None:
                     this_spec['vals'][y] = round(100*this_spec['vals'][y]) # Enter to the nearest percentage
@@ -551,10 +549,10 @@ def js_to_py_scen(js_scen):
     
 
 @register_RPC(validation='named')    
-def get_scenario_info(project_id, key=None):
+def get_scen_info(project_id, key=None, online=True):
 
     print('Getting scenario info...')
-    proj = load_project(project_id, raise_exception=True)
+    proj = load_project(project_id, raise_exception=True, online=online)
     
     scenario_summaries = []
     for py_scen in proj.scens.values():
@@ -568,10 +566,10 @@ def get_scenario_info(project_id, key=None):
 
 
 @register_RPC(validation='named')    
-def set_scenario_info(project_id, scenario_summaries):
+def set_scen_info(project_id, scenario_summaries, online=True):
 
     print('Setting scenario info...')
-    proj = load_project(project_id, raise_exception=True)
+    proj = load_project(project_id, raise_exception=True, online=online)
     proj.scens.clear()
     
     for j,js_scen in enumerate(scenario_summaries):
@@ -582,18 +580,20 @@ def set_scenario_info(project_id, scenario_summaries):
         pprint(json)
         
     print('Saving project...')
-    save_project(proj)
-    
+    save_project(proj, online=online)
     return None
 
 
 @register_RPC(validation='named')    
-def get_default_scenario(project_id):
-
+def get_default_scen(project_id, scen_type=None):
+    
     print('Creating default scenario...')
+    if scen_type is None: scen_type = 'coverage'
     proj = load_project(project_id, raise_exception=True)
     
-    py_scen = proj.demo_scens(doadd=False)[0]
+    py_scens = proj.demo_scens(doadd=False)
+    py_scen = py_scens[0] # Pull out the first one
+    py_scen.scen_type = scen_type # Set the scenario type
     js_scen = py_to_js_scen(py_scen, proj)
     
     print('Created default JavaScript scenario:')
@@ -601,15 +601,11 @@ def get_default_scenario(project_id):
     return js_scen
 
 
-
-    
-    
-
 @register_RPC(validation='named')    
-def run_scenarios(project_id):
+def run_scens(project_id, online=True):
     
     print('Running scenarios...')
-    proj = load_project(project_id, raise_exception=True)
+    proj = load_project(project_id, raise_exception=True, online=online)
     
     proj.results.clear() # Remove any existing results
     proj.run_scens()
@@ -624,7 +620,7 @@ def run_scenarios(project_id):
         print('Converted figure %s of %s' % (f+1, len(figs)))
     
     print('Saving project...')
-    save_project(proj)    
+    save_project(proj, online=online)    
     return {'graphs':graphs}
 
 

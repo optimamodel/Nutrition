@@ -49,7 +49,8 @@ Last update: 2018-09-01
 
         <div>
           <button class="btn __green" :disabled="!scenariosLoaded" @click="runScens()">Run scenarios</button>
-          <button class="btn __blue" :disabled="!scenariosLoaded" @click="addBudgetScenModal()">Add scenario</button>
+          <button class="btn __blue" :disabled="!scenariosLoaded" @click="addScenModal('coverage')">Add coverage scenario</button>
+          <button class="btn __blue" :disabled="!scenariosLoaded" @click="addScenModal('budget')">Add budget scenario</button>
         </div>
       </div>
     </div>
@@ -98,7 +99,7 @@ Last update: 2018-09-01
 
 
     <!-- START ADD-SCENARIO MODAL -->
-    <modal name="add-budget-scen"
+    <modal name="add-scen"
            height="auto"
            :scrollable="true"
            :width="900"
@@ -119,12 +120,12 @@ Last update: 2018-09-01
           <b>Scenario name:</b><br>
           <input type="text"
                  class="txbox"
-                 v-model="defaultScen.name"/><br>
+                 v-model="addEditModal.scenSummary.name"/><br>
           <table class="table table-bordered table-hover table-striped" style="width: 100%">
             <thead>
             <tr>
               <th colspan=100><div class="dialog-header">
-                <span v-if="modalScenarioType==='coverage'">Program coverages (%)</span>
+                <span v-if="addEditModal.modalScenarioType==='coverage'">Program coverages (%)</span>
                 <span v-else>Program spending (US$)</span>
               </div></th>
             </tr>
@@ -141,28 +142,27 @@ Last update: 2018-09-01
                 {{ prog_spec.name }}
               </td>
               <td style="text-align: center">
-                <input type="checkbox" v-model="prog_spec.included"/>
+                <input type="checkbox" v-model="addEditModal.scenSummary.prog_spec.included"/>
               </td>
               <td style="text-align: right">
-                <span v-if="modalScenarioType==='coverage'">{{ prog_spec.base_cov }}</span>
-                <span v-else>{{ prog_spec.base_spend }}</span>
+                <span v-if="addEditModal.modalScenarioType==='coverage'">{{ prog_spec.base_cov }}</span>
+                <span v-else>{{ addEditModal.scenSummary.prog_spec.base_spend }}</span>
               </td>
-              <td v-for="(val, index) in prog_spec.vals">
+              <td v-for="(val, index) in addEditModal.scenSummary.prog_spec.vals">
                 <input type="text"
                        class="txbox"
                        style="text-align: right"
-                       v-model="prog_spec.vals[index]"/>
+                       v-model="addEditModal.scenSummary.prog_spec.vals[index]"/>
               </td>
             </tr>
             </tbody>
           </table>
         </div>
-        <div style="text-align:center">
-          <button @click="addScenario()" class='btn __green' style="display:inline-block">
+        <div style="text-align:justify">
+          <button @click="addScen()" class='btn __green' style="display:inline-block">
             Save scenario
           </button>
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-          <button @click="$modal.hide('add-scenario')" class='btn __red' style="display:inline-block">
+          <button @click="$modal.hide('add-budget-scen')" class='btn __red' style="display:inline-block">
             Cancel
           </button>
         </div>
@@ -196,26 +196,14 @@ Last update: 2018-09-01
       return {
         response: 'no response',
         scenSummaries: [],
-        defaultBudgetScen: {},
-        objectiveOptions: [],
-        activeParset:  -1,
-        activeProgset: -1,
-        parsetOptions:  [],
-        progsetOptions: [],
-        newParsetName:  [],
-        newProgsetName: [],
-        startYear: 0,
-        endYear: 0,
-        areShowingPlotControls: false,
-        plotOptions: [],
+        defaultScen: {},
+        defaultScenYears: [],
         scenariosLoaded: false,
-        table: null,
-        activePop: "All",
-        endYear: 0,
         addEditModal: {
           scenSummary: {},
           origName: '',
-          mode: 'add'
+          mode: 'add',
+          modalScenarioType: 'coverage',
         },
         figscale: 1.0,
       }
@@ -224,10 +212,6 @@ Last update: 2018-09-01
     computed: {
       projectID()    { return utils.projectID(this) },
       hasData()      { return utils.hasData(this) },
-      simStart()     { return utils.simStart(this) },
-      simEnd()       { return utils.simEnd(this) },
-      simYears()     { return utils.simYears(this) },
-      activePops()   { return utils.activePops(this) },
       placeholders() { return utils.placeholders() },
     },
 
@@ -238,14 +222,10 @@ Last update: 2018-09-01
       else if ((this.$store.state.activeProject.project != undefined) &&
         (this.$store.state.activeProject.project.hasData) ) {
         console.log('created() called')
-        this.startYear = this.simStart
-        this.endYear = this.simEnd
-        this.popOptions = this.activePops
         utils.sleep(1)  // used so that spinners will come up by callback func
           .then(response => {
             this.getScenSummaries()
-            this.getDefaultBudgetScen()
-            this.updateSets()
+            this.getDefaultScen('coverage')
             this.getPlotOptions()
           })
       }
@@ -253,7 +233,6 @@ Last update: 2018-09-01
 
     methods: {
 
-      getPlotOptions()          { return utils.getPlotOptions(this) },
       clearGraphs()             { this.table = null; return utils.clearGraphs() },
       makeGraphs(graphdata)     { return utils.makeGraphs(this, graphdata) },
       exportGraphs()            { return utils.exportGraphs(this) },
@@ -268,67 +247,17 @@ Last update: 2018-09-01
         return utils.scaleFigs(frac)
       },
 
-      clipValidateYearInput() {
-        if (this.startYear > this.simEnd) {
-          this.startYear = this.simEnd
-        }
-        else if (this.startYear < this.simStart) {
-          this.startYear = this.simStart
-        }
-        if (this.endYear > this.simEnd) {
-          this.endYear = this.simEnd
-        }
-        else if (this.endYear < this.simStart) {
-          this.endYear = this.simStart
-        }
-      },
 
-      updateSets() {
-        console.log('updateSets() called')
-        rpcs.rpc('get_parset_info', [this.projectID]) // Get the current user's parsets from the server.
+      getDefaultScen(scen_type) {
+        console.log('getDefaultScen() called for type ' + scen_type)
+        rpcs.rpc('get_default_scen', [this.projectID, scen_type])
           .then(response => {
-            this.parsetOptions = response.data // Set the scenarios to what we received.
-            if (this.parsetOptions.indexOf(this.activeParset) === -1) {
-              console.log('Parameter set ' + this.activeParset + ' no longer found')
-              this.activeParset = this.parsetOptions[0] // If the active parset no longer exists in the array, reset it
-            } else {
-              console.log('Parameter set ' + this.activeParset + ' still found')
-            }
-            this.newParsetName = this.activeParset // WARNING, KLUDGY
-            console.log('Parset options: ' + this.parsetOptions)
-            console.log('Active parset: ' + this.activeParset)
-            rpcs.rpc('get_progset_info', [this.projectID]) // Get the current user's progsets from the server.
-              .then(response => {
-                this.progsetOptions = response.data // Set the scenarios to what we received.
-                if (this.progsetOptions.indexOf(this.activeProgset) === -1) {
-                  console.log('Program set ' + this.activeProgset + ' no longer found')
-                  this.activeProgset = this.progsetOptions[0] // If the active parset no longer exists in the array, reset it
-                } else {
-                  console.log('Program set ' + this.activeProgset + ' still found')
-                }
-                this.newProgsetName = this.activeProgset // WARNING, KLUDGY
-                console.log('Progset options: ' + this.progsetOptions)
-                console.log('Active progset: ' + this.activeProgset)
-              })
-              .catch(error => {
-                status.failurePopup(this, 'Could not get progset info: ' + error.message)
-              })
+            this.defaultScen = response.data // Set the scenario to what we received.
+            console.log('This is the default scenario:')
+            console.log(this.defaultScen);
           })
           .catch(error => {
-            status.failurePopup(this, 'Could not get parset info: ' + error.message)
-          })
-      },
-
-      getDefaultBudgetScen() {
-        console.log('getDefaultBudgetScen() called')
-        rpcs.rpc('get_default_budget_scen', [this.projectID])
-          .then(response => {
-            this.defaultBudgetScen = response.data // Set the scenario to what we received.
-            console.log('This is the default:')
-            console.log(this.defaultBudgetScen);
-          })
-          .catch(error => {
-            status.failurePopup(this, 'Could not get default budget scenario: ' + error.message)
+            status.failurePopup(this, 'Could not get default scenario: ' + error.message)
           })
       },
 
@@ -361,17 +290,18 @@ Last update: 2018-09-01
           })
       },
 
-      addBudgetScenModal() {
+      addScenModal(scen_type) {
         // Open a model dialog for creating a new project
-        console.log('addBudgetScenModal() called');
-        rpcs.rpc('get_default_budget_scen', [this.projectID])
+        console.log('addScenModal() called');
+        rpcs.rpc('get_default_scen', [this.projectID, scen_type])
           .then(response => {
-            this.defaultBudgetScen = response.data // Set the scenario to what we received.
-            this.addEditModal.scenSummary = _.cloneDeep(this.defaultBudgetScen)
-            this.addEditModal.origName = this.addEditModal.scenSummary.name
-            this.addEditModal.mode = 'add'
-            this.$modal.show('add-budget-scen');
-            console.log(this.defaultBudgetScen)
+            this.defaultBudgetScen = response.data; // Set the scenario to what we received.
+            this.addEditModal.scenSummary = _.cloneDeep(this.defaultBudgetScen);
+            this.addEditModal.origName = this.addEditModal.scenSummary.name;
+            this.addEditModal.mode = 'add';
+            this.$modal.show('add-scen');
+            console.log('New scenario:');
+            console.log(this.defaultScen)
           })
           .catch(error => {
             this.response = 'There was an error: ' + error.message // Pull out the error message.
@@ -379,19 +309,31 @@ Last update: 2018-09-01
           })
       },
 
-      addBudgetScen() {
-        console.log('addBudgetScen() called')
-        this.$modal.hide('add-budget-scen')
-        status.start(this)
-        let newScen = _.cloneDeep(this.addEditModal.scenSummary) // Get the new scenario summary from the modal.
-        let scenNames = [] // Get the list of all of the current scenario names.
+      editScen(scenSummary) {
+        // Open a model dialog for creating a new project
+        console.log('editScen() called');
+        this.defaultScen = scenSummary;
+        console.log('Editing scenario:');
+        console.log(this.defaultScen);
+        this.addEditModal.scenSummary = _.cloneDeep(this.defaultScen);
+        this.addEditModal.origName = this.addEditModal.scenSummary.name;
+        this.addEditModal.mode = 'edit';
+        this.$modal.show('add-scen');
+      },
+
+      addScen() {
+        console.log('addScen() called');
+        this.$modal.hide('add-scen');
+        status.start(this);
+        let newScen = _.cloneDeep(this.addEditModal.scenSummary); // Get the new scenario summary from the modal.
+        let scenNames = []; // Get the list of all of the current scenario names.
         this.scenSummaries.forEach(scenSum => {
           scenNames.push(scenSum.name)
-        })
-        if (this.addEditModal.mode == 'edit') { // If we are editing an existing scenario...
-          let index = scenNames.indexOf(this.addEditModal.origName) // Get the index of the original (pre-edited) name
+        });
+        if (this.addEditModal.mode === 'edit') { // If we are editing an existing scenario...
+          let index = scenNames.indexOf(this.addEditModal.origName); // Get the index of the original (pre-edited) name
           if (index > -1) {
-            this.scenSummaries[index].name = newScen.name  // hack to make sure Vue table updated
+            this.scenSummaries[index].name = newScen.name; // hack to make sure Vue table updated
             this.scenSummaries[index] = newScen
           }
           else {
@@ -399,11 +341,11 @@ Last update: 2018-09-01
           }
         }
         else { // Else (we are adding a new scenario)...
-          newScen.name = utils.getUniqueName(newScen.name, scenNames)
+          newScen.name = utils.getUniqueName(newScen.name, scenNames);
           this.scenSummaries.push(newScen)
         }
-        console.log(newScen)
-        console.log(this.scenSummaries)
+        console.log('Saved scenario:');
+        console.log(newScen);
         rpcs.rpc('set_scen_info', [this.projectID, this.scenSummaries])
           .then( response => {
             status.succeed(this, 'Scenario added')
@@ -413,17 +355,7 @@ Last update: 2018-09-01
           })
       },
 
-      editScen(scenSummary) {
-        // Open a model dialog for creating a new project
-        console.log('editScen() called');
-        this.defaultBudgetScen = scenSummary
-        console.log('defaultBudgetScen')
-        console.log(this.defaultBudgetScen)
-        this.addEditModal.scenSummary = _.cloneDeep(this.defaultBudgetScen)
-        this.addEditModal.origName = this.addEditModal.scenSummary.name
-        this.addEditModal.mode = 'edit'
-        this.$modal.show('add-budget-scen');
-      },
+
 
       copyScen(scenSummary) {
         console.log('copyScen() called')
