@@ -493,6 +493,14 @@ def export_results(project_id):
 ### Scenario functions and RPCs
 ##################################################################################
 
+def is_included(prog_set, program, default_included):
+    if (program.name in prog_set) or (program.base_cov and default_included):
+        answer = True
+    else: 
+        answer = False
+    return answer
+    
+
 def py_to_js_scen(py_scen, proj, key=None, default_included=False):
     ''' Convert a Python to JSON representation of a scenario '''
     prog_names = proj.dataset().prog_names()
@@ -507,10 +515,7 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
         program = proj.model(key).prog_info.programs[prog_name]
         this_spec = {}
         this_spec['name'] = prog_name
-        if (prog_name in py_scen.prog_set) or (program.base_cov and default_included):
-            this_spec['included'] = True
-        else: 
-            this_spec['included'] = False
+        this_spec['included'] = is_included(py_scen.prog_set, program, default_included)
         this_spec['vals'] = []
         if this_spec['included']:
             count += 1
@@ -652,7 +657,7 @@ def objective_mapping(key=None, val=None):
         return None
 
 
-def py_to_js_optim(py_optim, proj, key=None):
+def py_to_js_optim(py_optim, proj, key=None, default_included=False):
     ''' Convert a Python to JSON representation of an optimization '''
     prog_names = proj.dataset().prog_names()
     js_optim = {}
@@ -662,9 +667,10 @@ def py_to_js_optim(py_optim, proj, key=None):
     js_optim['obj'] = objective_mapping(key=py_optim.obj)
     js_optim['spec'] = []
     for prog_name in prog_names:
+        program = proj.model(key).prog_info.programs[prog_name]
         this_spec = {}
         this_spec['name'] = prog_name
-        this_spec['included'] = True if prog_name in py_optim.prog_set else False
+        this_spec['included'] = is_included(py_optim.prog_set, program, default_included)
         js_optim['spec'].append(this_spec)
     return js_optim
     
@@ -732,7 +738,7 @@ def get_default_optim(project_id):
     proj = load_project(project_id, raise_exception=True)
     
     py_optim = proj.demo_optims(doadd=False)[0]
-    js_optim = py_to_js_optim(py_optim, proj)
+    js_optim = py_to_js_optim(py_optim, proj, defaul_included=True)
     js_optim['objective_options'] = objective_mapping()
     
     print("TEST")
