@@ -346,30 +346,15 @@ def load_zip_of_prj_files(project_ids):
     Given a list of project UIDs, make a .zip file containing all of these 
     projects as .prj files, and return the full path to this file.
     """
-    
-    # Use the downloads directory to put the file in.
-    dirname = sw.globalvars.downloads_dir.dir_path
-
-    # Build a list of prj.ProjectSO objects for each of the selected projects, 
-    # saving each of them in separate .prj files.
-    prjs = [load_project_record(id).save_as_file(dirname) for id in project_ids]
-    
-    # Make the zip file name and the full server file path version of the same..
-    zip_fname = '%s.zip' % str(sc.uuid())
+    dirname = sw.globalvars.downloads_dir.dir_path # Use the downloads directory to put the file in.
+    prjs = [load_project_record(id).save_as_file(dirname) for id in project_ids] # Build a list of prj.ProjectSO objects for each of the selected projects, saving each of them in separate .prj files.
+    zip_fname = '%s.zip' % str(sc.uuid()) # Make the zip file name and the full server file path version of the same.
     server_zip_fname = os.path.join(dirname, sc.sanitizefilename(zip_fname))
-    
-    # Create the zip file, putting all of the .prj files in a projects 
-    # directory.
-    with ZipFile(server_zip_fname, 'w') as zipfile:
+    with ZipFile(server_zip_fname, 'w') as zipfile: # Create the zip file, putting all of the .prj files in a projects directory.
         for project in prjs:
             zipfile.write(os.path.join(dirname, project), 'projects/{}'.format(project))
-            
-    # Display the call information.
-    # TODO: have this so that it doesn't show when logging is turned off
-    print(">> load_zip_of_prj_files %s" % (server_zip_fname))
-
-    # Return the server file name.
-    return server_zip_fname
+    print(">> load_zip_of_prj_files %s" % (server_zip_fname)) # Display the call information.
+    return server_zip_fname # Return the server file name.
 
 @register_RPC(validation='named')
 def add_demo_project(user_id):
