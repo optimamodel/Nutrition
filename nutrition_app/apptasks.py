@@ -39,10 +39,7 @@ def run_optim(project_id, optim_name=None, online=True):
     print('Running optimization...')
     if online:
         prj.apptasks_load_projects(config)
-        proj = rpcs.load_project(project_id, raise_exception=True)
-    else:
-        proj = project_id
-    
+    proj = rpcs.load_project(project_id, raise_exception=True, online=online)
     proj.results.clear() # Remove any existing results
     proj.run_optim(key=optim_name, parallel=False)
     figs = proj.plot(key=optim_name, optim=True) # Only plot allocation
@@ -55,8 +52,7 @@ def run_optim(project_id, optim_name=None, online=True):
         print('Converted figure %s of %s' % (f+1, len(figs)))
     
     print('Saving project...')
-    if online:
-        rpcs.save_project(proj) 
+    rpcs.save_project(proj, online=online) 
     
     # Return the graphs.
     return {'graphs': graphs}

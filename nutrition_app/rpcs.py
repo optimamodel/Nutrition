@@ -85,15 +85,18 @@ def load_project_record(project_id, raise_exception=True):
     # Return the Project object for the match (None if none found).
     return project_record
 
-def load_project(project_id, raise_exception=True):
+def load_project(project_id, raise_exception=True, online=True):
     """
     Return the Nutrition Project object, given a project UID, or None if no 
     ID match is found.
     """ 
     
+    # If running offline, just return the project
+    if not online: 
+        return project_id
+    
     # Load the project record matching the ID passed in.
-    project_record = load_project_record(project_id, 
-        raise_exception=raise_exception)
+    project_record = load_project_record(project_id, raise_exception=raise_exception)
     
     # If there is no match, raise an exception or return None.
     if project_record is None:
@@ -150,12 +153,17 @@ def get_unique_name(name, other_names=None):
     # Return the found name.
     return unique_name
 
-def save_project(proj):
+def save_project(proj, online=True):
     """
     Given a Project object, wrap it in a new prj.ProjectSO object and put this 
     in the project collection (either adding a new object, or updating an 
     existing one)  skip_result lets you null out saved results in the Project.
     """ 
+    
+    # If offline, just save to a file and return
+    if not online:
+        proj.save()
+        return None
     
     # Load the project record matching the UID of the project passed in.
     project_record = load_project_record(proj.uid)
@@ -169,7 +177,7 @@ def save_project(proj):
     # the constructor will automatically use the Project's UID.
     projSO = prj.ProjectSO(new_project, project_record.owner_uid)
     prj.proj_collection.update_object(projSO)
-    
+    return None
 
 def save_project_as_new(proj, user_id):
     """
@@ -666,7 +674,7 @@ def objective_mapping(key=None, val=None):
     elif val is not None:
         return mapping.find(val)
     else:
-        raise Exception('This is impossible. You are not seeing this.')
+        raise Exception('This is impossible. You are not seeing this. Have your eyes checked.')
         return None
 
 
@@ -674,7 +682,7 @@ def py_to_js_optim(py_optim, proj, key=None):
     ''' Convert a Python to JSON representation of an optimization '''
     prog_names = proj.dataset().prog_names()
     js_optim = {}
-    attrs = ['name', 'mults', 'add_funds', 'fix_curr']
+    attrs = ['name', 'mults', 'add_funds', 'fix_curr', 'filter_progs']
     for attr in attrs:
         js_optim[attr] = getattr(py_optim, attr) # Copy the attributes into a dictionary
     js_optim['obj'] = objective_mapping(key=py_optim.obj)
@@ -690,7 +698,7 @@ def py_to_js_optim(py_optim, proj, key=None):
 def js_to_py_optim(js_optim):
     ''' Convert a JSON to Python representation of an optimization '''
     json = sc.odict()
-    attrs = ['name', 'fix_curr']
+    attrs = ['name', 'fix_curr', 'filter_progs']
     for attr in attrs:
         json[attr] = js_optim[attr]
     json['obj'] = objective_mapping(val=js_optim['obj'])
@@ -715,39 +723,31 @@ def js_to_py_optim(js_optim):
     
 
 @register_RPC(validation='named')    
-def get_optim_info(project_id):
-
+def get_optim_info(project_id, online=True):
     print('Getting optimization info...')
-    proj = load_project(project_id, raise_exception=True)
-    
+    proj = load_project(project_id, raise_exception=True, online=online)
     optim_summaries = []
     for py_optim in proj.optims.values():
         js_optim = py_to_js_optim(py_optim, proj)
         optim_summaries.append(js_optim)
-    
     print('JavaScript optimization info:')
     pprint(optim_summaries)
-
     return optim_summaries
 
 
 @register_RPC(validation='named')    
-def set_optim_info(project_id, optim_summaries):
-
+def set_optim_info(project_id, optim_summaries, online=True):
     print('Setting optimization info...')
-    proj = load_project(project_id, raise_exception=True)
+    proj = load_project(project_id, raise_exception=True, online=online)
     proj.optims.clear()
-    
     for j,js_optim in enumerate(optim_summaries):
         print('Setting optimization %s of %s...' % (j+1, len(optim_summaries)))
         json = js_to_py_optim(js_optim)
         print('Python optimization info for optimization %s:' % (j+1))
         print(json)
         proj.add_optim(json=json)
-    
     print('Saving project...')
-    save_project(proj)   
-    
+    save_project(proj, online=online)   
     return None
     
 
