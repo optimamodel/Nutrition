@@ -97,8 +97,9 @@ class ProjectSO(sw.Blob):
                 'id': self.uid,
                 'name': self.proj.name,
                 'userId': self.owner_uid,
+                'hasData':      len(self.proj.datasets)>0,
                 'creationTime': self.proj.created,
-                'updatedTime': self.proj.modified     
+                'updatedTime': self.proj.modified
             }
         }
         return obj_info
