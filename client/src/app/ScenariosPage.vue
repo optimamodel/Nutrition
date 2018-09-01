@@ -55,28 +55,13 @@ Last update: 2018-09-01
       </div>
     </div>
 
+    <!-- START RESULTS CARD -->
     <div class="card full-width-card">
       <div class="calib-title">
         <help reflink="results-plots" label="Results"></help>
         <div>
-
-          <b>Year: &nbsp;</b>
-          <select v-model="endYear" v-on:change="plotScenarios()">
-            <option v-for='year in simYears'>
-              {{ year }}
-            </option>
-          </select>
-          &nbsp;&nbsp;&nbsp;
-          <b>Population: &nbsp;</b>
-          <select v-model="activePop" v-on:change="plotScenarios()">
-            <option v-for='pop in activePops'>
-              {{ pop }}
-            </option>
-          </select>
-          &nbsp;&nbsp;&nbsp;
           <button class="btn" @click="exportGraphs()">Export graphs</button>
           <button class="btn" @click="exportResults(projectID)">Export data</button>
-
         </div>
       </div>
 
@@ -96,6 +81,7 @@ Last update: 2018-09-01
       </div>
 
     </div>
+    <!-- END RESULTS CARD -->
 
 
     <!-- START ADD-SCENARIO MODAL -->
@@ -137,22 +123,22 @@ Last update: 2018-09-01
             </tr>
             </thead>
             <tbody>
-            <tr v-for="prog_spec in defaultScen.spec">
+            <tr v-for="progval in this.addEditModal.scenSummary.progvals">
               <td style="min-width:200px">
-                {{ prog_spec.name }}
+                {{ progval.name }}
               </td>
               <td style="text-align: center">
-                <input type="checkbox" v-model="addEditModal.scenSummary.prog_spec.included"/>
+                <input type="checkbox" v-model="addEditModal.scenSummary.progvals.included"/>
               </td>
               <td style="text-align: right">
-                <span v-if="addEditModal.modalScenarioType==='coverage'">{{ prog_spec.base_cov }}</span>
-                <span v-else>{{ addEditModal.scenSummary.prog_spec.base_spend }}</span>
+                <span v-if="addEditModal.modalScenarioType==='coverage'">{{ progvals.base_cov }}</span>
+                <span v-else>{{ addEditModal.scenSummary.progvals.base_spend }}</span>
               </td>
-              <td v-for="(val, index) in addEditModal.scenSummary.prog_spec.vals">
+              <td v-for="(val, index) in addEditModal.scenSummary.progvals.vals">
                 <input type="text"
                        class="txbox"
                        style="text-align: right"
-                       v-model="addEditModal.scenSummary.prog_spec.vals[index]"/>
+                       v-model="addEditModal.scenSummary.progvals.vals[index]"/>
               </td>
             </tr>
             </tbody>
@@ -295,13 +281,12 @@ Last update: 2018-09-01
         console.log('addScenModal() called');
         rpcs.rpc('get_default_scen', [this.projectID, scen_type])
           .then(response => {
-            this.defaultBudgetScen = response.data; // Set the scenario to what we received.
-            this.addEditModal.scenSummary = _.cloneDeep(this.defaultBudgetScen);
+            this.addEditModal.scenSummary = response.data;
             this.addEditModal.origName = this.addEditModal.scenSummary.name;
             this.addEditModal.mode = 'add';
             this.$modal.show('add-scen');
             console.log('New scenario:');
-            console.log(this.defaultScen)
+            console.log(this.addEditModal.scenSummary)
           })
           .catch(error => {
             this.response = 'There was an error: ' + error.message // Pull out the error message.
@@ -312,10 +297,9 @@ Last update: 2018-09-01
       editScen(scenSummary) {
         // Open a model dialog for creating a new project
         console.log('editScen() called');
-        this.defaultScen = scenSummary;
+        this.addEditModal.scenSummary = scenSummary;
         console.log('Editing scenario:');
-        console.log(this.defaultScen);
-        this.addEditModal.scenSummary = _.cloneDeep(this.defaultScen);
+        console.log(this.addEditModal.scenSummary);
         this.addEditModal.origName = this.addEditModal.scenSummary.name;
         this.addEditModal.mode = 'edit';
         this.$modal.show('add-scen');

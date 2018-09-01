@@ -501,7 +501,7 @@ def py_to_js_scen(py_scen, proj, key=None):
     js_scen = {}
     for attr in attrs:
         js_scen[attr] = getattr(py_scen, attr) # Copy the attributes into a dictionary
-    js_scen['spec'] = []
+    js_scen['progvals'] = []
     count = -1
     for prog_name in prog_names:
         program = proj.model(key).prog_info.programs[prog_name]
@@ -525,7 +525,7 @@ def py_to_js_scen(py_scen, proj, key=None):
                     this_spec['vals'][y] = round(100*this_spec['vals'][y]) # Enter to the nearest percentage
         this_spec['base_cov'] = round(program.base_cov*100) # Convert to percentage
         this_spec['base_spend'] = round(program.base_spend)
-        js_scen['spec'].append(this_spec)
+        js_scen['progvals'].append(this_spec)
         js_scen['t'] = settings.t
     return js_scen
     
@@ -536,7 +536,7 @@ def js_to_py_scen(js_scen):
     for attr in ['name', 'scen_type', 'active']: # Copy these directly
         py_json[attr] = js_scen[attr]
     py_json['progvals'] = sc.odict() # These require more TLC
-    for js_spec in js_scen['spec']:
+    for js_spec in js_scen['progvals']:
         if js_spec['included']:
             py_json['progvals'][js_spec['name']] = []
             vals = list(sanitize(js_spec['vals'], skip=True))

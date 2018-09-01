@@ -32,7 +32,7 @@ if 'scen_io' in torun or runall:
         heading('Results:')
         print(R)
     heading('Scenario summaries:')
-    print(scen_summaries)
+    sc.pp(scen_summaries)
 
 
 if 'optim_io' in torun or runall:
@@ -45,7 +45,7 @@ if 'optim_io' in torun or runall:
         heading('Results:')
         print(R)
     heading('Optimization summaries:')
-    print(optim_summaries)
+    sc.pp(optim_summaries)
     
 
 if 'run_optimization' in torun or runall:
@@ -53,7 +53,7 @@ if 'run_optimization' in torun or runall:
     proj = nu.demo(optims=True)
     output = apt.run_optim(proj, online=False)
     print('Output:')
-    print(output)
+    sc.pp(output)
 
 
 sc.toc(T)
