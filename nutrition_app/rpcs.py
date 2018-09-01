@@ -374,24 +374,14 @@ def load_zip_of_prj_files(project_ids):
 @register_RPC(validation='named')
 def add_demo_project(user_id):
     """
-    Add a demo Optima TB project
+    Add a demo Optima Nutrition project
     """
-    # Get a unique name for the project to be added.
-    new_proj_name = get_unique_name('Demo project', other_names=None)
-    
-    # Create the project, loading in the desired spreadsheets.
-    proj = nu.demo() 
+    new_proj_name = get_unique_name('Demo project', other_names=None) # Get a unique name for the project to be added.
+    proj = nu.demo(scens=True, optims=True)  # Create the project, loading in the desired spreadsheets.
     proj.name = new_proj_name
-    
-    # Display the call information.
-    # TODO: have this so that it doesn't show when logging is turned off
-    print(">> add_demo_project %s" % (proj.name))    
-    
-    # Save the new project in the DataStore.
-    save_project_as_new(proj, user_id)
-    
-    # Return the new project UID in the return message.
-    return { 'projectId': str(proj.uid) }
+    print(">> add_demo_project %s" % (proj.name)) # Display the call information.
+    save_project_as_new(proj, user_id) # Save the new project in the DataStore.
+    return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
 
 
 @register_RPC(call_type='download', validation='named')

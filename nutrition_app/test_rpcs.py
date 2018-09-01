@@ -16,8 +16,10 @@ torun = [
 T = sc.tic()
 
 def heading(string):
+    sc.blank()
     sc.colorize('blue', string)
     return None
+
 
 if 'optim_io' in torun or runall:
     proj = nu.demo(optims=True)
