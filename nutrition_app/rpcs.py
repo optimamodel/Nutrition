@@ -101,69 +101,17 @@ def load_project(project_id, raise_exception=True, online=True):
     Return the Nutrition Project object, given a project UID, or None if no 
     ID match is found.
     """ 
-    
-    # If running offline, just return the project
-    if not online: 
-        return project_id
-    
-    # Load the project record matching the ID passed in.
-    project_record = load_project_record(project_id, raise_exception=raise_exception)
-    
-    # If there is no match, raise an exception or return None.
-    if project_record is None:
-        if raise_exception:
-            raise Exception('ProjectDoesNotExist(id=%s)' % project_id)
-        else:
-            return None
-        
-    # Return the found project.
-    return project_record.proj
+    if not online:  return project_id # If running offline, just return the project
+    project_record = load_project_record(project_id, raise_exception=raise_exception) # Load the project record matching the ID passed in.
+    if project_record is None: # If there is no match, raise an exception or return None.
+        if raise_exception: raise Exception('ProjectDoesNotExist(id=%s)' % project_id)
+        else:               return None
+    return project_record.proj # Return the found project.
 
 def load_project_summary_from_project_record(project_record):
-    """
-    Return the project summary, given the DataStore record.
-    """ 
-    
-    # Return the built project summary.
-    return project_record.get_user_front_end_repr()
-  
-def load_current_user_project_summaries2():
-    """
-    Return project summaries for all projects the user has to the client. -- WARNING, fix!
-    """ 
-    
-    # Get the prj.ProjectSO entries matching the user UID.
-    project_entries = prj.proj_collection.get_project_entries_by_user(current_user.get_id())
-    
-    # Grab a list of project summaries from the list of prj.ProjectSO objects we 
-    # just got.
-    return {'projects': map(load_project_summary_from_project_record, 
-        project_entries)}
-                
-def get_unique_name(name, other_names=None):
-    """
-    Given a name and a list of other names, find a replacement to the name 
-    that doesn't conflict with the other names, and pass it back.
-    """
-    
-    # If no list of other_names is passed in, load up a list with all of the 
-    # names from the project summaries.
-    if other_names is None:
-        other_names = [p['project']['name'] for p in load_current_user_project_summaries2()['projects']]
-      
-    # Start with the passed in name.
-    i = 0
-    unique_name = name
-    
-    # Try adding an index (i) to the name until we find one that no longer 
-    # matches one of the other names in the list.
-    while unique_name in other_names:
-        i += 1
-        unique_name = "%s (%d)" % (name, i)
-        
-    # Return the found name.
-    return unique_name
-
+    """ Return the project summary, given the DataStore record. """ 
+    return project_record.get_user_front_end_repr() # Return the built project summary.
+          
 def save_project(proj, online=True):
     """
     Given a Project object, wrap it in a new prj.ProjectSO object and put this 
@@ -238,48 +186,27 @@ def get_version_info():
     
 @RPC()
 def get_scirisdemo_projects():
-    """
-    Return the projects associated with the Sciris Demo user.
-    """
-    
-    # Get the user UID for the _ScirisDemo user.
-    user_id = sw.get_scirisdemo_user()
-   
-    # Get the prj.ProjectSO entries matching the _ScirisDemo user UID.
-    project_entries = prj.proj_collection.get_project_entries_by_user(user_id)
-
-    # Collect the project summaries for that user into a list.
-    project_summary_list = map(load_project_summary_from_project_record, 
-        project_entries)
-    
-    # Sort the projects by the project name.
-    sorted_summary_list = sorted(project_summary_list, 
-        key=lambda proj: proj['project']['name']) # Sorts by project name
-    
-    # Return a dictionary holding the project summaries.
-    output = {'projects': sorted_summary_list}
+    """ Return the projects associated with the Sciris Demo user. """
+    user_id = sw.get_scirisdemo_user() # Get the user UID for the _ScirisDemo user.
+    project_entries = prj.proj_collection.get_project_entries_by_user(user_id) # Get the prj.ProjectSO entries matching the _ScirisDemo user UID.
+    project_summary_list = map(load_project_summary_from_project_record, project_entries) # Collect the project summaries for that user into a list.
+    sorted_summary_list = sorted(project_summary_list, key=lambda proj: proj['project']['name']) # Sorts by project name
+    output = {'projects': sorted_summary_list} # Return a dictionary holding the project summaries.
     return output
 
 @RPC()
 def load_project_summary(project_id):
-    """
-    Return the project summary, given the Project UID.
-    """ 
-    
-    # Load the project record matching the UID of the project passed in.
-    project_entry = load_project_record(project_id)
-    
-    # Return a project summary from the accessed prj.ProjectSO entry.
-    return load_project_summary_from_project_record(project_entry)
+    """ Return the project summary, given the Project UID. """ 
+    project_entry = load_project_record(project_id) # Load the project record matching the UID of the project passed in.
+    return load_project_summary_from_project_record(project_entry) # Return a project summary from the accessed prj.ProjectSO entry.
 
 
 @RPC()
 def load_current_user_project_summaries():
-    """
-    Return project summaries for all projects the user has to the client.
-    """ 
-    
-    return load_current_user_project_summaries2()
+    """ Return project summaries for all projects the user has to the client. """ 
+    project_entries = prj.proj_collection.get_project_entries_by_user(current_user.get_id()) # Get the prj.ProjectSO entries matching the user UID.
+    return {'projects': map(load_project_summary_from_project_record, project_entries)}# Grab a list of project summaries from the list of prj.ProjectSO objects we just got.
+
 
 
 @RPC()                
@@ -312,7 +239,7 @@ def delete_projects(project_ids):
         if record is not None:
             prj.proj_collection.delete_object_by_uid(project_id)
 
-@RPC(call_type='download', validation='named')   
+@RPC(call_type='download')   
 def download_project(project_id):
     """
     For the passed in project UID, get the Project on the server, save it in a 
@@ -325,7 +252,7 @@ def download_project(project_id):
     print(">> download_project %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
 
-@RPC(call_type='download', validation='named')   
+@RPC(call_type='download')   
 def download_databook(project_id):
     """
     Download databook
@@ -338,7 +265,7 @@ def download_databook(project_id):
     return full_file_name # Return the full filename.
 
 
-@RPC(call_type='download', validation='named')   
+@RPC(call_type='download')   
 def download_defaults(project_id):
     """
     Download defaults
@@ -351,7 +278,7 @@ def download_defaults(project_id):
     return full_file_name # Return the full filename.
 
 
-@RPC(call_type='download', validation='named')
+@RPC(call_type='download')
 def load_zip_of_prj_files(project_ids):
     """
     Given a list of project UIDs, make a .zip file containing all of these 
@@ -372,7 +299,7 @@ def add_demo_project(user_id):
     """
     Add a demo Optima Nutrition project
     """
-    new_proj_name = get_unique_name('Demo project', other_names=None) # Get a unique name for the project to be added.
+    new_proj_name = sc.uniquename('Demo project', namelist=None) # Get a unique name for the project to be added.
     proj = nu.demo(scens=True, optims=True)  # Create the project, loading in the desired spreadsheets.
     proj.name = new_proj_name
     print(">> add_demo_project %s" % (proj.name)) # Display the call information.
@@ -380,13 +307,13 @@ def add_demo_project(user_id):
     return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
 
 
-@RPC(call_type='download', validation='named')
+@RPC(call_type='download')
 def create_new_project(user_id, proj_name):
     """
     Create a new Optima Nutrition project.
     """
     template_name = 'template_input.xlsx'
-    new_proj_name = get_unique_name(proj_name, other_names=None) # Get a unique name for the project to be added.
+    new_proj_name = sc.uniquename(proj_name, namelist=None) # Get a unique name for the project to be added.
     proj = nu.Project(name=new_proj_name) # Create the project
     print(">> create_new_project %s" % (proj.name))     # Display the call information.
     save_project_as_new(proj, user_id) # Save the new project in the DataStore.
@@ -398,7 +325,7 @@ def create_new_project(user_id, proj_name):
     return full_file_name
 
 
-@RPC(call_type='upload', validation='named')
+@RPC(call_type='upload')
 def upload_databook(databook_filename, project_id):
     """ Upload a databook to a project. """
     print(">> upload_databook '%s'" % databook_filename)
@@ -421,7 +348,7 @@ def update_project_from_summary(project_summary):
     save_project(proj) # Save the changed project to the DataStore.
     return None
     
-@RPC()    
+@RPC()
 def copy_project(project_id):
     """
     Given a project UID, creates a copy of the project with a new UID and 
@@ -430,7 +357,7 @@ def copy_project(project_id):
     project_record = load_project_record(project_id, raise_exception=True) # Get the Project object for the project to be copied.
     proj = project_record.proj
     new_project = sc.dcp(proj) # Make a copy of the project loaded in to work with.
-    new_project.name = get_unique_name(proj.name, other_names=None) # Just change the project name, and we have the new version of the Project object to be saved as a copy.
+    new_project.name = sc.uniquename(proj.name, namelist=None) # Just change the project name, and we have the new version of the Project object to be saved as a copy.
     user_id = current_user.get_id() # Set the user UID for the new projects record to be the current user.
     print(">> copy_project %s" % (new_project.name))  # Display the call information.
     save_project_as_new(new_project, user_id) # Save a DataStore projects record for the copy project.
@@ -438,7 +365,7 @@ def copy_project(project_id):
     return { 'projectId': copy_project_id } # Return the UID for the new projects record.
 
 
-@RPC(call_type='upload', validation='named')
+@RPC(call_type='upload')
 def create_project_from_prj_file(prj_filename, user_id):
     """
     Given a .prj file name and a user UID, create a new project from the file 
@@ -449,12 +376,12 @@ def create_project_from_prj_file(prj_filename, user_id):
         proj = sc.loadobj(prj_filename)
     except Exception:
         return { 'error': 'BadFileFormatError' }
-    proj.name = get_unique_name(proj.name, other_names=None) # Reset the project name to a new project name that is unique.
+    proj.name = sc.uniquename(proj.name, namelist=None) # Reset the project name to a new project name that is unique.
     save_project_as_new(proj, user_id) # Save the new project in the DataStore.
     return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
 
 
-@RPC(call_type='download', validation='named')
+@RPC(call_type='download')
 def export_results(project_id):
     proj = load_project(project_id, raise_exception=True) # Load the project with the matching UID.
     file_name = '%s outputs.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
@@ -462,6 +389,17 @@ def export_results(project_id):
     proj.write_results(full_file_name, keys=-1)
     print(">> export_results %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
+
+
+
+##################################################################################
+### Input functions and RPCs
+##################################################################################
+
+@RPC()
+def get_sheet_data(project_id):
+    pass
+
 
 
 
