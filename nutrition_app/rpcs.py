@@ -236,7 +236,7 @@ def get_version_info():
 	return version_info
 
     
-@RPC(validation='named')
+@RPC()
 def get_scirisdemo_projects():
     """
     Return the projects associated with the Sciris Demo user.
@@ -260,7 +260,7 @@ def get_scirisdemo_projects():
     output = {'projects': sorted_summary_list}
     return output
 
-@RPC(validation='named')
+@RPC()
 def load_project_summary(project_id):
     """
     Return the project summary, given the Project UID.
@@ -273,7 +273,7 @@ def load_project_summary(project_id):
     return load_project_summary_from_project_record(project_entry)
 
 
-@RPC(validation='named')
+@RPC()
 def load_current_user_project_summaries():
     """
     Return project summaries for all projects the user has to the client.
@@ -282,7 +282,7 @@ def load_current_user_project_summaries():
     return load_current_user_project_summaries2()
 
 
-@RPC(validation='named')                
+@RPC()                
 def load_all_project_summaries():
     """
     Return project summaries for all projects to the client.
@@ -296,7 +296,7 @@ def load_all_project_summaries():
     return {'projects': map(load_project_summary_from_project_record, 
         project_entries)}
             
-@RPC(validation='named')    
+@RPC()    
 def delete_projects(project_ids):
     """
     Delete all of the projects with the passed in UIDs.
@@ -367,7 +367,7 @@ def load_zip_of_prj_files(project_ids):
     print(">> load_zip_of_prj_files %s" % (server_zip_fname)) # Display the call information.
     return server_zip_fname # Return the server file name.
 
-@RPC(validation='named')
+@RPC()
 def add_demo_project(user_id):
     """
     Add a demo Optima Nutrition project
@@ -409,7 +409,7 @@ def upload_databook(databook_filename, project_id):
     return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
 
 
-@RPC(validation='named')
+@RPC()
 def update_project_from_summary(project_summary):
     """
     Given the passed in project summary, update the underlying project 
@@ -421,7 +421,7 @@ def update_project_from_summary(project_summary):
     save_project(proj) # Save the changed project to the DataStore.
     return None
     
-@RPC(validation='named')    
+@RPC()    
 def copy_project(project_id):
     """
     Given a project UID, creates a copy of the project with a new UID and 
@@ -532,7 +532,7 @@ def js_to_py_scen(js_scen):
     return py_json
     
 
-@RPC(validation='named')    
+@RPC()    
 def get_scen_info(project_id, key=None, online=True):
 
     print('Getting scenario info...')
@@ -549,7 +549,7 @@ def get_scen_info(project_id, key=None, online=True):
     return scenario_summaries
 
 
-@RPC(validation='named')    
+@RPC()    
 def set_scen_info(project_id, scenario_summaries, online=True):
 
     print('Setting scenario info...')
@@ -568,7 +568,7 @@ def set_scen_info(project_id, scenario_summaries, online=True):
     return None
 
 
-@RPC(validation='named')    
+@RPC()    
 def get_default_scen(project_id, scen_type=None):
     
     print('Creating default scenario...')
@@ -585,7 +585,7 @@ def get_default_scen(project_id, scen_type=None):
     return js_scen
 
 
-@RPC(validation='named')    
+@RPC()    
 def run_scens(project_id, online=True):
     
     print('Running scenarios...')
@@ -684,7 +684,7 @@ def js_to_py_optim(js_optim):
     return json
     
 
-@RPC(validation='named')    
+@RPC()    
 def get_optim_info(project_id, online=True):
     print('Getting optimization info...')
     proj = load_project(project_id, raise_exception=True, online=online)
@@ -697,7 +697,7 @@ def get_optim_info(project_id, online=True):
     return optim_summaries
 
 
-@RPC(validation='named')    
+@RPC()    
 def set_optim_info(project_id, optim_summaries, online=True):
     print('Setting optimization info...')
     proj = load_project(project_id, raise_exception=True, online=online)
@@ -713,7 +713,7 @@ def set_optim_info(project_id, optim_summaries, online=True):
     return None
     
 
-@RPC(validation='named')    
+@RPC()    
 def get_default_optim(project_id):
     print('Getting default optimization...')
     proj = load_project(project_id, raise_exception=True)
@@ -725,7 +725,7 @@ def get_default_optim(project_id):
     return js_optim
 
 
-@RPC(validation='named')    
+@RPC()    
 def plot_optimization(project_id, cache_id):
     proj = load_project(project_id, raise_exception=True)
     figs = proj.plot(key=cache_id, optim=True) # Only plot allocation
