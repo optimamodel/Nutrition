@@ -1,69 +1,110 @@
-f<!--
-Define equity
+<!--
+Optimizations page
 
-Last update: 2018-08-09
+Last update: 2018-09-02
 -->
 
 <template>
-  <div class="SitePage">
-  
-    <div v-if="activeProjectID ==''">
+  <div>
+
+    <div v-if="projectID ==''">
       <div style="font-style:italic">
         <p>No project is loaded.</p>
       </div>
     </div>
-    
-    <div v-else>    
-      <table class="table table-bordered table-hover table-striped" style="width: 100%">
-        <thead>
-        <tr>
-          <th>Name</th>
-          <th>Actions</th>
-        </tr>
-        </thead>
+
+    <div v-else-if="!hasData">
+      <div style="font-style:italic">
+        <p>Data not yet uploaded for the project.  Please upload a databook in the Projects page.</p>
+      </div>
+    </div>
+
+    <div v-else>
+      <div class="card">
+        <help reflink="optimizations" label="Define optimizations"></help>
+        <table class="table table-bordered table-hover table-striped" style="width: 100%">
+          <thead>
+          <tr>
+            <th>Name</th>
+            <th>Actions</th>
+          </tr>
+          </thead>
         <tbody>
         <tr v-for="optimSummary in optimSummaries">
           <td>
             <b>{{ optimSummary.name }}</b>
           </td>
           <td style="white-space: nowrap">
-            <button class="btn __green" @click="runOptim(optimSummary)">Run</button>
+            <button class="btn __green" @click="runOptim(optimSummary, 9999)">Run</button>
+<button class="btn" @click="runOptim(optimSummary, 20)">Test run</button>
             <button class="btn" @click="editOptim(optimSummary)">Edit</button>
             <button class="btn" @click="copyOptim(optimSummary)">Copy</button>
             <button class="btn" @click="deleteOptim(optimSummary)">Delete</button>
           </td>
         </tr>
         </tbody>
-      </table>
+        </table>
+      </div>
+    </div>
 
-      <div>
-        <button class="btn __blue" @click="addOptimModal()">Add optimization</button>
-        <button class="btn" @click="exportResults()">Export results</button>
-        <button class="btn" @click="clearGraphs()">Clear graphs</button>
+
+    <!-- START RESULTS CARD -->
+    <div class="card full-width-card">
+      <div class="calib-title">
+        <help reflink="results-plots" label="Results"></help>
+        <div>
+            <button class="btn btn-icon" @click="scaleFigs(0.9)" data-tooltip="Zoom out">&ndash;</button>
+            <button class="btn btn-icon" @click="scaleFigs(1.0)" data-tooltip="Reset zoom"><i class="ti-zoom-in"></i></button>
+            <button class="btn btn-icon" @click="scaleFigs(1.1)" data-tooltip="Zoom in">+</button>
+            &nbsp;&nbsp;&nbsp;
+          <button class="btn" @click="exportGraphs()">Export plots</button>
+          <button class="btn" @click="exportResults(projectID)">Export data</button>
+        </div>
       </div>
 
-
-      <modal name="add-optim"
-             height="auto" 
-             :scrollable="true"
-             :classes="['v--modal', 'vue-dialog']"
-             :width="width"
-             :pivot-y="0.3"
-             :adaptive="true"
-             :clickToClose="clickToClose"
-             :transition="transition">
-
-        <div class="dialog-content">
-          <div class="dialog-c-title">
-            Add/edit optimization
+      <div class="calib-main" :class="{'calib-main--full': true}">
+        <div class="calib-graphs">
+          <!--<div class="featured-graphs">-->
+            <!--<div :id="'fig0'">-->
+              <!--&lt;!&ndash;mpld3 content goes here&ndash;&gt;-->
+            <!--</div>-->
+          <!--</div>-->
+          <div class="other-graphs">
+            <div v-for="index in placeholders" :id="'fig'+index" class="calib-graph">
+              <!--mpld3 content goes here-->
+            </div>
           </div>
-          <div class="dialog-c-text">
-            Optimization name:<br>
+        </div>
+      </div>
+
+    </div>
+    <!-- END RESULTS CARD -->
+
+    <!-- START ADD-OPTIM MODAL -->
+      <modal name="add-optim"
+           height="auto"
+           :scrollable="true"
+           :width="900"
+           :classes="['v--modal', 'vue-dialog']"
+           :pivot-y="0.3"
+           :adaptive="true"
+           :clickToClose="clickToClose"
+           :transition="transition">
+
+      <div class="dialog-content">
+        <div class="dialog-c-title" v-if="addEditModal.mode=='add'">
+          Add optimization
+        </div>
+        <div class="dialog-c-title" v-else>
+          Edit optimization
+        </div>
+        <div class="dialog-c-text">
+            <b>Optimization name:</b><br>
             <input type="text"
                    class="txbox"
-                   v-model="defaultOptim.name"/><br>
-            Optimization objectives:<br>
-            <select v-model="defaultOptim.obj">
+                   v-model="addEditModal.optimSummary.name"/><br>
+            <b>Optimization objectives:</b><br>
+            <select v-model="addEditModal.optimSummary.obj">
               <option v-for='obj in objectiveOptions'>
                 {{ obj }}
               </option>
@@ -71,13 +112,12 @@ Last update: 2018-08-09
             Budget multipliers (1 = current budget):<br>
             <input type="text"
                    class="txbox"
-                   v-model="defaultOptim.mults"/><br>
+                   v-model="addEditModal.optimSummary.mults"/><br>
             <input type="checkbox" v-model="defaultOptim.fix_curr"/> Existing spending cannot be reallocated<br><br>
             Additional funds (US$):<br>
             <input type="text"
                    class="txbox"
                    v-model="defaultOptim.add_funds"/><br>
-          </div>
           
           <table class="table table-bordered table-hover table-striped" style="width: 100%">
             <thead>
@@ -87,37 +127,32 @@ Last update: 2018-08-09
             </tr>
             </thead>
             <tbody>
-            <tr v-for="prog_spec in defaultOptim.spec">
+            <tr v-for="progvals in addEditModal.optimSummary.progvals">
               <td>
-                {{ prog_spec.name }}
+                {{ progvals.name }}
               </td>
               <td style="text-align: center">
-                <input type="checkbox" v-model="prog_spec.included"/>
+                <input type="checkbox" v-model=progvals.included"/>
               </td>
             </tr>
             </tbody>
           </table>
             
-          <div style="text-align:center">
-            <button @click="addOptim()" class='btn __green' style="display:inline-block">
-              Save optimization
-            </button>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <button @click="$modal.hide('add-optim')" class='btn __red' style="display:inline-block">
-              Cancel
-            </button>
-          </div>
         </div>
-      </modal>
-    
-      <div>
-        <div v-for="index in placeholders" :id="'fig'+index" style="max-width:650px; float:left;">
-          <!--mpld3 content goes here-->
+        <div style="text-align:justify">
+          <button @click="addOptim()" class='btn __green' style="display:inline-block">
+            Save scenario
+          </button>
+          <button @click="$modal.hide('add-optim')" class='btn __red' style="display:inline-block">
+            Cancel
+          </button>
         </div>
       </div>
-      
-    
-    </div>
+
+    </modal>
+    <!-- END ADD-OPTIM MODAL -->
+
+
   </div>
 </template>
 
@@ -132,19 +167,15 @@ Last update: 2018-08-09
   import router from '@/router'
   import help from '@/app/HelpLink.vue'
 
-  const FLOAT_FORMATTER = d3.format('.0f');
-  const PERCENT_FORMATTER = (d) => d3.format('.1%')(d / 100);
-  const SI_FORMATTER = (d) => d3.format('.2s')(d);
 
   export default {
-    name: 'OptimizationPage',
+    name: 'OptimizationsPage',
     
     components: {
     },
   
     data() {
       return {
-        serverresponse: 'no response',
         optimSummaries: [],
         defaultOptim: [],
         objectiveOptions: [],
@@ -482,5 +513,5 @@ Last update: 2018-08-09
 
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="scss" scoped>
+<style scoped>
 </style>

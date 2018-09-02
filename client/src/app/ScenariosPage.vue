@@ -1,7 +1,7 @@
 <!--
-Scenarios Page
+Scenarios page
 
-Last update: 2018-09-01
+Last update: 2018-09-02
 -->
 
 <template>
@@ -60,7 +60,11 @@ Last update: 2018-09-01
       <div class="calib-title">
         <help reflink="results-plots" label="Results"></help>
         <div>
-          <button class="btn" @click="exportGraphs()">Export graphs</button>
+            <button class="btn btn-icon" @click="scaleFigs(0.9)" data-tooltip="Zoom out">&ndash;</button>
+            <button class="btn btn-icon" @click="scaleFigs(1.0)" data-tooltip="Reset zoom"><i class="ti-zoom-in"></i></button>
+            <button class="btn btn-icon" @click="scaleFigs(1.1)" data-tooltip="Zoom in">+</button>
+            &nbsp;&nbsp;&nbsp;
+          <button class="btn" @click="exportGraphs()">Export plots</button>
           <button class="btn" @click="exportResults(projectID)">Export data</button>
         </div>
       </div>
@@ -172,7 +176,7 @@ Last update: 2018-09-01
   import help from '@/app/HelpLink.vue'
 
   export default {
-    name: 'scenarioPage',
+    name: 'ScenariosPage',
 
     components: {
       help
@@ -180,9 +184,7 @@ Last update: 2018-09-01
 
     data() {
       return {
-        response: 'no response',
         scenSummaries: [],
-        defaultScen: {},
         defaultScenYears: [],
         scenariosLoaded: false,
         addEditModal: {
@@ -211,7 +213,6 @@ Last update: 2018-09-01
         utils.sleep(1)  // used so that spinners will come up by callback func
           .then(response => {
             this.getScenSummaries()
-            this.getDefaultScen('coverage')
             this.getPlotOptions()
           })
       }
@@ -231,20 +232,6 @@ Last update: 2018-09-01
           this.figscale = 1.0
         }
         return utils.scaleFigs(frac)
-      },
-
-
-      getDefaultScen(scen_type) {
-        console.log('getDefaultScen() called for type ' + scen_type)
-        rpcs.rpc('get_default_scen', [this.projectID, scen_type])
-          .then(response => {
-            this.defaultScen = response.data // Set the scenario to what we received.
-            console.log('This is the default scenario:')
-            console.log(this.defaultScen);
-          })
-          .catch(error => {
-            status.failurePopup(this, 'Could not get default scenario: ' + error.message)
-          })
       },
 
       getScenSummaries() {
@@ -340,8 +327,6 @@ Last update: 2018-09-01
           })
       },
 
-
-
       copyScen(scenSummary) {
         console.log('copyScen() called')
         status.start(this)
@@ -378,10 +363,6 @@ Last update: 2018-09-01
           })
       },
 
-      toggleShowingPlotControls() {
-        this.areShowingPlotControls = !this.areShowingPlotControls
-      },
-
       runScens() {
         console.log('runScens() called')
         status.start(this)
@@ -409,6 +390,4 @@ Last update: 2018-09-01
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-
 </style>
-
