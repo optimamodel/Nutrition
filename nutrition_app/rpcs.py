@@ -172,6 +172,7 @@ def get_scirisdemo_projects():
     output = {'projects': sorted_summary_list} # Return a dictionary holding the project summaries.
     return output
 
+
 @RPC()
 def load_project_summary(project_id):
     """ Return the project summary, given the Project UID. """ 
@@ -186,36 +187,22 @@ def load_current_user_project_summaries():
     return {'projects': map(load_project_summary_from_project_record, project_entries)}# Grab a list of project summaries from the list of prj.ProjectSO objects we just got.
 
 
-
 @RPC()                
 def load_all_project_summaries():
-    """
-    Return project summaries for all projects to the client.
-    """ 
-    
-    # Get all of the prj.ProjectSO entries.
-    project_entries = prj.proj_collection.get_all_objects()
-    
-    # Grab a list of project summaries from the list of prj.ProjectSO objects we 
-    # just got.
-    return {'projects': map(load_project_summary_from_project_record, 
-        project_entries)}
-            
+    """ Return project summaries for all projects to the client. """ 
+    project_entries = prj.proj_collection.get_all_objects() # Get all of the prj.ProjectSO entries.
+    return {'projects': map(load_project_summary_from_project_record, project_entries)} # Grab a list of project summaries from the list of prj.ProjectSO objects we just got.
+        
+        
 @RPC()    
 def delete_projects(project_ids):
-    """
-    Delete all of the projects with the passed in UIDs.
-    """ 
-    
-    # Loop over the project UIDs of the projects to be deleted...
-    for project_id in project_ids:
-        # Load the project record matching the UID of the project passed in.
-        record = load_project_record(project_id, raise_exception=True)
-        
-        # If a matching record is found, delete the object from the 
-        # ProjectCollection.
-        if record is not None:
+    """ Delete all of the projects with the passed in UIDs. """ 
+    for project_id in project_ids: # Loop over the project UIDs of the projects to be deleted...
+        record = load_project_record(project_id, raise_exception=True) # Load the project record matching the UID of the project passed in.
+        if record is not None: # If a matching record is found, delete the object from the ProjectCollection.
             prj.proj_collection.delete_object_by_uid(project_id)
+    return None
+
 
 @RPC(call_type='download')   
 def download_project(project_id):
@@ -232,9 +219,7 @@ def download_project(project_id):
 
 @RPC(call_type='download')   
 def download_databook(project_id):
-    """
-    Download databook
-    """
+    """ Download databook """
     proj = load_project(project_id, raise_exception=True) # Load the project with the matching UID.
     file_name = '%s_databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name) # Generate the full file name with path.
@@ -274,9 +259,7 @@ def load_zip_of_prj_files(project_ids):
 
 @RPC()
 def add_demo_project(user_id):
-    """
-    Add a demo Optima Nutrition project
-    """
+    """ Add a demo Optima Nutrition project """
     new_proj_name = sc.uniquename('Demo project', namelist=None) # Get a unique name for the project to be added.
     proj = nu.demo(scens=True, optims=True)  # Create the project, loading in the desired spreadsheets.
     proj.name = new_proj_name
@@ -287,9 +270,7 @@ def add_demo_project(user_id):
 
 @RPC(call_type='download')
 def create_new_project(user_id, proj_name):
-    """
-    Create a new Optima Nutrition project.
-    """
+    """ Create a new Optima Nutrition project. """
     template_name = 'template_input.xlsx'
     new_proj_name = sc.uniquename(proj_name, namelist=None) # Get a unique name for the project to be added.
     proj = nu.Project(name=new_proj_name) # Create the project
@@ -316,10 +297,7 @@ def upload_databook(databook_filename, project_id):
 
 @RPC()
 def update_project_from_summary(project_summary):
-    """
-    Given the passed in project summary, update the underlying project 
-    accordingly.
-    """ 
+    """ Given the passed in project summary, update the underlying project accordingly. """ 
     proj = load_project(project_summary['project']['id']) # Load the project corresponding with this summary.
     proj.name = project_summary['project']['name'] # Use the summary to set the actual project.
     proj.modified = sc.now() # Set the modified time to now.
