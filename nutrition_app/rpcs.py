@@ -34,6 +34,18 @@ RPC = sw.makeRPCtag(RPC_dict)
 ### Other functions (mostly helpers for the RPCs)
 ##############################################################
 
+def to_number(raw):
+    ''' Convert something to a number. WARNING, I'm sure this already exists!! '''
+    try:
+        output = float(raw)
+    except Exception as E:
+        if raw is None:
+            output = None
+        else:
+            raise E
+    return output
+
+
 def get_path(filename):
     dirname = sw.globalvars.downloads_dir.dir_path # Use the downloads directory to put the file in.
     fullpath = '%s%s%s' % (dirname, os.sep, filename) # Generate the full file name with path.
@@ -602,23 +614,19 @@ def run_scens(project_id, online=True):
 ### Optimization functions and RPCs
 ##################################################################################
 
-def objective_mapping(key=None, val=None):
-    mapping = sc.odict([
-        ('thrive',       'Maximize alive, non-stunted children'),
-        ('child_deaths', 'Minimize child deaths'),
-        ('stunting_prev','Minimize stunting prevalence'),
-        ('wasting_prev', 'Minimize wasting prevalence'),
-        ('anaemia_prev', 'Minimize anaemia prevalence')
-        ])
-    if key is None and val is None:
-        return mapping.values()
-    elif key is not None:
-        return mapping[key]
-    elif val is not None:
-        return mapping.find(val)
-    else:
-        raise Exception('This is impossible. You are not seeing this. Have your eyes checked.')
-        return None
+def objective_mapping():
+    output = [
+        'Number of child deaths',
+        'Number of stunted children',
+        'Wasting prevalence',
+        'Stunting prevalence',
+        'Child anaemia prevalence',
+        'Maternal anaemia prevalence',
+        'Maternal deaths',
+        'Child mortality rate',
+        'Maternal mortality rate',
+        ]
+    return output
 
 
 def py_to_js_optim(py_optim, proj, key=None, default_included=False):
@@ -628,7 +636,8 @@ def py_to_js_optim(py_optim, proj, key=None, default_included=False):
     attrs = ['name', 'mults', 'add_funds', 'fix_curr', 'filter_progs']
     for attr in attrs:
         js_optim[attr] = getattr(py_optim, attr) # Copy the attributes into a dictionary
-    js_optim['obj'] = objective_mapping(key=py_optim.obj)
+    weightslist = [{'label':item[0], 'weight':item[1]} for item in zip(objective_mapping(), py_optim.weights)]
+    js_optim['weightslist'] = weightslist
     js_optim['spec'] = []
     for prog_name in prog_names:
         program = proj.model(key).prog_info.programs[prog_name]
@@ -645,7 +654,15 @@ def js_to_py_optim(js_optim):
     attrs = ['name', 'fix_curr', 'filter_progs']
     for attr in attrs:
         json[attr] = js_optim[attr]
-    json['obj'] = objective_mapping(val=js_optim['obj'])
+    try:
+        json['weights'] = []
+        for item in js_optim['weightslist']:
+            val = to_number(item['weight'])
+            json['weights'].append(val)
+        json['weights'] = np.array(json['weights'])
+    except Exception as E:
+        print('Unable to convert "%s" to weights' % js_optim['weights'])
+        raise E
     jsm = js_optim['mults']
     if isinstance(jsm, list):
         vals = jsm
