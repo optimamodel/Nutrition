@@ -8,11 +8,12 @@ Last update: 7/31/18 (gchadder3)
 # Imports
 #
 
-import config
+
 import scirisweb as sw
-import projects as prj
 import mpld3
 from . import rpcs
+from . import config
+from . import projects as prj
 import matplotlib.pyplot as ppl
 ppl.switch_backend(config.MATPLOTLIB_BACKEND)
 

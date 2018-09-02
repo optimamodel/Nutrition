@@ -85,11 +85,11 @@ class ProjectSO(sw.Blob):
         super(ProjectSO, self).show()  
         
         # Show the Optima defined display text for the project.
-        print '---------------------'
-        print 'Owner User UID: %s' % self.owner_uid.hex
-        print 'Project Name: %s' % self.proj.name
-        print 'Creation Time: %s' % self.proj.created
-        print 'Update Time: %s' % self.proj.modified
+        print('---------------------')
+        print('Owner User UID: %s' % self.owner_uid.hex)
+        print('Project Name: %s' % self.proj.name)
+        print('Creation Time: %s' % self.proj.created)
+        print('Update Time: %s' % self.proj.modified)
             
     def get_user_front_end_repr(self):
         obj_info = {
@@ -218,7 +218,7 @@ def init_projects(app):
     # If there was a match...
     if proj_collection_uid is not None:
         if app.config['LOGGING_MODE'] == 'FULL':
-            print '>> Loading ProjectCollection from the DataStore.'
+            print('>> Loading ProjectCollection from the DataStore.')
         proj_collection.load_from_data_store() 
     
     # Else (no match)...
