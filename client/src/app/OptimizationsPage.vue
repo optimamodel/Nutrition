@@ -140,10 +140,11 @@ Last update: 2018-09-02
           </table>
             
         </div>
-        <div style="text-align:justify">
+        <div style="text-align:center">
           <button @click="addOptim()" class='btn __green' style="display:inline-block">
-            Save scenario
+            Save
           </button>
+          &nbsp;&nbsp;&nbsp;
           <button @click="$modal.hide('add-optim')" class='btn __red' style="display:inline-block">
             Cancel
           </button>
@@ -163,7 +164,6 @@ Last update: 2018-09-02
   var filesaver = require('file-saver')
   import utils from '@/services/utils'
   import rpcs from '@/services/rpc-service'
-  import taskservice from '@/services/task-service'
   import status from '@/services/status-service'
   import router from '@/router'
   import help from '@/app/HelpLink.vue'
