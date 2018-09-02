@@ -26,8 +26,8 @@ rc('font', size=12)
 # Dictionary to hold all of the registered RPCs in this module.
 RPC_dict = {}
 
-# RPC registration decorator factory created using call to make_register_RPC().
-register_RPC = sw.makeRPCtag(RPC_dict)
+# RPC registration decorator factory created using call to make_RPC().
+RPC = sw.makeRPCtag(RPC_dict)
 
 
         
@@ -211,7 +211,7 @@ def save_project_as_new(proj, user_id):
 ##################################################################################
 
 # Not a project RPC, but doesn't really belong
-@register_RPC()
+@RPC()
 def get_version_info():
 	''' Return the information about the project. '''
 	gitinfo = sc.gitinfo(__file__)
@@ -225,7 +225,7 @@ def get_version_info():
 	return version_info
 
     
-@register_RPC(validation='named')
+@RPC(validation='named')
 def get_scirisdemo_projects():
     """
     Return the projects associated with the Sciris Demo user.
@@ -249,7 +249,7 @@ def get_scirisdemo_projects():
     output = {'projects': sorted_summary_list}
     return output
 
-@register_RPC(validation='named')
+@RPC(validation='named')
 def load_project_summary(project_id):
     """
     Return the project summary, given the Project UID.
@@ -262,7 +262,7 @@ def load_project_summary(project_id):
     return load_project_summary_from_project_record(project_entry)
 
 
-@register_RPC(validation='named')
+@RPC(validation='named')
 def load_current_user_project_summaries():
     """
     Return project summaries for all projects the user has to the client.
@@ -271,7 +271,7 @@ def load_current_user_project_summaries():
     return load_current_user_project_summaries2()
 
 
-@register_RPC(validation='named')                
+@RPC(validation='named')                
 def load_all_project_summaries():
     """
     Return project summaries for all projects to the client.
@@ -285,7 +285,7 @@ def load_all_project_summaries():
     return {'projects': map(load_project_summary_from_project_record, 
         project_entries)}
             
-@register_RPC(validation='named')    
+@RPC(validation='named')    
 def delete_projects(project_ids):
     """
     Delete all of the projects with the passed in UIDs.
@@ -301,7 +301,7 @@ def delete_projects(project_ids):
         if record is not None:
             prj.proj_collection.delete_object_by_uid(project_id)
 
-@register_RPC(call_type='download', validation='named')   
+@RPC(call_type='download', validation='named')   
 def download_project(project_id):
     """
     For the passed in project UID, get the Project on the server, save it in a 
@@ -314,7 +314,7 @@ def download_project(project_id):
     print(">> download_project %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
 
-@register_RPC(call_type='download', validation='named')   
+@RPC(call_type='download', validation='named')   
 def download_databook(project_id):
     """
     Download databook
@@ -327,7 +327,7 @@ def download_databook(project_id):
     return full_file_name # Return the full filename.
 
 
-@register_RPC(call_type='download', validation='named')   
+@RPC(call_type='download', validation='named')   
 def download_defaults(project_id):
     """
     Download defaults
@@ -340,7 +340,7 @@ def download_defaults(project_id):
     return full_file_name # Return the full filename.
 
 
-@register_RPC(call_type='download', validation='named')
+@RPC(call_type='download', validation='named')
 def load_zip_of_prj_files(project_ids):
     """
     Given a list of project UIDs, make a .zip file containing all of these 
@@ -356,7 +356,7 @@ def load_zip_of_prj_files(project_ids):
     print(">> load_zip_of_prj_files %s" % (server_zip_fname)) # Display the call information.
     return server_zip_fname # Return the server file name.
 
-@register_RPC(validation='named')
+@RPC(validation='named')
 def add_demo_project(user_id):
     """
     Add a demo Optima Nutrition project
@@ -369,7 +369,7 @@ def add_demo_project(user_id):
     return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
 
 
-@register_RPC(call_type='download', validation='named')
+@RPC(call_type='download', validation='named')
 def create_new_project(user_id, proj_name):
     """
     Create a new Optima Nutrition project.
@@ -387,7 +387,7 @@ def create_new_project(user_id, proj_name):
     return full_file_name
 
 
-@register_RPC(call_type='upload', validation='named')
+@RPC(call_type='upload', validation='named')
 def upload_databook(databook_filename, project_id):
     """ Upload a databook to a project. """
     print(">> upload_databook '%s'" % databook_filename)
@@ -398,87 +398,52 @@ def upload_databook(databook_filename, project_id):
     return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
 
 
-@register_RPC(validation='named')
+@RPC(validation='named')
 def update_project_from_summary(project_summary):
     """
     Given the passed in project summary, update the underlying project 
     accordingly.
     """ 
+    proj = load_project(project_summary['project']['id']) # Load the project corresponding with this summary.
+    proj.name = project_summary['project']['name'] # Use the summary to set the actual project.
+    proj.modified = sc.now() # Set the modified time to now.
+    save_project(proj) # Save the changed project to the DataStore.
+    return None
     
-    # Load the project corresponding with this summary.
-    proj = load_project(project_summary['project']['id'])
-       
-    # Use the summary to set the actual project.
-    proj.name = project_summary['project']['name']
-    
-    # Set the modified time to now.
-    proj.modified = sc.now()
-    
-    # Save the changed project to the DataStore.
-    save_project(proj)
-    
-@register_RPC(validation='named')    
+@RPC(validation='named')    
 def copy_project(project_id):
     """
     Given a project UID, creates a copy of the project with a new UID and 
     returns that UID.
     """
-    
-    # Get the Project object for the project to be copied.
-    project_record = load_project_record(project_id, raise_exception=True)
+    project_record = load_project_record(project_id, raise_exception=True) # Get the Project object for the project to be copied.
     proj = project_record.proj
-    
-    # Make a copy of the project loaded in to work with.
-    new_project = sc.dcp(proj)
-    
-    # Just change the project name, and we have the new version of the 
-    # Project object to be saved as a copy.
-    new_project.name = get_unique_name(proj.name, other_names=None)
-    
-    # Set the user UID for the new projects record to be the current user.
-    user_id = current_user.get_id() 
-    
-    # Display the call information.
-    # TODO: have this so that it doesn't show when logging is turned off
-    print(">> copy_project %s" % (new_project.name)) 
-    
-    # Save a DataStore projects record for the copy project.
-    save_project_as_new(new_project, user_id)
-    
-    # Remember the new project UID (created in save_project_as_new()).
-    copy_project_id = new_project.uid
-
-    # Return the UID for the new projects record.
-    return { 'projectId': copy_project_id }
+    new_project = sc.dcp(proj) # Make a copy of the project loaded in to work with.
+    new_project.name = get_unique_name(proj.name, other_names=None) # Just change the project name, and we have the new version of the Project object to be saved as a copy.
+    user_id = current_user.get_id() # Set the user UID for the new projects record to be the current user.
+    print(">> copy_project %s" % (new_project.name))  # Display the call information.
+    save_project_as_new(new_project, user_id) # Save a DataStore projects record for the copy project.
+    copy_project_id = new_project.uid # Remember the new project UID (created in save_project_as_new()).
+    return { 'projectId': copy_project_id } # Return the UID for the new projects record.
 
 
-@register_RPC(call_type='upload', validation='named')
+@RPC(call_type='upload', validation='named')
 def create_project_from_prj_file(prj_filename, user_id):
     """
     Given a .prj file name and a user UID, create a new project from the file 
     with a new UID and return the new UID.
     """
-    
-    # Display the call information.
-    print(">> create_project_from_prj_file '%s'" % prj_filename)
-    
-    # Try to open the .prj file, and return an error message if this fails.
-    try:
+    print(">> create_project_from_prj_file '%s'" % prj_filename) # Display the call information.
+    try: # Try to open the .prj file, and return an error message if this fails.
         proj = sc.loadobj(prj_filename)
     except Exception:
         return { 'error': 'BadFileFormatError' }
-    
-    # Reset the project name to a new project name that is unique.
-    proj.name = get_unique_name(proj.name, other_names=None)
-    
-    # Save the new project in the DataStore.
-    save_project_as_new(proj, user_id)
-    
-    # Return the new project UID in the return message.
-    return { 'projectId': str(proj.uid) }
+    proj.name = get_unique_name(proj.name, other_names=None) # Reset the project name to a new project name that is unique.
+    save_project_as_new(proj, user_id) # Save the new project in the DataStore.
+    return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
 
 
-@register_RPC(call_type='download', validation='named')
+@RPC(call_type='download', validation='named')
 def export_results(project_id):
     proj = load_project(project_id, raise_exception=True) # Load the project with the matching UID.
     file_name = '%s outputs.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
@@ -556,7 +521,7 @@ def js_to_py_scen(js_scen):
     return py_json
     
 
-@register_RPC(validation='named')    
+@RPC(validation='named')    
 def get_scen_info(project_id, key=None, online=True):
 
     print('Getting scenario info...')
@@ -573,7 +538,7 @@ def get_scen_info(project_id, key=None, online=True):
     return scenario_summaries
 
 
-@register_RPC(validation='named')    
+@RPC(validation='named')    
 def set_scen_info(project_id, scenario_summaries, online=True):
 
     print('Setting scenario info...')
@@ -592,7 +557,7 @@ def set_scen_info(project_id, scenario_summaries, online=True):
     return None
 
 
-@register_RPC(validation='named')    
+@RPC(validation='named')    
 def get_default_scen(project_id, scen_type=None):
     
     print('Creating default scenario...')
@@ -609,7 +574,7 @@ def get_default_scen(project_id, scen_type=None):
     return js_scen
 
 
-@register_RPC(validation='named')    
+@RPC(validation='named')    
 def run_scens(project_id, online=True):
     
     print('Running scenarios...')
@@ -702,7 +667,7 @@ def js_to_py_optim(js_optim):
     return json
     
 
-@register_RPC(validation='named')    
+@RPC(validation='named')    
 def get_optim_info(project_id, online=True):
     print('Getting optimization info...')
     proj = load_project(project_id, raise_exception=True, online=online)
@@ -715,7 +680,7 @@ def get_optim_info(project_id, online=True):
     return optim_summaries
 
 
-@register_RPC(validation='named')    
+@RPC(validation='named')    
 def set_optim_info(project_id, optim_summaries, online=True):
     print('Setting optimization info...')
     proj = load_project(project_id, raise_exception=True, online=online)
@@ -731,7 +696,7 @@ def set_optim_info(project_id, optim_summaries, online=True):
     return None
     
 
-@register_RPC(validation='named')    
+@RPC(validation='named')    
 def get_default_optim(project_id):
 
     print('Getting default optimization...')
