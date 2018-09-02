@@ -21,13 +21,9 @@ from . import projects as prj
 from matplotlib.pyplot import rc
 rc('font', size=12)
 
-
-# Dictionary to hold all of the registered RPCs in this module.
-RPC_dict = {}
-
-# RPC registration decorator factory created using call to make_RPC().
-RPC = sw.makeRPCtag(RPC_dict)
-
+# Globals
+RPC_dict = {} # Dictionary to hold all of the registered RPCs in this module.
+RPC = sw.makeRPCtag(RPC_dict) # RPC registration decorator factory created using call to make_RPC().
 
         
 ###############################################################
@@ -81,20 +77,13 @@ def sanitize(vals, skip=False, forcefloat=False, verbose=True):
   
       
 def load_project_record(project_id, raise_exception=True):
-    """
-    Return the project DataStore reocord, given a project UID.
-    """ 
-    
-    # Load the matching prj.ProjectSO object from the database.
-    project_record = prj.proj_collection.get_object_by_uid(project_id)
-
-    # If we have no match, we may want to throw an exception.
-    if project_record is None:
+    """ Return the project DataStore reocord, given a project UID. """ 
+    project_record = prj.proj_collection.get_object_by_uid(project_id) # Load the matching prj.ProjectSO object from the database.
+    if project_record is None: # If we have no match, we may want to throw an exception.
         if raise_exception:
             raise Exception('ProjectDoesNotExist(id=%s)' % project_id)
-            
-    # Return the Project object for the match (None if none found).
-    return project_record
+    return project_record # Return the Project object for the match (None if none found).
+
 
 def load_project(project_id, raise_exception=True, online=True):
     """
@@ -108,27 +97,26 @@ def load_project(project_id, raise_exception=True, online=True):
         else:               return None
     return project_record.proj # Return the found project.
 
+
 def load_project_summary_from_project_record(project_record):
     """ Return the project summary, given the DataStore record. """ 
     return project_record.get_user_front_end_repr() # Return the built project summary.
-          
+    
+      
 def save_project(proj, online=True):
     """
     Given a Project object, wrap it in a new prj.ProjectSO object and put this 
     in the project collection (either adding a new object, or updating an 
     existing one)  skip_result lets you null out saved results in the Project.
     """ 
-    
     # If offline, just save to a file and return
     if not online:
         proj.save()
         return None
     
-    # Load the project record matching the UID of the project passed in.
-    project_record = load_project_record(proj.uid)
     
-    # Copy the project, only save what we want...
-    new_project = sc.dcp(proj)
+    project_record = load_project_record(proj.uid) # Load the project record matching the UID of the project passed in.
+    new_project = sc.dcp(proj) # Copy the project, only save what we want...
     new_project.modified = sc.now()
          
     # Create the new project entry and enter it into the ProjectCollection.
@@ -144,21 +132,11 @@ def save_project_as_new(proj, user_id):
     object and put this in the project collection, after getting a fresh UID
     for this Project.  Then do the actual save.
     """ 
-    
-    # Set a new project UID, so we aren't replicating the UID passed in.
-    proj.uid = sc.uuid()
-    
-    # Create the new project entry and enter it into the ProjectCollection.
-    projSO = prj.ProjectSO(proj, user_id)
+    proj.uid = sc.uuid() # Set a new project UID, so we aren't replicating the UID passed in.
+    projSO = prj.ProjectSO(proj, user_id) # Create the new project entry and enter it into the ProjectCollection.
     prj.proj_collection.add_object(projSO)  
-
-    # Display the call information.
-    # TODO: have this so that it doesn't show when logging is turned off
-    print(">> save_project_as_new '%s'" % proj.name)
-
-    # Save the changed Project object to the DataStore.
-    save_project(proj)
-    
+    print(">> save_project_as_new '%s'" % proj.name) # Display the call information.
+    save_project(proj) # Save the changed Project object to the DataStore.
     return None
 
 
