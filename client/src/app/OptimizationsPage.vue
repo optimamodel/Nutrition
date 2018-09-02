@@ -92,11 +92,10 @@ Last update: 2018-09-02
     <!-- END RESULTS CARD -->
 
 
-    <!-- START ADD-OPTIM MODAL -->
+    <!-- START ADD-OPTIM MODAL :width="900" -->
     <modal name="add-optim"
            height="auto"
            :scrollable="true"
-           :width="900"
            :classes="['v--modal', 'vue-dialog']"
            :pivot-y="0.3"
            :adaptive="true"
@@ -110,7 +109,7 @@ Last update: 2018-09-02
         <div class="dialog-c-title" v-else>
           Edit optimization
         </div>
-        <div class="dialog-c-text">
+        <div class="dialog-c-text" style="display:inline-block">
           <b>Optimization name</b><br>
           <input type="text"
                  class="txbox"
@@ -145,24 +144,26 @@ Last update: 2018-09-02
                  class="txbox"
                  v-model="addEditModal.optimSummary.add_funds"/><br>
 
-          <table class="table table-bordered table-hover table-striped" style="width: 100%">
-            <thead>
-            <tr>
-              <th>Program name</th>
-              <th style="text-align: center">Include?</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr v-for="spec in addEditModal.optimSummary.spec">
-              <td>
-                {{ spec.name }}
-              </td>
-              <td style="text-align: center">
-                <input type="checkbox" v-model="spec.included"/>
-              </td>
-            </tr>
-            </tbody>
-          </table>
+          <div class="calib-params" style="max-height: 40vh;">
+            <table class="table table-bordered table-hover table-striped" style="width: 100%">
+              <thead>
+              <tr>
+                <th>Program name</th>
+                <th style="text-align: center">Include?</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr v-for="spec in addEditModal.optimSummary.spec">
+                <td>
+                  {{ spec.name }}
+                </td>
+                <td style="text-align: center">
+                  <input type="checkbox" v-model="spec.included"/>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
 
         </div>
         <div style="text-align:center">
@@ -507,7 +508,6 @@ Last update: 2018-09-02
       plotOptimization(optimSummary) {
         console.log('plotOptimization() called')
         status.start(this)
-        // Make sure they're saved first
         rpcs.rpc('plot_optimization', [this.projectID, optimSummary.server_datastore_id])
           .then(response => {
             this.makeGraphs(response.data.graphs)

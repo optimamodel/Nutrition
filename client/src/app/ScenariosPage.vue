@@ -111,42 +111,44 @@ Last update: 2018-09-02
           <input type="text"
                  class="txbox"
                  v-model="addEditModal.scenSummary.name"/><br>
-          <table class="table table-bordered table-hover table-striped" style="width: 100%">
-            <thead>
-            <tr>
-              <th colspan=100><div class="dialog-header">
-                <span v-if="addEditModal.modalScenarioType==='coverage'">Program coverages (%)</span>
-                <span v-else>Program spending (US$)</span>
-              </div></th>
-            </tr>
-            <tr>
-              <th>Name</th>
-              <th>Include?</th>
-              <th>Baseline</th>
-              <th v-for="year in defaultScenYears">{{ year }}</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr v-for="progvals in this.addEditModal.scenSummary.progvals">
-              <td style="min-width:200px">
-                {{ progvals.name }}
-              </td>
-              <td style="text-align: center">
-                <input type="checkbox" v-model="progvals.included"/>
-              </td>
-              <td style="text-align: right">
-                <span v-if="addEditModal.modalScenarioType==='coverage'">{{ progvals.base_cov }}</span>
-                <span v-else>                                            {{ progvals.base_spend }}</span>
-              </td>
-              <td v-for="(val, index) in progvals.vals">
-                <input type="text"
-                       class="txbox"
-                       style="text-align: right"
-                       v-model="progvals.vals[index]"/>
-              </td>
-            </tr>
-            </tbody>
-          </table>
+          <div class="calib-params">
+            <table class="table table-bordered table-hover table-striped" style="width: 100%">
+              <thead>
+              <tr>
+                <th colspan=100><div class="dialog-header">
+                  <span v-if="addEditModal.modalScenarioType==='coverage'">Program coverages (%)</span>
+                  <span v-else>Program spending (US$)</span>
+                </div></th>
+              </tr>
+              <tr>
+                <th>Name</th>
+                <th>Include?</th>
+                <th>Baseline</th>
+                <th v-for="year in defaultScenYears">{{ year }}</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr v-for="progvals in this.addEditModal.scenSummary.progvals">
+                <td style="min-width:200px">
+                  {{ progvals.name }}
+                </td>
+                <td style="text-align: center">
+                  <input type="checkbox" v-model="progvals.included"/>
+                </td>
+                <td style="text-align: right">
+                  <span v-if="addEditModal.modalScenarioType==='coverage'">{{ progvals.base_cov }}</span>
+                  <span v-else>                                            {{ progvals.base_spend }}</span>
+                </td>
+                <td v-for="(val, index) in progvals.vals">
+                  <input type="text"
+                         class="txbox"
+                         style="text-align: right"
+                         v-model="progvals.vals[index]"/>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
         <div style="text-align:center">
           <button @click="addScen()" class='btn __green' style="display:inline-block">
