@@ -10,8 +10,8 @@ runall = False
 
 torun = [
 #'scen_io',
-'optim_io',
-#'run_optimization',
+#'optim_io',
+'run_optimization',
 ]
 
 T = sc.tic()
@@ -49,11 +49,14 @@ if 'optim_io' in torun or runall:
     
 
 if 'run_optimization' in torun or runall:
+    doplot = True
     maxtime = 10
     proj = nu.demo(optims=True)
-    output = apt.run_optim(proj, online=False)
-    print('Output:')
-    sc.pp(output)
+    proj = apt.run_optim(proj, 'placeholder_ID', online=False)
+    if doplot:
+        output = rpcs.plot_optimization(proj, proj.results.keys()[-1], online=False)
+        print('Output:')
+        sc.pp(output)
 
 
 sc.toc(T)
