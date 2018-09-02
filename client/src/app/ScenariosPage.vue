@@ -138,20 +138,21 @@ Last update: 2018-09-02
                 <span v-if="addEditModal.modalScenarioType==='coverage'">{{ progvals.base_cov }}</span>
                 <span v-else>                                            {{ progvals.base_spend }}</span>
               </td>
-              <td v-for="(val, index) in addEditModal.scenSummary.progvals.vals">
+              <td v-for="(val, index) in progvals.vals">
                 <input type="text"
                        class="txbox"
                        style="text-align: right"
-                       v-model="addEditModal.scenSummary.progvals.vals[index]"/>
+                       v-model="progvals.vals[index]"/>
               </td>
             </tr>
             </tbody>
           </table>
         </div>
-        <div style="text-align:justify">
+        <div style="text-align:center">
           <button @click="addScen()" class='btn __green' style="display:inline-block">
-            Save scenario
+            Save
           </button>
+          &nbsp;&nbsp;&nbsp;
           <button @click="$modal.hide('add-scen')" class='btn __red' style="display:inline-block">
             Cancel
           </button>
@@ -261,18 +262,27 @@ Last update: 2018-09-02
           })
       },
 
+      setScenYears(scen) {
+        this.defaultScenYears = [];
+        for (let year = scen.t[0]; year <= scen.t[1]; year++) {
+          this.defaultScenYears.push(year);
+        }
+      },
+
       addScenModal(scen_type) {
         // Open a model dialog for creating a new project
         console.log('addScenModal() called for type ' + scen_type);
         rpcs.rpc('get_default_scen', [this.projectID, scen_type])
           .then(response => {
-            this.addEditModal.scenSummary = response.data;
-            this.addEditModal.origName = this.addEditModal.scenSummary.name;
+            let defaultScen = response.data;
+            this.setScenYears(defaultScen);
+            this.addEditModal.scenSummary = defaultScen;
             this.addEditModal.mode = 'add';
             this.addEditModal.modalScenarioType = scen_type;
+            this.addEditModal.origName = this.addEditModal.scenSummary.name;
             this.$modal.show('add-scen');
-            console.log('New scenario:');
-            console.log(this.addEditModal.scenSummary)
+            console.log('Default scenario:');
+            console.log(defaultScen)
           })
           .catch(error => {
             status.failurePopup(this, 'Could not open add scenario modal: '  + error.message)
@@ -283,6 +293,7 @@ Last update: 2018-09-02
         // Open a model dialog for creating a new project
         console.log('editScenModal() called');
         this.addEditModal.scenSummary = scenSummary;
+        this.setScenYears(scenSummary);
         console.log('Editing scenario:');
         console.log(this.addEditModal.scenSummary);
         this.addEditModal.origName = this.addEditModal.scenSummary.name;
