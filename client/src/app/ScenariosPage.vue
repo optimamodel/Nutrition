@@ -281,7 +281,7 @@ Last update: 2018-09-02
 
       editScenModal(scenSummary) {
         // Open a model dialog for creating a new project
-        console.log('editScen() called');
+        console.log('editScenModal() called');
         this.addEditModal.scenSummary = scenSummary;
         console.log('Editing scenario:');
         console.log(this.addEditModal.scenSummary);
@@ -327,7 +327,7 @@ Last update: 2018-09-02
       copyScen(scenSummary) {
         console.log('copyScen() called')
         status.start(this)
-        var newScen = _.cloneDeep(scenSummary); // You've got to be kidding me, buster
+        var newScen = _.cloneDeep(scenSummary);
         var otherNames = []
         this.scenSummaries.forEach(scenSum => {
           otherNames.push(scenSum.name)
