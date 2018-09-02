@@ -625,6 +625,7 @@ def objective_mapping():
         'Maternal deaths',
         'Child mortality rate',
         'Maternal mortality rate',
+        '<Placeholder>',
         ]
     return output
 
@@ -722,3 +723,17 @@ def get_default_optim(project_id):
     print('Created default JavaScript optimization:')
     sc.pp(js_optim)
     return js_optim
+
+
+@RPC(validation='named')    
+def plot_optimization(project_id, cache_id):
+    proj = load_project(project_id, raise_exception=True)
+    figs = proj.plot(key=cache_id, optim=True) # Only plot allocation
+    graphs = []
+    for f,fig in enumerate(figs.values()):
+        for ax in fig.get_axes():
+            ax.set_facecolor('none')
+        graph_dict = mpld3.fig_to_dict(fig)
+        graphs.append(graph_dict)
+        print('Converted figure %s of %s' % (f+1, len(figs)))
+    return {'graphs': graphs}

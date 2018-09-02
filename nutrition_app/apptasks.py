@@ -35,28 +35,17 @@ celery_instance = sw.make_celery_instance(config=config) # Create the Celery ins
 #    return 'here be dummy result'
 
 @register_async_task
-def run_optim(project_id, optim_name=None, online=True):
+def run_optim(project_id, cache_id, optim_name=None, online=True):
     # Load the projects from the DataStore.
     print('Running optimization...')
     if online:
         prj.apptasks_load_projects(config)
     proj = rpcs.load_project(project_id, raise_exception=True, online=online)
-    proj.results.clear() # Remove any existing results
-    proj.run_optim(key=optim_name, parallel=False)
-    figs = proj.plot(key=optim_name, optim=True) # Only plot allocation
-    graphs = []
-    for f,fig in enumerate(figs.values()):
-        for ax in fig.get_axes():
-            ax.set_facecolor('none')
-        graph_dict = mpld3.fig_to_dict(fig)
-        graphs.append(graph_dict)
-        print('Converted figure %s of %s' % (f+1, len(figs)))
-    
+    results = proj.run_optim(key=optim_name, dosave=False, parallel=False)
+    proj.results[cache_id] = results
     print('Saving project...')
     rpcs.save_project(proj, online=online) 
-    
-    # Return the graphs.
-    return {'graphs': graphs}
+    return None # Plots sold seprately
 
 # Add the asynchronous task functions in this module to the tasks.py module so run_task() can call them.
 sw.add_task_funcs(task_func_dict)

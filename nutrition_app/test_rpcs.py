@@ -9,8 +9,8 @@ from nutrition_app import rpcs, apptasks as apt
 runall = False
 
 torun = [
-'scen_io',
-#'optim_io',
+#'scen_io',
+'optim_io',
 #'run_optimization',
 ]
 
@@ -36,7 +36,7 @@ if 'scen_io' in torun or runall:
 
 
 if 'optim_io' in torun or runall:
-    dorun = False
+    dorun = True
     proj = nu.demo(optims=True)
     optim_summaries = rpcs.get_optim_info(proj, online=False)
     rpcs.set_optim_info(proj, optim_summaries, online=False)

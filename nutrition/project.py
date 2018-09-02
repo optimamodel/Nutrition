@@ -305,7 +305,7 @@ class Project(object):
         if doadd:
             self.add_optims(optims)
             if dorun:
-                self.run_optims()
+                self.run_optim()
             return None
         else:
             return optims
@@ -323,7 +323,7 @@ class Project(object):
         self.add_result(results, name='scens')
         return None
 
-    def run_optim(self, key=-1, optim=None, maxiter=5, swarmsize=10, maxtime=10, parallel=True):
+    def run_optim(self, key=-1, optim=None, maxiter=5, swarmsize=10, maxtime=10, parallel=True, dosave=True):
         if optim is not None: self.add_optims(optim)
         optim = self.optim(key)
         results = []
@@ -336,8 +336,8 @@ class Project(object):
         model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
         results += optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel)
         # add by optim name
-        self.add_result(results, name=optim.name)
-        return None
+        if dosave: self.add_result(results, name=optim.name)
+        return results
 
     def get_output(self, outcomes=None):
         results = self.result(-1)

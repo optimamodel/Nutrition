@@ -26,6 +26,7 @@ Last update: 2018-09-02
           <thead>
           <tr>
             <th>Name</th>
+            <th>Status</th>
             <th>Actions</th>
           </tr>
           </thead>
@@ -34,10 +35,15 @@ Last update: 2018-09-02
             <td>
               <b>{{ optimSummary.name }}</b>
             </td>
+            <td>
+              {{ statusFormatStr(optimSummary) }}
+              {{ timeFormatStr(optimSummary) }}
+            </td>
             <td style="white-space: nowrap">
               <button class="btn __green" @click="runOptim(optimSummary, 9999)">Run</button>
               <button class="btn" @click="runOptim(optimSummary, 15)">Test run</button>
               <button class="btn __red" :disabled="!canCancelTask(optimSummary)" @click="clearTask(optimSummary)">Clear run</button>
+              <button class="btn" :disabled="!canPlotResults(optimSummary)" @click="plotOptimization(optimSummary)">Plot results</button>
               <button class="btn btn-icon" @click="editOptimModal(optimSummary)"><i class="ti-pencil"></i></button>
               <button class="btn btn-icon" @click="copyOptim(optimSummary)"><i class="ti-files"></i></button>
               <button class="btn btn-icon" @click="deleteOptim(optimSummary)"><i class="ti-trash"></i></button>
@@ -244,19 +250,52 @@ Last update: 2018-09-02
         return utils.scaleFigs(frac)
       },
 
+      statusFormatStr(optimSummary) {
+        if      (optimSummary.status === 'not started') {return ''}
+        else if (optimSummary.status === 'queued')      {return 'Initializing... '} // + this.timeFormatStr(optimSummary.pendingTime)
+        else if (optimSummary.status === 'started')     {return 'Running for '} // + this.timeFormatStr(optimSummary.executionTime)
+        else if (optimSummary.status === 'completed')   {return 'Completed after '} // + this.timeFormatStr(optimSummary.executionTime)
+        else                                            {return ''}
+      },
+
+      timeFormatStr(optimSummary) {
+        let rawValue = ''
+        let is_queued = (optimSummary.status === 'queued')
+        let is_executing = ((optimSummary.status === 'started') || (optimSummary.status === 'completed'))
+        if      (is_queued)    {rawValue = optimSummary.pendingTime}
+        else if (is_executing) {rawValue = optimSummary.executionTime}
+        else                   {return ''}
+
+        if (rawValue === '--') {
+          return '--'
+        } else {
+          let numSecs = Number(rawValue).toFixed()
+          let numHours = Math.floor(numSecs / 3600)
+          numSecs -= numHours * 3600
+          let numMins = Math.floor(numSecs / 60)
+          numSecs -= numMins * 60
+          let output = _.padStart(numHours.toString(), 2, '0') + ':' + _.padStart(numMins.toString(), 2, '0') + ':' + _.padStart(numSecs.toString(), 2, '0')
+          return output
+        }
+      },
+
       canRunTask(optimSummary) {
+        console.log('canRunTask() called for with: ' + optimSummary.status)
         return ((optimSummary.status === 'not started') || (optimSummary.status === 'completed'))
       },
 
       canCancelTask(optimSummary) {
+        console.log('canCancelTask() called for with: ' + optimSummary.status)
         return (optimSummary.status !== 'not started')
       },
 
       canPlotResults(optimSummary) {
+        console.log('canPlotResults() called for with: ' + optimSummary.status)
         return (optimSummary.status === 'completed')
       },
 
       getOptimTaskState(optimSummary) {
+        console.log('getOptimTaskState() called for with: ' + optimSummary.status)
         let statusStr = '';
 
         // Check the status of the task.
@@ -463,6 +502,21 @@ Last update: 2018-09-02
       cancelRun(optimSummary) {
         console.log('cancelRun() called for '+this.currentOptim)
         rpcs.rpc('delete_task', ['run_optim'])
+      },
+
+      plotOptimization(optimSummary) {
+        console.log('plotOptimization() called')
+        status.start(this)
+        // Make sure they're saved first
+        rpcs.rpc('plot_optimization', [this.projectID, optimSummary.server_datastore_id])
+          .then(response => {
+            this.makeGraphs(response.data.graphs)
+            this.displayResultName = optimSummary.name
+            status.succeed(this, 'Graphs created')
+          })
+          .catch(error => {
+            status.fail(this, 'Could not make graphs:' + error.message) // Indicate failure.
+          })
       },
     }
   }
