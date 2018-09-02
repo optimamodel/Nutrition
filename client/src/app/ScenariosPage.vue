@@ -39,7 +39,7 @@ Last update: 2018-09-02
               <input type="checkbox" v-model="scenSummary.active"/>
             </td>
             <td style="white-space: nowrap">
-              <button class="btn btn-icon" @click="editScen(scenSummary)"><i class="ti-pencil"></i></button>
+              <button class="btn btn-icon" @click="editScenModal(scenSummary)"><i class="ti-pencil"></i></button>
               <button class="btn btn-icon" @click="copyScen(scenSummary)"><i class="ti-files"></i></button>
               <button class="btn btn-icon" @click="deleteScen(scenSummary)"><i class="ti-trash"></i></button>
             </td>
@@ -213,7 +213,6 @@ Last update: 2018-09-02
         utils.sleep(1)  // used so that spinners will come up by callback func
           .then(response => {
             this.getScenSummaries()
-            this.getPlotOptions()
           })
       }
     },
@@ -246,7 +245,6 @@ Last update: 2018-09-02
             status.succeed(this, 'Scenarios loaded')
           })
           .catch(error => {
-            this.response = 'There was an error: ' + error.message // Pull out the error message.
             status.fail(this, 'Could not get scenarios: ' + error.message)
           })
       },
@@ -277,12 +275,11 @@ Last update: 2018-09-02
             console.log(this.addEditModal.scenSummary)
           })
           .catch(error => {
-            this.response = 'There was an error: ' + error.message // Pull out the error message.
             status.failurePopup(this, 'Could not open add scenario modal: '  + error.message)
           })
       },
 
-      editScen(scenSummary) {
+      editScenModal(scenSummary) {
         // Open a model dialog for creating a new project
         console.log('editScen() called');
         this.addEditModal.scenSummary = scenSummary;

@@ -172,118 +172,85 @@ Last update: 2018-09-02
     name: 'OptimizationsPage',
     
     components: {
+      help
     },
-  
+
     data() {
       return {
         optimSummaries: [],
-        defaultOptim: [],
-        objectiveOptions: [],
-        graphFormatters: [
-          {x: FLOAT_FORMATTER, xTicks: 6, y: PERCENT_FORMATTER, yTicks: null},
-          {x: FLOAT_FORMATTER, xTicks: 6, y: PERCENT_FORMATTER, yTicks: null},
-          {x: FLOAT_FORMATTER, xTicks: 6, y: PERCENT_FORMATTER, yTicks: null},
-          {x: FLOAT_FORMATTER, xTicks: 6, y: SI_FORMATTER, yTicks: null},
-          {x: FLOAT_FORMATTER, xTicks: 6, y: SI_FORMATTER, yTicks: null},
-          {x: FLOAT_FORMATTER, xTicks: 6, y: SI_FORMATTER, yTicks: null},
-        ],
-        defaultFormatter: {x: FLOAT_FORMATTER, xTicks: null, y: SI_FORMATTER, yTicks: null},
+        defaultScenYears: [],
+        optimsLoaded: false,
+        addEditModal: {
+          optimSummary: {},
+          origName: '',
+          mode: 'add',
+        },
+        figscale: 1.0,
       }
     },
 
     computed: {
       projectID()    { return utils.projectID(this) },
       hasData()      { return utils.hasData(this) },
-      simStart()     { return utils.simStart(this) },
-      simEnd()       { return utils.simEnd(this) },
-      simYears()     { return utils.simYears(this) },
-      activePops()   { return utils.activePops(this) },
       placeholders() { return utils.placeholders() },
-      activeProjectID() {
-        if (this.$store.state.activeProject.project === undefined) {
-          return ''
-        } else {
-          return this.$store.state.activeProject.project.id
-        }
-      },
-      
-      placeholders() {
-        var indices = []
-        for (var i = 0; i <= 100; i++) {
-          indices.push(i);
-        }
-        return indices;
-      },
-
     },
 
     created() {
-      // If we have no user logged in, automatically redirect to the login page.
-      if (this.$store.state.currentUser.displayname == undefined) {
+      if (this.$store.state.currentUser.displayname == undefined) { // If we have no user logged in, automatically redirect to the login page.
         router.push('/login')
       }
-      // Otherwise, if a project is active...
-      else if (this.$store.state.activeProject.project !== undefined) {
-        utils.sleep(1)  // embedding in this allows the popup spinner to be active
-        .then(response => {
-          // Load the optimization summaries of the current project.
-          this.getOptimSummaries()
-          this.getDefaultOptim()
-        })
+      else if ((this.$store.state.activeProject.project != undefined) &&
+        (this.$store.state.activeProject.project.hasData) ) {
+        console.log('created() called')
+        utils.sleep(1)  // used so that spinners will come up by callback func
+          .then(response => {
+            this.getOptimSummaries()
+          })
       }
     },
 
     methods: {
 
-      getDefaultOptim() {
-        console.log('getDefaultOptim() called')
-        rpcs.rpc('get_default_optim', [this.projectID])
-        .then(response => {
-          this.defaultOptim = response.data // Set the optimization to what we received.
-          this.objectiveOptions = response.data.objective_options
-          console.log('These are the options:'+this.objectiveOptions);
-        })
-        .catch(error => {
-          // Failure popup.
-          status.failurePopup(this, 'Could not get default optimization')
-        })          
+      clearGraphs()             { return utils.clearGraphs() },
+      makeGraphs(graphdata)     { return utils.makeGraphs(this, graphdata) },
+      exportGraphs()            { return utils.exportGraphs(this) },
+      exportResults(project_id) { return utils.exportResults(this, project_id) },
+
+      scaleFigs(frac) {
+        this.figscale = this.figscale*frac;
+        if (frac === 1.0) {
+          frac = 1.0/this.figscale
+          this.figscale = 1.0
+        }
+        return utils.scaleFigs(frac)
       },
 
       getOptimSummaries() {
         console.log('getOptimSummaries() called')
-        
-        // Start indicating progress.
         status.start(this)
-        
-        // Get the current project's optimization summaries from the server.
-        rpcs.rpc('get_optim_info', [this.projectID])
+        rpcs.rpc('get_optim_info', [this.projectID]) // Get the current project's optimization summaries from the server.
         .then(response => {
           this.optimSummaries = response.data // Set the optimizations to what we received.
-          
-          // Indicate success.
+            console.log('Optimization summaries:')
+            console.log(this.optimSummaries)
+            this.optimsLoaded = true
           status.succeed(this, 'Optimizations loaded')
         })
         .catch(error => {
-          // Indicate failure.
-          status.fail(this, 'Could not load optimizations')
+          status.fail(this, 'Could not get optimizations: ' + error.message)
         })         
       },
 
       setOptimSummaries() {
         console.log('setOptimSummaries() called')
-        
-        // Start indicating progress.
         status.start(this)
-        
         rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
         .then( response => {
-          // Indicate success.
           status.succeed(this, 'Optimizations saved')          
         })
         .catch(error => {
-          // Indicate failure.
-          status.fail(this, 'Could not save optimizations') 
-        })       
+          status.fail(this, 'Could not save optimizations: ' + error.message) 
+        })
       },
 
       addOptimModal() {
@@ -291,62 +258,67 @@ Last update: 2018-09-02
         console.log('addOptimModal() called');
         rpcs.rpc('get_default_optim', [this.projectID])
         .then(response => {
-          this.defaultOptim = response.data // Set the optimization to what we received.
-          this.$modal.show('add-optim');
-          console.log(this.defaultOptim)
-        })
+            this.addEditModal.optimSummary = response.data;
+            this.addEditModal.origName = this.addEditModal.optimSummary.name;
+            this.addEditModal.mode = 'add';
+            this.$modal.show('add-optim');
+            console.log('New optimization:');
+            console.log(this.addEditModal.optimSummary)
+          })
+          .catch(error => {
+            status.failurePopup(this, 'Could not open add optimization modal: '  + error.message)
+          })
+      },
+
+      editOptimModal(optimSummary) {
+        // Open a model dialog for creating a new project
+        console.log('editOptimModal() called');
+        this.addEditModal.optimSummary = optimSummary;
+        console.log('Editing optimization:');
+        console.log(this.addEditModal.optimSummary);
+        this.addEditModal.origName = this.addEditModal.optimSummary.name;
+        this.addEditModal.mode = 'edit';
+        this.$modal.show('add-optim');
       },
 
       addOptim() {
-        console.log('addOptim() called')
-        this.$modal.hide('add-optim')
-        
-        // Start indicating progress.
+        console.log('addOptim() called');
+        this.$modal.hide('add-optim');
         status.start(this)
-        
-        let newOptim = _.cloneDeep(this.defaultOptim); // You've got to be kidding me, buster
-        let otherNames = []
+        let newOptim = _.cloneDeep(this.addEditModal.optimSummary);
+        let optimNames = []; // Get the list of all of the current optimization names.
         this.optimSummaries.forEach(optimSum => {
-          otherNames.push(optimSum.name)
+          optimNames.push(optimSum.name)
         });
-        let index = otherNames.indexOf(newOptim.name);
-        if (index > -1) {
-          console.log('Optimization named '+newOptim.name+' exists, overwriting...')
-          this.optimSummaries[index] = newOptim
+        if (this.addEditModal.mode === 'edit') { // If we are editing an existing scenario...
+          let index = optimNames.indexOf(this.addEditModal.origName); // Get the index of the original (pre-edited) name
+          if (index > -1) {
+            this.optimSummaries[index].name = newOptim.name; // hack to make sure Vue table updated
+            this.optimSummaries[index] = newOptim
+          }
+          else {
+            console.log('Error: a mismatch in editing keys')
+          }
         }
-        else {
-          console.log('Optimization named '+newOptim.name+' does not exist, creating new...')
+        else { // Else (we are adding a new scenario)...
+          newOptim.name = utils.getUniqueName(newOptim.name, optimNames);
           this.optimSummaries.push(newOptim)
         }
-        console.log(newOptim)
+        console.log('Saved optimization:');
+        console.log(newOptim);
         rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
-        .then( response => {
-          // Indicate success.
-          status.succeed(this, 'Optimization added')
-        })
-        .catch(error => {
-          // Indicate failure.
-          status.fail(this, 'Could not add optimization') 
-          
-          // TODO: Should probably fix the corrupted this.optimSummaries.
-        })         
-      },
-
-      editOptim(optimSummary) {
-        // Open a model dialog for creating a new project
-        console.log('editOptim() called');
-        this.defaultOptim = optimSummary
-        console.log('defaultOptim', this.defaultOptim.obj)
-        this.$modal.show('add-optim');
+          .then( response => {
+            status.succeed(this, 'Optimization added')
+          })
+          .catch(error => {
+            status.fail(this, 'Could not add optimization: ' + error.message)
+          })
       },
 
       copyOptim(optimSummary) {
         console.log('copyOptim() called')
-        
-        // Start indicating progress.
         status.start(this)
-        
-        var newOptim = _.cloneDeep(optimSummary); // You've got to be kidding me, buster
+        var newOptim = _.cloneDeep(optimSummary);
         var otherNames = []
         this.optimSummaries.forEach(optimSum => {
           otherNames.push(optimSum.name)
@@ -355,23 +327,16 @@ Last update: 2018-09-02
         this.optimSummaries.push(newOptim)
         rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
         .then( response => {
-          // Indicate success.
-          status.succeed(this, 'Opimization copied')
+          status.succeed(this, 'Optimization copied')
         })
         .catch(error => {
-          // Indicate failure.
-          status.fail(this, 'Could not copy optimization') 
-          
-          // TODO: Should probably fix the corrupted this.optimSummaries.
-        })        
+          status.fail(this, 'Could not copy optimization: ' + error.message) 
+        })
       },
 
       deleteOptim(optimSummary) {
         console.log('deleteOptim() called')
-        
-        // Start indicating progress.
         status.start(this)
-        
         for(var i = 0; i< this.optimSummaries.length; i++) {
           if(this.optimSummaries[i].name === optimSummary.name) {
             this.optimSummaries.splice(i, 1);
@@ -379,15 +344,11 @@ Last update: 2018-09-02
         }
         rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
         .then( response => {
-          // Indicate success.
           status.succeed(this, 'Optimization deleted')
         })
         .catch(error => {
-          // Indicate failure.
-          status.fail(this, 'Could not delete optimization') 
-          
-          // TODO: Should probably fix the corrupted this.optimSummaries.
-        })         
+          status.fail(this, 'Could not delete optimization: ' + error.message) 
+        })
       },
 
       runOptim(optimSummary) {
@@ -468,45 +429,6 @@ Last update: 2018-09-02
           status.fail(this, 'Could not make graphs: ' + error.message)            
         })     
       },
-
-      reloadGraphs() {
-        console.log('Reload graphs')
-        let n_plots = this.graphData.length
-        console.log('Rendering ' + n_plots + ' graphs')
-        for (let index = 0; index <= n_plots; index++) {
-          console.log('Rendering plot ' + index)
-          var divlabel = 'fig' + index
-          try {
-            mpld3.draw_figure(divlabel, response.data.graphs[index]); // Draw the figure.
-          }
-          catch (err) {
-            console.log('failled:' + err.message);
-          }
-        }
-      },
-
-      clearGraphs() {
-        console.log('Clear graphs')
-        this.graphData = []
-        for (var index = 0; index <= 100; index++) {
-          console.log('Clearing plot ' + index)
-          var divlabel = 'fig' + index
-          var div = document.getElementById(divlabel); // CK: Not sure if this is necessary? To ensure the div is clear first
-          while (div.firstChild) {
-            div.removeChild(div.firstChild);
-          }
-        }
-      },
-
-      exportResults() {
-        console.log('exportResults() called')
-        rpcservice.rpcDownloadCall('export_results', [this.projectID]) // Make the server call to download the framework to a .prj file.
-          .catch(error => {
-            // Failure popup.
-            status.failurePopup(this, 'Could not export results: ' + error.message)
-          })
-      },
-      
     }
   }
 </script>
