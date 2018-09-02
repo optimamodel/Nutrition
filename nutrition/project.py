@@ -327,17 +327,16 @@ class Project(object):
         if optim is not None: self.add_optims(optim)
         optim = self.optim(key)
         results = []
-        if optim.active:
-            # run baseline
-            base = self.run_baseline(optim.model_name, optim.prog_set)
-            results.append(base)
-            # run optimization
-            model = sc.dcp(self.model(optim.model_name))
-            model.setup(optim, setcovs=False)
-            model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
-            results += optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel)
-            # add by optim name
-            self.add_result(results, name=optim.name)
+        # run baseline
+        base = self.run_baseline(optim.model_name, optim.prog_set)
+        results.append(base)
+        # run optimization
+        model = sc.dcp(self.model(optim.model_name))
+        model.setup(optim, setcovs=False)
+        model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
+        results += optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel)
+        # add by optim name
+        self.add_result(results, name=optim.name)
         return None
 
     def get_output(self, outcomes=None):
