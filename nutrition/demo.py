@@ -37,13 +37,13 @@ def demo_scens():
 
 def demo_optims():
     kwargs1 = {'name': 'Maximize thrive',
-          'model_name': 'demo',
-          'obj':'thrive',
-          'mults':[1,2],
-          'prog_set': ['Vitamin A supplementation', 'IYCF 1'],
-          'fix_curr': False,
-          'add_funds':1e7,
-          'filter_progs':False}
+              'model_name': 'demo',
+              'obj':'thrive',
+              'mults':[1,2],
+              'prog_set': ['Vitamin A supplementation', 'IYCF 1'],
+              'fix_curr': False,
+              'add_funds':1e7,
+              'filter_progs':False}
     
     optims = [Optim(**kwargs1)]
     return optims

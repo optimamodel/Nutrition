@@ -633,7 +633,7 @@ def py_to_js_optim(py_optim, proj, key=None, default_included=False):
     ''' Convert a Python to JSON representation of an optimization '''
     prog_names = proj.dataset().prog_names()
     js_optim = {}
-    attrs = ['name', 'mults', 'add_funds', 'fix_curr', 'filter_progs']
+    attrs = ['name', 'model_name', 'mults', 'add_funds', 'fix_curr', 'filter_progs']
     for attr in attrs:
         js_optim[attr] = getattr(py_optim, attr) # Copy the attributes into a dictionary
     weightslist = [{'label':item[0], 'weight':item[1]} for item in zip(objective_mapping(), py_optim.weights)]
@@ -651,7 +651,7 @@ def py_to_js_optim(py_optim, proj, key=None, default_included=False):
 def js_to_py_optim(js_optim):
     ''' Convert a JSON to Python representation of an optimization '''
     json = sc.odict()
-    attrs = ['name', 'fix_curr', 'filter_progs']
+    attrs = ['name', 'model_name', 'fix_curr', 'filter_progs']
     for attr in attrs:
         json[attr] = js_optim[attr]
     try:
