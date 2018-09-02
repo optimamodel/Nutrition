@@ -38,9 +38,9 @@ Last update: 2018-09-02
             <button class="btn __green" @click="runOptim(optimSummary, 9999)">Run</button>
 <button class="btn" @click="runOptim(optimSummary, 15)">Test run</button>
 <button class="btn __red" :disabled="!canCancelTask(optimSummary)" @click="clearTask(optimSummary)">Clear run</button>
-            <button class="btn" @click="editOptim(optimSummary)">Edit</button>
-            <button class="btn" @click="copyOptim(optimSummary)">Copy</button>
-            <button class="btn" @click="deleteOptim(optimSummary)">Delete</button>
+            <button class="btn btn-icon" @click="editOptimModal(optimSummary)"><i class="ti-pencil"></i></button>
+            <button class="btn btn-icon" @click="copyOptim(optimSummary)"><i class="ti-files"></i></button>
+            <button class="btn btn-icon" @click="deleteOptim(optimSummary)"><i class="ti-trash"></i></button>
           </td>
         </tr>
         </tbody>
@@ -114,11 +114,11 @@ Last update: 2018-09-02
             <input type="text"
                    class="txbox"
                    v-model="addEditModal.optimSummary.mults"/><br>
-            <input type="checkbox" v-model="defaultOptim.fix_curr"/> Existing spending cannot be reallocated<br><br>
+            <input type="checkbox" v-model="addEditModal.optimSummary.fix_curr"/> Existing spending cannot be reallocated<br><br>
             Additional funds (US$):<br>
             <input type="text"
                    class="txbox"
-                   v-model="defaultOptim.add_funds"/><br>
+                   v-model="addEditModal.optimSummary.add_funds"/><br>
           
           <table class="table table-bordered table-hover table-striped" style="width: 100%">
             <thead>
@@ -128,12 +128,12 @@ Last update: 2018-09-02
             </tr>
             </thead>
             <tbody>
-            <tr v-for="progvals in addEditModal.optimSummary.progvals">
+            <tr v-for="spec in addEditModal.optimSummary.spec">
               <td>
-                {{ progvals.name }}
+                {{ spec.name }}
               </td>
               <td style="text-align: center">
-                <input type="checkbox" v-model="progvals.included"/>
+                <input type="checkbox" v-model="spec.included"/>
               </td>
             </tr>
             </tbody>
@@ -179,7 +179,6 @@ Last update: 2018-09-02
     data() {
       return {
         optimSummaries: [],
-        defaultScenYears: [],
         optimsLoaded: false,
         addEditModal: {
           optimSummary: {},
@@ -227,56 +226,53 @@ Last update: 2018-09-02
       },
 
       canRunTask(optimSummary) {
-        return ((optimSummary.status == 'not started') || (optimSummary.status == 'completed'))
+        return ((optimSummary.status === 'not started') || (optimSummary.status === 'completed'))
       },
       
       canCancelTask(optimSummary) {
-        let output = (optimSummary.status != 'not started')
-        return output
+        return (optimSummary.status !== 'not started')
       },
       
       canPlotResults(optimSummary) {
-        return (optimSummary.status == 'completed')
+        return (optimSummary.status === 'completed')
       },
       
       getOptimTaskState(optimSummary) {
-        var statusStr = ''
+        var statusStr = '';
         
         // Check the status of the task.
         rpcs.rpc('check_task', [optimSummary.server_datastore_id])
         .then(result => {
-          statusStr = result.data.task.status
-          optimSummary.status = statusStr
-          optimSummary.pendingTime = result.data.pendingTime
+          statusStr = result.data.task.status;
+          optimSummary.status = statusStr;
+          optimSummary.pendingTime = result.data.pendingTime;
           optimSummary.executionTime = result.data.executionTime          
         })
         .catch(error => {
-          optimSummary.status = 'not started'
-          optimSummary.pendingTime = '--'
+          optimSummary.status = 'not started';
+          optimSummary.pendingTime = '--';
           optimSummary.executionTime = '--'
         })
       },
       
       pollAllTaskStates() {
-        console.log('Do a task poll...')
-        // For each of the optimization summaries...
-        this.optimSummaries.forEach(optimSum => {
-          // If there is a valid task launched, check it.
-          if ((optimSum.status != 'not started') && (optimSum.status != 'completed')) {
+        console.log('Do a task poll...');
+        this.optimSummaries.forEach(optimSum => { // For each of the optimization summaries...
+          if ((optimSum.status != 'not started') && (optimSum.status != 'completed')) { // If there is a valid task launched, check it.
             this.getOptimTaskState(optimSum)
           }
-        }) 
+        });
                
         // Hack to get the Vue display of optimSummaries to update
-        this.optimSummaries.push(this.optimSummaries[0])
-        this.optimSummaries.pop()
+        this.optimSummaries.push(this.optimSummaries[0]);
+        this.optimSummaries.pop();
         
         // Sleep waitingtime seconds.
         var waitingtime = 1
         utils.sleep(waitingtime * 1000)
         .then(response => {
           // Only if we are still in the optimizations page, call ourselves.
-          if (this.$route.path == '/optimizations') {
+          if (this.$route.path === '/optimizations') {
             this.pollAllTaskStates()
           }
         }) 
@@ -292,7 +288,6 @@ Last update: 2018-09-02
           // TODO: Delete cached result.          
         })
       },
-
 
       getOptimSummaries() {
         console.log('getOptimSummaries() called')

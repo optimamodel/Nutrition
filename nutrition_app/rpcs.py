@@ -12,7 +12,6 @@ import os
 from zipfile import ZipFile
 from flask_login import current_user
 from shutil import copyfile
-from pprint import pprint
 import mpld3
 import numpy as np
 import sciris as sc
@@ -533,7 +532,7 @@ def get_scen_info(project_id, key=None, online=True):
         scenario_summaries.append(js_scen)
     
     print('JavaScript scenario info:')
-    pprint(scenario_summaries)
+    sc.pp(scenario_summaries)
 
     return scenario_summaries
 
@@ -550,7 +549,7 @@ def set_scen_info(project_id, scenario_summaries, online=True):
         json = js_to_py_scen(js_scen)
         proj.add_scen(json=json)
         print('Python scenario info for scenario %s:' % (j+1))
-        pprint(json)
+        sc.pp(json)
         
     print('Saving project...')
     save_project(proj, online=online)
@@ -570,7 +569,7 @@ def get_default_scen(project_id, scen_type=None):
     js_scen = py_to_js_scen(py_scen, proj, default_included=True)
     
     print('Created default JavaScript scenario:')
-    pprint(js_scen)
+    sc.pp(js_scen)
     return js_scen
 
 
@@ -676,7 +675,7 @@ def get_optim_info(project_id, online=True):
         js_optim = py_to_js_optim(py_optim, proj)
         optim_summaries.append(js_optim)
     print('JavaScript optimization info:')
-    pprint(optim_summaries)
+    sc.pp(optim_summaries)
     return optim_summaries
 
 
@@ -710,5 +709,5 @@ def get_default_optim(project_id):
     print objective_mapping()
     
     print('Created default JavaScript optimization:')
-    pprint(js_optim)
+    sc.pp(js_optim)
     return js_optim
