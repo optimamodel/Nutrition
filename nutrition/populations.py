@@ -254,7 +254,7 @@ class ChildAgeGroup(AgeGroup):
         elif risk == 'MAM' or risk == 'SAM':
             OR = self.default.or_cond[risk]['Diarrhoea'][self.age]
         else:
-            print 'risk factor is invalid'
+            print('Risk factor is invalid: "%s" is not Stunting, Anaemia, or MAM' % risk)
         AO = pow(OR, RRnot * Za * 1./self.ageingRate)
         return AO
 

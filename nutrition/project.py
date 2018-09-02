@@ -155,7 +155,7 @@ class Project(object):
         """ Add an entry to a structure list """
         structlist = self.getwhat(what=what)
         structlist[name] = item
-        print 'Item "{}" added to "{}"'.format(name, what)
+        print('Item "{}" added to "{}"'.format(name, what))
         self.modified = sc.now()
 
     def remove(self, what, name=None):
@@ -165,7 +165,7 @@ class Project(object):
             name = 'all'
         else:
             structlist.pop(name)
-        print '{} "{}" removed'.format(what, name)
+        print('{} "{}" removed'.format(what, name))
         self.modified = sc.now()
 
     def getwhat(self, what):

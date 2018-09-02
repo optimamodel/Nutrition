@@ -714,17 +714,11 @@ def set_optim_info(project_id, optim_summaries, online=True):
 
 @RPC(validation='named')    
 def get_default_optim(project_id):
-
     print('Getting default optimization...')
     proj = load_project(project_id, raise_exception=True)
-    
     py_optim = proj.demo_optims(doadd=False)[0]
     js_optim = py_to_js_optim(py_optim, proj, default_included=True)
     js_optim['objective_options'] = objective_mapping()
-    
-    print("TEST")
-    print objective_mapping()
-    
     print('Created default JavaScript optimization:')
     sc.pp(js_optim)
     return js_optim
