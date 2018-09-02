@@ -703,7 +703,7 @@ def get_default_optim(project_id):
     proj = load_project(project_id, raise_exception=True)
     
     py_optim = proj.demo_optims(doadd=False)[0]
-    js_optim = py_to_js_optim(py_optim, proj, defaul_included=True)
+    js_optim = py_to_js_optim(py_optim, proj, default_included=True)
     js_optim['objective_options'] = objective_mapping()
     
     print("TEST")
