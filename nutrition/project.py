@@ -356,9 +356,14 @@ class Project(object):
         figs = make_plots(self.result(key), toplot=toplot, optim=optim)
         return figs
 
-    def get_costeff(self, key=-1):
+    def get_costeff(self):
         """ Returns a nested odict with keys (scenario name, outcome) and value (output). Output is type string """
-        results = self.result(key)
+        results = []
+        for scen in self.scens.itervalues():
+            if scen.active:
+                model = self.model(scen.model_name)
+                res = run_scen(scen, model)
+                results.append(res)
         costeff = get_costeff(results)
         return costeff
 
