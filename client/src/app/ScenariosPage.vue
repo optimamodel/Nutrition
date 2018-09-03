@@ -56,7 +56,7 @@ Last update: 2018-09-02
     </div>
 
     <!-- START RESULTS CARD -->
-    <div class="card full-width-card">
+    <div class="card full-width-card" v-if="hasGraphs">
       <div class="calib-title">
         <help reflink="results-plots" label="Results"></help>
         <div>
@@ -197,6 +197,7 @@ Last update: 2018-09-02
           modalScenarioType: 'coverage',
         },
         figscale: 1.0,
+        hasGraphs: false,
       }
     },
 
@@ -222,7 +223,6 @@ Last update: 2018-09-02
 
     methods: {
 
-      clearGraphs()             { return utils.clearGraphs() },
       makeGraphs(graphdata)     { return utils.makeGraphs(this, graphdata) },
       exportGraphs()            { return utils.exportGraphs(this) },
       exportResults(project_id) { return utils.exportResults(this, project_id) },

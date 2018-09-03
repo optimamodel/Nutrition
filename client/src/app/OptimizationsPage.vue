@@ -60,7 +60,7 @@ Last update: 2018-09-02
 
 
     <!-- START RESULTS CARD -->
-    <div class="card full-width-card">
+    <div class="card full-width-card" v-if="hasGraphs">
       <div class="calib-title">
         <help reflink="results-plots" label="Results"></help>
         <div>
@@ -212,6 +212,7 @@ Last update: 2018-09-02
           mode: 'add',
         },
         figscale: 1.0,
+        hasGraphs: false,
       }
     },
 
@@ -326,7 +327,7 @@ Last update: 2018-09-02
         this.optimSummaries.push(this.optimSummaries[0]);
         this.optimSummaries.pop();
 
-        // Sleep waitingtime seconds.
+        // Sleep waitingtime seconds. -- WARNING, should make it so this is only called when something changes
         let waitingtime = 1
         utils.sleep(waitingtime * 1000)
           .then(response => {

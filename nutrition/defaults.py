@@ -7,7 +7,7 @@ Defaults correspond to the data set which is loaded by the user.
 """
 from .scenarios import make_scens
 
-def get_defaults(modelname, model, basename='Baseline', zeroname='Zero cov'):
+def get_defaults(modelname, model, basename='Baseline', zeroname='Zero coverage'):
     """
     Assumes user has selected a data set to upload into the project.
     Both baseline and the zero scenario will be based on all the programs uploaded in the data book
