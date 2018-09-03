@@ -92,7 +92,7 @@ def direc_outcomes(pretty):
     newlabs = [pre+lab.lower() for pre,lab in zip(prefix, pretty)]
     return newlabs
 
-def relabel(old, direction=False):
+def relabel(old, direction=False): # todo: take and return list of labels, will be faster
     labs = pretty_labels(direction=direction)
     try:
         new = labs[str(old)] # do not allow indexing
