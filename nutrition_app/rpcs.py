@@ -375,6 +375,7 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
     ''' Convert a Python to JSON representation of a scenario '''
     prog_names = proj.dataset().prog_names()
     settings = nu.Settings()
+    scen_years = settings.n_years - 1 # First year is baseline
     attrs = ['name', 'active', 'scen_type']
     js_scen = {}
     for attr in attrs:
@@ -393,10 +394,10 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
                 this_spec['vals'] = py_scen.vals[count]
             except:
                 this_spec['vals'] = [None]
-            while len(this_spec['vals']) < settings.n_years: # Ensure it's the right length
+            while len(this_spec['vals']) < scen_years: # Ensure it's the right length
                 this_spec['vals'].append(None)
         else:
-            this_spec['vals'] = [None]*settings.n_years # WARNING, kludgy way to extract the number of years
+            this_spec['vals'] = [None]*scen_years # WARNING, kludgy way to extract the number of years
         if js_scen['scen_type'] == 'coverage': # Convert to percentage
             for y in range(len(this_spec['vals'])):
                 if this_spec['vals'][y] is not None:
@@ -404,7 +405,7 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
         this_spec['base_cov'] = round(program.base_cov*100) # Convert to percentage
         this_spec['base_spend'] = round(program.base_spend)
         js_scen['progvals'].append(this_spec)
-        js_scen['t'] = settings.t
+        js_scen['t'] = [settings.t[0]+1, settings.t[1]] # First year is baseline year
     return js_scen
     
     

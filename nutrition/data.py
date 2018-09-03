@@ -3,40 +3,6 @@ import pandas
 import sciris as sc
 from . import settings, populations, utils, programs
 
-class Spreadsheet(object):
-    ''' A class for reading and writing spreadsheet data in binary format, so a project contains the spreadsheet loaded '''
-    
-    def __init__(self, filename=None):
-        self.data = None
-        self.filename = None
-        if filename is not None: self.load(filename)
-        return None
-    
-    def __repr__(self):
-        output  = sc.prepr(self)
-        return output
-    
-    def load(self, filename=None):
-        if filename is not None:
-            filepath = sc.makefilepath(filename=filename)
-            self.filename = filepath
-            with open(filepath, mode='rb') as f: 
-                self.data = f.read()
-        else:
-            print('No filename specified; aborting.')
-        return None
-    
-    def save(self, filename=None):
-        if filename is None:
-            if self.filename is not None: filename = self.filename
-        if filename is not None:
-            filepath = sc.makefilepath(filename=filename)
-            with open(filepath, mode='wb') as f:
-                f.write(self.data)
-            print('Spreadsheet saved to %s.' % filepath)
-        return filepath
-            
-
 class DefaultParams(object):
     def __init__(self, default_data, input_data):
         self.settings = settings.Settings()
@@ -72,7 +38,7 @@ class DefaultParams(object):
 
     def rem_spreadsheet(self, default_path):
         self.spreadsheet.close()
-        self.spreadsheet = Spreadsheet(default_path) # Load spreadsheet binary file into project -- WARNING, only partly implemented since not sure how to read from
+        self.spreadsheet = sc.Spreadsheet(default_path) # Load spreadsheet binary file into project -- WARNING, only partly implemented since not sure how to read from
 
     def read_spreadsheet(self):
         self.extend_treatsam()
@@ -336,7 +302,7 @@ class InputData(object):
 
     def rem_spreadsheet(self, filepath):
         self.spreadsheet.close()
-        self.spreadsheet = Spreadsheet(filepath)
+        self.spreadsheet = sc.Spreadsheet(filepath)
 
     ## DEMOGRAPHICS ##
 

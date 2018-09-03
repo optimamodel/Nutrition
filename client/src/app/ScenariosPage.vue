@@ -123,7 +123,7 @@ Last update: 2018-09-02
               <tr>
                 <th>Name</th>
                 <th>Include?</th>
-                <th>Baseline</th>
+                <th>2017</th>
                 <th v-for="year in defaultScenYears">{{ year }}</th>
               </tr>
               </thead>

@@ -9,7 +9,7 @@ p.load_data('demo', 'demo', name='eg')
 kwargs1 = {'name':'Treat SAM 100%',
            'model_name': 'eg',
            'scen_type': 'coverage',
-            'progvals': sc.odict({'Treatment of SAM': [1]})}
+            'progvals': sc.odict({'Treatment of SAM': [1,1,1,1,1,1,1,1,1,1]})}
 
 kwargs2 = sc.dcp(kwargs1)
 kwargs2.update({'name': 'IYCF 1 100%',
