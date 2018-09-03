@@ -64,25 +64,45 @@ def pretty_labels(direction=False):
     :return:
     """
     # pretty must correspond to the labels in 'default_trackers'
-    pretty = [
-        'Number of alive, non-stunted children',
-        'Number of child deaths',
-        'Number of stunted children',
-        'Number of wasted children',
-        'Number of anaemic children',
-        'Prevalence of stunting in children',
-        'Prevalence of wasting in children',
-        'Prevalence of anaemia in children',
-        'Number of pregnant women deaths',
-        'Number of anaemic pregnant women',
-        'Prevalence of anaemia in pregnant women',
-        'Number of anaemic non-pregnant women',
-        'Prevalence of anaemia in non-pregnant women',
-        'Child mortality rate',
-        'Pregnant women mortality rate'
-    ]
-    if direction: # for use in weighted objective
-        pretty = direc_outcomes(pretty)
+
+    if direction:
+        # for use in weighted objective
+        pretty = [
+            'Maximize the number of alive, non-stunted children',
+            'Minimize the number of child deaths',
+            'Minimize the number of stunted children',
+            'Minimize the number of wasted children',
+            'Minimize the number of anaemic children',
+            'Minimize the prevalence of stunting in children',
+            'Minimize the prevalence of wasting in children',
+            'Minimize the prevalence of anaemia in children',
+            'Minimize the number of pregnant women deaths',
+            'Minimize the number of anaemic pregnant women',
+            'Minimize the prevalence of anaemia in pregnant women',
+            'Minimize the number of anaemic non-pregnant women',
+            'Minimize the prevalence of anaemia in non-pregnant women',
+            'Minimize child mortality rate',
+            'Minimize pregnant women mortality rate'
+        ]
+    else:
+
+        pretty = [
+            'Number of alive, non-stunted children',
+            'Number of child deaths',
+            'Number of stunted children',
+            'Number of wasted children',
+            'Number of anaemic children',
+            'Prevalence of stunting in children',
+            'Prevalence of wasting in children',
+            'Prevalence of anaemia in children',
+            'Number of pregnant women deaths',
+            'Number of anaemic pregnant women',
+            'Prevalence of anaemia in pregnant women',
+            'Number of anaemic non-pregnant women',
+            'Prevalence of anaemia in non-pregnant women',
+            'Child mortality rate',
+            'Pregnant women mortality rate'
+        ]
     labs = sc.odict(zip(default_trackers(), pretty))
     labs['Baseline'] = 'Est. spending \n baseline year' # this is for allocation
     return labs
