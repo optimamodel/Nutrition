@@ -1,8 +1,7 @@
 import numpy as np
 import pandas
-import sciris.core as sc
+import sciris as sc
 from . import settings, populations, utils, programs
-import numpy as np
 
 class Spreadsheet(object):
     ''' A class for reading and writing spreadsheet data in binary format, so a project contains the spreadsheet loaded '''
@@ -14,7 +13,7 @@ class Spreadsheet(object):
         return None
     
     def __repr__(self):
-        output  = sc.desc(self)
+        output  = sc.prepr(self)
         return output
     
     def load(self, filename=None):
@@ -68,7 +67,7 @@ class DefaultParams(object):
         return None
     
     def __repr__(self):
-        output  = sc.desc(self)
+        output  = sc.prepr(self)
         return output
 
     def rem_spreadsheet(self, default_path):
@@ -332,7 +331,7 @@ class InputData(object):
         self.rem_spreadsheet(data.io)
 
     def __repr__(self):
-        output  = sc.desc(self)
+        output  = sc.prepr(self)
         return output
 
     def rem_spreadsheet(self, filepath):
@@ -450,7 +449,7 @@ class ProgData(object):
         self.rem_spreadsheet()
     
     def __repr__(self):
-        output  = sc.desc(self)
+        output  = sc.prepr(self)
         return output
 
     def rem_spreadsheet(self):
@@ -574,13 +573,13 @@ class Dataset(object):
             try:    name = country+'_'+region
             except: name = 'default'
         self.name = name
-        self.modified = sc.today()
+        self.modified = sc.now()
         if doload:
             self.load(filepath=filepath)
         return None
     
     def __repr__(self):
-        output  = sc.desc(self)
+        output  = sc.prepr(self)
         return output
     
     def load(self, filepath=None):
@@ -591,7 +590,7 @@ class Dataset(object):
         self.pops = pops
         self.prog_info = prog_info
         self.t = demo_data.t
-        self.modified = sc.today()
+        self.modified = sc.now()
         return None
     
     def spit(self, withpops=False):

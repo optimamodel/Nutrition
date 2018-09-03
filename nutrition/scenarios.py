@@ -1,7 +1,7 @@
-import sciris.core as sc
+import sciris as sc
 from .results import ScenResult
 
-class Scen(object):
+class Scen(sc.prettyobj):
     def __init__(self, name=None, model_name=None, scen_type=None, progvals=None, active=True):
         """
         Structure to define a scenario which can be used to fully instantiate a model instance in the project class.
@@ -17,10 +17,6 @@ class Scen(object):
         self.vals = progvals.values()
         self.prog_set = progvals.keys()
         self.active = active
-
-    def __repr__(self):
-        output  = sc.desc(self)
-        return output
 
     def get_attr(self):
         return self.__dict__

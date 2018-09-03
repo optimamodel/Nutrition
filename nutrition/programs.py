@@ -1,11 +1,12 @@
-import numpy as np
-from .settings import Settings
 from functools import partial
-import sciris.core as sc
-from .utils import get_new_prob
 from math import ceil
+import numpy as np
+import sciris as sc
+from .settings import Settings
+from .utils import get_new_prob
 
-class Program(object):
+
+class Program(sc.prettyobj):
     """Each instance of this class is an intervention,
     and all necessary data will be stored as attributes. Will store name, targetpop, popsize, coverage, edges etc
     Restricted coverage: the coverage amongst the target population (assumed given by user)
@@ -42,7 +43,7 @@ class Program(object):
         self._set_threshold_deps()
     
     def __repr__(self):
-        output = sc.desc(self)
+        output = sc.prepr(self)
         return output
 
     def update_cov(self, cov, spend):
@@ -346,7 +347,7 @@ class Program(object):
         self.unit_cost *= scaleFactor
         self.set_costcov()
 
-class CostCovCurve:
+class CostCovCurve(sc.prettyobj):
     def __init__(self, unit_cost, sat, restrictedPop, unrestrictedPop, curveType='linear'):
         self.curveType = curveType
         self.unit_cost = unit_cost
@@ -438,7 +439,7 @@ def set_programs(prog_set, prog_data, all_years):
     return programs
 
 
-class ProgramInfo:
+class ProgramInfo(sc.prettyobj):
     def __init__(self, prog_data):
         self.prog_data = prog_data
         self.programs = None

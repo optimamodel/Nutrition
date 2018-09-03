@@ -6,8 +6,8 @@ Small script to reset the user database -- WARNING, deletes everything!!!
 Version: 2018jun04
 '''
 
-import sciris.web as sw
-import nutrition_webapp as onwa
+import scirisweb as sw
+import nutrition_app as onwa
 import os
 
 webapp_dir = os.path.abspath(onwa.config.CLIENT_DIR)

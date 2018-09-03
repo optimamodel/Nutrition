@@ -2,7 +2,8 @@
 #%% Imports
 #######################################################################################################
 
-import sciris.core as sc
+import numpy as np
+import sciris as sc
 from .version import version
 from .optimization import Optim
 from .data import Dataset
@@ -60,8 +61,8 @@ class Project(object):
         ## Define other quantities
         self.name = name
         self.uid = sc.uuid()
-        self.created = sc.today()
-        self.modified = sc.today()
+        self.created = sc.now()
+        self.modified = sc.now()
         self.version = version
         self.gitinfo = sc.gitinfo(__file__)
         self.filename = None # File path, only present if self.save() is used
@@ -135,15 +136,27 @@ class Project(object):
                 out = res.get_outputs(outcomes, seq=False)
                 outputs.append([res.name] + out) # gets all outputs
         data = [['Result name'] + headers] + outputs
-        sc.export_xlsx(filename=filename, data=data)
+        
+        # Formatting
+        formats = {
+            'header':{'bold':True, 'bg_color':'#3c7d3e', 'color':'#ffffff'},
+            'plain': {},
+            'bold':   {'bold':True}}
+        nrows = len(data)
+        ncols = len(data[0])
+        formatdata = np.zeros((nrows, ncols), dtype=object)
+        formatdata[:,:] = 'plain' # Format data as plain
+        formatdata[:,0] = 'bold' # Left side bold
+        formatdata[0,:] = 'header' # Top with green header
+        sc.savespreadsheet(filename=filename, data=data, formats=formats, formatdata=formatdata)
         return filepath
 
     def add(self, name, item, what=None):
         """ Add an entry to a structure list """
         structlist = self.getwhat(what=what)
         structlist[name] = item
-        print 'Item "{}" added to "{}"'.format(name, what)
-        self.modified = sc.today()
+        print('Item "{}" added to "{}"'.format(name, what))
+        self.modified = sc.now()
 
     def remove(self, what, name=None):
         structlist = self.getwhat(what=what)
@@ -152,8 +165,8 @@ class Project(object):
             name = 'all'
         else:
             structlist.pop(name)
-        print '{} "{}" removed'.format(what, name)
-        self.modified = sc.today()
+        print('{} "{}" removed'.format(what, name))
+        self.modified = sc.now()
 
     def getwhat(self, what):
         '''
@@ -236,7 +249,7 @@ class Project(object):
         # get default scenarios
         defaults = get_defaults(name, model)
         self.add_scens(defaults)
-        self.modified = sc.today()
+        self.modified = sc.now()
 
     def add_scens(self, scens, overwrite=False):
         """ Adds scenarios to the Project's self.scens odict.
@@ -250,7 +263,7 @@ class Project(object):
         scens = sc.promotetolist(scens)
         for scen in scens:
             self.add(name=scen.name, item=scen, what='scen')
-        self.modified = sc.today()
+        self.modified = sc.now()
 
     def run_baseline(self, model_name, prog_set, dorun=True):
         model = sc.dcp(self.model(model_name))
@@ -265,7 +278,7 @@ class Project(object):
         if overwrite: self.optims = sc.odict() # remove exist scenarios
         for optim in optim_list:
             self.add(name=optim.name, item=optim, what='optim')
-        self.modified = sc.today()
+        self.modified = sc.now()
 
     def add_result(self, result, name=None):
         """Add result by name"""
@@ -292,7 +305,7 @@ class Project(object):
         if doadd:
             self.add_optims(optims)
             if dorun:
-                self.run_optims()
+                self.run_optim()
             return None
         else:
             return optims
@@ -310,26 +323,20 @@ class Project(object):
         self.add_result(results, name='scens')
         return None
 
-    def run_optims(self, key=-1, optims=None, maxiter=5, swarmsize=10, maxtime=10, parallel=True):
-        if optims is not None: self.add_optims(optims)
+    def run_optim(self, key=-1, optim=None, maxiter=5, swarmsize=10, maxtime=10, parallel=True, dosave=True):
+        if optim is not None: self.add_optims(optim)
         optim = self.optim(key)
         results = []
-        if optim.active:
-            # run baseline
-            base = self.run_baseline(optim.model_name, optim.prog_set)
-            results.append(base)
-            # run optimization
-            model = sc.dcp(self.model(optim.model_name))
-            model.setup(optim, setcovs=False)
-            model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
-            results += optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel)
-            # add by optim name
-            self.add_result(results, name=optim.name)
-        return None
-
-    def get_results(self, key=-1):
-        """ Key is a string or integer """
-        results = self.result(key)
+        # run baseline
+        base = self.run_baseline(optim.model_name, optim.prog_set)
+        results.append(base)
+        # run optimization
+        model = sc.dcp(self.model(optim.model_name))
+        model.setup(optim, setcovs=False)
+        model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
+        results += optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel)
+        # add by optim name
+        if dosave: self.add_result(results, name=optim.name)
         return results
 
     def get_output(self, outcomes=None):
@@ -346,12 +353,12 @@ class Project(object):
 
     @trace_exception
     def plot(self, key=-1, toplot=None, optim=False):
-        figs = make_plots(self.get_results(key), toplot=toplot, optim=optim)
+        figs = make_plots(self.result(key), toplot=toplot, optim=optim)
         return figs
 
     def get_costeff(self, key=-1):
         """ Returns a nested odict with keys (scenario name, outcome) and value (output). Output is type string """
-        results = self.get_results(key)
+        results = self.result(key)
         costeff = get_costeff(results)
         return costeff
 

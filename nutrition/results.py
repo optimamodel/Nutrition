@@ -1,8 +1,8 @@
-import sciris.core as sc
+import sciris as sc
 from .plotting import make_plots
 from .model import default_trackers
 
-class ScenResult(object):
+class ScenResult(sc.prettyobj):
     def __init__(self, name, model_name, model, obj=None, mult=None):
         self.name = name
         self.model_name = model_name
@@ -14,13 +14,9 @@ class ScenResult(object):
         self.obj = obj
         self.years = range(model.t[0], model.t[1]+1)
         self.uid = sc.uuid()
-        self.created = sc.today()
-        self.modified = sc.today()
-
-    def __repr__(self):
-        output = sc.desc(self)
-        return output
-
+        self.created = sc.now()
+        self.modified = sc.now()
+        
     def model_attr(self):
         return self.model.__dict__
     

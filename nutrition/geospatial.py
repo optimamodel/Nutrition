@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 from multiprocessing import cpu_count
-from numpy import array, append, linspace, nanargmax, zeros, nonzero, inf
+from numpy import array, linspace, nanargmax, zeros, nonzero, inf
 from csv import writer, reader
 from itertools import izip
 from collections import OrderedDict
@@ -111,7 +111,7 @@ class GeospatialOptimization:
                 # self.getOptimalOutcomes(regions, objective)
 
     def getRegionalBOCs(self, objective, fixWithin, add_funds):
-        print '...Generating BOCs... \n'
+        print('...Generating BOCs... \n')
         regions = self.setUpRegions(objective, fixWithin, add_funds)
         jobs = self.getBOCjobs(regions, objective)
         maxRegions = int(50 / (len(self.budgetMultiples) - 1))
@@ -223,7 +223,7 @@ class GeospatialOptimization:
         return costEffVecs, spendingVec
 
     def optimizeAllRegions(self, optimizedSpending, objective, options):
-        print '...Optimizing within regions... \n'
+        print('...Optimizing within regions... \n')
         _fixBetween, fixWithin, replaceCurrent, add_funds = options
         budgetMultiple = [1]
         newRegions = []

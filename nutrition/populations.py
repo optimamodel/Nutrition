@@ -1,12 +1,13 @@
-from .utils import solve_quad, restratify, fit_poly, system, check_sol
-from . import settings
-import sciris.core as sc
+from functools import partial
 from math import pow
 import numpy as np
 from scipy.optimize import fsolve
-from functools import partial
+import sciris as sc
+from . import settings
+from .utils import solve_quad, restratify, fit_poly, system, check_sol
 
-class AgeGroup(object):
+
+class AgeGroup(sc.prettyobj):
     def __init__(self, age, pop_size, anaemia_dist):
         self.age = age
         self.pop_size = pop_size
@@ -253,7 +254,7 @@ class ChildAgeGroup(AgeGroup):
         elif risk == 'MAM' or risk == 'SAM':
             OR = self.default.or_cond[risk]['Diarrhoea'][self.age]
         else:
-            print 'risk factor is invalid'
+            print('Risk factor is invalid: "%s" is not Stunting, Anaemia, or MAM' % risk)
         AO = pow(OR, RRnot * Za * 1./self.ageingRate)
         return AO
 
@@ -286,7 +287,7 @@ class Newborn(ChildAgeGroup):
 
 ####### Population classes #########
 
-class Population(object):
+class Population(sc.prettyobj):
     def __init__(self, name, data, default):
         self.name = name
         self.data = data

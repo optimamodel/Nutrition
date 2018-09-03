@@ -1,7 +1,12 @@
-import os, functools, traceback, scipy.special, multiprocessing, numbers, copy, collections
+import os
+import functools
+import traceback
+import multiprocessing
 import numpy as np
-import sciris.core as sc
+import scipy.special
 from scipy.optimize import brentq
+import sciris as sc
+
 
 
 def optimafolder(subfolder=None):

@@ -1,6 +1,6 @@
 import os
 import itertools
-import sciris.core as sc
+import sciris as sc
 from .version import version
 
 class Settings(object):
@@ -38,7 +38,7 @@ class Settings(object):
         self.women_age_rates = [1./5., 1./10., 1./10., 1./10.] # in years
     
     def __repr__(self):
-        output  = sc.desc(self)
+        output  = sc.prepr(self)
         return output
 
 def data_path(country, region, sim_type):
@@ -64,7 +64,6 @@ def default_params_path():
 # Tool path
 def ONpath(subdir=None, trailingsep=True):
     ''' Returns the parent path of the Optima Nutrition module. If subdir is not None, include it in the path '''
-    import os
     path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
     if subdir is not None:
         tojoin = [path, subdir]
@@ -75,7 +74,6 @@ def ONpath(subdir=None, trailingsep=True):
 
 # Debugging information
 def debuginfo(output=False):
-    import sciris.core as sc
     outstr = '\nOptima Nutrition debugging info:\n'
     outstr += '   Version: %s\n' % version
     outstr += '   Branch:  %s\n' % sc.gitinfo()['branch']
