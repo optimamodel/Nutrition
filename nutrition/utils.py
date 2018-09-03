@@ -107,11 +107,6 @@ def pretty_labels(direction=False):
     labs['Baseline'] = 'Est. spending \n baseline year' # this is for allocation
     return labs
 
-def direc_outcomes(pretty):
-    prefix = ['Maximize the '] + ['Minimize the '] * (len(pretty)-3) + ['Minimize '] * 2
-    newlabs = [pre+lab.lower() for pre,lab in zip(prefix, pretty)]
-    return newlabs
-
 def relabel(old, direction=False): # todo: take and return list of labels, will be faster
     labs = pretty_labels(direction=direction)
     try:
