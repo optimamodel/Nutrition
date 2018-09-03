@@ -85,7 +85,6 @@ def pretty_labels(direction=False):
             'Minimize pregnant women mortality rate'
         ]
     else:
-
         pretty = [
             'Number of alive, non-stunted children',
             'Number of child deaths',
