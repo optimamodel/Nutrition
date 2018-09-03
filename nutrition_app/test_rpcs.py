@@ -9,9 +9,10 @@ from nutrition_app import rpcs, apptasks as apt
 runall = False
 
 torun = [
+'input_io',
 #'scen_io',
 #'optim_io',
-'run_optimization',
+#'run_optimization',
 ]
 
 T = sc.tic()
@@ -20,6 +21,11 @@ def heading(string):
     sc.blank()
     sc.colorize('blue', string)
     return None
+
+if 'input_io' in torun or runall:
+    proj = nu.demo()
+    sheetdata = rpcs.get_sheet_data(proj, online=False)
+    sc.pp(sheetdata)
 
 
 if 'scen_io' in torun or runall:

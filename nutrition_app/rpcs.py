@@ -353,8 +353,20 @@ def export_results(project_id):
 ##################################################################################
 
 @RPC()
-def get_sheet_data(project_id):
-    pass
+def get_sheet_data(project_id, key=None, online=True):
+    sheets = [
+        'Nutritional status distribution', 
+        'Breastfeeding distribution',
+        'IYCF packages',
+        'Treatment of SAM',
+        'Programs cost and coverage',
+        ]
+    proj = load_project(project_id, raise_exception=True, online=online)
+    wb = proj.dataset().input_sheet
+    sheetdata = sc.odict()
+    for sheet in sheets:
+        sheetdata[sheet] = wb.readcells(sheetname=sheet, header=False)
+    return sheetdata
 
 
 
