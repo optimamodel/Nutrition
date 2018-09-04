@@ -218,12 +218,12 @@ def download_project(project_id):
     return full_file_name # Return the full filename.
 
 @RPC(call_type='download')   
-def download_databook(project_id):
+def download_databook(project_id, key=None):
     """ Download databook """
     proj = load_project(project_id, raise_exception=True) # Load the project with the matching UID.
     file_name = '%s_databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name) # Generate the full file name with path.
-    proj.dataset().demo_data.spreadsheet.save(full_file_name)
+    proj.dataset(key).input_sheet.save(full_file_name)
     print(">> download_databook %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
 
@@ -236,7 +236,7 @@ def download_defaults(project_id):
     proj = load_project(project_id, raise_exception=True) # Load the project with the matching UID.
     file_name = '%s_defaults.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name) # Generate the full file name with path.
-    proj.dataset().default_params.spreadsheet.save(full_file_name)
+    proj.dataset().defaults_sheet.save(full_file_name)
     print(">> download_defaults %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
 
@@ -492,7 +492,23 @@ def get_sheet_data(project_id, key=None, online=True):
     return {'names':sheets, 'tables':sheetjson}
 
 
-
+@RPC()
+def save_sheet_data(project_id, sheetjson, key=None, online=True):
+    proj = load_project(project_id, raise_exception=True, online=online)
+    wb = proj.dataset(key).input_sheet
+    for sheet in sheetjson.keys():
+        datashape = np.shape(sheetjson[sheet])
+        rows,cols = datashape
+        for r in range(rows):
+            for c in range(cols):
+                cellformat = sheetjson[sheet][r][c]['format']
+                cellval    = sheetjson[sheet][r][c]['value']
+                if cellformat == 'edit':
+                    wb.writecells(sheetname=sheet, row=r, col=c, vals=cellval, verbose=True)
+    proj.dataset(key).load(from_file=False)
+    print('Saving project...')
+    save_project(proj, online=online)
+    return None
 
 ##################################################################################
 ### Scenario functions and RPCs

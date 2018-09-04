@@ -25,10 +25,10 @@ Last update: 2018-08-02
           <help reflink="inputs" label="Edit input data"></help>
           <div v-for="name in sheetNames" style="display:inline-block; padding-right:10px">
             <div v-if="name===activeSheet">
-              <button class="btn sheetbtn" @click="setActive(name)">{{ name }}</button>
+              <button class="btn sheetbtn" @click="setActive(name)" data-tooltip="Current sheet">{{ name }}</button>
             </div>
             <div v-else>
-              <button class="btn sheetbtn deselected" @click="setActive(name)">{{ name }}</button>
+              <button class="btn sheetbtn deselected" @click="setActive(name)" data-tooltip="Switch to this sheet">{{ name }}</button>
             </div>
 
           </div>
@@ -62,10 +62,10 @@ Last update: 2018-08-02
           </div>
 
           <div>
-            <button class="btn __green" @click="saveChanges()">Save changes</button>
-            <button class="btn"         @click="revert()">Revert</button>
-            <button class="btn"         @click="download()"><i class="ti-download"></i></button>
-            <button class="btn"         @click="upload()"><i class="ti-upload"></i></button>
+            <button class="btn __green" @click="saveSheetData()"    data-tooltip="Save data to project">Save changes</button>
+            <button class="btn"         @click="getSheetData()"     data-tooltip="Revert to last saved data">Revert</button>
+            <button class="btn"         @click="downloadDatabook()" data-tooltip="Download databook"><i class="ti-download"></i></button>
+            <button class="btn"         @click="uploadDatabook()"   data-tooltip="Upload databook"><i class="ti-upload"></i></button>
           </div>
           <br>
         </div>
@@ -132,35 +132,46 @@ Last update: 2018-08-02
             status.succeed(this, 'Data loaded')
           })
           .catch(error => {
-            // Failure popup.
             status.failurePopup(this, 'Could not get sheet data: ' + error.message)
           })
       },
 
-      saveChanges() {
-        status.failurePopup(this, 'Not implemented')
-      },
-
-      upload() {
-        status.failurePopup(this, 'Not implemented')
-      },
-
-      download() {
-        status.failurePopup(this, 'Not implemented')
-      },
-
-      revert() {
-        status.failurePopup(this, 'Not implemented')
-      },
-
-      exportResults() {
-        console.log('exportResults() called')
-        rpcs.rpcDownloadCall('export_results', [this.projectID]) // Make the server call to download the framework to a .prj file.
+      saveSheetData() {
+        console.log('saveSheetData() called')
+        rpcs.rpc('save_sheet_data', [this.projectID, this.sheetTables]) // Make the server call to download the framework to a .prj file.
+          .then(response => {
+            status.succeed(this, 'Data saved')
+          })
           .catch(error => {
-            // Failure popup.
-            status.failurePopup(this, 'Could not export results: ' + error.message)
+            status.failurePopup(this, 'Could not save sheet data: ' + error.message)
           })
       },
+
+      downloadDatabook() {
+        console.log('downloadDatabook() called')
+        status.start(this, 'Downloading data book...')
+        rpcs.download('download_databook', [this.projectID])
+          .then(response => {
+            status.succeed(this, '')  // No green popup message.
+          })
+          .catch(error => {
+            status.fail(this, 'Could not download databook: ' + error.message)
+          })
+      },
+
+      uploadDatabook() {
+        console.log('uploadDatabook() called')
+        status.start(this, 'Uploading databook...')
+        rpcs.upload('upload_databook', [this.projectID], {}, '.xlsx')
+          .then(response => {
+            this.getSheetData() // Refresh the table
+            status.succeed(this, 'Data uploaded')
+          })
+          .catch(error => {
+            status.fail(this, 'Could not upload data: ' + error.message)
+          })
+      },
+
     }
   }
 </script>
@@ -202,7 +213,8 @@ Last update: 2018-08-02
   }
 
   .c_calc {
-    background-color:#aaa;
+    color:#888;
+    background-color:#ccc;
     justify-content:flex-end;
   }
 

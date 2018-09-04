@@ -422,16 +422,13 @@ Last update: 2018-08-30
       },
 
       downloadDatabook(uid) {
-        // Find the project that matches the UID passed in.
-        let matchProject = this.projectSummaries.find(theProj => theProj.project.id === uid)
-        console.log('downloadDatabook() called for ' + matchProject.project.name)
-        status.start(this, 'Downloading data book...') // Start indicating progress.
+        console.log('downloadDatabook() called')
+        status.start(this, 'Downloading data book...')
         rpcs.download('download_databook', [uid])
           .then(response => {
             status.succeed(this, '')  // No green popup message.
           })
           .catch(error => {
-            // Indicate failure.
             status.fail(this, 'Could not download databook: ' + error.message)
           })
       },
@@ -450,13 +447,12 @@ Last update: 2018-08-30
       },
 
       uploadDatabook(uid) {
-        let matchProject = this.projectSummaries.find(theProj => theProj.project.id === uid) // Find the project that matches the UID passed in.
-        console.log('uploadDatabook() called for ' + matchProject.project.name)
+        console.log('uploadDatabook() called')
         status.start(this, 'Uploading databook...')
-        rpcs.upload('upload_databook', [uid], {})
+        rpcs.upload('upload_databook', [uid], {}, '.xlsx')
           .then(response => {
-            this.updateProjectSummaries(uid) // Update the project summaries so the copied program shows up on the list.
-            status.succeed(this, 'Data uploaded to project "'+matchProject.project.name+'"') // Indicate success.
+            this.updateProjectSummaries(uid) // Update the project summaries
+            status.succeed(this, 'Data uploaded to project') // Indicate success.
           })
           .catch(error => {
             status.fail(this, 'Could not upload data: ' + error.message) // Indicate failure.
