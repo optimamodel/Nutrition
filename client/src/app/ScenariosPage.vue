@@ -171,7 +171,7 @@ Last update: 2018-09-02
 
 <script>
   import axios from 'axios'
-  var filesaver = require('file-saver')
+  let filesaver = require('file-saver')
   import utils from '@/services/utils'
   import rpcs from '@/services/rpc-service'
   import status from '@/services/status-service'

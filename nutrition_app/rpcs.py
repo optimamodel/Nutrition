@@ -352,6 +352,107 @@ def export_results(project_id):
 ### Input functions and RPCs
 ##################################################################################
 
+def define_formats():
+    ''' Hard-coded sheet formats '''
+    formats = sc.odict()
+    
+    formats['Nutritional status distribution'] = [
+        ['head', 'head', 'name', 'name', 'name', 'name', 'name', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
+        ['name', 'name', 'calc', 'calc', 'calc', 'calc', 'calc', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
+        ['blnk', 'name', 'calc', 'calc', 'calc', 'calc', 'calc', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
+        ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
+        ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
+        ['blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
+        ['blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
+        ['name', 'name', 'calc', 'calc', 'calc', 'calc', 'calc', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
+        ['blnk', 'name', 'calc', 'calc', 'calc', 'calc', 'calc', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
+        ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
+        ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
+        ['blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
+        ['name', 'blnk', 'name', 'name', 'name', 'name', 'name', 'name', 'name', 'name', 'name', 'name', 'name', 'name', 'name'],
+        ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit'],
+        ['blnk', 'name', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc'],
+    ]
+    
+    formats['Breastfeeding distribution'] = [
+        ['head', 'head', 'head', 'head', 'head', 'head', 'head'],
+        ['name', 'name', 'edit', 'edit', 'edit', 'edit', 'edit'],
+        ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit'],
+        ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit'],
+        ['blnk', 'name', 'calc', 'calc', 'calc', 'calc', 'calc'],
+    ]
+    
+    formats['IYCF packages'] = [
+        ['head', 'head', 'head', 'head', 'head'],
+        ['head', 'name', 'edit', 'edit', 'blnk'],
+        ['blnk', 'name', 'edit', 'edit', 'blnk'],
+        ['blnk', 'name', 'edit', 'edit', 'blnk'],
+        ['blnk', 'name', 'edit', 'edit', 'blnk'],
+        ['blnk', 'name', 'edit', 'edit', 'blnk'],
+        ['blnk', 'name', 'blnk', 'blnk', 'edit'],
+        ['blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
+        ['head', 'name', 'edit', 'edit', 'blnk'],
+        ['blnk', 'name', 'edit', 'edit', 'blnk'],
+        ['blnk', 'name', 'edit', 'edit', 'blnk'],
+        ['blnk', 'name', 'edit', 'edit', 'blnk'],
+        ['blnk', 'name', 'edit', 'edit', 'blnk'],
+        ['blnk', 'name', 'blnk', 'blnk', 'edit'],
+        ['blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
+        ['head', 'name', 'edit', 'edit', 'blnk'],
+        ['blnk', 'name', 'edit', 'edit', 'blnk'],
+        ['blnk', 'name', 'edit', 'edit', 'blnk'],
+        ['blnk', 'name', 'edit', 'edit', 'blnk'],
+        ['blnk', 'name', 'edit', 'edit', 'blnk'],
+        ['blnk', 'name', 'blnk', 'blnk', 'edit'],
+    ]
+    
+    formats['Treatment of SAM'] = [
+        ['blnk', 'head', 'head', 'head'],
+        ['head', 'name', 'name', 'edit'],
+        ['head', 'name', 'name', 'edit'],
+    ]
+    
+    formats['Programs cost and coverage'] = [
+        ['head', 'head', 'head', 'head'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'calc'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'calc'],
+        ['name', 'edit', 'edit', 'calc'],
+        ['name', 'edit', 'edit', 'calc'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'calc'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+    ]
+    
+    return formats
+    
+
 @RPC()
 def get_sheet_data(project_id, key=None, online=True):
     sheets = [
@@ -366,12 +467,30 @@ def get_sheet_data(project_id, key=None, online=True):
     sheetdata = sc.odict()
     for sheet in sheets:
         sheetdata[sheet] = wb.readcells(sheetname=sheet, header=False)
+    sheetformat = define_formats()
+    
+    sheetjson = sc.odict()
+    for sheet in sheets:
+        datashape = np.shape(sheetdata[sheet])
+        formatshape = np.shape(sheetformat[sheet])
+        if datashape != formatshape:
+            errormsg = 'Sheet data and formats have different shapes: %s vs. %s' % (datashape, formatshape)
+            raise Exception(errormsg)
+        rows,cols = datashape
+        sheetjson[sheet] = []
+        for r in range(rows):
+            sheetjson[sheet].append([])
+            for c in range(cols):
+                cellinfo = {'format':sheetformat[sheet][r][c], 'value':sheetdata[sheet][r][c]}
+                sheetjson[sheet][r].append(cellinfo)
+    
+    sheetjson = sw.sanitize_json(sheetjson)
     # Figure out what parts of sheets should be parsed
     # Define formatting for header, fixed, editable
     # Package in a way that can work
     # Loop over in frontend
     # Define conditionals correctly
-    return sheetdata
+    return {'names':sheets, 'tables':sheetjson}
 
 
 
