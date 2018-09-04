@@ -21,6 +21,32 @@ class Scen(sc.prettyobj):
     def get_attr(self):
         return self.__dict__
 
+    def get_childscens(self): # todo: may need to pass in baseline for cost calculation... Pretty sure zero case has to be all programs to 0
+        """ For calculating the impacts of each scenario with single intervention set to 0 coverage """
+        # get the programs
+        # scale each one down to 0 individually
+        # return these to project for processing later
+        # could store like the other scenarios
+        cov = [0]
+        allkwargs = []
+        # zero cov scen # todo: if this is zero using baseline, then don't define in here...
+        kwargs = {'name': 'Zero cov',
+                  'model_name': self.model_name,
+                  'scen_type': self.scen_type,
+                  'progvals': {prog: cov for prog in self.prog_set}} # todo: may need to be baseline progset...
+        allkwargs.append(kwargs)
+        # scale down each program to 0 individually
+        progvals = {prog: val for prog, val in zip(self.prog_set, self.vals)}
+        for prog in self.prog_set:
+            new_progvals = sc.dcp(progvals)
+            new_progvals[prog] = cov
+            kwargs = {'name': prog,
+                      'model_name': self.model_name,
+                      'scen_type': self.scen_type,
+                      'progvals': new_progvals}
+            allkwargs.append(kwargs)
+        return allkwargs
+
 def run_scen(scen, model, obj=None, mult=None, setcovs=True):
     """ Function to run associated Scen and Model objects """
     model = sc.dcp(model)
