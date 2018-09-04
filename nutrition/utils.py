@@ -105,12 +105,22 @@ def pretty_labels(direction=False):
     labs['Baseline'] = 'Est. spending \n baseline year' # this is for allocation
     return labs
 
-def relabel(old, direction=False): # todo: take and return list of labels, will be faster
-    labs = pretty_labels(direction=direction)
-    try:
-        new = labs[str(old)] # do not allow indexing
-    except:
-        new = old
+def relabel(old, direction=False):
+    """ Can be given a string or a list of strings.
+    Will return corresponding pretty label as a string or a list of strings """
+    pretty = pretty_labels(direction=direction)
+    if isinstance(old, list):
+        new = []
+        for lab in old:
+            try:
+                new.append(pretty[str(lab)])  # do not allow indexing
+            except:
+                new.append(lab)
+    else:
+        try:
+            new = pretty[str(old)] # do not allow indexing
+        except:
+            new = old
     return new
 
 def get_obj_sign(obj):
