@@ -42,7 +42,7 @@ def make_plots(all_res=None, toplot=None, optim=False):
 
 def plot_prevs(all_res):
     """ Plot prevs for each scenario"""
-    prevs = utils.default_trackers(prev=True)
+    prevs = utils.default_trackers(prev=True, rate=False)
     lines = []
     figs = sc.odict()
     for i, prev in enumerate(prevs):
@@ -73,7 +73,7 @@ def plot_prevs(all_res):
     return figs
 
 def plot_outputs(all_res, seq, name):
-    outcomes = utils.default_trackers(prev=False)
+    outcomes = utils.default_trackers(prev=False, rate=False)
     width = 0.15 if seq else 0.35
     figs = sc.odict()
     scale = 1e1 # scales for formatting
@@ -193,7 +193,7 @@ def get_costeff(results):
     :param results:
     :return:
     """
-    outcomes = utils.default_trackers(prev=False)
+    outcomes = utils.default_trackers(prev=False, rate=False)
     costeff = sc.odict()
     zero = results.pop(0)
     base = results.pop(0)

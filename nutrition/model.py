@@ -11,7 +11,6 @@ class Model(sc.prettyobj):
         self.prog_info = sc.dcp(prog_info)
         self.ss = settings.Settings()
 
-        self.monthly_births = None
         self.t = t if t else self.ss.t
         self.all_years = np.arange(0, self.t[1]-self.t[0]+1)
         self.n_years = len(self.all_years)
@@ -56,24 +55,36 @@ class Model(sc.prettyobj):
 
     def _set_trackers(self):
         """ Arrays to store annual outputs """
-        for tracker in default_trackers():
+        for tracker in default_trackers() + ['annual_births']:
             arr = np.zeros(self.n_years)
             setattr(self, tracker, arr)
 
     def _track_outcomes(self):
+        # children
         oldest = self.children.age_groups[-1]
-        self.thrive[self.year] += oldest.num_notstunted() * oldest.ageingRate
-        self.stunted[self.year] += oldest.num_stunted() * oldest.ageingRate
-        self.wasted[self.year] += sum(oldest.num_wasted(cat) for cat in self.ss.wasted_list) * oldest.ageingRate
+        rate = oldest.ageingRate
+        self.thrive[self.year] += oldest.num_notstunted() * rate
+        self.stunted[self.year] += oldest.num_stunted() * rate
+        self.wasted[self.year] += sum(oldest.num_wasted(cat) for cat in self.ss.wasted_list) * rate
+        self.child_anaemic[self.year] += oldest.num_anaemic() * rate
+        # pw
+        self.pw_anaemic[self.year] += self.pw.num_anaemic()
+        # nonpw
+        self.nonpw_anaemic[self.year] += self.nonpw.num_anaemic()
 
     def _track_prevs(self):
         """ Tracks the prevalences of conditions over time.
          Begins at baseline year so that all scenario prevalences begin at the same point """
-        self.stunting_prev[self.year] = self.children.frac_stunted()
-        self.wasting_prev[self.year] = self.children.frac_risk('wast')
+        self.stunted_prev[self.year] = self.children.frac_stunted()
+        self.wasted_prev[self.year] = self.children.frac_risk('wast')
         self.child_anaemprev[self.year] = self.children.frac_risk('an')
         self.pw_anaemprev[self.year] = self.pw.frac_risk('an')
         self.nonpw_anaemprev[self.year] = self.nonpw.frac_risk('an')
+
+    def _track_rates(self):
+        """ Calculates mortality rates per 1000 births """
+        self.child_mortrate += 1000 * sum(self.child_deaths) / sum(self.annual_births)
+        self.pw_mortrate[self.year] += 1000 * sum(self.pw_deaths) / sum(self.annual_births)
 
     def _set_pop_probs(self, year):
         init_cov = self.prog_info.get_ann_covs(year-1)
@@ -405,7 +416,7 @@ class Model(sc.prettyobj):
         # restratify stunting and wasting
         newBorns = self.children.age_groups[0]
         # add births to population size
-        newBorns.pop_size += self.monthly_births
+        newBorns.pop_size += self.annual_births[self.year] * self.ss.timestep
         # get stunting and wasting distributions for each birth outcome.
         restratifiedStuntingAtBirth = {}
         restratifiedWastingAtBirth = {}
@@ -483,7 +494,7 @@ class Model(sc.prettyobj):
         """ Set monthly number of births """
         numbirths = self.pw.proj['Number of births'][self.year]
         adj_births = numbirths * (1. - self.nonpw.get_pregav())
-        self.monthly_births = adj_births * self.ss.timestep
+        self.annual_births[self.year] = adj_births
 
     def _applyPrevTimeTrends(self): # TODO: haven't done mortality yet
         for age_group in self.children.age_groups:

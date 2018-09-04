@@ -1,5 +1,5 @@
 import nutrition.ui as nu
-import sciris.core as sc
+import sciris as sc
 
 # load in data to create model
 p = nu.Project('eg')
@@ -25,4 +25,4 @@ scen_list = nu.make_scens([kwargs1, kwargs2, kwargs3])
 p.add_scens(scen_list)
 p.run_scens()
 p.plot()
-p.get_costeff()
+# p.get_costeff()
