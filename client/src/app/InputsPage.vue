@@ -21,7 +21,7 @@ Last update: 2018-08-02
 
     <div v-else>
       <div v-if="sheetNames">
-        <!--<div>-->
+        <div class="card">
           <help reflink="inputs" label="Edit input data"></help>
           <div v-for="name in sheetNames" style="display:inline-block; padding-right:10px">
             <div v-if="name===activeSheet">
@@ -37,7 +37,7 @@ Last update: 2018-08-02
           <!--Placeholder for {{ this.activeScreen }} input table<br><br>-->
 
           <!--<div style="flex-grow: 1; max-width: 90vh; overflow-x: scroll;">-->
-        <div style="display: inline-block">
+        <div style="display: inline-block; max-width: 90vw; max-height: 90vh; overflow: auto;">
             <table class="table table-bordered table-hover table-striped" style="width: 100%">
               <tr v-for="rowData in sheetTables[activeSheet]">
                 <td v-for="cellDict in rowData">
@@ -63,7 +63,7 @@ Last update: 2018-08-02
           </div>
           <br>
         </div>
-      <!--</div>-->
+      </div>
     </div>
 
   </div>
