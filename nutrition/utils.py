@@ -59,12 +59,11 @@ def default_trackers(prev=None, rate=None):
 
 def pretty_labels(direction=False):
     """
-    Prettifies the variable names
+    Prettifies the variable names.
+    Note that the order of pretty must match the order returned by default_trackers().
     :param direction: Include max/min of the objective
     :return:
     """
-    # pretty must correspond to the labels in 'default_trackers'
-
     if direction:
         # for use in weighted objective
         pretty = [
