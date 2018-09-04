@@ -212,11 +212,17 @@ def get_costeff(parents, children):
                 else:
                     costimpact = totalspend / impact
                     costimpact = round(costimpact, 2)
-                    # format # todo: fix this formatting
-                    if costimpact > 0:
-                        costimpact = '${} per additional case'.format(costimpact)
-                    elif costimpact < 0:
-                        costimpact = '${} per case averted'.format(costimpact * -1)
+                    # format
+                    if out == 'thrive': # thrive should increase
+                        if costimpact < 0:
+                            costimpact = 'negative impact'
+                        else:
+                            costimpact = '${} per additional case'.format(costimpact)
+                    else: # all other outcomes should be negative
+                        if costimpact > 0:
+                            costimpact = 'negative impact'
+                        else:
+                            costimpact = '${} per case averted'.format(costimpact * -1)
                 costeff[parent.name][child.name][pretty[i]] = costimpact
     return costeff
 
