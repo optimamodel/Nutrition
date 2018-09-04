@@ -366,6 +366,11 @@ def get_sheet_data(project_id, key=None, online=True):
     sheetdata = sc.odict()
     for sheet in sheets:
         sheetdata[sheet] = wb.readcells(sheetname=sheet, header=False)
+    # Figure out what parts of sheets should be parsed
+    # Define formatting for header, fixed, editable
+    # Package in a way that can work
+    # Loop over in frontend
+    # Define conditionals correctly
     return sheetdata
 
 
