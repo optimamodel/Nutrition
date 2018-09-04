@@ -36,15 +36,22 @@ Last update: 2018-08-02
 
           <!--Placeholder for {{ this.activeScreen }} input table<br><br>-->
 
-          <div class="divTable">
-            <div class="divTableRow" v-for="rowData in sheetTables[activeSheet]">
-              <div class="divRowContent" v-for="cellDict in rowData">hi
-                <input type="text"
-                       class="txbox"
-                       style="text-align: right"
-                       v-model="cellDict.value"/>
-              </div>
-            </div>
+          <div style="flex-grow: 1; max-width: 90vh; overflow-x: scroll;">
+            <table class="table table-bordered table-hover table-striped" style="width: 100%">
+              <tr v-for="rowData in sheetTables[activeSheet]">
+                <td v-for="cellDict in rowData">
+                  <div v-if="cellDict.format==='edit'">
+                    <input type="text"
+                           class="txbox"
+                           style="text-align: right"
+                           v-model="cellDict.value"/>
+                  </div>
+                  <div v-else>
+                    {{ cellDict.value }}
+                  </div>
+                </td>
+              </tr>
+            </table>
           </div>
 
           <div>
