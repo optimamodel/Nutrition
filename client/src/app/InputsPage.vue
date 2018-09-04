@@ -34,27 +34,27 @@ Last update: 2018-08-02
           </div>
           <br><br>
 
-          <!--Placeholder for {{ this.activeScreen }} input table<br><br>-->
-
-          <!--<div style="flex-grow: 1; max-width: 90vh; overflow-x: scroll;">-->
-        <div style="display: inline-block; max-width: 90vw; max-height: 90vh; overflow: auto;">
+          <div class="icantbelieveitsnotexcel">
             <table class="table table-bordered table-hover table-striped" style="width: 100%;">
               <tr v-for="rowData in sheetTables[activeSheet]" style="height:30px">
-                <td v-for="cellDict in rowData" style="border: 1px solid #ccc; margin:0; padding:0">
-                  <div v-if="cellDict.format==='edit'">
+                <td v-for="cellDict in rowData" style="border: 1px solid #ccc;">
+                  <div v-if="cellDict.format==='head'" class="cell c_head"><div class="cellpad">{{ cellDict.value }}</div></div>
+                  <div v-if="cellDict.format==='name'" class="cell c_name"><div class="cellpad">{{ cellDict.value }}</div></div>
+                  <!--<div v-if="cellDict.format==='calc'" class="cell c_calc"><div class="cellpad">{{ cellDict.value }}</div></div>-->
+                  <div v-if="cellDict.format==='blnk'" class="cell c_blnk"><div class="cellpad">{{ cellDict.value }}</div></div>
+                  <div v-if="cellDict.format==='edit'" class="cell c_edit"><div class="cellpad">
+                      <input type="text"
+                             class="txbox"
+                             style="text-align: right"
+                             v-model="cellDict.value"/>
+                    </div>
+                  </div>
+                  <div v-if="cellDict.format==='calc'" class="cell c_calc"><div class="cellpad">
                     <input type="text"
                            class="txbox"
                            style="text-align: right"
-                           v-model="cellDict.value"/>
+                           v-model="cellDict.value" disabled/>
                   </div>
-                  <div v-if="cellDict.format==='calc'" style="display:inline-flex; background-color:#aaa; justify-content:flex-end; align-items:center; height:100%; width:100%">
-                    {{ cellDict.value }}
-                  </div>
-                  <div v-if="cellDict.format==='head'" style="font-weight:bold">
-                    {{ cellDict.value }}
-                  </div>
-                  <div v-if="cellDict.format==='name'" style="">
-                    {{ cellDict.value }}
                   </div>
                 </td>
               </tr>
@@ -167,4 +167,46 @@ Last update: 2018-08-02
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss" scoped>
+  .icantbelieveitsnotexcel {
+    display:inline-block;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: auto;
+  }
+
+  .cell {
+    display:inline-flex;
+    align-items:center;
+    height:100%;
+    width:100%;
+    justify-content:flex-end;
+    text-align:right;
+  }
+
+  .cellpad {
+    padding:5px
+  }
+
+  .c_head {
+    background-color: #fafafa;
+    font-weight:bold
+  }
+
+  .c_name {
+    background-color:#fafafa;
+  }
+
+  .c_edit {
+    background-color: rgb(168, 237, 154);
+    justify-content:flex-end;
+  }
+
+  .c_calc {
+    background-color:#aaa;
+    justify-content:flex-end;
+  }
+
+  .c_blnk {
+    background-color:#fafafa;
+  }
 </style>
