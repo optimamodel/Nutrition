@@ -45,7 +45,6 @@ Last update: 2018-08-02
                        v-model="cellDict.value"/>
               </td>
             </tr>
-            </tbody>
           </table>
 
           <div>
