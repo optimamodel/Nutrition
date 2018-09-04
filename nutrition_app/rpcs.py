@@ -489,11 +489,6 @@ def get_sheet_data(project_id, key=None, online=True):
                 sheetjson[sheet][r].append(cellinfo)
     
     sheetjson = sw.sanitize_json(sheetjson)
-    # Figure out what parts of sheets should be parsed
-    # Define formatting for header, fixed, editable
-    # Package in a way that can work
-    # Loop over in frontend
-    # Define conditionals correctly
     return {'names':sheets, 'tables':sheetjson}
 
 

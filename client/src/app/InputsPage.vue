@@ -38,16 +38,22 @@ Last update: 2018-08-02
 
           <!--<div style="flex-grow: 1; max-width: 90vh; overflow-x: scroll;">-->
         <div style="display: inline-block; max-width: 90vw; max-height: 90vh; overflow: auto;">
-            <table class="table table-bordered table-hover table-striped" style="width: 100%; border: 1px solid">
-              <tr v-for="rowData in sheetTables[activeSheet]" style="border: 1px solid; height:30px">
-                <td v-for="cellDict in rowData" style="border: 1px solid">
+            <table class="table table-bordered table-hover table-striped" style="width: 100%;">
+              <tr v-for="rowData in sheetTables[activeSheet]" style="height:30px">
+                <td v-for="cellDict in rowData" style="border: 1px solid #ccc; margin:0; padding:0">
                   <div v-if="cellDict.format==='edit'">
                     <input type="text"
                            class="txbox"
                            style="text-align: right"
                            v-model="cellDict.value"/>
                   </div>
-                  <div v-else>
+                  <div v-if="cellDict.format==='calc'" style="display:inline-flex; background-color:#aaa; justify-content:flex-end; align-items:center; height:100%; width:100%">
+                    {{ cellDict.value }}
+                  </div>
+                  <div v-if="cellDict.format==='head'" style="font-weight:bold">
+                    {{ cellDict.value }}
+                  </div>
+                  <div v-if="cellDict.format==='name'" style="">
                     {{ cellDict.value }}
                   </div>
                 </td>
