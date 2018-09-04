@@ -38,9 +38,9 @@ Last update: 2018-08-02
 
           <!--<div style="flex-grow: 1; max-width: 90vh; overflow-x: scroll;">-->
         <div style="display: inline-block; max-width: 90vw; max-height: 90vh; overflow: auto;">
-            <table class="table table-bordered table-hover table-striped" style="width: 100%">
-              <tr v-for="rowData in sheetTables[activeSheet]">
-                <td v-for="cellDict in rowData">
+            <table class="table table-bordered table-hover table-striped" style="width: 100%; border: 1px solid">
+              <tr v-for="rowData in sheetTables[activeSheet]" style="border: 1px solid; height:30px">
+                <td v-for="cellDict in rowData" style="border: 1px solid">
                   <div v-if="cellDict.format==='edit'">
                     <input type="text"
                            class="txbox"

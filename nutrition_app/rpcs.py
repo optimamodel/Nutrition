@@ -481,7 +481,11 @@ def get_sheet_data(project_id, key=None, online=True):
         for r in range(rows):
             sheetjson[sheet].append([])
             for c in range(cols):
-                cellinfo = {'format':sheetformat[sheet][r][c], 'value':sheetdata[sheet][r][c]}
+                cellformat = sheetformat[sheet][r][c]
+                cellval = sheetdata[sheet][r][c]
+                if sc.isnumber(cellval):
+                    cellval = sc.sigfig(cellval, sigfigs=3, sep=',')
+                cellinfo = {'format':cellformat, 'value':cellval}
                 sheetjson[sheet][r].append(cellinfo)
     
     sheetjson = sw.sanitize_json(sheetjson)
