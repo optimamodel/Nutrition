@@ -102,8 +102,6 @@ Last update: 2018-09-02
            :clickToClose="clickToClose"
            :transition="transition">
 
-      <div style="min-width:1500px">
-        fuckyoufukcyoufuckyou
       <div class="dialog-content">
         <div class="dialog-c-title" v-if="addEditModal.mode=='add'">
           Add optimization
@@ -179,7 +177,6 @@ Last update: 2018-09-02
         </div>
       </div>
 
-      </div>
     </modal>
     <!-- END ADD-OPTIM MODAL -->
 

@@ -102,13 +102,13 @@ def pretty_labels(direction=False):
             'Pregnant women mortality rate'
         ]
     labs = sc.odict(zip(default_trackers(), pretty))
-    labs['Baseline'] = 'Est. spending \n baseline year' # this is for allocation
     return labs
 
 def relabel(old, direction=False):
     """ Can be given a string or a list of strings.
     Will return corresponding pretty label as a string or a list of strings """
     pretty = pretty_labels(direction=direction)
+    pretty['Baseline'] = 'Est. spending \n baseline year' # this is for allocation
     if isinstance(old, list):
         new = []
         for lab in old:

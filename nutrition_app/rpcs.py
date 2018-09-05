@@ -717,30 +717,16 @@ def run_scens(project_id, online=True, doplot=True):
 ### Optimization functions and RPCs
 ##################################################################################
 
-def objective_mapping():
-    output = [
-        'Number of child deaths',
-        'Number of stunted children',
-        'Wasting prevalence',
-        'Stunting prevalence',
-        'Child anaemia prevalence',
-        'Maternal anaemia prevalence',
-        'Maternal deaths',
-        'Child mortality rate',
-        'Maternal mortality rate',
-        '<Placeholder>',
-        ]
-    return output
-
 
 def py_to_js_optim(py_optim, proj, key=None, default_included=False):
     ''' Convert a Python to JSON representation of an optimization '''
+    obj_labels = nu.pretty_labels(direction=True).values()
     prog_names = proj.dataset().prog_names()
     js_optim = {}
     attrs = ['name', 'model_name', 'mults', 'add_funds', 'fix_curr', 'filter_progs']
     for attr in attrs:
         js_optim[attr] = getattr(py_optim, attr) # Copy the attributes into a dictionary
-    weightslist = [{'label':item[0], 'weight':item[1]} for item in zip(objective_mapping(), py_optim.weights)]
+    weightslist = [{'label':item[0], 'weight':item[1]} for item in zip(obj_labels, py_optim.weights)]
     js_optim['weightslist'] = weightslist
     js_optim['spec'] = []
     for prog_name in prog_names:
@@ -749,6 +735,7 @@ def py_to_js_optim(py_optim, proj, key=None, default_included=False):
         this_spec['name'] = prog_name
         this_spec['included'] = is_included(py_optim.prog_set, program, default_included)
         js_optim['spec'].append(this_spec)
+    js_optim['objective_options'] = obj_labels # Not modified but used on the FE
     return js_optim
     
     
@@ -822,7 +809,6 @@ def get_default_optim(project_id):
     proj = load_project(project_id, raise_exception=True)
     py_optim = proj.demo_optims(doadd=False)[0]
     js_optim = py_to_js_optim(py_optim, proj, default_included=True)
-    js_optim['objective_options'] = objective_mapping()
     print('Created default JavaScript optimization:')
     sc.pp(js_optim)
     return js_optim
