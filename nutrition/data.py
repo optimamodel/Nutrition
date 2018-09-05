@@ -319,12 +319,10 @@ class InputData(object):
 
     def get_proj(self):
         # drops rows with any na
-        proj = self.spreadsheet.parse(sheet_name='Demographic projections', index_col=[0]).dropna(how='any')
+        proj = utils.read_sheet(self.spreadsheet, 'Demographic projections', cols=[0], dropna='any')
         # dict of lists to support indexing
-        print('TEMPPPP')
         for column in proj:
             self.proj[column] = proj[column].tolist()
-            print(self.proj[column])
         # wra pop projections list in increasing age order
         for age in self.settings.wra_ages:
             self.wra_proj.append(proj[age].tolist())
@@ -364,7 +362,7 @@ class InputData(object):
         self.risk_dist['Breastfeeding'] = dist.loc['Breastfeeding'].to_dict()
 
     def get_time_trends(self):
-        trends = self.spreadsheet.parse(sheet_name='Time trends', index_col=[0,1])
+        trends = utils.read_sheet(self.spreadsheet, 'Time trends', cols=[0,1], dropna=False)
         self.time_trends['Stunting'] = trends.loc['Stunting prevalence (%)'].loc['Children 0-59 months'].values.tolist()[:1]
         self.time_trends['Wasting'] = trends.loc['Wasting prevalence (%)'].loc['Children 0-59 months'].values.tolist()[:1]
         self.time_trends['Anaemia'] = trends.loc['Anaemia prevalence (%)'].values.tolist()[:3] # order is (children, PW, WRA)

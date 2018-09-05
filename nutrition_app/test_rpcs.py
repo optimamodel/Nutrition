@@ -24,9 +24,9 @@ def heading(string):
     return None
 
 if 'spreadsheet_io' in torun or runall:
-    filename = 'nutrition_test_good.xlsx'
+    filename = 'nutrition_test.xlsx'
     proj = nu.demo()
-#    proj.dataset().input_sheet.openpyxl().save(filename)
+    proj.dataset().input_sheet.openpyxl().save(filename)
     proj.dataset().load(filename, recalc=True)
 
 

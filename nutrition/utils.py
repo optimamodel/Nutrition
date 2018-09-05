@@ -93,8 +93,11 @@ def relabel(old):
         new = old
     return new
 
-def read_sheet(spreadsheet, name, cols=None, dict_orient=None, skiprows=None, to_odict=False):
-    df = spreadsheet.parse(name, index_col=cols, skiprows=skiprows).dropna(how='all')
+def read_sheet(spreadsheet, name, cols=None, dict_orient=None, skiprows=None, to_odict=False, dropna=None):
+    if dropna is None: dropna = 'all'
+    df = spreadsheet.parse(name, index_col=cols, skiprows=skiprows)
+    if dropna:
+        df = df.dropna(how=dropna)
     if dict_orient:
         df = df.to_dict(dict_orient)
     elif to_odict:
