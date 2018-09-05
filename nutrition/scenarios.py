@@ -21,6 +21,29 @@ class Scen(sc.prettyobj):
     def get_attr(self):
         return self.__dict__
 
+    def get_childscens(self, base_progset=None):
+        """ For calculating the impacts of each scenario with single intervention set to 0 coverage """
+        cov = [0]
+        allkwargs = []
+        # zero cov scen
+        baseprogs = base_progset if base_progset is not None else self.prog_set
+        kwargs = {'name': 'Zero cov',
+                  'model_name': self.model_name,
+                  'scen_type': self.scen_type,
+                  'progvals': {prog: cov for prog in baseprogs}}
+        allkwargs.append(kwargs)
+        # scale down each program to 0 individually
+        progvals = {prog: val for prog, val in zip(self.prog_set, self.vals)}
+        for prog in self.prog_set:
+            new_progvals = sc.dcp(progvals)
+            new_progvals[prog] = cov
+            kwargs = {'name': prog,
+                      'model_name': self.model_name,
+                      'scen_type': self.scen_type,
+                      'progvals': new_progvals}
+            allkwargs.append(kwargs)
+        return allkwargs
+
 def run_scen(scen, model, obj=None, mult=None, setcovs=True):
     """ Function to run associated Scen and Model objects """
     model = sc.dcp(model)
