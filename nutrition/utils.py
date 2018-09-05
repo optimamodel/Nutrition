@@ -21,25 +21,107 @@ def optimafolder(subfolder=None):
 # ##############################################################################
 #
 
-def default_trackers(prev=None):
-    """ Prevalence tracker names MUST contains the string 'prev' """
+def default_trackers(prev=None, rate=None):
+    """
+    The names of model outcomes that are tracked. The order of this list is important, so alter with caution.
+    :param prev: return just prev (True) or everything else (False) or the entire list (None)
+    :param rate: return just rates (True) or everything else (False) or the entire list (None)
+    :return: a list of outcome variable names
+    """
     outcomes = [
-        'stunting_prev',
-        'wasting_prev',
-        'child_anaemprev',
-        'pw_anaemprev',
-        'nonpw_anaemprev',
-        'child_deaths',
-        'pw_deaths',
         'thrive',
+        'child_deaths',
         'stunted',
-        'wasted']
+        'wasted',
+        'child_anaemic',
+        'stunted_prev',
+        'wasted_prev',
+        'child_anaemprev',
+        'pw_deaths',
+        'pw_anaemic',
+        'pw_anaemprev',
+        'nonpw_anaemic',
+        'nonpw_anaemprev',
+        'child_mortrate',
+        'pw_mortrate'
+    ]
     if prev is not None:
         if prev:
             outcomes = [out for out in outcomes if 'prev' in out]
         else:
             outcomes = [out for out in outcomes if 'prev' not in out]
+    if rate is not None:
+        if rate:
+            outcomes = [out for out in outcomes if 'rate' in out]
+        else:
+            outcomes = [out for out in outcomes if 'rate' not in out]
     return outcomes
+
+def pretty_labels(direction=False):
+    """
+    Prettifies the variable names.
+    Note that the order of pretty must match the order returned by default_trackers().
+    :param direction: Include max/min of the objective
+    :return:
+    """
+    if direction:
+        # for use in weighted objective
+        pretty = [
+            'Maximize the number of alive, non-stunted children',
+            'Minimize the number of child deaths',
+            'Minimize the number of stunted children',
+            'Minimize the number of wasted children',
+            'Minimize the number of anaemic children',
+            'Minimize the prevalence of stunting in children',
+            'Minimize the prevalence of wasting in children',
+            'Minimize the prevalence of anaemia in children',
+            'Minimize the number of pregnant women deaths',
+            'Minimize the number of anaemic pregnant women',
+            'Minimize the prevalence of anaemia in pregnant women',
+            'Minimize the number of anaemic non-pregnant women',
+            'Minimize the prevalence of anaemia in non-pregnant women',
+            'Minimize child mortality rate',
+            'Minimize pregnant women mortality rate'
+        ]
+    else:
+        pretty = [
+            'Number of alive, non-stunted children',
+            'Number of child deaths',
+            'Number of stunted children',
+            'Number of wasted children',
+            'Number of anaemic children',
+            'Prevalence of stunting in children',
+            'Prevalence of wasting in children',
+            'Prevalence of anaemia in children',
+            'Number of pregnant women deaths',
+            'Number of anaemic pregnant women',
+            'Prevalence of anaemia in pregnant women',
+            'Number of anaemic non-pregnant women',
+            'Prevalence of anaemia in non-pregnant women',
+            'Child mortality rate',
+            'Pregnant women mortality rate'
+        ]
+    labs = sc.odict(zip(default_trackers(), pretty))
+    labs['Baseline'] = 'Est. spending \n baseline year' # this is for allocation
+    return labs
+
+def relabel(old, direction=False):
+    """ Can be given a string or a list of strings.
+    Will return corresponding pretty label as a string or a list of strings """
+    pretty = pretty_labels(direction=direction)
+    if isinstance(old, list):
+        new = []
+        for lab in old:
+            try:
+                new.append(pretty[str(lab)])  # do not allow indexing
+            except:
+                new.append(lab)
+    else:
+        try:
+            new = pretty[str(old)] # do not allow indexing
+        except:
+            new = old
+    return new
 
 def get_obj_sign(obj):
     max_obj = ['thrive']
@@ -70,28 +152,6 @@ def get_weights(obj):
         return obj
     else:
         raise Exception("ERROR: cannot get weights for this object type")
-
-def pretty_labels():
-    labs = sc.odict()
-    labs['thrive'] = 'Number of alive, non-stunted children'
-    labs['stunting_prev'] = 'Prevalence of stunting in children'
-    labs['child_deaths'] = 'Child deaths'
-    labs['pw_deaths'] = 'Pregnant women deaths'
-    labs['child_anaemprev'] = 'Prevalence of anaemia in children'
-    labs['pw_anaemprev'] = 'Prevalence of anaemia in pregnant women'
-    labs['nonpw_anaemprev'] = 'Prevalence of anaemia in non-pregnant women'
-    labs['wasting_prev'] = 'Prevalence of wasting in children'
-    labs['Baseline'] = 'Est. spending \n baseline year' # this is for allocation
-    return labs
-
-def relabel(old):
-    """ Turn a variable label into a user-friendly version """
-    labs = pretty_labels()
-    try:
-        new = labs[str(old)] # do not allow indexing
-    except:
-        new = old
-    return new
 
 def read_sheet(spreadsheet, name, cols=None, dict_orient=None, skiprows=None, to_odict=False, dropna=None):
     if dropna is None: dropna = 'all'
