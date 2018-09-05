@@ -67,11 +67,9 @@ if 'optim_io' in torun or runall:
 if 'run_scenarios' in torun or runall:
     doplot = True
     proj = nu.demo(scens=True)
-    proj = rpcs.run_optim(proj, 'placeholder_ID', online=False)
-    if doplot:
-        output = rpcs.plot_optimization(proj, proj.results.keys()[-1], online=False)
-        print('Output:')
-        sc.pp(output)
+    output = rpcs.run_scens(proj, online=False)
+    sc.pp(output)
+
 
 if 'run_optimization' in torun or runall:
     doplot = True

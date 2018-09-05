@@ -103,9 +103,6 @@ def read_sheet(spreadsheet, name, cols=None, dict_orient=None, skiprows=None, to
     elif to_odict:
         df = df.to_dict(into=sc.odict)
     sc.blank()
-    print('HIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII')
-    print(name)
-    print(df)
     return df
 
 def scale_alloc(free, allocation):
