@@ -193,41 +193,53 @@ def plot_alloc(results, optim):
     figs['alloc'] = fig
     return figs
 
-def get_costeff(results):
+def get_costeff(parents, children, baselines):
     """
     Calculates the cost per impact of a scenario.
     (Total money spent on all programs (baseline + new) ) / (scneario outcome - zero cov outcome)
-    :param results:
-    :return:
+    :return: 3 levels of nested odicts, with keys (scen name, child name, pretty outcome) and value of type string
     """
     outcomes = utils.default_trackers(prev=False, rate=False)
+    pretty = utils.relabel(outcomes)
     costeff = sc.odict()
-    zero = results.pop(0)
-    base = results.pop(0)
-    baseallocs = base.get_allocs(ref=False)
-    zeroouts = zero.get_outputs(outcomes)
-    for result in results + [zero]:
-        costeff[result.name] = sc.odict()
-        allocs = result.get_allocs(ref=False)
+    for i, parent in enumerate(parents):
+        baseline = baselines[i]
+        costeff[parent.name] = sc.odict()
+        par_outs = parent.get_outputs(outcomes)
+        allocs = parent.get_allocs(ref=False)
+        baseallocs = baseline.get_allocs(ref=False)
         filteredbase = sc.odict({prog:spend for prog, spend in baseallocs.iteritems() if prog not in allocs})
         if any(filteredbase): # not empty
             totalspend = sum(sum(allocs.values())) + sum(sum(filteredbase.values()))
         else:
             totalspend = sum(sum(allocs.values()))
-        outputs = result.get_outputs(outcomes)
-        for i, out in enumerate(outcomes):
-            impact = outputs[i] - zeroouts[i]
-            if abs(impact) < 1e-3:
-                costimpact = 'no impact'
-            else:
-                costimpact = totalspend / impact
-                costimpact = round(costimpact, 2)
-                # format
-                if costimpact > 0:
-                    costimpact = '${} per additional case'.format(costimpact)
-                elif costimpact < 0:
-                    costimpact = '${} per case averted'.format(costimpact*-1)
-            costeff[result.name][out] = costimpact
+        thesechildren = children[parent.name]
+        for j, child in enumerate(thesechildren):
+            if j > 0: # i.e. scenarios with individual scale-downs
+                # only want spending on individual program in parent scen
+                progspend = allocs[child.name]
+                totalspend = sum(progspend)
+            costeff[parent.name][child.name] = sc.odict()
+            child_outs = child.get_outputs(outcomes)
+            for k, out in enumerate(outcomes):
+                impact = par_outs[k] - child_outs[k]
+                if abs(impact) < 1e-3:
+                    costimpact = 'no impact'
+                else:
+                    costimpact = totalspend / impact
+                    costimpact = round(costimpact, 2)
+                    # format
+                    if out == 'thrive': # thrive should increase
+                        if costimpact < 0:
+                            costimpact = 'negative impact'
+                        else:
+                            costimpact = '${} per additional case'.format(costimpact)
+                    else: # all other outcomes should be negative
+                        if costimpact > 0:
+                            costimpact = 'negative impact'
+                        else:
+                            costimpact = '${} per case averted'.format(costimpact * -1)
+                costeff[parent.name][child.name][pretty[k]] = costimpact
     return costeff
 
 def round_elements(mylist, dec=1):
