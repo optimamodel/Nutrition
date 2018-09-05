@@ -151,14 +151,9 @@ Last update: 2018-08-30
   import rpcs from '@/services/rpc-service'
   import status from '@/services/status-service'
   import router from '@/router'
-  import help from '@/app/HelpLink.vue'
 
   export default {
     name: 'ProjectsPage',
-
-    components: {
-      help
-    },
 
     data() {
       return {
