@@ -64,7 +64,12 @@ def sanitize(vals, skip=False, forcefloat=False, verbose=True):
             sanival = np.nan
         else:
             try:
-                sanival = float(val)
+                factor = 1.0
+                if sc.isstring(val):
+                    val = val.replace(',','') # Remove commas, if present
+                    val = val.replace('$','') # Remove dollars, if present
+                    # if val.endswith('%'): factor = 0.01 # Scale if percentage has been used -- CK: not used since already converted from percentage
+                sanival = float(val)*factor
             except Exception as E:
                 print('Could not sanitize value "%s": %s; returning nan' % (val, repr(E)))
                 sanival = np.nan
@@ -113,7 +118,6 @@ def save_project(proj, online=True):
     if not online:
         proj.save()
         return None
-    
     
     project_record = load_project_record(proj.uid) # Load the project record matching the UID of the project passed in.
     new_project = sc.dcp(proj) # Copy the project, only save what we want...
@@ -572,6 +576,8 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
         this_spec['name'] = prog_name
         this_spec['included'] = is_included(py_scen.prog_set, program, default_included)
         this_spec['vals'] = []
+        
+        # Calculate values
         if this_spec['included']:
             count += 1
             try:
@@ -582,12 +588,16 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
                 this_spec['vals'].append(None)
         else:
             this_spec['vals'] = [None]*scen_years # WARNING, kludgy way to extract the number of years
-        if js_scen['scen_type'] == 'coverage': # Convert to percentage
-            for y in range(len(this_spec['vals'])):
-                if this_spec['vals'][y] is not None:
-                    this_spec['vals'][y] = round(100*this_spec['vals'][y]) # Enter to the nearest percentage
-        this_spec['base_cov'] = round(program.base_cov*100) # Convert to percentage
-        this_spec['base_spend'] = round(program.base_spend)
+        
+        # Add formatting
+        for y in range(len(this_spec['vals'])):
+            if this_spec['vals'][y] is not None:
+                if js_scen['scen_type'] == 'coverage': # Convert to percentage
+                    this_spec['vals'][y] = str(round(100*this_spec['vals'][y])) # Enter to the nearest percentage
+                elif js_scen['scen_type'] == 'coverage': # Add commas
+                    this_spec['vals'][y] = format(int(round(this_spec['vals'][y])), ',') # Add commas
+        this_spec['base_cov'] = str(round(program.base_cov*100)) # Convert to percentage
+        this_spec['base_spend'] = format(int(round(program.base_spend)), ',')
         js_scen['progvals'].append(this_spec)
         js_scen['t'] = [settings.t[0]+1, settings.t[1]] # First year is baseline year
     return js_scen
