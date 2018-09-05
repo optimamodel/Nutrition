@@ -186,7 +186,7 @@ def plot_alloc(all_res):
     figs['alloc'] = fig
     return figs
 
-def get_costeff(parents, children):
+def get_costeff(parents, children, baselines):
     """
     Calculates the cost per impact of a scenario.
     (Total money spent on all programs (baseline + new) ) / (scneario outcome - zero cov outcome)
@@ -195,18 +195,24 @@ def get_costeff(parents, children):
     outcomes = utils.default_trackers(prev=False, rate=False)
     pretty = utils.relabel(outcomes)
     costeff = sc.odict()
-    for parent in parents:
+    for i, parent in enumerate(parents):
+        baseline = baselines[i]
         costeff[parent.name] = sc.odict()
         par_outs = parent.get_outputs(outcomes)
         allocs = parent.get_allocs(ref=False)
-        totalspend = sum(sum(allocs.values()))
+        baseallocs = baseline.get_allocs(ref=False)
+        filteredbase = sc.odict({prog:spend for prog, spend in baseallocs.iteritems() if prog not in allocs})
+        if any(filteredbase): # not empty
+            totalspend = sum(sum(allocs.values())) + sum(sum(filteredbase.values()))
+        else:
+            totalspend = sum(sum(allocs.values()))
         thesechildren = children[parent.name]
         for child in thesechildren:
             # use the names of the children as key
             costeff[parent.name][child.name] = sc.odict()
             child_outs = child.get_outputs(outcomes)
-            for i, out in enumerate(outcomes):
-                impact = par_outs[i] - child_outs[i]
+            for j, out in enumerate(outcomes):
+                impact = par_outs[j] - child_outs[j]
                 if abs(impact) < 1e-3:
                     costimpact = 'no impact'
                 else:
@@ -223,7 +229,7 @@ def get_costeff(parents, children):
                             costimpact = 'negative impact'
                         else:
                             costimpact = '${} per case averted'.format(costimpact * -1)
-                costeff[parent.name][child.name][pretty[i]] = costimpact
+                costeff[parent.name][child.name][pretty[j]] = costimpact
     return costeff
 
 def round_elements(mylist, dec=1):
