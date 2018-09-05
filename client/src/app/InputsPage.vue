@@ -40,8 +40,7 @@ Last update: 2018-08-02
                 <td v-for="cellDict in rowData" style="border: 1px solid #ccc;">
                   <div v-if="cellDict.format==='head'" class="cell c_head"><div class="cellpad">{{ cellDict.value }}</div></div>
                   <div v-if="cellDict.format==='name'" class="cell c_name"><div class="cellpad">{{ cellDict.value }}</div></div>
-                  <!--<div v-if="cellDict.format==='calc'" class="cell c_calc"><div class="cellpad">{{ cellDict.value }}</div></div>-->
-                  <div v-if="cellDict.format==='blnk'" class="cell c_blnk"><div class="cellpad">{{ cellDict.value }}</div></div>
+                  <div v-if="cellDict.format==='blnk'" class="cell c_blnk"><div class="cellpad"></div></div> <!-- Force empty, even if value -->
                   <div v-if="cellDict.format==='edit'" class="cell c_edit"><div class="cellpad">
                       <input type="text"
                              class="txbox"
