@@ -118,8 +118,10 @@ Last update: 2018-09-02
     <modal name="add-scen"
            height="auto"
            :scrollable="true"
-           :width="auto"
-           :classes="['v--modal', 'vue-dialog']"
+           :width="2000"
+           :minWidth="2000"
+           :maxWidth="2000"
+           :classes="['v--modal', 'vue-dialog', 'grrmodal']"
            :pivot-y="0.3"
            :adaptive="true"
            :clickToClose="clickToClose"
@@ -424,4 +426,13 @@ Last update: 2018-09-02
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+
+  .grrmodal {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: hidden;
+  }
 </style>
