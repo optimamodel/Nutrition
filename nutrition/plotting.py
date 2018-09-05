@@ -207,12 +207,15 @@ def get_costeff(parents, children, baselines):
         else:
             totalspend = sum(sum(allocs.values()))
         thesechildren = children[parent.name]
-        for child in thesechildren:
-            # use the names of the children as key
+        for j, child in enumerate(thesechildren):
+            if j > 0: # i.e. scenarios with individual scale-downs
+                # only want spending on individual program in parent scen
+                progspend = allocs[child.name]
+                totalspend = sum(progspend)
             costeff[parent.name][child.name] = sc.odict()
             child_outs = child.get_outputs(outcomes)
-            for j, out in enumerate(outcomes):
-                impact = par_outs[j] - child_outs[j]
+            for k, out in enumerate(outcomes):
+                impact = par_outs[k] - child_outs[k]
                 if abs(impact) < 1e-3:
                     costimpact = 'no impact'
                 else:
@@ -229,7 +232,7 @@ def get_costeff(parents, children, baselines):
                             costimpact = 'negative impact'
                         else:
                             costimpact = '${} per case averted'.format(costimpact * -1)
-                costeff[parent.name][child.name][pretty[j]] = costimpact
+                costeff[parent.name][child.name][pretty[k]] = costimpact
     return costeff
 
 def round_elements(mylist, dec=1):

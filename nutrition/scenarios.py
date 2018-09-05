@@ -21,19 +21,16 @@ class Scen(sc.prettyobj):
     def get_attr(self):
         return self.__dict__
 
-    def get_childscens(self): # todo: may need to pass in baseline for cost calculation... Pretty sure zero case has to be all programs to 0
+    def get_childscens(self, base_progset=None):
         """ For calculating the impacts of each scenario with single intervention set to 0 coverage """
-        # get the programs
-        # scale each one down to 0 individually
-        # return these to project for processing later
-        # could store like the other scenarios
         cov = [0]
         allkwargs = []
-        # zero cov scen # todo: if this is zero using baseline, then don't define in here...
+        # zero cov scen
+        baseprogs = base_progset if base_progset is not None else self.prog_set
         kwargs = {'name': 'Zero cov',
                   'model_name': self.model_name,
                   'scen_type': self.scen_type,
-                  'progvals': {prog: cov for prog in self.prog_set}} # todo: may need to be baseline progset...
+                  'progvals': {prog: cov for prog in baseprogs}}
         allkwargs.append(kwargs)
         # scale down each program to 0 individually
         progvals = {prog: val for prog, val in zip(self.prog_set, self.vals)}

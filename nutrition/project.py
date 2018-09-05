@@ -372,7 +372,7 @@ class Project(object):
                 res = run_scen(baseline, model)
                 baselines.append(res)
                 # get all the 'child' results for each scenario
-                childkwargs = scen.get_childscens()
+                childkwargs = scen.get_childscens(res.prog_info.base_progset())
                 childscens = make_scens(childkwargs)
                 for child in childscens:
                     res = run_scen(child, model)
