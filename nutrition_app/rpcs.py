@@ -495,16 +495,23 @@ def get_sheet_data(project_id, key=None, online=True):
 @RPC()
 def save_sheet_data(project_id, sheetjson, key=None, online=True):
     proj = load_project(project_id, raise_exception=True, online=online)
+    sheetdata = sheetjson['tables']
     wb = proj.dataset(key).input_sheet
-    for sheet in sheetjson.keys():
-        datashape = np.shape(sheetjson[sheet])
+    for sheet in sheetdata.keys():
+        datashape = np.shape(sheetdata[sheet])
         rows,cols = datashape
+        cells = []
+        vals = []
         for r in range(rows):
             for c in range(cols):
-                cellformat = sheetjson[sheet][r][c]['format']
-                cellval    = sheetjson[sheet][r][c]['value']
+                cellformat = sheetdata[sheet][r][c]['format']
                 if cellformat == 'edit':
-                    wb.writecells(sheetname=sheet, row=r, col=c, vals=cellval, verbose=True)
+                    cellval    = sheetdata[sheet][r][c]['value']
+                    try:    cellval = float(cellval)
+                    except: cellval = str(cellval)
+                    cells.append([r+1,c+1]) # Excel uses 1-based indexing
+                    vals.append(cellval)
+        wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=True)
     proj.dataset(key).load(from_file=False)
     print('Saving project...')
     save_project(proj, online=online)

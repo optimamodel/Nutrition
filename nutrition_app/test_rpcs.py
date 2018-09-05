@@ -24,8 +24,9 @@ def heading(string):
 
 if 'input_io' in torun or runall:
     proj = nu.demo()
-    sheetdata = rpcs.get_sheet_data(proj, online=False)
-    sc.pp(sheetdata)
+    sheetjson = rpcs.get_sheet_data(proj, online=False)
+    rpcs.save_sheet_data(proj, sheetjson=sheetjson, online=False)
+    sc.pp(sheetjson)
 
 
 if 'scen_io' in torun or runall:
