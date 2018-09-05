@@ -221,21 +221,21 @@ def get_costeff(parents, children, baselines):
             for k, out in enumerate(outcomes):
                 impact = par_outs[k] - child_outs[k]
                 if abs(impact) < 1e-3:
-                    costimpact = 'no impact'
+                    costimpact = 'No impact'
                 else:
                     costimpact = totalspend / impact
                     costimpact = round(costimpact, 2)
                     # format
                     if out == 'thrive': # thrive should increase
                         if costimpact < 0:
-                            costimpact = 'negative impact'
+                            costimpact = 'Negative impact'
                         else:
-                            costimpact = '${} per additional case'.format(costimpact)
+                            costimpact = '$%s per additional case' % format(costimpact, ',')
                     else: # all other outcomes should be negative
                         if costimpact > 0:
-                            costimpact = 'negative impact'
+                            costimpact = 'Negative impact'
                         else:
-                            costimpact = '${} per case averted'.format(costimpact * -1)
+                            costimpact = '$%s per case averted' % format(-costimpact, ',')
                 costeff[parent.name][child.name][pretty[k]] = costimpact
     return costeff
 

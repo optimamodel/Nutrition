@@ -87,7 +87,7 @@ Last update: 2018-09-02
       <br>
       <div v-if="table" display="style:inline-block">
         <help reflink="cost-effectiveness" label="Program cost-effectiveness"></help>
-        <div class="calib-graphs" style="display:inline-block">
+        <div class="calib-graphs" style="display:inline-block; text-align:right">
           <table class="table table-bordered table-hover table-striped">
             <thead>
             <tr>
