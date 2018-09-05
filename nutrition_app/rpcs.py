@@ -697,13 +697,11 @@ def run_scens(project_id, online=True, doplot=True):
     costeff = proj.get_costeff()
     table = []
     for i,scenkey,val1 in costeff.enumitems():
-        table.append([])
         for j,progkey,val2 in val1.enumitems():
-            table[-1].append([])
             for k,outkey,cost in val2.enumitems():
-                if i == 0: table[i][j].append([scenkey, '', '', '', ''])
-                if j == 0: table[i][j].append(['', progkey, '', '', ''])
-                table[i][j].append(['', '', outkey, cost])
+                if i == 0: table.append([scenkey, '', '', '', ''])
+                if j == 0: table.append(['', progkey, '', '', ''])
+                table.append(['', '', outkey, cost])
     
     print('Saving project...')
     save_project(proj, online=online)
