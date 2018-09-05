@@ -84,13 +84,30 @@ Last update: 2018-09-02
         </div>
       </div>
 
-      <div class="calib-tables" v-if="table">
-        <h4>Program cost-effectiveness</h4>
-        <table class="table table-striped">
-          <tr v-for="rowdata in table">
-            <td v-for="text in rowdata">{{text}}</td>
-          </tr>
-        </table>
+      <br>
+      <div v-if="table" display="style:inline-block">
+        <help reflink="cost-effectiveness" label="Program cost-effectiveness"></help>
+        <div class="calib-graphs" style="display:inline-block">
+          <table class="table table-bordered table-hover table-striped">
+            <thead>
+            <tr>
+              <th>Scenario</th>
+              <th>Program</th>
+              <th>Outcome</th>
+              <th>ICER</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="rowdata in table">
+              <td v-for="text in rowdata">
+                <span v-if="rowdata[0]!==''" style="font-size: 14px; font-weight:bold">{{text}}</span>
+                <span v-else-if="rowdata[1]!==''" style="font-weight:bold"><b>{{text}}</b></span>
+                <span v-else>{{text}}</span>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
     </div>

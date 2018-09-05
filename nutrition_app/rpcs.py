@@ -699,8 +699,8 @@ def run_scens(project_id, online=True, doplot=True):
     for i,scenkey,val1 in costeff.enumitems():
         for j,progkey,val2 in val1.enumitems():
             for k,outkey,cost in val2.enumitems():
-                if j==0 and k==0: table.append([scenkey, '', '', '', ''])
-                if k==0: table.append(['', progkey, '', '', ''])
+                if j==0 and k==0: table.append([scenkey, '', '', ''])
+                if k==0: table.append(['', progkey, '', ''])
                 table.append(['', '', outkey, cost])
 #                if i == 0: table.append([scenkey, '', '', '', ''])
 #                if j == 0: table.append(['', progkey, '', '', ''])

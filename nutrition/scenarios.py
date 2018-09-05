@@ -27,7 +27,7 @@ class Scen(sc.prettyobj):
         allkwargs = []
         # zero cov scen
         baseprogs = base_progset if base_progset is not None else self.prog_set
-        kwargs = {'name': 'Zero cov',
+        kwargs = {'name': 'Zero coverage',
                   'model_name': self.model_name,
                   'scen_type': self.scen_type,
                   'progvals': {prog: cov for prog in baseprogs}}
