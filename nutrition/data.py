@@ -268,7 +268,7 @@ class DefaultParams(object):
 
 class InputData(object):
     """ Container for all the region-specific data (prevalences, mortality rates etc) read in from spreadsheet"""
-    def __init__(self, data):
+    def __init__(self, data, recalc=False):
         self.spreadsheet = data
         self.settings = settings.Settings()
         self.demo = None
@@ -282,6 +282,7 @@ class InputData(object):
         self.pw_agedist = []
         self.wra_proj = []
         self.t = None
+        self.recalc = recalc # Whether or not to recalculate formulas
 
         self.get_demo()
         self.get_proj()
@@ -351,7 +352,6 @@ class InputData(object):
         # get breastfeeding dist
         dist = utils.read_sheet(self.spreadsheet, 'Breastfeeding distribution', [0,1])
         self.risk_dist['Breastfeeding'] = dist.loc['Breastfeeding'].to_dict()
-        import traceback; traceback.print_exc(); import pdb; pdb.set_trace()
 
     def get_time_trends(self):
         trends = self.spreadsheet.parse(sheet_name='Time trends', index_col=[0,1])
@@ -539,7 +539,7 @@ class Dataset(object):
         output  = sc.prepr(self)
         return output
     
-    def load(self, filepath=None, from_file=True):
+    def load(self, filepath=None, from_file=True, recalc=False):
         if from_file:
             if filepath is None: input_path = settings.data_path(self.country, self.region)
             else:                input_path = filepath
@@ -547,7 +547,7 @@ class Dataset(object):
             self.defaults_sheet = sc.Spreadsheet(filename=settings.default_params_path())
         input_data   = self.input_sheet.pandas()
         default_data = self.defaults_sheet.pandas()
-        self.demo_data = InputData(input_data)
+        self.demo_data = InputData(input_data, recalc=recalc)
         self.default_params = DefaultParams(default_data, input_data)
         self.default_params.compute_risks(self.demo_data)
         self.prog_data = ProgData(input_data, self.default_params)

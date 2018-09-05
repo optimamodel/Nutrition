@@ -9,6 +9,7 @@ from nutrition_app import rpcs, apptasks as apt
 runall = False
 
 torun = [
+#'spreadsheet_io',
 'input_io',
 #'scen_io',
 #'optim_io',
@@ -21,6 +22,13 @@ def heading(string):
     sc.blank()
     sc.colorize('blue', string)
     return None
+
+if 'spreadsheet_io' in torun or runall:
+    filename = 'nutrition_test.xlsx'
+    proj = nu.demo()
+    proj.dataset().input_sheet.openpyxl().save(filename)
+    proj.dataset().load(filename, recalc=True)
+
 
 if 'input_io' in torun or runall:
     proj = nu.demo()
