@@ -168,7 +168,7 @@ def plot_alloc(results, optim):
             valuestr = valuestr[:2]
         xlab = 'Total available budget (relative to US$%sM)' % valuestr
     else:
-        title = 'Av. annual allocation, %s-%s' % (ref.years[0], ref.years[-1])
+        title = 'Average annual spending, %s-%s' % (ref.years[0], ref.years[-1])
         xlab = 'Scenario'
     ax.set_title(title)
     ax.set_xticks(x)
