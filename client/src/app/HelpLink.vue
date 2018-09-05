@@ -36,10 +36,10 @@ Last update: 2018-08-23
 
     data() {
       return {
-        baseURL: 'https://docs.google.com/document/d/1x4Kb3hyB8NwVziE95UhT6bXpO1uRDFxJlN8QxvrLgvg/edit#heading=', 
+        baseURL: 'https://docs.google.com/document/d/1YIsB7kqtd7gRPSZl33dpho4fnp5Fssfp4pF-_-VdFbA/edit#heading=h.4d34og8',
         linkMap: {
-          'create-projects': 'h.wohgolfxe9ko', 
-          'manage-projects': 'h.fcnvzbrouon2'
+//          'create-projects': 'h.wohgolfxe9ko',
+//          'manage-projects': 'h.fcnvzbrouon2'
         }
       }
     },
