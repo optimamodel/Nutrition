@@ -290,6 +290,12 @@ Last update: 2018-09-02
         return (optimSummary.status === 'completed')
       },
 
+      needToPoll(optimSummary) {
+        let routePath = (this.$route.path === '/optimizations')
+        let optimState = true; // ((optimSummary.status === 'queued') || (optimSummary.status === 'started')) // CK: this needs to be given a delay to work
+        return (routePath && optimState)
+      },
+
       getOptimTaskState(optimSummary) {
         console.log('getOptimTaskState() called for with: ' + optimSummary.status)
         let statusStr = '';
@@ -316,17 +322,12 @@ Last update: 2018-09-02
             this.getOptimTaskState(optimSum)
           }
         });
-
-        // Hack to get the Vue display of optimSummaries to update
-        this.optimSummaries.push(this.optimSummaries[0]);
+        this.optimSummaries.push(this.optimSummaries[0]); // Hack to get the Vue display of optimSummaries to update
         this.optimSummaries.pop();
-
-        // Sleep waitingtime seconds. -- WARNING, should make it so this is only called when something changes
-        let waitingtime = 1
+        let waitingtime = 1 // Sleep waitingtime seconds
         utils.sleep(waitingtime * 1000)
           .then(response => {
-            // Only if we are still in the optimizations page, call ourselves.
-            if (this.$route.path === '/optimizations') {
+            if (this.needToPoll()) { // Only if we are still in the optimizations page, call ourselves.
               this.pollAllTaskStates()
             }
           })
