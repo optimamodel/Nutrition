@@ -60,10 +60,10 @@ Last update: 2018-09-02
       <div class="calib-title">
         <help reflink="results-plots" label="Results"></help>
         <div>
-            <button class="btn btn-icon" @click="scaleFigs(0.9)" data-tooltip="Zoom out">&ndash;</button>
-            <button class="btn btn-icon" @click="scaleFigs(1.0)" data-tooltip="Reset zoom"><i class="ti-zoom-in"></i></button>
-            <button class="btn btn-icon" @click="scaleFigs(1.1)" data-tooltip="Zoom in">+</button>
-            &nbsp;&nbsp;&nbsp;
+          <button class="btn btn-icon" @click="scaleFigs(0.9)" data-tooltip="Zoom out">&ndash;</button>
+          <button class="btn btn-icon" @click="scaleFigs(1.0)" data-tooltip="Reset zoom"><i class="ti-zoom-in"></i></button>
+          <button class="btn btn-icon" @click="scaleFigs(1.1)" data-tooltip="Zoom in">+</button>
+          &nbsp;&nbsp;&nbsp;
           <button class="btn" @click="exportGraphs()">Export plots</button>
           <button class="btn" @click="exportResults(projectID)">Export data</button>
         </div>
@@ -72,9 +72,9 @@ Last update: 2018-09-02
       <div class="calib-main" :class="{'calib-main--full': true}">
         <div class="calib-graphs">
           <!--<div class="featured-graphs">-->
-            <!--<div :id="'fig0'">-->
-              <!--&lt;!&ndash;mpld3 content goes here&ndash;&gt;-->
-            <!--</div>-->
+          <!--<div :id="'fig0'">-->
+          <!--&lt;!&ndash;mpld3 content goes here&ndash;&gt;-->
+          <!--</div>-->
           <!--</div>-->
           <div class="other-graphs">
             <div v-for="index in placeholders" :id="'fig'+index" class="calib-graph">
@@ -92,76 +92,77 @@ Last update: 2018-09-02
     <modal name="add-scen"
            height="auto"
            :scrollable="true"
-           :width="900"
+           :width="auto"
            :classes="['v--modal', 'vue-dialog']"
            :pivot-y="0.3"
            :adaptive="true"
            :clickToClose="clickToClose"
            :transition="transition">
 
-      <div class="dialog-content">
-        <div class="dialog-c-title" v-if="addEditModal.mode=='add'">
-          Add scenario
-        </div>
-        <div class="dialog-c-title" v-else>
-          Edit scenario
-        </div>
-        <div class="dialog-c-text">
-          <b>Scenario name:</b><br>
-          <input type="text"
-                 class="txbox"
-                 v-model="addEditModal.scenSummary.name"/><br>
-          <div class="calib-params">
-            <table class="table table-bordered table-hover table-striped" style="width: 100%">
-              <thead>
-              <tr>
-                <th colspan=100><div class="dialog-header">
-                  <span v-if="addEditModal.modalScenarioType==='coverage'">Program coverages (%)</span>
-                  <span v-else>Program spending (US$)</span>
-                </div></th>
-              </tr>
-              <tr>
-                <th>Name</th>
-                <th>Include?</th>
-                <th>2017</th>
-                <th v-for="year in defaultScenYears">{{ year }}</th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr v-for="progvals in this.addEditModal.scenSummary.progvals">
-                <td style="min-width:200px">
-                  {{ progvals.name }}
-                </td>
-                <td style="text-align: center">
-                  <input type="checkbox" v-model="progvals.included"/>
-                </td>
-                <td style="text-align: right">
-                  <span v-if="addEditModal.modalScenarioType==='coverage'">{{ progvals.base_cov }}</span>
-                  <span v-else>                                            {{ progvals.base_spend }}</span>
-                </td>
-                <td v-for="(val, index) in progvals.vals">
-                  <input type="text"
-                         class="txbox"
-                         style="text-align: right"
-                         v-model="progvals.vals[index]"/>
-                </td>
-              </tr>
-              </tbody>
-            </table>
+        <div class="dialog-content">
+          <div class="dialog-c-title" v-if="addEditModal.mode=='add'">
+            Add scenario
+          </div>
+          <div class="dialog-c-title" v-else>
+            Edit scenario
+          </div>
+          <div class="dialog-c-text">
+            <b>Scenario name:</b><br>
+            <input type="text"
+                   class="txbox"
+                   v-model="addEditModal.scenSummary.name"/><br>
+            <div class="calib-params">
+              <table class="table table-bordered table-hover table-striped" style="width: 100%">
+                <thead>
+                <tr>
+                  <th colspan=100><div class="dialog-header">
+                    <span v-if="addEditModal.modalScenarioType==='coverage'">Program coverages (%)</span>
+                    <span v-else>Program spending (US$)</span>
+                  </div></th>
+                </tr>
+                <tr>
+                  <th>Name</th>
+                  <th>Include?</th>
+                  <th>2017</th>
+                  <th v-for="year in defaultScenYears">{{ year }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="progvals in this.addEditModal.scenSummary.progvals">
+                  <td style="min-width:200px">
+                    {{ progvals.name }}
+                  </td>
+                  <td style="text-align: center">
+                    <input type="checkbox" v-model="progvals.included"/>
+                  </td>
+                  <td style="text-align: right">
+                    <span v-if="addEditModal.modalScenarioType==='coverage'">{{ progvals.base_cov }}</span>
+                    <span v-else>                                            {{ progvals.base_spend }}</span>
+                  </td>
+                  <td v-for="(val, index) in progvals.vals">
+                    <input type="text"
+                           class="txbox"
+                           style="text-align: right"
+                           v-model="progvals.vals[index]"/>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div style="text-align:center">
+            <button @click="addScen()" class='btn __green' style="display:inline-block">
+              Save
+            </button>
+            &nbsp;&nbsp;&nbsp;
+            <button @click="$modal.hide('add-scen')" class='btn __red' style="display:inline-block">
+              Cancel
+            </button>
           </div>
         </div>
-        <div style="text-align:center">
-          <button @click="addScen()" class='btn __green' style="display:inline-block">
-            Save
-          </button>
-          &nbsp;&nbsp;&nbsp;
-          <button @click="$modal.hide('add-scen')" class='btn __red' style="display:inline-block">
-            Cancel
-          </button>
-        </div>
-      </div>
 
     </modal>
+
     <!-- END ADD-SCENARIO MODAL -->
 
 
