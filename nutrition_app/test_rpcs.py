@@ -9,8 +9,8 @@ from nutrition_app import rpcs, apptasks as apt
 runall = False
 
 torun = [
-#'spreadsheet_io',
-'input_io',
+'spreadsheet_io',
+#'input_io',
 #'scen_io',
 #'optim_io',
 #'run_optimization',
@@ -24,9 +24,9 @@ def heading(string):
     return None
 
 if 'spreadsheet_io' in torun or runall:
-    filename = 'nutrition_test.xlsx'
+    filename = 'nutrition_test_good.xlsx'
     proj = nu.demo()
-    proj.dataset().input_sheet.openpyxl().save(filename)
+#    proj.dataset().input_sheet.openpyxl().save(filename)
     proj.dataset().load(filename, recalc=True)
 
 

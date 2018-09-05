@@ -321,8 +321,10 @@ class InputData(object):
         # drops rows with any na
         proj = self.spreadsheet.parse(sheet_name='Demographic projections', index_col=[0]).dropna(how='any')
         # dict of lists to support indexing
+        print('TEMPPPP')
         for column in proj:
             self.proj[column] = proj[column].tolist()
+            print(self.proj[column])
         # wra pop projections list in increasing age order
         for age in self.settings.wra_ages:
             self.wra_proj.append(proj[age].tolist())
@@ -344,7 +346,15 @@ class InputData(object):
         # get anaemia
         dist = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0,1], skiprows=12)
         self.risk_dist['Anaemia'] = sc.odict()
-        anaem = dist.loc['Anaemia', 'Prevalence of iron deficiency anaemia'].to_dict()
+        if not self.recalc:
+            anaem = dist.loc['Anaemia', 'Prevalence of iron deficiency anaemia'].to_dict()
+        else:
+            # CK: Spreadsheet recalculation #1
+            all_anaem = dist.loc['Anaemia', 'Prevalence of anaemia'].to_dict()
+            baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs')
+            index = np.array(baseline['Field']).tolist().index('Percentage of anaemia that is iron deficient')
+            iron_pct = np.array(baseline['Data'])[index]
+            anaem = {key:val*iron_pct for key,val in all_anaem.items()}
         for age, prev in anaem.iteritems():
             self.risk_dist['Anaemia'][age] = dict()
             self.risk_dist['Anaemia'][age]['Anaemic'] = prev
