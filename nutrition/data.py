@@ -351,6 +351,7 @@ class InputData(object):
         # get breastfeeding dist
         dist = utils.read_sheet(self.spreadsheet, 'Breastfeeding distribution', [0,1])
         self.risk_dist['Breastfeeding'] = dist.loc['Breastfeeding'].to_dict()
+        import traceback; traceback.print_exc(); import pdb; pdb.set_trace()
 
     def get_time_trends(self):
         trends = self.spreadsheet.parse(sheet_name='Time trends', index_col=[0,1])

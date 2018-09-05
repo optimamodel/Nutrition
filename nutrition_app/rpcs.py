@@ -511,7 +511,9 @@ def save_sheet_data(project_id, sheetjson, key=None, online=True):
                     except: cellval = str(cellval)
                     cells.append([r+1,c+1]) # Excel uses 1-based indexing
                     vals.append(cellval)
-        wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=True)
+        wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=True) # TEMP VERBOSE
+    print('TEMPPPPP')
+    wb.save('foo.xlsx')
     proj.dataset(key).load(from_file=False)
     print('Saving project...')
     save_project(proj, online=online)
