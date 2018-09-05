@@ -9,7 +9,7 @@ for_frontend = True
 if for_frontend:
     legend_loc =      {'bbox_to_anchor':(1.0,1.0)}
     fig_size = (8,3)
-    ax_size = [0.2,0.12,0.40,0.75]
+    ax_size = [0.2,0.18,0.40,0.72]
 else:
     legend_loc = {'loc':'right'}
     ax_size = [0.2,0.10,0.65,0.75]
