@@ -7,8 +7,7 @@ from . import utils
 # Choose where the legend appears: outside right or inside right
 for_frontend = True
 if for_frontend:
-    legend_loc = {'bbox_to_anchor':(1,1.0)}
-    legend_loc_prev = {'loc':'best'} # No idea why this has to be different, but it does
+    legend_loc =      {'bbox_to_anchor':(1.0,1.0)}
     fig_size = (8,3)
     ax_size = [0.2,0.12,0.40,0.75]
 else:
@@ -68,7 +67,7 @@ def plot_prevs(all_res):
         ax.set_ylim([0, ymax + ymax*0.1])
         ax.set_xlabel('Years')
         ax.set_title(utils.relabel(prev))
-        ax.legend(lines, [res.name for res in all_res], **legend_loc_prev)
+        ax.legend(lines, [res.name for res in all_res], **legend_loc)
         figs['prevs_%0i'%i] = fig
     return figs
 
