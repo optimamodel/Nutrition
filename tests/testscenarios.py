@@ -1,6 +1,8 @@
 import nutrition.ui as nu
 import sciris as sc
 
+doplot = False
+
 # load in data to create model
 p = nu.Project('eg')
 p.load_data('demo', 'demo', name='eg')
@@ -24,5 +26,6 @@ kwargs3 = {'name': 'IYCF at $10 mil',
 scen_list = nu.make_scens([kwargs1, kwargs2, kwargs3])
 p.add_scens(scen_list)
 p.run_scens()
-p.plot()
+if doplot:
+    p.plot()
 costeff = p.get_costeff()

@@ -84,6 +84,15 @@ Last update: 2018-09-02
         </div>
       </div>
 
+      <div class="calib-tables" v-if="table">
+        <h4>Program cost-effectiveness</h4>
+        <table class="table table-striped">
+          <tr v-for="rowdata in table">
+            <td v-for="text in rowdata">{{text}}</td>
+          </tr>
+        </table>
+      </div>
+
     </div>
     <!-- END RESULTS CARD -->
 
@@ -194,6 +203,7 @@ Last update: 2018-09-02
         },
         figscale: 1.0,
         hasGraphs: false,
+        table: [],
       }
     },
 
@@ -204,10 +214,10 @@ Last update: 2018-09-02
     },
 
     created() {
-      if (this.$store.state.currentUser.displayname == undefined) { // If we have no user logged in, automatically redirect to the login page.
+      if (this.$store.state.currentUser.displayname === undefined) { // If we have no user logged in, automatically redirect to the login page.
         router.push('/login')
       }
-      else if ((this.$store.state.activeProject.project != undefined) &&
+      else if ((this.$store.state.activeProject.project !== undefined) &&
         (this.$store.state.activeProject.project.hasData) ) {
         console.log('created() called')
         utils.sleep(1)  // used so that spinners will come up by callback func
@@ -376,6 +386,7 @@ Last update: 2018-09-02
           .then(response => {
             rpcs.rpc('run_scens', [this.projectID]) // Go to the server to get the results
               .then(response => {
+                this.table = response.data.table
                 this.makeGraphs(response.data.graphs)
                 status.succeed(this, '') // Success message in graphs function
               })
