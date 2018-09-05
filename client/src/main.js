@@ -50,9 +50,9 @@ Object.defineProperty(Vue.prototype, '$Chartist', {
   }
 })
 
-import utils from '@/services/utils'
-
-Vue.prototype.$utils = utils
+// CK: if we decide we want to do global imputs in future, so we can use e.g. this.$utils.sleep() in the components instead of import utils and then utils.sleep()
+// import utils from '@/services/utils'
+// Vue.prototype.$utils = utils
 
 new Vue({
   el: '#app',
