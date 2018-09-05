@@ -361,7 +361,8 @@ class Project(object):
         parents = []
         baselines = []
         children = sc.odict()
-        for scen in self.scens.itervalues():
+        for s,scen in enumerate(self.scens.values()):
+            print('Running cost-effectiveness scenario %s of %s' % (s+1, len(self.scens)))
             if scen.active:
                 children[scen.name] = []
                 model = self.model(scen.model_name)

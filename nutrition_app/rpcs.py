@@ -675,26 +675,39 @@ def get_default_scen(project_id, scen_type=None):
 
 
 @RPC()
-def run_scens(project_id, online=True):
+def run_scens(project_id, online=True, doplot=True):
     
     print('Running scenarios...')
     proj = load_project(project_id, raise_exception=True, online=online)
-    
     proj.results.clear() # Remove any existing results
     proj.run_scens()
-    figs = proj.plot('scens')
-
+    
+    # Get graphs
     graphs = []
-    for f,fig in enumerate(figs.values()):
-        for ax in fig.get_axes():
-            ax.set_facecolor('none')
-        graph_dict = mpld3.fig_to_dict(fig)
-        graphs.append(graph_dict)
-        print('Converted figure %s of %s' % (f+1, len(figs)))
+    if doplot:
+        figs = proj.plot('scens')
+        for f,fig in enumerate(figs.values()):
+            for ax in fig.get_axes():
+                ax.set_facecolor('none')
+            graph_dict = mpld3.fig_to_dict(fig)
+            graphs.append(graph_dict)
+            print('Converted figure %s of %s' % (f+1, len(figs)))
+        
+    # Get cost-effectiveness table
+    costeff = proj.get_costeff()
+    table = []
+    for i,scenkey,val1 in costeff.enumitems():
+        table.append([])
+        for j,progkey,val2 in val1.enumitems():
+            table[-1].append([])
+            for k,outkey,cost in val2.enumitems():
+                if i == 0: table[i][j].append([scenkey, '', '', '', ''])
+                if j == 0: table[i][j].append(['', progkey, '', '', ''])
+                table[i][j].append(['', '', outkey, cost])
     
     print('Saving project...')
-    save_project(proj, online=online)    
-    return {'graphs':graphs}
+    save_project(proj, online=online)
+    return {'graphs':graphs, 'table':table}
 
 
 
