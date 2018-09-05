@@ -118,7 +118,7 @@ Last update: 2018-09-02
     <modal name="add-scen"
            height="auto"
            :scrollable="true"
-           :width="auto"
+           :width="'90%'"
            :classes="['v--modal', 'vue-dialog', 'grrmodal']"
            :pivot-y="0.3"
            :adaptive="true"
@@ -127,7 +127,7 @@ Last update: 2018-09-02
 
         <div class="dialog-content">
           <div class="dialog-c-title" v-if="addEditModal.mode=='add'">
-            Add scenario???
+            Add scenario
           </div>
           <div class="dialog-c-title" v-else>
             Edit scenario
