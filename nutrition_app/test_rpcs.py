@@ -10,9 +10,10 @@ runall = False
 
 torun = [
 #'spreadsheet_io',
-'input_io',
+#'input_io',
 #'scen_io',
 #'optim_io',
+'run_scenarios',
 #'run_optimization',
 ]
 
@@ -33,7 +34,7 @@ if 'spreadsheet_io' in torun or runall:
 if 'input_io' in torun or runall:
     proj = nu.demo()
     sheetjson = rpcs.get_sheet_data(proj, online=False)
-    rpcs.save_sheet_data(proj, sheetjson=sheetjson, online=False)
+    rpcs.save_sheet_data(proj, sheetdata=sheetjson['tables'], online=False)
     sc.pp(sheetjson)
 
 
@@ -62,6 +63,15 @@ if 'optim_io' in torun or runall:
     heading('Optimization summaries:')
     sc.pp(optim_summaries)
     
+
+if 'run_scenarios' in torun or runall:
+    doplot = True
+    proj = nu.demo(scens=True)
+    proj = rpcs.run_optim(proj, 'placeholder_ID', online=False)
+    if doplot:
+        output = rpcs.plot_optimization(proj, proj.results.keys()[-1], online=False)
+        print('Output:')
+        sc.pp(output)
 
 if 'run_optimization' in torun or runall:
     doplot = True

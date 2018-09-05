@@ -123,11 +123,14 @@ Last update: 2018-08-02
 
       getSheetData() {
         console.log('getSheetData() called')
+        status.start(this, 'Getting data...')
         rpcs.rpc('get_sheet_data', [this.projectID]) // Make the server call to download the framework to a .prj file.
           .then(response => {
             this.sheetNames = response.data.names
             this.sheetTables = response.data.tables
-            this.activeSheet = this.sheetNames[0]
+            if (this.activeSheet === '') {
+              this.activeSheet = this.sheetNames[0]
+            }
             status.succeed(this, 'Data loaded')
           })
           .catch(error => {
@@ -137,6 +140,7 @@ Last update: 2018-08-02
 
       saveSheetData() {
         console.log('saveSheetData() called')
+        status.start(this, 'Saving changes...')
         rpcs.rpc('save_sheet_data', [this.projectID, this.sheetTables]) // Make the server call to download the framework to a .prj file.
           .then(response => {
             status.succeed(this, 'Data saved')

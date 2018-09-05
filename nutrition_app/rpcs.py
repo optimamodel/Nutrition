@@ -187,14 +187,14 @@ def load_current_user_project_summaries():
     return {'projects': map(load_project_summary_from_project_record, project_entries)}# Grab a list of project summaries from the list of prj.ProjectSO objects we just got.
 
 
-@RPC()                
+@RPC()
 def load_all_project_summaries():
     """ Return project summaries for all projects to the client. """ 
     project_entries = prj.proj_collection.get_all_objects() # Get all of the prj.ProjectSO entries.
     return {'projects': map(load_project_summary_from_project_record, project_entries)} # Grab a list of project summaries from the list of prj.ProjectSO objects we just got.
         
         
-@RPC()    
+@RPC()
 def delete_projects(project_ids):
     """ Delete all of the projects with the passed in UIDs. """ 
     for project_id in project_ids: # Loop over the project UIDs of the projects to be deleted...
@@ -520,9 +520,8 @@ def get_sheet_data(project_id, key=None, online=True):
 
 
 @RPC()
-def save_sheet_data(project_id, sheetjson, key=None, online=True):
+def save_sheet_data(project_id, sheetdata, key=None, online=True):
     proj = load_project(project_id, raise_exception=True, online=online)
-    sheetdata = sheetjson['tables']
     wb = proj.dataset(key).input_sheet
     for sheet in sheetdata.keys():
         datashape = np.shape(sheetdata[sheet])
@@ -612,7 +611,7 @@ def js_to_py_scen(js_scen):
     return py_json
     
 
-@RPC()    
+@RPC()
 def get_scen_info(project_id, key=None, online=True):
 
     print('Getting scenario info...')
@@ -629,7 +628,7 @@ def get_scen_info(project_id, key=None, online=True):
     return scenario_summaries
 
 
-@RPC()    
+@RPC()
 def set_scen_info(project_id, scenario_summaries, online=True):
 
     print('Setting scenario info...')
@@ -648,7 +647,7 @@ def set_scen_info(project_id, scenario_summaries, online=True):
     return None
 
 
-@RPC()    
+@RPC()
 def get_default_scen(project_id, scen_type=None):
     
     print('Creating default scenario...')
@@ -665,7 +664,7 @@ def get_default_scen(project_id, scen_type=None):
     return js_scen
 
 
-@RPC()    
+@RPC()
 def run_scens(project_id, online=True):
     
     print('Running scenarios...')
@@ -764,7 +763,7 @@ def js_to_py_optim(js_optim):
     return json
     
 
-@RPC()    
+@RPC()
 def get_optim_info(project_id, online=True):
     print('Getting optimization info...')
     proj = load_project(project_id, raise_exception=True, online=online)
@@ -777,7 +776,7 @@ def get_optim_info(project_id, online=True):
     return optim_summaries
 
 
-@RPC()    
+@RPC()
 def set_optim_info(project_id, optim_summaries, online=True):
     print('Setting optimization info...')
     proj = load_project(project_id, raise_exception=True, online=online)
@@ -793,7 +792,7 @@ def set_optim_info(project_id, optim_summaries, online=True):
     return None
     
 
-@RPC()    
+@RPC()
 def get_default_optim(project_id):
     print('Getting default optimization...')
     proj = load_project(project_id, raise_exception=True)
@@ -805,7 +804,7 @@ def get_default_optim(project_id):
     return js_optim
 
 
-@RPC()    
+@RPC()
 def plot_optimization(project_id, cache_id, online=True):
     proj = load_project(project_id, raise_exception=True, online=online)
     figs = proj.plot(key=cache_id, optim=True) # Only plot allocation
