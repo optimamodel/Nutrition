@@ -21,9 +21,7 @@ def make_plots(all_res=None, toplot=None, optim=False):
     ## Initialize
     allplots = sc.odict()
     if toplot is None:
-        toplot = ['prevs', 'ann', 'agg']
-        if optim:
-            toplot.append('alloc')
+        toplot = ['prevs', 'ann', 'agg', 'alloc']
     toplot = sc.promotetolist(toplot)
     all_res = sc.promotetolist(all_res)
     if 'prevs' in toplot:
@@ -36,7 +34,7 @@ def make_plots(all_res=None, toplot=None, optim=False):
         outfigs = plot_outputs(all_res, False, 'agg')
         allplots.update(outfigs)
     if 'alloc' in toplot: # optimized allocations
-        outfigs = plot_alloc(all_res)
+        outfigs = plot_alloc(all_res, optim=optim)
         allplots.update(outfigs)
     return allplots
 
@@ -123,51 +121,61 @@ def plot_outputs(all_res, seq, name):
         figs['%s_out_%0i'%(name, i)] = fig
     return figs
 
-def plot_alloc(all_res):
-    """ Plot the program allocations from an optimization, alongside baseline allocation.
-     Note that scenarios not generated from optimization cannot be plotted using this function,
-     as assumed structure for spending is different """
+def plot_alloc(results, optim):
+    """ Plots the average annual spending for each scenario, coloured by program.
+    Legend will include all programs in the 'baseline' allocation which receive non-zero spending """
     #initialize
     width = 0.35
-    scale = 1
     fig = pl.figure(figsize=fig_size)
     ax = fig.add_axes(ax_size)
     figs = sc.odict()
-    ref = all_res[1] # assumes baseline at index 0
-    ref_spend = ref.prog_info.refs
-    x = np.arange(len(all_res))
-    xlabs = []
+    ref = results[0]
+    progset = ref.prog_info.base_progset()
+    colors = sc.gridcolors(ncolors=len(progset))
+    leglabs = []
+    x = np.arange(len(results))
+    # group allocations by program
+    avspend = []
+    for prog in progset:
+        thisprog = np.zeros(len(results))
+        for i, res in enumerate(results):
+            alloc = res.get_allocs(ref=False) # slightly inefficient to do this for every program
+            try:
+                progav = alloc[prog][1:].mean()
+            except: # program not in scenario program set
+                progav = 0
+
+            thisprog[i] = progav
+        avspend.append(thisprog)
+    # make bar plots
     bars = []
-    bottom = np.zeros(len(all_res))
-    colors = sc.gridcolors(ncolors=len(ref.programs))
-    for i,prog in ref.programs.enumvals():
-        y = []
-        # get allocation for each multiple
-        for j, res in enumerate(all_res):
-            pos = res.mult if res.mult else res.name
-            xlabs.append(utils.relabel(pos))
-            # adjust spending so does not display reference spending
-            alloc = res.programs[i].annual_spend[1] - ref_spend[i] # spending is same after first year in optimization
-            # scale for axis
-            alloc /= scale
-            y = np.append(y, alloc)
-        bar = ax.bar(x, y, width=width, bottom=bottom, color=colors[i])
-        bars.append(bar)
-        bottom += y
+    xlabs = [res.mult if res.mult else res.name for res in results]
+    bottom = np.zeros(len(results))
+    for i, spend in enumerate(avspend):
+        if any(spend) > 0:    # only want to plot prog if spending is non-zero (solves legend issues)
+            leglabs.append(progset[i])
+            bar = ax.bar(x, spend, width=width, bottom=bottom, color=colors[i])
+            bars.append(bar)
+            bottom += spend
     ymax = max(bottom)
-    ax.set_title('Optimal allocation, %s-%s'% (ref.years[0], ref.years[-1]))
+    if optim:
+        title = 'Optimal allocation, %s-%s'% (ref.years[0], ref.years[-1])
+        valuestr = str(results[1].prog_info.free / 1e6) # bit of a hack
+        # format x axis
+        if valuestr[1] == '.':
+            valuestr = valuestr[:3]
+        else:
+            valuestr = valuestr[:2]
+        xlab = 'Total available budget (relative to US$%sM)' % valuestr
+    else:
+        title = 'Average annual spending, %s-%s' % (ref.years[0], ref.years[-1])
+        xlab = 'Scenario'
+    ax.set_title(title)
     ax.set_xticks(x)
     ax.set_xticklabels(xlabs)
+    ax.set_xlabel(xlab)
     ax.set_ylim((0, ymax+ymax*.1))
-    ax.set_ylabel('Annual spending on programs (US$)')
-    valuestr = str(res.prog_info.free/1e6)
-    # format x axis
-    if valuestr[1] == '.':
-        valuestr = valuestr[:3]
-    else:
-        valuestr = valuestr[:2]
-    string = 'Total available budget (relative to US$%sM)'%valuestr
-    ax.set_xlabel(string)
+    ax.set_ylabel('Spending (US$)')
     sc.SIticks(ax=ax, axis='y')
     nprogs = len(ref.programs)
     labelspacing = 0.1
@@ -182,7 +190,7 @@ def plot_alloc(all_res):
         ncol = 2
     customizations = {'fontsize':fontsize, 'labelspacing':labelspacing, 'ncol':ncol, 'columnspacing':columnspacing}
     customizations.update(legend_loc)
-    ax.legend(bars, ref.programs.keys(), **customizations)
+    ax.legend(bars, leglabs, **customizations)
     figs['alloc'] = fig
     return figs
 
