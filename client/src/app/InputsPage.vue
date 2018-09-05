@@ -78,7 +78,7 @@ Last update: 2018-08-02
 <script>
   import axios from 'axios'
   let filesaver = require('file-saver')
-  import utils from '@/services/utils'
+//  import utils from '@/services/utils'
   import rpcs from '@/services/rpc-service'
   import status from '@/services/status-service'
   import router from '@/router'
@@ -95,8 +95,8 @@ Last update: 2018-08-02
     },
 
     computed: {
-      projectID()    { return utils.projectID(this) },
-      hasData()      { return utils.hasData(this) },
+      projectID()    { return this.$utils.projectID(this) },
+      hasData()      { return this.$utils.hasData(this) },
     },
 
     created() {
