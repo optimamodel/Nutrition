@@ -547,6 +547,16 @@ class Dataset(object):
         output  = sc.prepr(self)
         return output
     
+    def __copy__(self):
+        objcopy = type(self)()
+        objcopy.__dict__.update(self.__dict__)
+        objcopy.input_sheet    = 'Warning: spreadsheets are not copied'
+        objcopy.defaults_sheet = 'Warning: spreadsheets are not copied'
+        return objcopy
+    
+    def __deepcopy__(self):
+        return self.__copy__()
+    
     def load(self, filepath=None, from_file=True, recalc=False):
         if from_file:
             if filepath is None: input_path = settings.data_path(self.country, self.region)
