@@ -155,7 +155,7 @@ function exportGraphs(vm) {
   console.log('exportGraphs() called')
   rpcs.download('download_graphs', []) // Make the server call to download the framework to a .prj file.
     .catch(error => {
-      status.failurePopup(vm, 'Could not download graphs')
+      status.failurePopup(vm, 'Could not download graphs: ' + error.message)
     })
 }
 
@@ -163,7 +163,7 @@ function exportResults(vm, project_id) {
   console.log('exportResults() called TEMP FIX')
   rpcs.download('export_results', [project_id]) // Make the server call to download the framework to a .prj file.
     .catch(error => {
-      status.failurePopup(vm, 'Could not export results')
+      status.failurePopup(vm, 'Could not export results: ' + error.message)
     })
 }
 
