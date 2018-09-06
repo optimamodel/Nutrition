@@ -1,7 +1,7 @@
 <!--
 Optimizations page
 
-Last update: 2018-09-02
+Last update: 2018-09-06
 -->
 
 <template>
@@ -234,8 +234,9 @@ Last update: 2018-09-02
 
       clearGraphs()             { return utils.clearGraphs() },
       makeGraphs(graphdata)     { return utils.makeGraphs(this, graphdata) },
-      exportGraphs()            { return utils.exportGraphs(this) },
-      exportResults(project_id) { return utils.exportResults(this, project_id) },
+      exportGraphs(project_id)  { return utils.exportGraphs(this, project_id) },
+      exportResults(serverDatastoreId) 
+                                { return utils.exportResults(this, serverDatastoreId) },
 
       scaleFigs(frac) {
         this.figscale = this.figscale*frac;
@@ -301,18 +302,18 @@ Last update: 2018-09-02
         let statusStr = '';
 
         // Check the status of the task.
-        rpcs.rpc('check_task', [optimSummary.server_datastore_id])
-          .then(result => {
-            statusStr = result.data.task.status;
-            optimSummary.status = statusStr;
-            optimSummary.pendingTime = result.data.pendingTime;
-            optimSummary.executionTime = result.data.executionTime
-          })
-          .catch(error => {
-            optimSummary.status = 'not started';
-            optimSummary.pendingTime = '--';
-            optimSummary.executionTime = '--'
-          })
+        rpcs.rpc('check_task', [optimSummary.serverDatastoreId])
+        .then(result => {
+          statusStr = result.data.task.status
+          optimSummary.status = statusStr
+          optimSummary.pendingTime = result.data.pendingTime
+          optimSummary.executionTime = result.data.executionTime          
+        })
+        .catch(error => {
+          optimSummary.status = 'not started'
+          optimSummary.pendingTime = '--'
+          optimSummary.executionTime = '--'
+        })
       },
 
       pollAllTaskStates() {
@@ -334,14 +335,13 @@ Last update: 2018-09-02
       },
 
       clearTask(optimSummary) {
-        console.log('cancelRun() called for '+this.currentOptim)
-        rpcs.rpc('delete_task', [optimSummary.server_datastore_id])
-          .then(response => {
-            // Get the task state for the optimization.
-            this.getOptimTaskState(optimSummary)
-
-            // TODO: Delete cached result.
-          })
+        let datastoreId = optimSummary.serverDatastoreId  // hack because this gets overwritten soon by caller
+        console.log('clearTask() called for '+this.currentOptim)
+        rpcs.rpc('delete_task', [optimSummary.serverDatastoreId])
+        .then(response => {
+          this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
+          rpcs.rpc('delete_results_cache_entry', [datastoreId]) // Delete cached result.      
+        })
       },
 
       getOptimSummaries() {
@@ -462,18 +462,21 @@ Last update: 2018-09-02
       deleteOptim(optimSummary) {
         console.log('deleteOptim() called')
         status.start(this)
+        if (optimSummary.status != 'not started') {
+          this.clearTask(optimSummary)  // Clear the task from the server.
+        }
         for(var i = 0; i< this.optimSummaries.length; i++) {
           if(this.optimSummaries[i].name === optimSummary.name) {
             this.optimSummaries.splice(i, 1);
           }
         }
         rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
-          .then( response => {
-            status.succeed(this, 'Optimization deleted')
-          })
-          .catch(error => {
-            status.fail(this, 'Could not delete optimization: ' + error.message)
-          })
+        .then(response => {
+          status.succeed(this, 'Optimization deleted')
+        })
+        .catch(error => {
+          status.fail(this, 'Could not delete optimization: ' + error.message)
+        })
       },
 
       runOptim(optimSummary, maxtime) {
