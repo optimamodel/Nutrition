@@ -354,6 +354,16 @@ def export_results(project_id, online=True):
     return full_file_name # Return the full filename.
 
 
+@RPC(call_type='download')
+def export_graphs(project_id, online=True):
+    proj = load_project(project_id, raise_exception=True, online=online) # Load the project with the matching UID.
+    file_name = '%s graphs.pdf' % proj.name # Create a filename containing the project name followed by a .prj suffix.
+    full_file_name = get_path(file_name, online=online) # Generate the full file name with path.
+    figs = proj.plot(-1) # Generate the plots
+    sc.savefigs(figs, filetype='singlepdf', filename=full_file_name)
+    print(">> export_graphs %s" % (full_file_name)) # Display the call information.
+    return full_file_name # Return the full filename.
+
 
 ##################################################################################
 ### Input functions and RPCs

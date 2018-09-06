@@ -119,9 +119,11 @@ if 'export_results' in torun or runall:
     heading('Running export_results', 'big')
     proj = nu.demo(scens=True)
     proj.run_scens()
-    fn = rpcs.export_results(proj, online=False)
-    print('Output file:')
-    print(fn)
+    fn1 = rpcs.export_results(proj, online=False)
+    fn2 = rpcs.export_graphs(proj, online=False)
+    print('Output files:')
+    print(fn1)
+    print(fn2)
     
 
 sc.toc(T)

@@ -127,9 +127,9 @@ function makeGraphs(vm, graphdata) {
             fig.setXTicks(6, function (d) {
               return d3.format('.0f')(d);
             });
-            fig.setYTicks(null, function (d) {
-              return d3.format('.2s')(d);
-            });
+            // fig.setYTicks(null, function (d) {
+            //   return d3.format('.2s')(d);
+            // });
           });
         }
         catch (error) {
@@ -151,16 +151,16 @@ function clearGraphs(vm) {
   }
 }
 
-function exportGraphs(vm) {
+function exportGraphs(vm, project_id) {
   console.log('exportGraphs() called')
-  rpcs.download('download_graphs', []) // Make the server call to download the framework to a .prj file.
+  rpcs.download('export_graphs', [project_id]) // Make the server call to download the framework to a .prj file.
     .catch(error => {
       status.failurePopup(vm, 'Could not download graphs: ' + error.message)
     })
 }
 
 function exportResults(vm, project_id) {
-  console.log('exportResults() called TEMP FIX')
+  console.log('exportResults()')
   rpcs.download('export_results', [project_id]) // Make the server call to download the framework to a .prj file.
     .catch(error => {
       status.failurePopup(vm, 'Could not export results: ' + error.message)
