@@ -9,11 +9,12 @@ from nutrition_app import rpcs, apptasks as apt
 runall = False
 
 torun = [
+'file_tests'
 #'spreadsheet_io',
 #'input_io',
 #'scen_io',
 #'optim_io',
-'run_scenarios',
+#'run_scenarios',
 #'run_optimization',
 ]
 
@@ -25,6 +26,27 @@ def heading(string, style=None):
     if style == 'big': string = '\n'.join([divider, string, divider])
     sc.colorize('blue', string)
     return None
+
+
+if 'file_tests' in torun or runall:
+    filename = 'file_tests.prj'
+    heading('Running file_tests', 'big')
+    
+    proj = nu.demo(scens=True)
+    print('Project size before running scenarios:')
+    sc.checkmem(proj, descend=True)
+    proj.run_scens()
+    print('Project size after running scenarios:')
+    sc.checkmem(proj, descend=True)
+    startsave = sc.tic()
+    proj.save(filename)
+    startload = sc.tic()
+    proj2 = sc.loadobj(filename)
+    savetime = sc.toc(startsave, output=True)
+    loadtime = sc.toc(startload, output=True)
+    print('Time to save: %s s' % savetime)
+    print('Time to load: %s s' % loadtime)
+
 
 if 'spreadsheet_io' in torun or runall:
     heading('Running spreadsheet_io', 'big')
