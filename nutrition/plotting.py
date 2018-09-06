@@ -210,10 +210,7 @@ def get_costeff(parents, children, baselines):
         allocs = parent.get_allocs(ref=False)
         baseallocs = baseline.get_allocs(ref=False)
         filteredbase = sc.odict({prog:spend for prog, spend in baseallocs.iteritems() if prog not in allocs})
-        if any(filteredbase): # not empty
-            totalspend = sum(sum(allocs.values())) + sum(sum(filteredbase.values()))
-        else:
-            totalspend = sum(sum(allocs.values()))
+        totalspend = allocs[:].sum() + filteredbase[:].sum()
         thesechildren = children[parent.name]
         for j, child in enumerate(thesechildren):
             if j > 0: # i.e. scenarios with individual scale-downs
