@@ -338,7 +338,6 @@ class Children(Population):
         self._set_future_stunting()
         self._set_stunted_birth()
         self._set_wasted_birth()
-        self._set_bo_space()
 
     ##### DATA WRANGLING ######
 
@@ -350,6 +349,7 @@ class Children(Population):
         self._set_stunted_dia()
         self._set_anaemic_dia()
         self._set_wasted_dia()
+        self._set_bo_space()
 
     def frac_risk(self, risk):
         risk = risk.lower()
