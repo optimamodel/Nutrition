@@ -541,7 +541,7 @@ def save_sheet_data(project_id, sheetdata, key=None, online=True):
                     except: cellval = str(cellval)
                     cells.append([r+1,c+1]) # Excel uses 1-based indexing
                     vals.append(cellval)
-        wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=True, wbargs={'data_only':True}) # TEMP VERBOSE
+        wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={'data_only':True}) # Can turn on verbose
     proj.dataset(key).load(from_file=False, recalc=True)
     print('Saving project...')
     save_project(proj, online=online)
@@ -674,6 +674,20 @@ def get_default_scen(project_id, scen_type=None):
     return js_scen
 
 
+def reformat_costeff(costeff):
+    ''' Changes the format from an odict to something jsonifiable '''
+    outcomekeys = costeff[0][0].keys()
+    emptycols = ['']*len(outcomekeys)
+    table = []
+    for i,scenkey,val1 in costeff.enumitems():
+        for j,progkey,val2 in val1.enumitems():
+            if j==0: 
+                if i>0: table.append(['', '']+emptycols) # Blank row
+                table.append(['header', scenkey]+emptycols) # e.g. ['header', 'Wasting example', '', '', '']
+                table.append(['keys', 'Programs']+outcomekeys)      # e.g. ['keys', '', 'Number anaemic', 'Number dead', ...]
+            table.append(['entry', progkey]+val2.values())  # e.g. ['entry', 'IYCF', '$23,348 per death', 'No impact', ...]
+    return table
+
 @RPC()
 def run_scens(project_id, online=True, doplot=True):
     
@@ -695,20 +709,12 @@ def run_scens(project_id, online=True, doplot=True):
         
     # Get cost-effectiveness table
     costeff = proj.get_costeff()
-    table = []
-    for i,scenkey,val1 in costeff.enumitems():
-        for j,progkey,val2 in val1.enumitems():
-            for k,outkey,cost in val2.enumitems():
-                if j==0 and k==0: table.append([scenkey, '', '', ''])
-                if k==0: table.append(['', progkey, '', ''])
-                table.append(['', '', outkey, cost])
-#                if i == 0: table.append([scenkey, '', '', '', ''])
-#                if j == 0: table.append(['', progkey, '', '', ''])
-#                table.append([scenkey, progkey, outkey, cost])
+    table = reformat_costeff(costeff)
     
     print('Saving project...')
     save_project(proj, online=online)
-    return {'graphs':graphs, 'table':table}
+    output = {'graphs':graphs, 'table':table}
+    return output
 
 
 

@@ -39,9 +39,9 @@ Last update: 2018-09-02
               <input type="checkbox" v-model="scenSummary.active"/>
             </td>
             <td style="white-space: nowrap">
-              <button class="btn btn-icon" @click="editScenModal(scenSummary)"><i class="ti-pencil"></i></button>
-              <button class="btn btn-icon" @click="copyScen(scenSummary)"><i class="ti-files"></i></button>
-              <button class="btn btn-icon" @click="deleteScen(scenSummary)"><i class="ti-trash"></i></button>
+              <button class="btn btn-icon" @click="editScenModal(scenSummary)" data-tooltip="Edit scenario"><i class="ti-pencil"></i></button>
+              <button class="btn btn-icon" @click="copyScen(scenSummary)" data-tooltip="Copy scenario"><i class="ti-files"></i></button>
+              <button class="btn btn-icon" @click="deleteScen(scenSummary)" data-tooltip="Delete scenario"><i class="ti-trash"></i></button>
             </td>
           </tr>
           </tbody>
@@ -85,24 +85,26 @@ Last update: 2018-09-02
       </div>
 
       <br>
-      <div v-if="table" display="style:inline-block">
+      <div v-if="table">
         <help reflink="cost-effectiveness" label="Program cost-effectiveness"></help>
-        <div class="calib-graphs" style="display:inline-block; text-align:right">
+        <div class="calib-graphs" style="display:inline-block; text-align:right; overflow:auto">
           <table class="table table-bordered table-hover table-striped">
             <thead>
             <tr>
-              <th>Scenario</th>
-              <th>Program</th>
-              <th>Outcome</th>
-              <th>ICER</th>
+              <th>Scenario/program</th>
+              <th>Outcomes</th>
+              <th v-for="i in table[0].length-3"></th>
             </tr>
             </thead>
             <tbody>
             <tr v-for="rowdata in table">
-              <td v-for="text in rowdata">
-                <span v-if="rowdata[0]!==''" style="font-size: 14px; font-weight:bold">{{text}}</span>
-                <span v-else-if="rowdata[1]!==''" style="font-weight:bold"><b>{{text}}</b></span>
-                <span v-else>{{text}}</span>
+              <td v-for="i in (rowdata.length-1)">
+                <span v-if="rowdata[0]==='header'"             style="font-size:15px; font-weight:bold">{{rowdata[i]}}</span>
+                <span v-else-if="rowdata[0]==='keys'  && i==1" style="font-size:12px; font-style:italic">{{rowdata[i]}}</span>
+                <span v-else-if="rowdata[0]==='keys'  && i!=1" style="font-size:12px; font-weight:bold">{{rowdata[i]}}</span>
+                <span v-else-if="rowdata[0]==='entry' && i==1" style="font-size:12px; font-weight:bold">{{rowdata[i]}}</span>
+                <span v-else-if="rowdata[0]==='entry' && i!=1" style="font-size:12px;">                 {{rowdata[i]}}</span>
+                <span v-else><div style="min-height:30px"></div></span>
               </td>
             </tr>
             </tbody>

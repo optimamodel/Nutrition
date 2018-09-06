@@ -85,7 +85,7 @@ Last update: 2018-08-30
             </td>
             <td style="text-align:left">
               <span v-if="sortedFilteredProjectSummaries.length>1">
-                <button class="btn __green"  @click="openProject(projectSummary.project.id)"         data-tooltip="Open project" :disabled="projectLoaded(projectSummary.project.id)" ><span>Open</span></button>
+                <button class="btn __green"  @click="openProject(projectSummary.project.id)"       data-tooltip="Open project" :disabled="projectLoaded(projectSummary.project.id)" ><span>Open</span></button>
               </span>
               <button class="btn btn-icon" @click="renameProject(projectSummary)"                  data-tooltip="Rename">  <i class="ti-pencil"></i></button>
               <button class="btn btn-icon" @click="copyProject(projectSummary.project.id)"         data-tooltip="Copy">    <i class="ti-files"></i></button>

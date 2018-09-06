@@ -12,8 +12,8 @@ torun = [
 #'spreadsheet_io',
 #'input_io',
 #'scen_io',
-'optim_io',
-#'run_scenarios',
+#'optim_io',
+'run_scenarios',
 #'run_optimization',
 ]
 
