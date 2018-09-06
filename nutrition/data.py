@@ -346,15 +346,15 @@ class InputData(object):
         # get anaemia
         dist = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0,1], skiprows=12)
         self.risk_dist['Anaemia'] = sc.odict()
-        if not self.recalc:
+        if 1: # not self.recalc: # CK: for future when we implement reload
             anaem = dist.loc['Anaemia', 'Prevalence of iron deficiency anaemia'].to_dict()
-        else:
-            # CK: Spreadsheet recalculation #1
-            all_anaem = dist.loc['Anaemia', 'Prevalence of anaemia'].to_dict()
-            baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs')
-            index = np.array(baseline['Field']).tolist().index('Percentage of anaemia that is iron deficient')
-            iron_pct = np.array(baseline['Data'])[index]
-            anaem = {key:val*iron_pct for key,val in all_anaem.items()}
+#        else:
+#            # CK: Spreadsheet recalculation #1
+#            all_anaem = dist.loc['Anaemia', 'Prevalence of anaemia'].to_dict()
+#            baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs')
+#            index = np.array(baseline['Field']).tolist().index('Percentage of anaemia that is iron deficient')
+#            iron_pct = np.array(baseline['Data'])[index]
+#            anaem = {key:val*iron_pct for key,val in all_anaem.items()}
         for age, prev in anaem.iteritems():
             self.risk_dist['Anaemia'][age] = dict()
             self.risk_dist['Anaemia'][age]['Anaemic'] = prev
@@ -524,7 +524,7 @@ class Dataset(object):
     ''' Store all the data for a project '''
     
     def __init__(self, country='demo', region='demo', name=None, demo_data=None, prog_data=None, default_params=None,
-                 pops=None, prog_info=None, doload=False, filepath=None, project=None):
+                 pops=None, prog_info=None, doload=False, filepath=None, from_file=None, project=None):
         
         self.country = country
         self.region = region
@@ -541,21 +541,26 @@ class Dataset(object):
             except: name = 'default'
         self.modified = sc.now()
         if doload:
-            self.load(filepath=filepath, project=project)
+            self.load(filepath=filepath, from_file=True, project=project)
         return None
     
     def __repr__(self):
         output  = sc.prepr(self)
         return output
     
-    def load(self, filepath=None, input_sheet=None, project=None):
-        if not input_sheet:
+    def load(self, filepath=None, from_file=True, project=None):
+        if project is None:
+            raise Exception('Sorry, but you must supply a project for load().')
+        if from_file:
             if filepath is None: input_path = settings.data_path(self.country, self.region)
             else:                input_path = filepath
             input_sheet    = sc.Spreadsheet(filename=input_path)
             defaults_sheet = sc.Spreadsheet(filename=settings.default_params_path())
-            if project is not None: project.input_sheet = input_sheet
-            else:                   print('Warning: loading a new spreadsheet but no project supplied!')
+            project.input_sheet    = input_sheet
+            project.defaults_sheet = defaults_sheet
+        else:
+            input_sheet    = project.input_sheet
+            defaults_sheet = project.defaults_sheet
         input_data   = input_sheet.pandas()
         default_data = defaults_sheet.pandas()
         self.demo_data = InputData(input_data)

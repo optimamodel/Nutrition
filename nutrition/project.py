@@ -57,7 +57,8 @@ class Project(object):
         self.scens       = sc.odict()
         self.optims      = sc.odict()
         self.results     = sc.odict()
-        self.input_sheet = None # WARNING, might want to make this an odict at some point
+        self.input_sheet    = None # WARNING, might want to make this an odict at some point
+        self.defaults_sheet = None # WARNING, might want to make this an odict at some point
 
         ## Define other quantities
         self.name = name

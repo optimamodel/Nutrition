@@ -542,7 +542,7 @@ def save_sheet_data(project_id, sheetdata, key=None, online=True):
                     cells.append([r+1,c+1]) # Excel uses 1-based indexing
                     vals.append(cellval)
         wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={'data_only':True}) # Can turn on verbose
-    proj.dataset(key).load(input_sheet=wb)
+    proj.dataset(key).load(project=proj, from_file=False)
     print('Saving project...')
     save_project(proj, online=online)
     return None
