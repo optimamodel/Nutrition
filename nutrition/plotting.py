@@ -167,7 +167,7 @@ def plot_alloc(results, optim):
     for i, spend in enumerate(avspend):
         if any(spend) > 0:    # only want to plot prog if spending is non-zero (solves legend issues)
             leglabs.append(progset[i])
-            bar = ax.bar(x, spend, width=width, bottom=bottom, color=colors[i])
+            bar = ax.barh(x, spend, width, bottom, color=colors[i])
             bars.append(bar)
             bottom += spend
     ymax = max(bottom)
@@ -184,15 +184,15 @@ def plot_alloc(results, optim):
         title = 'Average annual spending, %s-%s' % (ref.years[0], ref.years[-1])
         xlab = '' # 'Scenario' # Collides with tick labels
     ax.set_title(title)
-    ax.set_xticks(x)
-    ax.set_xticklabels(xlabs)
-    ax.set_xlabel(xlab) 
-    ax.set_ylim((0, ymax+ymax*.1))
+    ax.set_yticks(x)
+    ax.set_yticklabels(xlabs)
+    ax.set_ylabel(xlab) 
+    ax.set_xlim((0, ymax+ymax*.1))
     if   scale == 1e1: ylabel = 'Spending (US$)'
     elif scale == 1e6: ylabel = 'Spending (US$M)'
     else:               raise Exception('Scale value must be 1e1 or 1e6, not %s' % scale)
-    ax.set_ylabel(ylabel)
-    sc.SIticks(ax=ax, axis='y')
+    ax.set_xlabel(ylabel)
+#    sc.SIticks(ax=ax, axis='y')
     nprogs = len(leglabs)
     labelspacing = 0.1
     columnspacing = 0.1
