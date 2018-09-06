@@ -224,6 +224,7 @@ def download_project(project_id):
     print(">> download_project %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
 
+
 @RPC(call_type='download')   
 def download_databook(project_id, key=None):
     """ Download databook """
@@ -256,13 +257,14 @@ def load_zip_of_prj_files(project_ids):
     """
     dirname = sw.globalvars.downloads_dir.dir_path # Use the downloads directory to put the file in.
     prjs = [load_project_record(id).save_as_file(dirname) for id in project_ids] # Build a list of prj.ProjectSO objects for each of the selected projects, saving each of them in separate .prj files.
-    zip_fname = '%s.zip' % str(sc.uuid()) # Make the zip file name and the full server file path version of the same.
+    zip_fname = 'Projects %s.zip' % sc.getdate() # Make the zip file name and the full server file path version of the same..
     server_zip_fname = os.path.join(dirname, sc.sanitizefilename(zip_fname))
     with ZipFile(server_zip_fname, 'w') as zipfile: # Create the zip file, putting all of the .prj files in a projects directory.
         for project in prjs:
             zipfile.write(os.path.join(dirname, project), 'projects/{}'.format(project))
     print(">> load_zip_of_prj_files %s" % (server_zip_fname)) # Display the call information.
     return server_zip_fname # Return the server file name.
+
 
 @RPC()
 def add_demo_project(user_id):
@@ -636,15 +638,12 @@ def js_to_py_scen(js_scen):
 
 @RPC()
 def get_scen_info(project_id, key=None, online=True):
-
     print('Getting scenario info...')
     proj = load_project(project_id, raise_exception=True, online=online)
-    
     scenario_summaries = []
     for py_scen in proj.scens.values():
         js_scen = py_to_js_scen(py_scen, proj, key=key)
         scenario_summaries.append(js_scen)
-    
     print('JavaScript scenario info:')
     sc.pp(scenario_summaries)
 
@@ -653,11 +652,9 @@ def get_scen_info(project_id, key=None, online=True):
 
 @RPC()
 def set_scen_info(project_id, scenario_summaries, online=True):
-
     print('Setting scenario info...')
     proj = load_project(project_id, raise_exception=True, online=online)
     proj.scens.clear()
-    
     for j,js_scen in enumerate(scenario_summaries):
         print('Setting scenario %s of %s...' % (j+1, len(scenario_summaries)))
         json = js_to_py_scen(js_scen)
@@ -672,16 +669,13 @@ def set_scen_info(project_id, scenario_summaries, online=True):
 
 @RPC()
 def get_default_scen(project_id, scen_type=None):
-    
     print('Creating default scenario...')
     if scen_type is None: scen_type = 'coverage'
     proj = load_project(project_id, raise_exception=True)
-    
     py_scens = proj.demo_scens(doadd=False)
     py_scen = py_scens[0] # Pull out the first one
     py_scen.scen_type = scen_type # Set the scenario type
     js_scen = py_to_js_scen(py_scen, proj, default_included=True)
-    
     print('Created default JavaScript scenario:')
     sc.pp(js_scen)
     return js_scen
