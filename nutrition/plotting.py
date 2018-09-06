@@ -11,6 +11,7 @@ if for_frontend:
     legend_loc_prev = {'loc':'best'} # No idea why this has to be different, but it does
     fig_size = (8,3)
     ax_size = [0.2,0.12,0.40,0.75]
+    pltstart = 1
 else:
     legend_loc = {'loc':'right'}
     ax_size = [0.2,0.10,0.65,0.75]
@@ -63,7 +64,7 @@ def plot_prevs(all_res):
             leglabels.append(res.name)
         # formatting
         sc.SIticks(ax=ax, axis='y')
-#        ax.set_ylabel('Percentage') # Shown as tick labels
+        ax.set_ylabel('Percentage') # Shown as tick labels
         ax.set_ylim([0, ymax + ymax*0.1])
         ax.set_xlabel('Years')
         ax.set_title(utils.relabel(prev))
