@@ -29,6 +29,8 @@ class DefaultParams(object):
         self.spreadsheet = default_data
         self.input_data = input_data
         self.read_spreadsheet()
+        self.spreadsheet = None
+        self.input_data = None
         return None
     
     def __repr__(self):
@@ -412,6 +414,7 @@ class ProgData(object):
         self.get_prog_info()
         self.get_famplan_methods()
         self.create_iycf()
+        self.spreadsheet = None # Reset to save memory
     
     def __repr__(self):
         output  = sc.prepr(self)
@@ -521,7 +524,7 @@ class Dataset(object):
     ''' Store all the data for a project '''
     
     def __init__(self, country='demo', region='demo', name=None, demo_data=None, prog_data=None, default_params=None,
-                 pops=None, prog_info=None, doload=False, filepath=None):
+                 pops=None, prog_info=None, doload=False, filepath=None, project=None):
         
         self.country = country
         self.region = region
@@ -537,35 +540,25 @@ class Dataset(object):
             try:    name = country+'_'+region
             except: name = 'default'
         self.modified = sc.now()
-        self.input_sheet    = None
-        self.defaults_sheet = None
         if doload:
-            self.load(filepath=filepath)
+            self.load(filepath=filepath, project=project)
         return None
     
     def __repr__(self):
         output  = sc.prepr(self)
         return output
     
-    def __copy__(self):
-        objcopy = type(self)()
-        objcopy.__dict__.update(self.__dict__)
-        objcopy.input_sheet    = 'Warning: spreadsheets are not copied'
-        objcopy.defaults_sheet = 'Warning: spreadsheets are not copied'
-        return objcopy
-    
-    def __deepcopy__(self):
-        return self.__copy__()
-    
-    def load(self, filepath=None, from_file=True, recalc=False):
-        if from_file:
+    def load(self, filepath=None, input_sheet=None, project=None):
+        if not input_sheet:
             if filepath is None: input_path = settings.data_path(self.country, self.region)
             else:                input_path = filepath
-            self.input_sheet    = sc.Spreadsheet(filename=input_path)
-            self.defaults_sheet = sc.Spreadsheet(filename=settings.default_params_path())
-        input_data   = self.input_sheet.pandas()
-        default_data = self.defaults_sheet.pandas()
-        self.demo_data = InputData(input_data, recalc=recalc)
+            input_sheet    = sc.Spreadsheet(filename=input_path)
+            defaults_sheet = sc.Spreadsheet(filename=settings.default_params_path())
+            if project is not None: project.input_sheet = input_sheet
+            else:                   print('Warning: loading a new spreadsheet but no project supplied!')
+        input_data   = input_sheet.pandas()
+        default_data = defaults_sheet.pandas()
+        self.demo_data = InputData(input_data)
         self.default_params = DefaultParams(default_data, input_data)
         self.default_params.compute_risks(self.demo_data)
         self.prog_data = ProgData(input_data, self.default_params)
@@ -579,7 +572,3 @@ class Dataset(object):
         ''' WARNING, hacky function to get program names '''
         names = self.prog_data.base_prog_set
         return names
-
-
-#def get_data(country=None, region=None, project=None, dataset=None, filepath=None, asobj=False, withpops=False):
-        

@@ -913,6 +913,7 @@ class NonPregnantWomen(Population):
 
 
 def set_pops(data, default_params):
+    if hasattr(data, 'spreadsheet'): delattr(data, 'spreadsheet') # To reduce file size
     children = Children(data, default_params)
     pregnantWomen = PregnantWomen(data, default_params)
     nonPregnantWomen = NonPregnantWomen(data, default_params)

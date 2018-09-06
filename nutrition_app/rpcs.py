@@ -227,7 +227,7 @@ def download_databook(project_id, key=None):
     proj = load_project(project_id, raise_exception=True) # Load the project with the matching UID.
     file_name = '%s_databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name) # Generate the full file name with path.
-    proj.dataset(key).input_sheet.save(full_file_name)
+    proj.input_sheet.save(full_file_name)
     print(">> download_databook %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
 
@@ -494,7 +494,7 @@ def get_sheet_data(project_id, key=None, online=True):
         'Programs cost and coverage',
         ]
     proj = load_project(project_id, raise_exception=True, online=online)
-    wb = proj.dataset().input_sheet
+    wb = proj.input_sheet
     sheetdata = sc.odict()
     for sheet in sheets:
         sheetdata[sheet] = wb.readcells(sheetname=sheet, header=False)
@@ -526,7 +526,7 @@ def get_sheet_data(project_id, key=None, online=True):
 @RPC()
 def save_sheet_data(project_id, sheetdata, key=None, online=True):
     proj = load_project(project_id, raise_exception=True, online=online)
-    wb = proj.dataset(key).input_sheet
+    wb = proj.input_sheet # CK: Warning, might want to change
     for sheet in sheetdata.keys():
         datashape = np.shape(sheetdata[sheet])
         rows,cols = datashape
@@ -542,7 +542,7 @@ def save_sheet_data(project_id, sheetdata, key=None, online=True):
                     cells.append([r+1,c+1]) # Excel uses 1-based indexing
                     vals.append(cellval)
         wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={'data_only':True}) # Can turn on verbose
-    proj.dataset(key).load(from_file=False, recalc=True)
+    proj.dataset(key).load(input_sheet=wb)
     print('Saving project...')
     save_project(proj, online=online)
     return None
