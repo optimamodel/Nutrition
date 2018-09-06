@@ -105,10 +105,15 @@ Last update: 2018-08-02
     created() {
       if (this.$store.state.currentUser.displayname === undefined) { // If we have no user logged in, automatically redirect to the login page.
         router.push('/login')
-      } else { // Otherwise...
-        this.getSheetData() // Load the sheet data
       }
-
+      else if ((this.$store.state.activeProject.project !== undefined) &&
+        (this.$store.state.activeProject.project.hasData) ) {
+        console.log('created() called')
+        utils.sleep(1)  // used so that spinners will come up by callback func
+          .then(response => {
+            this.getSheetData() // Load the sheet data
+          })
+      }
     },
 
     methods: {

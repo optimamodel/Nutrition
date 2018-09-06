@@ -41,7 +41,7 @@ Last update: 2018-09-02
             </td>
             <td style="white-space: nowrap">
               <button class="btn __green" @click="runOptim(optimSummary, 9999)">Run</button>
-              <button class="btn" @click="runOptim(optimSummary, 15)">Test run</button>
+              <!--<button class="btn" @click="runOptim(optimSummary, 15)">Test run</button>-->
               <button class="btn __red" :disabled="!canCancelTask(optimSummary)" @click="clearTask(optimSummary)">Clear run</button>
               <button class="btn" :disabled="!canPlotResults(optimSummary)" @click="plotOptimization(optimSummary)">Plot results</button>
               <button class="btn btn-icon" @click="editOptimModal(optimSummary)"><i class="ti-pencil"></i></button>
