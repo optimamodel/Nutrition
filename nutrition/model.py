@@ -333,6 +333,7 @@ class Model(sc.prettyobj):
             nonpw.birth_space[space] *= 1 - frac_correcting
         nonpw.birth_space[self.ss.optimal_space] = nonpw.birthspace_update
         # update birth outcomes
+        self.children._set_bo_space() # todo: this is a hack to avoid the issue of updating birth distribution in multiple places. Fix later
         for bo in self.ss.birth_outcomes:
             newborns.birth_dist[bo] = sum(newborns.prob_bospace[bo][name] * value for name, value in nonpw.birth_space.iteritems())
 

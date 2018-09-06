@@ -10,9 +10,11 @@ if for_frontend:
     legend_loc =      {'bbox_to_anchor':(1.0,1.0)}
     fig_size = (8,3)
     ax_size = [0.2,0.18,0.40,0.72]
+    pltstart = 1
 else:
     legend_loc = {'loc':'right'}
     ax_size = [0.2,0.10,0.65,0.75]
+    pltstart = 1
 
 
 def make_plots(all_res=None, toplot=None, optim=False):
@@ -113,7 +115,7 @@ def plot_outputs(all_res, seq, name):
                     height = rect.get_height()
                     ax.text(rect.get_x() + rect.get_width() / 2., height,'{}%'.format(change), ha='center', va='bottom')
         # formatting
-        title += ' %s \n %s-%s'%(utils.relabel(outcome).lower(), baseres.years[0], baseres.years[-1])
+        title += ' %s \n %s-%s'%(utils.relabel(outcome).lower(), baseres.years[pltstart], baseres.years[-1])
         sc.SIticks(ax=ax, axis='y')
         ax.set_ylim([0, ymax + ymax * .1])
         if   scale == 1e1: ylabel = 'Number'
@@ -172,7 +174,7 @@ def plot_alloc(results, optim):
             bottom += spend
     ymax = max(bottom)
     if optim:
-        title = 'Optimal allocation, %s-%s'% (ref.years[0], ref.years[-1])
+        title = 'Optimal allocation, %s-%s'% (ref.years[pltstart], ref.years[-1])
         valuestr = str(results[1].prog_info.free / 1e6) # bit of a hack
         # format x axis
         if valuestr[1] == '.':
@@ -181,7 +183,7 @@ def plot_alloc(results, optim):
             valuestr = valuestr[:2]
         xlab = 'Total available budget (relative to US$%sM)' % valuestr
     else:
-        title = 'Average annual spending, %s-%s' % (ref.years[0], ref.years[-1])
+        title = 'Average annual spending, %s-%s' % (ref.years[pltstart], ref.years[-1])
         xlab = '' # 'Scenario' # Collides with tick labels
     ax.set_title(title)
     ax.set_yticks(x)
