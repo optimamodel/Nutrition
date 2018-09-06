@@ -42,9 +42,12 @@ def to_number(raw):
     return output
 
 
-def get_path(filename):
-    dirname = sw.globalvars.downloads_dir.dir_path # Use the downloads directory to put the file in.
-    fullpath = '%s%s%s' % (dirname, os.sep, filename) # Generate the full file name with path.
+def get_path(filename, online=True):
+    if online:
+        dirname = sw.globalvars.downloads_dir.dir_path # Use the downloads directory to put the file in.
+        fullpath = '%s%s%s' % (dirname, os.sep, filename) # Generate the full file name with path.
+    else:
+        fullpath = filename
     return fullpath
 
 
@@ -342,10 +345,10 @@ def create_project_from_prj_file(prj_filename, user_id):
 
 
 @RPC(call_type='download')
-def export_results(project_id):
-    proj = load_project(project_id, raise_exception=True) # Load the project with the matching UID.
+def export_results(project_id, online=True):
+    proj = load_project(project_id, raise_exception=True, online=online) # Load the project with the matching UID.
     file_name = '%s outputs.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
-    full_file_name = get_path(file_name) # Generate the full file name with path.
+    full_file_name = get_path(file_name, online=online) # Generate the full file name with path.
     proj.write_results(full_file_name, keys=-1)
     print(">> export_results %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.

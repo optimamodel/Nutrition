@@ -11,11 +11,12 @@ runall = False
 torun = [
 #'file_tests'
 #'spreadsheet_io',
-'input_io',
+#'input_io',
 #'scen_io',
 #'optim_io',
 #'run_scenarios',
 #'run_optimization',
+'export_results',
 ]
 
 T = sc.tic()
@@ -113,6 +114,15 @@ if 'run_optimization' in torun or runall:
         print('Output:')
         sc.pp(output)
 
+
+if 'export_results' in torun or runall:
+    heading('Running export_results', 'big')
+    proj = nu.demo(scens=True)
+    proj.run_scens()
+    fn = rpcs.export_results(proj, online=False)
+    print('Output file:')
+    print(fn)
+    
 
 sc.toc(T)
 print('Done.')

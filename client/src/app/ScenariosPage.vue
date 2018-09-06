@@ -64,7 +64,7 @@ Last update: 2018-09-02
           <button class="btn btn-icon" @click="scaleFigs(1.0)" data-tooltip="Reset zoom"><i class="ti-zoom-in"></i></button>
           <button class="btn btn-icon" @click="scaleFigs(1.1)" data-tooltip="Zoom in">+</button>
           &nbsp;&nbsp;&nbsp;
-          <button class="btn" @click="exportGraphs()">Export plots</button>
+          <!--<button class="btn" @click="exportGraphs()">Export plots</button>-->
           <button class="btn" @click="exportResults(projectID)">Export data</button>
         </div>
       </div>
