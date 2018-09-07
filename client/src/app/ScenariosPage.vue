@@ -274,7 +274,7 @@ Last update: 2018-09-06
             status.succeed(this, 'Scenarios loaded')
           })
           .catch(error => {
-            status.fail(this, 'Could not get scenarios: ' + error.message)
+            status.fail(this, 'Could not get scenarios', error)
           })
       },
 
@@ -286,7 +286,7 @@ Last update: 2018-09-06
             status.succeed(this, 'Scenarios saved')
           })
           .catch(error => {
-            status.fail(this, 'Could not save scenarios: ' + error.message)
+            status.fail(this, 'Could not save scenarios', error)
           })
       },
 
@@ -359,7 +359,7 @@ Last update: 2018-09-06
             status.succeed(this, 'Scenario added')
           })
           .catch(error => {
-            status.fail(this, 'Could not add scenario: ' + error.message)
+            status.fail(this, 'Could not add scenario', error)
           })
       },
 
@@ -378,7 +378,7 @@ Last update: 2018-09-06
             status.succeed(this, 'Scenario copied')
           })
           .catch(error => {
-            status.fail(this, 'Could not copy scenario: ' + error.message)
+            status.fail(this, 'Could not copy scenario', error)
           })
       },
 
@@ -395,7 +395,7 @@ Last update: 2018-09-06
             status.succeed(this, 'Scenario deleted')
           })
           .catch(error => {
-            status.fail(this, 'Could not delete scenario: ' + error.message)
+            status.fail(this, 'Could not delete scenario', error)
           })
       },
 
@@ -411,13 +411,13 @@ Last update: 2018-09-06
                 status.succeed(this, '') // Success message in graphs function
               })
               .catch(error => {
-                console.log('There was an error: ' + error.message) // Pull out the error message.
-                status.fail(this, 'Could not run scenarios: ' + error.message) // Indicate failure.
+                console.log('There was an error', error) // Pull out the error message.
+                status.fail(this, 'Could not run scenarios', error) // Indicate failure.
               })
           })
           .catch(error => {
-            this.response = 'There was an error: ' + error.message
-            status.fail(this, 'Could not set scenarios: ' + error.message)
+            this.response = 'There was an error', error
+            status.fail(this, 'Could not set scenarios', error)
           })
       },
     }

@@ -247,7 +247,7 @@ Last update: 2018-08-30
             status.succeed(this, '')  // No green popup.
           })
           .catch(error => {
-            status.fail(this, 'Could not load projects: ' + error.message)
+            status.fail(this, 'Could not load projects', error)
           })
       },
 
@@ -260,7 +260,7 @@ Last update: 2018-08-30
             status.succeed(this, '')
           })
           .catch(error => {
-            status.fail(this, 'Could not add demo project: ' + error.message)
+            status.fail(this, 'Could not add demo project', error)
           })
       },
 
@@ -294,7 +294,7 @@ Last update: 2018-08-30
             status.succeed(this, 'New project uploaded')
           })
           .catch(error => {
-            status.fail(this, 'Could not upload file: ' + error.message)
+            status.fail(this, 'Could not upload file', error)
           })
       },
 
@@ -372,7 +372,7 @@ Last update: 2018-08-30
             status.succeed(this, 'Project "'+matchProject.project.name+'" copied')    // Indicate success.
           })
           .catch(error => {
-            status.fail(this, 'Could not copy project: ' + error.message) // Indicate failure.
+            status.fail(this, 'Could not copy project', error) // Indicate failure.
           })
       },
 
@@ -392,7 +392,7 @@ Last update: 2018-08-30
             })
             .catch(error => {
               // Indicate failure.
-              status.fail(this, 'Could not rename project: ' + error.message)
+              status.fail(this, 'Could not rename project', error)
             })
         }
 
@@ -414,7 +414,7 @@ Last update: 2018-08-30
             status.succeed(this, '')  // No green popup message.
           })
           .catch(error => { // Indicate failure.
-            status.fail(this, 'Could not download project: ' + error.message)
+            status.fail(this, 'Could not download project', error)
           })
       },
 
@@ -426,7 +426,7 @@ Last update: 2018-08-30
             status.succeed(this, '')  // No green popup message.
           })
           .catch(error => {
-            status.fail(this, 'Could not download databook: ' + error.message)
+            status.fail(this, 'Could not download databook', error)
           })
       },
 
@@ -439,7 +439,7 @@ Last update: 2018-08-30
           status.succeed(this, '')  // No green popup message.        
         })
         .catch(error => {
-          status.fail(this, 'Could not download defaults: ' + error.message)     
+          status.fail(this, 'Could not download defaults', error)     
         })      
       },
 
@@ -452,7 +452,7 @@ Last update: 2018-08-30
             status.succeed(this, 'Data uploaded to project') // Indicate success.
           })
           .catch(error => {
-            status.fail(this, 'Could not upload data: ' + error.message) // Indicate failure.
+            status.fail(this, 'Could not upload data', error) // Indicate failure.
           })
       },
 
@@ -492,7 +492,7 @@ Last update: 2018-08-30
               status.succeed(this, '')  // No green popup message.
             })
             .catch(error => {
-              status.fail(this, 'Could not delete project/s: ' + error.message)
+              status.fail(this, 'Could not delete project/s', error)
             })
         }
       },

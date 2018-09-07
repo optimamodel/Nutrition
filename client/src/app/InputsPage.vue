@@ -136,7 +136,7 @@ Last update: 2018-08-02
             status.succeed(this, 'Data loaded')
           })
           .catch(error => {
-            status.failurePopup(this, 'Could not get sheet data: ' + error.message)
+            status.failurePopup(this, 'Could not get sheet data', error)
           })
       },
 
@@ -148,7 +148,7 @@ Last update: 2018-08-02
             status.succeed(this, 'Data saved')
           })
           .catch(error => {
-            status.failurePopup(this, 'Could not save sheet data: ' + error.message)
+            status.failurePopup(this, 'Could not save sheet data', error)
           })
       },
 
@@ -160,7 +160,7 @@ Last update: 2018-08-02
             status.succeed(this, '')  // No green popup message.
           })
           .catch(error => {
-            status.fail(this, 'Could not download databook: ' + error.message)
+            status.fail(this, 'Could not download databook', error)
           })
       },
 
@@ -173,7 +173,7 @@ Last update: 2018-08-02
             status.succeed(this, 'Data uploaded')
           })
           .catch(error => {
-            status.fail(this, 'Could not upload data: ' + error.message)
+            status.fail(this, 'Could not upload data', error)
           })
       },
 

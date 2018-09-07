@@ -362,7 +362,7 @@ Last update: 2018-09-06
             status.succeed(this, 'Optimizations loaded')
           })
           .catch(error => {
-            status.fail(this, 'Could not load optimizations: ' + error.message)
+            status.fail(this, 'Could not load optimizations', error)
           })
       },
 
@@ -374,7 +374,7 @@ Last update: 2018-09-06
             status.succeed(this, 'Optimizations saved')
           })
           .catch(error => {
-            status.fail(this, 'Could not save optimizations: ' + error.message)
+            status.fail(this, 'Could not save optimizations', error)
           })
       },
 
@@ -436,7 +436,7 @@ Last update: 2018-09-06
             status.succeed(this, 'Optimization added')
           })
           .catch(error => {
-            status.fail(this, 'Could not add optimization: ' + error.message)
+            status.fail(this, 'Could not add optimization', error)
           })
       },
 
@@ -455,7 +455,7 @@ Last update: 2018-09-06
             status.succeed(this, 'Optimization copied')
           })
           .catch(error => {
-            status.fail(this, 'Could not copy optimization: ' + error.message)
+            status.fail(this, 'Could not copy optimization', error)
           })
       },
 
@@ -475,7 +475,7 @@ Last update: 2018-09-06
           status.succeed(this, 'Optimization deleted')
         })
         .catch(error => {
-          status.fail(this, 'Could not delete optimization: ' + error.message)
+          status.fail(this, 'Could not delete optimization', error)
         })
       },
 
@@ -491,11 +491,11 @@ Last update: 2018-09-06
                 status.succeed(this, 'Started optimization')
               })
               .catch(error => {
-                status.fail(this, 'Could not start optimization: ' + error.message)
+                status.fail(this, 'Could not start optimization', error)
               })
           })
           .catch(error => {
-            status.fail(this, 'Could not save optimizations: ' + error.message)
+            status.fail(this, 'Could not save optimizations', error)
           })
       },
 
