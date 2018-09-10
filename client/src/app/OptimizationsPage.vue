@@ -391,7 +391,7 @@ Last update: 2018-09-06
             console.log(this.addEditModal.optimSummary)
           })
           .catch(error => {
-            status.failurePopup(this, 'Could not open add optimization modal: '  + error.message)
+            status.fail(this, 'Could not open add optimization modal', error)
           })
       },
 
@@ -514,7 +514,7 @@ Last update: 2018-09-06
             status.succeed(this, 'Graphs created')
           })
           .catch(error => {
-            status.fail(this, 'Could not make graphs:' + error.message) // Indicate failure.
+            status.fail(this, 'Could not make graphs', error) // Indicate failure.
           })
       },
     }

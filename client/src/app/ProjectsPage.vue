@@ -281,7 +281,7 @@ Last update: 2018-08-30
             status.succeed(this, 'New project "' + this.proj_name + '" created') // Indicate success.
           })
           .catch(error => {
-            status.fail(this, 'Could not add new project:' + error.message)    // Indicate failure.
+            status.fail(this, 'Could not add new project', error)    // Indicate failure.
           })
       },
 
@@ -359,7 +359,7 @@ Last update: 2018-08-30
         let matchProject = this.projectSummaries.find(theProj => theProj.project.id === uid)
         console.log('openProject() called for ' + matchProject.project.name)
         this.$store.commit('newActiveProject', matchProject) // Set the active project to the matched project.
-        status.successPopup(this, 'Project "'+matchProject.project.name+'" loaded') // Success popup.
+        status.succeed(this, 'Project "'+matchProject.project.name+'" loaded') // Success popup.
       },
 
       copyProject(uid) {

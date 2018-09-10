@@ -313,7 +313,7 @@ Last update: 2018-09-06
             console.log(defaultScen)
           })
           .catch(error => {
-            status.failurePopup(this, 'Could not open add scenario modal: '  + error.message)
+            status.fail(this, 'Could not open add scenario modal', error)
           })
       },
 
