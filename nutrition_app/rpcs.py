@@ -739,7 +739,7 @@ def py_to_js_optim(py_optim, proj, key=None, default_included=False):
     attrs = ['name', 'model_name', 'mults', 'add_funds', 'fix_curr', 'filter_progs']
     for attr in attrs:
         js_optim[attr] = getattr(py_optim, attr) # Copy the attributes into a dictionary
-    weightslist = [{'label':item[0], 'weight':item[1]} for item in zip(obj_labels, py_optim.weights)]
+    weightslist = [{'label':item[0], 'weight':abs(item[1])} for item in zip(obj_labels, py_optim.weights)] # WARNING, ABS HACK
     js_optim['weightslist'] = weightslist
     js_optim['spec'] = []
     for prog_name in prog_names:
