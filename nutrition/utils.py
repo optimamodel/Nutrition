@@ -153,6 +153,13 @@ def get_weights(obj):
     else:
         raise Exception("ERROR: cannot get weights for this object type")
 
+def check_weights(weights):
+    """ This is just a quick hack, real solution on another branch """
+    # change thrive to negative
+    weights = np.absolute(weights)
+    weights[0] *= -1
+    return weights
+
 def read_sheet(spreadsheet, name, cols=None, dict_orient=None, skiprows=None, to_odict=False, dropna=None):
     if dropna is None: dropna = 'all'
     df = spreadsheet.parse(name, index_col=cols, skiprows=skiprows)
