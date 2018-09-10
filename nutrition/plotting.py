@@ -12,10 +12,12 @@ if for_frontend:
     fig_size = (8,3)
     ax_size = [0.2,0.12,0.40,0.75]
     pltstart = 1
+    hueshift = 0.05
 else:
     legend_loc = {'loc':'right'}
     ax_size = [0.2,0.10,0.65,0.75]
     pltstart = 1
+    hueshift = 0.05
 
 
 def make_plots(all_res=None, toplot=None, optim=False):
@@ -45,13 +47,14 @@ def plot_prevs(all_res):
     prevs = utils.default_trackers(prev=True, rate=False)
     lines = []
     figs = sc.odict()
+    colors = sc.gridcolors(ncolors=len(all_res), hueshift=hueshift)
     for i, prev in enumerate(prevs):
         fig = pl.figure(figsize=fig_size)
         ax = fig.add_axes(ax_size)
         ymax = 0
         leglabels = []
         # plot results
-        for res in all_res:
+        for r, res in enumerate(all_res):
             years = res.years
             out = res.get_outputs([prev], seq=True)[0]
             f = scipy.interpolate.PchipInterpolator(years, out, extrapolate=False)
@@ -59,7 +62,7 @@ def plot_prevs(all_res):
             out = f(newx) * 100
             thismax = max(out)
             if thismax > ymax: ymax = thismax
-            line, = ax.plot(newx, out)
+            line, = ax.plot(newx, out, color=colors[r])
             lines.append(line)
             leglabels.append(res.name)
         # formatting
@@ -79,6 +82,7 @@ def plot_outputs(all_res, seq, name):
     scale = 1e1 # scales for formatting
     baseres = all_res[0]
     years = np.array(baseres.years) # assume these scenarios over same time horizon
+    colors = sc.gridcolors(ncolors=len(all_res), hueshift=hueshift)
     for i, outcome in enumerate(outcomes):
         fig = pl.figure(figsize=fig_size)
         ax = fig.add_axes(ax_size)
@@ -98,7 +102,7 @@ def plot_outputs(all_res, seq, name):
             if thimax > ymax: ymax = thimax
             change = round_elements([utils.get_change(base, out) for out,base in zip(output, baseout)], dec=1)
             perchange.append(change)
-            bar = ax.bar(xpos, output, width=width)
+            bar = ax.bar(xpos, output, width=width, color=colors[r])
             bars.append(bar)
         if seq:
             ax.set_xlabel('Years')
@@ -133,7 +137,7 @@ def plot_alloc(results, optim):
     figs = sc.odict()
     ref = results[0]
     progset = ref.prog_info.base_progset()
-    colors = sc.gridcolors(ncolors=len(progset))
+    colors = sc.gridcolors(ncolors=len(progset), hueshift=hueshift)
     leglabs = []
     x = np.arange(len(results))
     # group allocations by program
@@ -146,7 +150,6 @@ def plot_alloc(results, optim):
                 progav = alloc[prog][1:].mean()
             except: # program not in scenario program set
                 progav = 0
-
             thisprog[i] = progav
         avspend.append(thisprog)
     # make bar plots
