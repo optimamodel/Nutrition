@@ -7,10 +7,9 @@ from . import utils
 # Choose where the legend appears: outside right or inside right
 for_frontend = True
 if for_frontend:
-    legend_loc = {'bbox_to_anchor':(1,1.0)}
-    legend_loc_prev = {'loc':'best'} # No idea why this has to be different, but it does
+    legend_loc =      {'bbox_to_anchor':(1.0,1.0)}
     fig_size = (8,3)
-    ax_size = [0.2,0.12,0.40,0.75]
+    ax_size = [0.2,0.18,0.40,0.72]
     pltstart = 1
 else:
     legend_loc = {'loc':'right'}
@@ -68,7 +67,7 @@ def plot_prevs(all_res):
         ax.set_ylim([0, ymax + ymax*0.1])
         ax.set_xlabel('Years')
         ax.set_title(utils.relabel(prev))
-        ax.legend(lines, [res.name for res in all_res], **legend_loc_prev)
+        ax.legend(lines, [res.name for res in all_res], **legend_loc)
         figs['prevs_%0i'%i] = fig
     return figs
 
@@ -179,7 +178,7 @@ def plot_alloc(results, optim):
     ax.set_ylim((0, ymax+ymax*.1))
     ax.set_ylabel('Spending (US$)')
     sc.SIticks(ax=ax, axis='y')
-    nprogs = len(ref.programs)
+    nprogs = len(leglabs)
     labelspacing = 0.1
     columnspacing = 0.1
     fontsize = None
@@ -224,21 +223,21 @@ def get_costeff(parents, children, baselines):
             for k, out in enumerate(outcomes):
                 impact = par_outs[k] - child_outs[k]
                 if abs(impact) < 1e-3:
-                    costimpact = 'no impact'
+                    costimpact = 'No impact'
                 else:
                     costimpact = totalspend / impact
                     costimpact = round(costimpact, 2)
                     # format
                     if out == 'thrive': # thrive should increase
                         if costimpact < 0:
-                            costimpact = 'negative impact'
+                            costimpact = 'Negative impact'
                         else:
-                            costimpact = '${} per additional case'.format(costimpact)
+                            costimpact = '$%s per additional case' % format(costimpact, ',')
                     else: # all other outcomes should be negative
                         if costimpact > 0:
-                            costimpact = 'negative impact'
+                            costimpact = 'Negative impact'
                         else:
-                            costimpact = '${} per case averted'.format(costimpact * -1)
+                            costimpact = '$%s per case averted' % format(-costimpact, ',')
                 costeff[parent.name][child.name][pretty[k]] = costimpact
     return costeff
 

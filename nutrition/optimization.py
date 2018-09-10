@@ -75,7 +75,7 @@ class Optim(sc.prettyobj):
         optim = (maxiter, swarmsize, maxtime)
         args = [(self.get_kwargs(model, self.weights, mult, keep_inds), mult)+optim for mult in self.mults]
         if parallel:
-            res = utils.run_parallel(self.one_optim, args, num_procs)
+            res = utils.run_parallel(self.one_optim_parallel, args, num_procs)
         else:
             res = []
             for arg in args:
@@ -114,7 +114,6 @@ class Optim(sc.prettyobj):
             keep_inds = [True for i, _ in enumerate(self.prog_set)]
         return np.array(keep_inds)
 
-    @utils.trace_exception
     def one_optim(self, args):
         """ Runs optimization for an objective and budget multiple.
         Return: a list of allocations, with order corresponding to the programs list """
@@ -146,6 +145,11 @@ class Optim(sc.prettyobj):
         progvals = {prog:spend for prog, spend in zip(self.prog_set, best_alloc)}
         scen = Scen(name=name, model_name=self.model_name, scen_type='budget', progvals=progvals)
         res = run_scen(scen, model, obj=self.obj, mult=mult)
+        return res
+    
+    @utils.trace_exception
+    def one_optim_parallel(self, args):
+        res = self.one_optim(args)
         return res
 
     def print_status(self, objective, multiple, flag, now):

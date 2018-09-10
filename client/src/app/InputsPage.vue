@@ -5,59 +5,70 @@ Last update: 2018-08-02
 -->
 
 <template>
-  <div class="SitePage">
+  <div>
 
-    <div v-if="activeProjectID ==''">
+    <div v-if="projectID ==''">
       <div style="font-style:italic">
         <p>No project is loaded.</p>
       </div>
     </div>
 
-    <div v-else>
-      <button class="btn" @click="setActive('breastfeeding')">Breastfeeding distribution</button>
-      <button class="btn" @click="setActive('nutritional')">Nutritional status distribution</button>
-      <button class="btn" @click="setActive('IYCF')">IYCF packages</button>
-      <button class="btn" @click="setActive('sam')">Treatment of SAM</button>
-      <button class="btn" @click="setActive('programs')">Program cost and coverage</button>
-      <br><br>
-
-      <!--Placeholder for {{ this.activeScreen }} input table<br><br>-->
-
-      <table class="table table-bordered table-hover table-striped" style="width: 100%">
-        <thead>
-        <tr>
-          <th colspan="6" style="text-align: left">Percentage of children in each breastfeeding category in baseline year (2017)</th>
-        </tr>
-        <tr>
-          <th>Status</th>
-          <th><1 month</th>
-          <th>1-5 months</th>
-          <th>6-11 months</th>
-          <th>12-23 months</th>
-          <th>24-59 months</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr v-for="tmpr in tmpRows">
-          <td v-for="tmpc in tmpCols">
-            <input type="text"
-                   class="txbox"
-                   style="text-align: right"
-                   v-model="tmpData[tmpr][tmpc]"/>
-            <!--{{ r }}-->
-          </td>
-        </tr>
-        </tbody>
-      </table>
-
-      <div>
-        <button class="btn __green" @click="saveChanges()">Save changes</button>
-        <button class="btn"         @click="download()">Download</button>
-        <button class="btn"         @click="upload()">Upload</button>
-        <button class="btn __red"   @click="revert()">Revert</button>
+    <div v-else-if="!hasData">
+      <div style="font-style:italic">
+        <p>Data not yet uploaded for the project.  Please upload a databook in the Projects page.</p>
       </div>
-      <br>
+    </div>
 
+    <div v-else>
+      <div v-if="sheetNames">
+        <div class="card">
+          <help reflink="inputs" label="Edit input data"></help>
+          <div v-for="name in sheetNames" style="display:inline-block; padding-right:10px">
+            <div v-if="name===activeSheet">
+              <button class="btn sheetbtn" @click="setActive(name)" data-tooltip="Current sheet">{{ name }}</button>
+            </div>
+            <div v-else>
+              <button class="btn sheetbtn deselected" @click="setActive(name)" data-tooltip="Switch to this sheet">{{ name }}</button>
+            </div>
+
+          </div>
+          <br><br>
+
+          <div class="icantbelieveitsnotexcel">
+            <table class="table table-bordered table-hover table-striped" style="width: 100%;">
+              <tr v-for="rowData in sheetTables[activeSheet]" style="height:30px">
+                <td v-for="cellDict in rowData" style="border: 1px solid #ccc;">
+                  <div v-if="cellDict.format==='head'" class="cell c_head"><div class="cellpad">{{ cellDict.value }}</div></div>
+                  <div v-if="cellDict.format==='name'" class="cell c_name"><div class="cellpad">{{ cellDict.value }}</div></div>
+                  <div v-if="cellDict.format==='blnk'" class="cell c_blnk"><div class="cellpad"></div></div> <!-- Force empty, even if value -->
+                  <div v-if="cellDict.format==='edit'" class="cell c_edit"><div class="cellpad">
+                      <input type="text"
+                             class="txbox"
+                             style="text-align: right"
+                             v-model="cellDict.value"/>
+                    </div>
+                  </div>
+                  <div v-if="cellDict.format==='calc'" class="cell c_calc"><div class="cellpad">
+                    <input type="text"
+                           class="txbox"
+                           style="text-align: right"
+                           v-model="cellDict.value" disabled/>
+                  </div>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <div>
+            <button class="btn __green" @click="saveSheetData()"    data-tooltip="Save data to project">Save changes</button>
+            <button class="btn"         @click="getSheetData()"     data-tooltip="Revert to last saved data">Revert</button>
+            <button class="btn"         @click="downloadDatabook()" data-tooltip="Download databook"><i class="ti-download"></i></button>
+            <button class="btn"         @click="uploadDatabook()"   data-tooltip="Upload databook"><i class="ti-upload"></i></button>
+          </div>
+          <br>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -65,50 +76,37 @@ Last update: 2018-08-02
 
 
 <script>
+
   import axios from 'axios'
-  var filesaver = require('file-saver')
-  import rpcservice from '@/services/rpc-service'
+  let filesaver = require('file-saver')
+  import utils from '@/services/utils' // Imported globally
+  import rpcs from '@/services/rpc-service'
   import status from '@/services/status-service'
   import router from '@/router'
-  import Vue from 'vue';
 
   export default {
     name: 'InputsPage',
 
-    components: {
-    },
+
 
     data() {
       return {
-        activeScreen: 'breastfeeding',
-        screenData: [],
-        tmpData: [['Exclusive', '84.0%', '44.3%', '1.4%', '0.0%', '0.0%'],
-          ['Predominant', '9.2%', '21.7%', '3.3%', '0.1%', '0.0%'],
-          ['Partial', '5.8%', '31.6%', '93.5%', '72.1%', '0.0%'],
-          ['None', '1.0%', '2.4%', '1.9%', '27.8%', '100.0%']],
-        tmpRows: [0,1,2,3],
-        tmpCols: [0,1,2,3,4,5],
+        sheetNames: [],
+        sheetTables: {},
+        activeSheet: '',
       }
     },
 
     computed: {
-      activeProjectID() {
-        if (this.$store.state.activeProject.project === undefined) {
-          return ''
-        } else {
-          return this.$store.state.activeProject.project.id
-        }
-      },
+      projectID()    { return utils.projectID(this) },
+      hasData()      { return utils.hasData(this) },
     },
 
     created() {
-      // If we have no user logged in, automatically redirect to the login page.
-      if (this.$store.state.currentUser.displayname == undefined) {
+      if (this.$store.state.currentUser.displayname === undefined) { // If we have no user logged in, automatically redirect to the login page.
         router.push('/login')
-      }
-      else { // Otherwise...
-        // Load the project summaries of the current user.
-        this.getSheetData()
+      } else { // Otherwise...
+        this.getSheetData() // Load the sheet data
       }
 
     },
@@ -117,46 +115,110 @@ Last update: 2018-08-02
 
       setActive(active) {
         console.log('Setting active to ' + active)
-        this.activeScreen = active
+        this.activeSheet = active
       },
 
       getSheetData() {
         console.log('getSheetData() called')
-      },
-
-      projectID() {
-        let id = this.$store.state.activeProject.project.id // Shorten this
-        return id
-      },
-
-      saveChanges() {
-        status.failurePopup(this, 'Not implemented')
-      },
-
-      upload() {
-        status.failurePopup(this, 'Not implemented')
-      },
-
-      download() {
-        status.failurePopup(this, 'Not implemented')
-      },
-
-      revert() {
-        status.failurePopup(this, 'Not implemented')
-      },
-
-      exportResults() {
-        console.log('exportResults() called')
-        rpcservice.rpcDownloadCall('export_results', [this.projectID()]) // Make the server call to download the framework to a .prj file.
+        status.start(this, 'Getting data...')
+        rpcs.rpc('get_sheet_data', [this.projectID]) // Make the server call to download the framework to a .prj file.
+          .then(response => {
+            this.sheetNames = response.data.names
+            this.sheetTables = response.data.tables
+            if (this.activeSheet === '') {
+              this.activeSheet = this.sheetNames[0]
+            }
+            status.succeed(this, 'Data loaded')
+          })
           .catch(error => {
-            // Failure popup.
-            status.failurePopup(this, 'Could not export results: ' + error.message)
+            status.failurePopup(this, 'Could not get sheet data: ' + error.message)
           })
       },
+
+      saveSheetData() {
+        console.log('saveSheetData() called')
+        status.start(this, 'Saving changes...')
+        rpcs.rpc('save_sheet_data', [this.projectID, this.sheetTables]) // Make the server call to download the framework to a .prj file.
+          .then(response => {
+            status.succeed(this, 'Data saved')
+          })
+          .catch(error => {
+            status.failurePopup(this, 'Could not save sheet data: ' + error.message)
+          })
+      },
+
+      downloadDatabook() {
+        console.log('downloadDatabook() called')
+        status.start(this, 'Downloading data book...')
+        rpcs.download('download_databook', [this.projectID])
+          .then(response => {
+            status.succeed(this, '')  // No green popup message.
+          })
+          .catch(error => {
+            status.fail(this, 'Could not download databook: ' + error.message)
+          })
+      },
+
+      uploadDatabook() {
+        console.log('uploadDatabook() called')
+        status.start(this, 'Uploading databook...')
+        rpcs.upload('upload_databook', [this.projectID], {}, '.xlsx')
+          .then(response => {
+            this.getSheetData() // Refresh the table
+            status.succeed(this, 'Data uploaded')
+          })
+          .catch(error => {
+            status.fail(this, 'Could not upload data: ' + error.message)
+          })
+      },
+
     }
   }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss" scoped>
+  .icantbelieveitsnotexcel {
+    display:inline-block;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: auto;
+  }
+
+  .cell {
+    display:inline-flex;
+    align-items:center;
+    height:100%;
+    width:100%;
+    justify-content:flex-end;
+    text-align:right;
+  }
+
+  .cellpad {
+    padding:5px
+  }
+
+  .c_head {
+    background-color: #fafafa;
+    font-weight:bold
+  }
+
+  .c_name {
+    background-color:#fafafa;
+  }
+
+  .c_edit {
+    background-color: rgb(168, 237, 154);
+    justify-content:flex-end;
+  }
+
+  .c_calc {
+    color:#888;
+    background-color:#ccc;
+    justify-content:flex-end;
+  }
+
+  .c_blnk {
+    background-color:#fafafa;
+  }
 </style>

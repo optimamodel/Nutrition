@@ -41,7 +41,8 @@ class Settings(object):
         output  = sc.prepr(self)
         return output
 
-def data_path(country, region, sim_type):
+def data_path(country, region):
+    sim_type = 'national' if country == region else 'regional'
     parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
     demoname = '{}_input.xlsx'.format(region)
     subdir = os.path.join('applications', country, 'data', sim_type, demoname)

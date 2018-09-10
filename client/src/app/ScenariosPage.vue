@@ -56,14 +56,14 @@ Last update: 2018-09-02
     </div>
 
     <!-- START RESULTS CARD -->
-    <div class="card full-width-card">
+    <div class="card full-width-card" v-if="hasGraphs">
       <div class="calib-title">
         <help reflink="results-plots" label="Results"></help>
         <div>
-            <button class="btn btn-icon" @click="scaleFigs(0.9)" data-tooltip="Zoom out">&ndash;</button>
-            <button class="btn btn-icon" @click="scaleFigs(1.0)" data-tooltip="Reset zoom"><i class="ti-zoom-in"></i></button>
-            <button class="btn btn-icon" @click="scaleFigs(1.1)" data-tooltip="Zoom in">+</button>
-            &nbsp;&nbsp;&nbsp;
+          <button class="btn btn-icon" @click="scaleFigs(0.9)" data-tooltip="Zoom out">&ndash;</button>
+          <button class="btn btn-icon" @click="scaleFigs(1.0)" data-tooltip="Reset zoom"><i class="ti-zoom-in"></i></button>
+          <button class="btn btn-icon" @click="scaleFigs(1.1)" data-tooltip="Zoom in">+</button>
+          &nbsp;&nbsp;&nbsp;
           <button class="btn" @click="exportGraphs()">Export plots</button>
           <button class="btn" @click="exportResults(projectID)">Export data</button>
         </div>
@@ -72,15 +72,41 @@ Last update: 2018-09-02
       <div class="calib-main" :class="{'calib-main--full': true}">
         <div class="calib-graphs">
           <!--<div class="featured-graphs">-->
-            <!--<div :id="'fig0'">-->
-              <!--&lt;!&ndash;mpld3 content goes here&ndash;&gt;-->
-            <!--</div>-->
+          <!--<div :id="'fig0'">-->
+          <!--&lt;!&ndash;mpld3 content goes here&ndash;&gt;-->
+          <!--</div>-->
           <!--</div>-->
           <div class="other-graphs">
             <div v-for="index in placeholders" :id="'fig'+index" class="calib-graph">
               <!--mpld3 content goes here-->
             </div>
           </div>
+        </div>
+      </div>
+
+      <br>
+      <div v-if="table" display="style:inline-block">
+        <help reflink="cost-effectiveness" label="Program cost-effectiveness"></help>
+        <div class="calib-graphs" style="display:inline-block; text-align:right">
+          <table class="table table-bordered table-hover table-striped">
+            <thead>
+            <tr>
+              <th>Scenario</th>
+              <th>Program</th>
+              <th>Outcome</th>
+              <th>ICER</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="rowdata in table">
+              <td v-for="text in rowdata">
+                <span v-if="rowdata[0]!==''" style="font-size: 14px; font-weight:bold">{{text}}</span>
+                <span v-else-if="rowdata[1]!==''" style="font-weight:bold"><b>{{text}}</b></span>
+                <span v-else>{{text}}</span>
+              </td>
+            </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -92,76 +118,77 @@ Last update: 2018-09-02
     <modal name="add-scen"
            height="auto"
            :scrollable="true"
-           :width="900"
-           :classes="['v--modal', 'vue-dialog']"
+           :width="'90%'"
+           :classes="['v--modal', 'vue-dialog', 'grrmodal']"
            :pivot-y="0.3"
            :adaptive="true"
            :clickToClose="clickToClose"
            :transition="transition">
 
-      <div class="dialog-content">
-        <div class="dialog-c-title" v-if="addEditModal.mode=='add'">
-          Add scenario
-        </div>
-        <div class="dialog-c-title" v-else>
-          Edit scenario
-        </div>
-        <div class="dialog-c-text">
-          <b>Scenario name:</b><br>
-          <input type="text"
-                 class="txbox"
-                 v-model="addEditModal.scenSummary.name"/><br>
-          <div class="calib-params">
-            <table class="table table-bordered table-hover table-striped" style="width: 100%">
-              <thead>
-              <tr>
-                <th colspan=100><div class="dialog-header">
-                  <span v-if="addEditModal.modalScenarioType==='coverage'">Program coverages (%)</span>
-                  <span v-else>Program spending (US$)</span>
-                </div></th>
-              </tr>
-              <tr>
-                <th>Name</th>
-                <th>Include?</th>
-                <th>Baseline</th>
-                <th v-for="year in defaultScenYears">{{ year }}</th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr v-for="progvals in this.addEditModal.scenSummary.progvals">
-                <td style="min-width:200px">
-                  {{ progvals.name }}
-                </td>
-                <td style="text-align: center">
-                  <input type="checkbox" v-model="progvals.included"/>
-                </td>
-                <td style="text-align: right">
-                  <span v-if="addEditModal.modalScenarioType==='coverage'">{{ progvals.base_cov }}</span>
-                  <span v-else>                                            {{ progvals.base_spend }}</span>
-                </td>
-                <td v-for="(val, index) in progvals.vals">
-                  <input type="text"
-                         class="txbox"
-                         style="text-align: right"
-                         v-model="progvals.vals[index]"/>
-                </td>
-              </tr>
-              </tbody>
-            </table>
+        <div class="dialog-content">
+          <div class="dialog-c-title" v-if="addEditModal.mode=='add'">
+            Add scenario
+          </div>
+          <div class="dialog-c-title" v-else>
+            Edit scenario
+          </div>
+          <div class="dialog-c-text">
+            <b>Scenario name:</b><br>
+            <input type="text"
+                   class="txbox"
+                   v-model="addEditModal.scenSummary.name"/><br>
+            <div class="calib-params">
+              <table class="table table-bordered table-hover table-striped" style="width: 100%">
+                <thead>
+                <tr>
+                  <th colspan=100><div class="dialog-header">
+                    <span v-if="addEditModal.modalScenarioType==='coverage'">Program coverages (%)</span>
+                    <span v-else>Program spending (US$)</span>
+                  </div></th>
+                </tr>
+                <tr>
+                  <th>Name</th>
+                  <th>Include?</th>
+                  <th>2017</th>
+                  <th v-for="year in defaultScenYears">{{ year }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="progvals in this.addEditModal.scenSummary.progvals">
+                  <td style="min-width:200px">
+                    {{ progvals.name }}
+                  </td>
+                  <td style="text-align: center">
+                    <input type="checkbox" v-model="progvals.included"/>
+                  </td>
+                  <td style="text-align: right">
+                    <span v-if="addEditModal.modalScenarioType==='coverage'">{{ progvals.base_cov }}</span>
+                    <span v-else>                                            {{ progvals.base_spend }}</span>
+                  </td>
+                  <td v-for="(val, index) in progvals.vals">
+                    <input type="text"
+                           class="txbox"
+                           style="text-align: right"
+                           v-model="progvals.vals[index]"/>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div style="text-align:center">
+            <button @click="addScen()" class='btn __green' style="display:inline-block">
+              Save
+            </button>
+            &nbsp;&nbsp;&nbsp;
+            <button @click="$modal.hide('add-scen')" class='btn __red' style="display:inline-block">
+              Cancel
+            </button>
           </div>
         </div>
-        <div style="text-align:center">
-          <button @click="addScen()" class='btn __green' style="display:inline-block">
-            Save
-          </button>
-          &nbsp;&nbsp;&nbsp;
-          <button @click="$modal.hide('add-scen')" class='btn __red' style="display:inline-block">
-            Cancel
-          </button>
-        </div>
-      </div>
 
     </modal>
+
     <!-- END ADD-SCENARIO MODAL -->
 
 
@@ -171,19 +198,14 @@ Last update: 2018-09-02
 
 <script>
   import axios from 'axios'
-  var filesaver = require('file-saver')
+  let filesaver = require('file-saver')
   import utils from '@/services/utils'
   import rpcs from '@/services/rpc-service'
   import status from '@/services/status-service'
   import router from '@/router'
-  import help from '@/app/HelpLink.vue'
 
   export default {
     name: 'ScenariosPage',
-
-    components: {
-      help
-    },
 
     data() {
       return {
@@ -197,6 +219,8 @@ Last update: 2018-09-02
           modalScenarioType: 'coverage',
         },
         figscale: 1.0,
+        hasGraphs: false,
+        table: [],
       }
     },
 
@@ -207,10 +231,10 @@ Last update: 2018-09-02
     },
 
     created() {
-      if (this.$store.state.currentUser.displayname == undefined) { // If we have no user logged in, automatically redirect to the login page.
+      if (this.$store.state.currentUser.displayname === undefined) { // If we have no user logged in, automatically redirect to the login page.
         router.push('/login')
       }
-      else if ((this.$store.state.activeProject.project != undefined) &&
+      else if ((this.$store.state.activeProject.project !== undefined) &&
         (this.$store.state.activeProject.project.hasData) ) {
         console.log('created() called')
         utils.sleep(1)  // used so that spinners will come up by callback func
@@ -222,7 +246,6 @@ Last update: 2018-09-02
 
     methods: {
 
-      clearGraphs()             { return utils.clearGraphs() },
       makeGraphs(graphdata)     { return utils.makeGraphs(this, graphdata) },
       exportGraphs()            { return utils.exportGraphs(this) },
       exportResults(project_id) { return utils.exportResults(this, project_id) },
@@ -380,6 +403,7 @@ Last update: 2018-09-02
           .then(response => {
             rpcs.rpc('run_scens', [this.projectID]) // Go to the server to get the results
               .then(response => {
+                this.table = response.data.table
                 this.makeGraphs(response.data.graphs)
                 status.succeed(this, '') // Success message in graphs function
               })
@@ -400,4 +424,13 @@ Last update: 2018-09-02
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+
+  .grrmodal {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: hidden;
+  }
 </style>

@@ -44,8 +44,9 @@ def run_optim(project_id, cache_id, optim_name=None, online=True):
     results = proj.run_optim(key=optim_name, dosave=False, parallel=False)
     proj.results[cache_id] = results
     print('Saving project...')
-    rpcs.save_project(proj, online=online) 
-    return proj # Plots sold seprately
+    rpcs.save_project(proj, online=online)
+    if online: return None # Plots sold seprately
+    else:      return proj
 
 # Add the asynchronous task functions in this module to the tasks.py module so run_task() can call them.
 sw.add_task_funcs(task_func_dict)

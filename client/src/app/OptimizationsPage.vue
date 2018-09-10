@@ -60,7 +60,7 @@ Last update: 2018-09-02
 
 
     <!-- START RESULTS CARD -->
-    <div class="card full-width-card">
+    <div class="card full-width-card" v-if="hasGraphs">
       <div class="calib-title">
         <help reflink="results-plots" label="Results"></help>
         <div>
@@ -192,15 +192,9 @@ Last update: 2018-09-02
   import rpcs from '@/services/rpc-service'
   import status from '@/services/status-service'
   import router from '@/router'
-  import help from '@/app/HelpLink.vue'
-
 
   export default {
     name: 'OptimizationsPage',
-
-    components: {
-      help
-    },
 
     data() {
       return {
@@ -212,6 +206,7 @@ Last update: 2018-09-02
           mode: 'add',
         },
         figscale: 1.0,
+        hasGraphs: false,
       }
     },
 
@@ -295,6 +290,12 @@ Last update: 2018-09-02
         return (optimSummary.status === 'completed')
       },
 
+      needToPoll(optimSummary) {
+        let routePath = (this.$route.path === '/optimizations')
+        let optimState = true; // ((optimSummary.status === 'queued') || (optimSummary.status === 'started')) // CK: this needs to be given a delay to work
+        return (routePath && optimState)
+      },
+
       getOptimTaskState(optimSummary) {
         console.log('getOptimTaskState() called for with: ' + optimSummary.status)
         let statusStr = '';
@@ -321,17 +322,12 @@ Last update: 2018-09-02
             this.getOptimTaskState(optimSum)
           }
         });
-
-        // Hack to get the Vue display of optimSummaries to update
-        this.optimSummaries.push(this.optimSummaries[0]);
+        this.optimSummaries.push(this.optimSummaries[0]); // Hack to get the Vue display of optimSummaries to update
         this.optimSummaries.pop();
-
-        // Sleep waitingtime seconds.
-        let waitingtime = 1
+        let waitingtime = 1 // Sleep waitingtime seconds
         utils.sleep(waitingtime * 1000)
           .then(response => {
-            // Only if we are still in the optimizations page, call ourselves.
-            if (this.$route.path === '/optimizations') {
+            if (this.needToPoll()) { // Only if we are still in the optimizations page, call ourselves.
               this.pollAllTaskStates()
             }
           })

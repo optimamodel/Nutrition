@@ -3,40 +3,6 @@ import pandas
 import sciris as sc
 from . import settings, populations, utils, programs
 
-class Spreadsheet(object):
-    ''' A class for reading and writing spreadsheet data in binary format, so a project contains the spreadsheet loaded '''
-    
-    def __init__(self, filename=None):
-        self.data = None
-        self.filename = None
-        if filename is not None: self.load(filename)
-        return None
-    
-    def __repr__(self):
-        output  = sc.prepr(self)
-        return output
-    
-    def load(self, filename=None):
-        if filename is not None:
-            filepath = sc.makefilepath(filename=filename)
-            self.filename = filepath
-            with open(filepath, mode='rb') as f: 
-                self.data = f.read()
-        else:
-            print('No filename specified; aborting.')
-        return None
-    
-    def save(self, filename=None):
-        if filename is None:
-            if self.filename is not None: filename = self.filename
-        if filename is not None:
-            filepath = sc.makefilepath(filename=filename)
-            with open(filepath, mode='wb') as f:
-                f.write(self.data)
-            print('Spreadsheet saved to %s.' % filepath)
-        return filepath
-            
-
 class DefaultParams(object):
     def __init__(self, default_data, input_data):
         self.settings = settings.Settings()
@@ -63,16 +29,11 @@ class DefaultParams(object):
         self.spreadsheet = default_data
         self.input_data = input_data
         self.read_spreadsheet()
-        self.rem_spreadsheet(default_data.io)
         return None
     
     def __repr__(self):
         output  = sc.prepr(self)
         return output
-
-    def rem_spreadsheet(self, default_path):
-        self.spreadsheet.close()
-        self.spreadsheet = Spreadsheet(default_path) # Load spreadsheet binary file into project -- WARNING, only partly implemented since not sure how to read from
 
     def read_spreadsheet(self):
         self.extend_treatsam()
@@ -307,7 +268,7 @@ class DefaultParams(object):
 
 class InputData(object):
     """ Container for all the region-specific data (prevalences, mortality rates etc) read in from spreadsheet"""
-    def __init__(self, data):
+    def __init__(self, data, recalc=False):
         self.spreadsheet = data
         self.settings = settings.Settings()
         self.demo = None
@@ -321,6 +282,7 @@ class InputData(object):
         self.pw_agedist = []
         self.wra_proj = []
         self.t = None
+        self.recalc = recalc # Whether or not to recalculate formulas
 
         self.get_demo()
         self.get_proj()
@@ -328,15 +290,11 @@ class InputData(object):
         self.get_death_dist()
         self.get_time_trends()
         self.get_incidences()
-        self.rem_spreadsheet(data.io)
 
     def __repr__(self):
         output  = sc.prepr(self)
         return output
 
-    def rem_spreadsheet(self, filepath):
-        self.spreadsheet.close()
-        self.spreadsheet = Spreadsheet(filepath)
 
     ## DEMOGRAPHICS ##
 
@@ -361,7 +319,7 @@ class InputData(object):
 
     def get_proj(self):
         # drops rows with any na
-        proj = self.spreadsheet.parse(sheet_name='Demographic projections', index_col=[0]).dropna(how='any')
+        proj = utils.read_sheet(self.spreadsheet, 'Demographic projections', cols=[0], dropna='any')
         # dict of lists to support indexing
         for column in proj:
             self.proj[column] = proj[column].tolist()
@@ -386,7 +344,15 @@ class InputData(object):
         # get anaemia
         dist = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0,1], skiprows=12)
         self.risk_dist['Anaemia'] = sc.odict()
-        anaem = dist.loc['Anaemia', 'Prevalence of iron deficiency anaemia'].to_dict()
+        if not self.recalc:
+            anaem = dist.loc['Anaemia', 'Prevalence of iron deficiency anaemia'].to_dict()
+        else:
+            # CK: Spreadsheet recalculation #1
+            all_anaem = dist.loc['Anaemia', 'Prevalence of anaemia'].to_dict()
+            baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs')
+            index = np.array(baseline['Field']).tolist().index('Percentage of anaemia that is iron deficient')
+            iron_pct = np.array(baseline['Data'])[index]
+            anaem = {key:val*iron_pct for key,val in all_anaem.items()}
         for age, prev in anaem.iteritems():
             self.risk_dist['Anaemia'][age] = dict()
             self.risk_dist['Anaemia'][age]['Anaemic'] = prev
@@ -396,7 +362,7 @@ class InputData(object):
         self.risk_dist['Breastfeeding'] = dist.loc['Breastfeeding'].to_dict()
 
     def get_time_trends(self):
-        trends = self.spreadsheet.parse(sheet_name='Time trends', index_col=[0,1])
+        trends = utils.read_sheet(self.spreadsheet, 'Time trends', cols=[0,1], dropna=False)
         self.time_trends['Stunting'] = trends.loc['Stunting prevalence (%)'].loc['Children 0-59 months'].values.tolist()[:1]
         self.time_trends['Wasting'] = trends.loc['Wasting prevalence (%)'].loc['Children 0-59 months'].values.tolist()[:1]
         self.time_trends['Anaemia'] = trends.loc['Anaemia prevalence (%)'].values.tolist()[:3] # order is (children, PW, WRA)
@@ -446,15 +412,10 @@ class ProgData(object):
         self.get_prog_info()
         self.get_famplan_methods()
         self.create_iycf()
-        self.rem_spreadsheet()
     
     def __repr__(self):
         output  = sc.prepr(self)
         return output
-
-    def rem_spreadsheet(self):
-        self.spreadsheet.close()
-        self.spreadsheet = None
 
     def get_prog_target(self):
         targetPopSheet = utils.read_sheet(self.spreadsheet, 'Programs target population', [0,1])
@@ -561,19 +522,23 @@ class Dataset(object):
     
     def __init__(self, country='demo', region='demo', name=None, demo_data=None, prog_data=None, default_params=None,
                  pops=None, prog_info=None, doload=False, filepath=None):
+        
         self.country = country
         self.region = region
+        
         self.demo_data = demo_data
         self.prog_data = prog_data
         self.default_params = default_params
         self.pops = pops
         self.prog_info = prog_info
         self.t = None
+        self.name = name
         if name is None:
             try:    name = country+'_'+region
             except: name = 'default'
-        self.name = name
         self.modified = sc.now()
+        self.input_sheet    = None
+        self.defaults_sheet = None
         if doload:
             self.load(filepath=filepath)
         return None
@@ -582,24 +547,23 @@ class Dataset(object):
         output  = sc.prepr(self)
         return output
     
-    def load(self, filepath=None):
-        demo_data, prog_data, default_params, pops, prog_info = get_data(country=self.country, region=self.region, filepath=filepath, withpops=True)
-        self.demo_data = demo_data
-        self.prog_data = prog_data
-        self.default_params = default_params
-        self.pops = pops
-        self.prog_info = prog_info
-        self.t = demo_data.t
+    def load(self, filepath=None, from_file=True, recalc=False):
+        if from_file:
+            if filepath is None: input_path = settings.data_path(self.country, self.region)
+            else:                input_path = filepath
+            self.input_sheet    = sc.Spreadsheet(filename=input_path)
+            self.defaults_sheet = sc.Spreadsheet(filename=settings.default_params_path())
+        input_data   = self.input_sheet.pandas()
+        default_data = self.defaults_sheet.pandas()
+        self.demo_data = InputData(input_data, recalc=recalc)
+        self.default_params = DefaultParams(default_data, input_data)
+        self.default_params.compute_risks(self.demo_data)
+        self.prog_data = ProgData(input_data, self.default_params)
+        self.pops = populations.set_pops(self.demo_data, self.default_params)
+        self.prog_info = programs.ProgramInfo(self.prog_data)
+        self.t = self.demo_data.t
         self.modified = sc.now()
         return None
-    
-    def spit(self, withpops=False):
-        ''' Hopefully temporary method to spit out a tuple, to match get_data '''
-        if withpops:
-            output = (self.demo_data, self.prog_data, self.default_params)
-        else:
-            output = (self.demo_data, self.prog_data, self.default_params, self.pops)
-        return output
     
     def prog_names(self):
         ''' WARNING, hacky function to get program names '''
@@ -607,29 +571,5 @@ class Dataset(object):
         return names
 
 
-def get_data(country=None, region=None, project=None, dataset=None, filepath=None, asobj=False, withpops=False):
-    if project is not None:
-        demo_data, prog_data, default_params, pops = project.dataset(dataset).spit()
-    else:
-        sim_type = 'national' if country == region else 'regional'
-        if filepath is None:
-            input_path = settings.data_path(country, region, sim_type)
-        else:
-            input_path = filepath
-        # get data
-        input_data = pandas.ExcelFile(input_path)
-        demo_data = InputData(input_data)
-        default_data = pandas.ExcelFile(settings.default_params_path())
-        default_params = DefaultParams(default_data, input_data)
-        default_params.compute_risks(demo_data)
-        prog_data = ProgData(input_data, default_params)
-        pops = populations.set_pops(demo_data, default_params)
-        prog_info = programs.ProgramInfo(prog_data)
-    if asobj:
-        output = Dataset(country, region, demo_data, prog_data, default_params, pops)
-        return output
-    else:
-        if withpops:
-            return demo_data, prog_data, default_params, pops, prog_info
-        else:
-            return demo_data, prog_data, default_params
+#def get_data(country=None, region=None, project=None, dataset=None, filepath=None, asobj=False, withpops=False):
+        
