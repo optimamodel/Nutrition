@@ -38,6 +38,7 @@ def run_optim(project_id, cache_id, optim_name=None, online=True):
     proj = rpcs.load_project(project_id, raise_exception=True, online=online)
     results = proj.run_optim(key=optim_name, dosave=False, parallel=False)
     proj.results[cache_id] = results
+    rpcs.put_results_cache_entry(cache_id, results, apptasks_call=True)
     print('Saving project...')
     rpcs.save_project(proj, online=online)
     if online: return None # Plots sold seprately
