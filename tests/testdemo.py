@@ -8,7 +8,7 @@ do_plot   = True
 run_scen  = True
 run_optim = False
 
-P = nu.demo()
+P = nu.demo(scens=run_scen, optims=run_optim)
 
 if run_scen:
     P.run_scens()

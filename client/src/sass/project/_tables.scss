@@ -153,11 +153,11 @@ $table-bg-active:                    $table-bg-hover;
     }
   }
 
-  //tr.highlighted {
-  //  > td {
-  //    background-color: #80ffaa !important;
-  //  }
-  //}
+  tr.highlighted {
+    > td {
+      background-color: #80ffaa !important;
+    }
+  }
 }
 
 // Hover effect

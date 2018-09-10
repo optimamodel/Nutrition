@@ -1,7 +1,7 @@
 <!--
 Optimizations page
 
-Last update: 2018-09-02
+Last update: 2018-09-06
 -->
 
 <template>
@@ -41,12 +41,12 @@ Last update: 2018-09-02
             </td>
             <td style="white-space: nowrap">
               <button class="btn __green" @click="runOptim(optimSummary, 9999)">Run</button>
-              <button class="btn" @click="runOptim(optimSummary, 15)">Test run</button>
+              <!--<button class="btn" @click="runOptim(optimSummary, 15)">Test run</button>-->
               <button class="btn __red" :disabled="!canCancelTask(optimSummary)" @click="clearTask(optimSummary)">Clear run</button>
               <button class="btn" :disabled="!canPlotResults(optimSummary)" @click="plotOptimization(optimSummary)">Plot results</button>
-              <button class="btn btn-icon" @click="editOptimModal(optimSummary)"><i class="ti-pencil"></i></button>
-              <button class="btn btn-icon" @click="copyOptim(optimSummary)"><i class="ti-files"></i></button>
-              <button class="btn btn-icon" @click="deleteOptim(optimSummary)"><i class="ti-trash"></i></button>
+              <button class="btn btn-icon" @click="editOptimModal(optimSummary)" data-tooltip="Edit optimization"><i class="ti-pencil"></i></button>
+              <button class="btn btn-icon" @click="copyOptim(optimSummary)" data-tooltip="Copy optimization"><i class="ti-files"></i></button>
+              <button class="btn btn-icon" @click="deleteOptim(optimSummary)" data-tooltip="Delete optimization"><i class="ti-trash"></i></button>
             </td>
           </tr>
           </tbody>
@@ -68,7 +68,7 @@ Last update: 2018-09-02
           <button class="btn btn-icon" @click="scaleFigs(1.0)" data-tooltip="Reset zoom"><i class="ti-zoom-in"></i></button>
           <button class="btn btn-icon" @click="scaleFigs(1.1)" data-tooltip="Zoom in">+</button>
           &nbsp;&nbsp;&nbsp;
-          <button class="btn" @click="exportGraphs()">Export plots</button>
+          <!--<button class="btn" @click="exportGraphs()">Export plots</button>-->
           <button class="btn" @click="exportResults(projectID)">Export data</button>
         </div>
       </div>
@@ -234,8 +234,9 @@ Last update: 2018-09-02
 
       clearGraphs()             { return utils.clearGraphs() },
       makeGraphs(graphdata)     { return utils.makeGraphs(this, graphdata) },
-      exportGraphs()            { return utils.exportGraphs(this) },
-      exportResults(project_id) { return utils.exportResults(this, project_id) },
+      exportGraphs(project_id)  { return utils.exportGraphs(this, project_id) },
+      exportResults(serverDatastoreId) 
+                                { return utils.exportResults(this, serverDatastoreId) },
 
       scaleFigs(frac) {
         this.figscale = this.figscale*frac;
@@ -301,18 +302,18 @@ Last update: 2018-09-02
         let statusStr = '';
 
         // Check the status of the task.
-        rpcs.rpc('check_task', [optimSummary.server_datastore_id])
-          .then(result => {
-            statusStr = result.data.task.status;
-            optimSummary.status = statusStr;
-            optimSummary.pendingTime = result.data.pendingTime;
-            optimSummary.executionTime = result.data.executionTime
-          })
-          .catch(error => {
-            optimSummary.status = 'not started';
-            optimSummary.pendingTime = '--';
-            optimSummary.executionTime = '--'
-          })
+        rpcs.rpc('check_task', [optimSummary.serverDatastoreId])
+        .then(result => {
+          statusStr = result.data.task.status
+          optimSummary.status = statusStr
+          optimSummary.pendingTime = result.data.pendingTime
+          optimSummary.executionTime = result.data.executionTime          
+        })
+        .catch(error => {
+          optimSummary.status = 'not started'
+          optimSummary.pendingTime = '--'
+          optimSummary.executionTime = '--'
+        })
       },
 
       pollAllTaskStates() {
@@ -334,14 +335,13 @@ Last update: 2018-09-02
       },
 
       clearTask(optimSummary) {
-        console.log('cancelRun() called for '+this.currentOptim)
-        rpcs.rpc('delete_task', [optimSummary.server_datastore_id])
-          .then(response => {
-            // Get the task state for the optimization.
-            this.getOptimTaskState(optimSummary)
-
-            // TODO: Delete cached result.
-          })
+        let datastoreId = optimSummary.serverDatastoreId  // hack because this gets overwritten soon by caller
+        console.log('clearTask() called for '+this.currentOptim)
+        rpcs.rpc('delete_task', [optimSummary.serverDatastoreId])
+        .then(response => {
+          this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
+          rpcs.rpc('delete_results_cache_entry', [datastoreId]) // Delete cached result.      
+        })
       },
 
       getOptimSummaries() {
@@ -362,7 +362,7 @@ Last update: 2018-09-02
             status.succeed(this, 'Optimizations loaded')
           })
           .catch(error => {
-            status.fail(this, 'Could not load optimizations: ' + error.message)
+            status.fail(this, 'Could not load optimizations', error)
           })
       },
 
@@ -374,7 +374,7 @@ Last update: 2018-09-02
             status.succeed(this, 'Optimizations saved')
           })
           .catch(error => {
-            status.fail(this, 'Could not save optimizations: ' + error.message)
+            status.fail(this, 'Could not save optimizations', error)
           })
       },
 
@@ -436,7 +436,7 @@ Last update: 2018-09-02
             status.succeed(this, 'Optimization added')
           })
           .catch(error => {
-            status.fail(this, 'Could not add optimization: ' + error.message)
+            status.fail(this, 'Could not add optimization', error)
           })
       },
 
@@ -455,25 +455,28 @@ Last update: 2018-09-02
             status.succeed(this, 'Optimization copied')
           })
           .catch(error => {
-            status.fail(this, 'Could not copy optimization: ' + error.message)
+            status.fail(this, 'Could not copy optimization', error)
           })
       },
 
       deleteOptim(optimSummary) {
         console.log('deleteOptim() called')
         status.start(this)
+        if (optimSummary.status != 'not started') {
+          this.clearTask(optimSummary)  // Clear the task from the server.
+        }
         for(var i = 0; i< this.optimSummaries.length; i++) {
           if(this.optimSummaries[i].name === optimSummary.name) {
             this.optimSummaries.splice(i, 1);
           }
         }
         rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
-          .then( response => {
-            status.succeed(this, 'Optimization deleted')
-          })
-          .catch(error => {
-            status.fail(this, 'Could not delete optimization: ' + error.message)
-          })
+        .then(response => {
+          status.succeed(this, 'Optimization deleted')
+        })
+        .catch(error => {
+          status.fail(this, 'Could not delete optimization', error)
+        })
       },
 
       runOptim(optimSummary, maxtime) {
@@ -488,11 +491,11 @@ Last update: 2018-09-02
                 status.succeed(this, 'Started optimization')
               })
               .catch(error => {
-                status.fail(this, 'Could not start optimization: ' + error.message)
+                status.fail(this, 'Could not start optimization', error)
               })
           })
           .catch(error => {
-            status.fail(this, 'Could not save optimizations: ' + error.message)
+            status.fail(this, 'Could not save optimizations', error)
           })
       },
 

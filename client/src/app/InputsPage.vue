@@ -105,10 +105,15 @@ Last update: 2018-08-02
     created() {
       if (this.$store.state.currentUser.displayname === undefined) { // If we have no user logged in, automatically redirect to the login page.
         router.push('/login')
-      } else { // Otherwise...
-        this.getSheetData() // Load the sheet data
       }
-
+      else if ((this.$store.state.activeProject.project !== undefined) &&
+        (this.$store.state.activeProject.project.hasData) ) {
+        console.log('created() called')
+        utils.sleep(1)  // used so that spinners will come up by callback func
+          .then(response => {
+            this.getSheetData() // Load the sheet data
+          })
+      }
     },
 
     methods: {
@@ -131,7 +136,7 @@ Last update: 2018-08-02
             status.succeed(this, 'Data loaded')
           })
           .catch(error => {
-            status.failurePopup(this, 'Could not get sheet data: ' + error.message)
+            status.failurePopup(this, 'Could not get sheet data', error)
           })
       },
 
@@ -143,7 +148,7 @@ Last update: 2018-08-02
             status.succeed(this, 'Data saved')
           })
           .catch(error => {
-            status.failurePopup(this, 'Could not save sheet data: ' + error.message)
+            status.failurePopup(this, 'Could not save sheet data', error)
           })
       },
 
@@ -155,7 +160,7 @@ Last update: 2018-08-02
             status.succeed(this, '')  // No green popup message.
           })
           .catch(error => {
-            status.fail(this, 'Could not download databook: ' + error.message)
+            status.fail(this, 'Could not download databook', error)
           })
       },
 
@@ -168,7 +173,7 @@ Last update: 2018-08-02
             status.succeed(this, 'Data uploaded')
           })
           .catch(error => {
-            status.fail(this, 'Could not upload data: ' + error.message)
+            status.fail(this, 'Could not upload data', error)
           })
       },
 

@@ -1,7 +1,7 @@
 '''
 Classes for handling projects as Sciris objects
 
-Version: 2018jul16 by gchadder3
+Version: 2018sep06
 '''
 
 import os
@@ -9,20 +9,9 @@ import sciris as sc
 import scirisweb as sw
 import nutrition as on
 
-
-
-#
 # Globals
-#
+proj_collection = None # The ProjectCollection object for all of the app's projects.  Gets initialized by and loaded by init_projects().
 
-# The ProjectCollection object for all of the app's projects.  Gets 
-# initialized by and loaded by init_projects().
-proj_collection = None
-
-
-#
-# Classes
-#
 
 class ProjectSO(sw.Blob):
     """
@@ -33,7 +22,7 @@ class ProjectSO(sw.Blob):
             void -- constructor
         load_from_copy(other_object): void -- assuming other_object is another 
             object of our type, copy its contents to us (calls the 
-            ScirisObject superclass version of this method also)   
+            Blob superclass version of this method also)   
         show(): void -- print the contents of the object
         get_user_front_end_repr(): dict -- get a JSON-friendly dictionary 
             representation of the object state the front-end uses for non-
@@ -70,7 +59,7 @@ class ProjectSO(sw.Blob):
             self.owner_uid = valid_uuid
             
     def load_from_copy(self, other_object):
-        if type(other_object) == type(self):        
+        if type(other_object) == type(self):
             # Do the superclass copying.
             super(ProjectSO, self).load_from_copy(other_object)
             
@@ -84,12 +73,12 @@ class ProjectSO(sw.Blob):
         # Show superclass attributes.
         super(ProjectSO, self).show()  
         
-        # Show the Optima defined display text for the project.
+        # Show the defined display text for the project.
         print('---------------------')
-        print('Owner User UID: %s' % self.owner_uid.hex)
-        print('Project Name: %s' % self.proj.name)
-        print('Creation Time: %s' % self.proj.created)
-        print('Update Time: %s' % self.proj.modified)
+        print('Owner user UID: %s' % self.owner_uid.hex)
+        print('Project name: %s' % self.proj.name)
+        print('Creation time: %s' % self.proj.created)
+        print('Update time: %s' % self.proj.modified)
             
     def get_user_front_end_repr(self):
         obj_info = {
@@ -113,7 +102,7 @@ class ProjectSO(sw.Blob):
         full_file_name = '%s%s%s' % (load_dir, os.sep, file_name)   
      
         # Write the object to a Gzip string pickle file.
-        fileio.object_to_gzip_string_pickle_file(full_file_name, self.proj)
+        sc.saveobj(full_file_name, self.proj)
         
         # Return the filename (not the full one).
         return self.proj.name + ".prj"
@@ -208,8 +197,7 @@ def init_projects(app):
     global proj_collection  # need this to allow modification within the module
     
     # Look for an existing ProjectCollection.
-    proj_collection_uid = sw.globalvars.data_store.get_uid('projectscoll', 
-        'Projects Collection')
+    proj_collection_uid = sw.globalvars.data_store.get_uid('projectscoll', 'Projects Collection')
     
     # Create the projects collection object.  Note, that if no match was found, 
     # this will be assigned a new UID.    
@@ -234,7 +222,6 @@ def init_projects(app):
         proj_collection.add_object(projSO)
         
     if app.config['LOGGING_MODE'] == 'FULL':
-        print('proj_collection type (main.py): %s' % type(proj_collection))
         # Show what's in the ProjectCollection.    
         proj_collection.show()
         
@@ -252,8 +239,7 @@ def apptasks_load_projects(config):
     sw.globalvars.data_store.load()
     
     # Look for an existing ProjectCollection.
-    proj_collection_uid = sw.globalvars.data_store.get_uid('projectscoll', 
-        'Projects Collection')
+    proj_collection_uid = sw.globalvars.data_store.get_uid('projectscoll', 'Projects Collection')
     
     # Create the projects collection object.  Note, that if no match was found, 
     # this will be assigned a new UID.    
@@ -265,3 +251,5 @@ def apptasks_load_projects(config):
         proj_collection.load_from_data_store()        
         
 #        proj_collection.show()      
+    
+    return None

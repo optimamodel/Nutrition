@@ -53,10 +53,12 @@ class Project(object):
 
         ## Define the structure sets
         self.datasets    = sc.odict()
-        self.scens       = sc.odict()
         self.models      = sc.odict()
+        self.scens       = sc.odict()
         self.optims      = sc.odict()
         self.results     = sc.odict()
+        self.input_sheet    = None # WARNING, might want to make this an odict at some point
+        self.defaults_sheet = None # WARNING, might want to make this an odict at some point
 
         ## Define other quantities
         self.name = name
@@ -75,6 +77,7 @@ class Project(object):
         output += '      Project name: %s\n'    % self.name
         output += '\n'
         output += '          Datasets: %i\n'    % len(self.datasets)
+        output += '            Models: %i\n'    % len(self.models)
         output += '         Scenarios: %i\n'    % len(self.scens)
         output += '     Optimizations: %i\n'    % len(self.optims)
         output += '      Results sets: %i\n'    % len(self.results)
@@ -100,7 +103,7 @@ class Project(object):
     
     
     def load_data(self, country=None, region=None, name=None, filepath=None):
-        dataset = Dataset(country=country, region=region, name=name, filepath=filepath, doload=True)
+        dataset = Dataset(country=country, region=region, name=name, filepath=filepath, doload=True, project=self)
         if name is None: name = dataset.name
         self.datasets[name] = dataset
         # add model associated with the dataset
@@ -133,7 +136,7 @@ class Project(object):
             reslist = self.result(key)
             reslist = sc.promotetolist(reslist)
             for res in reslist:
-                out = res.get_outputs(outcomes, seq=False)
+                out = list(res.get_outputs(outcomes, seq=False))
                 outputs.append([res.name] + out) # gets all outputs
         data = [['Result name'] + headers] + outputs
         

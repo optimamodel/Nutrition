@@ -1,7 +1,7 @@
 <!--
 Scenarios page
 
-Last update: 2018-09-02
+Last update: 2018-09-06
 -->
 
 <template>
@@ -39,9 +39,9 @@ Last update: 2018-09-02
               <input type="checkbox" v-model="scenSummary.active"/>
             </td>
             <td style="white-space: nowrap">
-              <button class="btn btn-icon" @click="editScenModal(scenSummary)"><i class="ti-pencil"></i></button>
-              <button class="btn btn-icon" @click="copyScen(scenSummary)"><i class="ti-files"></i></button>
-              <button class="btn btn-icon" @click="deleteScen(scenSummary)"><i class="ti-trash"></i></button>
+              <button class="btn btn-icon" @click="editScenModal(scenSummary)" data-tooltip="Edit scenario"><i class="ti-pencil"></i></button>
+              <button class="btn btn-icon" @click="copyScen(scenSummary)" data-tooltip="Copy scenario"><i class="ti-files"></i></button>
+              <button class="btn btn-icon" @click="deleteScen(scenSummary)" data-tooltip="Delete scenario"><i class="ti-trash"></i></button>
             </td>
           </tr>
           </tbody>
@@ -64,8 +64,8 @@ Last update: 2018-09-02
           <button class="btn btn-icon" @click="scaleFigs(1.0)" data-tooltip="Reset zoom"><i class="ti-zoom-in"></i></button>
           <button class="btn btn-icon" @click="scaleFigs(1.1)" data-tooltip="Zoom in">+</button>
           &nbsp;&nbsp;&nbsp;
-          <button class="btn" @click="exportGraphs()">Export plots</button>
-          <button class="btn" @click="exportResults(projectID)">Export data</button>
+          <button class="btn" @click="exportGraphs(projectID)">Export plots</button>
+          <button class="btn" @click="exportResults(projectID)">Export results</button>
         </div>
       </div>
 
@@ -85,24 +85,26 @@ Last update: 2018-09-02
       </div>
 
       <br>
-      <div v-if="table" display="style:inline-block">
+      <div v-if="table">
         <help reflink="cost-effectiveness" label="Program cost-effectiveness"></help>
-        <div class="calib-graphs" style="display:inline-block; text-align:right">
+        <div class="calib-graphs" style="display:inline-block; text-align:right; overflow:auto">
           <table class="table table-bordered table-hover table-striped">
             <thead>
             <tr>
-              <th>Scenario</th>
-              <th>Program</th>
-              <th>Outcome</th>
-              <th>ICER</th>
+              <th>Scenario/program</th>
+              <th>Outcomes</th>
+              <th v-for="i in table[0].length-3"></th>
             </tr>
             </thead>
             <tbody>
             <tr v-for="rowdata in table">
-              <td v-for="text in rowdata">
-                <span v-if="rowdata[0]!==''" style="font-size: 14px; font-weight:bold">{{text}}</span>
-                <span v-else-if="rowdata[1]!==''" style="font-weight:bold"><b>{{text}}</b></span>
-                <span v-else>{{text}}</span>
+              <td v-for="i in (rowdata.length-1)">
+                <span v-if="rowdata[0]==='header'"             style="font-size:15px; font-weight:bold">{{rowdata[i]}}</span>
+                <span v-else-if="rowdata[0]==='keys'  && i==1" style="font-size:12px; font-style:italic">{{rowdata[i]}}</span>
+                <span v-else-if="rowdata[0]==='keys'  && i!=1" style="font-size:12px; font-weight:bold">{{rowdata[i]}}</span>
+                <span v-else-if="rowdata[0]==='entry' && i==1" style="font-size:12px; font-weight:bold">{{rowdata[i]}}</span>
+                <span v-else-if="rowdata[0]==='entry' && i!=1" style="font-size:12px;">                 {{rowdata[i]}}</span>
+                <span v-else><div style="min-height:30px"></div></span>
               </td>
             </tr>
             </tbody>
@@ -247,9 +249,10 @@ Last update: 2018-09-02
     methods: {
 
       makeGraphs(graphdata)     { return utils.makeGraphs(this, graphdata) },
-      exportGraphs()            { return utils.exportGraphs(this) },
-      exportResults(project_id) { return utils.exportResults(this, project_id) },
-
+      exportGraphs(project_id)  { return utils.exportGraphs(this, project_id) },
+      exportResults(serverDatastoreId) 
+                                { return utils.exportResults(this, serverDatastoreId) },
+                                
       scaleFigs(frac) {
         this.figscale = this.figscale*frac;
         if (frac === 1.0) {
@@ -271,7 +274,7 @@ Last update: 2018-09-02
             status.succeed(this, 'Scenarios loaded')
           })
           .catch(error => {
-            status.fail(this, 'Could not get scenarios: ' + error.message)
+            status.fail(this, 'Could not get scenarios', error)
           })
       },
 
@@ -283,7 +286,7 @@ Last update: 2018-09-02
             status.succeed(this, 'Scenarios saved')
           })
           .catch(error => {
-            status.fail(this, 'Could not save scenarios: ' + error.message)
+            status.fail(this, 'Could not save scenarios', error)
           })
       },
 
@@ -356,7 +359,7 @@ Last update: 2018-09-02
             status.succeed(this, 'Scenario added')
           })
           .catch(error => {
-            status.fail(this, 'Could not add scenario: ' + error.message)
+            status.fail(this, 'Could not add scenario', error)
           })
       },
 
@@ -375,7 +378,7 @@ Last update: 2018-09-02
             status.succeed(this, 'Scenario copied')
           })
           .catch(error => {
-            status.fail(this, 'Could not copy scenario: ' + error.message)
+            status.fail(this, 'Could not copy scenario', error)
           })
       },
 
@@ -392,7 +395,7 @@ Last update: 2018-09-02
             status.succeed(this, 'Scenario deleted')
           })
           .catch(error => {
-            status.fail(this, 'Could not delete scenario: ' + error.message)
+            status.fail(this, 'Could not delete scenario', error)
           })
       },
 
@@ -408,13 +411,13 @@ Last update: 2018-09-02
                 status.succeed(this, '') // Success message in graphs function
               })
               .catch(error => {
-                console.log('There was an error: ' + error.message) // Pull out the error message.
-                status.fail(this, 'Could not run scenarios: ' + error.message) // Indicate failure.
+                console.log('There was an error', error) // Pull out the error message.
+                status.fail(this, 'Could not run scenarios', error) // Indicate failure.
               })
           })
           .catch(error => {
-            this.response = 'There was an error: ' + error.message
-            status.fail(this, 'Could not set scenarios: ' + error.message)
+            this.response = 'There was an error', error
+            status.fail(this, 'Could not set scenarios', error)
           })
       },
     }
@@ -425,12 +428,4 @@ Last update: 2018-09-02
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 
-  .grrmodal {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    overflow: hidden;
-  }
 </style>
