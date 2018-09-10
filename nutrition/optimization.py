@@ -30,7 +30,7 @@ class Optim(sc.prettyobj):
         self.name = name
         self.model_name = model_name
         self.obj = obj
-        self.weights = weights if weights is not None else utils.get_weights(obj)
+        self.weights = utils.check_weights(weights) if weights is not None else utils.get_weights(obj)
         self.mults = mults
         self.prog_set = prog_set
         self.add_funds = add_funds
