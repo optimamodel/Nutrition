@@ -38,7 +38,6 @@ Last update: 2018-05-28
 </template>
 
 <script>
-import rpcservice from '@/services/rpc-service'
 import userservice from '@/services/user-service'
 import router from '@/router'
 
