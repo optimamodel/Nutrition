@@ -10,7 +10,7 @@ class Optim(sc.prettyobj):
 
     def __init__(self, name=None, model_name=None, obj=None, weights=None, mults=None, prog_set=None, active=True,
                  add_funds=0, fix_curr=False, rem_curr=False, curve_type='linear',
-                 filter_progs=True):
+                 filter_progs=False):
         """
         :param name: the name of the optimization (string)
         :param model_name: the name of the model corresponding to optimizations (string)
