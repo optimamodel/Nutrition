@@ -534,7 +534,7 @@ def get_sheet_data(project_id, key=None, online=True):
                 cellinfo = {'format':cellformat, 'value':cellval}
                 sheetjson[sheet][r].append(cellinfo)
     
-    sheetjson = sw.sanitize_json(sheetjson)
+    sheetjson = sc.sanitizejson(sheetjson)
     return {'names':sheets, 'tables':sheetjson}
 
 
