@@ -1,6 +1,6 @@
 import nutrition.ui as nu
 from nutrition.optimization import Optim
-import numpy as np
+import sciris as sc
 
 doplot = True
 dosave = False
@@ -33,9 +33,11 @@ kwargs2 = {'name':'test2',
 # custom objective
 kwargs3 = {'name': 'test3',
            'model_name': 'eg',
-           'obj': 'thrive_anaem',
            'mults':[1,2],
-           'weights': np.array([-1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+           'weights': sc.odict({'thrive':                               1,
+                                'Minimize the number of child deaths':  7.6,
+                                'Child mortality rate':                 -1
+                                }),
            'prog_set':  ['IFAS (community)', 'IFAS (hospital)', 'IYCF 1', 'Lipid-based nutrition supplements',
                          'Multiple micronutrient supplementation', 'Micronutrient powders',
                          'Public provision of complementary foods', 'Treatment of SAM',
@@ -45,6 +47,8 @@ kwargs3 = {'name': 'test3',
 
 optims = [Optim(**kwargs3)]
 p.add_optims(optims)
-p.run_optim(swarmsize=10, maxiter=10, maxtime=10, parallel=True)
+p.run_optim(swarmsize=1, maxiter=1, maxtime=1, parallel=True)
 if doplot: p.plot(optim=True)
 if dosave: p.write_results('optim_results.xlsx')
+import pylab as pl
+pl.show()
