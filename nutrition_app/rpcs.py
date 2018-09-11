@@ -541,6 +541,7 @@ def get_sheet_data(project_id, key=None, online=True):
 @RPC()
 def save_sheet_data(project_id, sheetdata, key=None, online=True):
     proj = load_project(project_id, raise_exception=True, online=online)
+    if key is None: key = proj.datasets.keys()[-1] # There should always be at least one
     wb = proj.input_sheet # CK: Warning, might want to change
     for sheet in sheetdata.keys():
         datashape = np.shape(sheetdata[sheet])
@@ -558,6 +559,8 @@ def save_sheet_data(project_id, sheetdata, key=None, online=True):
                     vals.append(cellval)
         wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={'data_only':True}) # Can turn on verbose
     proj.dataset(key).load(project=proj, from_file=False)
+    proj.add_model(key) # Refresh the model
+    
     print('Saving project...')
     save_project(proj, online=online)
     return None

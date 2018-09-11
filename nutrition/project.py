@@ -101,13 +101,12 @@ class Project(object):
             info[attr] = getattr(self, attr) # Populate the dictionary
         return info
     
-    
-    def load_data(self, country=None, region=None, name=None, filepath=None):
+    def load_data(self, country=None, region=None, name=None, filepath=None, overwrite=False):
         dataset = Dataset(country=country, region=region, name=name, filepath=filepath, doload=True, project=self)
         if name is None: name = dataset.name
         self.datasets[name] = dataset
         # add model associated with the dataset
-        self.add_model(name, dataset.pops, dataset.prog_info, dataset.t)
+        self.add_model(name, overwrite=overwrite)
         return None
 
     def save(self, filename=None, folder=None, saveresults=False, verbose=2):
@@ -236,7 +235,7 @@ class Project(object):
         self.add_optims(optims)
         return None
 
-    def add_model(self, name, pops, prog_info, t=None, overwrite=False):
+    def add_model(self, name=None, overwrite=False):
         """ Adds a model to the self.models odict.
         A new model should only be instantiated if new input data is uploaded to the Project.
         For the same input data, one model instance is used for all scenarios.
@@ -246,6 +245,10 @@ class Project(object):
         :param overwrite:
         :return:
         """
+        dataset = self.dataset(name)
+        pops = dataset.pops
+        prog_info = dataset.prog_info
+        t = dataset.t
         if overwrite: self.models = sc.odict()
         model = Model(pops, prog_info, t)
         self.add(name=name, item=model, what='model')
