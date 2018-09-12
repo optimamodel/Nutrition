@@ -33,9 +33,12 @@ def demo_optims():
               'model_name': 'demo',
               'obj':'thrive',
               'mults':[1,2],
-              'prog_set': ['Vitamin A supplementation', 'IYCF 1'],
+              'prog_set': ['Vitamin A supplementation', 'IYCF 1', 'IFA fortification of maize',
+                           'Balanced energy-protein supplementation',
+                           'Public provision of complementary foods',
+                           'Iron and iodine fortification of salt'],
               'fix_curr': False,
-              'add_funds':1e7,
+              'add_funds': 0,
               'filter_progs':False}
     
     optims = [Optim(**kwargs1)]
