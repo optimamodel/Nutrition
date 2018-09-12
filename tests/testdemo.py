@@ -16,6 +16,6 @@ if run_scen:
         P.plot()
 
 if run_optim:
-    P.run_optims(keys=[P.optim().name], parallel=False)
+    P.run_optim(parallel=True)
     if do_plot:
         P.plot(-1, optim=True)
