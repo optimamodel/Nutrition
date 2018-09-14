@@ -78,7 +78,7 @@ def plot_prevs(all_res):
 
 def plot_outputs(all_res, seq, name):
     outcomes = utils.default_trackers(prev=False, rate=False)
-    width = 0.15 if seq else 0.35
+    width = 0.15
     figs = sc.odict()
     
     baseres = all_res[0]
