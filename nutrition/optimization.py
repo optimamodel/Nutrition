@@ -111,7 +111,7 @@ class Optim(sc.prettyobj):
                 hasimpact = abs((val - zeroval) / zeroval) * 100. > threshold
                 keep_inds.append(hasimpact)
             if not any(keep_inds): # no programs had impact
-                print('Warning: selected programs do not impact objective "%s"' % obj)
+                print('Warning: selected programs do not impact objective')
         else:
             keep_inds = [True for i, _ in enumerate(self.prog_set)]
         return np.array(keep_inds)
