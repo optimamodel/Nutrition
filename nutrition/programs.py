@@ -620,6 +620,8 @@ class ProgramInfo(sc.prettyobj):
                     newcov = np.array(cov)
                 elif len(cov) < numyears:
                     newcov = np.concatenate((cov, np.full(numyears - len(cov), cov[-1])), axis=0)
+                elif len(cov) > numyears:
+                    newcov = cov[1:] # this is hack fix for when baseline spending included
             except IndexError: # coverage scenario not specified, assume constant
                 newcov = np.full(numyears, prog.base_cov)
             newcovs[i][1:] = newcov
