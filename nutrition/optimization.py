@@ -68,7 +68,7 @@ class Optim(sc.prettyobj):
             num_procs = 1
         print('Optimizing for %s in %s' % (self.name, how))
         # list of kwargs
-        keep_inds = self._filter_progs(model, self.weights) # not dependent upon spending
+        keep_inds = self._filter_progs(model) # not dependent upon spending
         optim = (maxiter, swarmsize, maxtime)
         args = [(self.get_kwargs(model, self.weights, mult, keep_inds), mult)+optim for mult in self.mults]
         if parallel:
@@ -80,7 +80,7 @@ class Optim(sc.prettyobj):
                 res.append(this_res)
         return res
 
-    def _filter_progs(self, model, weights):
+    def _filter_progs(self, model):
         if self.filter_progs:
             threshold = 0.1
             newcov = 1.
@@ -94,7 +94,7 @@ class Optim(sc.prettyobj):
             zeromodel = sc.dcp(model)
             zerores = run_scen(zeroscen, zeromodel)
             zeroouts = zerores.get_outputs()
-            zeroval = np.inner(zeroouts, weights)
+            zeroval = np.inner(zeroouts, self.weights)
             for i, prog in enumerate(self.prog_set):
                 thismodel = sc.dcp(model)
                 thiscov = sc.dcp(progvals)
@@ -104,7 +104,7 @@ class Optim(sc.prettyobj):
                 scen = Scen(**thesekwargs)
                 res = run_scen(scen, thismodel)
                 outs = res.get_outputs()
-                val = np.inner(outs, weights)
+                val = np.inner(outs, self.weights)
                 hasimpact = abs((val - zeroval) / zeroval) * 100. > threshold
                 keep_inds.append(hasimpact)
             if not any(keep_inds): # no programs had impact
