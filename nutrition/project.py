@@ -53,10 +53,12 @@ class Project(object):
 
         ## Define the structure sets
         self.datasets    = sc.odict()
-        self.scens       = sc.odict()
         self.models      = sc.odict()
+        self.scens       = sc.odict()
         self.optims      = sc.odict()
         self.results     = sc.odict()
+        self.input_sheet    = None # WARNING, might want to make this an odict at some point
+        self.defaults_sheet = None # WARNING, might want to make this an odict at some point
 
         ## Define other quantities
         self.name = name
@@ -75,6 +77,7 @@ class Project(object):
         output += '      Project name: %s\n'    % self.name
         output += '\n'
         output += '          Datasets: %i\n'    % len(self.datasets)
+        output += '            Models: %i\n'    % len(self.models)
         output += '         Scenarios: %i\n'    % len(self.scens)
         output += '     Optimizations: %i\n'    % len(self.optims)
         output += '      Results sets: %i\n'    % len(self.results)
@@ -98,13 +101,12 @@ class Project(object):
             info[attr] = getattr(self, attr) # Populate the dictionary
         return info
     
-    
-    def load_data(self, country=None, region=None, name=None, filepath=None):
-        dataset = Dataset(country=country, region=region, name=name, filepath=filepath, doload=True)
+    def load_data(self, country=None, region=None, name=None, filepath=None, overwrite=False):
+        dataset = Dataset(country=country, region=region, name=name, filepath=filepath, doload=True, project=self)
         if name is None: name = dataset.name
         self.datasets[name] = dataset
         # add model associated with the dataset
-        self.add_model(name, dataset.pops, dataset.prog_info, dataset.t)
+        self.add_model(name, overwrite=overwrite)
         return None
 
     def save(self, filename=None, folder=None, saveresults=False, verbose=2):
@@ -133,7 +135,7 @@ class Project(object):
             reslist = self.result(key)
             reslist = sc.promotetolist(reslist)
             for res in reslist:
-                out = res.get_outputs(outcomes, seq=False)
+                out = list(res.get_outputs(outcomes, seq=False))
                 outputs.append([res.name] + out) # gets all outputs
         data = [['Result name'] + headers] + outputs
         
@@ -233,7 +235,7 @@ class Project(object):
         self.add_optims(optims)
         return None
 
-    def add_model(self, name, pops, prog_info, t=None, overwrite=False):
+    def add_model(self, name=None, overwrite=False):
         """ Adds a model to the self.models odict.
         A new model should only be instantiated if new input data is uploaded to the Project.
         For the same input data, one model instance is used for all scenarios.
@@ -243,6 +245,10 @@ class Project(object):
         :param overwrite:
         :return:
         """
+        dataset = self.dataset(name)
+        pops = dataset.pops
+        prog_info = dataset.prog_info
+        t = dataset.t
         if overwrite: self.models = sc.odict()
         model = Model(pops, prog_info, t)
         self.add(name=name, item=model, what='model')
@@ -323,7 +329,7 @@ class Project(object):
         self.add_result(results, name='scens')
         return None
 
-    def run_optim(self, key=-1, optim=None, maxiter=5, swarmsize=10, maxtime=10, parallel=True, dosave=True):
+    def run_optim(self, key=-1, optim=None, maxiter=20, swarmsize=12, maxtime=10, parallel=True, dosave=True):
         if optim is not None: self.add_optims(optim)
         optim = self.optim(key)
         results = []
@@ -361,7 +367,8 @@ class Project(object):
         parents = []
         baselines = []
         children = sc.odict()
-        for scen in self.scens.itervalues():
+        for s,scen in enumerate(self.scens.values()):
+            print('Running cost-effectiveness scenario %s of %s' % (s+1, len(self.scens)))
             if scen.active:
                 children[scen.name] = []
                 model = self.model(scen.model_name)

@@ -2,7 +2,7 @@ $cascade-blue: #00267a;
 $optima-blue: #00adee;
 $optima-dark: #092344;
 $main-color: $optima-blue;
-$main-dark: $optima-dark;
+$main-dark: #0071a4; // #0b5998;
 
 $font-color: #0c2544 !default;
 $fill-font-color: rgba(255, 255, 255, 0.7);
@@ -94,7 +94,7 @@ $padding-small-horizontal: 10px !default;
 $padding-dropdown-vertical: 10px !default;
 $padding-dropdown-horizontal: 15px !default;
 
-$margin-large-vertical: 30px !default;
+$margin-large-vertical: 5px !default;
 $margin-base-vertical: 15px !default;
 
 // border radius for buttons
@@ -126,7 +126,7 @@ $font-size-large-navbar: 20px !default;
 $font-size-h1: 3.2em !default;
 $font-size-h2: 2.6em !default;
 $font-size-h3: 1.825em !default;
-$font-size-h4: 1.5em !default;
+$font-size-h4: 1.4em !default;
 $font-size-h5: 1.25em !default;
 $font-size-h6: 0.9em !default;
 $font-paragraph: 16px !default;
@@ -190,8 +190,8 @@ $red-navbar: rgba(#FF4C40, .98);
 $bg-nude: #f8f8f4 !default; // CK: main color!!!!!
 $bg-primary: #8ECFD5 !default;
 $bg-info: #7CE4FE !default;
-$bg-success: #8EF3C5 !default;
-$bg-warning: #FFE28C !default;
+$bg-success: rgba(0, 136, 0, 1.0); // #008800; //#8EF3C5 !default;
+$bg-warning: rgba(226, 151, 34, 1.0); // #e29722; //#de4724; //#FFE28C !default;
 $bg-danger: #FF8F5E !default;
 
 $topbar-x: topbar-x !default;

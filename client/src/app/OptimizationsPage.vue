@@ -1,7 +1,7 @@
 <!--
 Optimizations page
 
-Last update: 2018-09-02
+Last update: 2018-09-06
 -->
 
 <template>
@@ -40,13 +40,12 @@ Last update: 2018-09-02
               {{ timeFormatStr(optimSummary) }}
             </td>
             <td style="white-space: nowrap">
-              <button class="btn __green" @click="runOptim(optimSummary, 9999)">Run</button>
-              <button class="btn" @click="runOptim(optimSummary, 15)">Test run</button>
+              <button class="btn __green" :disabled="!canRunTask(optimSummary)" @click="runOptim(optimSummary, 3600)">Run</button>
+              <button class="btn __green" :disabled="!canPlotResults(optimSummary)" @click="plotOptimization(optimSummary)">Plot results</button>
               <button class="btn __red" :disabled="!canCancelTask(optimSummary)" @click="clearTask(optimSummary)">Clear run</button>
-              <button class="btn" :disabled="!canPlotResults(optimSummary)" @click="plotOptimization(optimSummary)">Plot results</button>
-              <button class="btn btn-icon" @click="editOptimModal(optimSummary)"><i class="ti-pencil"></i></button>
-              <button class="btn btn-icon" @click="copyOptim(optimSummary)"><i class="ti-files"></i></button>
-              <button class="btn btn-icon" @click="deleteOptim(optimSummary)"><i class="ti-trash"></i></button>
+              <button class="btn btn-icon" @click="editOptimModal(optimSummary)" data-tooltip="Edit optimization"><i class="ti-pencil"></i></button>
+              <button class="btn btn-icon" @click="copyOptim(optimSummary)" data-tooltip="Copy optimization"><i class="ti-files"></i></button>
+              <button class="btn btn-icon" @click="deleteOptim(optimSummary)" data-tooltip="Delete optimization"><i class="ti-trash"></i></button>
             </td>
           </tr>
           </tbody>
@@ -60,7 +59,7 @@ Last update: 2018-09-02
 
 
     <!-- START RESULTS CARD -->
-    <div class="card full-width-card">
+    <div class="card full-width-card" v-if="hasGraphs">
       <div class="calib-title">
         <help reflink="results-plots" label="Results"></help>
         <div>
@@ -68,7 +67,7 @@ Last update: 2018-09-02
           <button class="btn btn-icon" @click="scaleFigs(1.0)" data-tooltip="Reset zoom"><i class="ti-zoom-in"></i></button>
           <button class="btn btn-icon" @click="scaleFigs(1.1)" data-tooltip="Zoom in">+</button>
           &nbsp;&nbsp;&nbsp;
-          <button class="btn" @click="exportGraphs()">Export plots</button>
+          <!--<button class="btn" @click="exportGraphs()">Export plots</button>-->
           <button class="btn" @click="exportResults(projectID)">Export data</button>
         </div>
       </div>
@@ -192,26 +191,23 @@ Last update: 2018-09-02
   import rpcs from '@/services/rpc-service'
   import status from '@/services/status-service'
   import router from '@/router'
-  import help from '@/app/HelpLink.vue'
-
 
   export default {
     name: 'OptimizationsPage',
 
-    components: {
-      help
-    },
-
     data() {
       return {
+        serverDatastoreId: '',
         optimSummaries: [],
         optimsLoaded: false,
+        useCelery: true,
         addEditModal: {
           optimSummary: {},
           origName: '',
           mode: 'add',
         },
         figscale: 1.0,
+        hasGraphs: false,
       }
     },
 
@@ -239,8 +235,9 @@ Last update: 2018-09-02
 
       clearGraphs()             { return utils.clearGraphs() },
       makeGraphs(graphdata)     { return utils.makeGraphs(this, graphdata) },
-      exportGraphs()            { return utils.exportGraphs(this) },
-      exportResults(project_id) { return utils.exportResults(this, project_id) },
+      exportGraphs(project_id)  { return utils.exportGraphs(this, project_id) },
+      exportResults(serverDatastoreId) 
+                                { return utils.exportResults(this, serverDatastoreId) },
 
       scaleFigs(frac) {
         this.figscale = this.figscale*frac;
@@ -280,38 +277,55 @@ Last update: 2018-09-02
         }
       },
 
-      canRunTask(optimSummary) {
-        console.log('canRunTask() called for with: ' + optimSummary.status)
-        return ((optimSummary.status === 'not started') || (optimSummary.status === 'completed'))
-      },
+      canRunTask(optimSummary)     { return ((optimSummary.status === 'not started') || (optimSummary.status === 'completed')) },
+      canCancelTask(optimSummary)  { return  (optimSummary.status !== 'not started') },
+      canPlotResults(optimSummary) { return  (optimSummary.status === 'completed') },
 
-      canCancelTask(optimSummary) {
-        console.log('canCancelTask() called for with: ' + optimSummary.status)
-        return (optimSummary.status !== 'not started')
-      },
-
-      canPlotResults(optimSummary) {
-        console.log('canPlotResults() called for with: ' + optimSummary.status)
-        return (optimSummary.status === 'completed')
+      needToPoll(optimSummary) {
+        let routePath = (this.$route.path === '/optimizations')
+        let optimState = true; // ((optimSummary.status === 'queued') || (optimSummary.status === 'started')) // CK: this needs to be given a delay to work
+        return (routePath && optimState)
       },
 
       getOptimTaskState(optimSummary) {
         console.log('getOptimTaskState() called for with: ' + optimSummary.status)
         let statusStr = '';
 
-        // Check the status of the task.
-        rpcs.rpc('check_task', [optimSummary.server_datastore_id])
-          .then(result => {
-            statusStr = result.data.task.status;
-            optimSummary.status = statusStr;
-            optimSummary.pendingTime = result.data.pendingTime;
-            optimSummary.executionTime = result.data.executionTime
-          })
-          .catch(error => {
-            optimSummary.status = 'not started';
-            optimSummary.pendingTime = '--';
-            optimSummary.executionTime = '--'
-          })
+        if (this.useCelery) {
+          // Check the status of the task.
+          rpcs.rpc('check_task', [optimSummary.serverDatastoreId])
+            .then(result => {
+              statusStr = result.data.task.status
+              optimSummary.status = statusStr
+              optimSummary.pendingTime = result.data.pendingTime
+              optimSummary.executionTime = result.data.executionTime
+            })
+            .catch(error => {
+              optimSummary.status = 'not started'
+              optimSummary.pendingTime = '--'
+              optimSummary.executionTime = '--'
+            })
+        }
+        
+        else {
+          // Check whether there is a cached result.
+          rpcs.rpc('check_results_cache_entry', [optimSummary.serverDatastoreId])
+            .then(result => {
+              if (result.data.found) {
+                optimSummary.status = 'completed'                
+              }
+              else {
+                optimSummary.status = 'not started'
+              }
+              optimSummary.pendingTime = '--'
+              optimSummary.executionTime = '--'              
+            })
+            .catch(error => {
+              optimSummary.status = 'not started'
+              optimSummary.pendingTime = '--'
+              optimSummary.executionTime = '--'
+            })          
+        }
       },
 
       pollAllTaskStates() {
@@ -321,53 +335,69 @@ Last update: 2018-09-02
             this.getOptimTaskState(optimSum)
           }
         });
-
-        // Hack to get the Vue display of optimSummaries to update
-        this.optimSummaries.push(this.optimSummaries[0]);
+        this.optimSummaries.push(this.optimSummaries[0]); // Hack to get the Vue display of optimSummaries to update
         this.optimSummaries.pop();
-
-        // Sleep waitingtime seconds.
-        let waitingtime = 1
+        let waitingtime = 1 // Sleep waitingtime seconds
         utils.sleep(waitingtime * 1000)
           .then(response => {
-            // Only if we are still in the optimizations page, call ourselves.
-            if (this.$route.path === '/optimizations') {
+            if (this.needToPoll()) { // Only if we are still in the optimizations page, call ourselves.
               this.pollAllTaskStates()
             }
           })
       },
 
       clearTask(optimSummary) {
-        console.log('cancelRun() called for '+this.currentOptim)
-        rpcs.rpc('delete_task', [optimSummary.server_datastore_id])
-          .then(response => {
-            // Get the task state for the optimization.
-            this.getOptimTaskState(optimSummary)
-
-            // TODO: Delete cached result.
-          })
+        return new Promise((resolve, reject) => {
+          let datastoreId = optimSummary.serverDatastoreId  // hack because this gets overwritten soon by caller
+          console.log('clearTask() called for '+this.currentOptim)
+          
+          rpcs.rpc('delete_results_cache_entry', [datastoreId]) // Delete cached result.
+            .then(response => {
+              if (this.useCelery) {
+                rpcs.rpc('delete_task', [datastoreId])
+                  .then(response => {
+                    this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
+                    resolve(response)
+                  })
+                  .catch(error => {
+                    resolve(error)  // yes, resolve because at least cache entry deletion succeeded
+                  })                  
+              }
+              else {
+                this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
+                resolve(response)
+              }
+            })
+            .catch(error => {
+              reject(error)
+            })
+        })
       },
 
       getOptimSummaries() {
         console.log('getOptimSummaries() called')
         status.start(this)
         rpcs.rpc('get_optim_info', [this.projectID]) // Get the current project's optimization summaries from the server.
-          .then(response => {
-            this.optimSummaries = response.data // Set the optimizations to what we received.
-            this.optimSummaries.forEach(optimSum => { // For each of the optimization summaries...
-              optimSum.server_datastore_id = this.$store.state.activeProject.project.id + ':opt-' + optimSum.name // Build a task and results cache ID from the project's hex UID and the optimization name.
-              optimSum.status = 'not started' // Set the status to 'not started' by default, and the pending and execution times to '--'.
-              optimSum.pendingTime = '--'
-              optimSum.executionTime = '--'
-              this.getOptimTaskState(optimSum) // Get the task state for the optimization.
-            })
-            this.optimsLoaded = true;
+        .then(response => {
+          this.optimSummaries = response.data // Set the optimizations to what we received.
+          this.optimSummaries.forEach(optimSum => { // For each of the optimization summaries...
+            optimSum.serverDatastoreId = this.$store.state.activeProject.project.id + ':opt-' + optimSum.name // Build a task and results cache ID from the project's hex UID and the optimization name.
+            optimSum.status = 'not started' // Set the status to 'not started' by default, and the pending and execution times to '--'.
+            optimSum.pendingTime = '--'
+            optimSum.executionTime = '--'
+            
+            // Get the task state for the optimization.
+            this.getOptimTaskState(optimSum) // Get the task state for the optimization.
+          })
+          if (this.useCelery) {
             this.pollAllTaskStates() // Start polling of tasks states.
-            status.succeed(this, 'Optimizations loaded')
-          })
-          .catch(error => {
-            status.fail(this, 'Could not load optimizations: ' + error.message)
-          })
+          }
+          this.optimsLoaded = true
+          status.succeed(this, 'Optimizations loaded')
+        })
+        .catch(error => {
+          status.fail(this, 'Could not load optimizations', error)
+        })
       },
 
       setOptimSummaries() {
@@ -378,7 +408,7 @@ Last update: 2018-09-02
             status.succeed(this, 'Optimizations saved')
           })
           .catch(error => {
-            status.fail(this, 'Could not save optimizations: ' + error.message)
+            status.fail(this, 'Could not save optimizations', error)
           })
       },
 
@@ -395,7 +425,7 @@ Last update: 2018-09-02
             console.log(this.addEditModal.optimSummary)
           })
           .catch(error => {
-            status.failurePopup(this, 'Could not open add optimization modal: '  + error.message)
+            status.fail(this, 'Could not open add optimization modal', error)
           })
       },
 
@@ -431,7 +461,9 @@ Last update: 2018-09-02
         }
         else { // Else (we are adding a new scenario)...
           newOptim.name = utils.getUniqueName(newOptim.name, optimNames);
+          newOptim.serverDatastoreId = this.$store.state.activeProject.project.id + ':opt-' + newOptim.name
           this.optimSummaries.push(newOptim)
+          this.getOptimTaskState(newOptim)
         }
         console.log('Saved optimization:');
         console.log(newOptim);
@@ -440,7 +472,7 @@ Last update: 2018-09-02
             status.succeed(this, 'Optimization added')
           })
           .catch(error => {
-            status.fail(this, 'Could not add optimization: ' + error.message)
+            status.fail(this, 'Could not add optimization', error)
           })
       },
 
@@ -453,30 +485,35 @@ Last update: 2018-09-02
           otherNames.push(optimSum.name)
         })
         newOptim.name = utils.getUniqueName(newOptim.name, otherNames)
+        newOptim.serverDatastoreId = this.$store.state.activeProject.project.id + ':opt-' + newOptim.name
         this.optimSummaries.push(newOptim)
+        this.getOptimTaskState(newOptim)
         rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
           .then( response => {
             status.succeed(this, 'Optimization copied')
           })
           .catch(error => {
-            status.fail(this, 'Could not copy optimization: ' + error.message)
+            status.fail(this, 'Could not copy optimization', error)
           })
       },
 
       deleteOptim(optimSummary) {
         console.log('deleteOptim() called')
         status.start(this)
+        if (optimSummary.status != 'not started') {
+          this.clearTask(optimSummary)  // Clear the task from the server.
+        }
         for(var i = 0; i< this.optimSummaries.length; i++) {
           if(this.optimSummaries[i].name === optimSummary.name) {
             this.optimSummaries.splice(i, 1);
           }
         }
         rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
-          .then( response => {
+          .then(response => {
             status.succeed(this, 'Optimization deleted')
           })
           .catch(error => {
-            status.fail(this, 'Could not delete optimization: ' + error.message)
+            status.fail(this, 'Could not delete optimization', error)
           })
       },
 
@@ -485,18 +522,18 @@ Last update: 2018-09-02
         status.start(this)
         rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries]) // Make sure they're saved first
           .then(response => {
-            rpcs.rpc('launch_task', [optimSummary.server_datastore_id, 'run_optim',
-              [this.projectID, optimSummary.server_datastore_id, optimSummary.name]])
+            rpcs.rpc('launch_task', [optimSummary.serverDatastoreId, 'run_optim',
+              [this.projectID, optimSummary.serverDatastoreId, optimSummary.name]])
               .then(response => {
                 this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
                 status.succeed(this, 'Started optimization')
               })
               .catch(error => {
-                status.fail(this, 'Could not start optimization: ' + error.message)
+                status.fail(this, 'Could not start optimization', error)
               })
           })
           .catch(error => {
-            status.fail(this, 'Could not save optimizations: ' + error.message)
+            status.fail(this, 'Could not save optimizations', error)
           })
       },
 
@@ -508,14 +545,14 @@ Last update: 2018-09-02
       plotOptimization(optimSummary) {
         console.log('plotOptimization() called')
         status.start(this)
-        rpcs.rpc('plot_optimization', [this.projectID, optimSummary.server_datastore_id])
+        rpcs.rpc('plot_optimization', [this.projectID, optimSummary.serverDatastoreId])
           .then(response => {
             this.makeGraphs(response.data.graphs)
             this.displayResultName = optimSummary.name
             status.succeed(this, 'Graphs created')
           })
           .catch(error => {
-            status.fail(this, 'Could not make graphs:' + error.message) // Indicate failure.
+            status.fail(this, 'Could not make graphs', error) // Indicate failure.
           })
       },
     }

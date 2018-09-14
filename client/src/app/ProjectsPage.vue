@@ -84,7 +84,9 @@ Last update: 2018-08-30
               </div>
             </td>
             <td style="text-align:left">
-              <button class="btn __green"  @click="openProject(projectSummary.project.id)"         data-tooltip="Open project" :disabled="projectLoaded(projectSummary.project.id)" ><span>Open</span></button>
+              <span v-if="sortedFilteredProjectSummaries.length>1">
+                <button class="btn __green"  @click="openProject(projectSummary.project.id)"       data-tooltip="Open project" :disabled="projectLoaded(projectSummary.project.id)" ><span>Open</span></button>
+              </span>
               <button class="btn btn-icon" @click="renameProject(projectSummary)"                  data-tooltip="Rename">  <i class="ti-pencil"></i></button>
               <button class="btn btn-icon" @click="copyProject(projectSummary.project.id)"         data-tooltip="Copy">    <i class="ti-files"></i></button>
               <button class="btn btn-icon" @click="downloadProjectFile(projectSummary.project.id)" data-tooltip="Download"><i class="ti-download"></i></button>
@@ -151,14 +153,9 @@ Last update: 2018-08-30
   import rpcs from '@/services/rpc-service'
   import status from '@/services/status-service'
   import router from '@/router'
-  import help from '@/app/HelpLink.vue'
 
   export default {
     name: 'ProjectsPage',
-
-    components: {
-      help
-    },
 
     data() {
       return {
@@ -250,7 +247,7 @@ Last update: 2018-08-30
             status.succeed(this, '')  // No green popup.
           })
           .catch(error => {
-            status.fail(this, 'Could not load projects: ' + error.message)
+            status.fail(this, 'Could not load projects', error)
           })
       },
 
@@ -263,7 +260,7 @@ Last update: 2018-08-30
             status.succeed(this, '')
           })
           .catch(error => {
-            status.fail(this, 'Could not add demo project: ' + error.message)
+            status.fail(this, 'Could not add demo project', error)
           })
       },
 
@@ -284,7 +281,7 @@ Last update: 2018-08-30
             status.succeed(this, 'New project "' + this.proj_name + '" created') // Indicate success.
           })
           .catch(error => {
-            status.fail(this, 'Could not add new project:' + error.message)    // Indicate failure.
+            status.fail(this, 'Could not add new project', error)    // Indicate failure.
           })
       },
 
@@ -297,7 +294,7 @@ Last update: 2018-08-30
             status.succeed(this, 'New project uploaded')
           })
           .catch(error => {
-            status.fail(this, 'Could not upload file: ' + error.message)
+            status.fail(this, 'Could not upload file', error)
           })
       },
 
@@ -362,7 +359,7 @@ Last update: 2018-08-30
         let matchProject = this.projectSummaries.find(theProj => theProj.project.id === uid)
         console.log('openProject() called for ' + matchProject.project.name)
         this.$store.commit('newActiveProject', matchProject) // Set the active project to the matched project.
-        status.successPopup(this, 'Project "'+matchProject.project.name+'" loaded') // Success popup.
+        status.succeed(this, 'Project "'+matchProject.project.name+'" loaded') // Success popup.
       },
 
       copyProject(uid) {
@@ -375,7 +372,7 @@ Last update: 2018-08-30
             status.succeed(this, 'Project "'+matchProject.project.name+'" copied')    // Indicate success.
           })
           .catch(error => {
-            status.fail(this, 'Could not copy project: ' + error.message) // Indicate failure.
+            status.fail(this, 'Could not copy project', error) // Indicate failure.
           })
       },
 
@@ -395,7 +392,7 @@ Last update: 2018-08-30
             })
             .catch(error => {
               // Indicate failure.
-              status.fail(this, 'Could not rename project: ' + error.message)
+              status.fail(this, 'Could not rename project', error)
             })
         }
 
@@ -417,22 +414,19 @@ Last update: 2018-08-30
             status.succeed(this, '')  // No green popup message.
           })
           .catch(error => { // Indicate failure.
-            status.fail(this, 'Could not download project: ' + error.message)
+            status.fail(this, 'Could not download project', error)
           })
       },
 
       downloadDatabook(uid) {
-        // Find the project that matches the UID passed in.
-        let matchProject = this.projectSummaries.find(theProj => theProj.project.id === uid)
-        console.log('downloadDatabook() called for ' + matchProject.project.name)
-        status.start(this, 'Downloading data book...') // Start indicating progress.
+        console.log('downloadDatabook() called')
+        status.start(this, 'Downloading data book...')
         rpcs.download('download_databook', [uid])
           .then(response => {
             status.succeed(this, '')  // No green popup message.
           })
           .catch(error => {
-            // Indicate failure.
-            status.fail(this, 'Could not download databook: ' + error.message)
+            status.fail(this, 'Could not download databook', error)
           })
       },
 
@@ -445,21 +439,20 @@ Last update: 2018-08-30
           status.succeed(this, '')  // No green popup message.        
         })
         .catch(error => {
-          status.fail(this, 'Could not download defaults: ' + error.message)     
+          status.fail(this, 'Could not download defaults', error)     
         })      
       },
 
       uploadDatabook(uid) {
-        let matchProject = this.projectSummaries.find(theProj => theProj.project.id === uid) // Find the project that matches the UID passed in.
-        console.log('uploadDatabook() called for ' + matchProject.project.name)
+        console.log('uploadDatabook() called')
         status.start(this, 'Uploading databook...')
-        rpcs.upload('upload_databook', [uid], {})
+        rpcs.upload('upload_databook', [uid], {}, '.xlsx')
           .then(response => {
-            this.updateProjectSummaries(uid) // Update the project summaries so the copied program shows up on the list.
-            status.succeed(this, 'Data uploaded to project "'+matchProject.project.name+'"') // Indicate success.
+            this.updateProjectSummaries(uid) // Update the project summaries
+            status.succeed(this, 'Data uploaded to project') // Indicate success.
           })
           .catch(error => {
-            status.fail(this, 'Could not upload data: ' + error.message) // Indicate failure.
+            status.fail(this, 'Could not upload data', error) // Indicate failure.
           })
       },
 
@@ -499,7 +492,7 @@ Last update: 2018-08-30
               status.succeed(this, '')  // No green popup message.
             })
             .catch(error => {
-              status.fail(this, 'Could not delete project/s: ' + error.message)
+              status.fail(this, 'Could not delete project/s', error)
             })
         }
       },

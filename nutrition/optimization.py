@@ -68,11 +68,11 @@ class Optim(sc.prettyobj):
             num_procs = 1
         print('Optimizing for %s in %s' % (self.name, how))
         # list of kwargs
-        keep_inds = self._filter_progs(model) # not dependent upon spending
+        keep_inds = self._filter_progs(model, self.weights) # not dependent upon spending
         optim = (maxiter, swarmsize, maxtime)
         args = [(self.get_kwargs(model, self.weights, mult, keep_inds), mult)+optim for mult in self.mults]
         if parallel:
-            res = utils.run_parallel(self.one_optim, args, num_procs)
+            res = utils.run_parallel(self.one_optim_parallel, args, num_procs)
         else:
             res = []
             for arg in args:
@@ -80,7 +80,7 @@ class Optim(sc.prettyobj):
                 res.append(this_res)
         return res
 
-    def _filter_progs(self, model): # todo: need to update this. Could use objective function
+    def _filter_progs(self, model, weights):
         if self.filter_progs:
             threshold = 0.1
             newcov = 1.
@@ -90,10 +90,11 @@ class Optim(sc.prettyobj):
             progvals = {prog:[0] for prog in self.prog_set}
             kwargs = {'scen_type': 'cov',
                       'progvals': progvals}
-            scen = Scen(**kwargs)
+            zeroscen = Scen(**kwargs)
             zeromodel = sc.dcp(model)
-            zerores = run_scen(scen, zeromodel)
-            zeroout = zerores.get_outputs(obj)[0][0]
+            zerores = run_scen(zeroscen, zeromodel)
+            zeroouts = zerores.get_outputs()
+            zeroval = np.inner(zeroouts, weights)
             for i, prog in enumerate(self.prog_set):
                 thismodel = sc.dcp(model)
                 thiscov = sc.dcp(progvals)
@@ -102,16 +103,16 @@ class Optim(sc.prettyobj):
                 thesekwargs['progvals'] = thiscov
                 scen = Scen(**thesekwargs)
                 res = run_scen(scen, thismodel)
-                out = res.get_outputs(obj)[0][0] # todo: will need to update this for weighting
-                hasimpact = abs((out - zeroout) / zeroout) * 100. > threshold
+                outs = res.get_outputs()
+                val = np.inner(outs, weights)
+                hasimpact = abs((val - zeroval) / zeroval) * 100. > threshold
                 keep_inds.append(hasimpact)
             if not any(keep_inds): # no programs had impact
-                print('Warning: selected programs do not impact objective "%s"' % obj)
+                print('Warning: selected programs do not impact objective')
         else:
             keep_inds = [True for i, _ in enumerate(self.prog_set)]
         return np.array(keep_inds)
 
-    @utils.trace_exception
     def one_optim(self, args):
         """ Runs optimization for an objective and budget multiple.
         Return: a list of allocations, with order corresponding to the programs list """
@@ -143,6 +144,11 @@ class Optim(sc.prettyobj):
         progvals = {prog:spend for prog, spend in zip(self.prog_set, best_alloc)}
         scen = Scen(name=name, model_name=self.model_name, scen_type='budget', progvals=progvals)
         res = run_scen(scen, model, obj=self.name, mult=mult)
+        return res
+    
+    @utils.trace_exception
+    def one_optim_parallel(self, args):
+        res = self.one_optim(args)
         return res
 
     def print_status(self, objective, multiple, flag, now):

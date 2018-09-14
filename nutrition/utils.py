@@ -101,13 +101,13 @@ def pretty_labels(direction=False):
             'Pregnant women mortality rate'
         ]
     labs = sc.odict(zip(default_trackers(), pretty))
-    labs['Baseline'] = 'Est. spending \n baseline year' # this is for allocation
     return labs
 
 def relabel(old, direction=False):
     """ Can be given a string or a list of strings.
     Will return corresponding pretty label as a string or a list of strings """
     pretty = pretty_labels(direction=direction)
+    pretty['Baseline'] = 'Est. spending \n baseline year' # this is for allocation
     if isinstance(old, list):
         new = []
         for lab in old:
@@ -159,8 +159,18 @@ def process_weights(weights):
         raise Exception('All objective weights are zero. Process aborted.')
     return newweights
 
-def read_sheet(spreadsheet, name, cols=None, dict_orient=None, skiprows=None, to_odict=False):
-    df = spreadsheet.parse(name, index_col=cols, skiprows=skiprows).dropna(how='all')
+def check_weights(weights):
+    """ This is just a quick hack, real solution on another branch """
+    # change thrive to negative
+    weights = np.absolute(weights)
+    weights[0] *= -1
+    return weights
+
+def read_sheet(spreadsheet, name, cols=None, dict_orient=None, skiprows=None, to_odict=False, dropna=None):
+    if dropna is None: dropna = 'all'
+    df = spreadsheet.parse(name, index_col=cols, skiprows=skiprows)
+    if dropna:
+        df = df.dropna(how=dropna)
     if dict_orient:
         df = df.to_dict(dict_orient)
     elif to_odict:

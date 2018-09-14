@@ -7,15 +7,16 @@ from . import utils
 # Choose where the legend appears: outside right or inside right
 for_frontend = True
 if for_frontend:
-    legend_loc = {'bbox_to_anchor':(1,1.0)}
-    legend_loc_prev = {'loc':'best'} # No idea why this has to be different, but it does
+    legend_loc =      {'bbox_to_anchor':(1.0,1.0)}
     fig_size = (8,3)
-    ax_size = [0.2,0.12,0.40,0.75]
+    ax_size = [0.2,0.18,0.40,0.72]
     pltstart = 1
+    hueshift = 0.05
 else:
     legend_loc = {'loc':'right'}
     ax_size = [0.2,0.10,0.65,0.75]
     pltstart = 1
+    hueshift = 0.05
 
 
 def make_plots(all_res=None, toplot=None, optim=False):
@@ -45,13 +46,14 @@ def plot_prevs(all_res):
     prevs = utils.default_trackers(prev=True, rate=False)
     lines = []
     figs = sc.odict()
+    colors = sc.gridcolors(ncolors=len(all_res), hueshift=hueshift)
     for i, prev in enumerate(prevs):
         fig = pl.figure(figsize=fig_size)
         ax = fig.add_axes(ax_size)
         ymax = 0
         leglabels = []
         # plot results
-        for res in all_res:
+        for r, res in enumerate(all_res):
             years = res.years
             out = res.get_outputs([prev], seq=True)[0]
             f = scipy.interpolate.PchipInterpolator(years, out, extrapolate=False)
@@ -59,16 +61,16 @@ def plot_prevs(all_res):
             out = f(newx) * 100
             thismax = max(out)
             if thismax > ymax: ymax = thismax
-            line, = ax.plot(newx, out)
+            line, = ax.plot(newx, out, color=colors[r])
             lines.append(line)
             leglabels.append(res.name)
         # formatting
-        sc.SIticks(ax=ax, axis='y')
-        ax.set_ylabel('Percentage') # Shown as tick labels
+#        sc.SIticks(ax=ax, axis='y')
+        ax.set_ylabel('Prevalence (%)') # Shown as tick labels
         ax.set_ylim([0, ymax + ymax*0.1])
         ax.set_xlabel('Years')
         ax.set_title(utils.relabel(prev))
-        ax.legend(lines, [res.name for res in all_res], **legend_loc_prev)
+        ax.legend(lines, [res.name for res in all_res], **legend_loc)
         figs['prevs_%0i'%i] = fig
     return figs
 
@@ -76,29 +78,33 @@ def plot_outputs(all_res, seq, name):
     outcomes = utils.default_trackers(prev=False, rate=False)
     width = 0.15 if seq else 0.35
     figs = sc.odict()
-    scale = 1e1 # scales for formatting
+    
     baseres = all_res[0]
     years = np.array(baseres.years) # assume these scenarios over same time horizon
+    colors = sc.gridcolors(ncolors=len(all_res), hueshift=hueshift)
     for i, outcome in enumerate(outcomes):
         fig = pl.figure(figsize=fig_size)
         ax = fig.add_axes(ax_size)
         ymax = 0
         perchange = []
         bars = []
-        baseout = baseres.get_outputs(outcome, seq=seq)[0] / scale
-        if not isinstance(baseout, np.ndarray): baseout = [baseout]
+        
+        baseout = sc.promotetoarray(baseres.get_outputs(outcome, seq=seq)[0])
+        if baseout.max()>1e6: scale = 1e6
+        else:                 scale = 1e1
+        baseout /= scale
         offsets = np.arange(len(all_res)+1)*width # Calculate offset so tick is in the center of the bars
         offsets -= offsets.mean() - 0.5*width
         for r,res in enumerate(all_res):
             offset = offsets[r]
             xpos = years + offset if seq else offset
-            output = res.get_outputs(outcome, seq=seq)[0] / scale
-            if not isinstance(output, np.ndarray): output = [output]
-            thimax = max(output)
+            output = sc.promotetoarray(res.get_outputs(outcome, seq=seq)[0])
+            output /= scale
+            thimax = output.max()
             if thimax > ymax: ymax = thimax
             change = round_elements([utils.get_change(base, out) for out,base in zip(output, baseout)], dec=1)
             perchange.append(change)
-            bar = ax.bar(xpos, output, width=width)
+            bar = ax.bar(xpos, output, width=width, color=colors[r])
             bars.append(bar)
         if seq:
             ax.set_xlabel('Years')
@@ -111,13 +117,15 @@ def plot_outputs(all_res, seq, name):
                 for k, rect in enumerate(bar):
                     change = perchange[j][k]
                     height = rect.get_height()
-                    ax.text(rect.get_x() + rect.get_width() / 2., height,'{}%'.format(change), ha='center',
-                                va='bottom')
+                    ax.text(rect.get_x() + rect.get_width() / 2., height,'{}%'.format(change), ha='center', va='bottom')
         # formatting
         title += ' %s \n %s-%s'%(utils.relabel(outcome).lower(), baseres.years[pltstart], baseres.years[-1])
         sc.SIticks(ax=ax, axis='y')
         ax.set_ylim([0, ymax + ymax * .1])
-        ax.set_ylabel('Number')
+        if   scale == 1e1: ylabel = 'Number'
+        elif scale == 1e6: ylabel = 'Number (millions)'
+        else:               raise Exception('Scale value must be 1e1 or 1e6, not %s' % scale)
+        ax.set_ylabel(ylabel)
         ax.legend(bars, [res.name for res in all_res], ncol=1, **legend_loc)
         ax.set_title(title)
         figs['%s_out_%0i'%(name, i)] = fig
@@ -126,17 +134,19 @@ def plot_outputs(all_res, seq, name):
 def plot_alloc(results, optim):
     """ Plots the average annual spending for each scenario, coloured by program.
     Legend will include all programs in the 'baseline' allocation which receive non-zero spending """
-    #initialize
+    
+    # Initialize
     width = 0.35
     fig = pl.figure(figsize=fig_size)
     ax = fig.add_axes(ax_size)
     figs = sc.odict()
     ref = results[0]
     progset = ref.prog_info.base_progset()
-    colors = sc.gridcolors(ncolors=len(progset))
+    colors = sc.gridcolors(ncolors=len(progset), hueshift=hueshift)
     leglabs = []
     x = np.arange(len(results))
-    # group allocations by program
+    
+    # Group allocations by program
     avspend = []
     for prog in progset:
         thisprog = np.zeros(len(results))
@@ -146,17 +156,23 @@ def plot_alloc(results, optim):
                 progav = alloc[prog][1:].mean()
             except: # program not in scenario program set
                 progav = 0
-
             thisprog[i] = progav
         avspend.append(thisprog)
-    # make bar plots
+    
+    # Scale
+    avspend = np.array(avspend)
+    if avspend.max()>1e6: scale = 1e6
+    else:                 scale = 1e1
+    avspend /= scale
+    
+    # Make bar plots
     bars = []
     xlabs = [res.mult if res.mult else res.name for res in results]
     bottom = np.zeros(len(results))
     for i, spend in enumerate(avspend):
         if any(spend) > 0:    # only want to plot prog if spending is non-zero (solves legend issues)
             leglabs.append(progset[i])
-            bar = ax.bar(x, spend, width=width, bottom=bottom, color=colors[i])
+            bar = ax.barh(x, spend, width, bottom, color=colors[i])
             bars.append(bar)
             bottom += spend
     ymax = max(bottom)
@@ -171,15 +187,18 @@ def plot_alloc(results, optim):
         xlab = 'Total available budget (relative to US$%sM)' % valuestr
     else:
         title = 'Average annual spending, %s-%s' % (ref.years[pltstart], ref.years[-1])
-        xlab = 'Scenario'
+        xlab = '' # 'Scenario' # Collides with tick labels
     ax.set_title(title)
-    ax.set_xticks(x)
-    ax.set_xticklabels(xlabs)
-    ax.set_xlabel(xlab)
-    ax.set_ylim((0, ymax+ymax*.1))
-    ax.set_ylabel('Spending (US$)')
-    sc.SIticks(ax=ax, axis='y')
-    nprogs = len(ref.programs)
+    ax.set_yticks(x)
+    ax.set_yticklabels(xlabs)
+    ax.set_ylabel(xlab) 
+    ax.set_xlim((0, ymax+ymax*.1))
+    if   scale == 1e1: ylabel = 'Spending (US$)'
+    elif scale == 1e6: ylabel = 'Spending (US$M)'
+    else:               raise Exception('Scale value must be 1e1 or 1e6, not %s' % scale)
+    ax.set_xlabel(ylabel)
+#    sc.SIticks(ax=ax, axis='y')
+    nprogs = len(leglabs)
     labelspacing = 0.1
     columnspacing = 0.1
     fontsize = None
@@ -224,21 +243,21 @@ def get_costeff(parents, children, baselines):
             for k, out in enumerate(outcomes):
                 impact = par_outs[k] - child_outs[k]
                 if abs(impact) < 1e-3:
-                    costimpact = 'no impact'
+                    costimpact = 'No impact'
                 else:
                     costimpact = totalspend / impact
                     costimpact = round(costimpact, 2)
                     # format
                     if out == 'thrive': # thrive should increase
                         if costimpact < 0:
-                            costimpact = 'negative impact'
+                            costimpact = 'Negative impact'
                         else:
-                            costimpact = '${} per additional case'.format(costimpact)
+                            costimpact = '$%s per additional case' % format(costimpact, ',')
                     else: # all other outcomes should be negative
                         if costimpact > 0:
-                            costimpact = 'negative impact'
+                            costimpact = 'Negative impact'
                         else:
-                            costimpact = '${} per case averted'.format(costimpact * -1)
+                            costimpact = '$%s per case averted' % format(-costimpact, ',')
                 costeff[parent.name][child.name][pretty[k]] = costimpact
     return costeff
 
