@@ -244,7 +244,8 @@ def get_costeff(parents, children, baselines):
             child_outs = child.get_outputs(outcomes)
             for k, out in enumerate(outcomes):
                 impact = par_outs[k] - child_outs[k]
-                if abs(impact) < 1: # should only be used for number of people, not prevalence or rates
+                if abs(impact) < 1 or totalspend < 1: # should only be used for number of people, not prevalence or rates
+                    # total spend < 1 will catch the scale-down of reference programs, since they will return $0 expenditure
                     costimpact = 'No impact'
                 else:
                     costimpact = totalspend / impact
