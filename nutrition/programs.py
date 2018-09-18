@@ -50,12 +50,13 @@ class Program(sc.prettyobj):
         self.annual_cov = cov
         self.annual_spend = spend
 
-    def interp_scen(self, cov, years, scentype):
+    def interp_scen(self, cov, years, scentype, progname):
         """ cov: a list of coverages/spending with one-to-one correspondence with sim_years
         restr_cov: boolean indicating if the coverages are restricted or unrestricted """
         if 'ov' in scentype:
-            # check if >1. Done here before converting to unrestricted coverages
-            cov[cov > 1] = 1
+            # Raise exception is invalid coverage value. Done here before converting to unrestricted coverages
+            if (cov < 0).any() or (cov > 1).any():
+                raise Exception("Coverage for '%s' outside range 0-100"%progname)
             # assume restricted cov
             cov = self.get_unrestr_cov(cov)
             cov[0] = self.annual_cov[0]
@@ -63,12 +64,16 @@ class Program(sc.prettyobj):
             interp_cov = np.interp(years, years[not_nan], cov[not_nan])
             interp_spend = self.inv_func(interp_cov)
         elif 'ud' in scentype: # budget
+            # can't have negative spending
+            if (cov < 0).any():
+                raise Exception("Spending for '%s' below $0"%progname)
             cov[0] = self.annual_spend[0]
             not_nan = ~np.isnan(cov)
             interp_spend = np.interp(years, years[not_nan], cov[not_nan])
             interp_cov = self.func(interp_spend)
+            print interp_cov
         else:
-            raise Exception("Error: scenario type '{}' is not valid".format(scentype))
+            raise Exception("Scenario type '%s' is not valid" %scentype)
         return interp_cov, interp_spend
 
     def get_unrestr_cov(self, restr_cov):
@@ -603,7 +608,7 @@ class ProgramInfo(sc.prettyobj):
         spend = np.zeros(shape=(len(self.programs), len(years)))
         covs = self.check_cov(covs, years)
         for i,prog in self.programs.enumvals():
-            thiscov, thisspend = prog.interp_scen(covs[i], years, scentype)
+            thiscov, thisspend = prog.interp_scen(covs[i], years, scentype, prog.name)
             # ensure % cov less than 1
             thiscov[thiscov > 1] = 1
             unrestr_cov[i] = thiscov
