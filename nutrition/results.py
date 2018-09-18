@@ -20,7 +20,7 @@ class ScenResult(sc.prettyobj):
     def model_attr(self):
         return self.model.__dict__
     
-    def get_outputs(self, outcomes=None, seq=False, asdict=False):
+    def get_outputs(self, outcomes=None, seq=False, asdict=False, pretty=False):
         """
         outcomes: a list of model outcomes to return
         return: a list of outputs with same order as outcomes
@@ -36,6 +36,15 @@ class ScenResult(sc.prettyobj):
                 output[outcome] = outs[o]
         else: 
             output = outs
+            if pretty and not seq:
+                prettyvals = []
+                for out, val in zip(outcomes, output):
+                    if 'prev' in out:
+                        prettyval = round(val* 100, 2)
+                    else:
+                        prettyval = round(val,0)
+                    prettyvals.append(prettyval)
+                output = prettyvals
         return output
 
     def get_allocs(self, ref=True):
