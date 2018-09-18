@@ -71,7 +71,6 @@ class Program(sc.prettyobj):
             not_nan = ~np.isnan(cov)
             interp_spend = np.interp(years, years[not_nan], cov[not_nan])
             interp_cov = self.func(interp_spend)
-            print interp_cov
         else:
             raise Exception("Scenario type '%s' is not valid" %scentype)
         return interp_cov, interp_spend
