@@ -84,9 +84,15 @@ class Model(sc.prettyobj):
         self.nonpw_anaemprev[self.year] = self.nonpw.frac_risk('an')
 
     def _track_rates(self):
-        """ Calculates mortality rates per 1000 births """
-        self.child_mortrate += 1000 * sum(self.child_deaths) / sum(self.annual_births)
-        self.pw_mortrate[self.year] += 1000 * sum(self.pw_deaths) / sum(self.annual_births)
+        """ Rates defined as total deaths per 1000 live births.
+         This is calculated per year with the cumulative deaths and births,
+         so the final element will be total rates over the simulation period"""
+        self.child_mortrate[self.year] = 1000 * sum(self.child_deaths) / sum(self.annual_births)
+        self.pw_mortrate[self.year] = 1000 * sum(self.pw_deaths) / sum(self.annual_births)
+
+    def track(self):
+        self._track_wra_outcomes()
+        self._track_prevs()
 
     def _set_pop_probs(self, year):
         init_cov = self.prog_info.get_ann_covs(year-1)
@@ -117,7 +123,8 @@ class Model(sc.prettyobj):
             if self.adjust_cov: # account for pop growth
                 self.prog_info.adjust_covs(self.pops, year)
             self.integrate()
-            self._track_prevs()
+            self.track()
+        self._track_rates()
 
     def _apply_prog_covs(self):
         # update populations
@@ -133,7 +140,6 @@ class Model(sc.prettyobj):
         self._apply_pw_mort()
         self._update_pw()
         self._update_wra_pop()
-        self._track_wra_outcomes()
 
     def _update_pop_mort(self, pop):
         if pop.name != 'Non-pregnant women':
