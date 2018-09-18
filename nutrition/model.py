@@ -59,7 +59,7 @@ class Model(sc.prettyobj):
             arr = np.zeros(self.n_years)
             setattr(self, tracker, arr)
 
-    def _track_outcomes(self):
+    def _track_child_outcomes(self):
         # children
         oldest = self.children.age_groups[-1]
         rate = oldest.ageingRate
@@ -67,6 +67,8 @@ class Model(sc.prettyobj):
         self.stunted[self.year] += oldest.num_stunted() * rate
         self.wasted[self.year] += sum(oldest.num_wasted(cat) for cat in self.ss.wasted_list) * rate
         self.child_anaemic[self.year] += oldest.num_anaemic() * rate
+
+    def _track_wra_outcomes(self):
         # pw
         self.pw_anaemic[self.year] += self.pw.num_anaemic()
         # nonpw
@@ -131,6 +133,7 @@ class Model(sc.prettyobj):
         self._apply_pw_mort()
         self._update_pw()
         self._update_wra_pop()
+        self._track_wra_outcomes()
 
     def _update_pop_mort(self, pop):
         if pop.name != 'Non-pregnant women':
@@ -379,7 +382,7 @@ class Model(sc.prettyobj):
             self.child_deaths[self.year] += deaths
 
     def _apply_child_ageing(self):
-        self._track_outcomes()
+        self._track_child_outcomes()
         # get number ageing out of each age group
         age_groups = self.children.age_groups
         ageingOut = []
