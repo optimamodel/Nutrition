@@ -54,6 +54,8 @@ class Program(sc.prettyobj):
         """ cov: a list of coverages/spending with one-to-one correspondence with sim_years
         restr_cov: boolean indicating if the coverages are restricted or unrestricted """
         if 'ov' in scentype:
+            # check if >1. Done here before converting to unrestricted coverages
+            cov[cov > 1] = 1
             # assume restricted cov
             cov = self.get_unrestr_cov(cov)
             cov[0] = self.annual_cov[0]
