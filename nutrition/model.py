@@ -525,7 +525,7 @@ class Model(sc.prettyobj):
         try:
             return getattr(self, outcome)
         except AttributeError:
-            raise Exception(" ::ERROR:: %s not an attribute of Model class " % outcome)
+            raise Exception("%s not an attribute of Model class" % outcome)
 
     def get_output(self, outcomes=None, seq=False):
         """ Always returns a list, but of variable length"""
