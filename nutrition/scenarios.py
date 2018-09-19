@@ -44,10 +44,10 @@ class Scen(sc.prettyobj):
             allkwargs.append(kwargs)
         return allkwargs
 
-def run_scen(scen, model, obj=None, mult=None, setcovs=True):
+def run_scen(scen, model, obj=None, mult=None, setcovs=True, restrictcovs=True):
     """ Function to run associated Scen and Model objects """
     model = sc.dcp(model)
-    model.setup(scen, setcovs=setcovs)
+    model.setup(scen, setcovs=setcovs, restrictcovs=restrictcovs)
     model.run_sim()
     res = ScenResult(scen.name, scen.model_name, model, obj=obj, mult=mult)
     return res
