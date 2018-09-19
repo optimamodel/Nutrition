@@ -632,13 +632,14 @@ class ProgramInfo(sc.prettyobj):
         newcovs = newcovs.astype(float) # force conversion to treat None as nan
         return newcovs
 
-    def update_covs(self, covs, spends):
+    def update_covs(self, covs, spends, restrictcovs):
         for i,prog in self.programs.enumvals():
             cov = covs[i]
             spend = spends[i]
             prog.update_cov(cov, spend)
         # restrict covs
-        self.restrict_covs()
+        if restrictcovs:
+            self.restrict_covs()
 
     def determine_cov_change(self):
         for prog in self.programs.values():

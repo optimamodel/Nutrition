@@ -23,7 +23,7 @@ class Model(sc.prettyobj):
         self.adjust_cov = adjust_cov
         self.timeTrends = timeTrends
 
-    def setup(self, scen, setcovs=True):
+    def setup(self, scen, setcovs=True, restrictcovs=True):
         """ Sets scenario-specific parameters within the model.
         - simulation period
         - programs for scenario
@@ -38,7 +38,7 @@ class Model(sc.prettyobj):
         self._track_prevs()
         if setcovs:
             # scenario coverages
-            self.update_covs(scen.vals, scen.scen_type)
+            self.update_covs(scen.vals, scen.scen_type, restrictcovs=restrictcovs)
 
     def get_allocs(self, add_funds, fix_curr, rem_curr):
         self.prog_info.get_allocs(add_funds, fix_curr, rem_curr)
@@ -49,9 +49,9 @@ class Model(sc.prettyobj):
         self.prog_info.set_costcovs() # enables getting coverage from cost
         self.prog_info.get_base_spend()
     
-    def update_covs(self, covs, scentype):
+    def update_covs(self, covs, scentype, restrictcovs=True):
         covs, spend = self.prog_info.get_cov_scen(covs, scentype, self.all_years)
-        self.prog_info.update_covs(covs, spend)
+        self.prog_info.update_covs(covs, spend, restrictcovs)
 
     def _set_trackers(self):
         """ Arrays to store annual outputs """
