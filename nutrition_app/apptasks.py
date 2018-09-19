@@ -1,14 +1,12 @@
 """
 apptasks.py -- The Celery tasks module for this webapp
     
-Last update: 7/31/18 (gchadder3)
+Last update: 2018sep19
 """
 
 import scirisweb as sw
-import mpld3
 from . import rpcs
 from . import config
-from . import projects as prj
 import matplotlib.pyplot as ppl
 ppl.switch_backend(config.MATPLOTLIB_BACKEND)
 
