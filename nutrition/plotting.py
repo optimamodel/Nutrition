@@ -12,11 +12,13 @@ if for_frontend:
     ax_size = [0.2,0.18,0.40,0.72]
     pltstart = 1
     hueshift = 0.05
+    refprogs = False # include ref spending?
 else:
     legend_loc = {'loc':'right'}
     ax_size = [0.2,0.10,0.65,0.75]
     pltstart = 1
     hueshift = 0.05
+    refprogs = False # include ref spending?
 
 
 def make_plots(all_res=None, toplot=None, optim=False):
@@ -76,7 +78,7 @@ def plot_prevs(all_res):
 
 def plot_outputs(all_res, seq, name):
     outcomes = utils.default_trackers(prev=False, rate=False)
-    width = 0.15 if seq else 0.35
+    width = 0.15
     figs = sc.odict()
     
     baseres = all_res[0]
@@ -151,7 +153,7 @@ def plot_alloc(results, optim):
     for prog in progset:
         thisprog = np.zeros(len(results))
         for i, res in enumerate(results):
-            alloc = res.get_allocs(ref=False) # slightly inefficient to do this for every program
+            alloc = res.get_allocs(ref=refprogs) # slightly inefficient to do this for every program
             try:
                 progav = alloc[prog][1:].mean()
             except: # program not in scenario program set
@@ -228,8 +230,8 @@ def get_costeff(parents, children, baselines):
         baseline = baselines[i]
         costeff[parent.name] = sc.odict()
         par_outs = parent.get_outputs(outcomes)
-        allocs = parent.get_allocs(ref=False)
-        baseallocs = baseline.get_allocs(ref=False)
+        allocs = parent.get_allocs(ref=refprogs)
+        baseallocs = baseline.get_allocs(ref=refprogs)
         filteredbase = sc.odict({prog:spend for prog, spend in baseallocs.iteritems() if prog not in allocs})
         totalspend = allocs[:].sum() + filteredbase[:].sum()
         thesechildren = children[parent.name]
@@ -242,7 +244,8 @@ def get_costeff(parents, children, baselines):
             child_outs = child.get_outputs(outcomes)
             for k, out in enumerate(outcomes):
                 impact = par_outs[k] - child_outs[k]
-                if abs(impact) < 1e-3:
+                if abs(impact) < 1 or totalspend < 1: # should only be used for number of people, not prevalence or rates
+                    # total spend < 1 will catch the scale-down of reference programs, since they will return $0 expenditure
                     costimpact = 'No impact'
                 else:
                     costimpact = totalspend / impact
