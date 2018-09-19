@@ -757,18 +757,18 @@ def py_to_js_optim(py_optim, proj, key=None, default_included=False):
     
 def js_to_py_optim(js_optim):
     ''' Convert a JSON to Python representation of an optimization '''
+    obj_keys = nu.default_trackers()
     json = sc.odict()
     attrs = ['name', 'model_name', 'fix_curr', 'filter_progs']
     for attr in attrs:
         json[attr] = js_optim[attr]
     try:
-        json['weights'] = []
-        for item in js_optim['weightslist']:
+        json['weights'] = sc.odict()
+        for key,item in zip(obj_keys,js_optim['weightslist']):
             val = to_number(item['weight'])
-            json['weights'].append(val)
-        json['weights'] = np.array(json['weights'])
+            json['weights'][key] = val
     except Exception as E:
-        print('Unable to convert "%s" to weights' % js_optim['weights'])
+        print('Unable to convert "%s" to weights' % js_optim['weightslist'])
         raise E
     jsm = js_optim['mults']
     if isinstance(jsm, list):
