@@ -8,7 +8,6 @@ from scipy.optimize import brentq
 import sciris as sc
 
 
-
 def optimafolder(subfolder=None):
     if subfolder is None: subfolder='nutrition'
     parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
@@ -123,35 +122,42 @@ def relabel(old, direction=False):
             new = old
     return new
 
-def get_obj_sign(obj):
+def get_sign(obj):
     max_obj = ['thrive']
     if obj in max_obj:
         return -1
     else:
         return 1
 
-def get_vector(obj):
-    """ If a pre-defined objective is passed, this will create the corresponding weights """
-    outcomes = default_trackers()
-    try:
-        i = outcomes.index(obj)
-    except ValueError:
-        raise Exception('ERROR: objective string not found')
-    weights = np.zeros(len(outcomes))
-    sign = get_obj_sign(obj)
-    weights[i] = sign
-    return weights
-
-def get_weights(obj):
-    """ Function to process weights """
-    if isinstance(obj, str):
-        # a pre-defined objective
-        return get_vector(obj)
-    elif isinstance(obj, np.ndarray):
-        # custom weights, assume order as in default_trackers()
-        return obj
-    else:
-        raise Exception("ERROR: cannot get weights for this object type")
+def process_weights(weights):
+    """ Creates an array of weights with the order corresponding to default_trackers().
+    If conditions for the max/min problem is violated, will correct these by flipping sign.
+    :param weights: an odict of (outcome, weight) pairs
+    :return an array of floats """
+    default = default_trackers()
+    pretty1 = pretty_labels(direction=False)
+    # reverse mapping to find outcome
+    inv_pretty1 = {v: k for k, v in pretty1.iteritems()}
+    pretty2 = pretty_labels(direction=True)
+    inv_pretty2 = {v: k for k, v in pretty2.iteritems()}
+    newweights = np.zeros(len(default))
+    for out, weight in weights.iteritems():
+        if out in default:
+            ind = default.index(out)
+        elif out in inv_pretty1:
+            thisout = inv_pretty1[out]
+            ind = default.index(thisout)
+        elif out in inv_pretty2:
+            thisout = inv_pretty2[out]
+            ind = default.index(thisout)
+        else:
+            print('Warning: "%s" is an invalid weighted outcome, removing'%out)
+            continue
+        sign = get_sign(out)
+        newweights[ind] = abs(weight) * sign
+    if np.all(newweights==0):
+        raise Exception('All objective weights are zero. Process aborted.')
+    return newweights
 
 def check_weights(weights):
     """ This is just a quick hack, real solution on another branch """
