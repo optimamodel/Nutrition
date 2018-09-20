@@ -281,8 +281,8 @@ def add_demo_project():
     proj = nu.demo(scens=True, optims=True)  # Create the project, loading in the desired spreadsheets.
     proj.name = new_proj_name
     print(">> add_demo_project %s" % (proj.name)) # Display the call information.
-    save_project(proj, new=True) # Save the new project in the DataStore.
-    return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
+    key = save_project(proj, new=True) # Save the new project in the DataStore.
+    return {'projectKey': key} # Return the new project UID in the return message.
 
 
 @RPC(call_type='download')

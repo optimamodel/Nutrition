@@ -256,7 +256,7 @@ Last update: 2018-08-30
         status.start(this);
         rpcs.rpc('add_demo_project', []) // Have the server create a new project.
           .then(response => {
-            this.updateProjectSummaries(response.data.projectId); // Update the project summaries so the new project shows up on the list.
+            this.updateProjectSummaries(response.data.projectKey); // Update the project summaries so the new project shows up on the list.
             status.succeed(this, '')
           })
           .catch(error => {
