@@ -201,10 +201,10 @@ def save_new_project(proj):
     new_project.modified = sc.now()
     new_project.uid = sc.uuid()
     key = save_project(new_project)
-    return key
+    return key,new_project
 
 @RPC()
-def project_json(project_id):
+def project_json(project_id, verbose=False):
     """ Return the project summary, given the Project UID. """ 
     proj = load_project(project_id) # Load the project record matching the UID of the project passed in.
     json = {
@@ -217,18 +217,20 @@ def project_json(project_id):
             'updatedTime':  proj.modified
         }
     }
+    if verbose: sc.pp(json)
     return json
     
 
 
 @RPC()
-def project_jsons():
+def project_jsons(verbose=False):
     """ Return project summaries for all projects the user has to the client. """ 
     output = {'projects':[]}
     user = get_user()
     for project_key in user.projects:
         json = project_json(project_key)
         output['projects'].append(json)
+    if verbose: sc.pp(output)
     return output
 
 
@@ -248,8 +250,8 @@ def add_demo_project():
     proj = nu.demo(scens=True, optims=True)  # Create the project, loading in the desired spreadsheets.
     proj.name = new_proj_name
     print(">> add_demo_project %s" % (proj.name)) # Display the call information.
-    key = save_new_project(proj) # Save the new project in the DataStore.
-    return {'projectKey': key} # Return the new project UID in the return message.
+    key,proj = save_new_project(proj) # Save the new project in the DataStore.
+    return {'projectID': str(proj.uid)} # Return the new project UID in the return message.
 
 
 @RPC(call_type='download')
@@ -259,7 +261,7 @@ def create_new_project(proj_name):
     new_proj_name = unique_project_name(proj_name) # Get a unique name for the project to be added.
     proj = nu.Project(name=new_proj_name) # Create the project
     print(">> create_new_project %s" % (proj.name))     # Display the call information.
-    save_new_project(proj) # Save the new project in the DataStore.
+    key,proj = save_new_project(proj) # Save the new project in the DataStore.
     databook_path = sc.makefilepath(filename=template_name, folder=nu.ONpath('applications'))
     file_name = '%s databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name)
@@ -288,7 +290,7 @@ def copy_project(project_key):
     new_project = sc.dcp(proj) # Make a copy of the project loaded in to work with.
     new_project.name = unique_project_name(proj.name) # Just change the project name, and we have the new version of the Project object to be saved as a copy.
     print(">> copy_project %s" % (new_project.name))  # Display the call information.
-    save_new_project(new_project) # Save a DataStore projects record for the copy project.
+    key,new_project = save_new_project(new_project) # Save a DataStore projects record for the copy project.
     copy_project_id = new_project.uid # Remember the new project UID (created in save_project_as_new()).
     return { 'projectId': copy_project_id } # Return the UID for the new projects record.
 
@@ -384,7 +386,7 @@ def create_project_from_prj_file(prj_filename):
     except Exception:
         return { 'error': 'BadFileFormatError' }
     proj.name = unique_project_name(proj.name) # Reset the project name to a new project name that is unique.
-    save_new_project(proj) # Save the new project in the DataStore.
+    key,proj = save_new_project(proj) # Save the new project in the DataStore.
     return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
 
 
