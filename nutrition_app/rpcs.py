@@ -41,8 +41,9 @@ def to_number(raw):
 
 
 def get_path(filename):
-    dirname = sw.globalvars.downloads_dir.dir_path # Use the downloads directory to put the file in.
-    fullpath = '%s%s%s' % (dirname, os.sep, filename) # Generate the full file name with path.
+    basedir = sw.flaskapp.datastore.tempfolder
+    user_id = str(check_user().uid) # Can't user username since too much sanitization required
+    fullpath = os.sep.join([basedir, user_id, filename]) # Generate the full file name with path.
     return fullpath
 
 
