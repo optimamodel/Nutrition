@@ -39,7 +39,7 @@ def run_optim(project_id, cache_id, optim_name=None):
 #    proj.results[cache_id] = results
     rpcs.put_results_cache_entry(cache_id, results, apptasks_call=True)
     print('Saving project...')
-    proj = rpcs.load_project(project_id, raise_exception=True)
+    proj = rpcs.load_project(project_id, raise_exception=True)  # load again to lessen risk other project writes from external processes are lost
     proj.results[cache_id] = results
     rpcs.save_project(proj)
     return None
