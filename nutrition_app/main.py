@@ -10,6 +10,7 @@ from . import config, rpcs, apptasks # analysis:ignore
 def make_app():
     app = sw.ScirisApp(name='Optima Nutrition', filepath=__file__, config=config) # Create the ScirisApp object.  NOTE: app.config will thereafter contain all of the configuration parameters, including for Flask.
     app.add_RPC_dict(rpcs.RPC_dict) # Register the RPCs.
+    sw.make_default_users(app)
     return app
 
 def run():

@@ -153,15 +153,15 @@ def blobop(key=None, objtype=None, op=None, obj=None):
     
 
 # Convenience functions
-def load_project(key): return sw.flaskapp.datastore.loadblob(key, objtype='project')
-def load_result(key):  return sw.flaskapp.datastore.loadblob(key, objtype='result')
-def load_task(key):    return sw.flaskapp.datastore.loadtask(key)
-def save_project(obj): return blobop(obj=obj, objtype='project', op='add')
-def save_result(obj):  return blobop(obj=obj, objtype='result',  op='add')
-def save_task(obj):    return blobop(obj=obj, objtype='task',    op='add')
-def del_project(key):  return blobop(key=key, objtype='project', op='delete')
-def del_result(key):   return blobop(key=key, objtype='result',  op='delete')
-def del_task(key):     return blobop(key=key, objtype='task',    op='delete')
+def load_project(key, die=None): return sw.flaskapp.datastore.loadblob(key, objtype='project', die=die)
+def load_result(key, die=None):  return sw.flaskapp.datastore.loadblob(key, objtype='result', die=die)
+def load_task(key, die=None):    return sw.flaskapp.datastore.loadtask(key, die=die)
+def save_project(obj, die=None): return blobop(obj=obj, objtype='project', op='add', die=die)
+def save_result(obj, die=None):  return blobop(obj=obj, objtype='result',  op='add', die=die)
+def save_task(obj, die=None):    return blobop(obj=obj, objtype='task',    op='add', die=die)
+def del_project(key, die=None):  return blobop(key=key, objtype='project', op='delete', die=die)
+def del_result(key, die=None):   return blobop(key=key, objtype='result',  op='delete', die=die)
+def del_task(key, die=None):     return blobop(key=key, objtype='task',    op='delete', die=die)
 
     
 
