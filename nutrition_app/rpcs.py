@@ -23,7 +23,7 @@ rc('font', size=12)
 RPC_dict = {} # Dictionary to hold all of the registered RPCs in this module.
 RPC = sw.makeRPCtag(RPC_dict) # RPC registration decorator factory created using call to make_RPC().
 
-        
+
 ###############################################################
 ### Other functions (mostly helpers for the RPCs)
 ##############################################################
@@ -170,6 +170,18 @@ def del_task(key):     return blobop(key=key, objtype='task',    op='delete')
 ##################################################################################
 
 
+def save_new_project(proj):
+    """
+    Given a Project object, wrap it in a new prj.ProjectSO object and put this 
+    in the project collection (either adding a new object, or updating an 
+    existing one)  skip_result lets you null out saved results in the Project.
+    """ 
+    new_project = sc.dcp(proj) # Copy the project, only save what we want...
+    new_project.modified = sc.now()
+    new_project.uid = sc.uuid()
+    key = save_project(new_project)
+    return key
+
 @RPC()
 def project_json(project_id):
     """ Return the project summary, given the Project UID. """ 
@@ -262,7 +274,7 @@ def add_demo_project():
     proj = nu.demo(scens=True, optims=True)  # Create the project, loading in the desired spreadsheets.
     proj.name = new_proj_name
     print(">> add_demo_project %s" % (proj.name)) # Display the call information.
-    key = save_project(proj, new=True) # Save the new project in the DataStore.
+    key = save_new_project(proj) # Save the new project in the DataStore.
     return {'projectKey': key} # Return the new project UID in the return message.
 
 
