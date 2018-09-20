@@ -40,10 +40,11 @@ def to_number(raw):
     return output
 
 
-def get_path(filename):
+def get_path(filename=None):
+    if filename is None: filename = ''
     basedir = sw.flaskapp.datastore.tempfolder
     user_id = str(get_user().uid) # Can't user username since too much sanitization required
-    fullpath = os.sep.join([basedir, user_id, filename]) # Generate the full file name with path.
+    fullpath = os.path.join(basedir, user_id, filename) # Generate the full file name with path.
     return fullpath
 
 
@@ -171,6 +172,22 @@ def del_task(key, die=None):     return blobop(key=key, objtype='task',    op='d
 ##################################################################################
 
 
+def unique_project_name(project_name, verbose=False):
+    ''' Get a unique project name '''
+    user = get_user()
+    current_project_names = []
+    for project_key in user.projects:
+        proj = load_project(project_key)
+        current_project_names.append(proj.name)
+    new_project_name = sc.uniquename(project_name, namelist=current_project_names)
+    if verbose:
+        print('   Original name: %s' % project_name)
+        print('Existing name(s): %s' % current_project_names)
+        print('        New name: %s' % new_project_name)
+    return new_project_name
+
+
+
 def save_new_project(proj):
     """
     Given a Project object, wrap it in a new prj.ProjectSO object and put this 
@@ -252,18 +269,22 @@ def download_defaults(project_id):
 
 
 @RPC(call_type='download')
-def load_zip_of_prj_files(project_ids):
+def load_zip_of_prj_files(project_keys):
     """
     Given a list of project UIDs, make a .zip file containing all of these 
     projects as .prj files, and return the full path to this file.
     """
-    dirname = sw.globalvars.downloads_dir.dir_path # Use the downloads directory to put the file in.
-    prjs = [load_project_record(pid).save_as_file(dirname) for pid in project_ids] # Build a list of prj.ProjectSO objects for each of the selected projects, saving each of them in separate .prj files.
+    basedir = get_path() # Use the downloads directory to put the file in.
+    project_paths = []
+    for project_key in project_keys:
+        proj = load_project(project_key)
+        project_path = proj.save(folder=basedir)
+        project_paths.append(project_path)
     zip_fname = 'Projects %s.zip' % sc.getdate() # Make the zip file name and the full server file path version of the same..
-    server_zip_fname = os.path.join(dirname, sc.sanitizefilename(zip_fname))
+    server_zip_fname = os.path.join(basedir, sc.sanitizefilename(zip_fname))
     with ZipFile(server_zip_fname, 'w') as zipfile: # Create the zip file, putting all of the .prj files in a projects directory.
-        for project in prjs:
-            zipfile.write(os.path.join(dirname, project), 'projects/{}'.format(project))
+        for project_path in project_paths:
+            zipfile.write(project_path, 'projects/{}'.format(project_path))
     print(">> load_zip_of_prj_files %s" % (server_zip_fname)) # Display the call information.
     return server_zip_fname # Return the server file name.
 
@@ -271,7 +292,7 @@ def load_zip_of_prj_files(project_ids):
 @RPC()
 def add_demo_project():
     """ Add a demo Optima Nutrition project """
-    new_proj_name = sc.uniquename('Demo project', namelist=None) # Get a unique name for the project to be added.
+    new_proj_name = unique_project_name('Demo project') # Get a unique name for the project to be added.
     proj = nu.demo(scens=True, optims=True)  # Create the project, loading in the desired spreadsheets.
     proj.name = new_proj_name
     print(">> add_demo_project %s" % (proj.name)) # Display the call information.
@@ -283,7 +304,7 @@ def add_demo_project():
 def create_new_project(proj_name):
     """ Create a new Optima Nutrition project. """
     template_name = 'template_input.xlsx'
-    new_proj_name = sc.uniquename(proj_name, namelist=None) # Get a unique name for the project to be added.
+    new_proj_name = unique_project_name(proj_name) # Get a unique name for the project to be added.
     proj = nu.Project(name=new_proj_name) # Create the project
     print(">> create_new_project %s" % (proj.name))     # Display the call information.
     save_project(proj, new=True) # Save the new project in the DataStore.
@@ -323,7 +344,7 @@ def copy_project(project_key):
     """
     proj = load_project(project_key, die=True) # Get the Project object for the project to be copied.
     new_project = sc.dcp(proj) # Make a copy of the project loaded in to work with.
-    new_project.name = sc.uniquename(proj.name, namelist=None) # Just change the project name, and we have the new version of the Project object to be saved as a copy.
+    new_project.name = unique_project_name(proj.name) # Just change the project name, and we have the new version of the Project object to be saved as a copy.
     print(">> copy_project %s" % (new_project.name))  # Display the call information.
     save_project(new_project, new=True) # Save a DataStore projects record for the copy project.
     copy_project_id = new_project.uid # Remember the new project UID (created in save_project_as_new()).
@@ -341,7 +362,7 @@ def create_project_from_prj_file(prj_filename):
         proj = sc.loadobj(prj_filename)
     except Exception:
         return { 'error': 'BadFileFormatError' }
-    proj.name = sc.uniquename(proj.name, namelist=None) # Reset the project name to a new project name that is unique.
+    proj.name = unique_project_name(proj.name) # Reset the project name to a new project name that is unique.
     save_project(proj, new=True) # Save the new project in the DataStore.
     return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
 
