@@ -113,7 +113,7 @@ Last update: 2018-08-30
             })
           } else {
             // Set a failure result to show.
-            this.loginResult = 'Login failed: username or password incorrect or account not activated.'
+            this.loginResult = response.data
           }
         })
         .catch(error => {

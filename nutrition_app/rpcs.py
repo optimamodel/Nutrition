@@ -40,9 +40,11 @@ def to_number(raw):
     return output
 
 
-def get_path(filename):
-    dirname = sw.globalvars.downloads_dir.dir_path # Use the downloads directory to put the file in.
-    fullpath = '%s%s%s' % (dirname, os.sep, filename) # Generate the full file name with path.
+def get_path(filename=None):
+    if filename is None: filename = ''
+    basedir = sw.flaskapp.datastore.tempfolder
+    user_id = str(get_user().uid) # Can't user username since too much sanitization required
+    fullpath = os.path.join(basedir, user_id, filename) # Generate the full file name with path.
     return fullpath
 
 
@@ -98,7 +100,7 @@ def get_version_info():
 ### User functions/RPCs
 ##################################################################################
 
-def check_user():
+def get_user():
     ''' Ensure it's a valid Optima Nutrition user '''
     user = sw.load_user()
     dosave = False
@@ -119,7 +121,7 @@ def check_user():
 def blobop(key=None, objtype=None, op=None, obj=None, die=None):
     ''' Perform a blob operation -- add or delete a project, result, or task for the user '''
     # Figure out what kind of list it is
-    user = check_user()
+    user = get_user()
     if   objtype == 'project': itemlist = user.projects
     elif objtype == 'result':  itemlist = user.results
     elif objtype == 'task':    itemlist = user.tasks
@@ -170,6 +172,22 @@ def del_task(key, die=None):     return blobop(key=key, objtype='task',    op='d
 ##################################################################################
 
 
+def unique_project_name(project_name, verbose=False):
+    ''' Get a unique project name '''
+    user = get_user()
+    current_project_names = []
+    for project_key in user.projects:
+        proj = load_project(project_key)
+        current_project_names.append(proj.name)
+    new_project_name = sc.uniquename(project_name, namelist=current_project_names)
+    if verbose:
+        print('   Original name: %s' % project_name)
+        print('Existing name(s): %s' % current_project_names)
+        print('        New name: %s' % new_project_name)
+    return new_project_name
+
+
+
 def save_new_project(proj):
     """
     Given a Project object, wrap it in a new prj.ProjectSO object and put this 
@@ -190,7 +208,7 @@ def project_json(project_id):
         'project': {
             'id':           proj.uid,
             'name':         proj.name,
-            'username':     check_user().username,
+            'username':     get_user().username,
             'hasData':      len(proj.datasets)>0,
             'creationTime': proj.created,
             'updatedTime':  proj.modified
@@ -204,7 +222,7 @@ def project_json(project_id):
 def project_jsons():
     """ Return project summaries for all projects the user has to the client. """ 
     output = {'projects':[]}
-    user = check_user()
+    user = get_user()
     for project_key in user.projects:
         json = project_json(project_key)
         output['projects'].append(json)
@@ -245,32 +263,45 @@ def download_defaults(project_id):
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
     file_name = '%s_defaults.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name) # Generate the full file name with path.
-    proj.dataset().defaults_sheet.save(full_file_name)
+    proj.defaults_sheet.save(full_file_name)
     print(">> download_defaults %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
 
 
 @RPC(call_type='download')
-def load_zip_of_prj_files(project_ids):
+def load_zip_of_prj_files(project_keys):
     """
     Given a list of project UIDs, make a .zip file containing all of these 
     projects as .prj files, and return the full path to this file.
     """
-    dirname = sw.globalvars.downloads_dir.dir_path # Use the downloads directory to put the file in.
-    prjs = [load_project_record(pid).save_as_file(dirname) for pid in project_ids] # Build a list of prj.ProjectSO objects for each of the selected projects, saving each of them in separate .prj files.
+    basedir = get_path() # Use the downloads directory to put the file in.
+    project_paths = []
+    for project_key in project_keys:
+        proj = load_project(project_key)
+        project_path = proj.save(folder=basedir)
+        project_paths.append(project_path)
     zip_fname = 'Projects %s.zip' % sc.getdate() # Make the zip file name and the full server file path version of the same..
-    server_zip_fname = os.path.join(dirname, sc.sanitizefilename(zip_fname))
+    server_zip_fname = os.path.join(basedir, sc.sanitizefilename(zip_fname))
     with ZipFile(server_zip_fname, 'w') as zipfile: # Create the zip file, putting all of the .prj files in a projects directory.
-        for project in prjs:
-            zipfile.write(os.path.join(dirname, project), 'projects/{}'.format(project))
+        for project_path in project_paths:
+            filename = os.path.basename(project_path)
+            zipfile.write(project_path, filename)
     print(">> load_zip_of_prj_files %s" % (server_zip_fname)) # Display the call information.
     return server_zip_fname # Return the server file name.
 
 
 @RPC()
+def delete_projects(project_keys):
+    ''' Delete one or more projects '''
+    project_keys = sc.promotetolist(project_keys)
+    for project_key in project_keys:
+        del_project(project_key)
+    return None
+
+@RPC()
 def add_demo_project():
     """ Add a demo Optima Nutrition project """
-    new_proj_name = sc.uniquename('Demo project', namelist=None) # Get a unique name for the project to be added.
+    new_proj_name = unique_project_name('Demo project') # Get a unique name for the project to be added.
     proj = nu.demo(scens=True, optims=True)  # Create the project, loading in the desired spreadsheets.
     proj.name = new_proj_name
     print(">> add_demo_project %s" % (proj.name)) # Display the call information.
@@ -282,10 +313,10 @@ def add_demo_project():
 def create_new_project(proj_name):
     """ Create a new Optima Nutrition project. """
     template_name = 'template_input.xlsx'
-    new_proj_name = sc.uniquename(proj_name, namelist=None) # Get a unique name for the project to be added.
+    new_proj_name = unique_project_name(proj_name) # Get a unique name for the project to be added.
     proj = nu.Project(name=new_proj_name) # Create the project
     print(">> create_new_project %s" % (proj.name))     # Display the call information.
-    save_project(proj, new=True) # Save the new project in the DataStore.
+    save_new_project(proj) # Save the new project in the DataStore.
     databook_path = sc.makefilepath(filename=template_name, folder=nu.ONpath('applications'))
     file_name = '%s databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name)
@@ -322,9 +353,9 @@ def copy_project(project_key):
     """
     proj = load_project(project_key, die=True) # Get the Project object for the project to be copied.
     new_project = sc.dcp(proj) # Make a copy of the project loaded in to work with.
-    new_project.name = sc.uniquename(proj.name, namelist=None) # Just change the project name, and we have the new version of the Project object to be saved as a copy.
+    new_project.name = unique_project_name(proj.name) # Just change the project name, and we have the new version of the Project object to be saved as a copy.
     print(">> copy_project %s" % (new_project.name))  # Display the call information.
-    save_project(new_project, new=True) # Save a DataStore projects record for the copy project.
+    save_new_project(new_project) # Save a DataStore projects record for the copy project.
     copy_project_id = new_project.uid # Remember the new project UID (created in save_project_as_new()).
     return { 'projectId': copy_project_id } # Return the UID for the new projects record.
 
@@ -340,8 +371,8 @@ def create_project_from_prj_file(prj_filename):
         proj = sc.loadobj(prj_filename)
     except Exception:
         return { 'error': 'BadFileFormatError' }
-    proj.name = sc.uniquename(proj.name, namelist=None) # Reset the project name to a new project name that is unique.
-    save_project(proj, new=True) # Save the new project in the DataStore.
+    proj.name = unique_project_name(proj.name) # Reset the project name to a new project name that is unique.
+    save_new_project(proj) # Save the new project in the DataStore.
     return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
 
 
@@ -841,319 +872,3 @@ def plot_optimization(project_id, cache_id):
         graphs.append(graph_dict)
         print('Converted figure %s of %s' % (f+1, len(figs)))
     return {'graphs': graphs}
-
-
-
-
-
-
-
-
-
-################################################################
-#### Results global and classes
-###############################################################
-#    
-#
-## Global for the results cache.
-#results_cache = None
-#
-#
-#class ResultSet(sw.Blob):
-#
-#    def __init__(self, uid, result_set, set_label):
-#        super(ResultSet, self).__init__(uid, type_prefix='resultset', 
-#            file_suffix='.rst', instance_label=set_label)
-#        self.result_set = result_set  # can be single Result or list of Results
-#        
-#    def show(self):
-#        # Show superclass attributes.
-#        super(ResultSet, self).show()  
-#        
-#        # Show the defined display text for the project.
-#        print('---------------------')
-#        print('Result set contents: ')
-#        print(self.result_set)
-#
-#
-#class ResultsCache(sw.BlobDict):
-#
-#    def __init__(self, uid):
-#        super(ResultsCache, self).__init__(uid, type_prefix='resultscache', 
-#            file_suffix='.rca', instance_label='Results Cache', 
-#            objs_within_coll=False)
-#        
-#        # Create the Python dict to hold the hashes from cache_ids to the UIDs.
-#        self.cache_id_hashes = {}
-#        
-#    def load_from_copy(self, other_object):
-#        if type(other_object) == type(self):
-#            # Do the superclass copying.
-#            super(ResultsCache, self).load_from_copy(other_object)
-#            
-#            self.cache_id_hashes = other_object.cache_id_hashes
-#            
-#    def retrieve(self, cache_id):
-#        print('>> ResultsCache.retrieve() called') 
-#        print('>>   cache_id = %s' % cache_id)
-#        
-#        # Get the UID for the blob corresponding to the cache ID (if any).
-#        result_set_blob_uid = self.cache_id_hashes.get(cache_id, None)
-#        
-#        # If we found no match, return None.
-#        if result_set_blob_uid is None:
-#            print('>> ERROR: ResultSet %s not in cache_id_hashes' % result_set_blob_uid)
-#            return None
-#        
-#        # Otherwise, return the object found.
-#        else:
-#            obj = self.get_object_by_uid(result_set_blob_uid)
-#            if obj is None:
-#                print('>> ERROR: ResultSet %s not in DataStore handle_dict' % result_set_blob_uid)
-#                return None
-#            else:
-#                return self.get_object_by_uid(result_set_blob_uid).result_set
-#    
-#    def store(self, cache_id, result_set):
-#        print('>> ResultsCache.store() called')
-#        print('>>   cache_id = %s' % cache_id)
-#        print('>>   result_set contents:')
-#        print(result_set)
-#        
-#        # If there already is a cache entry for this, update the object there.
-#        if cache_id in self.cache_id_hashes.keys():
-#            result_set_blob = ResultSet(self.cache_id_hashes[cache_id], 
-#                result_set, cache_id)
-#            print('>> Running update_object()')
-#            self.update_object(result_set_blob)
-#            
-#        # Otherwise, update the cache ID hashes and add the new object.
-#        else:
-#            print('>> Running add_object()')
-#            result_set_blob = ResultSet(None, result_set, cache_id)
-#            self.cache_id_hashes[cache_id] = result_set_blob.uid
-#            self.add_object(result_set_blob)
-#    
-#    def delete(self, cache_id):
-#        print('>> ResultsCache.delete()')
-#        print('>>   cache_id = %s' % cache_id)
-#        
-#        # Get the UID for the blob corresponding to the cache ID (if any).
-#        result_set_blob_uid = self.cache_id_hashes.get(cache_id, None)
-#        
-#        # If we found no match, give an error.
-#        if result_set_blob_uid is None:
-#            print('>> ERROR: ResultSet not in cache_id_hashes')
-#            
-#        # Otherwise, delete the object found.
-#        else:
-#            del self.cache_id_hashes[cache_id] 
-#            self.delete_object_by_uid(result_set_blob_uid)
-#        
-#    def delete_all(self):
-#        print('>> ResultsCache.delete_all() called')
-#        # Reset the hashes from cache_ids to UIDs.
-#        self.cache_id_hashes = {}
-#        
-#        # Do the rest of the deletion process.
-#        self.delete_all_objects()
-#        
-#    def delete_by_project(self, project_uid):
-#        print('>> ResultsCache.delete_by_project() called')
-#        print('>>   project_uid = %s' % project_uid)
-#        
-#        # Build a list of the keys that match the given project.
-#        matching_cache_ids = []
-#        for cache_id in self.cache_id_hashes.keys():
-#            cache_id_project = re.sub(':.*', '', cache_id)
-#            if cache_id_project == project_uid:
-#                matching_cache_ids.append(cache_id)
-#        
-#        # For each matching key, delete the entry.
-#        for cache_id in matching_cache_ids:
-#            self.delete(cache_id)
-#            
-#    def show(self):
-#        super(sw.BlobDict, self).show()   # Show superclass attributes.
-#        if self.objs_within_coll: print('Objects stored within dict?: Yes')
-#        else:                     print('Objects stored within dict?: No')
-#        print('Cache ID dict contents: ')
-#        print(self.cache_id_hashes)         
-#        print('---------------------')
-#        print('Contents')
-#        print('---------------------')
-#        
-#        if self.objs_within_coll: # If we are storing things inside the obj_dict...
-#            for key in self.obj_dict: # For each key in the dictionary...
-#                obj = self.obj_dict[key] # Get the object pointed to.
-#                obj.show() # Show the handle contents.
-#        else: # Otherwise, we are using the UUID set.
-#            for uid in self.ds_uuid_set: # For each item in the set...
-#                obj = sw.globalvars.data_store.retrieve(uid)
-#                if obj is None:
-#                    print('--------------------------------------------')
-#                    print('ERROR: UID %s object failed to retrieve' % uid)
-#                else:
-#                    obj.show() # Show the object with that UID in the DataStore.
-#        print('--------------------------------------------')
-#
-#
-###############################################################
-#### Task functions and RPCs
-###############################################################
-#    
-#
-#def tasks_delete_by_project(project_uid):
-#    print('>> tasks_delete_by_project() called')
-#    print('>>   project_uid = %s' % project_uid)
-#    
-#    # Look for an existing tasks dictionary.
-#    task_dict_uid = sw.globalvars.data_store.get_uid('taskdict', 'Task Dictionary')
-#    
-#    # Create the task dictionary object.
-#    task_dict = sw.TaskDict(task_dict_uid)
-#    
-#    # Load the TaskDict tasks from Redis.
-#    task_dict.load_from_data_store()
-#
-#    # Build a list of the keys that match the given project.
-#    matching_task_ids = []
-#    for task_id in task_dict.task_id_hashes.keys():
-#        task_id_project = re.sub(':.*', '', task_id)
-#        if task_id_project == project_uid:
-#            matching_task_ids.append(task_id)
-#            
-#    print('>> Task IDs to be deleted:')
-#    print(matching_task_ids)
-#    
-#    # For each matching key, delete the task, aborting it in Celery also.
-#    for task_id in matching_task_ids:
-#        sw.delete_task(task_id)
-#            
-#
-###############################################################
-#### Results / ResultSet functions and RPCs
-###############################################################
-#    
-#
-#def init_results_cache(app):
-#    global results_cache
-#    
-#    # Look for an existing ResultsCache.
-#    results_cache_uid = sw.globalvars.data_store.get_uid('resultscache', 'Results Cache')
-#    
-#    # Create the results cache object.  Note, that if no match was found, 
-#    # this will be assigned a new UID.    
-#    results_cache = ResultsCache(results_cache_uid)  
-#    
-#    # If there was a match...
-#    if results_cache_uid is not None:
-##        if app.config['LOGGING_MODE'] == 'FULL':
-##            print('>> Loading ResultsCache from the DataStore.')
-#        results_cache.load_from_data_store()
-#        
-#    # Else (no match)...
-#    else:
-#        if app.config['LOGGING_MODE'] == 'FULL':
-#            print('>> Creating a new ResultsCache.') 
-#        results_cache.add_to_data_store()
-#        
-#    # Uncomment this to delete all the entries in the cache.
-##    results_cache.delete_all()
-#    
-#    if app.config['LOGGING_MODE'] == 'FULL':
-#        # Show what's in the ResultsCache.    
-##        results_cache.show()
-#        print('>> Loaded results cache with %s results' % len(results_cache.keys()))
-#
-#        
-#def apptasks_load_results_cache():
-#    # Look for an existing ResultsCache.
-#    results_cache_uid = sw.globalvars.data_store.get_uid('resultscache', 'Results Cache')
-#    
-#    # Create the results cache object.  Note, that if no match was found, 
-#    # this will be assigned a new UID.    
-#    results_cache = ResultsCache(results_cache_uid)
-#    
-#    # If there was a match...
-#    if results_cache_uid is not None:
-#        # Load the cache from the persistent storage.
-#        results_cache.load_from_data_store()
-#        
-#        # Return the cache state to the Celery worker.
-#        return results_cache
-#        
-#    # Else (no match)...
-#    else: 
-#        print('>>> ERROR: RESULTS CACHE NOT IN DATASTORE')
-#        return None  
-#
-#
-#def fetch_results_cache_entry(cache_id):
-#    # Reload the whole data_store (handle_dict), just in case a Celery worker 
-#    # has modified handle_dict, for example, by adding a new ResultsCache 
-#    # entry.
-#    # NOTE: It is possible this line can be removed if Celery never writes  
-#    # to handle_dict.
-#    sw.globalvars.data_store.load()
-#    
-#    # Load the latest results_cache from persistent store.
-#    results_cache.load_from_data_store()
-#    
-#    # Retrieve and return the results from the cache..
-#    return results_cache.retrieve(cache_id)
-#
-#
-#def put_results_cache_entry(cache_id, results, apptasks_call=False):
-#    global results_cache
-#    
-#    # If a Celery worker has made the call...
-#    if apptasks_call:
-#        # Load the latest ResultsCache from persistent storage.  It is likely 
-#        # to have changed because the webapp process added a new cache entry.
-#        results_cache = apptasks_load_results_cache()
-#        
-#        # If we have no cache, give an error.
-#        if not (cache_id in results_cache.cache_id_hashes.keys()):
-#            print('>>> WARNING: A NEW CACHE ENTRY IS BEING ADDED BY CELERY, WHICH IS POTENTIALLY UNSAFE.  YOU SHOULD HAVE THE WEBAPP CALL make_results_cache_entry(cache_id) FIRST TO AVOID THIS')
-#            
-#    else:      
-#        # Load the latest results_cache from persistent store.
-#        results_cache.load_from_data_store()
-#    
-#    # Reload the whole data_store (handle_dict), just in case a Celery worker 
-#    # has modified handle_dict, for example, by adding a new ResultsCache 
-#    # entry.
-#    # NOTE: It is possible this line can be removed if Celery never writes  
-#    # to handle_dict.    
-#    sw.globalvars.data_store.load()
-#    
-#    # Actually, store the results in the cache.
-#    results_cache.store(cache_id, results)
-#
-#
-#@RPC() 
-#def check_results_cache_entry(cache_id):
-#    print('Checking for cached results...')
-#    # Load the results from the cache and check if we got a result.
-#    results = fetch_results_cache_entry(cache_id)   
-#    return { 'found': (results is not None) }
-#
-#
-## NOTE: This function should be called by the Optimizations FE pages before the 
-## call is made to launch_task().  That is because we want to avoid the Celery 
-## workers adding new cache entries through its own call to ResultsCache.store()
-## because that is unsafe due to conflicts over the DataStore handle_dict.
-#@RPC()
-#def make_results_cache_entry(cache_id):
-#    # TODO: We might want to have a check here to see if this is a new entry 
-#    # in the cache, and if it isn't, just exit out, so the store doesn't 
-#    # overwrite the already-stored result.  However, this may not really be an 
-#    # issue because "Plot results" is disabled during the running of a task.
-#    results_cache.store(cache_id, None)
-#
-#    
-#@RPC()
-#def delete_results_cache_entry(cache_id):
-#    results_cache.delete(cache_id)
-    
