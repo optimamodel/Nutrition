@@ -132,7 +132,7 @@ def get_sign(obj):
 def process_weights(weights):
     """ Creates an array of weights with the order corresponding to default_trackers().
     If conditions for the max/min problem is violated, will correct these by flipping sign.
-    :param weights: an odict of (outcome, weight) pairs
+    :param weights: an odict of (outcome, weight) pairs. Also allowing a string for single objectives.
     :return an array of floats """
     default = default_trackers()
     pretty1 = pretty_labels(direction=False)
@@ -141,8 +141,11 @@ def process_weights(weights):
     pretty2 = pretty_labels(direction=True)
     inv_pretty2 = {v: k for k, v in pretty2.iteritems()}
     newweights = np.zeros(len(default))
+    # if user just enters a string from the pre-defined objectives
+    if sc.isstring(weights): weights = sc.odict({weights:1})
     for out, weight in weights.iteritems():
         if out in default:
+            thisout = out
             ind = default.index(out)
         elif out in inv_pretty1:
             thisout = inv_pretty1[out]
@@ -153,7 +156,7 @@ def process_weights(weights):
         else:
             print('Warning: "%s" is an invalid weighted outcome, removing'%out)
             continue
-        sign = get_sign(out)
+        sign = get_sign(thisout)
         newweights[ind] = abs(weight) * sign
     if np.all(newweights==0):
         raise Exception('All objective weights are zero. Process aborted.')
