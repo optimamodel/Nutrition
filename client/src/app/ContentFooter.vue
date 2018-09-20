@@ -10,7 +10,6 @@ Last update: 2018-03-25
       <nav class="pull-left">
         <ul>
           <li>
-            <!-- HealthPrior | Health Services Prioritization Tool -->
           </li>
         </ul>
       </nav>

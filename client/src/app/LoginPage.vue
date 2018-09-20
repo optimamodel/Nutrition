@@ -62,8 +62,8 @@ Last update: 2018-08-30
 </template>
 
 <script>
-  import rpcs from '@/services/rpc-service'
-  import userservice from '@/services/user-service'
+  import rpcs from '@/js/rpc-service'
+  import userservice from '@/js/user-service'
   import router from '@/router'
 
   export default {
