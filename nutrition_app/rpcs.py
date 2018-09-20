@@ -263,7 +263,7 @@ def download_defaults(project_id):
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
     file_name = '%s_defaults.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name) # Generate the full file name with path.
-    proj.dataset().defaults_sheet.save(full_file_name)
+    proj.defaults_sheet.save(full_file_name)
     print(">> download_defaults %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
 
@@ -291,6 +291,14 @@ def load_zip_of_prj_files(project_keys):
 
 
 @RPC()
+def delete_projects(project_keys):
+    ''' Delete one or more projects '''
+    project_keys = sc.promotetolist(project_keys)
+    for project_key in project_keys:
+        del_project(project_key)
+    return None
+
+@RPC()
 def add_demo_project():
     """ Add a demo Optima Nutrition project """
     new_proj_name = unique_project_name('Demo project') # Get a unique name for the project to be added.
@@ -308,7 +316,7 @@ def create_new_project(proj_name):
     new_proj_name = unique_project_name(proj_name) # Get a unique name for the project to be added.
     proj = nu.Project(name=new_proj_name) # Create the project
     print(">> create_new_project %s" % (proj.name))     # Display the call information.
-    save_project(proj, new=True) # Save the new project in the DataStore.
+    save_new_project(proj) # Save the new project in the DataStore.
     databook_path = sc.makefilepath(filename=template_name, folder=nu.ONpath('applications'))
     file_name = '%s databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name)
@@ -347,7 +355,7 @@ def copy_project(project_key):
     new_project = sc.dcp(proj) # Make a copy of the project loaded in to work with.
     new_project.name = unique_project_name(proj.name) # Just change the project name, and we have the new version of the Project object to be saved as a copy.
     print(">> copy_project %s" % (new_project.name))  # Display the call information.
-    save_project(new_project, new=True) # Save a DataStore projects record for the copy project.
+    save_new_project(new_project) # Save a DataStore projects record for the copy project.
     copy_project_id = new_project.uid # Remember the new project UID (created in save_project_as_new()).
     return { 'projectId': copy_project_id } # Return the UID for the new projects record.
 
@@ -364,7 +372,7 @@ def create_project_from_prj_file(prj_filename):
     except Exception:
         return { 'error': 'BadFileFormatError' }
     proj.name = unique_project_name(proj.name) # Reset the project name to a new project name that is unique.
-    save_project(proj, new=True) # Save the new project in the DataStore.
+    save_new_project(proj) # Save the new project in the DataStore.
     return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
 
 
