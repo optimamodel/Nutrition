@@ -1,7 +1,7 @@
 """
 Optima Nutrition remote procedure calls (RPCs)
     
-Last update: 2018aug30 by cliffk
+Last update: 2018sep20 by cliffk
 """
 
 ###############################################################
@@ -81,79 +81,8 @@ def sanitize(vals, skip=False, forcefloat=False, verbose=True):
         return output
     else:
         return output[0]
-  
-      
-def load_project_record(project_id, raise_exception=True):
-    """ Return the project DataStore reocord, given a project UID. """ 
-    project_record = prj.proj_collection.get_object_by_uid(project_id) # Load the matching prj.ProjectSO object from the database.
-    if project_record is None: # If we have no match, we may want to throw an exception.
-        if raise_exception:
-            raise Exception('ProjectDoesNotExist(id=%s)' % project_id)
-    return project_record # Return the Project object for the match (None if none found).
 
 
-def load_project(project_id, raise_exception=True, online=True):
-    """
-    Return the Nutrition Project object, given a project UID, or None if no 
-    ID match is found.
-    """ 
-    if not online:  return project_id # If running offline, just return the project
-    project_record = load_project_record(project_id, raise_exception=raise_exception) # Load the project record matching the ID passed in.
-    if project_record is None: # If there is no match, raise an exception or return None.
-        if raise_exception: raise Exception('ProjectDoesNotExist(id=%s)' % project_id)
-        else:               return None
-    return project_record.proj # Return the found project.
-
-
-def load_project_summary_from_project_record(project_record):
-    """ Return the project summary, given the DataStore record. """ 
-    return project_record.get_user_front_end_repr() # Return the built project summary.
-    
-      
-def save_project(proj, online=True):
-    """
-    Given a Project object, wrap it in a new prj.ProjectSO object and put this 
-    in the project collection (either adding a new object, or updating an 
-    existing one)  skip_result lets you null out saved results in the Project.
-    """ 
-    # If offline, just save to a file and return
-    if not online:
-        proj.save()
-        return None
-    
-    project_record = load_project_record(proj.uid) # Load the project record matching the UID of the project passed in.
-    new_project = sc.dcp(proj) # Copy the project, only save what we want...
-    new_project.modified = sc.now()
-         
-    # Create the new project entry and enter it into the ProjectCollection.
-    # Note: We don't need to pass in project.uid as a 3rd argument because 
-    # the constructor will automatically use the Project's UID.
-    projSO = prj.ProjectSO(new_project, project_record.owner_uid)
-    prj.proj_collection.update_object(projSO)
-    return None
-
-def save_project_as_new(proj, user_id):
-    """
-    Given a Project object and a user UID, wrap the Project in a new prj.ProjectSO 
-    object and put this in the project collection, after getting a fresh UID
-    for this Project.  Then do the actual save.
-    """ 
-    proj.uid = sc.uuid() # Set a new project UID, so we aren't replicating the UID passed in.
-    projSO = prj.ProjectSO(proj, user_id) # Create the new project entry and enter it into the ProjectCollection.
-    prj.proj_collection.add_object(projSO)  
-    print(">> save_project_as_new '%s'" % proj.name) # Display the call information.
-    save_project(proj) # Save the changed Project object to the DataStore.
-    return None
-
-
-
-
-
-##################################################################################
-### Project RPCs
-##################################################################################
-
-# Not a project RPC, but doesn't really belong
 @RPC()
 def get_version_info():
 	''' Return the information about the project. '''
@@ -166,24 +95,145 @@ def get_version_info():
 	       'gitdate':   gitinfo['date'],
 	}
 	return version_info
+      
+
+
+##################################################################################
+### User functions/RPCs
+##################################################################################
+
+def save_user(user=None):
+    if user is None: user = current_user
+    sw.flaskapp.datastore.saveuser(user)
+    return None
+
+def check_user():
+    ''' Ensure it's a valid Optima Nutrition user '''
+    user = current_user
+    dosave = False
+    if not hasattr(user, 'projects'):
+        user.projects = []
+        dosave = True
+    if not hasattr(user, 'results'): 
+        user.results = []
+        dosave = True
+    if not hasattr(user, 'tasks'):
+        user.tasks = []
+        dosave = True
+    if dosave:
+        save_user(user)
+    return user
+
+def modify_user_data(key, which, operation):
+    ''' Add or remove a project, result, or task for the user '''
+    # Figure out what kind of list it is
+    user = check_user()
+    if   which == 'projects': itemlist = user.projects
+    elif which == 'results':  itemlist = user.results
+    elif which == 'tasks':    itemlist = user.tasks
+    else:
+        errormsg = '"which" must be "projects", "results", or "tasks", not "%s"' % which
+        raise Exception(errormsg)
+    
+    # Do the operation
+    if operation == 'add':
+        if key not in itemlist:
+            itemlist.append(key)
+            save_user()
+    elif operation == 'rm':
+        if key in itemlist:
+            itemlist.remove(key)
+            save_user()
+    else:
+        errormsg = '"operation" must be "add" or "rm", not "%s"' % operation
+        raise Exception(errormsg)
+    
+    return None
+    
+
+def add_project(project_key):
+    modify_user_data(project_key, 'projects', 'add')
+    return None
+
+def rm_project(project_key):
+    modify_user_data(project_key, 'projects', 'rm')
+    return None
+
+def add_result(result_key):
+    modify_user_data(result_key, 'results', 'add')
+    return None
+    
+def rm_result(result_key):
+    modify_user_data(result_key, 'results', 'rm')
+    return None
+
+def add_task(task_key):
+    modify_user_data(task_key, 'tasks', 'add')
+    return None
+    
+def rm_task(task_key):
+    modify_user_data(task_key, 'tasks', 'rm')
+    return None
+
+
+
+##################################################################################
+### Project RPCs
+##################################################################################
+
+
+def load_project(project_key, die=True, online=True):
+    """ Return the project DataStore reocord, given a project UID. """ 
+    if not online: return project_key # If running offline, just return the project
+    project = sw.flaskapp.datastore.loadblob(project_key) # Load the matching prj.ProjectSO object from the database.
+    if project is None: # If we have no match, we may want to throw an exception.
+        if die:
+            raise Exception('ProjectDoesNotExist(id=%s)' % project_key)
+    return project # Return the Project object for the match (None if none found).
 
     
-@RPC()
-def get_scirisdemo_projects():
-    """ Return the projects associated with the Sciris Demo user. """
-    user_id = sw.get_scirisdemo_user() # Get the user UID for the _ScirisDemo user.
-    project_entries = prj.proj_collection.get_project_entries_by_user(user_id) # Get the prj.ProjectSO entries matching the _ScirisDemo user UID.
-    project_summary_list = map(load_project_summary_from_project_record, project_entries) # Collect the project summaries for that user into a list.
-    sorted_summary_list = sorted(project_summary_list, key=lambda proj: proj['project']['name']) # Sorts by project name
-    output = {'projects': sorted_summary_list} # Return a dictionary holding the project summaries.
-    return output
+      
+def save_project(proj, as_new=False, online=True):
+    """
+    Given a Project object, wrap it in a new prj.ProjectSO object and put this 
+    in the project collection (either adding a new object, or updating an 
+    existing one)  skip_result lets you null out saved results in the Project.
+    """ 
+    # If offline, just save to a file and return
+    if not online:
+        proj.save()
+        return None
+    
+    new_project = sc.dcp(proj) # Copy the project, only save what we want...
+    new_project.modified = sc.now()
+    if as_new: new_project.uid = sc.uuid()
+    key = sw.flaskapp.datastore.saveblob(data=proj, objtype='project', uid=new_project.uid)
+    add_project(key)
+    return key
 
 
 @RPC()
-def load_project_summary(project_id):
+def project_json(project_key):
     """ Return the project summary, given the Project UID. """ 
-    project_entry = load_project_record(project_id) # Load the project record matching the UID of the project passed in.
-    return load_project_summary_from_project_record(project_entry) # Return a project summary from the accessed prj.ProjectSO entry.
+    project = load_project(project_key) # Load the project record matching the UID of the project passed in.
+    obj_info = {
+        'project': {
+            'id':            self.uid,
+            'name':          self.proj.name,
+            'userId':        self.owner_uid,
+            'creationTime':  sc.getdate(self.proj.created),
+            'updatedTime':   sc.getdate(self.proj.modified),
+            'hasData':       self.proj.data is not None,
+            'hasPrograms':   len(self.proj.progsets)>0,
+            'n_pops':        n_pops,
+            'sim_start':     self.proj.settings.sim_start,
+            'sim_end':       self.proj.settings.sim_end,
+            'framework':     framework_name,
+            'pops':          pop_pairs
+        }
+    }
+    return obj_info
+    
 
 
 @RPC()
@@ -255,7 +305,7 @@ def load_zip_of_prj_files(project_ids):
     projects as .prj files, and return the full path to this file.
     """
     dirname = sw.globalvars.downloads_dir.dir_path # Use the downloads directory to put the file in.
-    prjs = [load_project_record(id).save_as_file(dirname) for id in project_ids] # Build a list of prj.ProjectSO objects for each of the selected projects, saving each of them in separate .prj files.
+    prjs = [load_project_record(pid).save_as_file(dirname) for pid in project_ids] # Build a list of prj.ProjectSO objects for each of the selected projects, saving each of them in separate .prj files.
     zip_fname = 'Projects %s.zip' % sc.getdate() # Make the zip file name and the full server file path version of the same..
     server_zip_fname = os.path.join(dirname, sc.sanitizefilename(zip_fname))
     with ZipFile(server_zip_fname, 'w') as zipfile: # Create the zip file, putting all of the .prj files in a projects directory.
