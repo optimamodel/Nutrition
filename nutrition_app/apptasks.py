@@ -1,11 +1,11 @@
 """
 apptasks.py -- The Celery tasks module for this webapp
     
-Last update: 2018sep19
+Last update: 2018sep20
 """
 
 import scirisweb as sw
-from . import rpcs
+#from . import rpcs
 from . import config
 import matplotlib.pyplot as ppl
 ppl.switch_backend(config.MATPLOTLIB_BACKEND)
@@ -23,7 +23,8 @@ celery_instance = sw.make_celery_instance(config=config) # Create the Celery ins
 def run_optim(project_id, cache_id, optim_name=None):
     # Load the projects from the DataStore.
     print('Running optimization...')
-    proj = rpcs.load_project(project_id, raise_exception=True)
+    datastore = sw.get_datastore(config=config)
+    proj = datastore.loadblob(uid=project_id, objtype='project', die=True)
     results = proj.run_optim(key=optim_name, dosave=False, parallel=False)
 #    proj.results[cache_id] = results
 #    rpcs.put_results_cache_entry(cache_id, results, apptasks_call=True)
