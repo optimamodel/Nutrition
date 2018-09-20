@@ -8,15 +8,13 @@ from .scenarios import Scen, run_scen
 class Optim(sc.prettyobj):
     """ Stores settings for running an optimization for a single objective. """
 
-    def __init__(self, name=None, model_name=None, obj=None, weights=None, mults=None, prog_set=None, active=True,
+    def __init__(self, name=None, model_name=None, weights=None, mults=None, prog_set=None, active=True,
                  add_funds=0, fix_curr=False, rem_curr=False, curve_type='linear',
-                 filter_progs=True):
+                 filter_progs=False):
         """
         :param name: the name of the optimization (string)
         :param model_name: the name of the model corresponding to optimizations (string)
-        :param obj: the name of the objective to optimize. This can be an outcome stored in utils.default_trackers() or custom.
-        If custom, a vector of weights with the same order will need to be specified.
-        :param weights: the weights to be applied to the model outcomes, order as in utils.default_trackers(). If 'obj' is pre-defined, don't need to specify this.
+        :param weights: an odict of (outcome, weight) pairs
         :param mults: multiples of free funds
         :param prog_set: the programs to include in optimization (list of strings)
         :param active: whether to run in project class (boolean)
@@ -29,8 +27,7 @@ class Optim(sc.prettyobj):
 
         self.name = name
         self.model_name = model_name
-        self.obj = obj
-        self.weights = utils.check_weights(weights) if weights is not None else utils.get_weights(obj)
+        self.weights = utils.process_weights(weights)
         self.mults = mults
         self.prog_set = prog_set
         self.add_funds = add_funds
@@ -71,7 +68,7 @@ class Optim(sc.prettyobj):
             num_procs = 1
         print('Optimizing for %s in %s' % (self.name, how))
         # list of kwargs
-        keep_inds = self._filter_progs(model, self.weights) # not dependent upon spending
+        keep_inds = self._filter_progs(model) # not dependent upon spending
         optim = (maxiter, swarmsize, maxtime)
         args = [(self.get_kwargs(model, self.weights, mult, keep_inds), mult)+optim for mult in self.mults]
         if parallel:
@@ -83,7 +80,7 @@ class Optim(sc.prettyobj):
                 res.append(this_res)
         return res
 
-    def _filter_progs(self, model, weights):
+    def _filter_progs(self, model):
         if self.filter_progs:
             threshold = 0.1
             newcov = 1.
@@ -144,20 +141,20 @@ class Optim(sc.prettyobj):
             now = sc.tic()
             x0, fopt = pso.pso(obj_func, xmin, xmax, kwargs=kwargs, maxiter=maxiter, swarmsize=swarmsize)
             x, fval, flag = sc.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=2, maxtime=maxtime)
-            self.print_status(self.obj, mult, flag, now)
+            self.print_status(self.name, mult, flag, now)
             scaled = utils.scale_alloc(free, x)
             best_alloc = utils.add_fixed_alloc(fixed, scaled, inds)
         else:
             # if no money to distribute, return the fixed costs
             if self.name != 'Baseline':
                 print('Warning: degenerate optimization, returning fixed allocations \n objective: %s '
-                  '\n flexible funds: %s \n impactful progs: %s' % (self.obj, free, numprogs))
+                  '\n flexible funds: %s \n impactful progs: %s' % (self.name, free, numprogs))
             best_alloc = fixed
         # generate results
         name = '%s (x%s)' % (self.name, mult)
         progvals = {prog:spend for prog, spend in zip(self.prog_set, best_alloc)}
         scen = Scen(name=name, model_name=self.model_name, scen_type='budget', progvals=progvals)
-        res = run_scen(scen, model, obj=self.obj, mult=mult)
+        res = run_scen(scen, model, obj=self.name, mult=mult)
         return res
     
     @utils.trace_exception
