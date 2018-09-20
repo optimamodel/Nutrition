@@ -116,7 +116,7 @@ def check_user():
     return user
 
 
-def blobop(key=None, objtype=None, op=None, obj=None):
+def blobop(key=None, objtype=None, op=None, obj=None, die=None):
     ''' Perform a blob operation -- add or delete a project, result, or task for the user '''
     # Figure out what kind of list it is
     user = check_user()
@@ -133,12 +133,12 @@ def blobop(key=None, objtype=None, op=None, obj=None):
     # Do the operation(s)
     saveuser = False
     if op == 'add':
-        sw.flaskapp.datastore.saveblob(key=key, obj=obj, objtype=objtype, uid=obj.uid)
+        sw.flaskapp.datastore.saveblob(key=key, obj=obj, objtype=objtype, uid=obj.uid, die=die)
         if key not in itemlist:
             itemlist.append(key)
             saveuser = True
     elif op == 'delete':
-        sw.flaskapp.datastore.delete(key)
+        sw.flaskapp.datastore.delete(key, die=die)
         if key in itemlist:
             itemlist.remove(key)
             saveuser = True
