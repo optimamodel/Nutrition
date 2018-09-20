@@ -128,7 +128,7 @@ def blobop(key=None, objtype=None, op=None, obj=None):
         raise Exception(errormsg)
     
     # Make the best guess about what the key should be
-    key = sw.flaskapp.datastore.makekey(key=key, objtype=objtype, obj=obj)
+    key = sw.flaskapp.datastore.getkey(key=key, objtype=objtype, obj=obj)
     
     # Do the operation(s)
     saveuser = False
@@ -167,12 +167,12 @@ def del_task(key):    return blobop(key=key, objtype='task',    op='delete')
 ##################################################################################
 
 
-def load_project(project_key, die=True):
+def load_project(project_id, die=True):
     """ Return the project DataStore reocord, given a project UID. """ 
-    project = sw.flaskapp.datastore.loadblob(project_key) # Load the matching prj.ProjectSO object from the database.
+    project = sw.flaskapp.datastore.loadblob(project_id, objtype='project') # Load the matching prj.ProjectSO object from the database.
     if project is None: # If we have no match, we may want to throw an exception.
         if die:
-            raise Exception('ProjectDoesNotExist(id=%s)' % project_key)
+            raise Exception('ProjectDoesNotExist(id=%s)' % project_id)
     return project # Return the Project object for the match (None if none found).
 
       
@@ -190,9 +190,9 @@ def save_project(proj, new=False):
 
 
 @RPC()
-def project_json(project_key):
+def project_json(project_id):
     """ Return the project summary, given the Project UID. """ 
-    proj = load_project(project_key) # Load the project record matching the UID of the project passed in.
+    proj = load_project(project_id) # Load the project record matching the UID of the project passed in.
     json = {
         'project': {
             'id':           proj.uid,
