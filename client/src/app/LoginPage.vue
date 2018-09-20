@@ -93,7 +93,7 @@ Last update: 2018-08-30
       tryLogin () {
         userservice.loginCall(this.loginUserName, this.loginPassword)
         .then(response => {
-          if (response.data == 'success') {
+          if (response.data === 'success') {
             // Set a success result to show.
             this.loginResult = 'Logging in...'
 

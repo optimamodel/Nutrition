@@ -117,7 +117,7 @@ export default {
       .then(response => {
         if (response.data === 'success') { // Set a success result to show.
           this.registerResult = 'Success! Please wait while you are redirected...';
-          setTimeout(function() {router.push('/login')}, 2000); // Navigate automatically to the login page after a delay
+          setTimeout(function() {router.push('/login')}, 1000); // Navigate automatically to the login page after a delay
         } else { // Set a failure result to show.
           this.registerResult = response.data;
         }
