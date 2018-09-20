@@ -124,6 +124,7 @@ def check_user():
         save_user(user)
     return user
 
+
 def modify_user_data(key, which, operation):
     ''' Add or remove a project, result, or task for the user '''
     # Figure out what kind of list it is
@@ -135,19 +136,26 @@ def modify_user_data(key, which, operation):
         errormsg = '"which" must be "projects", "results", or "tasks", not "%s"' % which
         raise Exception(errormsg)
     
-    # Do the operation
+    # Do the operation(s)
+    dosave = False
+    keys = sc.promotetolist(key) # Ensure it's a list
     if operation == 'add':
-        if key not in itemlist:
-            itemlist.append(key)
-            save_user()
+        for key in keys:
+            if key not in itemlist:
+                itemlist.append(key)
+                dosave = True
     elif operation == 'rm':
-        if key in itemlist:
-            itemlist.remove(key)
-            save_user()
+        for key in keys:
+            if key in itemlist:
+                itemlist.remove(key)
+                dosave = True
     else:
         errormsg = '"operation" must be "add" or "rm", not "%s"' % operation
         raise Exception(errormsg)
     
+    # Finish up
+    if dosave:
+        save_user()
     return None
     
 
@@ -182,31 +190,24 @@ def rm_task(task_key):
 ##################################################################################
 
 
-def load_project(project_key, die=True, online=True):
+def load_project(project_key, die=True):
     """ Return the project DataStore reocord, given a project UID. """ 
-    if not online: return project_key # If running offline, just return the project
     project = sw.flaskapp.datastore.loadblob(project_key) # Load the matching prj.ProjectSO object from the database.
     if project is None: # If we have no match, we may want to throw an exception.
         if die:
             raise Exception('ProjectDoesNotExist(id=%s)' % project_key)
     return project # Return the Project object for the match (None if none found).
 
-    
       
-def save_project(proj, as_new=False, online=True):
+def save_project(proj, new=False):
     """
     Given a Project object, wrap it in a new prj.ProjectSO object and put this 
     in the project collection (either adding a new object, or updating an 
     existing one)  skip_result lets you null out saved results in the Project.
     """ 
-    # If offline, just save to a file and return
-    if not online:
-        proj.save()
-        return None
-    
     new_project = sc.dcp(proj) # Copy the project, only save what we want...
     new_project.modified = sc.now()
-    if as_new: new_project.uid = sc.uuid()
+    if new: new_project.uid = sc.uuid()
     key = sw.flaskapp.datastore.saveblob(data=proj, objtype='project', uid=new_project.uid)
     add_project(key)
     return key
@@ -215,49 +216,31 @@ def save_project(proj, as_new=False, online=True):
 @RPC()
 def project_json(project_key):
     """ Return the project summary, given the Project UID. """ 
-    project = load_project(project_key) # Load the project record matching the UID of the project passed in.
-    obj_info = {
+    proj = load_project(project_key) # Load the project record matching the UID of the project passed in.
+    json = {
         'project': {
-            'id':            self.uid,
-            'name':          self.proj.name,
-            'userId':        self.owner_uid,
-            'creationTime':  sc.getdate(self.proj.created),
-            'updatedTime':   sc.getdate(self.proj.modified),
-            'hasData':       self.proj.data is not None,
-            'hasPrograms':   len(self.proj.progsets)>0,
-            'n_pops':        n_pops,
-            'sim_start':     self.proj.settings.sim_start,
-            'sim_end':       self.proj.settings.sim_end,
-            'framework':     framework_name,
-            'pops':          pop_pairs
+            'id':           project_key,
+            'name':         proj.name,
+            'username':     check_user().username,
+            'hasData':      len(proj.datasets)>0,
+            'creationTime': proj.created,
+            'updatedTime':  proj.modified
         }
     }
-    return obj_info
+    return json
     
 
 
 @RPC()
-def load_current_user_project_summaries():
+def project_jsons():
     """ Return project summaries for all projects the user has to the client. """ 
-    project_entries = prj.proj_collection.get_project_entries_by_user(current_user.get_id()) # Get the prj.ProjectSO entries matching the user UID.
-    return {'projects': map(load_project_summary_from_project_record, project_entries)}# Grab a list of project summaries from the list of prj.ProjectSO objects we just got.
+    output = {'projects':[]}
+    user = check_user()
+    for project_key in user.projects:
+        json = project_json(project_key)
+        output['projects'].append(json)
+    return output
 
-
-@RPC()
-def load_all_project_summaries():
-    """ Return project summaries for all projects to the client. """ 
-    project_entries = prj.proj_collection.get_all_objects() # Get all of the prj.ProjectSO entries.
-    return {'projects': map(load_project_summary_from_project_record, project_entries)} # Grab a list of project summaries from the list of prj.ProjectSO objects we just got.
-        
-        
-@RPC()
-def delete_projects(project_ids):
-    """ Delete all of the projects with the passed in UIDs. """ 
-    for project_id in project_ids: # Loop over the project UIDs of the projects to be deleted...
-        record = load_project_record(project_id, raise_exception=True) # Load the project record matching the UID of the project passed in.
-        if record is not None: # If a matching record is found, delete the object from the ProjectCollection.
-            prj.proj_collection.delete_object_by_uid(project_id)
-    return None
 
 
 @RPC(call_type='download')   
