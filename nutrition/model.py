@@ -23,7 +23,7 @@ class Model(sc.prettyobj):
         self.adjust_cov = adjust_cov
         self.timeTrends = timeTrends
 
-    def setup(self, scen, setcovs=True):
+    def setup(self, scen, setcovs=True, restrictcovs=True):
         """ Sets scenario-specific parameters within the model.
         - simulation period
         - programs for scenario
@@ -38,7 +38,7 @@ class Model(sc.prettyobj):
         self._track_prevs()
         if setcovs:
             # scenario coverages
-            self.update_covs(scen.vals, scen.scen_type)
+            self.update_covs(scen.vals, scen.scen_type, restrictcovs=restrictcovs)
 
     def get_allocs(self, add_funds, fix_curr, rem_curr):
         self.prog_info.get_allocs(add_funds, fix_curr, rem_curr)
@@ -49,9 +49,9 @@ class Model(sc.prettyobj):
         self.prog_info.set_costcovs() # enables getting coverage from cost
         self.prog_info.get_base_spend()
     
-    def update_covs(self, covs, scentype):
+    def update_covs(self, covs, scentype, restrictcovs=True):
         covs, spend = self.prog_info.get_cov_scen(covs, scentype, self.all_years)
-        self.prog_info.update_covs(covs, spend)
+        self.prog_info.update_covs(covs, spend, restrictcovs)
 
     def _set_trackers(self):
         """ Arrays to store annual outputs """
@@ -59,7 +59,7 @@ class Model(sc.prettyobj):
             arr = np.zeros(self.n_years)
             setattr(self, tracker, arr)
 
-    def _track_outcomes(self):
+    def _track_child_outcomes(self):
         # children
         oldest = self.children.age_groups[-1]
         rate = oldest.ageingRate
@@ -67,6 +67,8 @@ class Model(sc.prettyobj):
         self.stunted[self.year] += oldest.num_stunted() * rate
         self.wasted[self.year] += sum(oldest.num_wasted(cat) for cat in self.ss.wasted_list) * rate
         self.child_anaemic[self.year] += oldest.num_anaemic() * rate
+
+    def _track_wra_outcomes(self):
         # pw
         self.pw_anaemic[self.year] += self.pw.num_anaemic()
         # nonpw
@@ -131,6 +133,7 @@ class Model(sc.prettyobj):
         self._apply_pw_mort()
         self._update_pw()
         self._update_wra_pop()
+        self._track_wra_outcomes()
 
     def _update_pop_mort(self, pop):
         if pop.name != 'Non-pregnant women':
@@ -379,7 +382,7 @@ class Model(sc.prettyobj):
             self.child_deaths[self.year] += deaths
 
     def _apply_child_ageing(self):
-        self._track_outcomes()
+        self._track_child_outcomes()
         # get number ageing out of each age group
         age_groups = self.children.age_groups
         ageingOut = []
@@ -522,7 +525,7 @@ class Model(sc.prettyobj):
         try:
             return getattr(self, outcome)
         except AttributeError:
-            raise Exception(" ::ERROR:: %s not an attribute of Model class " % outcome)
+            raise Exception("%s not an attribute of Model class" % outcome)
 
     def get_output(self, outcomes=None, seq=False):
         """ Always returns a list, but of variable length"""
