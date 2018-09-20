@@ -121,7 +121,7 @@ function currentUser() {
 }
 
 function checkLoggedIn() {
-  if (this.currentUser.displayname == undefined)
+  if (this.currentUser.displayname === undefined)
     return false
   else
     return true

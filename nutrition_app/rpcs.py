@@ -119,32 +119,36 @@ def check_user():
     return user
 
 
-def modify_user_data(key, which, operation):
-    ''' Add or remove a project, result, or task for the user '''
+def blobop(key, objtype, op, data=None):
+    ''' Perform a blob operation -- add or delete a project, result, or task for the user '''
     # Figure out what kind of list it is
     user = check_user()
-    if   which == 'projects': itemlist = user.projects
-    elif which == 'results':  itemlist = user.results
-    elif which == 'tasks':    itemlist = user.tasks
+    if   objtype == 'project': itemlist = user.projects
+    elif objtype == 'result':  itemlist = user.results
+    elif objtype == 'task':    itemlist = user.tasks
     else:
-        errormsg = '"which" must be "projects", "results", or "tasks", not "%s"' % which
+        errormsg = '"objtype" must be "project", "result", or "task", not "%s"' % objtype
         raise Exception(errormsg)
     
     # Do the operation(s)
     dosave = False
     keys = sc.promotetolist(key) # Ensure it's a list
-    if operation == 'add':
+    if op == 'add':
+        if key is None:
+            key = sw.flaskapp.datastore.saveblob(data=data, objtype='project', uid=data.uid)
         for key in keys:
             if key not in itemlist:
                 itemlist.append(key)
+                if data: sw.flaskapp.datastore.saveblob(key=key, data=data, objtype=objtype, uid=data.uid)
                 dosave = True
-    elif operation == 'rm':
+    elif op == 'delete':
         for key in keys:
             if key in itemlist:
                 itemlist.remove(key)
+                sw.flaskapp.datastore.delete(key)
                 dosave = True
     else:
-        errormsg = '"operation" must be "add" or "rm", not "%s"' % operation
+        errormsg = '"op" must be "add" or "delete", not "%s"' % op
         raise Exception(errormsg)
     
     # Finish up
@@ -153,29 +157,13 @@ def modify_user_data(key, which, operation):
     return None
     
 
-def add_project(project_key):
-    modify_user_data(project_key, 'projects', 'add')
-    return None
-
-def rm_project(project_key):
-    modify_user_data(project_key, 'projects', 'rm')
-    return None
-
-def add_result(result_key):
-    modify_user_data(result_key, 'results', 'add')
-    return None
-    
-def rm_result(result_key):
-    modify_user_data(result_key, 'results', 'rm')
-    return None
-
-def add_task(task_key):
-    modify_user_data(task_key, 'tasks', 'add')
-    return None
-    
-def rm_task(task_key):
-    modify_user_data(task_key, 'tasks', 'rm')
-    return None
+# Convenience functions
+def add_project(project_key, project): return blobop(key=project_key, objtype='project', op='add', data=project)
+def add_result(result_key, result):    return blobop(key=result_key,  objtype='result',  op='add', data=result)
+def add_task(task_key, task):          return blobop(key=task_key,    objtype='task',    op='add', data=task)
+def del_project(project_key):          return blobop(key=project_key, objtype='project', op='delete')
+def del_result(result_key):            return blobop(key=result_key,  objtype='result',  op='delete')
+def del_task(task_key):                return blobop(key=task_key,    objtype='task',    op='delete')
 
 
 
@@ -213,7 +201,7 @@ def project_json(project_key):
     proj = load_project(project_key) # Load the project record matching the UID of the project passed in.
     json = {
         'project': {
-            'id':           project_key,
+            'id':           proj.uid,
             'name':         proj.name,
             'username':     check_user().username,
             'hasData':      len(proj.datasets)>0,
