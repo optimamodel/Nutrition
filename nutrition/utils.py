@@ -162,13 +162,6 @@ def process_weights(weights):
         raise Exception('All objective weights are zero. Process aborted.')
     return newweights
 
-def check_weights(weights):
-    """ This is just a quick hack, real solution on another branch """
-    # change thrive to negative
-    weights = np.absolute(weights)
-    weights[0] *= -1
-    return weights
-
 def read_sheet(spreadsheet, name, cols=None, dict_orient=None, skiprows=None, to_odict=False, dropna=None):
     if dropna is None: dropna = 'all'
     df = spreadsheet.parse(name, index_col=cols, skiprows=skiprows)
