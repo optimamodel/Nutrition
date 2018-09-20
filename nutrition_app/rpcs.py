@@ -116,7 +116,7 @@ def check_user():
     return user
 
 
-def blobop(key=None, objtype=None, op=None, obj=None):
+def blobop(key=None, objtype=None, op=None, obj=None, die=None):
     ''' Perform a blob operation -- add or delete a project, result, or task for the user '''
     # Figure out what kind of list it is
     user = check_user()
@@ -133,12 +133,12 @@ def blobop(key=None, objtype=None, op=None, obj=None):
     # Do the operation(s)
     saveuser = False
     if op == 'add':
-        sw.flaskapp.datastore.saveblob(key=key, obj=obj, objtype=objtype, uid=obj.uid)
+        sw.flaskapp.datastore.saveblob(key=key, obj=obj, objtype=objtype, uid=obj.uid, die=die)
         if key not in itemlist:
             itemlist.append(key)
             saveuser = True
     elif op == 'delete':
-        sw.flaskapp.datastore.delete(key)
+        sw.flaskapp.datastore.delete(key, die=die)
         if key in itemlist:
             itemlist.remove(key)
             saveuser = True
@@ -153,15 +153,15 @@ def blobop(key=None, objtype=None, op=None, obj=None):
     
 
 # Convenience functions
-def load_project(key): return sw.flaskapp.datastore.loadblob(key, objtype='project')
-def load_result(key):  return sw.flaskapp.datastore.loadblob(key, objtype='result')
-def load_task(key):    return sw.flaskapp.datastore.loadtask(key)
-def save_project(obj): return blobop(obj=obj, objtype='project', op='add')
-def save_result(obj):  return blobop(obj=obj, objtype='result',  op='add')
-def save_task(obj):    return blobop(obj=obj, objtype='task',    op='add')
-def del_project(key):  return blobop(key=key, objtype='project', op='delete')
-def del_result(key):   return blobop(key=key, objtype='result',  op='delete')
-def del_task(key):     return blobop(key=key, objtype='task',    op='delete')
+def load_project(key, die=None): return sw.flaskapp.datastore.loadblob(key, objtype='project', die=die)
+def load_result(key, die=None):  return sw.flaskapp.datastore.loadblob(key, objtype='result', die=die)
+def load_task(key, die=None):    return sw.flaskapp.datastore.loadtask(key, die=die)
+def save_project(obj, die=None): return blobop(obj=obj, objtype='project', op='add', die=die)
+def save_result(obj, die=None):  return blobop(obj=obj, objtype='result',  op='add', die=die)
+def save_task(obj, die=None):    return blobop(obj=obj, objtype='task',    op='add', die=die)
+def del_project(key, die=None):  return blobop(key=key, objtype='project', op='delete', die=die)
+def del_result(key, die=None):   return blobop(key=key, objtype='result',  op='delete', die=die)
+def del_task(key, die=None):     return blobop(key=key, objtype='task',    op='delete', die=die)
 
     
 
