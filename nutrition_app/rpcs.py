@@ -40,12 +40,9 @@ def to_number(raw):
     return output
 
 
-def get_path(filename, online=True):
-    if online:
-        dirname = sw.globalvars.downloads_dir.dir_path # Use the downloads directory to put the file in.
-        fullpath = '%s%s%s' % (dirname, os.sep, filename) # Generate the full file name with path.
-    else:
-        fullpath = filename
+def get_path(filename):
+    dirname = sw.globalvars.downloads_dir.dir_path # Use the downloads directory to put the file in.
+    fullpath = '%s%s%s' % (dirname, os.sep, filename) # Generate the full file name with path.
     return fullpath
 
 
@@ -156,12 +153,12 @@ def blobop(key=None, objtype=None, op=None, obj=None):
     
 
 # Convenience functions
-def add_project(project):     return blobop(obj=project,     objtype='project', op='add')
-def add_result(result):       return blobop(obj=result,      objtype='result',  op='add')
-def add_task(task):           return blobop(obj=task,        objtype='task',    op='add')
-def del_project(project_key): return blobop(key=project_key, objtype='project', op='delete')
-def del_result(result_key):   return blobop(key=result_key,  objtype='result',  op='delete')
-def del_task(task_key):       return blobop(key=task_key,    objtype='task',    op='delete')
+def add_project(obj): return blobop(obj=obj, objtype='project', op='add')
+def add_result(obj):  return blobop(obj=obj, objtype='result',  op='add')
+def add_task(obj):    return blobop(obj=obj, objtype='task',    op='add')
+def del_project(key): return blobop(key=key, objtype='project', op='delete')
+def del_result(key):  return blobop(key=key, objtype='result',  op='delete')
+def del_task(key):    return blobop(key=key, objtype='task',    op='delete')
 
 
 
@@ -188,8 +185,7 @@ def save_project(proj, new=False):
     new_project = sc.dcp(proj) # Copy the project, only save what we want...
     new_project.modified = sc.now()
     if new: new_project.uid = sc.uuid()
-    key = sw.flaskapp.datastore.saveblob(data=proj, objtype='project', uid=new_project.uid)
-    add_project(key)
+    key = add_project(new_project)
     return key
 
 
@@ -357,20 +353,20 @@ def create_project_from_prj_file(prj_filename):
 
 
 @RPC(call_type='download')
-def export_results(project_id, online=True):
-    proj = load_project(project_id, die=True, online=online) # Load the project with the matching UID.
+def export_results(project_id):
+    proj = load_project(project_id, die=True) # Load the project with the matching UID.
     file_name = '%s outputs.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
-    full_file_name = get_path(file_name, online=online) # Generate the full file name with path.
+    full_file_name = get_path(file_name) # Generate the full file name with path.
     proj.write_results(full_file_name, keys=-1)
     print(">> export_results %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
 
 
 @RPC(call_type='download')
-def export_graphs(project_id, online=True):
-    proj = load_project(project_id, die=True, online=online) # Load the project with the matching UID.
+def export_graphs(project_id):
+    proj = load_project(project_id, die=True) # Load the project with the matching UID.
     file_name = '%s graphs.pdf' % proj.name # Create a filename containing the project name followed by a .prj suffix.
-    full_file_name = get_path(file_name, online=online) # Generate the full file name with path.
+    full_file_name = get_path(file_name) # Generate the full file name with path.
     figs = proj.plot(-1) # Generate the plots
     sc.savefigs(figs, filetype='singlepdf', filename=full_file_name)
     print(">> export_graphs %s" % (full_file_name)) # Display the call information.
@@ -510,7 +506,7 @@ def define_formats():
     
 
 @RPC()
-def get_sheet_data(project_id, key=None, online=True):
+def get_sheet_data(project_id, key=None):
     sheets = [
         'Nutritional status distribution', 
         'Breastfeeding distribution',
@@ -518,7 +514,7 @@ def get_sheet_data(project_id, key=None, online=True):
         'Treatment of SAM',
         'Programs cost and coverage',
         ]
-    proj = load_project(project_id, die=True, online=online)
+    proj = load_project(project_id, die=True)
     wb = proj.input_sheet
     sheetdata = sc.odict()
     for sheet in sheets:
@@ -549,8 +545,8 @@ def get_sheet_data(project_id, key=None, online=True):
 
 
 @RPC()
-def save_sheet_data(project_id, sheetdata, key=None, online=True):
-    proj = load_project(project_id, die=True, online=online)
+def save_sheet_data(project_id, sheetdata, key=None):
+    proj = load_project(project_id, die=True)
     if key is None: key = proj.datasets.keys()[-1] # There should always be at least one
     wb = proj.input_sheet # CK: Warning, might want to change
     for sheet in sheetdata.keys():
@@ -572,7 +568,7 @@ def save_sheet_data(project_id, sheetdata, key=None, online=True):
     proj.add_model(key) # Refresh the model
     
     print('Saving project...')
-    save_project(proj, online=online)
+    save_project(proj)
     return None
 
 ##################################################################################
@@ -650,9 +646,9 @@ def js_to_py_scen(js_scen):
     
 
 @RPC()
-def get_scen_info(project_id, key=None, online=True):
+def get_scen_info(project_id, key=None):
     print('Getting scenario info...')
-    proj = load_project(project_id, die=True, online=online)
+    proj = load_project(project_id, die=True)
     scenario_summaries = []
     for py_scen in proj.scens.values():
         js_scen = py_to_js_scen(py_scen, proj, key=key)
@@ -664,9 +660,9 @@ def get_scen_info(project_id, key=None, online=True):
 
 
 @RPC()
-def set_scen_info(project_id, scenario_summaries, online=True):
+def set_scen_info(project_id, scenario_summaries):
     print('Setting scenario info...')
-    proj = load_project(project_id, die=True, online=online)
+    proj = load_project(project_id, die=True)
     proj.scens.clear()
     for j,js_scen in enumerate(scenario_summaries):
         print('Setting scenario %s of %s...' % (j+1, len(scenario_summaries)))
@@ -676,7 +672,7 @@ def set_scen_info(project_id, scenario_summaries, online=True):
         sc.pp(json)
         
     print('Saving project...')
-    save_project(proj, online=online)
+    save_project(proj)
     return None
 
 
@@ -709,10 +705,10 @@ def reformat_costeff(costeff):
     return table
 
 @RPC()
-def run_scens(project_id, online=True, doplot=True):
+def run_scens(project_id, doplot=True):
     
     print('Running scenarios...')
-    proj = load_project(project_id, die=True, online=online)
+    proj = load_project(project_id, die=True)
     proj.results.clear() # Remove any existing results
     proj.run_scens()
     
@@ -732,7 +728,7 @@ def run_scens(project_id, online=True, doplot=True):
     table = reformat_costeff(costeff)
     
     print('Saving project...')
-    save_project(proj, online=online)
+    save_project(proj)
     output = {'graphs':graphs, 'table':table}
     return output
 
@@ -801,9 +797,9 @@ def js_to_py_optim(js_optim):
     
 
 @RPC()
-def get_optim_info(project_id, online=True):
+def get_optim_info(project_id):
     print('Getting optimization info...')
-    proj = load_project(project_id, die=True, online=online)
+    proj = load_project(project_id, die=True)
     optim_summaries = []
     for py_optim in proj.optims.values():
         js_optim = py_to_js_optim(py_optim, proj)
@@ -814,9 +810,9 @@ def get_optim_info(project_id, online=True):
 
 
 @RPC()
-def set_optim_info(project_id, optim_summaries, online=True):
+def set_optim_info(project_id, optim_summaries):
     print('Setting optimization info...')
-    proj = load_project(project_id, die=True, online=online)
+    proj = load_project(project_id, die=True)
     proj.optims.clear()
     for j,js_optim in enumerate(optim_summaries):
         print('Setting optimization %s of %s...' % (j+1, len(optim_summaries)))
@@ -825,7 +821,7 @@ def set_optim_info(project_id, optim_summaries, online=True):
         print(json)
         proj.add_optim(json=json)
     print('Saving project...')
-    save_project(proj, online=online)   
+    save_project(proj)   
     return None
     
 
@@ -841,8 +837,8 @@ def get_default_optim(project_id):
 
 
 @RPC()
-def plot_optimization(project_id, cache_id, online=True):
-    proj = load_project(project_id, die=True, online=online)
+def plot_optimization(project_id, cache_id):
+    proj = load_project(project_id, die=True)
     figs = proj.plot(key=cache_id, optim=True) # Only plot allocation
     graphs = []
     for f,fig in enumerate(figs.values()):
