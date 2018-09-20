@@ -109,7 +109,7 @@ class Project(object):
         self.add_model(name, overwrite=overwrite)
         return None
 
-    def save(self, filename=None, folder=None, saveresults=False, verbose=2):
+    def save(self, filename=None, folder=None, saveresults=False, verbose=0):
         ''' Save the current project, by default using its name, and without results '''
         fullpath = sc.makefilepath(filename=filename, folder=folder, default=[self.filename, self.name], ext='prj', sanitize=True)
         self.filename = fullpath # Store file path

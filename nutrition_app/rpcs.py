@@ -284,7 +284,8 @@ def load_zip_of_prj_files(project_keys):
     server_zip_fname = os.path.join(basedir, sc.sanitizefilename(zip_fname))
     with ZipFile(server_zip_fname, 'w') as zipfile: # Create the zip file, putting all of the .prj files in a projects directory.
         for project_path in project_paths:
-            zipfile.write(project_path, 'projects/{}'.format(project_path))
+            filename = os.path.basename(project_path)
+            zipfile.write(project_path, filename)
     print(">> load_zip_of_prj_files %s" % (server_zip_fname)) # Display the call information.
     return server_zip_fname # Return the server file name.
 
