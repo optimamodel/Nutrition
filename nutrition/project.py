@@ -89,7 +89,6 @@ class Project(object):
         output += '        Git branch: %s\n'    % self.gitinfo['branch']
         output += '          Git hash: %s\n'    % self.gitinfo['hash']
         output += '============================================================\n'
-#        output += self.getwarnings(doprint=False) # Don't print since print later
         return output
     
     
