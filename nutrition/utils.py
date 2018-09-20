@@ -143,6 +143,9 @@ def process_weights(weights):
     newweights = np.zeros(len(default))
     # if user just enters a string from the pre-defined objectives
     if sc.isstring(weights): weights = sc.odict({weights:1})
+    if isinstance(weights, np.ndarray):
+        newweights[:len(weights)] = weights
+        return newweights
     for out, weight in weights.iteritems():
         if out in default:
             thisout = out

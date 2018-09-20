@@ -11,7 +11,7 @@ from .data import Dataset
 from .scenarios import Scen, run_scen, make_scens
 from .plotting import make_plots, get_costeff
 from .model import Model
-from .utils import trace_exception, default_trackers, pretty_labels
+from .utils import trace_exception, default_trackers, pretty_labels, run_parallel
 from .demo import demo_scens, demo_optims
 from .settings import ONException
 from .defaults import get_defaults
@@ -281,9 +281,10 @@ class Project(object):
         else:
             return base
 
-    def add_optims(self, optim_list, overwrite=False):
+    def add_optims(self, optims, overwrite=False):
         if overwrite: self.optims = sc.odict() # remove exist scenarios
-        for optim in optim_list:
+        optims = sc.promotetolist(optims)
+        for optim in optims:
             self.add(name=optim.name, item=optim, what='optim')
         self.modified = sc.now()
 
@@ -330,13 +331,14 @@ class Project(object):
         self.add_result(results, name='scens')
         return None
 
-    def run_optim(self, key=-1, optim=None, maxiter=30, swarmsize=25, maxtime=20, parallel=True, dosave=True):
+    def run_optim(self, key=-1, optim=None, maxiter=15, swarmsize=20, maxtime=140, parallel=True, dosave=True, runbaseline=True):
         if optim is not None: self.add_optims(optim)
         optim = self.optim(key)
         results = []
         # run baseline
-        base = self.run_baseline(optim.model_name, optim.prog_set)
-        results.append(base)
+        if runbaseline:
+            base = self.run_baseline(optim.model_name, optim.prog_set)
+            results.append(base)
         # run optimization
         model = sc.dcp(self.model(optim.model_name))
         model.setup(optim, setcovs=False)
@@ -346,13 +348,15 @@ class Project(object):
         if dosave: self.add_result(results, name=optim.name)
         return results
 
-    def run_geospatial(self, key=-1, geo=None):
+    def run_geospatial(self, geo=None, maxiter=30, swarmsize=25, maxtime=20):
+        # import utils
         regions = geo.make_regions()
-        for region in regions:
-            # will get a list of results for each region
-            results = self.run_optim(optim=region)
-            # todo: use this list to generate a BOC
-            # boc = geo.get_boc(results)?
+        # run_parallel(self.run_optim, regions, len(regions))
+        results = sc.odict({region.name: self.run_optim(optim=region, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
+                                                        runbaseline=False) for region in regions})
+        print results
+        # results = map(lambda region: self.run_optim(region), regions)
+        geo.get_bocs(results)
 
 
     def get_output(self, outcomes=None):
