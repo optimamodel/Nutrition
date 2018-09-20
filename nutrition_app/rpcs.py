@@ -153,40 +153,21 @@ def blobop(key=None, objtype=None, op=None, obj=None):
     
 
 # Convenience functions
-def add_project(obj): return blobop(obj=obj, objtype='project', op='add')
-def add_result(obj):  return blobop(obj=obj, objtype='result',  op='add')
-def add_task(obj):    return blobop(obj=obj, objtype='task',    op='add')
-def del_project(key): return blobop(key=key, objtype='project', op='delete')
-def del_result(key):  return blobop(key=key, objtype='result',  op='delete')
-def del_task(key):    return blobop(key=key, objtype='task',    op='delete')
+def load_project(key): return sw.flaskapp.datastore.loadblob(key, objtype='project')
+def load_result(key):  return sw.flaskapp.datastore.loadblob(key, objtype='result')
+def load_task(key):    return sw.flaskapp.datastore.loadtask(key)
+def save_project(obj): return blobop(obj=obj, objtype='project', op='add')
+def save_result(obj):  return blobop(obj=obj, objtype='result',  op='add')
+def save_task(obj):    return blobop(obj=obj, objtype='task',    op='add')
+def del_project(key):  return blobop(key=key, objtype='project', op='delete')
+def del_result(key):   return blobop(key=key, objtype='result',  op='delete')
+def del_task(key):     return blobop(key=key, objtype='task',    op='delete')
 
-
+    
 
 ##################################################################################
 ### Project RPCs
 ##################################################################################
-
-
-def load_project(project_id, die=True):
-    """ Return the project DataStore reocord, given a project UID. """ 
-    project = sw.flaskapp.datastore.loadblob(project_id, objtype='project') # Load the matching prj.ProjectSO object from the database.
-    if project is None: # If we have no match, we may want to throw an exception.
-        if die:
-            raise Exception('ProjectDoesNotExist(id=%s)' % project_id)
-    return project # Return the Project object for the match (None if none found).
-
-      
-def save_project(proj, new=False):
-    """
-    Given a Project object, wrap it in a new prj.ProjectSO object and put this 
-    in the project collection (either adding a new object, or updating an 
-    existing one)  skip_result lets you null out saved results in the Project.
-    """ 
-    new_project = sc.dcp(proj) # Copy the project, only save what we want...
-    new_project.modified = sc.now()
-    if new: new_project.uid = sc.uuid()
-    key = add_project(new_project)
-    return key
 
 
 @RPC()
