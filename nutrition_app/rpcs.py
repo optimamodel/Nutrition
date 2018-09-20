@@ -25,7 +25,7 @@ RPC = sw.makeRPCtag(RPC_dict) # RPC registration decorator factory created using
 
 
 ###############################################################
-### Other functions (mostly helpers for the RPCs)
+### Helper functions
 ##############################################################
 
 def to_number(raw):
@@ -97,7 +97,7 @@ def get_version_info():
 
 
 ##################################################################################
-### User functions/RPCs
+### User functions
 ##################################################################################
 
 def get_user():
@@ -118,7 +118,7 @@ def get_user():
     return user
 
 
-def blobop(key=None, objtype=None, op=None, obj=None, die=None):
+def blobop(key=None, objtype=None, op=None, obj=None, die=None, create=True):
     ''' Perform a blob operation -- add or delete a project, result, or task for the user '''
     # Figure out what kind of list it is
     user = get_user()
@@ -130,12 +130,12 @@ def blobop(key=None, objtype=None, op=None, obj=None, die=None):
         raise Exception(errormsg)
     
     # Make the best guess about what the key should be
-    key = sw.flaskapp.datastore.getkey(key=key, objtype=objtype, obj=obj)
+    key, objtype, uid = sw.flaskapp.datastore.getkey(key=key, objtype=objtype, obj=obj, create=create, fulloutput=True)
     
     # Do the operation(s)
     saveuser = False
     if op == 'add':
-        sw.flaskapp.datastore.saveblob(key=key, obj=obj, objtype=objtype, uid=obj.uid, die=die)
+        sw.flaskapp.datastore.saveblob(key=key, obj=obj, objtype=objtype, uid=uid, die=die)
         if key not in itemlist:
             itemlist.append(key)
             saveuser = True
@@ -151,7 +151,7 @@ def blobop(key=None, objtype=None, op=None, obj=None, die=None):
     # Finish up
     if saveuser:
         sw.save_user(user)
-    return None
+    return key
     
 
 # Convenience functions
@@ -170,6 +170,9 @@ def del_task(key, die=None):     return blobop(key=key, objtype='task',    op='d
 ##################################################################################
 ### Project RPCs
 ##################################################################################
+
+
+
 
 
 def unique_project_name(project_name, verbose=False):
@@ -228,6 +231,72 @@ def project_jsons():
         output['projects'].append(json)
     return output
 
+
+
+@RPC()
+def delete_projects(project_keys):
+    ''' Delete one or more projects '''
+    project_keys = sc.promotetolist(project_keys)
+    for project_key in project_keys:
+        del_project(project_key)
+    return None
+
+@RPC()
+def add_demo_project():
+    """ Add a demo Optima Nutrition project """
+    new_proj_name = unique_project_name('Demo project') # Get a unique name for the project to be added.
+    proj = nu.demo(scens=True, optims=True)  # Create the project, loading in the desired spreadsheets.
+    proj.name = new_proj_name
+    print(">> add_demo_project %s" % (proj.name)) # Display the call information.
+    key = save_new_project(proj) # Save the new project in the DataStore.
+    return {'projectKey': key} # Return the new project UID in the return message.
+
+
+@RPC(call_type='download')
+def create_new_project(proj_name):
+    """ Create a new Optima Nutrition project. """
+    template_name = 'template_input.xlsx'
+    new_proj_name = unique_project_name(proj_name) # Get a unique name for the project to be added.
+    proj = nu.Project(name=new_proj_name) # Create the project
+    print(">> create_new_project %s" % (proj.name))     # Display the call information.
+    save_new_project(proj) # Save the new project in the DataStore.
+    databook_path = sc.makefilepath(filename=template_name, folder=nu.ONpath('applications'))
+    file_name = '%s databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
+    full_file_name = get_path(file_name)
+    copyfile(databook_path, full_file_name)
+    print(">> download_databook %s" % (full_file_name))
+    return full_file_name
+
+
+@RPC()
+def update_project_from_summary(project_summary):
+    """ Given the passed in project summary, update the underlying project accordingly. """ 
+    proj = load_project(project_summary['project']['id']) # Load the project corresponding with this summary.
+    proj.name = project_summary['project']['name'] # Use the summary to set the actual project.
+    proj.modified = sc.now() # Set the modified time to now.
+    save_project(proj) # Save the changed project to the DataStore.
+    return None
+    
+    
+@RPC()
+def copy_project(project_key):
+    """
+    Given a project UID, creates a copy of the project with a new UID and 
+    returns that UID.
+    """
+    proj = load_project(project_key, die=True) # Get the Project object for the project to be copied.
+    new_project = sc.dcp(proj) # Make a copy of the project loaded in to work with.
+    new_project.name = unique_project_name(proj.name) # Just change the project name, and we have the new version of the Project object to be saved as a copy.
+    print(">> copy_project %s" % (new_project.name))  # Display the call information.
+    save_new_project(new_project) # Save a DataStore projects record for the copy project.
+    copy_project_id = new_project.uid # Remember the new project UID (created in save_project_as_new()).
+    return { 'projectId': copy_project_id } # Return the UID for the new projects record.
+
+
+
+##################################################################################
+### Upload/download RPCs
+##################################################################################
 
 
 @RPC(call_type='download')   
@@ -290,39 +359,7 @@ def load_zip_of_prj_files(project_keys):
     return server_zip_fname # Return the server file name.
 
 
-@RPC()
-def delete_projects(project_keys):
-    ''' Delete one or more projects '''
-    project_keys = sc.promotetolist(project_keys)
-    for project_key in project_keys:
-        del_project(project_key)
-    return None
 
-@RPC()
-def add_demo_project():
-    """ Add a demo Optima Nutrition project """
-    new_proj_name = unique_project_name('Demo project') # Get a unique name for the project to be added.
-    proj = nu.demo(scens=True, optims=True)  # Create the project, loading in the desired spreadsheets.
-    proj.name = new_proj_name
-    print(">> add_demo_project %s" % (proj.name)) # Display the call information.
-    key = save_new_project(proj) # Save the new project in the DataStore.
-    return {'projectKey': key} # Return the new project UID in the return message.
-
-
-@RPC(call_type='download')
-def create_new_project(proj_name):
-    """ Create a new Optima Nutrition project. """
-    template_name = 'template_input.xlsx'
-    new_proj_name = unique_project_name(proj_name) # Get a unique name for the project to be added.
-    proj = nu.Project(name=new_proj_name) # Create the project
-    print(">> create_new_project %s" % (proj.name))     # Display the call information.
-    save_new_project(proj) # Save the new project in the DataStore.
-    databook_path = sc.makefilepath(filename=template_name, folder=nu.ONpath('applications'))
-    file_name = '%s databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
-    full_file_name = get_path(file_name)
-    copyfile(databook_path, full_file_name)
-    print(">> download_databook %s" % (full_file_name))
-    return full_file_name
 
 
 @RPC(call_type='upload')
@@ -334,31 +371,6 @@ def upload_databook(databook_filename, project_id):
     proj.modified = sc.now()
     save_project(proj) # Save the new project in the DataStore.
     return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
-
-
-@RPC()
-def update_project_from_summary(project_summary):
-    """ Given the passed in project summary, update the underlying project accordingly. """ 
-    proj = load_project(project_summary['project']['id']) # Load the project corresponding with this summary.
-    proj.name = project_summary['project']['name'] # Use the summary to set the actual project.
-    proj.modified = sc.now() # Set the modified time to now.
-    save_project(proj) # Save the changed project to the DataStore.
-    return None
-    
-@RPC()
-def copy_project(project_key):
-    """
-    Given a project UID, creates a copy of the project with a new UID and 
-    returns that UID.
-    """
-    proj = load_project(project_key, die=True) # Get the Project object for the project to be copied.
-    new_project = sc.dcp(proj) # Make a copy of the project loaded in to work with.
-    new_project.name = unique_project_name(proj.name) # Just change the project name, and we have the new version of the Project object to be saved as a copy.
-    print(">> copy_project %s" % (new_project.name))  # Display the call information.
-    save_new_project(new_project) # Save a DataStore projects record for the copy project.
-    copy_project_id = new_project.uid # Remember the new project UID (created in save_project_as_new()).
-    return { 'projectId': copy_project_id } # Return the UID for the new projects record.
-
 
 @RPC(call_type='upload')
 def create_project_from_prj_file(prj_filename):
@@ -375,26 +387,6 @@ def create_project_from_prj_file(prj_filename):
     save_new_project(proj) # Save the new project in the DataStore.
     return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
 
-
-@RPC(call_type='download')
-def export_results(project_id):
-    proj = load_project(project_id, die=True) # Load the project with the matching UID.
-    file_name = '%s outputs.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
-    full_file_name = get_path(file_name) # Generate the full file name with path.
-    proj.write_results(full_file_name, keys=-1)
-    print(">> export_results %s" % (full_file_name)) # Display the call information.
-    return full_file_name # Return the full filename.
-
-
-@RPC(call_type='download')
-def export_graphs(project_id):
-    proj = load_project(project_id, die=True) # Load the project with the matching UID.
-    file_name = '%s graphs.pdf' % proj.name # Create a filename containing the project name followed by a .prj suffix.
-    full_file_name = get_path(file_name) # Generate the full file name with path.
-    figs = proj.plot(-1) # Generate the plots
-    sc.savefigs(figs, filetype='singlepdf', filename=full_file_name)
-    print(">> export_graphs %s" % (full_file_name)) # Display the call information.
-    return full_file_name # Return the full filename.
 
 
 ##################################################################################
@@ -733,7 +725,6 @@ def run_scens(project_id, doplot=True):
     
     print('Running scenarios...')
     proj = load_project(project_id, die=True)
-    proj.results.clear() # Remove any existing results
     proj.run_scens()
     
     # Get graphs
@@ -750,6 +741,9 @@ def run_scens(project_id, doplot=True):
     # Get cost-effectiveness table
     costeff = proj.get_costeff()
     table = reformat_costeff(costeff)
+    
+    # Store results in cache
+    proj = cache_results(proj)
     
     print('Saving project...')
     save_project(proj)
@@ -872,3 +866,52 @@ def plot_optimization(project_id, cache_id):
         graphs.append(graph_dict)
         print('Converted figure %s of %s' % (f+1, len(figs)))
     return {'graphs': graphs}
+
+
+
+
+
+##################################################################################
+### Results RPCs
+##################################################################################
+
+def cache_results(proj, verbose=True):
+    ''' Store the results of the project in Redis '''
+    for key,result in proj.results.items():
+        if not sc.isstring(result):
+            result_key = save_result(result)
+            proj.results[key] = result_key
+            if verbose: print('Cached result "%s" to "%s"' % (key, result_key))
+    return proj
+
+
+def retrieve_results(proj, verbose=True):
+    ''' Retrieve the results from the database back into the project '''
+    for key,result_key in proj.results.items():
+        if sc.isstring(result_key):
+            result = load_result(result_key)
+            proj.results[key] = result
+            if verbose: print('Retrieved result "%s" from "%s"' % (key, result_key))
+    return proj
+
+
+@RPC(call_type='download')
+def export_results(project_id):
+    proj = load_project(project_id, die=True) # Load the project with the matching UID.
+    file_name = '%s outputs.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
+    full_file_name = get_path(file_name) # Generate the full file name with path.
+    proj.write_results(full_file_name, keys=-1)
+    print(">> export_results %s" % (full_file_name)) # Display the call information.
+    return full_file_name # Return the full filename.
+
+
+@RPC(call_type='download')
+def export_graphs(project_id):
+    proj = load_project(project_id, die=True) # Load the project with the matching UID.
+    file_name = '%s graphs.pdf' % proj.name # Create a filename containing the project name followed by a .prj suffix.
+    full_file_name = get_path(file_name) # Generate the full file name with path.
+    figs = proj.plot(-1) # Generate the plots
+    sc.savefigs(figs, filetype='singlepdf', filename=full_file_name)
+    print(">> export_graphs %s" % (full_file_name)) # Display the call information.
+    return full_file_name # Return the full filename.
+
