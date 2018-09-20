@@ -10,7 +10,6 @@ Last update: 2018sep20 by cliffk
 
 import os
 from zipfile import ZipFile
-from flask_login import current_user
 from shutil import copyfile
 import mpld3
 import numpy as np
@@ -102,14 +101,9 @@ def get_version_info():
 ### User functions/RPCs
 ##################################################################################
 
-def save_user(user=None):
-    if user is None: user = current_user
-    sw.flaskapp.datastore.saveuser(user)
-    return None
-
 def check_user():
     ''' Ensure it's a valid Optima Nutrition user '''
-    user = current_user
+    user = sw.load_user()
     dosave = False
     if not hasattr(user, 'projects'):
         user.projects = []
@@ -121,7 +115,7 @@ def check_user():
         user.tasks = []
         dosave = True
     if dosave:
-        save_user(user)
+        sw.save_user(user)
     return user
 
 
@@ -155,7 +149,7 @@ def modify_user_data(key, which, operation):
     
     # Finish up
     if dosave:
-        save_user()
+        sw.save_user(user)
     return None
     
 
@@ -249,7 +243,7 @@ def download_project(project_id):
     For the passed in project UID, get the Project on the server, save it in a 
     file, minus results, and pass the full path of this file back.
     """
-    proj = load_project(project_id, raise_exception=True) # Load the project with the matching UID.
+    proj = load_project(project_id, die=True) # Load the project with the matching UID.
     file_name = '%s.prj' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name) # Generate the full file name with path.
     sc.saveobj(full_file_name, proj) # Write the object to a Gzip string pickle file.
@@ -260,7 +254,7 @@ def download_project(project_id):
 @RPC(call_type='download')   
 def download_databook(project_id, key=None):
     """ Download databook """
-    proj = load_project(project_id, raise_exception=True) # Load the project with the matching UID.
+    proj = load_project(project_id, die=True) # Load the project with the matching UID.
     file_name = '%s_databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name) # Generate the full file name with path.
     proj.input_sheet.save(full_file_name)
@@ -273,7 +267,7 @@ def download_defaults(project_id):
     """
     Download defaults
     """
-    proj = load_project(project_id, raise_exception=True) # Load the project with the matching UID.
+    proj = load_project(project_id, die=True) # Load the project with the matching UID.
     file_name = '%s_defaults.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name) # Generate the full file name with path.
     proj.dataset().defaults_sheet.save(full_file_name)
@@ -299,24 +293,24 @@ def load_zip_of_prj_files(project_ids):
 
 
 @RPC()
-def add_demo_project(user_id):
+def add_demo_project():
     """ Add a demo Optima Nutrition project """
     new_proj_name = sc.uniquename('Demo project', namelist=None) # Get a unique name for the project to be added.
     proj = nu.demo(scens=True, optims=True)  # Create the project, loading in the desired spreadsheets.
     proj.name = new_proj_name
     print(">> add_demo_project %s" % (proj.name)) # Display the call information.
-    save_project_as_new(proj, user_id) # Save the new project in the DataStore.
+    save_project(proj, new=True) # Save the new project in the DataStore.
     return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
 
 
 @RPC(call_type='download')
-def create_new_project(user_id, proj_name):
+def create_new_project(proj_name):
     """ Create a new Optima Nutrition project. """
     template_name = 'template_input.xlsx'
     new_proj_name = sc.uniquename(proj_name, namelist=None) # Get a unique name for the project to be added.
     proj = nu.Project(name=new_proj_name) # Create the project
     print(">> create_new_project %s" % (proj.name))     # Display the call information.
-    save_project_as_new(proj, user_id) # Save the new project in the DataStore.
+    save_project(proj, new=True) # Save the new project in the DataStore.
     databook_path = sc.makefilepath(filename=template_name, folder=nu.ONpath('applications'))
     file_name = '%s databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name)
@@ -329,7 +323,7 @@ def create_new_project(user_id, proj_name):
 def upload_databook(databook_filename, project_id):
     """ Upload a databook to a project. """
     print(">> upload_databook '%s'" % databook_filename)
-    proj = load_project(project_id, raise_exception=True)
+    proj = load_project(project_id, die=True)
     proj.load_data(filepath=databook_filename) # Reset the project name to a new project name that is unique.
     proj.modified = sc.now()
     save_project(proj) # Save the new project in the DataStore.
@@ -346,24 +340,22 @@ def update_project_from_summary(project_summary):
     return None
     
 @RPC()
-def copy_project(project_id):
+def copy_project(project_key):
     """
     Given a project UID, creates a copy of the project with a new UID and 
     returns that UID.
     """
-    project_record = load_project_record(project_id, raise_exception=True) # Get the Project object for the project to be copied.
-    proj = project_record.proj
+    proj = load_project(project_key, die=True) # Get the Project object for the project to be copied.
     new_project = sc.dcp(proj) # Make a copy of the project loaded in to work with.
     new_project.name = sc.uniquename(proj.name, namelist=None) # Just change the project name, and we have the new version of the Project object to be saved as a copy.
-    user_id = current_user.get_id() # Set the user UID for the new projects record to be the current user.
     print(">> copy_project %s" % (new_project.name))  # Display the call information.
-    save_project_as_new(new_project, user_id) # Save a DataStore projects record for the copy project.
+    save_project(new_project, new=True) # Save a DataStore projects record for the copy project.
     copy_project_id = new_project.uid # Remember the new project UID (created in save_project_as_new()).
     return { 'projectId': copy_project_id } # Return the UID for the new projects record.
 
 
 @RPC(call_type='upload')
-def create_project_from_prj_file(prj_filename, user_id):
+def create_project_from_prj_file(prj_filename):
     """
     Given a .prj file name and a user UID, create a new project from the file 
     with a new UID and return the new UID.
@@ -374,13 +366,13 @@ def create_project_from_prj_file(prj_filename, user_id):
     except Exception:
         return { 'error': 'BadFileFormatError' }
     proj.name = sc.uniquename(proj.name, namelist=None) # Reset the project name to a new project name that is unique.
-    save_project_as_new(proj, user_id) # Save the new project in the DataStore.
+    save_project(proj, new=True) # Save the new project in the DataStore.
     return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
 
 
 @RPC(call_type='download')
 def export_results(project_id, online=True):
-    proj = load_project(project_id, raise_exception=True, online=online) # Load the project with the matching UID.
+    proj = load_project(project_id, die=True, online=online) # Load the project with the matching UID.
     file_name = '%s outputs.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name, online=online) # Generate the full file name with path.
     proj.write_results(full_file_name, keys=-1)
@@ -390,7 +382,7 @@ def export_results(project_id, online=True):
 
 @RPC(call_type='download')
 def export_graphs(project_id, online=True):
-    proj = load_project(project_id, raise_exception=True, online=online) # Load the project with the matching UID.
+    proj = load_project(project_id, die=True, online=online) # Load the project with the matching UID.
     file_name = '%s graphs.pdf' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name, online=online) # Generate the full file name with path.
     figs = proj.plot(-1) # Generate the plots
@@ -540,7 +532,7 @@ def get_sheet_data(project_id, key=None, online=True):
         'Treatment of SAM',
         'Programs cost and coverage',
         ]
-    proj = load_project(project_id, raise_exception=True, online=online)
+    proj = load_project(project_id, die=True, online=online)
     wb = proj.input_sheet
     sheetdata = sc.odict()
     for sheet in sheets:
@@ -572,7 +564,7 @@ def get_sheet_data(project_id, key=None, online=True):
 
 @RPC()
 def save_sheet_data(project_id, sheetdata, key=None, online=True):
-    proj = load_project(project_id, raise_exception=True, online=online)
+    proj = load_project(project_id, die=True, online=online)
     if key is None: key = proj.datasets.keys()[-1] # There should always be at least one
     wb = proj.input_sheet # CK: Warning, might want to change
     for sheet in sheetdata.keys():
@@ -674,7 +666,7 @@ def js_to_py_scen(js_scen):
 @RPC()
 def get_scen_info(project_id, key=None, online=True):
     print('Getting scenario info...')
-    proj = load_project(project_id, raise_exception=True, online=online)
+    proj = load_project(project_id, die=True, online=online)
     scenario_summaries = []
     for py_scen in proj.scens.values():
         js_scen = py_to_js_scen(py_scen, proj, key=key)
@@ -688,7 +680,7 @@ def get_scen_info(project_id, key=None, online=True):
 @RPC()
 def set_scen_info(project_id, scenario_summaries, online=True):
     print('Setting scenario info...')
-    proj = load_project(project_id, raise_exception=True, online=online)
+    proj = load_project(project_id, die=True, online=online)
     proj.scens.clear()
     for j,js_scen in enumerate(scenario_summaries):
         print('Setting scenario %s of %s...' % (j+1, len(scenario_summaries)))
@@ -706,7 +698,7 @@ def set_scen_info(project_id, scenario_summaries, online=True):
 def get_default_scen(project_id, scen_type=None):
     print('Creating default scenario...')
     if scen_type is None: scen_type = 'coverage'
-    proj = load_project(project_id, raise_exception=True)
+    proj = load_project(project_id, die=True)
     py_scens = proj.demo_scens(doadd=False)
     py_scen = py_scens[0] # Pull out the first one
     py_scen.scen_type = scen_type # Set the scenario type
@@ -734,7 +726,7 @@ def reformat_costeff(costeff):
 def run_scens(project_id, online=True, doplot=True):
     
     print('Running scenarios...')
-    proj = load_project(project_id, raise_exception=True, online=online)
+    proj = load_project(project_id, die=True, online=online)
     proj.results.clear() # Remove any existing results
     proj.run_scens()
     
@@ -825,7 +817,7 @@ def js_to_py_optim(js_optim):
 @RPC()
 def get_optim_info(project_id, online=True):
     print('Getting optimization info...')
-    proj = load_project(project_id, raise_exception=True, online=online)
+    proj = load_project(project_id, die=True, online=online)
     optim_summaries = []
     for py_optim in proj.optims.values():
         js_optim = py_to_js_optim(py_optim, proj)
@@ -838,7 +830,7 @@ def get_optim_info(project_id, online=True):
 @RPC()
 def set_optim_info(project_id, optim_summaries, online=True):
     print('Setting optimization info...')
-    proj = load_project(project_id, raise_exception=True, online=online)
+    proj = load_project(project_id, die=True, online=online)
     proj.optims.clear()
     for j,js_optim in enumerate(optim_summaries):
         print('Setting optimization %s of %s...' % (j+1, len(optim_summaries)))
@@ -854,7 +846,7 @@ def set_optim_info(project_id, optim_summaries, online=True):
 @RPC()
 def get_default_optim(project_id):
     print('Getting default optimization...')
-    proj = load_project(project_id, raise_exception=True)
+    proj = load_project(project_id, die=True)
     py_optim = proj.demo_optims(doadd=False)[0]
     js_optim = py_to_js_optim(py_optim, proj, default_included=True)
     print('Created default JavaScript optimization:')
@@ -864,7 +856,7 @@ def get_default_optim(project_id):
 
 @RPC()
 def plot_optimization(project_id, cache_id, online=True):
-    proj = load_project(project_id, raise_exception=True, online=online)
+    proj = load_project(project_id, die=True, online=online)
     figs = proj.plot(key=cache_id, optim=True) # Only plot allocation
     graphs = []
     for f,fig in enumerate(figs.values()):

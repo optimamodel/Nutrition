@@ -220,7 +220,7 @@ Last update: 2018-08-30
       updateProjectSummaries(setActiveID) {
         console.log('updateProjectSummaries() called')
         status.start(this)
-        rpcs.rpc('load_current_user_project_summaries') // Get the current user's project summaries from the server.
+        rpcs.rpc('project_jsons') // Get the current user's project summaries from the server.
           .then(response => {
             let lastCreationTime = null
             let lastCreatedID = null
@@ -254,7 +254,7 @@ Last update: 2018-08-30
       addDemoProject() {
         console.log('addDemoProject() called');
         status.start(this);
-        rpcs.rpc('add_demo_project', [this.$store.state.currentUser.UID]) // Have the server create a new project.
+        rpcs.rpc('add_demo_project', []) // Have the server create a new project.
           .then(response => {
             this.updateProjectSummaries(response.data.projectId); // Update the project summaries so the new project shows up on the list.
             status.succeed(this, '')

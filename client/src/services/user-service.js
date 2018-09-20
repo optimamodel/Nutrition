@@ -30,12 +30,6 @@ function getCurrentUserInfo() {
   return rpcs.rpc('get_current_user_info')  
 }
 
-// getAllUsersInfo() -- Call rpc() for reading all of the users.
-function getAllUsersInfo() {
-  // Make the actual RPC call.
-  return rpcs.rpc('get_all_users')   
-}
-
 // registerUser() -- Call rpc() for registering a new user.
 function registerUser(username, password, displayname, email) {
   // Get a hex version of a hashed password using the SHA224 algorithm.
@@ -159,7 +153,6 @@ export default {
   loginCall,
   logoutCall,
   getCurrentUserInfo,
-  getAllUsersInfo,
   registerUser,
   changeUserInfo,
   changeUserPassword,

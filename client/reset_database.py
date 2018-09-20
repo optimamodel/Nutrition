@@ -12,11 +12,10 @@ import os
 
 webapp_dir = os.path.abspath(onwa.config.CLIENT_DIR)
 redis_url = onwa.config.REDIS_URL
+datastore = sw.DataStore(redis_url=redis_url)
 prompt = 'Are you sure you want to reset the database for the following?\n  %s\n  %s\nAnswer (y/[n]): ' % (webapp_dir, redis_url)
 answer = raw_input(prompt)
 if answer == 'y':
-	datastore = sw.DataStore(redis_url=redis_url)
 	datastore.flushdb()
-	print('Database reset.')
 else:
 	print('Database not reset.')
