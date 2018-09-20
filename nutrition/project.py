@@ -136,7 +136,7 @@ class Project(object):
             reslist = self.result(key)
             reslist = sc.promotetolist(reslist)
             for res in reslist:
-                out = list(res.get_outputs(outcomes, seq=False))
+                out = list(res.get_outputs(outcomes, seq=False, pretty=True))
                 outputs.append([res.name] + out) # gets all outputs
         data = [['Result name'] + headers] + outputs
         
@@ -330,7 +330,7 @@ class Project(object):
         self.add_result(results, name='scens')
         return None
 
-    def run_optim(self, key=-1, optim=None, maxiter=20, swarmsize=12, maxtime=10, parallel=True, dosave=True):
+    def run_optim(self, key=-1, optim=None, maxiter=30, swarmsize=25, maxtime=20, parallel=True, dosave=True):
         if optim is not None: self.add_optims(optim)
         optim = self.optim(key)
         results = []

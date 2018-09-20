@@ -84,6 +84,7 @@ class Optim(sc.prettyobj):
         if self.filter_progs:
             threshold = 0.1
             newcov = 1.
+            restrictcovs=False
             keep_inds = []
             years = len(model.sim_years)
             # compare with 0 case
@@ -92,21 +93,31 @@ class Optim(sc.prettyobj):
                       'progvals': progvals}
             zeroscen = Scen(**kwargs)
             zeromodel = sc.dcp(model)
-            zerores = run_scen(zeroscen, zeromodel)
+            zerores = run_scen(zeroscen, zeromodel, restrictcovs)
             zeroouts = zerores.get_outputs()
             zeroval = np.inner(zeroouts, self.weights)
+            # check for dependencies
+            progs = zeromodel.prog_info.programs.values()
+            alldeps = [prog.exclusionDependencies for prog in progs] + [prog.thresholdDependencies for prog in progs]
+            # flatten list of lists
+            flatdeps = [progname for deps in alldeps for progname in deps]
             for i, prog in enumerate(self.prog_set):
-                thismodel = sc.dcp(model)
-                thiscov = sc.dcp(progvals)
-                thiscov[prog] = [newcov]*years
-                thesekwargs = sc.dcp(kwargs)
-                thesekwargs['progvals'] = thiscov
-                scen = Scen(**thesekwargs)
-                res = run_scen(scen, thismodel)
-                outs = res.get_outputs()
-                val = np.inner(outs, self.weights)
-                hasimpact = abs((val - zeroval) / zeroval) * 100. > threshold
-                keep_inds.append(hasimpact)
+                if prog in flatdeps:
+                    # parent programs must be retained in the optimization
+                    keep_inds.append(True)
+                else:
+                    thismodel = sc.dcp(model)
+                    # override dependencies to allow scale-up
+                    thiscov = sc.dcp(progvals)
+                    thiscov[prog] = [newcov]*years
+                    thesekwargs = sc.dcp(kwargs)
+                    thesekwargs['progvals'] = thiscov
+                    scen = Scen(**thesekwargs)
+                    res = run_scen(scen, thismodel, restrictcovs=restrictcovs)
+                    outs = res.get_outputs()
+                    val = np.inner(outs, self.weights)
+                    hasimpact = abs((val - zeroval) / zeroval) * 100. > threshold
+                    keep_inds.append(hasimpact)
             if not any(keep_inds): # no programs had impact
                 print('Warning: selected programs do not impact objective')
         else:

@@ -50,10 +50,13 @@ class Program(sc.prettyobj):
         self.annual_cov = cov
         self.annual_spend = spend
 
-    def interp_scen(self, cov, years, scentype):
+    def interp_scen(self, cov, years, scentype, progname):
         """ cov: a list of coverages/spending with one-to-one correspondence with sim_years
         restr_cov: boolean indicating if the coverages are restricted or unrestricted """
         if 'ov' in scentype:
+            # Raise exception is invalid coverage value. Done here before converting to unrestricted coverages
+            if (cov < 0).any() or (cov > 1).any():
+                raise Exception("Coverage for '%s' outside range 0-100"%progname)
             # assume restricted cov
             cov = self.get_unrestr_cov(cov)
             cov[0] = self.annual_cov[0]
@@ -61,12 +64,15 @@ class Program(sc.prettyobj):
             interp_cov = np.interp(years, years[not_nan], cov[not_nan])
             interp_spend = self.inv_func(interp_cov)
         elif 'ud' in scentype: # budget
+            # can't have negative spending
+            if (cov < 0).any():
+                raise Exception("Spending for '%s' below $0"%progname)
             cov[0] = self.annual_spend[0]
             not_nan = ~np.isnan(cov)
             interp_spend = np.interp(years, years[not_nan], cov[not_nan])
             interp_cov = self.func(interp_spend)
         else:
-            raise Exception("Error: scenario type '{}' is not valid".format(scentype))
+            raise Exception("Scenario type '%s' is not valid" %scentype)
         return interp_cov, interp_spend
 
     def get_unrestr_cov(self, restr_cov):
@@ -601,7 +607,7 @@ class ProgramInfo(sc.prettyobj):
         spend = np.zeros(shape=(len(self.programs), len(years)))
         covs = self.check_cov(covs, years)
         for i,prog in self.programs.enumvals():
-            thiscov, thisspend = prog.interp_scen(covs[i], years, scentype)
+            thiscov, thisspend = prog.interp_scen(covs[i], years, scentype, prog.name)
             # ensure % cov less than 1
             thiscov[thiscov > 1] = 1
             unrestr_cov[i] = thiscov
@@ -626,13 +632,14 @@ class ProgramInfo(sc.prettyobj):
         newcovs = newcovs.astype(float) # force conversion to treat None as nan
         return newcovs
 
-    def update_covs(self, covs, spends):
+    def update_covs(self, covs, spends, restrictcovs):
         for i,prog in self.programs.enumvals():
             cov = covs[i]
             spend = spends[i]
             prog.update_cov(cov, spend)
         # restrict covs
-        self.restrict_covs()
+        if restrictcovs:
+            self.restrict_covs()
 
     def determine_cov_change(self):
         for prog in self.programs.values():
