@@ -1,15 +1,57 @@
-import os
-import pandas as pd
-from multiprocessing import cpu_count
-from numpy import array, linspace, nanargmax, zeros, nonzero, inf
-from csv import writer, reader
-from itertools import izip
-from collections import OrderedDict
-from datetime import date
+import sciris as sc
+from optimization import Optim
 
-# TODO: THIS CURRENTLY DOESNT WORK
+# todo: will need to create this in the project class
+class Geospatial:
+    # todo: now that we have light-weight Optim() objects, we can use this as a wrapper for that
+    def __init__(self, name=None, model_name=None, region_names=None, weights=None, mults=None, prog_set=None,
+                 add_funds=0, fix_curr=False, active=True):
+        """
+        :param name: name of the optimization (string)
+        :param region_names: names of the regions to be included (list of strings)
+        :param weights: weights defining an objective function (odict). See documentation in optimization.Optim()
+        :param mults: the multiples of flexible funding to be optimized
+        :param prog_set:
+        :param add_funds:
+        :param fix_curr:
+        """
+        self.name = name
+        self.model_name = model_name
+        self.regions = region_names
+        self.weights = weights
+        self.mults = [0, 0.01, 0.025, 0.04, 0.05, 0.075, 0.1, 0.2, 0.3, 0.6, 1]  # these multiples are in the interval (minFreeFunds, maxFreeFunds)
+        self.prog_set = prog_set
+        self.add_funds = add_funds # this is additional across all regions
+        self.fix_curr = fix_curr # fix current program allocations within regions
+        self.active = active
 
-class GeospatialOptimization:
+        self.scenarios = None # todo: could be option from the gui or in code, specified as an odict
+        self.bocs = sc.odict() # todo: not sure if want this as attribute of this or Optim() class
+
+    def create_regions(self, fix_curr, add_funds): # todo: should this accept altered params?
+        """ Create all the Optim objects requested """
+        regions = []
+        for name in self.regions:
+            region = Optim(name=name, model_name=self.model_name, weights=self.weights, mults=self.mults,
+                           prog_set=self.prog_set, active=self.active, add_funds=add_funds,
+                           fix_curr=fix_curr)
+            regions.append(region)
+        return regions
+
+    def get_bocs(self):
+        """ Genereates the budget outcome curves for each region """
+        regions = self.make_regions(self.fix_curr, self.add_funds)
+        # todo: want the functionality to run the optims, as in project
+
+    # todo: REQUIRED FUNCTIONALITY
+    # generate BOCs by running multiple optimization within regions
+        # will need to create optim objects (1 per region)
+        # combination of new and old funds
+    # distribute between regions
+    # optimize again within regions
+
+
+
     def __init__(self, objectives, root, regionNames, numYears=None, costCurveType='linear'):
         self.root = root
         self.analysisType = 'regional'

@@ -6,6 +6,7 @@ import numpy as np
 import sciris as sc
 from .version import version
 from .optimization import Optim
+from .geospatial import Geospatial
 from .data import Dataset
 from .scenarios import Scen, run_scen, make_scens
 from .plotting import make_plots, get_costeff
@@ -344,6 +345,15 @@ class Project(object):
         # add by optim name
         if dosave: self.add_result(results, name=optim.name)
         return results
+
+    def run_geospatial(self, key=-1, geo=None):
+        regions = geo.make_regions()
+        for region in regions:
+            # will get a list of results for each region
+            results = self.run_optim(optim=region)
+            # todo: use this list to generate a BOC
+            # boc = geo.get_boc(results)?
+
 
     def get_output(self, outcomes=None):
         results = self.result(-1)
