@@ -42,7 +42,7 @@ def to_number(raw):
 
 def get_path(filename):
     basedir = sw.flaskapp.datastore.tempfolder
-    user_id = str(check_user().uid) # Can't user username since too much sanitization required
+    user_id = str(get_user().uid) # Can't user username since too much sanitization required
     fullpath = os.sep.join([basedir, user_id, filename]) # Generate the full file name with path.
     return fullpath
 
@@ -99,7 +99,7 @@ def get_version_info():
 ### User functions/RPCs
 ##################################################################################
 
-def check_user():
+def get_user():
     ''' Ensure it's a valid Optima Nutrition user '''
     user = sw.load_user()
     dosave = False
@@ -120,7 +120,7 @@ def check_user():
 def blobop(key=None, objtype=None, op=None, obj=None, die=None):
     ''' Perform a blob operation -- add or delete a project, result, or task for the user '''
     # Figure out what kind of list it is
-    user = check_user()
+    user = get_user()
     if   objtype == 'project': itemlist = user.projects
     elif objtype == 'result':  itemlist = user.results
     elif objtype == 'task':    itemlist = user.tasks
@@ -191,7 +191,7 @@ def project_json(project_id):
         'project': {
             'id':           proj.uid,
             'name':         proj.name,
-            'username':     check_user().username,
+            'username':     get_user().username,
             'hasData':      len(proj.datasets)>0,
             'creationTime': proj.created,
             'updatedTime':  proj.modified
@@ -205,7 +205,7 @@ def project_json(project_id):
 def project_jsons():
     """ Return project summaries for all projects the user has to the client. """ 
     output = {'projects':[]}
-    user = check_user()
+    user = get_user()
     for project_key in user.projects:
         json = project_json(project_key)
         output['projects'].append(json)
