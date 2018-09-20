@@ -133,7 +133,7 @@ def blobop(key=None, objtype=None, op=None, obj=None):
     # Do the operation(s)
     saveuser = False
     if op == 'add':
-        sw.flaskapp.datastore.saveblob(key=key, obj=obj, objtype=objtype)
+        sw.flaskapp.datastore.saveblob(key=key, obj=obj, objtype=objtype, uid=obj.uid)
         if key not in itemlist:
             itemlist.append(key)
             saveuser = True
