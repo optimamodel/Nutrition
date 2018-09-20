@@ -119,7 +119,7 @@ def check_user():
     return user
 
 
-def blobop(key, objtype, op, data=None):
+def blobop(key=None, objtype=None, op=None, obj=None):
     ''' Perform a blob operation -- add or delete a project, result, or task for the user '''
     # Figure out what kind of list it is
     user = check_user()
@@ -130,40 +130,38 @@ def blobop(key, objtype, op, data=None):
         errormsg = '"objtype" must be "project", "result", or "task", not "%s"' % objtype
         raise Exception(errormsg)
     
+    # Make the best guess about what the key should be
+    key = sw.flaskapp.datastore.makekey(key=key, objtype=objtype, obj=obj)
+    
     # Do the operation(s)
-    dosave = False
-    keys = sc.promotetolist(key) # Ensure it's a list
+    saveuser = False
     if op == 'add':
-        if key is None:
-            key = sw.flaskapp.datastore.saveblob(data=data, objtype='project', uid=data.uid)
-        for key in keys:
-            if key not in itemlist:
-                itemlist.append(key)
-                if data: sw.flaskapp.datastore.saveblob(key=key, data=data, objtype=objtype, uid=data.uid)
-                dosave = True
+        sw.flaskapp.datastore.saveblob(key=key, obj=obj, objtype=objtype)
+        if key not in itemlist:
+            itemlist.append(key)
+            saveuser = True
     elif op == 'delete':
-        for key in keys:
-            if key in itemlist:
-                itemlist.remove(key)
-                sw.flaskapp.datastore.delete(key)
-                dosave = True
+        sw.flaskapp.datastore.delete(key)
+        if key in itemlist:
+            itemlist.remove(key)
+            saveuser = True
     else:
         errormsg = '"op" must be "add" or "delete", not "%s"' % op
         raise Exception(errormsg)
     
     # Finish up
-    if dosave:
+    if saveuser:
         sw.save_user(user)
     return None
     
 
 # Convenience functions
-def add_project(project_key, project): return blobop(key=project_key, objtype='project', op='add', data=project)
-def add_result(result_key, result):    return blobop(key=result_key,  objtype='result',  op='add', data=result)
-def add_task(task_key, task):          return blobop(key=task_key,    objtype='task',    op='add', data=task)
-def del_project(project_key):          return blobop(key=project_key, objtype='project', op='delete')
-def del_result(result_key):            return blobop(key=result_key,  objtype='result',  op='delete')
-def del_task(task_key):                return blobop(key=task_key,    objtype='task',    op='delete')
+def add_project(project):     return blobop(obj=project,     objtype='project', op='add')
+def add_result(result):       return blobop(obj=result,      objtype='result',  op='add')
+def add_task(task):           return blobop(obj=task,        objtype='task',    op='add')
+def del_project(project_key): return blobop(key=project_key, objtype='project', op='delete')
+def del_result(result_key):   return blobop(key=result_key,  objtype='result',  op='delete')
+def del_task(task_key):       return blobop(key=task_key,    objtype='task',    op='delete')
 
 
 
