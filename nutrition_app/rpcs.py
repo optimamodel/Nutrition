@@ -906,6 +906,7 @@ def get_default_optim(project_id):
 @RPC()
 def plot_optimization(project_id, cache_id):
     proj = load_project(project_id, die=True)
+    proj = retrieve_results(proj)
     figs = proj.plot(key=cache_id, optim=True) # Only plot allocation
     graphs = []
     for f,fig in enumerate(figs.values()):
