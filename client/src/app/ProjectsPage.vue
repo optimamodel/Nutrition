@@ -220,7 +220,7 @@ Last update: 2018-08-30
       updateProjectSummaries(setActiveID) {
         console.log('updateProjectSummaries() called')
         status.start(this)
-        rpcs.rpc('project_jsons') // Get the current user's project summaries from the server.
+        rpcs.rpc('project_jsons', [this.$store.state.currentUser.username]) // Get the current user's project summaries from the server.
           .then(response => {
             let lastCreationTime = null
             let lastCreatedID = null
@@ -504,7 +504,7 @@ Last update: 2018-08-30
         console.log('downloadSelectedProjects() called for ', selectProjectsUIDs)
         if (selectProjectsUIDs.length > 0) { // Have the server download the selected projects.
           status.start(this)
-          rpcs.download('download_projects', [selectProjectsUIDs])
+          rpcs.download('download_projects', [selectProjectsUIDs, this.$store.state.currentUser.username])
             .then(response => {
               // Indicate success.
               status.succeed(this, '')  // No green popup message.

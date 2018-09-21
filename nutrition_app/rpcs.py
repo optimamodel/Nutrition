@@ -9,7 +9,6 @@ Last update: 2018sep20 by cliffk
 ##############################################################
 
 import os
-from zipfile import ZipFile
 from shutil import copyfile
 import mpld3
 import numpy as np
@@ -42,10 +41,10 @@ def to_number(raw):
     return output
 
 
-def get_path(filename=None):
+def get_path(filename=None, username=None):
     if filename is None: filename = ''
     base_dir = sw.flaskapp.datastore.tempfolder
-    user_id = str(get_user().uid) # Can't user username since too much sanitization required
+    user_id = str(get_user(username).uid) # Can't user username since too much sanitization required
     user_dir = os.path.join(base_dir, user_id)
     if not os.path.exists(user_dir):
         os.makedirs(user_dir)
@@ -108,57 +107,23 @@ def set_datastore():
         datastore = sw.get_datastore(config=config)
     return None
 
+set_datastore() # Run this on load
+
 ##################################################################################
 ### User functions
 ##################################################################################
 
 def get_user(username=None):
     ''' Ensure it's a valid Optima Nutrition user '''
-    user = sw.load_user(username)
+    user = datastore.loaduser(username)
     dosave = False
     if not hasattr(user, 'projects'):
         user.projects = []
         dosave = True
     if dosave:
-        sw.save_user(user)
+        datastore.saveuser(user)
     return user
 
-
-def blobop(key=None, objtype=None, op=None, obj=None, die=None):
-    ''' Perform a blob operation -- add or delete a project, result, or task for the user '''
-    # Figure out what kind of list it is
-    user = get_user()
-    set_datastore()
-    if   objtype == 'project': itemlist = user.projects
-    elif objtype == 'result':  itemlist = user.results
-    elif objtype == 'task':    itemlist = user.tasks
-    else:
-        errormsg = '"objtype" must be "project", "result", or "task", not "%s"' % objtype
-        raise Exception(errormsg)
-    
-    # Make the best guess about what the key should be
-    key, objtype, uid = datastore.getkey(key=key, objtype=objtype, obj=obj, fulloutput=True)
-    
-    # Do the operation(s)
-    saveuser = False
-    if op == 'add':
-        datastore.saveblob(key=key, obj=obj, objtype=objtype, uid=uid, die=die)
-        if key not in itemlist:
-            itemlist.append(key)
-            saveuser = True
-    elif op == 'delete':
-        datastore.delete(key, die=die)
-        if key in itemlist:
-            itemlist.remove(key)
-            saveuser = True
-    else:
-        errormsg = '"op" must be "add" or "delete", not "%s"' % op
-        raise Exception(errormsg)
-    
-    # Finish up
-    if saveuser:
-        sw.save_user(user)
-    return key
 
 
 
@@ -167,22 +132,18 @@ def blobop(key=None, objtype=None, op=None, obj=None, die=None):
 ##################################################################################
     
 def load_project(project_key, die=None):
-    set_datastore()
     output = datastore.loadblob(project_key, objtype='project', die=die)
     return output
 
 def load_result(result_key, die=None):
-    set_datastore()
     output = datastore.loadblob(result_key, objtype='result', die=die)
     return output
 
 def save_project(project, die=None): # NB, only for saving an existing project
-    set_datastore()
     output = datastore.saveblob(obj=project, objtype='project', die=die)
     return output
 
 def save_result(result, die=None):
-    set_datastore()
     output = datastore.saveblob(obj=result, objtype='result', die=die)
     return output
 
@@ -195,7 +156,7 @@ def del_project(project_key, die=None):
         user.projects.remove(key)
     else:
         print('Warning: deleting project %s (%s), but not found in user "%s" projects' % (project.name, key, user.username))
-    sw.save_user(user)
+    datastore.saveuser(user)
     return output
 
     
@@ -203,9 +164,6 @@ def del_project(project_key, die=None):
 ##################################################################################
 ### Project RPCs
 ##################################################################################
-
-
-
 
 
 def save_new_project(proj, username=None):
@@ -237,7 +195,7 @@ def save_new_project(proj, username=None):
     # Save all the things
     key = save_project(new_project)
     user.projects.append(key)
-    sw.save_user(user)
+    datastore.saveuser(user)
     return key,new_project
 
 
@@ -263,10 +221,10 @@ def project_json(project_id, verbose=False):
 
 
 @RPC()
-def project_jsons(verbose=False):
+def project_jsons(username, verbose=False):
     """ Return project summaries for all projects the user has to the client. """ 
     output = {'projects':[]}
-    user = get_user()
+    user = get_user(username)
     for project_key in user.projects:
         json = project_json(project_key)
         output['projects'].append(json)
@@ -323,7 +281,7 @@ def create_new_project(username, proj_name, *args, **kwargs):
     key,proj = save_new_project(proj, username) # Save the new project in the DataStore.
     databook_path = sc.makefilepath(filename=template_name, folder=nu.ONpath('applications'))
     file_name = '%s databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
-    full_file_name = get_path(file_name)
+    full_file_name = get_path(file_name, username)
     copyfile(databook_path, full_file_name)
     print(">> download_databook %s" % (full_file_name))
     return full_file_name
@@ -372,30 +330,27 @@ def download_project(project_id):
     """
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
     file_name = '%s.prj' % proj.name # Create a filename containing the project name followed by a .prj suffix.
-    full_file_name = get_path(file_name) # Generate the full file name with path.
+    full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
     sc.saveobj(full_file_name, proj) # Write the object to a Gzip string pickle file.
     print(">> download_project %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
 
 
 @RPC(call_type='download')
-def download_projects(project_keys):
+def download_projects(project_keys, username):
     """
     Given a list of project UIDs, make a .zip file containing all of these 
     projects as .prj files, and return the full path to this file.
     """
-    basedir = get_path() # Use the downloads directory to put the file in.
+    basedir = get_path('', username) # Use the downloads directory to put the file in.
     project_paths = []
     for project_key in project_keys:
         proj = load_project(project_key)
         project_path = proj.save(folder=basedir)
         project_paths.append(project_path)
     zip_fname = 'Projects %s.zip' % sc.getdate() # Make the zip file name and the full server file path version of the same..
-    server_zip_fname = os.path.join(basedir, sc.sanitizefilename(zip_fname))
-    with ZipFile(server_zip_fname, 'w') as zipfile: # Create the zip file, putting all of the .prj files in a projects directory.
-        for project_path in project_paths:
-            filename = os.path.basename(project_path)
-            zipfile.write(project_path, filename)
+    server_zip_fname = get_path(zip_fname, username)
+    sc.savezip(server_zip_fname, project_paths)
     print(">> load_zip_of_prj_files %s" % (server_zip_fname)) # Display the call information.
     return server_zip_fname # Return the server file name.
 
@@ -405,7 +360,7 @@ def download_databook(project_id, key=None):
     """ Download databook """
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
     file_name = '%s_databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
-    full_file_name = get_path(file_name) # Generate the full file name with path.
+    full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
     proj.input_sheet.save(full_file_name)
     print(">> download_databook %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
@@ -418,7 +373,7 @@ def download_defaults(project_id):
     """
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
     file_name = '%s_defaults.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
-    full_file_name = get_path(file_name) # Generate the full file name with path.
+    full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
     proj.defaults_sheet.save(full_file_name)
     print(">> download_defaults %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
@@ -952,7 +907,7 @@ def export_results(project_id):
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
     proj = retrieve_results(proj)
     file_name = '%s outputs.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
-    full_file_name = get_path(file_name) # Generate the full file name with path.
+    full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
     proj.write_results(full_file_name, keys=-1)
     print(">> export_results %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
@@ -963,7 +918,7 @@ def export_graphs(project_id):
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
     proj = retrieve_results(proj)
     file_name = '%s graphs.pdf' % proj.name # Create a filename containing the project name followed by a .prj suffix.
-    full_file_name = get_path(file_name) # Generate the full file name with path.
+    full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
     figs = proj.plot(-1) # Generate the plots
     sc.savefigs(figs, filetype='singlepdf', filename=full_file_name)
     print(">> export_graphs %s" % (full_file_name)) # Display the call information.

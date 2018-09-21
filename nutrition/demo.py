@@ -5,27 +5,33 @@ from .optimization import Optim
 
 def demo_scens():
     # stunting reduction
-    kwargs1 = {'name':       'Stunting example',
+    kwargs1 = {'name':       'Stunting example (coverage)',
                'model_name': 'demo',
                'scen_type':  'coverage',
                'progvals':   sc.odict({'IYCF 1':[1], 'Vitamin A supplementation':[1]})
                }
     
+    kwargs2 = {'name':       'Stunting example (budget)',
+               'model_name': 'demo',
+               'scen_type':  'budget',
+               'progvals':   sc.odict({'IYCF 1':[2e6], 'Vitamin A supplementation':[1e6]})
+               }
+    
     # wasting reduction
-    kwargs2 = {'name':       'Wasting example',
+    kwargs3 = {'name':       'Wasting example',
                'model_name': 'demo',
                'scen_type':  'coverage',
                'progvals':   sc.odict({'Treatment of SAM':[1]})
                }
     
     # anaemia reduction
-    kwargs3 = {'name':       'Anaemia example',
+    kwargs4 = {'name':       'Anaemia example',
                'model_name': 'demo',
                'scen_type':  'coverage',
                'progvals': sc.odict({'Micronutrient powders':[1], 'IFAS (community)':[1], 'IFAS (retailer)':[1], 'IFAS (school)':[1]})
                }
 
-    scens = [Scen(**kwargs) for kwargs in [kwargs1, kwargs2, kwargs3]]
+    scens = [Scen(**kwargs) for kwargs in [kwargs1, kwargs2, kwargs3, kwargs4]]
     return scens
 
 def demo_optims():
