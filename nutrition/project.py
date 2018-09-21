@@ -367,7 +367,8 @@ class Project(object):
         parents = []
         baselines = []
         children = sc.odict()
-        results = self.result(-1)
+#        results = self.result(-1)
+        results = self.result('scens')       
         for r, res in enumerate(results):
             print('Running cost-effectiveness scenario %s of %s' % (r+1, len(results)))
             children[res.name] = []
