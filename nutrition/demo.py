@@ -14,7 +14,7 @@ def demo_scens():
     kwargs2 = {'name':       'Stunting example (budget)',
                'model_name': 'demo',
                'scen_type':  'budget',
-               'progvals':   sc.odict({'IYCF 1':[2e6], 'Vitamin A supplementation':[1e6]})
+               'progvals':   sc.odict({'IYCF 1':[2e6], 'Vitamin A supplementation':[2e6]})
                }
     
     # wasting reduction

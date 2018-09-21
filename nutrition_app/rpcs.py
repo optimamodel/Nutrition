@@ -639,7 +639,7 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
             if this_spec['vals'][y] is not None:
                 if js_scen['scen_type'] == 'coverage': # Convert to percentage
                     this_spec['vals'][y] = str(round(100*this_spec['vals'][y])) # Enter to the nearest percentage
-                elif js_scen['scen_type'] == 'coverage': # Add commas
+                elif js_scen['scen_type'] == 'budget': # Add commas
                     this_spec['vals'][y] = format(int(round(this_spec['vals'][y])), ',') # Add commas
         this_spec['base_cov'] = str(round(program.base_cov*100)) # Convert to percentage
         this_spec['base_spend'] = format(int(round(program.base_spend)), ',')
@@ -703,7 +703,8 @@ def get_default_scen(project_id, scen_type=None):
     if scen_type is None: scen_type = 'coverage'
     proj = load_project(project_id, die=True)
     py_scens = proj.demo_scens(doadd=False)
-    py_scen = py_scens[0] # Pull out the first one
+    if scen_type == 'coverage': py_scen = py_scens[0] # Pull out the first one
+    else:                       py_scen = py_scens[1] # Pull out the second one
     py_scen.scen_type = scen_type # Set the scenario type
     js_scen = py_to_js_scen(py_scen, proj, default_included=True)
     print('Created default JavaScript scenario:')
