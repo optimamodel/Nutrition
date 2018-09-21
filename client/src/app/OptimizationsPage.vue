@@ -145,19 +145,19 @@ Last update: 2018-09-06
                  v-model="addEditModal.optimSummary.add_funds"/><br>
 
           <div class="calib-params" style="max-height: 40vh;">
-            <table class="table table-bordered table-hover table-striped" style="width: 100%">
+            <table class="table table-bordered table-hover table-striped scrolltable" style="width: 100%">
               <thead>
               <tr>
-                <th>Program name</th>
-                <th style="text-align: center">Include?</th>
+                <th class="column1">Program name</th>
+                <th class="column2" style="text-align: center">Include?</th>
               </tr>
               </thead>
               <tbody>
               <tr v-for="spec in addEditModal.optimSummary.spec">
-                <td>
+                <td class="column1">
                   {{ spec.name }}
                 </td>
-                <td style="text-align: center">
+                <td class="column2" style="text-align: center">
                   <input type="checkbox" v-model="spec.included"/>
                 </td>
               </tr>
@@ -566,4 +566,30 @@ Last update: 2018-09-06
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+  .scrolltable thead tr {
+    display: block;
+  }
+  
+  .scrolltable thead th.column1 {
+    width: 434px;
+  }
+  
+  .scrolltable thead th.column2 {
+    width: 100px;
+  }
+  
+  .scrolltable tbody {
+    display: block;
+    width: 100%;
+    height: 200px;
+    overflow: auto;
+  }
+  
+  .scrolltable tbody td.column1 {
+    width: 434px;
+  }
+  
+  .scrolltable tbody td.column2 {
+    width: 100px;
+  }  
 </style>
