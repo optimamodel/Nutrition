@@ -569,15 +569,7 @@ Last update: 2018-09-06
   .scrolltable thead tr {
     display: block;
   }
-  
-  .scrolltable thead th.column1 {
-    width: 434px;
-  }
-  
-  .scrolltable thead th.column2 {
-    width: 100px;
-  }
-  
+   
   .scrolltable tbody {
     display: block;
     width: 100%;
@@ -585,11 +577,11 @@ Last update: 2018-09-06
     overflow: auto;
   }
   
-  .scrolltable tbody td.column1 {
+  .scrolltable .column1 {
     width: 434px;
   }
   
-  .scrolltable tbody td.column2 {
+  .scrolltable .column2 {
     width: 100px;
   }  
 </style>
