@@ -30,7 +30,7 @@ def run_optim(project_id, cache_id, optim_name=None, runtype=None):
     else:                 results = proj.run_optim(key=optim_name, dosave=False, parallel=False)
     newproj = datastore.loadblob(uid=project_id, objtype='project', die=True)
     newproj.results[cache_id] = results
-#    newproj = rpcs.cache_results(newproj) # WARNING, causes crash
+    newproj = rpcs.cache_results(newproj) # WARNING, causes crash
     key = datastore.saveblob(uid=project_id, objtype='project', obj=newproj)
     return key
 

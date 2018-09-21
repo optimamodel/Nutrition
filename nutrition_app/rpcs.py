@@ -16,12 +16,14 @@ import numpy as np
 import sciris as sc
 import scirisweb as sw
 import nutrition.ui as nu
+from . import config
 from matplotlib.pyplot import rc
 rc('font', size=12)
 
 # Globals
 RPC_dict = {} # Dictionary to hold all of the registered RPCs in this module.
 RPC = sw.makeRPCtag(RPC_dict) # RPC registration decorator factory created using call to make_RPC().
+datastore = None
 
 
 ###############################################################
@@ -96,22 +98,23 @@ def get_version_info():
       
 
 
+def set_datastore():
+    ''' Ensure the datastore is loaded '''
+    global datastore
+    if datastore is None:
+        datastore = sw.get_datastore(config=config)
+    return None
+
 ##################################################################################
 ### User functions
 ##################################################################################
 
-def get_user():
+def get_user(username=None):
     ''' Ensure it's a valid Optima Nutrition user '''
-    user = sw.load_user()
+    user = sw.load_user(username)
     dosave = False
     if not hasattr(user, 'projects'):
         user.projects = []
-        dosave = True
-    if not hasattr(user, 'results'): 
-        user.results = []
-        dosave = True
-    if not hasattr(user, 'tasks'):
-        user.tasks = []
         dosave = True
     if dosave:
         sw.save_user(user)
@@ -122,6 +125,7 @@ def blobop(key=None, objtype=None, op=None, obj=None, die=None):
     ''' Perform a blob operation -- add or delete a project, result, or task for the user '''
     # Figure out what kind of list it is
     user = get_user()
+    set_datastore()
     if   objtype == 'project': itemlist = user.projects
     elif objtype == 'result':  itemlist = user.results
     elif objtype == 'task':    itemlist = user.tasks
@@ -130,17 +134,17 @@ def blobop(key=None, objtype=None, op=None, obj=None, die=None):
         raise Exception(errormsg)
     
     # Make the best guess about what the key should be
-    key, objtype, uid = sw.flaskapp.datastore.getkey(key=key, objtype=objtype, obj=obj, fulloutput=True)
+    key, objtype, uid = datastore.getkey(key=key, objtype=objtype, obj=obj, fulloutput=True)
     
     # Do the operation(s)
     saveuser = False
     if op == 'add':
-        sw.flaskapp.datastore.saveblob(key=key, obj=obj, objtype=objtype, uid=uid, die=die)
+        datastore.saveblob(key=key, obj=obj, objtype=objtype, uid=uid, die=die)
         if key not in itemlist:
             itemlist.append(key)
             saveuser = True
     elif op == 'delete':
-        sw.flaskapp.datastore.delete(key, die=die)
+        datastore.delete(key, die=die)
         if key in itemlist:
             itemlist.remove(key)
             saveuser = True
@@ -152,18 +156,43 @@ def blobop(key=None, objtype=None, op=None, obj=None, die=None):
     if saveuser:
         sw.save_user(user)
     return key
-    
 
-# Convenience functions
-def load_project(key, die=None): return sw.flaskapp.datastore.loadblob(key, objtype='project', die=die)
-def load_result(key, die=None):  return sw.flaskapp.datastore.loadblob(key, objtype='result', die=die)
-def load_task(key, die=None):    return sw.flaskapp.datastore.loadtask(key, die=die)
-def save_project(obj, die=None): return blobop(obj=obj, objtype='project', op='add', die=die)
-def save_result(obj, die=None):  return blobop(obj=obj, objtype='result',  op='add', die=die)
-def save_task(obj, die=None):    return blobop(obj=obj, objtype='task',    op='add', die=die)
-def del_project(key, die=None):  return blobop(key=key, objtype='project', op='delete', die=die)
-def del_result(key, die=None):   return blobop(key=key, objtype='result',  op='delete', die=die)
-def del_task(key, die=None):     return blobop(key=key, objtype='task',    op='delete', die=die)
+
+
+##################################################################################
+### Convenience functions -- WARNING, make these more symmetric
+##################################################################################
+    
+def load_project(project_key, die=None):
+    set_datastore()
+    output = datastore.loadblob(project_key, objtype='project', die=die)
+    return output
+
+def load_result(result_key, die=None):
+    set_datastore()
+    output = datastore.loadblob(result_key, objtype='result', die=die)
+    return output
+
+def save_project(project, die=None): # NB, only for saving an existing project
+    set_datastore()
+    output = datastore.saveblob(obj=project, objtype='project', die=die)
+    return output
+
+def save_result(result, die=None):
+    set_datastore()
+    output = datastore.saveblob(obj=result, objtype='result', die=die)
+    return output
+
+def del_project(project_key, die=None):
+    project = load_project(project_key)
+    user = get_user(project.webapp.username)
+    output = datastore.delete(project_key)
+    if project_key in user.projects:
+        user.projects.remove(project_key)
+    else:
+        print('Warning: deleting project %s (%s), but not found in user "%s" projects' % (project.name, project_key, user.username))
+    sw.save_user(user)
+    return output
 
     
 
@@ -175,37 +204,38 @@ def del_task(key, die=None):     return blobop(key=key, objtype='task',    op='d
 
 
 
-def unique_project_name(project_name, verbose=False):
-    ''' Get a unique project name '''
-    user = get_user()
+def save_new_project(proj, username=None):
+    """
+    If we're creating a new project, we need to do some operations on it to
+    make sure it's valid for the webapp.
+    """ 
+    
+    # Preliminaries
+    new_project = sc.dcp(proj) # Copy the project, only save what we want...
+    new_project.modified = sc.now()
+    new_project.uid = sc.uuid()
+    
+    # Get unique name
+    user = get_user(username)
     current_project_names = []
     for project_key in user.projects:
         proj = load_project(project_key)
         current_project_names.append(proj.name)
-    new_project_name = sc.uniquename(project_name, namelist=current_project_names)
-    if verbose:
-        print('   Original name: %s' % project_name)
-        print('Existing name(s): %s' % current_project_names)
-        print('        New name: %s' % new_project_name)
-    return new_project_name
-
-
-
-def save_new_project(proj, user_id=None):
-    """
-    Given a Project object, wrap it in a new prj.ProjectSO object and put this 
-    in the project collection (either adding a new object, or updating an 
-    existing one)  skip_result lets you null out saved results in the Project.
-    """ 
-    new_project = sc.dcp(proj) # Copy the project, only save what we want...
-    new_project.modified = sc.now()
-    new_project.uid = sc.uuid()
+    new_project_name = sc.uniquename(new_project.name, namelist=current_project_names)
+    new_project.name = new_project_name
+    
+    # Ensure it's a valid webapp project
     if not hasattr(new_project, 'webapp'):
         new_project.webapp = sc.prettyobj()
-        new_project.webapp.user_id = user_id
+        new_project.webapp.username = username
         new_project.webapp.tasks = []
+    
+    # Save all the things
     key = save_project(new_project)
+    user.projects.append(key)
+    sw.save_user(user)
     return key,new_project
+
 
 @RPC()
 def project_json(project_id, verbose=False):
@@ -215,10 +245,12 @@ def project_json(project_id, verbose=False):
         'project': {
             'id':           proj.uid,
             'name':         proj.name,
-            'username':     get_user().username,
+            'username':     proj.webapp.username,
             'hasData':      len(proj.datasets)>0,
             'creationTime': proj.created,
-            'updatedTime':  proj.modified
+            'updatedTime':  proj.modified,
+            'n_results':    len(proj.results),
+            'n_tasks':      len(proj.webapp.tasks)
         }
     }
     if verbose: sc.pp(json)
@@ -250,9 +282,8 @@ def delete_projects(project_keys):
 @RPC()
 def add_demo_project():
     """ Add a demo Optima Nutrition project """
-    new_proj_name = unique_project_name('Demo project') # Get a unique name for the project to be added.
     proj = nu.demo(scens=True, optims=True)  # Create the project, loading in the desired spreadsheets.
-    proj.name = new_proj_name
+    proj.name = 'Demo project'
     print(">> add_demo_project %s" % (proj.name)) # Display the call information.
     key,proj = save_new_project(proj) # Save the new project in the DataStore.
     return {'projectID': str(proj.uid)} # Return the new project UID in the return message.
@@ -262,8 +293,7 @@ def add_demo_project():
 def create_new_project(proj_name):
     """ Create a new Optima Nutrition project. """
     template_name = 'template_input.xlsx'
-    new_proj_name = unique_project_name(proj_name) # Get a unique name for the project to be added.
-    proj = nu.Project(name=new_proj_name) # Create the project
+    proj = nu.Project(name=proj_name) # Create the project
     print(">> create_new_project %s" % (proj.name))     # Display the call information.
     key,proj = save_new_project(proj) # Save the new project in the DataStore.
     databook_path = sc.makefilepath(filename=template_name, folder=nu.ONpath('applications'))
@@ -292,7 +322,6 @@ def copy_project(project_key):
     """
     proj = load_project(project_key, die=True) # Get the Project object for the project to be copied.
     new_project = sc.dcp(proj) # Make a copy of the project loaded in to work with.
-    new_project.name = unique_project_name(proj.name) # Just change the project name, and we have the new version of the Project object to be saved as a copy.
     print(">> copy_project %s" % (new_project.name))  # Display the call information.
     key,new_project = save_new_project(new_project) # Save a DataStore projects record for the copy project.
     copy_project_id = new_project.uid # Remember the new project UID (created in save_project_as_new()).
@@ -365,9 +394,6 @@ def load_zip_of_prj_files(project_keys):
     return server_zip_fname # Return the server file name.
 
 
-
-
-
 @RPC(call_type='upload')
 def upload_databook(databook_filename, project_id):
     """ Upload a databook to a project. """
@@ -377,6 +403,7 @@ def upload_databook(databook_filename, project_id):
     proj.modified = sc.now()
     save_project(proj) # Save the new project in the DataStore.
     return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
+
 
 @RPC(call_type='upload')
 def create_project_from_prj_file(prj_filename):
@@ -389,7 +416,6 @@ def create_project_from_prj_file(prj_filename):
         proj = sc.loadobj(prj_filename)
     except Exception:
         return { 'error': 'BadFileFormatError' }
-    proj.name = unique_project_name(proj.name) # Reset the project name to a new project name that is unique.
     key,proj = save_new_project(proj) # Save the new project in the DataStore.
     return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
 
@@ -888,6 +914,7 @@ def cache_results(proj, verbose=True):
             result_key = save_result(result)
             proj.results[key] = result_key
             if verbose: print('Cached result "%s" to "%s"' % (key, result_key))
+    save_project(proj)
     return proj
 
 
@@ -904,6 +931,7 @@ def retrieve_results(proj, verbose=True):
 @RPC(call_type='download')
 def export_results(project_id):
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
+    proj = retrieve_results(proj)
     file_name = '%s outputs.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name) # Generate the full file name with path.
     proj.write_results(full_file_name, keys=-1)
@@ -914,6 +942,7 @@ def export_results(project_id):
 @RPC(call_type='download')
 def export_graphs(project_id):
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
+    proj = retrieve_results(proj)
     file_name = '%s graphs.pdf' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name) # Generate the full file name with path.
     figs = proj.plot(-1) # Generate the plots
