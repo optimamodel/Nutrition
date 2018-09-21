@@ -5,7 +5,7 @@ from scipy.interpolate import pchip
 import utils
 
 class Geospatial:
-    def __init__(self, name=None, model_name=None, region_names=None, weights=None, mults=None, prog_set=None,
+    def __init__(self, name=None, model_names=None, region_names=None, weights=None, mults=None, prog_set=None,
                  add_funds=0, fix_curr=False, active=True):
         """
         :param name: name of the optimization (string)
@@ -17,14 +17,21 @@ class Geospatial:
         :param fix_curr:
         """
         self.name = name
-        self.model_name = model_name
-        self.regions = region_names
+        self.model_names = model_names
+        self.regionnames = region_names
+        self.regions = None
         self.weights = utils.process_weights(weights)
-        self.mults = [0, 0.01, 0.025, 0.04, 0.05, 0.075, 0.1, 0.2, 0.3, 0.6, 1] if mults is None else mults  # these multiples are in the interval (minFreeFunds, maxFreeFunds)
+        if mults is not None:
+            print("Warning: changing budget multiples, not recommended")
+            self.mults = mults
+        else:
+            self.mults = [0, 0.01, 0.025, 0.04, 0.05, 0.075, 0.1, 0.2, 0.3, 0.6, 1] # these multiples are in the interval (minFreeFunds, maxFreeFunds)
         self.prog_set = prog_set
         self.add_funds = add_funds # this is additional across all regions
         self.fix_curr = fix_curr # fix current program allocations within regions
         self.active = active
+
+        self.model = None
 
         self.scenarios = None # todo: could be option from the gui or in code, specified as an odict
         self.bocs = sc.odict() # todo: not sure if want this as attribute of this or Optim() class
@@ -32,32 +39,100 @@ class Geospatial:
     def make_regions(self):
         """ Create all the Optim objects requested """
         regions = []
-        for name in self.regions:
-            region = Optim(name=name, model_name=self.model_name, weights=self.weights, mults=self.mults,
+        for i, name in enumerate(self.regionnames):
+            model_name = self.model_names[i]
+            region = Optim(name=name, model_name=model_name, weights=self.weights, mults=self.mults,
                            prog_set=self.prog_set, active=self.active, add_funds=self.add_funds,
                            fix_curr=self.fix_curr)
             regions.append(region)
+        self.regions = regions
         return regions
 
-    def get_bocs(self, regions):
+    def get_bocs(self, regions, result):
         """ Genereates the budget outcome curves for each region
          :param regions: a list of Optim objects (list of lists) """
-        # extract the regions, then the budgets.
-        # use the names for the odict
-        # for each budget, get the value using weights
-        # interpolate
-        # bocs should be
-        # todo: would be nice not have baseline at all, shouldn't need it if including 0 point at fixed spending
+        national = self.get_totalfreefunds(result)
         for name, results in regions.iteritems():
             spending = np.zeros(len(results))
             output = np.zeros(len(results))
             for i, res in enumerate(results):
                 outs = res.model.get_output()
                 val = np.inner(outs, self.weights)
-                spending[i] = res.get_allocs()[:].sum()
+                spending[i] = national * res.mult
                 output[i] = val
             self.bocs[name] = pchip(spending, output, extrapolate=False)
         return
+
+    def get_icer(self, regions):
+        numpoints = 10000
+        icervecs = []
+        spendingvec = []
+        nationalspend = self.get_totalfreefunds(regions)
+        for name, region in zip(self.regionnames, regions):
+            minspend = 0 # todo: should this be fixed spending?
+            maxspend = nationalspend
+            boc = self.bocs[name]
+            spend = np.linspace(minspend, maxspend, numpoints)
+            deriv = boc.derivative(nu=1)
+            icer = deriv(spend) # reflect curve across x-axis
+            spendingvec.append(spend)
+            icervecs.append(icer)
+        return spendingvec, icervecs
+
+    def gridsearch(self, regions):
+        spendvecs, icervecs = self.get_icer(regions)
+        totalfunds = self.get_totalfreefunds(regions)
+        remainfunds = totalfunds
+        regional_allocs = np.zeros(len(regions))
+        percentspend = 0
+        maxiters = int(1e6)
+
+        for i in range(maxiters):
+            besteff = -np.inf
+            bestregion = None
+            for regionidx in range(len(regions)):
+                # find most effective spending in each region
+                icer = icervecs[regionidx]
+                if len(icer):
+                    maxidx = np.nanargmin(icer)
+                    maxeff = icer[maxidx]
+                    if maxeff > besteff:
+                        besteff = maxeff
+                        besteffidx = maxidx
+                        bestregion = regionidx
+            # once he most cost-effective spending is found, adjust all spending
+            # and outcome vectors, available funds and regional allocation
+            if bestregion is not None:
+                fundsspent = spendvecs[bestregion][besteffidx]
+                remainfunds -= fundsspent
+                spendvecs[bestregion] -= fundsspent
+                regional_allocs[bestregion] += fundsspent
+                # remove funds & derivatives at or below zero
+                spendvecs[bestregion] = spendvecs[bestregion][besteffidx + 1:]
+                icervecs[bestregion] = icervecs[bestregion][besteffidx + 1:]
+                # ensure regional spending doesn't exceed remaining funds
+                for regionidx in range(len(regions)):
+                    withinbudget = np.nonzero(spendvecs[regionidx] <= remainfunds)[0]
+                    spendvecs[regionidx] = spendvecs[regionidx][withinbudget]
+                    icervecs[regionidx] = icervecs[regionidx][withinbudget]
+                newpercent = (totalfunds - remainfunds) / totalfunds * 100
+                if not (i % 100) or (newpercent - percentspend) > 1:
+                    percentspend = newpercent
+            else:
+                break # nothing more to allocate
+
+        # scale to ensure correct budget
+        scaledallocs = utils.scale_alloc(totalfunds, regional_allocs)
+        return scaledallocs
+
+    def get_totalfreefunds(self, regions):
+        return sum([region.get_freefunds() - self.add_funds for region in regions]) + self.add_funds
+
+    def get_nationalspend(self, regions):
+        """ allocation return as time series, ensure only extract current spending"""
+        return sum([sum(region.get_currspend()) for region in regions])
+
+
 
 
 #

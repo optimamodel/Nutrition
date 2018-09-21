@@ -351,12 +351,20 @@ class Project(object):
     def run_geospatial(self, geo=None, maxiter=30, swarmsize=25, maxtime=20):
         # import utils
         regions = geo.make_regions()
-        # run_parallel(self.run_optim, regions, len(regions))
+        # run_parallel(self.run_optim, args, num_procs=len(regions))
         results = sc.odict({region.name: self.run_optim(optim=region, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
                                                         runbaseline=False) for region in regions})
-        print results
-        # results = map(lambda region: self.run_optim(region), regions)
-        geo.get_bocs(results)
+        # results = [self.run_optim(optim=region, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
+        #                                                 runbaseline=False) for region in regions]
+        # regions = geo.make_regions(withmults=False)
+        # geo.model = sc.dcp(self.model(geo.model_name))
+
+        # todo: need to setup different optim objects (only 1 per region) so that we can get the correct expenditures that don't pertain to bocs...
+        # extract each result that have multiple 1
+        result = [region for sublist in results.itervalues() for region in sublist if region.mult == 1]
+        geo.get_bocs(results, result)
+        regional_allocs = geo.gridsearch(result)
+        print regional_allocs
 
 
     def get_output(self, outcomes=None):
