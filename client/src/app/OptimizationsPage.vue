@@ -40,9 +40,10 @@ Last update: 2018-09-06
               {{ timeFormatStr(optimSummary) }}
             </td>
             <td style="white-space: nowrap">
-              <button class="btn __green" :disabled="!canRunTask(optimSummary)" @click="runOptim(optimSummary, 3600)">Run</button>
+              <button class="btn __green" :disabled="!canRunTask(optimSummary)"     @click="runOptim(optimSummary, 'full')">Run</button>
               <button class="btn __green" :disabled="!canPlotResults(optimSummary)" @click="plotOptimization(optimSummary)">Plot results</button>
-              <button class="btn __red" :disabled="!canCancelTask(optimSummary)" @click="clearTask(optimSummary)">Clear run</button>
+              <button class="btn" :disabled="!canRunTask(optimSummary)"             @click="runOptim(optimSummary, 'test')">Test run</button>
+              <button class="btn" :disabled="!canCancelTask(optimSummary)"          @click="clearTask(optimSummary)">Clear run</button>
               <button class="btn btn-icon" @click="editOptimModal(optimSummary)" data-tooltip="Edit optimization"><i class="ti-pencil"></i></button>
               <button class="btn btn-icon" @click="copyOptim(optimSummary)" data-tooltip="Copy optimization"><i class="ti-files"></i></button>
               <button class="btn btn-icon" @click="deleteOptim(optimSummary)" data-tooltip="Delete optimization"><i class="ti-trash"></i></button>
@@ -187,9 +188,9 @@ Last update: 2018-09-06
 <script>
   import axios from 'axios'
   var filesaver = require('file-saver')
-  import utils from '@/services/utils'
-  import rpcs from '@/services/rpc-service'
-  import status from '@/services/status-service'
+  import utils from '@/js/utils'
+  import rpcs from '@/js/rpc-service'
+  import status from '@/js/status-service'
   import router from '@/router'
 
   export default {
@@ -295,6 +296,8 @@ Last update: 2018-09-06
           // Check the status of the task.
           rpcs.rpc('check_task', [optimSummary.serverDatastoreId])
             .then(result => {
+              console.log('Response TEMP')
+              console.log(result.data)
               statusStr = result.data.task.status
               optimSummary.status = statusStr
               optimSummary.pendingTime = result.data.pendingTime
@@ -329,8 +332,9 @@ Last update: 2018-09-06
       },
 
       pollAllTaskStates() {
-        console.log('Do a task poll...');
+        console.log('Polling all tasks...');
         this.optimSummaries.forEach(optimSum => { // For each of the optimization summaries...
+          console.log(optimSum.status)
           if ((optimSum.status !== 'not started') && (optimSum.status !== 'completed')) { // If there is a valid task launched, check it.
             this.getOptimTaskState(optimSum)
           }
@@ -500,7 +504,7 @@ Last update: 2018-09-06
       deleteOptim(optimSummary) {
         console.log('deleteOptim() called')
         status.start(this)
-        if (optimSummary.status != 'not started') {
+        if (optimSummary.status !== 'not started') {
           this.clearTask(optimSummary)  // Clear the task from the server.
         }
         for(var i = 0; i< this.optimSummaries.length; i++) {
@@ -517,13 +521,13 @@ Last update: 2018-09-06
           })
       },
 
-      runOptim(optimSummary, maxtime) {
-        console.log('runOptim() called for ' + optimSummary.name + ' for time: ' + maxtime)
+      runOptim(optimSummary, runtype) {
+        console.log('runOptim() called for ' + optimSummary.name + ' for time: ' + runtype)
         status.start(this)
         rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries]) // Make sure they're saved first
           .then(response => {
             rpcs.rpc('launch_task', [optimSummary.serverDatastoreId, 'run_optim',
-              [this.projectID, optimSummary.serverDatastoreId, optimSummary.name]])
+              [this.projectID, optimSummary.serverDatastoreId, optimSummary.name, runtype]])
               .then(response => {
                 this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
                 status.succeed(this, 'Started optimization')

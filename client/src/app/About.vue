@@ -63,7 +63,7 @@ Last update: 2018may28
 
 
 <script>
-  import rpcs from '@/services/rpc-service'
+  import rpcs from '@/js/rpc-service'
   import router from '@/router'
 
   export default {

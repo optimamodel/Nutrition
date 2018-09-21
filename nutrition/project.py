@@ -89,7 +89,6 @@ class Project(object):
         output += '        Git branch: %s\n'    % self.gitinfo['branch']
         output += '          Git hash: %s\n'    % self.gitinfo['hash']
         output += '============================================================\n'
-#        output += self.getwarnings(doprint=False) # Don't print since print later
         return output
     
     
@@ -109,7 +108,7 @@ class Project(object):
         self.add_model(name, overwrite=overwrite)
         return None
 
-    def save(self, filename=None, folder=None, saveresults=False, verbose=2):
+    def save(self, filename=None, folder=None, saveresults=False, verbose=0):
         ''' Save the current project, by default using its name, and without results '''
         fullpath = sc.makefilepath(filename=filename, folder=folder, default=[self.filename, self.name], ext='prj', sanitize=True)
         self.filename = fullpath # Store file path
@@ -363,27 +362,27 @@ class Project(object):
         return figs
 
     def get_costeff(self):
-        """ Returns a nested odict with keys (scenario name, child name, pretty outcome) and value (output). Output is type string """
+        """ Returns a nested odict with keys (scenario name, child name, pretty outcome) and value (output). Output is type string
+        Will work for both scenarios and optimizations, using whatever results were last generated """
         parents = []
         baselines = []
         children = sc.odict()
-        for s,scen in enumerate(self.scens.values()):
-            print('Running cost-effectiveness scenario %s of %s' % (s+1, len(self.scens)))
-            if scen.active:
-                children[scen.name] = []
-                model = self.model(scen.model_name)
-                res = run_scen(scen, model)
-                parents.append(res)
-                # generate a baseline for each scenario
-                baseline = get_defaults(scen.model_name, model)[0] # assumes baseline at 0 index
-                res = run_scen(baseline, model)
-                baselines.append(res)
-                # get all the 'child' results for each scenario
-                childkwargs = scen.get_childscens(res.prog_info.base_progset())
-                childscens = make_scens(childkwargs)
-                for child in childscens:
-                    res = run_scen(child, model)
-                    children[scen.name].append(res)
+        results = self.result(-1)
+        for r, res in enumerate(results):
+            print('Running cost-effectiveness scenario %s of %s' % (r+1, len(results)))
+            children[res.name] = []
+            model = self.model(res.model_name)
+            parents.append(res)
+            # generate a baseline for each scenario
+            baseline = get_defaults(res.model_name, model)[0]  # assumes baseline at 0 index
+            baseres = run_scen(baseline, model)
+            baselines.append(baseres)
+            # get all the 'child' results for each scenario
+            childkwargs = res.get_childscens()
+            childscens = make_scens(childkwargs)
+            for child in childscens:
+                childres = run_scen(child, model)
+                children[res.name].append(childres)
         costeff = get_costeff(parents, children, baselines)
         return costeff
 

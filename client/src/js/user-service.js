@@ -1,4 +1,4 @@
-import rpcs from '@/services/rpc-service'
+import rpcs from '@/js/rpc-service'
 import store from '@/store'
 import router from '@/router'
 var state = {
@@ -28,12 +28,6 @@ function logoutCall() {
 function getCurrentUserInfo() {
   // Make the actual RPC call.
   return rpcs.rpc('get_current_user_info')  
-}
-
-// getAllUsersInfo() -- Call rpc() for reading all of the users.
-function getAllUsersInfo() {
-  // Make the actual RPC call.
-  return rpcs.rpc('get_all_users')   
 }
 
 // registerUser() -- Call rpc() for registering a new user.
@@ -127,7 +121,7 @@ function currentUser() {
 }
 
 function checkLoggedIn() {
-  if (this.currentUser.displayname == undefined)
+  if (this.currentUser.displayname === undefined)
     return false
   else
     return true
@@ -159,7 +153,6 @@ export default {
   loginCall,
   logoutCall,
   getCurrentUserInfo,
-  getAllUsersInfo,
   registerUser,
   changeUserInfo,
   changeUserPassword,

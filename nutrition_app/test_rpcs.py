@@ -3,31 +3,61 @@ Version:
 """
 
 import sciris as sc
+import scirisweb as sw
 import nutrition.ui as nu
-from nutrition_app import rpcs, apptasks as apt
+from nutrition_app import main, rpcs, apptasks as apt
+from flask_login import login_user
 
 runall = False
 
 torun = [
 #'file_tests'
+'datastore', # WARNING, doesn't work
 #'spreadsheet_io',
 #'input_io',
 #'scen_io',
 #'optim_io',
 #'run_scenarios',
 #'run_optimization',
-'export_results',
+#'export_results',
 ]
 
-T = sc.tic()
+
+
+###########################################################################
+### Definitions
+###########################################################################
+
+def demoproj(proj_id):
+    P = nu.demo(scens=True, optims=True)
+    P.name = 'RPCs test %s' % proj_id[:6]
+    P.uid = proj_id
+    P = rpcs.cache_results(P)
+    rpcs.save_new_project(P)
+    return P
 
 def heading(string, style=None):
-    divider = '#'*60
+    divider = '='*60
     sc.blank()
     if style == 'big': string = '\n'.join([divider, string, divider])
     sc.colorize('blue', string)
     return None
 
+
+T = sc.tic()
+app = main.make_app()
+#user = sw.make_default_users(app)[0] # WARNING, broken!
+#login_user(user)
+proj_id  = sc.uuid(as_string=True) # These can all be the same
+proj = demoproj(proj_id)
+
+
+###########################################################################
+### Run the tests
+###########################################################################
+
+string = 'Starting tests for proj = %s' % proj_id
+heading(string, 'big')
 
 if 'file_tests' in torun or runall:
     filename = 'file_tests.prj'
@@ -50,6 +80,9 @@ if 'file_tests' in torun or runall:
     print('Time to save: %s s' % savetime)
     print('Time to load: %s s' % loadtime)
 
+
+if 'datastore' in torun or runall:
+    ds = sw.flaskapp.datastore
 
 if 'spreadsheet_io' in torun or runall:
     heading('Running spreadsheet_io', 'big')
