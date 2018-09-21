@@ -29,18 +29,6 @@ datastore = None
 ### Helper functions
 ##############################################################
 
-def to_number(raw):
-    ''' Convert something to a number. WARNING, I'm sure this already exists!! '''
-    try:
-        output = float(raw)
-    except Exception as E:
-        if raw is None:
-            output = None
-        else:
-            raise E
-    return output
-
-
 def get_path(filename=None, username=None):
     if filename is None: filename = ''
     base_dir = sw.flaskapp.datastore.tempfolder
@@ -52,10 +40,13 @@ def get_path(filename=None, username=None):
     return fullpath
 
 
-def sanitize(vals, skip=False, forcefloat=False, verbose=True):
+def sanitize(vals, skip=False, forcefloat=False, verbose=False, as_nan=False, die=True):
     ''' Make sure values are numeric, and either return nans or skip vals that aren't -- WARNING, duplicates lots of other things!'''
     if verbose: print('Sanitizing vals of %s: %s' % (type(vals), vals))
-    if sc.isiterable(vals):
+    if as_nan: missingval = np.nan
+    else:      missingval = None
+    
+    if not sc.isstring(vals) and sc.isiterable(vals):
         as_array = False if forcefloat else True
     else:
         vals = [vals]
@@ -63,9 +54,9 @@ def sanitize(vals, skip=False, forcefloat=False, verbose=True):
     output = []
     for val in vals:
         if val=='':
-            sanival = np.nan
+            sanival = missingval
         elif val==None:
-            sanival = np.nan
+            sanival = missingval
         else:
             try:
                 factor = 1.0
@@ -75,9 +66,11 @@ def sanitize(vals, skip=False, forcefloat=False, verbose=True):
                     # if val.endswith('%'): factor = 0.01 # Scale if percentage has been used -- CK: not used since already converted from percentage
                 sanival = float(val)*factor
             except Exception as E:
-                print('Could not sanitize value "%s": %s; returning nan' % (val, repr(E)))
-                sanival = np.nan
-        if not np.isnan(sanival) or not skip:
+                errormsg = 'Could not sanitize value "%s": %s' % (val, str(E))
+                if die: raise Exception(errormsg)
+                else:   print(errormsg+'; returning %s' % missingval)
+                sanival = missingval
+        if not skip or (sanival is not None and not np.isnan(sanival)):
             output.append(sanival)
     if as_array:
         return output
@@ -100,14 +93,14 @@ def get_version_info():
       
 
 
-def set_datastore():
+def find_datastore():
     ''' Ensure the datastore is loaded '''
     global datastore
     if datastore is None:
         datastore = sw.get_datastore(config=config)
-    return None
+    return datastore # So can be used externally
 
-set_datastore() # Run this on load
+find_datastore() # Run this on load
 
 ##################################################################################
 ### User functions
@@ -795,22 +788,16 @@ def js_to_py_optim(js_optim):
     try:
         json['weights'] = sc.odict()
         for key,item in zip(obj_keys,js_optim['weightslist']):
-            val = to_number(item['weight'])
+            val = sanitize(item['weight'])
             json['weights'][key] = val
     except Exception as E:
         print('Unable to convert "%s" to weights' % js_optim['weightslist'])
         raise E
     jsm = js_optim['mults']
-    if isinstance(jsm, list):
-        vals = jsm
-    elif sc.isstring(jsm):
-        try:
-            vals = [float(jsm)]
-        except Exception as E:
-            print('Cannot figure out what to do with multipliers "%s"' % jsm)
-            raise E
-    else:
-        raise Exception('Cannot figure out multipliers type "%s" for "%s"' % (type(jsm), jsm))
+    if not jsm: jsm = 1.0
+    if sc.isstring(jsm):
+        jsm = jsm.split(',')
+    vals = sanitize(jsm, die=True)
     json['mults'] = vals
     json['add_funds'] = sanitize(js_optim['add_funds'], forcefloat=True)
     json['prog_set'] = [] # These require more TLC

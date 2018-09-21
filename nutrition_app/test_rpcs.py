@@ -7,20 +7,18 @@ import scirisweb as sw
 import nutrition.ui as nu
 from nutrition_app import main, rpcs, apptasks as apt
 
-runall = False
-
 torun = [
 #'file_tests'
-#'datastore', # WARNING, doesn't work
+'sanitization',
+#'datastore',
 #'spreadsheet_io',
 #'input_io',
-'scen_io',
+#'scen_io',
 #'optim_io',
 #'run_scenarios',
 #'run_optimization',
 #'export_results',
 ]
-
 
 
 ###########################################################################
@@ -57,7 +55,7 @@ proj = demoproj(proj_id, user.username)
 string = 'Starting tests for proj = %s' % proj_id
 heading(string, 'big')
 
-if 'file_tests' in torun or runall:
+if 'file_tests' in torun:
     filename = 'file_tests.prj'
     heading('Running file_tests', 'big')
     print('Project size before running scenarios:')
@@ -77,24 +75,48 @@ if 'file_tests' in torun or runall:
     print('Time to load: %s s' % loadtime)
 
 
-if 'datastore' in torun or runall:
-    ds = sw.flaskapp.datastore
+if 'sanitization' in torun:
+    heading('Running sanitization', 'big')
+    testentries = [None, '', 3, '3', '3%', '$3', '$3,000.00', '$3.000,00', [23,23], ['24','24'], '[25,25]']
+    inputstrings = []
+    outputstrings = []
+    for entry in testentries:
+        try:                   sanitized = repr(rpcs.sanitize(entry))
+        except Exception as E: sanitized = repr(E)
+        inputstrings.append('%s' % repr(entry))
+        outputstrings.append('%s' % sanitized)
+    inlen = 0
+    outlen = 0
+    for  instr in  inputstrings:  inlen = max( inlen, len( instr))
+    for outstr in outputstrings: outlen = max(outlen, len(outstr))
+    outlen = min(outlen,20)
+    inctrl  = '%' + ('%i' % inlen)  + 's'
+    outctrl = '%' + ('%i' % outlen) + 's'
+    ctrlstring = '  Original: { ' + inctrl + ' } --> Sanitized: { ' + outctrl + ' }'
+    for instr,outstr in zip(inputstrings,outputstrings):
+        print(ctrlstring % (instr, outstr))
+    
 
-if 'spreadsheet_io' in torun or runall:
+if 'datastore' in torun:
+    heading('Running datastore', 'big')
+    ds = rpcs.find_datastore()
+
+
+if 'spreadsheet_io' in torun:
     heading('Running spreadsheet_io', 'big')
     filename = 'nutrition_test.xlsx'
     proj.input_sheet.openpyxl(data_only=True).save(filename)
     proj.dataset().load(filename, project=proj)
 
 
-if 'input_io' in torun or runall:
+if 'input_io' in torun:
     heading('Running input_io', 'big')
     sheetjson = rpcs.get_sheet_data(proj.uid)
     rpcs.save_sheet_data(proj.uid, sheetdata=sheetjson['tables'])
     sc.pp(sheetjson)
 
 
-if 'scen_io' in torun or runall:
+if 'scen_io' in torun:
     heading('Running scen_io', 'big')
     dorun = True
     scen_summaries = rpcs.get_scen_info(proj.uid)
@@ -107,7 +129,7 @@ if 'scen_io' in torun or runall:
     sc.pp(scen_summaries)
 
 
-if 'optim_io' in torun or runall:
+if 'optim_io' in torun:
     heading('Running optim_io', 'big')
     dorun = True
     optim_summaries = rpcs.get_optim_info(proj.uid)
@@ -120,14 +142,14 @@ if 'optim_io' in torun or runall:
     sc.pp(optim_summaries)
     
 
-if 'run_scenarios' in torun or runall:
+if 'run_scenarios' in torun:
     heading('Running run_scenarios', 'big')
     doplot = False
     output = rpcs.run_scens(proj.uid, doplot=doplot)
     sc.pp(output)
 
 
-if 'run_optimization' in torun or runall:
+if 'run_optimization' in torun:
     heading('Running run_optimization', 'big')
     doplot = True
     maxtime = 10
@@ -138,7 +160,7 @@ if 'run_optimization' in torun or runall:
         sc.pp(output)
 
 
-if 'export_results' in torun or runall:
+if 'export_results' in torun:
     heading('Running export_results', 'big')
     proj.run_scens()
     fn1 = rpcs.export_results(proj.uid)
