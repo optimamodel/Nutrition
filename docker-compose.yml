@@ -5,7 +5,7 @@ services:
       context: .
       args:
         PORT: '80'
-        REDIS_URL: 'redis://10.0.0.11:6379/6'
+        REDIS_URL: 'redis://10.0.0.19:6379/6'
         # REDIS_URL: 'redis://vladh.net:63790/6'
     command: python start_server.py
     ports:
