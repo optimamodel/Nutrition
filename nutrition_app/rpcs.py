@@ -118,7 +118,7 @@ def get_user():
     return user
 
 
-def blobop(key=None, objtype=None, op=None, obj=None, die=None, create=True):
+def blobop(key=None, objtype=None, op=None, obj=None, die=None):
     ''' Perform a blob operation -- add or delete a project, result, or task for the user '''
     # Figure out what kind of list it is
     user = get_user()
@@ -130,7 +130,7 @@ def blobop(key=None, objtype=None, op=None, obj=None, die=None, create=True):
         raise Exception(errormsg)
     
     # Make the best guess about what the key should be
-    key, objtype, uid = sw.flaskapp.datastore.getkey(key=key, objtype=objtype, obj=obj, create=create, fulloutput=True)
+    key, objtype, uid = sw.flaskapp.datastore.getkey(key=key, objtype=objtype, obj=obj, fulloutput=True)
     
     # Do the operation(s)
     saveuser = False
@@ -191,7 +191,7 @@ def unique_project_name(project_name, verbose=False):
 
 
 
-def save_new_project(proj):
+def save_new_project(proj, user_id=None):
     """
     Given a Project object, wrap it in a new prj.ProjectSO object and put this 
     in the project collection (either adding a new object, or updating an 
@@ -200,6 +200,10 @@ def save_new_project(proj):
     new_project = sc.dcp(proj) # Copy the project, only save what we want...
     new_project.modified = sc.now()
     new_project.uid = sc.uuid()
+    if not hasattr(new_project, 'webapp'):
+        new_project.webapp = sc.prettyobj()
+        new_project.webapp.user_id = user_id
+        new_project.webapp.tasks = []
     key = save_project(new_project)
     return key,new_project
 

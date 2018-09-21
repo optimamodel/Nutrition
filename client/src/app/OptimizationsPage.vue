@@ -296,6 +296,8 @@ Last update: 2018-09-06
           // Check the status of the task.
           rpcs.rpc('check_task', [optimSummary.serverDatastoreId])
             .then(result => {
+              console.log('Response TEMP')
+              console.log(result.data)
               statusStr = result.data.task.status
               optimSummary.status = statusStr
               optimSummary.pendingTime = result.data.pendingTime
@@ -330,8 +332,9 @@ Last update: 2018-09-06
       },
 
       pollAllTaskStates() {
-        console.log('Do a task poll...');
+        console.log('Polling all tasks...');
         this.optimSummaries.forEach(optimSum => { // For each of the optimization summaries...
+          console.log(optimSum.status)
           if ((optimSum.status !== 'not started') && (optimSum.status !== 'completed')) { // If there is a valid task launched, check it.
             this.getOptimTaskState(optimSum)
           }
@@ -501,7 +504,7 @@ Last update: 2018-09-06
       deleteOptim(optimSummary) {
         console.log('deleteOptim() called')
         status.start(this)
-        if (optimSummary.status != 'not started') {
+        if (optimSummary.status !== 'not started') {
           this.clearTask(optimSummary)  // Clear the task from the server.
         }
         for(var i = 0; i< this.optimSummaries.length; i++) {
