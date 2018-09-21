@@ -254,7 +254,7 @@ Last update: 2018-08-30
       addDemoProject() {
         console.log('addDemoProject() called');
         status.start(this);
-        rpcs.rpc('add_demo_project', []) // Have the server create a new project.
+        rpcs.rpc('add_demo_project', [this.$store.state.currentUser.username]) // Have the server create a new project.
           .then(response => {
             this.updateProjectSummaries(response.data.projectID); // Update the project summaries so the new project shows up on the list.
             status.succeed(this, '')
@@ -274,8 +274,9 @@ Last update: 2018-08-30
       createNewProject() {
         console.log('createNewProject() called');
         this.$modal.hide('create-project');
-        status.start(this) // Start indicating progress. 
-        rpcs.download('create_new_project', [this.$store.state.currentUser.UID, this.proj_name]) // Have the server create a new project.
+        status.start(this) // Start indicating progress.
+        var username = this.$store.state.currentUser.username
+        rpcs.download('create_new_project', [username, this.proj_name]) // Have the server create a new project.
           .then(response => {
             this.updateProjectSummaries(null); // Update the project summaries so the new project shows up on the list.
             status.succeed(this, 'New project "' + this.proj_name + '" created') // Indicate success.
@@ -287,7 +288,7 @@ Last update: 2018-08-30
 
       uploadProjectFromFile() {
         console.log('uploadProjectFromFile() called')
-        rpcs.upload('create_project_from_prj_file', [this.$store.state.currentUser.UID], {}, '.prj') // Have the server upload the project.
+        rpcs.upload('upload_project', [this.$store.state.currentUser.username], {}, '.prj') // Have the server upload the project.
           .then(response => {
             status.start(this)  // This line needs to be here to avoid the spinner being up during the user modal.
             this.updateProjectSummaries(response.data.projectId) // Update the project summaries so the new project shows up on the list.
@@ -384,7 +385,7 @@ Last update: 2018-08-30
           let newProjectSummary = _.cloneDeep(projectSummary) // Make a deep copy of the projectSummary object by JSON-stringifying the old object, and then parsing the result back into a new object.
           newProjectSummary.project.name = projectSummary.renaming // Rename the project name in the client list from what's in the textbox.
           status.start(this)
-          rpcs.rpc('update_project_from_summary', [newProjectSummary]) // Have the server change the name of the project by passing in the new copy of the summary.
+          rpcs.rpc('rename_project', [newProjectSummary]) // Have the server change the name of the project by passing in the new copy of the summary.
             .then(response => {
               this.updateProjectSummaries(newProjectSummary.project.id) // Update the project summaries so the rename shows up on the list.
               projectSummary.renaming = '' // Turn off the renaming mode.
@@ -503,7 +504,7 @@ Last update: 2018-08-30
         console.log('downloadSelectedProjects() called for ', selectProjectsUIDs)
         if (selectProjectsUIDs.length > 0) { // Have the server download the selected projects.
           status.start(this)
-          rpcs.download('load_zip_of_prj_files', [selectProjectsUIDs])
+          rpcs.download('download_projects', [selectProjectsUIDs])
             .then(response => {
               // Indicate success.
               status.succeed(this, '')  // No green popup message.
