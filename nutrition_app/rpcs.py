@@ -187,13 +187,14 @@ def save_result(result, die=None):
     return output
 
 def del_project(project_key, die=None):
-    project = load_project(project_key)
+    key = datastore.getkey(key=project_key, objtype='project')
+    project = load_project(key)
     user = get_user(project.webapp.username)
-    output = datastore.delete(project_key)
-    if project_key in user.projects:
-        user.projects.remove(project_key)
+    output = datastore.delete(key)
+    if key in user.projects:
+        user.projects.remove(key)
     else:
-        print('Warning: deleting project %s (%s), but not found in user "%s" projects' % (project.name, project_key, user.username))
+        print('Warning: deleting project %s (%s), but not found in user "%s" projects' % (project.name, key, user.username))
     sw.save_user(user)
     return output
 
