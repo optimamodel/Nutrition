@@ -16,7 +16,7 @@ you use a relative path, it is interpreted as being with respect to the
 "webapp directory," that is, the directory containing this config file and the
 main webapp script that imports it.
 
-Last update: 2018jun04 (cliffk)
+Last update: 2018sep22
 """
 
 import os
@@ -51,6 +51,9 @@ SERVER_PORT = int(os.getenv('PORT', 8092))
 
 # Matplotlib backend
 MATPLOTLIB_BACKEND = 'Agg'
+
+# Slack logging configuration
+SLACK = {'to':'webapp-logs', 'from':'nutrition-bot', 'token':'~/.slackurl'}
 
 #
 # Asynchronous task parameters

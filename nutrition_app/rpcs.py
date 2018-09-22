@@ -9,7 +9,6 @@ Last update: 2018sep20 by cliffk
 ##############################################################
 
 import os
-from shutil import copyfile
 import mpld3
 import numpy as np
 import sciris as sc
@@ -258,14 +257,12 @@ def add_demo_project(username):
 @RPC(call_type='download')
 def create_new_project(username, proj_name, *args, **kwargs):
     """ Create a new Optima Nutrition project. """
-    template_name = 'template_input.xlsx'
     proj = nu.Project(name=proj_name) # Create the project
     print(">> create_new_project %s" % (proj.name))     # Display the call information.
     key,proj = save_new_project(proj, username) # Save the new project in the DataStore.
-    databook_path = sc.makefilepath(filename=template_name, folder=nu.ONpath('applications'))
     file_name = '%s databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name, username)
-    copyfile(databook_path, full_file_name)
+    proj.input_sheet.save(full_file_name)
     print(">> download_databook %s" % (full_file_name))
     return full_file_name
 
