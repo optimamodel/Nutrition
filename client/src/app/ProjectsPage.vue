@@ -1,11 +1,11 @@
 <!--
 Manage projects page
 
-Last update: 2018-08-30
+Last update: 2018sep22
 -->
 
 <template>
-  <div>
+  <div class="SitePage">
     <div class="card">
       <help reflink="create-projects" label="Create projects"></help>
 
@@ -396,8 +396,7 @@ Last update: 2018-08-30
               status.succeed(this, '')  // No green popup message.
             })
             .catch(error => {
-              // Indicate failure.
-              status.fail(this, 'Could not rename project', error)
+              status.fail(this, 'Could not rename project', error) // Indicate failure.
             })
         }
 
@@ -510,7 +509,7 @@ Last update: 2018-08-30
               status.succeed(this, '')  // No green popup message.
             })
             .catch(error => {
-              status.fail(this, 'Could not delete project/s', error)
+              status.fail(this, 'Could not delete project(s)', error)
             })
         }
       },
@@ -527,8 +526,7 @@ Last update: 2018-08-30
               status.succeed(this, '')  // No green popup message.
             })
             .catch(error => {
-              // Indicate failure.
-              status.fail(this, 'Could not download project/s')
+              status.fail(this, 'Could not download project(s)', error) // Indicate failure.
             })
         }
       }
