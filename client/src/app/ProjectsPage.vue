@@ -61,6 +61,7 @@ Last update: 2018-08-30
               </span>
             </th>
             <th>Databook</th> <!-- ATOMICA-NUTRITION DIFFERENCE -->
+            <th>Defaults</th> <!-- ATOMICA-NUTRITION DIFFERENCE -->
           </tr>
           </thead>
           <tbody>
@@ -97,7 +98,10 @@ Last update: 2018-08-30
             <td style="white-space: nowrap; text-align:left"> <!-- ATOMICA-NUTRITION DIFFERENCE -->
               <button class="btn __blue" @click="uploadDatabook(projectSummary.project.id)" data-tooltip="Upload databook"><i class="ti-upload"></i></button>
               <button class="btn" @click="downloadDatabook(projectSummary.project.id)" data-tooltip="Download databook"><i class="ti-download"></i></button>
-              <button class="btn" @click="downloadDefaults(projectSummary.project.id)" data-tooltip="Download defaults"><i class="ti-file"></i></button>
+            </td>
+            <td style="white-space: nowrap; text-align:left"> <!-- ATOMICA-NUTRITION DIFFERENCE -->
+              <button class="btn" @click="uploadDefaults(projectSummary.project.id)" data-tooltip="Upload defaults"><i class="ti-upload"></i></button>
+              <button class="btn" @click="downloadDefaults(projectSummary.project.id)" data-tooltip="Download defaults"><i class="ti-download"></i></button>
             </td>
           </tr>
           </tbody>
@@ -220,7 +224,7 @@ Last update: 2018-08-30
       updateProjectSummaries(setActiveID) {
         console.log('updateProjectSummaries() called')
         status.start(this)
-        rpcs.rpc('project_jsons') // Get the current user's project summaries from the server.
+        rpcs.rpc('project_jsons', [this.$store.state.currentUser.username]) // Get the current user's project summaries from the server.
           .then(response => {
             let lastCreationTime = null
             let lastCreatedID = null
@@ -457,6 +461,19 @@ Last update: 2018-08-30
           })
       },
 
+      uploadDefaults(uid) {
+        console.log('uploadDefaults() called')
+        status.start(this, 'Uploading defaults...')
+        rpcs.upload('upload_defaults', [uid], {}, '.xlsx')
+          .then(response => {
+            this.updateProjectSummaries(uid) // Update the project summaries
+            status.succeed(this, 'Defaults uploaded to project') // Indicate success.
+          })
+          .catch(error => {
+            status.fail(this, 'Could not upload defaults', error) // Indicate failure.
+          })
+      },
+
       // Confirmation alert
       deleteModal() {
         let selectProjectsUIDs = this.projectSummaries.filter(theProj => // Pull out the names of the projects that are selected.
@@ -504,7 +521,7 @@ Last update: 2018-08-30
         console.log('downloadSelectedProjects() called for ', selectProjectsUIDs)
         if (selectProjectsUIDs.length > 0) { // Have the server download the selected projects.
           status.start(this)
-          rpcs.download('download_projects', [selectProjectsUIDs])
+          rpcs.download('download_projects', [selectProjectsUIDs, this.$store.state.currentUser.username])
             .then(response => {
               // Indicate success.
               status.succeed(this, '')  // No green popup message.
