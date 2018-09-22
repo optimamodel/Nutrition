@@ -115,8 +115,9 @@ Last update: 2018-09-06
                  class="txbox"
                  v-model="addEditModal.optimSummary.name"/><br>
           <b>Optimization objective weights</b><br>
-          <div style="display: inline-block;">
-            <table class="table">
+          <div class="calib-params" style="max-height: 40vh;">
+            <!--<div style="display: inline-block;">-->
+            <table class="table scrolltable">
               <tbody>
               <tr v-for="item in addEditModal.optimSummary.weightslist">
                 <td>
@@ -139,25 +140,27 @@ Last update: 2018-09-06
           <b>Existing spending</b><br>
           <input type="radio" v-model="addEditModal.optimSummary.fix_curr" value=false>&nbsp;Can be reallocated<br>
           <input type="radio" v-model="addEditModal.optimSummary.fix_curr" value=true>&nbsp;Cannot be reallocated<br><br>
-          <b>Additional funds to allocate (US$)</b><br>
+          <b>Additional funds to allocate</b><br>
           <input type="text"
                  class="txbox"
                  v-model="addEditModal.optimSummary.add_funds"/><br>
 
-          <div class="calib-params" style="max-height: 40vh;">
-            <table class="table table-bordered table-hover table-striped scrolltable" style="width: 100%">
+          <div class="tableFixHead">
+          <!--<div class="calib-params" style="max-height: 40vh;">-->
+            <table>
+            <!--<table class="table table-bordered table-hover table-striped scrolltable" style="width: 100%">-->
               <thead>
               <tr>
-                <th class="column1">Program name</th>
-                <th class="column2" style="text-align: center">Include?</th>
+                <th>Program name</th>
+                <th style="text-align: center">Include?</th>
               </tr>
               </thead>
               <tbody>
               <tr v-for="spec in addEditModal.optimSummary.spec">
-                <td class="column1">
+                <td>
                   {{ spec.name }}
                 </td>
-                <td class="column2" style="text-align: center">
+                <td style="text-align: center">
                   <input type="checkbox" v-model="spec.included"/>
                 </td>
               </tr>
@@ -237,8 +240,8 @@ Last update: 2018-09-06
       clearGraphs()             { return utils.clearGraphs() },
       makeGraphs(graphdata)     { return utils.makeGraphs(this, graphdata) },
       exportGraphs(project_id)  { return utils.exportGraphs(this, project_id) },
-      exportResults(serverDatastoreId) 
-                                { return utils.exportResults(this, serverDatastoreId) },
+      exportResults(serverDatastoreId)
+      { return utils.exportResults(this, serverDatastoreId) },
 
       scaleFigs(frac) {
         this.figscale = this.figscale*frac;
@@ -309,25 +312,25 @@ Last update: 2018-09-06
               optimSummary.executionTime = '--'
             })
         }
-        
+
         else {
           // Check whether there is a cached result.
           rpcs.rpc('check_results_cache_entry', [optimSummary.serverDatastoreId])
             .then(result => {
               if (result.data.found) {
-                optimSummary.status = 'completed'                
+                optimSummary.status = 'completed'
               }
               else {
                 optimSummary.status = 'not started'
               }
               optimSummary.pendingTime = '--'
-              optimSummary.executionTime = '--'              
+              optimSummary.executionTime = '--'
             })
             .catch(error => {
               optimSummary.status = 'not started'
               optimSummary.pendingTime = '--'
               optimSummary.executionTime = '--'
-            })          
+            })
         }
       },
 
@@ -354,7 +357,7 @@ Last update: 2018-09-06
         return new Promise((resolve, reject) => {
           let datastoreId = optimSummary.serverDatastoreId  // hack because this gets overwritten soon by caller
           console.log('clearTask() called for '+this.currentOptim)
-          
+
           rpcs.rpc('delete_results_cache_entry', [datastoreId]) // Delete cached result.
             .then(response => {
               if (this.useCelery) {
@@ -365,7 +368,7 @@ Last update: 2018-09-06
                   })
                   .catch(error => {
                     resolve(error)  // yes, resolve because at least cache entry deletion succeeded
-                  })                  
+                  })
               }
               else {
                 this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
@@ -382,26 +385,26 @@ Last update: 2018-09-06
         console.log('getOptimSummaries() called')
         status.start(this)
         rpcs.rpc('get_optim_info', [this.projectID]) // Get the current project's optimization summaries from the server.
-        .then(response => {
-          this.optimSummaries = response.data // Set the optimizations to what we received.
-          this.optimSummaries.forEach(optimSum => { // For each of the optimization summaries...
-            optimSum.serverDatastoreId = this.$store.state.activeProject.project.id + ':opt-' + optimSum.name // Build a task and results cache ID from the project's hex UID and the optimization name.
-            optimSum.status = 'not started' // Set the status to 'not started' by default, and the pending and execution times to '--'.
-            optimSum.pendingTime = '--'
-            optimSum.executionTime = '--'
-            
-            // Get the task state for the optimization.
-            this.getOptimTaskState(optimSum) // Get the task state for the optimization.
+          .then(response => {
+            this.optimSummaries = response.data // Set the optimizations to what we received.
+            this.optimSummaries.forEach(optimSum => { // For each of the optimization summaries...
+              optimSum.serverDatastoreId = this.$store.state.activeProject.project.id + ':opt-' + optimSum.name // Build a task and results cache ID from the project's hex UID and the optimization name.
+              optimSum.status = 'not started' // Set the status to 'not started' by default, and the pending and execution times to '--'.
+              optimSum.pendingTime = '--'
+              optimSum.executionTime = '--'
+
+              // Get the task state for the optimization.
+              this.getOptimTaskState(optimSum) // Get the task state for the optimization.
+            })
+            if (this.useCelery) {
+              this.pollAllTaskStates() // Start polling of tasks states.
+            }
+            this.optimsLoaded = true
+            status.succeed(this, 'Optimizations loaded')
           })
-          if (this.useCelery) {
-            this.pollAllTaskStates() // Start polling of tasks states.
-          }
-          this.optimsLoaded = true
-          status.succeed(this, 'Optimizations loaded')
-        })
-        .catch(error => {
-          status.fail(this, 'Could not load optimizations', error)
-        })
+          .catch(error => {
+            status.fail(this, 'Could not load optimizations', error)
+          })
       },
 
       setOptimSummaries() {
@@ -562,26 +565,3 @@ Last update: 2018-09-06
     }
   }
 </script>
-
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-  .scrolltable thead tr {
-    display: block;
-  }
-   
-  .scrolltable tbody {
-    display: block;
-    width: 100%;
-    height: 200px;
-    overflow: auto;
-  }
-  
-  .scrolltable .column1 {
-    width: 434px;
-  }
-  
-  .scrolltable .column2 {
-    width: 100px;
-  }  
-</style>
