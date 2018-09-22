@@ -12,8 +12,8 @@ from .plotting import make_plots, get_costeff
 from .model import Model
 from .utils import trace_exception, default_trackers, pretty_labels
 from .demo import demo_scens, demo_optims
-from .settings import ONException
 from .defaults import get_defaults
+from . import settings
 
 
 #######################################################################################################
@@ -100,12 +100,25 @@ class Project(object):
             info[attr] = getattr(self, attr) # Populate the dictionary
         return info
     
-    def load_data(self, country=None, region=None, name=None, filepath=None, overwrite=False):
-        dataset = Dataset(country=country, region=region, name=name, filepath=filepath, doload=True, project=self)
-        if name is None: name = dataset.name
-        self.datasets[name] = dataset
-        # add model associated with the dataset
-        self.add_model(name, overwrite=overwrite)
+    def load_data(self, country=None, region=None, name=None, filepath=None, overwrite=False, fromfile=True, makemodel=True):
+        '''Load the data, which can mean one of two things: read in the spreadsheets, and/or use these data to make a model '''
+        
+        # Optionally (but almost always) reload the spreadsheets from file
+        if fromfile:
+            if filepath is None: input_path = settings.data_path(self.country, self.region)
+            else:                input_path = filepath
+            input_sheet    = sc.Spreadsheet(filename=input_path)
+            defaults_sheet = sc.Spreadsheet(filename=settings.default_params_path())
+            self.input_sheet    = input_sheet
+            self.defaults_sheet = defaults_sheet
+        
+        # Optionally (but almost always) use these to make a model (do not do if blank sheets)
+        if makemodel:
+            dataset = Dataset(country=country, region=region, name=name, filepath=filepath, doload=True, project=self)
+            if name is None: name = sc.uniquename(dataset.name, self.datasets.keys())
+            self.datasets[name] = dataset
+            self.add_model(name, overwrite=overwrite) # add model associated with the dataset
+        
         return None
 
     def save(self, filename=None, folder=None, saveresults=False, verbose=0):
@@ -180,7 +193,7 @@ class Project(object):
         elif what in ['s', 'scen', 'scens', 'scenario', 'scenarios']: structlist = self.scens
         elif what in ['o', 'opt', 'opts', 'optim', 'optims', 'optimization', 'optimization', 'optimizations', 'optimizations']: structlist = self.optims
         elif what in ['r', 'res', 'result', 'results']: structlist = self.results
-        else: raise ONException("Item not found")
+        else: raise settings.ONException("Item not found")
         return structlist
 
     #######################################################################################################

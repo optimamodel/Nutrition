@@ -524,7 +524,7 @@ class Dataset(object):
     ''' Store all the data for a project '''
     
     def __init__(self, country='demo', region='demo', name=None, demo_data=None, prog_data=None, default_params=None,
-                 pops=None, prog_info=None, doload=False, filepath=None, from_file=None, project=None):
+                 pops=None, prog_info=None, doload=False, filepath=None, fromfile=None, project=None):
         
         self.country = country
         self.region = region
@@ -541,17 +541,17 @@ class Dataset(object):
             except: name = 'default'
         self.modified = sc.now()
         if doload:
-            self.load(filepath=filepath, from_file=True, project=project)
+            self.load(filepath=filepath, fromfile=True, project=project)
         return None
     
     def __repr__(self):
         output  = sc.prepr(self)
         return output
     
-    def load(self, filepath=None, from_file=True, project=None):
+    def load(self, filepath=None, fromfile=True, project=None):
         if project is None:
             raise Exception('Sorry, but you must supply a project for load().')
-        if from_file:
+        if fromfile:
             if filepath is None: input_path = settings.data_path(self.country, self.region)
             else:                input_path = filepath
             input_sheet    = sc.Spreadsheet(filename=input_path)
