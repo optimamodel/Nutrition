@@ -551,19 +551,13 @@ class Dataset(object):
     def load(self, filepath=None, fromfile=True, project=None):
         if project is None:
             raise Exception('Sorry, but you must supply a project for load().')
-        if fromfile:
-            if filepath is None: input_path = settings.data_path(self.country, self.region)
-            else:                input_path = filepath
-            input_sheet    = sc.Spreadsheet(filename=input_path)
-            defaults_sheet = sc.Spreadsheet(filename=settings.default_params_path())
-            project.input_sheet    = input_sheet
-            project.defaults_sheet = defaults_sheet
-        else:
-            input_sheet    = project.input_sheet
-            defaults_sheet = project.defaults_sheet
-        input_data   = input_sheet.pandas()
-        default_data = defaults_sheet.pandas()
-        self.demo_data = InputData(input_data)
+        if fromfile: # Reload the data at the project level
+            project.load_data(country=self.country, region=self.region, name=self.name, filepath=filepath, fromfile=fromfile, makemodel=False)
+        input_sheet    = project.input_sheet # Pull the sheets from the project
+        defaults_sheet = project.defaults_sheet
+        input_data     = input_sheet.pandas() # Convert them to Pandas
+        default_data   = defaults_sheet.pandas()
+        self.demo_data      = InputData(input_data) # Read them into actual data
         self.default_params = DefaultParams(default_data, input_data)
         self.default_params.compute_risks(self.demo_data)
         self.prog_data = ProgData(input_data, self.default_params)

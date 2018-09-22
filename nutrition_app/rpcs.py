@@ -258,16 +258,6 @@ def add_demo_project(username):
 @RPC(call_type='download')
 def create_new_project(username, proj_name, *args, **kwargs):
     """ Create a new Optima Nutrition project. """
-    print('TESSST')
-    print username
-    print('ah')
-    print proj_name
-    print('k')
-    print args
-    print('ff')
-    print kwargs
-    print('gg')
-    
     template_name = 'template_input.xlsx'
     proj = nu.Project(name=proj_name) # Create the project
     print(">> create_new_project %s" % (proj.name))     # Display the call information.
@@ -578,7 +568,7 @@ def save_sheet_data(project_id, sheetdata, key=None):
                     cells.append([r+1,c+1]) # Excel uses 1-based indexing
                     vals.append(cellval)
         wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={'data_only':True}) # Can turn on verbose
-    proj.dataset(key).load(project=proj, from_file=False)
+    proj.dataset(key).load(project=proj, fromfile=False)
     proj.add_model(key) # Refresh the model
     
     print('Saving project...')

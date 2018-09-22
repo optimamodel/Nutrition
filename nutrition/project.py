@@ -48,25 +48,30 @@ class Project(object):
     ### Built-in methods -- initialization, and the thing to print if you call a project
     #######################################################################################################
 
-    def __init__(self, name='default', **kwargs):
+    def __init__(self, name='default', loadsheets=True, filepath=None):
         ''' Initialize the project '''
 
         ## Define the structure sets
-        self.datasets    = sc.odict()
-        self.models      = sc.odict()
-        self.scens       = sc.odict()
-        self.optims      = sc.odict()
-        self.results     = sc.odict()
-        self.input_sheet    = None # WARNING, might want to make this an odict at some point
-        self.defaults_sheet = None # WARNING, might want to make this an odict at some point
+        self.datasets = sc.odict()
+        self.models   = sc.odict()
+        self.scens    = sc.odict()
+        self.optims   = sc.odict()
+        self.results  = sc.odict()
+        self.input_sheet    = None
+        self.defaults_sheet = None
+        if loadsheets:
+            if not filepath:
+                template_name = 'template_input.xlsx'
+                filepath = sc.makefilepath(filename=template_name, folder=settings.ONpath('applications'))
+            self.load_data(filepath=filepath, fromfile=True, makemodel=False)
 
         ## Define other quantities
-        self.name = name
-        self.uid = sc.uuid()
-        self.created = sc.now()
+        self.name     = name
+        self.uid      = sc.uuid()
+        self.created  = sc.now()
         self.modified = sc.now()
-        self.version = version
-        self.gitinfo = sc.gitinfo(__file__)
+        self.version  = version
+        self.gitinfo  = sc.gitinfo(__file__)
         self.filename = None # File path, only present if self.save() is used
 
         return None
@@ -100,12 +105,12 @@ class Project(object):
             info[attr] = getattr(self, attr) # Populate the dictionary
         return info
     
-    def load_data(self, country=None, region=None, name=None, filepath=None, overwrite=False, fromfile=True, makemodel=True):
+    def load_data(self, country='demo', region='demo', name=None, filepath=None, overwrite=False, fromfile=True, makemodel=True):
         '''Load the data, which can mean one of two things: read in the spreadsheets, and/or use these data to make a model '''
         
         # Optionally (but almost always) reload the spreadsheets from file
         if fromfile:
-            if filepath is None: input_path = settings.data_path(self.country, self.region)
+            if filepath is None: input_path = settings.data_path(country, region)
             else:                input_path = filepath
             input_sheet    = sc.Spreadsheet(filename=input_path)
             defaults_sheet = sc.Spreadsheet(filename=settings.default_params_path())

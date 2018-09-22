@@ -8,16 +8,16 @@ import nutrition.ui as nu
 from nutrition_app import main, rpcs, apptasks as apt
 
 torun = [
-#'file_tests'
+'file_tests'
 'sanitization',
-#'datastore',
-#'spreadsheet_io',
-#'input_io',
-#'scen_io',
-#'optim_io',
-#'run_scenarios',
-#'run_optimization',
-#'export_results',
+'datastore',
+'spreadsheet_io',
+'input_io',
+'scen_io',
+'optim_io',
+'run_scenarios',
+'run_optimization',
+'export_results',
 ]
 
 
@@ -134,7 +134,7 @@ if 'optim_io' in torun:
     dorun = True
     optim_summaries = rpcs.get_optim_info(proj.uid)
     rpcs.set_optim_info(proj.uid, optim_summaries)
-    if dorun:
+    if dorun: # Do not use Celery, do not pass go
         R = proj.run_optim(maxtime=5, parallel=False)
         heading('Results:')
         print(R)
@@ -152,10 +152,9 @@ if 'run_scenarios' in torun:
 if 'run_optimization' in torun:
     heading('Running run_optimization', 'big')
     doplot = True
-    maxtime = 10
-    proj = apt.run_optim(proj.uid, 'placeholder_ID')
+    proj_id = apt.run_optim(proj.uid, 'placeholder_ID', runtype='test')
     if doplot:
-        output = rpcs.plot_optimization(proj.uid, proj.results.keys()[-1])
+        output = rpcs.plot_optimization(proj_id, proj.results.keys()[-1])
         print('Output:')
         sc.pp(output)
 
