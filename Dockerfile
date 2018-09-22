@@ -31,4 +31,4 @@ WORKDIR client
 RUN python install_client.py
 RUN python build_client.py
 
-CMD python server.py
+CMD python run.py
