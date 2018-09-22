@@ -1,7 +1,7 @@
 """
 Optima Nutrition remote procedure calls (RPCs)
     
-Last update: 2018sep20 by cliffk
+Last update: 2018sep22 by cliffk
 """
 
 ###############################################################
@@ -9,6 +9,8 @@ Last update: 2018sep20 by cliffk
 ##############################################################
 
 import os
+import socket
+import psutil
 import numpy as np
 import sciris as sc
 import scirisweb as sw
@@ -86,6 +88,8 @@ def get_version_info():
 	       'gitbranch': gitinfo['branch'],
 	       'githash':   gitinfo['hash'],
 	       'gitdate':   gitinfo['date'],
+            'server':    socket.gethostname(),
+            'cpu':       '%0.1f%%' % psutil.cpu_percent(),
 	}
 	return version_info
       
@@ -268,7 +272,7 @@ def copy_project(project_key):
     print(">> copy_project %s" % (new_project.name))  # Display the call information.
     key,new_project = save_new_project(new_project, proj.webapp.username) # Save a DataStore projects record for the copy project.
     copy_project_id = new_project.uid # Remember the new project UID (created in save_project_as_new()).
-    return { 'projectId': copy_project_id } # Return the UID for the new projects record.
+    return { 'projectID': copy_project_id } # Return the UID for the new projects record.
 
 
 
@@ -356,7 +360,7 @@ def upload_databook(databook_filename, project_id):
     proj.load_data(inputspath=databook_filename) # Reset the project name to a new project name that is unique.
     proj.modified = sc.now()
     save_project(proj) # Save the new project in the DataStore.
-    return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
+    return { 'projectID': str(proj.uid) } # Return the new project UID in the return message.
 
 
 @RPC(call_type='upload')
@@ -370,7 +374,7 @@ def upload_defaults(defaults_filename, project_id):
         print('Defaults uploaded, but data not loaded (probably since inputs have not been uploaded yet): %s' % str(E))
     proj.modified = sc.now()
     save_project(proj) # Save the new project in the DataStore.
-    return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
+    return { 'projectID': str(proj.uid) } # Return the new project UID in the return message.
 
 
 
