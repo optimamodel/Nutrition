@@ -125,6 +125,7 @@ def load_result(result_key, die=None):
     return output
 
 def save_project(project, die=None): # NB, only for saving an existing project
+    project.modified = sc.now()
     output = datastore.saveblob(obj=project, objtype='project', die=die)
     return output
 
