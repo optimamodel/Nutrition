@@ -523,7 +523,7 @@ class ProgData(object):
 class Dataset(object):
     ''' Store all the data for a project '''
     
-    def __init__(self, country='demo', region='demo', name=None, demo_data=None, prog_data=None, default_params=None,
+    def __init__(self, country=None, region=None, name=None, demo_data=None, prog_data=None, default_params=None,
                  pops=None, prog_info=None, doload=False, inputspath=None, defaultspath=None, fromfile=None, project=None):
         
         self.country = country

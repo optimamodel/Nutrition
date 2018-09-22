@@ -116,13 +116,15 @@ class Project(object):
         self.defaults_sheet = sc.Spreadsheet(filename=defaultspath)
         return self.defaults_sheet
         
-    def load_data(self, country='demo', region='demo', name=None, inputspath=None, defaultspath=None, overwrite=False, fromfile=True, makemodel=True):
+    def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, overwrite=False, fromfile=True, makemodel=True):
         '''Load the data, which can mean one of two things: read in the spreadsheets, and/or use these data to make a model '''
         
         # Optionally (but almost always) reload the spreadsheets from file
         if fromfile:
-            if inputspath   or not self.input_sheet:    self.load_inputs(inputspath=inputspath, country=country, region=region)
-            if defaultspath or not self.defaults_sheet: self.load_defaults(defaultspath=defaultspath)
+            if inputspath or country or not self.input_sheet:
+                self.load_inputs(inputspath=inputspath, country=country, region=region)
+            if defaultspath or not self.defaults_sheet:
+                self.load_defaults(defaultspath=defaultspath)
         
         # Optionally (but almost always) use these to make a model (do not do if blank sheets)
         if makemodel:
