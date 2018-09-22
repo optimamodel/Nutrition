@@ -7,13 +7,13 @@ import sciris as sc
 from .version import version
 from .optimization import Optim
 from .data import Dataset
-from .scenarios import Scen, run_scen, make_scens
+from .scenarios import Scen, run_scen
 from .plotting import make_plots, get_costeff
 from .model import Model
 from .utils import trace_exception, default_trackers, pretty_labels
 from .demo import demo_scens, demo_optims
-from .settings import ONException
 from .defaults import get_defaults
+from . import settings
 
 
 #######################################################################################################
@@ -48,25 +48,30 @@ class Project(object):
     ### Built-in methods -- initialization, and the thing to print if you call a project
     #######################################################################################################
 
-    def __init__(self, name='default', **kwargs):
+    def __init__(self, name='default', loadsheets=True, inputspath=None, defaultspath=None):
         ''' Initialize the project '''
 
         ## Define the structure sets
-        self.datasets    = sc.odict()
-        self.models      = sc.odict()
-        self.scens       = sc.odict()
-        self.optims      = sc.odict()
-        self.results     = sc.odict()
-        self.input_sheet    = None # WARNING, might want to make this an odict at some point
-        self.defaults_sheet = None # WARNING, might want to make this an odict at some point
+        self.datasets = sc.odict()
+        self.models   = sc.odict()
+        self.scens    = sc.odict()
+        self.optims   = sc.odict()
+        self.results  = sc.odict()
+        self.input_sheet    = None
+        self.defaults_sheet = None
+        if loadsheets:
+            if not inputspath:
+                template_name = 'template_input.xlsx'
+                inputspath = sc.makefilepath(filename=template_name, folder=settings.ONpath('applications'))
+            self.load_data(inputspath=inputspath, defaultspath=defaultspath, fromfile=True, makemodel=False)
 
         ## Define other quantities
-        self.name = name
-        self.uid = sc.uuid()
-        self.created = sc.now()
+        self.name     = name
+        self.uid      = sc.uuid()
+        self.created  = sc.now()
         self.modified = sc.now()
-        self.version = version
-        self.gitinfo = sc.gitinfo(__file__)
+        self.version  = version
+        self.gitinfo  = sc.gitinfo(__file__)
         self.filename = None # File path, only present if self.save() is used
 
         return None
@@ -91,7 +96,6 @@ class Project(object):
         output += '============================================================\n'
         return output
     
-    
     def getinfo(self):
         ''' Return an odict with basic information about the project'''
         info = sc.odict()
@@ -100,12 +104,35 @@ class Project(object):
             info[attr] = getattr(self, attr) # Populate the dictionary
         return info
     
-    def load_data(self, country=None, region=None, name=None, filepath=None, overwrite=False):
-        dataset = Dataset(country=country, region=region, name=name, filepath=filepath, doload=True, project=self)
-        if name is None: name = dataset.name
-        self.datasets[name] = dataset
-        # add model associated with the dataset
-        self.add_model(name, overwrite=overwrite)
+    def load_inputs(self, inputspath=None, country=None, region=None):
+        ''' Reload the input spreadsheet into the project '''
+        if inputspath is None: inputspath = settings.data_path(country, region)
+        self.input_sheet    = sc.Spreadsheet(filename=inputspath)
+        return self.input_sheet
+    
+    def load_defaults(self, defaultspath=None):
+        ''' Reload the defaults spreadsheet into the project '''
+        if defaultspath is None: defaultspath = settings.default_params_path()
+        self.defaults_sheet = sc.Spreadsheet(filename=defaultspath)
+        return self.defaults_sheet
+        
+    def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, overwrite=False, fromfile=True, makemodel=True):
+        '''Load the data, which can mean one of two things: read in the spreadsheets, and/or use these data to make a model '''
+        
+        # Optionally (but almost always) reload the spreadsheets from file
+        if fromfile:
+            if inputspath or country or not self.input_sheet:
+                self.load_inputs(inputspath=inputspath, country=country, region=region)
+            if defaultspath or not self.defaults_sheet:
+                self.load_defaults(defaultspath=defaultspath)
+        
+        # Optionally (but almost always) use these to make a model (do not do if blank sheets)
+        if makemodel:
+            dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self)
+            if name is None: name = sc.uniquename(dataset.name, self.datasets.keys())
+            self.datasets[name] = dataset
+            self.add_model(name, overwrite=overwrite) # add model associated with the dataset
+        
         return None
 
     def save(self, filename=None, folder=None, saveresults=False, verbose=0):
@@ -180,7 +207,7 @@ class Project(object):
         elif what in ['s', 'scen', 'scens', 'scenario', 'scenarios']: structlist = self.scens
         elif what in ['o', 'opt', 'opts', 'optim', 'optims', 'optimization', 'optimization', 'optimizations', 'optimizations']: structlist = self.optims
         elif what in ['r', 'res', 'result', 'results']: structlist = self.results
-        else: raise ONException("Item not found")
+        else: raise settings.ONException("Item not found")
         return structlist
 
     #######################################################################################################
@@ -361,29 +388,15 @@ class Project(object):
         figs = make_plots(self.result(key), toplot=toplot, optim=optim)
         return figs
 
-    def get_costeff(self):
-        """ Returns a nested odict with keys (scenario name, child name, pretty outcome) and value (output). Output is type string
-        Will work for both scenarios and optimizations, using whatever results were last generated """
-        parents = []
-        baselines = []
-        children = sc.odict()
-        results = self.result(-1)
-        for r, res in enumerate(results):
-            print('Running cost-effectiveness scenario %s of %s' % (r+1, len(results)))
-            children[res.name] = []
-            model = self.model(res.model_name)
-            parents.append(res)
-            # generate a baseline for each scenario
-            baseline = get_defaults(res.model_name, model)[0]  # assumes baseline at 0 index
-            baseres = run_scen(baseline, model)
-            baselines.append(baseres)
-            # get all the 'child' results for each scenario
-            childkwargs = res.get_childscens()
-            childscens = make_scens(childkwargs)
-            for child in childscens:
-                childres = run_scen(child, model)
-                children[res.name].append(childres)
-        costeff = get_costeff(parents, children, baselines)
+    def get_costeff(self, resultname=None):
+        """ 
+        Returns a nested odict with keys (scenario/optim name, child name, pretty outcome) 
+        and value (output). Output is type string. Will work for both scenarios and optimizations, 
+        using whatever results were last generated
+        """
+        if resultname is None: resultname = 'scens'
+        results = self.result(resultname)       
+        costeff = get_costeff(self, results)
         return costeff
 
 def demo(scens=False, optims=False):

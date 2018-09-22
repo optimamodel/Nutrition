@@ -9,7 +9,6 @@ Last update: 2018sep20 by cliffk
 ##############################################################
 
 import os
-from zipfile import ZipFile
 from shutil import copyfile
 import mpld3
 import numpy as np
@@ -30,22 +29,10 @@ datastore = None
 ### Helper functions
 ##############################################################
 
-def to_number(raw):
-    ''' Convert something to a number. WARNING, I'm sure this already exists!! '''
-    try:
-        output = float(raw)
-    except Exception as E:
-        if raw is None:
-            output = None
-        else:
-            raise E
-    return output
-
-
-def get_path(filename=None):
+def get_path(filename=None, username=None):
     if filename is None: filename = ''
     base_dir = sw.flaskapp.datastore.tempfolder
-    user_id = str(get_user().uid) # Can't user username since too much sanitization required
+    user_id = str(get_user(username).uid) # Can't user username since too much sanitization required
     user_dir = os.path.join(base_dir, user_id)
     if not os.path.exists(user_dir):
         os.makedirs(user_dir)
@@ -53,10 +40,13 @@ def get_path(filename=None):
     return fullpath
 
 
-def sanitize(vals, skip=False, forcefloat=False, verbose=True):
+def sanitize(vals, skip=False, forcefloat=False, verbose=False, as_nan=False, die=True):
     ''' Make sure values are numeric, and either return nans or skip vals that aren't -- WARNING, duplicates lots of other things!'''
     if verbose: print('Sanitizing vals of %s: %s' % (type(vals), vals))
-    if sc.isiterable(vals):
+    if as_nan: missingval = np.nan
+    else:      missingval = None
+    
+    if not sc.isstring(vals) and sc.isiterable(vals):
         as_array = False if forcefloat else True
     else:
         vals = [vals]
@@ -64,9 +54,9 @@ def sanitize(vals, skip=False, forcefloat=False, verbose=True):
     output = []
     for val in vals:
         if val=='':
-            sanival = np.nan
+            sanival = missingval
         elif val==None:
-            sanival = np.nan
+            sanival = missingval
         else:
             try:
                 factor = 1.0
@@ -76,9 +66,11 @@ def sanitize(vals, skip=False, forcefloat=False, verbose=True):
                     # if val.endswith('%'): factor = 0.01 # Scale if percentage has been used -- CK: not used since already converted from percentage
                 sanival = float(val)*factor
             except Exception as E:
-                print('Could not sanitize value "%s": %s; returning nan' % (val, repr(E)))
-                sanival = np.nan
-        if not np.isnan(sanival) or not skip:
+                errormsg = 'Could not sanitize value "%s": %s' % (val, str(E))
+                if die: raise Exception(errormsg)
+                else:   print(errormsg+'; returning %s' % missingval)
+                sanival = missingval
+        if not skip or (sanival is not None and not np.isnan(sanival)):
             output.append(sanival)
     if as_array:
         return output
@@ -101,12 +93,14 @@ def get_version_info():
       
 
 
-def set_datastore():
+def find_datastore():
     ''' Ensure the datastore is loaded '''
     global datastore
     if datastore is None:
         datastore = sw.get_datastore(config=config)
-    return None
+    return datastore # So can be used externally
+
+find_datastore() # Run this on load
 
 ##################################################################################
 ### User functions
@@ -114,51 +108,15 @@ def set_datastore():
 
 def get_user(username=None):
     ''' Ensure it's a valid Optima Nutrition user '''
-    user = sw.load_user(username)
+    user = datastore.loaduser(username)
     dosave = False
     if not hasattr(user, 'projects'):
         user.projects = []
         dosave = True
     if dosave:
-        sw.save_user(user)
+        datastore.saveuser(user)
     return user
 
-
-def blobop(key=None, objtype=None, op=None, obj=None, die=None):
-    ''' Perform a blob operation -- add or delete a project, result, or task for the user '''
-    # Figure out what kind of list it is
-    user = get_user()
-    set_datastore()
-    if   objtype == 'project': itemlist = user.projects
-    elif objtype == 'result':  itemlist = user.results
-    elif objtype == 'task':    itemlist = user.tasks
-    else:
-        errormsg = '"objtype" must be "project", "result", or "task", not "%s"' % objtype
-        raise Exception(errormsg)
-    
-    # Make the best guess about what the key should be
-    key, objtype, uid = datastore.getkey(key=key, objtype=objtype, obj=obj, fulloutput=True)
-    
-    # Do the operation(s)
-    saveuser = False
-    if op == 'add':
-        datastore.saveblob(key=key, obj=obj, objtype=objtype, uid=uid, die=die)
-        if key not in itemlist:
-            itemlist.append(key)
-            saveuser = True
-    elif op == 'delete':
-        datastore.delete(key, die=die)
-        if key in itemlist:
-            itemlist.remove(key)
-            saveuser = True
-    else:
-        errormsg = '"op" must be "add" or "delete", not "%s"' % op
-        raise Exception(errormsg)
-    
-    # Finish up
-    if saveuser:
-        sw.save_user(user)
-    return key
 
 
 
@@ -167,34 +125,31 @@ def blobop(key=None, objtype=None, op=None, obj=None, die=None):
 ##################################################################################
     
 def load_project(project_key, die=None):
-    set_datastore()
     output = datastore.loadblob(project_key, objtype='project', die=die)
     return output
 
 def load_result(result_key, die=None):
-    set_datastore()
     output = datastore.loadblob(result_key, objtype='result', die=die)
     return output
 
 def save_project(project, die=None): # NB, only for saving an existing project
-    set_datastore()
     output = datastore.saveblob(obj=project, objtype='project', die=die)
     return output
 
 def save_result(result, die=None):
-    set_datastore()
     output = datastore.saveblob(obj=result, objtype='result', die=die)
     return output
 
 def del_project(project_key, die=None):
-    project = load_project(project_key)
+    key = datastore.getkey(key=project_key, objtype='project')
+    project = load_project(key)
     user = get_user(project.webapp.username)
-    output = datastore.delete(project_key)
-    if project_key in user.projects:
-        user.projects.remove(project_key)
+    output = datastore.delete(key)
+    if key in user.projects:
+        user.projects.remove(key)
     else:
-        print('Warning: deleting project %s (%s), but not found in user "%s" projects' % (project.name, project_key, user.username))
-    sw.save_user(user)
+        print('Warning: deleting project %s (%s), but not found in user "%s" projects' % (project.name, key, user.username))
+    datastore.saveuser(user)
     return output
 
     
@@ -202,9 +157,6 @@ def del_project(project_key, die=None):
 ##################################################################################
 ### Project RPCs
 ##################################################################################
-
-
-
 
 
 def save_new_project(proj, username=None):
@@ -236,7 +188,7 @@ def save_new_project(proj, username=None):
     # Save all the things
     key = save_project(new_project)
     user.projects.append(key)
-    sw.save_user(user)
+    datastore.saveuser(user)
     return key,new_project
 
 
@@ -262,10 +214,10 @@ def project_json(project_id, verbose=False):
 
 
 @RPC()
-def project_jsons(verbose=False):
+def project_jsons(username, verbose=False):
     """ Return project summaries for all projects the user has to the client. """ 
     output = {'projects':[]}
-    user = get_user()
+    user = get_user(username)
     for project_key in user.projects:
         json = project_json(project_key)
         output['projects'].append(json)
@@ -306,23 +258,13 @@ def add_demo_project(username):
 @RPC(call_type='download')
 def create_new_project(username, proj_name, *args, **kwargs):
     """ Create a new Optima Nutrition project. """
-    print('TESSST')
-    print username
-    print('ah')
-    print proj_name
-    print('k')
-    print args
-    print('ff')
-    print kwargs
-    print('gg')
-    
     template_name = 'template_input.xlsx'
     proj = nu.Project(name=proj_name) # Create the project
     print(">> create_new_project %s" % (proj.name))     # Display the call information.
     key,proj = save_new_project(proj, username) # Save the new project in the DataStore.
     databook_path = sc.makefilepath(filename=template_name, folder=nu.ONpath('applications'))
     file_name = '%s databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
-    full_file_name = get_path(file_name)
+    full_file_name = get_path(file_name, username)
     copyfile(databook_path, full_file_name)
     print(">> download_databook %s" % (full_file_name))
     return full_file_name
@@ -371,30 +313,27 @@ def download_project(project_id):
     """
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
     file_name = '%s.prj' % proj.name # Create a filename containing the project name followed by a .prj suffix.
-    full_file_name = get_path(file_name) # Generate the full file name with path.
+    full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
     sc.saveobj(full_file_name, proj) # Write the object to a Gzip string pickle file.
     print(">> download_project %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
 
 
 @RPC(call_type='download')
-def download_projects(project_keys):
+def download_projects(project_keys, username):
     """
     Given a list of project UIDs, make a .zip file containing all of these 
     projects as .prj files, and return the full path to this file.
     """
-    basedir = get_path() # Use the downloads directory to put the file in.
+    basedir = get_path('', username) # Use the downloads directory to put the file in.
     project_paths = []
     for project_key in project_keys:
         proj = load_project(project_key)
         project_path = proj.save(folder=basedir)
         project_paths.append(project_path)
     zip_fname = 'Projects %s.zip' % sc.getdate() # Make the zip file name and the full server file path version of the same..
-    server_zip_fname = os.path.join(basedir, sc.sanitizefilename(zip_fname))
-    with ZipFile(server_zip_fname, 'w') as zipfile: # Create the zip file, putting all of the .prj files in a projects directory.
-        for project_path in project_paths:
-            filename = os.path.basename(project_path)
-            zipfile.write(project_path, filename)
+    server_zip_fname = get_path(zip_fname, username)
+    sc.savezip(server_zip_fname, project_paths)
     print(">> load_zip_of_prj_files %s" % (server_zip_fname)) # Display the call information.
     return server_zip_fname # Return the server file name.
 
@@ -404,7 +343,7 @@ def download_databook(project_id, key=None):
     """ Download databook """
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
     file_name = '%s_databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
-    full_file_name = get_path(file_name) # Generate the full file name with path.
+    full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
     proj.input_sheet.save(full_file_name)
     print(">> download_databook %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
@@ -417,12 +356,10 @@ def download_defaults(project_id):
     """
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
     file_name = '%s_defaults.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
-    full_file_name = get_path(file_name) # Generate the full file name with path.
+    full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
     proj.defaults_sheet.save(full_file_name)
     print(">> download_defaults %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
-
-
 
 
 @RPC(call_type='upload')
@@ -430,11 +367,24 @@ def upload_databook(databook_filename, project_id):
     """ Upload a databook to a project. """
     print(">> upload_databook '%s'" % databook_filename)
     proj = load_project(project_id, die=True)
-    proj.load_data(filepath=databook_filename) # Reset the project name to a new project name that is unique.
+    proj.load_data(inputspath=databook_filename) # Reset the project name to a new project name that is unique.
     proj.modified = sc.now()
     save_project(proj) # Save the new project in the DataStore.
     return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
 
+
+@RPC(call_type='upload')
+def upload_defaults(defaults_filename, project_id):
+    """ Upload a databook to a project. """
+    print(">> upload_databook '%s'" % defaults_filename)
+    proj = load_project(project_id, die=True)
+    try:
+        proj.load_data(defaultspath=defaults_filename) # Reset the project name to a new project name that is unique.
+    except Exception as E:
+        print('Defaults uploaded, but data not loaded (probably since inputs have not been uploaded yet): %s' % str(E))
+    proj.modified = sc.now()
+    save_project(proj) # Save the new project in the DataStore.
+    return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
 
 
 
@@ -501,32 +451,32 @@ def define_formats():
     
     formats['IYCF packages'] = [
         ['head', 'head', 'head', 'head', 'head'],
-        ['head', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'blnk', 'blnk', 'edit'],
+        ['head', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'blnk', 'blnk', 'tick'],
         ['blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-        ['head', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'blnk', 'blnk', 'edit'],
+        ['head', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'blnk', 'blnk', 'tick'],
         ['blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-        ['head', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'blnk', 'blnk', 'edit'],
+        ['head', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'blnk', 'blnk', 'tick'],
     ]
     
     formats['Treatment of SAM'] = [
         ['blnk', 'head', 'head', 'head'],
-        ['head', 'name', 'name', 'edit'],
-        ['head', 'name', 'name', 'edit'],
+        ['head', 'name', 'name', 'tick'],
+        ['head', 'name', 'name', 'tick'],
     ]
     
     formats['Programs cost and coverage'] = [
@@ -629,7 +579,7 @@ def save_sheet_data(project_id, sheetdata, key=None):
                     cells.append([r+1,c+1]) # Excel uses 1-based indexing
                     vals.append(cellval)
         wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={'data_only':True}) # Can turn on verbose
-    proj.dataset(key).load(project=proj, from_file=False)
+    proj.dataset(key).load(project=proj, fromfile=False)
     proj.add_model(key) # Refresh the model
     
     print('Saving project...')
@@ -683,7 +633,7 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
             if this_spec['vals'][y] is not None:
                 if js_scen['scen_type'] == 'coverage': # Convert to percentage
                     this_spec['vals'][y] = str(round(100*this_spec['vals'][y])) # Enter to the nearest percentage
-                elif js_scen['scen_type'] == 'coverage': # Add commas
+                elif js_scen['scen_type'] == 'budget': # Add commas
                     this_spec['vals'][y] = format(int(round(this_spec['vals'][y])), ',') # Add commas
         this_spec['base_cov'] = str(round(program.base_cov*100)) # Convert to percentage
         this_spec['base_spend'] = format(int(round(program.base_spend)), ',')
@@ -747,7 +697,8 @@ def get_default_scen(project_id, scen_type=None):
     if scen_type is None: scen_type = 'coverage'
     proj = load_project(project_id, die=True)
     py_scens = proj.demo_scens(doadd=False)
-    py_scen = py_scens[0] # Pull out the first one
+    if scen_type == 'coverage': py_scen = py_scens[0] # Pull out the first one
+    else:                       py_scen = py_scens[1] # Pull out the second one
     py_scen.scen_type = scen_type # Set the scenario type
     js_scen = py_to_js_scen(py_scen, proj, default_included=True)
     print('Created default JavaScript scenario:')
@@ -788,7 +739,7 @@ def run_scens(project_id, doplot=True):
             print('Converted figure %s of %s' % (f+1, len(figs)))
         
     # Get cost-effectiveness table
-    costeff = proj.get_costeff()
+    costeff = nu.get_costeff(project=proj, results=proj.result('scens'))
     table = reformat_costeff(costeff)
     
     # Store results in cache
@@ -838,22 +789,16 @@ def js_to_py_optim(js_optim):
     try:
         json['weights'] = sc.odict()
         for key,item in zip(obj_keys,js_optim['weightslist']):
-            val = to_number(item['weight'])
+            val = sanitize(item['weight'])
             json['weights'][key] = val
     except Exception as E:
         print('Unable to convert "%s" to weights' % js_optim['weightslist'])
         raise E
     jsm = js_optim['mults']
-    if isinstance(jsm, list):
-        vals = jsm
-    elif sc.isstring(jsm):
-        try:
-            vals = [float(jsm)]
-        except Exception as E:
-            print('Cannot figure out what to do with multipliers "%s"' % jsm)
-            raise E
-    else:
-        raise Exception('Cannot figure out multipliers type "%s" for "%s"' % (type(jsm), jsm))
+    if not jsm: jsm = 1.0
+    if sc.isstring(jsm):
+        jsm = jsm.split(',')
+    vals = sanitize(jsm, die=True)
     json['mults'] = vals
     json['add_funds'] = sanitize(js_optim['add_funds'], forcefloat=True)
     json['prog_set'] = [] # These require more TLC
@@ -915,7 +860,12 @@ def plot_optimization(project_id, cache_id):
         graph_dict = mpld3.fig_to_dict(fig)
         graphs.append(graph_dict)
         print('Converted figure %s of %s' % (f+1, len(figs)))
-    return {'graphs': graphs}
+    
+    # Get cost-effectiveness table
+    costeff = nu.get_costeff(project=proj, results=proj.result(cache_id))
+    table = reformat_costeff(costeff)
+    
+    return {'graphs':graphs, 'table':table}
 
 
 
@@ -951,7 +901,7 @@ def export_results(project_id):
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
     proj = retrieve_results(proj)
     file_name = '%s outputs.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
-    full_file_name = get_path(file_name) # Generate the full file name with path.
+    full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
     proj.write_results(full_file_name, keys=-1)
     print(">> export_results %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
@@ -962,7 +912,7 @@ def export_graphs(project_id):
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
     proj = retrieve_results(proj)
     file_name = '%s graphs.pdf' % proj.name # Create a filename containing the project name followed by a .prj suffix.
-    full_file_name = get_path(file_name) # Generate the full file name with path.
+    full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
     figs = proj.plot(-1) # Generate the plots
     sc.savefigs(figs, filetype='singlepdf', filename=full_file_name)
     print(">> export_graphs %s" % (full_file_name)) # Display the call information.

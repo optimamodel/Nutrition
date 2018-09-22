@@ -5,6 +5,7 @@ Defaults are the following:
 Defaults correspond to the data set which is loaded by the user.
 """
 from .scenarios import make_scens
+import sciris as sc
 
 def get_defaults(modelname, model, basename='Baseline'):
     """
@@ -17,7 +18,7 @@ def get_defaults(modelname, model, basename='Baseline'):
     """
     progset = model.prog_info.base_progset()
     # maintain current coverage
-    progvals = {prog:[] for prog in progset}
+    progvals = sc.odict([(prog,[]) for prog in progset])
     kwargs1 = {'name': basename,
               'model_name': modelname,
               'scen_type': 'cov',
