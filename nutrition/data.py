@@ -524,7 +524,7 @@ class Dataset(object):
     ''' Store all the data for a project '''
     
     def __init__(self, country='demo', region='demo', name=None, demo_data=None, prog_data=None, default_params=None,
-                 pops=None, prog_info=None, doload=False, filepath=None, from_file=None, project=None):
+                 pops=None, prog_info=None, doload=False, inputspath=None, defaultspath=None, fromfile=None, project=None):
         
         self.country = country
         self.region = region
@@ -541,36 +541,41 @@ class Dataset(object):
             except: name = 'default'
         self.modified = sc.now()
         if doload:
-            self.load(filepath=filepath, from_file=True, project=project)
+            self.load(inputspath=inputspath, defaultspath=defaultspath, fromfile=True, project=project)
         return None
     
     def __repr__(self):
         output  = sc.prepr(self)
         return output
     
-    def load(self, filepath=None, from_file=True, project=None):
+    def load(self, inputspath=None, defaultspath=None, fromfile=True, project=None):
+        # Handle inputs
         if project is None:
             raise Exception('Sorry, but you must supply a project for load().')
-        if from_file:
-            if filepath is None: input_path = settings.data_path(self.country, self.region)
-            else:                input_path = filepath
-            input_sheet    = sc.Spreadsheet(filename=input_path)
-            defaults_sheet = sc.Spreadsheet(filename=settings.default_params_path())
-            project.input_sheet    = input_sheet
-            project.defaults_sheet = defaults_sheet
-        else:
-            input_sheet    = project.input_sheet
-            defaults_sheet = project.defaults_sheet
-        input_data   = input_sheet.pandas()
-        default_data = defaults_sheet.pandas()
-        self.demo_data = InputData(input_data)
-        self.default_params = DefaultParams(default_data, input_data)
-        self.default_params.compute_risks(self.demo_data)
-        self.prog_data = ProgData(input_data, self.default_params)
-        self.pops = populations.set_pops(self.demo_data, self.default_params)
-        self.prog_info = programs.ProgramInfo(self.prog_data)
-        self.t = self.demo_data.t
-        self.modified = sc.now()
+        if fromfile: # Reload the data at the project level
+            project.load_data(country=self.country, region=self.region, name=self.name, inputspath=inputspath, defaultspath=defaultspath, fromfile=fromfile, makemodel=False)
+        
+        # Pull the sheets from the project
+        input_sheet    = project.input_sheet 
+        defaults_sheet = project.defaults_sheet
+        
+        # Convert them to Pandas
+        input_data     = input_sheet.pandas() 
+        default_data   = defaults_sheet.pandas()
+        
+        # Read them into actual data
+        try:
+            self.demo_data = InputData(input_data)
+            self.default_params = DefaultParams(default_data, input_data)
+            self.default_params.compute_risks(self.demo_data)
+            self.prog_data = ProgData(input_data, self.default_params)
+            self.pops = populations.set_pops(self.demo_data, self.default_params)
+            self.prog_info = programs.ProgramInfo(self.prog_data)
+            self.t = self.demo_data.t
+            self.modified = sc.now()
+        except Exception as E:
+            errormsg = 'Could not load data: ensure both input and defaults sheets have been loaded: %s' % str(E)
+            raise Exception(errormsg)
         return None
     
     def prog_names(self):
