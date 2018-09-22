@@ -48,7 +48,7 @@ class Project(object):
     ### Built-in methods -- initialization, and the thing to print if you call a project
     #######################################################################################################
 
-    def __init__(self, name='default', loadsheets=True, filepath=None):
+    def __init__(self, name='default', loadsheets=True, inputspath=None, defaultspath=None):
         ''' Initialize the project '''
 
         ## Define the structure sets
@@ -60,10 +60,10 @@ class Project(object):
         self.input_sheet    = None
         self.defaults_sheet = None
         if loadsheets:
-            if not filepath:
+            if not inputspath:
                 template_name = 'template_input.xlsx'
-                filepath = sc.makefilepath(filename=template_name, folder=settings.ONpath('applications'))
-            self.load_data(filepath=filepath, fromfile=True, makemodel=False)
+                inputspath = sc.makefilepath(filename=template_name, folder=settings.ONpath('applications'))
+            self.load_data(inputspath=inputspath, defaultspath=defaultspath, fromfile=True, makemodel=False)
 
         ## Define other quantities
         self.name     = name
@@ -96,7 +96,6 @@ class Project(object):
         output += '============================================================\n'
         return output
     
-    
     def getinfo(self):
         ''' Return an odict with basic information about the project'''
         info = sc.odict()
@@ -105,21 +104,29 @@ class Project(object):
             info[attr] = getattr(self, attr) # Populate the dictionary
         return info
     
-    def load_data(self, country='demo', region='demo', name=None, filepath=None, overwrite=False, fromfile=True, makemodel=True):
+    def load_inputs(self, inputspath=None, country=None, region=None):
+        ''' Reload the input spreadsheet into the project '''
+        if inputspath is None: inputspath = settings.data_path(country, region)
+        self.input_sheet    = sc.Spreadsheet(filename=inputspath)
+        return self.input_sheet
+    
+    def load_defaults(self, defaultspath=None):
+        ''' Reload the defaults spreadsheet into the project '''
+        if defaultspath is None: defaultspath = settings.default_params_path()
+        self.defaults_sheet = sc.Spreadsheet(filename=defaultspath)
+        return self.defaults_sheet
+        
+    def load_data(self, country='demo', region='demo', name=None, inputspath=None, defaultspath=None, overwrite=False, fromfile=True, makemodel=True):
         '''Load the data, which can mean one of two things: read in the spreadsheets, and/or use these data to make a model '''
         
         # Optionally (but almost always) reload the spreadsheets from file
         if fromfile:
-            if filepath is None: input_path = settings.data_path(country, region)
-            else:                input_path = filepath
-            input_sheet    = sc.Spreadsheet(filename=input_path)
-            defaults_sheet = sc.Spreadsheet(filename=settings.default_params_path())
-            self.input_sheet    = input_sheet
-            self.defaults_sheet = defaults_sheet
+            if inputspath   or not self.input_sheet:    self.load_inputs(inputspath=inputspath, country=country, region=region)
+            if defaultspath or not self.defaults_sheet: self.load_defaults(defaultspath=defaultspath)
         
         # Optionally (but almost always) use these to make a model (do not do if blank sheets)
         if makemodel:
-            dataset = Dataset(country=country, region=region, name=name, filepath=filepath, doload=True, project=self)
+            dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self)
             if name is None: name = sc.uniquename(dataset.name, self.datasets.keys())
             self.datasets[name] = dataset
             self.add_model(name, overwrite=overwrite) # add model associated with the dataset

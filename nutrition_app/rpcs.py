@@ -362,18 +362,29 @@ def download_defaults(project_id):
     return full_file_name # Return the full filename.
 
 
-
-
 @RPC(call_type='upload')
 def upload_databook(databook_filename, project_id):
     """ Upload a databook to a project. """
     print(">> upload_databook '%s'" % databook_filename)
     proj = load_project(project_id, die=True)
-    proj.load_data(filepath=databook_filename) # Reset the project name to a new project name that is unique.
+    proj.load_data(inputspath=databook_filename) # Reset the project name to a new project name that is unique.
     proj.modified = sc.now()
     save_project(proj) # Save the new project in the DataStore.
     return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
 
+
+@RPC(call_type='upload')
+def upload_defaults(defaults_filename, project_id):
+    """ Upload a databook to a project. """
+    print(">> upload_databook '%s'" % defaults_filename)
+    proj = load_project(project_id, die=True)
+    try:
+        proj.load_data(defaultspath=defaults_filename) # Reset the project name to a new project name that is unique.
+    except Exception as E:
+        print('Defaults uploaded, but data not loaded (probably since inputs have not been uploaded yet): %s' % str(E))
+    proj.modified = sc.now()
+    save_project(proj) # Save the new project in the DataStore.
+    return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
 
 
 
