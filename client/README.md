@@ -10,19 +10,10 @@ This folder contains the executable files for various tasks. On Mac/Linux, files
 
 ## Run scripts
 
-* `start_server.py` starts the main server. Note, this will only work after `build_client.py` has been run.
+* `server.py` starts the main server. Note, this will only work after `build_client.py` has been run.
+
+* `celery.py` starts the task server (used for optimizations).
 
 ## Other
 
 * `reset_database.py` deletes all data from the database: all users, projects, blobs, etc.
-
-## Updating Athena
-
-* Log in with root privileges.
-* Make sure Sciris is up to date: `cd ~/tools/sciris; gp` (`gp` is aliased to `git pull`)
-* Make sure Nutrition is up to date: `cd ~/tools/nutrition; gp` (NB, make sure you're on `develop` and/or change to whatever branch you need)
-* If needed, install the client (only if new node_modules have been added): `cd client; ./install_client.py`
-* Build the client (assuming you're already in the `client` folder): `./build_client`
-* Restart the server: `sudo service nutrition restart`
-* Restart Celery (the task manager): `sudo service nutritioncelery restart`
-* You should be good to go!
