@@ -9,7 +9,6 @@ Last update: 2018sep20 by cliffk
 ##############################################################
 
 import os
-import mpld3
 import numpy as np
 import sciris as sc
 import scirisweb as sw
@@ -731,7 +730,7 @@ def run_scens(project_id, doplot=True):
         for f,fig in enumerate(figs.values()):
             for ax in fig.get_axes():
                 ax.set_facecolor('none')
-            graph_dict = mpld3.fig_to_dict(fig)
+            graph_dict = sw.mpld3ify(fig, jsonify=False)
             graphs.append(graph_dict)
             print('Converted figure %s of %s' % (f+1, len(figs)))
         
@@ -854,7 +853,7 @@ def plot_optimization(project_id, cache_id):
     for f,fig in enumerate(figs.values()):
         for ax in fig.get_axes():
             ax.set_facecolor('none')
-        graph_dict = mpld3.fig_to_dict(fig)
+        graph_dict = sw.mpld3ify(fig, jsonify=False)
         graphs.append(graph_dict)
         print('Converted figure %s of %s' % (f+1, len(figs)))
     
