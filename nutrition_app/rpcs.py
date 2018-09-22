@@ -90,20 +90,6 @@ def get_version_info():
 	return version_info
       
 
-
-def find_datastore():
-    ''' Ensure the datastore is loaded '''
-    global datastore
-    if datastore is None:
-        datastore = sw.get_datastore(config=config)
-    return datastore # So can be used externally
-
-find_datastore() # Run this on load
-
-##################################################################################
-### User functions
-##################################################################################
-
 def get_user(username=None):
     ''' Ensure it's a valid Optima Nutrition user '''
     user = datastore.loaduser(username)
@@ -116,6 +102,14 @@ def get_user(username=None):
     return user
 
 
+def find_datastore():
+    ''' Ensure the datastore is loaded '''
+    global datastore
+    if datastore is None:
+        datastore = sw.get_datastore(config=config)
+    return datastore # So can be used externally
+
+find_datastore() # Run this on load
 
 
 ##################################################################################
