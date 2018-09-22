@@ -3,6 +3,8 @@ import numpy as np
 import scipy.interpolate
 import sciris as sc
 from . import utils
+from .defaults import get_defaults
+from .scenarios import run_scen, make_scens
 
 # Choose where the legend appears: outside right or inside right
 for_frontend = True
@@ -217,12 +219,31 @@ def plot_alloc(results, optim):
     figs['alloc'] = fig
     return figs
 
-def get_costeff(parents, children, baselines):
+
+def get_costeff(project, results):
     """
     Calculates the cost per impact of a scenario.
     (Total money spent on all programs (baseline + new) ) / (scneario outcome - zero cov outcome)
     :return: 3 levels of nested odicts, with keys (scen name, child name, pretty outcome) and value of type string
     """
+    parents = []
+    baselines = []
+    children = sc.odict()
+    for r, res in enumerate(results):
+        print('Running cost-effectiveness result %s of %s' % (r+1, len(results)))
+        children[res.name] = []
+        model = project.model(res.model_name)
+        parents.append(res)
+        # generate a baseline for each scenario
+        baseline = get_defaults(res.model_name, model)[0]  # assumes baseline at 0 index
+        baseres = run_scen(baseline, model)
+        baselines.append(baseres)
+        # get all the 'child' results for each scenario
+        childkwargs = res.get_childscens()
+        childscens = make_scens(childkwargs)
+        for child in childscens:
+            childres = run_scen(child, model)
+            children[res.name].append(childres)
     outcomes = utils.default_trackers(prev=False, rate=False)
     pretty = utils.relabel(outcomes)
     costeff = sc.odict()
