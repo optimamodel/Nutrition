@@ -114,10 +114,14 @@ Last update: 2018-09-06
           <input type="text"
                  class="txbox"
                  v-model="addEditModal.optimSummary.name"/><br>
-          <b>Optimization objective weights</b><br>
-          <div class="calib-params" style="max-height: 40vh;">
-            <!--<div style="display: inline-block;">-->
-            <table class="table scrolltable">
+          <div class="scrolltable" style="max-height: 30vh;">
+            <table class="table table-bordered table-striped table-hover">
+              <thead>
+              <tr>
+                <th>Optimization objective</th>
+                <th>Weight</th>
+              </tr>
+              </thead>
               <tbody>
               <tr v-for="item in addEditModal.optimSummary.weightslist">
                 <td>
@@ -132,6 +136,7 @@ Last update: 2018-09-06
               </tbody>
             </table>
           </div>
+
           <br>
           <b>Budget multipliers</b> (1 = current budget)<br>
           <input type="text"
@@ -145,10 +150,8 @@ Last update: 2018-09-06
                  class="txbox"
                  v-model="addEditModal.optimSummary.add_funds"/><br>
 
-          <div class="tableFixHead">
-          <!--<div class="calib-params" style="max-height: 40vh;">-->
-            <table>
-            <!--<table class="table table-bordered table-hover table-striped scrolltable" style="width: 100%">-->
+          <div class="scrolltable" style="max-height: 30vh;">
+            <table class="table table-bordered table-striped table-hover">
               <thead>
               <tr>
                 <th>Program name</th>

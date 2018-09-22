@@ -174,55 +174,22 @@ $table-bg-active:                    $table-bg-hover;
   }
 }
 
-// Scrollable table -- TEMP
 
-.scrolltable thead tr {
-  //display: block;
-}
-
-.scrolltable tbody {
-  //display: inline;
-  //width: 100%;
-  //height: 200px;
-  overflow: auto;
-}
-
-//.scrolltable .column1 {
-//  width: 434px;
-//}
-//
-//.scrolltable .column2 {
-//  width: 100px;
-//}
-
-
-.tableFixHead {
+.scrolltable {
   overflow-y: auto;
-  height: 100px;
 }
 
-.tableFixHead table {
-  border-collapse: collapse;
-  width: 100%;
-}
-
-.tableFixHead th,
-.tableFixHead td {
-  padding: 8px 16px;
-}
-
-.tableFixHead th {
+.scrolltable th {
   position: sticky;
   top: 0;
-  background: #eee;
+  z-index: 1000;
+  //background: #eee;
 }
 
 
 
 
 // Table cell sizing
-//
-// Reset default table behavior
 
 table col[class*="col-"] {
   position: static; // Prevent border hiding in Firefox and IE9/10 (see https://github.com/twbs/bootstrap/issues/11623)
