@@ -20,6 +20,16 @@ function getUniqueName(fileName, otherNames) {
   return tryName
 }
 
+function updateSorting(vm, sortColumn) {
+  console.log('updateSorting() called')
+  if (vm.sortColumn === sortColumn) { // If the active sorting column is clicked...
+    vm.sortReverse = !vm.sortReverse // Reverse the sort.
+  } else { // Otherwise.
+    vm.sortColumn = sortColumn // Select the new column for sorting.
+    vm.sortReverse = false // Set the sorting for non-reverse.
+  }
+}
+
 function placeholders(startVal) {
   var indices = []
   if (!startVal) {
@@ -140,12 +150,17 @@ function makeGraphs(vm, graphdata) {
   status.succeed(vm, 'Graphs created') // Indicate success.
 }
 
-function clearGraphs(vm) {
-  for (var index = 0; index <= 100; index++) {
-    var divlabel = 'fig' + index
-    var div = document.getElementById(divlabel); // CK: Not sure if this is necessary? To ensure the div is clear first
-    while (div.firstChild) {
-      div.removeChild(div.firstChild);
+function clearGraphs(vm, numfigs) {
+  console.log('clearGraphs() called')
+  for (let index = 1; index <= numfigs; index++) {
+    let divlabel = 'fig' + index
+    let div = document.getElementById(divlabel); // CK: Not sure if this is necessary? To ensure the div is clear first
+    if (div) {
+      while (div.firstChild) {
+        div.removeChild(div.firstChild);
+      }
+    } else {
+      console.log('WARNING: div not found: ' + divlabel)
     }
     vm.hasGraphs = false
   }
@@ -172,23 +187,6 @@ function exportResults(vm, project_id) {
 // Graphs DOM functions
 //
 
-function showBrowserWindowSize() {
-  var w = window.innerWidth;
-  var h = window.innerHeight;
-  var ow = window.outerWidth; //including toolbars and status bar etc.
-  var oh = window.outerHeight;
-  console.log('Browser window size:')
-  console.log('Inner width: ', w)
-  console.log('Inner height: ', h)
-  console.log('Outer width: ', ow)
-  console.log('Outer height: ', oh)
-  window.alert('Browser window size:\n'+
-    'Inner width: ' + w + '\n' +
-    'Inner height: ' + h + '\n' +
-    'Outer width: ' + ow + '\n' +
-    'Outer height: ' + oh + '\n')
-}
-
 function scaleElem(svg, frac) {
   // It might ultimately be better to redraw the graph, but this works
   var width  = svg.getAttribute("width")
@@ -213,6 +211,7 @@ export default {
   sleep,
   getUniqueName,
   placeholders,
+  updateSorting,
   projectID,
   hasData,
   simStart,
@@ -225,5 +224,4 @@ export default {
   exportGraphs,
   exportResults,
   scaleFigs,
-  showBrowserWindowSize,
 }

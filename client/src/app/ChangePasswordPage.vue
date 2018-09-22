@@ -78,7 +78,7 @@ Last update: 2018-08-26
             }
           })
           .catch(error => {
-            this.changeResult = 'Server error.  Please try again later.'
+            status.fail(this, 'Password updated failed', error)
           })
       }
     }

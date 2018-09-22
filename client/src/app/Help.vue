@@ -7,8 +7,12 @@ Last update: 2018sep22
 <template>
   <div class="SitePage" style="text-align:center">
     <div style="display:inline-block; margin:auto; text-align:left" v-model="getVersionInfo">
-      <p>We are in the process of writing a user guide.</p>
-      <p>For assistance in the mean time, please email <a href="mailto:help@ocds.co">help@ocds.co</a>.</p>
+      <div style="max-width:500px">
+        <p>We are in the process of writing a user guide.</p>
+        <p>For assistance in the mean time, please email <a href="mailto:help@ocds.co">help@ocds.co</a>.</p>
+        <p>Please copy and paste the information from the table below into your email.</p>
+        <br>
+      </div>
 
       <table class="table table-bordered table-striped table-hover">
         <thead>
@@ -34,8 +38,16 @@ Last update: 2018sep22
           <td>{{ githash }}</td>
         </tr>
         <tr>
-          <td class="tlabel">Timestamp </td>
+          <td class="tlabel">Time </td>
           <td>{{ gitdate }}</td>
+        </tr>
+        <tr>
+          <td class="tlabel">Server </td>
+          <td>{{ server }}</td>
+        </tr>
+        <tr>
+          <td class="tlabel">Load </td>
+          <td>{{ cpu }}</td>
         </tr>
         </tbody>
       </table>
@@ -56,6 +68,8 @@ Last update: 2018sep22
         gitbranch: '',
         githash: '',
         gitdate: '',
+        server: '',
+        cpu: '',
       }
     },
 
@@ -63,11 +77,13 @@ Last update: 2018sep22
       getVersionInfo() {
         rpcs.rpc('get_version_info')
           .then(response => {
-            this.version = response.data['version'];
-            this.date = response.data['date'];
+            this.version   = response.data['version'];
+            this.date      = response.data['date'];
             this.gitbranch = response.data['gitbranch'];
-            this.githash = response.data['githash'];
-            this.gitdate = response.data['gitdate'];
+            this.githash   = response.data['githash'];
+            this.gitdate   = response.data['gitdate'];
+            this.server    = response.data['server'];
+            this.cpu       = response.data['cpu'];
           })
       },
     },
@@ -78,5 +94,4 @@ Last update: 2018sep22
   .tlabel {
     font-weight:bold;
   }
-
 </style>

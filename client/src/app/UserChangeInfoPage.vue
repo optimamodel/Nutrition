@@ -98,7 +98,7 @@ Last update: 2018-08-18
             }
           })
           .catch(error => {
-            this.changeResult = 'Server error.  Please try again later.'
+            status.fail(this, 'Failed to update user info, please check password and try again', error)
           })
       }
     }

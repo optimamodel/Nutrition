@@ -1,7 +1,7 @@
 """
 Optima Nutrition remote procedure calls (RPCs)
     
-Last update: 2018sep20 by cliffk
+Last update: 2018sep22 by cliffk
 """
 
 ###############################################################
@@ -9,6 +9,8 @@ Last update: 2018sep20 by cliffk
 ##############################################################
 
 import os
+import socket
+import psutil
 import numpy as np
 import sciris as sc
 import scirisweb as sw
@@ -86,6 +88,8 @@ def get_version_info():
 	       'gitbranch': gitinfo['branch'],
 	       'githash':   gitinfo['hash'],
 	       'gitdate':   gitinfo['date'],
+            'server':    socket.gethostname(),
+            'cpu':       '%0.1f%%' % psutil.cpu_percent(),
 	}
 	return version_info
       
@@ -125,41 +129,17 @@ def load_result(result_key, die=None):
     return output
 
 def save_project(project, die=None): # NB, only for saving an existing project
+    project.modified = sc.now()
     output = datastore.saveblob(obj=project, objtype='project', die=die)
     return output
-
-def save_result(result, die=None):
-    output = datastore.saveblob(obj=result, objtype='result', die=die)
-    return output
-
-def del_project(project_key, die=None):
-    key = datastore.getkey(key=project_key, objtype='project')
-    project = load_project(key)
-    user = get_user(project.webapp.username)
-    output = datastore.delete(key)
-    if key in user.projects:
-        user.projects.remove(key)
-    else:
-        print('Warning: deleting project %s (%s), but not found in user "%s" projects' % (project.name, key, user.username))
-    datastore.saveuser(user)
-    return output
-
-    
-
-##################################################################################
-### Project RPCs
-##################################################################################
-
 
 def save_new_project(proj, username=None):
     """
     If we're creating a new project, we need to do some operations on it to
     make sure it's valid for the webapp.
     """ 
-    
     # Preliminaries
     new_project = sc.dcp(proj) # Copy the project, only save what we want...
-    new_project.modified = sc.now()
     new_project.uid = sc.uuid()
     
     # Get unique name
@@ -184,9 +164,41 @@ def save_new_project(proj, username=None):
     return key,new_project
 
 
+def save_result(result, die=None):
+    output = datastore.saveblob(obj=result, objtype='result', die=die)
+    return output
+
+
+def del_project(project_key, die=None):
+    key = datastore.getkey(key=project_key, objtype='project')
+    project = load_project(key)
+    user = get_user(project.webapp.username)
+    output = datastore.delete(key)
+    if key in user.projects:
+        user.projects.remove(key)
+    else:
+        print('Warning: deleting project %s (%s), but not found in user "%s" projects' % (project.name, key, user.username))
+    datastore.saveuser(user)
+    return output
+
+
+@RPC()
+def delete_projects(project_keys):
+    ''' Delete one or more projects '''
+    project_keys = sc.promotetolist(project_keys)
+    for project_key in project_keys:
+        del_project(project_key)
+    return None
+
+
+
+##################################################################################
+### Project RPCs
+##################################################################################
+
 @RPC()
 def project_json(project_id, verbose=False):
-    """ Return the project summary, given the Project UID. """ 
+    """ Return the project json, given the Project UID. """ 
     proj = load_project(project_id) # Load the project record matching the UID of the project passed in.
     json = {
         'project': {
@@ -204,10 +216,9 @@ def project_json(project_id, verbose=False):
     return json
     
 
-
 @RPC()
 def project_jsons(username, verbose=False):
-    """ Return project summaries for all projects the user has to the client. """ 
+    """ Return project jsons for all projects the user has to the client. """ 
     output = {'projects':[]}
     user = get_user(username)
     for project_key in user.projects:
@@ -217,21 +228,11 @@ def project_jsons(username, verbose=False):
     return output
 
 
-
 @RPC()
-def delete_projects(project_keys):
-    ''' Delete one or more projects '''
-    project_keys = sc.promotetolist(project_keys)
-    for project_key in project_keys:
-        del_project(project_key)
-    return None
-
-
-@RPC()
-def rename_project(project_summary):
-    """ Given the passed in project summary, update the underlying project accordingly. """ 
-    proj = load_project(project_summary['project']['id']) # Load the project corresponding with this summary.
-    proj.name = project_summary['project']['name'] # Use the summary to set the actual project.
+def rename_project(project_json):
+    """ Given the passed in project json, update the underlying project accordingly. """ 
+    proj = load_project(project_json['project']['id']) # Load the project corresponding with this json.
+    proj.name = project_json['project']['name'] # Use the json to set the actual project.
     proj.modified = sc.now() # Set the modified time to now.
     save_project(proj) # Save the changed project to the DataStore.
     return None
@@ -271,14 +272,13 @@ def copy_project(project_key):
     print(">> copy_project %s" % (new_project.name))  # Display the call information.
     key,new_project = save_new_project(new_project, proj.webapp.username) # Save a DataStore projects record for the copy project.
     copy_project_id = new_project.uid # Remember the new project UID (created in save_project_as_new()).
-    return { 'projectId': copy_project_id } # Return the UID for the new projects record.
+    return { 'projectID': copy_project_id } # Return the UID for the new projects record.
 
 
 
 ##################################################################################
 ### Upload/download RPCs
 ##################################################################################
-
 
 @RPC(call_type='upload')
 def upload_project(prj_filename, username):
@@ -292,7 +292,7 @@ def upload_project(prj_filename, username):
     except Exception:
         return { 'error': 'BadFileFormatError' }
     key,proj = save_new_project(proj, username) # Save the new project in the DataStore.
-    return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
+    return {'projectID': str(proj.uid)} # Return the new project UID in the return message.
 
 
 @RPC(call_type='download')   
@@ -360,7 +360,7 @@ def upload_databook(databook_filename, project_id):
     proj.load_data(inputspath=databook_filename) # Reset the project name to a new project name that is unique.
     proj.modified = sc.now()
     save_project(proj) # Save the new project in the DataStore.
-    return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
+    return { 'projectID': str(proj.uid) } # Return the new project UID in the return message.
 
 
 @RPC(call_type='upload')
@@ -374,7 +374,7 @@ def upload_defaults(defaults_filename, project_id):
         print('Defaults uploaded, but data not loaded (probably since inputs have not been uploaded yet): %s' % str(E))
     proj.modified = sc.now()
     save_project(proj) # Save the new project in the DataStore.
-    return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
+    return { 'projectID': str(proj.uid) } # Return the new project UID in the return message.
 
 
 
@@ -654,23 +654,23 @@ def js_to_py_scen(js_scen):
 def get_scen_info(project_id, key=None):
     print('Getting scenario info...')
     proj = load_project(project_id, die=True)
-    scenario_summaries = []
+    scenario_jsons = []
     for py_scen in proj.scens.values():
         js_scen = py_to_js_scen(py_scen, proj, key=key)
-        scenario_summaries.append(js_scen)
+        scenario_jsons.append(js_scen)
     print('JavaScript scenario info:')
-    sc.pp(scenario_summaries)
+    sc.pp(scenario_jsons)
 
-    return scenario_summaries
+    return scenario_jsons
 
 
 @RPC()
-def set_scen_info(project_id, scenario_summaries):
+def set_scen_info(project_id, scenario_jsons):
     print('Setting scenario info...')
     proj = load_project(project_id, die=True)
     proj.scens.clear()
-    for j,js_scen in enumerate(scenario_summaries):
-        print('Setting scenario %s of %s...' % (j+1, len(scenario_summaries)))
+    for j,js_scen in enumerate(scenario_jsons):
+        print('Setting scenario %s of %s...' % (j+1, len(scenario_jsons)))
         json = js_to_py_scen(js_scen)
         proj.add_scen(json=json)
         print('Python scenario info for scenario %s:' % (j+1))
@@ -802,22 +802,22 @@ def js_to_py_optim(js_optim):
 def get_optim_info(project_id):
     print('Getting optimization info...')
     proj = load_project(project_id, die=True)
-    optim_summaries = []
+    optim_jsons = []
     for py_optim in proj.optims.values():
         js_optim = py_to_js_optim(py_optim, proj)
-        optim_summaries.append(js_optim)
+        optim_jsons.append(js_optim)
     print('JavaScript optimization info:')
-    sc.pp(optim_summaries)
-    return optim_summaries
+    sc.pp(optim_jsons)
+    return optim_jsons
 
 
 @RPC()
-def set_optim_info(project_id, optim_summaries):
+def set_optim_info(project_id, optim_jsons):
     print('Setting optimization info...')
     proj = load_project(project_id, die=True)
     proj.optims.clear()
-    for j,js_optim in enumerate(optim_summaries):
-        print('Setting optimization %s of %s...' % (j+1, len(optim_summaries)))
+    for j,js_optim in enumerate(optim_jsons):
+        print('Setting optimization %s of %s...' % (j+1, len(optim_jsons)))
         json = js_to_py_optim(js_optim)
         print('Python optimization info for optimization %s:' % (j+1))
         print(json)

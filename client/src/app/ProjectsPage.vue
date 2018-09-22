@@ -1,11 +1,11 @@
 <!--
 Manage projects page
 
-Last update: 2018-08-30
+Last update: 2018sep22
 -->
 
 <template>
-  <div>
+  <div class="SitePage">
     <div class="card">
       <help reflink="create-projects" label="Create projects"></help>
 
@@ -181,14 +181,14 @@ Last update: 2018-08-30
     },
 
     created() {
-      let projectId = null
+      let projectID = null
       if (this.$store.state.currentUser.displayname === undefined) { // If we have no user logged in, automatically redirect to the login page.
         router.push('/login')
       } else {    // Otherwise...
         if (this.$store.state.activeProject.project !== undefined) { // Get the active project ID if there is an active project.
-          projectId = this.$store.state.activeProject.project.id
+          projectID = this.$store.state.activeProject.project.id
         }
-        this.updateProjectSummaries(projectId) // Load the project summaries of the current user.
+        this.updateProjectSummaries(projectID) // Load the project summaries of the current user.
       }
     },
 
@@ -295,7 +295,7 @@ Last update: 2018-08-30
         rpcs.upload('upload_project', [this.$store.state.currentUser.username], {}, '.prj') // Have the server upload the project.
           .then(response => {
             status.start(this)  // This line needs to be here to avoid the spinner being up during the user modal.
-            this.updateProjectSummaries(response.data.projectId) // Update the project summaries so the new project shows up on the list.
+            this.updateProjectSummaries(response.data.projectID) // Update the project summaries so the new project shows up on the list.
             status.succeed(this, 'New project uploaded')
           })
           .catch(error => {
@@ -373,7 +373,7 @@ Last update: 2018-08-30
         status.start(this) // Start indicating progress.
         rpcs.rpc('copy_project', [uid]) // Have the server copy the project, giving it a new name.
           .then(response => {
-            this.updateProjectSummaries(response.data.projectId) // Update the project summaries so the copied program shows up on the list.
+            this.updateProjectSummaries(response.data.projectID) // Update the project summaries so the copied program shows up on the list.
             status.succeed(this, 'Project "'+matchProject.project.name+'" copied')    // Indicate success.
           })
           .catch(error => {
@@ -396,8 +396,7 @@ Last update: 2018-08-30
               status.succeed(this, '')  // No green popup message.
             })
             .catch(error => {
-              // Indicate failure.
-              status.fail(this, 'Could not rename project', error)
+              status.fail(this, 'Could not rename project', error) // Indicate failure.
             })
         }
 
@@ -510,7 +509,7 @@ Last update: 2018-08-30
               status.succeed(this, '')  // No green popup message.
             })
             .catch(error => {
-              status.fail(this, 'Could not delete project/s', error)
+              status.fail(this, 'Could not delete project(s)', error)
             })
         }
       },
@@ -527,8 +526,7 @@ Last update: 2018-08-30
               status.succeed(this, '')  // No green popup message.
             })
             .catch(error => {
-              // Indicate failure.
-              status.fail(this, 'Could not download project/s')
+              status.fail(this, 'Could not download project(s)', error) // Indicate failure.
             })
         }
       }
