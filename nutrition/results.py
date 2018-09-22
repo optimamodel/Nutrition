@@ -1,5 +1,4 @@
 import sciris as sc
-from .plotting import make_plots
 from .model import default_trackers
 
 class ScenResult(sc.prettyobj):
@@ -81,5 +80,6 @@ class ScenResult(sc.prettyobj):
         return allkwargs
 
     def plot(self, toplot=None):
+        from .plotting import make_plots # This is here to avoid a circular import
         figs = make_plots(self, toplot=toplot)
         return figs

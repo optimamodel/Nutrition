@@ -1,5 +1,4 @@
 import sciris as sc
-from .results import ScenResult
 
 class Scen(sc.prettyobj):
     def __init__(self, name=None, model_name=None, scen_type=None, progvals=None, active=True):
@@ -23,6 +22,7 @@ class Scen(sc.prettyobj):
 
 def run_scen(scen, model, obj=None, mult=None, setcovs=True, restrictcovs=True):
     """ Function to run associated Scen and Model objects """
+    from .results import ScenResult # This is here to avoid a potentially circular import
     model = sc.dcp(model)
     model.setup(scen, setcovs=setcovs, restrictcovs=restrictcovs)
     model.run_sim()

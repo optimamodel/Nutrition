@@ -75,16 +75,39 @@ Last update: 2018-09-06
 
       <div class="calib-main" :class="{'calib-main--full': true}">
         <div class="calib-graphs">
-          <!--<div class="featured-graphs">-->
-          <!--<div :id="'fig0'">-->
-          <!--&lt;!&ndash;mpld3 content goes here&ndash;&gt;-->
-          <!--</div>-->
-          <!--</div>-->
           <div class="other-graphs">
             <div v-for="index in placeholders" :id="'fig'+index" class="calib-graph">
               <!--mpld3 content goes here-->
             </div>
           </div>
+        </div>
+      </div>
+
+      <br>
+      <div v-if="table">
+        <help reflink="cost-effectiveness" label="Program cost-effectiveness"></help>
+        <div class="calib-graphs" style="display:inline-block; text-align:right; overflow:auto">
+          <table class="table table-bordered table-hover table-striped">
+            <thead>
+            <tr>
+              <th>Optimization/program</th>
+              <th>Outcomes</th>
+              <th v-for="i in table[0].length-3"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="rowdata in table">
+              <td v-for="i in (rowdata.length-1)">
+                <span v-if="rowdata[0]==='header'"             style="font-size:15px; font-weight:bold">{{rowdata[i]}}</span>
+                <span v-else-if="rowdata[0]==='keys'  && i==1" style="font-size:12px; font-style:italic">{{rowdata[i]}}</span>
+                <span v-else-if="rowdata[0]==='keys'  && i!=1" style="font-size:12px; font-weight:bold">{{rowdata[i]}}</span>
+                <span v-else-if="rowdata[0]==='entry' && i==1" style="font-size:12px; font-weight:bold">{{rowdata[i]}}</span>
+                <span v-else-if="rowdata[0]==='entry' && i!=1" style="font-size:12px;">                 {{rowdata[i]}}</span>
+                <span v-else><div style="min-height:30px"></div></span>
+              </td>
+            </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -215,6 +238,7 @@ Last update: 2018-09-06
         },
         figscale: 1.0,
         hasGraphs: false,
+        table: [],
       }
     },
 
@@ -557,6 +581,7 @@ Last update: 2018-09-06
         status.start(this)
         rpcs.rpc('plot_optimization', [this.projectID, optimSummary.serverDatastoreId])
           .then(response => {
+            this.table = response.data.table
             this.makeGraphs(response.data.graphs)
             this.displayResultName = optimSummary.name
             status.succeed(this, 'Graphs created')

@@ -26,7 +26,7 @@ def run_optim(project_id, cache_id, optim_name=None, runtype=None):
     print('Running %s optimization...' % runtype)
     datastore = sw.get_datastore(config=config)
     proj = datastore.loadblob(uid=project_id, objtype='project', die=True) # WARNING, rpcs.load_project() causes crash
-    if runtype == 'test': results = proj.run_optim(key=optim_name, dosave=False, parallel=False, maxiter=5, swarmsize=5, maxtime=10)
+    if runtype == 'test': results = proj.run_optim(key=optim_name, dosave=False, parallel=False, maxiter=5, swarmsize=5, maxtime=5)
     else:                 results = proj.run_optim(key=optim_name, dosave=False, parallel=False)
     newproj = datastore.loadblob(uid=project_id, objtype='project', die=True)
     newproj.results[cache_id] = results

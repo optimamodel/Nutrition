@@ -451,32 +451,32 @@ def define_formats():
     
     formats['IYCF packages'] = [
         ['head', 'head', 'head', 'head', 'head'],
-        ['head', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'blnk', 'blnk', 'edit'],
+        ['head', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'blnk', 'blnk', 'tick'],
         ['blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-        ['head', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'blnk', 'blnk', 'edit'],
+        ['head', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'blnk', 'blnk', 'tick'],
         ['blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-        ['head', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'blnk'],
-        ['blnk', 'name', 'blnk', 'blnk', 'edit'],
+        ['head', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'tick', 'tick', 'blnk'],
+        ['blnk', 'name', 'blnk', 'blnk', 'tick'],
     ]
     
     formats['Treatment of SAM'] = [
         ['blnk', 'head', 'head', 'head'],
-        ['head', 'name', 'name', 'edit'],
-        ['head', 'name', 'name', 'edit'],
+        ['head', 'name', 'name', 'tick'],
+        ['head', 'name', 'name', 'tick'],
     ]
     
     formats['Programs cost and coverage'] = [
@@ -739,7 +739,7 @@ def run_scens(project_id, doplot=True):
             print('Converted figure %s of %s' % (f+1, len(figs)))
         
     # Get cost-effectiveness table
-    costeff = proj.get_costeff()
+    costeff = nu.get_costeff(project=proj, results=proj.result('scens'))
     table = reformat_costeff(costeff)
     
     # Store results in cache
@@ -860,7 +860,12 @@ def plot_optimization(project_id, cache_id):
         graph_dict = mpld3.fig_to_dict(fig)
         graphs.append(graph_dict)
         print('Converted figure %s of %s' % (f+1, len(figs)))
-    return {'graphs': graphs}
+    
+    # Get cost-effectiveness table
+    costeff = nu.get_costeff(project=proj, results=proj.result(cache_id))
+    table = reformat_costeff(costeff)
+    
+    return {'graphs':graphs, 'table':table}
 
 
 

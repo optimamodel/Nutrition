@@ -7,7 +7,7 @@ import sciris as sc
 from .version import version
 from .optimization import Optim
 from .data import Dataset
-from .scenarios import Scen, run_scen, make_scens
+from .scenarios import Scen, run_scen
 from .plotting import make_plots, get_costeff
 from .model import Model
 from .utils import trace_exception, default_trackers, pretty_labels
@@ -388,30 +388,15 @@ class Project(object):
         figs = make_plots(self.result(key), toplot=toplot, optim=optim)
         return figs
 
-    def get_costeff(self):
-        """ Returns a nested odict with keys (scenario name, child name, pretty outcome) and value (output). Output is type string
-        Will work for both scenarios and optimizations, using whatever results were last generated """
-        parents = []
-        baselines = []
-        children = sc.odict()
-#        results = self.result(-1)
-        results = self.result('scens')       
-        for r, res in enumerate(results):
-            print('Running cost-effectiveness scenario %s of %s' % (r+1, len(results)))
-            children[res.name] = []
-            model = self.model(res.model_name)
-            parents.append(res)
-            # generate a baseline for each scenario
-            baseline = get_defaults(res.model_name, model)[0]  # assumes baseline at 0 index
-            baseres = run_scen(baseline, model)
-            baselines.append(baseres)
-            # get all the 'child' results for each scenario
-            childkwargs = res.get_childscens()
-            childscens = make_scens(childkwargs)
-            for child in childscens:
-                childres = run_scen(child, model)
-                children[res.name].append(childres)
-        costeff = get_costeff(parents, children, baselines)
+    def get_costeff(self, resultname=None):
+        """ 
+        Returns a nested odict with keys (scenario/optim name, child name, pretty outcome) 
+        and value (output). Output is type string. Will work for both scenarios and optimizations, 
+        using whatever results were last generated
+        """
+        if resultname is None: resultname = 'scens'
+        results = self.result(resultname)       
+        costeff = get_costeff(self, results)
         return costeff
 
 def demo(scens=False, optims=False):
