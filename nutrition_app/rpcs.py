@@ -288,7 +288,7 @@ def upload_project(prj_filename, username):
     except Exception:
         return { 'error': 'BadFileFormatError' }
     key,proj = save_new_project(proj, username) # Save the new project in the DataStore.
-    return { 'projectId': str(proj.uid) } # Return the new project UID in the return message.
+    return {'projectID': str(proj.uid)} # Return the new project UID in the return message.
 
 
 @RPC(call_type='download')   
