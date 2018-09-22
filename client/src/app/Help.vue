@@ -63,11 +63,11 @@ Last update: 2018sep22
       getVersionInfo() {
         rpcs.rpc('get_version_info')
           .then(response => {
-            this.version = response.data['version'];
-            this.date = response.data['date'];
+            this.version   = response.data['version'];
+            this.date      = response.data['date'];
             this.gitbranch = response.data['gitbranch'];
-            this.githash = response.data['githash'];
-            this.gitdate = response.data['gitdate'];
+            this.githash   = response.data['githash'];
+            this.gitdate   = response.data['gitdate'];
           })
       },
     },
@@ -78,5 +78,4 @@ Last update: 2018sep22
   .tlabel {
     font-weight:bold;
   }
-
 </style>

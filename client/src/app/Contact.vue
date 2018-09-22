@@ -1,7 +1,7 @@
 <!--
 Contact page
 
-Last update: 2018-03-25
+Last update: 2018sep22
 -->
 
 <template>
@@ -9,8 +9,3 @@ Last update: 2018-03-25
   	<p>You can reach us at <a href="mailto:info@ocds.co">info@ocds.co</a>.</p>
   </div>
 </template>
-
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-</style>
