@@ -31,13 +31,13 @@
 .calib-params {
   flex: 0 0 30%;
   max-height: 80vh;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 .calib-graphs {
   border: 2px solid #ddd;
   flex-grow: 1;
   max-height: 80vh;
-  overflow-y: scroll;
+  overflow-y: auto;
   .featured-graphs {
 
   }
