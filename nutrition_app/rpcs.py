@@ -12,26 +12,26 @@ import os
 import socket
 import psutil
 import numpy as np
+import pylab as pl
 import sciris as sc
 import scirisweb as sw
 import nutrition.ui as nu
 from . import config
-from matplotlib.pyplot import rc
-rc('font', size=12)
+pl.rc('font', size=14)
 
 # Globals
 RPC_dict = {} # Dictionary to hold all of the registered RPCs in this module.
-RPC = sw.makeRPCtag(RPC_dict) # RPC registration decorator factory created using call to make_RPC().
+RPC = sw.RPCwrapper(RPC_dict) # RPC registration decorator factory created using call to make_RPC().
 datastore = None
 
 
 ###############################################################
 ### Helper functions
-##############################################################
+###############################################################
 
 def get_path(filename=None, username=None):
     if filename is None: filename = ''
-    base_dir = sw.flaskapp.datastore.tempfolder
+    base_dir = datastore.tempfolder
     user_id = str(get_user(username).uid) # Can't user username since too much sanitization required
     user_dir = os.path.join(base_dir, user_id)
     if not os.path.exists(user_dir):
@@ -80,7 +80,7 @@ def sanitize(vals, skip=False, forcefloat=False, verbose=False, as_nan=False, di
 
 @RPC()
 def get_version_info():
-	''' Return the information about the project. '''
+	''' Return the information about the running environment '''
 	gitinfo = sc.gitinfo(__file__)
 	version_info = {
 	       'version':   nu.version,
@@ -197,7 +197,7 @@ def delete_projects(project_keys):
 ##################################################################################
 
 @RPC()
-def project_json(project_id, verbose=False):
+def jsonify_project(project_id, verbose=False):
     """ Return the project json, given the Project UID. """ 
     proj = load_project(project_id) # Load the project record matching the UID of the project passed in.
     json = {
@@ -217,12 +217,12 @@ def project_json(project_id, verbose=False):
     
 
 @RPC()
-def project_jsons(username, verbose=False):
+def jsonify_projects(username, verbose=False):
     """ Return project jsons for all projects the user has to the client. """ 
     output = {'projects':[]}
     user = get_user(username)
     for project_key in user.projects:
-        json = project_json(project_key)
+        json = jsonify_project(project_key)
         output['projects'].append(json)
     if verbose: sc.pp(output)
     return output

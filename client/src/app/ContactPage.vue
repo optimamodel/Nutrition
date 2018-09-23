@@ -1,7 +1,7 @@
 <!--
 Contact page
 
-Last update: 2018sep22
+Last update: 2018sep23
 -->
 
 <template>

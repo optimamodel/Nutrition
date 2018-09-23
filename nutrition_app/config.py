@@ -16,14 +16,12 @@ you use a relative path, it is interpreted as being with respect to the
 "webapp directory," that is, the directory containing this config file and the
 main webapp script that imports it.
 
-Last update: 2018sep22
+Last update: 2018sep23
 """
-
 import os
 
-
 # A secret key value used by Python Flask.
-SECRET_KEY = 'Pick something unique for your site here'
+SECRET_KEY = 'afabacefacedabaddad'
 
 # Directory containing the client code.
 CLIENT_DIR = '../client/dist'
@@ -35,7 +33,7 @@ USE_DATASTORE = True
 # URL for the Redis database that the web app will use to manage
 # persistence.  Note that the /N/ number at the end should match the
 # database number you want to use.  (N=0 is the default Redis database.)
-REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/6')
+REDIS_URL = os.getenv('REDIS_URL', 'redis://127.0.0.1:6379/6')
 
 # Flag for setting whether we use the users functionality provided by
 # Sciris in the webapp.
@@ -52,13 +50,6 @@ SERVER_PORT = int(os.getenv('PORT', 8092))
 # Matplotlib backend
 MATPLOTLIB_BACKEND = 'Agg'
 
-# Slack logging configuration
-SLACK = {'to':'webapp-logs', 'from':'nutrition-bot', 'token':'~/.slackurl'}
-
-#
-# Asynchronous task parameters
-#
-
 # Flag for setting whether we use the tasks functionality provided by
 # Sciris in the webapp.
 USE_TASKS = True
@@ -72,3 +63,6 @@ BROKER_URL = REDIS_URL
 # Note that the /N number at the end should match the
 # database number you want to use.  (N=0 is the default Redis database.)
 CELERY_RESULT_BACKEND = REDIS_URL
+
+# Slack logging configuration
+SLACK = {'to':'webapp-logs', 'from':'nutrition-bot', 'token':'~/.slackurl'}
