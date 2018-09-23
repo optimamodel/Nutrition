@@ -11,12 +11,6 @@ from . import config
 import matplotlib.pyplot as ppl
 ppl.switch_backend(config.MATPLOTLIB_BACKEND)
 
-
-print('')
-print('#########################################')
-print('Starting Cascade Analysis Tools Celery...')
-print('#########################################')
-
 # Process arguments
 for i,arg in enumerate(sys.argv[1:]):
     try:
