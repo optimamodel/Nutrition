@@ -22,7 +22,7 @@ Last update: 2018sep23
         <tbody>
         <tr><td class="tlabel">Username    </td><td>{{ username }}</td></tr>
         <tr><td class="tlabel">Browser     </td><td>{{ useragent }}</td></tr>
-        <tr><td class="tlabel">App version </td><td>Optima Nutrition {{ version }} ({{ date }}) {{ gitbranch }}:{{ githash }}</td></tr>
+        <tr><td class="tlabel">App version </td><td>Optima Nutrition {{ version }} ({{ date }}) [{{ gitbranch }}/{{ githash }}]</td></tr>
         <tr><td class="tlabel">Timestamp   </td><td>{{ timestamp }}</td></tr>
         <tr><td class="tlabel">Server name </td><td>{{ server }}</td></tr>
         <tr><td class="tlabel">Server load </td><td>{{ cpu }}</td></tr>
