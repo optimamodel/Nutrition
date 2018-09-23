@@ -1,7 +1,7 @@
 <!--
 About page
 
-Last update: 2018sep22
+Last update: 2018sep23
 -->
 
 <template>
@@ -27,7 +27,6 @@ Last update: 2018sep22
             <div class="divRowContent" style="text-align:center; padding-bottom:30px"><img src="static/img/burnet-logo-transparent.png" height="60px"></div>
             <div class="divRowContent" style="text-align:center; padding-bottom:30px"><img src="static/img/world-bank-logo.png" height="60px"></div>
           </div>
-
         </div>
       </div>
     </div>
