@@ -8,7 +8,7 @@ ENV PORT $PORT
 ENV REDIS_URL $REDIS_URL
 
 # Set up apt-get
-RUN apt-get update -qq && apt-get install -yqq gnupg curl libgl1-mesa-glx gcc
+RUN apt-get update -qq && apt-get install -yqq gnupg curl libgl1-mesa-glx gcc supervisor
 
 # Install nodejs
 RUN curl -sL https://deb.nodesource.com/setup_9.x | bash
