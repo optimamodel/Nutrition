@@ -357,7 +357,7 @@ Last update: 2018sep23
         return new Promise((resolve, reject) => {
           let datastoreId = optimSummary.serverDatastoreId  // hack because this gets overwritten soon by caller
           console.log('clearTask() called for '+this.currentOptim)
-          rpcs.rpc('delete_results_cache_entry', [datastoreId]) // Delete cached result.
+          rpcs.rpc('del_result', [datastoreId, this.projectID]) // Delete cached result.
             .then(response => {
               rpcs.rpc('delete_task', [datastoreId])
                 .then(response => {
