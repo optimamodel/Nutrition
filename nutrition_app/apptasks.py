@@ -11,12 +11,6 @@ from . import config
 import matplotlib.pyplot as ppl
 ppl.switch_backend(config.MATPLOTLIB_BACKEND)
 
-
-print('')
-print('#########################################')
-print('Starting Cascade Analysis Tools Celery...')
-print('#########################################')
-
 # Process arguments
 for i,arg in enumerate(sys.argv[1:]):
     try:
@@ -45,15 +39,13 @@ def run_optim(project_id, cache_id, optim_name=None, runtype=None):
     # Load the projects from the DataStore.
     if runtype is None: runtype = 'full'
     print('Running %s optimization...' % runtype)
-    datastore = sw.get_datastore(config=config)
-    proj = datastore.loadblob(uid=project_id, objtype='project', die=True) # WARNING, rpcs.load_project() cause(d) crash
+    proj = rpcs.load_project(project_id)
     if runtype == 'test': results = proj.run_optim(key=optim_name, dosave=False, parallel=False, maxiter=5, swarmsize=5, maxtime=5)
     else:                 results = proj.run_optim(key=optim_name, dosave=False, parallel=False)
-    newproj = datastore.loadblob(uid=project_id, objtype='project', die=True)
+    newproj = rpcs.load_project(project_id)
     newproj.results[cache_id] = results
-    newproj = rpcs.cache_results(newproj) # WARNING, causes crash
-    key = datastore.saveblob(uid=project_id, objtype='project', obj=newproj)
-    return key
+    rpcs.cache_results(newproj)
+    return None
 
 # Add the asynchronous task functions in this module to the tasks.py module so run_task() can call them.
 sw.add_task_funcs(task_func_dict)
