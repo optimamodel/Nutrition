@@ -457,7 +457,7 @@ Last update: 2018sep23
             console.log('Error: a mismatch in editing keys')
           }
         }
-        else { // Else (we are adding a new scenario)...
+        else { // Else (we are adding a new optimization)...
           newOptim.name = utils.getUniqueName(newOptim.name, optimNames);
           newOptim.serverDatastoreId = this.$store.state.activeProject.project.id + ':opt-' + newOptim.name
           this.optimSummaries.push(newOptim)
