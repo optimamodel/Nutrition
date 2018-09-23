@@ -46,7 +46,6 @@ Last update: 2018sep23
         date: '',
         gitbranch: '',
         githash: '',
-        gitdate: '',
         server: '',
         cpu: '',
         timestamp: '',
@@ -64,7 +63,6 @@ Last update: 2018sep23
             this.date      = response.data['date'];
             this.gitbranch = response.data['gitbranch'];
             this.githash   = response.data['githash'];
-            this.gitdate   = response.data['gitdate'];
             this.server    = response.data['server'];
             this.cpu       = response.data['cpu'];
           })

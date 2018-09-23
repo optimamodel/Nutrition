@@ -80,7 +80,7 @@ def sanitize(vals, skip=False, forcefloat=False, verbose=False, as_nan=False, di
 
 @RPC()
 def get_version_info():
-	''' Return the information about the project. '''
+	''' Return the information about the running environment '''
 	gitinfo = sc.gitinfo(__file__)
 	version_info = {
 	       'version':   nu.version,
