@@ -10,7 +10,7 @@ Last update: 2018sep23
       <div>
         <p>We are in the process of writing a user guide.</p>
         <p>For assistance in the mean time, please email <a href="mailto:help@ocds.co">help@ocds.co</a>.</p>
-        <p>Please copy and paste the table below into your email.</p>
+        <p>Please copy and paste the table below into your email, along with any error messages.</p>
       </div>
 
       <table class="table table-bordered table-striped table-hover">
