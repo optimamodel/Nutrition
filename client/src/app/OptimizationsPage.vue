@@ -1,7 +1,7 @@
 <!--
 Optimizations page
 
-Last update: 2018-09-06
+Last update: 2018sep23
 -->
 
 <template>
@@ -230,7 +230,6 @@ Last update: 2018-09-06
         serverDatastoreId: '',
         optimSummaries: [],
         optimsLoaded: false,
-        useCelery: true,
         addEditModal: {
           optimSummary: {},
           origName: '',
@@ -321,44 +320,18 @@ Last update: 2018-09-06
       getOptimTaskState(optimSummary) {
         console.log('getOptimTaskState() called for with: ' + optimSummary.status)
         let statusStr = '';
-
-        if (this.useCelery) {
-          // Check the status of the task.
-          rpcs.rpc('check_task', [optimSummary.serverDatastoreId])
-            .then(result => {
-              console.log('Response TEMP')
-              console.log(result.data)
-              statusStr = result.data.task.status
-              optimSummary.status = statusStr
-              optimSummary.pendingTime = result.data.pendingTime
-              optimSummary.executionTime = result.data.executionTime
-            })
-            .catch(error => {
-              optimSummary.status = 'not started'
-              optimSummary.pendingTime = '--'
-              optimSummary.executionTime = '--'
-            })
-        }
-
-        else {
-          // Check whether there is a cached result.
-          rpcs.rpc('check_results_cache_entry', [optimSummary.serverDatastoreId])
-            .then(result => {
-              if (result.data.found) {
-                optimSummary.status = 'completed'
-              }
-              else {
-                optimSummary.status = 'not started'
-              }
-              optimSummary.pendingTime = '--'
-              optimSummary.executionTime = '--'
-            })
-            .catch(error => {
-              optimSummary.status = 'not started'
-              optimSummary.pendingTime = '--'
-              optimSummary.executionTime = '--'
-            })
-        }
+        rpcs.rpc('check_task', [optimSummary.serverDatastoreId]) // Check the status of the task.
+          .then(result => {
+            statusStr = result.data.task.status
+            optimSummary.status = statusStr
+            optimSummary.pendingTime = result.data.pendingTime
+            optimSummary.executionTime = result.data.executionTime
+          })
+          .catch(error => {
+            optimSummary.status = 'not started'
+            optimSummary.pendingTime = '--'
+            optimSummary.executionTime = '--'
+          })
       },
 
       pollAllTaskStates() {
@@ -384,23 +357,16 @@ Last update: 2018-09-06
         return new Promise((resolve, reject) => {
           let datastoreId = optimSummary.serverDatastoreId  // hack because this gets overwritten soon by caller
           console.log('clearTask() called for '+this.currentOptim)
-
           rpcs.rpc('delete_results_cache_entry', [datastoreId]) // Delete cached result.
             .then(response => {
-              if (this.useCelery) {
-                rpcs.rpc('delete_task', [datastoreId])
-                  .then(response => {
-                    this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
-                    resolve(response)
-                  })
-                  .catch(error => {
-                    resolve(error)  // yes, resolve because at least cache entry deletion succeeded
-                  })
-              }
-              else {
-                this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
-                resolve(response)
-              }
+              rpcs.rpc('delete_task', [datastoreId])
+                .then(response => {
+                  this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
+                  resolve(response)
+                })
+                .catch(error => {
+                  resolve(error)  // yes, resolve because at least cache entry deletion succeeded
+                })
             })
             .catch(error => {
               reject(error)
@@ -423,9 +389,7 @@ Last update: 2018-09-06
               // Get the task state for the optimization.
               this.getOptimTaskState(optimSum) // Get the task state for the optimization.
             })
-            if (this.useCelery) {
-              this.pollAllTaskStates() // Start polling of tasks states.
-            }
+            this.pollAllTaskStates() // Start polling of tasks states.
             this.optimsLoaded = true
             status.succeed(this, 'Optimizations loaded')
           })
