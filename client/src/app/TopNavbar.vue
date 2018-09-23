@@ -1,7 +1,7 @@
 <!--
 Definition of top navigation bar
 
-Last update: 2018sep22
+Last update: 2018sep23
 -->
 
 <template>
