@@ -128,7 +128,7 @@ def load_project(project_key, die=None):
 
 
 @RPC() # Not usually called as an RPC
-def load_result(result_key, die=None):
+def load_result(result_key, die=False):
     output = datastore.loadblob(result_key, objtype='result', die=die)
     return output
 
