@@ -197,7 +197,7 @@ def delete_projects(project_keys):
 ##################################################################################
 
 @RPC()
-def project_json(project_id, verbose=False):
+def jsonify_project(project_id, verbose=False):
     """ Return the project json, given the Project UID. """ 
     proj = load_project(project_id) # Load the project record matching the UID of the project passed in.
     json = {
@@ -217,12 +217,12 @@ def project_json(project_id, verbose=False):
     
 
 @RPC()
-def project_jsons(username, verbose=False):
+def jsonify_projects(username, verbose=False):
     """ Return project jsons for all projects the user has to the client. """ 
     output = {'projects':[]}
     user = get_user(username)
     for project_key in user.projects:
-        json = project_json(project_key)
+        json = jsonify_project(project_key)
         output['projects'].append(json)
     if verbose: sc.pp(output)
     return output

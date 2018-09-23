@@ -224,7 +224,7 @@ Last update: 2018sep22
       updateProjectSummaries(setActiveID) {
         console.log('updateProjectSummaries() called')
         status.start(this)
-        rpcs.rpc('project_jsons', [this.$store.state.currentUser.username]) // Get the current user's project summaries from the server.
+        rpcs.rpc('jsonify_projects', [this.$store.state.currentUser.username]) // Get the current user's project summaries from the server.
           .then(response => {
             let lastCreationTime = null
             let lastCreatedID = null
