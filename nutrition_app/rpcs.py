@@ -31,7 +31,7 @@ datastore = None
 
 def get_path(filename=None, username=None):
     if filename is None: filename = ''
-    base_dir = sw.flaskapp.datastore.tempfolder
+    base_dir = datastore.tempfolder
     user_id = str(get_user(username).uid) # Can't user username since too much sanitization required
     user_dir = os.path.join(base_dir, user_id)
     if not os.path.exists(user_dir):
