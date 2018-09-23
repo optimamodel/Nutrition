@@ -12,12 +12,12 @@ import os
 import socket
 import psutil
 import numpy as np
+import pylab as pl
 import sciris as sc
 import scirisweb as sw
 import nutrition.ui as nu
 from . import config
-from matplotlib.pyplot import rc
-rc('font', size=12)
+pl.rc('font', size=14)
 
 # Globals
 RPC_dict = {} # Dictionary to hold all of the registered RPCs in this module.
@@ -27,7 +27,7 @@ datastore = None
 
 ###############################################################
 ### Helper functions
-##############################################################
+###############################################################
 
 def get_path(filename=None, username=None):
     if filename is None: filename = ''
