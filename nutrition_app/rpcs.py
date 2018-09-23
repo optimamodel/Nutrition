@@ -116,23 +116,31 @@ def find_datastore():
 find_datastore() # Run this on load
 
 
+
 ##################################################################################
-### Convenience functions -- WARNING, make these more symmetric
+### Convenience functions
 ##################################################################################
-    
+
+@RPC() # Not usually called as an RPC
 def load_project(project_key, die=None):
     output = datastore.loadblob(project_key, objtype='project', die=die)
     return output
 
+
+@RPC() # Not usually called as an RPC
 def load_result(result_key, die=None):
     output = datastore.loadblob(result_key, objtype='result', die=die)
     return output
 
+
+@RPC() # Not usually called as an RPC
 def save_project(project, die=None): # NB, only for saving an existing project
     project.modified = sc.now()
     output = datastore.saveblob(obj=project, objtype='project', die=die)
     return output
 
+
+@RPC() # Not usually called as an RPC
 def save_new_project(proj, username=None):
     """
     If we're creating a new project, we need to do some operations on it to
@@ -164,11 +172,13 @@ def save_new_project(proj, username=None):
     return key,new_project
 
 
+@RPC() # Not usually called as an RPC
 def save_result(result, die=None):
     output = datastore.saveblob(obj=result, objtype='result', die=die)
     return output
 
 
+@RPC() # Not usually called as an RPC
 def del_project(project_key, die=None):
     key = datastore.getkey(key=project_key, objtype='project')
     project = load_project(key)
@@ -191,6 +201,22 @@ def delete_projects(project_keys):
     return None
 
 
+@RPC()
+def del_result(result_key, project_key, die=None):
+    key = datastore.getkey(key=result_key, objtype='result', forcetype=False)
+    output = datastore.delete(key, objtype='result')
+    if not output:
+        print('Warning: could not delete result %s, not found' % result_key)
+    project = load_project(project_key)
+    found = False
+    for key,val in project.results.items():
+        if result_key in [key, val]: # Could be either, depending on results caching
+            project.results.pop(key) # Remove it
+            found = True
+    if not found:
+        print('Warning: deleting result %s (%s), but not found in project "%s"' % (result_key, project_key))
+    if found: save_project(project) # Only save if required
+    return output
 
 ##################################################################################
 ### Project RPCs
