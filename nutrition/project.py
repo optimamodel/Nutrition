@@ -6,7 +6,7 @@ import numpy as np
 import sciris as sc
 from .version import version
 from .optimization import Optim
-from .geospatial import Geospatial
+from functools import partial
 from .data import Dataset
 from .scenarios import Scen, run_scen, make_scens
 from .plotting import make_plots, get_costeff
@@ -331,8 +331,10 @@ class Project(object):
         self.add_result(results, name='scens')
         return None
 
-    def run_optim(self, key=-1, optim=None, maxiter=15, swarmsize=20, maxtime=140, parallel=True, dosave=True, runbaseline=True):
-        if optim is not None: self.add_optims(optim)
+    def run_optim(self, optim=None, key=-1, maxiter=15, swarmsize=20, maxtime=140, parallel=True, dosave=True, runbaseline=True):
+        if optim is not None:
+            self.add_optims(optim)
+            key = optim.name # this to handle parallel calls of this function
         optim = self.optim(key)
         results = []
         # run baseline
@@ -348,24 +350,29 @@ class Project(object):
         if dosave: self.add_result(results, name=optim.name)
         return results
 
-    def run_geospatial(self, geo=None, maxiter=30, swarmsize=25, maxtime=20):
-        # import utils
+    @trace_exception
+    def run_geospatial(self, geo=None, maxiter=30, swarmsize=25, maxtime=20, dosave=True):
+        """ Regions cannot be parallelised because daemon processes cannot have children. """
         regions = geo.make_regions()
-        # run_parallel(self.run_optim, args, num_procs=len(regions))
-        results = sc.odict({region.name: self.run_optim(optim=region, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
-                                                        runbaseline=False) for region in regions})
-        # results = [self.run_optim(optim=region, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
-        #                                                 runbaseline=False) for region in regions]
-        # regions = geo.make_regions(withmults=False)
-        # geo.model = sc.dcp(self.model(geo.model_name))
-
-        # todo: need to setup different optim objects (only 1 per region) so that we can get the correct expenditures that don't pertain to bocs...
+        run_optim = partial(self.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
+                            parallel=True, dosave=True, runbaseline=False)
+        results = sc.odict(sc.odict({region.name: run_optim(optim=region) for region in regions}))
         # extract each result that have multiple 1
         result = [region for sublist in results.itervalues() for region in sublist if region.mult == 1]
-        geo.get_bocs(results, result)
+        geo.get_bocs(results, result) # todo: need to change this naming, workflow
         regional_allocs = geo.gridsearch(result)
-        print regional_allocs
-
+        # now optimize these allocations within each region
+        regions = geo.make_regions(add_funds=regional_allocs, mults=[1])
+        run_optim = partial(self.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
+                            parallel=False, dosave=True, runbaseline=False)
+        # can run in parallel b/c child processes in series
+        results = run_parallel(run_optim, regions, num_procs=len(regions))
+        results = [item for sublist in results for item in sublist]
+        # remove multiple to plot by name
+        for res in results: # total hack
+            res.mult = None
+        if dosave: self.add_result(results, name='geospatial')
+        return results
 
     def get_output(self, outcomes=None):
         results = self.result(-1)

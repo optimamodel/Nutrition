@@ -132,6 +132,7 @@ def plot_outputs(all_res, seq, name):
     return figs
 
 def plot_alloc(results, optim):
+    # todo: will need a geospatial param, since this means we don't want: multiples in names, the use of multiples, total flexible funds must be ALL regions, not just 1.
     """ Plots the average annual spending for each scenario, coloured by program.
     Legend will include all programs in the 'baseline' allocation which receive non-zero spending """
     
