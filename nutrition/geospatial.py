@@ -6,7 +6,7 @@ import utils
 
 class Geospatial:
     def __init__(self, name=None, model_names=None, region_names=None, weights=None, mults=None, prog_set=None,
-                 add_funds=0, fix_curr=False, active=True):
+                 add_funds=0, fix_curr=False, filter_progs=True, active=True):
         """
         :param name: name of the optimization (string)
         :param region_names: names of the regions to be included (list of strings)
@@ -29,21 +29,26 @@ class Geospatial:
         self.prog_set = prog_set
         self.add_funds = add_funds # this is additional across all regions
         self.fix_curr = fix_curr # fix current program allocations within regions
+        self.filter_progs = filter_progs
         self.active = active
 
         self.model = None
 
-        self.scenarios = None # todo: could be option from the gui or in code, specified as an odict
         self.bocs = sc.odict() # todo: not sure if want this as attribute of this or Optim() class
 
-    def make_regions(self):
+    def make_regions(self, add_funds=None, mults=None):
         """ Create all the Optim objects requested """
+        if add_funds is None: add_funds = self.add_funds
+        if mults is None: mults = self.mults
+        if isinstance(add_funds, float) or isinstance(add_funds, int):
+            add_funds = [add_funds] * len(self.regionnames)
         regions = []
         for i, name in enumerate(self.regionnames):
             model_name = self.model_names[i]
-            region = Optim(name=name, model_name=model_name, weights=self.weights, mults=self.mults,
-                           prog_set=self.prog_set, active=self.active, add_funds=self.add_funds,
-                           fix_curr=self.fix_curr)
+            regionalfunds = add_funds[i]
+            region = Optim(name=name, model_name=model_name, weights=self.weights, mults=mults,
+                           prog_set=self.prog_set, active=self.active, add_funds=regionalfunds,
+                           filter_progs=self.filter_progs, fix_curr=self.fix_curr)
             regions.append(region)
         self.regions = regions
         return regions
@@ -88,7 +93,7 @@ class Geospatial:
         maxiters = int(1e6)
 
         for i in range(maxiters):
-            besteff = -np.inf
+            besteff = np.inf
             bestregion = None
             for regionidx in range(len(regions)):
                 # find most effective spending in each region
@@ -96,7 +101,7 @@ class Geospatial:
                 if len(icer):
                     maxidx = np.nanargmin(icer)
                     maxeff = icer[maxidx]
-                    if maxeff > besteff:
+                    if maxeff < besteff:
                         besteff = maxeff
                         besteffidx = maxidx
                         bestregion = regionidx
