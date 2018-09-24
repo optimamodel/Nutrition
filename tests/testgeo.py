@@ -7,6 +7,8 @@ import sciris as sc
 p = nu.Project('Demo')
 p.load_data('demo', 'demoregion1', name='Demo1')
 p.load_data('demo', 'demoregion2', name='Demo2')
+# p.load_data('demo', 'demoregion2', name='Demo3')
+
 
 
 kwargs = {'name': 'test1',
@@ -14,11 +16,14 @@ kwargs = {'name': 'test1',
           'region_names': ['demoregion1', 'demoregion2'],
           'weights': 'thrive',
           'fix_curr': True,
-          # 'mults': [1,2],
-          'add_funds': 10e6,
-          'prog_set': ['IFA fortification of maize', 'Zinc for treatment + ORS', 'IFAS (community)', 'IFAS (hospital)', 'IYCF 1', 'Lipid-based nutrition supplements',
+          'mults': [0,0.25, 0.75, 1],
+          'add_funds': 1e7,
+          'prog_set': ['IFA fortification of maize', 'IYCF 1', 'Lipid-based nutrition supplements',
            'Multiple micronutrient supplementation', 'Micronutrient powders', 'Kangaroo mother care',
-           'Public provision of complementary foods', 'Treatment of SAM',
-           'Vitamin A supplementation', 'Zinc supplementation', 'Calcium supplementation', 'Mg for eclampsia', 'Mg for pre-eclampsia'],}
+           'Public provision of complementary foods', 'Treatment of SAM',  'Vitamin A supplementation',
+                       'Mg for eclampsia']}
 geo = Geospatial(**kwargs)
-p.run_geospatial(geo=geo, maxtime=40, maxiter=5, swarmsize=5)
+results = p.run_geospatial(geo=geo, maxtime=10, maxiter=10, swarmsize=5)
+p.plot(optim=True)
+import pylab as pl
+pl.show()
