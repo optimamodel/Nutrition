@@ -359,16 +359,14 @@ class Project(object):
         run_optim = partial(self.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
                             parallel=True, dosave=True, runbaseline=False)
         optimized = sc.odict(sc.odict({region.name: run_optim(optim=region) for region in regions}))
-        # extract each result that has multiple 1
-        optim_curr = [region for sublist in optimized.itervalues() for region in sublist if region.mult == 1]
-        geo.get_bocs(optimized, optim_curr)
-        regional_allocs = geo.gridsearch(optim_curr)
+        regional_allocs = geo.gridsearch(optimized)
         # now optimize these allocations within each region
         regions = geo.make_regions(add_funds=regional_allocs, mults=[1])
         run_optim = partial(self.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
                             parallel=False, dosave=True, runbaseline=False)
         # can run in parallel b/c child processes in series
         results = run_parallel(run_optim, regions, num_procs=len(regions))
+        # flatten list
         results = [item for sublist in results for item in sublist]
         # remove multiple to plot by name (total hack)
         for res in results:
@@ -390,8 +388,8 @@ class Project(object):
         print('Not implemented')
 
     @trace_exception
-    def plot(self, key=-1, toplot=None, optim=False):
-        figs = make_plots(self.result(key), toplot=toplot, optim=optim)
+    def plot(self, key=-1, toplot=None, optim=False, geo=False):
+        figs = make_plots(self.result(key), toplot=toplot, optim=optim, geo=geo)
         return figs
 
     def get_costeff(self):
