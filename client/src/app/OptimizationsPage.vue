@@ -1,7 +1,7 @@
 <!--
 Optimizations page
 
-Last update: 2018sep23
+Last update: 2018sep24
 -->
 
 <template>
@@ -254,10 +254,7 @@ Last update: 2018sep23
       else if ((this.$store.state.activeProject.project !== undefined) &&
         (this.$store.state.activeProject.project.hasData) ) {
         console.log('created() called')
-        utils.sleep(1)  // used so that spinners will come up by callback func
-          .then(response => {
-            this.getOptimSummaries()
-          })
+        this.getOptimSummaries()
       }
     },
 
@@ -283,13 +280,15 @@ Last update: 2018sep23
         else if (optimSummary.status === 'queued')      {return 'Initializing... '} // + this.timeFormatStr(optimSummary.pendingTime)
         else if (optimSummary.status === 'started')     {return 'Running for '} // + this.timeFormatStr(optimSummary.executionTime)
         else if (optimSummary.status === 'completed')   {return 'Completed after '} // + this.timeFormatStr(optimSummary.executionTime)
+        else if (optimSummary.status === 'error')   {return 'Error after '} // + this.timeFormatStr(optimSummary.executionTime)          
         else                                            {return ''}
       },
 
       timeFormatStr(optimSummary) {
         let rawValue = ''
         let is_queued = (optimSummary.status === 'queued')
-        let is_executing = ((optimSummary.status === 'started') || (optimSummary.status === 'completed'))
+        let is_executing = ((optimSummary.status === 'started') || 
+          (optimSummary.status === 'completed') || (optimSummary.status === 'error'))
         if      (is_queued)    {rawValue = optimSummary.pendingTime}
         else if (is_executing) {rawValue = optimSummary.executionTime}
         else                   {return ''}
@@ -326,6 +325,10 @@ Last update: 2018sep23
             optimSummary.status = statusStr
             optimSummary.pendingTime = result.data.pendingTime
             optimSummary.executionTime = result.data.executionTime
+            if (optimSummary.status == 'error') {
+              console.log('Error in task: ', optimSummary.serverDatastoreId)
+              console.log(result.data.task.errorText)
+            }
           })
           .catch(error => {
             optimSummary.status = 'not started'
@@ -337,8 +340,9 @@ Last update: 2018sep23
       pollAllTaskStates() {
         console.log('Polling all tasks...');
         this.optimSummaries.forEach(optimSum => { // For each of the optimization summaries...
-          console.log(optimSum.status)
-          if ((optimSum.status !== 'not started') && (optimSum.status !== 'completed')) { // If there is a valid task launched, check it.
+          console.log(optimSum.serverDatastoreId, optimSum.status)
+          if ((optimSum.status !== 'not started') && (optimSum.status !== 'completed') && 
+            (optimSum.status !== 'error')) { // If there is a valid task launched, check it.
             this.getOptimTaskState(optimSum)
           }
         });
