@@ -192,7 +192,7 @@ def plot_alloc(results, optim, geo):
         else:
             valuestr = valuestr[:2]
         if geo:
-            xlab = 'Total available budget'
+            xlab = 'Region'
         else:
             xlab = 'Total available budget (relative to US$%sM)' % valuestr
     else:

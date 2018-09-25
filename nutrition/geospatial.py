@@ -6,15 +6,18 @@ import utils
 
 class Geospatial:
     def __init__(self, name=None, model_names=None, region_names=None, weights=None, mults=None, prog_set=None,
-                 add_funds=0, fix_curr=False, filter_progs=True, active=True):
+                 add_funds=0, fix_progallocs=False, fix_regionalspend=False, filter_progs=True, active=True):
         """
         :param name: name of the optimization (string)
         :param region_names: names of the regions to be included (list of strings)
         :param weights: weights defining an objective function (odict). See documentation in optimization.Optim()
-        :param mults: the multiples of flexible funding to be optimized
+        :param mults: the multiples of flexible funding to be optimized. These are multiples within the interval (min_freefunds, max_freefunds).
+         Default values recommended.
         :param prog_set:
         :param add_funds:
-        :param fix_curr: fix the current regional program allocations (boolean)
+        :param fix_progallocs: fix the current regional program allocations (boolean)
+        :param fix_regionalspend: fix the current total regional spending (boolean), but not at current allocations.
+        It follows that fix_regionalspend and fix_progallocs cannot have the same value
         """
         self.name = name
         self.model_names = model_names
@@ -25,15 +28,13 @@ class Geospatial:
             print("Warning: changing budget multiples, not recommended")
             self.mults = mults
         else:
-            self.mults = [0, 0.01, 0.025, 0.04, 0.05, 0.075, 0.1, 0.2, 0.3, 0.6, 1] # these multiples are in the interval (minFreeFunds, maxFreeFunds)
+            self.mults = [0, 0.01, 0.025, 0.04, 0.05, 0.075, 0.1, 0.2, 0.3, 0.6, 1]
         self.prog_set = prog_set
         self.add_funds = add_funds
-        self.fix_curr = fix_curr
+        self.fix_progallocs = fix_progallocs
+        self.fix_regionalspend = fix_regionalspend
         self.filter_progs = filter_progs
         self.active = active
-
-        self.model = None
-
         self.bocs = sc.odict()
 
     def make_regions(self, add_funds=None, mults=None):
@@ -48,7 +49,7 @@ class Geospatial:
             regionalfunds = add_funds[i]
             region = Optim(name=name, model_name=model_name, weights=self.weights, mults=mults,
                            prog_set=self.prog_set, active=self.active, add_funds=regionalfunds,
-                           filter_progs=self.filter_progs, fix_curr=self.fix_curr)
+                           filter_progs=self.filter_progs, fix_curr=self.fix_progallocs)
             regions.append(region)
         self.regions = regions
         return regions
@@ -74,7 +75,7 @@ class Geospatial:
         spendingvec = []
         nationalspend = self.get_totalfreefunds(regions)
         for name, region in zip(self.regionnames, regions):
-            minspend = 0 # todo: should this be fixed spending?
+            minspend = 0
             maxspend = nationalspend
             boc = self.bocs[name]
             spend = np.linspace(minspend, maxspend, numpoints)
@@ -89,7 +90,7 @@ class Geospatial:
         regions = [region for sublist in optimized.itervalues() for region in sublist if region.mult == 1]
         self.get_bocs(optimized, regions)
         spendvecs, icervecs = self.get_icer(regions)
-        totalfunds = self.get_totalfreefunds(regions)
+        totalfunds = self.get_totalfreefunds(regions, restrict=self.fix_regionalspend)
         remainfunds = totalfunds
         regional_allocs = np.zeros(len(regions))
         percentspend = 0
@@ -133,8 +134,11 @@ class Geospatial:
         scaledallocs = utils.scale_alloc(totalfunds, regional_allocs)
         return scaledallocs
 
-    def get_totalfreefunds(self, regions):
-        return sum([region.get_freefunds() - self.add_funds for region in regions]) + self.add_funds
+    def get_totalfreefunds(self, regions, restrict=False):
+        if restrict:
+            return self.add_funds
+        else:
+            return sum([region.get_freefunds() - self.add_funds for region in regions]) + self.add_funds
 
     def get_nationalspend(self, regions):
         """ allocation return as time series, ensure only extract current spending"""
