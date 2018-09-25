@@ -1,7 +1,7 @@
 <!--
 Optimizations page
 
-Last update: 2018-09-06
+Last update: 2018sep24
 -->
 
 <template>
@@ -41,8 +41,8 @@ Last update: 2018-09-06
             </td>
             <td style="white-space: nowrap">
               <button class="btn __green" :disabled="!canRunTask(optimSummary)"     @click="runOptim(optimSummary, 'full')">Run</button>
-              <button class="btn __green" :disabled="!canPlotResults(optimSummary)" @click="plotOptimization(optimSummary)">Plot results</button>
               <button class="btn" :disabled="!canRunTask(optimSummary)"             @click="runOptim(optimSummary, 'test')">Test run</button>
+              <button class="btn __green" :disabled="!canPlotResults(optimSummary)" @click="plotOptimization(optimSummary)">Plot results</button>
               <button class="btn" :disabled="!canCancelTask(optimSummary)"          @click="clearTask(optimSummary)">Clear run</button>
               <button class="btn btn-icon" @click="editOptimModal(optimSummary)" data-tooltip="Edit optimization"><i class="ti-pencil"></i></button>
               <button class="btn btn-icon" @click="copyOptim(optimSummary)" data-tooltip="Copy optimization"><i class="ti-files"></i></button>
@@ -230,7 +230,6 @@ Last update: 2018-09-06
         serverDatastoreId: '',
         optimSummaries: [],
         optimsLoaded: false,
-        useCelery: true,
         addEditModal: {
           optimSummary: {},
           origName: '',
@@ -255,10 +254,7 @@ Last update: 2018-09-06
       else if ((this.$store.state.activeProject.project !== undefined) &&
         (this.$store.state.activeProject.project.hasData) ) {
         console.log('created() called')
-        utils.sleep(1)  // used so that spinners will come up by callback func
-          .then(response => {
-            this.getOptimSummaries()
-          })
+        this.getOptimSummaries()
       }
     },
 
@@ -284,13 +280,15 @@ Last update: 2018-09-06
         else if (optimSummary.status === 'queued')      {return 'Initializing... '} // + this.timeFormatStr(optimSummary.pendingTime)
         else if (optimSummary.status === 'started')     {return 'Running for '} // + this.timeFormatStr(optimSummary.executionTime)
         else if (optimSummary.status === 'completed')   {return 'Completed after '} // + this.timeFormatStr(optimSummary.executionTime)
+        else if (optimSummary.status === 'error')   {return 'Error after '} // + this.timeFormatStr(optimSummary.executionTime)          
         else                                            {return ''}
       },
 
       timeFormatStr(optimSummary) {
         let rawValue = ''
         let is_queued = (optimSummary.status === 'queued')
-        let is_executing = ((optimSummary.status === 'started') || (optimSummary.status === 'completed'))
+        let is_executing = ((optimSummary.status === 'started') || 
+          (optimSummary.status === 'completed') || (optimSummary.status === 'error'))
         if      (is_queued)    {rawValue = optimSummary.pendingTime}
         else if (is_executing) {rawValue = optimSummary.executionTime}
         else                   {return ''}
@@ -308,9 +306,9 @@ Last update: 2018-09-06
         }
       },
 
-      canRunTask(optimSummary)     { return ((optimSummary.status === 'not started') || (optimSummary.status === 'completed')) },
-      canCancelTask(optimSummary)  { return  (optimSummary.status !== 'not started') },
-      canPlotResults(optimSummary) { return  (optimSummary.status === 'completed') },
+      canRunTask(optimSummary)     { return (optimSummary.status === 'not started') },
+      canCancelTask(optimSummary)  { return (optimSummary.status !== 'not started') },
+      canPlotResults(optimSummary) { return (optimSummary.status === 'completed') },
 
       needToPoll(optimSummary) {
         let routePath = (this.$route.path === '/optimizations')
@@ -321,51 +319,30 @@ Last update: 2018-09-06
       getOptimTaskState(optimSummary) {
         console.log('getOptimTaskState() called for with: ' + optimSummary.status)
         let statusStr = '';
-
-        if (this.useCelery) {
-          // Check the status of the task.
-          rpcs.rpc('check_task', [optimSummary.serverDatastoreId])
-            .then(result => {
-              console.log('Response TEMP')
-              console.log(result.data)
-              statusStr = result.data.task.status
-              optimSummary.status = statusStr
-              optimSummary.pendingTime = result.data.pendingTime
-              optimSummary.executionTime = result.data.executionTime
-            })
-            .catch(error => {
-              optimSummary.status = 'not started'
-              optimSummary.pendingTime = '--'
-              optimSummary.executionTime = '--'
-            })
-        }
-
-        else {
-          // Check whether there is a cached result.
-          rpcs.rpc('check_results_cache_entry', [optimSummary.serverDatastoreId])
-            .then(result => {
-              if (result.data.found) {
-                optimSummary.status = 'completed'
-              }
-              else {
-                optimSummary.status = 'not started'
-              }
-              optimSummary.pendingTime = '--'
-              optimSummary.executionTime = '--'
-            })
-            .catch(error => {
-              optimSummary.status = 'not started'
-              optimSummary.pendingTime = '--'
-              optimSummary.executionTime = '--'
-            })
-        }
+        rpcs.rpc('check_task', [optimSummary.serverDatastoreId]) // Check the status of the task.
+          .then(result => {
+            statusStr = result.data.task.status
+            optimSummary.status = statusStr
+            optimSummary.pendingTime = result.data.pendingTime
+            optimSummary.executionTime = result.data.executionTime
+            if (optimSummary.status == 'error') {
+              console.log('Error in task: ', optimSummary.serverDatastoreId)
+              console.log(result.data.task.errorText)
+            }
+          })
+          .catch(error => {
+            optimSummary.status = 'not started'
+            optimSummary.pendingTime = '--'
+            optimSummary.executionTime = '--'
+          })
       },
 
       pollAllTaskStates() {
         console.log('Polling all tasks...');
         this.optimSummaries.forEach(optimSum => { // For each of the optimization summaries...
-          console.log(optimSum.status)
-          if ((optimSum.status !== 'not started') && (optimSum.status !== 'completed')) { // If there is a valid task launched, check it.
+          console.log(optimSum.serverDatastoreId, optimSum.status)
+          if ((optimSum.status !== 'not started') && (optimSum.status !== 'completed') && 
+            (optimSum.status !== 'error')) { // If there is a valid task launched, check it.
             this.getOptimTaskState(optimSum)
           }
         });
@@ -384,23 +361,16 @@ Last update: 2018-09-06
         return new Promise((resolve, reject) => {
           let datastoreId = optimSummary.serverDatastoreId  // hack because this gets overwritten soon by caller
           console.log('clearTask() called for '+this.currentOptim)
-
-          rpcs.rpc('delete_results_cache_entry', [datastoreId]) // Delete cached result.
+          rpcs.rpc('del_result', [datastoreId, this.projectID]) // Delete cached result.
             .then(response => {
-              if (this.useCelery) {
-                rpcs.rpc('delete_task', [datastoreId])
-                  .then(response => {
-                    this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
-                    resolve(response)
-                  })
-                  .catch(error => {
-                    resolve(error)  // yes, resolve because at least cache entry deletion succeeded
-                  })
-              }
-              else {
-                this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
-                resolve(response)
-              }
+              rpcs.rpc('delete_task', [datastoreId])
+                .then(response => {
+                  this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
+                  resolve(response)
+                })
+                .catch(error => {
+                  resolve(error)  // yes, resolve because at least cache entry deletion succeeded
+                })
             })
             .catch(error => {
               reject(error)
@@ -423,9 +393,7 @@ Last update: 2018-09-06
               // Get the task state for the optimization.
               this.getOptimTaskState(optimSum) // Get the task state for the optimization.
             })
-            if (this.useCelery) {
-              this.pollAllTaskStates() // Start polling of tasks states.
-            }
+            this.pollAllTaskStates() // Start polling of tasks states.
             this.optimsLoaded = true
             status.succeed(this, 'Optimizations loaded')
           })
@@ -493,7 +461,7 @@ Last update: 2018-09-06
             console.log('Error: a mismatch in editing keys')
           }
         }
-        else { // Else (we are adding a new scenario)...
+        else { // Else (we are adding a new optimization)...
           newOptim.name = utils.getUniqueName(newOptim.name, optimNames);
           newOptim.serverDatastoreId = this.$store.state.activeProject.project.id + ':opt-' + newOptim.name
           this.optimSummaries.push(newOptim)

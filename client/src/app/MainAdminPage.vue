@@ -1,12 +1,12 @@
 <!--
 Admin page
 
-Last update: 2018-05-28
+Last update: 2018sep23
 -->
 
 <template>
   <div class="SitePage">
-    <h2>Optima Nutrition Users</h2>
+    <h2>Users</h2>
     <table v-if="usersList[0] != undefined">
       <tr>
         <th>Username</th>

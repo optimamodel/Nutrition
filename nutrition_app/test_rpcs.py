@@ -28,9 +28,9 @@ torun = [
 def demoproj(proj_id, username):
     P = nu.demo(scens=True, optims=True)
     P.name = 'RPCs test %s' % proj_id[:6]
-    P.uid = proj_id
+    P.uid = sc.uuid(proj_id)
     P = rpcs.cache_results(P)
-    rpcs.save_new_project(P, username)
+    rpcs.save_new_project(P, username, uid=P.uid) # Force a matching uid
     return P
 
 def heading(string, style=None):
@@ -40,11 +40,11 @@ def heading(string, style=None):
     sc.colorize('blue', string)
     return None
 
-
+# Launch app
 T = sc.tic()
 app = main.make_app()
-user = sw.make_default_users(app)[0] # WARNING, broken!
-proj_id  = sc.uuid(as_string=True) # These can all be the same
+user = sw.make_default_users(app)[0]
+proj_id  = sc.uuid(tostring=True) # These can all be the same
 proj = demoproj(proj_id, user.username)
 
 

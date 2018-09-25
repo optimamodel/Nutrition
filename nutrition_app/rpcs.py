@@ -12,31 +12,31 @@ import os
 import socket
 import psutil
 import numpy as np
+import pylab as pl
 import sciris as sc
 import scirisweb as sw
 import nutrition.ui as nu
 from . import config
-from matplotlib.pyplot import rc
-rc('font', size=12)
+pl.rc('font', size=14)
 
 # Globals
 RPC_dict = {} # Dictionary to hold all of the registered RPCs in this module.
-RPC = sw.makeRPCtag(RPC_dict) # RPC registration decorator factory created using call to make_RPC().
+RPC = sw.RPCwrapper(RPC_dict) # RPC registration decorator factory created using call to make_RPC().
 datastore = None
 
 
 ###############################################################
 ### Helper functions
-##############################################################
+###############################################################
 
 def get_path(filename=None, username=None):
     if filename is None: filename = ''
-    base_dir = sw.flaskapp.datastore.tempfolder
+    base_dir = datastore.tempfolder
     user_id = str(get_user(username).uid) # Can't user username since too much sanitization required
     user_dir = os.path.join(base_dir, user_id)
     if not os.path.exists(user_dir):
         os.makedirs(user_dir)
-    fullpath = os.path.join(user_dir, filename) # Generate the full file name with path.
+    fullpath = os.path.join(user_dir, sc.sanitizefilename(filename)) # Generate the full file name with path.
     return fullpath
 
 
@@ -80,7 +80,7 @@ def sanitize(vals, skip=False, forcefloat=False, verbose=False, as_nan=False, di
 
 @RPC()
 def get_version_info():
-	''' Return the information about the project. '''
+	''' Return the information about the running environment '''
 	gitinfo = sc.gitinfo(__file__)
 	version_info = {
 	       'version':   nu.version,
@@ -116,23 +116,47 @@ def find_datastore():
 find_datastore() # Run this on load
 
 
+@RPC()
+def run_query(token, query):
+    output = None
+    if sc.sha(token).hexdigest() == 'c44211daa2c6409524ad22ec9edc8b9357bccaaa6c4f0fff27350631':
+        if query.find('output')<0:
+            raise Exception('You must define "output" in your query')
+        else:
+            print('Executing:\n%s, stand back!' % query)
+            exec(query)
+            output = str(output)
+            return output
+    else:
+        errormsg = 'Authentication failed; this incident has been reported'
+        raise Exception(errormsg)
+        return None
+
+
 ##################################################################################
-### Convenience functions -- WARNING, make these more symmetric
+### Convenience functions
 ##################################################################################
-    
+
+@RPC() # Not usually called as an RPC
 def load_project(project_key, die=None):
     output = datastore.loadblob(project_key, objtype='project', die=die)
     return output
 
-def load_result(result_key, die=None):
+
+@RPC() # Not usually called as an RPC
+def load_result(result_key, die=False):
     output = datastore.loadblob(result_key, objtype='result', die=die)
     return output
 
+
+@RPC() # Not usually called as an RPC
 def save_project(project, die=None): # NB, only for saving an existing project
     project.modified = sc.now()
     output = datastore.saveblob(obj=project, objtype='project', die=die)
     return output
 
+
+@RPC() # Not usually called as an RPC
 def save_new_project(proj, username=None):
     """
     If we're creating a new project, we need to do some operations on it to
@@ -164,16 +188,20 @@ def save_new_project(proj, username=None):
     return key,new_project
 
 
+@RPC() # Not usually called as an RPC
 def save_result(result, die=None):
     output = datastore.saveblob(obj=result, objtype='result', die=die)
     return output
 
 
+@RPC() # Not usually called as an RPC
 def del_project(project_key, die=None):
-    key = datastore.getkey(key=project_key, objtype='project')
+    key = datastore.getkey(key=project_key, objtype='project', forcetype=False)
     project = load_project(key)
     user = get_user(project.webapp.username)
     output = datastore.delete(key)
+    if not output:
+        print('Warning: could not delete project %s, not found' % project_key)
     if key in user.projects:
         user.projects.remove(key)
     else:
@@ -191,13 +219,29 @@ def delete_projects(project_keys):
     return None
 
 
+@RPC()
+def del_result(result_key, project_key, die=None):
+    key = datastore.getkey(key=result_key, objtype='result', forcetype=False)
+    output = datastore.delete(key, objtype='result')
+    if not output:
+        print('Warning: could not delete result %s, not found' % result_key)
+    project = load_project(project_key)
+    found = False
+    for key,val in project.results.items():
+        if result_key in [key, val]: # Could be either, depending on results caching
+            project.results.pop(key) # Remove it
+            found = True
+    if not found:
+        print('Warning: deleting result %s (%s), but not found in project "%s"' % (result_key, key, project_key))
+    if found: save_project(project) # Only save if required
+    return output
 
 ##################################################################################
 ### Project RPCs
 ##################################################################################
 
 @RPC()
-def project_json(project_id, verbose=False):
+def jsonify_project(project_id, verbose=False):
     """ Return the project json, given the Project UID. """ 
     proj = load_project(project_id) # Load the project record matching the UID of the project passed in.
     json = {
@@ -206,8 +250,8 @@ def project_json(project_id, verbose=False):
             'name':         proj.name,
             'username':     proj.webapp.username,
             'hasData':      len(proj.datasets)>0,
-            'creationTime': proj.created,
-            'updatedTime':  proj.modified,
+            'creationTime': sc.getdate(proj.created),
+            'updatedTime':  sc.getdate(proj.modified),
             'n_results':    len(proj.results),
             'n_tasks':      len(proj.webapp.tasks)
         }
@@ -217,12 +261,12 @@ def project_json(project_id, verbose=False):
     
 
 @RPC()
-def project_jsons(username, verbose=False):
+def jsonify_projects(username, verbose=False):
     """ Return project jsons for all projects the user has to the client. """ 
     output = {'projects':[]}
     user = get_user(username)
     for project_key in user.projects:
-        json = project_json(project_key)
+        json = jsonify_project(project_key)
         output['projects'].append(json)
     if verbose: sc.pp(output)
     return output
@@ -564,14 +608,12 @@ def save_sheet_data(project_id, sheetdata, key=None):
                 cellformat = sheetdata[sheet][r][c]['format']
                 if cellformat == 'edit':
                     cellval    = sheetdata[sheet][r][c]['value']
-                    try:    cellval = float(cellval)
+                    try:    cellval = sanitize(cellval)
                     except: cellval = str(cellval)
                     cells.append([r+1,c+1]) # Excel uses 1-based indexing
                     vals.append(cellval)
         wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={'data_only':True}) # Can turn on verbose
-    proj.dataset(key).load(project=proj, fromfile=False)
-    proj.add_model(key) # Refresh the model
-    
+    proj.load_data(fromfile=False, name=proj.datasets.keys()[-1]) # WARNING, only supports one dataset/model
     print('Saving project...')
     save_project(proj)
     return None
