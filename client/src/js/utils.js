@@ -174,9 +174,9 @@ function exportGraphs(vm, project_id) {
     })
 }
 
-function exportResults(vm, project_id) {
+function exportResults(vm, project_id, cache_id) {
   console.log('exportResults()')
-  rpcs.download('export_results', [project_id]) // Make the server call to download the framework to a .prj file.
+  rpcs.download('export_results', [project_id, cache_id]) // Make the server call to download the framework to a .prj file.
     .catch(error => {
       status.failurePopup(vm, 'Could not export results: ' + error.message)
     })

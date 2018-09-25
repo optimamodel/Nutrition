@@ -1,7 +1,7 @@
 <!--
 Optimizations page
 
-Last update: 2018sep24
+Last update: 2018sep25
 -->
 
 <template>
@@ -69,7 +69,7 @@ Last update: 2018sep24
           <button class="btn btn-icon" @click="scaleFigs(1.1)" data-tooltip="Zoom in">+</button>
           &nbsp;&nbsp;&nbsp;
           <!--<button class="btn" @click="exportGraphs()">Export plots</button>-->
-          <button class="btn" @click="exportResults(projectID)">Export data</button>
+          <button class="btn" @click="exportResults(projectID, displayResultDatastoreId)">Export data</button>
         </div>
       </div>
 
@@ -228,6 +228,8 @@ Last update: 2018sep24
     data() {
       return {
         serverDatastoreId: '',
+        displayResultName: '',
+        displayResultDatastoreId: '',        
         optimSummaries: [],
         optimsLoaded: false,
         addEditModal: {
@@ -263,8 +265,8 @@ Last update: 2018sep24
       clearGraphs()             { return utils.clearGraphs() },
       makeGraphs(graphdata)     { return utils.makeGraphs(this, graphdata) },
       exportGraphs(project_id)  { return utils.exportGraphs(this, project_id) },
-      exportResults(serverDatastoreId)
-      { return utils.exportResults(this, serverDatastoreId) },
+      exportResults(project_id, cache_id)
+      { return utils.exportResults(this, project_id, cache_id) },
 
       scaleFigs(frac) {
         this.figscale = this.figscale*frac;
@@ -552,6 +554,7 @@ Last update: 2018sep24
             this.table = response.data.table
             this.makeGraphs(response.data.graphs)
             this.displayResultName = optimSummary.name
+            this.displayResultDatastoreId = optimSummary.serverDatastoreId
             status.succeed(this, 'Graphs created')
           })
           .catch(error => {

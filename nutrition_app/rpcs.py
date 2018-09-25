@@ -934,12 +934,13 @@ def retrieve_results(proj, verbose=True):
 
 
 @RPC(call_type='download')
-def export_results(project_id):
+def export_results(project_id, cache_id):
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
     proj = retrieve_results(proj)
     file_name = '%s outputs.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
-    proj.write_results(full_file_name, keys=-1)
+#    proj.write_results(full_file_name, keys=-1)
+    proj.write_results(full_file_name, keys=[cache_id])
     print(">> export_results %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
 

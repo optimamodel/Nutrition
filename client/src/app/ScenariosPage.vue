@@ -1,7 +1,7 @@
 <!--
 Scenarios page
 
-Last update: 2018-09-06
+Last update: 2018-09-25
 -->
 
 <template>
@@ -65,7 +65,7 @@ Last update: 2018-09-06
           <button class="btn btn-icon" @click="scaleFigs(1.1)" data-tooltip="Zoom in">+</button>
           &nbsp;&nbsp;&nbsp;
           <button class="btn" @click="exportGraphs(projectID)">Export plots</button>
-          <button class="btn" @click="exportResults(projectID)">Export results</button>
+          <button class="btn" @click="exportResults(projectID, 'scens')">Export results</button>
         </div>
       </div>
 
@@ -250,8 +250,8 @@ Last update: 2018-09-06
 
       makeGraphs(graphdata)     { return utils.makeGraphs(this, graphdata) },
       exportGraphs(project_id)  { return utils.exportGraphs(this, project_id) },
-      exportResults(serverDatastoreId) 
-                                { return utils.exportResults(this, serverDatastoreId) },
+      exportResults(project_id, cache_id) 
+                                { return utils.exportResults(this, project_id, cache_id) },
                                 
       scaleFigs(frac) {
         this.figscale = this.figscale*frac;
