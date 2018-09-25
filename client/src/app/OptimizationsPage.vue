@@ -328,6 +328,10 @@ Last update: 2018sep24
             optimSummary.status = statusStr
             optimSummary.pendingTime = result.data.pendingTime
             optimSummary.executionTime = result.data.executionTime
+            if (optimSummary.status == 'error') {
+              console.log('Error in task: ', optimSummary.serverDatastoreId)
+              console.log(result.data.task.errorText)
+            }
           })
           .catch(error => {
             optimSummary.status = 'not started'
@@ -340,7 +344,8 @@ Last update: 2018sep24
         console.log('Polling all tasks...');
         this.optimSummaries.forEach(optimSum => { // For each of the optimization summaries...
           console.log(optimSum.serverDatastoreId, optimSum.status)
-          if ((optimSum.status !== 'not started') && (optimSum.status !== 'completed')) { // If there is a valid task launched, check it.
+          if ((optimSum.status !== 'not started') && (optimSum.status !== 'completed') && 
+            (optimSum.status !== 'error')) { // If there is a valid task launched, check it.
             this.getOptimTaskState(optimSum)
           }
         });
