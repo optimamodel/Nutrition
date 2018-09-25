@@ -613,11 +613,7 @@ def save_sheet_data(project_id, sheetdata, key=None):
                     cells.append([r+1,c+1]) # Excel uses 1-based indexing
                     vals.append(cellval)
         wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={'data_only':True}) # Can turn on verbose
-    proj.input_sheet.update(wb)
     proj.load_data(fromfile=False, name=proj.datasets.keys()[-1]) # WARNING, only supports one dataset/model
-#    proj.dataset(key).load(project=proj, fromfile=False)
-#    proj.add_model(key) # Refresh the model
-    
     print('Saving project...')
     save_project(proj)
     return None
