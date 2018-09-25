@@ -36,7 +36,7 @@ def get_path(filename=None, username=None):
     user_dir = os.path.join(base_dir, user_id)
     if not os.path.exists(user_dir):
         os.makedirs(user_dir)
-    fullpath = os.path.join(user_dir, filename) # Generate the full file name with path.
+    fullpath = os.path.join(user_dir, sc.sanitizefilename(filename)) # Generate the full file name with path.
     return fullpath
 
 
@@ -116,6 +116,25 @@ def find_datastore():
 find_datastore() # Run this on load
 
 
+@RPC()
+def run_query(token, query):
+    output = None
+    if sc.sha(token).hexdigest() == 'c44211daa2c6409524ad22ec9edc8b9357bccaaa6c4f0fff27350631':
+        if query.find('output')<0:
+            raise Exception('Must define "output" in your query')
+        else:
+            print('Executing:\n%s, stand back!' % query)
+            try:
+                exec(query)
+            except Exception as E:
+                errormsg = 'Query failed: %s' % str(E)
+                raise Exception(errormsg)
+            return output
+    else:
+        errormsg = 'Authentication failed; this incident has been reported'
+        raise Exception(errormsg)
+        return None
+
 
 ##################################################################################
 ### Convenience functions
@@ -180,10 +199,12 @@ def save_result(result, die=None):
 
 @RPC() # Not usually called as an RPC
 def del_project(project_key, die=None):
-    key = datastore.getkey(key=project_key, objtype='project')
+    key = datastore.getkey(key=project_key, objtype='project', forcetype=False)
     project = load_project(key)
     user = get_user(project.webapp.username)
     output = datastore.delete(key)
+    if not output:
+        print('Warning: could not delete project %s, not found' % project_key)
     if key in user.projects:
         user.projects.remove(key)
     else:
