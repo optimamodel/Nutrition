@@ -46,14 +46,27 @@ class ScenResult(sc.prettyobj):
                 output = prettyvals
         return output
 
-    def get_allocs(self, ref=True):
+    def get_allocs(self, ref=True, current=False):
         allocs = sc.odict()
         for name, prog in self.programs.iteritems():
             spend = prog.annual_spend
             if not ref and prog.reference:
                 spend -= spend[0] # baseline year is reference spending, subtracted from every year
+            if current:
+                spend = spend[:1]
+            # if not fixed and not prog.reference:
+            #     spend -= spend[0]
             allocs[name] = spend
         return allocs
+
+    def get_freefunds(self):
+        free = self.model.prog_info.free
+        if self.mult is not None:
+            free *= self.mult
+        return free
+
+    def get_currspend(self):
+        return self.model.prog_info.curr
 
     def get_childscens(self):
         """ For calculating the impacts of each scenario with single intervention set to 0 coverage """

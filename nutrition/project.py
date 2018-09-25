@@ -6,11 +6,12 @@ import numpy as np
 import sciris as sc
 from .version import version
 from .optimization import Optim
+from functools import partial
 from .data import Dataset
 from .scenarios import Scen, run_scen
 from .plotting import make_plots, get_costeff
 from .model import Model
-from .utils import trace_exception, default_trackers, pretty_labels
+from .utils import trace_exception, default_trackers, pretty_labels, run_parallel
 from .demo import demo_scens, demo_optims
 from .defaults import get_defaults
 from . import settings
@@ -306,9 +307,10 @@ class Project(object):
         else:
             return base
 
-    def add_optims(self, optim_list, overwrite=False):
+    def add_optims(self, optims, overwrite=False):
         if overwrite: self.optims = sc.odict() # remove exist scenarios
-        for optim in optim_list:
+        optims = sc.promotetolist(optims)
+        for optim in optims:
             self.add(name=optim.name, item=optim, what='optim')
         self.modified = sc.now()
 
@@ -355,13 +357,16 @@ class Project(object):
         self.add_result(results, name='scens')
         return None
 
-    def run_optim(self, key=-1, optim=None, maxiter=15, swarmsize=20, maxtime=140, parallel=True, dosave=True):
-        if optim is not None: self.add_optims(optim)
+    def run_optim(self, optim=None, key=-1, maxiter=15, swarmsize=20, maxtime=140, parallel=True, dosave=True, runbaseline=True):
+        if optim is not None:
+            self.add_optims(optim)
+            key = optim.name # this to handle parallel calls of this function
         optim = self.optim(key)
         results = []
         # run baseline
-        base = self.run_baseline(optim.model_name, optim.prog_set)
-        results.append(base)
+        if runbaseline:
+            base = self.run_baseline(optim.model_name, optim.prog_set)
+            results.append(base)
         # run optimization
         model = sc.dcp(self.model(optim.model_name))
         model.setup(optim, setcovs=False)
@@ -369,6 +374,31 @@ class Project(object):
         results += optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel)
         # add by optim name
         if dosave: self.add_result(results, name=optim.name)
+        return results
+
+    @trace_exception
+    def run_geospatial(self, geo=None, maxiter=30, swarmsize=25, maxtime=20, dosave=True):
+        """ Regions cannot be parallelised because daemon processes cannot have children.
+        Two options: Either can parallelize regions and not the budget or run
+        regions in series while parallelising each budget multiple. """
+        regions = geo.make_regions()
+        run_optim = partial(self.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
+                            parallel=True, dosave=True, runbaseline=False)
+        optimized = sc.odict(sc.odict({region.name: run_optim(optim=region) for region in regions}))
+        regional_allocs = geo.gridsearch(optimized)
+        # now optimize these allocations within each region
+        regions = geo.make_regions(add_funds=regional_allocs, mults=[1])
+        run_optim = partial(self.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
+                            parallel=False, dosave=True, runbaseline=False)
+        # can run in parallel b/c child processes in series
+        results = run_parallel(run_optim, regions, num_procs=len(regions))
+        # flatten list
+        results = [item for sublist in results for item in sublist]
+        # remove multiple to plot by name (total hack)
+        for res in results:
+            res.mult = None
+            res.name = res.name.replace('(x1)', '')
+        if dosave: self.add_result(results, name='geospatial')
         return results
 
     def get_output(self, outcomes=None):
@@ -384,8 +414,8 @@ class Project(object):
         print('Not implemented')
 
     @trace_exception
-    def plot(self, key=-1, toplot=None, optim=False):
-        figs = make_plots(self.result(key), toplot=toplot, optim=optim)
+    def plot(self, key=-1, toplot=None, optim=False, geo=False):
+        figs = make_plots(self.result(key), toplot=toplot, optim=optim, geo=geo)
         return figs
 
     def get_costeff(self, resultname=None):
