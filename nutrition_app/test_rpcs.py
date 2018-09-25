@@ -28,9 +28,9 @@ torun = [
 def demoproj(proj_id, username):
     P = nu.demo(scens=True, optims=True)
     P.name = 'RPCs test %s' % proj_id[:6]
-    P.uid = proj_id
+    P.uid = sc.uuid(proj_id)
     P = rpcs.cache_results(P)
-    rpcs.save_new_project(P, username)
+    rpcs.save_new_project(P, username, uid=P.uid) # Force a matching uid
     return P
 
 def heading(string, style=None):
