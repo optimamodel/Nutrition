@@ -608,7 +608,7 @@ def save_sheet_data(project_id, sheetdata, key=None):
                 cellformat = sheetdata[sheet][r][c]['format']
                 if cellformat == 'edit':
                     cellval    = sheetdata[sheet][r][c]['value']
-                    try:    cellval = float(cellval)
+                    try:    cellval = sanitize(cellval)
                     except: cellval = str(cellval)
                     cells.append([r+1,c+1]) # Excel uses 1-based indexing
                     vals.append(cellval)
