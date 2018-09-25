@@ -41,7 +41,6 @@ class Optim(sc.prettyobj):
 
         self.num_procs = None
         self.optim_allocs = sc.odict()
-        self.BOCs = {}
 
 
     ######### SETUP ############
@@ -64,7 +63,7 @@ class Optim(sc.prettyobj):
             how = 'parallel'
             num_procs = num_procs if num_procs else self.num_cpus
         else:
-            how = 'serial'
+            how = 'series'
             num_procs = 1
         print('Optimizing for %s in %s' % (self.name, how))
         # list of kwargs
