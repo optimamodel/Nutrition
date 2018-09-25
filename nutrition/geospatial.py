@@ -17,7 +17,7 @@ class Geospatial:
         :param add_funds:
         :param fix_progallocs: fix the current regional program allocations (boolean)
         :param fix_regionalspend: fix the current total regional spending (boolean), but not at current allocations.
-        It follows that fix_regionalspend and fix_progallocs cannot have the same value
+        It follows that if fix_progallocs is True, fix_regionalspend must also be true.
         """
         self.name = name
         self.model_names = model_names
@@ -32,7 +32,7 @@ class Geospatial:
         self.prog_set = prog_set
         self.add_funds = add_funds
         self.fix_progallocs = fix_progallocs
-        self.fix_regionalspend = fix_regionalspend
+        self.fix_regionalspend = fix_progallocs if fix_progallocs else fix_regionalspend
         self.filter_progs = filter_progs
         self.active = active
         self.bocs = sc.odict()
