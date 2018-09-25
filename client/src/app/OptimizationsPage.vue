@@ -41,8 +41,8 @@ Last update: 2018sep24
             </td>
             <td style="white-space: nowrap">
               <button class="btn __green" :disabled="!canRunTask(optimSummary)"     @click="runOptim(optimSummary, 'full')">Run</button>
-              <button class="btn __green" :disabled="!canPlotResults(optimSummary)" @click="plotOptimization(optimSummary)">Plot results</button>
               <button class="btn" :disabled="!canRunTask(optimSummary)"             @click="runOptim(optimSummary, 'test')">Test run</button>
+              <button class="btn __green" :disabled="!canPlotResults(optimSummary)" @click="plotOptimization(optimSummary)">Plot results</button>
               <button class="btn" :disabled="!canCancelTask(optimSummary)"          @click="clearTask(optimSummary)">Clear run</button>
               <button class="btn btn-icon" @click="editOptimModal(optimSummary)" data-tooltip="Edit optimization"><i class="ti-pencil"></i></button>
               <button class="btn btn-icon" @click="copyOptim(optimSummary)" data-tooltip="Copy optimization"><i class="ti-files"></i></button>
@@ -306,9 +306,9 @@ Last update: 2018sep24
         }
       },
 
-      canRunTask(optimSummary)     { return ((optimSummary.status === 'not started') || (optimSummary.status === 'completed')) },
-      canCancelTask(optimSummary)  { return  (optimSummary.status !== 'not started') },
-      canPlotResults(optimSummary) { return  (optimSummary.status === 'completed') },
+      canRunTask(optimSummary)     { return (optimSummary.status === 'not started') },
+      canCancelTask(optimSummary)  { return (optimSummary.status !== 'not started') },
+      canPlotResults(optimSummary) { return (optimSummary.status === 'completed') },
 
       needToPoll(optimSummary) {
         let routePath = (this.$route.path === '/optimizations')
