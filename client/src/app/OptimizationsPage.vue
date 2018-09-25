@@ -254,10 +254,7 @@ Last update: 2018sep24
       else if ((this.$store.state.activeProject.project !== undefined) &&
         (this.$store.state.activeProject.project.hasData) ) {
         console.log('created() called')
-        utils.sleep(1)  // used so that spinners will come up by callback func
-          .then(response => {
-            this.getOptimSummaries()
-          })
+        this.getOptimSummaries()
       }
     },
 
