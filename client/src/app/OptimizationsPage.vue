@@ -319,24 +319,28 @@ Last update: 2018sep25
       },
 
       getOptimTaskState(optimSummary) {
-        console.log('getOptimTaskState() called for with: ' + optimSummary.status)
-        let statusStr = '';
-        rpcs.rpc('check_task', [optimSummary.serverDatastoreId]) // Check the status of the task.
-          .then(result => {
-            statusStr = result.data.task.status
-            optimSummary.status = statusStr
-            optimSummary.pendingTime = result.data.pendingTime
-            optimSummary.executionTime = result.data.executionTime
-            if (optimSummary.status == 'error') {
-              console.log('Error in task: ', optimSummary.serverDatastoreId)
-              console.log(result.data.task.errorText)
-            }
-          })
-          .catch(error => {
-            optimSummary.status = 'not started'
-            optimSummary.pendingTime = '--'
-            optimSummary.executionTime = '--'
-          })
+        return new Promise((resolve, reject) => {
+          console.log('getOptimTaskState() called for with: ' + optimSummary.status)
+          let statusStr = '';
+          rpcs.rpc('check_task', [optimSummary.serverDatastoreId]) // Check the status of the task.
+            .then(result => {
+              statusStr = result.data.task.status
+              optimSummary.status = statusStr
+              optimSummary.pendingTime = result.data.pendingTime
+              optimSummary.executionTime = result.data.executionTime
+              if (optimSummary.status == 'error') {
+                console.log('Error in task: ', optimSummary.serverDatastoreId)
+                console.log(result.data.task.errorText)
+              }
+              resolve(result)
+            })
+            .catch(error => {
+              optimSummary.status = 'not started'
+              optimSummary.pendingTime = '--'
+              optimSummary.executionTime = '--'
+              resolve(error)  // yes, resolve, not reject, because this means non-started task
+            })
+        })
       },
 
       pollAllTaskStates() {
@@ -357,6 +361,49 @@ Last update: 2018sep25
               this.pollAllTaskStates()
             }
           })
+      },
+      
+      myNewPollAllTaskStates() {
+        return new Promise((resolve, reject) => {
+          console.log('Polling all tasks...')
+          
+          // Clear the poll states.
+          this.optimSummaries.forEach(optimSum => {
+            optimSum.polled = false
+          })
+          
+          // For each of the optimization summaries...
+          this.optimSummaries.forEach(optimSum => { 
+            console.log(optimSum.serverDatastoreId, optimSum.status)
+            
+            // If there is a valid task running, check it.
+            if ((optimSum.status !== 'not started') && (optimSum.status !== 'completed') && 
+              (optimSum.status !== 'error')) {
+              this.getOptimTaskState(optimSum)
+              .then(response => {
+                // We are done polling.
+                optimSum.polled = true
+              })              
+            }
+            
+            // Otherwise (no task to check), we are done polling for it.
+            else {
+              optimSum.polled = true
+            }
+            
+            // Resolve when all of the optimSummaries are polled.
+            let done = true
+            this.optimSummaries.forEach(optimSum2 => {
+              if (!optimSum2.polled) {
+                done = false
+              }
+            })
+            if (done) {
+              resolve()
+            }
+          })
+          
+        })     
       },
 
       clearTask(optimSummary) {
@@ -395,7 +442,11 @@ Last update: 2018sep25
               // Get the task state for the optimization.
               this.getOptimTaskState(optimSum) // Get the task state for the optimization.
             })
-            this.pollAllTaskStates() // Start polling of tasks states.
+            this.myNewPollAllTaskStates()
+            .then(() => {
+              console.log('we done!')
+            })
+//            this.pollAllTaskStates() // Start polling of tasks states.
             this.optimsLoaded = true
             status.succeed(this, 'Optimizations loaded')
           })
