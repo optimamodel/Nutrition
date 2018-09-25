@@ -139,13 +139,13 @@ Last update: 2018-09-06
             <input type="text"
                    class="txbox"
                    v-model="addEditModal.scenSummary.name"/><br>
-            <div class="calib-params">
-              <table class="table table-bordered table-hover table-striped" style="width: 100%">
+            <div class="scrolltable" style="max-height: 80vh;">
+              <table class="table table-bordered table-striped table-hover">
                 <thead>
                 <tr>
                   <th colspan=100><div class="dialog-header">
                     <span v-if="addEditModal.modalScenarioType==='coverage'">Program coverages (%)</span>
-                    <span v-else>Program spending (US$)</span>
+                    <span v-else>Program spending</span>
                   </div></th>
                 </tr>
                 <tr>
@@ -201,9 +201,9 @@ Last update: 2018-09-06
 <script>
   import axios from 'axios'
   let filesaver = require('file-saver')
-  import utils from '@/services/utils'
-  import rpcs from '@/services/rpc-service'
-  import status from '@/services/status-service'
+  import utils from '@/js/utils'
+  import rpcs from '@/js/rpc-service'
+  import status from '@/js/status-service'
   import router from '@/router'
 
   export default {

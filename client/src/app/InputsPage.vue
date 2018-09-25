@@ -41,19 +41,26 @@ Last update: 2018-08-02
                   <div v-if="cellDict.format==='head'" class="cell c_head"><div class="cellpad">{{ cellDict.value }}</div></div>
                   <div v-if="cellDict.format==='name'" class="cell c_name"><div class="cellpad">{{ cellDict.value }}</div></div>
                   <div v-if="cellDict.format==='blnk'" class="cell c_blnk"><div class="cellpad"></div></div> <!-- Force empty, even if value -->
-                  <div v-if="cellDict.format==='edit'" class="cell c_edit"><div class="cellpad">
+                  <div v-if="cellDict.format==='tick'" class="cell c_tick">
+                    <div class="cellpad">
+                      <input type="checkbox" v-model="cellDict.value"/>
+                    </div>
+                  </div>
+                  <div v-if="cellDict.format==='edit'" class="cell c_edit">
+                    <div class="cellpad">
                       <input type="text"
                              class="txbox"
                              style="text-align: right"
                              v-model="cellDict.value"/>
                     </div>
                   </div>
-                  <div v-if="cellDict.format==='calc'" class="cell c_calc"><div class="cellpad">
-                    <input type="text"
-                           class="txbox"
-                           style="text-align: right"
-                           v-model="cellDict.value" disabled/>
-                  </div>
+                  <div v-if="cellDict.format==='calc'" class="cell c_calc">
+                    <div class="cellpad">
+                      <input type="text"
+                             class="txbox"
+                             style="text-align: right"
+                             v-model="cellDict.value" disabled/>
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -79,9 +86,9 @@ Last update: 2018-08-02
 
   import axios from 'axios'
   let filesaver = require('file-saver')
-  import utils from '@/services/utils' // Imported globally
-  import rpcs from '@/services/rpc-service'
-  import status from '@/services/status-service'
+  import utils from '@/js/utils' // Imported globally
+  import rpcs from '@/js/rpc-service'
+  import status from '@/js/status-service'
   import router from '@/router'
 
   export default {
@@ -210,6 +217,11 @@ Last update: 2018-08-02
 
   .c_name {
     background-color:#fafafa;
+  }
+
+  .c_tick {
+    background-color: rgb(168, 237, 154);
+    justify-content:center;
   }
 
   .c_edit {

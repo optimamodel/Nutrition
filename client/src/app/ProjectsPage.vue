@@ -1,11 +1,11 @@
 <!--
 Manage projects page
 
-Last update: 2018-08-30
+Last update: 2018sep22
 -->
 
 <template>
-  <div>
+  <div class="SitePage">
     <div class="card">
       <help reflink="create-projects" label="Create projects"></help>
 
@@ -61,6 +61,7 @@ Last update: 2018-08-30
               </span>
             </th>
             <th>Databook</th> <!-- ATOMICA-NUTRITION DIFFERENCE -->
+            <th>Defaults</th> <!-- ATOMICA-NUTRITION DIFFERENCE -->
           </tr>
           </thead>
           <tbody>
@@ -97,7 +98,10 @@ Last update: 2018-08-30
             <td style="white-space: nowrap; text-align:left"> <!-- ATOMICA-NUTRITION DIFFERENCE -->
               <button class="btn __blue" @click="uploadDatabook(projectSummary.project.id)" data-tooltip="Upload databook"><i class="ti-upload"></i></button>
               <button class="btn" @click="downloadDatabook(projectSummary.project.id)" data-tooltip="Download databook"><i class="ti-download"></i></button>
-              <button class="btn" @click="downloadDefaults(projectSummary.project.id)" data-tooltip="Download defaults"><i class="ti-file"></i></button>
+            </td>
+            <td style="white-space: nowrap; text-align:left"> <!-- ATOMICA-NUTRITION DIFFERENCE -->
+              <button class="btn" @click="uploadDefaults(projectSummary.project.id)" data-tooltip="Upload defaults"><i class="ti-upload"></i></button>
+              <button class="btn" @click="downloadDefaults(projectSummary.project.id)" data-tooltip="Download defaults"><i class="ti-download"></i></button>
             </td>
           </tr>
           </tbody>
@@ -149,9 +153,9 @@ Last update: 2018-08-30
 <script>
   import axios from 'axios'
   var filesaver = require('file-saver')
-  import utils from '@/services/utils'
-  import rpcs from '@/services/rpc-service'
-  import status from '@/services/status-service'
+  import utils from '@/js/utils'
+  import rpcs from '@/js/rpc-service'
+  import status from '@/js/status-service'
   import router from '@/router'
 
   export default {
@@ -177,14 +181,14 @@ Last update: 2018-08-30
     },
 
     created() {
-      let projectId = null
-      if (this.$store.state.currentUser.displayname == undefined) { // If we have no user logged in, automatically redirect to the login page.
+      let projectID = null
+      if (this.$store.state.currentUser.displayname === undefined) { // If we have no user logged in, automatically redirect to the login page.
         router.push('/login')
       } else {    // Otherwise...
-        if (this.$store.state.activeProject.project != undefined) { // Get the active project ID if there is an active project.
-          projectId = this.$store.state.activeProject.project.id
+        if (this.$store.state.activeProject.project !== undefined) { // Get the active project ID if there is an active project.
+          projectID = this.$store.state.activeProject.project.id
         }
-        this.updateProjectSummaries(projectId) // Load the project summaries of the current user.
+        this.updateProjectSummaries(projectID) // Load the project summaries of the current user.
       }
     },
 
@@ -192,7 +196,7 @@ Last update: 2018-08-30
 
       projectLoaded(uid) {
         console.log('projectLoaded called')
-        if (this.$store.state.activeProject.project != undefined) {
+        if (this.$store.state.activeProject.project !== undefined) {
           if (this.$store.state.activeProject.project.id === uid) {
             console.log('Project ' + uid + ' is loaded')
             return true
@@ -220,7 +224,7 @@ Last update: 2018-08-30
       updateProjectSummaries(setActiveID) {
         console.log('updateProjectSummaries() called')
         status.start(this)
-        rpcs.rpc('load_current_user_project_summaries') // Get the current user's project summaries from the server.
+        rpcs.rpc('jsonify_projects', [this.$store.state.currentUser.username]) // Get the current user's project summaries from the server.
           .then(response => {
             let lastCreationTime = null
             let lastCreatedID = null
@@ -254,9 +258,9 @@ Last update: 2018-08-30
       addDemoProject() {
         console.log('addDemoProject() called');
         status.start(this);
-        rpcs.rpc('add_demo_project', [this.$store.state.currentUser.UID]) // Have the server create a new project.
+        rpcs.rpc('add_demo_project', [this.$store.state.currentUser.username]) // Have the server create a new project.
           .then(response => {
-            this.updateProjectSummaries(response.data.projectId); // Update the project summaries so the new project shows up on the list.
+            this.updateProjectSummaries(response.data.projectID); // Update the project summaries so the new project shows up on the list.
             status.succeed(this, '')
           })
           .catch(error => {
@@ -274,8 +278,9 @@ Last update: 2018-08-30
       createNewProject() {
         console.log('createNewProject() called');
         this.$modal.hide('create-project');
-        status.start(this) // Start indicating progress. 
-        rpcs.download('create_new_project', [this.$store.state.currentUser.UID, this.proj_name]) // Have the server create a new project.
+        status.start(this) // Start indicating progress.
+        var username = this.$store.state.currentUser.username
+        rpcs.download('create_new_project', [username, this.proj_name]) // Have the server create a new project.
           .then(response => {
             this.updateProjectSummaries(null); // Update the project summaries so the new project shows up on the list.
             status.succeed(this, 'New project "' + this.proj_name + '" created') // Indicate success.
@@ -287,10 +292,10 @@ Last update: 2018-08-30
 
       uploadProjectFromFile() {
         console.log('uploadProjectFromFile() called')
-        rpcs.upload('create_project_from_prj_file', [this.$store.state.currentUser.UID], {}, '.prj') // Have the server upload the project.
+        rpcs.upload('upload_project', [this.$store.state.currentUser.username], {}, '.prj') // Have the server upload the project.
           .then(response => {
             status.start(this)  // This line needs to be here to avoid the spinner being up during the user modal.
-            this.updateProjectSummaries(response.data.projectId) // Update the project summaries so the new project shows up on the list.
+            this.updateProjectSummaries(response.data.projectID) // Update the project summaries so the new project shows up on the list.
             status.succeed(this, 'New project uploaded')
           })
           .catch(error => {
@@ -368,7 +373,7 @@ Last update: 2018-08-30
         status.start(this) // Start indicating progress.
         rpcs.rpc('copy_project', [uid]) // Have the server copy the project, giving it a new name.
           .then(response => {
-            this.updateProjectSummaries(response.data.projectId) // Update the project summaries so the copied program shows up on the list.
+            this.updateProjectSummaries(response.data.projectID) // Update the project summaries so the copied program shows up on the list.
             status.succeed(this, 'Project "'+matchProject.project.name+'" copied')    // Indicate success.
           })
           .catch(error => {
@@ -384,15 +389,14 @@ Last update: 2018-08-30
           let newProjectSummary = _.cloneDeep(projectSummary) // Make a deep copy of the projectSummary object by JSON-stringifying the old object, and then parsing the result back into a new object.
           newProjectSummary.project.name = projectSummary.renaming // Rename the project name in the client list from what's in the textbox.
           status.start(this)
-          rpcs.rpc('update_project_from_summary', [newProjectSummary]) // Have the server change the name of the project by passing in the new copy of the summary.
+          rpcs.rpc('rename_project', [newProjectSummary]) // Have the server change the name of the project by passing in the new copy of the summary.
             .then(response => {
               this.updateProjectSummaries(newProjectSummary.project.id) // Update the project summaries so the rename shows up on the list.
               projectSummary.renaming = '' // Turn off the renaming mode.
               status.succeed(this, '')  // No green popup message.
             })
             .catch(error => {
-              // Indicate failure.
-              status.fail(this, 'Could not rename project', error)
+              status.fail(this, 'Could not rename project', error) // Indicate failure.
             })
         }
 
@@ -456,6 +460,19 @@ Last update: 2018-08-30
           })
       },
 
+      uploadDefaults(uid) {
+        console.log('uploadDefaults() called')
+        status.start(this, 'Uploading defaults...')
+        rpcs.upload('upload_defaults', [uid], {}, '.xlsx')
+          .then(response => {
+            this.updateProjectSummaries(uid) // Update the project summaries
+            status.succeed(this, 'Defaults uploaded to project') // Indicate success.
+          })
+          .catch(error => {
+            status.fail(this, 'Could not upload defaults', error) // Indicate failure.
+          })
+      },
+
       // Confirmation alert
       deleteModal() {
         let selectProjectsUIDs = this.projectSummaries.filter(theProj => // Pull out the names of the projects that are selected.
@@ -492,7 +509,7 @@ Last update: 2018-08-30
               status.succeed(this, '')  // No green popup message.
             })
             .catch(error => {
-              status.fail(this, 'Could not delete project/s', error)
+              status.fail(this, 'Could not delete project(s)', error)
             })
         }
       },
@@ -503,14 +520,13 @@ Last update: 2018-08-30
         console.log('downloadSelectedProjects() called for ', selectProjectsUIDs)
         if (selectProjectsUIDs.length > 0) { // Have the server download the selected projects.
           status.start(this)
-          rpcs.download('load_zip_of_prj_files', [selectProjectsUIDs])
+          rpcs.download('download_projects', [selectProjectsUIDs, this.$store.state.currentUser.username])
             .then(response => {
               // Indicate success.
               status.succeed(this, '')  // No green popup message.
             })
             .catch(error => {
-              // Indicate failure.
-              status.fail(this, 'Could not download project/s')
+              status.fail(this, 'Could not download project(s)', error) // Indicate failure.
             })
         }
       }

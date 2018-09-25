@@ -1,0 +1,15 @@
+version: '2'
+services:
+  app:
+    build:
+      context: .
+      args:
+        PORT: '80'
+        REDIS_URL: 'redis://10.0.0.19:6379/6'
+    command: supervisord
+    ports:
+     - '80:80'
+     - '8080:8080'
+     - '8092:8092'
+    volumes:
+     - .:/code

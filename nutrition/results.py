@@ -1,5 +1,4 @@
 import sciris as sc
-from .plotting import make_plots
 from .model import default_trackers
 
 class ScenResult(sc.prettyobj):
@@ -69,6 +68,31 @@ class ScenResult(sc.prettyobj):
     def get_currspend(self):
         return self.model.prog_info.curr
 
+    def get_childscens(self):
+        """ For calculating the impacts of each scenario with single intervention set to 0 coverage """
+        cov = [0]
+        allkwargs = []
+        progset = self.programs.iterkeys()
+        base_progset = self.prog_info.base_progset()
+        # zero cov scen
+        kwargs = {'name': 'Scenario overall',
+                  'model_name': self.model_name,
+                  'scen_type': 'budget',
+                  'progvals': {prog: cov for prog in base_progset}}
+        allkwargs.append(kwargs)
+        # scale down each program to 0 individually
+        progvals = self.get_allocs(ref=True)
+        for prog in progset:
+            new_progvals = sc.dcp(progvals)
+            new_progvals[prog] = cov
+            kwargs = {'name': prog,
+                      'model_name': self.model_name,
+                      'scen_type': 'budget',
+                      'progvals': new_progvals}
+            allkwargs.append(kwargs)
+        return allkwargs
+
     def plot(self, toplot=None):
+        from .plotting import make_plots # This is here to avoid a circular import
         figs = make_plots(self, toplot=toplot)
         return figs
