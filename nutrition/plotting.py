@@ -19,8 +19,15 @@ else:
     hueshift = 0.05
 
 
-def make_plots(all_res=None, toplot=None, optim=False):
-    """ res is a ScenResult or Result object (could be a list of these objects) from which all information can be extracted """
+def make_plots(all_res=None, toplot=None, optim=False, geo=False):
+    """
+    This function controls all the plotting types a user can ask for
+    :param all_res: all the results that should be plotted (list of ScenResult objects)
+    :param toplot: type of plots to produce (list of strings)
+    :param optim: are these the results of a national optimiztion? (boolean)
+    :param geo: are these the results of a geospatial optimization? (boolean)
+    :return: figures to be plotted (odict)
+    """
     ## Initialize
     allplots = sc.odict()
     if toplot is None:
@@ -37,7 +44,7 @@ def make_plots(all_res=None, toplot=None, optim=False):
         outfigs = plot_outputs(all_res, False, 'agg')
         allplots.update(outfigs)
     if 'alloc' in toplot: # optimized allocations
-        outfigs = plot_alloc(all_res, optim=optim)
+        outfigs = plot_alloc(all_res, optim=optim, geo=geo)
         allplots.update(outfigs)
     return allplots
 
@@ -131,10 +138,9 @@ def plot_outputs(all_res, seq, name):
         figs['%s_out_%0i'%(name, i)] = fig
     return figs
 
-def plot_alloc(results, optim):
-    # todo: will need a geospatial param, since this means we don't want: multiples in names, the use of multiples, total flexible funds must be ALL regions, not just 1.
+def plot_alloc(results, optim, geo):
     """ Plots the average annual spending for each scenario, coloured by program.
-    Legend will include all programs in the 'baseline' allocation which receive non-zero spending """
+    Legend will include all programs in the 'baseline' allocation which receive non-zero spending in any scenario """
     
     # Initialize
     width = 0.35
@@ -177,7 +183,7 @@ def plot_alloc(results, optim):
             bars.append(bar)
             bottom += spend
     ymax = max(bottom)
-    if optim:
+    if optim or geo:
         title = 'Optimal allocation, %s-%s'% (ref.years[pltstart], ref.years[-1])
         valuestr = str(results[1].prog_info.free / 1e6) # bit of a hack
         # format x axis
@@ -185,7 +191,10 @@ def plot_alloc(results, optim):
             valuestr = valuestr[:3]
         else:
             valuestr = valuestr[:2]
-        xlab = 'Total available budget (relative to US$%sM)' % valuestr
+        if geo:
+            xlab = 'Total available budget'
+        else:
+            xlab = 'Total available budget (relative to US$%sM)' % valuestr
     else:
         title = 'Average annual spending, %s-%s' % (ref.years[pltstart], ref.years[-1])
         xlab = '' # 'Scenario' # Collides with tick labels
