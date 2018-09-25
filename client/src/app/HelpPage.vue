@@ -7,28 +7,28 @@ Last update: 2018sep23
 <template>
   <div class="SitePage">
     <div style="text-align:center">
-    <div style="display:inline-block; margin:auto; text-align:left" v-model="getVersionInfo">
-      <div>
-        <p>We are in the process of writing a user guide.</p>
-        <p>For assistance in the mean time, please email <a href="mailto:help@ocds.co">help@ocds.co</a>.</p>
-        <p>Please copy and paste the table below into your email, along with any error messages.</p>
-      </div>
+      <div style="display:inline-block; margin:auto; text-align:left" v-model="getVersionInfo">
+        <div>
+          <p>We are in the process of writing a user guide.</p>
+          <p>For assistance in the mean time, please email <a href="mailto:help@ocds.co">help@ocds.co</a>.</p>
+          <p>Please copy and paste the table below into your email, along with any error messages.</p>
+        </div>
 
-      <table class="table table-bordered table-striped table-hover">
-        <thead>
-        <tr>
-          <th colspan=100>Technical information</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr><td class="tlabel">Username    </td><td>{{ username }}</td></tr>
-        <tr><td class="tlabel">Browser     </td><td>{{ useragent }}</td></tr>
-        <tr><td class="tlabel">App version </td><td>Optima Nutrition {{ version }} ({{ date }}) [{{ gitbranch }}/{{ githash }}]</td></tr>
-        <tr><td class="tlabel">Timestamp   </td><td>{{ timestamp }}</td></tr>
-        <tr><td class="tlabel">Server name </td><td>{{ server }}</td></tr>
-        <tr><td class="tlabel">Server load </td><td>{{ cpu }}</td></tr>
-        </tbody>
-      </table>
+        <table class="table table-bordered table-striped table-hover">
+          <thead>
+          <tr>
+            <th colspan=100>Technical information</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr><td class="tlabel">Username    </td><td>{{ username }}</td></tr>
+          <tr><td class="tlabel">Browser     </td><td>{{ useragent }}</td></tr>
+          <tr><td class="tlabel">App version </td><td>Optima Nutrition {{ version }} ({{ date }}) [{{ gitbranch }}/{{ githash }}]</td></tr>
+          <tr><td class="tlabel">Timestamp   </td><td>{{ timestamp }}</td></tr>
+          <tr><td class="tlabel">Server name </td><td>{{ server }}</td></tr>
+          <tr><td class="tlabel">Server load </td><td>{{ cpu }}</td></tr>
+          </tbody>
+        </table>
 
         <div>
           <button @click="adv_consoleModal">
@@ -48,7 +48,7 @@ Last update: 2018sep23
             <textarea rows="10" cols="100" v-model="adv_query"/><br>
             <button @click="adv_submit">Submit</button><br><br><br>
             <b>Output</b><br>
-            {{ adv_response }}
+            <span v-html="adv_response"></span>
           </div>
         </div>
       </div>
@@ -120,7 +120,7 @@ Last update: 2018sep23
           }
           this.$Simplert.open(obj)
         } else {
-          this.adv_toggleConsole()
+          this.adv_showConsole = false
         }
       },
 
@@ -132,7 +132,8 @@ Last update: 2018sep23
         console.log('adv_submit() called')
         rpcs.rpc('run_query', [this.adv_authentication, this.adv_query]) // Have the server copy the project, giving it a new name.
           .then(response => {
-            this.adv_response = response.data
+            console.log(response.data)
+            this.adv_response = response.data.replace(/\n/g,'<br>')
             status.succeed(this, 'Query run')    // Indicate success.
           })
           .catch(error => {
