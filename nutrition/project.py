@@ -352,15 +352,17 @@ class Project(object):
 
     @trace_exception
     def run_geospatial(self, geo=None, maxiter=30, swarmsize=25, maxtime=20, dosave=True):
-        """ Regions cannot be parallelised because daemon processes cannot have children. """
+        """ Regions cannot be parallelised because daemon processes cannot have children.
+        Two options: Either can parallelize regions and not the budget or run
+        regions in series while parallelising each budget multiple. """
         regions = geo.make_regions()
         run_optim = partial(self.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
                             parallel=True, dosave=True, runbaseline=False)
-        results = sc.odict(sc.odict({region.name: run_optim(optim=region) for region in regions}))
-        # extract each result that have multiple 1
-        result = [region for sublist in results.itervalues() for region in sublist if region.mult == 1]
-        geo.get_bocs(results, result) # todo: need to change this naming, workflow
-        regional_allocs = geo.gridsearch(result)
+        optimized = sc.odict(sc.odict({region.name: run_optim(optim=region) for region in regions}))
+        # extract each result that has multiple 1
+        optim_curr = [region for sublist in optimized.itervalues() for region in sublist if region.mult == 1]
+        geo.get_bocs(optimized, optim_curr)
+        regional_allocs = geo.gridsearch(optim_curr)
         # now optimize these allocations within each region
         regions = geo.make_regions(add_funds=regional_allocs, mults=[1])
         run_optim = partial(self.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
@@ -368,9 +370,10 @@ class Project(object):
         # can run in parallel b/c child processes in series
         results = run_parallel(run_optim, regions, num_procs=len(regions))
         results = [item for sublist in results for item in sublist]
-        # remove multiple to plot by name
-        for res in results: # total hack
+        # remove multiple to plot by name (total hack)
+        for res in results:
             res.mult = None
+            res.name = res.name.replace('(x1)', '')
         if dosave: self.add_result(results, name='geospatial')
         return results
 

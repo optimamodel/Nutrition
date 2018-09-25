@@ -53,11 +53,11 @@ class Geospatial:
         self.regions = regions
         return regions
 
-    def get_bocs(self, regions, result):
+    def get_bocs(self, optimized, optim_curr):
         """ Genereates the budget outcome curves for each region
-         :param regions: a list of Optim objects (list of lists) """
-        national = self.get_totalfreefunds(result)
-        for name, results in regions.iteritems():
+         :param optimized: a list of Optim objects (list of lists) """
+        national = self.get_totalfreefunds(optim_curr)
+        for name, results in optimized.iteritems():
             spending = np.zeros(len(results))
             output = np.zeros(len(results))
             for i, res in enumerate(results):
