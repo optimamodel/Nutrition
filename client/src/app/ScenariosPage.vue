@@ -40,8 +40,8 @@ Last update: 2018-09-25
             </td>
             <td style="white-space: nowrap">
               <button class="btn btn-icon" @click="editScenModal(scenSummary)" data-tooltip="Edit scenario"><i class="ti-pencil"></i></button>
-              <button class="btn btn-icon" @click="copyScen(scenSummary)" data-tooltip="Copy scenario"><i class="ti-files"></i></button>
-              <button class="btn btn-icon" @click="deleteScen(scenSummary)" data-tooltip="Delete scenario"><i class="ti-trash"></i></button>
+              <button class="btn btn-icon" @click="copyScen(scenSummary)"      data-tooltip="Copy scenario"><i class="ti-files"></i></button>
+              <button class="btn btn-icon" @click="deleteScen(scenSummary)"    data-tooltip="Delete scenario"><i class="ti-trash"></i></button>
             </td>
           </tr>
           </tbody>
@@ -49,8 +49,8 @@ Last update: 2018-09-25
 
         <div>
           <button class="btn __green" :disabled="!scenariosLoaded" @click="runScens()">Run scenarios</button>
-          <button class="btn __blue" :disabled="!scenariosLoaded" @click="addScenModal('coverage')">Add coverage scenario</button>
-          <button class="btn __blue" :disabled="!scenariosLoaded" @click="addScenModal('budget')">Add budget scenario</button>
+          <button class="btn __blue"  :disabled="!scenariosLoaded" @click="addScenModal('coverage')">Add coverage scenario</button>
+          <button class="btn __blue"  :disabled="!scenariosLoaded" @click="addScenModal('budget')">Add budget scenario</button>
         </div>
       </div>
     </div>
@@ -64,7 +64,7 @@ Last update: 2018-09-25
           <button class="btn btn-icon" @click="scaleFigs(1.0)" data-tooltip="Reset zoom"><i class="ti-zoom-in"></i></button>
           <button class="btn btn-icon" @click="scaleFigs(1.1)" data-tooltip="Zoom in">+</button>
           &nbsp;&nbsp;&nbsp;
-          <button class="btn" @click="exportGraphs(projectID)">Export plots</button>
+          <button class="btn" @click="exportGraphs(projectID, 'scens')">Export plots</button>
           <button class="btn" @click="exportResults(projectID, 'scens')">Export results</button>
         </div>
       </div>
@@ -248,10 +248,9 @@ Last update: 2018-09-25
 
     methods: {
 
-      makeGraphs(graphdata)     { return utils.makeGraphs(this, graphdata) },
-      exportGraphs(project_id)  { return utils.exportGraphs(this, project_id) },
-      exportResults(project_id, cache_id) 
-                                { return utils.exportResults(this, project_id, cache_id) },
+      makeGraphs(graphdata)               { return utils.makeGraphs(this, graphdata) },
+      exportGraphs(project_id, cache_id)  { return utils.exportGraphs(this, project_id, cache_id) },
+      exportResults(project_id, cache_id) { return utils.exportResults(this, project_id, cache_id) },
                                 
       scaleFigs(frac) {
         this.figscale = this.figscale*frac;
@@ -321,6 +320,7 @@ Last update: 2018-09-25
         // Open a model dialog for creating a new project
         console.log('editScenModal() called');
         this.addEditModal.scenSummary = scenSummary;
+        this.addEditModal.modalScenarioType = scenSummary.scen_type;
         this.setScenYears(scenSummary);
         console.log('Editing scenario:');
         console.log(this.addEditModal.scenSummary);

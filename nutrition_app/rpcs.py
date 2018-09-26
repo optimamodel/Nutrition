@@ -1,7 +1,7 @@
 """
 Optima Nutrition remote procedure calls (RPCs)
     
-Last update: 2018sep22 by cliffk
+Last update: 2018sep25 by cliffk
 """
 
 ###############################################################
@@ -40,7 +40,7 @@ def get_path(filename=None, username=None):
     return fullpath
 
 
-def sanitize(vals, skip=False, forcefloat=False, verbose=False, as_nan=False, die=True):
+def sanitize(vals, skip=False, forcefloat=False, convertpercent=False, verbose=False, as_nan=False, die=True):
     ''' Make sure values are numeric, and either return nans or skip vals that aren't -- WARNING, duplicates lots of other things!'''
     if verbose: print('Sanitizing vals of %s: %s' % (type(vals), vals))
     if as_nan: missingval = np.nan
@@ -61,9 +61,9 @@ def sanitize(vals, skip=False, forcefloat=False, verbose=False, as_nan=False, di
             try:
                 factor = 1.0
                 if sc.isstring(val):
-                    val = val.replace(',','') # Remove commas, if present
-                    val = val.replace('$','') # Remove dollars, if present
-                    # if val.endswith('%'): factor = 0.01 # Scale if percentage has been used -- CK: not used since already converted from percentage
+                    if convertpercent and val.endswith('%'): factor = 0.01 # Scale if percentage has been used -- CK: not used since already converted from percentage
+                    for toremove in [' ', ',', '$', '%']:
+                        val = val.replace(toremove,'') # Remove unwanted parts of the strnig
                 sanival = float(val)*factor
             except Exception as E:
                 errormsg = 'Could not sanitize value "%s": %s' % (val, str(E))
@@ -95,7 +95,7 @@ def get_version_info():
       
 
 def get_user(username=None):
-    ''' Ensure it's a valid Optima Nutrition user '''
+    ''' Ensure it's a valid user '''
     user = datastore.loaduser(username)
     dosave = False
     if not hasattr(user, 'projects'):
@@ -121,14 +121,11 @@ def run_query(token, query):
     output = None
     if sc.sha(token).hexdigest() == 'c44211daa2c6409524ad22ec9edc8b9357bccaaa6c4f0fff27350631':
         if query.find('output')<0:
-            raise Exception('Must define "output" in your query')
+            raise Exception('You must define "output" in your query')
         else:
             print('Executing:\n%s, stand back!' % query)
-            try:
-                exec(query)
-            except Exception as E:
-                errormsg = 'Query failed: %s' % str(E)
-                raise Exception(errormsg)
+            exec(query)
+            output = str(output)
             return output
     else:
         errormsg = 'Authentication failed; this incident has been reported'
@@ -160,14 +157,14 @@ def save_project(project, die=None): # NB, only for saving an existing project
 
 
 @RPC() # Not usually called as an RPC
-def save_new_project(proj, username=None):
+def save_new_project(proj, username=None, uid=None):
     """
     If we're creating a new project, we need to do some operations on it to
     make sure it's valid for the webapp.
     """ 
     # Preliminaries
     new_project = sc.dcp(proj) # Copy the project, only save what we want...
-    new_project.uid = sc.uuid()
+    new_project.uid = sc.uuid(uid)
     
     # Get unique name
     user = get_user(username)
@@ -186,7 +183,8 @@ def save_new_project(proj, username=None):
     
     # Save all the things
     key = save_project(new_project)
-    user.projects.append(key)
+    if key not in user.projects: # Let's not allow multiple copies
+        user.projects.append(key)
     datastore.saveuser(user)
     return key,new_project
 
@@ -199,7 +197,7 @@ def save_result(result, die=None):
 
 @RPC() # Not usually called as an RPC
 def del_project(project_key, die=None):
-    key = datastore.getkey(key=project_key, objtype='project', forcetype=False)
+    key = datastore.getkey(key=project_key, objtype='project', forcetype=True)
     project = load_project(key)
     user = get_user(project.webapp.username)
     output = datastore.delete(key)
@@ -253,8 +251,8 @@ def jsonify_project(project_id, verbose=False):
             'name':         proj.name,
             'username':     proj.webapp.username,
             'hasData':      len(proj.datasets)>0,
-            'creationTime': proj.created,
-            'updatedTime':  proj.modified,
+            'creationTime': sc.getdate(proj.created),
+            'updatedTime':  sc.getdate(proj.modified),
             'n_results':    len(proj.results),
             'n_tasks':      len(proj.webapp.tasks)
         }
@@ -269,7 +267,8 @@ def jsonify_projects(username, verbose=False):
     output = {'projects':[]}
     user = get_user(username)
     for project_key in user.projects:
-        json = jsonify_project(project_key)
+        try:                   json = jsonify_project(project_key)
+        except Exception as E: json = {'project': {'name':'Project load failed: %s' % str(E)}}
         output['projects'].append(json)
     if verbose: sc.pp(output)
     return output
@@ -611,14 +610,12 @@ def save_sheet_data(project_id, sheetdata, key=None):
                 cellformat = sheetdata[sheet][r][c]['format']
                 if cellformat == 'edit':
                     cellval    = sheetdata[sheet][r][c]['value']
-                    try:    cellval = float(cellval)
+                    try:    cellval = sanitize(cellval)
                     except: cellval = str(cellval)
                     cells.append([r+1,c+1]) # Excel uses 1-based indexing
                     vals.append(cellval)
         wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={'data_only':True}) # Can turn on verbose
-    proj.dataset(key).load(project=proj, fromfile=False)
-    proj.add_model(key) # Refresh the model
-    
+    proj.load_data(fromfile=False, name=proj.datasets.keys()[-1]) # WARNING, only supports one dataset/model
     print('Saving project...')
     save_project(proj)
     return None
@@ -628,9 +625,9 @@ def save_sheet_data(project_id, sheetdata, key=None):
 ##################################################################################
 
 def is_included(prog_set, program, default_included):
-    if (program.name in prog_set) or (program.base_cov and default_included):
+    if (program.name in prog_set) or (program.base_cov and default_included and 'WASH' not in program.name):
         answer = True
-    else: 
+    else:
         answer = False
     return answer
     
@@ -638,8 +635,7 @@ def is_included(prog_set, program, default_included):
 def py_to_js_scen(py_scen, proj, key=None, default_included=False):
     ''' Convert a Python to JSON representation of a scenario '''
     prog_names = proj.dataset().prog_names()
-    settings = nu.Settings()
-    scen_years = settings.n_years - 1 # First year is baseline
+    scen_years = proj.dataset().t[1] - proj.dataset().t[0] # First year is baseline
     attrs = ['name', 'active', 'scen_type']
     js_scen = {}
     for attr in attrs:
@@ -675,7 +671,7 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
         this_spec['base_cov'] = str(round(program.base_cov*100)) # Convert to percentage
         this_spec['base_spend'] = format(int(round(program.base_spend)), ',')
         js_scen['progvals'].append(this_spec)
-        js_scen['t'] = [settings.t[0]+1, settings.t[1]] # First year is baseline year
+        js_scen['t'] = [proj.dataset().t[0]+1, proj.dataset().t[1]] # First year is baseline year
     return js_scen
     
     
@@ -688,7 +684,7 @@ def js_to_py_scen(js_scen):
     for js_spec in js_scen['progvals']:
         if js_spec['included']:
             py_json['progvals'][js_spec['name']] = []
-            vals = list(sanitize(js_spec['vals'], skip=True))
+            vals = list(sanitize(js_spec['vals'], skip=False))
             for y in range(len(vals)):
                 if js_scen['scen_type'] == 'coverage': # Convert from percentage
                         if vals[y] is not None:
@@ -733,10 +729,8 @@ def get_default_scen(project_id, scen_type=None):
     print('Creating default scenario...')
     if scen_type is None: scen_type = 'coverage'
     proj = load_project(project_id, die=True)
-    py_scens = proj.demo_scens(doadd=False)
-    if scen_type == 'coverage': py_scen = py_scens[0] # Pull out the first one
-    else:                       py_scen = py_scens[1] # Pull out the second one
-    py_scen.scen_type = scen_type # Set the scenario type
+    py_scen = proj.demo_scens(doadd=False, default=True, scen_type=scen_type)
+    py_scen.scen_type = scen_type # Set the scenario type -- Warning, is this needed?
     js_scen = py_to_js_scen(py_scen, proj, default_included=True)
     print('Created default JavaScript scenario:')
     sc.pp(js_scen)
@@ -764,6 +758,10 @@ def run_scens(project_id, doplot=True):
     proj = load_project(project_id, die=True)
     proj.run_scens()
     
+    # Get cost-effectiveness table
+    costeff = nu.get_costeff(project=proj, results=proj.result('scens'))
+    table = reformat_costeff(costeff)
+    
     # Get graphs
     graphs = []
     if doplot:
@@ -775,10 +773,6 @@ def run_scens(project_id, doplot=True):
             graphs.append(graph_dict)
             print('Converted figure %s of %s' % (f+1, len(figs)))
         
-    # Get cost-effectiveness table
-    costeff = nu.get_costeff(project=proj, results=proj.result('scens'))
-    table = reformat_costeff(costeff)
-    
     # Store results in cache
     proj = cache_results(proj)
     
@@ -939,18 +933,18 @@ def export_results(project_id, cache_id):
     proj = retrieve_results(proj)
     file_name = '%s outputs.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
-    proj.write_results(full_file_name, keys=[cache_id])
+    proj.write_results(full_file_name, keys=cache_id)
     print(">> export_results %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
 
 
 @RPC(call_type='download')
-def export_graphs(project_id):
+def export_graphs(project_id, cache_id):
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
     proj = retrieve_results(proj)
     file_name = '%s graphs.pdf' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
-    figs = proj.plot(-1) # Generate the plots
+    figs = proj.plot(key=cache_id) # Generate the plots
     sc.savefigs(figs, filetype='singlepdf', filename=full_file_name)
     print(">> export_graphs %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.

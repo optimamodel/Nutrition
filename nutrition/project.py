@@ -262,7 +262,7 @@ class Project(object):
         self.add_optims(optims)
         return None
 
-    def add_model(self, name=None, overwrite=False):
+    def add_model(self, name=None, overwrite=True):
         """ Adds a model to the self.models odict.
         A new model should only be instantiated if new input data is uploaded to the Project.
         For the same input data, one model instance is used for all scenarios.
@@ -324,8 +324,8 @@ class Project(object):
                 name = 'default_result'
         self.add(name=name, item=result, what='result')
 
-    def demo_scens(self, dorun=None, doadd=True):
-        scens = demo_scens()
+    def demo_scens(self, dorun=None, doadd=True, default=False, scen_type=None):
+        scens = demo_scens(default=default, scen_type=scen_type)
         if doadd:
             self.add_scens(scens)
             if dorun:

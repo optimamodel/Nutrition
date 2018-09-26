@@ -8,16 +8,16 @@ import nutrition.ui as nu
 from nutrition_app import main, rpcs, apptasks as apt
 
 torun = [
-'file_tests'
-'sanitization',
-'datastore',
-'spreadsheet_io',
-'input_io',
+#'file_tests'
+#'sanitization',
+#'datastore',
+#'spreadsheet_io',
+#'input_io',
 'scen_io',
-'optim_io',
-'run_scenarios',
-'run_optimization',
-'export_results',
+#'optim_io',
+#'run_scenarios',
+#'run_optimization',
+#'export_results',
 ]
 
 
@@ -44,7 +44,7 @@ def heading(string, style=None):
 T = sc.tic()
 app = main.make_app()
 user = sw.make_default_users(app)[0]
-proj_id  = sc.uuid(as_string=True) # These can all be the same
+proj_id  = sc.uuid(tostring=True) # These can all be the same
 proj = demoproj(proj_id, user.username)
 
 
