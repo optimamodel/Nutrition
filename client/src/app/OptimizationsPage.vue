@@ -442,10 +442,12 @@ Last update: 2018sep25
         // Do the polling of the task states.
         this.myNewPollAllTaskStates(checkAllTasks)
         .then(() => {
+          // Hack to get the Vue display of optimSummaries to update
+          this.optimSummaries.push(this.optimSummaries[0])
+          this.optimSummaries.pop()
+            
           // Only if we need to continue polling...
           if (this.myNewNeedToPoll()) {
-            this.optimSummaries.push(this.optimSummaries[0]); // Hack to get the Vue display of optimSummaries to update
-            this.optimSummaries.pop();
             let waitingtime = 1 // Sleep waitingtime seconds
             utils.sleep(waitingtime * 1000)
               .then(response => {
@@ -519,12 +521,9 @@ Last update: 2018sep25
               optimSum.serverDatastoreId = this.$store.state.activeProject.project.id + ':opt-' + optimSum.name // Build a task and results cache ID from the project's hex UID and the optimization name.
               optimSum.status = 'not started' // Set the status to 'not started' by default, and the pending and execution times to '--'.
               optimSum.pendingTime = '--'
-              optimSum.executionTime = '--'
-              
-              // Get the task state for the optimization.
-              this.getOptimTaskState(optimSum) // Get the task state for the optimization.              
+              optimSum.executionTime = '--'             
             })
-            this.myNewOuterPollAllTaskStates(true)           
+            this.myNewOuterPollAllTaskStates(true) 
             this.optimsLoaded = true
             status.succeed(this, 'Optimizations loaded')
           })
@@ -658,8 +657,10 @@ Last update: 2018sep25
             rpcs.rpc('launch_task', [optimSummary.serverDatastoreId, 'run_optim',
               [this.projectID, optimSummary.serverDatastoreId, optimSummary.name, runtype]])
               .then(response => {
-//                this.myNewOuterPollAllTaskStates(true)
-                this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
+                if (!this.pollingTasks) {
+                  this.myNewOuterPollAllTaskStates(true)
+                }
+//                this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
                 status.succeed(this, 'Started optimization')
               })
               .catch(error => {
