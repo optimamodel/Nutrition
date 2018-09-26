@@ -51,9 +51,6 @@ def sanitizevals(val, blank=None, invalid=None, toremove=None, convertpercent=No
     if invalid        is None: invalid = 'die'
     if convertpercent is None: convertpercent = False
     if toremove       is None: toremove = default_toremove
-    if blank not in default_opts or invalid not in default_opts:
-        errormsg = '"blank" and "invalid" must be one of %s, not %s and %s' % (default_opts, blank, invalid)
-        raise Exception(errormsg)
     
     def baddata(val, opt, errormsg=None):
         ''' Handle different options for blank or invalid data '''
@@ -62,7 +59,7 @@ def sanitizevals(val, blank=None, invalid=None, toremove=None, convertpercent=No
         elif opt == 'zero': return 0
         elif opt == 'pass': return val
         elif opt == 'die':  raise Exception(errormsg)
-        else:               raise Exception('Invalid option for baddata(): %s' % opt)
+        else:               raise Exception('Bad option for baddata(): "blank" and "invalid" must be one of %s, not %s and %s' % (default_opts, blank, invalid))
     
     # If a list, then recursively call this function
     if aslist:
@@ -80,17 +77,17 @@ def sanitizevals(val, blank=None, invalid=None, toremove=None, convertpercent=No
         # Process the entry
         if sc.isnumber(val): # It's already a number, don't worry, it doesn't get more sanitary than that
             sanival = val
-        if val in ['', None, np.nan, []]: # It's blank, handle that
+        elif val in ['', None, []]: # It's blank, handle that
             sanival = baddata(val, blank)
-        else: # It's a string or something proceed
+        else: # It's a string or something; proceed
             try:
-                factor = 1.0
-                if sc.isstring(val):
+                factor = 1.0 # Set the factor (for handling percentages)
+                if sc.isstring(val): # If it's a string (probably it is), do extra handling
                     if convertpercent and val.endswith('%'): factor = 0.01 # Scale if percentage has been used -- CK: not used since already converted from percentage
                     for badchar in toremove:
-                        val = val.replace(badchar,'') # Remove unwanted parts of the strnig
-                sanival = float(val)*factor
-            except Exception as E:
+                        val = val.replace(badchar,'') # Remove unwanted parts of the string
+                sanival = float(val)*factor # Do the actual conversion
+            except Exception as E: # If that didn't work, handle the exception
                 errormsg = 'Sanitization failed: invalid entry: "%s" (%s)' % (val, str(E))
                 sanival = baddata(val, invalid, errormsg)
         
