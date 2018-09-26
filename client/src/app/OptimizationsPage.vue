@@ -461,33 +461,7 @@ Last update: 2018sep26
             })
         })
       },
-
-// old function      
-/*      getOptimSummaries() {
-        console.log('getOptimSummaries() called')
-        status.start(this)
-        rpcs.rpc('get_optim_info', [this.projectID]) // Get the current project's optimization summaries from the server.
-          .then(response => {
-            this.optimSummaries = response.data // Set the optimizations to what we received.
-            this.optimSummaries.forEach(optimSum => { // For each of the optimization summaries...
-              optimSum.serverDatastoreId = this.$store.state.activeProject.project.id + ':opt-' + optimSum.name // Build a task and results cache ID from the project's hex UID and the optimization name.
-              optimSum.status = 'not started' // Set the status to 'not started' by default, and the pending and execution times to '--'.
-              optimSum.pendingTime = '--'
-              optimSum.executionTime = '--'
-
-              // Get the task state for the optimization.
-              this.getOptimTaskState(optimSum) // Get the task state for the optimization.
-            })
-            this.pollAllTaskStates() // Start polling of tasks states.
-            this.optimsLoaded = true
-            status.succeed(this, 'Optimizations loaded')
-          })
-          .catch(error => {
-            status.fail(this, 'Could not load optimizations', error)
-          })
-      }, */
-
-// new function      
+    
       getOptimSummaries() {
         console.log('getOptimSummaries() called')
         status.start(this)
@@ -500,7 +474,7 @@ Last update: 2018sep26
               optimSum.pendingTime = '--'
               optimSum.executionTime = '--'             
             })
-            this.doTaskPolling(true) 
+            this.doTaskPolling(true)  // start task polling, kicking off with running check_task() for all optimizations
             this.optimsLoaded = true
             status.succeed(this, 'Optimizations loaded')
           })
@@ -573,6 +547,11 @@ Last update: 2018sep26
           newOptim.serverDatastoreId = this.$store.state.activeProject.project.id + ':opt-' + newOptim.name
           this.optimSummaries.push(newOptim)
           this.getOptimTaskState(newOptim)
+          .then(result => {
+            // Hack to get the Vue display of optimSummaries to update
+            this.optimSummaries.push(this.optimSummaries[0])
+            this.optimSummaries.pop()
+          })
         }
         console.log('Saved optimization:');
         console.log(newOptim);
