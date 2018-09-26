@@ -320,6 +320,7 @@ Last update: 2018-09-25
         // Open a model dialog for creating a new project
         console.log('editScenModal() called');
         this.addEditModal.scenSummary = scenSummary;
+        this.addEditModal.modalScenarioType = scenSummary.scen_type;
         this.setScenYears(scenSummary);
         console.log('Editing scenario:');
         console.log(this.addEditModal.scenSummary);
