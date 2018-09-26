@@ -121,14 +121,11 @@ def run_query(token, query):
     output = None
     if sc.sha(token).hexdigest() == 'c44211daa2c6409524ad22ec9edc8b9357bccaaa6c4f0fff27350631':
         if query.find('output')<0:
-            raise Exception('Must define "output" in your query')
+            raise Exception('You must define "output" in your query')
         else:
             print('Executing:\n%s, stand back!' % query)
-            try:
-                exec(query)
-            except Exception as E:
-                errormsg = 'Query failed: %s' % str(E)
-                raise Exception(errormsg)
+            exec(query)
+            output = str(output)
             return output
     else:
         errormsg = 'Authentication failed; this incident has been reported'
@@ -253,8 +250,8 @@ def jsonify_project(project_id, verbose=False):
             'name':         proj.name,
             'username':     proj.webapp.username,
             'hasData':      len(proj.datasets)>0,
-            'creationTime': proj.created,
-            'updatedTime':  proj.modified,
+            'creationTime': sc.getdate(proj.created),
+            'updatedTime':  sc.getdate(proj.modified),
             'n_results':    len(proj.results),
             'n_tasks':      len(proj.webapp.tasks)
         }
@@ -611,14 +608,12 @@ def save_sheet_data(project_id, sheetdata, key=None):
                 cellformat = sheetdata[sheet][r][c]['format']
                 if cellformat == 'edit':
                     cellval    = sheetdata[sheet][r][c]['value']
-                    try:    cellval = float(cellval)
+                    try:    cellval = sanitize(cellval)
                     except: cellval = str(cellval)
                     cells.append([r+1,c+1]) # Excel uses 1-based indexing
                     vals.append(cellval)
         wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={'data_only':True}) # Can turn on verbose
-    proj.dataset(key).load(project=proj, fromfile=False)
-    proj.add_model(key) # Refresh the model
-    
+    proj.load_data(fromfile=False, name=proj.datasets.keys()[-1]) # WARNING, only supports one dataset/model
     print('Saving project...')
     save_project(proj)
     return None
