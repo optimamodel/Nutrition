@@ -61,6 +61,7 @@ def sanitize(vals, skip=False, forcefloat=False, verbose=False, as_nan=False, di
             try:
                 factor = 1.0
                 if sc.isstring(val):
+                    val = val.replace(' ','') # Remove spaces, if present
                     val = val.replace(',','') # Remove commas, if present
                     val = val.replace('$','') # Remove dollars, if present
                     # if val.endswith('%'): factor = 0.01 # Scale if percentage has been used -- CK: not used since already converted from percentage
