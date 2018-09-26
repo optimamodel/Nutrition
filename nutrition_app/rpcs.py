@@ -1,7 +1,7 @@
 """
 Optima Nutrition remote procedure calls (RPCs)
     
-Last update: 2018sep22 by cliffk
+Last update: 2018sep25 by cliffk
 """
 
 ###############################################################
@@ -623,9 +623,9 @@ def save_sheet_data(project_id, sheetdata, key=None):
 ##################################################################################
 
 def is_included(prog_set, program, default_included):
-    if (program.name in prog_set) or (program.base_cov and default_included):
+    if (program.name in prog_set) or (program.base_cov and default_included and 'WASH' not in program.name):
         answer = True
-    else: 
+    else:
         answer = False
     return answer
     

@@ -56,7 +56,7 @@ class Program(sc.prettyobj):
         if 'ov' in scentype:
             # Raise exception is invalid coverage value. Done here before converting to unrestricted coverages
             if (cov < 0).any() or (cov > 1).any():
-                raise Exception("Coverage for '%s' outside range 0-100"%progname)
+                raise Exception("Coverage for '%s' outside range 0-100: %s" % (progname, cov))
             # assume restricted cov
             cov = self.get_unrestr_cov(cov)
             cov[0] = self.annual_cov[0]
@@ -66,13 +66,13 @@ class Program(sc.prettyobj):
         elif 'ud' in scentype: # budget
             # can't have negative spending
             if (cov < 0).any():
-                raise Exception("Spending for '%s' below $0"%progname)
+                raise Exception("Spending for '%s' below 0: %s" % (progname, cov))
             cov[0] = self.annual_spend[0]
             not_nan = ~np.isnan(cov)
             interp_spend = np.interp(years, years[not_nan], cov[not_nan])
             interp_cov = self.func(interp_spend)
         else:
-            raise Exception("Scenario type '%s' is not valid" %scentype)
+            raise Exception("Scenario type '%s' is not valid, must be 'coverage' or 'budget'" %scentype)
         return interp_cov, interp_spend
 
     def get_unrestr_cov(self, restr_cov):
