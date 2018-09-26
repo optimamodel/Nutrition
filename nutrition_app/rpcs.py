@@ -1,7 +1,7 @@
 """
 Optima Nutrition remote procedure calls (RPCs)
     
-Last update: 2018sep22 by cliffk
+Last update: 2018sep25 by cliffk
 """
 
 ###############################################################
@@ -40,7 +40,7 @@ def get_path(filename=None, username=None):
     return fullpath
 
 
-def sanitize(vals, skip=False, forcefloat=False, verbose=False, as_nan=False, die=True):
+def sanitize(vals, skip=False, forcefloat=False, convertpercent=False, verbose=False, as_nan=False, die=True):
     ''' Make sure values are numeric, and either return nans or skip vals that aren't -- WARNING, duplicates lots of other things!'''
     if verbose: print('Sanitizing vals of %s: %s' % (type(vals), vals))
     if as_nan: missingval = np.nan
@@ -61,9 +61,9 @@ def sanitize(vals, skip=False, forcefloat=False, verbose=False, as_nan=False, di
             try:
                 factor = 1.0
                 if sc.isstring(val):
-                    val = val.replace(',','') # Remove commas, if present
-                    val = val.replace('$','') # Remove dollars, if present
-                    # if val.endswith('%'): factor = 0.01 # Scale if percentage has been used -- CK: not used since already converted from percentage
+                    if convertpercent and val.endswith('%'): factor = 0.01 # Scale if percentage has been used -- CK: not used since already converted from percentage
+                    for toremove in [' ', ',', '$', '%']:
+                        val = val.replace(toremove,'') # Remove unwanted parts of the strnig
                 sanival = float(val)*factor
             except Exception as E:
                 errormsg = 'Could not sanitize value "%s": %s' % (val, str(E))
@@ -95,7 +95,7 @@ def get_version_info():
       
 
 def get_user(username=None):
-    ''' Ensure it's a valid Optima Nutrition user '''
+    ''' Ensure it's a valid user '''
     user = datastore.loaduser(username)
     dosave = False
     if not hasattr(user, 'projects'):
@@ -157,14 +157,14 @@ def save_project(project, die=None): # NB, only for saving an existing project
 
 
 @RPC() # Not usually called as an RPC
-def save_new_project(proj, username=None):
+def save_new_project(proj, username=None, uid=None):
     """
     If we're creating a new project, we need to do some operations on it to
     make sure it's valid for the webapp.
     """ 
     # Preliminaries
     new_project = sc.dcp(proj) # Copy the project, only save what we want...
-    new_project.uid = sc.uuid()
+    new_project.uid = sc.uuid(uid)
     
     # Get unique name
     user = get_user(username)
@@ -623,9 +623,9 @@ def save_sheet_data(project_id, sheetdata, key=None):
 ##################################################################################
 
 def is_included(prog_set, program, default_included):
-    if (program.name in prog_set) or (program.base_cov and default_included):
+    if (program.name in prog_set) or (program.base_cov and default_included and 'WASH' not in program.name):
         answer = True
-    else: 
+    else:
         answer = False
     return answer
     
@@ -728,10 +728,8 @@ def get_default_scen(project_id, scen_type=None):
     print('Creating default scenario...')
     if scen_type is None: scen_type = 'coverage'
     proj = load_project(project_id, die=True)
-    py_scens = proj.demo_scens(doadd=False)
-    if scen_type == 'coverage': py_scen = py_scens[0] # Pull out the first one
-    else:                       py_scen = py_scens[1] # Pull out the second one
-    py_scen.scen_type = scen_type # Set the scenario type
+    py_scen = proj.demo_scens(doadd=False, default=True, scen_type=scen_type)
+    py_scen.scen_type = scen_type # Set the scenario type -- Warning, is this needed?
     js_scen = py_to_js_scen(py_scen, proj, default_included=True)
     print('Created default JavaScript scenario:')
     sc.pp(js_scen)
@@ -759,6 +757,10 @@ def run_scens(project_id, doplot=True):
     proj = load_project(project_id, die=True)
     proj.run_scens()
     
+    # Get cost-effectiveness table
+    costeff = nu.get_costeff(project=proj, results=proj.result('scens'))
+    table = reformat_costeff(costeff)
+    
     # Get graphs
     graphs = []
     if doplot:
@@ -770,10 +772,6 @@ def run_scens(project_id, doplot=True):
             graphs.append(graph_dict)
             print('Converted figure %s of %s' % (f+1, len(figs)))
         
-    # Get cost-effectiveness table
-    costeff = nu.get_costeff(project=proj, results=proj.result('scens'))
-    table = reformat_costeff(costeff)
-    
     # Store results in cache
     proj = cache_results(proj)
     
