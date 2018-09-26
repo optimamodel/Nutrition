@@ -473,6 +473,9 @@ Last update: 2018sep25
               rpcs.rpc('delete_task', [datastoreId])
                 .then(response => {
                   this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
+                  if (!this.pollingTasks) {
+                    this.myNewOuterPollAllTaskStates(true)
+                  }
                   resolve(response)
                 })
                 .catch(error => {
@@ -660,7 +663,7 @@ Last update: 2018sep25
                 if (!this.pollingTasks) {
                   this.myNewOuterPollAllTaskStates(true)
                 }
-//                this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
+                this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
                 status.succeed(this, 'Started optimization')
               })
               .catch(error => {
