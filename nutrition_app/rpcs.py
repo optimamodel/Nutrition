@@ -40,42 +40,62 @@ def get_path(filename=None, username=None):
     return fullpath
 
 
-def sanitize(vals, skip=False, forcefloat=False, convertpercent=False, verbose=False, as_nan=False, die=True):
-    ''' Make sure values are numeric, and either return nans or skip vals that aren't -- WARNING, duplicates lots of other things!'''
-    if verbose: print('Sanitizing vals of %s: %s' % (type(vals), vals))
-    if as_nan: missingval = np.nan
-    else:      missingval = None
+def sanitizevals(val, blank=None, invalid=None, toremove=None, convertpercent=None, aslist=False, verbose=True):
+    ''' Convert strings to numbers, unless, don't '''
+    # Set defaults
+    default_toremove = [' ', ',', '$', '%'] # Characters to filter out
+    default_opts     = ['none', 'nan', 'zero', 'pass', 'die'] # How to handle either blank entries or invalid entries
     
-    if not sc.isstring(vals) and sc.isiterable(vals):
-        as_array = False if forcefloat else True
+    # Handle input arguments
+    if blank          is None: blank   = 'none'
+    if invalid        is None: invalid = 'die'
+    if convertpercent is None: convertpercent = False
+    if toremove       is None: toremove = default_toremove
+    if blank not in default_opts or invalid not in default_opts:
+        errormsg = '"blank" and "invalid" must be one of %s, not %s and %s' % (default_opts, blank, invalid)
+        raise Exception(errormsg)
+    
+    def baddata(val, opt, errormsg=None):
+        ''' Handle different options for blank or invalid data '''
+        if   opt == 'none': return None
+        elif opt == 'nan':  return np.nan
+        elif opt == 'zero': return 0
+        elif opt == 'pass': return val
+        elif opt == 'die':  raise Exception(errormsg)
+        else:               raise Exception('Invalid option for baddata(): %s' % opt)
+    
+    # If a list, then recursively call this function
+    if aslist:
+        if not isinstance(val, list):
+            errormsg = 'Must suply a list if aslist=True, but you supplied %s (%s)' % (val, type(val))
+            raise Exception(errormsg)
+        output = []
+        for thisval in sc.promotetolist(val):
+            sanival = sanitizevals(thisval, blank=blank, invalid=invalid, toremove=toremove, convertpercent=convertpercent, aslist=False, verbose=verbose)
+            output.append(sanival)
+        return output
+    
+    # Otherwise, actually do the processing
     else:
-        vals = [vals]
-        as_array = False
-    output = []
-    for val in vals:
-        if val=='':
-            sanival = missingval
-        elif val==None:
-            sanival = missingval
-        else:
+        # Process the entry
+        if sc.isnumber(val): # It's already a number, don't worry, it doesn't get more sanitary than that
+            sanival = val
+        if val in ['', None, np.nan, []]: # It's blank, handle that
+            sanival = baddata(val, blank)
+        else: # It's a string or something proceed
             try:
                 factor = 1.0
                 if sc.isstring(val):
                     if convertpercent and val.endswith('%'): factor = 0.01 # Scale if percentage has been used -- CK: not used since already converted from percentage
-                    for toremove in [' ', ',', '$', '%']:
-                        val = val.replace(toremove,'') # Remove unwanted parts of the strnig
+                    for badchar in toremove:
+                        val = val.replace(badchar,'') # Remove unwanted parts of the strnig
                 sanival = float(val)*factor
             except Exception as E:
-                errormsg = 'Could not sanitize value "%s": %s' % (val, str(E))
-                if die: raise Exception(errormsg)
-                else:   print(errormsg+'; returning %s' % missingval)
-                sanival = missingval
-        if not skip or (sanival is not None and not np.isnan(sanival)):
-            output.append(sanival)
-    if as_array:
-        return output
-    else:
-        return output[0]
+                errormsg = 'Sanitization failed: invalid entry: "%s" (%s)' % (val, str(E))
+                sanival = baddata(val, invalid, errormsg)
+        
+        if verbose: print('Sanitized %s %s to %s' % (type(val), repr(val), repr(sanival)))
+        return sanival
 
 
 @RPC()
@@ -612,9 +632,8 @@ def save_sheet_data(project_id, sheetdata, key=None):
             for c in range(cols):
                 cellformat = sheetdata[sheet][r][c]['format']
                 if cellformat == 'edit':
-                    cellval    = sheetdata[sheet][r][c]['value']
-                    try:    cellval = sanitize(cellval)
-                    except: cellval = str(cellval)
+                    cellval = sheetdata[sheet][r][c]['value']
+                    cellval = sanitizevals(cellval, blank='zero', invalid='die', aslist=False)
                     cells.append([r+1,c+1]) # Excel uses 1-based indexing
                     vals.append(cellval)
         wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={'data_only':True}) # Can turn on verbose
@@ -687,7 +706,7 @@ def js_to_py_scen(js_scen):
     for js_spec in js_scen['progvals']:
         if js_spec['included']:
             py_json['progvals'][js_spec['name']] = []
-            vals = list(sanitize(js_spec['vals'], skip=False))
+            vals = sanitizevals(js_spec['vals'], blank='nan', invalid='die', aslist=True)
             for y in range(len(vals)):
                 if js_scen['scen_type'] == 'coverage': # Convert from percentage
                         if vals[y] is not None:
@@ -823,7 +842,7 @@ def js_to_py_optim(js_optim):
     try:
         json['weights'] = sc.odict()
         for key,item in zip(obj_keys,js_optim['weightslist']):
-            val = sanitize(item['weight'])
+            val = sanitizevals(item['weight'], blank='zero', invalid='die', aslist=False)
             json['weights'][key] = val
     except Exception as E:
         print('Unable to convert "%s" to weights' % js_optim['weightslist'])
@@ -832,9 +851,9 @@ def js_to_py_optim(js_optim):
     if not jsm: jsm = 1.0
     if sc.isstring(jsm):
         jsm = jsm.split(',')
-    vals = sanitize(jsm, die=True)
+    vals = sanitizevals(jsm, blank='die', invalid='die', aslist=True)
     json['mults'] = vals
-    json['add_funds'] = sanitize(js_optim['add_funds'], forcefloat=True)
+    json['add_funds'] = sanitizevals(js_optim['add_funds'], blank='zero', invalid='die', aslist=False)
     json['prog_set'] = [] # These require more TLC
     for js_spec in js_optim['spec']:
         if js_spec['included']:
