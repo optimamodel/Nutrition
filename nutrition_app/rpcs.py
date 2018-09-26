@@ -40,7 +40,7 @@ def get_path(filename=None, username=None):
     return fullpath
 
 
-def sanitize(vals, skip=False, forcefloat=False, verbose=False, as_nan=False, die=True):
+def sanitize(vals, skip=False, forcefloat=False, convertpercent=False, verbose=False, as_nan=False, die=True):
     ''' Make sure values are numeric, and either return nans or skip vals that aren't -- WARNING, duplicates lots of other things!'''
     if verbose: print('Sanitizing vals of %s: %s' % (type(vals), vals))
     if as_nan: missingval = np.nan
@@ -61,10 +61,9 @@ def sanitize(vals, skip=False, forcefloat=False, verbose=False, as_nan=False, di
             try:
                 factor = 1.0
                 if sc.isstring(val):
-                    val = val.replace(' ','') # Remove spaces, if present
-                    val = val.replace(',','') # Remove commas, if present
-                    val = val.replace('$','') # Remove dollars, if present
-                    # if val.endswith('%'): factor = 0.01 # Scale if percentage has been used -- CK: not used since already converted from percentage
+                    if convertpercent and val.endswith('%'): factor = 0.01 # Scale if percentage has been used -- CK: not used since already converted from percentage
+                    for toremove in [' ', ',', '$', '%']:
+                        val = val.replace(toremove,'') # Remove unwanted parts of the strnig
                 sanival = float(val)*factor
             except Exception as E:
                 errormsg = 'Could not sanitize value "%s": %s' % (val, str(E))
