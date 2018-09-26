@@ -23,7 +23,31 @@ kwargs3 = {'name': 'IYCF at $10 mil',
            'progvals': sc.odict({'IYCF 1': [1e7],
                                  'IPTp': [1e7]})}
 
-scen_list = nu.make_scens([kwargs1, kwargs2, kwargs3])
+### testing FE bugs
+kwargs4 = {'name': 'IPTp 0 spend bug',
+           'model_name': 'eg',
+           'scen_type': 'budget',
+           'progvals': sc.odict({u'IFA fortification of maize': [2000000],
+                                    u'IPTp': [],
+                                     u'Iron and iodine fortification of salt':[],
+                                     u'IYCF 1':[],
+                                     u'Long-lasting insecticide-treated bednets':[0],
+                                     u'Micronutrient powders':[],
+                                     u'Multiple micronutrient supplementation': [],
+                                     u'Vitamin A supplementation': [],
+                                     u'Zinc for treatment + ORS': []})}
+
+kwargs5 = {'name': 'Check WASH',
+           'model_name': 'eg',
+           'scen_type': 'budget',
+           'progvals': sc.odict({'WASH: Handwashing': [1e6]})}
+
+kwargs6 = {'name': 'Check bednets',
+           'model_name': 'eg',
+           'scen_type': 'budget',
+           'progvals': sc.odict({'Long-lasting insecticide-treated bednets': [0]})}
+
+scen_list = nu.make_scens([kwargs4])
 p.add_scens(scen_list)
 p.run_scens()
 if doplot:
