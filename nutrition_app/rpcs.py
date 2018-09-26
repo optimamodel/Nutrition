@@ -95,7 +95,7 @@ def get_version_info():
       
 
 def get_user(username=None):
-    ''' Ensure it's a valid Optima Nutrition user '''
+    ''' Ensure it's a valid user '''
     user = datastore.loaduser(username)
     dosave = False
     if not hasattr(user, 'projects'):
