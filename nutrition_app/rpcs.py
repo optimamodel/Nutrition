@@ -40,7 +40,7 @@ def get_path(filename=None, username=None):
     return fullpath
 
 
-def numberify(val, blank=None, invalid=None, toremove=None, convertpercent=None, aslist=False, verbose=True):
+def numberify(val, blank=None, invalid=None, toremove=None, convertpercent=None, aslist=False, verbose=False):
     ''' Convert strings to numbers, unless, don't '''
     # Set defaults
     default_toremove = [' ', ',', '$', '%'] # Characters to filter out
@@ -448,6 +448,8 @@ def upload_defaults(defaults_filename, project_id):
 ### Input functions and RPCs
 ##################################################################################
 
+editableformats = ['edit', 'tick'] # Define which kinds of format are editable and saveable
+
 def define_formats():
     ''' Hard-coded sheet formats '''
     formats = sc.odict()
@@ -616,11 +618,12 @@ def get_sheet_data(project_id, key=None):
 
 
 @RPC()
-def save_sheet_data(project_id, sheetdata, key=None):
+def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
     proj = load_project(project_id, die=True)
     if key is None: key = proj.datasets.keys()[-1] # There should always be at least one
     wb = proj.input_sheet # CK: Warning, might want to change
     for sheet in sheetdata.keys():
+        if verbose: print('Saving sheet %s...' % sheet)
         datashape = np.shape(sheetdata[sheet])
         rows,cols = datashape
         cells = []
@@ -628,11 +631,12 @@ def save_sheet_data(project_id, sheetdata, key=None):
         for r in range(rows):
             for c in range(cols):
                 cellformat = sheetdata[sheet][r][c]['format']
-                if cellformat == 'edit':
+                if cellformat in editableformats:
                     cellval = sheetdata[sheet][r][c]['value']
                     cellval = numberify(cellval, blank='zero', invalid='die', aslist=False)
                     cells.append([r+1,c+1]) # Excel uses 1-based indexing
                     vals.append(cellval)
+                    if verbose: print('  Cell (%s,%s) = %s' % (r+1, c+1, cellval))
         wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={'data_only':True}) # Can turn on verbose
     proj.load_data(fromfile=False, name=proj.datasets.keys()[-1]) # WARNING, only supports one dataset/model
     print('Saving project...')
@@ -713,21 +717,21 @@ def js_to_py_scen(js_scen):
     
 
 @RPC()
-def get_scen_info(project_id, key=None):
+def get_scen_info(project_id, key=None, verbose=False):
     print('Getting scenario info...')
     proj = load_project(project_id, die=True)
     scenario_jsons = []
     for py_scen in proj.scens.values():
         js_scen = py_to_js_scen(py_scen, proj, key=key)
         scenario_jsons.append(js_scen)
-    print('JavaScript scenario info:')
-    sc.pp(scenario_jsons)
-
+    if verbose:
+        print('JavaScript scenario info:')
+        sc.pp(scenario_jsons)
     return scenario_jsons
 
 
 @RPC()
-def set_scen_info(project_id, scenario_jsons):
+def set_scen_info(project_id, scenario_jsons, verbose=False):
     print('Setting scenario info...')
     proj = load_project(project_id, die=True)
     proj.scens.clear()
@@ -735,9 +739,9 @@ def set_scen_info(project_id, scenario_jsons):
         print('Setting scenario %s of %s...' % (j+1, len(scenario_jsons)))
         json = js_to_py_scen(js_scen)
         proj.add_scen(json=json)
-        print('Python scenario info for scenario %s:' % (j+1))
-        sc.pp(json)
-        
+        if verbose:
+            print('Python scenario info for scenario %s:' % (j+1))
+            sc.pp(json)
     print('Saving project...')
     save_project(proj)
     return None
