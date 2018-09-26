@@ -40,7 +40,7 @@ def get_path(filename=None, username=None):
     return fullpath
 
 
-def sanitizevals(val, blank=None, invalid=None, toremove=None, convertpercent=None, aslist=False, verbose=True):
+def numberify(val, blank=None, invalid=None, toremove=None, convertpercent=None, aslist=False, verbose=True):
     ''' Convert strings to numbers, unless, don't '''
     # Set defaults
     default_toremove = [' ', ',', '$', '%'] # Characters to filter out
@@ -68,7 +68,7 @@ def sanitizevals(val, blank=None, invalid=None, toremove=None, convertpercent=No
             raise Exception(errormsg)
         output = []
         for thisval in sc.promotetolist(val):
-            sanival = sanitizevals(thisval, blank=blank, invalid=invalid, toremove=toremove, convertpercent=convertpercent, aslist=False, verbose=verbose)
+            sanival = numberify(thisval, blank=blank, invalid=invalid, toremove=toremove, convertpercent=convertpercent, aslist=False, verbose=verbose)
             output.append(sanival)
         return output
     
@@ -630,7 +630,7 @@ def save_sheet_data(project_id, sheetdata, key=None):
                 cellformat = sheetdata[sheet][r][c]['format']
                 if cellformat == 'edit':
                     cellval = sheetdata[sheet][r][c]['value']
-                    cellval = sanitizevals(cellval, blank='zero', invalid='die', aslist=False)
+                    cellval = numberify(cellval, blank='zero', invalid='die', aslist=False)
                     cells.append([r+1,c+1]) # Excel uses 1-based indexing
                     vals.append(cellval)
         wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={'data_only':True}) # Can turn on verbose
@@ -703,7 +703,7 @@ def js_to_py_scen(js_scen):
     for js_spec in js_scen['progvals']:
         if js_spec['included']:
             py_json['progvals'][js_spec['name']] = []
-            vals = sanitizevals(js_spec['vals'], blank='nan', invalid='die', aslist=True)
+            vals = numberify(js_spec['vals'], blank='nan', invalid='die', aslist=True)
             for y in range(len(vals)):
                 if js_scen['scen_type'] == 'coverage': # Convert from percentage
                         if vals[y] is not None:
@@ -839,7 +839,7 @@ def js_to_py_optim(js_optim):
     try:
         json['weights'] = sc.odict()
         for key,item in zip(obj_keys,js_optim['weightslist']):
-            val = sanitizevals(item['weight'], blank='zero', invalid='die', aslist=False)
+            val = numberify(item['weight'], blank='zero', invalid='die', aslist=False)
             json['weights'][key] = val
     except Exception as E:
         print('Unable to convert "%s" to weights' % js_optim['weightslist'])
@@ -848,9 +848,9 @@ def js_to_py_optim(js_optim):
     if not jsm: jsm = 1.0
     if sc.isstring(jsm):
         jsm = jsm.split(',')
-    vals = sanitizevals(jsm, blank='die', invalid='die', aslist=True)
+    vals = numberify(jsm, blank='die', invalid='die', aslist=True)
     json['mults'] = vals
-    json['add_funds'] = sanitizevals(js_optim['add_funds'], blank='zero', invalid='die', aslist=False)
+    json['add_funds'] = numberify(js_optim['add_funds'], blank='zero', invalid='die', aslist=False)
     json['prog_set'] = [] # These require more TLC
     for js_spec in js_optim['spec']:
         if js_spec['included']:
