@@ -37,7 +37,7 @@ def make_plots(all_res=None, toplot=None, optim=False, geo=False):
     if toplot is None:
         toplot = ['prevs', 'ann', 'agg', 'alloc']
     toplot = sc.promotetolist(toplot)
-    all_res = sc.promotetolist(all_res)
+    all_res = sc.promotetolist(sc.dcp(all_res)) # Without dcp(), modifies the original and breaks things
     if 'prevs' in toplot:
         prevfigs = plot_prevs(all_res)
         allplots.update(prevfigs)
