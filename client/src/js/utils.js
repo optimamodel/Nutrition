@@ -111,7 +111,7 @@ function getPlotOptions(vm) {
       vm.plotOptions = response.data // Get the parameter values
     })
     .catch(error => {
-      status.failurePopup(vm, 'Could not get plot options: ' + error.message)
+      status.fail(vm, 'Could not get plot options', error)
     })
 }
 
@@ -166,19 +166,19 @@ function clearGraphs(vm, numfigs) {
   }
 }
 
-function exportGraphs(vm, project_id) {
+function exportGraphs(vm, project_id, cache_id) {
   console.log('exportGraphs() called')
-  rpcs.download('export_graphs', [project_id]) // Make the server call to download the framework to a .prj file.
+  rpcs.download('export_graphs', [project_id, cache_id]) // Make the server call to download the framework to a .prj file.
     .catch(error => {
-      status.failurePopup(vm, 'Could not download graphs: ' + error.message)
+      status.fail(vm, 'Could not download graphs', error)
     })
 }
 
-function exportResults(vm, project_id) {
+function exportResults(vm, project_id, cache_id) {
   console.log('exportResults()')
-  rpcs.download('export_results', [project_id]) // Make the server call to download the framework to a .prj file.
+  rpcs.download('export_results', [project_id, cache_id]) // Make the server call to download the framework to a .prj file.
     .catch(error => {
-      status.failurePopup(vm, 'Could not export results: ' + error.message)
+      status.fail(vm, 'Could not export results', error)
     })
 }
 
