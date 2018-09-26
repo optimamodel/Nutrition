@@ -232,6 +232,7 @@ Last update: 2018sep25
         displayResultDatastoreId: '',        
         optimSummaries: [],
         optimsLoaded: false,
+        pollingTasks: false,
         addEditModal: {
           optimSummary: {},
           origName: '',
@@ -435,6 +436,9 @@ Last update: 2018sep25
       },
       
       myNewOuterPollAllTaskStates(checkAllTasks) {
+        // Flag that we're polling.
+        this.pollingTasks = true
+        
         // Do the polling of the task states.
         this.myNewPollAllTaskStates(checkAllTasks)
         .then(() => {
@@ -449,6 +453,11 @@ Last update: 2018sep25
                   this.myNewOuterPollAllTaskStates(false)
                 }
               })
+          }
+          
+          // Otherwise, flag that we're no longer polling.
+          else {
+            this.pollingTasks = false
           }
         })
       },
@@ -474,8 +483,8 @@ Last update: 2018sep25
         })
       },
 
-/* old function      
-      getOptimSummaries() {
+// old function      
+/*      getOptimSummaries() {
         console.log('getOptimSummaries() called')
         status.start(this)
         rpcs.rpc('get_optim_info', [this.projectID]) // Get the current project's optimization summaries from the server.
@@ -498,7 +507,8 @@ Last update: 2018sep25
             status.fail(this, 'Could not load optimizations', error)
           })
       }, */
-      
+
+// new function      
       getOptimSummaries() {
         console.log('getOptimSummaries() called')
         status.start(this)
@@ -510,6 +520,9 @@ Last update: 2018sep25
               optimSum.status = 'not started' // Set the status to 'not started' by default, and the pending and execution times to '--'.
               optimSum.pendingTime = '--'
               optimSum.executionTime = '--'
+              
+              // Get the task state for the optimization.
+              this.getOptimTaskState(optimSum) // Get the task state for the optimization.              
             })
             this.myNewOuterPollAllTaskStates(true)           
             this.optimsLoaded = true
@@ -645,6 +658,7 @@ Last update: 2018sep25
             rpcs.rpc('launch_task', [optimSummary.serverDatastoreId, 'run_optim',
               [this.projectID, optimSummary.serverDatastoreId, optimSummary.name, runtype]])
               .then(response => {
+//                this.myNewOuterPollAllTaskStates(true)
                 this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
                 status.succeed(this, 'Started optimization')
               })
