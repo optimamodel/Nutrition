@@ -363,7 +363,23 @@ Last update: 2018sep25
           })
       },
       
-      myNewPollAllTaskStates() {
+      myNewNeedToPoll() {
+        // Check if we're still on the Optimizations page.
+        let routePath = (this.$route.path === '/optimizations')
+        
+        // Check if we have a queued or started task.
+        let runningState = false
+        this.optimSummaries.forEach(optimSum => {
+          if ((optimSum.status === 'queued') || (optimSum.status === 'started')) {
+            runningState = true
+          }
+        })
+        
+        // We need to poll if we are in the page and a task is going.
+        return (routePath && runningState)
+      },
+      
+      myNewPollAllTaskStates(checkAllTasks) {
         return new Promise((resolve, reject) => {
           console.log('Polling all tasks...')
           
@@ -376,36 +392,67 @@ Last update: 2018sep25
           this.optimSummaries.forEach(optimSum => { 
             console.log(optimSum.serverDatastoreId, optimSum.status)
             
-            // If there is a valid task running, check it.
-            if ((optimSum.status !== 'not started') && (optimSum.status !== 'completed') && 
-              (optimSum.status !== 'error')) {
+            // If we are to check all tasks OR there is a valid task running, check it.
+            if ((checkAllTasks) ||            
+              ((optimSum.status !== 'not started') && (optimSum.status !== 'completed') && 
+                (optimSum.status !== 'error'))) {
               this.getOptimTaskState(optimSum)
               .then(response => {
-                // We are done polling.
+                // Flag as polled.
                 optimSum.polled = true
-              })              
+                
+                // Resolve the main promise when all of the optimSummaries are polled.
+                let done = true
+                this.optimSummaries.forEach(optimSum2 => {
+                  if (!optimSum2.polled) {
+                    done = false
+                  }
+                })
+                if (done) {
+                  resolve()
+                }
+              })
             }
             
             // Otherwise (no task to check), we are done polling for it.
             else {
+              // Flag as polled.
               optimSum.polled = true
-            }
-            
-            // Resolve when all of the optimSummaries are polled.
-            let done = true
-            this.optimSummaries.forEach(optimSum2 => {
-              if (!optimSum2.polled) {
-                done = false
+              
+              // Resolve the main promise when all of the optimSummaries are polled.
+              let done = true
+              this.optimSummaries.forEach(optimSum2 => {
+                if (!optimSum2.polled) {
+                  done = false
+                }
+              })
+              if (done) {
+                resolve()
               }
-            })
-            if (done) {
-              resolve()
-            }
-          })
-          
+            }           
+          })   
         })     
       },
-
+      
+      myNewOuterPollAllTaskStates(checkAllTasks) {
+        // Do the polling of the task states.
+        this.myNewPollAllTaskStates(checkAllTasks)
+        .then(() => {
+          // Only if we need to continue polling...
+          if (this.myNewNeedToPoll()) {
+            this.optimSummaries.push(this.optimSummaries[0]); // Hack to get the Vue display of optimSummaries to update
+            this.optimSummaries.pop();
+            let waitingtime = 1 // Sleep waitingtime seconds
+            utils.sleep(waitingtime * 1000)
+              .then(response => {
+                if (this.myNewNeedToPoll()) { // Only if we are still in the optimizations page, call ourselves.
+                  this.myNewOuterPollAllTaskStates(false)
+                }
+              })
+          }
+        })
+      },
+      
       clearTask(optimSummary) {
         return new Promise((resolve, reject) => {
           let datastoreId = optimSummary.serverDatastoreId  // hack because this gets overwritten soon by caller
@@ -427,6 +474,7 @@ Last update: 2018sep25
         })
       },
 
+/* old function      
       getOptimSummaries() {
         console.log('getOptimSummaries() called')
         status.start(this)
@@ -442,11 +490,28 @@ Last update: 2018sep25
               // Get the task state for the optimization.
               this.getOptimTaskState(optimSum) // Get the task state for the optimization.
             })
-            this.myNewPollAllTaskStates()
-            .then(() => {
-              console.log('we done!')
+            this.pollAllTaskStates() // Start polling of tasks states.
+            this.optimsLoaded = true
+            status.succeed(this, 'Optimizations loaded')
+          })
+          .catch(error => {
+            status.fail(this, 'Could not load optimizations', error)
+          })
+      }, */
+      
+      getOptimSummaries() {
+        console.log('getOptimSummaries() called')
+        status.start(this)
+        rpcs.rpc('get_optim_info', [this.projectID]) // Get the current project's optimization summaries from the server.
+          .then(response => {
+            this.optimSummaries = response.data // Set the optimizations to what we received.
+            this.optimSummaries.forEach(optimSum => { // For each of the optimization summaries...
+              optimSum.serverDatastoreId = this.$store.state.activeProject.project.id + ':opt-' + optimSum.name // Build a task and results cache ID from the project's hex UID and the optimization name.
+              optimSum.status = 'not started' // Set the status to 'not started' by default, and the pending and execution times to '--'.
+              optimSum.pendingTime = '--'
+              optimSum.executionTime = '--'
             })
-//            this.pollAllTaskStates() // Start polling of tasks states.
+            this.myNewOuterPollAllTaskStates(true)           
             this.optimsLoaded = true
             status.succeed(this, 'Optimizations loaded')
           })
