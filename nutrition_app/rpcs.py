@@ -158,14 +158,14 @@ def save_project(project, die=None): # NB, only for saving an existing project
 
 
 @RPC() # Not usually called as an RPC
-def save_new_project(proj, username=None):
+def save_new_project(proj, username=None, uid=None):
     """
     If we're creating a new project, we need to do some operations on it to
     make sure it's valid for the webapp.
     """ 
     # Preliminaries
     new_project = sc.dcp(proj) # Copy the project, only save what we want...
-    new_project.uid = sc.uuid()
+    new_project.uid = sc.uuid(uid)
     
     # Get unique name
     user = get_user(username)
