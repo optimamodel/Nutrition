@@ -183,7 +183,8 @@ def save_new_project(proj, username=None, uid=None):
     
     # Save all the things
     key = save_project(new_project)
-    user.projects.append(key)
+    if key not in user.projects: # Let's not allow multiple copies
+        user.projects.append(key)
     datastore.saveuser(user)
     return key,new_project
 
@@ -196,7 +197,7 @@ def save_result(result, die=None):
 
 @RPC() # Not usually called as an RPC
 def del_project(project_key, die=None):
-    key = datastore.getkey(key=project_key, objtype='project', forcetype=False)
+    key = datastore.getkey(key=project_key, objtype='project', forcetype=True)
     project = load_project(key)
     user = get_user(project.webapp.username)
     output = datastore.delete(key)
@@ -266,7 +267,8 @@ def jsonify_projects(username, verbose=False):
     output = {'projects':[]}
     user = get_user(username)
     for project_key in user.projects:
-        json = jsonify_project(project_key)
+        try:                   json = jsonify_project(project_key)
+        except Exception as E: json = {'project': {'name':'Project load failed: %s' % str(E)}}
         output['projects'].append(json)
     if verbose: sc.pp(output)
     return output
@@ -633,8 +635,7 @@ def is_included(prog_set, program, default_included):
 def py_to_js_scen(py_scen, proj, key=None, default_included=False):
     ''' Convert a Python to JSON representation of a scenario '''
     prog_names = proj.dataset().prog_names()
-    settings = nu.Settings()
-    scen_years = settings.n_years - 1 # First year is baseline
+    scen_years = proj.dataset().t[1] - proj.dataset().t[0] # First year is baseline
     attrs = ['name', 'active', 'scen_type']
     js_scen = {}
     for attr in attrs:
@@ -670,7 +671,7 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
         this_spec['base_cov'] = str(round(program.base_cov*100)) # Convert to percentage
         this_spec['base_spend'] = format(int(round(program.base_spend)), ',')
         js_scen['progvals'].append(this_spec)
-        js_scen['t'] = [settings.t[0]+1, settings.t[1]] # First year is baseline year
+        js_scen['t'] = [proj.dataset().t[0]+1, proj.dataset().t[1]] # First year is baseline year
     return js_scen
     
     
@@ -683,7 +684,7 @@ def js_to_py_scen(js_scen):
     for js_spec in js_scen['progvals']:
         if js_spec['included']:
             py_json['progvals'][js_spec['name']] = []
-            vals = list(sanitize(js_spec['vals'], skip=True))
+            vals = list(sanitize(js_spec['vals'], skip=False))
             for y in range(len(vals)):
                 if js_scen['scen_type'] == 'coverage': # Convert from percentage
                         if vals[y] is not None:
