@@ -40,8 +40,8 @@ Last update: 2018-09-25
             </td>
             <td style="white-space: nowrap">
               <button class="btn btn-icon" @click="editScenModal(scenSummary)" data-tooltip="Edit scenario"><i class="ti-pencil"></i></button>
-              <button class="btn btn-icon" @click="copyScen(scenSummary)" data-tooltip="Copy scenario"><i class="ti-files"></i></button>
-              <button class="btn btn-icon" @click="deleteScen(scenSummary)" data-tooltip="Delete scenario"><i class="ti-trash"></i></button>
+              <button class="btn btn-icon" @click="copyScen(scenSummary)"      data-tooltip="Copy scenario"><i class="ti-files"></i></button>
+              <button class="btn btn-icon" @click="deleteScen(scenSummary)"    data-tooltip="Delete scenario"><i class="ti-trash"></i></button>
             </td>
           </tr>
           </tbody>
@@ -49,8 +49,8 @@ Last update: 2018-09-25
 
         <div>
           <button class="btn __green" :disabled="!scenariosLoaded" @click="runScens()">Run scenarios</button>
-          <button class="btn __blue" :disabled="!scenariosLoaded" @click="addScenModal('coverage')">Add coverage scenario</button>
-          <button class="btn __blue" :disabled="!scenariosLoaded" @click="addScenModal('budget')">Add budget scenario</button>
+          <button class="btn __blue"  :disabled="!scenariosLoaded" @click="addScenModal('coverage')">Add coverage scenario</button>
+          <button class="btn __blue"  :disabled="!scenariosLoaded" @click="addScenModal('budget')">Add budget scenario</button>
         </div>
       </div>
     </div>
@@ -248,10 +248,9 @@ Last update: 2018-09-25
 
     methods: {
 
-      makeGraphs(graphdata)     { return utils.makeGraphs(this, graphdata) },
-      exportGraphs(project_id)  { return utils.exportGraphs(this, project_id) },
-      exportResults(project_id, cache_id) 
-                                { return utils.exportResults(this, project_id, cache_id) },
+      makeGraphs(graphdata)               { return utils.makeGraphs(this, graphdata) },
+      exportGraphs(project_id)            { return utils.exportGraphs(this, project_id) },
+      exportResults(project_id, cache_id) { return utils.exportResults(this, project_id, cache_id) },
                                 
       scaleFigs(frac) {
         this.figscale = this.figscale*frac;

@@ -262,11 +262,10 @@ Last update: 2018sep25
 
     methods: {
 
-      clearGraphs()             { return utils.clearGraphs() },
-      makeGraphs(graphdata)     { return utils.makeGraphs(this, graphdata) },
-      exportGraphs(project_id)  { return utils.exportGraphs(this, project_id) },
-      exportResults(project_id, cache_id)
-      { return utils.exportResults(this, project_id, cache_id) },
+      clearGraphs()                       { return utils.clearGraphs() },
+      makeGraphs(graphdata)               { return utils.makeGraphs(this, graphdata) },
+      exportGraphs(project_id)            { return utils.exportGraphs(this, project_id) },
+      exportResults(project_id, cache_id) { return utils.exportResults(this, project_id, cache_id) },
 
       scaleFigs(frac) {
         this.figscale = this.figscale*frac;
@@ -282,7 +281,7 @@ Last update: 2018sep25
         else if (optimSummary.status === 'queued')      {return 'Initializing... '} // + this.timeFormatStr(optimSummary.pendingTime)
         else if (optimSummary.status === 'started')     {return 'Running for '} // + this.timeFormatStr(optimSummary.executionTime)
         else if (optimSummary.status === 'completed')   {return 'Completed after '} // + this.timeFormatStr(optimSummary.executionTime)
-        else if (optimSummary.status === 'error')   {return 'Error after '} // + this.timeFormatStr(optimSummary.executionTime)          
+        else if (optimSummary.status === 'error')       {return 'Error after '} // + this.timeFormatStr(optimSummary.executionTime)          
         else                                            {return ''}
       },
 
