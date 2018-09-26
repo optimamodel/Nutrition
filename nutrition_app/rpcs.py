@@ -940,12 +940,12 @@ def export_results(project_id, cache_id):
 
 
 @RPC(call_type='download')
-def export_graphs(project_id):
+def export_graphs(project_id, cache_id):
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
     proj = retrieve_results(proj)
     file_name = '%s graphs.pdf' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
-    figs = proj.plot(-1) # Generate the plots
+    figs = proj.plot(key=cache_id) # Generate the plots
     sc.savefigs(figs, filetype='singlepdf', filename=full_file_name)
     print(">> export_graphs %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.

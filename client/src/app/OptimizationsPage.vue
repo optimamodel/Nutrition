@@ -68,7 +68,7 @@ Last update: 2018sep25
           <button class="btn btn-icon" @click="scaleFigs(1.0)" data-tooltip="Reset zoom"><i class="ti-zoom-in"></i></button>
           <button class="btn btn-icon" @click="scaleFigs(1.1)" data-tooltip="Zoom in">+</button>
           &nbsp;&nbsp;&nbsp;
-          <!--<button class="btn" @click="exportGraphs()">Export plots</button>-->
+          <button class="btn" @click="exportGraphs(projectID, displayResultDatastoreId)">Export plots</button>
           <button class="btn" @click="exportResults(projectID, displayResultDatastoreId)">Export data</button>
         </div>
       </div>
@@ -264,7 +264,7 @@ Last update: 2018sep25
 
       clearGraphs()                       { return utils.clearGraphs() },
       makeGraphs(graphdata)               { return utils.makeGraphs(this, graphdata) },
-      exportGraphs(project_id)            { return utils.exportGraphs(this, project_id) },
+      exportGraphs(project_id, cache_id)  { return utils.exportGraphs(this, project_id, cache_id) },
       exportResults(project_id, cache_id) { return utils.exportResults(this, project_id, cache_id) },
 
       scaleFigs(frac) {
