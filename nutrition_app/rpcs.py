@@ -759,6 +759,10 @@ def run_scens(project_id, doplot=True):
     proj = load_project(project_id, die=True)
     proj.run_scens()
     
+    # Get cost-effectiveness table
+    costeff = nu.get_costeff(project=proj, results=proj.result('scens'))
+    table = reformat_costeff(costeff)
+    
     # Get graphs
     graphs = []
     if doplot:
@@ -770,10 +774,6 @@ def run_scens(project_id, doplot=True):
             graphs.append(graph_dict)
             print('Converted figure %s of %s' % (f+1, len(figs)))
         
-    # Get cost-effectiveness table
-    costeff = nu.get_costeff(project=proj, results=proj.result('scens'))
-    table = reformat_costeff(costeff)
-    
     # Store results in cache
     proj = cache_results(proj)
     
