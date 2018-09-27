@@ -686,12 +686,14 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
         
         # Add formatting
         for y in range(len(this_spec['vals'])):
-            if this_spec['vals'][y] is not None:
+            try:
                 if js_scen['scen_type'] == 'coverage': # Convert to percentage
                     this_spec['vals'][y] = str(round(100*this_spec['vals'][y])) # Enter to the nearest percentage
                 elif js_scen['scen_type'] == 'budget': # Add commas
                     this_spec['vals'][y] = format(int(round(this_spec['vals'][y])), ',') # Add commas
-        this_spec['base_cov'] = str(round(program.base_cov*100)) # Convert to percentage
+            except:
+                this_spec['vals'][y] = None # It's None or Nan
+        this_spec['base_cov'] = str(round(program.base_cov*100)) # Convert to percentage -- this should never be None or Nan
         this_spec['base_spend'] = format(int(round(program.base_spend)), ',')
         js_scen['progvals'].append(this_spec)
         js_scen['t'] = [proj.dataset().t[0]+1, proj.dataset().t[1]] # First year is baseline year
