@@ -21,7 +21,7 @@ def get_defaults(modelname=None, model=None, basename='Baseline'):
     progvals = sc.odict([(prog,[]) for prog in progset])
     kwargs1 = {'name': basename,
               'model_name': modelname,
-              'scen_type': 'cov',
+              'scen_type': 'coverage',
               'progvals': progvals}
     defaults = make_scens(kwargs1)
     return defaults

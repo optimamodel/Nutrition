@@ -88,7 +88,7 @@ class Optim(sc.prettyobj):
             years = len(model.sim_years)
             # compare with 0 case
             progvals = {prog:[0] for prog in self.prog_set}
-            kwargs = {'scen_type': 'cov',
+            kwargs = {'scen_type': 'coverage',
                       'progvals': progvals}
             zeroscen = Scen(**kwargs)
             zeromodel = sc.dcp(model)
