@@ -10,7 +10,7 @@ class Optim(sc.prettyobj):
 
     def __init__(self, name=None, model_name=None, weights=None, mults=None, prog_set=None, active=True,
                  add_funds=0, fix_curr=False, rem_curr=False, curve_type='linear',
-                 filter_progs=False):
+                 filter_progs=True):
         """
         :param name: the name of the optimization (string)
         :param model_name: the name of the model corresponding to optimizations (string)
@@ -88,7 +88,7 @@ class Optim(sc.prettyobj):
             years = len(model.sim_years)
             # compare with 0 case
             progvals = {prog:[0] for prog in self.prog_set}
-            kwargs = {'scen_type': 'cov',
+            kwargs = {'scen_type': 'coverage',
                       'progvals': progvals}
             zeroscen = Scen(**kwargs)
             zeromodel = sc.dcp(model)

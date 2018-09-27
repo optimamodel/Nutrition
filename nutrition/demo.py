@@ -9,9 +9,9 @@ def demo_scens(default=None, scen_type=None):
     
     if default:
         kwargs = {'name':       'Default scenario (%s)' % scen_type,
-           'model_name': 'demo',
-           'scen_type':  scen_type,
-           'progvals':   sc.odict()
+                  'model_name': None,
+                  'scen_type':  scen_type,
+                  'progvals':   sc.odict()
            }
         scen = Scen(**kwargs)
         return scen
@@ -19,27 +19,27 @@ def demo_scens(default=None, scen_type=None):
         
         # stunting reduction
         kwargs1 = {'name':       'Stunting example (coverage)',
-                   'model_name': 'demo',
+                   'model_name': None,
                    'scen_type':  'coverage',
                    'progvals':   sc.odict({'IYCF 1':[1], 'Vitamin A supplementation':[1]})
                    }
         
         kwargs2 = {'name':       'Stunting example (budget)',
-                   'model_name': 'demo',
+                   'model_name': None,
                    'scen_type':  'budget',
                    'progvals':   sc.odict({'IYCF 1':[2e6], 'Vitamin A supplementation':[2e6]})
                    }
         
         # wasting reduction
         kwargs3 = {'name':       'Wasting example',
-                   'model_name': 'demo',
+                   'model_name': None,
                    'scen_type':  'coverage',
                    'progvals':   sc.odict({'Treatment of SAM':[1]})
                    }
         
         # anaemia reduction
         kwargs4 = {'name':       'Anaemia example',
-                   'model_name': 'demo',
+                   'model_name': None,
                    'scen_type':  'coverage',
                    'progvals': sc.odict({'Micronutrient powders':[1], 'IFAS (community)':[1], 'IFAS (retailer)':[1], 'IFAS (school)':[1]})
                    }
@@ -49,7 +49,7 @@ def demo_scens(default=None, scen_type=None):
 
 def demo_optims():
     kwargs1 = {'name': 'Maximize thrive',
-              'model_name': 'demo',
+              'model_name': None,
               'mults':[1,2],
                'weights': sc.odict({'thrive': 1}),
               'prog_set': ['Vitamin A supplementation', 'IYCF 1', 'IFA fortification of maize',
@@ -62,3 +62,5 @@ def demo_optims():
     
     optims = [Optim(**kwargs1)]
     return optims
+
+
