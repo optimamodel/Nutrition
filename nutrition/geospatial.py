@@ -6,18 +6,19 @@ import utils
 
 class Geospatial:
     def __init__(self, name=None, model_names=None, region_names=None, weights=None, mults=None, prog_set=None,
-                 add_funds=0, fix_progallocs=False, fix_regionalspend=False, filter_progs=True, active=True):
+                 add_funds=0, fix_curr=False, fix_regionalspend=False, filter_progs=True, active=True):
         """
         :param name: name of the optimization (string)
         :param region_names: names of the regions to be included (list of strings)
+        :param model_names: names of the models (datasets) that each region corresponds to (list of strings). Order must match that of region_names.
         :param weights: weights defining an objective function (odict). See documentation in optimization.Optim()
         :param mults: the multiples of flexible funding to be optimized. These are multiples within the interval (min_freefunds, max_freefunds).
          Default values recommended.
-        :param prog_set:
-        :param add_funds:
-        :param fix_progallocs: fix the current regional program allocations (boolean)
+        :param prog_set: the progr
+        :param add_funds: additional funds to be distributed across all regions (positive float/integer)
+        :param fix_curr: fix the current regional program allocations (boolean), as in optimization.Optim(fix_curr).
         :param fix_regionalspend: fix the current total regional spending (boolean), but not at current allocations.
-        It follows that if fix_progallocs is True, fix_regionalspend must also be true.
+        It follows that if fix_curr is True, fix_regionalspend must also be true.
         """
         self.name = name
         self.model_names = model_names
@@ -31,8 +32,8 @@ class Geospatial:
             self.mults = [0, 0.01, 0.025, 0.04, 0.05, 0.075, 0.1, 0.2, 0.3, 0.6, 1]
         self.prog_set = prog_set
         self.add_funds = add_funds
-        self.fix_progallocs = fix_progallocs
-        self.fix_regionalspend = fix_progallocs if fix_progallocs else fix_regionalspend
+        self.fix_curr = fix_curr
+        self.fix_regionalspend = fix_curr if fix_curr else fix_regionalspend
         self.filter_progs = filter_progs
         self.active = active
         self.bocs = sc.odict()
@@ -49,7 +50,7 @@ class Geospatial:
             regionalfunds = add_funds[i]
             region = Optim(name=name, model_name=model_name, weights=self.weights, mults=mults,
                            prog_set=self.prog_set, active=self.active, add_funds=regionalfunds,
-                           filter_progs=self.filter_progs, fix_curr=self.fix_progallocs)
+                           filter_progs=self.filter_progs, fix_curr=self.fix_curr)
             regions.append(region)
         self.regions = regions
         return regions
