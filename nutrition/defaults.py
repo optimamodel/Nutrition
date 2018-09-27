@@ -7,7 +7,7 @@ Defaults correspond to the data set which is loaded by the user.
 from .scenarios import make_scens
 import sciris as sc
 
-def get_defaults(modelname, model, basename='Baseline'):
+def get_defaults(modelname=None, model=None, basename='Baseline'):
     """
     Assumes user has selected a data set to upload into the project.
     Baseline will be based on all the programs uploaded in the data book.

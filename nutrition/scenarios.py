@@ -11,7 +11,7 @@ class Scen(sc.prettyobj):
         :param active: whether or not the scenario is to be run (boolean)
         """
         self.name = name
-        self.model_name = model_name if model_name else None
+        self.model_name = model_name
         self.scen_type = scen_type
         self.vals = progvals.values()
         self.prog_set = progvals.keys()

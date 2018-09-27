@@ -132,6 +132,7 @@ class Project(object):
             dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self)
             if name is None: name = sc.uniquename(dataset.name, self.datasets.keys())
             self.datasets[name] = dataset
+            dataset.name = name
             self.add_model(name, overwrite=overwrite) # add model associated with the dataset
         
         return None
