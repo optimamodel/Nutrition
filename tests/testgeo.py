@@ -23,7 +23,5 @@ kwargs = {'name': 'test1',
                        'Mg for eclampsia', 'Zinc for treatment + ORS', 'Iron and iodine fortification of salt']}
 
 geo = Geospatial(**kwargs)
-results = p.run_geospatial(geo=geo, maxtime=1, maxiter=1, swarmsize=1)
+results = p.run_geospatial(geo=geo)
 p.plot(geo=True)
-import pylab as pl
-pl.show()
