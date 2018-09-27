@@ -16,8 +16,7 @@ kwargs1 = {'name':'test1',
            'weights': sc.odict({'thrive': 1}),
           'prog_set': ['Vitamin A supplementation', 'IYCF 1'],
           'fix_curr': False,
-          'add_funds':1e7,
-          'filter_progs':False}
+          'add_funds':1e7}
 
 kwargs2 = {'name':'test2',
           'model_name': 'eg',
@@ -41,8 +40,7 @@ kwargs3 = {'name': 'test3',
                          'Multiple micronutrient supplementation', 'Micronutrient powders',
                          'Public provision of complementary foods', 'Treatment of SAM',
                          'Vitamin A supplementation', 'Zinc supplementation'],
-           'fix_curr': False,
-           'filter_progs':False}
+           'fix_curr': False}
 
 optims = [Optim(**kwargs2)]
 p.add_optims(optims)
