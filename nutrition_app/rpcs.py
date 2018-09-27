@@ -579,7 +579,7 @@ def define_formats():
     
 
 @RPC()
-def get_sheet_data(project_id, key=None):
+def get_sheet_data(project_id, key=None, verbose=True):
     sheets = [
         'Nutritional status distribution', 
         'Breastfeeding distribution',
@@ -609,16 +609,23 @@ def get_sheet_data(project_id, key=None):
                 cellformat = sheetformat[sheet][r][c]
                 cellval = sheetdata[sheet][r][c]
                 if sc.isnumber(cellval):
-                    cellval = sc.sigfig(cellval, sigfigs=3, sep=',')
+                    if cellformat == 'edit': # Format edit box numbers nicely
+                        cellval = sc.sigfig(cellval, sigfigs=3, sep=',')
+                    elif cellformat == 'tick':
+                        if not cellval: cellval = False
+                        else:           cellval = True
+                    else:
+                        pass # It's fine, just let it go, let it go, can't hold it back any more
                 cellinfo = {'format':cellformat, 'value':cellval}
                 sheetjson[sheet][r].append(cellinfo)
     
     sheetjson = sc.sanitizejson(sheetjson)
+    if verbose: sc.pp(sheetjson)
     return {'names':sheets, 'tables':sheetjson}
 
 
 @RPC()
-def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
+def save_sheet_data(project_id, sheetdata, key=None, verbose=True):
     proj = load_project(project_id, die=True)
     if key is None: key = proj.datasets.keys()[-1] # There should always be at least one
     wb = proj.input_sheet # CK: Warning, might want to change
@@ -633,7 +640,13 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
                 cellformat = sheetdata[sheet][r][c]['format']
                 if cellformat in editableformats:
                     cellval = sheetdata[sheet][r][c]['value']
-                    cellval = numberify(cellval, blank='zero', invalid='die', aslist=False)
+                    if cellformat == 'edit':
+                        cellval = numberify(cellval, blank='none', invalid='die', aslist=False)
+                    elif cellformat == 'tick':
+                        if not cellval: cellval = '' # For Excel display
+                        else:           cellval = True
+                    else:
+                        pass
                     cells.append([r+1,c+1]) # Excel uses 1-based indexing
                     vals.append(cellval)
                     if verbose: print('  Cell (%s,%s) = %s' % (r+1, c+1, cellval))
@@ -686,12 +699,14 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
         
         # Add formatting
         for y in range(len(this_spec['vals'])):
-            if this_spec['vals'][y] is not None:
+            if this_spec['vals'][y] in [None, np.nan, '']: # It's None or Nan
+                this_spec['vals'][y] = None
+            else:
                 if js_scen['scen_type'] == 'coverage': # Convert to percentage
                     this_spec['vals'][y] = str(round(100*this_spec['vals'][y])) # Enter to the nearest percentage
                 elif js_scen['scen_type'] == 'budget': # Add commas
                     this_spec['vals'][y] = format(int(round(this_spec['vals'][y])), ',') # Add commas
-        this_spec['base_cov'] = str(round(program.base_cov*100)) # Convert to percentage
+        this_spec['base_cov'] = str(round(program.base_cov*100)) # Convert to percentage -- this should never be None or Nan
         this_spec['base_spend'] = format(int(round(program.base_spend)), ',')
         js_scen['progvals'].append(this_spec)
         js_scen['t'] = [proj.dataset().t[0]+1, proj.dataset().t[1]] # First year is baseline year
