@@ -5,7 +5,8 @@ services:
       context: .
       args:
         PORT: '80'
-        REDIS_URL: 'redis://10.0.0.19:6379/6'
+        # REDIS_URL: 'redis://10.0.0.19:6379/6' # asia-southeast1-a
+        REDIS_URL: 'redis://10.0.0.3:6379/6' # europe-west1-b
     command: supervisord
     ports:
      - '80:80'
