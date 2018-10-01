@@ -22,10 +22,10 @@ steps:
       'managed', 'rolling-action', 'start-update',
       'nutrition-app-eu',
       '--version',
-      '--max-surge=9999',
-      '--max-unavailable=9999',
       'template=nutrition-app-${COMMIT_SHA}',
-      '--zone=europe-west1-b'
+      '--zone=europe-west1-b',
+      '--max-surge=9999',
+      '--max-unavailable=9999'
     ]
 images:
   - 'gcr.io/${PROJECT_ID}/${REPO_NAME}__app:${COMMIT_SHA}'
