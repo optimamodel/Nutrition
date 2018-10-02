@@ -13,10 +13,11 @@ torun = [
 #'datastore',
 #'spreadsheet_io',
 #'input_io',
-'scen_io',
+#'scen_io',
 #'optim_io',
 #'run_scenarios',
 #'run_optimization',
+'run_geo',
 #'export_results',
 ]
 
@@ -157,6 +158,16 @@ if 'run_optimization' in torun:
         output = rpcs.plot_optimization(proj_id, proj.results.keys()[-1])
         print('Output:')
         sc.pp(output)
+
+
+if 'run_geo' in torun:
+    heading('Running run_geo', 'big')
+    doplot = True
+    proj_id = apt.run_geo(proj.uid, 'placeholder_ID', runtype='test')
+#    if doplot:
+#        output = rpcs.plot_optimization(proj_id, proj.results.keys()[-1])
+#        print('Output:')
+#        sc.pp(output)
 
 
 if 'export_results' in torun:
