@@ -153,32 +153,45 @@ class Project(object):
     def write_results(self, filename=None, folder=None, keys=None):
         outcomes = default_trackers()
         labs = pretty_labels()
-        headers = [labs[out] for out in outcomes]
+        rows = [labs[out] for out in outcomes]
         if keys is None: keys = self.results.keys()
         keys = sc.promotetolist(keys)
         if filename is None: filename = 'outputs.xlsx'
         filepath = sc.makefilepath(filename=filename, folder=folder, ext='xlsx', default='%s outputs.xlsx' % self.name)
         outputs = []
+        sheetnames = []
+        alldata = []
+        allformats = []
         for key in keys:
             reslist = self.result(key)
             reslist = sc.promotetolist(reslist)
-            for res in reslist:
-                out = list(res.get_outputs(outcomes, seq=False, pretty=True))
-                outputs.append([res.name] + out) # gets all outputs
-        data = [['Scenario'] + headers] + outputs
-        
-        # Formatting
+            years = reslist[0].years
+            headers = [['Scenario', 'Outcome'] + years]
+            nullrow = [''] * len(years)
+            for r, res in enumerate(reslist):
+                out = res.get_outputs(outcomes, seq=True, pretty=True)
+                for o, outcome in enumerate(rows):
+                    name = [res.name] if o == 0 else ['']
+                    outputs.append(name + [outcome] + list(out[o]))
+                outputs.append(nullrow)
+
+            data = headers + outputs
+            alldata.append(data)
+            sheetnames.append(reslist[0].model_name)
+
+            # Formatting
+            nrows = len(data)
+            ncols = len(data[0])
+            formatdata = np.zeros((nrows, ncols), dtype=object)
+            formatdata[:,:] = 'plain' # Format data as plain
+            formatdata[:,0] = 'bold' # Left side bold
+            formatdata[0,:] = 'header' # Top with green header
+            allformats.append(formatdata)
         formats = {
-            'header':{'bold':True, 'bg_color':'#3c7d3e', 'color':'#ffffff'},
+            'header': {'bold': True, 'bg_color': '#3c7d3e', 'color': '#ffffff'},
             'plain': {},
-            'bold':   {'bold':True}}
-        nrows = len(data)
-        ncols = len(data[0])
-        formatdata = np.zeros((nrows, ncols), dtype=object)
-        formatdata[:,:] = 'plain' # Format data as plain
-        formatdata[:,0] = 'bold' # Left side bold
-        formatdata[0,:] = 'header' # Top with green header
-        sc.savespreadsheet(filename=filename, data=data, formats=formats, formatdata=formatdata)
+            'bold': {'bold': True}}
+        sc.savespreadsheet(filename=filename, data=alldata, sheetnames=sheetnames, formats=formats, formatdata=allformats)
         return filepath
 
     def add(self, name, item, what=None):
