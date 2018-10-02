@@ -1,7 +1,5 @@
 import nutrition.ui as nu
-from nutrition.optimization import Optim
 from nutrition.geospatial import Geospatial
-import sciris as sc
 
 # load in data to create model
 p = nu.Project('Demo')
@@ -23,5 +21,5 @@ kwargs = {'name': 'test1',
                        'Mg for eclampsia', 'Zinc for treatment + ORS', 'Iron and iodine fortification of salt']}
 
 geo = Geospatial(**kwargs)
-results = p.run_geospatial(geo=geo)
+results = p.run_geospatial(geo=geo, maxiter=3, swarmsize=3, maxtime=3)
 p.plot(geo=True)

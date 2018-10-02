@@ -46,5 +46,20 @@ def run_optim(project_id, cache_id, optim_name=None, runtype=None):
     rpcs.cache_results(newproj)
     return None
 
+
+@async_task
+def run_geo(project_id, cache_id, optim_name=None, runtype=None):
+    # Load the projects from the DataStore.
+    if runtype is None: runtype = 'full'
+    print('Running %s optimization...' % runtype)
+    proj = rpcs.load_project(project_id)
+    if runtype == 'test': results = proj.run_optim(key=optim_name, dosave=False, parallel=False, maxiter=5, swarmsize=5, maxtime=5)
+    else:                 results = proj.run_optim(key=optim_name, dosave=False, parallel=False)
+    newproj = rpcs.load_project(project_id)
+    newproj.results[cache_id] = results
+    rpcs.cache_results(newproj)
+    return None
+
+
 # Add the asynchronous task functions in this module to the tasks.py module so run_task() can call them.
 sw.add_task_funcs(task_func_dict)
