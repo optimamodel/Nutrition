@@ -378,21 +378,24 @@ class Project(object):
         return results
 
     @trace_exception
-    def run_geospatial(self, geo=None, maxiter=30, swarmsize=25, maxtime=20, dosave=True):
+    def run_geospatial(self, geo=None, maxiter=30, swarmsize=25, maxtime=20, dosave=True, parallel=False):
         """ Regions cannot be parallelised because daemon processes cannot have children.
         Two options: Either can parallelize regions and not the budget or run
         regions in series while parallelising each budget multiple. """
         regions = geo.make_regions()
         run_optim = partial(self.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
-                            parallel=True, dosave=True, runbaseline=False)
-        optimized = sc.odict(sc.odict({region.name: run_optim(optim=region) for region in regions}))
+                            parallel=parallel, dosave=True, runbaseline=False)
+        optimized = sc.odict([(region.name, run_optim(optim=region)) for region in regions])
         regional_allocs = geo.gridsearch(optimized)
         # now optimize these allocations within each region
         regions = geo.make_regions(add_funds=regional_allocs, mults=[1])
         run_optim = partial(self.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
                             parallel=False, dosave=True, runbaseline=False)
         # can run in parallel b/c child processes in series
-        results = run_parallel(run_optim, regions, num_procs=len(regions))
+        if parallel:
+            results = run_parallel(run_optim, regions, num_procs=len(regions))
+        else:
+            results = [run_optim(region) for region in regions]
         # flatten list
         results = [item for sublist in results for item in sublist]
         # remove multiple to plot by name (total hack)
