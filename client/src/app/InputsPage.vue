@@ -23,6 +23,25 @@ Last update: 2018-08-02
       <div v-if="sheetNames">
         <div class="card">
           <help reflink="inputs" label="Edit input data"></help>
+          <br>
+          <br>
+          <div class="controls-box">
+            <b>Dataset: &nbsp;</b>
+            <select v-model="activeDataset">
+              <option v-for='dataset in datasetOptions'>
+                {{ dataset }}
+              </option>
+            </select>&nbsp;
+            <!--<button class="btn btn-icon" @click="renameDatasetModal()" data-tooltip="Rename"><i class="ti-pencil"></i></button>-->
+            <!--<button class="btn btn-icon" @click="copyDataset()" data-tooltip="Copy"><i class="ti-files"></i></button>-->
+            <!--<button class="btn btn-icon" @click="deleteDataset()" data-tooltip="Delete"><i class="ti-trash"></i></button>-->
+            <button class="btn btn-icon" @click="downloadDatabook()" data-tooltip="Downl databookoad databook"><i class="ti-download"></i></button>
+            <button class="btn btn-icon" @click="uploadDatabook()" data-tooltip="Upload"><i class="ti-upload"></i></button>
+            <!--<button class="btn btn-icon" @click="loadParTable()" data-tooltip="Refresh"><i class="ti-reload"></i></button>&nbsp;-->
+            <!--<help reflink="parameter-sets"></help>-->
+          </div>
+          <br>
+          <br>
           <div v-for="name in sheetNames" style="display:inline-block; padding-right:10px">
             <div v-if="name===activeSheet">
               <button class="btn sheetbtn" @click="setActive(name)" data-tooltip="Current sheet">{{ name }}</button>
@@ -98,6 +117,8 @@ Last update: 2018-08-02
 
     data() {
       return {
+        activeDataset: '',
+        datasetOptions: [],
         sheetNames: [],
         sheetTables: {},
         activeSheet: '',
@@ -118,12 +139,15 @@ Last update: 2018-08-02
         console.log('created() called')
         utils.sleep(1)  // used so that spinners will come up by callback func
           .then(response => {
+            this.updateDatasets()
             this.getSheetData() // Load the sheet data
           })
       }
     },
 
     methods: {
+
+      updateDatasets() { return utils.updateDatasets(this) },
 
       setActive(active) {
         console.log('Setting active to ' + active)

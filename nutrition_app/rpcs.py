@@ -580,7 +580,7 @@ def define_formats():
     
 
 @RPC()
-def get_sheet_data(project_id, key=None, verbose=True):
+def get_sheet_data(project_id, key=None, verbose=False):
     sheets = [
         'Nutritional status distribution', 
         'Breastfeeding distribution',
@@ -626,7 +626,7 @@ def get_sheet_data(project_id, key=None, verbose=True):
 
 
 @RPC()
-def save_sheet_data(project_id, sheetdata, key=None, verbose=True):
+def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
     proj = load_project(project_id, die=True)
     if key is None: key = proj.datasets.keys()[-1] # There should always be at least one
     wb = proj.input_sheet # CK: Warning, might want to change
@@ -656,6 +656,23 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=True):
     print('Saving project...')
     save_project(proj)
     return None
+
+
+@RPC() 
+def get_dataset_keys(project_id):
+    print('Returning parset info...')
+    proj = load_project(project_id, die=True)
+    dataset_names = proj.datasets.keys()
+    model_names = proj.models.keys()
+    if dataset_names != model_names:
+        for dsn in dataset_names:
+            if dsn not in model_names:
+                print('get_dataset_keys(): Model %s not found, recreating now...')
+                proj.add_model(dsn)
+        save_project(proj)
+    return dataset_names
+
+
 
 ##################################################################################
 ### Scenario functions and RPCs

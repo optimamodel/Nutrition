@@ -53,13 +53,12 @@ class Project(object):
         ''' Initialize the project '''
 
         ## Define the structure sets
-        self.datasets = sc.odict()
-        self.models   = sc.odict()
-        self.scens    = sc.odict()
-        self.optims   = sc.odict()
-        self.results  = sc.odict()
-        self.input_sheet    = None
-        self.defaults_sheet = None
+        self.datasets     = sc.odict()
+        self.models       = sc.odict()
+        self.scens        = sc.odict()
+        self.optims       = sc.odict()
+        self.results      = sc.odict()
+        self.spreadsheets = sc.odict()
         if loadsheets:
             if not inputspath:
                 template_name = 'template_input.xlsx'
@@ -105,17 +104,18 @@ class Project(object):
             info[attr] = getattr(self, attr) # Populate the dictionary
         return info
     
-    def load_inputs(self, inputspath=None, country=None, region=None):
+    def load_inputs(self, inputspath=None, country=None, region=None, name=None):
         ''' Reload the input spreadsheet into the project '''
+        if name is None: name = sc.uniquename('Default', self.spreadsheets.keys())
         if inputspath is None: inputspath = settings.data_path(country, region)
         self.input_sheet    = sc.Spreadsheet(filename=inputspath)
-        return self.input_sheet
+        return self.input_sheet()
     
     def load_defaults(self, defaultspath=None):
         ''' Reload the defaults spreadsheet into the project '''
         if defaultspath is None: defaultspath = settings.default_params_path()
         self.defaults_sheet = sc.Spreadsheet(filename=defaultspath)
-        return self.defaults_sheet
+        return self.defaults_sheet()
         
     def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, overwrite=False, fromfile=True, makemodel=True):
         '''Load the data, which can mean one of two things: read in the spreadsheets, and/or use these data to make a model '''
@@ -216,6 +216,16 @@ class Project(object):
     ### Utilities
     #######################################################################################################
 
+    def input_sheet(self, key=None, verbose=2):
+        if key is None: key = -1
+        try:    return self.spreadsheets[key]['input_sheet']
+        except: return sc.printv('Warning, input sheet "%s" set not found!' %key, 1, verbose)
+    
+    def defaults_sheet(self, key=None, verbose=2):
+        if key is None: key = -1
+        try:    return self.spreadsheets[key]['defaults_sheet']
+        except: return sc.printv('Warning, defaults sheet "%s" set not found!' %key, 1, verbose)
+
     def dataset(self, key=None, verbose=2):
         ''' Shortcut for getting the latest model, i.e. self.datasets[-1] '''
         if key is None: key = -1
@@ -255,13 +265,13 @@ class Project(object):
         ''' Super roundabout way to add a scenario '''
         scens = [Scen(**json)]
         self.add_scens(scens)
-        return None
+        return scens
 
     def add_optim(self, json=None):
         ''' Super roundabout way to add a scenario '''
         optims = [Optim(**json)]
         self.add_optims(optims)
-        return None
+        return optims
 
     def add_model(self, name=None, overwrite=True):
         """ Adds a model to the self.models odict.
@@ -284,6 +294,7 @@ class Project(object):
         defaults = get_defaults(name, model)
         self.add_scens(defaults)
         self.modified = sc.now()
+        return model
 
     def add_scens(self, scens, overwrite=False):
         """ Adds scenarios to the Project's self.scens odict.
@@ -314,6 +325,7 @@ class Project(object):
         for optim in optims:
             self.add(name=optim.name, item=optim, what='optim')
         self.modified = sc.now()
+        return optims
 
     def add_result(self, result, name=None):
         """Add result by name"""
@@ -324,6 +336,7 @@ class Project(object):
                 print('WARNING, could not extract result name: %s' % repr(E))
                 name = 'default_result'
         self.add(name=name, item=result, what='result')
+        return result
 
     def demo_scens(self, dorun=None, doadd=True, default=False, scen_type=None):
         scens = demo_scens(default=default, scen_type=scen_type)

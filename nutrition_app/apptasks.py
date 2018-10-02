@@ -76,7 +76,7 @@ def run_geo(project_id, cache_id, optim_name=None, runtype=None):
     
     import nutrition.ui as nu
     geo = nu.Geospatial(**kwargs)
-    results = p.run_geospatial(geo=geo, maxiter=3, swarmsize=3, maxtime=3)
+    results = p.run_geospatial(geo=geo, parallel=False, maxiter=3, swarmsize=3, maxtime=3)
     
     
     newproj = rpcs.load_project(project_id)
