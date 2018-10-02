@@ -47,6 +47,7 @@ Last update: 2018sep26
               <button class="btn btn-icon" @click="editOptimModal(optimSummary)" data-tooltip="Edit optimization"><i class="ti-pencil"></i></button>
               <button class="btn btn-icon" @click="copyOptim(optimSummary)" data-tooltip="Copy optimization"><i class="ti-files"></i></button>
               <button class="btn btn-icon" @click="deleteOptim(optimSummary)" data-tooltip="Delete optimization"><i class="ti-trash"></i></button>
+              <button class="btn" :disabled="!optimsLoaded" @click="testgeo(optimSummary)">TESTGEO</button>
             </td>
           </tr>
           </tbody>
@@ -625,6 +626,29 @@ Last update: 2018sep26
           })
           .catch(error => {
             status.fail(this, 'Could not save optimizations', error)
+          })
+      },
+
+      testgeo(optimSummary) {
+        console.log('testgeo() called')
+        status.start(this)
+        rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries]) // Make sure they're saved first
+          .then(response => {
+            rpcs.rpc('launch_task', [optimSummary.serverDatastoreId, 'run_geo',
+              [this.projectID, optimSummary.serverDatastoreId, 'test', 'test']])
+              .then(response => {
+                this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
+                if (!this.pollingTasks) {
+                  this.doTaskPolling(true)
+                }
+                status.succeed(this, 'Started geo')
+              })
+              .catch(error => {
+                status.fail(this, 'Could not save geo', error)
+              })
+          })
+          .catch(error => {
+            status.fail(this, 'Could not save geo', error)
           })
       },
 
