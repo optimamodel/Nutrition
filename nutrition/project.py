@@ -165,7 +165,7 @@ class Project(object):
             for res in reslist:
                 out = list(res.get_outputs(outcomes, seq=False, pretty=True))
                 outputs.append([res.name] + out) # gets all outputs
-        data = [['Result name'] + headers] + outputs
+        data = [['Scenario'] + headers] + outputs
         
         # Formatting
         formats = {
