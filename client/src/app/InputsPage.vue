@@ -1,7 +1,7 @@
 <!--
 Define health packages
 
-Last update: 2018-08-02
+Last update: 2018-10-03
 -->
 
 <template>
@@ -173,9 +173,9 @@ Last update: 2018-08-02
 
       uploadDatabook() {
         console.log('uploadDatabook() called')
-        status.start(this, 'Uploading databook...')
         rpcs.upload('upload_databook', [this.projectID], {}, '.xlsx')
           .then(response => {
+            status.start(this, 'Uploading databook...')
             this.getSheetData() // Refresh the table
             status.succeed(this, 'Data uploaded')
           })
