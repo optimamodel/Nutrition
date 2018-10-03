@@ -449,7 +449,7 @@ def upload_defaults(defaults_filename, project_id):
 ### Input functions and RPCs
 ##################################################################################
 
-editableformats = ['edit', 'calc', 'tick'] # Define which kinds of format are editable and saveable
+editableformats = ['edit', 'calc', 'tick', 'bdgt'] # Define which kinds of format are editable and saveable
 
 def define_formats():
     ''' Hard-coded sheet formats '''
@@ -540,40 +540,40 @@ def define_formats():
     
     formats['Programs cost and coverage'] = [
         ['head', 'head', 'head', 'head'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'calc'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'calc'],
-        ['name', 'edit', 'edit', 'calc'],
-        ['name', 'edit', 'edit', 'calc'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'calc'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
     ]
     
     return formats
@@ -610,8 +610,10 @@ def get_sheet_data(project_id, key=None, verbose=False):
                 cellformat = sheetformat[sheet][r][c]
                 cellval = sheetdata[sheet][r][c]
                 if sc.isnumber(cellval):
-                    if cellformat == 'edit': # Format edit box numbers nicely
-                        cellval = sc.sigfig(cellval, sigfigs=3, sep=',')
+                    if cellformat in ['edit','calc']:
+                        cellval = sc.sigfig(100*cellval, sigfigs=3)
+                    elif cellformat == 'bdgt': # Format edit box numbers nicely
+                        cellval = '%0.0f' % cellval
                     elif cellformat == 'tick':
                         if not cellval: cellval = False
                         else:           cellval = True
@@ -641,7 +643,11 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
                 cellformat = sheetdata[sheet][r][c]['format']
                 if cellformat in editableformats:
                     cellval = sheetdata[sheet][r][c]['value']
-                    if cellformat == 'edit' or cellformat == 'calc': # Warning, have to be careful with these.
+                    if cellformat in ['edit','calc']:
+                        cellval = numberify(cellval, blank='none', invalid='die', aslist=False)
+                        if sc.isnumber(cellval):
+                            cellval /= 100 # Convert from percentage
+                    elif cellformat == 'bdgt': # Warning, have to be careful with these.
                         cellval = numberify(cellval, blank='none', invalid='die', aslist=False)
                     elif cellformat == 'tick':
                         if not cellval: cellval = '' # For Excel display
