@@ -15,8 +15,8 @@ Last update: 2018sep23
         between the <a href="http://www.burnet.edu.au">Burnet Institute</a> and the <a href="http://www.worldbank.org">World Bank</a>.</p>
 
       <p>
-        Information about Optima Nutrition is available as a <a href="/static/Optima_Nutrition_Overview.pdf" target="_blank">PDF</a> or
-        <a href="/static/Optima_Nutrition_Overview.pdf" target="_blank">PowerPoint</a> presentation.
+        Information about Optima Nutrition is available as a <a href="http://ocds.co/appfiles/Optima_Nutrition_Overview.pdf" target="_blank">PDF</a> or
+        <a href="http://ocds.co/appfiles/Optima_Nutrition_Overview.pdf" target="_blank">PowerPoint</a> presentation.
       </p>
 
       <br/>
