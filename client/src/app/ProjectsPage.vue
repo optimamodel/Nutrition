@@ -1,7 +1,7 @@
 <!--
 Manage projects page
 
-Last update: 2018sep22
+Last update: 2018oct03
 -->
 
 <template>
@@ -449,9 +449,9 @@ Last update: 2018sep22
 
       uploadDatabook(uid) {
         console.log('uploadDatabook() called')
-        status.start(this, 'Uploading databook...')
         rpcs.upload('upload_databook', [uid], {}, '.xlsx')
           .then(response => {
+            status.start(this, 'Uploading databook...')
             this.updateProjectSummaries(uid) // Update the project summaries
             status.succeed(this, 'Data uploaded to project') // Indicate success.
           })
@@ -461,10 +461,10 @@ Last update: 2018sep22
       },
 
       uploadDefaults(uid) {
-        console.log('uploadDefaults() called')
-        status.start(this, 'Uploading defaults...')
+        console.log('uploadDefaults() called')     
         rpcs.upload('upload_defaults', [uid], {}, '.xlsx')
           .then(response => {
+            status.start(this, 'Uploading defaults...')
             this.updateProjectSummaries(uid) // Update the project summaries
             status.succeed(this, 'Defaults uploaded to project') // Indicate success.
           })
