@@ -59,7 +59,7 @@ Last update: 2018-08-02
                       <input type="text"
                              class="txbox"
                              style="text-align: right"
-                             v-model="cellDict.value" disabled/>
+                             v-model="cellDict.value"/> <!-- disabled -->
                     </div>
                   </div>
                 </td>
