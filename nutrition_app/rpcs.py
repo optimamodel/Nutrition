@@ -214,16 +214,17 @@ def save_result(result, die=None):
 
 
 @RPC() # Not usually called as an RPC
-def del_project(project_key, die=None):
+def del_project(project_key, username=None, die=None):
     key = datastore.getkey(key=project_key, objtype='project')
     try:
         project = load_project(key)
-    except Exception:
-        print('Warning: cannot delete project %s, not found' % key)
+    except Exception as E:
+        print('Warning: cannot delete project %s, not found (%s)' % (key, str(E)))
         return None
     output = datastore.delete(key)
     try:
-        user = get_user(project.webapp.username)
+        if username is None: username = project.webapp.username
+        user = get_user(username)
         user.projects.remove(key)
         datastore.saveuser(user)
     except Exception as E:
@@ -232,11 +233,11 @@ def del_project(project_key, die=None):
 
 
 @RPC()
-def delete_projects(project_keys):
+def delete_projects(project_keys, username=None):
     ''' Delete one or more projects '''
     project_keys = sc.promotetolist(project_keys)
     for project_key in project_keys:
-        del_project(project_key)
+        del_project(project_key, username=username)
     return None
 
 
