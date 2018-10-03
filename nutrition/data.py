@@ -535,9 +535,6 @@ class Dataset(object):
         self.pops = pops
         self.prog_info = prog_info
         self.t = None
-        if name is None:
-            try:    name = country+'_'+region
-            except: name = 'default'
         self.name = name
         self.modified = sc.now()
         if doload:
