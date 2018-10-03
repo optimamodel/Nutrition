@@ -268,7 +268,7 @@ def jsonify_project(project_id, verbose=False):
     proj = load_project(project_id) # Load the project record matching the UID of the project passed in.
     json = {
         'project': {
-            'id':           proj.uid,
+            'id':           str(proj.uid),
             'name':         proj.name,
             'username':     proj.webapp.username,
             'hasData':      len(proj.datasets)>0,
@@ -726,10 +726,19 @@ def js_to_py_scen(js_scen):
     for js_spec in js_scen['progvals']:
         if js_spec['included']:
             py_json['progvals'][js_spec['name']] = []
-            vals = numberify(js_spec['vals'], blank='nan', invalid='die', aslist=True)
-            for y in range(len(vals)):
+            vals = []
+            for y in range(len(js_spec['vals'])):
+                try:
+                    val = numberify(js_spec['vals'][y], blank='nan', invalid='die', aslist=False)
+                    vals.append(val)
+                except:
+                    errormsg = 'Value "%s" for "%s" could not be converted to a number' % (js_spec['vals'][y], js_spec['name'])
+                    raise Exception(errormsg)
                 if js_scen['scen_type'] == 'coverage': # Convert from percentage
                         if vals[y] is not None:
+                            if sc.isnumber(vals[y], isnan=False) and not (vals[y]>=0 and vals[y]<=100):
+                                errormsg = 'Value "%s" for "%s" should be a percentage (between 0 and 100)' % (vals[y], js_spec['name'])
+                                raise Exception(errormsg)
                             vals[y] = vals[y]/100. # Convert from percentage
             py_json['progvals'][js_spec['name']] += vals
     return py_json
