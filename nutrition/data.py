@@ -535,10 +535,10 @@ class Dataset(object):
         self.pops = pops
         self.prog_info = prog_info
         self.t = None
-        self.name = name
         if name is None:
             try:    name = country+'_'+region
             except: name = 'default'
+        self.name = name
         self.modified = sc.now()
         if doload:
             self.load(inputspath=inputspath, defaultspath=defaultspath, fromfile=True, project=project)

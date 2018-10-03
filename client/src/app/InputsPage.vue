@@ -59,7 +59,7 @@ Last update: 2018-08-02
                       <input type="text"
                              class="txbox"
                              style="text-align: right"
-                             v-model="cellDict.value" disabled/>
+                             v-model="cellDict.value"/> <!-- disabled -->
                     </div>
                   </div>
                 </td>
@@ -230,8 +230,9 @@ Last update: 2018-08-02
   }
 
   .c_calc {
-    color:#888;
-    background-color:#ccc;
+    background-color: rgb(168, 237, 154); // Temporary, presumably, until spreadsheet calculations are done correctly
+    /*color:#888;*/
+    /*background-color:#ccc;*/
     justify-content:flex-end;
   }
 

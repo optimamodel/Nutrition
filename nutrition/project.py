@@ -132,6 +132,7 @@ class Project(object):
             dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self)
             if name is None: name = sc.uniquename(dataset.name, self.datasets.keys())
             self.datasets[name] = dataset
+            dataset.name = name
             self.add_model(name, overwrite=overwrite) # add model associated with the dataset
         
         return None
@@ -324,8 +325,8 @@ class Project(object):
                 name = 'default_result'
         self.add(name=name, item=result, what='result')
 
-    def demo_scens(self, dorun=None, doadd=True):
-        scens = demo_scens()
+    def demo_scens(self, dorun=None, doadd=True, default=False, scen_type=None):
+        scens = demo_scens(default=default, scen_type=scen_type)
         if doadd:
             self.add_scens(scens)
             if dorun:

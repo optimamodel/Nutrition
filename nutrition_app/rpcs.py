@@ -1,7 +1,7 @@
 """
 Optima Nutrition remote procedure calls (RPCs)
     
-Last update: 2018sep22 by cliffk
+Last update: 2018sep25 by cliffk
 """
 
 ###############################################################
@@ -40,42 +40,59 @@ def get_path(filename=None, username=None):
     return fullpath
 
 
-def sanitize(vals, skip=False, forcefloat=False, verbose=False, as_nan=False, die=True):
-    ''' Make sure values are numeric, and either return nans or skip vals that aren't -- WARNING, duplicates lots of other things!'''
-    if verbose: print('Sanitizing vals of %s: %s' % (type(vals), vals))
-    if as_nan: missingval = np.nan
-    else:      missingval = None
+def numberify(val, blank=None, invalid=None, toremove=None, convertpercent=None, aslist=False, verbose=False):
+    ''' Convert strings to numbers, unless, don't '''
+    # Set defaults
+    default_toremove = [' ', ',', '$', '%'] # Characters to filter out
+    default_opts     = ['none', 'nan', 'zero', 'pass', 'die'] # How to handle either blank entries or invalid entries
     
-    if not sc.isstring(vals) and sc.isiterable(vals):
-        as_array = False if forcefloat else True
-    else:
-        vals = [vals]
-        as_array = False
-    output = []
-    for val in vals:
-        if val=='':
-            sanival = missingval
-        elif val==None:
-            sanival = missingval
-        else:
-            try:
-                factor = 1.0
-                if sc.isstring(val):
-                    val = val.replace(',','') # Remove commas, if present
-                    val = val.replace('$','') # Remove dollars, if present
-                    # if val.endswith('%'): factor = 0.01 # Scale if percentage has been used -- CK: not used since already converted from percentage
-                sanival = float(val)*factor
-            except Exception as E:
-                errormsg = 'Could not sanitize value "%s": %s' % (val, str(E))
-                if die: raise Exception(errormsg)
-                else:   print(errormsg+'; returning %s' % missingval)
-                sanival = missingval
-        if not skip or (sanival is not None and not np.isnan(sanival)):
+    # Handle input arguments
+    if blank          is None: blank   = 'none'
+    if invalid        is None: invalid = 'die'
+    if convertpercent is None: convertpercent = False
+    if toremove       is None: toremove = default_toremove
+    
+    def baddata(val, opt, errormsg=None):
+        ''' Handle different options for blank or invalid data '''
+        if   opt == 'none': return None
+        elif opt == 'nan':  return np.nan
+        elif opt == 'zero': return 0
+        elif opt == 'pass': return val
+        elif opt == 'die':  raise Exception(errormsg)
+        else:               raise Exception('Bad option for baddata(): "blank" and "invalid" must be one of %s, not %s and %s' % (default_opts, blank, invalid))
+    
+    # If a list, then recursively call this function
+    if aslist:
+        if not isinstance(val, list):
+            errormsg = 'Must suply a list if aslist=True, but you supplied %s (%s)' % (val, type(val))
+            raise Exception(errormsg)
+        output = []
+        for thisval in sc.promotetolist(val):
+            sanival = numberify(thisval, blank=blank, invalid=invalid, toremove=toremove, convertpercent=convertpercent, aslist=False, verbose=verbose)
             output.append(sanival)
-    if as_array:
         return output
+    
+    # Otherwise, actually do the processing
     else:
-        return output[0]
+        # Process the entry
+        if sc.isnumber(val): # It's already a number, don't worry, it doesn't get more sanitary than that
+            sanival = val
+        elif val in ['', None, []]: # It's blank, handle that
+            sanival = baddata(val, blank)
+        else: # It's a string or something; proceed
+            try:
+                factor = 1.0 # Set the factor (for handling percentages)
+                if sc.isstring(val): # If it's a string (probably it is), do extra handling
+                    if convertpercent and val.endswith('%'): factor = 0.01 # Scale if percentage has been used -- CK: not used since already converted from percentage
+                    for badchar in toremove:
+                        val = val.replace(badchar,'') # Remove unwanted parts of the string
+                sanival = float(val)*factor # Do the actual conversion
+            except Exception as E: # If that didn't work, handle the exception
+                errormsg = 'Sanitization failed: invalid entry: "%s" (%s)' % (val, str(E))
+                sanival = baddata(val, invalid, errormsg)
+        
+        if verbose: print('Sanitized %s %s to %s' % (type(val), repr(val), repr(sanival)))
+        return sanival
 
 
 @RPC()
@@ -95,7 +112,7 @@ def get_version_info():
       
 
 def get_user(username=None):
-    ''' Ensure it's a valid Optima Nutrition user '''
+    ''' Ensure it's a valid user '''
     user = datastore.loaduser(username)
     dosave = False
     if not hasattr(user, 'projects'):
@@ -157,14 +174,14 @@ def save_project(project, die=None): # NB, only for saving an existing project
 
 
 @RPC() # Not usually called as an RPC
-def save_new_project(proj, username=None):
+def save_new_project(proj, username=None, uid=None):
     """
     If we're creating a new project, we need to do some operations on it to
     make sure it's valid for the webapp.
     """ 
     # Preliminaries
     new_project = sc.dcp(proj) # Copy the project, only save what we want...
-    new_project.uid = sc.uuid()
+    new_project.uid = sc.uuid(uid)
     
     # Get unique name
     user = get_user(username)
@@ -180,11 +197,13 @@ def save_new_project(proj, username=None):
         new_project.webapp = sc.prettyobj()
         new_project.webapp.username = username
         new_project.webapp.tasks = []
+    new_project.webapp.username = username # Make sure we have the current username
     
     # Save all the things
     key = save_project(new_project)
-    user.projects.append(key)
-    datastore.saveuser(user)
+    if key not in user.projects: # Let's not allow multiple copies
+        user.projects.append(key)
+        datastore.saveuser(user)
     return key,new_project
 
 
@@ -195,27 +214,30 @@ def save_result(result, die=None):
 
 
 @RPC() # Not usually called as an RPC
-def del_project(project_key, die=None):
-    key = datastore.getkey(key=project_key, objtype='project', forcetype=False)
-    project = load_project(key)
-    user = get_user(project.webapp.username)
+def del_project(project_key, username=None, die=None):
+    key = datastore.getkey(key=project_key, objtype='project')
+    try:
+        project = load_project(key)
+    except Exception as E:
+        print('Warning: cannot delete project %s, not found (%s)' % (key, str(E)))
+        return None
     output = datastore.delete(key)
-    if not output:
-        print('Warning: could not delete project %s, not found' % project_key)
-    if key in user.projects:
+    try:
+        if username is None: username = project.webapp.username
+        user = get_user(username)
         user.projects.remove(key)
-    else:
-        print('Warning: deleting project %s (%s), but not found in user "%s" projects' % (project.name, key, user.username))
-    datastore.saveuser(user)
+        datastore.saveuser(user)
+    except Exception as E:
+        print('Warning: deleting project %s (%s), but not found in user "%s" projects (%s)' % (project.name, key,project.webapp.username, str(E)))
     return output
 
 
 @RPC()
-def delete_projects(project_keys):
+def delete_projects(project_keys, username=None):
     ''' Delete one or more projects '''
     project_keys = sc.promotetolist(project_keys)
     for project_key in project_keys:
-        del_project(project_key)
+        del_project(project_key, username=username)
     return None
 
 
@@ -266,7 +288,8 @@ def jsonify_projects(username, verbose=False):
     output = {'projects':[]}
     user = get_user(username)
     for project_key in user.projects:
-        json = jsonify_project(project_key)
+        try:                   json = jsonify_project(project_key)
+        except Exception as E: json = {'project': {'name':'Project load failed: %s' % str(E)}}
         output['projects'].append(json)
     if verbose: sc.pp(output)
     return output
@@ -426,6 +449,8 @@ def upload_defaults(defaults_filename, project_id):
 ### Input functions and RPCs
 ##################################################################################
 
+editableformats = ['edit', 'calc', 'tick'] # Define which kinds of format are editable and saveable
+
 def define_formats():
     ''' Hard-coded sheet formats '''
     formats = sc.odict()
@@ -555,7 +580,7 @@ def define_formats():
     
 
 @RPC()
-def get_sheet_data(project_id, key=None):
+def get_sheet_data(project_id, key=None, verbose=False):
     sheets = [
         'Nutritional status distribution', 
         'Breastfeeding distribution',
@@ -585,20 +610,28 @@ def get_sheet_data(project_id, key=None):
                 cellformat = sheetformat[sheet][r][c]
                 cellval = sheetdata[sheet][r][c]
                 if sc.isnumber(cellval):
-                    cellval = sc.sigfig(cellval, sigfigs=3, sep=',')
+                    if cellformat == 'edit': # Format edit box numbers nicely
+                        cellval = sc.sigfig(cellval, sigfigs=3, sep=',')
+                    elif cellformat == 'tick':
+                        if not cellval: cellval = False
+                        else:           cellval = True
+                    else:
+                        pass # It's fine, just let it go, let it go, can't hold it back any more
                 cellinfo = {'format':cellformat, 'value':cellval}
                 sheetjson[sheet][r].append(cellinfo)
     
     sheetjson = sc.sanitizejson(sheetjson)
+    if verbose: sc.pp(sheetjson)
     return {'names':sheets, 'tables':sheetjson}
 
 
 @RPC()
-def save_sheet_data(project_id, sheetdata, key=None):
+def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
     proj = load_project(project_id, die=True)
     if key is None: key = proj.datasets.keys()[-1] # There should always be at least one
     wb = proj.input_sheet # CK: Warning, might want to change
     for sheet in sheetdata.keys():
+        if verbose: print('Saving sheet %s...' % sheet)
         datashape = np.shape(sheetdata[sheet])
         rows,cols = datashape
         cells = []
@@ -606,12 +639,18 @@ def save_sheet_data(project_id, sheetdata, key=None):
         for r in range(rows):
             for c in range(cols):
                 cellformat = sheetdata[sheet][r][c]['format']
-                if cellformat == 'edit':
-                    cellval    = sheetdata[sheet][r][c]['value']
-                    try:    cellval = sanitize(cellval)
-                    except: cellval = str(cellval)
+                if cellformat in editableformats:
+                    cellval = sheetdata[sheet][r][c]['value']
+                    if cellformat == 'edit' or cellformat == 'calc': # Warning, have to be careful with these.
+                        cellval = numberify(cellval, blank='none', invalid='die', aslist=False)
+                    elif cellformat == 'tick':
+                        if not cellval: cellval = '' # For Excel display
+                        else:           cellval = True
+                    else:
+                        pass
                     cells.append([r+1,c+1]) # Excel uses 1-based indexing
                     vals.append(cellval)
+                    if verbose: print('  Cell (%s,%s) = %s' % (r+1, c+1, cellval))
         wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={'data_only':True}) # Can turn on verbose
     proj.load_data(fromfile=False, name=proj.datasets.keys()[-1]) # WARNING, only supports one dataset/model
     print('Saving project...')
@@ -623,9 +662,9 @@ def save_sheet_data(project_id, sheetdata, key=None):
 ##################################################################################
 
 def is_included(prog_set, program, default_included):
-    if (program.name in prog_set) or (program.base_cov and default_included):
+    if (program.name in prog_set) or (program.base_cov and default_included and 'WASH' not in program.name):
         answer = True
-    else: 
+    else:
         answer = False
     return answer
     
@@ -633,8 +672,7 @@ def is_included(prog_set, program, default_included):
 def py_to_js_scen(py_scen, proj, key=None, default_included=False):
     ''' Convert a Python to JSON representation of a scenario '''
     prog_names = proj.dataset().prog_names()
-    settings = nu.Settings()
-    scen_years = settings.n_years - 1 # First year is baseline
+    scen_years = proj.dataset().t[1] - proj.dataset().t[0] # First year is baseline
     attrs = ['name', 'active', 'scen_type']
     js_scen = {}
     for attr in attrs:
@@ -662,15 +700,20 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
         
         # Add formatting
         for y in range(len(this_spec['vals'])):
-            if this_spec['vals'][y] is not None:
-                if js_scen['scen_type'] == 'coverage': # Convert to percentage
-                    this_spec['vals'][y] = str(round(100*this_spec['vals'][y])) # Enter to the nearest percentage
-                elif js_scen['scen_type'] == 'budget': # Add commas
-                    this_spec['vals'][y] = format(int(round(this_spec['vals'][y])), ',') # Add commas
-        this_spec['base_cov'] = str(round(program.base_cov*100)) # Convert to percentage
+            try:
+                if this_spec['vals'][y] in [None, '', 'nan'] or sc.isnumber(this_spec['vals'][y], isnan=True): # It's None or Nan
+                    this_spec['vals'][y] = None
+                else:
+                    if js_scen['scen_type'] == 'coverage': # Convert to percentage
+                        this_spec['vals'][y] = str(round(100*this_spec['vals'][y])) # Enter to the nearest percentage
+                    elif js_scen['scen_type'] == 'budget': # Add commas
+                        this_spec['vals'][y] = format(int(round(this_spec['vals'][y])), ',') # Add commas
+            except Exception as E:
+                this_spec['vals'][y] = str(E) # If all else fails, set it to None
+        this_spec['base_cov'] = str(round(program.base_cov*100)) # Convert to percentage -- this should never be None or Nan
         this_spec['base_spend'] = format(int(round(program.base_spend)), ',')
         js_scen['progvals'].append(this_spec)
-        js_scen['t'] = [settings.t[0]+1, settings.t[1]] # First year is baseline year
+        js_scen['t'] = [proj.dataset().t[0]+1, proj.dataset().t[1]] # First year is baseline year
     return js_scen
     
     
@@ -683,7 +726,7 @@ def js_to_py_scen(js_scen):
     for js_spec in js_scen['progvals']:
         if js_spec['included']:
             py_json['progvals'][js_spec['name']] = []
-            vals = list(sanitize(js_spec['vals'], skip=True))
+            vals = numberify(js_spec['vals'], blank='nan', invalid='die', aslist=True)
             for y in range(len(vals)):
                 if js_scen['scen_type'] == 'coverage': # Convert from percentage
                         if vals[y] is not None:
@@ -693,21 +736,21 @@ def js_to_py_scen(js_scen):
     
 
 @RPC()
-def get_scen_info(project_id, key=None):
+def get_scen_info(project_id, key=None, verbose=False):
     print('Getting scenario info...')
     proj = load_project(project_id, die=True)
     scenario_jsons = []
     for py_scen in proj.scens.values():
         js_scen = py_to_js_scen(py_scen, proj, key=key)
         scenario_jsons.append(js_scen)
-    print('JavaScript scenario info:')
-    sc.pp(scenario_jsons)
-
+    if verbose:
+        print('JavaScript scenario info:')
+        sc.pp(scenario_jsons)
     return scenario_jsons
 
 
 @RPC()
-def set_scen_info(project_id, scenario_jsons):
+def set_scen_info(project_id, scenario_jsons, verbose=False):
     print('Setting scenario info...')
     proj = load_project(project_id, die=True)
     proj.scens.clear()
@@ -715,9 +758,9 @@ def set_scen_info(project_id, scenario_jsons):
         print('Setting scenario %s of %s...' % (j+1, len(scenario_jsons)))
         json = js_to_py_scen(js_scen)
         proj.add_scen(json=json)
-        print('Python scenario info for scenario %s:' % (j+1))
-        sc.pp(json)
-        
+        if verbose:
+            print('Python scenario info for scenario %s:' % (j+1))
+            sc.pp(json)
     print('Saving project...')
     save_project(proj)
     return None
@@ -728,10 +771,8 @@ def get_default_scen(project_id, scen_type=None):
     print('Creating default scenario...')
     if scen_type is None: scen_type = 'coverage'
     proj = load_project(project_id, die=True)
-    py_scens = proj.demo_scens(doadd=False)
-    if scen_type == 'coverage': py_scen = py_scens[0] # Pull out the first one
-    else:                       py_scen = py_scens[1] # Pull out the second one
-    py_scen.scen_type = scen_type # Set the scenario type
+    py_scen = proj.demo_scens(doadd=False, default=True, scen_type=scen_type)
+    py_scen.scen_type = scen_type # Set the scenario type -- Warning, is this needed?
     js_scen = py_to_js_scen(py_scen, proj, default_included=True)
     print('Created default JavaScript scenario:')
     sc.pp(js_scen)
@@ -759,6 +800,10 @@ def run_scens(project_id, doplot=True):
     proj = load_project(project_id, die=True)
     proj.run_scens()
     
+    # Get cost-effectiveness table
+    costeff = nu.get_costeff(project=proj, results=proj.result('scens'))
+    table = reformat_costeff(costeff)
+    
     # Get graphs
     graphs = []
     if doplot:
@@ -770,10 +815,6 @@ def run_scens(project_id, doplot=True):
             graphs.append(graph_dict)
             print('Converted figure %s of %s' % (f+1, len(figs)))
         
-    # Get cost-effectiveness table
-    costeff = nu.get_costeff(project=proj, results=proj.result('scens'))
-    table = reformat_costeff(costeff)
-    
     # Store results in cache
     proj = cache_results(proj)
     
@@ -821,7 +862,7 @@ def js_to_py_optim(js_optim):
     try:
         json['weights'] = sc.odict()
         for key,item in zip(obj_keys,js_optim['weightslist']):
-            val = sanitize(item['weight'])
+            val = numberify(item['weight'], blank='zero', invalid='die', aslist=False)
             json['weights'][key] = val
     except Exception as E:
         print('Unable to convert "%s" to weights' % js_optim['weightslist'])
@@ -830,9 +871,9 @@ def js_to_py_optim(js_optim):
     if not jsm: jsm = 1.0
     if sc.isstring(jsm):
         jsm = jsm.split(',')
-    vals = sanitize(jsm, die=True)
+    vals = numberify(jsm, blank='die', invalid='die', aslist=True)
     json['mults'] = vals
-    json['add_funds'] = sanitize(js_optim['add_funds'], forcefloat=True)
+    json['add_funds'] = numberify(js_optim['add_funds'], blank='zero', invalid='die', aslist=False)
     json['prog_set'] = [] # These require more TLC
     for js_spec in js_optim['spec']:
         if js_spec['included']:
@@ -929,23 +970,23 @@ def retrieve_results(proj, verbose=True):
 
 
 @RPC(call_type='download')
-def export_results(project_id):
+def export_results(project_id, cache_id):
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
     proj = retrieve_results(proj)
     file_name = '%s outputs.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
-    proj.write_results(full_file_name, keys=-1)
+    proj.write_results(full_file_name, keys=cache_id)
     print(">> export_results %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
 
 
 @RPC(call_type='download')
-def export_graphs(project_id):
+def export_graphs(project_id, cache_id):
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
     proj = retrieve_results(proj)
     file_name = '%s graphs.pdf' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
-    figs = proj.plot(-1) # Generate the plots
+    figs = proj.plot(key=cache_id) # Generate the plots
     sc.savefigs(figs, filetype='singlepdf', filename=full_file_name)
     print(">> export_graphs %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
