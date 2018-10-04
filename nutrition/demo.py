@@ -2,6 +2,7 @@
 import sciris as sc
 from .scenarios import Scen
 from .optimization import Optim
+from .geospatial import Geospatial
 
 def demo_scens(default=None, scen_type=None):
     if default is None: default = False
@@ -62,5 +63,21 @@ def demo_optims():
     
     optims = [Optim(**kwargs1)]
     return optims
+
+def demo_geos():
+    kwargs1 = {'name': 'Geospatial optimization',
+          'model_names': ['Demo1', 'Demo2', 'Demo3'],
+          'region_names': ['demoregion1', 'demoregion2', 'demoregion3'],
+          'weights': 'thrive',
+          'fix_curr': False,
+          'fix_regionalspend': False,
+          'add_funds': 0,
+          'prog_set': ['IFA fortification of maize', 'IYCF 1', 'Lipid-based nutrition supplements',
+                        'Multiple micronutrient supplementation', 'Micronutrient powders', 'Kangaroo mother care',
+                        'Public provision of complementary foods', 'Treatment of SAM',  'Vitamin A supplementation',
+                       'Mg for eclampsia', 'Zinc for treatment + ORS', 'Iron and iodine fortification of salt']}
+    
+    geos = [Geospatial(**kwargs1)]
+    return geos
 
 

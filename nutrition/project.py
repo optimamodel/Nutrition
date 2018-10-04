@@ -2,18 +2,19 @@
 #%% Imports
 #######################################################################################################
 
+from functools import partial
 import numpy as np
 import sciris as sc
 from .version import version
-from .optimization import Optim
-from functools import partial
-from .data import Dataset
-from .scenarios import Scen, run_scen
-from .plotting import make_plots, get_costeff
-from .model import Model
 from .utils import default_trackers, pretty_labels, run_parallel
-from .demo import demo_scens, demo_optims
+from .data import Dataset
+from .model import Model
 from .defaults import get_defaults
+from .scenarios import Scen, run_scen
+from .optimization import Optim
+from .geospatial import Geospatial
+from .plotting import make_plots, get_costeff
+from .demo import demo_scens, demo_optims, demo_geos
 from . import settings
 
 
@@ -57,6 +58,7 @@ class Project(object):
         self.models       = sc.odict()
         self.scens        = sc.odict()
         self.optims       = sc.odict()
+        self.geos         = sc.odict()
         self.results      = sc.odict()
         self.spreadsheets = sc.odict()
         self.defaults_sheet = None
@@ -282,6 +284,12 @@ class Project(object):
         optims = [Optim(**json)]
         self.add_optims(optims)
         return optims
+    
+    def add_geo(self, json=None):
+        ''' Super roundabout way to add a scenario '''
+        geos = [Geospatial(**json)]
+        self.add_geos(geos)
+        return geos
 
     def add_model(self, name=None):
         """ Adds a model to the self.models odict.
@@ -335,6 +343,14 @@ class Project(object):
             self.add(name=optim.name, item=optim, what='optim')
         self.modified = sc.now()
         return optims
+    
+    def add_geos(self, geos, overwrite=False):
+        if overwrite: self.geos = sc.odict() # remove exist scenarios
+        geos = sc.promotetolist(geos)
+        for geo in geos:
+            self.add(name=geo.name, item=geo, what='geo')
+        self.modified = sc.now()
+        return geos
 
     def add_result(self, result, name=None):
         """Add result by name"""
@@ -366,6 +382,16 @@ class Project(object):
             return None
         else:
             return optims
+    
+    def demo_geos(self, dorun=False, doadd=True):
+        geos = demo_geos()
+        if doadd:
+            self.add_geos(geos)
+            if dorun:
+                self.run_geo()
+            return None
+        else:
+            return geos
 
     def run_scens(self, scens=None):
         """Function for running scenarios
@@ -452,7 +478,7 @@ class Project(object):
         return costeff
 
 
-def demo(scens=False, optims=False):
+def demo(scens=False, optims=False, geo=False):
     """ Create a demo project with demo settings """
     
     # Parameters
@@ -467,4 +493,5 @@ def demo(scens=False, optims=False):
     # Create scenarios and optimizations
     if scens:  P.demo_scens()
     if optims: P.demo_optims()
+    if geo:    P.demo_geos()
     return P
