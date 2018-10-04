@@ -43,6 +43,11 @@ Last update: 2018sep23
               <span>Optimizations</span>
             </router-link>
           </li>
+          <li class="nav-item">
+            <router-link to="/geospatial">
+              <span>Geospatial</span>
+            </router-link>
+          </li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
           <li class="nav-item">
