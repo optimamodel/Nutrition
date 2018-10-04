@@ -268,7 +268,7 @@ def jsonify_project(project_id, verbose=False):
     proj = load_project(project_id) # Load the project record matching the UID of the project passed in.
     json = {
         'project': {
-            'id':           proj.uid,
+            'id':           str(proj.uid),
             'name':         proj.name,
             'username':     proj.webapp.username,
             'hasData':      len(proj.datasets)>0,
@@ -449,7 +449,7 @@ def upload_defaults(defaults_filename, project_id):
 ### Input functions and RPCs
 ##################################################################################
 
-editableformats = ['edit', 'calc', 'tick'] # Define which kinds of format are editable and saveable
+editableformats = ['edit', 'calc', 'tick', 'bdgt'] # Define which kinds of format are editable and saveable
 
 def define_formats():
     ''' Hard-coded sheet formats '''
@@ -540,40 +540,40 @@ def define_formats():
     
     formats['Programs cost and coverage'] = [
         ['head', 'head', 'head', 'head'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'calc'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'calc'],
-        ['name', 'edit', 'edit', 'calc'],
-        ['name', 'edit', 'edit', 'calc'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'calc'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
+        ['name', 'edit', 'edit', 'bdgt'],
     ]
     
     return formats
@@ -610,8 +610,10 @@ def get_sheet_data(project_id, key=None, verbose=False):
                 cellformat = sheetformat[sheet][r][c]
                 cellval = sheetdata[sheet][r][c]
                 if sc.isnumber(cellval):
-                    if cellformat == 'edit': # Format edit box numbers nicely
-                        cellval = sc.sigfig(cellval, sigfigs=3, sep=',')
+                    if cellformat in ['edit','calc']:
+                        cellval = sc.sigfig(100*cellval, sigfigs=3)
+                    elif cellformat == 'bdgt': # Format edit box numbers nicely
+                        cellval = '%0.0f' % cellval
                     elif cellformat == 'tick':
                         if not cellval: cellval = False
                         else:           cellval = True
@@ -641,7 +643,11 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
                 cellformat = sheetdata[sheet][r][c]['format']
                 if cellformat in editableformats:
                     cellval = sheetdata[sheet][r][c]['value']
-                    if cellformat == 'edit' or cellformat == 'calc': # Warning, have to be careful with these.
+                    if cellformat in ['edit','calc']:
+                        cellval = numberify(cellval, blank='none', invalid='die', aslist=False)
+                        if sc.isnumber(cellval):
+                            cellval /= 100 # Convert from percentage
+                    elif cellformat == 'bdgt': # Warning, have to be careful with these.
                         cellval = numberify(cellval, blank='none', invalid='die', aslist=False)
                     elif cellformat == 'tick':
                         if not cellval: cellval = '' # For Excel display
@@ -726,10 +732,19 @@ def js_to_py_scen(js_scen):
     for js_spec in js_scen['progvals']:
         if js_spec['included']:
             py_json['progvals'][js_spec['name']] = []
-            vals = numberify(js_spec['vals'], blank='nan', invalid='die', aslist=True)
-            for y in range(len(vals)):
+            vals = []
+            for y in range(len(js_spec['vals'])):
+                try:
+                    val = numberify(js_spec['vals'][y], blank='nan', invalid='die', aslist=False)
+                    vals.append(val)
+                except:
+                    errormsg = 'Value "%s" for "%s" could not be converted to a number' % (js_spec['vals'][y], js_spec['name'])
+                    raise Exception(errormsg)
                 if js_scen['scen_type'] == 'coverage': # Convert from percentage
                         if vals[y] is not None:
+                            if sc.isnumber(vals[y], isnan=False) and not (vals[y]>=0 and vals[y]<=100):
+                                errormsg = 'Value "%s" for "%s" should be a percentage (between 0 and 100)' % (vals[y], js_spec['name'])
+                                raise Exception(errormsg)
                             vals[y] = vals[y]/100. # Convert from percentage
             py_json['progvals'][js_spec['name']] += vals
     return py_json
