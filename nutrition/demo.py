@@ -58,7 +58,7 @@ def demo_optims():
                            'Iron and iodine fortification of salt'],
               'fix_curr': False,
               'add_funds': 0,
-              'filter_progs':False}
+              'filter_progs':True}
     
     optims = [Optim(**kwargs1)]
     return optims

@@ -550,7 +550,7 @@ class Dataset(object):
         if project is None:
             raise Exception('Sorry, but you must supply a project for load().')
         if fromfile: # Reload the data at the project level
-            project.load_data(country=self.country, region=self.region, name=self.name, inputspath=inputspath, defaultspath=defaultspath, fromfile=fromfile, makemodel=False)
+            project.load_data(country=self.country, region=self.region, name=self.name, inputspath=inputspath, defaultspath=defaultspath, fromfile=fromfile)
         
         # Pull the sheets from the project
         if self.name in project.spreadsheets.keys(): spreadsheetkey = self.name
