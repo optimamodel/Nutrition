@@ -54,6 +54,14 @@ Last update: 2018-10-03
                              v-model="cellDict.value"/>
                     </div>
                   </div>
+                  <div v-if="cellDict.format==='bdgt'" class="cell c_edit">
+                    <div class="cellpad">
+                      <input type="text"
+                             class="txbox"
+                             style="text-align: right"
+                             v-model="cellDict.value"/>
+                    </div>
+                  </div>
                   <div v-if="cellDict.format==='calc'" class="cell c_calc">
                     <div class="cellpad">
                       <input type="text"
