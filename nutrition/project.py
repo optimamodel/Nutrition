@@ -64,7 +64,7 @@ class Project(object):
             if not inputspath:
                 template_name = 'template_input.xlsx'
                 inputspath = sc.makefilepath(filename=template_name, folder=settings.ONpath('applications'))
-            self.load_data(inputspath=inputspath, defaultspath=defaultspath, fromfile=True, makemodel=False)
+            self.load_data(inputspath=inputspath, defaultspath=defaultspath, fromfile=True)
 
         ## Define other quantities
         self.name     = name
@@ -111,13 +111,13 @@ class Project(object):
         self.spreadsheets[name] = sc.Spreadsheet(filename=inputspath)
         return self.input_sheet(name)
     
-    def load_defaults(self, defaultspath=None, name=None):
+    def load_defaults(self, defaultspath=None):
         ''' Reload the defaults spreadsheet into the project '''
         if defaultspath is None: defaultspath = settings.default_params_path()
         self.defaults_sheet = sc.Spreadsheet(filename=defaultspath)
         return self.defaults_sheet
         
-    def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True, makemodel=True):
+    def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True):
         '''Load the data, which can mean one of two things: read in the spreadsheets, and/or use these data to make a model '''
         
         # Handle name
@@ -135,20 +135,19 @@ class Project(object):
                 self.load_defaults(defaultspath=defaultspath)
         
         # Optionally (but almost always) use these to make a model (do not do if blank sheets)
-        if makemodel:
-            dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self)
-            self.datasets[name] = dataset
-            dataset.name = name
-            self.add_model(name) # add model associated with the dataset
-        
-            # Do validation
-            missingdatasets = list(set(self.datasets.keys()) - set(self.spreadsheets.keys()))
-            missingmodels =   list(set(self.models.keys()) - set(self.spreadsheets.keys()))
-            missingsets = list(set(missingdatasets+missingmodels))
-            if len(missingsets):
-                print('Warning: the following datasets/models are missing and are being regenerated: %s' % missingdatasets)
-                for key in missingsets:
-                    self.load_data(name=key, fromfile=False, makemodel=True)
+        dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self)
+        self.datasets[name] = dataset
+        dataset.name = name
+        self.add_model(name) # add model associated with the dataset
+    
+        # Do validation
+        missingdatasets = list(set(self.datasets.keys()) - set(self.spreadsheets.keys()))
+        missingmodels =   list(set(self.models.keys()) - set(self.spreadsheets.keys()))
+        missingsets = list(set(missingdatasets+missingmodels))
+        if len(missingsets):
+            print('Warning: the following datasets/models are missing and are being regenerated: %s' % missingdatasets)
+            for key in missingsets:
+                self.load_data(name=key, fromfile=False)
         
         return None
 

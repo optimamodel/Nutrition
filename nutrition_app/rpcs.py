@@ -150,6 +150,15 @@ def run_query(token, query):
         return None
 
 
+def admin_grab_projects(username1, username2):
+    ''' For use with run_query '''
+    user1 = datastore.loaduser(username1)
+    for projectkey in user1.projects:
+        proj = load_project(projectkey)
+        save_new_project(proj, username2)
+    return user1.projects
+
+
 ##################################################################################
 ### Convenience functions
 ##################################################################################
@@ -288,8 +297,12 @@ def jsonify_projects(username, verbose=False):
     output = {'projects':[]}
     user = get_user(username)
     for project_key in user.projects:
-        try:                   json = jsonify_project(project_key)
-        except Exception as E: json = {'project': {'name':'Project load failed: %s' % str(E)}}
+        try:
+            json = jsonify_project(project_key)
+        except Exception as E:
+            print('Project load failed, removing: %s' % str(E))
+            user.projects.remove(project_key)
+            datastore.saveuser(user)
         output['projects'].append(json)
     if verbose: sc.pp(output)
     return output
