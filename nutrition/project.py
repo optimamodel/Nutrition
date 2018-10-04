@@ -129,10 +129,10 @@ class Project(object):
         
         # Optionally (but almost always) reload the spreadsheets from file
         if fromfile:
-            if inputspath or country or not self.input_sheet:
-                self.load_inputs(inputspath=inputspath, country=country, region=region, name=name)
             if defaultspath or not self.defaults_sheet:
                 self.load_defaults(defaultspath=defaultspath)
+            if inputspath or country or not self.input_sheet:
+                self.load_inputs(inputspath=inputspath, country=country, region=region, name=name)
         
         # Optionally (but almost always) use these to make a model (do not do if blank sheets)
         dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self)

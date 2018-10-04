@@ -538,19 +538,17 @@ class Dataset(object):
         self.name = name
         self.modified = sc.now()
         if doload:
-            self.load(inputspath=inputspath, defaultspath=defaultspath, fromfile=True, project=project)
+            self.load(project=project)
         return None
     
     def __repr__(self):
         output  = sc.prepr(self)
         return output
     
-    def load(self, inputspath=None, defaultspath=None, fromfile=True, project=None):
+    def load(self, project=None):
         # Handle inputs
         if project is None:
             raise Exception('Sorry, but you must supply a project for load().')
-        if fromfile: # Reload the data at the project level
-            project.load_data(country=self.country, region=self.region, name=self.name, inputspath=inputspath, defaultspath=defaultspath, fromfile=fromfile)
         
         # Pull the sheets from the project
         if self.name in project.spreadsheets.keys(): spreadsheetkey = self.name
@@ -563,18 +561,18 @@ class Dataset(object):
         default_data   = defaults_sheet.pandas()
         
         # Read them into actual data
-        try:
-            self.demo_data = InputData(input_data)
-            self.default_params = DefaultParams(default_data, input_data)
-            self.default_params.compute_risks(self.demo_data)
-            self.prog_data = ProgData(input_data, self.default_params)
-            self.pops = populations.set_pops(self.demo_data, self.default_params)
-            self.prog_info = programs.ProgramInfo(self.prog_data)
-            self.t = self.demo_data.t
-            self.modified = sc.now()
-        except Exception as E:
-            errormsg = 'Could not load data: ensure both input and defaults sheets have been loaded: %s' % str(E)
-            raise Exception(errormsg)
+#        try:
+        self.demo_data = InputData(input_data)
+        self.default_params = DefaultParams(default_data, input_data)
+        self.default_params.compute_risks(self.demo_data)
+        self.prog_data = ProgData(input_data, self.default_params)
+        self.pops = populations.set_pops(self.demo_data, self.default_params)
+        self.prog_info = programs.ProgramInfo(self.prog_data)
+        self.t = self.demo_data.t
+        self.modified = sc.now()
+#        except Exception as E:
+#            errormsg = 'Could not load data: ensure both input and defaults sheets have been loaded: %s' % str(E)
+#            raise Exception(errormsg)
         return None
     
     def prog_names(self):
