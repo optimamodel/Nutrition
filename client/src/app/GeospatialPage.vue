@@ -47,14 +47,13 @@ Last update: 2018sep26
               <button class="btn btn-icon" @click="editOptimModal(optimSummary)" data-tooltip="Edit optimization"><i class="ti-pencil"></i></button>
               <button class="btn btn-icon" @click="copyOptim(optimSummary)" data-tooltip="Copy optimization"><i class="ti-files"></i></button>
               <button class="btn btn-icon" @click="deleteOptim(optimSummary)" data-tooltip="Delete optimization"><i class="ti-trash"></i></button>
-              <button class="btn" :disabled="!optimsLoaded" @click="testgeo(optimSummary)">TESTGEO</button>
             </td>
           </tr>
           </tbody>
         </table>
 
         <div>
-          <button class="btn" :disabled="!optimsLoaded" @click="addOptimModal()">Add optimization</button>
+          <button class="btn" :disabled="!optimsLoaded" @click="addGeoModal()">Add geospatial optimization</button>
         </div>
       </div>
     </div>
@@ -116,8 +115,8 @@ Last update: 2018sep26
     <!-- END RESULTS CARD -->
 
 
-    <!-- START ADD-OPTIM MODAL :width="900" -->
-    <modal name="add-optim"
+    <!-- START ADD-GEO MODAL :width="900" -->
+    <modal name="add-geo"
            height="auto"
            :scrollable="true"
            :classes="['v--modal', 'vue-dialog']"
@@ -201,14 +200,14 @@ Last update: 2018sep26
             Save
           </button>
           &nbsp;&nbsp;&nbsp;
-          <button @click="$modal.hide('add-optim')" class='btn __red' style="display:inline-block">
+          <button @click="$modal.hide('add-geo')" class='btn __red' style="display:inline-block">
             Cancel
           </button>
         </div>
       </div>
 
     </modal>
-    <!-- END ADD-OPTIM MODAL -->
+    <!-- END ADD-GEO MODAL -->
 
 
   </div>
@@ -496,15 +495,15 @@ Last update: 2018sep26
           })
       },
 
-      addOptimModal() {
+      addGeoModal() {
         // Open a model dialog for creating a new project
-        console.log('addOptimModal() called');
+        console.log('addGeoModal() called');
         rpcs.rpc('get_default_optim', [this.projectID])
           .then(response => {
             this.addEditModal.optimSummary = response.data;
             this.addEditModal.origName = this.addEditModal.optimSummary.name;
             this.addEditModal.mode = 'add';
-            this.$modal.show('add-optim');
+            this.$modal.show('add-geo');
             console.log('New optimization:');
             console.log(this.addEditModal.optimSummary)
           })
@@ -521,12 +520,12 @@ Last update: 2018sep26
         console.log(this.addEditModal.optimSummary);
         this.addEditModal.origName = this.addEditModal.optimSummary.name;
         this.addEditModal.mode = 'edit';
-        this.$modal.show('add-optim');
+        this.$modal.show('add-geo');
       },
 
       addOptim() {
         console.log('addOptim() called');
-        this.$modal.hide('add-optim');
+        this.$modal.hide('add-geo');
         status.start(this)
         let newOptim = _.cloneDeep(this.addEditModal.optimSummary);
         let optimNames = []; // Get the list of all of the current optimization names.

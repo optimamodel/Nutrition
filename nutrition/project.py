@@ -2,18 +2,19 @@
 #%% Imports
 #######################################################################################################
 
+from functools import partial
 import numpy as np
 import sciris as sc
 from .version import version
-from .optimization import Optim
-from functools import partial
-from .data import Dataset
-from .scenarios import Scen, run_scen
-from .plotting import make_plots, get_costeff
-from .model import Model
 from .utils import default_trackers, pretty_labels, run_parallel
-from .demo import demo_scens, demo_optims
+from .data import Dataset
+from .model import Model
 from .defaults import get_defaults
+from .scenarios import Scen, run_scen
+from .optimization import Optim
+from .geospatial import Geospatial
+from .plotting import make_plots, get_costeff
+from .demo import demo_scens, demo_optims, demo_geos
 from . import settings
 
 
@@ -57,6 +58,7 @@ class Project(object):
         self.models       = sc.odict()
         self.scens        = sc.odict()
         self.optims       = sc.odict()
+        self.geos         = sc.odict()
         self.results      = sc.odict()
         self.spreadsheets = sc.odict()
         self.defaults_sheet = None
@@ -87,6 +89,7 @@ class Project(object):
         output += '            Models: %i\n'    % len(self.models)
         output += '         Scenarios: %i\n'    % len(self.scens)
         output += '     Optimizations: %i\n'    % len(self.optims)
+        output += '        Geospatial: %i\n'    % len(self.geos)
         output += '      Results sets: %i\n'    % len(self.results)
         output += '\n'
         output += '      Date created: %s\n'    % sc.getdate(self.created)
@@ -222,7 +225,8 @@ class Project(object):
         if what in ['d', 'ds', 'dataset', 'datasets']: structlist = self.datasets
         elif what in ['m', 'mod', 'model', 'models']: structlist = self.models
         elif what in ['s', 'scen', 'scens', 'scenario', 'scenarios']: structlist = self.scens
-        elif what in ['o', 'opt', 'opts', 'optim', 'optims', 'optimization', 'optimization', 'optimizations', 'optimizations']: structlist = self.optims
+        elif what in ['o', 'opt', 'opts', 'optim', 'optims', 'optimization', 'optimizations']: structlist = self.optims
+        elif what in ['g', 'geo', 'geos', 'geospatial']: structlist = self.geos
         elif what in ['r', 'res', 'result', 'results']: structlist = self.results
         else: raise settings.ONException("Item not found")
         return structlist
@@ -255,10 +259,16 @@ class Project(object):
         except: return sc.printv('Warning, scenario "%s" not found!' %key, 1, verbose) # Returns None
     
     def optim(self, key=None, verbose=2):
-        ''' Shortcut for getting the latest optim, i.e. self.scen[-1] '''
+        ''' Shortcut for getting the latest optim, i.e. self.optims[-1] '''
         if key is None: key = -1
         try:    return self.optims[key]
         except: return sc.printv('Warning, optimization "%s" not found!' %key, 1, verbose) # Returns None
+    
+    def geo(self, key=None, verbose=2):
+        ''' Shortcut for getting the latest geo, i.e. self.geos[-1] '''
+        if key is None: key = -1
+        try:    return self.geos[key]
+        except: return sc.printv('Warning, geospatial analysis "%s" not found!' %key, 1, verbose) # Returns None
     
     def result(self, key=None, verbose=2):
         ''' Shortcut for getting the latest result, i.e. self.results[-1] '''
@@ -282,6 +292,12 @@ class Project(object):
         optims = [Optim(**json)]
         self.add_optims(optims)
         return optims
+    
+    def add_geo(self, json=None):
+        ''' Super roundabout way to add a scenario '''
+        geos = [Geospatial(**json)]
+        self.add_geos(geos)
+        return geos
 
     def add_model(self, name=None):
         """ Adds a model to the self.models odict.
@@ -335,6 +351,14 @@ class Project(object):
             self.add(name=optim.name, item=optim, what='optim')
         self.modified = sc.now()
         return optims
+    
+    def add_geos(self, geos, overwrite=False):
+        if overwrite: self.geos = sc.odict() # remove exist scenarios
+        geos = sc.promotetolist(geos)
+        for geo in geos:
+            self.add(name=geo.name, item=geo, what='geo')
+        self.modified = sc.now()
+        return geos
 
     def add_result(self, result, name=None):
         """Add result by name"""
@@ -366,6 +390,16 @@ class Project(object):
             return None
         else:
             return optims
+    
+    def demo_geos(self, dorun=False, doadd=True):
+        geos = demo_geos()
+        if doadd:
+            self.add_geos(geos)
+            if dorun:
+                self.run_geo()
+            return None
+        else:
+            return geos
 
     def run_scens(self, scens=None):
         """Function for running scenarios
@@ -399,10 +433,14 @@ class Project(object):
         if dosave: self.add_result(results, name=optim.name)
         return results
 
-    def run_geospatial(self, geo=None, maxiter=30, swarmsize=25, maxtime=20, dosave=True, parallel=False):
+    def run_geo(self, geo=None, key=-1, maxiter=30, swarmsize=25, maxtime=20, dosave=True, parallel=False):
         """ Regions cannot be parallelised because daemon processes cannot have children.
         Two options: Either can parallelize regions and not the budget or run
         regions in series while parallelising each budget multiple. """
+        if geo is not None:
+            self.add_geos(geo)
+            key = geo.name # this to handle parallel calls of this function
+        geo = self.geo(key)
         regions = geo.make_regions()
         run_optim = partial(self.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
                             parallel=parallel, dosave=True, runbaseline=False)
@@ -452,7 +490,7 @@ class Project(object):
         return costeff
 
 
-def demo(scens=False, optims=False):
+def demo(scens=False, optims=False, geos=False):
     """ Create a demo project with demo settings """
     
     # Parameters
@@ -467,4 +505,5 @@ def demo(scens=False, optims=False):
     # Create scenarios and optimizations
     if scens:  P.demo_scens()
     if optims: P.demo_optims()
+    if geos:   P.demo_geos()
     return P

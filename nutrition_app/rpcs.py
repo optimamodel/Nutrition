@@ -321,7 +321,7 @@ def rename_project(project_json):
 @RPC()
 def add_demo_project(username):
     """ Add a demo Optima Nutrition project """
-    proj = nu.demo(scens=True, optims=True)  # Create the project, loading in the desired spreadsheets.
+    proj = nu.demo(scens=True, optims=True, geos=True)  # Create the project, loading in the desired spreadsheets.
     proj.name = 'Demo project'
     print(">> add_demo_project %s" % (proj.name)) # Display the call information.
     key,proj = save_new_project(proj, username) # Save the new project in the DataStore.
