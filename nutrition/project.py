@@ -11,7 +11,7 @@ from .data import Dataset
 from .scenarios import Scen, run_scen
 from .plotting import make_plots, get_costeff
 from .model import Model
-from .utils import trace_exception, default_trackers, pretty_labels, run_parallel
+from .utils import default_trackers, pretty_labels, run_parallel
 from .demo import demo_scens, demo_optims
 from .defaults import get_defaults
 from . import settings
@@ -59,6 +59,7 @@ class Project(object):
         self.optims       = sc.odict()
         self.results      = sc.odict()
         self.spreadsheets = sc.odict()
+        self.defaults_sheet = None
         if loadsheets:
             if not inputspath:
                 template_name = 'template_input.xlsx'
@@ -107,7 +108,7 @@ class Project(object):
     def load_inputs(self, inputspath=None, country=None, region=None, name=None):
         ''' Reload the input spreadsheet into the project '''
         if inputspath is None: inputspath = settings.data_path(country, region)
-        self.spreadsheets[name]['input_sheet'] = sc.Spreadsheet(filename=inputspath)
+        self.spreadsheets[name] = sc.Spreadsheet(filename=inputspath)
         return self.input_sheet(name)
     
     def load_defaults(self, defaultspath=None, name=None):
@@ -140,8 +141,14 @@ class Project(object):
             dataset.name = name
             self.add_model(name) # add model associated with the dataset
         
-        # Do validation
-        if self.spreadsheets.keys() 
+            # Do validation
+            missingdatasets = list(set(self.datasets.keys()) - set(self.spreadsheets.keys()))
+            missingmodels =   list(set(self.models.keys()) - set(self.spreadsheets.keys()))
+            missingsets = list(set(missingdatasets+missingmodels))
+            if len(missingsets):
+                print('Warning: the following datasets/models are missing and are being regenerated: %s' % missingdatasets)
+                for key in missingsets:
+                    self.load_data(name=key, fromfile=False, makemodel=True)
         
         return None
 
@@ -190,7 +197,7 @@ class Project(object):
         return filepath
 
     def add(self, name, item, what=None):
-        """ Add an entry to a structure list """
+        """ Add an entry to a structure list, overwriting with abandon """
         structlist = self.getwhat(what=what)
         structlist[name] = item
         print('Item "{}" added to "{}"'.format(name, what))

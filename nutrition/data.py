@@ -553,7 +553,9 @@ class Dataset(object):
             project.load_data(country=self.country, region=self.region, name=self.name, inputspath=inputspath, defaultspath=defaultspath, fromfile=fromfile, makemodel=False)
         
         # Pull the sheets from the project
-        input_sheet    = project.input_sheet 
+        if self.name in project.spreadsheets.keys(): spreadsheetkey = self.name
+        else:                                        spreadsheetkey = -1
+        input_sheet    = project.input_sheet(spreadsheetkey)
         defaults_sheet = project.defaults_sheet
         
         # Convert them to Pandas
