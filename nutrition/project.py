@@ -64,7 +64,8 @@ class Project(object):
             if not inputspath:
                 template_name = 'template_input.xlsx'
                 inputspath = sc.makefilepath(filename=template_name, folder=settings.ONpath('applications'))
-            self.load_data(inputspath=inputspath, defaultspath=defaultspath, fromfile=True)
+            else:
+                self.load_data(inputspath=inputspath, defaultspath=defaultspath, fromfile=True)
 
         ## Define other quantities
         self.name     = name

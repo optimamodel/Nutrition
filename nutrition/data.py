@@ -301,23 +301,28 @@ class InputData(object):
     ## DEMOGRAPHICS ##
 
     def get_demo(self):
-        baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0,1])
-        demo = sc.odict()
-        # the fields that group the data in spreadsheet
-        fields = ['Population data', 'Food', 'Age distribution of pregnant women', 'Mortality', 'Other risks']
-        for field in fields:
-            demo.update(baseline.loc[field].to_dict('index'))
-        self.demo = {key: item['Data'] for key, item in demo.iteritems()}
-        self.demo['Birth dist'] = baseline.loc['Birth outcome distribution'].to_dict()['Data']
-        t = baseline.loc['Projection years']
-        self.t = [int(t.loc['Baseline year (projection start year)']['Data']), int(t.loc['End year']['Data'])]
-        # birth spacing
-        self.birth_space = baseline.loc['Birth spacing'].to_dict()['Data']
-        self.birth_space.pop('Total (must be 100%)', None)
-        # fix ages for PW
-        baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0])
-        for row in baseline.loc['Age distribution of pregnant women'].iterrows():
-            self.pw_agedist.append(row[1]['Data'])
+        try:
+            baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0,1])
+            demo = sc.odict()
+            # the fields that group the data in spreadsheet
+            fields = ['Population data', 'Food', 'Age distribution of pregnant women', 'Mortality', 'Other risks']
+            for field in fields:
+                demo.update(baseline.loc[field].to_dict('index'))
+            self.demo = {key: item['Data'] for key, item in demo.iteritems()}
+            self.demo['Birth dist'] = baseline.loc['Birth outcome distribution'].to_dict()['Data']
+            t = baseline.loc['Projection years']
+            self.t = [int(t.loc['Baseline year (projection start year)']['Data']), int(t.loc['End year']['Data'])]
+            # birth spacing
+            self.birth_space = baseline.loc['Birth spacing'].to_dict()['Data']
+            self.birth_space.pop('Total (must be 100%)', None)
+            # fix ages for PW
+            baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0])
+            for row in baseline.loc['Age distribution of pregnant women'].iterrows():
+                self.pw_agedist.append(row[1]['Data'])
+        except Exception as E:
+            errormsg = 'Inputs sheet is missing data (error: %s)' % str(E)
+            raise Exception(errormsg)
+        return None
 
     def get_proj(self):
         # drops rows with any na
