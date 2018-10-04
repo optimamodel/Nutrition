@@ -5,12 +5,11 @@ from scipy.interpolate import pchip
 import utils
 
 class Geospatial:
-    def __init__(self, name=None, model_names=None, region_names=None, weights=None, mults=None, prog_set=None,
+    def __init__(self, name=None, modelnames=None, weights=None, mults=None, prog_set=None,
                  add_funds=0, fix_curr=False, fix_regionalspend=False, filter_progs=True, active=True):
         """
         :param name: name of the optimization (string)
-        :param region_names: names of the regions to be included (list of strings)
-        :param model_names: names of the models (datasets) that each region corresponds to (list of strings). Order must match that of region_names.
+        :param modelnames: names of the models (datasets) that each region corresponds to (list of strings). Order must match that of region_names.
         :param weights: weights defining an objective function (odict). See documentation in optimization.Optim()
         :param mults: the multiples of flexible funding to be optimized. These are multiples within the interval (min_freefunds, max_freefunds).
          Default values recommended.
@@ -21,8 +20,7 @@ class Geospatial:
         It follows that if fix_curr is True, fix_regionalspend must also be true.
         """
         self.name = name
-        self.model_names = model_names
-        self.regionnames = region_names
+        self.modelnames = modelnames
         self.regions = None
         self.weights = utils.process_weights(weights)
         if mults is not None:
@@ -43,12 +41,12 @@ class Geospatial:
         if add_funds is None: add_funds = self.add_funds
         if mults is None: mults = self.mults
         if isinstance(add_funds, float) or isinstance(add_funds, int):
-            add_funds = [add_funds] * len(self.regionnames)
+            add_funds = [add_funds] * len(self.modelnames)
         regions = []
-        for i, name in enumerate(self.regionnames):
-            model_name = self.model_names[i]
+        for i, name in enumerate(self.modelnames):
+            modelname = self.modelnames[i]
             regionalfunds = add_funds[i]
-            region = Optim(name=name, model_name=model_name, weights=self.weights, mults=mults,
+            region = Optim(name=name, model_name=modelname, weights=self.weights, mults=mults,
                            prog_set=self.prog_set, active=self.active, add_funds=regionalfunds,
                            filter_progs=self.filter_progs, fix_curr=self.fix_curr)
             regions.append(region)
@@ -75,7 +73,7 @@ class Geospatial:
         icervecs = []
         spendingvec = []
         nationalspend = self.get_totalfreefunds(regions)
-        for name, region in zip(self.regionnames, regions):
+        for name, region in zip(self.modelnames, regions):
             minspend = 0
             maxspend = nationalspend
             boc = self.bocs[name]

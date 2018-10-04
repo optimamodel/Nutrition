@@ -89,6 +89,7 @@ class Project(object):
         output += '            Models: %i\n'    % len(self.models)
         output += '         Scenarios: %i\n'    % len(self.scens)
         output += '     Optimizations: %i\n'    % len(self.optims)
+        output += '        Geospatial: %i\n'    % len(self.geos)
         output += '      Results sets: %i\n'    % len(self.results)
         output += '\n'
         output += '      Date created: %s\n'    % sc.getdate(self.created)
@@ -224,7 +225,8 @@ class Project(object):
         if what in ['d', 'ds', 'dataset', 'datasets']: structlist = self.datasets
         elif what in ['m', 'mod', 'model', 'models']: structlist = self.models
         elif what in ['s', 'scen', 'scens', 'scenario', 'scenarios']: structlist = self.scens
-        elif what in ['o', 'opt', 'opts', 'optim', 'optims', 'optimization', 'optimization', 'optimizations', 'optimizations']: structlist = self.optims
+        elif what in ['o', 'opt', 'opts', 'optim', 'optims', 'optimization', 'optimizations']: structlist = self.optims
+        elif what in ['g', 'geo', 'geos', 'geospatial']: structlist = self.geos
         elif what in ['r', 'res', 'result', 'results']: structlist = self.results
         else: raise settings.ONException("Item not found")
         return structlist
@@ -257,10 +259,16 @@ class Project(object):
         except: return sc.printv('Warning, scenario "%s" not found!' %key, 1, verbose) # Returns None
     
     def optim(self, key=None, verbose=2):
-        ''' Shortcut for getting the latest optim, i.e. self.scen[-1] '''
+        ''' Shortcut for getting the latest optim, i.e. self.optims[-1] '''
         if key is None: key = -1
         try:    return self.optims[key]
         except: return sc.printv('Warning, optimization "%s" not found!' %key, 1, verbose) # Returns None
+    
+    def geo(self, key=None, verbose=2):
+        ''' Shortcut for getting the latest geo, i.e. self.geos[-1] '''
+        if key is None: key = -1
+        try:    return self.geos[key]
+        except: return sc.printv('Warning, geospatial analysis "%s" not found!' %key, 1, verbose) # Returns None
     
     def result(self, key=None, verbose=2):
         ''' Shortcut for getting the latest result, i.e. self.results[-1] '''
@@ -425,10 +433,14 @@ class Project(object):
         if dosave: self.add_result(results, name=optim.name)
         return results
 
-    def run_geospatial(self, geo=None, maxiter=30, swarmsize=25, maxtime=20, dosave=True, parallel=False):
+    def run_geo(self, geo=None, key=-1, maxiter=30, swarmsize=25, maxtime=20, dosave=True, parallel=False):
         """ Regions cannot be parallelised because daemon processes cannot have children.
         Two options: Either can parallelize regions and not the budget or run
         regions in series while parallelising each budget multiple. """
+        if geo is not None:
+            self.add_geos(geo)
+            key = geo.name # this to handle parallel calls of this function
+        geo = self.geo(key)
         regions = geo.make_regions()
         run_optim = partial(self.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
                             parallel=parallel, dosave=True, runbaseline=False)
@@ -478,7 +490,7 @@ class Project(object):
         return costeff
 
 
-def demo(scens=False, optims=False, geo=False):
+def demo(scens=False, optims=False, geos=False):
     """ Create a demo project with demo settings """
     
     # Parameters
@@ -493,5 +505,5 @@ def demo(scens=False, optims=False, geo=False):
     # Create scenarios and optimizations
     if scens:  P.demo_scens()
     if optims: P.demo_optims()
-    if geo:    P.demo_geos()
+    if geos:   P.demo_geos()
     return P
