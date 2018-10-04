@@ -613,7 +613,7 @@ def get_sheet_data(project_id, key=None, verbose=False):
                     if cellformat in ['edit','calc']:
                         cellval = sc.sigfig(100*cellval, sigfigs=3)
                     elif cellformat == 'bdgt': # Format edit box numbers nicely
-                        cellval = '%0.0f' % cellval
+                        cellval = '%0.2f' % cellval
                     elif cellformat == 'tick':
                         if not cellval: cellval = False
                         else:           cellval = True
