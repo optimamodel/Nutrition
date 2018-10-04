@@ -2,7 +2,6 @@
 #%% Imports
 #######################################################################################################
 
-import numpy as np
 import sciris as sc
 from .version import version
 from .optimization import Optim
@@ -11,9 +10,10 @@ from .data import Dataset
 from .scenarios import Scen, run_scen
 from .plotting import make_plots, get_costeff
 from .model import Model
-from .utils import trace_exception, default_trackers, pretty_labels, run_parallel
+from .utils import trace_exception, default_trackers, run_parallel
 from .demo import demo_scens, demo_optims
 from .defaults import get_defaults
+from .results import write_results
 from . import settings
 
 
@@ -150,49 +150,12 @@ class Project(object):
             del tmpproject # Don't need it hanging around any more
         return fullpath
 
-    def write_results(self, filename=None, folder=None, keys=None):
-        outcomes = default_trackers()
-        labs = pretty_labels()
-        rows = [labs[out] for out in outcomes]
-        if keys is None: keys = self.results.keys()
-        keys = sc.promotetolist(keys)
-        if filename is None: filename = 'outputs.xlsx'
-        filepath = sc.makefilepath(filename=filename, folder=folder, ext='xlsx', default='%s outputs.xlsx' % self.name)
-        outputs = []
-        sheetnames = []
-        alldata = []
-        allformats = []
-        for key in keys:
-            reslist = self.result(key)
-            reslist = sc.promotetolist(reslist)
-            years = reslist[0].years
-            headers = [['Scenario', 'Outcome'] + years]
-            nullrow = [''] * len(years)
-            for r, res in enumerate(reslist):
-                out = res.get_outputs(outcomes, seq=True, pretty=True)
-                for o, outcome in enumerate(rows):
-                    name = [res.name] if o == 0 else ['']
-                    outputs.append(name + [outcome] + list(out[o]))
-                outputs.append(nullrow)
-
-            data = headers + outputs
-            alldata.append(data)
-            sheetnames.append(reslist[0].model_name)
-
-            # Formatting
-            nrows = len(data)
-            ncols = len(data[0])
-            formatdata = np.zeros((nrows, ncols), dtype=object)
-            formatdata[:,:] = 'plain' # Format data as plain
-            formatdata[:,0] = 'bold' # Left side bold
-            formatdata[0,:] = 'header' # Top with green header
-            allformats.append(formatdata)
-        formats = {
-            'header': {'bold': True, 'bg_color': '#3c7d3e', 'color': '#ffffff'},
-            'plain': {},
-            'bold': {'bold': True}}
-        sc.savespreadsheet(filename=filename, data=alldata, sheetnames=sheetnames, formats=formats, formatdata=allformats)
-        return filepath
+    def write_results(self, filename=None, folder=None, key=None): # todo: ensure doesn't break FE, cache_id?
+        """ Blargh, this really needs some tidying """
+        if key is None: key = -1
+        results = self.result(key)
+        write_results(results, projname=self.name, filename=filename, folder=folder)
+        return
 
     def add(self, name, item, what=None):
         """ Add an entry to a structure list """
