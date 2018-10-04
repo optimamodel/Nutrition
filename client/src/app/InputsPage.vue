@@ -1,7 +1,7 @@
 <!--
 Define health packages
 
-Last update: 2018-08-02
+Last update: 2018-10-03
 -->
 
 <template>
@@ -73,12 +73,20 @@ Last update: 2018-08-02
                              v-model="cellDict.value"/>
                     </div>
                   </div>
+                  <div v-if="cellDict.format==='bdgt'" class="cell c_edit">
+                    <div class="cellpad">
+                      <input type="text"
+                             class="txbox"
+                             style="text-align: right"
+                             v-model="cellDict.value"/>
+                    </div>
+                  </div>
                   <div v-if="cellDict.format==='calc'" class="cell c_calc">
                     <div class="cellpad">
                       <input type="text"
                              class="txbox"
                              style="text-align: right"
-                             v-model="cellDict.value" disabled/>
+                             v-model="cellDict.value"/> <!-- disabled -->
                     </div>
                   </div>
                 </td>
@@ -197,9 +205,9 @@ Last update: 2018-08-02
 
       uploadDatabook() {
         console.log('uploadDatabook() called')
-        status.start(this, 'Uploading databook...')
         rpcs.upload('upload_databook', [this.projectID], {}, '.xlsx')
           .then(response => {
+            status.start(this, 'Uploading databook...')
             this.getSheetData() // Refresh the table
             status.succeed(this, 'Data uploaded')
           })
@@ -254,8 +262,9 @@ Last update: 2018-08-02
   }
 
   .c_calc {
-    color:#888;
-    background-color:#ccc;
+    background-color: rgb(168, 237, 154); // Temporary, presumably, until spreadsheet calculations are done correctly
+    /*color:#888;*/
+    /*background-color:#ccc;*/
     justify-content:flex-end;
   }
 
