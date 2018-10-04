@@ -150,7 +150,7 @@ class Project(object):
             del tmpproject # Don't need it hanging around any more
         return fullpath
 
-    def write_results(self, filename=None, folder=None, key=None): # todo: ensure doesn't break FE, cache_id?
+    def write_results(self, filename=None, folder=None, key=None):
         """ Blargh, this really needs some tidying """
         if key is None: key = -1
         results = self.result(key)
