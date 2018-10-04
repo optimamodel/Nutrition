@@ -56,7 +56,7 @@ class Program(sc.prettyobj):
         if 'ov' in scentype:
             # Raise exception is invalid coverage value. Done here before converting to unrestricted coverages
             if (cov < 0).any() or (cov > 1).any():
-                raise Exception("Coverage for '%s' outside range 0-100: %s" % (progname, cov))
+                raise Exception("Coverage for '%s' outside range 0-1: %s" % (progname, cov))
             # assume restricted cov
             cov = self.get_unrestr_cov(cov)
             cov[0] = self.annual_cov[0]
