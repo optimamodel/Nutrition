@@ -2,11 +2,11 @@
 #%% Imports
 #######################################################################################################
 
+import os
 from functools import partial
-import numpy as np
 import sciris as sc
 from .version import version
-from .utils import default_trackers, pretty_labels, run_parallel
+from .utils import default_trackers, run_parallel
 from .data import Dataset
 from .model import Model
 from .defaults import get_defaults
@@ -127,8 +127,15 @@ class Project(object):
         
         # Handle name
         if name is None:
-            try:    name = country+'_'+region
-            except: name = 'Default'
+            try:    
+                name = country+'_'+region
+            except: 
+                if inputspath is not None:
+                    name = os.path.basename(inputspath)
+                    if name.endswith('.xlsx'):
+                        name = name[:-5]
+                else:
+                    name = 'Default'
         if fromfile:
             name = sc.uniquename(name, self.datasets.keys())
         
