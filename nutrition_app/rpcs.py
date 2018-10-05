@@ -685,7 +685,7 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
 
 @RPC() 
 def get_dataset_keys(project_id):
-    print('Returning parset info...')
+    print('Returning dataset info...')
     proj = load_project(project_id, die=True)
     dataset_names = proj.datasets.keys()
     model_names = proj.models.keys()
@@ -697,6 +697,76 @@ def get_dataset_keys(project_id):
         save_project(proj)
     return dataset_names
 
+
+
+@RPC() 
+def rename_dataset(project_id, datasetname=None, new_name=None):
+    print('Renaming dataset from %s to %s...' % (datasetname, new_name))
+    proj = load_project(project_id, die=True)
+    proj.datasets.rename(datasetname, new_name)
+    print('Saving project...')
+    save_project(proj)
+    return None
+
+print('WARNING, fix')
+
+@RPC() 
+def copy_dataset(project_id, datasetname=None):
+    print('Copying dataset %s...' % datasetname)
+    proj = load_project(project_id, die=True)
+    print('Number of datasets before copy: %s' % len(proj.datasets))
+    new_name = sc.uniquename(datasetname, namelist=proj.datasets.keys())
+    print('Old name: %s; new name: %s' % (datasetname, new_name))
+    proj.datasets[new_name] = sc.dcp(proj.datasets[datasetname])
+    print('Number of datasets after copy: %s' % len(proj.datasets))
+    print('Saving project...')
+    save_project(proj)
+    return new_name
+
+
+@RPC() 
+def delete_dataset(project_id, datasetname=None):
+    print('Deleting dataset %s...' % datasetname)
+    proj = load_project(project_id, die=True)
+    print('Number of datasets before delete: %s' % len(proj.datasets))
+    if len(proj.datasets)>1:
+        proj.datasets.pop(datasetname)
+    else:
+        raise Exception('Cannot delete last parameter set')
+    print('Number of datasets after delete: %s' % len(proj.datasets))
+    print('Saving project...')
+    save_project(proj)
+    return None
+
+
+@RPC(call_type='download')   
+def download_dataset(project_id, datasetname=None):
+    '''
+    For the passed in project UID, get the Project on the server, save it in a 
+    file, minus results, and pass the full path of this file back.
+    '''
+    proj = load_project(project_id, die=True) # Load the project with the matching UID.
+    dataset = proj.datasets[datasetname]
+    file_name = '%s - %s.par' % (proj.name, datasetname) # Create a filename containing the project name followed by a .prj suffix.
+    full_file_name = get_path(file_name, username=proj.webapp.username) # Generate the full file name with path.
+    sc.saveobj(full_file_name, dataset) # Write the object to a Gzip string pickle file.
+    print(">> download_dataset %s" % (full_file_name)) # Display the call information.
+    return full_file_name # Return the full filename.
+    
+    
+@RPC(call_type='upload')   
+def upload_dataset(dataset_filename, project_id):
+    '''
+    For the passed in project UID, get the Project on the server, save it in a 
+    file, minus results, and pass the full path of this file back.
+    '''
+    proj = load_project(project_id, die=True) # Load the project with the matching UID.
+    dataset = sc.loadobj(dataset_filename)
+    datasetname = sc.uniquename(dataset.name, namelist=proj.datasets.keys())
+    dataset.name = datasetname # Reset the name
+    proj.datasets[datasetname] = dataset
+    save_project(proj) # Save the new project in the DataStore.
+    return datasetname # Return the new project UID in the return message.
 
 
 ##################################################################################
@@ -1006,7 +1076,7 @@ def py_to_js_geo(py_geo, proj, key=None, default_included=False):
     obj_labels = nu.pretty_labels(direction=True).values()
     prog_names = proj.dataset().prog_names()
     js_geo = {}
-    attrs = ['name', 'model_name', 'mults', 'add_funds', 'fix_curr', 'filter_progs']
+    attrs = ['name', 'modelnames', 'mults', 'add_funds', 'fix_curr', 'fix_regionalspend', 'filter_progs']
     for attr in attrs:
         js_geo[attr] = getattr(py_geo, attr) # Copy the attributes into a dictionary
     weightslist = [{'label':item[0], 'weight':abs(item[1])} for item in zip(obj_labels, py_geo.weights)] # WARNING, ABS HACK
@@ -1019,6 +1089,11 @@ def py_to_js_geo(py_geo, proj, key=None, default_included=False):
         this_spec['included'] = is_included(py_geo.prog_set, program, default_included)
         js_geo['spec'].append(this_spec)
     js_geo['objective_options'] = obj_labels # Not modified but used on the FE
+    js_geo['dataset_selections'] = []
+    for key in proj.datasets.keys():
+        active = key in js_geo['modelnames']
+        selection = {'name':key, 'active':active}
+        js_geo['dataset_selections'].append(selection)
     return js_geo
     
     
@@ -1026,7 +1101,7 @@ def js_to_py_geo(js_geo):
     ''' Convert a JSON to Python representation of an optimization '''
     obj_keys = nu.default_trackers()
     json = sc.odict()
-    attrs = ['name', 'model_name', 'fix_curr', 'filter_progs']
+    attrs = ['name', 'modelnames', 'fix_curr', 'fix_regionalspend', 'filter_progs']
     for attr in attrs:
         json[attr] = js_geo[attr]
     try:

@@ -138,11 +138,10 @@ Last update: 2018sep26
                  class="txbox"
                  v-model="addEditModal.geoSummary.name"/><br>
           <b>Select regions</b><br>
-          <select v-model="activeDataset">
-            <option v-for='dataset in datasetOptions'>
-              {{ dataset }}
-            </option>
-          </select>&nbsp;<br>
+          <div v-for="selection in addEditModal.geoSummary.dataset_selections">
+            <input type="checkbox" :value="selection.active" v-model="selection.active">
+            {{selection.name}}</input>
+          </div><br>
           <div class="scrolltable" style="max-height: 30vh;">
             <table class="table table-bordered table-striped table-hover">
               <thead>
@@ -167,9 +166,12 @@ Last update: 2018sep26
           </div>
 
           <br>
-          <b>Existing regional spending</b><br>
+          <b>Existing spending</b><br>
           <input type="radio" v-model="addEditModal.geoSummary.fix_curr" value=false>&nbsp;Can be reallocated<br>
           <input type="radio" v-model="addEditModal.geoSummary.fix_curr" value=true>&nbsp;Cannot be reallocated<br><br>
+          <b>Regional spending</b><br>
+          <input type="radio" v-model="addEditModal.geoSummary.fix_regionalspend" value=false>&nbsp;Can be reallocated between regions<br>
+          <input type="radio" v-model="addEditModal.geoSummary.fix_regionalspend" value=true>&nbsp;Cannot be reallocated between regions<br><br>
           <b>Additional funds to allocate</b><br>
           <input type="text"
                  class="txbox"

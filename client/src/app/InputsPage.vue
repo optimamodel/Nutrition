@@ -105,6 +105,40 @@ Last update: 2018-10-03
       </div>
     </div>
 
+    <!-- ### Start: rename dataset modal ### -->
+    <modal name="rename-dataset"
+           height="auto"
+           :classes="['v--modal', 'vue-dialog']"
+           :width="width"
+           :pivot-y="0.3"
+           :adaptive="true"
+           :clickToClose="clickToClose"
+           :transition="transition">
+
+      <div class="dialog-content">
+        <div class="dialog-c-title">
+          Rename dataset
+        </div>
+        <div class="dialog-c-text">
+          New name:<br>
+          <input type="text"
+                 class="txbox"
+                 v-model="activeDataset"/><br>
+        </div>
+        <div style="text-align:justify">
+          <button @click="renameDataset()" class='btn __green' style="display:inline-block">
+            Rename
+          </button>
+
+          <button @click="$modal.hide('rename-dataset')" class='btn __red' style="display:inline-block">
+            Cancel
+          </button>
+        </div>
+      </div>
+
+    </modal>
+    <!-- ### End: rename dataset modal ### -->
+
   </div>
 </template>
 
@@ -213,6 +247,56 @@ Last update: 2018-10-03
           })
           .catch(error => {
             status.fail(this, 'Could not upload data', error)
+          })
+      },
+
+      renameDatasetModal() {
+        console.log('renameDatasetModal() called');
+        this.origDatasetName = this.activeDataset // Store this before it gets overwritten
+        this.$modal.show('rename-dataset');
+      },
+
+      renameDataset() {
+        console.log('renameDataset() called for ' + this.activeDataset)
+        this.$modal.hide('rename-dataset');
+        status.start(this)
+        rpcs.rpc('rename_dataset', [this.projectID, this.origDatasetName, this.activeDataset]) // Have the server copy the project, giving it a new name.
+          .then(response => {
+            this.updateDatasets() // Update the project summaries so the copied program shows up on the list.
+            // TODO: look into whether the above line is necessary
+            status.succeed(this, 'Dataset "'+this.activeDataset+'" renamed') // Indicate success.
+          })
+          .catch(error => {
+            status.fail(this, 'Could not rename dataset', error)
+          })
+      },
+
+      copyDataset() {
+        console.log('copyDataset() called for ' + this.activeDataset)
+        status.start(this)
+        rpcs.rpc('copy_dataset', [this.projectID, this.activeDataset]) // Have the server copy the project, giving it a new name.
+          .then(response => {
+            this.updateDatasets() // Update the project summaries so the copied program shows up on the list.
+            // TODO: look into whether the above line is necessary
+            this.activeDataset = response.data
+            status.succeed(this, 'Dataset "'+this.activeDataset+'" copied') // Indicate success.
+          })
+          .catch(error => {
+            status.fail(this, 'Could not copy dataset', error)
+          })
+      },
+
+      deleteDataset() {
+        console.log('deleteDataset() called for ' + this.activeDataset)
+        status.start(this)
+        rpcs.rpc('delete_dataset', [this.projectID, this.activeDataset]) // Have the server copy the project, giving it a new name.
+          .then(response => {
+            this.updateDatasets() // Update the project summaries so the copied program shows up on the list.
+            // TODO: look into whether the above line is necessary
+            status.succeed(this, 'Dataset "'+this.activeDataset+'" deleted') // Indicate success.
+          })
+          .catch(error => {
+            status.fail(this, 'Cannot delete last dataset: ensure there are at least 2 datasets before deleting one', error)
           })
       },
 
