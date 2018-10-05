@@ -46,5 +46,44 @@ def run_optim(project_id, cache_id, optim_name=None, runtype=None):
     rpcs.cache_results(newproj)
     return None
 
+
+@async_task
+def run_geo(project_id, cache_id, optim_name=None, runtype=None):
+    # Load the projects from the DataStore.
+    if runtype is None: runtype = 'full'
+    print('Running %s geospatial optimization...' % runtype)
+    proj = rpcs.load_project(project_id)
+#    if runtype == 'test': results = proj.run_geo(key=optim_name, dosave=False, maxiter=3, swarmsize=3, maxtime=3)
+#    else:                 results = proj.run_geo(key=optim_name, dosave=False) # parallel=True
+    
+    # three identical regions (same spreadsheet)
+    p = proj
+    p.load_data('demo', 'demoregion1', name='Demo1')
+    p.load_data('demo', 'demoregion1', name='Demo2')
+    p.load_data('demo', 'demoregion1', name='Demo3')
+    
+    kwargs = {'name': 'test1',
+              'model_names': ['Demo1', 'Demo2', 'Demo3'],
+              'region_names': ['demoregion1', 'demoregion2', 'demoregion3'],
+              'weights': 'thrive',
+              'fix_curr': False,
+              'fix_regionalspend': False,
+              'add_funds': 1e6,
+              'prog_set': ['IFA fortification of maize', 'IYCF 1', 'Lipid-based nutrition supplements',
+                            'Multiple micronutrient supplementation', 'Micronutrient powders', 'Kangaroo mother care',
+                            'Public provision of complementary foods', 'Treatment of SAM',  'Vitamin A supplementation',
+                           'Mg for eclampsia', 'Zinc for treatment + ORS', 'Iron and iodine fortification of salt']}
+    
+    import nutrition.ui as nu
+    geo = nu.Geospatial(**kwargs)
+    results = p.run_geospatial(geo=geo, parallel=False, maxiter=3, swarmsize=3, maxtime=3)
+    
+    
+    newproj = rpcs.load_project(project_id)
+    newproj.results[cache_id] = results
+    rpcs.cache_results(newproj)
+    return None
+
+
 # Add the asynchronous task functions in this module to the tasks.py module so run_task() can call them.
 sw.add_task_funcs(task_func_dict)

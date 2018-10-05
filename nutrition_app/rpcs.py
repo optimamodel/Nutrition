@@ -135,20 +135,35 @@ find_datastore() # Run this on load
 
 @RPC()
 def run_query(token, query):
-    output = None
+    output = 'Output not specified'
     if sc.sha(token).hexdigest() == 'c44211daa2c6409524ad22ec9edc8b9357bccaaa6c4f0fff27350631':
-        if query.find('output')<0:
-            raise Exception('You must define "output" in your query')
-        else:
-            print('Executing:\n%s, stand back!' % query)
-            exec(query)
-            output = str(output)
-            return output
+        print('Executing:\n%s, stand back!' % query)
+        exec(query)
+        output = str(output)
+        return output
     else:
-        errormsg = 'Authentication failed; this incident has been reported'
+        errormsg = 'Authentication "%s" failed; this incident has been reported and your account access will be removed.' % token
         raise Exception(errormsg)
         return None
 
+
+def admin_grab_projects(username1, username2):
+    ''' For use with run_query '''
+    user1 = datastore.loaduser(username1)
+    for projectkey in user1.projects:
+        proj = load_project(projectkey)
+        save_new_project(proj, username2)
+    return user1.projects
+
+
+def admin_reset_projects(username):
+    user = datastore.loaduser(username)
+    for projectkey in user.projects:
+        try:    datastore.delete(projectkey)
+        except: pass
+    user.projects = []
+    output = datastore.saveuser(user)
+    return output
 
 ##################################################################################
 ### Convenience functions
@@ -288,8 +303,12 @@ def jsonify_projects(username, verbose=False):
     output = {'projects':[]}
     user = get_user(username)
     for project_key in user.projects:
-        try:                   json = jsonify_project(project_key)
-        except Exception as E: json = {'project': {'name':'Project load failed: %s' % str(E)}}
+        try:
+            json = jsonify_project(project_key)
+        except Exception as E:
+            print('Project load failed, removing: %s' % str(E))
+            user.projects.remove(project_key)
+            datastore.saveuser(user)
         output['projects'].append(json)
     if verbose: sc.pp(output)
     return output
@@ -308,7 +327,7 @@ def rename_project(project_json):
 @RPC()
 def add_demo_project(username):
     """ Add a demo Optima Nutrition project """
-    proj = nu.demo(scens=True, optims=True)  # Create the project, loading in the desired spreadsheets.
+    proj = nu.demo(scens=True, optims=True, geos=True)  # Create the project, loading in the desired spreadsheets.
     proj.name = 'Demo project'
     print(">> add_demo_project %s" % (proj.name)) # Display the call information.
     key,proj = save_new_project(proj, username) # Save the new project in the DataStore.
@@ -323,7 +342,7 @@ def create_new_project(username, proj_name, *args, **kwargs):
     key,proj = save_new_project(proj, username) # Save the new project in the DataStore.
     file_name = '%s databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name, username)
-    proj.input_sheet.save(full_file_name)
+    proj.input_sheet().save(full_file_name)
     print(">> download_databook %s" % (full_file_name))
     return full_file_name
 
@@ -401,7 +420,7 @@ def download_databook(project_id, key=None):
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
     file_name = '%s_databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
-    proj.input_sheet.save(full_file_name)
+    proj.input_sheet().save(full_file_name)
     print(">> download_databook %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
 
@@ -589,7 +608,7 @@ def get_sheet_data(project_id, key=None, verbose=False):
         'Programs cost and coverage',
         ]
     proj = load_project(project_id, die=True)
-    wb = proj.input_sheet
+    wb = proj.input_sheet(key)
     sheetdata = sc.odict()
     for sheet in sheets:
         sheetdata[sheet] = wb.readcells(sheetname=sheet, header=False)
@@ -631,7 +650,7 @@ def get_sheet_data(project_id, key=None, verbose=False):
 def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
     proj = load_project(project_id, die=True)
     if key is None: key = proj.datasets.keys()[-1] # There should always be at least one
-    wb = proj.input_sheet # CK: Warning, might want to change
+    wb = proj.input_sheet(key) # CK: Warning, might want to change
     for sheet in sheetdata.keys():
         if verbose: print('Saving sheet %s...' % sheet)
         datashape = np.shape(sheetdata[sheet])
@@ -662,6 +681,93 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
     print('Saving project...')
     save_project(proj)
     return None
+
+
+@RPC() 
+def get_dataset_keys(project_id):
+    print('Returning dataset info...')
+    proj = load_project(project_id, die=True)
+    dataset_names = proj.datasets.keys()
+    model_names = proj.models.keys()
+    if dataset_names != model_names:
+        for dsn in dataset_names:
+            if dsn not in model_names:
+                print('get_dataset_keys(): Model %s not found, recreating now...')
+                proj.add_model(dsn)
+        save_project(proj)
+    return dataset_names
+
+
+
+@RPC() 
+def rename_dataset(project_id, datasetname=None, new_name=None):
+    print('Renaming dataset from %s to %s...' % (datasetname, new_name))
+    proj = load_project(project_id, die=True)
+    proj.datasets.rename(datasetname, new_name)
+    print('Saving project...')
+    save_project(proj)
+    return None
+
+print('WARNING, fix')
+
+@RPC() 
+def copy_dataset(project_id, datasetname=None):
+    print('Copying dataset %s...' % datasetname)
+    proj = load_project(project_id, die=True)
+    print('Number of datasets before copy: %s' % len(proj.datasets))
+    new_name = sc.uniquename(datasetname, namelist=proj.datasets.keys())
+    print('Old name: %s; new name: %s' % (datasetname, new_name))
+    proj.datasets[new_name] = sc.dcp(proj.datasets[datasetname])
+    print('Number of datasets after copy: %s' % len(proj.datasets))
+    print('Saving project...')
+    save_project(proj)
+    return new_name
+
+
+@RPC() 
+def delete_dataset(project_id, datasetname=None):
+    print('Deleting dataset %s...' % datasetname)
+    proj = load_project(project_id, die=True)
+    print('Number of datasets before delete: %s' % len(proj.datasets))
+    if len(proj.datasets)>1:
+        proj.datasets.pop(datasetname)
+    else:
+        raise Exception('Cannot delete last parameter set')
+    print('Number of datasets after delete: %s' % len(proj.datasets))
+    print('Saving project...')
+    save_project(proj)
+    return None
+
+
+@RPC(call_type='download')   
+def download_dataset(project_id, datasetname=None):
+    '''
+    For the passed in project UID, get the Project on the server, save it in a 
+    file, minus results, and pass the full path of this file back.
+    '''
+    proj = load_project(project_id, die=True) # Load the project with the matching UID.
+    dataset = proj.datasets[datasetname]
+    file_name = '%s - %s.par' % (proj.name, datasetname) # Create a filename containing the project name followed by a .prj suffix.
+    full_file_name = get_path(file_name, username=proj.webapp.username) # Generate the full file name with path.
+    sc.saveobj(full_file_name, dataset) # Write the object to a Gzip string pickle file.
+    print(">> download_dataset %s" % (full_file_name)) # Display the call information.
+    return full_file_name # Return the full filename.
+    
+    
+@RPC(call_type='upload')   
+def upload_dataset(dataset_filename, project_id):
+    '''
+    For the passed in project UID, get the Project on the server, save it in a 
+    file, minus results, and pass the full path of this file back.
+    '''
+    proj = load_project(project_id, die=True) # Load the project with the matching UID.
+    dataset = sc.loadobj(dataset_filename)
+    datasetname = sc.uniquename(dataset.name, namelist=proj.datasets.keys())
+    dataset.name = datasetname # Reset the name
+    proj.datasets[datasetname] = dataset
+    save_project(proj) # Save the new project in the DataStore.
+    return datasetname # Return the new project UID in the return message.
+
 
 ##################################################################################
 ### Scenario functions and RPCs
@@ -955,6 +1061,129 @@ def plot_optimization(project_id, cache_id):
     
     return {'graphs':graphs, 'table':table}
 
+
+
+
+
+
+##################################################################################
+### Geospatial functions and RPCs
+##################################################################################
+
+
+def py_to_js_geo(py_geo, proj, key=None, default_included=False):
+    ''' Convert a Python to JSON representation of an optimization '''
+    obj_labels = nu.pretty_labels(direction=True).values()
+    prog_names = proj.dataset().prog_names()
+    js_geo = {}
+    attrs = ['name', 'modelnames', 'mults', 'add_funds', 'fix_curr', 'fix_regionalspend', 'filter_progs']
+    for attr in attrs:
+        js_geo[attr] = getattr(py_geo, attr) # Copy the attributes into a dictionary
+    weightslist = [{'label':item[0], 'weight':abs(item[1])} for item in zip(obj_labels, py_geo.weights)] # WARNING, ABS HACK
+    js_geo['weightslist'] = weightslist
+    js_geo['spec'] = []
+    for prog_name in prog_names:
+        program = proj.model(key).prog_info.programs[prog_name]
+        this_spec = {}
+        this_spec['name'] = prog_name
+        this_spec['included'] = is_included(py_geo.prog_set, program, default_included)
+        js_geo['spec'].append(this_spec)
+    js_geo['objective_options'] = obj_labels # Not modified but used on the FE
+    js_geo['dataset_selections'] = []
+    for key in proj.datasets.keys():
+        active = key in js_geo['modelnames']
+        selection = {'name':key, 'active':active}
+        js_geo['dataset_selections'].append(selection)
+    return js_geo
+    
+    
+def js_to_py_geo(js_geo):
+    ''' Convert a JSON to Python representation of an optimization '''
+    obj_keys = nu.default_trackers()
+    json = sc.odict()
+    attrs = ['name', 'modelnames', 'fix_curr', 'fix_regionalspend', 'filter_progs']
+    for attr in attrs:
+        json[attr] = js_geo[attr]
+    try:
+        json['weights'] = sc.odict()
+        for key,item in zip(obj_keys,js_geo['weightslist']):
+            val = numberify(item['weight'], blank='zero', invalid='die', aslist=False)
+            json['weights'][key] = val
+    except Exception as E:
+        print('Unable to convert "%s" to weights' % js_geo['weightslist'])
+        raise E
+    jsm = js_geo['mults']
+    if not jsm: jsm = 1.0
+    if sc.isstring(jsm):
+        jsm = jsm.split(',')
+    vals = numberify(jsm, blank='die', invalid='die', aslist=True)
+    json['mults'] = vals
+    json['add_funds'] = numberify(js_geo['add_funds'], blank='zero', invalid='die', aslist=False)
+    json['prog_set'] = [] # These require more TLC
+    for js_spec in js_geo['spec']:
+        if js_spec['included']:
+            json['prog_set'].append(js_spec['name'])  
+    return json
+    
+
+@RPC()
+def get_geo_info(project_id):
+    print('Getting optimization info...')
+    proj = load_project(project_id, die=True)
+    geo_jsons = []
+    for py_geo in proj.geos.values():
+        js_geo = py_to_js_geo(py_geo, proj)
+        geo_jsons.append(js_geo)
+    print('JavaScript optimization info:')
+    sc.pp(geo_jsons)
+    return geo_jsons
+
+
+@RPC()
+def set_geo_info(project_id, geo_jsons):
+    print('Setting optimization info...')
+    proj = load_project(project_id, die=True)
+    proj.geos.clear()
+    for j,js_geo in enumerate(geo_jsons):
+        print('Setting optimization %s of %s...' % (j+1, len(geo_jsons)))
+        json = js_to_py_geo(js_geo)
+        print('Python optimization info for optimization %s:' % (j+1))
+        print(json)
+        proj.add_geo(json=json)
+    print('Saving project...')
+    save_project(proj)   
+    return None
+    
+
+@RPC()
+def get_default_geo(project_id):
+    print('Getting default optimization...')
+    proj = load_project(project_id, die=True)
+    py_geo = proj.demo_geos(doadd=False)[0]
+    js_geo = py_to_js_geo(py_geo, proj, default_included=True)
+    print('Created default JavaScript optimization:')
+    sc.pp(js_geo)
+    return js_geo
+
+
+@RPC()
+def plot_geospatial(project_id, cache_id):
+    proj = load_project(project_id, die=True)
+    proj = retrieve_results(proj)
+    figs = proj.plot(key=cache_id, geo=True) # Only plot allocation
+    graphs = []
+    for f,fig in enumerate(figs.values()):
+        for ax in fig.get_axes():
+            ax.set_facecolor('none')
+        graph_dict = sw.mpld3ify(fig, jsonify=False)
+        graphs.append(graph_dict)
+        print('Converted figure %s of %s' % (f+1, len(figs)))
+    
+    # Get cost-effectiveness table
+    costeff = nu.get_costeff(project=proj, results=proj.result(cache_id))
+    table = reformat_costeff(costeff)
+    
+    return {'graphs':graphs, 'table':table}
 
 
 

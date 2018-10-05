@@ -2,18 +2,20 @@
 #%% Imports
 #######################################################################################################
 
+from functools import partial
+import numpy as np
 import sciris as sc
 from .version import version
-from .optimization import Optim
-from functools import partial
+from .utils import default_trackers, pretty_labels, run_parallel
 from .data import Dataset
-from .scenarios import Scen, run_scen
-from .plotting import make_plots, get_costeff
 from .model import Model
-from .utils import trace_exception, default_trackers, run_parallel
-from .demo import demo_scens, demo_optims
 from .defaults import get_defaults
+from .scenarios import Scen, run_scen
+from .optimization import Optim
+from .geospatial import Geospatial
 from .results import write_results
+from .plotting import make_plots, get_costeff
+from .demo import demo_scens, demo_optims, demo_geos
 from . import settings
 
 
@@ -40,7 +42,7 @@ class Project(object):
         3. copy -- copy a structure in the odict
         4. rename -- rename a structure in the odict
 
-    Version: 2018apr19
+    Version: 2018oct02
     """
 
 
@@ -53,18 +55,20 @@ class Project(object):
         ''' Initialize the project '''
 
         ## Define the structure sets
-        self.datasets = sc.odict()
-        self.models   = sc.odict()
-        self.scens    = sc.odict()
-        self.optims   = sc.odict()
-        self.results  = sc.odict()
-        self.input_sheet    = None
+        self.datasets     = sc.odict()
+        self.models       = sc.odict()
+        self.scens        = sc.odict()
+        self.optims       = sc.odict()
+        self.geos         = sc.odict()
+        self.results      = sc.odict()
+        self.spreadsheets = sc.odict()
         self.defaults_sheet = None
         if loadsheets:
             if not inputspath:
                 template_name = 'template_input.xlsx'
                 inputspath = sc.makefilepath(filename=template_name, folder=settings.ONpath('applications'))
-            self.load_data(inputspath=inputspath, defaultspath=defaultspath, fromfile=True, makemodel=False)
+            else:
+                self.load_data(inputspath=inputspath, defaultspath=defaultspath, fromfile=True)
 
         ## Define other quantities
         self.name     = name
@@ -86,6 +90,7 @@ class Project(object):
         output += '            Models: %i\n'    % len(self.models)
         output += '         Scenarios: %i\n'    % len(self.scens)
         output += '     Optimizations: %i\n'    % len(self.optims)
+        output += '        Geospatial: %i\n'    % len(self.geos)
         output += '      Results sets: %i\n'    % len(self.results)
         output += '\n'
         output += '      Date created: %s\n'    % sc.getdate(self.created)
@@ -105,11 +110,11 @@ class Project(object):
             info[attr] = getattr(self, attr) # Populate the dictionary
         return info
     
-    def load_inputs(self, inputspath=None, country=None, region=None):
+    def load_inputs(self, inputspath=None, country=None, region=None, name=None):
         ''' Reload the input spreadsheet into the project '''
         if inputspath is None: inputspath = settings.data_path(country, region)
-        self.input_sheet    = sc.Spreadsheet(filename=inputspath)
-        return self.input_sheet
+        self.spreadsheets[name] = sc.Spreadsheet(filename=inputspath)
+        return self.input_sheet(name)
     
     def load_defaults(self, defaultspath=None):
         ''' Reload the defaults spreadsheet into the project '''
@@ -117,23 +122,37 @@ class Project(object):
         self.defaults_sheet = sc.Spreadsheet(filename=defaultspath)
         return self.defaults_sheet
         
-    def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, overwrite=False, fromfile=True, makemodel=True):
+    def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True):
         '''Load the data, which can mean one of two things: read in the spreadsheets, and/or use these data to make a model '''
+        
+        # Handle name
+        if name is None:
+            try:    name = country+'_'+region
+            except: name = 'Default'
+        if fromfile:
+            name = sc.uniquename(name, self.datasets.keys())
         
         # Optionally (but almost always) reload the spreadsheets from file
         if fromfile:
-            if inputspath or country or not self.input_sheet:
-                self.load_inputs(inputspath=inputspath, country=country, region=region)
             if defaultspath or not self.defaults_sheet:
                 self.load_defaults(defaultspath=defaultspath)
+            if inputspath or country or not self.input_sheet:
+                self.load_inputs(inputspath=inputspath, country=country, region=region, name=name)
         
         # Optionally (but almost always) use these to make a model (do not do if blank sheets)
-        if makemodel:
-            dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self)
-            if name is None: name = sc.uniquename(dataset.name, self.datasets.keys())
-            self.datasets[name] = dataset
-            dataset.name = name
-            self.add_model(name, overwrite=overwrite) # add model associated with the dataset
+        dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self)
+        self.datasets[name] = dataset
+        dataset.name = name
+        self.add_model(name) # add model associated with the dataset
+    
+        # Do validation
+        missingdatasets = list(set(self.datasets.keys()) - set(self.spreadsheets.keys()))
+        missingmodels =   list(set(self.models.keys()) - set(self.spreadsheets.keys()))
+        missingsets = list(set(missingdatasets+missingmodels))
+        if len(missingsets):
+            print('Warning: the following datasets/models are missing and are being regenerated: %s' % missingdatasets)
+            for key in missingsets:
+                self.load_data(name=key, fromfile=False)
         
         return None
 
@@ -158,7 +177,7 @@ class Project(object):
         return
 
     def add(self, name, item, what=None):
-        """ Add an entry to a structure list """
+        """ Add an entry to a structure list, overwriting with abandon """
         structlist = self.getwhat(what=what)
         structlist[name] = item
         print('Item "{}" added to "{}"'.format(name, what))
@@ -183,7 +202,8 @@ class Project(object):
         if what in ['d', 'ds', 'dataset', 'datasets']: structlist = self.datasets
         elif what in ['m', 'mod', 'model', 'models']: structlist = self.models
         elif what in ['s', 'scen', 'scens', 'scenario', 'scenarios']: structlist = self.scens
-        elif what in ['o', 'opt', 'opts', 'optim', 'optims', 'optimization', 'optimization', 'optimizations', 'optimizations']: structlist = self.optims
+        elif what in ['o', 'opt', 'opts', 'optim', 'optims', 'optimization', 'optimizations']: structlist = self.optims
+        elif what in ['g', 'geo', 'geos', 'geospatial']: structlist = self.geos
         elif what in ['r', 'res', 'result', 'results']: structlist = self.results
         else: raise settings.ONException("Item not found")
         return structlist
@@ -191,6 +211,11 @@ class Project(object):
     #######################################################################################################
     ### Utilities
     #######################################################################################################
+
+    def input_sheet(self, key=None, verbose=2):
+        if key is None: key = -1
+        try:    return self.spreadsheets[key]
+        except: return sc.printv('Warning, input sheet "%s" set not found!' %key, 1, verbose)
 
     def dataset(self, key=None, verbose=2):
         ''' Shortcut for getting the latest model, i.e. self.datasets[-1] '''
@@ -211,10 +236,16 @@ class Project(object):
         except: return sc.printv('Warning, scenario "%s" not found!' %key, 1, verbose) # Returns None
     
     def optim(self, key=None, verbose=2):
-        ''' Shortcut for getting the latest optim, i.e. self.scen[-1] '''
+        ''' Shortcut for getting the latest optim, i.e. self.optims[-1] '''
         if key is None: key = -1
         try:    return self.optims[key]
         except: return sc.printv('Warning, optimization "%s" not found!' %key, 1, verbose) # Returns None
+    
+    def geo(self, key=None, verbose=2):
+        ''' Shortcut for getting the latest geo, i.e. self.geos[-1] '''
+        if key is None: key = -1
+        try:    return self.geos[key]
+        except: return sc.printv('Warning, geospatial analysis "%s" not found!' %key, 1, verbose) # Returns None
     
     def result(self, key=None, verbose=2):
         ''' Shortcut for getting the latest result, i.e. self.results[-1] '''
@@ -231,35 +262,40 @@ class Project(object):
         ''' Super roundabout way to add a scenario '''
         scens = [Scen(**json)]
         self.add_scens(scens)
-        return None
+        return scens
 
     def add_optim(self, json=None):
         ''' Super roundabout way to add a scenario '''
         optims = [Optim(**json)]
         self.add_optims(optims)
-        return None
+        return optims
+    
+    def add_geo(self, json=None):
+        ''' Super roundabout way to add a scenario '''
+        geos = [Geospatial(**json)]
+        self.add_geos(geos)
+        return geos
 
-    def add_model(self, name=None, overwrite=True):
+    def add_model(self, name=None):
         """ Adds a model to the self.models odict.
         A new model should only be instantiated if new input data is uploaded to the Project.
         For the same input data, one model instance is used for all scenarios.
         :param name:
         :param pops:
         :param prog_info:
-        :param overwrite:
         :return:
         """
         dataset = self.dataset(name)
         pops = dataset.pops
         prog_info = dataset.prog_info
         t = dataset.t
-        if overwrite: self.models = sc.odict()
         model = Model(pops, prog_info, t)
         self.add(name=name, item=model, what='model')
         # get default scenarios
         defaults = get_defaults(name, model)
         self.add_scens(defaults)
         self.modified = sc.now()
+        return model
 
     def add_scens(self, scens, overwrite=False):
         """ Adds scenarios to the Project's self.scens odict.
@@ -274,6 +310,7 @@ class Project(object):
         for scen in scens:
             self.add(name=scen.name, item=scen, what='scen')
         self.modified = sc.now()
+        return scens
 
     def run_baseline(self, model_name, prog_set, dorun=True):
         model = sc.dcp(self.model(model_name))
@@ -290,6 +327,15 @@ class Project(object):
         for optim in optims:
             self.add(name=optim.name, item=optim, what='optim')
         self.modified = sc.now()
+        return optims
+    
+    def add_geos(self, geos, overwrite=False):
+        if overwrite: self.geos = sc.odict() # remove exist scenarios
+        geos = sc.promotetolist(geos)
+        for geo in geos:
+            self.add(name=geo.name, item=geo, what='geo')
+        self.modified = sc.now()
+        return geos
 
     def add_result(self, result, name=None):
         """Add result by name"""
@@ -300,6 +346,7 @@ class Project(object):
                 print('WARNING, could not extract result name: %s' % repr(E))
                 name = 'default_result'
         self.add(name=name, item=result, what='result')
+        return result
 
     def demo_scens(self, dorun=None, doadd=True, default=False, scen_type=None):
         scens = demo_scens(default=default, scen_type=scen_type)
@@ -320,6 +367,16 @@ class Project(object):
             return None
         else:
             return optims
+    
+    def demo_geos(self, dorun=False, doadd=True):
+        geos = demo_geos()
+        if doadd:
+            self.add_geos(geos)
+            if dorun:
+                self.run_geo()
+            return None
+        else:
+            return geos
 
     def run_scens(self, scens=None):
         """Function for running scenarios
@@ -353,22 +410,26 @@ class Project(object):
         if dosave: self.add_result(results, name=optim.name)
         return results
 
-    @trace_exception
-    def run_geospatial(self, geo=None, maxiter=30, swarmsize=25, maxtime=20, dosave=True):
+    def run_geo(self, geo=None, key=-1, maxiter=15, swarmsize=20, maxtime=140, dosave=True, parallel=False):
         """ Regions cannot be parallelised because daemon processes cannot have children.
         Two options: Either can parallelize regions and not the budget or run
         regions in series while parallelising each budget multiple. """
+        if geo is not None:
+            self.add_geos(geo)
+            key = geo.name # this to handle parallel calls of this function
+        geo = self.geo(key)
         regions = geo.make_regions()
         run_optim = partial(self.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
-                            parallel=True, dosave=True, runbaseline=False)
-        optimized = sc.odict(sc.odict({region.name: run_optim(optim=region) for region in regions}))
+                            parallel=parallel, dosave=True, runbaseline=False)
+        optimized = sc.odict([(region.name, run_optim(optim=region)) for region in regions])
         regional_allocs = geo.gridsearch(optimized)
         # now optimize these allocations within each region
         regions = geo.make_regions(add_funds=regional_allocs, mults=[1])
         run_optim = partial(self.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
                             parallel=False, dosave=True, runbaseline=False)
         # can run in parallel b/c child processes in series
-        results = run_parallel(run_optim, regions, num_procs=len(regions))
+        if parallel: results = run_parallel(run_optim, regions, num_procs=len(regions))
+        else:        results = [run_optim(region) for region in regions]
         # flatten list
         results = [item for sublist in results for item in sublist]
         # remove multiple to plot by name (total hack)
@@ -390,7 +451,6 @@ class Project(object):
     def sensitivity(self):
         print('Not implemented')
 
-    @trace_exception
     def plot(self, key=-1, toplot=None, optim=False, geo=False):
         figs = make_plots(self.result(key), toplot=toplot, optim=optim, geo=geo)
         return figs
@@ -406,7 +466,8 @@ class Project(object):
         costeff = get_costeff(self, results)
         return costeff
 
-def demo(scens=False, optims=False):
+
+def demo(scens=False, optims=False, geos=False):
     """ Create a demo project with demo settings """
     
     # Parameters
@@ -419,8 +480,7 @@ def demo(scens=False, optims=False):
     P.load_data(country, region, name='demo')
 
     # Create scenarios and optimizations
-    if scens:
-        P.demo_scens()
-    if optims:
-        P.demo_optims()
+    if scens:  P.demo_scens()
+    if optims: P.demo_optims()
+    if geos:   P.demo_geos()
     return P
