@@ -159,6 +159,15 @@ def admin_grab_projects(username1, username2):
     return user1.projects
 
 
+def admin_reset_projects(username):
+    user = datastore.loaduser(username)
+    for projectkey in user.projects:
+        try:    datastore.delete(projectkey)
+        except: pass
+    user.projects = []
+    output = datastore.saveuser(user)
+    return output
+
 ##################################################################################
 ### Convenience functions
 ##################################################################################
@@ -1020,7 +1029,7 @@ def export_results(project_id, cache_id):
     proj = retrieve_results(proj)
     file_name = '%s outputs.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
-    proj.write_results(full_file_name, keys=cache_id)
+    proj.write_results(full_file_name, key=cache_id)
     print(">> export_results %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
 
