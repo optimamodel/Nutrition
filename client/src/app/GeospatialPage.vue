@@ -31,29 +31,29 @@ Last update: 2018sep26
           </tr>
           </thead>
           <tbody>
-          <tr v-for="optimSummary in optimSummaries">
+          <tr v-for="geoSummary in geoSummaries">
             <td>
-              <b>{{ optimSummary.name }}</b>
+              <b>{{ geoSummary.name }}</b>
             </td>
             <td>
-              {{ statusFormatStr(optimSummary) }}
-              {{ timeFormatStr(optimSummary) }}
+              {{ statusFormatStr(geoSummary) }}
+              {{ timeFormatStr(geoSummary) }}
             </td>
             <td style="white-space: nowrap">
-              <button class="btn __green" :disabled="!canRunTask(optimSummary)"     @click="runOptim(optimSummary, 'full')">Run</button>
-              <button class="btn" :disabled="!canRunTask(optimSummary)"             @click="runOptim(optimSummary, 'test')">Test run</button>
-              <button class="btn __green" :disabled="!canPlotResults(optimSummary)" @click="plotGeospatial(optimSummary)">Plot results</button>
-              <button class="btn" :disabled="!canCancelTask(optimSummary)"          @click="clearTask(optimSummary)">Clear run</button>
-              <button class="btn btn-icon" @click="editOptimModal(optimSummary)" data-tooltip="Edit geospatial optimization"><i class="ti-pencil"></i></button>
-              <button class="btn btn-icon" @click="copyOptim(optimSummary)" data-tooltip="Copy geospatial optimization"><i class="ti-files"></i></button>
-              <button class="btn btn-icon" @click="deleteOptim(optimSummary)" data-tooltip="Delete geospatial optimization"><i class="ti-trash"></i></button>
+              <button class="btn __green" :disabled="!canRunTask(geoSummary)"     @click="runGeo(geoSummary, 'full')">Run</button>
+              <button class="btn" :disabled="!canRunTask(geoSummary)"             @click="runGeo(geoSummary, 'test')">Test run</button>
+              <button class="btn __green" :disabled="!canPlotResults(geoSummary)" @click="plotGeospatial(geoSummary)">Plot results</button>
+              <button class="btn" :disabled="!canCancelTask(geoSummary)"          @click="clearTask(geoSummary)">Clear run</button>
+              <button class="btn btn-icon" @click="editGeoModal(geoSummary)" data-tooltip="Edit geospatial optimization"><i class="ti-pencil"></i></button>
+              <button class="btn btn-icon" @click="copyGeo(geoSummary)" data-tooltip="Copy geospatial optimization"><i class="ti-files"></i></button>
+              <button class="btn btn-icon" @click="deleteGeo(geoSummary)" data-tooltip="Delete geospatial optimization"><i class="ti-trash"></i></button>
             </td>
           </tr>
           </tbody>
         </table>
 
         <div>
-          <button class="btn" :disabled="!optimsLoaded" @click="addGeoModal()">Add geospatial optimization</button>
+          <button class="btn" :disabled="!geosLoaded" @click="addGeoModal()">Add geospatial optimization</button>
         </div>
       </div>
     </div>
@@ -136,7 +136,7 @@ Last update: 2018sep26
           <b>Geospatial optimization name</b><br>
           <input type="text"
                  class="txbox"
-                 v-model="addEditModal.optimSummary.name"/><br>
+                 v-model="addEditModal.geoSummary.name"/><br>
           <b>Select regions</b><br>
           <select v-model="activeDataset">
             <option v-for='dataset in datasetOptions'>
@@ -152,7 +152,7 @@ Last update: 2018sep26
               </tr>
               </thead>
               <tbody>
-              <tr v-for="item in addEditModal.optimSummary.weightslist">
+              <tr v-for="item in addEditModal.geoSummary.weightslist">
                 <td>
                   {{ item.label }}&nbsp;&nbsp;&nbsp;
                 </td>
@@ -168,12 +168,12 @@ Last update: 2018sep26
 
           <br>
           <b>Existing regional spending</b><br>
-          <input type="radio" v-model="addEditModal.optimSummary.fix_curr" value=false>&nbsp;Can be reallocated<br>
-          <input type="radio" v-model="addEditModal.optimSummary.fix_curr" value=true>&nbsp;Cannot be reallocated<br><br>
+          <input type="radio" v-model="addEditModal.geoSummary.fix_curr" value=false>&nbsp;Can be reallocated<br>
+          <input type="radio" v-model="addEditModal.geoSummary.fix_curr" value=true>&nbsp;Cannot be reallocated<br><br>
           <b>Additional funds to allocate</b><br>
           <input type="text"
                  class="txbox"
-                 v-model="addEditModal.optimSummary.add_funds"/><br>
+                 v-model="addEditModal.geoSummary.add_funds"/><br>
 
           <div class="scrolltable" style="max-height: 30vh;">
             <table class="table table-bordered table-striped table-hover">
@@ -184,7 +184,7 @@ Last update: 2018sep26
               </tr>
               </thead>
               <tbody>
-              <tr v-for="spec in addEditModal.optimSummary.spec">
+              <tr v-for="spec in addEditModal.geoSummary.spec">
                 <td>
                   {{ spec.name }}
                 </td>
@@ -198,7 +198,7 @@ Last update: 2018sep26
 
         </div>
         <div style="text-align:center">
-          <button @click="addOptim()" class='btn __green' style="display:inline-block">
+          <button @click="addGeo()" class='btn __green' style="display:inline-block">
             Save
           </button>
           &nbsp;&nbsp;&nbsp;
@@ -232,11 +232,11 @@ Last update: 2018sep26
         serverDatastoreId: '',
         displayResultName: '',
         displayResultDatastoreId: '',        
-        optimSummaries: [],
-        optimsLoaded: false,
+        geoSummaries: [],
+        geosLoaded: false,
         pollingTasks: false,
         addEditModal: {
-          optimSummary: {},
+          geoSummary: {},
           origName: '',
           mode: 'add',
         },
@@ -263,7 +263,7 @@ Last update: 2018sep26
         utils.sleep(1)  // used so that spinners will come up by callback func
           .then(response => {
             this.updateDatasets()
-            this.getOptimSummaries()
+            this.getGeoSummaries()
           })
       }
     },
@@ -285,22 +285,22 @@ Last update: 2018sep26
         return utils.scaleFigs(frac)
       },
 
-      statusFormatStr(optimSummary) {
-        if      (optimSummary.status === 'not started') {return ''}
-        else if (optimSummary.status === 'queued')      {return 'Initializing... '} // + this.timeFormatStr(optimSummary.pendingTime)
-        else if (optimSummary.status === 'started')     {return 'Running for '} // + this.timeFormatStr(optimSummary.executionTime)
-        else if (optimSummary.status === 'completed')   {return 'Completed after '} // + this.timeFormatStr(optimSummary.executionTime)
-        else if (optimSummary.status === 'error')       {return 'Error after '} // + this.timeFormatStr(optimSummary.executionTime)          
+      statusFormatStr(geoSummary) {
+        if      (geoSummary.status === 'not started') {return ''}
+        else if (geoSummary.status === 'queued')      {return 'Initializing... '} // + this.timeFormatStr(geoSummary.pendingTime)
+        else if (geoSummary.status === 'started')     {return 'Running for '} // + this.timeFormatStr(geoSummary.executionTime)
+        else if (geoSummary.status === 'completed')   {return 'Completed after '} // + this.timeFormatStr(geoSummary.executionTime)
+        else if (geoSummary.status === 'error')       {return 'Error after '} // + this.timeFormatStr(geoSummary.executionTime)          
         else                                            {return ''}
       },
 
-      timeFormatStr(optimSummary) {
+      timeFormatStr(geoSummary) {
         let rawValue = ''
-        let is_queued = (optimSummary.status === 'queued')
-        let is_executing = ((optimSummary.status === 'started') || 
-          (optimSummary.status === 'completed') || (optimSummary.status === 'error'))
-        if      (is_queued)    {rawValue = optimSummary.pendingTime}
-        else if (is_executing) {rawValue = optimSummary.executionTime}
+        let is_queued = (geoSummary.status === 'queued')
+        let is_executing = ((geoSummary.status === 'started') || 
+          (geoSummary.status === 'completed') || (geoSummary.status === 'error'))
+        if      (is_queued)    {rawValue = geoSummary.pendingTime}
+        else if (is_executing) {rawValue = geoSummary.executionTime}
         else                   {return ''}
 
         if (rawValue === '--') {
@@ -316,30 +316,30 @@ Last update: 2018sep26
         }
       },
 
-      canRunTask(optimSummary)     { return (optimSummary.status === 'not started') },
-      canCancelTask(optimSummary)  { return (optimSummary.status !== 'not started') },
-      canPlotResults(optimSummary) { return (optimSummary.status === 'completed') },
+      canRunTask(geoSummary)     { return (geoSummary.status === 'not started') },
+      canCancelTask(geoSummary)  { return (geoSummary.status !== 'not started') },
+      canPlotResults(geoSummary) { return (geoSummary.status === 'completed') },
 
-      getOptimTaskState(optimSummary) {
+      getGeoTaskState(geoSummary) {
         return new Promise((resolve, reject) => {
-          console.log('getOptimTaskState() called for with: ' + optimSummary.status)
+          console.log('getGeoTaskState() called for with: ' + geoSummary.status)
           let statusStr = '';
-          rpcs.rpc('check_task', [optimSummary.serverDatastoreId]) // Check the status of the task.
+          rpcs.rpc('check_task', [geoSummary.serverDatastoreId]) // Check the status of the task.
             .then(result => {
               statusStr = result.data.task.status
-              optimSummary.status = statusStr
-              optimSummary.pendingTime = result.data.pendingTime
-              optimSummary.executionTime = result.data.executionTime
-              if (optimSummary.status == 'error') {
-                console.log('Error in task: ', optimSummary.serverDatastoreId)
+              geoSummary.status = statusStr
+              geoSummary.pendingTime = result.data.pendingTime
+              geoSummary.executionTime = result.data.executionTime
+              if (geoSummary.status == 'error') {
+                console.log('Error in task: ', geoSummary.serverDatastoreId)
                 console.log(result.data.task.errorText)
               }
               resolve(result)
             })
             .catch(error => {
-              optimSummary.status = 'not started'
-              optimSummary.pendingTime = '--'
-              optimSummary.executionTime = '--'
+              geoSummary.status = 'not started'
+              geoSummary.pendingTime = '--'
+              geoSummary.executionTime = '--'
               resolve(error)  // yes, resolve, not reject, because this means non-started task
             })
         })
@@ -351,8 +351,8 @@ Last update: 2018sep26
         
         // Check if we have a queued or started task.
         let runningState = false
-        this.optimSummaries.forEach(optimSum => {
-          if ((optimSum.status === 'queued') || (optimSum.status === 'started')) {
+        this.geoSummaries.forEach(geoSum => {
+          if ((geoSum.status === 'queued') || (geoSum.status === 'started')) {
             runningState = true
           }
         })
@@ -366,27 +366,27 @@ Last update: 2018sep26
           console.log('Polling all tasks...')
           
           // Clear the poll states.
-          this.optimSummaries.forEach(optimSum => {
-            optimSum.polled = false
+          this.geoSummaries.forEach(geoSum => {
+            geoSum.polled = false
           })
           
           // For each of the optimization summaries...
-          this.optimSummaries.forEach(optimSum => { 
-            console.log(optimSum.serverDatastoreId, optimSum.status)
+          this.geoSummaries.forEach(geoSum => { 
+            console.log(geoSum.serverDatastoreId, geoSum.status)
             
             // If we are to check all tasks OR there is a valid task running, check it.
             if ((checkAllTasks) ||            
-              ((optimSum.status !== 'not started') && (optimSum.status !== 'completed') && 
-                (optimSum.status !== 'error'))) {
-              this.getOptimTaskState(optimSum)
+              ((geoSum.status !== 'not started') && (geoSum.status !== 'completed') && 
+                (geoSum.status !== 'error'))) {
+              this.getGeoTaskState(geoSum)
               .then(response => {
                 // Flag as polled.
-                optimSum.polled = true
+                geoSum.polled = true
                 
-                // Resolve the main promise when all of the optimSummaries are polled.
+                // Resolve the main promise when all of the geoSummaries are polled.
                 let done = true
-                this.optimSummaries.forEach(optimSum2 => {
-                  if (!optimSum2.polled) {
+                this.geoSummaries.forEach(geoSum2 => {
+                  if (!geoSum2.polled) {
                     done = false
                   }
                 })
@@ -399,12 +399,12 @@ Last update: 2018sep26
             // Otherwise (no task to check), we are done polling for it.
             else {
               // Flag as polled.
-              optimSum.polled = true
+              geoSum.polled = true
               
-              // Resolve the main promise when all of the optimSummaries are polled.
+              // Resolve the main promise when all of the geoSummaries are polled.
               let done = true
-              this.optimSummaries.forEach(optimSum2 => {
-                if (!optimSum2.polled) {
+              this.geoSummaries.forEach(geoSum2 => {
+                if (!geoSum2.polled) {
                   done = false
                 }
               })
@@ -423,9 +423,9 @@ Last update: 2018sep26
         // Do the polling of the task states.
         this.pollAllTaskStates(checkAllTasks)
         .then(() => {
-          // Hack to get the Vue display of optimSummaries to update
-          this.optimSummaries.push(this.optimSummaries[0])
-          this.optimSummaries.pop()
+          // Hack to get the Vue display of geoSummaries to update
+          this.geoSummaries.push(this.geoSummaries[0])
+          this.geoSummaries.pop()
             
           // Only if we need to continue polling...
           if (this.needToPoll()) {
@@ -446,15 +446,15 @@ Last update: 2018sep26
         })
       },
       
-      clearTask(optimSummary) {
+      clearTask(geoSummary) {
         return new Promise((resolve, reject) => {
-          let datastoreId = optimSummary.serverDatastoreId  // hack because this gets overwritten soon by caller
-          console.log('clearTask() called for '+this.currentOptim)
+          let datastoreId = geoSummary.serverDatastoreId  // hack because this gets overwritten soon by caller
+          console.log('clearTask() called for '+this.currentGeo)
           rpcs.rpc('del_result', [datastoreId, this.projectID]) // Delete cached result.
             .then(response => {
               rpcs.rpc('delete_task', [datastoreId])
                 .then(response => {
-                  this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
+                  this.getGeoTaskState(geoSummary) // Get the task state for the optimization.
                   if (!this.pollingTasks) {
                     this.doTaskPolling(true)
                   }
@@ -470,20 +470,20 @@ Last update: 2018sep26
         })
       },
     
-      getOptimSummaries() {
-        console.log('getOptimSummaries() called')
+      getGeoSummaries() {
+        console.log('getGeoSummaries() called')
         status.start(this)
-        rpcs.rpc('get_optim_info', [this.projectID]) // Get the current project's optimization summaries from the server.
+        rpcs.rpc('get_geo_info', [this.projectID]) // Get the current project's optimization summaries from the server.
           .then(response => {
-            this.optimSummaries = response.data // Set the optimizations to what we received.
-            this.optimSummaries.forEach(optimSum => { // For each of the optimization summaries...
-              optimSum.serverDatastoreId = this.$store.state.activeProject.project.id + ':opt-' + optimSum.name // Build a task and results cache ID from the project's hex UID and the optimization name.
-              optimSum.status = 'not started' // Set the status to 'not started' by default, and the pending and execution times to '--'.
-              optimSum.pendingTime = '--'
-              optimSum.executionTime = '--'             
+            this.geoSummaries = response.data // Set the optimizations to what we received.
+            this.geoSummaries.forEach(geoSum => { // For each of the optimization summaries...
+              geoSum.serverDatastoreId = this.$store.state.activeProject.project.id + ':geo-' + geoSum.name // Build a task and results cache ID from the project's hex UID and the optimization name.
+              geoSum.status = 'not started' // Set the status to 'not started' by default, and the pending and execution times to '--'.
+              geoSum.pendingTime = '--'
+              geoSum.executionTime = '--'             
             })
             this.doTaskPolling(true)  // start task polling, kicking off with running check_task() for all optimizations
-            this.optimsLoaded = true
+            this.geosLoaded = true
             status.succeed(this, 'Geospatial optimizations loaded')
           })
           .catch(error => {
@@ -491,10 +491,10 @@ Last update: 2018sep26
           })
       },
 
-      setOptimSummaries() {
-        console.log('setOptimSummaries() called')
+      setGeoSummaries() {
+        console.log('setGeoSummaries() called')
         status.start(this)
-        rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
+        rpcs.rpc('set_geo_info', [this.projectID, this.geoSummaries])
           .then( response => {
             status.succeed(this, 'Geospatial optimizations saved')
           })
@@ -506,64 +506,64 @@ Last update: 2018sep26
       addGeoModal() {
         // Open a model dialog for creating a new project
         console.log('addGeoModal() called');
-        rpcs.rpc('get_default_optim', [this.projectID])
+        rpcs.rpc('get_default_geo', [this.projectID])
           .then(response => {
-            this.addEditModal.optimSummary = response.data;
-            this.addEditModal.origName = this.addEditModal.optimSummary.name;
+            this.addEditModal.geoSummary = response.data;
+            this.addEditModal.origName = this.addEditModal.geoSummary.name;
             this.addEditModal.mode = 'add';
             this.$modal.show('add-geo');
             console.log('New geospatial optimization:');
-            console.log(this.addEditModal.optimSummary)
+            console.log(this.addEditModal.geoSummary)
           })
           .catch(error => {
             status.fail(this, 'Could not open add optimization modal', error)
           })
       },
 
-      editOptimModal(optimSummary) {
+      editGeoModal(geoSummary) {
         // Open a model dialog for creating a new project
-        console.log('editOptimModal() called');
-        this.addEditModal.optimSummary = optimSummary;
+        console.log('editGeoModal() called');
+        this.addEditModal.geoSummary = geoSummary;
         console.log('Editing geospatial optimization:');
-        console.log(this.addEditModal.optimSummary);
-        this.addEditModal.origName = this.addEditModal.optimSummary.name;
+        console.log(this.addEditModal.geoSummary);
+        this.addEditModal.origName = this.addEditModal.geoSummary.name;
         this.addEditModal.mode = 'edit';
         this.$modal.show('add-geo');
       },
 
-      addOptim() {
-        console.log('addOptim() called');
+      addGeo() {
+        console.log('addGeo() called');
         this.$modal.hide('add-geo');
         status.start(this)
-        let newOptim = _.cloneDeep(this.addEditModal.optimSummary);
-        let optimNames = []; // Get the list of all of the current optimization names.
-        this.optimSummaries.forEach(optimSum => {
-          optimNames.push(optimSum.name)
+        let newGeo = _.cloneDeep(this.addEditModal.geoSummary);
+        let geoNames = []; // Get the list of all of the current optimization names.
+        this.geoSummaries.forEach(geoSum => {
+          geoNames.push(geoSum.name)
         });
         if (this.addEditModal.mode === 'edit') { // If we are editing an existing scenario...
-          let index = optimNames.indexOf(this.addEditModal.origName); // Get the index of the original (pre-edited) name
+          let index = geoNames.indexOf(this.addEditModal.origName); // Get the index of the original (pre-edited) name
           if (index > -1) {
-            this.optimSummaries[index].name = newOptim.name; // hack to make sure Vue table updated
-            this.optimSummaries[index] = newOptim
+            this.geoSummaries[index].name = newGeo.name; // hack to make sure Vue table updated
+            this.geoSummaries[index] = newGeo
           }
           else {
             console.log('Error: a mismatch in editing keys')
           }
         }
         else { // Else (we are adding a new optimization)...
-          newOptim.name = utils.getUniqueName(newOptim.name, optimNames);
-          newOptim.serverDatastoreId = this.$store.state.activeProject.project.id + ':opt-' + newOptim.name
-          this.optimSummaries.push(newOptim)
-          this.getOptimTaskState(newOptim)
+          newGeo.name = utils.getUniqueName(newGeo.name, geoNames);
+          newGeo.serverDatastoreId = this.$store.state.activeProject.project.id + ':geo-' + newGeo.name
+          this.geoSummaries.push(newGeo)
+          this.getGeoTaskState(newGeo)
           .then(result => {
-            // Hack to get the Vue display of optimSummaries to update
-            this.optimSummaries.push(this.optimSummaries[0])
-            this.optimSummaries.pop()
+            // Hack to get the Vue display of geoSummaries to update
+            this.geoSummaries.push(this.geoSummaries[0])
+            this.geoSummaries.pop()
           })
         }
         console.log('Saved geospatial optimization:');
-        console.log(newOptim);
-        rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
+        console.log(newGeo);
+        rpcs.rpc('set_geo_info', [this.projectID, this.geoSummaries])
           .then( response => {
             status.succeed(this, 'Geospatial optimization added')
           })
@@ -572,19 +572,19 @@ Last update: 2018sep26
           })
       },
 
-      copyOptim(optimSummary) {
-        console.log('copyOptim() called')
+      copyGeo(geoSummary) {
+        console.log('copyGeo() called')
         status.start(this)
-        var newOptim = _.cloneDeep(optimSummary);
+        var newGeo = _.cloneDeep(geoSummary);
         var otherNames = []
-        this.optimSummaries.forEach(optimSum => {
-          otherNames.push(optimSum.name)
+        this.geoSummaries.forEach(geoSum => {
+          otherNames.push(geoSum.name)
         })
-        newOptim.name = utils.getUniqueName(newOptim.name, otherNames)
-        newOptim.serverDatastoreId = this.$store.state.activeProject.project.id + ':opt-' + newOptim.name
-        this.optimSummaries.push(newOptim)
-        this.getOptimTaskState(newOptim)
-        rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
+        newGeo.name = utils.getUniqueName(newGeo.name, otherNames)
+        newGeo.serverDatastoreId = this.$store.state.activeProject.project.id + ':geo-' + newGeo.name
+        this.geoSummaries.push(newGeo)
+        this.getGeoTaskState(newGeo)
+        rpcs.rpc('set_geo_info', [this.projectID, this.geoSummaries])
           .then( response => {
             status.succeed(this, 'Geospatial optimization copied')
           })
@@ -593,18 +593,18 @@ Last update: 2018sep26
           })
       },
 
-      deleteOptim(optimSummary) {
-        console.log('deleteOptim() called')
+      deleteGeo(geoSummary) {
+        console.log('deleteGeo() called')
         status.start(this)
-        if (optimSummary.status !== 'not started') {
-          this.clearTask(optimSummary)  // Clear the task from the server.
+        if (geoSummary.status !== 'not started') {
+          this.clearTask(geoSummary)  // Clear the task from the server.
         }
-        for(var i = 0; i< this.optimSummaries.length; i++) {
-          if(this.optimSummaries[i].name === optimSummary.name) {
-            this.optimSummaries.splice(i, 1);
+        for(var i = 0; i< this.geoSummaries.length; i++) {
+          if(this.geoSummaries[i].name === geoSummary.name) {
+            this.geoSummaries.splice(i, 1);
           }
         }
-        rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
+        rpcs.rpc('set_geo_info', [this.projectID, this.geoSummaries])
           .then(response => {
             status.succeed(this, 'Geospatial optimization deleted')
           })
@@ -613,15 +613,15 @@ Last update: 2018sep26
           })
       },
 
-      runOptim(optimSummary, runtype) {
-        console.log('runOptim() called for ' + optimSummary.name + ' for time: ' + runtype)
+      runGeo(geoSummary, runtype) {
+        console.log('runGeo() called for ' + geoSummary.name + ' for time: ' + runtype)
         status.start(this)
-        rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries]) // Make sure they're saved first
+        rpcs.rpc('set_geo_info', [this.projectID, this.geoSummaries]) // Make sure they're saved first
           .then(response => {
-            rpcs.rpc('launch_task', [optimSummary.serverDatastoreId, 'run_optim',
-              [this.projectID, optimSummary.serverDatastoreId, optimSummary.name, runtype]])
+            rpcs.rpc('launch_task', [geoSummary.serverDatastoreId, 'run_geo',
+              [this.projectID, geoSummary.serverDatastoreId, geoSummary.name, runtype]])
               .then(response => {
-                this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
+                this.getGeoTaskState(geoSummary) // Get the task state for the optimization.
                 if (!this.pollingTasks) {
                   this.doTaskPolling(true)
                 }
@@ -636,43 +636,20 @@ Last update: 2018sep26
           })
       },
 
-      testgeo(optimSummary) {
-        console.log('testgeo() called')
-        status.start(this)
-        rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries]) // Make sure they're saved first
-          .then(response => {
-            rpcs.rpc('launch_task', [optimSummary.serverDatastoreId, 'run_geo',
-              [this.projectID, optimSummary.serverDatastoreId, 'test', 'test']])
-              .then(response => {
-                this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
-                if (!this.pollingTasks) {
-                  this.doTaskPolling(true)
-                }
-                status.succeed(this, 'Started geo')
-              })
-              .catch(error => {
-                status.fail(this, 'Could not save geo', error)
-              })
-          })
-          .catch(error => {
-            status.fail(this, 'Could not save geo', error)
-          })
-      },
-
-      cancelRun(optimSummary) {
-        console.log('cancelRun() called for '+this.currentOptim)
+      cancelRun(geoSummary) {
+        console.log('cancelRun() called for '+this.currentGeo)
         rpcs.rpc('delete_task', ['run_optim'])
       },
 
-      plotGeospatial(optimSummary) {
+      plotGeospatial(geoSummary) {
         console.log('plotGeospatial() called')
         status.start(this)
-        rpcs.rpc('plot_geospatial', [this.projectID, optimSummary.serverDatastoreId])
+        rpcs.rpc('plot_geospatial', [this.projectID, geoSummary.serverDatastoreId])
           .then(response => {
             this.table = response.data.table
             this.makeGraphs(response.data.graphs)
-            this.displayResultName = optimSummary.name
-            this.displayResultDatastoreId = optimSummary.serverDatastoreId
+            this.displayResultName = geoSummary.name
+            this.displayResultDatastoreId = geoSummary.serverDatastoreId
             status.succeed(this, 'Graphs created')
           })
           .catch(error => {
