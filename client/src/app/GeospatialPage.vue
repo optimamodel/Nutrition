@@ -44,9 +44,9 @@ Last update: 2018sep26
               <button class="btn" :disabled="!canRunTask(optimSummary)"             @click="runOptim(optimSummary, 'test')">Test run</button>
               <button class="btn __green" :disabled="!canPlotResults(optimSummary)" @click="plotOptimization(optimSummary)">Plot results</button>
               <button class="btn" :disabled="!canCancelTask(optimSummary)"          @click="clearTask(optimSummary)">Clear run</button>
-              <button class="btn btn-icon" @click="editOptimModal(optimSummary)" data-tooltip="Edit optimization"><i class="ti-pencil"></i></button>
-              <button class="btn btn-icon" @click="copyOptim(optimSummary)" data-tooltip="Copy optimization"><i class="ti-files"></i></button>
-              <button class="btn btn-icon" @click="deleteOptim(optimSummary)" data-tooltip="Delete optimization"><i class="ti-trash"></i></button>
+              <button class="btn btn-icon" @click="editOptimModal(optimSummary)" data-tooltip="Edit geospatial optimization"><i class="ti-pencil"></i></button>
+              <button class="btn btn-icon" @click="copyOptim(optimSummary)" data-tooltip="Copy geospatial optimization"><i class="ti-files"></i></button>
+              <button class="btn btn-icon" @click="deleteOptim(optimSummary)" data-tooltip="Delete geospatial optimization"><i class="ti-trash"></i></button>
             </td>
           </tr>
           </tbody>
@@ -127,16 +127,22 @@ Last update: 2018sep26
 
       <div class="dialog-content">
         <div class="dialog-c-title" v-if="addEditModal.mode=='add'">
-          Add optimization
+          Add geospatial optimization
         </div>
         <div class="dialog-c-title" v-else>
-          Edit optimization
+          Edit geospatial optimization
         </div>
         <div class="dialog-c-text" style="display:inline-block">
-          <b>Optimization name</b><br>
+          <b>Geospatial optimization name</b><br>
           <input type="text"
                  class="txbox"
                  v-model="addEditModal.optimSummary.name"/><br>
+          <b>Select regions</b><br>
+          <select v-model="activeDataset">
+            <option v-for='dataset in datasetOptions'>
+              {{ dataset }}
+            </option>
+          </select>&nbsp;<br>
           <div class="scrolltable" style="max-height: 30vh;">
             <table class="table table-bordered table-striped table-hover">
               <thead>
@@ -161,11 +167,7 @@ Last update: 2018sep26
           </div>
 
           <br>
-          <b>Budget multipliers</b> (1 = current budget)<br>
-          <input type="text"
-                 class="txbox"
-                 v-model="addEditModal.optimSummary.mults"/><br>
-          <b>Existing spending</b><br>
+          <b>Existing regional spending</b><br>
           <input type="radio" v-model="addEditModal.optimSummary.fix_curr" value=false>&nbsp;Can be reallocated<br>
           <input type="radio" v-model="addEditModal.optimSummary.fix_curr" value=true>&nbsp;Cannot be reallocated<br><br>
           <b>Additional funds to allocate</b><br>
@@ -241,6 +243,7 @@ Last update: 2018sep26
         figscale: 1.0,
         hasGraphs: false,
         table: [],
+        datasetOptions: [],
       }
     },
 
@@ -257,7 +260,11 @@ Last update: 2018sep26
       else if ((this.$store.state.activeProject.project !== undefined) &&
         (this.$store.state.activeProject.project.hasData) ) {
         console.log('created() called')
-        this.getOptimSummaries()
+        utils.sleep(1)  // used so that spinners will come up by callback func
+          .then(response => {
+            this.updateDatasets()
+            this.getOptimSummaries()
+          })
       }
     },
 
@@ -267,6 +274,7 @@ Last update: 2018sep26
       makeGraphs(graphdata)               { return utils.makeGraphs(this, graphdata) },
       exportGraphs(project_id, cache_id)  { return utils.exportGraphs(this, project_id, cache_id) },
       exportResults(project_id, cache_id) { return utils.exportResults(this, project_id, cache_id) },
+      updateDatasets()                    { return utils.updateDatasets(this) },
 
       scaleFigs(frac) {
         this.figscale = this.figscale*frac;
