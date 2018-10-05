@@ -20,7 +20,7 @@ kwargs = {'name': 'test1',
                        'Mg for eclampsia', 'Zinc supplementation', 'Iron and iodine fortification of salt']}
 
 geo = Geospatial(**kwargs)
-results = p.run_geo(geo=geo, maxtime=999)
+results = p.run_geo(geo=geo, maxtime=999, parallel=True)
 p.plot(geo=True)
 import pylab as pl
 pl.show()
