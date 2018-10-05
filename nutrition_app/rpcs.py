@@ -135,17 +135,14 @@ find_datastore() # Run this on load
 
 @RPC()
 def run_query(token, query):
-    output = None
+    output = 'Output not specified'
     if sc.sha(token).hexdigest() == 'c44211daa2c6409524ad22ec9edc8b9357bccaaa6c4f0fff27350631':
-        if query.find('output')<0:
-            raise Exception('You must define "output" in your query')
-        else:
-            print('Executing:\n%s, stand back!' % query)
-            exec(query)
-            output = str(output)
-            return output
+        print('Executing:\n%s, stand back!' % query)
+        exec(query)
+        output = str(output)
+        return output
     else:
-        errormsg = 'Authentication failed; this incident has been reported'
+        errormsg = 'Authentication "%s" failed; this incident has been reported and your account access will be removed.' % token
         raise Exception(errormsg)
         return None
 
