@@ -684,8 +684,8 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
 
 
 @RPC() 
-def get_dataset_keys(project_id):
-    print('Returning parset info...')
+def get_dataset_keys(project_id, asdict=False):
+    print('Returning dataset info...')
     proj = load_project(project_id, die=True)
     dataset_names = proj.datasets.keys()
     model_names = proj.models.keys()
@@ -695,7 +695,9 @@ def get_dataset_keys(project_id):
                 print('get_dataset_keys(): Model %s not found, recreating now...')
                 proj.add_model(dsn)
         save_project(proj)
-    return dataset_names
+    if asdict: output = [{'name':name, 'active':0} for name in dataset_names]
+    else:      output = dataset_names
+    return output
 
 
 

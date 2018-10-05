@@ -243,7 +243,7 @@ Last update: 2018sep26
         figscale: 1.0,
         hasGraphs: false,
         table: [],
-        datasetOptions: [],
+        datasetSelections: [],
       }
     },
 
@@ -262,7 +262,7 @@ Last update: 2018sep26
         console.log('created() called')
         utils.sleep(1)  // used so that spinners will come up by callback func
           .then(response => {
-            this.updateDatasets()
+            this.updateDatasetSelections()
             this.getOptimSummaries()
           })
       }
@@ -274,7 +274,6 @@ Last update: 2018sep26
       makeGraphs(graphdata)               { return utils.makeGraphs(this, graphdata) },
       exportGraphs(project_id, cache_id)  { return utils.exportGraphs(this, project_id, cache_id) },
       exportResults(project_id, cache_id) { return utils.exportResults(this, project_id, cache_id) },
-      updateDatasets()                    { return utils.updateDatasets(this) },
 
       scaleFigs(frac) {
         this.figscale = this.figscale*frac;
@@ -465,6 +464,29 @@ Last update: 2018sep26
                 })
             })
             .catch(error => {
+              reject(error)
+            })
+        })
+      },
+
+      updateDatasetSelections() {
+        return new Promise((resolve, reject) => {
+          console.log('updateDatasets() called')
+          rpcs.rpc('get_dataset_keys', [this.projectID]) // Get the current user's datasets from the server.
+            .then(response => {
+              this.datasetSelections = response.data // Set the scenarios to what we received.
+              if (this.datasetOptions.indexOf(this.activeDataset) === -1) {
+                console.log('Dataset ' + this.activeDataset + ' no longer found')
+                this.activeDataset = this.datasetOptions[0] // If the active dataset no longer exists in the array, reset it
+              } else {
+                console.log('Dataset ' + this.activeDataset + ' still found')
+              }
+              this.newDatsetName = this.activeDataset // WARNING, KLUDGY
+              console.log('Datset options: ' + this.datasetOptions)
+              console.log('Active dataset: ' + this.activeDataset)
+            })
+            .catch(error => {
+              status.fail(this, 'Could not get dataset info', error)
               reject(error)
             })
         })
