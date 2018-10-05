@@ -995,6 +995,124 @@ def plot_optimization(project_id, cache_id):
 
 
 
+
+##################################################################################
+### Geospatial functions and RPCs
+##################################################################################
+
+
+def py_to_js_geo(py_geo, proj, key=None, default_included=False):
+    ''' Convert a Python to JSON representation of an optimization '''
+    obj_labels = nu.pretty_labels(direction=True).values()
+    prog_names = proj.dataset().prog_names()
+    js_geo = {}
+    attrs = ['name', 'model_name', 'mults', 'add_funds', 'fix_curr', 'filter_progs']
+    for attr in attrs:
+        js_geo[attr] = getattr(py_geo, attr) # Copy the attributes into a dictionary
+    weightslist = [{'label':item[0], 'weight':abs(item[1])} for item in zip(obj_labels, py_geo.weights)] # WARNING, ABS HACK
+    js_geo['weightslist'] = weightslist
+    js_geo['spec'] = []
+    for prog_name in prog_names:
+        program = proj.model(key).prog_info.programs[prog_name]
+        this_spec = {}
+        this_spec['name'] = prog_name
+        this_spec['included'] = is_included(py_geo.prog_set, program, default_included)
+        js_geo['spec'].append(this_spec)
+    js_geo['objective_options'] = obj_labels # Not modified but used on the FE
+    return js_geo
+    
+    
+def js_to_py_geo(js_geo):
+    ''' Convert a JSON to Python representation of an optimization '''
+    obj_keys = nu.default_trackers()
+    json = sc.odict()
+    attrs = ['name', 'model_name', 'fix_curr', 'filter_progs']
+    for attr in attrs:
+        json[attr] = js_geo[attr]
+    try:
+        json['weights'] = sc.odict()
+        for key,item in zip(obj_keys,js_geo['weightslist']):
+            val = numberify(item['weight'], blank='zero', invalid='die', aslist=False)
+            json['weights'][key] = val
+    except Exception as E:
+        print('Unable to convert "%s" to weights' % js_geo['weightslist'])
+        raise E
+    jsm = js_geo['mults']
+    if not jsm: jsm = 1.0
+    if sc.isstring(jsm):
+        jsm = jsm.split(',')
+    vals = numberify(jsm, blank='die', invalid='die', aslist=True)
+    json['mults'] = vals
+    json['add_funds'] = numberify(js_geo['add_funds'], blank='zero', invalid='die', aslist=False)
+    json['prog_set'] = [] # These require more TLC
+    for js_spec in js_geo['spec']:
+        if js_spec['included']:
+            json['prog_set'].append(js_spec['name'])  
+    return json
+    
+
+@RPC()
+def get_geo_info(project_id):
+    print('Getting optimization info...')
+    proj = load_project(project_id, die=True)
+    geo_jsons = []
+    for py_geo in proj.geos.values():
+        js_geo = py_to_js_geo(py_geo, proj)
+        geo_jsons.append(js_geo)
+    print('JavaScript optimization info:')
+    sc.pp(geo_jsons)
+    return geo_jsons
+
+
+@RPC()
+def set_geo_info(project_id, geo_jsons):
+    print('Setting optimization info...')
+    proj = load_project(project_id, die=True)
+    proj.geos.clear()
+    for j,js_geo in enumerate(geo_jsons):
+        print('Setting optimization %s of %s...' % (j+1, len(geo_jsons)))
+        json = js_to_py_geo(js_geo)
+        print('Python optimization info for optimization %s:' % (j+1))
+        print(json)
+        proj.add_geo(json=json)
+    print('Saving project...')
+    save_project(proj)   
+    return None
+    
+
+@RPC()
+def get_default_geo(project_id):
+    print('Getting default optimization...')
+    proj = load_project(project_id, die=True)
+    py_geo = proj.demo_geos(doadd=False)[0]
+    js_geo = py_to_js_geo(py_geo, proj, default_included=True)
+    print('Created default JavaScript optimization:')
+    sc.pp(js_geo)
+    return js_geo
+
+
+@RPC()
+def plot_geospatial(project_id, cache_id):
+    proj = load_project(project_id, die=True)
+    proj = retrieve_results(proj)
+    figs = proj.plot(key=cache_id, geo=True) # Only plot allocation
+    graphs = []
+    for f,fig in enumerate(figs.values()):
+        for ax in fig.get_axes():
+            ax.set_facecolor('none')
+        graph_dict = sw.mpld3ify(fig, jsonify=False)
+        graphs.append(graph_dict)
+        print('Converted figure %s of %s' % (f+1, len(figs)))
+    
+    # Get cost-effectiveness table
+    costeff = nu.get_costeff(project=proj, results=proj.result(cache_id))
+    table = reformat_costeff(costeff)
+    
+    return {'graphs':graphs, 'table':table}
+
+
+
+
 ##################################################################################
 ### Results RPCs
 ##################################################################################
