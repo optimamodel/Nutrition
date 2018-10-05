@@ -1,5 +1,6 @@
 import sciris as sc
-from .model import default_trackers
+from .utils import default_trackers, pretty_labels
+import numpy as np
 
 class ScenResult(sc.prettyobj):
     def __init__(self, name, model_name, model, obj=None, mult=None):
@@ -59,6 +60,15 @@ class ScenResult(sc.prettyobj):
             allocs[name] = spend
         return allocs
 
+    def get_covs(self, ref=True):
+        covs = sc.odict()
+        for name, prog in self.programs.iteritems():
+            cov = prog.annual_cov
+            if not ref and prog.reference:
+                cov -= cov[0] # baseline year is reference cov, subtracted from every year
+            covs[name] = cov
+        return covs
+
     def get_freefunds(self):
         free = self.model.prog_info.free
         if self.mult is not None:
@@ -96,3 +106,79 @@ class ScenResult(sc.prettyobj):
         from .plotting import make_plots # This is here to avoid a circular import
         figs = make_plots(self, toplot=toplot)
         return figs
+
+def write_results(results, projname=None, filename=None, folder=None):
+    """ Writes outputs and program allocations to an xlsx book.
+    For each scenario, book will include:
+        - sheet called 'outcomes' which contains all outputs over time
+        - sheet called 'budget and coverage' which contains all program cost and coverages over time """
+    if projname is None: projname = ''
+    outcomes = default_trackers()
+    labs = pretty_labels()
+    rows = [labs[out] for out in outcomes]
+    if filename is None: filename = 'outputs.xlsx'
+    filepath = sc.makefilepath(filename=filename, folder=folder, ext='xlsx', default='%s outputs.xlsx' % projname)
+    outputs = []
+    sheetnames = ['Outcomes', 'Budget & coverage']
+    alldata = []
+    allformats = []
+    years = results[0].years
+    nullrow = [''] * len(years)
+
+    ### Outcomes sheet
+    headers = [['Scenario', 'Outcome'] + years + ['Cumulative']]
+    for r, res in enumerate(results):
+        out = res.get_outputs(outcomes, seq=True, pretty=True)
+        for o, outcome in enumerate(rows):
+            name = [res.name] if o == 0 else ['']
+            thisout = out[o]
+            outputs.append(name + [outcome] + list(thisout) + [sum(thisout)])
+        outputs.append(nullrow)
+    data = headers + outputs
+    alldata.append(data)
+
+    # Formatting
+    nrows = len(data)
+    ncols = len(data[0])
+    formatdata = np.zeros((nrows, ncols), dtype=object)
+    formatdata[:, :] = 'plain'  # Format data as plain
+    formatdata[:, 0] = 'bold'  # Left side bold
+    formatdata[0, :] = 'header'  # Top with green header
+    allformats.append(formatdata)
+
+    ### Cost & coverage sheet
+    # this is grouped not by program, but by coverage and cost (within each scenario)
+    outputs = []
+    headers = [['Scenario', 'Program', 'Type'] + years]
+    for r, res in enumerate(results):
+        rows = res.programs.keys()
+        spend = res.get_allocs(ref=False)
+        cov = res.get_covs()
+        # collate coverages first
+        for r, prog in enumerate(rows):
+            name = [res.name] if r == 0 else ['']
+            thiscov = cov[prog]
+            outputs.append(name + [prog] + ['Coverage'] + list(thiscov))
+        # collate spending second
+        for r, prog in enumerate(rows):
+            thisspend = spend[prog]
+            outputs.append([''] + [prog] + ['Budget'] + list(thisspend))
+        outputs.append(nullrow)
+    data = headers + outputs
+    alldata.append(data)
+
+    # Formatting
+    nrows = len(data)
+    ncols = len(data[1])
+    formatdata = np.zeros((nrows, ncols), dtype=object)
+    formatdata[:, :] = 'plain'  # Format data as plain
+    formatdata[:, 0] = 'bold'  # Left side bold
+    formatdata[0, :] = 'header'  # Top with green header
+    allformats.append(formatdata)
+
+    formats = {
+        'header': {'bold': True, 'bg_color': '#3c7d3e', 'color': '#ffffff'},
+        'plain': {},
+        'bold': {'bold': True}}
+    sc.savespreadsheet(filename=filename, data=alldata, sheetnames=sheetnames, formats=formats, formatdata=allformats)
+    return filepath

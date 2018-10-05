@@ -2,7 +2,6 @@
 #%% Imports
 #######################################################################################################
 
-import numpy as np
 import sciris as sc
 from .version import version
 from .optimization import Optim
@@ -11,9 +10,10 @@ from .data import Dataset
 from .scenarios import Scen, run_scen
 from .plotting import make_plots, get_costeff
 from .model import Model
-from .utils import trace_exception, default_trackers, pretty_labels, run_parallel
+from .utils import trace_exception, default_trackers, run_parallel
 from .demo import demo_scens, demo_optims
 from .defaults import get_defaults
+from .results import write_results
 from . import settings
 
 
@@ -150,36 +150,12 @@ class Project(object):
             del tmpproject # Don't need it hanging around any more
         return fullpath
 
-    def write_results(self, filename=None, folder=None, keys=None):
-        outcomes = default_trackers()
-        labs = pretty_labels()
-        headers = [labs[out] for out in outcomes]
-        if keys is None: keys = self.results.keys()
-        keys = sc.promotetolist(keys)
-        if filename is None: filename = 'outputs.xlsx'
-        filepath = sc.makefilepath(filename=filename, folder=folder, ext='xlsx', default='%s outputs.xlsx' % self.name)
-        outputs = []
-        for key in keys:
-            reslist = self.result(key)
-            reslist = sc.promotetolist(reslist)
-            for res in reslist:
-                out = list(res.get_outputs(outcomes, seq=False, pretty=True))
-                outputs.append([res.name] + out) # gets all outputs
-        data = [['Result name'] + headers] + outputs
-        
-        # Formatting
-        formats = {
-            'header':{'bold':True, 'bg_color':'#3c7d3e', 'color':'#ffffff'},
-            'plain': {},
-            'bold':   {'bold':True}}
-        nrows = len(data)
-        ncols = len(data[0])
-        formatdata = np.zeros((nrows, ncols), dtype=object)
-        formatdata[:,:] = 'plain' # Format data as plain
-        formatdata[:,0] = 'bold' # Left side bold
-        formatdata[0,:] = 'header' # Top with green header
-        sc.savespreadsheet(filename=filename, data=data, formats=formats, formatdata=formatdata)
-        return filepath
+    def write_results(self, filename=None, folder=None, key=None):
+        """ Blargh, this really needs some tidying """
+        if key is None: key = -1
+        results = self.result(key)
+        write_results(results, projname=self.name, filename=filename, folder=folder)
+        return
 
     def add(self, name, item, what=None):
         """ Add an entry to a structure list """
