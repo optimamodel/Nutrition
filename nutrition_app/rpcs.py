@@ -214,16 +214,17 @@ def save_result(result, die=None):
 
 
 @RPC() # Not usually called as an RPC
-def del_project(project_key, die=None):
+def del_project(project_key, username=None, die=None):
     key = datastore.getkey(key=project_key, objtype='project')
     try:
         project = load_project(key)
-    except Exception:
-        print('Warning: cannot delete project %s, not found' % key)
+    except Exception as E:
+        print('Warning: cannot delete project %s, not found (%s)' % (key, str(E)))
         return None
     output = datastore.delete(key)
     try:
-        user = get_user(project.webapp.username)
+        if username is None: username = project.webapp.username
+        user = get_user(username)
         user.projects.remove(key)
         datastore.saveuser(user)
     except Exception as E:
@@ -232,11 +233,11 @@ def del_project(project_key, die=None):
 
 
 @RPC()
-def delete_projects(project_keys):
+def delete_projects(project_keys, username=None):
     ''' Delete one or more projects '''
     project_keys = sc.promotetolist(project_keys)
     for project_key in project_keys:
-        del_project(project_key)
+        del_project(project_key, username=username)
     return None
 
 
@@ -448,7 +449,7 @@ def upload_defaults(defaults_filename, project_id):
 ### Input functions and RPCs
 ##################################################################################
 
-editableformats = ['edit', 'tick'] # Define which kinds of format are editable and saveable
+editableformats = ['edit', 'calc', 'tick'] # Define which kinds of format are editable and saveable
 
 def define_formats():
     ''' Hard-coded sheet formats '''
@@ -579,7 +580,7 @@ def define_formats():
     
 
 @RPC()
-def get_sheet_data(project_id, key=None, verbose=True):
+def get_sheet_data(project_id, key=None, verbose=False):
     sheets = [
         'Nutritional status distribution', 
         'Breastfeeding distribution',
@@ -625,7 +626,7 @@ def get_sheet_data(project_id, key=None, verbose=True):
 
 
 @RPC()
-def save_sheet_data(project_id, sheetdata, key=None, verbose=True):
+def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
     proj = load_project(project_id, die=True)
     if key is None: key = proj.datasets.keys()[-1] # There should always be at least one
     wb = proj.input_sheet # CK: Warning, might want to change
@@ -640,7 +641,7 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=True):
                 cellformat = sheetdata[sheet][r][c]['format']
                 if cellformat in editableformats:
                     cellval = sheetdata[sheet][r][c]['value']
-                    if cellformat == 'edit':
+                    if cellformat == 'edit' or cellformat == 'calc': # Warning, have to be careful with these.
                         cellval = numberify(cellval, blank='none', invalid='die', aslist=False)
                     elif cellformat == 'tick':
                         if not cellval: cellval = '' # For Excel display
@@ -700,15 +701,15 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
         # Add formatting
         for y in range(len(this_spec['vals'])):
             try:
-                if this_spec['vals'][y] in [None, np.nan, '']: # It's None or Nan
+                if this_spec['vals'][y] in [None, '', 'nan'] or sc.isnumber(this_spec['vals'][y], isnan=True): # It's None or Nan
                     this_spec['vals'][y] = None
                 else:
                     if js_scen['scen_type'] == 'coverage': # Convert to percentage
                         this_spec['vals'][y] = str(round(100*this_spec['vals'][y])) # Enter to the nearest percentage
                     elif js_scen['scen_type'] == 'budget': # Add commas
                         this_spec['vals'][y] = format(int(round(this_spec['vals'][y])), ',') # Add commas
-            except:
-                this_spec['vals'][y] = None # If all else fails, set it to None
+            except Exception as E:
+                this_spec['vals'][y] = str(E) # If all else fails, set it to None
         this_spec['base_cov'] = str(round(program.base_cov*100)) # Convert to percentage -- this should never be None or Nan
         this_spec['base_spend'] = format(int(round(program.base_spend)), ',')
         js_scen['progvals'].append(this_spec)
