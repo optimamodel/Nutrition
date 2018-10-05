@@ -1,5 +1,5 @@
 <!--
-Optimizations page
+Geospatial page
 
 Last update: 2018sep26
 -->
@@ -21,7 +21,7 @@ Last update: 2018sep26
 
     <div v-else>
       <div class="card">
-        <help reflink="optimizations" label="Define optimizations"></help>
+        <help reflink="geospatial" label="Define geospatial optimizations"></help>
         <table class="table table-bordered table-hover table-striped" style="width: 100%">
           <thead>
           <tr>
@@ -42,7 +42,7 @@ Last update: 2018sep26
             <td style="white-space: nowrap">
               <button class="btn __green" :disabled="!canRunTask(optimSummary)"     @click="runOptim(optimSummary, 'full')">Run</button>
               <button class="btn" :disabled="!canRunTask(optimSummary)"             @click="runOptim(optimSummary, 'test')">Test run</button>
-              <button class="btn __green" :disabled="!canPlotResults(optimSummary)" @click="plotOptimization(optimSummary)">Plot results</button>
+              <button class="btn __green" :disabled="!canPlotResults(optimSummary)" @click="plotGeospatial(optimSummary)">Plot results</button>
               <button class="btn" :disabled="!canCancelTask(optimSummary)"          @click="clearTask(optimSummary)">Clear run</button>
               <button class="btn btn-icon" @click="editOptimModal(optimSummary)" data-tooltip="Edit geospatial optimization"><i class="ti-pencil"></i></button>
               <button class="btn btn-icon" @click="copyOptim(optimSummary)" data-tooltip="Copy geospatial optimization"><i class="ti-files"></i></button>
@@ -225,7 +225,7 @@ Last update: 2018sep26
   import router from '@/router'
 
   export default {
-    name: 'OptimizationsPage',
+    name: 'GeospatialPage',
 
     data() {
       return {
@@ -346,8 +346,8 @@ Last update: 2018sep26
       },
 
       needToPoll() {
-        // Check if we're still on the Optimizations page.
-        let routePath = (this.$route.path === '/optimizations')
+        // Check if we're still on the Geospatial page.
+        let routePath = (this.$route.path === '/geospatial')
         
         // Check if we have a queued or started task.
         let runningState = false
@@ -484,10 +484,10 @@ Last update: 2018sep26
             })
             this.doTaskPolling(true)  // start task polling, kicking off with running check_task() for all optimizations
             this.optimsLoaded = true
-            status.succeed(this, 'Optimizations loaded')
+            status.succeed(this, 'Geospatial optimizations loaded')
           })
           .catch(error => {
-            status.fail(this, 'Could not load optimizations', error)
+            status.fail(this, 'Could not load geospatial optimizations', error)
           })
       },
 
@@ -496,10 +496,10 @@ Last update: 2018sep26
         status.start(this)
         rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
           .then( response => {
-            status.succeed(this, 'Optimizations saved')
+            status.succeed(this, 'Geospatial optimizations saved')
           })
           .catch(error => {
-            status.fail(this, 'Could not save optimizations', error)
+            status.fail(this, 'Could not save geospatial optimizations', error)
           })
       },
 
@@ -512,7 +512,7 @@ Last update: 2018sep26
             this.addEditModal.origName = this.addEditModal.optimSummary.name;
             this.addEditModal.mode = 'add';
             this.$modal.show('add-geo');
-            console.log('New optimization:');
+            console.log('New geospatial optimization:');
             console.log(this.addEditModal.optimSummary)
           })
           .catch(error => {
@@ -524,7 +524,7 @@ Last update: 2018sep26
         // Open a model dialog for creating a new project
         console.log('editOptimModal() called');
         this.addEditModal.optimSummary = optimSummary;
-        console.log('Editing optimization:');
+        console.log('Editing geospatial optimization:');
         console.log(this.addEditModal.optimSummary);
         this.addEditModal.origName = this.addEditModal.optimSummary.name;
         this.addEditModal.mode = 'edit';
@@ -561,14 +561,14 @@ Last update: 2018sep26
             this.optimSummaries.pop()
           })
         }
-        console.log('Saved optimization:');
+        console.log('Saved geospatial optimization:');
         console.log(newOptim);
         rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
           .then( response => {
-            status.succeed(this, 'Optimization added')
+            status.succeed(this, 'Geospatial optimization added')
           })
           .catch(error => {
-            status.fail(this, 'Could not add optimization', error)
+            status.fail(this, 'Could not add geospatial optimization', error)
           })
       },
 
@@ -586,10 +586,10 @@ Last update: 2018sep26
         this.getOptimTaskState(newOptim)
         rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
           .then( response => {
-            status.succeed(this, 'Optimization copied')
+            status.succeed(this, 'Geospatial optimization copied')
           })
           .catch(error => {
-            status.fail(this, 'Could not copy optimization', error)
+            status.fail(this, 'Could not copy geospatial optimization', error)
           })
       },
 
@@ -606,10 +606,10 @@ Last update: 2018sep26
         }
         rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
           .then(response => {
-            status.succeed(this, 'Optimization deleted')
+            status.succeed(this, 'Geospatial optimization deleted')
           })
           .catch(error => {
-            status.fail(this, 'Could not delete optimization', error)
+            status.fail(this, 'Could not delete geospatial optimization', error)
           })
       },
 
@@ -625,14 +625,14 @@ Last update: 2018sep26
                 if (!this.pollingTasks) {
                   this.doTaskPolling(true)
                 }
-                status.succeed(this, 'Started optimization')
+                status.succeed(this, 'Started geospatial optimization')
               })
               .catch(error => {
-                status.fail(this, 'Could not start optimization', error)
+                status.fail(this, 'Could not start geospatial optimization', error)
               })
           })
           .catch(error => {
-            status.fail(this, 'Could not save optimizations', error)
+            status.fail(this, 'Could not save geospatial optimizations', error)
           })
       },
 
@@ -664,10 +664,10 @@ Last update: 2018sep26
         rpcs.rpc('delete_task', ['run_optim'])
       },
 
-      plotOptimization(optimSummary) {
-        console.log('plotOptimization() called')
+      plotGeospatial(optimSummary) {
+        console.log('plotGeospatial() called')
         status.start(this)
-        rpcs.rpc('plot_optimization', [this.projectID, optimSummary.serverDatastoreId])
+        rpcs.rpc('plot_geospatial', [this.projectID, optimSummary.serverDatastoreId])
           .then(response => {
             this.table = response.data.table
             this.makeGraphs(response.data.graphs)
