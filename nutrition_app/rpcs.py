@@ -704,6 +704,8 @@ def rename_dataset(project_id, datasetname=None, new_name=None):
     print('Renaming dataset from %s to %s...' % (datasetname, new_name))
     proj = load_project(project_id, die=True)
     proj.datasets.rename(datasetname, new_name)
+    proj.spreadsheets.rename(datasetname, new_name)
+    proj.models.rename(datasetname, new_name)
     print('Saving project...')
     save_project(proj)
     return None

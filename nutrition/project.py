@@ -2,6 +2,7 @@
 #%% Imports
 #######################################################################################################
 
+import os
 import sciris as sc
 from .version import version
 from .utils import default_trackers
@@ -125,8 +126,15 @@ class Project(object):
         
         # Handle name
         if name is None:
-            try:    name = country+'_'+region
-            except: name = 'Default'
+            try:    
+                name = country+'_'+region
+            except: 
+                if inputspath is not None:
+                    name = os.path.basename(inputspath)
+                    if name.endswith('.xlsx'):
+                        name = name[:-5]
+                else:
+                    name = 'Default'
         if fromfile:
             name = sc.uniquename(name, self.datasets.keys())
         
