@@ -13,14 +13,12 @@ kwargs = {'name': 'test1',
           'weights': 'thrive',
           'fix_curr': False,
           'fix_regionalspend': False,
-          'add_funds': 0,
+          'add_funds': 5e6,
           'prog_set': ['IFA fortification of maize', 'IYCF 1', 'Lipid-based nutrition supplements',
                         'Multiple micronutrient supplementation', 'Micronutrient powders', 'Kangaroo mother care',
                         'Public provision of complementary foods', 'Treatment of SAM',  'Vitamin A supplementation',
                        'Mg for eclampsia', 'Zinc supplementation', 'Iron and iodine fortification of salt']}
 
 geo = Geospatial(**kwargs)
-results = p.run_geo(geo=geo, maxtime=999, parallel=True)
+results = p.run_geo(geo=geo, maxiter=4, swarmsize=4, maxtime=20, parallel=False)
 p.plot(geo=True)
-import pylab as pl
-pl.show()
