@@ -1124,7 +1124,10 @@ def js_to_py_geo(js_geo):
     json['prog_set'] = [] # These require more TLC
     for js_spec in js_geo['spec']:
         if js_spec['included']:
-            json['prog_set'].append(js_spec['name'])  
+            json['prog_set'].append(js_spec['name']) 
+    json['modelnames'] = []
+    for item in js_geo['dataset_selections']:
+        if item['active']: json['modelnames'].append(item['name'])
     return json
     
 
