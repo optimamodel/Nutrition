@@ -3,10 +3,9 @@
 #######################################################################################################
 
 import os
-from functools import partial
 import sciris as sc
 from .version import version
-from .utils import default_trackers, run_parallel
+from .utils import default_trackers
 from .data import Dataset
 from .model import Model
 from .defaults import get_defaults
@@ -425,24 +424,7 @@ class Project(object):
             self.add_geos(geo)
             key = geo.name # this to handle parallel calls of this function
         geo = self.geo(key)
-        regions = geo.make_regions()
-        run_optim = partial(self.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
-                            parallel=parallel, dosave=True, runbaseline=False)
-        optimized = sc.odict([(region.name, run_optim(optim=region)) for region in regions])
-        regional_allocs = geo.gridsearch(optimized)
-        # now optimize these allocations within each region
-        regions = geo.make_regions(add_funds=regional_allocs, mults=[1])
-        run_optim = partial(self.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
-                            parallel=False, dosave=True, runbaseline=False)
-        # can run in parallel b/c child processes in series
-        if parallel: results = run_parallel(run_optim, regions, num_procs=len(regions))
-        else:        results = [run_optim(region) for region in regions]
-        # flatten list
-        results = [item for sublist in results for item in sublist]
-        # remove multiple to plot by name (total hack)
-        for res in results:
-            res.mult = None
-            res.name = res.name.replace('(x1)', '')
+        results = geo.run_geo(self, maxiter, swarmsize, maxtime, parallel)
         if dosave: self.add_result(results, name='geospatial')
         return results
 
