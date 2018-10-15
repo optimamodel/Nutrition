@@ -5,4 +5,5 @@ from .project import Project, demo # analysis:ignore
 from .settings import Settings, ONpath, debuginfo, ONException # analysis:ignore
 from .scenarios import Scen, make_scens # analysis:ignore
 from .optimization import Optim # analysis:ignore
+from .geospatial import Geospatial # analysis:ignore
 from .plotting import get_costeff # analysis:ignore

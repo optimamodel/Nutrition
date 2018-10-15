@@ -13,6 +13,7 @@ import ProjectsPage from '@/app/ProjectsPage'
 import InputsPage from '@/app/InputsPage' // ATOMICA-NUTRITION DIFFERENCE
 import ScenariosPage from '@/app/ScenariosPage'
 import OptimizationsPage from '@/app/OptimizationsPage'
+import GeospatialPage from '@/app/GeospatialPage'
 import LoginPage from '@/app/LoginPage'
 import MainAdminPage from '@/app/MainAdminPage'
 import RegisterPage from '@/app/RegisterPage'
@@ -61,6 +62,11 @@ export default new Router({
           path: 'optimizations',
           name: 'Create optimizations',
           component: OptimizationsPage
+        },
+        {
+          path: 'geospatial',
+          name: 'Geospatial analysis',
+          component: GeospatialPage
         },
         {
           path: 'mainadmin',
