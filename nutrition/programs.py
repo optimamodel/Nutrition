@@ -23,6 +23,7 @@ class Program(sc.prettyobj):
         self.inv_func = None
         self.target_pops = prog_data.prog_target[self.name] # frac of each population which is targeted
         self.unit_cost = prog_data.costs[self.name]
+        self.costtype = prog_data.costtype[self.name]
         if not self.unit_cost:
             self.unit_cost = 1
             print('Warning, program %s has 0 unit cost'%self.name)
@@ -330,8 +331,8 @@ class Program(sc.prettyobj):
         return fracChange
 
     def set_costcov(self):
-        costcurve = CostCovCurve(self.unit_cost, self.sat, self.restr_popsize, self.unrestr_popsize)
-        self.func, self.inv_func = costcurve.set_cost_curve()
+        costtype = CostCovCurve(self.unit_cost, self.sat, self.restr_popsize, self.unrestr_popsize, self.costtype)
+        self.func, self.inv_func = costtype.set_cost_curve()
 
     def get_cov(self, spend):
         """
@@ -354,20 +355,20 @@ class Program(sc.prettyobj):
         self.set_costcov()
 
 class CostCovCurve(sc.prettyobj):
-    def __init__(self, unit_cost, sat, restrictedPop, unrestrictedPop, curveType='linear'):
-        self.curveType = curveType
+    def __init__(self, unit_cost, sat, restrictedPop, unrestrictedPop, costtype):
+        self.costtype = costtype
         self.unit_cost = unit_cost
         self.sat = sat
         self.restrictedPop = restrictedPop
         self.unrestrictedPop = unrestrictedPop
+        self.maxcov = sat * restrictedPop / unrestrictedPop
+        self.ss = Settings()
 
     def set_cost_curve(self):
-        if self.curveType == 'linear':
-            curve = self._get_lin_curve()
-            invcurve = self._get_inv_lin()
+        if self.costtype == 'Constant (default)':
+            curve, invcurve = self._get_lin_curve()
         else:
-            curve = self._get_log_curve()
-            invcurve = self._get_inv_log()
+            curve, invcurve = self._get_log_curve()
         return curve, invcurve
 
     def _get_lin_curve(self):
@@ -377,9 +378,9 @@ class CostCovCurve(sc.prettyobj):
             c = y0
         else:
             c = y0 / (m * x0)
-        maxCoverage = self.restrictedPop * self.sat
-        linearCurve = partial(self._lin_func, m, c, maxCoverage)
-        return linearCurve
+        linearCurve = partial(self._lin_func, m, c)
+        invcurve = partial(self._inv_lin_func, m, c)
+        return linearCurve, invcurve
 
     def _get_inv_lin(self):
         m = 1. / self.unit_cost
@@ -392,35 +393,49 @@ class CostCovCurve(sc.prettyobj):
         return curve
 
     def _get_log_curve(self):
-        """ Returns an increasing marginal costs logistic curve"""
-        B = self.sat * self.restrictedPop
-        A = -B
-        C = 0.
-        D = self.unit_cost*B/2.
-        curve = partial(self._log_func, A, B, C, D)
-        return curve
+        """ Returns a logisitic function with the desired marginal cost behaviour.
+         The parameters for the 'increasing' marginal cost curve were solved for analytically,
+         while other variants are created by shifting these """
+        # 'increasing' is the default case
+        b = self.sat * self.restrictedPop
+        a = -b
+        c = 0.
+        d = self.unit_cost * b / 2.
+        yshift = 0
+        xscale = 1
+        yscale = 1
+        if self.costtype == 'Decreasing':
+            endx, endy = self.get_endpoints(a, b, c, d)
+            yshift = endy # shift up
+            c += endx # shift right
+        elif self.costtype == 'Mixed':
+            endx, endy = self.get_endpoints(a, b, c, d)
+            yshift = endy # shift up
+            c += endx # shift right
+            xscale = 2 # shrink x
+            yscale = 2 # shrink y
+        curve = partial(self._log_func, a, b, c, d, yshift, xscale, yscale)
+        inv = partial(self._inv_log, a, b, c, d, yshift, xscale, yscale)
+        return curve, inv
 
-    def _get_inv_log(self):
-        """ Inverse of the increasing marginal costs logistic curve
-        WARNING: if coverage exceed sat, will return infinity"""
-        B = self.sat * self.restrictedPop
-        A = -B
-        C = 0.
-        D = self.unit_cost*B/2.
-        curve = partial(self._inv_log, A, B, C, D)
-        return curve
-
-    def _lin_func(self, m, c, max_cov, x):
+    def _lin_func(self, m, c, x):
         """ Expects x to be a 1D numpy array.
          Return: a numpy array of the same length as x """
         if not self.unrestrictedPop:
             unres_maxcov = 0
         else:
-            unres_maxcov = np.full(len(x), max_cov / self.unrestrictedPop)
+            unres_maxcov = np.full(len(x), self.maxcov)
         return np.minimum((m * x[:] + c)/self.unrestrictedPop, unres_maxcov)
 
-    def _log_func(self, A, B, C, D, x):
-        return (A + (B - A) / (1 + np.exp(-(x[:] - C) / D))) / self.unrestrictedPop
+    def _log_func(self, a, b, c, d, yshift, xscale, yscale, x):
+        """ The generalized logistic function, with extra params for scaling and shifting so that all desired curves can be produced.
+         This function is truncated for the decreasing marginal costs curve, which can exceed maxcov. """
+        if not self.unrestrictedPop:
+            unres_maxcov = 0
+        else:
+            unres_maxcov = np.full(len(x), self.maxcov)
+        cov = ( (a + yshift) + (b - a) / (1 + np.exp(-(x[:]*xscale - c) / d))) / self.unrestrictedPop / yscale
+        return np.minimum(cov, unres_maxcov)
 
     def _inv_lin_func(self, m, c, y):
         """
@@ -431,11 +446,25 @@ class CostCovCurve(sc.prettyobj):
         """
         return (y[:]*self.unrestrictedPop - c)/m
 
-    def _inv_log(self, A, B, C, D, y):
-        if D == 0:
+    def _inv_log(self, a, b, c, d, yshift, xscale, yscale, y):
+        """ Inverse of the logistic curve with given parameters.
+         WARNING: coverages values (y) >= saturation will return infinity """
+        numcovered = y * self.unrestrictedPop
+        if d == 0:
             return 0
         else:
-            return -D * np.log((B - y[:]) / (y[:] - A)) + C
+            return xscale*(-d * np.log((b - yscale * numcovered[:] + yshift) / (yscale * numcovered[:] - a - yshift)) + c)
+
+    def get_endpoints(self, a, b, c, d):
+        """Estimates the average change of the increasing marginal costs curve,
+        so that the decreasing and mixed marginal cost curves can be fit.
+        The average change dictates the gradient of a linear curve to base logistic curves upon.
+        Calculates between points (0,0) and (cost, 95% of saturation) """
+        # estimate cost at 95% of saturation
+        endcov = np.array([0.95*self.maxcov])
+        endcost = self._inv_log(a, b, c, d, 0, 1, 1, endcov)
+        endnum = endcov * self.unrestrictedPop
+        return endcost[0], endnum[0]
 
 
 def set_programs(prog_set, prog_data, all_years):
