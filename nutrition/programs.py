@@ -145,7 +145,7 @@ class Program(sc.prettyobj):
                                          if age.age in self.agesTargeted)
         if not self.restr_popsize:
             self.nullpop = True
-            print('Warning, program "%s" has zero target population size'%self.name)
+            # print('Warning, program "%s" has zero target population size'%self.name)
 
     def _set_exclusion_deps(self):
         """
