@@ -574,6 +574,8 @@ def define_formats():
         ['name', 'edit', 'edit', 'edit'],
         ['name', 'edit', 'edit', 'edit'],
         ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit'],
+        ['name', 'edit', 'edit', 'edit']
     ]
     
     return formats
