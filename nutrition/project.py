@@ -61,7 +61,7 @@ class Project(object):
         self.geos         = sc.odict()
         self.results      = sc.odict()
         self.spreadsheets = sc.odict()
-        self.defaults_sheet = None
+        self.defaultssheet = None
         if loadsheets:
             if not inputspath:
                 template_name = 'template_input.xlsx'
@@ -114,13 +114,13 @@ class Project(object):
         ''' Reload the input spreadsheet into the project '''
         if inputspath is None: inputspath = settings.data_path(country, region)
         self.spreadsheets[name] = sc.Spreadsheet(filename=inputspath)
-        return self.input_sheet(name)
+        return self.inputsheet(name)
     
     def storedefaults(self, defaultspath=None):
         ''' Reload the defaults spreadsheet into the project '''
         if defaultspath is None: defaultspath = settings.default_params_path()
-        self.defaults_sheet = sc.Spreadsheet(filename=defaultspath)
-        return self.defaults_sheet
+        self.defaultssheet = sc.Spreadsheet(filename=defaultspath)
+        return self.defaultssheet
         
     def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True):
         '''Load the data, which can mean one of two things: read in the spreadsheets, and/or use these data to make a model '''
@@ -141,9 +141,9 @@ class Project(object):
         
         # Optionally (but almost always) reload the spreadsheets from file
         if fromfile:
-            if defaultspath or not self.defaults_sheet:
+            if defaultspath or not self.defaultssheet:
                 self.storedefaults(defaultspath=defaultspath)
-            if inputspath or country or not self.input_sheet:
+            if inputspath or country or not self.inputsheet:
                 self.storeinputs(inputspath=inputspath, country=country, region=region, name=name)
         
         # Optionally (but almost always) use these to make a model (do not do if blank sheets)
@@ -219,7 +219,7 @@ class Project(object):
     ### Utilities
     #######################################################################################################
 
-    def input_sheet(self, key=None, verbose=2):
+    def inputsheet(self, key=None, verbose=2):
         if key is None: key = -1
         try:    return self.spreadsheets[key]
         except: return sc.printv('Warning, input sheet "%s" set not found!' %key, 1, verbose)
