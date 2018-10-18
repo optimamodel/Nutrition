@@ -558,12 +558,12 @@ class Dataset(object):
         # Pull the sheets from the project
         if self.name in project.spreadsheets.keys(): spreadsheetkey = self.name
         else:                                        spreadsheetkey = -1
-        input_sheet    = project.input_sheet(spreadsheetkey)
-        defaults_sheet = project.defaults_sheet
+        inputsheet    = project.inputsheet(spreadsheetkey)
+        defaultssheet = project.defaultssheet
         
         # Convert them to Pandas
-        input_data     = input_sheet.pandas() 
-        default_data   = defaults_sheet.pandas()
+        input_data     = inputsheet.pandas() 
+        default_data   = defaultssheet.pandas()
         
         # Read them into actual data
 #        try:
