@@ -146,7 +146,7 @@ class Program(sc.prettyobj):
                                          if age.age in self.agesTargeted)
         if not self.restr_popsize:
             self.nullpop = True
-            print('Warning, program "%s" has zero target population size'%self.name)
+            # print('Warning, program "%s" has zero target population size'%self.name)
 
     def _set_exclusion_deps(self):
         """
@@ -331,8 +331,8 @@ class Program(sc.prettyobj):
         return fracChange
 
     def set_costcov(self):
-        costtype = CostCovCurve(self.unit_cost, self.sat, self.restr_popsize, self.unrestr_popsize, self.costtype)
-        self.func, self.inv_func = costtype.set_cost_curve()
+        costcurve = CostCovCurve(self.unit_cost, self.sat, self.restr_popsize, self.unrestr_popsize, self.costtype)
+        self.func, self.inv_func = costcurve.set_cost_curve()
 
     def get_cov(self, spend):
         """
@@ -361,7 +361,10 @@ class CostCovCurve(sc.prettyobj):
         self.sat = sat
         self.restrictedPop = restrictedPop
         self.unrestrictedPop = unrestrictedPop
-        self.maxcov = sat * restrictedPop / unrestrictedPop
+        try:
+            self.maxcov = sat * restrictedPop / unrestrictedPop
+        except ZeroDivisionError:
+            self.maxcov = 0
         self.ss = Settings()
 
     def set_cost_curve(self):
@@ -421,21 +424,16 @@ class CostCovCurve(sc.prettyobj):
     def _lin_func(self, m, c, x):
         """ Expects x to be a 1D numpy array.
          Return: a numpy array of the same length as x """
-        if not self.unrestrictedPop:
-            unres_maxcov = 0
-        else:
-            unres_maxcov = np.full(len(x), self.maxcov)
-        return np.minimum((m * x[:] + c)/self.unrestrictedPop, unres_maxcov)
+        numcov = m * x[:] + c
+        cov = np.divide(numcov, self.unrestrictedPop, out=np.zeros(len(x)), where=self.unrestrictedPop!=0)
+        return np.minimum(cov, self.maxcov)
 
     def _log_func(self, a, b, c, d, yshift, xscale, yscale, x):
         """ The generalized logistic function, with extra params for scaling and shifting so that all desired curves can be produced.
          This function is truncated for the decreasing marginal costs curve, which can exceed maxcov. """
-        if not self.unrestrictedPop:
-            unres_maxcov = 0
-        else:
-            unres_maxcov = np.full(len(x), self.maxcov)
-        cov = ( (a + yshift) + (b - a) / (1 + np.exp(-(x[:]*xscale - c) / d))) / self.unrestrictedPop / yscale
-        return np.minimum(cov, unres_maxcov)
+        numcov = ((a + yshift) + (b - a) / (1 + np.exp(-(x*xscale - c) / d))) / yscale
+        cov = np.divide(numcov, self.unrestrictedPop, out=np.zeros(len(x)), where=self.unrestrictedPop!=0)
+        return np.minimum(cov, self.maxcov)
 
     def _inv_lin_func(self, m, c, y):
         """
@@ -444,16 +442,14 @@ class CostCovCurve(sc.prettyobj):
         :param y: a 1d numpy array of unrestricted coverage fractions
         :return: a 1d numpy array with same length as y
         """
-        return (y[:]*self.unrestrictedPop - c)/m
+        return (y*self.unrestrictedPop - c)/m
 
     def _inv_log(self, a, b, c, d, yshift, xscale, yscale, y):
         """ Inverse of the logistic curve with given parameters.
          WARNING: coverages values (y) >= saturation will return infinity """
         numcovered = y * self.unrestrictedPop
-        if d == 0:
-            return 0
-        else:
-            return xscale*(-d * np.log((b - yscale * numcovered[:] + yshift) / (yscale * numcovered[:] - a - yshift)) + c)
+        cost = xscale*(-d * np.log((b - yscale * numcovered + yshift) / (yscale * numcovered - a - yshift)) + c)
+        return cost
 
     def get_endpoints(self, a, b, c, d):
         """Estimates the average change of the increasing marginal costs curve,
