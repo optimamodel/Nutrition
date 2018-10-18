@@ -66,6 +66,7 @@ class Project(object):
             if not inputspath:
                 template_name = 'template_input.xlsx'
                 inputspath = sc.makefilepath(filename=template_name, folder=settings.ONpath('applications'))
+                self.storeinputs(inputspath)
             else:
                 self.load_data(inputspath=inputspath, defaultspath=defaultspath, fromfile=True)
 
@@ -109,13 +110,13 @@ class Project(object):
             info[attr] = getattr(self, attr) # Populate the dictionary
         return info
     
-    def load_inputs(self, inputspath=None, country=None, region=None, name=None):
+    def storeinputs(self, inputspath=None, country=None, region=None, name=None):
         ''' Reload the input spreadsheet into the project '''
         if inputspath is None: inputspath = settings.data_path(country, region)
         self.spreadsheets[name] = sc.Spreadsheet(filename=inputspath)
         return self.input_sheet(name)
     
-    def load_defaults(self, defaultspath=None):
+    def storedefaults(self, defaultspath=None):
         ''' Reload the defaults spreadsheet into the project '''
         if defaultspath is None: defaultspath = settings.default_params_path()
         self.defaults_sheet = sc.Spreadsheet(filename=defaultspath)
@@ -141,9 +142,9 @@ class Project(object):
         # Optionally (but almost always) reload the spreadsheets from file
         if fromfile:
             if defaultspath or not self.defaults_sheet:
-                self.load_defaults(defaultspath=defaultspath)
+                self.storedefaults(defaultspath=defaultspath)
             if inputspath or country or not self.input_sheet:
-                self.load_inputs(inputspath=inputspath, country=country, region=region, name=name)
+                self.storeinputs(inputspath=inputspath, country=country, region=region, name=name)
         
         # Optionally (but almost always) use these to make a model (do not do if blank sheets)
         dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self)
