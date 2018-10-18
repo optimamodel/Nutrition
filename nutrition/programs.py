@@ -417,8 +417,14 @@ class CostCovCurve(sc.prettyobj):
             c += endx # shift right
             xscale = 2 # shrink x
             yscale = 2 # shrink y
+        # account for the error around (0,0)
+        zero = np.array([0])
         curve = partial(self._log_func, a, b, c, d, yshift, xscale, yscale)
         inv = partial(self._inv_log, a, b, c, d, yshift, xscale, yscale)
+        yerr = curve(zero)
+        xerr = inv(zero)
+        curve = partial(self._log_func, a, b, c, d, yshift, xscale, yscale, offset=yerr)
+        inv = partial(self._inv_log, a, b, c, d, yshift, xscale, yscale, offset=xerr)
         return curve, inv
 
     def _lin_func(self, m, c, x):
@@ -428,11 +434,12 @@ class CostCovCurve(sc.prettyobj):
         cov = np.divide(numcov, self.unrestrictedPop, out=np.zeros(len(x)), where=self.unrestrictedPop!=0)
         return np.minimum(cov, self.maxcov)
 
-    def _log_func(self, a, b, c, d, yshift, xscale, yscale, x):
+    def _log_func(self, a, b, c, d, yshift, xscale, yscale, x, offset=0):
         """ The generalized logistic function, with extra params for scaling and shifting so that all desired curves can be produced.
+        Offset is a way to account for the error around (0,0) produced by approximating the 'end' value of the logisitic curve.
          This function is truncated for the decreasing marginal costs curve, which can exceed maxcov. """
         numcov = ((a + yshift) + (b - a) / (1 + np.exp(-(x*xscale - c) / d))) / yscale
-        cov = np.divide(numcov, self.unrestrictedPop, out=np.zeros(len(x)), where=self.unrestrictedPop!=0)
+        cov = np.divide(numcov, self.unrestrictedPop, out=np.zeros(len(x)), where=self.unrestrictedPop!=0) - offset
         return np.minimum(cov, self.maxcov)
 
     def _inv_lin_func(self, m, c, y):
@@ -444,11 +451,11 @@ class CostCovCurve(sc.prettyobj):
         """
         return (y*self.unrestrictedPop - c)/m
 
-    def _inv_log(self, a, b, c, d, yshift, xscale, yscale, y):
+    def _inv_log(self, a, b, c, d, yshift, xscale, yscale, y, offset=0):
         """ Inverse of the logistic curve with given parameters.
          WARNING: coverages values (y) >= saturation will return infinity """
         numcovered = y * self.unrestrictedPop
-        cost = xscale*(-d * np.log((b - yscale * numcovered + yshift) / (yscale * numcovered - a - yshift)) + c)
+        cost = xscale*(-d * np.log((b - yscale * numcovered + yshift) / (yscale * numcovered - a - yshift)) + c) - offset
         return cost
 
     def get_endpoints(self, a, b, c, d):
@@ -457,7 +464,7 @@ class CostCovCurve(sc.prettyobj):
         The average change dictates the gradient of a linear curve to base logistic curves upon.
         Calculates between points (0,0) and (cost, 95% of saturation) """
         # estimate cost at 95% of saturation
-        endcov = np.array([0.95*self.maxcov])
+        endcov = np.array([.95*self.maxcov])
         endcost = self._inv_log(a, b, c, d, 0, 1, 1, endcov)
         endnum = endcov * self.unrestrictedPop
         return endcost[0], endnum[0]
