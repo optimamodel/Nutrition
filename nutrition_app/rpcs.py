@@ -342,7 +342,7 @@ def create_new_project(username, proj_name, *args, **kwargs):
     key,proj = save_new_project(proj, username) # Save the new project in the DataStore.
     file_name = '%s databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name, username)
-    proj.input_sheet().save(full_file_name)
+    proj.inputsheet().save(full_file_name)
     print(">> download_databook %s" % (full_file_name))
     return full_file_name
 
@@ -420,7 +420,7 @@ def download_databook(project_id, key=None):
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
     file_name = '%s_databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
-    proj.input_sheet().save(full_file_name)
+    proj.inputsheet().save(full_file_name)
     print(">> download_databook %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
 
@@ -433,7 +433,7 @@ def download_defaults(project_id):
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
     file_name = '%s_defaults.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
-    proj.defaults_sheet.save(full_file_name)
+    proj.defaultssheet.save(full_file_name)
     print(">> download_defaults %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
 
@@ -608,7 +608,7 @@ def get_sheet_data(project_id, key=None, verbose=False):
         'Programs cost and coverage',
         ]
     proj = load_project(project_id, die=True)
-    wb = proj.input_sheet(key)
+    wb = proj.inputsheet(key)
     sheetdata = sc.odict()
     for sheet in sheets:
         sheetdata[sheet] = wb.readcells(sheetname=sheet, header=False)
@@ -650,7 +650,7 @@ def get_sheet_data(project_id, key=None, verbose=False):
 def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
     proj = load_project(project_id, die=True)
     if key is None: key = proj.datasets.keys()[-1] # There should always be at least one
-    wb = proj.input_sheet(key) # CK: Warning, might want to change
+    wb = proj.inputsheet(key) # CK: Warning, might want to change
     for sheet in sheetdata.keys():
         if verbose: print('Saving sheet %s...' % sheet)
         datashape = np.shape(sheetdata[sheet])
