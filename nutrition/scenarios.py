@@ -13,8 +13,8 @@ class Scen(sc.prettyobj):
         self.name = name
         self.model_name = model_name
         self.scen_type = scen_type
-        self.vals = progvals.values()
-        self.prog_set = progvals.keys()
+        self.vals = list(progvals.values())
+        self.prog_set = list(progvals.keys())
         self.active = active
 
     def get_attr(self):
