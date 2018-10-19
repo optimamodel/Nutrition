@@ -406,6 +406,7 @@ class ProgData(object):
         self.ref_progs = []
         self.sat = None
         self.costs = None
+        self.costtype = None
         self.prog_deps = None
         self.prog_target = None
         self.famplan_methods = None
@@ -463,6 +464,7 @@ class ProgData(object):
         self.base_cov = sc.odict(zip(self.base_prog_set, sheet.iloc[:,1].tolist()))
         self.sat = sc.odict(zip(self.base_prog_set, sheet.iloc[:,2].tolist()))
         self.costs = sc.odict(zip(self.base_prog_set, sheet.iloc[:,3].tolist()))
+        self.costtype = sc.odict(zip(self.base_prog_set, sheet.iloc[:,4].tolist()))
 
     def create_iycf(self):
         packages = self.define_iycf()
