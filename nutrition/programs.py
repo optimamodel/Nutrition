@@ -54,9 +54,9 @@ class Program(sc.prettyobj):
         """ cov: a list of coverages/spending with one-to-one correspondence with sim_years
         restr_cov: boolean indicating if the coverages are restricted or unrestricted """
         if 'ov' in scentype:
-            # Raise exception if invalid coverage value provided. Done here before converting to unrestricted coverages
+            # Raise exception is invalid coverage value. Done here before converting to unrestricted coverages
             if (cov < 0).any() or (cov > 1).any():
-                raise Exception("Coverage for '%s' outside range 0-100: %s" % (progname, cov))
+                raise Exception("Coverage for '%s' outside range 0-1: %s" % (progname, cov))
             # assume restricted cov
             cov = self.get_unrestr_cov(cov)
             cov[0] = self.annual_cov[0]
@@ -330,7 +330,7 @@ class Program(sc.prettyobj):
         return fracChange
 
     def set_costcov(self):
-        costcurve = CostCovCurve(self.unit_cost, self.sat, self.restr_popsize, self.unrestr_popsize, self.nullpop)
+        costcurve = CostCovCurve(self.unit_cost, self.sat, self.restr_popsize, self.unrestr_popsize)
         self.func, self.inv_func = costcurve.set_cost_curve()
 
     def get_cov(self, spend):
@@ -354,13 +354,12 @@ class Program(sc.prettyobj):
         self.set_costcov()
 
 class CostCovCurve(sc.prettyobj):
-    def __init__(self, unit_cost, sat, restrictedPop, unrestrictedPop, nullpop, curveType='linear'):
+    def __init__(self, unit_cost, sat, restrictedPop, unrestrictedPop, curveType='linear'):
         self.curveType = curveType
         self.unit_cost = unit_cost
         self.sat = sat
         self.restrictedPop = restrictedPop
         self.unrestrictedPop = unrestrictedPop
-        self.nullpop = nullpop
 
     def set_cost_curve(self):
         if self.curveType == 'linear':
@@ -414,11 +413,11 @@ class CostCovCurve(sc.prettyobj):
     def _lin_func(self, m, c, max_cov, x):
         """ Expects x to be a 1D numpy array.
          Return: a numpy array of the same length as x """
-        if self.nullpop:
-            return np.zeros(len(x))
+        if not self.unrestrictedPop:
+            unres_maxcov = 0
         else:
             unres_maxcov = np.full(len(x), max_cov / self.unrestrictedPop)
-            return np.minimum((m * x[:] + c)/self.unrestrictedPop, unres_maxcov)
+        return np.minimum((m * x[:] + c)/self.unrestrictedPop, unres_maxcov)
 
     def _log_func(self, A, B, C, D, x):
         return (A + (B - A) / (1 + np.exp(-(x[:] - C) / D))) / self.unrestrictedPop

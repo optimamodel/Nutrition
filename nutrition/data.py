@@ -301,23 +301,28 @@ class InputData(object):
     ## DEMOGRAPHICS ##
 
     def get_demo(self):
-        baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0,1])
-        demo = sc.odict()
-        # the fields that group the data in spreadsheet
-        fields = ['Population data', 'Food', 'Age distribution of pregnant women', 'Mortality', 'Other risks']
-        for field in fields:
-            demo.update(baseline.loc[field].to_dict('index'))
-        self.demo = {key: item['Data'] for key, item in demo.iteritems()}
-        self.demo['Birth dist'] = baseline.loc['Birth outcome distribution'].to_dict()['Data']
-        t = baseline.loc['Projection years']
-        self.t = [int(t.loc['Baseline year (projection start year)']['Data']), int(t.loc['End year']['Data'])]
-        # birth spacing
-        self.birth_space = baseline.loc['Birth spacing'].to_dict()['Data']
-        self.birth_space.pop('Total (must be 100%)', None)
-        # fix ages for PW
-        baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0])
-        for row in baseline.loc['Age distribution of pregnant women'].iterrows():
-            self.pw_agedist.append(row[1]['Data'])
+        try:
+            baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0,1])
+            demo = sc.odict()
+            # the fields that group the data in spreadsheet
+            fields = ['Population data', 'Food', 'Age distribution of pregnant women', 'Mortality', 'Other risks']
+            for field in fields:
+                demo.update(baseline.loc[field].to_dict('index'))
+            self.demo = {key: item['Data'] for key, item in demo.iteritems()}
+            self.demo['Birth dist'] = baseline.loc['Birth outcome distribution'].to_dict()['Data']
+            t = baseline.loc['Projection years']
+            self.t = [int(t.loc['Baseline year (projection start year)']['Data']), int(t.loc['End year']['Data'])]
+            # birth spacing
+            self.birth_space = baseline.loc['Birth spacing'].to_dict()['Data']
+            self.birth_space.pop('Total (must be 100%)', None)
+            # fix ages for PW
+            baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0])
+            for row in baseline.loc['Age distribution of pregnant women'].iterrows():
+                self.pw_agedist.append(row[1]['Data'])
+        except Exception as E:
+            errormsg = 'Inputs sheet is missing data (error: %s)' % str(E)
+            raise Exception(errormsg)
+        return None
 
     def get_proj(self):
         # drops rows with any na
@@ -535,47 +540,44 @@ class Dataset(object):
         self.pops = pops
         self.prog_info = prog_info
         self.t = None
-        if name is None:
-            try:    name = country+'_'+region
-            except: name = 'default'
         self.name = name
         self.modified = sc.now()
         if doload:
-            self.load(inputspath=inputspath, defaultspath=defaultspath, fromfile=True, project=project)
+            self.load(project=project)
         return None
     
     def __repr__(self):
         output  = sc.prepr(self)
         return output
     
-    def load(self, inputspath=None, defaultspath=None, fromfile=True, project=None):
+    def load(self, project=None):
         # Handle inputs
         if project is None:
             raise Exception('Sorry, but you must supply a project for load().')
-        if fromfile: # Reload the data at the project level
-            project.load_data(country=self.country, region=self.region, name=self.name, inputspath=inputspath, defaultspath=defaultspath, fromfile=fromfile, makemodel=False)
         
         # Pull the sheets from the project
-        input_sheet    = project.input_sheet 
-        defaults_sheet = project.defaults_sheet
+        if self.name in project.spreadsheets.keys(): spreadsheetkey = self.name
+        else:                                        spreadsheetkey = -1
+        inputsheet    = project.inputsheet(spreadsheetkey)
+        defaultssheet = project.defaultssheet
         
         # Convert them to Pandas
-        input_data     = input_sheet.pandas() 
-        default_data   = defaults_sheet.pandas()
+        input_data     = inputsheet.pandas() 
+        default_data   = defaultssheet.pandas()
         
         # Read them into actual data
-        try:
-            self.demo_data = InputData(input_data)
-            self.default_params = DefaultParams(default_data, input_data)
-            self.default_params.compute_risks(self.demo_data)
-            self.prog_data = ProgData(input_data, self.default_params)
-            self.pops = populations.set_pops(self.demo_data, self.default_params)
-            self.prog_info = programs.ProgramInfo(self.prog_data)
-            self.t = self.demo_data.t
-            self.modified = sc.now()
-        except Exception as E:
-            errormsg = 'Could not load data: ensure both input and defaults sheets have been loaded: %s' % str(E)
-            raise Exception(errormsg)
+#        try:
+        self.demo_data = InputData(input_data)
+        self.default_params = DefaultParams(default_data, input_data)
+        self.default_params.compute_risks(self.demo_data)
+        self.prog_data = ProgData(input_data, self.default_params)
+        self.pops = populations.set_pops(self.demo_data, self.default_params)
+        self.prog_info = programs.ProgramInfo(self.prog_data)
+        self.t = self.demo_data.t
+        self.modified = sc.now()
+#        except Exception as E:
+#            errormsg = 'Could not load data: ensure both input and defaults sheets have been loaded: %s' % str(E)
+#            raise Exception(errormsg)
         return None
     
     def prog_names(self):

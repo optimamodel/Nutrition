@@ -24,6 +24,11 @@ const SidebarStore = {
       path: '/optimizations'
     },
     {
+      name: 'Geospatial',
+      icon: 'ti-world',
+      path: '/geospatial'
+    },
+    {
       name: 'Help',
       icon: 'ti-help',
       path: '/help'

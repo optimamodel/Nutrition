@@ -1,7 +1,7 @@
 <!--
 Define health packages
 
-Last update: 2018-08-02
+Last update: 2018-10-03
 -->
 
 <template>
@@ -23,6 +23,25 @@ Last update: 2018-08-02
       <div v-if="sheetNames">
         <div class="card">
           <help reflink="inputs" label="Edit input data"></help>
+          <br>
+          <br>
+          <div class="controls-box">
+            <b>Dataset: &nbsp;</b>
+            <select v-model="activeDataset">
+              <option v-for='dataset in datasetOptions'>
+                {{ dataset }}
+              </option>
+            </select>&nbsp;
+            <button class="btn btn-icon" @click="renameDatasetModal()" data-tooltip="Rename"><i class="ti-pencil"></i></button>
+            <button class="btn btn-icon" @click="copyDataset()" data-tooltip="Copy"><i class="ti-files"></i></button>
+            <button class="btn btn-icon" @click="deleteDataset()" data-tooltip="Delete"><i class="ti-trash"></i></button>
+            <button class="btn btn-icon" @click="downloadDatabook()" data-tooltip="Downl databookoad databook"><i class="ti-download"></i></button>
+            <button class="btn btn-icon" @click="uploadDatabook()" data-tooltip="Upload"><i class="ti-upload"></i></button>
+            <button class="btn btn-icon" @click="loadDatasets()" data-tooltip="Refresh"><i class="ti-reload"></i></button>&nbsp;
+            <!--<help reflink="parameter-sets"></help>-->
+          </div>
+          <br>
+          <br>
           <div v-for="name in sheetNames" style="display:inline-block; padding-right:10px">
             <div v-if="name===activeSheet">
               <button class="btn sheetbtn" @click="setActive(name)" data-tooltip="Current sheet">{{ name }}</button>
@@ -54,6 +73,14 @@ Last update: 2018-08-02
                              v-model="cellDict.value"/>
                     </div>
                   </div>
+                  <div v-if="cellDict.format==='bdgt'" class="cell c_edit">
+                    <div class="cellpad">
+                      <input type="text"
+                             class="txbox"
+                             style="text-align: right"
+                             v-model="cellDict.value"/>
+                    </div>
+                  </div>
                   <div v-if="cellDict.format==='calc'" class="cell c_calc">
                     <div class="cellpad">
                       <input type="text"
@@ -78,6 +105,40 @@ Last update: 2018-08-02
       </div>
     </div>
 
+    <!-- ### Start: rename dataset modal ### -->
+    <modal name="rename-dataset"
+           height="auto"
+           :classes="['v--modal', 'vue-dialog']"
+           :width="width"
+           :pivot-y="0.3"
+           :adaptive="true"
+           :clickToClose="clickToClose"
+           :transition="transition">
+
+      <div class="dialog-content">
+        <div class="dialog-c-title">
+          Rename dataset
+        </div>
+        <div class="dialog-c-text">
+          New name:<br>
+          <input type="text"
+                 class="txbox"
+                 v-model="activeDataset"/><br>
+        </div>
+        <div style="text-align:justify">
+          <button @click="renameDataset()" class='btn __green' style="display:inline-block">
+            Rename
+          </button>
+
+          <button @click="$modal.hide('rename-dataset')" class='btn __red' style="display:inline-block">
+            Cancel
+          </button>
+        </div>
+      </div>
+
+    </modal>
+    <!-- ### End: rename dataset modal ### -->
+
   </div>
 </template>
 
@@ -98,6 +159,8 @@ Last update: 2018-08-02
 
     data() {
       return {
+        activeDataset: '',
+        datasetOptions: [],
         sheetNames: [],
         sheetTables: {},
         activeSheet: '',
@@ -118,12 +181,15 @@ Last update: 2018-08-02
         console.log('created() called')
         utils.sleep(1)  // used so that spinners will come up by callback func
           .then(response => {
+            this.updateDatasets()
             this.getSheetData() // Load the sheet data
           })
       }
     },
 
     methods: {
+
+      updateDatasets() { return utils.updateDatasets(this) },
 
       setActive(active) {
         console.log('Setting active to ' + active)
@@ -173,14 +239,64 @@ Last update: 2018-08-02
 
       uploadDatabook() {
         console.log('uploadDatabook() called')
-        status.start(this, 'Uploading databook...')
         rpcs.upload('upload_databook', [this.projectID], {}, '.xlsx')
           .then(response => {
+            status.start(this, 'Uploading databook...')
             this.getSheetData() // Refresh the table
             status.succeed(this, 'Data uploaded')
           })
           .catch(error => {
             status.fail(this, 'Could not upload data', error)
+          })
+      },
+
+      renameDatasetModal() {
+        console.log('renameDatasetModal() called');
+        this.origDatasetName = this.activeDataset // Store this before it gets overwritten
+        this.$modal.show('rename-dataset');
+      },
+
+      renameDataset() {
+        console.log('renameDataset() called for ' + this.activeDataset)
+        this.$modal.hide('rename-dataset');
+        status.start(this)
+        rpcs.rpc('rename_dataset', [this.projectID, this.origDatasetName, this.activeDataset]) // Have the server copy the project, giving it a new name.
+          .then(response => {
+            this.updateDatasets() // Update the project summaries so the copied program shows up on the list.
+            // TODO: look into whether the above line is necessary
+            status.succeed(this, 'Dataset "'+this.activeDataset+'" renamed') // Indicate success.
+          })
+          .catch(error => {
+            status.fail(this, 'Could not rename dataset', error)
+          })
+      },
+
+      copyDataset() {
+        console.log('copyDataset() called for ' + this.activeDataset)
+        status.start(this)
+        rpcs.rpc('copy_dataset', [this.projectID, this.activeDataset]) // Have the server copy the project, giving it a new name.
+          .then(response => {
+            this.updateDatasets() // Update the project summaries so the copied program shows up on the list.
+            // TODO: look into whether the above line is necessary
+            this.activeDataset = response.data
+            status.succeed(this, 'Dataset "'+this.activeDataset+'" copied') // Indicate success.
+          })
+          .catch(error => {
+            status.fail(this, 'Could not copy dataset', error)
+          })
+      },
+
+      deleteDataset() {
+        console.log('deleteDataset() called for ' + this.activeDataset)
+        status.start(this)
+        rpcs.rpc('delete_dataset', [this.projectID, this.activeDataset]) // Have the server copy the project, giving it a new name.
+          .then(response => {
+            this.updateDatasets() // Update the project summaries so the copied program shows up on the list.
+            // TODO: look into whether the above line is necessary
+            status.succeed(this, 'Dataset "'+this.activeDataset+'" deleted') // Indicate success.
+          })
+          .catch(error => {
+            status.fail(this, 'Cannot delete last dataset: ensure there are at least 2 datasets before deleting one', error)
           })
       },
 
