@@ -44,7 +44,7 @@ export default {
       })
       .then(response => {
         if (typeof(response.data.error) !== 'undefined') { // If there is an error in the POST response.
-          console.log('RPC error: ' + response.data.error)
+          console.log('RPC response error: ' + response.data.error)
           reject(Error(response.data.error))
         } else {
           console.log('RPC succeeded')
@@ -52,7 +52,7 @@ export default {
         }
       })
       .catch(error => {
-        console.log('RPC error: ' + error)
+        console.log('Unknown RPC error: ' + error)
         if (error.response) { // If there was an actual response returned from the server...
           if (typeof(error.response.data.exception) !== 'undefined') { // If we have exception information in the response (which indicates an exception on the server side)...
             reject(Error(error.response.data.exception)) // For now, reject with an error message matching the exception.

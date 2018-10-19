@@ -303,13 +303,14 @@ def jsonify_projects(username, verbose=False):
     output = {'projects':[]}
     user = get_user(username)
     for project_key in user.projects:
+        json = jsonify_project(project_key)
+        output['projects'].append(json)
         try:
-            json = jsonify_project(project_key)
+            pass
         except Exception as E:
             print('Project load failed, removing: %s' % str(E))
             user.projects.remove(project_key)
             datastore.saveuser(user)
-        output['projects'].append(json)
     if verbose: sc.pp(output)
     return output
 
