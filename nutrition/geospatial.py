@@ -134,7 +134,7 @@ class Geospatial:
 
     def gridsearch(self, optimized, totalfunds):
         # extract each result that has multiple 1
-        regions = [region for sublist in optimized.itervalues() for region in sublist if region.mult == 1]
+        regions = [region for sublist in optimized.values() for region in sublist if region.mult == 1]
         self.get_bocs(optimized, totalfunds)
         spendvecs, icervecs = self.get_icer(regions, totalfunds)
         remainfunds = totalfunds
