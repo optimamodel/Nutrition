@@ -191,7 +191,7 @@ class Program(sc.prettyobj):
 
     def set_pregav_sum(self):
         self.pregav_sum = sum(self.famplan_methods[prog]['Effectiveness'] * self.famplan_methods[prog]['Distribution']
-                      for prog in self.famplan_methods.iterkeys())
+                      for prog in self.famplan_methods.keys())
 
     def get_pregav_update(self, age_group):
         """ Even though this isn't technically an age group-specific update,
@@ -555,7 +555,7 @@ class ProgramInfo(sc.prettyobj):
     def _clean_prog_areas(self, prog_areas, progset):
         """ Removed programs from program area list if not included in analysis """
         retain = {}
-        for risk, names in prog_areas.iteritems():
+        for risk, names in prog_areas.items():
             retain[risk] = [prog for prog in names if prog in progset]
         return retain
 

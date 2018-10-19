@@ -442,7 +442,7 @@ class ProgData(object):
         for program, dependency in deps.iterrows():
             programDep[program] = sc.odict()
             for dependType, value in dependency.items():
-                if isinstance(value, unicode): # cell not empty
+                if sc.isstring(value): # cell not empty
                     programDep[program][dependType] = value.replace(", ", ",").split(',') # assumes programs separated by ", "
                 else:
                     programDep[program][dependType] = []

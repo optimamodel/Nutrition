@@ -263,7 +263,7 @@ def get_costeff(project, results):
         par_outs = parent.get_outputs(outcomes)
         allocs = parent.get_allocs(ref=refprogs)
         baseallocs = baseline.get_allocs(ref=refprogs)
-        filteredbase = sc.odict({prog:spend for prog, spend in baseallocs.iteritems() if prog not in allocs})
+        filteredbase = sc.odict({prog:spend for prog, spend in baseallocs.items() if prog not in allocs})
         totalspend = allocs[:].sum() + filteredbase[:].sum()
         thesechildren = children[parent.name]
         for j, child in enumerate(thesechildren):
