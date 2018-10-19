@@ -1,9 +1,10 @@
-import sciris as sc
-from optimization import Optim
 import numpy as np
-from scipy.interpolate import pchip
-import utils
+import sciris as sc
 from functools import partial
+from scipy.interpolate import pchip
+from .optimization import Optim
+from . import utils
+
 
 class Geospatial:
     def __init__(self, name=None, modelnames=None, weights=None, mults=None, prog_set=None,

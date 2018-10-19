@@ -710,7 +710,6 @@ def rename_dataset(project_id, datasetname=None, new_name=None):
     save_project(proj)
     return None
 
-print('WARNING, fix')
 
 @RPC() 
 def copy_dataset(project_id, datasetname=None):
