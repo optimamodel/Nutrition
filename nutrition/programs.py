@@ -48,6 +48,12 @@ class Program(sc.prettyobj):
         return output
 
     def get_cov(self, unrestr=True):
+        """ Extracts either the restricted or unrestricted coverage array """
+        if unrestr or self.nullpop:
+            return self.annual_cov
+        else:
+            return self.annual_cov * self.unrestr_popsize / self.restr_popsize
+
     def update_cov(self, cov, spend):
         self.annual_cov = cov
         self.annual_spend = spend
@@ -334,14 +340,6 @@ class Program(sc.prettyobj):
     def set_costcov(self):
         costcurve = CostCovCurve(self.unit_cost, self.sat, self.restr_popsize, self.unrestr_popsize, self.costtype)
         self.func, self.inv_func = costcurve.set_cost_curve()
-
-    def get_cov(self, spend):
-        """
-        Calculate the coverage for given expenditure
-        :param spend: a 1d numpy array
-        :return: a 1d numpy array
-        """
-        return self.func(spend)
 
     def get_spending(self, covs):
         """
