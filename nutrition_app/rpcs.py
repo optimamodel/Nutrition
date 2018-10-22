@@ -469,7 +469,7 @@ def upload_defaults(defaults_filename, project_id):
 ### Input functions and RPCs
 ##################################################################################
 
-editableformats = ['edit', 'calc', 'tick', 'bdgt'] # Define which kinds of format are editable and saveable
+editableformats = ['edit', 'calc', 'tick', 'bdgt', 'drop'] # Define which kinds of format are editable and saveable
 
 def define_formats():
     ''' Hard-coded sheet formats '''
@@ -559,44 +559,44 @@ def define_formats():
     ]
     
     formats['Programs cost and coverage'] = [
-        ['head', 'head', 'head', 'head'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'calc'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'calc'],
-        ['name', 'edit', 'edit', 'calc'],
-        ['name', 'edit', 'edit', 'calc'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'calc'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit']
+        ['head', 'head', 'head', 'head', 'head'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'calc', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'calc', 'drop'],
+        ['name', 'edit', 'edit', 'calc', 'drop'],
+        ['name', 'edit', 'edit', 'calc', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'calc', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop']
     ]
     
     return formats
@@ -623,7 +623,7 @@ def get_sheet_data(project_id, key=None, verbose=False):
         datashape = np.shape(sheetdata[sheet])
         formatshape = np.shape(sheetformat[sheet])
         if datashape != formatshape:
-            errormsg = 'Sheet data and formats have different shapes: %s vs. %s' % (datashape, formatshape)
+            errormsg = 'Sheet data and formats have different shapes for sheet "%s": %s vs. %s' % (sheet, datashape, formatshape)
             raise Exception(errormsg)
         rows,cols = datashape
         sheetjson[sheet] = []
