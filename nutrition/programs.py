@@ -365,6 +365,7 @@ class CostCovCurve(sc.prettyobj):
             self.maxcov = sat * restrictedPop / unrestrictedPop
         except ZeroDivisionError:
             self.maxcov = 0
+        self.approx = 0.95
         self.ss = Settings()
 
     def set_cost_curve(self):
@@ -449,11 +450,13 @@ class CostCovCurve(sc.prettyobj):
         :param y: a 1d numpy array of unrestricted coverage fractions
         :return: a 1d numpy array with same length as y
         """
+        y[y>self.maxcov] = self.maxcov
         return (y*self.unrestrictedPop - c)/m
 
     def _inv_log(self, a, b, c, d, yshift, xscale, yscale, y, offset=0):
         """ Inverse of the logistic curve with given parameters.
-         WARNING: coverages values (y) >= saturation will return infinity """
+         If coverage >= the asymptote, takes an approx of this. """
+        y[y>=self.maxcov] = self.approx*self.maxcov # prevent inf
         numcovered = y * self.unrestrictedPop
         cost = xscale*(-d * np.log((b - yscale * numcovered + yshift) / (yscale * numcovered - a - yshift)) + c) - offset
         return cost
@@ -464,7 +467,7 @@ class CostCovCurve(sc.prettyobj):
         The average change dictates the gradient of a linear curve to base logistic curves upon.
         Calculates between points (0,0) and (cost, 95% of saturation) """
         # estimate cost at 95% of saturation
-        endcov = np.array([.95*self.maxcov])
+        endcov = np.array([self.approx*self.maxcov])
         endcost = self._inv_log(a, b, c, d, 0, 1, 1, endcov)
         endnum = endcov * self.unrestrictedPop
         return endcost[0], endnum[0]
