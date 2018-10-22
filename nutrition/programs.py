@@ -47,6 +47,13 @@ class Program(sc.prettyobj):
         output = sc.prepr(self)
         return output
 
+    def get_cov(self, unrestr=True):
+        """ Extracts either the restricted or unrestricted coverage array """
+        if unrestr or self.nullpop:
+            return self.annual_cov
+        else:
+            return self.annual_cov * self.unrestr_popsize / self.restr_popsize
+
     def update_cov(self, cov, spend):
         self.annual_cov = cov
         self.annual_spend = spend
@@ -334,14 +341,6 @@ class Program(sc.prettyobj):
         costcurve = CostCovCurve(self.unit_cost, self.sat, self.restr_popsize, self.unrestr_popsize, self.costtype)
         self.func, self.inv_func = costcurve.set_cost_curve()
 
-    def get_cov(self, spend):
-        """
-        Calculate the coverage for given expenditure
-        :param spend: a 1d numpy array
-        :return: a 1d numpy array
-        """
-        return self.func(spend)
-
     def get_spending(self, covs):
         """
         Calculate the spending for given coverage
@@ -365,6 +364,7 @@ class CostCovCurve(sc.prettyobj):
             self.maxcov = sat * restrictedPop / unrestrictedPop
         except ZeroDivisionError:
             self.maxcov = 0
+        self.approx = 0.95
         self.ss = Settings()
 
     def set_cost_curve(self):
@@ -449,11 +449,13 @@ class CostCovCurve(sc.prettyobj):
         :param y: a 1d numpy array of unrestricted coverage fractions
         :return: a 1d numpy array with same length as y
         """
+        y[y>self.maxcov] = self.maxcov
         return (y*self.unrestrictedPop - c)/m
 
     def _inv_log(self, a, b, c, d, yshift, xscale, yscale, y, offset=0):
         """ Inverse of the logistic curve with given parameters.
-         WARNING: coverages values (y) >= saturation will return infinity """
+         If coverage >= the asymptote, takes an approx of this. """
+        y[y>=self.maxcov] = self.approx*self.maxcov # prevent inf
         numcovered = y * self.unrestrictedPop
         cost = xscale*(-d * np.log((b - yscale * numcovered + yshift) / (yscale * numcovered - a - yshift)) + c) - offset
         return cost
@@ -464,7 +466,7 @@ class CostCovCurve(sc.prettyobj):
         The average change dictates the gradient of a linear curve to base logistic curves upon.
         Calculates between points (0,0) and (cost, 95% of saturation) """
         # estimate cost at 95% of saturation
-        endcov = np.array([.95*self.maxcov])
+        endcov = np.array([self.approx*self.maxcov])
         endcost = self._inv_log(a, b, c, d, 0, 1, 1, endcov)
         endnum = endcov * self.unrestrictedPop
         return endcost[0], endnum[0]
@@ -639,11 +641,7 @@ class ProgramInfo(sc.prettyobj):
         spend = np.zeros(shape=(len(self.programs), len(years)))
         covs = self.check_cov(covs, years)
         for i,prog in self.programs.enumvals():
-            thiscov, thisspend = prog.interp_scen(covs[i], years, scentype, prog.name)
-            # ensure % cov less than 1
-            thiscov[thiscov > 1] = 1
-            unrestr_cov[i] = thiscov
-            spend[i] = thisspend
+            unrestr_cov[i], spend[i] = prog.interp_scen(covs[i], years, scentype, prog.name)
         return unrestr_cov, spend
 
     def check_cov(self, covs, years):
@@ -663,7 +661,7 @@ class ProgramInfo(sc.prettyobj):
             except IndexError: # coverage scenario not specified, assume constant
                 newcov = np.full(numyears, prog.base_cov)
             newcovs[i][1:] = newcov
-        newcovs = newcovs.astype(float) # force conversion to treat None as nan
+        newcovs = newcovs.astype(float) # force conversion to treat None as nan and convert integers
         return newcovs
 
     def update_covs(self, covs, spends, restrictcovs):

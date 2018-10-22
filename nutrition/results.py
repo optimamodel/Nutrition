@@ -60,10 +60,10 @@ class ScenResult(sc.prettyobj):
             allocs[name] = spend
         return allocs
 
-    def get_covs(self, ref=True):
+    def get_covs(self, ref=True, unrestr=True):
         covs = sc.odict()
-        for name, prog in self.programs.items():
-            cov = prog.annual_cov
+        for name, prog in self.programs.iteritems():
+            cov = prog.get_cov(unrestr=unrestr)
             if not ref and prog.reference:
                 cov -= cov[0] # baseline year is reference cov, subtracted from every year
             covs[name] = cov
@@ -153,7 +153,7 @@ def write_results(results, projname=None, filename=None, folder=None):
     for r, res in enumerate(results):
         rows = res.programs.keys()
         spend = res.get_allocs(ref=False)
-        cov = res.get_covs()
+        cov = res.get_covs(unrestr=False)
         # collate coverages first
         for r, prog in enumerate(rows):
             name = [res.name] if r == 0 else ['']
