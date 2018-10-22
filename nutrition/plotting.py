@@ -229,6 +229,33 @@ def plot_alloc(results, optim, geo):
     figs['alloc'] = fig
     return figs
 
+def plot_costcurve(results):
+    """ Plots the cost coverage curves.
+     Really only used as a diagnostic plotting tool, since with lots of programs it may not be very informative for a user. """
+    fig = pl.figure()
+    ax = fig.add_axes(ax_size)
+    leglabs = []
+    for res in results[:1]:
+        allocs = res.get_allocs()
+        maxspend = 0
+        for name in res.programs.iterkeys():
+            thisspend = allocs[name]
+            leglabs.append(name)
+            if maxspend < np.max(thisspend):
+                maxspend = np.max(thisspend)
+        x = np.linspace(0, 2e7, 10000)
+        for prog in res.programs.itervalues():
+            y = prog.func(x)
+            ax.plot(x, y)
+    ax.set_ylim([0, 1])
+    ax.set_xlim([0, 2e7])
+    ax.set_ylabel('Coverage (%)')
+    ax.set_xlabel('Spending ($US)')
+    ax.legend(leglabs)
+    return fig
+
+
+
 
 def get_costeff(project, results):
     """
