@@ -642,11 +642,7 @@ class ProgramInfo(sc.prettyobj):
         spend = np.zeros(shape=(len(self.programs), len(years)))
         covs = self.check_cov(covs, years)
         for i,prog in self.programs.enumvals():
-            thiscov, thisspend = prog.interp_scen(covs[i], years, scentype, prog.name)
-            # ensure % cov less than 1
-            thiscov[thiscov > 1] = 1
-            unrestr_cov[i] = thiscov
-            spend[i] = thisspend
+            unrestr_cov[i], spend[i] = prog.interp_scen(covs[i], years, scentype, prog.name)
         return unrestr_cov, spend
 
     def check_cov(self, covs, years):
@@ -666,7 +662,7 @@ class ProgramInfo(sc.prettyobj):
             except IndexError: # coverage scenario not specified, assume constant
                 newcov = np.full(numyears, prog.base_cov)
             newcovs[i][1:] = newcov
-        newcovs = newcovs.astype(float) # force conversion to treat None as nan
+        newcovs = newcovs.astype(float) # force conversion to treat None as nan and convert integers
         return newcovs
 
     def update_covs(self, covs, spends, restrictcovs):
