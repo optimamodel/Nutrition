@@ -47,6 +47,7 @@ class Program(sc.prettyobj):
         output = sc.prepr(self)
         return output
 
+    def get_cov(self, unrestr=True):
     def update_cov(self, cov, spend):
         self.annual_cov = cov
         self.annual_spend = spend
