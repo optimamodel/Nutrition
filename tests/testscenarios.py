@@ -60,7 +60,12 @@ kwargs6 = {'name': 'Check bednets',
            'scen_type': 'budget',
            'progvals': sc.odict({'Long-lasting insecticide-treated bednets': [0]})}
 
-scen_list = nu.make_scens([kwargs4, kwargs5])
+kwargs6 = {'name': 'Check bednets',
+           'model_name': 'eg',
+           'scen_type': 'budget',
+           'progvals': sc.odict({'IYCF 1': [0]})}
+
+scen_list = nu.make_scens([kwargs6])
 p.add_scens(scen_list)
 p.run_scens()
 if doplot:

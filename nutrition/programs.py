@@ -13,7 +13,7 @@ class Program(sc.prettyobj):
     Unrestricted coverage: the coverage amongst the entire population """
     def __init__(self, name, prog_data, all_years):
         self.name = name
-        self.prog_deps = prog_data.prog_deps
+        self.prog_deps = prog_data.prog_deps # todo: this order could change
         self.ss = Settings()
         self.year = all_years[0]
         self.annual_cov = np.zeros(len(all_years))
@@ -472,9 +472,10 @@ class CostCovCurve(sc.prettyobj):
         return endcost[0], endnum[0]
 
 
-def set_programs(prog_set, prog_data, all_years):
+def set_programs(prog_set, prog_data, all_years): # todo: could do program checking in here, handle the exceptions. Would be nice to reverse order of prog_data so prog names first
     programs = sc.odict()
     for prog_name in prog_set:
+        
         programs[prog_name] = Program(prog_name, prog_data, all_years)
     return programs
 

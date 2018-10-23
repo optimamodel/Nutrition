@@ -468,6 +468,7 @@ class ProgData(object):
 
     def create_iycf(self):
         packages = self.define_iycf()
+        packages = sc.odict({key: val for key,val in packages.iteritems() if val})
         target = self.get_iycf_target(packages)
         self.prog_target.update(target)
 
