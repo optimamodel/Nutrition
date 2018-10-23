@@ -38,7 +38,7 @@ class Program(sc.prettyobj):
             self.famplan_methods = kwargs['famplan']
             self.set_pregav_sum()
         self._set_target_ages()
-        self._set_impacted_ages(kwargs['impactedpop']) # TODO: This func could contain the info for how many multiples needed for unrestricted population calculation (IYCF)
+        self._set_impacted_ages(kwargs['impactedpop'])
 
     def __repr__(self):
         output = sc.prepr(self)
