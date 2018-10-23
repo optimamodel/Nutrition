@@ -11,45 +11,42 @@ class Program(sc.prettyobj):
     and all necessary data will be stored as attributes. Will store name, targetpop, popsize, coverage, edges etc
     Restricted coverage: the coverage amongst the target population (assumed given by user)
     Unrestricted coverage: the coverage amongst the entire population """
-    def __init__(self, name, prog_data, all_years):
-        self.name = name
-        self.prog_deps = prog_data.prog_deps # todo: this order could change
-        self.ss = Settings()
-        self.year = all_years[0]
-        self.annual_cov = np.zeros(len(all_years))
-        self.annual_spend = np.zeros(len(all_years))
+    def __init__(self, **kwargs):
+        self.name = kwargs['name']
+        self.year = kwargs['allyears'][0]
+        self.target_pops = kwargs['targetpops']
+        self.unit_cost = kwargs['unitcost']
+        self.costtype = kwargs['costtype']
+        self.sat = kwargs['sat']
+        self.base_cov = kwargs['basecov']
+        self.annual_cov = np.zeros(len(kwargs['allyears']))
+        self.annual_spend = np.zeros(len(kwargs['allyears']))
+        self.exclusionDependencies = kwargs['deps']['Exclusion dependency']
+        self.thresholdDependencies = kwargs['deps']['Threshold dependency']
+        # attributes to be calculated later
         self.ref_spend = None
         self.func = None
         self.inv_func = None
-        self.target_pops = prog_data.prog_target[self.name] # frac of each population which is targeted
-        self.unit_cost = prog_data.costs[self.name]
-        self.costtype = prog_data.costtype[self.name]
-        if not self.unit_cost:
-            self.unit_cost = 1
-            print('Warning, program %s has 0 unit cost'%self.name)
-        self.sat = prog_data.sat[self.name]
         self.sat_unrestr = None
-        self.base_cov = prog_data.base_cov[self.name]
         self.base_spend = None
-        self.pregav_sum = None
         self.famplan_methods = None
-        if 'amil' in name: # family planning program only
-            self.famplan_methods = prog_data.famplan_methods
-            self.set_pregav_sum()
-        self.nullpop = False # flags whether target pop is 0
+        self.pregav_sum = None
 
+        self.ss = Settings()
+
+        if 'amil' in self.name: # family planning program only
+            self.famplan_methods = kwargs['famplan']
+            self.set_pregav_sum()
         self._set_target_ages()
-        self._set_impacted_ages(prog_data.impacted_pop[self.name]) # TODO: This func could contain the info for how many multiples needed for unrestricted population calculation (IYCF)
-        self._set_exclusion_deps()
-        self._set_threshold_deps()
-    
+        self._set_impacted_ages(kwargs['impactedpop']) # TODO: This func could contain the info for how many multiples needed for unrestricted population calculation (IYCF)
+
     def __repr__(self):
         output = sc.prepr(self)
         return output
 
     def get_cov(self, unrestr=True):
         """ Extracts either the restricted or unrestricted coverage array """
-        if unrestr or self.nullpop:
+        if unrestr:
             return self.annual_cov
         else:
             return self.annual_cov * self.unrestr_popsize / self.restr_popsize
@@ -85,25 +82,16 @@ class Program(sc.prettyobj):
 
     def get_unrestr_cov(self, restr_cov):
         """ Expects an array of restricted coverages """
-        if self.nullpop:
-            return restr_cov[:] * 0
-        else:
-            return restr_cov[:] * self.restr_popsize / self.unrestr_popsize
+        return restr_cov[:] * self.restr_popsize / self.unrestr_popsize
 
     def set_pop_sizes(self, pops):
         self._set_restrpop(pops)
         self._set_unrestrpop(pops)
         # this accounts for different fractions within age bands
-        if self.nullpop:
-            self.sat_unrestr = 0
-        else:
-            self.sat_unrestr = self.restr_popsize / self.unrestr_popsize
+        self.sat_unrestr = self.restr_popsize / self.unrestr_popsize
 
     def set_init_unrestr(self):
-        if self.nullpop:
-            unrestr_cov = 0
-        else:
-            unrestr_cov = (self.base_cov * self.restr_popsize) / self.unrestr_popsize
+        unrestr_cov = (self.base_cov * self.restr_popsize) / self.unrestr_popsize
         self.annual_cov[0] = unrestr_cov
 
     def adjust_cov(self, pops, year): # todo: needs fixing for annual_cov being an array now
@@ -151,35 +139,6 @@ class Program(sc.prettyobj):
         for pop in populations:
             self.restr_popsize += sum(age.pop_size * self.target_pops[age.age] for age in pop.age_groups
                                          if age.age in self.agesTargeted)
-        if not self.restr_popsize:
-            self.nullpop = True
-            # print('Warning, program "%s" has zero target population size'%self.name)
-
-    def _set_exclusion_deps(self):
-        """
-        List containing the names of programs which restrict the coverage of this program to (1 - coverage of independent program)
-        :return:
-        """
-        self.exclusionDependencies = []
-        try: # TODO: don't like this, perhaps switch order or cleanup before hand?
-            dependencies = self.prog_deps[self.name]['Exclusion dependency']
-        except:
-            dependencies = []
-        for program in dependencies:
-            self.exclusionDependencies.append(program)
-
-    def _set_threshold_deps(self):
-        """
-        List containing the name of programs which restrict the coverage of this program to coverage of independent program
-        :return:
-        """
-        self.thresholdDependencies = []
-        try:
-            dependencies = self.prog_deps[self.name]['Threshold dependency']
-        except:
-            dependencies = []
-        for program in dependencies:
-            self.thresholdDependencies.append(program)
 
     def stunting_update(self, age_group):
         """
@@ -472,11 +431,52 @@ class CostCovCurve(sc.prettyobj):
         return endcost[0], endnum[0]
 
 
-def set_programs(prog_set, prog_data, all_years): # todo: could do program checking in here, handle the exceptions. Would be nice to reverse order of prog_data so prog names first
+def set_programs(progset, progdata, all_years):
+    """ Do the error handling here because we have the progset param at this point. """
     programs = sc.odict()
-    for prog_name in prog_set:
-        
-        programs[prog_name] = Program(prog_name, prog_data, all_years)
+    for name in progset:
+        kwargs = sc.odict()
+        kwargs['name'] = name
+        kwargs['allyears'] = all_years
+        try:
+            targetpops = progdata.prog_target[name]
+            if sum(targetpops.values()) == 0:
+                raise Exception()
+            kwargs['targetpops'] = targetpops
+        except:
+            raise Exception('Cannot define %s because target population is incorrctly specified.'% name)
+        try:
+            unitcost = progdata.costs[name]
+            if unitcost == 0:
+                raise Exception()
+            kwargs['unitcost'] = unitcost
+        except:
+            raise Exception('Cannot define %s because unit cost is incorrctly specified.' % name)
+        try:
+            kwargs['costtype'] = progdata.costtype[name]
+        except:
+            raise Exception('Cannot define %s because cost type is incorrctly specified.' % name)
+        try:
+            kwargs['sat'] = progdata.sat[name]
+        except:
+            raise Exception('Cannot define %s because saturation is incorrctly specified.' % name)
+        try:
+            kwargs['basecov'] = progdata.base_cov[name]
+        except:
+            raise Exception('Cannot define %s because baseline coverage is incorrctly specified.' % name)
+        try:
+            kwargs['famplan'] = progdata.famplan_methods
+        except:
+            raise Exception('Cannot define %s because family planning is incorrctly specified.' % name)
+        try:
+            kwargs['impactedpop'] = progdata.impacted_pop[name]
+        except:
+            raise Exception('Cannot define %s because impacted population is incorrctly specified.' % name)
+        try:
+            kwargs['deps'] = progdata.prog_deps[name]
+        except:
+            raise Exception('Cannot define %s because dependencies are incorrctly specified.' % name)
+        programs[name] = Program(**kwargs)
     return programs
 
 
