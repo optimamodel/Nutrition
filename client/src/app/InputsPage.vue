@@ -171,7 +171,10 @@ Last update: 2018-10-03
         sheetNames: [],
         sheetTables: {},
         activeSheet: '',
-        costFuncOptions: ['Constant (default)', 'Increasing', 'Decreasing', 'Mixed']
+        costFuncOptions: ['Linear (constant marginal cost) [default]',
+                          'Curved with increasing marginal cost',
+                          'Curved with decreasing marginal cost',
+                          'S-shaped (decreasing then increasing marginal cost)']
       }
     },
 
