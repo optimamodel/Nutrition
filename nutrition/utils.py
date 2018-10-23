@@ -20,6 +20,16 @@ def optimafolder(subfolder=None):
 # ##############################################################################
 #
 
+def format_costtypes(oldlabs):
+    maps = {'Linear (constant marginal cost) [default]': 'linear',
+     'Curved with increasing marginal cost': 'increasing',
+     'Curved with decreasing marginal cost': 'decreasing',
+     'S-shaped (decreasing then increasing marginal cost)': 's-shaped'}
+    newlabs = []
+    for lab in oldlabs:
+        newlabs.append(maps[lab])
+    return newlabs
+
 def default_trackers(prev=None, rate=None):
     """
     The names of model outcomes that are tracked. The order of this list is important, so alter with caution.

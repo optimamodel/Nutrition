@@ -355,7 +355,7 @@ class Program(sc.prettyobj):
 
 class CostCovCurve(sc.prettyobj):
     def __init__(self, unit_cost, sat, restrictedPop, unrestrictedPop, costtype):
-        self.costtype = costtype
+        self.costtype = costtype.lower()
         self.unit_cost = unit_cost
         self.sat = sat
         self.restrictedPop = restrictedPop
@@ -368,7 +368,7 @@ class CostCovCurve(sc.prettyobj):
         self.ss = Settings()
 
     def set_cost_curve(self):
-        if self.costtype == 'Constant (default)':
+        if 'lin' in self.costtype:
             curve, invcurve = self._get_lin_curve()
         else:
             curve, invcurve = self._get_log_curve()
@@ -407,11 +407,11 @@ class CostCovCurve(sc.prettyobj):
         yshift = 0
         xscale = 1
         yscale = 1
-        if self.costtype == 'Decreasing':
+        if 'decre' in self.costtype:
             endx, endy = self.get_endpoints(a, b, c, d)
             yshift = endy # shift up
             c += endx # shift right
-        elif self.costtype == 'Mixed':
+        elif 'shaped' in self.costtype:
             endx, endy = self.get_endpoints(a, b, c, d)
             yshift = endy # shift up
             c += endx # shift right
