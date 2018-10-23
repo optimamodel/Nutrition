@@ -89,6 +89,13 @@ Last update: 2018-10-03
                              v-model="cellDict.value"/> <!-- disabled -->
                     </div>
                   </div>
+                  <div v-if="cellDict.format==='drop'" class="cell c_drop">
+                    <div class="cellpad">
+                      <select v-model="cellDict.value">
+                        <option v-for='costFunc in costFuncOptions'>{{ costFunc }}</option>
+                      </select>
+                    </div>
+                  </div>
                 </td>
               </tr>
             </table>
@@ -164,6 +171,10 @@ Last update: 2018-10-03
         sheetNames: [],
         sheetTables: {},
         activeSheet: '',
+        costFuncOptions: ['Linear (constant marginal cost) [default]',
+                          'Curved with increasing marginal cost',
+                          'Curved with decreasing marginal cost',
+                          'S-shaped (decreasing then increasing marginal cost)']
       }
     },
 
@@ -349,6 +360,11 @@ Last update: 2018-10-03
     background-color: rgb(168, 237, 154); // Temporary, presumably, until spreadsheet calculations are done correctly
     /*color:#888;*/
     /*background-color:#ccc;*/
+    justify-content:flex-end;
+  }
+
+  .c_drop {
+    background-color: rgb(168, 237, 154);
     justify-content:flex-end;
   }
 

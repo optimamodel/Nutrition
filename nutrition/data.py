@@ -70,7 +70,7 @@ class DefaultParams(object):
         areas = utils.read_sheet(self.spreadsheet, 'Program risk areas', [0])
         booleanFrame = areas.isnull()
         for program, areas in booleanFrame.iterrows():
-            for risk, value in areas.iteritems():
+            for risk, value in areas.items():
                 if self.prog_areas.get(risk) is None:
                     self.prog_areas[risk] = []
                 if not value:
@@ -80,7 +80,7 @@ class DefaultParams(object):
         areas = utils.read_sheet(self.spreadsheet, 'Population risk areas', [0])
         booleanFrame = areas.isnull()
         for program, areas in booleanFrame.iterrows():
-            for risk, value in areas.iteritems():
+            for risk, value in areas.items():
                 if self.pop_areas.get(risk) is None:
                     self.pop_areas[risk] = []
                 if not value:
@@ -234,9 +234,9 @@ class DefaultParams(object):
     def make_dict(self, mydict):
         """ myDict is a spreadsheet with 3 index cols, converted to dict using orient='index' """
         result = sc.odict()
-        for age, progCatTypeDict in mydict.iteritems():
+        for age, progCatTypeDict in mydict.items():
             result[age] = sc.odict()
-            for progCatType in progCatTypeDict.iteritems():
+            for progCatType in progCatTypeDict.items():
                 keys = progCatType[0]
                 val = progCatType[1]
                 result[age].update({keys[0]:{keys[1]:{keys[2]:val}}})
@@ -245,9 +245,9 @@ class DefaultParams(object):
     def make_dict2(self, mydict):
         """ creating relative risk dict """
         res_dict = sc.odict()
-        for age in mydict.iterkeys():
+        for age in mydict.keys():
             res_dict[age] = sc.odict()
-            for condCat in mydict[age].iterkeys():
+            for condCat in mydict[age].keys():
                 cond = condCat[0]
                 cat = condCat[1]
                 if res_dict[age].get(cat) is None:
@@ -260,9 +260,9 @@ class DefaultParams(object):
     def make_dict3(self, mydict):
         """ for rr diarrhoea """
         res_dict = sc.odict()
-        for age in mydict.iterkeys():
+        for age in mydict.keys():
             res_dict[age] = sc.odict()
-            for condCat in mydict[age].iterkeys():
+            for condCat in mydict[age].keys():
                 cat = condCat[1]
                 if res_dict[age].get(cat) is None:
                     res_dict[age][cat] = mydict[age][condCat]
@@ -308,7 +308,7 @@ class InputData(object):
             fields = ['Population data', 'Food', 'Age distribution of pregnant women', 'Mortality', 'Other risks']
             for field in fields:
                 demo.update(baseline.loc[field].to_dict('index'))
-            self.demo = {key: item['Data'] for key, item in demo.iteritems()}
+            self.demo = {key: item['Data'] for key, item in demo.items()}
             self.demo['Birth dist'] = baseline.loc['Birth outcome distribution'].to_dict()['Data']
             t = baseline.loc['Projection years']
             self.t = [int(t.loc['Baseline year (projection start year)']['Data']), int(t.loc['End year']['Data'])]
@@ -341,11 +341,11 @@ class InputData(object):
         for field in ['Stunting (height-for-age)', 'Wasting (weight-for-height)']:
             riskDist[field.split(' ',1)[0]] = dist.loc[field].dropna(axis=1, how='all').to_dict('dict')
         # fix key refs (surprisingly hard to do in Pandas)
-        for outer, ageCat in riskDist.iteritems():
+        for outer, ageCat in riskDist.items():
             self.risk_dist[outer] = sc.odict()
-            for age, catValue in ageCat.iteritems():
+            for age, catValue in ageCat.items():
                 self.risk_dist[outer][age] = dict()
-                for cat, value in catValue.iteritems():
+                for cat, value in catValue.items():
                     newCat = cat.split(' ',1)[0]
                     self.risk_dist[outer][age][newCat] = value
         # get anaemia
@@ -360,7 +360,7 @@ class InputData(object):
 #            index = np.array(baseline['Field']).tolist().index('Percentage of anaemia that is iron deficient')
 #            iron_pct = np.array(baseline['Data'])[index]
 #            anaem = {key:val*iron_pct for key,val in all_anaem.items()}
-        for age, prev in anaem.iteritems():
+        for age, prev in anaem.items():
             self.risk_dist['Anaemia'][age] = dict()
             self.risk_dist['Anaemia'][age]['Anaemic'] = prev
             self.risk_dist['Anaemia'][age]['Not anaemic'] = 1.-prev
@@ -384,7 +384,7 @@ class InputData(object):
     def get_death_dist(self):
         death_dist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0], 'index')
         # convert 'Pregnant women' to age bands
-        for key, value in death_dist.iteritems():
+        for key, value in death_dist.items():
             self.death_dist[key] = sc.odict()
             pw_val = value['Pregnant women']
             for age in self.settings.pw_ages+self.settings.child_ages:
@@ -442,8 +442,8 @@ class ProgData(object):
         programDep = sc.odict()
         for program, dependency in deps.iterrows():
             programDep[program] = sc.odict()
-            for dependType, value in dependency.iteritems():
-                if isinstance(value, unicode): # cell not empty
+            for dependType, value in dependency.items():
+                if sc.isstring(value): # cell not empty
                     programDep[program][dependType] = value.replace(", ", ",").split(',') # assumes programs separated by ", "
                 else:
                     programDep[program][dependType] = []
@@ -464,7 +464,8 @@ class ProgData(object):
         self.base_cov = sc.odict(zip(self.base_prog_set, sheet.iloc[:,1].tolist()))
         self.sat = sc.odict(zip(self.base_prog_set, sheet.iloc[:,2].tolist()))
         self.costs = sc.odict(zip(self.base_prog_set, sheet.iloc[:,3].tolist()))
-        self.costtype = sc.odict(zip(self.base_prog_set, sheet.iloc[:,4].tolist()))
+        costtypes = utils.format_costtypes(sheet.iloc[:,4].tolist())
+        self.costtype = sc.odict(zip(self.base_prog_set, costtypes))
 
     def create_iycf(self):
         packages = self.define_iycf()
@@ -501,7 +502,7 @@ class ProgData(object):
         frac_child = float(pop_data.loc['Percentage of children attending health facility'])
         # target pop is the sum of fractions exposed to modality in each age band
         target = sc.odict()
-        for name, package in package_modes.iteritems():
+        for name, package in package_modes.items():
             target[name] = sc.odict()
             for pop, mode in package:
                 if target[name].get(pop) is None:
@@ -515,7 +516,7 @@ class ProgData(object):
                     target[name][pop] += 1
         # convert pw to age bands and set missing children + wra to 0
         new_target = sc.dcp(target)
-        for name in target.iterkeys():
+        for name in target.keys():
             if 'Pregnant women' in target[name]:
                 new_target[name].update({age:target[name]['Pregnant women'] for age in self.settings.pw_ages})
                 new_target[name].pop('Pregnant women')

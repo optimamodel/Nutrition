@@ -20,6 +20,16 @@ def optimafolder(subfolder=None):
 # ##############################################################################
 #
 
+def format_costtypes(oldlabs):
+    maps = {'Linear (constant marginal cost) [default]': 'linear',
+     'Curved with increasing marginal cost': 'increasing',
+     'Curved with decreasing marginal cost': 'decreasing',
+     'S-shaped (decreasing then increasing marginal cost)': 's-shaped'}
+    newlabs = []
+    for lab in oldlabs:
+        newlabs.append(maps[lab])
+    return newlabs
+
 def default_trackers(prev=None, rate=None):
     """
     The names of model outcomes that are tracked. The order of this list is important, so alter with caution.
@@ -137,16 +147,16 @@ def process_weights(weights):
     default = default_trackers()
     pretty1 = pretty_labels(direction=False)
     # reverse mapping to find outcome
-    inv_pretty1 = {v: k for k, v in pretty1.iteritems()}
+    inv_pretty1 = {v: k for k, v in pretty1.items()}
     pretty2 = pretty_labels(direction=True)
-    inv_pretty2 = {v: k for k, v in pretty2.iteritems()}
+    inv_pretty2 = {v: k for k, v in pretty2.items()}
     newweights = np.zeros(len(default))
     # if user just enters a string from the pre-defined objectives
     if sc.isstring(weights): weights = sc.odict({weights:1})
     if isinstance(weights, np.ndarray):
         newweights[:len(weights)] = weights
         return newweights
-    for out, weight in weights.iteritems():
+    for out, weight in weights.items():
         if out in default:
             thisout = out
             ind = default.index(out)

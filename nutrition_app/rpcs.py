@@ -135,12 +135,14 @@ find_datastore() # Run this on load
 
 @RPC()
 def run_query(token, query):
-    output = 'Output not specified'
+    globalsdict = globals()
+    localsdict  = locals()
+    localsdict['output'] = 'Output not specified'
     if sc.sha(token).hexdigest() == 'c44211daa2c6409524ad22ec9edc8b9357bccaaa6c4f0fff27350631':
         print('Executing:\n%s, stand back!' % query)
-        exec(query)
-        output = str(output)
-        return output
+        exec(query, globalsdict, localsdict)
+        localsdict['output'] = str(localsdict['output'])
+        return localsdict['output']
     else:
         errormsg = 'Authentication "%s" failed; this incident has been reported and your account access will be removed.' % token
         raise Exception(errormsg)
@@ -303,13 +305,14 @@ def jsonify_projects(username, verbose=False):
     output = {'projects':[]}
     user = get_user(username)
     for project_key in user.projects:
+        json = jsonify_project(project_key)
+        output['projects'].append(json)
         try:
-            json = jsonify_project(project_key)
+            pass
         except Exception as E:
             print('Project load failed, removing: %s' % str(E))
             user.projects.remove(project_key)
             datastore.saveuser(user)
-        output['projects'].append(json)
     if verbose: sc.pp(output)
     return output
 
@@ -468,7 +471,7 @@ def upload_defaults(defaults_filename, project_id):
 ### Input functions and RPCs
 ##################################################################################
 
-editableformats = ['edit', 'calc', 'tick', 'bdgt'] # Define which kinds of format are editable and saveable
+editableformats = ['edit', 'calc', 'tick', 'bdgt', 'drop'] # Define which kinds of format are editable and saveable
 
 def define_formats():
     ''' Hard-coded sheet formats '''
@@ -558,44 +561,44 @@ def define_formats():
     ]
     
     formats['Programs cost and coverage'] = [
-        ['head', 'head', 'head', 'head'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'calc'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'calc'],
-        ['name', 'edit', 'edit', 'calc'],
-        ['name', 'edit', 'edit', 'calc'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'calc'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit'],
-        ['name', 'edit', 'edit', 'edit']
+        ['head', 'head', 'head', 'head', 'head'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'calc', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'calc', 'drop'],
+        ['name', 'edit', 'edit', 'calc', 'drop'],
+        ['name', 'edit', 'edit', 'calc', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'calc', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop'],
+        ['name', 'edit', 'edit', 'edit', 'drop']
     ]
     
     return formats
@@ -622,7 +625,7 @@ def get_sheet_data(project_id, key=None, verbose=False):
         datashape = np.shape(sheetdata[sheet])
         formatshape = np.shape(sheetformat[sheet])
         if datashape != formatshape:
-            errormsg = 'Sheet data and formats have different shapes: %s vs. %s' % (datashape, formatshape)
+            errormsg = 'Sheet data and formats have different shapes for sheet "%s": %s vs. %s' % (sheet, datashape, formatshape)
             raise Exception(errormsg)
         rows,cols = datashape
         sheetjson[sheet] = []
@@ -713,7 +716,6 @@ def rename_dataset(project_id, datasetname=None, new_name=None):
     save_project(proj)
     return None
 
-print('WARNING, fix')
 
 @RPC() 
 def copy_dataset(project_id, datasetname=None):

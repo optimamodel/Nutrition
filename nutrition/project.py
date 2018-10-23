@@ -390,7 +390,7 @@ class Project(object):
         If scens is specified, they are added to self.scens """
         results = []
         if scens is not None: self.add_scens(scens)
-        for scen in self.scens.itervalues():
+        for scen in self.scens.values():
             if scen.active:
                 model = self.model(scen.model_name)
                 res = run_scen(scen, model)

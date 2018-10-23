@@ -49,7 +49,7 @@ class ScenResult(sc.prettyobj):
 
     def get_allocs(self, ref=True, current=False):
         allocs = sc.odict()
-        for name, prog in self.programs.iteritems():
+        for name, prog in self.programs.items():
             spend = prog.annual_spend
             if not ref and prog.reference:
                 spend -= spend[0] # baseline year is reference spending, subtracted from every year
@@ -82,7 +82,7 @@ class ScenResult(sc.prettyobj):
         """ For calculating the impacts of each scenario with single intervention set to 0 coverage """
         cov = [0]
         allkwargs = []
-        progset = self.programs.iterkeys()
+        progset = self.programs.keys()
         base_progset = self.prog_info.base_progset()
         # zero cov scen
         kwargs = {'name': 'Scenario overall',

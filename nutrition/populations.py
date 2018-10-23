@@ -423,7 +423,7 @@ class Children(Population):
             bf_dist = self.bf_dist[age]
             birth_dist = self.birth_dist
             incidences = self.data.incidences[age]
-            incidences = {condition: incidence * self.ss.timestep for condition, incidence in incidences.iteritems()}
+            incidences = {condition: incidence * self.ss.timestep for condition, incidence in incidences.items()}
             ageingRate = 1./self.ss.child_age_spans[i]
             if age == '<1 month': # <1 month age group has slightly different functionality
                 self.age_groups.append(Newborn(age, popSize,
@@ -684,8 +684,8 @@ class Children(Population):
             # get P(BO | space1)
             prob_bospace[bo] = sc.odict()
             fracbo = newborns.birth_dist[bo]
-            p1 = fracbo / sum(RRs[name][bo] * birth_space[name] for name in birth_space.iterkeys())
-            for name in birth_space.iterkeys():
+            p1 = fracbo / sum(RRs[name][bo] * birth_space[name] for name in birth_space.keys())
+            for name in birth_space.keys():
                 prob_bospace[bo][name] = RRs[name][bo] * p1
         newborns.prob_bospace = prob_bospace
 
@@ -845,7 +845,7 @@ class NonPregnantWomen(Population):
     def __init__(self, data, default_params):
         Population.__init__(self, 'Non-pregnant women', data, default_params)
         self.anaemia_dist = self.data.risk_dist['Anaemia']
-        self.proj = {age:pops for age, pops in data.proj.iteritems() if age in self.ss.wra_ages + ['Total WRA']}
+        self.proj = {age:pops for age, pops in data.proj.items() if age in self.ss.wra_ages + ['Total WRA']}
         self._make_pop_sizes()
         self._make_age_groups()
         self._set_time_trends()
