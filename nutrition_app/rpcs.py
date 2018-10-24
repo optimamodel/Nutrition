@@ -605,7 +605,7 @@ def define_formats():
     
 
 @RPC()
-def get_sheet_data(project_id, key=None, verbose=True):
+def get_sheet_data(project_id, key=None, verbose=False):
     sheets = [
         'Nutritional status distribution', 
         'Breastfeeding distribution',
