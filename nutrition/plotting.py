@@ -178,7 +178,7 @@ def plot_alloc(results, optim, geo):
     
     # Make bar plots
     bars = []
-    xlabs = [res.mult if res.mult else res.name for res in results]
+    xlabs = [res.mult if res.mult is not None else res.name for res in results]
     bottom = np.zeros(len(results))
     for i, spend in enumerate(avspend):
         if any(spend) > 0:    # only want to plot prog if spending is non-zero (solves legend issues)
