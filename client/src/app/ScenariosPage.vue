@@ -177,6 +177,7 @@ Last update: 2018-09-25
                 </tbody>
               </table>
             </div>
+            <button class="btn" @click="deselectAll()" data-tooltip="Deselect all interventions">Deselect all</button>
           </div>
           <div style="text-align:center">
             <button @click="addScen()" class='btn __green' style="display:inline-block">
@@ -327,6 +328,12 @@ Last update: 2018-09-25
         this.addEditModal.origName = this.addEditModal.scenSummary.name;
         this.addEditModal.mode = 'edit';
         this.$modal.show('add-scen');
+      },
+
+      deselectAll() {
+        this.addEditModal.scenSummary.progvals.forEach(progval => {
+          progval.included = false;
+        })
       },
 
       addScen() {
