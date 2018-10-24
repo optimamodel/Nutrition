@@ -9,7 +9,7 @@ from .utils import default_trackers
 from .data import Dataset
 from .model import Model
 from .defaults import get_defaults
-from .scenarios import Scen, run_scen
+from .scenarios import Scen, run_scen, convert_scen
 from .optimization import Optim
 from .geospatial import Geospatial
 from .results import write_results
@@ -318,6 +318,16 @@ class Project(object):
             self.add(name=scen.name, item=scen, what='scen')
         self.modified = sc.now()
         return scens
+
+    def convert_scen(self, key=-1):
+        """ Converts one scenario type to another.
+        Retains the original and adds the converted scenario in the project.
+         :param key: the key of the scen to convert"""
+        scen = self.scen(key=key)
+        model = self.model(scen.model_name)
+        converted = convert_scen(scen, model)
+        self.add_scens(converted)
+        return
 
     def run_baseline(self, model_name, prog_set, dorun=True):
         model = sc.dcp(self.model(model_name))
