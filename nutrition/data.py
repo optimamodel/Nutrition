@@ -414,10 +414,10 @@ class ProgData(object):
         self.prog_areas = default_data.prog_areas
 
         # load data
+        self.get_prog_info()
         self.get_prog_target()
         self.get_prog_deps()
         self.get_ref_progs()
-        self.get_prog_info()
         self.get_famplan_methods()
         self.create_iycf()
         self.spreadsheet = None # Reset to save memory
@@ -448,7 +448,7 @@ class ProgData(object):
                 else:
                     programDep[program][dependType] = []
         # pad the remaining programs
-        missingProgs = list(set(self.prog_set) - set(programDep.keys()))
+        missingProgs = list(set(self.base_prog_set) - set(programDep.keys()))
         for program in missingProgs:
             programDep[program] = sc.odict()
             for field in deps.columns:
@@ -469,6 +469,10 @@ class ProgData(object):
 
     def create_iycf(self):
         packages = self.define_iycf()
+        # remove IYCF from base progs if it isn't appropriately defined (avoid error in baseline)
+        remprog = [key for key,val in packages.iteritems() if not val]
+        self.base_prog_set = [prog for prog in self.base_prog_set if prog not in remprog]
+        packages = sc.odict({key: val for key,val in packages.iteritems() if val})
         target = self.get_iycf_target(packages)
         self.prog_target.update(target)
 
