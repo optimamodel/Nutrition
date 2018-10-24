@@ -13,7 +13,7 @@ from .scenarios import Scen, run_scen
 from .optimization import Optim
 from .geospatial import Geospatial
 from .results import write_results
-from .plotting import make_plots, get_costeff
+from .plotting import make_plots, get_costeff, plot_costcurve
 from .demo import demo_scens, demo_optims, demo_geos
 from . import settings
 
@@ -390,7 +390,7 @@ class Project(object):
         If scens is specified, they are added to self.scens """
         results = []
         if scens is not None: self.add_scens(scens)
-        for scen in self.scens.itervalues():
+        for scen in self.scens.values():
             if scen.active:
                 model = self.model(scen.model_name)
                 res = run_scen(scen, model)
@@ -455,6 +455,13 @@ class Project(object):
         results = self.result(resultname)       
         costeff = get_costeff(self, results)
         return costeff
+
+    def plot_costcurves(self, key=-1):
+        """ For backend diagnostic use only """
+        results = self.result(key)
+        plot_costcurve(results)
+        return
+
 
 
 def demo(scens=False, optims=False, geos=False):

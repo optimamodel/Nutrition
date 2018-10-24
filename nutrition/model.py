@@ -157,7 +157,7 @@ class Model(sc.prettyobj):
         return age_groups
 
     def _update_pop(self, population):
-        for risk in self.prog_info.prog_areas.iterkeys():
+        for risk in self.prog_info.prog_areas.keys():
             # get relevant programs and age groups, determined by risk area
             applicableProgs = self._applicable_progs(risk)
             age_groups = self._applicable_ages(population, risk)
@@ -345,7 +345,7 @@ class Model(sc.prettyobj):
         # update birth outcomes
         self.children._set_bo_space() # todo: this is a hack to avoid the issue of updating birth distribution in multiple places. Fix later
         for bo in self.ss.birth_outcomes:
-            newborns.birth_dist[bo] = sum(newborns.prob_bospace[bo][name] * value for name, value in nonpw.birth_space.iteritems())
+            newborns.birth_dist[bo] = sum(newborns.prob_bospace[bo][name] * value for name, value in nonpw.birth_space.items())
 
     def _frac_dia_update(self, beta, age_group, risk):
         oldProb = age_group.frac_risk(risk)

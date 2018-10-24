@@ -9,7 +9,7 @@ class Optim(sc.prettyobj):
     """ Stores settings for running an optimization for a single objective. """
 
     def __init__(self, name=None, model_name=None, weights=None, mults=None, prog_set=None, active=True,
-                 add_funds=0, fix_curr=False, rem_curr=False, curve_type='linear',
+                 add_funds=0, fix_curr=False, rem_curr=False,
                  filter_progs=True):
         """
         :param name: the name of the optimization (string)
@@ -21,7 +21,6 @@ class Optim(sc.prettyobj):
         :param add_funds: additional funds
         :param fix_curr: fix the current allocations?
         :param rem_curr: remove the current allocations?
-        :param curve_type: the type for cost-coverage curve
         :param filter_progs: filter out programs which don't impact the objective (can improve optimization results)
         """
 
@@ -33,7 +32,6 @@ class Optim(sc.prettyobj):
         self.add_funds = add_funds
         self.fix_curr = fix_curr
         self.rem_curr = rem_curr if not fix_curr else False # can't remove if fixed
-        self.curve_type = curve_type
         self.filter_progs = filter_progs
         self.num_cpus = multiprocessing.cpu_count()
 
@@ -96,7 +94,7 @@ class Optim(sc.prettyobj):
             zeroouts = zerores.get_outputs()
             zeroval = np.inner(zeroouts, self.weights)
             # check for dependencies
-            progs = zeromodel.prog_info.programs.values()
+            progs = list(zeromodel.prog_info.programs.values())
             alldeps = [prog.exclusionDependencies for prog in progs] + [prog.thresholdDependencies for prog in progs]
             # flatten list of lists
             flatdeps = [progname for deps in alldeps for progname in deps]

@@ -1,9 +1,10 @@
-import sciris as sc
-from optimization import Optim
 import numpy as np
-from scipy.interpolate import pchip
-import utils
+import sciris as sc
 from functools import partial
+from scipy.interpolate import pchip
+from .optimization import Optim
+from . import utils
+
 
 class Geospatial:
     def __init__(self, name=None, modelnames=None, weights=None, mults=None, prog_set=None,
@@ -105,7 +106,7 @@ class Geospatial:
     def get_bocs(self, optimized, totalfunds):
         """ Genereates the budget outcome curves for each region
          :param optimized: a list of Optim objects (list of lists) """
-        for name, results in optimized.iteritems():
+        for name, results in optimized.items():
             spending = np.zeros(len(results))
             output = np.zeros(len(results))
             for i, res in enumerate(results):
@@ -133,7 +134,7 @@ class Geospatial:
 
     def gridsearch(self, optimized, totalfunds):
         # extract each result that has multiple 1
-        regions = [region for sublist in optimized.itervalues() for region in sublist if region.mult == 1]
+        regions = [region for sublist in optimized.values() for region in sublist if region.mult == 1]
         self.get_bocs(optimized, totalfunds)
         spendvecs, icervecs = self.get_icer(regions, totalfunds)
         remainfunds = totalfunds
