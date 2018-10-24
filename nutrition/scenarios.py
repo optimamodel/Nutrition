@@ -40,3 +40,16 @@ def make_scens(kwargs):
     for kwarg in kwargs:
         scens.append(Scen(**kwarg))
     return scens
+
+def convert_scen(scen, model):
+    """ In order to access the complimentary spending/coverage, the results object must be obtained. """
+    result = run_scen(scen, model)
+    if 'ov' in scen.scen_type:
+        progvals = result.get_allocs()
+        scen_type = 'budget'
+    else:
+        progvals = result.get_covs()
+        scen_type = 'coverage'
+    name = scen.name + ' (%s)' % scen_type
+    converted = Scen(name=name, model_name=scen.model_name, scen_type=scen_type, progvals=progvals)
+    return converted
