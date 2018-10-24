@@ -1,3 +1,4 @@
+import traceback
 from functools import partial
 from math import ceil
 import numpy as np
@@ -443,39 +444,18 @@ def set_programs(progset, progdata, all_years):
             if sum(targetpops.values()) == 0:
                 raise Exception()
             kwargs['targetpops'] = targetpops
-        except:
-            raise Exception('Cannot define %s because target population is incorrctly specified.'% name)
-        try:
             unitcost = progdata.costs[name]
-            if unitcost == 0:
-                raise Exception()
+            assert unitcost != 0
             kwargs['unitcost'] = unitcost
-        except:
-            raise Exception('Cannot define %s because unit cost is incorrctly specified.' % name)
-        try:
             kwargs['costtype'] = progdata.costtype[name]
-        except:
-            raise Exception('Cannot define %s because cost type is incorrctly specified.' % name)
-        try:
             kwargs['sat'] = progdata.sat[name]
-        except:
-            raise Exception('Cannot define %s because saturation is incorrctly specified.' % name)
-        try:
             kwargs['basecov'] = progdata.base_cov[name]
-        except:
-            raise Exception('Cannot define %s because baseline coverage is incorrctly specified.' % name)
-        try:
             kwargs['famplan'] = progdata.famplan_methods
-        except:
-            raise Exception('Cannot define %s because family planning is incorrctly specified.' % name)
-        try:
             kwargs['impactedpop'] = progdata.impacted_pop[name]
-        except:
-            raise Exception('Cannot define %s because impacted population is incorrctly specified.' % name)
-        try:
             kwargs['deps'] = progdata.prog_deps[name]
         except:
-            raise Exception('Cannot define %s because dependencies are incorrctly specified.' % name)
+            errormsg = 'Cannot define program %s: %s'% (name, traceback.format_exc())
+            raise Exception(errormsg)
         programs[name] = Program(**kwargs)
     return programs
 

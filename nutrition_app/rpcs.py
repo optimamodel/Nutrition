@@ -634,7 +634,9 @@ def get_sheet_data(project_id, key=None, verbose=False):
             for c in range(cols):
                 cellformat = sheetformat[sheet][r][c]
                 cellval = sheetdata[sheet][r][c]
-                if sc.isnumber(cellval):
+                try:    cellval = float(cellval) # Try to cast to float
+                except: pass # But give up easily
+                if sc.isnumber(cellval): # If it is a number...
                     if cellformat in ['edit','calc']:
                         cellval = sc.sigfig(100*cellval, sigfigs=3)
                     elif cellformat == 'bdgt': # Format edit box numbers nicely
