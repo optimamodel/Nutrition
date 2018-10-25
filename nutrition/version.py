@@ -1,2 +1,2 @@
-version = '1.3.4'
+version = '1.3.2'
 versiondate = '2018-10-25'
