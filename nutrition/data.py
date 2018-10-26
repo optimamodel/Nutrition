@@ -441,7 +441,7 @@ class ProgData(object):
                 invalid.append(errormsg)
             cost = self.costs[progname]
             if cost <= 0:
-                errormsg = 'Cost is negative or zero for %s' %progname
+                errormsg = 'Cost is 0 or negative for %s' %progname
                 invalid.append(errormsg)
             if progname not in self.prog_target.keys():
                 errormsg = 'Target population not defined for %s' % progname
