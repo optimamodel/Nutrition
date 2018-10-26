@@ -12,18 +12,18 @@ class Program(sc.prettyobj):
     and all necessary data will be stored as attributes. Will store name, targetpop, popsize, coverage, edges etc
     Restricted coverage: the coverage amongst the target population (assumed given by user)
     Unrestricted coverage: the coverage amongst the entire population """
-    def __init__(self, **kwargs):
-        self.name = kwargs['name']
-        self.year = kwargs['allyears'][0]
-        self.target_pops = kwargs['targetpops']
-        self.unit_cost = kwargs['unitcost']
-        self.costtype = kwargs['costtype']
-        self.sat = kwargs['sat']
-        self.base_cov = kwargs['basecov']
-        self.annual_cov = np.zeros(len(kwargs['allyears']))
-        self.annual_spend = np.zeros(len(kwargs['allyears']))
-        self.exclusionDependencies = kwargs['deps']['Exclusion dependency']
-        self.thresholdDependencies = kwargs['deps']['Threshold dependency']
+    def __init__(self, name, all_years, progdata):
+        self.name = name
+        self.year = all_years[0]
+        self.target_pops = progdata.prog_target[name]
+        self.unit_cost = progdata.costs[name]
+        self.costtype = progdata.costtype[name]
+        self.sat = progdata.sat[name]
+        self.base_cov = progdata.base_cov[name]
+        self.annual_cov = np.zeros(len(all_years))
+        self.annual_spend = np.zeros(len(all_years))
+        self.exclusionDependencies = progdata.prog_deps[name]['Exclusion dependency']
+        self.thresholdDependencies = progdata.prog_deps[name]['Threshold dependency']
         # attributes to be calculated later
         self.ref_spend = None
         self.func = None
@@ -36,10 +36,10 @@ class Program(sc.prettyobj):
         self.ss = Settings()
 
         if 'amil' in self.name: # family planning program only
-            self.famplan_methods = kwargs['famplan']
+            self.famplan_methods = progdata.famplan_methods
             self.set_pregav_sum()
         self._set_target_ages()
-        self._set_impacted_ages(kwargs['impactedpop'])
+        self._set_impacted_ages(progdata.impacted_pop[name])
 
     def __repr__(self):
         output = sc.prepr(self)
@@ -436,27 +436,7 @@ def set_programs(progset, progdata, all_years):
     """ Do the error handling here because we have the progset param at this point. """
     programs = sc.odict()
     for name in progset:
-        kwargs = sc.odict()
-        kwargs['name'] = name
-        kwargs['allyears'] = all_years
-        try:
-            targetpops = progdata.prog_target[name]
-            if sum(targetpops.values()) == 0:
-                raise Exception()
-            kwargs['targetpops'] = targetpops
-            unitcost = progdata.costs[name]
-            assert unitcost != 0
-            kwargs['unitcost'] = unitcost
-            kwargs['costtype'] = progdata.costtype[name]
-            kwargs['sat'] = progdata.sat[name]
-            kwargs['basecov'] = progdata.base_cov[name]
-            kwargs['famplan'] = progdata.famplan_methods
-            kwargs['impactedpop'] = progdata.impacted_pop[name]
-            kwargs['deps'] = progdata.prog_deps[name]
-        except:
-            errormsg = 'Cannot define program %s: %s'% (name, traceback.format_exc())
-            raise Exception(errormsg)
-        programs[name] = Program(**kwargs)
+        programs[name] = Program(name, all_years, progdata)
     return programs
 
 
