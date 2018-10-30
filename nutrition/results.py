@@ -169,7 +169,7 @@ def write_results(results, projname=None, filename=None, folder=None):
 
     # Formatting
     nrows = len(data)
-    ncols = len(data[1])
+    ncols = len(data[0])
     formatdata = np.zeros((nrows, ncols), dtype=object)
     formatdata[:, :] = 'plain'  # Format data as plain
     formatdata[:, 0] = 'bold'  # Left side bold
