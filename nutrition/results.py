@@ -132,7 +132,11 @@ def write_results(results, projname=None, filename=None, folder=None):
         for o, outcome in enumerate(rows):
             name = [res.name] if o == 0 else ['']
             thisout = out[o]
-            outputs.append(name + [outcome] + list(thisout) + [sum(thisout)])
+            if 'prev' in outcome.lower():
+                cumul = 'N/A'
+            else:
+                cumul = sum(thisout)
+            outputs.append(name + [outcome] + list(thisout) + [cumul])
         outputs.append(nullrow)
     data = headers + outputs
     alldata.append(data)
