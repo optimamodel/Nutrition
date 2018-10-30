@@ -152,7 +152,7 @@ def write_results(results, projname=None, filename=None, folder=None):
     headers = [['Scenario', 'Program', 'Type'] + years]
     for r, res in enumerate(results):
         rows = res.programs.keys()
-        spend = res.get_allocs(ref=False)
+        spend = res.get_allocs(ref=True)
         cov = res.get_covs(unrestr=False)
         # collate coverages first
         for r, prog in enumerate(rows):
