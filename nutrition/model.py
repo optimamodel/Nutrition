@@ -88,8 +88,8 @@ class Model(sc.prettyobj):
          This is calculated per year with the cumulative deaths and births,
          so the final element will be total rates over the simulation period.
          Note: for now, only calculating final entry since this is all that is required """
-        self.child_mortrate[self.year] = 1000 * sum(self.child_deaths) / sum(self.annual_births)
-        self.pw_mortrate[self.year] = 1000 * sum(self.pw_deaths) / sum(self.annual_births)
+        self.child_mortrate[self.year] = 1000 * np.sum(self.child_deaths) / np.sum(self.annual_births)
+        self.pw_mortrate[self.year] = 1000 * np.sum(self.pw_deaths) / np.sum(self.annual_births)
 
     def _track(self):
         self._track_wra_outcomes()
