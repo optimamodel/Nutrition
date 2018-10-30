@@ -163,6 +163,18 @@ class Project(object):
         
         return None
 
+    def add_data(self, data=None):
+        """ Add a new dataset object to Project """
+        if data is None:
+            self.load_data()
+        else:
+            try:
+                name = data.name
+                self.datasets[name] = data
+                self.add_model(name)
+            except:
+                raise Exception("No name for data object")
+
     def save(self, filename=None, folder=None, saveresults=False, verbose=0):
         ''' Save the current project, by default using its name, and without results '''
         fullpath = sc.makefilepath(filename=filename, folder=folder, default=[self.filename, self.name], ext='prj', sanitize=True)

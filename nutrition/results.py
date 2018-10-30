@@ -132,7 +132,11 @@ def write_results(results, projname=None, filename=None, folder=None):
         for o, outcome in enumerate(rows):
             name = [res.name] if o == 0 else ['']
             thisout = out[o]
-            outputs.append(name + [outcome] + list(thisout) + [sum(thisout)])
+            if 'prev' in outcome.lower():
+                cumul = 'N/A'
+            else:
+                cumul = sum(thisout)
+            outputs.append(name + [outcome] + list(thisout) + [cumul])
         outputs.append(nullrow)
     data = headers + outputs
     alldata.append(data)
@@ -152,7 +156,7 @@ def write_results(results, projname=None, filename=None, folder=None):
     headers = [['Scenario', 'Program', 'Type'] + years]
     for r, res in enumerate(results):
         rows = res.programs.keys()
-        spend = res.get_allocs(ref=False)
+        spend = res.get_allocs(ref=True)
         cov = res.get_covs(unrestr=False)
         # collate coverages first
         for r, prog in enumerate(rows):
@@ -169,7 +173,7 @@ def write_results(results, projname=None, filename=None, folder=None):
 
     # Formatting
     nrows = len(data)
-    ncols = len(data[1])
+    ncols = len(data[0])
     formatdata = np.zeros((nrows, ncols), dtype=object)
     formatdata[:, :] = 'plain'  # Format data as plain
     formatdata[:, 0] = 'bold'  # Left side bold
