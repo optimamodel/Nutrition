@@ -298,7 +298,7 @@ class Model(sc.prettyobj):
         Zt = age_group._getZa() # updated incidence
         beta = age_group._getFracDiarrhoea(Z0, Zt)
         age_group._updateProbConditionalDiarrhoea(Zt)
-        for risk in ['Stunting', 'Anaemia']: # todo: remove link between dia and anaemia?
+        for risk in ['Stunting', 'Anaemia']:
             age_group.diarrhoeaUpdate[risk] *= self._frac_dia_update(beta, age_group, risk)
         wastingUpdate = self._wasting_update_dia(beta, age_group)
         for wastingCat in self.ss.wasted_list:
