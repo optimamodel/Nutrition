@@ -805,13 +805,12 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
         this_spec = {}
         this_spec['name'] = prog_name
         this_spec['included'] = is_included(py_scen.prog_set, program, default_included)
-        this_spec['vals'] = []
         
         # Calculate values
         if this_spec['included']:
             count += 1
             try:
-                this_spec['vals'] = py_scen.vals[count]
+                this_spec['vals'] = list(py_scen.vals[count]) # Ensure it's a list
             except:
                 this_spec['vals'] = [None]
             while len(this_spec['vals']) < scen_years: # Ensure it's the right length
@@ -825,12 +824,16 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
                 if this_spec['vals'][y] in [None, '', 'nan'] or sc.isnumber(this_spec['vals'][y], isnan=True): # It's None or Nan
                     this_spec['vals'][y] = None
                 else:
+                    
                     if js_scen['scen_type'] == 'coverage': # Convert to percentage
                         this_spec['vals'][y] = str(round(100*this_spec['vals'][y])) # Enter to the nearest percentage
                     elif js_scen['scen_type'] == 'budget': # Add commas
                         this_spec['vals'][y] = format(int(round(this_spec['vals'][y])), ',') # Add commas
+                    else:
+                        errormsg = 'Could not recognize scenario type %s, must be budget or coverage' % js_scen['scen_type']
+                        raise Exception(errormsg)
             except Exception as E:
-                this_spec['vals'][y] = str(E) # If all else fails, set it to None
+                this_spec['vals'][y] = str(E) # If all else fails, set it to the error message
         this_spec['base_cov'] = str(round(program.base_cov*100)) # Convert to percentage -- this should never be None or Nan
         this_spec['base_spend'] = format(int(round(program.base_spend)), ',')
         js_scen['progvals'].append(this_spec)
@@ -897,16 +900,25 @@ def set_scen_info(project_id, scenario_jsons, verbose=False):
 
 
 @RPC()
-def get_default_scen(project_id, scen_type=None):
+def get_default_scen(project_id, scen_type=None, verbose=False):
     print('Creating default scenario...')
     if scen_type is None: scen_type = 'coverage'
     proj = load_project(project_id, die=True)
     py_scen = proj.demo_scens(doadd=False, default=True, scen_type=scen_type)
     py_scen.scen_type = scen_type # Set the scenario type -- Warning, is this needed?
     js_scen = py_to_js_scen(py_scen, proj, default_included=True)
-    print('Created default JavaScript scenario:')
-    sc.pp(js_scen)
+    if verbose:
+        print('Created default JavaScript scenario:')
+        sc.pp(js_scen)
     return js_scen
+
+@RPC()
+def convert_scen(project_id, scenkey=None):
+    print('Converting scenario...')
+    proj = load_project(project_id, die=True)
+    proj.convert_scen(scenkey)
+    save_project(proj)
+    return None
 
 
 def reformat_costeff(costeff):

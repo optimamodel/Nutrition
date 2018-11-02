@@ -26,6 +26,7 @@ Last update: 2018-09-25
           <thead>
           <tr>
             <th>Name</th>
+            <th>Type</th>
             <th>Active?</th>
             <th>Actions</th>
           </tr>
@@ -35,12 +36,16 @@ Last update: 2018-09-25
             <td>
               <b>{{ scenSummary.name }}</b>
             </td>
+            <td>
+              {{ scenSummary.scen_type }}
+            </td>
             <td style="text-align: center">
               <input type="checkbox" v-model="scenSummary.active"/>
             </td>
             <td style="white-space: nowrap">
               <button class="btn btn-icon" @click="editScenModal(scenSummary)" data-tooltip="Edit scenario"><i class="ti-pencil"></i></button>
               <button class="btn btn-icon" @click="copyScen(scenSummary)"      data-tooltip="Copy scenario"><i class="ti-files"></i></button>
+              <button class="btn btn-icon" @click="convertScen(scenSummary)"   data-tooltip="Convert scenario type"><i class="ti-control-shuffle"></i></button>
               <button class="btn btn-icon" @click="deleteScen(scenSummary)"    data-tooltip="Delete scenario"><i class="ti-trash"></i></button>
             </td>
           </tr>
@@ -386,6 +391,19 @@ Last update: 2018-09-25
           })
           .catch(error => {
             status.fail(this, 'Could not copy scenario', error)
+          })
+      },
+
+      convertScen(scenSummary) {
+        console.log('convertScen() called')
+        status.start(this)
+        rpcs.rpc('convert_scen', [this.projectID, scenSummary.name])
+          .then( response => {
+            status.succeed(this, 'Scenario converted')
+            this.getScenSummaries()
+          })
+          .catch(error => {
+            status.fail(this, 'Could not convert scenario', error)
           })
       },
 

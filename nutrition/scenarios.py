@@ -1,3 +1,4 @@
+import numpy as np
 import sciris as sc
 
 class Scen(sc.prettyobj):
@@ -45,11 +46,17 @@ def convert_scen(scen, model):
     """ In order to access the complimentary spending/coverage, the results object must be obtained. """
     result = run_scen(scen, model)
     if 'ov' in scen.scen_type:
-        progvals = result.get_allocs()
+        convertedvals = result.get_allocs()
         scen_type = 'budget'
     else:
-        progvals = result.get_covs(unrestr=False)
+        convertedvals = result.get_covs(unrestr=False)
         scen_type = 'coverage'
+    newprogvals = sc.odict() # Create new dict to hold the converted values
+    for k,key in convertedvals.enumkeys(): # Loop over programs
+        newprogvals[key] = sc.dcp(scen.vals[k]) # Copy current values list
+        for v,val in enumerate(newprogvals[key]): # Loop over values
+            if val is not None and not np.isnan(val):
+                newprogvals[key][v] = convertedvals[key][v+1]
     name = scen.name + ' (%s)' % scen_type
-    converted = Scen(name=name, model_name=scen.model_name, scen_type=scen_type, progvals=progvals)
+    converted = Scen(name=name, model_name=scen.model_name, scen_type=scen_type, progvals=newprogvals)
     return converted
