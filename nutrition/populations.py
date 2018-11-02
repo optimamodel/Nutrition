@@ -404,7 +404,7 @@ class Children(Population):
         popSize = [pop * monthlyBirths for pop in self.ss.child_age_spans[:3]]
         # children > 1 year, who are not counted in annual 'live births'
         months = sum(self.ss.child_age_spans[3:])
-        popRemainder = self.data.proj['Children under 5'][0] - monthlyBirths * 12.
+        popRemainder = self.data.demo['Children under 5 population'] - monthlyBirths * 12.
         monthlyRate = popRemainder/months
         popSize += [pop * monthlyRate for pop in self.ss.child_age_spans[3:]]
         self.popSizes = {age:pop for age, pop in zip(self.ss.child_ages, popSize)}
