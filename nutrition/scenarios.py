@@ -48,7 +48,7 @@ def convert_scen(scen, model):
         progvals = result.get_allocs()
         scen_type = 'budget'
     else:
-        progvals = result.get_covs()
+        progvals = result.get_covs(unrestr=False)
         scen_type = 'coverage'
     name = scen.name + ' (%s)' % scen_type
     converted = Scen(name=name, model_name=scen.model_name, scen_type=scen_type, progvals=progvals)
