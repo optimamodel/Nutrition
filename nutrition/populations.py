@@ -797,10 +797,15 @@ class PregnantWomen(Population):
         mortalityRate = self.data.demo['Maternal mortality (per 1,000 live births)']
         mortalityCorrected = {}
         for i, age in enumerate(self.ss.pw_ages):
-            if i == 0:
-                mortalityCorrected[age] = (mortalityRate * liveBirths / 1000.) * (4. / 34.) / agePop[i]
-            else:
-                mortalityCorrected[age] = (mortalityRate * liveBirths / 1000.) * (9. / 34.) / agePop[i]
+            try:
+                if i == 0:
+                    mortalityCorrected[age] = (mortalityRate * liveBirths / 1000.) * (4. / 34.) / agePop[i]
+                else:
+                    mortalityCorrected[age] = (mortalityRate * liveBirths / 1000.) * (9. / 34.) / agePop[i]
+            except ZeroDivisionError:
+                # this means there will never be pregnant women in this age (distribution 0%)
+                # therefore value not relevant
+                mortalityCorrected[age] = 0
         # Calculate LHS for each age and cause of death then solve for X
         for age_group in self.age_groups:
             age = age_group.age
