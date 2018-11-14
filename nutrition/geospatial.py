@@ -46,6 +46,8 @@ class Geospatial:
             - once funding is distributed between regions, optimize this within the regions"""
         # create regions in order to calculate total flexible funds
         regions = self.make_regions(add_funds=0)
+        if len(regions) < 2:
+            raise Exception('Less than 2 regions selected for geospatial analysis.')
         models = []
         for reg in regions:
             thismod = sc.dcp(proj.model(reg.model_name))
