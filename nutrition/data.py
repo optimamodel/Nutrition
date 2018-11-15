@@ -605,7 +605,7 @@ class Dataset(object):
             self.default_params.compute_risks(self.demo_data)
             self.prog_data = ProgData(input_data, self.default_params)
         except Exception as E:
-            raise Exception('Error in defaults book: %s'%str(E))
+            raise Exception('Error in program data: %s'%str(E))
         try:
             self.pops = populations.set_pops(self.demo_data, self.default_params)
         except Exception as E:
