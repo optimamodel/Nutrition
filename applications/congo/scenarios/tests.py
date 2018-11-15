@@ -17,6 +17,8 @@ regions = ['bas_uele', 'equateur', 'haut_katanga',
            'sud_kivu', 'sub_ubangi', 'tanganyika',
            'tshopo', 'tshuapa']
 
+# regions = ['kinshasa']
+
 progset = ['Balanced energy-protein supplementation', 'Calcium supplementation',
            'Cash transfers', 'Family planning', 'IFA fortification of maize',
            'IFAS (school)', 'IFAS for pregnant women (health facility)',
@@ -26,11 +28,11 @@ progset = ['Balanced energy-protein supplementation', 'Calcium supplementation',
            'WASH: Handwashing', 'Zinc for treatment + ORS']
 
 for region in regions:
-    p.load_data(country='congo', region=region, name='congo')
+    p.load_data(country='congo', region=region, name=region)
     kwargs = []
     for prog in progset:
-        kwarg = {'name': 'test prog: %s'%prog,
-                  'model_name': 'congo',
+        kwarg = {'name': 'region: %s \n prog: %s'%(region, prog),
+                  'model_name': region,
                   'scen_type': 'coverage',
                   'progvals': sc.odict({prog: [0.95]})}
         kwargs.append(kwarg)
