@@ -335,6 +335,17 @@ Last update: 2018sep26
               if (geoSummary.status == 'error') {
                 console.log('Error in task: ', geoSummary.serverDatastoreId)
                 console.log(result.data.task.errorText)
+                let failMessage = 'Error in task: ' + geoSummary.serverDatastoreId
+                let usermsg = result.data.task.errorText
+/*                this.$notifications.notify({
+                  message: '<b>' + failMessage + '</b>' + '<br><br>' + usermsg,
+                  icon: 'ti-face-sad',
+                  type: 'warning',
+                  verticalAlign: 'top',
+                  horizontalAlign: 'right',
+                  timeout: 0
+                }) */
+                status.fail(this, failMessage, result.data.task.errorText)
               }
               resolve(result)
             })
