@@ -382,16 +382,22 @@ class InputData(object):
     ### MORTALITY ###
 
     def get_death_dist(self):
-        death_dist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0], 'index')
-        # convert 'Pregnant women' to age bands
-        for key, value in death_dist.items():
-            self.death_dist[key] = sc.odict()
-            pw_val = value['Pregnant women']
-            for age in self.settings.pw_ages+self.settings.child_ages:
-                if "PW" in age:
-                    self.death_dist[key][age] = pw_val
+        # read in with helpful column names, ignore the final row of each sub-table
+        deathdist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0, 1], skiprows=1)
+        neonates = deathdist.loc['Neonatal'].ix[:-1]
+        deathdist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0, 1], skiprows=12)
+        children = deathdist.loc['Children'].ix[:-1]
+        deathdist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0, 1], skiprows=24)
+        pw = deathdist.loc['Pregnant women'].ix[:-1]
+        dist = pandas.concat([neonates['<1 month'], children, pw['Pregnant women.1']], axis=1, sort=False).fillna(0)
+        for cause in dist.index:
+            self.death_dist[cause] = sc.odict()
+            for age in self.settings.child_ages + self.settings.pw_ages:
+                if 'PW' in age:
+                    # stratify the pregnant women
+                    self.death_dist[cause][age] = dist['Pregnant women.1'][cause]
                 else:
-                    self.death_dist[key][age] = value[age]
+                    self.death_dist[cause][age] = dist[age][cause]
         # list causes of death
         self.causes_death = self.death_dist.keys()
 
