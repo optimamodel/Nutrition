@@ -22,8 +22,8 @@ class Program(sc.prettyobj):
         self.base_cov = progdata.base_cov[name]
         self.annual_cov = np.zeros(len(all_years))
         self.annual_spend = np.zeros(len(all_years))
-        self.exclusionDependencies = progdata.prog_deps[name]['Exclusion dependency']
-        self.thresholdDependencies = progdata.prog_deps[name]['Threshold dependency']
+        self.excl_deps = progdata.prog_deps[name]['Exclusion dependency']
+        self.thresh_deps = progdata.prog_deps[name]['Threshold dependency']
         # attributes to be calculated later
         self.ref_spend = None
         self.func = None
@@ -544,8 +544,8 @@ class ProgramInfo(sc.prettyobj):
         """ Removes programs from dependencies lists which are not included in analysis """
         allNames = self.programs.keys()
         for prog in self.programs.values():
-            prog.thresholdDependencies = [name for name in prog.thresholdDependencies if name in allNames]
-            prog.exclusionDependencies = [name for name in prog.exclusionDependencies if name in allNames]
+            prog.thresh_deps = [name for name in prog.thresh_deps if name in allNames]
+            prog.excl_deps = [name for name in prog.excl_deps if name in allNames]
 
     def _clean_prog_areas(self, prog_areas, progset):
         """ Removed programs from program area list if not included in analysis """
@@ -556,13 +556,13 @@ class ProgramInfo(sc.prettyobj):
 
     def _get_thresh_roots(self):
         """ Makes a list of all programs with dependencies """
-        openSet = [program for program in self.programs.values() if program.thresholdDependencies]
+        openSet = [program for program in self.programs.values() if program.thresh_deps]
         closedSet = [program for program in self.programs.values() if program not in openSet] # independence
         idx = len(closedSet)
         return openSet, closedSet, idx
 
     def _get_excl_roots(self):
-        openSet = [program for program in self.programs.values() if program.exclusionDependencies]
+        openSet = [program for program in self.programs.values() if program.excl_deps]
         closedSet = [program for program in self.programs.values() if program not in openSet] # independence
         idx = len(closedSet)
         return openSet, closedSet, idx
@@ -570,7 +570,7 @@ class ProgramInfo(sc.prettyobj):
     def _excl_sort(self):
         openSet, closedSet, idx = self._get_excl_roots()
         for program in openSet:
-            dependentNames = set(program.exclusionDependencies)
+            dependentNames = set(program.excl_deps)
             closedSetNames = set([prog.name for prog in closedSet])
             if dependentNames.issubset(closedSetNames):  # all parent programs in closed set
                 closedSet += [program]
@@ -579,7 +579,7 @@ class ProgramInfo(sc.prettyobj):
     def _thresh_sort(self):
         open_set, closed_set, idx = self._get_thresh_roots()
         for program in open_set:
-            dependentNames = set(program.thresholdDependencies)
+            dependentNames = set(program.thresh_deps)
             closedSetNames = set([prog.name for prog in closed_set])
             if dependentNames.issubset(closedSetNames):  # all parent programs in closed set
                 closed_set += [program]
@@ -665,7 +665,7 @@ class ProgramInfo(sc.prettyobj):
         """
         # threshold
         for child in self.thresholdOrder:
-            for parname in child.thresholdDependencies:
+            for parname in child.thresh_deps:
                 for year in self.all_years:
                     par = next(prog for prog in self.programs.values() if prog.name == parname)
                     # assuming uniform coverage across age bands, we can use the unrestricted coverage (NOT restricted)
@@ -674,7 +674,7 @@ class ProgramInfo(sc.prettyobj):
                         child.annual_cov[year] = maxcov_child
         # exclusion
         for child in self.exclusionOrder:
-            for parname in child.exclusionDependencies:
+            for parname in child.excl_deps:
                 for year in self.all_years:
                     par = next((prog for prog in self.programs.values() if prog.name == parname))
                     # assuming uniform coverage across age bands, we can use the unrestricted coverage (NOT restricted)

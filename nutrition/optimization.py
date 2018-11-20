@@ -98,7 +98,7 @@ class Optim(sc.prettyobj):
             zeroval = np.inner(zeroouts, self.weights)
             # check for dependencies
             progs = list(zeromodel.prog_info.programs.values())
-            alldeps = [prog.exclusionDependencies for prog in progs] + [prog.thresholdDependencies for prog in progs]
+            alldeps = [prog.excl_deps for prog in progs] + [prog.thresh_deps for prog in progs]
             # flatten list of lists
             flatdeps = [progname for deps in alldeps for progname in deps]
             for i, prog in enumerate(self.prog_set):
