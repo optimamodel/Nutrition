@@ -1,4 +1,3 @@
-import traceback
 from functools import partial
 from math import ceil
 import numpy as np
@@ -8,27 +7,42 @@ from .utils import get_new_prob
 
 
 class Program(sc.prettyobj):
-    """Each instance of this class is an intervention,
-    and all necessary data will be stored as attributes. Will store name, targetpop, popsize, coverage, edges etc
-    Restricted coverage: the coverage amongst the target population (assumed given by user)
-    Unrestricted coverage: the coverage amongst the entire population """
+    """
+    The base class for a program.
+    This stores the relevant data and functionality for individual programs.
+    """
     def __init__(self, name, all_years, progdata):
+        """
+
+        :param name: The name of the program (type string)
+        :param all_years: The years for the simulation period (type list)
+        :param progdata: Contains the following program data (class ProgData)
+            1. Target populations
+            2. Unit cost
+            3. Cost-coverage curve type
+            4. Saturation
+            5. Baseline coverage
+            6. Exclusion dependencies
+            7. Threshold dependencies
+        """
         self.name = name
         self.year = all_years[0]
-        self.target_pops = progdata.prog_target[name]
+        self.targetpopfracs = progdata.prog_target[name]
         self.unit_cost = progdata.costs[name]
         self.costtype = progdata.costtype[name]
         self.sat = progdata.sat[name]
         self.base_cov = progdata.base_cov[name]
-        self.annual_cov = np.zeros(len(all_years))
-        self.annual_spend = np.zeros(len(all_years))
+        self.annualcov = np.zeros(len(all_years))
+        self.annualspend = np.zeros(len(all_years))
         self.excl_deps = progdata.prog_deps[name]['Exclusion dependency']
         self.thresh_deps = progdata.prog_deps[name]['Threshold dependency']
         # attributes to be calculated later
+        self.targetpopsize = 0
+        self.totalpopsize = 0
         self.ref_spend = None
-        self.func = None
-        self.inv_func = None
-        self.sat_unrestr = None
+        self.costfunc = None
+        self.covfunc = None
+        self.totalpopsat = None
         self.base_spend = None
         self.famplan_methods = None
         self.pregav_sum = None
@@ -38,82 +52,106 @@ class Program(sc.prettyobj):
         if 'amil' in self.name: # family planning program only
             self.famplan_methods = progdata.famplan_methods
             self.set_pregav_sum()
-        self._set_target_ages()
-        self._set_impacted_ages(progdata.impacted_pop[name])
+        self._settargetages()
+        self._setimpactages(progdata.impacted_pop[name])
 
     def __repr__(self):
         output = sc.prepr(self)
         return output
 
-    def get_cov(self, unrestr=True):
-        """ Extracts either the restricted or unrestricted coverage array """
-        if unrestr:
-            return self.annual_cov
+    def getcov(self, popcov=True):
+        """
+        Retrieves the desired coverage vector
+        :param popcov: population or target coverage (boolean)
+        :return: A 1d numpy array, containing either population or target coverages
+        """
+        if popcov:
+            return self.annualcov
         else:
-            return self.annual_cov * self.unrestr_popsize / self.restr_popsize
+            return self.annualcov * self.totalpopsize / self.targetpopsize
 
     def update_cov(self, cov, spend):
-        self.annual_cov = cov
-        self.annual_spend = spend
+        """
+        Sets the coverage and spending vectors for a program.
+        :param cov: A 1d numpy array of population coverages.
+        :param spend: A 1d numpy array of budgets
+        :return: None
+        """
+        self.annualcov = cov
+        self.annualspend = spend
+        return
 
-        """ cov: a list of coverages/spending with one-to-one correspondence with sim_years
-        restr_cov: boolean indicating if the coverages are restricted or unrestricted """
+    def _interpscen(self, cov, years, scentype):
+        """
+        Interpolates the coverage and spending vectors for a program.
+        Performs some basic validation on the vectors.
+        :param cov: A 1d array of coverages or spending. Must be the same length as years.
+        :param years: The years of the simulation
+        :param scentype: The type of scenario, containing the substring 'ov' (coverage) or 'ud' (budget)
+        :return: the interpolated coverage and spending vectors (1d numpy array)
+        """
         if 'ov' in scentype:
-            # Raise exception is invalid coverage value. Done here before converting to unrestricted coverages
+            # Raise exception is invalid coverage value. Done here before converting to population coverages
             if (cov < 0).any() or (cov > 1).any():
                 raise Exception("Coverage for '%s' outside range 0-1: %s" % (self.name, cov))
-            # assume restricted cov
-            cov = self.get_unrestr_cov(cov)
-            cov[0] = self.annual_cov[0]
+            # assume target coverage
+            cov = self.getpopcov(cov)
+            cov[0] = self.annualcov[0]
             not_nan = ~np.isnan(cov)
             interp_cov = np.interp(years, years[not_nan], cov[not_nan])
-            interp_spend = self.inv_func(interp_cov)
+            interp_spend = self.covfunc(interp_cov)
         elif 'ud' in scentype: # budget
             # can't have negative spending
             if (cov < 0).any():
                 raise Exception("Spending for '%s' below 0: %s" % (self.name, cov))
-            cov[0] = self.annual_spend[0]
+            cov[0] = self.annualspend[0]
             not_nan = ~np.isnan(cov)
             interp_spend = np.interp(years, years[not_nan], cov[not_nan])
-            interp_cov = self.func(interp_spend)
+            interp_cov = self.costfunc(interp_spend)
         else:
             raise Exception("Scenario type '%s' is not valid, must be 'coverage' or 'budget'" %scentype)
         return interp_cov, interp_spend
 
-    def get_unrestr_cov(self, restr_cov):
-        """ Expects an array of restricted coverages """
-        return restr_cov[:] * self.restr_popsize / self.unrestr_popsize
+    def getpopcov(self, popcov):
+        """ Expects an array of target population coverages """
+        return popcov[:] * self.targetpopsize / self.totalpopsize
 
-    def set_pop_sizes(self, pops):
-        self._set_restrpop(pops)
-        self._set_unrestrpop(pops)
+    def setpopsize(self, pops):
+        self._settargetpop(pops)
+        self._settotalpop(pops)
         # this accounts for different fractions within age bands
-        self.sat_unrestr = self.restr_popsize / self.unrestr_popsize
+        self.totalpopsat = self.targetpopsize / self.totalpopsize
+        return
 
-    def set_init_unrestr(self):
-        unrestr_cov = (self.base_cov * self.restr_popsize) / self.unrestr_popsize
-        self.annual_cov[0] = unrestr_cov
+    def setbasecov(self):
+        popcov = (self.base_cov * self.targetpopsize) / self.totalpopsize
+        self.annualcov[0] = popcov
+        spend = self.covfunc(self.annualcov[:1])[0]
+        self.base_spend = spend
+        self.annualspend[0] = spend
+        return
 
-    def adjust_cov(self, pops, year): # todo: needs fixing for annual_cov being an array now
+    def adjust_cov(self, pops, year): # todo: needs fixing for annualcov being an array now
+        """ Defunct, requires updating"""
         # set unrestricted pop size so coverages account for growing population size
-        oldURP = self.unrestr_popsize
-        self.set_pop_sizes(pops)# TODO: is this the optimal place to do this?
-        oldCov = self.annual_cov[year]
-        newCov = oldURP * oldCov / self.unrestr_popsize
-        self.annual_cov.append(newCov)
+        oldURP = self.totalpopsize
+        self.setpopsize(pops)# TODO: is this the optimal place to do this?
+        oldCov = self.annualcov[year]
+        newCov = oldURP * oldCov / self.totalpopsize
+        self.annualcov.append(newCov)
 
-    def _set_target_ages(self):
+    def _settargetages(self):
         """
         The ages at whom programs are targeted
         :return:
         """
         self.agesTargeted = []
         for age in self.ss.all_ages:
-            fracTargeted = self.target_pops[age]
+            fracTargeted = self.targetpopfracs[age]
             if fracTargeted > 0.001: # floating point tolerance
                 self.agesTargeted.append(age)
 
-    def _set_impacted_ages(self, impacted_pop):
+    def _setimpactages(self, impacted_pop):
         """
         The ages who are impacted by this program
         :return:
@@ -124,20 +162,18 @@ class Program(sc.prettyobj):
             if impacted > 0.001: # floating point tolerance
                 self.agesImpacted.append(age)
 
-    def _set_unrestrpop(self, populations):
+    def _settotalpop(self, populations): # todo: revisit this
         """
         sum of the total pop for each targeted age group
         """
         # TMP SOLUTION: THE DENOMINATOR FOR CALCULATING PROGRAM COVERAGE WILL USE sum(CEILING(FRAC TARGETED) * POP SIZE) over all pops targeted. I.E. FOR IYCF WITH FRAC >1, we get normalised sum
-        self.unrestr_popsize = 0.
         for pop in populations:
-            self.unrestr_popsize += sum(ceil(self.target_pops[age.age]) * age.pop_size for age in pop.age_groups
+            self.totalpopsize += sum(ceil(self.targetpopfracs[age.age]) * age.pop_size for age in pop.age_groups
                                         if age.age in self.agesTargeted)
 
-    def _set_restrpop(self, populations):
-        self.restr_popsize = 0.
+    def _settargetpop(self, populations):
         for pop in populations:
-            self.restr_popsize += sum(age.pop_size * self.target_pops[age.age] for age in pop.age_groups
+            self.targetpopsize += sum(age.pop_size * self.targetpopfracs[age.age] for age in pop.age_groups
                                          if age.age in self.agesTargeted)
 
     def stunting_update(self, age_group):
@@ -165,7 +201,7 @@ class Program(sc.prettyobj):
         for consistencies sake, this distributes the pregnancies averted uniformly across the age bands,
         but should really only need the sum of all averted births.
         (cov(t) - cov(t-1)) yields a symmetric update around the baseline coverage"""
-        change =  self.annual_cov[self.year] - self.annual_cov[self.year-1]
+        change =  self.annualcov[self.year] - self.annualcov[self.year-1]
         age_group.preg_av = self.pregav_sum * change / len(self.ss.wra_ages)
 
     def get_birthspace_update(self, age_group):
@@ -178,7 +214,7 @@ class Program(sc.prettyobj):
         correctold = age_group.birth_space[self.ss.optimal_space]
         probcov = age_group.probConditionalCoverage['Birth spacing'][self.name]['covered']
         probnot = age_group.probConditionalCoverage['Birth spacing'][self.name]['not covered']
-        probnew = get_new_prob(self.annual_cov[self.year], probcov, probnot)
+        probnew = get_new_prob(self.annualcov[self.year], probcov, probnot)
         fracChange = probnew - correctold
         return fracChange
 
@@ -235,7 +271,7 @@ class Program(sc.prettyobj):
         oldProb = age_group.frac_risk(risk)
         probIfCovered = age_group.probConditionalCoverage[risk][self.name]['covered']
         probIfNotCovered = age_group.probConditionalCoverage[risk][self.name]['not covered']
-        newProb = get_new_prob(self.annual_cov[self.year], probIfCovered, probIfNotCovered)
+        newProb = get_new_prob(self.annualcov[self.year], probIfCovered, probIfNotCovered)
         reduction = (oldProb - newProb) / oldProb
         update = 1.-reduction
         return update
@@ -247,18 +283,18 @@ class Program(sc.prettyobj):
             oldProb = age_group.frac_wasted(wastingCat)
             probWastedIfCovered = age_group.probConditionalCoverage[wastingCat][self.name]['covered']
             probWastedIfNotCovered = age_group.probConditionalCoverage[wastingCat][self.name]['not covered']
-            newProb = get_new_prob(self.annual_cov[self.year], probWastedIfCovered, probWastedIfNotCovered)
+            newProb = get_new_prob(self.annualcov[self.year], probWastedIfCovered, probWastedIfNotCovered)
             reduction = (oldProb - newProb) / oldProb
             update[wastingCat] = 1-reduction
         return update
 
     def _wasting_incid_update(self, age_group):
         update = {}
-        oldCov = self.annual_cov[self.year-1]
+        oldCov = self.annualcov[self.year-1]
         for condition in self.ss.wasted_list:
             affFrac = age_group.prog_eff[(self.name, condition, 'Affected fraction')]
             effectiveness = age_group.prog_eff[(self.name, condition,'Effectiveness incidence')]
-            reduction = affFrac * effectiveness * (self.annual_cov[self.year] - oldCov) / (1. - effectiveness*oldCov)
+            reduction = affFrac * effectiveness * (self.annualcov[self.year] - oldCov) / (1. - effectiveness*oldCov)
             update[condition] = 1.-reduction
         return update
 
@@ -269,21 +305,21 @@ class Program(sc.prettyobj):
         else: # mortality
             toIterate = age_group.causes_death
         update = {cause: 1. for cause in toIterate}
-        oldCov = self.annual_cov[self.year-1]
+        oldCov = self.annualcov[self.year-1]
         for cause in toIterate:
             affFrac = age_group.prog_eff.get((self.name,cause,'Affected fraction'),0)
             effectiveness = age_group.prog_eff.get((self.name,cause,effType),0)
-            reduction = affFrac * effectiveness * (self.annual_cov[self.year] - oldCov) / (1. - effectiveness*oldCov)
+            reduction = affFrac * effectiveness * (self.annualcov[self.year] - oldCov) / (1. - effectiveness*oldCov)
             update[cause] *= 1. - reduction
         return update
 
     def _bo_update(self, age_group):
         BOupdate = {BO: 1. for BO in self.ss.birth_outcomes}
-        oldCov = self.annual_cov[self.year-1]
+        oldCov = self.annualcov[self.year-1]
         for outcome in self.ss.birth_outcomes:
             affFrac = age_group.bo_eff[self.name]['affected fraction'][outcome]
             eff = age_group.bo_eff[self.name]['effectiveness'][outcome]
-            reduction = affFrac * eff * (self.annual_cov[self.year] - oldCov) / (1. - eff*oldCov)
+            reduction = affFrac * eff * (self.annualcov[self.year] - oldCov) / (1. - eff*oldCov)
             BOupdate[outcome] = 1. - reduction
         return BOupdate
 
@@ -292,13 +328,14 @@ class Program(sc.prettyobj):
         correctFracOld = age_group.bf_dist[correctPrac]
         probCorrectCovered = age_group.probConditionalCoverage['Breastfeeding'][self.name]['covered']
         probCorrectNotCovered = age_group.probConditionalCoverage['Breastfeeding'][self.name]['not covered']
-        probNew = get_new_prob(self.annual_cov[self.year], probCorrectCovered, probCorrectNotCovered)
+        probNew = get_new_prob(self.annualcov[self.year], probCorrectCovered, probCorrectNotCovered)
         fracChange = probNew - correctFracOld
         return fracChange
 
-    def set_costcov(self):
-        costcurve = CostCovCurve(self.unit_cost, self.sat, self.restr_popsize, self.unrestr_popsize, self.costtype)
-        self.func, self.inv_func = costcurve.set_cost_curve()
+    def setcostfuncs(self):
+        """ Set the cost-coverage function and corresponding inverse function """
+        costcurve = CostCovCurve(self.unit_cost, self.sat, self.targetpopsize, self.totalpopsize, self.costtype)
+        self.costfunc, self.covfunc = costcurve.setfuncs()
 
     def get_spending(self, covs):
         """
@@ -306,27 +343,29 @@ class Program(sc.prettyobj):
         :param covs: 1d numpy array
         :return: 1d numpy array
         """
-        return self.inv_func(covs)
+        return self.covfunc(covs)
 
-    def scale_unit_costs(self, scaleFactor):
-        self.unit_cost *= scaleFactor
-        self.set_costcov()
 
 class CostCovCurve(sc.prettyobj):
-    def __init__(self, unit_cost, sat, restrictedPop, unrestrictedPop, costtype):
+    def __init__(self, unitcost, sat, targetpop, totalpop, costtype):
         self.costtype = costtype.lower()
-        self.unit_cost = unit_cost
+        self.unitcost = unitcost
         self.sat = sat
-        self.restrictedPop = restrictedPop
-        self.unrestrictedPop = unrestrictedPop
+        self.targetpop = targetpop
+        self.totalpop = totalpop
         try:
-            self.maxcov = sat * restrictedPop / unrestrictedPop
+            self.maxcov = sat * targetpop / totalpop
         except ZeroDivisionError:
             self.maxcov = 0
         self.approx = 0.95
         self.ss = Settings()
 
-    def set_cost_curve(self):
+    def setfuncs(self):
+        """
+        Sets the cost-coverage function and its corresponding inverse.
+        The functional form is determined by self.costtype
+        :return: a cost coverage function and its inverse
+        """
         if 'lin' in self.costtype:
             curve, invcurve = self._get_lin_curve()
         else:
@@ -334,7 +373,7 @@ class CostCovCurve(sc.prettyobj):
         return curve, invcurve
 
     def _get_lin_curve(self):
-        m = 1. / self.unit_cost
+        m = 1. / self.unitcost
         x0, y0 = [0., 0.]  # extra point
         if x0 == 0.:
             c = y0
@@ -345,7 +384,7 @@ class CostCovCurve(sc.prettyobj):
         return linearCurve, invcurve
 
     def _get_inv_lin(self):
-        m = 1. / self.unit_cost
+        m = 1. / self.unitcost
         x0, y0 = [0., 0.]  # extra point
         if x0 == 0.:
             c = y0
@@ -359,10 +398,10 @@ class CostCovCurve(sc.prettyobj):
          The parameters for the 'increasing' marginal cost curve were solved for analytically,
          while other variants are created by shifting these """
         # 'increasing' is the default case
-        b = self.sat * self.restrictedPop
+        b = self.sat * self.targetpop
         a = -b
         c = 0.
-        d = self.unit_cost * b / 2.
+        d = self.unitcost * b / 2.
         yshift = 0
         xscale = 1
         yscale = 1
@@ -390,7 +429,7 @@ class CostCovCurve(sc.prettyobj):
         """ Expects x to be a 1D numpy array.
          Return: a numpy array of the same length as x """
         numcov = m * x[:] + c
-        cov = np.divide(numcov, self.unrestrictedPop, out=np.zeros(len(x)), where=self.unrestrictedPop!=0)
+        cov = np.divide(numcov, self.totalpop, out=np.zeros(len(x)), where=self.totalpop!=0)
         return np.minimum(cov, self.maxcov)
 
     def _log_func(self, a, b, c, d, yshift, xscale, yscale, x, offset=0):
@@ -398,7 +437,7 @@ class CostCovCurve(sc.prettyobj):
         Offset is a way to account for the error around (0,0) produced by approximating the 'end' value of the logisitic curve.
          This function is truncated for the decreasing marginal costs curve, which can exceed maxcov. """
         numcov = ((a + yshift) + (b - a) / (1 + np.exp(-(x*xscale - c) / d))) / yscale
-        cov = np.divide(numcov, self.unrestrictedPop, out=np.zeros(len(x)), where=self.unrestrictedPop!=0) - offset
+        cov = np.divide(numcov, self.totalpop, out=np.zeros(len(x)), where=self.totalpop!=0) - offset
         return np.minimum(cov, self.maxcov)
 
     def _inv_lin_func(self, m, c, y):
@@ -409,13 +448,13 @@ class CostCovCurve(sc.prettyobj):
         :return: a 1d numpy array with same length as y
         """
         y[y>self.maxcov] = self.maxcov
-        return (y*self.unrestrictedPop - c)/m
+        return (y*self.totalpop - c)/m
 
     def _inv_log(self, a, b, c, d, yshift, xscale, yscale, y, offset=0):
         """ Inverse of the logistic curve with given parameters.
          If coverage >= the asymptote, takes an approx of this. """
         y[y>=self.maxcov] = self.approx*self.maxcov # prevent inf
-        numcovered = y * self.unrestrictedPop
+        numcovered = y * self.totalpop
         cost = xscale*(-d * np.log((b - yscale * numcovered + yshift) / (yscale * numcovered - a - yshift)) + c) - offset
         return cost
 
@@ -427,7 +466,7 @@ class CostCovCurve(sc.prettyobj):
         # estimate cost at 95% of saturation
         endcov = np.array([self.approx*self.maxcov])
         endcost = self._inv_log(a, b, c, d, 0, 1, 1, endcov)
-        endnum = endcov * self.unrestrictedPop
+        endnum = endcov * self.totalpop
         return endcost[0], endnum[0]
 
 
@@ -452,7 +491,13 @@ class ProgramInfo(sc.prettyobj):
         self.fixed = None
         self.free = None
 
-    def get_allocs(self, add_funds, fix_curr, rem_curr):
+    def setupprogs(self, pops):
+        for prog in self.programs.values():
+            prog.setpopsize(pops)
+            prog.setcostfuncs()
+            prog.setbasecov()
+
+    def setallocs(self, add_funds, fix_curr, rem_curr):
         self.refs = self.get_refs()
         self.curr = self.get_curr()
         self.fixed = self.get_fixed(fix_curr)
@@ -462,7 +507,7 @@ class ProgramInfo(sc.prettyobj):
         ref_allocs = np.zeros(len(self.programs))
         for i, prog in self.programs.enumvals():
             if prog.reference:
-                ref_allocs[i] = prog.get_spending(prog.annual_cov)[0]
+                ref_allocs[i] = prog.get_spending(prog.annualcov)[0]
             else:
                 ref_allocs[i] = 0
         return ref_allocs
@@ -470,7 +515,7 @@ class ProgramInfo(sc.prettyobj):
     def get_curr(self):
         allocs = np.zeros(len(self.programs))
         for i, prog in self.programs.enumvals():
-            allocs[i] = prog.get_spending(prog.annual_cov)[0]
+            allocs[i] = prog.get_spending(prog.annualcov)[0]
         return allocs
 
     def get_fixed(self, fix_curr):
@@ -503,19 +548,13 @@ class ProgramInfo(sc.prettyobj):
             freeFunds = sum(self.curr) - sum(self.fixed) + add_funds
         return freeFunds
 
-    def make_progs(self, prog_set, all_years):
+    def makeprogs(self, prog_set, all_years):
         self.all_years = all_years
         self.sim_years = all_years[1:]
         self.programs = set_programs(prog_set, self.prog_data, all_years)
         self.prog_areas = self._clean_prog_areas(self.prog_data.prog_areas, prog_set)
         self._set_ref_progs()
         self._sort_progs()
-
-    def get_base_spend(self):
-        for prog in self.programs.values():
-            spend = prog.inv_func(prog.annual_cov[:1])[0]
-            prog.base_spend = spend
-            prog.annual_spend[0] = spend
 
     def base_progset(self):
         return self.prog_data.base_prog_set
@@ -584,25 +623,20 @@ class ProgramInfo(sc.prettyobj):
                 closed_set += [program]
         self.thresholdOrder = closed_set[idx:]
 
-    def set_init_covs(self, pops):
-        for prog in self.programs.values():
-            prog.set_pop_sizes(pops)
-            prog.set_init_unrestr()
-
-    def set_costcovs(self):
-        for prog in self.programs.values():
-            prog.set_costcov()
-
-    def get_cov_scen(self, covs, scentype, years):
-        """ If scen is a budget scenario, convert it to unrestricted coverage.
-        If scen is a coverage object, assumed to be restricted cov and coverted
-        Return: list of lists"""
-        unrestr_cov = np.zeros(shape=(len(self.programs), len(years)))
+    def getscen(self, covs, scentype, years):
+        """
+        Checks and fully defines the coverage and budget vectors used in the scenario.
+        :param covs: the coverages or budgets for each program (list of lists)
+        :param scentype:
+        :param years:
+        :return:
+        """
+        popcov = np.zeros(shape=(len(self.programs), len(years)))
         spend = np.zeros(shape=(len(self.programs), len(years)))
         covs = self.check_cov(covs, years)
         for i,prog in self.programs.enumvals():
-            unrestr_cov[i], spend[i] = prog.interp_scen(covs[i], years, scentype)
-        return unrestr_cov, spend
+            popcov[i], spend[i] = prog._interpscen(covs[i], years, scentype)
+        return popcov, spend
 
     def check_cov(self, covs, years):
         numyears = len(years)-1 # not including baseline
@@ -624,7 +658,7 @@ class ProgramInfo(sc.prettyobj):
         newcovs = newcovs.astype(float) # force conversion to treat None as nan and convert integers
         return newcovs
 
-    def update_covs(self, covs, spends, restrictcovs):
+    def setcovs(self, covs, spends, restrictcovs):
         for i,prog in self.programs.enumvals():
             cov = covs[i]
             spend = spends[i]
@@ -635,7 +669,7 @@ class ProgramInfo(sc.prettyobj):
 
     def determine_cov_change(self):
         for prog in self.programs.values():
-            if abs(prog.annual_cov[prog.year-1] - prog.annual_cov[prog.year]) > 1e-3:
+            if abs(prog.annualcov[prog.year-1] - prog.annualcov[prog.year]) > 1e-3:
                 return True
             else:
                 pass
@@ -652,13 +686,13 @@ class ProgramInfo(sc.prettyobj):
     def get_ann_covs(self, year):
         covs = {}
         for prog in self.programs.values():
-            covs[prog.name] = prog.annual_cov[year]
+            covs[prog.name] = prog.annualcov[year]
         return covs
 
     def restrict_covs(self):
         """
         Uses the ordering of both dependency lists to restrict the coverage of programs.
-        Assumes that the coverage is given as peopleCovered/unrestr_popsize.
+        Assumes that the coverage is given as peopleCovered/totalpopsize.
         Since the order of dependencies matters, was decided to apply threshold first then exclusion dependencies.
         Coverage will be restricted even in baseline year.
         """
@@ -668,15 +702,15 @@ class ProgramInfo(sc.prettyobj):
                 for year in self.all_years:
                     par = next(prog for prog in self.programs.values() if prog.name == parname)
                     # assuming uniform coverage across age bands, we can use the unrestricted coverage (NOT restricted)
-                    maxcov_child = max(child.sat_unrestr - (par.sat_unrestr - par.annual_cov[year]), 0)
-                    if child.annual_cov[year] > maxcov_child:
-                        child.annual_cov[year] = maxcov_child
+                    maxcov_child = max(child.totalpopsat - (par.totalpopsat - par.annualcov[year]), 0)
+                    if child.annualcov[year] > maxcov_child:
+                        child.annualcov[year] = maxcov_child
         # exclusion
         for child in self.exclusionOrder:
             for parname in child.excl_deps:
                 for year in self.all_years:
                     par = next((prog for prog in self.programs.values() if prog.name == parname))
                     # assuming uniform coverage across age bands, we can use the unrestricted coverage (NOT restricted)
-                    maxcov_child = max(child.sat_unrestr - par.annual_cov[year], 0) # if coverage of parent exceeds child sat
-                    if child.annual_cov[year] > maxcov_child:
-                        child.annual_cov[year] = maxcov_child
+                    maxcov_child = max(child.totalpopsat - par.annualcov[year], 0) # if coverage of parent exceeds child sat
+                    if child.annualcov[year] > maxcov_child:
+                        child.annualcov[year] = maxcov_child
