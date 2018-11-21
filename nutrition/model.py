@@ -18,7 +18,7 @@ class Model(sc.prettyobj):
         self.year = self.all_years[0]
 
         # this is for extracting baseline coverage/spending in gui (before prog_set set)
-        self._set_progs(self.prog_info.base_progset())
+        self._setprogs(self.prog_info.base_progset())
 
         self.adjust_cov = adjust_cov
         self.timeTrends = timeTrends
@@ -31,27 +31,40 @@ class Model(sc.prettyobj):
         - storage for updates
         - coverage scenario for programs
          """
-        self._set_progs(scen.prog_set) # overwrite baseline prog_set
-        self._set_pop_probs(self.year)
+        self._setprogs(scen.prog_set) # overwrite baseline prog_set
+        self._setpopprobs(self.year)
         self._reset_storage()
         self._set_trackers()
         self._track_prevs()
         if setcovs:
             # scenario coverages
-            self.update_covs(scen.vals, scen.scen_type, restrictcovs=restrictcovs)
+            self.setcovs(scen.vals, scen.scen_type, restrictcovs=restrictcovs)
 
-    def get_allocs(self, add_funds, fix_curr, rem_curr):
-        self.prog_info.get_allocs(add_funds, fix_curr, rem_curr)
+    def setallocs(self, add_funds, fix_curr, rem_curr):
+        self.prog_info.setallocs(add_funds, fix_curr, rem_curr)
 
-    def _set_progs(self, prog_set):
-        self.prog_info.make_progs(prog_set, self.all_years)
-        self.prog_info.set_init_covs(self.pops)
-        self.prog_info.set_costcovs() # enables getting coverage from cost
-        self.prog_info.get_base_spend()
-    
-    def update_covs(self, covs, scentype, restrictcovs=True):
-        covs, spend = self.prog_info.get_cov_scen(covs, scentype, self.all_years)
-        self.prog_info.update_covs(covs, spend, restrictcovs)
+    def _setprogs(self, prog_set):
+        """
+        Creates instances of the Program class and sets the following:
+            1.
+        :param prog_set:
+        :return:
+        """
+        self.prog_info.makeprogs(prog_set, self.all_years)
+        self.prog_info.setupprogs(self.pops)
+        return
+
+    def setcovs(self, vals, scentype, restrictcovs=True):
+        """
+        Sets the coverage and budget vectors for each program.
+        :param vals: Either coverage or budget vectors (list of lists)
+        :param scentype: Either coverage or budget scenario (string)
+        :param restrictcovs: Respect program dependencies by restricting coverages?
+        :return: None
+        """
+        covs, spend = self.prog_info.getscen(vals, scentype, self.all_years)
+        self.prog_info.setcovs(covs, spend, restrictcovs)
+        return
 
     def _set_trackers(self):
         """ Arrays to store annual outputs """
@@ -95,7 +108,7 @@ class Model(sc.prettyobj):
         self._track_wra_outcomes()
         self._track_prevs()
 
-    def _set_pop_probs(self, year):
+    def _setpopprobs(self, year):
         init_cov = self.prog_info.get_ann_covs(year-1)
         prog_areas = self.prog_info.prog_areas
         for pop in self.pops:
@@ -118,7 +131,7 @@ class Model(sc.prettyobj):
             change = self.prog_info.determine_cov_change()
             if change:
                 # update for next year
-                self._set_pop_probs(year)
+                self._setpopprobs(year)
                 self._reset_storage()
                 self._apply_prog_covs()
             if self.adjust_cov: # account for pop growth

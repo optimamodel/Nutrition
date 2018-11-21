@@ -52,7 +52,7 @@ class Geospatial:
         for reg in regions:
             thismod = sc.dcp(proj.model(reg.model_name))
             thismod.setup(reg, setcovs=False)
-            thismod.get_allocs(reg.add_funds, reg.fix_curr, reg.rem_curr)
+            thismod.setallocs(reg.add_funds, reg.fix_curr, reg.rem_curr)
             models.append(thismod)
         # current regional spending only included in flexible funding if regional spending not fixed
         regional_flexi = np.array([mod.prog_info.free for mod in models]) * int(not self.fix_regionalspend)
