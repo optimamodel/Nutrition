@@ -56,13 +56,12 @@ class Program(sc.prettyobj):
         self.annual_cov = cov
         self.annual_spend = spend
 
-    def interp_scen(self, cov, years, scentype, progname):
         """ cov: a list of coverages/spending with one-to-one correspondence with sim_years
         restr_cov: boolean indicating if the coverages are restricted or unrestricted """
         if 'ov' in scentype:
             # Raise exception is invalid coverage value. Done here before converting to unrestricted coverages
             if (cov < 0).any() or (cov > 1).any():
-                raise Exception("Coverage for '%s' outside range 0-1: %s" % (progname, cov))
+                raise Exception("Coverage for '%s' outside range 0-1: %s" % (self.name, cov))
             # assume restricted cov
             cov = self.get_unrestr_cov(cov)
             cov[0] = self.annual_cov[0]
@@ -72,7 +71,7 @@ class Program(sc.prettyobj):
         elif 'ud' in scentype: # budget
             # can't have negative spending
             if (cov < 0).any():
-                raise Exception("Spending for '%s' below 0: %s" % (progname, cov))
+                raise Exception("Spending for '%s' below 0: %s" % (self.name, cov))
             cov[0] = self.annual_spend[0]
             not_nan = ~np.isnan(cov)
             interp_spend = np.interp(years, years[not_nan], cov[not_nan])
@@ -602,7 +601,7 @@ class ProgramInfo(sc.prettyobj):
         spend = np.zeros(shape=(len(self.programs), len(years)))
         covs = self.check_cov(covs, years)
         for i,prog in self.programs.enumvals():
-            unrestr_cov[i], spend[i] = prog.interp_scen(covs[i], years, scentype, prog.name)
+            unrestr_cov[i], spend[i] = prog.interp_scen(covs[i], years, scentype)
         return unrestr_cov, spend
 
     def check_cov(self, covs, years):
