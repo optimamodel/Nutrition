@@ -50,20 +50,18 @@ class ScenResult(sc.prettyobj):
     def get_allocs(self, ref=True, current=False):
         allocs = sc.odict()
         for name, prog in self.programs.items():
-            spend = prog.annual_spend
+            spend = prog.annualspend
             if not ref and prog.reference:
                 spend -= spend[0] # baseline year is reference spending, subtracted from every year
             if current:
                 spend = spend[:1]
-            # if not fixed and not prog.reference:
-            #     spend -= spend[0]
             allocs[name] = spend
         return allocs
 
-    def get_covs(self, ref=True, unrestr=True):
+    def get_covs(self, ref=True, popcov=True):
         covs = sc.odict()
         for name, prog in self.programs.iteritems():
-            cov = prog.get_cov(unrestr=unrestr)
+            cov = prog.getcov(popcov=popcov)
             if not ref and prog.reference:
                 cov -= cov[0] # baseline year is reference cov, subtracted from every year
             covs[name] = cov

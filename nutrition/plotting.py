@@ -245,7 +245,7 @@ def plot_costcurve(results):
                 maxspend = np.max(thisspend)
         x = np.linspace(0, 2e7, 10000)
         for prog in res.programs.itervalues():
-            y = prog.func(x)
+            y = prog.costfunc(x)
             ax.plot(x, y)
     ax.set_ylim([0, 1])
     ax.set_xlim([0, 2e7])

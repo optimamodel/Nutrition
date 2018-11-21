@@ -179,7 +179,7 @@ def obj_func(allocation, model, free, fixed, keep_inds, weights):
     # scale the allocation appropriately
     scaledAllocation = utils.scale_alloc(free, allocation)
     totalAllocations = utils.add_fixed_alloc(fixed, scaledAllocation, keep_inds)
-    thisModel.update_covs(totalAllocations, 'budget')
+    thisModel.setcovs(totalAllocations, 'budget')
     thisModel.run_sim()
     # get weighted objective value
     outs = thisModel.get_output()
