@@ -46,6 +46,7 @@ class Program(sc.prettyobj):
         self.base_spend = None
         self.famplan_methods = None
         self.pregav_sum = None
+        self.reference = False
 
         self.ss = Settings()
 
@@ -81,40 +82,40 @@ class Program(sc.prettyobj):
         self.annualspend = spend
         return
 
-    def _interpscen(self, cov, years, scentype):
+    def interpscen(self, val, years, scentype):
         """
         Interpolates the coverage and spending vectors for a program.
         Performs some basic validation on the vectors.
-        :param cov: A 1d array of coverages or spending. Must be the same length as years.
+        :param val: A 1d array of coverages or spending. Must be the same length as years.
         :param years: The years of the simulation
         :param scentype: The type of scenario, containing the substring 'ov' (coverage) or 'ud' (budget)
         :return: the interpolated coverage and spending vectors (1d numpy array)
         """
         if 'ov' in scentype:
             # Raise exception is invalid coverage value. Done here before converting to population coverages
-            if (cov < 0).any() or (cov > 1).any():
-                raise Exception("Coverage for '%s' outside range 0-1: %s" % (self.name, cov))
+            if (val < 0).any() or (val > 1).any():
+                raise Exception("Coverage for '%s' outside range 0-1: %s" % (self.name, val))
             # assume target coverage
-            cov = self.getpopcov(cov)
+            cov = self.getpopcov(val)
             cov[0] = self.annualcov[0]
             not_nan = ~np.isnan(cov)
             interp_cov = np.interp(years, years[not_nan], cov[not_nan])
             interp_spend = self.covfunc(interp_cov)
         elif 'ud' in scentype: # budget
             # can't have negative spending
-            if (cov < 0).any():
-                raise Exception("Spending for '%s' below 0: %s" % (self.name, cov))
-            cov[0] = self.annualspend[0]
-            not_nan = ~np.isnan(cov)
-            interp_spend = np.interp(years, years[not_nan], cov[not_nan])
+            if (val < 0).any():
+                raise Exception("Spending for '%s' below 0: %s" % (self.name, val))
+            val[0] = self.annualspend[0]
+            not_nan = ~np.isnan(val)
+            interp_spend = np.interp(years, years[not_nan], val[not_nan])
             interp_cov = self.costfunc(interp_spend)
         else:
             raise Exception("Scenario type '%s' is not valid, must be 'coverage' or 'budget'" %scentype)
         return interp_cov, interp_spend
 
-    def getpopcov(self, popcov):
+    def getpopcov(self, targetcov):
         """ Expects an array of target population coverages """
-        return popcov[:] * self.targetpopsize / self.totalpopsize
+        return targetcov[:] * self.targetpopsize / self.totalpopsize
 
     def setpopsize(self, pops):
         self._settargetpop(pops)
@@ -553,20 +554,18 @@ class ProgramInfo(sc.prettyobj):
         self.sim_years = all_years[1:]
         self.programs = set_programs(prog_set, self.prog_data, all_years)
         self.prog_areas = self._clean_prog_areas(self.prog_data.prog_areas, prog_set)
-        self._set_ref_progs()
-        self._sort_progs()
+        self._setreference()
+        self._sortprogs()
 
     def base_progset(self):
         return self.prog_data.base_prog_set
 
-    def _set_ref_progs(self):
+    def _setreference(self):
         for program in self.programs.values():
             if program.name in self.prog_data.ref_progs:
                 program.reference = True
-            else:
-                program.reference = False
 
-    def _sort_progs(self):
+    def _sortprogs(self):
         """
         Sorts the program list by dependency such that the resulting order will be most independent to least independent.
         Uses a variant of a breadth-first search,
