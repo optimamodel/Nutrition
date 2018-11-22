@@ -343,7 +343,6 @@ Last update: 2018-09-25
 
       addScen() {
         console.log('addScen() called');
-        this.$modal.hide('add-scen');
         status.start(this);
         let newScen = _.cloneDeep(this.addEditModal.scenSummary); // Get the new scenario summary from the modal.
         let scenNames = []; // Get the list of all of the current scenario names.
@@ -369,9 +368,11 @@ Last update: 2018-09-25
         rpcs.rpc('set_scen_info', [this.projectID, this.scenSummaries])
           .then( response => {
             status.succeed(this, 'Scenario added')
+            this.$modal.hide('add-scen');
           })
           .catch(error => {
             status.fail(this, 'Could not add scenario', error)
+            this.getScenSummaries()
           })
       },
 
