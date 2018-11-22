@@ -58,13 +58,9 @@ class ScenResult(sc.prettyobj):
             allocs[name] = spend
         return allocs
 
-    def get_covs(self, ref=True, popcov=True):
-        covs = sc.odict()
-        for name, prog in self.programs.iteritems():
-            cov = prog.getcov(popcov=popcov)
-            if not ref and prog.reference:
-                cov -= cov[0] # baseline year is reference cov, subtracted from every year
-            covs[name] = cov
+    def getcovs(self, popcov=True, years=None):
+        if years is None: years = self.years
+        covs = self.prog_info.getcovs(popcov=popcov, years=years)
         return covs
 
     def get_freefunds(self):

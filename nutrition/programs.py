@@ -60,16 +60,18 @@ class Program(sc.prettyobj):
         output = sc.prepr(self)
         return output
 
-    def getcov(self, popcov=True):
+    def getcov(self, popcov, years):
         """
         Retrieves the desired coverage vector
+        :param years: the years for coverage to be returns
         :param popcov: population or target coverage (boolean)
         :return: A 1d numpy array, containing either population or target coverages
         """
         if popcov:
-            return self.annualcov
+            return self.annualcov[years]
         else:
-            return self.annualcov * self.totalpopsize / self.targetpopsize
+            return self.annualcov[years] * 1 / self.totalpopsat
+
 
     def update_cov(self, cov, spend):
         """
