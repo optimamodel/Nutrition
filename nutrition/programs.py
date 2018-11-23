@@ -72,6 +72,12 @@ class Program(sc.prettyobj):
         else:
             return self.annualcov[years] * 1 / self.totalpopsat
 
+    def getspend(self, years, ref=True):
+        spend = self.annualspend[years]
+        if not ref and self.reference:
+            # subtract baseline spending
+            spend -= spend[0]
+        return spend
 
     def update_cov(self, cov, spend):
         """
@@ -117,7 +123,7 @@ class Program(sc.prettyobj):
 
     def getpopcov(self, targetcov):
         """ Expects an array of target population coverages """
-        return targetcov[:] * self.targetpopsize / self.totalpopsize
+        return targetcov[:] * self.totalpopsat
 
     def setpopsize(self, pops):
         self._settargetpop(pops)
@@ -127,7 +133,7 @@ class Program(sc.prettyobj):
         return
 
     def setbasecov(self):
-        popcov = (self.base_cov * self.targetpopsize) / self.totalpopsize
+        popcov = self.base_cov * self.totalpopsat
         self.annualcov[0] = popcov
         spend = self.covfunc(self.annualcov[:1])[0]
         self.base_spend = spend
@@ -340,12 +346,13 @@ class Program(sc.prettyobj):
         costcurve = CostCovCurve(self.unit_cost, self.sat, self.targetpopsize, self.totalpopsize, self.costtype)
         self.costfunc, self.covfunc = costcurve.setfuncs()
 
-    def get_spending(self, covs):
+    def calcspend(self, years):
         """
         Calculate the spending for given coverage
-        :param covs: 1d numpy array
+        :param years: the years to calculate spending (list)
         :return: 1d numpy array
         """
+        covs = self.annualcov[years]
         return self.covfunc(covs)
 
 
@@ -494,23 +501,83 @@ class ProgramInfo(sc.prettyobj):
         self.fixed = None
         self.free = None
 
+    def makeprogs(self, prog_set, all_years):
+        """
+        Creates the program objects
+        :param prog_set: The programs to be created (list of strings)
+        :param all_years: years of the simulation period
+        :return: None
+        """
+        self.all_years = all_years
+        self.sim_years = all_years[1:]
+        self.programs = set_programs(prog_set, self.prog_data, all_years)
+        self.prog_areas = self._clean_prog_areas(self.prog_data.prog_areas, prog_set)
+        self._setreference()
+        self._sortprogs()
+        return
+
     def setupprogs(self, pops):
+        """
+        Sets up the following for programs:
+            1. Population sizes (total and target populations)
+            2. The cost-coverage function and its inverse
+            3. The baseline coverage and budget
+        :param pops: The three population objects: children, pregnant women, non-pregnant women (list of objects)
+        :return: None
+        """
         for prog in self.programs.values():
             prog.setpopsize(pops)
             prog.setcostfuncs()
             prog.setbasecov()
+        return
 
     def setallocs(self, add_funds, fix_curr, rem_curr):
+        """
+        Calculates the four different kinds of expenditure.
+            1. reference: the baseline spending of each reference program
+            2. current: baseline spending of each program
+            3. fixed: the fixed spending of each program
+            4. free: the total funds available for optimization
+                     after accounting for fixed and reference spending
+        Used only for optimization and is not relevant to scenarios.
+        :param add_funds: additional funds (float)
+        :param fix_curr: fix current allocations? (boolean)
+        :param rem_curr: remove the current allocations? (boolean)
+        :return: None
+        """
         self.refs = self.get_refs()
         self.curr = self.get_curr()
         self.fixed = self.get_fixed(fix_curr)
         self.free = self.get_free(add_funds, fix_curr, rem_curr)
+        return
 
-    def get_refs(self):
+    def getcovs(self, popcov=True, years=None):
+        """
+        Retrieves the coverage vector for each program in a convenient form.
+        :param popcov: population coverage or target coverage? (boolean)
+        :param years: Determines the length of the coverage vector
+        :return: An odict with program names as keys and 1d numpy arrays as values
+        """
+        if years is None: years = self.all_years
+        covs = sc.odict()
+        for prog in self.programs.values():
+            covs[prog.name] = prog.getcov(popcov, years)
+        return covs
+
+    def getspending(self, years, ref=True):
+        spend = sc.odict()
+        for i, prog in self.programs.enumvals():
+            thisspend = prog.getspend()
+            if not ref and prog.reference:
+                thisspend -= thisspend[0]
+            spend[prog.name] = thisspend[years]
+        return spend[years]
+
+    def get_refs(self): # todo: this does not have access to a scenario definition yet, so have to use function
         ref_allocs = np.zeros(len(self.programs))
         for i, prog in self.programs.enumvals():
             if prog.reference:
-                ref_allocs[i] = prog.get_spending(prog.annualcov)[0]
+                ref_allocs[i] = prog.calcspend(years=[0])
             else:
                 ref_allocs[i] = 0
         return ref_allocs
@@ -518,7 +585,7 @@ class ProgramInfo(sc.prettyobj):
     def get_curr(self):
         allocs = np.zeros(len(self.programs))
         for i, prog in self.programs.enumvals():
-            allocs[i] = prog.get_spending(prog.annualcov)[0]
+            allocs[i] = prog.calcspend(years=[0])
         return allocs
 
     def get_fixed(self, fix_curr):
@@ -551,14 +618,6 @@ class ProgramInfo(sc.prettyobj):
             freeFunds = sum(self.curr) - sum(self.fixed) + add_funds
         return freeFunds
 
-    def makeprogs(self, prog_set, all_years):
-        self.all_years = all_years
-        self.sim_years = all_years[1:]
-        self.programs = set_programs(prog_set, self.prog_data, all_years)
-        self.prog_areas = self._clean_prog_areas(self.prog_data.prog_areas, prog_set)
-        self._setreference()
-        self._sortprogs()
-
     def base_progset(self):
         return self.prog_data.base_prog_set
 
@@ -566,6 +625,7 @@ class ProgramInfo(sc.prettyobj):
         for program in self.programs.values():
             if program.name in self.prog_data.ref_progs:
                 program.reference = True
+        return
 
     def _sortprogs(self):
         """
@@ -578,6 +638,7 @@ class ProgramInfo(sc.prettyobj):
         self._rem_missing_progs()
         self._thresh_sort()
         self._excl_sort()
+        return
 
     def _rem_missing_progs(self):
         """ Removes programs from dependencies lists which are not included in analysis """
@@ -585,6 +646,7 @@ class ProgramInfo(sc.prettyobj):
         for prog in self.programs.values():
             prog.thresh_deps = [name for name in prog.thresh_deps if name in allNames]
             prog.excl_deps = [name for name in prog.excl_deps if name in allNames]
+        return
 
     def _clean_prog_areas(self, prog_areas, progset):
         """ Removed programs from program area list if not included in analysis """
@@ -614,6 +676,7 @@ class ProgramInfo(sc.prettyobj):
             if dependentNames.issubset(closedSetNames):  # all parent programs in closed set
                 closedSet += [program]
         self.exclusionOrder = closedSet[idx:]
+        return
 
     def _thresh_sort(self):
         open_set, closed_set, idx = self._get_thresh_roots()
@@ -623,41 +686,48 @@ class ProgramInfo(sc.prettyobj):
             if dependentNames.issubset(closedSetNames):  # all parent programs in closed set
                 closed_set += [program]
         self.thresholdOrder = closed_set[idx:]
+        return
 
-    def getscen(self, covs, scentype, years):
+    def getscen(self, vals, scentype, years):
         """
         Checks and fully defines the coverage and budget vectors used in the scenario.
-        :param covs: the coverages or budgets for each program (list of lists)
-        :param scentype:
-        :param years:
-        :return:
+        :param vals: the coverages or budgets for each program (list of lists)
+        :param scentype: Either coverage or budget
+        :param years: the number of years in simulation
+        :return: Two 2d numpy arrays. Each row is the fully-specified coverage or budget scenario.
         """
         popcov = np.zeros(shape=(len(self.programs), len(years)))
         spend = np.zeros(shape=(len(self.programs), len(years)))
-        covs = self.check_cov(covs, years)
+        vals = self.checkcov(vals, years)
         for i,prog in self.programs.enumvals():
-            popcov[i], spend[i] = prog._interpscen(covs[i], years, scentype)
+            popcov[i], spend[i] = prog.interpscen(vals[i], years, scentype)
         return popcov, spend
 
-    def check_cov(self, covs, years):
+    def checkcov(self, vals, years):
+        """
+        Checks and corrects the supplied coverage/budget list
+        :param vals: A coverage or budget scenario. Can be provided in a variety of ways
+        :param years: The years of the simulation period
+        :return: 2d numpy array. Each row is an array with length equal to the number of simulation years + 1 (for baseline)
+        """
         numyears = len(years)-1 # not including baseline
-        newcovs = np.zeros((len(self.programs), numyears+1))
+        newvals = np.zeros((len(self.programs), numyears+1))
         for i,prog in self.programs.enumvals():
             try:
-                cov = covs[i]
-                if isinstance(cov, float):
-                    newcov = np.full(numyears, cov)
-                elif len(cov) == numyears:
-                    newcov = np.array(cov)
-                elif len(cov) < numyears:
-                    newcov = np.concatenate((cov, np.full(numyears - len(cov), cov[-1])), axis=0)
-                elif len(cov) > numyears:
-                    newcov = cov[1:] # this is hack fix for when baseline spending included
+                val = vals[i]
+                if isinstance(val, float):
+                    newval = np.full(numyears, val)
+                elif len(val) == numyears:
+                    newval = np.array(val)
+                elif len(val) < numyears:
+                    newval = np.concatenate((val, np.full(numyears - len(val), val[-1])), axis=0)
+                elif len(val) > numyears:
+                    newval = val[1:] # this is hack fix for when baseline spending included
             except IndexError: # coverage scenario not specified, assume constant
-                newcov = np.full(numyears, prog.base_cov)
-            newcovs[i][1:] = newcov
-        newcovs = newcovs.astype(float) # force conversion to treat None as nan and convert integers
-        return newcovs
+                newval = np.full(numyears, prog.base_cov)
+            newvals[i][1:] = newval
+        newvals = newvals.astype(float) # force conversion to treat None as nan and convert integers
+        return newvals
 
     def setcovs(self, covs, spends, restrictcovs):
         for i,prog in self.programs.enumvals():
@@ -666,9 +736,11 @@ class ProgramInfo(sc.prettyobj):
             prog.update_cov(cov, spend)
         # restrict covs
         if restrictcovs:
-            self.restrict_covs()
+            self.restrictcovs()
+        return
 
-    def determine_cov_change(self):
+    def checkchange(self):
+        """ Checks if coverage has changed from the previous year """
         for prog in self.programs.values():
             if abs(prog.annualcov[prog.year-1] - prog.annualcov[prog.year]) > 1e-3:
                 return True
@@ -684,13 +756,7 @@ class ProgramInfo(sc.prettyobj):
         for prog in self.programs.values():
             prog.year = year
 
-    def get_ann_covs(self, year):
-        covs = {}
-        for prog in self.programs.values():
-            covs[prog.name] = prog.annualcov[year]
-        return covs
-
-    def restrict_covs(self):
+    def restrictcovs(self):
         """
         Uses the ordering of both dependency lists to restrict the coverage of programs.
         Assumes that the coverage is given as peopleCovered/totalpopsize.

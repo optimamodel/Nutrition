@@ -186,7 +186,7 @@ class Geospatial:
         if restrict:
             return self.add_funds
         else:
-            return sum([region.get_freefunds() - self.add_funds for region in regions]) + self.add_funds
+            return sum([region.getfunds(free=True) - self.add_funds for region in regions]) + self.add_funds
 
     def get_nationalspend(self, regions):
         """ allocation return as time series, ensure only extract current spending"""

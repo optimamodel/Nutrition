@@ -63,6 +63,14 @@ class ScenResult(sc.prettyobj):
         covs = self.prog_info.getcovs(popcov=popcov, years=years)
         return covs
 
+    def getfunds(self, years=None, free=False): #todo: maybe one func to do all funds handling. could call the proginfo methods
+        # todo: this returns different structures currently. fix this
+        if years is None: years = self.years
+        if free:
+            return self.prog_info.free
+        else:
+            return self.prog_info.getspending(years)
+
     def get_freefunds(self):
         free = self.model.prog_info.free
         if self.mult is not None:
@@ -151,7 +159,7 @@ def write_results(results, projname=None, filename=None, folder=None):
     for r, res in enumerate(results):
         rows = res.programs.keys()
         spend = res.get_allocs(ref=True)
-        cov = res.get_covs(unrestr=False)
+        cov = res.getcovs(popcov=False)
         # collate coverages first
         for r, prog in enumerate(rows):
             name = [res.name] if r == 0 else ['']

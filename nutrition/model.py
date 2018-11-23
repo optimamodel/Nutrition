@@ -6,6 +6,14 @@ from .utils import default_trackers, restratify
 
 class Model(sc.prettyobj):
     def __init__(self, pops, prog_info, t=None, adjust_cov=False, timeTrends=False):
+        """
+        Provides storage and functionality for the interaction between Populations and Programs
+        :param pops: Children, Pregnant women and Non-pregnant women objects (list of objects)
+        :param prog_info: Container for all the Programs and associated functionality
+        :param t: The start and end points of simulation period (list of integers)
+        :param adjust_cov: DEFUNCT. Was for correcting coverages based on population growth
+        :param timeTrends: DEFUNCT. Was for incorporating time trends for stunting prevalence etc
+        """
         self.pops = sc.dcp(pops)
         self.children, self.pw, self.nonpw = self.pops
         self.prog_info = sc.dcp(prog_info)
@@ -32,7 +40,7 @@ class Model(sc.prettyobj):
         - coverage scenario for programs
          """
         self._setprogs(scen.prog_set) # overwrite baseline prog_set
-        self._setpopprobs(self.year)
+        self._setpopprobs(1) # todo: not totally sure this is needed, since reset anyway
         self._reset_storage()
         self._set_trackers()
         self._track_prevs()
@@ -45,10 +53,9 @@ class Model(sc.prettyobj):
 
     def _setprogs(self, prog_set):
         """
-        Creates instances of the Program class and sets the following:
-            1.
-        :param prog_set:
-        :return:
+        Creates instances of the Program class.
+        :param prog_set: List of program names (list of strings)
+        :return: None
         """
         self.prog_info.makeprogs(prog_set, self.all_years)
         self.prog_info.setupprogs(self.pops)
@@ -109,7 +116,7 @@ class Model(sc.prettyobj):
         self._track_prevs()
 
     def _setpopprobs(self, year):
-        init_cov = self.prog_info.get_ann_covs(year-1)
+        init_cov = self.prog_info.getcovs(years=[year-1])
         prog_areas = self.prog_info.prog_areas
         for pop in self.pops:
             pop.previousCov = init_cov
@@ -124,11 +131,15 @@ class Model(sc.prettyobj):
         self.year = year
         self.prog_info.update_prog_year(year)
 
-    def run_sim(self):
+    def runsim(self):
+        """
+        Runs the scenario once the model object is fully specified.
+        :return: None
+        """
         for year in self.sim_years:
             self.update_year(year)
             # determine if there are cov changes from previous year
-            change = self.prog_info.determine_cov_change()
+            change = self.prog_info.checkchange()
             if change:
                 # update for next year
                 self._setpopprobs(year)
@@ -139,6 +150,7 @@ class Model(sc.prettyobj):
             self.integrate()
             self._track()
         self._track_rates()
+        return
 
     def _apply_prog_covs(self):
         # update populations
@@ -170,6 +182,11 @@ class Model(sc.prettyobj):
         return age_groups
 
     def _update_pop(self, population):
+        """
+        Calculates the impacts on each risk area produced by changing program coverages from the previous year.
+        :param population: A single population (children, pregnant women, non-pregnant women)
+        :return: None
+        """
         for risk in self.prog_info.prog_areas.keys():
             # get relevant programs and age groups, determined by risk area
             applicableProgs = self._applicable_progs(risk)

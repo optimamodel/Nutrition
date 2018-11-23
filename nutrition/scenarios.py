@@ -26,7 +26,7 @@ def run_scen(scen, model, obj=None, mult=None, setcovs=True, restrictcovs=True):
     from .results import ScenResult # This is here to avoid a potentially circular import
     model = sc.dcp(model)
     model.setup(scen, setcovs=setcovs, restrictcovs=restrictcovs)
-    model.run_sim()
+    model.runsim()
     res = ScenResult(scen.name, scen.model_name, model, obj=obj, mult=mult)
     return res
 
@@ -49,7 +49,7 @@ def convert_scen(scen, model):
         convertedvals = result.get_allocs()
         scen_type = 'budget'
     else:
-        convertedvals = result.get_covs(unrestr=False)
+        convertedvals = result.getcovs(popcov=False)
         scen_type = 'coverage'
     newprogvals = sc.odict() # Create new dict to hold the converted values
     for k,key in convertedvals.enumkeys(): # Loop over programs
