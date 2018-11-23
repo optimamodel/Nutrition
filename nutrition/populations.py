@@ -6,6 +6,8 @@ import sciris as sc
 from . import settings
 from .utils import solve_quad, restratify, fit_poly, system, check_sol
 
+################
+### AGE GROUPS ###
 
 class AgeGroup(sc.prettyobj):
     def __init__(self, age, pop_size, anaemia_dist):
@@ -48,14 +50,14 @@ class AgeGroup(sc.prettyobj):
 
     def frac_risk(self, risk):
         risk = risk.lower()
-        if any(sub in risk for sub in ['an', 'anaem', 'amaemia', 'amaemic']):
+        if any(sub in risk for sub in ['an', 'anaem', 'anaemia', 'anaemic']):
             return self.frac_anaemic()
         else:
             raise Exception('::ERROR:: age group "{}" does not have "{}" attribute'.format(self.age, risk))
 
     def num_risk(self, risk):
         risk = risk.lower()
-        if any(sub in risk for sub in ['an', 'anaem', 'amaemia', 'amaemic']):
+        if any(sub in risk for sub in ['an', 'anaem', 'anaemia', 'anaemic']):
             return self.num_anaemic()
         else:
             raise Exception('::ERROR:: age group "{}" does not have "{}" attribute'.format(self.age, risk))
@@ -177,7 +179,7 @@ class ChildAgeGroup(AgeGroup):
             return self.frac_wasted('SAM')
         elif any(sub in risk for sub in ['was', 'wast', 'wasting', 'wasted']):
             return sum(self.frac_wasted(cat) for cat in self.ss.wasted_list)
-        elif any(sub in risk for sub in ['an', 'anaem', 'amaemia', 'amaemic']):
+        elif any(sub in risk for sub in ['an', 'anaem', 'anaemia', 'anaemic']):
             return self.frac_anaemic()
         else:
             raise Exception('::ERROR:: age group "{}" does not have "{}" attribute'.format(self.age, risk))
@@ -193,7 +195,7 @@ class ChildAgeGroup(AgeGroup):
             return self.num_wasted('SAM')
         elif any(sub in risk for sub in ['was', 'wast', 'wasting', 'wasted']):
             return sum(self.num_wasted(cat) for cat in self.ss.wasted_list)
-        elif any(sub in risk for sub in ['an', 'anaem', 'amaemia', 'amaemic']):
+        elif any(sub in risk for sub in ['an', 'anaem', 'anaemia', 'anaemic']):
             return self.num_anaemic()
         else:
             raise Exception('::ERROR:: age group "{}" does not have "{}" attribute'.format(self.age, risk))
@@ -318,6 +320,11 @@ class Population(sc.prettyobj):
 
     def frac_anaemic(self):
         return self.num_anaemic() / self.total_pop()
+
+
+###################
+#### POPULATIONS #####
+
 
 class Children(Population):
     def __init__(self, data, default_params):
