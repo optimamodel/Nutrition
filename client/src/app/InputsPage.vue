@@ -35,7 +35,7 @@ Last update: 2018-10-03
             <button class="btn btn-icon" @click="renameDatasetModal()" data-tooltip="Rename"><i class="ti-pencil"></i></button>
             <button class="btn btn-icon" @click="copyDataset()" data-tooltip="Copy"><i class="ti-files"></i></button>
             <button class="btn btn-icon" @click="deleteDataset()" data-tooltip="Delete"><i class="ti-trash"></i></button>
-            <button class="btn btn-icon" @click="downloadDatabook()" data-tooltip="Downl databookoad databook"><i class="ti-download"></i></button>
+            <button class="btn btn-icon" @click="downloadDatabook()" data-tooltip="Download databook"><i class="ti-download"></i></button>
             <button class="btn btn-icon" @click="uploadDatabook()" data-tooltip="Upload"><i class="ti-upload"></i></button>
             <button class="btn btn-icon" @click="loadDatasets()" data-tooltip="Refresh"><i class="ti-reload"></i></button>&nbsp;
             <!--<help reflink="parameter-sets"></help>-->
