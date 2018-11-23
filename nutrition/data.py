@@ -382,16 +382,22 @@ class InputData(object):
     ### MORTALITY ###
 
     def get_death_dist(self):
-        death_dist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0], 'index')
-        # convert 'Pregnant women' to age bands
-        for key, value in death_dist.items():
-            self.death_dist[key] = sc.odict()
-            pw_val = value['Pregnant women']
-            for age in self.settings.pw_ages+self.settings.child_ages:
-                if "PW" in age:
-                    self.death_dist[key][age] = pw_val
+        # read in with helpful column names, ignore the final row of each sub-table
+        deathdist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0, 1], skiprows=1)
+        neonates = deathdist.loc['Neonatal'].ix[:-1]
+        deathdist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0, 1], skiprows=12)
+        children = deathdist.loc['Children'].ix[:-1]
+        deathdist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0, 1], skiprows=24)
+        pw = deathdist.loc['Pregnant women'].ix[:-1]
+        dist = pandas.concat([neonates['<1 month'], children, pw['Pregnant women.1']], axis=1, sort=False).fillna(0)
+        for cause in dist.index:
+            self.death_dist[cause] = sc.odict()
+            for age in self.settings.child_ages + self.settings.pw_ages:
+                if 'PW' in age:
+                    # stratify the pregnant women
+                    self.death_dist[cause][age] = dist['Pregnant women.1'][cause]
                 else:
-                    self.death_dist[key][age] = value[age]
+                    self.death_dist[cause][age] = dist[age][cause]
         # list causes of death
         self.causes_death = self.death_dist.keys()
 
@@ -414,17 +420,44 @@ class ProgData(object):
         self.prog_areas = default_data.prog_areas
 
         # load data
+        self.get_prog_info()
         self.get_prog_target()
         self.get_prog_deps()
         self.get_ref_progs()
-        self.get_prog_info()
         self.get_famplan_methods()
         self.create_iycf()
         self.spreadsheet = None # Reset to save memory
-    
+        self.validate()
+
     def __repr__(self):
         output  = sc.prepr(self)
         return output
+
+    def validate(self):
+        """ Validate program data """
+        invalid = []
+        for progname in self.base_prog_set:
+            cov = self.base_cov[progname]
+            if cov < 0 or cov > 1:
+                errormsg = 'Baseline coverage is outside the interval (0, 100) for %s' %progname
+                invalid.append(errormsg)
+            sat = self.sat[progname]
+            if sat < 0 or sat > 1:
+                errormsg = 'Saturation is outside the interval (0, 100) for %s' %progname
+                invalid.append(errormsg)
+            cost = self.costs[progname]
+            if cost <= 0:
+                errormsg = 'Cost is 0 or negative for %s' %progname
+                invalid.append(errormsg)
+            if progname not in self.prog_target.keys():
+                errormsg = 'Target population not defined for %s' % progname
+                invalid.append(errormsg)
+            elif sum(self.prog_target[progname].values()) == 0:
+                errormsg = 'Target population is 0 for %s' %progname
+                invalid.append(errormsg)
+        if invalid:
+            errors = '\n\n'.join(invalid)
+            raise Exception(errors)
 
     def get_prog_target(self):
         targetPopSheet = utils.read_sheet(self.spreadsheet, 'Programs target population', [0,1])
@@ -448,7 +481,7 @@ class ProgData(object):
                 else:
                     programDep[program][dependType] = []
         # pad the remaining programs
-        missingProgs = list(set(self.prog_set) - set(programDep.keys()))
+        missingProgs = list(set(self.base_prog_set) - set(programDep.keys()))
         for program in missingProgs:
             programDep[program] = sc.odict()
             for field in deps.columns:
@@ -464,10 +497,15 @@ class ProgData(object):
         self.base_cov = sc.odict(zip(self.base_prog_set, sheet.iloc[:,1].tolist()))
         self.sat = sc.odict(zip(self.base_prog_set, sheet.iloc[:,2].tolist()))
         self.costs = sc.odict(zip(self.base_prog_set, sheet.iloc[:,3].tolist()))
-        self.costtype = sc.odict(zip(self.base_prog_set, sheet.iloc[:,4].tolist()))
+        costtypes = utils.format_costtypes(sheet.iloc[:,4].tolist())
+        self.costtype = sc.odict(zip(self.base_prog_set, costtypes))
 
     def create_iycf(self):
         packages = self.define_iycf()
+        # remove IYCF from base progs if it isn't appropriately defined (avoid error in baseline)
+        remprog = [key for key,val in packages.iteritems() if not val]
+        self.base_prog_set = [prog for prog in self.base_prog_set if prog not in remprog]
+        packages = sc.odict({key: val for key,val in packages.iteritems() if val})
         target = self.get_iycf_target(packages)
         self.prog_target.update(target)
 

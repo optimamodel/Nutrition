@@ -1,3 +1,4 @@
+import traceback
 from functools import partial
 from math import ceil
 import numpy as np
@@ -11,45 +12,42 @@ class Program(sc.prettyobj):
     and all necessary data will be stored as attributes. Will store name, targetpop, popsize, coverage, edges etc
     Restricted coverage: the coverage amongst the target population (assumed given by user)
     Unrestricted coverage: the coverage amongst the entire population """
-    def __init__(self, name, prog_data, all_years):
+    def __init__(self, name, all_years, progdata):
         self.name = name
-        self.prog_deps = prog_data.prog_deps
-        self.ss = Settings()
         self.year = all_years[0]
+        self.target_pops = progdata.prog_target[name]
+        self.unit_cost = progdata.costs[name]
+        self.costtype = progdata.costtype[name]
+        self.sat = progdata.sat[name]
+        self.base_cov = progdata.base_cov[name]
         self.annual_cov = np.zeros(len(all_years))
         self.annual_spend = np.zeros(len(all_years))
+        self.excl_deps = progdata.prog_deps[name]['Exclusion dependency']
+        self.thresh_deps = progdata.prog_deps[name]['Threshold dependency']
+        # attributes to be calculated later
         self.ref_spend = None
         self.func = None
         self.inv_func = None
-        self.target_pops = prog_data.prog_target[self.name] # frac of each population which is targeted
-        self.unit_cost = prog_data.costs[self.name]
-        self.costtype = prog_data.costtype[self.name]
-        if not self.unit_cost:
-            self.unit_cost = 1
-            print('Warning, program %s has 0 unit cost'%self.name)
-        self.sat = prog_data.sat[self.name]
         self.sat_unrestr = None
-        self.base_cov = prog_data.base_cov[self.name]
         self.base_spend = None
-        self.pregav_sum = None
         self.famplan_methods = None
-        if 'amil' in name: # family planning program only
-            self.famplan_methods = prog_data.famplan_methods
-            self.set_pregav_sum()
-        self.nullpop = False # flags whether target pop is 0
+        self.pregav_sum = None
 
+        self.ss = Settings()
+
+        if 'amil' in self.name: # family planning program only
+            self.famplan_methods = progdata.famplan_methods
+            self.set_pregav_sum()
         self._set_target_ages()
-        self._set_impacted_ages(prog_data.impacted_pop[self.name]) # TODO: This func could contain the info for how many multiples needed for unrestricted population calculation (IYCF)
-        self._set_exclusion_deps()
-        self._set_threshold_deps()
-    
+        self._set_impacted_ages(progdata.impacted_pop[name])
+
     def __repr__(self):
         output = sc.prepr(self)
         return output
 
     def get_cov(self, unrestr=True):
         """ Extracts either the restricted or unrestricted coverage array """
-        if unrestr or self.nullpop:
+        if unrestr:
             return self.annual_cov
         else:
             return self.annual_cov * self.unrestr_popsize / self.restr_popsize
@@ -85,25 +83,16 @@ class Program(sc.prettyobj):
 
     def get_unrestr_cov(self, restr_cov):
         """ Expects an array of restricted coverages """
-        if self.nullpop:
-            return restr_cov[:] * 0
-        else:
-            return restr_cov[:] * self.restr_popsize / self.unrestr_popsize
+        return restr_cov[:] * self.restr_popsize / self.unrestr_popsize
 
     def set_pop_sizes(self, pops):
         self._set_restrpop(pops)
         self._set_unrestrpop(pops)
         # this accounts for different fractions within age bands
-        if self.nullpop:
-            self.sat_unrestr = 0
-        else:
-            self.sat_unrestr = self.restr_popsize / self.unrestr_popsize
+        self.sat_unrestr = self.restr_popsize / self.unrestr_popsize
 
     def set_init_unrestr(self):
-        if self.nullpop:
-            unrestr_cov = 0
-        else:
-            unrestr_cov = (self.base_cov * self.restr_popsize) / self.unrestr_popsize
+        unrestr_cov = (self.base_cov * self.restr_popsize) / self.unrestr_popsize
         self.annual_cov[0] = unrestr_cov
 
     def adjust_cov(self, pops, year): # todo: needs fixing for annual_cov being an array now
@@ -151,35 +140,6 @@ class Program(sc.prettyobj):
         for pop in populations:
             self.restr_popsize += sum(age.pop_size * self.target_pops[age.age] for age in pop.age_groups
                                          if age.age in self.agesTargeted)
-        if not self.restr_popsize:
-            self.nullpop = True
-            # print('Warning, program "%s" has zero target population size'%self.name)
-
-    def _set_exclusion_deps(self):
-        """
-        List containing the names of programs which restrict the coverage of this program to (1 - coverage of independent program)
-        :return:
-        """
-        self.exclusionDependencies = []
-        try: # TODO: don't like this, perhaps switch order or cleanup before hand?
-            dependencies = self.prog_deps[self.name]['Exclusion dependency']
-        except:
-            dependencies = []
-        for program in dependencies:
-            self.exclusionDependencies.append(program)
-
-    def _set_threshold_deps(self):
-        """
-        List containing the name of programs which restrict the coverage of this program to coverage of independent program
-        :return:
-        """
-        self.thresholdDependencies = []
-        try:
-            dependencies = self.prog_deps[self.name]['Threshold dependency']
-        except:
-            dependencies = []
-        for program in dependencies:
-            self.thresholdDependencies.append(program)
 
     def stunting_update(self, age_group):
         """
@@ -355,7 +315,7 @@ class Program(sc.prettyobj):
 
 class CostCovCurve(sc.prettyobj):
     def __init__(self, unit_cost, sat, restrictedPop, unrestrictedPop, costtype):
-        self.costtype = costtype
+        self.costtype = costtype.lower()
         self.unit_cost = unit_cost
         self.sat = sat
         self.restrictedPop = restrictedPop
@@ -368,7 +328,7 @@ class CostCovCurve(sc.prettyobj):
         self.ss = Settings()
 
     def set_cost_curve(self):
-        if self.costtype == 'Constant (default)':
+        if 'lin' in self.costtype:
             curve, invcurve = self._get_lin_curve()
         else:
             curve, invcurve = self._get_log_curve()
@@ -407,11 +367,11 @@ class CostCovCurve(sc.prettyobj):
         yshift = 0
         xscale = 1
         yscale = 1
-        if self.costtype == 'Decreasing':
+        if 'decre' in self.costtype:
             endx, endy = self.get_endpoints(a, b, c, d)
             yshift = endy # shift up
             c += endx # shift right
-        elif self.costtype == 'Mixed':
+        elif 'shaped' in self.costtype:
             endx, endy = self.get_endpoints(a, b, c, d)
             yshift = endy # shift up
             c += endx # shift right
@@ -472,10 +432,11 @@ class CostCovCurve(sc.prettyobj):
         return endcost[0], endnum[0]
 
 
-def set_programs(prog_set, prog_data, all_years):
+def set_programs(progset, progdata, all_years):
+    """ Do the error handling here because we have the progset param at this point. """
     programs = sc.odict()
-    for prog_name in prog_set:
-        programs[prog_name] = Program(prog_name, prog_data, all_years)
+    for name in progset:
+        programs[name] = Program(name, all_years, progdata)
     return programs
 
 
@@ -583,8 +544,8 @@ class ProgramInfo(sc.prettyobj):
         """ Removes programs from dependencies lists which are not included in analysis """
         allNames = self.programs.keys()
         for prog in self.programs.values():
-            prog.thresholdDependencies = [name for name in prog.thresholdDependencies if name in allNames]
-            prog.exclusionDependencies = [name for name in prog.exclusionDependencies if name in allNames]
+            prog.thresh_deps = [name for name in prog.thresh_deps if name in allNames]
+            prog.excl_deps = [name for name in prog.excl_deps if name in allNames]
 
     def _clean_prog_areas(self, prog_areas, progset):
         """ Removed programs from program area list if not included in analysis """
@@ -595,13 +556,13 @@ class ProgramInfo(sc.prettyobj):
 
     def _get_thresh_roots(self):
         """ Makes a list of all programs with dependencies """
-        openSet = [program for program in self.programs.values() if program.thresholdDependencies]
+        openSet = [program for program in self.programs.values() if program.thresh_deps]
         closedSet = [program for program in self.programs.values() if program not in openSet] # independence
         idx = len(closedSet)
         return openSet, closedSet, idx
 
     def _get_excl_roots(self):
-        openSet = [program for program in self.programs.values() if program.exclusionDependencies]
+        openSet = [program for program in self.programs.values() if program.excl_deps]
         closedSet = [program for program in self.programs.values() if program not in openSet] # independence
         idx = len(closedSet)
         return openSet, closedSet, idx
@@ -609,7 +570,7 @@ class ProgramInfo(sc.prettyobj):
     def _excl_sort(self):
         openSet, closedSet, idx = self._get_excl_roots()
         for program in openSet:
-            dependentNames = set(program.exclusionDependencies)
+            dependentNames = set(program.excl_deps)
             closedSetNames = set([prog.name for prog in closedSet])
             if dependentNames.issubset(closedSetNames):  # all parent programs in closed set
                 closedSet += [program]
@@ -618,7 +579,7 @@ class ProgramInfo(sc.prettyobj):
     def _thresh_sort(self):
         open_set, closed_set, idx = self._get_thresh_roots()
         for program in open_set:
-            dependentNames = set(program.thresholdDependencies)
+            dependentNames = set(program.thresh_deps)
             closedSetNames = set([prog.name for prog in closed_set])
             if dependentNames.issubset(closedSetNames):  # all parent programs in closed set
                 closed_set += [program]
@@ -704,7 +665,7 @@ class ProgramInfo(sc.prettyobj):
         """
         # threshold
         for child in self.thresholdOrder:
-            for parname in child.thresholdDependencies:
+            for parname in child.thresh_deps:
                 for year in self.all_years:
                     par = next(prog for prog in self.programs.values() if prog.name == parname)
                     # assuming uniform coverage across age bands, we can use the unrestricted coverage (NOT restricted)
@@ -713,7 +674,7 @@ class ProgramInfo(sc.prettyobj):
                         child.annual_cov[year] = maxcov_child
         # exclusion
         for child in self.exclusionOrder:
-            for parname in child.exclusionDependencies:
+            for parname in child.excl_deps:
                 for year in self.all_years:
                     par = next((prog for prog in self.programs.values() if prog.name == parname))
                     # assuming uniform coverage across age bands, we can use the unrestricted coverage (NOT restricted)

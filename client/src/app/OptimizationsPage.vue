@@ -193,7 +193,7 @@ Last update: 2018sep26
               </tbody>
             </table>
           </div>
-
+          <button class="btn" @click="deselectAll()" data-tooltip="Deselect all interventions">Deselect all</button>
         </div>
         <div style="text-align:center">
           <button @click="addOptim()" class='btn __green' style="display:inline-block">
@@ -322,7 +322,7 @@ Last update: 2018sep26
               optimSummary.status = statusStr
               optimSummary.pendingTime = result.data.pendingTime
               optimSummary.executionTime = result.data.executionTime
-              if (optimSummary.status == 'error') {
+              if (optimSummary.status === 'error') {
                 console.log('Error in task: ', optimSummary.serverDatastoreId)
                 console.log(result.data.task.errorText)
               }
@@ -521,6 +521,12 @@ Last update: 2018sep26
         this.addEditModal.origName = this.addEditModal.optimSummary.name;
         this.addEditModal.mode = 'edit';
         this.$modal.show('add-optim');
+      },
+
+      deselectAll() {
+        this.addEditModal.optimSummary.spec.forEach(progval => {
+          progval.included = false;
+        })
       },
 
       addOptim() {

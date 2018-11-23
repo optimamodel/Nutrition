@@ -52,6 +52,8 @@ class Optim(sc.prettyobj):
                    'fixed':     fixed,
                    'weights':   weights,
                    'keep_inds': keep_inds}
+        if free == 0:
+            raise Exception('There are no funds available to optimize.')
         return kwargs
 
     ######### OPTIMIZATION ##########
@@ -64,8 +66,9 @@ class Optim(sc.prettyobj):
             how = 'series'
             num_procs = 1
         print('Optimizing for %s in %s' % (self.name, how))
-        # list of kwargs
-        keep_inds = self._filter_progs(model) # not dependent upon spending
+        # get impactful programs
+        keep_inds = self._filter_progs(model)
+        # get the kwargs
         optim = (maxiter, swarmsize, maxtime)
         args = [(self.get_kwargs(model, self.weights, mult, keep_inds), mult)+optim for mult in self.mults]
         if parallel:
@@ -95,7 +98,7 @@ class Optim(sc.prettyobj):
             zeroval = np.inner(zeroouts, self.weights)
             # check for dependencies
             progs = list(zeromodel.prog_info.programs.values())
-            alldeps = [prog.exclusionDependencies for prog in progs] + [prog.thresholdDependencies for prog in progs]
+            alldeps = [prog.excl_deps for prog in progs] + [prog.thresh_deps for prog in progs]
             # flatten list of lists
             flatdeps = [progname for deps in alldeps for progname in deps]
             for i, prog in enumerate(self.prog_set):
@@ -115,10 +118,10 @@ class Optim(sc.prettyobj):
                     val = np.inner(outs, self.weights)
                     hasimpact = abs((val - zeroval) / zeroval) * 100. > threshold
                     keep_inds.append(hasimpact)
-            if not any(keep_inds): # no programs had impact
-                print('Warning: selected programs do not impact objective')
         else:
             keep_inds = [True for i, _ in enumerate(self.prog_set)]
+        if not keep_inds:
+            raise Exception('No programs impact the chosen objective or none were selected.')
         return np.array(keep_inds)
 
     def one_optim(self, args):
@@ -142,10 +145,7 @@ class Optim(sc.prettyobj):
             scaled = utils.scale_alloc(free, x)
             best_alloc = utils.add_fixed_alloc(fixed, scaled, inds)
         else:
-            # if no money to distribute, return the fixed costs
-            if self.name != 'Baseline':
-                print('Warning: degenerate optimization, returning fixed allocations \n objective: %s '
-                  '\n flexible funds: %s \n impactful progs: %s' % (self.name, free, numprogs))
+            # if one of the multiples is 0, return fixed costs
             best_alloc = fixed
         # generate results
         name = '%s (x%s)' % (self.name, mult)

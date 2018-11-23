@@ -88,8 +88,8 @@ class Model(sc.prettyobj):
          This is calculated per year with the cumulative deaths and births,
          so the final element will be total rates over the simulation period.
          Note: for now, only calculating final entry since this is all that is required """
-        self.child_mortrate[self.year] = 1000 * sum(self.child_deaths) / sum(self.annual_births)
-        self.pw_mortrate[self.year] = 1000 * sum(self.pw_deaths) / sum(self.annual_births)
+        self.child_mortrate[self.year] = 1000 * np.sum(self.child_deaths) / np.sum(self.annual_births)
+        self.pw_mortrate[self.year] = 1000 * np.sum(self.pw_deaths) / np.sum(self.annual_births)
 
     def _track(self):
         self._track_wra_outcomes()
@@ -298,7 +298,7 @@ class Model(sc.prettyobj):
         Zt = age_group._getZa() # updated incidence
         beta = age_group._getFracDiarrhoea(Z0, Zt)
         age_group._updateProbConditionalDiarrhoea(Zt)
-        for risk in ['Stunting', 'Anaemia']: # todo: remove link between dia and anaemia?
+        for risk in ['Stunting', 'Anaemia']:
             age_group.diarrhoeaUpdate[risk] *= self._frac_dia_update(beta, age_group, risk)
         wastingUpdate = self._wasting_update_dia(beta, age_group)
         for wastingCat in self.ss.wasted_list:
