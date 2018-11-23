@@ -287,7 +287,10 @@ class Newborn(ChildAgeGroup):
         self.birth_dist = birth_dist
         self.probRiskAtBirth = {}
 
-####### Population classes #########
+
+
+#########################
+#### POPULATIONS ####
 
 class Population(sc.prettyobj):
     def __init__(self, name, data, default):
@@ -320,11 +323,6 @@ class Population(sc.prettyobj):
 
     def frac_anaemic(self):
         return self.num_anaemic() / self.total_pop()
-
-
-###################
-#### POPULATIONS #####
-
 
 class Children(Population):
     def __init__(self, data, default_params):
