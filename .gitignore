@@ -126,3 +126,6 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# Custom
+package-lock.json
