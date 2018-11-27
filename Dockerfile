@@ -1,36 +1,45 @@
 FROM continuumio/anaconda:latest
-ADD . /app
-WORKDIR /app
 
 ARG PORT
 ARG REDIS_URL
+ARG CLIENT_DIR 
+
 ENV PORT $PORT
 ENV REDIS_URL $REDIS_URL
+ENV CLIENT_DIR $CLIENT_DIR
+
+RUN apt-get update \
+  && apt-get install -y python3-pip python3-dev \
+  && cd /usr/local/bin \
+  && ln -s /usr/bin/python3 python \
+  && pip3 install --upgrade pip
 
 # Set up apt-get
-RUN apt-get update -qq && apt-get install -yqq gnupg curl libgl1-mesa-glx gcc supervisor redis-server
+RUN apt-get update -y 
 
-# Install nodejs
-RUN curl -sL https://deb.nodesource.com/setup_9.x | bash
-RUN apt-get install -yqq nodejs
-RUN apt-get clean -y
+RUN apt-get install -y apt-utils gnupg curl libgl1-mesa-glx gcc redis-server 
+
+RUN apt-get install -y python3-matplotlib
+
+RUN apt-get install -y freetype*
+
+RUN mkdir /app
+
+ADD requirements.txt /app
+
+WORKDIR /app
 
 # Install sciris
-RUN git clone https://github.com/sciris/sciris.git
-RUN cd sciris && python setup.py develop
-RUN git clone https://github.com/sciris/scirisweb.git
-RUN cd scirisweb && python setup.py develop
+RUN pip3 install -r requirements.txt
+
+ADD . /app
 
 # Install mpld3
 RUN git clone https://github.com/sciris/mpld3.git
-RUN cd mpld3 && python setup.py submodule && python setup.py install
+RUN cd mpld3 && python3 setup.py submodule && python3 setup.py install
 
-# Install Optima Nutrition
-RUN python setup.py develop
+# Install atomica
+RUN python3 setup.py develop
 
-# Install app
-WORKDIR client
-RUN python install_client.py
-RUN python build_client.py
-
-CMD /etc/init.d/redis-server start && supervisord
+RUN pip3 uninstall -y redis
+RUN pip3 install redis==2.10.6 

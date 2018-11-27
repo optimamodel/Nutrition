@@ -129,3 +129,7 @@ ENV/
 
 # Custom
 package-lock.json
+
+debug/
+node_modules/
+*.sw*

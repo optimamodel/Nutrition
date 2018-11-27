@@ -24,7 +24,7 @@ import os
 SECRET_KEY = 'afabacefacedabaddad'
 
 # Directory containing the client code.
-CLIENT_DIR = '../client/dist'
+CLIENT_DIR = os.getenv('CLIENT_DIR')
 
 # Flag for setting whether we use the datastore functionality provided by
 # Sciris in the webapp.

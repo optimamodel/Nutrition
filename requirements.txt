@@ -1,0 +1,5 @@
+scipy
+redis==2.10.6
+gitpython
+https://github.com/sciris/sciris/archive/develop.zip
+https://github.com/sciris/scirisweb/archive/develop.zip
