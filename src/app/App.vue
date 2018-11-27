@@ -10,7 +10,11 @@ Last update: 2018sep23
     <router-view></router-view>
     <vue-progress-bar></vue-progress-bar>
     <popup-spinner size="75px" padding="15px" title="Please wait..."></popup-spinner>
-    <sidebar class="main-sidebar" type="navbar" :links="sidebarLinks" logo="/static/img/optima-inverted-logo-nutrition.png"> 
+    <sidebar 
+      class="main-sidebar" 
+      type="navbar" 
+      logo="/static/img/optima-inverted-logo.png" 
+      :links="sidebarLinks">
     <!--
     This sidebar appears only for screens 
     smaller than 992px otherwise, it is rendered in TopNavbar.vue

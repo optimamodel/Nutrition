@@ -6,7 +6,7 @@ import sciris from 'sciris-js';
 import App from './app/App.vue';
 import ScirisUIKit from 'sciris-uikit';
 
-Vue.prototype.$toolName = 'tb'
+Vue.prototype.$toolName = 'nutrition'
 
 Vue.use(sciris.ScirisVue, {
   progressbar: {
