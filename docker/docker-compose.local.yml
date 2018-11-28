@@ -8,17 +8,17 @@ services:
   web:
     image: nutrition 
     build: 
-      context: . 
+      context: .. 
       args:
         PORT: '80'
         REDIS_URL: 'redis://redis_db:6379' 
         CLIENT_DIR: '/app/debug'
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile
     command: python3 run.py 
     stdin_open: true
     tty: true
     volumes:
-      - .:/app
+      - ..:/app
     ports:
      - '8080:8080'
      - '8094:8091'
@@ -29,6 +29,6 @@ services:
     stdin_open: true
     tty: true
     volumes:
-      - .:/app
+      - ..:/app
 volumes:
   redis: {}

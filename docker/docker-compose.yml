@@ -4,24 +4,24 @@ services:
   web:
     image: nutrition 
     build:
-      context: .
+      context: ..
       args:
         PORT: '80'
         # REDIS_URL: redis://10.0.0.19:6379/6 # asia-southeast1-a
         REDIS_URL: redis://10.0.0.3:6379/6 # europe-west1-b
         CLIENT_DIR: '/app/dist'
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile
     command: python run.py
     ports:
      - '80:80'
      - '8080:8080'
      - '8091:8091'
     volumes:
-     - .:/app
+     - ..:/app
   workers:
     image: nutrition 
     command: python3 runtbworker.py
     stdin_open: true
     tty: true
     volumes:
-      - .:/app
+      - ..:/app
