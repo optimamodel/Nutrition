@@ -7,17 +7,17 @@ import sciris as sc
 p = nu.Project('congo')
 
 # individual program scale-up
-regions = ['bas_uele', 'equateur', 'haut_katanga',
-           'haut_lomami', 'haut_uele', 'ituri',
-           'kasai_central', 'kasai', 'kasai_oriental',
-           'kinshasa', 'kongo_central', 'kwango',
-           'kwilu', 'lomami', 'lualaba',
-           'mai_ndombe', 'maniema', 'mongala',
-           'nord_kivu', 'nord_ubangi', 'sankuru',
-           'sud_kivu', 'sub_ubangi', 'tanganyika',
-           'tshopo', 'tshuapa']
+# regions = ['bas_uele', 'equateur', 'haut_katanga',
+#            'haut_lomami', 'haut_uele', 'ituri',
+#            'kasai_central', 'kasai', 'kasai_oriental',
+#            'kinshasa', 'kongo_central', 'kwango',
+#            'kwilu', 'lomami', 'lualaba',
+#            'mai_ndombe', 'maniema', 'mongala',
+#            'nord_kivu', 'nord_ubangi', 'sankuru',
+#            'sud_kivu', 'sub_ubangi', 'tanganyika',
+#            'tshopo', 'tshuapa']
 
-# regions = ['kinshasa']
+regions = ['kinshasa']
 
 progset = ['Balanced energy-protein supplementation', 'Calcium supplementation',
            'Cash transfers', 'Family planning', 'IFA fortification of maize',
