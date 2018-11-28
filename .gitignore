@@ -126,3 +126,6 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# shapefiles for DRC
+applications/congo/maps/shapefiles
