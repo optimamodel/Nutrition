@@ -22,7 +22,7 @@ Change to the root of the `Nutrition` dir:
 cd Nutrition
 ```
 
-To build and run `cascade`:
+To build and run:
 
 ```
 docker-compose -f docker/docker-compose.local.yml build
