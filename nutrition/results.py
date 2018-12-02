@@ -122,7 +122,7 @@ def write_results(results, projname=None, filename=None, folder=None):
     sheetnames = ['Outcomes', 'Budget & coverage']
     alldata = []
     allformats = []
-    years = results[0].years
+    years = list(results[0].years)
     nullrow = [''] * len(years)
 
     ### Outcomes sheet
