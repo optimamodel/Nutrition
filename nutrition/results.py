@@ -12,7 +12,7 @@ class ScenResult(sc.prettyobj):
         self.pops = self.model.pops
         self.mult = mult
         self.obj = obj
-        self.years = range(model.t[0], model.t[1]+1)
+        self.years = list(range(model.t[0], model.t[1]+1))
         self.uid = sc.uuid()
         self.created = sc.now()
         self.modified = sc.now()

@@ -86,8 +86,7 @@ class Model(sc.prettyobj):
     def _track_rates(self):
         """ Rates defined as total deaths per 1000 live births.
          This is calculated per year with the cumulative deaths and births,
-         so the final element will be total rates over the simulation period.
-         Note: for now, only calculating final entry since this is all that is required """
+         so the final element will be total rates over the simulation period. """
         self.child_mortrate[self.year] = 1000 * np.sum(self.child_deaths) / np.sum(self.annual_births)
         self.pw_mortrate[self.year] = 1000 * np.sum(self.pw_deaths) / np.sum(self.annual_births)
 
@@ -125,7 +124,7 @@ class Model(sc.prettyobj):
                 self.prog_info.adjust_covs(self.pops, year)
             self.integrate()
             self._track()
-        self._track_rates()
+            self._track_rates()
 
     def _apply_prog_covs(self):
         # update populations
