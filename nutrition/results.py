@@ -12,7 +12,7 @@ class ScenResult(sc.prettyobj):
         self.pops = self.model.pops
         self.mult = mult
         self.obj = obj
-        self.years = range(model.t[0], model.t[1]+1)
+        self.years = list(range(model.t[0], model.t[1]+1))
         self.uid = sc.uuid()
         self.created = sc.now()
         self.modified = sc.now()
@@ -122,7 +122,7 @@ def write_results(results, projname=None, filename=None, folder=None):
     sheetnames = ['Outcomes', 'Budget & coverage']
     alldata = []
     allformats = []
-    years = list(results[0].years)
+    years = results[0].years
     nullrow = [''] * len(years)
 
     ### Outcomes sheet
