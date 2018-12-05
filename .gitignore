@@ -129,3 +129,6 @@ ENV/
 
 # Custom
 package-lock.json
+
+# shapefiles for DRC
+applications/congo/maps/shapefiles
