@@ -345,7 +345,7 @@ def create_new_project(username, proj_name, *args, **kwargs):
     key,proj = save_new_project(proj, username) # Save the new project in the DataStore.
     file_name = '%s databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name, username)
-    proj.inputsheet().save(full_file_name)
+    proj.templateinput.save(full_file_name)
     print(">> download_databook %s" % (full_file_name))
     return full_file_name
 
