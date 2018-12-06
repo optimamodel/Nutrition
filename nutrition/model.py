@@ -288,7 +288,11 @@ class Model(sc.prettyobj):
         Currently only accounting for the movement from sam to mam, because the other direction is complicated """
         numsam = age_group.num_risk('SAM')
         nummam = age_group.num_risk('MAM')
-        age_group.fromSAMtoMAMupdate['MAM'] = 1 + (1. - age_group.wastingTreatmentUpdate['SAM']) * numsam / nummam
+        # If the denominator is 0.0 or close, set update to 1 (no change).
+        if sc.approx(nummam, 0.0):
+            age_group.fromSAMtoMAMupdate['MAM'] = 1
+        else:
+            age_group.fromSAMtoMAMupdate['MAM'] = 1 + (1. - age_group.wastingTreatmentUpdate['SAM']) * numsam / nummam
 
     def _dia_indirect_effects(self, age_group):
         # get flow-on effects to stunting, anaemia and wasting
@@ -355,7 +359,11 @@ class Model(sc.prettyobj):
             t1 = beta[bfCat] * probThisRisk['diarrhoea']
             t2 = (1.-beta[bfCat]) * probThisRisk['no diarrhoea']
             newProb += pab * (t1 + t2)
-        reduction = (oldProb - newProb) / oldProb
+        # If the denominator is 0.0 or close, set reduction to zero (no change).
+        if sc.approx(oldProb, 0.0):
+            reduction = 0.0
+        else:
+            reduction = (oldProb - newProb) / oldProb
         update = 1. - reduction
         return update
 
@@ -371,7 +379,11 @@ class Model(sc.prettyobj):
                 t1 = beta[bfCat] * probWasted['diarrhoea']
                 t2 = (1.-beta[bfCat]) * probWasted['no diarrhoea']
                 newProb += pab*(t1+t2)
-            reduction = (oldProb - newProb)/oldProb
+            # If the denominator is 0.0 or close, set reduction to zero (no change).
+            if sc.approx(oldProb, 0.0):
+                reduction = 0
+            else:
+                reduction = (oldProb - newProb)/oldProb
             update[wastingCat] *= 1. - reduction
         return update
 

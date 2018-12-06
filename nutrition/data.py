@@ -301,27 +301,23 @@ class InputData(object):
     ## DEMOGRAPHICS ##
 
     def get_demo(self):
-        try:
-            baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0,1])
-            demo = sc.odict()
-            # the fields that group the data in spreadsheet
-            fields = ['Population data', 'Food', 'Age distribution of pregnant women', 'Mortality', 'Other risks']
-            for field in fields:
-                demo.update(baseline.loc[field].to_dict('index'))
-            self.demo = {key: item['Data'] for key, item in demo.items()}
-            self.demo['Birth dist'] = baseline.loc['Birth outcome distribution'].to_dict()['Data']
-            t = baseline.loc['Projection years']
-            self.t = [int(t.loc['Baseline year (projection start year)']['Data']), int(t.loc['End year']['Data'])]
-            # birth spacing
-            self.birth_space = baseline.loc['Birth spacing'].to_dict()['Data']
-            self.birth_space.pop('Total (must be 100%)', None)
-            # fix ages for PW
-            baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0])
-            for row in baseline.loc['Age distribution of pregnant women'].iterrows():
-                self.pw_agedist.append(row[1]['Data'])
-        except Exception as E:
-            errormsg = 'Inputs sheet is missing data (error: %s)' % str(E)
-            raise Exception(errormsg)
+        baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0,1])
+        demo = sc.odict()
+        # the fields that group the data in spreadsheet
+        fields = ['Population data', 'Food', 'Age distribution of pregnant women', 'Mortality', 'Other risks']
+        for field in fields:
+            demo.update(baseline.loc[field].to_dict('index'))
+        self.demo = {key: item['Data'] for key, item in demo.items()}
+        self.demo['Birth dist'] = baseline.loc['Birth outcome distribution'].to_dict()['Data']
+        t = baseline.loc['Projection years']
+        self.t = [int(t.loc['Baseline year (projection start year)']['Data']), int(t.loc['End year']['Data'])]
+        # birth spacing
+        self.birth_space = baseline.loc['Birth spacing'].to_dict()['Data']
+        self.birth_space.pop('Total (must be 100%)', None)
+        # fix ages for PW
+        baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0])
+        for row in baseline.loc['Age distribution of pregnant women'].iterrows():
+            self.pw_agedist.append(row[1]['Data'])
         return None
 
     def get_proj(self):
@@ -606,18 +602,23 @@ class Dataset(object):
         default_data   = defaultssheet.pandas()
         
         # Read them into actual data
-#        try:
-        self.demo_data = InputData(input_data)
-        self.default_params = DefaultParams(default_data, input_data)
-        self.default_params.compute_risks(self.demo_data)
-        self.prog_data = ProgData(input_data, self.default_params)
-        self.pops = populations.set_pops(self.demo_data, self.default_params)
+        try:
+            self.demo_data = InputData(input_data)
+        except Exception as E:
+            raise Exception('Error in databook: %s'%str(E))
+        try:
+            self.default_params = DefaultParams(default_data, input_data)
+            self.default_params.compute_risks(self.demo_data)
+            self.prog_data = ProgData(input_data, self.default_params)
+        except Exception as E:
+            raise Exception('Error in program data: %s'%str(E))
+        try:
+            self.pops = populations.set_pops(self.demo_data, self.default_params)
+        except Exception as E:
+            raise Exception('Error in creating populations, check data and defaults books: %s'%str(E))
         self.prog_info = programs.ProgramInfo(self.prog_data)
         self.t = self.demo_data.t
         self.modified = sc.now()
-#        except Exception as E:
-#            errormsg = 'Could not load data: ensure both input and defaults sheets have been loaded: %s' % str(E)
-#            raise Exception(errormsg)
         return None
     
     def prog_names(self):
