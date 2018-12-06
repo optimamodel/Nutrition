@@ -110,22 +110,10 @@ class Project(object):
             info[attr] = getattr(self, attr) # Populate the dictionary
         return info
     
-    def storeinputs(self, inputspath=None, country=None, region=None, name=None):
-        ''' Reload the input spreadsheet into the project '''
-        if inputspath is None: inputspath = settings.data_path(country, region)
-        self.spreadsheets[name] = sc.Spreadsheet(filename=inputspath)
-        return self.inputsheet(name)
     
-    def storedefaults(self, defaultspath=None):
-        ''' Reload the defaults spreadsheet into the project '''
-        if defaultspath is None: defaultspath = settings.default_params_path()
-        self.defaultssheet = sc.Spreadsheet(filename=defaultspath)
-        return self.defaultssheet
-        
-    def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True):
-        '''Load the data, which can mean one of two things: read in the spreadsheets, and/or use these data to make a model '''
-        
-        # Handle name
+    @staticmethod
+    def _sanitizename(name=None, country=None, region=None, inputspath=None):
+        ''' Get the most valid name '''
         if name is None:
             try:    
                 name = country+'_'+region
@@ -136,6 +124,29 @@ class Project(object):
                         name = name[:-5]
                 else:
                     name = 'Default'
+        return name
+    
+    
+    def storeinputs(self, inputspath=None, country=None, region=None, name=None):
+        ''' Reload the input spreadsheet into the project '''
+        if inputspath is None: inputspath = settings.data_path(country, region)
+        name = self._sanitizename(name, country, region, inputspath)
+        self.spreadsheets[name] = sc.Spreadsheet(filename=inputspath)
+        return self.inputsheet(name)
+    
+    
+    def storedefaults(self, defaultspath=None):
+        ''' Reload the defaults spreadsheet into the project '''
+        if defaultspath is None: defaultspath = settings.default_params_path()
+        self.defaultssheet = sc.Spreadsheet(filename=defaultspath)
+        return self.defaultssheet
+    
+        
+    def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True, validate=True):
+        '''Load the data, which can mean one of two things: read in the spreadsheets, and/or use these data to make a model '''
+        
+        # Handle name
+        name = self._sanitizename(name, country, region, inputspath)
         if fromfile:
             name = sc.uniquename(name, self.datasets.keys())
         
@@ -153,13 +164,19 @@ class Project(object):
         self.add_model(name) # add model associated with the dataset
     
         # Do validation
-        missingdatasets = list(set(self.datasets.keys()) - set(self.spreadsheets.keys()))
-        missingmodels =   list(set(self.models.keys()) - set(self.spreadsheets.keys()))
-        missingsets = list(set(missingdatasets+missingmodels))
-        if len(missingsets):
-            print('Warning: the following datasets/models are missing and are being regenerated: %s' % missingdatasets)
-            for key in missingsets:
-                self.load_data(name=key, fromfile=False)
+        if validate:
+            print('HIIIII')
+            print(self.spreadsheets.keys())
+            print(self.datasets.keys())
+            print(self.models.keys())
+            print('OKKKKK')
+            missingdatasets = list(set(self.spreadsheets.keys()) - set(self.datasets.keys()))
+            missingmodels =   list(set(self.spreadsheets.keys()) - set(self.models.keys()))
+            missingsets = list(set(missingdatasets+missingmodels))
+            if len(missingsets):
+                print('Warning: the following datasets/models are missing and are being regenerated: %s' % missingdatasets)
+                for key in missingsets:
+                    self.load_data(name=key, fromfile=False, validate=False)
         
         return None
 

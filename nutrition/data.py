@@ -602,10 +602,10 @@ class Dataset(object):
         default_data   = defaultssheet.pandas()
         
         # Read them into actual data
-        try:
-            self.demo_data = InputData(input_data)
-        except Exception as E:
-            raise Exception('Error in databook: %s'%str(E))
+#        try:
+        self.demo_data = InputData(input_data)
+#        except Exception as E:
+#            raise Exception('Error in databook: %s'%str(E))
         try:
             self.default_params = DefaultParams(default_data, input_data)
             self.default_params.compute_risks(self.demo_data)
