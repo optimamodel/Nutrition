@@ -237,7 +237,7 @@ class Program(sc.prettyobj):
         probIfCovered = age_group.probConditionalCoverage[risk][self.name]['covered']
         probIfNotCovered = age_group.probConditionalCoverage[risk][self.name]['not covered']
         newProb = get_new_prob(self.annual_cov[self.year], probIfCovered, probIfNotCovered)
-        reduction = (oldProb - newProb) / oldProb
+        reduction = sc.safedivide(oldProb - newProb, oldProb, default=0.0)  # If the denominator is 0.0 or close, set reduction to zero (no change)
         update = 1.-reduction
         return update
 
@@ -249,7 +249,7 @@ class Program(sc.prettyobj):
             probWastedIfCovered = age_group.probConditionalCoverage[wastingCat][self.name]['covered']
             probWastedIfNotCovered = age_group.probConditionalCoverage[wastingCat][self.name]['not covered']
             newProb = get_new_prob(self.annual_cov[self.year], probWastedIfCovered, probWastedIfNotCovered)
-            reduction = (oldProb - newProb) / oldProb
+            reduction = sc.safedivide(oldProb - newProb, oldProb, default=0.0)  # If the denominator is 0.0 or close, set reduction to zero (no change)
             update[wastingCat] = 1-reduction
         return update
 
