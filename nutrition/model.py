@@ -289,10 +289,7 @@ class Model(sc.prettyobj):
         numsam = age_group.num_risk('SAM')
         nummam = age_group.num_risk('MAM')
         # If the denominator is 0.0 or close, set update to 1 (no change).
-        if sc.approx(nummam, 0.0):
-            age_group.fromSAMtoMAMupdate['MAM'] = 1
-        else:
-            age_group.fromSAMtoMAMupdate['MAM'] = 1 + (1. - age_group.wastingTreatmentUpdate['SAM']) * numsam / nummam
+        age_group.fromSAMtoMAMupdate['MAM'] = 1 + sc.safedivide(((1.-age_group.wastingTreatmentUpdate['SAM']) * numsam), nummam, default=0.0)
 
     def _dia_indirect_effects(self, age_group):
         # get flow-on effects to stunting, anaemia and wasting
