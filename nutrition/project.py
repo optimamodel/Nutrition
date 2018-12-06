@@ -66,7 +66,7 @@ class Project(object):
             if not inputspath:
                 template_name = 'template_input.xlsx'
                 inputspath = sc.makefilepath(filename=template_name, folder=settings.ONpath('applications'))
-                self.storeinputs(inputspath)
+                self.templateinput = sc.Spreadsheet(filename=inputspath)
             else:
                 self.load_data(inputspath=inputspath, defaultspath=defaultspath, fromfile=True)
 
@@ -165,11 +165,6 @@ class Project(object):
     
         # Do validation
         if validate:
-            print('HIIIII')
-            print(self.spreadsheets.keys())
-            print(self.datasets.keys())
-            print(self.models.keys())
-            print('OKKKKK')
             missingdatasets = list(set(self.spreadsheets.keys()) - set(self.datasets.keys()))
             missingmodels =   list(set(self.spreadsheets.keys()) - set(self.models.keys()))
             missingsets = list(set(missingdatasets+missingmodels))
