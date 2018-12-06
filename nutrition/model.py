@@ -359,11 +359,7 @@ class Model(sc.prettyobj):
             t1 = beta[bfCat] * probThisRisk['diarrhoea']
             t2 = (1.-beta[bfCat]) * probThisRisk['no diarrhoea']
             newProb += pab * (t1 + t2)
-        # If the denominator is 0.0 or close, set reduction to zero (no change).
-        if sc.approx(oldProb, 0.0):
-            reduction = 0.0
-        else:
-            reduction = (oldProb - newProb) / oldProb
+        reduction = sc.safedivide(oldProb - newProb, oldProb, default=0.0)  # If the denominator is 0.0 or close, set reduction to zero (no change)
         update = 1. - reduction
         return update
 
@@ -379,11 +375,7 @@ class Model(sc.prettyobj):
                 t1 = beta[bfCat] * probWasted['diarrhoea']
                 t2 = (1.-beta[bfCat]) * probWasted['no diarrhoea']
                 newProb += pab*(t1+t2)
-            # If the denominator is 0.0 or close, set reduction to zero (no change).
-            if sc.approx(oldProb, 0.0):
-                reduction = 0
-            else:
-                reduction = (oldProb - newProb)/oldProb
+            reduction = sc.safedivide(oldProb - newProb, oldProb, default=0.0)  # If the denominator is 0.0 or close, set reduction to zero (no change)
             update[wastingCat] *= 1. - reduction
         return update
 
