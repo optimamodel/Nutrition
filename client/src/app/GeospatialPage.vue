@@ -1,7 +1,7 @@
 <!--
 Geospatial page
 
-Last update: 2018sep26
+Last update: 2018dec07
 -->
 
 <template>
@@ -434,31 +434,38 @@ Last update: 2018sep26
       doTaskPolling(checkAllTasks) {
         // Flag that we're polling.
         this.pollingTasks = true
-        
-        // Do the polling of the task states.
-        this.pollAllTaskStates(checkAllTasks)
-        .then(() => {
-          // Hack to get the Vue display of geoSummaries to update
-          this.geoSummaries.push(this.geoSummaries[0])
-          this.geoSummaries.pop()
+		
+		// If we there are some optimization summaries...
+		if (this.geoSummaries.length > 0) {         
+          // Do the polling of the task states.
+          this.pollAllTaskStates(checkAllTasks)
+          .then(() => {
+            // Hack to get the Vue display of geoSummaries to update
+            this.geoSummaries.push(this.geoSummaries[0])
+            this.geoSummaries.pop()
             
-          // Only if we need to continue polling...
-          if (this.needToPoll()) {
-            // Sleep waitingtime seconds.
-            let waitingtime = 1
-            utils.sleep(waitingtime * 1000)
-              .then(response => {
-                // Call the next polling, in a way that doesn't check_task()
-                // for _every_ task.
-                this.doTaskPolling(false)
-              })         
-          }
+            // Only if we need to continue polling...
+            if (this.needToPoll()) {
+              // Sleep waitingtime seconds.
+              let waitingtime = 1
+              utils.sleep(waitingtime * 1000)
+                .then(response => {
+                  // Call the next polling, in a way that doesn't check_task()
+                  // for _every_ task.
+                  this.doTaskPolling(false)
+                })         
+            }
           
-          // Otherwise, flag that we're no longer polling.
-          else {
-            this.pollingTasks = false
-          }
-        })
+            // Otherwise, flag that we're no longer polling.
+            else {
+              this.pollingTasks = false
+            }
+          })
+		  
+		// If the list is empty, we aren't polling.
+		} else {
+          this.pollingTasks = false
+		}
       },
       
       clearTask(geoSummary) {
