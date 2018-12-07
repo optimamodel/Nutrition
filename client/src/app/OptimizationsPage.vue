@@ -1,7 +1,7 @@
 <!--
 Optimizations page
 
-Last update: 2018sep26
+Last update: 2018dec07
 -->
 
 <template>
@@ -411,31 +411,38 @@ Last update: 2018sep26
       doTaskPolling(checkAllTasks) {
         // Flag that we're polling.
         this.pollingTasks = true
-        
-        // Do the polling of the task states.
-        this.pollAllTaskStates(checkAllTasks)
-        .then(() => {
-          // Hack to get the Vue display of optimSummaries to update
-          this.optimSummaries.push(this.optimSummaries[0])
-          this.optimSummaries.pop()
+
+        // If we there are some optimization summaries...
+        if (this.optimSummaries.length > 0) {       
+          // Do the polling of the task states.
+          this.pollAllTaskStates(checkAllTasks)
+          .then(() => {
+            // Hack to get the Vue display of optimSummaries to update
+            this.optimSummaries.push(this.optimSummaries[0])
+            this.optimSummaries.pop()
             
-          // Only if we need to continue polling...
-          if (this.needToPoll()) {
-            // Sleep waitingtime seconds.
-            let waitingtime = 1
-            utils.sleep(waitingtime * 1000)
-              .then(response => {
-                // Call the next polling, in a way that doesn't check_task()
-                // for _every_ task.
-                this.doTaskPolling(false)
-              })         
-          }
+            // Only if we need to continue polling...
+            if (this.needToPoll()) {
+              // Sleep waitingtime seconds.
+              let waitingtime = 1
+              utils.sleep(waitingtime * 1000)
+                .then(response => {
+                  // Call the next polling, in a way that doesn't check_task()
+                  // for _every_ task.
+                  this.doTaskPolling(false)
+                })         
+            }
           
-          // Otherwise, flag that we're no longer polling.
-          else {
-            this.pollingTasks = false
-          }
-        })
+            // Otherwise, flag that we're no longer polling.
+            else {
+              this.pollingTasks = false
+            }
+          })
+ 
+        // If the list is empty, we aren't polling.
+        } else {
+          this.pollingTasks = false
+        }
       },
       
       clearTask(optimSummary) {
