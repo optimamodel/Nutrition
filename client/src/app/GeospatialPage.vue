@@ -434,8 +434,8 @@ Last update: 2018dec07
       doTaskPolling(checkAllTasks) {
         // Flag that we're polling.
         this.pollingTasks = true
-		
-		// If we there are some optimization summaries...
+
+        // If we there are some optimization summaries...
         if (this.geoSummaries.length > 0) {         
           // Do the polling of the task states.
           this.pollAllTaskStates(checkAllTasks)
