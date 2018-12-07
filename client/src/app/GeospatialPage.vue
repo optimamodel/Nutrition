@@ -436,7 +436,7 @@ Last update: 2018dec07
         this.pollingTasks = true
 		
 		// If we there are some optimization summaries...
-		if (this.geoSummaries.length > 0) {         
+        if (this.geoSummaries.length > 0) {         
           // Do the polling of the task states.
           this.pollAllTaskStates(checkAllTasks)
           .then(() => {
@@ -461,11 +461,11 @@ Last update: 2018dec07
               this.pollingTasks = false
             }
           })
-		  
-		// If the list is empty, we aren't polling.
-		} else {
+
+        // If the list is empty, we aren't polling.
+        } else {
           this.pollingTasks = false
-		}
+        }
       },
       
       clearTask(geoSummary) {

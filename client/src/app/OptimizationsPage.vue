@@ -350,8 +350,6 @@ Last update: 2018dec07
         })
         
         // We need to poll if we are in the page and a task is going.
-		console.log('routePath:', routePath)
-		console.log('runningState:', runningState)
         return (routePath && runningState)
       },
       
@@ -415,7 +413,7 @@ Last update: 2018dec07
         this.pollingTasks = true
 		
 		// If we there are some optimization summaries...
-		if (this.optimSummaries.length > 0) {       
+        if (this.optimSummaries.length > 0) {       
           // Do the polling of the task states.
           this.pollAllTaskStates(checkAllTasks)
           .then(() => {
@@ -440,11 +438,11 @@ Last update: 2018dec07
               this.pollingTasks = false
             }
           })
-		  
-		// If the list is empty, we aren't polling.
-		} else {
+ 
+        // If the list is empty, we aren't polling.
+        } else {
           this.pollingTasks = false
-		}
+        }
       },
       
       clearTask(optimSummary) {
