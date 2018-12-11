@@ -94,11 +94,11 @@ def pretty_labels(direction=False):
         ]
     else:
         pretty = [
-            'Number of alive, non-stunted children',
+            'Number of alive, non-stunted children turning age 5',
             'Number of child deaths',
-            'Number of stunted children',
-            'Number of wasted children',
-            'Number of anaemic children',
+            'Number of stunted children turning age 5',
+            'Number of wasted children turning age 5',
+            'Number of anaemic children turning age 5',
             'Prevalence of stunting in children',
             'Prevalence of wasting in children',
             'Prevalence of anaemia in children',

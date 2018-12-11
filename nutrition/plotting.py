@@ -101,8 +101,10 @@ def plot_outputs(all_res, seq, name):
         bars = []
         
         baseout = sc.promotetoarray(baseres.get_outputs(outcome, seq=seq)[0])
-        if baseout.max()>1e6: scale = 1e6
-        else:                 scale = 1e1
+        if baseout.max()>1e6:
+            scale = 1e6
+        else:
+            scale = 1e0
         baseout /= scale
         offsets = np.arange(len(all_res)+1)*width # Calculate offset so tick is in the center of the bars
         offsets -= offsets.mean() - 0.5*width

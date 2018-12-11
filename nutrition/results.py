@@ -134,6 +134,8 @@ def write_results(results, projname=None, filename=None, folder=None):
             thisout = out[o]
             if 'prev' in outcome.lower():
                 cumul = 'N/A'
+            elif 'mortality' in outcome.lower():
+                cumul = 'N/A'
             else:
                 cumul = sum(thisout)
             outputs.append(name + [outcome] + list(thisout) + [cumul])
