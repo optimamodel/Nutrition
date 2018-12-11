@@ -135,9 +135,12 @@ def plot_outputs(all_res, seq, name):
         title += ' %s \n %s-%s'%(utils.relabel(outcome).lower(), baseres.years[pltstart], baseres.years[-1])
         sc.SIticks(ax=ax, axis='y')
         ax.set_ylim([0, ymax + ymax * .1])
-        if   scale == 1e1: ylabel = 'Number'
-        elif scale == 1e6: ylabel = 'Number (millions)'
-        else:               raise Exception('Scale value must be 1e1 or 1e6, not %s' % scale)
+        if   scale == 1e0:
+            ylabel = 'Number'
+        elif scale == 1e6:
+            ylabel = 'Number (millions)'
+        else:
+            raise Exception('Scale value must be 1e0 or 1e6, not %s' % scale)
         ax.set_ylabel(ylabel)
         ax.legend(bars, [res.name for res in all_res], ncol=1, **legend_loc)
         ax.set_title(title)
