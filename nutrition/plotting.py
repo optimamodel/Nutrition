@@ -101,10 +101,7 @@ def plot_outputs(all_res, seq, name):
         bars = []
         
         baseout = sc.promotetoarray(baseres.get_outputs(outcome, seq=seq)[0])
-        if baseout.max()>1e6:
-            scale = 1e6
-        else:
-            scale = 1e0
+        scale = 1e6 if baseout.max()>1e6 else 1
         baseout /= scale
         offsets = np.arange(len(all_res)+1)*width # Calculate offset so tick is in the center of the bars
         offsets -= offsets.mean() - 0.5*width
@@ -135,12 +132,12 @@ def plot_outputs(all_res, seq, name):
         title += ' %s \n %s-%s'%(utils.relabel(outcome).lower(), baseres.years[pltstart], baseres.years[-1])
         sc.SIticks(ax=ax, axis='y')
         ax.set_ylim([0, ymax*1.1])
-        if scale == 1e0:
+        if scale == 1:
             ylabel = 'Number'
         elif scale == 1e6:
             ylabel = 'Number (millions)'
         else:
-            raise Exception('Scale value must be 1e0 or 1e6, not %s' % scale)
+            raise Exception('Scale value must be 1 or 1e6, not %s' % scale)
         ax.set_ylabel(ylabel)
         ax.legend(bars, [res.name for res in all_res], ncol=1, **legend_loc)
         ax.set_title(title)
