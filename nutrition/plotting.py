@@ -78,7 +78,7 @@ def plot_prevs(all_res):
         # formatting
 #        sc.SIticks(ax=ax, axis='y')
         ax.set_ylabel('Prevalence (%)') # Shown as tick labels
-        ax.set_ylim([0, ymax + ymax*0.1])
+        ax.set_ylim([0, ymax*1.1])
         ax.set_xlabel('Years')
         ax.set_title(utils.relabel(prev))
         ax.legend(lines, [res.name for res in all_res], **legend_loc)
@@ -134,8 +134,8 @@ def plot_outputs(all_res, seq, name):
         # formatting
         title += ' %s \n %s-%s'%(utils.relabel(outcome).lower(), baseres.years[pltstart], baseres.years[-1])
         sc.SIticks(ax=ax, axis='y')
-        ax.set_ylim([0, ymax + ymax * .1])
-        if   scale == 1e0:
+        ax.set_ylim([0, ymax*1.1])
+        if scale == 1e0:
             ylabel = 'Number'
         elif scale == 1e6:
             ylabel = 'Number (millions)'
