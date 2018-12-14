@@ -65,7 +65,7 @@ class Project(object):
         if loadsheets:
             if not inputspath:
                 template_name = 'template_input.xlsx'
-                inputspath = sc.makefilepath(filename=template_name, folder=settings.ONpath('applications'))
+                inputspath = sc.makefilepath(filename=template_name, folder=settings.ONpath('inputs'))
                 self.templateinput = sc.Spreadsheet(filename=inputspath)
             else:
                 self.load_data(inputspath=inputspath, defaultspath=defaultspath, fromfile=True)

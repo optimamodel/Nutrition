@@ -46,7 +46,7 @@ def data_path(country, region=None):
     sim_type = 'national' if country == region else 'regional'
     parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) # Warning, could use e.g. ONpath() here
     demoname = '{}_input.xlsx'.format(region)
-    subdir = os.path.join('applications', country, 'data', sim_type, demoname)
+    subdir = os.path.join('inputs', country, 'data', sim_type, demoname)
     demopath = os.path.join(parentfolder, subdir)
     return demopath
 
