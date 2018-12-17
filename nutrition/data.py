@@ -564,7 +564,7 @@ class ProgData(object):
 class Dataset(object):
     ''' Store all the data for a project '''
     
-    def __init__(self, country=None, region=None, name=None, demo_data=None, prog_data=None, default_params=None,
+    def __init__(self, country=None, region=None, name=None, demo_data=None, prog_data=None, legacy_default_params=None,
                  pops=None, prog_info=None, doload=False, inputspath=None, defaultspath=None, fromfile=None, project=None):
         
         self.country = country
@@ -572,7 +572,7 @@ class Dataset(object):
         
         self.demo_data = demo_data
         self.prog_data = prog_data
-        self.default_params = default_params
+        self.legacy_default_params = legacy_default_params  # TODO: this should be phased out
         self.pops = pops
         self.prog_info = prog_info
         self.t = None
@@ -592,28 +592,30 @@ class Dataset(object):
             raise Exception('Sorry, but you must supply a project for load().')
         
         # Pull the sheets from the project
-        if self.name in project.spreadsheets.keys(): spreadsheetkey = self.name
-        else:                                        spreadsheetkey = -1
+        if self.name in project.spreadsheets.keys():
+            spreadsheetkey = self.name
+        else:
+            spreadsheetkey = -1
         inputsheet    = project.inputsheet(spreadsheetkey)
-        defaultssheet = project.defaultssheet
+        legacydefaultssheet = project.legacydefaultssheet  # TODO: this should be ultimately phased out
         
         # Convert them to Pandas
         input_data     = inputsheet.pandas() 
-        default_data   = defaultssheet.pandas()
+        legacy_default_data   = legacydefaultssheet.pandas() # TODO: this should be ultimately phased out
         
         # Read them into actual data
         try:
-            self.demo_data = InputData(input_data)
+            self.demo_data = InputData(input_data)  # demo_ here is demographic_
         except Exception as E:
             raise Exception('Error in databook: %s'%str(E))
         try:
-            self.default_params = DefaultParams(default_data, input_data)
-            self.default_params.compute_risks(self.demo_data)
-            self.prog_data = ProgData(input_data, self.default_params)
+            self.legacy_default_params = DefaultParams(legacy_default_data, input_data)
+            self.legacy_default_params.compute_risks(self.demo_data)
+            self.prog_data = ProgData(input_data, self.legacy_default_params)
         except Exception as E:
             raise Exception('Error in program data: %s'%str(E))
         try:
-            self.pops = populations.set_pops(self.demo_data, self.default_params)
+            self.pops = populations.set_pops(self.demo_data, self.legacy_default_params)
         except Exception as E:
             raise Exception('Error in creating populations, check data and defaults books: %s'%str(E))
         self.prog_info = programs.ProgramInfo(self.prog_data)

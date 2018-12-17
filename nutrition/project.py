@@ -61,7 +61,7 @@ class Project(object):
         self.geos         = sc.odict()
         self.results      = sc.odict()
         self.spreadsheets = sc.odict()
-        self.defaultssheet = None
+        self.legacydefaultssheet = None  # TODO: this should be ultimately phased out.  It is kept now so that legacy spreadsheets lacking the hidden Excel worksheets can be used.
         if loadsheets:
             if not inputspath:
                 template_name = 'template_input.xlsx'
@@ -129,17 +129,21 @@ class Project(object):
     
     def storeinputs(self, inputspath=None, country=None, region=None, name=None):
         ''' Reload the input spreadsheet into the project '''
-        if inputspath is None: inputspath = settings.data_path(country, region)
+        if inputspath is None:
+            inputspath = settings.data_path(country, region)
         name = self._sanitizename(name, country, region, inputspath)
         self.spreadsheets[name] = sc.Spreadsheet(filename=inputspath)
         return self.inputsheet(name)
     
-    
-    def storedefaults(self, defaultspath=None):
+
+    # TODO: this should be ultimately phased out.  It reads in legacy_default_params.xlsx, so that users who have
+    # databooks that are missing the hidden Excel worksheets with the default parameters can still be used.
+    def storelegacydefaults(self, defaultspath=None):
         ''' Reload the defaults spreadsheet into the project '''
-        if defaultspath is None: defaultspath = settings.default_params_path()
-        self.defaultssheet = sc.Spreadsheet(filename=defaultspath)
-        return self.defaultssheet
+        if defaultspath is None:
+            defaultspath = settings.legacy_default_params_path()
+        self.legacydefaultssheet = sc.Spreadsheet(filename=defaultspath)
+        return self.legacydefaultssheet
     
         
     def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True, validate=True):
@@ -152,8 +156,8 @@ class Project(object):
         
         # Optionally (but almost always) reload the spreadsheets from file
         if fromfile:
-            if defaultspath or not self.defaultssheet:
-                self.storedefaults(defaultspath=defaultspath)
+            if defaultspath or not self.legacydefaultssheet:
+                self.storelegacydefaults(defaultspath=defaultspath)
             if inputspath or country or not self.inputsheet:
                 self.storeinputs(inputspath=inputspath, country=country, region=region, name=name)
         
