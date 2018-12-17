@@ -428,39 +428,12 @@ def download_databook(project_id, key=None):
     return full_file_name # Return the full filename.
 
 
-@RPC(call_type='download')   
-def download_defaults(project_id):
-    """
-    Download defaults
-    """
-    proj = load_project(project_id, die=True) # Load the project with the matching UID.
-    file_name = '%s_defaults.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
-    full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
-    proj.defaultssheet.save(full_file_name)
-    print(">> download_defaults %s" % (full_file_name)) # Display the call information.
-    return full_file_name # Return the full filename.
-
-
 @RPC(call_type='upload')
 def upload_databook(databook_filename, project_id):
     """ Upload a databook to a project. """
     print(">> upload_databook '%s'" % databook_filename)
     proj = load_project(project_id, die=True)
     proj.load_data(inputspath=databook_filename) # Reset the project name to a new project name that is unique.
-    proj.modified = sc.now()
-    save_project(proj) # Save the new project in the DataStore.
-    return { 'projectID': str(proj.uid) } # Return the new project UID in the return message.
-
-
-@RPC(call_type='upload')
-def upload_defaults(defaults_filename, project_id):
-    """ Upload a databook to a project. """
-    print(">> upload_databook '%s'" % defaults_filename)
-    proj = load_project(project_id, die=True)
-    try:
-        proj.load_data(defaultspath=defaults_filename) # Reset the project name to a new project name that is unique.
-    except Exception as E:
-        print('Defaults uploaded, but data not loaded (probably since inputs have not been uploaded yet): %s' % str(E))
     proj.modified = sc.now()
     save_project(proj) # Save the new project in the DataStore.
     return { 'projectID': str(proj.uid) } # Return the new project UID in the return message.
