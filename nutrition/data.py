@@ -269,7 +269,7 @@ class DefaultParams(object):
                     res_dict[age][cat] = mydict[age][condCat]
         return res_dict
 
-# TODO (possible): we may want to merge this class with InputData to make another class (DatabookData).
+# TODO (possible): we may want to merge this class with DefaultParams to make another class (DatabookData).
 class InputData(object):
     """ Container for all the region-specific data (prevalences, mortality rates etc) read in from spreadsheet"""
     def __init__(self, data, recalc=False):
@@ -604,7 +604,7 @@ class Dataset(object):
         
         # Convert them to Pandas
         input_data     = inputsheet.pandas() 
-        legacy_default_data   = legacydefaultssheet.pandas() # TODO: this should be ultimately phased out.  For now, we'll pull from this if the worksheets are missing in input_data
+        legacy_default_data   = legacydefaultssheet.pandas() # TODO: this should be ultimately phased out.  For now, we'll pull from this if the hidden worksheets are missing in input_data
 
         # If the 'Programs impacted population' worksheet is in input_data, then we are working with one of the newer
         # databooks, so pull the default data from input_data.
