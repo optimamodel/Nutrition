@@ -3,6 +3,7 @@ import pandas
 import sciris as sc
 from . import settings, populations, utils, programs
 
+# TODO (possible): we may want to merge this class with InputData to make another class (DatabookData).
 class DefaultParams(object):
     def __init__(self, default_data, input_data):
         self.settings = settings.Settings()
@@ -268,6 +269,7 @@ class DefaultParams(object):
                     res_dict[age][cat] = mydict[age][condCat]
         return res_dict
 
+# TODO (possible): we may want to merge this class with InputData to make another class (DatabookData).
 class InputData(object):
     """ Container for all the region-specific data (prevalences, mortality rates etc) read in from spreadsheet"""
     def __init__(self, data, recalc=False):
@@ -564,18 +566,19 @@ class ProgData(object):
 class Dataset(object):
     ''' Store all the data for a project '''
     
-    def __init__(self, country=None, region=None, name=None, demo_data=None, prog_data=None, legacy_default_params=None,
+    def __init__(self, country=None, region=None, name=None, demo_data=None, prog_data=None, default_params=None,
                  pops=None, prog_info=None, doload=False, inputspath=None, defaultspath=None, fromfile=None, project=None):
         
         self.country = country
         self.region = region
         
-        self.demo_data = demo_data
+        self.demo_data = demo_data  # demo = demographic
         self.prog_data = prog_data
-        self.legacy_default_params = legacy_default_params  # TODO: this should be phased out
-        self.pops = pops
-        self.prog_info = prog_info
-        self.t = None
+        self.default_params = default_params  # TODO: this should probably be phased out once the InputData and DefaultParams classes get merged
+        # The next three attributes are used to initialize a Model object.
+        self.pops = pops  # populations
+        self.prog_info = prog_info  # program info
+        self.t = None  # start and end years for the simulation
         self.name = name
         self.modified = sc.now()
         if doload:
@@ -597,11 +600,20 @@ class Dataset(object):
         else:
             spreadsheetkey = -1
         inputsheet    = project.inputsheet(spreadsheetkey)
-        legacydefaultssheet = project.legacydefaultssheet  # TODO: this should be ultimately phased out
+        legacydefaultssheet = project.legacydefaultssheet  # TODO: this should be ultimately phased out.
         
         # Convert them to Pandas
         input_data     = inputsheet.pandas() 
-        legacy_default_data   = legacydefaultssheet.pandas() # TODO: this should be ultimately phased out
+        legacy_default_data   = legacydefaultssheet.pandas() # TODO: this should be ultimately phased out.  For now, we'll pull from this if the worksheets are missing in input_data
+
+        # If the 'Programs impacted population' worksheet is in input_data, then we are working with one of the newer
+        # databooks, so pull the default data from input_data.
+        if 'Programs impacted population' in input_data.sheet_names:
+            default_data = input_data
+
+        # Otherwise, pull the default data from the legacy spreadsheet.
+        else:
+            default_data = legacy_default_data
         
         # Read them into actual data
         try:
@@ -609,13 +621,13 @@ class Dataset(object):
         except Exception as E:
             raise Exception('Error in databook: %s'%str(E))
         try:
-            self.legacy_default_params = DefaultParams(legacy_default_data, input_data)
-            self.legacy_default_params.compute_risks(self.demo_data)
-            self.prog_data = ProgData(input_data, self.legacy_default_params)
+            self.default_params = DefaultParams(default_data, input_data)
+            self.default_params.compute_risks(self.demo_data)
+            self.prog_data = ProgData(input_data, self.default_params)
         except Exception as E:
             raise Exception('Error in program data: %s'%str(E))
         try:
-            self.pops = populations.set_pops(self.demo_data, self.legacy_default_params)
+            self.pops = populations.set_pops(self.demo_data, self.default_params)
         except Exception as E:
             raise Exception('Error in creating populations, check data and defaults books: %s'%str(E))
         self.prog_info = programs.ProgramInfo(self.prog_data)
