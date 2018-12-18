@@ -685,6 +685,7 @@ def rename_dataset(project_id, datasetname=None, new_name=None):
     print('Renaming dataset from %s to %s...' % (datasetname, new_name))
     proj = load_project(project_id, die=True)
     proj.datasets.rename(datasetname, new_name)
+    proj.datasets[new_name].name = new_name
     proj.spreadsheets.rename(datasetname, new_name)
     proj.models.rename(datasetname, new_name)
     print('Saving project...')
@@ -700,6 +701,7 @@ def copy_dataset(project_id, datasetname=None):
     new_name = sc.uniquename(datasetname, namelist=proj.datasets.keys())
     print('Old name: %s; new name: %s' % (datasetname, new_name))
     proj.datasets[new_name] = sc.dcp(proj.datasets[datasetname])
+    proj.datasets[new_name].name = new_name
     proj.spreadsheets[new_name] = sc.dcp(proj.spreadsheets[datasetname])
     print('Number of datasets after copy: %s' % len(proj.datasets))
     print('Saving project...')
