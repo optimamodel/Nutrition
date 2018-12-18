@@ -229,7 +229,7 @@ Last update: 2018-12-18
       saveSheetData() {
         console.log('saveSheetData() called')
         status.start(this, 'Saving changes...')
-        rpcs.rpc('save_sheet_data', [this.projectID, this.sheetTables]) // Make the server call to download the framework to a .prj file.
+        rpcs.rpc('save_sheet_data', [this.projectID, this.sheetTables], {'key': this.activeDataset}) // Make the server call to download the framework to a .prj file.
           .then(response => {
             status.succeed(this, 'Data saved')
           })
@@ -304,8 +304,7 @@ Last update: 2018-12-18
         status.start(this)
         rpcs.rpc('delete_dataset', [this.projectID, this.activeDataset]) // Have the server copy the project, giving it a new name.
           .then(response => {
-            this.updateDatasets() // Update the project summaries so the copied program shows up on the list.
-            // TODO: look into whether the above line is necessary
+            this.updateDatasets() // Update the project summaries so the dataset deletion shows up on the list.
             status.succeed(this, 'Dataset "'+this.activeDataset+'" deleted') // Indicate success.
           })
           .catch(error => {
