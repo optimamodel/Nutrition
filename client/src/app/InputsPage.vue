@@ -239,7 +239,7 @@ Last update: 2018-10-03
       downloadDatabook() {
         console.log('downloadDatabook() called')
         status.start(this, 'Downloading data book...')
-        rpcs.download('download_databook', [this.projectID])
+        rpcs.download('download_databook', [this.projectID], {'key': this.activeDataset})
           .then(response => {
             status.succeed(this, '')  // No green popup message.
           })
