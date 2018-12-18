@@ -1,7 +1,7 @@
 <!--
 Define health packages
 
-Last update: 2018-10-03
+Last update: 2018-12-18
 -->
 
 <template>
@@ -27,7 +27,7 @@ Last update: 2018-10-03
           <br>
           <div class="controls-box">
             <b>Dataset: &nbsp;</b>
-            <select v-model="activeDataset">
+            <select v-model="activeDataset" @change="getSheetData()">
               <option v-for='dataset in datasetOptions'>
                 {{ dataset }}
               </option>
@@ -37,7 +37,7 @@ Last update: 2018-10-03
             <button class="btn btn-icon" @click="deleteDataset()" data-tooltip="Delete"><i class="ti-trash"></i></button>
             <button class="btn btn-icon" @click="downloadDatabook()" data-tooltip="Download databook"><i class="ti-download"></i></button>
             <button class="btn btn-icon" @click="uploadDatabook()" data-tooltip="Upload"><i class="ti-upload"></i></button>
-            <button class="btn btn-icon" @click="loadDatasets()" data-tooltip="Refresh"><i class="ti-reload"></i></button>&nbsp;
+<!--            <button class="btn btn-icon" @click="loadDatasets()" data-tooltip="Refresh"><i class="ti-reload"></i></button> --> &nbsp;
             <!--<help reflink="parameter-sets"></help>-->
           </div>
           <br>
@@ -193,7 +193,9 @@ Last update: 2018-10-03
         utils.sleep(1)  // used so that spinners will come up by callback func
           .then(response => {
             this.updateDatasets()
-            this.getSheetData() // Load the sheet data
+              .then(response2 => {
+                this.getSheetData() // Load the sheet data
+              })
           })
       }
     },
@@ -210,7 +212,7 @@ Last update: 2018-10-03
       getSheetData() {
         console.log('getSheetData() called')
         status.start(this, 'Getting data...')
-        rpcs.rpc('get_sheet_data', [this.projectID]) // Make the server call to download the framework to a .prj file.
+        rpcs.rpc('get_sheet_data', [this.projectID], {'key': this.activeDataset}) // Make the server call to download the framework to a .prj file.
           .then(response => {
             this.sheetNames = response.data.names
             this.sheetTables = response.data.tables

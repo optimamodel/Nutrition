@@ -222,6 +222,7 @@ function updateDatasets(vm) {
         vm.newDatsetName = vm.activeDataset // WARNING, KLUDGY
         console.log('Datset options: ' + vm.datasetOptions)
         console.log('Active dataset: ' + vm.activeDataset)
+		resolve(response)
       })
       .catch(error => {
         status.fail(this, 'Could not get dataset info', error)
