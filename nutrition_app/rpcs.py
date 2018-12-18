@@ -700,6 +700,7 @@ def copy_dataset(project_id, datasetname=None):
     new_name = sc.uniquename(datasetname, namelist=proj.datasets.keys())
     print('Old name: %s; new name: %s' % (datasetname, new_name))
     proj.datasets[new_name] = sc.dcp(proj.datasets[datasetname])
+    proj.spreadsheets[new_name] = sc.dcp(proj.spreadsheets[datasetname])
     print('Number of datasets after copy: %s' % len(proj.datasets))
     print('Saving project...')
     save_project(proj)
@@ -713,6 +714,7 @@ def delete_dataset(project_id, datasetname=None):
     print('Number of datasets before delete: %s' % len(proj.datasets))
     if len(proj.datasets)>1:
         proj.datasets.pop(datasetname)
+        proj.spreadsheets.pop(datasetname)
     else:
         raise Exception('Cannot delete last parameter set')
     print('Number of datasets after delete: %s' % len(proj.datasets))

@@ -1,7 +1,7 @@
 <!--
 Define health packages
 
-Last update: 2018-12-18
+Last update: 2018-12-19
 -->
 
 <template>
@@ -302,10 +302,13 @@ Last update: 2018-12-18
       deleteDataset() {
         console.log('deleteDataset() called for ' + this.activeDataset)
         status.start(this)
-        rpcs.rpc('delete_dataset', [this.projectID, this.activeDataset]) // Have the server copy the project, giving it a new name.
+        rpcs.rpc('delete_dataset', [this.projectID, this.activeDataset]) // Have the server delete the dataset.
           .then(response => {
             this.updateDatasets() // Update the project summaries so the dataset deletion shows up on the list.
-            status.succeed(this, 'Dataset "'+this.activeDataset+'" deleted') // Indicate success.
+              .then(response2 => {
+                this.getSheetData() // Load the sheet data (since we've switched to a new one).
+				status.succeed(this, 'Dataset "'+this.activeDataset+'" deleted') // Indicate success.
+              })        
           })
           .catch(error => {
             status.fail(this, 'Cannot delete last dataset: ensure there are at least 2 datasets before deleting one', error)
