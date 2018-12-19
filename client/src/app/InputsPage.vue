@@ -255,9 +255,12 @@ Last update: 2018-12-19
         rpcs.upload('upload_databook', [this.projectID], {}, '.xlsx')
           .then(response => {
             status.start(this, 'Uploading databook...')
-            this.getSheetData() // Refresh the table
-            status.succeed(this, 'Data uploaded')
-          })
+            this.updateDatasets() // Update the dataset list so the new dataset shows up on the list.
+              .then(response2 => {
+                this.getSheetData() // Load the sheet data.
+                  status.succeed(this, 'Data uploaded')
+                })
+		  })
           .catch(error => {
             status.fail(this, 'Could not upload data', error)
           })
@@ -273,10 +276,9 @@ Last update: 2018-12-19
         console.log('renameDataset() called for ' + this.activeDataset)
         this.$modal.hide('rename-dataset');
         status.start(this)
-        rpcs.rpc('rename_dataset', [this.projectID, this.origDatasetName, this.activeDataset]) // Have the server copy the project, giving it a new name.
+        rpcs.rpc('rename_dataset', [this.projectID, this.origDatasetName, this.activeDataset]) // Have the server rename the dataset, giving it a new name.
           .then(response => {
-            this.updateDatasets() // Update the project summaries so the copied program shows up on the list.
-            // TODO: look into whether the above line is necessary
+            this.updateDatasets() // Update the dataset so the renamed set shows up on the list.
             status.succeed(this, 'Dataset "'+this.activeDataset+'" renamed') // Indicate success.
           })
           .catch(error => {
@@ -287,10 +289,9 @@ Last update: 2018-12-19
       copyDataset() {
         console.log('copyDataset() called for ' + this.activeDataset)
         status.start(this)
-        rpcs.rpc('copy_dataset', [this.projectID, this.activeDataset]) // Have the server copy the project, giving it a new name.
+        rpcs.rpc('copy_dataset', [this.projectID, this.activeDataset]) // Have the server copy the dataset, giving it a new name.
           .then(response => {
-            this.updateDatasets() // Update the project summaries so the copied program shows up on the list.
-            // TODO: look into whether the above line is necessary
+            this.updateDatasets() // Update the datasets so the copied program shows up on the list.
             this.activeDataset = response.data
             status.succeed(this, 'Dataset "'+this.activeDataset+'" copied') // Indicate success.
           })
