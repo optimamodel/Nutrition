@@ -421,7 +421,12 @@ def download_projects(project_keys, username):
 def download_databook(project_id, key=None):
     """ Download databook """
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
-    file_name = '%s_databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
+    if key is not None:
+        file_name = '%s_%s_databook.xlsx' % \
+            (proj.name, key) # Create a filename containing the project name followed by the databook name, then a .prj suffix.
+    else:
+        file_name = '%s_%s_databook.xlsx' % \
+            (proj.name, proj.spreadsheets.keys()[-1]) # Create a filename containing the project name followed the databook name, then a .prj suffix.
     full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
     proj.inputsheet(key=key).save(full_file_name) # Pull out and save the databook spreadsheet with the desired key (or the last databook if None).
     print(">> download_databook %s" % (full_file_name)) # Display the call information.
