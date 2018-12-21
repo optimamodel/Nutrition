@@ -1,7 +1,7 @@
 <!--
 Scenarios page
 
-Last update: 2018-09-25
+Last update: 2018-12-21
 -->
 
 <template>
@@ -144,6 +144,15 @@ Last update: 2018-09-25
             <input type="text"
                    class="txbox"
                    v-model="addEditModal.scenSummary.name"/><br>
+            <b>Dataset:</b><br>
+<!--            <select v-model="activeDataset" @change="getSheetData()">
+              <option v-for='dataset in datasetOptions'>
+                {{ dataset }}
+              </option>
+            </select>	-->		
+            <input type="text"
+                   class="txbox"
+                   v-model="addEditModal.scenSummary.name"/><br>				   
             <div class="scrolltable" style="max-height: 80vh;">
               <table class="table table-bordered table-striped table-hover">
                 <thead>
