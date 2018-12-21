@@ -50,14 +50,6 @@ def data_path(country, region=None):
     demopath = os.path.join(parentfolder, subdir)
     return demopath
 
-# TODO: This should probably be phased out.
-def legacy_default_params_path():
-    parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-    filename = 'legacy_default_params.xlsx'
-    childpath = os.path.join('nutrition', filename)
-    filepath = os.path.join(parentfolder, childpath)
-    return filepath
-
 
 
 #####################################################################################################################

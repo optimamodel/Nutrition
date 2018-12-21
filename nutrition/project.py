@@ -61,7 +61,6 @@ class Project(object):
         self.geos         = sc.odict()
         self.results      = sc.odict()
         self.spreadsheets = sc.odict()
-        self.legacydefaultssheet = None  # TODO: this should be ultimately phased out.  It is kept now so that legacy spreadsheets lacking the hidden Excel worksheets can be used.
         if loadsheets:
             if not inputspath:
                 template_name = 'template_input.xlsx'
@@ -135,16 +134,6 @@ class Project(object):
         self.spreadsheets[name] = sc.Spreadsheet(filename=inputspath)
         return self.inputsheet(name)
     
-
-    # TODO: this should be ultimately phased out.  It reads in legacy_default_params.xlsx, so that users who have
-    # databooks that are missing the hidden Excel worksheets with the default parameters can still be used.
-    def storelegacydefaults(self, defaultspath=None):
-        ''' Reload the defaults spreadsheet into the project '''
-        if defaultspath is None:
-            defaultspath = settings.legacy_default_params_path()
-        self.legacydefaultssheet = sc.Spreadsheet(filename=defaultspath)
-        return self.legacydefaultssheet
-    
         
     def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True, validate=True):
         '''Load the data, which can mean one of two things: read in the spreadsheets, and/or use these data to make a model '''
@@ -156,8 +145,6 @@ class Project(object):
         
         # Optionally (but almost always) reload the spreadsheets from file
         if fromfile:
-            if defaultspath or not self.legacydefaultssheet:
-                self.storelegacydefaults(defaultspath=defaultspath)
             if inputspath or country or not self.inputsheet:
                 self.storeinputs(inputspath=inputspath, country=country, region=region, name=name)
         
