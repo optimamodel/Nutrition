@@ -495,7 +495,7 @@ def demo(scens=False, optims=False, geos=False):
     # Parameters
     name = 'Demo project'
     country = 'demo'
-    region = 'demo'
+    region = 'national'
     
     # Create project and data
     P = Project(name)
