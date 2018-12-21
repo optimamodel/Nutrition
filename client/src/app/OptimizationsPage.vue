@@ -1,7 +1,7 @@
 <!--
 Optimizations page
 
-Last update: 2018dec07
+Last update: 2018dec21
 -->
 
 <template>
@@ -137,6 +137,15 @@ Last update: 2018dec07
           <input type="text"
                  class="txbox"
                  v-model="addEditModal.optimSummary.name"/><br>
+          <b>Dataset</b><br>
+<!--            <select v-model="activeDataset" @change="getSheetData()">
+              <option v-for='dataset in datasetOptions'>
+                {{ dataset }}
+              </option>
+            </select>	-->			  
+          <input type="text"
+                 class="txbox"
+                 v-model="addEditModal.optimSummary.name"/><br>				 
           <div class="scrolltable" style="max-height: 30vh;">
             <table class="table table-bordered table-striped table-hover">
               <thead>
