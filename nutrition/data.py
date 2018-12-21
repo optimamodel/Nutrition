@@ -613,7 +613,7 @@ class Dataset(object):
 
         # Otherwise, pull the default data from the legacy spreadsheet.
         else:
-            default_data = sc.Spreadsheet(filename=settings.ONpath('nutrition', 'legacy_default_params.xlsx'))
+            default_data = sc.Spreadsheet(filename=settings.ONpath('nutrition', 'legacy_default_params.xlsx')).pandas()
 #            default_data = legacy_default_data
         
         # Read them into actual data
