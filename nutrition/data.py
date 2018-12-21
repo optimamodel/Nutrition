@@ -600,11 +600,11 @@ class Dataset(object):
         else:
             spreadsheetkey = -1
         inputsheet    = project.inputsheet(spreadsheetkey)
-        legacydefaultssheet = project.legacydefaultssheet  # TODO: this should be ultimately phased out.
+#        legacydefaultssheet = project.legacydefaultssheet  # TODO: this should be ultimately phased out.
         
         # Convert them to Pandas
         input_data     = inputsheet.pandas() 
-        legacy_default_data   = legacydefaultssheet.pandas() # TODO: this should be ultimately phased out.  For now, we'll pull from this if the hidden worksheets are missing in input_data
+#        legacy_default_data   = legacydefaultssheet.pandas() # TODO: this should be ultimately phased out.  For now, we'll pull from this if the hidden worksheets are missing in input_data
 
         # If the 'Programs impacted population' worksheet is in input_data, then we are working with one of the newer
         # databooks, so pull the default data from input_data.
@@ -613,7 +613,8 @@ class Dataset(object):
 
         # Otherwise, pull the default data from the legacy spreadsheet.
         else:
-            default_data = legacy_default_data
+            default_data = sc.Spreadsheet(filename=settings.ONpath('nutrition', 'legacy_default_params.xlsx'))
+#            default_data = legacy_default_data
         
         # Read them into actual data
         try:
