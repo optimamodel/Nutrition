@@ -145,14 +145,11 @@ Last update: 2018-12-21
                    class="txbox"
                    v-model="addEditModal.scenSummary.name"/><br>
             <b>Dataset:</b><br>
-<!--            <select v-model="activeDataset" @change="getSheetData()">
+            <select v-model="addEditModal.selectedDataset">
               <option v-for='dataset in datasetOptions'>
                 {{ dataset }}
               </option>
-            </select>	-->		
-            <input type="text"
-                   class="txbox"
-                   v-model="addEditModal.scenSummary.name"/><br>				   
+            </select><br><br>		   
             <div class="scrolltable" style="max-height: 80vh;">
               <table class="table table-bordered table-striped table-hover">
                 <thead>
@@ -229,10 +226,12 @@ Last update: 2018-12-21
         scenSummaries: [],
         defaultScenYears: [],
         scenariosLoaded: false,
+		datasetOptions: [],
         addEditModal: {
           scenSummary: {},
           origName: '',
           mode: 'add',
+		  selectedDataset: '',
           modalScenarioType: 'coverage',
         },
         figscale: 1.0,
@@ -254,15 +253,17 @@ Last update: 2018-12-21
       else if ((this.$store.state.activeProject.project !== undefined) &&
         (this.$store.state.activeProject.project.hasData) ) {
         console.log('created() called')
-        utils.sleep(1)  // used so that spinners will come up by callback func
+        utils.sleep(1)  // used so that spinners will come up by callback func (GLC, 12/21/18, is this still needed?)
           .then(response => {
             this.getScenSummaries()
+			this.updateDatasets()
           })
       }
     },
 
     methods: {
 
+      updateDatasets()                    { return utils.updateDatasets(this) },
       makeGraphs(graphdata)               { return utils.makeGraphs(this, graphdata) },
       exportGraphs(project_id, cache_id)  { return utils.exportGraphs(this, project_id, cache_id) },
       exportResults(project_id, cache_id) { return utils.exportResults(this, project_id, cache_id) },

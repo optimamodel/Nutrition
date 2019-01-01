@@ -138,14 +138,11 @@ Last update: 2018dec21
                  class="txbox"
                  v-model="addEditModal.optimSummary.name"/><br>
           <b>Dataset</b><br>
-<!--            <select v-model="activeDataset" @change="getSheetData()">
-              <option v-for='dataset in datasetOptions'>
-                {{ dataset }}
-              </option>
-            </select>	-->			  
-          <input type="text"
-                 class="txbox"
-                 v-model="addEditModal.optimSummary.name"/><br>				 
+          <select v-model="addEditModal.selectedDataset">
+            <option v-for='dataset in datasetOptions'>
+              {{ dataset }}
+            </option>
+          </select><br><br>			 
           <div class="scrolltable" style="max-height: 30vh;">
             <table class="table table-bordered table-striped table-hover">
               <thead>
@@ -242,10 +239,12 @@ Last update: 2018dec21
         optimSummaries: [],
         optimsLoaded: false,
         pollingTasks: false,
+		datasetOptions: [],
         addEditModal: {
           optimSummary: {},
           origName: '',
           mode: 'add',
+		  selectedDataset: '',
         },
         figscale: 1.0,
         hasGraphs: false,
@@ -267,11 +266,13 @@ Last update: 2018dec21
         (this.$store.state.activeProject.project.hasData) ) {
         console.log('created() called')
         this.getOptimSummaries()
+		this.updateDatasets()
       }
     },
 
     methods: {
 
+      updateDatasets()                    { return utils.updateDatasets(this) },
       clearGraphs()                       { return utils.clearGraphs() },
       makeGraphs(graphdata)               { return utils.makeGraphs(this, graphdata) },
       exportGraphs(project_id, cache_id)  { return utils.exportGraphs(this, project_id, cache_id) },

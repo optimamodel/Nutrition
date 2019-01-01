@@ -5,8 +5,10 @@ from .optimization import Optim
 from .geospatial import Geospatial
 
 def demo_scens(default=None, scen_type=None):
-    if default is None: default = False
-    if scen_type is None: scen_type = 'coverage'
+    if default is None:
+        default = False
+    if scen_type is None:
+        scen_type = 'coverage'
     
     if default:
         kwargs = {'name':       'Default scenario (%s)' % scen_type,

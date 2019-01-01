@@ -414,7 +414,8 @@ class Project(object):
         """Function for running scenarios
         If scens is specified, they are added to self.scens """
         results = []
-        if scens is not None: self.add_scens(scens)
+        if scens is not None:
+            self.add_scens(scens)
         for scen in self.scens.values():
             if scen.active:
                 model = self.model(scen.model_name)
