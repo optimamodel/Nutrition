@@ -154,7 +154,8 @@ class Project(object):
         dataset.name = name
         self.add_model(name) # add model associated with the dataset
     
-        # Do validation
+        # Do validation to insure that Dataset and Model objects are loaded in for each of the spreadsheets that are
+        # in the project.
         if validate:
             missingdatasets = list(set(self.spreadsheets.keys()) - set(self.datasets.keys()))
             missingmodels =   list(set(self.spreadsheets.keys()) - set(self.models.keys()))
@@ -193,7 +194,8 @@ class Project(object):
 
     def write_results(self, filename=None, folder=None, key=None):
         """ Blargh, this really needs some tidying """
-        if key is None: key = -1
+        if key is None:
+            key = -1
         results = self.result(key)
         write_results(results, projname=self.name, filename=filename, folder=folder)
         return
@@ -221,13 +223,20 @@ class Project(object):
             structlist = getwhat('parameters')
         will return P.parset.
         '''
-        if what in ['d', 'ds', 'dataset', 'datasets']: structlist = self.datasets
-        elif what in ['m', 'mod', 'model', 'models']: structlist = self.models
-        elif what in ['s', 'scen', 'scens', 'scenario', 'scenarios']: structlist = self.scens
-        elif what in ['o', 'opt', 'opts', 'optim', 'optims', 'optimization', 'optimizations']: structlist = self.optims
-        elif what in ['g', 'geo', 'geos', 'geospatial']: structlist = self.geos
-        elif what in ['r', 'res', 'result', 'results']: structlist = self.results
-        else: raise settings.ONException("Item not found")
+        if what in ['d', 'ds', 'dataset', 'datasets']:
+            structlist = self.datasets
+        elif what in ['m', 'mod', 'model', 'models']:
+            structlist = self.models
+        elif what in ['s', 'scen', 'scens', 'scenario', 'scenarios']:
+            structlist = self.scens
+        elif what in ['o', 'opt', 'opts', 'optim', 'optims', 'optimization', 'optimizations']:
+            structlist = self.optims
+        elif what in ['g', 'geo', 'geos', 'geospatial']:
+            structlist = self.geos
+        elif what in ['r', 'res', 'result', 'results']:
+            structlist = self.results
+        else:
+            raise settings.ONException("Item not found")
         return structlist
 
     #######################################################################################################
@@ -235,45 +244,66 @@ class Project(object):
     #######################################################################################################
 
     def inputsheet(self, key=None, verbose=2):
-        if key is None: key = -1
-        try:    return self.spreadsheets[key]
-        except: return sc.printv('Warning, input sheet "%s" set not found!' %key, 1, verbose)
+        if key is None:
+            key = -1
+        try:
+            return self.spreadsheets[key]
+        except:
+            return sc.printv('Warning, input sheet "%s" set not found!' %key, 1, verbose)
 
     def dataset(self, key=None, verbose=2):
         ''' Shortcut for getting the latest model, i.e. self.datasets[-1] '''
-        if key is None: key = -1
-        try:    return self.datasets[key]
-        except: return sc.printv('Warning, dataset "%s" set not found!' %key, 1, verbose) # Returns None
+        if key is None:
+            key = -1
+        try:
+            return self.datasets[key]
+        except:
+            return sc.printv('Warning, dataset "%s" set not found!' %key, 1, verbose) # Returns None
         
     def model(self, key=None, verbose=2):
         ''' Shortcut for getting the latest model, i.e. self.datasets[-1] '''
-        if key is None: key = -1
-        try:    return self.models[key]
-        except: return sc.printv('Warning, model "%s" set not found!' %key, 1, verbose) # Returns None
+        if key is None:
+            key = -1
+        try:
+            return self.models[key]
+        except:
+            return sc.printv('Warning, model "%s" set not found!' %key, 1, verbose) # Returns None
     
     def scen(self, key=None, verbose=2):
         ''' Shortcut for getting the latest scenario, i.e. self.scen[-1] '''
-        if key is None: key = -1
-        try:    return self.scens[key]
-        except: return sc.printv('Warning, scenario "%s" not found!' %key, 1, verbose) # Returns None
+        if key is None:
+            key = -1
+        try:
+            return self.scens[key]
+        except:
+            return sc.printv('Warning, scenario "%s" not found!' %key, 1, verbose) # Returns None
     
     def optim(self, key=None, verbose=2):
         ''' Shortcut for getting the latest optim, i.e. self.optims[-1] '''
-        if key is None: key = -1
-        try:    return self.optims[key]
-        except: return sc.printv('Warning, optimization "%s" not found!' %key, 1, verbose) # Returns None
+        if key is None:
+            key = -1
+        try:
+            return self.optims[key]
+        except:
+            return sc.printv('Warning, optimization "%s" not found!' %key, 1, verbose) # Returns None
     
     def geo(self, key=None, verbose=2):
         ''' Shortcut for getting the latest geo, i.e. self.geos[-1] '''
-        if key is None: key = -1
-        try:    return self.geos[key]
-        except: return sc.printv('Warning, geospatial analysis "%s" not found!' %key, 1, verbose) # Returns None
+        if key is None:
+            key = -1
+        try:
+            return self.geos[key]
+        except:
+            return sc.printv('Warning, geospatial analysis "%s" not found!' %key, 1, verbose) # Returns None
     
     def result(self, key=None, verbose=2):
         ''' Shortcut for getting the latest result, i.e. self.results[-1] '''
-        if key is None: key = -1
-        try:    return self.results[key]
-        except: return sc.printv('Warning, result "%s" not found!' %key, 1, verbose) # Returns None
+        if key is None:
+            key = -1
+        try:
+            return self.results[key]
+        except:
+            return sc.printv('Warning, result "%s" not found!' %key, 1, verbose) # Returns None
     
     def cleanresults(self):
         ''' Remove all results '''
@@ -327,7 +357,8 @@ class Project(object):
         :param overwrite: boolean, True removes all previous scenarios.
         :return: None
         """
-        if overwrite: self.scens = sc.odict()
+        if overwrite:
+            self.scens = sc.odict()
         scens = sc.promotetolist(scens)
         for scen in scens:
             self.add(name=scen.name, item=scen, what='scen')
@@ -354,7 +385,8 @@ class Project(object):
             return base
 
     def add_optims(self, optims, overwrite=False):
-        if overwrite: self.optims = sc.odict() # remove exist scenarios
+        if overwrite:
+            self.optims = sc.odict() # remove exist scenarios
         optims = sc.promotetolist(optims)
         for optim in optims:
             self.add(name=optim.name, item=optim, what='optim')
@@ -362,7 +394,8 @@ class Project(object):
         return optims
     
     def add_geos(self, geos, overwrite=False):
-        if overwrite: self.geos = sc.odict() # remove exist scenarios
+        if overwrite:
+            self.geos = sc.odict() # remove exist scenarios
         geos = sc.promotetolist(geos)
         for geo in geos:
             self.add(name=geo.name, item=geo, what='geo')
@@ -440,7 +473,8 @@ class Project(object):
         model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
         results += optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel)
         # add by optim name
-        if dosave: self.add_result(results, name=optim.name)
+        if dosave:
+            self.add_result(results, name=optim.name)
         return results
 
     def run_geo(self, geo=None, key=-1, maxiter=15, swarmsize=20, maxtime=140, dosave=True, parallel=False):
@@ -452,12 +486,14 @@ class Project(object):
             key = geo.name # this to handle parallel calls of this function
         geo = self.geo(key)
         results = geo.run_geo(self, maxiter, swarmsize, maxtime, parallel)
-        if dosave: self.add_result(results, name='geospatial')
+        if dosave:
+            self.add_result(results, name='geospatial')
         return results
 
     def get_output(self, outcomes=None):
         results = self.result(-1)
-        if not outcomes: outcomes = default_trackers()
+        if not outcomes:
+            outcomes = default_trackers()
         outcomes = sc.promotetolist(outcomes)
         outputs = []
         for i, res in enumerate(results):
@@ -477,7 +513,8 @@ class Project(object):
         and value (output). Output is type string. Will work for both scenarios and optimizations, 
         using whatever results were last generated
         """
-        if resultname is None: resultname = 'scens'
+        if resultname is None:
+            resultname = 'scens'
         results = self.result(resultname)       
         costeff = get_costeff(self, results)
         return costeff
@@ -503,7 +540,10 @@ def demo(scens=False, optims=False, geos=False):
     P.load_data(country, region, name='demo')
 
     # Create scenarios and optimizations
-    if scens:  P.demo_scens()
-    if optims: P.demo_optims()
-    if geos:   P.demo_geos()
+    if scens:
+        P.demo_scens()
+    if optims:
+        P.demo_optims()
+    if geos:
+        P.demo_geos()
     return P
