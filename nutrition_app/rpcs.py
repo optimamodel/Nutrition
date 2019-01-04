@@ -826,7 +826,7 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
 def js_to_py_scen(js_scen):
     ''' Convert a JSON to Python representation of a scenario '''
     py_json = sc.odict()
-    for attr in ['name', 'scen_type', 'active']: # Copy these directly
+    for attr in ['name', 'scen_type', 'model_name', 'active']: # Copy these directly
         py_json[attr] = js_scen[attr]
     py_json['progvals'] = sc.odict() # These require more TLC
     for js_spec in js_scen['progvals']:
