@@ -142,7 +142,7 @@ Last update: 2019jan04
                  class="txbox"
                  v-model="addEditModal.optimSummary.name"/><br>
           <b>Dataset</b><br>
-          <select v-model="addEditModal.selectedDataset">
+          <select v-model="addEditModal.optimSummary.model_name">
             <option v-for='dataset in datasetOptions'>
               {{ dataset }}
             </option>
@@ -248,7 +248,6 @@ Last update: 2019jan04
           optimSummary: {},
           origName: '',
           mode: 'add',
-		  selectedDataset: '',
         },
         figscale: 1.0,
         hasGraphs: false,
