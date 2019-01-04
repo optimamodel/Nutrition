@@ -1,7 +1,7 @@
 <!--
 Optimizations page
 
-Last update: 2018dec21
+Last update: 2019jan04
 -->
 
 <template>
@@ -26,6 +26,7 @@ Last update: 2018dec21
           <thead>
           <tr>
             <th>Name</th>
+			<th>Dataset</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
@@ -35,6 +36,9 @@ Last update: 2018dec21
             <td>
               <b>{{ optimSummary.name }}</b>
             </td>
+            <td>
+              <b>{{ optimSummary.model_name }}</b>
+            </td>			
             <td>
               {{ statusFormatStr(optimSummary) }}
               {{ timeFormatStr(optimSummary) }}

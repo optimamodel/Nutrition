@@ -776,7 +776,7 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
     ''' Convert a Python to JSON representation of a scenario '''
     prog_names = proj.dataset().prog_names()
     scen_years = proj.dataset().t[1] - proj.dataset().t[0] # First year is baseline
-    attrs = ['name', 'active', 'scen_type']
+    attrs = ['name', 'active', 'scen_type', 'model_name']
     js_scen = {}
     for attr in attrs:
         js_scen[attr] = getattr(py_scen, attr) # Copy the attributes into a dictionary
@@ -855,7 +855,7 @@ def get_scen_info(project_id, key=None, verbose=False):
     print('Getting scenario info...')
     proj = load_project(project_id, die=True)
     scenario_jsons = []
-    for py_scen in proj.scens.values():
+    for py_scen in proj.scens.values(): # Loop over all Scens in Project
         js_scen = py_to_js_scen(py_scen, proj, key=key)
         scenario_jsons.append(js_scen)
     if verbose:

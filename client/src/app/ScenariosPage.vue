@@ -1,7 +1,7 @@
 <!--
 Scenarios page
 
-Last update: 2018-12-21
+Last update: 2019-01-04
 -->
 
 <template>
@@ -27,6 +27,7 @@ Last update: 2018-12-21
           <tr>
             <th>Name</th>
             <th>Type</th>
+			<th>Dataset</th>
             <th>Active?</th>
             <th>Actions</th>
           </tr>
@@ -39,6 +40,9 @@ Last update: 2018-12-21
             <td>
               {{ scenSummary.scen_type }}
             </td>
+            <td>
+              {{ scenSummary.model_name }}
+            </td>			
             <td style="text-align: center">
               <input type="checkbox" v-model="scenSummary.active"/>
             </td>
@@ -253,11 +257,8 @@ Last update: 2018-12-21
       else if ((this.$store.state.activeProject.project !== undefined) &&
         (this.$store.state.activeProject.project.hasData) ) {
         console.log('created() called')
-        utils.sleep(1)  // used so that spinners will come up by callback func (GLC, 12/21/18, is this still needed?)
-          .then(response => {
-            this.getScenSummaries()
-			this.updateDatasets()
-          })
+        this.getScenSummaries()
+        this.updateDatasets()
       }
     },
 
