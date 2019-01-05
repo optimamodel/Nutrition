@@ -316,13 +316,13 @@ class Project(object):
         return scens
 
     def add_optim(self, json=None):
-        ''' Super roundabout way to add a scenario '''
+        ''' Super roundabout way to add an optimization '''
         optims = [Optim(**json)]
         self.add_optims(optims)
         return optims
     
     def add_geo(self, json=None):
-        ''' Super roundabout way to add a scenario '''
+        ''' Super roundabout way to add a geospatial optimization '''
         geos = [Geospatial(**json)]
         self.add_geos(geos)
         return geos
@@ -343,7 +343,10 @@ class Project(object):
         model = Model(pops, prog_info, t)
         self.add(name=name, item=model, what='model')
         # get default scenarios
-        defaults = make_default_scens(name, model)
+        basename = 'Baseline'
+        if basename in self.scens.keys():
+            basename = basename + ' (' + name + ')'
+        defaults = make_default_scens(name, model, basename)
         self.add_scens(defaults)
         self.modified = sc.now()
         return model
