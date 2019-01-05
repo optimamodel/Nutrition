@@ -70,7 +70,6 @@ def make_default_scens(modelname=None, model=None, basename='Baseline'):
     :param basename: the name of the baseline scenario
     :return: a list of default scenarios
     """
-    # new_name = sc.uniquename(basename, namelist=proj.scens.keys())# Make sure basename is unique.
     progset = model.prog_info.base_progset()
     # maintain current coverage
     progvals = sc.odict([(prog,[]) for prog in progset])

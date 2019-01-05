@@ -453,6 +453,8 @@ class Project(object):
             self.add_scens(scens)
         for scen in self.scens.values():
             if scen.active:
+                if (scen.model_name is None) or (scen.model_name not in self.datasets.keys()):
+                    raise Exception('Could not find valid dataset for %s.  Edit the scenario and change the dataset' % scen.name)
                 model = self.model(scen.model_name)
                 res = run_scen(scen, model)
                 results.append(res)
