@@ -60,3 +60,23 @@ def convert_scen(scen, model):
     name = scen.name + ' (%s)' % scen_type
     converted = Scen(name=name, model_name=scen.model_name, scen_type=scen_type, progvals=newprogvals)
     return converted
+
+def make_default_scens(modelname=None, model=None, basename='Baseline'):
+    """
+    Assumes user has selected a data set to upload into the project.
+    Baseline will be based on all the programs uploaded in the data book.
+    :param modelname: the name of the Model object
+    :param model: a Model object for the baseline scenario.
+    :param basename: the name of the baseline scenario
+    :return: a list of default scenarios
+    """
+    # new_name = sc.uniquename(basename, namelist=proj.scens.keys())# Make sure basename is unique.
+    progset = model.prog_info.base_progset()
+    # maintain current coverage
+    progvals = sc.odict([(prog,[]) for prog in progset])
+    kwargs1 = {'name': basename,
+              'model_name': modelname,
+              'scen_type': 'coverage',
+              'progvals': progvals}
+    defaults = make_scens(kwargs1)
+    return defaults

@@ -8,8 +8,7 @@ from .version import version
 from .utils import default_trackers
 from .data import Dataset
 from .model import Model
-from .defaults import get_defaults
-from .scenarios import Scen, run_scen, convert_scen
+from .scenarios import Scen, run_scen, convert_scen, make_default_scens
 from .optimization import Optim
 from .geospatial import Geospatial
 from .results import write_results
@@ -344,7 +343,7 @@ class Project(object):
         model = Model(pops, prog_info, t)
         self.add(name=name, item=model, what='model')
         # get default scenarios
-        defaults = get_defaults(name, model)
+        defaults = make_default_scens(name, model)
         self.add_scens(defaults)
         self.modified = sc.now()
         return model

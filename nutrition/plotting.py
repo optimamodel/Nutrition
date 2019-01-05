@@ -3,8 +3,7 @@ import numpy as np
 import scipy.interpolate
 import sciris as sc
 from . import utils
-from .defaults import get_defaults
-from .scenarios import run_scen, make_scens
+from .scenarios import run_scen, make_scens, make_default_scens
 
 # Choose where the legend appears: outside right or inside right
 for_frontend = True
@@ -274,7 +273,7 @@ def get_costeff(project, results):
         model = project.model(res.model_name)
         parents.append(res)
         # generate a baseline for each scenario
-        baseline = get_defaults(res.model_name, model)[0]  # assumes baseline at 0 index
+        baseline = make_default_scens(res.model_name, model)[0]  # assumes baseline at 0 index
         baseres = run_scen(baseline, model)
         baselines.append(baseres)
         # get all the 'child' results for each scenario
