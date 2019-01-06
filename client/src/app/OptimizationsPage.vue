@@ -1,7 +1,7 @@
 <!--
 Optimizations page
 
-Last update: 2019jan04
+Last update: 2019jan06
 -->
 
 <template>
@@ -523,6 +523,7 @@ Last update: 2019jan04
             this.addEditModal.optimSummary = response.data;
             this.addEditModal.origName = this.addEditModal.optimSummary.name;
             this.addEditModal.mode = 'add';
+			this.addEditModal.optimSummary.model_name = this.datasetOptions[0]
             this.$modal.show('add-optim');
             console.log('New optimization:');
             console.log(this.addEditModal.optimSummary)

@@ -52,7 +52,7 @@ def demo_scens(default=None, scen_type=None):
 
 def demo_optims():
     kwargs1 = {'name': 'Maximize thrive',
-              'model_name': None,
+              'model_name': 'demo',
               'mults':[1,2],
                'weights': sc.odict({'thrive': 1}),
               'prog_set': ['Vitamin A supplementation', 'IYCF 1', 'IFA fortification of maize',
