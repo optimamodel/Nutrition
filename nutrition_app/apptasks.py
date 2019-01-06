@@ -1,7 +1,7 @@
 """
 apptasks.py -- The Celery tasks module for this webapp
     
-Last update: 2018sep23
+Last update: 2019jan06
 """
 
 import sys
@@ -36,11 +36,14 @@ celery_instance = sw.make_celery(config=config) # Create the Celery instance for
 @async_task
 def run_optim(project_id, cache_id, optim_name=None, runtype=None):
     # Load the projects from the DataStore.
-    if runtype is None: runtype = 'full'
+    if runtype is None:
+        runtype = 'full'
     print('Running %s optimization...' % runtype)
     proj = rpcs.load_project(project_id)
-    if runtype == 'test': results = proj.run_optim(key=optim_name, dosave=False, parallel=False, maxiter=5, swarmsize=5, maxtime=5)
-    else:                 results = proj.run_optim(key=optim_name, dosave=False, parallel=False)
+    if runtype == 'test':
+        results = proj.run_optim(key=optim_name, dosave=False, parallel=False, maxiter=5, swarmsize=5, maxtime=5)
+    else:
+        results = proj.run_optim(key=optim_name, dosave=False, parallel=False)
     newproj = rpcs.load_project(project_id)
     newproj.results[cache_id] = results
     rpcs.cache_results(newproj)
@@ -50,11 +53,14 @@ def run_optim(project_id, cache_id, optim_name=None, runtype=None):
 @async_task
 def run_geo(project_id, cache_id, geo_name=None, runtype=None):
     # Load the projects from the DataStore.
-    if runtype is None: runtype = 'full'
+    if runtype is None:
+        runtype = 'full'
     print('Running %s geospatial optimization...' % runtype)
     proj = rpcs.load_project(project_id)
-    if runtype == 'test': results = proj.run_geo(key=geo_name, dosave=False, parallel=False, maxiter=3, swarmsize=3, maxtime=3)
-    else:                 results = proj.run_geo(key=geo_name, dosave=False, parallel=False)
+    if runtype == 'test':
+        results = proj.run_geo(key=geo_name, dosave=False, parallel=False, maxiter=3, swarmsize=3, maxtime=3)
+    else:
+        results = proj.run_geo(key=geo_name, dosave=False, parallel=False)
     newproj = rpcs.load_project(project_id)
     newproj.results[cache_id] = results
     rpcs.cache_results(newproj)

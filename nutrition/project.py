@@ -472,6 +472,9 @@ class Project(object):
             base = self.run_baseline(optim.model_name, optim.prog_set)
             results.append(base)
         # run optimization
+        if (optim.model_name is None) or (optim.model_name not in self.datasets.keys()):
+            raise Exception(
+                'Could not find valid dataset for %s.  Edit the scenario and change the dataset' % optim.name)
         model = sc.dcp(self.model(optim.model_name))
         model.setup(optim, setcovs=False)
         model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
