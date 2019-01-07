@@ -1,7 +1,7 @@
 <!--
 Define health packages
 
-Last update: 2018-10-03
+Last update: 2018-12-19
 -->
 
 <template>
@@ -27,7 +27,7 @@ Last update: 2018-10-03
           <br>
           <div class="controls-box">
             <b>Dataset: &nbsp;</b>
-            <select v-model="activeDataset">
+            <select v-model="activeDataset" @change="getSheetData()">
               <option v-for='dataset in datasetOptions'>
                 {{ dataset }}
               </option>
@@ -37,7 +37,7 @@ Last update: 2018-10-03
             <button class="btn btn-icon" @click="deleteDataset()" data-tooltip="Delete"><i class="ti-trash"></i></button>
             <button class="btn btn-icon" @click="downloadDatabook()" data-tooltip="Download databook"><i class="ti-download"></i></button>
             <button class="btn btn-icon" @click="uploadDatabook()" data-tooltip="Upload"><i class="ti-upload"></i></button>
-            <button class="btn btn-icon" @click="loadDatasets()" data-tooltip="Refresh"><i class="ti-reload"></i></button>&nbsp;
+<!--            <button class="btn btn-icon" @click="loadDatasets()" data-tooltip="Refresh"><i class="ti-reload"></i></button> --> &nbsp;
             <!--<help reflink="parameter-sets"></help>-->
           </div>
           <br>
@@ -193,7 +193,9 @@ Last update: 2018-10-03
         utils.sleep(1)  // used so that spinners will come up by callback func
           .then(response => {
             this.updateDatasets()
-            this.getSheetData() // Load the sheet data
+              .then(response2 => {
+                this.getSheetData() // Load the sheet data
+              })
           })
       }
     },
@@ -210,7 +212,7 @@ Last update: 2018-10-03
       getSheetData() {
         console.log('getSheetData() called')
         status.start(this, 'Getting data...')
-        rpcs.rpc('get_sheet_data', [this.projectID]) // Make the server call to download the framework to a .prj file.
+        rpcs.rpc('get_sheet_data', [this.projectID], {'key': this.activeDataset}) // Make the server call to download the framework to a .prj file.
           .then(response => {
             this.sheetNames = response.data.names
             this.sheetTables = response.data.tables
@@ -227,7 +229,7 @@ Last update: 2018-10-03
       saveSheetData() {
         console.log('saveSheetData() called')
         status.start(this, 'Saving changes...')
-        rpcs.rpc('save_sheet_data', [this.projectID, this.sheetTables]) // Make the server call to download the framework to a .prj file.
+        rpcs.rpc('save_sheet_data', [this.projectID, this.sheetTables], {'key': this.activeDataset}) // Make the server call to download the framework to a .prj file.
           .then(response => {
             status.succeed(this, 'Data saved')
           })
@@ -239,7 +241,7 @@ Last update: 2018-10-03
       downloadDatabook() {
         console.log('downloadDatabook() called')
         status.start(this, 'Downloading data book...')
-        rpcs.download('download_databook', [this.projectID])
+        rpcs.download('download_databook', [this.projectID], {'key': this.activeDataset})
           .then(response => {
             status.succeed(this, '')  // No green popup message.
           })
@@ -253,9 +255,12 @@ Last update: 2018-10-03
         rpcs.upload('upload_databook', [this.projectID], {}, '.xlsx')
           .then(response => {
             status.start(this, 'Uploading databook...')
-            this.getSheetData() // Refresh the table
-            status.succeed(this, 'Data uploaded')
-          })
+            this.updateDatasets() // Update the dataset list so the new dataset shows up on the list.
+              .then(response2 => {
+                this.getSheetData() // Load the sheet data.
+                  status.succeed(this, 'Data uploaded')
+                })
+		  })
           .catch(error => {
             status.fail(this, 'Could not upload data', error)
           })
@@ -271,10 +276,9 @@ Last update: 2018-10-03
         console.log('renameDataset() called for ' + this.activeDataset)
         this.$modal.hide('rename-dataset');
         status.start(this)
-        rpcs.rpc('rename_dataset', [this.projectID, this.origDatasetName, this.activeDataset]) // Have the server copy the project, giving it a new name.
+        rpcs.rpc('rename_dataset', [this.projectID, this.origDatasetName, this.activeDataset]) // Have the server rename the dataset, giving it a new name.
           .then(response => {
-            this.updateDatasets() // Update the project summaries so the copied program shows up on the list.
-            // TODO: look into whether the above line is necessary
+            this.updateDatasets() // Update the dataset so the renamed set shows up on the list.
             status.succeed(this, 'Dataset "'+this.activeDataset+'" renamed') // Indicate success.
           })
           .catch(error => {
@@ -285,10 +289,9 @@ Last update: 2018-10-03
       copyDataset() {
         console.log('copyDataset() called for ' + this.activeDataset)
         status.start(this)
-        rpcs.rpc('copy_dataset', [this.projectID, this.activeDataset]) // Have the server copy the project, giving it a new name.
+        rpcs.rpc('copy_dataset', [this.projectID, this.activeDataset]) // Have the server copy the dataset, giving it a new name.
           .then(response => {
-            this.updateDatasets() // Update the project summaries so the copied program shows up on the list.
-            // TODO: look into whether the above line is necessary
+            this.updateDatasets() // Update the datasets so the copied program shows up on the list.
             this.activeDataset = response.data
             status.succeed(this, 'Dataset "'+this.activeDataset+'" copied') // Indicate success.
           })
@@ -300,11 +303,13 @@ Last update: 2018-10-03
       deleteDataset() {
         console.log('deleteDataset() called for ' + this.activeDataset)
         status.start(this)
-        rpcs.rpc('delete_dataset', [this.projectID, this.activeDataset]) // Have the server copy the project, giving it a new name.
+        rpcs.rpc('delete_dataset', [this.projectID, this.activeDataset]) // Have the server delete the dataset.
           .then(response => {
-            this.updateDatasets() // Update the project summaries so the copied program shows up on the list.
-            // TODO: look into whether the above line is necessary
-            status.succeed(this, 'Dataset "'+this.activeDataset+'" deleted') // Indicate success.
+            this.updateDatasets() // Update the project summaries so the dataset deletion shows up on the list.
+              .then(response2 => {
+                this.getSheetData() // Load the sheet data (since we've switched to a new one).
+				status.succeed(this, 'Dataset "'+this.activeDataset+'" deleted') // Indicate success.
+              })        
           })
           .catch(error => {
             status.fail(this, 'Cannot delete last dataset: ensure there are at least 2 datasets before deleting one', error)

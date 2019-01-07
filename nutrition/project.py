@@ -61,11 +61,10 @@ class Project(object):
         self.geos         = sc.odict()
         self.results      = sc.odict()
         self.spreadsheets = sc.odict()
-        self.defaultssheet = None
         if loadsheets:
             if not inputspath:
                 template_name = 'template_input.xlsx'
-                inputspath = sc.makefilepath(filename=template_name, folder=settings.ONpath('applications'))
+                inputspath = sc.makefilepath(filename=template_name, folder=settings.ONpath('inputs'))
                 self.templateinput = sc.Spreadsheet(filename=inputspath)
             else:
                 self.load_data(inputspath=inputspath, defaultspath=defaultspath, fromfile=True)
@@ -129,17 +128,11 @@ class Project(object):
     
     def storeinputs(self, inputspath=None, country=None, region=None, name=None):
         ''' Reload the input spreadsheet into the project '''
-        if inputspath is None: inputspath = settings.data_path(country, region)
+        if inputspath is None:
+            inputspath = settings.data_path(country, region)
         name = self._sanitizename(name, country, region, inputspath)
         self.spreadsheets[name] = sc.Spreadsheet(filename=inputspath)
         return self.inputsheet(name)
-    
-    
-    def storedefaults(self, defaultspath=None):
-        ''' Reload the defaults spreadsheet into the project '''
-        if defaultspath is None: defaultspath = settings.default_params_path()
-        self.defaultssheet = sc.Spreadsheet(filename=defaultspath)
-        return self.defaultssheet
     
         
     def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True, validate=True):
@@ -152,8 +145,6 @@ class Project(object):
         
         # Optionally (but almost always) reload the spreadsheets from file
         if fromfile:
-            if defaultspath or not self.defaultssheet:
-                self.storedefaults(defaultspath=defaultspath)
             if inputspath or country or not self.inputsheet:
                 self.storeinputs(inputspath=inputspath, country=country, region=region, name=name)
         
@@ -504,7 +495,7 @@ def demo(scens=False, optims=False, geos=False):
     # Parameters
     name = 'Demo project'
     country = 'demo'
-    region = 'demo'
+    region = 'national'
     
     # Create project and data
     P = Project(name)

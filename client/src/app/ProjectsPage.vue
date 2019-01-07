@@ -1,7 +1,7 @@
 <!--
 Manage projects page
 
-Last update: 2018oct04
+Last update: 2018dec17
 -->
 
 <template>
@@ -61,7 +61,6 @@ Last update: 2018oct04
               </span>
             </th>
             <th>Databook</th> <!-- ATOMICA-NUTRITION DIFFERENCE -->
-            <th>Defaults</th> <!-- ATOMICA-NUTRITION DIFFERENCE -->
           </tr>
           </thead>
           <tbody>
@@ -98,10 +97,6 @@ Last update: 2018oct04
             <td style="white-space: nowrap; text-align:left"> <!-- ATOMICA-NUTRITION DIFFERENCE -->
               <button class="btn __blue" @click="uploadDatabook(projectSummary.project.id)" data-tooltip="Upload databook"><i class="ti-upload"></i></button>
               <button class="btn" @click="downloadDatabook(projectSummary.project.id)" data-tooltip="Download databook"><i class="ti-download"></i></button>
-            </td>
-            <td style="white-space: nowrap; text-align:left"> <!-- ATOMICA-NUTRITION DIFFERENCE -->
-              <button class="btn" @click="uploadDefaults(projectSummary.project.id)" data-tooltip="Upload defaults"><i class="ti-upload"></i></button>
-              <button class="btn" @click="downloadDefaults(projectSummary.project.id)" data-tooltip="Download defaults"><i class="ti-download"></i></button>
             </td>
           </tr>
           </tbody>
@@ -454,19 +449,6 @@ Last update: 2018oct04
           })
       },
 
-      downloadDefaults(uid) {  // ATOMICA-NUTRITION DIFFERENCE
-        let matchProject = this.projectSummaries.find(theProj => theProj.project.id === uid) // Find the project that matches the UID passed in.
-        console.log('downloadDefaults() called for ' + matchProject.project.name)
-        status.start(this)
-        rpcs.download('download_defaults', [uid])
-        .then(response => {
-          status.succeed(this, '')  // No green popup message.        
-        })
-        .catch(error => {
-          status.fail(this, 'Could not download defaults', error)     
-        })      
-      },
-
       uploadDatabook(uid) {
         console.log('uploadDatabook() called')
         rpcs.upload('upload_databook', [uid], {}, '.xlsx')
@@ -477,19 +459,6 @@ Last update: 2018oct04
           })
           .catch(error => {
             status.fail(this, 'Could not upload data', error) // Indicate failure.
-          })
-      },
-
-      uploadDefaults(uid) {
-        console.log('uploadDefaults() called')     
-        rpcs.upload('upload_defaults', [uid], {}, '.xlsx')
-          .then(response => {
-            status.start(this, 'Uploading defaults...')
-            this.updateProjectSummaries(uid) // Update the project summaries
-            status.succeed(this, 'Defaults uploaded to project') // Indicate success.
-          })
-          .catch(error => {
-            status.fail(this, 'Could not upload defaults', error) // Indicate failure.
           })
       },
 

@@ -421,23 +421,15 @@ def download_projects(project_keys, username):
 def download_databook(project_id, key=None):
     """ Download databook """
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
-    file_name = '%s_databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
+    if key is not None:
+        file_name = '%s_%s_databook.xlsx' % \
+            (proj.name, key) # Create a filename containing the project name followed by the databook name, then a .prj suffix.
+    else:
+        file_name = '%s_%s_databook.xlsx' % \
+            (proj.name, proj.spreadsheets.keys()[-1]) # Create a filename containing the project name followed the databook name, then a .prj suffix.
     full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
-    proj.inputsheet().save(full_file_name)
+    proj.inputsheet(key=key).save(full_file_name) # Pull out and save the databook spreadsheet with the desired key (or the last databook if None).
     print(">> download_databook %s" % (full_file_name)) # Display the call information.
-    return full_file_name # Return the full filename.
-
-
-@RPC(call_type='download')   
-def download_defaults(project_id):
-    """
-    Download defaults
-    """
-    proj = load_project(project_id, die=True) # Load the project with the matching UID.
-    file_name = '%s_defaults.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
-    full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
-    proj.defaultssheet.save(full_file_name)
-    print(">> download_defaults %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
 
 
@@ -447,20 +439,6 @@ def upload_databook(databook_filename, project_id):
     print(">> upload_databook '%s'" % databook_filename)
     proj = load_project(project_id, die=True)
     proj.load_data(inputspath=databook_filename) # Reset the project name to a new project name that is unique.
-    proj.modified = sc.now()
-    save_project(proj) # Save the new project in the DataStore.
-    return { 'projectID': str(proj.uid) } # Return the new project UID in the return message.
-
-
-@RPC(call_type='upload')
-def upload_defaults(defaults_filename, project_id):
-    """ Upload a databook to a project. """
-    print(">> upload_databook '%s'" % defaults_filename)
-    proj = load_project(project_id, die=True)
-    try:
-        proj.load_data(defaultspath=defaults_filename) # Reset the project name to a new project name that is unique.
-    except Exception as E:
-        print('Defaults uploaded, but data not loaded (probably since inputs have not been uploaded yet): %s' % str(E))
     proj.modified = sc.now()
     save_project(proj) # Save the new project in the DataStore.
     return { 'projectID': str(proj.uid) } # Return the new project UID in the return message.
@@ -712,6 +690,7 @@ def rename_dataset(project_id, datasetname=None, new_name=None):
     print('Renaming dataset from %s to %s...' % (datasetname, new_name))
     proj = load_project(project_id, die=True)
     proj.datasets.rename(datasetname, new_name)
+    proj.datasets[new_name].name = new_name
     proj.spreadsheets.rename(datasetname, new_name)
     proj.models.rename(datasetname, new_name)
     print('Saving project...')
@@ -727,6 +706,8 @@ def copy_dataset(project_id, datasetname=None):
     new_name = sc.uniquename(datasetname, namelist=proj.datasets.keys())
     print('Old name: %s; new name: %s' % (datasetname, new_name))
     proj.datasets[new_name] = sc.dcp(proj.datasets[datasetname])
+    proj.datasets[new_name].name = new_name
+    proj.spreadsheets[new_name] = sc.dcp(proj.spreadsheets[datasetname])
     print('Number of datasets after copy: %s' % len(proj.datasets))
     print('Saving project...')
     save_project(proj)
@@ -740,6 +721,7 @@ def delete_dataset(project_id, datasetname=None):
     print('Number of datasets before delete: %s' % len(proj.datasets))
     if len(proj.datasets)>1:
         proj.datasets.pop(datasetname)
+        proj.spreadsheets.pop(datasetname)
     else:
         raise Exception('Cannot delete last parameter set')
     print('Number of datasets after delete: %s' % len(proj.datasets))

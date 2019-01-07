@@ -3,6 +3,7 @@ import pandas
 import sciris as sc
 from . import settings, populations, utils, programs
 
+# TODO (possible): we may want to merge this class with InputData to make another class (DatabookData).
 class DefaultParams(object):
     def __init__(self, default_data, input_data):
         self.settings = settings.Settings()
@@ -268,6 +269,7 @@ class DefaultParams(object):
                     res_dict[age][cat] = mydict[age][condCat]
         return res_dict
 
+# TODO (possible): we may want to merge this class with DefaultParams to make another class (DatabookData).
 class InputData(object):
     """ Container for all the region-specific data (prevalences, mortality rates etc) read in from spreadsheet"""
     def __init__(self, data, recalc=False):
@@ -570,12 +572,13 @@ class Dataset(object):
         self.country = country
         self.region = region
         
-        self.demo_data = demo_data
+        self.demo_data = demo_data  # demo = demographic
         self.prog_data = prog_data
-        self.default_params = default_params
-        self.pops = pops
-        self.prog_info = prog_info
-        self.t = None
+        self.default_params = default_params  # TODO: this should probably be phased out once the InputData and DefaultParams classes get merged
+        # The next three attributes are used to initialize a Model object.
+        self.pops = pops  # populations
+        self.prog_info = prog_info  # program info
+        self.t = None  # start and end years for the simulation
         self.name = name
         self.modified = sc.now()
         if doload:
@@ -592,18 +595,28 @@ class Dataset(object):
             raise Exception('Sorry, but you must supply a project for load().')
         
         # Pull the sheets from the project
-        if self.name in project.spreadsheets.keys(): spreadsheetkey = self.name
-        else:                                        spreadsheetkey = -1
+        if self.name in project.spreadsheets.keys():
+            spreadsheetkey = self.name
+        else:
+            spreadsheetkey = -1
         inputsheet    = project.inputsheet(spreadsheetkey)
-        defaultssheet = project.defaultssheet
-        
+
         # Convert them to Pandas
         input_data     = inputsheet.pandas() 
-        default_data   = defaultssheet.pandas()
+
+        # If the 'Programs impacted population' worksheet is in input_data, then we are working with one of the newer
+        # databooks, so pull the default data from input_data.
+        if 'Programs impacted population' in input_data.sheet_names:
+            default_data = input_data
+
+        # Otherwise, pull the default data from the legacy spreadsheet.
+        else:
+            filename = settings.ONpath('nutrition') + 'legacy_default_params.xlsx'
+            default_data = sc.Spreadsheet(filename=filename).pandas()
         
         # Read them into actual data
         try:
-            self.demo_data = InputData(input_data)
+            self.demo_data = InputData(input_data)  # demo_ here is demographic_
         except Exception as E:
             raise Exception('Error in databook: %s'%str(E))
         try:
