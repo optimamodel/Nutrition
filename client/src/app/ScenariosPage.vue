@@ -314,7 +314,7 @@ Last update: 2019jan07
 
       addScenModal(scen_type) {
         // Open a model dialog for creating a new project
-        console.log('addScenModal() called for type ' + scen_type);
+        console.log('addScenModal() called for type ' + scen_type)
         rpcs.rpc('get_default_scen', [this.projectID, scen_type])
           .then(response => {
             let defaultScen = response.data;
