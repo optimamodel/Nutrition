@@ -344,10 +344,9 @@ class Project(object):
         self.add(name=name, item=model, what='model')
         # get default scenarios
         basename = 'Baseline'
-        if basename in self.scens.keys():
-            basename = basename + ' (' + name + ')'
-        defaults = make_default_scens(name, model, basename)
-        self.add_scens(defaults)
+        if basename not in self.scens.keys():
+            defaults = make_default_scens(name, model, basename)
+            self.add_scens(defaults)
         self.modified = sc.now()
         return model
 
