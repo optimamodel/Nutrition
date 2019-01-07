@@ -317,7 +317,7 @@ Last update: 2019jan07
         console.log('addScenModal() called for type ' + scen_type)
         rpcs.rpc('get_default_scen', [this.projectID, scen_type])
           .then(response => {
-            let defaultScen = response.data;
+            let defaultScen = response.data
             this.setScenYears(defaultScen);
             this.addEditModal.scenSummary = defaultScen;
             this.addEditModal.mode = 'add';
