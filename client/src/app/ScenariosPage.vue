@@ -1,7 +1,7 @@
 <!--
 Scenarios page
 
-Last update: 2019-01-04
+Last update: 2019-01-07
 -->
 
 <template>
@@ -195,7 +195,7 @@ Last update: 2019-01-04
             <button class="btn" @click="deselectAll()" data-tooltip="Deselect all interventions">Deselect all</button>
           </div>
           <div style="text-align:center">
-            <button @click="addScen()" class='btn __green' style="display:inline-block">
+            <button @click="modalSave()" class='btn __green' style="display:inline-block">
               Save
             </button>
             &nbsp;&nbsp;&nbsp;
@@ -334,15 +334,15 @@ Last update: 2019-01-04
 
       editScenModal(scenSummary) {
         // Open a model dialog for creating a new project
-        console.log('editScenModal() called');
-        this.addEditModal.scenSummary = scenSummary;
-        this.addEditModal.modalScenarioType = scenSummary.scen_type;
-        this.setScenYears(scenSummary);
-        console.log('Editing scenario:');
-        console.log(this.addEditModal.scenSummary);
-        this.addEditModal.origName = this.addEditModal.scenSummary.name;
-        this.addEditModal.mode = 'edit';
-        this.$modal.show('add-scen');
+        console.log('editScenModal() called')
+        this.addEditModal.scenSummary = _.cloneDeep(scenSummary)
+        this.addEditModal.modalScenarioType = scenSummary.scen_type
+        this.setScenYears(scenSummary)
+        console.log('Editing scenario:')
+        console.log(this.addEditModal.scenSummary)
+        this.addEditModal.origName = this.addEditModal.scenSummary.name
+        this.addEditModal.mode = 'edit'
+        this.$modal.show('add-scen')
       },
 
       deselectAll() {
@@ -351,18 +351,19 @@ Last update: 2019-01-04
         })
       },
 
-      addScen() {
-        console.log('addScen() called');
-        status.start(this);
-        let newScen = _.cloneDeep(this.addEditModal.scenSummary); // Get the new scenario summary from the modal.
-        let scenNames = []; // Get the list of all of the current scenario names.
+      modalSave() {
+        console.log('modalSave() called')
+        status.start(this)
+        let newScen = _.cloneDeep(this.addEditModal.scenSummary) // Get the new scenario summary from the modal.
+        let scenNames = [] // Get the list of all of the current scenario names.
         this.scenSummaries.forEach(scenSum => {
           scenNames.push(scenSum.name)
-        });
+        })
         if (this.addEditModal.mode === 'edit') { // If we are editing an existing scenario...
-          let index = scenNames.indexOf(this.addEditModal.origName); // Get the index of the original (pre-edited) name
+          let index = scenNames.indexOf(this.addEditModal.origName) // Get the index of the original (pre-edited) name
           if (index > -1) {
-            this.scenSummaries[index].name = newScen.name; // hack to make sure Vue table updated
+            this.scenSummaries[index].name = newScen.name // hack to make sure Vue table updated
+			this.scenSummaries[index].model_name = newScen.model_name
             this.scenSummaries[index] = newScen
           }
           else {
@@ -370,15 +371,16 @@ Last update: 2019-01-04
           }
         }
         else { // Else (we are adding a new scenario)...
-          newScen.name = utils.getUniqueName(newScen.name, scenNames);
+          newScen.name = utils.getUniqueName(newScen.name, scenNames)
           this.scenSummaries.push(newScen)
         }
-        console.log('Saved scenario:');
-        console.log(newScen);
+        console.log('Saved scenario:')
+        console.log(newScen)
         rpcs.rpc('set_scen_info', [this.projectID, this.scenSummaries])
           .then( response => {
             status.succeed(this, 'Scenario added')
-            this.$modal.hide('add-scen');
+            this.$modal.hide('add-scen')
+			this.getScenSummaries()  // Reload all scenarios so Vue state is correct (hack).
           })
           .catch(error => {
             status.fail(this, 'Could not add scenario', error)

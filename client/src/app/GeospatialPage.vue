@@ -1,7 +1,7 @@
 <!--
 Geospatial page
 
-Last update: 2018dec07
+Last update: 2019jan07
 -->
 
 <template>
@@ -200,7 +200,7 @@ Last update: 2018dec07
 
         </div>
         <div style="text-align:center">
-          <button @click="addGeo()" class='btn __green' style="display:inline-block">
+          <button @click="modalSave()" class='btn __green' style="display:inline-block">
             Save
           </button>
           &nbsp;&nbsp;&nbsp;
@@ -527,14 +527,14 @@ Last update: 2018dec07
 
       addGeoModal() {
         // Open a model dialog for creating a new project
-        console.log('addGeoModal() called');
+        console.log('addGeoModal() called')
         rpcs.rpc('get_default_geo', [this.projectID])
           .then(response => {
-            this.addEditModal.geoSummary = response.data;
-            this.addEditModal.origName = this.addEditModal.geoSummary.name;
-            this.addEditModal.mode = 'add';
-            this.$modal.show('add-geo');
-            console.log('New geospatial optimization:');
+            this.addEditModal.geoSummary = response.data
+            this.addEditModal.origName = this.addEditModal.geoSummary.name
+            this.addEditModal.mode = 'add'
+            this.$modal.show('add-geo')
+            console.log('New geospatial optimization:')
             console.log(this.addEditModal.geoSummary)
           })
           .catch(error => {
@@ -544,28 +544,28 @@ Last update: 2018dec07
 
       editGeoModal(geoSummary) {
         // Open a model dialog for creating a new project
-        console.log('editGeoModal() called');
-        this.addEditModal.geoSummary = geoSummary;
-        console.log('Editing geospatial optimization:');
-        console.log(this.addEditModal.geoSummary);
-        this.addEditModal.origName = this.addEditModal.geoSummary.name;
-        this.addEditModal.mode = 'edit';
-        this.$modal.show('add-geo');
+        console.log('editGeoModal() called')
+        this.addEditModal.geoSummary = _.cloneDeep(geoSummary)
+        console.log('Editing geospatial optimization:')
+        console.log(this.addEditModal.geoSummary)
+        this.addEditModal.origName = this.addEditModal.geoSummary.name
+        this.addEditModal.mode = 'edit'
+        this.$modal.show('add-geo')
       },
 
-      addGeo() {
-        console.log('addGeo() called');
-        this.$modal.hide('add-geo');
+      modalSave() {
+        console.log('modalSave() called')
+        this.$modal.hide('add-geo')
         status.start(this)
-        let newGeo = _.cloneDeep(this.addEditModal.geoSummary);
-        let geoNames = []; // Get the list of all of the current optimization names.
+        let newGeo = _.cloneDeep(this.addEditModal.geoSummary)
+        let geoNames = [] // Get the list of all of the current optimization names.
         this.geoSummaries.forEach(geoSum => {
           geoNames.push(geoSum.name)
-        });
+        })
         if (this.addEditModal.mode === 'edit') { // If we are editing an existing scenario...
-          let index = geoNames.indexOf(this.addEditModal.origName); // Get the index of the original (pre-edited) name
+          let index = geoNames.indexOf(this.addEditModal.origName) // Get the index of the original (pre-edited) name
           if (index > -1) {
-            this.geoSummaries[index].name = newGeo.name; // hack to make sure Vue table updated
+            this.geoSummaries[index].name = newGeo.name // hack to make sure Vue table updated
             this.geoSummaries[index] = newGeo
           }
           else {
@@ -573,7 +573,7 @@ Last update: 2018dec07
           }
         }
         else { // Else (we are adding a new optimization)...
-          newGeo.name = utils.getUniqueName(newGeo.name, geoNames);
+          newGeo.name = utils.getUniqueName(newGeo.name, geoNames)
           newGeo.serverDatastoreId = this.$store.state.activeProject.project.id + ':geo-' + newGeo.name
           this.geoSummaries.push(newGeo)
           this.getGeoTaskState(newGeo)
@@ -583,11 +583,12 @@ Last update: 2018dec07
             this.geoSummaries.pop()
           })
         }
-        console.log('Saved geospatial optimization:');
-        console.log(newGeo);
+        console.log('Saved geospatial optimization:')
+        console.log(newGeo)
         rpcs.rpc('set_geo_info', [this.projectID, this.geoSummaries])
           .then( response => {
             status.succeed(this, 'Geospatial optimization added')
+			this.getGeoSummaries()  // Reload all geo optimizations so Vue state is correct (hack).
           })
           .catch(error => {
             status.fail(this, 'Could not add geospatial optimization', error)

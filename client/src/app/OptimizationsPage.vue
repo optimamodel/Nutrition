@@ -1,7 +1,7 @@
 <!--
 Optimizations page
 
-Last update: 2019jan06
+Last update: 2019jan07
 -->
 
 <template>
@@ -206,7 +206,7 @@ Last update: 2019jan06
           <button class="btn" @click="deselectAll()" data-tooltip="Deselect all interventions">Deselect all</button>
         </div>
         <div style="text-align:center">
-          <button @click="addOptim()" class='btn __green' style="display:inline-block">
+          <button @click="modalSave()" class='btn __green' style="display:inline-block">
             Save
           </button>
           &nbsp;&nbsp;&nbsp;
@@ -520,12 +520,12 @@ Last update: 2019jan06
         console.log('addOptimModal() called');
         rpcs.rpc('get_default_optim', [this.projectID])
           .then(response => {
-            this.addEditModal.optimSummary = response.data;
-            this.addEditModal.origName = this.addEditModal.optimSummary.name;
-            this.addEditModal.mode = 'add';
+            this.addEditModal.optimSummary = response.data
+            this.addEditModal.origName = this.addEditModal.optimSummary.name
+            this.addEditModal.mode = 'add'
 			this.addEditModal.optimSummary.model_name = this.datasetOptions[0]
-            this.$modal.show('add-optim');
-            console.log('New optimization:');
+            this.$modal.show('add-optim')
+            console.log('New optimization:')
             console.log(this.addEditModal.optimSummary)
           })
           .catch(error => {
@@ -535,13 +535,13 @@ Last update: 2019jan06
 
       editOptimModal(optimSummary) {
         // Open a model dialog for creating a new project
-        console.log('editOptimModal() called');
-        this.addEditModal.optimSummary = optimSummary;
-        console.log('Editing optimization:');
-        console.log(this.addEditModal.optimSummary);
-        this.addEditModal.origName = this.addEditModal.optimSummary.name;
-        this.addEditModal.mode = 'edit';
-        this.$modal.show('add-optim');
+        console.log('editOptimModal() called')
+        this.addEditModal.optimSummary = _.cloneDeep(optimSummary)
+        console.log('Editing optimization:')
+        console.log(this.addEditModal.optimSummary)
+        this.addEditModal.origName = this.addEditModal.optimSummary.name
+        this.addEditModal.mode = 'edit'
+        this.$modal.show('add-optim')
       },
 
       deselectAll() {
@@ -550,19 +550,19 @@ Last update: 2019jan06
         })
       },
 
-      addOptim() {
-        console.log('addOptim() called');
-        this.$modal.hide('add-optim');
+      modalSave() {
+        console.log('modalSave() called')
+        this.$modal.hide('add-optim')
         status.start(this)
-        let newOptim = _.cloneDeep(this.addEditModal.optimSummary);
-        let optimNames = []; // Get the list of all of the current optimization names.
+        let newOptim = _.cloneDeep(this.addEditModal.optimSummary)
+        let optimNames = [] // Get the list of all of the current optimization names.
         this.optimSummaries.forEach(optimSum => {
           optimNames.push(optimSum.name)
-        });
+        })
         if (this.addEditModal.mode === 'edit') { // If we are editing an existing scenario...
-          let index = optimNames.indexOf(this.addEditModal.origName); // Get the index of the original (pre-edited) name
+          let index = optimNames.indexOf(this.addEditModal.origName) // Get the index of the original (pre-edited) name
           if (index > -1) {
-            this.optimSummaries[index].name = newOptim.name; // hack to make sure Vue table updated
+            this.optimSummaries[index].name = newOptim.name // hack to make sure Vue table updated
             this.optimSummaries[index] = newOptim
           }
           else {
@@ -570,7 +570,7 @@ Last update: 2019jan06
           }
         }
         else { // Else (we are adding a new optimization)...
-          newOptim.name = utils.getUniqueName(newOptim.name, optimNames);
+          newOptim.name = utils.getUniqueName(newOptim.name, optimNames)
           newOptim.serverDatastoreId = this.$store.state.activeProject.project.id + ':opt-' + newOptim.name
           this.optimSummaries.push(newOptim)
           this.getOptimTaskState(newOptim)
@@ -580,11 +580,12 @@ Last update: 2019jan06
             this.optimSummaries.pop()
           })
         }
-        console.log('Saved optimization:');
+        console.log('Saved optimization:')
         console.log(newOptim);
         rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
           .then( response => {
             status.succeed(this, 'Optimization added')
+			this.getOptimSummaries()  // Reload all optimizations so Vue state is correct (hack).
           })
           .catch(error => {
             status.fail(this, 'Could not add optimization', error)
