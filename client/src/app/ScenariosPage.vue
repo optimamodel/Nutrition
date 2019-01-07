@@ -1,7 +1,7 @@
 <!--
 Scenarios page
 
-Last update: 2019-01-07
+Last update: 2019jan07
 -->
 
 <template>
