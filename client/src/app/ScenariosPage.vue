@@ -308,7 +308,7 @@ Last update: 2019jan07
       setScenYears(scen) {
         this.defaultScenYears = [];
         for (let year = scen.t[0]; year <= scen.t[1]; year++) {
-          this.defaultScenYears.push(year);
+          this.defaultScenYears.push(year)
         }
       },
 
