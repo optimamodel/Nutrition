@@ -8,7 +8,7 @@ from .version import version
 from .utils import default_trackers
 from .data import Dataset
 from .model import Model
-from .scenarios import Scen, run_scen, convert_scen, make_default_scens
+from .scenarios import Scen, run_scen, convert_scen, make_default_scens, make_default_scen
 from .optimization import Optim
 from .geospatial import Geospatial
 from .results import write_results
@@ -137,17 +137,17 @@ class Project(object):
     def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True, validate=True):
         '''Load the data, which can mean one of two things: read in the spreadsheets, and/or use these data to make a model '''
         
-        # Handle name
+        # Generate name odict key for Spreadsheet, Dataset, and Model odicts.
         name = self._sanitizename(name, country, region, inputspath)
         if fromfile:
             name = sc.uniquename(name, self.datasets.keys())
         
-        # Optionally (but almost always) reload the spreadsheets from file
+        # Optionally (but almost always) reload the spreadsheets from file.
         if fromfile:
             if inputspath or country or not self.inputsheet:
                 self.storeinputs(inputspath=inputspath, country=country, region=region, name=name)
         
-        # Optionally (but almost always) use these to make a model (do not do if blank sheets)
+        # Optionally (but almost always) use these to make a model (do not do if blank sheets).
         dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self)
         self.datasets[name] = dataset
         dataset.name = name
@@ -342,10 +342,11 @@ class Project(object):
         t = dataset.t
         model = Model(pops, prog_info, t)
         self.add(name=name, item=model, what='model')
-        # get default scenarios
+        # Only, if there is no 'Baseline' scenario, make a default baseline scenario.
         basename = 'Baseline'
         if basename not in self.scens.keys():
-            defaults = make_default_scens(name, model, basename)
+            # defaults = make_default_scens(name, model, basename)
+            defaults = make_default_scen(name, model, 'coverage', basename)
             self.add_scens(defaults)
         self.modified = sc.now()
         return model
@@ -541,11 +542,11 @@ def demo(scens=False, optims=False, geos=False):
     country = 'demo'
     region = 'national'
     
-    # Create project and data
+    # Create project and load in demo databook spreadsheet file into 'demo' Spreadsheet, Dataset, and Model.
     P = Project(name)
     P.load_data(country, region, name='demo')
 
-    # Create scenarios and optimizations
+    # Create demo scenarios and optimizations
     if scens:
         P.demo_scens()
     if optims:

@@ -17,6 +17,7 @@ import sciris as sc
 import scirisweb as sw
 import nutrition.ui as nu
 from . import config
+from nutrition.scenarios import make_default_scen
 pl.rc('font', size=14)
 
 # Globals
@@ -884,9 +885,24 @@ def set_scen_info(project_id, scenario_jsons, verbose=False):
 @RPC()
 def get_default_scen(project_id, scen_type=None, verbose=False):
     print('Creating default scenario...')
-    if scen_type is None: scen_type = 'coverage'
+    if scen_type is None:
+        scen_type = 'coverage'
     proj = load_project(project_id, die=True)
     py_scen = proj.demo_scens(doadd=False, default=True, scen_type=scen_type)
+    py_scen.scen_type = scen_type # Set the scenario type -- Warning, is this needed?
+    js_scen = py_to_js_scen(py_scen, proj, default_included=True)
+    if verbose:
+        print('Created default JavaScript scenario:')
+        sc.pp(js_scen)
+    return js_scen
+
+@RPC()
+def get_default_scen2(project_id, scen_type=None, model_name=None, verbose=False):
+    print('Creating default scenario...')
+    if scen_type is None:
+        scen_type = 'coverage'
+    proj = load_project(project_id, die=True)
+    py_scen = make_default_scen(model_name, model=proj.model(model_name), scen_type=scen_type, basename='Baseline')
     py_scen.scen_type = scen_type # Set the scenario type -- Warning, is this needed?
     js_scen = py_to_js_scen(py_scen, proj, default_included=True)
     if verbose:

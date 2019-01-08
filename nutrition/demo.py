@@ -10,7 +10,7 @@ def demo_scens(default=None, scen_type=None):
     if scen_type is None:
         scen_type = 'coverage'
     
-    if default:
+    if default:  # e.g. used for new scenarios created in FE
         kwargs = {'name':       'Default scenario (%s)' % scen_type,
                   'model_name': 'demo',
                   'scen_type':  scen_type,
@@ -18,7 +18,7 @@ def demo_scens(default=None, scen_type=None):
            }
         scen = Scen(**kwargs)
         return scen
-    else:
+    else:  # generally used specifically in demo scenarios
         
         # stunting reduction
         kwargs1 = {'name':       'Stunting example (coverage)',
