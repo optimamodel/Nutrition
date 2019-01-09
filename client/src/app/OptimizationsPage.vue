@@ -518,7 +518,8 @@ Last update: 2019jan09
       addOptimModal() {
         // Open a model dialog for creating a new project
         console.log('addOptimModal() called');
-        rpcs.rpc('get_default_optim', [this.projectID])
+//        rpcs.rpc('get_default_optim', [this.projectID])
+        rpcs.rpc('get_default_optim2', [this.projectID, this.datasetOptions[0]])
           .then(response => {
             this.addEditModal.optimSummary = response.data
             this.addEditModal.origName = this.addEditModal.optimSummary.name
@@ -547,6 +548,19 @@ Last update: 2019jan09
       modalSwitchDataset() {
         console.log('modalSwitchDataset() called')
 		console.log('New Dataset: ', this.addEditModal.optimSummary.model_name)
+		let optimName = this.addEditModal.optimSummary.name
+		// Get a new default optimization to write into the modal.
+        rpcs.rpc('get_default_optim2', [this.projectID, this.addEditModal.optimSummary.model_name])
+          .then(response => {
+            let newDefaultOptim = response.data
+            this.addEditModal.optimSummary = newDefaultOptim  // overwrite the old optimization
+			this.addEditModal.optimSummary.name = optimName  // keep the existing name
+            console.log('Default optimization:')
+            console.log(newDefaultOptim)
+          })
+          .catch(error => {
+            status.fail(this, 'Could not switch datasets', error)
+          })		
       },
 	  
       modalDeselectAll() {

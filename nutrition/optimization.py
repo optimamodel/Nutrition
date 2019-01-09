@@ -187,7 +187,7 @@ def obj_func(allocation, model, free, fixed, keep_inds, weights):
     return value
 
 
-def make_default_optim(modelname=None, model=None, scen_type=None, basename='Baseline'):
+def make_default_optim(modelname=None, basename='Maximize thrive'):
     """
     Assumes user has selected a data set to upload into the project.
     Baseline will be based on all the programs uploaded in the data book.
@@ -197,19 +197,17 @@ def make_default_optim(modelname=None, model=None, scen_type=None, basename='Bas
     :return: a list of default scenarios
     """
 
-    # Default to 'coverage' scenario if not set.
-    if scen_type is None:
-        scen_type = 'coverage'
-
-    # Get the set of programs in the model.
-    progset = model.prog_info.base_progset()
-    # maintain current coverage
-    progvals = sc.odict([(prog,[]) for prog in progset])
-    # progvals = sc.odict()  # TODO: use this or line above?
-    # print('Here are the progvals: ', progvals)
     kwargs1 = {'name': basename,
-              'model_name': modelname,
-              'scen_type': scen_type,
-              'progvals': progvals}
-    default = Scen(**kwargs1)
+               'model_name': modelname,
+               'mults': [1, 2],
+               'weights': sc.odict({'thrive': 1}),
+               'prog_set': ['Vitamin A supplementation', 'IYCF 1', 'IFA fortification of maize',
+                            'Balanced energy-protein supplementation',
+                            'Public provision of complementary foods',
+                            'Iron and iodine fortification of salt'],
+               'fix_curr': False,
+               'add_funds': 0,
+               'filter_progs': True}
+
+    default = Optim(**kwargs1)
     return default

@@ -18,6 +18,7 @@ import scirisweb as sw
 import nutrition.ui as nu
 from . import config
 from nutrition.scenarios import make_default_scen
+from nutrition.optimization import make_default_optim
 pl.rc('font', size=14)
 
 # Globals
@@ -1065,11 +1066,10 @@ def get_default_optim(project_id):
 
 
 @RPC()
-def get_default_optim2(project_id):
+def get_default_optim2(project_id, model_name=None):
     print('Getting default optimization...')
     proj = load_project(project_id, die=True)
-    py_optim = proj.demo_optims(doadd=False)[0]
-#    py_scen = make_default_scen(model_name, model=proj.model(model_name), scen_type=scen_type, basename='Baseline')
+    py_optim = make_default_optim(model_name, basename='Maximize thrive')
     js_optim = py_to_js_optim(py_optim, proj, default_included=True)
     print('Created default JavaScript optimization:')
     sc.pp(js_optim)
