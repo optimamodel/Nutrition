@@ -1,7 +1,7 @@
 <!--
 Geospatial page
 
-Last update: 2019jan07
+Last update: 2019jan09
 -->
 
 <template>
@@ -528,7 +528,8 @@ Last update: 2019jan07
       addGeoModal() {
         // Open a model dialog for creating a new project
         console.log('addGeoModal() called')
-        rpcs.rpc('get_default_geo', [this.projectID])
+//        rpcs.rpc('get_default_geo', [this.projectID])
+        rpcs.rpc('get_default_geo2', [this.projectID])
           .then(response => {
             this.addEditModal.geoSummary = response.data
             this.addEditModal.origName = this.addEditModal.geoSummary.name

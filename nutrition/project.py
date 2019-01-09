@@ -415,8 +415,8 @@ class Project(object):
         self.add(name=name, item=result, what='result')
         return result
 
-    def demo_scens(self, dorun=None, doadd=True, default=False, scen_type=None):
-        scens = demo_scens(default=default, scen_type=scen_type)
+    def demo_scens(self, dorun=None, doadd=True):
+        scens = demo_scens()
         if doadd:
             self.add_scens(scens)
             if dorun:

@@ -19,6 +19,7 @@ import nutrition.ui as nu
 from . import config
 from nutrition.scenarios import make_default_scen
 from nutrition.optimization import make_default_optim
+from nutrition.geospatial import make_default_geo
 pl.rc('font', size=14)
 
 # Globals
@@ -889,7 +890,7 @@ def get_default_scen(project_id, scen_type=None, verbose=False):
     if scen_type is None:
         scen_type = 'coverage'
     proj = load_project(project_id, die=True)
-    py_scen = proj.demo_scens(doadd=False, default=True, scen_type=scen_type)
+    py_scen = proj.demo_scens(doadd=False)
     py_scen.scen_type = scen_type # Set the scenario type -- Warning, is this needed?
     js_scen = py_to_js_scen(py_scen, proj, default_included=True)
     if verbose:
@@ -1207,8 +1208,7 @@ def get_default_geo(project_id):
 def get_default_geo2(project_id):
     print('Getting default optimization...')
     proj = load_project(project_id, die=True)
-    py_geo = proj.demo_geos(doadd=False)[0]
-    #    py_scen = make_default_scen(model_name, model=proj.model(model_name), scen_type=scen_type, basename='Baseline')
+    py_geo = make_default_geo(basename='Geospatial optimization')
     js_geo = py_to_js_geo(py_geo, proj, default_included=True)
     print('Created default JavaScript optimization:')
     sc.pp(js_geo)
