@@ -885,22 +885,7 @@ def set_scen_info(project_id, scenario_jsons, verbose=False):
 
 
 @RPC()
-def get_default_scen(project_id, scen_type=None, verbose=False):
-    print('Creating default scenario...')
-    if scen_type is None:
-        scen_type = 'coverage'
-    proj = load_project(project_id, die=True)
-    py_scen = proj.demo_scens(doadd=False)
-    py_scen.scen_type = scen_type # Set the scenario type -- Warning, is this needed?
-    js_scen = py_to_js_scen(py_scen, proj, default_included=True)
-    if verbose:
-        print('Created default JavaScript scenario:')
-        sc.pp(js_scen)
-    return js_scen
-
-
-@RPC()
-def get_default_scen2(project_id, scen_type=None, model_name=None, verbose=False):
+def get_default_scen(project_id, scen_type=None, model_name=None, verbose=False):
     print('Creating default scenario...')
     if scen_type is None:
         scen_type = 'coverage'
@@ -1053,21 +1038,10 @@ def set_optim_info(project_id, optim_jsons):
     print('Saving project...')
     save_project(proj)   
     return None
-    
-
-@RPC()
-def get_default_optim(project_id):
-    print('Getting default optimization...')
-    proj = load_project(project_id, die=True)
-    py_optim = proj.demo_optims(doadd=False)[0]
-    js_optim = py_to_js_optim(py_optim, proj, default_included=True)
-    print('Created default JavaScript optimization:')
-    sc.pp(js_optim)
-    return js_optim
 
 
 @RPC()
-def get_default_optim2(project_id, model_name=None):
+def get_default_optim(project_id, model_name=None):
     print('Getting default optimization...')
     proj = load_project(project_id, die=True)
     py_optim = make_default_optim(model_name, basename='Maximize thrive')
@@ -1191,21 +1165,10 @@ def set_geo_info(project_id, geo_jsons):
     print('Saving project...')
     save_project(proj)   
     return None
-    
+
 
 @RPC()
 def get_default_geo(project_id):
-    print('Getting default optimization...')
-    proj = load_project(project_id, die=True)
-    py_geo = proj.demo_geos(doadd=False)[0]
-    js_geo = py_to_js_geo(py_geo, proj, default_included=True)
-    print('Created default JavaScript optimization:')
-    sc.pp(js_geo)
-    return js_geo
-
-
-@RPC()
-def get_default_geo2(project_id):
     print('Getting default optimization...')
     proj = load_project(project_id, die=True)
     py_geo = make_default_geo(basename='Geospatial optimization')

@@ -516,10 +516,9 @@ Last update: 2019jan09
       },
 
       addOptimModal() {
-        // Open a model dialog for creating a new project
+        // Open a model dialog for creating a new optimization
         console.log('addOptimModal() called');
-//        rpcs.rpc('get_default_optim', [this.projectID])
-        rpcs.rpc('get_default_optim2', [this.projectID, this.datasetOptions[0]])
+        rpcs.rpc('get_default_optim', [this.projectID, this.datasetOptions[0]])
           .then(response => {
             this.addEditModal.optimSummary = response.data
             this.addEditModal.origName = this.addEditModal.optimSummary.name
@@ -535,7 +534,7 @@ Last update: 2019jan09
       },
 
       editOptimModal(optimSummary) {
-        // Open a model dialog for creating a new project
+        // Open a model dialog for editing an optimization
         console.log('editOptimModal() called')
         this.addEditModal.optimSummary = _.cloneDeep(optimSummary)
         console.log('Editing optimization:')
@@ -550,7 +549,7 @@ Last update: 2019jan09
 		console.log('New Dataset: ', this.addEditModal.optimSummary.model_name)
 		let optimName = this.addEditModal.optimSummary.name
 		// Get a new default optimization to write into the modal.
-        rpcs.rpc('get_default_optim2', [this.projectID, this.addEditModal.optimSummary.model_name])
+        rpcs.rpc('get_default_optim', [this.projectID, this.addEditModal.optimSummary.model_name])
           .then(response => {
             let newDefaultOptim = response.data
             this.addEditModal.optimSummary = newDefaultOptim  // overwrite the old optimization

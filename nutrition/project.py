@@ -8,7 +8,7 @@ from .version import version
 from .utils import default_trackers
 from .data import Dataset
 from .model import Model
-from .scenarios import Scen, run_scen, convert_scen, make_default_scens, make_default_scen
+from .scenarios import Scen, run_scen, convert_scen, make_default_scen
 from .optimization import Optim
 from .geospatial import Geospatial
 from .results import write_results
@@ -331,10 +331,6 @@ class Project(object):
         """ Adds a model to the self.models odict.
         A new model should only be instantiated if new input data is uploaded to the Project.
         For the same input data, one model instance is used for all scenarios.
-        :param name:
-        :param pops:
-        :param prog_info:
-        :return:
         """
         dataset = self.dataset(name)
         pops = dataset.pops
@@ -345,7 +341,6 @@ class Project(object):
         # Only, if there is no 'Baseline' scenario, make a default baseline scenario.
         basename = 'Baseline'
         if basename not in self.scens.keys():
-            # defaults = make_default_scens(name, model, basename)
             defaults = make_default_scen(name, model, 'coverage', basename)
             self.add_scens(defaults)
         self.modified = sc.now()

@@ -526,10 +526,9 @@ Last update: 2019jan09
       },
 
       addGeoModal() {
-        // Open a model dialog for creating a new project
+        // Open a model dialog for creating a new geospatial optimization
         console.log('addGeoModal() called')
-//        rpcs.rpc('get_default_geo', [this.projectID])
-        rpcs.rpc('get_default_geo2', [this.projectID])
+        rpcs.rpc('get_default_geo', [this.projectID])
           .then(response => {
             this.addEditModal.geoSummary = response.data
             this.addEditModal.origName = this.addEditModal.geoSummary.name
@@ -539,12 +538,12 @@ Last update: 2019jan09
             console.log(this.addEditModal.geoSummary)
           })
           .catch(error => {
-            status.fail(this, 'Could not open add optimization modal', error)
+            status.fail(this, 'Could not open add geospatial modal', error)
           })
       },
 
       editGeoModal(geoSummary) {
-        // Open a model dialog for creating a new project
+        // Open a model dialog for editing a geospatial optimization
         console.log('editGeoModal() called')
         this.addEditModal.geoSummary = _.cloneDeep(geoSummary)
         console.log('Editing geospatial optimization:')

@@ -313,10 +313,9 @@ Last update: 2019jan09
       },
 
       addScenModal(scen_type) {
-        // Open a model dialog for creating a new project
+        // Open a model dialog for creating a new scenario
         console.log('addScenModal() called for type ' + scen_type)
-//        rpcs.rpc('get_default_scen', [this.projectID, scen_type])
-        rpcs.rpc('get_default_scen2', [this.projectID, scen_type, this.datasetOptions[0]])
+        rpcs.rpc('get_default_scen', [this.projectID, scen_type, this.datasetOptions[0]])
           .then(response => {
             let defaultScen = response.data
             this.setScenYears(defaultScen)
@@ -334,7 +333,7 @@ Last update: 2019jan09
       },
 
       editScenModal(scenSummary) {
-        // Open a model dialog for creating a new project
+        // Open a model dialog for editing a scenario
         console.log('editScenModal() called')
         this.addEditModal.scenSummary = _.cloneDeep(scenSummary)
         this.addEditModal.modalScenarioType = scenSummary.scen_type
@@ -351,7 +350,7 @@ Last update: 2019jan09
 		console.log('New Dataset: ', this.addEditModal.scenSummary.model_name)
 		let scenName = this.addEditModal.scenSummary.name
 		// Get a new default scenario to write into the modal.
-        rpcs.rpc('get_default_scen2', [this.projectID, this.addEditModal.modalScenarioType, 
+        rpcs.rpc('get_default_scen', [this.projectID, this.addEditModal.modalScenarioType, 
 		  this.addEditModal.scenSummary.model_name])
           .then(response => {
             let newDefaultScen = response.data

@@ -195,12 +195,7 @@ class Geospatial:
 
 def make_default_geo(basename='Geospatial optimization'):
     """
-    Assumes user has selected a data set to upload into the project.
-    Baseline will be based on all the programs uploaded in the data book.
-    :param modelname: the name of the Model object
-    :param model: a Model object for the baseline scenario.
-    :param basename: the name of the baseline scenario
-    :return: a list of default scenarios
+    Creates and returns a prototype / default geospatial optimization.
     """
 
     kwargs1 = {'name': basename,
@@ -216,4 +211,3 @@ def make_default_geo(basename='Geospatial optimization'):
 
     default = Geospatial(**kwargs1)
     return default
-
