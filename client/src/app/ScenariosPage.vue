@@ -27,7 +27,7 @@ Last update: 2019jan09
           <tr>
             <th>Name</th>
             <th>Type</th>
-			<th>Dataset</th>
+            <th>Dataset</th>
             <th>Active?</th>
             <th>Actions</th>
           </tr>
@@ -230,7 +230,7 @@ Last update: 2019jan09
         scenSummaries: [],
         defaultScenYears: [],
         scenariosLoaded: false,
-		datasetOptions: [],
+        datasetOptions: [],
         addEditModal: {
           scenSummary: {},
           origName: '',
@@ -347,11 +347,11 @@ Last update: 2019jan09
 	  
       modalSwitchDataset() {
         console.log('modalSwitchDataset() called')
-		console.log('New Dataset: ', this.addEditModal.scenSummary.model_name)
-		let scenName = this.addEditModal.scenSummary.name
-		// Get a new default scenario to write into the modal.
+        console.log('New Dataset: ', this.addEditModal.scenSummary.model_name)
+        let scenName = this.addEditModal.scenSummary.name
+        // Get a new default scenario to write into the modal.
         rpcs.rpc('get_default_scen', [this.projectID, this.addEditModal.modalScenarioType, 
-		  this.addEditModal.scenSummary.model_name])
+          this.addEditModal.scenSummary.model_name])
           .then(response => {
             let newDefaultScen = response.data
             this.setScenYears(newDefaultScen)
@@ -383,7 +383,7 @@ Last update: 2019jan09
           let index = scenNames.indexOf(this.addEditModal.origName) // Get the index of the original (pre-edited) name
           if (index > -1) {
             this.scenSummaries[index].name = newScen.name // hack to make sure Vue table updated
-			this.scenSummaries[index].model_name = newScen.model_name
+            this.scenSummaries[index].model_name = newScen.model_name
             this.scenSummaries[index] = newScen
           }
           else {
@@ -400,7 +400,7 @@ Last update: 2019jan09
           .then( response => {
             status.succeed(this, 'Scenario added')
             this.$modal.hide('add-scen')
-			this.getScenSummaries()  // Reload all scenarios so Vue state is correct (hack).
+            this.getScenSummaries()  // Reload all scenarios so Vue state is correct (hack).
           })
           .catch(error => {
             status.fail(this, 'Could not add scenario', error)

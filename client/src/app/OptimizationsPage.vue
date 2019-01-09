@@ -26,7 +26,7 @@ Last update: 2019jan09
           <thead>
           <tr>
             <th>Name</th>
-			<th>Dataset</th>
+            <th>Dataset</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
@@ -243,7 +243,7 @@ Last update: 2019jan09
         optimSummaries: [],
         optimsLoaded: false,
         pollingTasks: false,
-		datasetOptions: [],
+        datasetOptions: [],
         addEditModal: {
           optimSummary: {},
           origName: '',
@@ -269,7 +269,7 @@ Last update: 2019jan09
         (this.$store.state.activeProject.project.hasData) ) {
         console.log('created() called')
         this.getOptimSummaries()
-		this.updateDatasets()
+        this.updateDatasets()
       }
     },
 
@@ -523,7 +523,7 @@ Last update: 2019jan09
             this.addEditModal.optimSummary = response.data
             this.addEditModal.origName = this.addEditModal.optimSummary.name
             this.addEditModal.mode = 'add'
-			this.addEditModal.optimSummary.model_name = this.datasetOptions[0]
+            this.addEditModal.optimSummary.model_name = this.datasetOptions[0]
             this.$modal.show('add-optim')
             console.log('New optimization:')
             console.log(this.addEditModal.optimSummary)
@@ -546,14 +546,14 @@ Last update: 2019jan09
 	  
       modalSwitchDataset() {
         console.log('modalSwitchDataset() called')
-		console.log('New Dataset: ', this.addEditModal.optimSummary.model_name)
-		let optimName = this.addEditModal.optimSummary.name
-		// Get a new default optimization to write into the modal.
+        console.log('New Dataset: ', this.addEditModal.optimSummary.model_name)
+        let optimName = this.addEditModal.optimSummary.name
+        // Get a new default optimization to write into the modal.
         rpcs.rpc('get_default_optim', [this.projectID, this.addEditModal.optimSummary.model_name])
           .then(response => {
             let newDefaultOptim = response.data
             this.addEditModal.optimSummary = newDefaultOptim  // overwrite the old optimization
-			this.addEditModal.optimSummary.name = optimName  // keep the existing name
+            this.addEditModal.optimSummary.name = optimName  // keep the existing name
             console.log('Default optimization:')
             console.log(newDefaultOptim)
           })
@@ -603,7 +603,7 @@ Last update: 2019jan09
         rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
           .then( response => {
             status.succeed(this, 'Optimization added')
-			this.getOptimSummaries()  // Reload all optimizations so Vue state is correct (hack).
+            this.getOptimSummaries()  // Reload all optimizations so Vue state is correct (hack).
           })
           .catch(error => {
             status.fail(this, 'Could not add optimization', error)
