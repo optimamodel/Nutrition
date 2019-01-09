@@ -185,3 +185,31 @@ def obj_func(allocation, model, free, fixed, keep_inds, weights):
     outs = thisModel.get_output()
     value = np.inner(outs, weights)
     return value
+
+
+def make_default_optim(modelname=None, model=None, scen_type=None, basename='Baseline'):
+    """
+    Assumes user has selected a data set to upload into the project.
+    Baseline will be based on all the programs uploaded in the data book.
+    :param modelname: the name of the Model object
+    :param model: a Model object for the baseline scenario.
+    :param basename: the name of the baseline scenario
+    :return: a list of default scenarios
+    """
+
+    # Default to 'coverage' scenario if not set.
+    if scen_type is None:
+        scen_type = 'coverage'
+
+    # Get the set of programs in the model.
+    progset = model.prog_info.base_progset()
+    # maintain current coverage
+    progvals = sc.odict([(prog,[]) for prog in progset])
+    # progvals = sc.odict()  # TODO: use this or line above?
+    # print('Here are the progvals: ', progvals)
+    kwargs1 = {'name': basename,
+              'model_name': modelname,
+              'scen_type': scen_type,
+              'progvals': progvals}
+    default = Scen(**kwargs1)
+    return default

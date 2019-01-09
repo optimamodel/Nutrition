@@ -1,7 +1,7 @@
 <!--
 Optimizations page
 
-Last update: 2019jan07
+Last update: 2019jan09
 -->
 
 <template>
@@ -142,7 +142,7 @@ Last update: 2019jan07
                  class="txbox"
                  v-model="addEditModal.optimSummary.name"/><br>
           <b>Dataset</b><br>
-          <select v-model="addEditModal.optimSummary.model_name">
+          <select v-model="addEditModal.optimSummary.model_name" @change="modalSwitchDataset">
             <option v-for='dataset in datasetOptions'>
               {{ dataset }}
             </option>
@@ -203,7 +203,7 @@ Last update: 2019jan07
               </tbody>
             </table>
           </div>
-          <button class="btn" @click="deselectAll()" data-tooltip="Deselect all interventions">Deselect all</button>
+          <button class="btn" @click="modalDeselectAll()" data-tooltip="Deselect all interventions">Deselect all</button>
         </div>
         <div style="text-align:center">
           <button @click="modalSave()" class='btn __green' style="display:inline-block">
@@ -543,8 +543,13 @@ Last update: 2019jan07
         this.addEditModal.mode = 'edit'
         this.$modal.show('add-optim')
       },
-
-      deselectAll() {
+	  
+      modalSwitchDataset() {
+        console.log('modalSwitchDataset() called')
+		console.log('New Dataset: ', this.addEditModal.optimSummary.model_name)
+      },
+	  
+      modalDeselectAll() {
         this.addEditModal.optimSummary.spec.forEach(progval => {
           progval.included = false;
         })

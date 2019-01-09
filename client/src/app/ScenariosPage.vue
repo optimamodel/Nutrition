@@ -1,7 +1,7 @@
 <!--
 Scenarios page
 
-Last update: 2019jan08
+Last update: 2019jan09
 -->
 
 <template>
@@ -149,7 +149,7 @@ Last update: 2019jan08
                    class="txbox"
                    v-model="addEditModal.scenSummary.name"/><br>
             <b>Dataset:</b><br>
-            <select v-model="addEditModal.scenSummary.model_name">
+            <select v-model="addEditModal.scenSummary.model_name" @change="modalSwitchDataset">
               <option v-for='dataset in datasetOptions'>
                 {{ dataset }}
               </option>
@@ -192,7 +192,7 @@ Last update: 2019jan08
                 </tbody>
               </table>
             </div>
-            <button class="btn" @click="deselectAll()" data-tooltip="Deselect all interventions">Deselect all</button>
+            <button class="btn" @click="modalDeselectAll()" data-tooltip="Deselect all interventions">Deselect all</button>
           </div>
           <div style="text-align:center">
             <button @click="modalSave()" class='btn __green' style="display:inline-block">
@@ -345,8 +345,28 @@ Last update: 2019jan08
         this.addEditModal.mode = 'edit'
         this.$modal.show('add-scen')
       },
-
-      deselectAll() {
+	  
+      modalSwitchDataset() {
+        console.log('modalSwitchDataset() called')
+		console.log('New Dataset: ', this.addEditModal.scenSummary.model_name)
+		let scenName = this.addEditModal.scenSummary.name
+		// Get a new default scenario to write into the modal.
+        rpcs.rpc('get_default_scen2', [this.projectID, this.addEditModal.modalScenarioType, 
+		  this.addEditModal.scenSummary.model_name])
+          .then(response => {
+            let newDefaultScen = response.data
+            this.setScenYears(newDefaultScen)
+            this.addEditModal.scenSummary = newDefaultScen  // overwrite the old scenario
+			this.addEditModal.scenSummary.name = scenName  // keep the existing name
+            console.log('Default scenario:')
+            console.log(newDefaultScen)
+          })
+          .catch(error => {
+            status.fail(this, 'Could not switch datasets', error)
+          })		
+      },
+	  
+      modalDeselectAll() {
         this.addEditModal.scenSummary.progvals.forEach(progval => {
           progval.included = false;
         })

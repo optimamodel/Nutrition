@@ -896,19 +896,21 @@ def get_default_scen(project_id, scen_type=None, verbose=False):
         sc.pp(js_scen)
     return js_scen
 
+
 @RPC()
 def get_default_scen2(project_id, scen_type=None, model_name=None, verbose=False):
     print('Creating default scenario...')
     if scen_type is None:
         scen_type = 'coverage'
     proj = load_project(project_id, die=True)
-    py_scen = make_default_scen(model_name, model=proj.model(model_name), scen_type=scen_type, basename='Baseline')
+    py_scen = make_default_scen(model_name, model=proj.model(model_name), scen_type=scen_type, basename='Default scenario (%s)' % scen_type)
     py_scen.scen_type = scen_type # Set the scenario type -- Warning, is this needed?
     js_scen = py_to_js_scen(py_scen, proj, default_included=True)
     if verbose:
         print('Created default JavaScript scenario:')
         sc.pp(js_scen)
     return js_scen
+
 
 @RPC()
 def convert_scen(project_id, scenkey=None):
@@ -932,6 +934,7 @@ def reformat_costeff(costeff):
                 table.append(['keys', 'Programs']+outcomekeys)      # e.g. ['keys', '', 'Number anaemic', 'Number dead', ...]
             table.append(['entry', progkey]+val2.values())  # e.g. ['entry', 'IYCF', '$23,348 per death', 'No impact', ...]
     return table
+
 
 @RPC()
 def run_scens(project_id, doplot=True):
@@ -1062,6 +1065,18 @@ def get_default_optim(project_id):
 
 
 @RPC()
+def get_default_optim2(project_id):
+    print('Getting default optimization...')
+    proj = load_project(project_id, die=True)
+    py_optim = proj.demo_optims(doadd=False)[0]
+#    py_scen = make_default_scen(model_name, model=proj.model(model_name), scen_type=scen_type, basename='Baseline')
+    js_optim = py_to_js_optim(py_optim, proj, default_included=True)
+    print('Created default JavaScript optimization:')
+    sc.pp(js_optim)
+    return js_optim
+
+
+@RPC()
 def plot_optimization(project_id, cache_id):
     proj = load_project(project_id, die=True)
     proj = retrieve_results(proj)
@@ -1182,6 +1197,18 @@ def get_default_geo(project_id):
     print('Getting default optimization...')
     proj = load_project(project_id, die=True)
     py_geo = proj.demo_geos(doadd=False)[0]
+    js_geo = py_to_js_geo(py_geo, proj, default_included=True)
+    print('Created default JavaScript optimization:')
+    sc.pp(js_geo)
+    return js_geo
+
+
+@RPC()
+def get_default_geo2(project_id):
+    print('Getting default optimization...')
+    proj = load_project(project_id, die=True)
+    py_geo = proj.demo_geos(doadd=False)[0]
+    #    py_scen = make_default_scen(model_name, model=proj.model(model_name), scen_type=scen_type, basename='Baseline')
     js_geo = py_to_js_geo(py_geo, proj, default_included=True)
     print('Created default JavaScript optimization:')
     sc.pp(js_geo)
