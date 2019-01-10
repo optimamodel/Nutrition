@@ -190,7 +190,7 @@ Last update: 2018-12-19
       else if ((this.$store.state.activeProject.project !== undefined) &&
         (this.$store.state.activeProject.project.hasData) ) {
         console.log('created() called')
-        utils.sleep(1)  // used so that spinners will come up by callback func
+        utils.sleep(1)  // used so that spinners will come up by callback func (GLC, 12/21/18, is this still needed?)
           .then(response => {
             this.updateDatasets()
               .then(response2 => {

@@ -8,8 +8,7 @@ from .version import version
 from .utils import default_trackers
 from .data import Dataset
 from .model import Model
-from .defaults import get_defaults
-from .scenarios import Scen, run_scen, convert_scen
+from .scenarios import Scen, run_scen, convert_scen, make_default_scen
 from .optimization import Optim
 from .geospatial import Geospatial
 from .results import write_results
@@ -138,23 +137,24 @@ class Project(object):
     def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True, validate=True):
         '''Load the data, which can mean one of two things: read in the spreadsheets, and/or use these data to make a model '''
         
-        # Handle name
+        # Generate name odict key for Spreadsheet, Dataset, and Model odicts.
         name = self._sanitizename(name, country, region, inputspath)
         if fromfile:
             name = sc.uniquename(name, self.datasets.keys())
         
-        # Optionally (but almost always) reload the spreadsheets from file
+        # Optionally (but almost always) reload the spreadsheets from file.
         if fromfile:
             if inputspath or country or not self.inputsheet:
                 self.storeinputs(inputspath=inputspath, country=country, region=region, name=name)
         
-        # Optionally (but almost always) use these to make a model (do not do if blank sheets)
+        # Optionally (but almost always) use these to make a model (do not do if blank sheets).
         dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self)
         self.datasets[name] = dataset
         dataset.name = name
         self.add_model(name) # add model associated with the dataset
     
-        # Do validation
+        # Do validation to insure that Dataset and Model objects are loaded in for each of the spreadsheets that are
+        # in the project.
         if validate:
             missingdatasets = list(set(self.spreadsheets.keys()) - set(self.datasets.keys()))
             missingmodels =   list(set(self.spreadsheets.keys()) - set(self.models.keys()))
@@ -193,7 +193,8 @@ class Project(object):
 
     def write_results(self, filename=None, folder=None, key=None):
         """ Blargh, this really needs some tidying """
-        if key is None: key = -1
+        if key is None:
+            key = -1
         results = self.result(key)
         write_results(results, projname=self.name, filename=filename, folder=folder)
         return
@@ -221,13 +222,20 @@ class Project(object):
             structlist = getwhat('parameters')
         will return P.parset.
         '''
-        if what in ['d', 'ds', 'dataset', 'datasets']: structlist = self.datasets
-        elif what in ['m', 'mod', 'model', 'models']: structlist = self.models
-        elif what in ['s', 'scen', 'scens', 'scenario', 'scenarios']: structlist = self.scens
-        elif what in ['o', 'opt', 'opts', 'optim', 'optims', 'optimization', 'optimizations']: structlist = self.optims
-        elif what in ['g', 'geo', 'geos', 'geospatial']: structlist = self.geos
-        elif what in ['r', 'res', 'result', 'results']: structlist = self.results
-        else: raise settings.ONException("Item not found")
+        if what in ['d', 'ds', 'dataset', 'datasets']:
+            structlist = self.datasets
+        elif what in ['m', 'mod', 'model', 'models']:
+            structlist = self.models
+        elif what in ['s', 'scen', 'scens', 'scenario', 'scenarios']:
+            structlist = self.scens
+        elif what in ['o', 'opt', 'opts', 'optim', 'optims', 'optimization', 'optimizations']:
+            structlist = self.optims
+        elif what in ['g', 'geo', 'geos', 'geospatial']:
+            structlist = self.geos
+        elif what in ['r', 'res', 'result', 'results']:
+            structlist = self.results
+        else:
+            raise settings.ONException("Item not found")
         return structlist
 
     #######################################################################################################
@@ -235,45 +243,66 @@ class Project(object):
     #######################################################################################################
 
     def inputsheet(self, key=None, verbose=2):
-        if key is None: key = -1
-        try:    return self.spreadsheets[key]
-        except: return sc.printv('Warning, input sheet "%s" set not found!' %key, 1, verbose)
+        if key is None:
+            key = -1
+        try:
+            return self.spreadsheets[key]
+        except:
+            return sc.printv('Warning, input sheet "%s" set not found!' %key, 1, verbose)
 
     def dataset(self, key=None, verbose=2):
         ''' Shortcut for getting the latest model, i.e. self.datasets[-1] '''
-        if key is None: key = -1
-        try:    return self.datasets[key]
-        except: return sc.printv('Warning, dataset "%s" set not found!' %key, 1, verbose) # Returns None
+        if key is None:
+            key = -1
+        try:
+            return self.datasets[key]
+        except:
+            return sc.printv('Warning, dataset "%s" set not found!' %key, 1, verbose) # Returns None
         
     def model(self, key=None, verbose=2):
         ''' Shortcut for getting the latest model, i.e. self.datasets[-1] '''
-        if key is None: key = -1
-        try:    return self.models[key]
-        except: return sc.printv('Warning, model "%s" set not found!' %key, 1, verbose) # Returns None
+        if key is None:
+            key = -1
+        try:
+            return self.models[key]
+        except:
+            return sc.printv('Warning, model "%s" set not found!' %key, 1, verbose) # Returns None
     
     def scen(self, key=None, verbose=2):
         ''' Shortcut for getting the latest scenario, i.e. self.scen[-1] '''
-        if key is None: key = -1
-        try:    return self.scens[key]
-        except: return sc.printv('Warning, scenario "%s" not found!' %key, 1, verbose) # Returns None
+        if key is None:
+            key = -1
+        try:
+            return self.scens[key]
+        except:
+            return sc.printv('Warning, scenario "%s" not found!' %key, 1, verbose) # Returns None
     
     def optim(self, key=None, verbose=2):
         ''' Shortcut for getting the latest optim, i.e. self.optims[-1] '''
-        if key is None: key = -1
-        try:    return self.optims[key]
-        except: return sc.printv('Warning, optimization "%s" not found!' %key, 1, verbose) # Returns None
+        if key is None:
+            key = -1
+        try:
+            return self.optims[key]
+        except:
+            return sc.printv('Warning, optimization "%s" not found!' %key, 1, verbose) # Returns None
     
     def geo(self, key=None, verbose=2):
         ''' Shortcut for getting the latest geo, i.e. self.geos[-1] '''
-        if key is None: key = -1
-        try:    return self.geos[key]
-        except: return sc.printv('Warning, geospatial analysis "%s" not found!' %key, 1, verbose) # Returns None
+        if key is None:
+            key = -1
+        try:
+            return self.geos[key]
+        except:
+            return sc.printv('Warning, geospatial analysis "%s" not found!' %key, 1, verbose) # Returns None
     
     def result(self, key=None, verbose=2):
         ''' Shortcut for getting the latest result, i.e. self.results[-1] '''
-        if key is None: key = -1
-        try:    return self.results[key]
-        except: return sc.printv('Warning, result "%s" not found!' %key, 1, verbose) # Returns None
+        if key is None:
+            key = -1
+        try:
+            return self.results[key]
+        except:
+            return sc.printv('Warning, result "%s" not found!' %key, 1, verbose) # Returns None
     
     def cleanresults(self):
         ''' Remove all results '''
@@ -287,13 +316,13 @@ class Project(object):
         return scens
 
     def add_optim(self, json=None):
-        ''' Super roundabout way to add a scenario '''
+        ''' Super roundabout way to add an optimization '''
         optims = [Optim(**json)]
         self.add_optims(optims)
         return optims
     
     def add_geo(self, json=None):
-        ''' Super roundabout way to add a scenario '''
+        ''' Super roundabout way to add a geospatial optimization '''
         geos = [Geospatial(**json)]
         self.add_geos(geos)
         return geos
@@ -302,10 +331,6 @@ class Project(object):
         """ Adds a model to the self.models odict.
         A new model should only be instantiated if new input data is uploaded to the Project.
         For the same input data, one model instance is used for all scenarios.
-        :param name:
-        :param pops:
-        :param prog_info:
-        :return:
         """
         dataset = self.dataset(name)
         pops = dataset.pops
@@ -313,9 +338,11 @@ class Project(object):
         t = dataset.t
         model = Model(pops, prog_info, t)
         self.add(name=name, item=model, what='model')
-        # get default scenarios
-        defaults = get_defaults(name, model)
-        self.add_scens(defaults)
+        # Only, if there is no 'Baseline' scenario, make a default baseline scenario.
+        basename = 'Baseline'
+        if basename not in self.scens.keys():
+            defaults = make_default_scen(name, model, 'coverage', basename)
+            self.add_scens(defaults)
         self.modified = sc.now()
         return model
 
@@ -327,7 +354,8 @@ class Project(object):
         :param overwrite: boolean, True removes all previous scenarios.
         :return: None
         """
-        if overwrite: self.scens = sc.odict()
+        if overwrite:
+            self.scens = sc.odict()
         scens = sc.promotetolist(scens)
         for scen in scens:
             self.add(name=scen.name, item=scen, what='scen')
@@ -354,7 +382,8 @@ class Project(object):
             return base
 
     def add_optims(self, optims, overwrite=False):
-        if overwrite: self.optims = sc.odict() # remove exist scenarios
+        if overwrite:
+            self.optims = sc.odict() # remove exist scenarios
         optims = sc.promotetolist(optims)
         for optim in optims:
             self.add(name=optim.name, item=optim, what='optim')
@@ -362,7 +391,8 @@ class Project(object):
         return optims
     
     def add_geos(self, geos, overwrite=False):
-        if overwrite: self.geos = sc.odict() # remove exist scenarios
+        if overwrite:
+            self.geos = sc.odict() # remove exist scenarios
         geos = sc.promotetolist(geos)
         for geo in geos:
             self.add(name=geo.name, item=geo, what='geo')
@@ -380,8 +410,8 @@ class Project(object):
         self.add(name=name, item=result, what='result')
         return result
 
-    def demo_scens(self, dorun=None, doadd=True, default=False, scen_type=None):
-        scens = demo_scens(default=default, scen_type=scen_type)
+    def demo_scens(self, dorun=None, doadd=True):
+        scens = demo_scens()
         if doadd:
             self.add_scens(scens)
             if dorun:
@@ -414,9 +444,12 @@ class Project(object):
         """Function for running scenarios
         If scens is specified, they are added to self.scens """
         results = []
-        if scens is not None: self.add_scens(scens)
+        if scens is not None:
+            self.add_scens(scens)
         for scen in self.scens.values():
             if scen.active:
+                if (scen.model_name is None) or (scen.model_name not in self.datasets.keys()):
+                    raise Exception('Could not find valid dataset for %s.  Edit the scenario and change the dataset' % scen.name)
                 model = self.model(scen.model_name)
                 res = run_scen(scen, model)
                 results.append(res)
@@ -434,12 +467,16 @@ class Project(object):
             base = self.run_baseline(optim.model_name, optim.prog_set)
             results.append(base)
         # run optimization
+        if (optim.model_name is None) or (optim.model_name not in self.datasets.keys()):
+            raise Exception(
+                'Could not find valid dataset for %s.  Edit the scenario and change the dataset' % optim.name)
         model = sc.dcp(self.model(optim.model_name))
         model.setup(optim, setcovs=False)
         model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
         results += optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel)
         # add by optim name
-        if dosave: self.add_result(results, name=optim.name)
+        if dosave:
+            self.add_result(results, name=optim.name)
         return results
 
     def run_geo(self, geo=None, key=-1, maxiter=15, swarmsize=20, maxtime=140, dosave=True, parallel=False):
@@ -451,12 +488,14 @@ class Project(object):
             key = geo.name # this to handle parallel calls of this function
         geo = self.geo(key)
         results = geo.run_geo(self, maxiter, swarmsize, maxtime, parallel)
-        if dosave: self.add_result(results, name='geospatial')
+        if dosave:
+            self.add_result(results, name='geospatial')
         return results
 
     def get_output(self, outcomes=None):
         results = self.result(-1)
-        if not outcomes: outcomes = default_trackers()
+        if not outcomes:
+            outcomes = default_trackers()
         outcomes = sc.promotetolist(outcomes)
         outputs = []
         for i, res in enumerate(results):
@@ -476,7 +515,8 @@ class Project(object):
         and value (output). Output is type string. Will work for both scenarios and optimizations, 
         using whatever results were last generated
         """
-        if resultname is None: resultname = 'scens'
+        if resultname is None:
+            resultname = 'scens'
         results = self.result(resultname)       
         costeff = get_costeff(self, results)
         return costeff
@@ -497,12 +537,15 @@ def demo(scens=False, optims=False, geos=False):
     country = 'demo'
     region = 'national'
     
-    # Create project and data
+    # Create project and load in demo databook spreadsheet file into 'demo' Spreadsheet, Dataset, and Model.
     P = Project(name)
     P.load_data(country, region, name='demo')
 
-    # Create scenarios and optimizations
-    if scens:  P.demo_scens()
-    if optims: P.demo_optims()
-    if geos:   P.demo_geos()
+    # Create demo scenarios and optimizations
+    if scens:
+        P.demo_scens()
+    if optims:
+        P.demo_optims()
+    if geos:
+        P.demo_geos()
     return P

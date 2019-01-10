@@ -1,7 +1,7 @@
 <!--
 Optimizations page
 
-Last update: 2018dec07
+Last update: 2019jan09
 -->
 
 <template>
@@ -26,6 +26,7 @@ Last update: 2018dec07
           <thead>
           <tr>
             <th>Name</th>
+            <th>Dataset</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
@@ -35,6 +36,9 @@ Last update: 2018dec07
             <td>
               <b>{{ optimSummary.name }}</b>
             </td>
+            <td>
+              <b>{{ optimSummary.model_name }}</b>
+            </td>			
             <td>
               {{ statusFormatStr(optimSummary) }}
               {{ timeFormatStr(optimSummary) }}
@@ -137,6 +141,12 @@ Last update: 2018dec07
           <input type="text"
                  class="txbox"
                  v-model="addEditModal.optimSummary.name"/><br>
+          <b>Dataset</b><br>
+          <select v-model="addEditModal.optimSummary.model_name" @change="modalSwitchDataset">
+            <option v-for='dataset in datasetOptions'>
+              {{ dataset }}
+            </option>
+          </select><br><br>			 
           <div class="scrolltable" style="max-height: 30vh;">
             <table class="table table-bordered table-striped table-hover">
               <thead>
@@ -193,10 +203,10 @@ Last update: 2018dec07
               </tbody>
             </table>
           </div>
-          <button class="btn" @click="deselectAll()" data-tooltip="Deselect all interventions">Deselect all</button>
+          <button class="btn" @click="modalDeselectAll()" data-tooltip="Deselect all interventions">Deselect all</button>
         </div>
         <div style="text-align:center">
-          <button @click="addOptim()" class='btn __green' style="display:inline-block">
+          <button @click="modalSave()" class='btn __green' style="display:inline-block">
             Save
           </button>
           &nbsp;&nbsp;&nbsp;
@@ -233,6 +243,7 @@ Last update: 2018dec07
         optimSummaries: [],
         optimsLoaded: false,
         pollingTasks: false,
+        datasetOptions: [],
         addEditModal: {
           optimSummary: {},
           origName: '',
@@ -258,11 +269,13 @@ Last update: 2018dec07
         (this.$store.state.activeProject.project.hasData) ) {
         console.log('created() called')
         this.getOptimSummaries()
+        this.updateDatasets()
       }
     },
 
     methods: {
 
+      updateDatasets()                    { return utils.updateDatasets(this) },
       clearGraphs()                       { return utils.clearGraphs() },
       makeGraphs(graphdata)               { return utils.makeGraphs(this, graphdata) },
       exportGraphs(project_id, cache_id)  { return utils.exportGraphs(this, project_id, cache_id) },
@@ -503,15 +516,16 @@ Last update: 2018dec07
       },
 
       addOptimModal() {
-        // Open a model dialog for creating a new project
+        // Open a model dialog for creating a new optimization
         console.log('addOptimModal() called');
-        rpcs.rpc('get_default_optim', [this.projectID])
+        rpcs.rpc('get_default_optim', [this.projectID, this.datasetOptions[0]])
           .then(response => {
-            this.addEditModal.optimSummary = response.data;
-            this.addEditModal.origName = this.addEditModal.optimSummary.name;
-            this.addEditModal.mode = 'add';
-            this.$modal.show('add-optim');
-            console.log('New optimization:');
+            this.addEditModal.optimSummary = response.data
+            this.addEditModal.origName = this.addEditModal.optimSummary.name
+            this.addEditModal.mode = 'add'
+            this.addEditModal.optimSummary.model_name = this.datasetOptions[0]
+            this.$modal.show('add-optim')
+            console.log('New optimization:')
             console.log(this.addEditModal.optimSummary)
           })
           .catch(error => {
@@ -520,35 +534,53 @@ Last update: 2018dec07
       },
 
       editOptimModal(optimSummary) {
-        // Open a model dialog for creating a new project
-        console.log('editOptimModal() called');
-        this.addEditModal.optimSummary = optimSummary;
-        console.log('Editing optimization:');
-        console.log(this.addEditModal.optimSummary);
-        this.addEditModal.origName = this.addEditModal.optimSummary.name;
-        this.addEditModal.mode = 'edit';
-        this.$modal.show('add-optim');
+        // Open a model dialog for editing an optimization
+        console.log('editOptimModal() called')
+        this.addEditModal.optimSummary = _.cloneDeep(optimSummary)
+        console.log('Editing optimization:')
+        console.log(this.addEditModal.optimSummary)
+        this.addEditModal.origName = this.addEditModal.optimSummary.name
+        this.addEditModal.mode = 'edit'
+        this.$modal.show('add-optim')
       },
-
-      deselectAll() {
+	  
+      modalSwitchDataset() {
+        console.log('modalSwitchDataset() called')
+        console.log('New Dataset: ', this.addEditModal.optimSummary.model_name)
+        let optimName = this.addEditModal.optimSummary.name
+        // Get a new default optimization to write into the modal.
+        rpcs.rpc('get_default_optim', [this.projectID, this.addEditModal.optimSummary.model_name])
+          .then(response => {
+            let newDefaultOptim = response.data
+            this.addEditModal.optimSummary = newDefaultOptim  // overwrite the old optimization
+            this.addEditModal.optimSummary.name = optimName  // keep the existing name
+            console.log('Default optimization:')
+            console.log(newDefaultOptim)
+          })
+          .catch(error => {
+            status.fail(this, 'Could not switch datasets', error)
+          })		
+      },
+	  
+      modalDeselectAll() {
         this.addEditModal.optimSummary.spec.forEach(progval => {
           progval.included = false;
         })
       },
 
-      addOptim() {
-        console.log('addOptim() called');
-        this.$modal.hide('add-optim');
+      modalSave() {
+        console.log('modalSave() called')
+        this.$modal.hide('add-optim')
         status.start(this)
-        let newOptim = _.cloneDeep(this.addEditModal.optimSummary);
-        let optimNames = []; // Get the list of all of the current optimization names.
+        let newOptim = _.cloneDeep(this.addEditModal.optimSummary)
+        let optimNames = [] // Get the list of all of the current optimization names.
         this.optimSummaries.forEach(optimSum => {
           optimNames.push(optimSum.name)
-        });
+        })
         if (this.addEditModal.mode === 'edit') { // If we are editing an existing scenario...
-          let index = optimNames.indexOf(this.addEditModal.origName); // Get the index of the original (pre-edited) name
+          let index = optimNames.indexOf(this.addEditModal.origName) // Get the index of the original (pre-edited) name
           if (index > -1) {
-            this.optimSummaries[index].name = newOptim.name; // hack to make sure Vue table updated
+            this.optimSummaries[index].name = newOptim.name // hack to make sure Vue table updated
             this.optimSummaries[index] = newOptim
           }
           else {
@@ -556,7 +588,7 @@ Last update: 2018dec07
           }
         }
         else { // Else (we are adding a new optimization)...
-          newOptim.name = utils.getUniqueName(newOptim.name, optimNames);
+          newOptim.name = utils.getUniqueName(newOptim.name, optimNames)
           newOptim.serverDatastoreId = this.$store.state.activeProject.project.id + ':opt-' + newOptim.name
           this.optimSummaries.push(newOptim)
           this.getOptimTaskState(newOptim)
@@ -566,11 +598,12 @@ Last update: 2018dec07
             this.optimSummaries.pop()
           })
         }
-        console.log('Saved optimization:');
+        console.log('Saved optimization:')
         console.log(newOptim);
         rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
           .then( response => {
             status.succeed(this, 'Optimization added')
+            this.getOptimSummaries()  // Reload all optimizations so Vue state is correct (hack).
           })
           .catch(error => {
             status.fail(this, 'Could not add optimization', error)

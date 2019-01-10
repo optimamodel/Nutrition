@@ -776,7 +776,7 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
     ''' Convert a Python to JSON representation of a scenario '''
     prog_names = proj.dataset().prog_names()
     scen_years = proj.dataset().t[1] - proj.dataset().t[0] # First year is baseline
-    attrs = ['name', 'active', 'scen_type']
+    attrs = ['name', 'active', 'scen_type', 'model_name']
     js_scen = {}
     for attr in attrs:
         js_scen[attr] = getattr(py_scen, attr) # Copy the attributes into a dictionary
@@ -826,7 +826,7 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
 def js_to_py_scen(js_scen):
     ''' Convert a JSON to Python representation of a scenario '''
     py_json = sc.odict()
-    for attr in ['name', 'scen_type', 'active']: # Copy these directly
+    for attr in ['name', 'scen_type', 'model_name', 'active']: # Copy these directly
         py_json[attr] = js_scen[attr]
     py_json['progvals'] = sc.odict() # These require more TLC
     for js_spec in js_scen['progvals']:
@@ -855,7 +855,7 @@ def get_scen_info(project_id, key=None, verbose=False):
     print('Getting scenario info...')
     proj = load_project(project_id, die=True)
     scenario_jsons = []
-    for py_scen in proj.scens.values():
+    for py_scen in proj.scens.values(): # Loop over all Scens in Project
         js_scen = py_to_js_scen(py_scen, proj, key=key)
         scenario_jsons.append(js_scen)
     if verbose:
@@ -882,17 +882,19 @@ def set_scen_info(project_id, scenario_jsons, verbose=False):
 
 
 @RPC()
-def get_default_scen(project_id, scen_type=None, verbose=False):
+def get_default_scen(project_id, scen_type=None, model_name=None, verbose=False):
     print('Creating default scenario...')
-    if scen_type is None: scen_type = 'coverage'
+    if scen_type is None:
+        scen_type = 'coverage'
     proj = load_project(project_id, die=True)
-    py_scen = proj.demo_scens(doadd=False, default=True, scen_type=scen_type)
+    py_scen = nu.make_default_scen(model_name, model=proj.model(model_name), scen_type=scen_type, basename='Default scenario (%s)' % scen_type)
     py_scen.scen_type = scen_type # Set the scenario type -- Warning, is this needed?
     js_scen = py_to_js_scen(py_scen, proj, default_included=True)
     if verbose:
         print('Created default JavaScript scenario:')
         sc.pp(js_scen)
     return js_scen
+
 
 @RPC()
 def convert_scen(project_id, scenkey=None):
@@ -916,6 +918,7 @@ def reformat_costeff(costeff):
                 table.append(['keys', 'Programs']+outcomekeys)      # e.g. ['keys', '', 'Number anaemic', 'Number dead', ...]
             table.append(['entry', progkey]+val2.values())  # e.g. ['entry', 'IYCF', '$23,348 per death', 'No impact', ...]
     return table
+
 
 @RPC()
 def run_scens(project_id, doplot=True):
@@ -1032,13 +1035,13 @@ def set_optim_info(project_id, optim_jsons):
     print('Saving project...')
     save_project(proj)   
     return None
-    
+
 
 @RPC()
-def get_default_optim(project_id):
+def get_default_optim(project_id, model_name=None):
     print('Getting default optimization...')
     proj = load_project(project_id, die=True)
-    py_optim = proj.demo_optims(doadd=False)[0]
+    py_optim = nu.make_default_optim(model_name, basename='Maximize thrive')
     js_optim = py_to_js_optim(py_optim, proj, default_included=True)
     print('Created default JavaScript optimization:')
     sc.pp(js_optim)
@@ -1159,13 +1162,13 @@ def set_geo_info(project_id, geo_jsons):
     print('Saving project...')
     save_project(proj)   
     return None
-    
+
 
 @RPC()
 def get_default_geo(project_id):
     print('Getting default optimization...')
     proj = load_project(project_id, die=True)
-    py_geo = proj.demo_geos(doadd=False)[0]
+    py_geo = nu.make_default_geo(basename='Geospatial optimization')
     js_geo = py_to_js_geo(py_geo, proj, default_included=True)
     print('Created default JavaScript optimization:')
     sc.pp(js_geo)
