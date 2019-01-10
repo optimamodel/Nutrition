@@ -17,9 +17,6 @@ import sciris as sc
 import scirisweb as sw
 import nutrition.ui as nu
 from . import config
-from nutrition.scenarios import make_default_scen
-from nutrition.optimization import make_default_optim
-from nutrition.geospatial import make_default_geo
 pl.rc('font', size=14)
 
 # Globals
@@ -890,7 +887,7 @@ def get_default_scen(project_id, scen_type=None, model_name=None, verbose=False)
     if scen_type is None:
         scen_type = 'coverage'
     proj = load_project(project_id, die=True)
-    py_scen = make_default_scen(model_name, model=proj.model(model_name), scen_type=scen_type, basename='Default scenario (%s)' % scen_type)
+    py_scen = nu.make_default_scen(model_name, model=proj.model(model_name), scen_type=scen_type, basename='Default scenario (%s)' % scen_type)
     py_scen.scen_type = scen_type # Set the scenario type -- Warning, is this needed?
     js_scen = py_to_js_scen(py_scen, proj, default_included=True)
     if verbose:
@@ -1044,7 +1041,7 @@ def set_optim_info(project_id, optim_jsons):
 def get_default_optim(project_id, model_name=None):
     print('Getting default optimization...')
     proj = load_project(project_id, die=True)
-    py_optim = make_default_optim(model_name, basename='Maximize thrive')
+    py_optim = nu.make_default_optim(model_name, basename='Maximize thrive')
     js_optim = py_to_js_optim(py_optim, proj, default_included=True)
     print('Created default JavaScript optimization:')
     sc.pp(js_optim)
@@ -1171,7 +1168,7 @@ def set_geo_info(project_id, geo_jsons):
 def get_default_geo(project_id):
     print('Getting default optimization...')
     proj = load_project(project_id, die=True)
-    py_geo = make_default_geo(basename='Geospatial optimization')
+    py_geo = nu.make_default_geo(basename='Geospatial optimization')
     js_geo = py_to_js_geo(py_geo, proj, default_included=True)
     print('Created default JavaScript optimization:')
     sc.pp(js_geo)
