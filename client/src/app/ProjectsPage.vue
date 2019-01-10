@@ -1,7 +1,7 @@
 <!--
 Manage projects page
 
-Last update: 2018dec17
+Last update: 2019jan10
 -->
 
 <template>
@@ -95,6 +95,11 @@ Last update: 2018dec17
               {{ projectSummary.project.updatedTime ? projectSummary.project.updatedTime:
               'No modification' }}</td>
             <td style="white-space: nowrap; text-align:left"> <!-- ATOMICA-NUTRITION DIFFERENCE -->
+              <select v-model="activeDataset">
+                <option v-for='dataset in datasetOptions'>
+                  {{ dataset }}
+                </option>
+              </select>&nbsp;
               <button class="btn __blue" @click="uploadDatabook(projectSummary.project.id)" data-tooltip="Upload databook"><i class="ti-upload"></i></button>
               <button class="btn" @click="downloadDatabook(projectSummary.project.id)" data-tooltip="Download databook"><i class="ti-download"></i></button>
             </td>
@@ -165,7 +170,8 @@ Last update: 2018dec17
         sortColumn: 'name',  // Column of table used for sorting the projects: name, country, creationTime, updatedTime, dataUploadTime
         sortReverse: false, // Sort in reverse order?
         projectSummaries: [], // List of summary objects for projects the user has
-        proj_name:  'New project', // For creating a new project: number of populations  // ATOMICA-NUTRITION DIFFERENCE
+        proj_name:  'New project', // For creating a new project: number of populations  
+        // ATOMICA-NUTRITION DIFFERENCE
       }
     },
 
