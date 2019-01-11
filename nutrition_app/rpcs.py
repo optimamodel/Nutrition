@@ -306,6 +306,7 @@ def jsonify_project(project_id, verbose=False):
             'name':         proj.name,
             'username':     proj.webapp.username,
             'hasData':      len(proj.datasets)>0,
+            'dataSets':     proj.datasets.keys(),
             'creationTime': sc.getdate(proj.created),
             'updatedTime':  sc.getdate(proj.modified),
             'n_results':    len(proj.results),

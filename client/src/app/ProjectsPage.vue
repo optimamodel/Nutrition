@@ -1,7 +1,7 @@
 <!--
 Manage projects page
 
-Last update: 2019jan10
+Last update: 2019jan11
 -->
 
 <template>
@@ -95,13 +95,13 @@ Last update: 2019jan10
               {{ projectSummary.project.updatedTime ? projectSummary.project.updatedTime:
               'No modification' }}</td>
             <td style="white-space: nowrap; text-align:left"> <!-- ATOMICA-NUTRITION DIFFERENCE -->
-              <select v-model="activeDataset">
-                <option v-for='dataset in datasetOptions'>
+              <button class="btn __blue" @click="uploadDatabook(projectSummary.project.id)" data-tooltip="Upload databook"><i class="ti-upload"></i></button>
+              <button class="btn" @click="downloadDatabook(projectSummary.project.id)" data-tooltip="Download databook"><i class="ti-download"></i></button>            
+              <select v-model="projectSummary.selectedDataSet">
+                <option v-for='dataset in projectSummary.project.dataSets'>
                   {{ dataset }}
                 </option>
               </select>&nbsp;
-              <button class="btn __blue" @click="uploadDatabook(projectSummary.project.id)" data-tooltip="Upload databook"><i class="ti-upload"></i></button>
-              <button class="btn" @click="downloadDatabook(projectSummary.project.id)" data-tooltip="Download databook"><i class="ti-download"></i></button>
             </td>
           </tr>
           </tbody>
@@ -239,6 +239,7 @@ Last update: 2019jan10
             this.projectSummaries.forEach(theProj => { // Preprocess all projects.
               theProj.selected = false // Set to not selected.
               theProj.renaming = '' // Set to not being renamed.
+              theProj.selectedDataSet = theProj.project.dataSets[0] // Set the first dataset.
               if (theProj.project.creationTime >= lastCreationTime) { // Update the last creation time and ID if what se see is later.
                 lastCreationTime = theProj.project.creationTime
                 lastCreatedID = theProj.project.id
