@@ -1,7 +1,7 @@
 """
 Optima Nutrition remote procedure calls (RPCs)
     
-Last update: 2018sep25 by cliffk
+Last update: 2019jan11 by georgec
 """
 
 ###############################################################
@@ -30,7 +30,8 @@ datastore = None
 ###############################################################
 
 def get_path(filename=None, username=None):
-    if filename is None: filename = ''
+    if filename is None:
+        filename = ''
     base_dir = datastore.tempfolder
     user_id = str(get_user(username).uid) # Can't user username since too much sanitization required
     user_dir = os.path.join(base_dir, user_id)
@@ -47,19 +48,29 @@ def numberify(val, blank=None, invalid=None, toremove=None, convertpercent=None,
     default_opts     = ['none', 'nan', 'zero', 'pass', 'die'] # How to handle either blank entries or invalid entries
     
     # Handle input arguments
-    if blank          is None: blank   = 'none'
-    if invalid        is None: invalid = 'die'
-    if convertpercent is None: convertpercent = False
-    if toremove       is None: toremove = default_toremove
+    if blank          is None:
+        blank   = 'none'
+    if invalid        is None:
+        invalid = 'die'
+    if convertpercent is None:
+        convertpercent = False
+    if toremove       is None:
+        toremove = default_toremove
     
     def baddata(val, opt, errormsg=None):
         ''' Handle different options for blank or invalid data '''
-        if   opt == 'none': return None
-        elif opt == 'nan':  return np.nan
-        elif opt == 'zero': return 0
-        elif opt == 'pass': return val
-        elif opt == 'die':  raise Exception(errormsg)
-        else:               raise Exception('Bad option for baddata(): "blank" and "invalid" must be one of %s, not %s and %s' % (default_opts, blank, invalid))
+        if   opt == 'none':
+            return None
+        elif opt == 'nan':
+            return np.nan
+        elif opt == 'zero':
+            return 0
+        elif opt == 'pass':
+            return val
+        elif opt == 'die':
+            raise Exception(errormsg)
+        else:
+            raise Exception('Bad option for baddata(): "blank" and "invalid" must be one of %s, not %s and %s' % (default_opts, blank, invalid))
     
     # If a list, then recursively call this function
     if aslist:
@@ -83,7 +94,8 @@ def numberify(val, blank=None, invalid=None, toremove=None, convertpercent=None,
             try:
                 factor = 1.0 # Set the factor (for handling percentages)
                 if sc.isstring(val): # If it's a string (probably it is), do extra handling
-                    if convertpercent and val.endswith('%'): factor = 0.01 # Scale if percentage has been used -- CK: not used since already converted from percentage
+                    if convertpercent and val.endswith('%'):
+                        factor = 0.01 # Scale if percentage has been used -- CK: not used since already converted from percentage
                     for badchar in toremove:
                         val = val.replace(badchar,'') # Remove unwanted parts of the string
                 sanival = float(val)*factor # Do the actual conversion
@@ -91,7 +103,8 @@ def numberify(val, blank=None, invalid=None, toremove=None, convertpercent=None,
                 errormsg = 'Sanitization failed: invalid entry: "%s" (%s)' % (val, str(E))
                 sanival = baddata(val, invalid, errormsg)
         
-        if verbose: print('Sanitized %s %s to %s' % (type(val), repr(val), repr(sanival)))
+        if verbose:
+            print('Sanitized %s %s to %s' % (type(val), repr(val), repr(sanival)))
         return sanival
 
 
@@ -161,8 +174,10 @@ def admin_grab_projects(username1, username2):
 def admin_reset_projects(username):
     user = datastore.loaduser(username)
     for projectkey in user.projects:
-        try:    datastore.delete(projectkey)
-        except: pass
+        try:
+            datastore.delete(projectkey)
+        except:
+            pass
     user.projects = []
     output = datastore.saveuser(user)
     return output
@@ -240,7 +255,8 @@ def del_project(project_key, username=None, die=None):
         return None
     output = datastore.delete(key)
     try:
-        if username is None: username = project.webapp.username
+        if username is None:
+            username = project.webapp.username
         user = get_user(username)
         user.projects.remove(key)
         datastore.saveuser(user)
@@ -272,7 +288,8 @@ def del_result(result_key, project_key, die=None):
             found = True
     if not found:
         print('Warning: deleting result %s (%s), but not found in project "%s"' % (result_key, key, project_key))
-    if found: save_project(project) # Only save if required
+    if found:
+        save_project(project) # Only save if required
     return output
 
 ##################################################################################
@@ -295,7 +312,8 @@ def jsonify_project(project_id, verbose=False):
             'n_tasks':      len(proj.webapp.tasks)
         }
     }
-    if verbose: sc.pp(json)
+    if verbose:
+        sc.pp(json)
     return json
     
 
@@ -313,7 +331,8 @@ def jsonify_projects(username, verbose=False):
             print('Project load failed, removing: %s' % str(E))
             user.projects.remove(project_key)
             datastore.saveuser(user)
-    if verbose: sc.pp(output)
+    if verbose:
+        sc.pp(output)
     return output
 
 
@@ -612,33 +631,40 @@ def get_sheet_data(project_id, key=None, verbose=False):
             for c in range(cols):
                 cellformat = sheetformat[sheet][r][c]
                 cellval = sheetdata[sheet][r][c]
-                try:    cellval = float(cellval) # Try to cast to float
-                except: pass # But give up easily
+                try:
+                    cellval = float(cellval) # Try to cast to float
+                except:
+                    pass # But give up easily
                 if sc.isnumber(cellval): # If it is a number...
                     if cellformat in ['edit','calc']:
                         cellval = sc.sigfig(100*cellval, sigfigs=3)
                     elif cellformat == 'bdgt': # Format edit box numbers nicely
                         cellval = '%0.2f' % cellval
                     elif cellformat == 'tick':
-                        if not cellval: cellval = False
-                        else:           cellval = True
+                        if not cellval:
+                            cellval = False
+                        else:
+                            cellval = True
                     else:
                         pass # It's fine, just let it go, let it go, can't hold it back any more
                 cellinfo = {'format':cellformat, 'value':cellval}
                 sheetjson[sheet][r].append(cellinfo)
     
     sheetjson = sc.sanitizejson(sheetjson)
-    if verbose: sc.pp(sheetjson)
+    if verbose:
+        sc.pp(sheetjson)
     return {'names':sheets, 'tables':sheetjson}
 
 
 @RPC()
 def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
     proj = load_project(project_id, die=True)
-    if key is None: key = proj.datasets.keys()[-1] # There should always be at least one
+    if key is None:
+        key = proj.datasets.keys()[-1] # There should always be at least one
     wb = proj.inputsheet(key) # CK: Warning, might want to change
     for sheet in sheetdata.keys():
-        if verbose: print('Saving sheet %s...' % sheet)
+        if verbose:
+            print('Saving sheet %s...' % sheet)
         datashape = np.shape(sheetdata[sheet])
         rows,cols = datashape
         cells = []
@@ -655,13 +681,16 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
                     elif cellformat == 'bdgt': # Warning, have to be careful with these.
                         cellval = numberify(cellval, blank='none', invalid='die', aslist=False)
                     elif cellformat == 'tick':
-                        if not cellval: cellval = '' # For Excel display
-                        else:           cellval = True
+                        if not cellval:
+                            cellval = '' # For Excel display
+                        else:
+                            cellval = True
                     else:
                         pass
                     cells.append([r+1,c+1]) # Excel uses 1-based indexing
                     vals.append(cellval)
-                    if verbose: print('  Cell (%s,%s) = %s' % (r+1, c+1, cellval))
+                    if verbose:
+                        print('  Cell (%s,%s) = %s' % (r+1, c+1, cellval))
         wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={'data_only':True}) # Can turn on verbose
     proj.load_data(fromfile=False, name=proj.datasets.keys()[-1]) # WARNING, only supports one dataset/model
     print('Saving project...')
@@ -913,7 +942,8 @@ def reformat_costeff(costeff):
     for i,scenkey,val1 in costeff.enumitems():
         for j,progkey,val2 in val1.enumitems():
             if j==0: 
-                if i>0: table.append(['', '']+emptycols) # Blank row
+                if i>0:
+                    table.append(['', '']+emptycols) # Blank row
                 table.append(['header', scenkey]+emptycols) # e.g. ['header', 'Wasting example', '', '', '']
                 table.append(['keys', 'Programs']+outcomekeys)      # e.g. ['keys', '', 'Number anaemic', 'Number dead', ...]
             table.append(['entry', progkey]+val2.values())  # e.g. ['entry', 'IYCF', '$23,348 per death', 'No impact', ...]
@@ -995,7 +1025,8 @@ def js_to_py_optim(js_optim):
         print('Unable to convert "%s" to weights' % js_optim['weightslist'])
         raise E
     jsm = js_optim['mults']
-    if not jsm: jsm = 1.0
+    if not jsm:
+        jsm = 1.0
     if sc.isstring(jsm):
         jsm = jsm.split(',')
     vals = numberify(jsm, blank='die', invalid='die', aslist=True)
@@ -1119,7 +1150,8 @@ def js_to_py_geo(js_geo):
         print('Unable to convert "%s" to weights' % js_geo['weightslist'])
         raise E
     jsm = js_geo['mults']
-    if not jsm: jsm = 1.0
+    if not jsm:
+        jsm = 1.0
     if sc.isstring(jsm):
         jsm = jsm.split(',')
     vals = numberify(jsm, blank='die', invalid='die', aslist=True)
@@ -1207,7 +1239,8 @@ def cache_results(proj, verbose=True):
         if not sc.isstring(result):
             result_key = save_result(result)
             proj.results[key] = result_key
-            if verbose: print('Cached result "%s" to "%s"' % (key, result_key))
+            if verbose:
+                print('Cached result "%s" to "%s"' % (key, result_key))
     save_project(proj)
     return proj
 
@@ -1218,7 +1251,8 @@ def retrieve_results(proj, verbose=True):
         if sc.isstring(result_key):
             result = load_result(result_key)
             proj.results[key] = result
-            if verbose: print('Retrieved result "%s" from "%s"' % (key, result_key))
+            if verbose:
+                print('Retrieved result "%s" from "%s"' % (key, result_key))
     return proj
 
 
