@@ -693,7 +693,8 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
                     if verbose:
                         print('  Cell (%s,%s) = %s' % (r+1, c+1, cellval))
         wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={'data_only':True}) # Can turn on verbose
-    proj.load_data(fromfile=False, name=proj.datasets.keys()[-1]) # WARNING, only supports one dataset/model
+    # proj.load_data(fromfile=False, name=proj.datasets.keys()[-1]) # WARNING, only supports one dataset/model
+    proj.load_data(fromfile=False, name=key)
     print('Saving project...')
     save_project(proj)
     return None
@@ -886,7 +887,8 @@ def get_scen_info(project_id, key=None, verbose=False):
     proj = load_project(project_id, die=True)
     scenario_jsons = []
     for py_scen in proj.scens.values(): # Loop over all Scens in Project
-        js_scen = py_to_js_scen(py_scen, proj, key=key)
+        # js_scen = py_to_js_scen(py_scen, proj, key=key)
+        js_scen = py_to_js_scen(py_scen, proj, key=py_scen.model_name)
         scenario_jsons.append(js_scen)
     if verbose:
         print('JavaScript scenario info:')
@@ -919,7 +921,7 @@ def get_default_scen(project_id, scen_type=None, model_name=None, verbose=False)
     proj = load_project(project_id, die=True)
     py_scen = nu.make_default_scen(model_name, model=proj.model(model_name), scen_type=scen_type, basename='Default scenario (%s)' % scen_type)
     py_scen.scen_type = scen_type # Set the scenario type -- Warning, is this needed?
-    js_scen = py_to_js_scen(py_scen, proj, default_included=True)
+    js_scen = py_to_js_scen(py_scen, proj, default_included=True, key=model_name)
     if verbose:
         print('Created default JavaScript scenario:')
         sc.pp(js_scen)
