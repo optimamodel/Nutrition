@@ -1,7 +1,7 @@
 <!--
 Define health packages
 
-Last update: 2018-12-19
+Last update: 2019-01-14
 -->
 
 <template>
@@ -362,9 +362,9 @@ Last update: 2018-12-19
   }
 
   .c_calc {
-    background-color: rgb(168, 237, 154); // Temporary, presumably, until spreadsheet calculations are done correctly
-    /*color:#888;*/
-    /*background-color:#ccc;*/
+//    background-color: rgb(168, 237, 154); // Temporary, presumably, until spreadsheet calculations are done correctly
+    color:#888;
+    background-color:#ccc;
     justify-content:flex-end;
   }
 
