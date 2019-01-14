@@ -53,7 +53,7 @@ def demo_optims():
 
 def demo_geos():
     kwargs1 = {'name': 'Geospatial optimization',
-          'modelnames': [None],
+          'modelnames': ['demoregion1', 'demoregion2', 'demoregion3'],
           'weights': 'thrive',
           'fix_curr': False,
           'fix_regionalspend': False,

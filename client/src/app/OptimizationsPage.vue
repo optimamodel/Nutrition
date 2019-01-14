@@ -1,7 +1,7 @@
 <!--
 Optimizations page
 
-Last update: 2019jan09
+Last update: 2019jan10
 -->
 
 <template>
@@ -338,6 +338,19 @@ Last update: 2019jan09
               if (optimSummary.status === 'error') {
                 console.log('Error in task: ', optimSummary.serverDatastoreId)
                 console.log(result.data.task.errorText)
+                let failMessage = 'Error in task: ' + optimSummary.serverDatastoreId
+                let usermsg = result.data.task.errorText
+                this.$notifications.notify({
+                  message: '<b>' + failMessage + '</b>' + '<br><br>' + usermsg,
+                  icon: 'ti-face-sad',
+                  type: 'warning',
+                  verticalAlign: 'top',
+                  horizontalAlign: 'right',
+                  timeout: 0
+                })
+                // TODO: The above works, but we want a solution that uses the line
+                // below (which currently does not work).
+//                status.fail(this, failMessage, result.data.task.errorText)                
               }
               resolve(result)
             })

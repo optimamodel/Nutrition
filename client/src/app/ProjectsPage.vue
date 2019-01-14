@@ -1,7 +1,7 @@
 <!--
 Manage projects page
 
-Last update: 2018dec17
+Last update: 2019jan11
 -->
 
 <template>
@@ -96,7 +96,12 @@ Last update: 2018dec17
               'No modification' }}</td>
             <td style="white-space: nowrap; text-align:left"> <!-- ATOMICA-NUTRITION DIFFERENCE -->
               <button class="btn __blue" @click="uploadDatabook(projectSummary.project.id)" data-tooltip="Upload databook"><i class="ti-upload"></i></button>
-              <button class="btn" @click="downloadDatabook(projectSummary.project.id)" data-tooltip="Download databook"><i class="ti-download"></i></button>
+              <button class="btn" @click="downloadDatabook(projectSummary.project.id, projectSummary.selectedDataSet)" data-tooltip="Download databook"><i class="ti-download"></i></button>            
+              <select v-model="projectSummary.selectedDataSet">
+                <option v-for='dataset in projectSummary.project.dataSets'>
+                  {{ dataset }}
+                </option>
+              </select>&nbsp;
             </td>
           </tr>
           </tbody>
@@ -165,7 +170,8 @@ Last update: 2018dec17
         sortColumn: 'name',  // Column of table used for sorting the projects: name, country, creationTime, updatedTime, dataUploadTime
         sortReverse: false, // Sort in reverse order?
         projectSummaries: [], // List of summary objects for projects the user has
-        proj_name:  'New project', // For creating a new project: number of populations  // ATOMICA-NUTRITION DIFFERENCE
+        proj_name:  'New project', // For creating a new project: number of populations  
+        // ATOMICA-NUTRITION DIFFERENCE
       }
     },
 
@@ -233,6 +239,7 @@ Last update: 2018dec17
             this.projectSummaries.forEach(theProj => { // Preprocess all projects.
               theProj.selected = false // Set to not selected.
               theProj.renaming = '' // Set to not being renamed.
+              theProj.selectedDataSet = theProj.project.dataSets[0] // Set the first dataset.
               if (theProj.project.creationTime >= lastCreationTime) { // Update the last creation time and ID if what se see is later.
                 lastCreationTime = theProj.project.creationTime
                 lastCreatedID = theProj.project.id
@@ -437,10 +444,10 @@ Last update: 2018dec17
           })
       },
 
-      downloadDatabook(uid) {
+      downloadDatabook(uid, selectedDataSet) {
         console.log('downloadDatabook() called')
         status.start(this, 'Downloading data book...')
-        rpcs.download('download_databook', [uid])
+        rpcs.download('download_databook', [uid], {'key': selectedDataSet})
           .then(response => {
             status.succeed(this, '')  // No green popup message.
           })
