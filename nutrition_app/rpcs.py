@@ -469,7 +469,8 @@ def upload_databook(databook_filename, project_id):
 ### Input functions and RPCs
 ##################################################################################
 
-editableformats = ['edit', 'calc', 'tick', 'bdgt', 'drop'] # Define which kinds of format are editable and saveable
+# editableformats = ['edit', 'calc', 'tick', 'bdgt', 'drop'] # Define which kinds of format are editable and saveable
+editableformats = ['edit', 'tick', 'bdgt', 'drop'] # Define which kinds of format are editable and saveable
 
 def define_formats():
     ''' Hard-coded sheet formats '''
@@ -692,7 +693,8 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
                     vals.append(cellval)
                     if verbose:
                         print('  Cell (%s,%s) = %s' % (r+1, c+1, cellval))
-        wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={'data_only':True}) # Can turn on verbose
+        wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={'data_only': True}) # Can turn on verbose
+        # wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False)  # Can turn on verbose
     proj.load_data(fromfile=False, name=key)
     print('Saving project...')
     save_project(proj)

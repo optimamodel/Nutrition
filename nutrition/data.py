@@ -349,15 +349,15 @@ class InputData(object):
         # get anaemia
         dist = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0,1], skiprows=12)
         self.risk_dist['Anaemia'] = sc.odict()
-        if 1: # not self.recalc: # CK: for future when we implement reload
+        if not self.recalc: # CK: for future when we implement reload
             anaem = dist.loc['Anaemia', 'Prevalence of iron deficiency anaemia'].to_dict()
-#        else:
-#            # CK: Spreadsheet recalculation #1
-#            all_anaem = dist.loc['Anaemia', 'Prevalence of anaemia'].to_dict()
-#            baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs')
-#            index = np.array(baseline['Field']).tolist().index('Percentage of anaemia that is iron deficient')
-#            iron_pct = np.array(baseline['Data'])[index]
-#            anaem = {key:val*iron_pct for key,val in all_anaem.items()}
+        else:
+            # CK: Spreadsheet recalculation #1
+            all_anaem = dist.loc['Anaemia', 'Prevalence of anaemia'].to_dict()
+            baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs')
+            index = np.array(baseline['Field']).tolist().index('Percentage of anaemia that is iron deficient')
+            iron_pct = np.array(baseline['Data'])[index]
+            anaem = {key: val * iron_pct for key, val in all_anaem.items()}
         for age, prev in anaem.items():
             self.risk_dist['Anaemia'][age] = dict()
             self.risk_dist['Anaemia'][age]['Anaemic'] = prev
@@ -616,7 +616,7 @@ class Dataset(object):
         
         # Read them into actual data
         try:
-            self.demo_data = InputData(input_data)  # demo_ here is demographic_
+            self.demo_data = InputData(input_data, recalc=True)  # demo_ here is demographic_
         except Exception as E:
             raise Exception('Error in databook: %s'%str(E))
         try:

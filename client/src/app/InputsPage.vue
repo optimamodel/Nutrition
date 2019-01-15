@@ -86,7 +86,7 @@ Last update: 2019-01-14
                       <input type="text"
                              class="txbox"
                              style="text-align: right"
-                             v-model="cellDict.value"/> <!-- disabled -->
+                             v-model="cellDict.value" :disabled="true"/>
                     </div>
                   </div>
                   <div v-if="cellDict.format==='drop'" class="cell c_drop">
