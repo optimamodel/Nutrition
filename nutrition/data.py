@@ -306,6 +306,7 @@ class InputData(object):
         baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0,1])
         print('PANDASAURUS 1.1!')
         print(baseline)
+        # baseline.to_csv('pandasaurus_1_1.csv')
         demo = sc.odict()
         # the fields that group the data in spreadsheet
         fields = ['Population data', 'Food', 'Age distribution of pregnant women', 'Mortality', 'Other risks']
@@ -322,6 +323,7 @@ class InputData(object):
         baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0])
         print('PANDASAURUS 1.2!')
         print(baseline)
+        # baseline.to_csv('pandasaurus_1_2.csv')
         for row in baseline.loc['Age distribution of pregnant women'].iterrows():
             self.pw_agedist.append(row[1]['Data'])
         return None
@@ -331,6 +333,7 @@ class InputData(object):
         proj = utils.read_sheet(self.spreadsheet, 'Demographic projections', cols=[0], dropna='any')
         print('PANDASAURUS 2!')
         print(proj)
+        # proj.to_csv('pandasaurus_2.csv')
         # dict of lists to support indexing
         for column in proj:
             self.proj[column] = proj[column].tolist()
@@ -342,6 +345,7 @@ class InputData(object):
         dist = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0,1])
         print('PANDASAURUS 3.1!')
         print(dist)
+        # dist.to_csv('pandasaurus_3_1.csv')
         # dist = dist.drop(dist.index[[1]])
         riskDist = sc.odict()
         for field in ['Stunting (height-for-age)', 'Wasting (weight-for-height)']:
@@ -358,6 +362,7 @@ class InputData(object):
         dist = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0,1], skiprows=12)
         print('PANDASAURUS 3.2!')
         print(dist)
+        # dist.to_csv('pandasaurus_3_2.csv')
         self.risk_dist['Anaemia'] = sc.odict()
         # If we are not calculating calculating spreadsheet calc values (but depending on the
         # Excel calculations instead)
@@ -378,6 +383,7 @@ class InputData(object):
         dist = utils.read_sheet(self.spreadsheet, 'Breastfeeding distribution', [0,1])
         print('PANDASAURUS 4!')
         print(dist)
+        # dist.to_csv('pandasaurus_4.csv')
         # If we need to recalculate values, overwrite the last row (None values).
         if self.recalc:
             print('WAAAAH!')
@@ -388,6 +394,7 @@ class InputData(object):
         trends = utils.read_sheet(self.spreadsheet, 'Time trends', cols=[0,1], dropna=False)
         print('PANDASAURUS 5!')
         print(trends)
+        # trends.to_csv('pandasaurus_5.csv')
         self.time_trends['Stunting'] = trends.loc['Stunting prevalence (%)'].loc['Children 0-59 months'].values.tolist()[:1]
         self.time_trends['Wasting'] = trends.loc['Wasting prevalence (%)'].loc['Children 0-59 months'].values.tolist()[:1]
         self.time_trends['Anaemia'] = trends.loc['Anaemia prevalence (%)'].values.tolist()[:3] # order is (children, PW, WRA)
@@ -398,6 +405,7 @@ class InputData(object):
         incidences = utils.read_sheet(self.spreadsheet, 'Incidence of conditions', [0])
         print('PANDASAURUS 6!')
         print(incidences)
+        # incidences.to_csv('pandasaurus_6.csv')
         self.incidences = incidences.to_dict()
         # self.incidences = utils.read_sheet(self.spreadsheet, 'Incidence of conditions', [0], to_odict=True)
 
@@ -408,14 +416,17 @@ class InputData(object):
         deathdist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0, 1], skiprows=1)
         print('PANDASAURUS 7.1!')
         print(deathdist)
+        # deathdist.to_csv('pandasaurus_7_1.csv')
         neonates = deathdist.loc['Neonatal'].ix[:-1]
         deathdist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0, 1], skiprows=12)
         print('PANDASAURUS 7.2!')
         print(deathdist)
+        # deathdist.to_csv('pandasaurus_7_2.csv')
         children = deathdist.loc['Children'].ix[:-1]
         deathdist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0, 1], skiprows=24)
         print('PANDASAURUS 7.3!')
         print(deathdist)
+        # deathdist.to_csv('pandasaurus_7_3.csv')
         pw = deathdist.loc['Pregnant women'].ix[:-1]
         dist = pandas.concat([neonates['<1 month'], children, pw['Pregnant women.1']], axis=1, sort=False).fillna(0)
         for cause in dist.index:
@@ -491,6 +502,7 @@ class ProgData(object):
         targetPopSheet = utils.read_sheet(self.spreadsheet, 'Programs target population', [0,1])
         print('PANDASAURUS 8!')
         print(targetPopSheet)
+        # targetPopSheet.to_csv('pandasaurus_8.csv')
         targetPop = sc.odict()
         for pop in ['Children', 'Pregnant women', 'Non-pregnant WRA', 'General population']:
             targetPop.update(targetPopSheet.loc[pop].to_dict(orient='index'))
@@ -519,14 +531,18 @@ class ProgData(object):
         self.prog_deps = programDep
 
     def get_famplan_methods(self):
-        self.famplan_methods = utils.read_sheet(self.spreadsheet, 'Programs family planning', [0], 'index')
+        famplan_methods = utils.read_sheet(self.spreadsheet, 'Programs family planning', [0])
         print('PANDASAURUS 9!')
-        print(self.famplan_methods)
+        print(famplan_methods)
+        # famplan_methods.to_csv('pandasaurus_9.csv')
+        self.famplan_methods = famplan_methods.to_dict('index')
+        # self.famplan_methods = utils.read_sheet(self.spreadsheet, 'Programs family planning', [0], 'index')
 
     def get_prog_info(self):
         sheet = utils.read_sheet(self.spreadsheet, 'Programs cost and coverage')
         print('PANDASAURUS 10!')
         print(sheet)
+        # sheet.to_csv('pandasaurus_10.csv')
         self.base_prog_set = sheet.iloc[:,0].tolist()
         self.base_cov = sc.odict(zip(self.base_prog_set, sheet.iloc[:,1].tolist()))
         self.sat = sc.odict(zip(self.base_prog_set, sheet.iloc[:,2].tolist()))
