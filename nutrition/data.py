@@ -304,6 +304,8 @@ class InputData(object):
 
     def get_demo(self):
         baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0,1])
+        print('PANDASAURUS 1.1!')
+        print(baseline)
         demo = sc.odict()
         # the fields that group the data in spreadsheet
         fields = ['Population data', 'Food', 'Age distribution of pregnant women', 'Mortality', 'Other risks']
@@ -318,6 +320,8 @@ class InputData(object):
         self.birth_space.pop('Total (must be 100%)', None)
         # fix ages for PW
         baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0])
+        print('PANDASAURUS 1.2!')
+        print(baseline)
         for row in baseline.loc['Age distribution of pregnant women'].iterrows():
             self.pw_agedist.append(row[1]['Data'])
         return None
@@ -325,6 +329,8 @@ class InputData(object):
     def get_proj(self):
         # drops rows with any na
         proj = utils.read_sheet(self.spreadsheet, 'Demographic projections', cols=[0], dropna='any')
+        print('PANDASAURUS 2!')
+        print(proj)
         # dict of lists to support indexing
         for column in proj:
             self.proj[column] = proj[column].tolist()
@@ -334,6 +340,8 @@ class InputData(object):
 
     def get_risk_dist(self):
         dist = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0,1])
+        print('PANDASAURUS 3.1!')
+        print(dist)
         # dist = dist.drop(dist.index[[1]])
         riskDist = sc.odict()
         for field in ['Stunting (height-for-age)', 'Wasting (weight-for-height)']:
@@ -348,11 +356,15 @@ class InputData(object):
                     self.risk_dist[outer][age][newCat] = value
         # get anaemia
         dist = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0,1], skiprows=12)
+        print('PANDASAURUS 3.2!')
+        print(dist)
         self.risk_dist['Anaemia'] = sc.odict()
-        if not self.recalc: # CK: for future when we implement reload
+        # If we are not calculating calculating spreadsheet calc values (but depending on the
+        # Excel calculations instead)
+        if not self.recalc:
             anaem = dist.loc['Anaemia', 'Prevalence of iron deficiency anaemia'].to_dict()
+        # Else, if we are doing the recalculations from the non-formula Excel cells...
         else:
-            # CK: Spreadsheet recalculation #1
             all_anaem = dist.loc['Anaemia', 'Prevalence of anaemia'].to_dict()
             baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs')
             index = np.array(baseline['Field']).tolist().index('Percentage of anaemia that is iron deficient')
@@ -364,10 +376,18 @@ class InputData(object):
             self.risk_dist['Anaemia'][age]['Not anaemic'] = 1.-prev
         # get breastfeeding dist
         dist = utils.read_sheet(self.spreadsheet, 'Breastfeeding distribution', [0,1])
+        print('PANDASAURUS 4!')
+        print(dist)
+        # If we need to recalculate values, overwrite the last row (None values).
+        if self.recalc:
+            print('WAAAAH!')
+            print(dist)
         self.risk_dist['Breastfeeding'] = dist.loc['Breastfeeding'].to_dict()
 
     def get_time_trends(self):
         trends = utils.read_sheet(self.spreadsheet, 'Time trends', cols=[0,1], dropna=False)
+        print('PANDASAURUS 5!')
+        print(trends)
         self.time_trends['Stunting'] = trends.loc['Stunting prevalence (%)'].loc['Children 0-59 months'].values.tolist()[:1]
         self.time_trends['Wasting'] = trends.loc['Wasting prevalence (%)'].loc['Children 0-59 months'].values.tolist()[:1]
         self.time_trends['Anaemia'] = trends.loc['Anaemia prevalence (%)'].values.tolist()[:3] # order is (children, PW, WRA)
@@ -375,17 +395,27 @@ class InputData(object):
         self.time_trends['Mortality'] = trends.loc['Mortality'].values.tolist() # under 5, maternal
 
     def get_incidences(self):
-        self.incidences = utils.read_sheet(self.spreadsheet, 'Incidence of conditions', [0], to_odict=True)
+        incidences = utils.read_sheet(self.spreadsheet, 'Incidence of conditions', [0])
+        print('PANDASAURUS 6!')
+        print(incidences)
+        self.incidences = incidences.to_dict()
+        # self.incidences = utils.read_sheet(self.spreadsheet, 'Incidence of conditions', [0], to_odict=True)
 
     ### MORTALITY ###
 
     def get_death_dist(self):
         # read in with helpful column names, ignore the final row of each sub-table
         deathdist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0, 1], skiprows=1)
+        print('PANDASAURUS 7.1!')
+        print(deathdist)
         neonates = deathdist.loc['Neonatal'].ix[:-1]
         deathdist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0, 1], skiprows=12)
+        print('PANDASAURUS 7.2!')
+        print(deathdist)
         children = deathdist.loc['Children'].ix[:-1]
         deathdist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0, 1], skiprows=24)
+        print('PANDASAURUS 7.3!')
+        print(deathdist)
         pw = deathdist.loc['Pregnant women'].ix[:-1]
         dist = pandas.concat([neonates['<1 month'], children, pw['Pregnant women.1']], axis=1, sort=False).fillna(0)
         for cause in dist.index:
@@ -459,6 +489,8 @@ class ProgData(object):
 
     def get_prog_target(self):
         targetPopSheet = utils.read_sheet(self.spreadsheet, 'Programs target population', [0,1])
+        print('PANDASAURUS 8!')
+        print(targetPopSheet)
         targetPop = sc.odict()
         for pop in ['Children', 'Pregnant women', 'Non-pregnant WRA', 'General population']:
             targetPop.update(targetPopSheet.loc[pop].to_dict(orient='index'))
@@ -488,9 +520,13 @@ class ProgData(object):
 
     def get_famplan_methods(self):
         self.famplan_methods = utils.read_sheet(self.spreadsheet, 'Programs family planning', [0], 'index')
+        print('PANDASAURUS 9!')
+        print(self.famplan_methods)
 
     def get_prog_info(self):
         sheet = utils.read_sheet(self.spreadsheet, 'Programs cost and coverage')
+        print('PANDASAURUS 10!')
+        print(sheet)
         self.base_prog_set = sheet.iloc[:,0].tolist()
         self.base_cov = sc.odict(zip(self.base_prog_set, sheet.iloc[:,1].tolist()))
         self.sat = sc.odict(zip(self.base_prog_set, sheet.iloc[:,2].tolist()))

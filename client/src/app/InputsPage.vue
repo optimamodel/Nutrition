@@ -1,7 +1,7 @@
 <!--
 Define health packages
 
-Last update: 2019-01-14
+Last update: 2019-01-16
 -->
 
 <template>
@@ -190,12 +190,9 @@ Last update: 2019-01-14
       else if ((this.$store.state.activeProject.project !== undefined) &&
         (this.$store.state.activeProject.project.hasData) ) {
         console.log('created() called')
-        utils.sleep(1)  // used so that spinners will come up by callback func (GLC, 12/21/18, is this still needed?)
+        this.updateDatasets()
           .then(response => {
-            this.updateDatasets()
-              .then(response2 => {
-                this.getSheetData() // Load the sheet data
-              })
+            this.getSheetData() // Load the sheet data
           })
       }
     },
@@ -231,6 +228,9 @@ Last update: 2019-01-14
         status.start(this, 'Saving changes...')
         rpcs.rpc('save_sheet_data', [this.projectID, this.sheetTables], {'key': this.activeDataset}) // Make the server call to download the framework to a .prj file.
           .then(response => {
+            // Call getSheetData() because the save_sheet_data() RPC will trigger new
+            // values for the calculated cells.
+            
             status.succeed(this, 'Data saved')
           })
           .catch(error => {
