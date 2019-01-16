@@ -386,8 +386,8 @@ class InputData(object):
         # dist.to_csv('pandasaurus_4.csv')
         # If we need to recalculate values, overwrite the last row (None values).
         if self.recalc:
-            print('WAAAAH!')
-            print(dist)
+            calc_cells = 1.0 - dist.loc['Breastfeeding'].iloc[0:3].sum().values
+            dist.loc['Breastfeeding'].loc['None', :] = calc_cells
         self.risk_dist['Breastfeeding'] = dist.loc['Breastfeeding'].to_dict()
 
     def get_time_trends(self):
