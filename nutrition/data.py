@@ -15,12 +15,19 @@ class CalcCellCache(object):
         for ind in range(len(vals)):
             self.write_cell(worksheet_name, row, col + ind, vals[ind])
 
+    def write_col(self, worksheet_name, row, col, vals):
+        for ind in range(len(vals)):
+            self.write_cell(worksheet_name, row + ind, col, vals[ind])
+
     def read_cell(self, worksheet_name, row, col):
         cell_key = '%s:[%d,%d]' % (worksheet_name, row, col)
         if cell_key in self.cachedict:
             return self.cachedict[cell_key]
         else:
             return 0.0
+
+    def show(self):
+        print(self.cachedict)
 
 # TODO (possible): we may want to merge this class with InputData to make another class (DatabookData).
 class DefaultParams(object):
@@ -354,6 +361,10 @@ class InputData(object):
         print('PANDASAURUS 2!')
         print(proj)
         # proj.to_csv('pandasaurus_2.csv')
+        total_wra = proj.loc[:, ['WRA: 15-19 years', 'WRA: 20-29 years', 'WRA: 30-39 years',
+            'WRA: 40-49 years']].sum(axis=1).values
+        proj.loc[:, 'Total WRA'] = total_wra
+        self.calcscache.write_col('Demographic projections', 1, 6, total_wra)
         # dict of lists to support indexing
         for column in proj:
             self.proj[column] = proj[column].tolist()
@@ -394,7 +405,8 @@ class InputData(object):
             baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs')
             index = np.array(baseline['Field']).tolist().index('Percentage of anaemia that is iron deficient')
             iron_pct = np.array(baseline['Data'])[index]
-            anaem = {key: val * iron_pct for key, val in all_anaem.items()}
+            anaem = sc.odict({key: val * iron_pct for key, val in all_anaem.items()})
+            self.calcscache.write_row('Nutritional status distribution', 14, 2, anaem[:])
         for age, prev in anaem.items():
             self.risk_dist['Anaemia'][age] = dict()
             self.risk_dist['Anaemia'][age]['Anaemic'] = prev
@@ -707,6 +719,7 @@ class Dataset(object):
         self.prog_info = programs.ProgramInfo(self.prog_data)
         self.t = self.demo_data.t
         self.modified = sc.now()
+        self.calcscache.show()  # show the contents of the calculations cache
         return None
     
     def prog_names(self):
