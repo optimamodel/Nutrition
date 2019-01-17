@@ -613,9 +613,10 @@ def get_sheet_data(project_id, key=None, verbose=False):
         'Programs cost and coverage',
         ]
     proj = load_project(project_id, die=True)
-    wb = proj.inputsheet(key)
+    wb = proj.inputsheet(key)  # Get the spreadsheet
+    calcscache = proj.dataset(key).calcscache  # Get the calculation cells cache
     sheetdata = sc.odict()
-    for sheet in sheets:
+    for sheet in sheets:  # Read pandas DataFrames in for each worksheet
         sheetdata[sheet] = wb.readcells(sheetname=sheet, header=False)
     sheetformat = define_formats()
     
@@ -626,19 +627,21 @@ def get_sheet_data(project_id, key=None, verbose=False):
         if datashape != formatshape:
             errormsg = 'Sheet data and formats have different shapes for sheet "%s": %s vs. %s' % (sheet, datashape, formatshape)
             raise Exception(errormsg)
-        rows,cols = datashape
+        rows, cols = datashape
         sheetjson[sheet] = []
         for r in range(rows):
             sheetjson[sheet].append([])
             for c in range(cols):
                 cellformat = sheetformat[sheet][r][c]
                 cellval = sheetdata[sheet][r][c]
+                if cellformat == 'calc':
+                    cellval = calcscache.read_cell(sheet, r, c)
                 try:
                     cellval = float(cellval) # Try to cast to float
                 except:
                     pass # But give up easily
                 if sc.isnumber(cellval): # If it is a number...
-                    if cellformat in ['edit','calc']:
+                    if cellformat in ['edit', 'calc']:
                         cellval = sc.sigfig(100*cellval, sigfigs=3)
                     elif cellformat == 'bdgt': # Format edit box numbers nicely
                         cellval = '%0.2f' % cellval
@@ -649,13 +652,13 @@ def get_sheet_data(project_id, key=None, verbose=False):
                             cellval = True
                     else:
                         pass # It's fine, just let it go, let it go, can't hold it back any more
-                cellinfo = {'format':cellformat, 'value':cellval}
+                cellinfo = {'format': cellformat, 'value': cellval}
                 sheetjson[sheet][r].append(cellinfo)
     
     sheetjson = sc.sanitizejson(sheetjson)
     if verbose:
         sc.pp(sheetjson)
-    return {'names':sheets, 'tables':sheetjson}
+    return {'names': sheets, 'tables': sheetjson}
 
 
 @RPC()

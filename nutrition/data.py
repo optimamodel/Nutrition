@@ -3,6 +3,25 @@ import pandas
 import sciris as sc
 from . import settings, populations, utils, programs
 
+class CalcCellCache(object):
+    def __init__(self):
+        self.cachedict = sc.odict()
+
+    def write_cell(self, worksheet_name, row, col, val):
+        cell_key = '%s:[%d,%d]' % (worksheet_name, row, col)
+        self.cachedict[cell_key] = val
+
+    def write_row(self, worksheet_name, row, col, vals):
+        for ind in range(len(vals)):
+            self.write_cell(worksheet_name, row, col + ind, vals[ind])
+
+    def read_cell(self, worksheet_name, row, col):
+        cell_key = '%s:[%d,%d]' % (worksheet_name, row, col)
+        if cell_key in self.cachedict:
+            return self.cachedict[cell_key]
+        else:
+            return 0.0
+
 # TODO (possible): we may want to merge this class with InputData to make another class (DatabookData).
 class DefaultParams(object):
     def __init__(self, default_data, input_data):
@@ -272,7 +291,7 @@ class DefaultParams(object):
 # TODO (possible): we may want to merge this class with DefaultParams to make another class (DatabookData).
 class InputData(object):
     """ Container for all the region-specific data (prevalences, mortality rates etc) read in from spreadsheet"""
-    def __init__(self, data, recalc=False):
+    def __init__(self, data, calcscache, recalc=False):
         self.spreadsheet = data
         self.settings = settings.Settings()
         self.demo = None
@@ -286,6 +305,7 @@ class InputData(object):
         self.pw_agedist = []
         self.wra_proj = []
         self.t = None
+        self.calcscache = calcscache
         self.recalc = recalc # Whether or not to recalculate formulas
 
         self.get_demo()
@@ -387,6 +407,7 @@ class InputData(object):
         # If we need to recalculate values, overwrite the last row (None values).
         if self.recalc:
             calc_cells = 1.0 - dist.loc['Breastfeeding'].iloc[0:3].sum().values
+            self.calcscache.write_row('Breastfeeding distribution', 4, 2, calc_cells)
             dist.loc['Breastfeeding'].loc['None', :] = calc_cells
         self.risk_dist['Breastfeeding'] = dist.loc['Breastfeeding'].to_dict()
 
@@ -623,6 +644,8 @@ class Dataset(object):
         
         self.country = country
         self.region = region
+
+        self.calcscache = CalcCellCache()
         
         self.demo_data = demo_data  # demo = demographic
         self.prog_data = prog_data
@@ -668,7 +691,7 @@ class Dataset(object):
         
         # Read them into actual data
         try:
-            self.demo_data = InputData(input_data, recalc=True)  # demo_ here is demographic_
+            self.demo_data = InputData(input_data, self.calcscache, recalc=True)  # demo_ here is demographic_
         except Exception as E:
             raise Exception('Error in databook: %s'%str(E))
         try:

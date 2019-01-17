@@ -1,7 +1,7 @@
 <!--
 Define health packages
 
-Last update: 2019-01-16
+Last update: 2019-01-17
 -->
 
 <template>
@@ -230,7 +230,7 @@ Last update: 2019-01-16
           .then(response => {
             // Call getSheetData() because the save_sheet_data() RPC will trigger new
             // values for the calculated cells.
-            
+            this.getSheetData() // Load the sheet data.
             status.succeed(this, 'Data saved')
           })
           .catch(error => {
