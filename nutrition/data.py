@@ -334,6 +334,18 @@ class InputData(object):
         print('PANDASAURUS 1.1!')
         print(baseline)
         # baseline.to_csv('pandasaurus_1_1.csv')
+        frac_rice = baseline.loc['Food'].loc['Fraction eating rice as main staple food'].values[0]
+        frac_wheat = baseline.loc['Food'].loc['Fraction eating wheat as main staple food'].values[0]
+        frac_maize = baseline.loc['Food'].loc['Fraction eating maize as main staple food'].values[0]
+        frac_other_staples = 1.0 - frac_rice - frac_wheat - frac_maize
+        baseline.loc['Food'].loc['Fraction on other staples as main staple food'] = frac_other_staples
+        self.calcscache.write_cell('Baseline year population inputs', 19, 2, frac_other_staples)
+        birth_spacing_sum = baseline.loc['Birth spacing'][0:4].sum().values[0]
+        baseline.loc['Birth spacing'].loc['Total (must be 100%)'] = birth_spacing_sum
+        self.calcscache.write_cell('Baseline year population inputs', 32, 2, birth_spacing_sum)
+        outcome_sum = baseline.loc['Birth outcome distribution'][0:3].sum().values[0]
+        baseline.loc['Birth outcome distribution'].loc['Term AGA'] = 1.0 - outcome_sum
+        self.calcscache.write_cell('Baseline year population inputs', 47, 2, 1.0 - outcome_sum)
         demo = sc.odict()
         # the fields that group the data in spreadsheet
         fields = ['Population data', 'Food', 'Age distribution of pregnant women', 'Mortality', 'Other risks']
@@ -365,6 +377,19 @@ class InputData(object):
             'WRA: 40-49 years']].sum(axis=1).values
         proj.loc[:, 'Total WRA'] = total_wra
         self.calcscache.write_col('Demographic projections', 1, 6, total_wra)
+
+        baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0, 1])
+        stillbirth = baseline.loc['Mortality'].loc['Stillbirths (per 1,000 total births)'].values[0]
+        abortion = baseline.loc['Mortality'].loc['Fraction of pregnancies ending in spontaneous abortion'].values[0]
+        numbirths = proj.loc[:, 'Number of births'].values
+        estpregwomen = (numbirths + numbirths * stillbirth / (1000.0 - stillbirth)) / (1.0 - abortion)
+        proj.loc[:, 'Estimated pregnant women'] = estpregwomen
+        self.calcscache.write_col('Demographic projections', 1, 7, estpregwomen)
+
+        nonpregwra = total_wra - estpregwomen
+        proj.loc[:, 'non-pregnant WRA'] = nonpregwra
+        self.calcscache.write_col('Demographic projections', 1, 8, nonpregwra)
+
         # dict of lists to support indexing
         for column in proj:
             self.proj[column] = proj[column].tolist()
