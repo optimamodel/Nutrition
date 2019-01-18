@@ -334,18 +334,19 @@ class InputData(object):
         print('PANDASAURUS 1.1!')
         print(baseline)
         # baseline.to_csv('pandasaurus_1_1.csv')
-        frac_rice = baseline.loc['Food'].loc['Fraction eating rice as main staple food'].values[0]
-        frac_wheat = baseline.loc['Food'].loc['Fraction eating wheat as main staple food'].values[0]
-        frac_maize = baseline.loc['Food'].loc['Fraction eating maize as main staple food'].values[0]
-        frac_other_staples = 1.0 - frac_rice - frac_wheat - frac_maize
-        baseline.loc['Food'].loc['Fraction on other staples as main staple food'] = frac_other_staples
-        self.calcscache.write_cell('Baseline year population inputs', 19, 2, frac_other_staples)
-        birth_spacing_sum = baseline.loc['Birth spacing'][0:4].sum().values[0]
-        baseline.loc['Birth spacing'].loc['Total (must be 100%)'] = birth_spacing_sum
-        self.calcscache.write_cell('Baseline year population inputs', 32, 2, birth_spacing_sum)
-        outcome_sum = baseline.loc['Birth outcome distribution'][0:3].sum().values[0]
-        baseline.loc['Birth outcome distribution'].loc['Term AGA'] = 1.0 - outcome_sum
-        self.calcscache.write_cell('Baseline year population inputs', 47, 2, 1.0 - outcome_sum)
+        if self.recalc:
+            frac_rice = baseline.loc['Food'].loc['Fraction eating rice as main staple food'].values[0]
+            frac_wheat = baseline.loc['Food'].loc['Fraction eating wheat as main staple food'].values[0]
+            frac_maize = baseline.loc['Food'].loc['Fraction eating maize as main staple food'].values[0]
+            frac_other_staples = 1.0 - frac_rice - frac_wheat - frac_maize
+            baseline.loc['Food'].loc['Fraction on other staples as main staple food'] = frac_other_staples
+            self.calcscache.write_cell('Baseline year population inputs', 19, 2, frac_other_staples)
+            birth_spacing_sum = baseline.loc['Birth spacing'][0:4].sum().values[0]
+            baseline.loc['Birth spacing'].loc['Total (must be 100%)'] = birth_spacing_sum
+            self.calcscache.write_cell('Baseline year population inputs', 32, 2, birth_spacing_sum)
+            outcome_sum = baseline.loc['Birth outcome distribution'][0:3].sum().values[0]
+            baseline.loc['Birth outcome distribution'].loc['Term AGA'] = 1.0 - outcome_sum
+            self.calcscache.write_cell('Baseline year population inputs', 47, 2, 1.0 - outcome_sum)
         demo = sc.odict()
         # the fields that group the data in spreadsheet
         fields = ['Population data', 'Food', 'Age distribution of pregnant women', 'Mortality', 'Other risks']
@@ -373,23 +374,21 @@ class InputData(object):
         print('PANDASAURUS 2!')
         print(proj)
         # proj.to_csv('pandasaurus_2.csv')
-        total_wra = proj.loc[:, ['WRA: 15-19 years', 'WRA: 20-29 years', 'WRA: 30-39 years',
-            'WRA: 40-49 years']].sum(axis=1).values
-        proj.loc[:, 'Total WRA'] = total_wra
-        self.calcscache.write_col('Demographic projections', 1, 6, total_wra)
-
-        baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0, 1])
-        stillbirth = baseline.loc['Mortality'].loc['Stillbirths (per 1,000 total births)'].values[0]
-        abortion = baseline.loc['Mortality'].loc['Fraction of pregnancies ending in spontaneous abortion'].values[0]
-        numbirths = proj.loc[:, 'Number of births'].values
-        estpregwomen = (numbirths + numbirths * stillbirth / (1000.0 - stillbirth)) / (1.0 - abortion)
-        proj.loc[:, 'Estimated pregnant women'] = estpregwomen
-        self.calcscache.write_col('Demographic projections', 1, 7, estpregwomen)
-
-        nonpregwra = total_wra - estpregwomen
-        proj.loc[:, 'non-pregnant WRA'] = nonpregwra
-        self.calcscache.write_col('Demographic projections', 1, 8, nonpregwra)
-
+        if self.recalc:
+            total_wra = proj.loc[:, ['WRA: 15-19 years', 'WRA: 20-29 years', 'WRA: 30-39 years',
+                'WRA: 40-49 years']].sum(axis=1).values
+            proj.loc[:, 'Total WRA'] = total_wra
+            self.calcscache.write_col('Demographic projections', 1, 6, total_wra)
+            baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0, 1])
+            stillbirth = baseline.loc['Mortality'].loc['Stillbirths (per 1,000 total births)'].values[0]
+            abortion = baseline.loc['Mortality'].loc['Fraction of pregnancies ending in spontaneous abortion'].values[0]
+            numbirths = proj.loc[:, 'Number of births'].values
+            estpregwomen = (numbirths + numbirths * stillbirth / (1000.0 - stillbirth)) / (1.0 - abortion)
+            proj.loc[:, 'Estimated pregnant women'] = estpregwomen
+            self.calcscache.write_col('Demographic projections', 1, 7, estpregwomen)
+            nonpregwra = total_wra - estpregwomen
+            proj.loc[:, 'non-pregnant WRA'] = nonpregwra
+            self.calcscache.write_col('Demographic projections', 1, 8, nonpregwra)
         # dict of lists to support indexing
         for column in proj:
             self.proj[column] = proj[column].tolist()
@@ -500,7 +499,7 @@ class InputData(object):
 
 class ProgData(object):
     """Stores all the settings for each project, defined by the user"""
-    def __init__(self, data, default_data):
+    def __init__(self, data, default_data, calcscache, recalc=False):
         self.settings = settings.Settings()
         self.spreadsheet = data
         self.prog_set = []
@@ -515,6 +514,8 @@ class ProgData(object):
         self.famplan_methods = None
         self.impacted_pop = default_data.impacted_pop
         self.prog_areas = default_data.prog_areas
+        self.calcscache = calcscache
+        self.recalc = recalc # Whether or not to recalculate formulas
 
         # load data
         self.get_prog_info()
@@ -557,12 +558,24 @@ class ProgData(object):
             raise Exception(errors)
 
     def get_prog_target(self):
-        targetPopSheet = utils.read_sheet(self.spreadsheet, 'Programs target population', [0,1])
+        targetPopSheet = utils.read_sheet(self.spreadsheet, 'Programs target population', [0, 1])
         print('PANDASAURUS 8!')
         print(targetPopSheet)
         # targetPopSheet.to_csv('pandasaurus_8.csv')
+        if self.recalc:
+            baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0, 1])
+            frac_malaria_risk = baseline.loc['Population data'].loc['Percentage of population at risk of malaria'].values[0]
+            bednet_row = frac_malaria_risk * np.ones(13)
+            targetPopSheet.loc['General population'].loc['Long-lasting insecticide-treated bednets'] = bednet_row
+            print('POOPOO 1!')
+            yyy = targetPopSheet.loc['General population'].loc['Long-lasting insecticide-treated bednets']
+            print(yyy)
+            self.calcscache.write_row('Programs target population', 32, 2, bednet_row)
         targetPop = sc.odict()
         for pop in ['Children', 'Pregnant women', 'Non-pregnant WRA', 'General population']:
+            print('POOPOO 2!')
+            xxx = targetPopSheet.loc['General population'].loc['Long-lasting insecticide-treated bednets']
+            print(xxx)
             targetPop.update(targetPopSheet.loc[pop].to_dict(orient='index'))
         self.prog_target = targetPop
 
@@ -734,7 +747,7 @@ class Dataset(object):
         try:
             self.default_params = DefaultParams(default_data, input_data)
             self.default_params.compute_risks(self.demo_data)
-            self.prog_data = ProgData(input_data, self.default_params)
+            self.prog_data = ProgData(input_data, self.default_params, self.calcscache, recalc=True)
         except Exception as E:
             raise Exception('Error in program data: %s'%str(E))
         try:
