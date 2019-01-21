@@ -559,23 +559,21 @@ class ProgData(object):
 
     def get_prog_target(self):
         targetPopSheet = utils.read_sheet(self.spreadsheet, 'Programs target population', [0, 1])
-        print('PANDASAURUS 8!')
+        # targetPopSheetB = utils.read_sheet(self.spreadsheet, 'Programs target population', [0, 1], poobah=True)
+        print('PANDASAURUS 8.1!')
         print(targetPopSheet)
-        # targetPopSheet.to_csv('pandasaurus_8.csv')
+        targetPopSheet.to_csv('pandasaurus_8_1.csv')
+        # print('PANDASAURUS 8.2!')
+        # print(targetPopSheetB)
+        # targetPopSheetB.to_csv('pandasaurus_8_2.csv')
         if self.recalc:
             baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0, 1])
             frac_malaria_risk = baseline.loc['Population data'].loc['Percentage of population at risk of malaria'].values[0]
             bednet_row = frac_malaria_risk * np.ones(13)
             targetPopSheet.loc['General population'].loc['Long-lasting insecticide-treated bednets'] = bednet_row
-            print('POOPOO 1!')
-            yyy = targetPopSheet.loc['General population'].loc['Long-lasting insecticide-treated bednets']
-            print(yyy)
             self.calcscache.write_row('Programs target population', 32, 2, bednet_row)
         targetPop = sc.odict()
         for pop in ['Children', 'Pregnant women', 'Non-pregnant WRA', 'General population']:
-            print('POOPOO 2!')
-            xxx = targetPopSheet.loc['General population'].loc['Long-lasting insecticide-treated bednets']
-            print(xxx)
             targetPop.update(targetPopSheet.loc[pop].to_dict(orient='index'))
         self.prog_target = targetPop
 

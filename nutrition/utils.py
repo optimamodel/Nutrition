@@ -175,9 +175,17 @@ def process_weights(weights):
         raise Exception('All objective weights are zero. Process aborted.')
     return newweights
 
-def read_sheet(spreadsheet, name, cols=None, dict_orient=None, skiprows=None, to_odict=False, dropna=None):
-    if dropna is None: dropna = 'all'
-    df = spreadsheet.parse(name, index_col=cols, skiprows=skiprows)
+def read_sheet(spreadsheet, name, cols=None, dict_orient=None, skiprows=None, to_odict=False, dropna=None, poobah=None):
+    if dropna is None:
+        dropna = 'all'
+    if poobah:
+        dropna = None
+    df = spreadsheet.parse(name, index_col=cols, skiprows=skiprows)  # Grab the raw spreadsheet DataFrame
+    df2 = df.reset_index()  # Put the indexes in the columns for now.
+    col0 = df2.columns.values[0]  # Remember the first column name.
+    col1 = df2.columns.values[1]  # Remember the second column name.
+    df3 = df2.drop_duplicates(col1)  # Remove duplicate rows in the second column.
+    df = df3.set_index([col0, col1])  # Put the first two columns back in the indexes.
     if dropna:
         df = df.dropna(how=dropna)
     if dict_orient:
