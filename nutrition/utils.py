@@ -181,7 +181,7 @@ def read_sheet(spreadsheet, name, cols=None, dict_orient=None, skiprows=None, to
 
     df = spreadsheet.parse(name, index_col=cols, skiprows=skiprows)  # Grab the raw spreadsheet DataFrame
 
-    if poobah:
+    if poobah:  # poobah is the munging that we're trying to test to see if we can get an improvement over the old code
         dropna = None
         df2 = df.reset_index()  # Put the indexes in the columns for now.
         col0 = df2.columns.values[0]  # Remember the first column name.

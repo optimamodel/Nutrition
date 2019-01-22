@@ -559,14 +559,14 @@ class ProgData(object):
 
     def get_prog_target(self):
         targetPopSheet = utils.read_sheet(self.spreadsheet, 'Programs target population', [0, 1])
-        targetPopSheetB = utils.read_sheet(self.spreadsheet, 'Programs target population', [0, 1], poobah=True)
+        # targetPopSheetB = utils.read_sheet(self.spreadsheet, 'Programs target population', [0, 1], poobah=True)
         print('PANDASAURUS 8.1!')
         print(targetPopSheet)
         # targetPopSheet.to_csv('pandasaurus_8_1.csv')
-        print('PANDASAURUS 8.2!')
-        print(targetPopSheetB)
+        # print('PANDASAURUS 8.2!')
+        # print(targetPopSheetB)
         # targetPopSheetB.to_csv('pandasaurus_8_2.csv')
-        targetPopSheet = targetPopSheetB
+        # targetPopSheet = targetPopSheetB
         if self.recalc:
             baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0, 1])
             frac_malaria_risk = baseline.loc['Population data'].loc['Percentage of population at risk of malaria'].values[0]
