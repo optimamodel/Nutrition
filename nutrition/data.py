@@ -486,6 +486,12 @@ class InputData(object):
         print('PANDASAURUS 7.1!')
         print(deathdist)
         # deathdist.to_csv('pandasaurus_7_1.csv')
+        neonatal_death_pct_sum = deathdist.loc['Neonatal']['<1 month'].values[:-1].astype(np.float).sum()
+        self.calcscache.write_cell('Causes of death', 10, 2, neonatal_death_pct_sum)
+        children_death_pct_sums = deathdist.loc['Children'].iloc[1:-1, 0:4].astype(np.float).sum().values
+        self.calcscache.write_row('Causes of death', 22, 2, children_death_pct_sums)
+        pregwomen_death_pct_sum = deathdist.loc['Pregnant women'].iloc[1:-1, 0].values.astype(np.float).sum()
+        self.calcscache.write_cell('Causes of death', 34, 2, pregwomen_death_pct_sum)
         neonates = deathdist.loc['Neonatal'].ix[:-1]
         deathdist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0, 1], skiprows=12)
         print('PANDASAURUS 7.2!')
