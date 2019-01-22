@@ -463,10 +463,18 @@ class InputData(object):
         print('PANDASAURUS 6!')
         print(incidences)
         # incidences.to_csv('pandasaurus_6.csv')
-        # if self.recalc:
-        #     calc_cells = 1.0 - dist.loc['Breastfeeding'].iloc[0:3].sum().values
-        #     self.calcscache.write_row('Breastfeeding distribution', 4, 2, calc_cells)
-        #     dist.loc['Breastfeeding'].loc['None', :] = calc_cells
+        if self.recalc:
+            baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0, 1])
+            diarr_incid = baseline.loc['Diarrhoea incidence']['Data'].values
+            incidences.loc['Diarrhoea', :] = diarr_incid
+            self.calcscache.write_row('Incidence of conditions', 1, 1, diarr_incid)
+            dist = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0, 1])
+            mam_incid = dist.loc['Wasting (weight-for-height)'].loc['MAM   (WHZ-score between -3 and -2)'][0:5].values.astype(np.float) * 2.6
+            sam_incid = dist.loc['Wasting (weight-for-height)'].loc['SAM   (WHZ-score < -3)'][0:5].values.astype(np.float) * 2.6
+            incidences.loc['MAM', :] = mam_incid
+            self.calcscache.write_row('Incidence of conditions', 2, 1, mam_incid)
+            incidences.loc['SAM', :] = sam_incid
+            self.calcscache.write_row('Incidence of conditions', 3, 1, sam_incid)
         self.incidences = incidences.to_dict()
         # self.incidences = utils.read_sheet(self.spreadsheet, 'Incidence of conditions', [0], to_odict=True)
 
