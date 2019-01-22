@@ -175,13 +175,26 @@ def process_weights(weights):
         raise Exception('All objective weights are zero. Process aborted.')
     return newweights
 
-def read_sheet(spreadsheet, name, cols=None, dict_orient=None, skiprows=None, to_odict=False, dropna=None, poobah=None):
+def read_sheet(spreadsheet, name, cols=None, dict_orient=None, skiprows=None, to_odict=False, dropna=None):
+    if dropna is None:
+        dropna = 'all'
+    df = spreadsheet.parse(name, index_col=cols, skiprows=skiprows)  # Grab the raw spreadsheet DataFrame
+    if dropna:
+        df = df.dropna(how=dropna)
+    if dict_orient:
+        df = df.to_dict(dict_orient)
+    elif to_odict:
+        df = df.to_dict(into=sc.odict)
+    return df
+
+# new version of read_sheet() that deals with cases where there are calculation cells
+def read_sheet_with_calcs(spreadsheet, name, cols=None, dict_orient=None, skiprows=None, to_odict=False, dropna=None, poobah=None):
     if dropna is None:
         dropna = 'all'
 
     df = spreadsheet.parse(name, index_col=cols, skiprows=skiprows)  # Grab the raw spreadsheet DataFrame
 
-    if poobah:  # poobah is the munging that we're trying to test to see if we can get an improvement over the old code
+    if poobah and cols is not None and len(cols) > 1:  # poobah is the munging that we're trying to test to see if we can get an improvement over the old code
         dropna = None
         df2 = df.reset_index()  # Put the indexes in the columns for now.
         col0 = df2.columns.values[0]  # Remember the first column name.

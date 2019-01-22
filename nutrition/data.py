@@ -463,6 +463,10 @@ class InputData(object):
         print('PANDASAURUS 6!')
         print(incidences)
         # incidences.to_csv('pandasaurus_6.csv')
+        # if self.recalc:
+        #     calc_cells = 1.0 - dist.loc['Breastfeeding'].iloc[0:3].sum().values
+        #     self.calcscache.write_row('Breastfeeding distribution', 4, 2, calc_cells)
+        #     dist.loc['Breastfeeding'].loc['None', :] = calc_cells
         self.incidences = incidences.to_dict()
         # self.incidences = utils.read_sheet(self.spreadsheet, 'Incidence of conditions', [0], to_odict=True)
 
@@ -559,12 +563,12 @@ class ProgData(object):
 
     def get_prog_target(self):
         targetPopSheet = utils.read_sheet(self.spreadsheet, 'Programs target population', [0, 1])
-        # targetPopSheetB = utils.read_sheet(self.spreadsheet, 'Programs target population', [0, 1], poobah=True)
+        targetPopSheetB = utils.read_sheet_with_calcs(self.spreadsheet, 'Programs target population', [0, 1], poobah=True)
         print('PANDASAURUS 8.1!')
         print(targetPopSheet)
         # targetPopSheet.to_csv('pandasaurus_8_1.csv')
-        # print('PANDASAURUS 8.2!')
-        # print(targetPopSheetB)
+        print('PANDASAURUS 8.2!')
+        print(targetPopSheetB)
         # targetPopSheetB.to_csv('pandasaurus_8_2.csv')
         # targetPopSheet = targetPopSheetB
         if self.recalc:
