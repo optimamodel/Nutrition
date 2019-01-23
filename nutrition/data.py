@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.stats import norm
 import pandas
 import sciris as sc
 from . import settings, populations, utils, programs
@@ -401,6 +402,23 @@ class InputData(object):
         print('PANDASAURUS 3.1!')
         print(dist)
         # dist.to_csv('pandasaurus_3_1.csv')
+        if self.recalc:
+            stunting_mod_hi_sums = dist.loc['Stunting (height-for-age)'].iloc[2:4, 0:5].astype(np.float).sum().values
+            stunting_invs = norm.ppf(stunting_mod_hi_sums, 0.0, 1.0)
+            stunting_norm_pcts = np.ones(5) - norm.cdf(stunting_invs + np.ones(5), 0.0, 1.0)
+            dist.loc['Stunting (height-for-age)'].iloc[0, 0:5] = stunting_norm_pcts
+            self.calcscache.write_row('Nutritional status distribution', 1, 2, stunting_norm_pcts)
+            stunting_mild_pcts = norm.cdf(stunting_invs + np.ones(5), 0.0, 1.0) - stunting_mod_hi_sums
+            dist.loc['Stunting (height-for-age)'].iloc[1, 0:5] = stunting_mild_pcts
+            self.calcscache.write_row('Nutritional status distribution', 2, 2, stunting_mild_pcts)
+            wasting_mod_hi_sums = dist.loc['Wasting (weight-for-height)'].iloc[2:4, 0:5].astype(np.float).sum().values
+            wasting_invs = norm.ppf(wasting_mod_hi_sums, 0.0, 1.0)
+            wasting_norm_pcts = np.ones(5) - norm.cdf(wasting_invs + np.ones(5), 0.0, 1.0)
+            dist.loc['Wasting (weight-for-height)'].iloc[0, 0:5] = wasting_norm_pcts
+            self.calcscache.write_row('Nutritional status distribution', 7, 2, wasting_norm_pcts)
+            wasting_mild_pcts = norm.cdf(wasting_invs + np.ones(5), 0.0, 1.0) - wasting_mod_hi_sums
+            dist.loc['Wasting (weight-for-height)'].iloc[1, 0:5] = wasting_mild_pcts
+            self.calcscache.write_row('Nutritional status distribution', 8, 2, wasting_mild_pcts)
         # dist = dist.drop(dist.index[[1]])
         riskDist = sc.odict()
         for field in ['Stunting (height-for-age)', 'Wasting (weight-for-height)']:
@@ -486,12 +504,13 @@ class InputData(object):
         print('PANDASAURUS 7.1!')
         print(deathdist)
         # deathdist.to_csv('pandasaurus_7_1.csv')
-        neonatal_death_pct_sum = deathdist.loc['Neonatal']['<1 month'].values[:-1].astype(np.float).sum()
-        self.calcscache.write_cell('Causes of death', 10, 2, neonatal_death_pct_sum)
-        children_death_pct_sums = deathdist.loc['Children'].iloc[1:-1, 0:4].astype(np.float).sum().values
-        self.calcscache.write_row('Causes of death', 22, 2, children_death_pct_sums)
-        pregwomen_death_pct_sum = deathdist.loc['Pregnant women'].iloc[1:-1, 0].values.astype(np.float).sum()
-        self.calcscache.write_cell('Causes of death', 34, 2, pregwomen_death_pct_sum)
+        if self.recalc:
+            neonatal_death_pct_sum = deathdist.loc['Neonatal']['<1 month'].values[:-1].astype(np.float).sum()
+            self.calcscache.write_cell('Causes of death', 10, 2, neonatal_death_pct_sum)
+            children_death_pct_sums = deathdist.loc['Children'].iloc[1:-1, 0:4].astype(np.float).sum().values
+            self.calcscache.write_row('Causes of death', 22, 2, children_death_pct_sums)
+            pregwomen_death_pct_sum = deathdist.loc['Pregnant women'].iloc[1:-1, 0].values.astype(np.float).sum()
+            self.calcscache.write_cell('Causes of death', 34, 2, pregwomen_death_pct_sum)
         neonates = deathdist.loc['Neonatal'].ix[:-1]
         deathdist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0, 1], skiprows=12)
         print('PANDASAURUS 7.2!')
