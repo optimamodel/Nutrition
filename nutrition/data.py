@@ -642,6 +642,12 @@ class ProgData(object):
         print('PANDASAURUS 9!')
         print(famplan_methods)
         # famplan_methods.to_csv('pandasaurus_9.csv')
+        if self.recalc:
+            dist = famplan_methods.loc[:, 'Distribution'].values
+            costs = famplan_methods.loc[:, 'Cost'].values
+            prop_costs = dist * costs
+            famplan_methods.loc[:, 'Proportional Cost'] = prop_costs
+            self.calcscache.write_col('Programs family planning', 1, 4, prop_costs)
         self.famplan_methods = famplan_methods.to_dict('index')
         # self.famplan_methods = utils.read_sheet(self.spreadsheet, 'Programs family planning', [0], 'index')
 
