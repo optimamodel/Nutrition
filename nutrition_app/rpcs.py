@@ -577,9 +577,9 @@ def define_formats():
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
-        ['name', 'edit', 'edit', 'bdgt', 'drop'],
-        ['name', 'edit', 'edit', 'bdgt', 'drop'],
-        ['name', 'edit', 'edit', 'bdgt', 'drop'],
+        ['name', 'edit', 'edit', 'bclc', 'drop'],
+        ['name', 'edit', 'edit', 'bclc', 'drop'],
+        ['name', 'edit', 'edit', 'bclc', 'drop'],
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
@@ -634,7 +634,7 @@ def get_sheet_data(project_id, key=None, verbose=False):
             for c in range(cols):
                 cellformat = sheetformat[sheet][r][c]
                 cellval = sheetdata[sheet][r][c]
-                if cellformat == 'calc':
+                if cellformat in ['calc', 'bclc']:
                     cellval = calcscache.read_cell(sheet, r, c)
                 try:
                     cellval = float(cellval) # Try to cast to float
@@ -643,7 +643,7 @@ def get_sheet_data(project_id, key=None, verbose=False):
                 if sc.isnumber(cellval): # If it is a number...
                     if cellformat in ['edit', 'calc']:
                         cellval = sc.sigfig(100*cellval, sigfigs=3)
-                    elif cellformat == 'bdgt': # Format edit box numbers nicely
+                    elif cellformat in ['bdgt', 'bclc']: # Format edit box numbers nicely
                         cellval = '%0.2f' % cellval
                     elif cellformat == 'tick':
                         if not cellval:
@@ -652,6 +652,8 @@ def get_sheet_data(project_id, key=None, verbose=False):
                             cellval = True
                     else:
                         pass # It's fine, just let it go, let it go, can't hold it back any more
+                if cellformat == 'bclc':
+                    cellformat = 'calc'  # convert bclc to calc format so FE displays correctly
                 cellinfo = {'format': cellformat, 'value': cellval}
                 sheetjson[sheet][r].append(cellinfo)
     
