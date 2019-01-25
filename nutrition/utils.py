@@ -201,6 +201,12 @@ def read_sheet_with_calcs(spreadsheet, name, cols=None, dict_orient=None, skipro
         col1 = df2.columns.values[1]  # Remember the second column name.
         df3 = df2.drop_duplicates(col1)  # Remove duplicate rows in the second column.
         df = df3.set_index([col0, col1])  # Put the first two columns back in the indexes.
+    elif poobah and cols is not None and len(cols) > 0:  # poobah is the munging that we're trying to test to see if we can get an improvement over the old code
+        dropna = None
+        df2 = df.reset_index()  # Put the indexes in the columns for now.
+        col0 = df2.columns.values[0]  # Remember the first column name.
+        df3 = df2.drop_duplicates(col0)  # Remove duplicate rows in the first column.
+        df = df3.set_index([col0])  # Put the first column back in the indexes.
 
     if dropna:
         df = df.dropna(how=dropna)

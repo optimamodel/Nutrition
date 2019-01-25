@@ -371,19 +371,44 @@ class InputData(object):
         return None
 
     def get_proj(self):
-        # drops rows with any na
+        # drops rows with any na [but this caused problems for calculation cells: GLC: 1/25/19]
         proj = utils.read_sheet_with_calcs(self.spreadsheet, 'Demographic projections', cols=[0], dropna='any', poobah=True)
-        print('PANDASAURUS 2!')
-        print(proj)
-        # proj.to_csv('pandasaurus_2.csv')
+
+        # proj = utils.read_sheet_with_calcs(self.spreadsheet, 'Demographic projections', cols=[0], poobah=True)
+        # print('PANDASAURUS 2!')
+        # print(proj)
+        # proj.to_csv('pandasaurus_2b.csv')
+        # proj2 = self.spreadsheet.parse(sheet_name='Demographic projections', index_col=[0])
+        # print('PANDASAURUS 2c!')
+        # print(proj2)
+        # proj2.to_csv('pandasaurus_2c.csv')
+        # proj3 = self.spreadsheet.parse(sheet_name='Demographic projections')
+        # print('PANDASAURUS 2d!')
+        # print(proj3)
+        # proj3.to_csv('pandasaurus_2d.csv')
+
         if self.recalc:
+            # Redo the worksheet readin with a special method.  The ordinary way won't work because the year row
+            # is made of calculation cells.
+            proj = self.spreadsheet.parse(sheet_name='Demographic projections')
+
+            # Read in the Baseline spreadsheet information we'll need.
+            baseline = utils.read_sheet_with_calcs(self.spreadsheet, 'Baseline year population inputs', [0, 1], poobah=True)
+            start_year = baseline.loc['Projection years'].loc['Baseline year (projection start year)'].values[0]
+            end_year = baseline.loc['Projection years'].loc['End year'].values[0]
+            stillbirth = baseline.loc['Mortality'].loc['Stillbirths (per 1,000 total births)'].values[0]
+            abortion = baseline.loc['Mortality'].loc['Fraction of pregnancies ending in spontaneous abortion'].values[0]
+
+            # Fill in the years column using start_year and end_year, then set the year column to be the index.
+            proj.loc[:, 'year'] = list(range(start_year, end_year + 1))
+            proj = proj.set_index('year')
+
+            proj.to_csv('pandasaurus_2d.csv')
+
             total_wra = proj.loc[:, ['WRA: 15-19 years', 'WRA: 20-29 years', 'WRA: 30-39 years',
                 'WRA: 40-49 years']].sum(axis=1).values
             proj.loc[:, 'Total WRA'] = total_wra
             self.calcscache.write_col('Demographic projections', 1, 6, total_wra)
-            baseline = utils.read_sheet_with_calcs(self.spreadsheet, 'Baseline year population inputs', [0, 1], poobah=True)
-            stillbirth = baseline.loc['Mortality'].loc['Stillbirths (per 1,000 total births)'].values[0]
-            abortion = baseline.loc['Mortality'].loc['Fraction of pregnancies ending in spontaneous abortion'].values[0]
             numbirths = proj.loc[:, 'Number of births'].values
             estpregwomen = (numbirths + numbirths * stillbirth / (1000.0 - stillbirth)) / (1.0 - abortion)
             proj.loc[:, 'Estimated pregnant women'] = estpregwomen
