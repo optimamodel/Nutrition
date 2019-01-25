@@ -394,16 +394,25 @@ class InputData(object):
 
             # Read in the Baseline spreadsheet information we'll need.
             baseline = utils.read_sheet_with_calcs(self.spreadsheet, 'Baseline year population inputs', [0, 1], poobah=True)
-            start_year = baseline.loc['Projection years'].loc['Baseline year (projection start year)'].values[0]
-            end_year = baseline.loc['Projection years'].loc['End year'].values[0]
+            start_year = int(baseline.loc['Projection years'].loc['Baseline year (projection start year)'].values[0])
+            end_year = int(baseline.loc['Projection years'].loc['End year'].values[0])
             stillbirth = baseline.loc['Mortality'].loc['Stillbirths (per 1,000 total births)'].values[0]
             abortion = baseline.loc['Mortality'].loc['Fraction of pregnancies ending in spontaneous abortion'].values[0]
 
+            proj.to_csv('pandasaurus_2d.csv')
+
+            # Create the years.
+            yearvals = list(range(start_year, end_year + 1))
+
+            # Drop any rows beyond the number of years being simulated.  (There are often garbage rows at the end
+            # after parse().
+            proj = proj.iloc[:len(yearvals), :]
+
             # Fill in the years column using start_year and end_year, then set the year column to be the index.
-            proj.loc[:, 'year'] = list(range(start_year, end_year + 1))
+            proj.loc[:, 'year'] = yearvals
             proj = proj.set_index('year')
 
-            proj.to_csv('pandasaurus_2d.csv')
+            proj.to_csv('pandasaurus_2e.csv')
 
             total_wra = proj.loc[:, ['WRA: 15-19 years', 'WRA: 20-29 years', 'WRA: 30-39 years',
                 'WRA: 40-49 years']].sum(axis=1).values
