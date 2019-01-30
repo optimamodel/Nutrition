@@ -335,7 +335,7 @@ class InputData(object):
         # baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0, 1])
         print('PANDASAURUS 1.1!')
         print(baseline)
-        # baseline.to_csv('pandasaurus_1_1.csv')
+        baseline.to_csv('pandasaurus_1_1.csv')
         if self.recalc:
             frac_rice = baseline.loc['Food'].loc['Fraction eating rice as main staple food'].values[0]
             frac_wheat = baseline.loc['Food'].loc['Fraction eating wheat as main staple food'].values[0]
@@ -365,7 +365,7 @@ class InputData(object):
         baseline = utils.read_sheet_with_calcs(self.spreadsheet, 'Baseline year population inputs', [0])
         print('PANDASAURUS 1.2!')
         print(baseline)
-        # baseline.to_csv('pandasaurus_1_2.csv')
+        baseline.to_csv('pandasaurus_1_2.csv')
         for row in baseline.loc['Age distribution of pregnant women'].iterrows():
             self.pw_agedist.append(row[1]['Data'])
         return None
@@ -412,7 +412,7 @@ class InputData(object):
             proj.loc[:, 'year'] = yearvals
             proj = proj.set_index('year')
 
-            proj.to_csv('pandasaurus_2e.csv')
+            proj.to_csv('pandasaurus_2.csv')
 
             total_wra = proj.loc[:, ['WRA: 15-19 years', 'WRA: 20-29 years', 'WRA: 30-39 years',
                 'WRA: 40-49 years']].sum(axis=1).values
@@ -436,8 +436,11 @@ class InputData(object):
         dist = utils.read_sheet_with_calcs(self.spreadsheet, 'Nutritional status distribution', [0, 1], poobah=True)
         print('PANDASAURUS 3.1!')
         print(dist)
-        # dist.to_csv('pandasaurus_3_1.csv')
+        dist.to_csv('pandasaurus_3_1.csv')
         if self.recalc:
+            distB = self.spreadsheet.parse(sheet_name='Nutritional status distribution', index_col=[0, 1])
+            distB.to_csv('pandasaurus_3_1x.csv')
+
             stunting_mod_hi_sums = dist.loc['Stunting (height-for-age)'].iloc[2:4, 0:5].astype(np.float).sum().values
             stunting_invs = norm.ppf(stunting_mod_hi_sums, 0.0, 1.0)
             stunting_norm_pcts = np.ones(5) - norm.cdf(stunting_invs + np.ones(5), 0.0, 1.0)
@@ -470,7 +473,7 @@ class InputData(object):
         dist = utils.read_sheet_with_calcs(self.spreadsheet, 'Nutritional status distribution', [0, 1], skiprows=12, poobah=True)
         print('PANDASAURUS 3.2!')
         print(dist)
-        # dist.to_csv('pandasaurus_3_2.csv')
+        dist.to_csv('pandasaurus_3_2.csv')
         self.risk_dist['Anaemia'] = sc.odict()
         # If we are not calculating calculating spreadsheet calc values (but depending on the
         # Excel calculations instead)
@@ -492,7 +495,7 @@ class InputData(object):
         dist = utils.read_sheet_with_calcs(self.spreadsheet, 'Breastfeeding distribution', [0, 1], poobah=True)
         print('PANDASAURUS 4!')
         print(dist)
-        # dist.to_csv('pandasaurus_4.csv')
+        dist.to_csv('pandasaurus_4.csv')
         # If we need to recalculate values, overwrite the last row (None values).
         if self.recalc:
             calc_cells = 1.0 - dist.loc['Breastfeeding'].iloc[0:3].sum().values
@@ -504,7 +507,7 @@ class InputData(object):
         trends = utils.read_sheet(self.spreadsheet, 'Time trends', cols=[0,1], dropna=False)
         print('PANDASAURUS 5!')
         print(trends)
-        # trends.to_csv('pandasaurus_5.csv')
+        trends.to_csv('pandasaurus_5.csv')
         self.time_trends['Stunting'] = trends.loc['Stunting prevalence (%)'].loc['Children 0-59 months'].values.tolist()[:1]
         self.time_trends['Wasting'] = trends.loc['Wasting prevalence (%)'].loc['Children 0-59 months'].values.tolist()[:1]
         self.time_trends['Anaemia'] = trends.loc['Anaemia prevalence (%)'].values.tolist()[:3] # order is (children, PW, WRA)
@@ -515,7 +518,7 @@ class InputData(object):
         incidences = utils.read_sheet_with_calcs(self.spreadsheet, 'Incidence of conditions', [0], poobah=True)
         print('PANDASAURUS 6!')
         print(incidences)
-        # incidences.to_csv('pandasaurus_6.csv')
+        incidences.to_csv('pandasaurus_6.csv')
         if self.recalc:
             baseline = utils.read_sheet_with_calcs(self.spreadsheet, 'Baseline year population inputs', [0, 1], poobah=True)
             diarr_incid = baseline.loc['Diarrhoea incidence']['Data'].values
@@ -538,7 +541,7 @@ class InputData(object):
         deathdist = utils.read_sheet_with_calcs(self.spreadsheet, 'Causes of death', [0, 1], skiprows=1, poobah=True)
         print('PANDASAURUS 7.1!')
         print(deathdist)
-        # deathdist.to_csv('pandasaurus_7_1.csv')
+        deathdist.to_csv('pandasaurus_7_1.csv')
         if self.recalc:
             neonatal_death_pct_sum = deathdist.loc['Neonatal']['<1 month'].values[:-1].astype(np.float).sum()
             self.calcscache.write_cell('Causes of death', 10, 2, neonatal_death_pct_sum)
@@ -550,12 +553,12 @@ class InputData(object):
         deathdist = utils.read_sheet_with_calcs(self.spreadsheet, 'Causes of death', [0, 1], skiprows=12, poobah=True)
         print('PANDASAURUS 7.2!')
         print(deathdist)
-        # deathdist.to_csv('pandasaurus_7_2.csv')
+        deathdist.to_csv('pandasaurus_7_2.csv')
         children = deathdist.loc['Children'].ix[:-1]
         deathdist = utils.read_sheet_with_calcs(self.spreadsheet, 'Causes of death', [0, 1], skiprows=24, poobah=True)
         print('PANDASAURUS 7.3!')
         print(deathdist)
-        # deathdist.to_csv('pandasaurus_7_3.csv')
+        deathdist.to_csv('pandasaurus_7_3.csv')
         pw = deathdist.loc['Pregnant women'].ix[:-1]
         dist = pandas.concat([neonates['<1 month'], children, pw['Pregnant women.1']], axis=1, sort=False).fillna(0)
         for cause in dist.index:
@@ -630,15 +633,11 @@ class ProgData(object):
             raise Exception(errors)
 
     def get_prog_target(self):
-        targetPopSheet = utils.read_sheet(self.spreadsheet, 'Programs target population', [0, 1])
-        targetPopSheetB = utils.read_sheet_with_calcs(self.spreadsheet, 'Programs target population', [0, 1], poobah=True)
-        print('PANDASAURUS 8.1!')
+        # targetPopSheet = utils.read_sheet(self.spreadsheet, 'Programs target population', [0, 1])
+        targetPopSheet = utils.read_sheet_with_calcs(self.spreadsheet, 'Programs target population', [0, 1], poobah=True)
+        print('PANDASAURUS 8!')
         print(targetPopSheet)
-        # targetPopSheet.to_csv('pandasaurus_8_1.csv')
-        print('PANDASAURUS 8.2!')
-        print(targetPopSheetB)
-        # targetPopSheetB.to_csv('pandasaurus_8_2.csv')
-        targetPopSheet = targetPopSheetB
+        targetPopSheet.to_csv('pandasaurus_8.csv')
         if self.recalc:
             baseline = utils.read_sheet_with_calcs(self.spreadsheet, 'Baseline year population inputs', [0, 1], poobah=True)
             food_insecure = baseline.loc['Population data'].loc['Percentage of population food insecure (default poor)'].values[0]
@@ -749,7 +748,7 @@ class ProgData(object):
         famplan_methods = utils.read_sheet_with_calcs(self.spreadsheet, 'Programs family planning', [0], poobah=True)
         print('PANDASAURUS 9!')
         print(famplan_methods)
-        # famplan_methods.to_csv('pandasaurus_9.csv')
+        famplan_methods.to_csv('pandasaurus_9.csv')
         if self.recalc:
             dist = famplan_methods.loc[:, 'Distribution'].values
             costs = famplan_methods.loc[:, 'Cost'].values
@@ -773,16 +772,16 @@ class ProgData(object):
         sheet = utils.read_sheet_with_calcs(self.spreadsheet, 'Programs cost and coverage', poobah=True)
         print('PANDASAURUS 10!')
         print(sheet)
-        # sheet.to_csv('pandasaurus_10.csv')
+        sheet.to_csv('pandasaurus_10.csv')
         if self.recalc:
             IYCFpackages = self.spreadsheet.parse(sheet_name='IYCF packages', index_col=[0, 1])
             print('PANDASAURUS 11!')
             print(IYCFpackages)
-            # IYCFpackages.to_csv('pandasaurus_11.csv')
+            IYCFpackages.to_csv('pandasaurus_11.csv')
             IYCFcost = self.spreadsheet.parse(sheet_name='IYCF cost', index_col=[0, 1])
             print('PANDASAURUS 12!')
             print(IYCFcost)
-            # IYCFcost.to_csv('pandasaurus_12.csv')
+            IYCFcost.to_csv('pandasaurus_12.csv')
             costs = pandas.DataFrame(IYCFcost.values,
                 index=['Pregnant women', '<1 month', '1-5 months', '6-11 months', '12-23 months'],
                 columns=['Health facility', 'Community', 'Mass media'])
@@ -791,7 +790,6 @@ class ProgData(object):
                 IYCF1_unit_cost = 0.01  # default to $0.01 if zero or less
             sheet.iloc[16, 3] = IYCF1_unit_cost
             self.calcscache.write_cell('Programs cost and coverage', 17, 3, IYCF1_unit_cost)
-            print('CALCULATION 2')
             IYCF2_unit_cost = get_unit_cost(IYCFpackages.loc['IYCF 2'].iloc[:-1, :], costs)
             if IYCF2_unit_cost <= 0.0:
                 IYCF2_unit_cost = 0.01  # default to $0.01 if zero or less
