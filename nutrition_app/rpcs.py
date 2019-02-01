@@ -469,40 +469,12 @@ def upload_databook(databook_filename, project_id):
 ### Input functions and RPCs
 ##################################################################################
 
-# editableformats = ['edit', 'calc', 'tick', 'bdgt', 'drop'] # Define which kinds of format are editable and saveable
 editableformats = ['edit', 'tick', 'bdgt', 'drop'] # Define which kinds of format are editable and saveable
 
 def define_formats():
     ''' Hard-coded sheet formats '''
     formats = sc.odict()
-    
-    # formats['Nutritional status distribution'] = [
-    #     ['head', 'head', 'name', 'name', 'name', 'name', 'name', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-    #     ['name', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-    #     ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-    #     ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-    #     ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-    #     ['blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-    #     ['blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-    #     ['name', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-    #     ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-    #     ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-    #     ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-    #     ['blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-    #     ['name', 'blnk', 'name', 'name', 'name', 'name', 'name', 'name', 'name', 'name', 'name', 'name', 'name', 'name', 'name'],
-    #     ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit'],
-    #     ['blnk', 'name', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc'],
-    # ]
-    #
-    # formats['Breastfeeding distribution'] = [
-    #     ['head', 'head', 'head', 'head', 'head', 'head', 'head'],
-    #     ['name', 'name', 'edit', 'edit', 'edit', 'edit', 'edit'],
-    #     ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit'],
-    #     ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit'],
-    #     ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit'],
-    # ]
-    
-    # These are for when we get formulas working
+
     formats['Nutritional status distribution'] = [
         ['head', 'head', 'name', 'name', 'name', 'name', 'name', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
         ['name', 'name', 'calc', 'calc', 'calc', 'calc', 'calc', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
@@ -621,7 +593,7 @@ def get_sheet_data(project_id, key=None, verbose=False):
     sheetformat = define_formats()
     
     sheetjson = sc.odict()
-    for sheet in sheets:
+    for sheet in sheets:  # loop over each GUI worksheet
         datashape = np.shape(sheetdata[sheet])
         formatshape = np.shape(sheetformat[sheet])
         if datashape != formatshape:
@@ -634,16 +606,16 @@ def get_sheet_data(project_id, key=None, verbose=False):
             for c in range(cols):
                 cellformat = sheetformat[sheet][r][c]
                 cellval = sheetdata[sheet][r][c]
-                if cellformat in ['calc', 'bclc']:
+                if cellformat in ['calc', 'bclc']:  # Pull from cache if 'calc' or 'bclc'
                     cellval = calcscache.read_cell(sheet, r, c)
                 try:
-                    cellval = float(cellval) # Try to cast to float
+                    cellval = float(cellval)  # Try to cast to float
                 except:
                     pass # But give up easily
-                if sc.isnumber(cellval): # If it is a number...
-                    if cellformat in ['edit', 'calc']:
+                if sc.isnumber(cellval):  # If it is a number...
+                    if cellformat in ['edit', 'calc']:  # Format editable and calculation cell values
                         cellval = sc.sigfig(100*cellval, sigfigs=3)
-                    elif cellformat in ['bdgt', 'bclc']: # Format edit box numbers nicely
+                    elif cellformat in ['bdgt', 'bclc']:  # Format budget and budget calc cell values
                         cellval = '%0.2f' % cellval
                     elif cellformat == 'tick':
                         if not cellval:
@@ -652,7 +624,7 @@ def get_sheet_data(project_id, key=None, verbose=False):
                             cellval = True
                     else:
                         pass # It's fine, just let it go, let it go, can't hold it back any more
-                if cellformat == 'bclc':
+                if cellformat == 'bclc':  # 'bcalc' means budget + calculation cell
                     cellformat = 'calc'  # convert bclc to calc format so FE displays correctly
                 cellinfo = {'format': cellformat, 'value': cellval}
                 sheetjson[sheet][r].append(cellinfo)
@@ -681,7 +653,7 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
                 cellformat = sheetdata[sheet][r][c]['format']
                 if cellformat in editableformats:
                     cellval = sheetdata[sheet][r][c]['value']
-                    if cellformat in ['edit','calc']:
+                    if cellformat in ['edit', 'calc']:
                         cellval = numberify(cellval, blank='none', invalid='die', aslist=False)
                         if sc.isnumber(cellval):
                             cellval /= 100 # Convert from percentage
@@ -698,11 +670,9 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
                     vals.append(cellval)
                     if verbose:
                         print('  Cell (%s,%s) = %s' % (r+1, c+1, cellval))
-        # wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={'data_only': True}) # Can turn on verbose TODO: remove when things work
         wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={'data_only': False})  # Can turn on verbose
-        # wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={'data_only': 'both'})  # Can turn on verbose
-    proj.inputsheet(key=key).save('hookahdookah.xlsx')   # TODO: remove this when things are working
-    proj.load_data(fromfile=False, name=key)
+    # proj.inputsheet(key=key).save('hookahdookah.xlsx')   # TODO: remove this when things are working
+    proj.load_data(fromfile=False, name=key)  # Change the Dataset and Model, including doing recalculations.
     print('Saving project...')
     save_project(proj)
     return None
