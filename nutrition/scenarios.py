@@ -60,3 +60,25 @@ def convert_scen(scen, model):
     name = scen.name + ' (%s)' % scen_type
     converted = Scen(name=name, model_name=scen.model_name, scen_type=scen_type, progvals=newprogvals)
     return converted
+
+def make_default_scen(modelname=None, model=None, scen_type=None, basename='Baseline'):
+    """
+    Creates and returns a prototype / default scenario for a particular Model.
+    """
+
+    # Default to 'coverage' scenario if not set.
+    if scen_type is None:
+        scen_type = 'coverage'
+
+    # Get the set of programs in the model.
+    progset = model.prog_info.base_progset()
+    progvals = sc.odict([(prog,[]) for prog in progset])
+
+    kwargs1 = {'name': basename,
+              'model_name': modelname,
+              'scen_type': scen_type,
+              'progvals': progvals}
+
+    default = Scen(**kwargs1)
+    return default
+

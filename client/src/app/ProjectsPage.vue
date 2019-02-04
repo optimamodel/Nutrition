@@ -1,7 +1,7 @@
 <!--
 Manage projects page
 
-Last update: 2018oct04
+Last update: 2019jan11
 -->
 
 <template>
@@ -61,7 +61,6 @@ Last update: 2018oct04
               </span>
             </th>
             <th>Databook</th> <!-- ATOMICA-NUTRITION DIFFERENCE -->
-            <th>Defaults</th> <!-- ATOMICA-NUTRITION DIFFERENCE -->
           </tr>
           </thead>
           <tbody>
@@ -97,11 +96,12 @@ Last update: 2018oct04
               'No modification' }}</td>
             <td style="white-space: nowrap; text-align:left"> <!-- ATOMICA-NUTRITION DIFFERENCE -->
               <button class="btn __blue" @click="uploadDatabook(projectSummary.project.id)" data-tooltip="Upload databook"><i class="ti-upload"></i></button>
-              <button class="btn" @click="downloadDatabook(projectSummary.project.id)" data-tooltip="Download databook"><i class="ti-download"></i></button>
-            </td>
-            <td style="white-space: nowrap; text-align:left"> <!-- ATOMICA-NUTRITION DIFFERENCE -->
-              <button class="btn" @click="uploadDefaults(projectSummary.project.id)" data-tooltip="Upload defaults"><i class="ti-upload"></i></button>
-              <button class="btn" @click="downloadDefaults(projectSummary.project.id)" data-tooltip="Download defaults"><i class="ti-download"></i></button>
+              <button class="btn" @click="downloadDatabook(projectSummary.project.id, projectSummary.selectedDataSet)" data-tooltip="Download databook"><i class="ti-download"></i></button>            
+              <select v-model="projectSummary.selectedDataSet">
+                <option v-for='dataset in projectSummary.project.dataSets'>
+                  {{ dataset }}
+                </option>
+              </select>&nbsp;
             </td>
           </tr>
           </tbody>
@@ -170,7 +170,8 @@ Last update: 2018oct04
         sortColumn: 'name',  // Column of table used for sorting the projects: name, country, creationTime, updatedTime, dataUploadTime
         sortReverse: false, // Sort in reverse order?
         projectSummaries: [], // List of summary objects for projects the user has
-        proj_name:  'New project', // For creating a new project: number of populations  // ATOMICA-NUTRITION DIFFERENCE
+        proj_name:  'New project', // For creating a new project: number of populations  
+        // ATOMICA-NUTRITION DIFFERENCE
       }
     },
 
@@ -238,6 +239,7 @@ Last update: 2018oct04
             this.projectSummaries.forEach(theProj => { // Preprocess all projects.
               theProj.selected = false // Set to not selected.
               theProj.renaming = '' // Set to not being renamed.
+              theProj.selectedDataSet = theProj.project.dataSets[0] // Set the first dataset.
               if (theProj.project.creationTime >= lastCreationTime) { // Update the last creation time and ID if what se see is later.
                 lastCreationTime = theProj.project.creationTime
                 lastCreatedID = theProj.project.id
@@ -442,29 +444,16 @@ Last update: 2018oct04
           })
       },
 
-      downloadDatabook(uid) {
+      downloadDatabook(uid, selectedDataSet) {
         console.log('downloadDatabook() called')
         status.start(this, 'Downloading data book...')
-        rpcs.download('download_databook', [uid])
+        rpcs.download('download_databook', [uid], {'key': selectedDataSet})
           .then(response => {
             status.succeed(this, '')  // No green popup message.
           })
           .catch(error => {
             status.fail(this, 'Could not download databook', error)
           })
-      },
-
-      downloadDefaults(uid) {  // ATOMICA-NUTRITION DIFFERENCE
-        let matchProject = this.projectSummaries.find(theProj => theProj.project.id === uid) // Find the project that matches the UID passed in.
-        console.log('downloadDefaults() called for ' + matchProject.project.name)
-        status.start(this)
-        rpcs.download('download_defaults', [uid])
-        .then(response => {
-          status.succeed(this, '')  // No green popup message.        
-        })
-        .catch(error => {
-          status.fail(this, 'Could not download defaults', error)     
-        })      
       },
 
       uploadDatabook(uid) {
@@ -477,19 +466,6 @@ Last update: 2018oct04
           })
           .catch(error => {
             status.fail(this, 'Could not upload data', error) // Indicate failure.
-          })
-      },
-
-      uploadDefaults(uid) {
-        console.log('uploadDefaults() called')     
-        rpcs.upload('upload_defaults', [uid], {}, '.xlsx')
-          .then(response => {
-            status.start(this, 'Uploading defaults...')
-            this.updateProjectSummaries(uid) // Update the project summaries
-            status.succeed(this, 'Defaults uploaded to project') // Indicate success.
-          })
-          .catch(error => {
-            status.fail(this, 'Could not upload defaults', error) // Indicate failure.
           })
       },
 

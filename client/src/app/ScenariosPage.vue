@@ -1,7 +1,7 @@
 <!--
 Scenarios page
 
-Last update: 2018-09-25
+Last update: 2019jan09
 -->
 
 <template>
@@ -27,6 +27,7 @@ Last update: 2018-09-25
           <tr>
             <th>Name</th>
             <th>Type</th>
+            <th>Dataset</th>
             <th>Active?</th>
             <th>Actions</th>
           </tr>
@@ -39,6 +40,9 @@ Last update: 2018-09-25
             <td>
               {{ scenSummary.scen_type }}
             </td>
+            <td>
+              {{ scenSummary.model_name }}
+            </td>			
             <td style="text-align: center">
               <input type="checkbox" v-model="scenSummary.active"/>
             </td>
@@ -144,6 +148,12 @@ Last update: 2018-09-25
             <input type="text"
                    class="txbox"
                    v-model="addEditModal.scenSummary.name"/><br>
+            <b>Dataset:</b><br>
+            <select v-model="addEditModal.scenSummary.model_name" @change="modalSwitchDataset">
+              <option v-for='dataset in datasetOptions'>
+                {{ dataset }}
+              </option>
+            </select><br><br>		   
             <div class="scrolltable" style="max-height: 80vh;">
               <table class="table table-bordered table-striped table-hover">
                 <thead>
@@ -182,10 +192,10 @@ Last update: 2018-09-25
                 </tbody>
               </table>
             </div>
-            <button class="btn" @click="deselectAll()" data-tooltip="Deselect all interventions">Deselect all</button>
+            <button class="btn" @click="modalDeselectAll()" data-tooltip="Deselect all interventions">Deselect all</button>
           </div>
           <div style="text-align:center">
-            <button @click="addScen()" class='btn __green' style="display:inline-block">
+            <button @click="modalSave()" class='btn __green' style="display:inline-block">
               Save
             </button>
             &nbsp;&nbsp;&nbsp;
@@ -220,6 +230,7 @@ Last update: 2018-09-25
         scenSummaries: [],
         defaultScenYears: [],
         scenariosLoaded: false,
+        datasetOptions: [],
         addEditModal: {
           scenSummary: {},
           origName: '',
@@ -245,15 +256,14 @@ Last update: 2018-09-25
       else if ((this.$store.state.activeProject.project !== undefined) &&
         (this.$store.state.activeProject.project.hasData) ) {
         console.log('created() called')
-        utils.sleep(1)  // used so that spinners will come up by callback func
-          .then(response => {
-            this.getScenSummaries()
-          })
+        this.getScenSummaries()
+        this.updateDatasets()
       }
     },
 
     methods: {
 
+      updateDatasets()                    { return utils.updateDatasets(this) },
       makeGraphs(graphdata)               { return utils.makeGraphs(this, graphdata) },
       exportGraphs(project_id, cache_id)  { return utils.exportGraphs(this, project_id, cache_id) },
       exportResults(project_id, cache_id) { return utils.exportResults(this, project_id, cache_id) },
@@ -298,23 +308,23 @@ Last update: 2018-09-25
       setScenYears(scen) {
         this.defaultScenYears = [];
         for (let year = scen.t[0]; year <= scen.t[1]; year++) {
-          this.defaultScenYears.push(year);
+          this.defaultScenYears.push(year)
         }
       },
 
       addScenModal(scen_type) {
-        // Open a model dialog for creating a new project
-        console.log('addScenModal() called for type ' + scen_type);
-        rpcs.rpc('get_default_scen', [this.projectID, scen_type])
+        // Open a model dialog for creating a new scenario
+        console.log('addScenModal() called for type ' + scen_type)
+        rpcs.rpc('get_default_scen', [this.projectID, scen_type, this.datasetOptions[0]])
           .then(response => {
-            let defaultScen = response.data;
-            this.setScenYears(defaultScen);
-            this.addEditModal.scenSummary = defaultScen;
-            this.addEditModal.mode = 'add';
-            this.addEditModal.modalScenarioType = scen_type;
-            this.addEditModal.origName = this.addEditModal.scenSummary.name;
-            this.$modal.show('add-scen');
-            console.log('Default scenario:');
+            let defaultScen = response.data
+            this.setScenYears(defaultScen)
+            this.addEditModal.scenSummary = defaultScen
+            this.addEditModal.mode = 'add'
+            this.addEditModal.modalScenarioType = scen_type
+            this.addEditModal.origName = this.addEditModal.scenSummary.name
+            this.$modal.show('add-scen')
+            console.log('Default scenario:')
             console.log(defaultScen)
           })
           .catch(error => {
@@ -323,36 +333,57 @@ Last update: 2018-09-25
       },
 
       editScenModal(scenSummary) {
-        // Open a model dialog for creating a new project
-        console.log('editScenModal() called');
-        this.addEditModal.scenSummary = scenSummary;
-        this.addEditModal.modalScenarioType = scenSummary.scen_type;
-        this.setScenYears(scenSummary);
-        console.log('Editing scenario:');
-        console.log(this.addEditModal.scenSummary);
-        this.addEditModal.origName = this.addEditModal.scenSummary.name;
-        this.addEditModal.mode = 'edit';
-        this.$modal.show('add-scen');
+        // Open a model dialog for editing a scenario
+        console.log('editScenModal() called')
+        this.addEditModal.scenSummary = _.cloneDeep(scenSummary)
+        this.addEditModal.modalScenarioType = scenSummary.scen_type
+        this.setScenYears(scenSummary)
+        console.log('Editing scenario:')
+        console.log(this.addEditModal.scenSummary)
+        this.addEditModal.origName = this.addEditModal.scenSummary.name
+        this.addEditModal.mode = 'edit'
+        this.$modal.show('add-scen')
       },
-
-      deselectAll() {
+	  
+      modalSwitchDataset() {
+        console.log('modalSwitchDataset() called')
+        console.log('New Dataset: ', this.addEditModal.scenSummary.model_name)
+        let scenName = this.addEditModal.scenSummary.name
+        // Get a new default scenario to write into the modal.
+        rpcs.rpc('get_default_scen', [this.projectID, this.addEditModal.modalScenarioType, 
+          this.addEditModal.scenSummary.model_name])
+          .then(response => {
+            let newDefaultScen = response.data
+            this.setScenYears(newDefaultScen)
+            this.addEditModal.scenSummary = newDefaultScen  // overwrite the old scenario
+			this.addEditModal.scenSummary.name = scenName  // keep the existing name
+            console.log('Default scenario:')
+            console.log(newDefaultScen)
+          })
+          .catch(error => {
+            status.fail(this, 'Could not switch datasets', error)
+          })		
+      },
+	  
+      modalDeselectAll() {
         this.addEditModal.scenSummary.progvals.forEach(progval => {
           progval.included = false;
         })
       },
 
-      addScen() {
-        console.log('addScen() called');
-        status.start(this);
-        let newScen = _.cloneDeep(this.addEditModal.scenSummary); // Get the new scenario summary from the modal.
-        let scenNames = []; // Get the list of all of the current scenario names.
+      modalSave() {
+        console.log('modalSave() called')
+        status.start(this)
+        let newScen = _.cloneDeep(this.addEditModal.scenSummary) // Get the new scenario summary from the modal.
+        let scenNames = [] // Get the list of all of the current scenario names.
         this.scenSummaries.forEach(scenSum => {
           scenNames.push(scenSum.name)
-        });
+        })
         if (this.addEditModal.mode === 'edit') { // If we are editing an existing scenario...
-          let index = scenNames.indexOf(this.addEditModal.origName); // Get the index of the original (pre-edited) name
+          let index = scenNames.indexOf(this.addEditModal.origName) // Get the index of the original (pre-edited) name
           if (index > -1) {
-            this.scenSummaries[index].name = newScen.name; // hack to make sure Vue table updated
+            this.scenSummaries[index].name = newScen.name // hack to make sure Vue table updated
+            this.scenSummaries[index].model_name = newScen.model_name
             this.scenSummaries[index] = newScen
           }
           else {
@@ -360,15 +391,16 @@ Last update: 2018-09-25
           }
         }
         else { // Else (we are adding a new scenario)...
-          newScen.name = utils.getUniqueName(newScen.name, scenNames);
+          newScen.name = utils.getUniqueName(newScen.name, scenNames)
           this.scenSummaries.push(newScen)
         }
-        console.log('Saved scenario:');
-        console.log(newScen);
+        console.log('Saved scenario:')
+        console.log(newScen)
         rpcs.rpc('set_scen_info', [this.projectID, this.scenSummaries])
           .then( response => {
             status.succeed(this, 'Scenario added')
-            this.$modal.hide('add-scen');
+            this.$modal.hide('add-scen')
+            this.getScenSummaries()  // Reload all scenarios so Vue state is correct (hack).
           })
           .catch(error => {
             status.fail(this, 'Could not add scenario', error)

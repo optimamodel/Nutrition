@@ -1,7 +1,7 @@
 """
 Optima Nutrition remote procedure calls (RPCs)
     
-Last update: 2018sep25 by cliffk
+Last update: 2019jan11 by georgec
 """
 
 ###############################################################
@@ -30,7 +30,8 @@ datastore = None
 ###############################################################
 
 def get_path(filename=None, username=None):
-    if filename is None: filename = ''
+    if filename is None:
+        filename = ''
     base_dir = datastore.tempfolder
     user_id = str(get_user(username).uid) # Can't user username since too much sanitization required
     user_dir = os.path.join(base_dir, user_id)
@@ -47,19 +48,29 @@ def numberify(val, blank=None, invalid=None, toremove=None, convertpercent=None,
     default_opts     = ['none', 'nan', 'zero', 'pass', 'die'] # How to handle either blank entries or invalid entries
     
     # Handle input arguments
-    if blank          is None: blank   = 'none'
-    if invalid        is None: invalid = 'die'
-    if convertpercent is None: convertpercent = False
-    if toremove       is None: toremove = default_toremove
+    if blank          is None:
+        blank   = 'none'
+    if invalid        is None:
+        invalid = 'die'
+    if convertpercent is None:
+        convertpercent = False
+    if toremove       is None:
+        toremove = default_toremove
     
     def baddata(val, opt, errormsg=None):
         ''' Handle different options for blank or invalid data '''
-        if   opt == 'none': return None
-        elif opt == 'nan':  return np.nan
-        elif opt == 'zero': return 0
-        elif opt == 'pass': return val
-        elif opt == 'die':  raise Exception(errormsg)
-        else:               raise Exception('Bad option for baddata(): "blank" and "invalid" must be one of %s, not %s and %s' % (default_opts, blank, invalid))
+        if   opt == 'none':
+            return None
+        elif opt == 'nan':
+            return np.nan
+        elif opt == 'zero':
+            return 0
+        elif opt == 'pass':
+            return val
+        elif opt == 'die':
+            raise Exception(errormsg)
+        else:
+            raise Exception('Bad option for baddata(): "blank" and "invalid" must be one of %s, not %s and %s' % (default_opts, blank, invalid))
     
     # If a list, then recursively call this function
     if aslist:
@@ -83,7 +94,8 @@ def numberify(val, blank=None, invalid=None, toremove=None, convertpercent=None,
             try:
                 factor = 1.0 # Set the factor (for handling percentages)
                 if sc.isstring(val): # If it's a string (probably it is), do extra handling
-                    if convertpercent and val.endswith('%'): factor = 0.01 # Scale if percentage has been used -- CK: not used since already converted from percentage
+                    if convertpercent and val.endswith('%'):
+                        factor = 0.01 # Scale if percentage has been used -- CK: not used since already converted from percentage
                     for badchar in toremove:
                         val = val.replace(badchar,'') # Remove unwanted parts of the string
                 sanival = float(val)*factor # Do the actual conversion
@@ -91,7 +103,8 @@ def numberify(val, blank=None, invalid=None, toremove=None, convertpercent=None,
                 errormsg = 'Sanitization failed: invalid entry: "%s" (%s)' % (val, str(E))
                 sanival = baddata(val, invalid, errormsg)
         
-        if verbose: print('Sanitized %s %s to %s' % (type(val), repr(val), repr(sanival)))
+        if verbose:
+            print('Sanitized %s %s to %s' % (type(val), repr(val), repr(sanival)))
         return sanival
 
 
@@ -161,8 +174,10 @@ def admin_grab_projects(username1, username2):
 def admin_reset_projects(username):
     user = datastore.loaduser(username)
     for projectkey in user.projects:
-        try:    datastore.delete(projectkey)
-        except: pass
+        try:
+            datastore.delete(projectkey)
+        except:
+            pass
     user.projects = []
     output = datastore.saveuser(user)
     return output
@@ -240,7 +255,8 @@ def del_project(project_key, username=None, die=None):
         return None
     output = datastore.delete(key)
     try:
-        if username is None: username = project.webapp.username
+        if username is None:
+            username = project.webapp.username
         user = get_user(username)
         user.projects.remove(key)
         datastore.saveuser(user)
@@ -272,7 +288,8 @@ def del_result(result_key, project_key, die=None):
             found = True
     if not found:
         print('Warning: deleting result %s (%s), but not found in project "%s"' % (result_key, key, project_key))
-    if found: save_project(project) # Only save if required
+    if found:
+        save_project(project) # Only save if required
     return output
 
 ##################################################################################
@@ -289,13 +306,15 @@ def jsonify_project(project_id, verbose=False):
             'name':         proj.name,
             'username':     proj.webapp.username,
             'hasData':      len(proj.datasets)>0,
+            'dataSets':     proj.datasets.keys(),
             'creationTime': sc.getdate(proj.created),
             'updatedTime':  sc.getdate(proj.modified),
             'n_results':    len(proj.results),
             'n_tasks':      len(proj.webapp.tasks)
         }
     }
-    if verbose: sc.pp(json)
+    if verbose:
+        sc.pp(json)
     return json
     
 
@@ -313,7 +332,8 @@ def jsonify_projects(username, verbose=False):
             print('Project load failed, removing: %s' % str(E))
             user.projects.remove(project_key)
             datastore.saveuser(user)
-    if verbose: sc.pp(output)
+    if verbose:
+        sc.pp(output)
     return output
 
 
@@ -421,23 +441,15 @@ def download_projects(project_keys, username):
 def download_databook(project_id, key=None):
     """ Download databook """
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
-    file_name = '%s_databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
+    if key is not None:
+        file_name = '%s_%s_databook.xlsx' % \
+            (proj.name, key) # Create a filename containing the project name followed by the databook name, then a .prj suffix.
+    else:
+        file_name = '%s_%s_databook.xlsx' % \
+            (proj.name, proj.spreadsheets.keys()[-1]) # Create a filename containing the project name followed the databook name, then a .prj suffix.
     full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
-    proj.inputsheet().save(full_file_name)
+    proj.inputsheet(key=key).save(full_file_name) # Pull out and save the databook spreadsheet with the desired key (or the last databook if None).
     print(">> download_databook %s" % (full_file_name)) # Display the call information.
-    return full_file_name # Return the full filename.
-
-
-@RPC(call_type='download')   
-def download_defaults(project_id):
-    """
-    Download defaults
-    """
-    proj = load_project(project_id, die=True) # Load the project with the matching UID.
-    file_name = '%s_defaults.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
-    full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
-    proj.defaultssheet.save(full_file_name)
-    print(">> download_defaults %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
 
 
@@ -447,20 +459,6 @@ def upload_databook(databook_filename, project_id):
     print(">> upload_databook '%s'" % databook_filename)
     proj = load_project(project_id, die=True)
     proj.load_data(inputspath=databook_filename) # Reset the project name to a new project name that is unique.
-    proj.modified = sc.now()
-    save_project(proj) # Save the new project in the DataStore.
-    return { 'projectID': str(proj.uid) } # Return the new project UID in the return message.
-
-
-@RPC(call_type='upload')
-def upload_defaults(defaults_filename, project_id):
-    """ Upload a databook to a project. """
-    print(">> upload_databook '%s'" % defaults_filename)
-    proj = load_project(project_id, die=True)
-    try:
-        proj.load_data(defaultspath=defaults_filename) # Reset the project name to a new project name that is unique.
-    except Exception as E:
-        print('Defaults uploaded, but data not loaded (probably since inputs have not been uploaded yet): %s' % str(E))
     proj.modified = sc.now()
     save_project(proj) # Save the new project in the DataStore.
     return { 'projectID': str(proj.uid) } # Return the new project UID in the return message.
@@ -634,33 +632,40 @@ def get_sheet_data(project_id, key=None, verbose=False):
             for c in range(cols):
                 cellformat = sheetformat[sheet][r][c]
                 cellval = sheetdata[sheet][r][c]
-                try:    cellval = float(cellval) # Try to cast to float
-                except: pass # But give up easily
+                try:
+                    cellval = float(cellval) # Try to cast to float
+                except:
+                    pass # But give up easily
                 if sc.isnumber(cellval): # If it is a number...
                     if cellformat in ['edit','calc']:
                         cellval = sc.sigfig(100*cellval, sigfigs=3)
                     elif cellformat == 'bdgt': # Format edit box numbers nicely
                         cellval = '%0.2f' % cellval
                     elif cellformat == 'tick':
-                        if not cellval: cellval = False
-                        else:           cellval = True
+                        if not cellval:
+                            cellval = False
+                        else:
+                            cellval = True
                     else:
                         pass # It's fine, just let it go, let it go, can't hold it back any more
                 cellinfo = {'format':cellformat, 'value':cellval}
                 sheetjson[sheet][r].append(cellinfo)
     
     sheetjson = sc.sanitizejson(sheetjson)
-    if verbose: sc.pp(sheetjson)
+    if verbose:
+        sc.pp(sheetjson)
     return {'names':sheets, 'tables':sheetjson}
 
 
 @RPC()
 def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
     proj = load_project(project_id, die=True)
-    if key is None: key = proj.datasets.keys()[-1] # There should always be at least one
+    if key is None:
+        key = proj.datasets.keys()[-1] # There should always be at least one
     wb = proj.inputsheet(key) # CK: Warning, might want to change
     for sheet in sheetdata.keys():
-        if verbose: print('Saving sheet %s...' % sheet)
+        if verbose:
+            print('Saving sheet %s...' % sheet)
         datashape = np.shape(sheetdata[sheet])
         rows,cols = datashape
         cells = []
@@ -677,15 +682,19 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
                     elif cellformat == 'bdgt': # Warning, have to be careful with these.
                         cellval = numberify(cellval, blank='none', invalid='die', aslist=False)
                     elif cellformat == 'tick':
-                        if not cellval: cellval = '' # For Excel display
-                        else:           cellval = True
+                        if not cellval:
+                            cellval = '' # For Excel display
+                        else:
+                            cellval = True
                     else:
                         pass
                     cells.append([r+1,c+1]) # Excel uses 1-based indexing
                     vals.append(cellval)
-                    if verbose: print('  Cell (%s,%s) = %s' % (r+1, c+1, cellval))
+                    if verbose:
+                        print('  Cell (%s,%s) = %s' % (r+1, c+1, cellval))
         wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={'data_only':True}) # Can turn on verbose
-    proj.load_data(fromfile=False, name=proj.datasets.keys()[-1]) # WARNING, only supports one dataset/model
+    # proj.load_data(fromfile=False, name=proj.datasets.keys()[-1]) # WARNING, only supports one dataset/model
+    proj.load_data(fromfile=False, name=key)
     print('Saving project...')
     save_project(proj)
     return None
@@ -712,6 +721,7 @@ def rename_dataset(project_id, datasetname=None, new_name=None):
     print('Renaming dataset from %s to %s...' % (datasetname, new_name))
     proj = load_project(project_id, die=True)
     proj.datasets.rename(datasetname, new_name)
+    proj.datasets[new_name].name = new_name
     proj.spreadsheets.rename(datasetname, new_name)
     proj.models.rename(datasetname, new_name)
     print('Saving project...')
@@ -727,6 +737,8 @@ def copy_dataset(project_id, datasetname=None):
     new_name = sc.uniquename(datasetname, namelist=proj.datasets.keys())
     print('Old name: %s; new name: %s' % (datasetname, new_name))
     proj.datasets[new_name] = sc.dcp(proj.datasets[datasetname])
+    proj.datasets[new_name].name = new_name
+    proj.spreadsheets[new_name] = sc.dcp(proj.spreadsheets[datasetname])
     print('Number of datasets after copy: %s' % len(proj.datasets))
     print('Saving project...')
     save_project(proj)
@@ -740,6 +752,7 @@ def delete_dataset(project_id, datasetname=None):
     print('Number of datasets before delete: %s' % len(proj.datasets))
     if len(proj.datasets)>1:
         proj.datasets.pop(datasetname)
+        proj.spreadsheets.pop(datasetname)
     else:
         raise Exception('Cannot delete last parameter set')
     print('Number of datasets after delete: %s' % len(proj.datasets))
@@ -794,7 +807,7 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
     ''' Convert a Python to JSON representation of a scenario '''
     prog_names = proj.dataset().prog_names()
     scen_years = proj.dataset().t[1] - proj.dataset().t[0] # First year is baseline
-    attrs = ['name', 'active', 'scen_type']
+    attrs = ['name', 'active', 'scen_type', 'model_name']
     js_scen = {}
     for attr in attrs:
         js_scen[attr] = getattr(py_scen, attr) # Copy the attributes into a dictionary
@@ -844,7 +857,7 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
 def js_to_py_scen(js_scen):
     ''' Convert a JSON to Python representation of a scenario '''
     py_json = sc.odict()
-    for attr in ['name', 'scen_type', 'active']: # Copy these directly
+    for attr in ['name', 'scen_type', 'model_name', 'active']: # Copy these directly
         py_json[attr] = js_scen[attr]
     py_json['progvals'] = sc.odict() # These require more TLC
     for js_spec in js_scen['progvals']:
@@ -873,8 +886,9 @@ def get_scen_info(project_id, key=None, verbose=False):
     print('Getting scenario info...')
     proj = load_project(project_id, die=True)
     scenario_jsons = []
-    for py_scen in proj.scens.values():
-        js_scen = py_to_js_scen(py_scen, proj, key=key)
+    for py_scen in proj.scens.values(): # Loop over all Scens in Project
+        # js_scen = py_to_js_scen(py_scen, proj, key=key)
+        js_scen = py_to_js_scen(py_scen, proj, key=py_scen.model_name)
         scenario_jsons.append(js_scen)
     if verbose:
         print('JavaScript scenario info:')
@@ -900,17 +914,19 @@ def set_scen_info(project_id, scenario_jsons, verbose=False):
 
 
 @RPC()
-def get_default_scen(project_id, scen_type=None, verbose=False):
+def get_default_scen(project_id, scen_type=None, model_name=None, verbose=False):
     print('Creating default scenario...')
-    if scen_type is None: scen_type = 'coverage'
+    if scen_type is None:
+        scen_type = 'coverage'
     proj = load_project(project_id, die=True)
-    py_scen = proj.demo_scens(doadd=False, default=True, scen_type=scen_type)
+    py_scen = nu.make_default_scen(model_name, model=proj.model(model_name), scen_type=scen_type, basename='Default scenario (%s)' % scen_type)
     py_scen.scen_type = scen_type # Set the scenario type -- Warning, is this needed?
-    js_scen = py_to_js_scen(py_scen, proj, default_included=True)
+    js_scen = py_to_js_scen(py_scen, proj, default_included=True, key=model_name)
     if verbose:
         print('Created default JavaScript scenario:')
         sc.pp(js_scen)
     return js_scen
+
 
 @RPC()
 def convert_scen(project_id, scenkey=None):
@@ -929,11 +945,13 @@ def reformat_costeff(costeff):
     for i,scenkey,val1 in costeff.enumitems():
         for j,progkey,val2 in val1.enumitems():
             if j==0: 
-                if i>0: table.append(['', '']+emptycols) # Blank row
+                if i>0:
+                    table.append(['', '']+emptycols) # Blank row
                 table.append(['header', scenkey]+emptycols) # e.g. ['header', 'Wasting example', '', '', '']
                 table.append(['keys', 'Programs']+outcomekeys)      # e.g. ['keys', '', 'Number anaemic', 'Number dead', ...]
             table.append(['entry', progkey]+val2.values())  # e.g. ['entry', 'IYCF', '$23,348 per death', 'No impact', ...]
     return table
+
 
 @RPC()
 def run_scens(project_id, doplot=True):
@@ -1010,7 +1028,8 @@ def js_to_py_optim(js_optim):
         print('Unable to convert "%s" to weights' % js_optim['weightslist'])
         raise E
     jsm = js_optim['mults']
-    if not jsm: jsm = 1.0
+    if not jsm:
+        jsm = 1.0
     if sc.isstring(jsm):
         jsm = jsm.split(',')
     vals = numberify(jsm, blank='die', invalid='die', aslist=True)
@@ -1050,13 +1069,13 @@ def set_optim_info(project_id, optim_jsons):
     print('Saving project...')
     save_project(proj)   
     return None
-    
+
 
 @RPC()
-def get_default_optim(project_id):
+def get_default_optim(project_id, model_name=None):
     print('Getting default optimization...')
     proj = load_project(project_id, die=True)
-    py_optim = proj.demo_optims(doadd=False)[0]
+    py_optim = nu.make_default_optim(model_name, basename='Maximize thrive')
     js_optim = py_to_js_optim(py_optim, proj, default_included=True)
     print('Created default JavaScript optimization:')
     sc.pp(js_optim)
@@ -1134,7 +1153,8 @@ def js_to_py_geo(js_geo):
         print('Unable to convert "%s" to weights' % js_geo['weightslist'])
         raise E
     jsm = js_geo['mults']
-    if not jsm: jsm = 1.0
+    if not jsm:
+        jsm = 1.0
     if sc.isstring(jsm):
         jsm = jsm.split(',')
     vals = numberify(jsm, blank='die', invalid='die', aslist=True)
@@ -1177,13 +1197,13 @@ def set_geo_info(project_id, geo_jsons):
     print('Saving project...')
     save_project(proj)   
     return None
-    
+
 
 @RPC()
 def get_default_geo(project_id):
     print('Getting default optimization...')
     proj = load_project(project_id, die=True)
-    py_geo = proj.demo_geos(doadd=False)[0]
+    py_geo = nu.make_default_geo(basename='Geospatial optimization')
     js_geo = py_to_js_geo(py_geo, proj, default_included=True)
     print('Created default JavaScript optimization:')
     sc.pp(js_geo)
@@ -1222,7 +1242,8 @@ def cache_results(proj, verbose=True):
         if not sc.isstring(result):
             result_key = save_result(result)
             proj.results[key] = result_key
-            if verbose: print('Cached result "%s" to "%s"' % (key, result_key))
+            if verbose:
+                print('Cached result "%s" to "%s"' % (key, result_key))
     save_project(proj)
     return proj
 
@@ -1233,7 +1254,8 @@ def retrieve_results(proj, verbose=True):
         if sc.isstring(result_key):
             result = load_result(result_key)
             proj.results[key] = result
-            if verbose: print('Retrieved result "%s" from "%s"' % (key, result_key))
+            if verbose:
+                print('Retrieved result "%s" from "%s"' % (key, result_key))
     return proj
 
 

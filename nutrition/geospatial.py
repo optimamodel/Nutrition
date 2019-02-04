@@ -191,3 +191,23 @@ class Geospatial:
     def get_nationalspend(self, regions):
         """ allocation return as time series, ensure only extract current spending"""
         return sum([sum(region.get_currspend()) for region in regions])
+
+
+def make_default_geo(basename='Geospatial optimization'):
+    """
+    Creates and returns a prototype / default geospatial optimization.
+    """
+
+    kwargs1 = {'name': basename,
+               'modelnames': [None],
+               'weights': 'thrive',
+               'fix_curr': False,
+               'fix_regionalspend': False,
+               'add_funds': 0,
+               'prog_set': ['IFA fortification of maize', 'IYCF 1', 'Lipid-based nutrition supplements',
+                            'Multiple micronutrient supplementation', 'Micronutrient powders', 'Kangaroo mother care',
+                            'Public provision of complementary foods', 'Treatment of SAM', 'Vitamin A supplementation',
+                            'Mg for eclampsia', 'Zinc for treatment + ORS', 'Iron and iodine fortification of salt']}
+
+    default = Geospatial(**kwargs1)
+    return default

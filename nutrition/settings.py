@@ -42,20 +42,10 @@ class Settings(object):
         return output
 
 def data_path(country, region=None):
-    if region is None: region = country
-    sim_type = 'national' if country == region else 'regional'
-    parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) # Warning, could use e.g. ONpath() here
-    demoname = '{}_input.xlsx'.format(region)
-    subdir = os.path.join('applications', country, 'data', sim_type, demoname)
-    demopath = os.path.join(parentfolder, subdir)
-    return demopath
-
-def default_params_path():
-    parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-    filename = 'default_params.xlsx'
-    childpath = os.path.join('nutrition', filename)
-    filepath = os.path.join(parentfolder, childpath)
-    return filepath
+    if region is None:
+        region = 'national'
+    filename = ONpath('inputs') + country + '_' + region + '_input.xlsx'
+    return filename
 
 
 
@@ -92,5 +82,6 @@ class ONException(Exception):
     ''' A tiny class to allow for Optima-specific exceptions -- define this here to allow for Optima-specific info '''
     
     def __init__(self, errormsg, *args, **kwargs):
-        if isinstance(errormsg, basestring): errormsg = errormsg+debuginfo(output=True) # If it's not a string, not sure what it is, but don't bother with this
+        if isinstance(errormsg, basestring):
+            errormsg = errormsg+debuginfo(output=True) # If it's not a string, not sure what it is, but don't bother with this
         Exception.__init__(self, errormsg, *args, **kwargs)
