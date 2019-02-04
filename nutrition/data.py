@@ -421,6 +421,7 @@ class InputData(object):
     def get_risk_dist(self):
         # Load the main spreadsheet into a DataFrame.
         dist = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0, 1])
+        
 
         # print('PANDASAURUS 3.1!')  # TODO: remove debugging code
         # print(dist)
@@ -443,6 +444,8 @@ class InputData(object):
         wasting_mild_pcts = norm.cdf(wasting_invs + np.ones(5), 0.0, 1.0) - wasting_mod_hi_sums
         dist.loc['Wasting (weight-for-height)'].iloc[1, 0:5] = wasting_mild_pcts
         self.calcscache.write_row('Nutritional status distribution', 8, 2, wasting_mild_pcts)
+        
+        
 
         # print('PANDASAURUS 3.1b!')  # TODO: remove debugging code
         # print(dist)
@@ -464,6 +467,8 @@ class InputData(object):
         # Load the main spreadsheet into a DataFrame, but skipping 12 rows.
         # get anaemia
         dist = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0, 1], skiprows=12)
+        
+        import traceback; traceback.print_exc(); import pdb; pdb.set_trace()
 
         # print('PANDASAURUS 3.2!')  # TODO: remove debugging code
         # print(dist)
@@ -962,10 +967,10 @@ class Dataset(object):
             self.prog_data = ProgData(input_data, self.default_params, self.calcscache)
         except Exception as E:
             raise Exception('Error in program data: %s'%str(E))
-        try:
-            self.pops = populations.set_pops(self.demo_data, self.default_params)
-        except Exception as E:
-            raise Exception('Error in creating populations, check data and defaults books: %s'%str(E))
+#        try:
+        self.pops = populations.set_pops(self.demo_data, self.default_params)
+#        except Exception as E:
+#            raise Exception('Error in creating populations, check data and defaults books: %s'%str(E))
         self.prog_info = programs.ProgramInfo(self.prog_data)
         self.t = self.demo_data.t
         self.modified = sc.now()
