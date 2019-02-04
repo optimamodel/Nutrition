@@ -449,7 +449,8 @@ class Children(Population):
                     for wastingCat in self.ss.wasting_list:
                         for bfCat in self.ss.bf_list:
                             for anaemiaCat in self.ss.anaemia_list:
-                                t1 = float(self.stunting_dist[age][stuntingCat])  # TODO: remove hack cast if we can fix source of t1 becoming str
+                                # t1 = float(self.stunting_dist[age][stuntingCat])  # TODO: remove hack cast if we can fix source of t1 becoming str
+                                t1 = self.stunting_dist[age][stuntingCat]  # TODO: remove hack cast if we can fix source of t1 becoming str
                                 t2 = self.wasting_dist[age][wastingCat]
                                 t3 = self.bf_dist[age][bfCat]
                                 t4 = self.anaemia_dist[age][anaemiaCat]

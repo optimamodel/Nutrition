@@ -444,6 +444,10 @@ class InputData(object):
         dist.loc['Wasting (weight-for-height)'].iloc[1, 0:5] = wasting_mild_pcts
         self.calcscache.write_row('Nutritional status distribution', 8, 2, wasting_mild_pcts)
 
+        # print('PANDASAURUS 3.1b!')  # TODO: remove debugging code
+        # print(dist)
+        # dist.to_csv('pandasaurus_3_1b.csv')
+
         # dist = dist.drop(dist.index[[1]])
         riskDist = sc.odict()
         for field in ['Stunting (height-for-age)', 'Wasting (weight-for-height)']:
@@ -727,6 +731,10 @@ class ProgData(object):
         bednet_row = frac_malaria_risk * np.ones(13)
         targetPopSheet.loc['General population'].loc['Long-lasting insecticide-treated bednets'] = bednet_row
         self.calcscache.write_row('Programs target population', 32, 2, bednet_row)
+
+        # print('PANDASAURUS 8b!')  # TODO: remove debugging code
+        # print(targetPopSheet)
+        # targetPopSheet.to_csv('pandasaurus_8b.csv')
 
         targetPop = sc.odict()
         for pop in ['Children', 'Pregnant women', 'Non-pregnant WRA', 'General population']:
