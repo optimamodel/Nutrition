@@ -430,7 +430,8 @@ class InputData(object):
         stunting_mod_hi_sums = dist.loc['Stunting (height-for-age)'].iloc[2:4, 0:5].astype(np.float).sum().values
         stunting_invs = norm.ppf(stunting_mod_hi_sums, 0.0, 1.0)
         stunting_norm_pcts = np.ones(5) - norm.cdf(stunting_invs + np.ones(5), 0.0, 1.0)
-        dist.loc['Stunting (height-for-age)'].iloc[0, 0:5] = stunting_norm_pcts
+        cols = dist.columns[0:5]
+        dist.loc[('Stunting (height-for-age)', 'Normal (HAZ-score > -1)'), cols] = stunting_norm_pcts
         self.calcscache.write_row('Nutritional status distribution', 1, 2, stunting_norm_pcts)
         stunting_mild_pcts = norm.cdf(stunting_invs + np.ones(5), 0.0, 1.0) - stunting_mod_hi_sums
         dist.loc['Stunting (height-for-age)'].iloc[1, 0:5] = stunting_mild_pcts
