@@ -422,9 +422,9 @@ class InputData(object):
         # Load the main spreadsheet into a DataFrame.
         dist = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0, 1])
 
-        print('PANDASAURUS 3.1!')  # TODO: remove debugging code
-        print(dist)
-        dist.to_csv('pandasaurus_3_1.csv')
+        # print('PANDASAURUS 3.1!')  # TODO: remove debugging code
+        # print(dist)
+        # dist.to_csv('pandasaurus_3_1.csv')
 
         # Recalculate cells that need it, and remember in the calculations cache.
         stunting_mod_hi_sums = dist.loc['Stunting (height-for-age)'].iloc[2:4, 0:5].astype(np.float).sum().values
@@ -434,20 +434,20 @@ class InputData(object):
         dist.loc[('Stunting (height-for-age)', 'Normal (HAZ-score > -1)'), cols] = stunting_norm_pcts
         self.calcscache.write_row('Nutritional status distribution', 1, 2, stunting_norm_pcts)
         stunting_mild_pcts = norm.cdf(stunting_invs + np.ones(5), 0.0, 1.0) - stunting_mod_hi_sums
-        dist.loc['Stunting (height-for-age)'].iloc[1, 0:5] = stunting_mild_pcts
+        dist.loc[('Stunting (height-for-age)', 'Mild (HAZ-score between -2 and -1)'), cols] = stunting_mild_pcts
         self.calcscache.write_row('Nutritional status distribution', 2, 2, stunting_mild_pcts)
         wasting_mod_hi_sums = dist.loc['Wasting (weight-for-height)'].iloc[2:4, 0:5].astype(np.float).sum().values
         wasting_invs = norm.ppf(wasting_mod_hi_sums, 0.0, 1.0)
         wasting_norm_pcts = np.ones(5) - norm.cdf(wasting_invs + np.ones(5), 0.0, 1.0)
-        dist.loc['Wasting (weight-for-height)'].iloc[0, 0:5] = wasting_norm_pcts
+        dist.loc[('Wasting (weight-for-height)', 'Normal (HAZ-score > -1)'), cols] = wasting_norm_pcts
         self.calcscache.write_row('Nutritional status distribution', 7, 2, wasting_norm_pcts)
         wasting_mild_pcts = norm.cdf(wasting_invs + np.ones(5), 0.0, 1.0) - wasting_mod_hi_sums
-        dist.loc['Wasting (weight-for-height)'].iloc[1, 0:5] = wasting_mild_pcts
+        dist.loc[('Wasting (weight-for-height)', 'Mild (HAZ-score between -2 and -1)'), cols] = wasting_mild_pcts
         self.calcscache.write_row('Nutritional status distribution', 8, 2, wasting_mild_pcts)
 
-        print('PANDASAURUS 3.1b!')  # TODO: remove debugging code
-        print(dist)
-        dist.to_csv('pandasaurus_3_1b.csv')
+        # print('PANDASAURUS 3.1b!')  # TODO: remove debugging code
+        # print(dist)
+        # dist.to_csv('pandasaurus_3_1b.csv')
 
         # dist = dist.drop(dist.index[[1]])
         riskDist = sc.odict()
@@ -730,7 +730,8 @@ class ProgData(object):
         targetPopSheet.loc['General population'].loc['IFA fortification of wheat flour'].iloc[2:13] = IFA_wheat_row
         self.calcscache.write_row('Programs target population', 30, 4, IFA_wheat_row)
         bednet_row = frac_malaria_risk * np.ones(13)
-        targetPopSheet.loc['General population'].loc['Long-lasting insecticide-treated bednets'] = bednet_row
+        # targetPopSheet.loc['General population'].loc['Long-lasting insecticide-treated bednets'] = bednet_row
+        targetPopSheet.loc[('General population', 'Long-lasting insecticide-treated bednets'), :] = bednet_row
         self.calcscache.write_row('Programs target population', 32, 2, bednet_row)
 
         # print('PANDASAURUS 8b!')  # TODO: remove debugging code
