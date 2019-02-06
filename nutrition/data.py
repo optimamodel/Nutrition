@@ -439,10 +439,10 @@ class InputData(object):
         wasting_mod_hi_sums = dist.loc['Wasting (weight-for-height)'].iloc[2:4, 0:5].astype(np.float).sum().values
         wasting_invs = norm.ppf(wasting_mod_hi_sums, 0.0, 1.0)
         wasting_norm_pcts = np.ones(5) - norm.cdf(wasting_invs + np.ones(5), 0.0, 1.0)
-        dist.loc[('Wasting (weight-for-height)', 'Normal (HAZ-score > -1)'), cols] = wasting_norm_pcts
+        dist.loc[('Wasting (weight-for-height)', 'Normal  (WHZ-score > -1)'), cols] = wasting_norm_pcts
         self.calcscache.write_row('Nutritional status distribution', 7, 2, wasting_norm_pcts)
         wasting_mild_pcts = norm.cdf(wasting_invs + np.ones(5), 0.0, 1.0) - wasting_mod_hi_sums
-        dist.loc[('Wasting (weight-for-height)', 'Mild (HAZ-score between -2 and -1)'), cols] = wasting_mild_pcts
+        dist.loc[('Wasting (weight-for-height)', 'Mild  (WHZ-score between -2 and -1)'), cols] = wasting_mild_pcts
         self.calcscache.write_row('Nutritional status distribution', 8, 2, wasting_mild_pcts)
 
         # print('PANDASAURUS 3.1b!')  # TODO: remove debugging code
@@ -496,7 +496,7 @@ class InputData(object):
         # Recalculate cells that need it, and remember in the calculations cache.
         calc_cells = 1.0 - dist.loc['Breastfeeding'].iloc[0:3].sum().values
         self.calcscache.write_row('Breastfeeding distribution', 4, 2, calc_cells)
-        dist.loc['Breastfeeding'].loc['None', :] = calc_cells  # TODO: get rid of chained loc
+        dist.loc[('Breastfeeding', 'None'), :] = calc_cells
 
         self.risk_dist['Breastfeeding'] = dist.loc['Breastfeeding'].to_dict()
 
@@ -669,65 +669,65 @@ class ProgData(object):
         comm_deliv_raw = treatsam.iloc[1]['Add extension']
         comm_deliv = pandas.notnull(comm_deliv_raw)
         cash_transfers_row = food_insecure * np.ones(4)
-        targetPopSheet.loc['Children'].loc['Cash transfers'].iloc[1:5] = cash_transfers_row  # TODO: get rid of chained loc
+        targetPopSheet.loc['Children', 'Cash transfers'].iloc[1:5] = cash_transfers_row
         self.calcscache.write_row('Programs target population', 1, 3, cash_transfers_row)
         lipid_row = food_insecure * np.ones(2)
-        targetPopSheet.loc['Children'].loc['Lipid-based nutrition supplements'].iloc[2:4] = lipid_row  # TODO: get rid of chained loc
+        targetPopSheet.loc['Children', 'Lipid-based nutrition supplements'].iloc[2:4] = lipid_row
         self.calcscache.write_row('Programs target population', 4, 4, lipid_row)
         oral_rehyd_row = diarr_incid / 26.0
-        targetPopSheet.loc['Children'].loc['Oral rehydration salts'].iloc[0:5] = oral_rehyd_row  # TODO: get rid of chained loc
+        targetPopSheet.loc['Children', 'Oral rehydration salts'].iloc[0:5] = oral_rehyd_row
         self.calcscache.write_row('Programs target population', 6, 2, oral_rehyd_row)
         pub_prov_row = food_insecure * np.ones(2)
-        targetPopSheet.loc['Children'].loc['Public provision of complementary foods'].iloc[2:4] = pub_prov_row  # TODO: get rid of chained loc
+        targetPopSheet.loc['Children', 'Public provision of complementary foods'].iloc[2:4] = pub_prov_row
         self.calcscache.write_row('Programs target population', 7, 4, pub_prov_row)
         if comm_deliv:
             treat_SAM_val = 1.0
         else:
             treat_SAM_val = frac_children_health_facility
         treat_SAM_row = treat_SAM_val * np.ones(4)
-        targetPopSheet.loc['Children'].loc['Treatment of SAM'].iloc[1:5] = treat_SAM_row  # TODO: get rid of chained loc
+        targetPopSheet.loc['Children', 'Treatment of SAM'].iloc[1:5] = treat_SAM_row
         self.calcscache.write_row('Programs target population', 8, 3, treat_SAM_row)
         zinc_treatment_row = diarr_incid / 26.0
-        targetPopSheet.loc['Children'].loc['Zinc for treatment + ORS'].iloc[0:5] = zinc_treatment_row  # TODO: get rid of chained loc
+        targetPopSheet.loc['Children', 'Zinc for treatment + ORS'].iloc[0:5] = zinc_treatment_row
         self.calcscache.write_row('Programs target population', 10, 2, zinc_treatment_row)
         balanced_energy_row = food_insecure * np.ones(4)
-        targetPopSheet.loc['Pregnant women'].loc['Balanced energy-protein supplementation'].iloc[5:9] = balanced_energy_row  # TODO: get rid of chained loc
+        targetPopSheet.loc['Pregnant women', 'Balanced energy-protein supplementation'].iloc[5:9] = balanced_energy_row
         self.calcscache.write_row('Programs target population', 13, 7, balanced_energy_row)
         IFAS_preg_health_row = frac_PW_health_facility * np.ones(4)
-        targetPopSheet.loc['Pregnant women'].loc['IFAS for pregnant women (health facility)'].iloc[5:9] = IFAS_preg_health_row  # TODO: get rid of chained loc
+        targetPopSheet.loc['Pregnant women', 'IFAS for pregnant women (health facility)'].iloc[5:9] = IFAS_preg_health_row
         self.calcscache.write_row('Programs target population', 16, 7, IFAS_preg_health_row)
         IPTp_row = frac_malaria_risk * np.ones(4)
-        targetPopSheet.loc['Pregnant women'].loc['IPTp'].iloc[5:9] = IPTp_row  # TODO: get rid of chained loc
+        targetPopSheet.loc['Pregnant women', 'IPTp'].iloc[5:9] = IPTp_row
         self.calcscache.write_row('Programs target population', 17, 7, IPTp_row)
         fam_planning_row = famplan_unmet_need * np.ones(4)
-        targetPopSheet.loc['Non-pregnant WRA'].loc['Family planning'].iloc[9:13] = fam_planning_row  # TODO: get rid of chained loc
+        targetPopSheet.loc['Non-pregnant WRA', 'Family planning'].iloc[9:13] = fam_planning_row
         self.calcscache.write_row('Programs target population', 22, 11, fam_planning_row)
         IFAS_comm_row = np.ones(4)
         IFAS_comm_row[0] = (1.0 - food_insecure) * 0.49 * (1.0 - school_attendance) + food_insecure * 0.7 * (1.0 - school_attendance)
         IFAS_comm_row[1:] = (1.0 - food_insecure) * 0.49 + food_insecure * 0.7
-        targetPopSheet.loc['Non-pregnant WRA'].loc['IFAS (community)'].iloc[9:13] = IFAS_comm_row  # TODO: get rid of chained loc
+        targetPopSheet.loc['Non-pregnant WRA', 'IFAS (community)'].iloc[9:13] = IFAS_comm_row
         self.calcscache.write_row('Programs target population', 23, 11, IFAS_comm_row)
         IFAS_health_fac_row = np.ones(4)
         IFAS_health_fac_row[0] = (1.0 - food_insecure) * 0.21 * (1.0 - school_attendance) + food_insecure * 0.3 * (1.0 - school_attendance)
         IFAS_health_fac_row[1:] = (1.0 - food_insecure) * 0.21 + food_insecure * 0.3
-        targetPopSheet.loc['Non-pregnant WRA'].loc['IFAS (health facility)'].iloc[9:13] = IFAS_health_fac_row  # TODO: get rid of chained loc
+        targetPopSheet.loc['Non-pregnant WRA', 'IFAS (health facility)'].iloc[9:13] = IFAS_health_fac_row
         self.calcscache.write_row('Programs target population', 24, 11, IFAS_health_fac_row)
         IFAS_retailer_row = np.ones(4)
         IFAS_retailer_row[0] = (1.0 - food_insecure) * 0.3 * (1.0 - school_attendance)
         IFAS_retailer_row[1:] = (1.0 - food_insecure) * 0.3
-        targetPopSheet.loc['Non-pregnant WRA'].loc['IFAS (retailer)'].iloc[9:13] = IFAS_retailer_row  # TODO: get rid of chained loc
+        targetPopSheet.loc['Non-pregnant WRA', 'IFAS (retailer)'].iloc[9:13] = IFAS_retailer_row
         self.calcscache.write_row('Programs target population', 25, 11, IFAS_retailer_row)
         IFAS_school_row = (1.0 - food_insecure) * school_attendance + food_insecure * school_attendance
-        targetPopSheet.loc['Non-pregnant WRA'].loc['IFAS (school)'].iloc[9] = IFAS_school_row  # TODO: get rid of chained loc
+        targetPopSheet.loc['Non-pregnant WRA', 'IFAS (school)'].iloc[9] = IFAS_school_row
         self.calcscache.write_cell('Programs target population', 26, 11, IFAS_school_row)
         IFA_maize_row = frac_maize * np.ones(11)
-        targetPopSheet.loc['General population'].loc['IFA fortification of maize'].iloc[2:13] = IFA_maize_row  # TODO: get rid of chained loc
+        targetPopSheet.loc['General population', 'IFA fortification of maize'].iloc[2:13] = IFA_maize_row
         self.calcscache.write_row('Programs target population', 28, 4, IFA_maize_row)
         IFA_rice_row = frac_rice * np.ones(11)
-        targetPopSheet.loc['General population'].loc['IFA fortification of rice'].iloc[2:13] = IFA_rice_row  # TODO: get rid of chained loc
+        targetPopSheet.loc['General population', 'IFA fortification of rice'].iloc[2:13] = IFA_rice_row
         self.calcscache.write_row('Programs target population', 29, 4, IFA_rice_row)
         IFA_wheat_row = frac_wheat * np.ones(11)
-        targetPopSheet.loc['General population'].loc['IFA fortification of wheat flour'].iloc[2:13] = IFA_wheat_row  # TODO: get rid of chained loc
+        targetPopSheet.loc['General population', 'IFA fortification of wheat flour'].iloc[2:13] = IFA_wheat_row
         self.calcscache.write_row('Programs target population', 30, 4, IFA_wheat_row)
         bednet_row = frac_malaria_risk * np.ones(13)
         # targetPopSheet.loc['General population'].loc['Long-lasting insecticide-treated bednets'] = bednet_row

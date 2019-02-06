@@ -449,8 +449,7 @@ class Children(Population):
                     for wastingCat in self.ss.wasting_list:
                         for bfCat in self.ss.bf_list:
                             for anaemiaCat in self.ss.anaemia_list:
-                                # t1 = float(self.stunting_dist[age][stuntingCat])  # TODO: remove hack cast if we can fix source of t1 becoming str
-                                t1 = self.stunting_dist[age][stuntingCat]  # TODO: remove hack cast if we can fix source of t1 becoming str
+                                t1 = self.stunting_dist[age][stuntingCat]
                                 t2 = self.wasting_dist[age][wastingCat]
                                 t3 = self.bf_dist[age][bfCat]
                                 t4 = self.anaemia_dist[age][anaemiaCat]
@@ -458,19 +457,6 @@ class Children(Population):
                                 t6 = self.default.rr_death['Wasting'][age][wastingCat].get(cause,1)
                                 t7 = self.default.rr_death['Breastfeeding'][age][bfCat].get(cause,1)
                                 t8 = self.default.rr_death['Anaemia'][age][anaemiaCat].get(cause,1)
-                                # print('BLAH!')  # TODO: remove debugging code
-                                # print('age:', age)
-                                # print('cause:', cause)
-                                # print('ts')
-                                # print(t1, t2, t3, t4, t5, t6, t7, t8)
-                                # print('t1 type: ', type(t1))
-                                # print('t2 type: ', type(t2))
-                                # print('t3 type: ', type(t3))
-                                # print('t4 type: ', type(t4))
-                                # print('t5 type: ', type(t5))
-                                # print('t6 type: ', type(t6))
-                                # print('t7 type: ', type(t7))
-                                # print('t8 type: ', type(t8))
                                 RHS[age][cause] += t1 * t2 * t3 * t4 * t5 * t6 * t7 * t8
         # RHS for newborns only
         age = '<1 month'
