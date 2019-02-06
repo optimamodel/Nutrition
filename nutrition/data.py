@@ -32,11 +32,30 @@ class CalcCellCache(object):
         if cell_key in self.cachedict:
             return self.cachedict[cell_key]
         else:
+            print('ERROR: Sheet: %s, Row: %d, Col: %d is not in cache!' % (worksheet_name, row, col))
             return 0.0
 
     # Do a dump of the whole cache.
     def show(self):
         print(self.cachedict)
+
+    # Check a value in the calculations cache against the cached value actually in the spreadsheet.
+    def check_cell_against_worksheet_value(self, wb, worksheet_name, row, col):
+        calc_val = self.read_cell(worksheet_name, row, col)
+        # print('Calc cache value:')
+        # print(calc_val)
+        wsheet_val = wb.readcells(method='openpyexcel', wbargs={'data_only': True},
+                                  sheetname=worksheet_name, cells=[[row, col]])[0]
+        # print('Spreadsheet cached value:')
+        # print(wsheet_val)
+        if calc_val == wsheet_val:
+            print('Sheet: %s, Row: %d, Col: %d -- match' % (worksheet_name, row, col))
+        else:
+            print('Sheet: %s, Row: %d, Col: %d -- NO MATCH' % (worksheet_name, row, col))
+
+    # def check_all_cells_against_worksheet_values(self):
+    #     for
+
 
 # TODO (possible): we may want to merge this class with InputData to make another class (DatabookData).
 class DefaultParams(object):
@@ -979,7 +998,8 @@ class Dataset(object):
         self.prog_info = programs.ProgramInfo(self.prog_data)
         self.t = self.demo_data.t
         self.modified = sc.now()
-        # self.calcscache.show()  # show the contents of the calculations cache  # TODO remove when things are working
+        self.calcscache.show()  # show the contents of the calculations cache  # TODO remove when things are working
+        self.calcscache.check_cell_against_worksheet_value(inputsheet, 'Nutritional status distribution', 1, 2)
         return None
     
     def prog_names(self):
