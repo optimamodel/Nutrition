@@ -671,7 +671,6 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
                     if verbose:
                         print('  Cell (%s,%s) = %s' % (r+1, c+1, cellval))
         wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={'data_only': False})  # Can turn on verbose
-    # proj.inputsheet(key=key).save('hookahdookah.xlsx')   # TODO: remove this when things are working
     proj.load_data(fromfile=False, name=key)  # Change the Dataset and Model, including doing recalculations.
     print('Saving project...')
     save_project(proj)

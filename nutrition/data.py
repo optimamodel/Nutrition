@@ -936,8 +936,6 @@ class Dataset(object):
         self.prog_info = programs.ProgramInfo(self.prog_data)
         self.t = self.demo_data.t
         self.modified = sc.now()
-        self.calcscache.show()  # show the contents of the calculations cache  # TODO remove when things are working
-        # self.calcscache.check_cell_against_worksheet_value(inputsheet, 'Nutritional status distribution', 1, 2)
         self.calcscache.check_all_cells_against_worksheet_values(inputsheet)
         return None
     
