@@ -56,7 +56,7 @@ class CalcCellCache(object):
         calc_val = self.read_cell(worksheet_name, row, col)
         wsheet_val = wb.readcells(method='openpyexcel', wbargs={'data_only': True},
                                   sheetname=worksheet_name, cells=[[row, col]])[0]
-        if calc_val == wsheet_val:
+        if sc.approx(calc_val, wsheet_val):
             print('Sheet: %s, Row: %d, Col: %d -- match' % (worksheet_name, row, col))
         else:
             print('Sheet: %s, Row: %d, Col: %d -- MISMATCH' % (worksheet_name, row, col))
@@ -68,7 +68,7 @@ class CalcCellCache(object):
     # For all items in the calculations cache, check whether they match with what's in the spreadsheet.
     def check_all_cells_against_worksheet_values(self, wb):
         print('Calculations cache check against spreadsheet:')
-        for key in self.cachedict.keys():
+        for key in self.cachedict.keys(): # TODO -- move worksheet load outside loop so don't have to reload for every cell
             (sheetname, rownum, colnum) = self._key_to_indices(key)
             self.check_cell_against_worksheet_value(wb, sheetname, rownum, colnum)
 
@@ -936,7 +936,6 @@ class Dataset(object):
         self.prog_info = programs.ProgramInfo(self.prog_data)
         self.t = self.demo_data.t
         self.modified = sc.now()
-        self.calcscache.check_all_cells_against_worksheet_values(inputsheet)
         return None
     
     def prog_names(self):
