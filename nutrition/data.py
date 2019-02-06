@@ -54,16 +54,16 @@ class CalcCellCache(object):
     # Check a value in the calculations cache against the cached value actually in the spreadsheet.
     def check_cell_against_worksheet_value(self, wb, worksheet_name, row, col):
         calc_val = self.read_cell(worksheet_name, row, col)
-        # print('Calc cache value:')
-        # print(calc_val)
         wsheet_val = wb.readcells(method='openpyexcel', wbargs={'data_only': True},
                                   sheetname=worksheet_name, cells=[[row, col]])[0]
-        # print('Spreadsheet cached value:')
-        # print(wsheet_val)
         if calc_val == wsheet_val:
             print('Sheet: %s, Row: %d, Col: %d -- match' % (worksheet_name, row, col))
         else:
-            print('Sheet: %s, Row: %d, Col: %d -- NO MATCH' % (worksheet_name, row, col))
+            print('Sheet: %s, Row: %d, Col: %d -- MISMATCH' % (worksheet_name, row, col))
+            print('-- calc cache value')
+            print(calc_val)
+            print('-- spreadsheet cached value')
+            print(wsheet_val)
 
     # For all items in the calculations cache, check whether they match with what's in the spreadsheet.
     def check_all_cells_against_worksheet_values(self, wb):
