@@ -2,6 +2,7 @@ import numpy as np
 from scipy.stats import norm
 import pandas
 import sciris as sc
+import re
 from . import settings, populations, utils, programs
 
 # This class is used to define an object which keeps a cache of all cells from the Excel databook/s that need to be
@@ -10,6 +11,17 @@ from . import settings, populations, utils, programs
 class CalcCellCache(object):
     def __init__(self):
         self.cachedict = sc.odict()
+
+    # From the key string value, pull out the spreadsheet name, and row and col numbers (0-indexed).
+    def _key_to_indices(self, keyval):
+        sheetname = re.sub(':.*$', '', keyval)
+        droptocolon = re.sub('.*:\[', '', keyval)
+        dropcommatoend = re.sub(',.*$', '', droptocolon)
+        rownum = int(dropcommatoend)
+        droptocomma = re.sub('.*,', '', keyval)
+        dropendbracket = re.sub('\]', '', droptocomma)
+        colnum = int(dropendbracket)
+        return (sheetname, rownum, colnum)
 
     # Write a single value to the cache.
     def write_cell(self, worksheet_name, row, col, val):
@@ -53,8 +65,12 @@ class CalcCellCache(object):
         else:
             print('Sheet: %s, Row: %d, Col: %d -- NO MATCH' % (worksheet_name, row, col))
 
-    # def check_all_cells_against_worksheet_values(self):
-    #     for
+    # For all items in the calculations cache, check whether they match with what's in the spreadsheet.
+    def check_all_cells_against_worksheet_values(self, wb):
+        print('Calculations cache check against spreadsheet:')
+        for key in self.cachedict.keys():
+            (sheetname, rownum, colnum) = self._key_to_indices(key)
+            self.check_cell_against_worksheet_value(wb, sheetname, rownum, colnum)
 
 
 # TODO (possible): we may want to merge this class with InputData to make another class (DatabookData).
@@ -999,7 +1015,8 @@ class Dataset(object):
         self.t = self.demo_data.t
         self.modified = sc.now()
         self.calcscache.show()  # show the contents of the calculations cache  # TODO remove when things are working
-        self.calcscache.check_cell_against_worksheet_value(inputsheet, 'Nutritional status distribution', 1, 2)
+        # self.calcscache.check_cell_against_worksheet_value(inputsheet, 'Nutritional status distribution', 1, 2)
+        self.calcscache.check_all_cells_against_worksheet_values(inputsheet)
         return None
     
     def prog_names(self):
