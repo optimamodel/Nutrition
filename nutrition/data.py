@@ -376,10 +376,6 @@ class InputData(object):
         # Load the main spreadsheet into a DataFrame.
         baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0, 1])
 
-        # print('PANDASAURUS 1.1!')  # TODO: remove debugging code
-        # print(baseline)
-        # baseline.to_csv('pandasaurus_1_1.csv')
-
         # Recalculate cells that need it, and remember in the calculations cache.
         frac_rice = baseline.loc['Food'].loc['Fraction eating rice as main staple food'].values[0]
         frac_wheat = baseline.loc['Food'].loc['Fraction eating wheat as main staple food'].values[0]
@@ -411,10 +407,6 @@ class InputData(object):
         # fix ages for PW
         baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0])
 
-        # print('PANDASAURUS 1.2!')  # TODO: remove debugging code
-        # print(baseline)
-        # baseline.to_csv('pandasaurus_1_2.csv')
-
         for row in baseline.loc['Age distribution of pregnant women'].iterrows():
             self.pw_agedist.append(row[1]['Data'])
         return None
@@ -428,10 +420,6 @@ class InputData(object):
         baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0, 1])
         stillbirth = baseline.loc['Mortality'].loc['Stillbirths (per 1,000 total births)'].values[0]
         abortion = baseline.loc['Mortality'].loc['Fraction of pregnancies ending in spontaneous abortion'].values[0]
-
-        # print('PANDASAURUS 2!')  # TODO: remove debugging code
-        # print(proj)
-        # proj.to_csv('pandasaurus_2.csv')
 
         # Recalculate cells that need it, and remember in the calculations cache.
         total_wra = proj.loc[:, ['WRA: 15-19 years', 'WRA: 20-29 years', 'WRA: 30-39 years',
@@ -457,10 +445,6 @@ class InputData(object):
         # Load the main spreadsheet into a DataFrame.
         dist = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0, 1])
 
-        # print('PANDASAURUS 3.1!')  # TODO: remove debugging code
-        # print(dist)
-        # dist.to_csv('pandasaurus_3_1.csv')
-
         # Recalculate cells that need it, and remember in the calculations cache.
         stunting_mod_hi_sums = dist.loc['Stunting (height-for-age)'].iloc[2:4, 0:5].astype(np.float).sum().values
         stunting_invs = norm.ppf(stunting_mod_hi_sums, 0.0, 1.0)
@@ -480,10 +464,6 @@ class InputData(object):
         dist.loc[('Wasting (weight-for-height)', 'Mild  (WHZ-score between -2 and -1)'), cols] = wasting_mild_pcts
         self.calcscache.write_row('Nutritional status distribution', 8, 2, wasting_mild_pcts)
 
-        # print('PANDASAURUS 3.1b!')  # TODO: remove debugging code
-        # print(dist)
-        # dist.to_csv('pandasaurus_3_1b.csv')
-
         # dist = dist.drop(dist.index[[1]])
         riskDist = sc.odict()
         for field in ['Stunting (height-for-age)', 'Wasting (weight-for-height)']:
@@ -500,10 +480,6 @@ class InputData(object):
         # Load the main spreadsheet into a DataFrame, but skipping 12 rows.
         # get anaemia
         dist = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0, 1], skiprows=12)
-
-        # print('PANDASAURUS 3.2!')  # TODO: remove debugging code
-        # print(dist)
-        # dist.to_csv('pandasaurus_3_2.csv')
 
         self.risk_dist['Anaemia'] = sc.odict()
 
@@ -524,28 +500,16 @@ class InputData(object):
         # get breastfeeding dist
         dist = utils.read_sheet(self.spreadsheet, 'Breastfeeding distribution', [0, 1])
 
-        # print('PANDASAURUS 4!')  # TODO: remove debugging code
-        # print(dist)
-        # dist.to_csv('pandasaurus_4.csv')
-
         # Recalculate cells that need it, and remember in the calculations cache.
         calc_cells = 1.0 - dist.loc['Breastfeeding'].iloc[0:3].sum().values
         self.calcscache.write_row('Breastfeeding distribution', 4, 2, calc_cells)
         dist.loc[('Breastfeeding', 'None'), :] = calc_cells
-
-        # print('PANDASAURUS 4b!')  # TODO: remove debugging code
-        # print(dist)
-        # dist.to_csv('pandasaurus_4b.csv')
 
         self.risk_dist['Breastfeeding'] = dist.loc['Breastfeeding'].to_dict()
 
     def get_time_trends(self):
         # Load the main spreadsheet into a DataFrame.
         trends = utils.read_sheet(self.spreadsheet, 'Time trends', cols=[0,1], dropna=False)
-
-        # print('PANDASAURUS 5!')  # TODO: remove debugging code
-        # print(trends)
-        # trends.to_csv('pandasaurus_5.csv')
 
         self.time_trends['Stunting'] = trends.loc['Stunting prevalence (%)'].loc['Children 0-59 months'].values.tolist()[:1]
         self.time_trends['Wasting'] = trends.loc['Wasting prevalence (%)'].loc['Children 0-59 months'].values.tolist()[:1]
@@ -556,10 +520,6 @@ class InputData(object):
     def get_incidences(self):
         # Load the main spreadsheet into a DataFrame.
         incidences = utils.read_sheet(self.spreadsheet, 'Incidence of conditions', [0])
-
-        # print('PANDASAURUS 6!')
-        # print(incidences)
-        # incidences.to_csv('pandasaurus_6.csv')
 
         # Recalculate cells that need it, and remember in the calculations cache.
         baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0, 1])
@@ -582,10 +542,6 @@ class InputData(object):
         # Load the main spreadsheet into a DataFrame.
         deathdist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0, 1], skiprows=1)
 
-        # print('PANDASAURUS 7.1!')  # TODO: remove debugging code
-        # print(deathdist)
-        # deathdist.to_csv('pandasaurus_7_1.csv')
-
         # Recalculate cells that need it, and remember in the calculations cache.
         neonatal_death_pct_sum = deathdist.loc['Neonatal']['<1 month'].values[:-1].astype(np.float).sum()
         self.calcscache.write_cell('Causes of death', 10, 2, neonatal_death_pct_sum)
@@ -599,18 +555,10 @@ class InputData(object):
         # Load the main spreadsheet into a DataFrame, but skip 12 rows.
         deathdist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0, 1], skiprows=12)
 
-        # print('PANDASAURUS 7.2!')  # TODO: remove debugging code
-        # print(deathdist)
-        # deathdist.to_csv('pandasaurus_7_2.csv')
-
         children = deathdist.loc['Children'].ix[:-1]
 
         # Load the main spreadsheet into a DataFrame, but skip 24 rows.
         deathdist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0, 1], skiprows=24)
-
-        # print('PANDASAURUS 7.3!')  # TODO: remove debugging code
-        # print(deathdist)
-        # deathdist.to_csv('pandasaurus_7_3.csv')
 
         pw = deathdist.loc['Pregnant women'].ix[:-1]
         dist = pandas.concat([neonates['<1 month'], children, pw['Pregnant women.1']], axis=1, sort=False).fillna(0)
@@ -687,10 +635,6 @@ class ProgData(object):
     def get_prog_target(self):
         # Load the main spreadsheet into a DataFrame.
         targetPopSheet = utils.read_sheet(self.spreadsheet, 'Programs target population', [0, 1])
-
-        # print('PANDASAURUS 8!')  # TODO: remove debugging code
-        # print(targetPopSheet)
-        # targetPopSheet.to_csv('pandasaurus_8.csv')
 
         # Recalculate cells that need it, and remember in the calculations cache.
         baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0, 1])
@@ -773,10 +717,6 @@ class ProgData(object):
         targetPopSheet.loc[('General population', 'Long-lasting insecticide-treated bednets'), :] = bednet_row
         self.calcscache.write_row('Programs target population', 32, 2, bednet_row)
 
-        # print('PANDASAURUS 8b!')  # TODO: remove debugging code
-        # print(targetPopSheet)
-        # targetPopSheet.to_csv('pandasaurus_8b.csv')
-
         targetPop = sc.odict()
         for pop in ['Children', 'Pregnant women', 'Non-pregnant WRA', 'General population']:
             targetPop.update(targetPopSheet.loc[pop].to_dict(orient='index'))
@@ -808,10 +748,6 @@ class ProgData(object):
         # Load the main spreadsheet into a DataFrame.
         famplan_methods = utils.read_sheet(self.spreadsheet, 'Programs family planning', [0])
 
-        # print('PANDASAURUS 9!')  # TODO: remove debugging code
-        # print(famplan_methods)
-        # famplan_methods.to_csv('pandasaurus_9.csv')
-
         # Recalculate cells that need it, and remember in the calculations cache.
         dist = famplan_methods.loc[:, 'Distribution'].values
         costs = famplan_methods.loc[:, 'Cost'].values
@@ -835,19 +771,9 @@ class ProgData(object):
         # Load the main spreadsheet into a DataFrame.
         sheet = utils.read_sheet(self.spreadsheet, 'Programs cost and coverage')
 
-        # print('PANDASAURUS 10!')  # TODO: remove debugging code
-        # print(sheet)
-        # sheet.to_csv('pandasaurus_10.csv')
-
         # Recalculate cells that need it, and remember in the calculations cache.
         IYCFpackages = self.spreadsheet.parse(sheet_name='IYCF packages', index_col=[0, 1])
-        # print('PANDASAURUS 11!')  # TODO: remove debugging code
-        # print(IYCFpackages)
-        # IYCFpackages.to_csv('pandasaurus_11.csv')
         IYCFcost = self.spreadsheet.parse(sheet_name='IYCF cost', index_col=[0, 1])
-        # print('PANDASAURUS 12!')  # TODO: remove debugging code
-        # print(IYCFcost)
-        # IYCFcost.to_csv('pandasaurus_12.csv')
         costs = pandas.DataFrame(IYCFcost.values,
             index=['Pregnant women', '<1 month', '1-5 months', '6-11 months', '12-23 months'],
             columns=['Health facility', 'Community', 'Mass media'])
@@ -866,10 +792,6 @@ class ProgData(object):
             IYCF3_unit_cost = 0.01  # default to $0.01 if zero or less
         sheet.iloc[18, 3] = IYCF3_unit_cost
         self.calcscache.write_cell('Programs cost and coverage', 19, 3, IYCF3_unit_cost)
-
-        # print('PANDASAURUS 10b!')  # TODO: remove debugging code
-        # print(sheet)
-        # sheet.to_csv('pandasaurus_10b.csv')
 
         self.base_prog_set = sheet.iloc[:,0].tolist()
         self.base_cov = sc.odict(zip(self.base_prog_set, sheet.iloc[:,1].tolist()))
