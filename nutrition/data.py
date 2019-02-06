@@ -498,6 +498,10 @@ class InputData(object):
         self.calcscache.write_row('Breastfeeding distribution', 4, 2, calc_cells)
         dist.loc[('Breastfeeding', 'None'), :] = calc_cells
 
+        # print('PANDASAURUS 4b!')  # TODO: remove debugging code
+        # print(dist)
+        # dist.to_csv('pandasaurus_4b.csv')
+
         self.risk_dist['Breastfeeding'] = dist.loc['Breastfeeding'].to_dict()
 
     def get_time_trends(self):
@@ -827,6 +831,10 @@ class ProgData(object):
             IYCF3_unit_cost = 0.01  # default to $0.01 if zero or less
         sheet.iloc[18, 3] = IYCF3_unit_cost
         self.calcscache.write_cell('Programs cost and coverage', 19, 3, IYCF3_unit_cost)
+
+        # print('PANDASAURUS 10b!')  # TODO: remove debugging code
+        # print(sheet)
+        # sheet.to_csv('pandasaurus_10b.csv')
 
         self.base_prog_set = sheet.iloc[:,0].tolist()
         self.base_cov = sc.odict(zip(self.base_prog_set, sheet.iloc[:,1].tolist()))
