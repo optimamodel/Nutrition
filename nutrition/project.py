@@ -540,9 +540,9 @@ def demo(scens=False, optims=False, geos=False):
     # Create project and load in demo databook spreadsheet file into 'demo' Spreadsheet, Dataset, and Model.
     P = Project(name)
     P.load_data(country, region, name='demo')
-    # P.load_data(country, 'region1', name='demoregion1')
-    # P.load_data(country, 'region2', name='demoregion2')
-    # P.load_data(country, 'region3', name='demoregion3')
+    P.load_data(country, 'region1', name='demoregion1')
+    P.load_data(country, 'region2', name='demoregion2')
+    P.load_data(country, 'region3', name='demoregion3')
 
     # Create demo scenarios and optimizations
     if scens:

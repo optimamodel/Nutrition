@@ -782,8 +782,8 @@ def is_included(prog_set, program, default_included):
 
 def py_to_js_scen(py_scen, proj, key=None, default_included=False):
     ''' Convert a Python to JSON representation of a scenario '''
-    prog_names = proj.dataset().prog_names()
-    scen_years = proj.dataset().t[1] - proj.dataset().t[0] # First year is baseline
+    prog_names = proj.dataset(key).prog_names()
+    scen_years = proj.dataset(key).t[1] - proj.dataset(key).t[0] # First year is baseline
     attrs = ['name', 'active', 'scen_type', 'model_name']
     js_scen = {}
     for attr in attrs:
@@ -827,7 +827,7 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
         this_spec['base_cov'] = str(round(program.base_cov*100)) # Convert to percentage -- this should never be None or Nan
         this_spec['base_spend'] = format(int(round(program.base_spend)), ',')
         js_scen['progvals'].append(this_spec)
-        js_scen['t'] = [proj.dataset().t[0]+1, proj.dataset().t[1]] # First year is baseline year
+        js_scen['t'] = [proj.dataset(key).t[0]+1, proj.dataset(key).t[1]] # First year is baseline year
     return js_scen
     
     
@@ -971,7 +971,7 @@ def run_scens(project_id, doplot=True):
 def py_to_js_optim(py_optim, proj, key=None, default_included=False):
     ''' Convert a Python to JSON representation of an optimization '''
     obj_labels = nu.pretty_labels(direction=True).values()
-    prog_names = proj.dataset().prog_names()
+    prog_names = proj.dataset(key).prog_names()
     js_optim = {}
     attrs = ['name', 'model_name', 'mults', 'add_funds', 'fix_curr', 'filter_progs']
     for attr in attrs:
@@ -1091,7 +1091,7 @@ def plot_optimization(project_id, cache_id):
 def py_to_js_geo(py_geo, proj, key=None, default_included=False):
     ''' Convert a Python to JSON representation of an optimization '''
     obj_labels = nu.pretty_labels(direction=True).values()
-    prog_names = proj.dataset().prog_names()
+    prog_names = proj.dataset(key).prog_names()
     js_geo = {}
     attrs = ['name', 'modelnames', 'mults', 'add_funds', 'fix_curr', 'fix_regionalspend', 'filter_progs']
     for attr in attrs:
