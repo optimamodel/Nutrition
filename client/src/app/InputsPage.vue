@@ -51,7 +51,15 @@ Last update: 2019-02-01
             </div>
 
           </div>
+
           <br><br>
+
+          <div>
+            <button class="btn __green" @click="saveSheetData()"    data-tooltip="Save data to project">Save changes</button>
+            <button class="btn __red"         @click="getSheetData()"     data-tooltip="Revert to last saved data">Revert</button>
+          </div>
+
+          <br>
 
           <div class="icantbelieveitsnotexcel">
             <table class="table table-bordered table-hover table-striped" style="width: 100%;">
@@ -101,12 +109,6 @@ Last update: 2019-02-01
             </table>
           </div>
 
-          <div>
-            <button class="btn __green" @click="saveSheetData()"    data-tooltip="Save data to project">Save changes</button>
-            <button class="btn"         @click="getSheetData()"     data-tooltip="Revert to last saved data">Revert</button>
-            <button class="btn"         @click="downloadDatabook()" data-tooltip="Download databook"><i class="ti-download"></i></button>
-            <button class="btn"         @click="uploadDatabook()"   data-tooltip="Upload databook"><i class="ti-upload"></i></button>
-          </div>
           <br>
         </div>
       </div>
