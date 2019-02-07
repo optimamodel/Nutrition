@@ -1,7 +1,77 @@
 import numpy as np
+from scipy.stats import norm
 import pandas
 import sciris as sc
+import re
 from . import settings, populations, utils, programs
+
+# This class is used to define an object which keeps a cache of all cells from the Excel databook/s that need to be
+# calculated.  This cache used by RPC code that figures out what calculation values to send to the FE to be displayed
+# in the grey non-editable cells in the GUI.
+class CalcCellCache(object):
+    def __init__(self):
+        self.cachedict = sc.odict()
+
+    # From the key string value, pull out the spreadsheet name, and row and col numbers (0-indexed).
+    def _key_to_indices(self, keyval):
+        sheetname = re.sub(':.*$', '', keyval)
+        droptocolon = re.sub('.*:\[', '', keyval)
+        dropcommatoend = re.sub(',.*$', '', droptocolon)
+        rownum = int(dropcommatoend)
+        droptocomma = re.sub('.*,', '', keyval)
+        dropendbracket = re.sub('\]', '', droptocomma)
+        colnum = int(dropendbracket)
+        return (sheetname, rownum, colnum)
+
+    # Write a single value to the cache.
+    def write_cell(self, worksheet_name, row, col, val):
+        cell_key = '%s:[%d,%d]' % (worksheet_name, row, col)
+        self.cachedict[cell_key] = val
+
+    # Write a row of values to the cache.
+    def write_row(self, worksheet_name, row, col, vals):
+        for ind in range(len(vals)):
+            self.write_cell(worksheet_name, row, col + ind, vals[ind])
+
+    # Write a column of values to the cache.
+    def write_col(self, worksheet_name, row, col, vals):
+        for ind in range(len(vals)):
+            self.write_cell(worksheet_name, row + ind, col, vals[ind])
+
+    # Read a value out of the cache, returning 0.0 if no entry is found.
+    def read_cell(self, worksheet_name, row, col):
+        cell_key = '%s:[%d,%d]' % (worksheet_name, row, col)
+        if cell_key in self.cachedict:
+            return self.cachedict[cell_key]
+        else:
+            print('ERROR: Sheet: %s, Row: %d, Col: %d is not in cache!' % (worksheet_name, row, col))
+            return 0.0
+
+    # Do a dump of the whole cache.
+    def show(self):
+        print(self.cachedict)
+
+    # Check a value in the calculations cache against the cached value actually in the spreadsheet.
+    def check_cell_against_worksheet_value(self, wb, worksheet_name, row, col):
+        calc_val = self.read_cell(worksheet_name, row, col)
+        wsheet_val = wb.readcells(method='openpyexcel', wbargs={'data_only': True},
+                                  sheetname=worksheet_name, cells=[[row, col]])[0]
+        if sc.approx(calc_val, wsheet_val):
+            print('Sheet: %s, Row: %d, Col: %d -- match' % (worksheet_name, row, col))
+        else:
+            print('Sheet: %s, Row: %d, Col: %d -- MISMATCH' % (worksheet_name, row, col))
+            print('-- calc cache value')
+            print(calc_val)
+            print('-- spreadsheet cached value')
+            print(wsheet_val)
+
+    # For all items in the calculations cache, check whether they match with what's in the spreadsheet.
+    def check_all_cells_against_worksheet_values(self, wb):
+        print('Calculations cache check against spreadsheet:')
+        for key in self.cachedict.keys(): # TODO -- move worksheet load outside loop so don't have to reload for every cell
+            (sheetname, rownum, colnum) = self._key_to_indices(key)
+            self.check_cell_against_worksheet_value(wb, sheetname, rownum, colnum)
+
 
 # TODO (possible): we may want to merge this class with InputData to make another class (DatabookData).
 class DefaultParams(object):
@@ -272,7 +342,7 @@ class DefaultParams(object):
 # TODO (possible): we may want to merge this class with DefaultParams to make another class (DatabookData).
 class InputData(object):
     """ Container for all the region-specific data (prevalences, mortality rates etc) read in from spreadsheet"""
-    def __init__(self, data, recalc=False):
+    def __init__(self, data, calcscache):
         self.spreadsheet = data
         self.settings = settings.Settings()
         self.demo = None
@@ -286,7 +356,7 @@ class InputData(object):
         self.pw_agedist = []
         self.wra_proj = []
         self.t = None
-        self.recalc = recalc # Whether or not to recalculate formulas
+        self.calcscache = calcscache
 
         self.get_demo()
         self.get_proj()
@@ -303,7 +373,23 @@ class InputData(object):
     ## DEMOGRAPHICS ##
 
     def get_demo(self):
-        baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0,1])
+        # Load the main spreadsheet into a DataFrame.
+        baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0, 1])
+
+        # Recalculate cells that need it, and remember in the calculations cache.
+        frac_rice = baseline.loc['Food'].loc['Fraction eating rice as main staple food'].values[0]
+        frac_wheat = baseline.loc['Food'].loc['Fraction eating wheat as main staple food'].values[0]
+        frac_maize = baseline.loc['Food'].loc['Fraction eating maize as main staple food'].values[0]
+        frac_other_staples = 1.0 - frac_rice - frac_wheat - frac_maize
+        baseline.loc['Food'].loc['Fraction on other staples as main staple food'] = frac_other_staples
+        self.calcscache.write_cell('Baseline year population inputs', 19, 2, frac_other_staples)
+        birth_spacing_sum = baseline.loc['Birth spacing'][0:4].sum().values[0]
+        baseline.loc['Birth spacing'].loc['Total (must be 100%)'] = birth_spacing_sum
+        self.calcscache.write_cell('Baseline year population inputs', 32, 2, birth_spacing_sum)
+        outcome_sum = baseline.loc['Birth outcome distribution'][0:3].sum().values[0]
+        baseline.loc['Birth outcome distribution'].loc['Term AGA'] = 1.0 - outcome_sum
+        self.calcscache.write_cell('Baseline year population inputs', 47, 2, 1.0 - outcome_sum)
+
         demo = sc.odict()
         # the fields that group the data in spreadsheet
         fields = ['Population data', 'Food', 'Age distribution of pregnant women', 'Mortality', 'Other risks']
@@ -316,15 +402,38 @@ class InputData(object):
         # birth spacing
         self.birth_space = baseline.loc['Birth spacing'].to_dict()['Data']
         self.birth_space.pop('Total (must be 100%)', None)
+
+        # Load the main spreadsheet into a DataFrame (slightly different format).
         # fix ages for PW
         baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0])
+
         for row in baseline.loc['Age distribution of pregnant women'].iterrows():
             self.pw_agedist.append(row[1]['Data'])
         return None
 
     def get_proj(self):
+        # Load the main spreadsheet into a DataFrame.
         # drops rows with any na
         proj = utils.read_sheet(self.spreadsheet, 'Demographic projections', cols=[0], dropna='any')
+
+        # Read in the Baseline spreadsheet information we'll need.
+        baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0, 1])
+        stillbirth = baseline.loc['Mortality'].loc['Stillbirths (per 1,000 total births)'].values[0]
+        abortion = baseline.loc['Mortality'].loc['Fraction of pregnancies ending in spontaneous abortion'].values[0]
+
+        # Recalculate cells that need it, and remember in the calculations cache.
+        total_wra = proj.loc[:, ['WRA: 15-19 years', 'WRA: 20-29 years', 'WRA: 30-39 years',
+            'WRA: 40-49 years']].sum(axis=1).values
+        proj.loc[:, 'Total WRA'] = total_wra
+        self.calcscache.write_col('Demographic projections', 1, 6, total_wra)
+        numbirths = proj.loc[:, 'Number of births'].values
+        estpregwomen = (numbirths + numbirths * stillbirth / (1000.0 - stillbirth)) / (1.0 - abortion)
+        proj.loc[:, 'Estimated pregnant women'] = estpregwomen
+        self.calcscache.write_col('Demographic projections', 1, 7, estpregwomen)
+        nonpregwra = total_wra - estpregwomen
+        proj.loc[:, 'non-pregnant WRA'] = nonpregwra
+        self.calcscache.write_col('Demographic projections', 1, 8, nonpregwra)
+
         # dict of lists to support indexing
         for column in proj:
             self.proj[column] = proj[column].tolist()
@@ -333,7 +442,28 @@ class InputData(object):
             self.wra_proj.append(proj[age].tolist())
 
     def get_risk_dist(self):
-        dist = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0,1])
+        # Load the main spreadsheet into a DataFrame.
+        dist = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0, 1])
+
+        # Recalculate cells that need it, and remember in the calculations cache.
+        stunting_mod_hi_sums = dist.loc['Stunting (height-for-age)'].iloc[2:4, 0:5].astype(np.float).sum().values
+        stunting_invs = norm.ppf(stunting_mod_hi_sums, 0.0, 1.0)
+        stunting_norm_pcts = np.ones(5) - norm.cdf(stunting_invs + np.ones(5), 0.0, 1.0)
+        cols = dist.columns[0:5]
+        dist.loc[('Stunting (height-for-age)', 'Normal (HAZ-score > -1)'), cols] = stunting_norm_pcts
+        self.calcscache.write_row('Nutritional status distribution', 1, 2, stunting_norm_pcts)
+        stunting_mild_pcts = norm.cdf(stunting_invs + np.ones(5), 0.0, 1.0) - stunting_mod_hi_sums
+        dist.loc[('Stunting (height-for-age)', 'Mild (HAZ-score between -2 and -1)'), cols] = stunting_mild_pcts
+        self.calcscache.write_row('Nutritional status distribution', 2, 2, stunting_mild_pcts)
+        wasting_mod_hi_sums = dist.loc['Wasting (weight-for-height)'].iloc[2:4, 0:5].astype(np.float).sum().values
+        wasting_invs = norm.ppf(wasting_mod_hi_sums, 0.0, 1.0)
+        wasting_norm_pcts = np.ones(5) - norm.cdf(wasting_invs + np.ones(5), 0.0, 1.0)
+        dist.loc[('Wasting (weight-for-height)', 'Normal  (WHZ-score > -1)'), cols] = wasting_norm_pcts
+        self.calcscache.write_row('Nutritional status distribution', 7, 2, wasting_norm_pcts)
+        wasting_mild_pcts = norm.cdf(wasting_invs + np.ones(5), 0.0, 1.0) - wasting_mod_hi_sums
+        dist.loc[('Wasting (weight-for-height)', 'Mild  (WHZ-score between -2 and -1)'), cols] = wasting_mild_pcts
+        self.calcscache.write_row('Nutritional status distribution', 8, 2, wasting_mild_pcts)
+
         # dist = dist.drop(dist.index[[1]])
         riskDist = sc.odict()
         for field in ['Stunting (height-for-age)', 'Wasting (weight-for-height)']:
@@ -346,28 +476,41 @@ class InputData(object):
                 for cat, value in catValue.items():
                     newCat = cat.split(' ',1)[0]
                     self.risk_dist[outer][age][newCat] = value
+
+        # Load the main spreadsheet into a DataFrame, but skipping 12 rows.
         # get anaemia
-        dist = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0,1], skiprows=12)
+        dist = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0, 1], skiprows=12)
+
         self.risk_dist['Anaemia'] = sc.odict()
-        if 1: # not self.recalc: # CK: for future when we implement reload
-            anaem = dist.loc['Anaemia', 'Prevalence of iron deficiency anaemia'].to_dict()
-#        else:
-#            # CK: Spreadsheet recalculation #1
-#            all_anaem = dist.loc['Anaemia', 'Prevalence of anaemia'].to_dict()
-#            baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs')
-#            index = np.array(baseline['Field']).tolist().index('Percentage of anaemia that is iron deficient')
-#            iron_pct = np.array(baseline['Data'])[index]
-#            anaem = {key:val*iron_pct for key,val in all_anaem.items()}
+
+        # Recalculate cells that need it, and remember in the calculations cache.
+        all_anaem = dist.loc['Anaemia', 'Prevalence of anaemia'].to_dict()
+        baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs')
+        index = np.array(baseline['Field']).tolist().index('Percentage of anaemia that is iron deficient')
+        iron_pct = np.array(baseline['Data'])[index]
+        anaem = sc.odict({key: val * iron_pct for key, val in all_anaem.items()})
+        self.calcscache.write_row('Nutritional status distribution', 14, 2, anaem[:])
+
         for age, prev in anaem.items():
             self.risk_dist['Anaemia'][age] = dict()
             self.risk_dist['Anaemia'][age]['Anaemic'] = prev
             self.risk_dist['Anaemia'][age]['Not anaemic'] = 1.-prev
+
+        # Load the main spreadsheet into a DataFrame.
         # get breastfeeding dist
-        dist = utils.read_sheet(self.spreadsheet, 'Breastfeeding distribution', [0,1])
+        dist = utils.read_sheet(self.spreadsheet, 'Breastfeeding distribution', [0, 1])
+
+        # Recalculate cells that need it, and remember in the calculations cache.
+        calc_cells = 1.0 - dist.loc['Breastfeeding'].iloc[0:3].sum().values
+        self.calcscache.write_row('Breastfeeding distribution', 4, 2, calc_cells)
+        dist.loc[('Breastfeeding', 'None'), :] = calc_cells
+
         self.risk_dist['Breastfeeding'] = dist.loc['Breastfeeding'].to_dict()
 
     def get_time_trends(self):
+        # Load the main spreadsheet into a DataFrame.
         trends = utils.read_sheet(self.spreadsheet, 'Time trends', cols=[0,1], dropna=False)
+
         self.time_trends['Stunting'] = trends.loc['Stunting prevalence (%)'].loc['Children 0-59 months'].values.tolist()[:1]
         self.time_trends['Wasting'] = trends.loc['Wasting prevalence (%)'].loc['Children 0-59 months'].values.tolist()[:1]
         self.time_trends['Anaemia'] = trends.loc['Anaemia prevalence (%)'].values.tolist()[:3] # order is (children, PW, WRA)
@@ -375,17 +518,48 @@ class InputData(object):
         self.time_trends['Mortality'] = trends.loc['Mortality'].values.tolist() # under 5, maternal
 
     def get_incidences(self):
-        self.incidences = utils.read_sheet(self.spreadsheet, 'Incidence of conditions', [0], to_odict=True)
+        # Load the main spreadsheet into a DataFrame.
+        incidences = utils.read_sheet(self.spreadsheet, 'Incidence of conditions', [0])
+
+        # Recalculate cells that need it, and remember in the calculations cache.
+        baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0, 1])
+        diarr_incid = baseline.loc['Diarrhoea incidence']['Data'].values
+        incidences.loc['Diarrhoea', :] = diarr_incid
+        self.calcscache.write_row('Incidence of conditions', 1, 1, diarr_incid)
+        dist = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0, 1])
+        mam_incid = dist.loc['Wasting (weight-for-height)'].loc['MAM   (WHZ-score between -3 and -2)'][0:5].values.astype(np.float) * 2.6
+        sam_incid = dist.loc['Wasting (weight-for-height)'].loc['SAM   (WHZ-score < -3)'][0:5].values.astype(np.float) * 2.6
+        incidences.loc['MAM', :] = mam_incid
+        self.calcscache.write_row('Incidence of conditions', 2, 1, mam_incid)
+        incidences.loc['SAM', :] = sam_incid
+        self.calcscache.write_row('Incidence of conditions', 3, 1, sam_incid)
+
+        self.incidences = incidences.to_dict()
 
     ### MORTALITY ###
 
     def get_death_dist(self):
-        # read in with helpful column names, ignore the final row of each sub-table
+        # Load the main spreadsheet into a DataFrame.
         deathdist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0, 1], skiprows=1)
+
+        # Recalculate cells that need it, and remember in the calculations cache.
+        neonatal_death_pct_sum = deathdist.loc['Neonatal']['<1 month'].values[:-1].astype(np.float).sum()
+        self.calcscache.write_cell('Causes of death', 10, 2, neonatal_death_pct_sum)
+        children_death_pct_sums = deathdist.loc['Children'].iloc[1:-1, 0:4].astype(np.float).sum().values
+        self.calcscache.write_row('Causes of death', 22, 2, children_death_pct_sums)
+        pregwomen_death_pct_sum = deathdist.loc['Pregnant women'].iloc[1:-1, 0].values.astype(np.float).sum()
+        self.calcscache.write_cell('Causes of death', 34, 2, pregwomen_death_pct_sum)
+
         neonates = deathdist.loc['Neonatal'].ix[:-1]
+
+        # Load the main spreadsheet into a DataFrame, but skip 12 rows.
         deathdist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0, 1], skiprows=12)
+
         children = deathdist.loc['Children'].ix[:-1]
+
+        # Load the main spreadsheet into a DataFrame, but skip 24 rows.
         deathdist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0, 1], skiprows=24)
+
         pw = deathdist.loc['Pregnant women'].ix[:-1]
         dist = pandas.concat([neonates['<1 month'], children, pw['Pregnant women.1']], axis=1, sort=False).fillna(0)
         for cause in dist.index:
@@ -401,7 +575,7 @@ class InputData(object):
 
 class ProgData(object):
     """Stores all the settings for each project, defined by the user"""
-    def __init__(self, data, default_data):
+    def __init__(self, data, default_data, calcscache):
         self.settings = settings.Settings()
         self.spreadsheet = data
         self.prog_set = []
@@ -416,6 +590,7 @@ class ProgData(object):
         self.famplan_methods = None
         self.impacted_pop = default_data.impacted_pop
         self.prog_areas = default_data.prog_areas
+        self.calcscache = calcscache
 
         # load data
         self.get_prog_info()
@@ -458,7 +633,90 @@ class ProgData(object):
             raise Exception(errors)
 
     def get_prog_target(self):
-        targetPopSheet = utils.read_sheet(self.spreadsheet, 'Programs target population', [0,1])
+        # Load the main spreadsheet into a DataFrame.
+        targetPopSheet = utils.read_sheet(self.spreadsheet, 'Programs target population', [0, 1])
+
+        # Recalculate cells that need it, and remember in the calculations cache.
+        baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0, 1])
+        food_insecure = baseline.loc['Population data'].loc['Percentage of population food insecure (default poor)'].values[0]
+        frac_malaria_risk = baseline.loc['Population data'].loc['Percentage of population at risk of malaria'].values[0]
+        school_attendance = baseline.loc['Population data'].loc['School attendance (percentage of 15-19 year women)'].values[0]
+        frac_PW_health_facility = baseline.loc['Population data'].loc['Percentage of pregnant women attending health facility'].values[0]
+        frac_children_health_facility = baseline.loc['Population data'].loc['Percentage of children attending health facility'].values[0]
+        famplan_unmet_need = baseline.loc['Population data'].loc['Unmet need for family planning'].values[0]
+        frac_rice = baseline.loc['Food'].loc['Fraction eating rice as main staple food'].values[0]
+        frac_wheat = baseline.loc['Food'].loc['Fraction eating wheat as main staple food'].values[0]
+        frac_maize = baseline.loc['Food'].loc['Fraction eating maize as main staple food'].values[0]
+        diarr_incid = baseline.loc['Diarrhoea incidence']['Data'].values
+        treatsam = self.spreadsheet.parse(sheet_name='Treatment of SAM')
+        comm_deliv_raw = treatsam.iloc[1]['Add extension']
+        comm_deliv = pandas.notnull(comm_deliv_raw)
+        cash_transfers_row = food_insecure * np.ones(4)
+        targetPopSheet.loc['Children', 'Cash transfers'].iloc[1:5] = cash_transfers_row
+        self.calcscache.write_row('Programs target population', 1, 3, cash_transfers_row)
+        lipid_row = food_insecure * np.ones(2)
+        targetPopSheet.loc['Children', 'Lipid-based nutrition supplements'].iloc[2:4] = lipid_row
+        self.calcscache.write_row('Programs target population', 4, 4, lipid_row)
+        oral_rehyd_row = diarr_incid / 26.0
+        targetPopSheet.loc['Children', 'Oral rehydration salts'].iloc[0:5] = oral_rehyd_row
+        self.calcscache.write_row('Programs target population', 6, 2, oral_rehyd_row)
+        pub_prov_row = food_insecure * np.ones(2)
+        targetPopSheet.loc['Children', 'Public provision of complementary foods'].iloc[2:4] = pub_prov_row
+        self.calcscache.write_row('Programs target population', 7, 4, pub_prov_row)
+        if comm_deliv:
+            treat_SAM_val = 1.0
+        else:
+            treat_SAM_val = frac_children_health_facility
+        treat_SAM_row = treat_SAM_val * np.ones(4)
+        targetPopSheet.loc['Children', 'Treatment of SAM'].iloc[1:5] = treat_SAM_row
+        self.calcscache.write_row('Programs target population', 8, 3, treat_SAM_row)
+        zinc_treatment_row = diarr_incid / 26.0
+        targetPopSheet.loc['Children', 'Zinc for treatment + ORS'].iloc[0:5] = zinc_treatment_row
+        self.calcscache.write_row('Programs target population', 10, 2, zinc_treatment_row)
+        balanced_energy_row = food_insecure * np.ones(4)
+        targetPopSheet.loc['Pregnant women', 'Balanced energy-protein supplementation'].iloc[5:9] = balanced_energy_row
+        self.calcscache.write_row('Programs target population', 13, 7, balanced_energy_row)
+        IFAS_preg_health_row = frac_PW_health_facility * np.ones(4)
+        targetPopSheet.loc['Pregnant women', 'IFAS for pregnant women (health facility)'].iloc[5:9] = IFAS_preg_health_row
+        self.calcscache.write_row('Programs target population', 16, 7, IFAS_preg_health_row)
+        IPTp_row = frac_malaria_risk * np.ones(4)
+        targetPopSheet.loc['Pregnant women', 'IPTp'].iloc[5:9] = IPTp_row
+        self.calcscache.write_row('Programs target population', 17, 7, IPTp_row)
+        fam_planning_row = famplan_unmet_need * np.ones(4)
+        targetPopSheet.loc['Non-pregnant WRA', 'Family planning'].iloc[9:13] = fam_planning_row
+        self.calcscache.write_row('Programs target population', 22, 11, fam_planning_row)
+        IFAS_comm_row = np.ones(4)
+        IFAS_comm_row[0] = (1.0 - food_insecure) * 0.49 * (1.0 - school_attendance) + food_insecure * 0.7 * (1.0 - school_attendance)
+        IFAS_comm_row[1:] = (1.0 - food_insecure) * 0.49 + food_insecure * 0.7
+        targetPopSheet.loc['Non-pregnant WRA', 'IFAS (community)'].iloc[9:13] = IFAS_comm_row
+        self.calcscache.write_row('Programs target population', 23, 11, IFAS_comm_row)
+        IFAS_health_fac_row = np.ones(4)
+        IFAS_health_fac_row[0] = (1.0 - food_insecure) * 0.21 * (1.0 - school_attendance) + food_insecure * 0.3 * (1.0 - school_attendance)
+        IFAS_health_fac_row[1:] = (1.0 - food_insecure) * 0.21 + food_insecure * 0.3
+        targetPopSheet.loc['Non-pregnant WRA', 'IFAS (health facility)'].iloc[9:13] = IFAS_health_fac_row
+        self.calcscache.write_row('Programs target population', 24, 11, IFAS_health_fac_row)
+        IFAS_retailer_row = np.ones(4)
+        IFAS_retailer_row[0] = (1.0 - food_insecure) * 0.3 * (1.0 - school_attendance)
+        IFAS_retailer_row[1:] = (1.0 - food_insecure) * 0.3
+        targetPopSheet.loc['Non-pregnant WRA', 'IFAS (retailer)'].iloc[9:13] = IFAS_retailer_row
+        self.calcscache.write_row('Programs target population', 25, 11, IFAS_retailer_row)
+        IFAS_school_row = (1.0 - food_insecure) * school_attendance + food_insecure * school_attendance
+        targetPopSheet.loc['Non-pregnant WRA', 'IFAS (school)'].iloc[9] = IFAS_school_row
+        self.calcscache.write_cell('Programs target population', 26, 11, IFAS_school_row)
+        IFA_maize_row = frac_maize * np.ones(11)
+        targetPopSheet.loc['General population', 'IFA fortification of maize'].iloc[2:13] = IFA_maize_row
+        self.calcscache.write_row('Programs target population', 28, 4, IFA_maize_row)
+        IFA_rice_row = frac_rice * np.ones(11)
+        targetPopSheet.loc['General population', 'IFA fortification of rice'].iloc[2:13] = IFA_rice_row
+        self.calcscache.write_row('Programs target population', 29, 4, IFA_rice_row)
+        IFA_wheat_row = frac_wheat * np.ones(11)
+        targetPopSheet.loc['General population', 'IFA fortification of wheat flour'].iloc[2:13] = IFA_wheat_row
+        self.calcscache.write_row('Programs target population', 30, 4, IFA_wheat_row)
+        bednet_row = frac_malaria_risk * np.ones(13)
+        # targetPopSheet.loc['General population'].loc['Long-lasting insecticide-treated bednets'] = bednet_row
+        targetPopSheet.loc[('General population', 'Long-lasting insecticide-treated bednets'), :] = bednet_row
+        self.calcscache.write_row('Programs target population', 32, 2, bednet_row)
+
         targetPop = sc.odict()
         for pop in ['Children', 'Pregnant women', 'Non-pregnant WRA', 'General population']:
             targetPop.update(targetPopSheet.loc[pop].to_dict(orient='index'))
@@ -487,11 +745,55 @@ class ProgData(object):
         self.prog_deps = programDep
 
     def get_famplan_methods(self):
-        self.famplan_methods = utils.read_sheet(self.spreadsheet, 'Programs family planning', [0], 'index')
+        # Load the main spreadsheet into a DataFrame.
+        famplan_methods = utils.read_sheet(self.spreadsheet, 'Programs family planning', [0])
+
+        # Recalculate cells that need it, and remember in the calculations cache.
+        dist = famplan_methods.loc[:, 'Distribution'].values
+        costs = famplan_methods.loc[:, 'Cost'].values
+        prop_costs = dist * costs
+        famplan_methods.loc[:, 'Proportional Cost'] = prop_costs
+        self.calcscache.write_col('Programs family planning', 1, 4, prop_costs)
+
+        self.famplan_methods = famplan_methods.to_dict('index')
 
     def get_prog_info(self):
+        def get_unit_cost(raw_includes, costs):
+            includes = raw_includes.notna() & (raw_includes != False)
+            all_mods = pandas.DataFrame({'Health facility': [includes.loc['All', 'Health facility']] * 5,
+                                        'Community': [includes.loc['All', 'Community']] * 5,
+                                        'Mass media': [includes.loc['All', 'Mass media']] * 5},
+                                        index=['Pregnant women', '<1 month', '1-5 months', '6-11 months', '12-23 months'])
+            includes.iloc[:-1, :] = includes.iloc[:-1, :] | all_mods
+            includes = includes.iloc[:-1, :]
+            return costs[includes].sum().sum()
+
+        # Load the main spreadsheet into a DataFrame.
         sheet = utils.read_sheet(self.spreadsheet, 'Programs cost and coverage')
-        self.base_prog_set = sheet.iloc[:,0].tolist()
+
+        # Recalculate cells that need it, and remember in the calculations cache.
+        IYCFpackages = self.spreadsheet.parse(sheet_name='IYCF packages', index_col=[0, 1])
+        IYCFcost = self.spreadsheet.parse(sheet_name='IYCF cost', index_col=[0, 1])
+        costs = pandas.DataFrame(IYCFcost.values,
+            index=['Pregnant women', '<1 month', '1-5 months', '6-11 months', '12-23 months'],
+            columns=['Health facility', 'Community', 'Mass media'])
+        IYCF1_unit_cost = get_unit_cost(IYCFpackages.loc['IYCF 1'].iloc[:-1, :], costs)
+        if IYCF1_unit_cost <= 0.0:  # TODO: probably remove this
+            IYCF1_unit_cost = 0.01  # default to $0.01 if zero or less
+        sheet.iloc[16, 3] = IYCF1_unit_cost
+        self.calcscache.write_cell('Programs cost and coverage', 17, 3, IYCF1_unit_cost)
+        IYCF2_unit_cost = get_unit_cost(IYCFpackages.loc['IYCF 2'].iloc[:-1, :], costs)
+        if IYCF2_unit_cost <= 0.0:  # TODO: probably remove this
+            IYCF2_unit_cost = 0.01  # default to $0.01 if zero or less
+        sheet.iloc[17, 3] = IYCF2_unit_cost
+        self.calcscache.write_cell('Programs cost and coverage', 18, 3, IYCF2_unit_cost)
+        IYCF3_unit_cost = get_unit_cost(IYCFpackages.loc['IYCF 3'], costs)
+        if IYCF3_unit_cost <= 0.0:  # TODO: probably remove this
+            IYCF3_unit_cost = 0.01  # default to $0.01 if zero or less
+        sheet.iloc[18, 3] = IYCF3_unit_cost
+        self.calcscache.write_cell('Programs cost and coverage', 19, 3, IYCF3_unit_cost)
+
+        self.base_prog_set = sheet.iloc[:,0].tolist()  # This grabs _all_ programs even those with zero unit cost.
         self.base_cov = sc.odict(zip(self.base_prog_set, sheet.iloc[:,1].tolist()))
         self.sat = sc.odict(zip(self.base_prog_set, sheet.iloc[:,2].tolist()))
         self.costs = sc.odict(zip(self.base_prog_set, sheet.iloc[:,3].tolist()))
@@ -571,6 +873,8 @@ class Dataset(object):
         
         self.country = country
         self.region = region
+
+        self.calcscache = CalcCellCache()
         
         self.demo_data = demo_data  # demo = demographic
         self.prog_data = prog_data
@@ -616,13 +920,13 @@ class Dataset(object):
         
         # Read them into actual data
         try:
-            self.demo_data = InputData(input_data)  # demo_ here is demographic_
+            self.demo_data = InputData(input_data, self.calcscache)  # demo_ here is demographic_
         except Exception as E:
             raise Exception('Error in databook: %s'%str(E))
         try:
             self.default_params = DefaultParams(default_data, input_data)
             self.default_params.compute_risks(self.demo_data)
-            self.prog_data = ProgData(input_data, self.default_params)
+            self.prog_data = ProgData(input_data, self.default_params, self.calcscache)
         except Exception as E:
             raise Exception('Error in program data: %s'%str(E))
         try:

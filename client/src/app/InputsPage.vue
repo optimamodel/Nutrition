@@ -1,7 +1,7 @@
 <!--
 Define health packages
 
-Last update: 2018-12-19
+Last update: 2019-02-01
 -->
 
 <template>
@@ -86,7 +86,7 @@ Last update: 2018-12-19
                       <input type="text"
                              class="txbox"
                              style="text-align: right"
-                             v-model="cellDict.value"/> <!-- disabled -->
+                             v-model="cellDict.value" :disabled="true"/>
                     </div>
                   </div>
                   <div v-if="cellDict.format==='drop'" class="cell c_drop">
@@ -190,12 +190,9 @@ Last update: 2018-12-19
       else if ((this.$store.state.activeProject.project !== undefined) &&
         (this.$store.state.activeProject.project.hasData) ) {
         console.log('created() called')
-        utils.sleep(1)  // used so that spinners will come up by callback func (GLC, 12/21/18, is this still needed?)
+        this.updateDatasets()
           .then(response => {
-            this.updateDatasets()
-              .then(response2 => {
-                this.getSheetData() // Load the sheet data
-              })
+            this.getSheetData() // Load the sheet data
           })
       }
     },
@@ -231,6 +228,9 @@ Last update: 2018-12-19
         status.start(this, 'Saving changes...')
         rpcs.rpc('save_sheet_data', [this.projectID, this.sheetTables], {'key': this.activeDataset}) // Make the server call to download the framework to a .prj file.
           .then(response => {
+            // Call getSheetData() because the save_sheet_data() RPC will trigger new
+            // values for the calculated cells.
+            this.getSheetData() // Load the sheet data.
             status.succeed(this, 'Data saved')
           })
           .catch(error => {
@@ -362,9 +362,8 @@ Last update: 2018-12-19
   }
 
   .c_calc {
-    background-color: rgb(168, 237, 154); // Temporary, presumably, until spreadsheet calculations are done correctly
-    /*color:#888;*/
-    /*background-color:#ccc;*/
+    color:#888;
+    background-color:#ccc;
     justify-content:flex-end;
   }
 

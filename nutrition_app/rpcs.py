@@ -469,22 +469,22 @@ def upload_databook(databook_filename, project_id):
 ### Input functions and RPCs
 ##################################################################################
 
-editableformats = ['edit', 'calc', 'tick', 'bdgt', 'drop'] # Define which kinds of format are editable and saveable
+editableformats = ['edit', 'tick', 'bdgt', 'drop'] # Define which kinds of format are editable and saveable
 
 def define_formats():
     ''' Hard-coded sheet formats '''
     formats = sc.odict()
-    
+
     formats['Nutritional status distribution'] = [
         ['head', 'head', 'name', 'name', 'name', 'name', 'name', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-        ['name', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
+        ['name', 'name', 'calc', 'calc', 'calc', 'calc', 'calc', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
+        ['blnk', 'name', 'calc', 'calc', 'calc', 'calc', 'calc', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
         ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
         ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
         ['blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
         ['blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-        ['name', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-        ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
+        ['name', 'name', 'calc', 'calc', 'calc', 'calc', 'calc', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
+        ['blnk', 'name', 'calc', 'calc', 'calc', 'calc', 'calc', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
         ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
         ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
         ['blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
@@ -492,41 +492,14 @@ def define_formats():
         ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit'],
         ['blnk', 'name', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc'],
     ]
-    
+
     formats['Breastfeeding distribution'] = [
         ['head', 'head', 'head', 'head', 'head', 'head', 'head'],
         ['name', 'name', 'edit', 'edit', 'edit', 'edit', 'edit'],
         ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit'],
         ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit'],
-        ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit'],
+        ['blnk', 'name', 'calc', 'calc', 'calc', 'calc', 'calc'],
     ]
-    
-    # These are for when we get formulas working
-#    formats['Nutritional status distribution'] = [
-#        ['head', 'head', 'name', 'name', 'name', 'name', 'name', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-#        ['name', 'name', 'calc', 'calc', 'calc', 'calc', 'calc', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-#        ['blnk', 'name', 'calc', 'calc', 'calc', 'calc', 'calc', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-#        ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-#        ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-#        ['blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-#        ['blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-#        ['name', 'name', 'calc', 'calc', 'calc', 'calc', 'calc', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-#        ['blnk', 'name', 'calc', 'calc', 'calc', 'calc', 'calc', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-#        ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-#        ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-#        ['blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk', 'blnk'],
-#        ['name', 'blnk', 'name', 'name', 'name', 'name', 'name', 'name', 'name', 'name', 'name', 'name', 'name', 'name', 'name'],
-#        ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit', 'edit'],
-#        ['blnk', 'name', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc', 'calc'],
-#    ]
-#    
-#    formats['Breastfeeding distribution'] = [
-#        ['head', 'head', 'head', 'head', 'head', 'head', 'head'],
-#        ['name', 'name', 'edit', 'edit', 'edit', 'edit', 'edit'],
-#        ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit'],
-#        ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit'],
-#        ['blnk', 'name', 'calc', 'calc', 'calc', 'calc', 'calc'],
-#    ]
     
     formats['IYCF packages'] = [
         ['head', 'head', 'head', 'head', 'head'],
@@ -576,9 +549,9 @@ def define_formats():
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
-        ['name', 'edit', 'edit', 'bdgt', 'drop'],
-        ['name', 'edit', 'edit', 'bdgt', 'drop'],
-        ['name', 'edit', 'edit', 'bdgt', 'drop'],
+        ['name', 'edit', 'edit', 'bclc', 'drop'],
+        ['name', 'edit', 'edit', 'bclc', 'drop'],
+        ['name', 'edit', 'edit', 'bclc', 'drop'],
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
@@ -612,34 +585,37 @@ def get_sheet_data(project_id, key=None, verbose=False):
         'Programs cost and coverage',
         ]
     proj = load_project(project_id, die=True)
-    wb = proj.inputsheet(key)
+    wb = proj.inputsheet(key)  # Get the spreadsheet
+    calcscache = proj.dataset(key).calcscache  # Get the calculation cells cache
     sheetdata = sc.odict()
-    for sheet in sheets:
+    for sheet in sheets:  # Read pandas DataFrames in for each worksheet
         sheetdata[sheet] = wb.readcells(sheetname=sheet, header=False)
     sheetformat = define_formats()
     
     sheetjson = sc.odict()
-    for sheet in sheets:
+    for sheet in sheets:  # loop over each GUI worksheet
         datashape = np.shape(sheetdata[sheet])
         formatshape = np.shape(sheetformat[sheet])
         if datashape != formatshape:
             errormsg = 'Sheet data and formats have different shapes for sheet "%s": %s vs. %s' % (sheet, datashape, formatshape)
             raise Exception(errormsg)
-        rows,cols = datashape
+        rows, cols = datashape
         sheetjson[sheet] = []
         for r in range(rows):
             sheetjson[sheet].append([])
             for c in range(cols):
                 cellformat = sheetformat[sheet][r][c]
                 cellval = sheetdata[sheet][r][c]
+                if cellformat in ['calc', 'bclc']:  # Pull from cache if 'calc' or 'bclc'
+                    cellval = calcscache.read_cell(sheet, r, c)
                 try:
-                    cellval = float(cellval) # Try to cast to float
+                    cellval = float(cellval)  # Try to cast to float
                 except:
                     pass # But give up easily
-                if sc.isnumber(cellval): # If it is a number...
-                    if cellformat in ['edit','calc']:
+                if sc.isnumber(cellval):  # If it is a number...
+                    if cellformat in ['edit', 'calc']:  # Format editable and calculation cell values
                         cellval = sc.sigfig(100*cellval, sigfigs=3)
-                    elif cellformat == 'bdgt': # Format edit box numbers nicely
+                    elif cellformat in ['bdgt', 'bclc']:  # Format budget and budget calc cell values
                         cellval = '%0.2f' % cellval
                     elif cellformat == 'tick':
                         if not cellval:
@@ -648,13 +624,15 @@ def get_sheet_data(project_id, key=None, verbose=False):
                             cellval = True
                     else:
                         pass # It's fine, just let it go, let it go, can't hold it back any more
-                cellinfo = {'format':cellformat, 'value':cellval}
+                if cellformat == 'bclc':  # 'bcalc' means budget + calculation cell
+                    cellformat = 'calc'  # convert bclc to calc format so FE displays correctly
+                cellinfo = {'format': cellformat, 'value': cellval}
                 sheetjson[sheet][r].append(cellinfo)
     
     sheetjson = sc.sanitizejson(sheetjson)
     if verbose:
         sc.pp(sheetjson)
-    return {'names':sheets, 'tables':sheetjson}
+    return {'names': sheets, 'tables': sheetjson}
 
 
 @RPC()
@@ -675,7 +653,7 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
                 cellformat = sheetdata[sheet][r][c]['format']
                 if cellformat in editableformats:
                     cellval = sheetdata[sheet][r][c]['value']
-                    if cellformat in ['edit','calc']:
+                    if cellformat in ['edit', 'calc']:
                         cellval = numberify(cellval, blank='none', invalid='die', aslist=False)
                         if sc.isnumber(cellval):
                             cellval /= 100 # Convert from percentage
@@ -692,9 +670,8 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
                     vals.append(cellval)
                     if verbose:
                         print('  Cell (%s,%s) = %s' % (r+1, c+1, cellval))
-        wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={'data_only':True}) # Can turn on verbose
-    # proj.load_data(fromfile=False, name=proj.datasets.keys()[-1]) # WARNING, only supports one dataset/model
-    proj.load_data(fromfile=False, name=key)
+        wb.writecells(sheetname=sheet, cells=cells, vals=vals, verbose=False, wbargs={'data_only': False})  # Can turn on verbose
+    proj.load_data(fromfile=False, name=key)  # Change the Dataset and Model, including doing recalculations.
     print('Saving project...')
     save_project(proj)
     return None
@@ -805,8 +782,8 @@ def is_included(prog_set, program, default_included):
 
 def py_to_js_scen(py_scen, proj, key=None, default_included=False):
     ''' Convert a Python to JSON representation of a scenario '''
-    prog_names = proj.dataset().prog_names()
-    scen_years = proj.dataset().t[1] - proj.dataset().t[0] # First year is baseline
+    prog_names = proj.dataset(key).prog_names()
+    scen_years = proj.dataset(key).t[1] - proj.dataset(key).t[0] # First year is baseline
     attrs = ['name', 'active', 'scen_type', 'model_name']
     js_scen = {}
     for attr in attrs:
@@ -850,7 +827,7 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
         this_spec['base_cov'] = str(round(program.base_cov*100)) # Convert to percentage -- this should never be None or Nan
         this_spec['base_spend'] = format(int(round(program.base_spend)), ',')
         js_scen['progvals'].append(this_spec)
-        js_scen['t'] = [proj.dataset().t[0]+1, proj.dataset().t[1]] # First year is baseline year
+        js_scen['t'] = [proj.dataset(key).t[0]+1, proj.dataset(key).t[1]] # First year is baseline year
     return js_scen
     
     
@@ -994,7 +971,7 @@ def run_scens(project_id, doplot=True):
 def py_to_js_optim(py_optim, proj, key=None, default_included=False):
     ''' Convert a Python to JSON representation of an optimization '''
     obj_labels = nu.pretty_labels(direction=True).values()
-    prog_names = proj.dataset().prog_names()
+    prog_names = proj.dataset(key).prog_names()
     js_optim = {}
     attrs = ['name', 'model_name', 'mults', 'add_funds', 'fix_curr', 'filter_progs']
     for attr in attrs:
@@ -1114,7 +1091,7 @@ def plot_optimization(project_id, cache_id):
 def py_to_js_geo(py_geo, proj, key=None, default_included=False):
     ''' Convert a Python to JSON representation of an optimization '''
     obj_labels = nu.pretty_labels(direction=True).values()
-    prog_names = proj.dataset().prog_names()
+    prog_names = proj.dataset(key).prog_names()
     js_geo = {}
     attrs = ['name', 'modelnames', 'mults', 'add_funds', 'fix_curr', 'fix_regionalspend', 'filter_progs']
     for attr in attrs:
