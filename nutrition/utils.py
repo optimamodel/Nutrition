@@ -176,8 +176,9 @@ def process_weights(weights):
     return newweights
 
 def read_sheet(spreadsheet, name, cols=None, dict_orient=None, skiprows=None, to_odict=False, dropna=None):
-    if dropna is None: dropna = 'all'
-    df = spreadsheet.parse(name, index_col=cols, skiprows=skiprows)
+    if dropna is None:
+        dropna = 'all'
+    df = spreadsheet.parse(name, index_col=cols, skiprows=skiprows)  # Grab the raw spreadsheet DataFrame
     if dropna:
         df = df.dropna(how=dropna)
     if dict_orient:

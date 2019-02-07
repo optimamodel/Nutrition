@@ -7,7 +7,7 @@ Last updated: 2018-07-11
 <template>
   <div class="notifications">
     <transition-group name="list" @on-close="removeNotification">
-      <notification v-for="(notification,index) in notifications" :key="index" :message="notification.message" :icon="notification.icon" :type="notification.type" :vertical-align="notification.verticalAlign" :horizontal-align="notification.horizontalAlign" :timeout="notification.timeout" :timestamp="notification.timestamp">
+      <notification v-for="(notification,index) in notifications" :key="index+0" :message="notification.message" :icon="notification.icon" :type="notification.type" :vertical-align="notification.verticalAlign" :horizontal-align="notification.horizontalAlign" :timeout="notification.timeout" :timestamp="notification.timestamp">
 
       </notification>
     </transition-group> 
