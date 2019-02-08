@@ -488,10 +488,15 @@ class InputData(object):
         baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs')
         index = np.array(baseline['Field']).tolist().index('Percentage of anaemia that is iron deficient')
         iron_pct = np.array(baseline['Data'])[index]
-        anaem = sc.odict({key: val * iron_pct for key, val in all_anaem.items()})
-        self.calcscache.write_row('Nutritional status distribution', 14, 2, anaem[:])
+        anaem = dist.loc['Anaemia', 'Prevalence of anaemia'] * iron_pct
+        self.calcscache.write_row('Nutritional status distribution', 14, 2, anaem.values)
 
-        for age, prev in anaem.items():
+        # These should work, but don't in Google Cloud.
+        # anaem = sc.odict({key: val * iron_pct for key, val in all_anaem.items()})
+        # self.calcscache.write_row('Nutritional status distribution', 14, 2, anaem[:])
+
+        # for age, prev in anaem.items():  # Should work with commented out code above
+        for age, prev in anaem.iteritems():
             self.risk_dist['Anaemia'][age] = dict()
             self.risk_dist['Anaemia'][age]['Anaemic'] = prev
             self.risk_dist['Anaemia'][age]['Not anaemic'] = 1.-prev
