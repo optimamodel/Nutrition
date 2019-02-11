@@ -1,7 +1,7 @@
 <!--
 Optimizations page
 
-Last update: 2019jan10
+Last update: 2019feb11
 -->
 
 <template>
@@ -26,7 +26,7 @@ Last update: 2019jan10
           <thead>
           <tr>
             <th>Name</th>
-            <th>Dataset</th>
+            <th>Databook</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
@@ -141,7 +141,7 @@ Last update: 2019jan10
           <input type="text"
                  class="txbox"
                  v-model="addEditModal.optimSummary.name"/><br>
-          <b>Dataset</b><br>
+          <b>Databook</b><br>
           <select v-model="addEditModal.optimSummary.model_name" @change="modalSwitchDataset">
             <option v-for='dataset in datasetOptions'>
               {{ dataset }}
@@ -571,7 +571,7 @@ Last update: 2019jan10
             console.log(newDefaultOptim)
           })
           .catch(error => {
-            status.fail(this, 'Could not switch datasets', error)
+            status.fail(this, 'Could not switch databooks', error)
           })		
       },
 	  

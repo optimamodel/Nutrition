@@ -1,7 +1,7 @@
 <!--
 Define health packages
 
-Last update: 2019-02-01
+Last update: 2019-02-11
 -->
 
 <template>
@@ -26,7 +26,7 @@ Last update: 2019-02-01
           <br>
           <br>
           <div class="controls-box">
-            <b>Dataset: &nbsp;</b>
+            <b>Databook: &nbsp;</b>
             <select v-model="activeDataset" @change="getSheetData()">
               <option v-for='dataset in datasetOptions'>
                 {{ dataset }}
@@ -35,7 +35,7 @@ Last update: 2019-02-01
             <button class="btn btn-icon" @click="renameDatasetModal()" data-tooltip="Rename"><i class="ti-pencil"></i></button>
             <button class="btn btn-icon" @click="copyDataset()" data-tooltip="Copy"><i class="ti-files"></i></button>
             <button class="btn btn-icon" @click="deleteDataset()" data-tooltip="Delete"><i class="ti-trash"></i></button>
-            <button class="btn btn-icon" @click="downloadDatabook()" data-tooltip="Download databook"><i class="ti-download"></i></button>
+            <button class="btn btn-icon" @click="downloadDatabook()" data-tooltip="Download"><i class="ti-download"></i></button>
             <button class="btn btn-icon" @click="uploadDatabook()" data-tooltip="Upload"><i class="ti-upload"></i></button>
 <!--            <button class="btn btn-icon" @click="loadDatasets()" data-tooltip="Refresh"><i class="ti-reload"></i></button> --> &nbsp;
             <!--<help reflink="parameter-sets"></help>-->
@@ -126,7 +126,7 @@ Last update: 2019-02-01
 
       <div class="dialog-content">
         <div class="dialog-c-title">
-          Rename dataset
+          Rename databook
         </div>
         <div class="dialog-c-text">
           New name:<br>
@@ -242,7 +242,7 @@ Last update: 2019-02-01
 
       downloadDatabook() {
         console.log('downloadDatabook() called')
-        status.start(this, 'Downloading data book...')
+        status.start(this, 'Downloading databook...')
         rpcs.download('download_databook', [this.projectID], {'key': this.activeDataset})
           .then(response => {
             status.succeed(this, '')  // No green popup message.
@@ -281,10 +281,10 @@ Last update: 2019-02-01
         rpcs.rpc('rename_dataset', [this.projectID, this.origDatasetName, this.activeDataset]) // Have the server rename the dataset, giving it a new name.
           .then(response => {
             this.updateDatasets() // Update the dataset so the renamed set shows up on the list.
-            status.succeed(this, 'Dataset "'+this.activeDataset+'" renamed') // Indicate success.
+            status.succeed(this, 'Databook "'+this.activeDataset+'" renamed') // Indicate success.
           })
           .catch(error => {
-            status.fail(this, 'Could not rename dataset', error)
+            status.fail(this, 'Could not rename databook', error)
           })
       },
 
@@ -295,10 +295,10 @@ Last update: 2019-02-01
           .then(response => {
             this.updateDatasets() // Update the datasets so the copied program shows up on the list.
             this.activeDataset = response.data
-            status.succeed(this, 'Dataset "'+this.activeDataset+'" copied') // Indicate success.
+            status.succeed(this, 'Databook "'+this.activeDataset+'" copied') // Indicate success.
           })
           .catch(error => {
-            status.fail(this, 'Could not copy dataset', error)
+            status.fail(this, 'Could not copy databook', error)
           })
       },
 
@@ -310,11 +310,11 @@ Last update: 2019-02-01
             this.updateDatasets() // Update the project summaries so the dataset deletion shows up on the list.
               .then(response2 => {
                 this.getSheetData() // Load the sheet data (since we've switched to a new one).
-				status.succeed(this, 'Dataset "'+this.activeDataset+'" deleted') // Indicate success.
+				status.succeed(this, 'Databook "'+this.activeDataset+'" deleted') // Indicate success.
               })        
           })
           .catch(error => {
-            status.fail(this, 'Cannot delete last dataset: ensure there are at least 2 datasets before deleting one', error)
+            status.fail(this, 'Cannot delete last databook: ensure there are at least 2 databooks before deleting one', error)
           })
       },
 
