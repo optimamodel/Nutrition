@@ -175,12 +175,16 @@ def process_weights(weights):
         raise Exception('All objective weights are zero. Process aborted.')
     return newweights
 
-def read_sheet(spreadsheet, name, cols=None, dict_orient=None, skiprows=None, to_odict=False, dropna=None):
+def read_sheet(spreadsheet, name, cols=None, dict_orient=None, skiprows=None, to_odict=False, dropna=None, debug_file_pfx=None):
     if dropna is None:
         dropna = 'all'
     df = spreadsheet.parse(name, index_col=cols, skiprows=skiprows)  # Grab the raw spreadsheet DataFrame
+    if debug_file_pfx is not None:
+        df.to_csv('%s_parse.csv' % debug_file_pfx)
     if dropna:
         df = df.dropna(how=dropna)
+        if debug_file_pfx is not None:
+            df.to_csv('%s_dropna.csv' % debug_file_pfx)
     if dict_orient:
         df = df.to_dict(dict_orient)
     elif to_odict:
