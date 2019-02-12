@@ -931,15 +931,18 @@ def reformat_costeff(costeff):
 
 
 @RPC()
-def run_scens(project_id, doplot=True):
+def run_scens(project_id, doplot=True, do_costeff=False):
     
     print('Running scenarios...')
     proj = load_project(project_id, die=True)
     proj.run_scens()
-    
-    # Get cost-effectiveness table
-    costeff = nu.get_costeff(project=proj, results=proj.result('scens'))
-    table = reformat_costeff(costeff)
+
+    if do_costeff:
+        # Get cost-effectiveness table
+        costeff = nu.get_costeff(project=proj, results=proj.result('scens'))
+        table = reformat_costeff(costeff)
+    else:
+        table = []
     
     # Get graphs
     graphs = []
@@ -950,6 +953,7 @@ def run_scens(project_id, doplot=True):
                 ax.set_facecolor('none')
             graph_dict = sw.mpld3ify(fig, jsonify=False)
             graphs.append(graph_dict)
+            pl.close(fig)
             print('Converted figure %s of %s' % (f+1, len(figs)))
         
     # Store results in cache
@@ -1060,7 +1064,7 @@ def get_default_optim(project_id, model_name=None):
 
 
 @RPC()
-def plot_optimization(project_id, cache_id):
+def plot_optimization(project_id, cache_id, do_costeff=False):
     proj = load_project(project_id, die=True)
     proj = retrieve_results(proj)
     figs = proj.plot(key=cache_id, optim=True) # Only plot allocation
@@ -1070,11 +1074,15 @@ def plot_optimization(project_id, cache_id):
             ax.set_facecolor('none')
         graph_dict = sw.mpld3ify(fig, jsonify=False)
         graphs.append(graph_dict)
+        pl.close(fig)
         print('Converted figure %s of %s' % (f+1, len(figs)))
     
     # Get cost-effectiveness table
-    costeff = nu.get_costeff(project=proj, results=proj.result(cache_id))
-    table = reformat_costeff(costeff)
+    if do_costeff:
+        costeff = nu.get_costeff(project=proj, results=proj.result(cache_id))
+        table = reformat_costeff(costeff)
+    else:
+        table = []
     
     return {'graphs':graphs, 'table':table}
 
