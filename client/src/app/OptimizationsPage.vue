@@ -57,6 +57,11 @@ Last update: 2019jan10
         </table>
 
         <div>
+            <input type="checkbox" id="costeff_checkbox" v-model="calculateCostEff"/>
+            <label for="costeff_checkbox">Perform intervention cost-effectiveness analysis</label>
+        </div>
+
+        <div>
           <button class="btn" :disabled="!optimsLoaded" @click="addOptimModal()">Add optimization</button>
         </div>
       </div>
@@ -88,7 +93,7 @@ Last update: 2019jan10
       </div>
 
       <br>
-      <div v-if="table">
+      <div v-if="hasTable">
         <help reflink="cost-effectiveness" label="Program cost-effectiveness"></help>
         <div class="calib-graphs" style="display:inline-block; text-align:right; overflow:auto">
           <table class="table table-bordered table-hover table-striped">
@@ -251,6 +256,8 @@ Last update: 2019jan10
         },
         figscale: 1.0,
         hasGraphs: false,
+        calculateCostEff: false,
+        hasTable: false,
         table: [],
       }
     },
@@ -695,8 +702,9 @@ Last update: 2019jan10
       plotOptimization(optimSummary) {
         console.log('plotOptimization() called')
         status.start(this)
-        rpcs.rpc('plot_optimization', [this.projectID, optimSummary.serverDatastoreId])
+        rpcs.rpc('plot_optimization', [this.projectID, optimSummary.serverDatastoreId, this.calculateCostEff])
           .then(response => {
+            this.hasTable = this.calculateCostEff
             this.table = response.data.table
             this.makeGraphs(response.data.graphs)
             this.displayResultName = optimSummary.name

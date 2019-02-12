@@ -57,6 +57,11 @@ Last update: 2019jan09
         </table>
 
         <div>
+            <input type="checkbox" id="costeff_checkbox" v-model="calculateCostEff"/>
+            <label for="costeff_checkbox">Perform intervention cost-effectiveness analysis</label>
+        </div>
+
+        <div>
           <button class="btn __green" :disabled="!scenariosLoaded" @click="runScens()">Run scenarios</button>
           <button class="btn __blue"  :disabled="!scenariosLoaded" @click="addScenModal('coverage')">Add coverage scenario</button>
           <button class="btn __blue"  :disabled="!scenariosLoaded" @click="addScenModal('budget')">Add budget scenario</button>
@@ -94,7 +99,7 @@ Last update: 2019jan09
       </div>
 
       <br>
-      <div v-if="table">
+      <div v-if="hasTable">
         <help reflink="cost-effectiveness" label="Program cost-effectiveness"></help>
         <div class="calib-graphs" style="display:inline-block; text-align:right; overflow:auto">
           <table class="table table-bordered table-hover table-striped">
@@ -239,6 +244,8 @@ Last update: 2019jan09
         },
         figscale: 1.0,
         hasGraphs: false,
+        calculateCostEff: false,
+        hasTable: false,
         table: [],
       }
     },
@@ -462,8 +469,9 @@ Last update: 2019jan09
         status.start(this)
         rpcs.rpc('set_scen_info', [this.projectID, this.scenSummaries]) // Make sure they're saved first
           .then(response => {
-            rpcs.rpc('run_scens', [this.projectID]) // Go to the server to get the results
+            rpcs.rpc('run_scens', [this.projectID, true, this.calculateCostEff]) // Go to the server to get the results
               .then(response => {
+                this.hasTable = this.calculateCostEff
                 this.table = response.data.table
                 this.makeGraphs(response.data.graphs)
                 status.succeed(this, '') // Success message in graphs function
