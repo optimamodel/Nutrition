@@ -1,7 +1,7 @@
 <!--
 Manage projects page
 
-Last update: 2019jan11
+Last update: 2019feb12
 -->
 
 <template>
@@ -70,10 +70,13 @@ Last update: 2019jan11
               <input type="checkbox" @click="uncheckSelectAll()" v-model="projectSummary.selected"/>
             </td>
             <td v-if="projectSummary.renaming !== ''">
-              <input type="text"
+<!--              <input type="text"
                      class="txbox renamebox"
                      @keyup.enter="renameProject(projectSummary)"
-                     v-model="projectSummary.renaming"/>
+                     v-model="projectSummary.renaming"/> -->
+              <input type="text"
+                     class="txbox renamebox"
+                     v-model="projectSummary.renaming"/>                     
             </td>
             <td v-else>
               <div v-if="projectLoaded(projectSummary.project.id)">
