@@ -70,13 +70,10 @@ Last update: 2019feb12
               <input type="checkbox" @click="uncheckSelectAll()" v-model="projectSummary.selected"/>
             </td>
             <td v-if="projectSummary.renaming !== ''">
-<!--              <input type="text"
-                     class="txbox renamebox"
-                     @keyup.enter="renameProject(projectSummary)"
-                     v-model="projectSummary.renaming"/> -->
               <input type="text"
                      class="txbox renamebox"
-                     v-model="projectSummary.renaming"/>                     
+                     @keyup.enter="renameProject(projectSummary)"
+                     v-model="projectSummary.renaming"/>                  
             </td>
             <td v-else>
               <div v-if="projectLoaded(projectSummary.project.id)">
