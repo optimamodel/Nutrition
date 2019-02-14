@@ -701,6 +701,14 @@ def rename_dataset(project_id, datasetname=None, new_name=None):
     proj.datasets[new_name].name = new_name
     proj.spreadsheets.rename(datasetname, new_name)
     proj.models.rename(datasetname, new_name)
+    # Loop over all Scen objects and change occurrences that match the old Dataset name to the new name.
+    for py_scen in proj.scens.values():  # Loop over all Scens in Project
+        if py_scen.model_name == datasetname:
+            py_scen.model_name = new_name
+    # Loop over all Optim objects and change occurrences that match the old Dataset name to the new name.
+    for py_optim in proj.optims.values():  # Loop over all Optims in Project
+        if py_optim.model_name == datasetname:
+            py_optim.model_name = new_name
     print('Saving project...')
     save_project(proj)
     return None
