@@ -735,9 +735,13 @@ def delete_dataset(project_id, datasetname=None):
     print('Deleting dataset %s...' % datasetname)
     proj = load_project(project_id, die=True)
     print('Number of datasets before delete: %s' % len(proj.datasets))
-    if len(proj.datasets)>1:
+    if len(proj.datasets) > 1:
         proj.datasets.pop(datasetname)
         proj.spreadsheets.pop(datasetname)
+        # Loop over all Scens and delete any that depend on the dataset being deleted.
+        for scen_name in proj.scens.keys():  # Loop over all Scen keys in Project
+            if proj.scens[scen_name].model_name == datasetname:
+                proj.scens.pop(scen_name)
     else:
         raise Exception('Cannot delete last parameter set')
     print('Number of datasets after delete: %s' % len(proj.datasets))
