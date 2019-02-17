@@ -701,6 +701,14 @@ def rename_dataset(project_id, datasetname=None, new_name=None):
     proj.datasets[new_name].name = new_name
     proj.spreadsheets.rename(datasetname, new_name)
     proj.models.rename(datasetname, new_name)
+    # Loop over all Scen objects and change occurrences that match the old Dataset name to the new name.
+    for py_scen in proj.scens.values():  # Loop over all Scens in Project
+        if py_scen.model_name == datasetname:
+            py_scen.model_name = new_name
+    # Loop over all Optim objects and change occurrences that match the old Dataset name to the new name.
+    for py_optim in proj.optims.values():  # Loop over all Optims in Project
+        if py_optim.model_name == datasetname:
+            py_optim.model_name = new_name
     print('Saving project...')
     save_project(proj)
     return None
@@ -727,9 +735,13 @@ def delete_dataset(project_id, datasetname=None):
     print('Deleting dataset %s...' % datasetname)
     proj = load_project(project_id, die=True)
     print('Number of datasets before delete: %s' % len(proj.datasets))
-    if len(proj.datasets)>1:
+    if len(proj.datasets) > 1:
         proj.datasets.pop(datasetname)
         proj.spreadsheets.pop(datasetname)
+        # Loop over all Scens and delete any that depend on the dataset being deleted.
+        for scen_name in proj.scens.keys():  # Loop over all Scen keys in Project
+            if proj.scens[scen_name].model_name == datasetname:
+                proj.scens.pop(scen_name)
     else:
         raise Exception('Cannot delete last parameter set')
     print('Number of datasets after delete: %s' % len(proj.datasets))
