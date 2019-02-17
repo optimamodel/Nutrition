@@ -61,7 +61,7 @@ class Program(sc.prettyobj):
         restr_cov: boolean indicating if the coverages are restricted or unrestricted """
         if 'ov' in scentype:
             # Raise exception is invalid coverage value. Done here before converting to unrestricted coverages
-            if (sc.sanitize(cov) < 0).any() or (cov > 1).any():
+            if (sc.sanitize(cov) < 0).any() or (sc.sanitize(cov) > 1).any():
                 raise Exception("Coverage for '%s' outside range 0-1: %s" % (progname, cov))
             # assume restricted cov
             cov = self.get_unrestr_cov(cov)
