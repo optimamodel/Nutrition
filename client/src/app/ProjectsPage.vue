@@ -73,7 +73,7 @@ Last update: 2019feb12
               <input type="text"
                      class="txbox renamebox"
                      @keyup.enter="renameProject(projectSummary)"
-                     v-model="projectSummary.renaming"/>                  
+                     v-model="projectSummary.renaming"/>
             </td>
             <td v-else>
               <div v-if="projectLoaded(projectSummary.project.id)">
@@ -95,8 +95,11 @@ Last update: 2019feb12
               {{ projectSummary.project.updatedTime ? projectSummary.project.updatedTime:
               'No modification' }}</td>
             <td style="white-space: nowrap; text-align:left"> <!-- ATOMICA-NUTRITION DIFFERENCE -->
-              <button class="btn __blue" @click="uploadDatabook(projectSummary.project.id)" data-tooltip="Upload databook"><i class="ti-upload"></i></button>
-              <button class="btn" @click="downloadDatabook(projectSummary.project.id, projectSummary.selectedDataSet)" data-tooltip="Download databook"><i class="ti-download"></i></button>            
+              <button class="btn __blue" @click="renameDatasetModal(projectSummary.project.id, projectSummary.selectedDataSet)" data-tooltip="Rename databook"><i class="ti-pencil"></i></button>
+              <button class="btn __blue" @click="copyDataset(projectSummary.project.id, projectSummary.selectedDataSet)" data-tooltip="Copy databook"><i class="ti-files"></i></button>
+              <button class="btn __blue" @click="deleteDataset(projectSummary.project.id, projectSummary.selectedDataSet)" data-tooltip="Delete databook"><i class="ti-trash"></i></button>            
+              <button class="btn __blue" @click="downloadDataset(projectSummary.project.id, projectSummary.selectedDataSet)" data-tooltip="Download databook"><i class="ti-download"></i></button>
+              <button class="btn __blue" @click="uploadDataset(projectSummary.project.id)" data-tooltip="Upload databook"><i class="ti-upload"></i></button>           
               <select v-model="projectSummary.selectedDataSet">
                 <option v-for='dataset in projectSummary.project.dataSets'>
                   {{ dataset }}
@@ -146,6 +149,39 @@ Last update: 2019feb12
       </div>
     </modal>  <!-- ATOMICA-NUTRITION DIFFERENCE -->
     
+    <!-- ### Start: rename dataset modal ### -->
+    <modal name="rename-dataset"
+           height="auto"
+           :classes="['v--modal', 'vue-dialog']"
+           :width="width"
+           :pivot-y="0.3"
+           :adaptive="true"
+           :clickToClose="clickToClose"
+           :transition="transition">
+
+      <div class="dialog-content">
+        <div class="dialog-c-title">
+          Rename databook
+        </div>
+        <div class="dialog-c-text">
+          New name:<br>
+          <input type="text"
+                 class="txbox"
+                 v-model="modalRenameDataset"/><br>
+        </div>
+        <div style="text-align:justify">
+          <button @click="renameDataset()" class='btn __green' style="display:inline-block">
+            Rename
+          </button>
+
+          <button @click="$modal.hide('rename-dataset')" class='btn __red' style="display:inline-block">
+            Cancel
+          </button>
+        </div>
+      </div>
+
+    </modal>
+    <!-- ### End: rename dataset modal ### -->    
   </div>
 
 </template>
@@ -170,7 +206,9 @@ Last update: 2019feb12
         sortColumn: 'name',  // Column of table used for sorting the projects: name, country, creationTime, updatedTime, dataUploadTime
         sortReverse: false, // Sort in reverse order?
         projectSummaries: [], // List of summary objects for projects the user has
-        proj_name:  'New project', // For creating a new project: number of populations  
+        proj_name:  'New project', // For creating a new project: number of populations 
+        modalRenameProjUID: null,  // Project ID with data being renamed in the modal dialog
+        modalRenameDataset: null,  // Dataset being renamed in the rename modal dialog
         // ATOMICA-NUTRITION DIFFERENCE
       }
     },
@@ -361,8 +399,6 @@ Last update: 2019feb12
         )
       },
 
-
-
       openProject(uid) {
         // Find the project that matches the UID passed in.
         let matchProject = this.projectSummaries.find(theProj => theProj.project.id === uid)
@@ -443,10 +479,58 @@ Last update: 2019feb12
             status.fail(this, 'Could not download project', error)
           })
       },
+      
+      renameDatasetModal(uid, selectedDataset) {
+        console.log('renameDatasetModal() called');
+        this.origDatasetName = selectedDataset // Store this before it gets overwritten
+        this.modalRenameProjUID = uid
+        this.modalRenameDataset = selectedDataset
+        this.$modal.show('rename-dataset');
+      },
 
+      renameDataset() {
+        console.log('renameDataset() called for ' + this.modalRenameDataset)
+        this.$modal.hide('rename-dataset');
+        status.start(this)
+        rpcs.rpc('rename_dataset', [this.modalRenameProjUID, this.origDatasetName, this.modalRenameDataset]) // Have the server rename the dataset, giving it a new name.
+          .then(response => {
+            this.updateProjectSummaries(this.modalRenameProjUID) // Update the project summaries
+            status.succeed(this, 'Databook "'+this.origDatasetName+'" renamed') // Indicate success.
+          })
+          .catch(error => {
+            status.fail(this, 'Could not rename databook', error)
+          })
+      },
+
+      copyDataset(uid, selectedDataset) {
+        console.log('copyDataset() called for ' + selectedDataset)
+        status.start(this)
+        rpcs.rpc('copy_dataset', [uid, selectedDataset]) // Have the server copy the dataset, giving it a new name.
+          .then(response => {
+            this.updateProjectSummaries(uid) // Update the project summaries
+            status.succeed(this, 'Databook "'+selectedDataset+'" copied') // Indicate success.
+          })
+          .catch(error => {
+            status.fail(this, 'Could not copy databook', error)
+          })
+      },
+
+      deleteDataset(uid, selectedDataset) {
+        console.log('deleteDataset() called for ' + selectedDataset)
+        status.start(this)
+        rpcs.rpc('delete_dataset', [uid, selectedDataset]) // Have the server delete the dataset.
+          .then(response => {
+            this.updateProjectSummaries(uid) // Update the project summaries
+            status.succeed(this, 'Databook "'+selectedDataset+'" deleted') // Indicate success.     
+          })
+          .catch(error => {
+            status.fail(this, 'Cannot delete last databook: ensure there are at least 2 databooks before deleting one', error)
+          })
+      },
+      
       downloadDatabook(uid, selectedDataSet) {
         console.log('downloadDatabook() called')
-        status.start(this, 'Downloading data book...')
+        status.start(this, 'Downloading databook...')
         rpcs.download('download_databook', [uid], {'key': selectedDataSet})
           .then(response => {
             status.succeed(this, '')  // No green popup message.

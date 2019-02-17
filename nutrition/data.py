@@ -763,40 +763,8 @@ class ProgData(object):
         self.famplan_methods = famplan_methods.to_dict('index')
 
     def get_prog_info(self):
-        def get_unit_cost(raw_includes, costs):
-            includes = raw_includes.notna() & (raw_includes != False)
-            all_mods = pandas.DataFrame({'Health facility': [includes.loc['All', 'Health facility']] * 5,
-                                        'Community': [includes.loc['All', 'Community']] * 5,
-                                        'Mass media': [includes.loc['All', 'Mass media']] * 5},
-                                        index=['Pregnant women', '<1 month', '1-5 months', '6-11 months', '12-23 months'])
-            includes.iloc[:-1, :] = includes.iloc[:-1, :] | all_mods
-            includes = includes.iloc[:-1, :]
-            return costs[includes].sum().sum()
-
         # Load the main spreadsheet into a DataFrame.
         sheet = utils.read_sheet(self.spreadsheet, 'Programs cost and coverage')
-
-        # Recalculate cells that need it, and remember in the calculations cache.
-        IYCFpackages = self.spreadsheet.parse(sheet_name='IYCF packages', index_col=[0, 1])
-        IYCFcost = self.spreadsheet.parse(sheet_name='IYCF cost', index_col=[0, 1])
-        costs = pandas.DataFrame(IYCFcost.values,
-            index=['Pregnant women', '<1 month', '1-5 months', '6-11 months', '12-23 months'],
-            columns=['Health facility', 'Community', 'Mass media'])
-        IYCF1_unit_cost = get_unit_cost(IYCFpackages.loc['IYCF 1'].iloc[:-1, :], costs)
-        if IYCF1_unit_cost <= 0.0:  # TODO: probably remove this
-            IYCF1_unit_cost = 0.01  # default to $0.01 if zero or less
-        sheet.iloc[16, 3] = IYCF1_unit_cost
-        self.calcscache.write_cell('Programs cost and coverage', 17, 3, IYCF1_unit_cost)
-        IYCF2_unit_cost = get_unit_cost(IYCFpackages.loc['IYCF 2'].iloc[:-1, :], costs)
-        if IYCF2_unit_cost <= 0.0:  # TODO: probably remove this
-            IYCF2_unit_cost = 0.01  # default to $0.01 if zero or less
-        sheet.iloc[17, 3] = IYCF2_unit_cost
-        self.calcscache.write_cell('Programs cost and coverage', 18, 3, IYCF2_unit_cost)
-        IYCF3_unit_cost = get_unit_cost(IYCFpackages.loc['IYCF 3'], costs)
-        if IYCF3_unit_cost <= 0.0:  # TODO: probably remove this
-            IYCF3_unit_cost = 0.01  # default to $0.01 if zero or less
-        sheet.iloc[18, 3] = IYCF3_unit_cost
-        self.calcscache.write_cell('Programs cost and coverage', 19, 3, IYCF3_unit_cost)
 
         self.base_prog_set = sheet.iloc[:,0].tolist()  # This grabs _all_ programs even those with zero unit cost.
         self.base_cov = sc.odict(zip(self.base_prog_set, sheet.iloc[:,1].tolist()))

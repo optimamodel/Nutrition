@@ -1,7 +1,7 @@
 <!--
 Scenarios page
 
-Last update: 2019jan09
+Last update: 2019feb11
 -->
 
 <template>
@@ -27,7 +27,7 @@ Last update: 2019jan09
           <tr>
             <th>Name</th>
             <th>Type</th>
-            <th>Dataset</th>
+            <th>Databook</th>
             <th>Active?</th>
             <th>Actions</th>
           </tr>
@@ -153,7 +153,7 @@ Last update: 2019jan09
             <input type="text"
                    class="txbox"
                    v-model="addEditModal.scenSummary.name"/><br>
-            <b>Dataset:</b><br>
+            <b>Databook:</b><br>
             <select v-model="addEditModal.scenSummary.model_name" @change="modalSwitchDataset">
               <option v-for='dataset in datasetOptions'>
                 {{ dataset }}
@@ -368,7 +368,7 @@ Last update: 2019jan09
             console.log(newDefaultScen)
           })
           .catch(error => {
-            status.fail(this, 'Could not switch datasets', error)
+            status.fail(this, 'Could not switch databooks', error)
           })		
       },
 	  
