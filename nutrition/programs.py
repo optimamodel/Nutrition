@@ -59,9 +59,15 @@ class Program(sc.prettyobj):
     def interp_scen(self, cov, years, scentype, progname):
         """ cov: a list of coverages/spending with one-to-one correspondence with sim_years
         restr_cov: boolean indicating if the coverages are restricted or unrestricted """
+        # Create a sanitized cov array where NaNs get converted to 0.0.
+        covchk = np.array(cov)
+        for ind, val in enumerate(cov):
+            if np.isnan(val):
+                covchk[ind] = 0.0
         if 'ov' in scentype:
             # Raise exception is invalid coverage value. Done here before converting to unrestricted coverages
-            if (cov < 0).any() or (cov > 1).any():
+            # if (cov < 0).any() or (cov > 1).any():
+            if (covchk < 0).any() or (covchk > 1).any():
                 raise Exception("Coverage for '%s' outside range 0-1: %s" % (progname, cov))
             # assume restricted cov
             cov = self.get_unrestr_cov(cov)
@@ -71,7 +77,8 @@ class Program(sc.prettyobj):
             interp_spend = self.inv_func(interp_cov)
         elif 'ud' in scentype: # budget
             # can't have negative spending
-            if (cov < 0).any():
+            # if (cov < 0).any():
+            if (covchk < 0).any():
                 raise Exception("Spending for '%s' below 0: %s" % (progname, cov))
             cov[0] = self.annual_spend[0]
             not_nan = ~np.isnan(cov)
