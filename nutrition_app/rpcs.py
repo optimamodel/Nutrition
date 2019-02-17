@@ -549,9 +549,9 @@ def define_formats():
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
-        ['name', 'edit', 'edit', 'bclc', 'drop'],
-        ['name', 'edit', 'edit', 'bclc', 'drop'],
-        ['name', 'edit', 'edit', 'bclc', 'drop'],
+        ['name', 'edit', 'edit', 'bdgt', 'drop'],
+        ['name', 'edit', 'edit', 'bdgt', 'drop'],
+        ['name', 'edit', 'edit', 'bdgt', 'drop'],
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
@@ -606,7 +606,7 @@ def get_sheet_data(project_id, key=None, verbose=False):
             for c in range(cols):
                 cellformat = sheetformat[sheet][r][c]
                 cellval = sheetdata[sheet][r][c]
-                if cellformat in ['calc', 'bclc']:  # Pull from cache if 'calc' or 'bclc'
+                if cellformat in ['calc']:  # Pull from cache if 'calc'
                     cellval = calcscache.read_cell(sheet, r, c)
                 try:
                     cellval = float(cellval)  # Try to cast to float
@@ -615,7 +615,7 @@ def get_sheet_data(project_id, key=None, verbose=False):
                 if sc.isnumber(cellval):  # If it is a number...
                     if cellformat in ['edit', 'calc']:  # Format editable and calculation cell values
                         cellval = sc.sigfig(100*cellval, sigfigs=3)
-                    elif cellformat in ['bdgt', 'bclc']:  # Format budget and budget calc cell values
+                    elif cellformat in ['bdgt']:  # Format budget cell values
                         cellval = '%0.2f' % cellval
                     elif cellformat == 'tick':
                         if not cellval:
@@ -624,8 +624,6 @@ def get_sheet_data(project_id, key=None, verbose=False):
                             cellval = True
                     else:
                         pass # It's fine, just let it go, let it go, can't hold it back any more
-                if cellformat == 'bclc':  # 'bcalc' means budget + calculation cell
-                    cellformat = 'calc'  # convert bclc to calc format so FE displays correctly
                 cellinfo = {'format': cellformat, 'value': cellval}
                 sheetjson[sheet][r].append(cellinfo)
     
@@ -701,6 +699,14 @@ def rename_dataset(project_id, datasetname=None, new_name=None):
     proj.datasets[new_name].name = new_name
     proj.spreadsheets.rename(datasetname, new_name)
     proj.models.rename(datasetname, new_name)
+    # Loop over all Scen objects and change occurrences that match the old Dataset name to the new name.
+    for py_scen in proj.scens.values():  # Loop over all Scens in Project
+        if py_scen.model_name == datasetname:
+            py_scen.model_name = new_name
+    # Loop over all Optim objects and change occurrences that match the old Dataset name to the new name.
+    for py_optim in proj.optims.values():  # Loop over all Optims in Project
+        if py_optim.model_name == datasetname:
+            py_optim.model_name = new_name
     print('Saving project...')
     save_project(proj)
     return None
@@ -727,9 +733,13 @@ def delete_dataset(project_id, datasetname=None):
     print('Deleting dataset %s...' % datasetname)
     proj = load_project(project_id, die=True)
     print('Number of datasets before delete: %s' % len(proj.datasets))
-    if len(proj.datasets)>1:
+    if len(proj.datasets) > 1:
         proj.datasets.pop(datasetname)
         proj.spreadsheets.pop(datasetname)
+        # Loop over all Scens and delete any that depend on the dataset being deleted.
+        for scen_name in proj.scens.keys():  # Loop over all Scen keys in Project
+            if proj.scens[scen_name].model_name == datasetname:
+                proj.scens.pop(scen_name)
     else:
         raise Exception('Cannot delete last parameter set')
     print('Number of datasets after delete: %s' % len(proj.datasets))
