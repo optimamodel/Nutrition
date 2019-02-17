@@ -456,7 +456,7 @@ class Project(object):
         self.add_result(results, name='scens')
         return None
 
-    def run_optim(self, optim=None, key=-1, maxiter=15, swarmsize=20, maxtime=140, parallel=True, dosave=True, runbaseline=True):
+    def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=25, maxtime=160, parallel=True, dosave=True, runbaseline=True):
         if optim is not None:
             self.add_optims(optim)
             key = optim.name # this to handle parallel calls of this function
