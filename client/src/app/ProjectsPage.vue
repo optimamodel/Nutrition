@@ -1,7 +1,7 @@
 <!--
 Manage projects page
 
-Last update: 2019feb12
+Last update: 2019feb18
 -->
 
 <template>
@@ -98,8 +98,8 @@ Last update: 2019feb12
               <button class="btn __blue" @click="renameDatasetModal(projectSummary.project.id, projectSummary.selectedDataSet)" data-tooltip="Rename databook"><i class="ti-pencil"></i></button>
               <button class="btn __blue" @click="copyDataset(projectSummary.project.id, projectSummary.selectedDataSet)" data-tooltip="Copy databook"><i class="ti-files"></i></button>
               <button class="btn __blue" @click="deleteDataset(projectSummary.project.id, projectSummary.selectedDataSet)" data-tooltip="Delete databook"><i class="ti-trash"></i></button>            
-              <button class="btn __blue" @click="downloadDataset(projectSummary.project.id, projectSummary.selectedDataSet)" data-tooltip="Download databook"><i class="ti-download"></i></button>
-              <button class="btn __blue" @click="uploadDataset(projectSummary.project.id)" data-tooltip="Upload databook"><i class="ti-upload"></i></button>           
+              <button class="btn __blue" @click="downloadDatabook(projectSummary.project.id, projectSummary.selectedDataSet)" data-tooltip="Download databook"><i class="ti-download"></i></button>
+              <button class="btn __blue" @click="uploadDatabook(projectSummary.project.id)" data-tooltip="Upload databook"><i class="ti-upload"></i></button>           
               <select v-model="projectSummary.selectedDataSet">
                 <option v-for='dataset in projectSummary.project.dataSets'>
                   {{ dataset }}
