@@ -339,10 +339,10 @@ class Project(object):
         model = Model(pops, prog_info, t)
         self.add(name=name, item=model, what='model')
         # Loop over all Scens and create a new default scenario for any that depend on the dataset which has been reloaded.
-        for scen_name in self.scens.keys():  # Loop over all Scen keys in the project
-            if self.scens[scen_name].model_name == name:
-                defaults = make_default_scen(name, model, self.scens[scen_name].scen_type, scen_name)
-                self.add_scens(defaults)
+        # for scen_name in self.scens.keys():  # Loop over all Scen keys in the project
+        #     if self.scens[scen_name].model_name == name:
+        #         defaults = make_default_scen(name, model, self.scens[scen_name].scen_type, scen_name)
+        #         self.add_scens(defaults)
         # Only, if there is no 'Baseline' scenario, make a default baseline scenario.
         basename = 'Baseline'
         if basename not in self.scens.keys():
