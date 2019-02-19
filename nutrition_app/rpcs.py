@@ -253,6 +253,10 @@ def del_project(project_key, username=None, die=None):
     except Exception as E:
         print('Warning: cannot delete project %s, not found (%s)' % (key, str(E)))
         return None
+
+    for result in project.results.values():
+        datastore.delete(result)
+
     output = datastore.delete(key)
     try:
         if username is None:
