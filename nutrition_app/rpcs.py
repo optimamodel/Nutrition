@@ -945,6 +945,10 @@ def run_scens(project_id, doplot=True, do_costeff=False):
     
     print('Running scenarios...')
     proj = load_project(project_id, die=True)
+
+    if 'scens' in proj.results:
+        datastore.delete(key=proj.results['scens'])
+
     proj.run_scens()
 
     if do_costeff:
