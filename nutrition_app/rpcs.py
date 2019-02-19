@@ -324,6 +324,13 @@ def del_project(project_key, username=None, die=None):
     except Exception as E:
         print('Warning: cannot delete project %s, not found (%s)' % (key, str(E)))
         return None
+
+    for result in project.results.values():
+        try:
+            datastore.delete(result)
+        except:
+            pass
+
     output = datastore.delete(key)
     try:
         if username is None:
@@ -1016,6 +1023,13 @@ def run_scens(project_id, doplot=True, do_costeff=False):
     
     print('Running scenarios...')
     proj = load_project(project_id, die=True)
+
+    if 'scens' in proj.results:
+        try:
+            datastore.delete(key=proj.results['scens'])
+        except:
+            pass
+
     proj.run_scens()
 
     if do_costeff:
