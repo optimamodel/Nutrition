@@ -326,7 +326,10 @@ def del_project(project_key, username=None, die=None):
         return None
 
     for result in project.results.values():
-        datastore.delete(result)
+        try:
+            datastore.delete(result)
+        except:
+            pass
 
     output = datastore.delete(key)
     try:
@@ -1022,7 +1025,10 @@ def run_scens(project_id, doplot=True, do_costeff=False):
     proj = load_project(project_id, die=True)
 
     if 'scens' in proj.results:
-        datastore.delete(key=proj.results['scens'])
+        try:
+            datastore.delete(key=proj.results['scens'])
+        except:
+            pass
 
     proj.run_scens()
 
