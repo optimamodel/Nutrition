@@ -1,7 +1,7 @@
 <!--
 Scenarios page
 
-Last update: 2019jan09
+Last update: 2019feb11
 -->
 
 <template>
@@ -27,7 +27,7 @@ Last update: 2019jan09
           <tr>
             <th>Name</th>
             <th>Type</th>
-            <th>Dataset</th>
+            <th>Databook</th>
             <th>Active?</th>
             <th>Actions</th>
           </tr>
@@ -55,6 +55,11 @@ Last update: 2019jan09
           </tr>
           </tbody>
         </table>
+
+        <div>
+            <input type="checkbox" id="costeff_checkbox" v-model="calculateCostEff"/>
+            <label for="costeff_checkbox">Perform intervention cost-effectiveness analysis</label>
+        </div>
 
         <div>
           <button class="btn __green" :disabled="!scenariosLoaded" @click="runScens()">Run scenarios</button>
@@ -94,7 +99,7 @@ Last update: 2019jan09
       </div>
 
       <br>
-      <div v-if="table">
+      <div v-if="hasTable">
         <help reflink="cost-effectiveness" label="Program cost-effectiveness"></help>
         <div class="calib-graphs" style="display:inline-block; text-align:right; overflow:auto">
           <table class="table table-bordered table-hover table-striped">
@@ -148,7 +153,7 @@ Last update: 2019jan09
             <input type="text"
                    class="txbox"
                    v-model="addEditModal.scenSummary.name"/><br>
-            <b>Dataset:</b><br>
+            <b>Databook:</b><br>
             <select v-model="addEditModal.scenSummary.model_name" @change="modalSwitchDataset">
               <option v-for='dataset in datasetOptions'>
                 {{ dataset }}
@@ -239,6 +244,8 @@ Last update: 2019jan09
         },
         figscale: 1.0,
         hasGraphs: false,
+        calculateCostEff: false,
+        hasTable: false,
         table: [],
       }
     },
@@ -361,7 +368,7 @@ Last update: 2019jan09
             console.log(newDefaultScen)
           })
           .catch(error => {
-            status.fail(this, 'Could not switch datasets', error)
+            status.fail(this, 'Could not switch databooks', error)
           })		
       },
 	  
@@ -462,8 +469,9 @@ Last update: 2019jan09
         status.start(this)
         rpcs.rpc('set_scen_info', [this.projectID, this.scenSummaries]) // Make sure they're saved first
           .then(response => {
-            rpcs.rpc('run_scens', [this.projectID]) // Go to the server to get the results
+            rpcs.rpc('run_scens', [this.projectID, true, this.calculateCostEff]) // Go to the server to get the results
               .then(response => {
+                this.hasTable = this.calculateCostEff
                 this.table = response.data.table
                 this.makeGraphs(response.data.graphs)
                 status.succeed(this, '') // Success message in graphs function

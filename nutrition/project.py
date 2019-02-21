@@ -338,6 +338,11 @@ class Project(object):
         t = dataset.t
         model = Model(pops, prog_info, t)
         self.add(name=name, item=model, what='model')
+        # Loop over all Scens and create a new default scenario for any that depend on the dataset which has been reloaded.
+        # for scen_name in self.scens.keys():  # Loop over all Scen keys in the project
+        #     if self.scens[scen_name].model_name == name:
+        #         defaults = make_default_scen(name, model, self.scens[scen_name].scen_type, scen_name)
+        #         self.add_scens(defaults)
         # Only, if there is no 'Baseline' scenario, make a default baseline scenario.
         basename = 'Baseline'
         if basename not in self.scens.keys():
@@ -456,7 +461,7 @@ class Project(object):
         self.add_result(results, name='scens')
         return None
 
-    def run_optim(self, optim=None, key=-1, maxiter=15, swarmsize=20, maxtime=140, parallel=True, dosave=True, runbaseline=True):
+    def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=25, maxtime=160, parallel=True, dosave=True, runbaseline=True):
         if optim is not None:
             self.add_optims(optim)
             key = optim.name # this to handle parallel calls of this function

@@ -1,7 +1,7 @@
 <!--
 Optimizations page
 
-Last update: 2019jan10
+Last update: 2019feb11
 -->
 
 <template>
@@ -26,7 +26,7 @@ Last update: 2019jan10
           <thead>
           <tr>
             <th>Name</th>
-            <th>Dataset</th>
+            <th>Databook</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
@@ -55,6 +55,11 @@ Last update: 2019jan10
           </tr>
           </tbody>
         </table>
+
+        <div>
+            <input type="checkbox" id="costeff_checkbox" v-model="calculateCostEff"/>
+            <label for="costeff_checkbox">Perform intervention cost-effectiveness analysis</label>
+        </div>
 
         <div>
           <button class="btn" :disabled="!optimsLoaded" @click="addOptimModal()">Add optimization</button>
@@ -88,7 +93,7 @@ Last update: 2019jan10
       </div>
 
       <br>
-      <div v-if="table">
+      <div v-if="hasTable">
         <help reflink="cost-effectiveness" label="Program cost-effectiveness"></help>
         <div class="calib-graphs" style="display:inline-block; text-align:right; overflow:auto">
           <table class="table table-bordered table-hover table-striped">
@@ -141,7 +146,7 @@ Last update: 2019jan10
           <input type="text"
                  class="txbox"
                  v-model="addEditModal.optimSummary.name"/><br>
-          <b>Dataset</b><br>
+          <b>Databook</b><br>
           <select v-model="addEditModal.optimSummary.model_name" @change="modalSwitchDataset">
             <option v-for='dataset in datasetOptions'>
               {{ dataset }}
@@ -251,6 +256,8 @@ Last update: 2019jan10
         },
         figscale: 1.0,
         hasGraphs: false,
+        calculateCostEff: false,
+        hasTable: false,
         table: [],
       }
     },
@@ -571,7 +578,7 @@ Last update: 2019jan10
             console.log(newDefaultOptim)
           })
           .catch(error => {
-            status.fail(this, 'Could not switch datasets', error)
+            status.fail(this, 'Could not switch databooks', error)
           })		
       },
 	  
@@ -695,8 +702,9 @@ Last update: 2019jan10
       plotOptimization(optimSummary) {
         console.log('plotOptimization() called')
         status.start(this)
-        rpcs.rpc('plot_optimization', [this.projectID, optimSummary.serverDatastoreId])
+        rpcs.rpc('plot_optimization', [this.projectID, optimSummary.serverDatastoreId, this.calculateCostEff])
           .then(response => {
+            this.hasTable = this.calculateCostEff
             this.table = response.data.table
             this.makeGraphs(response.data.graphs)
             this.displayResultName = optimSummary.name

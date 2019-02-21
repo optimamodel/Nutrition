@@ -182,6 +182,77 @@ def admin_reset_projects(username):
     output = datastore.saveuser(user)
     return output
 
+
+def admin_dump_db(filename=None):
+    ''' For use with run_query -- dump the database '''
+    if filename is None:
+        filename = 'db_%s.dump' % sc.getdate().split()[0]
+    allkeys = datastore.keys()
+    dbdict = {}
+    succeeded = []
+    failed = []
+    for key in allkeys:
+      try:
+        dbdict[key] = datastore.redis.get(key)
+        succeeded.append(key)
+      except:
+        failed.append(key)
+    sc.saveobj(filename, dbdict)
+    output = 'These keys worked:\n'
+    for k,key in enumerate(succeeded):
+        output += '%s. %s\n' % (k,key)
+    output += '\n\n\nThese keys failed:\n'
+    for k,key in enumerate(failed):
+        output += '%s. %s\n' % (k,key)
+    output += '\n\n\nGenerated file:\n'
+    output += '%s' % os.getcwd()
+    output += sc.runcommand('ls -lh %s' % filename)
+    return output
+
+
+def admin_upload_db(pw, filename=None, host=None):
+    ''' For use with run_query -- upload a previously dumped database '''
+    def nosshpass():
+        return sc.runcommand('sshpass').find('not found')
+
+    # Check that sshpass is available
+    if nosshpass():
+        cmd1 = 'apt install sshpass' # Try to install it
+        output1 = sc.runcommand(cmd1)
+        pl.pause(5) # Wait for the installation to happen
+        if nosshpass():
+            cmd2 = 'sudo apt install sshpass' # sudo try to install it
+            output2 = sc.runcommand(cmd2)
+            pl.pause(5) # Wait for the installation to happen
+            if nosshpass():
+                output = 'Could not find or install sshpass:\n%s' % '\n'.join([cmd1, output1, cmd2, output2])
+                return output
+    
+    # Check the pw
+    if host is None and sc.sha(pw).hexdigest() != 'b9c00e83ab3d4b62b6f67f6b540041475978de9f9a5a9af62e0831b1':
+        output = 'You may wish to reconsider "%s"' % pw
+        return output
+    
+    # Check the host
+    if host is None:
+        host = 'optima@203.0.141.220:/home/optima/google_cloud_db_backups'
+    
+    # Get the filename
+    if filename is None:
+        filename = sc.runcommand('ls -t *.dump | awk "NR == 1"').strip() # Get most recent dump file
+    
+    # Check the filename
+    if not os.path.isfile(filename):
+        output = 'File %s does not exist: try again' % filename
+        return output
+
+    # Run the command
+    command = "sshpass -p '%s' scp -o StrictHostKeyChecking=no %s %s" % (pw, filename, host)
+    output = sc.runcommand(command)
+    if not output:
+        output = 'Success! %s uploaded to %s.' % (filename, host)
+    
+    return output
 ##################################################################################
 ### Convenience functions
 ##################################################################################
@@ -253,6 +324,13 @@ def del_project(project_key, username=None, die=None):
     except Exception as E:
         print('Warning: cannot delete project %s, not found (%s)' % (key, str(E)))
         return None
+
+    for result in project.results.values():
+        try:
+            datastore.delete(result)
+        except:
+            pass
+
     output = datastore.delete(key)
     try:
         if username is None:
@@ -549,9 +627,9 @@ def define_formats():
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
-        ['name', 'edit', 'edit', 'bclc', 'drop'],
-        ['name', 'edit', 'edit', 'bclc', 'drop'],
-        ['name', 'edit', 'edit', 'bclc', 'drop'],
+        ['name', 'edit', 'edit', 'bdgt', 'drop'],
+        ['name', 'edit', 'edit', 'bdgt', 'drop'],
+        ['name', 'edit', 'edit', 'bdgt', 'drop'],
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
@@ -606,7 +684,7 @@ def get_sheet_data(project_id, key=None, verbose=False):
             for c in range(cols):
                 cellformat = sheetformat[sheet][r][c]
                 cellval = sheetdata[sheet][r][c]
-                if cellformat in ['calc', 'bclc']:  # Pull from cache if 'calc' or 'bclc'
+                if cellformat in ['calc']:  # Pull from cache if 'calc'
                     cellval = calcscache.read_cell(sheet, r, c)
                 try:
                     cellval = float(cellval)  # Try to cast to float
@@ -615,7 +693,7 @@ def get_sheet_data(project_id, key=None, verbose=False):
                 if sc.isnumber(cellval):  # If it is a number...
                     if cellformat in ['edit', 'calc']:  # Format editable and calculation cell values
                         cellval = sc.sigfig(100*cellval, sigfigs=3)
-                    elif cellformat in ['bdgt', 'bclc']:  # Format budget and budget calc cell values
+                    elif cellformat in ['bdgt']:  # Format budget cell values
                         cellval = '%0.2f' % cellval
                     elif cellformat == 'tick':
                         if not cellval:
@@ -624,8 +702,6 @@ def get_sheet_data(project_id, key=None, verbose=False):
                             cellval = True
                     else:
                         pass # It's fine, just let it go, let it go, can't hold it back any more
-                if cellformat == 'bclc':  # 'bcalc' means budget + calculation cell
-                    cellformat = 'calc'  # convert bclc to calc format so FE displays correctly
                 cellinfo = {'format': cellformat, 'value': cellval}
                 sheetjson[sheet][r].append(cellinfo)
     
@@ -701,6 +777,14 @@ def rename_dataset(project_id, datasetname=None, new_name=None):
     proj.datasets[new_name].name = new_name
     proj.spreadsheets.rename(datasetname, new_name)
     proj.models.rename(datasetname, new_name)
+    # Loop over all Scen objects and change occurrences that match the old Dataset name to the new name.
+    for py_scen in proj.scens.values():  # Loop over all Scens in Project
+        if py_scen.model_name == datasetname:
+            py_scen.model_name = new_name
+    # Loop over all Optim objects and change occurrences that match the old Dataset name to the new name.
+    for py_optim in proj.optims.values():  # Loop over all Optims in Project
+        if py_optim.model_name == datasetname:
+            py_optim.model_name = new_name
     print('Saving project...')
     save_project(proj)
     return None
@@ -727,9 +811,13 @@ def delete_dataset(project_id, datasetname=None):
     print('Deleting dataset %s...' % datasetname)
     proj = load_project(project_id, die=True)
     print('Number of datasets before delete: %s' % len(proj.datasets))
-    if len(proj.datasets)>1:
+    if len(proj.datasets) > 1:
         proj.datasets.pop(datasetname)
         proj.spreadsheets.pop(datasetname)
+        # Loop over all Scens and delete any that depend on the dataset being deleted.
+        for scen_name in proj.scens.keys():  # Loop over all Scen keys in Project
+            if proj.scens[scen_name].model_name == datasetname:
+                proj.scens.pop(scen_name)
     else:
         raise Exception('Cannot delete last parameter set')
     print('Number of datasets after delete: %s' % len(proj.datasets))
@@ -931,15 +1019,25 @@ def reformat_costeff(costeff):
 
 
 @RPC()
-def run_scens(project_id, doplot=True):
+def run_scens(project_id, doplot=True, do_costeff=False):
     
     print('Running scenarios...')
     proj = load_project(project_id, die=True)
+
+    if 'scens' in proj.results:
+        try:
+            datastore.delete(key=proj.results['scens'])
+        except:
+            pass
+
     proj.run_scens()
-    
-    # Get cost-effectiveness table
-    costeff = nu.get_costeff(project=proj, results=proj.result('scens'))
-    table = reformat_costeff(costeff)
+
+    if do_costeff:
+        # Get cost-effectiveness table
+        costeff = nu.get_costeff(project=proj, results=proj.result('scens'))
+        table = reformat_costeff(costeff)
+    else:
+        table = []
     
     # Get graphs
     graphs = []
@@ -950,6 +1048,7 @@ def run_scens(project_id, doplot=True):
                 ax.set_facecolor('none')
             graph_dict = sw.mpld3ify(fig, jsonify=False)
             graphs.append(graph_dict)
+            pl.close(fig)
             print('Converted figure %s of %s' % (f+1, len(figs)))
         
     # Store results in cache
@@ -1060,7 +1159,7 @@ def get_default_optim(project_id, model_name=None):
 
 
 @RPC()
-def plot_optimization(project_id, cache_id):
+def plot_optimization(project_id, cache_id, do_costeff=False):
     proj = load_project(project_id, die=True)
     proj = retrieve_results(proj)
     figs = proj.plot(key=cache_id, optim=True) # Only plot allocation
@@ -1070,11 +1169,15 @@ def plot_optimization(project_id, cache_id):
             ax.set_facecolor('none')
         graph_dict = sw.mpld3ify(fig, jsonify=False)
         graphs.append(graph_dict)
+        pl.close(fig)
         print('Converted figure %s of %s' % (f+1, len(figs)))
     
     # Get cost-effectiveness table
-    costeff = nu.get_costeff(project=proj, results=proj.result(cache_id))
-    table = reformat_costeff(costeff)
+    if do_costeff:
+        costeff = nu.get_costeff(project=proj, results=proj.result(cache_id))
+        table = reformat_costeff(costeff)
+    else:
+        table = []
     
     return {'graphs':graphs, 'table':table}
 
