@@ -65,7 +65,7 @@ class Geospatial:
         # Total funds = sum of all free-to-change programs + additional funds to be added.
         totalfunds = sum(regional_flexi) + self.add_funds
 
-        # Adjust for region adding in current expenditure again.
+        # Calculate the funds that could come into each region from all of the other regions and the additional funds.
         total_flexi = [totalfunds - x for x in regional_flexi]
 
         # If there are funds that need distribution between regions...
@@ -77,32 +77,37 @@ class Geospatial:
             run_optim = partial(proj.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
                                 parallel=parallel, dosave=True, runbaseline=False)
 
+            # Generate the budget outcome curves optimization results.
+            boc_optims = sc.odict([(region.name, run_optim(optim=region)) for region in regions])
 
-            # generate the budget outcome curves
-            optimized = sc.odict([(region.name, run_optim(optim=region)) for region in regions])
-            regional_allocs = self.gridsearch(optimized, totalfunds=totalfunds)
+            # Use a grid search to calculate the regional allocations from the BOCs.
+            regional_allocs = self.gridsearch(boc_optims, totalfunds=totalfunds)
 
         # Else, if we have no funds to distribute between regions, but can redistribute within the regions...
         elif (totalfunds == 0) and (self.fix_curr is False):
             print('Warning: No funds to distribute between regions.')
-            regional_allocs = [0] * len(self.modelnames)
+            regional_allocs = [0] * len(self.modelnames)  # allocate 0 additional funds to each region for final optimization
 
         # Else, we shouldn't be trying to optimize anything because nothing can be distributed.
         else:
             raise Exception('No funds to distribute between or within regions.')
 
-        # optimize the new allocations within each region
+        # Optimize the new allocations within each region.
         regions = self.make_regions(add_funds=regional_allocs, rem_curr=not self.fix_regionalspend, mults=[1])
         run_optim = partial(proj.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
                             parallel=False, dosave=True, runbaseline=False)
+
+        # Run results in parallel or series.
         # can run in parallel b/c child processes in series
         if parallel:
             results = utils.run_parallel(run_optim, regions, num_procs=len(regions))
         else:
             results = [run_optim(region) for region in regions]
-        # flatten list
+
+        # Flatten list.
         results = [item for sublist in results for item in sublist]
-        # remove multiple to plot by name (total hack)
+
+        # Remove multiple to plot by name (total hack)
         for res in results:
             res.mult = None
             res.name = res.name.replace('(x1)', '')
