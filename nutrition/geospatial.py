@@ -44,42 +44,62 @@ class Geospatial:
             Total flexible spending is a function of additional funds, `fix_curr` and `fix_regionalspend`.
             - generate budget outcome curves and run gridsearch to distribute these flexible funds.
             - once funding is distributed between regions, optimize this within the regions"""
-        # create regions in order to calculate total flexible funds
+        # Create regions in order to calculate total flexible funds.
         regions = self.make_regions(add_funds=0)
+
+        # Barf if we have less than 2 regions to analyze.
         if len(regions) < 2:
             raise Exception('Less than 2 regions selected for geospatial analysis.')
+
+        # Set up models for each of the regions.
         models = []
         for reg in regions:
             thismod = sc.dcp(proj.model(reg.model_name))
             thismod.setup(reg, setcovs=False)
             thismod.get_allocs(reg.add_funds, reg.fix_curr, reg.rem_curr)
             models.append(thismod)
-        # current regional spending only included in flexible funding if regional spending not fixed
+
+        # Current regional spending only included in flexible funding if regional spending not fixed.
         regional_flexi = np.array([mod.prog_info.free for mod in models]) * int(not self.fix_regionalspend)
+
+        # Total funds = sum of all free-to-change programs + additional funds to be added.
         totalfunds = sum(regional_flexi) + self.add_funds
-        # adjust for region adding in current expenditure again
+
+        # Adjust for region adding in current expenditure again.
         total_flexi = [totalfunds - x for x in regional_flexi]
+
+        # If there are funds that need distribution between regions...
         if totalfunds > 0:
-            # can distribute between regions
-            # create regions with corrected additional funds
+            # Create regions with corrected additional funds.
             regions = self.make_regions(add_funds=total_flexi)
+
+            # Define the run_optim func.
             run_optim = partial(proj.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
                                 parallel=parallel, dosave=True, runbaseline=False)
+
+
             # generate the budget outcome curves
             optimized = sc.odict([(region.name, run_optim(optim=region)) for region in regions])
             regional_allocs = self.gridsearch(optimized, totalfunds=totalfunds)
+
+        # Else, if we have no funds to distribute between regions, but can redistribute within the regions...
         elif (totalfunds == 0) and (self.fix_curr is False):
             print('Warning: No funds to distribute between regions.')
             regional_allocs = [0] * len(self.modelnames)
+
+        # Else, we shouldn't be trying to optimize anything because nothing can be distributed.
         else:
             raise Exception('No funds to distribute between or within regions.')
+
         # optimize the new allocations within each region
         regions = self.make_regions(add_funds=regional_allocs, rem_curr=not self.fix_regionalspend, mults=[1])
         run_optim = partial(proj.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
                             parallel=False, dosave=True, runbaseline=False)
         # can run in parallel b/c child processes in series
-        if parallel: results = utils.run_parallel(run_optim, regions, num_procs=len(regions))
-        else:        results = [run_optim(region) for region in regions]
+        if parallel:
+            results = utils.run_parallel(run_optim, regions, num_procs=len(regions))
+        else:
+            results = [run_optim(region) for region in regions]
         # flatten list
         results = [item for sublist in results for item in sublist]
         # remove multiple to plot by name (total hack)
@@ -90,8 +110,10 @@ class Geospatial:
 
     def make_regions(self, add_funds=None, rem_curr=False, mults=None):
         """ Create all the Optim objects requested """
-        if add_funds is None: add_funds = self.add_funds
-        if mults is None: mults = self.mults
+        if add_funds is None:
+            add_funds = self.add_funds
+        if mults is None:
+            mults = self.mults
         if isinstance(add_funds, float) or isinstance(add_funds, int):
             add_funds = [add_funds] * len(self.modelnames)
         regions = []
