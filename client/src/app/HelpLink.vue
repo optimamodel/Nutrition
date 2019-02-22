@@ -1,7 +1,7 @@
 <!--
 HelpLink component
 
-Last update: 2018-08-23
+Last update: 2019-02-22
 -->
 
 <template>
@@ -31,10 +31,14 @@ Last update: 2018-08-23
 
     data() {
       return {
-        baseURL: 'https://docs.google.com/document/d/1YIsB7kqtd7gRPSZl33dpho4fnp5Fssfp4pF-_-VdFbA/edit#heading=h.4d34og8',
+        baseURL: 'https://docs.google.com/document/d/1zB1_pX9ohKv0jTVLP-8NSvGVGWpX1tUNXmmvJHEvMkc/edit#heading=',
         linkMap: {
-//          'create-projects': 'h.wohgolfxe9ko',
-//          'manage-projects': 'h.fcnvzbrouon2'
+          'create-projects': 'h.oa2tji9979xf',
+          'manage-projects': 'h.3h1iizobhq17',
+          'inputs': 'h.ihv636',
+          'scenarios': 'h.1v1yuxt',
+          'optimizations': 'h.nmf14n',
+          'geospatial': 'h.2lwamvv'
         }
       }
     },
