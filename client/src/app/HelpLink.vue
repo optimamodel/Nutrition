@@ -38,7 +38,8 @@ Last update: 2019-02-22
           'inputs': 'h.ihv636',
           'scenarios': 'h.1v1yuxt',
           'optimizations': 'h.nmf14n',
-          'geospatial': 'h.2lwamvv'
+          'geospatial': 'h.2lwamvv',
+          'userguide': 'h.kp4pyp4hb8w6'
         }
       }
     },
