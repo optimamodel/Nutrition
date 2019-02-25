@@ -77,8 +77,18 @@ class Geospatial:
             run_optim = partial(proj.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
                                 parallel=parallel, dosave=True, runbaseline=False)
 
-            # Generate the budget outcome curves optimization results.
-            boc_optims = sc.odict([(region.name, run_optim(optim=region)) for region in regions])
+            # Generate the budget outcome curves optimization results.  This step takes a long while, generally.
+            import os.path
+            if os.path.exists('bocs.obj'):
+                print('Loading BOCS from bocs.obj...')
+                boc_optims = sc.loadobj('bocs.obj')
+            else:
+                print('Creating BOCs afresh...')
+                boc_optims = sc.odict([(region.name, run_optim(optim=region)) for region in regions])
+                sc.saveobj('bocs.obj', boc_optims)
+
+            # Get the actual BOCs (storing them in the self.bocs odict of pchip-generated objects).
+            self.get_bocs(boc_optims, totalfunds)
 
             # Use a grid search to calculate the regional allocations from the BOCs.
             regional_allocs = self.gridsearch(boc_optims, totalfunds=totalfunds)
@@ -132,10 +142,10 @@ class Geospatial:
         self.regions = regions
         return regions
 
-    def get_bocs(self, optimized, totalfunds):
+    def get_bocs(self, boc_optims, totalfunds):
         """ Genereates the budget outcome curves for each region
          :param optimized: a list of Optim objects (list of lists) """
-        for name, results in optimized.items():
+        for name, results in boc_optims.items():
             spending = np.zeros(len(results))
             output = np.zeros(len(results))
             for i, res in enumerate(results):
@@ -146,6 +156,7 @@ class Geospatial:
             self.bocs[name] = pchip(spending, output, extrapolate=False)
         return
 
+    # TODO: This can probably go bye-bye.
     def get_icer(self, regions, totalfunds):
         numpoints = 10000
         icervecs = []
@@ -161,49 +172,115 @@ class Geospatial:
             icervecs.append(icer)
         return spendingvec, icervecs
 
-    def gridsearch(self, optimized, totalfunds):
-        # extract each result that has multiple 1
-        regions = [region for sublist in optimized.values() for region in sublist if region.mult == 1]
-        self.get_bocs(optimized, totalfunds)
-        spendvecs, icervecs = self.get_icer(regions, totalfunds)
-        remainfunds = totalfunds
-        regional_allocs = np.zeros(len(regions))
-        percentspend = 0
-        maxiters = int(1e6)
+    def gridsearch(self, boc_optims, totalfunds):
+        # Make budget increments to be tried at each iteration of the algorithm.
+        numpoints = 10000
+        tmpx1 = np.linspace(1, np.log(totalfunds), numpoints)  # Logarithmically distributed
+        tmpx2 = np.log(np.linspace(1, totalfunds, numpoints))  # Uniformly distributed
+        tmpx3 = (tmpx1 + tmpx2) / 2.0  # Halfway in between, logarithmically speaking
+        budget_increments = np.exp(tmpx3)  # Convert from log-space to normal space
 
+        print('BUDGET INCREMENTS:')
+        print(budget_increments)
+
+        # Initialize the region budget allocations to all zeros.
+        numregions = len(boc_optims.keys())
+        regional_allocs = np.zeros(numregions)
+        total_budget_allocated = 0.0
+
+        print('INITIAL BUDGET ALLOCATIONS:')
+        print(regional_allocs)
+
+        # Loop over a number of budget increment tries...
+        maxiters = int(1e6)
         for i in range(maxiters):
-            besteff = np.inf
-            bestregion = None
-            for regionidx in range(len(regions)):
-                # find most effective spending in each region
-                icer = icervecs[regionidx]
-                if len(icer):
-                    maxidx = np.nanargmin(icer)
-                    maxeff = icer[maxidx]
-                    if maxeff < besteff:
-                        besteff = maxeff
-                        besteffidx = maxidx
-                        bestregion = regionidx
-            # once he most cost-effective spending is found, adjust all spending
-            # and outcome vectors, available funds and regional allocation
-            if bestregion is not None:
-                fundsspent = spendvecs[bestregion][besteffidx]
-                remainfunds -= fundsspent
-                spendvecs[bestregion] -= fundsspent
-                regional_allocs[bestregion] += fundsspent
-                # remove funds & derivatives at or below zero
-                spendvecs[bestregion] = spendvecs[bestregion][besteffidx + 1:]
-                icervecs[bestregion] = icervecs[bestregion][besteffidx + 1:]
-                # ensure regional spending doesn't exceed remaining funds
-                for regionidx in range(len(regions)):
-                    withinbudget = np.nonzero(spendvecs[regionidx] <= remainfunds)[0]
-                    spendvecs[regionidx] = spendvecs[regionidx][withinbudget]
-                    icervecs[regionidx] = icervecs[regionidx][withinbudget]
-                newpercent = (totalfunds - remainfunds) / totalfunds * 100
-                if not (i % 100) or (newpercent - percentspend) > 1:
-                    percentspend = newpercent
-            else:
-                break # nothing more to allocate
+            # Only take a step if we still have budget increment steps to take.
+            if len(budget_increments) > 0:
+                # Initialize the marginal improvements array.
+                marginal_improvements = np.zeros((numregions, len(budget_increments)))
+
+                # Loop over regions...
+                for reg_ind in range(numregions):
+                    # Get the present outcome value from the BOC (given the current budget allocated to the region).
+                    current_outcome = self.bocs[reg_ind](regional_allocs[reg_ind])
+
+                    # Loop over the budget increments...
+                    for budget_inc_ind in range(len(budget_increments)):
+                        # Get the new outcome from the BOC, assuming the particular budget increment is chosen.
+                        new_outcome = self.bocs[reg_ind](regional_allocs[reg_ind] + budget_increments[budget_inc_ind])
+
+                        # Calculate the marginal improvement for this budget increment and region.
+                        marginal_improvements[reg_ind][budget_inc_ind] = (current_outcome - new_outcome) / budget_increments[budget_inc_ind]
+
+                # Find the combination of region and budget increment.
+                (best_reg_ind, best_budget_inc_ind) = np.unravel_index(np.argmax(marginal_improvements), marginal_improvements.shape)
+
+                print('MARGINAL IMPROVEMENTS:')
+                print(marginal_improvements)
+                print('Best region %d' % best_reg_ind)
+                print('Best budget inc %f' % budget_increments[best_budget_inc_ind])
+
+                # Allocate the money to the chosen best region and add to the total budget allocated.
+                regional_allocs[best_reg_ind] += budget_increments[best_budget_inc_ind]
+                total_budget_allocated += budget_increments[best_budget_inc_ind]
+
+                print('BUDGET ALLOCATIONS:')
+                print(regional_allocs)
+
+                # Chop out any budget increments that now run us over the budget total.
+                budget_increments = budget_increments[(budget_increments + total_budget_allocated - totalfunds) <= 0]
+
+                print('NEW BUDGET INCREMENTS:')
+                print(budget_increments)
+
+                print('Allocated so far: %f of %f' % (total_budget_allocated, totalfunds))
+
+        print('FINAL BUDGET ALLOCATIONS:')
+        print(regional_allocs)
+
+        # Old shtuff.
+
+        # # extract each result that has multiple 1
+        # regions = [region for sublist in boc_optims.values() for region in sublist if region.mult == 1]
+        # spendvecs, icervecs = self.get_icer(regions, totalfunds)
+        # remainfunds = totalfunds
+        # regional_allocs = np.zeros(len(regions))
+        # percentspend = 0
+        # maxiters = int(1e6)
+        #
+        # for i in range(maxiters):
+        #     besteff = np.inf
+        #     bestregion = None
+        #     for regionidx in range(len(regions)):
+        #         # find most effective spending in each region
+        #         icer = icervecs[regionidx]
+        #         if len(icer):
+        #             maxidx = np.nanargmin(icer)
+        #             maxeff = icer[maxidx]
+        #             if maxeff < besteff:
+        #                 besteff = maxeff
+        #                 besteffidx = maxidx
+        #                 bestregion = regionidx
+        #     # once he most cost-effective spending is found, adjust all spending
+        #     # and outcome vectors, available funds and regional allocation
+        #     if bestregion is not None:
+        #         fundsspent = spendvecs[bestregion][besteffidx]
+        #         remainfunds -= fundsspent
+        #         spendvecs[bestregion] -= fundsspent
+        #         regional_allocs[bestregion] += fundsspent
+        #         # remove funds & derivatives at or below zero
+        #         spendvecs[bestregion] = spendvecs[bestregion][besteffidx + 1:]
+        #         icervecs[bestregion] = icervecs[bestregion][besteffidx + 1:]
+        #         # ensure regional spending doesn't exceed remaining funds
+        #         for regionidx in range(len(regions)):
+        #             withinbudget = np.nonzero(spendvecs[regionidx] <= remainfunds)[0]
+        #             spendvecs[regionidx] = spendvecs[regionidx][withinbudget]
+        #             icervecs[regionidx] = icervecs[regionidx][withinbudget]
+        #         newpercent = (totalfunds - remainfunds) / totalfunds * 100
+        #         if not (i % 100) or (newpercent - percentspend) > 1:
+        #             percentspend = newpercent
+        #     else:
+        #         break # nothing more to allocate
 
         # scale to ensure correct budget
         scaledallocs = utils.scale_alloc(totalfunds, regional_allocs)
