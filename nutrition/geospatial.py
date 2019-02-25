@@ -174,11 +174,14 @@ class Geospatial:
 
     def gridsearch(self, boc_optims, totalfunds):
         # Make budget increments to be tried at each iteration of the algorithm.
-        numpoints = 10000
-        tmpx1 = np.linspace(1, np.log(totalfunds), numpoints)  # Logarithmically distributed
-        tmpx2 = np.log(np.linspace(1, totalfunds, numpoints))  # Uniformly distributed
-        tmpx3 = (tmpx1 + tmpx2) / 2.0  # Halfway in between, logarithmically speaking
-        budget_increments = np.exp(tmpx3)  # Convert from log-space to normal space
+        # numpoints = 10000
+        numpoints = 2000
+        # tmpx1 = np.linspace(1, np.log(totalfunds), numpoints)  # Logarithmically distributed
+        # tmpx2 = np.log(np.linspace(1, totalfunds, numpoints))  # Uniformly distributed
+        # tmpx3 = (tmpx1 + tmpx2) / 2.0  # Halfway in between, logarithmically speaking
+        # budget_increments = np.exp(tmpx3)  # Convert from log-space to normal space
+        budget_increments = np.linspace(0, totalfunds, numpoints)
+        budget_increments = budget_increments[1:]
 
         print('BUDGET INCREMENTS:')
         print(budget_increments)
