@@ -41,9 +41,9 @@ def run_optim(project_id, cache_id, optim_name=None, runtype=None):
     print('Running %s optimization...' % runtype)
     proj = rpcs.load_project(project_id)
     if runtype == 'test':
-        results = proj.run_optim(key=optim_name, dosave=False, parallel=False, maxiter=5, swarmsize=5, maxtime=5)
+        results = proj.run_optim(key=optim_name, dosave=False, parallel=True, maxiter=5, swarmsize=5, maxtime=5)
     else:
-        results = proj.run_optim(key=optim_name, dosave=False, parallel=False)
+        results = proj.run_optim(key=optim_name, dosave=False, parallel=True)
     newproj = rpcs.load_project(project_id)
     newproj.results[cache_id] = results
     rpcs.cache_results(newproj)
@@ -58,9 +58,9 @@ def run_geo(project_id, cache_id, geo_name=None, runtype=None):
     print('Running %s geospatial optimization...' % runtype)
     proj = rpcs.load_project(project_id)
     if runtype == 'test':
-        results = proj.run_geo(key=geo_name, dosave=False, parallel=False, maxiter=3, swarmsize=3, maxtime=3)
+        results = proj.run_geo(key=geo_name, dosave=False, parallel=True, maxiter=3, swarmsize=3, maxtime=3)
     else:
-        results = proj.run_geo(key=geo_name, dosave=False, parallel=False)
+        results = proj.run_geo(key=geo_name, dosave=False, parallel=True)
     newproj = rpcs.load_project(project_id)
     newproj.results[cache_id] = results
     rpcs.cache_results(newproj)
