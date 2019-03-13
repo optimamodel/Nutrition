@@ -226,7 +226,7 @@ def run_parallel(func, args_list, num_procs):
     """ Uses pool.map() to distribute parallel processes.
     args_list: an iterable of args (also iterable)
     func: function to parallelise, must have single explicit argument (i.e an iterable) """
-    parallel = joblib.Parallel(n_jobs=num_procs)
+    parallel = joblib.Parallel(n_jobs=num_procs, prefer="threads")
     jobs = []
     for arg in args_list:
         job = joblib.delayed(func)(arg)
