@@ -2,6 +2,7 @@ import os
 import functools
 import traceback
 import joblib
+import multiprocessing
 import numpy as np
 import scipy.special
 from scipy.optimize import brentq
@@ -226,13 +227,19 @@ def run_parallel(func, args_list, num_procs):
     """ Uses pool.map() to distribute parallel processes.
     args_list: an iterable of args (also iterable)
     func: function to parallelise, must have single explicit argument (i.e an iterable) """
+    if num_procs > 4:
+        num_procs = 4
     print('TEMP HI I AM RUNNING IN %s' % num_procs)
-    parallel = joblib.Parallel(n_jobs=num_procs) # , prefer="threads"
-    jobs = []
-    for arg in args_list:
-        job = joblib.delayed(func)(arg)
-        jobs.append(job)
-    res = parallel(jobs)
+
+    p = multiprocessing.Pool(processes=num_procs)
+    res = p.map(func, args_list)
+
+    # parallel = joblib.Parallel(n_jobs=num_procs) # , prefer="threads"
+    # jobs = []
+    # for arg in args_list:
+    #     job = joblib.delayed(func)(arg)
+    #     jobs.append(job)
+    # res = parallel(jobs)
     return res
 
 def get_new_prob(coverage, probCovered, probNotCovered):
