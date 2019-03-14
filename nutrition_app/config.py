@@ -64,7 +64,5 @@ BROKER_URL = REDIS_URL
 # database number you want to use.  (N=0 is the default Redis database.)
 CELERY_RESULT_BACKEND = REDIS_URL
 
-CELERYD_POOL = 'eventlet'
-
 # Slack logging configuration
 SLACK = {'webhook':'https://hooks.slack.com/services/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'}
