@@ -13,8 +13,6 @@ RUN apt-get install -y freetype*
 ADD . /app
 WORKDIR /app
 
-RUN python3 -m pip install --upgrade https://github.com/celery/celery/tarball/master # Because Celery isn't compatible with python3!!
-
 ARG PORT
 ARG REDIS_URL
 ENV PORT $PORT
