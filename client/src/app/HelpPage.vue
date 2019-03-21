@@ -1,7 +1,7 @@
 <!--
 Help page
 
-Last update: 2018sep23
+Last update: 2019feb22
 -->
 
 <template>
@@ -9,8 +9,8 @@ Last update: 2018sep23
     <div style="text-align:center">
       <div style="display:inline-block; margin:auto; text-align:left" v-model="getVersionInfo">
         <div>
-          <p>We are in the process of writing a user guide.</p>
-          <p>For assistance in the mean time, please email <a href="mailto:help@ocds.co">help@ocds.co</a>.</p>
+          <help reflink="userguide" label="User guide"></help>
+          <p>For assistance from the Optima team, please email <a href="mailto:help@ocds.co">help@ocds.co</a>.</p>
           <p>Please copy and paste the table below into your email, along with any error messages.</p>
         </div>
 
