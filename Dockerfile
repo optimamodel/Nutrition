@@ -24,10 +24,10 @@ RUN apt-get install -yqq nodejs
 RUN apt-get clean -y
 
 # Install sciris
-RUN git clone https://github.com/sciris/sciris.git
-RUN cd sciris && python setup.py develop
-RUN git clone https://github.com/sciris/scirisweb.git
-RUN cd scirisweb && python setup.py develop
+RUN python3 -m pip install https://github.com/sciris/sciris/archive/master.zip
+RUN python3 -m pip install https://github.com/sciris/scirisweb/archive/master.zip 
+RUN python3 -m pip install --upgrade https://github.com/celery/celery/tarball/master 
+RUN python3 -m pip install --upgrade redis
 
 # Install mpld3
 RUN git clone https://github.com/sciris/mpld3.git
@@ -35,9 +35,6 @@ RUN cd mpld3 && python3 setup.py submodule && python3 setup.py install
 
 # Install Optima Nutrition
 RUN python3 setup.py develop
-
-RUN python3 -m pip install --upgrade https://github.com/celery/celery/tarball/master 
-RUN python3 -m pip install --upgrade redis
 
 # Install app
 WORKDIR client
