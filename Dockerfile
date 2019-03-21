@@ -13,6 +13,8 @@ RUN apt-get install -y freetype*
 ADD . /app
 WORKDIR /app
 
+RUN python3 -m pip install celery==4.2.2 # Because Celery 4.3 is broken
+
 ARG PORT
 ARG REDIS_URL
 ENV PORT $PORT
