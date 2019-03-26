@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 import sciris as sc
 from functools import partial
 from scipy.interpolate import pchip
@@ -173,23 +174,33 @@ class Geospatial:
         return spendingvec, icervecs
 
     def gridsearch(self, boc_optims, totalfunds):
-        # Make budget increments to be tried at each iteration of the algorithm.
-        # numpoints = 10000
-        numpoints = 2000
-        # tmpx1 = np.linspace(1, np.log(totalfunds), numpoints)  # Logarithmically distributed
-        # tmpx2 = np.log(np.linspace(1, totalfunds, numpoints))  # Uniformly distributed
-        # tmpx3 = (tmpx1 + tmpx2) / 2.0  # Halfway in between, logarithmically speaking
-        # budget_increments = np.exp(tmpx3)  # Convert from log-space to normal space
-        budget_increments = np.linspace(0, totalfunds, numpoints)
-        budget_increments = budget_increments[1:]
-
-        print('BUDGET INCREMENTS:')
-        print(budget_increments)
-
         # Initialize the region budget allocations to all zeros.
         numregions = len(boc_optims.keys())
         regional_allocs = np.zeros(numregions)
         total_budget_allocated = 0.0
+
+        # Make budget increments to be tried at each iteration of the algorithm.
+        numpoints = 10000
+        # numpoints = 2000
+        tmpx1 = np.linspace(1, np.log(totalfunds), numpoints)  # Logarithmically distributed
+        tmpx2 = np.log(np.linspace(1, totalfunds, numpoints))  # Uniformly distributed
+        tmpx3 = (tmpx1 + tmpx2) / 2.0  # Halfway in between, logarithmically speaking
+        base_budget_increments = np.exp(tmpx3)  # Convert from log-space to normal space
+        budget_increments = np.zeros((numregions, len(base_budget_increments)))
+        for reg_ind in numregions:
+            budget_increments[reg_ind, :] = sc.dcp(base_budget_increments)
+
+        # budget_increments = np.linspace(0, totalfunds, numpoints)
+        # budget_increments = budget_increments[1:]
+
+        plt.plot(self.bocs[0](budget_increments[0]))
+        plt.plot(self.bocs[1](budget_increments[1]))
+        plt.plot(self.bocs[2](budget_increments[2]))
+
+        print('BUDGET INCREMENTS:')
+        for reg_ind in numregions:
+            print('Region %d' % reg_ind)
+            print(budget_increments[reg_ind])
 
         print('INITIAL BUDGET ALLOCATIONS:')
         print(regional_allocs)
@@ -198,9 +209,14 @@ class Geospatial:
         maxiters = int(1e6)
         for i in range(maxiters):
             # Only take a step if we still have budget increment steps to take.
-            if len(budget_increments) > 0:
-                # Initialize the marginal improvements array.
-                marginal_improvements = np.zeros((numregions, len(budget_increments)))
+            valid_increments_count = 0.0
+            for reg_ind in numregions:
+                valid_increments_count += len(budget_increments[reg_ind])
+            if valid_increments_count > 0:
+                # Initialize the marginal improvements arrays.
+                marginal_improvements = []
+                for reg_ind in range(numregions):
+                    marginal_improvements.append(np.zeros(len(budget_increments[reg_ind])))
 
                 # Loop over regions...
                 for reg_ind in range(numregions):
@@ -208,12 +224,12 @@ class Geospatial:
                     current_outcome = self.bocs[reg_ind](regional_allocs[reg_ind])
 
                     # Loop over the budget increments...
-                    for budget_inc_ind in range(len(budget_increments)):
+                    for budget_inc_ind in range(len(budget_increments[reg_ind])):
                         # Get the new outcome from the BOC, assuming the particular budget increment is chosen.
-                        new_outcome = self.bocs[reg_ind](regional_allocs[reg_ind] + budget_increments[budget_inc_ind])
+                        new_outcome = self.bocs[reg_ind](regional_allocs[reg_ind] + budget_increments[reg_ind][budget_inc_ind])
 
                         # Calculate the marginal improvement for this budget increment and region.
-                        marginal_improvements[reg_ind][budget_inc_ind] = (current_outcome - new_outcome) / budget_increments[budget_inc_ind]
+                        marginal_improvements[reg_ind][budget_inc_ind] = (current_outcome - new_outcome) / budget_increments[reg_ind][budget_inc_ind]
 
                 # Find the combination of region and budget increment.
                 (best_reg_ind, best_budget_inc_ind) = np.unravel_index(np.argmax(marginal_improvements), marginal_improvements.shape)
