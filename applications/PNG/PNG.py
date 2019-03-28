@@ -6,7 +6,7 @@ import sciris as sc
 
 # load in data to create model
 p = nu.Project('PNG')
-region = ['National','Highlands', 'Islands', 'Momase', 'Southern']
+region = ['National']#,'Highlands', 'Islands', 'Momase', 'Southern']
 invest = [1e6,2e6,3e6,4e6,5e6]
 saturate = 0.95
 interventions = ['Balanced energy-protein supplementation','Calcium supplementation','Cash transfers','Delayed cord clamping',
@@ -17,6 +17,13 @@ interventions = ['Balanced energy-protein supplementation','Calcium supplementat
                      'Mg for pre-eclampsia','Micronutrient powders','Multiple micronutrient supplementation','Oral rehydration salts',
                      'Public provision of complementary foods','Treatment of SAM','Vitamin A supplementation','WASH: Handwashing',
                      'WASH: Hygenic disposal','WASH: Improved sanitation','WASH: Improved water source','WASH: Piped water',
+                     'Zinc for treatment + ORS','Zinc supplementation']
+interventions_opt = ['Balanced energy-protein supplementation','Calcium supplementation','Cash transfers','Delayed cord clamping',
+                     'IFA fortification of maize','IFA fortification of rice','IFA fortification of wheat flour',
+                     'IFAS (community)','IFAS for pregnant women (community)','IPTp','Iron and iodine fortification of salt','IYCF 1',
+                     'Kangaroo mother care','Lipid-based nutrition supplements','Long-lasting insecticide-treated bednets','Mg for eclampsia',
+                     'Mg for pre-eclampsia','Micronutrient powders','Multiple micronutrient supplementation','Oral rehydration salts',
+                     'Public provision of complementary foods','Treatment of SAM','Vitamin A supplementation',
                      'Zinc for treatment + ORS','Zinc supplementation']
 
 for r in range (0,len(region)):
@@ -53,13 +60,7 @@ for r in range (0,len(region)):
     p.write_results(region[r]+'_interventions_sat.xlsx', key=0)
 
     # set of interventions to use in optimisation
-    interventions_opt = ['Balanced energy-protein supplementation','Calcium supplementation','Cash transfers','Delayed cord clamping',
-                     'IFA fortification of maize','IFA fortification of rice','IFA fortification of wheat flour',
-                     'IFAS (community)','IFAS for pregnant women (community)','IPTp','Iron and iodine fortification of salt','IYCF 1',
-                     'Kangaroo mother care','Lipid-based nutrition supplements','Long-lasting insecticide-treated bednets','Mg for eclampsia',
-                     'Mg for pre-eclampsia','Micronutrient powders','Multiple micronutrient supplementation','Oral rehydration salts',
-                     'Public provision of complementary foods','Treatment of SAM','Vitamin A supplementation',
-                     'Zinc for treatment + ORS','Zinc supplementation']
+
 
     '''
     #Don't use this for now. Was trying to do multiple additional funds at once
