@@ -37,6 +37,9 @@ def make_plots(all_res=None, toplot=None, optim=False, geo=False):
         toplot = ['prevs', 'ann', 'agg', 'alloc']
     toplot = sc.promotetolist(toplot)
     all_res = sc.promotetolist(sc.dcp(all_res)) # Without dcp(), modifies the original and breaks things
+    if 'outs' in toplot:
+        prevfigs = plot_outputs(all_res)
+        allplots.update(prevfigs)
     if 'prevs' in toplot:
         prevfigs = plot_prevs(all_res)
         allplots.update(prevfigs)
@@ -53,7 +56,7 @@ def make_plots(all_res=None, toplot=None, optim=False, geo=False):
 
 def plot_prevs(all_res):
     """ Plot prevs for each scenario"""
-    prevs = utils.default_trackers(prev=True, rate=False)
+    prevs = utils.default_trackers()
     lines = []
     figs = sc.odict()
     colors = sc.gridcolors(ncolors=len(all_res), hueshift=hueshift)

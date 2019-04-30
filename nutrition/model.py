@@ -5,7 +5,7 @@ from .utils import default_trackers, restratify
 
 
 class Model(sc.prettyobj):
-    def __init__(self, pops, prog_info, t=None, adjust_cov=False, timeTrends=False):
+    def __init__(self, pops, prog_info, t=None, adjust_cov=False, timeTrends=True):
         self.pops = sc.dcp(pops)
         self.children, self.pw, self.nonpw = self.pops
         self.prog_info = sc.dcp(prog_info)
@@ -31,6 +31,7 @@ class Model(sc.prettyobj):
         - storage for updates
         - coverage scenario for programs
          """
+        self.scenario = scen
         self._set_progs(scen.prog_set) # overwrite baseline prog_set
         self._set_pop_probs(self.year)
         self._reset_storage()
@@ -80,6 +81,8 @@ class Model(sc.prettyobj):
         self.stunted_prev[self.year] = self.children.frac_stunted()
         self.wasted_prev[self.year] = self.children.frac_risk('wast')
         self.child_anaemprev[self.year] = self.children.frac_risk('an')
+        self.young_bf[self.year] = (1 / 6) * self.children.frac_bf('<1 month') + (5 / 6) * self.children.frac_bf('1-5 months')
+        self.old_bf[self.year] = (1 / 3) * self.children.frac_bf('6-11 months') + (2 / 3) * self.children.frac_bf('12-23 months')
         self.pw_anaemprev[self.year] = self.pw.frac_risk('an')
         self.nonpw_anaemprev[self.year] = self.nonpw.frac_risk('an')
 
@@ -125,6 +128,9 @@ class Model(sc.prettyobj):
             self.integrate()
             self._track()
             self._track_rates()
+            if self.timeTrends and self.scenario.name == 'Baseline':
+                self._applyPrevTimeTrends(year)
+                self.trend_dist_update(year)
 
     def _apply_prog_covs(self):
         # update populations
@@ -507,26 +513,159 @@ class Model(sc.prettyobj):
         adj_births = numbirths * (1. - self.nonpw.get_pregav())
         self.annual_births[self.year] = adj_births
 
-    def _applyPrevTimeTrends(self): # TODO: haven't done mortality yet
+    ''' Original method for applying time trends
+    def _applyPrevTimeTrends(self, year): # TODO: haven't done mortality yet
         for age_group in self.children.age_groups:
             # stunting
             probStunted = sum(age_group.stunting_dist[cat] for cat in self.ss.stunted_list)
-            newProb = probStunted * age_group.trends['Stunting']
+            newProb = probStunted * (age_group.trends['Stunting'][year]/age_group.trends['Stunting'][year - 1])
             age_group.update_dist('stunt', newProb)
             # wasting
             probWasted = sum(age_group.wasting_dist[cat] for cat in self.ss.wasted_list)
-            newProb = probWasted * age_group.trends['Wasting']
+            newProb = probWasted * (age_group.trends['Wasting'][year]/age_group.trends['Wasting'][year - 1])
             nonWastedProb = restratify(newProb)
             for nonWastedCat in self.ss.non_wasted_list:
                 age_group.wasting_dist[nonWastedCat] = nonWastedProb[nonWastedCat]
+            age_group.wasting_dist['MAM'] = nonWastedProb['Moderate']
+            age_group.wasting_dist['SAM'] = nonWastedProb['High']
             # anaemia
             probAnaemic = sum(age_group.anaemia_dist[cat] for cat in self.ss.anaemic_list)
-            newProb = probAnaemic * age_group.trends['Anaemia']
+            newProb = probAnaemic * (age_group.trends['Anaemia'][year]/age_group.trends['Anaemia'][year - 1])
             age_group.update_dist('anaem', newProb)
         for age_group in self.pw.age_groups + self.nonpw.age_groups:
             probAnaemic = sum(age_group.anaemia_dist[cat] for cat in self.ss.anaemic_list)
-            newProb = probAnaemic * age_group.trends['Anaemia']
+            newProb = probAnaemic * (age_group.trends['Anaemia'][year]/age_group.trends['Anaemia'][year - 1])
             age_group.update_dist('anaem', newProb)
+        num = 0
+        death_causes = self.pops[0].data.causes_death
+        for age_group in self.children.age_groups + self.pw.age_groups:
+            # mortality (not sure if works)
+            for item in list(range(0,len(death_causes))):
+                self.pops[0].data.death_dist[item][num] *= (age_group.trends['Mortality'][year]/age_group.trends['Mortality'][year - 1])
+            num += 1
+    '''
+
+    def _applyPrevTimeTrends(self, year): # TODO: haven't done breastfeeding yet
+        import warnings
+        warnings.filterwarnings('error')
+        if year < self.n_years:
+            try:
+                self.stunted_prev[year] = (self.children.age_groups[0].trends['Stunting'][year] / self.children.age_groups[0].trends['Stunting'][year - 1]) * self.stunted_prev[year - 1]
+            except RuntimeWarning: # Handles division by 0 (same for subsequent)
+                self.stunted_prev[year] = self.children.age_groups[0].trends['Stunting'][year]
+            try:
+                self.wasted_prev[year] = (self.children.age_groups[0].trends['Wasting'][year] / self.children.age_groups[0].trends['Wasting'][year - 1]) * self.wasted_prev[year - 1]
+            except RuntimeWarning:
+                self.wasted_prev[year] = self.children.age_groups[0].trends['Wasting'][year]
+            try:
+                self.child_anaemprev[year] = (self.children.age_groups[0].trends['Anaemia'][year] / self.children.age_groups[0].trends['Anaemia'][year - 1]) * self.child_anaemprev[year - 1]
+            except RuntimeWarning:
+                self.child_anaemprev[year] = self.children.age_groups[0].trends['Anaemia'][year]
+            try:
+                self.pw_anaemprev[year] = (self.pw.age_groups[0].trends['Anaemia'][year] / self.pw.age_groups[0].trends['Anaemia'][year - 1]) * self.pw_anaemprev[year - 1]
+            except RuntimeWarning:
+                self.pw_anaemprev[year] = self.pw.age_groups[0].trends['Anaemia'][year]
+            try:
+                self.nonpw_anaemprev[year] = (self.nonpw.age_groups[0].trends['Anaemia'][year] / self.nonpw.age_groups[0].trends['Anaemia'][year - 1]) * self.nonpw_anaemprev[year - 1]
+            except RuntimeWarning:
+                self.nonpw_anaemprev[year] = self.nonpw.age_groups[0].trends['Anaemia'][year]
+            try:
+                self.young_bf[year] = (self.children.age_groups[0].trends['Breastfeeding'][year] / self.children.age_groups[0].trends['Breastfeeding'][year - 1]) * self.young_bf[year - 1]
+            except RuntimeWarning:
+                self.young_bf[year] = self.children.age_groups[0].trends['Breastfeeding'][year]
+            try:
+                self.old_bf[year] = (self.children.age_groups[3].trends['Breastfeeding'][year] / self.children.age_groups[3].trends['Breastfeeding'][year - 1]) * self.old_bf[year - 1]
+            except RuntimeWarning:
+                self.old_bf[year] = self.children.age_groups[3].trends['Breastfeeding'][year]
+            for age in self.ss.child_ages[0:2]: # Breastfeeding practices for 0-5 months
+                try:
+                    self.children.bf_dist[age][self.ss.correct_bf[age]] *= (self.children.age_groups[0].trends['Breastfeeding'][year] / self.children.age_groups[0].trends['Breastfeeding'][year - 1])
+                except RuntimeWarning:
+                    if age == self.ss.child_ages[0]:
+                        self.children.bf_dist[age][self.ss.correct_bf[age]] = 6 * self.children.age_groups[0].trends['Breastfeeding'][year] - 5 * self.children.bf_dist[self.ss.child_ages[1]][self.ss.correct_bf[age]]
+                    elif age == self.ss.child_ages[1]:
+                        self.children.bf_dist[age][self.ss.correct_bf[age]] = (6 / 5) * self.children.age_groups[0].trends['Breastfeeding'][year] - (1 / 5) * self.children.bf_dist[self.ss.child_ages[0]][self.ss.correct_bf[age]]
+                self.normalise(self.children.bf_dist[age]) # Normalisation
+            for age in self.ss.child_ages[2:4]: # Breastfeeding practices for 6-23 months
+                try:
+                    self.children.bf_dist[age][self.ss.correct_bf[age]] *= (self.children.age_groups[3].trends['Breastfeeding'][year] / self.children.age_groups[3].trends['Breastfeeding'][year - 1])
+                except RuntimeWarning:
+                    if age == self.ss.child_ages[2]:
+                        self.children.bf_dist[age][self.ss.correct_bf[age]] = 3 * self.children.age_groups[3].trends['Breastfeeding'][year] - 2 * self.children.bf_dist[self.ss.child_ages[3]][self.ss.correct_bf[age]]
+                    elif age == self.ss.child_ages[3]:
+                        self.children.bf_dist[age][self.ss.correct_bf[age]] = (3 / 2) * self.children.age_groups[3].trends['Breastfeeding'][year] - (1 / 2) * self.children.bf_dist[self.ss.child_ages[2]][self.ss.correct_bf[age]]
+                self.normalise(self.children.bf_dist[age])
+            if year == 1:
+                self.child_mortrate[year - 1] = 1000 * np.sum(self.child_deaths) / np.sum(self.annual_births)
+                try:
+                    self.child_mortrate[year] = (self.children.age_groups[0].trends['Mortality'][year] / self.children.age_groups[0].trends['Mortality'][year - 1]) * self.child_mortrate[year - 1]
+                except RuntimeWarning:
+                    self.child_mortrate[year] = self.children.age_groups[0].trends['Mortality'][year]
+                self.pw_mortrate[year - 1] = 1000 * np.sum(self.pw_deaths) / np.sum(self.annual_births)
+                try:
+                    self.pw_mortrate[year] = (self.pw.age_groups[0].trends['Mortality'][year] / self.pw.age_groups[0].trends['Mortality'][year - 1]) * self.pw_mortrate[year - 1]
+                except RuntimeWarning:
+                    self.pw_mortrate[year] = self.pw.age_groups[0].trends['Mortality'][year]
+            else:
+                try:
+                    self.child_mortrate[year] = (self.children.age_groups[0].trends['Mortality'][year] / self.children.age_groups[0].trends['Mortality'][year - 1]) * self.child_mortrate[year - 1]
+                except RuntimeWarning:
+                    self.child_mortrate[year] = self.children.age_groups[0].trends['Mortality'][year]
+                try:
+                    self.pw_mortrate[year] = (self.pw.age_groups[0].trends['Mortality'][year] / self.pw.age_groups[0].trends['Mortality'][year - 1]) * self.pw_mortrate[year - 1]
+                except RuntimeWarning:
+                    self.pw_mortrate[year] = self.pw.age_groups[0].trends['Mortality'][year]
+        else:
+            pass
+
+    def normalise(self, dict):
+        total = sum(dict.values())
+        for age in dict:
+            dict[age] /= total
+        return dict
+
+    def trend_dist_update(self, year):
+        for age in self.children.age_groups:
+            total = 0
+            for stuntingCat in self.ss.stunted_list:
+                oldProbThisCat = age.stunting_dist[stuntingCat]
+                try:
+                    newProbThisCat = oldProbThisCat * (self.stunted_prev[year] / self.stunted_prev[year - 1])
+                except RuntimeWarning:
+                    newProbThisCat = oldProbThisCat
+                total += newProbThisCat
+            age.update_dist('stunt', total)
+            wast_dist = sc.odict()
+            total = 0
+            for wastingCat in self.ss.wasted_list:
+                oldProbThisCat = age.wasting_dist[wastingCat]
+                try:
+                    newProbThisCat = oldProbThisCat * (self.wasted_prev[year] / self.wasted_prev[year - 1])
+                except RuntimeWarning:
+                    newProbThisCat = oldProbThisCat
+                wast_dist[wastingCat] = newProbThisCat
+                total += newProbThisCat
+            age.update_dist('wast', total, wast_frac=wast_dist)
+            oldProbThisCat = age.anaemia_dist['Anaemic']
+            try:
+                newProbThisCat = oldProbThisCat * (self.child_anaemprev[year] / self.child_anaemprev[year - 1])
+            except RuntimeWarning:
+                newProbThisCat = oldProbThisCat
+            age.update_dist('anaem', newProbThisCat)
+        for age in self.pw.age_groups:
+            oldProbThisCat = age.anaemia_dist['Anaemic']
+            try:
+                newProbThisCat = oldProbThisCat * (self.pw_anaemprev[year] / self.pw_anaemprev[year - 1])
+            except RuntimeWarning:
+                newProbThisCat = oldProbThisCat
+            age.update_dist('anaem', newProbThisCat)
+        for age in self.nonpw.age_groups:
+            oldProbThisCat = age.anaemia_dist['Anaemic']
+            try:
+                newProbThisCat = oldProbThisCat * (self.nonpw_anaemprev[year] / self.nonpw_anaemprev[year - 1])
+            except RuntimeWarning:
+                newProbThisCat = oldProbThisCat
+            age.update_dist('anaem', newProbThisCat)
 
     def get_seq(self, outcome):
         try:

@@ -3,19 +3,21 @@ import sciris as sc
 
 doplot = False
 
+time_trends = True
+
 # load in data to create model
 p = nu.Project('eg')
-p.load_data('demo', 'demo', name='eg')
+p.load_data('demo', 'demo', name='eg', time_trend=time_trends)
 
 ### define custom scenarios
-kwargs1 = {'name':'Treat SAM 100%',
+kwargs1 = {'name':'Cash transfers',
            'model_name': 'eg',
            'scen_type': 'coverage',
-            'progvals': sc.odict({'Treatment of SAM': [1]})}
+            'progvals': sc.odict({'Cash transfers': [1]})}
 
 kwargs2 = sc.dcp(kwargs1)
-kwargs2.update({'name': 'IYCF 1 100%',
-                'progvals': sc.odict({'IYCF 1': [1]})})
+kwargs2.update({'name': 'IYCF 2 100%',
+                'progvals': sc.odict({'IYCF 2': [1]})})
 
 kwargs3 = {'name': 'IYCF at $10 mil',
          'model_name': 'eg',
@@ -65,9 +67,9 @@ kwargs6 = {'name': 'Check bednets',
            'scen_type': 'budget',
            'progvals': sc.odict({'IYCF 1': [0]})}
 
-scen_list = nu.make_scens([kwargs6])
+scen_list = nu.make_scens([kwargs1, kwargs2, kwargs3])
 p.add_scens(scen_list)
 p.run_scens()
 if doplot:
-    p.plot()
+    p.plot(toplot='prevs')
 costeff = p.get_costeff()

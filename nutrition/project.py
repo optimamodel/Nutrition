@@ -134,7 +134,7 @@ class Project(object):
         return self.inputsheet(name)
     
         
-    def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True, validate=True):
+    def load_data(self, country=None, region=None, name=None, time_trend=True, inputspath=None, defaultspath=None, fromfile=True, validate=True):
         '''Load the data, which can mean one of two things: read in the spreadsheets, and/or use these data to make a model '''
         
         # Generate name odict key for Spreadsheet, Dataset, and Model odicts.
@@ -151,7 +151,7 @@ class Project(object):
         dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self)
         self.datasets[name] = dataset
         dataset.name = name
-        self.add_model(name) # add model associated with the dataset
+        self.add_model(name, time_trend=time_trend) # add model associated with the dataset
     
         # Do validation to insure that Dataset and Model objects are loaded in for each of the spreadsheets that are
         # in the project.
@@ -327,7 +327,7 @@ class Project(object):
         self.add_geos(geos)
         return geos
 
-    def add_model(self, name=None):
+    def add_model(self, name=None, time_trend=True):
         """ Adds a model to the self.models odict.
         A new model should only be instantiated if new input data is uploaded to the Project.
         For the same input data, one model instance is used for all scenarios.
@@ -336,7 +336,7 @@ class Project(object):
         pops = dataset.pops
         prog_info = dataset.prog_info
         t = dataset.t
-        model = Model(pops, prog_info, t)
+        model = Model(pops, prog_info, t, timeTrends=time_trend)
         self.add(name=name, item=model, what='model')
         # Loop over all Scens and create a new default scenario for any that depend on the dataset which has been reloaded.
         # for scen_name in self.scens.keys():  # Loop over all Scen keys in the project
@@ -461,7 +461,7 @@ class Project(object):
         self.add_result(results, name='scens')
         return None
 
-    def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=25, maxtime=160, parallel=True, dosave=True, runbaseline=True):
+    def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=25, maxtime=160, parallel=False, dosave=True, runbaseline=True):
         if optim is not None:
             self.add_optims(optim)
             key = optim.name # this to handle parallel calls of this function

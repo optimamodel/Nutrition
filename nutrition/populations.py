@@ -393,6 +393,9 @@ class Children(Population):
     def frac_wasted(self, cat):
         return self.num_wasted(cat) / self.total_pop()
 
+    def frac_bf(self, age):
+        return self.bf_dist[age][self.ss.correct_bf[age]]
+
     def _setConditionalDiarrhoea(self):
         self._set_stunted_dia()
         self._set_anaemic_dia()
@@ -711,20 +714,20 @@ class Children(Population):
             age_group.prog_eff = self.default.child_progs[age]
 
     def _set_time_trends(self):
-        trends = self.data.time_trends
-        for risk in ['Stunting', 'Wasting', 'Anaemia']:
-            trend = trends[risk]
+        trends = self.data.interp_time_trends
+        for risk in ['Stunting', 'Wasting', 'Anaemia', 'Mortality']:
+            trend = trends[risk][0]
             for age_group in self.age_groups:
-                age_group.trends[risk] = fit_poly(0, trend)
+                age_group.trends[risk] = trend
         # breastfeeding has age dependency
         risk = 'Breastfeeding'
         trend = trends[risk]
-        younger = self.age_groups[:3]
+        younger = self.age_groups[:2]
         for age_group in younger:
-            age_group.trends[risk] = fit_poly(0, trend)
-        older = self.age_groups[3:]
+            age_group.trends[risk] = trend[0]
+        older = self.age_groups[2:4]
         for age_group in older:
-            age_group.trends[risk] = fit_poly(1, trend)
+            age_group.trends[risk] = trend[1]
 
     def _set_correctbf(self):
         for age_group in self.age_groups:
@@ -755,9 +758,13 @@ class PregnantWomen(Population):
 
     def _set_time_trends(self):
         risk = 'Anaemia'
-        trend = self.data.time_trends[risk]
+        trend = self.data.interp_time_trends[risk]
         for age_group in self.age_groups:
-            age_group.trends[risk] = fit_poly(1, trend)
+            age_group.trends[risk] = trend[1]
+        risk = 'Mortality'
+        trend = self.data.interp_time_trends[risk]
+        for age_group in self.age_groups:
+            age_group.trends[risk] = trend[1]
 
     def set_probs(self, prog_areas):
         self._set_prob_anaem(prog_areas)
@@ -911,9 +918,9 @@ class NonPregnantWomen(Population):
 
     def _set_time_trends(self):
         risk = 'Anaemia'
-        trend = self.data.time_trends[risk]
+        trend = self.data.interp_time_trends[risk]
         for age_group in self.age_groups:
-            age_group.trends[risk] = fit_poly(1, trend)
+            age_group.trends[risk] = trend[2]
 
 
 def set_pops(data, default_params):
