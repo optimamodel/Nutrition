@@ -13,11 +13,11 @@ p.load_data(inputspath='PNG 2019 databook_' + 'National' + ' 20190322.xlsx', nam
 kwargs1 = {'name':'Cash transfers',
            'model_name': model,
            'scen_type': 'coverage',
-            'progvals': sc.odict({'Cash transfers': [1]})}
+            'progvals': sc.odict({'Cash transfers': [1], 'IYCF 1': [1]})}
 
 kwargs2 = sc.dcp(kwargs1)
 kwargs2.update({'name': 'IYCF 2 100%',
-                'progvals': sc.odict({'IYCF 2': [1]})})
+                'progvals': sc.odict({'IPTp': [1], 'IYCF 2': [1], 'Vitamin A supplementation': [1]})})
 
 kwargs3 = {'name': 'IYCF at $10 mil',
          'model_name': model,
@@ -67,7 +67,7 @@ kwargs6 = {'name': 'Check bednets',
            'scen_type': 'budget',
            'progvals': sc.odict({'IYCF 1': [0]})}
 
-scen_list = nu.make_scens([kwargs2])
+scen_list = nu.make_scens([kwargs1, kwargs2])
 p.add_scens(scen_list)
 p.run_scens()
 if doplot:
