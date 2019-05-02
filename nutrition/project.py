@@ -12,7 +12,7 @@ from .scenarios import Scen, run_scen, convert_scen, make_default_scen
 from .optimization import Optim
 from .geospatial import Geospatial
 from .results import write_results
-from .plotting import make_plots, get_costeff, plot_costcurve
+from .plotting import make_plots, get_costeff, plot_costcurve, plot_prevs
 from .demo import demo_scens, demo_optims, demo_geos
 from . import settings
 
@@ -512,6 +512,10 @@ class Project(object):
 
     def plot(self, key=-1, toplot=None, optim=False, geo=False):
         figs = make_plots(self.result(key), toplot=toplot, optim=optim, geo=geo)
+        return figs
+
+    def plot_prevs(self, key=-1, toplot=None, optim=False, geo=False):
+        figs = plot_prevs(self.result(key))
         return figs
 
     def get_costeff(self, resultname=None):

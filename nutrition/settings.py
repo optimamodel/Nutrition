@@ -36,7 +36,7 @@ class Settings(object):
         self.risks = ['Stunting', 'Wasting', 'Breastfeeding', 'Anaemia'] # todo: even use this?
         self.child_age_spans = [1., 5., 6., 12., 36.] # in months
         self.women_age_rates = [1./5., 1./10., 1./10., 1./10.] # in years
-    
+
     def __repr__(self):
         output  = sc.prepr(self)
         return output

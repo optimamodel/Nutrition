@@ -4,14 +4,14 @@ import sciris as sc
 doplot = False
 
 time_trends = True
-
+model = 'PNG'
 # load in data to create model
-p = nu.Project('eg')
-p.load_data('demo', 'demo', name='eg', time_trend=time_trends)
-
+p = nu.Project(model)
+#p.load_data('demo', 'demo', name='eg', time_trend=time_trends)
+p.load_data(inputspath='PNG 2019 databook_' + 'National' + ' 20190322.xlsx', name='PNG', time_trend=time_trends)
 ### define custom scenarios
 kwargs1 = {'name':'Cash transfers',
-           'model_name': 'eg',
+           'model_name': model,
            'scen_type': 'coverage',
             'progvals': sc.odict({'Cash transfers': [1]})}
 
@@ -20,14 +20,14 @@ kwargs2.update({'name': 'IYCF 2 100%',
                 'progvals': sc.odict({'IYCF 2': [1]})})
 
 kwargs3 = {'name': 'IYCF at $10 mil',
-         'model_name': 'eg',
+         'model_name': model,
          'scen_type': 'budget',
            'progvals': sc.odict({'IYCF 1': [1e7],
                                  'IPTp': [1e7]})}
 
 ### testing FE bugs
 kwargs4 = {'name': 'FE check 1',
-           'model_name': 'eg',
+           'model_name': model,
            'scen_type': 'budget',
            'progvals': sc.odict({u'IFA fortification of maize': [2000000],
                                     u'IPTp': [2000000],
@@ -40,7 +40,7 @@ kwargs4 = {'name': 'FE check 1',
                                      u'Zinc for treatment + ORS': []})}
 
 kwargs5 = {'name': 'FE check 2',
-           'model_name': 'eg',
+           'model_name': model,
            'scen_type': 'budget',
            'progvals': sc.odict({u'IFA fortification of maize': [2000000],
                                     u'IPTp': [2000000],
@@ -53,23 +53,23 @@ kwargs5 = {'name': 'FE check 2',
                                      u'Zinc for treatment + ORS': []})}
 
 kwargs5 = {'name': 'Check WASH',
-           'model_name': 'eg',
+           'model_name': model,
            'scen_type': 'budget',
            'progvals': sc.odict({'WASH: Handwashing': [1e6]})}
 
 kwargs6 = {'name': 'Check bednets',
-           'model_name': 'eg',
+           'model_name': model,
            'scen_type': 'budget',
            'progvals': sc.odict({'Long-lasting insecticide-treated bednets': [0]})}
 
 kwargs6 = {'name': 'Check bednets',
-           'model_name': 'eg',
+           'model_name': model,
            'scen_type': 'budget',
            'progvals': sc.odict({'IYCF 1': [0]})}
 
-scen_list = nu.make_scens([kwargs1, kwargs2, kwargs3])
+scen_list = nu.make_scens([kwargs2])
 p.add_scens(scen_list)
 p.run_scens()
 if doplot:
-    p.plot(toplot='prevs')
+    p.plot_prevs()
 costeff = p.get_costeff()
