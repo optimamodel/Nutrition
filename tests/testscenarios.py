@@ -4,11 +4,11 @@ import sciris as sc
 doplot = False
 
 time_trends = True
-model = 'PNG'
+model = 'eg'
 # load in data to create model
 p = nu.Project(model)
-#p.load_data('demo', 'demo', name='eg', time_trend=time_trends)
-p.load_data(inputspath='PNG 2019 databook_' + 'National' + ' 20190322.xlsx', name='PNG', time_trend=time_trends)
+p.load_data('demo', 'demo', name='eg', time_trend=time_trends)
+#p.load_data(inputspath='PNG 2019 databook_' + 'National' + ' 20190322.xlsx', name='PNG', time_trend=time_trends)
 ### define custom scenarios
 kwargs1 = {'name':'Cash transfers',
            'model_name': model,

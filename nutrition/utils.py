@@ -110,7 +110,9 @@ def pretty_labels(direction=False):
             'Number of anaemic non-pregnant women',
             'Prevalence of anaemia in non-pregnant women',
             'Child mortality rate',
-            'Pregnant women mortality rate'
+            'Pregnant women mortality rate',
+            'Prevalence of age appropriate breastfeeding in children aged <12 months',
+            'Prevalence of age appropriate breastfeeding in children aged 12-23 months'
         ]
     labs = sc.odict(zip(default_trackers(), pretty))
     return labs
