@@ -784,50 +784,6 @@ class Model(sc.prettyobj):
                     self._bf_dist_update(self.children.age_groups[a], self.children.age_groups[a].pop_size,
                                          numCorrectBefore, numCorrectAfter)
 
-    def trend_num_update(self, year): # Not used currently, redundant?
-        import warnings
-        warnings.filterwarnings('error')
-        num_child = sum(age.pop_size for age in self.children.age_groups)
-        num_pw = sum(age.pop_size for age in self.pw.age_groups)
-        num_nonpw = sum(age.pop_size for age in self.nonpw.age_groups)
-        if year == 1:
-            self.stunted[year - 1] = self.stunted_prev[year - 1] * num_child
-            self.wasted[year - 1] = self.wasted_prev[year - 1] * num_child
-            self.child_anaemic[year - 1] = self.child_anaemprev[year - 1] * num_child
-            self.pw_anaemic[year - 1] = self.pw_anaemprev[year - 1] * num_pw
-            self.nonpw_anaemic[year - 1] = self.nonpw_anaemprev[year - 1] * num_nonpw
-        if year < self.n_years:
-            try:
-                self.stunted[year] = (self.children.age_groups[0].trends['Stunting'][year] /
-                                           self.children.age_groups[0].trends['Stunting'][year - 1]) * \
-                                          self.stunted[year - 1]
-            except RuntimeWarning:  # Handles division by 0 (same for subsequent)
-                self.stunted[year] = self.children.age_groups[0].trends['Stunting'][year] * num_child
-            try:
-                self.wasted[year] = (self.children.age_groups[0].trends['Wasting'][year] /
-                                          self.children.age_groups[0].trends['Wasting'][year - 1]) * self.wasted[
-                                             year - 1]
-            except RuntimeWarning:
-                self.wasted[year] = self.children.age_groups[0].trends['Wasting'][year] * num_child
-            try:
-                self.child_anaemic[year] = (self.children.age_groups[0].trends['Anaemia'][year] /
-                                              self.children.age_groups[0].trends['Anaemia'][year - 1]) * \
-                                             self.child_anaemic[year - 1]
-            except RuntimeWarning:
-                self.child_anaemic[year] = self.children.age_groups[0].trends['Anaemia'][year] * num_child
-            try:
-                self.pw_anaemic[year] = (self.pw.age_groups[0].trends['Anaemia'][year] /
-                                           self.pw.age_groups[0].trends['Anaemia'][year - 1]) * self.pw_anaemic[
-                                              year - 1]
-            except RuntimeWarning:
-                self.pw_anaemic[year] = self.pw.age_groups[0].trends['Anaemia'][year] * num_pw
-            try:
-                self.nonpw_anaemic[year] = (self.nonpw.age_groups[0].trends['Anaemia'][year] /
-                                              self.nonpw.age_groups[0].trends['Anaemia'][year - 1]) * \
-                                             self.nonpw_anaemic[year - 1]
-            except RuntimeWarning:
-                self.nonpw_anaemic[year] = self.nonpw.age_groups[0].trends['Anaemia'][year] * num_nonpw
-
     def get_seq(self, outcome):
         try:
             return getattr(self, outcome)
