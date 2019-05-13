@@ -715,7 +715,7 @@ class Children(Population):
 
     def _set_time_trends(self):
         trends = self.data.interp_time_trends
-        for risk in ['Stunting', 'Wasting', 'Anaemia', 'Mortality']:
+        for risk in ['Stunting', 'Wasting', 'Anaemia', 'Mortality']: # Set trends in each age_group
             trend = trends[risk][0]
             for age_group in self.age_groups:
                 age_group.trends[risk] = trend

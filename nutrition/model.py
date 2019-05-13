@@ -129,10 +129,9 @@ class Model(sc.prettyobj):
             self.integrate()
             self._track()
             self._track_rates()
-            if self.timeTrends:
-                self._applyPrevTimeTrends(year)
-                self.trend_dist_update(year)
-                # self.trend_num_update(year)
+            if self.timeTrends: # Apply time trends if necessary
+                self._applyPrevTimeTrends(year) # Updates prevalences
+                self.trend_dist_update(year) # Updates distributions
 
     def _apply_prog_covs(self):
         # update populations
@@ -523,7 +522,7 @@ class Model(sc.prettyobj):
 
     def _applyPrevTimeTrends(self, year): # Mortality disabled (and not streamlined)
         if year < self.n_years:
-            trigger = [0, 0, 0, 0, 0, 0]
+            trigger = [0, 0, 0, 0, 0, 0] # Check for whether each risk should have trend applied (non_Baseline scenarios)
             group_list = ['child', 'pw', 'nonpw']
             if self.scenario.name == 'Baseline': # Apply any trends to Baseline scenario
                 self.stuntedprev_trend(year)
@@ -646,14 +645,14 @@ class Model(sc.prettyobj):
 
     def trend_dist_update(self, year): # Updates distributions according to prevalences
         for age in self.children.age_groups:
-            trigger = [0, 0, 0, 0, 0, 0]
+            trigger = [0, 0, 0, 0, 0, 0] # Check for whether each risk should have trend applied (non_Baseline scenarios)
             group_list = ['child', 'pw', 'nonpw']
             if self.scenario.name == 'Baseline':
                 self.stunteddist_trend(age, year)
                 self.wasteddist_trend(age, year)
                 for group in group_list:
                     self.anaemicdist_trend(age, group, year)
-            else:
+            else: # Check which risks are impacted by non-Baseline scenario
                 for prog in self.scenario.prog_set:
                     if prog in self.prog_info.prog_areas['Stunting']:
                         trigger[0] += 1
@@ -671,6 +670,7 @@ class Model(sc.prettyobj):
                         trigger[4] += 1
                     if prog in self.prog_info.prog_areas['Breastfeeding']:
                         trigger[5] += 1
+                # Update distributions according to prevalences which trended
                 if trigger[0] == 0:
                     self.stunteddist_trend(age, year)
                 if trigger[1] == 0:

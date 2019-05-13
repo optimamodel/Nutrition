@@ -525,10 +525,10 @@ class InputData(object):
             self.time_trends['Breastfeeding'] = trends.loc['Prevalence of age-appropriate breastfeeding'].values[:2].astype(str).astype(float) # 0-5 months, 6-23 months
             self.time_trends['Mortality'] = trends.loc['Mortality'].values[:2].astype(str).astype(float) # under 5, maternal
         except ValueError as error:
-            sys.exit('In \'Time trends\' sheet, ' + str(error)) # exits if non-numeric entries found
+            sys.exit('In \'Time trends\' sheet, ' + str(error)) # Exits if non-numeric entries found
         self.interp_trends(t)
 
-    def interp_trends(self, t):
+    def interp_trends(self, t): # Linearly interpolates any time trend data
         for risk in self.time_trends:
             t_rep = np.tile(t, (len(self.time_trends[risk]), 1))
             self.interp_time_trends[risk] = sc.dcp(self.time_trends[risk])
@@ -536,7 +536,7 @@ class InputData(object):
                 for jindex in list(range(0,len(self.time_trends[risk][index]))):
                     if self.time_trends[risk][index][jindex] > 1:
                         self.time_trends[risk][index][jindex] = 1
-                        print('A prevalence in sheet \'Time trends\', Risk: %s is greater than one and has been set to one' % risk)  # handles prevalences > 1
+                        print('A prevalence in sheet \'Time trends\', Risk: %s is greater than one and has been set to one' % risk)  # Handles prevalences > 1
                 not_nan = ~np.isnan(self.time_trends[risk][index:index+1])
                 self.interp_time_trends[risk][index:index+1] = np.interp(t, t_rep[index:index+1][not_nan], self.time_trends[risk][index:index+1][not_nan])
 
