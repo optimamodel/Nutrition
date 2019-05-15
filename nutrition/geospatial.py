@@ -154,7 +154,7 @@ class Geospatial:
         total_budget_allocated = 0.0
         tol = 0.00001
         # Make budget increments to be tried at each iteration of the algorithm.
-        numpoints = 2000
+        numpoints = 1000
         # numpoints = 2000
         tmpx1 = np.linspace(1, np.log(totalfunds), numpoints)  # Logarithmically distributed
         tmpx2 = np.log(np.linspace(1, totalfunds, numpoints))  # Uniformly distributed
@@ -164,14 +164,6 @@ class Geospatial:
         trial_budgets = np.zeros((numregions, base_trial_budgets.size))
         for reg_ind in list(range(numregions)):
             trial_budgets[reg_ind] = base_trial_budgets
-
-        # budget_increments = np.linspace(0, totalfunds, numpoints)
-        # budget_increments = budget_increments[1:]
-
-        # plt.plot(trial_budgets[0], self.bocs[0](trial_budgets[0]))
-        # plt.plot(trial_budgets[1], self.bocs[1](trial_budgets[1]))
-        # plt.show()
-        # plt.plot(self.bocs[2](budget_increments[2]))
 
         print('TRIAL BUDGETS:')
         for reg_ind in list(range(numregions)):
@@ -211,8 +203,8 @@ class Geospatial:
                     shift_ind[reg_ind] = budget_increments[reg_ind].size - len(
                         budget_increments[reg_ind][budget_increments[reg_ind] - totalfunds + total_budget_allocated <= tol])
                     if shift_ind[reg_ind] > 0: # Remove budget increments which are too big
-                        budget_increments[reg_ind] = budget_increments[reg_ind][0 : budget_increments[reg_ind].size - int(shift_ind[reg_ind])]
-
+                        budget_increments[reg_ind] = budget_increments[reg_ind][0 : budget_increments[reg_ind].size - \
+                                                                                    int(shift_ind[reg_ind])]
                     # Loop over the budget increments...
                     for budget_inc_ind in list(range(len(budget_increments[reg_ind]))):
                         # Get the new outcome from the BOC, assuming the particular budget increment is chosen.
@@ -222,8 +214,6 @@ class Geospatial:
                         # Calculate the marginal improvement for this budget increment and region.
                         marginal_improvements[reg_ind][budget_inc_ind] = (current_outcome - new_outcome) / \
                                                                          budget_increments[reg_ind][budget_inc_ind]
-
-                # Find the combination of region and budget increment.
                 # Check if there were any marginal improvements calculated
                 if sum(np.count_nonzero(marginal_improvements[k]) for k in list(range(numregions))) == 0:
                     break
@@ -235,30 +225,36 @@ class Geospatial:
                         if not marginal_improvements[reg_ind].any():
                             check.append(np.nan)
                             val.append(np.nan)
-                        else: #If yes then find the maximum value
-                            check.append(np.nanargmax(marginal_improvements[reg_ind]))
+                        else: #If yes then find the last occurrence of the maximum value
+                            check.append(np.argwhere(marginal_improvements[reg_ind] == marginal_improvements[reg_ind]
+                                [np.nanargmax(marginal_improvements[reg_ind])]).flatten().tolist()[-1])
                             val.append(marginal_improvements[reg_ind][check[-1]])
                     # Find best region and funding amount
-                    best_reg_ind = np.nanargmax(val)
-                    best_budget_inc_ind = check[best_reg_ind]
-                    '''
-                    print('MARGINAL IMPROVEMENTS:')
-                    print(marginal_improvements)
-                    print('Best region %d' % best_reg_ind)
-                    print('Best budget inc %f' % budget_increments[best_reg_ind][best_budget_inc_ind])
-                    '''
-                    # Allocate the money to the chosen best region and add to the total budget allocated.
-                    regional_allocs[best_reg_ind] += budget_increments[best_reg_ind][best_budget_inc_ind]
-                    total_budget_allocated += budget_increments[best_reg_ind][best_budget_inc_ind]
-                    '''
-                    print('BUDGET ALLOCATIONS:')
-                    print(regional_allocs)
-
-                    print('NEW BUDGET INCREMENTS:')
-                    print(budget_increments)
-
-                    print('Allocated so far: %f of %f' % (total_budget_allocated, totalfunds))
-                    '''
+                    best_reg_ind = np.argwhere(val == val[np.nanargmax(val)]).flatten().tolist() # Find all maximum value indices
+                    best_budget_inc_ind = []
+                    for num_ind in best_reg_ind:
+                        best_budget_inc_ind.append(check[num_ind])
+                    # Check if there are multiple best regions
+                    if len(best_reg_ind) == 1:
+                        # Allocate the money to the chosen best region and add to the total budget allocated.
+                        regional_allocs[best_reg_ind[0]] += budget_increments[best_reg_ind[0]][best_budget_inc_ind[0]]
+                        total_budget_allocated += budget_increments[best_reg_ind[0]][best_budget_inc_ind[0]]
+                    else:
+                        options = []
+                        for choice in list(range(len(best_reg_ind))):
+                            options.append(regional_allocs[best_reg_ind[choice]])
+                        choose = np.argwhere(options == options[np.nanargmin(options)]).flatten().tolist()
+                        if len(choose) > 1:
+                            import random
+                            best_choice = random.choice(choose)
+                        elif len(choose) == 1:
+                            best_choice = choose[0]
+                        else:
+                            print('There are no regional allocations')
+                        regional_allocs[best_reg_ind[best_choice]] += budget_increments[best_reg_ind[best_choice]]
+                        [best_budget_inc_ind[best_choice]]
+                        total_budget_allocated += budget_increments[best_reg_ind[best_choice]]
+                        [best_budget_inc_ind[best_choice]]
             else:
                 break
 

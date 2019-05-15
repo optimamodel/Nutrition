@@ -7,12 +7,14 @@ if __name__ == '__main__':
     # three test regions
     p.load_data(inputspath='PNG 2019 databook_' + 'Highlands' + ' 20190322.xlsx', name='PNG_Highlands')
     p.load_data(inputspath='PNG 2019 databook_' + 'Islands' + ' 20190322.xlsx', name='PNG_Islands')
+    p.load_data(inputspath='PNG 2019 databook_' + 'Southern' + ' 20190322.xlsx', name='PNG_Southern')
+    #p.load_data(inputspath='PNG 2019 databook_' + 'Momase' + ' 20190322.xlsx', name='PNG_Momase')
     #p.load_data('demo', 'region1', name='Demo1')
     #p.load_data('demo', 'region2', name='Demo2')
     #p.load_data('demo', 'region3', name='Demo3')
 
     kwargs = {'name': 'test1',
-              'modelnames': ['PNG_Highlands', 'PNG_Islands'],
+              'modelnames': ['PNG_Highlands', 'PNG_Islands', 'PNG_Southern'],# 'PNG_Momase'],
               'weights': 'child_deaths',
               'fix_curr': False,
               'fix_regionalspend': False,
@@ -24,5 +26,8 @@ if __name__ == '__main__':
 
     geo = Geospatial(**kwargs)
     results = p.run_geo(geo=geo, maxiter=4, swarmsize=4, maxtime=15, dosave=True, parallel=False)
-    p.write_results('optim_results_geo.xlsx')
+    p.write_results('optim_results_geo_demo_new.xlsx')
     p.plot(toplot=['alloc'], geo=True)
+
+    # Test if optimal allocation
+
