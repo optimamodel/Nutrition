@@ -15,7 +15,8 @@ kwargs = {'name': 'test1',
                             'Public provision of complementary foods', 'Treatment of SAM',  'Vitamin A supplementation',
                            'Mg for eclampsia', 'Zinc supplementation', 'Iron and iodine fortification of salt'][:3]}
 self = nu.Geospatial(**kwargs)
-base_allocs = [3965752.71613903, 3452324.20189087, 2908124.86513123]
+#base_allocs = [3965752.71613903, 3452324.20189087, 2908124.86513123]
+base_allocs = [2957744.91439361, 1081565.18758813, 1518382.74770178]
 money = 10000
 changed_allocs12 = [base_allocs[0]-money, base_allocs[1]+money, base_allocs[2]]
 changed_allocs13 = [base_allocs[0]-money, base_allocs[1], base_allocs[2]+money]
