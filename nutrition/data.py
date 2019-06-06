@@ -530,15 +530,22 @@ class InputData(object):
 
     def interp_trends(self, t): # Linearly interpolates any time trend data
         for risk in self.time_trends:
-            t_rep = np.tile(t, (len(self.time_trends[risk]), 1))
-            self.interp_time_trends[risk] = sc.dcp(self.time_trends[risk])
-            for index in list(range(0,len(self.time_trends[risk]))):
-                for jindex in list(range(0,len(self.time_trends[risk][index]))):
-                    if self.time_trends[risk][index][jindex] > 1:
-                        self.time_trends[risk][index][jindex] = 1
-                        print('A prevalence in sheet \'Time trends\', Risk: %s is greater than one and has been set to one' % risk)  # Handles prevalences > 1
-                not_nan = ~np.isnan(self.time_trends[risk][index:index+1])
-                self.interp_time_trends[risk][index:index+1] = np.interp(t, t_rep[index:index+1][not_nan], self.time_trends[risk][index:index+1][not_nan])
+            if risk != 'Mortality':
+                t_rep = np.tile(t, (len(self.time_trends[risk]), 1))
+                self.interp_time_trends[risk] = sc.dcp(self.time_trends[risk])
+                for index in list(range(0,len(self.time_trends[risk]) - 1)):
+                    for jindex in list(range(0,len(self.time_trends[risk][index]))):
+                        if self.time_trends[risk][index][jindex] > 1:
+                            self.time_trends[risk][index][jindex] = 1
+                            print('A prevalence in sheet \'Time trends\', Risk: %s is greater than one and has been set to one' % risk)  # Handles prevalences > 1
+                    not_nan = ~np.isnan(self.time_trends[risk][index:index+1])
+                    self.interp_time_trends[risk][index:index+1] = np.interp(t, t_rep[index:index+1][not_nan], self.time_trends[risk][index:index+1][not_nan])
+            else:
+                t_rep = np.tile(t, (len(self.time_trends[risk]), 1))
+                self.interp_time_trends[risk] = sc.dcp(self.time_trends[risk])
+                for index in list(range(0, len(self.time_trends[risk]) - 1)):
+                    not_nan = ~np.isnan(self.time_trends[risk][index:index + 1])
+                    self.interp_time_trends[risk][index:index + 1] = np.interp(t, t_rep[index:index + 1][not_nan], self.time_trends[risk][index:index + 1][not_nan])
 
     def get_incidences(self):
         # Load the main spreadsheet into a DataFrame.

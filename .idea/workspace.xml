@@ -2,15 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a4f1e0ed-ea36-46c6-b364-c55d76e127e3" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.dockerignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/.npmrc" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Nutrition.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Nutrition.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/nutrition/data.py" beforeDir="false" afterPath="$PROJECT_DIR$/nutrition/data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nutrition/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/nutrition/model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nutrition/populations.py" beforeDir="false" afterPath="$PROJECT_DIR$/nutrition/populations.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nutrition/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/nutrition/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/testgeo.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/testgeo.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -23,7 +18,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tests/testgeo.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="272">
+            <state relative-caret-position="340">
               <caret line="20" column="107" selection-start-line="20" selection-start-column="107" selection-end-line="20" selection-end-column="107" />
               <folding>
                 <element signature="e#0#25#0" expanded="true" />
@@ -32,11 +27,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/nutrition/geospatial.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="884">
-              <caret line="52" column="28" selection-start-line="52" selection-start-column="25" selection-end-line="52" selection-end-column="28" />
+            <state relative-caret-position="-17">
+              <caret line="38" column="30" selection-start-line="38" selection-start-column="30" selection-end-line="38" selection-end-column="30" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -47,8 +42,20 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/nutrition/model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="255">
-              <caret line="672" column="59" lean-forward="true" selection-start-line="672" selection-start-column="59" selection-end-line="672" selection-end-column="59" />
+            <state relative-caret-position="994">
+              <caret line="672" column="59" selection-start-line="672" selection-start-column="59" selection-end-line="672" selection-end-column="59" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/nutrition/data.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="16">
+              <caret line="534" column="69" selection-start-line="534" selection-start-column="69" selection-end-line="534" selection-end-column="69" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -93,6 +100,7 @@
     </findStrings>
   </component>
   <component name="Git.Settings">
+    <option name="ROOT_SYNC" value="DONT_SYNC" />
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="IdeDocumentHistory">
@@ -109,47 +117,47 @@
         <option value="$PROJECT_DIR$/tests/testoptims.py" />
         <option value="$PROJECT_DIR$/nutrition/settings.py" />
         <option value="$PROJECT_DIR$/nutrition/geospatial.py" />
-        <option value="$PROJECT_DIR$/nutrition/data.py" />
         <option value="$PROJECT_DIR$/nutrition/model.py" />
         <option value="$PROJECT_DIR$/nutrition/populations.py" />
         <option value="$PROJECT_DIR$/tests/testgeo.py" />
+        <option value="$PROJECT_DIR$/nutrition/data.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-11" />
-    <option name="y" value="-11" />
-    <option name="width" value="1943" />
-    <option name="height" value="1043" />
+    <option name="x" value="1912" />
+    <option name="y" value="-8" />
+    <option name="width" value="1936" />
+    <option name="height" value="1056" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
             <path>
-              <item name="Nutrition-timetrends" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Nutrition-timetrends" type="462c0819:PsiDirectoryNode" />
+              <item name="Nutrition" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Nutrition" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
-              <item name="Nutrition-timetrends" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Nutrition-timetrends" type="462c0819:PsiDirectoryNode" />
+              <item name="Nutrition" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Nutrition" type="462c0819:PsiDirectoryNode" />
               <item name="nutrition" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../Nutrition-geospatial-gridsearch-rework-gc" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="vcs.Git" />
   </component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
@@ -302,9 +310,10 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-7" y="-7" width="1295" height="695" extended-state="6" />
+    <frame x="0" y="453" width="320" height="227" extended-state="0" />
+    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.24702145" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.8943662" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -503,13 +512,7 @@ model_name: PNG
         </state>
       </provider>
     </entry>
-    <entry file="file://C:/Python/Python37-32/Lib/site-packages/pandas/io/excel.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="149">
-          <caret line="392" selection-start-line="392" selection-end-line="392" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://C:/Python/Python37-32/Lib/site-packages/pandas/io/excel.py" />
     <entry file="file://$PROJECT_DIR$/nutrition/utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-1768">
@@ -555,16 +558,6 @@ model_name: PNG
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/nutrition/data.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="530" column="75" selection-start-line="530" selection-start-column="75" selection-end-line="530" selection-end-column="75" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/nutrition/populations.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="250">
@@ -572,19 +565,16 @@ model_name: PNG
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/nutrition/model.py">
+    <entry file="file://$PROJECT_DIR$/nutrition/settings.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="672" column="59" lean-forward="true" selection-start-line="672" selection-start-column="59" selection-end-line="672" selection-end-column="59" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="-510">
+          <caret line="9" column="28" selection-start-line="9" selection-start-column="28" selection-end-line="9" selection-end-column="28" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/tests/testgeo.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
+        <state relative-caret-position="340">
           <caret line="20" column="107" selection-start-line="20" selection-start-column="107" selection-end-line="20" selection-end-column="107" />
           <folding>
             <element signature="e#0#25#0" expanded="true" />
@@ -592,17 +582,30 @@ model_name: PNG
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/nutrition/settings.py">
+    <entry file="file://$PROJECT_DIR$/nutrition/geospatial.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="51">
-          <caret line="9" column="28" selection-start-line="9" selection-start-column="28" selection-end-line="9" selection-end-column="28" />
+        <state relative-caret-position="-17">
+          <caret line="38" column="30" selection-start-line="38" selection-start-column="30" selection-end-line="38" selection-end-column="30" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/nutrition/geospatial.py">
+    <entry file="file://$PROJECT_DIR$/nutrition/model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="884">
-          <caret line="52" column="28" selection-start-line="52" selection-start-column="25" selection-end-line="52" selection-end-column="28" />
+        <state relative-caret-position="994">
+          <caret line="672" column="59" selection-start-line="672" selection-start-column="59" selection-end-line="672" selection-end-column="59" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nutrition/data.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="16">
+          <caret line="534" column="69" selection-start-line="534" selection-start-column="69" selection-end-line="534" selection-end-column="69" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
