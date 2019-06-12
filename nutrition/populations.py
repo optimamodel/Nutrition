@@ -702,6 +702,10 @@ class Children(Population):
         bo[3] = newborns.birth_dist["Pre-term SGA"]
         p0 = newborns.frac_risk(risk)
         sol = fsolve(partial(system, OR, bo, p0), (0.5, 0.5, 0.5, 0.5), xtol=1e-12)
+        # Hacky fix for when root solver fails
+        truthy = [(num - 0.5 == 0) for num in sol]
+        if all(truthy): # If solver failed then rerun with slightly different initial guess
+            sol = fsolve(partial(system, OR, bo, p0), (0.45, 0.45, 0.55, 0.55), xtol=1e-12)
         check_sol(sol)
         return sol
 
