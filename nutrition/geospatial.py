@@ -67,14 +67,8 @@ class Geospatial:
             run_optim = partial(proj.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
                                 parallel=parallel, dosave=True, runbaseline=False)
             # Generate the budget outcome curves optimization results.  This step takes a long while, generally.
-            import os.path
-            if os.path.exists('bocs.obj'): # Use this only when testing same scenarios repeatedly
-                print('Loading BOCS from bocs.obj...')
-                boc_optims = sc.loadobj('bocs.obj')
-            else:
-                print('Creating BOCs afresh...')
-                boc_optims = sc.odict([(region.name, run_optim(optim=region)) for region in regions])
-                sc.saveobj('bocs.obj', boc_optims)
+            print('Creating BOCs afresh...')
+            boc_optims = sc.odict([(region.name, run_optim(optim=region)) for region in regions])
 
             # Get the actual BOCs (storing them in the self.bocs odict of pchip-generated objects).
             self.get_bocs(boc_optims, totalfunds)
@@ -164,7 +158,7 @@ class Geospatial:
         trial_budgets = np.zeros((numregions, base_trial_budgets.size))
         for reg_ind in list(range(numregions)):
             trial_budgets[reg_ind] = base_trial_budgets
-
+        '''
         print('TRIAL BUDGETS:')
         for reg_ind in list(range(numregions)):
             print('Region %d' % reg_ind)
@@ -172,7 +166,7 @@ class Geospatial:
 
         print('INITIAL BUDGET ALLOCATIONS:')
         print(regional_allocs)
-
+        '''
         # Loop over a number of budget increment tries...
         maxiters = int(1e6)
         for i in range(maxiters):

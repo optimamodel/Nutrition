@@ -129,3 +129,5 @@ ENV/
 
 # Custom
 package-lock.json
+*.obj
+tests/testing.xlsx
