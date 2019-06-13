@@ -91,8 +91,17 @@ class Model(sc.prettyobj):
         """ Rates defined as total deaths per 1000 live births.
          This is calculated per year with the cumulative deaths and births,
          so the final element will be total rates over the simulation period. """
-        self.child_mortrate[self.year] = 1000 * np.sum(self.child_deaths) / np.sum(self.annual_births)
-        self.pw_mortrate[self.year] = 1000 * np.sum(self.pw_deaths) / np.sum(self.annual_births)
+        # self.child_mortrate[self.year] = 1000 * np.sum(self.child_deaths) / np.sum(self.annual_births)
+        # self.pw_mortrate[self.year] = 1000 * np.sum(self.pw_deaths) / np.sum(self.annual_births)
+
+        # Trialing changes to create annual mortality rates
+        if self.year > 4:
+            self.child_mortrate[self.year] = 1000 * self.child_deaths[self.year] / self.annual_births[self.year - 5]
+            if self.year == 5:
+                for i in [1, 2, 3, 4]:
+                    self.child_mortrate[i] = self.child_mortrate[
+                        self.year]  # Set first 5 years as first calculated value
+        self.pw_mortrate[self.year] = 1000 * self.pw_deaths[self.year] / self.annual_births[self.year]
 
     def _track(self):
         self._track_wra_outcomes()
@@ -520,9 +529,9 @@ class Model(sc.prettyobj):
         adj_births = numbirths * (1. - self.nonpw.get_pregav())
         self.annual_births[self.year] = adj_births
 
-    def _applyPrevTimeTrends(self, year): # Mortality disabled (and not streamlined)
+    def _applyPrevTimeTrends(self, year): 
         if year < self.n_years:
-            trigger = [0, 0, 0, 0, 0, 0] # Check for whether each risk should have trend applied (non_Baseline scenarios)
+            trigger = [0, 0, 0, 0, 0, 0, 0, 0] # Check for whether each risk should have trend applied (non_Baseline scenarios)
             group_list = ['child', 'pw', 'nonpw']
             if self.scenario.name == 'Baseline': # Apply any trends to Baseline scenario
                 self.stuntedprev_trend(year)
@@ -530,6 +539,8 @@ class Model(sc.prettyobj):
                 for group in group_list:
                     self.anaemicprev_trend(group, year)
                 self.bfprev_trend(year)
+                self.child_mort_trend(year)
+                self.pw_mort_trend(year)
             else: # Check which risks are impacted by non-Baseline scenario
                 for prog in self.scenario.prog_set:
                     if prog in self.prog_info.prog_areas['Stunting']:
@@ -548,6 +559,12 @@ class Model(sc.prettyobj):
                         trigger[4] += 1
                     if prog in self.prog_info.prog_areas['Breastfeeding']:
                         trigger[5] += 1
+                    if (prog in self.prog_info.prog_areas['Mortality']) and (
+                            sum(self.prog_info.prog_data.impacted_pop[prog][age] for age in self.ss.child_ages) > 0):
+                        trigger[6] += 1
+                    if (prog in self.prog_info.prog_areas['Mortality']) and (
+                            sum(self.prog_info.prog_data.impacted_pop[prog][age] for age in self.ss.pw_ages) > 0):
+                        trigger[7] += 1
                 # For each risk unaffected in scenario, apply time trends
                 if trigger[0] == 0:
                     self.stuntedprev_trend(year)
@@ -558,28 +575,10 @@ class Model(sc.prettyobj):
                         self.anaemicprev_trend(group, year)
                 if trigger[5] == 0:
                     self.bfprev_trend(year)
-            '''
-            if year == 1:
-                self.child_mortrate[year - 1] = 1000 * self.children.age_groups[0].trends['Mortality'][year - 1]
-                try:
-                    self.child_mortrate[year] = (self.children.age_groups[0].trends['Mortality'][year] / self.children.age_groups[0].trends['Mortality'][year - 1]) * self.child_mortrate[year - 1]
-                except RuntimeWarning:
-                    self.child_mortrate[year] = self.children.age_groups[0].trends['Mortality'][year]
-                self.pw_mortrate[year - 1] = 1000 * self.pw.age_groups[0].trends['Mortality'][year - 1]
-                try:
-                    self.pw_mortrate[year] = (self.pw.age_groups[0].trends['Mortality'][year] / self.pw.age_groups[0].trends['Mortality'][year - 1]) * self.pw_mortrate[year - 1]
-                except RuntimeWarning:
-                    self.pw_mortrate[year] = self.pw.age_groups[0].trends['Mortality'][year]
-            else:
-                try:
-                    self.child_mortrate[year] = (self.children.age_groups[0].trends['Mortality'][year] / self.children.age_groups[0].trends['Mortality'][year - 1]) * self.child_mortrate[year - 1]
-                except RuntimeWarning:
-                    self.child_mortrate[year] = self.children.age_groups[0].trends['Mortality'][year]
-                try:
-                    self.pw_mortrate[year] = (self.pw.age_groups[0].trends['Mortality'][year] / self.pw.age_groups[0].trends['Mortality'][year - 1]) * self.pw_mortrate[year - 1]
-                except RuntimeWarning:
-                    self.pw_mortrate[year] = self.pw.age_groups[0].trends['Mortality'][year]
-            '''
+                if trigger[6] == 0:
+                    self.child_mort_trend(year)
+                if trigger[7] == 0:
+                    self.pw_mort_trend(year)
         else:
             pass
 
@@ -587,9 +586,10 @@ class Model(sc.prettyobj):
         import warnings
         warnings.filterwarnings('error')
         try:
-            self.stunted_prev[year] = (self.children.age_groups[0].trends['Stunting'][year] /
-                                       self.children.age_groups[0].trends['Stunting'][year - 1]) * self.stunted_prev[
-                                          year - 1]
+            change = self.children.age_groups[0].trends['Stunting'][year] / \
+                     self.children.age_groups[0].trends['Stunting'][year - 1]
+            if change != 1:
+                self.stunted_prev[year] = change * self.stunted_prev[year - 1]
         except RuntimeWarning:  # Handles division by 0 (same for subsequent)
             self.stunted_prev[year] = self.children.age_groups[0].trends['Stunting'][year]
 
@@ -597,9 +597,10 @@ class Model(sc.prettyobj):
         import warnings
         warnings.filterwarnings('error')
         try:
-            self.wasted_prev[year] = (self.children.age_groups[0].trends['Wasting'][year] /
-                                      self.children.age_groups[0].trends['Wasting'][year - 1]) * self.wasted_prev[
-                                         year - 1]
+            change = self.children.age_groups[0].trends['Wasting'][year] / \
+                     self.children.age_groups[0].trends['Wasting'][year - 1]
+            if change != 1:
+                self.wasted_prev[year] = change * self.wasted_prev[year - 1]
         except RuntimeWarning:
             self.wasted_prev[year] = self.children.age_groups[0].trends['Wasting'][year]
 
@@ -608,23 +609,26 @@ class Model(sc.prettyobj):
         warnings.filterwarnings('error')
         if group == 'child':
             try:
-                self.child_anaemprev[year] = (self.children.age_groups[0].trends['Anaemia'][year] /
-                                              self.children.age_groups[0].trends['Anaemia'][year - 1]) * \
-                                             self.child_anaemprev[year - 1]
+                child_change = self.children.age_groups[0].trends['Anaemia'][year] / \
+                               self.children.age_groups[0].trends['Anaemia'][year - 1]
+                if child_change != 1:
+                    self.child_anaemprev[year] = child_change * self.child_anaemprev[year - 1]
             except RuntimeWarning:
                 self.child_anaemprev[year] = self.children.age_groups[0].trends['Anaemia'][year]
         elif group == 'pw':
             try:
-                self.pw_anaemprev[year] = (self.pw.age_groups[0].trends['Anaemia'][year] /
-                                           self.pw.age_groups[0].trends['Anaemia'][year - 1]) * self.pw_anaemprev[
-                                              year - 1]
+                pw_change = self.pw.age_groups[0].trends['Anaemia'][year] / self.pw.age_groups[0].trends['Anaemia'][
+                    year - 1]
+                if pw_change != 1:
+                    self.pw_anaemprev[year] = pw_change * self.pw_anaemprev[year - 1]
             except RuntimeWarning:
                 self.pw_anaemprev[year] = self.pw.age_groups[0].trends['Anaemia'][year]
         elif group == 'nonpw':
             try:
-                self.nonpw_anaemprev[year] = (self.nonpw.age_groups[0].trends['Anaemia'][year] /
-                                              self.nonpw.age_groups[0].trends['Anaemia'][year - 1]) * \
-                                             self.nonpw_anaemprev[year - 1]
+                nonpw_change = self.nonpw.age_groups[0].trends['Anaemia'][year] / \
+                               self.nonpw.age_groups[0].trends['Anaemia'][year - 1]
+                if nonpw_change != 1:
+                    self.nonpw_anaemprev[year] = nonpw_change * self.nonpw_anaemprev[year - 1]
             except RuntimeWarning:
                 self.nonpw_anaemprev[year] = self.nonpw.age_groups[0].trends['Anaemia'][year]
 
@@ -632,16 +636,39 @@ class Model(sc.prettyobj):
         import warnings
         warnings.filterwarnings('error')
         try:
-            self.young_bf[year] = (self.children.age_groups[0].trends['Breastfeeding'][year] /
-                                   self.children.age_groups[0].trends['Breastfeeding'][year - 1]) * self.young_bf[
-                                      year - 1]
+            young_bf_change = self.children.age_groups[0].trends['Breastfeeding'][year] / \
+                              self.children.age_groups[0].trends['Breastfeeding'][year - 1]
+            if young_bf_change != 1:
+                self.young_bf[year] = young_bf_change * self.young_bf[year - 1]
         except RuntimeWarning:
             self.young_bf[year] = self.children.age_groups[0].trends['Breastfeeding'][year]
         try:
-            self.old_bf[year] = (self.children.age_groups[3].trends['Breastfeeding'][year] /
-                                 self.children.age_groups[3].trends['Breastfeeding'][year - 1]) * self.old_bf[year - 1]
+            old_bf_change = self.children.age_groups[3].trends['Breastfeeding'][year] / \
+                            self.children.age_groups[3].trends['Breastfeeding'][year - 1]
+            if old_bf_change != 1:
+                self.old_bf[year] = old_bf_change * self.old_bf[year - 1]
         except RuntimeWarning:
             self.old_bf[year] = self.children.age_groups[3].trends['Breastfeeding'][year]
+
+    def child_mort_trend(self, year):
+        try:
+            child_change = self.children.age_groups[0].trends['Mortality'][year] / \
+                           self.children.age_groups[0].trends['Mortality'][year - 1]
+            if child_change != 1:
+                self.child_mortrate[year] = child_change * self.child_mortrate[year - 1]
+        except RuntimeWarning:
+            self.child_mortrate[year] = self.children.age_groups[0].trends['Mortality'][year]
+
+    def pw_mort_trend(self, year):
+        try:
+            pw_change = self.pw.age_groups[0].trends['Mortality'][year] / \
+                        self.pw.age_groups[0].trends['Mortality'][year - 1]
+            if pw_change != 1 and year != 1:
+                self.pw_mortrate[year] = pw_change * self.pw_mortrate[year - 1]
+            else:
+                self.pw_mortrate[year] = pw_change * self.pw_mortrate[year]
+        except RuntimeWarning:
+            self.pw_mortrate[year] = self.pw.age_groups[0].trends['Mortality'][year]
 
     def trend_dist_update(self, year): # Updates distributions according to prevalences
         for age in self.children.age_groups:
