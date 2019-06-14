@@ -525,11 +525,13 @@ class Model(sc.prettyobj):
 
     def get_births(self):
         """ Set monthly number of births """
+        if self.year == 1:
+            self.annual_births[0] = self.pw.proj['Number of births'][0]
         numbirths = self.pw.proj['Number of births'][self.year]
         adj_births = numbirths * (1. - self.nonpw.get_pregav())
         self.annual_births[self.year] = adj_births
 
-    def _applyPrevTimeTrends(self, year): 
+    def _applyPrevTimeTrends(self, year):
         if year < self.n_years:
             trigger = [0, 0, 0, 0, 0, 0, 0, 0] # Check for whether each risk should have trend applied (non_Baseline scenarios)
             group_list = ['child', 'pw', 'nonpw']
