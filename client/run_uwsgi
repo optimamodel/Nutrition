@@ -1,2 +1,0 @@
-#!/bin/bash
-uwsgi -i uwsgi.ini
