@@ -197,7 +197,7 @@ def scale_alloc(free, allocation):
         scaled_alloc = allocation.copy()
     else:
         scale = free / new
-        scaled_alloc = allocation * scale
+        scaled_alloc = [allocation[i] * scale for i, thing in enumerate(allocation)]
     return scaled_alloc
 
 def add_fixed_alloc(fixed, alloc, indx):

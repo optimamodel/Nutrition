@@ -534,13 +534,29 @@ class Model(sc.prettyobj):
         except AttributeError:
             raise Exception("%s not an attribute of Model class" % outcome)
 
-    def get_output(self, outcomes=None, seq=False):
+    def get_output(self, outcomes=None, seq=False, years=None):
         """ Always returns a list, but of variable length"""
         if outcomes is None: outcomes = default_trackers()
-        if seq:
-            outputs = np.zeros((len(outcomes), self.n_years))
-            for i, out in enumerate(outcomes):
-                outputs[i] = self.get_seq(out)
+        if seq or years is not None:
+            if years is not None:
+                full_outputs = np.zeros((len(outcomes), self.n_years))
+                outputs = np.zeros(len(outcomes))
+                if len(outcomes) > 1:
+                    for i, out in enumerate(outcomes):
+                        t = years[i] - self.t[0]
+                        full_outputs[i] = self.get_seq(out)
+                        outputs[i] = full_outputs[i][t]
+                else:
+                    t = years - self.t[0]
+                    full_outputs = self.get_seq(outcomes[0])
+                    outputs = full_outputs[t]
+            else:
+                outputs = np.zeros((len(outcomes), self.n_years))
+                if len(outcomes) > 1:
+                    for i, out in enumerate(outcomes):
+                        outputs[i] = self.get_seq(out)
+                else:
+                    outputs = self.get_seq(outcomes[0])
         else:
             outputs = np.zeros(len(outcomes))
             for i, out in enumerate(outcomes):
