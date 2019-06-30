@@ -11,7 +11,7 @@ if __name__ == '__main__':
     p.load_data('nigeria', 'national', name='eg')
 
     ## define custom optimization
-    weight = 1
+    weight = 4
     kwargs1 = {'name':'test1',
                'model_name': 'eg',
                'mults': [1],
@@ -27,10 +27,10 @@ if __name__ == '__main__':
                'add_funds': 232e6,
                'relative_reduction': True,
                'outcome_reductions': sc.odict({'stunted_prev': sc.odict({'reduction': 20, 'year': 2025, 'weighting': weight}),
-                                               'child_anaemprev': sc.odict({'reduction': 50, 'year': 2025, 'weighting': weight}),
+                                               'child_anaemprev': sc.odict({'reduction': 28.46, 'year': 2025, 'weighting': weight}),
                                                'pw_anaemprev': sc.odict({'reduction': 50, 'year': 2025, 'weighting': weight}),
-                                               'nonpw_anaemprev': sc.odict({'reduction': 50, 'year': 2025, 'weighting': weight}),
-                                               'wasted_prev': sc.odict({'reduction': 10, 'year': 2025, 'weighting': weight})})}
+                                               'nonpw_anaemprev': sc.odict({'reduction': 14.03, 'year': 2025, 'weighting': weight}),
+                                               'wasted_prev': sc.odict({'reduction': 2.64, 'year': 2025, 'weighting': weight})})}
 
     kwargs2 = {'name': 'test2',
               'model_name': 'eg',
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     p.add_optims(optims)
     p.run_optim(parallel=False)
     if doplot: p.plot(optim=True)
-    if dosave: p.write_results('Nigeria_optim_results.xlsx')
+    if dosave: p.write_results('Nigeria_optim_progress_w_4_mixed.xlsx')
 
 '''
 ['Balanced energy-protein supplementation', 'Calcium supplementation', 'Cash transfers',

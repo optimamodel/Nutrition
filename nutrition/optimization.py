@@ -162,42 +162,6 @@ class Optim(sc.prettyobj):
         scen = Scen(name=name, model_name=self.model_name, scen_type='budget', progvals=progvals)
         res = run_scen(scen, model, obj=self.name, mult=mult)
         return res
-
-    def one_optim_multi(self, args):
-        """ Runs optimization for an objective and budget multiple.
-        Return: a list of allocations, with order corresponding to the programs list """
-        kwargs = args[0]
-        mult = args[1]
-        free = kwargs['free']
-        inds = kwargs['keep_inds']
-        fixed = kwargs['fixed']
-        model = kwargs['model']
-        outcome_reductions = kwargs['outcome_reductions']
-        numprogs = np.sum(inds)
-        if free > 0 and np.any(inds): # need both funds and programs
-            xmin = np.zeros(numprogs)
-            xmax = np.full(numprogs, free)
-            now = sc.tic()
-            objective = partial(obj_func_multi, **kwargs)
-            problem = pl.Problem(len(xmin), len(outcome_reductions.keys()))
-            problem.types[:] = [pl.Real(xmin[i], xmax[i]) for i in list(range(len(xmin)))]
-            problem.function = objective
-            algorithm = pl.SMPSO(problem)
-            algorithm.run(1000)
-            feasible_solutions = [s for s in algorithm.result if s.feasible]
-            x = feasible_solutions
-            #self.print_status(self.name, mult, flag, now)
-            scaled = utils.scale_alloc(free, x)
-            best_alloc = utils.add_fixed_alloc(fixed, scaled, inds)
-        else:
-            # if one of the multiples is 0, return fixed costs
-            best_alloc = fixed
-        # generate results
-        name = '%s (x%s)' % (self.name, mult)
-        progvals = {prog:spend for prog, spend in zip(self.prog_set, best_alloc)}
-        scen = Scen(name=name, model_name=self.model_name, scen_type='budget', progvals=progvals)
-        res = run_scen(scen, model, obj=self.name, mult=mult)
-        return res
     
     @utils.trace_exception
     def one_optim_parallel(self, args):
@@ -226,109 +190,44 @@ def obj_func(allocation, model, free, fixed, keep_inds, weights, relative_reduct
     totalAllocations = utils.add_fixed_alloc(fixed, scaledAllocation, keep_inds)
     thisModel.update_covs(totalAllocations, 'budget')
     thisModel.run_sim()
-    # get weighted objective value
+    # check which objective function to use
     if relative_reduction:
-        goals = outcome_reductions.keys()
+        goals = outcome_reductions.keys() # retrieve desired outcomes
         if len(goals) > 1:
-            try:
+            try: # use non-standard weights if input
                 index_weighting = [outcome_reductions[goal]['weighting'] for goal in goals]
             except KeyError:
                 index_weighting = [2 for goal in goals]
-            base = np.array(thisModel.get_output(outcomes=goals, years=[thisModel.t[0] for goal in goals]))
-            reductions = [outcome_reductions[goal]['reduction'] for goal in goals]
+            base = np.array(thisModel.get_output(outcomes=goals, years=[thisModel.t[0] for goal in goals])) # retrieve year 1 outcomes
+            reductions = [outcome_reductions[goal]['reduction'] for goal in goals] # retrieve desired relative reductions
             try:
-                years = [outcome_reductions[goal]['year'] for goal in goals]
-                outs = np.array(thisModel.get_output(outcomes=goals, years=years))
-                rel_red = 100 * (1. - (outs / base))
+                years = [outcome_reductions[goal]['year'] for goal in goals] # check if non-final year input as a goal
+                outs = np.array(thisModel.get_output(outcomes=goals, years=years)) # retrieve desired year outcomes
+                rel_red = 100 * (1. - (outs / base)) # retrieve relative reductions achieved
             except KeyError:
-                outs = np.array(thisModel.get_output(outcomes=goals))
-                rel_red = 100 * (1. - (outs / base))
-            value = sum(abs((1 - rr / reductions[ind])) ** index_weighting[ind] for ind, rr in enumerate(rel_red))
-            if len(goals) == 2:
+                outs = np.array(thisModel.get_output(outcomes=goals)) # retrieve final year outcomes
+                rel_red = 100 * (1. - (outs / base)) # retrieve relative reductions achieved
+            # sum over achieved progress toward (weighted) desired relative reduction in each outcomes
+            value = sum(max(0, (1 - rr / reductions[ind])) ** index_weighting[ind] for ind, rr in enumerate(rel_red))
+            if len(goals) == 2: # add equality weighting measure between two outcomes
                 value += abs(rel_red[1] / reductions[1] - rel_red[0] / reductions[0])
-            elif len(goals) > 2:
+            elif len(goals) > 2: # add equality weighting measure for more than two outcomes
                 value += sum(abs(rel_red[ind + 1] / reductions[ind + 1] - rel_red[ind] / reductions[ind]) for ind in list(range(len(goals) - 1)))
                 value += abs(rel_red[0] / reductions[0] - rel_red[-1] / reductions[-1])
-        else:
+        else: # check progress toward desired relative reduction for only one outcome
             goal = goals[0]
+            index_weighting = 1
+            base = thisModel.get_output(outcomes=goals, years=thisModel.t[0]) # retrieve year 1 outcome
+            reductions = outcome_reductions[goal]['reduction'] # retrieve desired relative reduction
             try:
-                index_weighting = outcome_reductions[goal]['weighting']
+                years = outcome_reductions[goal]['year'] # check if non-final year input as a goal
+                outs = thisModel.get_output(outcomes=goals, years=years) # retrieve desired year outcome
+                rel_red = 100 * (1 - (outs / base)) # retrieve relative reduction achieved
             except KeyError:
-                index_weighting = 2
-            base = thisModel.get_output(outcomes=goals, years=thisModel.t[0])
-            reductions = outcome_reductions[goal]['reduction']
-            try:
-                years = outcome_reductions[goal]['year']
-                outs = thisModel.get_output(outcomes=goals, years=years)
-                rel_red = 100 * (1 - (outs / base))
-            except KeyError:
-                outs = np.array(thisModel.get_output(outcomes=goals))
-                rel_red = 100 * (1 - (outs / base))
-            value = (1 - rel_red / reductions) ** index_weighting
-    else:
-        outs = thisModel.get_output()
-        value = np.inner(outs, weights)
-    return value
-
-def obj_func_multi(allocation, model, free, fixed, keep_inds, weights, relative_reduction, outcome_reductions):
-    """
-    Calculates the scalar value of a model run given some program allocation. Runs as a budget scenario.
-    :param allocation:
-    :param model: a newly instantiated model object to run the budget scenario.
-    :param free: total money to be distributed across programs
-    :param fixed: fixed costs for programs
-    :param keep_inds: The indices of the programs to keep (those excluded are 'fixed programs')
-    :param weights: an array of weights for each model outcome. Order corresponding to default_trackers()
-    :return: scalar value of the model run
-    """
-    thisModel = sc.dcp(model)
-    # scale the allocation appropriately
-    scaledAllocation = utils.scale_alloc(free, allocation)
-    totalAllocations = utils.add_fixed_alloc(fixed, scaledAllocation, keep_inds)
-    thisModel.update_covs(totalAllocations, 'budget')
-    thisModel.run_sim()
-    # get weighted objective value
-    if relative_reduction:
-        goals = outcome_reductions.keys()
-        if len(goals) > 1:
-            try:
-                index_weighting = [outcome_reductions[goal]['weighting'] for goal in goals]
-            except KeyError:
-                index_weighting = [2 for goal in goals]
-            base = np.array(thisModel.get_output(outcomes=goals, years=[thisModel.t[0] for goal in goals]))
-            reductions = [outcome_reductions[goal]['reduction'] for goal in goals]
-            try:
-                years = [outcome_reductions[goal]['year'] for goal in goals]
-                outs = np.array(thisModel.get_output(outcomes=goals, years=years))
-                rel_red = 100 * (1. - (outs / base))
-            except KeyError:
-                outs = np.array(thisModel.get_output(outcomes=goals))
-                rel_red = 100 * (1. - (outs / base))
-            value = [abs((1 - rr / reductions[ind])) ** index_weighting[ind] for ind, rr in enumerate(rel_red)]
-            '''
-            if len(goals) == 2:
-                value += abs(rel_red[1] / reductions[1] - rel_red[0] / reductions[0])
-            elif len(goals) > 2:
-                value += sum(abs(rel_red[ind + 1] / reductions[ind + 1] - rel_red[ind] / reductions[ind]) for ind in list(range(len(goals) - 1)))
-                value += abs(rel_red[0] / reductions[0] - rel_red[-1] / reductions[-1])
-            '''
-        else:
-            goal = goals[0]
-            try:
-                index_weighting = outcome_reductions[goal]['weighting']
-            except KeyError:
-                index_weighting = 2
-            base = thisModel.get_output(outcomes=goals, years=thisModel.t[0])
-            reductions = outcome_reductions[goal]['reduction']
-            try:
-                years = outcome_reductions[goal]['year']
-                outs = thisModel.get_output(outcomes=goals, years=years)
-                rel_red = 100 * (1 - (outs / base))
-            except KeyError:
-                outs = np.array(thisModel.get_output(outcomes=goals))
-                rel_red = 100 * (1 - (outs / base))
-            value = (1 - rel_red / reductions) ** index_weighting
-    else:
+                outs = np.array(thisModel.get_output(outcomes=goals)) # retrieve final year outcome
+                rel_red = 100 * (1 - (outs / base)) # retrieve relative reduction achieved
+            value = (1 - rel_red / reductions) ** index_weighting # calculate progress toward desired relative reduction
+    else: # standard objective function via inner product 
         outs = thisModel.get_output()
         value = np.inner(outs, weights)
     return value
