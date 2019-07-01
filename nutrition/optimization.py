@@ -3,8 +3,6 @@ import multiprocessing
 import sciris as sc
 from . import pso, utils
 from .scenarios import Scen, run_scen
-from functools import partial
-import platypus as pl
 
 
 class Optim(sc.prettyobj):
@@ -25,7 +23,8 @@ class Optim(sc.prettyobj):
         :param rem_curr: remove the current allocations?
         :param filter_progs: filter out programs which don't impact the objective (can improve optimization results)
         :param relative_reduction: use relative reduction based objective function?
-        :param outcome_reductions: an odict of (outcome, relative reduction) pairs
+        :param outcome_reductions: an odict of (outcome, relative reduction) pairs with optional inputs for the target
+        year and weighting associated with each outcome
         """
 
         self.name = name
@@ -195,11 +194,11 @@ def obj_func(allocation, model, free, fixed, keep_inds, weights, relative_reduct
         goals = outcome_reductions.keys() # retrieve desired outcomes
         if len(goals) > 1:
             try: # use non-standard weights if input
-                index_weighting = [outcome_reductions[goal]['weighting'] for goal in goals]
+                index_weighting = [outcome_reductions[goal]['index_weighting'] for goal in goals]
             except KeyError:
                 index_weighting = [2 for goal in goals]
             base = np.array(thisModel.get_output(outcomes=goals, years=[thisModel.t[0] for goal in goals])) # retrieve year 1 outcomes
-            reductions = [outcome_reductions[goal]['reduction'] for goal in goals] # retrieve desired relative reductions
+            reductions = [outcome_reductions[goal]['max_reduction'] for goal in goals] # retrieve desired relative reductions
             try:
                 years = [outcome_reductions[goal]['year'] for goal in goals] # check if non-final year input as a goal
                 outs = np.array(thisModel.get_output(outcomes=goals, years=years)) # retrieve desired year outcomes
@@ -208,7 +207,12 @@ def obj_func(allocation, model, free, fixed, keep_inds, weights, relative_reduct
                 outs = np.array(thisModel.get_output(outcomes=goals)) # retrieve final year outcomes
                 rel_red = 100 * (1. - (outs / base)) # retrieve relative reductions achieved
             # sum over achieved progress toward (weighted) desired relative reduction in each outcomes
-            value = sum(max(0, (1 - rr / reductions[ind])) ** index_weighting[ind] for ind, rr in enumerate(rel_red))
+            try:
+                outcome_weighting = [outcome_reductions[goal]['target_reduction'] for goal in goals] # check if specific target included for weighting
+                value = sum((outcome_weighting[ind] / reductions[ind]) * max(0, (1 - rr / reductions[ind]))
+                            ** index_weighting[ind] for ind, rr in enumerate(rel_red))
+            except KeyError:
+                value = sum(max(0, (1 - rr / reductions[ind])) ** index_weighting[ind] for ind, rr in enumerate(rel_red))
             if len(goals) == 2: # add equality weighting measure between two outcomes
                 value += abs(rel_red[1] / reductions[1] - rel_red[0] / reductions[0])
             elif len(goals) > 2: # add equality weighting measure for more than two outcomes
@@ -218,7 +222,7 @@ def obj_func(allocation, model, free, fixed, keep_inds, weights, relative_reduct
             goal = goals[0]
             index_weighting = 1
             base = thisModel.get_output(outcomes=goals, years=thisModel.t[0]) # retrieve year 1 outcome
-            reductions = outcome_reductions[goal]['reduction'] # retrieve desired relative reduction
+            reductions = outcome_reductions[goal]['max_reduction'] # retrieve desired relative reduction
             try:
                 years = outcome_reductions[goal]['year'] # check if non-final year input as a goal
                 outs = thisModel.get_output(outcomes=goals, years=years) # retrieve desired year outcome
@@ -227,7 +231,7 @@ def obj_func(allocation, model, free, fixed, keep_inds, weights, relative_reduct
                 outs = np.array(thisModel.get_output(outcomes=goals)) # retrieve final year outcome
                 rel_red = 100 * (1 - (outs / base)) # retrieve relative reduction achieved
             value = (1 - rel_red / reductions) ** index_weighting # calculate progress toward desired relative reduction
-    else: # standard objective function via inner product 
+    else: # standard objective function via inner product
         outs = thisModel.get_output()
         value = np.inner(outs, weights)
     return value
