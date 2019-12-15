@@ -220,11 +220,12 @@ class Geospatial:
                             check.append(np.nan)
                             val.append(np.nan)
                         else: #If yes then find the last occurrence of the maximum value
-                            check.append(np.argwhere(marginal_improvements[reg_ind] == marginal_improvements[reg_ind]
-                                [np.nanargmax(marginal_improvements[reg_ind])]).flatten().tolist()[-1])
+                            #check.append(np.argwhere(marginal_improvements[reg_ind] == marginal_improvements[reg_ind][np.nanargmax(marginal_improvements[reg_ind])]).flatten().tolist()[-1])
+                            check.append(np.nanargmax(marginal_improvements[reg_ind]).flatten().tolist()[-1])
                             val.append(marginal_improvements[reg_ind][check[-1]])
                     # Find best region and funding amount
-                    best_reg_ind = np.argwhere(val == val[np.nanargmax(val)]).flatten().tolist() # Find all maximum value indices
+                    #best_reg_ind = np.argwhere(val == val[np.nanargmax(val)]).flatten().tolist() # Find all maximum value indices
+                    best_reg_ind = np.nanargmax(val).flatten().tolist()
                     best_budget_inc_ind = []
                     for num_ind in best_reg_ind:
                         best_budget_inc_ind.append(check[num_ind])
