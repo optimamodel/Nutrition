@@ -245,10 +245,8 @@ class Geospatial:
                             best_choice = choose[0]
                         else:
                             print('There are no regional allocations')
-                        regional_allocs[best_reg_ind[best_choice]] += budget_increments[best_reg_ind[best_choice]]
-                        [best_budget_inc_ind[best_choice]]
-                        total_budget_allocated += budget_increments[best_reg_ind[best_choice]]
-                        [best_budget_inc_ind[best_choice]]
+                        regional_allocs[best_reg_ind[best_choice]] += budget_increments[best_reg_ind[best_choice]][best_budget_inc_ind[best_choice]]
+                        total_budget_allocated += budget_increments[best_reg_ind[best_choice]][best_budget_inc_ind[best_choice]]
             else:
                 break
 
