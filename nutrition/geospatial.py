@@ -176,11 +176,11 @@ class Geospatial:
                 valid_increments_count += len(trial_budgets[reg_ind])
             if valid_increments_count > 0:
                 # Initialize the marginal improvements arrays.
+                budget_increments = []
                 marginal_improvements = []
                 for reg_ind in list(range(numregions)):
-                    marginal_improvements.append(np.zeros(len(trial_budgets[reg_ind])))
+                   budget_increments.append(np.zeros(len(trial_budgets[reg_ind])))
                 # Initialise budget increments
-                budget_increments = sc.dcp(marginal_improvements)
                 # Loop over regions...
                 shift_ind = np.zeros(numregions)
                 for reg_ind in list(range(numregions)):
@@ -199,6 +199,7 @@ class Geospatial:
                     if shift_ind[reg_ind] > 0: # Remove budget increments which are too big
                         budget_increments[reg_ind] = budget_increments[reg_ind][0 : budget_increments[reg_ind].size - \
                                                                                     int(shift_ind[reg_ind])]
+                    marginal_improvements.append(np.zeros(len(budget_increments[reg_ind])))
                     # Loop over the budget increments...
                     for budget_inc_ind in list(range(len(budget_increments[reg_ind]))):
                         # Get the new outcome from the BOC, assuming the particular budget increment is chosen.
