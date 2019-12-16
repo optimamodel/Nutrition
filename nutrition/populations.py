@@ -37,7 +37,10 @@ class AgeGroup(sc.prettyobj):
                 # there is no constraint on the wasted fraction, only non-wasted
                 dist = restratify(frac_risk)
                 for cat in self.ss.non_wasted_list:
-                    wast_dist[cat] = dist[cat]
+                    if dist[cat] >= 0:
+                        wast_dist[cat] = dist[cat]
+                    else:
+                        wast_dist[cat] = 0
                 self.wasting_dist = wast_dist
             else:
                 raise Exception(" Error: cannot fully specify wasting distribution because the wasted categories were not specified.")
@@ -393,6 +396,9 @@ class Children(Population):
     def frac_wasted(self, cat):
         return self.num_wasted(cat) / self.total_pop()
 
+    def frac_bf(self, age):
+        return self.bf_dist[age][self.ss.correct_bf[age]]
+
     def _setConditionalDiarrhoea(self):
         self._set_stunted_dia()
         self._set_anaemic_dia()
@@ -704,10 +710,15 @@ class Children(Population):
         sol = fsolve(partial(system, OR, bo, p0), (0.5, 0.5, 0.5, 0.5), xtol=1e-12)
         # Hacky fix for when root solver fails
         truthy = [(num - 0.5 == 0) for num in sol]
-        if all(truthy): # If solver failed then rerun with slightly different initial guess
+        if all(truthy):
             sol = fsolve(partial(system, OR, bo, p0), (0.45, 0.45, 0.55, 0.55), xtol=1e-12)
-        check_sol(sol)
-        return sol
+        if check_sol(sol):
+            return sol
+        else:
+            for i, item in enumerate(sol):
+                if item < 0:
+                    sol[i] = 0
+            return sol
 
     def _set_progeff(self):
         for age_group in self.age_groups:
@@ -715,20 +726,20 @@ class Children(Population):
             age_group.prog_eff = self.default.child_progs[age]
 
     def _set_time_trends(self):
-        trends = self.data.time_trends
-        for risk in ['Stunting', 'Wasting', 'Anaemia']:
-            trend = trends[risk]
+        trends = self.data.interp_time_trends
+        for risk in ['Stunting', 'Wasting', 'Anaemia', 'Mortality']: # Set trends in each age_group
+            trend = trends[risk][0]
             for age_group in self.age_groups:
-                age_group.trends[risk] = fit_poly(0, trend)
+                age_group.trends[risk] = trend
         # breastfeeding has age dependency
         risk = 'Breastfeeding'
         trend = trends[risk]
-        younger = self.age_groups[:3]
+        younger = self.age_groups[:2]
         for age_group in younger:
-            age_group.trends[risk] = fit_poly(0, trend)
-        older = self.age_groups[3:]
+            age_group.trends[risk] = trend[0]
+        older = self.age_groups[2:4]
         for age_group in older:
-            age_group.trends[risk] = fit_poly(1, trend)
+            age_group.trends[risk] = trend[1]
 
     def _set_correctbf(self):
         for age_group in self.age_groups:
@@ -759,9 +770,13 @@ class PregnantWomen(Population):
 
     def _set_time_trends(self):
         risk = 'Anaemia'
-        trend = self.data.time_trends[risk]
+        trend = self.data.interp_time_trends[risk]
         for age_group in self.age_groups:
-            age_group.trends[risk] = fit_poly(1, trend)
+            age_group.trends[risk] = trend[1]
+        risk = 'Mortality'
+        trend = self.data.interp_time_trends[risk]
+        for age_group in self.age_groups:
+            age_group.trends[risk] = trend[1]
 
     def set_probs(self, prog_areas):
         self._set_prob_anaem(prog_areas)
@@ -915,9 +930,9 @@ class NonPregnantWomen(Population):
 
     def _set_time_trends(self):
         risk = 'Anaemia'
-        trend = self.data.time_trends[risk]
+        trend = self.data.interp_time_trends[risk]
         for age_group in self.age_groups:
-            age_group.trends[risk] = fit_poly(1, trend)
+            age_group.trends[risk] = trend[2]
 
 
 def set_pops(data, default_params):

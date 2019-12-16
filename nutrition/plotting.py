@@ -53,7 +53,7 @@ def make_plots(all_res=None, toplot=None, optim=False, geo=False):
 
 def plot_prevs(all_res):
     """ Plot prevs for each scenario"""
-    prevs = utils.default_trackers(prev=True, rate=False)
+    prevs = utils.default_trackers(prev=None, rate=None)
     lines = []
     figs = sc.odict()
     colors = sc.gridcolors(ncolors=len(all_res), hueshift=hueshift)

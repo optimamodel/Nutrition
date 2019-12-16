@@ -351,6 +351,7 @@ class InputData(object):
         self.risk_dist = sc.odict()
         self.causes_death = None
         self.time_trends = sc.odict()
+        self.interp_time_trends = sc.odict()
         self.birth_space = None
         self.incidences = sc.odict()
         self.pw_agedist = []
@@ -513,14 +514,37 @@ class InputData(object):
         self.risk_dist['Breastfeeding'] = dist.loc['Breastfeeding'].to_dict()
 
     def get_time_trends(self):
+        import sys
         # Load the main spreadsheet into a DataFrame.
         trends = utils.read_sheet(self.spreadsheet, 'Time trends', cols=[0,1], dropna=False)
+        t = np.array([range(self.t[0], self.t[-1]+1)])
+        try:
+            self.time_trends['Stunting'] = trends.loc['Stunting prevalence (%)'].loc['Children 0-59 months'].values[:1].astype(str).astype(float)
+            self.time_trends['Wasting'] = trends.loc['Wasting prevalence (%)'].loc['Children 0-59 months'].values[:1].astype(str).astype(float)
+            self.time_trends['Anaemia'] = trends.loc['Anaemia prevalence (%)'].values[:3].astype(str).astype(float) # order is (children, PW, WRA)
+            self.time_trends['Breastfeeding'] = trends.loc['Prevalence of age-appropriate breastfeeding'].values[:2].astype(str).astype(float) # 0-5 months, 6-23 months
+            self.time_trends['Mortality'] = trends.loc['Mortality'].values[:2].astype(str).astype(float) # under 5, maternal
+        except ValueError as error:
+            sys.exit('In \'Time trends\' sheet, ' + str(error)) # Exits if non-numeric entries found
+        self.interp_trends(t)
 
-        self.time_trends['Stunting'] = trends.loc['Stunting prevalence (%)'].loc['Children 0-59 months'].values.tolist()[:1]
-        self.time_trends['Wasting'] = trends.loc['Wasting prevalence (%)'].loc['Children 0-59 months'].values.tolist()[:1]
-        self.time_trends['Anaemia'] = trends.loc['Anaemia prevalence (%)'].values.tolist()[:3] # order is (children, PW, WRA)
-        self.time_trends['Breastfeeding'] = trends.loc['Prevalence of age-appropriate breastfeeding'].values.tolist()[:2] # 0-5 months, 6-23 months
-        self.time_trends['Mortality'] = trends.loc['Mortality'].values.tolist() # under 5, maternal
+    def interp_trends(self, t): # Linearly interpolates any time trend data
+        for risk in ['Stunting', 'Wasting', 'Anaemia', 'Breastfeeding']:
+            t_rep = np.tile(t, (len(self.time_trends[risk]), 1))
+            self.interp_time_trends[risk] = sc.dcp(self.time_trends[risk])
+            for index in list(range(0,len(self.time_trends[risk]))):
+                for jindex in list(range(0,len(self.time_trends[risk][index]))):
+                    if self.time_trends[risk][index][jindex] > 1 :
+                        self.time_trends[risk][index][jindex] = 1
+                        print('A prevalence in sheet \'Time trends\', Risk: %s is greater than one and has been set to one' % risk)  # Handles prevalences > 1
+                not_nan = ~np.isnan(self.time_trends[risk][index:index+1])
+                self.interp_time_trends[risk][index:index+1] = np.interp(t, t_rep[index:index+1][not_nan], self.time_trends[risk][index:index+1][not_nan])
+        t_rep = np.tile(t, (len(self.time_trends['Mortality']), 1))
+        self.interp_time_trends['Mortality'] = sc.dcp(self.time_trends['Mortality'])
+        for index in list(range(0, len(self.time_trends['Mortality']))):
+            not_nan = ~np.isnan(self.time_trends['Mortality'][index:index + 1])
+            self.interp_time_trends['Mortality'][index:index + 1] = np.interp(t, t_rep[index:index + 1][not_nan],
+                                                                       self.time_trends['Mortality'][index:index + 1][not_nan])
 
     def get_incidences(self):
         # Load the main spreadsheet into a DataFrame.
@@ -555,17 +579,17 @@ class InputData(object):
         pregwomen_death_pct_sum = deathdist.loc['Pregnant women'].iloc[1:-1, 0].values.astype(np.float).sum()
         self.calcscache.write_cell('Causes of death', 34, 2, pregwomen_death_pct_sum)
 
-        neonates = deathdist.loc['Neonatal'].ix[:-1]
+        neonates = deathdist.loc['Neonatal'].iloc[:-1]
 
         # Load the main spreadsheet into a DataFrame, but skip 12 rows.
         deathdist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0, 1], skiprows=12)
 
-        children = deathdist.loc['Children'].ix[:-1]
+        children = deathdist.loc['Children'].iloc[:-1]
 
         # Load the main spreadsheet into a DataFrame, but skip 24 rows.
         deathdist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0, 1], skiprows=24)
 
-        pw = deathdist.loc['Pregnant women'].ix[:-1]
+        pw = deathdist.loc['Pregnant women'].iloc[:-1]
         dist = pandas.concat([neonates['<1 month'], children, pw['Pregnant women.1']], axis=1, sort=False).fillna(0)
         for cause in dist.index:
             self.death_dist[cause] = sc.odict()

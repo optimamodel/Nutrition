@@ -9,6 +9,14 @@
 *.csv
 ~$*
 
+#ignore Dom's metric ton of input files
+inputs/Cost lower bounds
+inputs/Cost upper bounds
+inputs/Efficacy lower bounds
+inputs/Efficacy upper bounds
+inputs/Outdated
+inputs/costed_*
+
 #ignore Ruth's random testing file and some notes
 randomTests.py 
 optimisationPractice.py

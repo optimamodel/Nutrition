@@ -8,6 +8,8 @@ from scipy.optimize import brentq
 import sciris as sc
 
 
+
+
 def optimafolder(subfolder=None):
     if subfolder is None: subfolder='nutrition'
     parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
@@ -52,7 +54,9 @@ def default_trackers(prev=None, rate=None):
         'nonpw_anaemic',
         'nonpw_anaemprev',
         'child_mortrate',
-        'pw_mortrate'
+        'pw_mortrate',
+        'young_bf',
+        'old_bf'
     ]
     if prev is not None:
         if prev:
@@ -90,7 +94,9 @@ def pretty_labels(direction=False):
             'Minimize the number of anaemic non-pregnant women',
             'Minimize the prevalence of anaemia in non-pregnant women',
             'Minimize child mortality rate',
-            'Minimize pregnant women mortality rate'
+            'Minimize pregnant women mortality rate',
+            'Maximize the prevalence of age appropriate breastfeeding in children aged <12 months',
+            'Maximize the prevalence of age appropriate breastfeeding in children aged 12-23 months'
         ]
     else:
         pretty = [
@@ -108,7 +114,9 @@ def pretty_labels(direction=False):
             'Number of anaemic non-pregnant women',
             'Prevalence of anaemia in non-pregnant women',
             'Child mortality rate',
-            'Pregnant women mortality rate'
+            'Pregnant women mortality rate',
+            'Prevalence of age appropriate breastfeeding in children aged <12 months',
+            'Prevalence of age appropriate breastfeeding in children aged 12-23 months'
         ]
     labs = sc.odict(zip(default_trackers(), pretty))
     return labs
@@ -286,7 +294,9 @@ def system(odds, bo, p0, x):
     return [f1, f2, f3, f4]
 
 def check_sol(sol):
-    try:
-        ((sol > 0) & (sol < 1)).all()
-    except:
-        raise Exception(':: Error:: birth outcome probabilities outside interval (0,1)')
+    if ((sol > 0) & (sol < 1)).all():
+        return True
+    else:
+        print(':: Error:: birth outcome probabilities outside interval (0,1), setting change to zero')
+        return False
+

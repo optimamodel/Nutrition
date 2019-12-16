@@ -11,8 +11,8 @@ from .model import Model
 from .scenarios import Scen, run_scen, convert_scen, make_default_scen
 from .optimization import Optim
 from .geospatial import Geospatial
-from .results import write_results
-from .plotting import make_plots, get_costeff, plot_costcurve
+from .results import write_results, write_results_collected
+from .plotting import make_plots, get_costeff, plot_costcurve, plot_prevs
 from .demo import demo_scens, demo_optims, demo_geos
 from . import settings
 
@@ -134,7 +134,7 @@ class Project(object):
         return self.inputsheet(name)
     
         
-    def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True, validate=True):
+    def load_data(self, country=None, region=None, name=None, time_trend=True, inputspath=None, defaultspath=None, fromfile=True, validate=True):
         '''Load the data, which can mean one of two things: read in the spreadsheets, and/or use these data to make a model '''
         
         # Generate name odict key for Spreadsheet, Dataset, and Model odicts.
@@ -151,7 +151,7 @@ class Project(object):
         dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self)
         self.datasets[name] = dataset
         dataset.name = name
-        self.add_model(name) # add model associated with the dataset
+        self.add_model(name, time_trend=time_trend) # add model associated with the dataset
     
         # Do validation to insure that Dataset and Model objects are loaded in for each of the spreadsheets that are
         # in the project.
@@ -197,6 +197,14 @@ class Project(object):
             key = -1
         results = self.result(key)
         write_results(results, projname=self.name, filename=filename, folder=folder)
+        return
+
+    def write_results_collected(self, num_combs, num_countries, filename=None, folder=None, key=None, short_names=None):
+        """ Blargh, this really needs some tidying """
+        if key is None:
+            key = -1
+        results = self.result(key)
+        write_results_collected(results, num_combs, num_countries, projname=self.name, filename=filename, folder=folder, short_names=short_names)
         return
 
     def add(self, name, item, what=None):
@@ -327,7 +335,7 @@ class Project(object):
         self.add_geos(geos)
         return geos
 
-    def add_model(self, name=None):
+    def add_model(self, name=None, time_trend=True):
         """ Adds a model to the self.models odict.
         A new model should only be instantiated if new input data is uploaded to the Project.
         For the same input data, one model instance is used for all scenarios.
@@ -336,7 +344,7 @@ class Project(object):
         pops = dataset.pops
         prog_info = dataset.prog_info
         t = dataset.t
-        model = Model(pops, prog_info, t)
+        model = Model(pops, prog_info, t, timeTrends=time_trend)
         self.add(name=name, item=model, what='model')
         # Loop over all Scens and create a new default scenario for any that depend on the dataset which has been reloaded.
         # for scen_name in self.scens.keys():  # Loop over all Scen keys in the project
@@ -344,10 +352,12 @@ class Project(object):
         #         defaults = make_default_scen(name, model, self.scens[scen_name].scen_type, scen_name)
         #         self.add_scens(defaults)
         # Only, if there is no 'Baseline' scenario, make a default baseline scenario.
+        ''' Turned off for global model
         basename = 'Baseline'
         if basename not in self.scens.keys():
             defaults = make_default_scen(name, model, 'coverage', basename)
             self.add_scens(defaults)
+        '''
         self.modified = sc.now()
         return model
 
@@ -367,6 +377,22 @@ class Project(object):
         self.modified = sc.now()
         return scens
 
+    def add_scens_collected(self, scens, overwrite=False):
+        """ Adds scenarios to the Project's self.scens odict.
+        Scenarios point to a corresponding model, accessed by key in self.models.
+        Not all model parameters initialized until model.setup() is called.
+        :param scens: a list of Scen objects, but individual Scen object will be listified.
+        :param overwrite: boolean, True removes all previous scenarios.
+        :return: None
+        """
+        if overwrite:
+            self.scens = sc.odict()
+        scens = sc.promotetolist(scens)
+        for scen in scens:
+            self.add(name=scen[0].model_name, item=scen[0], what='scen')
+        self.modified = sc.now()
+        return scens
+
     def convert_scen(self, key=-1):
         """ Converts one scenario type to another.
         Retains the original and adds the converted scenario in the project.
@@ -381,6 +407,20 @@ class Project(object):
         model = sc.dcp(self.model(model_name))
         progvals = sc.odict({prog: [] for prog in prog_set})
         base = Scen(name='Baseline', model_name=model_name, scen_type='coverage', progvals=progvals)
+        if dorun:
+            return run_scen(base, model)
+        else:
+            return base
+
+    def run_baseline_plus(self, model_name, prog_set, new, dorun=True):
+        model = sc.dcp(self.model(model_name))
+        progvals = sc.odict({prog: [] for prog in prog_set})
+        if isinstance(new, dict):
+            for prog in new:
+                progvals[prog] = new[prog]
+        else:
+            print(new)
+        base = Scen(name=model_name, model_name=model_name, scen_type='coverage', progvals=progvals)
         if dorun:
             return run_scen(base, model)
         else:
@@ -461,7 +501,38 @@ class Project(object):
         self.add_result(results, name='scens')
         return None
 
-    def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=25, maxtime=160, parallel=True, dosave=True, runbaseline=True):
+    def run_scens_plus(self, prog_set, new_progs, scens=None):
+        """Function for running scenarios
+        If scens is specified, they are added to self.scens """
+        results = []
+        if scens is not None:
+            self.add_scens(scens)
+        for scen in self.scens.values():
+            if scen.active:
+                if (scen.model_name is None) or (scen.model_name not in self.datasets.keys()):
+                    raise Exception('Could not find valid dataset for %s.  Edit the scenario and change the dataset' % scen.name)
+                res = self.run_baseline_plus(scen.model_name, prog_set, new_progs)
+                results.append(res)
+        self.add_result(results, name='scens')
+        return None
+
+    def run_scens_collected(self, scens=None):
+        """Function for running scenarios
+        If scens is specified, they are added to self.scens """
+        results = []
+        if scens is not None:
+            self.add_scens(scens)
+        for scen in self.scens.values():
+            if scen.active:
+                if (scen.model_name is None) or (scen.model_name not in self.datasets.keys()):
+                    raise Exception('Could not find valid dataset for %s.  Edit the scenario and change the dataset' % scen.name)
+                model = self.model(scen.model_name)
+                res = run_scen(scen, model)
+                results.append(res)
+        self.add_result(results, name='scens')
+        return None
+
+    def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=25, maxtime=160, parallel=False, dosave=True, runbaseline=True):
         if optim is not None:
             self.add_optims(optim)
             key = optim.name # this to handle parallel calls of this function
@@ -484,7 +555,7 @@ class Project(object):
             self.add_result(results, name=optim.name)
         return results
 
-    def run_geo(self, geo=None, key=-1, maxiter=20, swarmsize=25, maxtime=200, dosave=True, parallel=False):
+    def run_geo(self, geo=None, key=-1, maxiter=15, swarmsize=20, maxtime=140, dosave=True, parallel=False):
         """ Regions cannot be parallelised because daemon processes cannot have children.
         Two options: Either can parallelize regions and not the budget or run
         regions in series while parallelising each budget multiple. """
@@ -512,6 +583,10 @@ class Project(object):
 
     def plot(self, key=-1, toplot=None, optim=False, geo=False):
         figs = make_plots(self.result(key), toplot=toplot, optim=optim, geo=geo)
+        return figs
+
+    def plot_prevs(self, key=-1, toplot=None, optim=False, geo=False):
+        figs = plot_prevs(self.result(key))
         return figs
 
     def get_costeff(self, resultname=None):
