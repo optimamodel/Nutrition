@@ -39,7 +39,8 @@ kwargs = {'name': 'test1',
               'fix_regionalspend': False,
               'add_funds': 1e9,
               'prog_set': prog_list,
-              'search_type': 'mixed'}
+              'search_type': 'mixed',
+              'spectrum': True}
 
 geo = Geospatial(**kwargs)
 results = p.run_geo(geo=geo, maxiter=1, swarmsize=1, maxtime=1, dosave=True, parallel=False)

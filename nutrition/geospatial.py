@@ -7,7 +7,7 @@ from . import utils
 
 
 class Geospatial:
-    def __init__(self, name=None, modelnames=None, weights=None, mults=None, prog_set=None, search_type=None,
+    def __init__(self, name=None, modelnames=None, weights=None, mults=None, prog_set=None, search_type=None, spectrum=None,
                  add_funds=0, fix_curr=False, fix_regionalspend=False, filter_progs=True, active=True):
         """
         :param name: name of the optimization (string)
@@ -32,6 +32,7 @@ class Geospatial:
             self.mults = [0, 0.01, 0.025, 0.04, 0.05, 0.075, 0.1, 0.2, 0.3, 0.6, 1]
         self.prog_set = prog_set
         self.search_type = search_type
+        self.spectrum = spectrum
         self.add_funds = add_funds
         self.fix_curr = fix_curr
         self.fix_regionalspend = fix_curr if fix_curr else fix_regionalspend
@@ -39,7 +40,7 @@ class Geospatial:
         self.active = active
         self.bocs = sc.odict()
 
-    def run_geo(self, proj, maxiter, swarmsize, maxtime, parallel):
+    def run_geo(self, proj, maxiter, swarmsize, maxtime, parallel, search_weight=None):
         """ Runs geospatial optimization for a given project via the following steps:
             - Calculates the total flexible spending available for distribution across regions.
             Total flexible spending is a function of additional funds, `fix_curr` and `fix_regionalspend`.
@@ -78,7 +79,7 @@ class Geospatial:
             elif self.search_type == 'costeffective' or self.search_type == None:
                 regional_allocs = self.costeffective_gridsearch(boc_optims, totalfunds=totalfunds)
             elif self.search_type == 'mixed':
-                regional_allocs = self.mixed_gridsearch(boc_optims, totalfunds=totalfunds)
+                regional_allocs = self.mixed_gridsearch(boc_optims, totalfunds=totalfunds, search_weight=search_weight)
                 self.mixed_trigger = True
             else:
                 print('Search method input was not understood, please enter either "worstcase", "costeffective" or "mixed". A cost effective grid search is being used.')
@@ -94,27 +95,57 @@ class Geospatial:
         else:
             raise Exception('No funds to distribute between or within regions.')
 
-            # Optimize the new allocations within each region.
-        regions = self.make_regions(add_funds=regional_allocs, rem_curr=not self.fix_regionalspend, mults=[1])
-        run_optim = partial(proj.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
-                            parallel=False, dosave=True, runbaseline=False)
+        if self.mixed_trigger:
+            results = []
+            for w, weighted_allocs in enumerate(regional_allocs):
+                # Optimize the new allocations within each region.
+                regions = self.make_regions(add_funds=weighted_allocs, rem_curr=not self.fix_regionalspend, mults=[1])
+                run_optim = partial(proj.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
+                                    parallel=False, dosave=True, runbaseline=False)
 
-        # Run results in parallel or series.
-        # can run in parallel b/c child processes in series
-        if parallel:
-            funded_regions = []
-            unfunded_regions = []
-            for region in regions:
-                if region.add_funds > 0: funded_regions.append(region)
-                else: unfunded_regions.append(region)
-            results = utils.run_parallel(run_optim, funded_regions, num_procs=len(funded_regions))
-            results.append(proj.run_baseline(region.model_name, proj.model(region.model_name).prog_info.base_progset()) for region in unfunded_regions)
+                # Run results in parallel or series.
+                # can run in parallel b/c child processes in series
+                if parallel:
+                    funded_regions = []
+                    unfunded_regions = []
+                    for region in regions:
+                        if region.add_funds > 0: funded_regions.append(region)
+                        else: unfunded_regions.append(region)
+                    results.append(utils.run_parallel(run_optim, funded_regions, num_procs=len(funded_regions)))
+                    results[-1].append(proj.run_baseline(region.model_name, proj.model(region.model_name).prog_info.base_progset()) for region in unfunded_regions)
+                else:
+                    results.appen([run_optim(region) for region in regions if region.add_funds > 0])
+                    results[-1].append(proj.run_baseline(region.model_name, proj.model(region.model_name).prog_info.base_progset()) for region in regions if region.add_funds == 0)
+            # Flatten list.
+            results = [thing for sublist in results for item in sublist for thing in item]
         else:
-            results = [run_optim(region) for region in regions if region.add_funds > 0]
-            results.append(proj.run_baseline(region.model_name, proj.model(region.model_name).prog_info.base_progset()) for region in regions if region.add_funds == 0)
+            # Optimize the new allocations within each region.
+            regions = self.make_regions(add_funds=regional_allocs, rem_curr=not self.fix_regionalspend, mults=[1])
+            run_optim = partial(proj.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
+                                parallel=False, dosave=True, runbaseline=False)
 
-        # Flatten list.
-        results = [item for sublist in results for item in sublist]
+            # Run results in parallel or series.
+            # can run in parallel b/c child processes in series
+            if parallel:
+                funded_regions = []
+                unfunded_regions = []
+                for region in regions:
+                    if region.add_funds > 0:
+                        funded_regions.append(region)
+                    else:
+                        unfunded_regions.append(region)
+                results = utils.run_parallel(run_optim, funded_regions, num_procs=len(funded_regions))
+                results.append(
+                    proj.run_baseline(region.model_name, proj.model(region.model_name).prog_info.base_progset()) for
+                    region in unfunded_regions)
+            else:
+                results = [run_optim(region) for region in regions if region.add_funds > 0]
+                results.append(
+                    proj.run_baseline(region.model_name, proj.model(region.model_name).prog_info.base_progset()) for
+                    region in regions if region.add_funds == 0)
+
+            # Flatten list.
+            results = [item for sublist in results for item in sublist]
 
         # Remove multiple to plot by name (total hack)
         for res in results:
@@ -157,17 +188,29 @@ class Geospatial:
             self.bocs[name] = pchip(spending, output, extrapolate=False)
         return
 
-    def mixed_gridsearch(self, boc_optims, totalfunds):
+    def mixed_gridsearch(self, boc_optims, totalfunds, search_weight=None):
         scaledallocs = []
-        #wc_weight = np.linspace(0, 1, 4).flatten().tolist()
-        #ce_weight = [1.0 - wc for wc in wc_weight]
+        wc_weight = np.linspace(0, 1, 4).flatten().tolist()
+        ce_weight = [1.0 - wc for wc in wc_weight]
         worstcase_allocs = self.worstcase_gridsearch(boc_optims, totalfunds)
         costeffective_allocs = self.costeffective_gridsearch(boc_optims, totalfunds)
-        #for weighting in enumerate(wc_weight):
-            #regional_allocs = [wc_weight*worstcase_allocs[allocs]+ce_weight*costeffective_allocs[allocs] for allocs in list(range(len(worstcase_allocs)))]
-            # scale to ensure correct budget
-        regional_allocs = [0.5*worstcase_allocs[allocs]+0.5*costeffective_allocs[allocs] for allocs in list(range(len(worstcase_allocs)))]
-        scaledallocs = utils.scale_alloc(totalfunds, regional_allocs)
+        if self.spectrum:
+            for w, weighting in enumerate(wc_weight):
+                scaledallocs.append([weighting*worstcase_allocs[allocs]+ce_weight[w]*costeffective_allocs[allocs] for allocs in list(range(len(worstcase_allocs)))])
+        else:
+            if not search_weight:
+                search_weight = {'worstcase':0.5, 'costeffective':0.5}
+                print('No search_weight specified for mixed method geospatial gridsearch and spectrum of results not requested so a 50/50 weighting is being used.')
+            elif search_weight[0] + search_weight[1] != 1:
+                try:
+                    search_weight[0] = search_weight[0]/(search_weight[0]+search_weight[1])
+                    search_weight[1] = 1 - search_weight[0]
+                    print('Note that the weightings on the mixed geospatial gridsearch methods were rescaled to sum to one.')
+                except RuntimeWarning:
+                    search_weight = {'worstcase': 0.5, 'costeffective': 0.5}
+                    print('A weight of zero was given to both geospatial gridsearch methods and a spectrum of results not requested despite a mixed method input so a 50/50 weighting is being used.')
+            scaledallocs.append([search_weight['worstcase']*worstcase_allocs[allocs]+search_weight['costeffective']*costeffective_allocs[allocs] for allocs in list(range(len(worstcase_allocs)))])
+
         return scaledallocs
 
     def worstcase_gridsearch(self, boc_optims, totalfunds):
