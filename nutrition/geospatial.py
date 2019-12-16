@@ -148,6 +148,7 @@ class Geospatial:
             results = [item for sublist in results for item in sublist]
 
         # Remove multiple to plot by name (total hack)
+        #ToDo: Figure out how to name when using spectrum of allocations
         for res in results:
             res.mult = None
             res.name = res.name.replace('(x1)', '')
@@ -190,7 +191,7 @@ class Geospatial:
 
     def mixed_gridsearch(self, boc_optims, totalfunds, search_weight=None):
         scaledallocs = []
-        wc_weight = np.linspace(0, 1, 4).flatten().tolist()
+        wc_weight = np.linspace(0, 1, 6).flatten().tolist()
         ce_weight = [1.0 - wc for wc in wc_weight]
         worstcase_allocs = self.worstcase_gridsearch(boc_optims, totalfunds)
         costeffective_allocs = self.costeffective_gridsearch(boc_optims, totalfunds)
