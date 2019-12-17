@@ -112,16 +112,19 @@ class Geospatial:
                         if region.add_funds > 0: funded_regions.append(region)
                         else: unfunded_regions.append(region)
                     results.append(utils.run_parallel(run_optim, funded_regions, num_procs=len(funded_regions)))
-                    results[-1].append(proj.run_baseline(region.model_name, proj.model(region.model_name).prog_info.base_progset()) for region in unfunded_regions)
+                    for region in unfunded_regions:
+                        results[-1].append([proj.run_baseline(region.model_name, proj.model(region.model_name).prog_info.base_progset())])
                 else:
                     results.append([run_optim(region) for region in regions if region.add_funds > 0])
-                    results[-1].append(proj.run_baseline(region.model_name, proj.model(region.model_name).prog_info.base_progset()) for region in regions if region.add_funds == 0)
+                    for region in regions:
+                        if region.add_funds == 0:
+                            results[-1].append([proj.run_baseline(region.model_name, proj.model(region.model_name).prog_info.base_progset())])
                 for res in results[w]:
                     res[0].mult = None
                     res[0].name = res[0].name.replace('(x1)', '')
                     if res[0].name == 'Baseline':
                         res[0].name = res[0].model_name
-                    res[0].name += '(EQ weight' + str(spectrum[w]) + ', CE weight' + str(1-spectrum[w]) + ')'
+                    res[0].name += '(EQ weight' + str(round(spectrum[w],1)) + ', CE weight' + str(round(1-spectrum[w],1)) + ')'
             # Flatten list.
             results = [thing for sublist in results for item in sublist for thing in item]
         else:
@@ -283,26 +286,11 @@ class Geospatial:
                         # Calculate the marginal improvement for this budget increment and region.
                         marginal_improvements[reg_ind][budget_inc_ind] = (current_outcome[reg_ind] - new_outcome)
                 # Check if there were any marginal improvements calculated
-                print('Length of budget increment vector',[marginal_improvements[ind].size for ind in list(range(numregions))])
+                #print('Length of budget increment vector',[marginal_improvements[ind].size for ind in list(range(numregions))])
                 if sum(np.count_nonzero(marginal_improvements[k]) for k in list(range(numregions))) == 0:
                     break
                 else:
-                    '''
-                    check = []
-                    val = []
-                    for reg_ind in list(range(numregions)):
-                        # Check if marginal improvements were calculated in each region
-                        if not marginal_improvements[reg_ind].any():
-                            check.append(np.nan)
-                            val.append(np.nan)
-                        else:  # If yes then find the last occurrence of the maximum value
-                            check.append(np.argwhere(marginal_improvements[reg_ind] == marginal_improvements[reg_ind]
-                            [np.nanargmax(marginal_improvements[reg_ind])]).flatten().tolist()[-1])
-                            val.append(marginal_improvements[reg_ind][check[-1]])
-                            # Find best region and funding amount
-                            # best_reg_ind = np.argwhere(
-                            #    val == val[np.nanargmax(val)]).flatten().tolist()  # Find all maximum value indices
-                    '''
+
                     if exclude_region:
                         for reg in exclude_region:
                             current_outcome[reg] = np.nan
