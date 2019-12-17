@@ -43,6 +43,6 @@ kwargs = {'name': 'test1',
               'spectrum': True}
 
 geo = Geospatial(**kwargs)
-results = p.run_geo(geo=geo, maxiter=1, swarmsize=1, maxtime=1, dosave=True, parallel=False)
+results = p.run_geo(geo=geo, maxiter=5, swarmsize=5, maxtime=5, dosave=True, parallel=False)
 #results = p.run_geo(geo=geo, dosave=True, parallel=False)
 p.write_results('testing.xlsx')

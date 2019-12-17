@@ -79,7 +79,7 @@ class Geospatial:
             elif self.search_type == 'costeffective' or self.search_type == None:
                 regional_allocs = self.costeffective_gridsearch(boc_optims, totalfunds=totalfunds)
             elif self.search_type == 'mixed':
-                regional_allocs = self.mixed_gridsearch(boc_optims, totalfunds=totalfunds, search_weight=search_weight)
+                spectrum, regional_allocs = self.mixed_gridsearch(boc_optims, totalfunds=totalfunds, search_weight=search_weight)
                 self.mixed_trigger = True
             else:
                 print('Search method input was not understood, please enter either "worstcase", "costeffective" or "mixed". A cost effective grid search is being used.')
@@ -116,6 +116,12 @@ class Geospatial:
                 else:
                     results.append([run_optim(region) for region in regions if region.add_funds > 0])
                     results[-1].append(proj.run_baseline(region.model_name, proj.model(region.model_name).prog_info.base_progset()) for region in regions if region.add_funds == 0)
+                for res in results[w]:
+                    res[0].mult = None
+                    res[0].name = res[0].name.replace('(x1)', '')
+                    if res[0].name == 'Baseline':
+                        res[0].name = res[0].model_name
+                    res[0].name += '(EQ weight' + str(spectrum[w]) + ', CE weight' + str(1-spectrum[w]) + ')'
             # Flatten list.
             results = [thing for sublist in results for item in sublist for thing in item]
         else:
@@ -148,12 +154,13 @@ class Geospatial:
             results = [item for sublist in results for item in sublist]
 
         # Remove multiple to plot by name (total hack)
-        #ToDo: Figure out how to name when using spectrum of allocations
+        '''
         for res in results:
             res.mult = None
             res.name = res.name.replace('(x1)', '')
             if res.name == 'Baseline':
                 res.name = res.model_name
+        '''
         return results
 
     def make_regions(self, add_funds=None, rem_curr=False, mults=None):
@@ -212,7 +219,7 @@ class Geospatial:
                     print('A weight of zero was given to both geospatial gridsearch methods and a spectrum of results not requested despite a mixed method input so a 50/50 weighting is being used.')
             scaledallocs.append([search_weight['worstcase']*worstcase_allocs[allocs]+search_weight['costeffective']*costeffective_allocs[allocs] for allocs in list(range(len(worstcase_allocs)))])
 
-        return scaledallocs
+        return wc_weight, scaledallocs
 
     def worstcase_gridsearch(self, boc_optims, totalfunds):
         import matplotlib.pyplot as plt
@@ -220,7 +227,6 @@ class Geospatial:
         numregions = len(boc_optims.keys())
 
         exclude_region = []
-        checklevels = []
         regional_allocs = np.zeros(numregions)
         total_budget_allocated = 0.0
         tol = 0.00001
@@ -325,20 +331,18 @@ class Geospatial:
                     for l, level in enumerate(marginal_improvements[best_reg_ind[0]]):
                         if (level - reg_diff > 0):
                             best_budget_inc_ind.append(l)
-                            print(best_reg_ind, sec_best_reg_ind, budget_increments[best_reg_ind[0]][l], l)
+                            #print(best_reg_ind, sec_best_reg_ind, budget_increments[best_reg_ind[0]][l], l)
                             break
                         #elif (marginal_improvements[best_reg_ind[0]][l + 1] == marginal_improvements[best_reg_ind[0]][l]):
                         elif l == len(marginal_improvements[best_reg_ind[0]]) - 1:
                             best_budget_inc_ind.append(-1)
                             exclude_region.append(best_reg_ind[0])
-                            checklevels.append([i, budget_increments[best_reg_ind[0]][-1]])
-                            print(best_reg_ind, sec_best_reg_ind, budget_increments[best_reg_ind[0]][-1], -1)
+                            #print(best_reg_ind, sec_best_reg_ind, budget_increments[best_reg_ind[0]][-1], -1)
                             break
                         elif marginal_improvements[best_reg_ind[0]][l+1] == marginal_improvements[best_reg_ind[0]][l]:
                             best_budget_inc_ind.append(l)
                             exclude_region.append(best_reg_ind[0])
-                            checklevels.append([i, budget_increments[best_reg_ind[0]][-1]])
-                            print(best_reg_ind, sec_best_reg_ind, budget_increments[best_reg_ind[0]][-1], l)
+                            #print(best_reg_ind, sec_best_reg_ind, budget_increments[best_reg_ind[0]][-1], l)
                             break
 
                     # Check if there are multiple best regions
@@ -377,7 +381,6 @@ class Geospatial:
 
         print('FINAL BUDGET ALLOCATIONS:')
         print(regional_allocs)
-        print(checklevels)
 
         # scale to ensure correct budget
         scaledallocs = utils.scale_alloc(totalfunds, regional_allocs)
