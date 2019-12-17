@@ -124,7 +124,7 @@ class Geospatial:
                     res[0].name = res[0].name.replace('(x1)', '')
                     if res[0].name == 'Baseline':
                         res[0].name = res[0].model_name
-                    res[0].name += '(EQ weight' + str(round(spectrum[w],1)) + ', CE weight' + str(round(1-spectrum[w],1)) + ')'
+                    res[0].name += '(EQ weight: ' + str(round(spectrum[w],1)) + ', CE weight: ' + str(round(1-spectrum[w],1)) + ')'
             # Flatten list.
             results = [thing for sublist in results for item in sublist for thing in item]
         else:
