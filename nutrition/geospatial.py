@@ -203,7 +203,8 @@ class Geospatial:
         scaledallocs = []
         wc_weight = np.linspace(0, 1, 6).flatten().tolist()
         ce_weight = [1.0 - wc for wc in wc_weight]
-        worstcase_allocs = self.worstcase_gridsearch(boc_optims, totalfunds)
+        #worstcase_allocs = self.worstcase_gridsearch(boc_optims, totalfunds)
+        worstcase_allocs = self.equity_allocations(boc_optims, totalfunds)
         costeffective_allocs = self.costeffective_gridsearch(boc_optims, totalfunds)
         if self.spectrum:
             for w, weighting in enumerate(wc_weight):
@@ -235,6 +236,7 @@ class Geospatial:
         tol = 0.00001
         # Make budget increments to be tried at each iteration of the algorithm.
         #numpoints = 1000
+
         numpoints = 2000
         tmpx1 = np.linspace(1, np.log(totalfunds), numpoints)  # Logarithmically distributed
         tmpx2 = np.log(np.linspace(1, totalfunds, numpoints))  # Uniformly distributed
@@ -282,7 +284,6 @@ class Geospatial:
                     for budget_inc_ind in list(range(len(budget_increments[reg_ind]))):
                         # Get the new outcome from the BOC, assuming the particular budget increment is chosen.
                         new_outcome = self.bocs[reg_ind](regional_allocs[reg_ind] + budget_increments[reg_ind][budget_inc_ind])
-
                         # Calculate the marginal improvement for this budget increment and region.
                         marginal_improvements[reg_ind][budget_inc_ind] = (current_outcome[reg_ind] - new_outcome)
                 # Check if there were any marginal improvements calculated
@@ -290,7 +291,6 @@ class Geospatial:
                 if sum(np.count_nonzero(marginal_improvements[k]) for k in list(range(numregions))) == 0:
                     break
                 else:
-
                     if exclude_region:
                         for reg in exclude_region:
                             current_outcome[reg] = np.nan
@@ -319,7 +319,7 @@ class Geospatial:
                     for l, level in enumerate(marginal_improvements[best_reg_ind[0]]):
                         if (level - reg_diff > 0):
                             best_budget_inc_ind.append(l)
-                            #print(best_reg_ind, sec_best_reg_ind, budget_increments[best_reg_ind[0]][l], l)
+                            print(best_reg_ind, sec_best_reg_ind, budget_increments[best_reg_ind[0]][l], l)
                             break
                         #elif (marginal_improvements[best_reg_ind[0]][l + 1] == marginal_improvements[best_reg_ind[0]][l]):
                         elif l == len(marginal_improvements[best_reg_ind[0]]) - 1:
@@ -363,7 +363,6 @@ class Geospatial:
                         else:
                             regional_allocs[best_reg_ind[best_choice]] += budget_increments[best_reg_ind[best_choice]][-1]
                             total_budget_allocated += budget_increments[best_reg_ind[best_choice]][-1]
-
             else:
                 break
 
@@ -372,6 +371,17 @@ class Geospatial:
 
         # scale to ensure correct budget
         scaledallocs = utils.scale_alloc(totalfunds, regional_allocs)
+        return scaledallocs
+
+    def equity_allocations(self, boc_optims, totalfunds):
+        outcomes = [self.bocs[reg_ind](0) for reg_ind in list(range(len(boc_optims.keys())))]
+        proportions = [outcome / sum(outcomes) for outcome in outcomes]
+        scaledallocs = [proportion * totalfunds for proportion in proportions]
+        print('FINAL BUDGET ALLOCATIONS:')
+        print(scaledallocs)
+
+        # scale to ensure correct budget
+        #scaledallocs = utils.scale_alloc(totalfunds, regional_allocs)
         return scaledallocs
 
 
@@ -447,7 +457,7 @@ class Geospatial:
                         if not marginal_improvements[reg_ind].any():
                             check.append(np.nan)
                             val.append(np.nan)
-                        else: #If yes then find the last occurrence of the maximum value
+                        else: # If yes then find the last occurrence of the maximum value
                             check.append(np.nanargmax(marginal_improvements[reg_ind]).flatten().tolist()[-1])
                             val.append(marginal_improvements[reg_ind][check[-1]])
                     # Find best region and funding amount
@@ -458,8 +468,9 @@ class Geospatial:
                     # Check if there are multiple best regions
                     if len(best_reg_ind) == 1:
                         # Allocate the money to the chosen best region and add to the total budget allocated.
-                        regional_allocs[best_reg_ind[0]] += budget_increments[best_reg_ind[0]][best_budget_inc_ind[0]]
-                        total_budget_allocated += budget_increments[best_reg_ind[0]][best_budget_inc_ind[0]]
+                        regional_allocs[best_reg_ind[0]] += budget_increments[best_reg_ind[0]][best_budget_inc_ind[-1]] # Should it be best_budget_inc_ind[0]?
+                        total_budget_allocated += budget_increments[best_reg_ind[0]][best_budget_inc_ind[-1]]
+                        print(best_reg_ind[0], budget_increments[best_reg_ind[0]][best_budget_inc_ind[-1]])
                     else:
                         options = []
                         for choice in list(range(len(best_reg_ind))):
@@ -476,6 +487,7 @@ class Geospatial:
                         try:
                             regional_allocs[best_reg_ind[best_choice]] += budget_increments[best_reg_ind[best_choice]][best_budget_inc_ind[best_choice]]
                             total_budget_allocated += budget_increments[best_reg_ind[best_choice]][best_budget_inc_ind[best_choice]]
+                            print(best_reg_ind[best_choice], budget_increments[best_reg_ind[best_choice]][best_budget_inc_ind[best_choice]])
                         except IndexError:
                             regional_allocs[best_reg_ind[best_choice]] += budget_increments[best_reg_ind[best_choice]][-1]
                             total_budget_allocated += budget_increments[best_reg_ind[best_choice]][-1]

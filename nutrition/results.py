@@ -116,10 +116,10 @@ def write_results(results, projname=None, filename=None, folder=None):
         - sheet called 'budget and coverage' which contains all program cost and coverages over time """
     if projname is None: projname = ''
     outcomes = [
-        'stunted',
-        'wasted',
-        'child_anaemic',
-        'child_deaths'
+        'stunted', 'stunted_prev',
+        'wasted', 'wasted_prev',
+        'child_anaemic', 'child_anaemprev',
+        'child_deaths', 'child_mortrate'
     ]
     #default_trackers()
     labs = pretty_labels()

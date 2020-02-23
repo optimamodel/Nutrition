@@ -5,7 +5,7 @@ import sciris as sc
 time_trends = [True, False]
 type = ['baseline', 'scaled up']
 # initialise project
-
+# Full country list
 country_list = ['China', 'North Korea', 'Cambodia', 'Indonesia', 'Laos', 'Malaysia', 'Maldives', 'Myanmar',
                 'Philippines', 'Sri Lanka', 'Thailand', 'Timor-Leste', 'Vietnam', 'Fiji', 'Kiribati',
                 'Federated States of Micronesia', 'Papua New Guinea', 'Samoa', 'Solomon Islands', 'Tonga', 'Vanuatu',
@@ -24,6 +24,16 @@ country_list = ['China', 'North Korea', 'Cambodia', 'Indonesia', 'Laos', 'Malays
                 'Guinea-Bissau', 'Liberia', 'Mali', 'Mauritania', 'Niger', 'Nigeria', 'Sao Tome and Principe', 'Senegal',
                 'Sierra Leone', 'Togo', 'Georgia', 'South Sudan', 'Sudan']
 
+# Bottom 50% of countries by GDP per capita
+country_list = ['Burundi', 'Somalia', 'Malawi', 'Niger', 'Central African Republic', 'Mozambique',
+                'Democratic Republic of the Congo', 'Sierra Leone', 'Madagascar', 'Afghanistan', 'Togo', 'Uganda',
+                'Burkina Faso', 'Chad', 'The Gambia', 'Liberia', 'Guinea-Bissau', 'Rwanda', 'Haiti', 'Ethiopia',
+                'Tajikistan', 'Mali', 'Benin', 'Guinea', 'Nepal', 'Yemen', 'Tanzania', 'South Sudan', 'Mauritania',
+                'Syria', 'Lesotho', 'Kyrgyzstan', 'Myanmar', 'Comoros', 'Senegal', 'Cambodia', 'Cameroon', 'Pakistan',
+                'Zambia', 'Cote dIvoire', 'Bangladesh', 'Kenya', 'Zimbabwe', 'Kiribati', 'North Korea', 'Congo',
+                'Sao Tome and Principe', 'Uzbekistan', 'Nigeria', 'India', 'Timor-Leste', 'Ghana', 'Solomon Islands',
+                'Nicaragua', 'Vietnam', 'Laos', 'Egypt', 'Honduras', 'Ukraine', 'Papua New Guinea', 'Moldova',
+                'Djibouti', 'Philippines', 'Sudan', 'Morocco']
 # run simulation for each country
 cov = 1.0
 progval = sc.odict({'Balanced energy-protein supplementation': cov, 'Calcium supplementation': cov, 'Cash transfers': cov,
@@ -170,11 +180,11 @@ t.run_scens()
 #t.run_scens_plus(prog_list, progval.keys())
 t.write_results('Global_' + type + '_full.xlsx')
 '''
-#type = 'baseline'
+type = 'baseline'
 u = Project('Global_' + type)
 for c, country in enumerate(country_list):
     # load country
-    u.load_data(country='costed_baseline_' + country, name=country + " " + type, time_trend=time_trends[1])
+    u.load_data(country='costed_baseline_' + country, name=country + " " + type, time_trend=time_trends[0])
     progset = u.models[-1].prog_info.base_progset()
     progvals = sc.odict([(prog, []) for prog in progset])
     kwargs = {'name': country,
@@ -185,7 +195,7 @@ for c, country in enumerate(country_list):
     u.add_scens(scen_list)
 u.run_scens()
 #p.run_scens_plus(prog_list, mort_progval.keys())
-u.write_results('Global_' + type + '_reduced_progs.xlsx')
+u.write_results('gdp_baseline_for_comparison.xlsx')
 
 
 
