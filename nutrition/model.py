@@ -146,9 +146,9 @@ class Model(sc.prettyobj):
             self.integrate()
             self._track()
             self._track_rates()
-            if self.timeTrends: # Apply time trends if necessary
+            if self.timeTrends and not change: # Apply time trends if necessary
                 self._applyPrevTimeTrends(year) # Updates prevalences
-                # self.trend_dist_update(year) # Updates distributions
+                self.trend_dist_update(year) # Updates distributions
 
     def _apply_prog_covs(self):
         # update populations
@@ -538,7 +538,7 @@ class Model(sc.prettyobj):
         self.annual_births[self.year] = adj_births
 
     def _applyPrevTimeTrends(self, year): # Mortality disabled (and not streamlined)
-        if 2 < year < self.n_years:
+        if 1 < year < self.n_years:
             trigger = [0, 0, 0, 0, 0, 0] # Check for whether each risk should have trend applied (non_Baseline scenarios)
             group_list = ['child', 'pw', 'nonpw']
             if True: #self.scenario.name == 'Baseline': # Apply any trends to Baseline scenario

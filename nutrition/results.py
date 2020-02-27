@@ -118,8 +118,8 @@ def write_results(results, projname=None, filename=None, folder=None):
     outcomes = [
         'stunted', 'stunted_prev',
         'wasted', 'wasted_prev',
-        'child_anaemic', 'child_anaemprev',
-        'child_deaths', 'child_mortrate'
+        'pw_anaemic', 'pw_anaemprev',
+        'nonpw_anaemic', 'nonpw_anaemprev',
     ]
     #default_trackers()
     labs = pretty_labels()

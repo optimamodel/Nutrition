@@ -2,8 +2,19 @@ import nutrition.ui as nu
 from nutrition.project import Project
 import sciris as sc
 
-time_trends = [True, False]
-type = ['baseline', 'scaled up']
+
+def interp_cov(project, program, years, target):
+    interp = []
+    timeskip = years[1] - years[0]
+    baseline_cov = project.models[-1].prog_info.programs[program].base_cov
+    if baseline_cov >= target:
+        return baseline_cov
+    else:
+        diff = target - baseline_cov
+        for year in list(range(timeskip + 1)):
+            interp.append(baseline_cov + year * diff / timeskip)
+        return interp
+
 # initialise project
 # Full country list
 country_list = ['China', 'North Korea', 'Cambodia', 'Indonesia', 'Laos', 'Malaysia', 'Maldives', 'Myanmar',
@@ -23,7 +34,7 @@ country_list = ['China', 'North Korea', 'Cambodia', 'Indonesia', 'Laos', 'Malays
                 'Burkina Faso', 'Cameroon', 'Cape Verde', 'Chad', 'Cote dIvoire', 'The Gambia', 'Ghana', 'Guinea',
                 'Guinea-Bissau', 'Liberia', 'Mali', 'Mauritania', 'Niger', 'Nigeria', 'Sao Tome and Principe', 'Senegal',
                 'Sierra Leone', 'Togo', 'Georgia', 'South Sudan', 'Sudan']
-
+'''
 # Bottom 50% of countries by GDP per capita
 country_list = ['Burundi', 'Somalia', 'Malawi', 'Niger', 'Central African Republic', 'Mozambique',
                 'Democratic Republic of the Congo', 'Sierra Leone', 'Madagascar', 'Afghanistan', 'Togo', 'Uganda',
@@ -34,9 +45,10 @@ country_list = ['Burundi', 'Somalia', 'Malawi', 'Niger', 'Central African Republ
                 'Sao Tome and Principe', 'Uzbekistan', 'Nigeria', 'India', 'Timor-Leste', 'Ghana', 'Solomon Islands',
                 'Nicaragua', 'Vietnam', 'Laos', 'Egypt', 'Honduras', 'Ukraine', 'Papua New Guinea', 'Moldova',
                 'Djibouti', 'Philippines', 'Sudan', 'Morocco']
+'''
 # run simulation for each country
 cov = 1.0
-progval = sc.odict({'Balanced energy-protein supplementation': cov, 'Calcium supplementation': cov, 'Cash transfers': cov,
+progvals = sc.odict({'Balanced energy-protein supplementation': cov, 'Calcium supplementation': cov, 'Cash transfers': cov,
                     'Delayed cord clamping': cov, 'IFA fortification of maize': cov,
                     'IFA fortification of rice': cov, 'IFA fortification of wheat flour': cov, 'IFAS (community)': cov,
                     'IFAS (health facility)': cov, 'IFAS (retailer)': cov, 'IFAS (school)': cov,
@@ -47,146 +59,25 @@ progval = sc.odict({'Balanced energy-protein supplementation': cov, 'Calcium sup
                     'Multiple micronutrient supplementation': cov, 'Oral rehydration salts': cov,
                     'Public provision of complementary foods': cov, 'Treatment of SAM': cov, 'Vitamin A supplementation': cov,
                     'Zinc for treatment + ORS': cov, 'Zinc supplementation': cov})
-prog_list = sc.dcp(progval.keys())
-stunt_progval = sc.odict({'IFAS for pregnant women (community)': cov, 'IPTp': cov, 'IYCF 1': cov,
-                          'Lipid-based nutrition supplements': cov, 'Vitamin A supplementation': cov,
-                          'Zinc supplementation': cov})
+prog_list = sc.dcp(progvals.keys())
 
-wast_progval = sc.odict({'Cash transfers': cov, 'Vitamin A supplementation': cov, 'Zinc supplementation': cov})
 
-anaem_progval = sc.odict({'IFA fortification of maize': cov, 'Iron and iodine fortification of salt': cov,
-                          'Long-lasting insecticide-treated bednets': cov, 'Micronutrient powders': cov})
-
-mort_progval = sc.odict({'IFA fortification of maize': cov,'IFAS for pregnant women (community)': cov,
-                         'IYCF 1': cov, 'Kangaroo mother care': cov, 'Oral rehydration salts': cov,
-                         'Vitamin A supplementation': cov, 'Zinc supplementation': cov})
-
-stunt_progs = sc.odict({'Balanced energy-protein supplementation': cov, 'Cash transfers': cov,
-                        'IFAS for pregnant women (community)': cov, 'IPTp': cov,
-                        'IYCF 1': cov, 'Kangaroo mother care': cov, 'Lipid-based nutrition supplements': cov,
-                        'Long-lasting insecticide-treated bednets': cov,
-                        'Multiple micronutrient supplementation': cov,
-                        'Oral rehydration salts': cov, 'Public provision of complementary foods': cov,
-                        'Treatment of SAM': cov,
-                        'Vitamin A supplementation': cov, 'Zinc for treatment + ORS': cov,
-                        'Zinc supplementation': cov})
-wast_progs = sc.odict({'Balanced energy-protein supplementation': cov, 'Cash transfers': cov,
-                       'IFAS for pregnant women (community)': cov, 'IPTp': cov,
-                       'IYCF 1': cov, 'Kangaroo mother care': cov, 'Lipid-based nutrition supplements': cov,
-                       'Long-lasting insecticide-treated bednets': cov,
-                       'Multiple micronutrient supplementation': cov,
-                       'Oral rehydration salts': cov, 'Public provision of complementary foods': cov,
-                       'Treatment of SAM': cov,
-                       'Vitamin A supplementation': cov, 'Zinc for treatment + ORS': cov,
-                       'Zinc supplementation': cov})
-anaem_progs = sc.odict({'Cash transfers': cov,
-                        'Delayed cord clamping': cov, 'IFA fortification of maize': cov,
-                        'Iron and iodine fortification of salt': cov,
-                        'IYCF 1': cov, 'Kangaroo mother care': cov, 'Lipid-based nutrition supplements': cov,
-                        'Long-lasting insecticide-treated bednets': cov,
-                        'Micronutrient powders': cov, 'Oral rehydration salts': cov,
-                        'Public provision of complementary foods': cov,
-                        'Treatment of SAM': cov, 'Vitamin A supplementation': cov, 'Zinc for treatment + ORS': cov,
-                        'Zinc supplementation': cov})
-mort_progs = sc.odict({'Cash transfers': cov, 'IFA fortification of maize': cov,
-                       'IFAS for pregnant women (community)': cov, 'IPTp': cov,
-                       'IYCF 1': cov, 'Kangaroo mother care': cov, 'Lipid-based nutrition supplements': cov,
-                       'Long-lasting insecticide-treated bednets': cov,
-                       'Multiple micronutrient supplementation': cov,
-                       'Oral rehydration salts': cov, 'Public provision of complementary foods': cov,
-                       'Treatment of SAM': cov,
-                       'Vitamin A supplementation': cov, 'Zinc for treatment + ORS': cov,
-                       'Zinc supplementation': cov})
 
 #progval = sc.odict()
-'''
-p = Project('Global_' + type)
-for c, country in enumerate(country_list):
-    # load country
-    p.load_data(country='baseline_' + country, name=country + " " + type, time_trend=time_trends[1])
-    progset = p.models[-1].prog_info.base_progset()
-    progvals = sc.odict([(prog, []) for prog in progset])
-    kwargs = {'name': country,
-              'model_name': country + " " + type,
-              'scen_type': 'coverage',
-              'progvals': mort_progval}
-    scen_list = nu.make_scens([kwargs])
-    p.add_scens(scen_list)
-#p.run_scens()
-p.run_scens_plus(prog_list, mort_progval.keys())
-p.write_results('Global_mortality_' + type + '_reduced_progs.xlsx')
 
-r = Project('Global_' + type)
-for c, country in enumerate(country_list):
-    # load country
-    r.load_data(country='baseline_' + country, name=country + " " + type, time_trend=time_trends[1])
-    progset = r.models[-1].prog_info.base_progset()
-    progvals = sc.odict([(prog, []) for prog in progset])
-    kwargs = {'name': country,
-              'model_name': country + " " + type,
-              'scen_type': 'coverage',
-              'progvals': anaem_progval}
-    scen_list = nu.make_scens([kwargs])
-    r.add_scens(scen_list)
-#p.run_scens()
-r.run_scens_plus(prog_list, anaem_progval.keys())
-r.write_results('Global_anaemia_' + type + '_reduced_progs.xlsx')
-
-q = Project('Global_' + type)
-for c, country in enumerate(country_list):
-    # load country
-    q.load_data(country='baseline_' + country, name=country + " " + type, time_trend=time_trends[1])
-    progset = q.models[-1].prog_info.base_progset()
-    progvals = sc.odict([(prog, []) for prog in progset])
-    kwargs = {'name': country,
-              'model_name': country + " " + type,
-              'scen_type': 'coverage',
-              'progvals': wast_progval}
-    scen_list = nu.make_scens([kwargs])
-    q.add_scens(scen_list)
-#p.run_scens()
-q.run_scens_plus(prog_list, wast_progval.keys())
-q.write_results('Global_wasting_' + type + '_reduced_progs.xlsx')
-
-s = Project('Global_' + type)
-for c, country in enumerate(country_list):
-    # load country
-    s.load_data(country='baseline_' + country, name=country + " " + type, time_trend=time_trends[1])
-    progset = s.models[-1].prog_info.base_progset()
-    progvals = sc.odict([(prog, []) for prog in progset])
-    kwargs = {'name': country,
-              'model_name': country + " " + type,
-              'scen_type': 'coverage',
-              'progvals': stunt_progval}
-    scen_list = nu.make_scens([kwargs])
-    s.add_scens(scen_list)
-#p.run_scens()
-s.run_scens_plus(prog_list, stunt_progval.keys())
-s.write_results('Global_stunting_' + type + '_reduced_progs.xlsx')
-
-t = Project('Global_' + type)
-for c, country in enumerate(country_list):
-    # load country
-    t.load_data(country='baseline_' + country, name=country + " " + type, time_trend=time_trends[1])
-    progset = t.models[-1].prog_info.base_progset()
-    progvals = sc.odict([(prog, []) for prog in progset])
-    kwargs = {'name': country,
-              'model_name': country + " " + type,
-              'scen_type': 'coverage',
-              'progvals': progval}
-    scen_list = nu.make_scens([kwargs])
-    t.add_scens(scen_list)
-t.run_scens()
-#t.run_scens_plus(prog_list, progval.keys())
-t.write_results('Global_' + type + '_full.xlsx')
-'''
 type = 'baseline'
+time_trend = True
+
 u = Project('Global_' + type)
 for c, country in enumerate(country_list):
     # load country
-    u.load_data(country='costed_baseline_' + country, name=country + " " + type, time_trend=time_trends[0])
-    progset = u.models[-1].prog_info.base_progset()
-    progvals = sc.odict([(prog, []) for prog in progset])
+    u.load_data(country='costed_baseline_' + country, name=country + " " + type, time_trend=time_trend)
+    if type == 'baseline':
+        progset = u.models[-1].prog_info.base_progset()
+        progvals = sc.odict([(prog, []) for prog in progset])
+    elif type == 'scaled up':
+        for p, prog in enumerate(prog_list):
+            progvals[prog] = interp_cov(u, prog_list[p], [2018, 2024], 0.95)
     kwargs = {'name': country,
               'model_name': country + " " + type,
               'scen_type': 'coverage',
@@ -195,7 +86,7 @@ for c, country in enumerate(country_list):
     u.add_scens(scen_list)
 u.run_scens()
 #p.run_scens_plus(prog_list, mort_progval.keys())
-u.write_results('gdp_baseline_for_comparison.xlsx')
+u.write_results('global_baseline.xlsx')
 
 
 

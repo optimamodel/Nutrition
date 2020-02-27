@@ -16,6 +16,7 @@ inputs/Efficacy lower bounds
 inputs/Efficacy upper bounds
 inputs/Outdated
 inputs/costed_*
+inputs/JHE stunting wasting
 
 #ignore Ruth's random testing file and some notes
 randomTests.py 
