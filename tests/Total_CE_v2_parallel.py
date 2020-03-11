@@ -8,6 +8,7 @@ from functools import partial
 import numpy as np
 import multiprocessing
 
+
 def interp_cov(project, program, years, target):
     interp = []
     timeskip = years[1] - years[0]
@@ -20,7 +21,7 @@ def interp_cov(project, program, years, target):
             interp.append(baseline_cov + year * diff / timeskip)
         return interp
 
-def calc_cost_impact(country, project, baseline, objective_progs, objective, eff_progs):
+def calc_cost_impact(country, project, baseline, objective_progs, objective, eff_progs, prog_list):
     cost = {}
     impact = {}
     effective_progs = {}
@@ -55,23 +56,22 @@ def calc_cost_impact(country, project, baseline, objective_progs, objective, eff
         elif objective == 'wasting':
             impact[prog] = np.sum(baseline.model.wasted) - np.sum(project.results['scens'][-1].model.wasted)
         elif objective == 'anaemia':
-            impact[prog] = np.sum(baseline.model.child_anaemic) - np.sum(project.results['scens'][-1].model.child_anaemic)
+            impact[prog] = np.sum(baseline.model.pw_anaemic) - np.sum(project.results['scens'][-1].model.pw_anaemic) + np.sum(baseline.model.nonpw_anaemic) - np.sum(project.results['scens'][-1].model.nonpw_anaemic)
         elif objective == 'mortality':
             impact[prog] = np.sum(baseline.model.child_deaths) - np.sum(project.results['scens'][-1].model.child_deaths)
     return cost, impact
 
-
-def cost_impact(country, objective, objective_progs, eff_progs):
-    progval = {'Balanced energy-protein supplementation': cov, 'Calcium supplementation': cov, 'Cash transfers': cov,
-         'Delayed cord clamping': cov, 'IFA fortification of maize': cov, 'IFAS (community)': cov,
-         'IFAS for pregnant women (community)': cov, 'IPTp': cov, 'Iron and iodine fortification of salt': cov,
-         'IYCF 1': cov, 'Kangaroo mother care': cov, 'Lipid-based nutrition supplements': cov,
-         'Long-lasting insecticide-treated bednets': cov, 'Mg for eclampsia': cov, 'Mg for pre-eclampsia': cov,
-         'Micronutrient powders': cov, 'Multiple micronutrient supplementation': cov,
-         'Oral rehydration salts': cov, 'Public provision of complementary foods': cov, 'Treatment of SAM': cov,
-         'Vitamin A supplementation': cov, 'Zinc for treatment + ORS': cov, 'Zinc supplementation': cov}
-
-    prog_list = sc.dcp(progval.keys())
+def cost_impact(country, objective, objective_progs, eff_progs, cov=0.95):
+    progvals = sc.odict({'Balanced energy-protein supplementation': cov, 'Calcium supplementation': cov, 'Cash transfers': cov,
+                         'Delayed cord clamping': cov, 'IFA fortification of maize': cov,
+                         'IFAS (community)': cov,
+                         'IFAS for pregnant women (community)': cov,
+                         'IPTp': cov, 'Iron and iodine fortification of salt': cov, 'IYCF 1': cov, 'Kangaroo mother care': cov,
+                         'Lipid-based nutrition supplements': cov, 'Long-lasting insecticide-treated bednets': cov,
+                         'Multiple micronutrient supplementation': cov,
+                         'Public provision of complementary foods': cov, 'Treatment of SAM': cov, 'Vitamin A supplementation': cov,
+                         'Zinc for treatment + ORS': cov})
+    prog_list = sc.dcp(progvals.keys())
 
     p = project.Project(country + ' scaled up')
     p.load_data(country='costed_baseline_' + country, name=country, time_trend=False)
@@ -83,7 +83,7 @@ def cost_impact(country, objective, objective_progs, eff_progs):
         else:
             effective_progs[eff_progs.keys()[0]] = interp_cov(p, eff_progs.keys()[0], [2018, 2024], 0.95)
     if effective_progs:
-	if 'IPTp' in effective_progs.keys():
+        if 'IPTp' in effective_progs.keys():
             if p.datasets[-1].demo_data.demo['Percentage of population at risk of malaria'] <= 0.005:
                 #print(effective_progs)
                 del effective_progs['IPTp']
@@ -98,11 +98,10 @@ def cost_impact(country, objective, objective_progs, eff_progs):
     else:
         baseline = p.run_baseline(country, prog_list)
 
-    cost, impact = calc_cost_impact(country, p, baseline, objective_progs, objective, effective_progs)
+    cost, impact = calc_cost_impact(country, p, baseline, objective_progs, objective, effective_progs, prog_list)
     #print('output', country, impact['IYCF 1'])
     val = [country, cost, impact]
     return val
-
 
 def run_parallel(func, args_list, num_procs):
     """ Uses pool.map() to distribute parallel processes.
@@ -114,167 +113,135 @@ def run_parallel(func, args_list, num_procs):
     res = f.map(func, args_list)
     return res
 
-time_trends = False
-type = 'scaled up'
-# initialise project
+def run_total_ce(date='01012020'):
 
-countries = ['North Korea', 'Cambodia', 'Indonesia', 'Laos', 'Malaysia', 'Maldives', 'Myanmar',
-             'Philippines', 'Sri Lanka', 'Thailand', 'Timor-Leste', 'Vietnam', 'Fiji', 'Kiribati',
-             'Federated States of Micronesia', 'Papua New Guinea', 'Samoa', 'Solomon Islands', 'Tonga', 'Vanuatu',
-             'Armenia', 'Azerbaijan', 'Kazakhstan', 'Kyrgyzstan', 'Mongolia', 'Tajikistan', 'Turkmenistan',
-             'Uzbekistan', 'Albania', 'Bosnia and Herzegovina', 'Bulgaria', 'Macedonia', 'Montenegro', 'Romania',
-             'Serbia', 'Belarus', 'Moldova', 'Russian Federation', 'Ukraine', 'Belize', 'Cuba', 'Dominican Republic',
-             'Grenada', 'Guyana', 'Haiti', 'Jamaica', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Suriname',
-             'Bolivia', 'Ecuador', 'Peru', 'Colombia', 'Costa Rica', 'El Salvador', 'Guatemala', 'Honduras',
-             'Nicaragua', 'Venezuela', 'Brazil', 'Paraguay', 'Algeria', 'Egypt', 'Iran', 'Iraq', 'Jordan', 'Lebanon',
-             'Libya', 'Morocco', 'Palestine', 'Syria', 'Tunisia', 'Turkey', 'Yemen', 'Afghanistan', 'Bangladesh',
-             'Bhutan', 'India', 'Nepal', 'Pakistan', 'Angola', 'Central African Republic', 'Congo',
-             'Democratic Republic of the Congo', 'Equatorial Guinea', 'Gabon', 'Burundi', 'Comoros', 'Djibouti',
-             'Ethiopia', 'Kenya', 'Madagascar', 'Malawi', 'Mauritius', 'Mozambique', 'Rwanda', 'Somalia', 'Tanzania',
-             'Uganda', 'Zambia', 'Botswana', 'Lesotho', 'Namibia', 'South Africa', 'Eswatini', 'Zimbabwe', 'Benin',
-             'Burkina Faso', 'Cameroon', 'Cape Verde', 'Chad', 'Cote dIvoire', 'The Gambia', 'Ghana', 'Guinea',
-             'Guinea-Bissau', 'Liberia', 'Mali', 'Mauritania', 'Niger', 'Nigeria', 'Sao Tome and Principe', 'Senegal',
-             'Sierra Leone', 'Togo', 'Georgia', 'South Sudan', 'Sudan']
-cov = 0.95
-progval = {'Balanced energy-protein supplementation': cov, 'Calcium supplementation': cov, 'Cash transfers': cov,
-     'Delayed cord clamping': cov, 'IFA fortification of maize': cov, 'IFAS (community)': cov,
-     'IFAS for pregnant women (community)': cov, 'IPTp': cov, 'Iron and iodine fortification of salt': cov,
-     'IYCF 1': cov, 'Kangaroo mother care': cov, 'Lipid-based nutrition supplements': cov,
-     'Long-lasting insecticide-treated bednets': cov, 'Mg for eclampsia': cov, 'Mg for pre-eclampsia': cov,
-     'Micronutrient powders': cov, 'Multiple micronutrient supplementation': cov,
-     'Oral rehydration salts': cov, 'Public provision of complementary foods': cov, 'Treatment of SAM': cov,
-     'Vitamin A supplementation': cov, 'Zinc for treatment + ORS': cov, 'Zinc supplementation': cov}
+    time_trends = False
+    type = 'scaled up'
+    # initialise project
 
-prog_list = sc.dcp(progval.keys())
+    countries = ['North Korea', 'Cambodia', 'Indonesia', 'Laos', 'Malaysia', 'Maldives', 'Myanmar',
+                 'Philippines', 'Sri Lanka', 'Thailand', 'Timor-Leste', 'Vietnam', 'Fiji', 'Kiribati',
+                 'Federated States of Micronesia', 'Papua New Guinea', 'Samoa', 'Solomon Islands', 'Tonga', 'Vanuatu',
+                 'Armenia', 'Azerbaijan', 'Kazakhstan', 'Kyrgyzstan', 'Mongolia', 'Tajikistan', 'Turkmenistan',
+                 'Uzbekistan', 'Albania', 'Bosnia and Herzegovina', 'Bulgaria', 'Macedonia', 'Montenegro', 'Romania',
+                 'Serbia', 'Belarus', 'Moldova', 'Russian Federation', 'Ukraine', 'Belize', 'Cuba', 'Dominican Republic',
+                 'Grenada', 'Guyana', 'Haiti', 'Jamaica', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Suriname',
+                 'Bolivia', 'Ecuador', 'Peru', 'Colombia', 'Costa Rica', 'El Salvador', 'Guatemala', 'Honduras',
+                 'Nicaragua', 'Venezuela', 'Brazil', 'Paraguay', 'Algeria', 'Egypt', 'Iran', 'Iraq', 'Jordan', 'Lebanon',
+                 'Libya', 'Morocco', 'Palestine', 'Syria', 'Tunisia', 'Turkey', 'Yemen', 'Afghanistan', 'Bangladesh',
+                 'Bhutan', 'India', 'Nepal', 'Pakistan', 'Angola', 'Central African Republic', 'Congo',
+                 'Democratic Republic of the Congo', 'Equatorial Guinea', 'Gabon', 'Burundi', 'Comoros', 'Djibouti',
+                 'Ethiopia', 'Kenya', 'Madagascar', 'Malawi', 'Mauritius', 'Mozambique', 'Rwanda', 'Somalia', 'Tanzania',
+                 'Uganda', 'Zambia', 'Botswana', 'Lesotho', 'Namibia', 'South Africa', 'Eswatini', 'Zimbabwe', 'Benin',
+                 'Burkina Faso', 'Cameroon', 'Cape Verde', 'Chad', 'Cote dIvoire', 'The Gambia', 'Ghana', 'Guinea',
+                 'Guinea-Bissau', 'Liberia', 'Mali', 'Mauritania', 'Niger', 'Nigeria', 'Sao Tome and Principe', 'Senegal',
+                 'Sierra Leone', 'Togo', 'Georgia', 'South Sudan', 'Sudan']
+    cov = 0.95
+    progvals = sc.odict({'Balanced energy-protein supplementation': cov, 'Calcium supplementation': cov, 'Cash transfers': cov,
+                         'Delayed cord clamping': cov, 'IFA fortification of maize': cov,
+                         'IFAS (community)': cov,
+                         'IFAS for pregnant women (community)': cov,
+                         'IPTp': cov, 'Iron and iodine fortification of salt': cov, 'IYCF 1': cov, 'Kangaroo mother care': cov,
+                         'Lipid-based nutrition supplements': cov, 'Long-lasting insecticide-treated bednets': cov,
+                         'Multiple micronutrient supplementation': cov,
+                         'Public provision of complementary foods': cov, 'Treatment of SAM': cov, 'Vitamin A supplementation': cov,
+                         'Zinc for treatment + ORS': cov})
+    prog_list = sc.dcp(progvals.keys())
 
-stunt_progs = {'Balanced energy-protein supplementation': cov, 'Cash transfers': cov,
-                        'IFAS for pregnant women (community)': cov, 'IPTp': cov,
-                        'IYCF 1': cov, 'Kangaroo mother care': cov, 'Lipid-based nutrition supplements': cov,
-                        'Long-lasting insecticide-treated bednets': cov,
-                        'Multiple micronutrient supplementation': cov,
-                        'Oral rehydration salts': cov, 'Public provision of complementary foods': cov,
-                        'Treatment of SAM': cov,
-                        'Vitamin A supplementation': cov, 'Zinc for treatment + ORS': cov,
-                        'Zinc supplementation': cov}
-wast_progs = {'Balanced energy-protein supplementation': cov, 'Cash transfers': cov,
-                       'IFAS for pregnant women (community)': cov, 'IPTp': cov,
-                       'IYCF 1': cov, 'Kangaroo mother care': cov, 'Lipid-based nutrition supplements': cov,
-                       'Long-lasting insecticide-treated bednets': cov,
-                       'Multiple micronutrient supplementation': cov,
-                       'Oral rehydration salts': cov, 'Public provision of complementary foods': cov,
-                       'Treatment of SAM': cov,
-                       'Vitamin A supplementation': cov, 'Zinc for treatment + ORS': cov,
-                       'Zinc supplementation': cov}
-anaem_progs = {'Cash transfers': cov,
-                        'Delayed cord clamping': cov, 'IFA fortification of maize': cov,
-                        'Iron and iodine fortification of salt': cov,
-                        'IYCF 1': cov, 'Kangaroo mother care': cov, 'Lipid-based nutrition supplements': cov,
-                        'Long-lasting insecticide-treated bednets': cov,
-                        'Micronutrient powders': cov, 'Oral rehydration salts': cov,
-                        'Public provision of complementary foods': cov,
-                        'Treatment of SAM': cov, 'Vitamin A supplementation': cov, 'Zinc for treatment + ORS': cov,
-                        'Zinc supplementation': cov}
-mort_progs = {'Cash transfers': cov, 'IFA fortification of maize': cov,
-                       'IFAS for pregnant women (community)': cov, 'IPTp': cov,
-                       'IYCF 1': cov, 'Kangaroo mother care': cov, 'Lipid-based nutrition supplements': cov,
-                       'Long-lasting insecticide-treated bednets': cov,
-                       'Multiple micronutrient supplementation': cov,
-                       'Oral rehydration salts': cov, 'Public provision of complementary foods': cov,
-                       'Treatment of SAM': cov,
-                       'Vitamin A supplementation': cov, 'Zinc for treatment + ORS': cov,
-                       'Zinc supplementation': cov}
-
-different_progs = [stunt_progs, wast_progs, anaem_progs, mort_progs]
-prog_choices = sc.odict({'stunting': sc.odict({'Cost effectiveness': [], 'Cost': [], 'Impact': [], 'Program': []}),
- 'wasting': sc.odict({'Cost effectiveness': [], 'Cost': [], 'Impact': [], 'Program': []}), 
-'anaemia': sc.odict({'Cost effectiveness': [], 'Cost': [], 'Impact': [], 'Program': []}), 
-'mortality': sc.odict({'Cost effectiveness': [], 'Cost': [], 'Impact': [], 'Program': []})})
-# run simulation for each country
-num_CE = [5, 3, 3, 5]
-for o, outcome in enumerate(['stunting', 'wasting', 'anaemia', 'mortality']):
-    effective_progs = {}
-    objective_progs = different_progs[o]
-    for round in list(range(num_CE[o])):
-        costs = {}
-        impacts = {}
-        total_cost = {}
-        total_impact = {}
-        total_CE = {}
-        impact_cost = partial(cost_impact, objective=outcome, objective_progs=objective_progs, eff_progs=effective_progs)
-        CE_values = run_parallel(impact_cost, countries, 64)
-        for prog, program in enumerate(objective_progs.keys()):
-            total_cost[program] = 0
-            total_impact[program] = 0
-            for i in list(range(len(countries))):
-                if ~np.isnan(CE_values[i][1][program]):
-                    total_cost[program] += CE_values[i][1][program]
-                if ~np.isnan(CE_values[i][2][program]):
-                    #if program == 'IYCF 1':
-                        #print('save', countries[i], CE_values[i][2][program])
-                    total_impact[program] += CE_values[i][2][program]
-            if total_impact[program] <= 0:
-                #print(outcome, 'getting negative impact for program', program, total_impact[program])
-                total_impact[program] = np.nan
+    prog_choices = sc.odict({'stunting': sc.odict({'Cost effectiveness': [], 'Cost': [], 'Impact': [], 'Program': []}),
+    'wasting': sc.odict({'Cost effectiveness': [], 'Cost': [], 'Impact': [], 'Program': []}),
+    'anaemia': sc.odict({'Cost effectiveness': [], 'Cost': [], 'Impact': [], 'Program': []}),
+    'mortality': sc.odict({'Cost effectiveness': [], 'Cost': [], 'Impact': [], 'Program': []})})
+    # run simulation for each country
+    num_CE = [18, 18, 18, 18]
+    for o, outcome in enumerate(['stunting', 'wasting', 'anaemia', 'mortality']):
+        effective_progs = {}
+        objective_progs = sc.dcp(progvals) #different_progs[o]
+        for round in list(range(num_CE[o])):
+            costs = {}
+            impacts = {}
+            total_cost = {}
+            total_impact = {}
+            total_CE = {}
+            impact_cost = partial(cost_impact, objective=outcome, objective_progs=objective_progs, eff_progs=effective_progs)
+            CE_values = run_parallel(impact_cost, countries, 8)
+            for prog, program in enumerate(objective_progs.keys()):
+                total_cost[program] = 0
+                total_impact[program] = 0
+                for i in list(range(len(countries))):
+                    if ~np.isnan(CE_values[i][1][program]):
+                        total_cost[program] += CE_values[i][1][program]
+                    if ~np.isnan(CE_values[i][2][program]):
+                        #if program == 'IYCF 1':
+                            #print('save', countries[i], CE_values[i][2][program])
+                        total_impact[program] += CE_values[i][2][program]
+                if total_impact[program] <= 0:
+                    #print(outcome, 'getting negative impact for program', program, total_impact[program])
+                    total_impact[program] = np.nan
+                try:
+                    total_CE[program] = total_cost[program] / total_impact[program]
+                except RuntimeWarning:
+                    total_CE[program] = np.nan
             try:
-                total_CE[program] = total_cost[program] / total_impact[program]
-            except RuntimeWarning:
-                total_CE[program] = np.nan
-        try:
-            location = np.nanargmin(total_CE.values())
-            program_choice = total_CE.keys()[location]
-        except ValueError:
-            break
-        effective_progs[program_choice] = 0.95
-        prog_choices[outcome]['Cost effectiveness'].append(total_CE[program_choice])
-        prog_choices[outcome]['Cost'].append(total_cost[program_choice])
-        prog_choices[outcome]['Impact'].append(total_impact[program_choice])
-        prog_choices[outcome]['Program'].append(program_choice)
-        print(outcome, prog_choices[outcome]['Program'], prog_choices[outcome]['Cost effectiveness'])
-        del objective_progs[program_choice]
+                location = np.nanargmin(total_CE.values())
+                program_choice = total_CE.keys()[location]
+            except ValueError:
+                break
+            effective_progs[program_choice] = 0.95
+            prog_choices[outcome]['Cost effectiveness'].append(total_CE[program_choice])
+            prog_choices[outcome]['Cost'].append(total_cost[program_choice])
+            prog_choices[outcome]['Impact'].append(total_impact[program_choice])
+            prog_choices[outcome]['Program'].append(program_choice)
+            print(outcome, prog_choices[outcome]['Program'], prog_choices[outcome]['Cost effectiveness'])
+            del objective_progs[program_choice]
 
-print(prog_choices)
-CE_book = xw.Workbook('Global_cost_effectiveness30082019.xlsx')
-CE_sheet = CE_book.add_worksheet()
-row = 0
-column = 0
+    print(prog_choices)
+    CE_book = xw.Workbook('Results/' + date + '/' + 'Global_cost_effectiveness' + date + '.xlsx')
+    CE_sheet = CE_book.add_worksheet()
+    row = 0
+    column = 0
 
 
-CE_sheet.write(row, column, 'World')
-row += 1
-column += 1
-for o, objective in enumerate(['stunting', 'wasting', 'anaemia', 'mortality']):
-    CE_sheet.write(row, column, objective)
+    CE_sheet.write(row, column, 'World')
     row += 1
     column += 1
-    for m, measure in enumerate(['Cost effectiveness', 'Cost', 'Impact', 'Program']):
-        CE_sheet.write(row, column, measure)
+    for o, objective in enumerate(['stunting', 'wasting', 'anaemia', 'mortality']):
+        CE_sheet.write(row, column, objective)
+        row += 1
         column += 1
-        if prog_choices[objective][measure]:
-            if measure == 'Cost':
-                CE_sheet.write(row, column, 0)
-                column += 1
-                for e, element in enumerate(prog_choices[objective][measure]):
-                    CE_sheet.write(row, column, prog_choices[objective][measure][e])
+        for m, measure in enumerate(['Cost effectiveness', 'Cost', 'Impact', 'Program']):
+            CE_sheet.write(row, column, measure)
+            column += 1
+            if prog_choices[objective][measure]:
+                if measure == 'Cost':
+                    CE_sheet.write(row, column, 0)
                     column += 1
-                row += 1
-                column -= e + 3
-            elif measure == 'Impact':
-                CE_sheet.write(row, column, 0)
-                column += 1
-                CE_sheet.write_row(row, column, prog_choices[objective][measure])
-                row += 1
-                column -= 2
+                    for e, element in enumerate(prog_choices[objective][measure]):
+                        CE_sheet.write(row, column, prog_choices[objective][measure][e])
+                        column += 1
+                    row += 1
+                    column -= e + 3
+                elif measure == 'Impact':
+                    CE_sheet.write(row, column, 0)
+                    column += 1
+                    CE_sheet.write_row(row, column, prog_choices[objective][measure])
+                    row += 1
+                    column -= 2
+                else:
+                    CE_sheet.write(row, column, "")
+                    column += 1
+                    CE_sheet.write_row(row, column, prog_choices[objective][measure])
+                    row += 1
+                    column -= 2
             else:
                 CE_sheet.write(row, column, "")
-                column += 1
-                CE_sheet.write_row(row, column, prog_choices[objective][measure])
                 row += 1
-                column -= 2
-        else:
-            CE_sheet.write(row, column, "")
-            row += 1
-            column -= 1
-    column -= 1
+                column -= 1
+        column -= 1
 
-CE_book.close()
-print('Finished!')
+    CE_book.close()
+    print('Finished!')
+    return prog_choices
+
+if __name__ == '__main__':
+    run_total_ce()

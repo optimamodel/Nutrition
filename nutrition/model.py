@@ -64,10 +64,12 @@ class Model(sc.prettyobj):
     def _track_child_outcomes(self):
         # children
         oldest = self.children.age_groups[-1]
+        children = self.children.age_groups
         rate = oldest.ageingRate
-        total_pop = oldest.pop_size
         self.thrive[self.year] += oldest.num_notstunted() * rate
-        self.stunted[self.year] += oldest.num_stunted() * rate
+        for age_group in list(range(len(children))):
+            self.stunted[self.year] += children[age_group].num_stunted()
+        #self.stunted[self.year] += oldest.num_stunted() * rate
         self.wasted[self.year] += sum(oldest.num_wasted(cat) for cat in self.ss.wasted_list) * rate
         self.child_anaemic[self.year] += oldest.num_anaemic() * rate
 
@@ -146,9 +148,11 @@ class Model(sc.prettyobj):
             self.integrate()
             self._track()
             self._track_rates()
-            if self.timeTrends and not change: # Apply time trends if necessary
+            if self.timeTrends: # and not change: # Apply time trends if necessary
                 self._applyPrevTimeTrends(year) # Updates prevalences
                 self.trend_dist_update(year) # Updates distributions
+                if change:
+                    self._track_prevs() # Maybe?
 
     def _apply_prog_covs(self):
         # update populations
@@ -685,51 +689,54 @@ class Model(sc.prettyobj):
 
 
     def trend_dist_update(self, year): # Updates distributions according to prevalences
-        for age in self.children.age_groups:
-            trigger = [0, 0, 0, 0, 0, 0] # Check for whether each risk should have trend applied (non_Baseline scenarios)
-            group_list = ['child', 'pw', 'nonpw']
-            if True:
-                self.stunteddist_trend(age, year)
-                self.wasteddist_trend(age, year)
-                for group in group_list:
-                    self.anaemicdist_trend(age, group, year)
-            else: # Check which risks are impacted by non-Baseline scenario
-                for prog in self.scenario.prog_set:
-                    if prog in self.prog_info.prog_areas['Stunting']:
-                        trigger[0] += 1
-                    if prog in (self.prog_info.prog_areas['Wasting prevention'] + self.prog_info.prog_areas[
-                        'Wasting treatment']):
-                        trigger[1] += 1
-                    if (prog in self.prog_info.prog_areas['Anaemia']) and (
-                            sum(self.prog_info.prog_data.impacted_pop[prog][age] for age in self.ss.child_ages) > 0):
-                        trigger[2] += 1
-                    if (prog in self.prog_info.prog_areas['Anaemia']) and (
-                            sum(self.prog_info.prog_data.impacted_pop[prog][age] for age in self.ss.pw_ages) > 0):
-                        trigger[3] += 1
-                    if (prog in self.prog_info.prog_areas['Anaemia']) and (
-                            sum(self.prog_info.prog_data.impacted_pop[prog][age] for age in self.ss.wra_ages) > 0):
-                        trigger[4] += 1
-                    if prog in self.prog_info.prog_areas['Breastfeeding']:
-                        trigger[5] += 1
-                # Update distributions according to prevalences which trended
-                if trigger[0] == 0:
-                    self.stunteddist_trend(age, year)
-                if trigger[1] == 0:
-                    self.wasteddist_trend(age, year)
-                for index, group in enumerate(group_list, 2):
-                    if trigger[index] == 0:
-                        self.anaemicdist_trend(age, group, year)
-            self.children.stunting_dist[age.age] = age.stunting_dist
-            self.children.wasting_dist[age.age] = age.wasting_dist
-            self.children.anaemia_dist[age.age] = age.anaemia_dist
-        for age in self.pw.age_groups:
-            self.pw.anaemia_dist[age.age] = age.anaemia_dist
-        for age in self.nonpw.age_groups:
-            self.nonpw.anaemia_dist[age.age] = age.anaemia_dist
-        if self.scenario.name == 'Baseline' or trigger[5] == 0:
-            self.bfdist_trend(year)
+        if 1 < year < self.n_years:
             for age in self.children.age_groups:
-                self.children.bf_dist[age.age] = age.bf_dist
+                trigger = [0, 0, 0, 0, 0, 0] # Check for whether each risk should have trend applied (non_Baseline scenarios)
+                group_list = ['child', 'pw', 'nonpw']
+                if True:
+                    self.stunteddist_trend(age, year)
+                    self.wasteddist_trend(age, year)
+                    for group in group_list:
+                        self.anaemicdist_trend(age, group, year)
+                else: # Check which risks are impacted by non-Baseline scenario
+                    for prog in self.scenario.prog_set:
+                        if prog in self.prog_info.prog_areas['Stunting']:
+                            trigger[0] += 1
+                        if prog in (self.prog_info.prog_areas['Wasting prevention'] + self.prog_info.prog_areas[
+                            'Wasting treatment']):
+                            trigger[1] += 1
+                        if (prog in self.prog_info.prog_areas['Anaemia']) and (
+                                sum(self.prog_info.prog_data.impacted_pop[prog][age] for age in self.ss.child_ages) > 0):
+                            trigger[2] += 1
+                        if (prog in self.prog_info.prog_areas['Anaemia']) and (
+                                sum(self.prog_info.prog_data.impacted_pop[prog][age] for age in self.ss.pw_ages) > 0):
+                            trigger[3] += 1
+                        if (prog in self.prog_info.prog_areas['Anaemia']) and (
+                                sum(self.prog_info.prog_data.impacted_pop[prog][age] for age in self.ss.wra_ages) > 0):
+                            trigger[4] += 1
+                        if prog in self.prog_info.prog_areas['Breastfeeding']:
+                            trigger[5] += 1
+                    # Update distributions according to prevalences which trended
+                    if trigger[0] == 0:
+                        self.stunteddist_trend(age, year)
+                    if trigger[1] == 0:
+                        self.wasteddist_trend(age, year)
+                    for index, group in enumerate(group_list, 2):
+                        if trigger[index] == 0:
+                            self.anaemicdist_trend(age, group, year)
+                self.children.stunting_dist[age.age] = age.stunting_dist
+                self.children.wasting_dist[age.age] = age.wasting_dist
+                self.children.anaemia_dist[age.age] = age.anaemia_dist
+            for age in self.pw.age_groups:
+                self.pw.anaemia_dist[age.age] = age.anaemia_dist
+            for age in self.nonpw.age_groups:
+                self.nonpw.anaemia_dist[age.age] = age.anaemia_dist
+            if self.scenario.name == 'Baseline' or trigger[5] == 0:
+                self.bfdist_trend(year)
+                for age in self.children.age_groups:
+                    self.children.bf_dist[age.age] = age.bf_dist
+        else:
+            pass
 
     def stunteddist_trend(self, age, year): # Update annual stunting distribution according to prevalence (equivalent for subsequent)
         import warnings

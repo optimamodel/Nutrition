@@ -4,17 +4,9 @@ sys.path.append('/home/dom/Optima')
 from nutrition.utils import run_parallel
 import sciris as sc
 
-def interp_cov(project, program, years, target): # linear interpolation of coverage from baseline value
-    interp = []
-    timeskip = years[1] - years[0]
-    baseline_cov = project.models[-1].prog_info.programs[program].base_cov
-    if baseline_cov >= target:
-        return baseline_cov
-    else:
-        diff = target - baseline_cov
-        for year in list(range(timeskip + 1)):
-            interp.append(baseline_cov + year * diff / timeskip)
-        return interp
+
+time_trends = False
+type = 'scaled up'
 
 ''' Adapted baseline scenario so that the most CE choices can be added for the next round'''
 def run_baseline_plus(proj, model_name, prog_set, new, dorun=True):
@@ -48,6 +40,18 @@ def run_scens_plus(proj, prog_set, new_progs, scens=None): # adapted run_scenari
             results.append(res)
     proj.add_result(results, name='scens')
     return proj
+
+def interp_cov(project, program, years, target): # linear interpolation of coverage from baseline value
+    interp = []
+    timeskip = years[1] - years[0]
+    baseline_cov = project.models[-1].prog_info.programs[program].base_cov
+    if baseline_cov >= target:
+        return baseline_cov
+    else:
+        diff = target - baseline_cov
+        for year in list(range(timeskip + 1)):
+            interp.append(baseline_cov + year * diff / timeskip)
+        return interp
 
 '''Calculates cost, impact and CE of each intervention scale up for a country and returns results until
  a CE threshold is crossed for the specified outcome'''
@@ -206,99 +210,85 @@ def run_analysis(country):
                [anaemia_CE[:-1], anaemia_cost[:-1], anaemia_impact[:-1], best_anaemia_progs[:-1]],
                [mortality_CE[:-1], mortality_cost[:-1], mortality_impact[:-1], best_mortality_progs[:-1]]]
     return CE_data
+# initialise project
 
-def run_country_ce(date='01012020'):
-    time_trends = False
-    type = 'scaled up'
-
-    # initialise project
-
-    countries = ['China', 'North Korea', 'Cambodia', 'Indonesia', 'Laos', 'Malaysia', 'Maldives', 'Myanmar',
-                 'Philippines', 'Sri Lanka', 'Thailand', 'Timor-Leste', 'Vietnam', 'Fiji', 'Kiribati',
-                 'Federated States of Micronesia', 'Papua New Guinea', 'Samoa', 'Solomon Islands', 'Tonga', 'Vanuatu',
-                 'Armenia', 'Azerbaijan', 'Kazakhstan', 'Kyrgyzstan', 'Mongolia', 'Tajikistan', 'Turkmenistan',
-                 'Uzbekistan', 'Albania', 'Bosnia and Herzegovina', 'Bulgaria', 'Macedonia', 'Montenegro', 'Romania',
-                 'Serbia', 'Belarus', 'Moldova', 'Russian Federation', 'Ukraine', 'Belize', 'Cuba', 'Dominican Republic',
-                 'Grenada', 'Guyana', 'Haiti', 'Jamaica', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Suriname',
-                 'Bolivia', 'Ecuador', 'Peru', 'Colombia', 'Costa Rica', 'El Salvador', 'Guatemala', 'Honduras',
-                 'Nicaragua', 'Venezuela', 'Brazil', 'Paraguay', 'Algeria', 'Egypt', 'Iran', 'Iraq', 'Jordan', 'Lebanon',
-                 'Libya', 'Morocco', 'Palestine', 'Syria', 'Tunisia', 'Turkey', 'Yemen', 'Afghanistan', 'Bangladesh',
-                 'Bhutan', 'India', 'Nepal', 'Pakistan', 'Angola', 'Central African Republic', 'Congo',
-                 'Democratic Republic of the Congo', 'Equatorial Guinea', 'Gabon', 'Burundi', 'Comoros', 'Djibouti',
-                 'Ethiopia', 'Kenya', 'Madagascar', 'Malawi', 'Mauritius', 'Mozambique', 'Rwanda', 'Somalia', 'Tanzania',
-                 'Uganda', 'Zambia', 'Botswana', 'Lesotho', 'Namibia', 'South Africa', 'Eswatini', 'Zimbabwe', 'Benin',
-                 'Burkina Faso', 'Cameroon', 'Cape Verde', 'Chad', 'Cote dIvoire', 'The Gambia', 'Ghana', 'Guinea',
-                 'Guinea-Bissau', 'Liberia', 'Mali', 'Mauritania', 'Niger', 'Nigeria', 'Sao Tome and Principe', 'Senegal',
-                 'Sierra Leone', 'Togo', 'Georgia', 'South Sudan', 'Sudan']
+countries = ['China', 'North Korea', 'Cambodia', 'Indonesia', 'Laos', 'Malaysia', 'Maldives', 'Myanmar',
+             'Philippines', 'Sri Lanka', 'Thailand', 'Timor-Leste', 'Vietnam', 'Fiji', 'Kiribati',
+             'Federated States of Micronesia', 'Papua New Guinea', 'Samoa', 'Solomon Islands', 'Tonga', 'Vanuatu',
+             'Armenia', 'Azerbaijan', 'Kazakhstan', 'Kyrgyzstan', 'Mongolia', 'Tajikistan', 'Turkmenistan',
+             'Uzbekistan', 'Albania', 'Bosnia and Herzegovina', 'Bulgaria', 'Macedonia', 'Montenegro', 'Romania',
+             'Serbia', 'Belarus', 'Moldova', 'Russian Federation', 'Ukraine', 'Belize', 'Cuba', 'Dominican Republic',
+             'Grenada', 'Guyana', 'Haiti', 'Jamaica', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Suriname',
+             'Bolivia', 'Ecuador', 'Peru', 'Colombia', 'Costa Rica', 'El Salvador', 'Guatemala', 'Honduras',
+             'Nicaragua', 'Venezuela', 'Brazil', 'Paraguay', 'Algeria', 'Egypt', 'Iran', 'Iraq', 'Jordan', 'Lebanon',
+             'Libya', 'Morocco', 'Palestine', 'Syria', 'Tunisia', 'Turkey', 'Yemen', 'Afghanistan', 'Bangladesh',
+             'Bhutan', 'India', 'Nepal', 'Pakistan', 'Angola', 'Central African Republic', 'Congo',
+             'Democratic Republic of the Congo', 'Equatorial Guinea', 'Gabon', 'Burundi', 'Comoros', 'Djibouti',
+             'Ethiopia', 'Kenya', 'Madagascar', 'Malawi', 'Mauritius', 'Mozambique', 'Rwanda', 'Somalia', 'Tanzania',
+             'Uganda', 'Zambia', 'Botswana', 'Lesotho', 'Namibia', 'South Africa', 'Eswatini', 'Zimbabwe', 'Benin',
+             'Burkina Faso', 'Cameroon', 'Cape Verde', 'Chad', 'Cote dIvoire', 'The Gambia', 'Ghana', 'Guinea',
+             'Guinea-Bissau', 'Liberia', 'Mali', 'Mauritania', 'Niger', 'Nigeria', 'Sao Tome and Principe', 'Senegal',
+             'Sierra Leone', 'Togo', 'Georgia', 'South Sudan', 'Sudan']
 
 
-    CE_data = sc.odict()
-    output_data = sc.odict()
-    # run simulation for each country
-    CE_outputs = run_parallel(run_analysis, countries, 8)
+CE_data = sc.odict()
+# run simulation for each country
+CE_outputs = run_parallel(run_analysis, countries, 8)
 
-    for c, country in enumerate(countries):
-        CE_data[country] = CE_outputs[c]
+for c, country in enumerate(countries):
+    CE_data[country] = CE_outputs[c]
+print(CE_data)
 
-    for objective in ['stunting', 'wasting', 'anaemia', 'mortality']:
-        output_data[objective] = sc.odict()
-        for c, country in enumerate(countries):
-            output_data[objective][country] = CE_outputs[c][objective]['Programs']
+CE_book = xw.Workbook('Country_CE_03032020.xlsx')
+CE_sheet = CE_book.add_worksheet()
+row = 0
+column = 0
 
-    CE_book = xw.Workbook('Results/' + date + '/' + 'Country_CE_' + date + '.xlsx')
-    CE_sheet = CE_book.add_worksheet()
-    row = 0
-    column = 0
-
-    '''Write results to excel sheet'''
-    for country in CE_data.keys():
-        CE_sheet.write(row, column, country)
+'''Write results to excel sheet'''
+for country in CE_data.keys():
+    CE_sheet.write(row, column, country)
+    row += 1
+    column += 1
+    for o, objective in enumerate(['stunting', 'wasting', 'anaemia', 'mortality']):
+        CE_sheet.write(row, column, objective)
         row += 1
         column += 1
-        for o, objective in enumerate(['stunting', 'wasting', 'anaemia', 'mortality']):
-            CE_sheet.write(row, column, objective)
-            row += 1
+        for m, measure in enumerate(['Cost effectiveness', 'Cost', 'Impact', 'Program']):
+            CE_sheet.write(row, column, measure)
             column += 1
-            for m, measure in enumerate(['Cost effectiveness', 'Cost', 'Impact', 'Program']):
-                CE_sheet.write(row, column, measure)
-                column += 1
-                if CE_data[country][o][m]:
-                    if measure == 'Cost':
-                        CE_sheet.write(row, column, 0)
-                        column += 1
-                        for e, element in enumerate(CE_data[country][o][m]):
-                            if e == 0:
-                                CE_sheet.write(row, column, CE_data[country][o][m][e])
-                                column += 1
-                            else:
-                                CE_sheet.write(row, column, sum(CE_data[country][o][m][:e+1]))
-                                column += 1
-                        row += 1
-                        column -= e + 3
-                    elif measure == 'Impact':
-                        CE_sheet.write(row, column, 0)
-                        column += 1
-                        CE_sheet.write_row(row, column, CE_data[country][o][m])
-                        row += 1
-                        column -= 2
-                    else:
-                        CE_sheet.write(row, column, "")
-                        column += 1
-                        CE_sheet.write_row(row, column, CE_data[country][o][m])
-                        row += 1
-                        column -= 2
+            if CE_data[country][o][m]:
+                if measure == 'Cost':
+                    CE_sheet.write(row, column, 0)
+                    column += 1
+                    for e, element in enumerate(CE_data[country][o][m]):
+                        if e == 0:
+                            CE_sheet.write(row, column, CE_data[country][o][m][e])
+                            column += 1
+                        else:
+                            CE_sheet.write(row, column, sum(CE_data[country][o][m][:e+1]))
+                            column += 1
+                    row += 1
+                    column -= e + 3
+                elif measure == 'Impact':
+                    CE_sheet.write(row, column, 0)
+                    column += 1
+                    CE_sheet.write_row(row, column, CE_data[country][o][m])
+                    row += 1
+                    column -= 2
                 else:
                     CE_sheet.write(row, column, "")
+                    column += 1
+                    CE_sheet.write_row(row, column, CE_data[country][o][m])
                     row += 1
-                    column -= 1
-            column -= 1
+                    column -= 2
+            else:
+                CE_sheet.write(row, column, "")
+                row += 1
+                column -= 1
         column -= 1
-    CE_book.close()
-    print('Finished!')
-    return output_data
-
-if __name__ == '__main__':
-    run_country_ce()
+    column -= 1
+CE_book.close()
+print('Finished!')
 
 
 

@@ -1,7 +1,7 @@
 from functools import partial
 from math import pow
 import numpy as np
-from scipy.optimize import fsolve
+from scipy.optimize import fsolve, root
 import sciris as sc
 from . import settings
 from .utils import solve_quad, restratify, fit_poly, system, check_sol
@@ -708,6 +708,7 @@ class Children(Population):
         bo[3] = newborns.birth_dist["Pre-term SGA"]
         p0 = newborns.frac_risk(risk)
         sol = fsolve(partial(system, OR, bo, p0), (0.5, 0.5, 0.5, 0.5), xtol=1e-12)
+        tion = root(partial(system, OR, bo, p0), (0.5, 0.5, 0.5, 0.5), tol=1e-12)
         # Hacky fix for when root solver fails
         truthy = [(num - 0.5 == 0) for num in sol]
         if all(truthy):

@@ -38,7 +38,7 @@ def cost_impact(country, prog_list, objective_progs, effective_progs, objective)
                   'scen_type': 'coverage',
                   'progvals': trial_progs}
         scen_list = ui.make_scens([kwargs])
-        p.add_scens([scen_list])
+        p.add_scens(scen_list)
         p.run_scens_plus(prog_list, trial_progs)
         cost.append((np.sum(p.results['scens'][-1].programs[prog].annual_spend) -
                      (len(p.results['scens'][-1].programs[prog].annual_spend)) *
@@ -77,15 +77,16 @@ countries = ['China', 'North Korea', 'Cambodia', 'Indonesia', 'Laos', 'Malaysia'
              'Sierra Leone', 'Togo', 'Georgia', 'South Sudan', 'Sudan']
 
 cov = 0.95
-progval = sc.odict(
-    {'Balanced energy-protein supplementation': cov, 'Calcium supplementation': cov, 'Cash transfers': cov,
-     'Delayed cord clamping': cov, 'IFA fortification of maize': cov, 'IFAS (community)': cov,
-     'IFAS for pregnant women (community)': cov, 'IPTp': cov, 'Iron and iodine fortification of salt': cov,
-     'IYCF 1': cov, 'Kangaroo mother care': cov, 'Lipid-based nutrition supplements': cov,
-     'Long-lasting insecticide-treated bednets': cov, 'Mg for eclampsia': cov, 'Mg for pre-eclampsia': cov,
-     'Micronutrient powders': cov, 'Multiple micronutrient supplementation': cov,
-     'Oral rehydration salts': cov, 'Public provision of complementary foods': cov, 'Treatment of SAM': cov,
-     'Vitamin A supplementation': cov, 'Zinc for treatment + ORS': cov, 'Zinc supplementation': cov})
+progval = sc.odict({'Balanced energy-protein supplementation': cov, 'Calcium supplementation': cov, 'Cash transfers': cov,
+                     'Delayed cord clamping': cov, 'IFA fortification of maize': cov,
+                     'IFAS (community)': cov,
+                     'IFAS for pregnant women (community)': cov,
+                     'IPTp': cov, 'Iron and iodine fortification of salt': cov, 'IYCF 1': cov, 'Kangaroo mother care': cov,
+                     'Lipid-based nutrition supplements': cov, 'Long-lasting insecticide-treated bednets': cov,
+                     'Multiple micronutrient supplementation': cov,
+                     'Public provision of complementary foods': cov, 'Treatment of SAM': cov, 'Vitamin A supplementation': cov,
+                     'Zinc for treatment + ORS': cov})
+
 
 prog_list = sc.dcp(progval.keys())
 
@@ -132,17 +133,17 @@ prog_choices = sc.odict({'stunting': sc.odict({'Cost effectiveness': [], 'Cost':
                          'anaemia': sc.odict({'Cost effectiveness': [], 'Cost': [], 'Impact': [], 'Program': []}),
                          'mortality': sc.odict({'Cost effectiveness': [], 'Cost': [], 'Impact': [], 'Program': []})})
 # run simulation for each country
-num_CE = [5, 3, 3, 5]
+num_CE = [18, 18, 18, 18]
 for o, outcome in enumerate(['stunting', 'wasting', 'anaemia', 'mortality']):
     effective_progs = sc.odict()
-    objective_progs = different_progs[o]
+    objective_progs = progval #different_progs[o]
     for round in list(range(num_CE[o])):
         costs = sc.odict()
         impacts = sc.odict()
         total_cost = sc.odict()
         total_impact = sc.odict()
         total_CE = sc.odict()
-        for country in countries[:5]:
+        for country in countries[32:33]:
             costs[country], impacts[country] = cost_impact(country, prog_list, objective_progs, effective_progs, outcome)
         for p, prog in enumerate(objective_progs.keys()):
             total_cost[prog] = 0
@@ -169,7 +170,7 @@ for o, outcome in enumerate(['stunting', 'wasting', 'anaemia', 'mortality']):
         del objective_progs[objective_progs.keys()[location]]
 
 print(prog_choices['stunting'])
-CE_book = xw.Workbook('Global_cost_effectiveness26082019.xlsx')
+CE_book = xw.Workbook('Global_cost_effectiveness02032020.xlsx')
 CE_sheet = CE_book.add_worksheet()
 row = 0
 column = 0
