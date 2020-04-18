@@ -119,7 +119,7 @@ Last update: 2018sep23
 
     // Health prior function
     created() {
-      this.$sciris.getUserInfo()
+      this.$sciris.getUserInfo(this.$store)
     },
 
     // Theme function

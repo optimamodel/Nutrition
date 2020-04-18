@@ -121,11 +121,11 @@ Last update: 2019feb18
     <modal name="create-project"
            height="auto"
            :classes="['v--modal', 'vue-dialog']"
-           :width="width"
+           :width="400"
            :pivot-y="0.3"
            :adaptive="true"
-           :clickToClose="clickToClose"
-           :transition="transition">
+           :clickToClose="false"
+    >
 
       <div class="dialog-content">
         <div class="dialog-c-title">
@@ -153,11 +153,11 @@ Last update: 2019feb18
     <modal name="rename-dataset"
            height="auto"
            :classes="['v--modal', 'vue-dialog']"
-           :width="width"
+           :width="400"
            :pivot-y="0.3"
            :adaptive="true"
-           :clickToClose="clickToClose"
-           :transition="transition">
+           :clickToClose="false"
+    >
 
       <div class="dialog-content">
         <div class="dialog-c-title">
