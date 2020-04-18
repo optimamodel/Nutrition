@@ -71,8 +71,7 @@ Last update: 2018sep23
 
 
 <script>
-  import userservice from '@/js/user-service'
-  import router from '@/router'
+  import router from '../router.js'
 
   export default {
     name: 'TopNavbar',
@@ -87,7 +86,7 @@ Last update: 2018sep23
     computed: {
       // Health prior function
       currentUser(){
-        return userservice.currentUser()
+        return this.$store.state.currentUser.username
       },
 
       activeProjectName() {
@@ -100,8 +99,8 @@ Last update: 2018sep23
 
       activeUserName() {
         // Get the active user name -- the display name if defined; else the user name
-        var username = userservice.currentUser().username;
-        var dispname = userservice.currentUser().displayname;
+        var username = this.$store.state.currentUser.username;
+        var dispname = this.$store.state.currentUser.displayname;
         var userlabel = '';
         if (dispname === undefined || dispname === '') {
           userlabel = username;
@@ -120,7 +119,7 @@ Last update: 2018sep23
 
     // Health prior function
     created() {
-      userservice.getUserInfo()
+      this.$sciris.getUserInfo()
     },
 
     // Theme function
@@ -132,15 +131,15 @@ Last update: 2018sep23
     methods: {
       // Health prior functions
       checkLoggedIn() {
-        userservice.checkLoggedIn
+        this.$sciris.checkLoggedIn
       },
 
       checkAdminLoggedIn() {
-        userservice.checkAdminLoggedIn
+        this.$sciris.checkAdminLoggedIn
       },
 
       logOut() {
-        userservice.logOut()
+        this.$sciris.logOut()
       },
 
       // Theme functions

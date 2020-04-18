@@ -156,10 +156,8 @@ Last update: 2019-02-11
 
   import axios from 'axios'
   let filesaver = require('file-saver')
-  import utils from '@/js/utils' // Imported globally
-  import rpcs from '@/js/rpc-service'
-  import status from '@/js/status-service'
-  import router from '@/router'
+  import utils from '../js/utils.js' // Imported globally
+  import router from '../router.js'
 
   export default {
     name: 'InputsPage',
@@ -210,61 +208,61 @@ Last update: 2019-02-11
 
       getSheetData() {
         console.log('getSheetData() called')
-        status.start(this, 'Getting data...')
-        rpcs.rpc('get_sheet_data', [this.projectID], {'key': this.activeDataset}) // Make the server call to download the framework to a .prj file.
+        this.$sciris.start(this, 'Getting data...')
+        this.$sciris.rpc('get_sheet_data', [this.projectID], {'key': this.activeDataset}) // Make the server call to download the framework to a .prj file.
           .then(response => {
             this.sheetNames = response.data.names
             this.sheetTables = response.data.tables
             if (this.activeSheet === '') {
               this.activeSheet = this.sheetNames[0]
             }
-            status.succeed(this, 'Data loaded')
+            this.$sciris.succeed(this, 'Data loaded')
           })
           .catch(error => {
-            status.fail(this, 'Could not get sheet data', error)
+            this.$sciris.fail(this, 'Could not get sheet data', error)
           })
       },
 
       saveSheetData() {
         console.log('saveSheetData() called')
-        status.start(this, 'Saving changes...')
-        rpcs.rpc('save_sheet_data', [this.projectID, this.sheetTables], {'key': this.activeDataset}) // Make the server call to download the framework to a .prj file.
+        this.$sciris.start(this, 'Saving changes...')
+        this.$sciris.rpc('save_sheet_data', [this.projectID, this.sheetTables], {'key': this.activeDataset}) // Make the server call to download the framework to a .prj file.
           .then(response => {
             // Call getSheetData() because the save_sheet_data() RPC will trigger new
             // values for the calculated cells.
             this.getSheetData() // Load the sheet data.
-            status.succeed(this, 'Data saved')
+            this.$sciris.succeed(this, 'Data saved')
           })
           .catch(error => {
-            status.fail(this, 'Could not save sheet data', error)
+            this.$sciris.fail(this, 'Could not save sheet data', error)
           })
       },
 
       downloadDatabook() {
         console.log('downloadDatabook() called')
-        status.start(this, 'Downloading databook...')
-        rpcs.download('download_databook', [this.projectID], {'key': this.activeDataset})
+        this.$sciris.start(this, 'Downloading databook...')
+        this.$sciris.download('download_databook', [this.projectID], {'key': this.activeDataset})
           .then(response => {
-            status.succeed(this, '')  // No green popup message.
+            this.$sciris.succeed(this, '')  // No green popup message.
           })
           .catch(error => {
-            status.fail(this, 'Could not download databook', error)
+            this.$sciris.fail(this, 'Could not download databook', error)
           })
       },
 
       uploadDatabook() {
         console.log('uploadDatabook() called')
-        rpcs.upload('upload_databook', [this.projectID], {}, '.xlsx')
+        this.$sciris.upload('upload_databook', [this.projectID], {}, '.xlsx')
           .then(response => {
-            status.start(this, 'Uploading databook...')
+            this.$sciris.start(this, 'Uploading databook...')
             this.updateDatasets() // Update the dataset list so the new dataset shows up on the list.
               .then(response2 => {
                 this.getSheetData() // Load the sheet data.
-                  status.succeed(this, 'Data uploaded')
+                  this.$sciris.succeed(this, 'Data uploaded')
                 })
 		  })
           .catch(error => {
-            status.fail(this, 'Could not upload data', error)
+            this.$sciris.fail(this, 'Could not upload data', error)
           })
       },
 
@@ -277,44 +275,44 @@ Last update: 2019-02-11
       renameDataset() {
         console.log('renameDataset() called for ' + this.activeDataset)
         this.$modal.hide('rename-dataset');
-        status.start(this)
-        rpcs.rpc('rename_dataset', [this.projectID, this.origDatasetName, this.activeDataset]) // Have the server rename the dataset, giving it a new name.
+        this.$sciris.start(this)
+        this.$sciris.rpc('rename_dataset', [this.projectID, this.origDatasetName, this.activeDataset]) // Have the server rename the dataset, giving it a new name.
           .then(response => {
             this.updateDatasets() // Update the dataset so the renamed set shows up on the list.
-            status.succeed(this, 'Databook "'+this.activeDataset+'" renamed') // Indicate success.
+            this.$sciris.succeed(this, 'Databook "'+this.activeDataset+'" renamed') // Indicate success.
           })
           .catch(error => {
-            status.fail(this, 'Could not rename databook', error)
+            this.$sciris.fail(this, 'Could not rename databook', error)
           })
       },
 
       copyDataset() {
         console.log('copyDataset() called for ' + this.activeDataset)
-        status.start(this)
-        rpcs.rpc('copy_dataset', [this.projectID, this.activeDataset]) // Have the server copy the dataset, giving it a new name.
+        this.$sciris.start(this)
+        this.$sciris.rpc('copy_dataset', [this.projectID, this.activeDataset]) // Have the server copy the dataset, giving it a new name.
           .then(response => {
             this.updateDatasets() // Update the datasets so the copied program shows up on the list.
             this.activeDataset = response.data
-            status.succeed(this, 'Databook "'+this.activeDataset+'" copied') // Indicate success.
+            this.$sciris.succeed(this, 'Databook "'+this.activeDataset+'" copied') // Indicate success.
           })
           .catch(error => {
-            status.fail(this, 'Could not copy databook', error)
+            this.$sciris.fail(this, 'Could not copy databook', error)
           })
       },
 
       deleteDataset() {
         console.log('deleteDataset() called for ' + this.activeDataset)
-        status.start(this)
-        rpcs.rpc('delete_dataset', [this.projectID, this.activeDataset]) // Have the server delete the dataset.
+        this.$sciris.start(this)
+        this.$sciris.rpc('delete_dataset', [this.projectID, this.activeDataset]) // Have the server delete the dataset.
           .then(response => {
             this.updateDatasets() // Update the project summaries so the dataset deletion shows up on the list.
               .then(response2 => {
                 this.getSheetData() // Load the sheet data (since we've switched to a new one).
-				status.succeed(this, 'Databook "'+this.activeDataset+'" deleted') // Indicate success.
+				this.$sciris.succeed(this, 'Databook "'+this.activeDataset+'" deleted') // Indicate success.
               })        
           })
           .catch(error => {
-            status.fail(this, 'Cannot delete last databook: ensure there are at least 2 databooks before deleting one', error)
+            this.$sciris.fail(this, 'Cannot delete last databook: ensure there are at least 2 databooks before deleting one', error)
           })
       },
 

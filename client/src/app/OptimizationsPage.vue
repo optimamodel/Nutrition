@@ -232,10 +232,8 @@ Last update: 2019feb11
 <script>
   import axios from 'axios'
   var filesaver = require('file-saver')
-  import utils from '@/js/utils'
-  import rpcs from '@/js/rpc-service'
-  import status from '@/js/status-service'
-  import router from '@/router'
+  import utils from '../js/utils.js'
+  import router from '../router.js'
 
   export default {
     name: 'OptimizationsPage',
@@ -336,7 +334,7 @@ Last update: 2019feb11
         return new Promise((resolve, reject) => {
           console.log('getOptimTaskState() called for with: ' + optimSummary.status)
           let statusStr = '';
-          rpcs.rpc('check_task', [optimSummary.serverDatastoreId]) // Check the status of the task.
+          this.$sciris.rpc('check_task', [optimSummary.serverDatastoreId]) // Check the status of the task.
             .then(result => {
               statusStr = result.data.task.status
               optimSummary.status = statusStr
@@ -357,7 +355,7 @@ Last update: 2019feb11
                 })
                 // TODO: The above works, but we want a solution that uses the line
                 // below (which currently does not work).
-//                status.fail(this, failMessage, result.data.task.errorText)                
+//                this.$sciris.fail(this, failMessage, result.data.task.errorText)
               }
               resolve(result)
             })
@@ -482,9 +480,9 @@ Last update: 2019feb11
         return new Promise((resolve, reject) => {
           let datastoreId = optimSummary.serverDatastoreId  // hack because this gets overwritten soon by caller
           console.log('clearTask() called for '+this.currentOptim)
-          rpcs.rpc('del_result', [datastoreId, this.projectID]) // Delete cached result.
+          this.$sciris.rpc('del_result', [datastoreId, this.projectID]) // Delete cached result.
             .then(response => {
-              rpcs.rpc('delete_task', [datastoreId])
+              this.$sciris.rpc('delete_task', [datastoreId])
                 .then(response => {
                   this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
                   if (!this.pollingTasks) {
@@ -504,8 +502,8 @@ Last update: 2019feb11
     
       getOptimSummaries() {
         console.log('getOptimSummaries() called')
-        status.start(this)
-        rpcs.rpc('get_optim_info', [this.projectID]) // Get the current project's optimization summaries from the server.
+        this.$sciris.start(this)
+        this.$sciris.rpc('get_optim_info', [this.projectID]) // Get the current project's optimization summaries from the server.
           .then(response => {
             this.optimSummaries = response.data // Set the optimizations to what we received.
             this.optimSummaries.forEach(optimSum => { // For each of the optimization summaries...
@@ -516,29 +514,29 @@ Last update: 2019feb11
             })
             this.doTaskPolling(true)  // start task polling, kicking off with running check_task() for all optimizations
             this.optimsLoaded = true
-            status.succeed(this, 'Optimizations loaded')
+            this.$sciris.succeed(this, 'Optimizations loaded')
           })
           .catch(error => {
-            status.fail(this, 'Could not load optimizations', error)
+            this.$sciris.fail(this, 'Could not load optimizations', error)
           })
       },
 
       setOptimSummaries() {
         console.log('setOptimSummaries() called')
-        status.start(this)
-        rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
+        this.$sciris.start(this)
+        this.$sciris.rpc('set_optim_info', [this.projectID, this.optimSummaries])
           .then( response => {
-            status.succeed(this, 'Optimizations saved')
+            this.$sciris.succeed(this, 'Optimizations saved')
           })
           .catch(error => {
-            status.fail(this, 'Could not save optimizations', error)
+            this.$sciris.fail(this, 'Could not save optimizations', error)
           })
       },
 
       addOptimModal() {
         // Open a model dialog for creating a new optimization
         console.log('addOptimModal() called');
-        rpcs.rpc('get_default_optim', [this.projectID, this.datasetOptions[0]])
+        this.$sciris.rpc('get_default_optim', [this.projectID, this.datasetOptions[0]])
           .then(response => {
             this.addEditModal.optimSummary = response.data
             this.addEditModal.origName = this.addEditModal.optimSummary.name
@@ -549,7 +547,7 @@ Last update: 2019feb11
             console.log(this.addEditModal.optimSummary)
           })
           .catch(error => {
-            status.fail(this, 'Could not open add optimization modal', error)
+            this.$sciris.fail(this, 'Could not open add optimization modal', error)
           })
       },
 
@@ -569,7 +567,7 @@ Last update: 2019feb11
         console.log('New Dataset: ', this.addEditModal.optimSummary.model_name)
         let optimName = this.addEditModal.optimSummary.name
         // Get a new default optimization to write into the modal.
-        rpcs.rpc('get_default_optim', [this.projectID, this.addEditModal.optimSummary.model_name])
+        this.$sciris.rpc('get_default_optim', [this.projectID, this.addEditModal.optimSummary.model_name])
           .then(response => {
             let newDefaultOptim = response.data
             this.addEditModal.optimSummary = newDefaultOptim  // overwrite the old optimization
@@ -578,7 +576,7 @@ Last update: 2019feb11
             console.log(newDefaultOptim)
           })
           .catch(error => {
-            status.fail(this, 'Could not switch databooks', error)
+            this.$sciris.fail(this, 'Could not switch databooks', error)
           })		
       },
 	  
@@ -591,7 +589,7 @@ Last update: 2019feb11
       modalSave() {
         console.log('modalSave() called')
         this.$modal.hide('add-optim')
-        status.start(this)
+        this.$sciris.start(this)
         let newOptim = _.cloneDeep(this.addEditModal.optimSummary)
         let optimNames = [] // Get the list of all of the current optimization names.
         this.optimSummaries.forEach(optimSum => {
@@ -620,19 +618,19 @@ Last update: 2019feb11
         }
         console.log('Saved optimization:')
         console.log(newOptim);
-        rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
+        this.$sciris.rpc('set_optim_info', [this.projectID, this.optimSummaries])
           .then( response => {
-            status.succeed(this, 'Optimization added')
+            this.$sciris.succeed(this, 'Optimization added')
             this.getOptimSummaries()  // Reload all optimizations so Vue state is correct (hack).
           })
           .catch(error => {
-            status.fail(this, 'Could not add optimization', error)
+            this.$sciris.fail(this, 'Could not add optimization', error)
           })
       },
 
       copyOptim(optimSummary) {
         console.log('copyOptim() called')
-        status.start(this)
+        this.$sciris.start(this)
         var newOptim = _.cloneDeep(optimSummary);
         var otherNames = []
         this.optimSummaries.forEach(optimSum => {
@@ -642,18 +640,18 @@ Last update: 2019feb11
         newOptim.serverDatastoreId = this.$store.state.activeProject.project.id + ':opt-' + newOptim.name
         this.optimSummaries.push(newOptim)
         this.getOptimTaskState(newOptim)
-        rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
+        this.$sciris.rpc('set_optim_info', [this.projectID, this.optimSummaries])
           .then( response => {
-            status.succeed(this, 'Optimization copied')
+            this.$sciris.succeed(this, 'Optimization copied')
           })
           .catch(error => {
-            status.fail(this, 'Could not copy optimization', error)
+            this.$sciris.fail(this, 'Could not copy optimization', error)
           })
       },
 
       deleteOptim(optimSummary) {
         console.log('deleteOptim() called')
-        status.start(this)
+        this.$sciris.start(this)
         if (optimSummary.status !== 'not started') {
           this.clearTask(optimSummary)  // Clear the task from the server.
         }
@@ -662,57 +660,57 @@ Last update: 2019feb11
             this.optimSummaries.splice(i, 1);
           }
         }
-        rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries])
+        this.$sciris.rpc('set_optim_info', [this.projectID, this.optimSummaries])
           .then(response => {
-            status.succeed(this, 'Optimization deleted')
+            this.$sciris.succeed(this, 'Optimization deleted')
           })
           .catch(error => {
-            status.fail(this, 'Could not delete optimization', error)
+            this.$sciris.fail(this, 'Could not delete optimization', error)
           })
       },
 
       runOptim(optimSummary, runtype) {
         console.log('runOptim() called for ' + optimSummary.name + ' for time: ' + runtype)
-        status.start(this)
-        rpcs.rpc('set_optim_info', [this.projectID, this.optimSummaries]) // Make sure they're saved first
+        this.$sciris.start(this)
+        this.$sciris.rpc('set_optim_info', [this.projectID, this.optimSummaries]) // Make sure they're saved first
           .then(response => {
-            rpcs.rpc('launch_task', [optimSummary.serverDatastoreId, 'run_optim',
+            this.$sciris.rpc('launch_task', [optimSummary.serverDatastoreId, 'run_optim',
               [this.projectID, optimSummary.serverDatastoreId, optimSummary.name, runtype]])
               .then(response => {
                 this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
                 if (!this.pollingTasks) {
                   this.doTaskPolling(true)
                 }
-                status.succeed(this, 'Started optimization')
+                this.$sciris.succeed(this, 'Started optimization')
               })
               .catch(error => {
-                status.fail(this, 'Could not start optimization', error)
+                this.$sciris.fail(this, 'Could not start optimization', error)
               })
           })
           .catch(error => {
-            status.fail(this, 'Could not save optimizations', error)
+            this.$sciris.fail(this, 'Could not save optimizations', error)
           })
       },
 
       cancelRun(optimSummary) {
         console.log('cancelRun() called for '+this.currentOptim)
-        rpcs.rpc('delete_task', ['run_optim'])
+        this.$sciris.rpc('delete_task', ['run_optim'])
       },
 
       plotOptimization(optimSummary) {
         console.log('plotOptimization() called')
-        status.start(this)
-        rpcs.rpc('plot_optimization', [this.projectID, optimSummary.serverDatastoreId, this.calculateCostEff])
+        this.$sciris.start(this)
+        this.$sciris.rpc('plot_optimization', [this.projectID, optimSummary.serverDatastoreId, this.calculateCostEff])
           .then(response => {
             this.hasTable = this.calculateCostEff
             this.table = response.data.table
             this.makeGraphs(response.data.graphs)
             this.displayResultName = optimSummary.name
             this.displayResultDatastoreId = optimSummary.serverDatastoreId
-            status.succeed(this, 'Graphs created')
+            this.$sciris.succeed(this, 'Graphs created')
           })
           .catch(error => {
-            status.fail(this, 'Could not make graphs', error) // Indicate failure.
+            this.$sciris.fail(this, 'Could not make graphs', error) // Indicate failure.
           })
       },
     }

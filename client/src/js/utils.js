@@ -2,8 +2,7 @@
  * Utilities that are shared across pages
  */
 
-import rpcs from '@/js/rpc-service'
-import status from '@/js/status-service'
+import sciris from 'sciris-js'
 
 function sleep(time) {
   // Return a promise that resolves after _time_ milliseconds.
@@ -106,19 +105,19 @@ function activePops(vm) {
 function getPlotOptions(vm) {
   console.log('getPlotOptions() called')
   let project_id = projectID(vm)
-  rpcs.rpc('get_supported_plots', [project_id, true])
+  sciris.rpc('get_supported_plots', [project_id, true])
     .then(response => {
       vm.plotOptions = response.data // Get the parameter values
     })
     .catch(error => {
-      status.fail(vm, 'Could not get plot options', error)
+      sciris.fail(vm, 'Could not get plot options', error)
     })
 }
 
 function makeGraphs(vm, graphdata) {
   let waitingtime = 0.5
   console.log('makeGraphs() called')
-  status.start(vm) // Start indicating progress.
+  sciris.start(vm) // Start indicating progress.
   vm.hasGraphs = true
   sleep(waitingtime * 1000)
     .then(response => {
@@ -147,7 +146,7 @@ function makeGraphs(vm, graphdata) {
         }
       }
     })
-  status.succeed(vm, 'Graphs created') // Indicate success.
+  sciris.succeed(vm, 'Graphs created') // Indicate success.
 }
 
 function clearGraphs(vm, numfigs) {
@@ -168,17 +167,17 @@ function clearGraphs(vm, numfigs) {
 
 function exportGraphs(vm, project_id, cache_id) {
   console.log('exportGraphs() called')
-  rpcs.download('export_graphs', [project_id, cache_id]) // Make the server call to download the framework to a .prj file.
+  sciris.download('export_graphs', [project_id, cache_id]) // Make the server call to download the framework to a .prj file.
     .catch(error => {
-      status.fail(vm, 'Could not download graphs', error)
+      sciris.fail(vm, 'Could not download graphs', error)
     })
 }
 
 function exportResults(vm, project_id, cache_id) {
   console.log('exportResults()')
-  rpcs.download('export_results', [project_id, cache_id]) // Make the server call to download the framework to a .prj file.
+  sciris.download('export_results', [project_id, cache_id]) // Make the server call to download the framework to a .prj file.
     .catch(error => {
-      status.fail(vm, 'Could not export results', error)
+      sciris.fail(vm, 'Could not export results', error)
     })
 }
 
@@ -210,7 +209,7 @@ function scaleFigs(frac) {
 function updateDatasets(vm) {
   return new Promise((resolve, reject) => {
     console.log('updateDatasets() called')
-    rpcs.rpc('get_dataset_keys', [vm.projectID]) // Get the current user's datasets from the server.
+    sciris.rpc('get_dataset_keys', [vm.projectID]) // Get the current user's datasets from the server.
       .then(response => {
         vm.datasetOptions = response.data // Set the scenarios to what we received.
         if (vm.datasetOptions.indexOf(vm.activeDataset) === -1) {
@@ -225,7 +224,7 @@ function updateDatasets(vm) {
 		resolve(response)
       })
       .catch(error => {
-        status.fail(this, 'Could not get dataset info', error)
+        sciris.fail(this, 'Could not get dataset info', error)
         reject(error)
       })
   })

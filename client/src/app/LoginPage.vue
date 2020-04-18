@@ -62,9 +62,7 @@ Last update: 2018sep22
 </template>
 
 <script>
-  import rpcs from '@/js/rpc-service'
-  import userservice from '@/js/user-service'
-  import router from '@/router'
+  import router from '../router.js'
 
   export default {
     name: 'LoginPage',
@@ -81,7 +79,7 @@ Last update: 2018sep22
 
     computed: {
       getVersionInfo() {
-        rpcs.rpc('get_version_info')
+        this.$sciris.rpc('get_version_info')
         .then(response => {
           this.version = response.data['version'];
           this.date = response.data['date'];
@@ -91,19 +89,27 @@ Last update: 2018sep22
 
     methods: {
       tryLogin () {
-        userservice.loginCall(this.loginUserName, this.loginPassword)
+        this.$sciris.loginCall(this.loginUserName, this.loginPassword)
         .then(response => {
           if (response.data === 'success') {
             // Set a success result to show.
             this.loginResult = 'Logging in...'
 
+            console.log('Login accepted')
+
             // Read in the full current user information.
-            userservice.getCurrentUserInfo()
+            this.$sciris.getCurrentUserInfo()
             .then(response2 => {
               // Set the username to what the server indicates.
+
+              console.log('Committing user')
+
               this.$store.commit('newUser', response2.data.user)
 
               // Navigate automatically to the home page.
+
+              console.log('Navigating')
+
               router.push('/')
             })
             .catch(error => {

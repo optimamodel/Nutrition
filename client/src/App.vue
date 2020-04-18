@@ -34,14 +34,12 @@ Last update: 2018sep23
 </template>
 
 <script>
-import userService from '@/js/user-service'
-import Vue from 'vue'; // This needs to appear somewhere but only once
+
+  import sciris from 'sciris-js';
+  import Vue from 'vue'; // This needs to appear somewhere but only once
 
 export default {
   computed: {
-    currentUser: () => {
-      return userService.currentUser()
-    },
 
     activeProjectName() {
       if (this.$store.state.activeProject.project === undefined) {
@@ -53,8 +51,8 @@ export default {
 
     activeUserName() {
       // Get the active user name -- the display name if defined; else the user name -- WARNING, duplicates TopNavbar.vue
-      var username = userService.currentUser().username;
-      var dispname = userService.currentUser().displayname;
+      var username = this.$store.state.currentUser.username;
+      var dispname = this.$store.state.currentUser.displayname;
       var userlabel = '';
       if (dispname === undefined || dispname === '') {
         userlabel = username;
@@ -66,7 +64,7 @@ export default {
   },
   methods: {
     logOut() {
-      userService.logOut()
+      sciris.logOut()
     },
   }
 
