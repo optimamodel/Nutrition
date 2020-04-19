@@ -82,7 +82,7 @@ Last update: 2018sep23
   import router from '../router.js'
 
   export default {
-    name: 'TopNavbar',
+    name: 'Navbar',
 
     // Health prior function
     data() {
