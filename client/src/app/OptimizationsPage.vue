@@ -15,7 +15,7 @@ Last update: 2019feb11
 
     <div v-else-if="!hasData">
       <div style="font-style:italic">
-        <p>Data not yet uploaded for the project.  Please upload a databook in the Projects page.</p>
+        <p>Data not yet uploaded for the project. Please upload a databook in the Projects page.</p>
       </div>
     </div>
 
@@ -38,16 +38,16 @@ Last update: 2019feb11
             </td>
             <td>
               <b>{{ optimSummary.model_name }}</b>
-            </td>			
+            </td>
             <td>
               {{ statusFormatStr(optimSummary) }}
               {{ timeFormatStr(optimSummary) }}
             </td>
             <td style="white-space: nowrap">
-              <button class="btn __green" :disabled="!canRunTask(optimSummary)"     @click="runOptim(optimSummary, 'full')">Run</button>
-              <button class="btn" :disabled="!canRunTask(optimSummary)"             @click="runOptim(optimSummary, 'test')">Test run</button>
+              <button class="btn __green" :disabled="!canRunTask(optimSummary)" @click="runOptim(optimSummary, 'full')">Run</button>
+              <button class="btn" :disabled="!canRunTask(optimSummary)" @click="runOptim(optimSummary, 'test')">Test run</button>
               <button class="btn __green" :disabled="!canPlotResults(optimSummary)" @click="plotOptimization(optimSummary)">Plot results</button>
-              <button class="btn" :disabled="!canCancelTask(optimSummary)"          @click="clearTask(optimSummary)">Clear run</button>
+              <button class="btn" :disabled="!canCancelTask(optimSummary)" @click="clearTask(optimSummary)">Clear run</button>
               <button class="btn btn-icon" @click="editOptimModal(optimSummary)" data-tooltip="Edit optimization"><i class="ti-pencil"></i></button>
               <button class="btn btn-icon" @click="copyOptim(optimSummary)" data-tooltip="Copy optimization"><i class="ti-files"></i></button>
               <button class="btn btn-icon" @click="deleteOptim(optimSummary)" data-tooltip="Delete optimization"><i class="ti-trash"></i></button>
@@ -57,8 +57,8 @@ Last update: 2019feb11
         </table>
 
         <div>
-            <input type="checkbox" id="costeff_checkbox" v-model="calculateCostEff"/>
-            <label for="costeff_checkbox">Perform intervention cost-effectiveness analysis</label>
+          <input type="checkbox" id="costeff_checkbox" v-model="calculateCostEff"/>
+          <label for="costeff_checkbox">Perform intervention cost-effectiveness analysis</label>
         </div>
 
         <div>
@@ -107,7 +107,7 @@ Last update: 2019feb11
             <tbody>
             <tr v-for="rowdata in table">
               <td v-for="i in (rowdata.length-1)">
-                <span v-if="rowdata[0]==='header'"             style="font-size:15px; font-weight:bold">{{rowdata[i]}}</span>
+                <span v-if="rowdata[0]==='header'" style="font-size:15px; font-weight:bold">{{rowdata[i]}}</span>
                 <span v-else-if="rowdata[0]==='keys'  && i==1" style="font-size:12px; font-style:italic">{{rowdata[i]}}</span>
                 <span v-else-if="rowdata[0]==='keys'  && i!=1" style="font-size:12px; font-weight:bold">{{rowdata[i]}}</span>
                 <span v-else-if="rowdata[0]==='entry' && i==1" style="font-size:12px; font-weight:bold">{{rowdata[i]}}</span>
@@ -151,7 +151,7 @@ Last update: 2019feb11
             <option v-for='dataset in datasetOptions'>
               {{ dataset }}
             </option>
-          </select><br><br>			 
+          </select><br><br>
           <div class="scrolltable" style="max-height: 30vh;">
             <table class="table table-bordered table-striped table-hover">
               <thead>
@@ -241,7 +241,7 @@ Last update: 2019feb11
       return {
         serverDatastoreId: '',
         displayResultName: '',
-        displayResultDatastoreId: '',        
+        displayResultDatastoreId: '',
         optimSummaries: [],
         optimsLoaded: false,
         pollingTasks: false,
@@ -260,17 +260,22 @@ Last update: 2019feb11
     },
 
     computed: {
-      projectID()    { return utils.projectID(this) },
-      hasData()      { return utils.hasData(this) },
-      placeholders() { return utils.placeholders() },
+      projectID() {
+        return utils.projectID(this)
+      },
+      hasData() {
+        return utils.hasData(this)
+      },
+      placeholders() {
+        return utils.placeholders()
+      },
     },
 
     created() {
       if (this.$store.state.currentUser.displayname === undefined) { // If we have no user logged in, automatically redirect to the login page.
         router.push('/login')
-      }
-      else if ((this.$store.state.activeProject.project !== undefined) &&
-        (this.$store.state.activeProject.project.hasData) ) {
+      } else if ((this.$store.state.activeProject.project !== undefined) &&
+          (this.$store.state.activeProject.project.hasData)) {
         console.log('created() called')
         this.getOptimSummaries()
         this.updateDatasets()
@@ -279,38 +284,63 @@ Last update: 2019feb11
 
     methods: {
 
-      updateDatasets()                    { return utils.updateDatasets(this) },
-      clearGraphs()                       { return utils.clearGraphs() },
-      makeGraphs(graphdata)               { return utils.makeGraphs(this, graphdata) },
-      exportGraphs(project_id, cache_id)  { return utils.exportGraphs(this, project_id, cache_id) },
-      exportResults(project_id, cache_id) { return utils.exportResults(this, project_id, cache_id) },
+      updateDatasets() {
+        return utils.updateDatasets(this)
+      },
+      clearGraphs() {
+        return utils.clearGraphs()
+      },
+      makeGraphs(graphdata) {
+        return utils.makeGraphs(this, graphdata)
+      },
+      exportGraphs(project_id, cache_id) {
+        return utils.exportGraphs(this, project_id, cache_id)
+      },
+      exportResults(project_id, cache_id) {
+        return utils.exportResults(this, project_id, cache_id)
+      },
 
       scaleFigs(frac) {
-        this.figscale = this.figscale*frac;
+        this.figscale = this.figscale * frac;
         if (frac === 1.0) {
-          frac = 1.0/this.figscale
+          frac = 1.0 / this.figscale
           this.figscale = 1.0
         }
         return utils.scaleFigs(frac)
       },
 
       statusFormatStr(optimSummary) {
-        if      (optimSummary.status === 'not started') {return ''}
-        else if (optimSummary.status === 'queued')      {return 'Initializing... '} // + this.timeFormatStr(optimSummary.pendingTime)
-        else if (optimSummary.status === 'started')     {return 'Running for '} // + this.timeFormatStr(optimSummary.executionTime)
-        else if (optimSummary.status === 'completed')   {return 'Completed after '} // + this.timeFormatStr(optimSummary.executionTime)
-        else if (optimSummary.status === 'error')       {return 'Error after '} // + this.timeFormatStr(optimSummary.executionTime)          
-        else                                            {return ''}
+        if (optimSummary.status === 'not started') {
+          return ''
+        } else if (optimSummary.status === 'queued') {
+          return 'Initializing... '
+        } // + this.timeFormatStr(optimSummary.pendingTime)
+        else if (optimSummary.status === 'started') {
+          return 'Running for '
+        } // + this.timeFormatStr(optimSummary.executionTime)
+        else if (optimSummary.status === 'completed') {
+          return 'Completed after '
+        } // + this.timeFormatStr(optimSummary.executionTime)
+        else if (optimSummary.status === 'error') {
+          return 'Error after '
+        } // + this.timeFormatStr(optimSummary.executionTime)
+        else {
+          return ''
+        }
       },
 
       timeFormatStr(optimSummary) {
         let rawValue = ''
         let is_queued = (optimSummary.status === 'queued')
-        let is_executing = ((optimSummary.status === 'started') || 
-          (optimSummary.status === 'completed') || (optimSummary.status === 'error'))
-        if      (is_queued)    {rawValue = optimSummary.pendingTime}
-        else if (is_executing) {rawValue = optimSummary.executionTime}
-        else                   {return ''}
+        let is_executing = ((optimSummary.status === 'started') ||
+            (optimSummary.status === 'completed') || (optimSummary.status === 'error'))
+        if (is_queued) {
+          rawValue = optimSummary.pendingTime
+        } else if (is_executing) {
+          rawValue = optimSummary.executionTime
+        } else {
+          return ''
+        }
 
         if (rawValue === '--') {
           return '--'
@@ -325,52 +355,58 @@ Last update: 2019feb11
         }
       },
 
-      canRunTask(optimSummary)     { return (optimSummary.status === 'not started') },
-      canCancelTask(optimSummary)  { return (optimSummary.status !== 'not started') },
-      canPlotResults(optimSummary) { return (optimSummary.status === 'completed') },
+      canRunTask(optimSummary) {
+        return (optimSummary.status === 'not started')
+      },
+      canCancelTask(optimSummary) {
+        return (optimSummary.status !== 'not started')
+      },
+      canPlotResults(optimSummary) {
+        return (optimSummary.status === 'completed')
+      },
 
       getOptimTaskState(optimSummary) {
         return new Promise((resolve, reject) => {
           console.log('getOptimTaskState() called for with: ' + optimSummary.status)
           let statusStr = '';
           this.$sciris.rpc('check_task', [optimSummary.serverDatastoreId]) // Check the status of the task.
-            .then(result => {
-              statusStr = result.data.task.status
-              optimSummary.status = statusStr
-              optimSummary.pendingTime = result.data.pendingTime
-              optimSummary.executionTime = result.data.executionTime
-              if (optimSummary.status === 'error') {
-                console.log('Error in task: ', optimSummary.serverDatastoreId)
-                console.log(result.data.task.errorText)
-                let failMessage = 'Error in task: ' + optimSummary.serverDatastoreId
-                let usermsg = result.data.task.errorText
-                this.$notifications.notify({
-                  message: '<b>' + failMessage + '</b>' + '<br><br>' + usermsg,
-                  icon: 'ti-face-sad',
-                  type: 'warning',
-                  verticalAlign: 'top',
-                  horizontalAlign: 'right',
-                  timeout: 0
-                })
-                // TODO: The above works, but we want a solution that uses the line
-                // below (which currently does not work).
+              .then(result => {
+                statusStr = result.data.task.status
+                optimSummary.status = statusStr
+                optimSummary.pendingTime = result.data.pendingTime
+                optimSummary.executionTime = result.data.executionTime
+                if (optimSummary.status === 'error') {
+                  console.log('Error in task: ', optimSummary.serverDatastoreId)
+                  console.log(result.data.task.errorText)
+                  let failMessage = 'Error in task: ' + optimSummary.serverDatastoreId
+                  let usermsg = result.data.task.errorText
+                  this.$notifications.notify({
+                    message: '<b>' + failMessage + '</b>' + '<br><br>' + usermsg,
+                    icon: 'ti-face-sad',
+                    type: 'warning',
+                    verticalAlign: 'top',
+                    horizontalAlign: 'right',
+                    timeout: 0
+                  })
+                  // TODO: The above works, but we want a solution that uses the line
+                  // below (which currently does not work).
 //                this.$sciris.fail(this, failMessage, result.data.task.errorText)
-              }
-              resolve(result)
-            })
-            .catch(error => {
-              optimSummary.status = 'not started'
-              optimSummary.pendingTime = '--'
-              optimSummary.executionTime = '--'
-              resolve(error)  // yes, resolve, not reject, because this means non-started task
-            })
+                }
+                resolve(result)
+              })
+              .catch(error => {
+                optimSummary.status = 'not started'
+                optimSummary.pendingTime = '--'
+                optimSummary.executionTime = '--'
+                resolve(error)  // yes, resolve, not reject, because this means non-started task
+              })
         })
       },
 
       needToPoll() {
         // Check if we're still on the Optimizations page.
         let routePath = (this.$route.path === '/optimizations')
-        
+
         // Check if we have a queued or started task.
         let runningState = false
         this.optimSummaries.forEach(optimSum => {
@@ -378,51 +414,51 @@ Last update: 2019feb11
             runningState = true
           }
         })
-        
+
         // We need to poll if we are in the page and a task is going.
         return (routePath && runningState)
       },
-      
+
       pollAllTaskStates(checkAllTasks) {
         return new Promise((resolve, reject) => {
           console.log('Polling all tasks...')
-          
+
           // Clear the poll states.
           this.optimSummaries.forEach(optimSum => {
             optimSum.polled = false
           })
-          
+
           // For each of the optimization summaries...
-          this.optimSummaries.forEach(optimSum => { 
+          this.optimSummaries.forEach(optimSum => {
             console.log(optimSum.serverDatastoreId, optimSum.status)
-            
+
             // If we are to check all tasks OR there is a valid task running, check it.
-            if ((checkAllTasks) ||            
-              ((optimSum.status !== 'not started') && (optimSum.status !== 'completed') && 
-                (optimSum.status !== 'error'))) {
+            if ((checkAllTasks) ||
+                ((optimSum.status !== 'not started') && (optimSum.status !== 'completed') &&
+                    (optimSum.status !== 'error'))) {
               this.getOptimTaskState(optimSum)
-              .then(response => {
-                // Flag as polled.
-                optimSum.polled = true
-                
-                // Resolve the main promise when all of the optimSummaries are polled.
-                let done = true
-                this.optimSummaries.forEach(optimSum2 => {
-                  if (!optimSum2.polled) {
-                    done = false
-                  }
-                })
-                if (done) {
-                  resolve()
-                }
-              })
+                  .then(response => {
+                    // Flag as polled.
+                    optimSum.polled = true
+
+                    // Resolve the main promise when all of the optimSummaries are polled.
+                    let done = true
+                    this.optimSummaries.forEach(optimSum2 => {
+                      if (!optimSum2.polled) {
+                        done = false
+                      }
+                    })
+                    if (done) {
+                      resolve()
+                    }
+                  })
             }
-            
+
             // Otherwise (no task to check), we are done polling for it.
             else {
               // Flag as polled.
               optimSum.polled = true
-              
+
               // Resolve the main promise when all of the optimSummaries are polled.
               let done = true
               this.optimSummaries.forEach(optimSum2 => {
@@ -433,121 +469,108 @@ Last update: 2019feb11
               if (done) {
                 resolve()
               }
-            }           
-          })   
-        })     
+            }
+          })
+        })
       },
-      
+
       doTaskPolling(checkAllTasks) {
         // Flag that we're polling.
         this.pollingTasks = true
 
         // If we there are some optimization summaries...
-        if (this.optimSummaries.length > 0) {       
+        if (this.optimSummaries.length > 0) {
           // Do the polling of the task states.
           this.pollAllTaskStates(checkAllTasks)
-          .then(() => {
-            // Hack to get the Vue display of optimSummaries to update
-            this.optimSummaries.push(this.optimSummaries[0])
-            this.optimSummaries.pop()
-            
-            // Only if we need to continue polling...
-            if (this.needToPoll()) {
-              // Sleep waitingtime seconds.
-              let waitingtime = 1
-              utils.sleep(waitingtime * 1000)
-                .then(response => {
-                  // Call the next polling, in a way that doesn't check_task()
-                  // for _every_ task.
-                  this.doTaskPolling(false)
-                })         
-            }
-          
-            // Otherwise, flag that we're no longer polling.
-            else {
-              this.pollingTasks = false
-            }
-          })
- 
-        // If the list is empty, we aren't polling.
+              .then(() => {
+                // Hack to get the Vue display of optimSummaries to update
+                this.optimSummaries.push(this.optimSummaries[0])
+                this.optimSummaries.pop()
+
+                // Only if we need to continue polling...
+                if (this.needToPoll()) {
+                  // Sleep waitingtime seconds.
+                  let waitingtime = 1
+                  utils.sleep(waitingtime * 1000)
+                      .then(response => {
+                        // Call the next polling, in a way that doesn't check_task()
+                        // for _every_ task.
+                        this.doTaskPolling(false)
+                      })
+                }
+
+                // Otherwise, flag that we're no longer polling.
+                else {
+                  this.pollingTasks = false
+                }
+              })
+
+          // If the list is empty, we aren't polling.
         } else {
           this.pollingTasks = false
         }
       },
-      
+
       clearTask(optimSummary) {
         return new Promise((resolve, reject) => {
           let datastoreId = optimSummary.serverDatastoreId  // hack because this gets overwritten soon by caller
-          console.log('clearTask() called for '+this.currentOptim)
+          console.log('clearTask() called for ' + this.currentOptim)
           this.$sciris.rpc('del_result', [datastoreId, this.projectID]) // Delete cached result.
-            .then(response => {
-              this.$sciris.rpc('delete_task', [datastoreId])
-                .then(response => {
-                  this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
-                  if (!this.pollingTasks) {
-                    this.doTaskPolling(true)
-                  }
-                  resolve(response)
-                })
-                .catch(error => {
-                  resolve(error)  // yes, resolve because at least cache entry deletion succeeded
-                })
-            })
-            .catch(error => {
-              reject(error)
-            })
+              .then(response => {
+                this.$sciris.rpc('delete_task', [datastoreId])
+                    .then(response => {
+                      this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
+                      if (!this.pollingTasks) {
+                        this.doTaskPolling(true)
+                      }
+                      resolve(response)
+                    })
+                    .catch(error => {
+                      resolve(error)  // yes, resolve because at least cache entry deletion succeeded
+                    })
+              })
+              .catch(error => {
+                reject(error)
+              })
         })
       },
-    
-      getOptimSummaries() {
-        console.log('getOptimSummaries() called')
-        this.$sciris.start(this)
-        this.$sciris.rpc('get_optim_info', [this.projectID]) // Get the current project's optimization summaries from the server.
-          .then(response => {
-            this.optimSummaries = response.data // Set the optimizations to what we received.
-            this.optimSummaries.forEach(optimSum => { // For each of the optimization summaries...
-              optimSum.serverDatastoreId = this.$store.state.activeProject.project.id + ':opt-' + optimSum.name // Build a task and results cache ID from the project's hex UID and the optimization name.
-              optimSum.status = 'not started' // Set the status to 'not started' by default, and the pending and execution times to '--'.
-              optimSum.pendingTime = '--'
-              optimSum.executionTime = '--'             
-            })
-            this.doTaskPolling(true)  // start task polling, kicking off with running check_task() for all optimizations
-            this.optimsLoaded = true
-            this.$sciris.succeed(this, 'Optimizations loaded')
-          })
-          .catch(error => {
-            this.$sciris.fail(this, 'Could not load optimizations', error)
-          })
-      },
 
-      setOptimSummaries() {
-        console.log('setOptimSummaries() called')
-        this.$sciris.start(this)
-        this.$sciris.rpc('set_optim_info', [this.projectID, this.optimSummaries])
-          .then( response => {
-            this.$sciris.succeed(this, 'Optimizations saved')
+      async getOptimSummaries() {
+        console.log('getOptimSummaries() called');
+        this.$sciris.start(this);
+        try {
+          let response = await this.$sciris.rpc('get_optim_info', [this.projectID]);
+          this.optimSummaries = response.data; // Set the optimizations to what we received.
+          this.optimSummaries.forEach(optimSum => { // For each of the optimization summaries...
+            optimSum.serverDatastoreId = this.$store.state.activeProject.project.id + ':opt-' + optimSum.name; // Build a task and results cache ID from the project's hex UID and the optimization name.
+            optimSum.status = 'not started'; // Set the status to 'not started' by default, and the pending and execution times to '--'.
+            optimSum.pendingTime = '--';
+            optimSum.executionTime = '--'
           })
-          .catch(error => {
-            this.$sciris.fail(this, 'Could not save optimizations', error)
-          })
+          this.doTaskPolling(true);  // start task polling, kicking off with running check_task() for all optimizations
+          this.optimsLoaded = true;
+          this.$sciris.succeed(this, 'Optimizations loaded')
+        } catch (error) {
+          this.$sciris.fail(this, 'Could not load optimizations', error);
+        }
       },
 
       addOptimModal() {
         // Open a model dialog for creating a new optimization
         console.log('addOptimModal() called');
         this.$sciris.rpc('get_default_optim', [this.projectID, this.datasetOptions[0]])
-          .then(response => {
-            this.addEditModal.optimSummary = response.data
-            this.addEditModal.origName = this.addEditModal.optimSummary.name
-            this.addEditModal.mode = 'add'
-            this.addEditModal.optimSummary.model_name = this.datasetOptions[0]
-            this.$modal.show('add-optim')
-            console.log('New optimization:')
-            console.log(this.addEditModal.optimSummary)
-          })
-          .catch(error => {
-            this.$sciris.fail(this, 'Could not open add optimization modal', error)
-          })
+            .then(response => {
+              this.addEditModal.optimSummary = response.data
+              this.addEditModal.origName = this.addEditModal.optimSummary.name
+              this.addEditModal.mode = 'add'
+              this.addEditModal.optimSummary.model_name = this.datasetOptions[0]
+              this.$modal.show('add-optim')
+              console.log('New optimization:')
+              console.log(this.addEditModal.optimSummary)
+            })
+            .catch(error => {
+              this.$sciris.fail(this, 'Could not open add optimization modal', error)
+            })
       },
 
       editOptimModal(optimSummary) {
@@ -560,25 +583,25 @@ Last update: 2019feb11
         this.addEditModal.mode = 'edit'
         this.$modal.show('add-optim')
       },
-	  
+
       modalSwitchDataset() {
         console.log('modalSwitchDataset() called')
         console.log('New Dataset: ', this.addEditModal.optimSummary.model_name)
         let optimName = this.addEditModal.optimSummary.name
         // Get a new default optimization to write into the modal.
         this.$sciris.rpc('get_default_optim', [this.projectID, this.addEditModal.optimSummary.model_name])
-          .then(response => {
-            let newDefaultOptim = response.data
-            this.addEditModal.optimSummary = newDefaultOptim  // overwrite the old optimization
-            this.addEditModal.optimSummary.name = optimName  // keep the existing name
-            console.log('Default optimization:')
-            console.log(newDefaultOptim)
-          })
-          .catch(error => {
-            this.$sciris.fail(this, 'Could not switch databooks', error)
-          })		
+            .then(response => {
+              let newDefaultOptim = response.data
+              this.addEditModal.optimSummary = newDefaultOptim  // overwrite the old optimization
+              this.addEditModal.optimSummary.name = optimName  // keep the existing name
+              console.log('Default optimization:')
+              console.log(newDefaultOptim)
+            })
+            .catch(error => {
+              this.$sciris.fail(this, 'Could not switch databooks', error)
+            })
       },
-	  
+
       modalDeselectAll() {
         this.addEditModal.optimSummary.spec.forEach(progval => {
           progval.included = false;
@@ -599,32 +622,30 @@ Last update: 2019feb11
           if (index > -1) {
             this.optimSummaries[index].name = newOptim.name // hack to make sure Vue table updated
             this.optimSummaries[index] = newOptim
-          }
-          else {
+          } else {
             console.log('Error: a mismatch in editing keys')
           }
-        }
-        else { // Else (we are adding a new optimization)...
+        } else { // Else (we are adding a new optimization)...
           newOptim.name = utils.getUniqueName(newOptim.name, optimNames)
           newOptim.serverDatastoreId = this.$store.state.activeProject.project.id + ':opt-' + newOptim.name
           this.optimSummaries.push(newOptim)
           this.getOptimTaskState(newOptim)
-          .then(result => {
-            // Hack to get the Vue display of optimSummaries to update
-            this.optimSummaries.push(this.optimSummaries[0])
-            this.optimSummaries.pop()
-          })
+              .then(result => {
+                // Hack to get the Vue display of optimSummaries to update
+                this.optimSummaries.push(this.optimSummaries[0])
+                this.optimSummaries.pop()
+              })
         }
         console.log('Saved optimization:')
         console.log(newOptim);
         this.$sciris.rpc('set_optim_info', [this.projectID, this.optimSummaries])
-          .then( response => {
-            this.$sciris.succeed(this, 'Optimization added')
-            this.getOptimSummaries()  // Reload all optimizations so Vue state is correct (hack).
-          })
-          .catch(error => {
-            this.$sciris.fail(this, 'Could not add optimization', error)
-          })
+            .then(response => {
+              this.$sciris.succeed(this, 'Optimization added')
+              this.getOptimSummaries()  // Reload all optimizations so Vue state is correct (hack).
+            })
+            .catch(error => {
+              this.$sciris.fail(this, 'Could not add optimization', error)
+            })
       },
 
       copyOptim(optimSummary) {
@@ -640,12 +661,12 @@ Last update: 2019feb11
         this.optimSummaries.push(newOptim)
         this.getOptimTaskState(newOptim)
         this.$sciris.rpc('set_optim_info', [this.projectID, this.optimSummaries])
-          .then( response => {
-            this.$sciris.succeed(this, 'Optimization copied')
-          })
-          .catch(error => {
-            this.$sciris.fail(this, 'Could not copy optimization', error)
-          })
+            .then(response => {
+              this.$sciris.succeed(this, 'Optimization copied')
+            })
+            .catch(error => {
+              this.$sciris.fail(this, 'Could not copy optimization', error)
+            })
       },
 
       deleteOptim(optimSummary) {
@@ -654,45 +675,45 @@ Last update: 2019feb11
         if (optimSummary.status !== 'not started') {
           this.clearTask(optimSummary)  // Clear the task from the server.
         }
-        for(var i = 0; i< this.optimSummaries.length; i++) {
-          if(this.optimSummaries[i].name === optimSummary.name) {
+        for (var i = 0; i < this.optimSummaries.length; i++) {
+          if (this.optimSummaries[i].name === optimSummary.name) {
             this.optimSummaries.splice(i, 1);
           }
         }
         this.$sciris.rpc('set_optim_info', [this.projectID, this.optimSummaries])
-          .then(response => {
-            this.$sciris.succeed(this, 'Optimization deleted')
-          })
-          .catch(error => {
-            this.$sciris.fail(this, 'Could not delete optimization', error)
-          })
+            .then(response => {
+              this.$sciris.succeed(this, 'Optimization deleted')
+            })
+            .catch(error => {
+              this.$sciris.fail(this, 'Could not delete optimization', error)
+            })
       },
 
       runOptim(optimSummary, runtype) {
         console.log('runOptim() called for ' + optimSummary.name + ' for time: ' + runtype)
         this.$sciris.start(this)
         this.$sciris.rpc('set_optim_info', [this.projectID, this.optimSummaries]) // Make sure they're saved first
-          .then(response => {
-            this.$sciris.rpc('launch_task', [optimSummary.serverDatastoreId, 'run_optim',
-              [this.projectID, optimSummary.serverDatastoreId, optimSummary.name, runtype]])
-              .then(response => {
-                this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
-                if (!this.pollingTasks) {
-                  this.doTaskPolling(true)
-                }
-                this.$sciris.succeed(this, 'Started optimization')
-              })
-              .catch(error => {
-                this.$sciris.fail(this, 'Could not start optimization', error)
-              })
-          })
-          .catch(error => {
-            this.$sciris.fail(this, 'Could not save optimizations', error)
-          })
+            .then(response => {
+              this.$sciris.rpc('launch_task', [optimSummary.serverDatastoreId, 'run_optim',
+                [this.projectID, optimSummary.serverDatastoreId, optimSummary.name, runtype]])
+                  .then(response => {
+                    this.getOptimTaskState(optimSummary) // Get the task state for the optimization.
+                    if (!this.pollingTasks) {
+                      this.doTaskPolling(true)
+                    }
+                    this.$sciris.succeed(this, 'Started optimization')
+                  })
+                  .catch(error => {
+                    this.$sciris.fail(this, 'Could not start optimization', error)
+                  })
+            })
+            .catch(error => {
+              this.$sciris.fail(this, 'Could not save optimizations', error)
+            })
       },
 
       cancelRun(optimSummary) {
-        console.log('cancelRun() called for '+this.currentOptim)
+        console.log('cancelRun() called for ' + this.currentOptim)
         this.$sciris.rpc('delete_task', ['run_optim'])
       },
 
@@ -700,17 +721,17 @@ Last update: 2019feb11
         console.log('plotOptimization() called')
         this.$sciris.start(this)
         this.$sciris.rpc('plot_optimization', [this.projectID, optimSummary.serverDatastoreId, this.calculateCostEff])
-          .then(response => {
-            this.hasTable = this.calculateCostEff
-            this.table = response.data.table
-            this.makeGraphs(response.data.graphs)
-            this.displayResultName = optimSummary.name
-            this.displayResultDatastoreId = optimSummary.serverDatastoreId
-            this.$sciris.succeed(this, 'Graphs created')
-          })
-          .catch(error => {
-            this.$sciris.fail(this, 'Could not make graphs', error) // Indicate failure.
-          })
+            .then(response => {
+              this.hasTable = this.calculateCostEff
+              this.table = response.data.table
+              this.makeGraphs(response.data.graphs)
+              this.displayResultName = optimSummary.name
+              this.displayResultDatastoreId = optimSummary.serverDatastoreId
+              this.$sciris.succeed(this, 'Graphs created')
+            })
+            .catch(error => {
+              this.$sciris.fail(this, 'Could not make graphs', error) // Indicate failure.
+            })
       },
     }
   }
