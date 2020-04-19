@@ -154,8 +154,6 @@ Last update: 2019-02-11
 
 <script>
 
-  import axios from 'axios'
-  let filesaver = require('file-saver')
   import utils from '../js/utils.js' // Imported globally
   import router from '../router.js'
 

@@ -187,11 +187,8 @@ Last update: 2019feb18
 </template>
 
 <script>
-  import axios from 'axios'
-  var filesaver = require('file-saver')
   import utils from '../js/utils'
   import router from '../router'
-  import sciris from 'sciris-js'
 
   export default {
     name: 'ProjectsPage',

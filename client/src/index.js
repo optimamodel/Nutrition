@@ -3,8 +3,6 @@
 import Vue from 'vue'
 
 // Plugins
-import Simplert from 'vue2-simplert-plugin' // Simple alert plugin
-require('vue2-simplert-plugin/dist/vue2-simplert-plugin.css');
 import VModal from 'vue-js-modal' // Modal dialogs plugin
 import SideBar from './app/Sidebar' // SideBar plugin
 
@@ -24,14 +22,14 @@ import 'bootstrap/dist/css/bootstrap.css'
 import './sass/project.scss'
 import 'es6-promise/auto'
 
-
-
+import Simplert from 'vue2-simplert-plugin'
+require('vue2-simplert-plugin/dist/vue2-simplert-plugin.css');
+Vue.use(Simplert);
 
 // plugin setup
 Vue.use(GlobalComponents);
 Vue.use(GlobalDirectives);
 Vue.use(SideBar);
-Vue.use(Simplert);
 Vue.use(VModal);
 
 Vue.use(sciris);

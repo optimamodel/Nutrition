@@ -21,11 +21,11 @@ Last update: 2018sep23
             </p>
           </a>
         </li>
-        <drop-down v-bind:title="activeUserName" icon="ti-user">
+        <dropdown v-bind:title="activeUserName" icon="ti-user">
           <li><a href="#/changeinfo"><i class="ti-pencil"></i>&nbsp;Edit account</a></li>
           <li><a href="#/changepassword"><i class="ti-key"></i>&nbsp;Change password</a></li>
           <li><a href="#" v-on:click=logOut()><i class="ti-car"></i>&nbsp;Log out</a></li>
-        </drop-down>
+        </dropdown>
         <li class="divider"></li>
       </ul>
     </side-bar>
