@@ -56,7 +56,7 @@ Last update: 2018sep23
               <span>Project: {{ activeProjectName }}</span>
             </div>
           </li>
-          <dropdown v-bind:title="activeUserName" icon="ti-user">
+          <dropdown v-bind:title="activeUserName" icon="ti-user" width="auto">
             <li><a href="#/changeinfo"><i class="ti-pencil"></i>&nbsp;&nbsp;Edit account</a></li>
             <li><a href="#/changepassword"><i class="ti-key"></i>&nbsp;&nbsp;Change password</a></li>
             <li><a href="#/help"><i class="ti-help"></i>&nbsp;&nbsp;Help</a></li>
@@ -107,6 +107,7 @@ Last update: 2018sep23
         } else {
           userlabel = dispname;
         }
+
         return 'User: '+userlabel
       },
 

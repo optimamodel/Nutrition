@@ -1,3 +1,3 @@
 #!/usr/bin/env python
 import os
-os.system('npm run prod')
+os.system('npm run build')
