@@ -56,7 +56,15 @@ Last update: 2018sep23
               <span>Project: {{ activeProjectName }}</span>
             </div>
           </li>
-          <dropdown v-bind:title="activeUserName" icon="ti-user" width="auto">
+          <dropdown>
+<!--            The template behaves oddly if content is bound to the dropdown properties, so just manually fill out the title slot instead-->
+            <template v-slot:title>
+              <div class="dropdown-title">
+                <i class="ti-user dropdown-icon"></i>
+                User: {{ activeUserName }}
+                <b class="caret"></b>
+              </div>
+            </template>
             <li><a href="#/changeinfo"><i class="ti-pencil"></i>&nbsp;&nbsp;Edit account</a></li>
             <li><a href="#/changepassword"><i class="ti-key"></i>&nbsp;&nbsp;Change password</a></li>
             <li><a href="#/help"><i class="ti-help"></i>&nbsp;&nbsp;Help</a></li>
@@ -84,10 +92,7 @@ Last update: 2018sep23
     },
 
     computed: {
-      // Health prior function
-      currentUser(){
-        return this.$store.state.currentUser.username
-      },
+
 
       activeProjectName() {
         if (this.$store.state.activeProject.project === undefined) {
@@ -108,11 +113,11 @@ Last update: 2018sep23
           userlabel = dispname;
         }
 
-        return 'User: '+userlabel
+        return userlabel;
       },
 
       // Theme function
-      routeName () {
+      routeName() {
         const route_name = this.$route.name
         return this.capitalizeFirstLetter(route_name)
       },
@@ -124,7 +129,7 @@ Last update: 2018sep23
     },
 
     // Theme function
-    data () {
+    data() {
       return {
         activeNotifications: false
       }
@@ -144,19 +149,19 @@ Last update: 2018sep23
       },
 
       // Theme functions
-      capitalizeFirstLetter (string) {
+      capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1)
       },
-      toggleNotificationDropDown () {
+      toggleNotificationDropDown() {
         this.activeNotifications = !this.activeNotifications
       },
-      closeDropDown () {
+      closeDropDown() {
         this.activeNotifications = false
       },
-      toggleSidebar () {
+      toggleSidebar() {
         this.$sidebar.displaySidebar(!this.$sidebar.showSidebar)
       },
-      hideSidebar () {
+      hideSidebar() {
         this.$sidebar.displaySidebar(false)
       }
     }
