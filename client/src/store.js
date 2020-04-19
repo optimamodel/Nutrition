@@ -37,10 +37,11 @@ const store = new Vuex.Store({
     // The project currently chosen by the user
     activeProject: {}
   },
-
+  plugins: [persist],
   mutations: {
     loadStorage(state) {
     },
+
     newUser(state, user) {
       state.currentUser = user
     },
@@ -53,7 +54,7 @@ const store = new Vuex.Store({
     isLoggedIn: state => state.currentUser.displayname !== undefined,
     projectOpen: state => state.activeProject !== null,
   },
-})
+});
 
 // Comment out line below to quickly disable persistent storage
 store.commit('loadStorage');
