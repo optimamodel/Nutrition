@@ -868,8 +868,9 @@ def is_included(prog_set, program, default_included):
     return answer
 
 
-def py_to_js_scen(py_scen, proj, key=None, default_included=False):
+def py_to_js_scen(py_scen, proj, default_included=False):
     ''' Convert a Python to JSON representation of a scenario '''
+    key = py_scen.model_name
     prog_names = proj.dataset(key).prog_names()
     scen_years = proj.dataset(key).t[1] - proj.dataset(key).t[0] # First year is baseline
     attrs = ['name', 'active', 'scen_type', 'model_name']
@@ -915,12 +916,14 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
         this_spec['base_cov'] = str(round(program.base_cov*100)) # Convert to percentage -- this should never be None or Nan
         this_spec['base_spend'] = format(int(round(program.base_spend)), ',')
         js_scen['progvals'].append(this_spec)
-        js_scen['t'] = [proj.dataset(key).t[0]+1, proj.dataset(key).t[1]] # First year is baseline year
+    js_scen['t'] = [proj.dataset(key).t[0]+1, proj.dataset(key).t[1]] # First year is baseline year
     return js_scen
 
 
 def js_to_py_scen(js_scen):
     ''' Convert a JSON to Python representation of a scenario '''
+    # WARNING - this is a destructive operation because the Python scenario doesn't record whether an intervention is included or not
+    # Therefore, any interventions that aren't included are dropped and the text box values are discarded entirely
     py_json = sc.odict()
     for attr in ['name', 'scen_type', 'model_name', 'active']: # Copy these directly
         py_json[attr] = js_scen[attr]
@@ -943,17 +946,17 @@ def js_to_py_scen(js_scen):
                                 raise Exception(errormsg)
                             vals[y] = vals[y]/100. # Convert from percentage
             py_json['progvals'][js_spec['name']] += vals
-    return py_json
+    scen = nu.Scen(**py_json)
+    return scen
 
 
 @RPC()
-def get_scen_info(project_id, key=None, verbose=False):
+def get_scen_info(project_id, verbose=False):
     print('Getting scenario info...')
     proj = load_project(project_id, die=True)
     scenario_jsons = []
-    for py_scen in proj.scens.values(): # Loop over all Scens in Project
-        # js_scen = py_to_js_scen(py_scen, proj, key=key)
-        js_scen = py_to_js_scen(py_scen, proj, key=py_scen.model_name)
+    for py_scen in proj.scens.values():
+        js_scen = py_to_js_scen(py_scen, proj)
         scenario_jsons.append(js_scen)
     if verbose:
         print('JavaScript scenario info:')
@@ -962,34 +965,66 @@ def get_scen_info(project_id, key=None, verbose=False):
 
 
 @RPC()
-def set_scen_info(project_id, scenario_jsons, verbose=False):
+def set_scen_info(project_id, scenario_jsons):
     print('Setting scenario info...')
     proj = load_project(project_id, die=True)
     proj.scens.clear()
     for j,js_scen in enumerate(scenario_jsons):
         print('Setting scenario %s of %s...' % (j+1, len(scenario_jsons)))
-        json = js_to_py_scen(js_scen)
-        proj.add_scen(json=json)
-        if verbose:
-            print('Python scenario info for scenario %s:' % (j+1))
-            sc.pp(json)
+        scen = js_to_py_scen(js_scen)
+        proj.add_scens(scen)
     print('Saving project...')
     save_project(proj)
     return None
 
 
 @RPC()
-def get_default_scen(project_id, scen_type=None, model_name=None, verbose=False):
+def get_default_scen(project_id, scen_type=None, model_name=None):
     print('Creating default scenario...')
     if scen_type is None:
         scen_type = 'coverage'
     proj = load_project(project_id, die=True)
     py_scen = nu.make_default_scen(model_name, model=proj.model(model_name), scen_type=scen_type, basename='Default scenario (%s)' % scen_type)
-    py_scen.scen_type = scen_type # Set the scenario type -- Warning, is this needed?
-    js_scen = py_to_js_scen(py_scen, proj, default_included=True, key=model_name)
-    if verbose:
-        print('Created default JavaScript scenario:')
-        sc.pp(js_scen)
+    js_scen = py_to_js_scen(py_scen, proj, default_included=True)
+    return js_scen
+
+@RPC()
+def scen_switch_dataset(project_id, js_scen: dict) -> dict:
+    """
+    Switch FE dataset preserving content
+
+    The JS scenario can be reused with the exception of the selected programs
+    - Missing programs need to be added
+    - Extra programs missing from the new dataset need to be removed
+    - Otherwise, preserve the selected state of the programs
+
+    :param project_id:
+    :param js_optim: Dict from `py_to_js_optim`
+    :return: An optimization summary for the FE
+    """
+
+    proj = load_project(project_id, die=True)
+    scen_years = proj.dataset(js_scen['model_name']).t[1] - proj.dataset(js_scen['model_name']).t[0] # First year is baseline
+
+    original_progvals = sc.dcp({x['name']:x for x in js_scen['progvals']})
+
+    new_progvals = []
+
+    for program in proj.model(js_scen['model_name']).prog_info.programs.values():
+        this_spec = {}
+        this_spec['name'] = program.name
+        this_spec['base_cov'] = str(round(program.base_cov*100)) # Convert to percentage -- this should never be None or Nan
+        this_spec['base_spend'] = format(int(round(program.base_spend)), ',')
+        if program.name in original_progvals:
+            this_spec['vals'] = original_progvals[program.name]['vals']
+            this_spec['included'] = original_progvals[program.name]['included']
+        else:
+            this_spec['vals'] = [None] * scen_years  # WARNING, kludgy way to extract the number of years
+            this_spec['included'] = True  # This matches programs defaulting to True in new scenarios
+
+        new_progvals.append(this_spec)
+
+    js_scen['progvals'] = new_progvals
     return js_scen
 
 

@@ -138,7 +138,7 @@ Last update: 2019feb11
            :classes="['v--modal', 'vue-dialog', 'grrmodal']"
            :pivot-y="0.3"
            :adaptive="true"
-           :clickToClose="clickToClose"
+           :clickToClose="false"
            :transition="transition">
 
         <div class="dialog-content">
@@ -348,27 +348,17 @@ Last update: 2019feb11
         this.addEditModal.mode = 'edit'
         this.$modal.show('add-scen')
       },
-	  
-      modalSwitchDataset() {
-        console.log('modalSwitchDataset() called')
-        console.log('New Dataset: ', this.addEditModal.scenSummary.model_name)
-        let scenName = this.addEditModal.scenSummary.name
-        // Get a new default scenario to write into the modal.
-        this.$sciris.rpc('get_default_scen', [this.projectID, this.addEditModal.modalScenarioType,
-          this.addEditModal.scenSummary.model_name])
-          .then(response => {
-            let newDefaultScen = response.data
-            this.setScenYears(newDefaultScen)
-            this.addEditModal.scenSummary = newDefaultScen  // overwrite the old scenario
-			this.addEditModal.scenSummary.name = scenName  // keep the existing name
-            console.log('Default scenario:')
-            console.log(newDefaultScen)
-          })
-          .catch(error => {
-            this.$sciris.fail(this, 'Could not switch databooks', error)
-          })		
+
+      async modalSwitchDataset() {
+        console.log('modalSwitchDataset() called');
+        try {
+          let response = await this.$sciris.rpc('scen_switch_dataset', [this.projectID, this.addEditModal.scenSummary]);
+          this.addEditModal.scenSummary = response.data;  // overwrite the old optimization
+        } catch (error) {
+          this.$sciris.fail(this, 'Could not switch databooks', error)
+        }
       },
-	  
+
       modalDeselectAll() {
         this.addEditModal.scenSummary.progvals.forEach(progval => {
           progval.included = false;
