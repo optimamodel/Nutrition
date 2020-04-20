@@ -46,7 +46,7 @@ def numberify(val, blank=None, invalid=None, toremove=None, convertpercent=None,
     # Set defaults
     default_toremove = [' ', ',', '$', '%'] # Characters to filter out
     default_opts     = ['none', 'nan', 'zero', 'pass', 'die'] # How to handle either blank entries or invalid entries
-    
+
     # Handle input arguments
     if blank          is None:
         blank   = 'none'
@@ -56,7 +56,7 @@ def numberify(val, blank=None, invalid=None, toremove=None, convertpercent=None,
         convertpercent = False
     if toremove       is None:
         toremove = default_toremove
-    
+
     def baddata(val, opt, errormsg=None):
         ''' Handle different options for blank or invalid data '''
         if   opt == 'none':
@@ -71,7 +71,7 @@ def numberify(val, blank=None, invalid=None, toremove=None, convertpercent=None,
             raise Exception(errormsg)
         else:
             raise Exception('Bad option for baddata(): "blank" and "invalid" must be one of %s, not %s and %s' % (default_opts, blank, invalid))
-    
+
     # If a list, then recursively call this function
     if aslist:
         if not isinstance(val, list):
@@ -82,7 +82,7 @@ def numberify(val, blank=None, invalid=None, toremove=None, convertpercent=None,
             sanival = numberify(thisval, blank=blank, invalid=invalid, toremove=toremove, convertpercent=convertpercent, aslist=False, verbose=verbose)
             output.append(sanival)
         return output
-    
+
     # Otherwise, actually do the processing
     else:
         # Process the entry
@@ -102,7 +102,7 @@ def numberify(val, blank=None, invalid=None, toremove=None, convertpercent=None,
             except Exception as E: # If that didn't work, handle the exception
                 errormsg = 'Sanitization failed: invalid entry: "%s" (%s)' % (val, str(E))
                 sanival = baddata(val, invalid, errormsg)
-        
+
         if verbose:
             print('Sanitized %s %s to %s' % (type(val), repr(val), repr(sanival)))
         return sanival
@@ -122,7 +122,7 @@ def get_version_info():
             'cpu':       '%0.1f%%' % psutil.cpu_percent(),
 	}
 	return version_info
-      
+
 
 def get_user(username=None):
     ''' Ensure it's a valid user '''
@@ -227,20 +227,20 @@ def admin_upload_db(pw, filename=None, host=None):
             if nosshpass():
                 output = 'Could not find or install sshpass:\n%s' % '\n'.join([cmd1, output1, cmd2, output2])
                 return output
-    
+
     # Check the pw
     if host is None and sc.sha(pw).hexdigest() != 'b9c00e83ab3d4b62b6f67f6b540041475978de9f9a5a9af62e0831b1':
         output = 'You may wish to reconsider "%s"' % pw
         return output
-    
+
     # Check the host
     if host is None:
         host = 'optima@203.0.141.220:/home/optima/google_cloud_db_backups'
-    
+
     # Get the filename
     if filename is None:
         filename = sc.runcommand('ls -t *.dump | awk "NR == 1"').strip() # Get most recent dump file
-    
+
     # Check the filename
     if not os.path.isfile(filename):
         output = 'File %s does not exist: try again' % filename
@@ -251,7 +251,7 @@ def admin_upload_db(pw, filename=None, host=None):
     output = sc.runcommand(command)
     if not output:
         output = 'Success! %s uploaded to %s.' % (filename, host)
-    
+
     return output
 ##################################################################################
 ### Convenience functions
@@ -281,11 +281,11 @@ def save_new_project(proj, username=None, uid=None):
     """
     If we're creating a new project, we need to do some operations on it to
     make sure it's valid for the webapp.
-    """ 
+    """
     # Preliminaries
     new_project = sc.dcp(proj) # Copy the project, only save what we want...
     new_project.uid = sc.uuid(uid)
-    
+
     # Get unique name
     user = get_user(username)
     current_project_names = []
@@ -294,14 +294,14 @@ def save_new_project(proj, username=None, uid=None):
         current_project_names.append(proj.name)
     new_project_name = sc.uniquename(new_project.name, namelist=current_project_names)
     new_project.name = new_project_name
-    
+
     # Ensure it's a valid webapp project
     if not hasattr(new_project, 'webapp'):
         new_project.webapp = sc.prettyobj()
         new_project.webapp.username = username
         new_project.webapp.tasks = []
     new_project.webapp.username = username # Make sure we have the current username
-    
+
     # Save all the things
     key = save_project(new_project)
     if key not in user.projects: # Let's not allow multiple copies
@@ -376,7 +376,7 @@ def del_result(result_key, project_key, die=None):
 
 @RPC()
 def jsonify_project(project_id, verbose=False):
-    """ Return the project json, given the Project UID. """ 
+    """ Return the project json, given the Project UID. """
     proj = load_project(project_id) # Load the project record matching the UID of the project passed in.
     json = {
         'project': {
@@ -394,11 +394,11 @@ def jsonify_project(project_id, verbose=False):
     if verbose:
         sc.pp(json)
     return json
-    
+
 
 @RPC()
 def jsonify_projects(username, verbose=False):
-    """ Return project jsons for all projects the user has to the client. """ 
+    """ Return project jsons for all projects the user has to the client. """
     output = {'projects':[]}
     user = get_user(username)
     for project_key in user.projects:
@@ -417,7 +417,7 @@ def jsonify_projects(username, verbose=False):
 
 @RPC()
 def rename_project(project_json):
-    """ Given the passed in project json, update the underlying project accordingly. """ 
+    """ Given the passed in project json, update the underlying project accordingly. """
     proj = load_project(project_json['project']['id']) # Load the project corresponding with this json.
     proj.name = project_json['project']['name'] # Use the json to set the actual project.
     proj.modified = sc.now() # Set the modified time to now.
@@ -447,7 +447,7 @@ def create_new_project(username, proj_name, *args, **kwargs):
     print(">> download_databook %s" % (full_file_name))
     return full_file_name
 
-    
+
 @RPC()
 def copy_project(project_key):
     """
@@ -482,7 +482,7 @@ def upload_project(prj_filename, username):
     return {'projectID': str(proj.uid)} # Return the new project UID in the return message.
 
 
-@RPC(call_type='download')   
+@RPC(call_type='download')
 def download_project(project_id):
     """
     For the passed in project UID, get the Project on the server, save it in a 
@@ -515,7 +515,7 @@ def download_projects(project_keys, username):
     return server_zip_fname # Return the server file name.
 
 
-@RPC(call_type='download')   
+@RPC(call_type='download')
 def download_databook(project_id, key=None):
     """ Download databook """
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
@@ -578,7 +578,7 @@ def define_formats():
         ['blnk', 'name', 'edit', 'edit', 'edit', 'edit', 'edit'],
         ['blnk', 'name', 'calc', 'calc', 'calc', 'calc', 'calc'],
     ]
-    
+
     formats['IYCF packages'] = [
         ['head', 'head', 'head', 'head', 'head'],
         ['head', 'name', 'tick', 'tick', 'blnk'],
@@ -602,13 +602,13 @@ def define_formats():
         ['blnk', 'name', 'tick', 'tick', 'blnk'],
         ['blnk', 'name', 'blnk', 'blnk', 'tick'],
     ]
-    
+
     formats['Treatment of SAM'] = [
         ['blnk', 'head', 'head', 'head'],
         ['head', 'name', 'name', 'tick'],
         ['head', 'name', 'name', 'tick'],
     ]
-    
+
     formats['Programs cost and coverage'] = [
         ['head', 'head', 'head', 'head', 'head'],
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
@@ -649,14 +649,14 @@ def define_formats():
         ['name', 'edit', 'edit', 'bdgt', 'drop'],
         ['name', 'edit', 'edit', 'bdgt', 'drop']
     ]
-    
+
     return formats
-    
+
 
 @RPC()
 def get_sheet_data(project_id, key=None, verbose=False):
     sheets = [
-        'Nutritional status distribution', 
+        'Nutritional status distribution',
         'Breastfeeding distribution',
         'IYCF packages',
         'Treatment of SAM',
@@ -669,7 +669,7 @@ def get_sheet_data(project_id, key=None, verbose=False):
     for sheet in sheets:  # Read pandas DataFrames in for each worksheet
         sheetdata[sheet] = wb.readcells(sheetname=sheet, header=False)
     sheetformat = define_formats()
-    
+
     sheetjson = sc.odict()
     for sheet in sheets:  # loop over each GUI worksheet
         datashape = np.shape(sheetdata[sheet])
@@ -704,7 +704,7 @@ def get_sheet_data(project_id, key=None, verbose=False):
                         pass # It's fine, just let it go, let it go, can't hold it back any more
                 cellinfo = {'format': cellformat, 'value': cellval}
                 sheetjson[sheet][r].append(cellinfo)
-    
+
     sheetjson = sc.sanitizejson(sheetjson)
     if verbose:
         sc.pp(sheetjson)
@@ -753,7 +753,7 @@ def save_sheet_data(project_id, sheetdata, key=None, verbose=False):
     return None
 
 
-@RPC() 
+@RPC()
 def get_dataset_keys(project_id):
     print('Returning dataset info...')
     proj = load_project(project_id, die=True)
@@ -769,7 +769,7 @@ def get_dataset_keys(project_id):
 
 
 
-@RPC() 
+@RPC()
 def rename_dataset(project_id, datasetname=None, new_name=None):
     print('Renaming dataset from %s to %s...' % (datasetname, new_name))
     proj = load_project(project_id, die=True)
@@ -790,7 +790,7 @@ def rename_dataset(project_id, datasetname=None, new_name=None):
     return None
 
 
-@RPC() 
+@RPC()
 def copy_dataset(project_id, datasetname=None):
     print('Copying dataset %s...' % datasetname)
     proj = load_project(project_id, die=True)
@@ -806,7 +806,7 @@ def copy_dataset(project_id, datasetname=None):
     return new_name
 
 
-@RPC() 
+@RPC()
 def delete_dataset(project_id, datasetname=None):
     print('Deleting dataset %s...' % datasetname)
     proj = load_project(project_id, die=True)
@@ -826,7 +826,7 @@ def delete_dataset(project_id, datasetname=None):
     return None
 
 
-@RPC(call_type='download')   
+@RPC(call_type='download')
 def download_dataset(project_id, datasetname=None):
     '''
     For the passed in project UID, get the Project on the server, save it in a 
@@ -839,9 +839,9 @@ def download_dataset(project_id, datasetname=None):
     sc.saveobj(full_file_name, dataset) # Write the object to a Gzip string pickle file.
     print(">> download_dataset %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
-    
-    
-@RPC(call_type='upload')   
+
+
+@RPC(call_type='upload')
 def upload_dataset(dataset_filename, project_id):
     '''
     For the passed in project UID, get the Project on the server, save it in a 
@@ -866,7 +866,7 @@ def is_included(prog_set, program, default_included):
     else:
         answer = False
     return answer
-    
+
 
 def py_to_js_scen(py_scen, proj, key=None, default_included=False):
     ''' Convert a Python to JSON representation of a scenario '''
@@ -883,7 +883,7 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
         this_spec = {}
         this_spec['name'] = prog_name
         this_spec['included'] = is_included(py_scen.prog_set, program, default_included)
-        
+
         # Calculate values
         if this_spec['included']:
             count += 1
@@ -895,14 +895,14 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
                 this_spec['vals'].append(None)
         else:
             this_spec['vals'] = [None]*scen_years # WARNING, kludgy way to extract the number of years
-        
+
         # Add formatting
         for y in range(len(this_spec['vals'])):
             try:
                 if this_spec['vals'][y] in [None, '', 'nan'] or sc.isnumber(this_spec['vals'][y], isnan=True): # It's None or Nan
                     this_spec['vals'][y] = None
                 else:
-                    
+
                     if js_scen['scen_type'] == 'coverage': # Convert to percentage
                         this_spec['vals'][y] = str(round(100*this_spec['vals'][y])) # Enter to the nearest percentage
                     elif js_scen['scen_type'] == 'budget': # Add commas
@@ -917,8 +917,8 @@ def py_to_js_scen(py_scen, proj, key=None, default_included=False):
         js_scen['progvals'].append(this_spec)
         js_scen['t'] = [proj.dataset(key).t[0]+1, proj.dataset(key).t[1]] # First year is baseline year
     return js_scen
-    
-    
+
+
 def js_to_py_scen(js_scen):
     ''' Convert a JSON to Python representation of a scenario '''
     py_json = sc.odict()
@@ -944,7 +944,7 @@ def js_to_py_scen(js_scen):
                             vals[y] = vals[y]/100. # Convert from percentage
             py_json['progvals'][js_spec['name']] += vals
     return py_json
-    
+
 
 @RPC()
 def get_scen_info(project_id, key=None, verbose=False):
@@ -1009,7 +1009,7 @@ def reformat_costeff(costeff):
     table = []
     for i,scenkey,val1 in costeff.enumitems():
         for j,progkey,val2 in val1.enumitems():
-            if j==0: 
+            if j==0:
                 if i>0:
                     table.append(['', '']+emptycols) # Blank row
                 table.append(['header', scenkey]+emptycols) # e.g. ['header', 'Wasting example', '', '', '']
@@ -1020,7 +1020,7 @@ def reformat_costeff(costeff):
 
 @RPC()
 def run_scens(project_id, doplot=True, do_costeff=False):
-    
+
     print('Running scenarios...')
     proj = load_project(project_id, die=True)
 
@@ -1038,7 +1038,7 @@ def run_scens(project_id, doplot=True, do_costeff=False):
         table = reformat_costeff(costeff)
     else:
         table = []
-    
+
     # Get graphs
     graphs = []
     if doplot:
@@ -1050,10 +1050,10 @@ def run_scens(project_id, doplot=True, do_costeff=False):
             graphs.append(graph_dict)
             pl.close(fig)
             print('Converted figure %s of %s' % (f+1, len(figs)))
-        
+
     # Store results in cache
     proj = cache_results(proj)
-    
+
     print('Saving project...')
     save_project(proj)
     output = {'graphs':graphs, 'table':table}
@@ -1067,28 +1067,23 @@ def run_scens(project_id, doplot=True, do_costeff=False):
 ##################################################################################
 
 
-def py_to_js_optim(py_optim, proj, key=None, default_included=False):
+def py_to_js_optim(py_optim: nu.Optim, proj: nu.Project):
     ''' Convert a Python to JSON representation of an optimization '''
     obj_labels = nu.pretty_labels(direction=True).values()
-    prog_names = proj.dataset(py_optim.model_name).prog_names()
     js_optim = {}
     attrs = ['name', 'model_name', 'mults', 'add_funds', 'fix_curr', 'filter_progs']
     for attr in attrs:
         js_optim[attr] = getattr(py_optim, attr) # Copy the attributes into a dictionary
     weightslist = [{'label':item[0], 'weight':abs(item[1])} for item in zip(obj_labels, py_optim.weights)] # WARNING, ABS HACK
     js_optim['weightslist'] = weightslist
-    js_optim['spec'] = []
-    for prog_name in prog_names:
-        program = proj.model(py_optim.model_name).prog_info.programs[prog_name]
-        this_spec = {}
-        this_spec['name'] = prog_name
-        this_spec['included'] = is_included(py_optim.prog_set, program, default_included)
-        js_optim['spec'].append(this_spec)
     js_optim['objective_options'] = obj_labels # Not modified but used on the FE
+    js_optim['programs'] = []
+    for prog_name in proj.dataset(py_optim.model_name).prog_names():
+        js_optim['programs'].append({'name':prog_name,'included': prog_name in py_optim.prog_set})
     return js_optim
-    
-    
-def js_to_py_optim(js_optim):
+
+
+def js_to_py_optim(js_optim: dict) -> nu.Optim:
     ''' Convert a JSON to Python representation of an optimization '''
     obj_keys = nu.default_trackers()
     kwargs = sc.odict()
@@ -1112,12 +1107,12 @@ def js_to_py_optim(js_optim):
     kwargs['mults'] = vals
     kwargs['add_funds'] = numberify(js_optim['add_funds'], blank='zero', invalid='die', aslist=False)
     kwargs['prog_set'] = [] # These require more TLC
-    for js_spec in js_optim['spec']:
+    for js_spec in js_optim['programs']:
         if js_spec['included']:
             kwargs['prog_set'].append(js_spec['name'])
     optim = nu.Optim(**kwargs)
     return optim
-    
+
 
 @RPC()
 def get_optim_info(project_id):
@@ -1144,20 +1139,44 @@ def set_optim_info(project_id, optim_jsons):
         print(json)
         proj.add_optim(json=json)
     print('Saving project...')
-    save_project(proj)   
+    save_project(proj)
     return None
 
 
 @RPC()
-def get_default_optim(project_id, model_name=None):
-    print('Getting default optimization...')
+def opt_new_optim(project_id, dataset):
+    print('Making new optimization...')
     proj = load_project(project_id, die=True)
-    py_optim = nu.make_default_optim(model_name, basename='Maximize thrive')
-    js_optim = py_to_js_optim(py_optim, proj, default_included=True)
-    print('Created default JavaScript optimization:')
-    sc.pp(js_optim)
+    py_optim = nu.make_default_optim(modelname=dataset, basename='Maximize thrive')
+    prog_set = []
+    for program in proj.model(py_optim.model_name).prog_info.programs.values():
+        if is_included(py_optim.prog_set, program, True):
+            prog_set.append(program.name)
+    py_optim.prog_set = prog_set
+    js_optim = py_to_js_optim(py_optim, proj)
     return js_optim
 
+@RPC()
+def opt_switch_dataset(project_id, js_optim: dict) -> dict:
+    """
+    Switch FE dataset preserving content
+
+    The JS optim can be reused with the exception of the selected programs
+    - Missing programs need to be added
+    - Extra programs missing from the new dataset need to be removed
+    - Otherwise, preserve the selected state of the programs
+
+    :param project_id:
+    :param js_optim: Dict from `py_to_js_optim`
+    :return: An optimization summary for the FE
+    """
+    proj = load_project(project_id, die=True)
+    included = {x['name']:x['included'] for x in js_optim['programs']}
+    programs = []
+    for program in proj.model(js_optim['model_name']).prog_info.programs.values():
+        programs.append({'name': program.name, 'included': program.name in included and included[program.name]})
+    js_optim['programs'] = programs
+    return js_optim
 
 @RPC()
 def plot_optimization(project_id, cache_id, do_costeff=False):
@@ -1172,14 +1191,14 @@ def plot_optimization(project_id, cache_id, do_costeff=False):
         graphs.append(graph_dict)
         pl.close(fig)
         print('Converted figure %s of %s' % (f+1, len(figs)))
-    
+
     # Get cost-effectiveness table
     if do_costeff:
         costeff = nu.get_costeff(project=proj, results=proj.result(cache_id))
         table = reformat_costeff(costeff)
     else:
         table = []
-    
+
     return {'graphs':graphs, 'table':table}
 
 
@@ -1194,6 +1213,8 @@ def plot_optimization(project_id, cache_id, do_costeff=False):
 
 def py_to_js_geo(py_geo, proj, key=None, default_included=False):
     ''' Convert a Python to JSON representation of an optimization '''
+    # NB. The list of programs may not be quite right if a project has datasets with
+    # different programs. This should be debugged when there is a specific use case
     obj_labels = nu.pretty_labels(direction=True).values()
     prog_names = proj.dataset(key).prog_names()
     js_geo = {}
@@ -1216,8 +1237,8 @@ def py_to_js_geo(py_geo, proj, key=None, default_included=False):
         selection = {'name':key, 'active':active}
         js_geo['dataset_selections'].append(selection)
     return js_geo
-    
-    
+
+
 def js_to_py_geo(js_geo):
     ''' Convert a JSON to Python representation of an optimization '''
     obj_keys = nu.default_trackers()
@@ -1244,12 +1265,12 @@ def js_to_py_geo(js_geo):
     json['prog_set'] = [] # These require more TLC
     for js_spec in js_geo['spec']:
         if js_spec['included']:
-            json['prog_set'].append(js_spec['name']) 
+            json['prog_set'].append(js_spec['name'])
     json['modelnames'] = []
     for item in js_geo['dataset_selections']:
         if item['active']: json['modelnames'].append(item['name'])
     return json
-    
+
 
 @RPC()
 def get_geo_info(project_id):
@@ -1276,7 +1297,7 @@ def set_geo_info(project_id, geo_jsons):
         print(json)
         proj.add_geo(json=json)
     print('Saving project...')
-    save_project(proj)   
+    save_project(proj)
     return None
 
 
@@ -1303,11 +1324,11 @@ def plot_geospatial(project_id, cache_id):
         graph_dict = sw.mpld3ify(fig, jsonify=False)
         graphs.append(graph_dict)
         print('Converted figure %s of %s' % (f+1, len(figs)))
-    
+
     # Get cost-effectiveness table
     costeff = nu.get_costeff(project=proj, results=proj.result(cache_id))
     table = reformat_costeff(costeff)
-    
+
     return {'graphs':graphs, 'table':table}
 
 

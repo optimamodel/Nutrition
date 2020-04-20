@@ -131,7 +131,7 @@ Last update: 2019feb11
            :classes="['v--modal', 'vue-dialog']"
            :pivot-y="0.3"
            :adaptive="true"
-           :clickToClose="clickToClose"
+           :clickToClose="false"
            :transition="transition">
 
       <div class="dialog-content">
@@ -197,12 +197,12 @@ Last update: 2019feb11
               </tr>
               </thead>
               <tbody>
-              <tr v-for="spec in addEditModal.optimSummary.spec">
+              <tr v-for="program in addEditModal.optimSummary.programs">
                 <td>
-                  {{ spec.name }}
+                  {{ program.name }}
                 </td>
                 <td style="text-align: center">
-                  <input type="checkbox" v-model="spec.included"/>
+                  <input type="checkbox" v-model="program.included"/>
                 </td>
               </tr>
               </tbody>
@@ -558,7 +558,7 @@ Last update: 2019feb11
       addOptimModal() {
         // Open a model dialog for creating a new optimization
         console.log('addOptimModal() called');
-        this.$sciris.rpc('get_default_optim', [this.projectID, this.datasetOptions[0]])
+        this.$sciris.rpc('opt_new_optim', [this.projectID, this.datasetOptions[0]])
             .then(response => {
               this.addEditModal.optimSummary = response.data
               this.addEditModal.origName = this.addEditModal.optimSummary.name
@@ -575,35 +575,27 @@ Last update: 2019feb11
 
       editOptimModal(optimSummary) {
         // Open a model dialog for editing an optimization
-        console.log('editOptimModal() called')
-        this.addEditModal.optimSummary = _.cloneDeep(optimSummary)
-        console.log('Editing optimization:')
-        console.log(this.addEditModal.optimSummary)
-        this.addEditModal.origName = this.addEditModal.optimSummary.name
-        this.addEditModal.mode = 'edit'
+        console.log('editOptimModal() called');
+        this.addEditModal.optimSummary = _.cloneDeep(optimSummary);
+        console.log('Editing optimization:');
+        console.log(this.addEditModal.optimSummary);
+        this.addEditModal.origName = this.addEditModal.optimSummary.name;
+        this.addEditModal.mode = 'edit';
         this.$modal.show('add-optim')
       },
 
-      modalSwitchDataset() {
-        console.log('modalSwitchDataset() called')
-        console.log('New Dataset: ', this.addEditModal.optimSummary.model_name)
-        let optimName = this.addEditModal.optimSummary.name
-        // Get a new default optimization to write into the modal.
-        this.$sciris.rpc('get_default_optim', [this.projectID, this.addEditModal.optimSummary.model_name])
-            .then(response => {
-              let newDefaultOptim = response.data
-              this.addEditModal.optimSummary = newDefaultOptim  // overwrite the old optimization
-              this.addEditModal.optimSummary.name = optimName  // keep the existing name
-              console.log('Default optimization:')
-              console.log(newDefaultOptim)
-            })
-            .catch(error => {
-              this.$sciris.fail(this, 'Could not switch databooks', error)
-            })
+      async modalSwitchDataset() {
+        console.log('modalSwitchDataset() called');
+        try {
+          let response = await this.$sciris.rpc('opt_switch_dataset', [this.projectID, this.addEditModal.optimSummary]);
+          this.addEditModal.optimSummary = response.data;  // overwrite the old optimization
+        } catch (error) {
+          this.$sciris.fail(this, 'Could not switch databooks', error)
+        }
       },
 
       modalDeselectAll() {
-        this.addEditModal.optimSummary.spec.forEach(progval => {
+        this.addEditModal.optimSummary.programs.forEach(progval => {
           progval.included = false;
         })
       },
