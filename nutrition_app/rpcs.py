@@ -1070,7 +1070,7 @@ def run_scens(project_id, doplot=True, do_costeff=False):
 def py_to_js_optim(py_optim, proj, key=None, default_included=False):
     ''' Convert a Python to JSON representation of an optimization '''
     obj_labels = nu.pretty_labels(direction=True).values()
-    prog_names = proj.dataset(key).prog_names()
+    prog_names = proj.dataset(py_optim.model_name).prog_names()
     js_optim = {}
     attrs = ['name', 'model_name', 'mults', 'add_funds', 'fix_curr', 'filter_progs']
     for attr in attrs:
@@ -1079,7 +1079,7 @@ def py_to_js_optim(py_optim, proj, key=None, default_included=False):
     js_optim['weightslist'] = weightslist
     js_optim['spec'] = []
     for prog_name in prog_names:
-        program = proj.model(key).prog_info.programs[prog_name]
+        program = proj.model(py_optim.model_name).prog_info.programs[prog_name]
         this_spec = {}
         this_spec['name'] = prog_name
         this_spec['included'] = is_included(py_optim.prog_set, program, default_included)
@@ -1091,15 +1091,15 @@ def py_to_js_optim(py_optim, proj, key=None, default_included=False):
 def js_to_py_optim(js_optim):
     ''' Convert a JSON to Python representation of an optimization '''
     obj_keys = nu.default_trackers()
-    json = sc.odict()
+    kwargs = sc.odict()
     attrs = ['name', 'model_name', 'fix_curr', 'filter_progs']
     for attr in attrs:
-        json[attr] = js_optim[attr]
+        kwargs[attr] = js_optim[attr]
     try:
-        json['weights'] = sc.odict()
+        kwargs['weights'] = sc.odict()
         for key,item in zip(obj_keys,js_optim['weightslist']):
             val = numberify(item['weight'], blank='zero', invalid='die', aslist=False)
-            json['weights'][key] = val
+            kwargs['weights'][key] = val
     except Exception as E:
         print('Unable to convert "%s" to weights' % js_optim['weightslist'])
         raise E
@@ -1109,13 +1109,14 @@ def js_to_py_optim(js_optim):
     if sc.isstring(jsm):
         jsm = jsm.split(',')
     vals = numberify(jsm, blank='die', invalid='die', aslist=True)
-    json['mults'] = vals
-    json['add_funds'] = numberify(js_optim['add_funds'], blank='zero', invalid='die', aslist=False)
-    json['prog_set'] = [] # These require more TLC
+    kwargs['mults'] = vals
+    kwargs['add_funds'] = numberify(js_optim['add_funds'], blank='zero', invalid='die', aslist=False)
+    kwargs['prog_set'] = [] # These require more TLC
     for js_spec in js_optim['spec']:
         if js_spec['included']:
-            json['prog_set'].append(js_spec['name'])  
-    return json
+            kwargs['prog_set'].append(js_spec['name'])
+    optim = nu.Optim(**kwargs)
+    return optim
     
 
 @RPC()
