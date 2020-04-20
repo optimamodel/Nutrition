@@ -167,11 +167,11 @@ Last update: 2019jan10
 
           <br>
           <b>Existing spending</b><br>
-          <input type="radio" v-model="addEditModal.geoSummary.fix_curr" :value="false">Can be reallocated<br>
-          <input type="radio" v-model="addEditModal.geoSummary.fix_curr" :value="true">Cannot be reallocated<br><br>
+          <input type="radio" v-model="addEditModal.geoSummary.fix_curr" :value="false">&nbsp;Can be reallocated<br>
+          <input type="radio" v-model="addEditModal.geoSummary.fix_curr" :value="true">&nbsp;Cannot be reallocated<br><br>
           <b>Regional spending</b><br>
-          <input type="radio" v-model="addEditModal.geoSummary.fix_regionalspend" :value="false">Can be reallocated between regions<br>
-          <input type="radio" v-model="addEditModal.geoSummary.fix_regionalspend" :value="true">Cannot be reallocated between regions<br><br>
+          <input type="radio" v-model="addEditModal.geoSummary.fix_regionalspend" :value="false">&nbsp;Can be reallocated between regions<br>
+          <input type="radio" v-model="addEditModal.geoSummary.fix_regionalspend" :value="true">&nbsp;Cannot be reallocated between regions<br><br>
           <b>Additional funds to allocate</b><br>
           <input type="text"
                  class="txbox"
