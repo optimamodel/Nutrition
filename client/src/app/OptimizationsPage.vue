@@ -181,8 +181,8 @@ Last update: 2019feb11
                  class="txbox"
                  v-model="addEditModal.optimSummary.mults"/><br>
           <b>Existing spending</b><br>
-          <input type="radio" v-model="addEditModal.optimSummary.fix_curr" value=false>&nbsp;Can be reallocated<br>
-          <input type="radio" v-model="addEditModal.optimSummary.fix_curr" value=true>&nbsp;Cannot be reallocated<br><br>
+          <input type="radio" v-model="addEditModal.optimSummary.fix_curr" :value="false">Can be reallocated<br>
+          <input type="radio" v-model="addEditModal.optimSummary.fix_curr" :value="true">&nbsp;Cannot be reallocated<br><br>
           <b>Additional funds to allocate</b><br>
           <input type="text"
                  class="txbox"

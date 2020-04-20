@@ -1157,8 +1157,6 @@ def get_optim_info(project_id):
     for py_optim in proj.optims.values():
         js_optim = py_to_js_optim(py_optim, proj)
         optim_jsons.append(js_optim)
-    print('JavaScript optimization info:')
-    sc.pp(optim_jsons)
     return optim_jsons
 
 
@@ -1168,11 +1166,8 @@ def set_optim_info(project_id, optim_jsons):
     proj = load_project(project_id, die=True)
     proj.optims.clear()
     for j,js_optim in enumerate(optim_jsons):
-        print('Setting optimization %s of %s...' % (j+1, len(optim_jsons)))
-        json = js_to_py_optim(js_optim)
-        print('Python optimization info for optimization %s:' % (j+1))
-        print(json)
-        proj.add_optim(json=json)
+        optim = js_to_py_optim(js_optim)
+        proj.add_optims(optim)
     print('Saving project...')
     save_project(proj)
     return None
