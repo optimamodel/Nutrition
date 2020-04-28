@@ -48,10 +48,16 @@ const store = new Vuex.Store({
 
     newActiveProject(state, project) {
       state.activeProject = project
-    }
+    },
+
+    logOut(state) {
+      state.currentUser = {};
+      state.activeProject = {};
+    },
+
   },
   getters: {
-    isLoggedIn: state => state.currentUser.displayname !== undefined,
+    isLoggedIn: state => "displayname" in state.currentUser && state.currentUser.displayname !== undefined,
     projectOpen: state => state.activeProject !== null,
   },
 });

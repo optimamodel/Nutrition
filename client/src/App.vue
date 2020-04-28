@@ -64,7 +64,9 @@ export default {
   },
   methods: {
     logOut() {
-      sciris.logOut()
+      this.$sciris.logoutCall();
+      this.$store.commit('logOut');
+      this.$router.push('/login');
     },
   }
 

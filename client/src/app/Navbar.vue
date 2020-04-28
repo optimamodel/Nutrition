@@ -57,7 +57,7 @@ Last update: 2018sep23
             </div>
           </li>
           <dropdown>
-<!--            The template behaves oddly if content is bound to the dropdown properties, so just manually fill out the title slot instead-->
+            <!--            The template behaves oddly if content is bound to the dropdown properties, so just manually fill out the title slot instead-->
             <template v-slot:title>
               <div class="dropdown-title">
                 <i class="ti-user dropdown-icon"></i>
@@ -79,7 +79,6 @@ Last update: 2018sep23
 
 
 <script>
-  import router from '../router.js'
 
   export default {
     name: 'Navbar',
@@ -118,7 +117,7 @@ Last update: 2018sep23
 
       // Theme function
       routeName() {
-        const route_name = this.$route.name
+        const route_name = this.$route.name;
         return this.capitalizeFirstLetter(route_name)
       },
     },
@@ -145,7 +144,9 @@ Last update: 2018sep23
       },
 
       logOut() {
-        this.$sciris.logOut()
+        this.$sciris.logoutCall();
+        this.$store.commit('logOut');
+        this.$router.push('/login');
       },
 
       // Theme functions
