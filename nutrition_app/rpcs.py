@@ -436,17 +436,18 @@ def add_demo_project(username):
 
 
 @RPC(call_type='download')
-def create_new_project(username, proj_name, *args, **kwargs):
+def create_new_project(username, proj_name):
     """ Create a new Optima Nutrition project. """
     proj = nu.Project(name=proj_name) # Create the project
     print(">> create_new_project %s" % (proj.name))     # Display the call information.
-    key,proj = save_new_project(proj, username) # Save the new project in the DataStore.
-    file_name = '%s databook.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
-    full_file_name = get_path(file_name, username)
-    proj.templateinput.save(full_file_name)
-    print(">> download_databook %s" % (full_file_name))
-    return full_file_name
+    key, proj = save_new_project(proj, username) # Save the new project in the DataStore.
+    return download_new_databook(key)
 
+@RPC(call_type='download')
+def download_new_databook(project_key):
+    proj = load_project(project_key, die=True)
+    print(">> download_databook")
+    return proj.templateinput.tofile(),  '%s databook.xlsx' % proj.name
 
 @RPC()
 def copy_project(project_key):
@@ -517,18 +518,22 @@ def download_projects(project_keys, username):
 
 @RPC(call_type='download')
 def download_databook(project_id, key=None):
-    """ Download databook """
+    """
+    Download databook
+
+    :param project_id: Project identifier to load the project
+    :param key: Identifier for which databook to download. If None, a new databook will be created
+    :return: (io.BytesIO, file_name) tuple
+    """
+
+    if key is None:
+        return download_new_databook(project_id)
+
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
     if key is not None:
-        file_name = '%s_%s_databook.xlsx' % \
-            (proj.name, key) # Create a filename containing the project name followed by the databook name, then a .prj suffix.
-    else:
-        file_name = '%s_%s_databook.xlsx' % \
-            (proj.name, proj.spreadsheets.keys()[-1]) # Create a filename containing the project name followed the databook name, then a .prj suffix.
-    full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
-    proj.inputsheet(key=key).save(full_file_name) # Pull out and save the databook spreadsheet with the desired key (or the last databook if None).
-    print(">> download_databook %s" % (full_file_name)) # Display the call information.
-    return full_file_name # Return the full filename.
+        file_name = '%s_%s_databook.xlsx' % (proj.name, key) # Create a filename containing the project name followed by the databook name, then a .prj suffix.
+    print(">> download_databook %s" % (file_name)) # Display the call information.
+    return proj.inputsheet(key=key).tofile(), file_name
 
 
 @RPC(call_type='upload')
@@ -1413,3 +1418,9 @@ def export_graphs(project_id, cache_id):
     print(">> export_graphs %s" % (full_file_name)) # Display the call information.
     return full_file_name # Return the full filename.
 
+@RPC()
+def read_changelog():
+    file = sc.thisdir(__file__, '../CHANGELOG.md')
+    with open(file,'r') as f:
+        content = f.read()
+    return content

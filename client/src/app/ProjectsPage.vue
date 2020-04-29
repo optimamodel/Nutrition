@@ -100,7 +100,7 @@ Last update: 2019feb18
               <button class="btn __blue" @click="deleteDataset(projectSummary.project.id, projectSummary.selectedDataSet)" data-tooltip="Delete databook"><i class="ti-trash"></i></button>            
               <button class="btn __blue" @click="downloadDatabook(projectSummary.project.id, projectSummary.selectedDataSet)" data-tooltip="Download databook"><i class="ti-download"></i></button>
               <button class="btn __blue" @click="uploadDatabook(projectSummary.project.id)" data-tooltip="Upload databook"><i class="ti-upload"></i></button>           
-              <select v-model="projectSummary.selectedDataSet">
+              <select v-if="projectSummary.project.dataSets.length>0" v-model="projectSummary.selectedDataSet">
                 <option v-for='dataset in projectSummary.project.dataSets'>
                   {{ dataset }}
                 </option>

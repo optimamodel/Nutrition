@@ -8,9 +8,19 @@ Last update: 2018sep23
   <div class="SitePage">
     <div style="max-width:800px; margin:auto">
       <div style="text-align:center;">
+
         <img src="static/img/optima-logo-nutrition.png" width="250px">
+        <br/><br/>
+
+        <a href="#" @click="showChangelog=true">
+          Version {{ version }} ({{ date }})
+        </a>
+        <Changelog v-if="showChangelog" @close="showChangelog=false"/>
+
       </div>
-      <br/><br/>
+
+      <br/>
+
       <p>Optima Nutrition is currently under development. Development is supported through a partnership
         between the <a href="http://www.burnet.edu.au">Burnet Institute</a> and the <a href="http://www.worldbank.org">World Bank</a>.</p>
 
@@ -32,3 +42,28 @@ Last update: 2018sep23
     </div>
   </div>
 </template>
+
+<script>
+  import router from '../router.js'
+  import Changelog from './Changelog.vue'
+
+  export default {
+    name: 'AboutPage',
+    components: {Changelog},
+
+    data() {
+      return {
+        version: '',
+        date: '',
+        showChangelog: false,
+      }
+    },
+
+    async created() {
+      let response = await this.$sciris.rpc('get_version_info');
+      this.version = response.data.version;
+      this.date = response.data.date;
+    },
+
+  }
+</script>
