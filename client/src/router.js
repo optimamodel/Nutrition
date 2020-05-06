@@ -5,28 +5,29 @@
 // Import main things
 import Vue from 'vue'
 import Router from 'vue-router'
-import DashboardLayout from '@/app/DashboardLayout.vue'
+import DashboardLayout from './app/DashboardLayout.vue'
 
 // App views
-import NotFound from '@/app/NotFoundPage.vue'
-import ProjectsPage from '@/app/ProjectsPage'
-import InputsPage from '@/app/InputsPage' // ATOMICA-NUTRITION DIFFERENCE
-import ScenariosPage from '@/app/ScenariosPage'
-import OptimizationsPage from '@/app/OptimizationsPage'
-import GeospatialPage from '@/app/GeospatialPage'
-import LoginPage from '@/app/LoginPage'
-import MainAdminPage from '@/app/MainAdminPage'
-import RegisterPage from '@/app/RegisterPage'
-import UserChangeInfoPage from '@/app/UserChangeInfoPage'
-import ChangePasswordPage from '@/app/ChangePasswordPage'
-import HelpPage from '@/app/HelpPage'
-import ContactPage from '@/app/ContactPage'
-import AboutPage from '@/app/AboutPage'
+import NotFound from './app/NotFoundPage.vue'
+import ProjectsPage from './app/ProjectsPage.vue'
+import InputsPage from './app/InputsPage.vue' // ATOMICA-NUTRITION DIFFERENCE
+import ScenariosPage from './app/ScenariosPage.vue'
+import OptimizationsPage from './app/OptimizationsPage.vue'
+import GeospatialPage from './app/GeospatialPage.vue'
+import LoginPage from './app/LoginPage.vue'
+import MainAdminPage from './app/MainAdminPage.vue'
+import RegisterPage from './app/RegisterPage.vue'
+import UserChangeInfoPage from './app/UserChangeInfoPage.vue'
+import ChangePasswordPage from './app/ChangePasswordPage.vue'
+import HelpPage from './app/HelpPage.vue'
+import ContactPage from './app/ContactPage.vue'
+import AboutPage from './app/AboutPage.vue'
+import store from './store.js'
 
 
 Vue.use(Router);
 
-export default new Router({
+let router = new Router({
   routes: [
     {
       path: '/register',
@@ -46,60 +47,88 @@ export default new Router({
         {
           path: 'projects',
           name: 'Manage projects',
-          component: ProjectsPage
+          component: ProjectsPage,
+          meta: {requiresAuth: true}
         },
         {
-          path: 'inputs',  // ATOMICA-NUTRITION DIFFERENCE
+          path: 'inputs',
           name: 'Inputs',
-          component: InputsPage
+          component: InputsPage,
+          meta: {requiresAuth: true}
         },
         {
           path: 'scenarios',
           name: 'Create scenarios',
-          component: ScenariosPage
+          component: ScenariosPage,
+          meta: {requiresAuth: true}
         },
         {
           path: 'optimizations',
           name: 'Create optimizations',
-          component: OptimizationsPage
+          component: OptimizationsPage,
+          meta: {requiresAuth: true}
         },
         {
           path: 'geospatial',
           name: 'Geospatial analysis',
-          component: GeospatialPage
+          component: GeospatialPage,
+          meta: {requiresAuth: true}
         },
         {
           path: 'mainadmin',
           name: 'Admin',
-          component: MainAdminPage
+          component: MainAdminPage,
+          meta: {requiresAuth: true}
         },
         {
           path: 'changeinfo',
           name: 'Edit account',
-          component: UserChangeInfoPage
+          component: UserChangeInfoPage,
+          meta: {requiresAuth: true}
         },
         {
           path: 'changepassword',
           name: 'Change password',
-          component: ChangePasswordPage
+          component: ChangePasswordPage,
+          meta: {requiresAuth: true}
         },
         {
           path: 'help',
           name: 'Help',
-          component: HelpPage
+          component: HelpPage,
+          meta: {requiresAuth: true}
         },
         {
           path: 'contact',
           name: 'Contact',
-          component: ContactPage
+          component: ContactPage,
+          meta: {requiresAuth: true}
         },
         {
           path: 'about',
           name: 'About',
-          component: AboutPage
+          component: AboutPage,
+          meta: {requiresAuth: true}
         },
       ]
     },
     { path: '*', component: NotFound }
   ]
 })
+
+router.beforeEach((to, from, next) => {
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (store.getters.isLoggedIn) {
+      next()
+      return
+    }
+    next({
+      name: "Login",
+      query: {loginRequired: to.fullPath}
+    })
+  } else {
+    next()
+  }
+})
+
+export default router
