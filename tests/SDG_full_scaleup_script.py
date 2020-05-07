@@ -13,7 +13,7 @@ date = fulldate.strftime('%x')[3:5] + fulldate.strftime('%x')[:2] + '20' + fulld
 
 if 'standard' in ToDo:
     for scenario in ['baseline', 'scaleup']:
-        for trends in [False, True]:
+        for trends in [True]:
             rgb.run_baseline_scaleup(date, 'standard', scenario, trends)
 
 if 'jhe' in ToDo:

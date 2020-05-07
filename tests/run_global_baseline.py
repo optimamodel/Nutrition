@@ -56,8 +56,8 @@ def run_baseline_scaleup(date, data_type, scen_type, trends):
                     'Comoros', 'Ethiopia', 'Guinea', 'The Gambia', 'Guinea-Bissau', 'Haiti', 'Liberia', 'Madagascar',
                     'Mali', 'Mozambique', 'Malawi', 'Niger', 'Nepal', 'North Korea', 'Rwanda', 'Senegal', 'Sierra Leone',
                      'Somalia', 'South Sudan', 'Syria', 'Chad', 'Togo', 'Tajikistan', 'Tanzania', 'Uganda', 'Yemen', 'Zimbabwe']
-
     '''
+
     ''' LMIC list
     country_list = ['Angola', 'Bangladesh', 'Bolivia', 'Bhutan', 'Cote dIvoire', 'Cameroon', 'Congo', 'Cape Verde',
                     'Djibouti', 'Egypt', 'Federated States of Micronesia', 'Georgia', 'Ghana', 'Honduras', 'Indonesia',
@@ -82,7 +82,7 @@ def run_baseline_scaleup(date, data_type, scen_type, trends):
     progvals = sc.odict({'Balanced energy-protein supplementation': cov, 'Calcium supplementation': cov, 'Cash transfers': cov,
                         'Delayed cord clamping': cov, 'IFA fortification of maize': cov,
                         'IFAS (community)': cov,
-                        'IFAS for pregnant women (community)': cov,
+                        #'IFAS for pregnant women (community)': cov,
                         'IPTp': cov, 'Iron and iodine fortification of salt': cov, 'IYCF 1': cov, 'Kangaroo mother care': cov,
                         'Lipid-based nutrition supplements': cov, 'Long-lasting insecticide-treated bednets': cov,
                         'Multiple micronutrient supplementation': cov,
@@ -94,7 +94,7 @@ def run_baseline_scaleup(date, data_type, scen_type, trends):
         {'Balanced energy-protein supplementation': cov, 'Calcium supplementation': cov,
          'Delayed cord clamping': cov, 'IFA fortification of maize': cov,
          'IFAS (community)': cov,
-         'IFAS for pregnant women (community)': cov,
+         #'IFAS for pregnant women (community)': cov,
          'Iron and iodine fortification of salt': cov, 'IYCF 1': cov, 'Kangaroo mother care': cov,
          'Lipid-based nutrition supplements': cov,
          'Multiple micronutrient supplementation': cov,
@@ -118,7 +118,7 @@ def run_baseline_scaleup(date, data_type, scen_type, trends):
         if data_type.lower() == 'jhe':
             loc_name = 'JHE stunting wasting/jhe_'
         else:
-            loc_name = ''
+            loc_name = 'jme_'
         u.load_data(country=loc_name + 'costed_baseline_' + country, name=country + " " + type, time_trend=time_trend)
         if type == 'baseline':
             progset = u.models[-1].prog_info.base_progset()

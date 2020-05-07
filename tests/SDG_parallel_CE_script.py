@@ -1,10 +1,10 @@
 import sys
 sys.path.append('/home/dom/Optima/tests')
 import datetime
-import Total_CE_v2_parallel as gce
+import Global_CE_parallel as gce
 import global_for_bounds as gb
-import By_country_CE_parallel_v2 as cce
-import by_country_for_bounds as cb
+import Country_CE_parallel as cce
+import country_for_bounds as cb
 import warnings
 warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)

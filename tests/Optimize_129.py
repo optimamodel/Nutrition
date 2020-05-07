@@ -21,6 +21,7 @@ country_list = ['China', 'North Korea', 'Cambodia', 'Indonesia', 'Laos', 'Malays
                 'Sierra Leone', 'Togo', 'Georgia', 'South Sudan', 'Sudan']
 
 # Bottom 50% of countries by GDP per capita
+'''
 country_list = ['Burundi', 'Somalia', 'Malawi', 'Niger', 'Central African Republic', 'Mozambique',
                 'Democratic Republic of the Congo', 'Sierra Leone', 'Madagascar', 'Afghanistan', 'Togo', 'Uganda',
                 'Burkina Faso', 'Chad', 'The Gambia', 'Liberia', 'Guinea-Bissau', 'Rwanda', 'Haiti', 'Ethiopia',
@@ -30,14 +31,12 @@ country_list = ['Burundi', 'Somalia', 'Malawi', 'Niger', 'Central African Republ
                 'Sao Tome and Principe', 'Uzbekistan', 'Nigeria', 'India', 'Timor-Leste', 'Ghana', 'Solomon Islands',
                 'Nicaragua', 'Vietnam', 'Laos', 'Egypt', 'Honduras', 'Ukraine', 'Papua New Guinea', 'Moldova',
                 'Djibouti', 'Philippines', 'Sudan', 'Morocco']
-
+'''
 #Stunting
-prog_list = ['Balanced energy-protein supplementation',
-             'IFAS for pregnant women (community)',
-             'IYCF 1', 'Lipid-based nutrition supplements',
-#             'Public provision of complementary foods',
-             'Vitamin A supplementation',
-             'Zinc supplementation']
+prog_list = ['Balanced energy-protein supplementation', 'IFA fortification of maize', 'IFAS (community)',
+             'IFAS for pregnant women (community)', 'IPTp', 'IYCF 1', 'Lipid-based nutrition supplements',
+             'Long-lasting insecticide-treated bednets', 'Multiple micronutrient supplementation',
+             'Public provision of complementary foods', 'Vitamin A supplementation', 'Zinc for treatment + ORS']
 
 #Wasting
 #prog_list = ['Vitamin A supplementation',
@@ -82,7 +81,7 @@ GHI_weighting = sc.odict({'child_mortrate': 2, 'stunted_prev': 1, 'wasted_prev':
 p = Project('Global_optim')
 
 for country in country_list:
-    p.load_data(country='costed_baseline_' + country, name=country, time_trend=True)
+    p.load_data(country='jme_costed_baseline_' + country, name=country, time_trend=True)
 
 kwargs = {'name': 'test1',
               'modelnames': country_list,
@@ -90,7 +89,7 @@ kwargs = {'name': 'test1',
               'mults': [0, 0.025, 0.05, 0.075, 0.1, 0.3, 0.6, 1],
               'fix_curr': True,
               'fix_regionalspend': False,
-              'add_funds': 5e9,
+              'add_funds': 1e10,
               'prog_set': prog_list,
               'search_type': 'mixed',
               'spectrum': True}
@@ -98,4 +97,4 @@ kwargs = {'name': 'test1',
 geo = Geospatial(**kwargs)
 #results = p.run_geo(geo=geo, maxiter=1, swarmsize=1, maxtime=1, dosave=True, parallel=False)
 results = p.run_geo(geo=geo, dosave=True, parallel=False)
-p.write_results('gdp_stunting.xlsx')
+p.write_results('jme_stunting.xlsx')
