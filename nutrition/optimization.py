@@ -140,7 +140,9 @@ class Optim(sc.prettyobj):
             xmax = np.full(numprogs, free)
             now = sc.tic()
             x0, fopt = pso.pso(obj_func, xmin, xmax, kwargs=kwargs, maxiter=maxiter, swarmsize=swarmsize)
-            x, fval, flag = sc.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=2, maxtime=maxtime)
+            #x, fval, flag = sc.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=2, maxtime=maxtime)
+            output = sc.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=2, maxtime=maxtime)
+            x, fval, flag = output['x'], output['fval'], output
             self.print_status(self.name, mult, flag, now)
             scaled = utils.scale_alloc(free, x)
             best_alloc = utils.add_fixed_alloc(fixed, scaled, inds)
