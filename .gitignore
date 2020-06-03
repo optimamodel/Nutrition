@@ -21,7 +21,11 @@ reformat_data.py
 Malaria_example.py
 Results*
 
-
+#ignore Dom's massive amount of input files
+inputs/Cost lower bounds
+inputs/Cost upper bounds
+inputs/Efficacy lower bounds
+inputs/Efficacy upper bounds
 
 
 # Byte-compiled / optimized / DLL files

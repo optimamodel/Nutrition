@@ -5,7 +5,7 @@ doplot = False
 
 # load in data to create model
 p = nu.Project('eg')
-p.load_data('demo', 'demo', name='eg')
+p.load_data('demo', 'region1', name='eg')
 
 ### define custom scenarios
 kwargs1 = {'name':'Treat SAM 100%',
@@ -65,9 +65,10 @@ kwargs6 = {'name': 'Check bednets',
            'scen_type': 'budget',
            'progvals': sc.odict({'IYCF 1': [0]})}
 
-scen_list = nu.make_scens([kwargs6])
+scen_list = nu.make_scens([kwargs1])
 p.add_scens(scen_list)
 p.run_scens()
 if doplot:
     p.plot()
 costeff = p.get_costeff()
+p.write_results('test.xlsx')
