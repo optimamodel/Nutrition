@@ -163,8 +163,9 @@ def write_results(results, projname=None, filename=None, folder=None):
         # collate coverages first
         for r, prog in enumerate(rows):
             name = [res.name] if r == 0 else ['']
-            thiscov = cov[prog]
-            outputs.append(name + [prog] + ['Coverage'] + list(thiscov))
+            if prog != 'Excess budget':
+                thiscov = cov[prog]
+                outputs.append(name + [prog] + ['Coverage'] + list(thiscov))
         # collate spending second
         for r, prog in enumerate(rows):
             thisspend = spend[prog]

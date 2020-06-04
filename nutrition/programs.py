@@ -681,3 +681,12 @@ class ProgramInfo(sc.prettyobj):
                     maxcov_child = max(child.sat_unrestr - par.annual_cov[year], 0) # if coverage of parent exceeds child sat
                     if child.annual_cov[year] > maxcov_child:
                         child.annual_cov[year] = maxcov_child
+
+    def add_prog(self, prog, pops):
+        new_prog = Program(prog['name'], prog['all_years'], prog['prog_data'])
+        new_prog.set_pop_sizes(pops)
+        new_prog.set_costcov()
+        self.programs[prog['name']] = new_prog
+        np.append(self.refs, 0.0)
+        np.append(self.curr, 0.0)
+        return

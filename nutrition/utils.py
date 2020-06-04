@@ -191,13 +191,31 @@ def read_sheet(spreadsheet, name, cols=None, dict_orient=None, skiprows=None, to
         df = df.to_dict(into=sc.odict)
     return df
 
-def scale_alloc(free, allocation):
+def scale_alloc(free, allocation, max_allocation):
     new = np.sum(allocation)
     if new == 0:
         scaled_alloc = allocation.copy()
     else:
         scale = free / new
         scaled_alloc = allocation * scale
+        excess = 0
+        over_count = 0
+        for a, alloc in enumerate(scaled_alloc):
+            if alloc >= max_allocation[a]:
+                excess += alloc - max_allocation[a]
+                scaled_alloc[a] = max_allocation[a]
+                over_count += 1
+        while excess > 0 and over_count < len(scaled_alloc):
+            redistribute = excess / (len(scaled_alloc) - over_count)
+            for a, alloc in enumerate(scaled_alloc):
+                if alloc < max_allocation[a] - redistribute:
+                    scaled_alloc[a] += redistribute
+                    excess -= redistribute
+                elif alloc < max_allocation[a]:
+                    excess -= (max_allocation[a] - alloc)
+                    scaled_alloc[a] = max_allocation[a]
+                    over_count += 1
+
     return scaled_alloc
 
 def add_fixed_alloc(fixed, alloc, indx):
@@ -290,3 +308,17 @@ def check_sol(sol):
         ((sol > 0) & (sol < 1)).all()
     except:
         raise Exception(':: Error:: birth outcome probabilities outside interval (0,1)')
+
+def add_dummy_prog_data(prog_info, name):
+    thisprog_data = sc.dcp(prog_info.prog_data)
+    thisprog_data.base_cov[name] = 0.0
+    thisprog_data.base_prog_set.append(name)
+    thisprog_data.costs[name] = 1e12
+    thisprog_data.costtype[name] = 'linear'
+    thisprog_data.impacted_pop[name] = {pop: 1.0 for pop in thisprog_data.settings.all_ages} # so that it covers everyone in the model
+    thisprog_data.prog_deps[name] = {'Exclusion dependency': [], 'Threshold dependency': []} # so that it has no dependencies
+    thisprog_data.prog_target[name] = {pop: 1.0 for pop in thisprog_data.settings.all_ages} # so that it covers everyone in the model
+    thisprog_data.sat[name] = 1.0
+    return thisprog_data
+
+

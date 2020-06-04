@@ -838,6 +838,11 @@ class ProgData(object):
             my_dict[key].update(newAgeGroups)
         return my_dict
 
+    def add_dummy_prog(self):
+        # do thing
+        return
+
+
 class Dataset(object):
     ''' Store all the data for a project '''
     
