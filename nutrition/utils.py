@@ -240,6 +240,8 @@ def scale_end_alloc(free, allocation, prog_info, inds):
         max_allocation = get_max_spend(prog_info, inds, scaled_alloc)
     if excess > 0:
         scaled_alloc = np.append(scaled_alloc, excess)
+    else:
+        scaled_alloc = np.append(scaled_alloc, 0.0)
 
     return scaled_alloc
 

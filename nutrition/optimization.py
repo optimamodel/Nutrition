@@ -144,15 +144,14 @@ class Optim(sc.prettyobj):
             x = opt_result.x
             self.print_status(x, mult, opt_result.exitreason, now)
             scaled = utils.scale_end_alloc(free, x, model.prog_info, inds) # scales spending to fit budget, limited by saturation and any program coverage dependencies
-            if len(scaled) > numprogs: # check if excess budget allocated to dummy program
-                inds = np.append(inds, True)
-                fixed = np.append(fixed, 0.0)
-                excess_spend = {'name': 'Excess budget',
-                                'all_years': model.prog_info.all_years,
-                                'prog_data': utils.add_dummy_prog_data(model.prog_info, 'Excess budget')}
-                model.prog_info.add_prog(excess_spend, model.pops)
-                model.prog_info.prog_data = excess_spend['prog_data']
-                self.prog_set.append('Excess budget')
+            inds = np.append(inds, True)
+            fixed = np.append(fixed, 0.0)
+            excess_spend = {'name': 'Excess budget not allocated',
+                            'all_years': model.prog_info.all_years,
+                            'prog_data': utils.add_dummy_prog_data(model.prog_info, 'Excess budget not allocated')}
+            model.prog_info.add_prog(excess_spend, model.pops)
+            model.prog_info.prog_data = excess_spend['prog_data']
+            self.prog_set.append('Excess budget not allocated')
             best_alloc = utils.add_fixed_alloc(fixed, scaled, inds)
         else:
             # if one of the multiples is 0, return fixed costs

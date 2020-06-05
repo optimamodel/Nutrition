@@ -164,9 +164,8 @@ def write_results(results, projname=None, filename=None, folder=None):
         for r, prog in enumerate(rows):
             name = [res.name] if r == 0 else ['']
             costcov = res.programs[prog].costtype
-            if prog != 'Excess budget':
-                thiscov = cov[prog]
-                outputs.append(name + [prog] + ['Coverage'] + [costcov] + list(thiscov))
+            thiscov = cov[prog]
+            outputs.append(name + [prog] + ['Coverage'] + [costcov] + list(thiscov))
         # collate spending second
         for r, prog in enumerate(rows):
             thisspend = spend[prog]
