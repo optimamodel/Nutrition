@@ -654,6 +654,14 @@ class ProgData(object):
         frac_wheat = baseline.loc['Food'].loc['Fraction eating wheat as main staple food'].values[0]
         frac_maize = baseline.loc['Food'].loc['Fraction eating maize as main staple food'].values[0]
         diarr_incid = baseline.loc['Diarrhoea incidence']['Data'].values
+        if len(baseline.loc['Other risks'].values) < 4:
+            print('Warning, the databook being read is out of date and does not include baseline prevalences of '
+                  'eclampsia and pre-eclmapsia so global averages will be used.')
+            preeclampsia_prev = self.settings.global_eclampsia_prevalence['Pre-eclampsia']
+            eclampsia_prev = self.settings.global_eclampsia_prevalence['Eclampsia']
+        else:
+            preeclampsia_prev = baseline.loc['Other risks'].loc['Prevalence of pre-eclampsia'].values[0]
+            eclampsia_prev = baseline.loc['Other risks'].loc['Prevalence of eclampsia'].values[0]
         treatsam = self.spreadsheet.parse(sheet_name='Treatment of SAM')
         comm_deliv_raw = treatsam.iloc[1]['Add extension']
         comm_deliv = pandas.notnull(comm_deliv_raw)
@@ -688,6 +696,12 @@ class ProgData(object):
         IPTp_row = frac_malaria_risk * np.ones(4)
         targetPopSheet.loc['Pregnant women', 'IPTp'].iloc[5:9] = IPTp_row
         self.calcscache.write_row('Programs target population', 17, 7, IPTp_row)
+        mg_eclampsia_row = eclampsia_prev * np.ones(4)
+        targetPopSheet.loc['Pregnant women', 'Mg for eclampsia'].iloc[5:9] = mg_eclampsia_row
+        self.calcscache.write_row('Programs target population', 18, 7, mg_eclampsia_row)
+        mg_preeclampsia_row = preeclampsia_prev * np.ones(4)
+        targetPopSheet.loc['Pregnant women', 'Mg for pre-eclampsia'].iloc[5:9] = mg_preeclampsia_row
+        self.calcscache.write_row('Programs target population', 19, 7, mg_preeclampsia_row)
         fam_planning_row = famplan_unmet_need * np.ones(4)
         targetPopSheet.loc['Non-pregnant WRA', 'Family planning'].iloc[9:13] = fam_planning_row
         self.calcscache.write_row('Programs target population', 22, 11, fam_planning_row)

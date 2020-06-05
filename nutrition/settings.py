@@ -28,6 +28,7 @@ class Settings(object):
                            '12-23 months': 'Partial', '24-59 months': 'None'}
         self.optimal_space = '24 months or greater'
         self.birth_outcomes = ['Term AGA', 'Term SGA', 'Pre-term AGA','Pre-term SGA']
+        self.global_eclampsia_prevalence = {'Pre-eclampsia': 0.046, 'Eclampsia': 0.014} # Need data/source, using https://www.ejog.org/article/S0301-2115(13)00196-6/fulltext
         self.all_risks = [self.stunting_list, self.wasting_list, self.bf_list, self.anaemia_list]
         self.child_ages = ['<1 month', '1-5 months', '6-11 months', '12-23 months', '24-59 months']
         self.pw_ages = ['PW: 15-19 years', 'PW: 20-29 years', 'PW: 30-39 years', 'PW: 40-49 years']
