@@ -20,7 +20,7 @@ kwargs1 = {'name':'test1',
 
 kwargs2 = {'name':'test2',
           'model_name': 'eg',
-          'mults':[1, 2],
+          'mults':[1, 10],
            'weights': 'thrive',
           'prog_set':  ['IFAS (community)', 'IFAS (health facility)', 'IYCF 1', 'Lipid-based nutrition supplements',
            'Multiple micronutrient supplementation', 'Micronutrient powders',

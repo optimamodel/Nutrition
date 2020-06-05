@@ -137,24 +137,14 @@ class Optim(sc.prettyobj):
         numprogs = np.sum(inds)
         if free > 0 and np.any(inds): # need both funds and programs
             xmin = np.zeros(numprogs)
-            #xmax = np.full(numprogs, free)
-            xmax = get_max_spend(model.prog_info, inds)
-            #xmin = np.append(xmin, 0.0)
-            #xmax = np.append(xmax, free)
-            #kwargs['keep_inds'] = np.append(kwargs['keep_inds'], True)
-            #kwargs['fixed'] = np.append(kwargs['fixed'], 0.0)
-            inds = kwargs['keep_inds']
-            fixed = kwargs['fixed']
+            xmax = np.full(numprogs, free)
             now = sc.tic()
             x0, fopt = pso.pso(obj_func, xmin, xmax, kwargs=kwargs, maxiter=maxiter, swarmsize=swarmsize)
             opt_result = sc.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=2, maxtime=maxtime)
             x = opt_result.x
             self.print_status(x, mult, opt_result.exitreason, now)
-            x_allowed = check_max_spend(model.prog_info, inds, x)
-            spend_diff = free - np.sum(x_allowed)  # find difference between funds required for max coverage and allocated funds
-            if spend_diff > 0: # if excess money
-                scaled = x_allowed
-                scaled = np.append(scaled, spend_diff)
+            scaled = utils.scale_end_alloc(free, x, model.prog_info, inds) # scales spending to fit budget, limited by saturation and any program coverage dependencies
+            if len(scaled) > numprogs: # check if excess budget allocated to dummy program
                 inds = np.append(inds, True)
                 fixed = np.append(fixed, 0.0)
                 excess_spend = {'name': 'Excess budget',
@@ -163,8 +153,6 @@ class Optim(sc.prettyobj):
                 model.prog_info.add_prog(excess_spend, model.pops)
                 model.prog_info.prog_data = excess_spend['prog_data']
                 self.prog_set.append('Excess budget')
-            else:
-                scaled = utils.scale_alloc(free, x, x_allowed)
             best_alloc = utils.add_fixed_alloc(fixed, scaled, inds)
         else:
             # if one of the multiples is 0, return fixed costs
@@ -199,7 +187,7 @@ def obj_func(allocation, model, free, fixed, keep_inds, weights):
     """
     thisModel = sc.dcp(model)
     # scale the allocation appropriately
-    scaledAllocation = utils.scale_alloc(free, allocation, np.full(len(allocation), free))
+    scaledAllocation = utils.scale_alloc(free, allocation)
     totalAllocations = utils.add_fixed_alloc(fixed, scaledAllocation, keep_inds)
     thisModel.update_covs(totalAllocations, 'budget')
     thisModel.run_sim()
@@ -228,45 +216,3 @@ def make_default_optim(modelname=None, basename='Maximize thrive'):
 
     default = Optim(**kwargs1)
     return default
-
-def get_max_spend(prog_info, keep_inds):
-    """
-    Calculates the spending required for each available program to reach saturation.
-    :param prog_info: a program information object from a relevant model instance to pull costcov data from
-    :param keep_inds: the indices of the programs which can be funded
-    :return: array of maximum spending for each program
-    """
-    rel_progs = sc.dcp(prog_info)
-    max_spends = np.zeros(np.sum(keep_inds))
-    keep_progs = [prog for p, prog in enumerate(rel_progs.programs) if keep_inds[p]]
-    for p, prog in enumerate(keep_progs):
-        max_covs = np.ones(np.sum(keep_inds)) * rel_progs.programs[prog].sat
-        max_spends[p] = rel_progs.programs[prog].get_spending(max_covs)[0]
-    return max_spends
-
-def check_max_spend(prog_info, keep_inds, curr_spends):
-    """
-    Checks if current spending allocations are above saturation or should be limited by dependency.
-    :param prog_info: a program information object from a relevant model instance to pull costcov data from
-    :param keep_inds: the indices of the programs to be checked
-    :param curr_spends: the spending allocations to be checked
-    :return: array of maximum spending for each program
-    """
-    rel_progs = sc.dcp(prog_info)
-    max_spends = np.zeros(np.sum(keep_inds))
-    keep_progs = [prog for p, prog in enumerate(rel_progs.programs) if keep_inds[p]]
-    for p, prog in enumerate(keep_progs):
-        max_covs = np.ones(np.sum(keep_inds))
-        trigger = True
-        for excl_prog in rel_progs.exclusionOrder:
-            if prog in excl_prog.excl_deps and excl_prog.name in keep_progs:
-                curr_covs = rel_progs.programs[excl_prog.name].func(np.array(curr_spends[keep_progs.index(excl_prog.name)]))
-                max_covs *= 1.0 - curr_covs
-                max_spends[p] = rel_progs.programs[prog].get_spending(max_covs)[0]
-                trigger = False
-            else:
-                pass
-        if trigger:
-            max_covs *= rel_progs.programs[prog].sat
-            max_spends[p] = rel_progs.programs[prog].get_spending(max_covs)[0]
-    return max_spends
