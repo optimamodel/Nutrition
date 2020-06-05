@@ -20,6 +20,6 @@ kwargs = {'name': 'test1',
                        'Mg for eclampsia', 'Zinc supplementation', 'Iron and iodine fortification of salt']}
 
 geo = Geospatial(**kwargs)
-results = p.run_geo(geo=geo, maxiter=1, swarmsize=1, maxtime=1, parallel=False)
-p.plot(toplot=['alloc'], geo=True)
+results = p.run_geo(geo=geo, maxiter=4, swarmsize=4, maxtime=20, parallel=False)
+p.plot(geo=True)
 p.write_results('geo_results.xlsx')
