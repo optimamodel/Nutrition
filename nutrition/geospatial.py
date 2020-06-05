@@ -76,16 +76,19 @@ class Geospatial:
         # optimize the new allocations within each region
         regions = self.make_regions(add_funds=regional_allocs, rem_curr=not self.fix_regionalspend, mults=[1])
         run_optim = partial(proj.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
-                            parallel=False, dosave=True, runbaseline=False)
+                            parallel=False, dosave=True, runbaseline=True)
         # can run in parallel b/c child processes in series
         if parallel: results = utils.run_parallel(run_optim, regions, num_procs=len(regions))
         else:        results = [run_optim(region) for region in regions]
         # flatten list
         results = [item for sublist in results for item in sublist]
         # remove multiple to plot by name (total hack)
-        for res in results:
+        for r, res in enumerate(results):
             res.mult = None
-            res.name = res.name.replace('(x1)', '')
+            if res.name == 'Baseline':
+                res.name = results[r+1].name.replace('(x1)', '') + 'baseline'
+            else:
+                res.name = res.name.replace('(x1)', '')
         return results
 
     def make_regions(self, add_funds=None, rem_curr=False, mults=None):
