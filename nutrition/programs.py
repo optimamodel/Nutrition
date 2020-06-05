@@ -683,6 +683,12 @@ class ProgramInfo(sc.prettyobj):
                         child.annual_cov[year] = maxcov_child
 
     def add_prog(self, prog, pops):
+        '''
+        Add a Program to ProgramInfo with a dict containing necessary information.
+        :param prog: dict containing program name, scenario years and ProgData for the program to be added
+        :param pops: model population info used to calculate coverages
+        :return:
+        '''
         new_prog = Program(prog['name'], prog['all_years'], prog['prog_data'])
         new_prog.set_pop_sizes(pops)
         new_prog.set_costcov()

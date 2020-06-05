@@ -258,7 +258,7 @@ def get_max_spend(prog_info, keep_inds, curr_spends):
     for p, prog in enumerate(keep_progs):
         max_covs = np.ones(np.sum(keep_inds))
         trigger = True
-        if prog in excl_progs:
+        if prog in excl_progs: # if program excludes coverage of other programs, limit its spending scaleup
             curr_covs = rel_progs.programs[prog].func(np.array([curr_spends[p]]))
             max_covs *= curr_covs[0]
             max_spends[p] = rel_progs.programs[prog].get_spending(max_covs)[0]

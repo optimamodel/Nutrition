@@ -155,7 +155,7 @@ def write_results(results, projname=None, filename=None, folder=None):
     ### Cost & coverage sheet
     # this is grouped not by program, but by coverage and cost (within each scenario)
     outputs = []
-    headers = [['Scenario', 'Program', 'Type'] + years]
+    headers = [['Scenario', 'Program', 'Type', 'Cost-coverage type'] + years]
     for r, res in enumerate(results):
         rows = res.programs.keys()
         spend = res.get_allocs(ref=True)
@@ -163,13 +163,15 @@ def write_results(results, projname=None, filename=None, folder=None):
         # collate coverages first
         for r, prog in enumerate(rows):
             name = [res.name] if r == 0 else ['']
+            costcov = res.programs[prog].costtype
             if prog != 'Excess budget':
                 thiscov = cov[prog]
-                outputs.append(name + [prog] + ['Coverage'] + list(thiscov))
+                outputs.append(name + [prog] + ['Coverage'] + [costcov] + list(thiscov))
         # collate spending second
         for r, prog in enumerate(rows):
             thisspend = spend[prog]
-            outputs.append([''] + [prog] + ['Budget'] + list(thisspend))
+            costcov = res.programs[prog].costtype
+            outputs.append([''] + [prog] + ['Budget'] + [costcov] + list(thisspend))
         outputs.append(nullrow)
     data = headers + outputs
     alldata.append(data)

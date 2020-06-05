@@ -2,7 +2,7 @@ import nutrition.ui as nu
 from nutrition.optimization import Optim
 import sciris as sc
 
-doplot = False
+doplot = True
 dosave = True
 
 # load in data to create model
@@ -44,6 +44,6 @@ kwargs3 = {'name': 'test3',
 
 optims = [Optim(**kwargs2)]
 p.add_optims(optims)
-p.run_optim(parallel=False)
-if doplot: p.plot(optim=True)
+p.run_optim(parallel=False)#, maxtime=1, maxiter=1, swarmsize=1)
+if doplot: p.plot(toplot=['alloc'], optim=True)
 if dosave: p.write_results('optim_results.xlsx')

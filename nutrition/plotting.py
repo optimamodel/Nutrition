@@ -154,6 +154,7 @@ def plot_alloc(results, optim, geo):
     figs = sc.odict()
     ref = results[0]
     progset = ref.prog_info.base_progset()
+    progset.append('Excess budget')
     colors = sc.gridcolors(ncolors=len(progset), hueshift=hueshift)
     leglabs = []
     x = np.arange(len(results))
