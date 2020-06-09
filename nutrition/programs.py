@@ -131,15 +131,35 @@ class Program(sc.prettyobj):
         """
         # TMP SOLUTION: THE DENOMINATOR FOR CALCULATING PROGRAM COVERAGE WILL USE sum(CEILING(FRAC TARGETED) * POP SIZE) over all pops targeted. I.E. FOR IYCF WITH FRAC >1, we get normalised sum
         self.unrestr_popsize = 0.
-        for pop in populations:
-            self.unrestr_popsize += sum(ceil(self.target_pops[age.age]) * age.pop_size for age in pop.age_groups
-                                        if age.age in self.agesTargeted)
+        if self.name in ['Oral rehydration salts1', 'Zinc for treatment + ORS1']:
+            for pop in populations:
+                self.unrestr_popsize += sum(ceil(self.target_pops[age.age]) * age.pop_size *
+                                            (age.incidences['Diarrhoea'] * 12) for age in pop.age_groups if age.age in
+                                            self.agesTargeted)
+        elif self.name == 'Treatment of SAM1':
+            for pop in populations:
+                self.unrestr_popsize += sum(ceil(self.target_pops[age.age]) * age.pop_size *
+                                            (age.incidences['SAM'] * 12) for age in pop.age_groups if age.age in
+                                            self.agesTargeted)
+        else:
+            for pop in populations:
+                self.unrestr_popsize += sum(ceil(self.target_pops[age.age]) * age.pop_size for age in pop.age_groups
+                                            if age.age in self.agesTargeted)
 
     def _set_restrpop(self, populations):
         self.restr_popsize = 0.
-        for pop in populations:
-            self.restr_popsize += sum(age.pop_size * self.target_pops[age.age] for age in pop.age_groups
-                                         if age.age in self.agesTargeted)
+        if self.name in ['Oral rehydration salts1', 'Zinc for treatment + ORS1']:
+            for pop in populations:
+                self.restr_popsize += sum(age.pop_size * self.target_pops[age.age] * (age.incidences['Diarrhoea'] * 12)
+                                          for age in pop.age_groups if age.age in self.agesTargeted)
+        elif self.name == 'Treatment of SAM1':
+            for pop in populations:
+                self.restr_popsize += sum(age.pop_size * self.target_pops[age.age] * (age.incidences['SAM'] * 12)
+                                          for age in pop.age_groups if age.age in self.agesTargeted)
+        else:
+            for pop in populations:
+                self.restr_popsize += sum(age.pop_size * self.target_pops[age.age] for age in pop.age_groups
+                                             if age.age in self.agesTargeted)
 
     def stunting_update(self, age_group):
         """
