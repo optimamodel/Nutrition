@@ -555,17 +555,17 @@ class InputData(object):
         pregwomen_death_pct_sum = deathdist.loc['Pregnant women'].iloc[1:-1, 0].values.astype(np.float).sum()
         self.calcscache.write_cell('Causes of death', 34, 2, pregwomen_death_pct_sum)
 
-        neonates = deathdist.loc['Neonatal'].ix[:-1]
+        neonates = deathdist.loc['Neonatal'].iloc[:-1]
 
         # Load the main spreadsheet into a DataFrame, but skip 12 rows.
         deathdist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0, 1], skiprows=12)
 
-        children = deathdist.loc['Children'].ix[:-1]
+        children = deathdist.loc['Children'].iloc[:-1]
 
         # Load the main spreadsheet into a DataFrame, but skip 24 rows.
         deathdist = utils.read_sheet(self.spreadsheet, 'Causes of death', [0, 1], skiprows=24)
 
-        pw = deathdist.loc['Pregnant women'].ix[:-1]
+        pw = deathdist.loc['Pregnant women'].iloc[:-1]
         dist = pandas.concat([neonates['<1 month'], children, pw['Pregnant women.1']], axis=1, sort=False).fillna(0)
         for cause in dist.index:
             self.death_dist[cause] = sc.odict()
