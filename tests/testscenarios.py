@@ -1,11 +1,12 @@
 import nutrition.ui as nu
 import sciris as sc
 
-doplot = False
+doplot = True
 
 # load in data to create model
 p = nu.Project('eg')
-p.load_data('demo', 'National', name='eg')
+p.load_data('demo', 'national', name='eg')
+
 
 ### define custom scenarios
 kwargs1 = {'name':'Treat SAM 100%',

@@ -138,7 +138,7 @@ Last update: 2019feb11
            :classes="['v--modal', 'vue-dialog', 'grrmodal']"
            :pivot-y="0.3"
            :adaptive="true"
-           :clickToClose="clickToClose"
+           :clickToClose="false"
            :transition="transition">
 
         <div class="dialog-content">
@@ -220,12 +220,9 @@ Last update: 2019feb11
 
 
 <script>
-  import axios from 'axios'
-  let filesaver = require('file-saver')
-  import utils from '@/js/utils'
-  import rpcs from '@/js/rpc-service'
-  import status from '@/js/status-service'
-  import router from '@/router'
+
+  import utils from '../js/utils.js'
+  import router from '../router.js'
 
   export default {
     name: 'ScenariosPage',
@@ -286,29 +283,29 @@ Last update: 2019feb11
 
       getScenSummaries() {
         console.log('getScenSummaries() called')
-        status.start(this)
-        rpcs.rpc('get_scen_info', [this.projectID])
+        this.$sciris.start(this)
+        this.$sciris.rpc('get_scen_info', [this.projectID])
           .then(response => {
             this.scenSummaries = response.data // Set the scenarios to what we received.
             console.log('Scenario summaries:')
             console.log(this.scenSummaries)
             this.scenariosLoaded = true
-            status.succeed(this, 'Scenarios loaded')
+            this.$sciris.succeed(this, 'Scenarios loaded')
           })
           .catch(error => {
-            status.fail(this, 'Could not get scenarios', error)
+            this.$sciris.fail(this, 'Could not get scenarios', error)
           })
       },
 
       setScenSummaries() {
         console.log('setScenSummaries() called')
-        status.start(this)
-        rpcs.rpc('set_scen_info', [this.projectID, this.scenSummaries])
+        this.$sciris.start(this)
+        this.$sciris.rpc('set_scen_info', [this.projectID, this.scenSummaries])
           .then( response => {
-            status.succeed(this, 'Scenarios saved')
+            this.$sciris.succeed(this, 'Scenarios saved')
           })
           .catch(error => {
-            status.fail(this, 'Could not save scenarios', error)
+            this.$sciris.fail(this, 'Could not save scenarios', error)
           })
       },
 
@@ -322,7 +319,7 @@ Last update: 2019feb11
       addScenModal(scen_type) {
         // Open a model dialog for creating a new scenario
         console.log('addScenModal() called for type ' + scen_type)
-        rpcs.rpc('get_default_scen', [this.projectID, scen_type, this.datasetOptions[0]])
+        this.$sciris.rpc('get_default_scen', [this.projectID, scen_type, this.datasetOptions[0]])
           .then(response => {
             let defaultScen = response.data
             this.setScenYears(defaultScen)
@@ -335,7 +332,7 @@ Last update: 2019feb11
             console.log(defaultScen)
           })
           .catch(error => {
-            status.fail(this, 'Could not open add scenario modal', error)
+            this.$sciris.fail(this, 'Could not open add scenario modal', error)
           })
       },
 
@@ -351,27 +348,17 @@ Last update: 2019feb11
         this.addEditModal.mode = 'edit'
         this.$modal.show('add-scen')
       },
-	  
-      modalSwitchDataset() {
-        console.log('modalSwitchDataset() called')
-        console.log('New Dataset: ', this.addEditModal.scenSummary.model_name)
-        let scenName = this.addEditModal.scenSummary.name
-        // Get a new default scenario to write into the modal.
-        rpcs.rpc('get_default_scen', [this.projectID, this.addEditModal.modalScenarioType, 
-          this.addEditModal.scenSummary.model_name])
-          .then(response => {
-            let newDefaultScen = response.data
-            this.setScenYears(newDefaultScen)
-            this.addEditModal.scenSummary = newDefaultScen  // overwrite the old scenario
-			this.addEditModal.scenSummary.name = scenName  // keep the existing name
-            console.log('Default scenario:')
-            console.log(newDefaultScen)
-          })
-          .catch(error => {
-            status.fail(this, 'Could not switch databooks', error)
-          })		
+
+      async modalSwitchDataset() {
+        console.log('modalSwitchDataset() called');
+        try {
+          let response = await this.$sciris.rpc('scen_switch_dataset', [this.projectID, this.addEditModal.scenSummary]);
+          this.addEditModal.scenSummary = response.data;  // overwrite the old optimization
+        } catch (error) {
+          this.$sciris.fail(this, 'Could not switch databooks', error)
+        }
       },
-	  
+
       modalDeselectAll() {
         this.addEditModal.scenSummary.progvals.forEach(progval => {
           progval.included = false;
@@ -380,7 +367,7 @@ Last update: 2019feb11
 
       modalSave() {
         console.log('modalSave() called')
-        status.start(this)
+        this.$sciris.start(this)
         let newScen = _.cloneDeep(this.addEditModal.scenSummary) // Get the new scenario summary from the modal.
         let scenNames = [] // Get the list of all of the current scenario names.
         this.scenSummaries.forEach(scenSum => {
@@ -403,21 +390,21 @@ Last update: 2019feb11
         }
         console.log('Saved scenario:')
         console.log(newScen)
-        rpcs.rpc('set_scen_info', [this.projectID, this.scenSummaries])
+        this.$sciris.rpc('set_scen_info', [this.projectID, this.scenSummaries])
           .then( response => {
-            status.succeed(this, 'Scenario added')
+            this.$sciris.succeed(this, 'Scenario added')
             this.$modal.hide('add-scen')
             this.getScenSummaries()  // Reload all scenarios so Vue state is correct (hack).
           })
           .catch(error => {
-            status.fail(this, 'Could not add scenario', error)
+            this.$sciris.fail(this, 'Could not add scenario', error)
             this.getScenSummaries()
           })
       },
 
       copyScen(scenSummary) {
         console.log('copyScen() called')
-        status.start(this)
+        this.$sciris.start(this)
         var newScen = _.cloneDeep(scenSummary);
         var otherNames = []
         this.scenSummaries.forEach(scenSum => {
@@ -425,65 +412,65 @@ Last update: 2019feb11
         })
         newScen.name = utils.getUniqueName(newScen.name, otherNames)
         this.scenSummaries.push(newScen)
-        rpcs.rpc('set_scen_info', [this.projectID, this.scenSummaries])
+        this.$sciris.rpc('set_scen_info', [this.projectID, this.scenSummaries])
           .then( response => {
-            status.succeed(this, 'Scenario copied')
+            this.$sciris.succeed(this, 'Scenario copied')
           })
           .catch(error => {
-            status.fail(this, 'Could not copy scenario', error)
+            this.$sciris.fail(this, 'Could not copy scenario', error)
           })
       },
 
       convertScen(scenSummary) {
         console.log('convertScen() called')
-        status.start(this)
-        rpcs.rpc('convert_scen', [this.projectID, scenSummary.name])
+        this.$sciris.start(this)
+        this.$sciris.rpc('convert_scen', [this.projectID, scenSummary.name])
           .then( response => {
-            status.succeed(this, 'Scenario converted')
+            this.$sciris.succeed(this, 'Scenario converted')
             this.getScenSummaries()
           })
           .catch(error => {
-            status.fail(this, 'Could not convert scenario', error)
+            this.$sciris.fail(this, 'Could not convert scenario', error)
           })
       },
 
       deleteScen(scenSummary) {
         console.log('deleteScen() called')
-        status.start(this)
+        this.$sciris.start(this)
         for(var i = 0; i< this.scenSummaries.length; i++) {
           if(this.scenSummaries[i].name === scenSummary.name) {
             this.scenSummaries.splice(i, 1);
           }
         }
-        rpcs.rpc('set_scen_info', [this.projectID, this.scenSummaries])
+        this.$sciris.rpc('set_scen_info', [this.projectID, this.scenSummaries])
           .then( response => {
-            status.succeed(this, 'Scenario deleted')
+            this.$sciris.succeed(this, 'Scenario deleted')
           })
           .catch(error => {
-            status.fail(this, 'Could not delete scenario', error)
+            this.$sciris.fail(this, 'Could not delete scenario', error)
           })
       },
 
       runScens() {
         console.log('runScens() called')
-        status.start(this)
-        rpcs.rpc('set_scen_info', [this.projectID, this.scenSummaries]) // Make sure they're saved first
+        this.$sciris.start(this)
+        this.$sciris.rpc('set_scen_info', [this.projectID, this.scenSummaries]) // Make sure they're saved first
           .then(response => {
-            rpcs.rpc('run_scens', [this.projectID, true, this.calculateCostEff]) // Go to the server to get the results
+            this.$sciris.rpc('run_scens', [this.projectID, true, this.calculateCostEff]) // Go to the server to get the results
               .then(response => {
                 this.hasTable = this.calculateCostEff
                 this.table = response.data.table
                 this.makeGraphs(response.data.graphs)
-                status.succeed(this, '') // Success message in graphs function
+                this.$sciris.succeed(this, '') // Success message in graphs function
               })
               .catch(error => {
                 console.log('There was an error', error) // Pull out the error message.
-                status.fail(this, 'Could not run scenarios', error) // Indicate failure.
+                this.$sciris.fail(this, 'Could not run scenarios', error) // Indicate failure.
               })
           })
           .catch(error => {
             this.response = 'There was an error', error
-            status.fail(this, 'Could not set scenarios', error)
+            this.$sciris.fail(this, 'Could not set scenarios', error)
           })
       },
     }

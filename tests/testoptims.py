@@ -2,12 +2,16 @@ import nutrition.ui as nu
 from nutrition.optimization import Optim
 import sciris as sc
 
+
+# load in data to create model
+
 doplot = False
 dosave = True
 
 # load in data to create model
 p = nu.Project('eg')
-p.load_data('demo', 'region1', name='eg')
+p.load_data('demo', 'national', name='eg')
+
 
 ## define custom optimization
 kwargs1 = {'name':'test1',
@@ -46,4 +50,4 @@ optims = [Optim(**kwargs2)]
 p.add_optims(optims)
 p.run_optim(parallel=False)
 if doplot: p.plot(optim=True)
-if dosave: p.write_results('optim_results1.xlsx')
+if dosave: p.write_results('optim_results.xlsx')
