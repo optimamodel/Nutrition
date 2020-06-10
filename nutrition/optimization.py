@@ -140,10 +140,9 @@ class Optim(sc.prettyobj):
             xmax = np.full(numprogs, free)
             now = sc.tic()
             x0, fopt = pso.pso(obj_func, xmin, xmax, kwargs=kwargs, maxiter=maxiter, swarmsize=swarmsize)
-            #x, fval, flag = sc.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=2, maxtime=maxtime)
-            output = sc.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=2, maxtime=maxtime)
-            x, fval, flag = output['x'], output['fval'], output
-            self.print_status(self.name, mult, flag, now)
+            opt_result = sc.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=2, maxtime=maxtime)
+            x = opt_result.x
+            self.print_status(x, mult, opt_result.exitreason, now)
             scaled = utils.scale_alloc(free, x)
             best_alloc = utils.add_fixed_alloc(fixed, scaled, inds)
         else:
@@ -161,9 +160,9 @@ class Optim(sc.prettyobj):
         res = self.one_optim(args)
         return res
 
-    def print_status(self, objective, multiple, flag, now):
+    def print_status(self, objective, multiple, exitreason, now):
         print('Finished optimization for %s for objective %s and multiple %s' % (self.name, objective, multiple))
-        print('The reason is %s and it took %0.1f s \n' % (flag['exitreason'], sc.toc(now, output=True)))
+        print('The reason is %s and it took %0.1f s \n' % (exitreason, sc.toc(now, output=True)))
 
 
 def obj_func(allocation, model, free, fixed, keep_inds, weights):

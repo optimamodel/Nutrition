@@ -167,11 +167,11 @@ Last update: 2019jan10
 
           <br>
           <b>Existing spending</b><br>
-          <input type="radio" v-model="addEditModal.geoSummary.fix_curr" value=false>&nbsp;Can be reallocated<br>
-          <input type="radio" v-model="addEditModal.geoSummary.fix_curr" value=true>&nbsp;Cannot be reallocated<br><br>
+          <input type="radio" v-model="addEditModal.geoSummary.fix_curr" :value="false">&nbsp;Can be reallocated<br>
+          <input type="radio" v-model="addEditModal.geoSummary.fix_curr" :value="true">&nbsp;Cannot be reallocated<br><br>
           <b>Regional spending</b><br>
-          <input type="radio" v-model="addEditModal.geoSummary.fix_regionalspend" value=false>&nbsp;Can be reallocated between regions<br>
-          <input type="radio" v-model="addEditModal.geoSummary.fix_regionalspend" value=true>&nbsp;Cannot be reallocated between regions<br><br>
+          <input type="radio" v-model="addEditModal.geoSummary.fix_regionalspend" :value="false">&nbsp;Can be reallocated between regions<br>
+          <input type="radio" v-model="addEditModal.geoSummary.fix_regionalspend" :value="true">&nbsp;Cannot be reallocated between regions<br><br>
           <b>Additional funds to allocate</b><br>
           <input type="text"
                  class="txbox"
@@ -219,12 +219,9 @@ Last update: 2019jan10
 
 
 <script>
-  import axios from 'axios'
-  var filesaver = require('file-saver')
-  import utils from '@/js/utils'
-  import rpcs from '@/js/rpc-service'
-  import status from '@/js/status-service'
-  import router from '@/router'
+
+  import utils from '../js/utils.js'
+  import router from '../router.js'
 
   export default {
     name: 'GeospatialPage',
@@ -326,7 +323,7 @@ Last update: 2019jan10
         return new Promise((resolve, reject) => {
           console.log('getGeoTaskState() called for with: ' + geoSummary.status)
           let statusStr = '';
-          rpcs.rpc('check_task', [geoSummary.serverDatastoreId]) // Check the status of the task.
+          this.$sciris.rpc('check_task', [geoSummary.serverDatastoreId]) // Check the status of the task.
             .then(result => {
               statusStr = result.data.task.status
               geoSummary.status = statusStr
@@ -347,7 +344,7 @@ Last update: 2019jan10
                 })
                 // TODO: The above works, but we want a solution that uses the line
                 // below (which currently does not work).
-//                status.fail(this, failMessage, result.data.task.errorText)
+//                this.$sciris.fail(this, failMessage, result.data.task.errorText)
               }
               resolve(result)
             })
@@ -472,9 +469,9 @@ Last update: 2019jan10
         return new Promise((resolve, reject) => {
           let datastoreId = geoSummary.serverDatastoreId  // hack because this gets overwritten soon by caller
           console.log('clearTask() called for '+this.currentGeo)
-          rpcs.rpc('del_result', [datastoreId, this.projectID]) // Delete cached result.
+          this.$sciris.rpc('del_result', [datastoreId, this.projectID]) // Delete cached result.
             .then(response => {
-              rpcs.rpc('delete_task', [datastoreId])
+              this.$sciris.rpc('delete_task', [datastoreId])
                 .then(response => {
                   this.getGeoTaskState(geoSummary) // Get the task state for the optimization.
                   if (!this.pollingTasks) {
@@ -494,8 +491,8 @@ Last update: 2019jan10
     
       getGeoSummaries() {
         console.log('getGeoSummaries() called')
-        status.start(this)
-        rpcs.rpc('get_geo_info', [this.projectID]) // Get the current project's optimization summaries from the server.
+        this.$sciris.start(this)
+        this.$sciris.rpc('get_geo_info', [this.projectID]) // Get the current project's optimization summaries from the server.
           .then(response => {
             this.geoSummaries = response.data // Set the optimizations to what we received.
             this.geoSummaries.forEach(geoSum => { // For each of the optimization summaries...
@@ -506,29 +503,29 @@ Last update: 2019jan10
             })
             this.doTaskPolling(true)  // start task polling, kicking off with running check_task() for all optimizations
             this.geosLoaded = true
-            status.succeed(this, 'Geospatial optimizations loaded')
+            this.$sciris.succeed(this, 'Geospatial optimizations loaded')
           })
           .catch(error => {
-            status.fail(this, 'Could not load geospatial optimizations', error)
+            this.$sciris.fail(this, 'Could not load geospatial optimizations', error)
           })
       },
 
       setGeoSummaries() {
         console.log('setGeoSummaries() called')
-        status.start(this)
-        rpcs.rpc('set_geo_info', [this.projectID, this.geoSummaries])
+        this.$sciris.start(this)
+        this.$sciris.rpc('set_geo_info', [this.projectID, this.geoSummaries])
           .then( response => {
-            status.succeed(this, 'Geospatial optimizations saved')
+            this.$sciris.succeed(this, 'Geospatial optimizations saved')
           })
           .catch(error => {
-            status.fail(this, 'Could not save geospatial optimizations', error)
+            this.$sciris.fail(this, 'Could not save geospatial optimizations', error)
           })
       },
 
       addGeoModal() {
         // Open a model dialog for creating a new geospatial optimization
         console.log('addGeoModal() called')
-        rpcs.rpc('get_default_geo', [this.projectID])
+        this.$sciris.rpc('get_default_geo', [this.projectID])
           .then(response => {
             this.addEditModal.geoSummary = response.data
             this.addEditModal.origName = this.addEditModal.geoSummary.name
@@ -538,7 +535,7 @@ Last update: 2019jan10
             console.log(this.addEditModal.geoSummary)
           })
           .catch(error => {
-            status.fail(this, 'Could not open add geospatial modal', error)
+            this.$sciris.fail(this, 'Could not open add geospatial modal', error)
           })
       },
 
@@ -556,7 +553,7 @@ Last update: 2019jan10
       modalSave() {
         console.log('modalSave() called')
         this.$modal.hide('add-geo')
-        status.start(this)
+        this.$sciris.start(this)
         let newGeo = _.cloneDeep(this.addEditModal.geoSummary)
         let geoNames = [] // Get the list of all of the current optimization names.
         this.geoSummaries.forEach(geoSum => {
@@ -585,19 +582,19 @@ Last update: 2019jan10
         }
         console.log('Saved geospatial optimization:')
         console.log(newGeo)
-        rpcs.rpc('set_geo_info', [this.projectID, this.geoSummaries])
+        this.$sciris.rpc('set_geo_info', [this.projectID, this.geoSummaries])
           .then( response => {
-            status.succeed(this, 'Geospatial optimization added')
+            this.$sciris.succeed(this, 'Geospatial optimization added')
 			this.getGeoSummaries()  // Reload all geo optimizations so Vue state is correct (hack).
           })
           .catch(error => {
-            status.fail(this, 'Could not add geospatial optimization', error)
+            this.$sciris.fail(this, 'Could not add geospatial optimization', error)
           })
       },
 
       copyGeo(geoSummary) {
         console.log('copyGeo() called')
-        status.start(this)
+        this.$sciris.start(this)
         var newGeo = _.cloneDeep(geoSummary);
         var otherNames = []
         this.geoSummaries.forEach(geoSum => {
@@ -607,18 +604,18 @@ Last update: 2019jan10
         newGeo.serverDatastoreId = this.$store.state.activeProject.project.id + ':geo-' + newGeo.name
         this.geoSummaries.push(newGeo)
         this.getGeoTaskState(newGeo)
-        rpcs.rpc('set_geo_info', [this.projectID, this.geoSummaries])
+        this.$sciris.rpc('set_geo_info', [this.projectID, this.geoSummaries])
           .then( response => {
-            status.succeed(this, 'Geospatial optimization copied')
+            this.$sciris.succeed(this, 'Geospatial optimization copied')
           })
           .catch(error => {
-            status.fail(this, 'Could not copy geospatial optimization', error)
+            this.$sciris.fail(this, 'Could not copy geospatial optimization', error)
           })
       },
 
       deleteGeo(geoSummary) {
         console.log('deleteGeo() called')
-        status.start(this)
+        this.$sciris.start(this)
         if (geoSummary.status !== 'not started') {
           this.clearTask(geoSummary)  // Clear the task from the server.
         }
@@ -627,56 +624,56 @@ Last update: 2019jan10
             this.geoSummaries.splice(i, 1);
           }
         }
-        rpcs.rpc('set_geo_info', [this.projectID, this.geoSummaries])
+        this.$sciris.rpc('set_geo_info', [this.projectID, this.geoSummaries])
           .then(response => {
-            status.succeed(this, 'Geospatial optimization deleted')
+            this.$sciris.succeed(this, 'Geospatial optimization deleted')
           })
           .catch(error => {
-            status.fail(this, 'Could not delete geospatial optimization', error)
+            this.$sciris.fail(this, 'Could not delete geospatial optimization', error)
           })
       },
 
       runGeo(geoSummary, runtype) {
         console.log('runGeo() called for ' + geoSummary.name + ' for time: ' + runtype)
-        status.start(this)
-        rpcs.rpc('set_geo_info', [this.projectID, this.geoSummaries]) // Make sure they're saved first
+        this.$sciris.start(this)
+        this.$sciris.rpc('set_geo_info', [this.projectID, this.geoSummaries]) // Make sure they're saved first
           .then(response => {
-            rpcs.rpc('launch_task', [geoSummary.serverDatastoreId, 'run_geo',
+            this.$sciris.rpc('launch_task', [geoSummary.serverDatastoreId, 'run_geo',
               [this.projectID, geoSummary.serverDatastoreId, geoSummary.name, runtype]])
               .then(response => {
                 this.getGeoTaskState(geoSummary) // Get the task state for the optimization.
                 if (!this.pollingTasks) {
                   this.doTaskPolling(true)
                 }
-                status.succeed(this, 'Started geospatial optimization')
+                this.$sciris.succeed(this, 'Started geospatial optimization')
               })
               .catch(error => {
-                status.fail(this, 'Could not start geospatial optimization', error)
+                this.$sciris.fail(this, 'Could not start geospatial optimization', error)
               })
           })
           .catch(error => {
-            status.fail(this, 'Could not save geospatial optimizations', error)
+            this.$sciris.fail(this, 'Could not save geospatial optimizations', error)
           })
       },
 
       cancelRun(geoSummary) {
         console.log('cancelRun() called for '+this.currentGeo)
-        rpcs.rpc('delete_task', ['run_optim'])
+        this.$sciris.rpc('delete_task', ['run_optim'])
       },
 
       plotGeospatial(geoSummary) {
         console.log('plotGeospatial() called')
-        status.start(this)
-        rpcs.rpc('plot_geospatial', [this.projectID, geoSummary.serverDatastoreId])
+        this.$sciris.start(this)
+        this.$sciris.rpc('plot_geospatial', [this.projectID, geoSummary.serverDatastoreId])
           .then(response => {
             this.table = response.data.table
             this.makeGraphs(response.data.graphs)
             this.displayResultName = geoSummary.name
             this.displayResultDatastoreId = geoSummary.serverDatastoreId
-            status.succeed(this, 'Graphs created')
+            this.$sciris.succeed(this, 'Graphs created')
           })
           .catch(error => {
-            status.fail(this, 'Could not make graphs', error) // Indicate failure.
+            this.$sciris.fail(this, 'Could not make graphs', error) // Indicate failure.
           })
       },
     }

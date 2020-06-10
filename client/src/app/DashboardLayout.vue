@@ -10,7 +10,7 @@ Last update: 2018-08-16
 
     </notifications>
     <div class="main-panel">
-      <top-navbar></top-navbar>
+      <navbar></navbar>
 
       <dashboard-content @click.native="toggleSidebar">
 
@@ -24,12 +24,12 @@ Last update: 2018-08-16
 
 </style>
 <script>
-  import TopNavbar from './TopNavbar.vue'
+  import Navbar from './Navbar.vue'
   import ContentFooter from './ContentFooter.vue'
   import DashboardContent from './Content.vue'
   export default {
     components: {
-      TopNavbar,
+      Navbar,
       ContentFooter,
       DashboardContent
     },

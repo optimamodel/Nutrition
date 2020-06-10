@@ -61,9 +61,7 @@ Last update: 2018-08-18
 </template>
 
 <script>
-  import userservice from '@/js/user-service'
-  import status from '@/js/status-service'
-  import router from '@/router'
+  import router from '../router.js'
 
   export default {
     name: 'UserChangeInfoPage',
@@ -80,12 +78,12 @@ Last update: 2018-08-18
 
     methods: {
       tryChangeInfo () {
-        userservice.changeUserInfo(this.changeUserName, this.changePassword,
+        this.$sciris.changeUserInfo(this.changeUserName, this.changePassword,
           this.changeDisplayName, this.changeEmail)
           .then(response => {
             if (response.data === 'success') {
-              status.succeed(this, 'User info updated') // Set a success result to show.
-              userservice.getCurrentUserInfo() // Read in the full current user information.
+              this.$sciris.succeed(this, 'User info updated') // Set a success result to show.
+              this.$sciris.getCurrentUserInfo() // Read in the full current user information.
                 .then(response2 => {
                   this.$store.commit('newUser', response2.data.user) // Set the username to what the server indicates.
                   router.push('/') // Navigate automatically to the home page.
@@ -98,7 +96,7 @@ Last update: 2018-08-18
             }
           })
           .catch(error => {
-            status.fail(this, 'Failed to update user info, please check password and try again', error)
+            this.$sciris.fail(this, 'Failed to update user info, please check password and try again', error)
           })
       }
     }
