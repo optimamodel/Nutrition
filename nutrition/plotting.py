@@ -64,23 +64,24 @@ def plot_prevs(all_res):
         leglabels = []
         # plot results
         for r, res in enumerate(all_res):
-            years = res.years
-            out = res.get_outputs([prev], seq=True)[0]
-            f = scipy.interpolate.PchipInterpolator(years, out, extrapolate=False)
-            newx = np.linspace(years[0], years[-1], len(years)*10)
-            out = f(newx) * 100
-            thismax = max(out)
-            if thismax > ymax: ymax = thismax
-            line, = ax.plot(newx, out, color=colors[r])
-            lines.append(line)
-            leglabels.append(res.name)
+            if res.name != 'Excess budget not allocated':
+                years = res.years
+                out = res.get_outputs([prev], seq=True)[0]
+                f = scipy.interpolate.PchipInterpolator(years, out, extrapolate=False)
+                newx = np.linspace(years[0], years[-1], len(years)*10)
+                out = f(newx) * 100
+                thismax = max(out)
+                if thismax > ymax: ymax = thismax
+                line, = ax.plot(newx, out, color=colors[r])
+                lines.append(line)
+                leglabels.append(res.name)
         # formatting
 #        sc.SIticks(ax=ax, axis='y')
         ax.set_ylabel('Prevalence (%)') # Shown as tick labels
         ax.set_ylim([0, ymax*1.1])
         ax.set_xlabel('Years')
         ax.set_title(utils.relabel(prev))
-        ax.legend(lines, [res.name for res in all_res], **legend_loc)
+        ax.legend(lines, [res.name for res in all_res if res.name != 'Excess budget not allocated'], **legend_loc)
         figs['prevs_%0i'%i] = fig
     return figs
 
@@ -105,16 +106,17 @@ def plot_outputs(all_res, seq, name):
         offsets = np.arange(len(all_res)+1)*width # Calculate offset so tick is in the center of the bars
         offsets -= offsets.mean() - 0.5*width
         for r,res in enumerate(all_res):
-            offset = offsets[r]
-            xpos = years + offset if seq else offset
-            output = sc.promotetoarray(res.get_outputs(outcome, seq=seq)[0])
-            output /= scale
-            thimax = output.max()
-            if thimax > ymax: ymax = thimax
-            change = round_elements([utils.get_change(base, out) for out,base in zip(output, baseout)], dec=1)
-            perchange.append(change)
-            bar = ax.bar(xpos, output, width=width, color=colors[r])
-            bars.append(bar)
+            if res.name != 'Excess budget not allocated':
+                offset = offsets[r]
+                xpos = years + offset if seq else offset
+                output = sc.promotetoarray(res.get_outputs(outcome, seq=seq)[0])
+                output /= scale
+                thimax = output.max()
+                if thimax > ymax: ymax = thimax
+                change = round_elements([utils.get_change(base, out) for out,base in zip(output, baseout)], dec=1)
+                perchange.append(change)
+                bar = ax.bar(xpos, output, width=width, color=colors[r])
+                bars.append(bar)
         if seq:
             ax.set_xlabel('Years')
             title = 'Annual'
@@ -138,7 +140,7 @@ def plot_outputs(all_res, seq, name):
         else:
             raise Exception('Scale value must be 1 or 1e6, not %s' % scale)
         ax.set_ylabel(ylabel)
-        ax.legend(bars, [res.name for res in all_res], ncol=1, **legend_loc)
+        ax.legend(bars, [res.name for res in all_res if res.name != 'Excess budget not allocated'], ncol=1, **legend_loc)
         ax.set_title(title)
         figs['%s_out_%0i'%(name, i)] = fig
     return figs
