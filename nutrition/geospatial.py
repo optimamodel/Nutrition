@@ -101,12 +101,24 @@ class Geospatial:
         # Flatten list.
         results = [item for sublist in results for item in sublist]
         # remove multiple to plot by name (total hack)
+        excess_budget = 0
         for r, res in enumerate(results):
             res.mult = None
             if res.name == 'Baseline':
                 res.name = results[r+1].name.replace('(x1)', '') + 'baseline'
             else:
-                res.name = res.name.replace('(x1)', '')
+                res.name = res.name.replace('(x1)', 'optimal')
+            if 'Excess budget not allocated' in res.prog_info.programs and 'baseline' not in res.name:
+                excess_budget += res.prog_info.programs['Excess budget not allocated'].annual_spend[-1]
+                res.prog_info.programs['Excess budget not allocated'].annual_spend = np.zeros(len(res.years))
+        if excess_budget > 0:
+            excess_res = sc.dcp(results[0])
+            excess_res.name = 'Excess budget not allocated'
+            excess_prog = sc.dcp(excess_res.programs['Excess budget not allocated'])
+            excess_prog.annual_spend[1:] += excess_budget
+            excess_res.prog_info.programs = {'Excess budget not allocated': excess_prog}
+            excess_res.programs = excess_res.prog_info.programs
+            results.append(excess_res)
         return results
 
     def make_regions(self, add_funds=None, rem_curr=False, mults=None):

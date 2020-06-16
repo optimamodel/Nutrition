@@ -124,22 +124,26 @@ def write_results(results, projname=None, filename=None, folder=None):
     allformats = []
     years = results[0].years
     nullrow = [''] * len(years)
+    excess_budget_trigger = False
 
     ### Outcomes sheet
     headers = [['Scenario', 'Outcome'] + years + ['Cumulative']]
     for r, res in enumerate(results):
-        out = res.get_outputs(outcomes, seq=True, pretty=True)
-        for o, outcome in enumerate(rows):
-            name = [res.name] if o == 0 else ['']
-            thisout = out[o]
-            if 'prev' in outcome.lower():
-                cumul = 'N/A'
-            elif 'mortality' in outcome.lower():
-                cumul = 'N/A'
-            else:
-                cumul = sum(thisout)
-            outputs.append(name + [outcome] + list(thisout) + [cumul])
-        outputs.append(nullrow)
+        if res.name != 'Excess budget not allocated':
+            out = res.get_outputs(outcomes, seq=True, pretty=True)
+            for o, outcome in enumerate(rows):
+                name = [res.name] if o == 0 else ['']
+                thisout = out[o]
+                if 'prev' in outcome.lower():
+                    cumul = 'N/A'
+                elif 'mortality' in outcome.lower():
+                    cumul = 'N/A'
+                else:
+                    cumul = sum(thisout)
+                outputs.append(name + [outcome] + list(thisout) + [cumul])
+            outputs.append(nullrow)
+        else:
+            excess_budget_trigger = True
     data = headers + outputs
     alldata.append(data)
 
@@ -157,21 +161,27 @@ def write_results(results, projname=None, filename=None, folder=None):
     outputs = []
     headers = [['Scenario', 'Program', 'Type', 'Cost-coverage type'] + years]
     for r, res in enumerate(results):
-        rows = res.programs.keys()
-        spend = res.get_allocs(ref=True)
-        cov = res.get_covs(unrestr=False)
-        # collate coverages first
-        for r, prog in enumerate(rows):
-            name = [res.name] if r == 0 else ['']
-            costcov = res.programs[prog].costtype
-            thiscov = cov[prog]
-            outputs.append(name + [prog] + ['Coverage'] + [costcov] + list(thiscov))
-        # collate spending second
-        for r, prog in enumerate(rows):
-            thisspend = spend[prog]
-            costcov = res.programs[prog].costtype
-            outputs.append([''] + [prog] + ['Budget'] + [costcov] + list(thisspend))
-        outputs.append(nullrow)
+        if res.name != 'Excess budget not allocated':
+            rows = res.programs.keys()
+            spend = res.get_allocs(ref=True)
+            cov = res.get_covs(unrestr=False)
+            # collate coverages first
+            for r, prog in enumerate(rows):
+                name = [res.name] if r == 0 else ['']
+                costcov = res.programs[prog].costtype
+                thiscov = cov[prog]
+                outputs.append(name + [prog] + ['Coverage'] + [costcov] + list(thiscov))
+            # collate spending second
+            for r, prog in enumerate(rows):
+                thisspend = spend[prog]
+                costcov = res.programs[prog].costtype
+                outputs.append([''] + [prog] + ['Budget'] + [costcov] + list(thisspend))
+            outputs.append(nullrow)
+        else:
+            spend = res.get_allocs(ref=True)
+            thisspend = spend['Excess budget not allocated']
+            outputs.append(['Excess budget not allocated'] + ['N/A'] + ['Budget'] + ['N/A'] + list(thisspend))
+            outputs.append(nullrow)
     data = headers + outputs
     alldata.append(data)
 
