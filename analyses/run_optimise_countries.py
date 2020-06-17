@@ -1,6 +1,3 @@
-import sys
-#sys.path.append('C:/Users/debra.tenbrink/Documents/GitHub/Nutrition/') # I assume this is where you'll be running it from?
-import nutrition.ui as nu
 from nutrition.optimization import Optim
 from nutrition.results import write_results
 from nutrition.utils import run_parallel
@@ -13,7 +10,7 @@ import sciris as sc
 def parallel_optim(region, path=None):
     p = Project('WHA optimisation')
 
-    p.load_data(inputspath=path + region + '_input.xlsx', name=region)
+    p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=True)
 
     ## define custom optimization
     kwargs = {'name': region,
@@ -22,7 +19,6 @@ def parallel_optim(region, path=None):
               'weights': sc.odict({'thrive': 1,
                                    'Minimize the number of wasted children': 2.91,
                                    'Minimize child mortality rate': 2.91}),
-              # The available programs need to be put below, I just filled it with common ones
               'prog_set': ['Balanced energy-protein supplementation','Cash transfers','IFA fortification of wheat flour',
                            'IYCF 1', 'IYCF 2', 'IYCF 3', 'IFAS for pregnant women (community)',
                            'IFAS for pregnant women (health facility)', 'Lipid-based nutrition supplements',
@@ -43,8 +39,8 @@ dirname = os.path.dirname(__file__)
 input_path = dirname + '/inputs/'
 output_path = dirname + '/outputs/'
 
-country_list = ['China', 'North Korea', 'Cambodia', 'Indonesia', 'Laos']#, 'Malaysia', 'Maldives', 'Myanmar',
-"""                'Philippines', 'Sri Lanka', 'Thailand', 'Timor-Leste', 'Vietnam', 'Fiji', 'Kiribati',
+country_list = ['China', 'North Korea', 'Cambodia', 'Indonesia', 'Laos', 'Malaysia', 'Maldives', 'Myanmar',
+                'Philippines', 'Sri Lanka', 'Thailand', 'Timor-Leste', 'Vietnam', 'Fiji', 'Kiribati',
                 'Federated States of Micronesia', 'Papua New Guinea', 'Samoa', 'Solomon Islands', 'Tonga', 'Vanuatu',
                 'Armenia', 'Azerbaijan', 'Kazakhstan', 'Kyrgyzstan', 'Mongolia', 'Tajikistan', 'Turkmenistan',
                 'Uzbekistan', 'Albania', 'Bosnia and Herzegovina', 'Bulgaria', 'Macedonia', 'Montenegro', 'Romania',
@@ -60,7 +56,7 @@ country_list = ['China', 'North Korea', 'Cambodia', 'Indonesia', 'Laos']#, 'Mala
                 'Burkina Faso', 'Cameroon', 'Cape Verde', 'Chad', 'Cote dIvoire', 'The Gambia', 'Ghana', 'Guinea',
                 'Guinea-Bissau', 'Liberia', 'Mali', 'Mauritania', 'Niger', 'Nigeria', 'Sao Tome and Principe', 'Senegal',
                 'Sierra Leone', 'Togo', 'Georgia', 'South Sudan', 'Sudan']
-"""
+
 
 if __name__ == '__main__':
 

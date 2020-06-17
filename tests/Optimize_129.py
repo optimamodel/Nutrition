@@ -96,12 +96,6 @@ kwargs = {'name': 'test1',
 
 geo = Geospatial(**kwargs)
 
-optims = [Optim(**kwargs2)]
-p.add_optims(optims)
-p.run_optim(parallel=False)
-if doplot: p.plot(optim=True)
-if dosave: p.write_results('optim_results.xlsx')
-
 #results = p.run_geo(geo=geo, maxiter=1, swarmsize=1, maxtime=1, dosave=True, parallel=False)
 results = p.run_geo(geo=geo, dosave=True, parallel=False)
 p.write_results('jme_stunting.xlsx')
