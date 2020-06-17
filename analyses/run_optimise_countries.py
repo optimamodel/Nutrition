@@ -43,7 +43,6 @@ dirname = os.path.dirname(__file__)
 input_path = dirname + '/inputs/'
 output_path = dirname + '/outputs/'
 
-
 country_list = ['China', 'North Korea', 'Cambodia', 'Indonesia', 'Laos']#, 'Malaysia', 'Maldives', 'Myanmar',
 """                'Philippines', 'Sri Lanka', 'Thailand', 'Timor-Leste', 'Vietnam', 'Fiji', 'Kiribati',
                 'Federated States of Micronesia', 'Papua New Guinea', 'Samoa', 'Solomon Islands', 'Tonga', 'Vanuatu',
