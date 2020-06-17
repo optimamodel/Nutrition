@@ -416,9 +416,8 @@ class Geospatial:
                 budget_increments = []
                 marginal_improvements = []
                 for reg_ind in list(range(numregions)):
-                    budget_increments.append(np.zeros(len(trial_budgets[reg_ind])))
+                   budget_increments.append(np.zeros(len(trial_budgets[reg_ind])))
                 # Initialise budget increments
-
                 # Loop over regions...
                 shift_ind = np.zeros(numregions)
                 for reg_ind in list(range(numregions)):
@@ -435,7 +434,9 @@ class Geospatial:
                     shift_ind[reg_ind] = budget_increments[reg_ind].size - len(
                         budget_increments[reg_ind][budget_increments[reg_ind] - totalfunds + total_budget_allocated <= tol])
                     if shift_ind[reg_ind] > 0: # Remove budget increments which are too big
-                        budget_increments[reg_ind] = budget_increments[reg_ind][0 : budget_increments[reg_ind].size - int(shift_ind[reg_ind])]
+                        budget_increments[reg_ind] = budget_increments[reg_ind][0 : budget_increments[reg_ind].size - \
+                                                                                    int(shift_ind[reg_ind])]
+
                     marginal_improvements.append(np.zeros(len(budget_increments[reg_ind])))
                     # Loop over the budget increments...
                     for budget_inc_ind in list(range(len(budget_increments[reg_ind]))):

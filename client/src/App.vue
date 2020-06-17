@@ -10,7 +10,7 @@ Last update: 2018sep23
     <router-view></router-view>
     <vue-progress-bar></vue-progress-bar>
     <popup-spinner size="75px" padding="15px" title="Please wait..."></popup-spinner>
-    <side-bar type="navbar" :sidebar-links="$sidebar.sidebarLinks"> <!--This sidebar appears only for screens smaller than 992px -- otherwise, it is rendered in TopNavbar.vue-->
+    <side-bar type="navbar" :sidebar-links="$sidebar.sidebarLinks"> <!--This sidebar appears only for screens smaller than 992px -- otherwise, it is rendered in Navbar.vue-->
       <ul class="nav navbar-nav">
         <!-- Below requires a userService -->
         <li>
@@ -21,11 +21,11 @@ Last update: 2018sep23
             </p>
           </a>
         </li>
-        <drop-down v-bind:title="activeUserName" icon="ti-user">
+        <dropdown v-bind:title="activeUserName" icon="ti-user">
           <li><a href="#/changeinfo"><i class="ti-pencil"></i>&nbsp;Edit account</a></li>
           <li><a href="#/changepassword"><i class="ti-key"></i>&nbsp;Change password</a></li>
           <li><a href="#" v-on:click=logOut()><i class="ti-car"></i>&nbsp;Log out</a></li>
-        </drop-down>
+        </dropdown>
         <li class="divider"></li>
       </ul>
     </side-bar>
@@ -34,14 +34,12 @@ Last update: 2018sep23
 </template>
 
 <script>
-import userService from '@/js/user-service'
-import Vue from 'vue'; // This needs to appear somewhere but only once
+
+  import sciris from 'sciris-js';
+  import Vue from 'vue'; // This needs to appear somewhere but only once
 
 export default {
   computed: {
-    currentUser: () => {
-      return userService.currentUser()
-    },
 
     activeProjectName() {
       if (this.$store.state.activeProject.project === undefined) {
@@ -52,9 +50,9 @@ export default {
     },
 
     activeUserName() {
-      // Get the active user name -- the display name if defined; else the user name -- WARNING, duplicates TopNavbar.vue
-      var username = userService.currentUser().username;
-      var dispname = userService.currentUser().displayname;
+      // Get the active user name -- the display name if defined; else the user name -- WARNING, duplicates Navbar.vue
+      var username = this.$store.state.currentUser.username;
+      var dispname = this.$store.state.currentUser.displayname;
       var userlabel = '';
       if (dispname === undefined || dispname === '') {
         userlabel = username;
@@ -66,7 +64,9 @@ export default {
   },
   methods: {
     logOut() {
-      userService.logOut()
+      this.$sciris.logoutCall();
+      this.$store.commit('logOut');
+      this.$router.push('/login');
     },
   }
 

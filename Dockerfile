@@ -13,8 +13,6 @@ RUN apt-get install -y freetype*
 ADD . /app
 WORKDIR /app
 
-RUN python3 -m pip install celery==4.2.2 # Because Celery 4.3 is broken
-
 ARG PORT
 ARG REDIS_URL
 ENV PORT $PORT
@@ -37,6 +35,9 @@ RUN cd mpld3 && python3 setup.py submodule && python3 setup.py install
 
 # Install Optima Nutrition
 RUN python3 setup.py develop
+
+RUN python3 -m pip install --upgrade https://github.com/celery/celery/tarball/master 
+RUN python3 -m pip install --upgrade redis
 
 # Install app
 WORKDIR client

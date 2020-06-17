@@ -109,7 +109,7 @@ class DefaultParams(object):
         return output
 
     def read_spreadsheet(self):
-        self.extend_treatsam()
+        #self.extend_treatsam()
         self.impact_pop()
         self.prog_risks()
         self.pop_risks()
@@ -124,11 +124,12 @@ class DefaultParams(object):
         packages = self.define_iycf()
         self.get_iycf_effects(packages)
 
-    def extend_treatsam(self):
-        treatsam = self.input_data.parse(sheet_name='Treatment of SAM')
-        add_man = treatsam.iloc[0]['Add extension']
-        if pandas.notnull(add_man):
-            self.man_mam = True
+    # redundant when manage mam is separate
+    #def extend_treatsam(self):
+    #    treatsam = self.input_data.parse(sheet_name='Treatment of SAM')
+    #    add_man = treatsam.iloc[0]['Add extension']
+    #    if pandas.notnull(add_man):
+    #        self.man_mam = True
 
     def impact_pop(self):
         sheet = utils.read_sheet(self.spreadsheet, 'Programs impacted population', [0,1])
@@ -237,10 +238,10 @@ class DefaultParams(object):
     def wasting_progs(self):
         wastingSheet = utils.read_sheet(self.spreadsheet, 'Programs wasting', [0,1])
         treatsam = wastingSheet.loc['Odds ratio of SAM when covered by program'].to_dict(orient='index')
-        manman = wastingSheet.loc['Odds ratio of MAM when covered by program'].to_dict(orient='index')
+        manmam = wastingSheet.loc['Odds ratio of MAM when covered by program'].to_dict(orient='index')
         self.or_wasting_prog['SAM'] = treatsam
-        if self.man_mam:
-            self.or_wasting_prog['MAM'] = {'Treatment of SAM': manman['Management of MAM'] }
+        #if self.man_mam:
+        self.or_wasting_prog['MAM'] = manmam #{'Management of MAM': manman['Management of MAM'] }
 
     def get_child_progs(self):
         self.child_progs = utils.read_sheet(self.spreadsheet, 'Programs for children', [0,1,2], to_odict=True)
@@ -678,8 +679,10 @@ class ProgData(object):
         frac_maize = baseline.loc['Food'].loc['Fraction eating maize as main staple food'].values[0]
         diarr_incid = baseline.loc['Diarrhoea incidence']['Data'].values
         treatsam = self.spreadsheet.parse(sheet_name='Treatment of SAM')
-        comm_deliv_raw = treatsam.iloc[1]['Add extension']
-        comm_deliv = pandas.notnull(comm_deliv_raw)
+        comm_deliv_sam_raw = treatsam.iloc[0]['Add extension']
+        comm_deliv_sam = pandas.notnull(comm_deliv_sam_raw)
+        comm_deliv_mam_raw = treatsam.iloc[1]['Add extension']
+        comm_deliv_mam = pandas.notnull(comm_deliv_mam_raw)
         cash_transfers_row = food_insecure * np.ones(4)
         targetPopSheet.loc['Children', 'Cash transfers'].iloc[1:5] = cash_transfers_row
         self.calcscache.write_row('Programs target population', 1, 3, cash_transfers_row)
@@ -692,13 +695,20 @@ class ProgData(object):
         pub_prov_row = food_insecure * np.ones(2)
         targetPopSheet.loc['Children', 'Public provision of complementary foods'].iloc[2:4] = pub_prov_row
         self.calcscache.write_row('Programs target population', 7, 4, pub_prov_row)
-        if comm_deliv:
+        if comm_deliv_sam:
             treat_SAM_val = 1.0
         else:
             treat_SAM_val = frac_children_health_facility
+        if comm_deliv_mam:
+            treat_MAM_val = 1.0
+        else:
+            treat_MAM_val = frac_children_health_facility
         treat_SAM_row = treat_SAM_val * np.ones(4)
+        treat_MAM_row = treat_MAM_val * np.ones(4)
         targetPopSheet.loc['Children', 'Treatment of SAM'].iloc[1:5] = treat_SAM_row
         self.calcscache.write_row('Programs target population', 8, 3, treat_SAM_row)
+        targetPopSheet.loc['Children', 'Management of MAM'].iloc[1:5] = treat_MAM_row
+        self.calcscache.write_row('Programs target population', 9, 3, treat_MAM_row)
         zinc_treatment_row = diarr_incid / 26.0
         targetPopSheet.loc['Children', 'Zinc for treatment + ORS'].iloc[0:5] = zinc_treatment_row
         self.calcscache.write_row('Programs target population', 10, 2, zinc_treatment_row)
@@ -905,8 +915,8 @@ class Dataset(object):
         # Convert them to Pandas
         input_data     = inputsheet.pandas() 
 
-        # If the 'Programs impacted population' worksheet is in input_data, then we are working with one of the newer
-        # databooks, so pull the default data from input_data.
+        # If the 'Programs impacted population' worksheet is in input_data then we are working with one of the newer databooks,
+        #  so pull the default data from input_data.
         if 'Programs impacted population' in input_data.sheet_names:
             default_data = input_data
 

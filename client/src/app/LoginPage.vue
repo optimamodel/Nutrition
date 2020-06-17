@@ -8,7 +8,7 @@ Last update: 2018sep22
   <div class="SitePage" style="background-color:#f8f8f4; position:fixed; min-height:100%; min-width:100%; padding:0 0 0 0" v-model="getVersionInfo"> <!-- Should match _variables.scss:$bg-nude -->
     <div style="background-color:#0c2544; position:absolute; height:100%; width:260px">
       <div class="logo">
-        <div class="simple-text" style="font-size:20px; color:#fff; font-weight:bold; padding:20px">
+        <div class="simple-text" style="font-size:20px; font-weight:bold; padding:20px">
           <span style="padding-left:10px">
             <a href="http://ocds.co" target="_blank">
               <img src="static/img/optima-inverted-logo.png" width="160px" vertical-align="middle" alt> <!-- // ATOMICA-NUTRITION DIFFERENCE -->
@@ -16,7 +16,10 @@ Last update: 2018sep22
           </span>
           <br/><br/>
           <div v-if="version" style="font-size:14px; font-weight:normal">
+            <a href="#" @click="showChangelog=true">
             Version {{ version }} ({{ date }})
+            </a>
+            <Changelog v-if="showChangelog" @close="showChangelog=false" />
           </div>
         </div>
       </div>
@@ -62,12 +65,12 @@ Last update: 2018sep22
 </template>
 
 <script>
-  import rpcs from '@/js/rpc-service'
-  import userservice from '@/js/user-service'
-  import router from '@/router'
+  import router from '../router.js'
+  import Changelog from './Changelog.vue'
 
   export default {
     name: 'LoginPage',
+    components: {Changelog},
 
     data () {
       return {
@@ -76,12 +79,13 @@ Last update: 2018sep22
         loginResult: '',
         version: '',
         date: '',
+        showChangelog: false,
       }
     },
 
     computed: {
       getVersionInfo() {
-        rpcs.rpc('get_version_info')
+        this.$sciris.rpc('get_version_info')
         .then(response => {
           this.version = response.data['version'];
           this.date = response.data['date'];
@@ -91,19 +95,27 @@ Last update: 2018sep22
 
     methods: {
       tryLogin () {
-        userservice.loginCall(this.loginUserName, this.loginPassword)
+        this.$sciris.loginCall(this.loginUserName, this.loginPassword)
         .then(response => {
           if (response.data === 'success') {
             // Set a success result to show.
             this.loginResult = 'Logging in...'
 
+            console.log('Login accepted')
+
             // Read in the full current user information.
-            userservice.getCurrentUserInfo()
+            this.$sciris.getCurrentUserInfo()
             .then(response2 => {
               // Set the username to what the server indicates.
+
+              console.log('Committing user')
+
               this.$store.commit('newUser', response2.data.user)
 
               // Navigate automatically to the home page.
+
+              console.log('Navigating')
+
               router.push('/')
             })
             .catch(error => {

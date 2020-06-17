@@ -65,9 +65,10 @@ kwargs6 = {'name': 'Check bednets',
            'scen_type': 'budget',
            'progvals': sc.odict({'IYCF 1': [0]})}
 
-scen_list = nu.make_scens([kwargs6])
+scen_list = nu.make_scens([kwargs1])
 p.add_scens(scen_list)
 p.run_scens()
 if doplot:
     p.plot()
 costeff = p.get_costeff()
+p.write_results('test.xlsx')
