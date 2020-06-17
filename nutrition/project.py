@@ -5,7 +5,7 @@
 import os
 import sciris as sc
 from .version import version
-from .utils import default_trackers
+from .utils import default_trackers, add_dummy_prog_data
 from .data import Dataset
 from .model import Model
 from .scenarios import Scen, run_scen, convert_scen, make_default_scen
@@ -406,6 +406,12 @@ class Project(object):
     def run_baseline(self, model_name, prog_set, dorun=True):
         model = sc.dcp(self.model(model_name))
         progvals = sc.odict({prog: [] for prog in prog_set})
+        if 'Excess budget not allocated' in prog_set:
+            excess_spend = {'name': 'Excess budget not allocated',
+                            'all_years': model.prog_info.all_years,
+                            'prog_data': add_dummy_prog_data(model.prog_info, 'Excess budget not allocated')}
+            model.prog_info.add_prog(excess_spend, model.pops)
+            model.prog_info.prog_data = excess_spend['prog_data']
         base = Scen(name='Baseline', model_name=model_name, scen_type='coverage', progvals=progvals)
         if dorun:
             return run_scen(base, model)
@@ -540,8 +546,10 @@ class Project(object):
         results = []
         # run baseline
         if runbaseline:
+            optim.prog_set.append('Excess budget not allocated')
             base = self.run_baseline(optim.model_name, optim.prog_set)
             results.append(base)
+            optim.prog_set.remove('Excess budget not allocated')
         # run optimization
         if (optim.model_name is None) or (optim.model_name not in self.datasets.keys()):
             raise Exception(

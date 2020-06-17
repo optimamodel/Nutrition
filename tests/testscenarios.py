@@ -7,6 +7,7 @@ doplot = True
 p = nu.Project('eg')
 p.load_data('demo', 'national', name='eg')
 
+
 ### define custom scenarios
 kwargs1 = {'name':'Treat SAM 100%',
            'model_name': 'eg',

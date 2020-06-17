@@ -490,11 +490,7 @@ def download_project(project_id):
     file, minus results, and pass the full path of this file back.
     """
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
-    file_name = '%s.prj' % proj.name # Create a filename containing the project name followed by a .prj suffix.
-    full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
-    sc.saveobj(full_file_name, proj) # Write the object to a Gzip string pickle file.
-    print(">> download_project %s" % (full_file_name)) # Display the call information.
-    return full_file_name # Return the full filename.
+    return sc.saveobj(None, proj), '%s.prj' % proj.name # Return the full filename.
 
 
 @RPC(call_type='download')
@@ -831,6 +827,7 @@ def delete_dataset(project_id, datasetname=None):
     return None
 
 
+# TODO - remove this function? Doesn't appear to be used anywhere
 @RPC(call_type='download')
 def download_dataset(project_id, datasetname=None):
     '''
@@ -839,13 +836,9 @@ def download_dataset(project_id, datasetname=None):
     '''
     proj = load_project(project_id, die=True) # Load the project with the matching UID.
     dataset = proj.datasets[datasetname]
-    file_name = '%s - %s.par' % (proj.name, datasetname) # Create a filename containing the project name followed by a .prj suffix.
-    full_file_name = get_path(file_name, username=proj.webapp.username) # Generate the full file name with path.
-    sc.saveobj(full_file_name, dataset) # Write the object to a Gzip string pickle file.
-    print(">> download_dataset %s" % (full_file_name)) # Display the call information.
-    return full_file_name # Return the full filename.
+    return sc.saveobj(None, dataset), '%s - %s.par' % (proj.name, datasetname)
 
-
+# TODO - remove this function? Doesn't appear to be used anywhere
 @RPC(call_type='upload')
 def upload_dataset(dataset_filename, project_id):
     '''
@@ -1403,8 +1396,8 @@ def export_results(project_id, cache_id):
     file_name = '%s outputs.xlsx' % proj.name # Create a filename containing the project name followed by a .prj suffix.
     full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
     proj.write_results(full_file_name, key=cache_id)
-    print(">> export_results %s" % (full_file_name)) # Display the call information.
-    return full_file_name # Return the full filename.
+    blobject = sc.Blobject(full_file_name)
+    return blobject.tofile(), file_name
 
 
 @RPC(call_type='download')
@@ -1415,8 +1408,8 @@ def export_graphs(project_id, cache_id):
     full_file_name = get_path(file_name, proj.webapp.username) # Generate the full file name with path.
     figs = proj.plot(key=cache_id) # Generate the plots
     sc.savefigs(figs, filetype='singlepdf', filename=full_file_name)
-    print(">> export_graphs %s" % (full_file_name)) # Display the call information.
-    return full_file_name # Return the full filename.
+    blobject = sc.Blobject(full_file_name)
+    return blobject.tofile(), file_name
 
 @RPC()
 def read_changelog():

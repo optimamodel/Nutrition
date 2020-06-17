@@ -143,7 +143,15 @@ class Optim(sc.prettyobj):
             opt_result = sc.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=2, maxtime=maxtime)
             x = opt_result.x
             self.print_status(x, mult, opt_result.exitreason, now)
-            scaled = utils.scale_alloc(free, x)
+            scaled = utils.scale_end_alloc(free, x, model.prog_info, inds) # scales spending to fit budget, limited by saturation and any program coverage dependencies
+            inds = np.append(inds, True)
+            fixed = np.append(fixed, 0.0)
+            excess_spend = {'name': 'Excess budget not allocated',
+                            'all_years': model.prog_info.all_years,
+                            'prog_data': utils.add_dummy_prog_data(model.prog_info, 'Excess budget not allocated')}
+            model.prog_info.add_prog(excess_spend, model.pops)
+            model.prog_info.prog_data = excess_spend['prog_data']
+            self.prog_set.append('Excess budget not allocated')
             best_alloc = utils.add_fixed_alloc(fixed, scaled, inds)
         else:
             # if one of the multiples is 0, return fixed costs
@@ -153,6 +161,8 @@ class Optim(sc.prettyobj):
         progvals = {prog:spend for prog, spend in zip(self.prog_set, best_alloc)}
         scen = Scen(name=name, model_name=self.model_name, scen_type='budget', progvals=progvals)
         res = run_scen(scen, model, obj=self.name, mult=mult)
+        if 'Excess budget not allocated' in self.prog_set:
+            self.prog_set.remove('Excess budget not allocated')
         return res
     
     @utils.trace_exception

@@ -131,15 +131,35 @@ class Program(sc.prettyobj):
         """
         # TMP SOLUTION: THE DENOMINATOR FOR CALCULATING PROGRAM COVERAGE WILL USE sum(CEILING(FRAC TARGETED) * POP SIZE) over all pops targeted. I.E. FOR IYCF WITH FRAC >1, we get normalised sum
         self.unrestr_popsize = 0.
-        for pop in populations:
-            self.unrestr_popsize += sum(ceil(self.target_pops[age.age]) * age.pop_size for age in pop.age_groups
-                                        if age.age in self.agesTargeted)
+        if self.name in ['Oral rehydration salts', 'Zinc for treatment + ORS']:
+            for pop in populations:
+                self.unrestr_popsize += sum(ceil(self.target_pops[age.age]) * age.pop_size *
+                                            (age.incidences['Diarrhoea'] * 12) for age in pop.age_groups if age.age in
+                                            self.agesTargeted)
+        elif self.name == 'Treatment of SAM':
+            for pop in populations:
+                self.unrestr_popsize += sum(ceil(self.target_pops[age.age]) * age.pop_size *
+                                            (age.incidences['SAM'] * 12) for age in pop.age_groups if age.age in
+                                            self.agesTargeted)
+        else:
+            for pop in populations:
+                self.unrestr_popsize += sum(ceil(self.target_pops[age.age]) * age.pop_size for age in pop.age_groups
+                                            if age.age in self.agesTargeted)
 
     def _set_restrpop(self, populations):
         self.restr_popsize = 0.
-        for pop in populations:
-            self.restr_popsize += sum(age.pop_size * self.target_pops[age.age] for age in pop.age_groups
-                                         if age.age in self.agesTargeted)
+        if self.name in ['Oral rehydration salts', 'Zinc for treatment + ORS']:
+            for pop in populations:
+                self.restr_popsize += sum(age.pop_size * self.target_pops[age.age] * (age.incidences['Diarrhoea'] * 12)
+                                          for age in pop.age_groups if age.age in self.agesTargeted)
+        elif self.name == 'Treatment of SAM':
+            for pop in populations:
+                self.restr_popsize += sum(age.pop_size * self.target_pops[age.age] * (age.incidences['SAM'] * 12)
+                                          for age in pop.age_groups if age.age in self.agesTargeted)
+        else:
+            for pop in populations:
+                self.restr_popsize += sum(age.pop_size * self.target_pops[age.age] for age in pop.age_groups
+                                             if age.age in self.agesTargeted)
 
     def stunting_update(self, age_group):
         """
@@ -681,3 +701,18 @@ class ProgramInfo(sc.prettyobj):
                     maxcov_child = max(child.sat_unrestr - par.annual_cov[year], 0) # if coverage of parent exceeds child sat
                     if child.annual_cov[year] > maxcov_child:
                         child.annual_cov[year] = maxcov_child
+
+    def add_prog(self, prog, pops):
+        '''
+        Add a Program to ProgramInfo with a dict containing necessary information.
+        :param prog: dict containing program name, scenario years and ProgData for the program to be added
+        :param pops: model population info used to calculate coverages
+        :return:
+        '''
+        new_prog = Program(prog['name'], prog['all_years'], prog['prog_data'])
+        new_prog.set_pop_sizes(pops)
+        new_prog.set_costcov()
+        self.programs[prog['name']] = new_prog
+        np.append(self.refs, 0.0)
+        np.append(self.curr, 0.0)
+        return

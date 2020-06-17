@@ -8,8 +8,6 @@ from scipy.optimize import brentq
 import sciris as sc
 
 
-
-
 def optimafolder(subfolder=None):
     if subfolder is None: subfolder='nutrition'
     parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
@@ -54,9 +52,7 @@ def default_trackers(prev=None, rate=None):
         'nonpw_anaemic',
         'nonpw_anaemprev',
         'child_mortrate',
-        'pw_mortrate',
-        'young_bf',
-        'old_bf'
+        'pw_mortrate'
     ]
     if prev is not None:
         if prev:
@@ -94,9 +90,7 @@ def pretty_labels(direction=False):
             'Minimize the number of anaemic non-pregnant women',
             'Minimize the prevalence of anaemia in non-pregnant women',
             'Minimize child mortality rate',
-            'Minimize pregnant women mortality rate',
-            'Maximize the prevalence of age appropriate breastfeeding in children aged <12 months',
-            'Maximize the prevalence of age appropriate breastfeeding in children aged 12-23 months'
+            'Minimize pregnant women mortality rate'
         ]
     else:
         pretty = [
@@ -114,9 +108,7 @@ def pretty_labels(direction=False):
             'Number of anaemic non-pregnant women',
             'Prevalence of anaemia in non-pregnant women',
             'Child mortality rate',
-            'Pregnant women mortality rate',
-            'Prevalence of age appropriate breastfeeding in children aged <12 months',
-            'Prevalence of age appropriate breastfeeding in children aged 12-23 months'
+            'Pregnant women mortality rate'
         ]
     labs = sc.odict(zip(default_trackers(), pretty))
     return labs
@@ -208,6 +200,96 @@ def scale_alloc(free, allocation):
         scaled_alloc = allocation * scale
     return scaled_alloc
 
+def scale_end_alloc(free, allocation, prog_info, inds):
+    """
+    Scales up spending allocations, limited by program coverage saturation and dependencies on other program coverages.
+    :param free: total budget which can be allocated
+    :param allocation: current budget allocations
+    :param prog_info: a program information object from a relevant model instance to pull costcov data from
+    :param inds: the indices of the programs to be checked
+    :return: array of maximum spending for each program
+    """
+    new = np.sum(allocation)
+    if new == 0:
+        scaled_alloc = allocation.copy()
+    else:
+        scale = free / new
+        scaled_alloc = allocation * scale
+    max_allocation = get_max_spend(prog_info, inds, allocation)
+    excess = 0
+    over_count = 0
+    for a, alloc in enumerate(scaled_alloc):
+        if alloc >= max_allocation[a]:
+            excess += alloc - max_allocation[a]
+            scaled_alloc[a] = max_allocation[a]
+            over_count += 1
+    while excess > 0 and over_count < len(scaled_alloc):
+        redistribute = excess / (len(scaled_alloc) - over_count)
+        for a, alloc in enumerate(scaled_alloc):
+            if alloc < max_allocation[a] - redistribute:
+                scaled_alloc[a] += redistribute
+                excess -= redistribute
+            elif alloc < max_allocation[a]:
+                excess -= (max_allocation[a] - alloc)
+                scaled_alloc[a] = max_allocation[a]
+                over_count += 1
+            else:
+                excess += alloc - max_allocation[a]
+                scaled_alloc[a] = max_allocation[a]
+                over_count += 1
+        max_allocation = get_max_spend(prog_info, inds, scaled_alloc)
+    if excess > 0:
+        scaled_alloc = np.append(scaled_alloc, excess)
+    else:
+        scaled_alloc = np.append(scaled_alloc, 0.0)
+
+    return scaled_alloc
+
+def get_max_spend(prog_info, keep_inds, curr_spends):
+    """
+    Checks if current spending allocations are above saturation or should be limited by dependency.
+    :param prog_info: a program information object from a relevant model instance to pull costcov data from
+    :param keep_inds: the indices of the programs to be checked
+    :param curr_spends: the spending allocations to be checked
+    :return: array of maximum spending for each program
+    """
+    rel_progs = sc.dcp(prog_info)
+    max_spends = np.zeros(np.sum(keep_inds))
+    keep_progs = [prog for p, prog in enumerate(rel_progs.programs) if keep_inds[p]]
+    excl_progs = [prog.name for prog in rel_progs.exclusionOrder]
+    for p, prog in enumerate(keep_progs):
+        max_covs = np.ones(np.sum(keep_inds))
+        trigger = True
+        if prog in excl_progs: # if program excludes coverage of other programs, limit its spending scaleup
+            curr_covs = rel_progs.programs[prog].func(np.array([curr_spends[p]]))
+            max_covs *= min(curr_covs[0], rel_progs.programs[prog].sat)
+            max_spends[p] = rel_progs.programs[prog].get_spending(max_covs)[0]
+        else:
+            for excl_prog in rel_progs.exclusionOrder:
+                if prog in excl_prog.excl_deps and excl_prog.name in keep_progs:
+                    curr_covs = rel_progs.programs[excl_prog.name].func(np.array([curr_spends[keep_progs.index(excl_prog.name)]]))
+                    max_covs *= min(1.0 - curr_covs[0], rel_progs.programs[prog].sat)
+                    max_spends[p] = rel_progs.programs[prog].get_spending(max_covs)[0]
+                    trigger = False
+                else:
+                    pass
+            for thresh_prog in rel_progs.thresholdOrder:
+                if prog in thresh_prog.thresh_deps and thresh_prog.name in keep_progs:
+                    curr_covs = rel_progs.programs[thresh_prog.name].func(np.array([curr_spends[keep_progs.index(thresh_prog.name)]]))
+                    max_covs *= curr_covs[0]
+                    max_spends[p] = rel_progs.programs[prog].get_spending(max_covs)[0]
+                    trigger = False
+                elif prog in thresh_prog.thresh_deps and thresh_prog.name not in keep_progs:
+                    max_covs *= 0
+                    max_spends[p] = rel_progs.programs[prog].get_spending(max_covs)[0]
+                    trigger = False
+                else:
+                    pass
+            if trigger:
+                max_covs *= rel_progs.programs[prog].sat
+                max_spends[p] = rel_progs.programs[prog].get_spending(max_covs)[0]
+    return max_spends
+
 def add_fixed_alloc(fixed, alloc, indx):
     """ Adds optimized allocations (for programs included in indx) to the fixed costs """
     total = np.copy(fixed)
@@ -294,9 +376,21 @@ def system(odds, bo, p0, x):
     return [f1, f2, f3, f4]
 
 def check_sol(sol):
-    if ((sol > 0) & (sol < 1)).all():
-        return True
-    else:
-        print(':: Error:: birth outcome probabilities outside interval (0,1), setting change to zero')
-        return False
+    try:
+        ((sol > 0) & (sol < 1)).all()
+    except:
+        raise Exception(':: Error:: birth outcome probabilities outside interval (0,1)')
+
+def add_dummy_prog_data(prog_info, name):
+    thisprog_data = sc.dcp(prog_info.prog_data)
+    thisprog_data.base_cov[name] = 0.0
+    thisprog_data.base_prog_set.append(name)
+    thisprog_data.costs[name] = 1e12
+    thisprog_data.costtype[name] = 'linear'
+    thisprog_data.impacted_pop[name] = {pop: 1.0 for pop in thisprog_data.settings.all_ages} # so that it covers everyone in the model
+    thisprog_data.prog_deps[name] = {'Exclusion dependency': [], 'Threshold dependency': []} # so that it has no dependencies
+    thisprog_data.prog_target[name] = {pop: 1.0 for pop in thisprog_data.settings.all_ages} # so that it covers everyone in the model
+    thisprog_data.sat[name] = 1.0
+    return thisprog_data
+
 

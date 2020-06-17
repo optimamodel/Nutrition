@@ -629,6 +629,7 @@ class ProgData(object):
         self.get_ref_progs()
         self.get_famplan_methods()
         self.create_iycf()
+        #self.recalc_episodic_prog_costs() #not necessary with episodic coverage change
         self.spreadsheet = None # Reset to save memory
         self.validate()
 
@@ -678,6 +679,14 @@ class ProgData(object):
         frac_wheat = baseline.loc['Food'].loc['Fraction eating wheat as main staple food'].values[0]
         frac_maize = baseline.loc['Food'].loc['Fraction eating maize as main staple food'].values[0]
         diarr_incid = baseline.loc['Diarrhoea incidence']['Data'].values
+        if len(baseline.loc['Other risks'].values) < 4:
+            print('Warning, the databook being read is out of date and does not include baseline prevalences of '
+                  'eclampsia and pre-eclampsia so global averages will be used.')
+            preeclampsia_prev = self.settings.global_eclampsia_prevalence['Pre-eclampsia']
+            eclampsia_prev = self.settings.global_eclampsia_prevalence['Eclampsia']
+        else:
+            preeclampsia_prev = baseline.loc['Other risks'].loc['Prevalence of pre-eclampsia'].values[0]
+            eclampsia_prev = baseline.loc['Other risks'].loc['Prevalence of eclampsia'].values[0]
         treatsam = self.spreadsheet.parse(sheet_name='Treatment of SAM')
         comm_deliv_sam_raw = treatsam.iloc[0]['Add extension']
         comm_deliv_sam = pandas.notnull(comm_deliv_sam_raw)
@@ -721,6 +730,12 @@ class ProgData(object):
         IPTp_row = frac_malaria_risk * np.ones(4)
         targetPopSheet.loc['Pregnant women', 'IPTp'].iloc[5:9] = IPTp_row
         self.calcscache.write_row('Programs target population', 17, 7, IPTp_row)
+        mg_eclampsia_row = eclampsia_prev * np.ones(4)
+        targetPopSheet.loc['Pregnant women', 'Mg for eclampsia'].iloc[5:9] = mg_eclampsia_row
+        self.calcscache.write_row('Programs target population', 18, 7, mg_eclampsia_row)
+        mg_preeclampsia_row = preeclampsia_prev * np.ones(4)
+        targetPopSheet.loc['Pregnant women', 'Mg for pre-eclampsia'].iloc[5:9] = mg_preeclampsia_row
+        self.calcscache.write_row('Programs target population', 19, 7, mg_preeclampsia_row)
         fam_planning_row = famplan_unmet_need * np.ones(4)
         targetPopSheet.loc['Non-pregnant WRA', 'Family planning'].iloc[9:13] = fam_planning_row
         self.calcscache.write_row('Programs target population', 22, 11, fam_planning_row)
@@ -833,6 +848,24 @@ class ProgData(object):
                     packagesDict[packageName[0]] += ageModeTuple
         return packagesDict
 
+    def recalc_episodic_prog_costs(self):
+        baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0, 1])
+        nutrition_status = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0, 1])
+        diarr_incid, sam_prev = [], []
+        if len(baseline.loc['Other risks'].values) < 4:
+            change = 4 - len(baseline.loc['Other risks'].values)
+        else:
+            change = 0
+        for s, span in enumerate(self.settings.child_age_spans): #weight age group incidence/prevalence by size of group
+            diarr_incid.append(baseline.values[-9 + change + s][0] * span)
+            sam_prev.append(nutrition_status.values[7][s] * span)
+        av_diarr_incid = sum(diarr_incid)/(sum(self.settings.child_age_spans)) # weighted average under 5 annual diarrhea incidence
+        av_sam_prev = sum(sam_prev)/(sum(self.settings.child_age_spans)) # weighted average under 5 SAM prevalence
+        self.costs['Oral rehydration salts'] *= av_diarr_incid
+        self.costs['Zinc for treatment + ORS'] *= av_diarr_incid
+        self.costs['Treatment of SAM'] *= av_sam_prev * 2.6 # estimated ratio of incidence/prevalence
+        return
+
     def get_iycf_target(self, package_modes):
         """ Creates the frac of pop targeted by each IYCF package.
         Note that frac in community and mass media assumed to be 1.
@@ -871,6 +904,8 @@ class ProgData(object):
             newAgeGroups = {age:subDict for age in ages if subDict is not None}
             my_dict[key].update(newAgeGroups)
         return my_dict
+
+
 
 class Dataset(object):
     ''' Store all the data for a project '''
