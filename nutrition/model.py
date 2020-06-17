@@ -16,7 +16,8 @@ class Model(sc.prettyobj):
         self.n_years = len(self.all_years)
         self.sim_years = self.all_years[1:]
         self.year = self.all_years[0]
-
+        self.young_bf = np.zeros(len(self.all_years))
+        self.old_bf = np.zeros(len(self.all_years))
         # this is for extracting baseline coverage/spending in gui (before prog_set set)
         self._set_progs(self.prog_info.base_progset())
 
