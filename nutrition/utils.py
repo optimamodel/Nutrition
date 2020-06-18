@@ -52,8 +52,8 @@ def default_trackers(prev=None, rate=None):
         'nonpw_anaemic',
         'nonpw_anaemprev',
         'child_mortrate',
-        'pw_mortrate'
-        'young_bf'
+        'pw_mortrate',
+        'young_bf',
         'old_bf'
     ]
     if prev is not None:
