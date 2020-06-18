@@ -1,4 +1,5 @@
 from nutrition.optimization import Optim
+from nutrition.scenarios import Scen
 from nutrition.results import write_results
 from nutrition.utils import run_parallel
 from functools import partial
@@ -14,7 +15,7 @@ def parallel_optim(region, path=None):
 
     ## define custom optimization
     kwargs = {'name': region,
-              'mults': [1],
+              'mults': [0.8,1],
               'model_name': region,
               'weights': sc.odict({'thrive': 1,
                                    'Minimize the number of wasted children': 2.91,
@@ -31,15 +32,16 @@ def parallel_optim(region, path=None):
               }
 
     p.add_optims(Optim(**kwargs))
-    results = p.run_optim(maxiter=50, swarmsize=15, maxtime=560, parallel=False)
+    results = p.run_optim(maxiter=10, swarmsize=5, maxtime=50, parallel=False)
 
     return(p)
+
 
 dirname = os.path.dirname(__file__)
 input_path = dirname + '/inputs/'
 output_path = dirname + '/outputs/'
 
-country_list = ['China', 'North Korea', 'Cambodia', 'Indonesia', 'Laos', 'Malaysia', 'Maldives', 'Myanmar']#,
+country_list = ['China', 'North Korea', 'Cambodia', 'Indonesia']#, 'Laos', 'Malaysia', 'Maldives', 'Myanmar']#,
                 # 'Philippines', 'Sri Lanka', 'Thailand', 'Timor-Leste', 'Vietnam', 'Fiji', 'Kiribati',
                 # 'Federated States of Micronesia', 'Papua New Guinea', 'Samoa', 'Solomon Islands', 'Tonga', 'Vanuatu',
                 # 'Armenia', 'Azerbaijan', 'Kazakhstan', 'Kyrgyzstan', 'Mongolia', 'Tajikistan', 'Turkmenistan',
@@ -58,6 +60,9 @@ country_list = ['China', 'North Korea', 'Cambodia', 'Indonesia', 'Laos', 'Malays
                 # 'Sierra Leone', 'Togo', 'Georgia', 'South Sudan', 'Sudan']
 
 
+
+
+
 if __name__ == '__main__':
 
     run_optim = partial(parallel_optim, path=input_path)
@@ -74,3 +79,65 @@ if __name__ == '__main__':
                 results.append(scenres)
 
     write_results(results, filename=output_path + 'test.xlsx')
+
+
+## Get uppoer and lower bounds
+    p_bounds = Project('WHA optimisation bounds')
+    optim_budgets = sc.odict()
+    for q in range(len(proj_list)):
+        country = proj_list[q].results.keys()[0]
+        int_list = proj_list[q].results[0][1].programs.keys()
+        optim_budgets[country] = sc.odict()
+        optim_budgets[country]['country_name'] = country
+        for i in int_list:
+            optim_budgets[country][i] = proj_list[q].results[0][1].programs[i].annual_spend[1:]
+
+        p_bounds.load_data(inputspath=input_path + country + '_input.xlsx', name=country + '_point',time_trend=True)
+        p_bounds.load_data(inputspath=input_path + 'LB/' + country + '_input.xlsx', name=country + '_LB', time_trend=True)
+        p_bounds.load_data(inputspath=input_path + 'UB/' + country + '_input.xlsx', name=country + '_UB',time_trend=True)
+        interventions = {k: optim_budgets[country][k] for k in optim_budgets[country].keys()
+                         if k not in {'country_name', 'Excess budget not allocated'}}
+
+        kwargs = {'name': country + '_point Baseline',
+                  'model_name': country + '_point',
+                  'scen_type': 'budget',
+                  'progvals': {}}
+
+        p_bounds.add_scens(Scen(**kwargs))
+
+        kwargs = {'name': country + '_LB Baseline',
+                  'model_name': country + '_LB',
+                  'scen_type': 'budget',
+                  'progvals': {}}
+        p_bounds.add_scens(Scen(**kwargs))
+
+        kwargs = {'name': country + '_UB Baseline',
+                  'model_name': country + '_UB',
+                  'scen_type': 'budget',
+                  'progvals': {}}
+        p_bounds.add_scens(Scen(**kwargs))
+
+        kwargs = {'name': country + '_point',
+                  'model_name': country + '_point',
+                  'scen_type': 'budget',
+                  'progvals': interventions}
+
+        p_bounds.add_scens(Scen(**kwargs))
+
+        kwargs = {'name': country + '_LB',
+                  'model_name': country + '_LB',
+                  'scen_type': 'budget',
+                  'progvals': interventions}
+        p_bounds.add_scens(Scen(**kwargs))
+
+        kwargs = {'name': country + '_UB',
+                  'model_name': country + '_UB',
+                  'scen_type': 'budget',
+                  'progvals': interventions}
+        p_bounds.add_scens(Scen(**kwargs))
+
+    p_bounds.run_scens()
+
+    write_results(p_bounds.results['scens'], filename=output_path + 'test_bounds.xlsx')
+
+

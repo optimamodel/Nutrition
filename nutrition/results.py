@@ -116,7 +116,7 @@ def write_results(results, projname=None, filename=None, folder=None):
         - sheet called 'budget and coverage' which contains all program cost and coverages over time """
     if projname is None: projname = ''
     outcomes = [
-        'Number of alive, non-stunted children turning age 5',
+        'thrive',
         'stunted', 'stunted_prev',
         'wasted', 'wasted_prev',
         'pw_anaemic', 'pw_anaemprev',
