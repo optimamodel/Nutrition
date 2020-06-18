@@ -124,7 +124,6 @@ def write_results(results, projname=None, filename=None, folder=None):
     allformats = []
     years = results[0].years
     nullrow = [''] * len(years)
-    excess_budget_trigger = False
 
     ### Outcomes sheet
     headers = [['Scenario', 'Outcome'] + years + ['Cumulative']]
