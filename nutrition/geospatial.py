@@ -113,7 +113,7 @@ class Geospatial:
                 res.prog_info.programs['Excess budget not allocated'].annual_spend = np.zeros(len(res.years))
         if excess_budget > 0:
             excess_res = sc.dcp(results[0])
-            excess_res.name = 'Excess budget not allocated'
+            excess_res.name = 'Excess budget'
             excess_prog = sc.dcp(excess_res.programs['Excess budget not allocated'])
             excess_prog.annual_spend[1:] += excess_budget
             excess_res.prog_info.programs = {'Excess budget not allocated': excess_prog}
