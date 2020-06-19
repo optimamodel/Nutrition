@@ -17,22 +17,29 @@ def parallel_optim(region, path=None):
     kwargs = {'name': region,
               'mults': [0.8,1],
               'model_name': region,
-              'weights': sc.odict({'thrive': 1,
-                                   'Minimize the number of wasted children': 2.91,
-                                   'Minimize child mortality rate': 2.91}),
-              'prog_set': ['Balanced energy-protein supplementation','Cash transfers','IFA fortification of wheat flour',
-                           'IYCF 1', 'IYCF 2', 'IYCF 3', 'IFAS for pregnant women (community)',
-                           'IFAS for pregnant women (health facility)', 'Lipid-based nutrition supplements',
-                           'Management of MAM',
-                           'Multiple micronutrient supplementation', 'Micronutrient powders', 'Kangaroo mother care',
-                           'Treatment of SAM', 'Vitamin A supplementation',
-                           'Zinc for treatment + ORS', 'Iron and iodine fortification of salt'],
+              'weights': sc.odict({'thrive': 1}),
+                                   # 'Minimize the number of wasted children': 2.91,
+                                   # 'Minimize child mortality rate': 2.91}),
+              'prog_set': ['Balanced energy-protein supplementation',
+                           'IYCF 1', 'IFAS for pregnant women (community)',
+                           'IFAS for pregnant women (health facility)', 'Public provision of complementary foods',
+                           'Management of MAM','Kangaroo mother care',
+                           'Multiple micronutrient supplementation', 'Treatment of SAM', 'Vitamin A supplementation',
+                           'Zinc for treatment + ORS',
+                           'Long-lasting insecticide-treated bednets', 'IPTp'],
+                           # ['Balanced energy-protein supplementation',
+                           # 'IYCF 1', 'IFAS for pregnant women (community)',
+                           # 'IFAS for pregnant women (health facility)', 'Public provision of complementary foods',
+                           # 'Management of MAM', 'Kangaroo mother care',
+                           # 'Multiple micronutrient supplementation', 'Micronutrient powders', 'Kangaroo mother care',
+                           # 'Treatment of SAM', 'Vitamin A supplementation',
+                           # 'Long-lasting insecticide-treated bednets', 'IPTp'],
               'fix_curr': False,
               'add_funds': 0
               }
 
     p.add_optims(Optim(**kwargs))
-    results = p.run_optim(maxiter=10, swarmsize=5, maxtime=50, parallel=False)
+    results = p.run_optim(maxiter=50, swarmsize=25, maxtime=500, parallel=False)
 
     return(p)
 
@@ -41,25 +48,17 @@ dirname = os.path.dirname(__file__)
 input_path = dirname + '/inputs/'
 output_path = dirname + '/outputs/'
 
-country_list = ['China', 'North Korea', 'Cambodia', 'Indonesia']#, 'Laos', 'Malaysia', 'Maldives', 'Myanmar']#,
-                # 'Philippines', 'Sri Lanka', 'Thailand', 'Timor-Leste', 'Vietnam', 'Fiji', 'Kiribati',
-                # 'Federated States of Micronesia', 'Papua New Guinea', 'Samoa', 'Solomon Islands', 'Tonga', 'Vanuatu',
-                # 'Armenia', 'Azerbaijan', 'Kazakhstan', 'Kyrgyzstan', 'Mongolia', 'Tajikistan', 'Turkmenistan',
-                # 'Uzbekistan', 'Albania', 'Bosnia and Herzegovina', 'Bulgaria', 'Macedonia', 'Montenegro', 'Romania',
-                # 'Serbia', 'Belarus', 'Moldova', 'Russian Federation', 'Ukraine', 'Belize', 'Cuba', 'Dominican Republic',
-                # 'Grenada', 'Guyana', 'Haiti', 'Jamaica', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Suriname',
-                # 'Bolivia', 'Ecuador', 'Peru', 'Colombia', 'Costa Rica', 'El Salvador', 'Guatemala', 'Honduras',
-                # 'Nicaragua', 'Venezuela', 'Brazil', 'Paraguay', 'Algeria', 'Egypt', 'Iran', 'Iraq', 'Jordan', 'Lebanon',
-                # 'Libya', 'Morocco', 'Palestine', 'Syria', 'Tunisia', 'Turkey', 'Yemen', 'Afghanistan', 'Bangladesh',
-                # 'Bhutan', 'India', 'Nepal', 'Pakistan', 'Angola', 'Central African Republic', 'Congo',
-                # 'Democratic Republic of the Congo', 'Equatorial Guinea', 'Gabon', 'Burundi', 'Comoros', 'Djibouti',
-                # 'Ethiopia', 'Kenya', 'Madagascar', 'Malawi', 'Mauritius', 'Mozambique', 'Rwanda', 'Somalia', 'Tanzania',
-                # 'Uganda', 'Zambia', 'Botswana', 'Lesotho', 'Namibia', 'South Africa', 'Eswatini', 'Zimbabwe', 'Benin',
-                # 'Burkina Faso', 'Cameroon', 'Cape Verde', 'Chad', 'Cote dIvoire', 'The Gambia', 'Ghana', 'Guinea',
-                # 'Guinea-Bissau', 'Liberia', 'Mali', 'Mauritania', 'Niger', 'Nigeria', 'Sao Tome and Principe', 'Senegal',
-                # 'Sierra Leone', 'Togo', 'Georgia', 'South Sudan', 'Sudan']
-
-
+country_list = ['Afghanistan', 'Albania', 'Algeria', 'Angola', 'Armenia', 'Azerbaijan', 'Bangladesh','Belarus',
+                'Belize', 'Benin', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'Bulgaria', 'Burkina Faso', 'Burundi', 'Cambodia',
+                'Cameroon', 'Cape Verde', 'Central African Republic','Chad', 'China', 'Colombia', 'Comoros', 'Congo', 'Costa Rica', 'Cuba', 'Democratic Republic of the Congo',
+                'Djibouti', 'Dominican Republic', 'Ecuador', 'Egypt', 'El Salvador', 'Equatorial Guinea',
+                'Eswatini', 'Ethiopia', 'Federated States of Micronesia', 'Fiji', 'Gabon', 'Gambia, The', 'Georgia', 'Ghana', 'Grenada', 'Guatemala', 'Guinea', 'Guinea-Bissau',
+                'Guyana', 'Haiti', 'Honduras', 'India', 'Indonesia', 'Iran', 'Iraq', 'Jamaica', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Kyrgyzstan', 'Laos', 'Lebanon', 'Lesotho', 'Liberia',
+                'Libya', 'Macedonia', 'Madagascar', 'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Mauritania', 'Mauritius', 'Moldova', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar', 'Namibia', 'Nepal', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'Pakistan', 'Palestine',
+                'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Romania', 'Russian Federation',
+                'Rwanda', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 'Sao Tome and Principe', 'Senegal', 'Serbia', 'Sierra Leone', 'Solomon Islands', 'Somalia', 'South Africa', 'South Sudan', 'Sri Lanka',
+                'Sudan', 'Suriname', 'Syria', 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Togo', 'Tonga', 'Tunisia', 'Turkey', 'Turkmenistan',
+                'Uganda', 'Ukraine', 'Uzbekistan', 'Vanuatu', 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe']
 
 
 
@@ -75,7 +74,7 @@ if __name__ == '__main__':
                 if scenres.name == 'Baseline':
                     scenres.name = scenres.model_name + ' ' + scenres.name
                 else:
-                    scenres.name = scenres.model_name
+                    scenres.name = scenres.model_name + ' Optimized ' + str(scenres.mult)+ 'x'
                 results.append(scenres)
 
     write_results(results, filename=output_path + 'test.xlsx')
@@ -84,57 +83,42 @@ if __name__ == '__main__':
 ## Get uppoer and lower bounds
     p_bounds = Project('WHA optimisation bounds')
     optim_budgets = sc.odict()
-    for q in range(len(proj_list)):
+    for q in range(len(proj_list)): # loop through countries
         country = proj_list[q].results.keys()[0]
         int_list = proj_list[q].results[0][1].programs.keys()
         optim_budgets[country] = sc.odict()
-        optim_budgets[country]['country_name'] = country
-        for i in int_list:
-            optim_budgets[country][i] = proj_list[q].results[0][1].programs[i].annual_spend[1:]
-
-        p_bounds.load_data(inputspath=input_path + country + '_input.xlsx', name=country + '_point',time_trend=True)
-        p_bounds.load_data(inputspath=input_path + 'LB/' + country + '_input.xlsx', name=country + '_LB', time_trend=True)
+        p_bounds.load_data(inputspath=input_path + country + '_input.xlsx', name=country + '_point', time_trend=True)
+        p_bounds.load_data(inputspath=input_path + 'LB/' + country + '_input.xlsx', name=country + '_LB',time_trend=True)
         p_bounds.load_data(inputspath=input_path + 'UB/' + country + '_input.xlsx', name=country + '_UB',time_trend=True)
-        interventions = {k: optim_budgets[country][k] for k in optim_budgets[country].keys()
-                         if k not in {'country_name', 'Excess budget not allocated'}}
 
-        kwargs = {'name': country + '_point Baseline',
-                  'model_name': country + '_point',
-                  'scen_type': 'budget',
-                  'progvals': {}}
+        for j in range(len(proj_list[q].results[0])): # number of scenarios
+            scen_name = proj_list[q].results[0][j].name
+            optim_budgets[country][scen_name] = sc.odict()
+            for i in int_list:
+                optim_budgets[country][scen_name][i] = proj_list[q].results[0][j].programs[i].annual_spend[1:]
 
-        p_bounds.add_scens(Scen(**kwargs))
+            optim_budgets[country][scen_name] = {k: optim_budgets[country][scen_name][k] for k in optim_budgets[country][scen_name].keys()
+                                        if k not in {'country_name', 'Excess budget not allocated'}}
 
-        kwargs = {'name': country + '_LB Baseline',
-                  'model_name': country + '_LB',
-                  'scen_type': 'budget',
-                  'progvals': {}}
-        p_bounds.add_scens(Scen(**kwargs))
 
-        kwargs = {'name': country + '_UB Baseline',
-                  'model_name': country + '_UB',
-                  'scen_type': 'budget',
-                  'progvals': {}}
-        p_bounds.add_scens(Scen(**kwargs))
+            kwargs = {'name': scen_name + ' point',
+                      'model_name': country + '_point',
+                      'scen_type': 'budget',
+                      'progvals': optim_budgets[country][scen_name]}
 
-        kwargs = {'name': country + '_point',
-                  'model_name': country + '_point',
-                  'scen_type': 'budget',
-                  'progvals': interventions}
+            p_bounds.add_scens(Scen(**kwargs))
 
-        p_bounds.add_scens(Scen(**kwargs))
+            kwargs = {'name': scen_name + ' LB',
+                      'model_name': country + '_LB',
+                      'scen_type': 'budget',
+                      'progvals': optim_budgets[country][scen_name]}
+            p_bounds.add_scens(Scen(**kwargs))
 
-        kwargs = {'name': country + '_LB',
-                  'model_name': country + '_LB',
-                  'scen_type': 'budget',
-                  'progvals': interventions}
-        p_bounds.add_scens(Scen(**kwargs))
-
-        kwargs = {'name': country + '_UB',
-                  'model_name': country + '_UB',
-                  'scen_type': 'budget',
-                  'progvals': interventions}
-        p_bounds.add_scens(Scen(**kwargs))
+            kwargs = {'name': scen_name + ' UB',
+                      'model_name': country + '_UB',
+                      'scen_type': 'budget',
+                      'progvals': optim_budgets[country][scen_name]}
+            p_bounds.add_scens(Scen(**kwargs))
 
     p_bounds.run_scens()
 
