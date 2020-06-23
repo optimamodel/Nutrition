@@ -527,7 +527,10 @@ class InputData(object):
             self.time_trends['Mortality'] = trends.loc['Mortality'].values[:2].astype(str).astype(float) # under 5, maternal
         except ValueError as error:
             sys.exit('In \'Time trends\' sheet, ' + str(error)) # Exits if non-numeric entries found
-        self.interp_trends(t)
+        for trend in ['Stunting', 'Wasting', 'Anaemia', 'Breastfeeding', 'Mortality']:
+            if not np.isnan(self.time_trends[trend][0][0]):
+                self.interp_trends(t)
+                break
 
     def interp_trends(self, t): # Linearly interpolates any time trend data
         for risk in ['Stunting', 'Wasting', 'Anaemia', 'Breastfeeding']:
