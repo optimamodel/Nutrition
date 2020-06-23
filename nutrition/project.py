@@ -5,13 +5,13 @@
 import os
 import sciris as sc
 from .version import version
-from .utils import default_trackers, add_dummy_prog_data
+from .utils import default_trackers, add_dummy_prog_data, write_results_collected
 from .data import Dataset
 from .model import Model
 from .scenarios import Scen, run_scen, convert_scen, make_default_scen
 from .optimization import Optim
 from .geospatial import Geospatial
-from .results import write_results, write_results_collected
+from .results import write_results
 from .plotting import make_plots, get_costeff, plot_costcurve, plot_prevs
 from .demo import demo_scens, demo_optims, demo_geos
 from . import settings
