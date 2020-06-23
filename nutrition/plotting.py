@@ -282,7 +282,7 @@ def get_costeff(project, results):
         childkwargs = res.get_childscens()
         childscens = make_scens(childkwargs)
         for child in childscens:
-            if child.name != 'Excess budget not allocated':
+            if child.name != 'Excess budget':
                 if 'Excess budget not allocated' in child.prog_set:
                     child.prog_set.remove('Excess budget not allocated')
                 childres = run_scen(child, model)
@@ -291,7 +291,7 @@ def get_costeff(project, results):
     pretty = utils.relabel(outcomes)
     costeff = sc.odict()
     for i, parent in enumerate(parents):
-        if parent.name != 'Excess budget not allocated':
+        if parent.name != 'Excess budget':
             baseline = baselines[i]
             costeff[parent.name] = sc.odict()
             par_outs = parent.get_outputs(outcomes)
