@@ -128,7 +128,7 @@ def write_results(results, projname=None, filename=None, folder=None):
     ### Outcomes sheet
     headers = [['Scenario', 'Outcome'] + years + ['Cumulative']]
     for r, res in enumerate(results):
-        if res.name != 'Excess budget not allocated':
+        if res.name != 'Excess budget':
             out = res.get_outputs(outcomes, seq=True, pretty=True)
             for o, outcome in enumerate(rows):
                 name = [res.name] if o == 0 else ['']
@@ -141,8 +141,6 @@ def write_results(results, projname=None, filename=None, folder=None):
                     cumul = sum(thisout)
                 outputs.append(name + [outcome] + list(thisout) + [cumul])
             outputs.append(nullrow)
-        else:
-            excess_budget_trigger = True
     data = headers + outputs
     alldata.append(data)
 
@@ -160,7 +158,7 @@ def write_results(results, projname=None, filename=None, folder=None):
     outputs = []
     headers = [['Scenario', 'Program', 'Type', 'Cost-coverage type'] + years]
     for r, res in enumerate(results):
-        if res.name != 'Excess budget not allocated':
+        if res.name != 'Excess budget':
             rows = res.programs.keys()
             spend = res.get_allocs(ref=True)
             cov = res.get_covs(unrestr=False)
