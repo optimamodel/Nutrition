@@ -323,7 +323,7 @@ class Population(sc.prettyobj):
         return self.num_anaemic() / self.total_pop()
 
 class Children(Population):
-    def __init__(self, data, default_params):
+    def __init__(self, data, default_params, time_trend=False):
         Population.__init__(self, 'Children', data, default_params)
         self.proj = sc.dcp(data.proj)
         self.birth_dist = self.data.demo['Birth dist']
@@ -336,7 +336,8 @@ class Children(Population):
         self._set_child_mortality()
         self.update_mortality()
         self._set_progeff()
-        self._set_time_trends()
+        if time_trend:
+            self._set_time_trends()
         self._set_correctbf()
         self._set_future_stunting()
         self._set_stunted_birth()
@@ -748,7 +749,7 @@ class Children(Population):
             age_group.correct_bf = self.ss.correct_bf[age]
 
 class PregnantWomen(Population):
-    def __init__(self, data, default_params):
+    def __init__(self, data, default_params, time_trend=False):
         Population.__init__(self, 'Pregnant women', data, default_params)
         self.proj = sc.dcp(data.proj)
         self.age_dist = data.pw_agedist
@@ -758,7 +759,8 @@ class PregnantWomen(Population):
         self._setPWReferenceMortality()
         self.update_mortality()
         self._set_progeff()
-        self._set_time_trends()
+        if time_trend:
+            self._set_time_trends()
 
     ##### DATA WRANGLING ######
 
@@ -866,13 +868,14 @@ class PregnantWomen(Population):
                 age_group.probConditionalCoverage[risk][program]['not covered'] = pn
 
 class NonPregnantWomen(Population):
-    def __init__(self, data, default_params):
+    def __init__(self, data, default_params, time_trend=False):
         Population.__init__(self, 'Non-pregnant women', data, default_params)
         self.anaemia_dist = self.data.risk_dist['Anaemia']
         self.proj = {age:pops for age, pops in data.proj.items() if age in self.ss.wra_ages + ['Total WRA']}
         self._make_pop_sizes()
         self._make_age_groups()
-        self._set_time_trends()
+        if time_trend:
+            self._set_time_trends()
 
     ##### DATA WRANGLING ######
 
@@ -936,9 +939,9 @@ class NonPregnantWomen(Population):
             age_group.trends[risk] = trend[2]
 
 
-def set_pops(data, default_params):
+def set_pops(data, default_params, time_trend=False):
     if hasattr(data, 'spreadsheet'): delattr(data, 'spreadsheet') # To reduce file size
-    children = Children(data, default_params)
-    pregnantWomen = PregnantWomen(data, default_params)
-    nonPregnantWomen = NonPregnantWomen(data, default_params)
+    children = Children(data, default_params, time_trend=time_trend)
+    pregnantWomen = PregnantWomen(data, default_params, time_trend=time_trend)
+    nonPregnantWomen = NonPregnantWomen(data, default_params, time_trend=time_trend)
     return [children, pregnantWomen, nonPregnantWomen]

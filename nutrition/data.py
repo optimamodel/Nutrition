@@ -343,7 +343,7 @@ class DefaultParams(object):
 # TODO (possible): we may want to merge this class with DefaultParams to make another class (DatabookData).
 class InputData(object):
     """ Container for all the region-specific data (prevalences, mortality rates etc) read in from spreadsheet"""
-    def __init__(self, data, calcscache):
+    def __init__(self, data, calcscache, time_trend=False):
         self.spreadsheet = data
         self.settings = settings.Settings()
         self.demo = None
@@ -364,7 +364,8 @@ class InputData(object):
         self.get_proj()
         self.get_risk_dist()
         self.get_death_dist()
-        self.get_time_trends()
+        if time_trend:
+            self.get_time_trends()
         self.get_incidences()
 
     def __repr__(self):
@@ -527,10 +528,8 @@ class InputData(object):
             self.time_trends['Mortality'] = trends.loc['Mortality'].values[:2].astype(str).astype(float) # under 5, maternal
         except ValueError as error:
             sys.exit('In \'Time trends\' sheet, ' + str(error)) # Exits if non-numeric entries found
-        for trend in ['Stunting', 'Wasting', 'Anaemia', 'Breastfeeding', 'Mortality']:
-            if not np.isnan(self.time_trends[trend][0][0]):
-                self.interp_trends(t)
-                break
+        self.interp_trends(t)
+
 
     def interp_trends(self, t): # Linearly interpolates any time trend data
         for risk in ['Stunting', 'Wasting', 'Anaemia', 'Breastfeeding']:
@@ -914,7 +913,8 @@ class Dataset(object):
     ''' Store all the data for a project '''
     
     def __init__(self, country=None, region=None, name=None, demo_data=None, prog_data=None, default_params=None,
-                 pops=None, prog_info=None, doload=False, inputspath=None, defaultspath=None, fromfile=None, project=None):
+                 pops=None, prog_info=None, doload=False, inputspath=None, defaultspath=None, fromfile=None, project=None,
+                 time_trend=False):
         
         self.country = country
         self.region = region
@@ -931,14 +931,14 @@ class Dataset(object):
         self.name = name
         self.modified = sc.now()
         if doload:
-            self.load(project=project)
+            self.load(project=project, time_trend=time_trend)
         return None
     
     def __repr__(self):
         output  = sc.prepr(self)
         return output
     
-    def load(self, project=None):
+    def load(self, project=None, time_trend=False):
         # Handle inputs
         if project is None:
             raise Exception('Sorry, but you must supply a project for load().')
@@ -965,7 +965,7 @@ class Dataset(object):
         
         # Read them into actual data
         try:
-            self.demo_data = InputData(input_data, self.calcscache)  # demo_ here is demographic_
+            self.demo_data = InputData(input_data, self.calcscache, time_trend=time_trend)  # demo_ here is demographic_
         except Exception as E:
             raise Exception('Error in databook: %s'%str(E))
         try:
@@ -975,7 +975,7 @@ class Dataset(object):
         except Exception as E:
             raise Exception('Error in program data: %s'%str(E))
         try:
-            self.pops = populations.set_pops(self.demo_data, self.default_params)
+            self.pops = populations.set_pops(self.demo_data, self.default_params, time_trend=time_trend)
         except Exception as E:
             raise Exception('Error in creating populations, check data and defaults books: %s'%str(E))
         self.prog_info = programs.ProgramInfo(self.prog_data)
