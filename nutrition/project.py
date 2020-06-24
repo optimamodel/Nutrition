@@ -134,7 +134,7 @@ class Project(object):
         return self.inputsheet(name)
     
         
-    def load_data(self, country=None, region=None, name=None, time_trend=True, inputspath=None, defaultspath=None, fromfile=True, validate=True):
+    def load_data(self, country=None, region=None, name=None, time_trend=False, inputspath=None, defaultspath=None, fromfile=True, validate=True):
         '''Load the data, which can mean one of two things: read in the spreadsheets, and/or use these data to make a model '''
         
         # Generate name odict key for Spreadsheet, Dataset, and Model odicts.
@@ -148,7 +148,7 @@ class Project(object):
                 self.storeinputs(inputspath=inputspath, country=country, region=region, name=name)
         
         # Optionally (but almost always) use these to make a model (do not do if blank sheets).
-        dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self)
+        dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self, time_trend=time_trend)
         self.datasets[name] = dataset
         dataset.name = name
         self.add_model(name, time_trend=time_trend) # add model associated with the dataset
