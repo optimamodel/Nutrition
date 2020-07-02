@@ -631,7 +631,7 @@ class ProgData(object):
         self.get_ref_progs()
         self.get_famplan_methods()
         self.create_iycf()
-        #self.recalc_episodic_prog_costs() #not necessary with episodic coverage change
+        self.recalc_treatsam_prog_costs()
         self.spreadsheet = None # Reset to save memory
         self.validate()
 
@@ -850,21 +850,12 @@ class ProgData(object):
                     packagesDict[packageName[0]] += ageModeTuple
         return packagesDict
 
-    def recalc_episodic_prog_costs(self):
-        baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0, 1])
+    def recalc_treatsam_prog_costs(self):
         nutrition_status = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0, 1])
-        diarr_incid, sam_prev = [], []
-        if len(baseline.loc['Other risks'].values) < 4:
-            change = 4 - len(baseline.loc['Other risks'].values)
-        else:
-            change = 0
+        sam_prev = []
         for s, span in enumerate(self.settings.child_age_spans): #weight age group incidence/prevalence by size of group
-            diarr_incid.append(baseline.values[-9 + change + s][0] * span)
             sam_prev.append(nutrition_status.values[7][s] * span)
-        av_diarr_incid = sum(diarr_incid)/(sum(self.settings.child_age_spans)) # weighted average under 5 annual diarrhea incidence
         av_sam_prev = sum(sam_prev)/(sum(self.settings.child_age_spans)) # weighted average under 5 SAM prevalence
-        self.costs['Oral rehydration salts'] *= av_diarr_incid
-        self.costs['Zinc for treatment + ORS'] *= av_diarr_incid
         self.costs['Treatment of SAM'] *= av_sam_prev * 2.6 # estimated ratio of incidence/prevalence
         return
 
