@@ -29,7 +29,7 @@ def parallel_optim(region, path=None):
                            'IFAS for pregnant women (health facility)', 'Public provision of complementary foods',
                            'Management of MAM','Kangaroo mother care',
                            'Multiple micronutrient supplementation', 'Treatment of SAM', 'Vitamin A supplementation',
-                           'Zinc for treatment + ORS',
+                           'Zinc for treatment + ORS', 'Oral rehydration salts',
                            'Long-lasting insecticide-treated bednets', 'IPTp'],
                            # ['Balanced energy-protein supplementation',
                            # 'IYCF 1', 'IFAS for pregnant women (community)',
@@ -52,7 +52,7 @@ dirname = os.path.dirname(__file__)
 input_path = dirname + '/inputs/'
 output_path = dirname + '/outputs/'
 
-country_list = ['Afghanistan', 'Albania', 'Algeria', 'Angola', 'Armenia', 'Bangladesh','Belarus',
+country_list = ['Afghanistan', 'Albania', 'Algeria', 'Angola', 'Armenia', 'Bangladesh',#'Belarus',
                 'Belize', 'Benin', 'Bhutan', 'Botswana', 'Burkina Faso', 'Burundi', 'Cambodia',
                 'Cameroon', 'Central African Republic','Chad', 'Colombia', 'Comoros', 'Congo', 'Cuba', 'Democratic Republic of the Congo',
                 'Dominican Republic', 'Egypt',
@@ -60,7 +60,7 @@ country_list = ['Afghanistan', 'Albania', 'Algeria', 'Angola', 'Armenia', 'Bangl
                 'Haiti', 'India', 'Iraq', 'Jordan', 'Kazakhstan', 'Kenya', 'Kyrgyzstan', 'Laos', 'Lesotho',
                 'Malawi', 'Maldives', 'Mali', 'Mauritania', 'Mongolia', 'Montenegro', 'Mozambique', 'Myanmar', 'Nepal', 'Nigeria',
                 'North Korea',
-                'Pakistan', 'Papua New Guinea', #'Sierra Leone', 'Paraguay','Peru', 'Philippines', 'Senegal', 'South Africa', 'Sri Lanka'
+                'Pakistan', #'Papua New Guinea', #'Sierra Leone', 'Paraguay','Peru', 'Philippines', 'Senegal', 'South Africa', 'Sri Lanka'
                 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Tunisia', 'Turkmenistan',
                 'Uganda', 'Zambia', 'Zimbabwe']
 
