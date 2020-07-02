@@ -59,10 +59,11 @@ country_list = ['Afghanistan', 'Albania', 'Algeria', 'Angola', 'Armenia', 'Bangl
                 'Ethiopia', 'Gambia, The', 'Georgia', 'Ghana', 'Guinea',
                 'Haiti', 'India', 'Iraq', 'Jordan', 'Kazakhstan', 'Kenya', 'Kyrgyzstan', 'Laos', 'Lesotho',
                 'Malawi', 'Maldives', 'Mali', 'Mauritania', 'Mongolia', 'Montenegro', 'Mozambique', 'Myanmar', 'Nepal', 'Nigeria',
-                'North Korea',
-                'Pakistan', #'Papua New Guinea', #'Sierra Leone', 'Paraguay','Peru', 'Philippines', 'Senegal', 'South Africa', 'Sri Lanka'
-                'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Tunisia', 'Turkmenistan',
-                'Uganda', 'Zambia', 'Zimbabwe']
+                'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Tunisia', 'Turkmenistan']#,
+                # 'North Korea',
+                # 'Pakistan', #'Papua New Guinea', #'Sierra Leone', 'Paraguay','Peru', 'Philippines', 'Senegal', 'South Africa', 'Sri Lanka'
+                # 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Tunisia', 'Turkmenistan',
+                # 'Uganda', 'Zambia', 'Zimbabwe']
 
 
 
