@@ -43,7 +43,7 @@ def parallel_optim(region, path=None):
               }
 
     p.add_optims(Optim(**kwargs))
-    results = p.run_optim(maxiter=50, swarmsize=25, maxtime=500, parallel=False)
+    results = p.run_optim(maxiter=5, swarmsize=5, maxtime=5, parallel=False)
 
     return(p)
 
@@ -52,17 +52,17 @@ dirname = os.path.dirname(__file__)
 input_path = dirname + '/inputs/'
 output_path = dirname + '/outputs/'
 
-country_list = ['Afghanistan', 'Albania', 'Algeria', 'Angola', 'Armenia', 'Azerbaijan', 'Bangladesh','Belarus',
-                'Belize', 'Benin', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'Bulgaria', 'Burkina Faso', 'Burundi', 'Cambodia',
-                'Cameroon', 'Cape Verde', 'Central African Republic','Chad', 'China', 'Colombia', 'Comoros', 'Congo', 'Costa Rica', 'Cuba', 'Democratic Republic of the Congo',
-                'Djibouti', 'Dominican Republic', 'Ecuador', 'Egypt', 'El Salvador', 'Equatorial Guinea',
-                'Eswatini', 'Ethiopia', 'Federated States of Micronesia', 'Fiji', 'Gabon', 'Gambia, The', 'Georgia', 'Ghana', 'Grenada', 'Guatemala', 'Guinea', 'Guinea-Bissau',
-                'Guyana', 'Haiti', 'Honduras', 'India', 'Indonesia', 'Iran', 'Iraq', 'Jamaica', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Kyrgyzstan', 'Laos', 'Lesotho', 'Liberia',
-                'Libya', 'Macedonia', 'Madagascar', 'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Mauritania', 'Mauritius', 'Moldova', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar', 'Namibia', 'Nepal', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'Pakistan', 'Palestine',
-                'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Romania', 'Russian Federation',
-                'Rwanda', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 'Sao Tome and Principe', 'Senegal', 'Serbia', 'Sierra Leone', 'Solomon Islands',
-                'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Togo', 'Tonga', 'Tunisia', 'Turkey', 'Turkmenistan',
-                'Uganda', 'Ukraine', 'Uzbekistan', 'Vanuatu', 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe']
+country_list = ['Afghanistan', 'Albania', 'Algeria', 'Angola', 'Armenia', 'Bangladesh','Belarus',
+                'Belize', 'Benin', 'Bhutan', 'Botswana', 'Burkina Faso', 'Burundi', 'Cambodia',
+                'Cameroon', 'Central African Republic','Chad', 'Colombia', 'Comoros', 'Congo', 'Cuba', 'Democratic Republic of the Congo',
+                'Dominican Republic', 'Egypt',
+                'Ethiopia', 'Gambia, The', 'Georgia', 'Ghana', 'Guinea',
+                'Haiti', 'India', 'Iraq', 'Jordan', 'Kazakhstan', 'Kenya', 'Kyrgyzstan', 'Laos', 'Lesotho',
+                'Malawi', 'Maldives', 'Mali', 'Mauritania', 'Mongolia', 'Montenegro', 'Mozambique', 'Myanmar', 'Nepal', 'Nigeria',
+                'North Korea',
+                'Pakistan', 'Papua New Guinea', #'Sierra Leone', 'Paraguay','Peru', 'Philippines', 'Senegal', 'South Africa', 'Sri Lanka'
+                'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Tunisia', 'Turkmenistan',
+                'Uganda', 'Zambia', 'Zimbabwe']
 
 
 
