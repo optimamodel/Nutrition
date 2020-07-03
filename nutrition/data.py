@@ -537,7 +537,7 @@ class InputData(object):
             self.interp_time_trends[risk] = sc.dcp(self.time_trends[risk])
             for index in list(range(0,len(self.time_trends[risk]))):
                 for jindex in list(range(0,len(self.time_trends[risk][index]))):
-                    if self.time_trends[risk][index][jindex] > 1 :
+                    if self.time_trends[risk][index][jindex] > 1:
                         self.time_trends[risk][index][jindex] = 1
                         print('A prevalence in sheet \'Time trends\', Risk: %s is greater than one and has been set to one' % risk)  # Handles prevalences > 1
                 not_nan = ~np.isnan(self.time_trends[risk][index:index+1])

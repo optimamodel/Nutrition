@@ -51,19 +51,19 @@ def parallel_optim(region, path=None):
 dirname = os.path.dirname(__file__)
 input_path = dirname + '/inputs/'
 output_path = dirname + '/outputs/'
-
-country_list = ['Afghanistan', 'Albania', 'Algeria', 'Angola', 'Armenia', 'Bangladesh',#'Belarus',
+#
+country_list = ['Afghanistan', 'Albania', 'Algeria', 'Angola', 'Armenia', 'Bangladesh', 'Belarus',
                 'Belize', 'Benin', 'Bhutan', 'Botswana', 'Burkina Faso', 'Burundi', 'Cambodia',
-                'Cameroon', 'Central African Republic','Chad', 'Colombia', 'Comoros', 'Congo', 'Cuba', 'Democratic Republic of the Congo',
+                'Cameroon', 'Central African Republic', 'Chad', 'Colombia', 'Comoros', 'Congo', 'Cuba',
+                'Democratic Republic of the Congo',
                 'Dominican Republic', 'Egypt',
                 'Ethiopia', 'Gambia, The', 'Georgia', 'Ghana', 'Guinea',
                 'Haiti', 'India', 'Iraq', 'Jordan', 'Kazakhstan', 'Kenya', 'Kyrgyzstan', 'Laos', 'Lesotho',
                 'Malawi', 'Maldives', 'Mali', 'Mauritania', 'Mongolia', 'Montenegro', 'Mozambique', 'Myanmar', 'Nepal', 'Nigeria',
-                'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Tunisia', 'Turkmenistan']#,
-                # 'North Korea',
-                # 'Pakistan', #'Papua New Guinea', #'Sierra Leone', 'Paraguay','Peru', 'Philippines', 'Senegal', 'South Africa', 'Sri Lanka'
-                # 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Tunisia', 'Turkmenistan',
-                # 'Uganda', 'Zambia', 'Zimbabwe']
+                'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Tunisia', 'Turkmenistan',
+                'North Korea', 'Pakistan', 'Papua New Guinea', 'Sierra Leone', 'Paraguay','Peru', 'Philippines', 'Senegal', 'South Africa', 'Sri Lanka',
+                'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Tunisia', 'Turkmenistan',
+                'Uganda', 'Zambia', 'Zimbabwe']
 
 
 
