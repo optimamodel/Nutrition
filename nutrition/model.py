@@ -84,6 +84,7 @@ class Model(sc.prettyobj):
          Begins at baseline year so that all scenario prevalences begin at the same point """
         self.stunted_prev[self.year] = self.children.frac_stunted()
         self.wasted_prev[self.year] = self.children.frac_risk('wast')
+        self.sam_prev[self.year] = self.children.frac_risk('sam')
         self.child_anaemprev[self.year] = self.children.frac_risk('an')
         self.young_bf[self.year] = (1 / 6) * self.children.frac_bf('<1 month') + (5 / 6) * self.children.frac_bf('1-5 months')
         self.old_bf[self.year] = (1 / 3) * self.children.frac_bf('6-11 months') + (2 / 3) * self.children.frac_bf('12-23 months')

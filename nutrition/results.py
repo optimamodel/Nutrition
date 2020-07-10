@@ -118,7 +118,7 @@ def write_results(results, projname=None, filename=None, folder=None):
     outcomes = [
         'thrive', 'child_deaths',
         'stunted', 'stunted_prev',
-        'wasted', 'wasted_prev',
+        'wasted', 'wasted_prev', 'sam_prev',
         'pw_anaemic', 'pw_anaemprev',
         'nonpw_anaemic', 'nonpw_anaemprev',
     ]
