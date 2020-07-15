@@ -852,11 +852,14 @@ class ProgData(object):
 
     def recalc_treatsam_prog_costs(self):
         nutrition_status = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0, 1])
-        sam_prev = []
+        sam_prev, mam_prev = [], []
         for s, span in enumerate(self.settings.child_age_spans): #weight age group incidence/prevalence by size of group
             sam_prev.append(nutrition_status.values[7][s] * span)
+            mam_prev.append(nutrition_status.values[6][s] * span)
         av_sam_prev = sum(sam_prev)/(sum(self.settings.child_age_spans)) # weighted average under 5 SAM prevalence
+        av_mam_prev = sum(mam_prev) / (sum(self.settings.child_age_spans))  # weighted average under 5 MAM prevalence
         self.costs['Treatment of SAM'] *= av_sam_prev * 2.6 # estimated ratio of incidence/prevalence
+        self.costs['Management of MAM'] *= av_mam_prev * 2.6  # estimated ratio of incidence/prevalence
         return
 
     def get_iycf_target(self, package_modes):
