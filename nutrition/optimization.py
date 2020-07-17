@@ -53,7 +53,8 @@ class Optim(sc.prettyobj):
                    'weights':   weights,
                    'keep_inds': keep_inds}
         if free == 0:
-            raise Exception('There are no funds available to optimize.')
+            #raise Exception('There are no funds available to optimize.')
+            print('There are no funds available to optimize.')
         return kwargs
 
     ######### OPTIMIZATION ##########

@@ -17,33 +17,37 @@ def parallel_optim(region, path=None):
     p = Project('WHA optimisation')
     p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=True)
 
+    age_labels = p.models[region].pops[0].popSizes.keys()
+    pop_size_tot = 0
+    for a in age_labels:  # get total number of stunted and wasted children for objective weights
+        pop_size_tot += p.models[region].pops[0].popSizes[a]
     ## define custom optimization
     kwargs = {'name': region,
-              'mults': [1],
+              'mults': [0.7,0.85,1.0],
               'model_name': region,
-              'weights': sc.odict({'thrive': 1}),
+              'weights': sc.odict({'Minimize the number of child deaths': 1,
+                                   'Minimize the prevalence of stunting in children': pop_size_tot,
+                                   #'Minimize the prevalence of wasting in children': pop_size_tot,
+                                   }),
                                    # 'Minimize the number of wasted children': 2.91,
-                                   # 'Minimize child mortality rate': 2.91}),
-              'prog_set': ['Balanced energy-protein supplementation',
-                           'IYCF 1', 'IFAS for pregnant women (community)',
-                           'IFAS for pregnant women (health facility)', 'Public provision of complementary foods',
-                           'Management of MAM','Kangaroo mother care',
-                           'Multiple micronutrient supplementation', 'Treatment of SAM', 'Vitamin A supplementation',
-                           'Zinc for treatment + ORS', 'Oral rehydration salts',
-                           'Long-lasting insecticide-treated bednets', 'IPTp'],
-                           # ['Balanced energy-protein supplementation',
-                           # 'IYCF 1', 'IFAS for pregnant women (community)',
-                           # 'IFAS for pregnant women (health facility)', 'Public provision of complementary foods',
-                           # 'Management of MAM', 'Kangaroo mother care',
-                           # 'Multiple micronutrient supplementation', 'Micronutrient powders', 'Kangaroo mother care',
-                           # 'Treatment of SAM', 'Vitamin A supplementation',
-                           # 'Long-lasting insecticide-treated bednets', 'IPTp'],
+                                   # 'Minimize the number of child deaths': 1}),
+              'prog_set': ['Balanced energy-protein supplementation', 'IYCF 1', 'IYCF 2',
+                           'Kangaroo mother care', 'Public provision of complementary foods','Vitamin A supplementation'],
+                           # 'Management of MAM', 'Treatment of SAM',
+                           # 'IFAS (community)',
+                           # 'IFAS for pregnant women (community)',
+                           # 'IFAS for pregnant women (health facility)',
+                           # 'Long-lasting insecticide-treated bednets', 'IPTp',
+                           # 'Multiple micronutrient supplementation',
+                           # #'Zinc for treatment + ORS', 'Oral rehydration salts',
+                           # ],
+
               'fix_curr': False,
               'add_funds': 0
               }
 
     p.add_optims(Optim(**kwargs))
-    results = p.run_optim(maxiter=5, swarmsize=5, maxtime=5, parallel=False)
+    results = p.run_optim(maxiter=25, swarmsize=25, maxtime=500, parallel=False)
 
     return(p)
 
@@ -93,8 +97,8 @@ if __name__ == '__main__':
         int_list = proj_list[q].results[0][1].programs.keys()
         optim_budgets[country] = sc.odict()
         p_bounds.load_data(inputspath=input_path + country + '_input.xlsx', name=country + '_point', time_trend=True)
-        p_bounds.load_data(inputspath=input_path + 'LB/' + country + '_input.xlsx', name=country + '_LB',time_trend=True)
-        p_bounds.load_data(inputspath=input_path + 'UB/' + country + '_input.xlsx', name=country + '_UB',time_trend=True)
+        p_bounds.load_data(inputspath=input_path + '' + country + '_input.xlsx', name=country + '_LB',time_trend=True)
+        p_bounds.load_data(inputspath=input_path + '' + country + '_input.xlsx', name=country + '_UB',time_trend=True)
 
         for j in range(len(proj_list[q].results[0])): # number of scenarios
             scen_name = proj_list[q].results[0][j].name
