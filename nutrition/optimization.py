@@ -143,7 +143,7 @@ class Optim(sc.prettyobj):
             opt_result = sc.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=2, maxtime=maxtime)
             x = opt_result.x
             self.print_status(x, mult, opt_result.exitreason, now)
-            scaled = utils.scale_end_alloc(free, x, model.prog_info, inds) # scales spending to fit budget, limited by saturation and any program coverage dependencies
+            scaled = utils.scale_end_alloc(free, x, model.prog_info, inds, fixed) # scales spending to fit budget, limited by saturation and any program coverage dependencies
             inds = np.append(inds, True)
             fixed = np.append(fixed, 0.0)
             excess_spend = {'name': 'Excess budget not allocated',

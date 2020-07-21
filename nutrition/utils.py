@@ -200,7 +200,7 @@ def scale_alloc(free, allocation):
         scaled_alloc = allocation * scale
     return scaled_alloc
 
-def scale_end_alloc(free, allocation, prog_info, inds):
+def scale_end_alloc(free, allocation, prog_info, inds, fixed):
     """
     Scales up spending allocations, limited by program coverage saturation and dependencies on other program coverages.
     :param free: total budget which can be allocated
@@ -215,7 +215,7 @@ def scale_end_alloc(free, allocation, prog_info, inds):
     else:
         scale = free / new
         scaled_alloc = allocation * scale
-    max_allocation = get_max_spend(prog_info, inds, allocation)
+    max_allocation = get_max_spend(prog_info, inds, allocation, fixed)
     excess = 0
     over_count = 0
     for a, alloc in enumerate(scaled_alloc):
@@ -237,7 +237,7 @@ def scale_end_alloc(free, allocation, prog_info, inds):
                 excess += alloc - max_allocation[a]
                 scaled_alloc[a] = max_allocation[a]
                 over_count += 1
-        max_allocation = get_max_spend(prog_info, inds, scaled_alloc)
+        max_allocation = get_max_spend(prog_info, inds, scaled_alloc, fixed)
     if excess > 1e-3:
         scaled_alloc = np.append(scaled_alloc, excess)
     else:
@@ -245,7 +245,7 @@ def scale_end_alloc(free, allocation, prog_info, inds):
 
     return scaled_alloc
 
-def get_max_spend(prog_info, keep_inds, curr_spends):
+def get_max_spend(prog_info, keep_inds, curr_spends, fixed):
     """
     Checks if current spending allocations are above saturation or should be limited by dependency.
     :param prog_info: a program information object from a relevant model instance to pull costcov data from
@@ -256,26 +256,33 @@ def get_max_spend(prog_info, keep_inds, curr_spends):
     rel_progs = sc.dcp(prog_info)
     max_spends = np.zeros(np.sum(keep_inds))
     keep_progs = [prog for p, prog in enumerate(rel_progs.programs) if keep_inds[p]]
-    excl_progs = [prog.name for prog in rel_progs.exclusionOrder]
+    excl_progs = [prog.excl_deps[0] for prog in rel_progs.exclusionOrder]
     for p, prog in enumerate(keep_progs):
         max_covs = np.ones(np.sum(keep_inds))
         trigger = True
         if prog in excl_progs: # if program excludes coverage of other programs, limit its spending scaleup
             curr_covs = rel_progs.programs[prog].func(np.array([curr_spends[p]]))
-            max_covs *= min(curr_covs[0], rel_progs.programs[prog].sat)
+            max_covs *= max(curr_covs[0], rel_progs.programs[prog].sat)
+            cpy_covs = sc.dcp(max_covs) # this needs to be here because max_covs gets overwritten in the next step for no apparent reason...
             max_spends[p] = rel_progs.programs[prog].get_spending(max_covs)[0]
+            for ex_prog in rel_progs.exclusionOrder:
+                if prog in ex_prog.excl_deps and p > keep_progs.index(ex_prog.name):
+                    max_covs_ex = np.ones(np.sum(keep_inds))
+                    max_covs_ex *= min(1.0 - cpy_covs[0], rel_progs.programs[ex_prog.name].sat)
+                    max_spends[keep_progs.index(ex_prog.name)] = rel_progs.programs[ex_prog.name].get_spending(max_covs_ex)[0]
+                    trigger = False
         else:
             for excl_prog in rel_progs.exclusionOrder:
-                if prog in excl_prog.excl_deps and excl_prog.name in keep_progs:
-                    curr_covs = rel_progs.programs[excl_prog.name].func(np.array([curr_spends[keep_progs.index(excl_prog.name)]]))
+                if prog == excl_prog.name:
+                    curr_covs = rel_progs.programs[excl_prog.excl_deps[0]].func(np.array([curr_spends[keep_progs.index(excl_prog.excl_deps[0])]]))
                     max_covs *= min(1.0 - curr_covs[0], rel_progs.programs[prog].sat)
                     max_spends[p] = rel_progs.programs[prog].get_spending(max_covs)[0]
                     trigger = False
                 else:
                     pass
             for thresh_prog in rel_progs.thresholdOrder:
-                if prog in thresh_prog.thresh_deps and thresh_prog.name in keep_progs:
-                    curr_covs = rel_progs.programs[thresh_prog.name].func(np.array([curr_spends[keep_progs.index(thresh_prog.name)]]))
+                if prog == thresh_prog.name:
+                    curr_covs = rel_progs.programs[thresh_prog.thresh_deps[0]].func(np.array([curr_spends[keep_progs.index(thresh_prog.thresh_deps[0])]]))
                     max_covs *= curr_covs[0]
                     max_spends[p] = rel_progs.programs[prog].get_spending(max_covs)[0]
                     trigger = False
@@ -288,6 +295,10 @@ def get_max_spend(prog_info, keep_inds, curr_spends):
             if trigger:
                 max_covs *= rel_progs.programs[prog].sat
                 max_spends[p] = rel_progs.programs[prog].get_spending(max_covs)[0]
+        if max_spends[p] - fixed[p] >= 0:
+            max_spends[p] -= fixed[p]
+        else:
+            max_spends[p] = 0
     return max_spends
 
 def add_fixed_alloc(fixed, alloc, indx):
