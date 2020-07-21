@@ -262,20 +262,21 @@ def get_max_spend(prog_info, keep_inds, curr_spends, fixed):
         trigger = True
         if prog in excl_progs: # if program excludes coverage of other programs, limit its spending scaleup
             curr_covs = rel_progs.programs[prog].func(np.array([curr_spends[p]]))
-            max_covs *= max(curr_covs[0], rel_progs.programs[prog].sat)
+            max_covs *= 0.95#max(curr_covs[0], rel_progs.programs[prog].sat)
             cpy_covs = sc.dcp(max_covs) # this needs to be here because max_covs gets overwritten in the next step for no apparent reason...
             max_spends[p] = rel_progs.programs[prog].get_spending(max_covs)[0]
             for ex_prog in rel_progs.exclusionOrder:
                 if prog in ex_prog.excl_deps and p > keep_progs.index(ex_prog.name):
                     max_covs_ex = np.ones(np.sum(keep_inds))
-                    max_covs_ex *= min(1.0 - cpy_covs[0], rel_progs.programs[ex_prog.name].sat)
+                    max_covs_ex *= 0.05 #min(1.0 - cpy_covs[0], rel_progs.programs[ex_prog.name].sat)
                     max_spends[keep_progs.index(ex_prog.name)] = rel_progs.programs[ex_prog.name].get_spending(max_covs_ex)[0]
                     trigger = False
+                    del(max_covs_ex)
         else:
             for excl_prog in rel_progs.exclusionOrder:
                 if prog == excl_prog.name:
-                    curr_covs = rel_progs.programs[excl_prog.excl_deps[0]].func(np.array([curr_spends[keep_progs.index(excl_prog.excl_deps[0])]]))
-                    max_covs *= min(1.0 - curr_covs[0], rel_progs.programs[prog].sat)
+                    curr_covs = rel_progs.programs[excl_prog.excl_deps[0]].func(np.array([max_spends[keep_progs.index(excl_prog.excl_deps[0])]]))
+                    max_covs *= 0.05#min(1.0 - curr_covs[0], rel_progs.programs[prog].sat)
                     max_spends[p] = rel_progs.programs[prog].get_spending(max_covs)[0]
                     trigger = False
                 else:

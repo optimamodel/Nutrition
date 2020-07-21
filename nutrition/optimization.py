@@ -160,7 +160,7 @@ class Optim(sc.prettyobj):
         name = '%s (x%s)' % (self.name, mult)
         progvals = {prog:spend for prog, spend in zip(self.prog_set, best_alloc)}
         scen = Scen(name=name, model_name=self.model_name, scen_type='budget', progvals=progvals)
-        res = run_scen(scen, model, obj=self.name, mult=mult)
+        res = run_scen(scen, model, obj=self.name, mult=mult, restrictcovs=False)
         if 'Excess budget not allocated' in self.prog_set:
             self.prog_set.remove('Excess budget not allocated')
         return res
