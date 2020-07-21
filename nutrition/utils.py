@@ -223,7 +223,7 @@ def scale_end_alloc(free, allocation, prog_info, inds):
             excess += alloc - max_allocation[a]
             scaled_alloc[a] = max_allocation[a]
             over_count += 1
-    while excess > 0 and over_count < len(scaled_alloc):
+    while excess > 1e-3 and over_count < len(scaled_alloc):
         redistribute = excess / (len(scaled_alloc) - over_count)
         for a, alloc in enumerate(scaled_alloc):
             if alloc < max_allocation[a] - redistribute:
@@ -233,12 +233,12 @@ def scale_end_alloc(free, allocation, prog_info, inds):
                 excess -= (max_allocation[a] - alloc)
                 scaled_alloc[a] = max_allocation[a]
                 over_count += 1
-            else:
+            elif alloc > max_allocation[a]:
                 excess += alloc - max_allocation[a]
                 scaled_alloc[a] = max_allocation[a]
                 over_count += 1
         max_allocation = get_max_spend(prog_info, inds, scaled_alloc)
-    if excess > 0:
+    if excess > 1e-3:
         scaled_alloc = np.append(scaled_alloc, excess)
     else:
         scaled_alloc = np.append(scaled_alloc, 0.0)
