@@ -282,47 +282,51 @@ def get_costeff(project, results):
         childkwargs = res.get_childscens()
         childscens = make_scens(childkwargs)
         for child in childscens:
-            childres = run_scen(child, model)
-            children[res.name].append(childres)
+            if child.name != 'Excess budget':
+                if 'Excess budget not allocated' in child.prog_set:
+                    child.prog_set.remove('Excess budget not allocated')
+                childres = run_scen(child, model)
+                children[res.name].append(childres)
     outcomes = utils.default_trackers(prev=False, rate=False)
     pretty = utils.relabel(outcomes)
     costeff = sc.odict()
     for i, parent in enumerate(parents):
-        baseline = baselines[i]
-        costeff[parent.name] = sc.odict()
-        par_outs = parent.get_outputs(outcomes)
-        allocs = parent.get_allocs(ref=refprogs)
-        baseallocs = baseline.get_allocs(ref=refprogs)
-        filteredbase = sc.odict({prog:spend for prog, spend in baseallocs.items() if prog not in allocs})
-        totalspend = allocs[:].sum() + filteredbase[:].sum()
-        thesechildren = children[parent.name]
-        for j, child in enumerate(thesechildren):
-            if j > 0: # i.e. scenarios with individual scale-downs
-                # only want spending on individual program in parent scen
-                progspend = allocs[child.name]
-                totalspend = sum(progspend)
-            costeff[parent.name][child.name] = sc.odict()
-            child_outs = child.get_outputs(outcomes)
-            for k, out in enumerate(outcomes):
-                impact = par_outs[k] - child_outs[k]
-                if abs(impact) < 1 or totalspend < 1: # should only be used for number of people, not prevalence or rates
-                    # total spend < 1 will catch the scale-down of reference programs, since they will return $0 expenditure
-                    costimpact = 'No impact'
-                else:
-                    costimpact = totalspend / impact
-                    costimpact = round(costimpact, 2)
-                    # format
-                    if out == 'thrive': # thrive should increase
-                        if costimpact < 0:
-                            costimpact = 'Negative impact'
-                        else:
-                            costimpact = '$%s per additional case' % format(costimpact, ',')
-                    else: # all other outcomes should be negative
-                        if costimpact > 0:
-                            costimpact = 'Negative impact'
-                        else:
-                            costimpact = '$%s per case averted' % format(-costimpact, ',')
-                costeff[parent.name][child.name][pretty[k]] = costimpact
+        if parent.name != 'Excess budget':
+            baseline = baselines[i]
+            costeff[parent.name] = sc.odict()
+            par_outs = parent.get_outputs(outcomes)
+            allocs = parent.get_allocs(ref=refprogs)
+            baseallocs = baseline.get_allocs(ref=refprogs)
+            filteredbase = sc.odict({prog:spend for prog, spend in baseallocs.items() if prog not in allocs})
+            totalspend = allocs[:].sum() + filteredbase[:].sum()
+            thesechildren = children[parent.name]
+            for j, child in enumerate(thesechildren):
+                if j > 0: # i.e. scenarios with individual scale-downs
+                    # only want spending on individual program in parent scen
+                    progspend = allocs[child.name]
+                    totalspend = sum(progspend)
+                costeff[parent.name][child.name] = sc.odict()
+                child_outs = child.get_outputs(outcomes)
+                for k, out in enumerate(outcomes):
+                    impact = par_outs[k] - child_outs[k]
+                    if abs(impact) < 1 or totalspend < 1: # should only be used for number of people, not prevalence or rates
+                        # total spend < 1 will catch the scale-down of reference programs, since they will return $0 expenditure
+                        costimpact = 'No impact'
+                    else:
+                        costimpact = totalspend / impact
+                        costimpact = round(costimpact, 2)
+                        # format
+                        if out == 'thrive': # thrive should increase
+                            if costimpact < 0:
+                                costimpact = 'Negative impact'
+                            else:
+                                costimpact = '$%s per additional case' % format(costimpact, ',')
+                        else: # all other outcomes should be negative
+                            if costimpact > 0:
+                                costimpact = 'Negative impact'
+                            else:
+                                costimpact = '$%s per case averted' % format(-costimpact, ',')
+                    costeff[parent.name][child.name][pretty[k]] = costimpact
     return costeff
 
 def round_elements(mylist, dec=1):
