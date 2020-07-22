@@ -215,7 +215,7 @@ def scale_end_alloc(free, allocation, prog_info, inds, fixed):
     else:
         scale = free / new
         scaled_alloc = allocation * scale
-    max_allocation = get_max_spend(prog_info, inds, allocation, fixed)
+    max_allocation = get_max_spend(prog_info, inds, scaled_alloc, fixed)
     excess = 0
     over_count = 0
     for a, alloc in enumerate(scaled_alloc):
@@ -238,12 +238,22 @@ def scale_end_alloc(free, allocation, prog_info, inds, fixed):
                 scaled_alloc[a] = max_allocation[a]
                 over_count += 1
         max_allocation = get_max_spend(prog_info, inds, scaled_alloc, fixed)
+        for val in (scaled_alloc - max_allocation):
+            if val > 0:
+                over_count -= 1
+    covs, max_covs = [], []
+    prog_list = [prog_info.programs[i].name for i, ind in enumerate(inds) if ind]
+    for p, prog in enumerate(prog_list):
+        if inds[p]:
+            max_covs.append(prog_info.programs[prog].func(np.ones(1)*max_allocation[p])[0])
+            covs.append(prog_info.programs[prog].func(np.ones(1) * scaled_alloc[p])[0])
     if excess > 1e-3:
         scaled_alloc = np.append(scaled_alloc, excess)
     else:
         scaled_alloc = np.append(scaled_alloc, 0.0)
 
     return scaled_alloc
+
 
 def get_max_spend(prog_info, keep_inds, curr_spends, fixed):
     """
@@ -255,47 +265,39 @@ def get_max_spend(prog_info, keep_inds, curr_spends, fixed):
     """
     rel_progs = sc.dcp(prog_info)
     max_spends = np.zeros(np.sum(keep_inds))
+    list_max_covs = np.zeros(np.sum(keep_inds))
     keep_progs = [prog for p, prog in enumerate(rel_progs.programs) if keep_inds[p]]
-    excl_progs = [prog.excl_deps[0] for prog in rel_progs.exclusionOrder]
     for p, prog in enumerate(keep_progs):
         max_covs = np.ones(np.sum(keep_inds))
-        trigger = True
-        if prog in excl_progs: # if program excludes coverage of other programs, limit its spending scaleup
-            curr_covs = rel_progs.programs[prog].func(np.array([curr_spends[p]]))
-            max_covs *= 0.95#max(curr_covs[0], rel_progs.programs[prog].sat)
-            cpy_covs = sc.dcp(max_covs) # this needs to be here because max_covs gets overwritten in the next step for no apparent reason...
+        trigger = False
+        # threshold
+        if prog in [threshprog.name for threshprog in rel_progs.thresholdOrder]:
+            child = rel_progs.thresholdOrder[[threshprog.name for threshprog in rel_progs.thresholdOrder].index(prog)]
+            for parname in child.thresh_deps:
+                par = next(prog for prog in rel_progs.programs.values() if prog.name == parname)
+                # assuming uniform coverage across age bands, we can use the unrestricted coverage (NOT restricted)
+                maxcov_child = min(par.func(np.ones(len(rel_progs.all_years))*curr_spends[keep_progs.index(par.name)])[0]/par.sat_unrestr, child.sat) * child.sat_unrestr
+
+            trigger = True
+        # exclusion
+        if prog in [excludeprog.name for excludeprog in rel_progs.exclusionOrder]:
+            child = rel_progs.exclusionOrder[[excludeprog.name for excludeprog in rel_progs.exclusionOrder].index(prog)]
+            for parname in child.excl_deps:
+                par = next((prog for prog in rel_progs.programs.values() if prog.name == parname))
+                # assuming uniform coverage across age bands, we can use the unrestricted coverage (NOT restricted)
+                maxcov_child = min(max(1.0 - par.func(np.ones(len(rel_progs.all_years))*curr_spends[keep_progs.index(par.name)])[0]/par.sat_unrestr, 0), child.sat) * child.sat_unrestr  # if coverage of parent exceeds child sat
+
+            trigger = True
+        if trigger:
+            max_covs *= maxcov_child
+            cpy_covs = sc.dcp(max_covs)  # this needs to be here because max_covs gets overwritten in the next step for no apparent reason...
             max_spends[p] = rel_progs.programs[prog].get_spending(max_covs)[0]
-            for ex_prog in rel_progs.exclusionOrder:
-                if prog in ex_prog.excl_deps and p > keep_progs.index(ex_prog.name):
-                    max_covs_ex = np.ones(np.sum(keep_inds))
-                    max_covs_ex *= 0.05 #min(1.0 - cpy_covs[0], rel_progs.programs[ex_prog.name].sat)
-                    max_spends[keep_progs.index(ex_prog.name)] = rel_progs.programs[ex_prog.name].get_spending(max_covs_ex)[0]
-                    trigger = False
-                    del(max_covs_ex)
+            list_max_covs[p] = cpy_covs[0]
         else:
-            for excl_prog in rel_progs.exclusionOrder:
-                if prog == excl_prog.name:
-                    curr_covs = rel_progs.programs[excl_prog.excl_deps[0]].func(np.array([max_spends[keep_progs.index(excl_prog.excl_deps[0])]]))
-                    max_covs *= 0.05#min(1.0 - curr_covs[0], rel_progs.programs[prog].sat)
-                    max_spends[p] = rel_progs.programs[prog].get_spending(max_covs)[0]
-                    trigger = False
-                else:
-                    pass
-            for thresh_prog in rel_progs.thresholdOrder:
-                if prog == thresh_prog.name:
-                    curr_covs = rel_progs.programs[thresh_prog.thresh_deps[0]].func(np.array([curr_spends[keep_progs.index(thresh_prog.thresh_deps[0])]]))
-                    max_covs *= curr_covs[0]
-                    max_spends[p] = rel_progs.programs[prog].get_spending(max_covs)[0]
-                    trigger = False
-                elif prog in thresh_prog.thresh_deps and thresh_prog.name not in keep_progs:
-                    max_covs *= 0
-                    max_spends[p] = rel_progs.programs[prog].get_spending(max_covs)[0]
-                    trigger = False
-                else:
-                    pass
-            if trigger:
-                max_covs *= rel_progs.programs[prog].sat
-                max_spends[p] = rel_progs.programs[prog].get_spending(max_covs)[0]
+            max_covs *= rel_progs.programs[prog].sat
+            cpy_covs = sc.dcp(max_covs)  # this needs to be here because max_covs gets overwritten in the next step for no apparent reason...
+            max_spends[p] = rel_progs.programs[prog].get_spending(max_covs)[0]
+            list_max_covs[p] = cpy_covs[0]
         if max_spends[p] - fixed[p] >= 0:
             max_spends[p] -= fixed[p]
         else:
