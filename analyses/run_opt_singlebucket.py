@@ -23,7 +23,7 @@ def parallel_optim1(region, path=None):
         pop_size_tot += p.models[region].pops[0].popSizes[a]
     ## define custom optimization
     kwargs = {'name': region,
-              'mults': [0.7,0.85,1.0],
+              'mults': [1.0],
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 0,
                                    'thrive': 1}),
@@ -34,8 +34,7 @@ def parallel_optim1(region, path=None):
                            'IFAS for pregnant women (community)',
                            'IFAS for pregnant women (health facility)',
                            'Long-lasting insecticide-treated bednets', 'IPTp',
-                           'Multiple micronutrient supplementation',
-                           'Zinc for treatment + ORS', 'Oral rehydration salts'],
+                           'Multiple micronutrient supplementation'],
               'fix_curr': False,
               'add_funds': 0
               }
@@ -60,7 +59,7 @@ def parallel_optim2(region, path=None):
         pop_size_tot += p.models[region].pops[0].popSizes[a]
     ## define custom optimization
     kwargs = {'name': region,
-              'mults': [0.7,0.85,1.0],
+              'mults': [1.0],
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 1,
                                    'thrive': 1}),
@@ -71,8 +70,7 @@ def parallel_optim2(region, path=None):
                            'IFAS for pregnant women (community)',
                            'IFAS for pregnant women (health facility)',
                            'Long-lasting insecticide-treated bednets', 'IPTp',
-                           'Multiple micronutrient supplementation',
-                           'Zinc for treatment + ORS', 'Oral rehydration salts'],
+                           'Multiple micronutrient supplementation'],
               'fix_curr': False,
               'add_funds': 0
               }
@@ -95,7 +93,7 @@ def parallel_optim3(region, path=None):
 
     ## define custom optimization
     kwargs = {'name': region,
-              'mults': [0.7,0.85,1.0],
+              'mults': [1.0],
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 5,
                                    'thrive': 1}),
@@ -106,8 +104,7 @@ def parallel_optim3(region, path=None):
                            'IFAS for pregnant women (community)',
                            'IFAS for pregnant women (health facility)',
                            'Long-lasting insecticide-treated bednets', 'IPTp',
-                           'Multiple micronutrient supplementation',
-                           'Zinc for treatment + ORS', 'Oral rehydration salts'],
+                           'Multiple micronutrient supplementation'],
               'fix_curr': False,
               'add_funds': 0
               }
@@ -131,7 +128,7 @@ def parallel_optim4(region, path=None):
 
     ## define custom optimization
     kwargs = {'name': region,
-              'mults': [0.7,0.85,1.0],
+              'mults': [1.0],
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 10,
                                    'thrive': 1}),
@@ -142,8 +139,7 @@ def parallel_optim4(region, path=None):
                            'IFAS for pregnant women (community)',
                            'IFAS for pregnant women (health facility)',
                            'Long-lasting insecticide-treated bednets', 'IPTp',
-                           'Multiple micronutrient supplementation',
-                           'Zinc for treatment + ORS', 'Oral rehydration salts'],
+                           'Multiple micronutrient supplementation'],
               'fix_curr': False,
               'add_funds': 0
               }
@@ -166,7 +162,7 @@ def parallel_optim5(region, path=None):
 
     ## define custom optimization
     kwargs = {'name': region,
-              'mults': [0.7,0.85,1.0],
+              'mults': [1.0],
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 1,
                                    'thrive': 0}),
@@ -177,8 +173,7 @@ def parallel_optim5(region, path=None):
                            'IFAS for pregnant women (community)',
                            'IFAS for pregnant women (health facility)',
                            'Long-lasting insecticide-treated bednets', 'IPTp',
-                           'Multiple micronutrient supplementation',
-                           'Zinc for treatment + ORS', 'Oral rehydration salts'],
+                           'Multiple micronutrient supplementation'],
               'fix_curr': False,
               'add_funds': 0
               }
