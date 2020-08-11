@@ -78,7 +78,7 @@ def run_baseline_scaleup(date, data_type, scen_type, trends):
 
     # run simulation for each country
     cov = 1.0
-    '''Including nutrition sensitive interventions (IPTp, LLINs, CAsh transfers) '''
+    '''Including nutrition sensitive interventions (IPTp, LLINs, Cash transfers) '''
     progvals = sc.odict({'Balanced energy-protein supplementation': cov, 'Calcium supplementation': cov, 'Cash transfers': cov,
                         'Delayed cord clamping': cov, 'IFA fortification of maize': cov,
                         'IFAS (community)': cov,

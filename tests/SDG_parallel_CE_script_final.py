@@ -9,6 +9,10 @@ import warnings
 warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
+'''
+Last updated 20/04/2020, runs on branch SDGS-global-optimization which is based on Optima Nutrition version 1.6.5.
+'''
+
 ToDo = [
     'global CE',
     #'global bounds',

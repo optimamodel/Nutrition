@@ -3,6 +3,10 @@ sys.path.append('C:\\Users\\dominic.delport\\Documents\\GitHub\\Nutrition\\tests
 import datetime
 import run_global_baseline as rgb
 
+'''
+Last updated 20/04/2020, runs on branch SDGS-global-optimization which is based on Optima Nutrition version 1.6.5.
+'''
+
 ToDo = [
     'standard',
     #'jhe'
