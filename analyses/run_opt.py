@@ -44,7 +44,8 @@ def parallel_optim1(region, path=None):
               'mults': [total_budget_2019/total_budget_2020],
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 5,
-                                   'thrive': 1}),
+                                   'Minimize the prevalence of stunting in children': pop_size_tot,
+                                   'thrive': 0}),
               'prog_set': prog_list,
               'fix_curr': False,
               'add_funds': 0
@@ -52,7 +53,7 @@ def parallel_optim1(region, path=None):
 
     p.add_optims(Optim(**kwargs))
     results = p.run_optim(maxiter=25, swarmsize=25, maxtime=500, parallel=False)
-    # results = p.run_optim(maxiter=2, swarmsize=2, maxtime=5, parallel=False)
+    #results = p.run_optim(maxiter=2, swarmsize=2, maxtime=5, parallel=False)
 
     return(p)
 
@@ -92,7 +93,8 @@ def parallel_optim2(region, path=None):
               'mults': [total_budget_2019/total_budget_2020],
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 5,
-                                   'thrive': 1}),
+                                   'Minimize the prevalence of stunting in children': pop_size_tot,
+                                   'thrive': 0}),
               'prog_set': prog_list,
               'fix_curr': False,
               'add_funds': 0
@@ -100,7 +102,7 @@ def parallel_optim2(region, path=None):
 
     p.add_optims(Optim(**kwargs))
     results = p.run_optim(maxiter=25, swarmsize=25, maxtime=500, parallel=False)
-    #results = p.run_optim(maxiter=2, swarmsize=2, maxtime=5, parallel=False)
+    # results = p.run_optim(maxiter=2, swarmsize=2, maxtime=5, parallel=False)
 
     return(p)
 
@@ -140,7 +142,8 @@ def parallel_optim3(region, path=None):
               'mults': [total_budget_2019/total_budget_2020],
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 5,
-                                   'thrive': 1}),
+                                   'Minimize the prevalence of stunting in children': pop_size_tot,
+                                   'thrive': 0}),
               'prog_set': prog_list,
               'fix_curr': False,
               'add_funds': 0
@@ -148,27 +151,28 @@ def parallel_optim3(region, path=None):
 
     p.add_optims(Optim(**kwargs))
     results = p.run_optim(maxiter=25, swarmsize=25, maxtime=500, parallel=False)
-    #results = p.run_optim(maxiter=2, swarmsize=2, maxtime=5, parallel=False)
+    # results = p.run_optim(maxiter=2, swarmsize=2, maxtime=5, parallel=False)
 
     return(p)
 
 
 #
-country_list = ['Afghanistan', 'Albania', 'Algeria', 'Angola']#, 'Armenia', 'Azerbaijan', 'Bangladesh',
-                # 'Belarus', 'Belize', 'Benin', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana',
-                # 'Brazil', 'Burkina Faso', 'Burundi', 'Cambodia', 'Cameroon', 'Cape Verde', 'Central African Republic',
-                # 'Chad', 'Colombia', 'Comoros', 'Congo', 'Costa Rica', 'Cote d\'Ivoire', 'Cuba', 'Democratic Republic of the Congo',
-                # 'Djibouti', 'Dominican Republic', 'Ecuador', 'Egypt', 'El Salvador', 'Equatorial Guinea', 'Ethiopia', 'Gabon',
-                # 'Gambia, The', 'Georgia', 'Ghana', 'Guatemala', 'Guinea', 'Guinea-Bissau', 'Guyana', 'Haiti',
-                # 'Honduras', 'India', 'Indonesia', 'Iraq', 'Jamaica', 'Jordan', 'Kazakhstan', 'Kenya',
-                # 'Kyrgyzstan', 'Laos', 'Lesotho', 'Liberia', 'Macedonia', 'Madagascar', 'Malawi',
-                # 'Maldives', 'Mali', 'Mauritania', 'Moldova', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique',
-                # 'Myanmar', 'Namibia', 'Nepal', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'Pakistan', 'Papua New Guinea',
-                # 'Paraguay', 'Peru', 'Philippines', 'Rwanda', 'Saint Lucia', 'Samoa', 'Sao Tome and Principe', 'Senegal',
-                # 'Serbia', 'Sierra Leone', 'Solomon Islands', 'Somalia', 'South Africa', 'South Sudan', 'Sri Lanka',
-                # 'Sudan', 'Suriname', 'Syria', 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Togo',
-                # 'Tonga', 'Tunisia', 'Turkey', 'Turkmenistan', 'Uganda', 'Ukraine', 'Uzbekistan', 'Vanuatu',
-                # 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe']
+country_list = ['Afghanistan', 'Albania', 'Algeria', 'Angola', 'Armenia', 'Azerbaijan', 'Bangladesh',
+                'Belarus', 'Belize', 'Benin', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana',
+                'Brazil', 'Burkina Faso', 'Burundi', 'Cambodia', 'Cameroon', 'Cape Verde', 'Central African Republic',
+                'Chad', 'Colombia', 'Comoros', 'Congo', 'Costa Rica', 'Cote d\'Ivoire', 'Cuba', 'Democratic Republic of the Congo',
+                'Djibouti', 'Dominican Republic', 'Ecuador', 'Egypt', 'El Salvador', 'Equatorial Guinea', 'Ethiopia', 'Gabon',
+                'Gambia, The', 'Georgia', 'Ghana', 'Guatemala', 'Guinea', 'Guinea-Bissau', 'Guyana', 'Haiti',
+                'Honduras', 'India', 'Indonesia', 'Iraq', 'Jamaica', 'Jordan', 'Kazakhstan', 'Kenya',
+                'Kyrgyzstan', 'Laos', 'Lesotho', 'Liberia', 'Macedonia', 'Madagascar', 'Malawi',
+                'Maldives', 'Mali', 'Mauritania', 'Moldova', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique',
+                'Myanmar', 'Namibia', 'Nepal', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'Pakistan', 'Papua New Guinea',
+                'Paraguay', 'Peru', 'Philippines', 'Rwanda', 'Saint Lucia', 'Samoa', 'Sao Tome and Principe', 'Senegal',
+                'Serbia', 'Sierra Leone', 'Solomon Islands', 'Somalia', 'South Africa', 'South Sudan', 'Sri Lanka',
+                'Sudan', 'Suriname', 'Syria', 'Tajikistan',
+                'Tanzania', 'Thailand', 'Timor-Leste', 'Togo',
+                'Tonga', 'Tunisia', 'Turkey', 'Turkmenistan', 'Uganda', 'Ukraine', 'Uzbekistan', 'Vanuatu',
+                'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe']
 
 prog_list = ['Balanced energy-protein supplementation', 'Cash transfers',
                            'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
