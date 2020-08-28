@@ -132,7 +132,7 @@ def parallel_optim4(region, path=None):
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 10,
                                    'thrive': 1}),
-              'prog_set': ['Balanced energy-protein supplementation', 'IYCF 1', 'IYCF 2',
+              'prog_set': ['Balanced energy-protein supplementation', 'Calcium supplementation', 'IYCF 1', 'IYCF 2',
                            'Kangaroo mother care', 'Public provision of complementary foods','Vitamin A supplementation',
                            'Management of MAM', 'Treatment of SAM',
                            'IFAS (community)',
@@ -183,17 +183,22 @@ def parallel_optim5(region, path=None):
 
     return(p)
 #
-country_list = ['Afghanistan', 'Albania', 'Algeria', 'Angola', 'Armenia', 'Bangladesh', 'Belarus',
-                'Belize', 'Benin', 'Bhutan', 'Botswana', 'Burkina Faso', 'Burundi', 'Cambodia',
-                'Cameroon', 'Central African Republic', 'Chad', 'Colombia', 'Comoros', 'Congo', 'Cuba',
-                'Democratic Republic of the Congo',
-                'Dominican Republic', 'Egypt',
-                'Ethiopia', 'Gambia, The', 'Georgia', 'Ghana', 'Guinea',
-                'Haiti', 'India', 'Iraq', 'Jordan', 'Kazakhstan', 'Kenya', 'Kyrgyzstan', 'Laos', 'Lesotho',
-                'Malawi', 'Maldives', 'Mali', 'Mauritania', 'Mongolia', 'Montenegro', 'Mozambique', 'Myanmar', 'Nepal', 'Nigeria',
-                'North Korea', 'Pakistan', 'Papua New Guinea', 'Sierra Leone', 'Paraguay','Peru', 'Philippines', 'Senegal', 'South Africa', 'Sri Lanka',
-                'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Tunisia', 'Turkmenistan',
-                'Uganda', 'Zambia', 'Zimbabwe']
+country_list = ['Afghanistan']#, 'Albania', 'Algeria', 'Angola', 'Armenia', 'Azerbaijan', 'Bangladesh',
+                # 'Belarus', 'Belize', 'Benin', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana',
+                # 'Brazil', 'Burkina Faso', 'Burundi', 'Cambodia', 'Cameroon', 'Cape Verde', 'Central African Republic',
+                # 'Chad', 'Colombia', 'Comoros', 'Congo', 'Costa Rica', 'Cote d\'Ivoire', 'Cuba', 'Democratic Republic of the Congo',
+                # 'Djibouti', 'Dominican Republic', 'Ecuador', 'Egypt', 'El Salvador', 'Equatorial Guinea', 'Ethiopia', 'Gabon',
+                # 'Gambia, The', 'Georgia', 'Ghana', 'Guatemala', 'Guinea', 'Guinea-Bissau', 'Guyana', 'Haiti',
+                # 'Honduras', 'India', 'Indonesia', 'Iraq', 'Jamaica', 'Jordan', 'Kazakhstan', 'Kenya',
+                # 'Kyrgyzstan', 'Laos', 'Lesotho', 'Liberia', 'Macedonia', 'Madagascar', 'Malawi',
+                # 'Maldives', 'Mali', 'Mauritania', 'Moldova', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique',
+                # 'Myanmar', 'Namibia', 'Nepal', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'Pakistan', 'Papua New Guinea',
+                # 'Paraguay', 'Peru', 'Philippines', 'Rwanda', 'Saint Lucia', 'Samoa', 'Sao Tome and Principe', 'Senegal',
+                # 'Serbia', 'Sierra Leone', 'Solomon Islands', 'Somalia', 'South Africa', 'South Sudan', 'Sri Lanka',
+                # 'Sudan', 'Suriname', 'Syria', 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Togo',
+                # 'Tonga', 'Tunisia', 'Turkey', 'Turkmenistan', 'Uganda', 'Ukraine', 'Uzbekistan', 'Vanuatu',
+                # 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe']
+
 
 
 dirname = os.path.dirname(__file__)

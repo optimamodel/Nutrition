@@ -32,7 +32,7 @@ def parallel_optim(region, path=None):
                                    # 'Minimize the number of wasted children': 2.91,
                                    # 'Minimize the number of child deaths': 1}),
               'prog_set': ['Balanced energy-protein supplementation', 'IYCF 1', 'IYCF 2',
-                           'Kangaroo mother care', 'Public provision of complementary foods','Vitamin A supplementation'],
+                           'Kangaroo mother care', 'Public provision of complementary foods','Vitamin A supplementation',
                            'Management of MAM', 'Treatment of SAM',
                            'IFAS (community)',
                            'IFAS for pregnant women (community)',
@@ -47,7 +47,7 @@ def parallel_optim(region, path=None):
               }
 
     p.add_optims(Optim(**kwargs))
-    results = p.run_optim(maxiter=25, swarmsize=25, maxtime=500, parallel=False)
+    results = p.run_optim(maxiter=2, swarmsize=2, maxtime=5, parallel=False)
 
     return(p)
 
