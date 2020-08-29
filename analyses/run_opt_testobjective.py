@@ -93,8 +93,10 @@ def parallel_optim3(region, path=None):
     p = Project('WHA optimisation')
     p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=False)
 
-    total_PW = sum(p.models[region].pops[1].popSizes)
-    total_non_PW = sum(p.models[region].pops[2].popSizes)
+    age_labels = p.models[region].pops[0].popSizes.keys()
+    pop_size_tot = 0
+    for a in age_labels:  # get total number of stunted and wasted children for objective weights
+        pop_size_tot += p.models[region].pops[0].popSizes[a]
 
     ## define custom optimization
     kwargs = {'name': region,
@@ -130,8 +132,10 @@ def parallel_optim4(region, path=None):
     p = Project('WHA optimisation')
     p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=False)
 
-    total_PW = sum(p.models[region].pops[1].popSizes)
-    total_non_PW = sum(p.models[region].pops[2].popSizes)
+    age_labels = p.models[region].pops[0].popSizes.keys()
+    pop_size_tot = 0
+    for a in age_labels:  # get total number of stunted and wasted children for objective weights
+        pop_size_tot += p.models[region].pops[0].popSizes[a]
 
     ## define custom optimization
     kwargs = {'name': region,
