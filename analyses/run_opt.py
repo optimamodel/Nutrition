@@ -42,7 +42,7 @@ def parallel_optim1(region, path=None):
         pop_size_tot += p.models[region].pops[0].popSizes[a]
     ## define custom optimization
     kwargs = {'name': region,
-              'mults': [total_budget_2019/total_budget_2020],
+              'mults': [0.8 * total_budget_2019/total_budget_2020],
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 5,
                                    'Minimize the prevalence of stunting in children': pop_size_tot,
@@ -53,8 +53,8 @@ def parallel_optim1(region, path=None):
               }
 
     p.add_optims(Optim(**kwargs))
-    # results = p.run_optim(maxiter=25, swarmsize=25, maxtime=500, parallel=False)
-    results = p.run_optim(maxiter=2, swarmsize=2, maxtime=5, parallel=False)
+    results = p.run_optim(maxiter=25, swarmsize=25, maxtime=500, parallel=False)
+    # results = p.run_optim(maxiter=2, swarmsize=2, maxtime=5, parallel=False)
 
     return(p)
 
@@ -92,7 +92,7 @@ def parallel_optim2(region, path=None):
         pop_size_tot += p.models[region].pops[0].popSizes[a]
     ## define custom optimization
     kwargs = {'name': region,
-              'mults': [total_budget_2019/total_budget_2020],
+              'mults': [0.9 * total_budget_2019/total_budget_2020],
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 5,
                                    'Minimize the prevalence of stunting in children': pop_size_tot,
@@ -103,8 +103,8 @@ def parallel_optim2(region, path=None):
               }
 
     p.add_optims(Optim(**kwargs))
-    #results = p.run_optim(maxiter=25, swarmsize=25, maxtime=500, parallel=False)
-    results = p.run_optim(maxiter=2, swarmsize=2, maxtime=5, parallel=False)
+    results = p.run_optim(maxiter=25, swarmsize=25, maxtime=500, parallel=False)
+    # results = p.run_optim(maxiter=2, swarmsize=2, maxtime=5, parallel=False)
 
     return(p)
 
@@ -153,8 +153,8 @@ def parallel_optim3(region, path=None):
               }
 
     p.add_optims(Optim(**kwargs))
-    # results = p.run_optim(maxiter=25, swarmsize=25, maxtime=500, parallel=False)
-    results = p.run_optim(maxiter=2, swarmsize=2, maxtime=5, parallel=False)
+    results = p.run_optim(maxiter=25, swarmsize=25, maxtime=500, parallel=False)
+    #results = p.run_optim(maxiter=2, swarmsize=2, maxtime=5, parallel=False)
 
     return(p)
 
@@ -201,9 +201,9 @@ if __name__ == '__main__':
     run_optim2 = partial(parallel_optim2, path=input_path_pes)
     run_optim3 = partial(parallel_optim3, path=input_path_opt)
     results = []
-    # proj_list1 = run_parallel(run_optim1, country_list, num_procs=n_processors)
-    # proj_list2 = run_parallel(run_optim2, country_list, num_procs=n_processors)
-    # proj_list3 = run_parallel(run_optim3, country_list, num_procs=n_processors)
+    proj_list1 = run_parallel(run_optim1, country_list, num_procs=n_processors)
+    proj_list2 = run_parallel(run_optim2, country_list, num_procs=n_processors)
+    proj_list3 = run_parallel(run_optim3, country_list, num_procs=n_processors)
 
 
     b = Project('Baseline2019')
@@ -256,30 +256,30 @@ if __name__ == '__main__':
         for scenres in b_trend.results[res]:
             scenres.name = scenres.model_name + ' Baseline 2019'
             results.append(scenres)
-    # for p in proj_list1:
-    #     for res in p.results:
-    #         for scenres in p.results[res]:
-    #             if scenres.name == 'Baseline':
-    #                 scenres.name = scenres.model_name + ' Baseline med'
-    #             else:
-    #                 scenres.name = scenres.model_name + ' Optimized med'
-    #             results.append(scenres)
-    # for p in proj_list2:
-    #     for res in p.results:
-    #         for scenres in p.results[res]:
-    #             if scenres.name == 'Baseline':
-    #                 scenres.name = scenres.model_name + ' Baseline pes'
-    #             else:
-    #                 scenres.name = scenres.model_name + ' Optimized pes'
-    #             results.append(scenres)
-    # for p in proj_list3:
-    #     for res in p.results:
-    #         for scenres in p.results[res]:
-    #             if scenres.name == 'Baseline':
-    #                 scenres.name = scenres.model_name + ' Baseline opt'
-    #             else:
-    #                 scenres.name = scenres.model_name + ' Optimized opt'
-    #             results.append(scenres)
+    for p in proj_list1:
+        for res in p.results:
+            for scenres in p.results[res]:
+                if scenres.name == 'Baseline':
+                    scenres.name = scenres.model_name + ' Baseline med'
+                else:
+                    scenres.name = scenres.model_name + ' Optimized med'
+                results.append(scenres)
+    for p in proj_list2:
+        for res in p.results:
+            for scenres in p.results[res]:
+                if scenres.name == 'Baseline':
+                    scenres.name = scenres.model_name + ' Baseline pes'
+                else:
+                    scenres.name = scenres.model_name + ' Optimized pes'
+                results.append(scenres)
+    for p in proj_list3:
+        for res in p.results:
+            for scenres in p.results[res]:
+                if scenres.name == 'Baseline':
+                    scenres.name = scenres.model_name + ' Baseline opt'
+                else:
+                    scenres.name = scenres.model_name + ' Optimized opt'
+                results.append(scenres)
 
     #write_results(results2019, filename=output_path + 'projection_from_2019.xlsx')
     write_results(results, filename=output_path + 'projection_from_2020.xlsx')
