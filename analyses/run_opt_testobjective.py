@@ -13,9 +13,10 @@ def parallel_optim1(region, path=None):
     import warnings
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
 
     p = Project('WHA optimisation')
-    p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=True)
+    p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=False)
 
     age_labels = p.models[region].pops[0].popSizes.keys()
     pop_size_tot = 0
@@ -50,9 +51,10 @@ def parallel_optim2(region, path=None):
     import warnings
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
 
     p = Project('WHA optimisation')
-    p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=True)
+    p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=False)
 
     age_labels = p.models[region].pops[0].popSizes.keys()
     pop_size_tot = 0
@@ -86,9 +88,10 @@ def parallel_optim3(region, path=None):
     import warnings
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
 
     p = Project('WHA optimisation')
-    p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=True)
+    p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=False)
 
     total_PW = sum(p.models[region].pops[1].popSizes)
     total_non_PW = sum(p.models[region].pops[2].popSizes)
@@ -122,9 +125,10 @@ def parallel_optim4(region, path=None):
     import warnings
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
 
     p = Project('WHA optimisation')
-    p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=True)
+    p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=False)
 
     total_PW = sum(p.models[region].pops[1].popSizes)
     total_non_PW = sum(p.models[region].pops[2].popSizes)
@@ -157,9 +161,10 @@ def parallel_optim5(region, path=None):
     import warnings
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
 
     p = Project('WHA optimisation')
-    p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=True)
+    p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=False)
 
     total_PW = sum(p.models[region].pops[1].popSizes)
     total_non_PW = sum(p.models[region].pops[2].popSizes)

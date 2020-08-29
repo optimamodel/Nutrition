@@ -13,6 +13,7 @@ def parallel_optim1(region, path=None):
     import warnings
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
     prog_list = ['Balanced energy-protein supplementation', 'Cash transfers',
                  'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                  'Public provision of complementary foods', 'Vitamin A supplementation',
@@ -21,16 +22,16 @@ def parallel_optim1(region, path=None):
                  'Oral rehydration salts', 'Zinc for treatment + ORS', 'IPTp',
                  'Multiple micronutrient supplementation']
     p0 = Project('Budget')
-    p0.load_data(inputspath='C:/Users/nick.scott/Desktop/Github/Nutrition/analyses/inputs/Medium 2019 base/' + region + '_input.xlsx', name=region, time_trend=True)
-    total_budget_2019 = 0
+    p0.load_data(inputspath='C:/Users/nick.scott/Desktop/Github/Nutrition/analyses/inputs/Medium 2019 base/' + region + '_input.xlsx', name=region, time_trend=False)
+    total_budget_2019 = 0.0
     for prog in prog_list:
         if prog in p0.models[region].prog_info.programs.keys():
             total_budget_2019 += p0.models[region].prog_info.programs[prog].annual_spend[0]
 
 
     p = Project('pes 2021 opt')
-    p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=True)
-    total_budget_2020 = 0
+    p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=False)
+    total_budget_2020 = 0.0
     for prog in prog_list:
         if prog in p.models[region].prog_info.programs.keys():
             total_budget_2020 += p.models[region].prog_info.programs[prog].annual_spend[0]
@@ -53,7 +54,7 @@ def parallel_optim1(region, path=None):
 
     p.add_optims(Optim(**kwargs))
     results = p.run_optim(maxiter=25, swarmsize=25, maxtime=500, parallel=False)
-    #results = p.run_optim(maxiter=2, swarmsize=2, maxtime=5, parallel=False)
+    # results = p.run_optim(maxiter=2, swarmsize=2, maxtime=5, parallel=False)
 
     return(p)
 
@@ -62,6 +63,7 @@ def parallel_optim2(region, path=None):
     import warnings
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
     prog_list = ['Balanced energy-protein supplementation', 'Cash transfers',
                  'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                  'Public provision of complementary foods', 'Vitamin A supplementation',
@@ -72,15 +74,15 @@ def parallel_optim2(region, path=None):
     p0 = Project('Budget')
     p0.load_data(
         inputspath='C:/Users/nick.scott/Desktop/Github/Nutrition/analyses/inputs/Medium 2019 base/' + region + '_input.xlsx',
-        name=region, time_trend=True)
-    total_budget_2019 = 0
+        name=region, time_trend=False)
+    total_budget_2019 = 0.0
     for prog in prog_list:
         if prog in p0.models[region].prog_info.programs.keys():
             total_budget_2019 += p0.models[region].prog_info.programs[prog].annual_spend[0]
 
     p = Project('med 2021 opt')
-    p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=True)
-    total_budget_2020 = 0
+    p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=False)
+    total_budget_2020 = 0.0
     for prog in prog_list:
         if prog in p.models[region].prog_info.programs.keys():
             total_budget_2020 += p.models[region].prog_info.programs[prog].annual_spend[0]
@@ -111,6 +113,7 @@ def parallel_optim3(region, path=None):
     import warnings
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
     prog_list = ['Balanced energy-protein supplementation', 'Cash transfers',
                  'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                  'Public provision of complementary foods', 'Vitamin A supplementation',
@@ -121,15 +124,15 @@ def parallel_optim3(region, path=None):
     p0 = Project('Budget')
     p0.load_data(
         inputspath='C:/Users/nick.scott/Desktop/Github/Nutrition/analyses/inputs/Medium 2019 base/' + region + '_input.xlsx',
-        name=region, time_trend=True)
-    total_budget_2019 = 0
+        name=region, time_trend=False)
+    total_budget_2019 = 0.0
     for prog in prog_list:
         if prog in p0.models[region].prog_info.programs.keys():
             total_budget_2019 += p0.models[region].prog_info.programs[prog].annual_spend[0]
 
     p = Project('opt 2021 opt')
-    p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=True)
-    total_budget_2020 = 0
+    p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=False)
+    total_budget_2020 = 0.0
     for prog in prog_list:
         if prog in p.models[region].prog_info.programs.keys():
             total_budget_2020 += p.models[region].prog_info.programs[prog].annual_spend[0]
@@ -151,7 +154,7 @@ def parallel_optim3(region, path=None):
 
     p.add_optims(Optim(**kwargs))
     results = p.run_optim(maxiter=25, swarmsize=25, maxtime=500, parallel=False)
-    # results = p.run_optim(maxiter=2, swarmsize=2, maxtime=5, parallel=False)
+    #results = p.run_optim(maxiter=2, swarmsize=2, maxtime=5, parallel=False)
 
     return(p)
 
@@ -169,8 +172,7 @@ country_list = ['Afghanistan', 'Albania', 'Algeria', 'Angola', 'Armenia', 'Azerb
                 'Myanmar', 'Namibia', 'Nepal', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'Pakistan', 'Papua New Guinea',
                 'Paraguay', 'Peru', 'Philippines', 'Rwanda', 'Saint Lucia', 'Samoa', 'Sao Tome and Principe', 'Senegal',
                 'Serbia', 'Sierra Leone', 'Solomon Islands', 'Somalia', 'South Africa', 'South Sudan', 'Sri Lanka',
-                'Sudan', 'Suriname', 'Syria', 'Tajikistan',
-                'Tanzania', 'Thailand', 'Timor-Leste', 'Togo',
+                'Sudan', 'Suriname', 'Syria', 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Togo',
                 'Tonga', 'Tunisia', 'Turkey', 'Turkmenistan', 'Uganda', 'Ukraine', 'Uzbekistan', 'Vanuatu',
                 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe']
 
