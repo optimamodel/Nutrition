@@ -17,7 +17,7 @@ def parallel_optim1(region, path=None):
     prog_list = ['Balanced energy-protein supplementation', 'Cash transfers',
                  'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                  'Public provision of complementary foods', 'Vitamin A supplementation',
-                 'Management of MAM', 'Treatment of SAM',
+                 'Treatment of SAM',  #'Management of MAM',
                  'IFAS (community)', 'IFAS for pregnant women (community)',
                  'Oral rehydration salts', 'Zinc for treatment + ORS', 'IPTp',
                  'Multiple micronutrient supplementation']
@@ -67,7 +67,7 @@ def parallel_optim2(region, path=None):
     prog_list = ['Balanced energy-protein supplementation', 'Cash transfers',
                  'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                  'Public provision of complementary foods', 'Vitamin A supplementation',
-                 'Management of MAM', 'Treatment of SAM',
+                 'Treatment of SAM',  #'Management of MAM',
                  'IFAS (community)', 'IFAS for pregnant women (community)',
                  'Oral rehydration salts', 'Zinc for treatment + ORS', 'IPTp',
                  'Multiple micronutrient supplementation']
@@ -117,7 +117,7 @@ def parallel_optim3(region, path=None):
     prog_list = ['Balanced energy-protein supplementation', 'Cash transfers',
                  'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                  'Public provision of complementary foods', 'Vitamin A supplementation',
-                 'Management of MAM', 'Treatment of SAM',
+                 'Treatment of SAM',  #'Management of MAM',
                  'IFAS (community)', 'IFAS for pregnant women (community)',
                  'Oral rehydration salts', 'Zinc for treatment + ORS', 'IPTp',
                  'Multiple micronutrient supplementation']
@@ -175,15 +175,15 @@ country_list = ['Afghanistan', 'Albania', 'Algeria', 'Angola', 'Armenia', 'Azerb
                 'Sudan', 'Suriname', 'Syria', 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Togo',
                 'Tonga', 'Tunisia', 'Turkey', 'Turkmenistan', 'Uganda', 'Ukraine', 'Uzbekistan', 'Vanuatu',
                 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe']
-country_list = ['Zambia']
+#country_list = ['Vanuatu','Venezuela', 'Vietnam', 'Yemen']
 
 prog_list = ['Balanced energy-protein supplementation', 'Cash transfers',
-                           'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
-                           'Public provision of complementary foods','Vitamin A supplementation',
-                           'Management of MAM', 'Treatment of SAM',
-                           'IFAS (community)', 'IFAS for pregnant women (community)',
-                            'Oral rehydration salts', 'Zinc for treatment + ORS', 'IPTp',
-                           'Multiple micronutrient supplementation'],
+                 'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
+                 'Public provision of complementary foods', 'Vitamin A supplementation',
+                 'Treatment of SAM',  #'Management of MAM',
+                 'IFAS (community)', 'IFAS for pregnant women (community)',
+                 'Oral rehydration salts', 'Zinc for treatment + ORS', 'IPTp',
+                 'Multiple micronutrient supplementation']
 
 dirname = os.path.dirname(__file__)
 input_path_med = dirname + '/inputs/Medium 2020 base/'
@@ -201,9 +201,9 @@ if __name__ == '__main__':
     run_optim2 = partial(parallel_optim2, path=input_path_pes)
     run_optim3 = partial(parallel_optim3, path=input_path_opt)
     results = []
-    proj_list1 = run_parallel(run_optim1, country_list, num_procs=n_processors)
-    proj_list2 = run_parallel(run_optim2, country_list, num_procs=n_processors)
-    proj_list3 = run_parallel(run_optim3, country_list, num_procs=n_processors)
+    # proj_list1 = run_parallel(run_optim1, country_list, num_procs=n_processors)
+    # proj_list2 = run_parallel(run_optim2, country_list, num_procs=n_processors)
+    # proj_list3 = run_parallel(run_optim3, country_list, num_procs=n_processors)
 
 
     b = Project('Baseline2019')
@@ -219,14 +219,15 @@ if __name__ == '__main__':
                                         'Cash transfers': [],
                            'IYCF 1': [], 'IYCF 2': [], 'Kangaroo mother care': [],
                            'Public provision of complementary foods': [],'Vitamin A supplementation': [],
-                           'Management of MAM': [], 'Treatment of SAM': [], 'IFAS for pregnant women (community)': [],
+                           #'Management of MAM': [],
+                           'Treatment of SAM': [], 'IFAS for pregnant women (community)': [],
                            'IFAS (community)': [], 'Oral rehydration salts': [], 'Zinc for treatment + ORS': [], 'IPTp': [],
                            'Multiple micronutrient supplementation': []})}
         b.add_scens(Scen(**kwargs))
     b.run_scens()
     for c in range(len(country_list)):
         region = country_list[c]
-        b_trend.load_data(inputspath=input_path_noCOVID + region + '_input.xlsx', name=region, time_trend=True)
+        b_trend.load_data(inputspath=input_path_noCOVID + region + '_input.xlsx', name=region, time_trend=False)
         kwargs = {'name': region,
                   'model_name': region,
                   'scen_type': 'coverage',
@@ -234,7 +235,8 @@ if __name__ == '__main__':
                                         'Cash transfers': [],
                            'IYCF 1': [], 'IYCF 2': [], 'Kangaroo mother care': [],
                            'Public provision of complementary foods': [],'Vitamin A supplementation': [],
-                           'Management of MAM': [], 'Treatment of SAM': [],'IFAS for pregnant women (community)': [],
+                           #'Management of MAM': [],
+                           'Treatment of SAM': [], 'IFAS for pregnant women (community)': [],
                            'IFAS (community)': [], 'Oral rehydration salts': [], 'Zinc for treatment + ORS': [], 'IPTp': [],
                            'Multiple micronutrient supplementation': []})}
         b_trend.add_scens(Scen(**kwargs))
@@ -254,30 +256,30 @@ if __name__ == '__main__':
         for scenres in b_trend.results[res]:
             scenres.name = scenres.model_name + ' Baseline 2019'
             results.append(scenres)
-    for p in proj_list1:
-        for res in p.results:
-            for scenres in p.results[res]:
-                if scenres.name == 'Baseline':
-                    scenres.name = scenres.model_name + ' Baseline med'
-                else:
-                    scenres.name = scenres.model_name + ' Optimized med'
-                results.append(scenres)
-    for p in proj_list2:
-        for res in p.results:
-            for scenres in p.results[res]:
-                if scenres.name == 'Baseline':
-                    scenres.name = scenres.model_name + ' Baseline pes'
-                else:
-                    scenres.name = scenres.model_name + ' Optimized pes'
-                results.append(scenres)
-    for p in proj_list3:
-        for res in p.results:
-            for scenres in p.results[res]:
-                if scenres.name == 'Baseline':
-                    scenres.name = scenres.model_name + ' Baseline opt'
-                else:
-                    scenres.name = scenres.model_name + ' Optimized opt'
-                results.append(scenres)
+    # for p in proj_list1:
+    #     for res in p.results:
+    #         for scenres in p.results[res]:
+    #             if scenres.name == 'Baseline':
+    #                 scenres.name = scenres.model_name + ' Baseline med'
+    #             else:
+    #                 scenres.name = scenres.model_name + ' Optimized med'
+    #             results.append(scenres)
+    # for p in proj_list2:
+    #     for res in p.results:
+    #         for scenres in p.results[res]:
+    #             if scenres.name == 'Baseline':
+    #                 scenres.name = scenres.model_name + ' Baseline pes'
+    #             else:
+    #                 scenres.name = scenres.model_name + ' Optimized pes'
+    #             results.append(scenres)
+    # for p in proj_list3:
+    #     for res in p.results:
+    #         for scenres in p.results[res]:
+    #             if scenres.name == 'Baseline':
+    #                 scenres.name = scenres.model_name + ' Baseline opt'
+    #             else:
+    #                 scenres.name = scenres.model_name + ' Optimized opt'
+    #             results.append(scenres)
 
     #write_results(results2019, filename=output_path + 'projection_from_2019.xlsx')
     write_results(results, filename=output_path + 'projection_from_2020.xlsx')
