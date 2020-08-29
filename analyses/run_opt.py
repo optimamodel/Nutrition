@@ -53,8 +53,8 @@ def parallel_optim1(region, path=None):
               }
 
     p.add_optims(Optim(**kwargs))
-    results = p.run_optim(maxiter=25, swarmsize=25, maxtime=500, parallel=False)
-    # results = p.run_optim(maxiter=2, swarmsize=2, maxtime=5, parallel=False)
+    # results = p.run_optim(maxiter=25, swarmsize=25, maxtime=500, parallel=False)
+    results = p.run_optim(maxiter=2, swarmsize=2, maxtime=5, parallel=False)
 
     return(p)
 
@@ -103,8 +103,8 @@ def parallel_optim2(region, path=None):
               }
 
     p.add_optims(Optim(**kwargs))
-    results = p.run_optim(maxiter=25, swarmsize=25, maxtime=500, parallel=False)
-    # results = p.run_optim(maxiter=2, swarmsize=2, maxtime=5, parallel=False)
+    #results = p.run_optim(maxiter=25, swarmsize=25, maxtime=500, parallel=False)
+    results = p.run_optim(maxiter=2, swarmsize=2, maxtime=5, parallel=False)
 
     return(p)
 
@@ -153,8 +153,8 @@ def parallel_optim3(region, path=None):
               }
 
     p.add_optims(Optim(**kwargs))
-    results = p.run_optim(maxiter=25, swarmsize=25, maxtime=500, parallel=False)
-    #results = p.run_optim(maxiter=2, swarmsize=2, maxtime=5, parallel=False)
+    # results = p.run_optim(maxiter=25, swarmsize=25, maxtime=500, parallel=False)
+    results = p.run_optim(maxiter=2, swarmsize=2, maxtime=5, parallel=False)
 
     return(p)
 
@@ -175,6 +175,7 @@ country_list = ['Afghanistan', 'Albania', 'Algeria', 'Angola', 'Armenia', 'Azerb
                 'Sudan', 'Suriname', 'Syria', 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Togo',
                 'Tonga', 'Tunisia', 'Turkey', 'Turkmenistan', 'Uganda', 'Ukraine', 'Uzbekistan', 'Vanuatu',
                 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe']
+country_list = ['Zambia']
 
 prog_list = ['Balanced energy-protein supplementation', 'Cash transfers',
                            'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
