@@ -17,10 +17,9 @@ def parallel_optim1(region, path=None):
     prog_list = ['Balanced energy-protein supplementation', 'Cash transfers',
                  'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                  'Public provision of complementary foods', 'Vitamin A supplementation',
-                 'Treatment of SAM',  #'Management of MAM',
-                 'IFAS (community)', 'IFAS for pregnant women (community)',
-                 'Oral rehydration salts', 'Zinc for treatment + ORS', 'IPTp',
-                 'Multiple micronutrient supplementation']
+                 'Treatment of SAM', 'IPTp', 'Multiple micronutrient supplementation',
+                 #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
+                 'IFAS (community)', 'IFAS for pregnant women (community)']
     p0 = Project('Budget')
     p0.load_data(inputspath='C:/Users/nick.scott/Desktop/Github/Nutrition/analyses/inputs/Medium 2019 base/' + region + '_input.xlsx', name=region, time_trend=False)
     total_budget_2019 = 0.0
@@ -40,13 +39,15 @@ def parallel_optim1(region, path=None):
     pop_size_tot = 0
     for a in age_labels:  # get total number of stunted and wasted children for objective weights
         pop_size_tot += p.models[region].pops[0].popSizes[a]
+
+    mult = [0.75 * total_budget_2019 / total_budget_2020]
     ## define custom optimization
     kwargs = {'name': region,
-              'mults': [0.8 * total_budget_2019/total_budget_2020],
+              'mults': mult,
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 5,
-                                   'Minimize the prevalence of stunting in children': pop_size_tot,
-                                   'thrive': 0}),
+                                   'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
+                                   'thrive': 1}),
               'prog_set': prog_list,
               'fix_curr': False,
               'add_funds': 0
@@ -67,10 +68,9 @@ def parallel_optim2(region, path=None):
     prog_list = ['Balanced energy-protein supplementation', 'Cash transfers',
                  'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                  'Public provision of complementary foods', 'Vitamin A supplementation',
-                 'Treatment of SAM',  #'Management of MAM',
-                 'IFAS (community)', 'IFAS for pregnant women (community)',
-                 'Oral rehydration salts', 'Zinc for treatment + ORS', 'IPTp',
-                 'Multiple micronutrient supplementation']
+                 'Treatment of SAM', 'IPTp', 'Multiple micronutrient supplementation',
+                 #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
+                 'IFAS (community)', 'IFAS for pregnant women (community)']
     p0 = Project('Budget')
     p0.load_data(
         inputspath='C:/Users/nick.scott/Desktop/Github/Nutrition/analyses/inputs/Medium 2019 base/' + region + '_input.xlsx',
@@ -90,13 +90,16 @@ def parallel_optim2(region, path=None):
     pop_size_tot = 0
     for a in age_labels:  # get total number of stunted and wasted children for objective weights
         pop_size_tot += p.models[region].pops[0].popSizes[a]
+
+    mult = [0.875 * total_budget_2019 / total_budget_2020]
+
     ## define custom optimization
     kwargs = {'name': region,
-              'mults': [0.9 * total_budget_2019/total_budget_2020],
+              'mults': mult,
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 5,
-                                   'Minimize the prevalence of stunting in children': pop_size_tot,
-                                   'thrive': 0}),
+                                   'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
+                                   'thrive': 1}),
               'prog_set': prog_list,
               'fix_curr': False,
               'add_funds': 0
@@ -117,10 +120,9 @@ def parallel_optim3(region, path=None):
     prog_list = ['Balanced energy-protein supplementation', 'Cash transfers',
                  'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                  'Public provision of complementary foods', 'Vitamin A supplementation',
-                 'Treatment of SAM',  #'Management of MAM',
-                 'IFAS (community)', 'IFAS for pregnant women (community)',
-                 'Oral rehydration salts', 'Zinc for treatment + ORS', 'IPTp',
-                 'Multiple micronutrient supplementation']
+                 'Treatment of SAM', 'IPTp', 'Multiple micronutrient supplementation',
+                 #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
+                 'IFAS (community)', 'IFAS for pregnant women (community)']
     p0 = Project('Budget')
     p0.load_data(
         inputspath='C:/Users/nick.scott/Desktop/Github/Nutrition/analyses/inputs/Medium 2019 base/' + region + '_input.xlsx',
@@ -140,13 +142,16 @@ def parallel_optim3(region, path=None):
     pop_size_tot = 0
     for a in age_labels:  # get total number of stunted and wasted children for objective weights
         pop_size_tot += p.models[region].pops[0].popSizes[a]
+
+    mult = [0.925 * total_budget_2019 / total_budget_2020]
+
     ## define custom optimization
     kwargs = {'name': region,
-              'mults': [total_budget_2019/total_budget_2020],
+              'mults': mult,
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 5,
-                                   'Minimize the prevalence of stunting in children': pop_size_tot,
-                                   'thrive': 0}),
+                                   'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
+                                   'thrive': 1}),
               'prog_set': prog_list,
               'fix_curr': False,
               'add_funds': 0
@@ -160,30 +165,29 @@ def parallel_optim3(region, path=None):
 
 
 #
-country_list = ['Afghanistan', 'Albania', 'Algeria', 'Angola', 'Armenia', 'Azerbaijan', 'Bangladesh',
+country_list = ['Afghanistan', 'Albania', 'Algeria', 'Angola', 'Argentina', 'Armenia', 'Azerbaijan', 'Bangladesh',
                 'Belarus', 'Belize', 'Benin', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana',
                 'Brazil', 'Burkina Faso', 'Burundi', 'Cambodia', 'Cameroon', 'Cape Verde', 'Central African Republic',
                 'Chad', 'Colombia', 'Comoros', 'Congo', 'Costa Rica', 'Cote d\'Ivoire', 'Cuba', 'Democratic Republic of the Congo',
-                'Djibouti', 'Dominican Republic', 'Ecuador', 'Egypt', 'El Salvador', 'Equatorial Guinea', 'Ethiopia', 'Gabon',
+                'Djibouti', 'Dominican Republic', 'Ecuador', 'Egypt', 'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Ethiopia', 'Gabon',
                 'Gambia, The', 'Georgia', 'Ghana', 'Guatemala', 'Guinea', 'Guinea-Bissau', 'Guyana', 'Haiti',
                 'Honduras', 'India', 'Indonesia', 'Iraq', 'Jamaica', 'Jordan', 'Kazakhstan', 'Kenya',
                 'Kyrgyzstan', 'Laos', 'Lesotho', 'Liberia', 'Macedonia', 'Madagascar', 'Malawi',
-                'Maldives', 'Mali', 'Mauritania', 'Moldova', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique',
-                'Myanmar', 'Namibia', 'Nepal', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'Pakistan', 'Papua New Guinea',
+                'Maldives', 'Mali', 'Mauritania', 'Mexico', 'Moldova', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique',
+                'Myanmar', 'Namibia', 'Nepal', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'Pakistan', 'Panama', 'Papua New Guinea',
                 'Paraguay', 'Peru', 'Philippines', 'Rwanda', 'Saint Lucia', 'Samoa', 'Sao Tome and Principe', 'Senegal',
                 'Serbia', 'Sierra Leone', 'Solomon Islands', 'Somalia', 'South Africa', 'South Sudan', 'Sri Lanka',
                 'Sudan', 'Suriname', 'Syria', 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Togo',
                 'Tonga', 'Tunisia', 'Turkey', 'Turkmenistan', 'Uganda', 'Ukraine', 'Uzbekistan', 'Vanuatu',
                 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe']
-#country_list = ['Vanuatu','Venezuela', 'Vietnam', 'Yemen']
+
 
 prog_list = ['Balanced energy-protein supplementation', 'Cash transfers',
                  'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                  'Public provision of complementary foods', 'Vitamin A supplementation',
-                 'Treatment of SAM',  #'Management of MAM',
-                 'IFAS (community)', 'IFAS for pregnant women (community)',
-                 'Oral rehydration salts', 'Zinc for treatment + ORS', 'IPTp',
-                 'Multiple micronutrient supplementation']
+                 'Treatment of SAM', 'IPTp', 'Multiple micronutrient supplementation',
+                 #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
+                 'IFAS (community)', 'IFAS for pregnant women (community)']
 
 dirname = os.path.dirname(__file__)
 input_path_med = dirname + '/inputs/Medium 2020 base/'
@@ -208,6 +212,9 @@ if __name__ == '__main__':
 
     b = Project('Baseline2019')
     b_trend = Project('Baseline2019_trend')
+    b_counter_med = Project('Baseline2020_med_trend')
+    b_counter_pes = Project('Baseline2020_pes_trend')
+    b_counter_opt = Project('Baseline2020_opt_trend')
     results2019 = []
     for c in range(len(country_list)):
         region = country_list[c]
@@ -215,33 +222,75 @@ if __name__ == '__main__':
         kwargs = {'name': region,
                   'model_name': region,
                   'scen_type': 'coverage',
-                  'progvals': sc.odict({'Balanced energy-protein supplementation': [],
-                                        'Cash transfers': [],
+                  'progvals': sc.odict({'Balanced energy-protein supplementation': [], 'Cash transfers': [],
                            'IYCF 1': [], 'IYCF 2': [], 'Kangaroo mother care': [],
                            'Public provision of complementary foods': [],'Vitamin A supplementation': [],
-                           #'Management of MAM': [],
+                           #'Management of MAM': [],'Oral rehydration salts': [], 'Zinc for treatment + ORS': [],
                            'Treatment of SAM': [], 'IFAS for pregnant women (community)': [],
-                           'IFAS (community)': [], 'Oral rehydration salts': [], 'Zinc for treatment + ORS': [], 'IPTp': [],
+                           'IFAS (community)': [],  'IPTp': [],
                            'Multiple micronutrient supplementation': []})}
         b.add_scens(Scen(**kwargs))
     b.run_scens()
     for c in range(len(country_list)):
         region = country_list[c]
-        b_trend.load_data(inputspath=input_path_noCOVID + region + '_input.xlsx', name=region, time_trend=False)
+        b_trend.load_data(inputspath=input_path_noCOVID + region + '_input.xlsx', name=region, time_trend=True)
         kwargs = {'name': region,
                   'model_name': region,
                   'scen_type': 'coverage',
-                  'progvals': sc.odict({'Balanced energy-protein supplementation': [],
-                                        'Cash transfers': [],
+                  'progvals': sc.odict({'Balanced energy-protein supplementation': [], 'Cash transfers': [],
                            'IYCF 1': [], 'IYCF 2': [], 'Kangaroo mother care': [],
                            'Public provision of complementary foods': [],'Vitamin A supplementation': [],
-                           #'Management of MAM': [],
+                           #'Management of MAM': [],'Oral rehydration salts': [], 'Zinc for treatment + ORS': [],
                            'Treatment of SAM': [], 'IFAS for pregnant women (community)': [],
-                           'IFAS (community)': [], 'Oral rehydration salts': [], 'Zinc for treatment + ORS': [], 'IPTp': [],
+                           'IFAS (community)': [],  'IPTp': [],
                            'Multiple micronutrient supplementation': []})}
         b_trend.add_scens(Scen(**kwargs))
     b_trend.run_scens()
-
+    for c in range(len(country_list)):
+        region = country_list[c]
+        b_counter_pes.load_data(inputspath=input_path_pes + region + '_input.xlsx', name=region, time_trend=True)
+        kwargs = {'name': region,
+                  'model_name': region,
+                  'scen_type': 'coverage',
+                  'progvals': sc.odict({'Balanced energy-protein supplementation': [], 'Cash transfers': [],
+                           'IYCF 1': [], 'IYCF 2': [], 'Kangaroo mother care': [],
+                           'Public provision of complementary foods': [],'Vitamin A supplementation': [],
+                           #'Management of MAM': [],'Oral rehydration salts': [], 'Zinc for treatment + ORS': [],
+                           'Treatment of SAM': [], 'IFAS for pregnant women (community)': [],
+                           'IFAS (community)': [],  'IPTp': [],
+                           'Multiple micronutrient supplementation': []})}
+        b_counter_pes.add_scens(Scen(**kwargs))
+    b_counter_pes.run_scens()
+    for c in range(len(country_list)):
+        region = country_list[c]
+        b_counter_med.load_data(inputspath=input_path_med + region + '_input.xlsx', name=region, time_trend=True)
+        kwargs = {'name': region,
+                  'model_name': region,
+                  'scen_type': 'coverage',
+                  'progvals': sc.odict({'Balanced energy-protein supplementation': [], 'Cash transfers': [],
+                           'IYCF 1': [], 'IYCF 2': [], 'Kangaroo mother care': [],
+                           'Public provision of complementary foods': [],'Vitamin A supplementation': [],
+                           #'Management of MAM': [],'Oral rehydration salts': [], 'Zinc for treatment + ORS': [],
+                           'Treatment of SAM': [], 'IFAS for pregnant women (community)': [],
+                           'IFAS (community)': [],  'IPTp': [],
+                           'Multiple micronutrient supplementation': []})}
+        b_counter_med.add_scens(Scen(**kwargs))
+    b_counter_med.run_scens()
+    for c in range(len(country_list)):
+        region = country_list[c]
+        b_counter_opt.load_data(inputspath=input_path_opt + region + '_input.xlsx', name=region, time_trend=True)
+        kwargs = {'name': region,
+                  'model_name': region,
+                  'scen_type': 'coverage',
+                  'progvals': sc.odict({'Balanced energy-protein supplementation': [], 'Cash transfers': [],
+                           'IYCF 1': [], 'IYCF 2': [], 'Kangaroo mother care': [],
+                           'Public provision of complementary foods': [],'Vitamin A supplementation': [],
+                           #'Management of MAM': [],'Oral rehydration salts': [], 'Zinc for treatment + ORS': [],
+                           'Treatment of SAM': [], 'IFAS for pregnant women (community)': [],
+                           'IFAS (community)': [],  'IPTp': [],
+                           'Multiple micronutrient supplementation': []})}
+        b_counter_opt.add_scens(Scen(**kwargs))
+    b_counter_opt.run_scens()
     # budgets2020 = sc.odict()
     # for c in range(len(country_list)):
     #     budgets2020[country_list[c]] = sc.odict()
@@ -250,27 +299,39 @@ if __name__ == '__main__':
 
     for res in b.results:
         for scenres in b.results[res]:
-            scenres.name = scenres.model_name + ' Baseline notrend'
+            scenres.name = scenres.model_name + ' Baseline 2019 notrend'
             results.append(scenres)
     for res in b_trend.results:
         for scenres in b_trend.results[res]:
             scenres.name = scenres.model_name + ' Baseline 2019'
             results.append(scenres)
+    for res in b_counter_pes.results:
+        for scenres in b_counter_pes.results[res]:
+            scenres.name = scenres.model_name + ' Baseline pes trend'
+            results.append(scenres)
+    for res in b_counter_med.results:
+        for scenres in b_counter_med.results[res]:
+            scenres.name = scenres.model_name + ' Baseline med trend'
+            results.append(scenres)
+    for res in b_counter_opt.results:
+        for scenres in b_counter_opt.results[res]:
+            scenres.name = scenres.model_name + ' Baseline opt trend'
+            results.append(scenres)
     for p in proj_list1:
-        for res in p.results:
-            for scenres in p.results[res]:
-                if scenres.name == 'Baseline':
-                    scenres.name = scenres.model_name + ' Baseline med'
-                else:
-                    scenres.name = scenres.model_name + ' Optimized med'
-                results.append(scenres)
-    for p in proj_list2:
         for res in p.results:
             for scenres in p.results[res]:
                 if scenres.name == 'Baseline':
                     scenres.name = scenres.model_name + ' Baseline pes'
                 else:
                     scenres.name = scenres.model_name + ' Optimized pes'
+                results.append(scenres)
+    for p in proj_list2:
+        for res in p.results:
+            for scenres in p.results[res]:
+                if scenres.name == 'Baseline':
+                    scenres.name = scenres.model_name + ' Baseline med'
+                else:
+                    scenres.name = scenres.model_name + ' Optimized med'
                 results.append(scenres)
     for p in proj_list3:
         for res in p.results:
@@ -281,8 +342,7 @@ if __name__ == '__main__':
                     scenres.name = scenres.model_name + ' Optimized opt'
                 results.append(scenres)
 
-    #write_results(results2019, filename=output_path + 'projection_from_2019.xlsx')
-    write_results(results, filename=output_path + 'projection_from_2020.xlsx')
+    write_results(results, filename=output_path + 'projection_from_2020_thrive10mort_notrends_noMAMnoORS.xlsx')
 
 
 

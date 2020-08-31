@@ -26,16 +26,15 @@ def parallel_optim1(region, path=None):
     kwargs = {'name': region,
               'mults': [1.0],
               'model_name': region,
-              'weights': sc.odict({'Minimize the number of child deaths': 1,
-                                   'Minimize the prevalence of stunting in children': pop_size_tot,
-                                   'thrive': 0}),
+              'weights': sc.odict({'Minimize the number of child deaths': 0,
+                                   'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
+                                   'thrive': 1}),
               'prog_set': ['Balanced energy-protein supplementation', 'Cash transfers',
                              'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                              'Public provision of complementary foods', 'Vitamin A supplementation',
-                             'Management of MAM', 'Treatment of SAM',
-                             'IFAS (community)', 'IFAS for pregnant women (community)',
-                             'Oral rehydration salts', 'Zinc for treatment + ORS', 'IPTp',
-                             'Multiple micronutrient supplementation'],
+                             'Treatment of SAM', 'IPTp', 'Multiple micronutrient supplementation',
+                             #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
+                             'IFAS (community)', 'IFAS for pregnant women (community)'],
               'fix_curr': False,
               'add_funds': 0
               }
@@ -64,16 +63,15 @@ def parallel_optim2(region, path=None):
     kwargs = {'name': region,
               'mults': [1.0],
               'model_name': region,
-              'weights': sc.odict({'Minimize the number of child deaths': 2,
-                                   'Minimize the prevalence of stunting in children': pop_size_tot,
-                                   'thrive': 0}),
+              'weights': sc.odict({'Minimize the number of child deaths': 1,
+                                   'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
+                                   'thrive': 1}),
               'prog_set': ['Balanced energy-protein supplementation', 'Cash transfers',
                              'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                              'Public provision of complementary foods', 'Vitamin A supplementation',
-                             'Management of MAM', 'Treatment of SAM',
-                             'IFAS (community)', 'IFAS for pregnant women (community)',
-                             'Oral rehydration salts', 'Zinc for treatment + ORS', 'IPTp',
-                             'Multiple micronutrient supplementation'],
+                             'Treatment of SAM', 'IPTp', 'Multiple micronutrient supplementation',
+                             #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
+                             'IFAS (community)', 'IFAS for pregnant women (community)'],
               'fix_curr': False,
               'add_funds': 0
               }
@@ -103,15 +101,14 @@ def parallel_optim3(region, path=None):
               'mults': [1.0],
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 5,
-                                   'Minimize the prevalence of stunting in children': pop_size_tot,
-                                   'thrive': 0}),
+                                   'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
+                                   'thrive': 1}),
               'prog_set': ['Balanced energy-protein supplementation', 'Cash transfers',
                              'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                              'Public provision of complementary foods', 'Vitamin A supplementation',
-                             'Management of MAM', 'Treatment of SAM',
-                             'IFAS (community)', 'IFAS for pregnant women (community)',
-                             'Oral rehydration salts', 'Zinc for treatment + ORS', 'IPTp',
-                             'Multiple micronutrient supplementation'],
+                             'Treatment of SAM', 'IPTp', 'Multiple micronutrient supplementation',
+                             #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
+                             'IFAS (community)', 'IFAS for pregnant women (community)'],
               'fix_curr': False,
               'add_funds': 0
               }
@@ -142,15 +139,14 @@ def parallel_optim4(region, path=None):
               'mults': [1.0],
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 10,
-                                   'Minimize the prevalence of stunting in children': pop_size_tot,
-                                   'thrive': 0}),
+                                   'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
+                                   'thrive': 1}),
               'prog_set': ['Balanced energy-protein supplementation', 'Cash transfers',
                              'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                              'Public provision of complementary foods', 'Vitamin A supplementation',
-                             'Management of MAM', 'Treatment of SAM',
-                             'IFAS (community)', 'IFAS for pregnant women (community)',
-                             'Oral rehydration salts', 'Zinc for treatment + ORS', 'IPTp',
-                             'Multiple micronutrient supplementation'],
+                             'Treatment of SAM', 'IPTp', 'Multiple micronutrient supplementation',
+                             #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
+                             'IFAS (community)', 'IFAS for pregnant women (community)'],
               'fix_curr': False,
               'add_funds': 0
               }
@@ -177,16 +173,15 @@ def parallel_optim5(region, path=None):
     kwargs = {'name': region,
               'mults': [1.0],
               'model_name': region,
-              'weights': sc.odict({'Minimize the number of child deaths': 5,
+              'weights': sc.odict({'Minimize the number of child deaths': 1,
                                    'Minimize the prevalence of stunting in children': 0,
                                    'thrive': 0}),
               'prog_set': ['Balanced energy-protein supplementation', 'Cash transfers',
                              'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                              'Public provision of complementary foods', 'Vitamin A supplementation',
-                             'Management of MAM', 'Treatment of SAM',
-                             'IFAS (community)', 'IFAS for pregnant women (community)',
-                             'Oral rehydration salts', 'Zinc for treatment + ORS', 'IPTp',
-                             'Multiple micronutrient supplementation'],
+                             'Treatment of SAM', 'IPTp', 'Multiple micronutrient supplementation',
+                             #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
+                             'IFAS (community)', 'IFAS for pregnant women (community)'],
               'fix_curr': False,
               'add_funds': 0
               }
@@ -197,16 +192,16 @@ def parallel_optim5(region, path=None):
 
     return(p)
 #
-country_list = ['Afghanistan', 'Albania', 'Algeria', 'Angola', 'Armenia', 'Azerbaijan', 'Bangladesh',
+country_list = ['Afghanistan', 'Albania', 'Algeria', 'Angola', 'Argentina', 'Armenia', 'Azerbaijan', 'Bangladesh',
                 'Belarus', 'Belize', 'Benin', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana',
                 'Brazil', 'Burkina Faso', 'Burundi', 'Cambodia', 'Cameroon', 'Cape Verde', 'Central African Republic',
                 'Chad', 'Colombia', 'Comoros', 'Congo', 'Costa Rica', 'Cote d\'Ivoire', 'Cuba', 'Democratic Republic of the Congo',
-                'Djibouti', 'Dominican Republic', 'Ecuador', 'Egypt', 'El Salvador', 'Equatorial Guinea', 'Ethiopia', 'Gabon',
+                'Djibouti', 'Dominican Republic', 'Ecuador', 'Egypt', 'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Ethiopia', 'Gabon',
                 'Gambia, The', 'Georgia', 'Ghana', 'Guatemala', 'Guinea', 'Guinea-Bissau', 'Guyana', 'Haiti',
                 'Honduras', 'India', 'Indonesia', 'Iraq', 'Jamaica', 'Jordan', 'Kazakhstan', 'Kenya',
                 'Kyrgyzstan', 'Laos', 'Lesotho', 'Liberia', 'Macedonia', 'Madagascar', 'Malawi',
-                'Maldives', 'Mali', 'Mauritania', 'Moldova', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique',
-                'Myanmar', 'Namibia', 'Nepal', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'Pakistan', 'Papua New Guinea',
+                'Maldives', 'Mali', 'Mauritania', 'Mexico', 'Moldova', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique',
+                'Myanmar', 'Namibia', 'Nepal', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'Pakistan', 'Panama', 'Papua New Guinea',
                 'Paraguay', 'Peru', 'Philippines', 'Rwanda', 'Saint Lucia', 'Samoa', 'Sao Tome and Principe', 'Senegal',
                 'Serbia', 'Sierra Leone', 'Solomon Islands', 'Somalia', 'South Africa', 'South Sudan', 'Sri Lanka',
                 'Sudan', 'Suriname', 'Syria', 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Togo',
@@ -323,6 +318,6 @@ if __name__ == '__main__':
 
         write_results(p_bounds.results['scens'], filename=output_path + 'test_bounds.xlsx')
     else:
-        write_results(results, filename=output_path + 'test.xlsx')
+        write_results(results, filename=output_path + 'objectives_thrivemort_noMAMnoORSnoZnORS.xlsx')
 
 
