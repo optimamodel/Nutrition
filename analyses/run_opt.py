@@ -215,9 +215,14 @@ if __name__ == '__main__':
     b_counter_med = Project('Baseline2020_med_trend')
     b_counter_pes = Project('Baseline2020_pes_trend')
     b_counter_opt = Project('Baseline2020_opt_trend')
-    results2019 = []
-    for c in range(len(country_list)):
-        region = country_list[c]
+
+    import warnings
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
+
+    for c in country_list:
+        region = c
         b.load_data(inputspath=input_path_noCOVID + region + '_input.xlsx', name=region, time_trend=False)
         kwargs = {'name': region,
                   'model_name': region,
@@ -231,8 +236,8 @@ if __name__ == '__main__':
                            'Multiple micronutrient supplementation': []})}
         b.add_scens(Scen(**kwargs))
     b.run_scens()
-    for c in range(len(country_list)):
-        region = country_list[c]
+    for c in country_list:
+        region = c
         b_trend.load_data(inputspath=input_path_noCOVID + region + '_input.xlsx', name=region, time_trend=True)
         kwargs = {'name': region,
                   'model_name': region,
@@ -246,8 +251,8 @@ if __name__ == '__main__':
                            'Multiple micronutrient supplementation': []})}
         b_trend.add_scens(Scen(**kwargs))
     b_trend.run_scens()
-    for c in range(len(country_list)):
-        region = country_list[c]
+    for c in country_list:
+        region = c
         b_counter_pes.load_data(inputspath=input_path_pes + region + '_input.xlsx', name=region, time_trend=True)
         kwargs = {'name': region,
                   'model_name': region,
@@ -261,8 +266,8 @@ if __name__ == '__main__':
                            'Multiple micronutrient supplementation': []})}
         b_counter_pes.add_scens(Scen(**kwargs))
     b_counter_pes.run_scens()
-    for c in range(len(country_list)):
-        region = country_list[c]
+    for c in country_list:
+        region = c
         b_counter_med.load_data(inputspath=input_path_med + region + '_input.xlsx', name=region, time_trend=True)
         kwargs = {'name': region,
                   'model_name': region,
@@ -276,8 +281,8 @@ if __name__ == '__main__':
                            'Multiple micronutrient supplementation': []})}
         b_counter_med.add_scens(Scen(**kwargs))
     b_counter_med.run_scens()
-    for c in range(len(country_list)):
-        region = country_list[c]
+    for c in country_list:
+        region = c
         b_counter_opt.load_data(inputspath=input_path_opt + region + '_input.xlsx', name=region, time_trend=True)
         kwargs = {'name': region,
                   'model_name': region,
@@ -299,7 +304,6 @@ if __name__ == '__main__':
 
     for res in b.results:
         for scenres in b.results[res]:
-            scenres.name = scenres.model_name + ' Baseline 2019 notrend'
             results.append(scenres)
     for res in b_trend.results:
         for scenres in b_trend.results[res]:
