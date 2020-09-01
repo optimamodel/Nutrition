@@ -169,18 +169,17 @@ country_list = ['Afghanistan', 'Albania', 'Algeria', 'Angola', 'Argentina', 'Arm
                 'Belarus', 'Belize', 'Benin', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana',
                 'Brazil', 'Burkina Faso', 'Burundi', 'Cambodia', 'Cameroon', 'Cape Verde', 'Central African Republic',
                 'Chad', 'Colombia', 'Comoros', 'Congo', 'Costa Rica', 'Cote d\'Ivoire', 'Cuba', 'Democratic Republic of the Congo',
-                'Djibouti', 'Dominican Republic', 'Ecuador', 'Egypt', 'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Ethiopia', 'Gabon',
-                'Gambia, The', 'Georgia', 'Ghana', 'Guatemala', 'Guinea', 'Guinea-Bissau', 'Guyana', 'Haiti',
+                'Djibouti', 'Dominican Republic', 'Ecuador', 'Egypt', 'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Ethiopia',
+                'Eswatini','Gabon', 'Gambia, The', 'Georgia', 'Ghana', 'Guatemala', 'Guinea', 'Guinea-Bissau', 'Guyana', 'Haiti',
                 'Honduras', 'India', 'Indonesia', 'Iraq', 'Jamaica', 'Jordan', 'Kazakhstan', 'Kenya',
                 'Kyrgyzstan', 'Laos', 'Lesotho', 'Liberia', 'Macedonia', 'Madagascar', 'Malawi',
-                'Maldives', 'Mali', 'Mauritania', 'Mexico', 'Moldova', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique',
+                'Maldives', 'Mali', 'Mauritania', 'Mexico','Moldova','Mongolia', 'Montenegro', 'Morocco', 'Mozambique',
                 'Myanmar', 'Namibia', 'Nepal', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'Pakistan', 'Panama', 'Papua New Guinea',
                 'Paraguay', 'Peru', 'Philippines', 'Rwanda', 'Saint Lucia', 'Samoa', 'Sao Tome and Principe', 'Senegal',
                 'Serbia', 'Sierra Leone', 'Solomon Islands', 'Somalia', 'South Africa', 'South Sudan', 'Sri Lanka',
                 'Sudan', 'Suriname', 'Syria', 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Togo',
                 'Tonga', 'Tunisia', 'Turkey', 'Turkmenistan', 'Uganda', 'Ukraine', 'Uzbekistan', 'Vanuatu',
                 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe']
-
 
 prog_list = ['Balanced energy-protein supplementation', 'Cash transfers',
                  'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
@@ -236,6 +235,10 @@ if __name__ == '__main__':
                            'Multiple micronutrient supplementation': []})}
         b.add_scens(Scen(**kwargs))
     b.run_scens()
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
+
     for c in country_list:
         region = c
         b_trend.load_data(inputspath=input_path_noCOVID + region + '_input.xlsx', name=region, time_trend=True)
@@ -251,6 +254,10 @@ if __name__ == '__main__':
                            'Multiple micronutrient supplementation': []})}
         b_trend.add_scens(Scen(**kwargs))
     b_trend.run_scens()
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
+
     for c in country_list:
         region = c
         b_counter_pes.load_data(inputspath=input_path_pes + region + '_input.xlsx', name=region, time_trend=True)
@@ -266,6 +273,10 @@ if __name__ == '__main__':
                            'Multiple micronutrient supplementation': []})}
         b_counter_pes.add_scens(Scen(**kwargs))
     b_counter_pes.run_scens()
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
+
     for c in country_list:
         region = c
         b_counter_med.load_data(inputspath=input_path_med + region + '_input.xlsx', name=region, time_trend=True)
@@ -281,6 +292,10 @@ if __name__ == '__main__':
                            'Multiple micronutrient supplementation': []})}
         b_counter_med.add_scens(Scen(**kwargs))
     b_counter_med.run_scens()
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
+
     for c in country_list:
         region = c
         b_counter_opt.load_data(inputspath=input_path_opt + region + '_input.xlsx', name=region, time_trend=True)
