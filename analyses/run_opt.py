@@ -319,10 +319,11 @@ if __name__ == '__main__':
 
     for res in b.results:
         for scenres in b.results[res]:
+            scenres.name = scenres.model_name + ' Baseline 2019'
             results.append(scenres)
     for res in b_trend.results:
         for scenres in b_trend.results[res]:
-            scenres.name = scenres.model_name + ' Baseline 2019'
+            scenres.name = scenres.model_name + ' Baseline 2019 trend'
             results.append(scenres)
     for res in b_counter_pes.results:
         for scenres in b_counter_pes.results[res]:
