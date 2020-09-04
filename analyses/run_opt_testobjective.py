@@ -318,6 +318,6 @@ if __name__ == '__main__':
 
         write_results(p_bounds.results['scens'], filename=output_path + 'test_bounds.xlsx')
     else:
-        write_results(results, filename=output_path + 'objectives_thrivemort_noMAMnoORSnoZnORS.xlsx')
+        write_results(results, filename=output_path + 'objectives_thrivemort_SAMreference_noMAMnoORSnoZnORS.xlsx')
 
 

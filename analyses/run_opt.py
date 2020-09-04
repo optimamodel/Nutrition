@@ -45,7 +45,7 @@ def parallel_optim1(region, path=None):
     kwargs = {'name': region,
               'mults': mult,
               'model_name': region,
-              'weights': sc.odict({'Minimize the number of child deaths': 5,
+              'weights': sc.odict({'Minimize the number of child deaths': 1,
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
                                    'thrive': 1}),
               'prog_set': prog_list,
@@ -97,7 +97,7 @@ def parallel_optim2(region, path=None):
     kwargs = {'name': region,
               'mults': mult,
               'model_name': region,
-              'weights': sc.odict({'Minimize the number of child deaths': 5,
+              'weights': sc.odict({'Minimize the number of child deaths': 1,
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
                                    'thrive': 1}),
               'prog_set': prog_list,
@@ -149,7 +149,7 @@ def parallel_optim3(region, path=None):
     kwargs = {'name': region,
               'mults': mult,
               'model_name': region,
-              'weights': sc.odict({'Minimize the number of child deaths': 5,
+              'weights': sc.odict({'Minimize the number of child deaths': 1,
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
                                    'thrive': 1}),
               'prog_set': prog_list,
@@ -362,7 +362,7 @@ if __name__ == '__main__':
                     scenres.name = scenres.model_name + ' Optimized opt'
                 results.append(scenres)
 
-    write_results(results, filename=output_path + 'projection_from_2020_thrive10mort_notrends_noMAMnoORS.xlsx')
+    write_results(results, filename=output_path + 'projection_from_2020_thrive1mort_IYCFfix_notrends_SAMreference_noMAMnoORSnoZnORS.xlsx')
 
 
 
