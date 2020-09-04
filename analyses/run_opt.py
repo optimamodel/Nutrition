@@ -21,7 +21,7 @@ def parallel_optim1(region, path=None):
                  #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
                  'IFAS (community)', 'IFAS for pregnant women (community)']
     p0 = Project('Budget')
-    p0.load_data(inputspath='C:/Users/nick.scott/Desktop/Github/Nutrition/analyses/inputs/Medium 2019 base/' + region + '_input.xlsx', name=region, time_trend=False)
+    p0.load_data(inputspath=os.path.dirname(__file__) + '/inputs/Medium 2019 base/' + region + '_input.xlsx', name=region, time_trend=False)
     total_budget_2019 = 0.0
     for prog in prog_list:
         if prog in p0.models[region].prog_info.programs.keys():
@@ -73,7 +73,7 @@ def parallel_optim2(region, path=None):
                  'IFAS (community)', 'IFAS for pregnant women (community)']
     p0 = Project('Budget')
     p0.load_data(
-        inputspath='C:/Users/nick.scott/Desktop/Github/Nutrition/analyses/inputs/Medium 2019 base/' + region + '_input.xlsx',
+        inputspath=os.path.dirname(__file__) + '/inputs/Medium 2019 base/' + region + '_input.xlsx',
         name=region, time_trend=False)
     total_budget_2019 = 0.0
     for prog in prog_list:
@@ -125,7 +125,7 @@ def parallel_optim3(region, path=None):
                  'IFAS (community)', 'IFAS for pregnant women (community)']
     p0 = Project('Budget')
     p0.load_data(
-        inputspath='C:/Users/nick.scott/Desktop/Github/Nutrition/analyses/inputs/Medium 2019 base/' + region + '_input.xlsx',
+        inputspath=os.path.dirname(__file__) + '/inputs/Medium 2019 base/' + region + '_input.xlsx',
         name=region, time_trend=False)
     total_budget_2019 = 0.0
     for prog in prog_list:
