@@ -33,6 +33,7 @@ def parallel_optim1(region, path=None):
                              'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                              'Public provision of complementary foods', 'Vitamin A supplementation',
                              'Treatment of SAM', 'IPTp', 'Multiple micronutrient supplementation',
+                             'Lipid-based nutrition supplements',
                              #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
                              'IFAS (community)', 'IFAS for pregnant women (community)'],
               'fix_curr': False,
@@ -70,6 +71,7 @@ def parallel_optim2(region, path=None):
                              'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                              'Public provision of complementary foods', 'Vitamin A supplementation',
                              'Treatment of SAM', 'IPTp', 'Multiple micronutrient supplementation',
+                             'Lipid-based nutrition supplements',
                              #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
                              'IFAS (community)', 'IFAS for pregnant women (community)'],
               'fix_curr': False,
@@ -107,6 +109,7 @@ def parallel_optim3(region, path=None):
                              'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                              'Public provision of complementary foods', 'Vitamin A supplementation',
                              'Treatment of SAM', 'IPTp', 'Multiple micronutrient supplementation',
+                             'Lipid-based nutrition supplements',
                              #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
                              'IFAS (community)', 'IFAS for pregnant women (community)'],
               'fix_curr': False,
@@ -145,6 +148,7 @@ def parallel_optim4(region, path=None):
                              'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                              'Public provision of complementary foods', 'Vitamin A supplementation',
                              'Treatment of SAM', 'IPTp', 'Multiple micronutrient supplementation',
+                             'Lipid-based nutrition supplements',
                              #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
                              'IFAS (community)', 'IFAS for pregnant women (community)'],
               'fix_curr': False,
@@ -180,6 +184,7 @@ def parallel_optim5(region, path=None):
                              'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                              'Public provision of complementary foods', 'Vitamin A supplementation',
                              'Treatment of SAM', 'IPTp', 'Multiple micronutrient supplementation',
+                             'Lipid-based nutrition supplements',
                              #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
                              'IFAS (community)', 'IFAS for pregnant women (community)'],
               'fix_curr': False,
@@ -318,6 +323,6 @@ if __name__ == '__main__':
 
         write_results(p_bounds.results['scens'], filename=output_path + 'test_bounds.xlsx')
     else:
-        write_results(results, filename=output_path + 'objectives_thrivemort_SAMreference_noMAMnoORSnoZnORS.xlsx')
+        write_results(results, filename=output_path + 'objectives_thrivemort_SAMreference_LNS.xlsx')
 
 
