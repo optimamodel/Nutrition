@@ -67,8 +67,10 @@ class Model(sc.prettyobj):
         children = self.children.age_groups
         rate = oldest.ageingRate
         self.thrive[self.year] += oldest.num_notstunted() * rate
-        #for age_group in list(range(len(children))):
-        #    self.stunted[self.year] += children[age_group].num_stunted()
+        for age_group in list(range(len(children))):
+            self.stunted_tot[self.year] += children[age_group].num_stunted()
+        for age_group in list(range(len(children))):
+            self.SAM_tot[self.year] += children[age_group].num_wasted('SAM')
         self.stunted[self.year] += oldest.num_stunted() * rate
         self.wasted[self.year] += sum(oldest.num_wasted(cat) for cat in self.ss.wasted_list) * rate
         self.child_anaemic[self.year] += oldest.num_anaemic() * rate

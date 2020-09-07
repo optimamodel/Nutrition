@@ -55,7 +55,9 @@ def default_trackers(prev=None, rate=None):
         'child_mortrate',
         'pw_mortrate',
         'young_bf',
-        'old_bf'
+        'old_bf',
+        'stunted_tot',
+        'SAM_tot'
     ]
     if prev is not None:
         if prev:
@@ -113,7 +115,11 @@ def pretty_labels(direction=False):
             'Number of anaemic non-pregnant women',
             'Prevalence of anaemia in non-pregnant women',
             'Child mortality rate',
-            'Pregnant women mortality rate'
+            'Pregnant women mortality rate',
+            'Prevalence of exclusive breastfeeding < 6 months',
+            'Prevalence of age-appropriate breastfeeding 6-23 months',
+            'Total number of stunted children under 5',
+            'Total number of SAM children under 5'
         ]
     labs = sc.odict(zip(default_trackers(), pretty))
     return labs
