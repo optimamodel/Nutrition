@@ -67,10 +67,6 @@ class Model(sc.prettyobj):
         children = self.children.age_groups
         rate = oldest.ageingRate
         self.thrive[self.year] += oldest.num_notstunted() * rate
-        for age_group in list(range(len(children))):
-            self.stunted_tot[self.year] += children[age_group].num_stunted()
-        for age_group in list(range(len(children))):
-            self.SAM_tot[self.year] += children[age_group].num_wasted('SAM')
         self.stunted[self.year] += oldest.num_stunted() * rate
         self.wasted[self.year] += sum(oldest.num_wasted(cat) for cat in self.ss.wasted_list) * rate
         self.child_anaemic[self.year] += oldest.num_anaemic() * rate
@@ -92,6 +88,18 @@ class Model(sc.prettyobj):
         self.old_bf[self.year] = (1 / 3) * self.children.frac_bf('6-11 months') + (2 / 3) * self.children.frac_bf('12-23 months')
         self.pw_anaemprev[self.year] = self.pw.frac_risk('an')
         self.nonpw_anaemprev[self.year] = self.nonpw.frac_risk('an')
+
+        #prevalence but in terms of absolute numbers
+        children = self.children.age_groups
+        self.stunted_prev_tot[self.year] = 0  # this means it is only the value at the last month of the year that will not be overwritten
+        for age_group in list(range(len(children))):
+            self.stunted_prev_tot[self.year] += children[age_group].num_stunted()
+        self.SAM_prev_tot[self.year] = 0
+        for age_group in list(range(len(children))):
+            self.SAM_prev_tot[self.year] += children[age_group].num_wasted('SAM')
+        self.wasted_prev_tot[self.year]
+        for age_group in list(range(len(children))):
+            self.wasted_prev_tot[self.year] += sum(children[age_group].num_wasted(cat) for cat in self.ss.wasted_list)
 
     def _track_rates(self):
         """ Rates defined as total deaths per 1000 live births.
