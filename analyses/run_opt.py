@@ -14,13 +14,14 @@ def parallel_optim1(region, path=None):
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
     warnings.filterwarnings("ignore", category=RuntimeWarning)
-    prog_list = ['Balanced energy-protein supplementation', 'Cash transfers',
-                 'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
+    prog_list = ['IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                  'Public provision of complementary foods', 'Vitamin A supplementation',
-                 'Treatment of SAM', 'IPTp', 'Multiple micronutrient supplementation',
-                 'Lipid-based nutrition supplements',
+                 'Treatment of SAM',
+                 'Lipid-based nutrition supplements'],
+                 #'IPTp', 'Multiple micronutrient supplementation',
                  #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
-                 'IFAS (community)', 'IFAS for pregnant women (community)']
+                 #'Balanced energy-protein supplementation', 'Cash transfers',
+                 #'IFAS (community)', 'IFAS for pregnant women (community)'],
     p0 = Project('Budget')
     p0.load_data(inputspath=os.path.dirname(__file__) + '/inputs/Medium 2019 base/' + region + '_input.xlsx', name=region, time_trend=False)
     total_budget_2019 = 0.0
@@ -67,13 +68,14 @@ def parallel_optim2(region, path=None):
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
     warnings.filterwarnings("ignore", category=RuntimeWarning)
-    prog_list = ['Balanced energy-protein supplementation', 'Cash transfers',
-                 'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
+    prog_list = ['IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                  'Public provision of complementary foods', 'Vitamin A supplementation',
-                 'Treatment of SAM', 'IPTp', 'Multiple micronutrient supplementation',
-                 'Lipid-based nutrition supplements',
+                 'Treatment of SAM',
+                 'Lipid-based nutrition supplements'],
+                 #'IPTp', 'Multiple micronutrient supplementation',
                  #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
-                 'IFAS (community)', 'IFAS for pregnant women (community)']
+                 #'Balanced energy-protein supplementation', 'Cash transfers',
+                 #'IFAS (community)', 'IFAS for pregnant women (community)'],
     p0 = Project('Budget')
     p0.load_data(
         inputspath=os.path.dirname(__file__) + '/inputs/Medium 2019 base/' + region + '_input.xlsx',
@@ -121,13 +123,14 @@ def parallel_optim3(region, path=None):
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
     warnings.filterwarnings("ignore", category=RuntimeWarning)
-    prog_list = ['Balanced energy-protein supplementation', 'Cash transfers',
-                 'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
+    prog_list = ['IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                  'Public provision of complementary foods', 'Vitamin A supplementation',
-                 'Treatment of SAM', 'IPTp', 'Multiple micronutrient supplementation',
-                 'Lipid-based nutrition supplements',
+                 'Treatment of SAM',
+                 'Lipid-based nutrition supplements'],
+                 #'IPTp', 'Multiple micronutrient supplementation',
                  #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
-                 'IFAS (community)', 'IFAS for pregnant women (community)']
+                 #'Balanced energy-protein supplementation', 'Cash transfers',
+                 #'IFAS (community)', 'IFAS for pregnant women (community)'],
     p0 = Project('Budget')
     p0.load_data(
         inputspath=os.path.dirname(__file__) + '/inputs/Medium 2019 base/' + region + '_input.xlsx',
@@ -187,13 +190,14 @@ country_list = ['Afghanistan', 'Albania', 'Algeria', 'Angola', 'Argentina', 'Arm
                 'Tonga', 'Tunisia', 'Turkey', 'Turkmenistan', 'Uganda', 'Ukraine', 'Uzbekistan', 'Vanuatu',
                 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe']
 
-prog_list = ['Balanced energy-protein supplementation', 'Cash transfers',
-                 'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
-                 'Public provision of complementary foods', 'Vitamin A supplementation',
-                 'Treatment of SAM', 'IPTp', 'Multiple micronutrient supplementation',
-                 'Lipid-based nutrition supplements',
-                 #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
-                 'IFAS (community)', 'IFAS for pregnant women (community)']
+prog_list = ['IYCF 1', 'IYCF 2', 'Kangaroo mother care',
+                             'Public provision of complementary foods', 'Vitamin A supplementation',
+                             'Treatment of SAM',
+                             'Lipid-based nutrition supplements'],
+                             #'IPTp', 'Multiple micronutrient supplementation',
+                             #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
+                             #'Balanced energy-protein supplementation', 'Cash transfers',
+                             #'IFAS (community)', 'IFAS for pregnant women (community)'],
 
 dirname = os.path.dirname(__file__)
 input_path_med = dirname + '/inputs/Medium 2020 base/'
@@ -233,14 +237,15 @@ if __name__ == '__main__':
         kwargs = {'name': region,
                   'model_name': region,
                   'scen_type': 'coverage',
-                  'progvals': sc.odict({'Balanced energy-protein supplementation': [], 'Cash transfers': [],
-                           'IYCF 1': [], 'IYCF 2': [], 'Kangaroo mother care': [],
+                  'progvals': sc.odict({'IYCF 1': [], 'IYCF 2': [], 'Kangaroo mother care': [],
                            'Public provision of complementary foods': [],'Vitamin A supplementation': [],
                            'Lipid-based nutrition supplements': [],
+                           'Treatment of SAM': []})}
                            #'Management of MAM': [],'Oral rehydration salts': [], 'Zinc for treatment + ORS': [],
-                           'Treatment of SAM': [], 'IFAS for pregnant women (community)': [],
-                           'IFAS (community)': [],  'IPTp': [],
-                           'Multiple micronutrient supplementation': []})}
+                           #'Balanced energy-protein supplementation': [], 'Cash transfers': [],
+                           #'IFAS for pregnant women (community)': [],
+                           #'IFAS (community)': [],  'IPTp': [],
+                           #'Multiple micronutrient supplementation': []})}
         b.add_scens(Scen(**kwargs))
     b.run_scens()
     warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -253,14 +258,15 @@ if __name__ == '__main__':
         kwargs = {'name': region,
                   'model_name': region,
                   'scen_type': 'coverage',
-                  'progvals': sc.odict({'Balanced energy-protein supplementation': [], 'Cash transfers': [],
-                           'IYCF 1': [], 'IYCF 2': [], 'Kangaroo mother care': [],
+                  'progvals': sc.odict({'IYCF 1': [], 'IYCF 2': [], 'Kangaroo mother care': [],
                            'Public provision of complementary foods': [],'Vitamin A supplementation': [],
                            'Lipid-based nutrition supplements': [],
+                           'Treatment of SAM': []})}
                            #'Management of MAM': [],'Oral rehydration salts': [], 'Zinc for treatment + ORS': [],
-                           'Treatment of SAM': [], 'IFAS for pregnant women (community)': [],
-                           'IFAS (community)': [],  'IPTp': [],
-                           'Multiple micronutrient supplementation': []})}
+                           #'Balanced energy-protein supplementation': [], 'Cash transfers': [],
+                           #'IFAS for pregnant women (community)': [],
+                           #'IFAS (community)': [],  'IPTp': [],
+                           #'Multiple micronutrient supplementation': []})}
         b_trend.add_scens(Scen(**kwargs))
     b_trend.run_scens()
     warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -293,14 +299,15 @@ if __name__ == '__main__':
         kwargs = {'name': region,
                   'model_name': region,
                   'scen_type': 'coverage',
-                  'progvals': sc.odict({'Balanced energy-protein supplementation': [], 'Cash transfers': [],
-                           'IYCF 1': [], 'IYCF 2': [], 'Kangaroo mother care': [],
+                  'progvals': sc.odict({'IYCF 1': [], 'IYCF 2': [], 'Kangaroo mother care': [],
                            'Public provision of complementary foods': [],'Vitamin A supplementation': [],
                            'Lipid-based nutrition supplements': [],
+                           'Treatment of SAM': []})}
                            #'Management of MAM': [],'Oral rehydration salts': [], 'Zinc for treatment + ORS': [],
-                           'Treatment of SAM': [], 'IFAS for pregnant women (community)': [],
-                           'IFAS (community)': [],  'IPTp': [],
-                           'Multiple micronutrient supplementation': []})}
+                           #'Balanced energy-protein supplementation': [], 'Cash transfers': [],
+                           #'IFAS for pregnant women (community)': [],
+                           #'IFAS (community)': [],  'IPTp': [],
+                           #'Multiple micronutrient supplementation': []})}
         b_counter_med.add_scens(Scen(**kwargs))
     b_counter_med.run_scens()
     warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -313,14 +320,15 @@ if __name__ == '__main__':
         kwargs = {'name': region,
                   'model_name': region,
                   'scen_type': 'coverage',
-                  'progvals': sc.odict({'Balanced energy-protein supplementation': [], 'Cash transfers': [],
-                           'IYCF 1': [], 'IYCF 2': [], 'Kangaroo mother care': [],
+                  'progvals': sc.odict({'IYCF 1': [], 'IYCF 2': [], 'Kangaroo mother care': [],
                            'Public provision of complementary foods': [],'Vitamin A supplementation': [],
                            'Lipid-based nutrition supplements': [],
+                           'Treatment of SAM': []})}
                            #'Management of MAM': [],'Oral rehydration salts': [], 'Zinc for treatment + ORS': [],
-                           'Treatment of SAM': [], 'IFAS for pregnant women (community)': [],
-                           'IFAS (community)': [],  'IPTp': [],
-                           'Multiple micronutrient supplementation': []})}
+                           #'Balanced energy-protein supplementation': [], 'Cash transfers': [],
+                           #'IFAS for pregnant women (community)': [],
+                           #'IFAS (community)': [],  'IPTp': [],
+                           #'Multiple micronutrient supplementation': []})}
         b_counter_opt.add_scens(Scen(**kwargs))
     b_counter_opt.run_scens()
     # budgets2020 = sc.odict()
@@ -374,7 +382,7 @@ if __name__ == '__main__':
                     scenres.name = scenres.model_name + ' Optimized opt'
                 results.append(scenres)
 
-    write_results(results, filename=output_path + 'projection_from_2020_thrive1mort_IYCFfix_notrends_SAMreference_.xlsx')
+    write_results(results, filename=output_path + 'projection_from_2020_7ints_.xlsx')
 
 
 
