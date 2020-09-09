@@ -48,7 +48,8 @@ def parallel_optim1(region, path=None):
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 1,
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
-                                   'thrive': 1}),
+                                   'Minimize the total number of stunted children under 5': 1,
+                                   'thrive': 0}),
               'prog_set': prog_list,
               'fix_curr': False,
               'add_funds': 0
@@ -101,7 +102,8 @@ def parallel_optim2(region, path=None):
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 1,
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
-                                   'thrive': 1}),
+                                   'Minimize the total number of stunted children under 5': 1,
+                                   'thrive': 0}),
               'prog_set': prog_list,
               'fix_curr': False,
               'add_funds': 0
@@ -154,7 +156,8 @@ def parallel_optim3(region, path=None):
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 1,
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
-                                   'thrive': 1}),
+                                   'Minimize the total number of stunted children under 5': 1,
+                                   'thrive': 0}),
               'prog_set': prog_list,
               'fix_curr': False,
               'add_funds': 0
@@ -371,7 +374,7 @@ if __name__ == '__main__':
                     scenres.name = scenres.model_name + ' Optimized opt'
                 results.append(scenres)
 
-    write_results(results, filename=output_path + 'projection_from_2020_thrive1mort_IYCFfix_notrends_SAMreference_LNS.xlsx')
+    write_results(results, filename=output_path + 'projection_from_2020_thrive1mort_IYCFfix_notrends_SAMreference_.xlsx')
 
 
 

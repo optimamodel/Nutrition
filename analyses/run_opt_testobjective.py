@@ -28,7 +28,8 @@ def parallel_optim1(region, path=None):
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 0,
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
-                                   'thrive': 1}),
+                                   'Minimize the total number of stunted children under 5': 1,
+                                   'thrive': 0}),
               'prog_set': ['Balanced energy-protein supplementation', 'Cash transfers',
                              'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                              'Public provision of complementary foods', 'Vitamin A supplementation',
@@ -66,7 +67,8 @@ def parallel_optim2(region, path=None):
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 1,
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
-                                   'thrive': 1}),
+                                   'Minimize the total number of stunted children under 5': 5,
+                                   'thrive': 0}),
               'prog_set': ['Balanced energy-protein supplementation', 'Cash transfers',
                              'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                              'Public provision of complementary foods', 'Vitamin A supplementation',
@@ -102,9 +104,10 @@ def parallel_optim3(region, path=None):
     kwargs = {'name': region,
               'mults': [1.0],
               'model_name': region,
-              'weights': sc.odict({'Minimize the number of child deaths': 5,
+              'weights': sc.odict({'Minimize the number of child deaths': 1,
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
-                                   'thrive': 1}),
+                                   'Minimize the total number of stunted children under 5': 2,
+                                   'thrive': 0}),
               'prog_set': ['Balanced energy-protein supplementation', 'Cash transfers',
                              'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                              'Public provision of complementary foods', 'Vitamin A supplementation',
@@ -141,9 +144,10 @@ def parallel_optim4(region, path=None):
     kwargs = {'name': region,
               'mults': [1.0],
               'model_name': region,
-              'weights': sc.odict({'Minimize the number of child deaths': 10,
+              'weights': sc.odict({'Minimize the number of child deaths': 1,
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
-                                   'thrive': 1}),
+                                   'Minimize the total number of stunted children under 5': 1,
+                                   'thrive': 0}),
               'prog_set': ['Balanced energy-protein supplementation', 'Cash transfers',
                              'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                              'Public provision of complementary foods', 'Vitamin A supplementation',
@@ -177,8 +181,9 @@ def parallel_optim5(region, path=None):
     kwargs = {'name': region,
               'mults': [1.0],
               'model_name': region,
-              'weights': sc.odict({'Minimize the number of child deaths': 1,
-                                   'Minimize the prevalence of stunting in children': 0,
+              'weights': sc.odict({'Minimize the number of child deaths': 2,
+                                   'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
+                                   'Minimize the total number of stunted children under 5': 1,
                                    'thrive': 0}),
               'prog_set': ['Balanced energy-protein supplementation', 'Cash transfers',
                              'IYCF 1', 'IYCF 2', 'Kangaroo mother care',
@@ -323,6 +328,6 @@ if __name__ == '__main__':
 
         write_results(p_bounds.results['scens'], filename=output_path + 'test_bounds.xlsx')
     else:
-        write_results(results, filename=output_path + 'objectives_thrivemort_SAMreference_LNS.xlsx')
+        write_results(results, filename=output_path + 'objectives_stuntmort_SAMreference_LNS.xlsx')
 
 
