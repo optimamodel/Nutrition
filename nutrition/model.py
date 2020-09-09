@@ -99,7 +99,7 @@ class Model(sc.prettyobj):
             self.SAM_prev_tot[self.year] += children[age_group].num_wasted('SAM')
         self.wasted_prev_tot[self.year]
         for age_group in list(range(len(children))):
-            self.wasted_prev_tot[self.year] += sum(children[age_group].num_wasted(cat) for cat in self.ss.wasted_list)
+            self.wasted_prev_tot[self.year] += (children[age_group].num_wasted('SAM') + children[age_group].num_wasted('MAM'))
 
     def _track_rates(self):
         """ Rates defined as total deaths per 1000 live births.
