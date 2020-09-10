@@ -546,10 +546,7 @@ class Project(object):
         results = []
         # run baseline
         if runbaseline:
-            try:
-                optim.prog_set.append('Excess budget not allocated')
-            except:
-                print('No budget')
+            optim.prog_set.append('Excess budget not allocated')
             base = self.run_baseline(optim.model_name, optim.prog_set)
             results.append(base)
             optim.prog_set.remove('Excess budget not allocated')
