@@ -28,8 +28,8 @@ def parallel_optim1(region, path=None):
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 0,
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
-                                   'Minimize the total number of stunted children under 5': 0,
-                                   'thrive': 1}),
+                                   'Minimize the total number of stunted children under 5': 1,
+                                   'thrive': 0}),
               'prog_set': ['IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                              'Public provision of complementary foods', 'Vitamin A supplementation',
                              'Treatment of SAM',
@@ -68,8 +68,8 @@ def parallel_optim2(region, path=None):
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 1,
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
-                                   'Minimize the total number of stunted children under 5': 0,
-                                   'thrive': 1}),
+                                   'Minimize the total number of stunted children under 5': 10,
+                                   'thrive': 0}),
               'prog_set': ['IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                              'Public provision of complementary foods', 'Vitamin A supplementation',
                              'Treatment of SAM',
@@ -106,10 +106,10 @@ def parallel_optim3(region, path=None):
     kwargs = {'name': region,
               'mults': [1.0],
               'model_name': region,
-              'weights': sc.odict({'Minimize the number of child deaths': 2,
+              'weights': sc.odict({'Minimize the number of child deaths': 1,
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
-                                   'Minimize the total number of stunted children under 5': 0,
-                                   'thrive': 1}),
+                                   'Minimize the total number of stunted children under 5': 5,
+                                   'thrive': 0}),
               'prog_set': ['IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                              'Public provision of complementary foods', 'Vitamin A supplementation',
                              'Treatment of SAM',
@@ -147,10 +147,10 @@ def parallel_optim4(region, path=None):
     kwargs = {'name': region,
               'mults': [1.0],
               'model_name': region,
-              'weights': sc.odict({'Minimize the number of child deaths': 5,
+              'weights': sc.odict({'Minimize the number of child deaths': 1,
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
-                                   'Minimize the total number of stunted children under 5': 10,
-                                   'thrive': 1}),
+                                   'Minimize the total number of stunted children under 5': 2,
+                                   'thrive': 0}),
               'prog_set': ['IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                              'Public provision of complementary foods', 'Vitamin A supplementation',
                              'Treatment of SAM',
@@ -185,10 +185,10 @@ def parallel_optim5(region, path=None):
     kwargs = {'name': region,
               'mults': [1.0],
               'model_name': region,
-              'weights': sc.odict({'Minimize the number of child deaths': 10,
+              'weights': sc.odict({'Minimize the number of child deaths': 1,
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
-                                   'Minimize the total number of stunted children under 5': 0,
-                                   'thrive': 1}),
+                                   'Minimize the total number of stunted children under 5': 1,
+                                   'thrive': 0}),
               'prog_set': ['IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                              'Public provision of complementary foods', 'Vitamin A supplementation',
                              'Treatment of SAM',
@@ -228,7 +228,7 @@ country_list = ['Afghanistan', 'Albania', 'Algeria', 'Angola', 'Argentina', 'Arm
 dirname = os.path.dirname(__file__)
 input_path = dirname + '/inputs/Medium 2020 base/'
 output_path = dirname + '/outputs/'
-n_processors = 4
+n_processors = 40
 bounds = False
 
 if __name__ == '__main__':
