@@ -17,7 +17,7 @@ def parallel_optim1(region, path=None):
     prog_list = ['IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                  'Public provision of complementary foods', 'Vitamin A supplementation',
                  'Treatment of SAM',
-                 'Lipid-based nutrition supplements'],
+                 'Lipid-based nutrition supplements']
                  #'IPTp', 'Multiple micronutrient supplementation',
                  #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
                  #'Balanced energy-protein supplementation', 'Cash transfers',
@@ -42,7 +42,7 @@ def parallel_optim1(region, path=None):
     for a in age_labels:  # get total number of stunted and wasted children for objective weights
         pop_size_tot += p.models[region].pops[0].popSizes[a]
 
-    mult = [0.75 * total_budget_2019 / max(1,total_budget_2020)]
+    mult = [1.0 * total_budget_2019 / max(1,total_budget_2020)]
     ## define custom optimization
     kwargs = {'name': region,
               'mults': mult,
@@ -71,7 +71,7 @@ def parallel_optim2(region, path=None):
     prog_list = ['IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                  'Public provision of complementary foods', 'Vitamin A supplementation',
                  'Treatment of SAM',
-                 'Lipid-based nutrition supplements'],
+                 'Lipid-based nutrition supplements']
                  #'IPTp', 'Multiple micronutrient supplementation',
                  #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
                  #'Balanced energy-protein supplementation', 'Cash transfers',
@@ -96,7 +96,7 @@ def parallel_optim2(region, path=None):
     for a in age_labels:  # get total number of stunted and wasted children for objective weights
         pop_size_tot += p.models[region].pops[0].popSizes[a]
 
-    mult = [0.875 * total_budget_2019 / max(1,total_budget_2020)]
+    mult = [1.0 * total_budget_2019 / max(1,total_budget_2020)]
 
     ## define custom optimization
     kwargs = {'name': region,
@@ -126,7 +126,7 @@ def parallel_optim3(region, path=None):
     prog_list = ['IYCF 1', 'IYCF 2', 'Kangaroo mother care',
                  'Public provision of complementary foods', 'Vitamin A supplementation',
                  'Treatment of SAM',
-                 'Lipid-based nutrition supplements'],
+                 'Lipid-based nutrition supplements']
                  #'IPTp', 'Multiple micronutrient supplementation',
                  #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
                  #'Balanced energy-protein supplementation', 'Cash transfers',
@@ -151,7 +151,7 @@ def parallel_optim3(region, path=None):
     for a in age_labels:  # get total number of stunted and wasted children for objective weights
         pop_size_tot += p.models[region].pops[0].popSizes[a]
 
-    mult = [0.925 * total_budget_2019 / max(1,total_budget_2020)]
+    mult = [1.0 * total_budget_2019 / max(1,total_budget_2020)]
 
     ## define custom optimization
     kwargs = {'name': region,
