@@ -42,15 +42,15 @@ def parallel_optim1(region, path=None):
     for a in age_labels:  # get total number of stunted and wasted children for objective weights
         pop_size_tot += p.models[region].pops[0].popSizes[a]
 
-    mult = [0.75 * total_budget_2019 / total_budget_2020]
+    mult = [0.75 * total_budget_2019 / max(1,total_budget_2020)]
     ## define custom optimization
     kwargs = {'name': region,
               'mults': mult,
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 1,
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
-                                   'Minimize the total number of stunted children under 5': 1,
-                                   'thrive': 0}),
+                                   'Minimize the total number of stunted children under 5': 0,
+                                   'thrive': 1}),
               'prog_set': prog_list,
               'fix_curr': False,
               'add_funds': 0
@@ -96,7 +96,7 @@ def parallel_optim2(region, path=None):
     for a in age_labels:  # get total number of stunted and wasted children for objective weights
         pop_size_tot += p.models[region].pops[0].popSizes[a]
 
-    mult = [0.875 * total_budget_2019 / total_budget_2020]
+    mult = [0.875 * total_budget_2019 / max(1,total_budget_2020)]
 
     ## define custom optimization
     kwargs = {'name': region,
@@ -104,8 +104,8 @@ def parallel_optim2(region, path=None):
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 1,
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
-                                   'Minimize the total number of stunted children under 5': 1,
-                                   'thrive': 0}),
+                                   'Minimize the total number of stunted children under 5': 0,
+                                   'thrive': 1}),
               'prog_set': prog_list,
               'fix_curr': False,
               'add_funds': 0
@@ -151,7 +151,7 @@ def parallel_optim3(region, path=None):
     for a in age_labels:  # get total number of stunted and wasted children for objective weights
         pop_size_tot += p.models[region].pops[0].popSizes[a]
 
-    mult = [0.925 * total_budget_2019 / total_budget_2020]
+    mult = [0.925 * total_budget_2019 / max(1,total_budget_2020)]
 
     ## define custom optimization
     kwargs = {'name': region,
@@ -159,8 +159,8 @@ def parallel_optim3(region, path=None):
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 1,
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
-                                   'Minimize the total number of stunted children under 5': 1,
-                                   'thrive': 0}),
+                                   'Minimize the total number of stunted children under 5': 0,
+                                   'thrive': 1}),
               'prog_set': prog_list,
               'fix_curr': False,
               'add_funds': 0
