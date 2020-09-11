@@ -228,7 +228,7 @@ country_list = ['Afghanistan', 'Albania', 'Algeria', 'Angola', 'Argentina', 'Arm
 dirname = os.path.dirname(__file__)
 input_path = dirname + '/inputs/Medium 2020 base/'
 output_path = dirname + '/outputs/'
-n_processors = 40
+n_processors = 4
 bounds = False
 
 if __name__ == '__main__':
