@@ -30,7 +30,7 @@ def parallel_optim1(region, path=None):
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
                                    'Minimize the total number of stunted children under 5': 0,
                                    'thrive': 1}),
-              'prog_set': ['IYCF 1', 'IYCF 2', 'Kangaroo mother care',
+              'prog_set': ['IYCF 1', 'IYCF 2', 'Kangaroo mother care','Balanced energy-protein supplementation',
                              'Public provision of complementary foods', 'Vitamin A supplementation',
                              'Treatment of SAM',
                              'Lipid-based nutrition supplements'],
@@ -70,7 +70,7 @@ def parallel_optim2(region, path=None):
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
                                    'Minimize the total number of stunted children under 5': 0,
                                    'thrive': 1}),
-              'prog_set': ['IYCF 1', 'IYCF 2', 'Kangaroo mother care',
+              'prog_set': ['IYCF 1', 'IYCF 2', 'Kangaroo mother care','Balanced energy-protein supplementation',
                              'Public provision of complementary foods', 'Vitamin A supplementation',
                              'Treatment of SAM',
                              'Lipid-based nutrition supplements'],
@@ -110,7 +110,7 @@ def parallel_optim3(region, path=None):
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
                                    'Minimize the total number of stunted children under 5': 0,
                                    'thrive': 1}),
-              'prog_set': ['IYCF 1', 'IYCF 2', 'Kangaroo mother care',
+              'prog_set': ['IYCF 1', 'IYCF 2', 'Kangaroo mother care','Balanced energy-protein supplementation',
                              'Public provision of complementary foods', 'Vitamin A supplementation',
                              'Treatment of SAM',
                              'Lipid-based nutrition supplements'],
@@ -151,7 +151,7 @@ def parallel_optim4(region, path=None):
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
                                    'Minimize the total number of stunted children under 5': 0,
                                    'thrive': 1}),
-              'prog_set': ['IYCF 1', 'IYCF 2', 'Kangaroo mother care',
+              'prog_set': ['IYCF 1', 'IYCF 2', 'Kangaroo mother care','Balanced energy-protein supplementation',
                              'Public provision of complementary foods', 'Vitamin A supplementation',
                              'Treatment of SAM',
                              'Lipid-based nutrition supplements'],
@@ -189,7 +189,7 @@ def parallel_optim5(region, path=None):
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
                                    'Minimize the total number of stunted children under 5': 0,
                                    'thrive': 1}),
-              'prog_set': ['IYCF 1', 'IYCF 2', 'Kangaroo mother care',
+              'prog_set': ['IYCF 1', 'IYCF 2', 'Kangaroo mother care','Balanced energy-protein supplementation',
                              'Public provision of complementary foods', 'Vitamin A supplementation',
                              'Treatment of SAM',
                              'Lipid-based nutrition supplements'],
@@ -333,6 +333,6 @@ if __name__ == '__main__':
 
         write_results(p_bounds.results['scens'], filename=output_path + 'test_bounds.xlsx')
     else:
-        write_results(results, filename=output_path + 'objectives_thrivemort_7int.xlsx')
+        write_results(results, filename=output_path + 'objectives_thrivemort_8int.xlsx')
 
 
