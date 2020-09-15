@@ -282,7 +282,7 @@ if __name__ == '__main__':
                   'progvals': sc.odict({'Balanced energy-protein supplementation': [], 'Cash transfers': [],
                            'IYCF 1': [], 'IYCF 2': [], 'Kangaroo mother care': [],
                            'Public provision of complementary foods': [],'Vitamin A supplementation': [],
-                           'Lipid-based nutrition supplements': [],'Balanced energy-protein supplementation': [],
+                           'Lipid-based nutrition supplements': [],
                            #'Management of MAM': [],'Oral rehydration salts': [], 'Zinc for treatment + ORS': [],
                            'Treatment of SAM': [], 'IFAS for pregnant women (community)': [],
                            'IFAS (community)': [],  'IPTp': [],
