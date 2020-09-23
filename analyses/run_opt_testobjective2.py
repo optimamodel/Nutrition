@@ -16,8 +16,8 @@ def parallel_optim1(region, path=None):
     warnings.filterwarnings("ignore", category=RuntimeWarning)
     prog_list = ['IYCF 1', 'IYCF 2', 'Kangaroo mother care', 'Balanced energy-protein supplementation',
                  'Public provision of complementary foods', 'Vitamin A supplementation',
-                 'Treatment of SAM',
-                 'Lipid-based nutrition supplements']
+                 'Lipid-based nutrition supplements', 'Cash transfers',
+                 'Treatment of SAM']
     p0 = Project('Budget')
     p0.load_data(
         inputspath=os.path.dirname(__file__) + '/inputs/Medium 2019 base/' + region + '_input.xlsx',
@@ -63,8 +63,8 @@ def parallel_optim2(region, path=None):
     warnings.filterwarnings("ignore", category=RuntimeWarning)
     prog_list = ['IYCF 1', 'IYCF 2', 'Kangaroo mother care', 'Balanced energy-protein supplementation',
                  'Public provision of complementary foods', 'Vitamin A supplementation',
-                 'Treatment of SAM',
-                 'Lipid-based nutrition supplements']
+                 'Lipid-based nutrition supplements', 'Cash transfers',
+                 'Treatment of SAM']
     p0 = Project('Budget')
     p0.load_data(
         inputspath=os.path.dirname(__file__) + '/inputs/Medium 2019 base/' + region + '_input.xlsx',
@@ -108,54 +108,8 @@ def parallel_optim3(region, path=None):
     warnings.filterwarnings("ignore", category=RuntimeWarning)
     prog_list = ['IYCF 1', 'IYCF 2', 'Kangaroo mother care', 'Balanced energy-protein supplementation',
                  'Public provision of complementary foods', 'Vitamin A supplementation',
-                 'Treatment of SAM',
-                 'Lipid-based nutrition supplements']
-    p0 = Project('Budget')
-    p0.load_data(
-        inputspath=os.path.dirname(__file__) + '/inputs/Medium 2019 base/' + region + '_input.xlsx',
-        name=region, time_trend=False)
-    total_budget_2019 = 0.0
-    for prog in prog_list:
-        if prog in p0.models[region].prog_info.programs.keys():
-            total_budget_2019 += p0.models[region].prog_info.programs[prog].annual_spend[0]
-
-    p = Project('WHA optimisation')
-    p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=False)
-    total_budget_2020 = 0.0
-    for prog in prog_list:
-        if prog in p.models[region].prog_info.programs.keys():
-            total_budget_2020 += p.models[region].prog_info.programs[prog].annual_spend[0]
-
-    mult = [1.0 * total_budget_2019 / max(1, total_budget_2020)]
-    ## define custom optimization
-    kwargs = {'name': region,
-              'mults': mult,
-              'model_name': region,
-              'weights': sc.odict({'Minimize the number of child deaths': 2,
-                                   'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
-                                   'Minimize the total number of stunted children under 5': 0,
-                                   'thrive': 1}),
-              'prog_set': prog_list,
-              'fix_curr': False,
-              'add_funds': 0
-              }
-
-    p.add_optims(Optim(**kwargs))
-    results = p.run_optim(maxiter=25, swarmsize=25, maxtime=500, parallel=False)
-    # results = p.run_optim(maxiter=2, swarmsize=2, maxtime=5, parallel=False)
-
-    return(p)
-
-
-def parallel_optim4(region, path=None):
-    import warnings
-    warnings.filterwarnings("ignore", category=DeprecationWarning)
-    warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
-    warnings.filterwarnings("ignore", category=RuntimeWarning)
-    prog_list = ['IYCF 1', 'IYCF 2', 'Kangaroo mother care', 'Balanced energy-protein supplementation',
-                 'Public provision of complementary foods', 'Vitamin A supplementation',
-                 'Treatment of SAM',
-                 'Lipid-based nutrition supplements']
+                 'Lipid-based nutrition supplements', 'Cash transfers',
+                 'Treatment of SAM']
     p0 = Project('Budget')
     p0.load_data(
         inputspath=os.path.dirname(__file__) + '/inputs/Medium 2019 base/' + region + '_input.xlsx',
@@ -192,6 +146,52 @@ def parallel_optim4(region, path=None):
 
     return(p)
 
+
+def parallel_optim4(region, path=None):
+    import warnings
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
+    prog_list = ['IYCF 1', 'IYCF 2', 'Kangaroo mother care', 'Balanced energy-protein supplementation',
+                 'Public provision of complementary foods', 'Vitamin A supplementation',
+                 'Lipid-based nutrition supplements', 'Cash transfers',
+                 'Treatment of SAM']
+    p0 = Project('Budget')
+    p0.load_data(
+        inputspath=os.path.dirname(__file__) + '/inputs/Medium 2019 base/' + region + '_input.xlsx',
+        name=region, time_trend=False)
+    total_budget_2019 = 0.0
+    for prog in prog_list:
+        if prog in p0.models[region].prog_info.programs.keys():
+            total_budget_2019 += p0.models[region].prog_info.programs[prog].annual_spend[0]
+
+    p = Project('WHA optimisation')
+    p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=False)
+    total_budget_2020 = 0.0
+    for prog in prog_list:
+        if prog in p.models[region].prog_info.programs.keys():
+            total_budget_2020 += p.models[region].prog_info.programs[prog].annual_spend[0]
+
+    mult = [1.0 * total_budget_2019 / max(1, total_budget_2020)]
+    ## define custom optimization
+    kwargs = {'name': region,
+              'mults': mult,
+              'model_name': region,
+              'weights': sc.odict({'Minimize the number of child deaths': 10,
+                                   'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
+                                   'Minimize the total number of stunted children under 5': 0,
+                                   'thrive': 1}),
+              'prog_set': prog_list,
+              'fix_curr': False,
+              'add_funds': 0
+              }
+
+    p.add_optims(Optim(**kwargs))
+    results = p.run_optim(maxiter=25, swarmsize=25, maxtime=500, parallel=False)
+    # results = p.run_optim(maxiter=2, swarmsize=2, maxtime=5, parallel=False)
+
+    return(p)
+
 def parallel_optim5(region, path=None):
     import warnings
     warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -199,8 +199,8 @@ def parallel_optim5(region, path=None):
     warnings.filterwarnings("ignore", category=RuntimeWarning)
     prog_list = ['IYCF 1', 'IYCF 2', 'Kangaroo mother care', 'Balanced energy-protein supplementation',
                  'Public provision of complementary foods', 'Vitamin A supplementation',
-                 'Treatment of SAM',
-                 'Lipid-based nutrition supplements']
+                 'Lipid-based nutrition supplements', 'Cash transfers',
+                 'Treatment of SAM']
     p0 = Project('Budget')
     p0.load_data(
         inputspath=os.path.dirname(__file__) + '/inputs/Medium 2019 base/' + region + '_input.xlsx',
@@ -363,6 +363,6 @@ if __name__ == '__main__':
 
         write_results(p_bounds.results['scens'], filename=output_path + 'test_bounds.xlsx')
     else:
-        write_results(results, filename=output_path + 'objectives_thrivemort_8int.xlsx')
+        write_results(results, filename=output_path + 'objectives_thrivemort_9int.xlsx')
 
 
