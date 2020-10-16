@@ -14,30 +14,37 @@ def parallel_optim1(region, path=None):
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
     warnings.filterwarnings("ignore", category=RuntimeWarning)
+    prog_list = ['IYCF 1', 'IYCF 2', 'Kangaroo mother care', 'Balanced energy-protein supplementation',
+                 'Public provision of complementary foods', 'Vitamin A supplementation',
+                 'Lipid-based nutrition supplements', 'Cash transfers',
+                 'Treatment of SAM']
+    p0 = Project('Budget')
+    p0.load_data(
+        inputspath=os.path.dirname(__file__) + '/inputs/Medium 2019 base/' + region + '_input.xlsx',
+        name=region, time_trend=False)
+    total_budget_2019 = 0.0
+    for prog in prog_list:
+        if prog in p0.models[region].prog_info.programs.keys():
+            total_budget_2019 += p0.models[region].prog_info.programs[prog].annual_spend[0]
 
     p = Project('WHA optimisation')
     p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=False)
+    total_budget_2020 = 0.0
+    for prog in prog_list:
+        if prog in p.models[region].prog_info.programs.keys():
+            total_budget_2020 += p.models[region].prog_info.programs[prog].annual_spend[0]
 
-    age_labels = p.models[region].pops[0].popSizes.keys()
-    pop_size_tot = 0
-    for a in age_labels:  # get total number of stunted and wasted children for objective weights
-        pop_size_tot += p.models[region].pops[0].popSizes[a]
+
+    mult = [1.0 * total_budget_2019 / max(1, total_budget_2020)]
     ## define custom optimization
     kwargs = {'name': region,
-              'mults': [1.0],
+              'mults': mult,
               'model_name': region,
-              'weights': sc.odict({'Minimize the number of child deaths': 1,
+              'weights': sc.odict({'Minimize the number of child deaths': 0,
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
-                                   'Minimize the total number of stunted children under 5': 10,
-                                   'thrive': 0}),
-              'prog_set': ['IYCF 1', 'IYCF 2', 'Kangaroo mother care','Balanced energy-protein supplementation',
-                             'Public provision of complementary foods', 'Vitamin A supplementation',
-                             'Treatment of SAM',
-                             'Lipid-based nutrition supplements'],
-                             #'IPTp', 'Multiple micronutrient supplementation',
-                             #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
-                             # 'Cash transfers',
-                             #'IFAS (community)', 'IFAS for pregnant women (community)'],
+                                   'Minimize the total number of stunted children under 5': 0,
+                                   'thrive': 1}),
+              'prog_set': prog_list,
               'fix_curr': False,
               'add_funds': 0
               }
@@ -54,30 +61,36 @@ def parallel_optim2(region, path=None):
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
     warnings.filterwarnings("ignore", category=RuntimeWarning)
+    prog_list = ['IYCF 1', 'IYCF 2', 'Kangaroo mother care', 'Balanced energy-protein supplementation',
+                 'Public provision of complementary foods', 'Vitamin A supplementation',
+                 'Lipid-based nutrition supplements', 'Cash transfers',
+                 'Treatment of SAM']
+    p0 = Project('Budget')
+    p0.load_data(
+        inputspath=os.path.dirname(__file__) + '/inputs/Medium 2019 base/' + region + '_input.xlsx',
+        name=region, time_trend=False)
+    total_budget_2019 = 0.0
+    for prog in prog_list:
+        if prog in p0.models[region].prog_info.programs.keys():
+            total_budget_2019 += p0.models[region].prog_info.programs[prog].annual_spend[0]
 
     p = Project('WHA optimisation')
     p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=False)
+    total_budget_2020 = 0.0
+    for prog in prog_list:
+        if prog in p.models[region].prog_info.programs.keys():
+            total_budget_2020 += p.models[region].prog_info.programs[prog].annual_spend[0]
 
-    age_labels = p.models[region].pops[0].popSizes.keys()
-    pop_size_tot = 0
-    for a in age_labels:  # get total number of stunted and wasted children for objective weights
-        pop_size_tot += p.models[region].pops[0].popSizes[a]
+    mult = [1.0 * total_budget_2019 / max(1, total_budget_2020)]
     ## define custom optimization
     kwargs = {'name': region,
-              'mults': [1.0],
+              'mults': mult,
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': 1,
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
-                                   'Minimize the total number of stunted children under 5': 5,
-                                   'thrive': 0}),
-              'prog_set': ['IYCF 1', 'IYCF 2', 'Kangaroo mother care','Balanced energy-protein supplementation',
-                             'Public provision of complementary foods', 'Vitamin A supplementation',
-                             'Treatment of SAM',
-                             'Lipid-based nutrition supplements'],
-                             #'IPTp', 'Multiple micronutrient supplementation',
-                             #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
-                             #'Balanced energy-protein supplementation', 'Cash transfers',
-                             #'IFAS (community)', 'IFAS for pregnant women (community)'],
+                                   'Minimize the total number of stunted children under 5': 0,
+                                   'thrive': 1}),
+              'prog_set': prog_list,
               'fix_curr': False,
               'add_funds': 0
               }
@@ -93,31 +106,36 @@ def parallel_optim3(region, path=None):
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
     warnings.filterwarnings("ignore", category=RuntimeWarning)
+    prog_list = ['IYCF 1', 'IYCF 2', 'Kangaroo mother care', 'Balanced energy-protein supplementation',
+                 'Public provision of complementary foods', 'Vitamin A supplementation',
+                 'Lipid-based nutrition supplements', 'Cash transfers',
+                 'Treatment of SAM']
+    p0 = Project('Budget')
+    p0.load_data(
+        inputspath=os.path.dirname(__file__) + '/inputs/Medium 2019 base/' + region + '_input.xlsx',
+        name=region, time_trend=False)
+    total_budget_2019 = 0.0
+    for prog in prog_list:
+        if prog in p0.models[region].prog_info.programs.keys():
+            total_budget_2019 += p0.models[region].prog_info.programs[prog].annual_spend[0]
 
     p = Project('WHA optimisation')
     p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=False)
+    total_budget_2020 = 0.0
+    for prog in prog_list:
+        if prog in p.models[region].prog_info.programs.keys():
+            total_budget_2020 += p.models[region].prog_info.programs[prog].annual_spend[0]
 
-    age_labels = p.models[region].pops[0].popSizes.keys()
-    pop_size_tot = 0
-    for a in age_labels:  # get total number of stunted and wasted children for objective weights
-        pop_size_tot += p.models[region].pops[0].popSizes[a]
-
+    mult = [1.0 * total_budget_2019 / max(1, total_budget_2020)]
     ## define custom optimization
     kwargs = {'name': region,
-              'mults': [1.0],
+              'mults': mult,
               'model_name': region,
-              'weights': sc.odict({'Minimize the number of child deaths': 1,
+              'weights': sc.odict({'Minimize the number of child deaths': 5,
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
-                                   'Minimize the total number of stunted children under 5': 1,
-                                   'thrive': 0}),
-              'prog_set': ['IYCF 1', 'IYCF 2', 'Kangaroo mother care','Balanced energy-protein supplementation',
-                             'Public provision of complementary foods', 'Vitamin A supplementation',
-                             'Treatment of SAM',
-                             'Lipid-based nutrition supplements'],
-                             #'IPTp', 'Multiple micronutrient supplementation',
-                             #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
-                             #'Balanced energy-protein supplementation', 'Cash transfers',
-                             #'IFAS (community)', 'IFAS for pregnant women (community)'],
+                                   'Minimize the total number of stunted children under 5': 0,
+                                   'thrive': 1}),
+              'prog_set': prog_list,
               'fix_curr': False,
               'add_funds': 0
               }
@@ -134,31 +152,36 @@ def parallel_optim4(region, path=None):
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
     warnings.filterwarnings("ignore", category=RuntimeWarning)
+    prog_list = ['IYCF 1', 'IYCF 2', 'Kangaroo mother care', 'Balanced energy-protein supplementation',
+                 'Public provision of complementary foods', 'Vitamin A supplementation',
+                 'Lipid-based nutrition supplements', 'Cash transfers',
+                 'Treatment of SAM']
+    p0 = Project('Budget')
+    p0.load_data(
+        inputspath=os.path.dirname(__file__) + '/inputs/Medium 2019 base/' + region + '_input.xlsx',
+        name=region, time_trend=False)
+    total_budget_2019 = 0.0
+    for prog in prog_list:
+        if prog in p0.models[region].prog_info.programs.keys():
+            total_budget_2019 += p0.models[region].prog_info.programs[prog].annual_spend[0]
 
     p = Project('WHA optimisation')
     p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=False)
+    total_budget_2020 = 0.0
+    for prog in prog_list:
+        if prog in p.models[region].prog_info.programs.keys():
+            total_budget_2020 += p.models[region].prog_info.programs[prog].annual_spend[0]
 
-    age_labels = p.models[region].pops[0].popSizes.keys()
-    pop_size_tot = 0
-    for a in age_labels:  # get total number of stunted and wasted children for objective weights
-        pop_size_tot += p.models[region].pops[0].popSizes[a]
-
+    mult = [1.0 * total_budget_2019 / max(1, total_budget_2020)]
     ## define custom optimization
     kwargs = {'name': region,
-              'mults': [1.0],
+              'mults': mult,
               'model_name': region,
-              'weights': sc.odict({'Minimize the number of child deaths': 2,
+              'weights': sc.odict({'Minimize the number of child deaths': 10,
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
-                                   'Minimize the total number of stunted children under 5': 1,
-                                   'thrive': 0}),
-              'prog_set': ['IYCF 1', 'IYCF 2', 'Kangaroo mother care','Balanced energy-protein supplementation',
-                             'Public provision of complementary foods', 'Vitamin A supplementation',
-                             'Treatment of SAM',
-                             'Lipid-based nutrition supplements'],
-                             #'IPTp', 'Multiple micronutrient supplementation',
-                             #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
-                             #'Balanced energy-protein supplementation', 'Cash transfers',
-                             #'IFAS (community)', 'IFAS for pregnant women (community)'],
+                                   'Minimize the total number of stunted children under 5': 0,
+                                   'thrive': 1}),
+              'prog_set': prog_list,
               'fix_curr': False,
               'add_funds': 0
               }
@@ -174,29 +197,36 @@ def parallel_optim5(region, path=None):
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
     warnings.filterwarnings("ignore", category=RuntimeWarning)
+    prog_list = ['IYCF 1', 'IYCF 2', 'Kangaroo mother care', 'Balanced energy-protein supplementation',
+                 'Public provision of complementary foods', 'Vitamin A supplementation',
+                 'Lipid-based nutrition supplements', 'Cash transfers',
+                 'Treatment of SAM']
+    p0 = Project('Budget')
+    p0.load_data(
+        inputspath=os.path.dirname(__file__) + '/inputs/Medium 2019 base/' + region + '_input.xlsx',
+        name=region, time_trend=False)
+    total_budget_2019 = 0.0
+    for prog in prog_list:
+        if prog in p0.models[region].prog_info.programs.keys():
+            total_budget_2019 += p0.models[region].prog_info.programs[prog].annual_spend[0]
 
     p = Project('WHA optimisation')
     p.load_data(inputspath=path + region + '_input.xlsx', name=region, time_trend=False)
+    total_budget_2020 = 0.0
+    for prog in prog_list:
+        if prog in p.models[region].prog_info.programs.keys():
+            total_budget_2020 += p.models[region].prog_info.programs[prog].annual_spend[0]
 
-    total_PW = sum(p.models[region].pops[1].popSizes)
-    total_non_PW = sum(p.models[region].pops[2].popSizes)
-
+    mult = [1.0 * total_budget_2019 / max(1, total_budget_2020)]
     ## define custom optimization
     kwargs = {'name': region,
-              'mults': [1.0],
+              'mults': mult,
               'model_name': region,
-              'weights': sc.odict({'Minimize the number of child deaths': 5,
+              'weights': sc.odict({'Minimize the number of child deaths': 1,
                                    'Minimize the prevalence of stunting in children': 0,#pop_size_tot,
-                                   'Minimize the total number of stunted children under 5': 1,
+                                   'Minimize the total number of stunted children under 5': 0,
                                    'thrive': 0}),
-              'prog_set': ['IYCF 1', 'IYCF 2', 'Kangaroo mother care','Balanced energy-protein supplementation',
-                             'Public provision of complementary foods', 'Vitamin A supplementation',
-                             'Treatment of SAM',
-                             'Lipid-based nutrition supplements'],
-                             #'IPTp', 'Multiple micronutrient supplementation',
-                             #'Management of MAM','Oral rehydration salts', 'Zinc for treatment + ORS',
-                             #'Balanced energy-protein supplementation', 'Cash transfers',
-                             #'IFAS (community)', 'IFAS for pregnant women (community)'],
+              'prog_set': prog_list,
               'fix_curr': False,
               'add_funds': 0
               }
@@ -251,31 +281,31 @@ if __name__ == '__main__':
                 if scenres.name == 'Baseline':
                     scenres.name = scenres.model_name + ' ' + scenres.name
                 else:
-                    scenres.name = scenres.model_name + ' Optimized obj1 ' + str(scenres.mult)+ 'x'
+                    scenres.name = scenres.model_name + ' Optimized obj1 ' + '1.0x'
                 results.append(scenres)
     for p in proj_list2:
         for res in p.results:
             for scenres in p.results[res]:
                 if scenres.name != 'Baseline':
-                    scenres.name = scenres.model_name + ' Optimized obj2 ' + str(scenres.mult)+ 'x'
+                    scenres.name = scenres.model_name + ' Optimized obj2 ' + '1.0x'
                     results.append(scenres)
     for p in proj_list3:
         for res in p.results:
             for scenres in p.results[res]:
                 if scenres.name != 'Baseline':
-                    scenres.name = scenres.model_name + ' Optimized obj3 ' + str(scenres.mult)+ 'x'
+                    scenres.name = scenres.model_name + ' Optimized obj3 ' + '1.0x'
                     results.append(scenres)
     for p in proj_list4:
         for res in p.results:
             for scenres in p.results[res]:
                 if scenres.name != 'Baseline':
-                    scenres.name = scenres.model_name + ' Optimized obj4 ' + str(scenres.mult)+ 'x'
+                    scenres.name = scenres.model_name + ' Optimized obj4 ' + '1.0x'
                     results.append(scenres)
     for p in proj_list5:
         for res in p.results:
             for scenres in p.results[res]:
                 if scenres.name != 'Baseline':
-                    scenres.name = scenres.model_name + ' Optimized obj5 ' + str(scenres.mult)+ 'x'
+                    scenres.name = scenres.model_name + ' Optimized obj5 ' + '1.0x'
                     results.append(scenres)
 
     # write_results(results, filename=output_path + 'test.xlsx')
@@ -333,6 +363,6 @@ if __name__ == '__main__':
 
         write_results(p_bounds.results['scens'], filename=output_path + 'test_bounds.xlsx')
     else:
-        write_results(results, filename=output_path + 'objectives_stuntmort_8int.xlsx')
+        write_results(results, filename=output_path + 'objectives_thrivemort_9int.xlsx')
 
 
