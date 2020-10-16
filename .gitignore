@@ -6,6 +6,7 @@
 *.png
 .pkl
 *.xls
+*.xlsx
 *.csv
 ~$*
 
@@ -19,6 +20,11 @@ inputs/costed_*
 inputs/JHE stunting wasting
 tests/*.xlsx
 tests/*.xlsm
+
+
+analyses/inputs/*
+analyses/inputs/Medium 2019 base
+analyses/outputs
 
 #ignore Ruth's random testing file and some notes
 randomTests.py 
@@ -147,3 +153,6 @@ package-lock.json
 *.obj
 tests/testing.xlsx
 inputs/costed_baseline*xlsx
+*.xlsx
+*.xlsx
+*.xlsx
