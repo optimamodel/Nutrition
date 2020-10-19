@@ -132,3 +132,4 @@ package-lock.json
 *.obj
 tests/testing.xlsx
 inputs/costed_baseline*xlsx
+*.xlsx
