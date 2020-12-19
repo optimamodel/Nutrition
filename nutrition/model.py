@@ -97,7 +97,7 @@ class Model(sc.prettyobj):
         self.SAM_prev_tot[self.year] = 0
         for age_group in list(range(len(children))):
             self.SAM_prev_tot[self.year] += children[age_group].num_wasted('SAM')
-        self.wasted_prev_tot[self.year]
+        self.wasted_prev_tot[self.year] = 0
         for age_group in list(range(len(children))):
             self.wasted_prev_tot[self.year] += (children[age_group].num_wasted('SAM') + children[age_group].num_wasted('MAM'))
 
