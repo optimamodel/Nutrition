@@ -119,7 +119,7 @@ def write_results(results, projname=None, filename=None, folder=None):
         'thrive', 'child_deaths',
         'stunted', 'stunted_prev',
         'wasted', 'wasted_prev', 'sam_prev',
-        'pw_anaemic', 'pw_anaemprev',
+        'pw_anaemic', 'SAM_prev_tot', #'pw_anaemprev',
         'stunted_prev_tot', 'wasted_prev_tot',
     ]
     #default_trackers()
