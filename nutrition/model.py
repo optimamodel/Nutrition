@@ -94,12 +94,12 @@ class Model(sc.prettyobj):
         self.stunted_prev_tot[self.year] = 0  # this means it is only the value at the last month of the year that will not be overwritten
         for age_group in list(range(len(children))):
             self.stunted_prev_tot[self.year] += children[age_group].num_stunted() #number non-stunted
-        self.SAM_prev_tot[self.year] = 0
+        self.SAM_tot[self.year] = 0
         for age_group in list(range(len(children))):
-            self.SAM_prev_tot[self.year] += children[age_group].num_wasted('SAM')
-        self.wasted_prev_tot[self.year] = 0
+            self.SAM_tot[self.year] += children[age_group].num_wasted('SAM')
+        self.wasted_tot[self.year] = 0
         for age_group in list(range(len(children))):
-            self.wasted_prev_tot[self.year] += (children[age_group].num_wasted('SAM') + children[age_group].num_wasted('MAM'))
+            self.wasted_tot[self.year] += (children[age_group].num_wasted('SAM') + children[age_group].num_wasted('MAM'))
 
     def _track_rates(self):
         """ Rates defined as total deaths per 1000 live births.

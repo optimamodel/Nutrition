@@ -57,8 +57,8 @@ def default_trackers(prev=None, rate=None):
         'young_bf',
         'old_bf',
         'stunted_prev_tot',
-        'SAM_prev_tot',
-        'wasted_prev_tot'
+        'SAM_tot',
+        'wasted_tot'
     ]
     if prev is not None:
         if prev:
