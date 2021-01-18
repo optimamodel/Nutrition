@@ -156,6 +156,13 @@ class Optim(sc.prettyobj):
             best_alloc = utils.add_fixed_alloc(fixed, scaled, inds)
         else:
             # if one of the multiples is 0, return fixed costs
+            fixed = np.append(fixed, 0.0)
+            excess_spend = {'name': 'Excess budget not allocated',
+                            'all_years': model.prog_info.all_years,
+                            'prog_data': utils.add_dummy_prog_data(model.prog_info, 'Excess budget not allocated')}
+            model.prog_info.add_prog(excess_spend, model.pops)
+            model.prog_info.prog_data = excess_spend['prog_data']
+            self.prog_set.append('Excess budget not allocated')
             best_alloc = fixed
         # generate results
         name = '%s (x%s)' % (self.name, mult)
