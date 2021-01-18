@@ -97,7 +97,7 @@ def pretty_labels(direction=False):
             'Minimize the number of anaemic non-pregnant women',
             'Minimize the prevalence of anaemia in non-pregnant women',
             'Minimize child mortality rate',
-            'Minimize pregnant women mortality rate'
+            'Minimize pregnant women mortality rate',
             'Maximize the prevalence of exclusive breastfeeding < 6 months',
             'Maximize the prevalence of age-appropriate breastfeeding 6-23 months',
             'Minimize the total number of stunted children under 5',
