@@ -682,6 +682,8 @@ class ProgData(object):
         frac_maize = baseline.loc['Food'].loc['Fraction eating maize as main staple food'].values[0]
         diarr_incid = baseline.loc['Diarrhoea incidence']['Data'].values
         frac_diarr_severe = baseline.loc['Other risks'].loc['Percentage of diarrhea that is severe'].values[0]
+        preterm = baseline.loc['Birth outcome distribution'].loc['Pre-term SGA'].values[0] + \
+                  baseline.loc['Birth outcome distribution'].loc['Pre-term AGA'].values[0]
         if len(baseline.loc['Other risks'].values) < 4:
             print('Warning, the databook being read is out of date and does not include baseline prevalences of '
                   'eclampsia and pre-eclampsia so global averages will be used.')
@@ -698,6 +700,9 @@ class ProgData(object):
         cash_transfers_row = food_insecure * np.ones(4)
         targetPopSheet.loc['Children', 'Cash transfers'].iloc[1:5] = cash_transfers_row
         self.calcscache.write_row('Programs target population', 1, 3, cash_transfers_row)
+        kmc_row = preterm * np.ones(1)
+        targetPopSheet.loc['Children', 'Kangaroo mother care'].iloc[0] = kmc_row
+        self.calcscache.write_row('Programs target population', 3, 2, kmc_row)
         lipid_row = food_insecure * np.ones(2)
         targetPopSheet.loc['Children', 'Lipid-based nutrition supplements'].iloc[2:4] = lipid_row
         self.calcscache.write_row('Programs target population', 4, 4, lipid_row)

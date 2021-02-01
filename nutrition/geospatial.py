@@ -9,7 +9,7 @@ from . import utils
 
 class Geospatial:
     def __init__(self, name=None, modelnames=None, weights=None, mults=None, prog_set=None,
-                 add_funds=0, fix_curr=False, fix_regionalspend=False, filter_progs=True, active=True):
+                 add_funds=0, fix_curr=False, fix_regionalspend=False, filter_progs=False, active=True):
         """
         :param name: name of the optimization (string)
         :param modelnames: names of the models (datasets) that each region corresponds to (list of strings). Order must match that of region_names.
