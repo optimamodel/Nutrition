@@ -298,8 +298,8 @@ def get_max_spend(prog_info, keep_inds, curr_spends, fixed):
             cpy_covs = sc.dcp(max_covs)  # this needs to be here because max_covs gets overwritten in the next step for no apparent reason...
             max_spends[p] = rel_progs.programs[prog].get_spending(max_covs)[0]
             list_max_covs[p] = cpy_covs[0]
-        if max_spends[p] - fixed[p] >= 0:
-            max_spends[p] -= fixed[p]
+        if max_spends[p] - fixed[keep_inds][p] >= 0:
+            max_spends[p] -= fixed[keep_inds][p]
         else:
             max_spends[p] = 0
     return max_spends
