@@ -108,6 +108,8 @@ class ScenResult(sc.prettyobj):
         return figs
 
 def write_results(results, projname=None, filename=None, folder=None):
+    from .version import version
+    from datetime import date
     """ Writes outputs and program allocations to an xlsx book.
     For each scenario, book will include:
         - sheet called 'outcomes' which contains all outputs over time
@@ -119,11 +121,24 @@ def write_results(results, projname=None, filename=None, folder=None):
     if filename is None: filename = 'outputs.xlsx'
     filepath = sc.makefilepath(filename=filename, folder=folder, ext='xlsx', default='%s outputs.xlsx' % projname)
     outputs = []
-    sheetnames = ['Outcomes', 'Budget & coverage']
+    sheetnames = ['Version', 'Outcomes', 'Budget & coverage']
     alldata = []
     allformats = []
     years = results[0].years
     nullrow = [''] * len(years)
+
+    ### Version sheet
+    data = [['Version', 'Date'], [version, date.today()]]
+    alldata.append(data)
+
+    # Formatting
+    nrows = len(data)
+    ncols = len(data[0])
+    formatdata = np.zeros((nrows, ncols), dtype=object)
+    formatdata[:, :] = 'plain'  # Format data as plain
+    formatdata[:, 0] = 'bold'  # Left side bold
+    formatdata[0, :] = 'header'  # Top with green header
+    allformats.append(formatdata)
 
     ### Outcomes sheet
     headers = [['Scenario', 'Outcome'] + years + ['Cumulative']]
