@@ -15,20 +15,20 @@ Last update: 2019feb11
 
     <div v-else-if="!hasData">
       <div style="font-style:italic">
-        <p>{{ $t("no_data_loaded") }}</p>
+        <p>{{ $t("common.no_data_loaded") }}</p>
       </div>
     </div>
 
     <div v-else>
       <div class="card">
-        <help reflink="optimizations" label="Define optimizations"></help>
+        <help reflink="optimizations" :label='$t("optimization.Define optimizations")'></help>
         <table class="table table-bordered table-hover table-striped" style="width: 100%">
           <thead>
           <tr>
-            <th>Name</th>
-            <th>Databook</th>
-            <th>Status</th>
-            <th>Actions</th>
+            <th>{{ $t("Name") }}</th>
+            <th>{{ $t("Databook") }}</th>
+            <th>{{ $t("Status") }}</th>
+            <th>{{ $t("Actions") }}</th>
           </tr>
           </thead>
           <tbody>
@@ -44,13 +44,13 @@ Last update: 2019feb11
               {{ timeFormatStr(optimSummary) }}
             </td>
             <td style="white-space: nowrap">
-              <button class="btn __green" :disabled="!canRunTask(optimSummary)" @click="runOptim(optimSummary, 'full')">Run</button>
-              <button class="btn" :disabled="!canRunTask(optimSummary)" @click="runOptim(optimSummary, 'test')">Test run</button>
-              <button class="btn __green" :disabled="!canPlotResults(optimSummary)" @click="plotOptimization(optimSummary)">Plot results</button>
-              <button class="btn" :disabled="!canCancelTask(optimSummary)" @click="clearTask(optimSummary)">Clear run</button>
-              <button class="btn btn-icon" @click="editOptimModal(optimSummary)" data-tooltip="Edit optimization"><i class="ti-pencil"></i></button>
-              <button class="btn btn-icon" @click="copyOptim(optimSummary)" data-tooltip="Copy optimization"><i class="ti-files"></i></button>
-              <button class="btn btn-icon" @click="deleteOptim(optimSummary)" data-tooltip="Delete optimization"><i class="ti-trash"></i></button>
+              <button class="btn __green" :disabled="!canRunTask(optimSummary)" @click="runOptim(optimSummary, 'full')">{{ $t("common.Run") }}</button>
+              <button class="btn" :disabled="!canRunTask(optimSummary)" @click="runOptim(optimSummary, 'test')">{{ $t("common.Test run") }}</button>
+              <button class="btn __green" :disabled="!canPlotResults(optimSummary)" @click="plotOptimization(optimSummary)">{{ $t("common.Plot results") }}</button>
+              <button class="btn" :disabled="!canCancelTask(optimSummary)" @click="clearTask(optimSummary)">{{ $t("common.Clear run") }}</button>
+              <button class="btn btn-icon" @click="editOptimModal(optimSummary)" :data-tooltip='$t("optimization.Edit optimization")'><i class="ti-pencil"></i></button>
+              <button class="btn btn-icon" @click="copyOptim(optimSummary)" :data-tooltip='$t("optimization.Copy optimization")'><i class="ti-files"></i></button>
+              <button class="btn btn-icon" @click="deleteOptim(optimSummary)" :data-tooltip='$t("optimization.Delete optimization")'><i class="ti-trash"></i></button>
             </td>
           </tr>
           </tbody>
@@ -73,12 +73,12 @@ Last update: 2019feb11
       <div class="calib-title">
         <help reflink="results-plots" label="Results"></help>
         <div>
-          <button class="btn btn-icon" @click="scaleFigs(0.9)" data-tooltip="Zoom out">&ndash;</button>
-          <button class="btn btn-icon" @click="scaleFigs(1.0)" data-tooltip="Reset zoom"><i class="ti-zoom-in"></i></button>
-          <button class="btn btn-icon" @click="scaleFigs(1.1)" data-tooltip="Zoom in">+</button>
+          <button class="btn btn-icon" @click="scaleFigs(0.9)" :data-tooltip='$t("common.Zoom out")'>&ndash;</button>
+          <button class="btn btn-icon" @click="scaleFigs(1.0)" :data-tooltip='$t("common.Reset zoom")'><i class="ti-zoom-in"></i></button>
+          <button class="btn btn-icon" @click="scaleFigs(1.1)" :data-tooltip='$t("common.Zoom in")'>+</button>
           &nbsp;&nbsp;&nbsp;
-          <button class="btn" @click="exportGraphs(projectID, displayResultDatastoreId)">{{ $t("Export plots") }}</button>
-          <button class="btn" @click="exportResults(projectID, displayResultDatastoreId)">{{ $t("Export data") }}</button>
+          <button class="btn" @click="exportGraphs(projectID, displayResultDatastoreId)">{{ $t("common.Export plots") }}</button>
+          <button class="btn" @click="exportResults(projectID, displayResultDatastoreId)">{{ $t("common.Export data") }}</button>
         </div>
       </div>
 
@@ -99,7 +99,7 @@ Last update: 2019feb11
           <table class="table table-bordered table-hover table-striped">
             <thead>
             <tr>
-              <th>Optimization/program</th>
+              <th>{{ $t("optimization.Optimization/program") }}</th>
               <th>{{ $t("Outcomes") }}</th>
               <th v-for="i in table[0].length-3"></th>
             </tr>
@@ -136,17 +136,17 @@ Last update: 2019feb11
 
       <div class="dialog-content">
         <div class="dialog-c-title" v-if="addEditModal.mode=='add'">
-          Add optimization
+          {{ $t("optimization.Add optimization") }}
         </div>
         <div class="dialog-c-title" v-else>
-          Edit optimization
+          {{ $t("optimization.Edit optimization") }}
         </div>
         <div class="dialog-c-text" style="display:inline-block">
-          <b>Optimization name</b><br>
+          <b>{{ $t("optimization.Optimization name") }}</b><br>
           <input type="text"
                  class="txbox"
                  v-model="addEditModal.optimSummary.name"/><br>
-          <b>Databook</b><br>
+          <b>{{ $t("Databook") }}</b><br>
           <select v-model="addEditModal.optimSummary.model_name" @change="modalSwitchDataset">
             <option v-for='dataset in datasetOptions'>
               {{ dataset }}
@@ -156,8 +156,8 @@ Last update: 2019feb11
             <table class="table table-bordered table-striped table-hover">
               <thead>
               <tr>
-                <th>Optimization objective</th>
-                <th>Weight</th>
+                <th>{{ $t("optimization.Optimization objective") }}</th>
+                <th>{{ $t("optimization.Weight") }}</th>
               </tr>
               </thead>
               <tbody>
@@ -176,14 +176,14 @@ Last update: 2019feb11
           </div>
 
           <br>
-          <b>Budget multipliers</b> (1 = current budget)<br>
+          <b>{{ $t("optimization.Budget multipliers") }}</b> (1 = {{ $t("optimization.current budget") }})<br>
           <input type="text"
                  class="txbox"
                  v-model="addEditModal.optimSummary.mults"/><br>
-          <b>Existing spending</b><br>
-          <input type="radio" v-model="addEditModal.optimSummary.fix_curr" :value="false">&nbsp;{{ $t("Can be reallocated") }}<br>
-          <input type="radio" v-model="addEditModal.optimSummary.fix_curr" :value="true">&nbsp;{{ $t("Cannot be reallocated") }}<br><br>
-          <b>Additional funds to allocate</b><br>
+          <b>{{ $t("optimization.Existing spending") }}</b><br>
+          <input type="radio" v-model="addEditModal.optimSummary.fix_curr" :value="false">&nbsp;{{ $t("common.Can be reallocated") }}<br>
+          <input type="radio" v-model="addEditModal.optimSummary.fix_curr" :value="true">&nbsp;{{ $t("common.Cannot be reallocated") }}<br><br>
+          <b>{{ $t("optimization.Additional funds to allocate") }}</b><br>
           <input type="text"
                  class="txbox"
                  v-model="addEditModal.optimSummary.add_funds"/><br>
@@ -192,7 +192,7 @@ Last update: 2019feb11
             <table class="table table-bordered table-striped table-hover">
               <thead>
               <tr>
-                <th>{{ $t("Program name") }}</th>
+                <th>{{ $t("common.Program name") }}</th>
                 <th style="text-align: center">{{ $t("Include") }}?</th>
               </tr>
               </thead>
@@ -208,15 +208,15 @@ Last update: 2019feb11
               </tbody>
             </table>
           </div>
-          <button class="btn" @click="modalDeselectAll()" data-tooltip="Deselect all interventions">Deselect all</button>
+          <button class="btn" @click="modalDeselectAll()" data-tooltip="Deselect all interventions">{{ $t("Deselect all") }}</button>
         </div>
         <div style="text-align:center">
           <button @click="modalSave()" class='btn __green' style="display:inline-block">
-            Save
+            {{ $t("Save") }}
           </button>
           &nbsp;&nbsp;&nbsp;
           <button @click="$modal.hide('add-optim')" class='btn __red' style="display:inline-block">
-            Cancel
+            {{ $t("Cancel") }}
           </button>
         </div>
       </div>

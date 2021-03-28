@@ -49,12 +49,12 @@ Last update: 2018sep22
             <input class="txbox __l"
                    type="password"
                    name="password"
-                   placeholder="Password"
+                   :placeholder="$t('placeholder.password')"
                    required="required"
                    v-model='loginPassword'/>
           </div>
 
-          <button type="submit" class="section btn __l __block">Login</button>
+          <button type="submit" class="section btn __l __block">{{ $t("Login") }}</button>
 
           <div class="section">
             {{ $t("login.newuser") }}

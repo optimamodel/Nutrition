@@ -15,19 +15,19 @@ Last update: 2019jan10
 
     <div v-else-if="!hasData">
       <div style="font-style:italic">
-        <p>{{ $t("no_data_loaded") }}</p>
+        <p>{{ $t("common.no_data_loaded") }}</p>
       </div>
     </div>
 
     <div v-else>
       <div class="card">
-        <help reflink="geospatial" label="Define geospatial optimizations"></help>
+        <help reflink="geospatial" :label='$t("geospatial.Define geospatial optimizations")'></help>
         <table class="table table-bordered table-hover table-striped" style="width: 100%">
           <thead>
           <tr>
-            <th>Name</th>
-            <th>Status</th>
-            <th>Actions</th>
+            <th>{{ $t("Name") }}</th>
+            <th>{{ $t("Status") }}</th>
+            <th>{{ $t("Actions") }}</th>
           </tr>
           </thead>
           <tbody>
@@ -40,20 +40,20 @@ Last update: 2019jan10
               {{ timeFormatStr(geoSummary) }}
             </td>
             <td style="white-space: nowrap">
-              <button class="btn __green" :disabled="!canRunTask(geoSummary)"     @click="runGeo(geoSummary, 'full')">Run</button>
-              <button class="btn" :disabled="!canRunTask(geoSummary)"             @click="runGeo(geoSummary, 'test')">Test run</button>
-              <button class="btn __green" :disabled="!canPlotResults(geoSummary)" @click="plotGeospatial(geoSummary)">Plot results</button>
-              <button class="btn" :disabled="!canCancelTask(geoSummary)"          @click="clearTask(geoSummary)">Clear run</button>
-              <button class="btn btn-icon" @click="editGeoModal(geoSummary)" data-tooltip="Edit geospatial optimization"><i class="ti-pencil"></i></button>
-              <button class="btn btn-icon" @click="copyGeo(geoSummary)" data-tooltip="Copy geospatial optimization"><i class="ti-files"></i></button>
-              <button class="btn btn-icon" @click="deleteGeo(geoSummary)" data-tooltip="Delete geospatial optimization"><i class="ti-trash"></i></button>
+              <button class="btn __green" :disabled="!canRunTask(geoSummary)"     @click="runGeo(geoSummary, 'full')">{{ $t("common.Run") }}</button>
+              <button class="btn" :disabled="!canRunTask(geoSummary)"             @click="runGeo(geoSummary, 'test')">{{ $t("common.Test run") }}</button>
+              <button class="btn __green" :disabled="!canPlotResults(geoSummary)" @click="plotGeospatial(geoSummary)">{{ $t("common.Plot results") }}</button>
+              <button class="btn" :disabled="!canCancelTask(geoSummary)"          @click="clearTask(geoSummary)">{{ $t("common.Clear run") }}</button>
+              <button class="btn btn-icon" @click="editGeoModal(geoSummary)" :data-tooltip='$t("geospatial.Edit geospatial optimization")'><i class="ti-pencil"></i></button>
+              <button class="btn btn-icon" @click="copyGeo(geoSummary)" :data-tooltip='$t("geospatial.Copy geospatial optimization")'><i class="ti-files"></i></button>
+              <button class="btn btn-icon" @click="deleteGeo(geoSummary)" :data-tooltip='$t("geospatial.Delete geospatial optimization")'><i class="ti-trash"></i></button>
             </td>
           </tr>
           </tbody>
         </table>
 
         <div>
-          <button class="btn" :disabled="!geosLoaded" @click="addGeoModal()">Add geospatial optimization</button>
+          <button class="btn" :disabled="!geosLoaded" @click="addGeoModal()">{{ $t("geospatial.Add geospatial optimization") }}</button>
         </div>
       </div>
     </div>
@@ -64,12 +64,12 @@ Last update: 2019jan10
       <div class="calib-title">
         <help reflink="results-plots" label="Results"></help>
         <div>
-          <button class="btn btn-icon" @click="scaleFigs(0.9)" data-tooltip="Zoom out">&ndash;</button>
-          <button class="btn btn-icon" @click="scaleFigs(1.0)" data-tooltip="Reset zoom"><i class="ti-zoom-in"></i></button>
-          <button class="btn btn-icon" @click="scaleFigs(1.1)" data-tooltip="Zoom in">+</button>
+          <button class="btn btn-icon" @click="scaleFigs(0.9)" :data-tooltip='$t("common.Zoom out")'>&ndash;</button>
+          <button class="btn btn-icon" @click="scaleFigs(1.0)" :data-tooltip='$t("common.Reset zoom")'><i class="ti-zoom-in"></i></button>
+          <button class="btn btn-icon" @click="scaleFigs(1.1)" :data-tooltip='$t("common.Zoom in")'>+</button>
           &nbsp;&nbsp;&nbsp;
-          <button class="btn" @click="exportGraphs(projectID, displayResultDatastoreId)">{{ $t("Export plots") }}</button>
-          <button class="btn" @click="exportResults(projectID, displayResultDatastoreId)">{{ $t("Export data") }}</button>
+          <button class="btn" @click="exportGraphs(projectID, displayResultDatastoreId)">{{ $t("common.Export plots") }}</button>
+          <button class="btn" @click="exportResults(projectID, displayResultDatastoreId)">{{ $t("common.Export data") }}</button>
         </div>
       </div>
 
@@ -166,9 +166,9 @@ Last update: 2019jan10
           </div>
 
           <br>
-          <b>Existing spending</b><br>
-          <input type="radio" v-model="addEditModal.geoSummary.fix_curr" :value="false">&nbsp;{{ $t("Can be reallocated") }}<br>
-          <input type="radio" v-model="addEditModal.geoSummary.fix_curr" :value="true">&nbsp;{{ $t("Cannot be reallocated") }}<br><br>
+          <b>{{ $t("geospatial.Existing spending") }}</b><br>
+          <input type="radio" v-model="addEditModal.geoSummary.fix_curr" :value="false">&nbsp;{{ $t("common.Can be reallocated") }}<br>
+          <input type="radio" v-model="addEditModal.geoSummary.fix_curr" :value="true">&nbsp;{{ $t("common.Cannot be reallocated") }}<br><br>
           <b>Regional spending</b><br>
           <input type="radio" v-model="addEditModal.geoSummary.fix_regionalspend" :value="false">&nbsp;{{ $t("geospatial.Can be reallocated between regions") }}<br>
           <input type="radio" v-model="addEditModal.geoSummary.fix_regionalspend" :value="true">&nbsp;{{ $t("geospatial.Cannot be reallocated between regions") }}<br><br>
@@ -181,7 +181,7 @@ Last update: 2019jan10
             <table class="table table-bordered table-striped table-hover">
               <thead>
               <tr>
-                <th>{{ $t("Program name") }}</th>
+                <th>{{ $t("common.Program name") }}</th>
                 <th style="text-align: center">{{ $t("Include") }}?</th>
               </tr>
               </thead>

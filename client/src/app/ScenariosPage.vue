@@ -15,13 +15,13 @@ Last update: 2019feb11
 
     <div v-else-if="!hasData">
       <div style="font-style:italic">
-        <p>{{ $t("no_data_loaded") }}</p>
+        <p>{{ $t("common.no_data_loaded") }}</p>
       </div>
     </div>
 
     <div v-else>
       <div class="card">
-        <help reflink="scenarios" label="Define scenarios"></help>
+        <help reflink="scenarios" :label='$t("scenarios.Define scenarios")'></help>
         <table class="table table-bordered table-hover table-striped" style="width: 100%">
           <thead>
           <tr>
@@ -74,12 +74,12 @@ Last update: 2019feb11
       <div class="calib-title">
         <help reflink="results-plots" label="Results"></help>
         <div>
-          <button class="btn btn-icon" @click="scaleFigs(0.9)" data-tooltip="Zoom out">&ndash;</button>
-          <button class="btn btn-icon" @click="scaleFigs(1.0)" data-tooltip="Reset zoom"><i class="ti-zoom-in"></i></button>
-          <button class="btn btn-icon" @click="scaleFigs(1.1)" data-tooltip="Zoom in">+</button>
+          <button class="btn btn-icon" @click="scaleFigs(0.9)" :data-tooltip='$t("Zoom out")'>&ndash;</button>
+          <button class="btn btn-icon" @click="scaleFigs(1.0)" :data-tooltip='$t("common.Reset zoom")'><i class="ti-zoom-in"></i></button>
+          <button class="btn btn-icon" @click="scaleFigs(1.1)" :data-tooltip='$t("common.Zoom in")'>+</button>
           &nbsp;&nbsp;&nbsp;
-          <button class="btn" @click="exportGraphs(projectID, 'scens')">{{ $t("Export plots") }}</button>
-          <button class="btn" @click="exportResults(projectID, 'scens')">{{ $t("Export results") }}</button>
+          <button class="btn" @click="exportGraphs(projectID, 'scens')">{{ $t("common.Export plots") }}</button>
+          <button class="btn" @click="exportResults(projectID, 'scens')">{{ $t("common.Export results") }}</button>
         </div>
       </div>
 

@@ -22,7 +22,7 @@ Last update: 2019-02-11
     <div v-else>
       <div v-if="sheetNames">
         <div class="card">
-          <help reflink="inputs" label="Edit input data"></help>
+          <help reflink="inputs" :label='$t("inputs.Edit input data")'></help>
           <br>
           <br>
           <div class="controls-box">

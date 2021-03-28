@@ -47,7 +47,7 @@ Last update: 2018-08-26
             <input class="txbox __l"
                    type="password"
                    name="password"
-                   placeholder="Password"
+                   :placeholder="$t('placeholder.password')"
                    required="required"
                    v-model='registerPassword'/>
           </div>
@@ -56,7 +56,7 @@ Last update: 2018-08-26
             <input class="txbox __l"
                    type="text"
                    name="displayname"
-                   placeholder="Display name (optional)"
+                   :placeholder="$t('placeholder.displayname')"
                    v-model='registerDisplayName'/>
           </div>
 
@@ -64,7 +64,7 @@ Last update: 2018-08-26
             <input class="txbox __l"
                    type="text"
                    name="email"
-                   placeholder="Email (optional)"
+                   :placeholder="$t('placeholder.email')"
                    v-model='registerEmail'/>
           </div>
 
