@@ -90,7 +90,7 @@ Last update: 2019jan10
           <table class="table table-bordered table-hover table-striped">
             <thead>
             <tr>
-              <th>Optimization/program</th>
+              <th>{{ $t("geospatial.Optimization/program") }}</th>
               <th>{{ $t("Outcomes") }}</th>
               <th v-for="i in table[0].length-3"></th>
             </tr>
@@ -127,17 +127,17 @@ Last update: 2019jan10
 
       <div class="dialog-content">
         <div class="dialog-c-title" v-if="addEditModal.mode=='add'">
-          Add geospatial optimization
+          {{ $t("geospatial.Add geospatial optimization") }}
         </div>
         <div class="dialog-c-title" v-else>
-          Edit geospatial optimization
+          {{ $t("geospatial.Edit geospatial optimization") }}
         </div>
         <div class="dialog-c-text" style="display:inline-block">
-          <b>Geospatial optimization name</b><br>
+          <b>{{ $t("geospatial.Geospatial optimization name") }}</b><br>
           <input type="text"
                  class="txbox"
                  v-model="addEditModal.geoSummary.name"/><br>
-          <b>Select regions</b><br>
+          <b>{{ $t("geospatial.Select regions") }}</b><br>
           <div v-for="selection in addEditModal.geoSummary.dataset_selections">
             <input type="checkbox" :value="selection.active" v-model="selection.active">
             {{selection.name}}</input>
@@ -146,8 +146,8 @@ Last update: 2019jan10
             <table class="table table-bordered table-striped table-hover">
               <thead>
               <tr>
-                <th>Optimization objective</th>
-                <th>Weight</th>
+                <th>{{ $t("geospatial.Optimization objective") }}</th>
+                <th>{{ $t("geospatial.Weight") }}</th>
               </tr>
               </thead>
               <tbody>
@@ -169,10 +169,10 @@ Last update: 2019jan10
           <b>{{ $t("geospatial.Existing spending") }}</b><br>
           <input type="radio" v-model="addEditModal.geoSummary.fix_curr" :value="false">&nbsp;{{ $t("common.Can be reallocated") }}<br>
           <input type="radio" v-model="addEditModal.geoSummary.fix_curr" :value="true">&nbsp;{{ $t("common.Cannot be reallocated") }}<br><br>
-          <b>Regional spending</b><br>
+          <b>{{ $t("geoaptial.Regional spending") }}</b><br>
           <input type="radio" v-model="addEditModal.geoSummary.fix_regionalspend" :value="false">&nbsp;{{ $t("geospatial.Can be reallocated between regions") }}<br>
           <input type="radio" v-model="addEditModal.geoSummary.fix_regionalspend" :value="true">&nbsp;{{ $t("geospatial.Cannot be reallocated between regions") }}<br><br>
-          <b>Additional funds to allocate</b><br>
+          <b>{{ $t("geospatial.Additional funds to allocate") }}</b><br>
           <input type="text"
                  class="txbox"
                  v-model="addEditModal.geoSummary.add_funds"/><br>
@@ -201,11 +201,11 @@ Last update: 2019jan10
         </div>
         <div style="text-align:center">
           <button @click="modalSave()" class='btn __green' style="display:inline-block">
-            Save
+            {{ $t("Save") }}
           </button>
           &nbsp;&nbsp;&nbsp;
           <button @click="$modal.hide('add-geo')" class='btn __red' style="display:inline-block">
-            Cancel
+            {{ $t("Cancel") }}
           </button>
         </div>
       </div>

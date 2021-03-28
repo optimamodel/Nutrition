@@ -95,11 +95,11 @@ Last update: 2019feb18
               {{ projectSummary.project.updatedTime ? projectSummary.project.updatedTime:
               'No modification' }}</td>
             <td style="white-space: nowrap; text-align:left"> <!-- ATOMICA-NUTRITION DIFFERENCE -->
-              <button class="btn __blue" @click="renameDatasetModal(projectSummary.project.id, projectSummary.selectedDataSet)" data-tooltip="Rename databook"><i class="ti-pencil"></i></button>
-              <button class="btn __blue" @click="copyDataset(projectSummary.project.id, projectSummary.selectedDataSet)" data-tooltip="Copy databook"><i class="ti-files"></i></button>
-              <button class="btn __blue" @click="deleteDataset(projectSummary.project.id, projectSummary.selectedDataSet)" data-tooltip="Delete databook"><i class="ti-trash"></i></button>            
-              <button class="btn __blue" @click="downloadDatabook(projectSummary.project.id, projectSummary.selectedDataSet)" data-tooltip="Download databook"><i class="ti-download"></i></button>
-              <button class="btn __blue" @click="uploadDatabook(projectSummary.project.id)" data-tooltip="Upload databook"><i class="ti-upload"></i></button>           
+              <button class="btn __blue" @click="renameDatasetModal(projectSummary.project.id, projectSummary.selectedDataSet)" :data-tooltip='$t("projects.Rename databook")'><i class="ti-pencil"></i></button>
+              <button class="btn __blue" @click="copyDataset(projectSummary.project.id, projectSummary.selectedDataSet)" :data-tooltip='$t("projects.Copy databook")'><i class="ti-files"></i></button>
+              <button class="btn __blue" @click="deleteDataset(projectSummary.project.id, projectSummary.selectedDataSet)" :data-tooltip='$t("projects.Delete databook")'><i class="ti-trash"></i></button>
+              <button class="btn __blue" @click="downloadDatabook(projectSummary.project.id, projectSummary.selectedDataSet)" :data-tooltip='$t("projects.Download databook")'><i class="ti-download"></i></button>
+              <button class="btn __blue" @click="uploadDatabook(projectSummary.project.id)" :data-tooltip='$t("projects.Upload databook")'><i class="ti-upload"></i></button>
               <select v-if="projectSummary.project.dataSets.length>0" v-model="projectSummary.selectedDataSet">
                 <option v-for='dataset in projectSummary.project.dataSets'>
                   {{ dataset }}

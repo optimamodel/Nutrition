@@ -58,11 +58,11 @@ Last update: 2019feb11
 
         <div>
           <input type="checkbox" id="costeff_checkbox" v-model="calculateCostEff"/>
-          <label for="costeff_checkbox">Perform intervention cost-effectiveness analysis</label>
+          <label for="costeff_checkbox">{{ $t("optimization.perform_costeff") }}</label>
         </div>
 
         <div>
-          <button class="btn" :disabled="!optimsLoaded" @click="addOptimModal()">Add optimization</button>
+          <button class="btn" :disabled="!optimsLoaded" @click="addOptimModal()">{{ $t("optimization.Add optimization") }}</button>
         </div>
       </div>
     </div>
@@ -208,7 +208,7 @@ Last update: 2019feb11
               </tbody>
             </table>
           </div>
-          <button class="btn" @click="modalDeselectAll()" data-tooltip="Deselect all interventions">{{ $t("Deselect all") }}</button>
+          <button class="btn" @click="modalDeselectAll()" :data-tooltip='$t("optimization.Deselect all interventions")'>{{ $t("Deselect all") }}</button>
         </div>
         <div style="text-align:center">
           <button @click="modalSave()" class='btn __green' style="display:inline-block">

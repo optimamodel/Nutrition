@@ -44,10 +44,10 @@ Last update: 2019-02-11
           <br>
           <div v-for="name in sheetNames" style="display:inline-block; padding-right:10px">
             <div v-if="name===activeSheet">
-              <button class="btn sheetbtn" @click="setActive(name)" data-tooltip="Current sheet">{{ name }}</button>
+              <button class="btn sheetbtn" @click="setActive(name)" :data-tooltip='$t("inputs.Current sheet")'>{{ name }}</button>
             </div>
             <div v-else>
-              <button class="btn sheetbtn deselected" @click="setActive(name)" data-tooltip="Switch to this sheet">{{ name }}</button>
+              <button class="btn sheetbtn deselected" @click="setActive(name)" :data-tooltip='$t("inputs.Switch to this sheet")'>{{ name }}</button>
             </div>
 
           </div>

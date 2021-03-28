@@ -11,6 +11,7 @@
 	"Deselect all": "Désélectionner tout",
 	"Download": "Télécharger",
 	"Download selected": "Téléchargement sélectionné",
+	"Help": "Aide",
 	"Include": "Inclure",
 	"Login": "Connexion",
 	"Name": "Nom",
@@ -43,18 +44,29 @@
 	"footer": {
 		"Terms and conditions": "Termes et conditions"
 	},
+	"geoaptial": {
+		"Regional spending": "Dépenses régionales"
+	},
 	"geospatial": {
 		"Add geospatial optimization": "Ajouter l'optimisation géospatiale",
+		"Additional funds to allocate": "Fonds supplémentaires à allouer",
 		"Can be reallocated between regions": "Peut être réaffecté entre les régions",
 		"Cannot be reallocated between regions": "Ne peut être réaffecté entre les régions",
 		"Copy geospatial optimization": "Copie de l'optimisation géospatiale",
 		"Define geospatial optimizations": "Définir les optimisations géospatiales",
 		"Delete geospatial optimization": "Supprimer l'optimisation géospatiale",
 		"Edit geospatial optimization": "Modifier l'optimisation géospatiale",
-		"Existing spending": "Dépenses existantes"
+		"Existing spending": "Dépenses existantes",
+		"Geospatial optimization name": "Nom de l'optimisation géospatiale",
+		"Optimization objective": "Objectif d'optimisation",
+		"Optimization/program": "Optimisation/programme",
+		"Select regions": "Sélectionner les régions",
+		"Weight": "Poids"
 	},
 	"inputs": {
+		"Current sheet": "Fiche actuelle",
 		"Edit input data": "Modifier les données d'entrée",
+		"Switch to this sheet": "Passez à cette feuille",
 		"data_not_loaded": "Données non chargées",
 		"no_project_loaded": "Aucun projet chargé",
 		"revert": "Revenir en arrière",
@@ -88,13 +100,15 @@
 		"Copy optimization": "Optimisation de la copie",
 		"Define optimizations": "Définir les optimisations",
 		"Delete optimization": "Supprimer l'optimisation",
+		"Deselect all interventions": "Désélectionner toutes les interventions",
 		"Edit optimization": "Optimisation de l'édition",
 		"Existing spending": "Dépenses existantes",
 		"Optimization name": "Nom de l'optimisation",
 		"Optimization objective": "Objectif d'optimisation",
 		"Optimization/program": "Optimisation/programme",
 		"Weight": "Poids",
-		"current budget": "budget actuel"
+		"current budget": "budget actuel",
+		"perform_costeff": "Effectuer une analyse coût-efficacité de l'intervention"
 	},
 	"placeholder": {
 		"Enter new password": "Entrez un nouveau mot de passe",
@@ -106,12 +120,15 @@
 	},
 	"projects": {
 		"Add demo project": "Ajouter un projet de démonstration",
+		"Copy databook": "Livre de données des copies",
 		"Could not add new project": "Impossible d'ajouter un nouveau projet",
 		"Could not download project": "Impossible de télécharger le projet",
 		"Could not rename databook": "Impossible de renommer le livre de données",
 		"Create blank project": "Créer un projet vierge",
 		"Create new project": "Créer un nouveau projet",
 		"Create project": "Créer un projet",
+		"Delete databook": "Supprimer l'annuaire de données",
+		"Download databook": "Télécharger la base de données",
 		"Last modified": "Dernière modification",
 		"Manage projects": "Gérer des projets",
 		"New name": "Nouveau nom",
@@ -121,6 +138,7 @@
 		"Project name": "Nom du projet",
 		"Rename databook": "Renommer le livre de données",
 		"Type here to filter projects": "Tapez ici pour filtrer les projets",
+		"Upload databook": "Télécharger le livre de données",
 		"Upload project from file": "Télécharger le projet à partir d'un fichier",
 		"loaded_popup": "Projet \"{name}\" chargé"
 	},
