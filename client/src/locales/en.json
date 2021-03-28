@@ -1,12 +1,73 @@
 {
+	"Cancel": "Cancel",
+	"Copy": "Copy",
+	"Could not upload file": "Could not upload file",
+	"Create": "Create",
+	"Databook": "Databook",
+	"Delete": "Delete",
+	"Delete selected": "Delete selected",
+	"Download": "Download",
+	"Download selected": "Download selected",
 	"Login": "Login",
-	"Projects": "Projects",
+	"Open": "Open",
 	"Register": "Register",
+	"Rename": "Rename",
+	"Upload": "Upload",
+	"footer": {
+		"Terms and conditions": "Terms and conditions"
+	},
+	"inputs": {
+		"data_not_loaded": "Data not loaded",
+		"no_project_loaded": "No project loaded",
+		"revert": "Revert",
+		"revert_tooltip": "Revert to last saved data",
+		"save_changes": "Save changes",
+		"save_tooltip": "Save data to project"
+	},
 	"login": {
 		"newuser": "New user?",
 		"registerhere": "Register here"
 	},
+	"navbar": {
+		"About": "About",
+		"Change password": "Change password",
+		"Edit account": "Edit account",
+		"Geospatial": "Geospatial",
+		"Help": "Help",
+		"Inputs": "Inputs",
+		"Log out": "Log out",
+		"Optimizations": "Optimizations",
+		"Project": "Project",
+		"Projects": "Projects",
+		"Scenarios": "Scenarios",
+		"Toggle navigation": "Toggle navigation",
+		"User": "User"
+	},
 	"placeholder": {
 		"username": "Username"
+	},
+	"projects": {
+		"Add demo project": "Add demo project",
+		"Could not add new project": "Could not add new project ",
+		"Could not download project": "Could not download project",
+		"Could not rename databook": "Could not rename databook",
+		"Create blank project": "Create blank project",
+		"Create new project": "Create new project",
+		"Create project": "Create project",
+		"Last modified": "Last modified",
+		"Manage projects": "Manage projects",
+		"Name": "Name",
+		"New name": "New name",
+		"New project": "New project",
+		"New project uploaded": "New project uploaded",
+		"Project actions": "Project actions",
+		"Project name": "Project name",
+		"Rename databook": "Rename databook",
+		"Type here to filter projects": "Type here to filter projects",
+		"Upload project from file": "Upload project from file",
+		"loaded_popup": "Project \"{name}\" loaded"
+	},
+	"register": {
+		"Already registered?": "Already registered?"
 	}
 }

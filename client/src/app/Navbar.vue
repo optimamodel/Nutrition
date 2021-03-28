@@ -14,7 +14,7 @@ Last update: 2018sep23
           </a>
         </div>
         <button type="button" class="navbar-toggle" :class="{toggled: $sidebar.showSidebar}" @click="toggleSidebar">
-          <span class="sr-only">Toggle navigation</span>
+          <span class="sr-only">{{ $t("navbar.Toggle navigation") }}</span>
           <span class="icon-bar bar1"></span>
           <span class="icon-bar bar2"></span>
           <span class="icon-bar bar3"></span>
@@ -25,27 +25,27 @@ Last update: 2018sep23
         <ul class="nav navbar-nav navbar-main">
           <li class="nav-item">
             <router-link to="/projects">
-              <span>{{ $t("Projects") }}</span>
+              <span>{{ $t("navbar.Projects") }}</span>
             </router-link>
           </li>
           <li class="nav-item">
             <router-link to="/inputs"> <!--  ATOMICA-NUTRITION DIFFERENCE -->
-              <span>Inputs</span>
+              <span>{{ $t("navbar.Inputs") }}</span>
             </router-link>
           </li>
           <li class="nav-item">
             <router-link to="/scenarios">
-              <span>Scenarios</span>
+              <span>{{ $t("navbar.Scenarios") }}</span>
             </router-link>
           </li>
           <li class="nav-item">
             <router-link to="/optimizations">
-              <span>Optimizations</span>
+              <span>{{ $t("navbar.Optimizations") }}</span>
             </router-link>
           </li>
           <li class="nav-item">
             <router-link to="/geospatial">
-              <span>Geospatial</span>
+              <span>{{ $t("navbar.Geospatial") }}</span>
             </router-link>
           </li>
         </ul>
@@ -53,7 +53,7 @@ Last update: 2018sep23
           <li class="nav-item">
             <div class="nav-link">
               <i class="ti-view-grid"></i>
-              <span>Project: {{ activeProjectName }}</span>
+              <span>{{ $t("navbar.Project") }}: {{ activeProjectName }}</span>
             </div>
           </li>
           <dropdown>
@@ -61,15 +61,15 @@ Last update: 2018sep23
             <template v-slot:title>
               <div class="dropdown-title">
                 <i class="ti-user dropdown-icon"></i>
-                User: {{ activeUserName }}
+                {{ $t("navbar.User") }}: {{ activeUserName }}
                 <b class="caret"></b>
               </div>
             </template>
-            <li><a href="#/changeinfo"><i class="ti-pencil"></i>&nbsp;&nbsp;Edit account</a></li>
-            <li><a href="#/changepassword"><i class="ti-key"></i>&nbsp;&nbsp;Change password</a></li>
-            <li><a href="#/help"><i class="ti-help"></i>&nbsp;&nbsp;Help</a></li>
-            <li><a href="#/about"><i class="ti-shine"></i>&nbsp;&nbsp;About</a></li>
-            <li><a href="#" v-on:click=logOut()><i class="ti-car"></i>&nbsp;&nbsp;Log out</a></li>
+            <li><a href="#/changeinfo"><i class="ti-pencil"></i>&nbsp;&nbsp;{{ $t("navbar.Edit account") }}</a></li>
+            <li><a href="#/changepassword"><i class="ti-key"></i>&nbsp;&nbsp;{{ $t("navbar.Change password") }}</a></li>
+            <li><a href="#/help"><i class="ti-help"></i>&nbsp;&nbsp;{{ $t("navbar.Help") }}</a></li>
+            <li><a href="#/about"><i class="ti-shine"></i>&nbsp;&nbsp;{{ $t("navbar.About") }}</a></li>
+            <li><a href="#" v-on:click=logOut()><i class="ti-car"></i>&nbsp;&nbsp;{{ $t("navbar.Log out") }}</a></li>
           </dropdown>
 
           <li class="nav-item">

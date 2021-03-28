@@ -68,12 +68,12 @@ Last update: 2018-08-26
                    v-model='registerEmail'/>
           </div>
 
-          <button type="submit" class="section btn __l __block">Register</button>
+          <button type="submit" class="section btn __l __block">{{ $t("Register") }}</button>
 
           <div class="section">
-            Already registered?
+            {{ $t("register.Already registered?") }}
             <router-link to="/login">
-              Login
+              {{ $t("Login") }}
             </router-link>
           </div>
 

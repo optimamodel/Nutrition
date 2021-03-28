@@ -1,12 +1,73 @@
 {
+	"Cancel": "Annuler",
+	"Copy": "Copie",
+	"Could not upload file": "Impossible de télécharger le fichier",
+	"Create": "Create",
+	"Databook": "Databook",
+	"Delete": "Supprimer",
+	"Delete selected": "Supprimer la sélection",
+	"Download": "Télécharger",
+	"Download selected": "Téléchargement sélectionné",
 	"Login": "S'identifier",
-	"Projects": "Projets",
+	"Open": "Ouvrez",
 	"Register": "Enregistrer",
+	"Rename": "Renommer",
+	"Upload": "Télécharger",
+	"footer": {
+		"Terms and conditions": "Termes et conditions"
+	},
+	"inputs": {
+		"data_not_loaded": "Données non chargées",
+		"no_project_loaded": "Aucun projet chargé",
+		"revert": "Revenir en arrière",
+		"revert_tooltip": "Revenir aux dernières données enregistrées",
+		"save_changes": "Enregistrer les changements",
+		"save_tooltip": "Sauvegarder les données dans le projet"
+	},
 	"login": {
 		"newuser": "Nouvel utilisateur?",
 		"registerhere": "Inscrivez-vous ici"
 	},
+	"navbar": {
+		"About": "À propos de",
+		"Change password": "Changer de mot de passe",
+		"Edit account": "Modifier le compte",
+		"Geospatial": "Géospatial",
+		"Help": "Aide",
+		"Inputs": "Entrées",
+		"Log out": "Déconnexion",
+		"Optimizations": "Optimisations",
+		"Project": "Projet",
+		"Projects": "Projets",
+		"Scenarios": "Scénarios",
+		"Toggle navigation": "Basculer la navigation",
+		"User": "Utilisateur"
+	},
 	"placeholder": {
 		"username": "Nom d'utilisateur"
+	},
+	"projects": {
+		"Add demo project": "Ajouter un projet de démonstration",
+		"Could not add new project": "Impossible d'ajouter un nouveau projet",
+		"Could not download project": "Impossible de télécharger le projet",
+		"Could not rename databook": "Impossible de renommer le livre de données",
+		"Create blank project": "Créer un projet vierge",
+		"Create new project": "Créer un nouveau projet",
+		"Create project": "Créer un projet",
+		"Last modified": "dernière modification",
+		"Manage projects": "Gérer des projets",
+		"Name": "Nom",
+		"New name": "Nouveau nom",
+		"New project": "Nouveau projet",
+		"New project uploaded": "Nouveau projet téléchargé",
+		"Project actions": "Actions du projet",
+		"Project name": "Nom du projet",
+		"Rename databook": "Renommer le livre de données",
+		"Type here to filter projects": "Tapez ici pour filtrer les projets",
+		"Upload project from file": "Télécharger le projet à partir d'un fichier",
+		"loaded_popup": "Projet \"{name}\" chargé"
+	},
+	"register": {
+		"Already registered?": "Déjà inscrit?"
 	}
 }

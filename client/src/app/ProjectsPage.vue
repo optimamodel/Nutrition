@@ -7,21 +7,21 @@ Last update: 2019feb18
 <template>
   <div class="SitePage">
     <div class="card">
-      <help reflink="create-projects" label="Create project"></help>
+      <help reflink="create-projects" :label='$t("projects.Create project")'></help>
 
       <div class="ControlsRow">
-        <button class="btn __blue" @click="addDemoProject">Add demo project</button>
+        <button class="btn __blue" @click="addDemoProject">{{ $t("projects.Add demo project") }}</button>
         &nbsp; &nbsp;
-        <button class="btn __blue" @click="createNewProjectModal">Create new project</button>
+        <button class="btn __blue" @click="createNewProjectModal">{{ $t("projects.Create new project") }}</button>
         &nbsp; &nbsp;
-        <button class="btn __blue" @click="uploadProjectFromFile">Upload project from file</button>
+        <button class="btn __blue" @click="uploadProjectFromFile">{{ $t("projects.Upload project from file") }}</button>
         &nbsp; &nbsp;
       </div>
     </div>
 
     <div class="PageSection" v-if="projectSummaries.length > 0">
       <div class="card">
-        <help reflink="manage-projects" label="Manage projects"></help>
+        <help reflink="manage-projects" :label='$t("projects.Manage projects")'></help>
 
         <input type="text"
                class="txbox"
@@ -36,7 +36,7 @@ Last update: 2019feb18
               <input type="checkbox" @click="selectAll()" v-model="allSelected"/>
             </th>
             <th @click="updateSorting('name')" class="sortable">
-              Name
+              {{ $t("projects.Name") }}
               <span v-show="sortColumn == 'name' && !sortReverse">
                 <i class="fas fa-caret-down"></i>
               </span>
@@ -47,9 +47,9 @@ Last update: 2019feb18
                 <i class="fas fa-caret-up" style="visibility: hidden"></i>
               </span>
             </th>
-            <th style="text-align:left">Project actions</th>
+            <th style="text-align:left">{{ $t("projects.Project actions") }}</th>
             <th @click="updateSorting('updatedTime')" class="sortable" style="text-align:left">
-              Last modified
+              {{ $t("projects.Last modified") }}
               <span v-show="sortColumn == 'updatedTime' && !sortReverse">
                 <i class="fas fa-caret-down"></i>
               </span>
@@ -60,7 +60,7 @@ Last update: 2019feb18
                 <i class="fas fa-caret-up" style="visibility: hidden"></i>
               </span>
             </th>
-            <th>Databook</th> <!-- ATOMICA-NUTRITION DIFFERENCE -->
+            <th>{{ $t("Databook") }}</th> <!-- ATOMICA-NUTRITION DIFFERENCE -->
           </tr>
           </thead>
           <tbody>
@@ -85,7 +85,7 @@ Last update: 2019feb18
             </td>
             <td style="text-align:left">
               <span v-if="sortedFilteredProjectSummaries.length>1">
-                <button class="btn __green"  @click="openProject(projectSummary.project.id)"       data-tooltip="Open project" :disabled="projectLoaded(projectSummary.project.id)" ><span>Open</span></button>
+                <button class="btn __green"  @click="openProject(projectSummary.project.id)" :disabled="projectLoaded(projectSummary.project.id)" ><span>{{ $t("Open") }}</span></button>
               </span>
               <button class="btn btn-icon" @click="renameProject(projectSummary)"                  :data-tooltip="$t('Rename')">  <i class="ti-pencil"></i></button>
               <button class="btn btn-icon" @click="copyProject(projectSummary.project.id)"         :data-tooltip="$t('Copy')">    <i class="ti-files"></i></button>
@@ -111,9 +111,9 @@ Last update: 2019feb18
         </table>
 
         <div class="ControlsRow">
-          <button class="btn" @click="deleteModal()">Delete selected</button>
+          <button class="btn" @click="deleteModal()">{{ $t("Delete selected") }}</button>
           &nbsp; &nbsp;
-          <button class="btn" @click="downloadSelectedProjects">Download selected</button>
+          <button class="btn" @click="downloadSelectedProjects">{{ $t("Download selected") }}</button>
         </div>
       </div>
     </div>
@@ -129,21 +129,21 @@ Last update: 2019feb18
 
       <div class="dialog-content">
         <div class="dialog-c-title">
-          Create blank project
+          {{ $t("projects.Create blank project") }}
         </div>
         <div class="dialog-c-text">
-          Project name:<br>
+          {{ $t("projects.Project name") }}:<br>
           <input type="text"
                  class="txbox"
                  v-model="proj_name"/><br>
         </div>  <!-- ATOMICA-NUTRITION DIFFERENCE -->
         <div style="text-align:justify">
           <button @click="createNewProject()" class='btn __green' style="display:inline-block">
-            Create
+            {{ $t("Create") }}
           </button>
 
           <button @click="$modal.hide('create-project')" class='btn __red' style="display:inline-block">
-            Cancel
+            {{ $t("Cancel") }}
           </button>
         </div>
       </div>
@@ -161,21 +161,21 @@ Last update: 2019feb18
 
       <div class="dialog-content">
         <div class="dialog-c-title">
-          Rename databook
+          {{ $t("projects.Rename databook") }}
         </div>
         <div class="dialog-c-text">
-          New name:<br>
+          {{ $t("projects.New name") }}:<br>
           <input type="text"
                  class="txbox"
                  v-model="modalRenameDataset"/><br>
         </div>
         <div style="text-align:justify">
           <button @click="renameDataset()" class='btn __green' style="display:inline-block">
-            Rename
+            {{ $t("Rename") }}
           </button>
 
           <button @click="$modal.hide('rename-dataset')" class='btn __red' style="display:inline-block">
-            Cancel
+            {{ $t("Cancel") }}
           </button>
         </div>
       </div>
@@ -189,20 +189,21 @@ Last update: 2019feb18
 <script>
   import utils from '../js/utils'
   import router from '../router'
+  import i18n from '../i18n'
 
   export default {
     name: 'ProjectsPage',
 
     data() {
       return {
-        filterPlaceholder: 'Type here to filter projects', // Placeholder text for table filter box
+        filterPlaceholder: i18n.t('projects.Type here to filter projects'), // Placeholder text for table filter box
         filterText: '',  // Text in the table filter box
         allSelected: false, // Are all of the projects selected?
         projectToRename: null, // What project is being renamed?
         sortColumn: 'name',  // Column of table used for sorting the projects: name, country, creationTime, updatedTime, dataUploadTime
         sortReverse: false, // Sort in reverse order?
         projectSummaries: [], // List of summary objects for projects the user has
-        proj_name:  'New project', // For creating a new project: number of populations 
+        proj_name:  i18n.t('projects.New project'), // For creating a new project: number of populations
         modalRenameProjUID: null,  // Project ID with data being renamed in the modal dialog
         modalRenameDataset: null,  // Dataset being renamed in the rename modal dialog
         // ATOMICA-NUTRITION DIFFERENCE
@@ -324,7 +325,7 @@ Last update: 2019feb18
             this.$sciris.succeed(this, 'New project "' + this.proj_name + '" created') // Indicate success.
           })
           .catch(error => {
-            this.$sciris.fail(this, 'Could not add new project', error)    // Indicate failure.
+            this.$sciris.fail(this, i18n.t('projects.Could not add new project'), error)    // Indicate failure.
           })
       },
 
@@ -334,10 +335,10 @@ Last update: 2019feb18
           .then(response => {
             this.$sciris.start(this)  // This line needs to be here to avoid the spinner being up during the user modal.
             this.updateProjectSummaries(response.data.projectID) // Update the project summaries so the new project shows up on the list.
-            this.$sciris.succeed(this, 'New project uploaded')
+            this.$sciris.succeed(this, i18n.t('projects.New project uploaded'))
           })
           .catch(error => {
-            this.$sciris.fail(this, 'Could not upload file', error)
+            this.$sciris.fail(this, i18n.t('Could not upload file'), error)
           })
       },
 
@@ -400,7 +401,7 @@ Last update: 2019feb18
         let matchProject = this.projectSummaries.find(theProj => theProj.project.id === uid)
         console.log('openProject() called for ' + matchProject.project.name)
         this.$store.commit('newActiveProject', matchProject) // Set the active project to the matched project.
-        this.$sciris.succeed(this, 'Project "'+matchProject.project.name+'" loaded') // Success popup.
+        this.$sciris.succeed(this, i18n.t('projects.loaded_popup', {name:matchProject.project.name})) // Success popup.
       },
 
       copyProject(uid) {
@@ -472,7 +473,7 @@ Last update: 2019feb18
             this.$sciris.succeed(this, '')  // No green popup message.
           })
           .catch(error => { // Indicate failure.
-            this.$sciris.fail(this, 'Could not download project', error)
+            this.$sciris.fail(this, i18n.t('projects.Could not download project'), error)
           })
       },
       
@@ -494,7 +495,7 @@ Last update: 2019feb18
             this.$sciris.succeed(this, 'Databook "'+this.origDatasetName+'" renamed') // Indicate success.
           })
           .catch(error => {
-            this.$sciris.fail(this, 'Could not rename databook', error)
+            this.$sciris.fail(this, i18n.t('projects.Could not rename databook'), error)
           })
       },
 
