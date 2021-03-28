@@ -1,20 +1,41 @@
 {
+	"Actions": "Actions",
+	"Active": "actif",
+	"Can be reallocated": "Peut être réaffecté",
 	"Cancel": "Annuler",
+	"Cannot be reallocated": "Ne peut être réaffecté",
 	"Copy": "Copie",
 	"Could not upload file": "Impossible de télécharger le fichier",
 	"Create": "Create",
 	"Databook": "Databook",
 	"Delete": "Supprimer",
 	"Delete selected": "Supprimer la sélection",
+	"Deselect all": "Désélectionner tout",
 	"Download": "Télécharger",
 	"Download selected": "Téléchargement sélectionné",
+	"Export data": "Exportation des données",
+	"Export plots": "Exportation de parcelles",
+	"Export results": "Exportation des résultats",
+	"Include": "Inclure",
 	"Login": "S'identifier",
+	"Name": "Nom",
 	"Open": "Ouvrez",
+	"Outcomes": "Résultats",
+	"Program name": "Nom du programme",
 	"Register": "Enregistrer",
 	"Rename": "Renommer",
+	"Save": "Sauvegarder",
+	"Type": "Tapez",
 	"Upload": "Télécharger",
+	"common": {
+		"no_project_loaded": "Aucun projet n'est chargé"
+	},
 	"footer": {
 		"Terms and conditions": "Termes et conditions"
+	},
+	"geospatial": {
+		"Can be reallocated between regions": "Peut être réaffecté entre les régions",
+		"Cannot be reallocated between regions": "Ne peut être réaffecté entre les régions"
 	},
 	"inputs": {
 		"data_not_loaded": "Données non chargées",
@@ -43,6 +64,7 @@
 		"Toggle navigation": "Basculer la navigation",
 		"User": "Utilisateur"
 	},
+	"no_data_loaded": "Les données n'ont pas encore été téléchargées pour le projet.  Veuillez télécharger un livre de données dans la page Projets.",
 	"placeholder": {
 		"username": "Nom d'utilisateur"
 	},
@@ -56,7 +78,6 @@
 		"Create project": "Créer un projet",
 		"Last modified": "dernière modification",
 		"Manage projects": "Gérer des projets",
-		"Name": "Nom",
 		"New name": "Nouveau nom",
 		"New project": "Nouveau projet",
 		"New project uploaded": "Nouveau projet téléchargé",
@@ -69,5 +90,22 @@
 	},
 	"register": {
 		"Already registered?": "Déjà inscrit?"
+	},
+	"scenarios": {
+		"Add budget scenario": "Ajouter un scénario budgétaire",
+		"Add coverage scenario": "Ajouter un scénario de couverture",
+		"Add scenario": "Ajouter un scénario",
+		"Convert scenario type": "Convertir le type de scénario",
+		"Copy scenario": "Copie du scénario",
+		"Databook": "Databook",
+		"Delete scenario": "Supprimer le scénario",
+		"Edit scenario": "Modifier le scénario",
+		"Perform intervention cost-effectiveness analysis": "Effectuer une analyse coût-efficacité de l'intervention",
+		"Program cost-effectiveness": "Rentabilité du programme",
+		"Program coverages": "Couvertures du programme",
+		"Program spending": "Dépenses du programme",
+		"Run scenarios": "Exécuter des scénarios",
+		"Scenario name": "Nom du scénario",
+		"Scenario/program": "Scénario/programme"
 	}
 }

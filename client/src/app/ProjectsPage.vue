@@ -36,7 +36,7 @@ Last update: 2019feb18
               <input type="checkbox" @click="selectAll()" v-model="allSelected"/>
             </th>
             <th @click="updateSorting('name')" class="sortable">
-              {{ $t("projects.Name") }}
+              {{ $t("Name") }}
               <span v-show="sortColumn == 'name' && !sortReverse">
                 <i class="fas fa-caret-down"></i>
               </span>

@@ -1,20 +1,41 @@
 {
+	"Actions": "Actions",
+	"Active": "Active",
+	"Can be reallocated": "Can be reallocated",
 	"Cancel": "Cancel",
+	"Cannot be reallocated": "Cannot be reallocated",
 	"Copy": "Copy",
 	"Could not upload file": "Could not upload file",
 	"Create": "Create",
 	"Databook": "Databook",
 	"Delete": "Delete",
 	"Delete selected": "Delete selected",
+	"Deselect all": "Deselect all",
 	"Download": "Download",
 	"Download selected": "Download selected",
+	"Export data": "Export data",
+	"Export plots": "Export plots",
+	"Export results": "Export results",
+	"Include": "Include",
 	"Login": "Login",
+	"Name": "Name",
 	"Open": "Open",
+	"Outcomes": "Outcomes",
+	"Program name": "Program name",
 	"Register": "Register",
 	"Rename": "Rename",
+	"Save": "Save",
+	"Type": "Type",
 	"Upload": "Upload",
+	"common": {
+		"no_project_loaded": "No project is loaded"
+	},
 	"footer": {
 		"Terms and conditions": "Terms and conditions"
+	},
+	"geospatial": {
+		"Can be reallocated between regions": "Can be reallocated between regions",
+		"Cannot be reallocated between regions": "Cannot be reallocated between regions"
 	},
 	"inputs": {
 		"data_not_loaded": "Data not loaded",
@@ -43,6 +64,7 @@
 		"Toggle navigation": "Toggle navigation",
 		"User": "User"
 	},
+	"no_data_loaded": "Data not yet uploaded for the project.  Please upload a databook in the Projects page",
 	"placeholder": {
 		"username": "Username"
 	},
@@ -56,7 +78,6 @@
 		"Create project": "Create project",
 		"Last modified": "Last modified",
 		"Manage projects": "Manage projects",
-		"Name": "Name",
 		"New name": "New name",
 		"New project": "New project",
 		"New project uploaded": "New project uploaded",
@@ -69,5 +90,22 @@
 	},
 	"register": {
 		"Already registered?": "Already registered?"
+	},
+	"scenarios": {
+		"Add budget scenario": "Add budget scenario",
+		"Add coverage scenario": "Add coverage scenario",
+		"Add scenario": "Add scenario",
+		"Convert scenario type": "Convert scenario type",
+		"Copy scenario": "Copy scenario",
+		"Databook": "Databook",
+		"Delete scenario": "Delete scenario",
+		"Edit scenario": "Edit scenario",
+		"Perform intervention cost-effectiveness analysis": "Perform intervention cost-effectiveness analysis",
+		"Program cost-effectiveness": "Program cost-effectiveness",
+		"Program coverages": "Program coverages",
+		"Program spending": "Program spending",
+		"Run scenarios": "Run scenarios",
+		"Scenario name": "Scenario name",
+		"Scenario/program": "Scenario/program"
 	}
 }

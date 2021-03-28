@@ -9,13 +9,13 @@ Last update: 2019feb11
 
     <div v-if="projectID ==''">
       <div style="font-style:italic">
-        <p>No project is loaded.</p>
+        <p>{{ $t("common.no_project_loaded") }}.</p>
       </div>
     </div>
 
     <div v-else-if="!hasData">
       <div style="font-style:italic">
-        <p>Data not yet uploaded for the project. Please upload a databook in the Projects page.</p>
+        <p>{{ $t("no_data_loaded") }}</p>
       </div>
     </div>
 
@@ -77,8 +77,8 @@ Last update: 2019feb11
           <button class="btn btn-icon" @click="scaleFigs(1.0)" data-tooltip="Reset zoom"><i class="ti-zoom-in"></i></button>
           <button class="btn btn-icon" @click="scaleFigs(1.1)" data-tooltip="Zoom in">+</button>
           &nbsp;&nbsp;&nbsp;
-          <button class="btn" @click="exportGraphs(projectID, displayResultDatastoreId)">Export plots</button>
-          <button class="btn" @click="exportResults(projectID, displayResultDatastoreId)">Export data</button>
+          <button class="btn" @click="exportGraphs(projectID, displayResultDatastoreId)">{{ $t("Export plots") }}</button>
+          <button class="btn" @click="exportResults(projectID, displayResultDatastoreId)">{{ $t("Export data") }}</button>
         </div>
       </div>
 
@@ -100,7 +100,7 @@ Last update: 2019feb11
             <thead>
             <tr>
               <th>Optimization/program</th>
-              <th>Outcomes</th>
+              <th>{{ $t("Outcomes") }}</th>
               <th v-for="i in table[0].length-3"></th>
             </tr>
             </thead>
@@ -181,8 +181,8 @@ Last update: 2019feb11
                  class="txbox"
                  v-model="addEditModal.optimSummary.mults"/><br>
           <b>Existing spending</b><br>
-          <input type="radio" v-model="addEditModal.optimSummary.fix_curr" :value="false">&nbsp;Can be reallocated<br>
-          <input type="radio" v-model="addEditModal.optimSummary.fix_curr" :value="true">&nbsp;Cannot be reallocated<br><br>
+          <input type="radio" v-model="addEditModal.optimSummary.fix_curr" :value="false">&nbsp;{{ $t("Can be reallocated") }}<br>
+          <input type="radio" v-model="addEditModal.optimSummary.fix_curr" :value="true">&nbsp;{{ $t("Cannot be reallocated") }}<br><br>
           <b>Additional funds to allocate</b><br>
           <input type="text"
                  class="txbox"
@@ -192,8 +192,8 @@ Last update: 2019feb11
             <table class="table table-bordered table-striped table-hover">
               <thead>
               <tr>
-                <th>Program name</th>
-                <th style="text-align: center">Include?</th>
+                <th>{{ $t("Program name") }}</th>
+                <th style="text-align: center">{{ $t("Include") }}?</th>
               </tr>
               </thead>
               <tbody>
