@@ -8,6 +8,7 @@
     "dev": "node build/build-dev.js",
     "start": "node build/dev-server.js",
     "build": "node build/build.js",
+    "translate": "npx vue-i18n-extract report -v 'src/**/*.?(js|vue)' -l 'src/locales/*.?(json|yml|yaml)' -a",
     "unit": "cross-env BABEL_ENV=test karma start test/unit/karma.conf.js --single-run",
     "e2e": "node test/e2e/runner.js",
     "test": "npm run unit && npm run e2e"
@@ -24,6 +25,7 @@
     "sciris-js": "^0.2.18",
     "vue": "^2.6.11",
     "vue-clickaway": "^2.1.0",
+    "vue-i18n": "^8.24.2",
     "vue-js-modal": "^1.3",
     "vue-markdown": "^2.2.4",
     "vue-progressbar": "^0.7.5",
@@ -57,6 +59,7 @@
     "shelljs": "^0.7.6",
     "uglifyjs-webpack-plugin": "^1.2.4",
     "url-loader": "^0.5.8",
+    "vue-i18n-extract": "^1.2.0",
     "vue-loader": "^12.1.0",
     "vue-style-loader": "^3.0.1",
     "vue-template-compiler": "^2.3.3",

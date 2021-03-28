@@ -1,0 +1,12 @@
+{
+	"Login": "Login",
+	"Projects": "Projects",
+	"Register": "Register",
+	"login": {
+		"newuser": "New user?",
+		"registerhere": "Register here"
+	},
+	"placeholder": {
+		"username": "Username"
+	}
+}

@@ -9,13 +9,13 @@ Last update: 2019-02-11
 
     <div v-if="projectID ==''">
       <div style="font-style:italic">
-        <p>No project is loaded.</p>
+        <p>{{ $t("inputs.no_project_loaded") }}.</p>
       </div>
     </div>
 
     <div v-else-if="!hasData">
       <div style="font-style:italic">
-        <p>Data not yet uploaded for the project.  Please upload a databook in the Projects page.</p>
+        <p>{{ $t("inputs.data_not_loaded")}}</p>
       </div>
     </div>
 
@@ -32,11 +32,11 @@ Last update: 2019-02-11
                 {{ dataset }}
               </option>
             </select>&nbsp;
-            <button class="btn btn-icon" @click="renameDatasetModal()" data-tooltip="Rename"><i class="ti-pencil"></i></button>
-            <button class="btn btn-icon" @click="copyDataset()" data-tooltip="Copy"><i class="ti-files"></i></button>
-            <button class="btn btn-icon" @click="deleteDataset()" data-tooltip="Delete"><i class="ti-trash"></i></button>
-            <button class="btn btn-icon" @click="downloadDatabook()" data-tooltip="Download"><i class="ti-download"></i></button>
-            <button class="btn btn-icon" @click="uploadDatabook()" data-tooltip="Upload"><i class="ti-upload"></i></button>
+            <button class="btn btn-icon" @click="renameDatasetModal()" :data-tooltip="$t('Rename')"><i class="ti-pencil"></i></button>
+            <button class="btn btn-icon" @click="copyDataset()" :data-tooltip="$t('Copy')"><i class="ti-files"></i></button>
+            <button class="btn btn-icon" @click="deleteDataset()" :data-tooltip="$t('Delete')"><i class="ti-trash"></i></button>
+            <button class="btn btn-icon" @click="downloadDatabook()" :data-tooltip="$t('Download')"><i class="ti-download"></i></button>
+            <button class="btn btn-icon" @click="uploadDatabook()" :data-tooltip="$t('Upload')"><i class="ti-upload"></i></button>
 <!--            <button class="btn btn-icon" @click="loadDatasets()" data-tooltip="Refresh"><i class="ti-reload"></i></button> --> &nbsp;
             <!--<help reflink="parameter-sets"></help>-->
           </div>
@@ -55,8 +55,8 @@ Last update: 2019-02-11
           <br><br>
 
           <div>
-            <button class="btn __green" @click="saveSheetData()"    data-tooltip="Save data to project">Save changes</button>
-            <button class="btn __red"         @click="getSheetData()"     data-tooltip="Revert to last saved data">Revert</button>
+            <button class="btn __green" @click="saveSheetData()"    :data-tooltip="$t('inputs.save_tooltip')">{{ $t("inputs.save_changes") }}</button>
+            <button class="btn __red"         @click="getSheetData()"     :data-tooltip="$t('inputs.revert_tooltip')">{{ $t("inputs.revert") }}</button>
           </div>
 
           <br>

@@ -21,6 +21,10 @@ Last update: 2018sep22
             </a>
             <Changelog v-if="showChangelog" @close="showChangelog=false" />
           </div>
+
+          <br/><br/>
+          <LocaleSwitcher />
+
         </div>
       </div>
     </div>
@@ -28,7 +32,7 @@ Last update: 2018sep22
       <form name="LogInForm" @submit.prevent="tryLogin" style="max-width: 500px; min-width: 100px; margin: 0 auto">
 
         <div class="modal-body">
-          <h2>Login</h2>
+          <h2>{{ $t("Login") }}</h2>
 
           <div class="section" v-if="loginResult != ''">{{ loginResult }}</div>
 
@@ -36,7 +40,7 @@ Last update: 2018sep22
             <input class="txbox __l"
                    type="text"
                    name="username"
-                   placeholder="User name"
+                   :placeholder="$t('placeholder.username')"
                    required="required"
                    v-model='loginUserName'/>
           </div>
@@ -53,9 +57,9 @@ Last update: 2018sep22
           <button type="submit" class="section btn __l __block">Login</button>
 
           <div class="section">
-            New user?
+            {{ $t("login.newuser") }}
             <router-link to="/register">
-              Register here
+              {{ $t("login.registerhere") }}
             </router-link>
           </div>
         </div>
@@ -67,10 +71,11 @@ Last update: 2018sep22
 <script>
   import router from '../router.js'
   import Changelog from './Changelog.vue'
+  import LocaleSwitcher from "./LocaleSwitcher.vue"
 
   export default {
     name: 'LoginPage',
-    components: {Changelog},
+    components: {Changelog, LocaleSwitcher},
 
     data () {
       return {

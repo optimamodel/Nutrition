@@ -87,9 +87,9 @@ Last update: 2019feb18
               <span v-if="sortedFilteredProjectSummaries.length>1">
                 <button class="btn __green"  @click="openProject(projectSummary.project.id)"       data-tooltip="Open project" :disabled="projectLoaded(projectSummary.project.id)" ><span>Open</span></button>
               </span>
-              <button class="btn btn-icon" @click="renameProject(projectSummary)"                  data-tooltip="Rename">  <i class="ti-pencil"></i></button>
-              <button class="btn btn-icon" @click="copyProject(projectSummary.project.id)"         data-tooltip="Copy">    <i class="ti-files"></i></button>
-              <button class="btn btn-icon" @click="downloadProjectFile(projectSummary.project.id)" data-tooltip="Download"><i class="ti-download"></i></button>
+              <button class="btn btn-icon" @click="renameProject(projectSummary)"                  :data-tooltip="$t('Rename')">  <i class="ti-pencil"></i></button>
+              <button class="btn btn-icon" @click="copyProject(projectSummary.project.id)"         :data-tooltip="$t('Copy')">    <i class="ti-files"></i></button>
+              <button class="btn btn-icon" @click="downloadProjectFile(projectSummary.project.id)" :data-tooltip="$t('Download')"><i class="ti-download"></i></button>
             </td>
             <td style="text-align:left">
               {{ projectSummary.project.updatedTime ? projectSummary.project.updatedTime:

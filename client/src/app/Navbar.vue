@@ -25,7 +25,7 @@ Last update: 2018sep23
         <ul class="nav navbar-nav navbar-main">
           <li class="nav-item">
             <router-link to="/projects">
-              <span>Projects</span>
+              <span>{{ $t("Projects") }}</span>
             </router-link>
           </li>
           <li class="nav-item">
@@ -71,7 +71,16 @@ Last update: 2018sep23
             <li><a href="#/about"><i class="ti-shine"></i>&nbsp;&nbsp;About</a></li>
             <li><a href="#" v-on:click=logOut()><i class="ti-car"></i>&nbsp;&nbsp;Log out</a></li>
           </dropdown>
-        </ul>
+
+          <li class="nav-item">
+            <div class="nav-link">
+              <LocaleSwitcher />
+              </div>
+          </li>
+                  </ul>
+
+        </div>
+
       </div>
     </div>
   </nav>
@@ -80,10 +89,12 @@ Last update: 2018sep23
 
 <script>
 
+  import LocaleSwitcher from "./LocaleSwitcher.vue"
+
   export default {
     name: 'Navbar',
+    components: { LocaleSwitcher },
 
-    // Health prior function
     data() {
       return {
         activePage: 'manage projects'
@@ -122,19 +133,13 @@ Last update: 2018sep23
       },
     },
 
-    // Health prior function
     created() {
       this.$sciris.getUserInfo(this.$store)
     },
 
-    // Theme function
-    data() {
-      return {
-        activeNotifications: false
-      }
-    },
+
     methods: {
-      // Health prior functions
+
       checkLoggedIn() {
         this.$sciris.checkLoggedIn
       },
@@ -153,18 +158,10 @@ Last update: 2018sep23
       capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1)
       },
-      toggleNotificationDropDown() {
-        this.activeNotifications = !this.activeNotifications
-      },
-      closeDropDown() {
-        this.activeNotifications = false
-      },
+
       toggleSidebar() {
         this.$sidebar.displaySidebar(!this.$sidebar.showSidebar)
       },
-      hideSidebar() {
-        this.$sidebar.displaySidebar(false)
-      }
     }
   }
 

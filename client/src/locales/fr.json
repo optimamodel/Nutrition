@@ -1,0 +1,12 @@
+{
+	"Login": "S'identifier",
+	"Projects": "Projets",
+	"Register": "Enregistrer",
+	"login": {
+		"newuser": "Nouvel utilisateur?",
+		"registerhere": "Inscrivez-vous ici"
+	},
+	"placeholder": {
+		"username": "Nom d'utilisateur"
+	}
+}

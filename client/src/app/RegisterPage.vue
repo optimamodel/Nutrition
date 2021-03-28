@@ -19,6 +19,10 @@ Last update: 2018-08-26
           <div style="font-size:14px; font-weight:normal">
             Version {{ version }} ({{ date }})
           </div>
+
+          <br/><br/>
+          <LocaleSwitcher />
+
         </div>
       </div>
     </div>
@@ -26,7 +30,7 @@ Last update: 2018-08-26
       <form name="RegisterForm" @submit.prevent="tryRegister" style="max-width: 500px; min-width: 100px; margin: 0 auto">
 
         <div class="modal-body">
-          <h2>Register</h2>
+          <h2>{{ $t("Register") }}</h2>
 
           <div class="section" v-if="registerResult != ''">{{ registerResult }}</div>
 
@@ -34,7 +38,7 @@ Last update: 2018-08-26
             <input class="txbox __l"
                    type="text"
                    name="username"
-                   placeholder="User name"
+                   :placeholder="$t('placeholder.username')"
                    required="required"
                    v-model='registerUserName'/>
           </div>
@@ -82,10 +86,11 @@ Last update: 2018-08-26
 
 <script>
 import router from '../router.js'
+import LocaleSwitcher from "./LocaleSwitcher.vue"
 
 export default {
   name: 'RegisterPage',
-
+  components: {LocaleSwitcher},
   data () {
     return {
       registerUserName: '',
