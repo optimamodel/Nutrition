@@ -336,7 +336,7 @@ class Project(object):
         pops = dataset.pops
         prog_info = dataset.prog_info
         t = dataset.t
-        model = Model(pops, prog_info, t)
+        model = Model(pops, prog_info, t=t, settings=dataset.demo_data.settings)
         self.add(name=name, item=model, what='model')
         # Loop over all Scens and create a new default scenario for any that depend on the dataset which has been reloaded.
         # for scen_name in self.scens.keys():  # Loop over all Scen keys in the project

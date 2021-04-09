@@ -40,3 +40,7 @@ from . import project
 from . import plotting
 from . import results
 from . import ui
+
+# Suppress openpyxl deprecation warnings
+import warnings
+warnings.filterwarnings(action="ignore", category=UserWarning, module=".*openpyxl")

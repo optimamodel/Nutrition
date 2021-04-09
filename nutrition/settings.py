@@ -2,11 +2,15 @@ import os
 import itertools
 import sciris as sc
 from .version import version
+from .utils import get_translator
 
 class Settings(object):
     """ Store all the statis data for a project that won't change except between Optima versions
     WARNING: Do not change the order of these lists without checking the potential consequences within the code """
-    def __init__(self):
+    def __init__(self, locale):
+
+        _ = get_translator(locale)
+
         self.t = [2017, 2030]
         self.years = sc.inclusiverange(self.t[0], self.t[1])
         self.n_years = len(self.years)
@@ -25,12 +29,12 @@ class Settings(object):
         self.all_cats = list(itertools.product(*list_cats))
         self.n_cats = len(self.all_cats)
         self.correct_bf = {'<1 month': 'Exclusive', '1-5 months': 'Exclusive', '6-11 months':'Partial',
-                           '12-23 months': 'Partial', '24-59 months': 'None'}
+                           _('12-23 months'): 'Partial', '24-59 months': 'None'}
         self.optimal_space = '24 months or greater'
         self.birth_outcomes = ['Term AGA', 'Term SGA', 'Pre-term AGA','Pre-term SGA']
         self.global_eclampsia_prevalence = {'Pre-eclampsia': 0.046, 'Eclampsia': 0.014} # Need data/source, using https://www.ejog.org/article/S0301-2115(13)00196-6/fulltext
         self.all_risks = [self.stunting_list, self.wasting_list, self.bf_list, self.anaemia_list]
-        self.child_ages = ['<1 month', '1-5 months', '6-11 months', '12-23 months', '24-59 months']
+        self.child_ages = ['<1 month', '1-5 months', '6-11 months', _('12-23 months'), '24-59 months']
         self.pw_ages = ['PW: 15-19 years', 'PW: 20-29 years', 'PW: 30-39 years', 'PW: 40-49 years']
         self.wra_ages = ['WRA: 15-19 years', 'WRA: 20-29 years', 'WRA: 30-39 years', 'WRA: 40-49 years']
         self.all_ages = self.child_ages + self.pw_ages + self.wra_ages

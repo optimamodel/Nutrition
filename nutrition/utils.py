@@ -6,7 +6,8 @@ import numpy as np
 import scipy.special
 from scipy.optimize import brentq
 import sciris as sc
-
+import pathlib
+import gettext
 
 def optimafolder(subfolder=None):
     if subfolder is None: subfolder='nutrition'
@@ -14,6 +15,17 @@ def optimafolder(subfolder=None):
     folder = os.path.join(parentfolder, subfolder, '')
     return folder
 
+    #
+    # path = pathlib.Path(__file__).parent.parent
+    # for d in sc.promotetolist(subdir):
+    #     path /= d
+    # return path.resolve()
+
+LOCALE_PATH = pathlib.Path(__file__).parent/"locale"
+
+def get_translator(locale):
+    translator = gettext.translation('nutrition', LOCALE_PATH, fallback=False, languages=[locale])
+    return translator.gettext
 
 # ##############################################################################
 # ### HELPER FUNCTIONS

@@ -5,6 +5,38 @@ import sciris as sc
 import re
 from . import settings, populations, utils, programs
 
+
+def get_databook_locale(workbook):
+    locale = 'en'  # Default language
+    if workbook.properties.keywords:
+        for item in workbook.properties.keywords.split(','):
+            item = item.strip().split('=')
+            if item[0] == 'lang':
+                locale = item[1]
+                break
+    return locale
+
+
+# def translate(f):
+#     """
+#     Decorator to inject _ function
+#
+#     For Babel's extract messages function to work, it requires the translation function
+#     to be defined as `_` (which is also the convention for translation functions). However,
+#     this needs to be set within the data instance so that the IO language can differ from
+#     the global application language. Therefore, the instance (e.g. InputData) has a '_translator'
+#     attribute for the function to perform translation in a given locale (i.e. it's the function
+#     returned by `get_translation_function`. Instead of having `_ = self._translator` at the top
+#     of every method, the method can instead be decorated with `@translate` to do the same thing.
+#
+#     """
+#     def wrapper(*args):
+#         g = f.__globals__  # use f.func_globals for py < 2.6
+#         g['_'] = args[0]._translator
+#         return f(*args)
+#     return wrapper
+
+
 # This class is used to define an object which keeps a cache of all cells from the Excel databook/s that need to be
 # calculated.  This cache used by RPC code that figures out what calculation values to send to the FE to be displayed
 # in the grey non-editable cells in the GUI.
@@ -76,7 +108,7 @@ class CalcCellCache(object):
 # TODO (possible): we may want to merge this class with InputData to make another class (DatabookData).
 class DefaultParams(object):
     def __init__(self, default_data, input_data):
-        self.settings = settings.Settings()
+        self.settings = settings.Settings(get_databook_locale(default_data.book))
         self.impacted_pop = None
         self.prog_areas = sc.odict()
         self.pop_areas = sc.odict()
@@ -343,8 +375,12 @@ class DefaultParams(object):
 class InputData(object):
     """ Container for all the region-specific data (prevalences, mortality rates etc) read in from spreadsheet"""
     def __init__(self, data, calcscache):
+
+        self.locale = get_databook_locale(data.book)
+        self._translator = utils.get_translator(self.locale)
+
         self.spreadsheet = data
-        self.settings = settings.Settings()
+        self.settings = settings.Settings(self.locale)
         self.demo = None
         self.proj = sc.odict()
         self.death_dist = sc.odict()
@@ -374,21 +410,24 @@ class InputData(object):
 
     def get_demo(self):
         # Load the main spreadsheet into a DataFrame.
-        baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0, 1])
+
+        _ = self._translator
+
+        baseline = utils.read_sheet(self.spreadsheet, _('Baseline year population inputs'), [0, 1])
 
         # Recalculate cells that need it, and remember in the calculations cache.
-        frac_rice = baseline.loc['Food'].loc['Fraction eating rice as main staple food'].values[0]
-        frac_wheat = baseline.loc['Food'].loc['Fraction eating wheat as main staple food'].values[0]
-        frac_maize = baseline.loc['Food'].loc['Fraction eating maize as main staple food'].values[0]
+        frac_rice = baseline.loc[('Food','Fraction eating rice as main staple food'),'Data']
+        frac_wheat = baseline.loc[('Food','Fraction eating wheat as main staple food'),'Data']
+        frac_maize = baseline.loc[('Food','Fraction eating maize as main staple food'),'Data']
         frac_other_staples = 1.0 - frac_rice - frac_wheat - frac_maize
-        baseline.loc['Food'].loc['Fraction on other staples as main staple food'] = frac_other_staples
-        self.calcscache.write_cell('Baseline year population inputs', 19, 2, frac_other_staples)
-        birth_spacing_sum = baseline.loc['Birth spacing'][0:4].sum().values[0]
-        baseline.loc['Birth spacing'].loc['Total (must be 100%)'] = birth_spacing_sum
-        self.calcscache.write_cell('Baseline year population inputs', 32, 2, birth_spacing_sum)
-        outcome_sum = baseline.loc['Birth outcome distribution'][0:3].sum().values[0]
-        baseline.loc['Birth outcome distribution'].loc['Term AGA'] = 1.0 - outcome_sum
-        self.calcscache.write_cell('Baseline year population inputs', 47, 2, 1.0 - outcome_sum)
+        baseline.loc[('Food','Fraction on other staples as main staple food'),'Data'] = frac_other_staples
+        self.calcscache.write_cell(_('Baseline year population inputs'), 19, 2, frac_other_staples)
+        birth_spacing_sum = baseline.loc['Birth spacing','Data'][0:4].sum()
+        baseline.loc['Birth spacing','Total (must be 100%)'] = birth_spacing_sum
+        self.calcscache.write_cell(_('Baseline year population inputs'), 32, 2, birth_spacing_sum)
+        outcome_sum = baseline.loc['Birth outcome distribution','Data'][0:3].sum()
+        baseline.loc[('Birth outcome distribution','Term AGA'),'Data'] = 1.0 - outcome_sum
+        self.calcscache.write_cell(_('Baseline year population inputs'), 47, 2, 1.0 - outcome_sum)
 
         demo = sc.odict()
         # the fields that group the data in spreadsheet
@@ -405,7 +444,7 @@ class InputData(object):
 
         # Load the main spreadsheet into a DataFrame (slightly different format).
         # fix ages for PW
-        baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0])
+        baseline = utils.read_sheet(self.spreadsheet, _('Baseline year population inputs'), [0])
 
         for row in baseline.loc['Age distribution of pregnant women'].iterrows():
             self.pw_agedist.append(row[1]['Data'])
@@ -414,10 +453,13 @@ class InputData(object):
     def get_proj(self):
         # Load the main spreadsheet into a DataFrame.
         # drops rows with any na
+
+        _ = self._translator
+
         proj = utils.read_sheet(self.spreadsheet, 'Demographic projections', cols=[0], dropna='any')
 
         # Read in the Baseline spreadsheet information we'll need.
-        baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0, 1])
+        baseline = utils.read_sheet(self.spreadsheet, _('Baseline year population inputs'), [0, 1])
         stillbirth = baseline.loc['Mortality'].loc['Stillbirths (per 1,000 total births)'].values[0]
         abortion = baseline.loc['Mortality'].loc['Fraction of pregnancies ending in spontaneous abortion'].values[0]
 
@@ -443,6 +485,9 @@ class InputData(object):
 
     def get_risk_dist(self):
         # Load the main spreadsheet into a DataFrame.
+
+        _ = self._translator
+
         dist = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0, 1])
 
         # Recalculate cells that need it, and remember in the calculations cache.
@@ -485,7 +530,7 @@ class InputData(object):
 
         # Recalculate cells that need it, and remember in the calculations cache.
         all_anaem = dist.loc['Anaemia', 'Prevalence of anaemia'].to_dict()
-        baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs')
+        baseline = utils.read_sheet(self.spreadsheet, _('Baseline year population inputs'))
         index = np.array(baseline['Field']).tolist().index('Percentage of anaemia that is iron deficient')
         iron_pct = np.array(baseline['Data'])[index]
         anaem = dist.loc['Anaemia', 'Prevalence of anaemia'] * iron_pct
@@ -524,10 +569,13 @@ class InputData(object):
 
     def get_incidences(self):
         # Load the main spreadsheet into a DataFrame.
+
+        _ = self._translator
+
         incidences = utils.read_sheet(self.spreadsheet, 'Incidence of conditions', [0])
 
         # Recalculate cells that need it, and remember in the calculations cache.
-        baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0, 1])
+        baseline = utils.read_sheet(self.spreadsheet, _('Baseline year population inputs'), [0, 1])
         diarr_incid = baseline.loc['Diarrhoea incidence']['Data'].values
         incidences.loc['Diarrhoea', :] = diarr_incid
         self.calcscache.write_row('Incidence of conditions', 1, 1, diarr_incid)
@@ -581,7 +629,10 @@ class InputData(object):
 class ProgData(object):
     """Stores all the settings for each project, defined by the user"""
     def __init__(self, data, default_data, calcscache):
-        self.settings = settings.Settings()
+
+        self.locale = get_databook_locale(data.book)
+
+        self.settings = settings.Settings(self.locale)
         self.spreadsheet = data
         self.prog_set = []
         self.base_prog_set = []
@@ -596,6 +647,8 @@ class ProgData(object):
         self.impacted_pop = default_data.impacted_pop
         self.prog_areas = default_data.prog_areas
         self.calcscache = calcscache
+
+        self._translator = utils.get_translator(self.locale)
 
         # load data
         self.get_prog_info()
@@ -640,10 +693,13 @@ class ProgData(object):
 
     def get_prog_target(self):
         # Load the main spreadsheet into a DataFrame.
+
+        _ = self._translator
+
         targetPopSheet = utils.read_sheet(self.spreadsheet, 'Programs target population', [0, 1])
 
         # Recalculate cells that need it, and remember in the calculations cache.
-        baseline = utils.read_sheet(self.spreadsheet, 'Baseline year population inputs', [0, 1])
+        baseline = utils.read_sheet(self.spreadsheet, _('Baseline year population inputs'), [0, 1])
         food_insecure = baseline.loc['Population data'].loc['Percentage of population food insecure (default poor)'].values[0]
         frac_malaria_risk = baseline.loc['Population data'].loc['Percentage of population at risk of malaria'].values[0]
         school_attendance = baseline.loc['Population data'].loc['School attendance (percentage of 15-19 year women)'].values[0]
@@ -828,7 +884,10 @@ class ProgData(object):
         """ Creates the frac of pop targeted by each IYCF package.
         Note that frac in community and mass media assumed to be 1.
         Note also this fraction can exceed 1, and is adjusted for the target pop calculations of the Programs class """
-        pop_data = self.spreadsheet.parse('Baseline year population inputs', index_col=[0,1]).loc['Population data']
+
+        _ = self._translator
+
+        pop_data = self.spreadsheet.parse(_('Baseline year population inputs'), index_col=[0,1]).loc['Population data']['Data']
         frac_pw = float(pop_data.loc['Percentage of pregnant women attending health facility'])
         frac_child = float(pop_data.loc['Percentage of children attending health facility'])
         # target pop is the sum of fractions exposed to modality in each age band

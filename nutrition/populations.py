@@ -8,10 +8,10 @@ from .utils import solve_quad, restratify, fit_poly, system, check_sol
 
 
 class AgeGroup(sc.prettyobj):
-    def __init__(self, age, pop_size, anaemia_dist):
+    def __init__(self, age, pop_size, anaemia_dist, settings):
         self.age = age
         self.pop_size = pop_size
-        self.ss = settings.Settings()
+        self.ss = settings
         self.anaemia_dist = sc.dcp(anaemia_dist)
 
         self.anaemiaUpdate = None
@@ -71,8 +71,8 @@ class AgeGroup(sc.prettyobj):
         return num_notanamic
 
 class NonPWAgeGroup(AgeGroup):
-    def __init__(self, age, pop_size, anaemia_dist, birth_space, correct_space):
-        AgeGroup.__init__(self, age, pop_size, anaemia_dist)
+    def __init__(self, age, pop_size, anaemia_dist, birth_space, correct_space, settings):
+        AgeGroup.__init__(self, age, pop_size, anaemia_dist, settings)
         self.birth_space = sc.dcp(birth_space)
         self.correct_space = correct_space
         self.preg_av = 0 # initially 0, but updated if coverage changes
@@ -85,8 +85,8 @@ class NonPWAgeGroup(AgeGroup):
         self.birthspace_update = self.birth_space[self.ss.optimal_space]
 
 class PWAgeGroup(AgeGroup):
-    def __init__(self, age, pop_size, anaemia_dist, ageingRate, causes_death, age_dist):
-        AgeGroup.__init__(self, age, pop_size, anaemia_dist)
+    def __init__(self, age, pop_size, anaemia_dist, ageingRate, causes_death, age_dist, settings):
+        AgeGroup.__init__(self, age, pop_size, anaemia_dist, settings)
         self.mortality = np.zeros(len(self.ss.anaemia_list)) # flattened array
         self.ageingRate = ageingRate
         self.causes_death = sc.dcp(causes_death)
@@ -107,8 +107,8 @@ class PWAgeGroup(AgeGroup):
 
 class ChildAgeGroup(AgeGroup):
     def __init__(self, age, pop_size, anaemia_dist, incidences, stunting_dist, wasting_dist, bf_dist,
-                 ageingRate, causes_death, default_params, frac_severe_dia):
-        AgeGroup.__init__(self, age, pop_size, anaemia_dist)
+                 ageingRate, causes_death, default_params, frac_severe_dia, settings):
+        AgeGroup.__init__(self, age, pop_size, anaemia_dist, settings)
         self.mortality = np.zeros(len(self.ss.all_cats)) # flattened array
         self.stunting_dist = sc.dcp(stunting_dist)
         self.wasting_dist = sc.dcp(wasting_dist)
@@ -276,12 +276,12 @@ class ChildAgeGroup(AgeGroup):
 
 class Newborn(ChildAgeGroup):
     def __init__(self, age, pop_size, anaemia_dist, incidences, stunting_dist, wasting_dist, bf_dist,
-                 ageingRate, birth_dist, causes_death, default_params, frac_severe_dia):
+                 ageingRate, birth_dist, causes_death, default_params, frac_severe_dia, settings):
         """
         This is the <1 month age group, distinguished from the other age groups by birth outcomes, spacing etc etc.
         """
         super(Newborn, self).__init__(age, pop_size, anaemia_dist, incidences, stunting_dist, wasting_dist, bf_dist,
-                 ageingRate, causes_death, default_params, frac_severe_dia)
+                 ageingRate, causes_death, default_params, frac_severe_dia, settings)
         self.birth_dist = birth_dist
         self.probRiskAtBirth = {}
 
@@ -289,11 +289,19 @@ class Newborn(ChildAgeGroup):
 
 class Population(sc.prettyobj):
     def __init__(self, name, data, default):
+        """
+
+        :param name:
+        :param data: A nu.InputData instance
+        :param default:
+
+        """
+
         self.name = name
         self.data = data
         self.default = default
         self.pop_areas = default.pop_areas
-        self.ss = settings.Settings()
+        self.ss = settings.Settings(data.locale)
         self.age_groups = []
 
     def total_pop(self):
@@ -429,12 +437,12 @@ class Children(Population):
                 self.age_groups.append(Newborn(age, popSize,
                                            anaemia_dist, incidences, stunting_dist, wasting_dist, bf_dist,
                                                 ageingRate, birth_dist, self.data.causes_death, self.default,
-                                               self.data.demo['Percentage of diarrhea that is severe']))
+                                               self.data.demo['Percentage of diarrhea that is severe'], self.ss))
             else:
                 self.age_groups.append(ChildAgeGroup(age, popSize,
                                            anaemia_dist, incidences, stunting_dist, wasting_dist, bf_dist,
                                                 ageingRate, self.data.causes_death, self.default,
-                                                     self.data.demo['Percentage of diarrhea that is severe']))
+                                                     self.data.demo['Percentage of diarrhea that is severe'], self.ss))
 
     def _set_child_mortality(self):
         # Equation is:  LHS = RHS * X
@@ -778,7 +786,7 @@ class PregnantWomen(Population):
             ageingRate = self.ss.women_age_rates[i]
             age_dist = self.data.pw_agedist[i]
             self.age_groups.append(PWAgeGroup(age, popSize, anaemia_dist, ageingRate,
-                                              self.data.causes_death, age_dist))
+                                              self.data.causes_death, age_dist, self.ss))
 
     def _setPWReferenceMortality(self):
         #Equation is:  LHS = RHS * X
@@ -876,7 +884,7 @@ class NonPregnantWomen(Population):
             popSize = self.popSizes[i]
             anaemia_dist = self.anaemia_dist[age]
             self.age_groups.append(NonPWAgeGroup(age, popSize, anaemia_dist, self.data.birth_space,
-                                                 self.ss.optimal_space))
+                                                 self.ss.optimal_space, self.ss))
 
     def _set_prob_anaem(self, prog_areas):
         risk = 'Anaemia'

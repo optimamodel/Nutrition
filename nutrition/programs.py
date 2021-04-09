@@ -12,7 +12,7 @@ class Program(sc.prettyobj):
     and all necessary data will be stored as attributes. Will store name, targetpop, popsize, coverage, edges etc
     Restricted coverage: the coverage amongst the target population (assumed given by user)
     Unrestricted coverage: the coverage amongst the entire population """
-    def __init__(self, name, all_years, progdata):
+    def __init__(self, name, all_years, progdata, settings):
         self.name = name
         self.year = all_years[0]
         self.target_pops = progdata.prog_target[name]
@@ -33,7 +33,7 @@ class Program(sc.prettyobj):
         self.famplan_methods = None
         self.pregav_sum = None
 
-        self.ss = Settings()
+        self.ss = settings
 
         if 'amil' in self.name: # family planning program only
             self.famplan_methods = progdata.famplan_methods
@@ -325,7 +325,7 @@ class CostCovCurve(sc.prettyobj):
         except ZeroDivisionError:
             self.maxcov = 0
         self.approx = 0.95
-        self.ss = Settings()
+        # self.ss = Settings() # This doesn't appear to be used?
 
     def set_cost_curve(self):
         if 'lin' in self.costtype:
@@ -432,11 +432,11 @@ class CostCovCurve(sc.prettyobj):
         return endcost[0], endnum[0]
 
 
-def set_programs(progset, progdata, all_years):
+def set_programs(progset, progdata, all_years, settings):
     """ Do the error handling here because we have the progset param at this point. """
     programs = sc.odict()
     for name in progset:
-        programs[name] = Program(name, all_years, progdata)
+        programs[name] = Program(name, all_years, progdata, settings)
     return programs
 
 
@@ -504,10 +504,10 @@ class ProgramInfo(sc.prettyobj):
             freeFunds = sum(self.curr) - sum(self.fixed) + add_funds
         return freeFunds
 
-    def make_progs(self, prog_set, all_years):
+    def make_progs(self, prog_set, all_years, settings):
         self.all_years = all_years
         self.sim_years = all_years[1:]
-        self.programs = set_programs(prog_set, self.prog_data, all_years)
+        self.programs = set_programs(prog_set, self.prog_data, all_years, settings)
         self.prog_areas = self._clean_prog_areas(self.prog_data.prog_areas, prog_set)
         self._set_ref_progs()
         self._sort_progs()

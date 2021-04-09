@@ -5,11 +5,11 @@ from .utils import default_trackers, restratify
 
 
 class Model(sc.prettyobj):
-    def __init__(self, pops, prog_info, t=None, adjust_cov=False, timeTrends=False):
+    def __init__(self, pops, prog_info, settings, t=None, adjust_cov=False, timeTrends=False):
         self.pops = sc.dcp(pops)
         self.children, self.pw, self.nonpw = self.pops
         self.prog_info = sc.dcp(prog_info)
-        self.ss = settings.Settings()
+        self.ss = settings
 
         self.t = t if t else self.ss.t
         self.all_years = np.arange(0, self.t[1]-self.t[0]+1)
@@ -44,7 +44,7 @@ class Model(sc.prettyobj):
         self.prog_info.get_allocs(add_funds, fix_curr, rem_curr)
 
     def _set_progs(self, prog_set):
-        self.prog_info.make_progs(prog_set, self.all_years)
+        self.prog_info.make_progs(prog_set, self.all_years, settings=self.ss)
         self.prog_info.set_init_covs(self.pops)
         self.prog_info.set_costcovs() # enables getting coverage from cost
         self.prog_info.get_base_spend()
