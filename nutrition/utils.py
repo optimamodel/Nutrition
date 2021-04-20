@@ -53,8 +53,8 @@ def default_trackers(prev=None, rate=None):
         'nonpw_anaemprev',
         'child_mortrate',
         'pw_mortrate',
-        'child_anemprev_thresh',
-        'pw_anemprev_thresh'
+        'child_anaemprev_thresh',
+        'pw_anaemprev_thresh'
     ]
     if prev is not None:
         if prev:
@@ -92,7 +92,7 @@ def pretty_labels(direction=False):
             'Minimize the number of anaemic non-pregnant women',
             'Minimize the prevalence of anaemia in non-pregnant women',
             'Minimize child mortality rate',
-            'Minimize pregnant women mortality rate'
+            'Minimize pregnant women mortality rate',
             'Keep child anaemia below threshold',
             'Keep pregnant women anaemia below threshold'
         ]
