@@ -88,11 +88,11 @@ class Model(sc.prettyobj):
         if self.children.frac_risk('an') < 0.2:
             self.child_anaemprev_thresh[self.year] = 0
         else:
-            self.child_anaemprev_thresh[self.year] = 1e20
+            self.child_anaemprev_thresh[self.year] = 1e5
         if self.pw.frac_risk('an') < 0.27:
             self.pw_anaemprev_thresh[self.year] = 0
         else:
-            self.pw_anaemprev_thresh[self.year] = 1e20
+            self.pw_anaemprev_thresh[self.year] = 1e5
 
 
     def _track_rates(self):
