@@ -52,7 +52,9 @@ def default_trackers(prev=None, rate=None):
         'nonpw_anaemic',
         'nonpw_anaemprev',
         'child_mortrate',
-        'pw_mortrate'
+        'pw_mortrate',
+        'child_anemprev_thresh',
+        'pw_anemprev_thresh'
     ]
     if prev is not None:
         if prev:
@@ -91,6 +93,8 @@ def pretty_labels(direction=False):
             'Minimize the prevalence of anaemia in non-pregnant women',
             'Minimize child mortality rate',
             'Minimize pregnant women mortality rate'
+            'Keep child anaemia below threshold',
+            'Keep pregnant women anaemia below threshold'
         ]
     else:
         pretty = [
@@ -108,7 +112,9 @@ def pretty_labels(direction=False):
             'Number of anaemic non-pregnant women',
             'Prevalence of anaemia in non-pregnant women',
             'Child mortality rate',
-            'Pregnant women mortality rate'
+            'Pregnant women mortality rate',
+            'Child anaemia threshold',
+            'Pregnant women anaemia threshold'
         ]
     labs = sc.odict(zip(default_trackers(), pretty))
     return labs

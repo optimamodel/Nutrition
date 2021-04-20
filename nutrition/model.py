@@ -68,6 +68,7 @@ class Model(sc.prettyobj):
         self.wasted[self.year] += sum(oldest.num_wasted(cat) for cat in self.ss.wasted_list) * rate
         self.child_anaemic[self.year] += oldest.num_anaemic() * rate
 
+
     def _track_wra_outcomes(self):
         # pw
         self.pw_anaemic[self.year] += self.pw.num_anaemic()
@@ -82,6 +83,17 @@ class Model(sc.prettyobj):
         self.child_anaemprev[self.year] = self.children.frac_risk('an')
         self.pw_anaemprev[self.year] = self.pw.frac_risk('an')
         self.nonpw_anaemprev[self.year] = self.nonpw.frac_risk('an')
+
+        # Manually set threshold objective for anaemia prevalence
+        if self.children.frac_risk('an') < 0.2:
+            self.child_anaemprev_thresh[self.year] = 0
+        else:
+            self.child_anaemprev_thresh[self.year] = 1e20
+        if self.pw.frac_risk('an') < 0.27:
+            self.pw_anaemprev_thresh[self.year] = 0
+        else:
+            self.pw_anaemprev_thresh[self.year] = 1e20
+
 
     def _track_rates(self):
         """ Rates defined as total deaths per 1000 live births.
