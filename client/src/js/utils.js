@@ -230,6 +230,8 @@ function updateDatasets(vm) {
   })
 }
 
+const locales = [{locale:'en',name:'English'}, {locale:'fr',name:'Français'}]
+
 export default {
   sleep,
   getUniqueName,
@@ -248,4 +250,5 @@ export default {
   exportResults,
   scaleFigs,
   updateDatasets,
+  locales,
 }

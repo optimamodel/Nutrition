@@ -388,7 +388,8 @@ def jsonify_project(project_id, verbose=False):
             'creationTime': sc.getdate(proj.created),
             'updatedTime':  sc.getdate(proj.modified),
             'n_results':    len(proj.results),
-            'n_tasks':      len(proj.webapp.tasks)
+            'n_tasks':      len(proj.webapp.tasks),
+            'locale':       proj.locale,
         }
     }
     if verbose:
@@ -426,9 +427,9 @@ def rename_project(project_json):
 
 
 @RPC()
-def add_demo_project(username):
+def add_demo_project(username, locale):
     """ Add a demo Optima Nutrition project """
-    proj = nu.demo(scens=True, optims=True, geos=True)  # Create the project, loading in the desired spreadsheets.
+    proj = nu.demo(scens=True, optims=True, geos=True, locale=locale)  # Create the project, loading in the desired spreadsheets.
     proj.name = 'Demo project'
     print(">> add_demo_project %s" % (proj.name)) # Display the call information.
     key,proj = save_new_project(proj, username) # Save the new project in the DataStore.
@@ -436,9 +437,9 @@ def add_demo_project(username):
 
 
 @RPC(call_type='download')
-def create_new_project(username, proj_name):
+def create_new_project(username, proj_name, locale):
     """ Create a new Optima Nutrition project. """
-    proj = nu.Project(name=proj_name) # Create the project
+    proj = nu.Project(name=proj_name, locale=locale) # Create the project
     print(">> create_new_project %s" % (proj.name))     # Display the call information.
     key, proj = save_new_project(proj, username) # Save the new project in the DataStore.
     return download_new_databook(key)

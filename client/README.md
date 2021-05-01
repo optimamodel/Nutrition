@@ -19,3 +19,12 @@ This folder contains the executable files for various tasks. On Mac/Linux, files
 ## Other
 
 * `reset_database.py` deletes all data from the database: all users, projects, blobs, etc.
+
+## Translations
+
+To add a translation
+
+1. Make a string in the `.vue` file using the `$t` function
+2. 
+
+Translations are in `src/locales` and also need to appear in `src/js/utils.js` in the list of available locales (this is how the locale will end up in the locale switcher)

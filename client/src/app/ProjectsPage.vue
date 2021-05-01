@@ -60,6 +60,7 @@ Last update: 2019feb18
                 <i class="fas fa-caret-up" style="visibility: hidden"></i>
               </span>
             </th>
+            <th>{{ $t("Language") }}</th>
             <th>{{ $t("Databook") }}</th> <!-- ATOMICA-NUTRITION DIFFERENCE -->
           </tr>
           </thead>
@@ -94,6 +95,7 @@ Last update: 2019feb18
             <td style="text-align:left">
               {{ projectSummary.project.updatedTime ? projectSummary.project.updatedTime:
               'No modification' }}</td>
+            <td style="text-align:left">{{ projectSummary.project.locale }}</td>
             <td style="white-space: nowrap; text-align:left"> <!-- ATOMICA-NUTRITION DIFFERENCE -->
               <button class="btn __blue" @click="renameDatasetModal(projectSummary.project.id, projectSummary.selectedDataSet)" :data-tooltip='$t("projects.Rename databook")'><i class="ti-pencil"></i></button>
               <button class="btn __blue" @click="copyDataset(projectSummary.project.id, projectSummary.selectedDataSet)" :data-tooltip='$t("projects.Copy databook")'><i class="ti-files"></i></button>
@@ -196,21 +198,20 @@ Last update: 2019feb18
 
     data() {
       return {
-        filterPlaceholder: i18n.t('projects.Type here to filter projects'), // Placeholder text for table filter box
         filterText: '',  // Text in the table filter box
         allSelected: false, // Are all of the projects selected?
         projectToRename: null, // What project is being renamed?
         sortColumn: 'name',  // Column of table used for sorting the projects: name, country, creationTime, updatedTime, dataUploadTime
         sortReverse: false, // Sort in reverse order?
         projectSummaries: [], // List of summary objects for projects the user has
-        proj_name:  i18n.t('projects.New project'), // For creating a new project: number of populations
         modalRenameProjUID: null,  // Project ID with data being renamed in the modal dialog
         modalRenameDataset: null,  // Dataset being renamed in the rename modal dialog
-        // ATOMICA-NUTRITION DIFFERENCE
       }
     },
 
     computed: {
+      filterPlaceholder() { return i18n.t('projects.Type here to filter projects') },
+      proj_name() { return i18n.t('projects.New project') },
       projectID()    { return utils.projectID(this) },
       sortedFilteredProjectSummaries() {
         return this.applyNameFilter(this.applySorting(this.projectSummaries))
@@ -297,7 +298,7 @@ Last update: 2019feb18
       addDemoProject() {
         console.log('addDemoProject() called');
         this.$sciris.start(this);
-        this.$sciris.rpc('add_demo_project', [this.$store.state.currentUser.username]) // Have the server create a new project.
+        this.$sciris.rpc('add_demo_project', [this.$store.state.currentUser.username, i18n.locale]) // Have the server create a new project.
           .then(response => {
             this.updateProjectSummaries(response.data.projectID); // Update the project summaries so the new project shows up on the list.
             this.$sciris.succeed(this, '')
@@ -319,7 +320,7 @@ Last update: 2019feb18
         this.$modal.hide('create-project');
         this.$sciris.start(this) // Start indicating progress.
         var username = this.$store.state.currentUser.username
-        this.$sciris.download('create_new_project', [username, this.proj_name]) // Have the server create a new project.
+        this.$sciris.download('create_new_project', [username, this.proj_name, i18n.locale]) // Have the server create a new project.
           .then(response => {
             this.updateProjectSummaries(null); // Update the project summaries so the new project shows up on the list.
             this.$sciris.succeed(this, 'New project "' + this.proj_name + '" created') // Indicate success.
