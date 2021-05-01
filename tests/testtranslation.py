@@ -10,7 +10,7 @@ dosave = True
 
 # load in data to create model
 p = nu.Project('eg')
-p.load_data(inputspath='demo_demo_input_en_fr.xlsx', name='eg')
+p.load_data(inputspath='demo_input_en_fr.xlsx', name='eg')
 
 
 ## define custom optimization
