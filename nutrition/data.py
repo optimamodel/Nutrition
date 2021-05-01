@@ -4,7 +4,7 @@ import pandas
 import sciris as sc
 import re
 from . import settings, populations, utils, programs
-
+from .migration import migrate
 
 def get_databook_locale(workbook):
     locale = 'en'  # Default language
@@ -377,7 +377,6 @@ class InputData(object):
     def __init__(self, data, calcscache):
 
         self.locale = get_databook_locale(data.book)
-        self._translator = utils.get_translator(self.locale)
 
         self.spreadsheet = data
         self.settings = settings.Settings(self.locale)
@@ -405,13 +404,17 @@ class InputData(object):
         output  = sc.prepr(self)
         return output
 
+    def __setstate__(self, d):
+        self.__dict__ = d
+        d = migrate(self)
+        self.__dict__ = d.__dict__
 
     ## DEMOGRAPHICS ##
 
     def get_demo(self):
         # Load the main spreadsheet into a DataFrame.
 
-        _ = self._translator
+        _ = utils.get_translator(self.locale)
 
         baseline = utils.read_sheet(self.spreadsheet, _('Baseline year population inputs'), [0, 1])
 
@@ -454,7 +457,7 @@ class InputData(object):
         # Load the main spreadsheet into a DataFrame.
         # drops rows with any na
 
-        _ = self._translator
+        _ = utils.get_translator(self.locale)
 
         proj = utils.read_sheet(self.spreadsheet, 'Demographic projections', cols=[0], dropna='any')
 
@@ -486,7 +489,7 @@ class InputData(object):
     def get_risk_dist(self):
         # Load the main spreadsheet into a DataFrame.
 
-        _ = self._translator
+        _ = utils.get_translator(self.locale)
 
         dist = utils.read_sheet(self.spreadsheet, 'Nutritional status distribution', [0, 1])
 
@@ -570,7 +573,7 @@ class InputData(object):
     def get_incidences(self):
         # Load the main spreadsheet into a DataFrame.
 
-        _ = self._translator
+        _ = utils.get_translator(self.locale)
 
         incidences = utils.read_sheet(self.spreadsheet, 'Incidence of conditions', [0])
 
@@ -648,8 +651,6 @@ class ProgData(object):
         self.prog_areas = default_data.prog_areas
         self.calcscache = calcscache
 
-        self._translator = utils.get_translator(self.locale)
-
         # load data
         self.get_prog_info()
         self.get_prog_target()
@@ -664,6 +665,11 @@ class ProgData(object):
     def __repr__(self):
         output  = sc.prepr(self)
         return output
+
+    def __setstate__(self, d):
+        self.__dict__ = d
+        d = migrate(self)
+        self.__dict__ = d.__dict__
 
     def validate(self):
         """ Validate program data """
@@ -694,7 +700,7 @@ class ProgData(object):
     def get_prog_target(self):
         # Load the main spreadsheet into a DataFrame.
 
-        _ = self._translator
+        _ = utils.get_translator(self.locale)
 
         targetPopSheet = utils.read_sheet(self.spreadsheet, 'Programs target population', [0, 1])
 
@@ -885,7 +891,7 @@ class ProgData(object):
         Note that frac in community and mass media assumed to be 1.
         Note also this fraction can exceed 1, and is adjusted for the target pop calculations of the Programs class """
 
-        _ = self._translator
+        _ = utils.get_translator(self.locale)
 
         pop_data = self.spreadsheet.parse(_('Baseline year population inputs'), index_col=[0,1]).loc['Population data']['Data']
         frac_pw = float(pop_data.loc['Percentage of pregnant women attending health facility'])
@@ -929,7 +935,9 @@ class Dataset(object):
     
     def __init__(self, country=None, region=None, name=None, demo_data=None, prog_data=None, default_params=None,
                  pops=None, prog_info=None, doload=False, inputspath=None, defaultspath=None, fromfile=None, project=None):
-        
+
+        self.locale = None # Store the databook locale (set during `Dataset.load`)
+
         self.country = country
         self.region = region
 
@@ -951,7 +959,7 @@ class Dataset(object):
     def __repr__(self):
         output  = sc.prepr(self)
         return output
-    
+
     def load(self, project=None):
         # Handle inputs
         if project is None:
@@ -967,6 +975,8 @@ class Dataset(object):
         # Convert them to Pandas
         input_data     = inputsheet.pandas() 
 
+        self.locale = get_databook_locale(input_data.book)
+
         # If the 'Programs impacted population' worksheet is in input_data, then we are working with one of the newer
         # databooks, so pull the default data from input_data.
         if 'Programs impacted population' in input_data.sheet_names:
@@ -974,7 +984,7 @@ class Dataset(object):
 
         # Otherwise, pull the default data from the legacy spreadsheet.
         else:
-            filename = settings.ONpath('nutrition') + 'legacy_default_params.xlsx'
+            filename = settings.ONpath/'nutrition'/'legacy_default_params.xlsx'
             default_data = sc.Spreadsheet(filename=filename).pandas()
         
         # Read them into actual data

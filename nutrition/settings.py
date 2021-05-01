@@ -3,6 +3,7 @@ import itertools
 import sciris as sc
 from .version import version
 from .utils import get_translator
+import pathlib
 
 class Settings(object):
     """ Store all the statis data for a project that won't change except between Optima versions
@@ -46,28 +47,16 @@ class Settings(object):
         output  = sc.prepr(self)
         return output
 
-def data_path(country, region=None):
-    if region is None:
-        region = 'national'
-    filename = ONpath('inputs') + country + '_' + region + '_input.xlsx'
-    return filename
+ONpath = pathlib.Path(__file__).parent.parent
 
+def data_path(locale, country, region=None):
+    region = region or 'national'
+    return ONpath/'inputs'/locale/f'{country}_{region}_input.xlsx'
 
 
 #####################################################################################################################
 ### Define debugging and exception functions/classes
 #####################################################################################################################
-
-# Tool path
-def ONpath(subdir=None, trailingsep=True):
-    ''' Returns the parent path of the Optima Nutrition module. If subdir is not None, include it in the path '''
-    path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-    if subdir is not None:
-        tojoin = [path, subdir]
-        if trailingsep: tojoin.append('') # This ensures it ends with a separator
-        path = os.path.join(*tojoin) # e.g. ['/home/optima', 'tests', '']
-    return path
-
 
 # Debugging information
 def debuginfo(output=False):
@@ -76,17 +65,9 @@ def debuginfo(output=False):
     outstr += '   Branch:  %s\n' % sc.gitinfo()['branch']
     outstr += '   SHA:     %s\n' % sc.gitinfo()['hash']
     outstr += '   Date:    %s\n' % sc.gitinfo()['date']
-    outstr += '   Path:    %s\n' % ONpath()
+    outstr += '   Path:    %s\n' % ONpath
     if output:
         return outstr
     else: 
         print(outstr)
         return None
-
-class ONException(Exception):
-    ''' A tiny class to allow for Optima-specific exceptions -- define this here to allow for Optima-specific info '''
-    
-    def __init__(self, errormsg, *args, **kwargs):
-        if isinstance(errormsg, basestring):
-            errormsg = errormsg+debuginfo(output=True) # If it's not a string, not sure what it is, but don't bother with this
-        Exception.__init__(self, errormsg, *args, **kwargs)

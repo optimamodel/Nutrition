@@ -27,6 +27,12 @@ Version: 2018jun26 by cliffk
 ### Load Optima Nutrition functions and classes
 #####################################################################################################################
 
+import logging
+logger = logging.getLogger("nutrition")
+
+import pathlib
+
+
 # Core functions
 from .version import version as __version__, versiondate as __versiondate__ # Specify the version, for the purposes of figuring out which version was used to create a project
 from . import utils

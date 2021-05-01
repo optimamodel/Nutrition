@@ -21,3 +21,10 @@
 - Particle swarm optimization step removed from default optimizations in order to reduce variability in allocation when similar budget sizes are optimized.
 - Default maximum run time for adaptive stochastic descent algorithm increased to accommodate the removal of the PSO step
 - Optima Nutrition version number and date added to standard results output in 'Version' sheet
+
+
+#### [...]
+
+- Removed `nu.ONException`, now a standard `Exception` is raised
+- `nu.ONpath` is now a `Path` object rather than a function. Instead of `nu.ONpath('foo')`, use `nu.ONpath/'foo'`
+- Input files are now stored within locales by default e.g. `inputs/en/demo_region1_input.xlsx`. Files are read by locale by default

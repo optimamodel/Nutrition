@@ -4,7 +4,7 @@
 
 import os
 import sciris as sc
-from .version import version
+from .version import version, gitinfo
 from .utils import default_trackers, add_dummy_prog_data
 from .data import Dataset
 from .model import Model
@@ -15,7 +15,8 @@ from .results import write_results
 from .plotting import make_plots, get_costeff, plot_costcurve
 from .demo import demo_scens, demo_optims, demo_geos
 from . import settings
-
+from . import utils as utils
+from .migration import migrate
 
 #######################################################################################################
 #%% Project class -- this contains everything else!
@@ -49,8 +50,10 @@ class Project(object):
     ### Built-in methods -- initialization, and the thing to print if you call a project
     #######################################################################################################
 
-    def __init__(self, name='default', loadsheets=True, inputspath=None, defaultspath=None):
+    def __init__(self, name='default', loadsheets=True, inputspath=None, defaultspath=None, locale=None):
         ''' Initialize the project '''
+
+        self.locale = locale or utils.locale  # Fall back to module's default locale if no locale is provided
 
         ## Define the structure sets
         self.datasets     = sc.odict()
@@ -62,9 +65,7 @@ class Project(object):
         self.spreadsheets = sc.odict()
         if loadsheets:
             if not inputspath:
-                template_name = 'template_input.xlsx'
-                inputspath = sc.makefilepath(filename=template_name, folder=settings.ONpath('inputs'))
-                self.templateinput = sc.Spreadsheet(filename=inputspath)
+                self.templateinput = sc.Spreadsheet(settings.ONpath/'inputs'/self.locale/'template_input.xlsx')
             else:
                 self.load_data(inputspath=inputspath, defaultspath=defaultspath, fromfile=True)
 
@@ -74,7 +75,7 @@ class Project(object):
         self.created  = sc.now()
         self.modified = sc.now()
         self.version  = version
-        self.gitinfo  = sc.gitinfo(__file__)
+        self.gitinfo  = gitinfo
         self.filename = None # File path, only present if self.save() is used
 
         return None
@@ -99,7 +100,12 @@ class Project(object):
         output += '          Git hash: %s\n'    % self.gitinfo['hash']
         output += '============================================================\n'
         return output
-    
+
+    def __setstate__(self, d):
+        self.__dict__ = d
+        d = migrate(self)
+        self.__dict__ = d.__dict__
+
     def getinfo(self):
         ''' Return an odict with basic information about the project'''
         info = sc.odict()
@@ -128,7 +134,7 @@ class Project(object):
     def storeinputs(self, inputspath=None, country=None, region=None, name=None):
         ''' Reload the input spreadsheet into the project '''
         if inputspath is None:
-            inputspath = settings.data_path(country, region)
+            inputspath = settings.data_path(self.locale, country, region)
         name = self._sanitizename(name, country, region, inputspath)
         self.spreadsheets[name] = sc.Spreadsheet(filename=inputspath)
         return self.inputsheet(name)
@@ -149,6 +155,12 @@ class Project(object):
         
         # Optionally (but almost always) use these to make a model (do not do if blank sheets).
         dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self)
+        if dataset.locale != self.locale:
+            if not self.datasets:
+                self.locale = dataset.locale
+            else:
+                raise Exception(f'Data locale "{dataset.locale}" does not match project locale "{self.locale}"')
+
         self.datasets[name] = dataset
         dataset.name = name
         self.add_model(name) # add model associated with the dataset
@@ -235,7 +247,7 @@ class Project(object):
         elif what in ['r', 'res', 'result', 'results']:
             structlist = self.results
         else:
-            raise settings.ONException("Item not found")
+            raise Exception("Item not found")
         return structlist
 
     #######################################################################################################
@@ -542,7 +554,7 @@ class Project(object):
 
 
 
-def demo(scens=False, optims=False, geos=False):
+def demo(scens=False, optims=False, geos=False, locale=None):
     """ Create a demo project with demo settings """
     
     # Parameters
@@ -551,7 +563,7 @@ def demo(scens=False, optims=False, geos=False):
     region = 'national'
     
     # Create project and load in demo databook spreadsheet file into 'demo' Spreadsheet, Dataset, and Model.
-    P = Project(name)
+    P = Project(name, locale=locale)
     P.load_data(country, region, name='demo')
     P.load_data(country, 'region1', name='demoregion1')
     P.load_data(country, 'region2', name='demoregion2')

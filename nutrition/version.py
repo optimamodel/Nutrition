@@ -1,2 +1,5 @@
-version = '1.7.1'
-versiondate = '2021-02-09'
+import sciris as sc
+
+version = '1.7.3'
+versiondate = '2021-05-01'
+gitinfo = sc.gitinfo(__file__)
