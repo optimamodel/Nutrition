@@ -10,7 +10,7 @@ Run `python setup.py develop` in the root folder.
 
 Run `python tests/testdemo.py` to test.
 
-## Localization
+## Localization (Python)
 
 To update strings (after adding new strings in code). This creates `nutrition/locale/nutrition.pot`
 
@@ -25,3 +25,15 @@ To update translations (after modifying translated text)
 
     python setup.py compile_catalog
 
+Normal workflow would be
+
+1. Add `_ = utils.get_translator(locale)` in the appropriate scope. `utils.locale` contains the fallback/default locale
+2. Modify strings to be passed through `_` for translation
+3. Run the extract messages and update catalog steps above
+4. Edit the `.po` files to populate the translations
+5. Compile the catalog
+6. Commit all files
+
+## Localization (Vue)
+
+See client readme

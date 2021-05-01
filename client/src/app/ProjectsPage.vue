@@ -232,6 +232,15 @@ Last update: 2019feb18
 
     methods: {
 
+      getLocaleName(locale) {
+        for (var i = 0; i < utils.locales.length; i++) {
+          if (utils.locales[i].locale === locale) {
+            return utils.locales[i].name;
+          }
+        }
+        return locale;
+      },
+
       projectLoaded(uid) {
         console.log('projectLoaded called')
         if (this.$store.state.activeProject.project !== undefined) {
@@ -259,40 +268,40 @@ Last update: 2019feb18
         }
       },
 
-      updateProjectSummaries(setActiveID) {
+      async updateProjectSummaries(setActiveID) {
         console.log('updateProjectSummaries() called')
         this.$sciris.start(this)
-        this.$sciris.rpc('jsonify_projects', [this.$store.state.currentUser.username]) // Get the current user's project summaries from the server.
-          .then(response => {
-            let lastCreationTime = null
-            let lastCreatedID = null
-            this.projectSummaries = response.data.projects // Set the projects to what we received.
-            if (this.projectSummaries.length > 0) { // Initialize the last creation time stuff if we have a non-empty list.
-              lastCreationTime = new Date(this.projectSummaries[0].project.creationTime)
-              lastCreatedID = this.projectSummaries[0].project.id
+        try {
+          let response = await this.$sciris.rpc('jsonify_projects', [this.$store.state.currentUser.username]) // Get the current user's project summaries from the server.
+          let lastCreationTime = null
+          let lastCreatedID = null
+          if (response.data.projects.length > 0) { // Initialize the last creation time stuff if we have a non-empty list.
+            lastCreationTime = new Date(response.data.projects[0].project.creationTime)
+            lastCreatedID = response.data.projects[0].project.id
+          }
+          this.projectToRename = null  // Unset the link to a project being renamed.
+          response.data.projects.forEach(theProj => { // Preprocess all projects.
+            theProj.selected = false // Set to not selected.
+            theProj.renaming = '' // Set to not being renamed.
+            theProj.selectedDataSet = theProj.project.dataSets[0] // Set the first dataset.
+            theProj.project.locale = this.getLocaleName(theProj.project.locale);
+            if (theProj.project.creationTime >= lastCreationTime) { // Update the last creation time and ID if what se see is later.
+              lastCreationTime = theProj.project.creationTime
+              lastCreatedID = theProj.project.id
             }
-            this.projectToRename = null  // Unset the link to a project being renamed.
-            this.projectSummaries.forEach(theProj => { // Preprocess all projects.
-              theProj.selected = false // Set to not selected.
-              theProj.renaming = '' // Set to not being renamed.
-              theProj.selectedDataSet = theProj.project.dataSets[0] // Set the first dataset.
-              if (theProj.project.creationTime >= lastCreationTime) { // Update the last creation time and ID if what se see is later.
-                lastCreationTime = theProj.project.creationTime
-                lastCreatedID = theProj.project.id
-              }
-            })
-            if (this.projectSummaries.length > 0) { // If we have a project on the list...
-              if (setActiveID === null) { // If no ID is passed in, set the active project to the last-created project.
-                this.openProject(lastCreatedID)
-              } else { // Otherwise, set the active project to the one passed in.
-                this.openProject(setActiveID)
-              }
+          })
+          this.projectSummaries = response.data.projects // Set the projects to what we received.
+          if (this.projectSummaries.length > 0) { // If we have a project on the list...
+            if (setActiveID === null) { // If no ID is passed in, set the active project to the last-created project.
+              this.openProject(lastCreatedID)
+            } else { // Otherwise, set the active project to the one passed in.
+              this.openProject(setActiveID)
             }
-            this.$sciris.succeed(this, '')  // No green popup.
-          })
-          .catch(error => {
-            this.$sciris.fail(this, 'Could not load projects', error)
-          })
+          }
+          this.$sciris.succeed(this, '')  // No green popup.
+        } catch (error) {
+          this.$sciris.fail(this, 'Could not load projects', error);
+        }
       },
 
       addDemoProject() {
