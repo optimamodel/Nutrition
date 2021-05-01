@@ -7,25 +7,49 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nutrition 1.7.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-04-09 22:05+1000\n"
-"PO-Revision-Date: 2021-04-09 17:38+1000\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2021-05-01 18:38+1000\n"
+"PO-Revision-Date: 2021-05-01 18:35+1000\n"
+"Last-Translator: \n"
 "Language: fr\n"
 "Language-Team: fr <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n > 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.9.0\n"
+"Generated-By: Babel 2.9.1\n"
 
-#: nutrition/data.py:416 nutrition/data.py:424 nutrition/data.py:427
-#: nutrition/data.py:430 nutrition/data.py:447 nutrition/data.py:462
-#: nutrition/data.py:533 nutrition/data.py:578 nutrition/data.py:702
-#: nutrition/data.py:890
+#: nutrition/data.py:419 nutrition/data.py:427 nutrition/data.py:430
+#: nutrition/data.py:433 nutrition/data.py:450 nutrition/data.py:465
+#: nutrition/data.py:536 nutrition/data.py:581 nutrition/data.py:708
+#: nutrition/data.py:896
 msgid "Baseline year population inputs"
 msgstr "Donnees pop de l'annee de ref"
 
-#: nutrition/settings.py:32 nutrition/settings.py:37
+#: nutrition/demo.py:14
+msgid "Stunting example (coverage)"
+msgstr "Exemple de retard de croissance (couverture)"
+
+#: nutrition/demo.py:20
+msgid "Stunting example (budget)"
+msgstr "Exemple de retard de croissance (budget)"
+
+#: nutrition/demo.py:27
+msgid "Wasting example"
+msgstr "Exemple de amaigrissement"
+
+#: nutrition/demo.py:34
+msgid "Anaemia example"
+msgstr "Exemple d’anémie"
+
+#: nutrition/demo.py:47
+msgid "Maximize thrive"
+msgstr "Maximiser l’épanouissement"
+
+#: nutrition/settings.py:33 nutrition/settings.py:38
 msgid "12-23 months"
 msgstr "12-23 mois"
+
+#: nutrition_app/rpcs.py:435
+msgid "Demo project"
+msgstr "Démo projet"
 

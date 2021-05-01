@@ -60,7 +60,7 @@ Last update: 2019feb18
                 <i class="fas fa-caret-up" style="visibility: hidden"></i>
               </span>
             </th>
-            <th>{{ $t("Language") }}</th>
+            <th>{{ $t("projects.Language") }}</th>
             <th>{{ $t("Databook") }}</th> <!-- ATOMICA-NUTRITION DIFFERENCE -->
           </tr>
           </thead>
@@ -113,7 +113,7 @@ Last update: 2019feb18
         </table>
 
         <div class="ControlsRow">
-          <button class="btn" @click="deleteModal()">{{ $t("Delete selected") }}</button>
+          <button class="btn __red" @click="deleteModal()">{{ $t("Delete selected") }}</button>
           &nbsp; &nbsp;
           <button class="btn" @click="downloadSelectedProjects">{{ $t("Download selected") }}</button>
         </div>

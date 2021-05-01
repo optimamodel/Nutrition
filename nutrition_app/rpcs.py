@@ -17,6 +17,7 @@ import sciris as sc
 import scirisweb as sw
 import nutrition.ui as nu
 from . import config
+
 pl.rc('font', size=14)
 
 # Globals
@@ -429,8 +430,9 @@ def rename_project(project_json):
 @RPC()
 def add_demo_project(username, locale):
     """ Add a demo Optima Nutrition project """
+    _ = nu.get_translator(locale)
     proj = nu.demo(scens=True, optims=True, geos=True, locale=locale)  # Create the project, loading in the desired spreadsheets.
-    proj.name = 'Demo project'
+    proj.name = _('Demo project')
     print(">> add_demo_project %s" % (proj.name)) # Display the call information.
     key,proj = save_new_project(proj, username) # Save the new project in the DataStore.
     return {'projectID': str(proj.uid)} # Return the new project UID in the return message.

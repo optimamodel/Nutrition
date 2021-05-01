@@ -13,10 +13,10 @@ from .optimization import Optim
 from .geospatial import Geospatial
 from .results import write_results
 from .plotting import make_plots, get_costeff, plot_costcurve
-from .demo import demo_scens, demo_optims, demo_geos
 from . import settings
 from . import utils as utils
 from .migration import migrate
+from .utils import get_translator
 
 #######################################################################################################
 #%% Project class -- this contains everything else!
@@ -434,7 +434,7 @@ class Project(object):
         return result
 
     def demo_scens(self, dorun=None, doadd=True):
-        scens = demo_scens()
+        scens = demo_scens(self.locale)
         if doadd:
             self.add_scens(scens)
             if dorun:
@@ -444,7 +444,7 @@ class Project(object):
             return scens
 
     def demo_optims(self, dorun=False, doadd=True):
-        optims = demo_optims()
+        optims = demo_optims(self.locale)
         if doadd:
             self.add_optims(optims)
             if dorun:
@@ -454,7 +454,7 @@ class Project(object):
             return optims
     
     def demo_geos(self, dorun=False, doadd=True):
-        geos = demo_geos()
+        geos = demo_geos(self.locale)
         if doadd:
             self.add_geos(geos)
             if dorun:
@@ -553,15 +553,88 @@ class Project(object):
         return
 
 
+### DEMO VALUES
+
+def demo_scens(locale):
+
+    _ = get_translator(locale)
+
+    # stunting reduction
+    kwargs1 = {'name': _('Stunting example (coverage)'),
+               'model_name': 'demo',
+               'scen_type': 'coverage',
+               'progvals': sc.odict({'IYCF 1': [1], 'Vitamin A supplementation': [1]})
+               }
+
+    kwargs2 = {'name': _('Stunting example (budget)'),
+               'model_name': 'demo',
+               'scen_type': 'budget',
+               'progvals': sc.odict({'IYCF 1': [2e6], 'Vitamin A supplementation': [2e6]})
+               }
+
+    # wasting reduction
+    kwargs3 = {'name': _('Wasting example'),
+               'model_name': 'demo',
+               'scen_type': 'coverage',
+               'progvals': sc.odict({'Treatment of SAM': [1]})
+               }
+
+    # anaemia reduction
+    kwargs4 = {'name': _('Anaemia example'),
+               'model_name': 'demo',
+               'scen_type': 'coverage',
+               'progvals': sc.odict({'Micronutrient powders': [1], 'IFAS (community)': [1], 'IFAS (retailer)': [1], 'IFAS (school)': [1]})
+               }
+
+    scens = [Scen(**kwargs) for kwargs in [kwargs1, kwargs2, kwargs3, kwargs4]]
+    return scens
+
+
+def demo_optims(locale):
+    _ = get_translator(locale)
+
+    kwargs1 = {'name': _('Maximize thrive'),
+               'model_name': 'demo',
+               'mults': [1],
+               'weights': sc.odict({'thrive': 1}),
+               'prog_set': ['Vitamin A supplementation', 'IYCF 1', 'IFA fortification of maize',
+                            'Balanced energy-protein supplementation',
+                            'Public provision of complementary foods',
+                            'Iron and iodine fortification of salt'],
+               'fix_curr': False,
+               'add_funds': 0,
+               'filter_progs': True}
+
+    optims = [Optim(**kwargs1)]
+    return optims
+
+
+def demo_geos(locale):
+    _ = get_translator(locale)
+
+    kwargs1 = {'name': 'Geospatial optimization',
+               'modelnames': ['demoregion1', 'demoregion2', 'demoregion3'],
+               'weights': 'thrive',
+               'fix_curr': False,
+               'fix_regionalspend': False,
+               'add_funds': 0,
+               'prog_set': ['IFA fortification of maize', 'IYCF 1', 'Lipid-based nutrition supplements',
+                            'Multiple micronutrient supplementation', 'Micronutrient powders', 'Kangaroo mother care',
+                            'Public provision of complementary foods', 'Treatment of SAM', 'Vitamin A supplementation',
+                            'Mg for eclampsia', 'Zinc for treatment + ORS', 'Iron and iodine fortification of salt']}
+
+    geos = [Geospatial(**kwargs1)]
+    return geos
+
 
 def demo(scens=False, optims=False, geos=False, locale=None):
     """ Create a demo project with demo settings """
-    
+
     # Parameters
     name = 'Demo project'
     country = 'demo'
     region = 'national'
-    
+
     # Create project and load in demo databook spreadsheet file into 'demo' Spreadsheet, Dataset, and Model.
     P = Project(name, locale=locale)
     P.load_data(country, region, name='demo')
