@@ -44,7 +44,8 @@ setup(
         'matplotlib>=1.4.2',
         'numpy>=1.10.1',
         'scipy',
-        'pandas>=0.17.1',
+        'pandas>=1.2.4',
         "babel",
+        "openpyxl",
     ],
 )

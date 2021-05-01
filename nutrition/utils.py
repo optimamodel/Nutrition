@@ -9,22 +9,14 @@ import sciris as sc
 import pathlib
 import gettext
 
-def optimafolder(subfolder=None):
-    if subfolder is None: subfolder='nutrition'
-    parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-    folder = os.path.join(parentfolder, subfolder, '')
-    return folder
-
-    #
-    # path = pathlib.Path(__file__).parent.parent
-    # for d in sc.promotetolist(subdir):
-    #     path /= d
-    # return path.resolve()
 
 LOCALE_PATH = pathlib.Path(__file__).parent/"locale"
+locale = 'en' # Set the default locale
 
-def get_translator(locale):
-    translator = gettext.translation('nutrition', LOCALE_PATH, fallback=False, languages=[locale])
+def get_translator(this_locale=None):
+    if this_locale is None:
+        this_locale = locale # Use the fallback locale. Loading it this way means users can write to nutrition.utils.locale to change the default at runtime
+    translator = gettext.translation('nutrition', LOCALE_PATH, fallback=False, languages=[this_locale])
     return translator.gettext
 
 # ##############################################################################
