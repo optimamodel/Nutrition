@@ -6,7 +6,7 @@ from .utils import get_translator
 import pathlib
 
 class Settings(object):
-    """ Store all the statis data for a project that won't change except between Optima versions
+    """ Store all the static data for a project that won't change except between Optima versions
     WARNING: Do not change the order of these lists without checking the potential consequences within the code """
     def __init__(self, locale):
 

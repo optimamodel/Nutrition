@@ -7,7 +7,7 @@ Last update: 2019-02-11
 <template>
   <div>
 
-    <div v-if="projectID ==''">
+    <div v-if="!projectID">
       <div style="font-style:italic">
         <p>{{ $t("inputs.no_project_loaded") }}.</p>
       </div>
@@ -177,7 +177,7 @@ Last update: 2019-02-11
     },
 
     computed: {
-      projectID()    { return utils.projectID(this) },
+      projectID()    { return this.$store.getters.activeProjectID },
       hasData()      { return utils.hasData(this) },
     },
 
@@ -214,7 +214,7 @@ Last update: 2019-02-11
             if (this.activeSheet === '') {
               this.activeSheet = this.sheetNames[0]
             }
-            this.$sciris.succeed(this, 'Data loaded')
+            this.$sciris.succeed(this)
           })
           .catch(error => {
             this.$sciris.fail(this, 'Could not get sheet data', error)

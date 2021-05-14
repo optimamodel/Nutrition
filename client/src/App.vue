@@ -40,28 +40,10 @@ Last update: 2018sep23
 
 export default {
   computed: {
-
-    activeProjectName() {
-      if (this.$store.state.activeProject.project === undefined) {
-        return 'none'
-      } else {
-        return this.$store.state.activeProject.project.name
-      }
-    },
-
-    activeUserName() {
-      // Get the active user name -- the display name if defined; else the user name -- WARNING, duplicates Navbar.vue
-      var username = this.$store.state.currentUser.username;
-      var dispname = this.$store.state.currentUser.displayname;
-      var userlabel = '';
-      if (dispname === undefined || dispname === '') {
-        userlabel = username;
-      } else {
-        userlabel = dispname;
-      }
-      return 'User: '+userlabel
-    },
+      activeProjectName() { return this.$store.getters.activeProjectName },
+      activeUserName() { return this.$store.getters.activeUserName },
   },
+
   methods: {
     logOut() {
       this.$sciris.logoutCall();

@@ -17,6 +17,7 @@ from . import settings
 from . import utils as utils
 from .migration import migrate
 from .utils import get_translator
+from datetime import timezone
 
 #######################################################################################################
 #%% Project class -- this contains everything else!
@@ -72,8 +73,8 @@ class Project(object):
         ## Define other quantities
         self.name     = name
         self.uid      = sc.uuid()
-        self.created  = sc.now()
-        self.modified = sc.now()
+        self.created  = sc.now(utc=True)
+        self.modified = sc.now(utc=True)
         self.version  = version
         self.gitinfo  = gitinfo
         self.filename = None # File path, only present if self.save() is used
@@ -92,8 +93,8 @@ class Project(object):
         output += '        Geospatial: %i\n'    % len(self.geos)
         output += '      Results sets: %i\n'    % len(self.results)
         output += '\n'
-        output += '      Date created: %s\n'    % sc.getdate(self.created)
-        output += '     Date modified: %s\n'    % sc.getdate(self.modified)
+        output += '      Date created: %s\n'    % sc.getdate(self.created.replace(tzinfo=timezone.utc).astimezone(tz=None), dateformat="%Y-%b-%d %H:%M:%S %Z")
+        output += '     Date modified: %s\n'    % sc.getdate(self.modified.replace(tzinfo=timezone.utc).astimezone(tz=None), dateformat="%Y-%b-%d %H:%M:%S %Z")
         output += '               UID: %s\n'    % self.uid
         output += '  Optima Nutrition: v%s\n'   % self.version
         output += '        Git branch: %s\n'    % self.gitinfo['branch']
@@ -216,7 +217,7 @@ class Project(object):
         structlist = self.getwhat(what=what)
         structlist[name] = item
         print('Item "{}" added to "{}"'.format(name, what))
-        self.modified = sc.now()
+        self.modified = sc.now(utc=True)
 
     def remove(self, what, name=None):
         structlist = self.getwhat(what=what)
@@ -226,7 +227,7 @@ class Project(object):
         else:
             structlist.pop(name)
         print('{} "{}" removed'.format(what, name))
-        self.modified = sc.now()
+        self.modified = sc.now(utc=True)
 
     def getwhat(self, what):
         '''
@@ -360,7 +361,7 @@ class Project(object):
         if basename not in self.scens.keys():
             defaults = make_default_scen(name, model, 'coverage', basename)
             self.add_scens(defaults)
-        self.modified = sc.now()
+        self.modified = sc.now(utc=True)
         return model
 
     def add_scens(self, scens, overwrite=False):
@@ -376,7 +377,7 @@ class Project(object):
         scens = sc.promotetolist(scens)
         for scen in scens:
             self.add(name=scen.name, item=scen, what='scen')
-        self.modified = sc.now()
+        self.modified = sc.now(utc=True)
         return scens
 
     def convert_scen(self, key=-1):
@@ -410,7 +411,7 @@ class Project(object):
         optims = sc.promotetolist(optims)
         for optim in optims:
             self.add(name=optim.name, item=optim, what='optim')
-        self.modified = sc.now()
+        self.modified = sc.now(utc=True)
         return optims
     
     def add_geos(self, geos, overwrite=False):
@@ -419,7 +420,7 @@ class Project(object):
         geos = sc.promotetolist(geos)
         for geo in geos:
             self.add(name=geo.name, item=geo, what='geo')
-        self.modified = sc.now()
+        self.modified = sc.now(utc=True)
         return geos
 
     def add_result(self, result, name=None):

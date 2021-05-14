@@ -42,15 +42,6 @@
       }
     },
 
-    computed: {
-      projectID() {
-        return utils.projectID(this)
-      },
-      hasData() {
-        return utils.hasData(this)
-      },
-    },
-
     async created() {
       try {
         let response = await this.$sciris.rpc('read_changelog');

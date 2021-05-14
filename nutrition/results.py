@@ -14,8 +14,8 @@ class ScenResult(sc.prettyobj):
         self.obj = obj
         self.years = list(range(model.t[0], model.t[1]+1))
         self.uid = sc.uuid()
-        self.created = sc.now()
-        self.modified = sc.now()
+        self.created = sc.now(utc=True)
+        self.modified = sc.now(utc=True)
         
     def model_attr(self):
         return self.model.__dict__

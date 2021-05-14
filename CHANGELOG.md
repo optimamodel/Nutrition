@@ -23,8 +23,9 @@
 - Optima Nutrition version number and date added to standard results output in 'Version' sheet
 
 
-#### [...]
+#### [1.7.4]
 
 - Removed `nu.ONException`, now a standard `Exception` is raised
 - `nu.ONpath` is now a `Path` object rather than a function. Instead of `nu.ONpath('foo')`, use `nu.ONpath/'foo'`
 - Input files are now stored within locales by default e.g. `inputs/en/demo_region1_input.xlsx`. Files are read by locale by default
+- Times are captured in UTC and displayed in local time to users. Legacy projects may have times that show up offset by the timezone because they were previously captured in local time

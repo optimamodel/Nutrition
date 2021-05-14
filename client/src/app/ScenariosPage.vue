@@ -250,7 +250,7 @@ Last update: 2019feb11
     },
 
     computed: {
-      projectID()    { return utils.projectID(this) },
+      projectID()    { return this.$store.getters.activeProjectID },
       hasData()      { return utils.hasData(this) },
       placeholders() { return utils.placeholders() },
     },
@@ -292,7 +292,7 @@ Last update: 2019feb11
             console.log('Scenario summaries:')
             console.log(this.scenSummaries)
             this.scenariosLoaded = true
-            this.$sciris.succeed(this, 'Scenarios loaded')
+            this.$sciris.succeed(this)
           })
           .catch(error => {
             this.$sciris.fail(this, 'Could not get scenarios', error)

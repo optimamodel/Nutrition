@@ -40,17 +40,9 @@ function placeholders(startVal) {
   return indices;
 }
 
-function projectID(vm) {
-  if (vm.$store.state.activeProject.project === undefined) {
-    return ''
-  } else {
-    let projectID = vm.$store.state.activeProject.project.id
-    return projectID
-  }
-}
 
 function hasData(vm) {
-  if (vm.$store.state.activeProject.project === undefined) {
+  if (!vm.$store.getters.projectOpen) {
     return false
   }
   else {
@@ -59,7 +51,7 @@ function hasData(vm) {
 }
 
 function simStart(vm) {
-  if (vm.$store.state.activeProject.project === undefined) {
+  if (!vm.$store.getters.projectOpen) {
     return ''
   } else {
     return vm.$store.state.activeProject.project.sim_start
@@ -67,7 +59,7 @@ function simStart(vm) {
 }
 
 function simEnd(vm) {
-  if (vm.$store.state.activeProject.project === undefined) {
+  if (!vm.$store.getters.projectOpen) {
     return ''
   } else {
     return vm.$store.state.activeProject.project.sim_end
@@ -75,7 +67,7 @@ function simEnd(vm) {
 }
 
 function simYears(vm) {
-  if (vm.$store.state.activeProject.project === undefined) {
+  if (!vm.$store.getters.projectOpen) {
     return []
   } else {
     var sim_start = vm.$store.state.activeProject.project.sim_start
@@ -90,7 +82,7 @@ function simYears(vm) {
 }
 
 function activePops(vm) {
-  if (vm.$store.state.activeProject.project === undefined) {
+  if (!vm.$store.getters.projectOpen) {
     return ''
   } else {
     let pop_pairs = vm.$store.state.activeProject.project.pops
@@ -237,7 +229,6 @@ export default {
   getUniqueName,
   placeholders,
   updateSorting,
-  projectID,
   hasData,
   simStart,
   simEnd,

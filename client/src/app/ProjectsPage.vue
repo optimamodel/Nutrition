@@ -66,7 +66,7 @@ Last update: 2019feb18
           </thead>
           <tbody>
           <tr v-for="projectSummary in sortedFilteredProjectSummaries"
-              :class="{ highlighted: projectIsActive(projectSummary.project.id) }">
+              :class="{ highlighted: projectSummary.project.id === projectID }">
             <td>
               <input type="checkbox" @click="uncheckSelectAll()" v-model="projectSummary.selected"/>
             </td>
@@ -77,7 +77,7 @@ Last update: 2019feb18
                      v-model="projectSummary.renaming"/>
             </td>
             <td v-else>
-              <div v-if="projectLoaded(projectSummary.project.id)">
+              <div v-if="projectSummary.project.id === projectID">
                 <b>{{ projectSummary.project.name }}</b>
               </div>
               <div v-else>
@@ -86,15 +86,15 @@ Last update: 2019feb18
             </td>
             <td style="text-align:left">
               <span v-if="sortedFilteredProjectSummaries.length>1">
-                <button class="btn __green"  @click="openProject(projectSummary.project.id)" :disabled="projectLoaded(projectSummary.project.id)" ><span>{{ $t("Open") }}</span></button>
+                <button class="btn __green"  @click="openProject(projectSummary.project.id)" :disabled="projectSummary.project.id === projectID" ><span>{{ $t("Open") }}</span></button>
               </span>
               <button class="btn btn-icon" @click="renameProject(projectSummary)"                  :data-tooltip="$t('Rename')">  <i class="ti-pencil"></i></button>
               <button class="btn btn-icon" @click="copyProject(projectSummary.project.id)"         :data-tooltip="$t('Copy')">    <i class="ti-files"></i></button>
               <button class="btn btn-icon" @click="downloadProjectFile(projectSummary.project.id)" :data-tooltip="$t('Download')"><i class="ti-download"></i></button>
             </td>
             <td style="text-align:left">
-              {{ projectSummary.project.updatedTime ? projectSummary.project.updatedTime:
-              'No modification' }}</td>
+              {{ projectSummary.project.updatedTimeString ? projectSummary.project.updatedTimeString : 'No modification' }}
+            </td>
             <td style="text-align:left">{{ projectSummary.project.locale }}</td>
             <td style="white-space: nowrap; text-align:left"> <!-- ATOMICA-NUTRITION DIFFERENCE -->
               <button class="btn __blue" @click="renameDatasetModal(projectSummary.project.id, projectSummary.selectedDataSet)" :data-tooltip='$t("projects.Rename databook")'><i class="ti-pencil"></i></button>
@@ -212,21 +212,17 @@ Last update: 2019feb18
     computed: {
       filterPlaceholder() { return i18n.t('projects.Type here to filter projects') },
       proj_name() { return i18n.t('projects.New project') },
-      projectID()    { return utils.projectID(this) },
+      projectID()    { return this.$store.getters.activeProjectID },
       sortedFilteredProjectSummaries() {
         return this.applyNameFilter(this.applySorting(this.projectSummaries))
       },
     },
 
     created() {
-      let projectID = null
-      if (this.$store.state.currentUser.displayname === undefined) { // If we have no user logged in, automatically redirect to the login page.
-        router.push('/login')
-      } else {    // Otherwise...
-        if (this.$store.state.activeProject.project !== undefined) { // Get the active project ID if there is an active project.
-          projectID = this.$store.state.activeProject.project.id
-        }
-        this.updateProjectSummaries(projectID) // Load the project summaries of the current user.
+      if (this.$store.state.activeProject) { // Get the active project ID if there is an active project.
+        this.updateProjectSummaries(this.$store.state.activeProject.project.id) // Load the project summaries of the current user.
+      } else {
+        this.updateProjectSummaries()
       }
     },
 
@@ -239,20 +235,6 @@ Last update: 2019feb18
           }
         }
         return locale;
-      },
-
-      projectLoaded(uid) {
-        console.log('projectLoaded called')
-        if (this.$store.state.activeProject.project !== undefined) {
-          if (this.$store.state.activeProject.project.id === uid) {
-            console.log('Project ' + uid + ' is loaded')
-            return true
-          } else {
-            return false
-          }
-        } else {
-          return false
-        }
       },
 
       beforeOpen (event) {
@@ -273,35 +255,48 @@ Last update: 2019feb18
         this.$sciris.start(this)
         try {
           let response = await this.$sciris.rpc('jsonify_projects', [this.$store.state.currentUser.username]) // Get the current user's project summaries from the server.
-          let lastCreationTime = null
-          let lastCreatedID = null
-          if (response.data.projects.length > 0) { // Initialize the last creation time stuff if we have a non-empty list.
-            lastCreationTime = new Date(response.data.projects[0].project.creationTime)
-            lastCreatedID = response.data.projects[0].project.id
-          }
+
           this.projectToRename = null  // Unset the link to a project being renamed.
-          response.data.projects.forEach(theProj => { // Preprocess all projects.
+          let options = { year: 'numeric', month: 'short', day: 'numeric' , hour:'numeric',minute:'numeric',second:'numeric', timeZoneName:'short'};
+          response.data.projects.forEach(theProj => {
             theProj.selected = false // Set to not selected.
             theProj.renaming = '' // Set to not being renamed.
             theProj.selectedDataSet = theProj.project.dataSets[0] // Set the first dataset.
             theProj.project.locale = this.getLocaleName(theProj.project.locale);
-            if (theProj.project.creationTime >= lastCreationTime) { // Update the last creation time and ID if what se see is later.
-              lastCreationTime = theProj.project.creationTime
-              lastCreatedID = theProj.project.id
-            }
+
+            // Convert times to JS objects
+            theProj.project.creationTime = new Date(theProj.project.creationTime);
+            theProj.project.updatedTime = new Date(theProj.project.updatedTime);
+
+            // Localize the last modified time string
+            theProj.project.updatedTimeString = theProj.project.updatedTime.toLocaleString(undefined, options);
           })
-          this.projectSummaries = response.data.projects // Set the projects to what we received.
-          if (this.projectSummaries.length > 0) { // If we have a project on the list...
-            if (setActiveID === null) { // If no ID is passed in, set the active project to the last-created project.
-              this.openProject(lastCreatedID)
-            } else { // Otherwise, set the active project to the one passed in.
-              this.openProject(setActiveID)
-            }
-          }
+
+          this.projectSummaries = response.data.projects
           this.$sciris.succeed(this, '')  // No green popup.
         } catch (error) {
           this.$sciris.fail(this, 'Could not load projects', error);
         }
+
+        if (this.projectSummaries.length === 0) {
+          this.$store.commit('newActiveProject', undefined);
+          return;
+        }
+
+        // Try to open the requested project (noting that it may not exist if the project has been deleted in the meantime)
+        if (setActiveID !== null) {
+          let matchProject = this.projectSummaries.find(theProj => theProj.project.id === setActiveID);
+          if (matchProject !== undefined) {
+            this.openProject(matchProject.project.id);
+            return;
+          }
+        }
+
+        // Otherwise, open the most recent project (by modification time)
+        let latest = Math.max(...Array.from(this.projectSummaries, x => x.project.updatedTime.getTime()));
+        let matchProject = this.projectSummaries.find(x => x.project.updatedTime.getTime() === latest);
+        this.openProject(matchProject.project.id);
+
       },
 
       addDemoProject() {
@@ -350,14 +345,6 @@ Last update: 2019feb18
           .catch(error => {
             this.$sciris.fail(this, i18n.t('Could not upload file'), error)
           })
-      },
-
-      projectIsActive(uid) {
-        if (this.$store.state.activeProject.project === undefined) { // If the project is undefined, it is not active.
-          return false
-        } else { // Otherwise, the project is active if the UIDs match.
-          return (this.$store.state.activeProject.project.id === uid)
-        }
       },
 
       selectAll() {
@@ -411,7 +398,7 @@ Last update: 2019feb18
         let matchProject = this.projectSummaries.find(theProj => theProj.project.id === uid)
         console.log('openProject() called for ' + matchProject.project.name)
         this.$store.commit('newActiveProject', matchProject) // Set the active project to the matched project.
-        this.$sciris.succeed(this, i18n.t('projects.loaded_popup', {name:matchProject.project.name})) // Success popup.
+        // this.$sciris.succeed(this, i18n.t('projects.loaded_popup', {name:matchProject.project.name})) // Success popup.
       },
 
       copyProject(uid) {

@@ -951,7 +951,7 @@ class Dataset(object):
         self.prog_info = prog_info  # program info
         self.t = None  # start and end years for the simulation
         self.name = name
-        self.modified = sc.now()
+        self.modified = sc.now(utc=True)
         if doload:
             self.load(project=project)
         return None
@@ -1004,7 +1004,7 @@ class Dataset(object):
             raise Exception('Error in creating populations, check data and defaults books: %s'%str(E))
         self.prog_info = programs.ProgramInfo(self.prog_data)
         self.t = self.demo_data.t
-        self.modified = sc.now()
+        self.modified = sc.now(utc=True)
         return None
     
     def prog_names(self):

@@ -14,6 +14,7 @@ LOCALE_PATH = pathlib.Path(__file__).parent/"locale"
 locale = 'en' # Set the default locale
 
 def get_translator(this_locale=None):
+    # Note that this function cannot be cached (e.g. with lrucache) because the default locale is read at runtime
     if this_locale is None:
         this_locale = locale # Use the fallback locale. Loading it this way means users can write to nutrition.utils.locale to change the default at runtime
     translator = gettext.translation('nutrition', LOCALE_PATH, fallback=False, languages=[this_locale])

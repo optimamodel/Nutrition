@@ -272,7 +272,7 @@ def load_result(result_key, die=False):
 
 @RPC() # Not usually called as an RPC
 def save_project(project, die=None): # NB, only for saving an existing project
-    project.modified = sc.now()
+    project.modified = sc.now(utc=True)
     output = datastore.saveblob(obj=project, objtype='project', die=die)
     return output
 
@@ -386,8 +386,8 @@ def jsonify_project(project_id, verbose=False):
             'username':     proj.webapp.username,
             'hasData':      len(proj.datasets)>0,
             'dataSets':     proj.datasets.keys(),
-            'creationTime': sc.getdate(proj.created),
-            'updatedTime':  sc.getdate(proj.modified),
+            'creationTime': proj.created,
+            'updatedTime':  proj.modified,
             'n_results':    len(proj.results),
             'n_tasks':      len(proj.webapp.tasks),
             'locale':       proj.locale,
@@ -422,7 +422,7 @@ def rename_project(project_json):
     """ Given the passed in project json, update the underlying project accordingly. """
     proj = load_project(project_json['project']['id']) # Load the project corresponding with this json.
     proj.name = project_json['project']['name'] # Use the json to set the actual project.
-    proj.modified = sc.now() # Set the modified time to now.
+    proj.modified = sc.now(utc=True) # Set the modified time to now.
     save_project(proj) # Save the changed project to the DataStore.
     return None
 
@@ -541,7 +541,7 @@ def upload_databook(databook_filename, project_id):
     print(">> upload_databook '%s'" % databook_filename)
     proj = load_project(project_id, die=True)
     proj.load_data(inputspath=databook_filename) # Reset the project name to a new project name that is unique.
-    proj.modified = sc.now()
+    proj.modified = sc.now(utc=True)
     save_project(proj) # Save the new project in the DataStore.
     return { 'projectID': str(proj.uid) } # Return the new project UID in the return message.
 

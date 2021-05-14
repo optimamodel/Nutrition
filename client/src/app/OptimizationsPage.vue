@@ -261,7 +261,7 @@ Last update: 2019feb11
 
     computed: {
       projectID() {
-        return utils.projectID(this)
+        return this.$store.getters.activeProjectID
       },
       hasData() {
         return utils.hasData(this)
@@ -549,7 +549,7 @@ Last update: 2019feb11
           })
           this.doTaskPolling(true);  // start task polling, kicking off with running check_task() for all optimizations
           this.optimsLoaded = true;
-          this.$sciris.succeed(this, 'Optimizations loaded')
+          this.$sciris.succeed(this)
         } catch (error) {
           this.$sciris.fail(this, 'Could not load optimizations', error);
         }

@@ -247,7 +247,7 @@ Last update: 2019jan10
     },
 
     computed: {
-      projectID()    { return utils.projectID(this) },
+      projectID()    { return this.$store.getters.activeProjectID },
       hasData()      { return utils.hasData(this) },
       placeholders() { return utils.placeholders() },
     },
@@ -503,7 +503,7 @@ Last update: 2019jan10
             })
             this.doTaskPolling(true)  // start task polling, kicking off with running check_task() for all optimizations
             this.geosLoaded = true
-            this.$sciris.succeed(this, 'Geospatial optimizations loaded')
+            this.$sciris.succeed(this)
           })
           .catch(error => {
             this.$sciris.fail(this, 'Could not load geospatial optimizations', error)
