@@ -8,10 +8,11 @@ from scipy.optimize import brentq
 import sciris as sc
 import pathlib
 import gettext
-
+import babel
 
 LOCALE_PATH = pathlib.Path(__file__).parent/"locale"
 locale = 'en' # Set the default locale
+available_locales = sorted([(pathlib.Path(x)/'..'/'..').resolve().name for x in gettext.find('nutrition', LOCALE_PATH, languages=babel.Locale('en').languages.keys(), all=True)])
 
 def get_translator(this_locale=None):
     # Note that this function cannot be cached (e.g. with lrucache) because the default locale is read at runtime
@@ -24,7 +25,6 @@ def get_translator(this_locale=None):
 # ### HELPER FUNCTIONS
 # ##############################################################################
 #
-
 def format_costtypes(oldlabs):
     maps = {'Linear (constant marginal cost) [default]': 'linear',
      'Curved with increasing marginal cost': 'increasing',

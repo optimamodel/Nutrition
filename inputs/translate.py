@@ -10,7 +10,7 @@ import nutrition.ui as nu
 
 # Load translations from Excel
 source = 'en'
-translations = pd.read_excel('translations.xlsx', index_col=source).dropna()
+translations = pd.read_csv('translations.csv', index_col=source).dropna()
 
 def translate_databook(target):
 
@@ -58,6 +58,7 @@ def translate_databook(target):
         wb.Close(True)
 
 def update_messages(target):
+    # Update the .po files with translations from the CSV list, if the English text matches the message ID
     target_po = polib.pofile((nu.ONpath/'nutrition'/'locale'/target/'LC_MESSAGES'/'nutrition.po'))
 
     msgids = set(translations.index)

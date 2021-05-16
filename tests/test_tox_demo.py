@@ -1,47 +1,39 @@
 import nutrition.ui as nu
-nu.logger.setLevel(0)
-
+import pytest
+import sciris as sc
 
 testdir = nu.ONpath/'tests'
 tempdir = testdir/'temp'
 
 
-P = nu.Project('eg')
-P.load_data(inputspath='demo_input_en_fr.xlsx')  # Reset the project name to a new project name that is unique.
-
-proj1 = nu.demo(scens=True, optims=True, geos=True)
-proj2 = nu.demo(scens=True, optims=True, geos=True, locale='fr')
-#
-# P2 = sc.loadobj('testobj')
-
-proj2.load_data(inputspath='demo_input_en_fr.xlsx')  # Reset the project name to a new project name that is unique.
+@pytest.fixture(scope="module", params=nu.available_locales)
+def project(request):
+    return nu.demo(scens=True, optims=True, geos=True, locale=request.param)
 
 
-
-"""
-Version:
-"""
-
-import nutrition.ui as nu
-
-do_plot   = True
-run_scen  = False
-run_optim = False
-run_geo   = True
-
-P = nu.demo(scens=run_scen, optims=run_optim, geos=run_geo)
-
-if run_scen:
+def test_scens(project):
+    P = sc.dcp(project)
     P.run_scens()
-    if do_plot:
-        P.plot()
+    P.plot()
 
-if run_optim:
-    P.run_optim(parallel=True)
-    if do_plot:
-        P.plot(-1, optim=True)
 
-if run_geo:
-    P.run_geo(parallel=True)
-    if do_plot:
-        P.plot(-1, geo=True)
+def test_optims(project):
+    P = sc.dcp(project)
+    P.run_optim(parallel=False, maxtime=1, maxiter=1)
+    P.plot(-1, optim=True)
+
+
+def test_geos(project):
+    return True # Skip this test for now - it's slow
+    P = sc.dcp(project)
+    P.run_geo(parallel=False, maxtime=1, maxiter=1)
+    P.plot(-1, geo=True)
+
+
+if __name__ == '__main__':
+    for locale in nu.available_locales:
+        project = nu.demo(scens=True, optims=True, geos=True, locale=locale)
+        test_scens(project)
+        test_optims(project)
+        test_geos(project)
+
