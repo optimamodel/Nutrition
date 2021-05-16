@@ -2,24 +2,25 @@ import sciris as sc
 from .utils import default_trackers, pretty_labels
 import numpy as np
 
+
 class ScenResult(sc.prettyobj):
     def __init__(self, name, model_name, model, obj=None, mult=None):
         self.name = name
         self.model_name = model_name
         self.model = model
-        self.prog_info = self.model.prog_info # provides access to costing info
+        self.prog_info = self.model.prog_info  # provides access to costing info
         self.programs = self.prog_info.programs
         self.pops = self.model.pops
         self.mult = mult
         self.obj = obj
-        self.years = list(range(model.t[0], model.t[1]+1))
+        self.years = list(range(model.t[0], model.t[1] + 1))
         self.uid = sc.uuid()
         self.created = sc.now(utc=True)
         self.modified = sc.now(utc=True)
-        
+
     def model_attr(self):
         return self.model.__dict__
-    
+
     def get_outputs(self, outcomes=None, seq=False, asdict=False, pretty=False):
         """
         outcomes: a list of model outcomes to return
@@ -32,17 +33,17 @@ class ScenResult(sc.prettyobj):
         outs = self.model.get_output(outcomes, seq=seq)
         if asdict:
             output = sc.odict()
-            for o,outcome in enumerate(outcomes):
+            for o, outcome in enumerate(outcomes):
                 output[outcome] = outs[o]
-        else: 
+        else:
             output = outs
             if pretty and not seq:
                 prettyvals = []
                 for out, val in zip(outcomes, output):
-                    if 'prev' in out:
-                        prettyval = round(val* 100, 2)
+                    if "prev" in out:
+                        prettyval = round(val * 100, 2)
                     else:
-                        prettyval = round(val,0)
+                        prettyval = round(val, 0)
                     prettyvals.append(prettyval)
                 output = prettyvals
         return output
@@ -52,7 +53,7 @@ class ScenResult(sc.prettyobj):
         for name, prog in self.programs.items():
             spend = prog.annual_spend
             if not ref and prog.reference:
-                spend -= spend[0] # baseline year is reference spending, subtracted from every year
+                spend -= spend[0]  # baseline year is reference spending, subtracted from every year
             if current:
                 spend = spend[:1]
             # if not fixed and not prog.reference:
@@ -65,7 +66,7 @@ class ScenResult(sc.prettyobj):
         for name, prog in self.programs.iteritems():
             cov = prog.get_cov(unrestr=unrestr)
             if not ref and prog.reference:
-                cov -= cov[0] # baseline year is reference cov, subtracted from every year
+                cov -= cov[0]  # baseline year is reference cov, subtracted from every year
             covs[name] = cov
         return covs
 
@@ -85,73 +86,72 @@ class ScenResult(sc.prettyobj):
         progset = self.programs.keys()
         base_progset = self.prog_info.base_progset()
         # zero cov scen
-        kwargs = {'name': 'Scenario overall',
-                  'model_name': self.model_name,
-                  'scen_type': 'budget',
-                  'progvals': {prog: cov for prog in base_progset}}
+        kwargs = {"name": "Scenario overall", "model_name": self.model_name, "scen_type": "budget", "progvals": {prog: cov for prog in base_progset}}
         allkwargs.append(kwargs)
         # scale down each program to 0 individually
         progvals = self.get_allocs(ref=True)
         for prog in progset:
             new_progvals = sc.dcp(progvals)
             new_progvals[prog] = cov
-            kwargs = {'name': prog,
-                      'model_name': self.model_name,
-                      'scen_type': 'budget',
-                      'progvals': new_progvals}
+            kwargs = {"name": prog, "model_name": self.model_name, "scen_type": "budget", "progvals": new_progvals}
             allkwargs.append(kwargs)
         return allkwargs
 
     def plot(self, toplot=None):
-        from .plotting import make_plots # This is here to avoid a circular import
+        from .plotting import make_plots  # This is here to avoid a circular import
+
         figs = make_plots(self, toplot=toplot)
         return figs
+
 
 def write_results(results, projname=None, filename=None, folder=None):
     from .version import version
     from datetime import date
+
     """ Writes outputs and program allocations to an xlsx book.
     For each scenario, book will include:
         - sheet called 'outcomes' which contains all outputs over time
         - sheet called 'budget and coverage' which contains all program cost and coverages over time """
-    if projname is None: projname = ''
+    if projname is None:
+        projname = ""
     outcomes = default_trackers()
     labs = pretty_labels()
     rows = [labs[out] for out in outcomes]
-    if filename is None: filename = 'outputs.xlsx'
-    filepath = sc.makefilepath(filename=filename, folder=folder, ext='xlsx', default='%s outputs.xlsx' % projname)
+    if filename is None:
+        filename = "outputs.xlsx"
+    filepath = sc.makefilepath(filename=filename, folder=folder, ext="xlsx", default="%s outputs.xlsx" % projname)
     outputs = []
-    sheetnames = ['Version', 'Outcomes', 'Budget & coverage']
+    sheetnames = ["Version", "Outcomes", "Budget & coverage"]
     alldata = []
     allformats = []
     years = results[0].years
-    nullrow = [''] * len(years)
+    nullrow = [""] * len(years)
 
     ### Version sheet
-    data = [['Version', 'Date'], [version, date.today()]]
+    data = [["Version", "Date"], [version, date.today()]]
     alldata.append(data)
 
     # Formatting
     nrows = len(data)
     ncols = len(data[0])
     formatdata = np.zeros((nrows, ncols), dtype=object)
-    formatdata[:, :] = 'plain'  # Format data as plain
-    formatdata[:, 0] = 'bold'  # Left side bold
-    formatdata[0, :] = 'header'  # Top with green header
+    formatdata[:, :] = "plain"  # Format data as plain
+    formatdata[:, 0] = "bold"  # Left side bold
+    formatdata[0, :] = "header"  # Top with green header
     allformats.append(formatdata)
 
     ### Outcomes sheet
-    headers = [['Scenario', 'Outcome'] + years + ['Cumulative']]
+    headers = [["Scenario", "Outcome"] + years + ["Cumulative"]]
     for r, res in enumerate(results):
-        if res.name != 'Excess budget':
+        if res.name != "Excess budget":
             out = res.get_outputs(outcomes, seq=True, pretty=True)
             for o, outcome in enumerate(rows):
-                name = [res.name] if o == 0 else ['']
+                name = [res.name] if o == 0 else [""]
                 thisout = out[o]
-                if 'prev' in outcome.lower():
-                    cumul = 'N/A'
-                elif 'mortality' in outcome.lower():
-                    cumul = 'N/A'
+                if "prev" in outcome.lower():
+                    cumul = "N/A"
+                elif "mortality" in outcome.lower():
+                    cumul = "N/A"
                 else:
                     cumul = sum(thisout)
                 outputs.append(name + [outcome] + list(thisout) + [cumul])
@@ -163,36 +163,36 @@ def write_results(results, projname=None, filename=None, folder=None):
     nrows = len(data)
     ncols = len(data[0])
     formatdata = np.zeros((nrows, ncols), dtype=object)
-    formatdata[:, :] = 'plain'  # Format data as plain
-    formatdata[:, 0] = 'bold'  # Left side bold
-    formatdata[0, :] = 'header'  # Top with green header
+    formatdata[:, :] = "plain"  # Format data as plain
+    formatdata[:, 0] = "bold"  # Left side bold
+    formatdata[0, :] = "header"  # Top with green header
     allformats.append(formatdata)
 
     ### Cost & coverage sheet
     # this is grouped not by program, but by coverage and cost (within each scenario)
     outputs = []
-    headers = [['Scenario', 'Program', 'Type', 'Cost-coverage type'] + years]
+    headers = [["Scenario", "Program", "Type", "Cost-coverage type"] + years]
     for r, res in enumerate(results):
-        if res.name != 'Excess budget':
+        if res.name != "Excess budget":
             rows = res.programs.keys()
             spend = res.get_allocs(ref=True)
             cov = res.get_covs(unrestr=False)
             # collate coverages first
             for r, prog in enumerate(rows):
-                name = [res.name] if r == 0 else ['']
+                name = [res.name] if r == 0 else [""]
                 costcov = res.programs[prog].costtype
                 thiscov = cov[prog]
-                outputs.append(name + [prog] + ['Coverage'] + [costcov] + list(thiscov))
+                outputs.append(name + [prog] + ["Coverage"] + [costcov] + list(thiscov))
             # collate spending second
             for r, prog in enumerate(rows):
                 thisspend = spend[prog]
                 costcov = res.programs[prog].costtype
-                outputs.append([''] + [prog] + ['Budget'] + [costcov] + list(thisspend))
+                outputs.append([""] + [prog] + ["Budget"] + [costcov] + list(thisspend))
             outputs.append(nullrow)
         else:
             spend = res.get_allocs(ref=True)
-            thisspend = spend['Excess budget not allocated']
-            outputs.append(['Excess budget not allocated'] + ['N/A'] + ['Budget'] + ['N/A'] + list(thisspend))
+            thisspend = spend["Excess budget not allocated"]
+            outputs.append(["Excess budget not allocated"] + ["N/A"] + ["Budget"] + ["N/A"] + list(thisspend))
             outputs.append(nullrow)
     data = headers + outputs
     alldata.append(data)
@@ -201,14 +201,11 @@ def write_results(results, projname=None, filename=None, folder=None):
     nrows = len(data)
     ncols = len(data[0])
     formatdata = np.zeros((nrows, ncols), dtype=object)
-    formatdata[:, :] = 'plain'  # Format data as plain
-    formatdata[:, 0] = 'bold'  # Left side bold
-    formatdata[0, :] = 'header'  # Top with green header
+    formatdata[:, :] = "plain"  # Format data as plain
+    formatdata[:, 0] = "bold"  # Left side bold
+    formatdata[0, :] = "header"  # Top with green header
     allformats.append(formatdata)
 
-    formats = {
-        'header': {'bold': True, 'bg_color': '#3c7d3e', 'color': '#ffffff'},
-        'plain': {},
-        'bold': {'bold': True}}
+    formats = {"header": {"bold": True, "bg_color": "#3c7d3e", "color": "#ffffff"}, "plain": {}, "bold": {"bold": True}}
     sc.savespreadsheet(filename=filename, data=alldata, sheetnames=sheetnames, formats=formats, formatdata=allformats)
     return filepath

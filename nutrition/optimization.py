@@ -8,9 +8,7 @@ from .scenarios import Scen, run_scen
 class Optim(sc.prettyobj):
     """ Stores settings for running an optimization for a single objective. """
 
-    def __init__(self, name=None, model_name=None, weights=None, mults=None, prog_set=None, active=True,
-                 add_funds=0, fix_curr=False, rem_curr=False,
-                 filter_progs=True):
+    def __init__(self, name=None, model_name=None, weights=None, mults=None, prog_set=None, active=True, add_funds=0, fix_curr=False, rem_curr=False, filter_progs=True):
         """
         :param name: the name of the optimization (string)
         :param model_name: the name of the model corresponding to optimizations (string)
@@ -31,7 +29,7 @@ class Optim(sc.prettyobj):
         self.prog_set = prog_set
         self.add_funds = add_funds
         self.fix_curr = fix_curr
-        self.rem_curr = rem_curr if not fix_curr else False # can't remove if fixed
+        self.rem_curr = rem_curr if not fix_curr else False  # can't remove if fixed
         self.filter_progs = filter_progs
         self.num_cpus = multiprocessing.cpu_count()
 
@@ -40,37 +38,32 @@ class Optim(sc.prettyobj):
         self.num_procs = None
         self.optim_allocs = sc.odict()
 
-
     ######### SETUP ############
 
     def get_kwargs(self, model, weights, mult, keep_inds):
         model = sc.dcp(model)
         free = model.prog_info.free
         fixed = model.prog_info.fixed
-        kwargs = { 'model':     model,
-                   'free':      free * mult,
-                   'fixed':     fixed,
-                   'weights':   weights,
-                   'keep_inds': keep_inds}
+        kwargs = {"model": model, "free": free * mult, "fixed": fixed, "weights": weights, "keep_inds": keep_inds}
         if free == 0:
-            raise Exception('There are no funds available to optimize.')
+            raise Exception("There are no funds available to optimize.")
         return kwargs
 
     ######### OPTIMIZATION ##########
 
     def run_optim(self, model, maxiter=80, swarmsize=35, maxtime=560, parallel=True, num_procs=None):
         if parallel:
-            how = 'parallel'
+            how = "parallel"
             num_procs = num_procs if num_procs else self.num_cpus
         else:
-            how = 'series'
+            how = "series"
             num_procs = 1
-        print('Optimizing for %s in %s' % (self.name, how))
+        print("Optimizing for %s in %s" % (self.name, how))
         # get impactful programs
         keep_inds = self._filter_progs(model)
         # get the kwargs
         optim = (maxiter, swarmsize, maxtime)
-        args = [(self.get_kwargs(model, self.weights, mult, keep_inds), mult)+optim for mult in self.mults]
+        args = [(self.get_kwargs(model, self.weights, mult, keep_inds), mult) + optim for mult in self.mults]
         if parallel:
             res = utils.run_parallel(self.one_optim_parallel, args, num_procs)
         else:
@@ -83,14 +76,13 @@ class Optim(sc.prettyobj):
     def _filter_progs(self, model):
         if self.filter_progs:
             threshold = 0.1
-            newcov = 1.
-            restrictcovs=False
+            newcov = 1.0
+            restrictcovs = False
             keep_inds = []
             years = len(model.sim_years)
             # compare with 0 case
-            progvals = {prog:[0] for prog in self.prog_set}
-            kwargs = {'scen_type': 'coverage',
-                      'progvals': progvals}
+            progvals = {prog: [0] for prog in self.prog_set}
+            kwargs = {"scen_type": "coverage", "progvals": progvals}
             zeroscen = Scen(**kwargs)
             zeromodel = sc.dcp(model)
             zerores = run_scen(zeroscen, zeromodel, restrictcovs)
@@ -109,73 +101,71 @@ class Optim(sc.prettyobj):
                     thismodel = sc.dcp(model)
                     # override dependencies to allow scale-up
                     thiscov = sc.dcp(progvals)
-                    thiscov[prog] = [newcov]*years
+                    thiscov[prog] = [newcov] * years
                     thesekwargs = sc.dcp(kwargs)
-                    thesekwargs['progvals'] = thiscov
+                    thesekwargs["progvals"] = thiscov
                     scen = Scen(**thesekwargs)
                     res = run_scen(scen, thismodel, restrictcovs=restrictcovs)
                     outs = res.get_outputs()
                     val = np.inner(outs, self.weights)
-                    hasimpact = abs((val - zeroval) / zeroval) * 100. > threshold
+                    hasimpact = abs((val - zeroval) / zeroval) * 100.0 > threshold
                     keep_inds.append(hasimpact)
         else:
             keep_inds = [True for i, _ in enumerate(self.prog_set)]
         if not keep_inds:
-            raise Exception('No programs impact the chosen objective or none were selected.')
+            raise Exception("No programs impact the chosen objective or none were selected.")
         return np.array(keep_inds)
 
     def one_optim(self, args):
-        """ Runs optimization for an objective and budget multiple.
-        Return: a list of allocations, with order corresponding to the programs list """
+        """Runs optimization for an objective and budget multiple.
+        Return: a list of allocations, with order corresponding to the programs list"""
         kwargs = args[0]
         mult = args[1]
         maxiter, swarmsize, maxtime = args[2:]
-        free = kwargs['free']
-        inds = kwargs['keep_inds']
-        fixed = kwargs['fixed']
-        model = kwargs['model']
+        free = kwargs["free"]
+        inds = kwargs["keep_inds"]
+        fixed = kwargs["fixed"]
+        model = kwargs["model"]
         numprogs = np.sum(inds)
-        if free > 0 and np.any(inds): # need both funds and programs
+        if free > 0 and np.any(inds):  # need both funds and programs
             xmin = np.zeros(numprogs)
             xmax = np.full(numprogs, free)
             now = sc.tic()
             if ((swarmsize is not None) and (swarmsize > 0)) and ((maxiter is not None) and (maxiter > 0)):
                 x0, fopt = pso.pso(obj_func, xmin, xmax, kwargs=kwargs, maxiter=maxiter, swarmsize=swarmsize)
             else:
-                x0 = kwargs['model'].prog_info.curr[inds]
+                x0 = kwargs["model"].prog_info.curr[inds]
             opt_result = sc.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=2, maxtime=maxtime, randseed=5)
             x = opt_result.x
             self.print_status(x, mult, opt_result.exitreason, now)
-            scaled = utils.scale_end_alloc(free, x, model.prog_info, inds, fixed) # scales spending to fit budget, limited by saturation and any program coverage dependencies
+            scaled = utils.scale_end_alloc(free, x, model.prog_info, inds, fixed)  # scales spending to fit budget, limited by saturation and any program coverage dependencies
             inds = np.append(inds, True)
             fixed = np.append(fixed, 0.0)
-            excess_spend = {'name': 'Excess budget not allocated',
-                            'all_years': model.prog_info.all_years,
-                            'prog_data': utils.add_dummy_prog_data(model.prog_info, 'Excess budget not allocated')}
+            excess_spend = {"name": "Excess budget not allocated", "all_years": model.prog_info.all_years, "prog_data": utils.add_dummy_prog_data(model.prog_info, "Excess budget not allocated")}
             model.prog_info.add_prog(excess_spend, model.pops)
-            model.prog_info.prog_data = excess_spend['prog_data']
-            self.prog_set.append('Excess budget not allocated')
+            model.prog_info.prog_data = excess_spend["prog_data"]
+            self.prog_set.append("Excess budget not allocated")
             best_alloc = utils.add_fixed_alloc(fixed, scaled, inds)
         else:
             # if one of the multiples is 0, return fixed costs
             best_alloc = fixed
         # generate results
-        name = '%s (x%s)' % (self.name, mult)
-        progvals = {prog:spend for prog, spend in zip(self.prog_set, best_alloc)}
-        scen = Scen(name=name, model_name=self.model_name, scen_type='budget', progvals=progvals)
+        name = "%s (x%s)" % (self.name, mult)
+        progvals = {prog: spend for prog, spend in zip(self.prog_set, best_alloc)}
+        scen = Scen(name=name, model_name=self.model_name, scen_type="budget", progvals=progvals)
         res = run_scen(scen, model, obj=self.name, mult=mult, restrictcovs=False)
-        if 'Excess budget not allocated' in self.prog_set:
-            self.prog_set.remove('Excess budget not allocated')
+        if "Excess budget not allocated" in self.prog_set:
+            self.prog_set.remove("Excess budget not allocated")
         return res
-    
+
     @utils.trace_exception
     def one_optim_parallel(self, args):
         res = self.one_optim(args)
         return res
 
     def print_status(self, objective, multiple, exitreason, now):
-        print('Finished optimization for %s for objective %s and multiple %s' % (self.name, objective, multiple))
-        print('The reason is %s and it took %0.1f s \n' % (exitreason, sc.toc(now, output=True)))
+        print("Finished optimization for %s for objective %s and multiple %s" % (self.name, objective, multiple))
+        print("The reason is %s and it took %0.1f s \n" % (exitreason, sc.toc(now, output=True)))
 
 
 def obj_func(allocation, model, free, fixed, keep_inds, weights):
@@ -193,7 +183,7 @@ def obj_func(allocation, model, free, fixed, keep_inds, weights):
     # scale the allocation appropriately
     scaledAllocation = utils.scale_alloc(free, allocation)
     totalAllocations = utils.add_fixed_alloc(fixed, scaledAllocation, keep_inds)
-    thisModel.update_covs(totalAllocations, 'budget')
+    thisModel.update_covs(totalAllocations, "budget")
     thisModel.run_sim()
     # get weighted objective value
     outs = thisModel.get_output()
@@ -201,22 +191,12 @@ def obj_func(allocation, model, free, fixed, keep_inds, weights):
     return value
 
 
-def make_default_optim(modelname=None, basename='Maximize thrive'):
+def make_default_optim(modelname=None, basename="Maximize thrive"):
     """
     Creates and returns a prototype / default optimization for a particular Model.
     """
 
-    kwargs1 = {'name': basename,
-               'model_name': modelname,
-               'mults': [1],
-               'weights': sc.odict({'thrive': 1}),
-               'prog_set': ['Vitamin A supplementation', 'IYCF 1', 'IFA fortification of maize',
-                            'Balanced energy-protein supplementation',
-                            'Public provision of complementary foods',
-                            'Iron and iodine fortification of salt'],
-               'fix_curr': False,
-               'add_funds': 0,
-               'filter_progs': True}
+    kwargs1 = {"name": basename, "model_name": modelname, "mults": [1], "weights": sc.odict({"thrive": 1}), "prog_set": ["Vitamin A supplementation", "IYCF 1", "IFA fortification of maize", "Balanced energy-protein supplementation", "Public provision of complementary foods", "Iron and iodine fortification of salt"], "fix_curr": False, "add_funds": 0, "filter_progs": True}
 
     default = Optim(**kwargs1)
     return default

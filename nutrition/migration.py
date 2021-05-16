@@ -46,6 +46,7 @@ else:
 class _Placeholder:
     pass
 
+
 # MIGRATIONS
 #
 # The remaining code manages upgrading Project objects and their contents after they
@@ -201,16 +202,17 @@ def migrate(obj, registry=migrations, version=version, gitinfo=gitinfo):
 
 @migration("Project", "1.7.2", "1.7.3", "Add locale")
 def _add_project_locale(proj):
-    proj.locale = 'en'
+    proj.locale = "en"
     return proj
+
 
 @migration("InputData", "1.7.2", "1.7.3", "Add locale")
 def _add_inputdata_locale(inputdata):
-    inputdata.locale = 'en'
+    inputdata.locale = "en"
     return inputdata
 
 
 @migration("ProgData", "1.7.2", "1.7.3", "Add locale")
 def _add_progdata_locale(progdata):
-    progdata.locale = 'en'
+    progdata.locale = "en"
     return progdata
