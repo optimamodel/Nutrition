@@ -9,9 +9,10 @@ import pylab as pl
 import nutrition.ui as nu
 import nutrition as on
 import sciris.core as sc
+
 try:
     from line_profiler import LineProfiler
-except: 
+except:
     errormsg = 'ERROR: You need to install line_profiler! "conda install line_profiler"'
     raise Exception(errormsg)
 
@@ -20,31 +21,32 @@ except:
 #%% Preliminaries -- do a CPU benchmark
 def cpubenchmark(repeats=int(1e6)):
     starttime = sc.tic()
-    tmp = [0+tmp for tmp in range(repeats)]
-    timediff = sc.toc(starttime, 'out')
-    performance = 1.0/timediff
+    tmp = [0 + tmp for tmp in range(repeats)]
+    timediff = sc.toc(starttime, "out")
+    performance = 1.0 / timediff
     return performance
-   
+
+
 # Calculate performance
 performance1 = cpubenchmark()
 pl.pause(0.5)
 performance2 = cpubenchmark()
-CPUperformance = sum([performance1, performance2])/2. # Find average of before and after
+CPUperformance = sum([performance1, performance2]) / 2.0  # Find average of before and after
 
 # Calculate initialization
 start = sc.tic()
 P = nu.demo()
-initialization = sc.toc(start, 'out')
+initialization = sc.toc(start, "out")
 
 # Calculate model un
 start = sc.tic()
 P.run_scens()
-model_run = sc.toc(start, 'out')
+model_run = sc.toc(start, "out")
 
 
 #####################################################################################################
 #%% Profiling
-'''
+"""
 Examples:
     nu.demo
     P.run_scens
@@ -61,37 +63,41 @@ Examples:
     P.optims[0].one_optim # Warning, doesn't work for some reason
     on.data.get_data
     P.datasets[0].default_params.read_spreadsheet
-'''
-functiontoprofile = 'on.data.get_data'
+"""
+functiontoprofile = "on.data.get_data"
+
+
 def profile():
-    print('Profiling %s...' % functiontoprofile)
+    print("Profiling %s..." % functiontoprofile)
 
     def do_profile(follow=None):
-      def inner(func):
-          def profiled_func(*args, **kwargs):
-              try:
-                  profiler = LineProfiler()
-                  profiler.add_function(func)
-                  for f in follow:
-                      profiler.add_function(f)
-                  profiler.enable_by_count()
-                  return func(*args, **kwargs)
-              finally:
-                  profiler.print_stats()
-          return profiled_func
-      return inner
-    
-    
-    
-    @do_profile(follow=[eval(functiontoprofile)]) # Add decorator to function being profiled
-    def runwrapper(): 
+        def inner(func):
+            def profiled_func(*args, **kwargs):
+                try:
+                    profiler = LineProfiler()
+                    profiler.add_function(func)
+                    for f in follow:
+                        profiler.add_function(f)
+                    profiler.enable_by_count()
+                    return func(*args, **kwargs)
+                finally:
+                    profiler.print_stats()
+
+            return profiled_func
+
+        return inner
+
+    @do_profile(follow=[eval(functiontoprofile)])  # Add decorator to function being profiled
+    def runwrapper():
         nu.demo()
+
     runwrapper()
-    
-    print('Done.')
+
+    print("Done.")
+
 
 profile()
 
 print("CPU benchmark:%0.2f million flops" % (CPUperformance))
-print('Model initialization: %s s' % initialization)
-print('Model runtime: %s s' % model_run)
+print("Model initialization: %s s" % initialization)
+print("Model runtime: %s s" % model_run)
