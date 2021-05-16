@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nutrition 1.7.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-05-01 18:38+1000\n"
+"POT-Creation-Date: 2021-05-16 11:09+1000\n"
 "PO-Revision-Date: 2021-05-01 18:35+1000\n"
 "Last-Translator: \n"
 "Language-Team: fr <LL@li.org>\n"
@@ -16,39 +16,50 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1)\n"
-"Generated-By: Babel 2.9.1\n"
+"Generated-By: Babel 2.9.0\n"
 
-#: nutrition/data.py:419 nutrition/data.py:427 nutrition/data.py:430
-#: nutrition/data.py:433 nutrition/data.py:450 nutrition/data.py:465
-#: nutrition/data.py:536 nutrition/data.py:581 nutrition/data.py:708
-#: nutrition/data.py:896
+#: nutrition/data.py:421 nutrition/data.py:429 nutrition/data.py:432
+#: nutrition/data.py:435 nutrition/data.py:452 nutrition/data.py:467
+#: nutrition/data.py:537 nutrition/data.py:582 nutrition/data.py:711
+#: nutrition/data.py:897
 msgid "Baseline year population inputs"
 msgstr "Donnees pop de l'annee de ref"
 
-#: nutrition/demo.py:14
+#: nutrition/geospatial.py:293 nutrition/optimization.py:201
+#: nutrition/project.py:624 nutrition/project.py:649
+msgid "IFA fortification of maize"
+msgstr "Enrichissement du maïs en AGI"
+
+#: nutrition/geospatial.py:301 nutrition/optimization.py:201
+#: nutrition/project.py:565 nutrition/project.py:577 nutrition/project.py:622
+#: nutrition/project.py:657
+msgid "Vitamin A supplementation"
+msgstr "Supplémentation en vitamine A"
+
+#: nutrition/project.py:559
 msgid "Stunting example (coverage)"
 msgstr "Exemple de retard de croissance (couverture)"
 
-#: nutrition/demo.py:20
+#: nutrition/project.py:571
 msgid "Stunting example (budget)"
 msgstr "Exemple de retard de croissance (budget)"
 
-#: nutrition/demo.py:27
+#: nutrition/project.py:584
 msgid "Wasting example"
 msgstr "Exemple de amaigrissement"
 
-#: nutrition/demo.py:34
+#: nutrition/project.py:596
 msgid "Anaemia example"
 msgstr "Exemple d’anémie"
 
-#: nutrition/demo.py:47
+#: nutrition/project.py:617
 msgid "Maximize thrive"
 msgstr "Maximiser l’épanouissement"
 
-#: nutrition/settings.py:33 nutrition/settings.py:38
+#: nutrition/settings.py:34 nutrition/settings.py:39
 msgid "12-23 months"
 msgstr "12-23 mois"
 
-#: nutrition_app/rpcs.py:435
+#: nutrition_app/rpcs.py:443
 msgid "Demo project"
 msgstr "Démo projet"

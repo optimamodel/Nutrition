@@ -33,7 +33,7 @@ def translate_databook(target):
 
             rg = sheet.UsedRange
 
-            for a, b in translations[[source, target]].values:
+            for a, b in translations[target].items():
 
                 # Translate the sheet name
                 if sheet.Name == a:
@@ -68,7 +68,6 @@ def update_messages(target):
     for entry in target_po:
         if entry.msgid in msgids:
             entry.msgstr = translations.at[entry.msgid, target]
-
     target_po.save()
 
 
@@ -77,7 +76,7 @@ excel.Visible = True
 
 
 for target in translations.columns:
-    translate_databook("en", target)
+    # translate_databook(target)
     update_messages(target)
 
 

@@ -788,7 +788,7 @@ class ProgData(object):
         targetPopSheet.loc["Non-pregnant WRA", "IFAS (school)"].iloc[9] = IFAS_school_row
         self.calcscache.write_cell("Programs target population", 26, 11, IFAS_school_row)
         IFA_maize_row = frac_maize * np.ones(11)
-        targetPopSheet.loc["General population", "IFA fortification of maize"].iloc[2:13] = IFA_maize_row
+        targetPopSheet.loc["General population", _("IFA fortification of maize")].iloc[2:13] = IFA_maize_row
         self.calcscache.write_row("Programs target population", 28, 4, IFA_maize_row)
         IFA_rice_row = frac_rice * np.ones(11)
         targetPopSheet.loc["General population", "IFA fortification of rice"].iloc[2:13] = IFA_rice_row
@@ -991,12 +991,11 @@ class Dataset(object):
             self.demo_data = InputData(input_data, self.calcscache)  # demo_ here is demographic_
         except Exception as E:
             raise Exception("Error in databook: %s" % str(E))
-        try:
-            self.default_params = DefaultParams(default_data, input_data)
-            self.default_params.compute_risks(self.demo_data)
-            self.prog_data = ProgData(input_data, self.default_params, self.calcscache)
-        except Exception as E:
-            raise Exception("Error in program data: %s" % str(E))
+
+        self.default_params = DefaultParams(default_data, input_data)
+        self.default_params.compute_risks(self.demo_data)
+        self.prog_data = ProgData(input_data, self.default_params, self.calcscache)
+
         try:
             self.pops = populations.set_pops(self.demo_data, self.default_params)
         except Exception as E:

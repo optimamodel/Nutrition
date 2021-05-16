@@ -6,7 +6,6 @@ from .utils import get_translator
 import pathlib
 
 
-
 class Settings(object):
     """Store all the static data for a project that won't change except between Optima versions
     WARNING: Do not change the order of these lists without checking the potential consequences within the code"""
@@ -56,6 +55,7 @@ ONpath = pathlib.Path(__file__).parent.parent
 def data_path(locale, country, region=None):
     region = region or "national"
     return ONpath / "inputs" / locale / f"{country}_{region}_input.xlsx"
+
 
 #####################################################################################################################
 ### Define debugging and exception functions/classes
