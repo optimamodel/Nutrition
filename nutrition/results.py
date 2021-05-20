@@ -120,7 +120,7 @@ def write_results(results, projname=None, filename=None, folder=None):
         'stunted', 'stunted_prev',
         'wasted', 'wasted_prev', 'sam_prev',
         'pw_anaemic', 'pw_anaemprev',
-        'stunted_prev_tot', 'SAM_prev_tot',
+        'child_anaemprev', 'SAM_prev_tot',
     ]
     #default_trackers()
     labs = pretty_labels()
