@@ -90,11 +90,11 @@ class Model(sc.prettyobj):
         self.nonpw_anaemprev[self.year] = self.nonpw.frac_risk('an')
 
         # Manually set threshold objective for anaemia prevalence
-        if self.children.frac_risk('an') < 0.2 and self.children.frac_risk('an') > 0.1:
+        if self.children.frac_risk('an') < 0.15 and self.children.frac_risk('an') > 0.1:
             self.child_anaemprev_thresh[self.year] = 0
         else:
             self.child_anaemprev_thresh[self.year] = 1e5
-        if self.pw.frac_risk('an') < 0.27 and self.pw.frac_risk('an') > 0.20:
+        if self.pw.frac_risk('an') < 0.10 and self.pw.frac_risk('an') > 0.08:
             self.pw_anaemprev_thresh[self.year] = 0
         else:
             self.pw_anaemprev_thresh[self.year] = 1e5
