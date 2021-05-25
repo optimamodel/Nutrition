@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/home/debra/Nutrition/')  # I think this will be the correct path on the server
+sys.path.append('C:/Users/debra.tenbrink/Documents/GitHub/Nutrition/')   # I think this will be the correct path on the server
 from nutrition.project import Project
 from nutrition.optimization import Optim
 from nutrition.scenarios import Scen
@@ -12,8 +12,8 @@ from nutrition.geospatial import Geospatial
 import sciris as sc
 
 
-input_path = 'Databooks/'
-output_path = 'Outputs/'
+input_path = 'databooks/'
+output_path = ''
 
 region_list = ['SUJAWAL', 'THATTA', 'JACOBABAD',
                  'KASHMOR', 'SHIKARPUR', 'LARKANA', 'KAMBAR SHAHDAD KOT', 'SUKKUR',
@@ -21,7 +21,7 @@ region_list = ['SUJAWAL', 'THATTA', 'JACOBABAD',
                  'TANDO ALLAHYAR','TANDO MUHAMMAD KHAN', 'MATIARI', 'BADIN', 'SANGHAR', 'MIRPUR KHAS', 'UMER KOT',
                  'THARPARKAR', 'KARACHI WEST', 'MALIR', 'KARACHI SOUTH', 'KARACHI EAST', 'KARACHI CENTRAL', 'KORANGI']
 
-add_funds = [5e6, 10e6, 20e6] # Extra budget amounts
+add_funds = [1e6, 2e6, 5e6] # Extra budget amounts
 
 if __name__ == '__main__':
 
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     for funds in add_funds:
         kwargs = {'name': 'Sindh',
                   'modelnames': region_list,
-                  'weights': sc.odict({'Minimize the number of child deaths': 1.0/11.0,
+                  'weights': sc.odict({'Minimize the number of child deaths': 1.0,
                                        #'Minimize the prevalence of wasting in children': pop_size_tot,
                                        #'Minimize the prevalence of stunting in children': pop_size_tot}),
                                        #'thrive': 1,
@@ -52,5 +52,5 @@ if __name__ == '__main__':
 
         geo = Geospatial(**kwargs)
         #results = p.run_geo(geo=geo, maxiter=10, swarmsize=10, maxtime=20, dosave=True, parallel=False)
-        results = p.run_geo(geo=geo, dosave=True, parallel=True, num_procs=8)
-        write_results(results, filename=output_path + 'Sindh_geospatial_test' + "{:.0e}".format(funds) + '.xlsx')
+        results = p.run_geo(geo=geo, dosave=True, parallel=True)
+        write_results(results, filename=output_path + 'Sindh_geospatial_20201216' + "{:.0e}".format(funds) + '.xlsx')

@@ -18,8 +18,12 @@ def parallel_optim(region, path=None):
     kwargs = {'name': region,
               'mults': [1],
               'model_name': region,
-              'weights': sc.odict({'thrive': pop_size_tot,
-              'Minimize the number of wasted children': pop_size_tot}),
+              'weights': sc.odict({'Minimize the number of child deaths': 1.0/11.0,
+                                       #'Minimize the prevalence of wasting in children': pop_size_tot,
+                                       #'Minimize the prevalence of stunting in children': pop_size_tot}),
+                                       #'thrive': 1,
+                                       'Minimize the total number of wasted children under 5': 1,
+                                       'Minimize the total number of stunted children under 5': 1}),
               # The available programs need to be put below, I just filled it with common ones
               'prog_set': ['Balanced energy-protein supplementation','Cash transfers','IFA fortification of wheat flour',
                            'IYCF 1', 'IYCF 2', 'IYCF 3', 'IFAS for pregnant women (community)',
@@ -40,10 +44,10 @@ def parallel_optim(region, path=None):
 input_path = 'Databooks/'
 output_path = 'Outputs/'
 
-region_list = ['JACOBABAD', 'SUJAWAL', 'THATTA', 'KASHMOR', 'SHIKARPUR', 'LARKANA', 'KAMBAR SHAHDAD KOT', 'SUKKUR', 'GHOTKI', 'KHAIRPUR',
-             'NAUSHAHRO FEROZE', 'SHAHEED BENAZIRABAD', 'DADU', 'JAMSHORO', 'HYDERABAD', 'TANDO ALLAHYAR',
-             'TANDO MUHAMMAD KHAN', 'MATIARI', 'BADIN', 'SANGHAR', 'MIRPUR KHAS', 'UMER KOT',
-             'THARPARKAR', 'KARACHI WEST', 'MALIR', 'KARACHI SOUTH', 'KARACHI EAST', 'KARACHI CENTRAL', 'KORANGI']
+region_list = ['JACOBABAD', 'SUJAWAL', 'THATTA', 'KASHMOR']#, 'SHIKARPUR', 'LARKANA', 'KAMBAR SHAHDAD KOT', 'SUKKUR', 'GHOTKI', 'KHAIRPUR',
+             # 'NAUSHAHRO FEROZE', 'SHAHEED BENAZIRABAD', 'DADU', 'JAMSHORO', 'HYDERABAD', 'TANDO ALLAHYAR',
+             # 'TANDO MUHAMMAD KHAN', 'MATIARI', 'BADIN', 'SANGHAR', 'MIRPUR KHAS', 'UMER KOT',
+             # 'THARPARKAR', 'KARACHI WEST', 'MALIR', 'KARACHI SOUTH', 'KARACHI EAST', 'KARACHI CENTRAL', 'KORANGI']
 
 
 if __name__ == '__main__':

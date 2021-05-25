@@ -17,21 +17,18 @@ input_path = 'Databooks/'
 output_path = 'Outputs/'
 
 
-region_list = ['AWARAN', 'BARKHAN', 'CHAGAI',
-                  'DERA BUGTI', 'GWADAR', 'HARNAI', 'JAFFARABAD', 'JHAL MAGSI',
-                  'KACHHI', 'KALAT', 'KECH', 'KHARAN', 'KHUZDAR', 'KILLA ABDULLAH', 'KILLA SAIFULLAH',
-                  'KOHLU', 'LASBELA', 'LEHRI', 'LORALAI', 'MASTUNG', 'MUSAKHEL', 'NASIRABAD',
-                  'NUSHKI', 'PANJGUR', 'PISHIN', 'QUETTA', 'SHERANI', 'SIBI', 'SOHBATPUR', 'WASHUK', 'ZHOB', 'ZIARAT']
-
+region_list = ['ABBOTTABAD', 'BANNU', 'BATTAGRAM', 'BUNER', 'CHARSADDA', 'CHITRAL', 'DERA ISMAIL KHAN', 'HANGU', 'HARIPUR',
+                'KALA DHAKA', 'KARAK', 'KOHAT', 'KOHISTAN', 'LAKKI MARWAT', 'LOWER DIR',
+               'MALAKAND', 'MANSEHRA', 'MARDAN', 'NOWSHERA', 'PESHAWAR', 'SHANGLA', 'SWABI', 'SWAT', 'TANK', 'UPPER DIR']
 add_funds = [1e6, 2e6, 5e6] # Extra budget amounts
 
 if __name__ == '__main__':
 
-    p = Project('Balochistan')
+    p = Project('K-P')
     for region in region_list:
         p.load_data(inputspath=input_path + region + '_input.xlsx', name=region)
     for funds in add_funds:
-        kwargs = {'name': 'Balochistan',
+        kwargs = {'name': 'K-P',
                   'modelnames': region_list,
                   'weights': sc.odict({'Minimize the number of child deaths': 1.0,
                                        #'Minimize the prevalence of wasting in children': pop_size_tot,
@@ -54,16 +51,16 @@ if __name__ == '__main__':
                   }
 
         geo = Geospatial(**kwargs)
-        #results = p.run_geo(geo=geo, maxiter=1, swarmsize=1, maxtime=2, dosave=True, parallel=False)
-        results = p.run_geo(geo=geo, maxiter=500, swarmsize=35, maxtime=560, dosave=True, parallel=True)
+        # results = p.run_geo(geo=geo, maxiter=500, swarmsize=35, maxtime=560, dosave=True, parallel=True)
+        results = p.run_geo(geo=geo, dosave=True, parallel=True)
 
-        write_results(results, filename=output_path + 'Balochistan_geospatial_20201217' + "{:.0e}".format(funds) + '.xlsx')
+        write_results(results, filename=output_path + 'KP_geospatial_20201219' + "{:.0e}".format(funds) + '.xlsx')
 
 
-    p2 = Project('Balochistan')
+    p2 = Project('K-P')
     for region in region_list:
         p2.load_data(inputspath=input_path + region + '_input.xlsx', name=region)
-    kwargs = {'name': 'Balochistan',
+    kwargs = {'name': 'K-P',
               'modelnames': region_list,
               'weights': sc.odict({'Minimize the number of child deaths': 1.0,
                                    #'Minimize the prevalence of wasting in children': pop_size_tot,
@@ -86,6 +83,6 @@ if __name__ == '__main__':
               }
 
     geo2 = Geospatial(**kwargs)
-    #results = p.run_geo(geo=geo, maxiter=1, swarmsize=1, maxtime=2, dosave=True, parallel=False)
-    results2 = p2.run_geo(geo=geo2, maxiter=500, swarmsize=35, maxtime=560, dosave=True, parallel=True)
-    write_results(results2, filename=output_path + 'Balochistan_district_opt_20201217.xlsx')
+    # results2 = p2.run_geo(geo=geo2, maxiter=500, swarmsize=35, maxtime=560, dosave=True, parallel=True)
+    results2 = p2.run_geo(geo=geo2, dosave=True, parallel=True)
+    write_results(results2, filename=output_path + 'KP_district_opt_20201219.xlsx')
