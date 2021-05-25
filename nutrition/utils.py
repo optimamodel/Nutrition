@@ -58,7 +58,9 @@ def default_trackers(prev=None, rate=None):
         'old_bf',
         'stunted_prev_tot',
         'SAM_prev_tot',
-        'wasted_prev_tot'
+        'wasted_prev_tot',
+        'child_anaemprev_thresh',
+        'pw_anaemprev_thresh'
     ]
     if prev is not None:
         if prev:
@@ -102,7 +104,9 @@ def pretty_labels(direction=False):
             'Maximize the prevalence of age-appropriate breastfeeding 6-23 months',
             'Minimize the total number of stunted children under 5',
             'Minimize the total number of SAM children under 5',
-            'Minimize the total number of wasted children under 5'
+            'Minimize the total number of wasted children under 5',
+            'Keep child anaemia below threshold',
+            'Keep pregnant women anaemia below threshold'
         ]
     else:
         pretty = [
@@ -126,7 +130,9 @@ def pretty_labels(direction=False):
             'Prevalence of age-appropriate breastfeeding 6-23 months',
             'Total number of stunted children under 5',
             'Total number of SAM children under 5',
-            'Total number of wasted children under 5'
+            'Total number of wasted children under 5',
+            'Child anaemia threshold',
+            'Pregnant women anaemia threshold'
         ]
     labs = sc.odict(zip(default_trackers(), pretty))
     return labs
