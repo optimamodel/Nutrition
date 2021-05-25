@@ -89,6 +89,16 @@ class Model(sc.prettyobj):
         self.pw_anaemprev[self.year] = self.pw.frac_risk('an')
         self.nonpw_anaemprev[self.year] = self.nonpw.frac_risk('an')
 
+        # Manually set threshold objective for anaemia prevalence
+        if self.children.frac_risk('an') < 0.2 and self.children.frac_risk('an') > 0.1:
+            self.child_anaemprev_thresh[self.year] = 0
+        else:
+            self.child_anaemprev_thresh[self.year] = 1e5
+        if self.pw.frac_risk('an') < 0.27 and self.pw.frac_risk('an') > 0.20:
+            self.pw_anaemprev_thresh[self.year] = 0
+        else:
+            self.pw_anaemprev_thresh[self.year] = 1e5
+
         #prevalence but in terms of absolute numbers
         children = self.children.age_groups
         self.stunted_prev_tot[self.year] = 0  # this means it is only the value at the last month of the year that will not be overwritten
