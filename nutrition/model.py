@@ -94,6 +94,7 @@ class Model(sc.prettyobj):
             self.child_anaemprev_thresh[self.year] = 0
         else:
             self.child_anaemprev_thresh[self.year] = 1e6
+
         if self.pw.frac_risk('an') < 0.09 and self.pw.frac_risk('an') > 0.01:
             self.pw_anaemprev_thresh[self.year] = 0
         else:
