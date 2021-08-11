@@ -829,8 +829,10 @@ class ProgData(object):
         Note that frac in community and mass media assumed to be 1.
         Note also this fraction can exceed 1, and is adjusted for the target pop calculations of the Programs class """
         pop_data = self.spreadsheet.parse('Baseline year population inputs', index_col=[0,1]).loc['Population data']
-        frac_pw = float(pop_data.loc['Percentage of pregnant women attending health facility'])
-        frac_child = float(pop_data.loc['Percentage of children attending health facility'])
+        #frac_pw = float(pop_data.loc['Percentage of pregnant women attending health facility'])
+       #frac_child = float(pop_data.loc['Percentage of children attending health facility'])
+        frac_pw = pop_data.loc['Percentage of pregnant women attending health facility'][0]
+        frac_child = pop_data.loc['Percentage of children attending health facility'][0]
         # target pop is the sum of fractions exposed to modality in each age band
         target = sc.odict()
         for name, package in package_modes.items():

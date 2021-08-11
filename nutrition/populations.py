@@ -212,6 +212,9 @@ class ChildAgeGroup(AgeGroup):
 
     def num_correctbf(self):
         return self.pop_size * self.bf_dist[self.correct_bf]
+    
+    def frac_correctbf(self):
+        return self.bf_dist[self.correct_bf]
 
     def frac_stunted(self):
         return sum(self.stunting_dist[cat] for cat in self.ss.stunted_list)
@@ -318,6 +321,7 @@ class Population(sc.prettyobj):
 
     def frac_anaemic(self):
         return self.num_anaemic() / self.total_pop()
+    
 
 class Children(Population):
     def __init__(self, data, default_params):

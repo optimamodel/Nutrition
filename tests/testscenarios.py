@@ -1,5 +1,8 @@
 import nutrition.ui as nu
 import sciris as sc
+#import pandas as pd
+
+#pd.set_option('mode.chained_assignment', None)
 
 doplot = False
 
@@ -61,12 +64,12 @@ kwargs6 = {'name': 'Check bednets',
            'scen_type': 'budget',
            'progvals': sc.odict({'Long-lasting insecticide-treated bednets': [0]})}
 
-kwargs6 = {'name': 'IYCF',
+kwargs7 = {'name': 'IYCF',
            'model_name': 'eg',
            'scen_type': 'coverage',
            'progvals': sc.odict({'IYCF 1': [0.95]})}
 
-scen_list = nu.make_scens([kwargs1, kwargs6])
+scen_list = nu.make_scens([kwargs1, kwargs2, kwargs7])
 p.add_scens(scen_list)
 p.run_scens()
 if doplot:

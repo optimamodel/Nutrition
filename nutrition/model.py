@@ -63,11 +63,15 @@ class Model(sc.prettyobj):
         # children
         oldest = self.children.age_groups[-1]
         rate = oldest.ageingRate
+        NewlyBorns = self.children.age_groups[0]
         self.thrive[self.year] += oldest.num_notstunted() * rate
         self.stunted[self.year] += oldest.num_stunted() * rate
         self.wasted[self.year] += sum(oldest.num_wasted(cat) for cat in self.ss.wasted_list) * rate
         self.child_anaemic[self.year] += oldest.num_anaemic() * rate
-
+        self.child_sam[self.year] = self.children.num_risk('sam')
+        self.child_mam[self.year] = self.children.num_risk('mam')
+        self.child_sga[self.year] = (NewlyBorns.birth_dist["Term SGA"] + NewlyBorns.birth_dist["Pre-term SGA"]) * np.sum(self.annual_births)
+        
     def _track_wra_outcomes(self):
         # pw
         self.pw_anaemic[self.year] += self.pw.num_anaemic()
@@ -77,23 +81,31 @@ class Model(sc.prettyobj):
     def _track_prevs(self):
         """ Tracks the prevalences of conditions over time.
          Begins at baseline year so that all scenario prevalences begin at the same point """
+        #children_1_5_mon = self.children.age_groups[0] + self.children.age_groups[1]
         self.stunted_prev[self.year] = self.children.frac_stunted()
         self.wasted_prev[self.year] = self.children.frac_risk('wast')
         self.child_anaemprev[self.year] = self.children.frac_risk('an')
         self.pw_anaemprev[self.year] = self.pw.frac_risk('an')
         self.nonpw_anaemprev[self.year] = self.nonpw.frac_risk('an')
-
+        self.child_samprev[self.year] = self.children.frac_risk('sam')
+        self.child_mamprev[self.year] = self.children.frac_risk('mam')
+        self.child_bfprev[self.year] = self.children.age_groups[0].frac_correctbf() + self.children.age_groups[1].frac_correctbf()
+        
     def _track_rates(self):
         """ Rates defined as total deaths per 1000 live births.
          This is calculated per year with the cumulative deaths and births,
          so the final element will be total rates over the simulation period. """
         self.child_mortrate[self.year] = 1000 * np.sum(self.child_deaths) / np.sum(self.annual_births)
         self.pw_mortrate[self.year] = 1000 * np.sum(self.pw_deaths) / np.sum(self.annual_births)
-
+    
+    def _track_pop(self):
+        self.pop_denomi[self.year] = self.total_pop() 
+   
     def _track(self):
         self._track_wra_outcomes()
         self._track_prevs()
-
+        
+        
     def _set_pop_probs(self, year):
         init_cov = self.prog_info.get_ann_covs(year-1)
         prog_areas = self.prog_info.prog_areas
@@ -125,6 +137,7 @@ class Model(sc.prettyobj):
             self.integrate()
             self._track()
             self._track_rates()
+            self._track_pop()
 
     def _apply_prog_covs(self):
         # update populations
