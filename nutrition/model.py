@@ -16,6 +16,7 @@ class Model(sc.prettyobj):
         self.n_years = len(self.all_years)
         self.sim_years = self.all_years[1:]
         self.year = self.all_years[0]
+        
 
         # this is for extracting baseline coverage/spending in gui (before prog_set set)
         self._set_progs(self.prog_info.base_progset())
@@ -64,6 +65,9 @@ class Model(sc.prettyobj):
         oldest = self.children.age_groups[-1]
         rate = oldest.ageingRate
         NewlyBorns = self.children.age_groups[0]
+        Child_1_5_months = self.children.age_groups[1]
+        Child_6_11_months = self.children.age_groups[2]
+        Child_12_23_months = self.children.age_groups[3]
         self.thrive[self.year] += oldest.num_notstunted() * rate
         self.stunted[self.year] += oldest.num_stunted() * rate
         self.wasted[self.year] += sum(oldest.num_wasted(cat) for cat in self.ss.wasted_list) * rate
@@ -71,6 +75,9 @@ class Model(sc.prettyobj):
         self.child_sam[self.year] = self.children.num_risk('sam')
         self.child_mam[self.year] = self.children.num_risk('mam')
         self.child_sga[self.year] = (NewlyBorns.birth_dist["Term SGA"] + NewlyBorns.birth_dist["Pre-term SGA"]) * np.sum(self.annual_births)
+        self.child_1_6months[self.year] = Child_1_5_months.totalchild_pop()
+        self.child_6_23months[self.year] = Child_6_11_months.totalchild_pop() + Child_12_23_months.totalchild_pop()
+        self.child_less_5years[self.year] = Child_1_5_months.totalchild_pop() + Child_6_11_months.totalchild_pop() + Child_12_23_months.totalchild_pop() + oldest.totalchild_pop()
         
     def _track_wra_outcomes(self):
         # pw
@@ -81,7 +88,7 @@ class Model(sc.prettyobj):
     def _track_prevs(self):
         """ Tracks the prevalences of conditions over time.
          Begins at baseline year so that all scenario prevalences begin at the same point """
-        #children_1_5_mon = self.children.age_groups[0] + self.children.age_groups[1]
+        
         self.stunted_prev[self.year] = self.children.frac_stunted()
         self.wasted_prev[self.year] = self.children.frac_risk('wast')
         self.child_anaemprev[self.year] = self.children.frac_risk('an')
@@ -89,22 +96,24 @@ class Model(sc.prettyobj):
         self.nonpw_anaemprev[self.year] = self.nonpw.frac_risk('an')
         self.child_samprev[self.year] = self.children.frac_risk('sam')
         self.child_mamprev[self.year] = self.children.frac_risk('mam')
-        self.child_bfprev[self.year] = self.children.age_groups[0].frac_correctbf() + self.children.age_groups[1].frac_correctbf()
-        
+             
     def _track_rates(self):
         """ Rates defined as total deaths per 1000 live births.
          This is calculated per year with the cumulative deaths and births,
          so the final element will be total rates over the simulation period. """
         self.child_mortrate[self.year] = 1000 * np.sum(self.child_deaths) / np.sum(self.annual_births)
         self.pw_mortrate[self.year] = 1000 * np.sum(self.pw_deaths) / np.sum(self.annual_births)
-    
-    def _track_pop(self):
-        self.pop_denomi[self.year] = self.total_pop() 
+        
+    def _track_bf(self):
+        self.child_bfprev[self.year] = self.children.age_groups[0].frac_correctbf() + self.children.age_groups[1].frac_correctbf()
+             
+    #def _track_pop(self):
+        #self.pop_denomi[self.year] = self.total_pop() 
    
     def _track(self):
         self._track_wra_outcomes()
         self._track_prevs()
-        
+        self._track_bf()
         
     def _set_pop_probs(self, year):
         init_cov = self.prog_info.get_ann_covs(year-1)
@@ -132,12 +141,13 @@ class Model(sc.prettyobj):
                 self._set_pop_probs(year)
                 self._reset_storage()
                 self._apply_prog_covs()
+                
             if self.adjust_cov: # account for pop growth
                 self.prog_info.adjust_covs(self.pops, year)
             self.integrate()
             self._track()
             self._track_rates()
-            self._track_pop()
+            
 
     def _apply_prog_covs(self):
         # update populations

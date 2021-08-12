@@ -127,6 +127,7 @@ class ChildAgeGroup(AgeGroup):
         self.trends = {}
         self.reset_storage()
         self._updatesForAgeingAndBirths()
+        self.totalchild_pop()
 
     def _updatesForAgeingAndBirths(self):
         """
@@ -137,7 +138,10 @@ class ChildAgeGroup(AgeGroup):
         self.continuedWastingImpact = {}
         for wastingCat in self.ss.wasted_list:
             self.continuedWastingImpact[wastingCat] = 1
-
+            
+    def totalchild_pop(self):
+        return self.pop_size
+    
     def reset_storage(self):
         super(ChildAgeGroup, self).reset_storage()
         # storing updates
