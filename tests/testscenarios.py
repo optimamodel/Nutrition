@@ -8,14 +8,14 @@ doplot = False
 
 # load in data to create model
 p = nu.Project('eg')
-p.load_data('demo', 'national', name='eg')
+p.load_data('demo', 'testing', name='eg')
 
 
 ### define custom scenarios
 kwargs1 = {'name':'Treat SAM 100%',
            'model_name': 'eg',
            'scen_type': 'coverage',
-            'progvals': sc.odict({'Treatment of SAM': [1]})}
+            'progvals': sc.odict({'Treatment of SAM': [1, 0.5, 0.8]})}
 
 kwargs2 = sc.dcp(kwargs1)
 kwargs2.update({'name': 'IYCF 1 100%',
@@ -67,9 +67,9 @@ kwargs6 = {'name': 'Check bednets',
 kwargs7 = {'name': 'IYCF',
            'model_name': 'eg',
            'scen_type': 'coverage',
-           'progvals': sc.odict({'IYCF 1': [0.95]})}
+           'progvals': sc.odict({'IYCF 1': [0.6, 0.2, 0.5, 0.95, 0.8]})}
 
-scen_list = nu.make_scens([kwargs1, kwargs2, kwargs7])
+scen_list = nu.make_scens([kwargs1, kwargs7])
 p.add_scens(scen_list)
 p.run_scens()
 if doplot:

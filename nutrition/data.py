@@ -588,6 +588,8 @@ class ProgData(object):
         self.base_cov = []
         self.ref_progs = []
         self.sat = None
+        self.max_inc = None
+        self.max_dec = None
         self.costs = None
         self.costtype = None
         self.prog_deps = None
@@ -623,6 +625,14 @@ class ProgData(object):
             sat = self.sat[progname]
             if sat < 0 or sat > 1:
                 errormsg = 'Saturation is outside the interval (0, 100) for %s' %progname
+                invalid.append(errormsg)
+            max_inc = self.max_inc[progname]
+            if max_inc < 0 or max_inc > 1:
+                errormsg = 'Maximum increase is outside the interval (0, 100) for %s' %progname
+                invalid.append(errormsg)
+            max_dec = self.max_dec[progname]
+            if max_dec < 0 or max_dec > 1:
+                errormsg = 'Maximum decrease is outside the interval (0, 100) for %s' %progname
                 invalid.append(errormsg)
             cost = self.costs[progname]
             if cost <= 0:
@@ -787,6 +797,8 @@ class ProgData(object):
         self.costs = sc.odict(zip(self.base_prog_set, sheet.iloc[:,3].tolist()))
         costtypes = utils.format_costtypes(sheet.iloc[:,4].tolist())
         self.costtype = sc.odict(zip(self.base_prog_set, costtypes))
+        self.max_inc = sc.odict(zip(self.base_prog_set, sheet.iloc[:,5].tolist()))
+        self.max_dec = sc.odict(zip(self.base_prog_set, sheet.iloc[:,6].tolist()))
 
     def create_iycf(self):
         packages = self.define_iycf()

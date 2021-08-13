@@ -19,6 +19,8 @@ class Program(sc.prettyobj):
         self.unit_cost = progdata.costs[name]
         self.costtype = progdata.costtype[name]
         self.sat = progdata.sat[name]
+        self.max_inc = progdata.max_inc[name]
+        self.max_dec = progdata.max_dec[name]
         self.base_cov = progdata.base_cov[name]
         self.annual_cov = np.zeros(len(all_years))
         self.annual_spend = np.zeros(len(all_years))
@@ -452,6 +454,8 @@ class ProgramInfo(sc.prettyobj):
         self.curr = None
         self.fixed = None
         self.free = None
+        #self.max_inc = 0
+        #self.max_dec = 0
 
     def get_allocs(self, add_funds, fix_curr, rem_curr):
         self.refs = self.get_refs()
@@ -650,11 +654,42 @@ class ProgramInfo(sc.prettyobj):
         for prog in self.programs.values():
             prog.year = year
 
-    def get_ann_covs(self, year):
-        covs = {}
+    '''def get_ann_covs(self, year):
+        orig_covs = {}
         for prog in self.programs.values():
-            covs[prog.name] = prog.annual_cov[year]
+            orig_covs[prog.name] = prog.annual_cov[year]
+        return orig_covs
+    
+    def trans_ann_covs(self, year, orig_covs):
+        covs = sc.odict()
+        for i,prog in self.programs.enumvals():
+            if i==0:
+                covs[i] = prog.orig_covs[i]
+            else:
+                if prog.orig_covs[i] - covs[i-1] > prog.max_inc:
+                    prog.covs[i] = covs[i-1] + prog.max_inc
+                elif prog.orig_covs[i] - covs[i-1] < (-1) * prog.max_dec:
+                    prog.covs[i] = covs[i-1] - prog.max_dec
+                else:
+                    covs[i] = prog.orig_covs[i]
+        return covs'''
+    
+    def get_ann_covs(self, year):
+        #covs = {}
+        covs = sc.odict()
+        for prog in self.programs.values():
+            if prog.year == self.all_years[0]:
+                covs[prog.name] = prog.annual_cov[0]
+            else:
+                if prog.annual_cov[year] - prog.annual_cov[year-1] > prog.max_inc:
+                    covs[prog.name] = prog.annual_cov[year-1] + prog.max_inc
+                elif prog.annual_cov[year] - prog.annual_cov[year-1] < (-1) * prog.max_dec:
+                    covs[prog.name] = prog.annual_cov[year-1] - prog.max_dec
+                else:
+                    covs[prog.name] = prog.annual_cov[year]
+            
         return covs
+        
 
     def restrict_covs(self):
         """
