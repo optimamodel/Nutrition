@@ -68,6 +68,8 @@ class ScenResult(sc.prettyobj):
                 cov -= cov[0] # baseline year is reference cov, subtracted from every year
             covs[name] = cov
         return covs
+    
+   
 
     def get_freefunds(self):
         free = self.model.prog_info.free
@@ -177,6 +179,7 @@ def write_results(results, projname=None, filename=None, folder=None):
             rows = res.programs.keys()
             spend = res.get_allocs(ref=True)
             cov = res.get_covs(unrestr=False)
+            
             # collate coverages first
             for r, prog in enumerate(rows):
                 name = [res.name] if r == 0 else ['']

@@ -51,6 +51,7 @@ class Program(sc.prettyobj):
         """ Extracts either the restricted or unrestricted coverage array """
         if unrestr:
             return self.annual_cov
+            
         else:
             return self.annual_cov * self.unrestr_popsize / self.restr_popsize
 
@@ -454,6 +455,7 @@ class ProgramInfo(sc.prettyobj):
         self.curr = None
         self.fixed = None
         self.free = None
+        self.covs = None
         #self.max_inc = 0
         #self.max_dec = 0
 

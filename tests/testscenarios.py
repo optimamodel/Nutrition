@@ -4,7 +4,7 @@ import sciris as sc
 
 #pd.set_option('mode.chained_assignment', None)
 
-doplot = False
+doplot = True
 
 # load in data to create model
 p = nu.Project('eg')
@@ -69,7 +69,7 @@ kwargs7 = {'name': 'IYCF',
            'scen_type': 'coverage',
            'progvals': sc.odict({'IYCF 1': [0.6, 0.2, 0.5, 0.95, 0.8]})}
 
-scen_list = nu.make_scens([kwargs1, kwargs7])
+scen_list = nu.make_scens([kwargs1, kwargs7, kwargs3])
 p.add_scens(scen_list)
 p.run_scens()
 if doplot:

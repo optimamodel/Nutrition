@@ -3,6 +3,7 @@ import numpy as np
 import scipy.interpolate
 import sciris as sc
 from . import utils
+from . import programs
 from .scenarios import run_scen, make_scens, make_default_scen
 
 # Choose where the legend appears: outside right or inside right
@@ -34,7 +35,7 @@ def make_plots(all_res=None, toplot=None, optim=False, geo=False):
     ## Initialize
     allplots = sc.odict()
     if toplot is None:
-        toplot = ['prevs', 'ann', 'agg', 'alloc']
+        toplot = ['prevs', 'ann', 'agg', 'alloc', 'annu_alloc']
     toplot = sc.promotetolist(toplot)
     all_res = sc.promotetolist(sc.dcp(all_res)) # Without dcp(), modifies the original and breaks things
     if 'prevs' in toplot:
@@ -48,6 +49,9 @@ def make_plots(all_res=None, toplot=None, optim=False, geo=False):
         allplots.update(outfigs)
     if 'alloc' in toplot: # optimized allocations
         outfigs = plot_alloc(all_res, optim=optim, geo=geo)
+        allplots.update(outfigs)
+    if 'annu_alloc' in toplot: # optimized allocations
+        outfigs = plot_annu_alloc(all_res, optim=optim, geo=geo)
         allplots.update(outfigs)
     return allplots
 
@@ -230,6 +234,97 @@ def plot_alloc(results, optim, geo):
     customizations.update(legend_loc)
     ax.legend(bars, leglabs, **customizations)
     figs['alloc'] = fig
+    return figs
+
+def plot_annu_alloc(results, optim, geo):
+    """ Plots the average annual spending for each scenario, coloured by program.
+    Legend will include all programs in the 'baseline' allocation which receive non-zero spending in any scenario """
+    
+    # Initialize
+    width = 0.35
+    figs = sc.odict()
+    year = results[0].years
+    
+    for k in range(len(year)):
+        fig = pl.figure(figsize=fig_size)
+        ax = fig.add_axes(ax_size)
+        ref = results[0]
+        progset = ref.prog_info.base_progset()
+        colors = sc.gridcolors(ncolors=len(progset), hueshift=hueshift)
+        leglabs = []
+        x = np.arange(len(results))
+    
+    # Group allocations by program
+        avspend = []
+        
+        for prog in progset:
+            thisprog = np.zeros(len(results))
+            for i, res in enumerate(results):
+                alloc = res.get_allocs(ref=refprogs) # slightly inefficient to do this for every program
+                try:
+                    progav = alloc[prog][1:].mean()
+                except: # program not in scenario program set
+                    progav = 0
+            thisprog[i] = progav
+            avspend.append(thisprog)
+    
+    # Scale
+        avspend = np.array(avspend)
+        if avspend.max()>1e6: scale = 1e6
+        else:                 scale = 1e1
+        #avspend /= scale
+        avspend = np.divide(avspend, scale)
+    # Make bar plots
+        bars = []
+        xlabs = [res.mult if res.mult is not None else res.name for res in results]
+        bottom = np.zeros(len(results))
+        for i, spend in enumerate(avspend):
+            if any(spend) > 0:    # only want to plot prog if spending is non-zero (solves legend issues)
+                leglabs.append(progset[i])
+                bar = ax.barh(x, spend, width, bottom, color=colors[i])
+                bars.append(bar)
+                bottom += spend
+        ymax = max(bottom)
+        if optim or geo:
+            title = 'Optimal allocation, %s-%s'% (ref.years[pltstart], ref.years[-1])
+            valuestr = str(results[1].prog_info.free / 1e6) # bit of a hack
+            # format x axis
+            if valuestr[1] == '.':
+                valuestr = valuestr[:3]
+            else:
+                valuestr = valuestr[:2]
+            if geo:
+                xlab = 'Region'
+            else:
+                xlab = 'Total available budget (relative to US$%sM)' % valuestr
+        else:
+            title = 'Annual spending for year %s' % ref.years[k]
+            xlab = '' # 'Scenario' # Collides with tick labels
+        ax.set_title(title)
+        ax.set_yticks(x)
+        ax.set_yticklabels(xlabs)
+        ax.set_ylabel(xlab) 
+        ax.set_xlim((0, ymax+ymax*.1))
+        if   scale == 1e1: ylabel = 'Spending (US$)'
+        elif scale == 1e6: ylabel = 'Spending (US$M)'
+        else:               raise Exception('Scale value must be 1e1 or 1e6, not %s' % scale)
+        ax.set_xlabel(ylabel)
+    #    sc.SIticks(ax=ax, axis='y')
+        nprogs = len(leglabs)
+        labelspacing = 0.1
+        columnspacing = 0.1
+        fontsize = None
+        ncol = 1
+        if nprogs>10:
+            fontsize = 8
+        if nprogs>12:
+            fontsize = 6
+        if nprogs>24:
+            ncol = 2
+        customizations = {'fontsize':fontsize, 'labelspacing':labelspacing, 'ncol':ncol, 'columnspacing':columnspacing}
+        customizations.update(legend_loc)
+        ax.legend(bars, leglabs, **customizations)
+        figs['annu_alloc'] = fig
     return figs
 
 def plot_costcurve(results):
