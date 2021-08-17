@@ -244,15 +244,20 @@ def plot_annu_alloc(results, optim, geo):
     width = 0.35
     figs = sc.odict()
     year = results[0].years
+    ref = results[0]
+    progset = ref.prog_info.base_progset()
+    colors = sc.gridcolors(ncolors=len(progset), hueshift=hueshift)
+    leglabs = []
+    x = np.arange(len(results))
     
-    for k in range(len(year)):
+    for k in range(1, len(year)):
         fig = pl.figure(figsize=fig_size)
         ax = fig.add_axes(ax_size)
-        ref = results[0]
-        progset = ref.prog_info.base_progset()
-        colors = sc.gridcolors(ncolors=len(progset), hueshift=hueshift)
-        leglabs = []
-        x = np.arange(len(results))
+        #ref = results[0]
+        #progset = ref.prog_info.base_progset()
+        #colors = sc.gridcolors(ncolors=len(progset), hueshift=hueshift)
+        #leglabs = []
+        #x = np.arange(len(results))
     
     # Group allocations by program
         avspend = []
@@ -262,10 +267,10 @@ def plot_annu_alloc(results, optim, geo):
             for i, res in enumerate(results):
                 alloc = res.get_allocs(ref=refprogs) # slightly inefficient to do this for every program
                 try:
-                    progav = alloc[prog][1:].mean()
+                    progav = alloc[prog][k] # extracting the spend for each year for each program
                 except: # program not in scenario program set
                     progav = 0
-            thisprog[i] = progav
+                thisprog[i] = progav
             avspend.append(thisprog)
     
     # Scale
@@ -288,7 +293,7 @@ def plot_annu_alloc(results, optim, geo):
         if optim or geo:
             title = 'Optimal allocation, %s-%s'% (ref.years[pltstart], ref.years[-1])
             valuestr = str(results[1].prog_info.free / 1e6) # bit of a hack
-            # format x axis
+                # format x axis
             if valuestr[1] == '.':
                 valuestr = valuestr[:3]
             else:
@@ -309,7 +314,7 @@ def plot_annu_alloc(results, optim, geo):
         elif scale == 1e6: ylabel = 'Spending (US$M)'
         else:               raise Exception('Scale value must be 1e1 or 1e6, not %s' % scale)
         ax.set_xlabel(ylabel)
-    #    sc.SIticks(ax=ax, axis='y')
+        #   sc.SIticks(ax=ax, axis='y')
         nprogs = len(leglabs)
         labelspacing = 0.1
         columnspacing = 0.1
