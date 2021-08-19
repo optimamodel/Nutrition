@@ -98,7 +98,7 @@ class Model(sc.prettyobj):
         if self.pw.frac_risk('an') < 0.09 and self.pw.frac_risk('an') > 0.01:
             self.pw_anaemprev_thresh[self.year] = 0
         else:
-            self.pw_anaemprev_thresh[self.year] = 1e6 * (self.pw.frac_risk('an') - 0.09)
+            self.pw_anaemprev_thresh[self.year] = 1e8 * (self.pw.frac_risk('an') - 0.09)
 
         #prevalence but in terms of absolute numbers
         children = self.children.age_groups
