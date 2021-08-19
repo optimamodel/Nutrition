@@ -9,7 +9,10 @@ import seaborn as sns
 with sns.axes_style("white"):
     sns.set_style("ticks")
     sns.set_context("talk")
-
+from matplotlib.legend_handler import HandlerBase
+from matplotlib.text import Text
+from matplotlib.legend import Legend
+import string
 # Choose where the legend appears: outside right or inside right
 for_frontend = True
 if for_frontend:
@@ -418,15 +421,18 @@ def plot_clustered_annu_alloc(results, optim, geo):
     fontsize = None
     ncol = 1
     if nprogs>10:
-        fontsize = 8
+        fontsize = 10
     if nprogs>12:
-        fontsize = 6
+        fontsize = 8
     if nprogs>24:
         ncol = 2
     customizations = {'fontsize':fontsize, 'labelspacing':labelspacing, 'ncol':ncol, 'columnspacing':columnspacing}
     customizations.update(legend_loc)
-    ax.legend(bars, leglabs, **customizations)
+    legend_1 = ax.legend(bars, leglabs, **customizations)
+    handles = [f"Bar {j}: " for j in range(1, len(xlabs)+1)]
+    ax.legend(handles=handles, labels=xlabs,  loc='lower center', bbox_to_anchor=(1.15, 0.5), fontsize=10, borderpad=1.2)
     figs['clust_annu_alloc'] = fig
+    fig.add_artist(legend_1)
     return figs
 
 def plot_costcurve(results):
@@ -527,3 +533,15 @@ def get_costeff(project, results):
 
 def round_elements(mylist, dec=1):
     return [round(np.float64(x) * 100, dec) for x in mylist] # Type conversion to handle None
+
+''' The following class can be used to modify the legend handle of any plot. Usually
+there is no in-built option to do that to change the handle for string type '''
+
+class TextHandlerB(HandlerBase):
+    def create_artists(self, legend, text ,xdescent, ydescent,
+                        width, height, fontsize, trans):
+        tx = Text(width/2.,height/2, text, fontsize=fontsize,
+                  ha="center", va="center", fontweight="bold")
+        return [tx]
+
+Legend.update_default_handler_map({str : TextHandlerB()})
