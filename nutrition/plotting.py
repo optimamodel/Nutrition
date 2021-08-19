@@ -347,7 +347,7 @@ def plot_clustered_annu_alloc(results, optim, geo):
     progset = ref.prog_info.base_progset()
     colors = sc.gridcolors(ncolors=len(progset), hueshift=hueshift)
     leglabs = []
-    fig = pl.figure(figsize=(20,4))
+    fig = pl.figure(figsize=(20,6))
     ax = fig.add_axes(ax_size)
     x_base = np.arange(len(results))
     x=np.multiply(x_base,width)
@@ -404,7 +404,7 @@ def plot_clustered_annu_alloc(results, optim, geo):
             xlab = 'Years' 
     ax.set_title(title)
     ax.set_xticks(year_ticks[1:] + 1.5*width) # ignoring base year and makingsure tick is at the middle of the bar group
-    ax.set_xticklabels(year[1:], fontsize = 8)
+    ax.set_xticklabels(year[1:], fontsize = 10)
     ax.set_xlabel(xlab) 
     ax.set_ylim((0, ymax+ymax*.1))
     if   scale == 1e1: ylabel = 'Spending (US$)'
