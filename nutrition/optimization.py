@@ -59,7 +59,7 @@ class Optim(sc.prettyobj):
 
     ######### OPTIMIZATION ##########
 
-    def run_optim(self, model, maxiter=80, swarmsize=35, maxtime=560, parallel=True, num_procs=None):
+    def run_optim(self, model, maxiter=80, swarmsize=None, maxtime=560, parallel=True, num_procs=None):
         if parallel:
             how = 'parallel'
             num_procs = num_procs if num_procs else self.num_cpus
