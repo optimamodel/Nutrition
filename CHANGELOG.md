@@ -15,3 +15,9 @@
 - Output exports include the type of cost-coverage curve for each intervention
 - Bugfix: when changing databooks in scenario and optimisation definitions, inputs are no longer reset
 - Bugfix: changing budget reallocation restrictions, in sequential optimisations, updates properly
+
+#### [1.7.1] - 2021-02-09
+
+- Particle swarm optimization step removed from default optimizations in order to reduce variability in allocation when similar budget sizes are optimized.
+- Default maximum run time for adaptive stochastic descent algorithm increased to accommodate the removal of the PSO step
+- Optima Nutrition version number and date added to standard results output in 'Version' sheet

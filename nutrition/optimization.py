@@ -59,7 +59,7 @@ class Optim(sc.prettyobj):
 
     ######### OPTIMIZATION ##########
 
-    def run_optim(self, model, maxiter=20, swarmsize=25, maxtime=160, parallel=True, num_procs=None):
+    def run_optim(self, model, maxiter=80, swarmsize=35, maxtime=560, parallel=True, num_procs=None):
         if parallel:
             how = 'parallel'
             num_procs = num_procs if num_procs else self.num_cpus
@@ -140,8 +140,11 @@ class Optim(sc.prettyobj):
             xmin = np.zeros(numprogs)
             xmax = np.full(numprogs, free)
             now = sc.tic()
-            x0, fopt = pso.pso(obj_func, xmin, xmax, kwargs=kwargs, maxiter=maxiter, swarmsize=swarmsize)
-            opt_result = sc.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=2, maxtime=maxtime)
+            if ((swarmsize is not None) and (swarmsize > 0)) and ((maxiter is not None) and (maxiter > 0)):
+                x0, fopt = pso.pso(obj_func, xmin, xmax, kwargs=kwargs, maxiter=maxiter, swarmsize=swarmsize)
+            else:
+                x0 = kwargs['model'].prog_info.curr[inds]
+            opt_result = sc.asd(obj_func, x0, args=kwargs, xmin=xmin, xmax=xmax, verbose=2, maxtime=maxtime, randseed=5)
             x = opt_result.x
             self.print_status(x, mult, opt_result.exitreason, now)
             scaled = utils.scale_end_alloc(free, x, model.prog_info, inds, fixed) # scales spending to fit budget, limited by saturation and any program coverage dependencies

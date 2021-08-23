@@ -300,7 +300,7 @@ def get_max_spend(prog_info, keep_inds, curr_spends, fixed):
             for parname in child.thresh_deps:
                 par = next(prog for prog in rel_progs.programs.values() if prog.name == parname)
                 # assuming uniform coverage across age bands, we can use the unrestricted coverage (NOT restricted)
-                maxcov_child = min(par.func(np.ones(len(rel_progs.all_years))*curr_spends[keep_progs.index(par.name)])[0]/par.sat_unrestr, child.sat) * child.sat_unrestr
+                maxcov_child = min(par.func(np.ones(len(rel_progs.all_years))*(curr_spends[keep_progs.index(par.name)] + par.base_spend))[0]/par.sat_unrestr, child.sat) * child.sat_unrestr
 
             trigger = True
         # exclusion
@@ -309,7 +309,7 @@ def get_max_spend(prog_info, keep_inds, curr_spends, fixed):
             for parname in child.excl_deps:
                 par = next((prog for prog in rel_progs.programs.values() if prog.name == parname))
                 # assuming uniform coverage across age bands, we can use the unrestricted coverage (NOT restricted)
-                maxcov_child = min(max(1.0 - par.func(np.ones(len(rel_progs.all_years))*curr_spends[keep_progs.index(par.name)])[0]/par.sat_unrestr, 0), child.sat) * child.sat_unrestr  # if coverage of parent exceeds child sat
+                maxcov_child = min(max(1.0 - par.func(np.ones(len(rel_progs.all_years))*(curr_spends[keep_progs.index(par.name)] + par.base_spend))[0]/par.sat_unrestr, 0), child.sat) * child.sat_unrestr  # if coverage of parent exceeds child sat
 
             trigger = True
         if trigger:
@@ -322,8 +322,8 @@ def get_max_spend(prog_info, keep_inds, curr_spends, fixed):
             cpy_covs = sc.dcp(max_covs)  # this needs to be here because max_covs gets overwritten in the next step for no apparent reason...
             max_spends[p] = rel_progs.programs[prog].get_spending(max_covs)[0]
             list_max_covs[p] = cpy_covs[0]
-        if max_spends[p] - fixed[p] >= 0:
-            max_spends[p] -= fixed[p]
+        if max_spends[p] - fixed[keep_inds][p] >= 0:
+            max_spends[p] -= fixed[keep_inds][p]
         else:
             max_spends[p] = 0
     return max_spends
