@@ -236,7 +236,7 @@ class DefaultParams(object):
 
     def wasting_progs(self):
         wastingSheet = utils.read_sheet(self.spreadsheet, 'Programs wasting', [0,1])
-        treatsam = wastingSheet.loc['Odds ratio of SAM when covered by program'].to_dict(orient='index')
+        treatsam = wastingSheet.loc['Odds ratio of SAM when covered by program'].to_dict()
         manman = wastingSheet.loc['Odds ratio of MAM when covered by program'].to_dict(orient='index')
         self.or_wasting_prog['SAM'] = treatsam
         if self.man_mam:
@@ -338,6 +338,536 @@ class DefaultParams(object):
                 if res_dict[age].get(cat) is None:
                     res_dict[age][cat] = mydict[age][condCat]
         return res_dict
+    
+class DefaultParamsLower(object):
+    def __init__(self, default_data, input_data):
+        self.settings = settings.Settings()
+        self.impacted_pop = None
+        self.prog_areas = sc.odict()
+        self.pop_areas = sc.odict()
+        self.rr_death = sc.odict()
+        self.or_cond = sc.odict()
+        self.or_cond_bo = sc.odict()
+        self.or_wasting_prog = sc.odict()
+        self.rr_dia = None
+        self.or_stunting_prog = None
+        self.bo_progs = None
+        self.rr_anaem_prog = None
+        self.or_anaem_prog = None
+        self.child_progs = None
+        self.pw_progs = None
+        self.rr_space_bo = None
+        self.or_space_prog = None
+        self.or_bf_prog = None
+        self.man_mam = False
+        self.arr_rr_death = sc.odict()
+        # read data
+        self.spreadsheet = default_data
+        self.input_data = input_data
+        self.read_spreadsheet()
+        self.spreadsheet = None
+        self.input_data = None
+        return None
+    
+    def __repr__(self):
+        output  = sc.prepr(self)
+        return output
+
+    def read_spreadsheet(self):
+        self.extend_treatsam()
+        self.impact_pop()
+        self.prog_risks()
+        self.pop_risks()
+        self.anaemia_progs()
+        self.wasting_progs()
+        self.relative_risks()
+        self.odds_ratios()
+        self.get_child_progs()
+        self.get_pw_progs()
+        self.get_bo_progs()
+        self.get_bo_risks()
+        packages = self.define_iycf()
+        self.get_iycf_effects(packages)
+
+    def extend_treatsam(self):
+        treatsam = self.input_data.parse(sheet_name='Treatment of SAM')
+        add_man = treatsam.iloc[0]['Add extension']
+        if pandas.notnull(add_man):
+            self.man_mam = True
+
+    def impact_pop(self):
+        sheet = utils.read_sheet(self.spreadsheet, 'Programs impacted population', [0,1])
+        impacted = sc.odict()
+        for pop in ['Children', 'Pregnant women', 'Non-pregnant WRA', 'General population']:
+            impacted.update(sheet.loc[pop].to_dict(orient='index'))
+        self.impacted_pop = impacted
+
+    def prog_risks(self):
+        areas = utils.read_sheet(self.spreadsheet, 'Program risk areas', [0])
+        booleanFrame = areas.isnull()
+        for program, areas in booleanFrame.iterrows():
+            for risk, value in areas.items():
+                if self.prog_areas.get(risk) is None:
+                    self.prog_areas[risk] = []
+                if not value:
+                    self.prog_areas[risk].append(program)
+
+    def pop_risks(self):
+        areas = utils.read_sheet(self.spreadsheet, 'Population risk areas', [0])
+        booleanFrame = areas.isnull()
+        for program, areas in booleanFrame.iterrows():
+            for risk, value in areas.items():
+                if self.pop_areas.get(risk) is None:
+                    self.pop_areas[risk] = []
+                if not value:
+                    self.pop_areas[risk].append(program)
+
+    def relative_risks(self):
+        # risk areas hidden in spreadsheet (white text)
+        # stunting
+        rr_sheet = utils.read_sheet(self.spreadsheet, 'Relative risks', [0,1,2], skiprows=111)
+        rr = rr_sheet.loc['Stunting'].to_dict()
+        self.rr_death['Stunting'] = self.make_dict2(rr)
+        # wasting
+        rr_sheet = utils.read_sheet(self.spreadsheet, 'Relative risks', [0,1,2], skiprows=138)
+        rr = rr_sheet.loc['Wasting'].to_dict()
+        self.rr_death['Wasting'] = self.make_dict2(rr)
+        # anaemia
+        rr_sheet = utils.read_sheet(self.spreadsheet, 'Relative risks', [0,1,2], skiprows=165).dropna(axis=1, how='all')
+        rr = rr_sheet.loc['Anaemia'].to_dict()
+        self.rr_death['Anaemia'] = self.make_dict2(rr)
+        # currently no impact on mortality for anaemia
+        self.rr_death['Anaemia'].update({age:{cat:{'Diarrhoea':1} for cat in self.settings.anaemia_list} for age in self.settings.child_ages})
+        # breastfeeding
+        rr_sheet = utils.read_sheet(self.spreadsheet, 'Relative risks', [0,1,2], skiprows=174)
+        rr = rr_sheet.loc['Breastfeeding'].to_dict()
+        self.rr_death['Breastfeeding'] = self.make_dict2(rr)
+        # diarrhoea
+        rr_sheet = utils.read_sheet(self.spreadsheet, 'Relative risks', [0,1,2], skiprows=213).dropna(axis=1, how='all')
+        rr = rr_sheet.loc['Diarrhoea'].to_dict()
+        self.rr_dia = self.make_dict3(rr)
+
+    def compute_risks(self, input_data=None):
+        """ Turn rr_death into an array"""
+        for age in self.settings.child_ages:
+            self.arr_rr_death[age] = np.zeros((self.settings.n_cats, len(input_data.causes_death)))
+            stunting = self.rr_death['Stunting'][age]
+            wasting = self.rr_death['Wasting'][age]
+            bf = self.rr_death['Breastfeeding'][age]
+            anaemia = self.rr_death['Anaemia'][age]
+            for i, cats in enumerate(self.settings.all_cats):
+                stuntcat = cats[0]
+                wastcat = cats[1]
+                anaemcat = cats[2]
+                bfcat = cats[3]
+                for j, cause in enumerate(input_data.causes_death):
+                    stunt = stunting[stuntcat].get(cause,1)
+                    wast = wasting[wastcat].get(cause,1)
+                    anaem = anaemia[anaemcat].get(cause,1)
+                    breast = bf[bfcat].get(cause,1)
+                    self.arr_rr_death[age][i,j] = stunt*wast*anaem*breast
+
+    def odds_ratios(self):
+        or_sheet = utils.read_sheet(self.spreadsheet, 'Odds ratios', [0,1], skiprows=23)
+        this_or = or_sheet.loc['Condition'].to_dict('index')
+        self.or_cond['Stunting'] = sc.odict()
+        self.or_cond['Stunting']['Prev stunting'] = this_or['Given previous stunting (HAZ < -2 in previous age band)']
+        self.or_cond['Stunting']['Diarrhoea'] = this_or['Diarrhoea (per additional episode)']
+        self.or_cond['SAM'] = sc.odict()
+        self.or_cond['SAM']['Diarrhoea'] = or_sheet.loc['Wasting'].to_dict('index')['For SAM per additional episode of diarrhoea']
+        self.or_cond['MAM'] = sc.odict()
+        self.or_cond['MAM']['Diarrhoea'] = or_sheet.loc['Wasting'].to_dict('index')['For MAM per additional episode of diarrhoea']
+        self.or_cond['Anaemia'] = sc.odict()
+        self.or_cond['Anaemia']['Severe diarrhoea'] = sc.odict()
+        self.or_cond['Anaemia']['Severe diarrhoea'] = or_sheet.loc['Anaemia'].to_dict('index')['For anaemia per additional episode of severe diarrhoea']
+        self.or_stunting_prog = or_sheet.loc['By program'].to_dict('index')
+        self.or_bf_prog = or_sheet.loc['Odds ratios for correct breastfeeding by program'].to_dict('index')
+        or_sheet = utils.read_sheet(self.spreadsheet, 'Odds ratios', [0,1], skiprows=40).dropna(axis=1, how='all')
+        self.or_space_prog = or_sheet.loc['Odds ratios for optimal birth spacing by program'].to_dict('index')
+
+    def get_bo_progs(self):
+        progs = utils.read_sheet(self.spreadsheet, 'Programs birth outcomes', [0,1], 'index', skiprows=15)
+        newprogs = sc.odict()
+        for program in progs.keys():
+            if not newprogs.get(program[0]):
+                newprogs[program[0]] = sc.odict()
+            newprogs[program[0]][program[1]] = progs[program]
+        self.bo_progs = newprogs
+
+    def anaemia_progs(self):
+        anaem_sheet = utils.read_sheet(self.spreadsheet, 'Programs anemia', [0,1], skiprows=22)
+        self.rr_anaem_prog = anaem_sheet.loc['Relative risks of anaemia when receiving intervention'].to_dict(orient='index')
+        self.or_anaem_prog = anaem_sheet.loc['Odds ratios of being anaemic when covered by intervention'].to_dict(orient='index')
+
+    def wasting_progs(self):
+        wastingSheet = utils.read_sheet(self.spreadsheet, 'Programs wasting', [0,1], skiprows=7)
+        treatsam = wastingSheet.loc['Odds ratio of SAM when covered by program'].to_dict(orient='index')
+        manman = wastingSheet.loc['Odds ratio of MAM when covered by program'].to_dict(orient='index')
+        self.or_wasting_prog['SAM'] = treatsam
+        if self.man_mam:
+            self.or_wasting_prog['MAM'] = {'Treatment of SAM': manman['Management of MAM'] }
+
+    def get_child_progs(self):
+        self.child_progs = utils.read_sheet(self.spreadsheet, 'Programs for children', [0,1,2], skiprows=51, to_odict=True)
+
+    def get_pw_progs(self):
+        self.pw_progs = utils.read_sheet(self.spreadsheet, 'Programs for PW', [0,1,2], skiprows=9, to_odict=True)
+
+    def get_bo_risks(self):
+        bo_sheet = utils.read_sheet(self.spreadsheet, 'Birth outcome risks', [0,1], skiprows=27)
+        ors = bo_sheet.loc['Odds ratios for conditions'].to_dict('index')
+        self.or_cond_bo['Stunting'] = ors['Stunting (HAZ-score < -2)']
+        self.or_cond_bo['MAM'] = ors['MAM (WHZ-score between -3 and -2)']
+        self.or_cond_bo['SAM'] = ors['SAM (WHZ-score < -3)']
+        self.rr_space_bo = bo_sheet.loc['Relative risk by birth spacing'].to_dict('index')
+        self.rr_death['Birth outcomes'] = bo_sheet.loc['Relative risks of neonatal causes of death'].to_dict()
+
+    def get_iycf_effects(self, iycf_packs):
+        # TODO: need something that catches if iycf packages not included at all.
+        effects = utils.read_sheet(self.spreadsheet, 'IYCF odds ratios', [0,1,2], skiprows=53)
+        bf_effects = effects.loc['Odds ratio for correct breastfeeding']
+        stunt_effects = effects.loc['Odds ratio for stunting']
+        self.or_bf_prog.update(self.create_iycf(bf_effects, iycf_packs))
+        self.or_stunting_prog.update(self.create_iycf(stunt_effects, iycf_packs))
+
+    def create_iycf(self, effects, packages):
+        """ Creates IYCF packages based on user input in 'IYCFpackages' """
+        # non-empty cells denote program combination
+        # get package combinations
+        # create new program
+        newPrograms = sc.odict()
+        ORs = sc.odict()
+        for key, item in packages.items():
+            if newPrograms.get(key) is None:
+                newPrograms[key] = sc.odict()
+            for age in self.settings.child_ages:
+                ORs[age] = 1.
+                for pop, mode in item:
+                    row = effects.loc[pop, mode]
+                    thisOR = row[age]
+                    ORs[age] *= thisOR
+            newPrograms[key].update(ORs)
+        return newPrograms
+
+    def define_iycf(self):
+        """ Returns a dict with values as a list of two tuples (age, modality)."""
+        IYCFpackages = self.input_data.parse(sheet_name='IYCF packages', index_col=[0,1])
+        packagesDict = sc.odict()
+        for packageName, package in IYCFpackages.groupby(level=[0, 1]):
+            if packageName[0] not in packagesDict:
+                packagesDict[packageName[0]] = []
+            for mode in package:
+                col = package[mode]
+                if col.notnull()[0]:
+                    if mode == 'Mass media':
+                        ageModeTuple = [(pop, mode) for pop in self.settings.child_ages[:-1]] # exclude 24-59 months
+                    else:
+                        ageModeTuple = [(packageName[1], mode)]
+                    packagesDict[packageName[0]] += ageModeTuple
+
+        return packagesDict
+
+    def make_dict(self, mydict):
+        """ myDict is a spreadsheet with 3 index cols, converted to dict using orient='index' """
+        result = sc.odict()
+        for age, progCatTypeDict in mydict.items():
+            result[age] = sc.odict()
+            for progCatType in progCatTypeDict.items():
+                keys = progCatType[0]
+                val = progCatType[1]
+                result[age].update({keys[0]:{keys[1]:{keys[2]:val}}})
+        return result
+
+    def make_dict2(self, mydict):
+        """ creating relative risk dict """
+        res_dict = sc.odict()
+        for age in mydict.keys():
+            res_dict[age] = sc.odict()
+            for condCat in mydict[age].keys():
+                cond = condCat[0]
+                cat = condCat[1]
+                if res_dict[age].get(cat) is None:
+                    res_dict[age][cat] = dict() # CK TEST
+                    res_dict[age][cat][cond] = mydict[age][condCat]
+                elif res_dict[age][cat].get(cond) is None:
+                    res_dict[age][cat][cond] = mydict[age][condCat]
+        return res_dict
+
+    def make_dict3(self, mydict):
+        """ for rr diarrhoea """
+        res_dict = sc.odict()
+        for age in mydict.keys():
+            res_dict[age] = sc.odict()
+            for condCat in mydict[age].keys():
+                cat = condCat[1]
+                if res_dict[age].get(cat) is None:
+                    res_dict[age][cat] = mydict[age][condCat]
+        return res_dict
+    
+class DefaultParamsUpper(object):
+    def __init__(self, default_data, input_data):
+        self.settings = settings.Settings()
+        self.impacted_pop = None
+        self.prog_areas = sc.odict()
+        self.pop_areas = sc.odict()
+        self.rr_death = sc.odict()
+        self.or_cond = sc.odict()
+        self.or_cond_bo = sc.odict()
+        self.or_wasting_prog = sc.odict()
+        self.rr_dia = None
+        self.or_stunting_prog = None
+        self.bo_progs = None
+        self.rr_anaem_prog = None
+        self.or_anaem_prog = None
+        self.child_progs = None
+        self.pw_progs = None
+        self.rr_space_bo = None
+        self.or_space_prog = None
+        self.or_bf_prog = None
+        self.man_mam = False
+        self.arr_rr_death = sc.odict()
+        # read data
+        self.spreadsheet = default_data
+        self.input_data = input_data
+        self.read_spreadsheet()
+        self.spreadsheet = None
+        self.input_data = None
+        return None
+    
+    def __repr__(self):
+        output  = sc.prepr(self)
+        return output
+
+    def read_spreadsheet(self):
+        self.extend_treatsam()
+        self.impact_pop()
+        self.prog_risks()
+        self.pop_risks()
+        self.anaemia_progs()
+        self.wasting_progs()
+        self.relative_risks()
+        self.odds_ratios()
+        self.get_child_progs()
+        self.get_pw_progs()
+        self.get_bo_progs()
+        self.get_bo_risks()
+        packages = self.define_iycf()
+        self.get_iycf_effects(packages)
+
+    def extend_treatsam(self):
+        treatsam = self.input_data.parse(sheet_name='Treatment of SAM')
+        add_man = treatsam.iloc[0]['Add extension']
+        if pandas.notnull(add_man):
+            self.man_mam = True
+
+    def impact_pop(self):
+        sheet = utils.read_sheet(self.spreadsheet, 'Programs impacted population', [0,1])
+        impacted = sc.odict()
+        for pop in ['Children', 'Pregnant women', 'Non-pregnant WRA', 'General population']:
+            impacted.update(sheet.loc[pop].to_dict(orient='index'))
+        self.impacted_pop = impacted
+
+    def prog_risks(self):
+        areas = utils.read_sheet(self.spreadsheet, 'Program risk areas', [0])
+        booleanFrame = areas.isnull()
+        for program, areas in booleanFrame.iterrows():
+            for risk, value in areas.items():
+                if self.prog_areas.get(risk) is None:
+                    self.prog_areas[risk] = []
+                if not value:
+                    self.prog_areas[risk].append(program)
+
+    def pop_risks(self):
+        areas = utils.read_sheet(self.spreadsheet, 'Population risk areas', [0])
+        booleanFrame = areas.isnull()
+        for program, areas in booleanFrame.iterrows():
+            for risk, value in areas.items():
+                if self.pop_areas.get(risk) is None:
+                    self.pop_areas[risk] = []
+                if not value:
+                    self.pop_areas[risk].append(program)
+
+    def relative_risks(self):
+        # risk areas hidden in spreadsheet (white text)
+        # stunting
+        rr_sheet = utils.read_sheet(self.spreadsheet, 'Relative risks', [0,1,2], skiprows=221)
+        rr = rr_sheet.loc['Stunting'].to_dict()
+        self.rr_death['Stunting'] = self.make_dict2(rr)
+        # wasting
+        rr_sheet = utils.read_sheet(self.spreadsheet, 'Relative risks', [0,1,2], skiprows=248)
+        rr = rr_sheet.loc['Wasting'].to_dict()
+        self.rr_death['Wasting'] = self.make_dict2(rr)
+        # anaemia
+        rr_sheet = utils.read_sheet(self.spreadsheet, 'Relative risks', [0,1,2], skiprows=275).dropna(axis=1, how='all')
+        rr = rr_sheet.loc['Anaemia'].to_dict()
+        self.rr_death['Anaemia'] = self.make_dict2(rr)
+        # currently no impact on mortality for anaemia
+        self.rr_death['Anaemia'].update({age:{cat:{'Diarrhoea':1} for cat in self.settings.anaemia_list} for age in self.settings.child_ages})
+        # breastfeeding
+        rr_sheet = utils.read_sheet(self.spreadsheet, 'Relative risks', [0,1,2], skiprows=284)
+        rr = rr_sheet.loc['Breastfeeding'].to_dict()
+        self.rr_death['Breastfeeding'] = self.make_dict2(rr)
+        # diarrhoea
+        rr_sheet = utils.read_sheet(self.spreadsheet, 'Relative risks', [0,1,2], skiprows=323).dropna(axis=1, how='all')
+        rr = rr_sheet.loc['Diarrhoea'].to_dict()
+        self.rr_dia = self.make_dict3(rr)
+
+    def compute_risks(self, input_data=None):
+        """ Turn rr_death into an array"""
+        for age in self.settings.child_ages:
+            self.arr_rr_death[age] = np.zeros((self.settings.n_cats, len(input_data.causes_death)))
+            stunting = self.rr_death['Stunting'][age]
+            wasting = self.rr_death['Wasting'][age]
+            bf = self.rr_death['Breastfeeding'][age]
+            anaemia = self.rr_death['Anaemia'][age]
+            for i, cats in enumerate(self.settings.all_cats):
+                stuntcat = cats[0]
+                wastcat = cats[1]
+                anaemcat = cats[2]
+                bfcat = cats[3]
+                for j, cause in enumerate(input_data.causes_death):
+                    stunt = stunting[stuntcat].get(cause,1)
+                    wast = wasting[wastcat].get(cause,1)
+                    anaem = anaemia[anaemcat].get(cause,1)
+                    breast = bf[bfcat].get(cause,1)
+                    self.arr_rr_death[age][i,j] = stunt*wast*anaem*breast
+
+    def odds_ratios(self):
+        or_sheet = utils.read_sheet(self.spreadsheet, 'Odds ratios', [0,1], skiprows=45)
+        this_or = or_sheet.loc['Condition'].to_dict('index')
+        self.or_cond['Stunting'] = sc.odict()
+        self.or_cond['Stunting']['Prev stunting'] = this_or['Given previous stunting (HAZ < -2 in previous age band)']
+        self.or_cond['Stunting']['Diarrhoea'] = this_or['Diarrhoea (per additional episode)']
+        self.or_cond['SAM'] = sc.odict()
+        self.or_cond['SAM']['Diarrhoea'] = or_sheet.loc['Wasting'].to_dict('index')['For SAM per additional episode of diarrhoea']
+        self.or_cond['MAM'] = sc.odict()
+        self.or_cond['MAM']['Diarrhoea'] = or_sheet.loc['Wasting'].to_dict('index')['For MAM per additional episode of diarrhoea']
+        self.or_cond['Anaemia'] = sc.odict()
+        self.or_cond['Anaemia']['Severe diarrhoea'] = sc.odict()
+        self.or_cond['Anaemia']['Severe diarrhoea'] = or_sheet.loc['Anaemia'].to_dict('index')['For anaemia per additional episode of severe diarrhoea']
+        self.or_stunting_prog = or_sheet.loc['By program'].to_dict('index')
+        self.or_bf_prog = or_sheet.loc['Odds ratios for correct breastfeeding by program'].to_dict('index')
+        or_sheet = utils.read_sheet(self.spreadsheet, 'Odds ratios', [0,1], skiprows=62).dropna(axis=1, how='all')
+        self.or_space_prog = or_sheet.loc['Odds ratios for optimal birth spacing by program'].to_dict('index')
+
+    def get_bo_progs(self):
+        progs = utils.read_sheet(self.spreadsheet, 'Programs birth outcomes', [0,1], 'index', skiprows=30)
+        newprogs = sc.odict()
+        for program in progs.keys():
+            if not newprogs.get(program[0]):
+                newprogs[program[0]] = sc.odict()
+            newprogs[program[0]][program[1]] = progs[program]
+        self.bo_progs = newprogs
+
+    def anaemia_progs(self):
+        anaem_sheet = utils.read_sheet(self.spreadsheet, 'Programs anemia', [0,1], skiprows=44)
+        self.rr_anaem_prog = anaem_sheet.loc['Relative risks of anaemia when receiving intervention'].to_dict(orient='index')
+        self.or_anaem_prog = anaem_sheet.loc['Odds ratios of being anaemic when covered by intervention'].to_dict(orient='index')
+
+    def wasting_progs(self):
+        wastingSheet = utils.read_sheet(self.spreadsheet, 'Programs wasting', [0,1], skiprows=14)
+        treatsam = wastingSheet.loc['Odds ratio of SAM when covered by program'].to_dict(orient='index')
+        manman = wastingSheet.loc['Odds ratio of MAM when covered by program'].to_dict(orient='index')
+        self.or_wasting_prog['SAM'] = treatsam
+        if self.man_mam:
+            self.or_wasting_prog['MAM'] = {'Treatment of SAM': manman['Management of MAM'] }
+
+    def get_child_progs(self):
+        self.child_progs = utils.read_sheet(self.spreadsheet, 'Programs for children', [0,1,2], skiprows=102, to_odict=True)
+
+    def get_pw_progs(self):
+        self.pw_progs = utils.read_sheet(self.spreadsheet, 'Programs for PW', [0,1,2], skiprows=18, to_odict=True)
+
+    def get_bo_risks(self):
+        bo_sheet = utils.read_sheet(self.spreadsheet, 'Birth outcome risks', [0,1], skiprows=53)
+        ors = bo_sheet.loc['Odds ratios for conditions'].to_dict('index')
+        self.or_cond_bo['Stunting'] = ors['Stunting (HAZ-score < -2)']
+        self.or_cond_bo['MAM'] = ors['MAM (WHZ-score between -3 and -2)']
+        self.or_cond_bo['SAM'] = ors['SAM (WHZ-score < -3)']
+        self.rr_space_bo = bo_sheet.loc['Relative risk by birth spacing'].to_dict('index')
+        self.rr_death['Birth outcomes'] = bo_sheet.loc['Relative risks of neonatal causes of death'].to_dict()
+
+    def get_iycf_effects(self, iycf_packs):
+        # TODO: need something that catches if iycf packages not included at all.
+        effects = utils.read_sheet(self.spreadsheet, 'IYCF odds ratios', [0,1,2], skiprows=106)
+        bf_effects = effects.loc['Odds ratio for correct breastfeeding']
+        stunt_effects = effects.loc['Odds ratio for stunting']
+        self.or_bf_prog.update(self.create_iycf(bf_effects, iycf_packs))
+        self.or_stunting_prog.update(self.create_iycf(stunt_effects, iycf_packs))
+
+    def create_iycf(self, effects, packages):
+        """ Creates IYCF packages based on user input in 'IYCFpackages' """
+        # non-empty cells denote program combination
+        # get package combinations
+        # create new program
+        newPrograms = sc.odict()
+        ORs = sc.odict()
+        for key, item in packages.items():
+            if newPrograms.get(key) is None:
+                newPrograms[key] = sc.odict()
+            for age in self.settings.child_ages:
+                ORs[age] = 1.
+                for pop, mode in item:
+                    row = effects.loc[pop, mode]
+                    thisOR = row[age]
+                    ORs[age] *= thisOR
+            newPrograms[key].update(ORs)
+        return newPrograms
+
+    def define_iycf(self):
+        """ Returns a dict with values as a list of two tuples (age, modality)."""
+        IYCFpackages = self.input_data.parse(sheet_name='IYCF packages', index_col=[0,1])
+        packagesDict = sc.odict()
+        for packageName, package in IYCFpackages.groupby(level=[0, 1]):
+            if packageName[0] not in packagesDict:
+                packagesDict[packageName[0]] = []
+            for mode in package:
+                col = package[mode]
+                if col.notnull()[0]:
+                    if mode == 'Mass media':
+                        ageModeTuple = [(pop, mode) for pop in self.settings.child_ages[:-1]] # exclude 24-59 months
+                    else:
+                        ageModeTuple = [(packageName[1], mode)]
+                    packagesDict[packageName[0]] += ageModeTuple
+
+        return packagesDict
+
+    def make_dict(self, mydict):
+        """ myDict is a spreadsheet with 3 index cols, converted to dict using orient='index' """
+        result = sc.odict()
+        for age, progCatTypeDict in mydict.items():
+            result[age] = sc.odict()
+            for progCatType in progCatTypeDict.items():
+                keys = progCatType[0]
+                val = progCatType[1]
+                result[age].update({keys[0]:{keys[1]:{keys[2]:val}}})
+        return result
+
+    def make_dict2(self, mydict):
+        """ creating relative risk dict """
+        res_dict = sc.odict()
+        for age in mydict.keys():
+            res_dict[age] = sc.odict()
+            for condCat in mydict[age].keys():
+                cond = condCat[0]
+                cat = condCat[1]
+                if res_dict[age].get(cat) is None:
+                    res_dict[age][cat] = dict() # CK TEST
+                    res_dict[age][cat][cond] = mydict[age][condCat]
+                elif res_dict[age][cat].get(cond) is None:
+                    res_dict[age][cat][cond] = mydict[age][condCat]
+        return res_dict
+
+    def make_dict3(self, mydict):
+        """ for rr diarrhoea """
+        res_dict = sc.odict()
+        for age in mydict.keys():
+            res_dict[age] = sc.odict()
+            for condCat in mydict[age].keys():
+                cat = condCat[1]
+                if res_dict[age].get(cat) is None:
+                    res_dict[age][cat] = mydict[age][condCat]
+        return res_dict 
 
 # TODO (possible): we may want to merge this class with DefaultParams to make another class (DatabookData).
 class InputData(object):
