@@ -236,7 +236,7 @@ class DefaultParams(object):
 
     def wasting_progs(self):
         wastingSheet = utils.read_sheet(self.spreadsheet, 'Programs wasting', [0,1])
-        treatsam = wastingSheet.loc['Odds ratio of SAM when covered by program'].to_dict()
+        treatsam = wastingSheet.loc['Odds ratio of SAM when covered by program'].to_dict(orient='index')
         manman = wastingSheet.loc['Odds ratio of MAM when covered by program'].to_dict(orient='index')
         self.or_wasting_prog['SAM'] = treatsam
         if self.man_mam:
@@ -471,19 +471,19 @@ class DefaultParamsLower(object):
         or_sheet = utils.read_sheet(self.spreadsheet, 'Odds ratios', [0,1], skiprows=23)
         this_or = or_sheet.loc['Condition'].to_dict('index')
         self.or_cond['Stunting'] = sc.odict()
-        self.or_cond['Stunting']['Prev stunting'] = this_or['Given previous stunting (HAZ < -2 in previous age band)']
-        self.or_cond['Stunting']['Diarrhoea'] = this_or['Diarrhoea (per additional episode)']
+        self.or_cond['Stunting']['Prev stunting'] = this_or['Given previous stunting (HAZ < -2 in previous age band) - lower']
+        self.or_cond['Stunting']['Diarrhoea'] = this_or['Diarrhoea (per additional episode) - lower']
         self.or_cond['SAM'] = sc.odict()
-        self.or_cond['SAM']['Diarrhoea'] = or_sheet.loc['Wasting'].to_dict('index')['For SAM per additional episode of diarrhoea']
+        self.or_cond['SAM']['Diarrhoea'] = or_sheet.loc['Wasting'].to_dict('index')['For SAM per additional episode of diarrhoea - lower']
         self.or_cond['MAM'] = sc.odict()
-        self.or_cond['MAM']['Diarrhoea'] = or_sheet.loc['Wasting'].to_dict('index')['For MAM per additional episode of diarrhoea']
+        self.or_cond['MAM']['Diarrhoea'] = or_sheet.loc['Wasting'].to_dict('index')['For MAM per additional episode of diarrhoea - lower']
         self.or_cond['Anaemia'] = sc.odict()
         self.or_cond['Anaemia']['Severe diarrhoea'] = sc.odict()
-        self.or_cond['Anaemia']['Severe diarrhoea'] = or_sheet.loc['Anaemia'].to_dict('index')['For anaemia per additional episode of severe diarrhoea']
-        self.or_stunting_prog = or_sheet.loc['By program'].to_dict('index')
-        self.or_bf_prog = or_sheet.loc['Odds ratios for correct breastfeeding by program'].to_dict('index')
+        self.or_cond['Anaemia']['Severe diarrhoea'] = or_sheet.loc['Anaemia'].to_dict('index')['For anaemia per additional episode of severe diarrhoea - lower']
+        self.or_stunting_prog = or_sheet.loc['By program - lower'].to_dict('index')
+        self.or_bf_prog = or_sheet.loc['Odds ratios for correct breastfeeding by program - lower'].to_dict('index')
         or_sheet = utils.read_sheet(self.spreadsheet, 'Odds ratios', [0,1], skiprows=40).dropna(axis=1, how='all')
-        self.or_space_prog = or_sheet.loc['Odds ratios for optimal birth spacing by program'].to_dict('index')
+        self.or_space_prog = or_sheet.loc['Odds ratios for optimal birth spacing by program - lower'].to_dict('index')
 
     def get_bo_progs(self):
         progs = utils.read_sheet(self.spreadsheet, 'Programs birth outcomes', [0,1], 'index', skiprows=15)
@@ -496,13 +496,13 @@ class DefaultParamsLower(object):
 
     def anaemia_progs(self):
         anaem_sheet = utils.read_sheet(self.spreadsheet, 'Programs anemia', [0,1], skiprows=22)
-        self.rr_anaem_prog = anaem_sheet.loc['Relative risks of anaemia when receiving intervention'].to_dict(orient='index')
-        self.or_anaem_prog = anaem_sheet.loc['Odds ratios of being anaemic when covered by intervention'].to_dict(orient='index')
+        self.rr_anaem_prog = anaem_sheet.loc['Relative risks of anaemia when receiving intervention - lower'].to_dict(orient='index')
+        self.or_anaem_prog = anaem_sheet.loc['Odds ratios of being anaemic when covered by intervention - lower'].to_dict(orient='index')
 
     def wasting_progs(self):
         wastingSheet = utils.read_sheet(self.spreadsheet, 'Programs wasting', [0,1], skiprows=7)
-        treatsam = wastingSheet.loc['Odds ratio of SAM when covered by program'].to_dict(orient='index')
-        manman = wastingSheet.loc['Odds ratio of MAM when covered by program'].to_dict(orient='index')
+        treatsam = wastingSheet.loc['Odds ratio of SAM when covered by program - lower'].to_dict(orient='index')
+        manman = wastingSheet.loc['Odds ratio of MAM when covered by program - lower'].to_dict(orient='index')
         self.or_wasting_prog['SAM'] = treatsam
         if self.man_mam:
             self.or_wasting_prog['MAM'] = {'Treatment of SAM': manman['Management of MAM'] }
@@ -515,18 +515,18 @@ class DefaultParamsLower(object):
 
     def get_bo_risks(self):
         bo_sheet = utils.read_sheet(self.spreadsheet, 'Birth outcome risks', [0,1], skiprows=27)
-        ors = bo_sheet.loc['Odds ratios for conditions'].to_dict('index')
-        self.or_cond_bo['Stunting'] = ors['Stunting (HAZ-score < -2)']
-        self.or_cond_bo['MAM'] = ors['MAM (WHZ-score between -3 and -2)']
-        self.or_cond_bo['SAM'] = ors['SAM (WHZ-score < -3)']
-        self.rr_space_bo = bo_sheet.loc['Relative risk by birth spacing'].to_dict('index')
-        self.rr_death['Birth outcomes'] = bo_sheet.loc['Relative risks of neonatal causes of death'].to_dict()
+        ors = bo_sheet.loc['Odds ratios for conditions - lower'].to_dict('index')
+        self.or_cond_bo['Stunting'] = ors['Stunting (HAZ-score < -2)-l']
+        self.or_cond_bo['MAM'] = ors['MAM (WHZ-score between -3 and -2)-l']
+        self.or_cond_bo['SAM'] = ors['SAM (WHZ-score < -3)-l']
+        self.rr_space_bo = bo_sheet.loc['Relative risk by birth spacing - lower'].to_dict('index')
+        self.rr_death['Birth outcomes'] = bo_sheet.loc['Relative risks of neonatal causes of death - lower'].to_dict()
 
     def get_iycf_effects(self, iycf_packs):
         # TODO: need something that catches if iycf packages not included at all.
         effects = utils.read_sheet(self.spreadsheet, 'IYCF odds ratios', [0,1,2], skiprows=53)
-        bf_effects = effects.loc['Odds ratio for correct breastfeeding']
-        stunt_effects = effects.loc['Odds ratio for stunting']
+        bf_effects = effects.loc['Odds ratio for correct breastfeeding - lower']
+        stunt_effects = effects.loc['Odds ratio for stunting - lower']
         self.or_bf_prog.update(self.create_iycf(bf_effects, iycf_packs))
         self.or_stunting_prog.update(self.create_iycf(stunt_effects, iycf_packs))
 
@@ -736,19 +736,19 @@ class DefaultParamsUpper(object):
         or_sheet = utils.read_sheet(self.spreadsheet, 'Odds ratios', [0,1], skiprows=45)
         this_or = or_sheet.loc['Condition'].to_dict('index')
         self.or_cond['Stunting'] = sc.odict()
-        self.or_cond['Stunting']['Prev stunting'] = this_or['Given previous stunting (HAZ < -2 in previous age band)']
-        self.or_cond['Stunting']['Diarrhoea'] = this_or['Diarrhoea (per additional episode)']
+        self.or_cond['Stunting']['Prev stunting'] = this_or['Given previous stunting (HAZ < -2 in previous age band) - upper']
+        self.or_cond['Stunting']['Diarrhoea'] = this_or['Diarrhoea (per additional episode) - upper']
         self.or_cond['SAM'] = sc.odict()
-        self.or_cond['SAM']['Diarrhoea'] = or_sheet.loc['Wasting'].to_dict('index')['For SAM per additional episode of diarrhoea']
+        self.or_cond['SAM']['Diarrhoea'] = or_sheet.loc['Wasting'].to_dict('index')['For SAM per additional episode of diarrhoea - upper']
         self.or_cond['MAM'] = sc.odict()
-        self.or_cond['MAM']['Diarrhoea'] = or_sheet.loc['Wasting'].to_dict('index')['For MAM per additional episode of diarrhoea']
+        self.or_cond['MAM']['Diarrhoea'] = or_sheet.loc['Wasting'].to_dict('index')['For MAM per additional episode of diarrhoea - upper']
         self.or_cond['Anaemia'] = sc.odict()
         self.or_cond['Anaemia']['Severe diarrhoea'] = sc.odict()
-        self.or_cond['Anaemia']['Severe diarrhoea'] = or_sheet.loc['Anaemia'].to_dict('index')['For anaemia per additional episode of severe diarrhoea']
-        self.or_stunting_prog = or_sheet.loc['By program'].to_dict('index')
-        self.or_bf_prog = or_sheet.loc['Odds ratios for correct breastfeeding by program'].to_dict('index')
+        self.or_cond['Anaemia']['Severe diarrhoea'] = or_sheet.loc['Anaemia'].to_dict('index')['For anaemia per additional episode of severe diarrhoea - upper']
+        self.or_stunting_prog = or_sheet.loc['By program - upper'].to_dict('index')
+        self.or_bf_prog = or_sheet.loc['Odds ratios for correct breastfeeding by program - upper'].to_dict('index')
         or_sheet = utils.read_sheet(self.spreadsheet, 'Odds ratios', [0,1], skiprows=62).dropna(axis=1, how='all')
-        self.or_space_prog = or_sheet.loc['Odds ratios for optimal birth spacing by program'].to_dict('index')
+        self.or_space_prog = or_sheet.loc['Odds ratios for optimal birth spacing by program - upper'].to_dict('index')
 
     def get_bo_progs(self):
         progs = utils.read_sheet(self.spreadsheet, 'Programs birth outcomes', [0,1], 'index', skiprows=30)
@@ -761,13 +761,13 @@ class DefaultParamsUpper(object):
 
     def anaemia_progs(self):
         anaem_sheet = utils.read_sheet(self.spreadsheet, 'Programs anemia', [0,1], skiprows=44)
-        self.rr_anaem_prog = anaem_sheet.loc['Relative risks of anaemia when receiving intervention'].to_dict(orient='index')
-        self.or_anaem_prog = anaem_sheet.loc['Odds ratios of being anaemic when covered by intervention'].to_dict(orient='index')
+        self.rr_anaem_prog = anaem_sheet.loc['Relative risks of anaemia when receiving intervention - upper'].to_dict(orient='index')
+        self.or_anaem_prog = anaem_sheet.loc['Odds ratios of being anaemic when covered by intervention - upper'].to_dict(orient='index')
 
     def wasting_progs(self):
         wastingSheet = utils.read_sheet(self.spreadsheet, 'Programs wasting', [0,1], skiprows=14)
-        treatsam = wastingSheet.loc['Odds ratio of SAM when covered by program'].to_dict(orient='index')
-        manman = wastingSheet.loc['Odds ratio of MAM when covered by program'].to_dict(orient='index')
+        treatsam = wastingSheet.loc['Odds ratio of SAM when covered by program - upper'].to_dict(orient='index')
+        manman = wastingSheet.loc['Odds ratio of MAM when covered by program - upper'].to_dict(orient='index')
         self.or_wasting_prog['SAM'] = treatsam
         if self.man_mam:
             self.or_wasting_prog['MAM'] = {'Treatment of SAM': manman['Management of MAM'] }
@@ -780,18 +780,18 @@ class DefaultParamsUpper(object):
 
     def get_bo_risks(self):
         bo_sheet = utils.read_sheet(self.spreadsheet, 'Birth outcome risks', [0,1], skiprows=53)
-        ors = bo_sheet.loc['Odds ratios for conditions'].to_dict('index')
-        self.or_cond_bo['Stunting'] = ors['Stunting (HAZ-score < -2)']
-        self.or_cond_bo['MAM'] = ors['MAM (WHZ-score between -3 and -2)']
-        self.or_cond_bo['SAM'] = ors['SAM (WHZ-score < -3)']
-        self.rr_space_bo = bo_sheet.loc['Relative risk by birth spacing'].to_dict('index')
-        self.rr_death['Birth outcomes'] = bo_sheet.loc['Relative risks of neonatal causes of death'].to_dict()
+        ors = bo_sheet.loc['Odds ratios for conditions - upper'].to_dict('index')
+        self.or_cond_bo['Stunting'] = ors['Stunting (HAZ-score < -2)-u']
+        self.or_cond_bo['MAM'] = ors['MAM (WHZ-score between -3 and -2)-u']
+        self.or_cond_bo['SAM'] = ors['SAM (WHZ-score < -3)-u']
+        self.rr_space_bo = bo_sheet.loc['Relative risk by birth spacing - upper'].to_dict('index')
+        self.rr_death['Birth outcomes'] = bo_sheet.loc['Relative risks of neonatal causes of death - upper'].to_dict()
 
     def get_iycf_effects(self, iycf_packs):
         # TODO: need something that catches if iycf packages not included at all.
         effects = utils.read_sheet(self.spreadsheet, 'IYCF odds ratios', [0,1,2], skiprows=106)
-        bf_effects = effects.loc['Odds ratio for correct breastfeeding']
-        stunt_effects = effects.loc['Odds ratio for stunting']
+        bf_effects = effects.loc['Odds ratio for correct breastfeeding - upper']
+        stunt_effects = effects.loc['Odds ratio for stunting - upper']
         self.or_bf_prog.update(self.create_iycf(bf_effects, iycf_packs))
         self.or_stunting_prog.update(self.create_iycf(stunt_effects, iycf_packs))
 
@@ -1412,7 +1412,7 @@ class ProgData(object):
 class Dataset(object):
     ''' Store all the data for a project '''
     
-    def __init__(self, country=None, region=None, name=None, demo_data=None, prog_data=None, default_params=None,
+    def __init__(self, country=None, region=None, name=None, demo_data=None, prog_data=None, default_params=None, default_params_lower=None, default_params_upper=None,
                  pops=None, prog_info=None, doload=False, inputspath=None, defaultspath=None, fromfile=None, project=None):
         
         self.country = country
@@ -1424,6 +1424,8 @@ class Dataset(object):
         self.prog_data = prog_data
         self.default_params = default_params  # TODO: this should probably be phased out once the InputData and DefaultParams classes get merged
         # The next three attributes are used to initialize a Model object.
+        self.default_params_lower = default_params_lower
+        self.default_params_upper = default_params_upper
         self.pops = pops  # populations
         self.prog_info = prog_info  # program info
         self.t = None  # start and end years for the simulation
@@ -1469,6 +1471,8 @@ class Dataset(object):
             raise Exception('Error in databook: %s'%str(E))
         try:
             self.default_params = DefaultParams(default_data, input_data)
+            self.default_params_lower = DefaultParamsLower(default_data, input_data)
+            self.default_params_upper = DefaultParamsUpper(default_data, input_data)
             self.default_params.compute_risks(self.demo_data)
             self.prog_data = ProgData(input_data, self.default_params, self.calcscache)
         except Exception as E:
