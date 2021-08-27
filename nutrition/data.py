@@ -247,7 +247,7 @@ class DefaultParams(object):
 
     def get_pw_progs(self):
         self.pw_progs = utils.read_sheet(self.spreadsheet, 'Programs for PW', [0,1,2], to_odict=True)
-
+        
     def get_bo_risks(self):
         bo_sheet = utils.read_sheet(self.spreadsheet, 'Birth outcome risks', [0,1], skiprows=[0])
         ors = bo_sheet.loc['Odds ratios for conditions'].to_dict('index')
@@ -508,10 +508,10 @@ class DefaultParamsLower(object):
             self.or_wasting_prog['MAM'] = {'Treatment of SAM': manman['Management of MAM'] }
 
     def get_child_progs(self):
-        self.child_progs = utils.read_sheet(self.spreadsheet, 'Programs for children', [0,1,2], skiprows=51, to_odict=True)
+        self.child_progs = utils.read_sheet(self.spreadsheet, 'Programs for children', [0,1,2], skiprows=51, to_odict=False)
 
     def get_pw_progs(self):
-        self.pw_progs = utils.read_sheet(self.spreadsheet, 'Programs for PW', [0,1,2], skiprows=9, to_odict=True)
+        self.pw_progs = utils.read_sheet(self.spreadsheet, 'Programs for PW', [0,1,2], skiprows=9, to_odict=False)
 
     def get_bo_risks(self):
         bo_sheet = utils.read_sheet(self.spreadsheet, 'Birth outcome risks', [0,1], skiprows=27)
@@ -773,10 +773,10 @@ class DefaultParamsUpper(object):
             self.or_wasting_prog['MAM'] = {'Treatment of SAM': manman['Management of MAM'] }
 
     def get_child_progs(self):
-        self.child_progs = utils.read_sheet(self.spreadsheet, 'Programs for children', [0,1,2], skiprows=102, to_odict=True)
+        self.child_progs = utils.read_sheet(self.spreadsheet, 'Programs for children', [0,1,2], skiprows=102, to_odict=False)
 
     def get_pw_progs(self):
-        self.pw_progs = utils.read_sheet(self.spreadsheet, 'Programs for PW', [0,1,2], skiprows=18, to_odict=True)
+        self.pw_progs = utils.read_sheet(self.spreadsheet, 'Programs for PW', [0,1,2], skiprows=18, to_odict=False)
 
     def get_bo_risks(self):
         bo_sheet = utils.read_sheet(self.spreadsheet, 'Birth outcome risks', [0,1], skiprows=53)
@@ -1490,3 +1490,67 @@ class Dataset(object):
         ''' WARNING, hacky function to get program names '''
         names = self.prog_data.base_prog_set
         return names
+
+class UncertaintyParas(object):
+    def __init__(self, default_data, input_data, lower = None, upper = None):
+        self.settings = settings.Settings()
+        self.impacted_pop = None
+        self.prog_areas = sc.odict()
+        self.pop_areas = sc.odict()
+        self.rr_death = sc.odict()
+        self.or_cond = sc.odict()
+        self.or_cond_bo = sc.odict()
+        self.or_wasting_prog = sc.odict()
+        self.rr_dia = None
+        self.or_stunting_prog = None
+        self.bo_progs = None
+        self.rr_anaem_prog = None
+        self.or_anaem_prog = None
+        self.child_progs = None
+        self.pw_progs = None
+        self.rr_space_bo = None
+        self.or_space_prog = None
+        self.or_bf_prog = None
+        self.man_mam = False
+        self.arr_rr_death = sc.odict()
+        self.lower = lower
+        self.upper = upper
+        self.default_paras_lower = DefaultParamsLower()
+        self.default_paras_upper = DefaultParamsUpper()
+        # read data
+        self.spreadsheet = default_data
+        self.input_data = input_data
+        self.read_spreadsheet()
+        self.spreadsheet = None
+        self.input_data = None
+        
+        return None
+    # function to generate data matrix using unifrom distribution with lower and upper input of the data cell
+    def make_random(self, L, U):
+        n = len(L[0])
+        m = len(L[:,0])
+        d=np.zeros([m, n])
+        for i in range(0, m):
+            for j in range(0, n):
+                d[i][j] = np.random.uniform(L[i][j], U[i][j], 1)
+        return d
+    
+    def set_pw_progs(self):
+        self.lower = self.default_paras_lower.get_pw_progs()
+        self.upper = self.default_paras_upper.get_pw_progs()
+        pw_progs = self.make_random(self.lower.to_numpy(), self.upper.to_numpy())
+        return pw_progs
+    
+    def set_child_progs(self):
+        self.lower = self.default_paras_lower.get_child_progs()
+        self.upper = self.default_paras_upper.get_child_progs()
+        child_progs = self.make_random(self.lower.to_numpy(), self.upper.to_numpy())
+        return child_progs
+    
+    def set_anaemia_progs(self):
+        lower_rr  = self.default_paras_lower.rr_anaem_prog
+        upper_rr = self.default_paras_upper.rr_anaem_prog
+        lower_or  = self.default_paras_lower.or_anaem_prog
+        upper_or = self.default_paras_upper.or_anaem_prog
+        self.rr_anaem_prog = self.make_random(lower_rr.to_numpy(), upper_rr.to_numpy())
+        self.or_anaem_prog = self.make_random(lower_or.to_numpy(), upper_or.to_numpy())
