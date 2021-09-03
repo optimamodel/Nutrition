@@ -939,10 +939,8 @@ class Dataset(object):
         except Exception as E:
             raise Exception('Error in databook: %s'%str(E))
         try:
-            self.uncertain_params = UncertaintyParas(default_data, input_data) # This needs fixes!
-            self.default_params = DefaultParamsDummy(default_data, input_data)
-            #self.default_params_lower = DefaultParamsLower(default_data, input_data)
-            #self.default_params_upper = DefaultParamsUpper(default_data, input_data)
+            self.uncertain_params = UncertaintyParas(default_data, input_data) 
+            self.default_params = DefaultParamsDummy(default_data, input_data) # just debugging with dummy class called
             self.default_params.compute_risks(self.demo_data)
             self.prog_data = ProgData(input_data, self.default_params, self.calcscache)
         except Exception as E:
@@ -1139,7 +1137,7 @@ class UncertaintyParas(object):
         ane_or_upper = or_sheet_cond_upper.loc['Anaemia']
         self.ane_or = self.make_random(ane_or_lower.to_numpy(), ane_or_upper.to_numpy()) # for anaemia
         or_stunting_prog_lower = or_sheet_cond_lower.loc['By program - lower'].dropna(axis=0, how='all')
-        or_bf_prog_lower = or_sheet_cond_lower.loc['Odds ratios for correct breastfeeding by program - lower']
+        or_bf_prog_lower = or_sheet_cond_lower.loc['Odds ratios for correct breastfeeding by program - lower'].dropna(axis=0, how='all')
         or_stunting_prog_upper = or_sheet_cond_upper.loc['By program - upper'].dropna(axis=0, how='all')
         or_bf_prog_upper = or_sheet_cond_upper.loc['Odds ratios for correct breastfeeding by program - upper'].dropna(axis=0, how='all')
         self.or_stunting_prog = self.make_random(or_stunting_prog_lower.to_numpy(), or_stunting_prog_upper.to_numpy()) # stunting programs
@@ -1306,7 +1304,7 @@ class DefaultParamsDummy(object):
         self.or_cond['Anaemia']['Severe diarrhoea'] = anem_or.to_dict('index')['For anaemia per additional episode of severe diarrhoea']
         or_stunting_prog_orig = or_sheet.loc['By program'].dropna(axis=0, how='all')
         self.or_stunting_prog = self.data_replace(or_stunting_prog_orig, self.uncert.or_stunting_prog).to_dict('index')
-        or_bf_prog_orig = or_sheet.loc['Odds ratios for correct breastfeeding by program']
+        or_bf_prog_orig = or_sheet.loc['Odds ratios for correct breastfeeding by program'].dropna(axis=0, how='all')
         self.or_bf_prog = self.data_replace(or_bf_prog_orig, self.uncert.or_bf_prog).to_dict('index')
         or_sheet_space = utils.read_sheet(self.spreadsheet, 'Odds ratios', [0,1], skiprows=[i for i in chain(range(0,18), range(20, 64))]).dropna(axis=1, how='all')
         or_space_prog_orig = or_sheet_space.loc['Odds ratios for optimal birth spacing by program']
