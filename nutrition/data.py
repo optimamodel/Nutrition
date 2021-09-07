@@ -939,8 +939,9 @@ class Dataset(object):
         except Exception as E:
             raise Exception('Error in databook: %s'%str(E))
         try:
-            self.uncertain_params = UncertaintyParas(default_data, input_data) 
-            self.default_params = DefaultParamsDummy(default_data, input_data) # just debugging with dummy class called
+            #self.uncertain_params = UncertaintyParas(default_data, input_data) 
+            #self.default_params = DefaultParamsDummy(default_data, input_data) # just debugging with dummy class called
+            self.default_params = DefaultParams(default_data, input_data) 
             self.default_params.compute_risks(self.demo_data)
             self.prog_data = ProgData(input_data, self.default_params, self.calcscache)
         except Exception as E:

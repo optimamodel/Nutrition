@@ -61,7 +61,9 @@ def default_trackers(prev=None, rate=None):
         'child_bfprev',
         'child_1_6months',
         'child_6_23months',
-        'child_less_5years'
+        'child_less_5years',
+        'stunting_cost',
+        'wasting_cost'
     ]
     if prev is not None:
         if prev:
@@ -127,7 +129,9 @@ def pretty_labels(direction=False):
             'Exclusive breastfeeding prevalence <6 months',
             'Number of children less than 6 months',
             'Number of children less between 6-23 months',
-            'Number of children less than 5 years'
+            'Number of children less than 5 years',
+            'Economic cost of stunting',
+            'Economic cost of wasting'
             
         ]
     labs = sc.odict(zip(default_trackers(), pretty))

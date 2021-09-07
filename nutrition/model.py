@@ -5,7 +5,7 @@ from .utils import default_trackers, restratify
 
 
 class Model(sc.prettyobj):
-    def __init__(self, pops, prog_info, t=None, adjust_cov=False, timeTrends=False):
+    def __init__(self, pops, prog_info, t=None, adjust_cov=False, timeTrends=False, cost_wasting=10, cost_stunting=10, growth = True):
         self.pops = sc.dcp(pops)
         self.children, self.pw, self.nonpw = self.pops
         self.prog_info = sc.dcp(prog_info)
@@ -23,6 +23,11 @@ class Model(sc.prettyobj):
 
         self.adjust_cov = adjust_cov
         self.timeTrends = timeTrends
+        self.growth = growth
+        
+        # For economic loss
+        self.cost_wasting = cost_wasting
+        self.cost_stunting = cost_stunting
 
     def setup(self, scen, setcovs=True, restrictcovs=True):
         """ Sets scenario-specific parameters within the model.
@@ -106,14 +111,20 @@ class Model(sc.prettyobj):
         
     def _track_bf(self):
         self.child_bfprev[self.year] = self.children.age_groups[0].frac_correctbf() + self.children.age_groups[1].frac_correctbf()
-             
-    #def _track_pop(self):
-        #self.pop_denomi[self.year] = self.total_pop() 
-   
+    
+    def _track_economic_loss(self):
+        """ To calculate the economic cost of children become stunting or wasting for the country.
+            Simply, the cost of stunting and cost of wasting have been fixed and hard coded currently."""
+        oldest = self.children.age_groups[-1]
+        rate = oldest.ageingRate
+        self.stunting_cost[self.year] += oldest.num_stunted() * rate * self.cost_wasting
+        self.wasting_cost[self.year] += sum(oldest.num_wasted(cat) for cat in self.ss.wasted_list) * rate * self.cost_stunting
+       
     def _track(self):
         self._track_wra_outcomes()
         self._track_prevs()
         self._track_bf()
+        self._track_economic_loss()
         
     def _set_pop_probs(self, year):
         init_cov = self.prog_info.get_ann_covs(year-1)
@@ -143,7 +154,7 @@ class Model(sc.prettyobj):
                 self._apply_prog_covs()
                 
             if self.adjust_cov: # account for pop growth
-                self.prog_info.adjust_covs(self.pops, year)
+                self.prog_info.adjust_covs(self.pops, year, self.growth)
             self.integrate()
             self._track()
             self._track_rates()

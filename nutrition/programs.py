@@ -34,6 +34,7 @@ class Program(sc.prettyobj):
         self.base_spend = None
         self.famplan_methods = None
         self.pregav_sum = None
+        
 
         self.ss = Settings()
 
@@ -98,13 +99,19 @@ class Program(sc.prettyobj):
         unrestr_cov = (self.base_cov * self.restr_popsize) / self.unrestr_popsize
         self.annual_cov[0] = unrestr_cov
 
-    def adjust_cov(self, pops, year): # todo: needs fixing for annual_cov being an array now
+    def adjust_cov(self, pops, year, growth=True): # todo: needs fixing for annual_cov being an array now
         # set unrestricted pop size so coverages account for growing population size
-        oldURP = self.unrestr_popsize
         self.set_pop_sizes(pops)# TODO: is this the optimal place to do this?
-        oldCov = self.annual_cov[year]
-        newCov = oldURP * oldCov / self.unrestr_popsize
-        self.annual_cov.append(newCov)
+        oldURP = self.unrestr_popsize
+        diff = oldURP[self.year] - oldURP[self.year-1]
+        rate= np.divide(diff, oldURP[self.year-1])
+        oldCov = self.annual_cov
+        newCov = rate * oldCov 
+        if growth:
+            #self.annual_cov.append(newCov)
+            return  newCov
+        else:
+            return oldCov
 
     def _set_target_ages(self):
         """
@@ -648,9 +655,9 @@ class ProgramInfo(sc.prettyobj):
                 pass
         return False
 
-    def adjust_covs(self, pops, year):
+    def adjust_covs(self, pops, year, growth):
         for program in self.programs.values():
-            program.adjust_cov(pops, year)
+            program.adjust_cov(pops, year, growth)
 
     def update_prog_year(self, year):
         for prog in self.programs.values():
