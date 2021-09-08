@@ -5,6 +5,8 @@ import numpy as np
 import sciris as sc
 from .settings import Settings
 from .utils import get_new_prob
+from . import utils
+
 
 
 class Program(sc.prettyobj):
@@ -12,9 +14,10 @@ class Program(sc.prettyobj):
     and all necessary data will be stored as attributes. Will store name, targetpop, popsize, coverage, edges etc
     Restricted coverage: the coverage amongst the target population (assumed given by user)
     Unrestricted coverage: the coverage amongst the entire population """
-    def __init__(self, name, all_years, progdata):
+    def __init__(self, name, all_years, progdata, pops):
         self.name = name
         self.year = all_years[0]
+        self.years = all_years
         self.target_pops = progdata.prog_target[name]
         self.unit_cost = progdata.costs[name]
         self.costtype = progdata.costtype[name]
@@ -26,6 +29,8 @@ class Program(sc.prettyobj):
         self.annual_spend = np.zeros(len(all_years))
         self.excl_deps = progdata.prog_deps[name]['Exclusion dependency']
         self.thresh_deps = progdata.prog_deps[name]['Threshold dependency']
+        self.children, self.pw, self.nonpw = self.pops
+        
         # attributes to be calculated later
         self.ref_spend = None
         self.func = None
@@ -101,17 +106,23 @@ class Program(sc.prettyobj):
 
     def adjust_cov(self, pops, year, growth=True): # todo: needs fixing for annual_cov being an array now
         # set unrestricted pop size so coverages account for growing population size
-        self.set_pop_sizes(pops)# TODO: is this the optimal place to do this?
-        oldURP = self.unrestr_popsize
-        diff = oldURP[self.year] - oldURP[self.year-1]
-        rate= np.divide(diff, oldURP[self.year-1])
+        self._set_unrestrpop(pops) # TODO: is this the optimal place to do this?
+        #oldURP = self.unrestr_popsize
+        #oldURP = [1000, 1200, 1250, 1300, 1350, 1360, 1370, 1380, 1300, 1390, 1400, 1420, 1450, 1460] # testing data only
+        Child_1_5_months = self.children.age_groups[1].totalchild_pop()
+        
+        #from .data import numbirths
+        oldURP = Child_1_5_months
         oldCov = self.annual_cov
-        newCov = rate * oldCov 
         if growth:
-            #self.annual_cov.append(newCov)
-            return  newCov
+            rate = np.zeros(len(self.years))
+            rate[0] = 1
+            for year in range(1, len(self.years)):
+                rate[year] = oldURP[year] / oldURP[year-1]
+            newCov = np.multiply(oldCov, rate)
+            self.annual_cov = newCov
         else:
-            return oldCov
+            self.annual_cov = oldCov
 
     def _set_target_ages(self):
         """

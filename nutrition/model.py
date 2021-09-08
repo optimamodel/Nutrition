@@ -5,7 +5,8 @@ from .utils import default_trackers, restratify
 
 
 class Model(sc.prettyobj):
-    def __init__(self, pops, prog_info, t=None, adjust_cov=False, timeTrends=False, cost_wasting=10, cost_stunting=10, growth = True):
+    def __init__(self, pops, prog_info, t=None, adjust_cov=True, timeTrends=False, cost_wasting=10, cost_stunting=10, 
+                 cost_child_death=50, cost_pw_death=100, cost_child_anaemic=5, cost_pw_anaemic=5, growth = True):
         self.pops = sc.dcp(pops)
         self.children, self.pw, self.nonpw = self.pops
         self.prog_info = sc.dcp(prog_info)
@@ -28,6 +29,10 @@ class Model(sc.prettyobj):
         # For economic loss
         self.cost_wasting = cost_wasting
         self.cost_stunting = cost_stunting
+        self.cost_child_death = cost_child_death
+        self.cost_pw_death = cost_pw_death
+        self.cost_child_anaemic = cost_child_anaemic
+        self.cost_pw_anaemic = cost_pw_anaemic
 
     def setup(self, scen, setcovs=True, restrictcovs=True):
         """ Sets scenario-specific parameters within the model.
@@ -119,7 +124,11 @@ class Model(sc.prettyobj):
         rate = oldest.ageingRate
         self.stunting_cost[self.year] += oldest.num_stunted() * rate * self.cost_wasting
         self.wasting_cost[self.year] += sum(oldest.num_wasted(cat) for cat in self.ss.wasted_list) * rate * self.cost_stunting
-       
+        self.child_death_cost[self.year] = np.sum(self.child_deaths) * self.cost_child_death
+        self.pw_death_cost[self.year] = np.sum(self.pw_deaths) * self.cost_pw_death
+        self.child_anaemic_cost[self.year] = oldest.num_anaemic() * rate * self.cost_child_anaemic
+        self.pw_anaemic_cost[self.year] = self.pw.num_anaemic() * self.cost_pw_anaemic
+        
     def _track(self):
         self._track_wra_outcomes()
         self._track_prevs()

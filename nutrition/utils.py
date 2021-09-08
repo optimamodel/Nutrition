@@ -63,7 +63,11 @@ def default_trackers(prev=None, rate=None):
         'child_6_23months',
         'child_less_5years',
         'stunting_cost',
-        'wasting_cost'
+        'wasting_cost',
+        'child_death_cost',
+        'pw_death_cost',
+        'child_anaemic_cost',
+        'pw_anaemic_cost'
     ]
     if prev is not None:
         if prev:
@@ -131,7 +135,11 @@ def pretty_labels(direction=False):
             'Number of children less between 6-23 months',
             'Number of children less than 5 years',
             'Economic cost of stunting',
-            'Economic cost of wasting'
+            'Economic cost of wasting',
+            'Economic cost of child death',
+            'Economic cost of pw death',
+            'Economic cost of anaemic child',
+            'Economic cost of anaemic pw'
             
         ]
     labs = sc.odict(zip(default_trackers(), pretty))
