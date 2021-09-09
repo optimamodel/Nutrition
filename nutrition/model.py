@@ -5,7 +5,7 @@ from .utils import default_trackers, restratify
 
 
 class Model(sc.prettyobj):
-    def __init__(self, pops, prog_info, t=None, adjust_cov=True, timeTrends=False, cost_wasting=10, cost_stunting=10, 
+    def __init__(self, pops, prog_info, t=None, adjust_cov=False, timeTrends=False, cost_wasting=10, cost_stunting=10, 
                  cost_child_death=50, cost_pw_death=100, cost_child_anaemic=5, cost_pw_anaemic=5, growth = True):
         self.pops = sc.dcp(pops)
         self.children, self.pw, self.nonpw = self.pops
