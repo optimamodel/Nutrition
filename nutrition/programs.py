@@ -32,6 +32,7 @@ class Program(sc.prettyobj):
         self.thresh_deps = progdata.prog_deps[name]['Threshold dependency']
         self.popn = np.zeros(len(all_years))
         
+        
         # attributes to be calculated later
         self.ref_spend = None
         self.func = None
@@ -109,8 +110,7 @@ class Program(sc.prettyobj):
     def adjust_cov(self, pops, year, growth=True): # todo: needs fixing for annual_cov being an array now
         # set unrestricted pop size so coverages account for growing population size
         self._set_unrestrpop(pops) # TODO: is this the optimal place to do this?
-        #oldURP = self.unrestr_popsize
-        oldURP = self.popn #temp fix only - not fully accurate
+        oldURP = self.popn + self.unrestr_popsize # partially accurate fix
         oldCov = self.annual_cov
         if growth:
             rate = np.zeros(len(self.years))
