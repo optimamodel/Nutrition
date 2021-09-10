@@ -388,7 +388,7 @@ def solve_quad(oddsRatio, fracA, fracB):
     p1 = p0 * oddsRatio / (1. - p0 + oddsRatio * p0)
     return p0, p1
 
-def solve_quad_bf(oddsRatio, fracA, fracB, p, q): # only for bf probability calculation
+def solve_quad_bf(oddsRatio, fracA, fracB, p, q): # custom function for breastfeeding prob solutions in (0,1)
     # solves quadratic to calculate probabilities where e.g.:
     # fracA is fraction covered by intervention
     # fracB is fraction of pop. in a particular risk status
