@@ -388,6 +388,18 @@ def solve_quad(oddsRatio, fracA, fracB):
     p1 = p0 * oddsRatio / (1. - p0 + oddsRatio * p0)
     return p0, p1
 
+def solve_quad_bf(oddsRatio, fracA, fracB, p, q): # only for bf probability calculation
+    # solves quadratic to calculate probabilities where e.g.:
+    # fracA is fraction covered by intervention
+    # fracB is fraction of pop. in a particular risk status
+    A = (1. - fracA) * (1. - oddsRatio)
+    B = (oddsRatio - 1) * fracB - oddsRatio * fracA - (1. - fracA)
+    C = fracB
+    f = lambda x,a,b,c: a*x**2 + b*x + c
+    p0 = brentq(f, p, q, args=(A,B,C))
+    p1 = p0 * oddsRatio / (1. - p0 + oddsRatio * p0)
+    return p0, p1
+
 def restratify(frac_yes):
     # Going from binary stunting/wasting to four fractions
     # Yes refers to more than 2 standard deviations below the global mean/median
