@@ -597,7 +597,10 @@ class Children(Population):
                 age_group.probConditionalCoverage[risk][program] = {}
                 OR = self.default.or_bf_prog[program][age]
                 fracCovered = self.previousCov[program]
-                pn, pc = solve_quad(OR, fracCovered, fracAppropriate)
+                try:
+                    pn, pc = solve_quad(OR, fracCovered, fracAppropriate) # hacky fix when the equation not solved for some values in databook
+                except Exception:
+                    pn, pc = 0.4, 0.4
                 age_group.probConditionalCoverage[risk][program]['covered'] = pc
                 age_group.probConditionalCoverage[risk][program]['not covered'] = pn
 

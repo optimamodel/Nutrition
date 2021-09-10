@@ -893,8 +893,8 @@ class Dataset(object):
         self.demo_data = demo_data  # demo = demographic
         self.prog_data = prog_data
         self.default_params = default_params  # TODO: this should probably be phased out once the InputData and DefaultParams classes get merged
-        # The next three attributes are used to initialize a Model object.
         self.uncertain_params = uncertain_params
+        # The next three attributes are used to initialize a Model object.
         self.pops = pops  # populations
         self.prog_info = prog_info  # program info
         self.t = None  # start and end years for the simulation
@@ -939,7 +939,6 @@ class Dataset(object):
         except Exception as E:
             raise Exception('Error in databook: %s'%str(E))
         try:
-            self.uncertain_params = UncertaintyParas(default_data, input_data) 
             self.default_params = DefaultParamsDummy(default_data, input_data) # just debugging with dummy class called
             #self.default_params = DefaultParams(default_data, input_data) 
             self.default_params.compute_risks(self.demo_data)
@@ -989,9 +988,6 @@ class UncertaintyParas(object):
         self.stun_or = None
         self.wast_or = None
         self.ane_or = None
-        self.or_stunting_prog = None
-        self.or_bf_prog = None
-        self.or_space_prog = None
         # read data
         self.spreadsheet = default_data
         self.input_data = input_data
@@ -1313,7 +1309,7 @@ class DefaultParamsDummy(object):
 
     def get_bo_progs(self):
         progs_orig = utils.read_sheet(self.spreadsheet, 'Programs birth outcomes', [0,1], skiprows=[i for i in range(13,43)]).dropna(axis=1, how='all')
-        progs = self.data_replace(progs_orig, self.uncert.bo_progs)
+        progs = self.data_replace(progs_orig, self.uncert.bo_progs).to_dict('index')
         newprogs = sc.odict()
         for program in progs.keys():
             if not newprogs.get(program[0]):
