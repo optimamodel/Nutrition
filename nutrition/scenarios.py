@@ -1,5 +1,7 @@
 import numpy as np
 import sciris as sc
+from . import utils
+import multiprocessing
 
 class Scen(sc.prettyobj):
     def __init__(self, name=None, model_name=None, scen_type=None, progvals=None, active=True):
@@ -21,13 +23,40 @@ class Scen(sc.prettyobj):
     def get_attr(self):
         return self.__dict__
 
-def run_scen(scen, model, obj=None, mult=None, setcovs=True, restrictcovs=True):
+def run_scen_(scen, model, obj=None, mult=None, setcovs=True, restrictcovs=True): # Single run supports previous version with no uncertainty
     """ Function to run associated Scen and Model objects """
     from .results import ScenResult # This is here to avoid a potentially circular import
     model = sc.dcp(model)
     model.setup(scen, setcovs=setcovs, restrictcovs=restrictcovs)
     model.run_sim()
     res = ScenResult(scen.name, scen.model_name, model, obj=obj, mult=mult)
+    return res
+
+def run_scen(scen, model, obj=None, mult=None, setcovs=True, restrictcovs=True, multi_run=False, num_procs=3):
+    """" Purspose is to consider multiple runs for each random parameter values generated."""
+    num_cpus = multiprocessing.cpu_count()
+    args = [scen, model, obj, mult, setcovs, restrictcovs]
+    if multi_run:
+        num_procs = num_procs if num_procs else num_cpus
+        res = utils.run_parallel(one_run_scene_parallel, args, num_procs)
+    else:
+        res = one_run_scene(args)
+            
+    return res
+        
+def one_run_scene(args):
+    from .results import ScenResult # This is here to avoid a potentially circular import
+    scen = args[0]
+    model, obj, mult, setcovs, restrictcovs = args[1:]
+    model = sc.dcp(model)
+    model.setup(scen, setcovs=setcovs, restrictcovs=restrictcovs)
+    model.run_sim()
+    res = ScenResult(scen.name, scen.model_name, model, obj=obj, mult=mult)
+    return res
+
+@utils.trace_exception
+def one_run_scene_parallel(args):
+    res = one_run_scene(args)
     return res
 
 def make_scens(kwargs):
@@ -81,4 +110,3 @@ def make_default_scen(modelname=None, model=None, scen_type=None, basename='Base
 
     default = Scen(**kwargs1)
     return default
-

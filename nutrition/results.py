@@ -69,8 +69,6 @@ class ScenResult(sc.prettyobj):
             covs[name] = cov
         return covs
     
-   
-
     def get_freefunds(self):
         free = self.model.prog_info.free
         if self.mult is not None:
