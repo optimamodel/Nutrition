@@ -4,7 +4,7 @@ import sciris as sc
 
 #pd.set_option('mode.chained_assignment', None)
 
-doplot = True
+doplot = False
 
 # load in data to create model
 p = nu.Project('eg')
@@ -83,7 +83,10 @@ kwargs8 = {'name': 'Treat SAM 100%',
 
 scen_list = nu.make_scens([kwargs1, kwargs7, kwargs3])
 p.add_scens(scen_list)
-p.run_scens()
+if __name__ == '__main__':
+    p.run_scens()
+
+#p.run_scens()
 if doplot:
     p.plot()
 #costeff = p.get_costeff()

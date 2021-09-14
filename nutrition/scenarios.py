@@ -32,18 +32,38 @@ def run_scen_(scen, model, obj=None, mult=None, setcovs=True, restrictcovs=True)
     res = ScenResult(scen.name, scen.model_name, model, obj=obj, mult=mult)
     return res
 
-def run_scen(scen, model, obj=None, mult=None, setcovs=True, restrictcovs=True, multi_run=False, num_procs=3):
+def run_scen(scen, model, obj=None, mult=None, setcovs=True, restrictcovs=True, multi_run=False, num_procs=3, n_runs=4):
     """" Purspose is to consider multiple runs for each random parameter values generated."""
     num_cpus = multiprocessing.cpu_count()
     args = [scen, model, obj, mult, setcovs, restrictcovs]
     if multi_run:
+        res = sc.odict()
         num_procs = num_procs if num_procs else num_cpus
-        res = utils.run_parallel(one_run_scene_parallel, args, num_procs)
+        iterkwargs = [None] * n_runs
+        for i in range(0, n_runs):
+            iterkwargs[i] = args
+        try:
+            this_res = utils.run_parallel(one_run_scene_parallel, iterkwargs, num_procs)
+            res.update(this_res)
+        except RuntimeError as E: # Handle if run outside of __main__ on Windows
+            if 'freeze_support' in E.args[0]: # For this error, add additional information
+                errormsg = '''
+                It appears you are trying to run with multiprocessing on Windows outside
+                of the __main__ block; please see https://docs.python.org/3/library/multiprocessing.html
+                for more information. The correct syntax to use is e.g.
+
+                            if __name__ == '__main__':
+                                p.run_scens()
+
+                Alternatively, to run without multiprocessing, set multi_run=False.'''
+                
+                raise RuntimeError(errormsg) from E
+            else: # For all other runtime errors, raise the original exception
+                raise E
     else:
-        res = one_run_scene(args)
-            
+        res = one_run_scene(args)           
     return res
-        
+       
 def one_run_scene(args):
     from .results import ScenResult # This is here to avoid a potentially circular import
     scen = args[0]
@@ -110,3 +130,5 @@ def make_default_scen(modelname=None, model=None, scen_type=None, basename='Base
 
     default = Scen(**kwargs1)
     return default
+
+
