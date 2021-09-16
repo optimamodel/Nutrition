@@ -32,19 +32,17 @@ def run_scen_(scen, model, obj=None, mult=None, setcovs=True, restrictcovs=True)
     res = ScenResult(scen.name, scen.model_name, model, obj=obj, mult=mult)
     return res
 
-def run_scen(scen, model, obj=None, mult=None, setcovs=True, restrictcovs=True, multi_run=False, num_procs=3, n_runs=4):
+def run_scen(scen, model, obj=None, mult=None, setcovs=True, restrictcovs=True, multi_run=False, num_procs=3, n_runs=2):
     """" Purspose is to consider multiple runs for each random parameter values generated."""
     num_cpus = multiprocessing.cpu_count()
     args = [scen, model, obj, mult, setcovs, restrictcovs]
     if multi_run:
-        res = sc.odict()
         num_procs = num_procs if num_procs else num_cpus
         iterkwargs = [None] * n_runs
         for i in range(0, n_runs):
             iterkwargs[i] = args
         try:
-            this_res = utils.run_parallel(one_run_scene_parallel, iterkwargs, num_procs)
-            res.update(this_res)
+            res = utils.run_parallel(one_run_scene_parallel, iterkwargs, num_procs)
         except RuntimeError as E: # Handle if run outside of __main__ on Windows
             if 'freeze_support' in E.args[0]: # For this error, add additional information
                 errormsg = '''

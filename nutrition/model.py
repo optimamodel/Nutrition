@@ -594,3 +594,4 @@ class Model(sc.prettyobj):
                     output = sum(outseq)
                 outputs[i] = output
         return outputs
+    

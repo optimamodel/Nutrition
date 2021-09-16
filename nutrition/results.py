@@ -20,7 +20,7 @@ class ScenResult(sc.prettyobj):
     def model_attr(self):
         return self.model.__dict__
     
-    def get_outputs(self, outcomes=None, seq=False, asdict=False, pretty=False):
+    def get_outputs(self, outcomes=None, seq=False, asdict=True, pretty=False):
         """
         outcomes: a list of model outcomes to return
         return: a list of outputs with same order as outcomes
@@ -126,7 +126,6 @@ def write_results(results, projname=None, filename=None, folder=None):
     allformats = []
     years = results[0].years
     nullrow = [''] * len(years)
-
     ### Version sheet
     data = [['Version', 'Date'], [version, date.today()]]
     alldata.append(data)
@@ -158,7 +157,7 @@ def write_results(results, projname=None, filename=None, folder=None):
             outputs.append(nullrow)
     data = headers + outputs
     alldata.append(data)
-
+    
     # Formatting
     nrows = len(data)
     ncols = len(data[0])
@@ -176,8 +175,7 @@ def write_results(results, projname=None, filename=None, folder=None):
         if res.name != 'Excess budget':
             rows = res.programs.keys()
             spend = res.get_allocs(ref=True)
-            cov = res.get_covs(unrestr=False)
-            
+            cov = res.get_covs(unrestr=False)                       
             # collate coverages first
             for r, prog in enumerate(rows):
                 name = [res.name] if r == 0 else ['']
