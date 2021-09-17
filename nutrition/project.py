@@ -11,7 +11,7 @@ from .model import Model
 from .scenarios import Scen, run_scen, convert_scen, make_default_scen
 from .optimization import Optim
 from .geospatial import Geospatial
-from .results import write_results
+from .results import write_to_excel
 from .plotting import make_plots, get_costeff, plot_costcurve
 from .demo import demo_scens, demo_optims, demo_geos
 from . import settings
@@ -196,7 +196,7 @@ class Project(object):
         if key is None:
             key = -1
         results = self.result(key)
-        write_results(results, projname=self.name, filename=filename, folder=folder)
+        write_to_excel(results, projname=self.name, filename=filename, folder=folder)
         return
 
     def add(self, name, item, what=None):
@@ -388,7 +388,7 @@ class Project(object):
             model.prog_info.prog_data = excess_spend['prog_data']
         base = Scen(name='Baseline', model_name=model_name, scen_type='coverage', progvals=progvals)
         if dorun:
-            return run_scen(base, model)
+            return run_scen(base, model, multi_run=False)
         else:
             return base
 

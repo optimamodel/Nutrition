@@ -107,7 +107,7 @@ class ScenResult(sc.prettyobj):
         figs = make_plots(self, toplot=toplot)
         return figs
 
-def write_results(results, projname=None, filename=None, folder=None):
+def write_to_excel(results, projname=None, filename=None, folder=None):
     from .version import version
     from datetime import date
     """ Writes outputs and program allocations to an xlsx book.
@@ -118,6 +118,7 @@ def write_results(results, projname=None, filename=None, folder=None):
     outcomes = default_trackers()
     labs = pretty_labels()
     rows = [labs[out] for out in outcomes]
+    print(rows)
     if filename is None: filename = 'outputs.xlsx'
     filepath = sc.makefilepath(filename=filename, folder=folder, ext='xlsx', default='%s outputs.xlsx' % projname)
     outputs = []
@@ -175,7 +176,7 @@ def write_results(results, projname=None, filename=None, folder=None):
         if res.name != 'Excess budget':
             rows = res.programs.keys()
             spend = res.get_allocs(ref=True)
-            cov = res.get_covs(unrestr=False)                       
+            cov = res.get_covs(unrestr=False) 
             # collate coverages first
             for r, prog in enumerate(rows):
                 name = [res.name] if r == 0 else ['']
