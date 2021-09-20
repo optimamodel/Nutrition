@@ -1440,7 +1440,6 @@ class DefaultParamsDummy(object):
     
     """replacing original data by randomly tranformed data"""
     def data_replace(self, orig, transformed):
-        orig_df = orig
-        orig_df[:] = transformed
-        outdata = orig_df
+        outdata = sc.dcp(orig)
+        outdata.loc[:,:] = transformed
         return outdata

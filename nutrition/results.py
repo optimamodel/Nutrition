@@ -189,7 +189,7 @@ def median(self, quantiles=None, **kwargs):
     '''
     return self.reduce(use_mean=False, quantiles=quantiles, **kwargs)
 
-def write_to_excel(results, projname=None, filename=None, folder=None):
+def write_results(results, projname=None, filename=None, folder=None):
     from .version import version
     from datetime import date
     """ Writes outputs and program allocations to an xlsx book.
