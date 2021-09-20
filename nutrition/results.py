@@ -106,6 +106,88 @@ class ScenResult(sc.prettyobj):
         from .plotting import make_plots # This is here to avoid a circular import
         figs = make_plots(self, toplot=toplot)
         return figs
+    
+def reduce(results, quantiles=None, use_mean=False, bounds=None):
+        '''
+        Combine multiple sims into a single sim statistically: by default, use
+        the median value and the 10th and 90th percentiles for the lower and upper
+        bounds. If use_mean=True, then use the mean and ±2 standard deviations
+        for lower and upper bounds.
+
+        Args:
+            quantiles (dict): the quantiles to use, e.g. [0.1, 0.9] or {'low : '0.1, 'high' : 0.9}
+            use_mean (bool): whether to use the mean instead of the median
+            bounds (float): if use_mean=True, the multiplier on the standard deviation for upper and lower bounds (default 2)
+            output (bool): whether to return the "reduced" sim (in any case, modify the multirun in-place)
+
+        '''
+
+        if use_mean:
+            if bounds is None:
+                bounds = 2
+        else:
+            if quantiles is None:
+                quantiles = {'low':0.1, 'high':0.9}
+            if not isinstance(quantiles, dict):
+                try:
+                    quantiles = {'low':float(quantiles[0]), 'high':float(quantiles[1])}
+                except Exception as E:
+                    errormsg = f'Could not figure out how to convert {quantiles} into a quantiles object: must be a dict with keys low, high or a 2-element array ({str(E)})'
+                    raise ValueError(errormsg)
+
+        # Store information on the sims
+        outcomes = default_trackers()
+        out = sc.odict()
+        years = results[0].years
+        
+        #n_runs = len(self)
+        #outputs = self.get_output()
+        #reduced_res = sc.dcp(outputs[0])
+        #reduced_res.metadata = dict(multi_run=True, n_runs=n_runs, quantiles=quantiles, use_mean=use_mean, bounds=bounds) # Store how this was parallelized
+        
+        # perform the statistcal calculations
+        for r, res in enumerate(results):
+            if res.name != 'Excess budget':
+                out[res] = res.get_outputs(outcomes, seq=True, pretty=True)
+                raw = {}
+                for reskey in outcomes:
+                    raw[reskey] = np.zeros(len(outcomes), len(years))
+                    vals = res[reskey].values
+                    raw[reskey][:,r] = vals
+                for reskeys in outcomes:
+                    axis = 1
+                    output = out[res]
+                    if use_mean:
+                        r_mean = np.mean(raw[reskey], axis=axis)
+                        r_std =  np.std(raw[reskey], axis=axis)
+                        output[reskey].values[:] = r_mean
+                        output[reskey].low = r_mean - bounds * r_std
+                        output[reskey].high = r_mean + bounds * r_std
+                    else:
+                        output[reskey].values[:] = np.quantile(raw[reskey], q=0.5, axis=axis)
+                        output[reskey].low = np.quantile(raw[reskey], q=quantiles['low'], axis=axis)
+                        output[reskey].high = np.quantile(raw[reskey], q=quantiles['high'], axis=axis)
+        return 
+            
+def mean(self, bounds=None, **kwargs):
+    '''
+    Alias for reduce(use_mean=True). See reduce() for full description.
+
+    Args:
+        bounds (float): multiplier on the standard deviation for the upper and lower bounds (default, 2)
+        kwargs (dict): passed to reduce()
+    '''
+    return self.reduce(use_mean=True, bounds=bounds, **kwargs)
+
+def median(self, quantiles=None, **kwargs):
+    '''
+    Alias for reduce(use_mean=False). See reduce() for full description.
+
+    Args:
+        quantiles (list or dict): upper and lower quantiles (default, 0.1 and 0.9)
+        kwargs (dict): passed to reduce()
+    '''
+    return self.reduce(use_mean=False, quantiles=quantiles, **kwargs)
 
 def write_to_excel(results, projname=None, filename=None, folder=None):
     from .version import version
@@ -139,12 +221,13 @@ def write_to_excel(results, projname=None, filename=None, folder=None):
     formatdata[:, 0] = 'bold'  # Left side bold
     formatdata[0, :] = 'header'  # Top with green header
     allformats.append(formatdata)
-
+    print(results)
     ### Outcomes sheet
     headers = [['Scenario', 'Outcome'] + years + ['Cumulative']]
     for r, res in enumerate(results):
         if res.name != 'Excess budget':
             out = res.get_outputs(outcomes, seq=True, pretty=True)
+            #print(out)
             for o, outcome in enumerate(rows):
                 name = [res.name] if o == 0 else ['']
                 thisout = out[o]
@@ -158,7 +241,7 @@ def write_to_excel(results, projname=None, filename=None, folder=None):
             outputs.append(nullrow)
     data = headers + outputs
     alldata.append(data)
-    
+    print(outputs)
     # Formatting
     nrows = len(data)
     ncols = len(data[0])

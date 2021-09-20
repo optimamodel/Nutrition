@@ -4,8 +4,9 @@
 
 import os
 import sciris as sc
+import numpy as np
 from .version import version
-from .utils import default_trackers, add_dummy_prog_data
+from .utils import default_trackers, add_dummy_prog_data, pretty_labels
 from .data import Dataset
 from .model import Model
 from .scenarios import Scen, run_scen, convert_scen, make_default_scen
@@ -539,9 +540,13 @@ class Project(object):
         results = self.result(key)
         plot_costcurve(results)
         return
-
-
-
+    
+    def __len__(self):
+        try:
+            return len(self.results)
+        except:
+            return 0
+    
 def demo(scens=False, optims=False, geos=False):
     """ Create a demo project with demo settings """
     
