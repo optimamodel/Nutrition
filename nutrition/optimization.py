@@ -94,7 +94,7 @@ class Optim(sc.prettyobj):
             zeroscen = Scen(**kwargs)
             zeromodel = sc.dcp(model)
             zerores = run_scen(zeroscen, zeromodel, restrictcovs)
-            zeroouts = zerores.get_outputs()
+            zeroouts = zerores.get_outputs(asdict=False)
             zeroval = np.inner(zeroouts, self.weights)
             # check for dependencies
             progs = list(zeromodel.prog_info.programs.values())
@@ -114,7 +114,7 @@ class Optim(sc.prettyobj):
                     thesekwargs['progvals'] = thiscov
                     scen = Scen(**thesekwargs)
                     res = run_scen(scen, thismodel, restrictcovs=restrictcovs)
-                    outs = res.get_outputs()
+                    outs = res.get_outputs(asdict=False)
                     val = np.inner(outs, self.weights)
                     hasimpact = abs((val - zeroval) / zeroval) * 100. > threshold
                     keep_inds.append(hasimpact)
