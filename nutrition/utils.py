@@ -449,6 +449,8 @@ def add_dummy_prog_data(prog_info, name):
     thisprog_data.prog_deps[name] = {'Exclusion dependency': [], 'Threshold dependency': []} # so that it has no dependencies
     thisprog_data.prog_target[name] = {pop: 1.0 for pop in thisprog_data.settings.all_ages} # so that it covers everyone in the model
     thisprog_data.sat[name] = 1.0
+    thisprog_data.max_inc[name] = 1.0
+    thisprog_data.max_dec[name] = 1.0
     return thisprog_data
 
 
