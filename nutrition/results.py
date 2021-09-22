@@ -16,6 +16,7 @@ class ScenResult(sc.prettyobj):
         self.uid = sc.uuid()
         self.created = sc.now()
         self.modified = sc.now()
+        #self.results = []
         
     def model_attr(self):
         return self.model.__dict__
@@ -241,7 +242,7 @@ def write_results(results, projname=None, filename=None, folder=None):
             outputs.append(nullrow)
     data = headers + outputs
     alldata.append(data)
-    print(outputs)
+    #print(outputs)
     # Formatting
     nrows = len(data)
     ncols = len(data[0])

@@ -36,13 +36,15 @@ def run_scen(scen, model, obj=None, mult=None, setcovs=True, restrictcovs=True, 
     """" Purspose is to consider multiple runs for each random parameter values generated."""
     num_cpus = multiprocessing.cpu_count()
     args = [scen, model, obj, mult, setcovs, restrictcovs]
+    #this_results = []
     if multi_run:
         num_procs = num_procs if num_procs else num_cpus
-        iterkwargs = [None] * n_runs
-        for i in range(0, n_runs):
-            iterkwargs[i] = args
+        iterarg = [None] * n_runs
         try:
-            res = utils.run_parallel(one_run_scene_parallel, iterkwargs, num_procs)
+            for i in range(0, n_runs):
+                iterarg[i] = args
+            res_list = utils.run_parallel(one_run_scene_parallel, iterarg, num_procs)
+            res = res_list[0]# just for testing
         except RuntimeError as E: # Handle if run outside of __main__ on Windows
             if 'freeze_support' in E.args[0]: # For this error, add additional information
                 errormsg = '''
@@ -59,13 +61,18 @@ def run_scen(scen, model, obj=None, mult=None, setcovs=True, restrictcovs=True, 
             else: # For all other runtime errors, raise the original exception
                 raise E
     else:
-        res = one_run_scene(args)           
+        res = one_run_scene(args) 
     return res
        
 def one_run_scene(args):
     from .results import ScenResult # This is here to avoid a potentially circular import
     scen = args[0]
-    model, obj, mult, setcovs, restrictcovs = args[1:]
+    model = args[1]
+    obj = args[2]
+    mult = args[3]
+    setcovs = args[4]
+    restrictcovs = args[5]
+    #model, obj, mult, setcovs, restrictcovs = args[1:]
     model = sc.dcp(model)
     model.setup(scen, setcovs=setcovs, restrictcovs=restrictcovs)
     model.run_sim()

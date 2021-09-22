@@ -81,13 +81,15 @@ kwargs8 = {'name': 'Treat SAM 100%',
                'add_funds': 0,
                'filter_progs': True}
 
-scen_list = nu.make_scens([kwargs1, kwargs7, kwargs3])
-p.add_scens(scen_list)
 if __name__ == '__main__':
-    p.run_scens()
+    scen_list = nu.make_scens([kwargs1, kwargs7, kwargs3])
+    p.add_scens(scen_list)
+
+    #p.run_scens()
+    p.multirun_scens()
     #p.mean()
 #p.run_scens()
 if doplot:
     p.plot()
 #costeff = p.get_costeff()
-p.write_results('scen_results.xlsx')
+#p.write_results('scen_results.xlsx')

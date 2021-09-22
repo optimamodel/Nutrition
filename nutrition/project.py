@@ -5,8 +5,9 @@
 import os
 import sciris as sc
 import numpy as np
+import multiprocessing
 from .version import version
-from .utils import default_trackers, add_dummy_prog_data, pretty_labels
+from .utils import default_trackers, add_dummy_prog_data, pretty_labels, run_parallel
 from .data import Dataset
 from .model import Model
 from .scenarios import Scen, run_scen, convert_scen, make_default_scen
@@ -467,6 +468,43 @@ class Project(object):
                 results.append(res)
         self.add_result(results, name='scens')
         return None
+    
+    def multirun_scens(self, scens=None, parallel=False, num_procs=3, n_runs=2):
+        """" Purspose is to consider multiple runs for each random parameter values generated."""
+        all_results = []
+        num_cpus = multiprocessing.cpu_count()
+        args = scens
+        if parallel:
+            num_procs = num_procs if num_procs else num_cpus
+            iterarg = [None] * n_runs
+            try:
+                for i in range(0, n_runs):
+                    iterarg[i] = args
+                results = run_parallel(self.run_scens, iterarg, num_procs)
+                all_results.append(results)
+                self.add_result(all_results, name='results')
+            except RuntimeError as E: # Handle if run outside of __main__ on Windows
+                if 'freeze_support' in E.args[0]: # For this error, add additional information
+                    errormsg = '''
+                    It appears you are trying to run with multiprocessing on Windows outside
+                    of the __main__ block; please see https://docs.python.org/3/library/multiprocessing.html
+                    for more information. The correct syntax to use is e.g.
+    
+                                if __name__ == '__main__':
+                                    p.run_scens()
+    
+                    Alternatively, to run without multiprocessing, set multi_run=False.'''
+                    
+                    raise RuntimeError(errormsg) from E
+                else: # For all other runtime errors, raise the original exception
+                    raise E
+        else:
+            all_results = []
+            for arg in args:
+                this_results = self.run_scens(arg)
+                all_results.append(this_results)
+        return None
+            
 
     def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=None, maxtime=300, parallel=True, dosave=True, runbaseline=True):
         if optim is not None:
