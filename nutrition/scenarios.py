@@ -23,65 +23,13 @@ class Scen(sc.prettyobj):
     def get_attr(self):
         return self.__dict__
 
-def run_scen_(scen, model, obj=None, mult=None, setcovs=True, restrictcovs=True): # Single run supports previous version with no uncertainty
+def run_scen(scen, model, obj=None, mult=None, setcovs=True, restrictcovs=True): # Single run supports previous version with no uncertainty
     """ Function to run associated Scen and Model objects """
     from .results import ScenResult # This is here to avoid a potentially circular import
     model = sc.dcp(model)
     model.setup(scen, setcovs=setcovs, restrictcovs=restrictcovs)
     model.run_sim()
     res = ScenResult(scen.name, scen.model_name, model, obj=obj, mult=mult)
-    return res
-
-def run_scen(scen, model, obj=None, mult=None, setcovs=True, restrictcovs=True, multi_run=False, num_procs=3, n_runs=2):
-    """" Purspose is to consider multiple runs for each random parameter values generated."""
-    num_cpus = multiprocessing.cpu_count()
-    args = [scen, model, obj, mult, setcovs, restrictcovs]
-    #this_results = []
-    if multi_run:
-        num_procs = num_procs if num_procs else num_cpus
-        iterarg = [None] * n_runs
-        try:
-            for i in range(0, n_runs):
-                iterarg[i] = args
-            res_list = utils.run_parallel(one_run_scene_parallel, iterarg, num_procs)
-            res = res_list[0]# just for testing
-        except RuntimeError as E: # Handle if run outside of __main__ on Windows
-            if 'freeze_support' in E.args[0]: # For this error, add additional information
-                errormsg = '''
-                It appears you are trying to run with multiprocessing on Windows outside
-                of the __main__ block; please see https://docs.python.org/3/library/multiprocessing.html
-                for more information. The correct syntax to use is e.g.
-
-                            if __name__ == '__main__':
-                                p.run_scens()
-
-                Alternatively, to run without multiprocessing, set multi_run=False.'''
-                
-                raise RuntimeError(errormsg) from E
-            else: # For all other runtime errors, raise the original exception
-                raise E
-    else:
-        res = one_run_scene(args) 
-    return res
-       
-def one_run_scene(args):
-    from .results import ScenResult # This is here to avoid a potentially circular import
-    scen = args[0]
-    model = args[1]
-    obj = args[2]
-    mult = args[3]
-    setcovs = args[4]
-    restrictcovs = args[5]
-    #model, obj, mult, setcovs, restrictcovs = args[1:]
-    model = sc.dcp(model)
-    model.setup(scen, setcovs=setcovs, restrictcovs=restrictcovs)
-    model.run_sim()
-    res = ScenResult(scen.name, scen.model_name, model, obj=obj, mult=mult)
-    return res
-
-@utils.trace_exception
-def one_run_scene_parallel(args):
-    res = one_run_scene(args)
     return res
 
 def make_scens(kwargs):

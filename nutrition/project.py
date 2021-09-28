@@ -338,7 +338,8 @@ class Project(object):
         pops = dataset.pops
         prog_info = dataset.prog_info
         t = dataset.t
-        model = Model(pops, prog_info, t)
+        demo_data = dataset.demo_data
+        model = Model(pops, prog_info, demo_data, t)
         self.add(name=name, item=model, what='model')
         # Loop over all Scens and create a new default scenario for any that depend on the dataset which has been reloaded.
         # for scen_name in self.scens.keys():  # Loop over all Scen keys in the project
@@ -390,7 +391,7 @@ class Project(object):
             model.prog_info.prog_data = excess_spend['prog_data']
         base = Scen(name='Baseline', model_name=model_name, scen_type='coverage', progvals=progvals)
         if dorun:
-            return run_scen(base, model, multi_run=False)
+            return run_scen(base, model)
         else:
             return base
 
@@ -452,6 +453,9 @@ class Project(object):
             return None
         else:
             return geos
+        
+    def repeat_fun(self, n_runs, f, *args):
+        for i in range(0, n_runs): f(*args)
 
     def run_scens(self, scens=None):
         """Function for running scenarios
@@ -469,43 +473,14 @@ class Project(object):
         self.add_result(results, name='scens')
         return None
     
-    def multirun_scens(self, scens=None, parallel=False, num_procs=3, n_runs=2):
+    def multirun_scens(self, n_runs=2):
         """" Purspose is to consider multiple runs for each random parameter values generated."""
-        all_results = []
-        num_cpus = multiprocessing.cpu_count()
-        args = scens
-        if parallel:
-            num_procs = num_procs if num_procs else num_cpus
-            iterarg = [None] * n_runs
-            try:
-                for i in range(0, n_runs):
-                    iterarg[i] = args
-                results = run_parallel(self.run_scens, iterarg, num_procs)
-                all_results.append(results)
-                self.add_result(all_results, name='results')
-            except RuntimeError as E: # Handle if run outside of __main__ on Windows
-                if 'freeze_support' in E.args[0]: # For this error, add additional information
-                    errormsg = '''
-                    It appears you are trying to run with multiprocessing on Windows outside
-                    of the __main__ block; please see https://docs.python.org/3/library/multiprocessing.html
-                    for more information. The correct syntax to use is e.g.
-    
-                                if __name__ == '__main__':
-                                    p.run_scens()
-    
-                    Alternatively, to run without multiprocessing, set multi_run=False.'''
-                    
-                    raise RuntimeError(errormsg) from E
-                else: # For all other runtime errors, raise the original exception
-                    raise E
-        else:
-            all_results = []
-            for arg in args:
-                this_results = self.run_scens(arg)
-                all_results.append(this_results)
+        #results = []
+        this_results = self.repeat_fun(n_runs, self.run_scens)
+        self.results.append(this_results)
+        self.add_result(self.results, name='results')
         return None
-            
-
+        
     def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=None, maxtime=300, parallel=True, dosave=True, runbaseline=True):
         if optim is not None:
             self.add_optims(optim)

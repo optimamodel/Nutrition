@@ -201,7 +201,6 @@ def write_results(results, projname=None, filename=None, folder=None):
     outcomes = default_trackers()
     labs = pretty_labels()
     rows = [labs[out] for out in outcomes]
-    print(rows)
     if filename is None: filename = 'outputs.xlsx'
     filepath = sc.makefilepath(filename=filename, folder=folder, ext='xlsx', default='%s outputs.xlsx' % projname)
     outputs = []
@@ -209,6 +208,7 @@ def write_results(results, projname=None, filename=None, folder=None):
     alldata = []
     allformats = []
     years = results[0].years
+    #print(years)
     nullrow = [''] * len(years)
     ### Version sheet
     data = [['Version', 'Date'], [version, date.today()]]
@@ -222,7 +222,7 @@ def write_results(results, projname=None, filename=None, folder=None):
     formatdata[:, 0] = 'bold'  # Left side bold
     formatdata[0, :] = 'header'  # Top with green header
     allformats.append(formatdata)
-    print(results)
+    #print(results)
     ### Outcomes sheet
     headers = [['Scenario', 'Outcome'] + years + ['Cumulative']]
     for r, res in enumerate(results):

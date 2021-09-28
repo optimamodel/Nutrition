@@ -1,6 +1,9 @@
 import nutrition.ui as nu
 import sciris as sc
-#import pandas as pd
+import sys
+
+x=1500
+sys.setrecursionlimit(x)
 
 #pd.set_option('mode.chained_assignment', None)
 
@@ -85,11 +88,11 @@ if __name__ == '__main__':
     scen_list = nu.make_scens([kwargs1, kwargs7, kwargs3])
     p.add_scens(scen_list)
 
-    #p.run_scens()
-    p.multirun_scens()
+    p.run_scens()
+    #p.multirun_scens()
     #p.mean()
 #p.run_scens()
 if doplot:
     p.plot()
 #costeff = p.get_costeff()
-#p.write_results('scen_results.xlsx')
+p.write_results('scen_results.xlsx')

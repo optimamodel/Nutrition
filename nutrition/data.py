@@ -357,6 +357,12 @@ class InputData(object):
         self.pw_agedist = []
         self.wra_proj = []
         self.t = None
+        self.cost_wasting = None
+        self.cost_stunting = None
+        self.cost_child_death = None
+        self.cost_pw_death = None
+        self.cost_child_anaemic = None
+        self.cost_pw_anaemic = None
         self.calcscache = calcscache
 
         self.get_demo()
@@ -365,6 +371,7 @@ class InputData(object):
         self.get_death_dist()
         self.get_time_trends()
         self.get_incidences()
+        self.get_economic_cost()
 
     def __repr__(self):
         output  = sc.prepr(self)
@@ -522,7 +529,16 @@ class InputData(object):
         self.time_trends['Anaemia'] = trends.loc['Anaemia prevalence (%)'].values.tolist()[:3] # order is (children, PW, WRA)
         self.time_trends['Breastfeeding'] = trends.loc['Prevalence of age-appropriate breastfeeding'].values.tolist()[:2] # 0-5 months, 6-23 months
         self.time_trends['Mortality'] = trends.loc['Mortality'].values.tolist() # under 5, maternal
-
+    
+    def get_economic_cost(self):
+        econo_cost = utils.read_sheet(self.spreadsheet, 'Economic loss', cols=[0], dropna=False)
+        self.cost_wasting = econo_cost.loc['Wasting'].values[0]
+        self.cost_stunting = econo_cost.loc['Stunting'].values[0]
+        self.cost_child_death = econo_cost.loc['Child death'].values[0]
+        self.cost_pw_death = econo_cost.loc['PW death'].values[0]
+        self.cost_child_anaemic = econo_cost.loc['Child anaemic'].values[0]
+        self.cost_pw_anaemic = econo_cost.loc['PW anaemic'].values[0]
+        
     def get_incidences(self):
         # Load the main spreadsheet into a DataFrame.
         incidences = utils.read_sheet(self.spreadsheet, 'Incidence of conditions', [0])
