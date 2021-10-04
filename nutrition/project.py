@@ -17,6 +17,8 @@ from .results import write_results
 from .plotting import make_plots, get_costeff, plot_costcurve
 from .demo import demo_scens, demo_optims, demo_geos
 from . import settings
+from .settings import Settings
+import pandas as pd
 
 
 #######################################################################################################
@@ -62,6 +64,7 @@ class Project(object):
         self.geos         = sc.odict()
         self.results      = sc.odict()
         self.spreadsheets = sc.odict()
+        
         if loadsheets:
             if not inputspath:
                 template_name = 'template_input.xlsx'
@@ -78,6 +81,7 @@ class Project(object):
         self.version  = version
         self.gitinfo  = sc.gitinfo(__file__)
         self.filename = None # File path, only present if self.save() is used
+        self.ss = Settings()
 
         return None
 
@@ -136,7 +140,7 @@ class Project(object):
         return self.inputsheet(name)
     
         
-    def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True, validate=True):
+    def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True, validate=True, resampling=True):
         '''Load the data, which can mean one of two things: read in the spreadsheets, and/or use these data to make a model '''
         
         # Generate name odict key for Spreadsheet, Dataset, and Model odicts.
@@ -150,7 +154,7 @@ class Project(object):
                 self.storeinputs(inputspath=inputspath, country=country, region=region, name=name)
         
         # Optionally (but almost always) use these to make a model (do not do if blank sheets).
-        dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self)
+        dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self, resampling=resampling)
         self.datasets[name] = dataset
         dataset.name = name
         self.add_model(name) # add model associated with the dataset
@@ -455,7 +459,7 @@ class Project(object):
             return geos
         
     def repeat_fun(self, n_runs, f, *args):
-        for i in range(0, n_runs): f(*args)
+        for i in range(n_runs): f(*args)
 
     def run_scens(self, scens=None):
         """Function for running scenarios
@@ -473,12 +477,115 @@ class Project(object):
         self.add_result(results, name='scens')
         return None
     
-    def multirun_scens(self, n_runs=2):
-        """" Purspose is to consider multiple runs for each random parameter values generated."""
-        #results = []
-        this_results = self.repeat_fun(n_runs, self.run_scens)
-        self.results.append(this_results)
-        self.add_result(self.results, name='results')
+    def _multirun_scens(self, scens=None, n_runs=2):
+        results = []
+        if scens is not None:
+            self.add_scens(scens)
+        for scen in self.scens.values():
+            if scen.active:
+                if (scen.model_name is None) or (scen.model_name not in self.datasets.keys()):
+                    raise Exception('Could not find valid dataset for %s.  Edit the scenario and change the dataset' % scen.name)
+                for i in range(n_runs):
+                    model = self.model(scen.model_name)
+                    res = run_scen(scen, model)
+                    results.append(res)
+        self.add_result(results, name='scens')
+        return None
+    
+    
+    def multirun_scens(self, scens=None, n_runs=2, quantiles=None, use_mean=False, bounds=None):
+        if use_mean:
+            if bounds is None:
+                bounds = 2
+        else:
+            if quantiles is None:
+                quantiles = {'low':0.1, 'high':0.9}
+            if not isinstance(quantiles, dict):
+                try:
+                    quantiles = {'low':float(quantiles[0]), 'high':float(quantiles[1])}
+                except Exception as E:
+                    errormsg = f'Could not figure out how to convert {quantiles} into a quantiles object: must be a dict with keys low, high or a 2-element array ({str(E)})'
+                    raise ValueError(errormsg)
+        results = []
+        years = self.ss.years
+        outcomes = default_trackers()
+        if scens is not None:
+            self.add_scens(scens)
+        for scen in self.scens.values():
+            if scen.active:
+                if (scen.model_name is None) or (scen.model_name not in self.datasets.keys()):
+                    raise Exception('Could not find valid dataset for %s.  Edit the scenario and change the dataset' % scen.name)
+                output = []
+                prog_rows = scen.prog_set # take the program list for each scenario
+                scen_name = scen.name
+                esti = ['point', 'low', 'high']
+                # Outcomes through default tracker
+                raw = {o: {n: np.zeros(len(years)) for n in range(n_runs)} for o in outcomes}
+                reduce = {o: {es: np.zeros(len(years)) for es in esti} for o in outcomes}
+                # for spends (Budget)
+                raw_spend = {k: {n: np.zeros(len(years)) for n in range(n_runs)} for k in prog_rows}
+                reduce_spend = {k: {es: np.zeros(len(years)) for es in esti} for k in prog_rows}
+                # for spends (Coverage)
+                raw_cov = {k: {n: np.zeros(len(years)) for n in range(n_runs)} for k in prog_rows}
+                reduce_cov = {k: {es: np.zeros(len(years)) for es in esti} for k in prog_rows}
+                for i in range(n_runs):
+                    model = self.model(scen.model_name)
+                    res = run_scen(scen, model)
+                    out = res.get_outputs(outcomes, seq=True, pretty=True)
+                    spend = res.get_allocs(ref=True)
+                    cov = res.get_covs(unrestr=False)
+                    output.append(out)
+                    for out_key in outcomes:
+                        vals = out[out_key]
+                        raw[out_key][i] = vals
+                        #print(raw)
+                    for prog_key in prog_rows:
+                        spend_vals = spend[prog_key]
+                        cov_vals = cov[prog_key]
+                        raw_spend[prog_key][i] = spend_vals
+                        raw_cov[prog_key][i] = cov_vals
+                    # for default tracker outcomes
+                    for out_key in outcomes:
+                        axis = 0
+                        if use_mean:
+                            r_mean = np.mean(list(raw[out_key].values()), axis=axis)
+                            r_std =  np.std(list(raw[out_key].values()), axis=axis) 
+                            reduce[out_key]['point'] = r_mean
+                            reduce[out_key]['low'] = r_mean - bounds * r_std
+                            reduce[out_key]['high'] = r_mean + bounds * r_std
+                        else:
+                            reduce[out_key]['point'] = np.quantile(list(raw[out_key].values()), q=0.5, axis=axis)
+                            reduce[out_key]['low'] = np.quantile(list(raw[out_key].values()), q=quantiles['low'], axis=axis)
+                            reduce[out_key]['high'] = np.quantile(list(raw[out_key].values()), q=quantiles['high'], axis=axis)
+                    # for spends (Budget)
+                    for prog_key in prog_rows:
+                        axis = 0
+                        if use_mean:
+                            r_mean = np.mean(list(raw_spend[prog_key].values()), axis=axis)
+                            r_std =  np.std(list(raw_spend[prog_key].values()), axis=axis) 
+                            reduce_spend[prog_key]['point'] = r_mean
+                            reduce_spend[prog_key]['low'] = r_mean - bounds * r_std
+                            reduce_spend[prog_key]['high'] = r_mean + bounds * r_std
+                        else:
+                            reduce_spend[prog_key]['point'] = np.quantile(list(raw_spend[prog_key].values()), q=0.5, axis=axis)
+                            reduce_spend[prog_key]['low'] = np.quantile(list(raw_spend[prog_key].values()), q=quantiles['low'], axis=axis)
+                            reduce_spend[prog_key]['high'] = np.quantile(list(raw_spend[prog_key].values()), q=quantiles['high'], axis=axis)
+                    # for spends (Coverage)
+                    for prog_key in prog_rows:
+                        axis = 0
+                        if use_mean:
+                            r_mean = np.mean(list(raw_cov[prog_key].values()), axis=axis)
+                            r_std =  np.std(list(raw_cov[prog_key].values()), axis=axis) 
+                            reduce_cov[prog_key]['point'] = r_mean
+                            reduce_cov[prog_key]['low'] = r_mean - bounds * r_std
+                            reduce_cov[prog_key]['high'] = r_mean + bounds * r_std
+                        else:
+                            reduce_cov[prog_key]['point'] = np.quantile(list(raw_cov[prog_key].values()), q=0.5, axis=axis)
+                            reduce_cov[prog_key]['low'] = np.quantile(list(raw_cov[prog_key].values()), q=quantiles['low'], axis=axis)
+                            reduce_cov[prog_key]['high'] = np.quantile(list(raw_cov[prog_key].values()), q=quantiles['high'], axis=axis)   
+                    results.append(res)
+                print(reduce_spend)
+        self.add_result(results, name='scens')
         return None
         
     def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=None, maxtime=300, parallel=True, dosave=True, runbaseline=True):
@@ -570,10 +677,10 @@ def demo(scens=False, optims=False, geos=False):
     
     # Create project and load in demo databook spreadsheet file into 'demo' Spreadsheet, Dataset, and Model.
     P = Project(name)
-    P.load_data(country, region, name='demo')
-    P.load_data(country, 'region1', name='demoregion1')
-    P.load_data(country, 'region2', name='demoregion2')
-    P.load_data(country, 'region3', name='demoregion3')
+    P.load_data(country, region, name='demo', resampling=False)
+    P.load_data(country, 'region1', name='demoregion1', resampling=False)
+    P.load_data(country, 'region2', name='demoregion2', resampling=False)
+    P.load_data(country, 'region3', name='demoregion3', resampling=False)
 
     # Create demo scenarios and optimizations
     if scens:

@@ -108,7 +108,7 @@ class ScenResult(sc.prettyobj):
         figs = make_plots(self, toplot=toplot)
         return figs
     
-def reduce(results, quantiles=None, use_mean=False, bounds=None):
+def reduce(results, quantiles=None, use_mean=False, bounds=None): # need to removal once finalized
         '''
         Combine multiple sims into a single sim statistically: by default, use
         the median value and the 10th and 90th percentiles for the lower and upper
@@ -170,7 +170,7 @@ def reduce(results, quantiles=None, use_mean=False, bounds=None):
                         output[reskey].high = np.quantile(raw[reskey], q=quantiles['high'], axis=axis)
         return 
             
-def mean(self, bounds=None, **kwargs):
+def mean(bounds=None, **kwargs):
     '''
     Alias for reduce(use_mean=True). See reduce() for full description.
 
@@ -178,9 +178,9 @@ def mean(self, bounds=None, **kwargs):
         bounds (float): multiplier on the standard deviation for the upper and lower bounds (default, 2)
         kwargs (dict): passed to reduce()
     '''
-    return self.reduce(use_mean=True, bounds=bounds, **kwargs)
+    return reduce(use_mean=True, bounds=bounds, **kwargs)
 
-def median(self, quantiles=None, **kwargs):
+def median(quantiles=None, **kwargs):
     '''
     Alias for reduce(use_mean=False). See reduce() for full description.
 
@@ -188,7 +188,7 @@ def median(self, quantiles=None, **kwargs):
         quantiles (list or dict): upper and lower quantiles (default, 0.1 and 0.9)
         kwargs (dict): passed to reduce()
     '''
-    return self.reduce(use_mean=False, quantiles=quantiles, **kwargs)
+    return reduce(use_mean=False, quantiles=quantiles, **kwargs)
 
 def write_results(results, projname=None, filename=None, folder=None):
     from .version import version
@@ -208,7 +208,6 @@ def write_results(results, projname=None, filename=None, folder=None):
     alldata = []
     allformats = []
     years = results[0].years
-    #print(years)
     nullrow = [''] * len(years)
     ### Version sheet
     data = [['Version', 'Date'], [version, date.today()]]
@@ -222,13 +221,35 @@ def write_results(results, projname=None, filename=None, folder=None):
     formatdata[:, 0] = 'bold'  # Left side bold
     formatdata[0, :] = 'header'  # Top with green header
     allformats.append(formatdata)
-    #print(results)
+    
     ### Outcomes sheet
     headers = [['Scenario', 'Outcome'] + years + ['Cumulative']]
+    '''names=[]
+    for r, res in enumerate(results):
+        this_name=res.name
+        names.append(this_name)
+    main_names = []
+    for nm in names:
+        if nm not in main_names:
+            main_names.append(nm)
+    n_runs = int(len(names) / len(main_names))
+    
+    raw = {nm: {out: np.zeros((n_runs, len(years))) for out in outcomes} for nm in main_names}
+    #print(raw)
+    out={} 
+    for r, res in enumerate(results):
+        for name in main_names:
+            out[name] = res.get_outputs(outcomes, seq=True, pretty=True)
+            print(out)
+            for nm_key in main_names:
+                   for out_key in outcomes:
+                    vals = out[nm_key][out_key]
+                    raw[nm_key][out_key][:] = vals
+            print(raw)'''
+                
     for r, res in enumerate(results):
         if res.name != 'Excess budget':
             out = res.get_outputs(outcomes, seq=True, pretty=True)
-            #print(out)
             for o, outcome in enumerate(rows):
                 name = [res.name] if o == 0 else ['']
                 thisout = out[o]
@@ -242,7 +263,7 @@ def write_results(results, projname=None, filename=None, folder=None):
             outputs.append(nullrow)
     data = headers + outputs
     alldata.append(data)
-    #print(outputs)
+    
     # Formatting
     nrows = len(data)
     ncols = len(data[0])
@@ -261,6 +282,7 @@ def write_results(results, projname=None, filename=None, folder=None):
             rows = res.programs.keys()
             spend = res.get_allocs(ref=True)
             cov = res.get_covs(unrestr=False) 
+            #print(spend)
             # collate coverages first
             for r, prog in enumerate(rows):
                 name = [res.name] if r == 0 else ['']

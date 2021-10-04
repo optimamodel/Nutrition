@@ -10,8 +10,11 @@ sys.setrecursionlimit(x)
 doplot = False
 
 # load in data to create model
+"""" If the model is run for a single run using 'p.run_scens()' then set resampling=False
+    to make sure that the default point estimators are used from 
+    the databook with out considering any randomness!"""
 p = nu.Project('eg')
-p.load_data('demo', 'testing', name='eg')
+p.load_data('demo', 'testing', name='eg', resampling=True)
 
 
 ### define custom scenarios
@@ -88,8 +91,8 @@ if __name__ == '__main__':
     scen_list = nu.make_scens([kwargs1, kwargs7, kwargs3])
     p.add_scens(scen_list)
 
-    p.run_scens()
-    #p.multirun_scens()
+    #p.run_scens() # make sure to set resampling=False
+    p.multirun_scens()
     #p.mean()
 #p.run_scens()
 if doplot:

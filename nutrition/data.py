@@ -222,7 +222,7 @@ class DefaultParams(object):
         self.or_space_prog = or_sheet.loc['Odds ratios for optimal birth spacing by program'].to_dict('index')
 
     def get_bo_progs(self):
-        progs = utils.read_sheet(self.spreadsheet, 'Programs birth outcomes', [0,1], 'index')
+        progs = utils.read_sheet(self.spreadsheet, 'Programs birth outcomes', [0,1], skiprows=[i for i in range(13,43)]).to_dict('index')
         newprogs = sc.odict()
         for program in progs.keys():
             if not newprogs.get(program[0]):
@@ -899,7 +899,7 @@ class Dataset(object):
     ''' Store all the data for a project '''
     
     def __init__(self, country=None, region=None, name=None, demo_data=None, prog_data=None, default_params=None, uncertain_params=None,
-                 pops=None, prog_info=None, doload=False, inputspath=None, defaultspath=None, fromfile=None, project=None):
+                 pops=None, prog_info=None, doload=False, inputspath=None, defaultspath=None, fromfile=None, project=None, resampling=True):
         
         self.country = country
         self.region = region
@@ -916,6 +916,7 @@ class Dataset(object):
         self.t = None  # start and end years for the simulation
         self.name = name
         self.modified = sc.now()
+        self.resampling = resampling
         if doload:
             self.load(project=project)
         return None
@@ -955,8 +956,10 @@ class Dataset(object):
         except Exception as E:
             raise Exception('Error in databook: %s'%str(E))
         try:
-            self.default_params = DefaultParamsDummy(default_data, input_data) # just debugging with dummy class called
-            #self.default_params = DefaultParams(default_data, input_data) 
+            if self.resampling:
+                self.default_params = DefaultParamsResampled(default_data, input_data) # for random sampling
+            else:
+                self.default_params = DefaultParams(default_data, input_data) # for point estimates 
             self.default_params.compute_risks(self.demo_data)
             self.prog_data = ProgData(input_data, self.default_params, self.calcscache)
         except Exception as E:
@@ -1163,7 +1166,7 @@ class UncertaintyParas(object):
 # The following is a dummy class that should be renamed to "DefaultParams" once correctly implemented.
 # This reads original data from the data book (to read and establish index names in DFs) and also call random data from UncertaintyParas class, next input them to model.
     
-class DefaultParamsDummy(object):
+class DefaultParamsResampled(object):
     def __init__(self, default_data, input_data):
         self.settings = settings.Settings()
         self.uncert = UncertaintyParas(default_data, input_data)
