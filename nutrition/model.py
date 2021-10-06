@@ -142,7 +142,7 @@ class Model(sc.prettyobj):
         for pop in self.pops:
             pop.previousCov = init_cov
             pop.set_probs(prog_areas)
-
+       
     def _reset_storage(self):
         for pop in self.pops:
             for age_group in pop.age_groups:
@@ -162,7 +162,6 @@ class Model(sc.prettyobj):
                 self._set_pop_probs(year)
                 self._reset_storage()
                 self._apply_prog_covs()
-                
             if self.adjust_cov: # account for pop growth
                 self.prog_info.adjust_covs(self.pops, year, self.growth)
             self.integrate()

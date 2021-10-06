@@ -696,18 +696,14 @@ class ProgramInfo(sc.prettyobj):
         #covs = {}
         covs = sc.odict()
         for prog in self.programs.values():
-            if prog.year == self.all_years[0]:
-                covs[prog.name] = prog.annual_cov[0]
+            if prog.annual_cov[prog.year] - prog.annual_cov[prog.year-1] > prog.max_inc:
+                covs[prog.name] = prog.annual_cov[prog.year-1] + prog.max_inc
+            elif prog.annual_cov[prog.year] - prog.annual_cov[prog.year-1] < (-1) * prog.max_dec:
+                covs[prog.name] = prog.annual_cov[prog.year-1] - prog.max_dec
             else:
-                if prog.annual_cov[year] - prog.annual_cov[year-1] > prog.max_inc:
-                    covs[prog.name] = prog.annual_cov[year-1] + prog.max_inc
-                elif prog.annual_cov[year] - prog.annual_cov[year-1] < (-1) * prog.max_dec:
-                    covs[prog.name] = prog.annual_cov[year-1] - prog.max_dec
-                else:
-                    covs[prog.name] = prog.annual_cov[year]
-            
-        return covs
-        
+                covs[prog.name] = prog.annual_cov[prog.year]
+                                    
+        return covs   
 
     def restrict_covs(self):
         """

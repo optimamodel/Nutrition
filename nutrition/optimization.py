@@ -26,7 +26,8 @@ class Optim(sc.prettyobj):
 
         self.name = name
         self.model_name = model_name
-        self.weights = utils.process_weights(weights)
+        proc_weights = utils.process_weights(weights)
+        self.weights = np.transpose(proc_weights)
         self.mults = mults
         self.prog_set = prog_set
         self.add_funds = add_funds
@@ -34,9 +35,7 @@ class Optim(sc.prettyobj):
         self.rem_curr = rem_curr if not fix_curr else False # can't remove if fixed
         self.filter_progs = filter_progs
         self.num_cpus = multiprocessing.cpu_count()
-
         self.active = active
-
         self.num_procs = None
         self.optim_allocs = sc.odict()
 
@@ -70,7 +69,8 @@ class Optim(sc.prettyobj):
         keep_inds = self._filter_progs(model)
         # get the kwargs
         optim = (maxiter, swarmsize, maxtime)
-        args = [(self.get_kwargs(model, self.weights, mult, keep_inds), mult)+optim for mult in self.mults]
+        args = [(self.get_kwargs(model, weight, mult, keep_inds), mult)+optim for mult in self.mults 
+                for weight in list(self.weights)]
         if parallel:
             res = utils.run_parallel(self.one_optim_parallel, args, num_procs)
         else:
@@ -79,6 +79,15 @@ class Optim(sc.prettyobj):
                 this_res = self.one_optim(arg)
                 res.append(this_res)
         return res
+    
+    def objfun_val(self, outs, weights):
+        """"This is used to find the value of the objective functional for 
+            different weights."""
+        num_weights = np.shape(self.weights)[0]
+        val = np.zeros(num_weights)
+        for i in range(0, num_weights):
+            val[i] = np.inner(outs, self.weights[i])
+        return val
 
     def _filter_progs(self, model):
         if self.filter_progs:
@@ -95,7 +104,7 @@ class Optim(sc.prettyobj):
             zeromodel = sc.dcp(model)
             zerores = run_scen(zeroscen, zeromodel, restrictcovs)
             zeroouts = zerores.get_outputs(asdict=False)
-            zeroval = np.inner(zeroouts, self.weights)
+            zeroval = self.objfun_val(zeroouts, self.weights)
             # check for dependencies
             progs = list(zeromodel.prog_info.programs.values())
             alldeps = [prog.excl_deps for prog in progs] + [prog.thresh_deps for prog in progs]
@@ -115,8 +124,8 @@ class Optim(sc.prettyobj):
                     scen = Scen(**thesekwargs)
                     res = run_scen(scen, thismodel, restrictcovs=restrictcovs)
                     outs = res.get_outputs(asdict=False)
-                    val = np.inner(outs, self.weights)
-                    hasimpact = abs((val - zeroval) / zeroval) * 100. > threshold
+                    val = self.objfun_val(outs, self.weights)
+                    hasimpact = abs((np.linalg.norm(val) - np.linalg.norm(zeroval)) / np.linalg.norm(zeroval)) * 100. > threshold
                     keep_inds.append(hasimpact)
         else:
             keep_inds = [True for i, _ in enumerate(self.prog_set)]

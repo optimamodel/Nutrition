@@ -493,7 +493,7 @@ class Project(object):
         return None
     
     
-    def multirun_scens(self, scens=None, n_runs=2, quantiles=None, use_mean=False, bounds=None):
+    def multirun_scens(self, scens=None, n_runs=1, quantiles=None, use_mean=False, bounds=None):
         if use_mean:
             if bounds is None:
                 bounds = 2
@@ -584,7 +584,7 @@ class Project(object):
                             reduce_cov[prog_key]['low'] = np.quantile(list(raw_cov[prog_key].values()), q=quantiles['low'], axis=axis)
                             reduce_cov[prog_key]['high'] = np.quantile(list(raw_cov[prog_key].values()), q=quantiles['high'], axis=axis)   
                     results.append(res)
-                print(reduce_spend)
+                #print(reduce_spend)
         self.add_result(results, name='scens')
         return None
         

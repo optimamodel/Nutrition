@@ -171,7 +171,7 @@ def get_sign(obj):
     else:
         return 1
 
-def process_weights(weights):
+def _process_weights(weights): # This is no loger needed if multiple weight are considered moving forward
     """ Creates an array of weights with the order corresponding to default_trackers().
     If conditions for the max/min problem is violated, will correct these by flipping sign.
     :param weights: an odict of (outcome, weight) pairs. Also allowing a string for single objectives.
@@ -204,6 +204,43 @@ def process_weights(weights):
         sign = get_sign(thisout)
         newweights[ind] = abs(weight) * sign
     if np.all(newweights==0):
+        raise Exception('All objective weights are zero. Process aborted.')
+        
+    return newweights
+
+def process_weights(weights):
+    """ Creates an nd array of weights with the order corresponding to default_trackers().
+    If conditions for the max/min problem is violated, will correct these by flipping sign.
+    :param weights: an odict of (outcome, array(weight)) pairs. Also allowing a string for single objectives.
+    :return an nd array (rows:- weight groups, columns:- outcome) """
+    default = default_trackers()
+    pretty1 = pretty_labels(direction=False)
+    # reverse mapping to find outcome
+    inv_pretty1 = {v: k for k, v in pretty1.items()}
+    pretty2 = pretty_labels(direction=True)
+    inv_pretty2 = {v: k for k, v in pretty2.items()}
+    newweights = np.zeros((len(default),len(weights.values()[0])))
+    # if user just enters a string from the pre-defined objectives
+    if sc.isstring(weights): weights = sc.odict({weights:[1]})
+    if isinstance(weights, np.ndarray):
+        newweights[:len(weights)] = weights
+        return newweights
+    for out, weight in weights.items():
+        if out in default:
+            thisout = out
+            ind = default.index(out)
+        elif out in inv_pretty1:
+            thisout = inv_pretty1[out]
+            ind = default.index(thisout)
+        elif out in inv_pretty2:
+            thisout = inv_pretty2[out]
+            ind = default.index(thisout)
+        else:
+            print('Warning: "%s" is an invalid weighted outcome, removing'%out)
+            continue
+        sign = get_sign(thisout)
+        newweights[ind] = list(np.multiply(weight, sign))
+    if np.all(newweights==np.zeros(len(weight))):
         raise Exception('All objective weights are zero. Process aborted.')
     return newweights
 
