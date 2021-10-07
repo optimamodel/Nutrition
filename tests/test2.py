@@ -24,7 +24,7 @@ nutrition_all = ['IYCF 1', 'IFAS for pregnant women (health facility)',
 
 def parallel_optim(progs, region, path=None, fixed=False, additional=0):
     p = Project('Vietnam')
-    p.load_data(inputspath=path + region + '.xlsx', name=region)
+    p.load_data(inputspath=path + region + '.xlsx', name=region, resampling=False)
 
     if region == 'National':
         additional *= 10
@@ -32,7 +32,7 @@ def parallel_optim(progs, region, path=None, fixed=False, additional=0):
     kwargs = {'name': region,
               'mults': [1],
               'model_name': region,
-              'weights': sc.odict({'thrive': 1}),
+              'weights': sc.odict({'thrive': [1, 0.5]}),
               'prog_set': progs,
               'fix_curr': fixed,
               'add_funds': additional

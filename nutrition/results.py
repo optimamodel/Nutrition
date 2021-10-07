@@ -50,24 +50,44 @@ class ScenResult(sc.prettyobj):
 
     def get_allocs(self, ref=True, current=False):
         allocs = sc.odict()
+        delta = 1e-5
         for name, prog in self.programs.items():
             spend = prog.annual_spend
+            new_spend = np.zeros(len(self.years))
             if not ref and prog.reference:
                 spend -= spend[0] # baseline year is reference spending, subtracted from every year
             if current:
                 spend = spend[:1]
+            else:
+                for i in range(len(self.years)):
+                    if (spend[i] - spend[i-1])/(spend[i-1] + delta) > prog.max_inc:
+                        new_spend[i] = spend[i-1]*(1 + prog.max_inc)
+                    elif (spend[i] - spend[i-1])/(spend[i-1] + delta) < (-1)*prog.max_dec:
+                        new_spend[i] = spend[i-1]*(1 - prog.max_dec)
+                    else:
+                        new_spend[i] = spend[i]
             # if not fixed and not prog.reference:
             #     spend -= spend[0]
-            allocs[name] = spend
+            allocs[name] = new_spend
+                    
         return allocs
 
     def get_covs(self, ref=True, unrestr=True):
         covs = sc.odict()
+        #new_cov = np.zeros(len(self.years))
         for name, prog in self.programs.iteritems():
             cov = prog.get_cov(unrestr=unrestr)
+            new_cov = np.zeros(len(self.years))
+            for i in range(len(self.years)):
+                if cov[i] - cov[i-1] > prog.max_inc:
+                   new_cov[i] = cov[i-1] +  prog.max_inc
+                elif cov[i] - cov[i-1] < (-1)* prog.max_dec:
+                    new_cov[i] = cov[i-1] - prog.max_dec
+                else:
+                    new_cov[i] = cov[i]
             if not ref and prog.reference:
                 cov -= cov[0] # baseline year is reference cov, subtracted from every year
-            covs[name] = cov
+            covs[name] = new_cov
         return covs
     
     def get_freefunds(self):
