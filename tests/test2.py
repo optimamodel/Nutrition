@@ -24,7 +24,7 @@ nutrition_all = ['IYCF 1', 'IFAS for pregnant women (health facility)',
 
 def parallel_optim(progs, region, path=None, fixed=False, additional=0):
     p = Project('Vietnam')
-    p.load_data(inputspath=path + region + '.xlsx', name=region, resampling=False)
+    p.load_data(inputspath=path + region + '.xlsx', name=region)
 
     if region == 'National':
         additional *= 10
