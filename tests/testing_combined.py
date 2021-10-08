@@ -1,7 +1,7 @@
 """"This script may be used to test running non-optimization
     and optimization scenarios together.
     resampling (boolian): whether to use resampling with multirun or point estimators with single run (defualt: True)
-    rampling   (boolian): whether to use ramping function or not
+    ramping   (boolian): whether to use ramping function or not
     NOTE: Resampling does not work well (in progress)"""
 import nutrition.ui as nu
 import sciris as sc
