@@ -54,16 +54,17 @@ class ScenResult(sc.prettyobj):
         for name, prog in self.programs.items():
             spend = prog.annual_spend
             new_spend = np.zeros(len(self.years))
+            new_spend[0] = spend[0]
             if not ref and prog.reference:
                 spend -= spend[0] # baseline year is reference spending, subtracted from every year
             if current:
                 spend = spend[:1]
             else:
-                for i in range(len(self.years)):
-                    if (spend[i] - spend[i-1])/(spend[i-1] + delta) > prog.max_inc:
-                        new_spend[i] = spend[i-1]*(1 + prog.max_inc)
-                    elif (spend[i] - spend[i-1])/(spend[i-1] + delta) < (-1)*prog.max_dec:
-                        new_spend[i] = spend[i-1]*(1 - prog.max_dec)
+                for i in range(1, len(self.years)):
+                    if (spend[i] - new_spend[i-1])/(new_spend[i-1] + delta) > prog.max_inc:
+                        new_spend[i] = new_spend[i-1]*(1 + prog.max_inc)
+                    elif (spend[i] - new_spend[i-1])/(new_spend[i-1] + delta) < (-1)*prog.max_dec:
+                        new_spend[i] = new_spend[i-1]*(1 - prog.max_dec)
                     else:
                         new_spend[i] = spend[i]
             # if not fixed and not prog.reference:
@@ -78,11 +79,12 @@ class ScenResult(sc.prettyobj):
         for name, prog in self.programs.iteritems():
             cov = prog.get_cov(unrestr=unrestr)
             new_cov = np.zeros(len(self.years))
-            for i in range(len(self.years)):
-                if cov[i] - cov[i-1] > prog.max_inc:
-                   new_cov[i] = cov[i-1] +  prog.max_inc
-                elif cov[i] - cov[i-1] < (-1)* prog.max_dec:
-                    new_cov[i] = cov[i-1] - prog.max_dec
+            new_cov[1] = cov[1]
+            for i in range(2, len(self.years)):
+                if cov[i] - new_cov[i-1] > prog.max_inc:
+                   new_cov[i] = new_cov[i-1] +  prog.max_inc
+                elif cov[i] - new_cov[i-1] < (-1)* prog.max_dec:
+                    new_cov[i] = new_cov[i-1] - prog.max_dec
                 else:
                     new_cov[i] = cov[i]
             if not ref and prog.reference:

@@ -679,7 +679,7 @@ class ProgramInfo(sc.prettyobj):
             covs[prog.name] = prog.annual_cov[prog.year]
         return covs   
 
-    def _get_ann_covs(self, year): # This is no longer requred
+    def _get_ann_covs(self, year): # This is no longer required
         #covs = {}
         covs = sc.odict()
         for prog in self.programs.values():
