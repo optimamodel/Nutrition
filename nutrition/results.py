@@ -50,7 +50,6 @@ class ScenResult(sc.prettyobj):
 
     def get_allocs(self, ref=True, current=False):
         allocs = sc.odict()
-        delta = 1e-5
         for name, prog in self.programs.items():
             spend = prog.annual_spend
             new_spend = np.zeros(len(self.years))
@@ -61,9 +60,9 @@ class ScenResult(sc.prettyobj):
                 spend = spend[:1]
             else:
                 for i in range(1, len(self.years)):
-                    if (spend[i] - new_spend[i-1])/(new_spend[i-1] + delta) > prog.max_inc:
+                    if ((spend[i] - new_spend[i-1])/new_spend[i-1]) if new_spend[i-1] != 0 else 0 > prog.max_inc:
                         new_spend[i] = new_spend[i-1]*(1 + prog.max_inc)
-                    elif (spend[i] - new_spend[i-1])/(new_spend[i-1] + delta) < (-1)*prog.max_dec:
+                    elif ((spend[i] - new_spend[i-1])/new_spend[i-1]) if new_spend[i-1] != 0 else 0 < (-1)*prog.max_dec:
                         new_spend[i] = new_spend[i-1]*(1 - prog.max_dec)
                     else:
                         new_spend[i] = spend[i]
