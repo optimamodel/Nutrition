@@ -23,13 +23,13 @@ class Scen(sc.prettyobj):
     def get_attr(self):
         return self.__dict__
 
-def run_scen(scen, model, obj=None, mult=None, setcovs=True, restrictcovs=True): # Single run supports previous version with no uncertainty
+def run_scen(scen, model, obj=None, mult=None, setcovs=True, restrictcovs=True, ramping=True): # Single run supports previous version with no uncertainty
     """ Function to run associated Scen and Model objects """
     from .results import ScenResult # This is here to avoid a potentially circular import
     model = sc.dcp(model)
     model.setup(scen, setcovs=setcovs, restrictcovs=restrictcovs)
     model.run_sim()
-    res = ScenResult(scen.name, scen.model_name, model, obj=obj, mult=mult)
+    res = ScenResult(scen.name, scen.model_name, model, obj=obj, mult=mult, ramping=ramping)
     return res
 
 def make_scens(kwargs):

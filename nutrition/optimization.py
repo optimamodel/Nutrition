@@ -57,7 +57,7 @@ class Optim(sc.prettyobj):
 
     ######### OPTIMIZATION ##########
 
-    def run_optim(self, model, maxiter=80, swarmsize=35, maxtime=560, parallel=True, num_procs=None):
+    def run_optim(self, model, maxiter=80, swarmsize=35, maxtime=560, parallel=True, num_procs=None, ramping=True):
         if parallel:
             how = 'parallel'
             num_procs = num_procs if num_procs else self.num_cpus
@@ -76,7 +76,7 @@ class Optim(sc.prettyobj):
         else:
             res = []
             for arg in args:
-                this_res = self.one_optim(arg)
+                this_res = self.one_optim(arg, ramping=ramping)
                 res.append(this_res)
         return res
     
@@ -102,7 +102,7 @@ class Optim(sc.prettyobj):
                       'progvals': progvals}
             zeroscen = Scen(**kwargs)
             zeromodel = sc.dcp(model)
-            zerores = run_scen(zeroscen, zeromodel, restrictcovs)
+            zerores = run_scen(zeroscen, zeromodel, restrictcovs, ramping=False)
             zeroouts = zerores.get_outputs(asdict=False)
             zeroval = self.objfun_val(zeroouts, self.weights)
             # check for dependencies
@@ -122,7 +122,7 @@ class Optim(sc.prettyobj):
                     thesekwargs = sc.dcp(kwargs)
                     thesekwargs['progvals'] = thiscov
                     scen = Scen(**thesekwargs)
-                    res = run_scen(scen, thismodel, restrictcovs=restrictcovs)
+                    res = run_scen(scen, thismodel, restrictcovs=restrictcovs, ramping=False)
                     outs = res.get_outputs(asdict=False)
                     val = self.objfun_val(outs, self.weights)
                     hasimpact = abs((np.linalg.norm(val) - np.linalg.norm(zeroval)) / np.linalg.norm(zeroval)) * 100. > threshold
@@ -133,7 +133,7 @@ class Optim(sc.prettyobj):
             raise Exception('No programs impact the chosen objective or none were selected.')
         return np.array(keep_inds)
 
-    def one_optim(self, args):
+    def one_optim(self, args, ramping=True):
         """ Runs optimization for an objective and budget multiple.
         Return: a list of allocations, with order corresponding to the programs list """
         kwargs = args[0]
@@ -172,7 +172,7 @@ class Optim(sc.prettyobj):
         name = '%s (x%s)' % (self.name, mult)
         progvals = {prog:spend for prog, spend in zip(self.prog_set, best_alloc)}
         scen = Scen(name=name, model_name=self.model_name, scen_type='budget', progvals=progvals)
-        res = run_scen(scen, model, obj=self.name, mult=mult, restrictcovs=False)
+        res = run_scen(scen, model, obj=self.name, mult=mult, restrictcovs=False, ramping=ramping)
         if 'Excess budget not allocated' in self.prog_set:
             self.prog_set.remove('Excess budget not allocated')
         return res

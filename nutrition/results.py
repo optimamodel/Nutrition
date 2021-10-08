@@ -3,7 +3,7 @@ from .utils import default_trackers, pretty_labels
 import numpy as np
 
 class ScenResult(sc.prettyobj):
-    def __init__(self, name, model_name, model, obj=None, mult=None):
+    def __init__(self, name, model_name, model, obj=None, mult=None, ramping=True):
         self.name = name
         self.model_name = model_name
         self.model = model
@@ -16,6 +16,7 @@ class ScenResult(sc.prettyobj):
         self.uid = sc.uuid()
         self.created = sc.now()
         self.modified = sc.now()
+        self.ramping = ramping
         #self.results = []
         
     def model_attr(self):
@@ -52,13 +53,9 @@ class ScenResult(sc.prettyobj):
         allocs = sc.odict()
         for name, prog in self.programs.items():
             spend = prog.annual_spend
-            new_spend = np.zeros(len(self.years))
-            new_spend[0] = spend[0]
-            if not ref and prog.reference:
-                spend -= spend[0] # baseline year is reference spending, subtracted from every year
-            if current:
-                spend = spend[:1]
-            else:
+            if self.ramping:
+                new_spend = np.zeros(len(self.years))
+                new_spend[0] = spend[0]
                 for i in range(1, len(self.years)):
                     if ((spend[i] - new_spend[i-1])/new_spend[i-1]) if new_spend[i-1] != 0 else 0 > prog.max_inc:
                         new_spend[i] = new_spend[i-1]*(1 + prog.max_inc)
@@ -66,10 +63,16 @@ class ScenResult(sc.prettyobj):
                         new_spend[i] = new_spend[i-1]*(1 - prog.max_dec)
                     else:
                         new_spend[i] = spend[i]
+                allocs[name] = new_spend
+            else:
+                if not ref and prog.reference:
+                    spend -= spend[0] # baseline year is reference spending, subtracted from every year
+                if current:
+                    spend = spend[:1]
             # if not fixed and not prog.reference:
             #     spend -= spend[0]
-            allocs[name] = new_spend
-                    
+            
+                allocs[name] = spend        
         return allocs
 
     def get_covs(self, ref=True, unrestr=True):
@@ -77,18 +80,23 @@ class ScenResult(sc.prettyobj):
         #new_cov = np.zeros(len(self.years))
         for name, prog in self.programs.iteritems():
             cov = prog.get_cov(unrestr=unrestr)
-            new_cov = np.zeros(len(self.years))
-            new_cov[1] = cov[1]
-            for i in range(2, len(self.years)):
-                if cov[i] - new_cov[i-1] > prog.max_inc:
-                   new_cov[i] = new_cov[i-1] +  prog.max_inc
-                elif cov[i] - new_cov[i-1] < (-1)* prog.max_dec:
-                    new_cov[i] = new_cov[i-1] - prog.max_dec
-                else:
-                    new_cov[i] = cov[i]
-            if not ref and prog.reference:
-                cov -= cov[0] # baseline year is reference cov, subtracted from every year
-            covs[name] = new_cov
+            if self.ramping:
+                new_cov = np.zeros(len(self.years))
+                new_cov[1] = cov[1]
+                for i in range(2, len(self.years)):
+                    if cov[i] - new_cov[i-1] > prog.max_inc:
+                       new_cov[i] = new_cov[i-1] +  prog.max_inc
+                    elif cov[i] - new_cov[i-1] < (-1)* prog.max_dec:
+                        new_cov[i] = new_cov[i-1] - prog.max_dec
+                    else:
+                        new_cov[i] = cov[i]
+               # if not ref and prog.reference:
+                    #cov -= cov[0] # baseline year is reference cov, subtracted from every year
+                covs[name] = new_cov
+            else:
+                if not ref and prog.reference:
+                    cov -= cov[0] # baseline year is reference cov, subtracted from every year
+                covs[name] = cov
         return covs
     
     def get_freefunds(self):
@@ -129,87 +137,6 @@ class ScenResult(sc.prettyobj):
         figs = make_plots(self, toplot=toplot)
         return figs
     
-def reduce(results, quantiles=None, use_mean=False, bounds=None): # need to removal once finalized
-        '''
-        Combine multiple sims into a single sim statistically: by default, use
-        the median value and the 10th and 90th percentiles for the lower and upper
-        bounds. If use_mean=True, then use the mean and ±2 standard deviations
-        for lower and upper bounds.
-
-        Args:
-            quantiles (dict): the quantiles to use, e.g. [0.1, 0.9] or {'low : '0.1, 'high' : 0.9}
-            use_mean (bool): whether to use the mean instead of the median
-            bounds (float): if use_mean=True, the multiplier on the standard deviation for upper and lower bounds (default 2)
-            output (bool): whether to return the "reduced" sim (in any case, modify the multirun in-place)
-
-        '''
-
-        if use_mean:
-            if bounds is None:
-                bounds = 2
-        else:
-            if quantiles is None:
-                quantiles = {'low':0.1, 'high':0.9}
-            if not isinstance(quantiles, dict):
-                try:
-                    quantiles = {'low':float(quantiles[0]), 'high':float(quantiles[1])}
-                except Exception as E:
-                    errormsg = f'Could not figure out how to convert {quantiles} into a quantiles object: must be a dict with keys low, high or a 2-element array ({str(E)})'
-                    raise ValueError(errormsg)
-
-        # Store information on the sims
-        outcomes = default_trackers()
-        out = sc.odict()
-        years = results[0].years
-        
-        #n_runs = len(self)
-        #outputs = self.get_output()
-        #reduced_res = sc.dcp(outputs[0])
-        #reduced_res.metadata = dict(multi_run=True, n_runs=n_runs, quantiles=quantiles, use_mean=use_mean, bounds=bounds) # Store how this was parallelized
-        
-        # perform the statistcal calculations
-        for r, res in enumerate(results):
-            if res.name != 'Excess budget':
-                out[res] = res.get_outputs(outcomes, seq=True, pretty=True)
-                raw = {}
-                for reskey in outcomes:
-                    raw[reskey] = np.zeros(len(outcomes), len(years))
-                    vals = res[reskey].values
-                    raw[reskey][:,r] = vals
-                for reskeys in outcomes:
-                    axis = 1
-                    output = out[res]
-                    if use_mean:
-                        r_mean = np.mean(raw[reskey], axis=axis)
-                        r_std =  np.std(raw[reskey], axis=axis)
-                        output[reskey].values[:] = r_mean
-                        output[reskey].low = r_mean - bounds * r_std
-                        output[reskey].high = r_mean + bounds * r_std
-                    else:
-                        output[reskey].values[:] = np.quantile(raw[reskey], q=0.5, axis=axis)
-                        output[reskey].low = np.quantile(raw[reskey], q=quantiles['low'], axis=axis)
-                        output[reskey].high = np.quantile(raw[reskey], q=quantiles['high'], axis=axis)
-        return 
-            
-def mean(bounds=None, **kwargs):
-    '''
-    Alias for reduce(use_mean=True). See reduce() for full description.
-
-    Args:
-        bounds (float): multiplier on the standard deviation for the upper and lower bounds (default, 2)
-        kwargs (dict): passed to reduce()
-    '''
-    return reduce(use_mean=True, bounds=bounds, **kwargs)
-
-def median(quantiles=None, **kwargs):
-    '''
-    Alias for reduce(use_mean=False). See reduce() for full description.
-
-    Args:
-        quantiles (list or dict): upper and lower quantiles (default, 0.1 and 0.9)
-        kwargs (dict): passed to reduce()
-    '''
-    return reduce(use_mean=False, quantiles=quantiles, **kwargs)
 
 def write_results(results, projname=None, filename=None, folder=None):
     from .version import version
@@ -244,30 +171,7 @@ def write_results(results, projname=None, filename=None, folder=None):
     allformats.append(formatdata)
     
     ### Outcomes sheet
-    headers = [['Scenario', 'Outcome'] + years + ['Cumulative']]
-    '''names=[]
-    for r, res in enumerate(results):
-        this_name=res.name
-        names.append(this_name)
-    main_names = []
-    for nm in names:
-        if nm not in main_names:
-            main_names.append(nm)
-    n_runs = int(len(names) / len(main_names))
-    
-    raw = {nm: {out: np.zeros((n_runs, len(years))) for out in outcomes} for nm in main_names}
-    #print(raw)
-    out={} 
-    for r, res in enumerate(results):
-        for name in main_names:
-            out[name] = res.get_outputs(outcomes, seq=True, pretty=True)
-            print(out)
-            for nm_key in main_names:
-                   for out_key in outcomes:
-                    vals = out[nm_key][out_key]
-                    raw[nm_key][out_key][:] = vals
-            print(raw)'''
-                
+    headers = [['Scenario', 'Outcome'] + years + ['Cumulative']] 
     for r, res in enumerate(results):
         if res.name != 'Excess budget':
             out = res.get_outputs(outcomes, seq=True, pretty=True)

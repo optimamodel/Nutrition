@@ -11,7 +11,7 @@ from nutrition.scenarios import Scen
 import sciris as sc
 
 
-def parallel_optim(region, path=None):
+def parallel_optim(region, path=None, ramping=True):
     p = Project('Cameroon')
 
     p.load_data(inputspath=path + region + '_input.xlsx', name=region)
@@ -34,13 +34,14 @@ def parallel_optim(region, path=None):
               }
 
     p.add_optims(Optim(**kwargs))
-    results = p.run_optim(maxiter=50, swarmsize=0, maxtime=500, parallel=False)
+    p.run_optim(maxiter=50, swarmsize=0, maxtime=500, parallel=False, ramping=ramping)
 
     return (p)
 
 
 input_path = 'Databooks/new_format/'
 output_path = 'Outputs/'
+ramping = True
 
 #region_list = ['ADAMAOUA', 'CENTRE', 'DOUALA', 'EAST', 'FAR NORTH', 'LITTORAL', 'NORTH',
 #               'NORTHWEST', 'WEST', 'SOUTH', 'SOUTHWEST', 'YAOUNDE']
@@ -48,7 +49,7 @@ region_list = ['DOUALA', 'WEST']
 
 if __name__ == '__main__':
 
-    run_optim = partial(parallel_optim, path=input_path)
+    run_optim = partial(parallel_optim, path=input_path, ramping=ramping)
     results = []
     proj_list = run_parallel(run_optim, region_list, num_procs=3)
     # len(region_list))

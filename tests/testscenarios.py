@@ -92,7 +92,7 @@ if __name__ == '__main__':
     p.add_scens(scen_list)
 
     #p.run_scens() # make sure to set resampling=False
-    p.multirun_scens()
+    p.multirun_scens(ramping=True)
     #p.mean()
 #p.run_scens()
 if doplot:
