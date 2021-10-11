@@ -82,8 +82,8 @@ class ScenResult(sc.prettyobj):
             cov = prog.get_cov(unrestr=unrestr)
             if self.ramping:
                 new_cov = np.zeros(len(self.years))
-                new_cov[1] = cov[1]
-                for i in range(2, len(self.years)):
+                new_cov[0] = cov[0]
+                for i in range(1, len(self.years)):
                     if cov[i] - new_cov[i-1] > prog.max_inc:
                        new_cov[i] = new_cov[i-1] +  prog.max_inc
                     elif cov[i] - new_cov[i-1] < (-1)* prog.max_dec:

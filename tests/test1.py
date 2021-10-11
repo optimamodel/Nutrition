@@ -10,7 +10,7 @@ from nutrition import utils
 from nutrition.scenarios import Scen
 import sciris as sc
 
-
+doplot = True
 def parallel_optim(region, path=None, ramping=True):
     p = Project('Cameroon')
 
@@ -63,3 +63,5 @@ if __name__ == '__main__':
                 results.append(scenres)
 
     write_results(results, filename=output_path + 'test1.xlsx')
+    if doplot:
+        p.plot(optim=True)
