@@ -957,15 +957,18 @@ class Dataset(object):
             raise Exception('Error in databook: %s'%str(E))
         try:
             if self.resampling:
-                self.default_params = DefaultParamsResampled(default_data, input_data) # for random sampling
+                #self.default_params = DefaultParamsResampled(default_data, input_data) # for random sampling
+                random_params = DefaultParamsResampled(default_data, input_data) # for random sampling
+                self.default_params = random_params
             else:
                 self.default_params = DefaultParams(default_data, input_data) # for point estimates 
             self.default_params.compute_risks(self.demo_data)
             self.prog_data = ProgData(input_data, self.default_params, self.calcscache)
+            print(self.default_params)
         except Exception as E:
             raise Exception('Error in program data: %s'%str(E))
         try:
-            self.pops = populations.set_pops(self.demo_data, self.default_params)
+            self.pops = populations.set_pops(self.demo_data, self.default_params)            
         except Exception as E:
             raise Exception('Error in creating populations, check data and defaults books: %s'%str(E))
         self.prog_info = programs.ProgramInfo(self.prog_data)
@@ -977,6 +980,16 @@ class Dataset(object):
         ''' WARNING, hacky function to get program names '''
         names = self.prog_data.base_prog_set
         return names
+    
+    def all_datasets(self):
+        for default in self.default_params:
+            yield default
+                        
+    def new_sample(self):
+        new = sc.dcp(self)
+        for default in new.all_datasets():
+            default.sample()
+        return new
 
 class UncertaintyParas(object):
     def __init__(self, default_data, input_data):

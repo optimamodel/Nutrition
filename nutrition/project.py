@@ -139,6 +139,10 @@ class Project(object):
         self.spreadsheets[name] = sc.Spreadsheet(filename=inputspath)
         return self.inputsheet(name)
     
+    def sample(self) -> None:
+        for k, dataset in self.datasets.items():
+            self.datasets[k] = dataset.sample()
+    
         
     def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True, validate=True, resampling=True):
         '''Load the data, which can mean one of two things: read in the spreadsheets, and/or use these data to make a model '''
@@ -157,6 +161,7 @@ class Project(object):
         dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self, resampling=resampling)
         self.datasets[name] = dataset
         dataset.name = name
+        #print(self.datasets.values())
         self.add_model(name) # add model associated with the dataset
     
         # Do validation to insure that Dataset and Model objects are loaded in for each of the spreadsheets that are
@@ -356,6 +361,7 @@ class Project(object):
             defaults = make_default_scen(name, model, 'coverage', basename)
             self.add_scens(defaults)
         self.modified = sc.now()
+        
         return model
 
     def add_scens(self, scens, overwrite=False):
@@ -493,7 +499,7 @@ class Project(object):
         return None
     
     
-    def multirun_scens(self, scens=None, n_runs=1, quantiles=None, use_mean=False, bounds=None, ramping=True):
+    def multirun_scens(self, scens=None, n_runs=3, quantiles=None, use_mean=False, bounds=None, ramping=True):
         if use_mean:
             if bounds is None:
                 bounds = 2
