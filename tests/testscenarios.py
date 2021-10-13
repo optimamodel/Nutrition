@@ -10,7 +10,8 @@ sys.setrecursionlimit(x)
 doplot = False
 resampling = True
 ramping = True
-sample_size = 10
+n_runs = 5
+sample_size = n_runs
 
 # load in data to create model
 """" If the model is run for a single run using 'p.run_scens()' then set resampling=False
@@ -94,7 +95,7 @@ if __name__ == '__main__':
     p.add_scens(scen_list)
 
     #p.run_scens() # make sure to set resampling=False
-    p.multirun_scens(ramping=ramping)
+    p.multirun_scens(n_runs=n_runs, ramping=ramping)
     #p.mean()
 #p.run_scens()
 if doplot:

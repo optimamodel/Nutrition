@@ -521,7 +521,7 @@ class Project(object):
         return None
     
     
-    def multirun_scens(self, scens=None, n_runs=10, quantiles=None, use_mean=False, bounds=None, ramping=True):
+    def multirun_scens(self, scens=None, n_runs=2, quantiles=None, use_mean=False, bounds=None, ramping=True):
         if use_mean:
             if bounds is None:
                 bounds = 2
@@ -537,6 +537,7 @@ class Project(object):
         results = []
         years = self.ss.years
         outcomes = default_trackers()
+        esti = ['point', 'low', 'high']
         if scens is not None:
             self.add_scens(scens)
         for scen in self.scens.values():
@@ -544,18 +545,8 @@ class Project(object):
                 if (scen.model_name is None) or (scen.model_name not in self.datasets.keys()):
                     raise Exception('Could not find valid dataset for %s.  Edit the scenario and change the dataset' % scen.name)
                 output = []
-                prog_rows = scen.prog_set # take the program list for each scenario
-                scen_name = scen.name
-                esti = ['point', 'low', 'high']
-                # Outcomes through default tracker
                 raw = {o: {n: np.zeros(len(years)) for n in range(n_runs)} for o in outcomes}
-                reduce = {o: {es: np.zeros(len(years)) for es in esti} for o in outcomes}
-                # for spends (Budget)
-                raw_spend = {k: {n: np.zeros(len(years)) for n in range(n_runs)} for k in prog_rows}
-                reduce_spend = {k: {es: np.zeros(len(years)) for es in esti} for k in prog_rows}
-                # for spends (Coverage)
-                raw_cov = {k: {n: np.zeros(len(years)) for n in range(n_runs)} for k in prog_rows}
-                reduce_cov = {k: {es: np.zeros(len(years)) for es in esti} for k in prog_rows}
+                reduce = {scen.name: {o: {es: np.zeros(len(years)) for es in esti} for o in outcomes}}
                 # validate to compare n_runs and the sample size
                 sample_size = len(self.model(scen.model_name))
                 if n_runs <= sample_size:
@@ -566,59 +557,31 @@ class Project(object):
                     model = random.choice(self.model(scen.model_name))
                     res = run_scen(scen, model, ramping=ramping)
                     out = res.get_outputs(outcomes, seq=True, pretty=True)
-                    spend = res.get_allocs(ref=True)
-                    cov = res.get_covs(unrestr=False)
                     output.append(out)
                     for out_key in outcomes:
                         vals = out[out_key]
                         raw[out_key][i] = vals
                         #print(raw)
-                    for prog_key in prog_rows:
-                        spend_vals = spend[prog_key]
-                        cov_vals = cov[prog_key]
-                        raw_spend[prog_key][i] = spend_vals
-                        raw_cov[prog_key][i] = cov_vals
-                    # for default tracker outcomes
+                    #for default tracker outcomes
                     for out_key in outcomes:
                         axis = 0
                         if use_mean:
                             r_mean = np.mean(list(raw[out_key].values()), axis=axis)
                             r_std =  np.std(list(raw[out_key].values()), axis=axis) 
-                            reduce[out_key]['point'] = r_mean
-                            reduce[out_key]['low'] = r_mean - bounds * r_std
-                            reduce[out_key]['high'] = r_mean + bounds * r_std
+                            reduce[scen.name][out_key]['point'] = r_mean
+                            reduce[scen.name][out_key]['low'] = r_mean - bounds * r_std
+                            reduce[scen.name][out_key]['high'] = r_mean + bounds * r_std
                         else:
-                            reduce[out_key]['point'] = np.quantile(list(raw[out_key].values()), q=0.5, axis=axis)
-                            reduce[out_key]['low'] = np.quantile(list(raw[out_key].values()), q=quantiles['low'], axis=axis)
-                            reduce[out_key]['high'] = np.quantile(list(raw[out_key].values()), q=quantiles['high'], axis=axis)
-                    # for spends (Budget)
-                    for prog_key in prog_rows:
-                        axis = 0
-                        if use_mean:
-                            r_mean = np.mean(list(raw_spend[prog_key].values()), axis=axis)
-                            r_std =  np.std(list(raw_spend[prog_key].values()), axis=axis) 
-                            reduce_spend[prog_key]['point'] = r_mean
-                            reduce_spend[prog_key]['low'] = r_mean - bounds * r_std
-                            reduce_spend[prog_key]['high'] = r_mean + bounds * r_std
-                        else:
-                            reduce_spend[prog_key]['point'] = np.quantile(list(raw_spend[prog_key].values()), q=0.5, axis=axis)
-                            reduce_spend[prog_key]['low'] = np.quantile(list(raw_spend[prog_key].values()), q=quantiles['low'], axis=axis)
-                            reduce_spend[prog_key]['high'] = np.quantile(list(raw_spend[prog_key].values()), q=quantiles['high'], axis=axis)
-                    # for spends (Coverage)
-                    for prog_key in prog_rows:
-                        axis = 0
-                        if use_mean:
-                            r_mean = np.mean(list(raw_cov[prog_key].values()), axis=axis)
-                            r_std =  np.std(list(raw_cov[prog_key].values()), axis=axis) 
-                            reduce_cov[prog_key]['point'] = r_mean
-                            reduce_cov[prog_key]['low'] = r_mean - bounds * r_std
-                            reduce_cov[prog_key]['high'] = r_mean + bounds * r_std
-                        else:
-                            reduce_cov[prog_key]['point'] = np.quantile(list(raw_cov[prog_key].values()), q=0.5, axis=axis)
-                            reduce_cov[prog_key]['low'] = np.quantile(list(raw_cov[prog_key].values()), q=quantiles['low'], axis=axis)
-                            reduce_cov[prog_key]['high'] = np.quantile(list(raw_cov[prog_key].values()), q=quantiles['high'], axis=axis)   
+                            reduce[scen.name][out_key]['point'] = np.quantile(list(raw[out_key].values()), q=0.5, axis=axis)
+                            reduce[scen.name][out_key]['low'] = np.quantile(list(raw[out_key].values()), q=quantiles['low'], axis=axis)
+                            reduce[scen.name][out_key]['high'] = np.quantile(list(raw[out_key].values()), q=quantiles['high'], axis=axis)
+                            
+                       
                     results.append(res)
-                print(reduce)
+            #print(reduce)
+            df = pd.DataFrame(reduce)
+            df.to_excel('reduce.xlsx')        
+        
         self.add_result(results, name='scens')
         return None
         

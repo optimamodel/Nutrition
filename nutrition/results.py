@@ -156,6 +156,7 @@ def write_results(results, projname=None, filename=None, folder=None):
     alldata = []
     allformats = []
     years = results[0].years
+    #print(results[1])
     nullrow = [''] * len(years)
     ### Version sheet
     data = [['Version', 'Date'], [version, date.today()]]
@@ -175,6 +176,7 @@ def write_results(results, projname=None, filename=None, folder=None):
     for r, res in enumerate(results):
         if res.name != 'Excess budget':
             out = res.get_outputs(outcomes, seq=True, pretty=True)
+            #print(out)
             for o, outcome in enumerate(rows):
                 name = [res.name] if o == 0 else ['']
                 thisout = out[o]
