@@ -16,12 +16,13 @@ input_path = 'Databooks/new_format/'
 output_path = 'Outputs/'
 region_list = ['DOUALA', 'WEST']
 ramping = True
+sample_size = 10
 
 """" If the model is run for a single run using 'p.run_scens()' then set resampling=False
     to make sure that the default point estimators are used from 
     the databook with out considering any randomness!"""
 p1 = nu.Project('eg')
-p1.load_data('demo', 'testing', name='eg', resampling=True)
+p1.load_data('demo', 'testing', name='eg', resampling=True, sample_size=sample_size)
 
 """Define non-optimization scenarios"""
 
