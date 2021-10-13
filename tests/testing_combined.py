@@ -16,7 +16,8 @@ input_path = 'Databooks/new_format/'
 output_path = 'Outputs/'
 region_list = ['DOUALA', 'WEST']
 ramping = True
-sample_size = 10
+n_runs = 5
+sample_size = n_runs
 
 """" If the model is run for a single run using 'p.run_scens()' then set resampling=False
     to make sure that the default point estimators are used from 
@@ -73,7 +74,7 @@ def parallel_optim(region, path=None, ramping=True):
 scen_list = nu.make_scens([kwargs1, kwargs2, kwargs3])
 p1.add_scens(scen_list)
 #p1.run_scens(ramping=ramping) # make sure to set resampling=False
-p1.multirun_scens(ramping=ramping)
+p1.multirun_scens(n_runs=n_runs, ramping=ramping)
 p1.write_results(filename=output_path + 'non_optimized.xlsx')
 
 """run optimization scenarios"""
