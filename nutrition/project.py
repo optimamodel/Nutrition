@@ -142,7 +142,7 @@ class Project(object):
         return self.inputsheet(name)
     
            
-    def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True, validate=True, resampling=True, sample_size=None):
+    def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True, validate=True, resampling=True):
         '''Load the data, which can mean one of two things: read in the spreadsheets, and/or use these data to make a model '''
         
         # Generate name odict key for Spreadsheet, Dataset, and Model odicts.
@@ -156,18 +156,11 @@ class Project(object):
                 self.storeinputs(inputspath=inputspath, country=country, region=region, name=name)
         
         # Optionally (but almost always) use these to make a model (do not do if blank sheets).
-        if resampling:
-            data=[]
-            for k in range(sample_size):
-                dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self, resampling=resampling)
-                data.append(dataset)
-            
-            self.datasets[name] = data
-        else:
-            dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self, resampling=resampling)
-            self.datasets[name] = dataset
+        
+        dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self, resampling=resampling)
+        self.datasets[name] = dataset
         dataset.name = name
-        self.add_model(name, resampling=resampling) # add model associated with the dataset or datasets
+        self.add_model(name) # add model associated with the dataset or datasets
     
         # Do validation to insure that Dataset and Model objects are loaded in for each of the spreadsheets that are
         # in the project.
@@ -266,27 +259,21 @@ class Project(object):
         except:
             return sc.printv('Warning, input sheet "%s" set not found!' %key, 1, verbose)
 
-    def dataset(self, key=None, verbose=2, resampling=True):
+    def dataset(self, key=None, verbose=2):
         ''' Shortcut for getting the latest model, i.e. self.datasets[-1] '''
         if key is None:
             key = -1
         try:
-            if resampling:
-                return self.datasets.values()[0]
-            else:
-                return self.datasets[key]
+            return self.datasets[key]
         except:
             return sc.printv('Warning, dataset "%s" set not found!' %key, 1, verbose) # Returns None
         
-    def model(self, key=None, verbose=2, resampling=True):
+    def model(self, key=None, verbose=2):
         ''' Shortcut for getting the latest model, i.e. self.datasets[-1] '''
         if key is None:
             key = -1
         try:
-            if resampling:
-                return self.models.values()[0]
-            else:
-                return self.models[key]
+            return self.models[key]
         except:
             return sc.printv('Warning, model "%s" set not found!' %key, 1, verbose) # Returns None
     
@@ -349,29 +336,18 @@ class Project(object):
         self.add_geos(geos)
         return geos
 
-    def add_model(self, name=None, resampling=True):
+    def add_model(self, name=None):
         """ Adds a model to the self.models odict.
         A new model should only be instantiated if new input data is uploaded to the Project.
         For the same input data, one model instance is used for all scenarios.
         """
-        if resampling:
-            sample_models = []
-            for dataset in self.dataset(name, resampling=resampling):
-                pops = dataset.pops
-                prog_info = dataset.prog_info
-                t = dataset.t
-                demo_data = dataset.demo_data
-                model = Model(pops, prog_info, demo_data, t)
-                sample_models.append(model)
-            self.add(name=name, item=sample_models, what='model')
-        else:
-            dataset = self.dataset(name, resampling=resampling)
-            pops = dataset.pops
-            prog_info = dataset.prog_info
-            t = dataset.t
-            demo_data = dataset.demo_data
-            model = Model(pops, prog_info, demo_data, t)
-            self.add(name=name, item=model, what='model')
+        dataset = self.dataset(name)
+        pops = dataset.pops
+        prog_info = dataset.prog_info
+        t = dataset.t
+        demo_data = dataset.demo_data
+        model = Model(pops, prog_info, demo_data, t)
+        self.add(name=name, item=model, what='model')
         # Loop over all Scens and create a new default scenario for any that depend on the dataset which has been reloaded.
         # for scen_name in self.scens.keys():  # Loop over all Scen keys in the project
         #     if self.scens[scen_name].model_name == name:
@@ -548,16 +524,23 @@ class Project(object):
                 raw = {o: {n: np.zeros(len(years)) for n in range(n_runs)} for o in outcomes}
                 reduce = {scen.name: {o: {es: np.zeros(len(years)) for es in esti} for o in outcomes}}
                 # validate to compare n_runs and the sample size
-                sample_size = len(self.model(scen.model_name))
-                if n_runs <= sample_size:
-                    n_runs = n_runs
-                else:
-                    n_runs = sample_size
+                
                 for i in range(n_runs):
-                    model = random.choice(self.model(scen.model_name))
+                    if i==0:
+                       model = self.model(scen.model_name)
+                    else:
+                    #model = self.model(scen.model_name)
+                    #res = run_scen(scen, model, ramping=ramping)
+                    #out = res.get_outputs(outcomes, seq=True, pretty=True)
+                    #output.append(out)
+                        dataset = Dataset(country=None, region=None, name=None, fromfile=False, doload=True, project=self, resampling=True)
+                        pops = dataset.pops
+                        prog_info = dataset.prog_info
+                        t = dataset.t
+                        sampled_data = dataset.demo_data
+                        model = Model(pops, prog_info, sampled_data , t)
                     res = run_scen(scen, model, ramping=ramping)
                     out = res.get_outputs(outcomes, seq=True, pretty=True)
-                    output.append(out)
                     for out_key in outcomes:
                         vals = out[out_key]
                         raw[out_key][i] = vals
@@ -601,7 +584,7 @@ class Project(object):
         if (optim.model_name is None) or (optim.model_name not in self.datasets.keys()):
             raise Exception(
                 'Could not find valid dataset for %s.  Edit the scenario and change the dataset' % optim.name)
-        model = sc.dcp(self.model(optim.model_name, resampling=False))
+        model = sc.dcp(self.model(optim.model_name))
         model.setup(optim, setcovs=False)
         model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
         results += optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel, ramping=ramping)

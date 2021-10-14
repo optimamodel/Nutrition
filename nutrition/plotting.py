@@ -84,9 +84,12 @@ def plot_prevs(all_res):
                 f = scipy.interpolate.PchipInterpolator(years, out, extrapolate=False)
                 newx = np.linspace(years[0], years[-1], len(years)*10)
                 out = f(newx) * 100
+                mean = np.mean(out, axis=0)
+                standard_dev = np.std(out, axis=0)
                 thismax = max(out)
                 if thismax > ymax: ymax = thismax
                 line, = ax.plot(newx, out, color=colors[r])
+                ax.fill_between(newx, mean - 0.5, mean + 0.5, alpha = 0.2)
                 lines.append(line)
                 leglabels.append(res.name)
         # formatting
@@ -101,7 +104,7 @@ def plot_prevs(all_res):
 
 def plot_outputs(all_res, seq, name):
     outcomes = utils.default_trackers(prev=False, rate=False)
-    width = 0.15
+    width = 0.35
     figs = sc.odict()
     
     baseres = all_res[0]
@@ -129,7 +132,7 @@ def plot_outputs(all_res, seq, name):
                 if thimax > ymax: ymax = thimax
                 change = round_elements([utils.get_change(base, out) for out,base in zip(output, baseout)], dec=1)
                 perchange.append(change)
-                bar = ax.bar(xpos, output, width=width, color=colors[r])
+                bar = ax.bar(xpos, output, width=width, color=colors[r], yerr=output*0.025)
                 bars.append(bar)
         if seq:
             ax.set_xlabel('Years')
@@ -291,7 +294,7 @@ def plot_annu_alloc(results, optim, geo):
         for i, spend in enumerate(avspend):
             if any(spend) > 0:    # only want to plot prog if spending is non-zero (solves legend issues)
                 leglabs.append(progset[i])
-                bar = ax.bar(x, spend, width, bottom, color=colors[i])
+                bar = ax.bar(x, spend, width, bottom, color=colors[i], yerr=spend*0.08)
                 bars.append(bar)
                 bottom += spend
         ymax = max(bottom)
@@ -368,6 +371,7 @@ def plot_clustered_annu_alloc(results, optim, geo):
                 alloc = res.get_allocs(ref=refprogs) # slightly inefficient to do this for every program
                 try:
                     progav = alloc[prog][k] # extracting the spend for each year for each program
+                    
                 except: # program not in scenario program set
                     progav = 0
                 thisprog[i] = progav
@@ -386,7 +390,7 @@ def plot_clustered_annu_alloc(results, optim, geo):
         for i, spend in enumerate(avspend):
             if any(spend) > 0:    # only want to plot prog if spending is non-zero (solves legend issues)
                 leglabs.append(progset[i])
-                bar = ax.bar(x+k, spend, width, bottom, color=colors[i]) # bars for each year in iteration
+                bar = ax.bar(x+k, spend, width, bottom, color=colors[i], yerr=spend*0.08) # bars for each year in iteration
                 bars.append(bar)
                 bottom += spend
         ymax = max(bottom)
