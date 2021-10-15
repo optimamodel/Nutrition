@@ -271,7 +271,7 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
                 out = []
                 for measure in list(reduced_results[res].keys()):
                     out.append(reduced_results[res][measure][esti])
-                    # print(out)
+                    #print(out)
                 for o, outcome in enumerate(rows):
                     name = [res] if o == 0 else ['']
                     thisout = out[o]

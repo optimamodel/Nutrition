@@ -593,7 +593,7 @@ class Project(object):
         print('Not implemented')
 
     def plot(self, key=-1, toplot=None, optim=False, geo=False):
-        figs = make_plots(self.result(key), toplot=toplot, optim=optim, geo=geo)
+        figs = make_plots(self.result(key), self.reduced_results, toplot=toplot, optim=optim, geo=geo)
         return figs
 
     def get_costeff(self, resultname=None):
