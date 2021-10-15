@@ -368,13 +368,14 @@ def plot_clustered_annu_alloc(results, optim, geo):
         for prog in progset:
             thisprog = np.zeros(len(results))
             for i, res in enumerate(results):
-                alloc = res.get_allocs(ref=refprogs) # slightly inefficient to do this for every program
-                try:
-                    progav = alloc[prog][k] # extracting the spend for each year for each program
-                    
-                except: # program not in scenario program set
-                    progav = 0
-                thisprog[i] = progav
+                if 'resampled' not in res.name:
+                    alloc = res.get_allocs(ref=refprogs) # slightly inefficient to do this for every program
+                    try:
+                        progav = alloc[prog][k] # extracting the spend for each year for each program
+                        
+                    except: # program not in scenario program set
+                        progav = 0
+                    thisprog[i] = progav
             avspend.append(thisprog)
     
     # Scale
@@ -385,7 +386,7 @@ def plot_clustered_annu_alloc(results, optim, geo):
         avspend = np.divide(avspend, scale)
     # Make bar plots
         bars = []
-        xlabs = [res.mult if res.mult is not None else res.name for res in results]
+        xlabs = [res.mult if res.mult is not None else res.name for res in results if 'resampled' not in res.name]
         bottom = np.zeros(len(results))
         for i, spend in enumerate(avspend):
             if any(spend) > 0:    # only want to plot prog if spending is non-zero (solves legend issues)
