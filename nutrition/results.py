@@ -185,7 +185,7 @@ def reduce(results, n_runs, use_mean=False, quantiles=None, bounds=None, output=
     return reduce
 
 
-def write_results(results, reduced_results, projname=None, filename=None, folder=None, full_outcomes=True):
+def write_results(results, reduced_results, projname=None, filename=None, folder=None, full_outcomes=False):
     from .version import version
     from datetime import date
     """ Writes outputs and program allocations to an xlsx book.
