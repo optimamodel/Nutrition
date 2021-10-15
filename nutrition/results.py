@@ -180,23 +180,28 @@ def reduce(results, n_runs, use_mean=False, quantiles=None, bounds=None, output=
                     reduce[results[i * n_runs].name][out_key]['point'] = np.quantile(list(raw[out_key].values()), q=0.5, axis=axis)
                     reduce[results[i * n_runs].name][out_key]['low'] = np.quantile(list(raw[out_key].values()), q=quantiles['low'], axis=axis)
                     reduce[results[i * n_runs].name][out_key]['high'] = np.quantile(list(raw[out_key].values()), q=quantiles['high'], axis=axis)
-    df = pd.DataFrame(reduce)
-    df.to_excel('reduce_test.xlsx')
+    #df = pd.DataFrame(reduce)
+    #df.to_excel('reduce_test.xlsx')
     return reduce
 
 
-def write_results(results, reduced_results, projname=None, filename=None, folder=None, full_outcomes=False):
+def write_results(results, reduced_results, projname=None, filename=None, folder=None, full_outcomes=True):
     from .version import version
     from datetime import date
     """ Writes outputs and program allocations to an xlsx book.
     For each scenario, book will include:
         - sheet called 'outcomes' which contains all outputs over time
         - sheet called 'budget and coverage' which contains all program cost and coverages over time """
+    if reduced_results:
+        filepath = write_reduced_results(results, reduced_results, projname=projname, filename=filename, folder=folder)
+        if not full_outcomes:
+            return filepath
     if projname is None: projname = ''
     outcomes = default_trackers()
     labs = pretty_labels()
     rows = [labs[out] for out in outcomes]
     if filename is None: filename = 'outputs.xlsx'
+    filename = 'full_' + filename
     filepath = sc.makefilepath(filename=filename, folder=folder, ext='xlsx', default='%s outputs.xlsx' % projname)
     outputs = []
     sheetnames = ['Version', 'Outcomes', 'Budget & coverage']
@@ -217,9 +222,9 @@ def write_results(results, reduced_results, projname=None, filename=None, folder
     formatdata[:, 0] = 'bold'  # Left side bold
     formatdata[0, :] = 'header'  # Top with green header
     allformats.append(formatdata)
-    
+
     ### Outcomes sheet
-    headers = [['Scenario', 'Outcome'] + years + ['Cumulative']] 
+    headers = [['Scenario', 'Outcome'] + years + ['Cumulative']]
     for r, res in enumerate(results):
         if res.name != 'Excess budget':
             out = res.get_outputs(outcomes, seq=True, pretty=True)
@@ -237,7 +242,7 @@ def write_results(results, reduced_results, projname=None, filename=None, folder
             outputs.append(nullrow)
     data = headers + outputs
     alldata.append(data)
-    
+
     # Formatting
     nrows = len(data)
     ncols = len(data[0])
@@ -255,7 +260,7 @@ def write_results(results, reduced_results, projname=None, filename=None, folder
         if res.name != 'Excess budget':
             rows = res.programs.keys()
             spend = res.get_allocs(ref=True)
-            cov = res.get_covs(unrestr=False) 
+            cov = res.get_covs(unrestr=False)
             #print(spend)
             # collate coverages first
             for r, prog in enumerate(rows):
@@ -270,6 +275,120 @@ def write_results(results, reduced_results, projname=None, filename=None, folder
                 outputs.append([''] + [prog] + ['Budget'] + [costcov] + list(thisspend))
             outputs.append(nullrow)
         else:
+            spend = res.get_allocs(ref=True)
+            thisspend = spend['Excess budget not allocated']
+            outputs.append(['Excess budget not allocated'] + ['N/A'] + ['Budget'] + ['N/A'] + list(thisspend))
+            outputs.append(nullrow)
+    data = headers + outputs
+    alldata.append(data)
+
+    # Formatting
+    nrows = len(data)
+    ncols = len(data[0])
+    formatdata = np.zeros((nrows, ncols), dtype=object)
+    formatdata[:, :] = 'plain'  # Format data as plain
+    formatdata[:, 0] = 'bold'  # Left side bold
+    formatdata[0, :] = 'header'  # Top with green header
+    allformats.append(formatdata)
+
+    formats = {
+        'header': {'bold': True, 'bg_color': '#3c7d3e', 'color': '#ffffff'},
+        'plain': {},
+        'bold': {'bold': True}}
+    sc.savespreadsheet(filename=filename, data=alldata, sheetnames=sheetnames, formats=formats, formatdata=allformats)
+    return filepath
+
+
+def write_reduced_results(results, reduced_results, projname=None, filename=None, folder=None):
+    from .version import version
+    from datetime import date
+    """ Writes outputs and program allocations to an xlsx book.
+    For each scenario, book will include:
+        - sheet called 'outcomes' which contains all outputs over time
+        - sheet called 'budget and coverage' which contains all program cost and coverages over time """
+
+    if projname is None: projname = ''
+    estimate_labels = list(reduced_results[list(reduced_results.keys())[0]][list(reduced_results[list(reduced_results.keys())[0]].keys())[0]].keys())
+    outcomes = default_trackers()
+    labs = pretty_labels()
+    rows = [labs[out]for out in outcomes]
+    if filename is None: filename = 'outputs.xlsx'
+    filepath = sc.makefilepath(filename=filename, folder=folder, ext='xlsx', default='%s outputs.xlsx' % projname)
+    outputs = []
+    sheetnames = ['Version', 'Outcomes', 'Budget & coverage']
+    alldata = []
+    allformats = []
+    years = results[0].years
+    # print(results[1])
+    nullrow = [''] * len(years)
+    ### Version sheet
+    data = [['Version', 'Date'], [version, date.today()]]
+    alldata.append(data)
+
+    # Formatting
+    nrows = len(data)
+    ncols = len(data[0])
+    formatdata = np.zeros((nrows, ncols), dtype=object)
+    formatdata[:, :] = 'plain'  # Format data as plain
+    formatdata[:, 0] = 'bold'  # Left side bold
+    formatdata[0, :] = 'header'  # Top with green header
+    allformats.append(formatdata)
+
+    ### Outcomes sheet
+    headers = [['Scenario', 'Estimate', 'Outcome'] + years + ['Cumulative']]
+    for r, res in enumerate(reduced_results):
+        for esti in estimate_labels:
+            if res != 'Excess budget':
+                out = []
+                for measure in list(reduced_results[res].keys()):
+                    out.append(reduced_results[res][measure][esti])
+                    # print(out)
+                for o, outcome in enumerate(rows):
+                    name = [res] if o == 0 else ['']
+                    thisout = out[o]
+                    if 'prev' in outcome.lower():
+                        cumul = 'N/A'
+                    elif 'mortality' in outcome.lower():
+                        cumul = 'N/A'
+                    else:
+                        cumul = sum(thisout)
+                    outputs.append(name + [esti] + [outcome] + list(thisout) + [cumul])
+                outputs.append(nullrow)
+    data = headers + outputs
+    alldata.append(data)
+
+    # Formatting
+    nrows = len(data)
+    ncols = len(data[0])
+    formatdata = np.zeros((nrows, ncols), dtype=object)
+    formatdata[:, :] = 'plain'  # Format data as plain
+    formatdata[:, 0] = 'bold'  # Left side bold
+    formatdata[0, :] = 'header'  # Top with green header
+    allformats.append(formatdata)
+
+    ### Cost & coverage sheet
+    # this is grouped not by program, but by coverage and cost (within each scenario)
+    outputs = []
+    headers = [['Scenario', 'Program', 'Type', 'Cost-coverage type'] + years]
+    for r, res in enumerate(results):
+        if res.name != 'Excess budget' and '#' not in res.name:
+            rows = res.programs.keys()
+            spend = res.get_allocs(ref=True)
+            cov = res.get_covs(unrestr=False)
+            # print(spend)
+            # collate coverages first
+            for p, prog in enumerate(rows):
+                name = [res.name] if p == 0 else ['']
+                costcov = res.programs[prog].costtype
+                thiscov = cov[prog]
+                outputs.append(name + [prog] + ['Coverage'] + [costcov] + list(thiscov))
+            # collate spending second
+            for p, prog in enumerate(rows):
+                thisspend = spend[prog]
+                costcov = res.programs[prog].costtype
+                outputs.append([''] + [prog] + ['Budget'] + [costcov] + list(thisspend))
+            outputs.append(nullrow)
+        elif '#' not in res.name:
             spend = res.get_allocs(ref=True)
             thisspend = spend['Excess budget not allocated']
             outputs.append(['Excess budget not allocated'] + ['N/A'] + ['Budget'] + ['N/A'] + list(thisspend))
