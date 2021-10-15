@@ -186,8 +186,6 @@ def reduce(results, n_runs, use_mean=False, quantiles=None, bounds=None, output=
 
 
 def write_results(results, reduced_results, projname=None, filename=None, folder=None, full_outcomes=False):
-    from .version import version
-    from datetime import date
     """ Writes outputs and program allocations to an xlsx book.
     For each scenario, book will include:
         - sheet called 'outcomes' which contains all outputs over time
@@ -196,32 +194,11 @@ def write_results(results, reduced_results, projname=None, filename=None, folder
         filepath = write_reduced_results(results, reduced_results, projname=projname, filename=filename, folder=folder)
         if not full_outcomes:
             return filepath
-    if projname is None: projname = ''
-    outcomes = default_trackers()
-    labs = pretty_labels()
-    rows = [labs[out] for out in outcomes]
-    if filename is None: filename = 'outputs.xlsx'
-    filename = 'full_' + filename
-    filepath = sc.makefilepath(filename=filename, folder=folder, ext='xlsx', default='%s outputs.xlsx' % projname)
-    outputs = []
-    sheetnames = ['Version', 'Outcomes', 'Budget & coverage']
-    alldata = []
-    allformats = []
-    years = results[0].years
-    #print(results[1])
-    nullrow = [''] * len(years)
-    ### Version sheet
-    data = [['Version', 'Date'], [version, date.today()]]
-    alldata.append(data)
+        filename = 'full_' + filename
 
-    # Formatting
-    nrows = len(data)
-    ncols = len(data[0])
-    formatdata = np.zeros((nrows, ncols), dtype=object)
-    formatdata[:, :] = 'plain'  # Format data as plain
-    formatdata[:, 0] = 'bold'  # Left side bold
-    formatdata[0, :] = 'header'  # Top with green header
-    allformats.append(formatdata)
+
+    years = results[0].years
+    rows, filepath, outputs, outcomes, sheetnames, nullrow, allformats, alldata = _write_results_outcomes(projname, filename, folder, years)
 
     ### Outcomes sheet
     headers = [['Scenario', 'Outcome'] + years + ['Cumulative']]
@@ -243,19 +220,8 @@ def write_results(results, reduced_results, projname=None, filename=None, folder
     data = headers + outputs
     alldata.append(data)
 
-    # Formatting
-    nrows = len(data)
-    ncols = len(data[0])
-    formatdata = np.zeros((nrows, ncols), dtype=object)
-    formatdata[:, :] = 'plain'  # Format data as plain
-    formatdata[:, 0] = 'bold'  # Left side bold
-    formatdata[0, :] = 'header'  # Top with green header
-    allformats.append(formatdata)
+    nrows, ncols, formatdata, allformats, outputs, headers = _write_results_costcov(data, allformats, years)
 
-    ### Cost & coverage sheet
-    # this is grouped not by program, but by coverage and cost (within each scenario)
-    outputs = []
-    headers = [['Scenario', 'Program', 'Type', 'Cost-coverage type'] + years]
     for r, res in enumerate(results):
         if res.name != 'Excess budget':
             rows = res.programs.keys()
@@ -282,57 +248,20 @@ def write_results(results, reduced_results, projname=None, filename=None, folder
     data = headers + outputs
     alldata.append(data)
 
-    # Formatting
-    nrows = len(data)
-    ncols = len(data[0])
-    formatdata = np.zeros((nrows, ncols), dtype=object)
-    formatdata[:, :] = 'plain'  # Format data as plain
-    formatdata[:, 0] = 'bold'  # Left side bold
-    formatdata[0, :] = 'header'  # Top with green header
-    allformats.append(formatdata)
+    _write_results_finalise(data, allformats, filename, alldata, sheetnames)
 
-    formats = {
-        'header': {'bold': True, 'bg_color': '#3c7d3e', 'color': '#ffffff'},
-        'plain': {},
-        'bold': {'bold': True}}
-    sc.savespreadsheet(filename=filename, data=alldata, sheetnames=sheetnames, formats=formats, formatdata=allformats)
     return filepath
 
 
 def write_reduced_results(results, reduced_results, projname=None, filename=None, folder=None):
-    from .version import version
-    from datetime import date
     """ Writes outputs and program allocations to an xlsx book.
     For each scenario, book will include:
         - sheet called 'outcomes' which contains all outputs over time
         - sheet called 'budget and coverage' which contains all program cost and coverages over time """
 
-    if projname is None: projname = ''
     estimate_labels = list(reduced_results[list(reduced_results.keys())[0]][list(reduced_results[list(reduced_results.keys())[0]].keys())[0]].keys())
-    outcomes = default_trackers()
-    labs = pretty_labels()
-    rows = [labs[out]for out in outcomes]
-    if filename is None: filename = 'outputs.xlsx'
-    filepath = sc.makefilepath(filename=filename, folder=folder, ext='xlsx', default='%s outputs.xlsx' % projname)
-    outputs = []
-    sheetnames = ['Version', 'Outcomes', 'Budget & coverage']
-    alldata = []
-    allformats = []
     years = results[0].years
-    # print(results[1])
-    nullrow = [''] * len(years)
-    ### Version sheet
-    data = [['Version', 'Date'], [version, date.today()]]
-    alldata.append(data)
-
-    # Formatting
-    nrows = len(data)
-    ncols = len(data[0])
-    formatdata = np.zeros((nrows, ncols), dtype=object)
-    formatdata[:, :] = 'plain'  # Format data as plain
-    formatdata[:, 0] = 'bold'  # Left side bold
-    formatdata[0, :] = 'header'  # Top with green header
-    allformats.append(formatdata)
+    rows, filepath, outputs, outcomes, sheetnames, nullrow, allformats, alldata = _write_results_outcomes(projname, filename, folder, years)
 
     ### Outcomes sheet
     headers = [['Scenario', 'Estimate', 'Outcome'] + years + ['Cumulative']]
@@ -357,19 +286,11 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
     data = headers + outputs
     alldata.append(data)
 
-    # Formatting
-    nrows = len(data)
-    ncols = len(data[0])
-    formatdata = np.zeros((nrows, ncols), dtype=object)
-    formatdata[:, :] = 'plain'  # Format data as plain
-    formatdata[:, 0] = 'bold'  # Left side bold
-    formatdata[0, :] = 'header'  # Top with green header
-    allformats.append(formatdata)
+    nrows, ncols, formatdata, allformats, outputs, headers = _write_results_costcov(data, allformats, years)
 
     ### Cost & coverage sheet
     # this is grouped not by program, but by coverage and cost (within each scenario)
-    outputs = []
-    headers = [['Scenario', 'Program', 'Type', 'Cost-coverage type'] + years]
+
     for r, res in enumerate(results):
         if res.name != 'Excess budget' and '#' not in res.name:
             rows = res.programs.keys()
@@ -396,6 +317,56 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
     data = headers + outputs
     alldata.append(data)
 
+    _write_results_finalise(data, allformats, filename, alldata, sheetnames)
+
+    return filepath
+
+def _write_results_outcomes(projname, filename, folder, years):
+    from .version import version
+    from datetime import date
+    if projname is None: projname = ''
+    outcomes = default_trackers()
+    labs = pretty_labels()
+    rows = [labs[out] for out in outcomes]
+    if filename is None: filename = 'outputs.xlsx'
+    filepath = sc.makefilepath(filename=filename, folder=folder, ext='xlsx', default='%s outputs.xlsx' % projname)
+    outputs = []
+    sheetnames = ['Version', 'Outcomes', 'Budget & coverage']
+    alldata = []
+    allformats = []
+    #print(results[1])
+    nullrow = [''] * len(years)
+    ### Version sheet
+    data = [['Version', 'Date'], [version, date.today()]]
+    alldata.append(data)
+
+    # Formatting
+    nrows = len(data)
+    ncols = len(data[0])
+    formatdata = np.zeros((nrows, ncols), dtype=object)
+    formatdata[:, :] = 'plain'  # Format data as plain
+    formatdata[:, 0] = 'bold'  # Left side bold
+    formatdata[0, :] = 'header'  # Top with green header
+    allformats.append(formatdata)
+
+    return rows, filepath, outputs, outcomes, sheetnames, nullrow, allformats, alldata
+
+def _write_results_costcov(data, allformats, years):
+    # Formatting
+    nrows = len(data)
+    ncols = len(data[0])
+    formatdata = np.zeros((nrows, ncols), dtype=object)
+    formatdata[:, :] = 'plain'  # Format data as plain
+    formatdata[:, 0] = 'bold'  # Left side bold
+    formatdata[0, :] = 'header'  # Top with green header
+    allformats.append(formatdata)
+
+    outputs = []
+    headers = [['Scenario', 'Program', 'Type', 'Cost-coverage type'] + years]
+
+    return nrows, ncols, formatdata, allformats, outputs, headers
+
+def _write_results_finalise(data, allformats, filename, alldata, sheetnames):
     # Formatting
     nrows = len(data)
     ncols = len(data[0])
@@ -410,4 +381,5 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
         'plain': {},
         'bold': {'bold': True}}
     sc.savespreadsheet(filename=filename, data=alldata, sheetnames=sheetnames, formats=formats, formatdata=allformats)
-    return filepath
+
+    return
