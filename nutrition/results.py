@@ -1,6 +1,7 @@
 import sciris as sc
 from .utils import default_trackers, pretty_labels
 import numpy as np
+import pandas as pd
 
 class ScenResult(sc.prettyobj):
     def __init__(self, name, model_name, model, obj=None, mult=None, ramping=True):
@@ -136,9 +137,55 @@ class ScenResult(sc.prettyobj):
         from .plotting import make_plots # This is here to avoid a circular import
         figs = make_plots(self, toplot=toplot)
         return figs
-    
 
-def write_results(results, projname=None, filename=None, folder=None):
+
+def reduce(results, n_runs, use_mean=False, quantiles=None, bounds=None, output=False):
+    years = results[0].years
+    esti = ['point', 'low', 'high']
+    outcomes = default_trackers()
+    if use_mean:
+        if bounds is None:
+            bounds = 2
+    else:
+        if quantiles is None:
+            quantiles = {'low': 0.1, 'high': 0.9}
+        if not isinstance(quantiles, dict):
+            try:
+                quantiles = {'low': float(quantiles[0]), 'high': float(quantiles[1])}
+            except Exception as E:
+                errormsg = f'Could not figure out how to convert {quantiles} into a quantiles object: must be a dict with keys low, high or a 2-element array ({str(E)})'
+                raise ValueError(errormsg)
+    reduce = {}
+
+    for i in range(int(len(results)/n_runs)):
+        raw = {o: {n: np.zeros(len(years)) for n in range(n_runs)} for o in outcomes}
+        reduce[results[i * n_runs].name] = {o: {es: np.zeros(len(years)) for es in esti} for o in outcomes}
+
+        for j in range(n_runs):
+            out = results[i * n_runs + j].get_outputs(outcomes, seq=True, pretty=True)
+            for out_key in outcomes:
+                vals = out[out_key]
+                raw[out_key][j] = vals
+                # print(raw)
+            # for default tracker outcomes
+            for out_key in outcomes:
+                axis = 0
+                if use_mean:
+                    r_mean = np.mean(list(raw[out_key].values()), axis=axis)
+                    r_std = np.std(list(raw[out_key].values()), axis=axis)
+                    reduce[results[i * n_runs].name][out_key]['point'] = r_mean
+                    reduce[results[i * n_runs].name][out_key]['low'] = r_mean - bounds * r_std
+                    reduce[results[i * n_runs].name][out_key]['high'] = r_mean + bounds * r_std
+                else:
+                    reduce[results[i * n_runs].name][out_key]['point'] = np.quantile(list(raw[out_key].values()), q=0.5, axis=axis)
+                    reduce[results[i * n_runs].name][out_key]['low'] = np.quantile(list(raw[out_key].values()), q=quantiles['low'], axis=axis)
+                    reduce[results[i * n_runs].name][out_key]['high'] = np.quantile(list(raw[out_key].values()), q=quantiles['high'], axis=axis)
+    df = pd.DataFrame(reduce)
+    df.to_excel('reduce_test.xlsx')
+    return reduce
+
+
+def write_results(results, reduced_results, projname=None, filename=None, folder=None, full_outcomes=False):
     from .version import version
     from datetime import date
     """ Writes outputs and program allocations to an xlsx book.

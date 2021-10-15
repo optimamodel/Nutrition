@@ -96,9 +96,10 @@ if __name__ == '__main__':
 
     #p.run_scens() # make sure to set resampling=False
     p.multirun_scens(n_runs=n_runs, ramping=ramping)
+    p.reduce()
     #p.mean()
 #p.run_scens()
 if doplot:
     p.plot()
 #costeff = p.get_costeff()
-p.write_results('scen_results.xlsx')
+p.write_results('scen_results_test.xlsx')

@@ -13,7 +13,7 @@ from .model import Model
 from .scenarios import Scen, run_scen, convert_scen, make_default_scen
 from .optimization import Optim
 from .geospatial import Geospatial
-from .results import write_results
+from .results import write_results, reduce
 from .plotting import make_plots, get_costeff, plot_costcurve
 from .demo import demo_scens, demo_optims, demo_geos
 from . import settings
@@ -84,6 +84,8 @@ class Project(object):
         self.gitinfo  = sc.gitinfo(__file__)
         self.filename = None # File path, only present if self.save() is used
         self.ss = Settings()
+        self.n_runs = 1
+        self.reduced_results = dict()
 
         return None
 
@@ -205,7 +207,8 @@ class Project(object):
         if key is None:
             key = -1
         results = self.result(key)
-        write_results(results, projname=self.name, filename=filename, folder=folder)
+        reduced_results = self.reduced_results
+        write_results(results, reduced_results, projname=self.name, filename=filename, folder=folder)
         return
 
     def add(self, name, item, what=None):
@@ -465,6 +468,13 @@ class Project(object):
     def repeat_fun(self, n_runs, f, *args):
         for i in range(n_runs): f(*args)
 
+    def reduce(self, key=None, use_mean=False, quantiles=None, bounds=None, output=False):
+        if key is None:
+            key = -1
+        results = self.result(key)
+        self.reduced_results = reduce(results, n_runs=self.n_runs, use_mean=use_mean, quantiles=quantiles, bounds=bounds, output=output)
+        return
+
     def run_scens(self, scens=None, ramping=True):
         """Function for running scenarios
         If scens is specified, they are added to self.scens """
@@ -497,23 +507,10 @@ class Project(object):
         return None
     
     
-    def multirun_scens(self, scens=None, n_runs=2, quantiles=None, use_mean=False, bounds=None, ramping=True):
-        if use_mean:
-            if bounds is None:
-                bounds = 2
-        else:
-            if quantiles is None:
-                quantiles = {'low':0.1, 'high':0.9}
-            if not isinstance(quantiles, dict):
-                try:
-                    quantiles = {'low':float(quantiles[0]), 'high':float(quantiles[1])}
-                except Exception as E:
-                    errormsg = f'Could not figure out how to convert {quantiles} into a quantiles object: must be a dict with keys low, high or a 2-element array ({str(E)})'
-                    raise ValueError(errormsg)
+    def multirun_scens(self, scens=None, n_runs=2, ramping=True):
+        self.n_runs = n_runs
         results = []
-        years = self.ss.years
-        outcomes = default_trackers()
-        esti = ['point', 'low', 'high']
+
         if scens is not None:
             self.add_scens(scens)
         for scen in self.scens.values():
@@ -521,18 +518,17 @@ class Project(object):
                 if (scen.model_name is None) or (scen.model_name not in self.datasets.keys()):
                     raise Exception('Could not find valid dataset for %s.  Edit the scenario and change the dataset' % scen.name)
                 output = []
-                raw = {o: {n: np.zeros(len(years)) for n in range(n_runs)} for o in outcomes}
-                reduce = {scen.name: {o: {es: np.zeros(len(years)) for es in esti} for o in outcomes}}
-                # validate to compare n_runs and the sample size
-                
+
                 for i in range(n_runs):
                     if i==0:
                        model = self.model(scen.model_name)
+                       true_name = scen.name
                     else:
                     #model = self.model(scen.model_name)
                     #res = run_scen(scen, model, ramping=ramping)
                     #out = res.get_outputs(outcomes, seq=True, pretty=True)
                     #output.append(out)
+                        scen.name = true_name + ' resampled #' + str(i)
                         dataset = Dataset(country=None, region=None, name=None, fromfile=False, doload=True, project=self, resampling=True)
                         pops = dataset.pops
                         prog_info = dataset.prog_info
@@ -540,30 +536,7 @@ class Project(object):
                         sampled_data = dataset.demo_data
                         model = Model(pops, prog_info, sampled_data , t)
                     res = run_scen(scen, model, ramping=ramping)
-                    out = res.get_outputs(outcomes, seq=True, pretty=True)
-                    for out_key in outcomes:
-                        vals = out[out_key]
-                        raw[out_key][i] = vals
-                        #print(raw)
-                    #for default tracker outcomes
-                    for out_key in outcomes:
-                        axis = 0
-                        if use_mean:
-                            r_mean = np.mean(list(raw[out_key].values()), axis=axis)
-                            r_std =  np.std(list(raw[out_key].values()), axis=axis) 
-                            reduce[scen.name][out_key]['point'] = r_mean
-                            reduce[scen.name][out_key]['low'] = r_mean - bounds * r_std
-                            reduce[scen.name][out_key]['high'] = r_mean + bounds * r_std
-                        else:
-                            reduce[scen.name][out_key]['point'] = np.quantile(list(raw[out_key].values()), q=0.5, axis=axis)
-                            reduce[scen.name][out_key]['low'] = np.quantile(list(raw[out_key].values()), q=quantiles['low'], axis=axis)
-                            reduce[scen.name][out_key]['high'] = np.quantile(list(raw[out_key].values()), q=quantiles['high'], axis=axis)
-                            
-                       
                     results.append(res)
-            #print(reduce)
-            df = pd.DataFrame(reduce)
-            df.to_excel('reduce.xlsx')        
         
         self.add_result(results, name='scens')
         return None
