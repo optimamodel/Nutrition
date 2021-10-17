@@ -185,7 +185,7 @@ def reduce(results, n_runs, use_mean=False, quantiles=None, bounds=None, output=
     return reduce
 
 
-def write_results(results, reduced_results, projname=None, filename=None, folder=None, full_outcomes=False):
+def write_results(results, reduced_results={}, projname=None, filename=None, folder=None, full_outcomes=False):
     """ Writes outputs and program allocations to an xlsx book.
     For each scenario, book will include:
         - sheet called 'outcomes' which contains all outputs over time
