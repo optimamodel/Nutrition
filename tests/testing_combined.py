@@ -16,9 +16,9 @@ input_path = 'Databooks/new_format/'
 output_path = 'Outputs/'
 region_list = ['DOUALA', 'WEST']
 ramping = True
-n_runs = 5
+n_runs = 2
 sample_size = n_runs
-doplot = True
+doplot = False
 
 """" If the model is run for a single run using 'p.run_scens()' then set resampling=False
     to make sure that the default point estimators are used from 
@@ -85,6 +85,7 @@ if __name__ == '__main__':
 
     run_optim = partial(parallel_optim, path=input_path, ramping=ramping)
     results = []
+    reduced_results={}
     proj_list = run_parallel(run_optim, region_list, num_procs=3)
     for p in proj_list:
         for res in p.results:
@@ -94,7 +95,7 @@ if __name__ == '__main__':
                 else:
                     scenres.name = scenres.model_name
                 results.append(scenres)
-    write_results(results, filename=output_path + 'optimized.xlsx')
+    write_results(results, reduced_results, filename=output_path + 'optimized.xlsx')
     if doplot:
         p.plot()
 
