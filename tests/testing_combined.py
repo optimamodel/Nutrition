@@ -85,7 +85,7 @@ if __name__ == '__main__':
 
     run_optim = partial(parallel_optim, path=input_path, ramping=ramping)
     results = []
-    reduced_results={}
+    
     proj_list = run_parallel(run_optim, region_list, num_procs=3)
     for p in proj_list:
         for res in p.results:
@@ -95,7 +95,7 @@ if __name__ == '__main__':
                 else:
                     scenres.name = scenres.model_name
                 results.append(scenres)
-    write_results(results, reduced_results, filename=output_path + 'optimized.xlsx')
+    write_results(results, filename=output_path + 'optimized.xlsx')
     if doplot:
         p.plot()
 

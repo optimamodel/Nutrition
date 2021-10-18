@@ -52,10 +52,10 @@ def make_plots(all_res=None, all_reduce=None, toplot=None, optim=False, geo=Fals
         prev_reducefigs = plot_prevs_reduce(all_res, all_reduce)
         allplots.update(prev_reducefigs)
     if 'ann' in toplot:
-        outfigs = plot_outputs(all_res, True, 'ann')
+        outfigs = plot_outputs(all_res, all_reduce, True, 'ann')
         allplots.update(outfigs)
     if 'agg' in toplot:
-        outfigs = plot_outputs(all_res, False, 'agg')
+        outfigs = plot_outputs(all_res, all_reduce, False, 'agg')
         allplots.update(outfigs)
     if 'alloc' in toplot: # optimized allocations
         outfigs = plot_alloc(all_res, optim=optim, geo=geo)
@@ -103,7 +103,73 @@ def plot_prevs_reduce(all_res, all_reduce):
         ax.set_title(utils.relabel(prev))
         ax.legend(lines, [res for res in all_reduce if res!= 'Excess budget not allocated'], **legend_loc)
         figs['prevs_%0i'%i] = fig
-    return figs        
+    return figs 
+
+def plot_outputs(all_res, all_reduce, seq, name):
+    outcomes = utils.default_trackers(prev=False, rate=False)
+    width = 0.2
+    figs = sc.odict()
+    
+    baseres = all_res[0]
+    years = np.array(baseres.years) # assume these scenarios over same time horizon
+    colors = sc.gridcolors(ncolors=len(all_reduce), hueshift=hueshift)
+    for i, outcome in enumerate(outcomes):
+        fig = pl.figure(figsize=fig_size)
+        ax = fig.add_axes(ax_size)
+        ymax = 0
+        perchange = []
+        bars = []
+        
+        baseout = sc.promotetoarray(baseres.get_outputs(outcome, seq=seq)[0])
+        scale = 1e6 if baseout.max()>1e6 else 1
+        baseout /= scale
+        offsets = np.arange(len(all_reduce)+1)*width # Calculate offset so tick is in the center of the bars
+        offsets -= offsets.mean() - 0.5*width
+        for r,res in enumerate(all_reduce):
+            
+            offset = offsets[r]
+            xpos = years + offset if seq else offset
+            #output_p = sc.promotetoarray(all_reduce[res][outcome]['point'][0])
+            output_p = all_reduce[res][outcome]['point']
+            output_l = all_reduce[res][outcome]['low']
+            output_h = all_reduce[res][outcome]['high']
+            output_p /= scale
+            output_l /= scale
+            output_h /= scale
+            error = [output_p - output_l, output_h - output_p]
+            thimax = output_p.max()
+            if thimax > ymax: ymax = thimax
+            change = round_elements([utils.get_change(base, out) for out,base in zip(output_p, baseout)], dec=1)
+            perchange.append(change)
+            bar = ax.bar(xpos, output_p, width=width, color=colors[r], yerr=output_h-output_l)
+            bars.append(bar)
+        if seq:
+            ax.set_xlabel('Years')
+            title = 'Annual'
+        else:
+            title = 'Cumulative'
+            ax.set_xticks([])
+            # display percentage change above bars
+            for j, bar in enumerate(bars[1:],1):
+                for k, rect in enumerate(bar):
+                    change = perchange[j][k]
+                    height = rect.get_height()
+                    ax.text(rect.get_x() + rect.get_width() / 2., height,'{}%'.format(change), ha='center', va='bottom')
+        # formatting
+        title += ' %s \n %s-%s'%(utils.relabel(outcome).lower(), baseres.years[pltstart], baseres.years[-1])
+        sc.SIticks(ax=ax, axis='y')
+        ax.set_ylim([0, ymax*1.1])
+        if scale == 1:
+            ylabel = 'Number'
+        elif scale == 1e6:
+            ylabel = 'Number (millions)'
+        else:
+            raise Exception('Scale value must be 1 or 1e6, not %s' % scale)
+        ax.set_ylabel(ylabel)
+        ax.legend(bars, [res for res in all_reduce if res!= 'Excess budget not allocated'], ncol=1, **legend_loc)
+        ax.set_title(title)
+        figs['%s_out_%0i'%(name, i)] = fig
+    return figs       
 
 def plot_prevs(all_res):
     """ Plot prevs for each scenario"""
@@ -129,7 +195,6 @@ def plot_prevs(all_res):
                 thismax = max(out)
                 if thismax > ymax: ymax = thismax
                 line, = ax.plot(newx, out, color=colors[r])
-                ax.fill_between(newx, mean - 0.5, mean + 0.5, alpha = 0.2)
                 lines.append(line)
                 leglabels.append(res.name)
         # formatting
@@ -142,7 +207,7 @@ def plot_prevs(all_res):
         figs['prevs_%0i'%i] = fig
     return figs
 
-def plot_outputs(all_res, seq, name):
+def _plot_outputs(all_res, all_reduce, seq, name):
     outcomes = utils.default_trackers(prev=False, rate=False)
     width = 0.35
     figs = sc.odict()
