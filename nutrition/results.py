@@ -49,38 +49,9 @@ class ScenResult(sc.prettyobj):
                     prettyvals.append(prettyval)
                 output = prettyvals
         return output
-
-    def get_allocs(self, ref=True, current=False):
-        allocs = sc.odict()
-        for name, prog in self.programs.items():
-            spend = prog.annual_spend
-            new_spend = np.zeros(len(self.years))
-            new_spend[0] = spend[0]
-            if self.ramping:
-                
-                for i in range(1, len(self.years)):
-                    
-                    if ((spend[i] - new_spend[i-1])/new_spend[i-1]) > prog.max_inc:
-                        new_spend[i] = new_spend[i-1]*(1 + prog.max_inc)
-                    elif ((spend[i] - new_spend[i-1])/new_spend[i-1]) < (-1)*prog.max_dec:
-                        new_spend[i] = new_spend[i-1]*(1 - prog.max_dec)
-                    else:
-                        new_spend[i] = spend[i]
-                allocs[name] = new_spend
-            else:
-                if not ref and prog.reference:
-                    spend -= spend[0] # baseline year is reference spending, subtracted from every year
-                if current:
-                    spend = spend[:1]
-            # if not fixed and not prog.reference:
-            #     spend -= spend[0]
-            
-                allocs[name] = spend        
-        return allocs
-
+    
     def get_covs(self, ref=True, unrestr=True):
         covs = sc.odict()
-        #new_cov = np.zeros(len(self.years))
         for name, prog in self.programs.iteritems():
             cov = prog.get_cov(unrestr=unrestr)
             if self.ramping:
@@ -101,6 +72,33 @@ class ScenResult(sc.prettyobj):
                     cov -= cov[0] # baseline year is reference cov, subtracted from every year
                 covs[name] = cov
         return covs
+
+    def get_allocs(self, ref=True, current=False):
+        allocs = sc.odict()
+        for name, prog in self.programs.items():
+            spend = prog.annual_spend
+            covs = self.get_covs(unrestr=False)[name]
+            rate = np.zeros(len(self.years))
+            rate[0] = 1
+            new_spend = np.zeros(len(self.years))
+            new_spend[0] = spend[0]
+            if self.ramping:
+                for k in range(1, len(self.years)):
+                    rate[k] = covs[k]/covs[k-1] if covs[k-1] != 0 else 1
+                    new_spend[k] = new_spend[k-1] * rate[k]
+                allocs[name] = new_spend
+            
+            else:
+                if not ref and prog.reference:
+                    spend -= spend[0] # baseline year is reference spending, subtracted from every year
+                if current:
+                    spend = spend[:1]
+            # if not fixed and not prog.reference:
+            #     spend -= spend[0]
+            
+                allocs[name] = spend        
+        return allocs
+
     
     def get_freefunds(self):
         free = self.model.prog_info.free
