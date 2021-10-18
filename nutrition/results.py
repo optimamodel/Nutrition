@@ -1,7 +1,7 @@
 import sciris as sc
 from .utils import default_trackers, pretty_labels
 import numpy as np
-import pandas as pd
+import math as mt
 
 class ScenResult(sc.prettyobj):
     def __init__(self, name, model_name, model, obj=None, mult=None, ramping=True):
@@ -52,15 +52,25 @@ class ScenResult(sc.prettyobj):
     
     def get_covs(self, ref=True, unrestr=True):
         covs = sc.odict()
+        cov_diffs = []
+        if self.ramping:
+            for name, prog in self.programs.iteritems():
+                check_cov = prog.get_cov(unrestr=unrestr)
+                cov_diffs.append(mt.ceil(abs(check_cov[-1] - check_cov[0]) / prog.max_inc))
+            max_time = np.nanmax(cov_diffs)
         for name, prog in self.programs.iteritems():
             cov = prog.get_cov(unrestr=unrestr)
             if self.ramping:
                 new_cov = np.zeros(len(self.years))
                 new_cov[0] = cov[0]
+                if mt.ceil(abs(cov[-1] - cov[0]) / prog.max_inc) < max_time and abs(cov[-1] - cov[0]) != 0:
+                    prog.max_inc = abs(cov[-1] - cov[0]) / max_time
+                if mt.ceil(abs(cov[-1] - cov[0]) / prog.max_dec) < max_time and abs(cov[-1] - cov[0]) != 0:
+                    prog.max_dec = abs(cov[-1] - cov[0]) / max_time
                 for i in range(1, len(self.years)):
                     if cov[i] - new_cov[i-1] > prog.max_inc:
-                       new_cov[i] = new_cov[i-1] +  prog.max_inc
-                    elif cov[i] - new_cov[i-1] < (-1)* prog.max_dec:
+                       new_cov[i] = new_cov[i-1] + prog.max_inc
+                    elif cov[i] - new_cov[i-1] < (-1) * prog.max_dec:
                         new_cov[i] = new_cov[i-1] - prog.max_dec
                     else:
                         new_cov[i] = cov[i]
