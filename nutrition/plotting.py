@@ -34,6 +34,7 @@ def make_plots(all_res=None, all_reduce=None, toplot=None, optim=False, geo=Fals
     """
     This function controls all the plotting types a user can ask for
     :param all_res: all the results that should be plotted (list of ScenResult objects)
+    :param all_reduce: all the results that should be plotted generated over resampling(list of ScenResult objects)
     :param toplot: type of plots to produce (list of strings)
     :param optim: are these the results of a national optimiztion? (boolean)
     :param geo: are these the results of a geospatial optimization? (boolean)
@@ -137,11 +138,11 @@ def plot_outputs(all_res, all_reduce, seq, name):
             output_l /= scale
             output_h /= scale
             error = [output_p - output_l, output_h - output_p]
-            thimax = output_p.max()
+            thimax = output_h.max()
             if thimax > ymax: ymax = thimax
             change = round_elements([utils.get_change(base, out) for out,base in zip(output_p, baseout)], dec=1)
             perchange.append(change)
-            bar = ax.bar(xpos, output_p, width=width, color=colors[r], yerr=output_h-output_l)
+            bar = ax.bar(xpos, output_p, width=width, color=colors[r], yerr=output_h-output_l, capsize=2)
             bars.append(bar)
         if seq:
             ax.set_xlabel('Years')
@@ -150,11 +151,11 @@ def plot_outputs(all_res, all_reduce, seq, name):
             title = 'Cumulative'
             ax.set_xticks([])
             # display percentage change above bars
-            for j, bar in enumerate(bars[1:],1):
-                for k, rect in enumerate(bar):
-                    change = perchange[j][k]
-                    height = rect.get_height()
-                    ax.text(rect.get_x() + rect.get_width() / 2., height,'{}%'.format(change), ha='center', va='bottom')
+            #for j, bar in enumerate(bars[1:],1):
+                #for k, rect in enumerate(bar):
+                    #change = perchange[j][k]
+                    #height = rect.get_height()
+                    #ax.text(rect.get_x() + rect.get_width() / 2., height,'{}%'.format(change), ha='center', va='bottom')
         # formatting
         title += ' %s \n %s-%s'%(utils.relabel(outcome).lower(), baseres.years[pltstart], baseres.years[-1])
         sc.SIticks(ax=ax, axis='y')
