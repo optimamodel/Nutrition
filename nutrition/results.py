@@ -85,7 +85,6 @@ class ScenResult(sc.prettyobj):
 
     def get_allocs(self, ref=True, current=False):
         allocs = sc.odict()
-        n_years =  []
         for name, prog in self.programs.items():
             spend = prog.annual_spend
             covs = self.get_covs(unrestr=False)[name]
@@ -95,15 +94,14 @@ class ScenResult(sc.prettyobj):
             new_spend[0] = spend[0]
             if self.ramping:
                 for k in range(1, len(self.years)):
-                    rate[k] = covs[k]/covs[k-1] if covs[k-1] != 0 else 1
-                    new_spend[k] = new_spend[k-1] * rate[k]
+                    if k == 1 and covs[k] != 0 and new_spend[k-1] == 0:
+                        new_spend[k] = prog.get_spending(covs)[k]
+                    else:
+                        rate[k] = covs[k]/covs[k-1] if covs[k-1] != 0 else 1
+                        new_spend[k] = new_spend[k-1] * rate[k]
                     
                 allocs[name] = new_spend
-                n = list(rate).index(1)
-                n_years.append(n)
-                max_length = max(n_years)
-            
-                
+                        
             else:
                 if not ref and prog.reference:
                     spend -= spend[0] # baseline year is reference spending, subtracted from every year

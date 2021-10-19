@@ -18,7 +18,7 @@ region_list = ['DOUALA', 'WEST']
 ramping = True
 n_runs = 2
 sample_size = n_runs
-doplot = False
+doplot = True
 
 """" If the model is run for a single run using 'p.run_scens()' then set resampling=False
     to make sure that the default point estimators are used from 
@@ -97,7 +97,7 @@ if __name__ == '__main__':
                 results.append(scenres)
     write_results(results, filename=output_path + 'optimized.xlsx')
     if doplot:
-        p.plot()
+        p.plot(optim=True)
 
 
 

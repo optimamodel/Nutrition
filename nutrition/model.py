@@ -120,7 +120,7 @@ class Model(sc.prettyobj):
     
     def _track_economic_loss(self):
         """ To calculate the economic cost of children become stunting or wasting for the country.
-            Simply, the cost of stunting and cost of wasting have been fixed and hard coded currently."""
+            Simply, the cost of stunting and cost of wasting have been input over the databook."""
         oldest = self.children.age_groups[-1]
         rate = oldest.ageingRate
         self.stunting_cost[self.year] += oldest.num_stunted() * rate * self.cost_wasting

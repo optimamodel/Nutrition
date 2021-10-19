@@ -46,27 +46,41 @@ def make_plots(all_res=None, all_reduce=None, toplot=None, optim=False, geo=Fals
         toplot = ['prevs', 'prev_reduce', 'ann', 'agg', 'alloc', 'annu_alloc', 'clust_annu_alloc']
     toplot = sc.promotetolist(toplot)
     all_res = sc.promotetolist(sc.dcp(all_res)) # Without dcp(), modifies the original and breaks things
-    if 'prevs' in toplot:
-        prevfigs = plot_prevs(all_res)
-        allplots.update(prevfigs)
-    if 'prev_reduce' in toplot:
-        prev_reducefigs = plot_prevs_reduce(all_res, all_reduce)
-        allplots.update(prev_reducefigs)
-    if 'ann' in toplot:
-        outfigs = plot_outputs(all_res, all_reduce, True, 'ann')
-        allplots.update(outfigs)
-    if 'agg' in toplot:
-        outfigs = plot_outputs(all_res, all_reduce, False, 'agg')
-        allplots.update(outfigs)
+    if optim:
+        if 'prevs' in toplot:
+            prevfigs = plot_prevs(all_res)
+            allplots.update(prevfigs)
+        if 'ann' in toplot:
+            outfigs = plot_outputs(all_res, all_reduce, True, 'ann')
+            allplots.update(outfigs)
+        if 'agg' in toplot:
+            outfigs = plot_outputs(all_res, all_reduce, False, 'agg')
+            allplots.update(outfigs)
+        if 'clust_annu_alloc' in toplot: # optimized allocations
+            outfigs = plot_clustered_annu_optialloc(all_res, optim=optim, geo=geo)
+            allplots.update(outfigs)
+            
+    else:
+        
+        if 'prev_reduce' in toplot:
+            prev_reducefigs = plot_prevs_reduce(all_res, all_reduce)
+            allplots.update(prev_reducefigs)
+        if 'ann' in toplot:
+            outfigs = plot_outputs_reduced(all_res, all_reduce, True, 'ann')
+            allplots.update(outfigs)
+        if 'agg' in toplot:
+            outfigs = plot_outputs_reduced(all_res, all_reduce, False, 'agg')
+            allplots.update(outfigs)
+        if 'clust_annu_alloc' in toplot: # optimized allocations
+            outfigs = plot_clustered_annu_alloc(all_res, optim=optim, geo=geo)
+            allplots.update(outfigs)
     if 'alloc' in toplot: # optimized allocations
         outfigs = plot_alloc(all_res, optim=optim, geo=geo)
         allplots.update(outfigs)
     if 'annu_alloc' in toplot: # optimized allocations
         outfigs = plot_annu_alloc(all_res, optim=optim, geo=geo)
         allplots.update(outfigs)
-    if 'clust_annu_alloc' in toplot: # optimized allocations
-        outfigs = plot_clustered_annu_alloc(all_res, optim=optim, geo=geo)
-        allplots.update(outfigs)
+    
     return allplots
 
 def plot_prevs_reduce(all_res, all_reduce):
@@ -106,7 +120,7 @@ def plot_prevs_reduce(all_res, all_reduce):
         figs['prevs_%0i'%i] = fig
     return figs 
 
-def plot_outputs(all_res, all_reduce, seq, name):
+def plot_outputs_reduced(all_res, all_reduce, seq, name):
     outcomes = utils.default_trackers(prev=False, rate=False)
     width = 0.2
     figs = sc.odict()
@@ -142,7 +156,7 @@ def plot_outputs(all_res, all_reduce, seq, name):
             if thimax > ymax: ymax = thimax
             change = round_elements([utils.get_change(base, out) for out,base in zip(output_p, baseout)], dec=1)
             perchange.append(change)
-            bar = ax.bar(xpos, output_p, width=width, color=colors[r], yerr=output_h-output_l, capsize=2)
+            bar = ax.bar(xpos, output_p, width=width, color=colors[r], yerr=np.mean(output_h)-np.mean(output_l), capsize=2)
             bars.append(bar)
         if seq:
             ax.set_xlabel('Years')
@@ -208,7 +222,7 @@ def plot_prevs(all_res):
         figs['prevs_%0i'%i] = fig
     return figs
 
-def _plot_outputs(all_res, all_reduce, seq, name):
+def plot_outputs(all_res, all_reduce, seq, name):
     outcomes = utils.default_trackers(prev=False, rate=False)
     width = 0.35
     figs = sc.odict()
@@ -238,7 +252,7 @@ def _plot_outputs(all_res, all_reduce, seq, name):
                 if thimax > ymax: ymax = thimax
                 change = round_elements([utils.get_change(base, out) for out,base in zip(output, baseout)], dec=1)
                 perchange.append(change)
-                bar = ax.bar(xpos, output, width=width, color=colors[r], yerr=output*0.025)
+                bar = ax.bar(xpos, output, width=width, color=colors[r])
                 bars.append(bar)
         if seq:
             ax.set_xlabel('Years')
@@ -402,7 +416,7 @@ def plot_annu_alloc(results, optim, geo):
         for i, spend in enumerate(avspend):
             if any(spend) > 0:    # only want to plot prog if spending is non-zero (solves legend issues)
                 leglabs.append(progset[i])
-                bar = ax.bar(x, spend, width, bottom, color=colors[i], yerr=spend*0.08)
+                bar = ax.bar(x, spend, width, bottom, color=colors[i])
                 bars.append(bar)
                 bottom += spend
         ymax = max(bottom)
@@ -500,7 +514,107 @@ def plot_clustered_annu_alloc(results, optim, geo):
         for i, spend in enumerate(avspend):
             if any(spend) > 0:    # only want to plot prog if spending is non-zero (solves legend issues)
                 leglabs.append(progset[i])
-                bar = ax.bar(x+k, spend, width, bottom, color=colors[i], yerr=spend*0.08) # bars for each year in iteration
+                bar = ax.bar(x+k, spend, width, bottom, color=colors[i]) # bars for each year in iteration
+                bars.append(bar)
+                bottom += spend
+        ymax = max(bottom)
+        if optim or geo:
+            title = 'Optimal allocation, %s-%s'% (ref.years[pltstart], ref.years[-1])
+            valuestr = str(results[1].prog_info.free / 1e6) # bit of a hack
+                # format x axis
+            if valuestr[1] == '.':
+                valuestr = valuestr[:3]
+            else:
+                valuestr = valuestr[:2]
+            if geo:
+                xlab = 'Region'
+            else:
+                xlab = 'Total available budget (relative to US$%sM)' % valuestr
+        else:
+            title = 'Annual spending, %s-%s' % (ref.years[pltstart], ref.years[-1])
+            xlab = 'Years' 
+    ax.set_title(title)
+    ax.set_xticks(year_ticks[1:] + 1.5*width) # ignoring base year and makingsure tick is at the middle of the bar group
+    ax.set_xticklabels(year[1:], fontsize = 10)
+    ax.set_xlabel(xlab) 
+    ax.set_ylim((0, ymax+ymax*.1))
+    if   scale == 1e1: ylabel = 'Spending (US$)'
+    elif scale == 1e6: ylabel = 'Spending (US$M)'
+    else:               raise Exception('Scale value must be 1e1 or 1e6, not %s' % scale)
+    ax.set_ylabel(ylabel)
+    #   sc.SIticks(ax=ax, axis='y')
+    nprogs = len(leglabs)
+    labelspacing = 0.1
+    columnspacing = 0.1
+    fontsize = None
+    ncol = 1
+    if nprogs>10:
+        fontsize = 10
+    if nprogs>12:
+        fontsize = 8
+    if nprogs>24:
+        ncol = 2
+    customizations = {'fontsize':fontsize, 'labelspacing':labelspacing, 'ncol':ncol, 'columnspacing':columnspacing}
+    customizations.update(legend_loc)
+    legend_1 = ax.legend(bars, leglabs, **customizations)
+    handles = [f"Bar {j}: " for j in range(1, len(xlabs)+1)]
+    ax.legend(handles=handles, labels=xlabs,  loc='lower center', bbox_to_anchor=(1.15, 0.3), fontsize=10, borderpad=1.2)
+    figs['clust_annu_alloc'] = fig
+    fig.add_artist(legend_1)
+    return figs
+
+def plot_clustered_annu_optialloc(results, optim, geo):
+    """ Plots the annual spending for each scenario, coloured by program.
+    Legend will include all programs in the 'baseline' allocation which receive non-zero spending in any scenario """
+    
+    # Initialize
+    width = 0.2
+    epsilon = .015
+    figs = sc.odict()
+    year = results[0].years
+    ref = results[0]
+    progset = ref.prog_info.base_progset()
+    colors = sc.gridcolors(ncolors=len(progset), hueshift=hueshift)
+    leglabs = []
+    fig = pl.figure(figsize=(20,6))
+    ax = fig.add_axes(ax_size)
+    x_base = np.arange(len(results))
+    x=np.multiply(x_base,width)
+    year_ticks = np.arange(len(year))
+    
+    
+    for k in range(1, len(year)):
+                   
+    # Group allocations by program
+        avspend = []
+        
+        for prog in progset:
+            thisprog = np.zeros(len(results))
+            for i, res in enumerate(results):
+                #if 'resampled' not in res.name:
+                    alloc = res.get_allocs(ref=refprogs) # slightly inefficient to do this for every program
+                    try:
+                        progav = alloc[prog][k] # extracting the spend for each year for each program
+                        
+                    except: # program not in scenario program set
+                        progav = 0
+                    thisprog[i] = progav
+            avspend.append(thisprog)
+    
+    # Scale
+        avspend = np.array(avspend)
+        if avspend.max()>1e6: scale = 1e6
+        else:                 scale = 1e1
+        #avspend /= scale
+        avspend = np.divide(avspend, scale)
+    # Make bar plots
+        bars = []
+        xlabs = [res.mult if res.mult is not None else res.name for res in results]
+        bottom = np.zeros(len(results))
+        for i, spend in enumerate(avspend):
+            if any(spend) > 0:    # only want to plot prog if spending is non-zero (solves legend issues)
+                leglabs.append(progset[i])
+                bar = ax.bar(x+k, spend, width, bottom, color=colors[i]) # bars for each year in iteration
                 bars.append(bar)
                 bottom += spend
         ymax = max(bottom)
