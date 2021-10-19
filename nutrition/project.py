@@ -507,7 +507,7 @@ class Project(object):
         return None
     
     
-    def multirun_scens(self, scens=None, n_runs=2, ramping=True):
+    def multirun_scens(self, scens=None, n_runs=2, ramping=True, pop_growth=False):
         self.n_runs = n_runs
         results = []
 
@@ -534,7 +534,7 @@ class Project(object):
                         prog_info = dataset.prog_info
                         t = dataset.t
                         sampled_data = dataset.demo_data
-                        model = Model(pops, prog_info, sampled_data , t)
+                        model = Model(pops, prog_info, sampled_data , t, pop_growth=pop_growth)
                     res = run_scen(scen, model, ramping=ramping)
                     results.append(res)
         
