@@ -21,3 +21,7 @@
 - Particle swarm optimization step removed from default optimizations in order to reduce variability in allocation when similar budget sizes are optimized.
 - Default maximum run time for adaptive stochastic descent algorithm increased to accommodate the removal of the PSO step
 - Optima Nutrition version number and date added to standard results output in 'Version' sheet
+
+#### [1.7.2] - 2021-19-10
+
+- Fixed incorrect initialization of non-pregnant women population sizes

@@ -863,7 +863,10 @@ class NonPregnantWomen(Population):
 
     def _make_pop_sizes(self):
         wra_proj = self.data.wra_proj
-        self.popSizes = [proj[0] for proj in wra_proj]
+        pw_pop = self.data.proj['Estimated pregnant women'][0]  # total baseline number
+        pw_dist = self.data.pw_agedist
+        pw_popSizes = [pw_pop * dist for dist in pw_dist]
+        self.popSizes = [proj[0] - pw_popSizes[p] for p, proj in enumerate(wra_proj)]
 
     def _make_age_groups(self):
         for i, age in enumerate(self.ss.wra_ages):
