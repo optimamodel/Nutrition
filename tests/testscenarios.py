@@ -33,8 +33,8 @@ kwargs2.update({'name': 'IYCF 1 100%',
 kwargs3 = {'name': 'IYCF at $10 mil',
          'model_name': 'eg',
          'scen_type': 'budget',
-           'progvals': sc.odict({'IYCF 1': [1e7, 2e7, 1.5e6, 2.5e7],
-                                 'IPTp': [2e7, 2.8e7, 2.8e6, 4.25e7]})}
+           'progvals': sc.odict({'IYCF 1': [1e8, 2e8, 1.5e8, 2.5e8],
+                                 'IPTp': [2e9, 2.8e9, 2.8e9, 4.25e9]})}
 
 ### testing FE bugs
 kwargs4 = {'name': 'FE check 1',
