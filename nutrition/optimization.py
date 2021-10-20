@@ -143,6 +143,7 @@ class Optim(sc.prettyobj):
         inds = kwargs['keep_inds']
         fixed = kwargs['fixed']
         model = kwargs['model']
+        weight = kwargs['weights']
         numprogs = np.sum(inds)
         if free > 0 and np.any(inds): # need both funds and programs
             xmin = np.zeros(numprogs)
@@ -169,10 +170,10 @@ class Optim(sc.prettyobj):
             # if one of the multiples is 0, return fixed costs
             best_alloc = fixed
         # generate results
-        name = '%s (x%s)' % (self.name, mult)
+        name = '%s (x%s) (w%s)' % (self.name, mult, weight)
         progvals = {prog:spend for prog, spend in zip(self.prog_set, best_alloc)}
         scen = Scen(name=name, model_name=self.model_name, scen_type='budget', progvals=progvals)
-        res = run_scen(scen, model, obj=self.name, mult=mult, restrictcovs=False, ramping=ramping)
+        res = run_scen(scen, model, obj=self.name, mult=mult, weight=weight, restrictcovs=False, ramping=ramping)
         if 'Excess budget not allocated' in self.prog_set:
             self.prog_set.remove('Excess budget not allocated')
         return res
