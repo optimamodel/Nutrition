@@ -165,7 +165,7 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name):
                 bar = ax.bar(xpos, output_p, width=width, color=colors[r])
                 ax.errorbar(xpos, output_p[length-1], yerr=error, capsize=2, color='black') 
             bars.append(bar)
-            print(bars)
+            
         if seq:
             ax.set_xlabel('Years')
             title = 'Annual'
@@ -174,11 +174,11 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name):
             ax.set_xticks([])
             
             # display percentage change above bars
-            for j, bar in enumerate(bars[1:],1):
-                for k, rect in enumerate(bar):
-                    change = perchange[j][k]
-                    height = rect.get_height()
-                    ax.text(rect.get_x() + rect.get_width() / 2., height,'{}%'.format(change), ha='center', va='bottom')
+            #for j, bar in enumerate(bars[1:],1):
+                #for k, rect in enumerate(bar):
+                    #change = perchange[j][k]
+                    #height = rect.get_height()
+                    #ax.text(rect.get_x() + rect.get_width() / 2., height,'{}%'.format(change), ha='center', va='bottom')
         # formatting
         title += ' %s \n %s-%s'%(utils.relabel(outcome).lower(), baseres.years[pltstart], baseres.years[-1])
         sc.SIticks(ax=ax, axis='y')

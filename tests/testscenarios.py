@@ -10,7 +10,7 @@ sys.setrecursionlimit(x)
 doplot = True
 resampling = False
 ramping = True
-n_runs = 3
+n_runs = 20
 sample_size = n_runs
 
 # load in data to create model

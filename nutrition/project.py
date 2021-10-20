@@ -491,7 +491,7 @@ class Project(object):
         self.add_result(results, name='scens')
         return None
     
-    def _multirun_scens(self, scens=None, n_runs=2):
+    def _multirun_scens(self, scens=None, n_runs=2):# can remove this once finalized
         results = []
         if scens is not None:
             self.add_scens(scens)
@@ -517,17 +517,11 @@ class Project(object):
             if scen.active:
                 if (scen.model_name is None) or (scen.model_name not in self.datasets.keys()):
                     raise Exception('Could not find valid dataset for %s.  Edit the scenario and change the dataset' % scen.name)
-                output = []
-
                 for i in range(n_runs):
                     if i==0:
                        model = self.model(scen.model_name)
                        true_name = scen.name
                     else:
-                    #model = self.model(scen.model_name)
-                    #res = run_scen(scen, model, ramping=ramping)
-                    #out = res.get_outputs(outcomes, seq=True, pretty=True)
-                    #output.append(out)
                         scen.name = true_name + ' resampled #' + str(i)
                         dataset = Dataset(country=None, region=None, name=None, fromfile=False, doload=True, project=self, resampling=True)
                         pops = dataset.pops
