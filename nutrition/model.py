@@ -5,7 +5,7 @@ from .utils import default_trackers, restratify
 
 
 class Model(sc.prettyobj):
-    def __init__(self, pops, prog_info, demo_data, t=None, adjust_cov=False, timeTrends=False, growth = True):
+    def __init__(self, pops, prog_info, demo_data, t=None, adjust_cov=False, timeTrends=False, pop_growth=False):
         self.pops = sc.dcp(pops)
         self.children, self.pw, self.nonpw = self.pops
         self.prog_info = sc.dcp(prog_info)
@@ -25,7 +25,7 @@ class Model(sc.prettyobj):
 
         self.adjust_cov = adjust_cov
         self.timeTrends = timeTrends
-        self.growth = growth
+        self.pop_growth = pop_growth
         
         # For economic loss
         self.cost_wasting = self.econo_data.cost_wasting
@@ -152,9 +152,23 @@ class Model(sc.prettyobj):
         self.year = year
         self.prog_info.update_prog_year(year)
 
+    def update_pops(self):
+        for pop in self.pops:
+            if isinstance(pop.popSizes, dict):
+                for a, age in enumerate(list(pop.popSizes.keys())):
+                    pop.popSizes[age] = pop.age_groups[a].pop_size
+            else:
+                for a, age in enumerate(pop.popSizes):
+                    pop.popSizes[a] = pop.age_groups[a].pop_size
+
+
     def run_sim(self):
         for year in self.sim_years:
             self.update_year(year)
+
+            if self.pop_growth: # account for pop growth
+                self.update_pops()
+                self.prog_info.adjust_covs(self.pops, year, self.pop_growth)
             # determine if there are cov changes from previous year
             change = self.prog_info.determine_cov_change()
             if change:
@@ -162,8 +176,6 @@ class Model(sc.prettyobj):
                 self._set_pop_probs(year)
                 self._reset_storage()
                 self._apply_prog_covs()
-            if self.adjust_cov: # account for pop growth
-                self.prog_info.adjust_covs(self.pops, year, self.growth)
             self.integrate()
             self._track()
             self._track_rates()

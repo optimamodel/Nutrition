@@ -107,18 +107,20 @@ class Program(sc.prettyobj):
         unrestr_cov = (self.base_cov * self.restr_popsize) / self.unrestr_popsize
         self.annual_cov[0] = unrestr_cov
 
-    def adjust_cov(self, pops, year, growth=True): # todo: needs fixing for annual_cov being an array now
+    def adjust_cov(self, pops, year, growth=False): # todo: needs fixing for annual_cov being an array now
         # set unrestricted pop size so coverages account for growing population size
+        oldURP = self.unrestr_popsize
         self._set_unrestrpop(pops) # TODO: is this the optimal place to do this?
-        oldURP = self.popn + self.unrestr_popsize # partially accurate fix
+        #oldURP = self.popn + self.unrestr_popsize # partially accurate fix
         oldCov = self.annual_cov
-        if growth:
-            rate = np.zeros(len(self.years))
-            rate[0] = 1
-            for year in range(1, len(self.years)):
-                rate[year] = oldURP[year] / oldURP[year-1]
-            newCov = np.multiply(oldCov, rate)
-            self.annual_cov = newCov
+        if growth == "fixed budget":
+            #rate = oldURP / self.unrestr_popsize
+            num_cov = oldCov[year] * oldURP
+            newCov = min(num_cov / self.unrestr_popsize, self.sat)
+            self.annual_cov[year] = newCov
+        elif growth == "fixed coverage":
+            self.annual_cov = oldCov
+            self.annual_spend[year] = self.get_spending(self.annual_cov)[year] * self.unrestr_popsize / oldURP
         else:
             self.annual_cov = oldCov
 
