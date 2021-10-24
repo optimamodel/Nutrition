@@ -7,7 +7,7 @@ sys.setrecursionlimit(x)
 
 #pd.set_option('mode.chained_assignment', None)
 
-doplot = True
+doplot = False
 resampling = False
 ramping = True
 n_runs = 3

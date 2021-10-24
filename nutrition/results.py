@@ -62,7 +62,7 @@ class ScenResult(sc.prettyobj):
         max_time = np.nanmax(cov_diffs)
         for name, prog in self.programs.iteritems():
             cov = prog.get_cov(unrestr=unrestr)
-            if self.ramping:
+            if self.ramping and self.pop_growth:
                 new_cov = np.zeros(len(self.years))
                 new_cov[0] = cov[0]
                 if mt.ceil(abs(cov[-1] - cov[0]) / prog.max_inc) < max_time and abs(cov[-1] - cov[0]) != 0:
@@ -71,7 +71,7 @@ class ScenResult(sc.prettyobj):
                     prog.max_dec = abs(cov[-1] - cov[0]) / max_time
                 for i in range(1, len(self.years)):
                     if cov[i] - new_cov[i-1] > prog.max_inc:
-                       new_cov[i] = new_cov[i-1] + prog.max_inc
+                       new_cov[i] = min(new_cov[i-1] + prog.max_inc, prog.sat)
                     elif cov[i] - new_cov[i-1] < (-1) * prog.max_dec:
                         new_cov[i] = new_cov[i-1] - prog.max_dec
                     else:
@@ -79,10 +79,15 @@ class ScenResult(sc.prettyobj):
                # if not ref and prog.reference:
                     #cov -= cov[0] # baseline year is reference cov, subtracted from every year
                 covs[name] = new_cov
-            else:
+            elif self.ramping and self.pop_growth=="fixed budget":
+                newcov = cov
+                covs[name] = newcov
+                print(newcov)
+            elif not self.ramping:
                 if not ref and prog.reference:
                     cov -= cov[0] # baseline year is reference cov, subtracted from every year
                 covs[name] = cov
+        
         return covs
 
     def get_allocs(self, ref=True, current=False):
@@ -94,7 +99,7 @@ class ScenResult(sc.prettyobj):
             rate[0] = 0
             new_spend = np.zeros(len(self.years))
             new_spend[0] = spend[0]
-            if self.ramping and not self.pop_growth:
+            if self.ramping and self.pop_growth:
                 for k in range(1, len(self.years)):
                     if k == 1 and covs[k] != 0 and new_spend[k-1] == 0:
                         new_spend[k] = prog.get_spending(covs)[k]
