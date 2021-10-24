@@ -123,7 +123,7 @@ class Program(sc.prettyobj):
             self.annual_spend[year] = self.get_spending(self.annual_cov)[year] * self.unrestr_popsize / oldURP
         else:
             self.annual_cov = oldCov
-
+        
     def _set_target_ages(self):
         """
         The ages at whom programs are targeted

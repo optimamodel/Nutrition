@@ -14,11 +14,12 @@ from functools import partial
 
 input_path = 'Databooks/new_format/'
 output_path = 'Outputs/'
-region_list = ['DOUALA', 'WEST']
+region_list = ['DOUALA']
 ramping = True
 n_runs = 2
 sample_size = n_runs
 doplot = True
+pop_growth = False
 
 """" If the model is run for a single run using 'p.run_scens()' then set resampling=False
     to make sure that the default point estimators are used from 
@@ -77,6 +78,7 @@ p1.add_scens(scen_list)
 #p1.run_scens(ramping=ramping) # make sure to set resampling=False
 p1.multirun_scens(n_runs=n_runs, ramping=ramping)
 p1.write_results(filename=output_path + 'non_optimized.xlsx')
+p1.reduce()
 #if doplot:
    #p1.plot()
 
@@ -96,6 +98,7 @@ if __name__ == '__main__':
                     scenres.name = scenres.model_name
                 results.append(scenres)
     write_results(results, filename=output_path + 'optimized.xlsx')
+    #p.write_results(filename=output_path + 'optimized.xlsx')
     if doplot:
         p.plot(optim=True)
 

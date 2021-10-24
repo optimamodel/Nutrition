@@ -14,7 +14,7 @@ doplot = True
 def parallel_optim(region, path=None, ramping=True):
     p = Project('Cameroon')
 
-    p.load_data(inputspath=path + region + '_input.xlsx', name=region)
+    p.load_data(inputspath=path + region + '_input.xlsx', name=region, resampling=False)
 
     ## define custom optimization
     kwargs = {'name': region,

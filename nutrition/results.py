@@ -4,7 +4,7 @@ import numpy as np
 import math as mt
 
 class ScenResult(sc.prettyobj):
-    def __init__(self, name, model_name, model, obj=None, mult=None, weight=None, ramping=True):
+    def __init__(self, name, model_name, model, obj=None, mult=None, weight=None, ramping=True, pop_growth=False):
         self.name = name
         self.model_name = model_name
         self.model = model
@@ -19,6 +19,7 @@ class ScenResult(sc.prettyobj):
         self.created = sc.now()
         self.modified = sc.now()
         self.ramping = ramping
+        self.pop_growth = pop_growth
         #self.results = []
         
     def model_attr(self):
@@ -54,11 +55,11 @@ class ScenResult(sc.prettyobj):
     def get_covs(self, ref=True, unrestr=True):
         covs = sc.odict()
         cov_diffs = []
-        if self.ramping:
-            for name, prog in self.programs.iteritems():
-                check_cov = prog.get_cov(unrestr=unrestr)
-                cov_diffs.append(mt.ceil(abs(check_cov[-1] - check_cov[0]) / prog.max_inc))
-            max_time = np.nanmax(cov_diffs)
+       
+        for name, prog in self.programs.iteritems():
+            check_cov = prog.get_cov(unrestr=unrestr)
+            cov_diffs.append(mt.ceil(abs(check_cov[-1] - check_cov[0]) / prog.max_inc))
+        max_time = np.nanmax(cov_diffs)
         for name, prog in self.programs.iteritems():
             cov = prog.get_cov(unrestr=unrestr)
             if self.ramping:
@@ -88,12 +89,12 @@ class ScenResult(sc.prettyobj):
         allocs = sc.odict()
         for name, prog in self.programs.items():
             spend = prog.annual_spend
-            covs = self.get_covs(unrestr=False)[name]
+            covs = self.get_covs(unrestr=True)[name]
             rate = np.zeros(len(self.years))
             rate[0] = 0
             new_spend = np.zeros(len(self.years))
             new_spend[0] = spend[0]
-            if self.ramping:
+            if self.ramping and not self.pop_growth:
                 for k in range(1, len(self.years)):
                     if k == 1 and covs[k] != 0 and new_spend[k-1] == 0:
                         new_spend[k] = prog.get_spending(covs)[k]
@@ -103,7 +104,11 @@ class ScenResult(sc.prettyobj):
                     
                 allocs[name] = new_spend
                         
-            else:
+            elif self.ramping and self.pop_growth=="fixed budget":
+                spend = spend
+                allocs[name] = spend
+                
+            elif not self.ramping:
                 if not ref and prog.reference:
                     spend -= spend[0] # baseline year is reference spending, subtracted from every year
                 if current:
@@ -124,6 +129,9 @@ class ScenResult(sc.prettyobj):
 
     def get_currspend(self):
         return self.model.prog_info.curr
+    
+    def get_basefunds(self):
+        return self.model.prog_info.fixed
 
     def get_childscens(self):
         """ For calculating the impacts of each scenario with single intervention set to 0 coverage """

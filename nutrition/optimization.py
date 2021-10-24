@@ -132,7 +132,7 @@ class Optim(sc.prettyobj):
         if not keep_inds:
             raise Exception('No programs impact the chosen objective or none were selected.')
         return np.array(keep_inds)
-
+       
     def one_optim(self, args, ramping=True):
         """ Runs optimization for an objective and budget multiple.
         Return: a list of allocations, with order corresponding to the programs list """
