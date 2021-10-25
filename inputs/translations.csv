@@ -1,0 +1,202 @@
+﻿en,fr
+Baseline year population inputs,Donnees pop de l'annee de ref
+Baseline year data,Données de l'année de référence
+Projection years,Années de projection
+Baseline year (projection start year),Année de référence (année de début de la projection)
+End year,Fin d'année
+Population data,Données sur la population
+Children under 5 population,Population des enfants de moins de 5 ans
+Percentage of population food insecure (default poor),Pourcentage de la population en situation d'insécurité alimentaire (pauvre par défaut)
+Percentage of population at risk of malaria,Pourcentage de la population exposée au risque de paludisme
+School attendance (percentage of 15-19 year women),Fréquentation scolaire (pourcentage de femmes de 15 à 19 ans)
+Percentage of pregnant women attending health facility,Pourcentage de femmes enceintes fréquentant un établissement de santé
+Percentage of children attending health facility,Pourcentage d'enfants fréquentant un établissement de santé
+Unmet need for family planning,Besoin non satisfait de planification familiale
+Food,Alimentation
+Fraction of subsistence farming,Fraction de l'agriculture de subsistance
+Fraction eating rice as main staple food,Fraction de personnes consommant du riz comme principal aliment de base
+Fraction eating wheat as main staple food,Fraction de ceux qui consomment du blé comme principal aliment de base
+Fraction eating maize as main staple food,Fraction de la population consommant du maïs comme principal aliment de base
+Fraction on other staples as main staple food,Fraction de la population qui consomme d'autres aliments de base comme principale denrée alimentaire
+Age distribution of pregnant women,Répartition par âge des femmes enceintes
+Percentage of pregnant women 15-19 years,Pourcentage de femmes enceintes de 15 à 19 ans
+Percentage of pregnant women 20-29 years,Pourcentage de femmes enceintes âgées de 20 à 29 ans
+Percentage of pregnant women 30-39 years,Pourcentage de femmes enceintes âgées de 30 à 39 ans
+Percentage of pregnant women 40-49 years,Pourcentage de femmes enceintes âgées de 40 à 49 ans
+Birth spacing,Espacement des naissances
+First birth,Première naissance
+less than 18 months,moins de 18 mois
+18-23 months,18 à 23 mois
+24 months or greater,24 mois ou plus
+Total (must be 100%),Total (doit être 100%)
+Baseline year mortality and risk factors,Mortalité de l'année de référence et facteurs de risque
+Mortality,Mortalité
+"Neonatal mortality (per 1,000 live births)",Mortalité néonatale (pour 1 000 naissances vivantes)
+"Infant mortality (per 1,000 live births)",Mortalité infantile (pour 1 000 naissances vivantes)
+"Under 5 mortality (per 1,000 live births)",Mortalité des moins de 5 ans (pour 1 000 naissances vivantes)
+"Maternal mortality (per 1,000 live births)",Mortalité maternelle (pour 1 000 naissances vivantes)
+Fraction of pregnancies ending in spontaneous abortion,Fraction des grossesses se terminant par un avortement spontané
+"Stillbirths (per 1,000 total births)",Mortinatalité (pour 1 000 naissances totales)
+Birth outcome distribution,Distribution des résultats des naissances
+Pre-term SGA,SGA avant terme
+Pre-term AGA,AGA avant terme
+Term SGA,SGA à terme
+Term AGA,AGA à terme
+Diarrhoea incidence,Incidence de la diarrhée
+Average episodes per year: <1 month,Nombre moyen d'épisodes par an : <1 mois
+Average episodes per year: 1-5 months,Épisodes moyens par an : 1-5 mois
+Average episodes per year: 6-11 months,Nombre moyen d'épisodes par an : 6-11 mois
+Average episodes per year: 12-23 months,Nombre moyen d'épisodes par an : 12-23 mois
+Average episodes per year: 24-59 months,Nombre moyen d'épisodes par an : 24-59 mois
+Other risks,Autres risques
+Percentage of diarrhea that is severe,Pourcentage de diarrhée grave
+Percentage of anaemia that is iron deficient,Pourcentage d'anémie avec carence en fer
+Demographic projections,Projections démographiques
+Year,Année
+Number of births,Nombre de naissances
+WRA: 15-19 year,FAP : 15-19 ans
+WRA: 20-29 year,FAP : 20-29 ans
+WRA: 30-39 year,FAP : 30-39 ans
+WRA: 40-49 year,FAP : 40-49 ans
+Total WRA,Total FAP
+Estimated pregnant women,Estimation des femmes enceintes
+Non-pregnant WRA,FAP non enceintes
+Causes of death,Causes de décès
+Percentage of deaths in baseline year (2019) attributable to cause,Pourcentage de décès dans l'année de référence (2019) attribuable à la cause
+Neonatal,Néonatal
+Neonatal diarrhoea,Diarrhée néonatale
+Neonatal sepsis,Septicémie néonatale
+Neonatal pneumonia,Pneumonie néonatale
+Neonatal asphyxia,Asphyxie néonatale
+Neonatal prematurity,Prématurité néonatale
+Neonatal tetanus,Tétanos néonatal
+Neonatal congenital anomalies,Anomalies congénitales néonatales
+Neonatal other,Autres pathologies néonatales
+Children,Enfants
+Causes,Causes
+Diarrhoea,Diarrhée
+Pneumonia,Pneumonie
+Meningitis,Méningite
+Measles,Rougeole
+Malaria,Paludisme
+Pertussis,Coqueluche
+AIDS,SIDA
+Injury,Blessure
+Other,Autre
+1-5 months,1-5 mois
+6-11 months,6-11 mois
+12-23 months,12-23 mois
+24-59 months,24-59 mois
+Pregnant women,Femmes enceintes
+Antepartum haemorrhage,Hémorragie antepartum
+Intrapartum haemorrhage,Hémorragie intra-partum
+Postpartum haemorrhage,Hémorragie du post-partum
+Hypertensive disorders,Troubles hypertensifs
+Sepsis,Septicémie
+Abortion,Avortement
+Embolism,Embolie
+Other direct causes,Autres causes directes
+Indirect causes,Causes indirectes
+Nutritional status distribution,Distribution de l'état nutritionnel
+Percentage of population in each category in baseline year (2019),Pourcentage de la population dans chaque catégorie dans l'année de référence (2019)
+Status,Statut
+<1 month,<1 mois
+Stunting (height-for-age),Retard de croissance (taille pour l'âge)
+Normal (HAZ-score > -1),Normal (score HAZ > -1)
+Mild (HAZ-score between -2 and -1),Léger (score HAZ entre -2 et -1)
+Moderate (HAZ-score between -3 and -2),Modéré (score HAZ entre -3 et -2)
+High (HAZ-score between < -3),Élevé (score HAZ entre < -3)
+Wasting (weight-for-height),Amaigrissement (poids par rapport à la taille)
+Normal  (WHZ-score > -1),Normal (score WHZ > -1)
+Mild  (WHZ-score between -2 and -1),Léger (score WHZ entre -2 et -1)
+MAM   (WHZ-score between -3 and -2),MAM (score WHZ entre -3 et -2)
+SAM   (WHZ-score < -3),SAM (score WHZ < -3)
+Anaemia,Anémie
+PW: 15-19 years,PW : 15-19 ans
+PW: 20-29 years,PW : 20-29 ans
+PW: 30-39 years,PW : 30-39 ans
+PW: 40-49 years,PW : 40-49 ans
+Prevalence of anaemia,Prévalence de l'anémie
+Prevalence of iron deficiency anaemia,Prévalence de l'anémie ferriprive
+Breastfeeding distribution,Distribution de l'allaitement maternel
+Percentage of children in each category in baseline year (2019),Pourcentage d'enfants dans chaque catégorie dans l'année de référence (2019)
+Breastfeeding,Allaitement maternel
+Exclusive,Exclusif
+Predominant,Prédominant
+Partial,Partiel
+None,Aucun
+Time trends,Tendances temporelles
+Risk,Risque
+Population,Population
+Stunting prevalence (%),Prévalence du retard de croissance (%)
+Wasting prevalence (%),Prévalence de l'émaciation (%)
+Anaemia prevalence (%),Prévalence de l'anémie (%)
+Pregnant women,Femmes enceintes
+Women of reproductive age,Femmes en âge de procréer
+Prevalence of age-appropriate breastfeeding,Prévalence de l'allaitement maternel adapté à l'âge des enfants
+Children 0-5 months,Enfants de 0 à 5 mois
+Children 6-23 months,Enfants de 6 à 23 mois
+"Under five (deaths per 1,000 births)",Moins de cinq ans (décès pour 1 000 naissances)
+"Maternal (deaths per 1,000 births)",Maternelle (décès pour 1 000 naissances)
+IYCF packages,Paquets IYCF
+IYCF package,Paquet IYCF
+Target population,Population cible
+Health facility,Établissement de santé
+Community,Communauté
+Mass media,Médias de masse
+All,Tous
+Programs cost and coverage,Coût et couverture des programmes
+Program,Programme
+Baseline (2019) coverage,Couverture de base (2019)
+Saturation coverage of target population,Couverture à saturation de la population cible
+Unit cost (US$ per person per year),Coût unitaire (US$ par personne et par an)
+Cost-coverage relationship,Relation coût-couverture
+Balanced energy-protein supplementation,Supplémentation équilibrée en énergie et en protéines
+Calcium supplementation,Supplémentation en calcium
+Cash transfers,Transferts en espèces
+Delayed cord clamping,Retardement du clampage du cordon
+Family planning,Planification familiale
+IFA fortification of maize,Enrichissement du maïs en AGI
+IFA fortification of rice,Enrichissement du riz en AGI
+IFA fortification of wheat flour,Enrichissement en ACI de la farine de blé
+IFAS (community),IFAS (communauté)
+IFAS (health facility),IFAS (établissement de santé)
+IFAS (retailer),IFAS (détaillant)
+IFAS (school),IFAS (école)
+IFAS for pregnant women (community),IFAS pour les femmes enceintes (communauté)
+IFAS for pregnant women (health facility),IFAS pour les femmes enceintes (établissement de santé)
+IPTp,IPTp
+Iron and iodine fortification of salt,Enrichissement du sel en fer et en iode
+IYCF 1,AIFC 1
+IYCF 2,AIFC 2
+IYCF 3,IYCF 3
+Kangaroo mother care,Soins maternels kangourou
+Lipid-based nutrition supplements,Suppléments nutritionnels à base de lipides
+Long-lasting insecticide-treated bednets,Moustiquaires imprégnées d'insecticide longue durée
+Mg for eclampsia,Mg pour l'éclampsie
+Mg for pre-eclampsia,Mg pour la pré-éclampsie
+Micronutrient powders,Poudres de micronutriments
+Multiple micronutrient supplementation,Supplémentation en micronutriments multiples
+Oral rehydration salts,Sels de réhydratation orale
+Public provision of complementary foods,Fourniture publique d'aliments complémentaires
+Treatment of SAM,Traitement de la MAS
+Vitamin A supplementation,Supplémentation en vitamine A
+WASH: Handwashing,WASH : lavage des mains
+WASH: Hygenic disposal,WASH : Élimination hygiénique
+WASH: Improved sanitation,WASH : Amélioration de l'assainissement
+WASH: Improved water source,WASH : Source d'eau améliorée
+WASH: Piped water,WASH : Eau courante
+Zinc for treatment + ORS,Zinc pour le traitement + SRO
+Zinc supplementation,Supplémentation en zinc
+Linear (constant marginal cost) [default],Linéaire (coût marginal constant) [par défaut].
+Curved with increasing marginal cost,Courbe avec coût marginal croissant
+Curved with decreasing marginal cost,Courbe avec coût marginal décroissant
+S-shaped (decreasing then increasing marginal cost),En forme de S (coût marginal décroissant puis croissant)
+Program dependencies,Dépendances du programme
+Exclusion dependency,Dépendance d'exclusion
+Threshold dependency,Dépendance de seuil
+Reference programs,Programmes de référence
+Default,Défaut
+Extension,Extension
+Add extension,Ajouter une extension
+Delivery mode,Mode de livraison
