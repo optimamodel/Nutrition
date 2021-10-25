@@ -18,8 +18,8 @@ region_list = ['DOUALA']
 ramping = True
 n_runs = 2
 sample_size = n_runs
-doplot = True
-pop_growth = False
+doplot = False
+pop_growth = "fixed coverage"
 
 """" If the model is run for a single run using 'p.run_scens()' then set resampling=False
     to make sure that the default point estimators are used from 

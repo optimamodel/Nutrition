@@ -50,6 +50,7 @@ class ScenResult(sc.prettyobj):
                         prettyval = round(val,0)
                     prettyvals.append(prettyval)
                 output = prettyvals
+        #print(output['pop_rate'])
         return output
     
     def get_covs(self, ref=True, unrestr=True):
@@ -85,7 +86,7 @@ class ScenResult(sc.prettyobj):
                 covs[name] = newcov
             elif self.ramping and self.pop_growth=="fixed coverage":
                 for i in range(1, len(self.years)):
-                    newcov[i] = cov[0]
+                    newcov[i] = cov[1]
                 covs[name] = newcov
             elif not self.ramping and self.pop_growth != "fixed budget" and self.pop_growth != "fixed coverage":
                 if not ref and prog.reference:
@@ -115,7 +116,7 @@ class ScenResult(sc.prettyobj):
                         
             elif self.ramping and self.pop_growth=="fixed budget":
                 for k in range(1, len(self.years)):
-                    new_spend[k] = spend[0]
+                    new_spend[k] = spend[1]
                 
                 allocs[name] = new_spend
             elif self.ramping and self.pop_growth=="fixed coverage":
@@ -133,7 +134,7 @@ class ScenResult(sc.prettyobj):
             #     spend -= spend[0]
             
                 allocs[name] = spend
-            
+        print(allocs)    
         return allocs
 
     
@@ -148,6 +149,10 @@ class ScenResult(sc.prettyobj):
     
     def get_basefunds(self):
         return self.model.prog_info.fixed
+    
+    def get_populations(self):
+        total_population = self.model.children.total_pop()
+        return total_population
 
     def get_childscens(self):
         """ For calculating the impacts of each scenario with single intervention set to 0 coverage """

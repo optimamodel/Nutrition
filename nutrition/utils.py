@@ -67,7 +67,10 @@ def default_trackers(prev=None, rate=None):
         'child_death_cost',
         'pw_death_cost',
         'child_anaemic_cost',
-        'pw_anaemic_cost'
+        'pw_anaemic_cost',
+        'total_popn',
+        'pop_rate'
+        
     ]
     if prev is not None:
         if prev:
@@ -139,7 +142,10 @@ def pretty_labels(direction=False):
             'Economic cost of child death',
             'Economic cost of pw death',
             'Economic cost of anaemic child',
-            'Economic cost of anaemic pw'
+            'Economic cost of anaemic pw',
+            'Total population',
+            'Population growth rate'
+           
             
         ]
     labs = sc.odict(zip(default_trackers(), pretty))

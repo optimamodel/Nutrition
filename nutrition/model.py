@@ -129,12 +129,17 @@ class Model(sc.prettyobj):
         self.pw_death_cost[self.year] = np.sum(self.pw_deaths) * self.cost_pw_death
         self.child_anaemic_cost[self.year] = oldest.num_anaemic() * rate * self.cost_child_anaemic
         self.pw_anaemic_cost[self.year] = self.pw.num_anaemic() * self.cost_pw_anaemic
+               
+    def _track_total_pop(self):
+        self.total_popn[self.year] = self.pw.total_pop() + self.nonpw.total_pop() + self.children.total_pop() 
+        self.pop_rate[self.year]= self.total_popn[self.year] / self.total_popn[self.year-1] if self.total_popn[self.year-1] !=0 else 1
         
     def _track(self):
         self._track_wra_outcomes()
         self._track_prevs()
         self._track_bf()
         self._track_economic_loss()
+        self._track_total_pop()
         
     def _set_pop_probs(self, year):
         init_cov = self.prog_info.get_ann_covs(year-1)
