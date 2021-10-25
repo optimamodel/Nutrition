@@ -118,7 +118,7 @@ class Program(sc.prettyobj):
             num_cov = oldCov[year] * oldURP
             newCov = min(num_cov / self.unrestr_popsize, self.sat)
             self.annual_cov[year] = newCov
-            self.annual_spend[year] =  self.get_spending(self.annual_cov)[year]
+            #self.annual_spend[year] =  self.get_spending(self.annual_cov)[year]
         elif growth == "fixed coverage":
             self.annual_cov = oldCov
             self.annual_spend[year] = self.get_spending(self.annual_cov)[year] * self.unrestr_popsize / oldURP
