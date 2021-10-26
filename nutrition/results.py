@@ -90,9 +90,10 @@ class ScenResult(sc.prettyobj):
                     #cov -= cov[0] # baseline year is reference cov, subtracted from every year
                 covs[name] = new_cov
             elif self.ramping and self.pop_growth=="fixed budget":
-                newcov = cov
+                newcov = prog.get_cov(unrestr=unrestr)
                 covs[name] = newcov
             elif self.ramping and self.pop_growth=="fixed coverage":
+                cov = prog.get_cov(unrestr=unrestr)
                 for i in range(1, len(self.years)):
                     newcov[i] = cov[1]
                 covs[name] = newcov
@@ -124,14 +125,16 @@ class ScenResult(sc.prettyobj):
                 allocs[name] = new_spend
                         
             elif self.ramping and self.pop_growth=="fixed budget":
+                spend = prog.annual_spend
                 for k in range(1, len(self.years)):
                     new_spend[k] = spend[1]
                 
                 allocs[name] = new_spend
             elif self.ramping and self.pop_growth=="fixed coverage":
-                rate = self.get_outputs(outcomes, seq=True, pretty=True)['pop_rate']
-                for k in range(1, len(self.years)):
-                    new_spend[k] = new_spend[k-1] * rate[k]
+                new_spend = prog.annual_spend
+                #rate = self.get_outputs(outcomes, seq=True, pretty=True)['pop_rate']
+                #for k in range(1, len(self.years)):
+                    #new_spend[k] = new_spend[k-1] * rate[k]
                 #new_spend = np.multiply(spend[:1], rate[:1])
                 
                 allocs[name] = new_spend
