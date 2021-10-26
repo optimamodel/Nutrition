@@ -12,23 +12,29 @@ Backend localization is needed for any strings that are hardcoded into the Pytho
 
 Strings that require translation are passed through a 'translation function' which is assigned to `_` by convention. `babel` scans through the package searching for strings occurring inside `_` and then uses them to update the catalog files.
 
-To update strings after adding new strings in code, run the following commands. Theses create `nutrition/locale/nutrition.pot`
+### Standard commands
+
+To update strings after adding new strings in code, run the following commands. This creates `nutrition/locale/nutrition.pot`
 
     python setup.py extract_messages
     python setup.py update_catalog
 
-To set up a new locale e.g. `en`. This creates `nutrition/locale/en/LC_MESSAGES/nutrition.po`
+To set up a new locale e.g., `en` use:
 
     python setup.py init_catalog -l en
+
+This creates `nutrition/locale/en/LC_MESSAGES/nutrition.po`.
 
 To update translations (after modifying translated text)
 
     python setup.py compile_catalog
 
-Normal workflow would be
+### Adding translations to the backend code
 
-1. Add `_ = utils.get_translator(locale)` in the appropriate scope. `utils.locale` contains the fallback/default locale
-2. Modify strings to be passed through `_` for translation
+The normal workflow for adding translations to existing strings in the code is:
+
+1. Add `_ = utils.get_translator(locale)` in the appropriate scope. `utils.locale` contains the fallback/default locale. For RPCs, it is necessary to get the translator inside the RPC call, so that way different languages can be simultaneously used by multiple users.
+2. For any string that needs to be translated, pass it through `_` for translation. For example `print("foo")` could become `print(_("foo"))`
 3. Run the extract messages and update catalog steps above
 4. Edit the `.po` files to populate the translations
 5. Compile the catalog
@@ -41,13 +47,11 @@ Some strings also appear in the databook, such as program names or population na
 The reference files are in `inputs/en`. Remaining files are automatically generated using `translate.py`. This script does the following for each file in `en`:
 
 - Copy file to locale folder e.g. `fr`
-- Finds and replaces all strings matched in `translations.xlsx`
+- Finds and replaces all strings matched in `translations.csv`. Strings are matched against cell contents in their entirity. Note that this means that cell values contained inside formulas e.g., `=IF(...,"foo")` will not match `"foo"` in `translations.csv`. This is required so that named cells e.g. `=start_year` do not become `=start_Année` and therefore break formalas. However, it may be necessary to change parts of the databook to move hardcoded strings to separate cells that are then referenced. 
 
 Therefore, `translate.py` generated translated versions of the `en` files.
 
 To preserve the files as precisely as possible, the translation is carried out by remote-controlling Microsoft Excel. Therefore, **this script can only be run on a Windows machine with Microsoft Excel installed**.
-
-CAUTION - translations should be ordered from longest to shortest to avoid issues related to substrings (e.g. if part of a string is substituted, resulting in a longer string failing to match later on)
 
 For strings that appear in both the databook and in the code, the translations in the `.po` files are automatically populated if the message ID matches the string in the source locale column. Consider the example of `12-24 months` which appears in both the databook and in the code. The workflow to translate this string is
 
@@ -59,12 +63,12 @@ For strings that appear in both the databook and in the code, the translations i
 
 ## Localization (Vue)
 
-To add a translation
+Strings that are specific to the frontend (e.g., the text that appears on a button) appear in `.vue` files. To add translations for these strings:
 
 1. Make a string in the `.vue` file using the `$t` function
 2. Use `npm run translate` to scan the `.vue` files and update the catalogs
 3. Fill in the translations in the catalog files
 
-Translations are in `src/locales` and also need to appear in `src/js/utils.js` in the list of available locales (this is how the locale will end up in the locale switcher). To add a locale, add an entry to `utils.js`, create a blank translation in `src/locales` and then run `npm run translate`
+Translations are in `src/locales` with one file for each locale. The locales themselves also need to appear in `src/js/utils.js` in the list of available locales (this is how the locale will end up in the locale switcher). To add a new locale, add an entry to `utils.js`, create a blank translation in `src/locales` and then run `npm run translate`
 
-To access the current locale, use `import i18n from '../i18n'` in the scripts section. `i18n.locale` is then accessible as the current locale in callbacks. Within the template, use `$i18n.locale` - see `LocaleSwitcher.vue` for an example.
+To access the current locale, use `import i18n from '../i18n'` in the scripts section. `i18n.locale` is then accessible as the current locale in callbacks. Within the template, use `$i18n.locale` - see `LocaleSwitcher.vue` for an example. This allows the locale in the UI to be included in RPC calls so that the RPC can access a specific locale. For example, when creating a demo project, the frontend's locale is used to determine which databook is used to create the project. 

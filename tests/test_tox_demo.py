@@ -31,6 +31,8 @@ def test_geos(project):
 
 
 if __name__ == "__main__":
+    nu.available_locales = ['fr']
+
     for locale in nu.available_locales:
         project = nu.demo(scens=True, optims=True, geos=True, locale=locale)
         test_scens(project)

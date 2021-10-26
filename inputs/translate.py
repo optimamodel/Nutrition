@@ -10,8 +10,9 @@ import nutrition.ui as nu
 
 # Load translations from Excel
 source = "en"
-translations = pd.read_csv("translations.csv", index_col=source).dropna()
-
+translations = pd.read_csv("translations.csv", index_col=source)
+translations = translations.drop(['notes'], axis=1, errors='ignore')
+assert not translations.index.duplicated().any()
 
 def translate_databook(target):
 
@@ -33,14 +34,15 @@ def translate_databook(target):
 
             rg = sheet.UsedRange
 
-            for a, b in translations[target].items():
+            for a, b in translations[target].dropna().items():
+                print(f"\t\t'{a}' -> '{b}'")
 
                 # Translate the sheet name
                 if sheet.Name == a:
                     sheet.Name = b
 
                 # Substitute cell content
-                rg.Replace(a, b)
+                rg.Replace(a, b, LookAt=1) # LookAt=1 is equivalent to "xlWhole" i.e. match entire cell. Otherwise functions get overwritten
 
             sheet.Protect("nick")  # Need to unprotect, otherwise it will not replace cell values correctly
 
@@ -63,11 +65,11 @@ def update_messages(target):
     # Update the .po files with translations from the CSV list, if the English text matches the message ID
     target_po = polib.pofile((nu.ONpath / "nutrition" / "locale" / target / "LC_MESSAGES" / "nutrition.po"))
 
-    msgids = set(translations.index)
+    target_translations = translations[target].dropna()
 
     for entry in target_po:
-        if entry.msgid in msgids:
-            entry.msgstr = translations.at[entry.msgid, target]
+        if entry.msgid in target_translations.index:
+            entry.msgstr = target_translations[entry.msgid]
     target_po.save()
 
 
