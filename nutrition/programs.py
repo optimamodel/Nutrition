@@ -115,16 +115,14 @@ class Program(sc.prettyobj):
         self._set_restrpop(pops)
         oldCov = self.annual_cov
         if growth == "fixed budget":
-            #rate = oldURP / self.unrestr_popsize
             num_cov = oldCov[year] * oldURP
             new_cov_year = min(num_cov / self.unrestr_popsize, self.sat)
             self.annual_cov[year] = new_cov_year
-            #self.annual_spend[year] =  self.get_spending(self.annual_cov)[year]
         elif growth == "fixed coverage":
             self.annual_cov = oldCov
             self.annual_spend[year] = self.get_spending(self.annual_cov)[year] * self.unrestr_popsize / oldURP
-        else:
-            self.annual_cov = oldCov
+        elif not growth:
+             self.annual_cov[year] = self.annual_cov[year]
         self.annual_restr_cov[year] = self.annual_cov[year] * self.unrestr_popsize / self.restr_popsize
         
     def _set_target_ages(self):
@@ -684,17 +682,25 @@ class ProgramInfo(sc.prettyobj):
             covs[prog.name] = prog.annual_cov[prog.year]
         return covs   
 
-    def _get_ann_covs(self, year): # This is no longer required
+    def ramp_ann_covs(self, year, growth): 
         #covs = {}
         covs = sc.odict()
         for prog in self.programs.values():
-            if prog.annual_cov[prog.year] - prog.annual_cov[prog.year-1] > prog.max_inc:
-                covs[prog.name] = prog.annual_cov[prog.year-1] + prog.max_inc
-            elif prog.annual_cov[prog.year] - prog.annual_cov[prog.year-1] < (-1) * prog.max_dec:
-                covs[prog.name] = prog.annual_cov[prog.year-1] - prog.max_dec
+            if growth == "fixed budget" or growth == "fixed coverage":
+                if prog.annual_restr_cov[prog.year] - prog.annual_restr_cov[prog.year-1] > prog.max_inc:
+                    covs[prog.name] = prog.annual_restr_cov[prog.year-1] + prog.max_inc
+                elif prog.annual_restr_cov[prog.year] - prog.annual_restr_cov[prog.year-1] < (-1) * prog.max_dec:
+                    covs[prog.name] = prog.annual_restr_cov[prog.year-1] - prog.max_dec
+                else:
+                    covs[prog.name] = prog.annual_restr_cov[prog.year]
             else:
-                covs[prog.name] = prog.annual_cov[prog.year]
-        return covs   
+                if prog.annual_cov[prog.year] - prog.annual_cov[prog.year-1] > prog.max_inc:
+                    covs[prog.name] = prog.annual_cov[prog.year-1] + prog.max_inc
+                elif prog.annual_cov[prog.year] - prog.annual_cov[prog.year-1] < (-1) * prog.max_dec:
+                    covs[prog.name] = prog.annual_cov[prog.year-1] - prog.max_dec
+                else:
+                    covs[prog.name] = prog.annual_cov[prog.year]
+            
 
     def restrict_covs(self):
         """

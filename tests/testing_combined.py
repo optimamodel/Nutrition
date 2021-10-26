@@ -19,13 +19,13 @@ ramping = True
 n_runs = 2
 sample_size = n_runs
 doplot = False
-pop_growth = "fixed coverage"
+pop_growth = "fixed budget"
 
 """" If the model is run for a single run using 'p.run_scens()' then set resampling=False
     to make sure that the default point estimators are used from 
     the databook with out considering any randomness!"""
 p1 = nu.Project('eg')
-p1.load_data('demo', 'testing', name='eg', resampling=False)
+p1.load_data('demo', 'testing', name='eg', resampling=False, pop_growth=pop_growth)
 
 """Define non-optimization scenarios"""
 
@@ -48,7 +48,7 @@ kwargs3 = {'name': 'IYCF',
 def parallel_optim(region, path=None, ramping=True):
     """Define optimization scenario"""
     p2 = Project('Cameroon')
-    p2.load_data(inputspath=path + region + '_input.xlsx', name=region, resampling=False)
+    p2.load_data(inputspath=path + region + '_input.xlsx', name=region, resampling=False, pop_growth=pop_growth)
 
     """Define a custom optimization scenario"""
     
@@ -76,7 +76,7 @@ def parallel_optim(region, path=None, ramping=True):
 scen_list = nu.make_scens([kwargs1, kwargs2, kwargs3])
 p1.add_scens(scen_list)
 #p1.run_scens(ramping=ramping) # make sure to set resampling=False
-p1.multirun_scens(n_runs=n_runs, ramping=ramping)
+p1.multirun_scens(n_runs=n_runs, ramping=ramping, pop_growth=pop_growth)
 p1.write_results(filename=output_path + 'non_optimized.xlsx')
 p1.reduce()
 #if doplot:

@@ -65,8 +65,10 @@ class ScenResult(sc.prettyobj):
         covs = sc.odict()
         
         for name, prog in self.programs.iteritems():
-            covs[name] = prog.annual_restr_cov
-
+            if self.pop_growth:
+                covs[name] = prog.annual_restr_cov
+            else:
+                covs[name] = prog.annual_cov
         return covs
 
     def get_allocs(self, ref=True, current=False):

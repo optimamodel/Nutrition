@@ -11,7 +11,7 @@ doplot = False
 resampling = False
 ramping = True
 n_runs = 3
-pop_growth = "fixed coverage"
+pop_growth = "fixed budget"
 
 # load in data to create model
 """" If the model is run for a single run using 'p.run_scens()' then set resampling=False
