@@ -50,8 +50,16 @@ class ScenResult(sc.prettyobj):
                         prettyval = round(val,0)
                     prettyvals.append(prettyval)
                 output = prettyvals
-        #print(output['pop_rate'])
         return output
+    
+    def get_poprates(self, outcomes=None):
+        if outcomes is None:
+            outcomes = default_trackers()
+        if sc.isstring(outcomes):
+            outcomes = sc.promotetolist(outcomes)
+        rates = self.model.get_poprate(outcomes)
+        print(rates)
+        return rates
     
     def get_covs(self, ref=True, unrestr=True):
         covs = sc.odict()
@@ -97,6 +105,7 @@ class ScenResult(sc.prettyobj):
 
     def get_allocs(self, ref=True, current=False):
         allocs = sc.odict()
+        outcomes = default_trackers()
         for name, prog in self.programs.items():
             spend = prog.annual_spend
             covs = self.get_covs(unrestr=True)[name]
@@ -120,9 +129,10 @@ class ScenResult(sc.prettyobj):
                 
                 allocs[name] = new_spend
             elif self.ramping and self.pop_growth=="fixed coverage":
-                #for k in range(1, len(self.years)):
-                    #new_spend[k] = prog.get_spending(covs)[k]
-                new_spend = spend[:1]
+                rate = self.get_outputs(outcomes, seq=True, pretty=True)['pop_rate']
+                for k in range(1, len(self.years)):
+                    new_spend[k] = new_spend[k-1] * rate[k]
+                #new_spend = np.multiply(spend[:1], rate[:1])
                 
                 allocs[name] = new_spend
             elif not self.ramping and self.pop_growth != "fixed budget" and self.pop_growth != "fixed coverage":
@@ -134,7 +144,7 @@ class ScenResult(sc.prettyobj):
             #     spend -= spend[0]
             
                 allocs[name] = spend
-        print(allocs)    
+         
         return allocs
 
     

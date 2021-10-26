@@ -5,7 +5,7 @@ from .utils import default_trackers, restratify
 
 
 class Model(sc.prettyobj):
-    def __init__(self, pops, prog_info, demo_data, t=None, adjust_cov=False, timeTrends=False, pop_growth=False):
+    def __init__(self, pops, prog_info, demo_data, t=None, adjust_cov=False, timeTrends=False, pop_growth=False, pop_sizes=dict()):
         self.pops = sc.dcp(pops)
         self.children, self.pw, self.nonpw = self.pops
         self.prog_info = sc.dcp(prog_info)
@@ -18,6 +18,8 @@ class Model(sc.prettyobj):
         self.sim_years = self.all_years[1:]
         self.year = self.all_years[0]
         self.econo_data = self.demo_data
+        self.pop_sizes = pop_sizes
+        
         
 
         # this is for extracting baseline coverage/spending in gui (before prog_set set)
@@ -131,8 +133,12 @@ class Model(sc.prettyobj):
         self.pw_anaemic_cost[self.year] = self.pw.num_anaemic() * self.cost_pw_anaemic
                
     def _track_total_pop(self):
+        self.pop_sizes[self.year] = dict()
+        for pop in self.pops:
+            for age_group in pop.age_groups:
+                self.pop_sizes[self.year][age_group.age] = age_group.pop_size
         self.total_popn[self.year] = self.pw.total_pop() + self.nonpw.total_pop() + self.children.total_pop() 
-        self.pop_rate[self.year]= self.total_popn[self.year] / self.total_popn[self.year-1] if self.total_popn[self.year-1] !=0 else 1
+        self.pop_rate[self.year] = self.total_popn[self.year] / self.total_popn[self.year-1] if self.total_popn[self.year-1] !=0 else 1
         
     def _track(self):
         self._track_wra_outcomes()
@@ -610,5 +616,8 @@ class Model(sc.prettyobj):
                 else: # want total
                     output = sum(outseq)
                 outputs[i] = output
+        
         return outputs
+    
+   
     

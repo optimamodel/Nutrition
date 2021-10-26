@@ -111,6 +111,7 @@ class Program(sc.prettyobj):
         # set unrestricted pop size so coverages account for growing population size
         oldURP = self.unrestr_popsize
         self._set_unrestrpop(pops) # TODO: is this the optimal place to do this?
+        self._set_restrpop(pops)
         oldCov = self.annual_cov
         if growth == "fixed budget":
             #rate = oldURP / self.unrestr_popsize
@@ -120,7 +121,6 @@ class Program(sc.prettyobj):
             #self.annual_spend[year] =  self.get_spending(self.annual_cov)[year]
         elif growth == "fixed coverage":
             self.annual_cov = oldCov
-            self._set_unrestrpop(pops)
             self.annual_spend[year] = self.get_spending(self.annual_cov)[year] * self.unrestr_popsize / oldURP
         else:
             self.annual_cov = oldCov
