@@ -26,7 +26,8 @@ class Program(sc.prettyobj):
         self.max_inc = progdata.max_inc[name]
         self.max_dec = progdata.max_dec[name]
         self.base_cov = progdata.base_cov[name]
-        self.annual_cov = np.zeros(len(all_years))
+        self.annual_cov = np.zeros(len(all_years)) #this is the unrestr_cov
+        self.annual_restr_cov = np.zeros(len(all_years)) #only calculated in adjust_cov
         self.annual_spend = np.zeros(len(all_years))
         self.excl_deps = progdata.prog_deps[name]['Exclusion dependency']
         self.thresh_deps = progdata.prog_deps[name]['Threshold dependency']
@@ -116,14 +117,15 @@ class Program(sc.prettyobj):
         if growth == "fixed budget":
             #rate = oldURP / self.unrestr_popsize
             num_cov = oldCov[year] * oldURP
-            newCov = min(num_cov / self.unrestr_popsize, self.sat)
-            self.annual_cov[year] = newCov
+            new_cov_year = min(num_cov / self.unrestr_popsize, self.sat)
+            self.annual_cov[year] = new_cov_year
             #self.annual_spend[year] =  self.get_spending(self.annual_cov)[year]
         elif growth == "fixed coverage":
             self.annual_cov = oldCov
             self.annual_spend[year] = self.get_spending(self.annual_cov)[year] * self.unrestr_popsize / oldURP
         else:
             self.annual_cov = oldCov
+        self.annual_restr_cov[year] = self.annual_cov[year] * self.unrestr_popsize / self.restr_popsize
         
     def _set_target_ages(self):
         """
