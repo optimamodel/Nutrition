@@ -63,91 +63,19 @@ class ScenResult(sc.prettyobj):
     
     def get_covs(self, ref=True, unrestr=True):
         covs = sc.odict()
-        cov_diffs = []
-       
-        for name, prog in self.programs.iteritems():
-            check_cov = prog.get_cov(unrestr=unrestr)
-            cov_diffs.append(mt.ceil(abs(check_cov[-1] - check_cov[0]) / prog.max_inc))
-        max_time = np.nanmax(cov_diffs)
-        for name, prog in self.programs.iteritems():
-            cov = prog.get_cov(unrestr=unrestr)
-            new_cov = np.zeros(len(self.years))
-            new_cov[0] = cov[0]
-            if self.ramping and self.pop_growth != "fixed budget" and self.pop_growth != "fixed coverage":
-                
-                if mt.ceil(abs(cov[-1] - cov[0]) / prog.max_inc) < max_time and abs(cov[-1] - cov[0]) != 0:
-                    prog.max_inc = abs(cov[-1] - cov[0]) / max_time
-                if mt.ceil(abs(cov[-1] - cov[0]) / prog.max_dec) < max_time and abs(cov[-1] - cov[0]) != 0:
-                    prog.max_dec = abs(cov[-1] - cov[0]) / max_time
-                for i in range(1, len(self.years)):
-                    if cov[i] - new_cov[i-1] > prog.max_inc:
-                       new_cov[i] = min(new_cov[i-1] + prog.max_inc, prog.sat)
-                    elif cov[i] - new_cov[i-1] < (-1) * prog.max_dec:
-                        new_cov[i] = new_cov[i-1] - prog.max_dec
-                    else:
-                        new_cov[i] = cov[i]
-               # if not ref and prog.reference:
-                    #cov -= cov[0] # baseline year is reference cov, subtracted from every year
-                covs[name] = new_cov
-            elif self.ramping and self.pop_growth=="fixed budget":
-                newcov = prog.get_cov(unrestr=unrestr)
-                covs[name] = newcov
-            elif self.ramping and self.pop_growth=="fixed coverage":
-                cov = prog.get_cov(unrestr=unrestr)
-                for i in range(1, len(self.years)):
-                    newcov[i] = cov[1]
-                covs[name] = newcov
-            elif not self.ramping and self.pop_growth != "fixed budget" and self.pop_growth != "fixed coverage":
-                if not ref and prog.reference:
-                    cov -= cov[0] # baseline year is reference cov, subtracted from every year
-                covs[name] = cov
         
+        for name, prog in self.programs.iteritems():
+            covs[name] = prog.annual_restr_cov
+
         return covs
 
     def get_allocs(self, ref=True, current=False):
         allocs = sc.odict()
-        outcomes = default_trackers()
+        
         for name, prog in self.programs.items():
-            spend = prog.annual_spend
-            covs = self.get_covs(unrestr=True)[name]
-            rate = np.zeros(len(self.years))
-            rate[0] = 0
-            new_spend = np.zeros(len(self.years))
-            new_spend[0] = spend[0]
-            if self.ramping and self.pop_growth != "fixed budget" and self.pop_growth != "fixed coverage":
-                for k in range(1, len(self.years)):
-                    if k == 1 and covs[k] != 0 and new_spend[k-1] == 0:
-                        new_spend[k] = prog.get_spending(covs)[k]
-                    else:
-                        rate[k] = covs[k]/covs[k-1] if covs[k-1] != 0 else 1
-                        new_spend[k] = new_spend[k-1] * rate[k]
-                    
-                allocs[name] = new_spend
-                        
-            elif self.ramping and self.pop_growth=="fixed budget":
-                spend = prog.annual_spend
-                for k in range(1, len(self.years)):
-                    new_spend[k] = spend[1]
-                
-                allocs[name] = new_spend
-            elif self.ramping and self.pop_growth=="fixed coverage":
-                new_spend = prog.annual_spend
-                #rate = self.get_outputs(outcomes, seq=True, pretty=True)['pop_rate']
-                #for k in range(1, len(self.years)):
-                    #new_spend[k] = new_spend[k-1] * rate[k]
-                #new_spend = np.multiply(spend[:1], rate[:1])
-                
-                allocs[name] = new_spend
-            elif not self.ramping and self.pop_growth != "fixed budget" and self.pop_growth != "fixed coverage":
-                if not ref and prog.reference:
-                    spend -= spend[0] # baseline year is reference spending, subtracted from every year
-                if current:
-                    spend = spend[:1]
-            # if not fixed and not prog.reference:
-            #     spend -= spend[0]
+            prog_cov = prog.get_cov(unrestr=True)
+            allocs[name] = prog.annual_spend
             
-                allocs[name] = spend
-         
         return allocs
 
     
