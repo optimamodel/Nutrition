@@ -115,8 +115,8 @@
     "Reenter old password": "Reenter old password",
     "displayname": "Display name (optional)",
     "email": "Email (optional)",
-    "password": "Password",
-    "username": "Username"
+    "Username": "Username",
+    "Password": "Password"
   },
   "projects": {
     "Add demo project": "Add demo project",

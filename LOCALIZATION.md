@@ -44,7 +44,9 @@ The normal workflow for adding translations to existing strings in the code is:
 
 Some strings also appear in the databook, such as program names or population names. These need to be localized in the databook templates as well as in the code, because the databooks are not generated programatically. The workflow for generating translated databooks is to start with a complete English template. Then, an Excel file containing translations is created.
 
-English strings that will be translated are contained in `translations.txt`. Running `csv_to_po.py` reads `translations.txt` and adds `.po` files to subdirectories within the input folder. These `po` files can be edited to perform the translations. `translate.py` will then  
+English strings that will be translated are contained in `translations.txt`. Running `csv_to_po.py` reads `translations.txt` and adds `.po` files to subdirectories within the input folder. These `po` files can be edited to perform the translations. `translate.py` will then  produce translated databooks. 
+
+
 
 The reference files are in `inputs/en`. Remaining files are automatically generated using `translate.py`. This script does the following for each file in `en`:
 

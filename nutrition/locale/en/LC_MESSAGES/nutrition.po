@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nutrition 1.7.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-10-27 11:17+1100\n"
-"PO-Revision-Date: 2021-10-26 13:03+1100\n"
+"POT-Creation-Date: 2021-10-27 14:08+1100\n"
+"PO-Revision-Date: 2021-10-27 13:27+1100\n"
 "Last-Translator: \n"
 "Language: en\n"
 "Language-Team: en <LL@li.org>\n"
@@ -20,7 +20,6 @@ msgstr ""
 
 #: nutrition/data.py:160 nutrition/data.py:275 nutrition/data.py:729
 #: nutrition/data.py:749 nutrition/data.py:886
-#, fuzzy
 msgctxt "databook"
 msgid "Treatment of SAM"
 msgstr "Treatment of SAM"
@@ -33,7 +32,6 @@ msgstr "Programs impacted population"
 #: nutrition/data.py:733 nutrition/data.py:736 nutrition/data.py:739
 #: nutrition/data.py:742 nutrition/data.py:749 nutrition/data.py:752
 #: nutrition/data.py:804
-#, fuzzy
 msgctxt "databook"
 msgid "Children"
 msgstr "Children"
@@ -42,7 +40,6 @@ msgstr "Children"
 #: nutrition/data.py:755 nutrition/data.py:758 nutrition/data.py:761
 #: nutrition/data.py:764 nutrition/data.py:767 nutrition/data.py:804
 #: nutrition/data.py:916 nutrition/data.py:917 nutrition/data.py:918
-#, fuzzy
 msgctxt "databook"
 msgid "Pregnant women"
 msgstr "Pregnant women"
@@ -50,10 +47,9 @@ msgstr "Pregnant women"
 #: nutrition/data.py:168 nutrition/data.py:770 nutrition/data.py:775
 #: nutrition/data.py:780 nutrition/data.py:785 nutrition/data.py:788
 #: nutrition/data.py:804
-#, fuzzy
 msgctxt "databook"
 msgid "Non-pregnant WRA"
-msgstr "non-pregnant WRA"
+msgstr "Non-pregnant WRA"
 
 #: nutrition/data.py:168 nutrition/data.py:791 nutrition/data.py:794
 #: nutrition/data.py:797 nutrition/data.py:800 nutrition/data.py:804
@@ -61,14 +57,12 @@ msgid "General population"
 msgstr "General population"
 
 #: nutrition/data.py:173
-#, fuzzy
 msgid "Program risk areas"
-msgstr "Programs anemia"
+msgstr "Program risk areas"
 
 #: nutrition/data.py:183
-#, fuzzy
 msgid "Population risk areas"
-msgstr "Population data"
+msgstr "Population risk areas"
 
 #: nutrition/data.py:195 nutrition/data.py:199 nutrition/data.py:203
 #: nutrition/data.py:209 nutrition/data.py:213
@@ -86,14 +80,12 @@ msgstr "Stunting"
 #: nutrition/data.py:249 nutrition/data.py:533 nutrition/data.py:536
 #: nutrition/data.py:540 nutrition/data.py:549 nutrition/data.py:550
 #: nutrition/data.py:551 nutrition/data.py:570
-#, fuzzy
 msgctxt "databook"
 msgid "Anaemia"
 msgstr "Anaemia"
 
 #: nutrition/data.py:207 nutrition/data.py:214 nutrition/data.py:242
 #: nutrition/data.py:244 nutrition/data.py:246 nutrition/data.py:584
-#, fuzzy
 msgctxt "databook"
 msgid "Diarrhoea"
 msgstr "Diarrhoea"
@@ -101,7 +93,6 @@ msgstr "Diarrhoea"
 #: nutrition/data.py:210 nutrition/data.py:211 nutrition/data.py:223
 #: nutrition/data.py:558 nutrition/data.py:560 nutrition/data.py:562
 #: nutrition/data.py:571
-#, fuzzy
 msgctxt "databook"
 msgid "Breastfeeding"
 msgstr "Breastfeeding"
@@ -115,18 +106,16 @@ msgid "Condition"
 msgstr "Condition"
 
 #: nutrition/data.py:241
-#, fuzzy
 msgid "Prev stunting"
-msgstr "Stunting"
+msgstr "Prev stunting"
 
 #: nutrition/data.py:241
 msgid "Given previous stunting (HAZ < -2 in previous age band)"
-msgstr ""
+msgstr "Given previous stunting (HAZ < -2 in previous age band)"
 
 #: nutrition/data.py:242
-#, fuzzy
 msgid "Diarrhoea (per additional episode)"
-msgstr "For SAM per additional episode of diarrhoea"
+msgstr "Diarrhoea (per additional episode)"
 
 #: nutrition/data.py:243 nutrition/data.py:244 nutrition/data.py:273
 #: nutrition/data.py:288 nutrition/data.py:591
@@ -156,12 +145,11 @@ msgstr "For anaemia per additional episode of severe diarrhoea"
 
 #: nutrition/data.py:250
 msgid "By program"
-msgstr ""
+msgstr "By program"
 
 #: nutrition/data.py:251
-#, fuzzy
 msgid "Odds ratios for correct breastfeeding by program"
-msgstr "Odds ratio of SAM when covered by program"
+msgstr "Odds ratios for correct breastfeeding by program"
 
 #: nutrition/data.py:256
 msgid "Programs birth outcomes"
@@ -193,46 +181,41 @@ msgstr "Odds ratio of MAM when covered by program"
 
 #: nutrition/data.py:278
 msgid "Programs for children"
-msgstr ""
+msgstr "Programs for children"
 
 #: nutrition/data.py:281
 msgid "Programs for PW"
-msgstr ""
+msgstr "Programs for PW"
 
 #: nutrition/data.py:284
-#, fuzzy
 msgid "Birth outcome risks"
-msgstr "Programs birth outcomes"
+msgstr "Birth outcome risks"
 
 #: nutrition/data.py:286
-#, fuzzy
 msgid "Stunting (HAZ-score < -2)"
-msgstr "Stunting (height-for-age)"
+msgstr "Stunting (HAZ-score < -2)"
 
 #: nutrition/data.py:287
-#, fuzzy
 msgid "MAM (WHZ-score between -3 and -2)"
-msgstr "Mild (HAZ-score between -2 and -1)"
+msgstr "MAM (WHZ-score between -3 and -2)"
 
 #: nutrition/data.py:290
 msgid "Relative risks of neonatal causes of death"
-msgstr ""
+msgstr "Relative risks of neonatal causes of death"
 
 #: nutrition/data.py:294
-#, fuzzy
 msgid "IYCF odds ratios"
-msgstr "Odds ratios"
+msgstr "IYCF odds ratios"
 
 #: nutrition/data.py:295
 msgid "Odds ratio for correct breastfeeding"
-msgstr ""
+msgstr "Odds ratio for correct breastfeeding"
 
 #: nutrition/data.py:296
 msgid "Odds ratio for stunting"
-msgstr ""
+msgstr "Odds ratio for stunting"
 
 #: nutrition/data.py:321 nutrition/data.py:865
-#, fuzzy
 msgctxt "databook"
 msgid "IYCF packages"
 msgstr "IYCF packages"
@@ -241,7 +224,6 @@ msgstr "IYCF packages"
 #: nutrition/data.py:435 nutrition/data.py:452 nutrition/data.py:467
 #: nutrition/data.py:537 nutrition/data.py:582 nutrition/data.py:711
 #: nutrition/data.py:896
-#, fuzzy
 msgctxt "databook"
 msgid "Baseline year population inputs"
 msgstr "Baseline year population inputs"
@@ -249,13 +231,11 @@ msgstr "Baseline year population inputs"
 #: nutrition/data.py:424 nutrition/data.py:425 nutrition/data.py:426
 #: nutrition/data.py:428 nutrition/data.py:439 nutrition/data.py:718
 #: nutrition/data.py:719 nutrition/data.py:720
-#, fuzzy
 msgctxt "databook"
 msgid "Food"
 msgstr "Food"
 
 #: nutrition/data.py:424 nutrition/data.py:718
-#, fuzzy
 msgctxt "databook"
 msgid "Fraction eating rice as main staple food"
 msgstr "Fraction eating rice as main staple food"
@@ -270,37 +250,31 @@ msgid "Data"
 msgstr "Data"
 
 #: nutrition/data.py:425 nutrition/data.py:719
-#, fuzzy
 msgctxt "databook"
 msgid "Fraction eating wheat as main staple food"
 msgstr "Fraction eating wheat as main staple food"
 
 #: nutrition/data.py:426 nutrition/data.py:720
-#, fuzzy
 msgctxt "databook"
 msgid "Fraction eating maize as main staple food"
 msgstr "Fraction eating maize as main staple food"
 
 #: nutrition/data.py:428
-#, fuzzy
 msgctxt "databook"
 msgid "Fraction on other staples as main staple food"
 msgstr "Fraction on other staples as main staple food"
 
 #: nutrition/data.py:430 nutrition/data.py:431 nutrition/data.py:447
-#, fuzzy
 msgctxt "databook"
 msgid "Birth spacing"
 msgstr "Birth spacing"
 
 #: nutrition/data.py:431 nutrition/data.py:448
-#, fuzzy
 msgctxt "databook"
 msgid "Total (must be 100%)"
 msgstr "Total (must be 100%)"
 
 #: nutrition/data.py:433 nutrition/data.py:434 nutrition/data.py:443
-#, fuzzy
 msgctxt "databook"
 msgid "Birth outcome distribution"
 msgstr "Birth outcome distribution"
@@ -308,32 +282,28 @@ msgstr "Birth outcome distribution"
 #: nutrition/data.py:434
 msgctxt "databook"
 msgid "Term AGA"
-msgstr ""
+msgstr "Term AGA"
 
 #: nutrition/data.py:439 nutrition/data.py:712 nutrition/data.py:713
 #: nutrition/data.py:714 nutrition/data.py:715 nutrition/data.py:716
 #: nutrition/data.py:717 nutrition/data.py:896
-#, fuzzy
 msgctxt "databook"
 msgid "Population data"
 msgstr "Population data"
 
 #: nutrition/data.py:439
-#, fuzzy
 msgctxt "databook"
 msgid "Age distribution of pregnant women"
 msgstr "Age distribution of pregnant women"
 
 #: nutrition/data.py:439 nutrition/data.py:468 nutrition/data.py:469
 #: nutrition/data.py:572
-#, fuzzy
 msgctxt "databook"
 msgid "Mortality"
 msgstr "Mortality"
 
 #: nutrition/data.py:439 nutrition/data.py:722 nutrition/data.py:727
 #: nutrition/data.py:728
-#, fuzzy
 msgctxt "databook"
 msgid "Other risks"
 msgstr "Other risks"
@@ -341,70 +311,60 @@ msgstr "Other risks"
 #: nutrition/data.py:444
 msgctxt "databook"
 msgid "Projection years"
-msgstr ""
+msgstr "Projection years"
 
 #: nutrition/data.py:445
-#, fuzzy
 msgctxt "databook"
 msgid "Baseline year (projection start year)"
-msgstr "Baseline year population inputs"
+msgstr "Baseline year (projection start year)"
 
 #: nutrition/data.py:445
 msgctxt "databook"
 msgid "End year"
-msgstr ""
+msgstr "End year"
 
 #: nutrition/data.py:464 nutrition/data.py:474 nutrition/data.py:478
 #: nutrition/data.py:481
-#, fuzzy
 msgctxt "databook"
 msgid "Demographic projections"
 msgstr "Demographic projections"
 
 #: nutrition/data.py:468
-#, fuzzy
 msgctxt "databook"
 msgid "Stillbirths (per 1,000 total births)"
 msgstr "Stillbirths (per 1,000 total births)"
 
 #: nutrition/data.py:469
-#, fuzzy
 msgctxt "databook"
 msgid "Fraction of pregnancies ending in spontaneous abortion"
 msgstr "Fraction of pregnancies ending in spontaneous abortion"
 
 #: nutrition/data.py:472
-#, fuzzy
 msgctxt "databook"
 msgid "WRA: 15-19 years"
 msgstr "WRA: 15-19 years"
 
 #: nutrition/data.py:472
-#, fuzzy
 msgctxt "databook"
 msgid "WRA: 20-29 years"
 msgstr "WRA: 20-29 years"
 
 #: nutrition/data.py:472
-#, fuzzy
 msgctxt "databook"
 msgid "WRA: 30-39 years"
 msgstr "WRA: 30-39 years"
 
 #: nutrition/data.py:472
-#, fuzzy
 msgctxt "databook"
 msgid "WRA: 40-49 years"
 msgstr "WRA: 40-49 years"
 
 #: nutrition/data.py:475
-#, fuzzy
 msgctxt "databook"
 msgid "Number of births"
 msgstr "Number of births"
 
 #: nutrition/data.py:477
-#, fuzzy
 msgctxt "databook"
 msgid "Estimated pregnant women"
 msgstr "Estimated pregnant women"
@@ -416,51 +376,43 @@ msgstr "non-pregnant WRA"
 #: nutrition/data.py:495 nutrition/data.py:503 nutrition/data.py:506
 #: nutrition/data.py:511 nutrition/data.py:514 nutrition/data.py:531
 #: nutrition/data.py:541 nutrition/data.py:586 nutrition/data.py:881
-#, fuzzy
 msgctxt "databook"
 msgid "Nutritional status distribution"
 msgstr "Nutritional status distribution"
 
 #: nutrition/data.py:498 nutrition/data.py:502 nutrition/data.py:505
 #: nutrition/data.py:518
-#, fuzzy
 msgctxt "databook"
 msgid "Stunting (height-for-age)"
 msgstr "Stunting (height-for-age)"
 
 #: nutrition/data.py:502
-#, fuzzy
 msgctxt "databook"
 msgid "Normal (HAZ-score > -1)"
 msgstr "Normal (HAZ-score > -1)"
 
 #: nutrition/data.py:505
-#, fuzzy
 msgctxt "databook"
 msgid "Mild (HAZ-score between -2 and -1)"
 msgstr "Mild (HAZ-score between -2 and -1)"
 
 #: nutrition/data.py:507 nutrition/data.py:510 nutrition/data.py:513
 #: nutrition/data.py:518 nutrition/data.py:587 nutrition/data.py:588
-#, fuzzy
 msgctxt "databook"
 msgid "Wasting (weight-for-height)"
 msgstr "Wasting (weight-for-height)"
 
 #: nutrition/data.py:510
-#, fuzzy
 msgctxt "databook"
 msgid "Normal  (WHZ-score > -1)"
 msgstr "Normal  (WHZ-score > -1)"
 
 #: nutrition/data.py:513
-#, fuzzy
 msgctxt "databook"
 msgid "Mild  (WHZ-score between -2 and -1)"
 msgstr "Mild  (WHZ-score between -2 and -1)"
 
 #: nutrition/data.py:536 nutrition/data.py:540
-#, fuzzy
 msgctxt "databook"
 msgid "Prevalence of anaemia"
 msgstr "Prevalence of anaemia"
@@ -474,19 +426,16 @@ msgid "Not anaemic"
 msgstr "Not anaemic"
 
 #: nutrition/data.py:555 nutrition/data.py:559
-#, fuzzy
 msgctxt "databook"
 msgid "Breastfeeding distribution"
 msgstr "Breastfeeding distribution"
 
 #: nutrition/data.py:566
-#, fuzzy
 msgctxt "databook"
 msgid "Time trends"
 msgstr "Time trends"
 
 #: nutrition/data.py:568
-#, fuzzy
 msgctxt "databook"
 msgid "Stunting prevalence (%)"
 msgstr "Stunting prevalence (%)"
@@ -496,19 +445,16 @@ msgid "Children 0-59 months"
 msgstr "Children 0-59 months"
 
 #: nutrition/data.py:569
-#, fuzzy
 msgctxt "databook"
 msgid "Wasting prevalence (%)"
 msgstr "Wasting prevalence (%)"
 
 #: nutrition/data.py:570
-#, fuzzy
 msgctxt "databook"
 msgid "Anaemia prevalence (%)"
 msgstr "Anaemia prevalence (%)"
 
 #: nutrition/data.py:571
-#, fuzzy
 msgctxt "databook"
 msgid "Prevalence of age-appropriate breastfeeding"
 msgstr "Prevalence of age-appropriate breastfeeding"
@@ -519,26 +465,22 @@ msgid "Incidence of conditions"
 msgstr "Incidence of conditions"
 
 #: nutrition/data.py:583 nutrition/data.py:721
-#, fuzzy
 msgctxt "databook"
 msgid "Diarrhoea incidence"
 msgstr "Diarrhoea incidence"
 
 #: nutrition/data.py:600 nutrition/data.py:604 nutrition/data.py:606
 #: nutrition/data.py:608 nutrition/data.py:613 nutrition/data.py:618
-#, fuzzy
 msgctxt "databook"
 msgid "Causes of death"
 msgstr "Causes of death"
 
 #: nutrition/data.py:603 nutrition/data.py:610
-#, fuzzy
 msgctxt "databook"
 msgid "Neonatal"
 msgstr "Neonatal"
 
 #: nutrition/data.py:603 nutrition/data.py:621
-#, fuzzy
 msgctxt "databook"
 msgid "<1 month"
 msgstr "<1 month"
@@ -554,43 +496,36 @@ msgstr "Pregnant women.1"
 #: nutrition/data.py:771 nutrition/data.py:776 nutrition/data.py:781
 #: nutrition/data.py:786 nutrition/data.py:789 nutrition/data.py:792
 #: nutrition/data.py:795 nutrition/data.py:798 nutrition/data.py:801
-#, fuzzy
 msgctxt "databook"
 msgid "Programs target population"
 msgstr "Programs target population"
 
 #: nutrition/data.py:712
-#, fuzzy
 msgctxt "databook"
 msgid "Percentage of population food insecure (default poor)"
 msgstr "Percentage of population food insecure (default poor)"
 
 #: nutrition/data.py:713
-#, fuzzy
 msgctxt "databook"
 msgid "Percentage of population at risk of malaria"
 msgstr "Percentage of population at risk of malaria"
 
 #: nutrition/data.py:714
-#, fuzzy
 msgctxt "databook"
 msgid "School attendance (percentage of 15-19 year women)"
 msgstr "School attendance (percentage of 15-19 year women)"
 
 #: nutrition/data.py:715 nutrition/data.py:897
-#, fuzzy
 msgctxt "databook"
 msgid "Percentage of pregnant women attending health facility"
 msgstr "Percentage of pregnant women attending health facility"
 
 #: nutrition/data.py:716 nutrition/data.py:898
-#, fuzzy
 msgctxt "databook"
 msgid "Percentage of children attending health facility"
 msgstr "Percentage of children attending health facility"
 
 #: nutrition/data.py:717
-#, fuzzy
 msgctxt "databook"
 msgid "Unmet need for family planning"
 msgstr "Unmet need for family planning"
@@ -604,43 +539,36 @@ msgid "Prevalence of eclampsia"
 msgstr "Prevalence of eclampsia"
 
 #: nutrition/data.py:730
-#, fuzzy
 msgctxt "databook"
 msgid "Add extension"
 msgstr "Add extension"
 
 #: nutrition/data.py:733
-#, fuzzy
 msgctxt "databook"
 msgid "Cash transfers"
 msgstr "Cash transfers"
 
 #: nutrition/data.py:736
-#, fuzzy
 msgctxt "databook"
 msgid "Lipid-based nutrition supplements"
 msgstr "Lipid-based nutrition supplements"
 
 #: nutrition/data.py:742
-#, fuzzy
 msgctxt "databook"
 msgid "Public provision of complementary foods"
 msgstr "Public provision of complementary foods"
 
 #: nutrition/data.py:752
-#, fuzzy
 msgctxt "databook"
 msgid "Zinc for treatment + ORS"
 msgstr "Zinc for treatment + ORS"
 
 #: nutrition/data.py:755
-#, fuzzy
 msgctxt "databook"
 msgid "Balanced energy-protein supplementation"
 msgstr "Balanced energy-protein supplementation"
 
 #: nutrition/data.py:758
-#, fuzzy
 msgctxt "databook"
 msgid "IFAS for pregnant women (health facility)"
 msgstr "IFAS for pregnant women (health facility)"
@@ -648,46 +576,39 @@ msgstr "IFAS for pregnant women (health facility)"
 #: nutrition/data.py:761
 msgctxt "databook"
 msgid "IPTp"
-msgstr ""
+msgstr "IPTp"
 
 #: nutrition/data.py:764
-#, fuzzy
 msgctxt "databook"
 msgid "Mg for eclampsia"
 msgstr "Mg for eclampsia"
 
 #: nutrition/data.py:767
-#, fuzzy
 msgctxt "databook"
 msgid "Mg for pre-eclampsia"
 msgstr "Mg for pre-eclampsia"
 
 #: nutrition/data.py:770
-#, fuzzy
 msgctxt "databook"
 msgid "Family planning"
 msgstr "Family planning"
 
 #: nutrition/data.py:775
-#, fuzzy
 msgctxt "databook"
 msgid "IFAS (community)"
 msgstr "IFAS (community)"
 
 #: nutrition/data.py:780
-#, fuzzy
 msgctxt "databook"
 msgid "IFAS (health facility)"
 msgstr "IFAS (health facility)"
 
 #: nutrition/data.py:785
-#, fuzzy
 msgctxt "databook"
 msgid "IFAS (retailer)"
 msgstr "IFAS (retailer)"
 
 #: nutrition/data.py:788
-#, fuzzy
 msgctxt "databook"
 msgid "IFAS (school)"
 msgstr "IFAS (school)"
@@ -695,19 +616,16 @@ msgstr "IFAS (school)"
 #: nutrition/data.py:791 nutrition/geospatial.py:293
 #: nutrition/optimization.py:201 nutrition/project.py:624
 #: nutrition/project.py:649
-#, fuzzy
 msgctxt "databook"
 msgid "IFA fortification of maize"
 msgstr "IFA fortification of maize"
 
 #: nutrition/data.py:794
-#, fuzzy
 msgctxt "databook"
 msgid "IFA fortification of rice"
 msgstr "IFA fortification of rice"
 
 #: nutrition/data.py:797
-#, fuzzy
 msgctxt "databook"
 msgid "IFA fortification of wheat flour"
 msgstr "IFA fortification of wheat flour"
@@ -715,16 +633,14 @@ msgstr "IFA fortification of wheat flour"
 #: nutrition/data.py:800
 msgctxt "databook"
 msgid "Long-lasting insecticide-treated bednets"
-msgstr ""
+msgstr "Long-lasting insecticide-treated bednets"
 
 #: nutrition/data.py:809
-#, fuzzy
 msgctxt "databook"
 msgid "Reference programs"
 msgstr "Reference programs"
 
 #: nutrition/data.py:813
-#, fuzzy
 msgctxt "databook"
 msgid "Program dependencies"
 msgstr "Program dependencies"
@@ -746,7 +662,6 @@ msgid "Proportional Cost"
 msgstr "Proportional Cost"
 
 #: nutrition/data.py:845
-#, fuzzy
 msgctxt "databook"
 msgid "Programs cost and coverage"
 msgstr "Programs cost and coverage"
@@ -762,7 +677,6 @@ msgstr "Error in creating populations, check data and defaults books"
 #: nutrition/geospatial.py:301 nutrition/optimization.py:201
 #: nutrition/project.py:565 nutrition/project.py:577 nutrition/project.py:622
 #: nutrition/project.py:657
-#, fuzzy
 msgctxt "databook"
 msgid "Vitamin A supplementation"
 msgstr "Vitamin A supplementation"
@@ -788,7 +702,6 @@ msgid "Maximize thrive"
 msgstr "Maximize thrive"
 
 #: nutrition/settings.py:34 nutrition/settings.py:39
-#, fuzzy
 msgctxt "databook"
 msgid "12-23 months"
 msgstr "12-23 months"
@@ -803,15 +716,6 @@ msgstr "Demo project"
 #~ msgid "Term AGA"
 #~ msgstr "Term AGA"
 
-#~ msgid "Projection years"
-#~ msgstr ""
-
-#~ msgid "End year"
-#~ msgstr ""
-
 #~ msgid "IPTp"
 #~ msgstr "IPTp"
-
-#~ msgid "Long-lasting insecticide-treated bednets"
-#~ msgstr ""
 

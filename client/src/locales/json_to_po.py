@@ -1,3 +1,6 @@
+# Convert JSON to PO
+# This will ensure that every JSON item has a corresponding PO entry
+# but will NOT copy over any translations
 import polib
 import json
 import pathlib
@@ -18,33 +21,49 @@ for locale in rootdir.iterdir():
     with open(locale, encoding='utf-8') as f:
         d = json.load(f)
 
-    out = {}
+    out = {} # These are the strings defined in the json file
     flatten(d, out)
 
-    po = polib.POFile()
-
-    # po.metadata = {
-    #     'Project-Id-Version': '1.0',
-    #     'Report-Msgid-Bugs-To': 'you@example.com',
-    #     'POT-Creation-Date': '2007-10-18 14:00+0100',
-    #     'PO-Revision-Date': '2007-10-18 14:00+0100',
-    #     'Last-Translator': 'you <you@example.com>',
-    #     'Language-Team': 'English <yourteam@example.com>',
-    #     'MIME-Version': '1.0',
-    #     'Content-Type': 'text/plain; charset=utf-8',
-    #     'Content-Transfer-Encoding': '8bit',
-    # }
-
+    # Produce a temporary pot file
+    pot = polib.POFile()
     for k,v in out.items():
         entry = polib.POEntry(
             msgid = k[-1],
-            msgstr = v,
+            msgstr = '',
             msgctxt = '.'.join(k[:-1]),
         )
-        po.append(entry)
+        pot.append(entry)
+    # pot.save(rootdir/'client.pot')
 
-    po.save(rootdir/f'{locale.stem}.po')
+    # Merge it with the existing po file
+    po_fname = rootdir / f'client_{locale.stem}.po'
+    if po_fname.exists():
+        po = polib.pofile(po_fname)
+    else:
+        po = polib.POFile()
+    po.merge(pot)
+    po.save(po_fname)
 
-
+    #
+    #
+    # po_fname = rootdir/f'{locale.stem}.po'
+    #
+    # if po_fname.exists():
+    #     po = polib.pofile(po_fname)
+    # else:
+    #     po = polib.POFile()
+    #
+    #
+    # for k,v in out.items():
+    #     entry = polib.POEntry(
+    #         msgid = k[-1],
+    #         msgstr = v,
+    #         msgctxt = '.'.join(k[:-1]),
+    #     )
+    #     po.append(entry)
+    #
+    # po.save()
+    #
+    #
 
 

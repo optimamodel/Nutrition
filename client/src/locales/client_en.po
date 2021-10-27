@@ -400,14 +400,6 @@ msgctxt "placeholder"
 msgid "email"
 msgstr "Email (optional)"
 
-msgctxt "placeholder"
-msgid "password"
-msgstr "Password"
-
-msgctxt "placeholder"
-msgid "username"
-msgstr "Username"
-
 msgctxt "projects"
 msgid "Add demo project"
 msgstr "Add demo project"
@@ -567,3 +559,11 @@ msgstr "Scenario name"
 msgctxt "scenarios"
 msgid "Scenario/program"
 msgstr "Scenario/program"
+
+msgctxt "placeholder"
+msgid "Username"
+msgstr "Username"
+
+msgctxt "placeholder"
+msgid "Password"
+msgstr "Password"

@@ -14,6 +14,6 @@ python setup.py compile_catalog # Compile the catalog into mo files
 
 # TODO - the frontend translations are a bit messier because json_to_po recreates the entire file
 # therefore making it hard to repeatedly run it
-#(cd client && npm run translate ) # vue->json
-#python client/src/locales/json_to_po.py # json -> po
-#python client/src/locales/po_to_json.py # update client jsons
+(cd client && npm run translate ) # vue->json
+python client/src/locales/json_to_po.py # json -> po
+python client/src/locales/po_to_json.py # update client jsons

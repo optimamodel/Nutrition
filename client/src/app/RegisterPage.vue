@@ -38,7 +38,7 @@ Last update: 2018-08-26
             <input class="txbox __l"
                    type="text"
                    name="username"
-                   :placeholder="$t('placeholder.username')"
+                   :placeholder="$t('placeholder.Username')"
                    required="required"
                    v-model='registerUserName'/>
           </div>
@@ -47,7 +47,7 @@ Last update: 2018-08-26
             <input class="txbox __l"
                    type="password"
                    name="password"
-                   :placeholder="$t('placeholder.password')"
+                   :placeholder="$t('placeholder.Password')"
                    required="required"
                    v-model='registerPassword'/>
           </div>
