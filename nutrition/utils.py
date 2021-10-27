@@ -140,9 +140,9 @@ def pretty_labels(direction=False):
             'Economic cost of stunting',
             'Economic cost of wasting',
             'Economic cost of child death',
-            'Economic cost of pw death',
+            'Economic cost of pregnanat woman death',
             'Economic cost of anaemic child',
-            'Economic cost of anaemic pw',
+            'Economic cost of anaemic pregnant woman',
             'Total population',
             'Population growth rate'
            
