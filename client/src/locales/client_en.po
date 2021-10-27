@@ -2,103 +2,78 @@
 msgid ""
 msgstr ""
 
-msgctxt ""
 msgid "Actions"
 msgstr "Actions"
 
-msgctxt ""
 msgid "Active"
 msgstr "Active"
 
-msgctxt ""
 msgid "Cancel"
 msgstr "Cancel"
 
-msgctxt ""
 msgid "Copy"
 msgstr "Copy"
 
-msgctxt ""
 msgid "Could not upload file"
 msgstr "Could not upload file"
 
-msgctxt ""
 msgid "Create"
 msgstr "Create"
 
-msgctxt ""
 msgid "Databook"
 msgstr "Databook"
 
-msgctxt ""
 msgid "Delete"
 msgstr "Delete"
 
-msgctxt ""
 msgid "Delete selected"
 msgstr "Delete selected"
 
-msgctxt ""
 msgid "Deselect all"
 msgstr "Deselect all"
 
-msgctxt ""
 msgid "Download"
 msgstr "Download"
 
-msgctxt ""
 msgid "Download selected"
 msgstr "Download selected"
 
-msgctxt ""
 msgid "Help"
 msgstr "Help"
 
-msgctxt ""
 msgid "Include"
 msgstr "Include"
 
-msgctxt ""
 msgid "Login"
 msgstr "Login"
 
-msgctxt ""
 msgid "Name"
 msgstr "Name"
 
-msgctxt ""
 msgid "Open"
 msgstr "Open"
 
-msgctxt ""
 msgid "Outcomes"
 msgstr "Outcomes"
 
-msgctxt ""
 msgid "Register"
 msgstr "Register"
 
-msgctxt ""
 msgid "Rename"
 msgstr "Rename"
 
-msgctxt ""
 msgid "Save"
 msgstr "Save"
 
-msgctxt ""
 msgid "Status"
 msgstr "Status"
 
-msgctxt ""
 msgid "Type"
 msgstr "Type"
 
-msgctxt ""
 msgid "Upload"
 msgstr "Upload"
 
-msgctxt ""
 msgid "Zoom out"
 msgstr "Zoom out"
 
@@ -265,11 +240,11 @@ msgid "save_tooltip"
 msgstr "Save data to project"
 
 msgctxt "login"
-msgid "newuser"
+msgid "New user?"
 msgstr "New user?"
 
 msgctxt "login"
-msgid "registerhere"
+msgid "Register here"
 msgstr "Register here"
 
 msgctxt "navbar"
@@ -391,14 +366,6 @@ msgstr "Enter new password"
 msgctxt "placeholder"
 msgid "Reenter old password"
 msgstr "Reenter old password"
-
-msgctxt "placeholder"
-msgid "displayname"
-msgstr "Display name (optional)"
-
-msgctxt "placeholder"
-msgid "email"
-msgstr "Email (optional)"
 
 msgctxt "projects"
 msgid "Add demo project"
@@ -567,3 +534,11 @@ msgstr "Username"
 msgctxt "placeholder"
 msgid "Password"
 msgstr "Password"
+
+msgctxt "placeholder"
+msgid "Display name (optional)"
+msgstr "Display name (optional)"
+
+msgctxt "placeholder"
+msgid "Email (optional)"
+msgstr "Email (optional)"

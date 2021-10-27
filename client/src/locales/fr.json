@@ -1,6 +1,6 @@
 {
-  "Actions": "Actions2",
-  "Active": "actif",
+  "Actions": "Actions",
+  "Active": "Actif",
   "Cancel": "Annuler",
   "Copy": "Copie",
   "Could not upload file": "Impossible de télécharger le fichier",
@@ -75,8 +75,8 @@
     "save_tooltip": "Sauvegarder les données dans le projet"
   },
   "login": {
-    "newuser": "Nouvel utilisateur?",
-    "registerhere": "Inscrivez-vous ici"
+    "New user?": "Nouvel utilisateur?",
+    "Register here": "Inscrivez-vous ici"
   },
   "navbar": {
     "About": "À propos de",
@@ -113,10 +113,10 @@
   "placeholder": {
     "Enter new password": "Entrez un nouveau mot de passe",
     "Reenter old password": "Saisissez à nouveau l'ancien mot de passe",
-    "displayname": "Nom d'affichage (facultatif)",
-    "email": "Courriel (facultatif)",
-    "Password": "Mot de passe1",
-    "Username": "Nom d'utilisateur"
+    "Password": "Mot de passe",
+    "Username": "Nom d'utilisateur",
+    "Display name (optional)": "Nom d'affichage (facultatif)",
+    "Email (optional)": "Courriel (facultatif)"
   },
   "projects": {
     "Add demo project": "Ajouter un projet de démonstration",

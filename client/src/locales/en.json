@@ -75,8 +75,8 @@
     "save_tooltip": "Save data to project"
   },
   "login": {
-    "newuser": "New user?",
-    "registerhere": "Register here"
+    "New user?": "New user?",
+    "Register here": "Register here"
   },
   "navbar": {
     "About": "About",
@@ -113,10 +113,10 @@
   "placeholder": {
     "Enter new password": "Enter new password",
     "Reenter old password": "Reenter old password",
-    "displayname": "Display name (optional)",
-    "email": "Email (optional)",
     "Username": "Username",
-    "Password": "Password"
+    "Password": "Password",
+    "Display name (optional)": "Display name (optional)",
+    "Email (optional)": "Email (optional)"
   },
   "projects": {
     "Add demo project": "Add demo project",

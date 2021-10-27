@@ -56,7 +56,7 @@ Last update: 2018-08-26
             <input class="txbox __l"
                    type="text"
                    name="displayname"
-                   :placeholder="$t('placeholder.displayname')"
+                   :placeholder="$t('placeholder.Display name (optional)')"
                    v-model='registerDisplayName'/>
           </div>
 
@@ -64,7 +64,7 @@ Last update: 2018-08-26
             <input class="txbox __l"
                    type="text"
                    name="email"
-                   :placeholder="$t('placeholder.email')"
+                   :placeholder="$t('placeholder.Email (optional)')"
                    v-model='registerEmail'/>
           </div>
 

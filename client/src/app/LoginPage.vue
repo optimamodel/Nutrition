@@ -57,9 +57,9 @@ Last update: 2018sep22
           <button type="submit" class="section btn __l __block">{{ $t("Login") }}</button>
 
           <div class="section">
-            {{ $t("login.newuser") }}
+            {{ $t("login.New user?") }}
             <router-link to="/register">
-              {{ $t("login.registerhere") }}
+              {{ $t("login.Register here") }}
             </router-link>
           </div>
         </div>

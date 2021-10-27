@@ -30,7 +30,7 @@ for locale in rootdir.iterdir():
         entry = polib.POEntry(
             msgid = k[-1],
             msgstr = '',
-            msgctxt = '.'.join(k[:-1]),
+            msgctxt = '.'.join(k[:-1]) if k[:-1] else None,
         )
         pot.append(entry)
     # pot.save(rootdir/'client.pot')

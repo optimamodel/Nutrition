@@ -1,104 +1,89 @@
 #
 msgid ""
 msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0\n"
 
-msgctxt ""
 msgid "Actions"
-msgstr "Actions2"
+msgstr "Actions"
 
-msgctxt ""
 msgid "Active"
-msgstr "actif"
+msgstr "Actif"
 
-msgctxt ""
 msgid "Cancel"
 msgstr "Annuler"
 
-msgctxt ""
 msgid "Copy"
 msgstr "Copie"
 
-msgctxt ""
 msgid "Could not upload file"
 msgstr "Impossible de télécharger le fichier"
 
-msgctxt ""
 msgid "Create"
 msgstr "Create"
 
-msgctxt ""
 msgid "Databook"
 msgstr "Databook"
 
-msgctxt ""
 msgid "Delete"
 msgstr "Supprimer"
 
-msgctxt ""
 msgid "Delete selected"
 msgstr "Supprimer la sélection"
 
-msgctxt ""
 msgid "Deselect all"
 msgstr "Désélectionner tout"
 
-msgctxt ""
 msgid "Download"
 msgstr "Télécharger"
 
-msgctxt ""
 msgid "Download selected"
 msgstr "Téléchargement sélectionné"
 
-msgctxt ""
 msgid "Help"
 msgstr "Aide"
 
-msgctxt ""
 msgid "Include"
 msgstr "Inclure"
 
-msgctxt ""
 msgid "Login"
 msgstr "Connexion"
 
-msgctxt ""
 msgid "Name"
 msgstr "Nom"
 
-msgctxt ""
 msgid "Open"
 msgstr "Ouvrez"
 
-msgctxt ""
 msgid "Outcomes"
 msgstr "Résultats"
 
-msgctxt ""
 msgid "Register"
 msgstr "Enregistrer"
 
-msgctxt ""
 msgid "Rename"
 msgstr "Renommer"
 
-msgctxt ""
 msgid "Save"
 msgstr "Sauvegarder"
 
-msgctxt ""
 msgid "Status"
 msgstr "Statut"
 
-msgctxt ""
 msgid "Type"
 msgstr "Tapez"
 
-msgctxt ""
 msgid "Upload"
 msgstr "Télécharger"
 
-msgctxt ""
 msgid "Zoom out"
 msgstr "Zoom arrière"
 
@@ -265,11 +250,11 @@ msgid "save_tooltip"
 msgstr "Sauvegarder les données dans le projet"
 
 msgctxt "login"
-msgid "newuser"
+msgid "New user?"
 msgstr "Nouvel utilisateur?"
 
 msgctxt "login"
-msgid "registerhere"
+msgid "Register here"
 msgstr "Inscrivez-vous ici"
 
 msgctxt "navbar"
@@ -391,14 +376,6 @@ msgstr "Entrez un nouveau mot de passe"
 msgctxt "placeholder"
 msgid "Reenter old password"
 msgstr "Saisissez à nouveau l'ancien mot de passe"
-
-msgctxt "placeholder"
-msgid "displayname"
-msgstr "Nom d'affichage (facultatif)"
-
-msgctxt "placeholder"
-msgid "email"
-msgstr "Courriel (facultatif)"
 
 msgctxt "placeholder"
 msgid "Password"
@@ -567,3 +544,11 @@ msgstr "Nom du scénario"
 msgctxt "scenarios"
 msgid "Scenario/program"
 msgstr "Scénario/programme"
+
+msgctxt "placeholder"
+msgid "Display name (optional)"
+msgstr "Nom d'affichage (facultatif)"
+
+msgctxt "placeholder"
+msgid "Email (optional)"
+msgstr "Courriel (facultatif)"
