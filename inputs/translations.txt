@@ -1,0 +1,201 @@
+Baseline year population inputs
+Baseline year data
+Projection years
+Baseline year (projection start year)
+End year
+Population data
+Children under 5 population
+Percentage of population food insecure (default poor)
+Percentage of population at risk of malaria
+School attendance (percentage of 15-19 year women)
+Percentage of pregnant women attending health facility
+Percentage of children attending health facility
+Unmet need for family planning
+Food
+Fraction of subsistence farming
+Fraction eating rice as main staple food
+Fraction eating wheat as main staple food
+Fraction eating maize as main staple food
+Fraction on other staples as main staple food
+Age distribution of pregnant women
+Percentage of pregnant women 15-19 years
+Percentage of pregnant women 20-29 years
+Percentage of pregnant women 30-39 years
+Percentage of pregnant women 40-49 years
+Birth spacing
+First birth
+less than 18 months
+18-23 months
+24 months or greater
+Total (must be 100%)
+Baseline year mortality and risk factors
+Mortality
+Neonatal mortality (per 1,000 live births)
+Infant mortality (per 1,000 live births)
+Under 5 mortality (per 1,000 live births)
+Maternal mortality (per 1,000 live births)
+Fraction of pregnancies ending in spontaneous abortion
+Stillbirths (per 1,000 total births)
+Birth outcome distribution
+Pre-term SGA
+Pre-term AGA
+Term SGA
+Term AGA
+Diarrhoea incidence
+Average episodes per year: <1 month
+Average episodes per year: 1-5 months
+Average episodes per year: 6-11 months
+Average episodes per year: 12-23 months
+Average episodes per year: 24-59 months
+Other risks
+Percentage of diarrhea that is severe
+Percentage of anaemia that is iron deficient
+Demographic projections
+Year
+Number of births
+WRA: 15-19 years
+WRA: 20-29 years
+WRA: 30-39 years
+WRA: 40-49 years
+Total WRA
+Estimated pregnant women
+Non-pregnant WRA
+Causes of death
+Percentage of deaths in baseline year (2019) attributable to cause
+Neonatal
+Neonatal diarrhoea
+Neonatal sepsis
+Neonatal pneumonia
+Neonatal asphyxia
+Neonatal prematurity
+Neonatal tetanus
+Neonatal congenital anomalies
+Neonatal other
+Children
+Causes
+Diarrhoea
+Pneumonia
+Meningitis
+Measles
+Malaria
+Pertussis
+AIDS
+Injury
+Other
+1-5 months
+6-11 months
+12-23 months
+24-59 months
+Pregnant women
+Antepartum haemorrhage
+Intrapartum haemorrhage
+Postpartum haemorrhage
+Hypertensive disorders
+Sepsis
+Abortion
+Embolism
+Other direct causes
+Indirect causes
+Nutritional status distribution
+Percentage of population in each category in baseline year (2019)
+Status
+<1 month
+Stunting (height-for-age)
+Normal (HAZ-score > -1)
+Mild (HAZ-score between -2 and -1)
+Moderate (HAZ-score between -3 and -2)
+High (HAZ-score between < -3)
+Wasting (weight-for-height)
+Normal  (WHZ-score > -1)
+Mild  (WHZ-score between -2 and -1)
+MAM   (WHZ-score between -3 and -2)
+SAM   (WHZ-score < -3)
+Anaemia
+PW: 15-19 years
+PW: 20-29 years
+PW: 30-39 years
+PW: 40-49 years
+Prevalence of anaemia
+Prevalence of iron deficiency anaemia
+Breastfeeding distribution
+Percentage of children in each category in baseline year (2019)
+Breastfeeding
+Exclusive
+Predominant
+Partial
+None
+Time trends
+Risk
+Population
+Stunting prevalence (%)
+Wasting prevalence (%)
+Anaemia prevalence (%)
+Women of reproductive age
+Prevalence of age-appropriate breastfeeding
+Children 0-5 months
+Children 6-23 months
+Under five (deaths per 1,000 births)
+Maternal (deaths per 1,000 births)
+IYCF packages
+IYCF package
+Target population
+Health facility
+Community
+Mass media
+All
+Programs cost and coverage
+Program
+Baseline (2019) coverage
+Saturation coverage of target population
+Unit cost (US$ per person per year)
+Cost-coverage relationship
+Balanced energy-protein supplementation
+Calcium supplementation
+Cash transfers
+Delayed cord clamping
+Family planning
+IFA fortification of maize
+IFA fortification of rice
+IFA fortification of wheat flour
+IFAS (community)
+IFAS (health facility)
+IFAS (retailer)
+IFAS (school)
+IFAS for pregnant women (community)
+IFAS for pregnant women (health facility)
+IPTp
+Iron and iodine fortification of salt
+IYCF 1
+IYCF 2
+IYCF 3
+Kangaroo mother care
+Lipid-based nutrition supplements
+Long-lasting insecticide-treated bednets
+Mg for eclampsia
+Mg for pre-eclampsia
+Micronutrient powders
+Multiple micronutrient supplementation
+Oral rehydration salts
+Public provision of complementary foods
+Treatment of SAM
+Vitamin A supplementation
+WASH: Handwashing
+WASH: Hygenic disposal
+WASH: Improved sanitation
+WASH: Improved water source
+WASH: Piped water
+Zinc for treatment + ORS
+Zinc supplementation
+Linear (constant marginal cost) [default]
+Curved with increasing marginal cost
+Curved with decreasing marginal cost
+S-shaped (decreasing then increasing marginal cost)
+Program dependencies
+Exclusion dependency
+Threshold dependency
+Reference programs
+Default
+Extension
+Add extension
+Delivery mode
+Programs target population

@@ -1,0 +1,103 @@
+import xlwings as xw
+import pandas as pd
+from pathlib import Path
+import shutil
+import os
+import win32com.client
+from pathlib import Path
+import polib
+import nutrition.ui as nu
+
+# Load translations from Excel
+rootdir = Path(__file__).parent
+source = "en"
+
+def translate_databook(target_locale: str):
+    """
+
+    Translate all Excel files from source to target locale
+    :param target_locale: A string like 'fr'
+    :return: None - translated Excel files are written directly
+
+    """
+
+    po = polib.pofile(rootdir/target_locale/'databook.po')
+
+    source_dir = Path(source)
+    dest = Path(target_locale)
+
+    for source_file in source_dir.iterdir():
+        if not source_file.suffix == ".xlsx":
+            continue
+
+        wb = excel.Workbooks.Add(str(source_file.resolve()))
+
+        print(source_file.name)
+
+        for sheet in wb.Sheets:
+            print("\t" + sheet.Name)
+
+            sheet.Activate()
+            sheet.Unprotect("nick")  # Need to unprotect, otherwise it will not replace cell values correctly
+
+            rg = sheet.UsedRange
+
+            for entry in po:
+                a = entry.msgid
+                b = entry.msgstr
+
+                print(f"\t\t'{a}' -> '{b}'")
+
+                # Translate the sheet name
+                if sheet.Name == a:
+                    sheet.Name = b
+
+                # Substitute cell content
+                rg.Replace(a, b, LookAt=1) # LookAt=1 is equivalent to "xlWhole" i.e. match entire cell. Otherwise functions get overwritten
+
+            sheet.Protect("nick")  # Need to unprotect, otherwise it will not replace cell values correctly
+
+        for property in wb.BuiltinDocumentProperties:
+            if property.name == "Keywords":
+                property.value = f"lang={target_locale}"
+                break
+
+        wb.Worksheets(1).Activate()  # Leave the first sheet open
+
+        # save as
+        dest_file = (dest / source_file.name).resolve()
+        if dest_file.exists():
+            os.remove(dest_file)
+        wb.SaveAs(str(dest_file))
+        wb.Close(True)
+
+
+def update_messages(target_locale):
+    # Update the .po files with translations from the CSV list, if the English text matches the message ID
+    # This requires that the backend po files have already been updated from the backend source
+    # This prevents strings that only appear in the databook from cluttering the backend translation
+    source_po = polib.pofile(rootdir/target_locale/'databook.po')
+    target_po = polib.pofile((nu.ONpath / "nutrition" / "locale" / target_locale / "LC_MESSAGES" / "nutrition.po"))
+
+    source_entries = {x.msgid:x for x in source_po}
+    for entry in target_po:
+        if entry.msgid in source_entries:
+            entry.msgstr = source_entries[entry.msgid].msgstr
+            entry.msgctxt = 'databook'
+
+    target_po.save()
+
+
+locales = [x.parent.stem for x in rootdir.glob('**/*.po')] # List of all locales (folders containing a `.po` file) e.g. ['fr']
+
+update_excel = False
+
+if update_excel:
+    excel = win32com.client.Dispatch("Excel.Application")
+    excel.Visible = True
+    for locale in locales:
+        translate_databook(locale)
+    excel.Quit()
+
+for locale in locales:
+    update_messages(locale)
