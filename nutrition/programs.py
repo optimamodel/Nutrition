@@ -682,24 +682,23 @@ class ProgramInfo(sc.prettyobj):
             covs[prog.name] = prog.annual_cov[prog.year]
         return covs   
 
-    def ramp_ann_covs(self, year, growth): 
-        #covs = {}
-        covs = sc.odict()
+    def ramp_ann_covs(self, pops, year, growth): 
         for prog in self.programs.values():
+            prog.adjust_cov(pops, year, growth)
             if growth == "fixed budget" or growth == "fixed coverage":
                 if prog.annual_restr_cov[prog.year] - prog.annual_restr_cov[prog.year-1] > prog.max_inc:
-                    covs[prog.name] = prog.annual_restr_cov[prog.year-1] + prog.max_inc
+                    prog.annual_restr_cov[prog.year] = prog.annual_restr_cov[prog.year-1] + prog.max_inc
                 elif prog.annual_restr_cov[prog.year] - prog.annual_restr_cov[prog.year-1] < (-1) * prog.max_dec:
-                    covs[prog.name] = prog.annual_restr_cov[prog.year-1] - prog.max_dec
+                    prog.annual_restr_cov[prog.year] = prog.annual_restr_cov[prog.year-1] - prog.max_dec
                 else:
-                    covs[prog.name] = prog.annual_restr_cov[prog.year]
+                    prog.annual_restr_cov[prog.year] = prog.annual_restr_cov[prog.year]
             else:
                 if prog.annual_cov[prog.year] - prog.annual_cov[prog.year-1] > prog.max_inc:
-                    covs[prog.name] = prog.annual_cov[prog.year-1] + prog.max_inc
+                    prog.annual_cov[prog.year] = prog.annual_cov[prog.year-1] + prog.max_inc
                 elif prog.annual_cov[prog.year] - prog.annual_cov[prog.year-1] < (-1) * prog.max_dec:
-                    covs[prog.name] = prog.annual_cov[prog.year-1] - prog.max_dec
+                    prog.annual_cov[prog.year] = prog.annual_cov[prog.year-1] - prog.max_dec
                 else:
-                    covs[prog.name] = prog.annual_cov[prog.year]
+                    prog.annual_cov[prog.year] = prog.annual_cov[prog.year]
             
 
     def restrict_covs(self):

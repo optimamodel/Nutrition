@@ -14,11 +14,10 @@ from functools import partial
 
 input_path = 'Databooks/new_format/'
 output_path = 'Outputs/'
-region_list = ['DOUALA']
+region_list = ['DOUALA', 'WEST']
 ramping = True
 n_runs = 2
-sample_size = n_runs
-doplot = False
+doplot = True
 pop_growth = "fixed budget"
 
 """" If the model is run for a single run using 'p.run_scens()' then set resampling=False
@@ -100,7 +99,8 @@ if __name__ == '__main__':
     write_results(results, filename=output_path + 'optimized.xlsx')
     #p.write_results(filename=output_path + 'optimized.xlsx')
     if doplot:
-        p.plot(optim=True)
+        for p in proj_list:
+            p.plot(optim=True)
 
 
 

@@ -77,9 +77,9 @@ def make_plots(all_res=None, all_reduce=None, toplot=None, optim=False, geo=Fals
     if 'alloc' in toplot: # optimized allocations
         outfigs = plot_alloc(all_res, optim=optim, geo=geo)
         allplots.update(outfigs)
-    if 'annu_alloc' in toplot: # optimized allocations
-        outfigs = plot_annu_alloc(all_res, optim=optim, geo=geo)
-        allplots.update(outfigs)
+    #if 'annu_alloc' in toplot: # optimized allocations
+        #outfigs = plot_annu_alloc(all_res, optim=optim, geo=geo)
+        #allplots.update(outfigs)
     
     return allplots
 
@@ -623,7 +623,7 @@ def plot_clustered_annu_optialloc(results, optim, geo):
     # Make bar plots
         bars = []
         #xlabs = [res.mult if res.mult is not None else res.name for res in results]
-        xlabs = [res.name if res.mult is None else (res.mult, [abs(w) for w in res.weight if w != 0], res.name) for res in results]
+        xlabs = [res.name if res.mult is None else '(mult= %s) (weight= %s) %s' % (res.mult, [abs(w) for w in res.weight if w != 0], res.name) for res in results]
         bottom = np.zeros(len(results))
         for i, spend in enumerate(avspend):
             if any(spend) > 0:    # only want to plot prog if spending is non-zero (solves legend issues)
@@ -672,7 +672,7 @@ def plot_clustered_annu_optialloc(results, optim, geo):
     customizations.update(legend_loc)
     legend_1 = ax.legend(bars, leglabs, **customizations)
     handles = [f"Bar {j}: " for j in range(1, len(xlabs)+1)]
-    ax.legend(handles=handles, labels=xlabs,  loc='lower center', bbox_to_anchor=(1.15, 0.3), fontsize=10, borderpad=1.2)
+    ax.legend(handles=handles, labels=xlabs,  loc='lower center', bbox_to_anchor=(1.25, 0.3), fontsize=10, borderpad=1.2)
     figs['clust_annu_alloc'] = fig
     fig.add_artist(legend_1)
     return figs

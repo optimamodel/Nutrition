@@ -52,20 +52,11 @@ class ScenResult(sc.prettyobj):
                 output = prettyvals
         return output
     
-    def get_poprates(self, outcomes=None):
-        if outcomes is None:
-            outcomes = default_trackers()
-        if sc.isstring(outcomes):
-            outcomes = sc.promotetolist(outcomes)
-        rates = self.model.get_poprate(outcomes)
-        print(rates)
-        return rates
-    
     def get_covs(self, ref=True, unrestr=True):
         covs = sc.odict()
         
         for name, prog in self.programs.iteritems():
-            if self.pop_growth:
+            if not self.pop_growth:
                 covs[name] = prog.annual_restr_cov
             else:
                 covs[name] = prog.annual_cov
@@ -79,7 +70,6 @@ class ScenResult(sc.prettyobj):
             allocs[name] = prog.annual_spend
             
         return allocs
-
     
     def get_freefunds(self):
         free = self.model.prog_info.free
@@ -214,7 +204,7 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
         if res.name != 'Excess budget':
             rows = res.programs.keys()
             spend = res.get_allocs(ref=True)
-            cov = res.get_covs(unrestr=False)
+            cov = res.get_covs(unrestr=True)
             #print(spend)
             # collate coverages first
             for r, prog in enumerate(rows):
@@ -283,7 +273,7 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
         if res.name != 'Excess budget' and '#' not in res.name:
             rows = res.programs.keys()
             spend = res.get_allocs(ref=True)
-            cov = res.get_covs(unrestr=False)
+            cov = res.get_covs(unrestr=True)
             # print(spend)
             # collate coverages first
             for p, prog in enumerate(rows):
