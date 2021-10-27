@@ -2,6 +2,8 @@ import polib
 import json
 import pathlib
 
+rootdir = pathlib.Path(__file__).parent
+
 def flatten(d,out,prefix=()):
     for k,v in d.items():
         if isinstance(v, dict):
@@ -9,7 +11,7 @@ def flatten(d,out,prefix=()):
         else:
             out[prefix + (k,)] = v
 
-for locale in pathlib.Path('.').iterdir():
+for locale in rootdir.iterdir():
     if locale.suffix != '.json':
         continue
 
@@ -41,7 +43,7 @@ for locale in pathlib.Path('.').iterdir():
         )
         po.append(entry)
 
-    po.save(f'{locale.stem}.po')
+    po.save(rootdir/f'{locale.stem}.po')
 
 
 

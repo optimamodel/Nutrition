@@ -44,6 +44,8 @@ The normal workflow for adding translations to existing strings in the code is:
 
 Some strings also appear in the databook, such as program names or population names. These need to be localized in the databook templates as well as in the code, because the databooks are not generated programatically. The workflow for generating translated databooks is to start with a complete English template. Then, an Excel file containing translations is created.
 
+English strings that will be translated are contained in `translations.txt`. Running `csv_to_po.py` reads `translations.txt` and adds `.po` files to subdirectories within the input folder. These `po` files can be edited to perform the translations. `translate.py` will then  
+
 The reference files are in `inputs/en`. Remaining files are automatically generated using `translate.py`. This script does the following for each file in `en`:
 
 - Copy file to locale folder e.g. `fr`
@@ -72,3 +74,13 @@ Strings that are specific to the frontend (e.g., the text that appears on a butt
 Translations are in `src/locales` with one file for each locale. The locales themselves also need to appear in `src/js/utils.js` in the list of available locales (this is how the locale will end up in the locale switcher). To add a new locale, add an entry to `utils.js`, create a blank translation in `src/locales` and then run `npm run translate`
 
 To access the current locale, use `import i18n from '../i18n'` in the scripts section. `i18n.locale` is then accessible as the current locale in callbacks. Within the template, use `$i18n.locale` - see `LocaleSwitcher.vue` for an example. This allows the locale in the UI to be included in RPC calls so that the RPC can access a specific locale. For example, when creating a demo project, the frontend's locale is used to determine which databook is used to create the project. 
+
+### Workflow for updating translations
+
+Some software, such as Poedit, can assist with managing translations. However, Poedit only supports the `.po` files used by the backend. Therefore, it is necessary to convert to/from the `.po` format in order to use these tools. The workflow incorporating a `.po` step is
+
+1. Make a string in the `.vue` file using the `$t` function
+2. Go into the `client` folder and run `update_po_files.sh` which will first regenerate the `json` files based on the `vue` files, and then generate `po` files
+3. Use Poedit or anything else to modify the `po` files
+4. Run `update_json_files.sh` to generate new `json` files from the `po` files
+5. Commit the `json` files to the repository
