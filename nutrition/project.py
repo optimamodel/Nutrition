@@ -475,7 +475,7 @@ class Project(object):
         self.reduced_results = reduce(results, n_runs=self.n_runs, use_mean=use_mean, quantiles=quantiles, bounds=bounds, output=output)
         return
 
-    def run_scens(self, scens=None, ramping=True):
+    def run_scens(self, scens=None):
         """Function for running scenarios
         If scens is specified, they are added to self.scens """
         results = []
@@ -486,7 +486,7 @@ class Project(object):
                 if (scen.model_name is None) or (scen.model_name not in self.datasets.keys()):
                     raise Exception('Could not find valid dataset for %s.  Edit the scenario and change the dataset' % scen.name)
                 model = self.model(scen.model_name, resampling=False)
-                res = run_scen(scen, model, ramping=ramping)
+                res = run_scen(scen, model)
                 results.append(res)
         self.add_result(results, name='scens')
         return None
@@ -507,7 +507,7 @@ class Project(object):
         return None
     
     
-    def multirun_scens(self, scens=None, n_runs=2, ramping=True, pop_growth=False):
+    def multirun_scens(self, scens=None, n_runs=2, pop_growth=False):
         self.n_runs = n_runs
         results = []
 
@@ -529,13 +529,13 @@ class Project(object):
                         t = dataset.t
                         sampled_data = dataset.demo_data
                         model = Model(pops, prog_info, sampled_data , t, pop_growth=pop_growth)
-                    res = run_scen(scen, model, ramping=ramping)
+                    res = run_scen(scen, model)
                     results.append(res)
         
         self.add_result(results, name='scens')
         return None
         
-    def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=None, maxtime=300, parallel=True, dosave=True, runbaseline=True, ramping=True):
+    def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=None, maxtime=300, parallel=True, dosave=True, runbaseline=True):
         if optim is not None:
             self.add_optims(optim)
             key = optim.name # this to handle parallel calls of this function
@@ -554,7 +554,7 @@ class Project(object):
         model = sc.dcp(self.model(optim.model_name))
         model.setup(optim, setcovs=False)
         model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
-        results += optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel, ramping=ramping)
+        results += optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel)
         # add by optim name
         if dosave:
             self.add_result(results, name=optim.name)

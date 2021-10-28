@@ -157,8 +157,9 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name):
             error = output_h[length-1] - output_l[length-1]
             thimax = output_h.max()
             if thimax > ymax: ymax = thimax
-            change = round_elements([utils.get_change(base, out) for out,base in zip(output_p, baseout)], dec=1)
+            change = round_elements([utils.get_change(base, out) for out,base in zip(output_p, baseout)], dec=1) 
             perchange.append(change)
+            
             if seq:
                 bar = ax.bar(xpos, output_p, width=width, color=colors[r],  yerr=output_h-output_l, capsize=2)
             if not seq:
@@ -269,6 +270,7 @@ def plot_outputs(all_res, all_reduce, seq, name):
         else:
             title = 'Cumulative'
             ax.set_xticks([])
+            
             # display percentage change above bars
             for j, bar in enumerate(bars[1:],1):
                 for k, rect in enumerate(bar):

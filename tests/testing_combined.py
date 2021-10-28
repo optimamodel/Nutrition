@@ -1,8 +1,7 @@
 """"This script may be used to test running non-optimization
     and optimization scenarios together.
     resampling (boolean): whether to use resampling with multirun or point estimators with single run (defualt: True)
-    ramping   (boolean): whether to use ramping function or not
-    NOTE: Resampling does not work well (in progress)"""
+    """
 import nutrition.ui as nu
 import sciris as sc
 from nutrition.project import Project
@@ -14,11 +13,10 @@ from functools import partial
 
 input_path = 'Databooks/new_format/'
 output_path = 'Outputs/'
-region_list = ['DOUALA', 'WEST']
-ramping = True
+region_list = ['DOUALA']
 n_runs = 2
 doplot = True
-pop_growth = "fixed budget"
+pop_growth = "fixed coverage"
 
 """" If the model is run for a single run using 'p.run_scens()' then set resampling=False
     to make sure that the default point estimators are used from 
@@ -44,7 +42,7 @@ kwargs3 = {'name': 'IYCF',
            'scen_type': 'coverage',
            'progvals': sc.odict({'IYCF 1': [0.6, 0.2, 0.5, 0.95, 0.8]})}
 
-def parallel_optim(region, path=None, ramping=True):
+def parallel_optim(region, path=None):
     """Define optimization scenario"""
     p2 = Project('Cameroon')
     p2.load_data(inputspath=path + region + '_input.xlsx', name=region, resampling=False, pop_growth=pop_growth)
@@ -68,14 +66,14 @@ def parallel_optim(region, path=None, ramping=True):
               }
 
     p2.add_optims(Optim(**kwargs))
-    p2.run_optim(maxiter=50, swarmsize=0, maxtime=500, parallel=False, ramping=ramping)
+    p2.run_optim(maxiter=50, swarmsize=0, maxtime=500, parallel=False)
     return (p2)
 
 """run non optimization scenarios"""
 scen_list = nu.make_scens([kwargs1, kwargs2, kwargs3])
 p1.add_scens(scen_list)
 #p1.run_scens(ramping=ramping) # make sure to set resampling=False
-p1.multirun_scens(n_runs=n_runs, ramping=ramping, pop_growth=pop_growth)
+p1.multirun_scens(n_runs=n_runs, pop_growth=pop_growth)
 p1.write_results(filename=output_path + 'non_optimized.xlsx')
 p1.reduce()
 #if doplot:
@@ -84,7 +82,7 @@ p1.reduce()
 """run optimization scenarios"""
 if __name__ == '__main__':
 
-    run_optim = partial(parallel_optim, path=input_path, ramping=ramping)
+    run_optim = partial(parallel_optim, path=input_path)
     results = []
     
     proj_list = run_parallel(run_optim, region_list, num_procs=3)

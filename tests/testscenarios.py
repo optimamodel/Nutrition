@@ -9,9 +9,8 @@ sys.setrecursionlimit(x)
 
 doplot = True
 resampling = False
-ramping = True
 n_runs = 3
-pop_growth = "fixed budget"
+pop_growth = "fixed coverage"
 
 # load in data to create model
 """" If the model is run for a single run using 'p.run_scens()' then set resampling=False
@@ -95,7 +94,7 @@ if __name__ == '__main__':
     p.add_scens(scen_list)
 
     #p.run_scens() # make sure to set resampling=False
-    p.multirun_scens(n_runs=n_runs, ramping=ramping, pop_growth=pop_growth)
+    p.multirun_scens(n_runs=n_runs, pop_growth=pop_growth)
     p.reduce()
     #p.mean()
 #p.run_scens()

@@ -4,7 +4,7 @@ import numpy as np
 import math as mt
 
 class ScenResult(sc.prettyobj):
-    def __init__(self, name, model_name, model, obj=None, mult=None, weight=None, ramping=True, pop_growth=False):
+    def __init__(self, name, model_name, model, obj=None, mult=None, weight=None, pop_growth=False):
         self.name = name
         self.model_name = model_name
         self.model = model
@@ -18,7 +18,6 @@ class ScenResult(sc.prettyobj):
         self.uid = sc.uuid()
         self.created = sc.now()
         self.modified = sc.now()
-        self.ramping = ramping
         self.pop_growth = pop_growth
         #self.results = []
         
