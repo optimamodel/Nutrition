@@ -50,6 +50,8 @@ Average episodes per year: 24-59 months
 Other risks
 Percentage of diarrhea that is severe
 Percentage of anaemia that is iron deficient
+Prevalence of pre-eclampsia
+Prevalence of eclampsia
 Demographic projections
 Year
 Number of births
@@ -61,7 +63,7 @@ Total WRA
 Estimated pregnant women
 Non-pregnant WRA
 Causes of death
-Percentage of deaths in baseline year (2019) attributable to cause
+Percentage of deaths in baseline year (2017) attributable to cause
 Neonatal
 Neonatal diarrhoea
 Neonatal sepsis
@@ -97,7 +99,7 @@ Embolism
 Other direct causes
 Indirect causes
 Nutritional status distribution
-Percentage of population in each category in baseline year (2019)
+Percentage of population in each category in baseline year (2017)
 Status
 <1 month
 Stunting (height-for-age)
@@ -199,3 +201,86 @@ Extension
 Add extension
 Delivery mode
 Programs target population
+Children 0-59 months
+Community based
+Management of MAM
+General population
+Unit cost (US$)
+Broad population group
+Baseline (2017) coverage
+Community-based
+Programs impacted population
+Program risk areas
+Population risk areas
+IYCF odds ratios
+Birth outcome risks
+Relative risks
+Odds ratios
+Programs birth outcomes
+Programs anaemia
+Programs wasting
+Programs for children
+Programs for PW
+Stunting
+Wasting prevention
+Wasting treatment
+Birth outcomes
+Birth number
+Age group
+Behaviour
+Odds ratio for correct breastfeeding
+Odds ratio for stunting
+Odds ratio for correct complementary feeding
+Maternal risk factors leading to birth outcomes
+Relative risk by birth spacing
+Odds ratio for women with maternal anaemia
+Risks for children who experience birth outcomes
+Odds ratios for conditions
+Stunting (HAZ-score < -2)
+MAM (WHZ-score between -3 and -2)
+SAM (WHZ-score < -3)
+Relative risks of neonatal causes of death
+Relative risk of causes of death by height-for-age (stunting) distribution
+Cause of death
+HAZ status
+Normal
+Mild
+Moderate
+High
+Relative risk of causes of death by weight-for-height (wasting) distribution
+WHZ status
+Relative risk of causes of death by anaemia status
+Anaemia status
+Not anaemic
+Anaemic
+Relative risk of causes of death by breastfeeding status
+Breastfeeding status
+Relative risks of experiencing diarrhoea by breastfeeding status
+Given previous stunting (HAZ < -2 in previous age band)
+Diarrhoea (per additional episode)
+By program
+Odds ratio for correct breastfeeding by program
+Other odds ratios
+For SAM per additional episode of diarrhoea
+For MAM per additional episode of diarrhoea
+For anaemia per additional episode of severe diarrhoea
+Odds ratios for optimal birth spacing by program
+effectiveness
+affected fraction
+Relative risks of anaemia when receiving intervention
+Odds ratio of being anaemic when covered by intervention
+Odds ratio of SAM when covered by program
+Odds ratio of MAM when covered by program
+Targetted condition
+Affected fraction
+Effectiveness mortality
+Effectiveness incidence
+SAM
+MAM
+Odds ratios for women with maternal anaemia
+Odds ratios for stunting
+Odds ratios for correct breastfeeding by program
+="Percentage of deaths in baseline year ("&start_year&") attributable to cause"
+="Percentage of population in each category in baseline year ("&start_year&")"
+="Percentage of children in each category in baseline year ("&start_year&")"
+Odds ratios of being anaemic when covered by intervention
