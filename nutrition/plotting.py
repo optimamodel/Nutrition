@@ -144,12 +144,15 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name):
             
             offset = offsets[r]
             xpos = years + offset if seq else offset
-            output_p = sc.promotetoarray(all_reduce[res][outcome]['point'].sum())
-            output_l = sc.promotetoarray(all_reduce[res][outcome]['low'].sum())
-            output_h = sc.promotetoarray(all_reduce[res][outcome]['high'].sum())
-            #output_p = all_reduce[res][outcome]['point']
-            #output_l = all_reduce[res][outcome]['low']
-            #output_h = all_reduce[res][outcome]['high']
+            if seq:
+                output_p = sc.promotetoarray(all_reduce[res][outcome]['point'])
+                output_l = sc.promotetoarray(all_reduce[res][outcome]['low'])
+                output_h = sc.promotetoarray(all_reduce[res][outcome]['high'])
+            if not seq:
+                    output_p = sc.promotetoarray(all_reduce[res][outcome]['point'].sum())
+                    output_l = sc.promotetoarray(all_reduce[res][outcome]['low'].sum())
+                    output_h = sc.promotetoarray(all_reduce[res][outcome]['high'].sum())
+            
             output_p /= scale
             output_l /= scale
             output_h /= scale
