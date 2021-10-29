@@ -52,8 +52,10 @@ def parallel_optim(region, path=None):
     kwargs = {'name': region,
               'mults': [1],
               'model_name': region,
-              'weights': sc.odict({'Minimize the number of child deaths': [1., 0.],
-                                   'thrive': [0., 1.]}),
+              'weights': sc.odict({'Minimize the number of child deaths': [1., 0., 0.],
+                                   'thrive': [0., 1., 0.],
+                                   'Minimize the prevalence of wasting in children': [0., 0., 1.],
+                                   }),
               'prog_set': ['Balanced energy-protein supplementation', 'Cash transfers',
                            'IFA fortification of wheat flour',
                            'IYCF 1', 'IYCF 2', 'IFAS for pregnant women (community)',
@@ -66,7 +68,7 @@ def parallel_optim(region, path=None):
               }
 
     p2.add_optims(Optim(**kwargs))
-    p2.run_optim(maxiter=50, swarmsize=0, maxtime=120, parallel=True, runbalanced=True)
+    p2.run_optim(maxiter=50, swarmsize=0, maxtime=1, parallel=True, runbalanced=True)
     return (p2)
 
 # """run non optimization scenarios"""
