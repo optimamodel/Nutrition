@@ -21,8 +21,8 @@ pop_growth = "fixed budget"
 """" If the model is run for a single run using 'p.run_scens()' then set resampling=False
     to make sure that the default point estimators are used from 
     the databook with out considering any randomness!"""
-p1 = nu.Project('eg')
-p1.load_data('demo', 'testing', name='eg', resampling=False, pop_growth=pop_growth)
+# p1 = nu.Project('eg')
+# p1.load_data('demo', 'testing', name='eg', resampling=False, pop_growth=pop_growth)
 
 """Define non-optimization scenarios"""
 
@@ -52,8 +52,8 @@ def parallel_optim(region, path=None):
     kwargs = {'name': region,
               'mults': [1],
               'model_name': region,
-              'weights': sc.odict({'Minimize the number of child deaths': [1, 0.5],
-                                   'thrive': [1, 0.2]}),
+              'weights': sc.odict({'Minimize the number of child deaths': [1., 0.],
+                                   'thrive': [0., 1.]}),
               'prog_set': ['Balanced energy-protein supplementation', 'Cash transfers',
                            'IFA fortification of wheat flour',
                            'IYCF 1', 'IYCF 2', 'IFAS for pregnant women (community)',
@@ -62,43 +62,51 @@ def parallel_optim(region, path=None):
                            'Treatment of SAM', 'Vitamin A supplementation',
                            'Zinc for treatment + ORS', 'Iron and iodine fortification of salt'],
               'fix_curr': False,
-              'add_funds': 0
+              'add_funds': 0,
               }
 
     p2.add_optims(Optim(**kwargs))
-    p2.run_optim(maxiter=50, swarmsize=0, maxtime=500, parallel=False)
+    p2.run_optim(maxiter=50, swarmsize=0, maxtime=120, parallel=True, runbalanced=True)
     return (p2)
 
-"""run non optimization scenarios"""
-scen_list = nu.make_scens([kwargs1, kwargs2, kwargs3])
-p1.add_scens(scen_list)
-#p1.run_scens(ramping=ramping) # make sure to set resampling=False
-p1.multirun_scens(n_runs=n_runs, pop_growth=pop_growth)
-p1.write_results(filename=output_path + 'non_optimized.xlsx')
-p1.reduce()
-#if doplot:
-   #p1.plot()
+# """run non optimization scenarios"""
+# scen_list = nu.make_scens([kwargs1, kwargs2, kwargs3])
+# p1.add_scens(scen_list)
+# #p1.run_scens(ramping=ramping) # make sure to set resampling=False
+# p1.multirun_scens(n_runs=n_runs, pop_growth=pop_growth)
+# p1.write_results(filename=output_path + 'non_optimized.xlsx')
+# p1.reduce()
+# #if doplot:
+#    #p1.plot()
 
 """run optimization scenarios"""
 if __name__ == '__main__':
+    from at_tools import get_desktop_folder
+    import os
 
     run_optim = partial(parallel_optim, path=input_path)
     results = []
     
-    proj_list = run_parallel(run_optim, region_list, num_procs=3)
+    # proj_list = run_parallel(run_optim, region_list, num_procs=3)
+    
+    proj_list = []
+    for region in region_list:
+        proj_list.append(run_optim(region))
+    
+    
     for p in proj_list:
         for res in p.results:
             for scenres in p.results[res]:
                 if scenres.name == 'Baseline':
                     scenres.name = scenres.model_name + ' ' + scenres.name
-                else:
-                    scenres.name = scenres.model_name
+                # else:
+                #     scenres.name = scenres.model_name
                 results.append(scenres)
     write_results(results, filename=output_path + 'optimized.xlsx')
     #p.write_results(filename=output_path + 'optimized.xlsx')
     if doplot:
         for p in proj_list:
-            p.plot(optim=True)
+            p.plot(optim=True, save_plots_folder=get_desktop_folder() + 'Nutrition test' + os.sep)
 
 
 
