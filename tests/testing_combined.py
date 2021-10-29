@@ -68,7 +68,7 @@ def parallel_optim(region, path=None):
               }
 
     p2.add_optims(Optim(**kwargs))
-    p2.run_optim(maxiter=50, swarmsize=0, maxtime=1, parallel=True, runbalanced=True)
+    p2.run_optim(maxiter=50, swarmsize=0, maxtime=500, parallel=True, runbalanced=True)
     return (p2)
 
 # """run non optimization scenarios"""

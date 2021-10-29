@@ -417,7 +417,7 @@ def plot_alloc(results, optim, geo):
             bottom += spend
     ymax = max(bottom)
     if optim or geo:
-        xlabs = [res.name if res.mult is None else (res.mult, [abs(w) for w in res.weight if w != 0], res.name) for res in results]
+        xlabs = [res.name for res in results]
         title = 'Optimal allocation, %s-%s'% (ref.years[pltstart], ref.years[-1])
         valuestr = str(results[1].prog_info.free / 1e6) # bit of a hack
         # format x axis
@@ -511,7 +511,7 @@ def plot_annu_alloc(results, optim, geo):
                 bottom += spend
         ymax = max(bottom)
         if optim or geo:
-            xlabs = [res.name if res.mult is None else (res.mult, [abs(w) for w in res.weight if w != 0], res.name) for res in results]
+            xlabs = [res.name for res in results]
             title = 'Optimal allocation, %s-%s'% (ref.years[pltstart], ref.years[-1])
             valuestr = str(results[1].prog_info.free / 1e6) # bit of a hack
                 # format x axis
@@ -703,7 +703,7 @@ def plot_clustered_annu_optialloc(results, optim, geo):
     # Make bar plots
         bars = []
         #xlabs = [res.mult if res.mult is not None else res.name for res in results]
-        xlabs = [res.name if res.mult is None else '(mult= %s) %s' % (res.mult, res.name) for res in results]
+        xlabs = [res.name for res in results]
         bottom = np.zeros(len(results))
         for i, spend in enumerate(avspend):
             if any(spend) > 0:    # only want to plot prog if spending is non-zero (solves legend issues)
