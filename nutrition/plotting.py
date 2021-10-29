@@ -30,6 +30,80 @@ else:
     refprogs = False # include ref spending?
 
 
+def save_figs(figs, path=".", prefix="", fnames=None) -> None:
+    """
+    Adapted from Atomica save_figs
+    
+    Save figures to disk as PNG files
+
+    Functions like `plot_series` and `plot_bars` can generate multiple figures, depending on
+    the data and legend options. This function facilitates saving those figures together.
+    The name for the file can be automatically selected when saving figures generated
+    by `plot_series` and `plot_bars`. This function also deals with cases where the figure
+    list may or may not contain a separate legend (so saving figures with this function means
+    the legend mode can be changed freely without having to change the figure saving code).
+
+    :param figs: A figure or list of figures
+    :param path: Optionally append a path to the figure file name
+    :param prefix: Optionally prepend a prefix to the file name
+    :param fnames: Optionally an array of file names. By default, each figure is named
+    using its 'label' property. If a figure has an empty 'label' string it is assumed to be
+    a legend and will be named based on the name of the figure immediately before it.
+    If you provide an empty string in the `fnames` argument this same operation will be carried
+    out. If the last figure name is omitted, an empty string will automatically be added.
+
+    """
+    import os, errno
+    
+    settings = dict()
+    settings["legend_mode"] = "together"  # Possible options are ['together','separate','none']
+    settings["bar_width"] = 1.0  # Width of bars in plot_bars()
+    settings["line_width"] = 3.0  # Width of lines in plot_series()
+    settings["marker_edge_width"] = 3.0
+    settings["dpi"] = 150  # average quality
+    settings["transparent"] = False
+    
+    try:
+        os.makedirs(path)
+    except OSError as err:
+        if err.errno != errno.EEXIST:
+            raise
+
+    if isinstance(figs, dict):
+        if fnames is None:
+            fnames = list(figs.keys())
+        figs = figs.values()
+
+    # Sanitize fig array input
+    if not isinstance(figs, list):
+        figs = [figs]
+
+    # Sanitize and populate default fnames values
+    if fnames is None:
+        fnames = [fig.get_label() for fig in figs]
+    elif not isinstance(fnames, list):
+        fnames = [fnames]
+
+    # Add legend figure to the end
+    if len(fnames) < len(figs):
+        fnames.append("")
+    assert len(fnames) == len(figs), "Number of figures must match number of specified filenames, or the last figure must be a legend with no label"
+    assert fnames[0], "The first figure name cannot be empty"
+
+    for i, fig in enumerate(figs):
+        if not fnames[i]:  # assert above means that i>0
+            fnames[i] = fnames[i - 1] + "_legend"
+            legend = fig.findobj(Legend)[0]
+            renderer = fig.canvas.get_renderer()
+            fig.draw(renderer=renderer)
+            bbox = legend.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+        else:
+            bbox = "tight"
+        fname = prefix + fnames[i] + ".png"
+        fname = sc.sanitizefilename(fname)  # parameters may have inappropriate characters
+        fig.savefig(os.path.join(path, fname), bbox_inches=bbox, dpi=settings["dpi"], transparent=settings["transparent"])
+        # logger.info('Saved figure "%s"', fname)
+
 def make_plots(all_res=None, all_reduce=None, toplot=None, optim=False, geo=False):
     """
     This function controls all the plotting types a user can ask for

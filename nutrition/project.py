@@ -14,7 +14,7 @@ from .scenarios import Scen, run_scen, convert_scen, make_default_scen
 from .optimization import Optim
 from .geospatial import Geospatial
 from .results import write_results, reduce
-from .plotting import make_plots, get_costeff, plot_costcurve
+from .plotting import make_plots, get_costeff, plot_costcurve, save_figs
 from .demo import demo_scens, demo_optims, demo_geos
 from . import settings
 from .settings import Settings
@@ -570,8 +570,10 @@ class Project(object):
     def sensitivity(self):
         print('Not implemented')
 
-    def plot(self, key=-1, toplot=None, optim=False, geo=False):
+    def plot(self, key=-1, toplot=None, optim=False, geo=False, save_plots_folder=None):
         figs = make_plots(self.result(key), self.reduced_results, toplot=toplot, optim=optim, geo=geo)
+        if save_plots_folder:
+            save_figs(figs, path=save_plots_folder)
         return figs
 
     def get_costeff(self, resultname=None):
