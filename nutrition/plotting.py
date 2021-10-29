@@ -46,7 +46,7 @@ def make_plots(all_res=None, all_reduce=None, toplot=None, optim=False, geo=Fals
         toplot = ['prevs', 'prev_reduce', 'ann', 'agg', 'alloc', 'annu_alloc', 'clust_annu_alloc']
     toplot = sc.promotetolist(toplot)
     all_res = sc.promotetolist(sc.dcp(all_res)) # Without dcp(), modifies the original and breaks things
-    if optim:
+    if optim or not all_reduce:
         if 'prevs' in toplot:
             prevfigs = plot_prevs(all_res)
             allplots.update(prevfigs)
@@ -144,9 +144,9 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name):
             
             offset = offsets[r]
             xpos = years + offset if seq else offset
-            output_p = sc.promotetoarray(all_reduce[res][outcome]['point'])
-            output_l = sc.promotetoarray(all_reduce[res][outcome]['low'])
-            output_h = sc.promotetoarray(all_reduce[res][outcome]['high'])
+            output_p = sc.promotetoarray(all_reduce[res][outcome]['point'].sum())
+            output_l = sc.promotetoarray(all_reduce[res][outcome]['low'].sum())
+            output_h = sc.promotetoarray(all_reduce[res][outcome]['high'].sum())
             #output_p = all_reduce[res][outcome]['point']
             #output_l = all_reduce[res][outcome]['low']
             #output_h = all_reduce[res][outcome]['high']
@@ -175,11 +175,11 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name):
             ax.set_xticks([])
             
             # display percentage change above bars
-            #for j, bar in enumerate(bars[1:],1):
-                #for k, rect in enumerate(bar):
-                    #change = perchange[j][k]
-                    #height = rect.get_height()
-                    #ax.text(rect.get_x() + rect.get_width() / 2., height,'{}%'.format(change), ha='center', va='bottom')
+            for j, bar in enumerate(bars[1:],1):
+                rect = bar[-1]
+                change = perchange[j][0]
+                height = rect.get_height()
+                ax.text(rect.get_x() + rect.get_width() / 2., height,'{}%'.format(change), ha='center', va='bottom')
         # formatting
         title += ' %s \n %s-%s'%(utils.relabel(outcome).lower(), baseres.years[pltstart], baseres.years[-1])
         sc.SIticks(ax=ax, axis='y')
