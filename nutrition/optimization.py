@@ -120,7 +120,7 @@ class Optim(sc.prettyobj):
                     res_balanced.append(this_res)
             #Prettier names
             for i, mult in enumerate(self.mults):
-                mult_str = "(mult={res_balanced[i].mult}) " if len(self.mults)>1 or res_balanced[i].mult != 1 else ""
+                mult_str = f"(mult={res_balanced[i].mult}) " if len(self.mults)>1 or res_balanced[i].mult != 1 else ""
                 res_balanced[i].name = f'{mult_str}Balanced objectives'
         
         """Attempt to get some better pretty names for the results"""
@@ -137,7 +137,7 @@ class Optim(sc.prettyobj):
                     new_label += f'{pretty[ind]}: {result.weight[ind] * utils.get_sign(pretty.keys()[ind])}' 
             
             if len(self.mults)>1 or result.mult != 1: #add clarity on multiplier only if necessary
-                new_label = '(mult={result.mult}) ' + new_label
+                new_label = f'(mult={result.mult}) ' + new_label
             result.name = new_label   
             
         if runbalanced:

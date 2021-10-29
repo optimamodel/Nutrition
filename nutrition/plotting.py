@@ -752,7 +752,7 @@ def plot_clustered_annu_optialloc(results, optim, geo):
     customizations.update(legend_loc)
     legend_1 = ax.legend(bars, leglabs, **customizations)
     handles = [f"Bar {j}: " for j in range(1, len(xlabs)+1)]
-    ax.legend(handles=handles, labels=xlabs,  loc='lower center', bbox_to_anchor=(1.25, 0.3), fontsize=10, borderpad=1.2)
+    ax.legend(handles=handles, labels=xlabs,  loc='center left', bbox_to_anchor=(1.0, 0.3), fontsize=10, borderpad=1.2)
     figs['clust_annu_alloc'] = fig
     fig.add_artist(legend_1)
     return figs
