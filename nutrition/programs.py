@@ -27,7 +27,7 @@ class Program(sc.prettyobj):
         self.max_dec = progdata.max_dec[name]
         self.base_cov = progdata.base_cov[name]
         self.annual_cov = np.zeros(len(all_years)) #this is the unrestr_cov
-        self.annual_restr_cov = np.zeros(len(all_years)) #only calculated in adjust_cov
+        self.annual_restr_cov = np.ones(len(all_years)) * self.base_cov #only calculated in adjust_cov
         self.annual_spend = np.zeros(len(all_years))
         self.excl_deps = progdata.prog_deps[name]['Exclusion dependency']
         self.thresh_deps = progdata.prog_deps[name]['Threshold dependency']
