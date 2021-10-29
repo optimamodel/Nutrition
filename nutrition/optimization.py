@@ -104,7 +104,8 @@ class Optim(sc.prettyobj):
                     #all objectives are reframed so that minimizing is good: baseline - optimized = a positive number where higher is better.
                     relative_progress = sum((base.get_outputs()[:] - res[weight_ind].get_outputs()[:]) * weight)
                     
-                    balanced_weight += weight * 1./relative_progress
+                    if relative_progress > 0.:
+                        balanced_weight += weight * 1./relative_progress
                 
                 balanced_weight *= 1./ max(abs(balanced_weight)) #normalize a bit so the highest absolute weight is 1.
                 
