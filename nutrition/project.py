@@ -490,23 +490,7 @@ class Project(object):
                 results.append(res)
         self.add_result(results, name='scens')
         return None
-    
-    def _multirun_scens(self, scens=None, n_runs=2):# can remove this once finalized
-        results = []
-        if scens is not None:
-            self.add_scens(scens)
-        for scen in self.scens.values():
-            if scen.active:
-                if (scen.model_name is None) or (scen.model_name not in self.datasets.keys()):
-                    raise Exception('Could not find valid dataset for %s.  Edit the scenario and change the dataset' % scen.name)
-                for i in range(n_runs):
-                    model = self.model(scen.model_name)
-                    res = run_scen(scen, model)
-                    results.append(res)
-        self.add_result(results, name='scens')
-        return None
-    
-    
+     
     def multirun_scens(self, scens=None, n_runs=2, pop_growth=False):
         self.n_runs = n_runs
         results = []
