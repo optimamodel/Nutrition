@@ -80,7 +80,7 @@ class Optim(sc.prettyobj):
             for arg in args:
                 this_res = self.one_optim(arg)
                 res.append(this_res)
-        
+
         """The goal of this is to balance progress toward multiple competing objectives, e.g.
         weight[0] = 100% Maximize thrive,  the objective progress (baseline evaluation - optimized evaluation) of the optimized result is 100
         weight[1] = 100% Minimize prevalence of MAM,  the objective progress (baseline evaluation - optimized evaluation) of the optimized result is 0.2
@@ -91,7 +91,6 @@ class Optim(sc.prettyobj):
         if runbalanced and len(self.weights)>1:
             balanced_args = []
             res_labels = [result.name for result in res]
-            print ('Result labels: ', res_labels)
             
             balanced_args = []
             for mult in self.mults:
@@ -107,23 +106,37 @@ class Optim(sc.prettyobj):
                     
                     balanced_weight += weight * 1./relative_progress
                 
-                balanced_weight *= 1./ max(abs(balanced_weight)) #normalize a bit so the highest weight is 1.
-                
-                #TODO remove this
-                from nutrition.utils import pretty_labels
-                pretty = pretty_labels(direction=False)+pretty_labels(direction=True)                
-                print (f'For mult {mult} balanced weights are {list(zip(pretty,balanced_weight))}) ')   
+                balanced_weight *= 1./ max(abs(balanced_weight)) #normalize a bit so the highest absolute weight is 1.
                 
                 balanced_args.append((self.get_kwargs(model, balanced_weight, mult, keep_inds), mult)+optim)
             
             if parallel:
                 res_balanced = utils.run_parallel(self.one_optim_parallel, balanced_args, num_procs)
-                res = res + res_balanced
             else:
+                res_balanced = []
                 for arg in balanced_args:
                     this_res = self.one_optim(arg)
-                    res.append(this_res)
-                
+                    res_balanced.append(this_res)
+            #Prettier names
+            for i, mult in enumerate(self.mults):
+                res_balanced[i].name = f'Balanced objectives'
+        
+        """Attempt to get some better pretty names for the results"""
+        pretty = utils.pretty_labels(direction=False) + utils.pretty_labels(direction=True)
+        for result in res:
+            new_label = '{self.name} '
+            non_zero_weights = np.where(result.weight != 0.)[0]
+            if len(non_zero_weights) == 1: #only one objective, no need to specify the weight
+                new_label = pretty[non_zero_weights][0]
+            else:
+                for ind in non_zero_weights:
+                    new_label += f'{pretty[ind]}: {result.weight[ind] * utils.get_sign(pretty.keys()[ind])}' 
+            
+            result.name = new_label   
+            
+        if runbalanced:
+            res += res_balanced  
+        
         return res
     
     def objfun_val(self, outs, weights):

@@ -702,7 +702,7 @@ def plot_clustered_annu_optialloc(results, optim, geo):
     # Make bar plots
         bars = []
         #xlabs = [res.mult if res.mult is not None else res.name for res in results]
-        xlabs = [res.name if res.mult is None else '(mult= %s) (weight= %s) %s' % (res.mult, [abs(w) for w in res.weight if w != 0], res.name) for res in results]
+        xlabs = [res.name if res.mult is None else '(mult= %s) %s' % (res.mult, res.name) for res in results]
         bottom = np.zeros(len(results))
         for i, spend in enumerate(avspend):
             if any(spend) > 0:    # only want to plot prog if spending is non-zero (solves legend issues)
