@@ -684,7 +684,7 @@ class ProgramInfo(sc.prettyobj):
         #covs = {}
         covs = sc.odict()
         for prog in self.programs.values():
-            covs[prog.name] = prog.annual_cov[prog.year]
+            covs[prog.name] = prog.annual_restr_cov[prog.year]
         return covs   
 
     def ramp_ann_covs(self, pops, year, growth): 
