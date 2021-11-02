@@ -311,7 +311,7 @@ def plot_prevs(all_res):
 
 def plot_outputs(all_res, all_reduce, seq, name):
     outcomes = utils.default_trackers(prev=False, rate=False)
-    width = 0.35
+    width = 1/(len(all_res)+1)
     figs = sc.odict()
     
     baseres = all_res[0]
@@ -417,7 +417,7 @@ def plot_alloc(results, optim, geo):
             bottom += spend
     ymax = max(bottom)
     if optim or geo:
-        xlabs = [res.name if res.mult is None else (res.mult, [abs(w) for w in res.weight if w != 0], res.name) for res in results]
+        xlabs = [res.name for res in results]
         title = 'Optimal allocation, %s-%s'% (ref.years[pltstart], ref.years[-1])
         valuestr = str(results[1].prog_info.free / 1e6) # bit of a hack
         # format x axis
@@ -511,7 +511,7 @@ def plot_annu_alloc(results, optim, geo):
                 bottom += spend
         ymax = max(bottom)
         if optim or geo:
-            xlabs = [res.name if res.mult is None else (res.mult, [abs(w) for w in res.weight if w != 0], res.name) for res in results]
+            xlabs = [res.name for res in results]
             title = 'Optimal allocation, %s-%s'% (ref.years[pltstart], ref.years[-1])
             valuestr = str(results[1].prog_info.free / 1e6) # bit of a hack
                 # format x axis
@@ -559,7 +559,7 @@ def plot_clustered_annu_alloc(results, optim, geo):
     Legend will include all programs in the 'baseline' allocation which receive non-zero spending in any scenario """
     
     # Initialize
-    width = 0.2
+    width = 1./(len(results)+1)
     epsilon = .015
     figs = sc.odict()
     year = results[0].years
@@ -626,7 +626,7 @@ def plot_clustered_annu_alloc(results, optim, geo):
             title = 'Annual spending, %s-%s' % (ref.years[pltstart], ref.years[-1])
             xlab = 'Years' 
     ax.set_title(title)
-    ax.set_xticks(year_ticks[1:] + 1.5*width) # ignoring base year and makingsure tick is at the middle of the bar group
+    ax.set_xticks(year_ticks[1:] + ((len(results)-1)/2)*width) # ignoring base year and makingsure tick is at the middle of the bar group
     ax.set_xticklabels(year[1:], fontsize = 10)
     ax.set_xlabel(xlab) 
     ax.set_ylim((0, ymax+ymax*.1))
@@ -660,7 +660,7 @@ def plot_clustered_annu_optialloc(results, optim, geo):
     Legend will include all programs in the 'baseline' allocation which receive non-zero spending in any scenario """
     
     # Initialize
-    width = 0.2
+    width = 1./(len(results)+1)
     epsilon = .015
     figs = sc.odict()
     year = results[0].years
@@ -671,12 +671,13 @@ def plot_clustered_annu_optialloc(results, optim, geo):
     fig = pl.figure(figsize=(20,6))
     ax = fig.add_axes(ax_size)
     x_base = np.arange(len(results))
+    
+    
     x=np.multiply(x_base,width)
     year_ticks = np.arange(len(year))
     
     
     for k in range(1, len(year)):
-                   
     # Group allocations by program
         avspend = []
         
@@ -702,7 +703,7 @@ def plot_clustered_annu_optialloc(results, optim, geo):
     # Make bar plots
         bars = []
         #xlabs = [res.mult if res.mult is not None else res.name for res in results]
-        xlabs = [res.name if res.mult is None else '(mult= %s) (weight= %s) %s' % (res.mult, [abs(w) for w in res.weight if w != 0], res.name) for res in results]
+        xlabs = [res.name for res in results]
         bottom = np.zeros(len(results))
         for i, spend in enumerate(avspend):
             if any(spend) > 0:    # only want to plot prog if spending is non-zero (solves legend issues)
@@ -727,7 +728,7 @@ def plot_clustered_annu_optialloc(results, optim, geo):
             title = 'Annual spending, %s-%s' % (ref.years[pltstart], ref.years[-1])
             xlab = 'Years' 
     ax.set_title(title)
-    ax.set_xticks(year_ticks[1:] + 1.5*width) # ignoring base year and makingsure tick is at the middle of the bar group
+    ax.set_xticks(year_ticks[1:] + ((len(results)-1)/2)*width) # ignoring base year and makingsure tick is at the middle of the bar group
     ax.set_xticklabels(year[1:], fontsize = 10)
     ax.set_xlabel(xlab) 
     ax.set_ylim((0, ymax+ymax*.1))
@@ -751,7 +752,7 @@ def plot_clustered_annu_optialloc(results, optim, geo):
     customizations.update(legend_loc)
     legend_1 = ax.legend(bars, leglabs, **customizations)
     handles = [f"Bar {j}: " for j in range(1, len(xlabs)+1)]
-    ax.legend(handles=handles, labels=xlabs,  loc='lower center', bbox_to_anchor=(1.25, 0.3), fontsize=10, borderpad=1.2)
+    ax.legend(handles=handles, labels=xlabs,  loc='center left', bbox_to_anchor=(1.0, 0.3), fontsize=10, borderpad=1.2)
     figs['clust_annu_alloc'] = fig
     fig.add_artist(legend_1)
     return figs

@@ -519,18 +519,20 @@ class Project(object):
         self.add_result(results, name='scens')
         return None
         
-    def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=None, maxtime=300, parallel=True, dosave=True, runbaseline=True):
+    def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=None, maxtime=300, parallel=True, dosave=True, runbaseline=True, runbalanced=False):
         if optim is not None:
             self.add_optims(optim)
             key = optim.name # this to handle parallel calls of this function
         optim = self.optim(key)
         results = []
         # run baseline
-        if runbaseline:
+        if runbaseline or run_balanced_optimization:
             optim.prog_set.append('Excess budget not allocated')
             base = self.run_baseline(optim.model_name, optim.prog_set)
             results.append(base)
             optim.prog_set.remove('Excess budget not allocated')
+        else:
+            base = None
         # run optimization
         if (optim.model_name is None) or (optim.model_name not in self.datasets.keys()):
             raise Exception(
@@ -538,7 +540,7 @@ class Project(object):
         model = sc.dcp(self.model(optim.model_name))
         model.setup(optim, setcovs=False)
         model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
-        results += optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel)
+        results += optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel, runbalanced=runbalanced, base=base)
         # add by optim name
         if dosave:
             self.add_result(results, name=optim.name)

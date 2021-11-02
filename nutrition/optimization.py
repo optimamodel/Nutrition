@@ -10,7 +10,7 @@ class Optim(sc.prettyobj):
 
     def __init__(self, name=None, model_name=None, weights=None, mults=None, prog_set=None, active=True,
                  add_funds=0, fix_curr=False, rem_curr=False,
-                 filter_progs=True):
+                 filter_progs=True, balanced_optimization=False):
         """
         :param name: the name of the optimization (string)
         :param model_name: the name of the model corresponding to optimizations (string)
@@ -22,6 +22,7 @@ class Optim(sc.prettyobj):
         :param fix_curr: fix the current allocations?
         :param rem_curr: remove the current allocations?
         :param filter_progs: filter out programs which don't impact the objective (can improve optimization results)
+        :param balanced_optimization: optionally run an additional set of optimizations for each budget multiplier that balances progress toward each objective
         """
 
         self.name = name
@@ -38,6 +39,7 @@ class Optim(sc.prettyobj):
         self.active = active
         self.num_procs = None
         self.optim_allocs = sc.odict()
+        self.balanced_optimization = balanced_optimization
 
 
     ######### SETUP ############
@@ -57,7 +59,7 @@ class Optim(sc.prettyobj):
 
     ######### OPTIMIZATION ##########
 
-    def run_optim(self, model, maxiter=80, swarmsize=35, maxtime=560, parallel=True, num_procs=None):
+    def run_optim(self, model, maxiter=80, swarmsize=35, maxtime=560, parallel=True, num_procs=None, runbalanced=False, base=None):
         if parallel:
             how = 'parallel'
             num_procs = num_procs if num_procs else self.num_cpus
@@ -78,6 +80,69 @@ class Optim(sc.prettyobj):
             for arg in args:
                 this_res = self.one_optim(arg)
                 res.append(this_res)
+
+        """The goal of this is to balance progress toward multiple competing objectives, e.g.
+        weight[0] = 100% Maximize thrive,  the objective progress (baseline evaluation - optimized evaluation) of the optimized result is 100
+        weight[1] = 100% Minimize prevalence of MAM,  the objective progress (baseline evaluation - optimized evaluation) of the optimized result is 0.2
+        Rebalancing these would give an objective function of:
+            [1/100 maximize thrive, 1/0.2 minimize prevalence of MAM] = [0.01, 5] and final results would approximately balance the most effective interventions for each objective
+        If multiple weightings include the same objective the results would be slightly leaning toward that objective, but this seems reasonably as intended    
+        """
+        if runbalanced and len(self.weights)>1:
+            balanced_args = []
+            res_labels = [result.name for result in res]
+            
+            balanced_args = []
+            for mult in self.mults:
+                relative_progress = dict()
+                balanced_weight = np.zeros(len(self.weights[0]))
+                
+                for weight in list(self.weights):
+                    weight_label = '%s (x%s) (w%s)' % (self.name, mult, weight)
+                    weight_ind = res_labels.index(weight_label)
+                    
+                    #all objectives are reframed so that minimizing is good: baseline - optimized = a positive number where higher is better.
+                    relative_progress = sum((base.get_outputs()[:] - res[weight_ind].get_outputs()[:]) * weight)
+                    
+                    if relative_progress > 0.:
+                        balanced_weight += weight * 1./relative_progress
+                
+                balanced_weight *= 1./ max(abs(balanced_weight)) #normalize a bit so the highest absolute weight is 1.
+                
+                balanced_args.append((self.get_kwargs(model, balanced_weight, mult, keep_inds), mult)+optim)
+            
+            if parallel:
+                res_balanced = utils.run_parallel(self.one_optim_parallel, balanced_args, num_procs)
+            else:
+                res_balanced = []
+                for arg in balanced_args:
+                    this_res = self.one_optim(arg)
+                    res_balanced.append(this_res)
+            #Prettier names
+            for i, mult in enumerate(self.mults):
+                mult_str = f"(mult={res_balanced[i].mult}) " if len(self.mults)>1 or res_balanced[i].mult != 1 else ""
+                res_balanced[i].name = f'{mult_str}Balanced objectives'
+        
+        """Attempt to get some better pretty names for the results"""
+        pretty = utils.pretty_labels(direction=False) + utils.pretty_labels(direction=True)
+        for result in res:
+            new_label = ''
+            non_zero_weights = np.where(result.weight != 0.)[0]
+            if len(non_zero_weights) == 1: #only one objective, no need to specify the weight
+                new_label += pretty[non_zero_weights][0]
+            else:
+                for ind in non_zero_weights:
+                    if new_label:
+                        new_label += ', '
+                    new_label += f'{pretty[ind]}: {result.weight[ind] * utils.get_sign(pretty.keys()[ind])}' 
+            
+            if len(self.mults)>1 or result.mult != 1: #add clarity on multiplier only if necessary
+                new_label = f'(mult={result.mult}) ' + new_label
+            result.name = new_label   
+            
+        if runbalanced:
+            res += res_balanced  
+        
         return res
     
     def objfun_val(self, outs, weights):
