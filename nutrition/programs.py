@@ -732,6 +732,7 @@ class ProgramInfo(sc.prettyobj):
                     if adjustable_budgets[i]:
                         prog.annual_spend[year] -= adjustable_budgets[i]
                         prog.annual_cov[year] = prog.func(prog.annual_spend)[year] #recalculate coverage also
+                        prog.annual_restr_cov[year] = prog.annual_cov[year] * prog.unrestr_popsize / prog.restr_popsize
         return spending_validated
                     
 
