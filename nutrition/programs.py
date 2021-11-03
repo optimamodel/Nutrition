@@ -110,24 +110,33 @@ class Program(sc.prettyobj):
 
     def adjust_cov(self, pops, year, growth=False): # todo: needs fixing for annual_cov being an array now
         # set unrestricted pop size so coverages account for growing population size
-        oldURP = self.unrestr_popsize
-        self._set_unrestrpop(pops) # TODO: is this the optimal place to do this?
-        self._set_restrpop(pops)
-        oldCov = self.annual_cov
+        if growth:
+            self._set_unrestrpop(pops) # ensure population sizes are updated to the current timestep
+            self._set_restrpop(pops)
+            self.set_costcov() #ensure cost curve is updated to new population size, TODO check: code may be (much?) faster to just update pop size and curve if nonlinear?
+        old_cov = self.annual_cov
+        
+        #work out what we want the coverage to be
         if growth == "fixed budget":
-            num_cov = oldCov[year] * oldURP
-            new_cov_year = min(num_cov / self.unrestr_popsize, self.sat)
-            self.annual_cov[year] = new_cov_year
-        elif growth == "fixed coverage":
-            self.annual_cov = oldCov
-            if year == 1:
-                self.annual_spend[year] = self.get_spending(self.annual_cov)[year] * self.unrestr_popsize / oldURP
-            elif year > 1 and self.annual_cov[year-1] != 0:
-                self.annual_spend[year] = self.annual_spend[year-1] * self.unrestr_popsize / oldURP
-            else:
-                self.annual_spend[year] = self.annual_spend[year-1]
-        elif not growth:
-             self.annual_cov[year] = self.annual_cov[year]
+            target_cov_year = self.func(self.annual_spend)[year]
+        elif growth == "fixed coverage" or not growth:
+            target_cov_year = old_cov[year]
+        else:
+            raise Exception("Growth type '%s' is not valid, must be False, 'fixed budget' or 'fixed coverage'" %growth)
+        
+        #enforce ramping
+        if year >= 1:
+            if target_cov_year - self.annual_cov[year-1] > self.max_inc: #enforce not increasing coverage faster than max increment relative to previous year
+                target_cov_year = self.annual_cov[year-1] + self.max_inc
+            elif self.annual_cov[year-1] - target_cov_year > self.max_dec: #enforce not decreasing coverage faster than max decrement relative to previous year
+                target_cov_year = self.annual_cov[year-1] - self.max_dec            
+        
+        self.annual_cov[year] = target_cov_year
+        
+        #calculate the budget based on the coverage
+        self.annual_spend[year] = self.get_spending(self.annual_cov)[year] #note that we have updated the cost curve so this should be correct for all scenarios
+
+            
         self.annual_restr_cov[year] = self.annual_cov[year] * self.unrestr_popsize / self.restr_popsize
         
     def _set_target_ages(self):
@@ -672,10 +681,67 @@ class ProgramInfo(sc.prettyobj):
                 pass
         return False
 
+    def rebalance_fixed_spending(self, year):
+        """
+        To be called if growth is fixed spending to ensure that spending remains exactly constant each year
+        
+        1. Check what the difference is
+        2. check what programs are not constrained relative to the necessary increase/decrease
+        3. get total spending on non-constrained progs
+        4. scale as necessary to spend/cut extra difference
+        5. adjust prog spending in this year directly
+        
+        :return True if changes were made, False if changes were not.
+        """
+        spending_validated = True if year == 0 else False
+        
+        while not spending_validated:            
+            prev_year_spend = np.zeros(len(self.programs))
+            this_year_spend = np.zeros(len(self.programs))
+            unconstrained_increase_progs = np.ones(len(self.programs))
+            unconstrained_decrease_progs = np.ones(len(self.programs))
+            
+            for i, prog in self.programs.enumvals():
+                prev_year_spend[i] += prog.annual_spend[year-1]
+                this_year_spend[i] += prog.annual_spend[year]
+                
+                if prog.annual_cov[year] - prog.annual_cov[year-1] >= prog.max_inc:
+                    unconstrained_increase_progs[i] = 0. #constrained above - can't have any extra budget assigned to it
+                if prog.annual_cov[year-1] - prog.annual_cov[year] >= prog.max_dec:
+                    unconstrained_decrease_progs[i] = 0. #constrained below - can't have any extra budget removed from it
+            
+            difference = sum(this_year_spend) - sum(prev_year_spend)
+            
+            if abs(difference) < 0.01: #less than 1 cent difference we can accept
+                spending_validated = True
+            else:
+                if difference > 0: #we have too much spending, need to remove spending from existing programs
+                    adjustable_budgets = this_year_spend * unconstrained_decrease_progs
+                elif difference < 0: #we have too little spending, need to add spending to existing programs
+                    adjustable_budgets = this_year_spend * unconstrained_increase_progs   
+                    
+                    
+                if sum(adjustable_budgets) == 0:
+                    adjustable_budgets = this_year_spend
+                    print (f'Warning: Necessary to violate ramping constraints in year {year} in order to preserve fixed budget constraint.')
+                    spending_validated = True #stop trying to improve on this
+                assert not np.isnan(difference).any(), 'Arg'
+                adjustable_budgets = difference * adjustable_budgets / sum(adjustable_budgets) #difference applied as a proportion of unconstrained budget
+                
+                for i, prog in self.programs.enumvals():
+                    if adjustable_budgets[i]:
+                        prog.annual_spend[year] -= adjustable_budgets[i]
+                        prog.annual_cov[year] = prog.func(prog.annual_spend)[year] #recalculate coverage also
+        return spending_validated
+                    
+
     def adjust_covs(self, pops, year, growth):
         for program in self.programs.values():
             program.adjust_cov(pops, year, growth)
-
+            
+        if growth == 'fixed budget' and year >= 1: #need to make sure annual budget is exactly the same every year while respecting ramping constraints
+            self.rebalance_fixed_spending(year)
+                    
     def update_prog_year(self, year):
         for prog in self.programs.values():
             prog.year = year
@@ -692,24 +758,6 @@ class ProgramInfo(sc.prettyobj):
                covs[prog.name] = prog.annual_cov[prog.year]
         return covs   
 
-    def ramp_ann_covs(self, pops, year, growth): 
-        for prog in self.programs.values():
-            prog.adjust_cov(pops, year, growth)
-            if growth == "fixed budget" or growth == "fixed coverage":
-                if prog.annual_restr_cov[prog.year] - prog.annual_restr_cov[prog.year-1] > prog.max_inc:
-                    prog.annual_restr_cov[prog.year] = prog.annual_restr_cov[prog.year-1] + prog.max_inc
-                elif prog.annual_restr_cov[prog.year] - prog.annual_restr_cov[prog.year-1] < (-1) * prog.max_dec:
-                    prog.annual_restr_cov[prog.year] = prog.annual_restr_cov[prog.year-1] - prog.max_dec
-                else:
-                    prog.annual_restr_cov[prog.year] = prog.annual_restr_cov[prog.year]
-            else:
-                if prog.annual_cov[prog.year] - prog.annual_cov[prog.year-1] > prog.max_inc:
-                    prog.annual_cov[prog.year] = prog.annual_cov[prog.year-1] + prog.max_inc
-                elif prog.annual_cov[prog.year] - prog.annual_cov[prog.year-1] < (-1) * prog.max_dec:
-                    prog.annual_cov[prog.year] = prog.annual_cov[prog.year-1] - prog.max_dec
-                else:
-                    prog.annual_cov[prog.year] = prog.annual_cov[prog.year]
-            
 
     def restrict_covs(self):
         """

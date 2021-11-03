@@ -176,8 +176,7 @@ class Model(sc.prettyobj):
 
             if self.pop_growth: # account for pop growth
                 self.update_pops()
-                #self.prog_info.adjust_covs(self.pops, year, self.pop_growth)
-                self.prog_info.ramp_ann_covs(self.pops, year, self.pop_growth) # ramping and adjust_covs happen together
+                self.prog_info.adjust_covs(self.pops, year, self.pop_growth)
             # determine if there are cov changes from previous year
             change = self.prog_info.determine_cov_change()
             if change:
