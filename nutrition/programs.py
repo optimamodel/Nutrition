@@ -65,9 +65,11 @@ class Program(sc.prettyobj):
         else:
             return self.annual_cov * self.unrestr_popsize / self.restr_popsize
 
-    def update_cov(self, cov, spend):
+    def initialize_cov(self, cov, spend):
         self.annual_cov = cov
         self.annual_spend = spend
+        if self.annual_cov[0] != self.annual_cov[1] or self.annual_spend[0] != self.annual_spend[1]:
+            print (f'{self.name}: initialized coverage at {self.annual_cov} / {self.annual_spend}')
 
     def interp_scen(self, cov, years, scentype, progname):
         """ cov: a list of coverages/spending with one-to-one correspondence with sim_years
@@ -635,7 +637,7 @@ class ProgramInfo(sc.prettyobj):
 
     def get_cov_scen(self, covs, scentype, years):
         """ If scen is a budget scenario, convert it to unrestricted coverage.
-        If scen is a coverage object, assumed to be restricted cov and coverted
+        If scen is a coverage object, assumed to be restricted cov and converted
         Return: list of lists"""
         unrestr_cov = np.zeros(shape=(len(self.programs), len(years)))
         spend = np.zeros(shape=(len(self.programs), len(years)))
@@ -664,11 +666,15 @@ class ProgramInfo(sc.prettyobj):
         newcovs = newcovs.astype(float) # force conversion to treat None as nan and convert integers
         return newcovs
 
-    def update_covs(self, covs, spends, restrictcovs):
+    def initialize_covs(self, covs, spends, restrictcovs):
+        """
+        Called once at the beginning of a model run to set the initial intended coverages/spendings for each program
+        Note: Annual updates to program coverages/spendings are set in the same program.annual_cov location, and set by adjust_covs
+        """
         for i,prog in self.programs.enumvals():
             cov = covs[i]
             spend = spends[i]
-            prog.update_cov(cov, spend)
+            prog.initialize_cov(cov, spend)
         # restrict covs
         if restrictcovs:
             self.restrict_covs()
@@ -736,7 +742,16 @@ class ProgramInfo(sc.prettyobj):
         return spending_validated
                     
 
-    def adjust_covs(self, pops, year, growth):
+    def adjust_covs(self, pops, year, growth, enforce_constraints=True):
+        """
+        Called every year to adjust the intended coverages/spendings based on population growth and ramping constraints
+        Note: Initial intended coverages/spendings are set in the same program.annual_cov location, and set by initialize_covs
+        
+        :param growth: False, 'fixed budget', or 'fixed coverage' (either of the latter assume population growth generally occurs)
+        :param enforce_constraints: may be turned on or off selectively by year for the model (e.g. to implement a coverage scenario outside of the ramping it would be turned off earlier)
+            - enforces for a fixed budget scenario that the budget this year matches exactly the previous year
+            - enforces ramping constraints that coverage can't have changed more than the limit from the previous year
+        """
         for program in self.programs.values():
             program.adjust_cov(pops, year, growth)
             

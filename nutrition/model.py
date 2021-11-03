@@ -5,7 +5,7 @@ from .utils import default_trackers, restratify
 
 
 class Model(sc.prettyobj):
-    def __init__(self, pops, prog_info, demo_data, t=None, adjust_cov=False, timeTrends=False, pop_growth=False, pop_sizes=dict()):
+    def __init__(self, pops, prog_info, demo_data, t=None, adjust_cov=False, timeTrends=False, pop_growth=False, enforce_constraints_year=0, pop_sizes=dict()):
         self.pops = sc.dcp(pops)
         self.children, self.pw, self.nonpw = self.pops
         self.prog_info = sc.dcp(prog_info)
@@ -28,6 +28,7 @@ class Model(sc.prettyobj):
         self.adjust_cov = adjust_cov
         self.timeTrends = timeTrends
         self.pop_growth = pop_growth
+        self.enforce_constraints_year = enforce_constraints_year
         
         # For economic loss
         self.cost_wasting = self.econo_data.cost_wasting
@@ -50,9 +51,10 @@ class Model(sc.prettyobj):
         self._reset_storage()
         self._set_trackers()
         self._track_prevs()
+        self.enforce_constraints_year = scen.enforce_constraints_year
         if setcovs:
             # scenario coverages
-            self.update_covs(scen.vals, scen.scen_type, restrictcovs=restrictcovs)
+            self.initialize_covs(scen.vals, scen.scen_type, restrictcovs=restrictcovs)
 
     def get_allocs(self, add_funds, fix_curr, rem_curr):
         self.prog_info.get_allocs(add_funds, fix_curr, rem_curr)
@@ -63,9 +65,9 @@ class Model(sc.prettyobj):
         self.prog_info.set_costcovs() # enables getting coverage from cost
         self.prog_info.get_base_spend()
     
-    def update_covs(self, covs, scentype, restrictcovs=True):
+    def initialize_covs(self, covs, scentype, restrictcovs=True):
         covs, spend = self.prog_info.get_cov_scen(covs, scentype, self.all_years)
-        self.prog_info.update_covs(covs, spend, restrictcovs)
+        self.prog_info.initialize_covs(covs, spend, restrictcovs)
 
     def _set_trackers(self):
         """ Arrays to store annual outputs """
