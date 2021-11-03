@@ -10,14 +10,14 @@ sys.setrecursionlimit(x)
 doplot = True
 resampling = False
 n_runs = 3
-pop_growth = "fixed budget"
+growth = "fixed budget"
 
 # load in data to create model
 """" If the model is run for a single run using 'p.run_scens()' then set resampling=False
     to make sure that the default point estimators are used from 
     the databook with out considering any randomness!"""
 p = nu.Project('eg')
-p.load_data('demo', 'testing', name='eg', resampling=resampling, pop_growth=pop_growth)
+p.load_data('demo', 'testing', name='eg', resampling=resampling, growth=growth)
 
 ### define custom scenarios
 kwargs1 = {'name':'Treat SAM 100%',
@@ -94,7 +94,7 @@ if __name__ == '__main__':
     p.add_scens(scen_list)
 
     #p.run_scens() # make sure to set resampling=False
-    p.run_scens(n_runs=n_runs, pop_growth=pop_growth)
+    p.run_scens(n_runs=n_runs, growth=growth)
     p.reduce()
     #p.mean()
 #p.run_scens()

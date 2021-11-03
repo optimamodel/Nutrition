@@ -4,13 +4,15 @@ from . import utils
 import multiprocessing
 
 class Scen(sc.prettyobj):
-    def __init__(self, name=None, model_name=None, scen_type=None, progvals=None, active=True):
+    def __init__(self, name=None, model_name=None, scen_type=None, progvals=None, enforce_constraints_year=None, growth=None, active=True):
         """
         Structure to define a scenario which can be used to fully instantiate a model instance in the project class.
         :param name: The name of the scenario (string)
         :param model_name: The name of the corresponding model object stored in Project (string)
         :param scen_type: Either 'coverage' or 'budget', depending on whether vals is an array of coverages or spending (string)
         :param progvals: an odict of lists, structured (progname, scenario)
+        :param enforce_constraints_year: the model year (starting from zero) from which to enforce constraints such as ramping and fixed budget
+        :param growth: whether there should be population growth or not in this scenario
         :param active: whether or not the scenario is to be run (boolean)
         """
         self.name = name
@@ -18,18 +20,32 @@ class Scen(sc.prettyobj):
         self.scen_type = scen_type
         self.vals = list(progvals.values())
         self.prog_set = list(progvals.keys())
+        if growth is None:
+            if 'budget' in self.scen_type:
+                self.growth = 'fixed budget'
+            elif 'coverage' in self.scen_type:
+                self.growth = 'fixed coverage'
+            else:
+                self.growth = 'fixed budget' #False?
+        else:
+            self.growth = growth
         self.active = active
+        if enforce_constraints_year is None:
+            self.enforce_constraints_year = max([len(sv) if sv else 0. for sv in self.vals]) #e.g. by default for a scenario, if it is defined for 3 years only enforce constraints like fixed spending after that
+        else:
+            self.enforce_constraints_year = enforce_constraints_year
 
     def get_attr(self):
         return self.__dict__
 
-def run_scen(scen, model, obj=None, mult=None, weight=None, setcovs=True, restrictcovs=True, pop_growth=False): # Single run supports previous version with no uncertainty
+def run_scen(scen, model, obj=None, mult=None, weight=None, setcovs=True, restrictcovs=True): # Single run supports previous version with no uncertainty
     """ Function to run associated Scen and Model objects """
     from .results import ScenResult # This is here to avoid a potentially circular import
     model = sc.dcp(model)
     model.setup(scen, setcovs=setcovs, restrictcovs=restrictcovs)
+    model.growth = scen.growth
     model.run_sim()
-    res = ScenResult(scen.name, scen.model_name, model, obj=obj, mult=mult, weight=weight, pop_growth=pop_growth)
+    res = ScenResult(scen.name, scen.model_name, model, obj=obj, mult=mult, weight=weight, growth=scen.growth)
     return res
 
 def make_scens(kwargs):

@@ -4,7 +4,7 @@ import numpy as np
 import math as mt
 
 class ScenResult(sc.prettyobj):
-    def __init__(self, name, model_name, model, obj=None, mult=None, weight=None, pop_growth=False):
+    def __init__(self, name, model_name, model, obj=None, mult=None, weight=None, growth=False):
         self.name = name
         self.model_name = model_name
         self.model = model
@@ -18,7 +18,7 @@ class ScenResult(sc.prettyobj):
         self.uid = sc.uuid()
         self.created = sc.now()
         self.modified = sc.now()
-        self.pop_growth = pop_growth
+        self.growth = growth
         #self.results = []
         
     def model_attr(self):
@@ -55,7 +55,7 @@ class ScenResult(sc.prettyobj):
         covs = sc.odict()
         
         for name, prog in self.programs.iteritems():
-            if not self.pop_growth:
+            if not self.growth:
                 covs[name] = prog.annual_restr_cov
             else:
                 covs[name] = prog.annual_cov

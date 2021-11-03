@@ -144,7 +144,7 @@ class Project(object):
         return self.inputsheet(name)
     
            
-    def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True, validate=True, resampling=True, pop_growth=False):
+    def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True, validate=True, resampling=True, growth=False):
         '''Load the data, which can mean one of two things: read in the spreadsheets, and/or use these data to make a model '''
         
         # Generate name odict key for Spreadsheet, Dataset, and Model odicts.
@@ -162,7 +162,7 @@ class Project(object):
         dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self, resampling=resampling)
         self.datasets[name] = dataset
         dataset.name = name
-        self.add_model(name, pop_growth=pop_growth) # add model associated with the dataset or datasets
+        self.add_model(name, growth=growth) # add model associated with the dataset or datasets
     
         # Do validation to insure that Dataset and Model objects are loaded in for each of the spreadsheets that are
         # in the project.
@@ -339,7 +339,7 @@ class Project(object):
         self.add_geos(geos)
         return geos
 
-    def add_model(self, name=None, pop_growth=False):
+    def add_model(self, name=None, growth=False):
         """ Adds a model to the self.models odict.
         A new model should only be instantiated if new input data is uploaded to the Project.
         For the same input data, one model instance is used for all scenarios.
@@ -349,7 +349,7 @@ class Project(object):
         prog_info = dataset.prog_info
         t = dataset.t
         demo_data = dataset.demo_data
-        model = Model(pops, prog_info, demo_data, t, pop_growth=pop_growth)
+        model = Model(pops, prog_info, demo_data, t, growth=growth)
         self.add(name=name, item=model, what='model')
         # Loop over all Scens and create a new default scenario for any that depend on the dataset which has been reloaded.
         # for scen_name in self.scens.keys():  # Loop over all Scen keys in the project
@@ -391,7 +391,7 @@ class Project(object):
         self.add_scens(converted)
         return
 
-    def run_baseline(self, model_name, prog_set, dorun=True):
+    def run_baseline(self, model_name, prog_set, growth, dorun=True):
         model = sc.dcp(self.model(model_name))
         progvals = sc.odict({prog: [] for prog in prog_set})
         if 'Excess budget not allocated' in prog_set:
@@ -400,7 +400,7 @@ class Project(object):
                             'prog_data': add_dummy_prog_data(model.prog_info, 'Excess budget not allocated')}
             model.prog_info.add_prog(excess_spend, model.pops)
             model.prog_info.prog_data = excess_spend['prog_data']
-        base = Scen(name='Baseline', model_name=model_name, scen_type='coverage', progvals=progvals)
+        base = Scen(name='Baseline', model_name=model_name, scen_type='coverage', progvals=progvals, growth=growth)
         if dorun:
             return run_scen(base, model)
         else:
@@ -475,7 +475,7 @@ class Project(object):
         self.reduced_results = reduce(results, n_runs=self.n_runs, use_mean=use_mean, quantiles=quantiles, bounds=bounds, output=output)
         return
 
-    def run_scens(self, scens=None, n_runs=1, pop_growth=False):
+    def run_scens(self, scens=None, n_runs=1):
         """Function for running scenarios
         If scens is specified, they are added to self.scens 
         
@@ -491,7 +491,9 @@ class Project(object):
                 true_name = scen.name
                 for i in range(n_runs):
                     if i==0:
-                        model = self.model(scen.model_name)
+                        model = sc.dcp(self.model(scen.model_name))
+                        model.growth = scen.growth
+                        model.enforce_constraints_year = scen.enforce_constraints_year
                     else:
                         #second and subsequent scenarios are sampled
                         scen.name = true_name + ' resampled #' + str(i)
@@ -500,7 +502,7 @@ class Project(object):
                         prog_info = dataset.prog_info
                         t = dataset.t
                         sampled_data = dataset.demo_data
-                        model = Model(pops, prog_info, sampled_data , t, pop_growth=pop_growth)
+                        model = Model(pops, prog_info, sampled_data , t, enforce_constraints_year = scen.enforce_constraints_year, growth=scen.growth)
                     res = run_scen(scen, model)
                     results.append(res)
                     
@@ -516,7 +518,7 @@ class Project(object):
         # run baseline
         if runbaseline or runbalanced:
             optim.prog_set.append('Excess budget not allocated')
-            base = self.run_baseline(optim.model_name, optim.prog_set)
+            base = self.run_baseline(optim.model_name, optim.prog_set, growth=optim.growth)
             results.append(base)
             optim.prog_set.remove('Excess budget not allocated')
         else:

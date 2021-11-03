@@ -9,7 +9,7 @@ class Optim(sc.prettyobj):
     """ Stores settings for running an optimization for a single objective. """
 
     def __init__(self, name=None, model_name=None, weights=None, mults=None, prog_set=None, active=True,
-                 add_funds=0, fix_curr=False, rem_curr=False,
+                 add_funds=0, fix_curr=False, rem_curr=False, growth='fixed budget', 
                  filter_progs=True, balanced_optimization=False):
         """
         :param name: the name of the optimization (string)
@@ -39,6 +39,7 @@ class Optim(sc.prettyobj):
         self.active = active
         self.num_procs = None
         self.optim_allocs = sc.odict()
+        self.growth = growth
         self.balanced_optimization = balanced_optimization
 
 
@@ -46,6 +47,7 @@ class Optim(sc.prettyobj):
 
     def get_kwargs(self, model, weights, mult, keep_inds):
         model = sc.dcp(model)
+        model.growth = self.growth
         free = model.prog_info.free
         fixed = model.prog_info.fixed
         kwargs = { 'model':     model,
@@ -164,9 +166,11 @@ class Optim(sc.prettyobj):
             # compare with 0 case
             progvals = {prog:[0] for prog in self.prog_set}
             kwargs = {'scen_type': 'coverage',
-                      'progvals': progvals}
+                      'progvals': progvals,
+                      'growth': self.growth}
             zeroscen = Scen(**kwargs)
             zeromodel = sc.dcp(model)
+            zeromodel.growth = self.growth
             zerores = run_scen(zeroscen, zeromodel, restrictcovs)
             zeroouts = zerores.get_outputs(asdict=False)
             zeroval = self.objfun_val(zeroouts, self.weights)
@@ -181,11 +185,13 @@ class Optim(sc.prettyobj):
                     keep_inds.append(True)
                 else:
                     thismodel = sc.dcp(model)
+                    thismodel.growth = self.growth
                     # override dependencies to allow scale-up
                     thiscov = sc.dcp(progvals)
                     thiscov[prog] = [newcov]*years
                     thesekwargs = sc.dcp(kwargs)
                     thesekwargs['progvals'] = thiscov
+                    thesekwargs['growth'] = self.growth
                     scen = Scen(**thesekwargs)
                     res = run_scen(scen, thismodel, restrictcovs=restrictcovs)
                     outs = res.get_outputs(asdict=False)
@@ -237,7 +243,7 @@ class Optim(sc.prettyobj):
         # generate results
         name = '%s (x%s) (w%s)' % (self.name, mult, weight)
         progvals = {prog:spend for prog, spend in zip(self.prog_set, best_alloc)}
-        scen = Scen(name=name, model_name=self.model_name, scen_type='budget', progvals=progvals)
+        scen = Scen(name=name, model_name=self.model_name, scen_type='budget', progvals=progvals, enforce_constraints_year=0, growth=self.growth)
         res = run_scen(scen, model, obj=self.name, mult=mult, weight=weight, restrictcovs=False)
         if 'Excess budget not allocated' in self.prog_set:
             self.prog_set.remove('Excess budget not allocated')

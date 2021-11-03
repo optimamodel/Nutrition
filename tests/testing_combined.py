@@ -14,15 +14,14 @@ from functools import partial
 input_path = 'Databooks/new_format/'
 output_path = 'Outputs/'
 region_list = ['DOUALA']
-n_runs = 2
+n_runs = 1
 doplot = True
-pop_growth = "fixed budget"
 
 """" If the model is run for a single run using 'p.run_scens()' then set resampling=False
     to make sure that the default point estimators are used from 
     the databook with out considering any randomness!"""
-# p1 = nu.Project('eg')
-# p1.load_data('demo', 'testing', name='eg', resampling=False, pop_growth=pop_growth)
+p1 = nu.Project('eg')
+p1.load_data('demo', 'testing', name='eg', resampling=False)
 
 """Define non-optimization scenarios"""
 
@@ -45,7 +44,7 @@ kwargs3 = {'name': 'IYCF',
 def parallel_optim(region, path=None):
     """Define optimization scenario"""
     p2 = Project('Cameroon')
-    p2.load_data(inputspath=path + region + '_input.xlsx', name=region, resampling=False, pop_growth=pop_growth)
+    p2.load_data(inputspath=path + region + '_input.xlsx', name=region, resampling=False)
 
     """Define a custom optimization scenario"""
     
@@ -53,8 +52,8 @@ def parallel_optim(region, path=None):
               'mults': [1],
               'model_name': region,
               'weights': sc.odict({'Minimize the number of child deaths': [1., 0., 0.],
-                                   'thrive': [0., 1., 0.],
-                                   'Minimize the prevalence of wasting in children': [0., 0., 1.],
+                                   # 'thrive': [0., 1., 0.],
+                                   # 'Minimize the prevalence of wasting in children': [0., 0., 1.],
                                    }),
               'prog_set': ['Balanced energy-protein supplementation', 'Cash transfers',
                            'IFA fortification of wheat flour',
@@ -65,26 +64,27 @@ def parallel_optim(region, path=None):
                            'Zinc for treatment + ORS', 'Iron and iodine fortification of salt'],
               'fix_curr': False,
               'add_funds': 0,
+              'growth': 'fixed budget',
               }
 
     p2.add_optims(Optim(**kwargs))
-    p2.run_optim(maxiter=50, swarmsize=0, maxtime=500, parallel=True, runbalanced=True)
+    p2.run_optim(maxiter=50, swarmsize=0, maxtime=50, parallel=True, runbalanced=True)
     return (p2)
 
 # """run non optimization scenarios"""
-# scen_list = nu.make_scens([kwargs1, kwargs2, kwargs3])
+# scen_list = nu.make_scens([kwargs1])
 # p1.add_scens(scen_list)
-# #p1.run_scens(ramping=ramping) # make sure to set resampling=False
-# p1.multirun_scens(n_runs=n_runs, pop_growth=pop_growth)
+# p1.run_scens(n_runs=n_runs)
 # p1.write_results(filename=output_path + 'non_optimized.xlsx')
 # p1.reduce()
+
+# p1.plot(optim=False, save_plots_folder=output_path)
 # #if doplot:
 #    #p1.plot()
 
 """run optimization scenarios"""
 if __name__ == '__main__':
-    #from at_tools import get_desktop_folder
-    #import os
+
 
     run_optim = partial(parallel_optim, path=input_path)
     results = []
@@ -108,8 +108,8 @@ if __name__ == '__main__':
     #p.write_results(filename=output_path + 'optimized.xlsx')
     if doplot:
         for p in proj_list:
-            #p.plot(optim=True, save_plots_folder=get_desktop_folder() + 'Nutrition test' + os.sep)
-            p.plot(optim=True)
+            p.plot(optim=True, save_plots_folder=get_desktop_folder() + 'Nutrition test' + os.sep)
+            # p.plot(optim=True)
 
 
 
