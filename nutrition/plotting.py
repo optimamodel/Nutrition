@@ -723,7 +723,7 @@ def plot_clustered_annu_optialloc(results, optim, geo):
             if geo:
                 xlab = 'Region'
             else:
-                xlab = 'Total available budget (relative to US$%sM)' % valuestr
+                xlab = 'Total available budget (relative to US$%sM)' % str(round(results[1].prog_info.free / 1e6))
         else:
             title = 'Annual spending, %s-%s' % (ref.years[pltstart], ref.years[-1])
             xlab = 'Years' 

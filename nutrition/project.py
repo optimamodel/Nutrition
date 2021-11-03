@@ -526,7 +526,7 @@ class Project(object):
         optim = self.optim(key)
         results = []
         # run baseline
-        if runbaseline or run_balanced_optimization:
+        if runbaseline or runbalanced:
             optim.prog_set.append('Excess budget not allocated')
             base = self.run_baseline(optim.model_name, optim.prog_set)
             results.append(base)

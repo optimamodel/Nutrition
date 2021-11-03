@@ -16,7 +16,7 @@ output_path = 'Outputs/'
 region_list = ['DOUALA']
 n_runs = 2
 doplot = True
-pop_growth = "fixed coverage"
+pop_growth = "fixed budget"
 
 """" If the model is run for a single run using 'p.run_scens()' then set resampling=False
     to make sure that the default point estimators are used from 
@@ -83,8 +83,8 @@ def parallel_optim(region, path=None):
 
 """run optimization scenarios"""
 if __name__ == '__main__':
-    from at_tools import get_desktop_folder
-    import os
+    #from at_tools import get_desktop_folder
+    #import os
 
     run_optim = partial(parallel_optim, path=input_path)
     results = []
@@ -108,7 +108,8 @@ if __name__ == '__main__':
     #p.write_results(filename=output_path + 'optimized.xlsx')
     if doplot:
         for p in proj_list:
-            p.plot(optim=True, save_plots_folder=get_desktop_folder() + 'Nutrition test' + os.sep)
+            #p.plot(optim=True, save_plots_folder=get_desktop_folder() + 'Nutrition test' + os.sep)
+            p.plot(optim=True)
 
 
 
