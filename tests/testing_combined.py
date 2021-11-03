@@ -16,7 +16,7 @@ output_path = 'Outputs/'
 region_list = ['DOUALA']
 n_runs = 2
 doplot = True
-pop_growth = "fixed budget"
+pop_growth = "fixed coverage"
 
 """" If the model is run for a single run using 'p.run_scens()' then set resampling=False
     to make sure that the default point estimators are used from 

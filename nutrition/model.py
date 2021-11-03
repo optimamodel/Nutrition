@@ -109,6 +109,7 @@ class Model(sc.prettyobj):
         self.nonpw_anaemprev[self.year] = self.nonpw.frac_risk('an')
         self.child_samprev[self.year] = self.children.frac_risk('sam')
         self.child_mamprev[self.year] = self.children.frac_risk('mam')
+        self.child_bfprev[self.year] = (self.children.age_groups[0].num_correctbf() + self.children.age_groups[1].num_correctbf()) / (self.children.age_groups[0].totalchild_pop() + self.children.age_groups[1].totalchild_pop())
              
     def _track_rates(self):
         """ Rates defined as total deaths per 1000 live births.
@@ -116,9 +117,6 @@ class Model(sc.prettyobj):
          so the final element will be total rates over the simulation period. """
         self.child_mortrate[self.year] = 1000 * np.sum(self.child_deaths) / np.sum(self.annual_births)
         self.pw_mortrate[self.year] = 1000 * np.sum(self.pw_deaths) / np.sum(self.annual_births)
-        
-    def _track_bf(self):
-        self.child_bfprev[self.year] = self.children.age_groups[0].frac_correctbf() + self.children.age_groups[1].frac_correctbf()
     
     def _track_economic_loss(self):
         """ To calculate the economic cost of children become stunting or wasting for the country.
@@ -143,7 +141,6 @@ class Model(sc.prettyobj):
     def _track(self):
         self._track_wra_outcomes()
         self._track_prevs()
-        self._track_bf()
         self._track_economic_loss()
         self._track_total_pop()
         
