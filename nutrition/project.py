@@ -475,37 +475,25 @@ class Project(object):
         self.reduced_results = reduce(results, n_runs=self.n_runs, use_mean=use_mean, quantiles=quantiles, bounds=bounds, output=output)
         return
 
-    def run_scens(self, scens=None):
+    def run_scens(self, scens=None, n_runs=1, pop_growth=False):
         """Function for running scenarios
-        If scens is specified, they are added to self.scens """
-        results = []
-        if scens is not None:
-            self.add_scens(scens)
-        for scen in self.scens.values():
-            if scen.active:
-                if (scen.model_name is None) or (scen.model_name not in self.datasets.keys()):
-                    raise Exception('Could not find valid dataset for %s.  Edit the scenario and change the dataset' % scen.name)
-                model = self.model(scen.model_name, resampling=False)
-                res = run_scen(scen, model)
-                results.append(res)
-        self.add_result(results, name='scens')
-        return None
-     
-    def multirun_scens(self, scens=None, n_runs=2, pop_growth=False):
+        If scens is specified, they are added to self.scens 
+        
+        """
         self.n_runs = n_runs
         results = []
-
         if scens is not None:
             self.add_scens(scens)
         for scen in self.scens.values():
             if scen.active:
                 if (scen.model_name is None) or (scen.model_name not in self.datasets.keys()):
                     raise Exception('Could not find valid dataset for %s.  Edit the scenario and change the dataset' % scen.name)
+                true_name = scen.name
                 for i in range(n_runs):
                     if i==0:
-                       model = self.model(scen.model_name)
-                       true_name = scen.name
+                        model = self.model(scen.model_name)
                     else:
+                        #second and subsequent scenarios are sampled
                         scen.name = true_name + ' resampled #' + str(i)
                         dataset = Dataset(country=None, region=None, name=None, fromfile=False, doload=True, project=self, resampling=True)
                         pops = dataset.pops
@@ -515,7 +503,7 @@ class Project(object):
                         model = Model(pops, prog_info, sampled_data , t, pop_growth=pop_growth)
                     res = run_scen(scen, model)
                     results.append(res)
-        
+                    
         self.add_result(results, name='scens')
         return None
         

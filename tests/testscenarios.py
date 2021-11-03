@@ -94,7 +94,7 @@ if __name__ == '__main__':
     p.add_scens(scen_list)
 
     #p.run_scens() # make sure to set resampling=False
-    p.multirun_scens(n_runs=n_runs, pop_growth=pop_growth)
+    p.run_scens(n_runs=n_runs, pop_growth=pop_growth)
     p.reduce()
     #p.mean()
 #p.run_scens()
