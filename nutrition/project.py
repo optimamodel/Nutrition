@@ -400,14 +400,8 @@ class Project(object):
                             'prog_data': add_dummy_prog_data(model.prog_info, 'Excess budget not allocated')}
             model.prog_info.add_prog(excess_spend, model.pops)
             model.prog_info.prog_data = excess_spend['prog_data']
-        if growth == 'fixed coverage' or not growth:
-            base = Scen(name='Baseline', model_name=model_name, scen_type='coverage', progvals=progvals, growth=growth)
-        elif growth == 'fixed budget':
-            base = Scen(name='Baseline', model_name=model_name, scen_type='budget', progvals=progvals, growth=growth)
-        else:
-            raise Exception('Unknown value for growth.')
-            
-            
+        base = Scen(name='Baseline', model_name=model_name, scen_type='coverage', progvals=progvals, growth=growth)
+                    
         if dorun:
             return run_scen(base, model)
         else:
