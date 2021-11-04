@@ -142,7 +142,7 @@ class Optim(sc.prettyobj):
                 new_label = f'(mult={result.mult}) ' + new_label
             result.name = new_label   
             
-        if runbalanced:
+        if runbalanced and len(self.weights)>1:
             res += res_balanced  
         
         return res
