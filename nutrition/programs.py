@@ -774,8 +774,8 @@ class ProgramInfo(sc.prettyobj):
         #NOTE: possibly should have a call to restrict_covs here?  Might slow the model down a lot for very limited gain though.  
         
         # if year==1: print (growth)
-        if growth == 'fixed budget' and year >= enforce_constraints_year: #need to make sure annual budget is exactly the same every year while respecting ramping constraints
-            # print ("rebalancing fixed budget...")
+        if growth == 'fixed budget' and year > enforce_constraints_year: #need to make sure annual budget is exactly the same every year while respecting ramping constraints
+            print ("rebalancing fixed budget...")
             self.rebalance_fixed_spending(year)
             
         # post_sum = 0.
