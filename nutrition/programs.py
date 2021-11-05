@@ -697,6 +697,10 @@ class ProgramInfo(sc.prettyobj):
         return False
     
     def get_change_covs(self, year, growth):
+        """ This function supports to smooth the ramping. It determines the program that has the 
+            slowest scale up for ramping,the number of years it takes to reach that level, and
+            the rate of scaling up. Next, the coverage for other programs are also adjusted using the same rate"""
+            
         if growth == 'fixed coverage':
             cov_diffs = []
             for prog in self.programs.values():
@@ -711,8 +715,6 @@ class ProgramInfo(sc.prettyobj):
                 
                     if prog.annual_cov[year] - prog.annual_cov[year-1] > prog.max_inc:
                        prog.annual_cov[year] = prog.annual_cov[year-1] +  prog.max_inc
-                    elif prog.annual_cov[year] - prog.annual_cov[year-1] < (-1)* prog.max_dec:
-                       prog.annual_cov[year] = prog.annual_cov[year-1] + prog.max_inc
                     elif prog.annual_cov[year] - prog.annual_cov[year-1] < (-1) * prog.max_dec:
                         prog.annual_cov[year] = prog.annual_cov[year-1] - prog.max_dec
                     else:
