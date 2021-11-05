@@ -55,7 +55,7 @@ class ScenResult(sc.prettyobj):
         covs = sc.odict()
         
         for name, prog in self.programs.iteritems():
-            if not self.growth:
+            if self.growth:
                 covs[name] = prog.annual_restr_cov
             else:
                 covs[name] = prog.annual_cov
