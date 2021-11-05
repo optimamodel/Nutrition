@@ -183,7 +183,6 @@ class Model(sc.prettyobj):
                 self.update_pops()
             
             self.prog_info.adjust_covs(self.pops, year, self.growth, self.enforce_constraints_year)
-            
             # determine if there are cov changes from previous year
             change = self.prog_info.determine_cov_change()
             if change:

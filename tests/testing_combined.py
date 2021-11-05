@@ -64,7 +64,7 @@ def parallel_optim(region, path=None):
                            'Zinc for treatment + ORS', 'Iron and iodine fortification of salt'],
               'fix_curr': False,
               'add_funds': 0,
-              'growth': 'fixed budget',
+              'growth': 'fixed coverage',
               }
 
     p2.add_optims(Optim(**kwargs))
@@ -108,8 +108,8 @@ if __name__ == '__main__':
     #p.write_results(filename=output_path + 'optimized.xlsx')
     if doplot:
         for p in proj_list:
-            p.plot(optim=True, save_plots_folder=get_desktop_folder() + 'Nutrition test' + os.sep)
-            # p.plot(optim=True)
+            #p.plot(optim=True, save_plots_folder=get_desktop_folder() + 'Nutrition test' + os.sep)
+            p.plot(optim=True)
 
 
 

@@ -695,6 +695,28 @@ class ProgramInfo(sc.prettyobj):
             else:
                 pass
         return False
+    
+    def get_change_covs(self, year, growth):
+        if growth == 'fixed coverage':
+            cov_diffs = []
+            for prog in self.programs.values():
+                cover_change = abs(prog.annual_cov[-1] - prog.annual_cov[0]) / prog.max_inc
+                cov_diffs.append(cover_change)
+            max_time = np.nanmax(cov_diffs)
+            for prog in self.programs.values():
+                if ceil(abs(prog.annual_cov[year-1] - prog.annual_cov[year]) / prog.max_inc) < max_time and abs(prog.annual_cov[year-1] - prog.annual_cov[year]) != 0:
+                    prog.max_inc = abs(prog.annual_cov[year-1] - prog.annual_cov[year]) / max_time
+                if ceil(abs(prog.annual_cov[year-1] - prog.annual_cov[year]) / prog.max_dec) < max_time and abs(prog.annual_cov[year-1] - prog.annual_cov[year]) != 0:
+                    prog.max_dec = abs(prog.annual_cov[year-1] - prog.annual_cov[year]) / max_time
+                
+                    if prog.annual_cov[year] - prog.annual_cov[year-1] > prog.max_inc:
+                       prog.annual_cov[year] = prog.annual_cov[year-1] +  prog.max_inc
+                    elif prog.annual_cov[year] - prog.annual_cov[year-1] < (-1)* prog.max_dec:
+                       prog.annual_cov[year] = prog.annual_cov[year-1] + prog.max_inc
+                    elif prog.annual_cov[year] - prog.annual_cov[year-1] < (-1) * prog.max_dec:
+                        prog.annual_cov[year] = prog.annual_cov[year-1] - prog.max_dec
+                    else:
+                        prog.annual_cov[year] = prog.annual_cov[year]
 
     def rebalance_fixed_spending(self, year):
         """
@@ -770,6 +792,8 @@ class ProgramInfo(sc.prettyobj):
         for program in self.programs.values():
             # prev_sum += program.annual_spend[year]
             program.adjust_cov(pops, year, growth, enforce_constraints_year = enforce_constraints_year)
+            
+        self.get_change_covs(year, growth)
             
         #NOTE: possibly should have a call to restrict_covs here?  Might slow the model down a lot for very limited gain though.  
         
