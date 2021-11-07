@@ -203,7 +203,9 @@ class Project(object):
         return fullpath
 
     def write_results(self, filename=None, folder=None, key=None):
-        """ Blargh, this really needs some tidying """
+        """ Blargh, this really needs some tidying
+            - This function calls write_results function in results.py
+            - Also, reduced_resutls includes point, high and low estimates generated through resampling in each run"""
         if key is None:
             key = -1
         results = self.result(key)
@@ -478,7 +480,9 @@ class Project(object):
 
     def run_scens(self, scens=None, n_runs=1):
         """Function for running scenarios
-        If scens is specified, they are added to self.scens 
+        - If scens is specified, they are added to self.scens 
+        - The first run happens with default parameters (point estimates)
+        - The subsequent runs consider resampling
         
         """
         self.n_runs = n_runs

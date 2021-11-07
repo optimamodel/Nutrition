@@ -76,6 +76,8 @@ class CalcCellCache(object):
 
 # TODO (possible): we may want to merge this class with InputData to make another class (DatabookData).
 class DefaultParams(object):
+    """" The parameters that are read from the databook are point estimates
+        This is used to run the scenarios/optimization ingoring any uncertainty"""
     def __init__(self, default_data, input_data):
         self.settings = settings.Settings()
         self.impacted_pop = None
@@ -983,6 +985,8 @@ class Dataset(object):
     
     
 class UncertaintyParas(object):
+    """" This is used to store upper and lower boundaries of uncertain parameters read from the databook
+       Next, random value is generated using uniform distribution and to generate a random for each scenario run"""
     def __init__(self, default_data, input_data):
         self.settings = settings.Settings()
         self.rr_dia = None
@@ -1036,6 +1040,8 @@ class UncertaintyParas(object):
              
     # function to generate data matrix using unifrom distribution with lower and upper input of the each data cell
     def make_random(self, lb, ub):
+        """" This function generates a random value considering unifrom distribution
+            Inputs: upper and lower boundaries"""
         n = len(lb[0])
         m = len(lb[:,0])
         d=np.zeros([m, n])
@@ -1171,6 +1177,9 @@ class UncertaintyParas(object):
 # This reads original data from the data book (to read and establish index names in DFs) and also call random data from UncertaintyParas class, next input them to model.
     
 class DefaultParamsResampled(object):
+    """" This stores all the randomly generated parameters
+        Data structures are similart to the corresponding parameters stored in 'DefaultParams' class
+        to ensure that thre would be no additional trasformations required in pupulation.py """
     def __init__(self, default_data, input_data):
         self.settings = settings.Settings()
         self.uncert = UncertaintyParas(default_data, input_data)
@@ -1461,8 +1470,9 @@ class DefaultParamsResampled(object):
                     res_dict[age][cat] = mydict[age][condCat]
         return res_dict
     
-    """replacing original data by randomly tranformed data"""
+    
     def data_replace(self, orig, transformed):
+        """This function replaces original data (point estimates) by randomly generated data"""
         outdata = sc.dcp(orig)
         outdata.loc[:,:] = transformed
         return outdata

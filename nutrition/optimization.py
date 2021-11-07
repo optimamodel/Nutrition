@@ -22,6 +22,7 @@ class Optim(sc.prettyobj):
         :param fix_curr: fix the current allocations?
         :param rem_curr: remove the current allocations?
         :param filter_progs: filter out programs which don't impact the objective (can improve optimization results)
+        :param growth: consider it is fixed budget ot fixed coverage (boolean)
         :param balanced_optimization: optionally run an additional set of optimizations for each budget multiplier that balances progress toward each objective
         """
 

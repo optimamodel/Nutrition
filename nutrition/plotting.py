@@ -158,7 +158,7 @@ def make_plots(all_res=None, all_reduce=None, toplot=None, optim=False, geo=Fals
     return allplots
 
 def plot_prevs_reduce(all_res, all_reduce):
-    """ Plot prevs for each scenario"""
+    """ Plot prevs for each scenario generated through resampling"""
     prevs = utils.default_trackers(prev=True, rate=False)
     lines = []
     years = all_res[0].years
@@ -195,6 +195,7 @@ def plot_prevs_reduce(all_res, all_reduce):
     return figs 
 
 def plot_outputs_reduced(all_res, all_reduce, seq, name):
+    """ Plot annual outputs and cumulative outputs for each scenario generated through resampling"""
     outcomes = utils.default_trackers(prev=False, rate=False)
     width = 0.2
     figs = sc.odict()
@@ -274,7 +275,7 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name):
     return figs       
 
 def plot_prevs(all_res):
-    """ Plot prevs for each scenario"""
+    """ Plot prevs for each scenario (optimized and no resampling)"""
     prevs = utils.default_trackers(prev=True, rate=False)
     lines = []
     figs = sc.odict()
@@ -310,6 +311,7 @@ def plot_prevs(all_res):
     return figs
 
 def plot_outputs(all_res, all_reduce, seq, name):
+    """ Plot annual outputs and cumulative outputs for each scenario (optimized and no resampling)"""
     outcomes = utils.default_trackers(prev=False, rate=False)
     width = 1/(len(all_res)+1)
     figs = sc.odict()
@@ -372,7 +374,8 @@ def plot_outputs(all_res, all_reduce, seq, name):
 
 def plot_alloc(results, optim, geo):
     """ Plots the average annual spending for each scenario, coloured by program.
-    Legend will include all programs in the 'baseline' allocation which receive non-zero spending in any scenario """
+    Legend will include all programs in the 'baseline' allocation which receive non-zero spending in any scenario 
+    Generates a single plot considering the mean spend over whole period"""
     
     # Initialize
     width = 0.35
@@ -462,7 +465,8 @@ def plot_alloc(results, optim, geo):
 
 def plot_annu_alloc(results, optim, geo):
     """ Plots the annual spending for each scenario, coloured by program.
-    Legend will include all programs in the 'baseline' allocation which receive non-zero spending in any scenario """
+    Legend will include all programs in the 'baseline' allocation which receive non-zero spending in any scenario 
+    Generates a plot for each year"""
     
     # Initialize
     width = 0.35
@@ -556,7 +560,8 @@ def plot_annu_alloc(results, optim, geo):
 
 def plot_clustered_annu_alloc(results, optim, geo):
     """ Plots the annual spending for each scenario, coloured by program.
-    Legend will include all programs in the 'baseline' allocation which receive non-zero spending in any scenario """
+    Legend will include all programs in the 'baseline' allocation which receive non-zero spending in any scenario 
+    Generates a single plot that represent allocations for each scenario annually"""
     
     # Initialize
     width = 1./(len(results)+1)
@@ -657,7 +662,8 @@ def plot_clustered_annu_alloc(results, optim, geo):
 
 def plot_clustered_annu_optialloc(results, optim, geo):
     """ Plots the annual spending for each scenario, coloured by program.
-    Legend will include all programs in the 'baseline' allocation which receive non-zero spending in any scenario """
+    Legend will include all programs in the 'baseline' allocation which receive non-zero spending in any scenario 
+    Generates a single plot that represent allocations for each optimization scenario annually"""
     
     # Initialize
     width = 1./(len(results)+1)
@@ -856,10 +862,11 @@ def get_costeff(project, results):
 def round_elements(mylist, dec=1):
     return [round(np.float64(x) * 100, dec) for x in mylist] # Type conversion to handle None
 
-''' The following class can be used to modify the legend handle of any plot. Usually
-there is no in-built option to do that to change the handle for string type '''
+
 
 class TextHandlerB(HandlerBase):
+    ''' This class can be used to modify the legend handle of any plot. Usually
+        there is no in-built option to do that to change the handle for string type '''
     def create_artists(self, legend, text ,xdescent, ydescent,
                         width, height, fontsize, trans):
         tx = Text(width/2.,height/2, text, fontsize=fontsize,
