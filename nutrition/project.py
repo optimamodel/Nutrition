@@ -205,7 +205,7 @@ class Project(object):
     def write_results(self, filename=None, folder=None, key=None):
         """ Blargh, this really needs some tidying
             - This function calls write_results function in results.py
-            - Also, reduced_resutls includes point, high and low estimates generated through resampling in each run"""
+            - Also, reduced_results includes point, high and low estimates generated through resampling in each run"""
         if key is None:
             key = -1
         results = self.result(key)

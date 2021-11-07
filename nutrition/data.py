@@ -986,7 +986,7 @@ class Dataset(object):
     
 class UncertaintyParas(object):
     """" This is used to store upper and lower boundaries of uncertain parameters read from the databook
-       Next, random value is generated using uniform distribution and to generate a random for each scenario run"""
+       A random value is generated for each selected parameter using uniform distribution and to generate a random for each scenario run"""
     def __init__(self, default_data, input_data):
         self.settings = settings.Settings()
         self.rr_dia = None
@@ -1179,7 +1179,7 @@ class UncertaintyParas(object):
 class DefaultParamsResampled(object):
     """" This stores all the randomly generated parameters
         Data structures are similart to the corresponding parameters stored in 'DefaultParams' class
-        to ensure that thre would be no additional trasformations required in pupulation.py """
+        to ensure that there would be no additional trasformations required in pupulation.py """
     def __init__(self, default_data, input_data):
         self.settings = settings.Settings()
         self.uncert = UncertaintyParas(default_data, input_data)
