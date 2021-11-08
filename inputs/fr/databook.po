@@ -26,15 +26,15 @@ msgstr "Années de projection"
 
 msgctxt "databook"
 msgid "Baseline year (projection start year)"
-msgstr "Année de référence (année de début de la projection)"
+msgstr "Année de référence (première année de la projection)"
 
 msgctxt "databook"
 msgid "End year"
-msgstr "Fin d'année"
+msgstr "Année finale"
 
 msgctxt "databook"
 msgid "Population data"
-msgstr "Données sur la population"
+msgstr "Données démographiques"
 
 msgctxt "databook"
 msgid "Children under 5 population"
@@ -42,29 +42,27 @@ msgstr "Population des enfants de moins de 5 ans"
 
 msgctxt "databook"
 msgid "Percentage of population food insecure (default poor)"
-msgstr ""
-"Pourcentage de la population en situation d'insécurité alimentaire (pauvre "
-"par défaut)"
+msgstr "Pourcentage de la population en situation d'insécurité alimentaire (pauvre par défaut)"
 
 msgctxt "databook"
 msgid "Percentage of population at risk of malaria"
-msgstr "Pourcentage de la population exposée au risque de paludisme"
+msgstr "Pourcentage de la population exposé au risque de paludisme"
 
 msgctxt "databook"
 msgid "School attendance (percentage of 15-19 year women)"
-msgstr "Fréquentation scolaire (pourcentage de femmes de 15 à 19 ans)"
+msgstr "Fréquentation scolaire (pourcentage des femmes de 15 à 19 ans)"
 
 msgctxt "databook"
 msgid "Percentage of pregnant women attending health facility"
-msgstr "Pourcentage de femmes enceintes fréquentant un établissement de santé"
+msgstr "Pourcentage des femmes enceintes fréquentant un établissement de santé"
 
 msgctxt "databook"
 msgid "Percentage of children attending health facility"
-msgstr "Pourcentage d'enfants fréquentant un établissement de santé"
+msgstr "Pourcentage des enfants fréquentant un établissement de santé"
 
 msgctxt "databook"
 msgid "Unmet need for family planning"
-msgstr "Besoin non satisfait de planification familiale"
+msgstr "Besoin non satisfait pour la planification familiale"
 
 msgctxt "databook"
 msgid "Food"
@@ -76,24 +74,19 @@ msgstr "Fraction de l'agriculture de subsistance"
 
 msgctxt "databook"
 msgid "Fraction eating rice as main staple food"
-msgstr ""
-"Fraction de personnes consommant du riz comme principal aliment de base"
+msgstr "Fraction qui mange du riz comme denrée de base principale"
 
 msgctxt "databook"
 msgid "Fraction eating wheat as main staple food"
-msgstr ""
-"Fraction de ceux qui consomment du blé comme principal aliment de base"
+msgstr "Fraction qui mange du blé comme denrée de base principale"
 
 msgctxt "databook"
 msgid "Fraction eating maize as main staple food"
-msgstr ""
-"Fraction de la population consommant du maïs comme principal aliment de base"
+msgstr "Fraction qui mange du maïs comme denrée de base principale"
 
 msgctxt "databook"
 msgid "Fraction on other staples as main staple food"
-msgstr ""
-"Fraction de la population qui consomme d'autres aliments de base comme "
-"principale denrée alimentaire"
+msgstr "Fraction qui consomme d'autres denrées de base comme denrée de base principale"
 
 msgctxt "databook"
 msgid "Age distribution of pregnant women"
@@ -101,19 +94,19 @@ msgstr "Répartition par âge des femmes enceintes"
 
 msgctxt "databook"
 msgid "Percentage of pregnant women 15-19 years"
-msgstr "Pourcentage de femmes enceintes de 15 à 19 ans"
+msgstr "Pourcentage des femmes enceintes âgées de 15 à 19 ans"
 
 msgctxt "databook"
 msgid "Percentage of pregnant women 20-29 years"
-msgstr "Pourcentage de femmes enceintes âgées de 20 à 29 ans"
+msgstr "Pourcentage des femmes enceintes âgées de 20 à 29 ans"
 
 msgctxt "databook"
 msgid "Percentage of pregnant women 30-39 years"
-msgstr "Pourcentage de femmes enceintes âgées de 30 à 39 ans"
+msgstr "Pourcentage des femmes enceintes âgées de 30 à 39 ans"
 
 msgctxt "databook"
 msgid "Percentage of pregnant women 40-49 years"
-msgstr "Pourcentage de femmes enceintes âgées de 40 à 49 ans"
+msgstr "Pourcentage des femmes enceintes âgées de 40 à 49 ans"
 
 msgctxt "databook"
 msgid "Birth spacing"
@@ -141,7 +134,7 @@ msgstr "Total (doit être 100%)"
 
 msgctxt "databook"
 msgid "Baseline year mortality and risk factors"
-msgstr "Mortalité de l'année de référence et facteurs de risque"
+msgstr "Mortalité et facteurs de risque de l'année de référence"
 
 msgctxt "databook"
 msgid "Mortality"
@@ -177,11 +170,11 @@ msgstr "Distribution des résultats des naissances"
 
 msgctxt "databook"
 msgid "Pre-term SGA"
-msgstr "SGA avant terme"
+msgstr "SGA prématuré"
 
 msgctxt "databook"
 msgid "Pre-term AGA"
-msgstr "AGA avant terme"
+msgstr "AGA prématuré"
 
 msgctxt "databook"
 msgid "Term SGA"
@@ -201,7 +194,7 @@ msgstr "Nombre moyen d'épisodes par an : <1 mois"
 
 msgctxt "databook"
 msgid "Average episodes per year: 1-5 months"
-msgstr "Épisodes moyens par an : 1-5 mois"
+msgstr "Nombre moyen d'épisodes par an : 1-5 mois"
 
 msgctxt "databook"
 msgid "Average episodes per year: 6-11 months"
@@ -221,11 +214,11 @@ msgstr "Autres risques"
 
 msgctxt "databook"
 msgid "Percentage of diarrhea that is severe"
-msgstr "Pourcentage de diarrhée grave"
+msgstr "Pourcentage de la diarrhée qui est aiguë"
 
 msgctxt "databook"
 msgid "Percentage of anaemia that is iron deficient"
-msgstr "Pourcentage d'anémie avec carence en fer"
+msgstr "Pourcentage de l'anémie qui est ferriprive"
 
 msgctxt "databook"
 msgid "Demographic projections"
@@ -269,12 +262,7 @@ msgstr "FAP non enceintes"
 
 msgctxt "databook"
 msgid "Causes of death"
-msgstr "Causes de décès"
-
-msgctxt "databook"
-msgid "Percentage of deaths in baseline year (2019) attributable to cause"
-msgstr ""
-"Pourcentage de décès dans l'année de référence (2019) attribuable à la cause"
+msgstr "Causes du décès"
 
 msgctxt "databook"
 msgid "Neonatal"
@@ -286,7 +274,7 @@ msgstr "Diarrhée néonatale"
 
 msgctxt "databook"
 msgid "Neonatal sepsis"
-msgstr "Septicémie néonatale"
+msgstr "Sepsis néonatal"
 
 msgctxt "databook"
 msgid "Neonatal pneumonia"
@@ -394,7 +382,7 @@ msgstr "Troubles hypertensifs"
 
 msgctxt "databook"
 msgid "Sepsis"
-msgstr "Septicémie"
+msgstr "Sepsis"
 
 msgctxt "databook"
 msgid "Abortion"
@@ -417,14 +405,8 @@ msgid "Nutritional status distribution"
 msgstr "Dist. de l'état nutritionnel"
 
 msgctxt "databook"
-msgid "Percentage of population in each category in baseline year (2019)"
-msgstr ""
-"Pourcentage de la population dans chaque catégorie dans l'année de référence"
-" (2019)"
-
-msgctxt "databook"
 msgid "Status"
-msgstr "Statut"
+msgstr "Etat"
 
 msgctxt "databook"
 msgid "<1 month"
@@ -452,7 +434,7 @@ msgstr "Élevé (score HAZ entre < -3)"
 
 msgctxt "databook"
 msgid "Wasting (weight-for-height)"
-msgstr "Amaigrissement (poids par rapport à la taille)"
+msgstr "Amaigrissement (poids-pour-taille)"
 
 msgctxt "databook"
 msgid "Normal  (WHZ-score > -1)"
@@ -464,11 +446,11 @@ msgstr "Léger (score WHZ entre -2 et -1)"
 
 msgctxt "databook"
 msgid "MAM   (WHZ-score between -3 and -2)"
-msgstr "MAM (score WHZ entre -3 et -2)"
+msgstr "MM (score WHZ entre -3 et -2)"
 
 msgctxt "databook"
 msgid "SAM   (WHZ-score < -3)"
-msgstr "SAM (score WHZ < -3)"
+msgstr "MAS (score WHZ < -3)"
 
 msgctxt "databook"
 msgid "Anaemia"
@@ -476,19 +458,19 @@ msgstr "Anémie"
 
 msgctxt "databook"
 msgid "PW: 15-19 years"
-msgstr "PW : 15-19 ans"
+msgstr "FE : 15-19 ans"
 
 msgctxt "databook"
 msgid "PW: 20-29 years"
-msgstr "PW : 20-29 ans"
+msgstr "FE : 20-29 ans"
 
 msgctxt "databook"
 msgid "PW: 30-39 years"
-msgstr "PW : 30-39 ans"
+msgstr "FE : 30-39 ans"
 
 msgctxt "databook"
 msgid "PW: 40-49 years"
-msgstr "PW : 40-49 ans"
+msgstr "FE : 40-49 ans"
 
 msgctxt "databook"
 msgid "Prevalence of anaemia"
@@ -504,8 +486,7 @@ msgstr "Dist. l'allaitement maternel"
 
 msgctxt "databook"
 msgid "Percentage of children in each category in baseline year (2019)"
-msgstr ""
-"Pourcentage d'enfants dans chaque catégorie dans l'année de référence (2019)"
+msgstr "Pourcentage des enfants dans chaque catégorie dans l'année de référence (2019)"
 
 msgctxt "databook"
 msgid "Breastfeeding"
@@ -561,11 +542,11 @@ msgstr "Prévalence de l'allaitement maternel adapté à l'âge des enfants"
 
 msgctxt "databook"
 msgid "Children 0-5 months"
-msgstr "Enfants de 0 à 5 mois"
+msgstr "Enfants âgés de 0 à 5 mois"
 
 msgctxt "databook"
 msgid "Children 6-23 months"
-msgstr "Enfants de 6 à 23 mois"
+msgstr "Enfants âgés de 6 à 23 mois"
 
 msgctxt "databook"
 msgid "Under five (deaths per 1,000 births)"
@@ -593,7 +574,7 @@ msgstr "Établissement de santé"
 
 msgctxt "databook"
 msgid "Community"
-msgstr "Communauté"
+msgstr "Communautaire"
 
 msgctxt "databook"
 msgid "Mass media"
@@ -621,7 +602,7 @@ msgstr "Couverture à saturation de la population cible"
 
 msgctxt "databook"
 msgid "Unit cost (US$ per person per year)"
-msgstr "Coût unitaire (US$ par personne et par an)"
+msgstr "Coût à l'unité (US$ par personne et par an)"
 
 msgctxt "databook"
 msgid "Cost-coverage relationship"
@@ -637,11 +618,11 @@ msgstr "Supplémentation en calcium"
 
 msgctxt "databook"
 msgid "Cash transfers"
-msgstr "Transferts en espèces"
+msgstr "Transferts monétaires"
 
 msgctxt "databook"
 msgid "Delayed cord clamping"
-msgstr "Retardement du clampage du cordon"
+msgstr "Clampage tardif du cordon"
 
 msgctxt "databook"
 msgid "Family planning"
@@ -649,39 +630,39 @@ msgstr "Planification familiale"
 
 msgctxt "databook"
 msgid "IFA fortification of maize"
-msgstr "Enrichissement du maïs en AGI"
+msgstr "Enrichissement du maïs en FAF"
 
 msgctxt "databook"
 msgid "IFA fortification of rice"
-msgstr "Enrichissement du riz en AGI"
+msgstr "Enrichissement du riz en FAF"
 
 msgctxt "databook"
 msgid "IFA fortification of wheat flour"
-msgstr "Enrichissement en ACI de la farine de blé"
+msgstr "Enrichissement en FAF de la farine de blé"
 
 msgctxt "databook"
 msgid "IFAS (community)"
-msgstr "IFAS (communauté)"
+msgstr "SFAF (communautaire)"
 
 msgctxt "databook"
 msgid "IFAS (health facility)"
-msgstr "IFAS (établissement de santé)"
+msgstr "SFAF (établissement de santé)"
 
 msgctxt "databook"
 msgid "IFAS (retailer)"
-msgstr "IFAS (détaillant)"
+msgstr "SFAF (détaillant)"
 
 msgctxt "databook"
 msgid "IFAS (school)"
-msgstr "IFAS (école)"
+msgstr "SFAF (école)"
 
 msgctxt "databook"
 msgid "IFAS for pregnant women (community)"
-msgstr "IFAS pour les femmes enceintes (communauté)"
+msgstr "SFAF pour les femmes enceintes (communautaire)"
 
 msgctxt "databook"
 msgid "IFAS for pregnant women (health facility)"
-msgstr "IFAS pour les femmes enceintes (établissement de santé)"
+msgstr "SFAF pour les femmes enceintes (établissement de santé)"
 
 msgctxt "databook"
 msgid "IPTp"
@@ -693,11 +674,11 @@ msgstr "Enrichissement du sel en fer et en iode"
 
 msgctxt "databook"
 msgid "IYCF 1"
-msgstr "AIFC 1"
+msgstr "IYCF 1"
 
 msgctxt "databook"
 msgid "IYCF 2"
-msgstr "AIFC 2"
+msgstr "IYCF 2"
 
 msgctxt "databook"
 msgid "IYCF 3"
@@ -705,15 +686,15 @@ msgstr "IYCF 3"
 
 msgctxt "databook"
 msgid "Kangaroo mother care"
-msgstr "Soins maternels kangourou"
+msgstr "Méthode mère kangourou"
 
 msgctxt "databook"
 msgid "Lipid-based nutrition supplements"
-msgstr "Suppléments nutritionnels à base de lipides"
+msgstr "Supplémentation en nutriments à base de lipides"
 
 msgctxt "databook"
 msgid "Long-lasting insecticide-treated bednets"
-msgstr "Moustiquaires imprégnées d'insecticide longue durée"
+msgstr "Moustiquaires imprégnées d'insecticide de longue durée"
 
 msgctxt "databook"
 msgid "Mg for eclampsia"
@@ -826,3 +807,351 @@ msgstr "Mode de livraison"
 msgctxt "databook"
 msgid "Programs target population"
 msgstr "Population cible programmes"
+
+msgctxt "databook"
+msgid "Prevalence of pre-eclampsia"
+msgstr "Prévalence de la pré-éclampsie"
+
+msgctxt "databook"
+msgid "Percentage of deaths in baseline year (2017) attributable to cause"
+msgstr "Pourcentage des morts pendant l'année de référence (2017) imputable à chaque cause"
+
+msgctxt "databook"
+msgid "Percentage of population in each category in baseline year (2017)"
+msgstr "Pourcentage de la population dans chaque catégorie pendant l'année de référence (2017)"
+
+msgctxt "databook"
+msgid "Children 0-59 months"
+msgstr "Enfants âgés de 0 à 59 mois"
+
+msgctxt "databook"
+msgid "Community based"
+msgstr "Communautaire"
+
+msgctxt "databook"
+msgid "Management of MAM"
+msgstr "Gestion de la MM"
+
+msgctxt "databook"
+msgid "General population"
+msgstr "Population générale"
+
+msgctxt "databook"
+msgid "Unit cost (US$)"
+msgstr "Coût à l'unité (US$)"
+
+msgctxt "databook"
+msgid "Broad population group"
+msgstr "Groupe général de la population"
+
+msgctxt "databook"
+msgid "Baseline (2017) coverage"
+msgstr "Couverture de l'année de référence (2017)"
+
+msgctxt "databook"
+msgid "Community-based"
+msgstr "Communautaire"
+
+msgctxt "databook"
+msgid "Programs impacted population"
+msgstr "Programmes population touchée"
+
+msgctxt "databook"
+msgid "Program risk areas"
+msgstr "Programme régions à risque"
+
+msgctxt "databook"
+msgid "Population risk areas"
+msgstr "Population des régions à risque"
+
+msgctxt "databook"
+msgid "IYCF odds ratios"
+msgstr "Rapport des cotes IYCF"
+
+msgctxt "databook"
+msgid "Birth outcome risks"
+msgstr "Risques des rés. des naissances"
+
+msgctxt "databook"
+msgid "Relative risks"
+msgstr "Risques relatifs"
+
+msgctxt "databook"
+msgid "Odds ratios"
+msgstr "Rapports des cotes"
+
+msgctxt "databook"
+msgid "Programs birth outcomes"
+msgstr "Programmes-rés. des naissances"
+
+msgctxt "databook"
+msgid "Programs anaemia"
+msgstr "Programmes-anémie"
+
+msgctxt "databook"
+msgid "Programs wasting"
+msgstr "Programmes-amaigrissement"
+
+msgctxt "databook"
+msgid "Programs for children"
+msgstr "Programmes pour les enfants"
+
+msgctxt "databook"
+msgid "Programs for PW"
+msgstr "Programmes pour les FE"
+
+msgctxt "databook"
+msgid "Stunting"
+msgstr "Retard de croissance"
+
+msgctxt "databook"
+msgid "Wasting prevention"
+msgstr "Prévention de l'amaigrissement"
+
+msgctxt "databook"
+msgid "Wasting treatment"
+msgstr "Traitement de l'amaigrissement"
+
+msgctxt "databook"
+msgid "Birth outcomes"
+msgstr "Résultats des naissances"
+
+msgctxt "databook"
+msgid "Birth number"
+msgstr "Nombre de naissances"
+
+msgctxt "databook"
+msgid "Age group"
+msgstr "Tranche d'âge"
+
+msgctxt "databook"
+msgid "Behaviour"
+msgstr "Comportement"
+
+msgctxt "databook"
+msgid "Odds ratio for correct breastfeeding"
+msgstr "Rapport des cotes pour l'allaitement maternelle correct"
+
+msgctxt "databook"
+msgid "Odds ratio for stunting"
+msgstr "Rapport des cotes pour le retard de croissance"
+
+msgctxt "databook"
+msgid "Odds ratio for correct complementary feeding"
+msgstr "Rapport des cotes pour l'alimentation complémetaire"
+
+msgctxt "databook"
+msgid "Maternal risk factors leading to birth outcomes"
+msgstr "Facteurs de risque maternels contribuant aux résultats des naissances"
+
+msgctxt "databook"
+msgid "Relative risk by birth spacing"
+msgstr "Risque relatif par espacement des naissances"
+
+msgctxt "databook"
+msgid "Odds ratio for women with maternal anaemia"
+msgstr "Rapport des cotes pour les femmes avec l'anémie maternelle"
+
+msgctxt "databook"
+msgid "Risks for children who experience birth outcomes"
+msgstr "Risques pour les enfants touchés par chaque résultat des naissances"
+
+msgctxt "databook"
+msgid "Odds ratios for conditions"
+msgstr "Rapport des cote pour des conditions"
+
+msgctxt "databook"
+msgid "Stunting (HAZ-score < -2)"
+msgstr "Amaigrissement (score-HAZ < -2)"
+
+msgctxt "databook"
+msgid "MAM (WHZ-score between -3 and -2)"
+msgstr "MM (Score-WHZ entre -3 et -2)"
+
+msgctxt "databook"
+msgid "SAM (WHZ-score < -3)"
+msgstr "MAS (Score-WHZ < -3)"
+
+msgctxt "databook"
+msgid "Relative risks of neonatal causes of death"
+msgstr "Risques relatifs des causes du décès néonatales"
+
+msgctxt "databook"
+msgid "Relative risk of causes of death by height-for-age (stunting) distribution"
+msgstr "Risque relatif des causes du décès par la distribution de la taille-pour-l'àge (retard de croissance)"
+
+msgctxt "databook"
+msgid "Cause of death"
+msgstr "Cause du décès"
+
+msgctxt "databook"
+msgid "HAZ status"
+msgstr "Niveau HAZ"
+
+msgctxt "databook"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "databook"
+msgid "Mild"
+msgstr "Léger"
+
+msgctxt "databook"
+msgid "Moderate"
+msgstr "Modéré"
+
+msgctxt "databook"
+msgid "High"
+msgstr "Elevé"
+
+msgctxt "databook"
+msgid "WHZ status"
+msgstr "Niveau WHZ"
+
+msgctxt "databook"
+msgid "Relative risk of causes of death by anaemia status"
+msgstr "Risque relatif des causes du décès par condition anémique"
+
+msgctxt "databook"
+msgid "Anaemia status"
+msgstr "Condition anémique"
+
+msgctxt "databook"
+msgid "Not anaemic"
+msgstr "Pas anémique"
+
+msgctxt "databook"
+msgid "Anaemic"
+msgstr "Anémique"
+
+msgctxt "databook"
+msgid "Relative risk of causes of death by breastfeeding status"
+msgstr "Risque relatif des causes du décès par mode d'allaitement maternel"
+
+msgctxt "databook"
+msgid "Breastfeeding status"
+msgstr "Mode d'allaitement maternel"
+
+msgctxt "databook"
+msgid "Relative risks of experiencing diarrhoea by breastfeeding status"
+msgstr "Risques relatifs de la diarrhée par mode d'allaitement maternel"
+
+msgctxt "databook"
+msgid "Given previous stunting (HAZ < -2 in previous age band)"
+msgstr "Compte tenu du retard de croissance antérieur (HAZ < -2 dans la tranche d’âge précédente)"
+
+msgctxt "databook"
+msgid "Diarrhoea (per additional episode)"
+msgstr "Diarrhée (par épisode supplémentaire)"
+
+msgctxt "databook"
+msgid "By program"
+msgstr "Par programme"
+
+msgctxt "databook"
+msgid "Odds ratio for correct breastfeeding by program"
+msgstr "Rapport des cotes pour allaitement correct par programme"
+
+msgctxt "databook"
+msgid "Other odds ratios"
+msgstr "Rapports des cotes supplémentaires"
+
+msgctxt "databook"
+msgid "For SAM per additional episode of diarrhoea"
+msgstr "Pour MAS par épisode supplémentaire de la diarrhée"
+
+msgctxt "databook"
+msgid "For anaemia per additional episode of severe diarrhoea"
+msgstr "Pour l'anémie par épisode supplémentaire de la diarrhée"
+
+msgctxt "databook"
+msgid "effectiveness"
+msgstr "efficacité"
+
+msgctxt "databook"
+msgid "affected fraction"
+msgstr "fraction touchée"
+
+msgctxt "databook"
+msgid "Relative risks of anaemia when receiving intervention"
+msgstr "Risques relatifs de l'anémie en recevant l'intervention"
+
+msgctxt "databook"
+msgid "Odds ratio of being anaemic when covered by intervention"
+msgstr "Rapport des cotes pour l'anémie en étant couvert par l'intervention"
+
+msgctxt "databook"
+msgid "Odds ratio of SAM when covered by program"
+msgstr "Rapport des cotes de la MAS en étant couvert par le programme"
+
+msgctxt "databook"
+msgid "Odds ratio of MAM when covered by program"
+msgstr "Rapport des cotes de la MM en étant couvert par le programme"
+
+msgctxt "databook"
+msgid "Targetted condition"
+msgstr "Condition ciblée"
+
+msgctxt "databook"
+msgid "Affected fraction"
+msgstr "Fraction touchée"
+
+msgctxt "databook"
+msgid "Effectiveness mortality"
+msgstr "Efficacité à prévenir une mort"
+
+msgctxt "databook"
+msgid "Effectiveness incidence"
+msgstr "Efficacité à prévenir un cas"
+
+msgctxt "databook"
+msgid "SAM"
+msgstr "MAS"
+
+msgctxt "databook"
+msgid "MAM"
+msgstr "MM"
+
+msgctxt "databook"
+msgid "Prevalence of eclampsia"
+msgstr "Prévalence de l'éclampsie"
+
+msgctxt "databook"
+msgid "Relative risk of causes of death by weight-for-height (wasting) distribution"
+msgstr "Risque relatif des causes du décès par la distribution du poids-pour-taille (amaigrissement)"
+
+msgctxt "databook"
+msgid "Odds ratios for women with maternal anaemia"
+msgstr "Rapport des cotes pour les femmes avec l'anémie maternelle"
+
+msgctxt "databook"
+msgid "Odds ratios for stunting"
+msgstr "Rapport des cotes pour le retard de croissance"
+
+msgctxt "databook"
+msgid "Odds ratios for correct breastfeeding by program"
+msgstr "Rapport des cotes pour allaitement maternel correct par programme"
+
+msgctxt "databook"
+msgid "=\"Percentage of deaths in baseline year (\"&start_year&\") attributable to cause\""
+msgstr "=\"Pourcentage des morts de l'année de référence (\"&start_year&\") imputable à chaque cause\""
+
+msgctxt "databook"
+msgid "For MAM per additional episode of diarrhoea"
+msgstr "Pour MM par épisode supplémentaire de la diarrhée"
+
+msgctxt "databook"
+msgid "Odds ratios for optimal birth spacing by program"
+msgstr "Rapports des cotes pour espacement des naissances optimal par programme"
+
+msgctxt "databook"
+msgid "=\"Percentage of population in each category in baseline year (\"&start_year&\")\""
+msgstr "=\"Pourcentage de la population dans chaque catégorie pendant l'année de référence (\"&start_year&\")\""
+
+msgctxt "databook"
+msgid "=\"Percentage of children in each category in baseline year (\"&start_year&\")\""
+msgstr "=\"Pourcentage des enfants dans chaque catégorie pendant l'année de référence (\"&start_year&\")\""
+
+msgctxt "databook"
+msgid "Odds ratios of being anaemic when covered by intervention"
+msgstr "Rapports des cotes de l'anémie en étant couverte par l'intervention"
