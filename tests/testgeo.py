@@ -24,7 +24,7 @@ kwargs = {'name': 'test1',
           'growth': 'fixed coverage'}
 if __name__ == '__main__':
     geo = Geospatial(**kwargs)
-    results = p.run_geo(geo=geo, maxiter=5, swarmsize=1, maxtime=5, parallel=False, runbalanced=True)
+    results = p.run_geo(geo=geo, maxiter=1, swarmsize=0, maxtime=1, parallel=False, runbalanced=True)
     p.plot(geo=True)
     p.write_results('geo_results.xlsx')
 
