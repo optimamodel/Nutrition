@@ -32,7 +32,7 @@ class Geospatial:
             self.mults = mults
         else:
             #self.mults = [0, 0.01, 0.025, 0.04, 0.05, 0.075, 0.1, 0.2, 0.3, 0.6, 1]
-            self.mults = [0, 0.025, 1]
+            self.mults = [0, 0.01, 0.025, 0.04, 0.05, 0.075]
         self.prog_set = prog_set
         self.add_funds = add_funds
         self.fix_curr = fix_curr
@@ -145,6 +145,15 @@ class Geospatial:
             regions.append(region)
         self.regions = regions
         return regions
+    
+    def geo_objfun_val(self, outs, weights):
+        """"This is used to find the value of the objective functional for 
+            different weights."""
+        num_weights = np.shape(self.weights)[0]
+        val = np.zeros(num_weights)
+        for i in range(0, num_weights):
+            val[i] = np.inner(outs, self.weights[i])
+        return val
 
     def get_bocs(self, boc_optims, totalfunds):
         """ Genereates the budget outcome curves for each region
@@ -154,7 +163,7 @@ class Geospatial:
             output = np.zeros(len(results))
             for i, res in enumerate(results):
                 outs = res.model.get_output()
-                val = Optim.objfun_val(outs, self.weights)
+                val = self.geo_objfun_val(outs, self.weights)
                 #val = np.inner(outs, self.weights)
                 spending[i] = totalfunds * res.mult
                 output[i] = val

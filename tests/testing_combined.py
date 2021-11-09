@@ -64,7 +64,7 @@ def parallel_optim(region, path=None):
                            'Zinc for treatment + ORS', 'Iron and iodine fortification of salt'],
               'fix_curr': False,
               'add_funds': 0,
-              'growth': 'fixed coverage',
+              'growth': 'fixed budget',
               }
 
     p2.add_optims(Optim(**kwargs))

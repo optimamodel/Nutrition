@@ -860,7 +860,7 @@ class ProgramInfo(sc.prettyobj):
         for prog in self.programs.values():
             prog.year = year
             
-    def get_ann_covs(self, year):
+    def _get_ann_covs(self, year):
         """ This function considers ramping constraints for the annual coverage
             This is called in model.py to compute population coverage probabilities"""
         #covs = {}
@@ -872,7 +872,15 @@ class ProgramInfo(sc.prettyobj):
                 covs[prog.name] = prog.annual_cov[prog.year-1] - prog.max_dec
             else:
                covs[prog.name] = prog.annual_cov[prog.year]
-        return covs   
+        return covs 
+    
+    def get_ann_covs(self, year):
+        """ This is called in model.py to compute population coverage probabilities"""
+        #covs = {}
+        covs = sc.odict()
+        for prog in self.programs.values():
+            covs[prog.name] = prog.annual_cov[prog.year]
+        return covs 
 
 
     def restrict_covs(self):
