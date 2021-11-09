@@ -705,12 +705,11 @@ class ProgramInfo(sc.prettyobj):
         ramping_changes = np.zeros(len(self.programs)) #relative to the current year if ramping was not in place
         
         orig_year_spend = np.zeros(len(self.programs))
-        
-        # ramped_year_spend = np.zeros(len(self.programs))
+        prev_year_spend = np.zeros(len(self.programs))
 
         for i, prog in self.programs.enumvals():
             orig_year_spend[i]    = sc.dcp(prog.annual_spend[year])
-            yearly_spend_changes[i] = (prog.annual_spend[year] - prog.annual_spend[year-1])
+            prev_year_spend[i]    = sc.dcp(prog.annual_spend[year-1])
             
             prog_change = False
             #actually enforce ramping
@@ -729,7 +728,13 @@ class ProgramInfo(sc.prettyobj):
             
                 ramping_changes[i] = prog.annual_spend[year] - orig_year_spend[i]
             
-            # ramped_year_spend[i] = sc.dcp(prog.annual_spend[year])
+        #normalize proportional differences in spending
+        # if sum(prev_year_spend) == 0:
+        #     return True #budget was zero the previous year, no way to correct for that to maintain budget.
+        
+        # norm_prev_year_spend = prev_year_spend * sum(orig_year_spend) / sum(prev_year_spend)
+        yearly_spend_changes = orig_year_spend - prev_year_spend
+
         
         total_ramping_spend_change = sum(ramping_changes)
         # print (f'Ramped spending changed {sum(orig_year_spend)} => {sum(ramped_year_spend)}, total change {total_ramping_spend_change}')
@@ -742,6 +747,9 @@ class ProgramInfo(sc.prettyobj):
         elif total_ramping_spend_change < 0: #too much money has been taken away due to ramping constraints - need to add some money to programs that decreased spend relative to the previous year
             ramping_correction = np.array([min(ys, 0.) for ys in yearly_spend_changes])
 
+        if sum(ramping_correction) == 0:
+            return True #not possible to correct anything that's being ramped as nothing was moved in the opposite direction
+
         #proportionally correct total spending based on how much spend was changed from the previous year
         ramping_correction = ramping_correction * total_ramping_spend_change / sum(ramping_correction)
         
@@ -749,7 +757,7 @@ class ProgramInfo(sc.prettyobj):
         #now change the spending, coverage, and restricted coverage based on this...
         for i, prog in self.programs.enumvals():
             if ramping_correction[i] != 0:
-                prog.annual_spend[year]     = prog.annual_spend[year] - ramping_correction[i]
+                prog.annual_spend[year]     = prog.annual_spend[year] - ramping_correction[i] #TODO check this could overcorrect when total budget changes if one program moves a little in the opposite direction.
                 prog.annual_cov[year]       = prog.func(prog.annual_spend)[year]
                 prog.annual_restr_cov[year] = prog.annual_cov[year] * prog.unrestr_popsize / prog.restr_popsize
                 
