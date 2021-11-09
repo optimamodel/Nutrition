@@ -1,5 +1,5 @@
 import sciris as sc
-from .utils import default_trackers, pretty_labels
+from .utils import default_trackers, pretty_labels, translate
 import numpy as np
 
 
@@ -17,6 +17,10 @@ class ScenResult(sc.prettyobj):
         self.uid = sc.uuid()
         self.created = sc.now(utc=True)
         self.modified = sc.now(utc=True)
+
+    @property
+    def locale(self):
+        return self.model.locale
 
     def model_attr(self):
         return self.model.__dict__

@@ -561,7 +561,7 @@ def demo_scens(locale):
         "scen_type": "coverage",
         "progvals": sc.odict(
             {
-                "IYCF 1": [1],
+                _("IYCF 1"): [1],
                 _("Vitamin A supplementation"): [1],
             }
         ),
@@ -573,7 +573,7 @@ def demo_scens(locale):
         "scen_type": "budget",
         "progvals": sc.odict(
             {
-                "IYCF 1": [2e6],
+                _("IYCF 1"): [2e6],
                 _("Vitamin A supplementation"): [2e6],
             }
         ),
@@ -586,7 +586,7 @@ def demo_scens(locale):
         "scen_type": "coverage",
         "progvals": sc.odict(
             {
-                "Treatment of SAM": [1],
+                _("Treatment of SAM"): [1],
             }
         ),
     }
@@ -598,10 +598,10 @@ def demo_scens(locale):
         "scen_type": "coverage",
         "progvals": sc.odict(
             {
-                "Micronutrient powders": [1],
-                "IFAS (community)": [1],
-                "IFAS (retailer)": [1],
-                "IFAS (school)": [1],
+                _("Micronutrient powders"): [1],
+                _("IFAS (community)"): [1],
+                _("IFAS (retailer)"): [1],
+                _("IFAS (school)"): [1],
             }
         ),
     }
@@ -620,11 +620,11 @@ def demo_optims(locale):
         "weights": sc.odict({"thrive": 1}),
         "prog_set": [
             _("Vitamin A supplementation"),
-            "IYCF 1",
+            _("IYCF 1"),
             _("IFA fortification of maize"),
-            "Balanced energy-protein supplementation",
-            "Public provision of complementary foods",
-            "Iron and iodine fortification of salt",
+            _("Balanced energy-protein supplementation"),
+            _("Public provision of complementary foods"),
+            _("Iron and iodine fortification of salt"),
         ],
         "fix_curr": False,
         "add_funds": 0,
@@ -639,7 +639,7 @@ def demo_geos(locale):
     _ = get_translator(locale)
 
     kwargs1 = {
-        "name": "Geospatial optimization",
+        "name": _("Geospatial optimization"),
         "modelnames": ["demoregion1", "demoregion2", "demoregion3"],
         "weights": "thrive",
         "fix_curr": False,
@@ -647,17 +647,17 @@ def demo_geos(locale):
         "add_funds": 0,
         "prog_set": [
             _("IFA fortification of maize"),
-            "IYCF 1",
-            "Lipid-based nutrition supplements",
-            "Multiple micronutrient supplementation",
-            "Micronutrient powders",
-            "Kangaroo mother care",
-            "Public provision of complementary foods",
-            "Treatment of SAM",
+            _("IYCF 1"),
+            _("Lipid-based nutrition supplements"),
+            _("Multiple micronutrient supplementation"),
+            _("Micronutrient powders"),
+            _("Kangaroo mother care"),
+            _("Public provision of complementary foods"),
+            _("Treatment of SAM"),
             _("Vitamin A supplementation"),
-            "Mg for eclampsia",
-            "Zinc for treatment + ORS",
-            "Iron and iodine fortification of salt",
+            _("Mg for eclampsia"),
+            _("Zinc for treatment + ORS"),
+            _("Iron and iodine fortification of salt"),
         ],
     }
 

@@ -5,7 +5,7 @@ import sciris as sc
 import re
 from . import settings, populations, utils, programs
 from .migration import migrate
-
+from .utils import translate
 
 def get_databook_locale(workbook):
     locale = "en"  # Default language
@@ -16,27 +16,6 @@ def get_databook_locale(workbook):
                 locale = item[1]
                 break
     return locale
-
-
-# def translate(f):
-#     """
-#     Decorator to inject _ function
-#
-#     For Babel's extract messages function to work, it requires the translation function
-#     to be defined as `_` (which is also the convention for translation functions). However,
-#     this needs to be set within the data instance so that the IO language can differ from
-#     the global application language. Therefore, the instance (e.g. InputData) has a '_translator'
-#     attribute for the function to perform translation in a given locale (i.e. it's the function
-#     returned by `get_translation_function`. Instead of having `_ = self._translator` at the top
-#     of every method, the method can instead be decorated with `@translate` to do the same thing.
-#
-#     """
-#     def wrapper(*args):
-#         g = f.__globals__  # use f.func_globals for py < 2.6
-#         g['_'] = args[0]._translator
-#         return f(*args)
-#     return wrapper
-
 
 # This class is used to define an object which keeps a cache of all cells from the Excel databook/s that need to be
 # calculated.  This cache used by RPC code that figures out what calculation values to send to the FE to be displayed
@@ -108,7 +87,10 @@ class CalcCellCache(object):
 # TODO (possible): we may want to merge this class with InputData to make another class (DatabookData).
 class DefaultParams(object):
     def __init__(self, default_data, input_data):
-        self.settings = settings.Settings(get_databook_locale(default_data.book))
+        self.locale = get_databook_locale(default_data.book)
+        assert get_databook_locale(default_data.book) == self.locale, 'Default data and input data locales do not match'
+
+        self.settings = settings.Settings(self.locale)
         self.impacted_pop = None
         self.prog_areas = sc.odict()
         self.pop_areas = sc.odict()
@@ -156,12 +138,14 @@ class DefaultParams(object):
         packages = self.define_iycf()
         self.get_iycf_effects(packages)
 
+    @translate
     def extend_treatsam(self):
         treatsam = self.input_data.parse(sheet_name=_("Treatment of SAM"))
-        add_man = treatsam.iloc[0]["Add extension"]
+        add_man = treatsam.iloc[0][_("Add extension")]
         if pandas.notnull(add_man):
             self.man_mam = True
 
+    @translate
     def impact_pop(self):
         sheet = utils.read_sheet(self.spreadsheet, _("Programs impacted population"), [0, 1])
         impacted = sc.odict()
@@ -169,6 +153,7 @@ class DefaultParams(object):
             impacted.update(sheet.loc[pop].to_dict(orient="index"))
         self.impacted_pop = impacted
 
+    @translate
     def prog_risks(self):
         areas = utils.read_sheet(self.spreadsheet, _("Program risk areas"), [0])
         booleanFrame = areas.isnull()
@@ -179,6 +164,7 @@ class DefaultParams(object):
                 if not value:
                     self.prog_areas[risk].append(program)
 
+    @translate
     def pop_risks(self):
         areas = utils.read_sheet(self.spreadsheet, _("Population risk areas"), [0])
         booleanFrame = areas.isnull()
@@ -189,6 +175,7 @@ class DefaultParams(object):
                 if not value:
                     self.pop_areas[risk].append(program)
 
+    @translate
     def relative_risks(self):
         # risk areas hidden in spreadsheet (white text)
         # stunting
@@ -214,6 +201,7 @@ class DefaultParams(object):
         rr = rr_sheet.loc[_("Diarrhoea")].to_dict()
         self.rr_dia = self.make_dict3(rr)
 
+    @translate
     def compute_risks(self, input_data=None):
         """ Turn rr_death into an array"""
         for age in self.settings.child_ages:
@@ -234,6 +222,7 @@ class DefaultParams(object):
                     breast = bf[bfcat].get(cause, 1)
                     self.arr_rr_death[age][i, j] = stunt * wast * anaem * breast
 
+    @translate
     def odds_ratios(self):
         or_sheet = utils.read_sheet(self.spreadsheet, _("Odds ratios"), [0, 1], skiprows=1)
         this_or = or_sheet.loc[_("Condition")].to_dict("index")
@@ -250,8 +239,9 @@ class DefaultParams(object):
         self.or_stunting_prog = or_sheet.loc[_("By program")].to_dict("index")
         self.or_bf_prog = or_sheet.loc[_("Odds ratios for correct breastfeeding by program")].to_dict("index")
         or_sheet = utils.read_sheet(self.spreadsheet, _("Odds ratios"), [0, 1], skiprows=18).dropna(axis=1, how="all")
-        self.or_space_prog = or_sheet.loc["Odds ratios for optimal birth spacing by program"].to_dict("index")
+        self.or_space_prog = or_sheet.loc[_("Odds ratios for optimal birth spacing by program")].to_dict("index")
 
+    @translate
     def get_bo_progs(self):
         progs = utils.read_sheet(self.spreadsheet, _("Programs birth outcomes"), [0, 1], "index")
         newprogs = sc.odict()
@@ -261,11 +251,13 @@ class DefaultParams(object):
             newprogs[program[0]][program[1]] = progs[program]
         self.bo_progs = newprogs
 
+    @translate
     def anaemia_progs(self):
         anaem_sheet = utils.read_sheet(self.spreadsheet, _("Programs anemia"), [0, 1])
         self.rr_anaem_prog = anaem_sheet.loc[_("Relative risks of anaemia when receiving intervention")].to_dict(orient="index")
         self.or_anaem_prog = anaem_sheet.loc[_("Odds ratios of being anaemic when covered by intervention")].to_dict(orient="index")
 
+    @translate
     def wasting_progs(self):
         wastingSheet = utils.read_sheet(self.spreadsheet, _("Programs wasting"), [0, 1])
         treatsam = wastingSheet.loc[_("Odds ratio of SAM when covered by program")].to_dict(orient="index")
@@ -274,21 +266,25 @@ class DefaultParams(object):
         if self.man_mam:
             self.or_wasting_prog[_("MAM")] = {_("Treatment of SAM"): manman["Management of MAM"]}
 
+    @translate
     def get_child_progs(self):
         self.child_progs = utils.read_sheet(self.spreadsheet, _("Programs for children"), [0, 1, 2], to_odict=True)
 
+    @translate
     def get_pw_progs(self):
         self.pw_progs = utils.read_sheet(self.spreadsheet, _("Programs for PW"), [0, 1, 2], to_odict=True)
 
+    @translate
     def get_bo_risks(self):
         bo_sheet = utils.read_sheet(self.spreadsheet, _("Birth outcome risks"), [0, 1], skiprows=[0])
-        ors = bo_sheet.loc["Odds ratios for conditions"].to_dict("index")
+        ors = bo_sheet.loc[_("Odds ratios for conditions")].to_dict("index")
         self.or_cond_bo[_("Stunting")] = ors[_("Stunting (HAZ-score < -2)")]
         self.or_cond_bo[_("MAM")] = ors[_("MAM (WHZ-score between -3 and -2)")]
-        self.or_cond_bo[_("SAM")] = ors["SAM (WHZ-score < -3)"]
-        self.rr_space_bo = bo_sheet.loc["Relative risk by birth spacing"].to_dict("index")
+        self.or_cond_bo[_("SAM")] = ors[_("SAM (WHZ-score < -3)")]
+        self.rr_space_bo = bo_sheet.loc[_("Relative risk by birth spacing")].to_dict("index")
         self.rr_death["Birth outcomes"] = bo_sheet.loc[_("Relative risks of neonatal causes of death")].to_dict()
 
+    @translate
     def get_iycf_effects(self, iycf_packs):
         # TODO: need something that catches if iycf packages not included at all.
         effects = utils.read_sheet(self.spreadsheet, _("IYCF odds ratios"), [0, 1, 2])
@@ -297,6 +293,7 @@ class DefaultParams(object):
         self.or_bf_prog.update(self.create_iycf(bf_effects, iycf_packs))
         self.or_stunting_prog.update(self.create_iycf(stunt_effects, iycf_packs))
 
+    @translate
     def create_iycf(self, effects, packages):
         """ Creates IYCF packages based on user input in 'IYCFpackages' """
         # non-empty cells denote program combination
@@ -316,6 +313,7 @@ class DefaultParams(object):
             newPrograms[key].update(ORs)
         return newPrograms
 
+    @translate
     def define_iycf(self):
         """ Returns a dict with values as a list of two tuples (age, modality)."""
         IYCFpackages = self.input_data.parse(sheet_name=_("IYCF packages"), index_col=[0, 1])
@@ -326,7 +324,7 @@ class DefaultParams(object):
             for mode in package:
                 col = package[mode]
                 if col.notnull()[0]:
-                    if mode == "Mass media":
+                    if mode == _("Mass media"):
                         ageModeTuple = [(pop, mode) for pop in self.settings.child_ages[:-1]]  # exclude 24-59 months
                     else:
                         ageModeTuple = [(packageName[1], mode)]
@@ -413,10 +411,9 @@ class InputData(object):
 
     ## DEMOGRAPHICS ##
 
+    @translate
     def get_demo(self):
         # Load the main spreadsheet into a DataFrame.
-
-        _ = utils.get_translator(self.locale)
 
         baseline = utils.read_sheet(self.spreadsheet, _("Baseline year population inputs"), [0, 1])
 
@@ -455,11 +452,10 @@ class InputData(object):
             self.pw_agedist.append(row[1][_("Data")])
         return None
 
+    @translate
     def get_proj(self):
         # Load the main spreadsheet into a DataFrame.
         # drops rows with any na
-
-        _ = utils.get_translator(self.locale)
 
         proj = utils.read_sheet(self.spreadsheet, _("Demographic projections"), cols=[0], dropna="any")
 
@@ -470,7 +466,7 @@ class InputData(object):
 
         # Recalculate cells that need it, and remember in the calculations cache.
         total_wra = proj.loc[:, [_("WRA: 15-19 years"), _("WRA: 20-29 years"), _("WRA: 30-39 years"), _("WRA: 40-49 years")]].sum(axis=1).values
-        proj.loc[:, "Total WRA"] = total_wra
+        proj.loc[:, _("Total WRA")] = total_wra
         self.calcscache.write_col(_("Demographic projections"), 1, 6, total_wra)
         numbirths = proj.loc[:, _("Number of births")].values
         estpregwomen = (numbirths + numbirths * stillbirth / (1000.0 - stillbirth)) / (1.0 - abortion)
@@ -487,10 +483,9 @@ class InputData(object):
         for age in self.settings.wra_ages:
             self.wra_proj.append(proj[age].tolist())
 
+    @translate
     def get_risk_dist(self):
         # Load the main spreadsheet into a DataFrame.
-
-        _ = utils.get_translator(self.locale)
 
         dist = utils.read_sheet(self.spreadsheet, _(_("Nutritional status distribution")), [0, 1])
 
@@ -515,8 +510,8 @@ class InputData(object):
 
         # dist = dist.drop(dist.index[[1]])
         riskDist = sc.odict()
-        for field in [_("Stunting (height-for-age)"), _("Wasting (weight-for-height)")]:
-            riskDist[field.split(" ", 1)[0]] = dist.loc[field].dropna(axis=1, how="all").to_dict("dict")
+        for key, field in zip([_('Stunting'),_('Wasting')], [_("Stunting (height-for-age)"), _("Wasting (weight-for-height)")]):
+            riskDist[key] = dist.loc[field].dropna(axis=1, how="all").to_dict("dict")
         # fix key refs (surprisingly hard to do in Pandas)
         for outer, ageCat in riskDist.items():
             self.risk_dist[outer] = sc.odict()
@@ -561,8 +556,9 @@ class InputData(object):
 
         self.risk_dist[_("Breastfeeding")] = dist.loc[_("Breastfeeding")].to_dict()
 
+    @translate
     def get_time_trends(self):
-        # Load the main spreadsheet into a DataFrame.
+
         trends = utils.read_sheet(self.spreadsheet, _("Time trends"), cols=[0, 1], dropna=False)
 
         self.time_trends[_("Stunting")] = trends.loc[_("Stunting prevalence (%)")].loc[_("Children 0-59 months")].values.tolist()[:1]
@@ -571,10 +567,8 @@ class InputData(object):
         self.time_trends[_("Breastfeeding")] = trends.loc[_("Prevalence of age-appropriate breastfeeding")].values.tolist()[:2]  # 0-5 months, 6-23 months
         self.time_trends[_("Mortality")] = trends.loc[_("Mortality")].values.tolist()  # under 5, maternal
 
+    @translate
     def get_incidences(self):
-        # Load the main spreadsheet into a DataFrame.
-
-        _ = utils.get_translator(self.locale)
 
         incidences = utils.read_sheet(self.spreadsheet, _("Incidence of conditions"), [0])
 
@@ -584,8 +578,8 @@ class InputData(object):
         incidences.loc[_("Diarrhoea"), :] = diarr_incid
         self.calcscache.write_row(_("Incidence of conditions"), 1, 1, diarr_incid)
         dist = utils.read_sheet(self.spreadsheet, _("Nutritional status distribution"), [0, 1])
-        mam_incid = dist.loc[_("Wasting (weight-for-height)")].loc["MAM   (WHZ-score between -3 and -2)"][0:5].values.astype(np.float) * 2.6
-        sam_incid = dist.loc[_("Wasting (weight-for-height)")].loc["SAM   (WHZ-score < -3)"][0:5].values.astype(np.float) * 2.6
+        mam_incid = dist.loc[_("Wasting (weight-for-height)")].loc[_("MAM   (WHZ-score between -3 and -2)")][0:5].values.astype(np.float) * 2.6
+        sam_incid = dist.loc[_("Wasting (weight-for-height)")].loc[_("SAM   (WHZ-score < -3)")][0:5].values.astype(np.float) * 2.6
         incidences.loc[_("MAM"), :] = mam_incid
         self.calcscache.write_row(_("Incidence of conditions"), 2, 1, mam_incid)
         incidences.loc[_("SAM"), :] = sam_incid
@@ -595,9 +589,8 @@ class InputData(object):
 
     ### MORTALITY ###
 
+    @translate
     def get_death_dist(self):
-
-        _ = utils.get_translator(self.locale)
 
         # Load the main spreadsheet into a DataFrame.
         deathdist = utils.read_sheet(self.spreadsheet, _("Causes of death"), [0, 1], skiprows=1)
@@ -610,27 +603,27 @@ class InputData(object):
         pregwomen_death_pct_sum = deathdist.loc[_("Pregnant women")].iloc[1:-1, 0].values.astype(np.float).sum()
         self.calcscache.write_cell(_("Causes of death"), 34, 2, pregwomen_death_pct_sum)
 
-        neonates = deathdist.loc[_("Neonatal")].iloc[:-1]
+        neonates = deathdist.loc[_("Neonatal")].iloc[:-1].dropna(axis=1)
 
-        # Load the main spreadsheet into a DataFrame, but skip 12 rows.
-        deathdist = utils.read_sheet(self.spreadsheet, _("Causes of death"), [0, 1], skiprows=12)
+        children = utils.read_sheet(self.spreadsheet, _("Causes of death"), [0, 1])
+        children = deathdist.loc[_("Children")]
+        children.columns = children.iloc[0]
+        children = children.iloc[1:-1].dropna(axis=1)
 
-        children = deathdist.loc[_("Children")].iloc[:-1]
+        pw = utils.read_sheet(self.spreadsheet, _("Causes of death"), [0, 1])
+        pw = deathdist.loc[_("Pregnant women")]
+        pw.columns = pw.iloc[0]
+        pw = pw.iloc[1:-1].dropna(axis=1)
+        for grp in self.settings.pw_ages:
+            pw[grp] = pw.iloc[:,0]
+        pw = pw.iloc[:,1:]
 
-        # Load the main spreadsheet into a DataFrame, but skip 24 rows.
-        deathdist = utils.read_sheet(self.spreadsheet, _("Causes of death"), [0, 1], skiprows=24)
+        death_dist = pandas.concat([neonates, children, pw])
+        death_dist.fillna(0, inplace=True)
+        death_dist = death_dist.T.to_dict()
+        death_dist = sc.odict({k:sc.odict(v) for k,v in death_dist.items()})
 
-        pw = deathdist.loc[_("Pregnant women")].iloc[:-1]
-        dist = pandas.concat([neonates[_("<1 month")], children, pw[_("Pregnant women.1")]], axis=1, sort=False).fillna(0)
-        for cause in dist.index:
-            self.death_dist[cause] = sc.odict()
-            for age in self.settings.child_ages + self.settings.pw_ages:
-                if "PW" in age:
-                    # stratify the pregnant women
-                    self.death_dist[cause][age] = dist[_("Pregnant women.1")][cause]
-                else:
-                    self.death_dist[cause][age] = dist[age][cause]
-        # list causes of death
+        self.death_dist = death_dist
         self.causes_death = self.death_dist.keys()
 
 
@@ -683,30 +676,29 @@ class ProgData(object):
         for progname in self.base_prog_set:
             cov = self.base_cov[progname]
             if cov < 0 or cov > 1:
-                errormsg = "Baseline coverage is outside the interval (0, 100) for %s" % progname
+                errormsg = _("Baseline coverage is outside the interval (0, 100) for %s") % progname
                 invalid.append(errormsg)
             sat = self.sat[progname]
             if sat < 0 or sat > 1:
-                errormsg = "Saturation is outside the interval (0, 100) for %s" % progname
+                errormsg = _("Saturation is outside the interval (0, 100) for %s") % progname
                 invalid.append(errormsg)
             cost = self.costs[progname]
             if cost <= 0:
-                errormsg = "Cost is 0 or negative for %s" % progname
+                errormsg = _("Cost is 0 or negative for %s") % progname
                 invalid.append(errormsg)
             if progname not in self.prog_target.keys():
-                errormsg = "Target population not defined for %s" % progname
+                errormsg = _("Target population not defined for %s") % progname
                 invalid.append(errormsg)
             elif sum(self.prog_target[progname].values()) == 0:
-                errormsg = "Target population is 0 for %s" % progname
+                errormsg = _("Target population is 0 for %s") % progname
                 invalid.append(errormsg)
         if invalid:
             errors = "\n\n".join(invalid)
             raise Exception(errors)
 
+    @translate
     def get_prog_target(self):
         # Load the main spreadsheet into a DataFrame.
-
-        _ = utils.get_translator(self.locale)
 
         targetPopSheet = utils.read_sheet(self.spreadsheet, _("Programs target population"), [0, 1])
 
@@ -723,7 +715,7 @@ class ProgData(object):
         frac_maize = baseline.loc[_("Food")].loc[_("Fraction eating maize as main staple food")].values[0]
         diarr_incid = baseline.loc[_("Diarrhoea incidence")][_("Data")].values
         if len(baseline.loc[_("Other risks")].values) < 4:
-            print("Warning, the databook being read is out of date and does not include baseline prevalences of eclampsia and pre-eclampsia so global averages will be used.")
+            print(_("Warning, the databook being read is out of date and does not include baseline prevalences of eclampsia and pre-eclampsia so global averages will be used."))
             preeclampsia_prev = self.settings.global_eclampsia_prevalence["Pre-eclampsia"]
             eclampsia_prev = self.settings.global_eclampsia_prevalence["Eclampsia"]
         else:
@@ -739,7 +731,7 @@ class ProgData(object):
         targetPopSheet.loc[_("Children"), _("Lipid-based nutrition supplements")].iloc[2:4] = lipid_row
         self.calcscache.write_row(_("Programs target population"), 4, 4, lipid_row)
         oral_rehyd_row = diarr_incid
-        targetPopSheet.loc[_("Children"), "Oral rehydration salts"].iloc[0:5] = oral_rehyd_row
+        targetPopSheet.loc[_("Children"), _("Oral rehydration salts")].iloc[0:5] = oral_rehyd_row
         self.calcscache.write_row(_("Programs target population"), 6, 2, oral_rehyd_row)
         pub_prov_row = food_insecure * np.ones(2)
         targetPopSheet.loc[_("Children"), _("Public provision of complementary foods")].iloc[2:4] = pub_prov_row
@@ -808,10 +800,12 @@ class ProgData(object):
             targetPop.update(targetPopSheet.loc[pop].to_dict(orient="index"))
         self.prog_target = targetPop
 
+    @translate
     def get_ref_progs(self):
         reference = self.spreadsheet.parse(sheet_name=_("Reference programs"), index_col=[0])
         self.ref_progs = list(reference.index)
 
+    @translate
     def get_prog_deps(self):
         deps = utils.read_sheet(self.spreadsheet, _("Program dependencies"), [0])
         programDep = sc.odict()
@@ -830,6 +824,7 @@ class ProgData(object):
                 programDep[program][field] = []
         self.prog_deps = programDep
 
+    @translate
     def get_famplan_methods(self):
         # Load the main spreadsheet into a DataFrame.
         famplan_methods = utils.read_sheet(self.spreadsheet, _("Programs family planning"), [0])
@@ -843,6 +838,7 @@ class ProgData(object):
 
         self.famplan_methods = famplan_methods.to_dict("index")
 
+    @translate
     def get_prog_info(self):
         # Load the main spreadsheet into a DataFrame.
         sheet = utils.read_sheet(self.spreadsheet, _("Programs cost and coverage"))
@@ -851,8 +847,20 @@ class ProgData(object):
         self.base_cov = sc.odict(zip(self.base_prog_set, sheet.iloc[:, 1].tolist()))
         self.sat = sc.odict(zip(self.base_prog_set, sheet.iloc[:, 2].tolist()))
         self.costs = sc.odict(zip(self.base_prog_set, sheet.iloc[:, 3].tolist()))
-        costtypes = utils.format_costtypes(sheet.iloc[:, 4].tolist())
+        costtypes = self._format_costtypes(sheet.iloc[:, 4].tolist())
         self.costtype = sc.odict(zip(self.base_prog_set, costtypes))
+
+    @translate
+    def _format_costtypes(self, oldlabs):
+        maps = {_("Linear (constant marginal cost) [default]"): "linear",
+                _("Curved with increasing marginal cost"): "increasing",
+                _("Curved with decreasing marginal cost"): "decreasing",
+                _("S-shaped (decreasing then increasing marginal cost)"): "s-shaped",
+                }
+        newlabs = []
+        for lab in oldlabs:
+            newlabs.append(maps[lab])
+        return newlabs
 
     def create_iycf(self):
         packages = self.define_iycf()
@@ -863,6 +871,7 @@ class ProgData(object):
         target = self.get_iycf_target(packages)
         self.prog_target.update(target)
 
+    @translate
     def define_iycf(self):
         """ Returns a dict with values as a list of two tuples (age, modality)."""
         IYCFpackages = self.spreadsheet.parse(sheet_name=_("IYCF packages"), index_col=[0, 1])
@@ -880,6 +889,7 @@ class ProgData(object):
                     packagesDict[packageName[0]] += ageModeTuple
         return packagesDict
 
+    @translate
     def recalc_treatsam_prog_costs(self):
         nutrition_status = utils.read_sheet(self.spreadsheet, _("Nutritional status distribution"), [0, 1])
         sam_prev = []
@@ -889,12 +899,11 @@ class ProgData(object):
         self.costs[_("Treatment of SAM")] *= av_sam_prev * 2.6  # estimated ratio of incidence/prevalence
         return
 
+    @translate
     def get_iycf_target(self, package_modes):
         """Creates the frac of pop targeted by each IYCF package.
         Note that frac in community and mass media assumed to be 1.
         Note also this fraction can exceed 1, and is adjusted for the target pop calculations of the Programs class"""
-
-        _ = utils.get_translator(self.locale)
 
         pop_data = self.spreadsheet.parse(_("Baseline year population inputs"), index_col=[0, 1]).loc[_("Population data")][_("Data")]
         frac_pw = float(pop_data.loc[_("Percentage of pregnant women attending health facility")])
@@ -961,13 +970,12 @@ class Dataset(object):
         output = sc.prepr(self)
         return output
 
+    @translate
     def load(self, project=None):
-
-        _ = utils.get_translator(self.locale)
 
         # Handle inputs
         if project is None:
-            raise Exception("Sorry, but you must supply a project for load().")
+            raise Exception(_("Sorry, but you must supply a project for load()."))
 
         # Pull the sheets from the project
         if self.name in project.spreadsheets.keys():

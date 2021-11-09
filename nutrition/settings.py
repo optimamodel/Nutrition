@@ -12,6 +12,8 @@ class Settings(object):
 
     def __init__(self, locale):
 
+        self.locale = locale # Store the locale for this settings instance
+
         _ = get_translator(locale)
 
         self.t = [2017, 2030]

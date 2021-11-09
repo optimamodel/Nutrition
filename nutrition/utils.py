@@ -23,17 +23,49 @@ def get_translator(this_locale=None):
     return translator.gettext
 
 
+def translate(f):
+    """
+    Decorator to inject _ function
+
+    For Babel's extract messages function to work, it requires the translation function
+    to be defined as `_` (which is also the convention for translation functions). For
+    classes that define a `self.locale` attribute, methods can be decorated with
+    this @translate wrapper to inject the translation function, instead of having
+    `_ = utils.get_translator(self.locale)` at the top of the method.
+
+    If the first argument does not have a locale attribute or if has not been set,
+    translation will be carried out using the default locale
+
+    Example usage:
+
+        class Foo():
+            def __init__(self, locale):
+                self.locale = locale
+
+            @translate
+            def bar(self):
+                print(_("string"))
+
+    Notice that the @translate decorator on the `Foo.bar()` method means that `_` can be
+    used inside the method, with the locale drawn from `self.locale`
+
+    """
+    def wrapper(*args, **kwargs):
+        g = f.__globals__  # use f.func_globals for py < 2.6
+
+        if hasattr(args[0],'locale') and args[0].locale is not None:
+            g['_'] = get_translator(args[0].locale)
+        else:
+            g['_'] = get_translator()
+        return f(*args, **kwargs)
+    return wrapper
+
+
+
+
 # ##############################################################################
 # ### HELPER FUNCTIONS
 # ##############################################################################
-#
-def format_costtypes(oldlabs):
-    maps = {"Linear (constant marginal cost) [default]": "linear", "Curved with increasing marginal cost": "increasing", "Curved with decreasing marginal cost": "decreasing", "S-shaped (decreasing then increasing marginal cost)": "s-shaped"}
-    newlabs = []
-    for lab in oldlabs:
-        newlabs.append(maps[lab])
-    return newlabs
-
 
 def default_trackers(prev=None, rate=None):
     """
@@ -330,10 +362,13 @@ def solve_quad(oddsRatio, fracA, fracB):
     return p0, p1
 
 
-def restratify(frac_yes):
+def restratify(frac_yes, locale):
     # Going from binary stunting/wasting to four fractions
     # Yes refers to more than 2 standard deviations below the global mean/median
     # in our notes, frac_yes = alpha
+
+    _ = get_translator(locale)
+
     if frac_yes > 1:
         frac_yes = 1
     invCDFalpha = scipy.special.ndtri(frac_yes)
@@ -341,7 +376,7 @@ def restratify(frac_yes):
     frac_mod = frac_yes - scipy.special.ndtr(invCDFalpha - 1.0)
     frac_mild = scipy.special.ndtr(invCDFalpha + 1.0) - frac_yes
     frac_norm = 1.0 - scipy.special.ndtr(invCDFalpha + 1.0)
-    restrat = {"Normal": frac_norm, "Mild": frac_mild, "Moderate": frac_mod, "High": frac_high}
+    restrat = {_("Normal"): frac_norm, _("Mild"): frac_mild, _("Moderate"): frac_mod, _("High"): frac_high}
     return restrat
 
 

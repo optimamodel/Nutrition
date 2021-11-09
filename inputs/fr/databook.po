@@ -768,7 +768,7 @@ msgid "Moderate"
 msgstr "Modéré"
 
 msgid "High"
-msgstr "Elevé"
+msgstr "Élevé"
 
 msgid "WHZ status"
 msgstr "Niveau WHZ"

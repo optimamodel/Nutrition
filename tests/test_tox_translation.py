@@ -12,7 +12,7 @@ def test_translation_workflow():
     P = nu.Project("eg")
 
     # Check that loading a databook sets the project locale
-    P.load_data(inputspath=inputdir / "en" / "demo_demo_input.xlsx")
+    P.load_data(inputspath=inputdir / "fr" / "demo_demo_input.xlsx")
     assert P.locale == "fr"
 
     # Once data is loaded, check that further data must have the same locale

@@ -1,7 +1,7 @@
 import numpy as np
 import sciris as sc
 from . import settings
-from .utils import default_trackers, restratify
+from .utils import default_trackers, restratify, translate
 
 
 class Model(sc.prettyobj):
@@ -22,6 +22,10 @@ class Model(sc.prettyobj):
 
         self.adjust_cov = adjust_cov
         self.timeTrends = timeTrends
+
+    @property
+    def locale(self):
+        return self.ss.locale
 
     def setup(self, scen, setcovs=True, restrictcovs=True):
         """Sets scenario-specific parameters within the model.
