@@ -25,7 +25,8 @@ class Geospatial:
         self.name = name
         self.modelnames = modelnames
         self.regions = None
-        self.weights = utils.process_weights(weights)
+        proc_weights = utils.process_weights(weights)
+        self.weights = np.transpose(proc_weights)
         if mults is not None:
             print("Warning: changing budget multiples, not recommended")
             self.mults = mults
@@ -148,7 +149,7 @@ class Geospatial:
             output = np.zeros(len(results))
             for i, res in enumerate(results):
                 outs = res.model.get_output()
-                val = np.inner(outs, self.weights)
+                val = Optim.objfun_val(outs, self.weights)
                 spending[i] = totalfunds * res.mult
                 output[i] = val
             self.bocs[name] = pchip(spending, output, extrapolate=False)
@@ -291,7 +292,7 @@ def make_default_geo(basename='Geospatial optimization'):
 
     kwargs1 = {'name': basename,
                'modelnames': [None],
-               'weights': 'thrive',
+               'weights': sc.odict({'thrive': [1,0,0]}),
                'fix_curr': False,
                'fix_regionalspend': False,
                'add_funds': 0,

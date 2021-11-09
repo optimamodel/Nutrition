@@ -1,5 +1,6 @@
 import nutrition.ui as nu
 from nutrition.geospatial import Geospatial
+import sciris as sc
 
 # load in data to create model
 p = nu.Project('Demo')
@@ -11,7 +12,8 @@ p.load_data('demo', 'region3', name='Demo3')
 
 kwargs = {'name': 'test1',
           'modelnames': ['Demo1', 'Demo2', 'Demo3'],
-          'weights': 'thrive',
+          'weights': sc.odict({'Minimize the number of child deaths': [1., 0., 0.],
+                                   }),
           'fix_curr': False,
           'fix_regionalspend': False,
           'add_funds': 5e6,
