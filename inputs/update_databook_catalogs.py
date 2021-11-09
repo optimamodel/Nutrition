@@ -1,3 +1,8 @@
+# Synchronize the po files with translations.txt
+#
+# If any new translations are required, add the English string to translations.txt
+# then run this file, and add the translation to databook.po for relevant locales
+
 import polib
 import pathlib
 
@@ -9,7 +14,7 @@ rootdir = pathlib.Path(__file__).parent
 with open(rootdir / 'translations.txt') as f:
     pot = polib.POFile()
     for s in f:
-        entry = polib.POEntry(msgid = s.strip(), msgctxt= 'databook')
+        entry = polib.POEntry(msgid = s.strip())
         pot.append(entry)
     pot.save(rootdir / f'databook.pot')
 

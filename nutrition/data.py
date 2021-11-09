@@ -535,7 +535,7 @@ class InputData(object):
         # Recalculate cells that need it, and remember in the calculations cache.
         all_anaem = dist.loc[_("Anaemia"), _("Prevalence of anaemia")].to_dict()
         baseline = utils.read_sheet(self.spreadsheet, _("Baseline year population inputs"))
-        index = np.array(baseline["Field"]).tolist().index("Percentage of anaemia that is iron deficient")
+        index = np.array(baseline["Field"]).tolist().index(_("Percentage of anaemia that is iron deficient"))
         iron_pct = np.array(baseline[_("Data")])[index]
         anaem = dist.loc[_("Anaemia"), _("Prevalence of anaemia")] * iron_pct
         self.calcscache.write_row(_("Nutritional status distribution"), 14, 2, anaem.values)
@@ -596,6 +596,9 @@ class InputData(object):
     ### MORTALITY ###
 
     def get_death_dist(self):
+
+        _ = utils.get_translator(self.locale)
+
         # Load the main spreadsheet into a DataFrame.
         deathdist = utils.read_sheet(self.spreadsheet, _("Causes of death"), [0, 1], skiprows=1)
 

@@ -2,1154 +2,868 @@
 msgid ""
 msgstr ""
 
-msgctxt "databook"
 msgid "Baseline year population inputs"
 msgstr ""
 
-msgctxt "databook"
 msgid "Baseline year data"
 msgstr ""
 
-msgctxt "databook"
 msgid "Projection years"
 msgstr ""
 
-msgctxt "databook"
 msgid "Baseline year (projection start year)"
 msgstr ""
 
-msgctxt "databook"
 msgid "End year"
 msgstr ""
 
-msgctxt "databook"
 msgid "Population data"
 msgstr ""
 
-msgctxt "databook"
 msgid "Children under 5 population"
 msgstr ""
 
-msgctxt "databook"
 msgid "Percentage of population food insecure (default poor)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Percentage of population at risk of malaria"
 msgstr ""
 
-msgctxt "databook"
 msgid "School attendance (percentage of 15-19 year women)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Percentage of pregnant women attending health facility"
 msgstr ""
 
-msgctxt "databook"
 msgid "Percentage of children attending health facility"
 msgstr ""
 
-msgctxt "databook"
 msgid "Unmet need for family planning"
 msgstr ""
 
-msgctxt "databook"
 msgid "Food"
 msgstr ""
 
-msgctxt "databook"
 msgid "Fraction of subsistence farming"
 msgstr ""
 
-msgctxt "databook"
 msgid "Fraction eating rice as main staple food"
 msgstr ""
 
-msgctxt "databook"
 msgid "Fraction eating wheat as main staple food"
 msgstr ""
 
-msgctxt "databook"
 msgid "Fraction eating maize as main staple food"
 msgstr ""
 
-msgctxt "databook"
 msgid "Fraction on other staples as main staple food"
 msgstr ""
 
-msgctxt "databook"
 msgid "Age distribution of pregnant women"
 msgstr ""
 
-msgctxt "databook"
 msgid "Percentage of pregnant women 15-19 years"
 msgstr ""
 
-msgctxt "databook"
 msgid "Percentage of pregnant women 20-29 years"
 msgstr ""
 
-msgctxt "databook"
 msgid "Percentage of pregnant women 30-39 years"
 msgstr ""
 
-msgctxt "databook"
 msgid "Percentage of pregnant women 40-49 years"
 msgstr ""
 
-msgctxt "databook"
 msgid "Birth spacing"
 msgstr ""
 
-msgctxt "databook"
 msgid "First birth"
 msgstr ""
 
-msgctxt "databook"
 msgid "less than 18 months"
 msgstr ""
 
-msgctxt "databook"
 msgid "18-23 months"
 msgstr ""
 
-msgctxt "databook"
 msgid "24 months or greater"
 msgstr ""
 
-msgctxt "databook"
 msgid "Total (must be 100%)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Baseline year mortality and risk factors"
 msgstr ""
 
-msgctxt "databook"
 msgid "Mortality"
 msgstr ""
 
-msgctxt "databook"
 msgid "Neonatal mortality (per 1,000 live births)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Infant mortality (per 1,000 live births)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Under 5 mortality (per 1,000 live births)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Maternal mortality (per 1,000 live births)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Fraction of pregnancies ending in spontaneous abortion"
 msgstr ""
 
-msgctxt "databook"
 msgid "Stillbirths (per 1,000 total births)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Birth outcome distribution"
 msgstr ""
 
-msgctxt "databook"
 msgid "Pre-term SGA"
 msgstr ""
 
-msgctxt "databook"
 msgid "Pre-term AGA"
 msgstr ""
 
-msgctxt "databook"
 msgid "Term SGA"
 msgstr ""
 
-msgctxt "databook"
 msgid "Term AGA"
 msgstr ""
 
-msgctxt "databook"
 msgid "Diarrhoea incidence"
 msgstr ""
 
-msgctxt "databook"
 msgid "Average episodes per year: <1 month"
 msgstr ""
 
-msgctxt "databook"
 msgid "Average episodes per year: 1-5 months"
 msgstr ""
 
-msgctxt "databook"
 msgid "Average episodes per year: 6-11 months"
 msgstr ""
 
-msgctxt "databook"
 msgid "Average episodes per year: 12-23 months"
 msgstr ""
 
-msgctxt "databook"
 msgid "Average episodes per year: 24-59 months"
 msgstr ""
 
-msgctxt "databook"
 msgid "Other risks"
 msgstr ""
 
-msgctxt "databook"
 msgid "Percentage of diarrhea that is severe"
 msgstr ""
 
-msgctxt "databook"
 msgid "Percentage of anaemia that is iron deficient"
 msgstr ""
 
-msgctxt "databook"
 msgid "Prevalence of pre-eclampsia"
 msgstr ""
 
-msgctxt "databook"
 msgid "Prevalence of eclampsia"
 msgstr ""
 
-msgctxt "databook"
 msgid "Demographic projections"
 msgstr ""
 
-msgctxt "databook"
 msgid "Year"
 msgstr ""
 
-msgctxt "databook"
 msgid "Number of births"
 msgstr ""
 
-msgctxt "databook"
 msgid "WRA: 15-19 years"
 msgstr ""
 
-msgctxt "databook"
 msgid "WRA: 20-29 years"
 msgstr ""
 
-msgctxt "databook"
 msgid "WRA: 30-39 years"
 msgstr ""
 
-msgctxt "databook"
 msgid "WRA: 40-49 years"
 msgstr ""
 
-msgctxt "databook"
 msgid "Total WRA"
 msgstr ""
 
-msgctxt "databook"
 msgid "Estimated pregnant women"
 msgstr ""
 
-msgctxt "databook"
 msgid "Non-pregnant WRA"
 msgstr ""
 
-msgctxt "databook"
 msgid "Causes of death"
 msgstr ""
 
-msgctxt "databook"
 msgid "Percentage of deaths in baseline year (2017) attributable to cause"
 msgstr ""
 
-msgctxt "databook"
 msgid "Neonatal"
 msgstr ""
 
-msgctxt "databook"
 msgid "Neonatal diarrhoea"
 msgstr ""
 
-msgctxt "databook"
 msgid "Neonatal sepsis"
 msgstr ""
 
-msgctxt "databook"
 msgid "Neonatal pneumonia"
 msgstr ""
 
-msgctxt "databook"
 msgid "Neonatal asphyxia"
 msgstr ""
 
-msgctxt "databook"
 msgid "Neonatal prematurity"
 msgstr ""
 
-msgctxt "databook"
 msgid "Neonatal tetanus"
 msgstr ""
 
-msgctxt "databook"
 msgid "Neonatal congenital anomalies"
 msgstr ""
 
-msgctxt "databook"
 msgid "Neonatal other"
 msgstr ""
 
-msgctxt "databook"
 msgid "Children"
 msgstr ""
 
-msgctxt "databook"
 msgid "Causes"
 msgstr ""
 
-msgctxt "databook"
 msgid "Diarrhoea"
 msgstr ""
 
-msgctxt "databook"
 msgid "Pneumonia"
 msgstr ""
 
-msgctxt "databook"
 msgid "Meningitis"
 msgstr ""
 
-msgctxt "databook"
 msgid "Measles"
 msgstr ""
 
-msgctxt "databook"
 msgid "Malaria"
 msgstr ""
 
-msgctxt "databook"
 msgid "Pertussis"
 msgstr ""
 
-msgctxt "databook"
 msgid "AIDS"
 msgstr ""
 
-msgctxt "databook"
 msgid "Injury"
 msgstr ""
 
-msgctxt "databook"
 msgid "Other"
 msgstr ""
 
-msgctxt "databook"
 msgid "1-5 months"
 msgstr ""
 
-msgctxt "databook"
 msgid "6-11 months"
 msgstr ""
 
-msgctxt "databook"
 msgid "12-23 months"
 msgstr ""
 
-msgctxt "databook"
 msgid "24-59 months"
 msgstr ""
 
-msgctxt "databook"
 msgid "Pregnant women"
 msgstr ""
 
-msgctxt "databook"
 msgid "Antepartum haemorrhage"
 msgstr ""
 
-msgctxt "databook"
 msgid "Intrapartum haemorrhage"
 msgstr ""
 
-msgctxt "databook"
 msgid "Postpartum haemorrhage"
 msgstr ""
 
-msgctxt "databook"
 msgid "Hypertensive disorders"
 msgstr ""
 
-msgctxt "databook"
 msgid "Sepsis"
 msgstr ""
 
-msgctxt "databook"
 msgid "Abortion"
 msgstr ""
 
-msgctxt "databook"
 msgid "Embolism"
 msgstr ""
 
-msgctxt "databook"
 msgid "Other direct causes"
 msgstr ""
 
-msgctxt "databook"
 msgid "Indirect causes"
 msgstr ""
 
-msgctxt "databook"
 msgid "Nutritional status distribution"
 msgstr ""
 
-msgctxt "databook"
 msgid "Percentage of population in each category in baseline year (2017)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Status"
 msgstr ""
 
-msgctxt "databook"
 msgid "<1 month"
 msgstr ""
 
-msgctxt "databook"
 msgid "Stunting (height-for-age)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Normal (HAZ-score > -1)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Mild (HAZ-score between -2 and -1)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Moderate (HAZ-score between -3 and -2)"
 msgstr ""
 
-msgctxt "databook"
 msgid "High (HAZ-score between < -3)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Wasting (weight-for-height)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Normal  (WHZ-score > -1)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Mild  (WHZ-score between -2 and -1)"
 msgstr ""
 
-msgctxt "databook"
 msgid "MAM   (WHZ-score between -3 and -2)"
 msgstr ""
 
-msgctxt "databook"
 msgid "SAM   (WHZ-score < -3)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Anaemia"
 msgstr ""
 
-msgctxt "databook"
 msgid "PW: 15-19 years"
 msgstr ""
 
-msgctxt "databook"
 msgid "PW: 20-29 years"
 msgstr ""
 
-msgctxt "databook"
 msgid "PW: 30-39 years"
 msgstr ""
 
-msgctxt "databook"
 msgid "PW: 40-49 years"
 msgstr ""
 
-msgctxt "databook"
 msgid "Prevalence of anaemia"
 msgstr ""
 
-msgctxt "databook"
 msgid "Prevalence of iron deficiency anaemia"
 msgstr ""
 
-msgctxt "databook"
 msgid "Breastfeeding distribution"
 msgstr ""
 
-msgctxt "databook"
 msgid "Percentage of children in each category in baseline year (2019)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Breastfeeding"
 msgstr ""
 
-msgctxt "databook"
 msgid "Exclusive"
 msgstr ""
 
-msgctxt "databook"
 msgid "Predominant"
 msgstr ""
 
-msgctxt "databook"
 msgid "Partial"
 msgstr ""
 
-msgctxt "databook"
 msgid "None"
 msgstr ""
 
-msgctxt "databook"
 msgid "Time trends"
 msgstr ""
 
-msgctxt "databook"
 msgid "Risk"
 msgstr ""
 
-msgctxt "databook"
 msgid "Population"
 msgstr ""
 
-msgctxt "databook"
 msgid "Stunting prevalence (%)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Wasting prevalence (%)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Anaemia prevalence (%)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Women of reproductive age"
 msgstr ""
 
-msgctxt "databook"
 msgid "Prevalence of age-appropriate breastfeeding"
 msgstr ""
 
-msgctxt "databook"
 msgid "Children 0-5 months"
 msgstr ""
 
-msgctxt "databook"
 msgid "Children 6-23 months"
 msgstr ""
 
-msgctxt "databook"
 msgid "Under five (deaths per 1,000 births)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Maternal (deaths per 1,000 births)"
 msgstr ""
 
-msgctxt "databook"
 msgid "IYCF packages"
 msgstr ""
 
-msgctxt "databook"
 msgid "IYCF package"
 msgstr ""
 
-msgctxt "databook"
 msgid "Target population"
 msgstr ""
 
-msgctxt "databook"
 msgid "Health facility"
 msgstr ""
 
-msgctxt "databook"
 msgid "Community"
 msgstr ""
 
-msgctxt "databook"
 msgid "Mass media"
 msgstr ""
 
-msgctxt "databook"
 msgid "All"
 msgstr ""
 
-msgctxt "databook"
 msgid "Programs cost and coverage"
 msgstr ""
 
-msgctxt "databook"
 msgid "Program"
 msgstr ""
 
-msgctxt "databook"
 msgid "Baseline (2019) coverage"
 msgstr ""
 
-msgctxt "databook"
 msgid "Saturation coverage of target population"
 msgstr ""
 
-msgctxt "databook"
 msgid "Unit cost (US$ per person per year)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Cost-coverage relationship"
 msgstr ""
 
-msgctxt "databook"
 msgid "Balanced energy-protein supplementation"
 msgstr ""
 
-msgctxt "databook"
 msgid "Calcium supplementation"
 msgstr ""
 
-msgctxt "databook"
 msgid "Cash transfers"
 msgstr ""
 
-msgctxt "databook"
 msgid "Delayed cord clamping"
 msgstr ""
 
-msgctxt "databook"
 msgid "Family planning"
 msgstr ""
 
-msgctxt "databook"
 msgid "IFA fortification of maize"
 msgstr ""
 
-msgctxt "databook"
 msgid "IFA fortification of rice"
 msgstr ""
 
-msgctxt "databook"
 msgid "IFA fortification of wheat flour"
 msgstr ""
 
-msgctxt "databook"
 msgid "IFAS (community)"
 msgstr ""
 
-msgctxt "databook"
 msgid "IFAS (health facility)"
 msgstr ""
 
-msgctxt "databook"
 msgid "IFAS (retailer)"
 msgstr ""
 
-msgctxt "databook"
 msgid "IFAS (school)"
 msgstr ""
 
-msgctxt "databook"
 msgid "IFAS for pregnant women (community)"
 msgstr ""
 
-msgctxt "databook"
 msgid "IFAS for pregnant women (health facility)"
 msgstr ""
 
-msgctxt "databook"
 msgid "IPTp"
 msgstr ""
 
-msgctxt "databook"
 msgid "Iron and iodine fortification of salt"
 msgstr ""
 
-msgctxt "databook"
 msgid "IYCF 1"
 msgstr ""
 
-msgctxt "databook"
 msgid "IYCF 2"
 msgstr ""
 
-msgctxt "databook"
 msgid "IYCF 3"
 msgstr ""
 
-msgctxt "databook"
 msgid "Kangaroo mother care"
 msgstr ""
 
-msgctxt "databook"
 msgid "Lipid-based nutrition supplements"
 msgstr ""
 
-msgctxt "databook"
 msgid "Long-lasting insecticide-treated bednets"
 msgstr ""
 
-msgctxt "databook"
 msgid "Mg for eclampsia"
 msgstr ""
 
-msgctxt "databook"
 msgid "Mg for pre-eclampsia"
 msgstr ""
 
-msgctxt "databook"
 msgid "Micronutrient powders"
 msgstr ""
 
-msgctxt "databook"
 msgid "Multiple micronutrient supplementation"
 msgstr ""
 
-msgctxt "databook"
 msgid "Oral rehydration salts"
 msgstr ""
 
-msgctxt "databook"
 msgid "Public provision of complementary foods"
 msgstr ""
 
-msgctxt "databook"
 msgid "Treatment of SAM"
 msgstr ""
 
-msgctxt "databook"
 msgid "Vitamin A supplementation"
 msgstr ""
 
-msgctxt "databook"
 msgid "WASH: Handwashing"
 msgstr ""
 
-msgctxt "databook"
 msgid "WASH: Hygenic disposal"
 msgstr ""
 
-msgctxt "databook"
 msgid "WASH: Improved sanitation"
 msgstr ""
 
-msgctxt "databook"
 msgid "WASH: Improved water source"
 msgstr ""
 
-msgctxt "databook"
 msgid "WASH: Piped water"
 msgstr ""
 
-msgctxt "databook"
 msgid "Zinc for treatment + ORS"
 msgstr ""
 
-msgctxt "databook"
 msgid "Zinc supplementation"
 msgstr ""
 
-msgctxt "databook"
 msgid "Linear (constant marginal cost) [default]"
 msgstr ""
 
-msgctxt "databook"
 msgid "Curved with increasing marginal cost"
 msgstr ""
 
-msgctxt "databook"
 msgid "Curved with decreasing marginal cost"
 msgstr ""
 
-msgctxt "databook"
 msgid "S-shaped (decreasing then increasing marginal cost)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Program dependencies"
 msgstr ""
 
-msgctxt "databook"
 msgid "Exclusion dependency"
 msgstr ""
 
-msgctxt "databook"
 msgid "Threshold dependency"
 msgstr ""
 
-msgctxt "databook"
 msgid "Reference programs"
 msgstr ""
 
-msgctxt "databook"
 msgid "Default"
 msgstr ""
 
-msgctxt "databook"
 msgid "Extension"
 msgstr ""
 
-msgctxt "databook"
 msgid "Add extension"
 msgstr ""
 
-msgctxt "databook"
 msgid "Delivery mode"
 msgstr ""
 
-msgctxt "databook"
 msgid "Programs target population"
 msgstr ""
 
-msgctxt "databook"
 msgid "Children 0-59 months"
 msgstr ""
 
-msgctxt "databook"
 msgid "Community based"
 msgstr ""
 
-msgctxt "databook"
 msgid "Management of MAM"
 msgstr ""
 
-msgctxt "databook"
 msgid "General population"
 msgstr ""
 
-msgctxt "databook"
 msgid "Unit cost (US$)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Broad population group"
 msgstr ""
 
-msgctxt "databook"
 msgid "Baseline (2017) coverage"
 msgstr ""
 
-msgctxt "databook"
 msgid "Community-based"
 msgstr ""
 
-msgctxt "databook"
 msgid "Programs impacted population"
 msgstr ""
 
-msgctxt "databook"
 msgid "Program risk areas"
 msgstr ""
 
-msgctxt "databook"
 msgid "Population risk areas"
 msgstr ""
 
-msgctxt "databook"
 msgid "IYCF odds ratios"
 msgstr ""
 
-msgctxt "databook"
 msgid "Birth outcome risks"
 msgstr ""
 
-msgctxt "databook"
 msgid "Relative risks"
 msgstr ""
 
-msgctxt "databook"
 msgid "Odds ratios"
 msgstr ""
 
-msgctxt "databook"
 msgid "Programs birth outcomes"
 msgstr ""
 
-msgctxt "databook"
 msgid "Programs anaemia"
 msgstr ""
 
-msgctxt "databook"
 msgid "Programs wasting"
 msgstr ""
 
-msgctxt "databook"
 msgid "Programs for children"
 msgstr ""
 
-msgctxt "databook"
 msgid "Programs for PW"
 msgstr ""
 
-msgctxt "databook"
 msgid "Stunting"
 msgstr ""
 
-msgctxt "databook"
 msgid "Wasting prevention"
 msgstr ""
 
-msgctxt "databook"
 msgid "Wasting treatment"
 msgstr ""
 
-msgctxt "databook"
 msgid "Birth outcomes"
 msgstr ""
 
-msgctxt "databook"
 msgid "Birth number"
 msgstr ""
 
-msgctxt "databook"
 msgid "Age group"
 msgstr ""
 
-msgctxt "databook"
 msgid "Behaviour"
 msgstr ""
 
-msgctxt "databook"
 msgid "Odds ratio for correct breastfeeding"
 msgstr ""
 
-msgctxt "databook"
 msgid "Odds ratio for stunting"
 msgstr ""
 
-msgctxt "databook"
 msgid "Odds ratio for correct complementary feeding"
 msgstr ""
 
-msgctxt "databook"
 msgid "Maternal risk factors leading to birth outcomes"
 msgstr ""
 
-msgctxt "databook"
 msgid "Relative risk by birth spacing"
 msgstr ""
 
-msgctxt "databook"
 msgid "Odds ratio for women with maternal anaemia"
 msgstr ""
 
-msgctxt "databook"
 msgid "Risks for children who experience birth outcomes"
 msgstr ""
 
-msgctxt "databook"
 msgid "Odds ratios for conditions"
 msgstr ""
 
-msgctxt "databook"
 msgid "Stunting (HAZ-score < -2)"
 msgstr ""
 
-msgctxt "databook"
 msgid "MAM (WHZ-score between -3 and -2)"
 msgstr ""
 
-msgctxt "databook"
 msgid "SAM (WHZ-score < -3)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Relative risks of neonatal causes of death"
 msgstr ""
 
-msgctxt "databook"
 msgid ""
 "Relative risk of causes of death by height-for-age (stunting) distribution"
 msgstr ""
 
-msgctxt "databook"
 msgid "Cause of death"
 msgstr ""
 
-msgctxt "databook"
 msgid "HAZ status"
 msgstr ""
 
-msgctxt "databook"
 msgid "Normal"
 msgstr ""
 
-msgctxt "databook"
 msgid "Mild"
 msgstr ""
 
-msgctxt "databook"
 msgid "Moderate"
 msgstr ""
 
-msgctxt "databook"
 msgid "High"
 msgstr ""
 
-msgctxt "databook"
 msgid ""
 "Relative risk of causes of death by weight-for-height (wasting) distribution"
 msgstr ""
 
-msgctxt "databook"
 msgid "WHZ status"
 msgstr ""
 
-msgctxt "databook"
 msgid "Relative risk of causes of death by anaemia status"
 msgstr ""
 
-msgctxt "databook"
 msgid "Anaemia status"
 msgstr ""
 
-msgctxt "databook"
 msgid "Not anaemic"
 msgstr ""
 
-msgctxt "databook"
 msgid "Anaemic"
 msgstr ""
 
-msgctxt "databook"
 msgid "Relative risk of causes of death by breastfeeding status"
 msgstr ""
 
-msgctxt "databook"
 msgid "Breastfeeding status"
 msgstr ""
 
-msgctxt "databook"
 msgid "Relative risks of experiencing diarrhoea by breastfeeding status"
 msgstr ""
 
-msgctxt "databook"
 msgid "Given previous stunting (HAZ < -2 in previous age band)"
 msgstr ""
 
-msgctxt "databook"
 msgid "Diarrhoea (per additional episode)"
 msgstr ""
 
-msgctxt "databook"
 msgid "By program"
 msgstr ""
 
-msgctxt "databook"
 msgid "Odds ratio for correct breastfeeding by program"
 msgstr ""
 
-msgctxt "databook"
 msgid "Other odds ratios"
 msgstr ""
 
-msgctxt "databook"
 msgid "For SAM per additional episode of diarrhoea"
 msgstr ""
 
-msgctxt "databook"
 msgid "For MAM per additional episode of diarrhoea"
 msgstr ""
 
-msgctxt "databook"
 msgid "For anaemia per additional episode of severe diarrhoea"
 msgstr ""
 
-msgctxt "databook"
 msgid "Odds ratios for optimal birth spacing by program"
 msgstr ""
 
-msgctxt "databook"
 msgid "effectiveness"
 msgstr ""
 
-msgctxt "databook"
 msgid "affected fraction"
 msgstr ""
 
-msgctxt "databook"
 msgid "Relative risks of anaemia when receiving intervention"
 msgstr ""
 
-msgctxt "databook"
 msgid "Odds ratio of being anaemic when covered by intervention"
 msgstr ""
 
-msgctxt "databook"
 msgid "Odds ratio of SAM when covered by program"
 msgstr ""
 
-msgctxt "databook"
 msgid "Odds ratio of MAM when covered by program"
 msgstr ""
 
-msgctxt "databook"
 msgid "Targetted condition"
 msgstr ""
 
-msgctxt "databook"
 msgid "Affected fraction"
 msgstr ""
 
-msgctxt "databook"
 msgid "Effectiveness mortality"
 msgstr ""
 
-msgctxt "databook"
 msgid "Effectiveness incidence"
 msgstr ""
 
-msgctxt "databook"
 msgid "SAM"
 msgstr ""
 
-msgctxt "databook"
 msgid "MAM"
 msgstr ""
 
-msgctxt "databook"
 msgid "Odds ratios for women with maternal anaemia"
 msgstr ""
 
-msgctxt "databook"
 msgid "Odds ratios for stunting"
 msgstr ""
 
-msgctxt "databook"
 msgid "Odds ratios for correct breastfeeding by program"
 msgstr ""
 
-msgctxt "databook"
 msgid ""
 "=\"Percentage of deaths in baseline year (\"&start_year&\") attributable to "
 "cause\""
 msgstr ""
 
-msgctxt "databook"
 msgid ""
 "=\"Percentage of population in each category in baseline year "
 "(\"&start_year&\")\""
 msgstr ""
 
-msgctxt "databook"
 msgid ""
 "=\"Percentage of children in each category in baseline year "
 "(\"&start_year&\")\""
 msgstr ""
 
-msgctxt "databook"
 msgid "Odds ratios of being anaemic when covered by intervention"
 msgstr ""

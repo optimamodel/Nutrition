@@ -1,3 +1,7 @@
+# Copy translations from databook.po into the backend nutrition.po
+#
+# This ensures that the backend code has translations that match the databook
+
 from pathlib import Path
 import polib
 import nutrition.ui as nu
@@ -17,7 +21,6 @@ def update_messages(target_locale):
     for entry in target_po:
         if entry.msgid in source_entries:
             entry.msgstr = source_entries[entry.msgid].msgstr
-            entry.msgctxt = 'databook'
 
     target_po.save()
 
