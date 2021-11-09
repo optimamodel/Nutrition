@@ -89,7 +89,7 @@ class Geospatial:
 
             # Optimize the new allocations within each region.
         regions = self.make_regions(add_funds=regional_allocs, rem_curr=not self.fix_regionalspend, mults=[1])
-        run_optim = partial(proj.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
+        run_optim = partial(proj.run_optim, key=-1, maxiter=1, swarmsize=swarmsize, maxtime=1,
                             parallel=False, dosave=True, runbaseline=True)
 
         # Run results in parallel or series.
