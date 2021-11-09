@@ -541,7 +541,7 @@ class Project(object):
             self.add_result(results, name=optim.name)
         return results
 
-    def run_geo(self, geo=None, key=-1, maxiter=20, swarmsize=None, maxtime=400, dosave=True, parallel=False):
+    def run_geo(self, geo=None, key=-1, maxiter=20, swarmsize=None, maxtime=400, dosave=True, parallel=False, runbalanced=False):
         """ Regions cannot be parallelised because daemon processes cannot have children.
         Two options: Either can parallelize regions and not the budget or run
         regions in series while parallelising each budget multiple. """
@@ -549,7 +549,7 @@ class Project(object):
             self.add_geos(geo)
             key = geo.name # this to handle parallel calls of this function
         geo = self.geo(key)
-        results = geo.run_geo(self, maxiter, swarmsize, maxtime, parallel)
+        results = geo.run_geo(self, maxiter, swarmsize, maxtime, parallel, runbalanced=runbalanced)
         if dosave:
             self.add_result(results, name='geospatial')
         return results

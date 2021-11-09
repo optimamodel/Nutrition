@@ -16,14 +16,15 @@ kwargs = {'name': 'test1',
                                    }),
           'fix_curr': False,
           'fix_regionalspend': False,
-          'add_funds': 5e6,
+          'add_funds': 0,
           'prog_set': ['IFA fortification of maize', 'IYCF 1', 'Lipid-based nutrition supplements',
                         'Multiple micronutrient supplementation', 'Micronutrient powders', 'Kangaroo mother care',
                         'Public provision of complementary foods', 'Treatment of SAM',  'Vitamin A supplementation',
-                       'Mg for eclampsia', 'Zinc supplementation', 'Iron and iodine fortification of salt']}
+                       'Mg for eclampsia', 'Zinc supplementation', 'Iron and iodine fortification of salt'],
+          'growth': 'fixed coverage'}
 if __name__ == '__main__':
     geo = Geospatial(**kwargs)
-    results = p.run_geo(geo=geo, parallel=True)
+    results = p.run_geo(geo=geo, maxiter=5, swarmsize=1, maxtime=5, parallel=False, runbalanced=True)
     p.plot(geo=True)
     p.write_results('geo_results.xlsx')
 

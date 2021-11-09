@@ -9,7 +9,7 @@ from . import utils
 
 class Geospatial:
     def __init__(self, name=None, modelnames=None, weights=None, mults=None, prog_set=None,
-                 add_funds=0, fix_curr=False, fix_regionalspend=False, filter_progs=True, active=True):
+                 add_funds=0, fix_curr=False, fix_regionalspend=False, filter_progs=True, active=True, growth='fixed budget', balanced_optimization=False):
         """
         :param name: name of the optimization (string)
         :param modelnames: names of the models (datasets) that each region corresponds to (list of strings). Order must match that of region_names.
@@ -39,8 +39,11 @@ class Geospatial:
         self.filter_progs = filter_progs
         self.active = active
         self.bocs = sc.odict()
+        self.growth = growth
+        self.balanced_optimization = balanced_optimization
 
-    def run_geo(self, proj, maxiter, swarmsize, maxtime, parallel):
+
+    def run_geo(self, proj, maxiter, swarmsize, maxtime, parallel, runbalanced=False):
         """ Runs geospatial optimization for a given project via the following steps:
             - Calculates the total flexible spending available for distribution across regions.
             Total flexible spending is a function of additional funds, `fix_curr` and `fix_regionalspend`.
@@ -90,7 +93,7 @@ class Geospatial:
             # Optimize the new allocations within each region.
         regions = self.make_regions(add_funds=regional_allocs, rem_curr=not self.fix_regionalspend, mults=[1])
         run_optim = partial(proj.run_optim, key=-1, maxiter=1, swarmsize=swarmsize, maxtime=1,
-                            parallel=False, dosave=True, runbaseline=True)
+                            parallel=False, dosave=True, runbaseline=True, runbalanced=runbalanced)
 
         # Run results in parallel or series.
         # can run in parallel b/c child processes in series
@@ -136,7 +139,8 @@ class Geospatial:
             regionalfunds = add_funds[i]
             region = Optim(name=name, model_name=modelname, weights=self.weights, mults=mults,
                            prog_set=self.prog_set, active=self.active, add_funds=regionalfunds,
-                           filter_progs=self.filter_progs, fix_curr=self.fix_curr, rem_curr=rem_curr)
+                           filter_progs=self.filter_progs, fix_curr=self.fix_curr, rem_curr=rem_curr, growth = self.growth,
+                           balanced_optimization=self.balanced_optimization)
             regions.append(region)
         self.regions = regions
         return regions
