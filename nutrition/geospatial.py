@@ -296,7 +296,7 @@ def make_default_geo(basename='Geospatial optimization'):
 
     kwargs1 = {'name': basename,
                'modelnames': [None],
-               'weights': sc.odict({'thrive': [1,0,0]}),
+               'weights': sc.odict({'thrive': [1]}),
                'fix_curr': False,
                'fix_regionalspend': False,
                'add_funds': 0,
