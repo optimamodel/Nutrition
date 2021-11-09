@@ -23,7 +23,8 @@ kwargs1 = {'name':'Treat SAM 100%',
            'model_name': 'eg',
            'scen_type': 'coverage',
             'progvals': sc.odict({'Treatment of SAM': [0.9, 0.5, 0.8]}),
-            'growth': 'fixed budget'}
+            'growth': 'fixed coverage',
+            'enforce_constraints_year': 1}
 
 kwargs2 = sc.dcp(kwargs1)
 kwargs2.update({'name': 'IYCF 1 100%',
@@ -35,7 +36,7 @@ kwargs3 = {'name': 'IYCF at $10 mil',
            'progvals': sc.odict({'IYCF 1': [1e8, 2e8, 1.5e8, 2.5e8],
                                  'IPTp': [2e7, 2.8e7, 2.8e7, 4.25e7]}),
            'growth': 'fixed budget',
-           'enforce_constraints_year': 2}
+           'enforce_constraints_year': 1}
 
 ### testing FE bugs
 kwargs4 = {'name': 'FE check 1',

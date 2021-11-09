@@ -830,7 +830,7 @@ class ProgramInfo(sc.prettyobj):
         Note: Initial intended coverages/spendings are set in the same program.annual_cov location, and set by initialize_covs
         
         :param growth: False, 'fixed budget', or 'fixed coverage' (either of the latter assume population growth generally occurs)
-        :param enforce_constraints: may be turned on or off selectively by year for the model (e.g. to implement a coverage scenario outside of the ramping it would be turned off earlier)
+        :param enforce_constraints_year: may be turned on or off selectively by year for the model (e.g. to implement a coverage scenario outside of the ramping it would be turned off earlier)
             - enforces for a fixed budget scenario that the budget this year matches exactly the previous year
             - enforces ramping constraints that coverage can't have changed more than the limit from the previous year
         """
@@ -854,7 +854,7 @@ class ProgramInfo(sc.prettyobj):
             
     def get_ann_covs(self, year):
         """ This function considers ramping constraints for the annual coverage
-            This is called in model.py to compute population covergae probabilities"""
+            This is called in model.py to compute population coverage probabilities"""
         #covs = {}
         covs = sc.odict()
         for prog in self.programs.values():
