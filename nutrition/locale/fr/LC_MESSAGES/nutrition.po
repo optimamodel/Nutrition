@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nutrition 1.7.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-11-10 10:56+1100\n"
+"POT-Creation-Date: 2021-11-10 11:04+1100\n"
 "PO-Revision-Date: 2021-10-27 10:47+1100\n"
 "Last-Translator: \n"
 "Language-Team: fr\n"
@@ -651,7 +651,7 @@ msgstr "Mg pour l'éclampsie"
 msgid "Mg for pre-eclampsia"
 msgstr "Mg pour la pré-éclampsie"
 
-#: nutrition/data.py:765
+#: nutrition/data.py:765 nutrition/programs.py:42
 msgid "Family planning"
 msgstr "Planification familiale"
 

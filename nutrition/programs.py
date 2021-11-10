@@ -97,6 +97,8 @@ class Program(sc.prettyobj):
         self._set_restrpop(pops)
         self._set_unrestrpop(pops)
         # this accounts for different fractions within age bands
+        print(self.name)
+        print(self.unrestr_popsize)
         self.sat_unrestr = self.restr_popsize / self.unrestr_popsize
 
     def set_init_unrestr(self):
@@ -140,7 +142,11 @@ class Program(sc.prettyobj):
         # TMP SOLUTION: THE DENOMINATOR FOR CALCULATING PROGRAM COVERAGE WILL USE sum(CEILING(FRAC TARGETED) * POP SIZE) over all pops targeted. I.E. FOR IYCF WITH FRAC >1, we get normalised sum
         self.unrestr_popsize = 0.0
         for pop in populations:
-            self.unrestr_popsize += sum(ceil(self.target_pops[age.age]) * age.pop_size for age in pop.age_groups if age.age in self.agesTargeted)
+            for age in pop.age_groups:
+                print(age.age)
+                if age.age in self.agesTargeted:
+                    print(f'{age.age}: {ceil(self.target_pops[age.age]) * age.pop_size}')
+                    self.unrestr_popsize += ceil(self.target_pops[age.age]) * age.pop_size
 
     def _set_restrpop(self, populations):
         self.restr_popsize = 0.0

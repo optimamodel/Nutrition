@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nutrition 1.7.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-11-10 10:56+1100\n"
-"PO-Revision-Date: 2021-11-09 17:59+1100\n"
+"POT-Creation-Date: 2021-11-10 11:04+1100\n"
+"PO-Revision-Date: 2021-11-10 11:04+1100\n"
 "Last-Translator: \n"
 "Language: en\n"
 "Language-Team: en <LL@li.org>\n"
@@ -233,9 +233,8 @@ msgid "Birth outcome risks"
 msgstr "Birth outcome risks"
 
 #: nutrition/data.py:280
-#, fuzzy
 msgid "Odds ratios for conditions"
-msgstr "Odds ratio for stunting"
+msgstr "Odds ratios for conditions"
 
 #: nutrition/data.py:281
 msgid "Stunting (HAZ-score < -2)"
@@ -246,19 +245,17 @@ msgid "MAM (WHZ-score between -3 and -2)"
 msgstr "MAM (WHZ-score between -3 and -2)"
 
 #: nutrition/data.py:283
-#, fuzzy
 msgid "SAM (WHZ-score < -3)"
-msgstr "SAM   (WHZ-score < -3)"
+msgstr "SAM (WHZ-score < -3)"
 
 #: nutrition/data.py:284
 msgid "Relative risk by birth spacing"
-msgstr ""
+msgstr "Relative risk by birth spacing"
 
 #: nutrition/data.py:285 nutrition/populations.py:491
 #: nutrition/populations.py:542
-#, fuzzy
 msgid "Birth outcomes"
-msgstr "Birth outcome risks"
+msgstr "Birth outcomes"
 
 #: nutrition/data.py:285
 msgid "Relative risks of neonatal causes of death"
@@ -403,7 +400,7 @@ msgstr "WRA: 40-49 years"
 
 #: nutrition/data.py:469 nutrition/populations.py:896
 msgid "Total WRA"
-msgstr ""
+msgstr "Total WRA"
 
 #: nutrition/data.py:471 nutrition/model.py:505 nutrition/populations.py:428
 #: nutrition/populations.py:499 nutrition/populations.py:834
@@ -591,6 +588,9 @@ msgid ""
 "baseline prevalences of eclampsia and pre-eclampsia so global averages "
 "will be used."
 msgstr ""
+"Warning, the databook being read is out of date and does not include "
+"baseline prevalences of eclampsia and pre-eclampsia so global averages "
+"will be used."
 
 #: nutrition/data.py:722
 msgid "Prevalence of pre-eclampsia"
@@ -610,7 +610,7 @@ msgstr "Lipid-based nutrition supplements"
 
 #: nutrition/data.py:734
 msgid "Oral rehydration salts"
-msgstr ""
+msgstr "Oral rehydration salts"
 
 #: nutrition/data.py:737 nutrition/project.py:626 nutrition/project.py:655
 msgid "Public provision of complementary foods"
@@ -640,7 +640,7 @@ msgstr "Mg for eclampsia"
 msgid "Mg for pre-eclampsia"
 msgstr "Mg for pre-eclampsia"
 
-#: nutrition/data.py:765
+#: nutrition/data.py:765 nutrition/programs.py:42
 msgid "Family planning"
 msgstr "Family planning"
 
@@ -708,19 +708,19 @@ msgstr "Programs cost and coverage"
 
 #: nutrition/data.py:855
 msgid "Linear (constant marginal cost) [default]"
-msgstr ""
+msgstr "Linear (constant marginal cost) [default]"
 
 #: nutrition/data.py:856
 msgid "Curved with increasing marginal cost"
-msgstr ""
+msgstr "Curved with increasing marginal cost"
 
 #: nutrition/data.py:857
 msgid "Curved with decreasing marginal cost"
-msgstr ""
+msgstr "Curved with decreasing marginal cost"
 
 #: nutrition/data.py:858
 msgid "S-shaped (decreasing then increasing marginal cost)"
-msgstr ""
+msgstr "S-shaped (decreasing then increasing marginal cost)"
 
 #: nutrition/data.py:978
 msgid "Sorry, but you must supply a project for load()."
@@ -742,37 +742,32 @@ msgstr "Vitamin A supplementation"
 
 #: nutrition/populations.py:350
 msgid "Birth dist"
-msgstr ""
+msgstr "Birth dist"
 
 #: nutrition/populations.py:432
-#, fuzzy
 msgid "Children under 5 population"
-msgstr "General population"
+msgstr "Children under 5 population"
 
 #: nutrition/populations.py:455 nutrition/populations.py:457
 #: nutrition/populations.py:665
-#, fuzzy
 msgid "Percentage of diarrhea that is severe"
-msgstr "Percentage of anaemia that is iron deficient"
+msgstr "Percentage of diarrhea that is severe"
 
 #: nutrition/populations.py:500
-#, fuzzy
 msgid "Neonatal mortality (per 1,000 live births)"
-msgstr "Stillbirths (per 1,000 total births)"
+msgstr "Neonatal mortality (per 1,000 live births)"
 
 #: nutrition/populations.py:501
-#, fuzzy
 msgid "Infant mortality (per 1,000 live births)"
-msgstr "Stillbirths (per 1,000 total births)"
+msgstr "Infant mortality (per 1,000 live births)"
 
 #: nutrition/populations.py:502
 msgid "Under 5 mortality (per 1,000 live births)"
-msgstr ""
+msgstr "Under 5 mortality (per 1,000 live births)"
 
 #: nutrition/populations.py:624
-#, fuzzy
 msgid "Wasting treatment"
-msgstr "Wasting example"
+msgstr "Wasting treatment"
 
 #: nutrition/populations.py:723 nutrition/populations.py:729
 #: nutrition/settings.py:38
@@ -790,47 +785,44 @@ msgid "Pre-term SGA"
 msgstr "Pre-term SGA"
 
 #: nutrition/populations.py:836
-#, fuzzy
 msgid "Maternal mortality (per 1,000 live births)"
-msgstr "Stillbirths (per 1,000 total births)"
+msgstr "Maternal mortality (per 1,000 live births)"
 
 #: nutrition/populations.py:894
-#, fuzzy
 msgid "Non-pregnant women"
-msgstr "Pregnant women"
+msgstr "Non-pregnant women"
 
 #: nutrition/programs.py:29
 msgid "Exclusion dependency"
-msgstr ""
+msgstr "Exclusion dependency"
 
 #: nutrition/programs.py:30
-#, fuzzy
 msgid "Threshold dependency"
-msgstr "Program dependencies"
+msgstr "Threshold dependency"
 
 #: nutrition/programs.py:170
 msgid "Effectiveness"
-msgstr ""
+msgstr "Effectiveness"
 
 #: nutrition/programs.py:214 nutrition/programs.py:273
 msgid "Effectiveness incidence"
-msgstr ""
+msgstr "Effectiveness incidence"
 
 #: nutrition/programs.py:231
 msgid "Effectiveness mortality"
-msgstr ""
+msgstr "Effectiveness mortality"
 
 #: nutrition/programs.py:272 nutrition/programs.py:288
 msgid "Affected fraction"
-msgstr ""
+msgstr "Affected fraction"
 
 #: nutrition/programs.py:299
 msgid "affected fraction"
-msgstr ""
+msgstr "affected fraction"
 
 #: nutrition/programs.py:300
 msgid "effectiveness"
-msgstr ""
+msgstr "effectiveness"
 
 #: nutrition/project.py:559
 msgid "Stunting example (coverage)"
@@ -839,7 +831,7 @@ msgstr "Stunting example (coverage)"
 #: nutrition/project.py:564 nutrition/project.py:576 nutrition/project.py:623
 #: nutrition/project.py:650
 msgid "IYCF 1"
-msgstr ""
+msgstr "IYCF 1"
 
 #: nutrition/project.py:571
 msgid "Stunting example (budget)"
@@ -855,29 +847,27 @@ msgstr "Anaemia example"
 
 #: nutrition/project.py:601 nutrition/project.py:653
 msgid "Micronutrient powders"
-msgstr ""
+msgstr "Micronutrient powders"
 
 #: nutrition/project.py:617
 msgid "Maximize thrive"
 msgstr "Maximize thrive"
 
 #: nutrition/project.py:627 nutrition/project.py:660
-#, fuzzy
 msgid "Iron and iodine fortification of salt"
-msgstr "IFA fortification of maize"
+msgstr "Iron and iodine fortification of salt"
 
 #: nutrition/project.py:642
 msgid "Geospatial optimization"
-msgstr ""
+msgstr "Geospatial optimization"
 
 #: nutrition/project.py:652
-#, fuzzy
 msgid "Multiple micronutrient supplementation"
-msgstr "Vitamin A supplementation"
+msgstr "Multiple micronutrient supplementation"
 
 #: nutrition/project.py:654
 msgid "Kangaroo mother care"
-msgstr ""
+msgstr "Kangaroo mother care"
 
 #: nutrition/settings.py:23 nutrition/utils.py:379
 msgid "High"
