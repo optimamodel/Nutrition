@@ -406,7 +406,7 @@ class Model(sc.prettyobj):
                 numAgeingInStratified[stuntingCat] = 0.0
             for prevStunt in ["stunted", "not stunted"]:
                 totalProbStunted = age_group.probConditionalStunting[prevStunt] * age_group.continuedStuntingImpact
-                restratifiedProb = restratify(totalProbStunted)
+                restratifiedProb = restratify(totalProbStunted, self.locale)
                 numaged = numAgeingIn[prevStunt]
                 for stuntingCat in self.ss.stunting_list:
                     numAgeingInStratified[stuntingCat] += restratifiedProb[stuntingCat] * numaged
@@ -420,6 +420,7 @@ class Model(sc.prettyobj):
             # new distribution
             age_group.update_dist("stunt", probStunting)
 
+    @translate
     def _apply_births(self):
         # restratify stunting and wasting
         newBorns = self.children.age_groups[0]
@@ -429,11 +430,11 @@ class Model(sc.prettyobj):
         restratifiedStuntingAtBirth = {}
         restratifiedWastingAtBirth = {}
         for outcome in self.ss.birth_outcomes:
-            totalProbStunted = newBorns.probRiskAtBirth["Stunting"][outcome] * newBorns.continuedStuntingImpact
-            restratifiedStuntingAtBirth[outcome] = restratify(totalProbStunted)
+            totalProbStunted = newBorns.probRiskAtBirth[_("Stunting")][outcome] * newBorns.continuedStuntingImpact
+            restratifiedStuntingAtBirth[outcome] = restratify(totalProbStunted, self.locale)
             # wasting
             restratifiedWastingAtBirth[outcome] = {}
-            probWastedAtBirth = newBorns.probRiskAtBirth["Wasting"]
+            probWastedAtBirth = newBorns.probRiskAtBirth[_("Wasting")]
             totalProbWasted = 0
             # distribute proportions for wasted categories
             for wastingCat in self.ss.wasted_list:
@@ -442,7 +443,7 @@ class Model(sc.prettyobj):
                 totalProbWasted += probWastedThisCat
             # normality constraint on non-wasted proportions
             for nonWastedCat in self.ss.non_wasted_list:
-                wasting_dist = restratify(totalProbWasted)
+                wasting_dist = restratify(totalProbWasted, self.locale)
                 restratifiedWastingAtBirth[outcome][nonWastedCat] = wasting_dist[nonWastedCat]
         # sum over birth outcome for full stratified stunting and wasting fractions, then apply to birth distribution
         stuntingFractions = {}
@@ -498,31 +499,33 @@ class Model(sc.prettyobj):
             self._apply_child_ageing()
             self._apply_births()
 
+    @translate
     def get_births(self):
         """ Set monthly number of births """
-        numbirths = self.pw.proj["Number of births"][self.year]
+        numbirths = self.pw.proj[_("Number of births")][self.year]
         adj_births = numbirths * (1.0 - self.nonpw.get_pregav())
         self.annual_births[self.year] = adj_births
 
+    @translate
     def _applyPrevTimeTrends(self):  # TODO: haven't done mortality yet
         for age_group in self.children.age_groups:
             # stunting
             probStunted = sum(age_group.stunting_dist[cat] for cat in self.ss.stunted_list)
-            newProb = probStunted * age_group.trends["Stunting"]
+            newProb = probStunted * age_group.trends[_("Stunting")]
             age_group.update_dist("stunt", newProb)
             # wasting
             probWasted = sum(age_group.wasting_dist[cat] for cat in self.ss.wasted_list)
-            newProb = probWasted * age_group.trends["Wasting"]
-            nonWastedProb = restratify(newProb)
+            newProb = probWasted * age_group.trends[_("Wasting")]
+            nonWastedProb = restratify(newProb, self.locale)
             for nonWastedCat in self.ss.non_wasted_list:
                 age_group.wasting_dist[nonWastedCat] = nonWastedProb[nonWastedCat]
             # anaemia
             probAnaemic = sum(age_group.anaemia_dist[cat] for cat in self.ss.anaemic_list)
-            newProb = probAnaemic * age_group.trends["Anaemia"]
+            newProb = probAnaemic * age_group.trends[_("Anaemia")]
             age_group.update_dist("anaem", newProb)
         for age_group in self.pw.age_groups + self.nonpw.age_groups:
             probAnaemic = sum(age_group.anaemia_dist[cat] for cat in self.ss.anaemic_list)
-            newProb = probAnaemic * age_group.trends["Anaemia"]
+            newProb = probAnaemic * age_group.trends[_("Anaemia")]
             age_group.update_dist("anaem", newProb)
 
     def get_seq(self, outcome):

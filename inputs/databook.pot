@@ -170,6 +170,9 @@ msgstr ""
 msgid "Year"
 msgstr ""
 
+msgid "year"
+msgstr ""
+
 msgid "Number of births"
 msgstr ""
 
@@ -192,6 +195,9 @@ msgid "Estimated pregnant women"
 msgstr ""
 
 msgid "Non-pregnant WRA"
+msgstr ""
+
+msgid "non-pregnant WRA"
 msgstr ""
 
 msgid "Causes of death"
@@ -808,6 +814,9 @@ msgstr ""
 msgid "effectiveness"
 msgstr ""
 
+msgid "Effectiveness"
+msgstr ""
+
 msgid "affected fraction"
 msgstr ""
 
@@ -865,5 +874,11 @@ msgid ""
 "(\"&start_year&\")\""
 msgstr ""
 
+msgid "=\"Baseline (\"&start_year&\") coverage\""
+msgstr ""
+
 msgid "Odds ratios of being anaemic when covered by intervention"
+msgstr ""
+
+msgid "Wasting"
 msgstr ""

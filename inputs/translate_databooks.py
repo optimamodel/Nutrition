@@ -37,8 +37,11 @@ def translate_databook(target_locale: str):
         for sheet in wb.Sheets:
             print("\t" + sheet.Name)
 
+            visible = sheet.Visible
+
             sheet.Activate()
             sheet.Unprotect("nick")  # Need to unprotect, otherwise it will not replace cell values correctly
+            sheet.Visible = True
 
             rg = sheet.UsedRange
 
@@ -46,16 +49,17 @@ def translate_databook(target_locale: str):
                 a = entry.msgid
                 b = entry.msgstr
 
-                print(f"\t\t'{a}' -> '{b}'")
+                # print(f"\t\t'{a}' -> '{b}'")
 
                 # Translate the sheet name
                 if sheet.Name == a:
                     sheet.Name = b
 
                 # Substitute cell content
-                rg.Replace(a, b, LookAt=1) # LookAt=1 is equivalent to "xlWhole" i.e. match entire cell. Otherwise functions get overwritten
+                rg.Replace(a, b, LookAt=1, MatchCase=True) # LookAt=1 is equivalent to "xlWhole" i.e. match entire cell. Otherwise functions get overwritten
 
             sheet.Protect("nick")  # Need to unprotect, otherwise it will not replace cell values correctly
+            sheet.Visible = visible
 
         for property in wb.BuiltinDocumentProperties:
             if property.name == "Keywords":
@@ -70,8 +74,6 @@ def translate_databook(target_locale: str):
             os.remove(dest_file)
         wb.SaveAs(str(dest_file))
         wb.Close(True)
-
-
 
 
 locales = [x.parent.stem for x in rootdir.glob('**/*.po')] # List of all locales (folders containing a `.po` file) e.g. ['fr']

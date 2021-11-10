@@ -203,6 +203,9 @@ msgstr "Estimation des femmes enceintes"
 msgid "Non-pregnant WRA"
 msgstr "FAP non enceintes"
 
+msgid "non-pregnant WRA"
+msgstr "FAP non enceintes"
+
 msgid "Causes of death"
 msgstr "Causes du décès"
 
@@ -820,6 +823,9 @@ msgstr "Pour l'anémie par épisode supplémentaire de la diarrhée"
 msgid "effectiveness"
 msgstr "efficacité"
 
+msgid "Effectiveness"
+msgstr "Efficacité"
+
 msgid "affected fraction"
 msgstr "fraction touchée"
 
@@ -901,3 +907,12 @@ msgstr ""
 
 msgid "Odds ratios of being anaemic when covered by intervention"
 msgstr "Rapports des cotes de l'anémie en étant couverte par l'intervention"
+
+msgid "Wasting"
+msgstr "Amaigrissement"
+
+msgid "year"
+msgstr "année"
+
+msgid "=\"Baseline (\"&start_year&\") coverage\""
+msgstr "=\"Couverture de l'année de référence (\"&start_year&\")\""

@@ -184,8 +184,8 @@ class DefaultParams(object):
         self.rr_death[_("Stunting")] = self.make_dict2(rr)
         # wasting
         rr_sheet = utils.read_sheet(self.spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=28)
-        rr = rr_sheet.loc["Wasting"].to_dict()
-        self.rr_death["Wasting"] = self.make_dict2(rr)
+        rr = rr_sheet.loc[_("Wasting")].to_dict()
+        self.rr_death[_("Wasting")] = self.make_dict2(rr)
         # anaemia
         rr_sheet = utils.read_sheet(self.spreadsheet, _("Relative risks"), [0, 1, 2], skiprows=55).dropna(axis=1, how="all")
         rr = rr_sheet.loc[_("Anaemia")].to_dict()
@@ -207,7 +207,7 @@ class DefaultParams(object):
         for age in self.settings.child_ages:
             self.arr_rr_death[age] = np.zeros((self.settings.n_cats, len(input_data.causes_death)))
             stunting = self.rr_death[_("Stunting")][age]
-            wasting = self.rr_death["Wasting"][age]
+            wasting = self.rr_death[_("Wasting")][age]
             bf = self.rr_death[_("Breastfeeding")][age]
             anaemia = self.rr_death[_("Anaemia")][age]
             for i, cats in enumerate(self.settings.all_cats):
@@ -230,9 +230,9 @@ class DefaultParams(object):
         self.or_cond[_("Stunting")][_("Prev stunting")] = this_or[_("Given previous stunting (HAZ < -2 in previous age band)")]
         self.or_cond[_("Stunting")][_("Diarrhoea")] = this_or[_("Diarrhoea (per additional episode)")]
         self.or_cond[_("SAM")] = sc.odict()
-        self.or_cond[_("SAM")][_("Diarrhoea")] = or_sheet.loc["Wasting"].to_dict("index")[_("For SAM per additional episode of diarrhoea")]
+        self.or_cond[_("SAM")][_("Diarrhoea")] = or_sheet.loc[_("Wasting")].to_dict("index")[_("For SAM per additional episode of diarrhoea")]
         self.or_cond[_("MAM")] = sc.odict()
-        self.or_cond[_("MAM")][_("Diarrhoea")] = or_sheet.loc["Wasting"].to_dict("index")[_("For MAM per additional episode of diarrhoea")]
+        self.or_cond[_("MAM")][_("Diarrhoea")] = or_sheet.loc[_("Wasting")].to_dict("index")[_("For MAM per additional episode of diarrhoea")]
         self.or_cond[_("Anaemia")] = sc.odict()
         self.or_cond[_("Anaemia")][_("Severe diarrhoea")] = sc.odict()
         self.or_cond[_("Anaemia")][_("Severe diarrhoea")] = or_sheet.loc[_("Anaemia")].to_dict("index")[_("For anaemia per additional episode of severe diarrhoea")]
@@ -282,7 +282,7 @@ class DefaultParams(object):
         self.or_cond_bo[_("MAM")] = ors[_("MAM (WHZ-score between -3 and -2)")]
         self.or_cond_bo[_("SAM")] = ors[_("SAM (WHZ-score < -3)")]
         self.rr_space_bo = bo_sheet.loc[_("Relative risk by birth spacing")].to_dict("index")
-        self.rr_death["Birth outcomes"] = bo_sheet.loc[_("Relative risks of neonatal causes of death")].to_dict()
+        self.rr_death[_("Birth outcomes")] = bo_sheet.loc[_("Relative risks of neonatal causes of death")].to_dict()
 
     @translate
     def get_iycf_effects(self, iycf_packs):
@@ -562,7 +562,7 @@ class InputData(object):
         trends = utils.read_sheet(self.spreadsheet, _("Time trends"), cols=[0, 1], dropna=False)
 
         self.time_trends[_("Stunting")] = trends.loc[_("Stunting prevalence (%)")].loc[_("Children 0-59 months")].values.tolist()[:1]
-        self.time_trends["Wasting"] = trends.loc[_("Wasting prevalence (%)")].loc[_("Children 0-59 months")].values.tolist()[:1]
+        self.time_trends[_("Wasting")] = trends.loc[_("Wasting prevalence (%)")].loc[_("Children 0-59 months")].values.tolist()[:1]
         self.time_trends[_("Anaemia")] = trends.loc[_("Anaemia prevalence (%)")].values.tolist()[:3]  # order is (children, PW, WRA)
         self.time_trends[_("Breastfeeding")] = trends.loc[_("Prevalence of age-appropriate breastfeeding")].values.tolist()[:2]  # 0-5 months, 6-23 months
         self.time_trends[_("Mortality")] = trends.loc[_("Mortality")].values.tolist()  # under 5, maternal

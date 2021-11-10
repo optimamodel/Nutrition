@@ -54,6 +54,7 @@ Prevalence of pre-eclampsia
 Prevalence of eclampsia
 Demographic projections
 Year
+year
 Number of births
 WRA: 15-19 years
 WRA: 20-29 years
@@ -62,6 +63,7 @@ WRA: 40-49 years
 Total WRA
 Estimated pregnant women
 Non-pregnant WRA
+non-pregnant WRA
 Causes of death
 Percentage of deaths in baseline year (2017) attributable to cause
 Neonatal
@@ -266,6 +268,7 @@ For MAM per additional episode of diarrhoea
 For anaemia per additional episode of severe diarrhoea
 Odds ratios for optimal birth spacing by program
 effectiveness
+Effectiveness
 affected fraction
 Relative risks of anaemia when receiving intervention
 Odds ratio of being anaemic when covered by intervention
@@ -283,4 +286,6 @@ Odds ratios for correct breastfeeding by program
 ="Percentage of deaths in baseline year ("&start_year&") attributable to cause"
 ="Percentage of population in each category in baseline year ("&start_year&")"
 ="Percentage of children in each category in baseline year ("&start_year&")"
+="Baseline ("&start_year&") coverage"
 Odds ratios of being anaemic when covered by intervention
+Wasting

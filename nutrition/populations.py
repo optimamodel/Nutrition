@@ -32,13 +32,13 @@ class AgeGroup(sc.prettyobj):
         risk = risk.lower()
         if "stu" in risk:
             # fraction stunted
-            self.stunting_dist = restratify(frac_risk)
+            self.stunting_dist = restratify(frac_risk, self.locale)
         elif "was" in risk:
             if wast_frac:
                 wast_dist = sc.dcp(wast_frac)
                 # fraction wasted
                 # there is no constraint on the wasted fraction, only non-wasted
-                dist = restratify(frac_risk)
+                dist = restratify(frac_risk, self.locale)
                 for cat in self.ss.non_wasted_list:
                     wast_dist[cat] = dist[cat]
                 self.wasting_dist = wast_dist
@@ -46,8 +46,8 @@ class AgeGroup(sc.prettyobj):
                 raise Exception(" Error: cannot fully specify wasting distribution because the wasted categories were not specified.")
         elif "an" in risk:
             # fraction anaemic
-            self.anaemia_dist["Anaemic"] = frac_risk
-            self.anaemia_dist["Not anaemic"] = 1 - frac_risk
+            self.anaemia_dist[_("Anaemic")] = frac_risk
+            self.anaemia_dist[_("Not anaemic")] = 1 - frac_risk
 
     def frac_risk(self, risk):
         risk = risk.lower()
@@ -174,32 +174,32 @@ class ChildAgeGroup(AgeGroup):
 
     ###### POPULATION CALCULATIONS ######
 
+    @translate
     def frac_risk(self, risk):
-        risk = risk.lower()
-        if any(sub in risk for sub in ["stun", "stunt", "stunting", "stunted"]):
+        if risk in ['stun',"Stunting", _("Stunting")]:
             return self.frac_stunted()
-        elif any(sub in risk for sub in ["ma", "mam"]):
-            return self.frac_wasted("MAM")
-        elif any(sub in risk for sub in ["sa", "sam"]):
-            return self.frac_wasted("SAM")
-        elif any(sub in risk for sub in ["was", "wast", "wasting", "wasted"]):
+        elif risk in ['ma', 'MAM',_("MAM")]:
+                return self.frac_wasted(_("MAM"))
+        elif risk in ["sa", "SAM", _("SAM")]:
+            return self.frac_wasted(_("SAM"))
+        elif risk in ["wast", "Wasting", _("Wasting")]:
             return sum(self.frac_wasted(cat) for cat in self.ss.wasted_list)
-        elif any(sub in risk for sub in ["an", "anaem", "anaemia", "anaemic"]):
+        elif risk in ["an", "Anaemia", _("Anaemia")]:
             return self.frac_anaemic()
         else:
             raise Exception('::ERROR:: age group "{}" does not have "{}" attribute'.format(self.age, risk))
 
+    @translate
     def num_risk(self, risk):
-        risk = risk.lower()
-        if any(sub in risk for sub in ["stun", "stunt", "stunting", "stunted"]):
+        if risk in ['stun',"Stunting", _("Stunting")]:
             return self.num_stunted()
-        elif any(sub in risk for sub in ["ma", "mam"]):
-            return self.num_wasted("MAM")
-        elif any(sub in risk for sub in ["sa", "sam"]):
-            return self.num_wasted("SAM")
-        elif any(sub in risk for sub in ["was", "wast", "wasting", "wasted"]):
+        elif risk in ['ma', 'MAM', _("MAM")]:
+            return self.num_wasted(_("MAM"))
+        elif risk in ["sa", "SAM", _("SAM")]:
+            return self.num_wasted(_("SAM"))
+        elif risk in ["wast", "Wasting", _("Wasting")]:
             return sum(self.num_wasted(cat) for cat in self.ss.wasted_list)
-        elif any(sub in risk for sub in ["an", "anaem", "anaemia", "anaemic"]):
+        elif risk in ["an", "Anaemia", _("Anaemia")]:
             return self.num_anaemic()
         else:
             raise Exception('::ERROR:: age group "{}" does not have "{}" attribute'.format(self.age, risk))
@@ -439,11 +439,11 @@ class Children(Population):
         for i, age in enumerate(self.ss.child_ages):
             popSize = self.popSizes[age]
             stunting_dist = self.stunting_dist[age]
-            stunting_dist = restratify(sum(stunting_dist[cat] for cat in self.ss.stunted_list))
+            stunting_dist = restratify(sum(stunting_dist[cat] for cat in self.ss.stunted_list), self.locale)
             anaemia_dist = self.anaemia_dist[age]
             wasting_dist = self.wasting_dist[age]
             probWasted = sum(wasting_dist[cat] for cat in self.ss.wasted_list)
-            nonwasting_dist = restratify(probWasted)
+            nonwasting_dist = restratify(probWasted, self.locale)
             for cat in self.ss.non_wasted_list:
                 wasting_dist[cat] = nonwasting_dist[cat]
             bf_dist = self.bf_dist[age]
@@ -452,9 +452,9 @@ class Children(Population):
             incidences = {condition: incidence * self.ss.timestep for condition, incidence in incidences.items()}
             ageingRate = 1.0 / self.ss.child_age_spans[i]
             if age == _("<1 month"):  # <1 month age group has slightly different functionality
-                self.age_groups.append(Newborn(age, popSize, anaemia_dist, incidences, stunting_dist, wasting_dist, bf_dist, ageingRate, birth_dist, self.data.causes_death, self.default, self.data.demo["Percentage of diarrhea that is severe"], self.ss))
+                self.age_groups.append(Newborn(age, popSize, anaemia_dist, incidences, stunting_dist, wasting_dist, bf_dist, ageingRate, birth_dist, self.data.causes_death, self.default, self.data.demo[_("Percentage of diarrhea that is severe")], self.ss))
             else:
-                self.age_groups.append(ChildAgeGroup(age, popSize, anaemia_dist, incidences, stunting_dist, wasting_dist, bf_dist, ageingRate, self.data.causes_death, self.default, self.data.demo["Percentage of diarrhea that is severe"], self.ss))
+                self.age_groups.append(ChildAgeGroup(age, popSize, anaemia_dist, incidences, stunting_dist, wasting_dist, bf_dist, ageingRate, self.data.causes_death, self.default, self.data.demo[_("Percentage of diarrhea that is severe")], self.ss))
 
     @translate
     def _set_child_mortality(self):
@@ -790,8 +790,9 @@ class PregnantWomen(Population):
             # effectiveness for birth outcomes
             age_group.bo_eff = self.default.bo_progs
 
+    @translate
     def _set_time_trends(self):
-        risk = "Anaemia"
+        risk = _("Anaemia")
         trend = self.data.time_trends[risk]
         for age_group in self.age_groups:
             age_group.trends[risk] = fit_poly(1, trend)
