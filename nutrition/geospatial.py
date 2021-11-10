@@ -32,7 +32,7 @@ class Geospatial:
             print("Warning: changing budget multiples, not recommended")
             self.mults = mults
         else:
-            self.mults = [0, 0.01, 0.6, 1]
+            self.mults = [0, 0.01, 0.025, 0.04, 0.05, 0.075, 0.1, 0.2, 0.3, 0.6, 1]
             #self.mults = [0, 0.01, 0.025, 0.04, 0.05, 0.075]
         self.prog_set = prog_set
         self.add_funds = add_funds
@@ -97,8 +97,12 @@ class Geospatial:
 
                 # Optimize the new allocations within each region.
             regions = self.make_regions(add_funds=regional_allocs, rem_curr=not self.fix_regionalspend, mults=[1], weight_ind=w)
-            run_optim = partial(proj.run_optim, key=-1, maxiter=1, swarmsize=swarmsize, maxtime=1,
-                                parallel=False, dosave=True, runbaseline=True, runbalanced=runbalanced)
+            if w == 0:
+                run_optim = partial(proj.run_optim, key=-1, maxiter=1, swarmsize=swarmsize, maxtime=1,
+                                    parallel=False, dosave=True, runbaseline=True, runbalanced=runbalanced)
+            else:
+                run_optim = partial(proj.run_optim, key=-1, maxiter=1, swarmsize=swarmsize, maxtime=1,
+                                    parallel=False, dosave=True, runbaseline=False, runbalanced=runbalanced)
 
             # Run results in parallel or series.
             # can run in parallel b/c child processes in series
@@ -115,10 +119,10 @@ class Geospatial:
         for r, res in enumerate(results):
             res.mult = None
             if res.name == 'Baseline':
-                res.name = results[r+1].name.replace('(x1)', '') + 'baseline'
+                res.name = res.model_name + ': Baseline'
             else:
-                res.name = res.name.replace('(x1)', 'optimal')
-            if 'Excess budget not allocated' in res.prog_info.programs and 'baseline' not in res.name:
+                res.name = res.model_name + ": " + res.name
+            if 'Excess budget not allocated' in res.prog_info.programs and 'Baseline' not in res.name:
                 excess_budget += res.prog_info.programs['Excess budget not allocated'].annual_spend[-1]
                 res.prog_info.programs['Excess budget not allocated'].annual_spend = np.zeros(len(res.years))
         if excess_budget > 0:
@@ -224,7 +228,8 @@ class Geospatial:
                 shift_ind = np.zeros(numregions)
                 for reg_ind in list(range(numregions)):
                     # Get the present outcome value from the BOC (given the current budget allocated to the region).
-                    current_outcome = self.bocs[reg_ind](regional_allocs[reg_ind])
+                    reg_key = boc_optims.keys()[reg_ind]
+                    current_outcome = self.bocs[reg_key](regional_allocs[reg_ind])
                     # Calculate budget increments
                     budget_increments[reg_ind] = trial_budgets[reg_ind] - regional_allocs[reg_ind]
                     # Find number of budget increments <= 0
@@ -242,7 +247,7 @@ class Geospatial:
                     # Loop over the budget increments...
                     for budget_inc_ind in list(range(len(budget_increments[reg_ind]))):
                         # Get the new outcome from the BOC, assuming the particular budget increment is chosen.
-                        new_outcome = self.bocs[reg_ind](
+                        new_outcome = self.bocs[reg_key](
                             regional_allocs[reg_ind] + budget_increments[reg_ind][budget_inc_ind])
 
                         # Calculate the marginal improvement for this budget increment and region.
