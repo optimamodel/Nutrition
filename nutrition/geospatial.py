@@ -97,12 +97,9 @@ class Geospatial:
 
                 # Optimize the new allocations within each region.
             regions = self.make_regions(add_funds=regional_allocs, rem_curr=not self.fix_regionalspend, mults=[1], weight_ind=w)
-            if w == 0:
-                run_optim = partial(proj.run_optim, key=-1, maxiter=1, swarmsize=swarmsize, maxtime=1,
-                                    parallel=False, dosave=True, runbaseline=True, runbalanced=runbalanced)
-            else:
-                run_optim = partial(proj.run_optim, key=-1, maxiter=1, swarmsize=swarmsize, maxtime=1,
-                                    parallel=False, dosave=True, runbaseline=False, runbalanced=runbalanced)
+            run_optim = partial(proj.run_optim, key=-1, maxiter=1, swarmsize=swarmsize, maxtime=1,
+                                parallel=False, dosave=True, runbaseline=True, runbalanced=runbalanced)
+
 
             # Run results in parallel or series.
             # can run in parallel b/c child processes in series
@@ -116,15 +113,23 @@ class Geospatial:
         results = [item for sublist in results for item in sublist]
         # remove multiple to plot by name (total hack)
         excess_budget = 0
+        track_names = []
+        track_del_ind = []
         for r, res in enumerate(results):
             res.mult = None
             if res.name == 'Baseline':
+                if res.model_name + ': Baseline' in track_names:
+                    track_del_ind.append(r)
                 res.name = res.model_name + ': Baseline'
+                track_names.append(res.name)
             else:
                 res.name = res.model_name + ": " + res.name
             if 'Excess budget not allocated' in res.prog_info.programs and 'Baseline' not in res.name:
                 excess_budget += res.prog_info.programs['Excess budget not allocated'].annual_spend[-1]
                 res.prog_info.programs['Excess budget not allocated'].annual_spend = np.zeros(len(res.years))
+        if track_del_ind:
+            for index in sorted(track_del_ind, reverse=True):
+                del results[index]
         if excess_budget > 0:
             excess_res = sc.dcp(results[0])
             excess_res.name = 'Excess budget'
