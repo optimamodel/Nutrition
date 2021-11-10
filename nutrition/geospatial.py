@@ -25,13 +25,14 @@ class Geospatial:
         self.name = name
         self.modelnames = modelnames
         self.regions = None
+        self.input_weights = weights # retain input weights to pass to Optim
         proc_weights = utils.process_weights(weights)
         self.weights = np.transpose(proc_weights)
         if mults is not None:
             print("Warning: changing budget multiples, not recommended")
             self.mults = mults
         else:
-            self.mults = [0, 0.01, 0.025, 0.04, 0.05, 0.075, 0.1, 0.2, 0.3, 0.6, 1]
+            self.mults = [0, 0.01, 0.6, 1]
             #self.mults = [0, 0.01, 0.025, 0.04, 0.05, 0.075]
         self.prog_set = prog_set
         self.add_funds = add_funds
@@ -50,58 +51,62 @@ class Geospatial:
             Total flexible spending is a function of additional funds, `fix_curr` and `fix_regionalspend`.
             - generate budget outcome curves and run gridsearch to distribute these flexible funds.
             - once funding is distributed between regions, optimize this within the regions"""
-        # create regions in order to calculate total flexible funds
-        regions = self.make_regions(add_funds=0)
-        if len(regions) < 2:
-            raise Exception('Less than 2 regions selected for geospatial analysis.')
-        models = []
-        for reg in regions:
-            thismod = sc.dcp(proj.model(reg.model_name))
-            thismod.setup(reg, setcovs=False)
-            thismod.get_allocs(reg.add_funds, reg.fix_curr, reg.rem_curr)
-            models.append(thismod)
-        # current regional spending only included in flexible funding if regional spending not fixed
-        regional_flexi = np.array([mod.prog_info.free for mod in models]) * int(not self.fix_regionalspend)
-        totalfunds = sum(regional_flexi) + self.add_funds
-        # adjust for region adding in current expenditure again
-        total_flexi = [totalfunds - x for x in regional_flexi]
-        if totalfunds > 0:
-            # can distribute between regions
-            # create regions with corrected additional funds
-            regions = self.make_regions(add_funds=total_flexi)
-            run_optim = partial(proj.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
-                                parallel=parallel, dosave=True, runbaseline=False)
-            # Generate the budget outcome curves optimization results.  This step takes a long while, generally.
-            print('Creating BOCs afresh...')
-            boc_optims = sc.odict([(region.name, run_optim(optim=region)) for region in regions])
 
-            # Get the actual BOCs (storing them in the self.bocs odict of pchip-generated objects).
-            self.get_bocs(boc_optims, totalfunds)
+        results = []
+        for w, weight in enumerate(self.weights):
+            # create regions in order to calculate total flexible funds
+            regions = self.make_regions(add_funds=0, weight_ind=w)
+            if len(regions) < 2:
+                raise Exception('Less than 2 regions selected for geospatial analysis.')
+            models = []
+            for reg in regions:
+                thismod = sc.dcp(proj.model(reg.model_name))
+                thismod.setup(reg, setcovs=False)
+                thismod.get_allocs(reg.add_funds, reg.fix_curr, reg.rem_curr)
+                models.append(thismod)
+            # current regional spending only included in flexible funding if regional spending not fixed
+            regional_flexi = np.array([mod.prog_info.free for mod in models]) * int(not self.fix_regionalspend)
+            totalfunds = sum(regional_flexi) + self.add_funds
+            # adjust for region adding in current expenditure again
+            total_flexi = [totalfunds - x for x in regional_flexi]
+            if totalfunds > 0:
+                # can distribute between regions
+                # create regions with corrected additional funds
+                regions = self.make_regions(add_funds=total_flexi, weight_ind=w)
+                run_optim = partial(proj.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime,
+                                    parallel=parallel, dosave=True, runbaseline=False)
+                # Generate the budget outcome curves optimization results.  This step takes a long while, generally.
+                print('Creating BOCs afresh...')
+                boc_optims = sc.odict([(region.name + 'objective #' + str(w+1), run_optim(optim=region)) for region in regions])
 
-            # Use a grid search to calculate the regional allocations from the BOCs.
-            regional_allocs = self.gridsearch(boc_optims, totalfunds=totalfunds)
+                # Get the actual BOCs (storing them in the self.bocs odict of pchip-generated objects).
+                self.get_bocs(boc_optims, totalfunds, weight)
 
-            # Else, if we have no funds to distribute between regions, but can redistribute within the regions...
-        elif (totalfunds == 0) and (self.fix_curr is False):
-            print('Warning: No funds to distribute between regions.')
-            regional_allocs = [0] * len(
-                self.modelnames)  # allocate 0 additional funds to each region for final optimization
+                # Use a grid search to calculate the regional allocations from the BOCs.
+                regional_allocs = self.gridsearch(boc_optims, totalfunds=totalfunds)
 
-            # Else, we shouldn't be trying to optimize anything because nothing can be distributed.
-        else:
-            raise Exception('No funds to distribute between or within regions.')
+                # Else, if we have no funds to distribute between regions, but can redistribute within the regions...
+            elif (totalfunds == 0) and (self.fix_curr is False):
+                print('Warning: No funds to distribute between regions.')
+                regional_allocs = [0] * len(
+                    self.modelnames)  # allocate 0 additional funds to each region for final optimization
 
-            # Optimize the new allocations within each region.
-        regions = self.make_regions(add_funds=regional_allocs, rem_curr=not self.fix_regionalspend, mults=[1])
-        run_optim = partial(proj.run_optim, key=-1, maxiter=1, swarmsize=swarmsize, maxtime=1,
-                            parallel=False, dosave=True, runbaseline=True, runbalanced=runbalanced)
+                # Else, we shouldn't be trying to optimize anything because nothing can be distributed.
+            else:
+                raise Exception('No funds to distribute between or within regions.')
 
-        # Run results in parallel or series.
-        # can run in parallel b/c child processes in series
-        if parallel:
-            results = utils.run_parallel(run_optim, regions, num_procs=len(regions))
-        else:
-            results = [run_optim(region) for region in regions]
+                # Optimize the new allocations within each region.
+            regions = self.make_regions(add_funds=regional_allocs, rem_curr=not self.fix_regionalspend, mults=[1], weight_ind=w)
+            run_optim = partial(proj.run_optim, key=-1, maxiter=1, swarmsize=swarmsize, maxtime=1,
+                                parallel=False, dosave=True, runbaseline=True, runbalanced=runbalanced)
+
+            # Run results in parallel or series.
+            # can run in parallel b/c child processes in series
+            if parallel:
+                results.append(utils.run_parallel(run_optim, regions, num_procs=len(regions)))
+            else:
+                for region in regions:
+                    results.append(run_optim(region))
 
         # Flatten list.
         results = [item for sublist in results for item in sublist]
@@ -126,7 +131,7 @@ class Geospatial:
             results.append(excess_res)
         return results
 
-    def make_regions(self, add_funds=None, rem_curr=False, mults=None):
+    def make_regions(self, add_funds=None, rem_curr=False, mults=None, weight_ind=None):
         """ Create all the Optim objects requested """
         if add_funds is None:
             add_funds = self.add_funds
@@ -134,11 +139,15 @@ class Geospatial:
             mults = self.mults
         if isinstance(add_funds, float) or isinstance(add_funds, int):
             add_funds = [add_funds] * len(self.modelnames)
+        if weight_ind is not None:
+            obj_weights = sc.odict((key, [val[weight_ind]]) for key, val in self.input_weights.items())
+        else:
+            obj_weights = self.input_weights
         regions = []
         for i, name in enumerate(self.modelnames):
             modelname = self.modelnames[i]
             regionalfunds = add_funds[i]
-            region = Optim(name=name, model_name=modelname, weights=self.weights, mults=mults,
+            region = Optim(name=name, model_name=modelname, weights=obj_weights, mults=mults,
                            prog_set=self.prog_set, active=self.active, add_funds=regionalfunds,
                            filter_progs=self.filter_progs, fix_curr=self.fix_curr, rem_curr=rem_curr, growth = self.growth,
                            balanced_optimization=self.balanced_optimization)
@@ -155,7 +164,7 @@ class Geospatial:
             val[i] = np.inner(outs, self.weights[i])
         return val
 
-    def get_bocs(self, boc_optims, totalfunds):
+    def get_bocs(self, boc_optims, totalfunds, weight):
         """ Genereates the budget outcome curves for each region
          :param optimized: a list of Optim objects (list of lists) """
         for name, results in boc_optims.items():
@@ -163,8 +172,8 @@ class Geospatial:
             output = np.zeros(len(results))
             for i, res in enumerate(results):
                 outs = res.model.get_output()
-                val = self.geo_objfun_val(outs, self.weights)
-                #val = np.inner(outs, self.weights)
+                #val = self.geo_objfun_val(outs, weight)
+                val = np.inner(outs, weight)
                 spending[i] = totalfunds * res.mult
                 output[i] = val
             self.bocs[name] = pchip(spending, output, extrapolate=False)

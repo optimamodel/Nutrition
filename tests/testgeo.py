@@ -12,7 +12,8 @@ p.load_data('demo', 'region2', name='Demo2', resampling=False)
 
 kwargs = {'name': 'test1',
           'modelnames': ['Demo1', 'Demo2'],
-          'weights': sc.odict({'Minimize the number of child deaths': [1.],
+          'weights': sc.odict({'Minimize the number of child deaths': [1., 2.],
+                               'thrive': [0., 1.],
                                    }),
           'fix_curr': False,
           'fix_regionalspend': False,
