@@ -22,10 +22,10 @@ kwargs = {'name': 'test1',
                         'Multiple micronutrient supplementation', 'Micronutrient powders', 'Kangaroo mother care',
                         'Public provision of complementary foods', 'Treatment of SAM',  'Vitamin A supplementation',
                        'Mg for eclampsia', 'Zinc supplementation', 'Iron and iodine fortification of salt'],
-          'growth': 'fixed budget'}
+          'growth': 'fixed coverage'}
 if __name__ == '__main__':
     geo = Geospatial(**kwargs)
-    results = p.run_geo(geo=geo, maxiter=50, swarmsize=0, maxtime=50, parallel=False, runbalanced=True)
+    results = p.run_geo(geo=geo, maxiter=80, swarmsize=0, maxtime=80, parallel=False, runbalanced=True)
     p.plot(toplot=['clust_annu_alloc'], geo=True)
     p.write_results('geo_results.xlsx')
     p.save('geo_test')
