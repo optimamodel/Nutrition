@@ -257,7 +257,7 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name):
                 rect = bar[-1]
                 change = perchange[j][0]
                 height = rect.get_height()
-                ax.text(rect.get_x() + rect.get_width() / 2., height,'{}%'.format(change), ha='center', va='bottom')
+                ax.text(rect.get_x() + rect.get_width() / 2., height,'{}%'.format(change), ha='center', va='bottom', fontsize=10)
         # formatting
         title += ' %s \n %s-%s'%(utils.relabel(outcome).lower(), baseres.years[pltstart], baseres.years[-1])
         sc.SIticks(ax=ax, axis='y')
@@ -355,7 +355,7 @@ def plot_outputs(all_res, all_reduce, seq, name):
                 for k, rect in enumerate(bar):
                     change = perchange[j][k]
                     height = rect.get_height()
-                    ax.text(rect.get_x() + rect.get_width() / 2., height,'{}%'.format(change), ha='center', va='bottom')
+                    ax.text(rect.get_x() + rect.get_width() / 2., height,'{}%'.format(change), ha='center', va='bottom', fontsize=10)
         # formatting
         title += ' %s \n %s-%s'%(utils.relabel(outcome).lower(), baseres.years[pltstart], baseres.years[-1])
         sc.SIticks(ax=ax, axis='y')
