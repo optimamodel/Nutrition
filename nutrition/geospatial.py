@@ -31,8 +31,8 @@ class Geospatial:
             print("Warning: changing budget multiples, not recommended")
             self.mults = mults
         else:
-            #self.mults = [0, 0.01, 0.025, 0.04, 0.05, 0.075, 0.1, 0.2, 0.3, 0.6, 1]
-            self.mults = [0, 0.01, 0.025, 0.04, 0.05, 0.075]
+            self.mults = [0, 0.01, 0.025, 0.04, 0.05, 0.075, 0.1, 0.2, 0.3, 0.6, 1]
+            #self.mults = [0, 0.01, 0.025, 0.04, 0.05, 0.075]
         self.prog_set = prog_set
         self.add_funds = add_funds
         self.fix_curr = fix_curr
