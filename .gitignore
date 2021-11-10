@@ -5,7 +5,6 @@
 *.rds
 *.png
 .pkl
-*.xls
 *.csv
 ~$*
 

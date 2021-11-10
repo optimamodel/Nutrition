@@ -39,14 +39,15 @@ def demo_optims():
     kwargs1 = {'name': 'Maximize thrive',
               'model_name': 'demo',
               'mults':[1],
-               'weights': sc.odict({'thrive': 1}),
+               'weights': sc.odict({'thrive': [1.]}),
               'prog_set': ['Vitamin A supplementation', 'IYCF 1', 'IFA fortification of maize',
                            'Balanced energy-protein supplementation',
                            'Public provision of complementary foods',
                            'Iron and iodine fortification of salt'],
               'fix_curr': False,
               'add_funds': 0,
-              'filter_progs':True}
+              'filter_progs':True,
+              'growth': 'fixed coverage'}
     
     optims = [Optim(**kwargs1)]
     return optims
@@ -54,14 +55,15 @@ def demo_optims():
 def demo_geos():
     kwargs1 = {'name': 'Geospatial optimization',
           'modelnames': ['demoregion1', 'demoregion2', 'demoregion3'],
-          'weights': 'thrive',
+          'weights': sc.odict({'thrive': [1.]}),
           'fix_curr': False,
           'fix_regionalspend': False,
           'add_funds': 0,
           'prog_set': ['IFA fortification of maize', 'IYCF 1', 'Lipid-based nutrition supplements',
                         'Multiple micronutrient supplementation', 'Micronutrient powders', 'Kangaroo mother care',
                         'Public provision of complementary foods', 'Treatment of SAM',  'Vitamin A supplementation',
-                       'Mg for eclampsia', 'Zinc for treatment + ORS', 'Iron and iodine fortification of salt']}
+                       'Mg for eclampsia', 'Zinc for treatment + ORS', 'Iron and iodine fortification of salt'],
+          'growth': 'fixed coverage'}
     
     geos = [Geospatial(**kwargs1)]
     return geos
