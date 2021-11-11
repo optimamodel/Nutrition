@@ -4,6 +4,7 @@ from . import utils
 import multiprocessing
 
 
+
 class Scen(sc.prettyobj):
     def __init__(self, name=None, model_name=None, scen_type=None, progvals=None, enforce_constraints_year=None, growth=None, active=True):
         """

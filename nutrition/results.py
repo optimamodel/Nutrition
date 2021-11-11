@@ -4,6 +4,7 @@ import numpy as np
 import math as mt
 
 
+
 class ScenResult(sc.prettyobj):
     def __init__(self, name, model_name, model, obj=None, mult=None, weight=None, growth=False):
         self.name = name
