@@ -253,7 +253,7 @@ class DefaultParams(object):
 
     @translate
     def anaemia_progs(self):
-        anaem_sheet = utils.read_sheet(self.spreadsheet, _("Programs anaemia"), [0, 1])
+        anaem_sheet = utils.read_sheet(self.spreadsheet, _("Programs anemia"), [0, 1])
         self.rr_anaem_prog = anaem_sheet.loc[_("Relative risks of anaemia when receiving intervention")].to_dict(orient="index")
         self.or_anaem_prog = anaem_sheet.loc[_("Odds ratios of being anaemic when covered by intervention")].to_dict(orient="index")
 
