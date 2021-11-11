@@ -151,7 +151,7 @@ find_datastore()  # Run this on load
 
 @RPC()
 def run_query(token, query):
-    raise Exception('Query function disabled')
+    raise Exception("Query function disabled")
     globalsdict = globals()
     localsdict = locals()
     localsdict["output"] = "Output not specified"
