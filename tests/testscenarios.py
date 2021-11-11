@@ -24,7 +24,7 @@ kwargs1 = {"name": "Treat SAM 100%", "model_name": "eg", "scen_type": "coverage"
 kwargs2 = sc.dcp(kwargs1)
 kwargs2.update({"name": "IYCF 1 100%", "progvals": sc.odict({"IYCF 1": [1]})})
 
-kwargs3 = {"name": "IYCF at $10 mil", "model_name": "eg", "scen_type": "budget", "progvals": sc.odict({"IYCF 1": [1e8, 2e8, 1.5e8, 2.5e8], "IPTp": [2e7, 2.8e7, 2.8e7, 4.25e7]}), "growth": "fixed budget", "enforce_constraints_year": 1}
+kwargs3 = {"name": "IYCF at $10 mil", "model_name": "eg", "scen_type": "budget", "progvals": sc.odict({"IYCF 1": [1e8, 2e8, 1.5e8, 2.5e8], "IPTp": [2e7, 2.8e7, 2.8e7, 4.25e7]}), "growth": "fixed covergae", "enforce_constraints_year": 1}
 
 ### testing FE bugs
 kwargs4 = {"name": "FE check 1", "model_name": "eg", "scen_type": "budget", "progvals": sc.odict({u"IFA fortification of maize": [2000000], u"IPTp": [2000000], u"Iron and iodine fortification of salt": [], u"IYCF 1": [], u"Long-lasting insecticide-treated bednets": [], u"Micronutrient powders": [], u"Multiple micronutrient supplementation": [], u"Vitamin A supplementation": [], u"Zinc for treatment + ORS": []})}
@@ -35,7 +35,7 @@ kwargs5 = {"name": "Check WASH", "model_name": "eg", "scen_type": "budget", "pro
 
 kwargs6 = {"name": "Check bednets", "model_name": "eg", "scen_type": "budget", "progvals": sc.odict({"Long-lasting insecticide-treated bednets": [0]})}
 
-kwargs7 = {"name": "IYCF", "model_name": "eg", "scen_type": "coverage", "progvals": sc.odict({"IYCF 1": [0.6, 0.2, 0.5, 0.95, 0.8]}), "growth": "fixed budget"}
+kwargs7 = {"name": "IYCF", "model_name": "eg", "scen_type": "coverage", "progvals": sc.odict({"IYCF 1": [0.6, 0.2, 0.5, 0.95, 0.8]}), "growth": "fixed covergae"}
 
 kwargs8 = {"name": "Treat SAM 100%", "model_name": "Maximize thrive", "mults": [1], "weights": sc.odict({"thrive": 1}), "prog_set": ["Vitamin A supplementation", "IYCF 1", "IFA fortification of maize", "Balanced energy-protein supplementation", "Public provision of complementary foods", "Iron and iodine fortification of salt"], "fix_curr": False, "add_funds": 0, "filter_progs": True}
 

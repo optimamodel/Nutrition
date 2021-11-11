@@ -155,15 +155,7 @@ class Geospatial:
         self.regions = regions
         return regions
 
-    def geo_objfun_val(self, outs, weights):
-        """ "This is used to find the value of the objective functional for
-        different weights."""
-        num_weights = np.shape(self.weights)[0]
-        val = np.zeros(num_weights)
-        for i in range(0, num_weights):
-            val[i] = np.inner(outs, self.weights[i])
-        return val
-
+    
     def get_bocs(self, boc_optims, totalfunds, weight):
         """Genereates the budget outcome curves for each region
         :param optimized: a list of Optim objects (list of lists)"""
@@ -172,7 +164,6 @@ class Geospatial:
             output = np.zeros(len(results))
             for i, res in enumerate(results):
                 outs = res.model.get_output()
-                # val = self.geo_objfun_val(outs, weight)
                 val = np.inner(outs, weight)
                 spending[i] = totalfunds * res.mult
                 output[i] = val
