@@ -385,10 +385,10 @@ def del_result(result_key, project_key, die=None):
 
 
 @RPC()
-def jsonify_project(project_id, verbose=False):
+def jsonify_project(project_key, verbose=False):
     """ Return the project json, given the Project UID. """
-    proj = load_project(project_id)  # Load the project record matching the UID of the project passed in.
-    json = {"project": {"id": str(proj.uid), "name": proj.name, "username": proj.webapp.username, "hasData": len(proj.datasets) > 0, "dataSets": proj.datasets.keys(), "creationTime": sc.getdate(proj.created), "updatedTime": sc.getdate(proj.modified), "n_results": len(proj.results), "n_tasks": len(proj.webapp.tasks)}}
+    proj = load_project(project_key)  # Load the project record matching the UID of the project passed in.
+    json = {"project": {"key": project_key, "id": str(proj.uid), "name": proj.name, "username": proj.webapp.username, "hasData": len(proj.datasets) > 0, "dataSets": proj.datasets.keys(), "creationTime": sc.getdate(proj.created), "updatedTime": sc.getdate(proj.modified), "n_results": len(proj.results), "n_tasks": len(proj.webapp.tasks)}}
     if verbose:
         sc.pp(json)
     return json

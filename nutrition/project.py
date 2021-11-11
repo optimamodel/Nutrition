@@ -590,6 +590,9 @@ class Project(object):
         except:
             return 0
 
+    def __bool__(self):
+        return True
+
 def demo(scens=False, optims=False, geos=False):
     """ Create a demo project with demo settings """
 

@@ -566,18 +566,18 @@ Last update: 2019feb18
       },
 
       deleteSelectedProjects() {
-        let selectProjectsUIDs = this.projectSummaries.filter(theProj => // Pull out the names of the projects that are selected.
-          theProj.selected).map(theProj => theProj.project.id)
-        console.log('deleteSelectedProjects() called for ', selectProjectsUIDs)
-        if (selectProjectsUIDs.length > 0) { // Have the server delete the selected projects.
+        let selectProjectKeys = this.projectSummaries.filter(theProj => // Pull out the names of the projects that are selected.
+          theProj.selected).map(theProj => theProj.project.key)
+        console.log('deleteSelectedProjects() called for ', selectProjectKeys)
+        if (selectProjectKeys.length > 0) { // Have the server delete the selected projects.
           this.$sciris.start(this)
-          this.$sciris.rpc('delete_projects', [selectProjectsUIDs, this.$store.state.currentUser.username])
+          this.$sciris.rpc('delete_projects', [selectProjectKeys, this.$store.state.currentUser.username])
             .then(response => {
               let activeProjectId = this.$store.state.activeProject.project.id // Get the active project ID.
               if (activeProjectId === undefined) {
                 activeProjectId = null
               }
-              if (selectProjectsUIDs.find(theId => theId === activeProjectId)) { // If the active project ID is one of the ones deleted...
+              if (selectProjectKeys.find(theId => theId === activeProjectId)) { // If the active project ID is one of the ones deleted...
                 this.$store.commit('newActiveProject', {}) // Set the active project to an empty project.
                 activeProjectId = null // Null out the project.
               }
