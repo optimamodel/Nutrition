@@ -16,7 +16,7 @@ from .plotting import make_plots, get_costeff, plot_costcurve
 from . import settings
 from . import utils as utils
 from .migration import migrate
-from .utils import get_translator
+from .utils import get_translator, translate
 from datetime import timezone
 
 
@@ -387,11 +387,12 @@ class Project(object):
         self.add_scens(converted)
         return
 
+    @translate
     def run_baseline(self, model_name, prog_set, dorun=True):
         model = sc.dcp(self.model(model_name))
         progvals = sc.odict({prog: [] for prog in prog_set})
-        if "Excess budget not allocated" in prog_set:
-            excess_spend = {"name": "Excess budget not allocated", "all_years": model.prog_info.all_years, "prog_data": add_dummy_prog_data(model.prog_info, "Excess budget not allocated")}
+        if _("Excess budget not allocated") in prog_set:
+            excess_spend = {"name": _("Excess budget not allocated"), "all_years": model.prog_info.all_years, "prog_data": add_dummy_prog_data(model.prog_info, _("Excess budget not allocated"), self.locale)}
             model.prog_info.add_prog(excess_spend, model.pops)
             model.prog_info.prog_data = excess_spend["prog_data"]
         base = Scen(name="Baseline", model_name=model_name, scen_type="coverage", progvals=progvals)

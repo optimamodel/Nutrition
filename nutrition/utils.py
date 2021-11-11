@@ -15,12 +15,36 @@ locale = "en"  # Set the default locale
 available_locales = sorted([(pathlib.Path(x) / ".." / "..").resolve().name for x in gettext.find("nutrition", LOCALE_PATH, languages=babel.Locale("en").languages.keys(), all=True)])
 
 
-def get_translator(this_locale=None):
+def get_translator(this_locale:str=None, context:bool=False):
+    """
+    Get locale translation function
+
+    Example usage
+
+        _ = get_translator() # default/fallback locale, set in nutrition.utils.locale
+        _ = get_translator('fr') # translator for specific locale
+        pgettext = get_translator('fr',context=True) # Include context
+
+        translated = _('original')
+        translated = pgettext('context','original')
+
+    Note that if ``context=True`` it is preferable to assign the returned function to
+    `pgettext` rather than `_` so that Babel extracts the msgctxt correctly.
+
+    :param this_locale: A locale string e.g. `fr` - should match available_locales
+    :param context: Optionally return a two-argument translation function supporting context
+    :return: A callable translation function
+    """
+
+
     # Note that this function cannot be cached (e.g. with lrucache) because the default locale is read at runtime
     if this_locale is None:
         this_locale = locale  # Use the fallback locale. Loading it this way means users can write to nutrition.utils.locale to change the default at runtime
     translator = gettext.translation("nutrition", LOCALE_PATH, fallback=False, languages=[this_locale])
-    return translator.gettext
+    if context:
+        return translator.pgettext
+    else:
+        return translator.gettext
 
 
 def translate(f):
@@ -407,14 +431,15 @@ def check_sol(sol):
         raise Exception(":: Error:: birth outcome probabilities outside interval (0,1)")
 
 
-def add_dummy_prog_data(prog_info, name):
+def add_dummy_prog_data(prog_info, name, locale):
+    _ = get_translator(locale)
     thisprog_data = sc.dcp(prog_info.prog_data)
     thisprog_data.base_cov[name] = 0.0
     thisprog_data.base_prog_set.append(name)
     thisprog_data.costs[name] = 1e12
     thisprog_data.costtype[name] = "linear"
     thisprog_data.impacted_pop[name] = {pop: 1.0 for pop in thisprog_data.settings.all_ages}  # so that it covers everyone in the model
-    thisprog_data.prog_deps[name] = {"Exclusion dependency": [], "Threshold dependency": []}  # so that it has no dependencies
+    thisprog_data.prog_deps[name] = {_("Exclusion dependency"): [], _("Threshold dependency"): []}  # so that it has no dependencies
     thisprog_data.prog_target[name] = {pop: 1.0 for pop in thisprog_data.settings.all_ages}  # so that it covers everyone in the model
     thisprog_data.sat[name] = 1.0
     return thisprog_data

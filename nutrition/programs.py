@@ -97,8 +97,6 @@ class Program(sc.prettyobj):
         self._set_restrpop(pops)
         self._set_unrestrpop(pops)
         # this accounts for different fractions within age bands
-        print(self.name)
-        print(self.unrestr_popsize)
         self.sat_unrestr = self.restr_popsize / self.unrestr_popsize
 
     def set_init_unrestr(self):
@@ -143,9 +141,7 @@ class Program(sc.prettyobj):
         self.unrestr_popsize = 0.0
         for pop in populations:
             for age in pop.age_groups:
-                print(age.age)
                 if age.age in self.agesTargeted:
-                    print(f'{age.age}: {ceil(self.target_pops[age.age]) * age.pop_size}')
                     self.unrestr_popsize += ceil(self.target_pops[age.age]) * age.pop_size
 
     def _set_restrpop(self, populations):

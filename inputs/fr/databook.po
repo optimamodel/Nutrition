@@ -150,19 +150,19 @@ msgid "Diarrhoea incidence"
 msgstr "Incidence de la diarrhée"
 
 msgid "Average episodes per year: <1 month"
-msgstr "Nombre moyen d'épisodes par an : <1 mois"
+msgstr "Nombre moyen d'épisodes par an: <1 mois"
 
 msgid "Average episodes per year: 1-5 months"
-msgstr "Nombre moyen d'épisodes par an : 1-5 mois"
+msgstr "Nombre moyen d'épisodes par an: 1-5 mois"
 
 msgid "Average episodes per year: 6-11 months"
-msgstr "Nombre moyen d'épisodes par an : 6-11 mois"
+msgstr "Nombre moyen d'épisodes par an: 6-11 mois"
 
 msgid "Average episodes per year: 12-23 months"
-msgstr "Nombre moyen d'épisodes par an : 12-23 mois"
+msgstr "Nombre moyen d'épisodes par an: 12-23 mois"
 
 msgid "Average episodes per year: 24-59 months"
-msgstr "Nombre moyen d'épisodes par an : 24-59 mois"
+msgstr "Nombre moyen d'épisodes par an: 24-59 mois"
 
 msgid "Other risks"
 msgstr "Autres risques"
@@ -183,16 +183,16 @@ msgid "Number of births"
 msgstr "Nombre de naissances"
 
 msgid "WRA: 15-19 years"
-msgstr "FAP : 15-19 ans"
+msgstr "FAP: 15-19 ans"
 
 msgid "WRA: 20-29 years"
-msgstr "FAP : 20-29 ans"
+msgstr "FAP: 20-29 ans"
 
 msgid "WRA: 30-39 years"
-msgstr "FAP : 30-39 ans"
+msgstr "FAP: 30-39 ans"
 
 msgid "WRA: 40-49 years"
-msgstr "FAP : 40-49 ans"
+msgstr "FAP: 40-49 ans"
 
 msgid "Total WRA"
 msgstr "Total FAP"
@@ -354,16 +354,16 @@ msgid "Anaemia"
 msgstr "Anémie"
 
 msgid "PW: 15-19 years"
-msgstr "FE : 15-19 ans"
+msgstr "FE: 15-19 ans"
 
 msgid "PW: 20-29 years"
-msgstr "FE : 20-29 ans"
+msgstr "FE: 20-29 ans"
 
 msgid "PW: 30-39 years"
-msgstr "FE : 30-39 ans"
+msgstr "FE: 30-39 ans"
 
 msgid "PW: 40-49 years"
-msgstr "FE : 40-49 ans"
+msgstr "FE: 40-49 ans"
 
 msgid "Prevalence of anaemia"
 msgstr "Prévalence de l'anémie"
@@ -560,19 +560,19 @@ msgid "Vitamin A supplementation"
 msgstr "Supplémentation en vitamine A"
 
 msgid "WASH: Handwashing"
-msgstr "WASH : lavage des mains"
+msgstr "WASH: lavage des mains"
 
 msgid "WASH: Hygenic disposal"
-msgstr "WASH : Élimination hygiénique"
+msgstr "WASH: Élimination hygiénique"
 
 msgid "WASH: Improved sanitation"
-msgstr "WASH : Amélioration de l'assainissement"
+msgstr "WASH: Amélioration de l'assainissement"
 
 msgid "WASH: Improved water source"
-msgstr "WASH : Source d'eau améliorée"
+msgstr "WASH: Source d'eau améliorée"
 
 msgid "WASH: Piped water"
-msgstr "WASH : Eau courante"
+msgstr "WASH: Eau courante"
 
 msgid "Zinc for treatment + ORS"
 msgstr "Zinc pour le traitement + SRO"
@@ -679,6 +679,9 @@ msgstr "Rapports des cotes"
 
 msgid "Programs birth outcomes"
 msgstr "Programmes-rés. des naissances"
+
+msgid "Programs anemia"
+msgstr "Programmes-anémie"
 
 msgid "Programs anaemia"
 msgstr "Programmes-anémie"
@@ -916,3 +919,9 @@ msgstr "année"
 
 msgid "=\"Baseline (\"&start_year&\") coverage\""
 msgstr "=\"Couverture de l'année de référence (\"&start_year&\")\""
+
+msgid "Data"
+msgstr "Données"
+
+msgid "Incidence of conditions"
+msgstr "Incidence des conditions"

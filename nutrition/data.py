@@ -253,7 +253,7 @@ class DefaultParams(object):
 
     @translate
     def anaemia_progs(self):
-        anaem_sheet = utils.read_sheet(self.spreadsheet, _("Programs anemia"), [0, 1])
+        anaem_sheet = utils.read_sheet(self.spreadsheet, _("Programs anaemia"), [0, 1])
         self.rr_anaem_prog = anaem_sheet.loc[_("Relative risks of anaemia when receiving intervention")].to_dict(orient="index")
         self.or_anaem_prog = anaem_sheet.loc[_("Odds ratios of being anaemic when covered by intervention")].to_dict(orient="index")
 
@@ -882,7 +882,7 @@ class ProgData(object):
             for mode in package:
                 col = package[mode]
                 if col.notnull()[0]:
-                    if mode == "Mass media":
+                    if mode == _("Mass media"):
                         ageModeTuple = [(pop, mode) for pop in self.settings.child_ages[:-1]]  # exclude 24-59 months
                     else:
                         ageModeTuple = [(packageName[1], mode)]
@@ -915,8 +915,8 @@ class ProgData(object):
             for pop, mode in package:
                 if target[name].get(pop) is None:
                     target[name][pop] = 0.0
-                if mode == "Health facility":
-                    if "month" in pop:  # children
+                if mode == _("Health facility"):
+                    if pop in self.settings.child_ages:  # children
                         target[name][pop] += frac_child
                     else:  # pregnant women
                         target[name][pop] += frac_pw
@@ -1000,10 +1000,8 @@ class Dataset(object):
             default_data = sc.Spreadsheet(filename=filename).pandas()
 
         # Read them into actual data
-        try:
-            self.demo_data = InputData(input_data, self.calcscache)  # demo_ here is demographic_
-        except Exception as E:
-            raise Exception(_("Error in databook") + ": %s" % str(E))
+        self.demo_data = InputData(input_data, self.calcscache)  # demo_ here is demographic_
+
 
         self.default_params = DefaultParams(default_data, input_data)
         self.default_params.compute_risks(self.demo_data)

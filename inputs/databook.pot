@@ -665,6 +665,9 @@ msgstr ""
 msgid "Programs birth outcomes"
 msgstr ""
 
+msgid "Programs anemia"
+msgstr ""
+
 msgid "Programs anaemia"
 msgstr ""
 
@@ -881,4 +884,10 @@ msgid "Odds ratios of being anaemic when covered by intervention"
 msgstr ""
 
 msgid "Wasting"
+msgstr ""
+
+msgid "Data"
+msgstr ""
+
+msgid "Incidence of conditions"
 msgstr ""

@@ -126,6 +126,9 @@ class Optim(sc.prettyobj):
         inds = kwargs["keep_inds"]
         fixed = kwargs["fixed"]
         model = kwargs["model"]
+
+        _ = utils.get_translator(model.locale)
+
         numprogs = np.sum(inds)
         if free > 0 and np.any(inds):  # need both funds and programs
             xmin = np.zeros(numprogs)
@@ -141,10 +144,10 @@ class Optim(sc.prettyobj):
             scaled = utils.scale_end_alloc(free, x, model.prog_info, inds, fixed)  # scales spending to fit budget, limited by saturation and any program coverage dependencies
             inds = np.append(inds, True)
             fixed = np.append(fixed, 0.0)
-            excess_spend = {"name": "Excess budget not allocated", "all_years": model.prog_info.all_years, "prog_data": utils.add_dummy_prog_data(model.prog_info, "Excess budget not allocated")}
+            excess_spend = {"name": _("Excess budget not allocated"), "all_years": model.prog_info.all_years, "prog_data": utils.add_dummy_prog_data(model.prog_info, _("Excess budget not allocated"), model.locale)}
             model.prog_info.add_prog(excess_spend, model.pops)
             model.prog_info.prog_data = excess_spend["prog_data"]
-            self.prog_set.append("Excess budget not allocated")
+            self.prog_set.append(_("Excess budget not allocated"))
             best_alloc = utils.add_fixed_alloc(fixed, scaled, inds)
         else:
             # if one of the multiples is 0, return fixed costs
@@ -154,8 +157,8 @@ class Optim(sc.prettyobj):
         progvals = {prog: spend for prog, spend in zip(self.prog_set, best_alloc)}
         scen = Scen(name=name, model_name=self.model_name, scen_type="budget", progvals=progvals)
         res = run_scen(scen, model, obj=self.name, mult=mult, restrictcovs=False)
-        if "Excess budget not allocated" in self.prog_set:
-            self.prog_set.remove("Excess budget not allocated")
+        if _("Excess budget not allocated") in self.prog_set:
+            self.prog_set.remove(_("Excess budget not allocated"))
         return res
 
     @utils.trace_exception

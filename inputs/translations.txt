@@ -219,6 +219,7 @@ Birth outcome risks
 Relative risks
 Odds ratios
 Programs birth outcomes
+Programs anemia
 Programs anaemia
 Programs wasting
 Programs for children
@@ -289,3 +290,5 @@ Odds ratios for correct breastfeeding by program
 ="Baseline ("&start_year&") coverage"
 Odds ratios of being anaemic when covered by intervention
 Wasting
+Data
+Incidence of conditions

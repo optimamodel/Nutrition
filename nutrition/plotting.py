@@ -52,8 +52,10 @@ def make_plots(all_res=None, toplot=None, optim=False, geo=False):
     return allplots
 
 
-def plot_prevs(all_res):
+def plot_prevs(all_res, locale=None):
     """ Plot prevs for each scenario"""
+    pgettext = utils.get_translator(locale, context=True)
+
     prevs = utils.default_trackers(prev=True, rate=False)
     lines = []
     figs = sc.odict()
@@ -65,7 +67,8 @@ def plot_prevs(all_res):
         leglabels = []
         # plot results
         for r, res in enumerate(all_res):
-            if res.name != "Excess budget not allocated":
+            _ = utils.get_translator(res.locale)
+            if res.name != _("Excess budget not allocated"):
                 years = res.years
                 out = res.get_outputs([prev], seq=True)[0]
                 f = scipy.interpolate.PchipInterpolator(years, out, extrapolate=False)
@@ -79,16 +82,19 @@ def plot_prevs(all_res):
                 leglabels.append(res.name)
         # formatting
         #        sc.SIticks(ax=ax, axis='y')
-        ax.set_ylabel("Prevalence (%)")  # Shown as tick labels
+        ax.set_ylabel(pgettext("plotting", "Prevalence (%)"))  # Shown as tick labels
         ax.set_ylim([0, ymax * 1.1])
-        ax.set_xlabel("Years")
+        ax.set_xlabel(pgettext("plotting", "Years"))
         ax.set_title(utils.relabel(prev))
-        ax.legend(lines, [res.name for res in all_res if res.name != "Excess budget not allocated"], **legend_loc)
+        ax.legend(lines, [res.name for res in all_res if res.name != _("Excess budget not allocated")], **legend_loc)
         figs["prevs_%0i" % i] = fig
     return figs
 
 
-def plot_outputs(all_res, seq, name):
+def plot_outputs(all_res, seq, name, locale=None):
+
+    pgettext = utils.get_translator(locale, context=True)
+
     outcomes = utils.default_trackers(prev=False, rate=False)
     width = 0.15
     figs = sc.odict()
@@ -109,7 +115,8 @@ def plot_outputs(all_res, seq, name):
         offsets = np.arange(len(all_res) + 1) * width  # Calculate offset so tick is in the center of the bars
         offsets -= offsets.mean() - 0.5 * width
         for r, res in enumerate(all_res):
-            if res.name != "Excess budget not allocated":
+            _ = utils.get_translator(res.locale)
+            if res.name != _("Excess budget not allocated"):
                 offset = offsets[r]
                 xpos = years + offset if seq else offset
                 output = sc.promotetoarray(res.get_outputs(outcome, seq=seq)[0])
@@ -122,10 +129,10 @@ def plot_outputs(all_res, seq, name):
                 bar = ax.bar(xpos, output, width=width, color=colors[r])
                 bars.append(bar)
         if seq:
-            ax.set_xlabel("Years")
-            title = "Annual"
+            ax.set_xlabel(pgettext("plotting", "Years"))
+            title = pgettext("plotting", "Annual")
         else:
-            title = "Cumulative"
+            title = pgettext("plotting", "Cumulative")
             ax.set_xticks([])
             # display percentage change above bars
             for j, bar in enumerate(bars[1:], 1):
@@ -138,21 +145,23 @@ def plot_outputs(all_res, seq, name):
         sc.SIticks(ax=ax, axis="y")
         ax.set_ylim([0, ymax * 1.1])
         if scale == 1:
-            ylabel = "Number"
+            ylabel = pgettext("plotting", "Number")
         elif scale == 1e6:
-            ylabel = "Number (millions)"
+            ylabel = pgettext("plotting", "Number (millions)")
         else:
             raise Exception("Scale value must be 1 or 1e6, not %s" % scale)
         ax.set_ylabel(ylabel)
-        ax.legend(bars, [res.name for res in all_res if res.name != "Excess budget not allocated"], ncol=1, **legend_loc)
+        ax.legend(bars, [res.name for res in all_res if res.name != _("Excess budget not allocated")], ncol=1, **legend_loc)
         ax.set_title(title)
         figs["%s_out_%0i" % (name, i)] = fig
     return figs
 
 
-def plot_alloc(results, optim, geo):
+def plot_alloc(results, optim, geo, locale=None):
     """Plots the average annual spending for each scenario, coloured by program.
     Legend will include all programs in the 'baseline' allocation which receive non-zero spending in any scenario"""
+
+    pgettext = utils.get_translator(locale, context=True)
 
     # Initialize
     width = 0.35
@@ -197,8 +206,10 @@ def plot_alloc(results, optim, geo):
             bars.append(bar)
             bottom += spend
     ymax = max(bottom)
+
     if optim or geo:
-        title = "Optimal allocation, %s-%s" % (ref.years[pltstart], ref.years[-1])
+        #msgctxt test
+        title = pgettext("plotting", "Optimal allocation, %s-%s") % (ref.years[pltstart], ref.years[-1])
         valuestr = str(results[1].prog_info.free / 1e6)  # bit of a hack
         # format x axis
         if valuestr[1] == ".":
@@ -206,23 +217,26 @@ def plot_alloc(results, optim, geo):
         else:
             valuestr = valuestr[:2]
         if geo:
-            xlab = "Region"
+            xlab = pgettext("plotting","Region")
         else:
-            xlab = "Total available budget (relative to US$%sM)" % valuestr
+            xlab = pgettext("plotting","Total available budget (relative to US$%sM)") % valuestr
     else:
-        title = "Average annual spending, %s-%s" % (ref.years[pltstart], ref.years[-1])
+        title = pgettext("plotting","Average annual spending, %s-%s") % (ref.years[pltstart], ref.years[-1])
         xlab = ""  # 'Scenario' # Collides with tick labels
+
     ax.set_title(title)
     ax.set_yticks(x)
     ax.set_yticklabels(xlabs)
     ax.set_ylabel(xlab)
     ax.set_xlim((0, ymax + ymax * 0.1))
+
     if scale == 1e1:
-        ylabel = "Spending (US$)"
+        ylabel = pgettext("plotting","Spending (US$)")
     elif scale == 1e6:
-        ylabel = "Spending (US$M)"
+        ylabel = pgettext("plotting","Spending (US$M)")
     else:
-        raise Exception("Scale value must be 1e1 or 1e6, not %s" % scale)
+        raise Exception(f"Scale value must be 1e1 or 1e6, not {scale}")
+
     ax.set_xlabel(ylabel)
     #    sc.SIticks(ax=ax, axis='y')
     nprogs = len(leglabs)
@@ -243,13 +257,17 @@ def plot_alloc(results, optim, geo):
     return figs
 
 
-def plot_costcurve(results):
+def plot_costcurve(results, locale=None):
     """Plots the cost coverage curves.
     Really only used as a diagnostic plotting tool, since with lots of programs it may not be very informative for a user."""
+
+    pgettext = utils.get_translator(locale, context=True)
+
     fig = pl.figure()
     ax = fig.add_axes(ax_size)
     leglabs = []
     for res in results[:1]:
+        _ = utils.get_translator(res.locale)
         allocs = res.get_allocs()
         maxspend = 0
         for name in res.programs.iterkeys():
@@ -263,8 +281,8 @@ def plot_costcurve(results):
             ax.plot(x, y)
     ax.set_ylim([0, 1])
     ax.set_xlim([0, 2e7])
-    ax.set_ylabel("Coverage (%)")
-    ax.set_xlabel("Spending ($US)")
+    ax.set_ylabel(pgettext("plotting", "Coverage (%)"))
+    ax.set_xlabel(pgettext("plotting", "Spending ($US)"))
     ax.legend(leglabs)
     return fig
 
@@ -279,6 +297,7 @@ def get_costeff(project, results):
     baselines = []
     children = sc.odict()
     for r, res in enumerate(results):
+        _ = utils.get_translator(res.locale)
         print("Running cost-effectiveness result %s of %s" % (r + 1, len(results)))
         children[res.name] = []
         model = project.model(res.model_name)
@@ -291,16 +310,16 @@ def get_costeff(project, results):
         childkwargs = res.get_childscens()
         childscens = make_scens(childkwargs)
         for child in childscens:
-            if child.name != "Excess budget":
-                if "Excess budget not allocated" in child.prog_set:
-                    child.prog_set.remove("Excess budget not allocated")
+            if child.name != _("Excess budget"):
+                if _("Excess budget not allocated") in child.prog_set:
+                    child.prog_set.remove(_("Excess budget not allocated"))
                 childres = run_scen(child, model)
                 children[res.name].append(childres)
     outcomes = utils.default_trackers(prev=False, rate=False)
     pretty = utils.relabel(outcomes)
     costeff = sc.odict()
     for i, parent in enumerate(parents):
-        if parent.name != "Excess budget":
+        if parent.name != _("Excess budget"):
             baseline = baselines[i]
             costeff[parent.name] = sc.odict()
             par_outs = parent.get_outputs(outcomes)
@@ -320,21 +339,21 @@ def get_costeff(project, results):
                     impact = par_outs[k] - child_outs[k]
                     if abs(impact) < 1 or totalspend < 1:  # should only be used for number of people, not prevalence or rates
                         # total spend < 1 will catch the scale-down of reference programs, since they will return $0 expenditure
-                        costimpact = "No impact"
+                        costimpact = _("No impact")
                     else:
                         costimpact = totalspend / impact
                         costimpact = round(costimpact, 2)
                         # format
                         if out == "thrive":  # thrive should increase
                             if costimpact < 0:
-                                costimpact = "Negative impact"
+                                costimpact = _("Negative impact")
                             else:
-                                costimpact = "$%s per additional case" % format(costimpact, ",")
+                                costimpact = _("$%s per additional case") % format(costimpact, ",")
                         else:  # all other outcomes should be negative
                             if costimpact > 0:
-                                costimpact = "Negative impact"
+                                costimpact = _("Negative impact")
                             else:
-                                costimpact = "$%s per case averted" % format(-costimpact, ",")
+                                costimpact = _("$%s per case averted") % format(-costimpact, ",")
                     costeff[parent.name][child.name][pretty[k]] = costimpact
     return costeff
 

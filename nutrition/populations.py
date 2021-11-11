@@ -22,18 +22,19 @@ class AgeGroup(sc.prettyobj):
     def reset_storage(self):
         self.anaemiaUpdate = 1
 
+    @translate
     def update_dist(self, risk, frac_risk, wast_frac=None):
         """
-        :param risk: one of 'stunting', 'wasting', 'anaemia'
+        :param risk: one of 'stunting', 'wasting', 'anaemia' (or translated versions)
         :param frac_risk: risk prevalence in age group
         :param wast_frac: wasting distribution requires 'MAM' and 'SAM' to be included already, since these are unconstrained
         :return: None
         """
-        risk = risk.lower()
-        if "stu" in risk:
+
+        if risk == _("Stunting"):
             # fraction stunted
             self.stunting_dist = restratify(frac_risk, self.locale)
-        elif "was" in risk:
+        elif risk == _("Wasting"):
             if wast_frac:
                 wast_dist = sc.dcp(wast_frac)
                 # fraction wasted
@@ -44,21 +45,23 @@ class AgeGroup(sc.prettyobj):
                 self.wasting_dist = wast_dist
             else:
                 raise Exception(" Error: cannot fully specify wasting distribution because the wasted categories were not specified.")
-        elif "an" in risk:
+        elif risk == _("Anaemia"):
             # fraction anaemic
             self.anaemia_dist[_("Anaemic")] = frac_risk
             self.anaemia_dist[_("Not anaemic")] = 1 - frac_risk
+        else:
+            raise Exception(f"Unknown risk '{risk}'")
 
+    @translate
     def frac_risk(self, risk):
-        risk = risk.lower()
-        if any(sub in risk for sub in ["an", "anaem", "anaemia", "anaemic"]):
+        if risk in ["an", "Anaemia", _("Anaemia")]:
             return self.frac_anaemic()
         else:
             raise Exception('::ERROR:: age group "{}" does not have "{}" attribute'.format(self.age, risk))
 
+    @translate
     def num_risk(self, risk):
-        risk = risk.lower()
-        if any(sub in risk for sub in ["an", "anaem", "anaemia", "anaemic"]):
+        if risk in ["an", "Anaemia", _("Anaemia")]:
             return self.num_anaemic()
         else:
             raise Exception('::ERROR:: age group "{}" does not have "{}" attribute'.format(self.age, risk))
@@ -179,7 +182,7 @@ class ChildAgeGroup(AgeGroup):
         if risk in ['stun',"Stunting", _("Stunting")]:
             return self.frac_stunted()
         elif risk in ['ma', 'MAM',_("MAM")]:
-                return self.frac_wasted(_("MAM"))
+            return self.frac_wasted(_("MAM"))
         elif risk in ["sa", "SAM", _("SAM")]:
             return self.frac_wasted(_("SAM"))
         elif risk in ["wast", "Wasting", _("Wasting")]:
@@ -225,49 +228,54 @@ class ChildAgeGroup(AgeGroup):
     def frac_wasted(self, cat):
         return self.wasting_dist[cat]
 
+    @translate
     def _getFracDiarrhoeaFixedZ(self):
         beta = {}
-        RRnot = self.default.rr_dia[self.age]["None"]
+        RRnot = self.default.rr_dia[self.age][_("None")]
         for bfCat in self.ss.bf_list:
             RDa = self.default.rr_dia[self.age][bfCat]
             beta[bfCat] = RDa / RRnot
         return beta
 
+    @translate
     def _getFracDiarrhoea(self, Z0, Zt):
         beta = {}
-        RRnot = self.default.rr_dia[self.age]["None"]
+        RRnot = self.default.rr_dia[self.age][_("None")]
         for bfCat in self.ss.bf_list:
             RDa = self.default.rr_dia[self.age][bfCat]
             beta[bfCat] = 1.0 - (RRnot * Z0 - RDa * Zt) / (RRnot * Z0)
             # RDa * Zt[age] / (RRnot * Z0[age])
         return beta
 
+    @translate
     def _getZa(self):
         riskSum = self._getDiarrhoeaRiskSum()
-        incidence = self.incidences["Diarrhoea"]
+        incidence = self.incidences[_("Diarrhoea")]
         return incidence / riskSum
 
     def _getDiarrhoeaRiskSum(self):
         return sum(self.default.rr_dia[self.age][bfCat] * self.bf_dist[bfCat] for bfCat in self.ss.bf_list)
 
+    @translate
     def _getAverageOR(self, Za, risk):
-        RRnot = self.default.rr_dia[self.age]["None"]
-        if risk == "Stunting":
-            OR = self.default.or_cond["Stunting"]["Diarrhoea"][self.age]
-        elif risk == "Anaemia":
-            OR = self.default.or_cond["Anaemia"]["Severe diarrhoea"][self.age]
-        elif risk == "MAM" or risk == "SAM":
-            OR = self.default.or_cond[risk]["Diarrhoea"][self.age]
+        RRnot = self.default.rr_dia[self.age][_("None")]
+        if risk == _("Stunting"):
+            OR = self.default.or_cond[_("Stunting")][_("Diarrhoea")][self.age]
+        elif risk == _("Anaemia"):
+            OR = self.default.or_cond[_("Anaemia")][_("Severe diarrhoea")][self.age]
+        elif risk == _("MAM") or risk == _("SAM"):
+            OR = self.default.or_cond[risk][_("Diarrhoea")][self.age]
         else:
             print('Risk factor is invalid: "%s" is not Stunting, Anaemia, or MAM' % risk)
         AO = pow(OR, RRnot * Za * 1.0 / self.ageingRate)
         return AO
 
+    @translate
     def _updateProbConditionalDiarrhoea(self, Zt):
         # stunting and anaemia
         AO = {}
-        for risk in ["Stunting", "Anaemia"]:
-            if risk == "Anaemia":
+        for risk in [_("Stunting"), _("Anaemia")]:
+            if risk == _("Anaemia"):
                 AO[risk] = self._getAverageOR(Zt * self.frac_severe_dia, risk)
             else:
                 AO[risk] = self._getAverageOR(Zt, risk)
@@ -312,21 +320,21 @@ class Population(sc.prettyobj):
 
     @property
     def locale(self):
-        return self.data.locale
+        return self.ss.locale
 
     def total_pop(self):
         return sum(age_group.pop_size for age_group in self.age_groups)
 
+    @translate
     def frac_risk(self, risk):
-        risk = risk.lower()
-        if any(sub in risk for sub in ["an", "anaem", "anaemia", "anaemic"]):
+        if risk in ["an", "Anaemia", _("Anaemia")]:
             return self.frac_anaemic()
         else:
             raise Exception('::ERROR:: population "{}" does not have "{}" attribute'.format(risk, self.name))
 
+    @translate
     def num_risk(self, risk):
-        risk = risk.lower()
-        if any(sub in risk for sub in ["an", "anaem", "anaemia", "anaemic"]):
+        if risk in ["an", "Anaemia", _("Anaemia")]:
             return self.num_anaemic()
         else:
             raise Exception('::ERROR:: population "{}" does not have "{}" attribute'.format(risk, self.name))
@@ -375,33 +383,33 @@ class Children(Population):
         self._set_wasted_dia()
         self._set_bo_space()
 
+    @translate
     def frac_risk(self, risk):
-        risk = risk.lower()
-        if any(sub in risk for sub in ["stun", "stunt", "stunting", "stunted"]):
+        if risk in ['stun',"Stunting", _("Stunting")]:
             return self.frac_stunted()
-        elif any(sub in risk for sub in ["ma", "mam"]):
-            return self.frac_wasted("MAM")
-        elif any(sub in risk for sub in ["sa", "sam"]):
-            return self.frac_wasted("SAM")
-        elif any(sub in risk for sub in ["was", "wast", "wasting", "wasted"]):
+        elif risk in ['ma', 'MAM',_("MAM")]:
+            return self.frac_wasted(_("MAM"))
+        elif risk in ["sa", "SAM", _("SAM")]:
+            return self.frac_wasted(_("SAM"))
+        elif risk in ["wast", "Wasting", _("Wasting")]:
             return sum(self.frac_wasted(cat) for cat in self.ss.wasted_list)
-        if any(sub in risk for sub in ["an", "anaem", "anaemia", "anaemic"]):
+        elif risk in ["an", "Anaemia", _("Anaemia")]:
             return self.frac_anaemic()
         else:
             raise Exception('::ERROR:: population "{}" does not have "{}" attribute'.format(risk, self.name))
 
+    @translate
     def num_risk(self, risk):
-        risk = risk.lower()
-        if any(sub in risk for sub in ["stun", "stunt", "stunting", "stunted"]):
+        if risk in ['stun',"Stunting", _("Stunting")]:
             return self.num_stunted()
-        elif any(sub in risk for sub in ["ma", "mam"]):
-            return self.num_wasted("MAM")
-        elif any(sub in risk for sub in ["sa", "sam"]):
-            return self.num_wasted("SAM")
-        elif any(sub in risk for sub in ["was", "wast", "wasting", "wasted"]):
+        elif risk in ['ma', 'MAM',_("MAM")]:
+                return self.num_wasted(_("MAM"))
+        elif risk in ["sa", "SAM", _("SAM")]:
+            return self.num_wasted(_("SAM"))
+        elif risk in ["wast", "Wasting", _("Wasting")]:
             return sum(self.num_wasted(cat) for cat in self.ss.wasted_list)
-        elif any(sub in risk for sub in ["an", "anaem", "anaemia", "anaemic"]):
-            return self.frac_anaemic()
+        elif risk in ["an", "Anaemia", _("Anaemia")]:
+            return self.num_anaemic()
         else:
             raise Exception('::ERROR:: population "{}" does not have "{}" attribute'.format(risk, self.name))
 
