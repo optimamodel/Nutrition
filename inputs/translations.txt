@@ -292,3 +292,17 @@ Odds ratios of being anaemic when covered by intervention
 Wasting
 Data
 Incidence of conditions
+Cost curve options
+Programs family planning
+Method
+Condom
+Male sterilization
+Female sterilization
+Injectable
+Implant
+Pill
+Withdrawal
+Fertility awareness
+IUD
+Cost
+Proprtional Cost

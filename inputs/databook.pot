@@ -891,3 +891,45 @@ msgstr ""
 
 msgid "Incidence of conditions"
 msgstr ""
+
+msgid "Cost curve options"
+msgstr ""
+
+msgid "Programs family planning"
+msgstr ""
+
+msgid "Method"
+msgstr ""
+
+msgid "Condom"
+msgstr ""
+
+msgid "Male sterilization"
+msgstr ""
+
+msgid "Female sterilization"
+msgstr ""
+
+msgid "Injectable"
+msgstr ""
+
+msgid "Implant"
+msgstr ""
+
+msgid "Pill"
+msgstr ""
+
+msgid "Withdrawal"
+msgstr ""
+
+msgid "Fertility awareness"
+msgstr ""
+
+msgid "IUD"
+msgstr ""
+
+msgid "Cost"
+msgstr ""
+
+msgid "Proprtional Cost"
+msgstr ""
