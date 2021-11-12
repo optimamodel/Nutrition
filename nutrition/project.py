@@ -525,14 +525,14 @@ class Project(object):
         # run optimization
         if (optim.model_name is None) or (optim.model_name not in self.datasets.keys()):
             raise Exception("Could not find valid dataset for %s.  Edit the scenario and change the dataset" % optim.name)
-        true_name = optim.model_name
+        true_name = optim.name
         for i in range(n_runs):
             if i == 0:
                 model = sc.dcp(self.model(optim.model_name))
                 model.setup(optim, setcovs=False)
                 model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
             else:
-                optim.model_name = true_name + " resampled #" + str(i)
+                optim.name = true_name + " resampled #" + str(i)
                 dataset = Dataset(country=None, region=None, name=None, fromfile=False, doload=True, project=self, resampling=True)
                 pops = dataset.pops
                 prog_info = dataset.prog_info
