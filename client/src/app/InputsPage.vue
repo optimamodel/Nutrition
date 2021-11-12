@@ -121,8 +121,7 @@ Last update: 2019-02-11
            :width="width"
            :pivot-y="0.3"
            :adaptive="true"
-           :clickToClose="clickToClose"
-           :transition="transition">
+           :clickToClose="clickToClose">
 
       <div class="dialog-content">
         <div class="dialog-c-title">

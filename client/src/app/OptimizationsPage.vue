@@ -47,7 +47,7 @@ Last update: 2019feb11
               <button class="btn __green" :disabled="!canRunTask(optimSummary)" @click="runOptim(optimSummary, 'full')">{{ $t("common.Run") }}</button>
               <button class="btn" :disabled="!canRunTask(optimSummary)" @click="runOptim(optimSummary, 'test')">{{ $t("common.Test run") }}</button>
               <button class="btn __green" :disabled="!canPlotResults(optimSummary)" @click="plotOptimization(optimSummary)">{{ $t("common.Plot results") }}</button>
-              <button class="btn" :disabled="!canCancelTask(optimSummary)" @click="clearTask(optimSummary)">{{ $t("common.Clear run") }}</button>
+              <button class="btn" :disabled="!canCancelTask(optimSummary)" @click="clearTask(optimSummary)">{{ $t("common.Clear results") }}</button>
               <button class="btn btn-icon" @click="editOptimModal(optimSummary)" :data-tooltip='$t("optimization.Edit optimization")'><i class="ti-pencil"></i></button>
               <button class="btn btn-icon" @click="copyOptim(optimSummary)" :data-tooltip='$t("optimization.Copy optimization")'><i class="ti-files"></i></button>
               <button class="btn btn-icon" @click="deleteOptim(optimSummary)" :data-tooltip='$t("optimization.Delete optimization")'><i class="ti-trash"></i></button>
@@ -131,8 +131,7 @@ Last update: 2019feb11
            :classes="['v--modal', 'vue-dialog']"
            :pivot-y="0.3"
            :adaptive="true"
-           :clickToClose="false"
-           :transition="transition">
+           :clickToClose="false">
 
       <div class="dialog-content">
         <div class="dialog-c-title" v-if="addEditModal.mode=='add'">

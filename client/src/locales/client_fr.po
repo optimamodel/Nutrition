@@ -95,9 +95,8 @@ msgctxt "common"
 msgid "Cannot be reallocated"
 msgstr "Ne peut être réaffecté"
 
-#, fuzzy
 msgctxt "common"
-msgid "Clear run"
+msgid "Clear results"
 msgstr "Marche à vide"
 
 msgctxt "common"
@@ -553,3 +552,6 @@ msgstr "Nom d'utilisateur (facultatif)"
 msgctxt "placeholder"
 msgid "Email (optional)"
 msgstr "E-mail (facultatif)"
+
+msgid "please_wait_spinner"
+msgstr "Veuillez patienter..."

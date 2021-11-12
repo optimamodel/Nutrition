@@ -9,7 +9,7 @@ Last update: 2018sep23
     <simplert></simplert>
     <router-view></router-view>
     <vue-progress-bar></vue-progress-bar>
-    <popup-spinner size="75px" padding="15px" title="Please wait..."></popup-spinner>
+    <popup-spinner size="75px" padding="15px" :title="$t('please_wait_spinner')"></popup-spinner>
     <side-bar type="navbar" :sidebar-links="$sidebar.sidebarLinks"> <!--This sidebar appears only for screens smaller than 992px -- otherwise, it is rendered in Navbar.vue-->
       <ul class="nav navbar-nav">
         <!-- Below requires a userService -->

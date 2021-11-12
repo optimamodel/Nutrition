@@ -138,8 +138,7 @@ Last update: 2019feb11
            :classes="['v--modal', 'vue-dialog', 'grrmodal']"
            :pivot-y="0.3"
            :adaptive="true"
-           :clickToClose="false"
-           :transition="transition">
+           :clickToClose="false">
 
         <div class="dialog-content">
           <div class="dialog-c-title" v-if="addEditModal.mode=='add'">

@@ -86,8 +86,8 @@ msgid "Cannot be reallocated"
 msgstr "Cannot be reallocated"
 
 msgctxt "common"
-msgid "Clear run"
-msgstr "Clear run"
+msgid "Clear results"
+msgstr "Clear results"
 
 msgctxt "common"
 msgid "Export data"
@@ -542,3 +542,6 @@ msgstr "Display name (optional)"
 msgctxt "placeholder"
 msgid "Email (optional)"
 msgstr "Email (optional)"
+
+msgid "please_wait_spinner"
+msgstr "Please wait..."

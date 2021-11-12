@@ -27,7 +27,7 @@
   "common": {
     "Can be reallocated": "Can be reallocated",
     "Cannot be reallocated": "Cannot be reallocated",
-    "Clear run": "Clear run",
+    "Clear results": "Clear results",
     "Export data": "Export data",
     "Export plots": "Export plots",
     "Export results": "Export results",
@@ -163,5 +163,6 @@
     "Run scenarios": "Run scenarios",
     "Scenario name": "Scenario name",
     "Scenario/program": "Scenario/program"
-  }
+  },
+  "please_wait_spinner": "Please wait..."
 }
