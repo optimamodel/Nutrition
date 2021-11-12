@@ -8,14 +8,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nutrition 1.7.4\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-11-11 11:28+1100\n"
+"POT-Creation-Date: 2021-11-12 11:06+1100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.9.0\n"
+"Generated-By: Babel 2.9.1\n"
 
 #: nutrition/data.py:143 nutrition/data.py:267 nutrition/data.py:724
 #: nutrition/data.py:744 nutrition/data.py:899 nutrition/project.py:590
@@ -383,6 +383,10 @@ msgstr ""
 #: nutrition/data.py:436 nutrition/data.py:717 nutrition/data.py:722
 #: nutrition/data.py:723
 msgid "Other risks"
+msgstr ""
+
+#: nutrition/data.py:440 nutrition/populations.py:358
+msgid "Birth dist"
 msgstr ""
 
 #: nutrition/data.py:441
@@ -755,10 +759,6 @@ msgstr ""
 msgid "Sorry, but you must supply a project for load()."
 msgstr ""
 
-#: nutrition/data.py:1013
-msgid "Error in creating populations, check data and defaults books"
-msgstr ""
-
 #: nutrition/geospatial.py:301 nutrition/optimization.py:204
 #: nutrition/project.py:566 nutrition/project.py:578 nutrition/project.py:623
 #: nutrition/project.py:658
@@ -889,10 +889,6 @@ msgstr ""
 #: nutrition/populations.py:261 nutrition/settings.py:32
 #: nutrition/settings.py:36
 msgid "None"
-msgstr ""
-
-#: nutrition/populations.py:358
-msgid "Birth dist"
 msgstr ""
 
 #: nutrition/populations.py:440

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nutrition 1.7.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-11-11 11:28+1100\n"
+"POT-Creation-Date: 2021-11-12 11:06+1100\n"
 "PO-Revision-Date: 2021-11-12 10:12+1100\n"
 "Last-Translator: \n"
 "Language-Team: fr\n"
@@ -15,9 +15,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"Generated-By: Babel 2.9.0\n"
-"X-Generator: Poedit 3.0\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
+"Generated-By: Babel 2.9.1\n"
 
 #: nutrition/data.py:143 nutrition/data.py:267 nutrition/data.py:724
 #: nutrition/data.py:744 nutrition/data.py:899 nutrition/project.py:590
@@ -31,7 +30,7 @@ msgstr "Ajouter une extension"
 
 #: nutrition/data.py:150 nutrition/data.py:994
 msgid "Programs impacted population"
-msgstr "Programmes population touchée"
+msgstr "Programmes - population touchée"
 
 #: nutrition/data.py:152 nutrition/data.py:601 nutrition/data.py:609
 #: nutrition/data.py:728 nutrition/data.py:731 nutrition/data.py:734
@@ -66,7 +65,7 @@ msgstr "Programme - secteurs à risque"
 
 #: nutrition/data.py:169
 msgid "Population risk areas"
-msgstr "Population des secteurs à risque"
+msgstr "Population des sect. à risque"
 
 #: nutrition/data.py:182 nutrition/data.py:186 nutrition/data.py:190
 #: nutrition/data.py:196 nutrition/data.py:200
@@ -223,7 +222,7 @@ msgstr "Rapport des cotes pour allaitement maternel correct par programme"
 #: nutrition/data.py:242
 msgid "Odds ratios for optimal birth spacing by program"
 msgstr ""
-"Rapports des cotes pour l'espacement des naissances optimal par programme"
+"Rapports des cotes pour espacement des naissances optimal par programme"
 
 #: nutrition/data.py:246
 msgid "Programs birth outcomes"
@@ -267,7 +266,7 @@ msgstr "Risques des rés. des naissances"
 
 #: nutrition/data.py:280
 msgid "Odds ratios for conditions"
-msgstr "Rapport des cotes pour des conditions"
+msgstr "Rapport des cote pour des conditions"
 
 #: nutrition/data.py:281
 msgid "Stunting (HAZ-score < -2)"
@@ -393,6 +392,10 @@ msgstr "Mortalité"
 msgid "Other risks"
 msgstr "Autres risques"
 
+#: nutrition/data.py:440 nutrition/populations.py:358
+msgid "Birth dist"
+msgstr "Naissance dist"
+
 #: nutrition/data.py:441
 msgid "Projection years"
 msgstr "Années de projection"
@@ -460,7 +463,7 @@ msgstr "Dist. de l'état nutritionnel"
 #: nutrition/data.py:493 nutrition/data.py:497 nutrition/data.py:500
 #: nutrition/data.py:513
 msgid "Stunting (height-for-age)"
-msgstr "Retard de croissance (taille pour l'âge)"
+msgstr "Retard de croissance (taille-pour-l'âge)"
 
 #: nutrition/data.py:497
 msgid "Normal (HAZ-score > -1)"
@@ -592,7 +595,7 @@ msgstr "La population cible est 0 pour %s"
 #: nutrition/data.py:781 nutrition/data.py:784 nutrition/data.py:787
 #: nutrition/data.py:790 nutrition/data.py:793 nutrition/data.py:796
 msgid "Programs target population"
-msgstr "Population cible programmes"
+msgstr "Programmes-population cible"
 
 #: nutrition/data.py:707
 msgid "Percentage of population food insecure (default poor)"
@@ -628,8 +631,8 @@ msgid ""
 "be used."
 msgstr ""
 "Attention, le recueil de données en cours de lecture n'est pas à jour et ne "
-"comprend pas les prévalences de base de l'éclampsie et de la pré-"
-"éclampsie ; des moyennes mondiales seront donc utilisées."
+"comprend pas les prévalences de base de l'éclampsie et de la pré-éclampsie ;"
+" des moyennes mondiales seront donc utilisées."
 
 #: nutrition/data.py:722
 msgid "Prevalence of pre-eclampsia"
@@ -727,7 +730,7 @@ msgstr "Dépendances du programme"
 
 #: nutrition/data.py:830
 msgid "Programs family planning"
-msgstr "Programmes - planification familiale"
+msgstr "Programmes-planification fam."
 
 #: nutrition/data.py:833 nutrition/programs.py:172
 msgid "Distribution"
@@ -768,12 +771,6 @@ msgstr "Établissement de santé"
 #: nutrition/data.py:978
 msgid "Sorry, but you must supply a project for load()."
 msgstr "Désolé, mais vous devez fournir un projet pour load()."
-
-#: nutrition/data.py:1013
-msgid "Error in creating populations, check data and defaults books"
-msgstr ""
-"Erreur dans la création des populations, vérifier les données et les "
-"recueils de données par défaut"
 
 #: nutrition/geospatial.py:301 nutrition/optimization.py:204
 #: nutrition/project.py:566 nutrition/project.py:578 nutrition/project.py:623
@@ -906,10 +903,6 @@ msgstr "$%s par cas évité"
 #: nutrition/settings.py:36
 msgid "None"
 msgstr "Aucun"
-
-#: nutrition/populations.py:358
-msgid "Birth dist"
-msgstr "Naissance dist"
 
 #: nutrition/populations.py:440
 msgid "Children under 5 population"
@@ -1095,3 +1088,8 @@ msgstr "FE: 40-49 ans"
 #: nutrition_app/rpcs.py:443
 msgid "Demo project"
 msgstr "Démo projet"
+
+#~ msgid "Error in creating populations, check data and defaults books"
+#~ msgstr ""
+#~ "Erreur dans la création des populations, vérifier les données et les "
+#~ "recueils de données par défaut"

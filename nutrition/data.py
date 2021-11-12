@@ -437,7 +437,7 @@ class InputData(object):
         for field in fields:
             demo.update(baseline.loc[field].to_dict("index"))
         self.demo = {key: item[_("Data")] for key, item in demo.items()}
-        self.demo["Birth dist"] = baseline.loc[_("Birth outcome distribution")].to_dict()[_("Data")]
+        self.demo[_("Birth dist")] = baseline.loc[_("Birth outcome distribution")].to_dict()[_("Data")]
         t = baseline.loc[_("Projection years")]
         self.t = [int(t.loc[_("Baseline year (projection start year)")][_("Data")]), int(t.loc[_("End year")][_("Data")])]
         # birth spacing
@@ -1007,10 +1007,8 @@ class Dataset(object):
         self.default_params.compute_risks(self.demo_data)
         self.prog_data = ProgData(input_data, self.default_params, self.calcscache)
 
-        try:
-            self.pops = populations.set_pops(self.demo_data, self.default_params)
-        except Exception as E:
-            raise Exception(_("Error in creating populations, check data and defaults books")+": %s" % str(E))
+        self.pops = populations.set_pops(self.demo_data, self.default_params)
+
         self.prog_info = programs.ProgramInfo(self.prog_data)
         self.t = self.demo_data.t
         self.modified = sc.now(utc=True)

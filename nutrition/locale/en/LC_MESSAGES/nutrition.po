@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nutrition 1.7.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-11-11 11:28+1100\n"
+"POT-Creation-Date: 2021-11-12 11:06+1100\n"
 "PO-Revision-Date: 2021-11-10 11:04+1100\n"
 "Last-Translator: \n"
 "Language: en\n"
@@ -16,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.9.0\n"
+"Generated-By: Babel 2.9.1\n"
 
 #: nutrition/data.py:143 nutrition/data.py:267 nutrition/data.py:724
 #: nutrition/data.py:744 nutrition/data.py:899 nutrition/project.py:590
@@ -225,9 +225,8 @@ msgid "Programs birth outcomes"
 msgstr "Programs birth outcomes"
 
 #: nutrition/data.py:256
-#, fuzzy
 msgid "Programs anemia"
-msgstr "Programs anaemia"
+msgstr "Programs anemia"
 
 #: nutrition/data.py:257
 msgid "Relative risks of anaemia when receiving intervention"
@@ -386,6 +385,10 @@ msgstr "Mortality"
 #: nutrition/data.py:723
 msgid "Other risks"
 msgstr "Other risks"
+
+#: nutrition/data.py:440 nutrition/populations.py:358
+msgid "Birth dist"
+msgstr "Birth dist"
 
 #: nutrition/data.py:441
 msgid "Projection years"
@@ -761,10 +764,6 @@ msgstr "IFAS (health facility)"
 msgid "Sorry, but you must supply a project for load()."
 msgstr "Sorry, but you must supply a project for load()."
 
-#: nutrition/data.py:1013
-msgid "Error in creating populations, check data and defaults books"
-msgstr "Error in creating populations, check data and defaults books"
-
 #: nutrition/geospatial.py:301 nutrition/optimization.py:204
 #: nutrition/project.py:566 nutrition/project.py:578 nutrition/project.py:623
 #: nutrition/project.py:658
@@ -901,10 +900,6 @@ msgstr ""
 #: nutrition/settings.py:36
 msgid "None"
 msgstr "None"
-
-#: nutrition/populations.py:358
-msgid "Birth dist"
-msgstr "Birth dist"
 
 #: nutrition/populations.py:440
 msgid "Children under 5 population"
@@ -1118,4 +1113,7 @@ msgstr "Demo project"
 
 #~ msgid "Error in databook"
 #~ msgstr "Error in databook"
+
+#~ msgid "Error in creating populations, check data and defaults books"
+#~ msgstr "Error in creating populations, check data and defaults books"
 
