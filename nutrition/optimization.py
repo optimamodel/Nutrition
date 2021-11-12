@@ -8,7 +8,7 @@ from .scenarios import Scen, run_scen
 class Optim(sc.prettyobj):
     """ Stores settings for running an optimization for a single objective. """
 
-    def __init__(self, name=None, model_name=None, weights=None, mults=None, prog_set=None, active=True, add_funds=0, fix_curr=False, rem_curr=False, filter_progs=True):
+    def __init__(self, name=None, model_name=None, weights=None, mults=None, prog_set=None, active=True, add_funds=0, fix_curr=False, rem_curr=False, filter_progs=True, locale=None):
         """
         :param name: the name of the optimization (string)
         :param model_name: the name of the model corresponding to optimizations (string)
@@ -19,12 +19,13 @@ class Optim(sc.prettyobj):
         :param add_funds: additional funds
         :param fix_curr: fix the current allocations?
         :param rem_curr: remove the current allocations?
+        :param locale: Locale to match the weights being passed in
         :param filter_progs: filter out programs which don't impact the objective (can improve optimization results)
         """
 
         self.name = name
         self.model_name = model_name
-        self.weights = utils.process_weights(weights)
+        self.weights = utils.process_weights(weights, locale=locale)
         self.mults = mults
         self.prog_set = prog_set
         self.add_funds = add_funds

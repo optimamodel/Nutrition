@@ -15,7 +15,7 @@ locale = "en"  # Set the default locale
 available_locales = sorted([(pathlib.Path(x) / ".." / "..").resolve().name for x in gettext.find("nutrition", LOCALE_PATH, languages=babel.Locale("en").languages.keys(), all=True)])
 
 
-def get_translator(this_locale:str=None, context:bool=False):
+def get_translator(this_locale: str = None, context: bool = False):
     """
     Get locale translation function
 
@@ -35,7 +35,6 @@ def get_translator(this_locale:str=None, context:bool=False):
     :param context: Optionally return a two-argument translation function supporting context
     :return: A callable translation function
     """
-
 
     # Note that this function cannot be cached (e.g. with lrucache) because the default locale is read at runtime
     if this_locale is None:
@@ -74,17 +73,17 @@ def translate(f):
     used inside the method, with the locale drawn from `self.locale`
 
     """
+
     def wrapper(*args, **kwargs):
         g = f.__globals__  # use f.func_globals for py < 2.6
 
-        if hasattr(args[0],'locale') and args[0].locale is not None:
+        if hasattr(args[0], 'locale') and args[0].locale is not None:
             g['_'] = get_translator(args[0].locale)
         else:
             g['_'] = get_translator()
         return f(*args, **kwargs)
+
     return wrapper
-
-
 
 
 # ##############################################################################
@@ -98,7 +97,25 @@ def default_trackers(prev=None, rate=None):
     :param rate: return just rates (True) or everything else (False) or the entire list (None)
     :return: a list of outcome variable names
     """
-    outcomes = ["thrive", "child_deaths", "stunted", "wasted", "child_anaemic", "stunted_prev", "wasted_prev", "child_anaemprev", "pw_deaths", "pw_anaemic", "pw_anaemprev", "nonpw_anaemic", "nonpw_anaemprev", "child_mortrate", "pw_mortrate"]
+
+    outcomes = [
+        "thrive",
+        "child_deaths",
+        "stunted",
+        "wasted",
+        "child_anaemic",
+        "stunted_prev",
+        "wasted_prev",
+        "child_anaemprev",
+        "pw_deaths",
+        "pw_anaemic",
+        "pw_anaemprev",
+        "nonpw_anaemic",
+        "nonpw_anaemprev",
+        "child_mortrate",
+        "pw_mortrate",
+    ]
+
     if prev is not None:
         if prev:
             outcomes = [out for out in outcomes if "prev" in out]
@@ -112,27 +129,65 @@ def default_trackers(prev=None, rate=None):
     return outcomes
 
 
-def pretty_labels(direction=False):
+def pretty_labels(direction=False, locale=None):
     """
     Prettifies the variable names.
     Note that the order of pretty must match the order returned by default_trackers().
     :param direction: Include max/min of the objective
     :return:
     """
+
+    pgettext = get_translator(locale, context=True)
+
     if direction:
         # for use in weighted objective
-        pretty = ["Maximize the number of alive, non-stunted children", "Minimize the number of child deaths", "Minimize the number of stunted children", "Minimize the number of wasted children", "Minimize the number of anaemic children", "Minimize the prevalence of stunting in children", "Minimize the prevalence of wasting in children", "Minimize the prevalence of anaemia in children", "Minimize the number of pregnant women deaths", "Minimize the number of anaemic pregnant women", "Minimize the prevalence of anaemia in pregnant women", "Minimize the number of anaemic non-pregnant women", "Minimize the prevalence of anaemia in non-pregnant women", "Minimize child mortality rate", "Minimize pregnant women mortality rate"]
+        pretty = [
+            pgettext("plotting", "Maximize the number of alive, non-stunted children"),
+            pgettext("plotting", "Minimize the number of child deaths"),
+            pgettext("plotting", "Minimize the number of stunted children"),
+            pgettext("plotting", "Minimize the number of wasted children"),
+            pgettext("plotting", "Minimize the number of anaemic children"),
+            pgettext("plotting", "Minimize the prevalence of stunting in children"),
+            pgettext("plotting", "Minimize the prevalence of wasting in children"),
+            pgettext("plotting", "Minimize the prevalence of anaemia in children"),
+            pgettext("plotting", "Minimize the number of pregnant women deaths"),
+            pgettext("plotting", "Minimize the number of anaemic pregnant women"),
+            pgettext("plotting", "Minimize the prevalence of anaemia in pregnant women"),
+            pgettext("plotting", "Minimize the number of anaemic non-pregnant women"),
+            pgettext("plotting", "Minimize the prevalence of anaemia in non-pregnant women"),
+            pgettext("plotting", "Minimize child mortality rate"),
+            pgettext("plotting", "Minimize pregnant women mortality rate"),
+        ]
     else:
-        pretty = ["Number of alive, non-stunted children turning age 5", "Number of child deaths", "Number of stunted children turning age 5", "Number of wasted children turning age 5", "Number of anaemic children turning age 5", "Prevalence of stunting in children", "Prevalence of wasting in children", "Prevalence of anaemia in children", "Number of pregnant women deaths", "Number of anaemic pregnant women", "Prevalence of anaemia in pregnant women", "Number of anaemic non-pregnant women", "Prevalence of anaemia in non-pregnant women", "Child mortality rate", "Pregnant women mortality rate"]
+        pretty = [
+            pgettext("plotting", "Number of alive, non-stunted children turning age 5"),
+            pgettext("plotting", "Number of child deaths"),
+            pgettext("plotting", "Number of stunted children turning age 5"),
+            pgettext("plotting", "Number of wasted children turning age 5"),
+            pgettext("plotting", "Number of anaemic children turning age 5"),
+            pgettext("plotting", "Prevalence of stunting in children"),
+            pgettext("plotting", "Prevalence of wasting in children"),
+            pgettext("plotting", "Prevalence of anaemia in children"),
+            pgettext("plotting", "Number of pregnant women deaths"),
+            pgettext("plotting", "Number of anaemic pregnant women"),
+            pgettext("plotting", "Prevalence of anaemia in pregnant women"),
+            pgettext("plotting", "Number of anaemic non-pregnant women"),
+            pgettext("plotting", "Prevalence of anaemia in non-pregnant women"),
+            pgettext("plotting", "Child mortality rate"),
+            pgettext("plotting", "Pregnant women mortality rate"),
+        ]
     labs = sc.odict(zip(default_trackers(), pretty))
     return labs
 
 
-def relabel(old, direction=False):
+def relabel(old, direction=False, locale=None):
     """Can be given a string or a list of strings.
     Will return corresponding pretty label as a string or a list of strings"""
-    pretty = pretty_labels(direction=direction)
-    pretty["Baseline"] = "Est. spending \n baseline year"  # this is for allocation
+
+    pgettext = get_translator(locale, context=True)
+
+    pretty = pretty_labels(direction=direction, locale=locale)
+    pretty["Baseline"] = pgettext("plotting", "Est. spending \n baseline year")  # this is for allocation
     if isinstance(old, list):
         new = []
         for lab in old:
@@ -156,16 +211,21 @@ def get_sign(obj):
         return 1
 
 
-def process_weights(weights):
+def process_weights(weights, locale=None):
     """Creates an array of weights with the order corresponding to default_trackers().
     If conditions for the max/min problem is violated, will correct these by flipping sign.
+
+    Note - if the the weights provided are in a locale different to the specified locale, they will
+    be removed
+
     :param weights: an odict of (outcome, weight) pairs. Also allowing a string for single objectives.
+    :param locale: A locale string that should match the locale of the weights being passed in, if the weights being passed in are pretty strings
     :return an array of floats"""
     default = default_trackers()
-    pretty1 = pretty_labels(direction=False)
+    pretty1 = pretty_labels(direction=False, locale=locale)
     # reverse mapping to find outcome
     inv_pretty1 = {v: k for k, v in pretty1.items()}
-    pretty2 = pretty_labels(direction=True)
+    pretty2 = pretty_labels(direction=True, locale=locale)
     inv_pretty2 = {v: k for k, v in pretty2.items()}
     newweights = np.zeros(len(default))
     # if user just enters a string from the pre-defined objectives

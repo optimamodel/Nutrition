@@ -1,10 +1,13 @@
 import nutrition.ui as nu
 import pytest
 import sciris as sc
+import matplotlib.pyplot as plt
 
 testdir = nu.ONpath / "tests"
 tempdir = testdir / "temp"
 
+if not tempdir.exists():
+    tempdir.mkdir(exist_ok=True, parents=True)
 
 @pytest.fixture(scope="module", params=nu.available_locales)
 def project(request):
@@ -15,7 +18,8 @@ def test_scens(project):
     P = sc.dcp(project)
     P.run_scens()
     P.plot()
-
+    plt.close('all')
+    P.write_results(tempdir/f"{P.locale}_scen_results.xlsx")
 
 def test_optims(project):
     P = sc.dcp(project)
@@ -31,10 +35,10 @@ def test_geos(project):
 
 
 if __name__ == "__main__":
-    nu.available_locales = ['en']
+    nu.available_locales = ['fr']
 
     for locale in nu.available_locales:
         project = nu.demo(scens=True, optims=True, geos=True, locale=locale)
         test_scens(project)
-        test_optims(project)
-        test_geos(project)
+        # test_optims(project)
+        # test_geos(project)

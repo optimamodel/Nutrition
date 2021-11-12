@@ -476,7 +476,9 @@ class Project(object):
         self.add_result(results, name="scens")
         return None
 
+    @translate
     def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=None, maxtime=300, parallel=True, dosave=True, runbaseline=True):
+
         if optim is not None:
             self.add_optims(optim)
             key = optim.name  # this to handle parallel calls of this function
@@ -484,10 +486,10 @@ class Project(object):
         results = []
         # run baseline
         if runbaseline:
-            optim.prog_set.append("Excess budget not allocated")
+            optim.prog_set.append(_("Excess budget not allocated"))
             base = self.run_baseline(optim.model_name, optim.prog_set)
             results.append(base)
-            optim.prog_set.remove("Excess budget not allocated")
+            optim.prog_set.remove(_("Excess budget not allocated"))
         # run optimization
         if (optim.model_name is None) or (optim.model_name not in self.datasets.keys()):
             raise Exception("Could not find valid dataset for %s.  Edit the scenario and change the dataset" % optim.name)
@@ -527,7 +529,7 @@ class Project(object):
         print("Not implemented")
 
     def plot(self, key=-1, toplot=None, optim=False, geo=False):
-        figs = make_plots(self.result(key), toplot=toplot, optim=optim, geo=geo)
+        figs = make_plots(self.result(key), toplot=toplot, optim=optim, geo=geo, locale=self.locale)
         return figs
 
     def get_costeff(self, resultname=None):
@@ -632,7 +634,7 @@ def demo_optims(locale):
         "filter_progs": True,
     }
 
-    optims = [Optim(**kwargs1)]
+    optims = [Optim(**kwargs1, locale=locale)]
     return optims
 
 
@@ -662,7 +664,7 @@ def demo_geos(locale):
         ],
     }
 
-    geos = [Geospatial(**kwargs1)]
+    geos = [Geospatial(**kwargs1, locale=locale)]
     return geos
 
 

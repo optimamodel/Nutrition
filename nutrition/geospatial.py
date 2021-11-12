@@ -8,7 +8,7 @@ from . import utils
 
 
 class Geospatial:
-    def __init__(self, name=None, modelnames=None, weights=None, mults=None, prog_set=None, add_funds=0, fix_curr=False, fix_regionalspend=False, filter_progs=True, active=True):
+    def __init__(self, name=None, modelnames=None, weights=None, mults=None, prog_set=None, add_funds=0, fix_curr=False, fix_regionalspend=False, filter_progs=True, active=True, locale=None):
         """
         :param name: name of the optimization (string)
         :param modelnames: names of the models (datasets) that each region corresponds to (list of strings). Order must match that of region_names.
@@ -19,12 +19,14 @@ class Geospatial:
         :param add_funds: additional funds to be distributed across all regions (positive float/integer)
         :param fix_curr: fix the current regional program allocations (boolean), as in optimization.Optim(fix_curr).
         :param fix_regionalspend: fix the current total regional spending (boolean), but not at current allocations.
+        :param locale: Locale to match the weights being passed in
+
         It follows that if fix_curr is True, fix_regionalspend must also be true.
         """
         self.name = name
         self.modelnames = modelnames
         self.regions = None
-        self.weights = utils.process_weights(weights)
+        self.weights = utils.process_weights(weights, locale=locale)
         if mults is not None:
             print("Warning: changing budget multiples, not recommended")
             self.mults = mults
@@ -45,6 +47,9 @@ class Geospatial:
         - generate budget outcome curves and run gridsearch to distribute these flexible funds.
         - once funding is distributed between regions, optimize this within the regions"""
         # create regions in order to calculate total flexible funds
+
+        _ = utils.get_translator(proj.locale)
+
         regions = self.make_regions(add_funds=0)
         if len(regions) < 2:
             raise Exception("Less than 2 regions selected for geospatial analysis.")
@@ -81,7 +86,7 @@ class Geospatial:
 
             # Else, we shouldn't be trying to optimize anything because nothing can be distributed.
         else:
-            raise Exception("No funds to distribute between or within regions.")
+            raise Exception(_("No funds to distribute between or within regions."))
 
             # Optimize the new allocations within each region.
         regions = self.make_regions(add_funds=regional_allocs, rem_curr=not self.fix_regionalspend, mults=[1])
@@ -99,20 +104,22 @@ class Geospatial:
         # remove multiple to plot by name (total hack)
         excess_budget = 0
         for r, res in enumerate(results):
+            _ = utils.get_translator(res.locale)
+
             res.mult = None
             if res.name == "Baseline":
                 res.name = results[r + 1].name.replace("(x1)", "") + "baseline"
             else:
                 res.name = res.name.replace("(x1)", "optimal")
-            if "Excess budget not allocated" in res.prog_info.programs and "baseline" not in res.name:
-                excess_budget += res.prog_info.programs["Excess budget not allocated"].annual_spend[-1]
-                res.prog_info.programs["Excess budget not allocated"].annual_spend = np.zeros(len(res.years))
+            if _("Excess budget not allocated") in res.prog_info.programs and "baseline" not in res.name:
+                excess_budget += res.prog_info.programs[_("Excess budget not allocated")].annual_spend[-1]
+                res.prog_info.programs[_("Excess budget not allocated")].annual_spend = np.zeros(len(res.years))
         if excess_budget > 0:
             excess_res = sc.dcp(results[0])
-            excess_res.name = "Excess budget"
-            excess_prog = sc.dcp(excess_res.programs["Excess budget not allocated"])
+            excess_res.name = _("Excess budget")
+            excess_prog = sc.dcp(excess_res.programs[_("Excess budget not allocated")])
             excess_prog.annual_spend[1:] += excess_budget
-            excess_res.prog_info.programs = {"Excess budget not allocated": excess_prog}
+            excess_res.prog_info.programs = {_("Excess budget not allocated"): excess_prog}
             excess_res.programs = excess_res.prog_info.programs
             results.append(excess_res)
         return results
@@ -291,19 +298,19 @@ def make_default_geo(basename="Geospatial optimization", locale=None):
         "add_funds": 0,
         "prog_set": [
             _("IFA fortification of maize"),
-            "IYCF 1",
-            "Lipid-based nutrition supplements",
-            "Multiple micronutrient supplementation",
-            "Micronutrient powders",
-            "Kangaroo mother care",
-            "Public provision of complementary foods",
-            "Treatment of SAM",
+            _("IYCF 1"),
+            _("Lipid-based nutrition supplements"),
+            _("Multiple micronutrient supplementation"),
+            _("Micronutrient powders"),
+            _("Kangaroo mother care"),
+            _("Public provision of complementary foods"),
+            _("Treatment of SAM"),
             _("Vitamin A supplementation"),
-            "Mg for eclampsia",
-            "Zinc for treatment + ORS",
-            "Iron and iodine fortification of salt",
+            _("Mg for eclampsia"),
+            _("Zinc for treatment + ORS"),
+            _("Iron and iodine fortification of salt"),
         ],
     }
 
-    default = Geospatial(**kwargs1)
+    default = Geospatial(**kwargs1, locale=locale)
     return default

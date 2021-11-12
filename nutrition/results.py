@@ -1,5 +1,5 @@
 import sciris as sc
-from .utils import default_trackers, pretty_labels, translate
+from .utils import default_trackers, pretty_labels, translate, get_translator
 import numpy as np
 
 
@@ -83,6 +83,7 @@ class ScenResult(sc.prettyobj):
     def get_currspend(self):
         return self.model.prog_info.curr
 
+    @translate
     def get_childscens(self):
         """ For calculating the impacts of each scenario with single intervention set to 0 coverage """
         cov = [0]
@@ -90,7 +91,7 @@ class ScenResult(sc.prettyobj):
         progset = self.programs.keys()
         base_progset = self.prog_info.base_progset()
         # zero cov scen
-        kwargs = {"name": "Scenario overall", "model_name": self.model_name, "scen_type": "budget", "progvals": {prog: cov for prog in base_progset}}
+        kwargs = {"name": _("Scenario overall"), "model_name": self.model_name, "scen_type": "budget", "progvals": {prog: cov for prog in base_progset}}
         allkwargs.append(kwargs)
         # scale down each program to 0 individually
         progvals = self.get_allocs(ref=True)
@@ -103,14 +104,15 @@ class ScenResult(sc.prettyobj):
 
     def plot(self, toplot=None):
         from .plotting import make_plots  # This is here to avoid a circular import
-
-        figs = make_plots(self, toplot=toplot)
+        figs = make_plots(self, toplot=toplot, locale=self.locale)
         return figs
 
 
 def write_results(results, projname=None, filename=None, folder=None):
     from .version import version
     from datetime import date
+
+    _ = get_translator(results[0].locale)
 
     """ Writes outputs and program allocations to an xlsx book.
     For each scenario, book will include:
@@ -125,14 +127,14 @@ def write_results(results, projname=None, filename=None, folder=None):
         filename = "outputs.xlsx"
     filepath = sc.makefilepath(filename=filename, folder=folder, ext="xlsx", default="%s outputs.xlsx" % projname)
     outputs = []
-    sheetnames = ["Version", "Outcomes", "Budget & coverage"]
+    sheetnames = [_("Version"), _("Outcomes"), _("Budget & coverage")]
     alldata = []
     allformats = []
     years = results[0].years
     nullrow = [""] * len(years)
 
     ### Version sheet
-    data = [["Version", "Date"], [version, date.today()]]
+    data = [[_("Version"), _("Date")], [version, date.today()]]
     alldata.append(data)
 
     # Formatting
@@ -145,17 +147,17 @@ def write_results(results, projname=None, filename=None, folder=None):
     allformats.append(formatdata)
 
     ### Outcomes sheet
-    headers = [["Scenario", "Outcome"] + years + ["Cumulative"]]
+    headers = [[_("Scenario"), _("Outcome")] + years + [_("Cumulative")]]
     for r, res in enumerate(results):
-        if res.name != "Excess budget":
+        if res.name != _("Excess budget"):
             out = res.get_outputs(outcomes, seq=True, pretty=True)
             for o, outcome in enumerate(rows):
                 name = [res.name] if o == 0 else [""]
                 thisout = out[o]
                 if "prev" in outcome.lower():
-                    cumul = "N/A"
+                    cumul = _("N/A")
                 elif "mortality" in outcome.lower():
-                    cumul = "N/A"
+                    cumul = _("N/A")
                 else:
                     cumul = sum(thisout)
                 outputs.append(name + [outcome] + list(thisout) + [cumul])
@@ -175,7 +177,7 @@ def write_results(results, projname=None, filename=None, folder=None):
     ### Cost & coverage sheet
     # this is grouped not by program, but by coverage and cost (within each scenario)
     outputs = []
-    headers = [["Scenario", "Program", "Type", "Cost-coverage type"] + years]
+    headers = [[_("Scenario"), _("Program"), _("Type"), _("Cost-coverage type")] + years]
     for r, res in enumerate(results):
         if res.name != "Excess budget":
             rows = res.programs.keys()
@@ -186,17 +188,17 @@ def write_results(results, projname=None, filename=None, folder=None):
                 name = [res.name] if r == 0 else [""]
                 costcov = res.programs[prog].costtype
                 thiscov = cov[prog]
-                outputs.append(name + [prog] + ["Coverage"] + [costcov] + list(thiscov))
+                outputs.append(name + [prog] + [_("Coverage")] + [costcov] + list(thiscov))
             # collate spending second
             for r, prog in enumerate(rows):
                 thisspend = spend[prog]
                 costcov = res.programs[prog].costtype
-                outputs.append([""] + [prog] + ["Budget"] + [costcov] + list(thisspend))
+                outputs.append([""] + [prog] + [_("Budget")] + [costcov] + list(thisspend))
             outputs.append(nullrow)
         else:
             spend = res.get_allocs(ref=True)
-            thisspend = spend["Excess budget not allocated"]
-            outputs.append(["Excess budget not allocated"] + ["N/A"] + ["Budget"] + ["N/A"] + list(thisspend))
+            thisspend = spend[_("Excess budget not allocated")]
+            outputs.append([_("Excess budget not allocated")] + [_("N/A")] + [_("Budget")] + [_("N/A")] + list(thisspend))
             outputs.append(nullrow)
     data = headers + outputs
     alldata.append(data)

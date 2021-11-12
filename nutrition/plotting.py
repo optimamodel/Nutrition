@@ -22,7 +22,7 @@ else:
     refprogs = False  # include ref spending?
 
 
-def make_plots(all_res=None, toplot=None, optim=False, geo=False):
+def make_plots(all_res=None, toplot=None, optim=False, geo=False, locale=None):
     """
     This function controls all the plotting types a user can ask for
     :param all_res: all the results that should be plotted (list of ScenResult objects)
@@ -38,16 +38,16 @@ def make_plots(all_res=None, toplot=None, optim=False, geo=False):
     toplot = sc.promotetolist(toplot)
     all_res = sc.promotetolist(sc.dcp(all_res))  # Without dcp(), modifies the original and breaks things
     if "prevs" in toplot:
-        prevfigs = plot_prevs(all_res)
+        prevfigs = plot_prevs(all_res, locale=locale)
         allplots.update(prevfigs)
     if "ann" in toplot:
-        outfigs = plot_outputs(all_res, True, "ann")
+        outfigs = plot_outputs(all_res, True, "ann", locale=locale)
         allplots.update(outfigs)
     if "agg" in toplot:
-        outfigs = plot_outputs(all_res, False, "agg")
+        outfigs = plot_outputs(all_res, False, "agg", locale=locale)
         allplots.update(outfigs)
     if "alloc" in toplot:  # optimized allocations
-        outfigs = plot_alloc(all_res, optim=optim, geo=geo)
+        outfigs = plot_alloc(all_res, optim=optim, geo=geo, locale=locale)
         allplots.update(outfigs)
     return allplots
 
@@ -85,7 +85,7 @@ def plot_prevs(all_res, locale=None):
         ax.set_ylabel(pgettext("plotting", "Prevalence (%)"))  # Shown as tick labels
         ax.set_ylim([0, ymax * 1.1])
         ax.set_xlabel(pgettext("plotting", "Years"))
-        ax.set_title(utils.relabel(prev))
+        ax.set_title(utils.relabel(prev, locale=locale))
         ax.legend(lines, [res.name for res in all_res if res.name != _("Excess budget not allocated")], **legend_loc)
         figs["prevs_%0i" % i] = fig
     return figs
@@ -141,7 +141,7 @@ def plot_outputs(all_res, seq, name, locale=None):
                     height = rect.get_height()
                     ax.text(rect.get_x() + rect.get_width() / 2.0, height, "{}%".format(change), ha="center", va="bottom")
         # formatting
-        title += " %s \n %s-%s" % (utils.relabel(outcome).lower(), baseres.years[pltstart], baseres.years[-1])
+        title += " %s \n %s-%s" % (utils.relabel(outcome, locale=locale).lower(), baseres.years[pltstart], baseres.years[-1])
         sc.SIticks(ax=ax, axis="y")
         ax.set_ylim([0, ymax * 1.1])
         if scale == 1:
@@ -316,7 +316,7 @@ def get_costeff(project, results):
                 childres = run_scen(child, model)
                 children[res.name].append(childres)
     outcomes = utils.default_trackers(prev=False, rate=False)
-    pretty = utils.relabel(outcomes)
+    pretty = utils.relabel(outcomes, locale=res.locale) # nb. uses locale from last result in list
     costeff = sc.odict()
     for i, parent in enumerate(parents):
         if parent.name != _("Excess budget"):
