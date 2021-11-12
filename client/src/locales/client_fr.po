@@ -95,10 +95,9 @@ msgctxt "common"
 msgid "Cannot be reallocated"
 msgstr "Ne peut être réaffecté"
 
-#, fuzzy
 msgctxt "common"
 msgid "Clear run"
-msgstr "Marche à vide"
+msgstr "Effacer les résultats"
 
 msgctxt "common"
 msgid "Export data"
