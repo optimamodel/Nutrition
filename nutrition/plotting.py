@@ -124,36 +124,45 @@ def make_plots(all_res=None, all_reduce=None, toplot=None, optim=False, geo=Fals
     toplot = sc.promotetolist(toplot)
     all_res = sc.promotetolist(sc.dcp(all_res))  # Without dcp(), modifies the original and breaks things
     if optim or not all_reduce:
-        if "prevs" in toplot:
-            prevfigs = plot_prevs(all_res)
-            allplots.update(prevfigs)
-        if "ann" in toplot:
-            outfigs = plot_outputs(all_res, all_reduce, True, "ann")
-            allplots.update(outfigs)
-        if "agg" in toplot:
-            outfigs = plot_outputs(all_res, all_reduce, False, "agg")
-            allplots.update(outfigs)
+        #if "prevs" in toplot:
+        #    prevfigs = plot_prevs(all_res)
+        #    allplots.update(prevfigs)
+        #if "ann" in toplot:
+        #    outfigs = plot_outputs(all_res, all_reduce, True, "ann")
+        #    allplots.update(outfigs)
+        #if "agg" in toplot:
+        #    outfigs = plot_outputs(all_res, all_reduce, False, "agg")
+        #    allplots.update(outfigs)
         if "clust_annu_alloc" in toplot:  # optimized allocations
             outfigs = plot_clustered_annu_optialloc(all_res, optim=optim, geo=geo)
             allplots.update(outfigs)
 
     else:
 
-        if "prev_reduce" in toplot:
-            prev_reducefigs = plot_prevs_reduce(all_res, all_reduce)
-            allplots.update(prev_reducefigs)
-        if "ann" in toplot:
-            outfigs = plot_outputs_reduced(all_res, all_reduce, True, "ann")
-            allplots.update(outfigs)
-        if "agg" in toplot:
-            outfigs = plot_outputs_reduced(all_res, all_reduce, False, "agg")
-            allplots.update(outfigs)
+        #if "prev_reduce" in toplot:
+        #    prev_reducefigs = plot_prevs_reduce(all_res, all_reduce)
+        #    allplots.update(prev_reducefigs)
+        #if "ann" in toplot:
+        #    outfigs = plot_outputs_reduced(all_res, all_reduce, True, "ann")
+        #   allplots.update(outfigs)
+        #if "agg" in toplot:
+        #    outfigs = plot_outputs_reduced(all_res, all_reduce, False, "agg")
+        #    allplots.update(outfigs)
         if "clust_annu_alloc" in toplot:  # optimized allocations
             outfigs = plot_clustered_annu_alloc(all_res, optim=optim, geo=geo)
             allplots.update(outfigs)
     if "alloc" in toplot:  # optimized allocations
         outfigs = plot_alloc(all_res, optim=optim, geo=geo)
         allplots.update(outfigs)
+    if "prev_reduce" in toplot:
+            prev_reducefigs = plot_prevs_reduce(all_res, all_reduce)
+            allplots.update(prev_reducefigs)
+    if "ann" in toplot:
+            outfigs = plot_outputs_reduced(all_res, all_reduce, True, "ann")
+            allplots.update(outfigs)
+    if "agg" in toplot:
+            outfigs = plot_outputs_reduced(all_res, all_reduce, False, "agg")
+            allplots.update(outfigs)
     # if 'annu_alloc' in toplot: # optimized allocations
     # outfigs = plot_annu_alloc(all_res, optim=optim, geo=geo)
     # allplots.update(outfigs)

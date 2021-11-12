@@ -508,7 +508,7 @@ class Project(object):
         self.add_result(results, name="scens")
         return None
 
-    def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=None, maxtime=300, parallel=True, dosave=True, runbaseline=True, runbalanced=False):
+    def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=None, maxtime=300, parallel=True, dosave=True, runbaseline=True, runbalanced=False, n_runs=1):
         if optim is not None:
             self.add_optims(optim)
             key = optim.name  # this to handle parallel calls of this function
@@ -525,16 +525,29 @@ class Project(object):
         # run optimization
         if (optim.model_name is None) or (optim.model_name not in self.datasets.keys()):
             raise Exception("Could not find valid dataset for %s.  Edit the scenario and change the dataset" % optim.name)
-        model = sc.dcp(self.model(optim.model_name))
-        model.setup(optim, setcovs=False)
-        model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
+        true_name = optim.model_name
+        for i in range(n_runs):
+            if i == 0:
+                model = sc.dcp(self.model(optim.model_name))
+                model.setup(optim, setcovs=False)
+                model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
+            else:
+                optim.model_name = true_name + " resampled #" + str(i)
+                dataset = Dataset(country=None, region=None, name=None, fromfile=False, doload=True, project=self, resampling=True)
+                pops = dataset.pops
+                prog_info = dataset.prog_info
+                t = dataset.t
+                sampled_data = dataset.demo_data
+                model = Model(pops, prog_info, sampled_data, t, enforce_constraints_year=0, growth=optim.growth)
+                model.setup(optim, setcovs=False)
+                model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
         results += optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel, runbalanced=runbalanced, base=base)
         # add by optim name
         if dosave:
             self.add_result(results, name=optim.name)
         return results
 
-    def run_geo(self, geo=None, key=-1, maxiter=20, swarmsize=None, maxtime=400, dosave=True, parallel=False, runbalanced=False):
+    def run_geo(self, geo=None, key=-1, maxiter=20, swarmsize=None, maxtime=400, dosave=True, parallel=False, runbalanced=False, n_runs=1):
         """Regions cannot be parallelised because daemon processes cannot have children.
         Two options: Either can parallelize regions and not the budget or run
         regions in series while parallelising each budget multiple."""
@@ -542,7 +555,7 @@ class Project(object):
             self.add_geos(geo)
             key = geo.name  # this to handle parallel calls of this function
         geo = self.geo(key)
-        results = geo.run_geo(self, maxiter, swarmsize, maxtime, parallel, runbalanced=runbalanced)
+        results = geo.run_geo(self, maxiter, swarmsize, maxtime, parallel, runbalanced=runbalanced, n_runs=n_runs)
         if dosave:
             self.add_result(results, name="geospatial")
         return results

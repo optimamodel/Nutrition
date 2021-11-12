@@ -43,7 +43,7 @@ class Geospatial:
         self.growth = growth
         self.balanced_optimization = balanced_optimization
 
-    def run_geo(self, proj, maxiter, swarmsize, maxtime, parallel, runbalanced=False):
+    def run_geo(self, proj, maxiter, swarmsize, maxtime, parallel, runbalanced=False, n_runs=1):
         """Runs geospatial optimization for a given project via the following steps:
         - Calculates the total flexible spending available for distribution across regions.
         Total flexible spending is a function of additional funds, `fix_curr` and `fix_regionalspend`.
@@ -71,7 +71,7 @@ class Geospatial:
                 # can distribute between regions
                 # create regions with corrected additional funds
                 regions = self.make_regions(add_funds=total_flexi, weight_ind=w)
-                run_optim = partial(proj.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel, dosave=True, runbaseline=False)
+                run_optim = partial(proj.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel, dosave=True, runbaseline=False, n_runs=n_runs)
                 # Generate the budget outcome curves optimization results.  This step takes a long while, generally.
                 print("Creating BOCs afresh...")
                 boc_optims = sc.odict([(region.name + "objective #" + str(w + 1), run_optim(optim=region)) for region in regions])

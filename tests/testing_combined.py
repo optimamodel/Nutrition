@@ -32,7 +32,7 @@ kwargs2 = {"name": "IYCF at $10 mil", "model_name": "eg", "scen_type": "budget",
 kwargs3 = {"name": "IYCF", "model_name": "eg", "scen_type": "coverage", "progvals": sc.odict({"IYCF 1": [0.6, 0.2, 0.5, 0.95, 0.8]})}
 
 
-def parallel_optim(region, path=None):
+def parallel_optim(region, path=None, n_runs=5):
     """Define optimization scenario"""
     p2 = Project("Cameroon")
     p2.load_data(inputspath=path + region + "_input.xlsx", name=region, resampling=False)
@@ -57,7 +57,8 @@ def parallel_optim(region, path=None):
     }
 
     p2.add_optims(Optim(**kwargs))
-    p2.run_optim(maxiter=50, swarmsize=0, maxtime=50, parallel=True, runbalanced=True)
+    p2.run_optim(maxiter=50, swarmsize=0, maxtime=50, parallel=True, runbalanced=True, n_runs=n_runs)
+    p2.reduce()
     return p2
 
 
@@ -75,7 +76,7 @@ def parallel_optim(region, path=None):
 """run optimization scenarios"""
 if __name__ == "__main__":
 
-    run_optim = partial(parallel_optim, path=input_path)
+    run_optim = partial(parallel_optim, path=input_path, n_runs=5)
     results = []
 
     # proj_list = run_parallel(run_optim, region_list, num_procs=3)
