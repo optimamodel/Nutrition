@@ -202,7 +202,23 @@ def make_default_optim(modelname=None, basename="Maximize thrive", locale=None):
 
     _ = utils.get_translator(locale)
 
-    kwargs1 = {"name": basename, "model_name": modelname, "mults": [1], "weights": sc.odict({"thrive": 1}), "prog_set": [_("Vitamin A supplementation"), "IYCF 1", _("IFA fortification of maize"), "Balanced energy-protein supplementation", "Public provision of complementary foods", "Iron and iodine fortification of salt"], "fix_curr": False, "add_funds": 0, "filter_progs": True}
+    kwargs1 = {
+        "name": basename,
+        "model_name": modelname,
+        "mults": [1],
+        "weights": sc.odict({"thrive": 1}),
+        "prog_set": [
+            _("Vitamin A supplementation"),
+            _("IYCF 1"),
+            _("IFA fortification of maize"),
+            _("Balanced energy-protein supplementation"),
+            _("Public provision of complementary foods"),
+            _("Iron and iodine fortification of salt"),
+        ],
+        "fix_curr": False,
+        "add_funds": 0,
+        "filter_progs": True,
+    }
 
-    default = Optim(**kwargs1)
+    default = Optim(**kwargs1, locale=locale)
     return default

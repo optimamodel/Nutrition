@@ -233,6 +233,7 @@ Last update: 2019feb11
 
   import utils from '../js/utils.js'
   import router from '../router.js'
+  import i18n from '../i18n'
 
   export default {
     name: 'OptimizationsPage',
@@ -558,7 +559,7 @@ Last update: 2019feb11
       addOptimModal() {
         // Open a model dialog for creating a new optimization
         console.log('addOptimModal() called');
-        this.$sciris.rpc('opt_new_optim', [this.projectID, this.datasetOptions[0]])
+        this.$sciris.rpc('opt_new_optim', [this.projectID, this.datasetOptions[0], i18n.locale])
             .then(response => {
               this.addEditModal.optimSummary = response.data
               this.addEditModal.origName = this.addEditModal.optimSummary.name

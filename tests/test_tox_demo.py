@@ -25,6 +25,7 @@ def test_optims(project):
     P = sc.dcp(project)
     P.run_optim(parallel=False, maxtime=1, maxiter=1)
     P.plot(-1, optim=True)
+    plt.close('all')
 
 
 def test_geos(project):
@@ -32,6 +33,7 @@ def test_geos(project):
     P = sc.dcp(project)
     P.run_geo(parallel=False, maxtime=1, maxiter=1)
     P.plot(-1, geo=True)
+    plt.close('all')
 
 
 if __name__ == "__main__":

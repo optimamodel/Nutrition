@@ -121,7 +121,7 @@ def write_results(results, projname=None, filename=None, folder=None):
     if projname is None:
         projname = ""
     outcomes = default_trackers()
-    labs = pretty_labels()
+    labs = pretty_labels(locale=results[0].locale)
     rows = [labs[out] for out in outcomes]
     if filename is None:
         filename = "outputs.xlsx"

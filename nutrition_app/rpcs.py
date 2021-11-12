@@ -563,11 +563,13 @@ def upload_databook(databook_filename, project_id):
 editableformats = ["edit", "tick", "bdgt", "drop"]  # Define which kinds of format are editable and saveable
 
 
-def define_formats():
+def define_formats(locale):
     """ Hard-coded sheet formats """
+    _ = nu.get_translator(locale)
+
     formats = sc.odict()
 
-    formats["Nutritional status distribution"] = [
+    formats[_("Nutritional status distribution")] = [
         ["head", "head", "name", "name", "name", "name", "name", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk"],
         ["name", "name", "calc", "calc", "calc", "calc", "calc", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk"],
         ["blnk", "name", "calc", "calc", "calc", "calc", "calc", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk", "blnk"],
@@ -585,7 +587,7 @@ def define_formats():
         ["blnk", "name", "calc", "calc", "calc", "calc", "calc", "calc", "calc", "calc", "calc", "calc", "calc", "calc", "calc"],
     ]
 
-    formats["Breastfeeding distribution"] = [
+    formats[_("Breastfeeding distribution")] = [
         ["head", "head", "head", "head", "head", "head", "head"],
         ["name", "name", "edit", "edit", "edit", "edit", "edit"],
         ["blnk", "name", "edit", "edit", "edit", "edit", "edit"],
@@ -593,7 +595,7 @@ def define_formats():
         ["blnk", "name", "calc", "calc", "calc", "calc", "calc"],
     ]
 
-    formats["IYCF packages"] = [
+    formats[_("IYCF packages")] = [
         ["head", "head", "head", "head", "head"],
         ["head", "name", "tick", "tick", "blnk"],
         ["blnk", "name", "tick", "tick", "blnk"],
@@ -617,13 +619,13 @@ def define_formats():
         ["blnk", "name", "blnk", "blnk", "tick"],
     ]
 
-    formats["Treatment of SAM"] = [
+    formats[_("Treatment of SAM")] = [
         ["blnk", "head", "head", "head"],
         ["head", "name", "name", "tick"],
         ["head", "name", "name", "tick"],
     ]
 
-    formats["Programs cost and coverage"] = [
+    formats[_("Programs cost and coverage")] = [
         ["head", "head", "head", "head", "head"],
         ["name", "edit", "edit", "bdgt", "drop"],
         ["name", "edit", "edit", "bdgt", "drop"],
@@ -669,20 +671,25 @@ def define_formats():
 
 @RPC()
 def get_sheet_data(project_id, key=None, verbose=False):
-    sheets = [
-        "Nutritional status distribution",
-        "Breastfeeding distribution",
-        "IYCF packages",
-        "Treatment of SAM",
-        "Programs cost and coverage",
-    ]
+
     proj = load_project(project_id, die=True)
+
+    locale = proj.dataset(key).locale
+    _ = nu.get_translator(locale)
+
+    sheets = [
+        _("Nutritional status distribution"),
+        _("Breastfeeding distribution"),
+        _("IYCF packages"),
+        _("Treatment of SAM"),
+        _("Programs cost and coverage"),
+    ]
     wb = proj.inputsheet(key)  # Get the spreadsheet
     calcscache = proj.dataset(key).calcscache  # Get the calculation cells cache
     sheetdata = sc.odict()
     for sheet in sheets:  # Read pandas DataFrames in for each worksheet
         sheetdata[sheet] = wb.readcells(sheetname=sheet, header=False)
-    sheetformat = define_formats()
+    sheetformat = define_formats(locale)
 
     sheetjson = sc.odict()
     for sheet in sheets:  # loop over each GUI worksheet
@@ -1115,7 +1122,8 @@ def run_scens(project_id, doplot=True, do_costeff=False):
 
 def py_to_js_optim(py_optim: nu.Optim, proj: nu.Project):
     """ Convert a Python to JSON representation of an optimization """
-    obj_labels = nu.pretty_labels(direction=True).values()
+    locale = proj.locale
+    obj_labels = nu.pretty_labels(direction=True, locale=locale).values()
     js_optim = {}
     attrs = ["name", "model_name", "mults", "add_funds", "fix_curr", "filter_progs"]
     for attr in attrs:
@@ -1185,10 +1193,13 @@ def set_optim_info(project_id, optim_jsons):
 
 
 @RPC()
-def opt_new_optim(project_id, dataset):
+def opt_new_optim(project_id, dataset, locale):
+
+    _ = nu.get_translator(locale)
+
     print("Making new optimization...")
     proj = load_project(project_id, die=True)
-    py_optim = nu.make_default_optim(modelname=dataset, basename="Maximize thrive")
+    py_optim = nu.make_default_optim(modelname=dataset, basename=_("Maximize thrive"), locale=proj.locale)
     prog_set = []
     for program in proj.model(py_optim.model_name).prog_info.programs.values():
         if is_included(py_optim.prog_set, program, True):
@@ -1254,7 +1265,8 @@ def py_to_js_geo(py_geo, proj, key=None, default_included=False):
     """ Convert a Python to JSON representation of an optimization """
     # NB. The list of programs may not be quite right if a project has datasets with
     # different programs. This should be debugged when there is a specific use case
-    obj_labels = nu.pretty_labels(direction=True).values()
+    locale = proj.locale
+    obj_labels = nu.pretty_labels(direction=True, locale=locale).values()
     prog_names = proj.dataset(key).prog_names()
     js_geo = {}
     attrs = ["name", "modelnames", "mults", "add_funds", "fix_curr", "fix_regionalspend", "filter_progs"]
@@ -1345,7 +1357,7 @@ def set_geo_info(project_id, geo_jsons):
 def get_default_geo(project_id):
     print("Getting default optimization...")
     proj = load_project(project_id, die=True)
-    py_geo = nu.make_default_geo(basename="Geospatial optimization")
+    py_geo = nu.make_default_geo(basename="Geospatial optimization", locale=proj.locale)
     js_geo = py_to_js_geo(py_geo, proj, default_included=True)
     print("Created default JavaScript optimization:")
     sc.pp(js_geo)
