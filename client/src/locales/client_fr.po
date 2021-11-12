@@ -97,7 +97,7 @@ msgstr "Ne peut être réaffecté"
 
 msgctxt "common"
 msgid "Clear results"
-msgstr "Marche à vide"
+msgstr "Effacer les résultats"
 
 msgctxt "common"
 msgid "Export data"
