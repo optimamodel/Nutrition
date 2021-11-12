@@ -714,7 +714,9 @@ def plot_clustered_annu_optialloc(results, optim, geo):
     leglabs = []
     fig = pl.figure(figsize=(20, 6))
     ax = fig.add_axes(ax_size)
-    x_base = np.arange(len(results))
+    res_list = [res for res in results if "#" not in res.name]
+    x_base = np.arange(len(res_list))
+    #x_base = np.arange(len(results))
 
     x = np.multiply(x_base, width)
     year_ticks = np.arange(len(year))
@@ -724,8 +726,8 @@ def plot_clustered_annu_optialloc(results, optim, geo):
         avspend = []
 
         for prog in progset:
-            thisprog = np.zeros(len(results))
-            for i, res in enumerate(results):
+            thisprog = np.zeros(len(res_list))
+            for i, res in enumerate(res_list):
                 if res.name != "Excess budget not allocated":
                     alloc = res.get_allocs(ref=refprogs)  # slightly inefficient to do this for every program
                     try:
@@ -748,7 +750,7 @@ def plot_clustered_annu_optialloc(results, optim, geo):
         bars = []
         # xlabs = [res.mult if res.mult is not None else res.name for res in results]
         xlabs = [res.name for res in results]
-        bottom = np.zeros(len(results))
+        bottom = np.zeros(len(res_list))
         for i, spend in enumerate(avspend):
             if any(spend) > 0:  # only want to plot prog if spending is non-zero (solves legend issues)
                 leglabs.append(progset[i])

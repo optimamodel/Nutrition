@@ -541,7 +541,7 @@ class Project(object):
                 model = Model(pops, prog_info, sampled_data, t, enforce_constraints_year=0, growth=optim.growth)
                 model.setup(optim, setcovs=False)
                 model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
-        results += optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel, runbalanced=runbalanced, base=base)
+            results += optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel, runbalanced=runbalanced, base=base)
         # add by optim name
         if dosave:
             self.add_result(results, name=optim.name)
