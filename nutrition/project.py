@@ -526,7 +526,7 @@ class Project(object):
             self.add_scens(scens)
         for scen in self.scens.values():
             if scen.active:
-                results += run_scen(scen, base_run = True, n_sampled_runs = n_runs - 1)
+                results += self.run_scen(scen, base_run = True, n_sampled_runs = n_runs - 1)
                 
         self.add_result(results, name="scens")
         return None
