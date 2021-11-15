@@ -424,7 +424,7 @@ def plot_alloc(results, optim, geo):
             bottom += spend
     ymax = max(bottom)
     if optim or geo:
-        xlabs = [res.name for res in results]
+        xlabs = [res.name for res in results if "#" not in res.name]
         title = "Optimal allocation, %s-%s" % (ref.years[pltstart], ref.years[-1])
         valuestr = str(results[1].prog_info.free / 1e6)  # bit of a hack
         # format x axis
@@ -437,7 +437,7 @@ def plot_alloc(results, optim, geo):
         else:
             xlab = "Total available budget (relative to US$%sM)" % valuestr
     else:
-        xlabs = [res.mult if res.mult is not None else res.name for res in res_list]
+        xlabs = [res.mult if res.mult is not None else res.name for res in res_list if "#" not in res.name]
         title = "Average annual spending, %s-%s" % (ref.years[pltstart], ref.years[-1])
         xlab = ""  # 'Scenario' # Collides with tick labels
     ax.set_title(title)
@@ -684,7 +684,7 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool):
     customizations.update(legend_loc)
     legend_1 = ax.legend(bars, leglabs, **customizations)
     handles = [f"Bar {j}: " for j in range(1, len(xlabs) + 1)]
-    ax.legend(handles=handles, labels=xlabs, loc="lower center", bbox_to_anchor=(1.15, 0.3), fontsize=10, borderpad=1.2)
+    ax.legend(handles=handles, labels=xlabs, loc="center left", bbox_to_anchor=(1.0, 0.3), fontsize=10, borderpad=1.2)
     figs["clust_annu_alloc"] = fig
     fig.add_artist(legend_1)
     return figs
