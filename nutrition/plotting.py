@@ -126,11 +126,16 @@ def make_plots(all_res=None, all_reduce=None, toplot=None, optim=False, geo=Fals
     if all_res is not None:
         all_res = sc.promotetolist(sc.dcp(all_res))  # Without dcp(), modifies the original and breaks things
         
-        if all_reduce is None:
-            all_reduce = reduce_results(all_res)
-    if all_res is None and all_reduce is None:
+        # if all_reduce is None or all_reduce == {}: #TODO review if there's a better way to deal with this
+        all_reduce = reduce_results(all_res)
+        #TODO specifically,  is there a good reason for projects to store reduced_results at all, or does it make a lot more sense to just generate here?
+        #TODO it may be important for performance to store the cache of reduced results for the FE, but then we also need to make sure to regen when appropriate
+        
+    
+    if (all_res is None or all_res == {} or all_res == []) and all_reduce is None:
         print('WARNING: No results to plot!')
         return allplots
+    
 
     if "clust_annu_alloc" in toplot:  # optimized allocations
         outfigs = plot_clustered_annu_alloc(all_res, optim=optim, geo=geo)
