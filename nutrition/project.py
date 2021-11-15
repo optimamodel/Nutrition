@@ -526,13 +526,20 @@ class Project(object):
         if (optim.model_name is None) or (optim.model_name not in self.datasets.keys()):
             raise Exception("Could not find valid dataset for %s.  Edit the scenario and change the dataset" % optim.name)
         true_name = optim.name
+        
+        model = sc.dcp(self.model(optim.model_name))
+        model.setup(optim, setcovs=False)
+        model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
+        results += optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel, runbalanced=runbalanced, base=base)
+        optim_alloc = results[-1].get_allocs()
+        if "Excess budget not allocated" in optim_alloc.keys():
+            optim_alloc.remove("Excess budget not allocated")
+
         for i in range(n_runs):
             if i == 0:
-                model = sc.dcp(self.model(optim.model_name))
-                model.setup(optim, setcovs=False)
-                model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
+                pass #already run outside the loop as the main optimization run
             else:
-                optim.name = true_name + " resampled #" + str(i)
+                sample_name = true_name + " resampled #" + str(i)
                 dataset = Dataset(country=None, region=None, name=None, fromfile=False, doload=True, project=self, resampling=True)
                 pops = dataset.pops
                 prog_info = dataset.prog_info
@@ -541,8 +548,13 @@ class Project(object):
                 model = Model(pops, prog_info, sampled_data, t, enforce_constraints_year=0, growth=optim.growth)
                 model.setup(optim, setcovs=False)
                 model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
-            results += optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel, runbalanced=runbalanced, base=base)
-        # add by optim name
+                
+                scen = Scen(name=sample_name, model_name=sample_name, scen_type="budget", progvals=optim_alloc, enforce_constraints_year=1, growth=optim.growth)
+                                
+                res = run_scen(scen, model) #, obj=sample_name, mult=None, weight=None, restrictcovs=False)
+
+                results.append(res)
+                
         if dosave:
             self.add_result(results, name=optim.name)
         return results
