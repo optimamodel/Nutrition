@@ -533,7 +533,8 @@ class Project(object):
         # run baseline
         if runbaseline or runbalanced:
             optim.prog_set.append("Excess budget not allocated")
-            base = self.run_baseline(optim.model_name, optim.prog_set, growth=optim.growth)
+            base_scen = self.run_baseline(optim.model_name, optim.prog_set, growth=optim.growth, dorun=False)
+            base = self.run_scen(scen = base_scen, base_run = True, n_sampled_runs = 0)
             if runbaseline: #don't append this to the results if runbaseline=False
                 results.append(base)
             optim.prog_set.remove("Excess budget not allocated")
@@ -550,9 +551,9 @@ class Project(object):
         
         results += opt_results
         
-        if n_runs == 1: #no sampling necessary, just add the optimized results
-            pass
-        elif n_runs> 1: #we also need to sample each of the optimized results
+        if n_runs> 1: #we also need to sample the baseline and each of the optimized results
+            results += self.run_scen(scen = base_scen, base_run = False, n_sampled_runs = n_runs - 1)
+            
             for opt_result in opt_results:
                 optim_alloc = opt_result.get_allocs()
                 if "Excess budget not allocated" in optim_alloc.keys(): #???
