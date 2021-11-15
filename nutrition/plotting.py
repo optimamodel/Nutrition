@@ -218,76 +218,77 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name):
     baseres = all_res[0]
     years = np.array(baseres.years)  # assume these scenarios over same time horizon
     colors = sc.gridcolors(ncolors=len(all_reduce), hueshift=hueshift)
-    for i, outcome in enumerate(outcomes):
-        fig = pl.figure(figsize=fig_size)
-        ax = fig.add_axes(ax_size)
-        ymax = 0
-        perchange = []
-        bars = []
-
-        baseout = sc.promotetoarray(baseres.get_outputs(outcome, seq=seq)[0])
-        scale = 1e6 if baseout.max() > 1e6 else 1
-        baseout /= scale
-        offsets = np.arange(len(all_reduce) + 1) * width  # Calculate offset so tick is in the center of the bars
-        offsets -= offsets.mean() - 0.5 * width
-        for r, res in enumerate(all_reduce):
-
-            offset = offsets[r]
-            xpos = years + offset if seq else offset
+    for i, outcome in enumerate(outcomes): 
+        if "cost" not in outcome:
+            fig = pl.figure(figsize=fig_size)
+            ax = fig.add_axes(ax_size)
+            ymax = 0
+            perchange = []
+            bars = []
+    
+            baseout = sc.promotetoarray(baseres.get_outputs(outcome, seq=seq)[0])
+            scale = 1e6 if baseout.max() > 1e6 else 1
+            baseout /= scale
+            offsets = np.arange(len(all_reduce) + 1) * width  # Calculate offset so tick is in the center of the bars
+            offsets -= offsets.mean() - 0.5 * width
+            for r, res in enumerate(all_reduce):
+    
+                offset = offsets[r]
+                xpos = years + offset if seq else offset
+                if seq:
+                    output_p = sc.promotetoarray(all_reduce[res][outcome]["point"])
+                    output_l = sc.promotetoarray(all_reduce[res][outcome]["low"])
+                    output_h = sc.promotetoarray(all_reduce[res][outcome]["high"])
+                if not seq:
+                    output_p = sc.promotetoarray(all_reduce[res][outcome]["point"].sum())
+                    output_l = sc.promotetoarray(all_reduce[res][outcome]["low"].sum())
+                    output_h = sc.promotetoarray(all_reduce[res][outcome]["high"].sum())
+    
+                output_p /= scale
+                output_l /= scale
+                output_h /= scale
+                length = len(output_p)
+                error = output_h[length - 1] - output_l[length - 1]
+                thimax = output_h.max()
+                if thimax > ymax:
+                    ymax = thimax
+                change = round_elements([utils.get_change(base, out) for out, base in zip(output_p, baseout)], dec=1)
+                perchange.append(change)
+    
+                if seq:
+                    bar = ax.bar(xpos, output_p, width=width, color=colors[r], yerr=output_h - output_l, capsize=2)
+                if not seq:
+                    bar = ax.bar(xpos, output_p, width=width, color=colors[r])
+                    ax.errorbar(xpos, output_p[length - 1], yerr=error, capsize=2, color="black")
+                bars.append(bar)
+    
             if seq:
-                output_p = sc.promotetoarray(all_reduce[res][outcome]["point"])
-                output_l = sc.promotetoarray(all_reduce[res][outcome]["low"])
-                output_h = sc.promotetoarray(all_reduce[res][outcome]["high"])
-            if not seq:
-                output_p = sc.promotetoarray(all_reduce[res][outcome]["point"].sum())
-                output_l = sc.promotetoarray(all_reduce[res][outcome]["low"].sum())
-                output_h = sc.promotetoarray(all_reduce[res][outcome]["high"].sum())
-
-            output_p /= scale
-            output_l /= scale
-            output_h /= scale
-            length = len(output_p)
-            error = output_h[length - 1] - output_l[length - 1]
-            thimax = output_h.max()
-            if thimax > ymax:
-                ymax = thimax
-            change = round_elements([utils.get_change(base, out) for out, base in zip(output_p, baseout)], dec=1)
-            perchange.append(change)
-
-            if seq:
-                bar = ax.bar(xpos, output_p, width=width, color=colors[r], yerr=output_h - output_l, capsize=2)
-            if not seq:
-                bar = ax.bar(xpos, output_p, width=width, color=colors[r])
-                ax.errorbar(xpos, output_p[length - 1], yerr=error, capsize=2, color="black")
-            bars.append(bar)
-
-        if seq:
-            ax.set_xlabel("Years")
-            title = "Annual"
-        else:
-            title = "Cumulative"
-            ax.set_xticks([])
-
-            # display percentage change above bars
-            for j, bar in enumerate(bars[1:], 1):
-                rect = bar[-1]
-                change = perchange[j][0]
-                height = rect.get_height()
-                ax.text(rect.get_x() + rect.get_width() / 2.0, height, "{}%".format(change), ha="center", va="bottom", fontsize=10)
-        # formatting
-        title += " %s \n %s-%s" % (utils.relabel(outcome).lower(), baseres.years[pltstart], baseres.years[-1])
-        sc.SIticks(ax=ax, axis="y")
-        ax.set_ylim([0, ymax * 1.1])
-        if scale == 1:
-            ylabel = "Number"
-        elif scale == 1e6:
-            ylabel = "Number (millions)"
-        else:
-            raise Exception("Scale value must be 1 or 1e6, not %s" % scale)
-        ax.set_ylabel(ylabel)
-        ax.legend(bars, [res for res in all_reduce if res != "Excess budget not allocated"], ncol=1, **legend_loc)
-        ax.set_title(title)
-        figs["%s_out_%0i" % (name, i)] = fig
+                ax.set_xlabel("Years")
+                title = "Annual"
+            else:
+                title = "Cumulative"
+                ax.set_xticks([])
+    
+                # display percentage change above bars
+                for j, bar in enumerate(bars[1:], 1):
+                    rect = bar[-1]
+                    change = perchange[j][0]
+                    height = rect.get_height()
+                    ax.text(rect.get_x() + rect.get_width() / 2.0, height, "{}%".format(change), ha="center", va="bottom", fontsize=10)
+            # formatting
+            title += " %s \n %s-%s" % (utils.relabel(outcome).lower(), baseres.years[pltstart], baseres.years[-1])
+            sc.SIticks(ax=ax, axis="y")
+            ax.set_ylim([0, ymax * 1.1])
+            if scale == 1:
+                ylabel = "Number"
+            elif scale == 1e6:
+                ylabel = "Number (millions)"
+            else:
+                raise Exception("Scale value must be 1 or 1e6, not %s" % scale)
+            ax.set_ylabel(ylabel)
+            ax.legend(bars, [res for res in all_reduce if res != "Excess budget not allocated"], ncol=1, **legend_loc)
+            ax.set_title(title)
+            figs["%s_out_%0i" % (name, i)] = fig
     return figs
 
 
