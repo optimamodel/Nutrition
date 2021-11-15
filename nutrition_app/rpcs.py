@@ -426,7 +426,8 @@ def rename_project(project_json):
 @RPC()
 def add_demo_project(username):
     """ Add a demo Optima Nutrition project """
-    proj = nu.demo(scens=True, optims=True, geos=True)  # Create the project, loading in the desired spreadsheets.
+    proj = nu.demo(scens=True, optims=True, geos=True)  #
+    proj.optims[0].weights[0] = proj.optims[0].weights[0][0:1]  # Overwrite optim weights to not be full array and avoid confusion.
     proj.name = "Demo project"
     print(">> add_demo_project %s" % (proj.name))  # Display the call information.
     key, proj = save_new_project(proj, username)  # Save the new project in the DataStore.
@@ -1126,7 +1127,9 @@ def js_to_py_optim(js_optim: dict) -> nu.Optim:
     try:
         kwargs["weights"] = sc.odict()
         for key, item in zip(obj_keys, js_optim["weightslist"]):
-            val = numberify(item["weight"], blank="zero", invalid="die", aslist=False)
+            if not isinstance(val, list):
+                item["weight"] = [item["weight"]]
+            val = numberify(item["weight"], blank="zero", invalid="die", aslist=True)
             kwargs["weights"][key] = val
     except Exception as E:
         print('Unable to convert "%s" to weights' % js_optim["weightslist"])
