@@ -41,7 +41,7 @@ class Scen(sc.prettyobj):
         return self.__dict__
 
 
-def run_scen(scen, model, obj=None, mult=None, weight=None, setcovs=True, restrictcovs=True):  # Single run supports previous version with no uncertainty
+def run_scen(scen, model, name=None, obj=None, mult=None, weight=None, setcovs=True, restrictcovs=True):  # Single run supports previous version with no uncertainty
     """ Function to run associated Scen and Model objects """
     from .results import ScenResult  # This is here to avoid a potentially circular import
 
@@ -49,7 +49,9 @@ def run_scen(scen, model, obj=None, mult=None, weight=None, setcovs=True, restri
     model.setup(scen, setcovs=setcovs, restrictcovs=restrictcovs)
     model.growth = scen.growth
     model.run_sim()
-    res = ScenResult(scen.name, scen.model_name, model, obj=obj, mult=mult, weight=weight, growth=scen.growth)
+    if name is None:
+        name = scen.name
+    res = ScenResult(name, scen.model_name, model, obj=obj, mult=mult, weight=weight, growth=scen.growth)
     return res
 
 

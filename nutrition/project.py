@@ -482,26 +482,33 @@ class Project(object):
         :return a list of Results
         """
         results = []
-        true_name = scen.name
         if (scen.model_name is None) or (scen.model_name not in self.datasets.keys()):
             raise Exception("Could not find valid dataset for %s.  Edit the scenario and change the dataset" % scen.name)
-        
-        if base_run: #run with the base requested model
-            model = sc.dcp(self.model(scen.model_name))
-            model.growth = scen.growth
-            model.enforce_constraints_year = scen.enforce_constraints_year
-            res = run_scen(scen, model)
-            results.append(res)
-        for i in range(n_sampled_runs): #create a resampled Dataset for each run
-            scen.name = true_name + " resampled__#" + str(i)
-            dataset = Dataset(country=None, region=None, name=None, fromfile=False, doload=True, project=self, resampling=True)
-            pops = dataset.pops
-            prog_info = dataset.prog_info
-            t = dataset.t
-            sampled_data = dataset.demo_data
-            model = Model(pops, prog_info, sampled_data, t, enforce_constraints_year=scen.enforce_constraints_year, growth=scen.growth)
             
-            res = run_scen(scen, model)
+
+        for i in range(0 if base_run else 1, n_sampled_runs+1):
+            # print (f'Sample {i} for scen {scen.name}')
+            if i == 0: #base_run
+                model = sc.dcp(self.model(scen.model_name))
+                model.growth = scen.growth
+                model.enforce_constraints_year = scen.enforce_constraints_year
+                result_name = scen.name
+            else: #sampled run
+                result_name = scen.name + " resampled__#" + str(i)
+                dataset = Dataset(country=None, region=None, name=None, fromfile=False, doload=True, project=self, resampling=True)
+                pops = dataset.pops
+                prog_info = dataset.prog_info
+                t = dataset.t
+                sampled_data = dataset.demo_data
+                model = Model(pops, prog_info, sampled_data, t, enforce_constraints_year=scen.enforce_constraints_year, growth=scen.growth)
+            
+                
+            if "Excess budget not allocated" in scen.prog_set: #add a dummy program to the model
+                excess_spend = {"name": "Excess budget not allocated", "all_years": model.prog_info.all_years, "prog_data": add_dummy_prog_data(model.prog_info, "Excess budget not allocated")}
+                model.prog_info.add_prog(excess_spend, model.pops)
+                model.prog_info.prog_data = excess_spend["prog_data"]
+                
+            res = run_scen(scen, model, name=result_name)
             results.append(res)
         
         return results
@@ -534,7 +541,7 @@ class Project(object):
         if runbaseline or runbalanced:
             optim.prog_set.append("Excess budget not allocated")
             base_scen = self.run_baseline(optim.model_name, optim.prog_set, growth=optim.growth, dorun=False)
-            base = self.run_scen(scen = base_scen, base_run = True, n_sampled_runs = 0)
+            base = self.run_scen(scen = base_scen, base_run = True, n_sampled_runs = 0)[0] #noting that run_scen returns a list
             if runbaseline: #don't append this to the results if runbaseline=False
                 results.append(base)
             optim.prog_set.remove("Excess budget not allocated")
