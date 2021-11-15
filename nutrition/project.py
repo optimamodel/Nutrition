@@ -536,21 +536,21 @@ class Project(object):
             self.add_optims(optim)
             key = optim.name  # this to handle parallel calls of this function
         optim = self.optim(key)
+        if (optim.model_name is None) or (optim.model_name not in self.datasets.keys()):
+            raise Exception("Could not find valid dataset for %s.  Edit the scenario and change the dataset" % optim.name)
+            
+        
         results = []
         # run baseline
         if runbaseline or runbalanced:
-            optim.prog_set.append("Excess budget not allocated")
             base_scen = self.run_baseline(optim.model_name, optim.prog_set, growth=optim.growth, dorun=False)
             base = self.run_scen(scen = base_scen, base_run = True, n_sampled_runs = 0)[0] #noting that run_scen returns a list
             if runbaseline: #don't append this to the results if runbaseline=False
                 results.append(base)
-            optim.prog_set.remove("Excess budget not allocated")
         else:
             base = None
+            
         # run optimization
-        if (optim.model_name is None) or (optim.model_name not in self.datasets.keys()):
-            raise Exception("Could not find valid dataset for %s.  Edit the scenario and change the dataset" % optim.name)
-        
         model = sc.dcp(self.model(optim.model_name))
         model.setup(optim, setcovs=False)
         model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
@@ -563,8 +563,6 @@ class Project(object):
             
             for opt_result in opt_results:
                 optim_alloc = opt_result.get_allocs()
-                if "Excess budget not allocated" in optim_alloc.keys(): #???
-                    optim_alloc.remove("Excess budget not allocated")
                 scen_name = opt_result.name
                 scen = Scen(name=scen_name, model_name=optim.model_name, scen_type="budget", progvals=optim_alloc, enforce_constraints_year=0, growth=opt_result.growth)
                 
