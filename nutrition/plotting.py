@@ -132,7 +132,7 @@ def make_plots(all_res=None, all_reduce=None, toplot=None, optim=False, geo=Fals
         #TODO it may be important for performance to store the cache of reduced results for the FE, but then we also need to make sure to regen when appropriate
         
     
-    if (all_res is None or all_res == {} or all_res == []) and all_reduce is None:
+    if not all_res or not all_reduce:
         print('WARNING: No results to plot!')
         return allplots
     
