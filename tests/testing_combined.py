@@ -32,7 +32,7 @@ kwargs2 = {"name": "IYCF at $10 mil", "model_name": "eg", "scen_type": "budget",
 kwargs3 = {"name": "IYCF", "model_name": "eg", "scen_type": "coverage", "progvals": sc.odict({"IYCF 1": [0.6, 0.2, 0.5, 0.95, 0.8]})}
 
 
-def parallel_optim(region, path=None, n_runs=5):
+def parallel_optim(region, path=None, n_runs=2):
     """Define optimization scenario"""
     p2 = Project("Cameroon")
     p2.load_data(inputspath=path + region + "_input.xlsx", name=region, resampling=False)
