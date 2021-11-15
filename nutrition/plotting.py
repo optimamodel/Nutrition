@@ -595,25 +595,26 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool):
     
     :return a list of figures
     """
+    
+    res_list = [res for res in results if "resampled__#" not in res.name]
 
     # Initialize
-    width = 1.0 / (len(results) + 1)
+    width = 1.0 / (len(res_list) + 1)
     epsilon = 0.015
     figs = sc.odict()
     year = results[0].years
-    ref = results[0]
+    ref = res_list[0]
     progset = ref.prog_info.base_progset()
     colors = sc.gridcolors(ncolors=len(progset), hueshift=hueshift)
     leglabs = []
     fig = pl.figure(figsize=(20, 6))
     ax = fig.add_axes(ax_size)
-    res_list = [res for res in results if "#" not in res.name]
+    
     x_base = np.arange(len(res_list))
     x = np.multiply(x_base, width)
     year_ticks = np.arange(len(year))
 
     for k in range(1, len(year)):
-
         # Group allocations by program
         avspend = []
 
@@ -642,10 +643,9 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool):
         avspend = np.divide(avspend, scale)
         # Make bar plots
         bars = []
-        if optim or geo:
-            xlabs = [res.name for res in results if "#" not in res.name]
-        else:
-            xlabs = [res.mult if res.mult is not None else res.name for res in results if "#" not in res.name]
+        
+        xlabs = [res.name for res in res_list]
+        
         bottom = np.zeros(len(res_list))
         for i, spend in enumerate(avspend):
             if any(spend) > 0:  # only want to plot prog if spending is non-zero (solves legend issues)
@@ -656,7 +656,7 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool):
         ymax = max(bottom)
         if optim or geo:
             title = "Optimal allocation, %s-%s" % (ref.years[pltstart], ref.years[-1])
-            valuestr = str(results[1].prog_info.free / 1e6)  # bit of a hack
+            valuestr = str(results[1].prog_info.free / 1e6)  # bit of a hack TODO almost certainly this is broken now??
             # format x axis
             if valuestr[1] == ".":
                 valuestr = valuestr[:3]
@@ -670,7 +670,7 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool):
             title = "Annual spending, %s-%s" % (ref.years[pltstart], ref.years[-1])
             xlab = "Years"
     ax.set_title(title)
-    ax.set_xticks(year_ticks[1:] + ((len(results) - 1) / 2) * width)  # ignoring base year and makingsure tick is at the middle of the bar group
+    ax.set_xticks(year_ticks[1:] + ((len(res_list) - 1) / 2) * width)  # ignoring base year and makingsure tick is at the middle of the bar group
     ax.set_xticklabels(year[1:], fontsize=10)
     ax.set_xlabel(xlab)
     ax.set_ylim((0, ymax + ymax * 0.1))

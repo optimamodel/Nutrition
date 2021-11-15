@@ -148,7 +148,7 @@ def reduce_results(results, point_estimate:str='best', bounds:str = 'quantiles',
 
     for res in results:
         if sampled_pattern not in res.name: #e.g. it's a "real" point estimate result
-            print ('Evaluating', res.name)
+            # print ('Evaluating', res.name)
             res_unc[res.name] = {o: {es: np.zeros(len(years)) for es in estimate_keys} for o in outcomes}
             
             sampled_results = [sr for sr in results if res.name + sampled_pattern in sr.name]

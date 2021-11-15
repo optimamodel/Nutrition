@@ -558,7 +558,7 @@ class Project(object):
         
         results += opt_results
         
-        if n_runs> 1: #we also need to sample the baseline and each of the optimized results
+        if n_runs> 1: #we also need to sample the baseline and each of the optimized results NOTE: base_run = False as we already ran the baseline
             results += self.run_scen(scen = base_scen, base_run = False, n_sampled_runs = n_runs - 1)
             
             for opt_result in opt_results:
@@ -566,7 +566,7 @@ class Project(object):
                 scen_name = opt_result.name
                 scen = Scen(name=scen_name, model_name=optim.model_name, scen_type="budget", progvals=optim_alloc, enforce_constraints_year=0, growth=opt_result.growth)
                 
-                results += self.run_scen(scen = scen, base_run = True, n_sampled_runs = n_runs - 1)
+                results += self.run_scen(scen = scen, base_run = False, n_sampled_runs = n_runs - 1)
                 
         if dosave:
             self.add_result(results, name=optim.name)
