@@ -57,8 +57,8 @@ def parallel_optim(region, path=None, n_runs=2):
     }
 
     p2.add_optims(Optim(**kwargs))
-    p2.run_optim(maxiter=50, swarmsize=0, maxtime=50, parallel=True, runbalanced=True, n_runs=n_runs)
-    p2.reduce()
+    p2.run_optim(maxiter=50, swarmsize=0, maxtime=1, parallel=False, runbalanced=False, n_runs=n_runs)
+    p2.reduce_results()
     return p2
 
 
@@ -67,7 +67,7 @@ def parallel_optim(region, path=None, n_runs=2):
 # p1.add_scens(scen_list)
 # p1.run_scens(n_runs=n_runs)
 # p1.write_results(filename=output_path + 'non_optimized.xlsx')
-# p1.reduce()
+# p1.reduce_results()
 
 # p1.plot(optim=False, save_plots_folder=output_path)
 # #if doplot:

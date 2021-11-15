@@ -109,18 +109,32 @@ class ScenResult(sc.prettyobj):
     def plot(self, toplot=None):
         from .plotting import make_plots  # This is here to avoid a circular import
 
-        figs = make_plots(self, toplot=toplot)
+        figs = make_plots(all_res=self, toplot=toplot)
         return figs
 
 
-def reduce(results, n_runs, use_mean=False, quantiles=None, bounds=None, output=False):
+def reduce_results(results, point_estimate:str='best', bounds:str = 'quantiles', stddevs=None, quantiles=None, keep_raw=False):
+    """Function to reduce a list of results including sampled results to a list of main results with point estimates, and upper and lower bounds
+    Should return a subset of results excluding anything that was sampled
+    :param results: a list of ScenResult objects
+    :param point_estimate: 'best' = the outcome values from the non-sampled result, 'mean' = the mean of sampled results at each timestep, 'median' = the median of sampled results at each timestep
+    :param bounds: 'best' = the outcome values from the non-sampled result, 'stddevs' = the value stddevs away from the (mean) point estimate, 'quantiles' = upper and lower quantiles from the sampled results
+    :param stddevs: number of standard deviations away from the mean to return, only used if bounds == stddevs
+    :param quantiles: the lower and upper quantiles to return, as a dict or tuple, only used if bounds == quantiles
+    :param keep_raw: also keep all of the individual sampled results (troubleshooting or alternative plot methods might use this)
+    
+    :return results dict of the key outcomes for each main result, not the full results
+    """
+    sampled_pattern = " resampled__#" #must match project run_scen pattern (should be in universal constants somewhere instead)
+    
     years = results[0].years
-    esti = ["point", "low", "high"]
+    estimate_keys = ["point", "low", "high"]
     outcomes = default_trackers()
-    if use_mean:
-        if bounds is None:
-            bounds = 2
-    else:
+    if bounds == 'stddevs':
+        assert point_estimate == 'mean', 'If bounds are stddevs, point_estimate should be mean'
+        if stddevs is None:
+            stddevs = 2
+    elif bounds == 'quantiles':
         if quantiles is None:
             quantiles = {"low": 0.1, "high": 0.9}
         if not isinstance(quantiles, dict):
@@ -129,34 +143,65 @@ def reduce(results, n_runs, use_mean=False, quantiles=None, bounds=None, output=
             except Exception as E:
                 errormsg = f"Could not figure out how to convert {quantiles} into a quantiles object: must be a dict with keys low, high or a 2-element array ({str(E)})"
                 raise ValueError(errormsg)
-    reduce = {}
+    
+    res_unc = {} #this will be the returned results with uncertainty and without sampled results
 
-    for i in range(int(len(results) / n_runs)):
-        raw = {o: {n: np.zeros(len(years)) for n in range(n_runs)} for o in outcomes}
-        reduce[results[i * n_runs].name] = {o: {es: np.zeros(len(years)) for es in esti} for o in outcomes}
+    for res in results:
+        if sampled_pattern not in res.name: #e.g. it's a "real" point estimate result
+            # print ('Evaluating', res.name)
+            res_unc[res.name] = {o: {es: np.zeros(len(years)) for es in estimate_keys} for o in outcomes}
+            
+            sampled_results = [sr for sr in results if res.name + sampled_pattern in sr.name]
+            n_sampled_runs = len(sampled_results)
 
-        for j in range(n_runs):
-            out = results[i * n_runs + j].get_outputs(outcomes, seq=True, pretty=True)
-            for out_key in outcomes:
-                vals = out[out_key]
-                raw[out_key][j] = vals
-                # print(raw)
+
+            raw = {o: {n: np.zeros(len(years)) for n in range(n_sampled_runs)} for o in outcomes}
+            
+            for sr, sampled_result in enumerate(sampled_results):
+                sampled_out = sampled_result.get_outputs(outcomes, seq=True, pretty=True)
+                for out_key in outcomes:
+                    raw[out_key][sr] = sampled_out[out_key]
+                    
             # for default tracker outcomes
+            # note that if there are no sampled runs it uses the 'best' (non-sampled) result for all estimates
+            best_estimates = res.get_outputs(outcomes, seq=True, pretty=True)
+            
             for out_key in outcomes:
+                best_estimate = best_estimates[out_key]
                 axis = 0
-                if use_mean:
+                #Choose a method for the point estimate
+                if point_estimate == 'best' or n_sampled_runs == 0:
+                    res_unc[res.name][out_key]["point"] = sc.dcp(best_estimate)
+                elif point_estimate == 'mean': 
+                    r_mean = np.mean(list(raw[out_key].values()), axis=axis)
+                    res_unc[res.name][out_key]["point"] = r_mean
+                elif point_estimate == 'median':
+                    res_unc[res.name][out_key]["point"] = np.quantile(list(raw[out_key].values()), q=0.5, axis=axis)
+                else:
+                    raise Exception(f'Point estimate must be "best" (non-sampled), "mean" (from samples), or "median" (from samples), {point_estimate} not a valid choice.')
+                
+                 #Choose a method for the lower and upper bounds
+                if bounds == 'best' or n_sampled_runs == 0:
+                    res_unc[res.name][out_key]["low"] = sc.dcp(best_estimate)
+                    res_unc[res.name][out_key]["high"] = sc.dcp(best_estimate)
+                elif bounds == 'stddevs':
                     r_mean = np.mean(list(raw[out_key].values()), axis=axis)
                     r_std = np.std(list(raw[out_key].values()), axis=axis)
-                    reduce[results[i * n_runs].name][out_key]["point"] = r_mean
-                    reduce[results[i * n_runs].name][out_key]["low"] = r_mean - bounds * r_std
-                    reduce[results[i * n_runs].name][out_key]["high"] = r_mean + bounds * r_std
+                    res_unc[res.name][out_key]["low"] = r_mean - stddevs * r_std
+                    res_unc[res.name][out_key]["high"] = r_mean + stddevs * r_std
+                elif bounds == 'quantiles':
+                    res_unc[res.name][out_key]["low"] = np.quantile(list(raw[out_key].values()), q=quantiles["low"], axis=axis)
+                    res_unc[res.name][out_key]["high"] = np.quantile(list(raw[out_key].values()), q=quantiles["high"], axis=axis)
                 else:
-                    reduce[results[i * n_runs].name][out_key]["point"] = np.quantile(list(raw[out_key].values()), q=0.5, axis=axis)
-                    reduce[results[i * n_runs].name][out_key]["low"] = np.quantile(list(raw[out_key].values()), q=quantiles["low"], axis=axis)
-                    reduce[results[i * n_runs].name][out_key]["high"] = np.quantile(list(raw[out_key].values()), q=quantiles["high"], axis=axis)
-    # df = pd.DataFrame(reduce)
+                    raise Exception(f'Bounds must be "best" (non-sampled), "stddevs" (from samples, using stddevs for number), or "quantiles" (from samples, using quantiles), {bounds} not a valid choice.')
+                
+                if keep_raw:
+                    res_unc[res.name][out_key]["raw"] = [sc.dcp(best_estimate)] + raw[out_key]
+                
+    # import pandas as pd   
+    # df = pd.DataFrame(res_unc)
     # df.to_excel('reduce_test.xlsx')
-    return reduce
+    return res_unc
 
 
 def write_results(results, reduced_results={}, projname=None, filename=None, folder=None, full_outcomes=False):

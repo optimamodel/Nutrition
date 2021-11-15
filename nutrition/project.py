@@ -13,7 +13,7 @@ from .model import Model
 from .scenarios import Scen, run_scen, convert_scen, make_default_scen
 from .optimization import Optim
 from .geospatial import Geospatial
-from .results import write_results, reduce
+from .results import write_results, reduce_results
 from .plotting import make_plots, get_costeff, plot_costcurve, save_figs
 from .demo import demo_scens, demo_optims, demo_geos
 from . import settings
@@ -82,7 +82,6 @@ class Project(object):
         self.gitinfo = sc.gitinfo(__file__)
         self.filename = None  # File path, only present if self.save() is used
         self.ss = Settings()
-        self.n_runs = 1
         self.reduced_results = dict()
 
         return None
@@ -465,12 +464,54 @@ class Project(object):
         for i in range(n_runs):
             f(*args)
 
-    def reduce(self, key=None, use_mean=False, quantiles=None, bounds=None, output=False):
+    def reduce_results(self, key=None, point_estimate = 'best', bounds = 'quantiles', stddevs=None, quantiles=None, keep_raw=False):
         if key is None:
             key = -1
         results = self.result(key)
-        self.reduced_results = reduce(results, n_runs=self.n_runs, use_mean=use_mean, quantiles=quantiles, bounds=bounds, output=output)
+        self.reduced_results = reduce_results(results, point_estimate=point_estimate, bounds=bounds, stddevs=stddevs, quantiles=quantiles, keep_raw=keep_raw)
         return
+
+    def run_scen(self, scen=None, base_run=True, n_sampled_runs=0):
+        """Function for running a single scenario that may or may not be saved in P.scens
+        NOTE that the sampling needs to be done as part of the Project object because it relies on access to the data
+        NOTE this does not add the scenario to P.scens or save the results to the project
+        
+        :param scen: a single Scenario
+        :param base_run: run without sampling
+        :param n_sampled_runs: number of times to run with sampling
+        :return a list of Results
+        """
+        results = []
+        if (scen.model_name is None) or (scen.model_name not in self.datasets.keys()):
+            raise Exception("Could not find valid dataset for %s.  Edit the scenario and change the dataset" % scen.name)
+            
+
+        for i in range(0 if base_run else 1, n_sampled_runs+1):
+            # print (f'Sample {i} for scen {scen.name}')
+            if i == 0: #base_run
+                model = sc.dcp(self.model(scen.model_name))
+                model.growth = scen.growth
+                model.enforce_constraints_year = scen.enforce_constraints_year
+                result_name = scen.name
+            else: #sampled run
+                result_name = scen.name + " resampled__#" + str(i)
+                dataset = Dataset(country=None, region=None, name=None, fromfile=False, doload=True, project=self, resampling=True)
+                pops = dataset.pops
+                prog_info = dataset.prog_info
+                t = dataset.t
+                sampled_data = dataset.demo_data
+                model = Model(pops, prog_info, sampled_data, t, enforce_constraints_year=scen.enforce_constraints_year, growth=scen.growth)
+            
+                
+            if "Excess budget not allocated" in scen.prog_set: #add a dummy program to the model
+                excess_spend = {"name": "Excess budget not allocated", "all_years": model.prog_info.all_years, "prog_data": add_dummy_prog_data(model.prog_info, "Excess budget not allocated")}
+                model.prog_info.add_prog(excess_spend, model.pops)
+                model.prog_info.prog_data = excess_spend["prog_data"]
+                
+            res = run_scen(scen, model, name=result_name)
+            results.append(res)
+        
+        return results
 
     def run_scens(self, scens=None, n_runs=1):
         """Function for running scenarios
@@ -485,26 +526,8 @@ class Project(object):
             self.add_scens(scens)
         for scen in self.scens.values():
             if scen.active:
-                if (scen.model_name is None) or (scen.model_name not in self.datasets.keys()):
-                    raise Exception("Could not find valid dataset for %s.  Edit the scenario and change the dataset" % scen.name)
-                true_name = scen.name
-                for i in range(n_runs):
-                    if i == 0:
-                        model = sc.dcp(self.model(scen.model_name))
-                        model.growth = scen.growth
-                        model.enforce_constraints_year = scen.enforce_constraints_year
-                    else:
-                        # second and subsequent scenarios are sampled
-                        scen.name = true_name + " resampled #" + str(i)
-                        dataset = Dataset(country=None, region=None, name=None, fromfile=False, doload=True, project=self, resampling=True)
-                        pops = dataset.pops
-                        prog_info = dataset.prog_info
-                        t = dataset.t
-                        sampled_data = dataset.demo_data
-                        model = Model(pops, prog_info, sampled_data, t, enforce_constraints_year=scen.enforce_constraints_year, growth=scen.growth)
-                    res = run_scen(scen, model)
-                    results.append(res)
-
+                results += self.run_scen(scen, base_run = True, n_sampled_runs = n_runs - 1)
+                
         self.add_result(results, name="scens")
         return None
 
@@ -513,36 +536,38 @@ class Project(object):
             self.add_optims(optim)
             key = optim.name  # this to handle parallel calls of this function
         optim = self.optim(key)
+        if (optim.model_name is None) or (optim.model_name not in self.datasets.keys()):
+            raise Exception("Could not find valid dataset for %s.  Edit the scenario and change the dataset" % optim.name)
+            
+        
         results = []
         # run baseline
         if runbaseline or runbalanced:
-            optim.prog_set.append("Excess budget not allocated")
-            base = self.run_baseline(optim.model_name, optim.prog_set, growth=optim.growth)
-            results.append(base)
-            optim.prog_set.remove("Excess budget not allocated")
+            base_scen = self.run_baseline(optim.model_name, optim.prog_set, growth=optim.growth, dorun=False)
+            base = self.run_scen(scen = base_scen, base_run = True, n_sampled_runs = 0)[0] #noting that run_scen returns a list
+            if runbaseline: #don't append this to the results if runbaseline=False
+                results.append(base)
         else:
             base = None
+            
         # run optimization
-        if (optim.model_name is None) or (optim.model_name not in self.datasets.keys()):
-            raise Exception("Could not find valid dataset for %s.  Edit the scenario and change the dataset" % optim.name)
-        true_name = optim.name
-        for i in range(n_runs):
-            if i == 0:
-                model = sc.dcp(self.model(optim.model_name))
-                model.setup(optim, setcovs=False)
-                model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
-            else:
-                optim.name = true_name + " resampled #" + str(i)
-                dataset = Dataset(country=None, region=None, name=None, fromfile=False, doload=True, project=self, resampling=True)
-                pops = dataset.pops
-                prog_info = dataset.prog_info
-                t = dataset.t
-                sampled_data = dataset.demo_data
-                model = Model(pops, prog_info, sampled_data, t, enforce_constraints_year=0, growth=optim.growth)
-                model.setup(optim, setcovs=False)
-                model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
-            results += optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel, runbalanced=runbalanced, base=base)
-        # add by optim name
+        model = sc.dcp(self.model(optim.model_name))
+        model.setup(optim, setcovs=False)
+        model.get_allocs(optim.add_funds, optim.fix_curr, optim.rem_curr)
+        opt_results = optim.run_optim(model, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel, runbalanced=runbalanced, base=base)
+        
+        results += opt_results
+        
+        if n_runs> 1: #we also need to sample the baseline and each of the optimized results NOTE: base_run = False as we already ran the baseline
+            results += self.run_scen(scen = base_scen, base_run = False, n_sampled_runs = n_runs - 1)
+            
+            for opt_result in opt_results:
+                optim_alloc = opt_result.get_allocs()
+                scen_name = opt_result.name
+                scen = Scen(name=scen_name, model_name=optim.model_name, scen_type="budget", progvals=optim_alloc, enforce_constraints_year=0, growth=opt_result.growth)
+                
+                results += self.run_scen(scen = scen, base_run = False, n_sampled_runs = n_runs - 1)
+                
         if dosave:
             self.add_result(results, name=optim.name)
         return results

@@ -5,6 +5,7 @@ import sciris as sc
 from . import utils
 from . import programs
 from .scenarios import run_scen, make_scens, make_default_scen
+from .results import reduce_results
 import seaborn as sns
 
 with sns.axes_style("white"):
@@ -113,7 +114,7 @@ def make_plots(all_res=None, all_reduce=None, toplot=None, optim=False, geo=Fals
     :param all_res: all the results that should be plotted (list of ScenResult objects)
     :param all_reduce: all the results that should be plotted generated over resampling(list of ScenResult objects)
     :param toplot: type of plots to produce (list of strings)
-    :param optim: are these the results of a national optimiztion? (boolean)
+    :param optim: are these the results of a national optimization? (boolean)
     :param geo: are these the results of a geospatial optimization? (boolean)
     :return: figures to be plotted (odict)
     """
@@ -122,47 +123,35 @@ def make_plots(all_res=None, all_reduce=None, toplot=None, optim=False, geo=Fals
     if toplot is None:
         toplot = ["prevs", "prev_reduce", "ann", "agg", "alloc", "annu_alloc", "clust_annu_alloc"]
     toplot = sc.promotetolist(toplot)
-    all_res = sc.promotetolist(sc.dcp(all_res))  # Without dcp(), modifies the original and breaks things
-    if optim or not all_reduce:
-        #if "prevs" in toplot:
-        #    prevfigs = plot_prevs(all_res)
-        #    allplots.update(prevfigs)
-        #if "ann" in toplot:
-        #    outfigs = plot_outputs(all_res, all_reduce, True, "ann")
-        #    allplots.update(outfigs)
-        #if "agg" in toplot:
-        #    outfigs = plot_outputs(all_res, all_reduce, False, "agg")
-        #    allplots.update(outfigs)
-        if "clust_annu_alloc" in toplot:  # optimized allocations
-            outfigs = plot_clustered_annu_optialloc(all_res, optim=optim, geo=geo)
-            allplots.update(outfigs)
+    if all_res is not None:
+        all_res = sc.promotetolist(sc.dcp(all_res))  # Without dcp(), modifies the original and breaks things
+        
+        # if all_reduce is None or all_reduce == {}: #TODO review if there's a better way to deal with this
+        all_reduce = reduce_results(all_res)
+        #TODO specifically,  is there a good reason for projects to store reduced_results at all, or does it make a lot more sense to just generate here?
+        #TODO it may be important for performance to store the cache of reduced results for the FE, but then we also need to make sure to regen when appropriate
+        
+    
+    if not all_res or not all_reduce:
+        print('WARNING: No results to plot!')
+        return allplots
+    
 
-    else:
-
-        #if "prev_reduce" in toplot:
-        #    prev_reducefigs = plot_prevs_reduce(all_res, all_reduce)
-        #    allplots.update(prev_reducefigs)
-        #if "ann" in toplot:
-        #    outfigs = plot_outputs_reduced(all_res, all_reduce, True, "ann")
-        #   allplots.update(outfigs)
-        #if "agg" in toplot:
-        #    outfigs = plot_outputs_reduced(all_res, all_reduce, False, "agg")
-        #    allplots.update(outfigs)
-        if "clust_annu_alloc" in toplot:  # optimized allocations
-            outfigs = plot_clustered_annu_alloc(all_res, optim=optim, geo=geo)
-            allplots.update(outfigs)
+    if "clust_annu_alloc" in toplot:  # optimized allocations
+        outfigs = plot_clustered_annu_alloc(all_res, optim=optim, geo=geo)
+        allplots.update(outfigs)
     if "alloc" in toplot:  # optimized allocations
         outfigs = plot_alloc(all_res, optim=optim, geo=geo)
         allplots.update(outfigs)
     if "prev_reduce" in toplot:
-            prev_reducefigs = plot_prevs_reduce(all_res, all_reduce)
-            allplots.update(prev_reducefigs)
+        prev_reducefigs = plot_prevs_reduce(all_res, all_reduce)
+        allplots.update(prev_reducefigs)
     if "ann" in toplot:
-            outfigs = plot_outputs_reduced(all_res, all_reduce, True, "ann")
-            allplots.update(outfigs)
+        outfigs = plot_outputs_reduced(all_res, all_reduce, True, "ann")
+        allplots.update(outfigs)
     if "agg" in toplot:
-            outfigs = plot_outputs_reduced(all_res, all_reduce, False, "agg")
-            allplots.update(outfigs)
+        outfigs = plot_outputs_reduced(all_res, all_reduce, False, "agg")
+        allplots.update(outfigs)
     # if 'annu_alloc' in toplot: # optimized allocations
     # outfigs = plot_annu_alloc(all_res, optim=optim, geo=geo)
     # allplots.update(outfigs)
@@ -448,7 +437,7 @@ def plot_alloc(results, optim, geo):
             bottom += spend
     ymax = max(bottom)
     if optim or geo:
-        xlabs = [res.name for res in results]
+        xlabs = [res.name for res in results if "#" not in res.name]
         title = "Optimal allocation, %s-%s" % (ref.years[pltstart], ref.years[-1])
         valuestr = str(results[1].prog_info.free / 1e6)  # bit of a hack
         # format x axis
@@ -461,7 +450,7 @@ def plot_alloc(results, optim, geo):
         else:
             xlab = "Total available budget (relative to US$%sM)" % valuestr
     else:
-        xlabs = [res.mult if res.mult is not None else res.name for res in res_list]
+        xlabs = [res.mult if res.mult is not None else res.name for res in res_list if "#" not in res.name]
         title = "Average annual spending, %s-%s" % (ref.years[pltstart], ref.years[-1])
         xlab = ""  # 'Scenario' # Collides with tick labels
     ax.set_title(title)
@@ -596,133 +585,32 @@ def plot_annu_alloc(results, optim, geo):
     return figs
 
 
-def plot_clustered_annu_alloc(results, optim, geo):
+def plot_clustered_annu_alloc(results, optim: bool, geo: bool):
     """Plots the annual spending for each scenario, coloured by program.
     Legend will include all programs in the 'baseline' allocation which receive non-zero spending in any scenario
-    Generates a single plot that represent allocations for each scenario annually"""
+    Generates a single plot that represent allocations for each scenario annually
+    :param results: a list of ScenResults objects
+    :param optim: True if these are optimization results, False if not (a slightly different format of results)
+    :param geo: True if these are geospatial results, False if not (a slightly different format of results)
+    
+    :return a list of figures
+    """
+    
+    res_list = [res for res in results if "resampled__#" not in res.name]
 
     # Initialize
-    width = 1.0 / (len(results) + 1)
+    width = 1.0 / (len(res_list) + 1)
     epsilon = 0.015
     figs = sc.odict()
     year = results[0].years
-    ref = results[0]
+    ref = res_list[0]
     progset = ref.prog_info.base_progset()
     colors = sc.gridcolors(ncolors=len(progset), hueshift=hueshift)
     leglabs = []
     fig = pl.figure(figsize=(20, 6))
     ax = fig.add_axes(ax_size)
-    res_list = [res for res in results if "#" not in res.name]
+    
     x_base = np.arange(len(res_list))
-    x = np.multiply(x_base, width)
-    year_ticks = np.arange(len(year))
-
-    for k in range(1, len(year)):
-
-        # Group allocations by program
-        avspend = []
-
-        for prog in progset:
-            thisprog = np.zeros(len(res_list))
-            for i, res in enumerate(res_list):
-                # if 'resampled' not in res.name:
-                alloc = res.get_allocs(ref=refprogs)  # slightly inefficient to do this for every program
-                try:
-                    progav = alloc[prog][k]  # extracting the spend for each year for each program
-
-                except:  # program not in scenario program set
-                    progav = 0
-                thisprog[i] = progav
-            avspend.append(thisprog)
-
-        # Scale
-        avspend = np.array(avspend)
-        if avspend.max() > 1e6:
-            scale = 1e6
-        else:
-            scale = 1e1
-        # avspend /= scale
-        avspend = np.divide(avspend, scale)
-        # Make bar plots
-        bars = []
-        xlabs = [res.mult if res.mult is not None else res.name for res in results if "#" not in res.name]
-        bottom = np.zeros(len(res_list))
-        for i, spend in enumerate(avspend):
-            if any(spend) > 0:  # only want to plot prog if spending is non-zero (solves legend issues)
-                leglabs.append(progset[i])
-                bar = ax.bar(x + k, spend, width, bottom, color=colors[i])  # bars for each year in iteration
-                bars.append(bar)
-                bottom += spend
-        ymax = max(bottom)
-        if optim or geo:
-            title = "Optimal allocation, %s-%s" % (ref.years[pltstart], ref.years[-1])
-            valuestr = str(results[1].prog_info.free / 1e6)  # bit of a hack
-            # format x axis
-            if valuestr[1] == ".":
-                valuestr = valuestr[:3]
-            else:
-                valuestr = valuestr[:2]
-            if geo:
-                xlab = "Region"
-            else:
-                xlab = "Total available budget (relative to US$%sM)" % valuestr
-        else:
-            title = "Annual spending, %s-%s" % (ref.years[pltstart], ref.years[-1])
-            xlab = "Years"
-    ax.set_title(title)
-    ax.set_xticks(year_ticks[1:] + ((len(results) - 1) / 2) * width)  # ignoring base year and makingsure tick is at the middle of the bar group
-    ax.set_xticklabels(year[1:], fontsize=10)
-    ax.set_xlabel(xlab)
-    ax.set_ylim((0, ymax + ymax * 0.1))
-    if scale == 1e1:
-        ylabel = "Spending (US$)"
-    elif scale == 1e6:
-        ylabel = "Spending (US$M)"
-    else:
-        raise Exception("Scale value must be 1e1 or 1e6, not %s" % scale)
-    ax.set_ylabel(ylabel)
-    #   sc.SIticks(ax=ax, axis='y')
-    nprogs = len(leglabs)
-    labelspacing = 0.1
-    columnspacing = 0.1
-    fontsize = None
-    ncol = 1
-    if nprogs > 10:
-        fontsize = 10
-    if nprogs > 12:
-        fontsize = 8
-    if nprogs > 24:
-        ncol = 2
-    customizations = {"fontsize": fontsize, "labelspacing": labelspacing, "ncol": ncol, "columnspacing": columnspacing}
-    customizations.update(legend_loc)
-    legend_1 = ax.legend(bars, leglabs, **customizations)
-    handles = [f"Bar {j}: " for j in range(1, len(xlabs) + 1)]
-    ax.legend(handles=handles, labels=xlabs, loc="lower center", bbox_to_anchor=(1.15, 0.3), fontsize=10, borderpad=1.2)
-    figs["clust_annu_alloc"] = fig
-    fig.add_artist(legend_1)
-    return figs
-
-
-def plot_clustered_annu_optialloc(results, optim, geo):
-    """Plots the annual spending for each scenario, coloured by program.
-    Legend will include all programs in the 'baseline' allocation which receive non-zero spending in any scenario
-    Generates a single plot that represent allocations for each optimization scenario annually"""
-
-    # Initialize
-    width = 1.0 / (len(results) + 1)
-    epsilon = 0.015
-    figs = sc.odict()
-    year = results[0].years
-    ref = results[0]
-    progset = ref.prog_info.base_progset()
-    colors = sc.gridcolors(ncolors=len(progset), hueshift=hueshift)
-    leglabs = []
-    fig = pl.figure(figsize=(20, 6))
-    ax = fig.add_axes(ax_size)
-    res_list = [res for res in results if "#" not in res.name]
-    x_base = np.arange(len(res_list))
-    #x_base = np.arange(len(results))
-
     x = np.multiply(x_base, width)
     year_ticks = np.arange(len(year))
 
@@ -733,11 +621,13 @@ def plot_clustered_annu_optialloc(results, optim, geo):
         for prog in progset:
             thisprog = np.zeros(len(res_list))
             for i, res in enumerate(res_list):
-                if res.name != "Excess budget not allocated":
+                # if 'resampled' not in res.name:
+                if not (optim or geo) or (res.name != "Excess budget not allocated"):
+                
                     alloc = res.get_allocs(ref=refprogs)  # slightly inefficient to do this for every program
                     try:
                         progav = alloc[prog][k]  # extracting the spend for each year for each program
-
+    
                     except:  # program not in scenario program set
                         progav = 0
                     thisprog[i] = progav
@@ -753,8 +643,9 @@ def plot_clustered_annu_optialloc(results, optim, geo):
         avspend = np.divide(avspend, scale)
         # Make bar plots
         bars = []
-        # xlabs = [res.mult if res.mult is not None else res.name for res in results]
-        xlabs = [res.name for res in results]
+        
+        xlabs = [res.name for res in res_list]
+        
         bottom = np.zeros(len(res_list))
         for i, spend in enumerate(avspend):
             if any(spend) > 0:  # only want to plot prog if spending is non-zero (solves legend issues)
@@ -765,7 +656,7 @@ def plot_clustered_annu_optialloc(results, optim, geo):
         ymax = max(bottom)
         if optim or geo:
             title = "Optimal allocation, %s-%s" % (ref.years[pltstart], ref.years[-1])
-            valuestr = str(results[1].prog_info.free / 1e6)  # bit of a hack
+            valuestr = str(results[1].prog_info.free / 1e6)  # bit of a hack TODO almost certainly this is broken now??
             # format x axis
             if valuestr[1] == ".":
                 valuestr = valuestr[:3]
@@ -774,12 +665,12 @@ def plot_clustered_annu_optialloc(results, optim, geo):
             if geo:
                 xlab = "Region"
             else:
-                xlab = "Total available budget (relative to US$%sM)" % str(round(results[1].prog_info.free / 1e6))
+                xlab = "Total available budget (relative to US$%sM)" % valuestr
         else:
             title = "Annual spending, %s-%s" % (ref.years[pltstart], ref.years[-1])
             xlab = "Years"
     ax.set_title(title)
-    ax.set_xticks(year_ticks[1:] + ((len(results) - 1) / 2) * width)  # ignoring base year and makingsure tick is at the middle of the bar group
+    ax.set_xticks(year_ticks[1:] + ((len(res_list) - 1) / 2) * width)  # ignoring base year and makingsure tick is at the middle of the bar group
     ax.set_xticklabels(year[1:], fontsize=10)
     ax.set_xlabel(xlab)
     ax.set_ylim((0, ymax + ymax * 0.1))
@@ -810,7 +701,6 @@ def plot_clustered_annu_optialloc(results, optim, geo):
     figs["clust_annu_alloc"] = fig
     fig.add_artist(legend_1)
     return figs
-
 
 def plot_costcurve(results):
     """Plots the cost coverage curves.

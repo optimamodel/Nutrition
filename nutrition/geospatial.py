@@ -71,7 +71,8 @@ class Geospatial:
                 # can distribute between regions
                 # create regions with corrected additional funds
                 regions = self.make_regions(add_funds=total_flexi, weight_ind=w)
-                run_optim = partial(proj.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel, dosave=True, runbaseline=False, n_runs=n_runs)
+                #NOTE: n_runs = 1 here always - we don't want sampling for determining the cost-curve
+                run_optim = partial(proj.run_optim, key=-1, maxiter=maxiter, swarmsize=swarmsize, maxtime=maxtime, parallel=parallel, dosave=True, runbaseline=False, n_runs=1)
                 # Generate the budget outcome curves optimization results.  This step takes a long while, generally.
                 print("Creating BOCs afresh...")
                 boc_optims = sc.odict([(region.name + "objective #" + str(w + 1), run_optim(optim=region)) for region in regions])
@@ -98,7 +99,7 @@ class Geospatial:
             # Run results in parallel or series.
             # can run in parallel b/c child processes in series
             if parallel:
-                results.append(utils.run_parallel(run_optim, regions, num_procs=len(regions)))
+                results += utils.run_parallel(run_optim, regions, num_procs=len(regions))
             else:
                 for region in regions:
                     results.append(run_optim(region))
