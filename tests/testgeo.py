@@ -27,7 +27,7 @@ kwargs = {
 }
 if __name__ == "__main__":
     geo = Geospatial(**kwargs)
-    results = p.run_geo(geo=geo, maxiter=5, swarmsize=0, maxtime=5, parallel=False, runbalanced=True, n_runs=2)
+    results = p.run_geo(geo=geo, maxiter=5, swarmsize=0, maxtime=5, parallel=False, runbalanced=True, n_runs=1)
     p.reduce()
     p.plot(toplot=["clust_annu_alloc"], geo=True)
     p.write_results("geo_results.xlsx")
