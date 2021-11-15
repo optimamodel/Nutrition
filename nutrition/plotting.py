@@ -5,6 +5,7 @@ import sciris as sc
 from . import utils
 from . import programs
 from .scenarios import run_scen, make_scens, make_default_scen
+from .results import reduce_results
 import seaborn as sns
 
 with sns.axes_style("white"):
@@ -113,7 +114,7 @@ def make_plots(all_res=None, all_reduce=None, toplot=None, optim=False, geo=Fals
     :param all_res: all the results that should be plotted (list of ScenResult objects)
     :param all_reduce: all the results that should be plotted generated over resampling(list of ScenResult objects)
     :param toplot: type of plots to produce (list of strings)
-    :param optim: are these the results of a national optimiztion? (boolean)
+    :param optim: are these the results of a national optimization? (boolean)
     :param geo: are these the results of a geospatial optimization? (boolean)
     :return: figures to be plotted (odict)
     """
@@ -122,7 +123,14 @@ def make_plots(all_res=None, all_reduce=None, toplot=None, optim=False, geo=Fals
     if toplot is None:
         toplot = ["prevs", "prev_reduce", "ann", "agg", "alloc", "annu_alloc", "clust_annu_alloc"]
     toplot = sc.promotetolist(toplot)
-    all_res = sc.promotetolist(sc.dcp(all_res))  # Without dcp(), modifies the original and breaks things
+    if all_res is not None:
+        all_res = sc.promotetolist(sc.dcp(all_res))  # Without dcp(), modifies the original and breaks things
+        
+        if all_reduce is None:
+            all_reduce = reduce_results(all_res)
+    if all_res is None and all_reduce is None:
+        print('WARNING: No results to plot!')
+        return allplots
 
     if "clust_annu_alloc" in toplot:  # optimized allocations
         outfigs = plot_clustered_annu_alloc(all_res, optim=optim, geo=geo)
@@ -131,14 +139,14 @@ def make_plots(all_res=None, all_reduce=None, toplot=None, optim=False, geo=Fals
         outfigs = plot_alloc(all_res, optim=optim, geo=geo)
         allplots.update(outfigs)
     if "prev_reduce" in toplot:
-            prev_reducefigs = plot_prevs_reduce(all_res, all_reduce)
-            allplots.update(prev_reducefigs)
+        prev_reducefigs = plot_prevs_reduce(all_res, all_reduce)
+        allplots.update(prev_reducefigs)
     if "ann" in toplot:
-            outfigs = plot_outputs_reduced(all_res, all_reduce, True, "ann")
-            allplots.update(outfigs)
+        outfigs = plot_outputs_reduced(all_res, all_reduce, True, "ann")
+        allplots.update(outfigs)
     if "agg" in toplot:
-            outfigs = plot_outputs_reduced(all_res, all_reduce, False, "agg")
-            allplots.update(outfigs)
+        outfigs = plot_outputs_reduced(all_res, all_reduce, False, "agg")
+        allplots.update(outfigs)
     # if 'annu_alloc' in toplot: # optimized allocations
     # outfigs = plot_annu_alloc(all_res, optim=optim, geo=geo)
     # allplots.update(outfigs)
