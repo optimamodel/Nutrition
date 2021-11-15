@@ -1128,7 +1128,7 @@ def js_to_py_optim(js_optim: dict) -> nu.Optim:
     try:
         kwargs["weights"] = sc.odict()
         for key, item in zip(obj_keys, js_optim["weightslist"]):
-            if not isinstance(val, list):
+            if not isinstance(item["weight"], list):
                 item["weight"] = [item["weight"]]
             val = numberify(item["weight"], blank="zero", invalid="die", aslist=True)
             kwargs["weights"][key] = val
@@ -1279,7 +1279,9 @@ def js_to_py_geo(js_geo):
     try:
         json["weights"] = sc.odict()
         for key, item in zip(obj_keys, js_geo["weightslist"]):
-            val = numberify(item["weight"], blank="zero", invalid="die", aslist=False)
+            if not isinstance(item["weight"], list):
+                item["weight"] = [item["weight"]]
+            val = numberify(item["weight"], blank="zero", invalid="die", aslist=True)
             json["weights"][key] = val
     except Exception as E:
         print('Unable to convert "%s" to weights' % js_geo["weightslist"])
