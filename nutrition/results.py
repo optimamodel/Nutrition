@@ -113,7 +113,7 @@ class ScenResult(sc.prettyobj):
         return figs
 
 
-def reduce_results(results, point_estimate:str='best', bounds:str = 'quantiles', stddevs=None, quantiles=None, keep_raw=False):
+def reduce_results(results, point_estimate:str="best", bounds:str = "quantiles", stddevs=None, quantiles=None, keep_raw=False):
     """Function to reduce a list of results including sampled results to a list of main results with point estimates, and upper and lower bounds
     Should return a subset of results excluding anything that was sampled
     :param results: a list of ScenResult objects
@@ -130,11 +130,11 @@ def reduce_results(results, point_estimate:str='best', bounds:str = 'quantiles',
     years = results[0].years
     estimate_keys = ["point", "low", "high"]
     outcomes = default_trackers()
-    if bounds == 'stddevs':
-        assert point_estimate == 'mean', 'If bounds are stddevs, point_estimate should be mean'
+    if bounds == "stddevs":
+        assert point_estimate == "mean", 'If bounds are stddevs, point_estimate should be mean'
         if stddevs is None:
             stddevs = 2
-    elif bounds == 'quantiles':
+    elif bounds == "quantiles":
         if quantiles is None:
             quantiles = {"low": 0.1, "high": 0.9}
         if not isinstance(quantiles, dict):
@@ -170,26 +170,26 @@ def reduce_results(results, point_estimate:str='best', bounds:str = 'quantiles',
                 best_estimate = best_estimates[out_key]
                 axis = 0
                 #Choose a method for the point estimate
-                if point_estimate == 'best' or n_sampled_runs == 0:
+                if point_estimate == "best" or n_sampled_runs == 0:
                     res_unc[res.name][out_key]["point"] = sc.dcp(best_estimate)
-                elif point_estimate == 'mean': 
+                elif point_estimate == "mean": 
                     r_mean = np.mean(list(raw[out_key].values()), axis=axis)
                     res_unc[res.name][out_key]["point"] = r_mean
-                elif point_estimate == 'median':
+                elif point_estimate == "median":
                     res_unc[res.name][out_key]["point"] = np.quantile(list(raw[out_key].values()), q=0.5, axis=axis)
                 else:
                     raise Exception(f'Point estimate must be "best" (non-sampled), "mean" (from samples), or "median" (from samples), {point_estimate} not a valid choice.')
                 
                  #Choose a method for the lower and upper bounds
-                if bounds == 'best' or n_sampled_runs == 0:
+                if bounds == "best" or n_sampled_runs == 0:
                     res_unc[res.name][out_key]["low"] = sc.dcp(best_estimate)
                     res_unc[res.name][out_key]["high"] = sc.dcp(best_estimate)
-                elif bounds == 'stddevs':
+                elif bounds == "stddevs":
                     r_mean = np.mean(list(raw[out_key].values()), axis=axis)
                     r_std = np.std(list(raw[out_key].values()), axis=axis)
                     res_unc[res.name][out_key]["low"] = r_mean - stddevs * r_std
                     res_unc[res.name][out_key]["high"] = r_mean + stddevs * r_std
-                elif bounds == 'quantiles':
+                elif bounds == "quantiles":
                     res_unc[res.name][out_key]["low"] = np.quantile(list(raw[out_key].values()), q=quantiles["low"], axis=axis)
                     res_unc[res.name][out_key]["high"] = np.quantile(list(raw[out_key].values()), q=quantiles["high"], axis=axis)
                 else:
