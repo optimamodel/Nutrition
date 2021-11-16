@@ -427,8 +427,8 @@ def rename_project(project_json):
 def add_demo_project(username):
     """ Add a demo Optima Nutrition project """
     proj = nu.demo(scens=True, optims=True, geos=True)  #
-    proj.optims[0].weights[0] = proj.optims[0].weights[0][0:1]  # Overwrite optim weights to not be full array and avoid confusion.
-    proj.geos[0].weights[0] = proj.geos[0].weights[0][0:1]  # Overwrite geo weights to not be full array and avoid confusion.
+    proj.optims[0].weights[0] = proj.optims[0].weights[0]  # Overwrite optim weights to not be full array and avoid confusion.
+    proj.geos[0].weights[0] = proj.geos[0].weights[0]  # Overwrite geo weights to not be full array and avoid confusion.
     proj.name = "Demo project"
     print(">> add_demo_project %s" % (proj.name))  # Display the call information.
     key, proj = save_new_project(proj, username)  # Save the new project in the DataStore.
