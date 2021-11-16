@@ -239,13 +239,14 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name):
                 length = len(output_p)
                 error = output_h[length - 1] - output_l[length - 1]
                 thimax = output_h.max()
+                kwargs = {"linewidth": 0.25}
                 if thimax > ymax:
                     ymax = thimax
                 change = round_elements([utils.get_change(base, out) for out, base in zip(output_p, baseout)], dec=1)
                 perchange.append(change)
     
                 if seq:
-                    bar = ax.bar(xpos, output_p, width=width, color=colors[r], yerr=output_h - output_l, capsize=2)
+                    bar = ax.bar(xpos, output_p, width=width, color=colors[r], yerr=output_h - output_l, capsize=2, **kwargs)
                 if not seq:
                     bar = ax.bar(xpos, output_p, width=width, color=colors[r])
                     ax.errorbar(xpos, output_p[length - 1], yerr=error, capsize=2, color="black")
