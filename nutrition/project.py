@@ -572,15 +572,58 @@ class Project(object):
             self.add_result(results, name=optim.name)
         return results
 
-    def run_geo(self, geo=None, key=-1, maxiter=20, swarmsize=None, maxtime=400, dosave=True, parallel=False, runbalanced=False, n_runs=1):
+    def _run_geo(self, geo=None, key=-1, maxiter=20, swarmsize=None, maxtime=400, dosave=True, parallel=False, runbaseline=True, runbalanced=False, n_runs=1):
         """Regions cannot be parallelised because daemon processes cannot have children.
         Two options: Either can parallelize regions and not the budget or run
         regions in series while parallelising each budget multiple."""
+        
         if geo is not None:
             self.add_geos(geo)
             key = geo.name  # this to handle parallel calls of this function
         geo = self.geo(key)
-        results = geo.run_geo(self, maxiter, swarmsize, maxtime, parallel, runbalanced=runbalanced, n_runs=n_runs)
+        if (geo.modelnames is None) or (geo.modelnames not in self.datasets.keys()):
+            raise Exception("Could not find valid dataset for %s.  Edit the scenario and change the dataset" % geo.name)
+        
+        results = []
+        
+        if runbaseline or runbalanced:
+            base_scen = self.run_baseline(geo.modelnames, geo.prog_set, growth=geo.growth, dorun=False)
+            base = self.run_scen(scen = base_scen, base_run = True, n_sampled_runs = 0)[0] #noting that run_scen returns a list
+            if runbaseline: #don't append this to the results if runbaseline=False
+                results.append(base)
+        else:
+            base = None
+            
+        geo_results = geo.run_geo(self, maxiter, swarmsize, maxtime, parallel, runbalanced=runbalanced, n_runs=n_runs)
+        
+        results += geo_results
+        
+        if n_runs> 1: #we also need to sample the baseline and each of the optimized results NOTE: base_run = False as we already ran the baseline
+            results += self.run_scen(scen = base_scen, base_run = False, n_sampled_runs = n_runs - 1)
+            
+            for geo_result in geo_results:
+                geo_alloc = geo_result.get_allocs()
+                scen_name = geo_result.name
+                scen = Scen(name=scen_name, model_name=geo.modelnames, scen_type="budget", progvals=geo_alloc, enforce_constraints_year=0, growth=geo_result.growth)
+                
+                results += self.run_scen(scen = scen, base_run = False, n_sampled_runs = n_runs - 1)
+                
+        if dosave:
+            self.add_result(results, name="geospatial")
+        return results
+    
+    def run_geo(self, geo=None, key=-1, maxiter=20, swarmsize=None, maxtime=400, dosave=True, parallel=False, runbalanced=False, n_runs=1):
+        """Regions cannot be parallelised because daemon processes cannot have children.
+        Two options: Either can parallelize regions and not the budget or run
+        regions in series while parallelising each budget multiple."""
+        
+        if geo is not None:
+            self.add_geos(geo)
+            key = geo.name  # this to handle parallel calls of this function
+        geo = self.geo(key)
+        
+        results = geo.run_geo(self, maxiter, swarmsize, maxtime, parallel, runbalanced=runbalanced, n_runs=n_runs)     
+                   
         if dosave:
             self.add_result(results, name="geospatial")
         return results
