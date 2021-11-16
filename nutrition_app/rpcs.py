@@ -1109,7 +1109,7 @@ def py_to_js_optim(py_optim: nu.Optim, proj: nu.Project):
     attrs = ["name", "model_name", "mults", "add_funds", "fix_curr", "filter_progs"]
     for attr in attrs:
         js_optim[attr] = getattr(py_optim, attr)  # Copy the attributes into a dictionary
-    weightslist = [{"label": item[0], "weight": abs(item[1])} for item in zip(obj_labels, py_optim.weights)]  # WARNING, ABS HACK
+    weightslist = [{"label": item[0], "weight": abs(item[1])} for item in zip(obj_labels, np.transpose(py_optim.weights))]  # WARNING, ABS HACK
     js_optim["weightslist"] = weightslist
     js_optim["objective_options"] = obj_labels  # Not modified but used on the FE
     js_optim["programs"] = []
@@ -1129,7 +1129,7 @@ def js_to_py_optim(js_optim: dict) -> nu.Optim:
         kwargs["weights"] = sc.odict()
         for key, item in zip(obj_keys, js_optim["weightslist"]):
             if not isinstance(item["weight"], list):
-                item["weight"] = [item["weight"]]
+                item["weight"] = item["weight"].split(",")
             val = numberify(item["weight"], blank="zero", invalid="die", aslist=True)
             kwargs["weights"][key] = val
     except Exception as E:
@@ -1251,7 +1251,7 @@ def py_to_js_geo(py_geo, proj, key=None, default_included=False):
     attrs = ["name", "modelnames", "mults", "add_funds", "fix_curr", "fix_regionalspend", "filter_progs"]
     for attr in attrs:
         js_geo[attr] = getattr(py_geo, attr)  # Copy the attributes into a dictionary
-    weightslist = [{"label": item[0], "weight": abs(item[1])} for item in zip(obj_labels, py_geo.weights)]  # WARNING, ABS HACK
+    weightslist = [{"label": item[0], "weight": abs(item[1])} for item in zip(obj_labels, np.transpose(py_geo.weights))]  # WARNING, ABS HACK
     js_geo["weightslist"] = weightslist
     js_geo["spec"] = []
     for prog_name in prog_names:
@@ -1280,7 +1280,7 @@ def js_to_py_geo(js_geo):
         json["weights"] = sc.odict()
         for key, item in zip(obj_keys, js_geo["weightslist"]):
             if not isinstance(item["weight"], list):
-                item["weight"] = [item["weight"]]
+                item["weight"] = item["weight"].split(",")
             val = numberify(item["weight"], blank="zero", invalid="die", aslist=True)
             json["weights"][key] = val
     except Exception as E:
