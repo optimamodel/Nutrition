@@ -20,7 +20,7 @@ import string
 for_frontend = True
 if for_frontend:
     legend_loc = {"bbox_to_anchor": (1.0, 1.0)}
-    fig_size = (8, 3)
+    fig_size = (8, 4)
     ax_size = [0.2, 0.18, 0.40, 0.72]
     pltstart = 1
     hueshift = 0.05
