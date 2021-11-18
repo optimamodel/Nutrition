@@ -78,7 +78,7 @@ class DefaultParams(object):
     """ " The parameters that are read from the databook are point estimates
     This is used to run the scenarios/optimization ingoring any uncertainty"""
 
-    def __init__(self, default_data, input_data):
+    def __init__(self, spreadsheet):
         self.settings = settings.Settings()
         self.impacted_pop = None
         self.prog_areas = sc.odict()
@@ -100,12 +100,9 @@ class DefaultParams(object):
         self.man_mam = False
         self.arr_rr_death = sc.odict()
         # read data
-        self.spreadsheet = default_data
-        self.input_data = input_data
+        self.spreadsheet = spreadsheet
         self.read_spreadsheet()
         self.spreadsheet = None
-        self.input_data = None
-        self.compute_risks()
         return None
 
     def __repr__(self):
@@ -129,7 +126,7 @@ class DefaultParams(object):
         self.get_iycf_effects(packages)
 
     def extend_treatsam(self):
-        treatsam = self.input_data.parse(sheet_name="Treatment of SAM")
+        treatsam = self.spreadsheet.parse(sheet_name="Treatment of SAM")
         add_man = treatsam.iloc[0]["Add extension"]
         if pandas.notnull(add_man):
             self.man_mam = True
@@ -290,7 +287,7 @@ class DefaultParams(object):
 
     def define_iycf(self):
         """ Returns a dict with values as a list of two tuples (age, modality)."""
-        IYCFpackages = self.input_data.parse(sheet_name="IYCF packages", index_col=[0, 1])
+        IYCFpackages = self.spreadsheet.parse(sheet_name="IYCF packages", index_col=[0, 1])
         packagesDict = sc.odict()
         for packageName, package in IYCFpackages.groupby(level=[0, 1]):
             if packageName[0] not in packagesDict:
@@ -345,11 +342,11 @@ class DefaultParams(object):
 
 
 # TODO (possible): we may want to merge this class with DefaultParams to make another class (DatabookData).
-class InputData(object):
+class DemographicData(object):
     """ Container for all the region-specific data (prevalences, mortality rates etc) read in from spreadsheet"""
 
-    def __init__(self, data, calcscache):
-        self.spreadsheet = data
+    def __init__(self, spreadsheet, calcscache):
+        self.spreadsheet = spreadsheet
         self.settings = settings.Settings()
         self.demo = None
         self.proj = sc.odict()
@@ -371,12 +368,34 @@ class InputData(object):
         self.calcscache = calcscache
 
         self.get_demo()
-        self.get_proj()
+        self.get_projections()
         self.get_risk_dist()
         self.get_death_dist()
         self.get_time_trends()
         self.get_incidences()
         self.get_economic_cost()
+
+        # moved from defaultparams
+        self.impacted_pop = None
+        self.prog_areas = sc.odict()
+        self.pop_areas = sc.odict()
+        self.rr_death = sc.odict()
+        self.or_cond = sc.odict()
+        self.or_cond_bo = sc.odict()
+        self.or_wasting_prog = sc.odict()
+        self.rr_dia = None
+        self.or_stunting_prog = None
+        self.bo_progs = None
+        self.rr_anaem_prog = None
+        self.or_anaem_prog = None
+        self.child_progs = None
+        self.pw_progs = None
+        self.rr_space_bo = None
+        self.or_space_prog = None
+        self.or_bf_prog = None
+        self.man_mam = False
+        self.arr_rr_death = sc.odict()
+        self.read_spreadsheet()
 
     def __repr__(self):
         output = sc.prepr(self)
@@ -423,10 +442,10 @@ class InputData(object):
             self.pw_agedist.append(row[1]["Data"])
         return None
 
-    def get_proj(self):
+    def get_projections(self):
         # Load the main spreadsheet into a DataFrame.
         # drops rows with any na
-        proj = utils.read_sheet(self.spreadsheet, "Demographic projections", cols=[0], dropna="any")
+        projections = utils.read_sheet(self.spreadsheet, "Demographic projections", cols=[0], dropna="any")
 
         # Read in the Baseline spreadsheet information we'll need.
         baseline = utils.read_sheet(self.spreadsheet, "Baseline year population inputs", [0, 1])
@@ -434,23 +453,23 @@ class InputData(object):
         abortion = baseline.loc["Mortality"].loc["Fraction of pregnancies ending in spontaneous abortion"].values[0]
 
         # Recalculate cells that need it, and remember in the calculations cache.
-        total_wra = proj.loc[:, ["WRA: 15-19 years", "WRA: 20-29 years", "WRA: 30-39 years", "WRA: 40-49 years"]].sum(axis=1).values
-        proj.loc[:, "Total WRA"] = total_wra
+        total_wra = projections.loc[:, ["WRA: 15-19 years", "WRA: 20-29 years", "WRA: 30-39 years", "WRA: 40-49 years"]].sum(axis=1).values
+        projections.loc[:, "Total WRA"] = total_wra
         self.calcscache.write_col("Demographic projections", 1, 6, total_wra)
-        numbirths = proj.loc[:, "Number of births"].values
+        numbirths = projections.loc[:, "Number of births"].values
         estpregwomen = (numbirths + numbirths * stillbirth / (1000.0 - stillbirth)) / (1.0 - abortion)
-        proj.loc[:, "Estimated pregnant women"] = estpregwomen
+        projections.loc[:, "Estimated pregnant women"] = estpregwomen
         self.calcscache.write_col("Demographic projections", 1, 7, estpregwomen)
         nonpregwra = total_wra - estpregwomen
-        proj.loc[:, "non-pregnant WRA"] = nonpregwra
+        projections.loc[:, "non-pregnant WRA"] = nonpregwra
         self.calcscache.write_col("Demographic projections", 1, 8, nonpregwra)
 
         # dict of lists to support indexing
-        for column in proj:
-            self.proj[column] = proj[column].tolist()
+        for column in projections:
+            self.proj[column] = projections[column].tolist()
         # wra pop projections list in increasing age order
         for age in self.settings.wra_ages:
-            self.wra_proj.append(proj[age].tolist())
+            self.wra_proj.append(projections[age].tolist())
 
     def get_risk_dist(self):
         # Load the main spreadsheet into a DataFrame.
@@ -599,7 +618,7 @@ class InputData(object):
         self.causes_death = self.death_dist.keys()
 
 
-class ProgData(object):
+class ProgramData(object):
     """Stores all the settings for each project, defined by the user"""
 
     def __init__(self, data, default_data, calcscache):
@@ -901,16 +920,15 @@ class ProgData(object):
 class Dataset(object):
     """ Store all the data for a project """
 
-    def __init__(self, country=None, region=None, name=None, demo_data=None, prog_data=None, default_params=None, uncertain_params=None, pops=None, prog_info=None, doload=False, inputspath=None, defaultspath=None, fromfile=None, project=None, resampling=True):
+    def __init__(self, country=None, region=None, name=None, demographic_data: DemographicData =None, prog_data: ProgramData=None, default_params=None, uncertain_params=None, pops=None, prog_info=None, doload=False, inputspath=None, defaultspath=None, fromfile=None, databook=None, resampling=True):
         self.settings = settings.Settings()
         self.country = country
         self.region = region
 
         self.calcscache = CalcCellCache()
 
-        self.demo_data = demo_data  # demo = demographic
+        self.demographic_data = demographic_data
         self.prog_data = prog_data
-        self.default_params = default_params  # TODO: this should probably be phased out once the InputData and DefaultParams classes get merged
         self.uncertain_params = uncertain_params
         # The next three attributes are used to initialize a Model object.
         self.pops = pops  # populations
@@ -918,86 +936,41 @@ class Dataset(object):
         self.t = None  # start and end years for the simulation
         self.name = name
         self.modified = sc.now()
-        self.resampling = resampling
-        
-        self.impacted_pop = None
-        self.prog_areas = sc.odict()
-        self.pop_areas = sc.odict()
-        self.rr_death = sc.odict()
-        self.or_cond = sc.odict()
-        self.or_cond_bo = sc.odict()
-        self.or_wasting_prog = sc.odict()
-        self.rr_dia = None
-        self.or_stunting_prog = None
-        self.bo_progs = None
-        self.rr_anaem_prog = None
-        self.or_anaem_prog = None
-        self.child_progs = None
-        self.pw_progs = None
-        self.rr_space_bo = None
-        self.or_space_prog = None
-        self.or_bf_prog = None
-        self.man_mam = False
-        self.arr_rr_death = sc.odict()
-        
         if doload:
-            self.load(project=project)
+            self.load(databook=databook)
         return None
 
     def __repr__(self):
         output = sc.prepr(self)
         return output
 
-    def load(self, project=None):
+    def load(self, databook: pandas.ExcelFile):
         # Handle inputs
         if project is None:
             raise Exception("Sorry, but you must supply a project for load().")
 
-        # Pull the sheets from the project
-        if self.name in project.spreadsheets.keys():
-            spreadsheetkey = self.name
-        else:
-            spreadsheetkey = -1
-        inputsheet = project.inputsheet(spreadsheetkey)
-
-        # Convert them to Pandas
-        input_data = inputsheet.pandas()
-
-        # If the 'Programs impacted population' worksheet is in input_data, then we are working with one of the newer
-        # databooks, so pull the default data from input_data.
-        if "Programs impacted population" in input_data.sheet_names:
-            default_data = input_data
-
-        # Otherwise, pull the default data from the legacy spreadsheet.
-        else:
-            filename = settings.ONpath("nutrition") + "legacy_default_params.xlsx"
-            default_data = sc.Spreadsheet(filename=filename).pandas()
-
         # Read them into actual data
         try:
-            self.demo_data = InputData(input_data, self.calcscache)  # demo_ here is demographic_
-        except Exception as E:
-            raise Exception("Error in databook: %s" % str(E))
-        try:
-            if self.resampling:
-                self.default_params = UncertaintyParams(default_data, input_data)
-                 #self.default_params = DefaultParamsResampled(default_data, input_data) # for random sampling
-                #random_params = DefaultParamsResampled(default_data, input_data)  # for random sampling
-                #self.default_params = random_params
-            else:
-                self.default_params = DefaultParams(default_data, input_data)  # for point estimates
-                #self.default_params.compute_risks()
-            #self.compute_risks(self.demo_data)
-            self.prog_data = ProgData(input_data, self.default_params, self.calcscache)
+            self.demographic_data = DemographicData(excel_file, self.calcscache)  # demo_ here is demographic_
+
+            # self.default_params = DefaultParams(excel_file)  # for point estimates
+            # self.default_params.compute_risks(self.demographic_data)
 
         except Exception as E:
-            raise Exception("Error in program data: %s" % str(E))
+            raise Exception("Error in databook: %s" % str(E))
+
         try:
-            self.pops = populations.set_pops(self.demo_data, self.default_params)
+
+            self.prog_data = ProgramData(excel_file, self.default_params, self.calcscache)
+        except Exception as E:
+            raise Exception("Error in program data: %s" % str(E))
+
+        try:
+            self.pops = populations.set_pops(self.demographic_data, self.default_params)
         except Exception as E:
             raise Exception("Error in creating populations, check data and defaults books: %s" % str(E))
         self.prog_info = programs.ProgramInfo(self.prog_data)
-        self.t = self.demo_data.t
+        self.t = self.demographic_data.t
         self.modified = sc.now()
         return None
 
@@ -1006,40 +979,36 @@ class Dataset(object):
         names = self.prog_data.base_prog_set
         return names
     
-    def _resample(self):
-        #uncert = self.default_param
-        new = sc.dcp(self)
-        return new
-    
     def resample(self):
         
         new = sc.dcp(self)
         uncert = self.default_param
+
         #Transforming into random values
         
         new.pw_progs = self.make_random(uncert.pw_progs_lower.to_numpy(), uncert.pw_progs_upper.to_numpy())
-        self.child_progs = self.make_random(uncert.child_progs_lower.to_numpy(), uncert.child_progs_upper.to_numpy())       
-        self.rr_anaem_prog = self.make_random(uncert.rr_anaem_prog_lower.to_numpy(), uncert.rr_anaem_prog_upper.to_numpy())
-        self.or_anaem_prog = self.make_random(uncert.or_anaem_prog_lower.to_numpy(), uncert.or_anaem_prog_upper.to_numpy())       
-        self.treatsam = self.make_random(uncert.treatsam_lower.to_numpy(), uncert.treatsam_upper.to_numpy())
-        self.manman = self.make_random(uncert.manman_lower.to_numpy(), uncert.manman_upper.to_numpy())       
-        self.bo_progs = self.make_random(uncert.progs_lower.to_numpy(), uncert.progs_upper.to_numpy())
-        self.bf_effects = self.make_random(uncert.bf_effects_lower.to_numpy(), uncert.bf_effects_upper.to_numpy())
-        self.stunt_effects = self.make_random(uncert.stunt_effects_lower.to_numpy(), uncert.stunt_effects_upper.to_numpy())
-        self.ors = self.make_random(uncert.ors_lower.to_numpy(), uncert.ors_upper.to_numpy())
-        self.rr_space_bo = self.make_random(uncert.rr_space_bo_lower.to_numpy(), uncert.rr_space_bo_upper.to_numpy())
-        self.rr_death_bo = self.make_random(uncert.rr_death_bo_lower.to_numpy(), uncert.rr_death_bo_upper.to_numpy())
-        self.rr_st = self.make_random(uncert.rr_st_lower.to_numpy(), uncert.rr_st_upper.to_numpy())  # stunting
-        self.rr_ws = self.make_random(uncert.rr_ws_lower.to_numpy(), uncert.rr_ws_upper.to_numpy())  # wasting
-        self.rr_an = self.make_random(uncert.rr_an_lower.to_numpy(), uncert.rr_an_upper.to_numpy())  # anaemia
-        self.rr_bf = self.make_random(uncert.rr_bf_lower.to_numpy(), uncert.rr_bf_upper.to_numpy())  # breastfeeding
-        self.rr_diar = self.make_random(uncert.rr_diar_lower.to_numpy(), uncert.rr_diar_upper.to_numpy())  # diarrhoea
-        self.stun_or = self.make_random(uncert.stun_or_lower.to_numpy(), uncert.stun_or_upper.to_numpy())  # for stunting       
-        self.wast_or = self.make_random(uncert.wast_or_lower.to_numpy(), uncert.wast_or_upper.to_numpy())  # for wastin
-        self.ane_or = self.make_random(uncert.ane_or_lower.to_numpy(), uncert.ane_or_upper.to_numpy())  # for anaemia       
-        self.or_stunting_prog = self.make_random(uncert.or_stunting_prog_lower.to_numpy(), uncert.or_stunting_prog_upper.to_numpy())  # stunting programs
-        self.or_bf_prog = self.make_random(uncert.or_bf_prog_lower.to_numpy(), uncert.or_bf_prog_upper.to_numpy())  # breastfeeding progra
-        self.or_space_prog = self.make_random(uncert.or_space_prog_lower.to_numpy(), uncert.or_space_prog_upper.to_numpy())  # birth spacing programs
+        new.child_progs = self.make_random(uncert.child_progs_lower.to_numpy(), uncert.child_progs_upper.to_numpy())
+        new.rr_anaem_prog = self.make_random(uncert.rr_anaem_prog_lower.to_numpy(), uncert.rr_anaem_prog_upper.to_numpy())
+        new.or_anaem_prog = self.make_random(uncert.or_anaem_prog_lower.to_numpy(), uncert.or_anaem_prog_upper.to_numpy())
+        new.treatsam = self.make_random(uncert.treatsam_lower.to_numpy(), uncert.treatsam_upper.to_numpy())
+        new.manman = self.make_random(uncert.manman_lower.to_numpy(), uncert.manman_upper.to_numpy())
+        new.bo_progs = self.make_random(uncert.progs_lower.to_numpy(), uncert.progs_upper.to_numpy())
+        new.bf_effects = self.make_random(uncert.bf_effects_lower.to_numpy(), uncert.bf_effects_upper.to_numpy())
+        new.stunt_effects = self.make_random(uncert.stunt_effects_lower.to_numpy(), uncert.stunt_effects_upper.to_numpy())
+        new.ors = self.make_random(uncert.ors_lower.to_numpy(), uncert.ors_upper.to_numpy())
+        new.rr_space_bo = self.make_random(uncert.rr_space_bo_lower.to_numpy(), uncert.rr_space_bo_upper.to_numpy())
+        new.rr_death_bo = self.make_random(uncert.rr_death_bo_lower.to_numpy(), uncert.rr_death_bo_upper.to_numpy())
+        new.rr_st = self.make_random(uncert.rr_st_lower.to_numpy(), uncert.rr_st_upper.to_numpy())  # stunting
+        new.rr_ws = self.make_random(uncert.rr_ws_lower.to_numpy(), uncert.rr_ws_upper.to_numpy())  # wasting
+        new.rr_an = self.make_random(uncert.rr_an_lower.to_numpy(), uncert.rr_an_upper.to_numpy())  # anaemia
+        new.rr_bf = self.make_random(uncert.rr_bf_lower.to_numpy(), uncert.rr_bf_upper.to_numpy())  # breastfeeding
+        new.rr_diar = self.make_random(uncert.rr_diar_lower.to_numpy(), uncert.rr_diar_upper.to_numpy())  # diarrhoea
+        new.stun_or = self.make_random(uncert.stun_or_lower.to_numpy(), uncert.stun_or_upper.to_numpy())  # for stunting
+        new.wast_or = self.make_random(uncert.wast_or_lower.to_numpy(), uncert.wast_or_upper.to_numpy())  # for wastin
+        new.ane_or = self.make_random(uncert.ane_or_lower.to_numpy(), uncert.ane_or_upper.to_numpy())  # for anaemia
+        new.or_stunting_prog = self.make_random(uncert.or_stunting_prog_lower.to_numpy(), uncert.or_stunting_prog_upper.to_numpy())  # stunting programs
+        new.or_bf_prog = self.make_random(uncert.or_bf_prog_lower.to_numpy(), uncert.or_bf_prog_upper.to_numpy())  # breastfeeding progra
+        new.or_space_prog = self.make_random(uncert.or_space_prog_lower.to_numpy(), uncert.or_space_prog_upper.to_numpy())  # birth spacing programs
         
         # Replacing with original data and store in required dictionary formats
         
@@ -1048,41 +1017,41 @@ class Dataset(object):
         new.rr_death["Stunting"] = self.make_dict2(rr)
         # wasting
         rr = self.data_replace(uncert.rr_ws_orig, self.rr_ws).to_dict()
-        self.rr_death["Wasting"] = self.make_dict2(rr)
+        new.rr_death["Wasting"] = self.make_dict2(rr)
         # anaemia
         rr = self.data_replace(uncert.rr_an_orig, self.rr_an).to_dict()
-        self.rr_death["Anaemia"] = self.make_dict2(rr)
+        new.rr_death["Anaemia"] = self.make_dict2(rr)
         # currently no impact on mortality for anaemia
-        self.rr_death["Anaemia"].update({age: {cat: {"Diarrhoea": 1} for cat in self.settings.anaemia_list} for age in self.settings.child_ages})
+        new.rr_death["Anaemia"].update({age: {cat: {"Diarrhoea": 1} for cat in self.settings.anaemia_list} for age in self.settings.child_ages})
         # breastfeeding
         rr = self.data_replace(uncert.rr_bf_orig, self.rr_bf).to_dict()
-        self.rr_death["Breastfeeding"] = self.make_dict2(rr)
+        new.rr_death["Breastfeeding"] = self.make_dict2(rr)
         # diarrhoea
         rr = self.data_replace(uncert.rr_diar_orig, self.rr_diar).to_dict()
-        self.rr_dia = self.make_dict3(rr)
+        new.rr_dia = self.make_dict3(rr)
         
         # odd ratios
         this_or = self.data_replace(uncert.this_or_orig, self.stun_or).to_dict("index")
-        self.or_cond["Stunting"] = sc.odict()
-        self.or_cond["Stunting"]["Prev stunting"] = this_or["Given previous stunting (HAZ < -2 in previous age band)"]
-        self.or_cond["Stunting"]["Diarrhoea"] = this_or["Diarrhoea (per additional episode)"]
+        new.or_cond["Stunting"] = sc.odict()
+        new.or_cond["Stunting"]["Prev stunting"] = this_or["Given previous stunting (HAZ < -2 in previous age band)"]
+        new.or_cond["Stunting"]["Diarrhoea"] = this_or["Diarrhoea (per additional episode)"]
         
         wasting_or = self.data_replace(uncert.wasting_or_orig, self.wast_or)
-        self.or_cond["SAM"] = sc.odict()
-        self.or_cond["SAM"]["Diarrhoea"] = wasting_or.to_dict("index")["For SAM per additional episode of diarrhoea"]
-        self.or_cond["MAM"] = sc.odict()
-        self.or_cond["MAM"]["Diarrhoea"] = wasting_or.to_dict("index")["For MAM per additional episode of diarrhoea"]
+        new.or_cond["SAM"] = sc.odict()
+        new.or_cond["SAM"]["Diarrhoea"] = wasting_or.to_dict("index")["For SAM per additional episode of diarrhoea"]
+        new.or_cond["MAM"] = sc.odict()
+        new.or_cond["MAM"]["Diarrhoea"] = wasting_or.to_dict("index")["For MAM per additional episode of diarrhoea"]
         
         anem_or = self.data_replace(uncert.anem_or_orig, self.ane_or)
-        self.or_cond["Anaemia"] = sc.odict()
-        self.or_cond["Anaemia"]["Severe diarrhoea"] = sc.odict()
-        self.or_cond["Anaemia"]["Severe diarrhoea"] = anem_or.to_dict("index")["For anaemia per additional episode of severe diarrhoea"]
+        new.or_cond["Anaemia"] = sc.odict()
+        new.or_cond["Anaemia"]["Severe diarrhoea"] = sc.odict()
+        new.or_cond["Anaemia"]["Severe diarrhoea"] = anem_or.to_dict("index")["For anaemia per additional episode of severe diarrhoea"]
         
-        self.or_stunting_prog = self.data_replace(uncert.or_stunting_prog_orig, self.or_stunting_prog).to_dict("index")
+        new.or_stunting_prog = self.data_replace(uncert.or_stunting_prog_orig, self.or_stunting_prog).to_dict("index")
         
-        self.or_bf_prog = self.data_replace(uncert.or_bf_prog_orig, self.or_bf_prog).to_dict("index")
+        new.or_bf_prog = self.data_replace(uncert.or_bf_prog_orig, self.or_bf_prog).to_dict("index")
         
-        self.or_space_prog = self.data_replace(uncert.or_space_prog_orig, self.or_space_prog).to_dict("index")
+        new.or_space_prog = self.data_replace(uncert.or_space_prog_orig, self.or_space_prog).to_dict("index")
         
         progs = self.data_replace(uncert.progs_orig, self.bo_progs).to_dict("index")
         newprogs = sc.odict()
@@ -1090,37 +1059,35 @@ class Dataset(object):
             if not newprogs.get(program[0]):
                 newprogs[program[0]] = sc.odict()
             newprogs[program[0]][program[1]] = progs[program]
-        self.bo_progs = newprogs
+        new.bo_progs = newprogs
         
-        self.rr_anaem_prog = self.data_replace(uncert.rr_anaem_prog, self.rr_anaem_prog).to_dict(orient="index")
-        self.or_anaem_prog = self.data_replace(uncert.or_anaem_prog, self.or_anaem_prog).to_dict(orient="index")
+        new.rr_anaem_prog = self.data_replace(uncert.rr_anaem_prog, self.rr_anaem_prog).to_dict(orient="index")
+        new.or_anaem_prog = self.data_replace(uncert.or_anaem_prog, self.or_anaem_prog).to_dict(orient="index")
         
         
         treatsam = self.data_replace(uncert.treatsam_orig, self.treatsam).to_dict(orient="index")
         manman = self.data_replace(uncert.manman_orig, self.manman).to_dict(orient="index")
-        self.or_wasting_prog["SAM"] = treatsam
-        if self.man_mam:
-            self.or_wasting_prog["MAM"] = {"Treatment of SAM": manman["Management of MAM"]}
+        new.or_wasting_prog["SAM"] = treatsam
+        if new.man_mam:
+            new.or_wasting_prog["MAM"] = {"Treatment of SAM": manman["Management of MAM"]}
             
-        self.child_progs = self.data_replace(uncert.child_progs_orig, self.child_progs).to_dict()
+        new.child_progs = self.data_replace(uncert.child_progs_orig, self.child_progs).to_dict()
         
-        self.pw_progs = self.data_replace(uncert.pw_progs_orig, self.pw_progs).to_dict()
+        new.pw_progs = self.data_replace(uncert.pw_progs_orig, self.pw_progs).to_dict()
         
         
         ors = self.data_replace(uncert.ors_orig, self.ors).to_dict("index")
-        self.or_cond_bo["Stunting"] = ors["Stunting (HAZ-score < -2)"]
-        self.or_cond_bo["MAM"] = ors["MAM (WHZ-score between -3 and -2)"]
-        self.or_cond_bo["SAM"] = ors["SAM (WHZ-score < -3)"]
+        new.or_cond_bo["Stunting"] = ors["Stunting (HAZ-score < -2)"]
+        new.or_cond_bo["MAM"] = ors["MAM (WHZ-score between -3 and -2)"]
+        new.or_cond_bo["SAM"] = ors["SAM (WHZ-score < -3)"]
        
-        self.rr_space_bo = self.data_replace(uncert.rr_space_bo_orig, self.rr_space_bo).to_dict("index")
+        new.rr_space_bo = self.data_replace(uncert.rr_space_bo_orig, self.rr_space_bo).to_dict("index")
         
-        self.rr_death["Birth outcomes"] = self.data_replace(uncert.rr_death_orig, self.rr_death_bo).to_dict()
+        new.rr_death["Birth outcomes"] = self.data_replace(uncert.rr_death_orig, self.rr_death_bo).to_dict()
         
-        self.bf_effects = self.data_replace(uncert.bf_effects_orig, self.bf_effects)
-        self.stunt_effects = self.data_replace(uncert.stunt_effects_orig, self.stunt_effects)
-    
-        new.compute_risks()
-        
+        new.bf_effects = self.data_replace(uncert.bf_effects_orig, self.bf_effects)
+        new.stunt_effects = self.data_replace(uncert.stunt_effects_orig, self.stunt_effects)
+
         return new 
     
     def get_iycf_effects(self, iycf_packs):
@@ -1163,26 +1130,7 @@ class Dataset(object):
                     packagesDict[packageName[0]] += ageModeTuple
 
         return packagesDict
-    
-    def compute_risks(self):
-        """ Turn rr_death into an array"""
-        for age in self.settings.child_ages:
-            self.arr_rr_death[age] = np.zeros((self.settings.n_cats, len(self.demo_data.causes_death)))
-            stunting = self.rr_death["Stunting"][age]
-            wasting = self.rr_death["Wasting"][age]
-            bf = self.rr_death["Breastfeeding"][age]
-            anaemia = self.rr_death["Anaemia"][age]
-            for i, cats in enumerate(self.settings.all_cats):
-                stuntcat = cats[0]
-                wastcat = cats[1]
-                anaemcat = cats[2]
-                bfcat = cats[3]
-                for j, cause in enumerate((self.demo_data.causes_death):
-                    stunt = stunting[stuntcat].get(cause, 1)
-                    wast = wasting[wastcat].get(cause, 1)
-                    anaem = anaemia[anaemcat].get(cause, 1)
-                    breast = bf[bfcat].get(cause, 1)
-                    self.arr_rr_death[age][i, j] = stunt * wast * anaem * breast
+
     
     def make_random(self, lb, ub):
         """ This function generates a random value considering unifrom distribution
@@ -1429,626 +1377,3 @@ class UncertaintyParas(object):
         or_space_prog_upper = or_sheet_space_upper.loc["Odds ratios for optimal birth spacing by program - upper"]
         self.or_space_prog = self.make_random(or_space_prog_lower.to_numpy(), or_space_prog_upper.to_numpy())  # birth spacing programs
 
-
-#### IMPORTANT ####
-# The following is a dummy class that should be renamed to "DefaultParams" once correctly implemented.
-# This reads original data from the data book (to read and establish index names in DFs) and also call random data from UncertaintyParas class, next input them to model.
-
-
-class DefaultParamsResampled(object):
-    """ " This stores all the randomly generated parameters
-    Data structures are similart to the corresponding parameters stored in 'DefaultParams' class
-    to ensure that there would be no additional trasformations required in pupulation.py"""
-
-    def __init__(self, default_data, input_data):
-        self.settings = settings.Settings()
-        self.uncert = UncertaintyParas(default_data, input_data)
-        self.impacted_pop = None
-        self.prog_areas = sc.odict()
-        self.pop_areas = sc.odict()
-        self.rr_death = sc.odict()
-        self.or_cond = sc.odict()
-        self.or_cond_bo = sc.odict()
-        self.or_wasting_prog = sc.odict()
-        self.rr_dia = None
-        self.or_stunting_prog = None
-        self.bo_progs = None
-        self.rr_anaem_prog = None
-        self.or_anaem_prog = None
-        self.child_progs = None
-        self.pw_progs = None
-        self.rr_space_bo = None
-        self.or_space_prog = None
-        self.or_bf_prog = None
-        self.man_mam = False
-        self.arr_rr_death = sc.odict()
-        # read data
-        self.spreadsheet = default_data
-        self.input_data = input_data
-        self.read_spreadsheet()
-        self.spreadsheet = None
-        self.input_data = None
-        return None
-
-    def __repr__(self):
-        output = sc.prepr(self)
-        return output
-
-    def read_spreadsheet(self):
-        self.extend_treatsam()
-        self.impact_pop()
-        self.prog_risks()
-        self.pop_risks()
-        self.anaemia_progs()
-        self.wasting_progs()
-        self.relative_risks()
-        self.odds_ratios()
-        self.get_child_progs()
-        self.get_pw_progs()
-        self.get_bo_progs()
-        self.get_bo_risks()
-        packages = self.define_iycf()
-        self.get_iycf_effects(packages)
-
-    def extend_treatsam(self):
-        treatsam = self.input_data.parse(sheet_name="Treatment of SAM")
-        add_man = treatsam.iloc[0]["Add extension"]
-        if pandas.notnull(add_man):
-            self.man_mam = True
-
-    def impact_pop(self):
-        sheet = utils.read_sheet(self.spreadsheet, "Programs impacted population", [0, 1])
-        impacted = sc.odict()
-        for pop in ["Children", "Pregnant women", "Non-pregnant WRA", "General population"]:
-            impacted.update(sheet.loc[pop].to_dict(orient="index"))
-        self.impacted_pop = impacted
-
-    def prog_risks(self):
-        areas = utils.read_sheet(self.spreadsheet, "Program risk areas", [0])
-        booleanFrame = areas.isnull()
-        for program, areas in booleanFrame.iterrows():
-            for risk, value in areas.items():
-                if self.prog_areas.get(risk) is None:
-                    self.prog_areas[risk] = []
-                if not value:
-                    self.prog_areas[risk].append(program)
-
-    def pop_risks(self):
-        areas = utils.read_sheet(self.spreadsheet, "Population risk areas", [0])
-        booleanFrame = areas.isnull()
-        for program, areas in booleanFrame.iterrows():
-            for risk, value in areas.items():
-                if self.pop_areas.get(risk) is None:
-                    self.pop_areas[risk] = []
-                if not value:
-                    self.pop_areas[risk].append(program)
-
-    def relative_risks(self):
-        # risk areas hidden in spreadsheet (white text)
-        # stunting
-        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 1), range(26, 328))]).dropna(axis=1, how="all")
-        rr_orig = rr_sheet.loc["Stunting"]
-        rr = self.data_replace(rr_orig, self.uncert.rr_st).to_dict()
-        self.rr_death["Stunting"] = self.make_dict2(rr)
-        # wasting
-        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 28), range(53, 328))]).dropna(axis=1, how="all")
-        rr_orig = rr_sheet.loc["Wasting"]
-        rr = self.data_replace(rr_orig, self.uncert.rr_ws).to_dict()
-        self.rr_death["Wasting"] = self.make_dict2(rr)
-        # anaemia
-        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 55), range(62, 328))]).dropna(axis=1, how="all")
-        rr_orig = rr_sheet.loc["Anaemia"]
-        rr = self.data_replace(rr_orig, self.uncert.rr_an).to_dict()
-        self.rr_death["Anaemia"] = self.make_dict2(rr)
-        # currently no impact on mortality for anaemia
-        self.rr_death["Anaemia"].update({age: {cat: {"Diarrhoea": 1} for cat in self.settings.anaemia_list} for age in self.settings.child_ages})
-        # breastfeeding
-        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 64), range(101, 328))]).dropna(axis=1, how="all")
-        rr_orig = rr_sheet.loc["Breastfeeding"]
-        rr = self.data_replace(rr_orig, self.uncert.rr_bf).to_dict()
-        self.rr_death["Breastfeeding"] = self.make_dict2(rr)
-        # diarrhoea
-        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 103), range(108, 328))]).dropna(axis=1, how="all")
-        rr_orig = rr_sheet.loc["Diarrhoea"]
-        rr = self.data_replace(rr_orig, self.uncert.rr_diar).to_dict()
-        self.rr_dia = self.make_dict3(rr)
-
-    def compute_risks(self, input_data=None):
-        """ Turn rr_death into an array"""
-        for age in self.settings.child_ages:
-            self.arr_rr_death[age] = np.zeros((self.settings.n_cats, len(input_data.causes_death)))
-            stunting = self.rr_death["Stunting"][age]
-            wasting = self.rr_death["Wasting"][age]
-            bf = self.rr_death["Breastfeeding"][age]
-            anaemia = self.rr_death["Anaemia"][age]
-            for i, cats in enumerate(self.settings.all_cats):
-                stuntcat = cats[0]
-                wastcat = cats[1]
-                anaemcat = cats[2]
-                bfcat = cats[3]
-                for j, cause in enumerate(input_data.causes_death):
-                    stunt = stunting[stuntcat].get(cause, 1)
-                    wast = wasting[wastcat].get(cause, 1)
-                    anaem = anaemia[anaemcat].get(cause, 1)
-                    breast = bf[bfcat].get(cause, 1)
-                    self.arr_rr_death[age][i, j] = stunt * wast * anaem * breast
-
-    def odds_ratios(self):
-        or_sheet = utils.read_sheet(self.spreadsheet, "Odds ratios", [0, 1], skiprows=[i for i in chain(range(0, 1), range(16, 64))]).dropna(axis=1, how="all")
-        this_or_orig = or_sheet.loc["Condition"]
-        this_or = self.data_replace(this_or_orig, self.uncert.stun_or).to_dict("index")
-        self.or_cond["Stunting"] = sc.odict()
-        self.or_cond["Stunting"]["Prev stunting"] = this_or["Given previous stunting (HAZ < -2 in previous age band)"]
-        self.or_cond["Stunting"]["Diarrhoea"] = this_or["Diarrhoea (per additional episode)"]
-        wasting_or_orig = or_sheet.loc["Wasting"]
-        wasting_or = self.data_replace(wasting_or_orig, self.uncert.wast_or)
-        self.or_cond["SAM"] = sc.odict()
-        self.or_cond["SAM"]["Diarrhoea"] = wasting_or.to_dict("index")["For SAM per additional episode of diarrhoea"]
-        self.or_cond["MAM"] = sc.odict()
-        self.or_cond["MAM"]["Diarrhoea"] = wasting_or.to_dict("index")["For MAM per additional episode of diarrhoea"]
-        anem_or_orig = or_sheet.loc["Anaemia"]
-        anem_or = self.data_replace(anem_or_orig, self.uncert.ane_or)
-        self.or_cond["Anaemia"] = sc.odict()
-        self.or_cond["Anaemia"]["Severe diarrhoea"] = sc.odict()
-        self.or_cond["Anaemia"]["Severe diarrhoea"] = anem_or.to_dict("index")["For anaemia per additional episode of severe diarrhoea"]
-        or_stunting_prog_orig = or_sheet.loc["By program"].dropna(axis=0, how="all")
-        self.or_stunting_prog = self.data_replace(or_stunting_prog_orig, self.uncert.or_stunting_prog).to_dict("index")
-        or_bf_prog_orig = or_sheet.loc["Odds ratios for correct breastfeeding by program"].dropna(axis=0, how="all")
-        self.or_bf_prog = self.data_replace(or_bf_prog_orig, self.uncert.or_bf_prog).to_dict("index")
-        or_sheet_space = utils.read_sheet(self.spreadsheet, "Odds ratios", [0, 1], skiprows=[i for i in chain(range(0, 18), range(20, 64))]).dropna(axis=1, how="all")
-        or_space_prog_orig = or_sheet_space.loc["Odds ratios for optimal birth spacing by program"]
-        self.or_space_prog = self.data_replace(or_space_prog_orig, self.uncert.or_space_prog).to_dict("index")
-
-    def get_bo_progs(self):
-        progs_orig = utils.read_sheet(self.spreadsheet, "Programs birth outcomes", [0, 1], skiprows=[i for i in range(13, 43)]).dropna(axis=1, how="all")
-        progs = self.data_replace(progs_orig, self.uncert.bo_progs).to_dict("index")
-        newprogs = sc.odict()
-        for program in progs.keys():
-            if not newprogs.get(program[0]):
-                newprogs[program[0]] = sc.odict()
-            newprogs[program[0]][program[1]] = progs[program]
-        self.bo_progs = newprogs
-
-    def anaemia_progs(self):
-        anaem_sheet = utils.read_sheet(self.spreadsheet, "Programs anemia", [0, 1], skiprows=[i for i in range(22, 66)]).dropna(axis=1, how="all")
-        rr_anaem_prog = anaem_sheet.loc["Relative risks of anaemia when receiving intervention"].dropna(axis=0, how="all")
-        self.rr_anaem_prog = self.data_replace(rr_anaem_prog, self.uncert.rr_anaem_prog).to_dict(orient="index")
-        or_anaem_prog = anaem_sheet.loc["Odds ratios of being anaemic when covered by intervention"].dropna(axis=0, how="all")
-        self.or_anaem_prog = self.data_replace(or_anaem_prog, self.uncert.or_anaem_prog).to_dict(orient="index")
-
-    def wasting_progs(self):
-        wastingSheet = utils.read_sheet(self.spreadsheet, "Programs wasting", [0, 1], skiprows=[i for i in range(5, 19)]).dropna(axis=1, how="all")
-        treatsam_orig = wastingSheet.loc["Odds ratio of SAM when covered by program"].dropna(axis=0, how="all")
-        manman_orig = wastingSheet.loc["Odds ratio of MAM when covered by program"].dropna(axis=0, how="all")
-        treatsam = self.data_replace(treatsam_orig, self.uncert.treatsam).to_dict(orient="index")
-        manman = self.data_replace(manman_orig, self.uncert.manman).to_dict(orient="index")
-        self.or_wasting_prog["SAM"] = treatsam
-        if self.man_mam:
-            self.or_wasting_prog["MAM"] = {"Treatment of SAM": manman["Management of MAM"]}
-
-    def get_child_progs(self):
-        child_progs_orig = utils.read_sheet(self.spreadsheet, "Programs for children", [0, 1, 2], skiprows=[i for i in range(49, 151)]).dropna(axis=1, how="all")
-        self.child_progs = self.data_replace(child_progs_orig, self.uncert.child_progs).to_dict()
-
-    def get_pw_progs(self):
-        pw_progs_orig = utils.read_sheet(self.spreadsheet, "Programs for PW", [0, 1, 2], skiprows=[i for i in range(7, 25)]).dropna(axis=1, how="all")
-        self.pw_progs = self.data_replace(pw_progs_orig, self.uncert.pw_progs).to_dict()
-
-    def get_bo_risks(self):
-        bo_sheet = utils.read_sheet(self.spreadsheet, "Birth outcome risks", [0, 1], skiprows=[i for i in chain(range(25, 81), range(0, 1))]).dropna(axis=1, how="all")
-        ors_orig = bo_sheet.loc["Odds ratios for conditions"].dropna(axis=0, how="all")
-        ors = self.data_replace(ors_orig, self.uncert.ors).to_dict("index")
-        self.or_cond_bo["Stunting"] = ors["Stunting (HAZ-score < -2)"]
-        self.or_cond_bo["MAM"] = ors["MAM (WHZ-score between -3 and -2)"]
-        self.or_cond_bo["SAM"] = ors["SAM (WHZ-score < -3)"]
-        rr_space_bo_orig = bo_sheet.loc["Relative risk by birth spacing"].dropna(axis=0, how="all")
-        self.rr_space_bo = self.data_replace(rr_space_bo_orig, self.uncert.rr_space_bo).to_dict("index")
-        rr_death_orig = bo_sheet.loc["Relative risks of neonatal causes of death"].dropna(axis=0, how="all")
-        self.rr_death["Birth outcomes"] = self.data_replace(rr_death_orig, self.uncert.rr_death_bo).to_dict()
-
-    def get_iycf_effects(self, iycf_packs):
-        # TODO: need something that catches if iycf packages not included at all.
-        effects = utils.read_sheet(self.spreadsheet, "IYCF odds ratios", [0, 1, 2], skiprows=[i for i in range(51, 157)]).dropna(axis=1, how="all")
-        bf_effects_orig = effects.loc["Odds ratio for correct breastfeeding"].dropna(axis=0, how="all")
-        stunt_effects_orig = effects.loc["Odds ratio for stunting"].dropna(axis=0, how="all")
-        bf_effects = self.data_replace(bf_effects_orig, self.uncert.bf_effects)
-        stunt_effects = self.data_replace(stunt_effects_orig, self.uncert.stunt_effects)
-        self.or_bf_prog.update(self.create_iycf(bf_effects, iycf_packs))
-        self.or_stunting_prog.update(self.create_iycf(stunt_effects, iycf_packs))
-
-    def create_iycf(self, effects, packages):
-        """ Creates IYCF packages based on user input in 'IYCFpackages' """
-        # non-empty cells denote program combination
-        # get package combinations
-        # create new program
-        newPrograms = sc.odict()
-        ORs = sc.odict()
-        for key, item in packages.items():
-            if newPrograms.get(key) is None:
-                newPrograms[key] = sc.odict()
-            for age in self.settings.child_ages:
-                ORs[age] = 1.0
-                for pop, mode in item:
-                    row = effects.loc[pop, mode]
-                    thisOR = row[age]
-                    ORs[age] *= thisOR
-            newPrograms[key].update(ORs)
-        return newPrograms
-
-    def define_iycf(self):
-        """ Returns a dict with values as a list of two tuples (age, modality)."""
-        IYCFpackages = self.input_data.parse(sheet_name="IYCF packages", index_col=[0, 1])
-        packagesDict = sc.odict()
-        for packageName, package in IYCFpackages.groupby(level=[0, 1]):
-            if packageName[0] not in packagesDict:
-                packagesDict[packageName[0]] = []
-            for mode in package:
-                col = package[mode]
-                if col.notnull()[0]:
-                    if mode == "Mass media":
-                        ageModeTuple = [(pop, mode) for pop in self.settings.child_ages[:-1]]  # exclude 24-59 months
-                    else:
-                        ageModeTuple = [(packageName[1], mode)]
-                    packagesDict[packageName[0]] += ageModeTuple
-
-        return packagesDict
-
-    def make_dict(self, mydict):
-        """ myDict is a spreadsheet with 3 index cols, converted to dict using orient='index' """
-        result = sc.odict()
-        for age, progCatTypeDict in mydict.items():
-            result[age] = sc.odict()
-            for progCatType in progCatTypeDict.items():
-                keys = progCatType[0]
-                val = progCatType[1]
-                result[age].update({keys[0]: {keys[1]: {keys[2]: val}}})
-        return result
-
-    def make_dict2(self, mydict):
-        """ creating relative risk dict """
-        res_dict = sc.odict()
-        for age in mydict.keys():
-            res_dict[age] = sc.odict()
-            for condCat in mydict[age].keys():
-                cond = condCat[0]
-                cat = condCat[1]
-                if res_dict[age].get(cat) is None:
-                    res_dict[age][cat] = dict()  # CK TEST
-                    res_dict[age][cat][cond] = mydict[age][condCat]
-                elif res_dict[age][cat].get(cond) is None:
-                    res_dict[age][cat][cond] = mydict[age][condCat]
-        return res_dict
-
-    def make_dict3(self, mydict):
-        """ for rr diarrhoea """
-        res_dict = sc.odict()
-        for age in mydict.keys():
-            res_dict[age] = sc.odict()
-            for condCat in mydict[age].keys():
-                cat = condCat[1]
-                if res_dict[age].get(cat) is None:
-                    res_dict[age][cat] = mydict[age][condCat]
-        return res_dict
-
-    def data_replace(self, orig, transformed):
-        """This function replaces original data (point estimates) by randomly generated data"""
-        outdata = sc.dcp(orig)
-        outdata.loc[:, :] = transformed
-        return outdata
-
-class UncertaintyParams(object):
-    """ " This is used to store upper and lower boundaries of uncertain parameters read from the databook
-    A random value is generated for each selected parameter using uniform distribution and to generate a random for each scenario run"""
-
-    def __init__(self, default_data, input_data):
-        self.settings = settings.Settings()
-        self.impacted_pop = None
-        self.prog_areas = sc.odict()
-        self.pop_areas = sc.odict()
-        self.rr_dia = None
-        self.or_stunting_prog = None
-        self.bo_progs = None
-        self.progs_lower = None
-        self.progs_upper = None
-        self.progs_orig = None
-        self.rr_anaem_prog_lower = None
-        self.rr_anaem_prog_upper = None
-        self.rr_anaem_prog_orig = None
-        self.or_anaem_prog_lower = None
-        self.or_anaem_prog_upper = None
-        self.or_anaem_prog_orig = None
-        self.child_progs_lower = None
-        self.child_progs_upper = None
-        self.child_progs_orig = None
-        self.pw_progs_lower = None
-        self.pw_progs_upper = None
-        self.pw_progs_orig = None
-        self.rr_space_bo = None
-        self.or_space_prog = None
-        self.or_bf_prog = None
-        self.man_mam = False
-        self.treatsam_lower = None
-        self.treatsam_upper = None
-        self.treatsam_orig = None
-        self.manman_lower = None
-        self.manman_upper = None
-        self.manman_orig = None
-        self.bf_effects_lower = None
-        self.bf_effects_upper = None
-        self.bf_effects_orig = None
-        self.stunt_effects_lower = None
-        self.stunt_effects_upper = None
-        self.stunt_effects_orig = None
-        self.ors_lower = None
-        self.ors_upper = None
-        self.ors_orig = None
-        self.rr_space_bo_lower = None
-        self.rr_space_bo_upper = None
-        self.rr_space_bo_orig = None
-        self.rr_death_bo_lower = None
-        self.rr_death_bo_upper = None
-        self.rr_death_bo_orig = None
-        self.rr_st_lower = None
-        self.rr_st_upper = None
-        self.rr_st_orig = None
-        self.rr_ws_lower = None
-        self.rr_ws_upper = None
-        self.rr_ws_orig = None
-        self.rr_an_lower = None
-        self.rr_an_upper = None
-        self.rr_an_orig = None
-        self.rr_bf_lower = None
-        self.rr_bf_upper = None
-        self.rr_bf_orig = None
-        self.rr_diar_lower = None
-        self.rr_diar_upper = None
-        self.rr_diar_orig = None
-        self.stun_or = None
-        self.wast_or = None
-        self.ane_or = None
-        self.stun_or_lower = None
-        self.stun_or_upper = None
-        self.wast_or_lower = None
-        self.wast_or_upper = None
-        self.ane_or_lower = None
-        self.ane_or_upper = None
-        self.or_stunting_prog_lower = None
-        self.or_bf_prog_lower = None
-        self.or_stunting_prog_upper = None
-        self.or_bf_prog_upper = None
-        self.or_space_prog_lower = None
-        self.or_space_prog_upper = None
-        self.this_or_orig = None
-        self.wasting_or_orig = None
-        self.anem_or_orig = None
-        self.or_stunting_prog_orig = None
-        self.or_bf_prog_orig = None
-        self.or_space_prog_orig = None
-        self.rr_death = sc.odict()
-        # read data
-        self.spreadsheet = default_data
-        self.input_data = input_data
-        self.read_spreadsheet()
-        self.spreadsheet = None
-        self.input_data = None
-        return None
-
-    def __repr__(self):
-        output = sc.prepr(self)
-        return output
-
-    def read_spreadsheet(self):
-        self.set_pw_progs()
-        self.set_child_progs()
-        self.set_anaemia_progs()
-        self.set_wasting_progs()
-        self.set_bo_progs()
-        self.set_iycf_effects()
-        self.set_bo_risks()
-        self.set_relative_risks()
-        self.set_odds_ratios()
-        
-    def extend_treatsam(self):
-        treatsam = self.input_data.parse(sheet_name="Treatment of SAM")
-        add_man = treatsam.iloc[0]["Add extension"]
-        if pandas.notnull(add_man):
-            self.man_mam = True
-
-    def impact_pop(self):
-        sheet = utils.read_sheet(self.spreadsheet, "Programs impacted population", [0, 1])
-        impacted = sc.odict()
-        for pop in ["Children", "Pregnant women", "Non-pregnant WRA", "General population"]:
-            impacted.update(sheet.loc[pop].to_dict(orient="index"))
-        self.impacted_pop = impacted
-
-    def prog_risks(self):
-        areas = utils.read_sheet(self.spreadsheet, "Program risk areas", [0])
-        booleanFrame = areas.isnull()
-        for program, areas in booleanFrame.iterrows():
-            for risk, value in areas.items():
-                if self.prog_areas.get(risk) is None:
-                    self.prog_areas[risk] = []
-                if not value:
-                    self.prog_areas[risk].append(program)
-
-    def pop_risks(self):
-        areas = utils.read_sheet(self.spreadsheet, "Population risk areas", [0])
-        booleanFrame = areas.isnull()
-        for program, areas in booleanFrame.iterrows():
-            for risk, value in areas.items():
-                if self.pop_areas.get(risk) is None:
-                    self.pop_areas[risk] = []
-                if not value:
-                    self.pop_areas[risk].append(program)
-
-    
-    def set_pw_progs(self):
-        self.pw_progs_lower = utils.read_sheet(self.spreadsheet, "Programs for PW", [0, 1, 2], skiprows=[i for i in chain(range(1, 10), range(16, 25))], to_odict=False).dropna(axis=1, how="all")
-        self.pw_progs_upper = utils.read_sheet(self.spreadsheet, "Programs for PW", [0, 1, 2], skiprows=[i for i in range(1, 19)], to_odict=False).dropna(axis=1, how="all")
-        
-        self.pw_progs_orig = utils.read_sheet(self.spreadsheet, "Programs for PW", [0, 1, 2], skiprows=[i for i in range(7, 25)]).dropna(axis=1, how="all")
-       
-    def set_child_progs(self):
-        self.child_progs_lower = utils.read_sheet(self.spreadsheet, "Programs for children", [0, 1, 2], skiprows=[i for i in chain(range(1, 52), range(100, 152))]).dropna(axis=1, how="all")
-        self.child_progs_upper = utils.read_sheet(self.spreadsheet, "Programs for children", [0, 1, 2], skiprows=[i for i in range(1, 103)]).dropna(axis=1, how="all")
-        
-        self.child_progs_orig = utils.read_sheet(self.spreadsheet, "Programs for children", [0, 1, 2], skiprows=[i for i in range(49, 151)]).dropna(axis=1, how="all")
-        
-
-    def set_anaemia_progs(self):
-        anaem_sheet_lower = utils.read_sheet(self.spreadsheet, "Programs anemia", [0, 1], skiprows=[i for i in chain(range(1, 24), range(43, 66))]).dropna(axis=1, how="all")
-        self.rr_anaem_prog_lower = anaem_sheet_lower.loc["Relative risks of anaemia when receiving intervention - lower"].dropna(axis=0, how="all")
-        self.or_anaem_prog_lower = anaem_sheet_lower.loc["Odds ratios of being anaemic when covered by intervention - lower"].dropna(axis=0, how="all")
-        anaem_sheet_upper = utils.read_sheet(self.spreadsheet, "Programs anemia", [0, 1], skiprows=[i for i in range(1, 46)]).dropna(axis=1, how="all")
-        self.rr_anaem_prog_upper = anaem_sheet_upper.loc["Relative risks of anaemia when receiving intervention - upper"].dropna(axis=0, how="all")
-        self.or_anaem_prog_upper = anaem_sheet_upper.loc["Odds ratios of being anaemic when covered by intervention - upper"].dropna(axis=0, how="all")
-        
-        anaem_sheet = utils.read_sheet(self.spreadsheet, "Programs anemia", [0, 1], skiprows=[i for i in range(22, 66)]).dropna(axis=1, how="all")
-        self.rr_anaem_prog_orig = anaem_sheet.loc["Relative risks of anaemia when receiving intervention"].dropna(axis=0, how="all")
-        self.or_anaem_prog_orig = anaem_sheet.loc["Odds ratios of being anaemic when covered by intervention"].dropna(axis=0, how="all")
-        
-
-    def set_wasting_progs(self):
-        wastingSheet_lower = utils.read_sheet(self.spreadsheet, "Programs wasting", [0, 1], skiprows=[i for i in chain(range(1, 8), range(12, 19))]).dropna(axis=1, how="all")
-        self.treatsam_lower = wastingSheet_lower.loc["Odds ratio of SAM when covered by program - lower"].dropna(axis=0, how="all")
-        self.manman_lower = wastingSheet_lower.loc["Odds ratio of MAM when covered by program - lower"].dropna(axis=0, how="all")
-        wastingSheet_upper = utils.read_sheet(self.spreadsheet, "Programs wasting", [0, 1], skiprows=[i for i in range(1, 16)]).dropna(axis=1, how="all")
-        self.treatsam_upper = wastingSheet_upper.loc["Odds ratio of SAM when covered by program - upper"].dropna(axis=0, how="all")
-        self.manman_upper = wastingSheet_upper.loc["Odds ratio of MAM when covered by program - upper"].dropna(axis=0, how="all")
-        
-        wastingSheet = utils.read_sheet(self.spreadsheet, "Programs wasting", [0, 1], skiprows=[i for i in range(5, 19)]).dropna(axis=1, how="all")
-        self.treatsam_orig = wastingSheet.loc["Odds ratio of SAM when covered by program"].dropna(axis=0, how="all")
-        self.manman_orig = wastingSheet.loc["Odds ratio of MAM when covered by program"].dropna(axis=0, how="all")
-        
-
-    def set_bo_progs(self):
-        self.progs_lower = utils.read_sheet(self.spreadsheet, "Programs birth outcomes", [0, 1], skiprows=[i for i in chain(range(1, 16), range(28, 43))]).dropna(axis=1, how="all")
-        self.progs_upper = utils.read_sheet(self.spreadsheet, "Programs birth outcomes", [0, 1], skiprows=[i for i in range(1, 31)]).dropna(axis=1, how="all")
-        
-        self.progs_orig = utils.read_sheet(self.spreadsheet, "Programs birth outcomes", [0, 1], skiprows=[i for i in range(13, 43)]).dropna(axis=1, how="all")
-        
-
-    def set_iycf_effects(self):
-        effects_lower = utils.read_sheet(self.spreadsheet, "IYCF odds ratios", [0, 1, 2], skiprows=[i for i in chain(range(1, 54), range(104, 157))]).dropna(axis=1, how="all")
-        self.bf_effects_lower = effects_lower.loc["Odds ratio for correct breastfeeding - lower"].dropna(axis=0, how="all")
-        self.stunt_effects_lower = effects_lower.loc["Odds ratio for stunting - lower"].dropna(axis=0, how="all")
-        effects_upper = utils.read_sheet(self.spreadsheet, "IYCF odds ratios", [0, 1, 2], skiprows=[i for i in range(1, 107)]).dropna(axis=1, how="all")
-        self.bf_effects_upper = effects_upper.loc["Odds ratio for correct breastfeeding - upper"].dropna(axis=0, how="all")
-        self.stunt_effects_upper = effects_upper.loc["Odds ratio for stunting - upper"].dropna(axis=0, how="all")
-        
-        effects = utils.read_sheet(self.spreadsheet, "IYCF odds ratios", [0, 1, 2], skiprows=[i for i in range(51, 157)]).dropna(axis=1, how="all")
-        self.bf_effects_orig = effects.loc["Odds ratio for correct breastfeeding"].dropna(axis=0, how="all")
-        self.stunt_effects_orig = effects.loc["Odds ratio for stunting"].dropna(axis=0, how="all")
-        
-
-
-    def set_bo_risks(self):
-        bo_sheet_lower = utils.read_sheet(self.spreadsheet, "Birth outcome risks", [0, 1], skiprows=[i for i in chain(range(0, 28), range(52, 79))]).dropna(axis=1, how="all")
-        self.ors_lower = bo_sheet_lower.loc["Odds ratios for conditions - lower"]
-        bo_sheet_upper = utils.read_sheet(self.spreadsheet, "Birth outcome risks", [0, 1], skiprows=[i for i in range(0, 55)]).dropna(axis=1, how="all")
-        self.ors_upper = bo_sheet_upper.loc["Odds ratios for conditions - upper"].dropna(axis=0, how="all")
-        self.rr_space_bo_lower = bo_sheet_lower.loc["Relative risk by birth spacing - lower"].dropna(axis=0, how="all")
-        self.rr_death_bo_lower = bo_sheet_lower.loc["Relative risks of neonatal causes of death - lower"].dropna(axis=0, how="all")
-        self.rr_space_bo_upper = bo_sheet_upper.loc["Relative risk by birth spacing - upper"].dropna(axis=0, how="all")
-        self.rr_death_bo_upper = bo_sheet_upper.loc["Relative risks of neonatal causes of death - upper"].dropna(axis=0, how="all")
-        
-        bo_sheet = utils.read_sheet(self.spreadsheet, "Birth outcome risks", [0, 1], skiprows=[i for i in chain(range(25, 81), range(0, 1))]).dropna(axis=1, how="all")
-        self.ors_orig = bo_sheet.loc["Odds ratios for conditions"].dropna(axis=0, how="all")
-        self.rr_space_bo_orig = bo_sheet.loc["Relative risk by birth spacing"].dropna(axis=0, how="all")
-        self.rr_death_bo_orig = bo_sheet.loc["Relative risks of neonatal causes of death"].dropna(axis=0, how="all")
-        
-
-    def set_relative_risks(self):
-        # lower values
-        # stunting
-        rr_st_sheet_lower = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 111), range(136, 328))]).dropna(axis=1, how="all")
-        self.rr_st_lower = rr_st_sheet_lower.loc["Stunting"]
-        # wasting
-        rr_ws_sheet_lower = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 138), range(163, 328))]).dropna(axis=1, how="all")
-        self.rr_ws_lower = rr_ws_sheet_lower.loc["Wasting"]
-        # anaemia
-        rr_an_sheet_lower = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 165), range(172, 328))]).dropna(axis=1, how="all")
-        self.rr_an_lower = rr_an_sheet_lower.loc["Anaemia"]
-        # breastfeeding
-        rr_bf_sheet_lower = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 174), range(211, 328))]).dropna(axis=1, how="all")
-        self.rr_bf_lower = rr_bf_sheet_lower.loc["Breastfeeding"]
-        # diarrhoea
-        rr_diar_sheet_lower = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 213), range(218, 328))]).dropna(axis=1, how="all")
-        self.rr_diar_lower = rr_diar_sheet_lower.loc["Diarrhoea"]
-        # upper values
-        # stunting
-        rr_st_sheet_upper = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 221), range(246, 328))]).dropna(axis=1, how="all")
-        self.rr_st_upper = rr_st_sheet_upper.loc["Stunting"]
-        # wasting
-        rr_ws_sheet_upper = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 248), range(273, 328))]).dropna(axis=1, how="all")
-        self.rr_ws_upper = rr_ws_sheet_upper.loc["Wasting"]
-        # anaemia
-        rr_an_sheet_upper = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 275), range(282, 328))]).dropna(axis=1, how="all")
-        self.rr_an_upper = rr_an_sheet_upper.loc["Anaemia"]
-        # breastfeeding
-        rr_bf_sheet_upper = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 284), range(321, 328))]).dropna(axis=1, how="all")
-        self.rr_bf_upper = rr_bf_sheet_upper.loc["Breastfeeding"]
-        # diarrhoea
-        rr_diar_sheet_upper = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in range(0, 323)]).dropna(axis=1, how="all")
-        self.rr_diar_upper = rr_diar_sheet_upper.loc["Diarrhoea"]
-        
-        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 1), range(26, 328))]).dropna(axis=1, how="all")
-        self.rr_st_orig = rr_sheet.loc["Stunting"]
-       
-        # wasting
-        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 28), range(53, 328))]).dropna(axis=1, how="all")
-        self.rr_ws_orig = rr_sheet.loc["Wasting"]
-        
-        # anaemia
-        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 55), range(62, 328))]).dropna(axis=1, how="all")
-        self.rr_an_orig = rr_sheet.loc["Anaemia"]
-       
-        # currently no impact on mortality for anaemia
-        #self.rr_death["Anaemia"].update({age: {cat: {"Diarrhoea": 1} for cat in self.settings.anaemia_list} for age in self.settings.child_ages})
-        # breastfeeding
-        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 64), range(101, 328))]).dropna(axis=1, how="all")
-        self.rr_bf_orig = rr_sheet.loc["Breastfeeding"]
-        
-        # diarrhoea
-        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 103), range(108, 328))]).dropna(axis=1, how="all")
-        self.rr_diar_orig = rr_sheet.loc["Diarrhoea"]
-        
-        
-    def set_odds_ratios(self):
-        or_sheet_cond_lower = utils.read_sheet(self.spreadsheet, "Odds ratios", [0, 1], skiprows=[i for i in chain(range(0, 23), range(38, 64))]).dropna(axis=1, how="all")
-        or_sheet_cond_upper = utils.read_sheet(self.spreadsheet, "Odds ratios", [0, 1], skiprows=[i for i in chain(range(0, 45), range(60, 64))]).dropna(axis=1, how="all")
-        or_sheet_space_lower = utils.read_sheet(self.spreadsheet, "Odds ratios", [0, 1], skiprows=[i for i in chain(range(0, 40), range(42, 64))]).dropna(axis=1, how="all")
-        or_sheet_space_upper = utils.read_sheet(self.spreadsheet, "Odds ratios", [0, 1], skiprows=[i for i in range(0, 62)]).dropna(axis=1, how="all")
-        self.stun_or_lower = or_sheet_cond_lower.loc["Condition"].fillna(0)
-        self.stun_or_upper = or_sheet_cond_upper.loc["Condition"].fillna(0)
-        
-        self.wast_or_lower = or_sheet_cond_lower.loc["Wasting"]
-        self.wast_or_upper = or_sheet_cond_upper.loc["Wasting"]
-        
-        self.ane_or_lower = or_sheet_cond_lower.loc["Anaemia"]
-        self.ane_or_upper = or_sheet_cond_upper.loc["Anaemia"]
-        
-        self.or_stunting_prog_lower = or_sheet_cond_lower.loc["By program - lower"].dropna(axis=0, how="all")
-        self.or_bf_prog_lower = or_sheet_cond_lower.loc["Odds ratios for correct breastfeeding by program - lower"].dropna(axis=0, how="all")
-        self.or_stunting_prog_upper = or_sheet_cond_upper.loc["By program - upper"].dropna(axis=0, how="all")
-        self.or_bf_prog_upper = or_sheet_cond_upper.loc["Odds ratios for correct breastfeeding by program - upper"].dropna(axis=0, how="all")
-        
-        
-        self.or_space_prog_lower = or_sheet_space_lower.loc["Odds ratios for optimal birth spacing by program - lower"]
-        self.or_space_prog_upper = or_sheet_space_upper.loc["Odds ratios for optimal birth spacing by program - upper"]
-        
-        or_sheet = utils.read_sheet(self.spreadsheet, "Odds ratios", [0, 1], skiprows=[i for i in chain(range(0, 1), range(16, 64))]).dropna(axis=1, how="all")
-        self.this_or_orig = or_sheet.loc["Condition"]
-        
-        self.wasting_or_orig = or_sheet.loc["Wasting"]
-        
-        self.anem_or_orig = or_sheet.loc["Anaemia"]
-        
-        self.or_stunting_prog_orig = or_sheet.loc["By program"].dropna(axis=0, how="all")
-        
-        self.or_bf_prog_orig = or_sheet.loc["Odds ratios for correct breastfeeding by program"].dropna(axis=0, how="all")
-       
-        or_sheet_space = utils.read_sheet(self.spreadsheet, "Odds ratios", [0, 1], skiprows=[i for i in chain(range(0, 18), range(20, 64))]).dropna(axis=1, how="all")
-        self.or_space_prog_orig = or_sheet_space.loc["Odds ratios for optimal birth spacing by program"]
-        
-    

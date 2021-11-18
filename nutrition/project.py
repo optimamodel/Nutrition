@@ -152,8 +152,8 @@ class Project(object):
                 self.storeinputs(inputspath=inputspath, country=country, region=region, name=name)
 
         # Optionally (but almost always) use these to make a model (do not do if blank sheets).
-
-        dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self, resampling=resampling)
+        databook = self.inputsheet(name).pandas()
+        dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, databook=databook, resampling=resampling)
         self.datasets[name] = dataset
         dataset.name = name
         self.add_model(name, growth=growth)  # add model associated with the dataset or datasets
@@ -344,8 +344,8 @@ class Project(object):
         pops = dataset.pops
         prog_info = dataset.prog_info
         t = dataset.t
-        demo_data = dataset.demo_data
-        model = Model(pops, prog_info, demo_data, t, growth=growth)
+        demo_data = dataset.demographic_data
+        model = Model(pops, prog_info, demographic_data, t, growth=growth)
         self.add(name=name, item=model, what="model")
         # Loop over all Scens and create a new default scenario for any that depend on the dataset which has been reloaded.
         # for scen_name in self.scens.keys():  # Loop over all Scen keys in the project
@@ -499,7 +499,7 @@ class Project(object):
                 pops = dataset.pops
                 prog_info = dataset.prog_info
                 t = dataset.t
-                sampled_data = dataset.demo_data
+                sampled_data = dataset.demographic_data
                 model = Model(pops, prog_info, sampled_data, t, enforce_constraints_year=scen.enforce_constraints_year, growth=scen.growth)
             
                 
