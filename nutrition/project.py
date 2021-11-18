@@ -512,7 +512,8 @@ class Project(object):
         results = []
         for scen in self.scens.values():
             if scen.active:
-                results += self.run_scen(scen, n_samples = n_samples)
+                results += self.run_scen(scen, n_samples = 0) #best estimate
+                results += self.run_scen(scen, n_samples = n_samples) #actual samples
                 
         self.add_result(results, name="scens")
 
@@ -590,7 +591,7 @@ class Project(object):
 
     def plot(self, key=-1, toplot=None, optim=False, geo=False, save_plots_folder=None):
         figs = make_plots(self.result(key), toplot=toplot, optim=optim, geo=geo)
-        if save_plots_folder:
+        if figs and save_plots_folder:
             save_figs(figs, path=save_plots_folder)
         return figs
 

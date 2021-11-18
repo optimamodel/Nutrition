@@ -3,7 +3,7 @@ from .utils import default_trackers, pretty_labels
 import numpy as np
 import math as mt
 
-resampled_key_str = " resampled__#" #constant string imported elsewhere
+resampled_key_str = " __resampled__#" #constant string imported elsewhere
 
 
 
