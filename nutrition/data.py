@@ -1023,47 +1023,47 @@ class Dataset(object):
         # Replacing with original data and store in required dictionary formats
         
         # stunting
-        rr = new.data_replace(uncert.rr_st_orig, new.rr_st).to_dict()
+        rr = new.data_replace(new.uncert.rr_st_orig, new.rr_st).to_dict()
         new.rr_death["Stunting"] = new.make_dict2(rr)
         # wasting
-        rr = new.data_replace(uncert.rr_ws_orig, new.rr_ws).to_dict()
+        rr = new.data_replace(new.uncert.rr_ws_orig, new.rr_ws).to_dict()
         new.rr_death["Wasting"] = new.make_dict2(rr)
         # anaemia
-        rr = new.data_replace(uncert.rr_an_orig, new.rr_an).to_dict()
+        rr = new.data_replace(new.uncert.rr_an_orig, new.rr_an).to_dict()
         new.rr_death["Anaemia"] = new.make_dict2(rr)
         # currently no impact on mortality for anaemia
         new.rr_death["Anaemia"].update({age: {cat: {"Diarrhoea": 1} for cat in new.settings.anaemia_list} for age in new.settings.child_ages})
         # breastfeeding
-        rr = new.data_replace(uncert.rr_bf_orig, new.rr_bf).to_dict()
+        rr = new.data_replace(new.uncert.rr_bf_orig, new.rr_bf).to_dict()
         new.rr_death["Breastfeeding"] = new.make_dict2(rr)
         # diarrhoea
-        rr = new.data_replace(uncert.rr_diar_orig, new.rr_diar).to_dict()
+        rr = new.data_replace(new.uncert.rr_diar_orig, new.rr_diar).to_dict()
         new.rr_dia = new.make_dict3(rr)
         
         # odd ratios
-        this_or = new.data_replace(uncert.this_or_orig, new.stun_or).to_dict("index")
+        this_or = new.data_replace(new.uncert.this_or_orig, new.stun_or).to_dict("index")
         new.or_cond["Stunting"] = sc.odict()
         new.or_cond["Stunting"]["Prev stunting"] = this_or["Given previous stunting (HAZ < -2 in previous age band)"]
         new.or_cond["Stunting"]["Diarrhoea"] = this_or["Diarrhoea (per additional episode)"]
         
-        wasting_or = new.data_replace(uncert.wasting_or_orig, new.wast_or)
+        wasting_or = new.data_replace(new.uncert.wasting_or_orig, new.wast_or)
         new.or_cond["SAM"] = sc.odict()
         new.or_cond["SAM"]["Diarrhoea"] = wasting_or.to_dict("index")["For SAM per additional episode of diarrhoea"]
         new.or_cond["MAM"] = sc.odict()
         new.or_cond["MAM"]["Diarrhoea"] = wasting_or.to_dict("index")["For MAM per additional episode of diarrhoea"]
         
-        anem_or = new.data_replace(uncert.anem_or_orig, new.ane_or)
+        anem_or = new.data_replace(new.uncert.anem_or_orig, new.ane_or)
         new.or_cond["Anaemia"] = sc.odict()
         new.or_cond["Anaemia"]["Severe diarrhoea"] = sc.odict()
         new.or_cond["Anaemia"]["Severe diarrhoea"] = anem_or.to_dict("index")["For anaemia per additional episode of severe diarrhoea"]
         
-        new.or_stunting_prog = new.data_replace(uncert.or_stunting_prog_orig, new.or_stunting_prog).to_dict("index")
+        new.or_stunting_prog = new.data_replace(new.uncert.or_stunting_prog_orig, new.or_stunting_prog).to_dict("index")
         
-        new.or_bf_prog = new.data_replace(uncert.or_bf_prog_orig, new.or_bf_prog).to_dict("index")
+        new.or_bf_prog = new.data_replace(new.uncert.or_bf_prog_orig, new.or_bf_prog).to_dict("index")
         
-        new.or_space_prog = new.data_replace(uncert.or_space_prog_orig, new.or_space_prog).to_dict("index")
+        new.or_space_prog = new.data_replace(new.uncert.or_space_prog_orig, new.or_space_prog).to_dict("index")
         
-        progs = new.data_replace(uncert.progs_orig, new.bo_progs).to_dict("index")
+        progs = new.data_replace(new.uncert.progs_orig, new.bo_progs).to_dict("index")
         newprogs = sc.odict()
         for program in progs.keys():
             if not newprogs.get(program[0]):
@@ -1071,32 +1071,32 @@ class Dataset(object):
             newprogs[program[0]][program[1]] = progs[program]
         new.bo_progs = newprogs
         
-        new.rr_anaem_prog = new.data_replace(uncert.rr_anaem_prog, new.rr_anaem_prog).to_dict(orient="index")
-        new.or_anaem_prog = new.data_replace(uncert.or_anaem_prog, new.or_anaem_prog).to_dict(orient="index")
+        new.rr_anaem_prog = new.data_replace(new.uncert.rr_anaem_prog, new.rr_anaem_prog).to_dict(orient="index")
+        new.or_anaem_prog = new.data_replace(new.uncert.or_anaem_prog, new.or_anaem_prog).to_dict(orient="index")
         
         
-        treatsam = new.data_replace(uncert.treatsam_orig, new.treatsam).to_dict(orient="index")
-        manman = new.data_replace(uncert.manman_orig, new.manman).to_dict(orient="index")
+        treatsam = new.data_replace(new.uncert.treatsam_orig, new.treatsam).to_dict(orient="index")
+        manman = new.data_replace(new.uncert.manman_orig, new.manman).to_dict(orient="index")
         new.or_wasting_prog["SAM"] = treatsam
         if new.man_mam:
             new.or_wasting_prog["MAM"] = {"Treatment of SAM": manman["Management of MAM"]}
             
-        new.child_progs = new.data_replace(uncert.child_progs_orig, new.child_progs).to_dict()
+        new.child_progs = new.data_replace(new.uncert.child_progs_orig, new.child_progs).to_dict()
         
-        new.pw_progs = new.data_replace(uncert.pw_progs_orig, new.pw_progs).to_dict()
+        new.pw_progs = new.data_replace(new.uncert.pw_progs_orig, new.pw_progs).to_dict()
         
         
-        ors = new.data_replace(uncert.ors_orig, new.ors).to_dict("index")
+        ors = new.data_replace(new.uncert.ors_orig, new.ors).to_dict("index")
         new.or_cond_bo["Stunting"] = ors["Stunting (HAZ-score < -2)"]
         new.or_cond_bo["MAM"] = ors["MAM (WHZ-score between -3 and -2)"]
         new.or_cond_bo["SAM"] = ors["SAM (WHZ-score < -3)"]
        
-        new.rr_space_bo = new.data_replace(uncert.rr_space_bo_orig, new.rr_space_bo).to_dict("index")
+        new.rr_space_bo = new.data_replace(new.uncert.rr_space_bo_orig, new.rr_space_bo).to_dict("index")
         
-        new.rr_death["Birth outcomes"] = new.data_replace(uncert.rr_death_orig, new.rr_death_bo).to_dict()
+        new.rr_death["Birth outcomes"] = new.data_replace(new.uncert.rr_death_orig, new.rr_death_bo).to_dict()
         
-        new.bf_effects = new.data_replace(uncert.bf_effects_orig, new.bf_effects)
-        new.stunt_effects = new.data_replace(uncert.stunt_effects_orig, new.stunt_effects)
+        new.bf_effects = new.data_replace(new.uncert.bf_effects_orig, new.bf_effects)
+        new.stunt_effects = new.data_replace(new.uncert.stunt_effects_orig, new.stunt_effects)
 
         return new 
     

@@ -57,7 +57,7 @@ def parallel_optim(region, path=None, n_runs=2):
     }
 
     p2.add_optims(Optim(**kwargs))
-    p2.run_optim(maxiter=50, swarmsize=0, maxtime=1, parallel=False, runbalanced=False, n_runs=n_runs)
+    p2.run_optim(maxiter=50, swarmsize=0, maxtime=1, parallel=True, runbalanced=False, n_runs=n_runs)
     p2.reduce_results()
     return p2
 
