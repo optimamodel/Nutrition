@@ -530,7 +530,7 @@ class Project(object):
 
         return results
 
-    def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=None, maxtime=300, parallel=True, dosave=True, runbaseline=True, runbalanced=False, n_runs=1):
+    def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=None, maxtime=300, parallel=True, dosave=True, runbaseline=True, runbalanced=False, n_samples=0):
         if optim is not None:
             self.add_optims(optim)
             key = optim.name  # this to handle parallel calls of this function
@@ -557,21 +557,21 @@ class Project(object):
         
         results += opt_results
         
-        if n_runs> 1: #we also need to sample the baseline and each of the optimized results NOTE: base_run = False as we already ran the baseline
-            results += self.run_scen(scen = base_scen, n_samples = n_runs - 1)
+        if n_samples >= 1: #we also need to sample the baseline and each of the optimized results NOTE: base_run = False as we already ran the baseline
+            results += self.run_scen(scen = base_scen, n_samples = n_samples)
             
             for opt_result in opt_results:
                 optim_alloc = opt_result.get_allocs()
                 scen_name = opt_result.name
                 scen = Scen(name=scen_name, model_name=optim.model_name, scen_type="budget", progvals=optim_alloc, enforce_constraints_year=0, growth=opt_result.growth)
                 
-                results += self.run_scen(scen = scen, n_samples = n_runs - 1)
+                results += self.run_scen(scen = scen, n_samples = n_samples)
                 
         if dosave:
             self.add_result(results, name=optim.name)
         return results
   
-    def run_geo(self, geo=None, key=-1, maxiter=20, swarmsize=None, maxtime=400, dosave=True, parallel=False, runbalanced=False, n_runs=1):
+    def run_geo(self, geo=None, key=-1, maxiter=20, swarmsize=None, maxtime=400, dosave=True, parallel=False, runbalanced=False, n_samples=0):
         """Regions cannot be parallelised because daemon processes cannot have children.
         Two options: Either can parallelize regions and not the budget or run
         regions in series while parallelising each budget multiple."""
@@ -581,7 +581,7 @@ class Project(object):
             key = geo.name  # this to handle parallel calls of this function
         geo = self.geo(key)
         
-        results = geo.run_geo(self, maxiter, swarmsize, maxtime, parallel, runbalanced=runbalanced, n_runs=n_runs)     
+        results = geo.run_geo(self, maxiter, swarmsize, maxtime, parallel, runbalanced=runbalanced, n_samples=n_samples)     
                    
         if dosave:
             self.add_result(results, name="geospatial")

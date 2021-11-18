@@ -14,7 +14,7 @@ from functools import partial
 input_path = "Databooks/new_format/"
 output_path = "Outputs/"
 region_list = ["DOUALA"]
-n_runs = 1
+n_samples = 10
 doplot = True
 
 """" If the model is run for a single run using 'p.run_scens()' then set resampling=False
@@ -32,7 +32,7 @@ kwargs2 = {"name": "IYCF at $10 mil", "model_name": "eg", "scen_type": "budget",
 kwargs3 = {"name": "IYCF", "model_name": "eg", "scen_type": "coverage", "progvals": sc.odict({"IYCF 1": [0.6, 0.2, 0.5, 0.95, 0.8]})}
 
 
-def parallel_optim(region, path=None, n_runs=2):
+def parallel_optim(region, path=None, n_samples=2):
     """Define optimization scenario"""
     p2 = Project("Cameroon")
     p2.load_data(inputspath=path + region + "_input.xlsx", name=region, resampling=False)
@@ -57,26 +57,25 @@ def parallel_optim(region, path=None, n_runs=2):
     }
 
     p2.add_optims(Optim(**kwargs))
-    p2.run_optim(maxiter=50, swarmsize=0, maxtime=1, parallel=True, runbalanced=False, n_runs=n_runs)
+    p2.run_optim(maxiter=50, swarmsize=0, maxtime=1, parallel=True, runbalanced=False, n_samples=n_samples)
     p2.reduce_results()
     return p2
 
 
 # """run non optimization scenarios"""
-# scen_list = nu.make_scens([kwargs1])
-# p1.add_scens(scen_list)
-# p1.run_scens(n_runs=n_runs)
-# p1.write_results(filename=output_path + 'non_optimized.xlsx')
-# p1.reduce_results()
+scen_list = nu.make_scens([kwargs1])
+p1.run_scens(scens = scen_list, n_samples=n_samples)
+p1.write_results(filename=output_path + 'non_optimized.xlsx')
+p1.reduce_results()
 
-# p1.plot(optim=False, save_plots_folder=output_path)
-# #if doplot:
-#    #p1.plot()
+p1.plot(optim=False, save_plots_folder=output_path)
+#if doplot:
+    #p1.plot()
 
 """run optimization scenarios"""
 if __name__ == "__main__":
 
-    run_optim = partial(parallel_optim, path=input_path, n_runs=5)
+    run_optim = partial(parallel_optim, path=input_path, n_samples=n_samples)
     results = []
 
     # proj_list = run_parallel(run_optim, region_list, num_procs=3)
