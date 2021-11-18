@@ -2,14 +2,15 @@ import numpy as np
 import sciris as sc
 from . import settings
 from .utils import default_trackers, restratify
+from .data import Dataset
 
 
 class Model(sc.prettyobj):
-    def __init__(self, pops, prog_info, demo_data, t=None, adjust_cov=False, timeTrends=False, growth=False, enforce_constraints_year=0, pop_sizes=dict()):
-        self.pops = sc.dcp(pops)
+    def __init__(self, dataset: Dataset, t=None, adjust_cov=False, timeTrends=False, growth=False, enforce_constraints_year=0, pop_sizes=dict()):
+        self.pops = sc.dcp(dataset.pops)
         self.children, self.pw, self.nonpw = self.pops
-        self.prog_info = sc.dcp(prog_info)
-        self.demo_data = sc.dcp(demo_data)
+        self.prog_info = sc.dcp(dataset.prog_info)
+        self.demo_data = sc.dcp(dataset.demographic_data)
         self.ss = settings.Settings()
 
         self.t = t if t else self.ss.t
@@ -17,7 +18,6 @@ class Model(sc.prettyobj):
         self.n_years = len(self.all_years)
         self.sim_years = self.all_years[1:]
         self.year = self.all_years[0]
-        self.econo_data = self.demo_data
         self.pop_sizes = pop_sizes
 
         # this is for extracting baseline coverage/spending in gui (before prog_set set)
@@ -29,12 +29,12 @@ class Model(sc.prettyobj):
         self.enforce_constraints_year = enforce_constraints_year
 
         # For economic loss
-        self.cost_wasting = self.econo_data.cost_wasting
-        self.cost_stunting = self.econo_data.cost_stunting
-        self.cost_child_death = self.econo_data.cost_child_death
-        self.cost_pw_death = self.econo_data.cost_pw_death
-        self.cost_child_anaemic = self.econo_data.cost_child_anaemic
-        self.cost_pw_anaemic = self.econo_data.cost_pw_anaemic
+        self.cost_wasting = self.demo_data.cost_wasting
+        self.cost_stunting = self.demo_data.cost_stunting
+        self.cost_child_death = self.demo_data.cost_child_death
+        self.cost_pw_death = self.demo_data.cost_pw_death
+        self.cost_child_anaemic = self.demo_data.cost_child_anaemic
+        self.cost_pw_anaemic = self.demo_data.cost_pw_anaemic
 
     def setup(self, scen, setcovs=True, restrictcovs=True):
         """Sets scenario-specific parameters within the model.

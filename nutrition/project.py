@@ -341,11 +341,8 @@ class Project(object):
         For the same input data, one model instance is used for all scenarios.
         """
         dataset = self.dataset(name)
-        pops = dataset.pops
-        prog_info = dataset.prog_info
         t = dataset.t
-        demo_data = dataset.demographic_data
-        model = Model(pops, prog_info, demo_data, t, growth=growth)
+        model = Model(dataset, t, growth=growth)
         self.add(name=name, item=model, what="model")
         # Loop over all Scens and create a new default scenario for any that depend on the dataset which has been reloaded.
         # for scen_name in self.scens.keys():  # Loop over all Scen keys in the project
@@ -471,7 +468,8 @@ class Project(object):
         self.reduced_results = reduce_results(results, point_estimate=point_estimate, bounds=bounds, stddevs=stddevs, quantiles=quantiles, keep_raw=keep_raw)
         return
 
-    def run_scen(self, scen=None, base_run=True, n_sampled_runs=0):
+
+    def run_scen(self, scen, n_samples=0):
         """Function for running a single scenario that may or may not be saved in P.scens
         NOTE that the sampling needs to be done as part of the Project object because it relies on access to the data
         NOTE this does not add the scenario to P.scens or save the results to the project
@@ -481,56 +479,56 @@ class Project(object):
         :param n_sampled_runs: number of times to run with sampling
         :return a list of Results
         """
+
         results = []
         if (scen.model_name is None) or (scen.model_name not in self.datasets.keys()):
             raise Exception("Could not find valid dataset for %s.  Edit the scenario and change the dataset" % scen.name)
-            
-        dataset = Dataset(country=None, region=None, name=None, fromfile=False, doload=True, project=self, resampling=True)
-        for i in range(0 if base_run else 1, n_sampled_runs+1):
-            # print (f'Sample {i} for scen {scen.name}')
-            if i == 0: #base_run
-                model = sc.dcp(self.model(scen.model_name))
-                model.growth = scen.growth
-                model.enforce_constraints_year = scen.enforce_constraints_year
-                result_name = scen.name
-            else: #sampled run
-                result_name = scen.name + " resampled__#" + str(i)
-                #dataset = Dataset(country=None, region=None, name=None, fromfile=False, doload=True, project=self, resampling=True)
-                sample = dataset.resample()
-                pops = sample.pops
-                prog_info = sample.prog_info
-                t = sample.t
-                sampled_data = sample.demographic_data
-                model = Model(pops, prog_info, sampled_data, t, enforce_constraints_year=scen.enforce_constraints_year, growth=scen.growth)
-            
-                
+
+        def _add_excess_budget(scen, model):
+            # unclear why this is needed?
             if "Excess budget not allocated" in scen.prog_set: #add a dummy program to the model
                 excess_spend = {"name": "Excess budget not allocated", "all_years": model.prog_info.all_years, "prog_data": add_dummy_prog_data(model.prog_info, "Excess budget not allocated")}
                 model.prog_info.add_prog(excess_spend, model.pops)
                 model.prog_info.prog_data = excess_spend["prog_data"]
-                
+
+        dataset = self.dataset(scen.model_name) # WARNING - assumes that model names are always the same as dataset names
+
+        if n_samples == 0:
+            model = Model(dataset, dataset.t, enforce_constraints_year=scen.enforce_constraints_year, growth=scen.growth)
+            result_name = scen.name
+            _add_excess_budget(scen, model)
             res = run_scen(scen, model, name=result_name)
             results.append(res)
-        
+        else:
+            for i in range(n_samples):
+                model = Model(dataset.resample(), dataset.t, enforce_constraints_year=scen.enforce_constraints_year, growth=scen.growth)
+                result_name = scen.name + " resampled__#" + str(i)
+                _add_excess_budget(scen, model)
+                res = run_scen(scen, model, name=result_name)
+                results.append(res)
+
         return results
 
-    def run_scens(self, scens=None, n_runs=1):
+
+    def run_scens(self, scens=None, n_samples=0):
         """Function for running scenarios
         - If scens is specified, they are added to self.scens
         - The first run happens with default parameters (point estimates)
         - The subsequent runs consider resampling
 
         """
-        self.n_runs = n_runs
-        results = []
+
         if scens is not None:
             self.add_scens(scens)
+
+        results = []
         for scen in self.scens.values():
             if scen.active:
-                results += self.run_scen(scen, base_run = True, n_sampled_runs = n_runs - 1)
+                results += self.run_scen(scen, n_samples = 0)
                 
         self.add_result(results, name="scens")
-        return None
+
+        return results
 
     def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=None, maxtime=300, parallel=True, dosave=True, runbaseline=True, runbalanced=False, n_runs=1):
         if optim is not None:
@@ -646,9 +644,9 @@ def demo(scens=False, optims=False, geos=False):
     # Create project and load in demo databook spreadsheet file into 'demo' Spreadsheet, Dataset, and Model.
     P = Project(name)
     P.load_data(country, region, name="demo", resampling=False)
-    P.load_data(country, "region1", name="demoregion1", resampling=False)
-    P.load_data(country, "region2", name="demoregion2", resampling=False)
-    P.load_data(country, "region3", name="demoregion3", resampling=False)
+    # P.load_data(country, "region1", name="demoregion1", resampling=False)
+    # P.load_data(country, "region2", name="demoregion2", resampling=False)
+    # P.load_data(country, "region3", name="demoregion3", resampling=False)
 
     # Create demo scenarios and optimizations
     if scens:
