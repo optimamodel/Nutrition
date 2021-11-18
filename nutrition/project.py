@@ -516,7 +516,8 @@ class Project(object):
         for scen in self.scens.values():
             if scen.active:
                 results += self.run_scen(scen, n_samples = 0) #best estimate (no random seed relevant)
-                results += self.run_scen(scen, n_samples = n_samples, seed=seed) #actual samples
+                if n_samples > 0:
+                    results += self.run_scen(scen, n_samples = n_samples, seed=seed) #actual samples
                 
         self.add_result(results, name="scens")
 
