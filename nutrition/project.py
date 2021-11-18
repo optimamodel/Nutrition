@@ -13,7 +13,7 @@ from .model import Model
 from .scenarios import Scen, run_scen, convert_scen, make_default_scen
 from .optimization import Optim
 from .geospatial import Geospatial
-from .results import write_results
+from .results import write_results, resampled_key_str
 from .plotting import make_plots, get_costeff, plot_costcurve, save_figs
 from .demo import demo_scens, demo_optims, demo_geos
 from . import settings
@@ -491,7 +491,7 @@ class Project(object):
         else:
             for i in range(n_samples):
                 model = Model(dataset.resample(), dataset.t, enforce_constraints_year=scen.enforce_constraints_year, growth=scen.growth)
-                result_name = scen.name + " resampled__#" + str(i)
+                result_name = scen.name + resampled_key_str + str(i)
                 _add_excess_budget(scen, model)
                 res = run_scen(scen, model, name=result_name)
                 results.append(res)

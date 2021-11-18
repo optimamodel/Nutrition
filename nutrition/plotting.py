@@ -5,7 +5,7 @@ import sciris as sc
 from . import utils
 from . import programs
 from .scenarios import run_scen, make_scens, make_default_scen
-from .results import reduce_results
+from .results import reduce_results, resampled_key_str
 import seaborn as sns
 
 with sns.axes_style("white"):
@@ -591,7 +591,7 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool):
     :return a list of figures
     """
     
-    res_list = [res for res in results if "resampled__#" not in res.name]
+    res_list = [res for res in results if resampled_key_str not in res.name]
 
     # Initialize
     width = 1.0 / (len(res_list) + 1)

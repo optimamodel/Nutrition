@@ -3,6 +3,8 @@ from .utils import default_trackers, pretty_labels
 import numpy as np
 import math as mt
 
+resampled_key_str = " resampled__#" #constant string imported elsewhere
+
 
 
 class ScenResult(sc.prettyobj):
@@ -124,9 +126,7 @@ def reduce_results(results, point_estimate:str="best", bounds:str = "quantiles",
     :param keep_raw: also keep all of the individual sampled results (troubleshooting or alternative plot methods might use this)
     
     :return results dict of the key outcomes for each main result, not the full results
-    """
-    sampled_pattern = " resampled__#" #must match project run_scen pattern (should be in universal constants somewhere instead)
-    
+    """    
     years = results[0].years
     estimate_keys = ["point", "low", "high"]
     outcomes = default_trackers()
@@ -147,11 +147,11 @@ def reduce_results(results, point_estimate:str="best", bounds:str = "quantiles",
     res_unc = {} #this will be the returned results with uncertainty and without sampled results
 
     for res in results:
-        if sampled_pattern not in res.name: #e.g. it's a "real" point estimate result
+        if resampled_key_str not in res.name: #e.g. it's a "real" point estimate result
             # print ('Evaluating', res.name)
             res_unc[res.name] = {o: {es: np.zeros(len(years)) for es in estimate_keys} for o in outcomes}
             
-            sampled_results = [sr for sr in results if res.name + sampled_pattern in sr.name]
+            sampled_results = [sr for sr in results if res.name + resampled_key_str in sr.name]
             n_sampled_runs = len(sampled_results)
 
 
