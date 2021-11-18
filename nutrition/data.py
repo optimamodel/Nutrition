@@ -1406,38 +1406,95 @@ class Dataset(object):
 
 
 
-class UncertaintyParas(object):
+class UncertaintyParams(object):
     """ " This is used to store upper and lower boundaries of uncertain parameters read from the databook
     A random value is generated for each selected parameter using uniform distribution and to generate a random for each scenario run"""
 
     def __init__(self, default_data, input_data):
         self.settings = settings.Settings()
+        self.impacted_pop = None
+        self.prog_areas = sc.odict()
+        self.pop_areas = sc.odict()
         self.rr_dia = None
         self.or_stunting_prog = None
         self.bo_progs = None
-        self.rr_anaem_prog = None
-        self.or_anaem_prog = None
-        self.child_progs = None
-        self.pw_progs = None
+        self.progs_lower = None
+        self.progs_upper = None
+        self.progs_orig = None
+        self.rr_anaem_prog_lower = None
+        self.rr_anaem_prog_upper = None
+        self.rr_anaem_prog_orig = None
+        self.or_anaem_prog_lower = None
+        self.or_anaem_prog_upper = None
+        self.or_anaem_prog_orig = None
+        self.child_progs_lower = None
+        self.child_progs_upper = None
+        self.child_progs_orig = None
+        self.pw_progs_lower = None
+        self.pw_progs_upper = None
+        self.pw_progs_orig = None
         self.rr_space_bo = None
         self.or_space_prog = None
         self.or_bf_prog = None
         self.man_mam = False
-        self.treatsam = None
-        self.manman = None
-        self.bf_effects = None
-        self.stunt_effects = None
-        self.ors = None
-        self.rr_space_bo = None
-        self.rr_death_bo = None
-        self.rr_st = None
-        self.rr_ws = None
-        self.rr_an = None
-        self.rr_bf = None
-        self.rr_diar = None
+        self.treatsam_lower = None
+        self.treatsam_upper = None
+        self.treatsam_orig = None
+        self.manman_lower = None
+        self.manman_upper = None
+        self.manman_orig = None
+        self.bf_effects_lower = None
+        self.bf_effects_upper = None
+        self.bf_effects_orig = None
+        self.stunt_effects_lower = None
+        self.stunt_effects_upper = None
+        self.stunt_effects_orig = None
+        self.ors_lower = None
+        self.ors_upper = None
+        self.ors_orig = None
+        self.rr_space_bo_lower = None
+        self.rr_space_bo_upper = None
+        self.rr_space_bo_orig = None
+        self.rr_death_bo_lower = None
+        self.rr_death_bo_upper = None
+        self.rr_death_bo_orig = None
+        self.rr_st_lower = None
+        self.rr_st_upper = None
+        self.rr_st_orig = None
+        self.rr_ws_lower = None
+        self.rr_ws_upper = None
+        self.rr_ws_orig = None
+        self.rr_an_lower = None
+        self.rr_an_upper = None
+        self.rr_an_orig = None
+        self.rr_bf_lower = None
+        self.rr_bf_upper = None
+        self.rr_bf_orig = None
+        self.rr_diar_lower = None
+        self.rr_diar_upper = None
+        self.rr_diar_orig = None
         self.stun_or = None
         self.wast_or = None
         self.ane_or = None
+        self.stun_or_lower = None
+        self.stun_or_upper = None
+        self.wast_or_lower = None
+        self.wast_or_upper = None
+        self.ane_or_lower = None
+        self.ane_or_upper = None
+        self.or_stunting_prog_lower = None
+        self.or_bf_prog_lower = None
+        self.or_stunting_prog_upper = None
+        self.or_bf_prog_upper = None
+        self.or_space_prog_lower = None
+        self.or_space_prog_upper = None
+        self.this_or_orig = None
+        self.wasting_or_orig = None
+        self.anem_or_orig = None
+        self.or_stunting_prog_orig = None
+        self.or_bf_prog_orig = None
+        self.or_space_prog_orig = None
+        self.rr_death = sc.odict()
         # read data
         self.spreadsheet = default_data
         self.input_data = input_data
@@ -1460,138 +1517,206 @@ class UncertaintyParas(object):
         self.set_bo_risks()
         self.set_relative_risks()
         self.set_odds_ratios()
+        
+    def extend_treatsam(self):
+        treatsam = self.input_data.parse(sheet_name="Treatment of SAM")
+        add_man = treatsam.iloc[0]["Add extension"]
+        if pandas.notnull(add_man):
+            self.man_mam = True
 
-    # function to generate data matrix using unifrom distribution with lower and upper input of the each data cell
-    def make_random(self, lb, ub):
-        """ " This function generates a random value considering unifrom distribution
-        Inputs: upper and lower boundaries"""
-        n = len(lb[0])
-        m = len(lb[:, 0])
-        d = np.zeros([m, n])
-        for i in range(0, m):
-            for j in range(0, n):
-                d[i][j] = np.random.uniform(lb[i][j], ub[i][j], 1)
-        return d
+    def impact_pop(self):
+        sheet = utils.read_sheet(self.spreadsheet, "Programs impacted population", [0, 1])
+        impacted = sc.odict()
+        for pop in ["Children", "Pregnant women", "Non-pregnant WRA", "General population"]:
+            impacted.update(sheet.loc[pop].to_dict(orient="index"))
+        self.impacted_pop = impacted
 
+    def prog_risks(self):
+        areas = utils.read_sheet(self.spreadsheet, "Program risk areas", [0])
+        booleanFrame = areas.isnull()
+        for program, areas in booleanFrame.iterrows():
+            for risk, value in areas.items():
+                if self.prog_areas.get(risk) is None:
+                    self.prog_areas[risk] = []
+                if not value:
+                    self.prog_areas[risk].append(program)
+
+    def pop_risks(self):
+        areas = utils.read_sheet(self.spreadsheet, "Population risk areas", [0])
+        booleanFrame = areas.isnull()
+        for program, areas in booleanFrame.iterrows():
+            for risk, value in areas.items():
+                if self.pop_areas.get(risk) is None:
+                    self.pop_areas[risk] = []
+                if not value:
+                    self.pop_areas[risk].append(program)
+
+    
     def set_pw_progs(self):
-        pw_progs_lower = utils.read_sheet(self.spreadsheet, "Programs for PW", [0, 1, 2], skiprows=[i for i in chain(range(1, 10), range(16, 25))], to_odict=False).dropna(axis=1, how="all")
-        pw_progs_upper = utils.read_sheet(self.spreadsheet, "Programs for PW", [0, 1, 2], skiprows=[i for i in range(1, 19)], to_odict=False).dropna(axis=1, how="all")
-        self.pw_progs = self.make_random(pw_progs_lower.to_numpy(), pw_progs_upper.to_numpy())
-
+        self.pw_progs_lower = utils.read_sheet(self.spreadsheet, "Programs for PW", [0, 1, 2], skiprows=[i for i in chain(range(1, 10), range(16, 25))], to_odict=False).dropna(axis=1, how="all")
+        self.pw_progs_upper = utils.read_sheet(self.spreadsheet, "Programs for PW", [0, 1, 2], skiprows=[i for i in range(1, 19)], to_odict=False).dropna(axis=1, how="all")
+        
+        self.pw_progs_orig = utils.read_sheet(self.spreadsheet, "Programs for PW", [0, 1, 2], skiprows=[i for i in range(7, 25)]).dropna(axis=1, how="all")
+       
     def set_child_progs(self):
-        child_progs_lower = utils.read_sheet(self.spreadsheet, "Programs for children", [0, 1, 2], skiprows=[i for i in chain(range(1, 52), range(100, 152))]).dropna(axis=1, how="all")
-        child_progs_upper = utils.read_sheet(self.spreadsheet, "Programs for children", [0, 1, 2], skiprows=[i for i in range(1, 103)]).dropna(axis=1, how="all")
-        self.child_progs = self.make_random(child_progs_lower.to_numpy(), child_progs_upper.to_numpy())
+        self.child_progs_lower = utils.read_sheet(self.spreadsheet, "Programs for children", [0, 1, 2], skiprows=[i for i in chain(range(1, 52), range(100, 152))]).dropna(axis=1, how="all")
+        self.child_progs_upper = utils.read_sheet(self.spreadsheet, "Programs for children", [0, 1, 2], skiprows=[i for i in range(1, 103)]).dropna(axis=1, how="all")
+        
+        self.child_progs_orig = utils.read_sheet(self.spreadsheet, "Programs for children", [0, 1, 2], skiprows=[i for i in range(49, 151)]).dropna(axis=1, how="all")
+        
 
     def set_anaemia_progs(self):
         anaem_sheet_lower = utils.read_sheet(self.spreadsheet, "Programs anemia", [0, 1], skiprows=[i for i in chain(range(1, 24), range(43, 66))]).dropna(axis=1, how="all")
-        rr_anaem_prog_lower = anaem_sheet_lower.loc["Relative risks of anaemia when receiving intervention - lower"].dropna(axis=0, how="all")
-        or_anaem_prog_lower = anaem_sheet_lower.loc["Odds ratios of being anaemic when covered by intervention - lower"].dropna(axis=0, how="all")
+        self.rr_anaem_prog_lower = anaem_sheet_lower.loc["Relative risks of anaemia when receiving intervention - lower"].dropna(axis=0, how="all")
+        self.or_anaem_prog_lower = anaem_sheet_lower.loc["Odds ratios of being anaemic when covered by intervention - lower"].dropna(axis=0, how="all")
         anaem_sheet_upper = utils.read_sheet(self.spreadsheet, "Programs anemia", [0, 1], skiprows=[i for i in range(1, 46)]).dropna(axis=1, how="all")
-        rr_anaem_prog_upper = anaem_sheet_upper.loc["Relative risks of anaemia when receiving intervention - upper"].dropna(axis=0, how="all")
-        or_anaem_prog_upper = anaem_sheet_upper.loc["Odds ratios of being anaemic when covered by intervention - upper"].dropna(axis=0, how="all")
-        self.rr_anaem_prog = self.make_random(rr_anaem_prog_lower.to_numpy(), rr_anaem_prog_upper.to_numpy())
-        self.or_anaem_prog = self.make_random(or_anaem_prog_lower.to_numpy(), or_anaem_prog_upper.to_numpy())
+        self.rr_anaem_prog_upper = anaem_sheet_upper.loc["Relative risks of anaemia when receiving intervention - upper"].dropna(axis=0, how="all")
+        self.or_anaem_prog_upper = anaem_sheet_upper.loc["Odds ratios of being anaemic when covered by intervention - upper"].dropna(axis=0, how="all")
+        
+        anaem_sheet = utils.read_sheet(self.spreadsheet, "Programs anemia", [0, 1], skiprows=[i for i in range(22, 66)]).dropna(axis=1, how="all")
+        self.rr_anaem_prog_orig = anaem_sheet.loc["Relative risks of anaemia when receiving intervention"].dropna(axis=0, how="all")
+        self.or_anaem_prog_orig = anaem_sheet.loc["Odds ratios of being anaemic when covered by intervention"].dropna(axis=0, how="all")
+        
 
     def set_wasting_progs(self):
         wastingSheet_lower = utils.read_sheet(self.spreadsheet, "Programs wasting", [0, 1], skiprows=[i for i in chain(range(1, 8), range(12, 19))]).dropna(axis=1, how="all")
-        treatsam_lower = wastingSheet_lower.loc["Odds ratio of SAM when covered by program - lower"].dropna(axis=0, how="all")
-        manman_lower = wastingSheet_lower.loc["Odds ratio of MAM when covered by program - lower"].dropna(axis=0, how="all")
+        self.treatsam_lower = wastingSheet_lower.loc["Odds ratio of SAM when covered by program - lower"].dropna(axis=0, how="all")
+        self.manman_lower = wastingSheet_lower.loc["Odds ratio of MAM when covered by program - lower"].dropna(axis=0, how="all")
         wastingSheet_upper = utils.read_sheet(self.spreadsheet, "Programs wasting", [0, 1], skiprows=[i for i in range(1, 16)]).dropna(axis=1, how="all")
-        treatsam_upper = wastingSheet_upper.loc["Odds ratio of SAM when covered by program - upper"].dropna(axis=0, how="all")
-        manman_upper = wastingSheet_upper.loc["Odds ratio of MAM when covered by program - upper"].dropna(axis=0, how="all")
-        self.treatsam = self.make_random(treatsam_lower.to_numpy(), treatsam_upper.to_numpy())
-        self.manman = self.make_random(manman_lower.to_numpy(), manman_upper.to_numpy())
+        self.treatsam_upper = wastingSheet_upper.loc["Odds ratio of SAM when covered by program - upper"].dropna(axis=0, how="all")
+        self.manman_upper = wastingSheet_upper.loc["Odds ratio of MAM when covered by program - upper"].dropna(axis=0, how="all")
+        
+        wastingSheet = utils.read_sheet(self.spreadsheet, "Programs wasting", [0, 1], skiprows=[i for i in range(5, 19)]).dropna(axis=1, how="all")
+        self.treatsam_orig = wastingSheet.loc["Odds ratio of SAM when covered by program"].dropna(axis=0, how="all")
+        self.manman_orig = wastingSheet.loc["Odds ratio of MAM when covered by program"].dropna(axis=0, how="all")
+        
 
     def set_bo_progs(self):
-        progs_lower = utils.read_sheet(self.spreadsheet, "Programs birth outcomes", [0, 1], skiprows=[i for i in chain(range(1, 16), range(28, 43))]).dropna(axis=1, how="all")
-        progs_upper = utils.read_sheet(self.spreadsheet, "Programs birth outcomes", [0, 1], skiprows=[i for i in range(1, 31)]).dropna(axis=1, how="all")
-        self.bo_progs = self.make_random(progs_lower.to_numpy(), progs_upper.to_numpy())  # use prog[:] = UncertaintyParas.bo_progs in the DefaultParas class to replace
+        self.progs_lower = utils.read_sheet(self.spreadsheet, "Programs birth outcomes", [0, 1], skiprows=[i for i in chain(range(1, 16), range(28, 43))]).dropna(axis=1, how="all")
+        self.progs_upper = utils.read_sheet(self.spreadsheet, "Programs birth outcomes", [0, 1], skiprows=[i for i in range(1, 31)]).dropna(axis=1, how="all")
+        
+        self.progs_orig = utils.read_sheet(self.spreadsheet, "Programs birth outcomes", [0, 1], skiprows=[i for i in range(13, 43)]).dropna(axis=1, how="all")
+        
 
     def set_iycf_effects(self):
         effects_lower = utils.read_sheet(self.spreadsheet, "IYCF odds ratios", [0, 1, 2], skiprows=[i for i in chain(range(1, 54), range(104, 157))]).dropna(axis=1, how="all")
-        bf_effects_lower = effects_lower.loc["Odds ratio for correct breastfeeding - lower"].dropna(axis=0, how="all")
-        stunt_effects_lower = effects_lower.loc["Odds ratio for stunting - lower"].dropna(axis=0, how="all")
+        self.bf_effects_lower = effects_lower.loc["Odds ratio for correct breastfeeding - lower"].dropna(axis=0, how="all")
+        self.stunt_effects_lower = effects_lower.loc["Odds ratio for stunting - lower"].dropna(axis=0, how="all")
         effects_upper = utils.read_sheet(self.spreadsheet, "IYCF odds ratios", [0, 1, 2], skiprows=[i for i in range(1, 107)]).dropna(axis=1, how="all")
-        bf_effects_upper = effects_upper.loc["Odds ratio for correct breastfeeding - upper"].dropna(axis=0, how="all")
-        stunt_effects_upper = effects_upper.loc["Odds ratio for stunting - upper"].dropna(axis=0, how="all")
-        self.bf_effects = self.make_random(bf_effects_lower.to_numpy(), bf_effects_upper.to_numpy())
-        self.stunt_effects = self.make_random(stunt_effects_lower.to_numpy(), stunt_effects_upper.to_numpy())
+        self.bf_effects_upper = effects_upper.loc["Odds ratio for correct breastfeeding - upper"].dropna(axis=0, how="all")
+        self.stunt_effects_upper = effects_upper.loc["Odds ratio for stunting - upper"].dropna(axis=0, how="all")
+        
+        effects = utils.read_sheet(self.spreadsheet, "IYCF odds ratios", [0, 1, 2], skiprows=[i for i in range(51, 157)]).dropna(axis=1, how="all")
+        self.bf_effects_orig = effects.loc["Odds ratio for correct breastfeeding"].dropna(axis=0, how="all")
+        self.stunt_effects_orig = effects.loc["Odds ratio for stunting"].dropna(axis=0, how="all")
+        
+
 
     def set_bo_risks(self):
         bo_sheet_lower = utils.read_sheet(self.spreadsheet, "Birth outcome risks", [0, 1], skiprows=[i for i in chain(range(0, 28), range(52, 79))]).dropna(axis=1, how="all")
-        ors_lower = bo_sheet_lower.loc["Odds ratios for conditions - lower"]
+        self.ors_lower = bo_sheet_lower.loc["Odds ratios for conditions - lower"]
         bo_sheet_upper = utils.read_sheet(self.spreadsheet, "Birth outcome risks", [0, 1], skiprows=[i for i in range(0, 55)]).dropna(axis=1, how="all")
-        ors_upper = bo_sheet_upper.loc["Odds ratios for conditions - upper"].dropna(axis=0, how="all")
-        rr_space_bo_lower = bo_sheet_lower.loc["Relative risk by birth spacing - lower"].dropna(axis=0, how="all")
-        rr_death_bo_lower = bo_sheet_lower.loc["Relative risks of neonatal causes of death - lower"].dropna(axis=0, how="all")
-        rr_space_bo_upper = bo_sheet_upper.loc["Relative risk by birth spacing - upper"].dropna(axis=0, how="all")
-        rr_death_bo_upper = bo_sheet_upper.loc["Relative risks of neonatal causes of death - upper"].dropna(axis=0, how="all")
-        self.ors = self.make_random(ors_lower.to_numpy(), ors_upper.to_numpy())
-        self.rr_space_bo = self.make_random(rr_space_bo_lower.to_numpy(), rr_space_bo_upper.to_numpy())
-        self.rr_death_bo = self.make_random(rr_death_bo_lower.to_numpy(), rr_death_bo_upper.to_numpy())
+        self.ors_upper = bo_sheet_upper.loc["Odds ratios for conditions - upper"].dropna(axis=0, how="all")
+        self.rr_space_bo_lower = bo_sheet_lower.loc["Relative risk by birth spacing - lower"].dropna(axis=0, how="all")
+        self.rr_death_bo_lower = bo_sheet_lower.loc["Relative risks of neonatal causes of death - lower"].dropna(axis=0, how="all")
+        self.rr_space_bo_upper = bo_sheet_upper.loc["Relative risk by birth spacing - upper"].dropna(axis=0, how="all")
+        self.rr_death_bo_upper = bo_sheet_upper.loc["Relative risks of neonatal causes of death - upper"].dropna(axis=0, how="all")
+        
+        bo_sheet = utils.read_sheet(self.spreadsheet, "Birth outcome risks", [0, 1], skiprows=[i for i in chain(range(25, 81), range(0, 1))]).dropna(axis=1, how="all")
+        self.ors_orig = bo_sheet.loc["Odds ratios for conditions"].dropna(axis=0, how="all")
+        self.rr_space_bo_orig = bo_sheet.loc["Relative risk by birth spacing"].dropna(axis=0, how="all")
+        self.rr_death_bo_orig = bo_sheet.loc["Relative risks of neonatal causes of death"].dropna(axis=0, how="all")
+        
 
     def set_relative_risks(self):
         # lower values
         # stunting
         rr_st_sheet_lower = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 111), range(136, 328))]).dropna(axis=1, how="all")
-        rr_st_lower = rr_st_sheet_lower.loc["Stunting"]
+        self.rr_st_lower = rr_st_sheet_lower.loc["Stunting"]
         # wasting
         rr_ws_sheet_lower = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 138), range(163, 328))]).dropna(axis=1, how="all")
-        rr_ws_lower = rr_ws_sheet_lower.loc["Wasting"]
+        self.rr_ws_lower = rr_ws_sheet_lower.loc["Wasting"]
         # anaemia
         rr_an_sheet_lower = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 165), range(172, 328))]).dropna(axis=1, how="all")
-        rr_an_lower = rr_an_sheet_lower.loc["Anaemia"]
+        self.rr_an_lower = rr_an_sheet_lower.loc["Anaemia"]
         # breastfeeding
         rr_bf_sheet_lower = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 174), range(211, 328))]).dropna(axis=1, how="all")
-        rr_bf_lower = rr_bf_sheet_lower.loc["Breastfeeding"]
+        self.rr_bf_lower = rr_bf_sheet_lower.loc["Breastfeeding"]
         # diarrhoea
         rr_diar_sheet_lower = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 213), range(218, 328))]).dropna(axis=1, how="all")
-        rr_diar_lower = rr_diar_sheet_lower.loc["Diarrhoea"]
+        self.rr_diar_lower = rr_diar_sheet_lower.loc["Diarrhoea"]
         # upper values
         # stunting
         rr_st_sheet_upper = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 221), range(246, 328))]).dropna(axis=1, how="all")
-        rr_st_upper = rr_st_sheet_upper.loc["Stunting"]
+        self.rr_st_upper = rr_st_sheet_upper.loc["Stunting"]
         # wasting
         rr_ws_sheet_upper = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 248), range(273, 328))]).dropna(axis=1, how="all")
-        rr_ws_upper = rr_ws_sheet_upper.loc["Wasting"]
+        self.rr_ws_upper = rr_ws_sheet_upper.loc["Wasting"]
         # anaemia
         rr_an_sheet_upper = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 275), range(282, 328))]).dropna(axis=1, how="all")
-        rr_an_upper = rr_an_sheet_upper.loc["Anaemia"]
+        self.rr_an_upper = rr_an_sheet_upper.loc["Anaemia"]
         # breastfeeding
         rr_bf_sheet_upper = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 284), range(321, 328))]).dropna(axis=1, how="all")
-        rr_bf_upper = rr_bf_sheet_upper.loc["Breastfeeding"]
+        self.rr_bf_upper = rr_bf_sheet_upper.loc["Breastfeeding"]
         # diarrhoea
         rr_diar_sheet_upper = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in range(0, 323)]).dropna(axis=1, how="all")
-        rr_diar_upper = rr_diar_sheet_upper.loc["Diarrhoea"]
-        # converting to random values
-        self.rr_st = self.make_random(rr_st_lower.to_numpy(), rr_st_upper.to_numpy())  # stunting
-        self.rr_ws = self.make_random(rr_ws_lower.to_numpy(), rr_ws_upper.to_numpy())  # wasting
-        self.rr_an = self.make_random(rr_an_lower.to_numpy(), rr_an_upper.to_numpy())  # anaemia
-        self.rr_bf = self.make_random(rr_bf_lower.to_numpy(), rr_bf_upper.to_numpy())  # breastfeeding
-        self.rr_diar = self.make_random(rr_diar_lower.to_numpy(), rr_diar_upper.to_numpy())  # diarrhoea
-
+        self.rr_diar_upper = rr_diar_sheet_upper.loc["Diarrhoea"]
+        
+        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 1), range(26, 328))]).dropna(axis=1, how="all")
+        self.rr_st_orig = rr_sheet.loc["Stunting"]
+       
+        # wasting
+        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 28), range(53, 328))]).dropna(axis=1, how="all")
+        self.rr_ws_orig = rr_sheet.loc["Wasting"]
+        
+        # anaemia
+        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 55), range(62, 328))]).dropna(axis=1, how="all")
+        self.rr_an_orig = rr_sheet.loc["Anaemia"]
+       
+        # currently no impact on mortality for anaemia
+        #self.rr_death["Anaemia"].update({age: {cat: {"Diarrhoea": 1} for cat in self.settings.anaemia_list} for age in self.settings.child_ages})
+        # breastfeeding
+        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 64), range(101, 328))]).dropna(axis=1, how="all")
+        self.rr_bf_orig = rr_sheet.loc["Breastfeeding"]
+        
+        # diarrhoea
+        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 103), range(108, 328))]).dropna(axis=1, how="all")
+        self.rr_diar_orig = rr_sheet.loc["Diarrhoea"]
+        
+        
     def set_odds_ratios(self):
         or_sheet_cond_lower = utils.read_sheet(self.spreadsheet, "Odds ratios", [0, 1], skiprows=[i for i in chain(range(0, 23), range(38, 64))]).dropna(axis=1, how="all")
         or_sheet_cond_upper = utils.read_sheet(self.spreadsheet, "Odds ratios", [0, 1], skiprows=[i for i in chain(range(0, 45), range(60, 64))]).dropna(axis=1, how="all")
         or_sheet_space_lower = utils.read_sheet(self.spreadsheet, "Odds ratios", [0, 1], skiprows=[i for i in chain(range(0, 40), range(42, 64))]).dropna(axis=1, how="all")
         or_sheet_space_upper = utils.read_sheet(self.spreadsheet, "Odds ratios", [0, 1], skiprows=[i for i in range(0, 62)]).dropna(axis=1, how="all")
-        stun_or_lower = or_sheet_cond_lower.loc["Condition"].fillna(0)
-        stun_or_upper = or_sheet_cond_upper.loc["Condition"].fillna(0)
-        self.stun_or = self.make_random(stun_or_lower.to_numpy(), stun_or_upper.to_numpy())  # for stunting
-        wast_or_lower = or_sheet_cond_lower.loc["Wasting"]
-        wast_or_upper = or_sheet_cond_upper.loc["Wasting"]
-        self.wast_or = self.make_random(wast_or_lower.to_numpy(), wast_or_upper.to_numpy())  # for wasting
-        ane_or_lower = or_sheet_cond_lower.loc["Anaemia"]
-        ane_or_upper = or_sheet_cond_upper.loc["Anaemia"]
-        self.ane_or = self.make_random(ane_or_lower.to_numpy(), ane_or_upper.to_numpy())  # for anaemia
-        or_stunting_prog_lower = or_sheet_cond_lower.loc["By program - lower"].dropna(axis=0, how="all")
-        or_bf_prog_lower = or_sheet_cond_lower.loc["Odds ratios for correct breastfeeding by program - lower"].dropna(axis=0, how="all")
-        or_stunting_prog_upper = or_sheet_cond_upper.loc["By program - upper"].dropna(axis=0, how="all")
-        or_bf_prog_upper = or_sheet_cond_upper.loc["Odds ratios for correct breastfeeding by program - upper"].dropna(axis=0, how="all")
-        self.or_stunting_prog = self.make_random(or_stunting_prog_lower.to_numpy(), or_stunting_prog_upper.to_numpy())  # stunting programs
-        self.or_bf_prog = self.make_random(or_bf_prog_lower.to_numpy(), or_bf_prog_upper.to_numpy())  # breastfeeding programs
-        or_space_prog_lower = or_sheet_space_lower.loc["Odds ratios for optimal birth spacing by program - lower"]
-        or_space_prog_upper = or_sheet_space_upper.loc["Odds ratios for optimal birth spacing by program - upper"]
-        self.or_space_prog = self.make_random(or_space_prog_lower.to_numpy(), or_space_prog_upper.to_numpy())  # birth spacing programs
-
+        self.stun_or_lower = or_sheet_cond_lower.loc["Condition"].fillna(0)
+        self.stun_or_upper = or_sheet_cond_upper.loc["Condition"].fillna(0)
+        
+        self.wast_or_lower = or_sheet_cond_lower.loc["Wasting"]
+        self.wast_or_upper = or_sheet_cond_upper.loc["Wasting"]
+        
+        self.ane_or_lower = or_sheet_cond_lower.loc["Anaemia"]
+        self.ane_or_upper = or_sheet_cond_upper.loc["Anaemia"]
+        
+        self.or_stunting_prog_lower = or_sheet_cond_lower.loc["By program - lower"].dropna(axis=0, how="all")
+        self.or_bf_prog_lower = or_sheet_cond_lower.loc["Odds ratios for correct breastfeeding by program - lower"].dropna(axis=0, how="all")
+        self.or_stunting_prog_upper = or_sheet_cond_upper.loc["By program - upper"].dropna(axis=0, how="all")
+        self.or_bf_prog_upper = or_sheet_cond_upper.loc["Odds ratios for correct breastfeeding by program - upper"].dropna(axis=0, how="all")
+        
+        
+        self.or_space_prog_lower = or_sheet_space_lower.loc["Odds ratios for optimal birth spacing by program - lower"]
+        self.or_space_prog_upper = or_sheet_space_upper.loc["Odds ratios for optimal birth spacing by program - upper"]
+        
+        or_sheet = utils.read_sheet(self.spreadsheet, "Odds ratios", [0, 1], skiprows=[i for i in chain(range(0, 1), range(16, 64))]).dropna(axis=1, how="all")
+        self.this_or_orig = or_sheet.loc["Condition"]
+        
+        self.wasting_or_orig = or_sheet.loc["Wasting"]
+        
+        self.anem_or_orig = or_sheet.loc["Anaemia"]
+        
+        self.or_stunting_prog_orig = or_sheet.loc["By program"].dropna(axis=0, how="all")
+        
+        self.or_bf_prog_orig = or_sheet.loc["Odds ratios for correct breastfeeding by program"].dropna(axis=0, how="all")
+       
+        or_sheet_space = utils.read_sheet(self.spreadsheet, "Odds ratios", [0, 1], skiprows=[i for i in chain(range(0, 18), range(20, 64))]).dropna(axis=1, how="all")
+        self.or_space_prog_orig = or_sheet_space.loc["Odds ratios for optimal birth spacing by program"]
