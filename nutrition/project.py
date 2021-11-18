@@ -458,7 +458,7 @@ class Project(object):
         for i in range(n_runs):
             f(*args)
 
-    def run_scen(self, scen, n_samples=0):
+    def run_scen(self, scen, n_samples=0, seed=None):
         """Function for running a single scenario that may or may not be saved in P.scens
         NOTE that the sampling needs to be done as part of the Project object because it relies on access to the data
         NOTE this does not add the scenario to P.scens or save the results to the project
@@ -468,6 +468,9 @@ class Project(object):
         :param n_sampled_runs: number of times to run with sampling
         :return a list of Results
         """
+        
+        if seed is None:
+            seed = 0
 
         results = []
         if (scen.model_name is None) or (scen.model_name not in self.datasets.keys()):
@@ -490,7 +493,7 @@ class Project(object):
             results.append(res)
         else:
             for i in range(n_samples):
-                model = Model(dataset.resample(), dataset.t, enforce_constraints_year=scen.enforce_constraints_year, growth=scen.growth)
+                model = Model(dataset.resample(seed=seed+i), dataset.t, enforce_constraints_year=scen.enforce_constraints_year, growth=scen.growth)
                 result_name = scen.name + resampled_key_str + str(i)
                 _add_excess_budget(scen, model)
                 res = run_scen(scen, model, name=result_name)
@@ -499,7 +502,7 @@ class Project(object):
         return results
 
 
-    def run_scens(self, scens=None, n_samples=0):
+    def run_scens(self, scens=None, n_samples=0, seed=None):
         """Function for running scenarios
         - If scens is specified, they are added to self.scens
         - The first run happens with default parameters (point estimates)
@@ -512,14 +515,14 @@ class Project(object):
         results = []
         for scen in self.scens.values():
             if scen.active:
-                results += self.run_scen(scen, n_samples = 0) #best estimate
-                results += self.run_scen(scen, n_samples = n_samples) #actual samples
+                results += self.run_scen(scen, n_samples = 0) #best estimate (no random seed relevant)
+                results += self.run_scen(scen, n_samples = n_samples, seed=seed) #actual samples
                 
         self.add_result(results, name="scens")
 
         return results
 
-    def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=None, maxtime=300, parallel=True, dosave=True, runbaseline=True, runbalanced=False, n_samples=0):
+    def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=None, maxtime=300, parallel=True, dosave=True, runbaseline=True, runbalanced=False, n_samples=0, seed=None):
         if optim is not None:
             self.add_optims(optim)
             key = optim.name  # this to handle parallel calls of this function
@@ -547,20 +550,20 @@ class Project(object):
         results += opt_results
         
         if n_samples >= 1: #we also need to sample the baseline and each of the optimized results NOTE: base_run = False as we already ran the baseline
-            results += self.run_scen(scen = base_scen, n_samples = n_samples)
+            results += self.run_scen(scen = base_scen, n_samples = n_samples, seed=seed)
             
             for opt_result in opt_results:
                 optim_alloc = opt_result.get_allocs()
                 scen_name = opt_result.name
                 scen = Scen(name=scen_name, model_name=optim.model_name, scen_type="budget", progvals=optim_alloc, enforce_constraints_year=0, growth=opt_result.growth)
                 
-                results += self.run_scen(scen = scen, n_samples = n_samples)
+                results += self.run_scen(scen = scen, n_samples = n_samples, seed=seed)
                 
         if dosave:
             self.add_result(results, name=optim.name)
         return results
   
-    def run_geo(self, geo=None, key=-1, maxiter=20, swarmsize=None, maxtime=400, dosave=True, parallel=False, runbalanced=False, n_samples=0):
+    def run_geo(self, geo=None, key=-1, maxiter=20, swarmsize=None, maxtime=400, dosave=True, parallel=False, runbalanced=False, n_samples=0, seed=None):
         """Regions cannot be parallelised because daemon processes cannot have children.
         Two options: Either can parallelize regions and not the budget or run
         regions in series while parallelising each budget multiple."""
@@ -570,7 +573,9 @@ class Project(object):
             key = geo.name  # this to handle parallel calls of this function
         geo = self.geo(key)
         
-        results = geo.run_geo(self, maxiter, swarmsize, maxtime, parallel, runbalanced=runbalanced, n_samples=n_samples)     
+        results = geo.run_geo(self, maxiter, swarmsize, maxtime, parallel, runbalanced=runbalanced, n_samples=n_samples)
+        
+        #TODO needs to do sampling here?
                    
         if dosave:
             self.add_result(results, name="geospatial")
