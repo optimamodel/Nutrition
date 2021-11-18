@@ -524,7 +524,7 @@ class Project(object):
         results = []
         for scen in self.scens.values():
             if scen.active:
-                results += self.run_scen(scen, n_samples = 0)
+                results += self.run_scen(scen, n_samples = n_samples)
                 
         self.add_result(results, name="scens")
 
