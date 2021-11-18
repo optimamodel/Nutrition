@@ -13,7 +13,7 @@ from .model import Model
 from .scenarios import Scen, run_scen, convert_scen, make_default_scen
 from .optimization import Optim
 from .geospatial import Geospatial
-from .results import write_results, reduce_results
+from .results import write_results
 from .plotting import make_plots, get_costeff, plot_costcurve, save_figs
 from .demo import demo_scens, demo_optims, demo_geos
 from . import settings
@@ -82,7 +82,6 @@ class Project(object):
         self.gitinfo = sc.gitinfo(__file__)
         self.filename = None  # File path, only present if self.save() is used
         self.ss = Settings()
-        self.reduced_results = dict()
 
         return None
 
@@ -198,13 +197,11 @@ class Project(object):
 
     def write_results(self, filename=None, folder=None, key=None):
         """Blargh, this really needs some tidying
-        - This function calls write_results function in results.py
-        - Also, reduced_results includes point, high and low estimates generated through resampling in each run"""
+        - This function calls write_results function in results.py"""
         if key is None:
             key = -1
         results = self.result(key)
-        reduced_results = self.reduced_results
-        write_results(results, reduced_results, projname=self.name, filename=filename, folder=folder)
+        write_results(results, projname=self.name, filename=filename, folder=folder)
         return
 
     def add(self, name, item, what=None):
@@ -461,14 +458,6 @@ class Project(object):
         for i in range(n_runs):
             f(*args)
 
-    def reduce_results(self, key=None, point_estimate = 'best', bounds = 'quantiles', stddevs=None, quantiles=None, keep_raw=False):
-        if key is None:
-            key = -1
-        results = self.result(key)
-        self.reduced_results = reduce_results(results, point_estimate=point_estimate, bounds=bounds, stddevs=stddevs, quantiles=quantiles, keep_raw=keep_raw)
-        return
-
-
     def run_scen(self, scen, n_samples=0):
         """Function for running a single scenario that may or may not be saved in P.scens
         NOTE that the sampling needs to be done as part of the Project object because it relies on access to the data
@@ -517,7 +506,6 @@ class Project(object):
         - The subsequent runs consider resampling
 
         """
-
         if scens is not None:
             self.add_scens(scens)
 
@@ -601,7 +589,7 @@ class Project(object):
         print("Not implemented")
 
     def plot(self, key=-1, toplot=None, optim=False, geo=False, save_plots_folder=None):
-        figs = make_plots(self.result(key), self.reduced_results, toplot=toplot, optim=optim, geo=geo)
+        figs = make_plots(self.result(key), toplot=toplot, optim=optim, geo=geo)
         if save_plots_folder:
             save_figs(figs, path=save_plots_folder)
         return figs

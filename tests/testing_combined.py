@@ -58,7 +58,6 @@ def parallel_optim(region, path=None, n_samples=2):
 
     p2.add_optims(Optim(**kwargs))
     p2.run_optim(maxiter=50, swarmsize=0, maxtime=1, parallel=True, runbalanced=False, n_samples=n_samples)
-    p2.reduce_results()
     return p2
 
 
@@ -66,7 +65,6 @@ def parallel_optim(region, path=None, n_samples=2):
 scen_list = nu.make_scens([kwargs1])
 p1.run_scens(scens = scen_list, n_samples=n_samples)
 p1.write_results(filename=output_path + 'non_optimized.xlsx')
-p1.reduce_results()
 
 p1.plot(optim=False, save_plots_folder=output_path)
 #if doplot:

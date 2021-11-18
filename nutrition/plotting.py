@@ -108,11 +108,10 @@ def save_figs(figs, path=".", prefix="", fnames=None) -> None:
         # logger.info('Saved figure "%s"', fname)
 
 
-def make_plots(all_res=None, all_reduce=None, toplot=None, optim=False, geo=False):
+def make_plots(all_res=None, toplot=None, optim=False, geo=False):
     """
     This function controls all the plotting types a user can ask for
     :param all_res: all the results that should be plotted (list of ScenResult objects)
-    :param all_reduce: all the results that should be plotted generated over resampling(list of ScenResult objects)
     :param toplot: type of plots to produce (list of strings)
     :param optim: are these the results of a national optimization? (boolean)
     :param geo: are these the results of a geospatial optimization? (boolean)
@@ -125,12 +124,7 @@ def make_plots(all_res=None, all_reduce=None, toplot=None, optim=False, geo=Fals
     toplot = sc.promotetolist(toplot)
     if all_res is not None:
         all_res = sc.promotetolist(sc.dcp(all_res))  # Without dcp(), modifies the original and breaks things
-        
-        # if all_reduce is None or all_reduce == {}: #TODO review if there's a better way to deal with this
-        all_reduce = reduce_results(all_res)
-        #TODO specifically,  is there a good reason for projects to store reduced_results at all, or does it make a lot more sense to just generate here?
-        #TODO it may be important for performance to store the cache of reduced results for the FE, but then we also need to make sure to regen when appropriate
-        
+        all_reduce = reduce_results(all_res)        
     
     if not all_res or not all_reduce:
         print('WARNING: No results to plot!')

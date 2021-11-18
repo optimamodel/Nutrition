@@ -45,7 +45,6 @@ if __name__ == "__main__":
 
     # p.run_scens() # make sure to set resampling=False
     p.run_scens(n_samples=10)
-    p.reduce_results()
     # p.mean()
 # p.run_scens()
 if doplot:
