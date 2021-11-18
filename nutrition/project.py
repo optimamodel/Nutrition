@@ -345,7 +345,7 @@ class Project(object):
         prog_info = dataset.prog_info
         t = dataset.t
         demo_data = dataset.demographic_data
-        model = Model(pops, prog_info, demographic_data, t, growth=growth)
+        model = Model(pops, prog_info, demo_data, t, growth=growth)
         self.add(name=name, item=model, what="model")
         # Loop over all Scens and create a new default scenario for any that depend on the dataset which has been reloaded.
         # for scen_name in self.scens.keys():  # Loop over all Scen keys in the project
@@ -485,7 +485,7 @@ class Project(object):
         if (scen.model_name is None) or (scen.model_name not in self.datasets.keys()):
             raise Exception("Could not find valid dataset for %s.  Edit the scenario and change the dataset" % scen.name)
             
-
+        dataset = Dataset(country=None, region=None, name=None, fromfile=False, doload=True, project=self, resampling=True)
         for i in range(0 if base_run else 1, n_sampled_runs+1):
             # print (f'Sample {i} for scen {scen.name}')
             if i == 0: #base_run
@@ -495,11 +495,12 @@ class Project(object):
                 result_name = scen.name
             else: #sampled run
                 result_name = scen.name + " resampled__#" + str(i)
-                dataset = Dataset(country=None, region=None, name=None, fromfile=False, doload=True, project=self, resampling=True)
-                pops = dataset.pops
-                prog_info = dataset.prog_info
-                t = dataset.t
-                sampled_data = dataset.demographic_data
+                #dataset = Dataset(country=None, region=None, name=None, fromfile=False, doload=True, project=self, resampling=True)
+                sample = dataset.resample()
+                pops = sample.pops
+                prog_info = sample.prog_info
+                t = sample.t
+                sampled_data = sample.demographic_data
                 model = Model(pops, prog_info, sampled_data, t, enforce_constraints_year=scen.enforce_constraints_year, growth=scen.growth)
             
                 
