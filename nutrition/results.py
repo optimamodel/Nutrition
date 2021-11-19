@@ -351,7 +351,7 @@ def _write_results_outcomes(projname, filename, folder, years):
         projname = ""
     outcomes = default_trackers()
     labs = pretty_labels()
-    rows = [labs[out] for out in outcomes]
+    rows = [labs[out] for out in outcomes if "pop" not in out and "pw_mortrate" not in out]
     if filename is None:
         filename = "outputs.xlsx"
     filepath = sc.makefilepath(filename=filename, folder=folder, ext="xlsx", default="%s outputs.xlsx" % projname)
