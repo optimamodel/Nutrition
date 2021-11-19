@@ -955,7 +955,7 @@ class Dataset(object):
 
         # Read them into actual data
         try:
-            self.demographic_data = DemographicData(databook, self.calcscache)  # demo_ here is demographic_
+            self.demographic_data = DemographicData(databook, self.calcscache)  
         except Exception as E:
             raise Exception("Error in databook: %s" % str(E))
 
@@ -999,74 +999,74 @@ class Dataset(object):
         rng = np.random.default_rng(seed = seed)
 
         #Transforming into random values
-        new_dd.pw_progs         = new._make_random(new.uncert.pw_progs_lower.to_numpy(),         new.uncert.pw_progs_upper.to_numpy(),          rng)
-        new_dd.child_progs      = new._make_random(new.uncert.child_progs_lower.to_numpy(),      new.uncert.child_progs_upper.to_numpy(),       rng)
-        new_dd.rr_anaem_prog    = new._make_random(new.uncert.rr_anaem_prog_lower.to_numpy(),    new.uncert.rr_anaem_prog_upper.to_numpy(),     rng)
-        new_dd.or_anaem_prog    = new._make_random(new.uncert.or_anaem_prog_lower.to_numpy(),    new.uncert.or_anaem_prog_upper.to_numpy(),     rng)
-        new_dd.treatsam         = new._make_random(new.uncert.treatsam_lower.to_numpy(),         new.uncert.treatsam_upper.to_numpy(),          rng)
-        new_dd.manman           = new._make_random(new.uncert.manman_lower.to_numpy(),           new.uncert.manman_upper.to_numpy(),            rng)
-        new_dd.bo_progs         = new._make_random(new.uncert.progs_lower.to_numpy(),            new.uncert.progs_upper.to_numpy(),             rng)
-        new_dd.bf_effects       = new._make_random(new.uncert.bf_effects_lower.to_numpy(),       new.uncert.bf_effects_upper.to_numpy(),        rng)
-        new_dd.stunt_effects    = new._make_random(new.uncert.stunt_effects_lower.to_numpy(),    new.uncert.stunt_effects_upper.to_numpy(),     rng)
-        new_dd.ors              = new._make_random(new.uncert.ors_lower.to_numpy(),              new.uncert.ors_upper.to_numpy(),               rng)
-        new_dd.rr_space_bo      = new._make_random(new.uncert.rr_space_bo_lower.to_numpy(),      new.uncert.rr_space_bo_upper.to_numpy(),       rng)
-        new_dd.rr_death_bo      = new._make_random(new.uncert.rr_death_bo_lower.to_numpy(),      new.uncert.rr_death_bo_upper.to_numpy(),       rng)
-        new_dd.rr_st            = new._make_random(new.uncert.rr_st_lower.to_numpy(),            new.uncert.rr_st_upper.to_numpy(),             rng)  # stunting
-        new_dd.rr_ws            = new._make_random(new.uncert.rr_ws_lower.to_numpy(),            new.uncert.rr_ws_upper.to_numpy(),             rng)  # wasting
-        new_dd.rr_an            = new._make_random(new.uncert.rr_an_lower.to_numpy(),            new.uncert.rr_an_upper.to_numpy(),             rng)  # anaemia
-        new_dd.rr_bf            = new._make_random(new.uncert.rr_bf_lower.to_numpy(),            new.uncert.rr_bf_upper.to_numpy(),             rng)  # breastfeeding
-        new_dd.rr_diar          = new._make_random(new.uncert.rr_diar_lower.to_numpy(),          new.uncert.rr_diar_upper.to_numpy(),           rng)  # diarrhoea
-        new_dd.stun_or          = new._make_random(new.uncert.stun_or_lower.to_numpy(),          new.uncert.stun_or_upper.to_numpy(),           rng)  # for stunting
-        new_dd.wast_or          = new._make_random(new.uncert.wast_or_lower.to_numpy(),          new.uncert.wast_or_upper.to_numpy(),           rng)  # for wastin
-        new_dd.ane_or           = new._make_random(new.uncert.ane_or_lower.to_numpy(),           new.uncert.ane_or_upper.to_numpy(),            rng)  # for anaemia
-        new_dd.or_stunting_prog = new._make_random(new.uncert.or_stunting_prog_lower.to_numpy(), new.uncert.or_stunting_prog_upper.to_numpy(),  rng)  # stunting programs
-        new_dd.or_bf_prog       = new._make_random(new.uncert.or_bf_prog_lower.to_numpy(),       new.uncert.or_bf_prog_upper.to_numpy(),        rng)  # breastfeeding progra
-        new_dd.or_space_prog    = new._make_random(new.uncert.or_space_prog_lower.to_numpy(),    new.uncert.or_space_prog_upper.to_numpy(),     rng)  # birth spacing programs
+        temp_pw_progs         = new._make_random(new.uncert.pw_progs_lower.to_numpy(),         new.uncert.pw_progs_upper.to_numpy(),          rng)
+        temp_child_progs      = new._make_random(new.uncert.child_progs_lower.to_numpy(),      new.uncert.child_progs_upper.to_numpy(),       rng)
+        temp_rr_anaem_prog    = new._make_random(new.uncert.rr_anaem_prog_lower.to_numpy(),    new.uncert.rr_anaem_prog_upper.to_numpy(),     rng)
+        temp_or_anaem_prog    = new._make_random(new.uncert.or_anaem_prog_lower.to_numpy(),    new.uncert.or_anaem_prog_upper.to_numpy(),     rng)
+        temp_treatsam         = new._make_random(new.uncert.treatsam_lower.to_numpy(),         new.uncert.treatsam_upper.to_numpy(),          rng)
+        temp_manman           = new._make_random(new.uncert.manman_lower.to_numpy(),           new.uncert.manman_upper.to_numpy(),            rng)
+        temp_bo_progs         = new._make_random(new.uncert.progs_lower.to_numpy(),            new.uncert.progs_upper.to_numpy(),             rng)
+        temp_bf_effects       = new._make_random(new.uncert.bf_effects_lower.to_numpy(),       new.uncert.bf_effects_upper.to_numpy(),        rng)
+        temp_stunt_effects    = new._make_random(new.uncert.stunt_effects_lower.to_numpy(),    new.uncert.stunt_effects_upper.to_numpy(),     rng)
+        temp_ors              = new._make_random(new.uncert.ors_lower.to_numpy(),              new.uncert.ors_upper.to_numpy(),               rng)
+        temp_rr_space_bo      = new._make_random(new.uncert.rr_space_bo_lower.to_numpy(),      new.uncert.rr_space_bo_upper.to_numpy(),       rng)
+        temp_rr_death_bo      = new._make_random(new.uncert.rr_death_bo_lower.to_numpy(),      new.uncert.rr_death_bo_upper.to_numpy(),       rng)
+        temp_rr_st            = new._make_random(new.uncert.rr_st_lower.to_numpy(),            new.uncert.rr_st_upper.to_numpy(),             rng)  # stunting
+        temp_rr_ws            = new._make_random(new.uncert.rr_ws_lower.to_numpy(),            new.uncert.rr_ws_upper.to_numpy(),             rng)  # wasting
+        temp_rr_an            = new._make_random(new.uncert.rr_an_lower.to_numpy(),            new.uncert.rr_an_upper.to_numpy(),             rng)  # anaemia
+        temp_rr_bf            = new._make_random(new.uncert.rr_bf_lower.to_numpy(),            new.uncert.rr_bf_upper.to_numpy(),             rng)  # breastfeeding
+        temp_rr_diar          = new._make_random(new.uncert.rr_diar_lower.to_numpy(),          new.uncert.rr_diar_upper.to_numpy(),           rng)  # diarrhoea
+        temp_stun_or          = new._make_random(new.uncert.stun_or_lower.to_numpy(),          new.uncert.stun_or_upper.to_numpy(),           rng)  # for stunting
+        temp_wast_or          = new._make_random(new.uncert.wast_or_lower.to_numpy(),          new.uncert.wast_or_upper.to_numpy(),           rng)  # for wastin
+        temp_ane_or           = new._make_random(new.uncert.ane_or_lower.to_numpy(),           new.uncert.ane_or_upper.to_numpy(),            rng)  # for anaemia
+        temp_or_stunting_prog = new._make_random(new.uncert.or_stunting_prog_lower.to_numpy(), new.uncert.or_stunting_prog_upper.to_numpy(),  rng)  # stunting programs
+        temp_or_bf_prog       = new._make_random(new.uncert.or_bf_prog_lower.to_numpy(),       new.uncert.or_bf_prog_upper.to_numpy(),        rng)  # breastfeeding progra
+        temp_or_space_prog    = new._make_random(new.uncert.or_space_prog_lower.to_numpy(),    new.uncert.or_space_prog_upper.to_numpy(),     rng)  # birth spacing programs
         
         # Replacing with original data and store in required dictionary formats
         
         # stunting
-        rr = new._data_replace(new.uncert.rr_st_orig, new_dd.rr_st).to_dict()
+        rr = new._data_replace(new.uncert.rr_st_orig, temp_rr_st ).to_dict()
         new_dd.rr_death["Stunting"] = new.make_dict2(rr)
         # wasting
-        rr = new._data_replace(new.uncert.rr_ws_orig, new_dd.rr_ws).to_dict()
+        rr = new._data_replace(new.uncert.rr_ws_orig, temp_rr_ws).to_dict()
         new_dd.rr_death["Wasting"] = new.make_dict2(rr)
         # anaemia
-        rr = new._data_replace(new.uncert.rr_an_orig, new_dd.rr_an).to_dict()
+        rr = new._data_replace(new.uncert.rr_an_orig, temp_rr_an ).to_dict()
         new_dd.rr_death["Anaemia"] = new.make_dict2(rr)
         # currently no impact on mortality for anaemia
         new_dd.rr_death["Anaemia"].update({age: {cat: {"Diarrhoea": 1} for cat in new.settings.anaemia_list} for age in new.settings.child_ages})
         # breastfeeding
-        rr = new._data_replace(new.uncert.rr_bf_orig, new_dd.rr_bf).to_dict()
+        rr = new._data_replace(new.uncert.rr_bf_orig,temp_rr_bf).to_dict()
         new_dd.rr_death["Breastfeeding"] = new.make_dict2(rr)
         # diarrhoea
-        rr = new._data_replace(new.uncert.rr_diar_orig, new_dd.rr_diar).to_dict()
+        rr = new._data_replace(new.uncert.rr_diar_orig, temp_rr_diar).to_dict()
         new_dd.rr_dia = new.make_dict3(rr)
         
         # odd ratios
-        this_or = new._data_replace(new.uncert.this_or_orig, new_dd.stun_or).to_dict("index")
+        this_or = new._data_replace(new.uncert.this_or_orig, temp_stun_or ).to_dict("index")
         new_dd.or_cond["Stunting"] = sc.odict()
         new_dd.or_cond["Stunting"]["Prev stunting"] = this_or["Given previous stunting (HAZ < -2 in previous age band)"]
         new_dd.or_cond["Stunting"]["Diarrhoea"] = this_or["Diarrhoea (per additional episode)"]
         
-        wasting_or = new._data_replace(new.uncert.wasting_or_orig, new_dd.wast_or)
+        wasting_or = new._data_replace(new.uncert.wasting_or_orig, temp_wast_or)
         new_dd.or_cond["SAM"] = sc.odict()
         new_dd.or_cond["SAM"]["Diarrhoea"] = wasting_or.to_dict("index")["For SAM per additional episode of diarrhoea"]
         new_dd.or_cond["MAM"] = sc.odict()
         new_dd.or_cond["MAM"]["Diarrhoea"] = wasting_or.to_dict("index")["For MAM per additional episode of diarrhoea"]
         
-        anem_or = new._data_replace(new.uncert.anem_or_orig, new_dd.ane_or)
+        anem_or = new._data_replace(new.uncert.anem_or_orig, temp_ane_or )
         new_dd.or_cond["Anaemia"] = sc.odict()
         new_dd.or_cond["Anaemia"]["Severe diarrhoea"] = sc.odict()
         new_dd.or_cond["Anaemia"]["Severe diarrhoea"] = anem_or.to_dict("index")["For anaemia per additional episode of severe diarrhoea"]
         
-        new_dd.or_stunting_prog = new._data_replace(new.uncert.or_stunting_prog_orig, new_dd.or_stunting_prog).to_dict("index")
+        new_dd.or_stunting_prog = new._data_replace(new.uncert.or_stunting_prog_orig, temp_or_stunting_prog).to_dict("index")
         
-        new_dd.or_bf_prog = new._data_replace(new.uncert.or_bf_prog_orig, new_dd.or_bf_prog).to_dict("index")
+        new_dd.or_bf_prog = new._data_replace(new.uncert.or_bf_prog_orig, temp_or_bf_prog).to_dict("index")
         
-        new_dd.or_space_prog = new._data_replace(new.uncert.or_space_prog_orig, new_dd.or_space_prog).to_dict("index")
+        new_dd.or_space_prog = new._data_replace(new.uncert.or_space_prog_orig, temp_or_space_prog).to_dict("index")
         
-        progs = new._data_replace(new.uncert.progs_orig, new_dd.bo_progs).to_dict("index")
+        progs = new._data_replace(new.uncert.progs_orig,  temp_bo_progs).to_dict("index")
         newprogs = sc.odict()
         for program in progs.keys():
             if not newprogs.get(program[0]):
@@ -1074,32 +1074,32 @@ class Dataset(object):
             newprogs[program[0]][program[1]] = progs[program]
         new_dd.bo_progs = newprogs
         
-        new_dd.rr_anaem_prog = new._data_replace(new.uncert.rr_anaem_prog_orig, new_dd.rr_anaem_prog).to_dict(orient="index")
-        new_dd.or_anaem_prog = new._data_replace(new.uncert.or_anaem_prog_orig, new_dd.or_anaem_prog).to_dict(orient="index")
+        new_dd.rr_anaem_prog = new._data_replace(new.uncert.rr_anaem_prog_orig, temp_rr_anaem_prog).to_dict(orient="index")
+        new_dd.or_anaem_prog = new._data_replace(new.uncert.or_anaem_prog_orig, temp_or_anaem_prog).to_dict(orient="index")
         
         
-        treatsam = new._data_replace(new.uncert.treatsam_orig, new_dd.treatsam).to_dict(orient="index")
-        manman = new._data_replace(new.uncert.manman_orig, new_dd.manman).to_dict(orient="index")
+        treatsam = new._data_replace(new.uncert.treatsam_orig, temp_treatsam).to_dict(orient="index")
+        manman = new._data_replace(new.uncert.manman_orig, temp_manman).to_dict(orient="index")
         new_dd.or_wasting_prog["SAM"] = treatsam
         if new_dd.man_mam:
             new_dd.or_wasting_prog["MAM"] = {"Treatment of SAM": manman["Management of MAM"]}
             
-        new_dd.child_progs = new._data_replace(new.uncert.child_progs_orig, new_dd.child_progs).to_dict()
+        new_dd.child_progs = new._data_replace(new.uncert.child_progs_orig, temp_child_progs).to_dict()
         
-        new_dd.pw_progs = new._data_replace(new.uncert.pw_progs_orig, new_dd.pw_progs).to_dict()
+        new_dd.pw_progs = new._data_replace(new.uncert.pw_progs_orig, temp_pw_progs).to_dict()
         
         
-        ors = new._data_replace(new.uncert.ors_orig, new_dd.ors).to_dict("index")
+        ors = new._data_replace(new.uncert.ors_orig, temp_ors).to_dict("index")
         new_dd.or_cond_bo["Stunting"] = ors["Stunting (HAZ-score < -2)"]
         new_dd.or_cond_bo["MAM"] = ors["MAM (WHZ-score between -3 and -2)"]
         new_dd.or_cond_bo["SAM"] = ors["SAM (WHZ-score < -3)"]
        
-        new_dd.rr_space_bo = new._data_replace(new.uncert.rr_space_bo_orig, new_dd.rr_space_bo).to_dict("index")
+        new_dd.rr_space_bo = new._data_replace(new.uncert.rr_space_bo_orig, temp_rr_space_bo).to_dict("index")
         
-        new_dd.rr_death["Birth outcomes"] = new._data_replace(new.uncert.rr_death_bo_orig, new_dd.rr_death_bo).to_dict()
+        new_dd.rr_death["Birth outcomes"] = new._data_replace(new.uncert.rr_death_bo_orig, temp_rr_death_bo).to_dict()
         
-        new_dd.bf_effects = new._data_replace(new.uncert.bf_effects_orig, new_dd.bf_effects)
-        new_dd.stunt_effects = new._data_replace(new.uncert.stunt_effects_orig, new_dd.stunt_effects)
+        new_dd.bf_effects = new._data_replace(new.uncert.bf_effects_orig, temp_bf_effects)
+        new_dd.stunt_effects = new._data_replace(new.uncert.stunt_effects_orig, temp_stunt_effects)
 
         new.demographic_data = new_dd
 
