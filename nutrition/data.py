@@ -405,25 +405,25 @@ class DemographicData(object):
     def relative_risks(self):
         # risk areas hidden in spreadsheet (white text)
         # stunting
-        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=1)
+        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 1), range(26, 328))]).dropna(axis=1, how="all")
         rr = rr_sheet.loc["Stunting"].to_dict()
         self.rr_death["Stunting"] = self.make_dict2(rr)
         # wasting
-        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=28)
+        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 28), range(53, 328))]).dropna(axis=1, how="all")
         rr = rr_sheet.loc["Wasting"].to_dict()
         self.rr_death["Wasting"] = self.make_dict2(rr)
         # anaemia
-        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=55).dropna(axis=1, how="all")
+        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 55), range(62, 328))]).dropna(axis=1, how="all")
         rr = rr_sheet.loc["Anaemia"].to_dict()
         self.rr_death["Anaemia"] = self.make_dict2(rr)
         # currently no impact on mortality for anaemia
         self.rr_death["Anaemia"].update({age: {cat: {"Diarrhoea": 1} for cat in self.settings.anaemia_list} for age in self.settings.child_ages})
         # breastfeeding
-        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=64)
+        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 64), range(101, 328))]).dropna(axis=1, how="all")
         rr = rr_sheet.loc["Breastfeeding"].to_dict()
         self.rr_death["Breastfeeding"] = self.make_dict2(rr)
         # diarrhoea
-        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=103).dropna(axis=1, how="all")
+        rr_sheet = utils.read_sheet(self.spreadsheet, "Relative risks", [0, 1, 2], skiprows=[i for i in chain(range(0, 103), range(108, 328))]).dropna(axis=1, how="all")
         rr = rr_sheet.loc["Diarrhoea"].to_dict()
         self.rr_dia = self.make_dict3(rr)
 
@@ -448,7 +448,6 @@ class DemographicData(object):
                     self.arr_rr_death[age][i, j] = stunt * wast * anaem * breast
 
     def odds_ratios(self):
-        or_sheet = utils.read_sheet(self.spreadsheet, "Odds ratios", [0, 1], skiprows=1)
         this_or = or_sheet.loc["Condition"].to_dict("index")
         self.or_cond["Stunting"] = sc.odict()
         self.or_cond["Stunting"]["Prev stunting"] = this_or["Given previous stunting (HAZ < -2 in previous age band)"]
@@ -462,7 +461,7 @@ class DemographicData(object):
         self.or_cond["Anaemia"]["Severe diarrhoea"] = or_sheet.loc["Anaemia"].to_dict("index")["For anaemia per additional episode of severe diarrhoea"]
         self.or_stunting_prog = or_sheet.loc["By program"].to_dict("index")
         self.or_bf_prog = or_sheet.loc["Odds ratios for correct breastfeeding by program"].to_dict("index")
-        or_sheet = utils.read_sheet(self.spreadsheet, "Odds ratios", [0, 1], skiprows=18).dropna(axis=1, how="all")
+        or_sheet = utils.read_sheet(self.spreadsheet, "Odds ratios", [0, 1], skiprows=[i for i in chain(range(0, 18), range(20, 64))]).dropna(axis=1, how="all")
         self.or_space_prog = or_sheet.loc["Odds ratios for optimal birth spacing by program"].to_dict("index")
 
     def get_bo_progs(self):
@@ -475,12 +474,12 @@ class DemographicData(object):
         self.bo_progs = newprogs
 
     def anaemia_progs(self):
-        anaem_sheet = utils.read_sheet(self.spreadsheet, "Programs anemia", [0, 1])
+        anaem_sheet = utils.read_sheet(self.spreadsheet, "Programs anemia", [0, 1], skiprows=[i for i in range(22, 66)]).dropna(axis=1, how="all")
         self.rr_anaem_prog = anaem_sheet.loc["Relative risks of anaemia when receiving intervention"].to_dict(orient="index")
         self.or_anaem_prog = anaem_sheet.loc["Odds ratios of being anaemic when covered by intervention"].to_dict(orient="index")
 
     def wasting_progs(self):
-        wastingSheet = utils.read_sheet(self.spreadsheet, "Programs wasting", [0, 1])
+        wastingSheet = utils.read_sheet(self.spreadsheet, "Programs wasting", [0, 1], skiprows=[i for i in range(5, 19)]).dropna(axis=1, how="all")
         treatsam = wastingSheet.loc["Odds ratio of SAM when covered by program"].to_dict(orient="index")
         manman = wastingSheet.loc["Odds ratio of MAM when covered by program"].to_dict(orient="index")
         self.or_wasting_prog["SAM"] = treatsam
@@ -488,13 +487,13 @@ class DemographicData(object):
             self.or_wasting_prog["MAM"] = {"Treatment of SAM": manman["Management of MAM"]}
 
     def get_child_progs(self):
-        self.child_progs = utils.read_sheet(self.spreadsheet, "Programs for children", [0, 1, 2], to_odict=True)
+        self.child_progs = utils.read_sheet(self.spreadsheet, "Programs for children", [0, 1, 2], skiprows=[i for i in range(49, 151)]).dropna(axis=1, how="all")
 
     def get_pw_progs(self):
-        self.pw_progs = utils.read_sheet(self.spreadsheet, "Programs for PW", [0, 1, 2], to_odict=True)
+        self.pw_progs = utils.read_sheet(self.spreadsheet, "Programs for PW", [0, 1, 2], skiprows=[i for i in range(7, 25)]).dropna(axis=1, how="all")
 
     def get_bo_risks(self):
-        bo_sheet = utils.read_sheet(self.spreadsheet, "Birth outcome risks", [0, 1], skiprows=[0])
+        bo_sheet = utils.read_sheet(self.spreadsheet, "Birth outcome risks", [0, 1], skiprows=[i for i in chain(range(25, 81), range(0, 1))]).dropna(axis=1, how="all")
         ors = bo_sheet.loc["Odds ratios for conditions"].to_dict("index")
         self.or_cond_bo["Stunting"] = ors["Stunting (HAZ-score < -2)"]
         self.or_cond_bo["MAM"] = ors["MAM (WHZ-score between -3 and -2)"]
@@ -504,7 +503,7 @@ class DemographicData(object):
 
     def get_iycf_effects(self, iycf_packs):
         # TODO: need something that catches if iycf packages not included at all.
-        effects = utils.read_sheet(self.spreadsheet, "IYCF odds ratios", [0, 1, 2])
+        effects =  utils.read_sheet(self.spreadsheet, "IYCF odds ratios", [0, 1, 2], skiprows=[i for i in range(51, 157)]).dropna(axis=1, how="all")
         bf_effects = effects.loc["Odds ratio for correct breastfeeding"]
         stunt_effects = effects.loc["Odds ratio for stunting"]
         self.or_bf_prog.update(self.create_iycf(bf_effects, iycf_packs))
@@ -895,7 +894,6 @@ class Dataset(object):
                  demographic_data: DemographicData =None,
                  prog_data: ProgramData=None,
                  default_params=None,
-                 uncertain_params=None,
                  pops=None,
                  prog_info=None,
                  doload=False,
@@ -932,8 +930,6 @@ class Dataset(object):
 
         self.demographic_data = demographic_data
         self.prog_data = prog_data
-        self.uncertain_params = uncertain_params
-        # The next three attributes are used to initialize a Model object.
         self.pops = pops  # populations
         self.prog_info = prog_info  # program info
         self.t = None  # start and end years for the simulation
