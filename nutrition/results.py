@@ -219,11 +219,10 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
     rows, filepath, outputs, outcomes, sheetnames, nullrow, allformats, alldata = _write_results_outcomes(projname, filename, folder, years)
 
     ### Outcomes sheet
-    headers = [["Scenario", "Outcome"] + years + ["Cumulative"]]
+    headers = [["Scenario", "Outcome"] + years + [""] + ["Cumulative"]]
     for r, res in enumerate(results):
         if res.name != "Excess budget":
             out = res.get_outputs(outcomes, seq=True, pretty=True)
-            # print(out)
             for o, outcome in enumerate(rows):
                 name = [res.name] if o == 0 else [""]
                 thisout = out[o]
@@ -231,9 +230,11 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
                     cumul = "N/A"
                 elif "mortality" in outcome.lower():
                     cumul = "N/A"
+                elif "Number of SAM children" in outcome or "Number of MAM children" in outcome:
+                    cumul = "N/A"
                 else:
                     cumul = sum(thisout)
-                outputs.append(name + [outcome] + list(thisout) + [cumul])
+                outputs.append(name + [outcome] + list(thisout) + [""] +  [cumul])
             outputs.append(nullrow)
     data = headers + outputs
     alldata.append(data)
@@ -296,6 +297,8 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
                     if "prev" in outcome.lower():
                         cumul = "N/A"
                     elif "mortality" in outcome.lower():
+                        cumul = "N/A"
+                    elif "Number of SAM children" in outcome or "Number of MAM children" in outcome:
                         cumul = "N/A"
                     else:
                         cumul = sum(thisout)

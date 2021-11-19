@@ -289,12 +289,12 @@ class DemographicData(object):
 
     def get_economic_cost(self):
         econo_cost = utils.read_sheet(self.spreadsheet, "Economic loss", cols=[0], dropna=False)
-        self.cost_wasting = econo_cost.loc["Wasting"].values[0]
-        self.cost_stunting = econo_cost.loc["Stunting"].values[0]
+        self.cost_wasting = econo_cost.loc["Child wasting episode"].values[0]
+        self.cost_stunting = econo_cost.loc["Child turning age 5 stunted (over lifetime)"].values[0]
         self.cost_child_death = econo_cost.loc["Child death"].values[0]
-        self.cost_pw_death = econo_cost.loc["PW death"].values[0]
-        self.cost_child_anaemic = econo_cost.loc["Child anaemic"].values[0]
-        self.cost_pw_anaemic = econo_cost.loc["PW anaemic"].values[0]
+        self.cost_pw_death = econo_cost.loc["Maternal death"].values[0]
+        self.cost_child_anaemic = econo_cost.loc["Anaemic child (per year)"].values[0]
+        self.cost_pw_anaemic = econo_cost.loc["Anaemic pregnant woman (per pregnancy)"].values[0]
 
     def get_incidences(self):
         # Load the main spreadsheet into a DataFrame.
