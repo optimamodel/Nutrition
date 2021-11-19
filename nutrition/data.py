@@ -130,6 +130,22 @@ class DemographicData(object):
 
         self.compute_risks()
         self.spreadsheet = None
+        
+    def read_spreadsheet(self):
+        self.extend_treatsam()
+        self.impact_pop()
+        self.prog_risks()
+        self.pop_risks()
+        self.anaemia_progs()
+        self.wasting_progs()
+        self.relative_risks()
+        self.odds_ratios()
+        self.get_child_progs()
+        self.get_pw_progs()
+        self.get_bo_progs()
+        self.get_bo_risks()
+        packages = self.define_iycf()
+        self.get_iycf_effects(packages)
 
 
     def __repr__(self):
@@ -352,23 +368,6 @@ class DemographicData(object):
         # list causes of death
         self.causes_death = self.death_dist.keys()
         
-# moved from default data        
-
-    def read_spreadsheet(self):
-        self.extend_treatsam()
-        self.impact_pop()
-        self.prog_risks()
-        self.pop_risks()
-        self.anaemia_progs()
-        self.wasting_progs()
-        self.relative_risks()
-        self.odds_ratios()
-        self.get_child_progs()
-        self.get_pw_progs()
-        self.get_bo_progs()
-        self.get_bo_risks()
-        packages = self.define_iycf()
-        self.get_iycf_effects(packages)
 
     def extend_treatsam(self):
         treatsam = self.spreadsheet.parse(sheet_name="Treatment of SAM")
