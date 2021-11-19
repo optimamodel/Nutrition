@@ -137,7 +137,7 @@ class Optim(sc.prettyobj):
         """
         for result in res:
             if len(self.mults) > 1 or result.mult != 1:  # add clarity on multiplier only if necessary
-                result.name = result.obj + f" budget x{result.mult}"
+                result.name = result.obj + f" (budget x{result.mult})"
             else:
                 result.name = result.obj
 
