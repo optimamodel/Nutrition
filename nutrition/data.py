@@ -448,6 +448,7 @@ class DemographicData(object):
                     self.arr_rr_death[age][i, j] = stunt * wast * anaem * breast
 
     def odds_ratios(self):
+        or_sheet = utils.read_sheet(self.spreadsheet, "Odds ratios", [0, 1], skiprows=[i for i in chain(range(0, 1), range(16, 64))]).dropna(axis=1, how="all")
         this_or = or_sheet.loc["Condition"].to_dict("index")
         self.or_cond["Stunting"] = sc.odict()
         self.or_cond["Stunting"]["Prev stunting"] = this_or["Given previous stunting (HAZ < -2 in previous age band)"]
