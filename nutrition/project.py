@@ -137,7 +137,7 @@ class Project(object):
         self.spreadsheets[name] = sc.Spreadsheet(filename=inputspath)
         return self.inputsheet(name)
 
-    def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True, validate=True, resampling=True, growth=False):
+    def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True, validate=True, growth=False):
         """Load the data, which can mean one of two things: read in the spreadsheets, and/or use these data to make a model """
 
         # Generate name odict key for Spreadsheet, Dataset, and Model odicts.
@@ -152,7 +152,7 @@ class Project(object):
 
         # Optionally (but almost always) use these to make a model (do not do if blank sheets).
         databook = self.inputsheet(name).pandas()
-        dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, databook=databook, resampling=resampling)
+        dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, databook=databook)
         self.datasets[name] = dataset
         dataset.name = name
         self.add_model(name, growth=growth)  # add model associated with the dataset or datasets
@@ -638,10 +638,10 @@ def demo(scens=False, optims=False, geos=False):
 
     # Create project and load in demo databook spreadsheet file into 'demo' Spreadsheet, Dataset, and Model.
     P = Project(name)
-    P.load_data(country, region, name="demo", resampling=False)
-    # P.load_data(country, "region1", name="demoregion1", resampling=False)
-    # P.load_data(country, "region2", name="demoregion2", resampling=False)
-    # P.load_data(country, "region3", name="demoregion3", resampling=False)
+    P.load_data(country, region, name="demo")
+    # P.load_data(country, "region1", name="demoregion1")
+    # P.load_data(country, "region2", name="demoregion2")
+    # P.load_data(country, "region3", name="demoregion3")
 
     # Create demo scenarios and optimizations
     if scens:

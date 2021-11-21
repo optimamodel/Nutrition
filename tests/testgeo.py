@@ -5,9 +5,9 @@ import sciris as sc
 # load in data to create model
 p = nu.Project("Demo")
 # three identical regions (same spreadsheet)
-p.load_data("demo", "region1", name="Demo1", resampling=False)
-p.load_data("demo", "region2", name="Demo2", resampling=False)
-# p.load_data('demo', 'region3', name='Demo3', resampling=False)
+p.load_data("demo", "region1", name="Demo1")
+p.load_data("demo", "region2", name="Demo2")
+# p.load_data('demo', 'region3', name='Demo3')
 
 
 kwargs = {

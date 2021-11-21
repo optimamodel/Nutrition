@@ -1,6 +1,5 @@
 """"This script may be used to test running non-optimization
     and optimization scenarios together.
-    resampling (boolean): whether to use resampling with multirun or point estimators with single run (defualt: True)
     """
 import nutrition.ui as nu
 import sciris as sc
@@ -17,11 +16,11 @@ region_list = ["DOUALA"]
 n_samples = 10
 doplot = True
 
-"""" If the model is run for a single run using 'p.run_scens()' then set resampling=False
+"""" If the model is run for a single run using 'p.run_scens()' 
     to make sure that the default point estimators are used from 
     the databook with out considering any randomness!"""
 p1 = nu.Project("eg")
-p1.load_data("demo", "testing", name="eg", resampling=False)
+p1.load_data("demo", "testing", name="eg")
 
 """Define non-optimization scenarios"""
 
@@ -35,7 +34,7 @@ kwargs3 = {"name": "IYCF", "model_name": "eg", "scen_type": "coverage", "progval
 def parallel_optim(region, path=None, n_samples=2):
     """Define optimization scenario"""
     p2 = Project("Cameroon")
-    p2.load_data(inputspath=path + region + "_input.xlsx", name=region, resampling=False)
+    p2.load_data(inputspath=path + region + "_input.xlsx", name=region)
 
     """Define a custom optimization scenario"""
 
@@ -67,8 +66,7 @@ p1.run_scens(scens = scen_list, n_samples=n_samples)
 p1.write_results(filename=output_path + 'non_optimized.xlsx')
 
 p1.plot(optim=False, save_plots_folder=output_path)
-#if doplot:
-    #p1.plot()
+raise Exception()
 
 """run optimization scenarios"""
 if __name__ == "__main__":

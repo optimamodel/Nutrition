@@ -902,7 +902,6 @@ class Dataset(object):
                  defaultspath=None,
                  fromfile=None,
                  databook: pandas.ExcelFile=None,
-                 resampling=True,
                  ):
         """
 
@@ -920,7 +919,6 @@ class Dataset(object):
         :param defaultspath:
         :param fromfile:
         :param databook:
-        :param resampling:
         """
 
         self.settings = settings.Settings()
