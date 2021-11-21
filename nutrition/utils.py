@@ -37,7 +37,7 @@ def default_trackers(prev=None, rate=None):
     :param rate: return just rates (True) or everything else (False) or the entire list (None)
     :return: a list of outcome variable names
     """
-    outcomes = ["thrive", "child_deaths", "stunted", "wasted", "child_anaemic", "stunted_prev", "wasted_prev", "child_anaemprev", "pw_deaths", "pw_anaemic", "pw_anaemprev", "nonpw_anaemic", "nonpw_anaemprev", "child_mortrate", "pw_mortrate", "child_samprev", "child_mamprev", "child_sam", "child_mam", "child_sga", "child_bfprev", "child_1_6months", "child_6_23months", "child_less_5years", "stunting_cost", "wasting_cost", "child_death_cost", "pw_death_cost", "child_anaemic_cost", "pw_anaemic_cost", "total_popn", "pop_rate"]
+    outcomes = ["thrive", "child_deaths", "stunted", "wasted", "child_anaemic", "stunted_prev", "wasted_prev", "child_anaemprev", "pw_deaths", "pw_anaemic", "pw_anaemprev", "nonpw_anaemic", "nonpw_anaemprev", "child_mortrate", "child_samprev", "child_mamprev", "child_sam", "child_mam", "child_sga", "child_bfprev", "child_1_6months", "child_6_23months", "child_less_5years", "stunting_cost", "wasting_cost", "child_death_cost", "pw_death_cost", "child_anaemic_cost", "pw_anaemic_cost", "pw_mortrate", "total_popn", "pop_rate"]
     if prev is not None:
         if prev:
             outcomes = [out for out in outcomes if "prev" in out]
@@ -77,7 +77,6 @@ def pretty_labels(direction=False):
             "Number of anaemic non-pregnant women",
             "Prevalence of anaemia in non-pregnant women",
             "Child mortality rate",
-            "Pregnant women mortality rate",
             "Prevalence of SAM",
             "Prevalence of MAM",
             "Number of SAM children",
@@ -93,6 +92,7 @@ def pretty_labels(direction=False):
             "Economic cost of pregnant woman death",
             "Economic cost of anaemic child",
             "Economic cost of anaemic pregnant woman",
+            "Pregnant women mortality rate",
             "Total population",
             "Population growth rate",
         ]

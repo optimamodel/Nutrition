@@ -49,6 +49,7 @@ class Model(sc.prettyobj):
         self._reset_storage()
         self._set_trackers()
         self._track_prevs()
+        self._track_child_outcomes
         try:
             self.enforce_constraints_year = scen.enforce_constraints_year
         except:
@@ -93,7 +94,7 @@ class Model(sc.prettyobj):
         self.child_sga[self.year] = (NewlyBorns.birth_dist["Term SGA"] + NewlyBorns.birth_dist["Pre-term SGA"]) * np.sum(self.annual_births)
         self.child_1_6months[self.year] = Child_1_5_months.totalchild_pop()
         self.child_6_23months[self.year] = Child_6_11_months.totalchild_pop() + Child_12_23_months.totalchild_pop()
-        self.child_less_5years[self.year] = Child_1_5_months.totalchild_pop() + Child_6_11_months.totalchild_pop() + Child_12_23_months.totalchild_pop() + oldest.totalchild_pop()
+        self.child_less_5years[self.year] = NewlyBorns.totalchild_pop() + Child_1_5_months.totalchild_pop() + Child_6_11_months.totalchild_pop() + Child_12_23_months.totalchild_pop() + oldest.totalchild_pop()
 
     def _track_wra_outcomes(self):
         # pw
@@ -146,6 +147,7 @@ class Model(sc.prettyobj):
         self._track_prevs()
         self._track_economic_loss()
         self._track_total_pop()
+        self._track_child_outcomes
 
     def _set_pop_probs(self, year):
         init_cov = self.prog_info.get_ann_covs(year - 1)
