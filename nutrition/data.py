@@ -905,20 +905,14 @@ class Dataset(object):
                  ):
         """
 
-        :param country:
-        :param region:
-        :param name:
-        :param demographic_data:
-        :param prog_data:
-        :param default_params:
-        :param uncertain_params:
-        :param pops:
-        :param prog_info:
-        :param doload:
-        :param inputspath:
-        :param defaultspath:
-        :param fromfile:
-        :param databook:
+        :param country: The country of interest for data
+        :param region: The region of interest in the country (in geospatial optimization)
+        :param demographic_data: All the default parameters and input data stored here
+        :param prog_data: All the program specific data are stored here
+        :param pops: Population related data
+        :param prog_info: Intervention related data are stored here
+        :param doload: (Boolean)
+        :param databook: Databook that is being used in the model
         """
 
         self.settings = settings.Settings()
@@ -1054,6 +1048,7 @@ class Dataset(object):
         new_dd.or_cond["Anaemia"]["Severe diarrhoea"] = sc.odict()
         new_dd.or_cond["Anaemia"]["Severe diarrhoea"] = anem_or.to_dict("index")["For anaemia per additional episode of severe diarrhoea"]
         
+        # programs
         new_dd.or_stunting_prog = new._data_replace(new.uncert.or_stunting_prog_orig, resampled_or_stunting_prog).to_dict("index")
         
         new_dd.or_bf_prog = new._data_replace(new.uncert.or_bf_prog_orig, resampled_or_bf_prog).to_dict("index")
@@ -1109,10 +1104,7 @@ class Dataset(object):
 
         return new 
     
-    def get_iycf_effects(self, iycf_packs):
-        self.or_bf_prog.update(self.create_iycf(self.bf_effects, iycf_packs))
-        self.or_stunting_prog.update(self.create_iycf(self.stunt_effects, iycf_packs))
-    
+       
     def create_iycf(self, effects, packages):
         """ Creates IYCF packages based on user input in 'IYCFpackages' """
         # non-empty cells denote program combination
@@ -1199,7 +1191,7 @@ class Dataset(object):
         return res_dict
 
     def make_dict3(self, mydict):
-        """ for rr diarrhoea """
+        """ for relative risk diarrhoea """
         res_dict = sc.odict()
         for age in mydict.keys():
             res_dict[age] = sc.odict()
@@ -1212,8 +1204,8 @@ class Dataset(object):
 
 
 class UncertaintyParams(object):
-    """ " This is used to store upper and lower boundaries of uncertain parameters read from the databook
-    A random value is generated for each selected parameter using uniform distribution and to generate a random for each scenario run"""
+    """ " This is used to store upper bounds/lower bounds/original values of parameters that are being read from the databook
+    This object is being called by Dataset to make parameters random"""
 
     def __init__(self, spreadsheet):
         self.settings = settings.Settings()
@@ -1322,40 +1314,6 @@ class UncertaintyParams(object):
         self.set_odds_ratios()
 
         
-    def extend_treatsam(self):
-        treatsam = self.input_data.parse(sheet_name="Treatment of SAM")
-        add_man = treatsam.iloc[0]["Add extension"]
-        if pandas.notnull(add_man):
-            self.man_mam = True
-
-    def impact_pop(self):
-        sheet = utils.read_sheet(self.spreadsheet, "Programs impacted population", [0, 1])
-        impacted = sc.odict()
-        for pop in ["Children", "Pregnant women", "Non-pregnant WRA", "General population"]:
-            impacted.update(sheet.loc[pop].to_dict(orient="index"))
-        self.impacted_pop = impacted
-
-    def prog_risks(self):
-        areas = utils.read_sheet(self.spreadsheet, "Program risk areas", [0])
-        booleanFrame = areas.isnull()
-        for program, areas in booleanFrame.iterrows():
-            for risk, value in areas.items():
-                if self.prog_areas.get(risk) is None:
-                    self.prog_areas[risk] = []
-                if not value:
-                    self.prog_areas[risk].append(program)
-
-    def pop_risks(self):
-        areas = utils.read_sheet(self.spreadsheet, "Population risk areas", [0])
-        booleanFrame = areas.isnull()
-        for program, areas in booleanFrame.iterrows():
-            for risk, value in areas.items():
-                if self.pop_areas.get(risk) is None:
-                    self.pop_areas[risk] = []
-                if not value:
-                    self.pop_areas[risk].append(program)
-
-    
     def set_pw_progs(self):
         self.pw_progs_lower = utils.read_sheet(self.spreadsheet, "Programs for PW", [0, 1, 2], skiprows=[i for i in chain(range(1, 10), range(16, 25))], to_odict=False).dropna(axis=1, how="all")
         self.pw_progs_upper = utils.read_sheet(self.spreadsheet, "Programs for PW", [0, 1, 2], skiprows=[i for i in range(1, 19)], to_odict=False).dropna(axis=1, how="all")

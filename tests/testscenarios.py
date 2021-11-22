@@ -8,7 +8,6 @@ sys.setrecursionlimit(x)
 # pd.set_option('mode.chained_assignment', None)
 
 doplot = True
-n_runs = 3
 
 # load in data to create model
 """" If the model is run for a single run using 'p.run_scens()' 
