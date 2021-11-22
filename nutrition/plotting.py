@@ -20,7 +20,7 @@ import string
 for_frontend = True
 if for_frontend:
     legend_loc = {"bbox_to_anchor": (1.0, 1.0)}
-    fig_size = (8, 4)
+    fig_size = (8, 3)
     ax_size = [0.2, 0.18, 0.40, 0.72]
     pltstart = 1
     hueshift = 0.05
@@ -645,7 +645,7 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool):
         for i, spend in enumerate(avspend):
             if any(spend) > 0:  # only want to plot prog if spending is non-zero (solves legend issues)
                 leglabs.append(progset[i])
-                bar = ax.bar(x + year[k], spend, width, bottom, color=colors[i])  # bars for each year in iteration
+                bar = ax.bar(x + k, spend, width, bottom, color=colors[i])  # bars for each year in iteration
                 bars.append(bar)
                 bottom += spend
         ymax = max(bottom)
@@ -665,8 +665,8 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool):
             title = "Annual spending, %s-%s" % (ref.years[pltstart], ref.years[-1])
             xlab = "Years"
     ax.set_title(title)
-    ax.set_xticks(np.array(year[1:]) + ((len(res_list) - 1) / 2) * width)  # ignoring base year and makingsure tick is at the middle of the bar group
-    #ax.set_xticklabels(year[1:], fontsize=10)
+    ax.set_xticks(year_ticks[1:] + ((len(res_list) - 1) / 2) * width)  # ignoring base year and makingsure tick is at the middle of the bar group
+    ax.set_xticklabels(year[1:], fontsize=10)
     ax.set_xlabel(xlab)
     ax.set_ylim((0, ymax + ymax * 0.1))
     if scale == 1e1:
