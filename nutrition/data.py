@@ -144,8 +144,8 @@ class DemographicData(object):
         self.get_pw_progs()
         self.get_bo_progs()
         self.get_bo_risks()
-        packages = self.define_iycf()
-        self.get_iycf_effects(packages)
+        self.iycf_packages = self.define_iycf()
+        self.get_iycf_effects(self.iycf_packages)
 
 
     def __repr__(self):
@@ -1095,7 +1095,17 @@ class Dataset(object):
         new_dd.bf_effects = new._data_replace(new.uncert.bf_effects_orig, resampled_bf_effects)
         new_dd.stunt_effects = new._data_replace(new.uncert.stunt_effects_orig, resampled_stunt_effects)
 
+        iycf_packs = sc.dcp(new.demographic_data.iycf_packages)
+
+        new_dd.or_bf_prog.update(self.create_iycf(new_dd.bf_effects, iycf_packs))
+        new_dd.or_stunting_prog.update(self.create_iycf(new_dd.stunt_effects, iycf_packs))
+
         new.demographic_data = new_dd
+
+        try:
+            new.set_pops()
+        except Exception as E:
+            raise Exception("Error in creating populations after resampling, check data and defaults books: %s" % str(E))
 
         return new 
     
@@ -1310,6 +1320,7 @@ class UncertaintyParams(object):
         self.set_bo_risks()
         self.set_relative_risks()
         self.set_odds_ratios()
+
         
     def extend_treatsam(self):
         treatsam = self.input_data.parse(sheet_name="Treatment of SAM")
@@ -1392,9 +1403,11 @@ class UncertaintyParams(object):
         
 
     def set_iycf_effects(self):
+
         effects_lower = utils.read_sheet(self.spreadsheet, "IYCF odds ratios", [0, 1, 2], skiprows=[i for i in chain(range(1, 54), range(104, 157))]).dropna(axis=1, how="all")
         self.bf_effects_lower = effects_lower.loc["Odds ratio for correct breastfeeding - lower"].dropna(axis=0, how="all")
         self.stunt_effects_lower = effects_lower.loc["Odds ratio for stunting - lower"].dropna(axis=0, how="all")
+
         effects_upper = utils.read_sheet(self.spreadsheet, "IYCF odds ratios", [0, 1, 2], skiprows=[i for i in range(1, 107)]).dropna(axis=1, how="all")
         self.bf_effects_upper = effects_upper.loc["Odds ratio for correct breastfeeding - upper"].dropna(axis=0, how="all")
         self.stunt_effects_upper = effects_upper.loc["Odds ratio for stunting - upper"].dropna(axis=0, how="all")
@@ -1403,7 +1416,6 @@ class UncertaintyParams(object):
         self.bf_effects_orig = effects.loc["Odds ratio for correct breastfeeding"].dropna(axis=0, how="all")
         self.stunt_effects_orig = effects.loc["Odds ratio for stunting"].dropna(axis=0, how="all")
         
-
 
     def set_bo_risks(self):
         bo_sheet_lower = utils.read_sheet(self.spreadsheet, "Birth outcome risks", [0, 1], skiprows=[i for i in chain(range(0, 28), range(52, 79))]).dropna(axis=1, how="all")
