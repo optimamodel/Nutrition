@@ -8,15 +8,13 @@ sys.setrecursionlimit(x)
 # pd.set_option('mode.chained_assignment', None)
 
 doplot = True
-resampling = False
-n_runs = 3
 
 # load in data to create model
-"""" If the model is run for a single run using 'p.run_scens()' then set resampling=False
+"""" If the model is run for a single run using 'p.run_scens()' 
     to make sure that the default point estimators are used from 
     the databook with out considering any randomness!"""
 p = nu.Project("eg")
-p.load_data("demo", "testing", name="eg", resampling=resampling)
+p.load_data("demo", "testing", name="eg")
 
 ### define custom scenarios
 kwargs1 = {"name": "Treat SAM 100%", "model_name": "eg", "scen_type": "coverage", "progvals": sc.odict({"Treatment of SAM": [0.9, 0.5, 0.8]}), "growth": "fixed coverage", "enforce_constraints_year": 1}
@@ -43,9 +41,7 @@ if __name__ == "__main__":
     scen_list = nu.make_scens([kwargs1, kwargs7, kwargs3])
     p.add_scens(scen_list)
 
-    # p.run_scens() # make sure to set resampling=False
-    p.run_scens(n_runs=n_runs)
-    p.reduce_results()
+    p.run_scens(n_samples=5)
     # p.mean()
 # p.run_scens()
 if doplot:

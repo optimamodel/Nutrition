@@ -2,14 +2,15 @@ import numpy as np
 import sciris as sc
 from . import settings
 from .utils import default_trackers, restratify
+from .data import Dataset
 
 
 class Model(sc.prettyobj):
-    def __init__(self, pops, prog_info, demo_data, t=None, adjust_cov=False, timeTrends=False, growth=False, enforce_constraints_year=0, pop_sizes=dict()):
-        self.pops = sc.dcp(pops)
+    def __init__(self, dataset: Dataset, t=None, adjust_cov=False, timeTrends=False, growth=False, enforce_constraints_year=0, pop_sizes=dict()):
+        self.pops = sc.dcp(dataset.pops)
         self.children, self.pw, self.nonpw = self.pops
-        self.prog_info = sc.dcp(prog_info)
-        self.demo_data = sc.dcp(demo_data)
+        self.prog_info = sc.dcp(dataset.prog_info)
+        self.demo_data = sc.dcp(dataset.demographic_data)
         self.ss = settings.Settings()
 
         self.t = t if t else self.ss.t
@@ -17,7 +18,6 @@ class Model(sc.prettyobj):
         self.n_years = len(self.all_years)
         self.sim_years = self.all_years[1:]
         self.year = self.all_years[0]
-        self.econo_data = self.demo_data
         self.pop_sizes = pop_sizes
 
         # this is for extracting baseline coverage/spending in gui (before prog_set set)
@@ -29,12 +29,12 @@ class Model(sc.prettyobj):
         self.enforce_constraints_year = enforce_constraints_year
 
         # For economic loss
-        self.cost_wasting = self.econo_data.cost_wasting
-        self.cost_stunting = self.econo_data.cost_stunting
-        self.cost_child_death = self.econo_data.cost_child_death
-        self.cost_pw_death = self.econo_data.cost_pw_death
-        self.cost_child_anaemic = self.econo_data.cost_child_anaemic
-        self.cost_pw_anaemic = self.econo_data.cost_pw_anaemic
+        self.cost_wasting = self.demo_data.cost_wasting
+        self.cost_stunting = self.demo_data.cost_stunting
+        self.cost_child_death = self.demo_data.cost_child_death
+        self.cost_pw_death = self.demo_data.cost_pw_death
+        self.cost_child_anaemic = self.demo_data.cost_child_anaemic
+        self.cost_pw_anaemic = self.demo_data.cost_pw_anaemic
 
     def setup(self, scen, setcovs=True, restrictcovs=True):
         """Sets scenario-specific parameters within the model.
@@ -48,7 +48,8 @@ class Model(sc.prettyobj):
         self._set_pop_probs(self.year)
         self._reset_storage()
         self._set_trackers()
-        self._track_prevs()
+        self._track_risk_outcomes()
+        self._track_child_outcomes
         try:
             self.enforce_constraints_year = scen.enforce_constraints_year
         except:
@@ -88,23 +89,27 @@ class Model(sc.prettyobj):
         self.stunted[self.year] += oldest.num_stunted() * rate
         self.wasted[self.year] += sum(oldest.num_wasted(cat) for cat in self.ss.wasted_list) * rate
         self.child_anaemic[self.year] += oldest.num_anaemic() * rate
-        self.child_sam[self.year] = self.children.num_risk("sam")
-        self.child_mam[self.year] = self.children.num_risk("mam")
         self.child_sga[self.year] = (NewlyBorns.birth_dist["Term SGA"] + NewlyBorns.birth_dist["Pre-term SGA"]) * np.sum(self.annual_births)
         self.child_1_6months[self.year] = Child_1_5_months.totalchild_pop()
         self.child_6_23months[self.year] = Child_6_11_months.totalchild_pop() + Child_12_23_months.totalchild_pop()
-        self.child_less_5years[self.year] = Child_1_5_months.totalchild_pop() + Child_6_11_months.totalchild_pop() + Child_12_23_months.totalchild_pop() + oldest.totalchild_pop()
-
+        
     def _track_wra_outcomes(self):
         # pw
         self.pw_anaemic[self.year] += self.pw.num_anaemic()
         # nonpw
         self.nonpw_anaemic[self.year] += self.nonpw.num_anaemic()
 
-    def _track_prevs(self):
-        """Tracks the prevalences of conditions over time.
-        Begins at baseline year so that all scenario prevalences begin at the same point"""
-
+    def _track_risk_outcomes(self):
+        """Tracks the risk of conditions over time.
+        Begins at baseline year so that all scenario prevalences, number at risk and total age<5 population begin at the same point"""
+        oldest = self.children.age_groups[-1]
+        NewlyBorns = self.children.age_groups[0]
+        Child_1_5_months = self.children.age_groups[1]
+        Child_6_11_months = self.children.age_groups[2]
+        Child_12_23_months = self.children.age_groups[3]
+        self.child_sam[self.year] = self.children.num_risk("sam")
+        self.child_mam[self.year] = self.children.num_risk("mam")
+        self.child_less_5years[self.year] = NewlyBorns.totalchild_pop() + Child_1_5_months.totalchild_pop() + Child_6_11_months.totalchild_pop() + Child_12_23_months.totalchild_pop() + oldest.totalchild_pop()
         self.stunted_prev[self.year] = self.children.frac_stunted()
         self.wasted_prev[self.year] = self.children.frac_risk("wast")
         self.child_anaemprev[self.year] = self.children.frac_risk("an")
@@ -112,7 +117,7 @@ class Model(sc.prettyobj):
         self.nonpw_anaemprev[self.year] = self.nonpw.frac_risk("an")
         self.child_samprev[self.year] = self.children.frac_risk("sam")
         self.child_mamprev[self.year] = self.children.frac_risk("mam")
-        self.child_bfprev[self.year] = (self.children.age_groups[0].num_correctbf() + self.children.age_groups[1].num_correctbf()) / (self.children.age_groups[0].totalchild_pop() + self.children.age_groups[1].totalchild_pop())
+        self.child_bfprev[self.year] = (NewlyBorns.num_correctbf() + Child_1_5_months.num_correctbf()) / (NewlyBorns.totalchild_pop() + Child_1_5_months.totalchild_pop())
 
     def _track_rates(self):
         """Rates defined as total deaths per 1000 live births.
@@ -143,9 +148,10 @@ class Model(sc.prettyobj):
 
     def _track(self):
         self._track_wra_outcomes()
-        self._track_prevs()
+        self._track_risk_outcomes()
         self._track_economic_loss()
         self._track_total_pop()
+        self._track_child_outcomes
 
     def _set_pop_probs(self, year):
         init_cov = self.prog_info.get_ann_covs(year - 1)

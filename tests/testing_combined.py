@@ -1,6 +1,5 @@
 """"This script may be used to test running non-optimization
     and optimization scenarios together.
-    resampling (boolean): whether to use resampling with multirun or point estimators with single run (defualt: True)
     """
 import nutrition.ui as nu
 import sciris as sc
@@ -14,14 +13,14 @@ from functools import partial
 input_path = "Databooks/new_format/"
 output_path = "Outputs/"
 region_list = ["DOUALA"]
-n_runs = 1
+n_samples = 5
 doplot = True
 
-"""" If the model is run for a single run using 'p.run_scens()' then set resampling=False
+"""" If the model is run for a single run using 'p.run_scens()' 
     to make sure that the default point estimators are used from 
     the databook with out considering any randomness!"""
 p1 = nu.Project("eg")
-p1.load_data("demo", "testing", name="eg", resampling=False)
+p1.load_data("demo", "testing", name="eg")
 
 """Define non-optimization scenarios"""
 
@@ -32,10 +31,10 @@ kwargs2 = {"name": "IYCF at $10 mil", "model_name": "eg", "scen_type": "budget",
 kwargs3 = {"name": "IYCF", "model_name": "eg", "scen_type": "coverage", "progvals": sc.odict({"IYCF 1": [0.6, 0.2, 0.5, 0.95, 0.8]})}
 
 
-def parallel_optim(region, path=None, n_runs=2):
+def parallel_optim(region, path=None, n_samples=2):
     """Define optimization scenario"""
     p2 = Project("Cameroon")
-    p2.load_data(inputspath=path + region + "_input.xlsx", name=region, resampling=False)
+    p2.load_data(inputspath=path + region + "_input.xlsx", name=region)
 
     """Define a custom optimization scenario"""
 
@@ -53,33 +52,29 @@ def parallel_optim(region, path=None, n_runs=2):
         "prog_set": ["Balanced energy-protein supplementation", "Cash transfers", "IFA fortification of wheat flour", "IYCF 1", "IYCF 2", "IFAS for pregnant women (community)", "IFAS for pregnant women (health facility)", "Lipid-based nutrition supplements", "Multiple micronutrient supplementation", "Micronutrient powders", "Kangaroo mother care", "Treatment of SAM", "Vitamin A supplementation", "Zinc for treatment + ORS", "Iron and iodine fortification of salt"],
         "fix_curr": False,
         "add_funds": 0,
-        "growth": "fixed budget",
+        "growth": "fixed coverage",
     }
 
     p2.add_optims(Optim(**kwargs))
-    p2.run_optim(maxiter=50, swarmsize=0, maxtime=1, parallel=False, runbalanced=False, n_runs=n_runs)
-    p2.reduce_results()
+    p2.run_optim(maxiter=50, swarmsize=0, maxtime=1, parallel=False, runbalanced=False, n_samples=n_samples)
     return p2
 
 
 # """run non optimization scenarios"""
-# scen_list = nu.make_scens([kwargs1])
-# p1.add_scens(scen_list)
-# p1.run_scens(n_runs=n_runs)
-# p1.write_results(filename=output_path + 'non_optimized.xlsx')
-# p1.reduce_results()
+#scen_list = nu.make_scens([kwargs1])
+#p1.run_scens(scens = scen_list, n_samples=n_samples)
+#p1.write_results(filename=output_path + 'non_optimized.xlsx')
 
-# p1.plot(optim=False, save_plots_folder=output_path)
-# #if doplot:
-#    #p1.plot()
+#p1.plot(optim=False, save_plots_folder=output_path)
+#raise Exception()
 
 """run optimization scenarios"""
 if __name__ == "__main__":
 
-    run_optim = partial(parallel_optim, path=input_path, n_runs=5)
+    run_optim = partial(parallel_optim, path=input_path, n_samples=5)
     results = []
 
-    # proj_list = run_parallel(run_optim, region_list, num_procs=3)
+    proj_list = run_parallel(run_optim, region_list, num_procs=3)
 
     proj_list = []
     for region in region_list:
@@ -90,11 +85,11 @@ if __name__ == "__main__":
             for scenres in p.results[res]:
                 if scenres.name == "Baseline":
                     scenres.name = scenres.model_name + " " + scenres.name
-                # else:
-                #     scenres.name = scenres.model_name
+                #else:
+                     #scenres.name = scenres.model_name
                 results.append(scenres)
     write_results(results, filename=output_path + "optimized.xlsx")
-    # p.write_results(filename=output_path + 'optimized.xlsx')
+    p.write_results(filename=output_path + 'optimized.xlsx')
     if doplot:
         for p in proj_list:
             # p.plot(optim=True, save_plots_folder=get_desktop_folder() + 'Nutrition test' + os.sep)

@@ -13,7 +13,7 @@ from .model import Model
 from .scenarios import Scen, run_scen, convert_scen, make_default_scen
 from .optimization import Optim
 from .geospatial import Geospatial
-from .results import write_results, reduce_results
+from .results import write_results, resampled_key_str
 from .plotting import make_plots, get_costeff, plot_costcurve, save_figs
 from .demo import demo_scens, demo_optims, demo_geos
 from . import settings
@@ -82,7 +82,6 @@ class Project(object):
         self.gitinfo = sc.gitinfo(__file__)
         self.filename = None  # File path, only present if self.save() is used
         self.ss = Settings()
-        self.reduced_results = dict()
 
         return None
 
@@ -138,7 +137,7 @@ class Project(object):
         self.spreadsheets[name] = sc.Spreadsheet(filename=inputspath)
         return self.inputsheet(name)
 
-    def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True, validate=True, resampling=True, growth=False):
+    def load_data(self, country=None, region=None, name=None, inputspath=None, defaultspath=None, fromfile=True, validate=True, growth=False):
         """Load the data, which can mean one of two things: read in the spreadsheets, and/or use these data to make a model """
 
         # Generate name odict key for Spreadsheet, Dataset, and Model odicts.
@@ -152,8 +151,8 @@ class Project(object):
                 self.storeinputs(inputspath=inputspath, country=country, region=region, name=name)
 
         # Optionally (but almost always) use these to make a model (do not do if blank sheets).
-
-        dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, project=self, resampling=resampling)
+        databook = self.inputsheet(name).pandas()
+        dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, databook=databook)
         self.datasets[name] = dataset
         dataset.name = name
         self.add_model(name, growth=growth)  # add model associated with the dataset or datasets
@@ -198,13 +197,11 @@ class Project(object):
 
     def write_results(self, filename=None, folder=None, key=None):
         """Blargh, this really needs some tidying
-        - This function calls write_results function in results.py
-        - Also, reduced_results includes point, high and low estimates generated through resampling in each run"""
+        - This function calls write_results function in results.py"""
         if key is None:
             key = -1
         results = self.result(key)
-        reduced_results = self.reduced_results
-        write_results(results, reduced_results, projname=self.name, filename=filename, folder=folder)
+        write_results(results, projname=self.name, filename=filename, folder=folder)
         return
 
     def add(self, name, item, what=None):
@@ -341,11 +338,8 @@ class Project(object):
         For the same input data, one model instance is used for all scenarios.
         """
         dataset = self.dataset(name)
-        pops = dataset.pops
-        prog_info = dataset.prog_info
         t = dataset.t
-        demo_data = dataset.demo_data
-        model = Model(pops, prog_info, demo_data, t, growth=growth)
+        model = Model(dataset, t, growth=growth)
         self.add(name=name, item=model, what="model")
         # Loop over all Scens and create a new default scenario for any that depend on the dataset which has been reloaded.
         # for scen_name in self.scens.keys():  # Loop over all Scen keys in the project
@@ -464,14 +458,7 @@ class Project(object):
         for i in range(n_runs):
             f(*args)
 
-    def reduce_results(self, key=None, point_estimate = 'best', bounds = 'quantiles', stddevs=None, quantiles=None, keep_raw=False):
-        if key is None:
-            key = -1
-        results = self.result(key)
-        self.reduced_results = reduce_results(results, point_estimate=point_estimate, bounds=bounds, stddevs=stddevs, quantiles=quantiles, keep_raw=keep_raw)
-        return
-
-    def run_scen(self, scen=None, base_run=True, n_sampled_runs=0):
+    def run_scen(self, scen, n_samples=0, seed=None):
         """Function for running a single scenario that may or may not be saved in P.scens
         NOTE that the sampling needs to be done as part of the Project object because it relies on access to the data
         NOTE this does not add the scenario to P.scens or save the results to the project
@@ -481,57 +468,62 @@ class Project(object):
         :param n_sampled_runs: number of times to run with sampling
         :return a list of Results
         """
+        
+        if seed is None:
+            seed = 0
+
         results = []
         if (scen.model_name is None) or (scen.model_name not in self.datasets.keys()):
             raise Exception("Could not find valid dataset for %s.  Edit the scenario and change the dataset" % scen.name)
-            
 
-        for i in range(0 if base_run else 1, n_sampled_runs+1):
-            # print (f'Sample {i} for scen {scen.name}')
-            if i == 0: #base_run
-                model = sc.dcp(self.model(scen.model_name))
-                model.growth = scen.growth
-                model.enforce_constraints_year = scen.enforce_constraints_year
-                result_name = scen.name
-            else: #sampled run
-                result_name = scen.name + " resampled__#" + str(i)
-                dataset = Dataset(country=None, region=None, name=None, fromfile=False, doload=True, project=self, resampling=True)
-                pops = dataset.pops
-                prog_info = dataset.prog_info
-                t = dataset.t
-                sampled_data = dataset.demo_data
-                model = Model(pops, prog_info, sampled_data, t, enforce_constraints_year=scen.enforce_constraints_year, growth=scen.growth)
-            
-                
+        def _add_excess_budget(scen, model):
+            # unclear why this is needed?
             if "Excess budget not allocated" in scen.prog_set: #add a dummy program to the model
                 excess_spend = {"name": "Excess budget not allocated", "all_years": model.prog_info.all_years, "prog_data": add_dummy_prog_data(model.prog_info, "Excess budget not allocated")}
                 model.prog_info.add_prog(excess_spend, model.pops)
                 model.prog_info.prog_data = excess_spend["prog_data"]
-                
+
+        dataset = self.dataset(scen.model_name) # WARNING - assumes that model names are always the same as dataset names
+
+        if n_samples == 0:
+            model = Model(dataset, dataset.t, enforce_constraints_year=scen.enforce_constraints_year, growth=scen.growth)
+            result_name = scen.name
+            _add_excess_budget(scen, model)
             res = run_scen(scen, model, name=result_name)
             results.append(res)
-        
+        else:
+            for i in range(n_samples):
+                model = Model(dataset.resample(seed=seed+i), dataset.t, enforce_constraints_year=scen.enforce_constraints_year, growth=scen.growth)
+                result_name = scen.name + resampled_key_str + str(i)
+                _add_excess_budget(scen, model)
+                res = run_scen(scen, model, name=result_name)
+                results.append(res)
+
         return results
 
-    def run_scens(self, scens=None, n_runs=1):
+
+    def run_scens(self, scens=None, n_samples=0, seed=None):
         """Function for running scenarios
         - If scens is specified, they are added to self.scens
         - The first run happens with default parameters (point estimates)
         - The subsequent runs consider resampling
 
         """
-        self.n_runs = n_runs
-        results = []
         if scens is not None:
             self.add_scens(scens)
+
+        results = []
         for scen in self.scens.values():
             if scen.active:
-                results += self.run_scen(scen, base_run = True, n_sampled_runs = n_runs - 1)
+                results += self.run_scen(scen, n_samples = 0) #best estimate (no random seed relevant)
+                if n_samples > 0:
+                    results += self.run_scen(scen, n_samples = n_samples, seed=seed) #actual samples
                 
         self.add_result(results, name="scens")
-        return None
 
-    def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=None, maxtime=300, parallel=True, dosave=True, runbaseline=True, runbalanced=False, n_runs=1):
+        return results
+
+    def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=None, maxtime=300, parallel=True, dosave=True, runbaseline=True, runbalanced=False, n_samples=0, seed=None):
         if optim is not None:
             self.add_optims(optim)
             key = optim.name  # this to handle parallel calls of this function
@@ -544,7 +536,7 @@ class Project(object):
         # run baseline
         if runbaseline or runbalanced:
             base_scen = self.run_baseline(optim.model_name, optim.prog_set, growth=optim.growth, dorun=False)
-            base = self.run_scen(scen = base_scen, base_run = True, n_sampled_runs = 0)[0] #noting that run_scen returns a list
+            base = self.run_scen(scen = base_scen, n_samples = 0)[0] #noting that run_scen returns a list
             if runbaseline: #don't append this to the results if runbaseline=False
                 results.append(base)
         else:
@@ -558,21 +550,21 @@ class Project(object):
         
         results += opt_results
         
-        if n_runs> 1: #we also need to sample the baseline and each of the optimized results NOTE: base_run = False as we already ran the baseline
-            results += self.run_scen(scen = base_scen, base_run = False, n_sampled_runs = n_runs - 1)
+        if n_samples >= 1: #we also need to sample the baseline and each of the optimized results NOTE: base_run = False as we already ran the baseline
+            results += self.run_scen(scen = base_scen, n_samples = n_samples, seed=seed)
             
             for opt_result in opt_results:
                 optim_alloc = opt_result.get_allocs()
                 scen_name = opt_result.name
                 scen = Scen(name=scen_name, model_name=optim.model_name, scen_type="budget", progvals=optim_alloc, enforce_constraints_year=0, growth=opt_result.growth)
                 
-                results += self.run_scen(scen = scen, base_run = False, n_sampled_runs = n_runs - 1)
+                results += self.run_scen(scen = scen, n_samples = n_samples, seed=seed)
                 
         if dosave:
             self.add_result(results, name=optim.name)
         return results
   
-    def run_geo(self, geo=None, key=-1, maxiter=20, swarmsize=None, maxtime=400, dosave=True, parallel=False, runbalanced=False, n_runs=1):
+    def run_geo(self, geo=None, key=-1, maxiter=20, swarmsize=None, maxtime=400, dosave=True, parallel=False, runbalanced=False, n_samples=0, seed=None):
         """Regions cannot be parallelised because daemon processes cannot have children.
         Two options: Either can parallelize regions and not the budget or run
         regions in series while parallelising each budget multiple."""
@@ -582,7 +574,9 @@ class Project(object):
             key = geo.name  # this to handle parallel calls of this function
         geo = self.geo(key)
         
-        results = geo.run_geo(self, maxiter, swarmsize, maxtime, parallel, runbalanced=runbalanced, n_runs=n_runs)     
+        results = geo.run_geo(self, maxiter, swarmsize, maxtime, parallel, runbalanced=runbalanced, n_samples=n_samples)
+        
+        #TODO needs to do sampling here?
                    
         if dosave:
             self.add_result(results, name="geospatial")
@@ -602,8 +596,8 @@ class Project(object):
         print("Not implemented")
 
     def plot(self, key=-1, toplot=None, optim=False, geo=False, save_plots_folder=None):
-        figs = make_plots(self.result(key), self.reduced_results, toplot=toplot, optim=optim, geo=geo)
-        if save_plots_folder:
+        figs = make_plots(self.result(key), toplot=toplot, optim=optim, geo=geo)
+        if figs and save_plots_folder:
             save_figs(figs, path=save_plots_folder)
         return figs
 
@@ -644,10 +638,10 @@ def demo(scens=False, optims=False, geos=False):
 
     # Create project and load in demo databook spreadsheet file into 'demo' Spreadsheet, Dataset, and Model.
     P = Project(name)
-    P.load_data(country, region, name="demo", resampling=False)
-    P.load_data(country, "region1", name="demoregion1", resampling=False)
-    P.load_data(country, "region2", name="demoregion2", resampling=False)
-    P.load_data(country, "region3", name="demoregion3", resampling=False)
+    P.load_data(country, region, name="demo")
+    # P.load_data(country, "region1", name="demoregion1")
+    # P.load_data(country, "region2", name="demoregion2")
+    # P.load_data(country, "region3", name="demoregion3")
 
     # Create demo scenarios and optimizations
     if scens:

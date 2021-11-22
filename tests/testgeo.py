@@ -5,9 +5,9 @@ import sciris as sc
 # load in data to create model
 p = nu.Project("Demo")
 # three identical regions (same spreadsheet)
-p.load_data("demo", "region1", name="Demo1", resampling=False)
-p.load_data("demo", "region2", name="Demo2", resampling=False)
-# p.load_data('demo', 'region3', name='Demo3', resampling=False)
+p.load_data("demo", "region1", name="Demo1")
+p.load_data("demo", "region2", name="Demo2")
+# p.load_data('demo', 'region3', name='Demo3')
 
 
 kwargs = {
@@ -27,8 +27,7 @@ kwargs = {
 }
 if __name__ == "__main__":
     geo = Geospatial(**kwargs)
-    results = p.run_geo(geo=geo, maxiter=80, swarmsize=0, maxtime=80, parallel=True, runbalanced=True, n_runs=5)
-    p.reduce_results()
+    results = p.run_geo(geo=geo, maxiter=5, swarmsize=0, maxtime=5, parallel=True, runbalanced=True, n_samples=5)
     p.plot(geo=True)
     p.write_results("geo_results.xlsx")
     p.save("geo_test")

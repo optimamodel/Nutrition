@@ -133,4 +133,3 @@ tests/testing.xlsx
 inputs/costed_baseline*xlsx
 *.xlsx
 *.xlsm
-*.rdb

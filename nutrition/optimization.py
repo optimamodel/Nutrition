@@ -118,23 +118,7 @@ class Optim(sc.prettyobj):
                 mult_str = f"(mult={res_balanced[i].mult}) " if len(self.mults) > 1 or res_balanced[i].mult != 1 else ""
                 res_balanced[i].name = f"{mult_str}Balanced objectives"
 
-        """Attempt to get some better pretty names for the results
-        pretty = utils.pretty_labels(direction=False) + utils.pretty_labels(direction=True)
-        for result in res:
-            new_label = ""
-            non_zero_weights = np.where(result.weight != 0.0)[0]
-            if len(non_zero_weights) == 1:  # only one objective, no need to specify the weight
-                new_label += pretty[non_zero_weights][0]
-            else:
-                for ind in non_zero_weights:
-                    if new_label:
-                        new_label += ", "
-                    new_label += f"{pretty[ind]}: {result.weight[ind] * utils.get_sign(pretty.keys()[ind])}"
 
-            if len(self.mults) > 1 or result.mult != 1:  # add clarity on multiplier only if necessary
-                new_label = f"(mult={result.mult}) " + new_label
-            result.name = new_label
-        """
         for result in res:
             if len(self.mults) > 1 or result.mult != 1:  # add clarity on multiplier only if necessary
                 result.name = result.obj + f" (budget x{result.mult})"

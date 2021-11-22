@@ -3,6 +3,8 @@ from .utils import default_trackers, pretty_labels
 import numpy as np
 import math as mt
 
+resampled_key_str = " __resampled__#" #constant string imported elsewhere
+
 
 
 class ScenResult(sc.prettyobj):
@@ -124,9 +126,7 @@ def reduce_results(results, point_estimate:str="best", bounds:str = "quantiles",
     :param keep_raw: also keep all of the individual sampled results (troubleshooting or alternative plot methods might use this)
     
     :return results dict of the key outcomes for each main result, not the full results
-    """
-    sampled_pattern = " resampled__#" #must match project run_scen pattern (should be in universal constants somewhere instead)
-    
+    """    
     years = results[0].years
     estimate_keys = ["point", "low", "high"]
     outcomes = default_trackers()
@@ -147,11 +147,11 @@ def reduce_results(results, point_estimate:str="best", bounds:str = "quantiles",
     res_unc = {} #this will be the returned results with uncertainty and without sampled results
 
     for res in results:
-        if sampled_pattern not in res.name: #e.g. it's a "real" point estimate result
+        if resampled_key_str not in res.name: #e.g. it's a "real" point estimate result
             # print ('Evaluating', res.name)
             res_unc[res.name] = {o: {es: np.zeros(len(years)) for es in estimate_keys} for o in outcomes}
             
-            sampled_results = [sr for sr in results if res.name + sampled_pattern in sr.name]
+            sampled_results = [sr for sr in results if res.name + resampled_key_str in sr.name]
             n_sampled_runs = len(sampled_results)
 
 
@@ -219,11 +219,10 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
     rows, filepath, outputs, outcomes, sheetnames, nullrow, allformats, alldata = _write_results_outcomes(projname, filename, folder, years)
 
     ### Outcomes sheet
-    headers = [["Scenario", "Outcome"] + years + ["Cumulative"]]
+    headers = [["Scenario", "Outcome"] + years + [""] + ["Cumulative"]]
     for r, res in enumerate(results):
         if res.name != "Excess budget":
             out = res.get_outputs(outcomes, seq=True, pretty=True)
-            # print(out)
             for o, outcome in enumerate(rows):
                 name = [res.name] if o == 0 else [""]
                 thisout = out[o]
@@ -231,9 +230,11 @@ def write_results(results, reduced_results={}, projname=None, filename=None, fol
                     cumul = "N/A"
                 elif "mortality" in outcome.lower():
                     cumul = "N/A"
+                elif "Number of SAM children" in outcome or "Number of MAM children" in outcome:
+                    cumul = "N/A"
                 else:
                     cumul = sum(thisout)
-                outputs.append(name + [outcome] + list(thisout) + [cumul])
+                outputs.append(name + [outcome] + list(thisout) + [""] +  [cumul])
             outputs.append(nullrow)
     data = headers + outputs
     alldata.append(data)
@@ -297,6 +298,8 @@ def write_reduced_results(results, reduced_results, projname=None, filename=None
                         cumul = "N/A"
                     elif "mortality" in outcome.lower():
                         cumul = "N/A"
+                    elif "Number of SAM children" in outcome or "Number of MAM children" in outcome:
+                        cumul = "N/A"
                     else:
                         cumul = sum(thisout)
                     outputs.append(name + [esti] + [outcome] + list(thisout) + [cumul])
@@ -348,7 +351,7 @@ def _write_results_outcomes(projname, filename, folder, years):
         projname = ""
     outcomes = default_trackers()
     labs = pretty_labels()
-    rows = [labs[out] for out in outcomes]
+    rows = [labs[out] for out in outcomes if "pop" not in out and "pw_mortrate" not in out]
     if filename is None:
         filename = "outputs.xlsx"
     filepath = sc.makefilepath(filename=filename, folder=folder, ext="xlsx", default="%s outputs.xlsx" % projname)
