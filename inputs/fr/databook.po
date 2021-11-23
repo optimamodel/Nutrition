@@ -680,9 +680,6 @@ msgstr "Rapports des cotes"
 msgid "Programs birth outcomes"
 msgstr "Programmes-rés. des naissances"
 
-msgid "Programs anemia"
-msgstr "Programmes-anémie"
-
 msgid "Programs anaemia"
 msgstr "Programmes-anémie"
 

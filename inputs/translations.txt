@@ -219,7 +219,6 @@ Birth outcome risks
 Relative risks
 Odds ratios
 Programs birth outcomes
-Programs anemia
 Programs anaemia
 Programs wasting
 Programs for children

@@ -665,9 +665,6 @@ msgstr ""
 msgid "Programs birth outcomes"
 msgstr ""
 
-msgid "Programs anemia"
-msgstr ""
-
 msgid "Programs anaemia"
 msgstr ""
 

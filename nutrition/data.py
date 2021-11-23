@@ -507,7 +507,7 @@ class DemographicData(object):
 
     @translate
     def anaemia_progs(self):
-        anaem_sheet = utils.read_sheet(self.spreadsheet, _("Programs anemia"), [0, 1])
+        anaem_sheet = utils.read_sheet(self.spreadsheet, _("Programs anaemia"), [0, 1])
         self.rr_anaem_prog = anaem_sheet.loc[_("Relative risks of anaemia when receiving intervention")].to_dict(orient="index")
         self.or_anaem_prog = anaem_sheet.loc[_("Odds ratios of being anaemic when covered by intervention")].to_dict(orient="index")
 
@@ -1413,14 +1413,14 @@ class UncertaintyParams(object):
         
 
     def set_anaemia_progs(self):
-        anaem_sheet_lower = utils.read_sheet(self.spreadsheet, "Programs anemia", [0, 1], skiprows=[i for i in chain(range(1, 24), range(43, 66))]).dropna(axis=1, how="all")
+        anaem_sheet_lower = utils.read_sheet(self.spreadsheet, "Programs anaemia", [0, 1], skiprows=[i for i in chain(range(1, 24), range(43, 66))]).dropna(axis=1, how="all")
         self.rr_anaem_prog_lower = anaem_sheet_lower.loc["Relative risks of anaemia when receiving intervention - lower"].dropna(axis=0, how="all")
         self.or_anaem_prog_lower = anaem_sheet_lower.loc["Odds ratios of being anaemic when covered by intervention - lower"].dropna(axis=0, how="all")
-        anaem_sheet_upper = utils.read_sheet(self.spreadsheet, "Programs anemia", [0, 1], skiprows=[i for i in range(1, 46)]).dropna(axis=1, how="all")
+        anaem_sheet_upper = utils.read_sheet(self.spreadsheet, "Programs anaemia", [0, 1], skiprows=[i for i in range(1, 46)]).dropna(axis=1, how="all")
         self.rr_anaem_prog_upper = anaem_sheet_upper.loc["Relative risks of anaemia when receiving intervention - upper"].dropna(axis=0, how="all")
         self.or_anaem_prog_upper = anaem_sheet_upper.loc["Odds ratios of being anaemic when covered by intervention - upper"].dropna(axis=0, how="all")
         
-        anaem_sheet = utils.read_sheet(self.spreadsheet, "Programs anemia", [0, 1], skiprows=[i for i in range(22, 66)]).dropna(axis=1, how="all")
+        anaem_sheet = utils.read_sheet(self.spreadsheet, "Programs anaemia", [0, 1], skiprows=[i for i in range(22, 66)]).dropna(axis=1, how="all")
         self.rr_anaem_prog_orig = anaem_sheet.loc["Relative risks of anaemia when receiving intervention"].dropna(axis=0, how="all")
         self.or_anaem_prog_orig = anaem_sheet.loc["Odds ratios of being anaemic when covered by intervention"].dropna(axis=0, how="all")
         
