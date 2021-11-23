@@ -84,13 +84,35 @@ class CalcCellCache(object):
             self.check_cell_against_worksheet_value(wb, sheetname, rownum, colnum)
 
 
-# TODO (possible): we may want to merge this class with InputData to make another class (DatabookData).
-class DefaultParams(object):
-    def __init__(self, default_data, input_data):
-        self.locale = get_databook_locale(default_data.book)
-        assert get_databook_locale(default_data.book) == self.locale, 'Default data and input data locales do not match'
+class DemographicData(object):
+    """ Container for all the region-specific data (prevalences, mortality rates etc) read in from spreadsheet"""
 
+    def __init__(self, data, calcscache):
+
+        self.locale = get_databook_locale(data.book)
+
+        self.spreadsheet = data
         self.settings = settings.Settings(self.locale)
+        self.demo = None
+        self.proj = sc.odict()
+        self.death_dist = sc.odict()
+        self.risk_dist = sc.odict()
+        self.causes_death = None
+        self.time_trends = sc.odict()
+        self.birth_space = None
+        self.incidences = sc.odict()
+        self.pw_agedist = []
+        self.wra_proj = []
+        self.t = None
+        self.calcscache = calcscache
+
+        self.get_demo()
+        self.get_proj()
+        self.get_risk_dist()
+        self.get_death_dist()
+        self.get_time_trends()
+        self.get_incidences()
+
         self.impacted_pop = None
         self.prog_areas = sc.odict()
         self.pop_areas = sc.odict()
@@ -118,10 +140,6 @@ class DefaultParams(object):
         self.input_data = None
         return None
 
-    def __repr__(self):
-        output = sc.prepr(self)
-        return output
-
     def read_spreadsheet(self):
         self.extend_treatsam()
         self.impact_pop()
@@ -137,6 +155,232 @@ class DefaultParams(object):
         self.get_bo_risks()
         packages = self.define_iycf()
         self.get_iycf_effects(packages)
+
+    def __repr__(self):
+        output = sc.prepr(self)
+        return output
+
+    def __setstate__(self, d):
+        self.__dict__ = d
+        d = migrate(self)
+        self.__dict__ = d.__dict__
+
+    ## DEMOGRAPHICS ##
+
+    @translate
+    def get_demo(self):
+        # Load the main spreadsheet into a DataFrame.
+
+        baseline = utils.read_sheet(self.spreadsheet, _("Baseline year population inputs"), [0, 1])
+
+        # Recalculate cells that need it, and remember in the calculations cache.
+        frac_rice = baseline.loc[(_("Food"), _("Fraction eating rice as main staple food")), _("Data")]
+        frac_wheat = baseline.loc[(_("Food"), _("Fraction eating wheat as main staple food")), _("Data")]
+        frac_maize = baseline.loc[(_("Food"), _("Fraction eating maize as main staple food")), _("Data")]
+        frac_other_staples = 1.0 - frac_rice - frac_wheat - frac_maize
+        baseline.loc[(_("Food"), _("Fraction on other staples as main staple food")), _("Data")] = frac_other_staples
+        self.calcscache.write_cell(_("Baseline year population inputs"), 19, 2, frac_other_staples)
+        birth_spacing_sum = baseline.loc[_("Birth spacing"), _("Data")][0:4].sum()
+        baseline.loc[_("Birth spacing"), _("Total (must be 100%)")] = birth_spacing_sum
+        self.calcscache.write_cell(_("Baseline year population inputs"), 32, 2, birth_spacing_sum)
+        outcome_sum = baseline.loc[_("Birth outcome distribution"), _("Data")][0:3].sum()
+        baseline.loc[(_("Birth outcome distribution"), _("Term AGA")), _("Data")] = 1.0 - outcome_sum
+        self.calcscache.write_cell(_("Baseline year population inputs"), 47, 2, 1.0 - outcome_sum)
+
+        demo = sc.odict()
+        # the fields that group the data in spreadsheet
+        fields = [_("Population data"), _("Food"), _("Age distribution of pregnant women"), _("Mortality"), _("Other risks")]
+        for field in fields:
+            demo.update(baseline.loc[field].to_dict("index"))
+        self.demo = {key: item[_("Data")] for key, item in demo.items()}
+        self.demo[_("Birth dist")] = baseline.loc[_("Birth outcome distribution")].to_dict()[_("Data")]
+        t = baseline.loc[_("Projection years")]
+        self.t = [int(t.loc[_("Baseline year (projection start year)")][_("Data")]), int(t.loc[_("End year")][_("Data")])]
+        # birth spacing
+        self.birth_space = baseline.loc[_("Birth spacing")].to_dict()[_("Data")]
+        self.birth_space.pop(_("Total (must be 100%)"), None)
+
+        # Load the main spreadsheet into a DataFrame (slightly different format).
+        # fix ages for PW
+        baseline = utils.read_sheet(self.spreadsheet, _("Baseline year population inputs"), [0])
+
+        for row in baseline.loc[_(("Age distribution of pregnant women"))].iterrows():
+            self.pw_agedist.append(row[1][_("Data")])
+        return None
+
+    @translate
+    def get_proj(self):
+        # Load the main spreadsheet into a DataFrame.
+        # drops rows with any na
+
+        proj = utils.read_sheet(self.spreadsheet, _("Demographic projections"), cols=[0], dropna="any")
+
+        # Read in the Baseline spreadsheet information we'll need.
+        baseline = utils.read_sheet(self.spreadsheet, _("Baseline year population inputs"), [0, 1])
+        stillbirth = baseline.loc[_("Mortality")].loc[_("Stillbirths (per 1,000 total births)")].values[0]
+        abortion = baseline.loc[_("Mortality")].loc[_("Fraction of pregnancies ending in spontaneous abortion")].values[0]
+
+        # Recalculate cells that need it, and remember in the calculations cache.
+        total_wra = proj.loc[:, [_("WRA: 15-19 years"), _("WRA: 20-29 years"), _("WRA: 30-39 years"), _("WRA: 40-49 years")]].sum(axis=1).values
+        proj.loc[:, _("Total WRA")] = total_wra
+        self.calcscache.write_col(_("Demographic projections"), 1, 6, total_wra)
+        numbirths = proj.loc[:, _("Number of births")].values
+        estpregwomen = (numbirths + numbirths * stillbirth / (1000.0 - stillbirth)) / (1.0 - abortion)
+        proj.loc[:, _("Estimated pregnant women")] = estpregwomen
+        self.calcscache.write_col(_("Demographic projections"), 1, 7, estpregwomen)
+        nonpregwra = total_wra - estpregwomen
+        proj.loc[:, _("non-pregnant WRA")] = nonpregwra
+        self.calcscache.write_col(_("Demographic projections"), 1, 8, nonpregwra)
+
+        # dict of lists to support indexing
+        for column in proj:
+            self.proj[column] = proj[column].tolist()
+        # wra pop projections list in increasing age order
+        for age in self.settings.wra_ages:
+            self.wra_proj.append(proj[age].tolist())
+
+    @translate
+    def get_risk_dist(self):
+        # Load the main spreadsheet into a DataFrame.
+
+        dist = utils.read_sheet(self.spreadsheet, _(_("Nutritional status distribution")), [0, 1])
+
+        # Recalculate cells that need it, and remember in the calculations cache.
+        stunting_mod_hi_sums = dist.loc[_("Stunting (height-for-age)")].iloc[2:4, 0:5].astype(np.float).sum().values
+        stunting_invs = norm.ppf(stunting_mod_hi_sums, 0.0, 1.0)
+        stunting_norm_pcts = np.ones(5) - norm.cdf(stunting_invs + np.ones(5), 0.0, 1.0)
+        cols = dist.columns[0:5]
+        dist.loc[(_("Stunting (height-for-age)"), _("Normal (HAZ-score > -1)")), cols] = stunting_norm_pcts
+        self.calcscache.write_row(_("Nutritional status distribution"), 1, 2, stunting_norm_pcts)
+        stunting_mild_pcts = norm.cdf(stunting_invs + np.ones(5), 0.0, 1.0) - stunting_mod_hi_sums
+        dist.loc[(_("Stunting (height-for-age)"), _("Mild (HAZ-score between -2 and -1)")), cols] = stunting_mild_pcts
+        self.calcscache.write_row(_("Nutritional status distribution"), 2, 2, stunting_mild_pcts)
+        wasting_mod_hi_sums = dist.loc[_("Wasting (weight-for-height)")].iloc[2:4, 0:5].astype(np.float).sum().values
+        wasting_invs = norm.ppf(wasting_mod_hi_sums, 0.0, 1.0)
+        wasting_norm_pcts = np.ones(5) - norm.cdf(wasting_invs + np.ones(5), 0.0, 1.0)
+        dist.loc[(_("Wasting (weight-for-height)"), _("Normal  (WHZ-score > -1)")), cols] = wasting_norm_pcts
+        self.calcscache.write_row(_("Nutritional status distribution"), 7, 2, wasting_norm_pcts)
+        wasting_mild_pcts = norm.cdf(wasting_invs + np.ones(5), 0.0, 1.0) - wasting_mod_hi_sums
+        dist.loc[(_("Wasting (weight-for-height)"), _("Mild  (WHZ-score between -2 and -1)")), cols] = wasting_mild_pcts
+        self.calcscache.write_row(_("Nutritional status distribution"), 8, 2, wasting_mild_pcts)
+
+        # dist = dist.drop(dist.index[[1]])
+        riskDist = sc.odict()
+        for key, field in zip([_('Stunting'),_('Wasting')], [_("Stunting (height-for-age)"), _("Wasting (weight-for-height)")]):
+            riskDist[key] = dist.loc[field].dropna(axis=1, how="all").to_dict("dict")
+        # fix key refs (surprisingly hard to do in Pandas)
+        for outer, ageCat in riskDist.items():
+            self.risk_dist[outer] = sc.odict()
+            for age, catValue in ageCat.items():
+                self.risk_dist[outer][age] = dict()
+                for cat, value in catValue.items():
+                    newCat = cat.split(" ", 1)[0]
+                    self.risk_dist[outer][age][newCat] = value
+
+        # Load the main spreadsheet into a DataFrame, but skipping 12 rows.
+        # get anaemia
+        dist = utils.read_sheet(self.spreadsheet, _("Nutritional status distribution"), [0, 1], skiprows=12)
+
+        self.risk_dist[_("Anaemia")] = sc.odict()
+
+        # Recalculate cells that need it, and remember in the calculations cache.
+        all_anaem = dist.loc[_("Anaemia"), _("Prevalence of anaemia")].to_dict()
+        baseline = utils.read_sheet(self.spreadsheet, _("Baseline year population inputs"))
+        index = np.array(baseline["Field"]).tolist().index(_("Percentage of anaemia that is iron deficient"))
+        iron_pct = np.array(baseline[_("Data")])[index]
+        anaem = dist.loc[_("Anaemia"), _("Prevalence of anaemia")] * iron_pct
+        self.calcscache.write_row(_("Nutritional status distribution"), 14, 2, anaem.values)
+
+        # These should work, but don't in Google Cloud.
+        # anaem = sc.odict({key: val * iron_pct for key, val in all_anaem.items()})
+        # self.calcscache.write_row('Nutritional status distribution', 14, 2, anaem[:])
+
+        # for age, prev in anaem.items():  # Should work with commented out code above
+        for age, prev in anaem.iteritems():
+            self.risk_dist[_("Anaemia")][age] = dict()
+            self.risk_dist[_("Anaemia")][age][_("Anaemic")] = prev
+            self.risk_dist[_("Anaemia")][age][_("Not anaemic")] = 1.0 - prev
+
+        # Load the main spreadsheet into a DataFrame.
+        # get breastfeeding dist
+        dist = utils.read_sheet(self.spreadsheet, _("Breastfeeding distribution"), [0, 1])
+
+        # Recalculate cells that need it, and remember in the calculations cache.
+        calc_cells = 1.0 - dist.loc[_("Breastfeeding")].iloc[0:3].sum().values
+        self.calcscache.write_row(_("Breastfeeding distribution"), 4, 2, calc_cells)
+        dist.loc[(_("Breastfeeding"), "None"), :] = calc_cells
+
+        self.risk_dist[_("Breastfeeding")] = dist.loc[_("Breastfeeding")].to_dict()
+
+    @translate
+    def get_time_trends(self):
+
+        trends = utils.read_sheet(self.spreadsheet, _("Time trends"), cols=[0, 1], dropna=False)
+
+        self.time_trends[_("Stunting")] = trends.loc[_("Stunting prevalence (%)")].loc[_("Children 0-59 months")].values.tolist()[:1]
+        self.time_trends[_("Wasting")] = trends.loc[_("Wasting prevalence (%)")].loc[_("Children 0-59 months")].values.tolist()[:1]
+        self.time_trends[_("Anaemia")] = trends.loc[_("Anaemia prevalence (%)")].values.tolist()[:3]  # order is (children, PW, WRA)
+        self.time_trends[_("Breastfeeding")] = trends.loc[_("Prevalence of age-appropriate breastfeeding")].values.tolist()[:2]  # 0-5 months, 6-23 months
+        self.time_trends[_("Mortality")] = trends.loc[_("Mortality")].values.tolist()  # under 5, maternal
+
+    @translate
+    def get_incidences(self):
+
+        incidences = utils.read_sheet(self.spreadsheet, _("Incidence of conditions"), [0])
+
+        # Recalculate cells that need it, and remember in the calculations cache.
+        baseline = utils.read_sheet(self.spreadsheet, _("Baseline year population inputs"), [0, 1])
+        diarr_incid = baseline.loc[_("Diarrhoea incidence")][_("Data")].values
+        incidences.loc[_("Diarrhoea"), :] = diarr_incid
+        self.calcscache.write_row(_("Incidence of conditions"), 1, 1, diarr_incid)
+        dist = utils.read_sheet(self.spreadsheet, _("Nutritional status distribution"), [0, 1])
+        mam_incid = dist.loc[_("Wasting (weight-for-height)")].loc[_("MAM   (WHZ-score between -3 and -2)")][0:5].values.astype(np.float) * 2.6
+        sam_incid = dist.loc[_("Wasting (weight-for-height)")].loc[_("SAM   (WHZ-score < -3)")][0:5].values.astype(np.float) * 2.6
+        incidences.loc[_("MAM"), :] = mam_incid
+        self.calcscache.write_row(_("Incidence of conditions"), 2, 1, mam_incid)
+        incidences.loc[_("SAM"), :] = sam_incid
+        self.calcscache.write_row(_("Incidence of conditions"), 3, 1, sam_incid)
+
+        self.incidences = incidences.to_dict()
+
+    ### MORTALITY ###
+
+    @translate
+    def get_death_dist(self):
+
+        # Load the main spreadsheet into a DataFrame.
+        deathdist = utils.read_sheet(self.spreadsheet, _("Causes of death"), [0, 1], skiprows=1)
+
+        # Recalculate cells that need it, and remember in the calculations cache.
+        neonatal_death_pct_sum = deathdist.loc[_("Neonatal")][_("<1 month")].values[:-1].astype(np.float).sum()
+        self.calcscache.write_cell(_("Causes of death"), 10, 2, neonatal_death_pct_sum)
+        children_death_pct_sums = deathdist.loc[_("Children")].iloc[1:-1, 0:4].astype(np.float).sum().values
+        self.calcscache.write_row(_("Causes of death"), 22, 2, children_death_pct_sums)
+        pregwomen_death_pct_sum = deathdist.loc[_("Pregnant women")].iloc[1:-1, 0].values.astype(np.float).sum()
+        self.calcscache.write_cell(_("Causes of death"), 34, 2, pregwomen_death_pct_sum)
+
+        neonates = deathdist.loc[_("Neonatal")].iloc[:-1].dropna(axis=1)
+
+        children = utils.read_sheet(self.spreadsheet, _("Causes of death"), [0, 1])
+        children = deathdist.loc[_("Children")]
+        children.columns = children.iloc[0]
+        children = children.iloc[1:-1].dropna(axis=1)
+
+        pw = utils.read_sheet(self.spreadsheet, _("Causes of death"), [0, 1])
+        pw = deathdist.loc[_("Pregnant women")]
+        pw.columns = pw.iloc[0]
+        pw = pw.iloc[1:-1].dropna(axis=1)
+        for grp in self.settings.pw_ages:
+            pw[grp] = pw.iloc[:,0]
+        pw = pw.iloc[:,1:]
+
+        death_dist = pandas.concat([neonates, children, pw])
+        death_dist.fillna(0, inplace=True)
+        death_dist = death_dist.T.to_dict()
+        death_dist = sc.odict({k:sc.odict(v) for k,v in death_dist.items()})
+
+        self.death_dist = death_dist
+        self.causes_death = self.death_dist.keys()
 
     @translate
     def extend_treatsam(self):
@@ -368,264 +612,6 @@ class DefaultParams(object):
                 if res_dict[age].get(cat) is None:
                     res_dict[age][cat] = mydict[age][condCat]
         return res_dict
-
-
-# TODO (possible): we may want to merge this class with DefaultParams to make another class (DatabookData).
-class InputData(object):
-    """ Container for all the region-specific data (prevalences, mortality rates etc) read in from spreadsheet"""
-
-    def __init__(self, data, calcscache):
-
-        self.locale = get_databook_locale(data.book)
-
-        self.spreadsheet = data
-        self.settings = settings.Settings(self.locale)
-        self.demo = None
-        self.proj = sc.odict()
-        self.death_dist = sc.odict()
-        self.risk_dist = sc.odict()
-        self.causes_death = None
-        self.time_trends = sc.odict()
-        self.birth_space = None
-        self.incidences = sc.odict()
-        self.pw_agedist = []
-        self.wra_proj = []
-        self.t = None
-        self.calcscache = calcscache
-
-        self.get_demo()
-        self.get_proj()
-        self.get_risk_dist()
-        self.get_death_dist()
-        self.get_time_trends()
-        self.get_incidences()
-
-    def __repr__(self):
-        output = sc.prepr(self)
-        return output
-
-    def __setstate__(self, d):
-        self.__dict__ = d
-        d = migrate(self)
-        self.__dict__ = d.__dict__
-
-    ## DEMOGRAPHICS ##
-
-    @translate
-    def get_demo(self):
-        # Load the main spreadsheet into a DataFrame.
-
-        baseline = utils.read_sheet(self.spreadsheet, _("Baseline year population inputs"), [0, 1])
-
-        # Recalculate cells that need it, and remember in the calculations cache.
-        frac_rice = baseline.loc[(_("Food"), _("Fraction eating rice as main staple food")), _("Data")]
-        frac_wheat = baseline.loc[(_("Food"), _("Fraction eating wheat as main staple food")), _("Data")]
-        frac_maize = baseline.loc[(_("Food"), _("Fraction eating maize as main staple food")), _("Data")]
-        frac_other_staples = 1.0 - frac_rice - frac_wheat - frac_maize
-        baseline.loc[(_("Food"), _("Fraction on other staples as main staple food")), _("Data")] = frac_other_staples
-        self.calcscache.write_cell(_("Baseline year population inputs"), 19, 2, frac_other_staples)
-        birth_spacing_sum = baseline.loc[_("Birth spacing"), _("Data")][0:4].sum()
-        baseline.loc[_("Birth spacing"), _("Total (must be 100%)")] = birth_spacing_sum
-        self.calcscache.write_cell(_("Baseline year population inputs"), 32, 2, birth_spacing_sum)
-        outcome_sum = baseline.loc[_("Birth outcome distribution"), _("Data")][0:3].sum()
-        baseline.loc[(_("Birth outcome distribution"), _("Term AGA")), _("Data")] = 1.0 - outcome_sum
-        self.calcscache.write_cell(_("Baseline year population inputs"), 47, 2, 1.0 - outcome_sum)
-
-        demo = sc.odict()
-        # the fields that group the data in spreadsheet
-        fields = [_("Population data"), _("Food"), _("Age distribution of pregnant women"), _("Mortality"), _("Other risks")]
-        for field in fields:
-            demo.update(baseline.loc[field].to_dict("index"))
-        self.demo = {key: item[_("Data")] for key, item in demo.items()}
-        self.demo[_("Birth dist")] = baseline.loc[_("Birth outcome distribution")].to_dict()[_("Data")]
-        t = baseline.loc[_("Projection years")]
-        self.t = [int(t.loc[_("Baseline year (projection start year)")][_("Data")]), int(t.loc[_("End year")][_("Data")])]
-        # birth spacing
-        self.birth_space = baseline.loc[_("Birth spacing")].to_dict()[_("Data")]
-        self.birth_space.pop(_("Total (must be 100%)"), None)
-
-        # Load the main spreadsheet into a DataFrame (slightly different format).
-        # fix ages for PW
-        baseline = utils.read_sheet(self.spreadsheet, _("Baseline year population inputs"), [0])
-
-        for row in baseline.loc[_(("Age distribution of pregnant women"))].iterrows():
-            self.pw_agedist.append(row[1][_("Data")])
-        return None
-
-    @translate
-    def get_proj(self):
-        # Load the main spreadsheet into a DataFrame.
-        # drops rows with any na
-
-        proj = utils.read_sheet(self.spreadsheet, _("Demographic projections"), cols=[0], dropna="any")
-
-        # Read in the Baseline spreadsheet information we'll need.
-        baseline = utils.read_sheet(self.spreadsheet, _("Baseline year population inputs"), [0, 1])
-        stillbirth = baseline.loc[_("Mortality")].loc[_("Stillbirths (per 1,000 total births)")].values[0]
-        abortion = baseline.loc[_("Mortality")].loc[_("Fraction of pregnancies ending in spontaneous abortion")].values[0]
-
-        # Recalculate cells that need it, and remember in the calculations cache.
-        total_wra = proj.loc[:, [_("WRA: 15-19 years"), _("WRA: 20-29 years"), _("WRA: 30-39 years"), _("WRA: 40-49 years")]].sum(axis=1).values
-        proj.loc[:, _("Total WRA")] = total_wra
-        self.calcscache.write_col(_("Demographic projections"), 1, 6, total_wra)
-        numbirths = proj.loc[:, _("Number of births")].values
-        estpregwomen = (numbirths + numbirths * stillbirth / (1000.0 - stillbirth)) / (1.0 - abortion)
-        proj.loc[:, _("Estimated pregnant women")] = estpregwomen
-        self.calcscache.write_col(_("Demographic projections"), 1, 7, estpregwomen)
-        nonpregwra = total_wra - estpregwomen
-        proj.loc[:, _("non-pregnant WRA")] = nonpregwra
-        self.calcscache.write_col(_("Demographic projections"), 1, 8, nonpregwra)
-
-        # dict of lists to support indexing
-        for column in proj:
-            self.proj[column] = proj[column].tolist()
-        # wra pop projections list in increasing age order
-        for age in self.settings.wra_ages:
-            self.wra_proj.append(proj[age].tolist())
-
-    @translate
-    def get_risk_dist(self):
-        # Load the main spreadsheet into a DataFrame.
-
-        dist = utils.read_sheet(self.spreadsheet, _(_("Nutritional status distribution")), [0, 1])
-
-        # Recalculate cells that need it, and remember in the calculations cache.
-        stunting_mod_hi_sums = dist.loc[_("Stunting (height-for-age)")].iloc[2:4, 0:5].astype(np.float).sum().values
-        stunting_invs = norm.ppf(stunting_mod_hi_sums, 0.0, 1.0)
-        stunting_norm_pcts = np.ones(5) - norm.cdf(stunting_invs + np.ones(5), 0.0, 1.0)
-        cols = dist.columns[0:5]
-        dist.loc[(_("Stunting (height-for-age)"), _("Normal (HAZ-score > -1)")), cols] = stunting_norm_pcts
-        self.calcscache.write_row(_("Nutritional status distribution"), 1, 2, stunting_norm_pcts)
-        stunting_mild_pcts = norm.cdf(stunting_invs + np.ones(5), 0.0, 1.0) - stunting_mod_hi_sums
-        dist.loc[(_("Stunting (height-for-age)"), _("Mild (HAZ-score between -2 and -1)")), cols] = stunting_mild_pcts
-        self.calcscache.write_row(_("Nutritional status distribution"), 2, 2, stunting_mild_pcts)
-        wasting_mod_hi_sums = dist.loc[_("Wasting (weight-for-height)")].iloc[2:4, 0:5].astype(np.float).sum().values
-        wasting_invs = norm.ppf(wasting_mod_hi_sums, 0.0, 1.0)
-        wasting_norm_pcts = np.ones(5) - norm.cdf(wasting_invs + np.ones(5), 0.0, 1.0)
-        dist.loc[(_("Wasting (weight-for-height)"), _("Normal  (WHZ-score > -1)")), cols] = wasting_norm_pcts
-        self.calcscache.write_row(_("Nutritional status distribution"), 7, 2, wasting_norm_pcts)
-        wasting_mild_pcts = norm.cdf(wasting_invs + np.ones(5), 0.0, 1.0) - wasting_mod_hi_sums
-        dist.loc[(_("Wasting (weight-for-height)"), _("Mild  (WHZ-score between -2 and -1)")), cols] = wasting_mild_pcts
-        self.calcscache.write_row(_("Nutritional status distribution"), 8, 2, wasting_mild_pcts)
-
-        # dist = dist.drop(dist.index[[1]])
-        riskDist = sc.odict()
-        for key, field in zip([_('Stunting'),_('Wasting')], [_("Stunting (height-for-age)"), _("Wasting (weight-for-height)")]):
-            riskDist[key] = dist.loc[field].dropna(axis=1, how="all").to_dict("dict")
-        # fix key refs (surprisingly hard to do in Pandas)
-        for outer, ageCat in riskDist.items():
-            self.risk_dist[outer] = sc.odict()
-            for age, catValue in ageCat.items():
-                self.risk_dist[outer][age] = dict()
-                for cat, value in catValue.items():
-                    newCat = cat.split(" ", 1)[0]
-                    self.risk_dist[outer][age][newCat] = value
-
-        # Load the main spreadsheet into a DataFrame, but skipping 12 rows.
-        # get anaemia
-        dist = utils.read_sheet(self.spreadsheet, _("Nutritional status distribution"), [0, 1], skiprows=12)
-
-        self.risk_dist[_("Anaemia")] = sc.odict()
-
-        # Recalculate cells that need it, and remember in the calculations cache.
-        all_anaem = dist.loc[_("Anaemia"), _("Prevalence of anaemia")].to_dict()
-        baseline = utils.read_sheet(self.spreadsheet, _("Baseline year population inputs"))
-        index = np.array(baseline["Field"]).tolist().index(_("Percentage of anaemia that is iron deficient"))
-        iron_pct = np.array(baseline[_("Data")])[index]
-        anaem = dist.loc[_("Anaemia"), _("Prevalence of anaemia")] * iron_pct
-        self.calcscache.write_row(_("Nutritional status distribution"), 14, 2, anaem.values)
-
-        # These should work, but don't in Google Cloud.
-        # anaem = sc.odict({key: val * iron_pct for key, val in all_anaem.items()})
-        # self.calcscache.write_row('Nutritional status distribution', 14, 2, anaem[:])
-
-        # for age, prev in anaem.items():  # Should work with commented out code above
-        for age, prev in anaem.iteritems():
-            self.risk_dist[_("Anaemia")][age] = dict()
-            self.risk_dist[_("Anaemia")][age][_("Anaemic")] = prev
-            self.risk_dist[_("Anaemia")][age][_("Not anaemic")] = 1.0 - prev
-
-        # Load the main spreadsheet into a DataFrame.
-        # get breastfeeding dist
-        dist = utils.read_sheet(self.spreadsheet, _("Breastfeeding distribution"), [0, 1])
-
-        # Recalculate cells that need it, and remember in the calculations cache.
-        calc_cells = 1.0 - dist.loc[_("Breastfeeding")].iloc[0:3].sum().values
-        self.calcscache.write_row(_("Breastfeeding distribution"), 4, 2, calc_cells)
-        dist.loc[(_("Breastfeeding"), "None"), :] = calc_cells
-
-        self.risk_dist[_("Breastfeeding")] = dist.loc[_("Breastfeeding")].to_dict()
-
-    @translate
-    def get_time_trends(self):
-
-        trends = utils.read_sheet(self.spreadsheet, _("Time trends"), cols=[0, 1], dropna=False)
-
-        self.time_trends[_("Stunting")] = trends.loc[_("Stunting prevalence (%)")].loc[_("Children 0-59 months")].values.tolist()[:1]
-        self.time_trends[_("Wasting")] = trends.loc[_("Wasting prevalence (%)")].loc[_("Children 0-59 months")].values.tolist()[:1]
-        self.time_trends[_("Anaemia")] = trends.loc[_("Anaemia prevalence (%)")].values.tolist()[:3]  # order is (children, PW, WRA)
-        self.time_trends[_("Breastfeeding")] = trends.loc[_("Prevalence of age-appropriate breastfeeding")].values.tolist()[:2]  # 0-5 months, 6-23 months
-        self.time_trends[_("Mortality")] = trends.loc[_("Mortality")].values.tolist()  # under 5, maternal
-
-    @translate
-    def get_incidences(self):
-
-        incidences = utils.read_sheet(self.spreadsheet, _("Incidence of conditions"), [0])
-
-        # Recalculate cells that need it, and remember in the calculations cache.
-        baseline = utils.read_sheet(self.spreadsheet, _("Baseline year population inputs"), [0, 1])
-        diarr_incid = baseline.loc[_("Diarrhoea incidence")][_("Data")].values
-        incidences.loc[_("Diarrhoea"), :] = diarr_incid
-        self.calcscache.write_row(_("Incidence of conditions"), 1, 1, diarr_incid)
-        dist = utils.read_sheet(self.spreadsheet, _("Nutritional status distribution"), [0, 1])
-        mam_incid = dist.loc[_("Wasting (weight-for-height)")].loc[_("MAM   (WHZ-score between -3 and -2)")][0:5].values.astype(np.float) * 2.6
-        sam_incid = dist.loc[_("Wasting (weight-for-height)")].loc[_("SAM   (WHZ-score < -3)")][0:5].values.astype(np.float) * 2.6
-        incidences.loc[_("MAM"), :] = mam_incid
-        self.calcscache.write_row(_("Incidence of conditions"), 2, 1, mam_incid)
-        incidences.loc[_("SAM"), :] = sam_incid
-        self.calcscache.write_row(_("Incidence of conditions"), 3, 1, sam_incid)
-
-        self.incidences = incidences.to_dict()
-
-    ### MORTALITY ###
-
-    @translate
-    def get_death_dist(self):
-
-        # Load the main spreadsheet into a DataFrame.
-        deathdist = utils.read_sheet(self.spreadsheet, _("Causes of death"), [0, 1], skiprows=1)
-
-        # Recalculate cells that need it, and remember in the calculations cache.
-        neonatal_death_pct_sum = deathdist.loc[_("Neonatal")][_("<1 month")].values[:-1].astype(np.float).sum()
-        self.calcscache.write_cell(_("Causes of death"), 10, 2, neonatal_death_pct_sum)
-        children_death_pct_sums = deathdist.loc[_("Children")].iloc[1:-1, 0:4].astype(np.float).sum().values
-        self.calcscache.write_row(_("Causes of death"), 22, 2, children_death_pct_sums)
-        pregwomen_death_pct_sum = deathdist.loc[_("Pregnant women")].iloc[1:-1, 0].values.astype(np.float).sum()
-        self.calcscache.write_cell(_("Causes of death"), 34, 2, pregwomen_death_pct_sum)
-
-        neonates = deathdist.loc[_("Neonatal")].iloc[:-1].dropna(axis=1)
-
-        children = utils.read_sheet(self.spreadsheet, _("Causes of death"), [0, 1])
-        children = deathdist.loc[_("Children")]
-        children.columns = children.iloc[0]
-        children = children.iloc[1:-1].dropna(axis=1)
-
-        pw = utils.read_sheet(self.spreadsheet, _("Causes of death"), [0, 1])
-        pw = deathdist.loc[_("Pregnant women")]
-        pw.columns = pw.iloc[0]
-        pw = pw.iloc[1:-1].dropna(axis=1)
-        for grp in self.settings.pw_ages:
-            pw[grp] = pw.iloc[:,0]
-        pw = pw.iloc[:,1:]
-
-        death_dist = pandas.concat([neonates, children, pw])
-        death_dist.fillna(0, inplace=True)
-        death_dist = death_dist.T.to_dict()
-        death_dist = sc.odict({k:sc.odict(v) for k,v in death_dist.items()})
-
-        self.death_dist = death_dist
-        self.causes_death = self.death_dist.keys()
-
 
 class ProgData(object):
     """Stores all the settings for each project, defined by the user"""
