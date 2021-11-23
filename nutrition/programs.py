@@ -4,7 +4,7 @@ from math import ceil
 import numpy as np
 import sciris as sc
 from .settings import Settings
-from .utils import get_new_prob
+from .utils import get_new_prob, translate, get_translator
 from . import utils
 
 
@@ -14,7 +14,10 @@ class Program(sc.prettyobj):
     Restricted coverage: the coverage amongst the target population (assumed given by user)
     Unrestricted coverage: the coverage amongst the entire population"""
 
-    def __init__(self, name, all_years, progdata):
+    def __init__(self, name, all_years, progdata, settings):
+
+        _ = get_translator(settings.locale)
+
         self.name = name
         self.year = all_years[0]
         self.years = all_years
@@ -29,8 +32,8 @@ class Program(sc.prettyobj):
         self.annual_cov = np.zeros(len(all_years))  # this is the unrestr_cov
         self.annual_restr_cov = np.ones(len(all_years)) * self.base_cov  # only calculated in adjust_cov
         self.annual_spend = np.zeros(len(all_years))
-        self.excl_deps = progdata.prog_deps[name]["Exclusion dependency"]
-        self.thresh_deps = progdata.prog_deps[name]["Threshold dependency"]
+        self.excl_deps = progdata.prog_deps[name][_("Exclusion dependency")]
+        self.thresh_deps = progdata.prog_deps[name][_("Threshold dependency")]
         self.popn = np.zeros(len(all_years))
 
         # attributes to be calculated later
@@ -42,13 +45,17 @@ class Program(sc.prettyobj):
         self.famplan_methods = None
         self.pregav_sum = None
 
-        self.ss = Settings()
+        self.ss = settings
 
-        if "amil" in self.name:  # family planning program only
+        if self.name == _("Family planning"):
             self.famplan_methods = progdata.famplan_methods
             self.set_pregav_sum()
         self._set_target_ages()
         self._set_impacted_ages(progdata.impacted_pop[name])
+
+    @property
+    def locale(self):
+        return self.ss.locale
 
     def __repr__(self):
         output = sc.prepr(self)
@@ -166,13 +173,16 @@ class Program(sc.prettyobj):
         # TMP SOLUTION: THE DENOMINATOR FOR CALCULATING PROGRAM COVERAGE WILL USE sum(CEILING(FRAC TARGETED) * POP SIZE) over all pops targeted. I.E. FOR IYCF WITH FRAC >1, we get normalised sum
         self.unrestr_popsize = 0.0
         for pop in populations:
-            self.unrestr_popsize += sum(ceil(self.target_pops[age.age]) * age.pop_size for age in pop.age_groups if age.age in self.agesTargeted)
+            for age in pop.age_groups:
+                if age.age in self.agesTargeted:
+                    self.unrestr_popsize += ceil(self.target_pops[age.age]) * age.pop_size
 
     def _set_restrpop(self, populations):
         self.restr_popsize = 0.0
         for pop in populations:
             self.restr_popsize += sum(age.pop_size * self.target_pops[age.age] for age in pop.age_groups if age.age in self.agesTargeted)
 
+    @translate
     def stunting_update(self, age_group):
         """
         Will get the total stunting update for a single program.
@@ -180,17 +190,19 @@ class Program(sc.prettyobj):
         and across programs (that is, after we have accounted for dependencies),
         the order of multiplication of updates does not matter.
         """
-        age_group.stuntingUpdate *= self._get_cond_prob_update(age_group, "Stunting")
+        age_group.stuntingUpdate *= self._get_cond_prob_update(age_group, _("Stunting"))
 
+    @translate
     def anaemia_update(self, age_group):
         """
         Program which directly impact anaemia.
         :param age_group: instance of age_group class
         """
-        age_group.anaemiaUpdate *= self._get_cond_prob_update(age_group, "Anaemia")
+        age_group.anaemiaUpdate *= self._get_cond_prob_update(age_group, _("Anaemia"))
 
+    @translate
     def set_pregav_sum(self):
-        self.pregav_sum = sum(self.famplan_methods[prog]["Effectiveness"] * self.famplan_methods[prog]["Distribution"] for prog in self.famplan_methods.keys())
+        self.pregav_sum = sum(self.famplan_methods[prog][_("Effectiveness")] * self.famplan_methods[prog][_("Distribution")] for prog in self.famplan_methods.keys())
 
     def get_pregav_update(self, age_group):
         """Even though this isn't technically an age group-specific update,
@@ -204,12 +216,13 @@ class Program(sc.prettyobj):
         """ Birth spacing in non-pregnant women impacts birth outcomes for newborns """
         age_group.birthspace_update += self._space_update(age_group)
 
+    @translate
     def _space_update(self, age_group):
         """Update the proportion of pregnancies in the correct spacing category.
         This will only work on WRA: 15-19 years by design, since it isn't actually age-specific"""
         correctold = age_group.birth_space[self.ss.optimal_space]
-        probcov = age_group.probConditionalCoverage["Birth spacing"][self.name]["covered"]
-        probnot = age_group.probConditionalCoverage["Birth spacing"][self.name]["not covered"]
+        probcov = age_group.probConditionalCoverage[_("Birth spacing")][self.name]["covered"]
+        probnot = age_group.probConditionalCoverage[_("Birth spacing")][self.name]["not covered"]
         probnew = get_new_prob(self.annual_cov[self.year], probcov, probnot)
         fracChange = probnew - correctold
         return fracChange
@@ -226,14 +239,15 @@ class Program(sc.prettyobj):
         for wastingCat in self.ss.wasted_list:
             age_group.wastingTreatmentUpdate[wastingCat] *= update[wastingCat]
 
+    @translate
     def dia_incidence_update(self, age_group):
         """
         This function accounts for the _direct_ impact of programs on diarrhoea incidence
         :param age_group:
         :return:
         """
-        update = self._effectiveness_update(age_group, "Effectiveness incidence")
-        age_group.diarrhoeaIncidenceUpdate *= update["Diarrhoea"]
+        update = self._effectiveness_update(age_group, _("Effectiveness incidence"))
+        age_group.diarrhoeaIncidenceUpdate *= update[_("Diarrhoea")]
 
     def bf_update(self, age_group):
         """
@@ -243,12 +257,13 @@ class Program(sc.prettyobj):
         """
         age_group.bfPracticeUpdate += self._bf_practice_update(age_group)
 
+    @translate
     def get_mortality_update(self, age_group):
         """
         Programs which directly impact mortality rates
         :return:
         """
-        update = self._effectiveness_update(age_group, "Effectiveness mortality")
+        update = self._effectiveness_update(age_group, _("Effectiveness mortality"))
         for cause in age_group.causes_death:
             age_group.mortalityUpdate[cause] *= update[cause]
 
@@ -284,46 +299,50 @@ class Program(sc.prettyobj):
             update[wastingCat] = 1 - reduction
         return update
 
+    @translate
     def _wasting_incid_update(self, age_group):
         update = {}
         oldCov = self.annual_cov[self.year - 1]
         for condition in self.ss.wasted_list:
-            affFrac = age_group.prog_eff[(self.name, condition, "Affected fraction")]
-            effectiveness = age_group.prog_eff[(self.name, condition, "Effectiveness incidence")]
+            affFrac = age_group.prog_eff[(self.name, condition, _("Affected fraction"))]
+            effectiveness = age_group.prog_eff[(self.name, condition, _("Effectiveness incidence"))]
             reduction = affFrac * effectiveness * (self.annual_cov[self.year] - oldCov) / (1.0 - effectiveness * oldCov)
             update[condition] = 1.0 - reduction
         return update
 
+    @translate
     def _effectiveness_update(self, age_group, effType):
         """This covers mortality and incidence updates (except wasting)"""
         if "incidence" in effType:
-            toIterate = ["Diarrhoea"]  # only model diarrhoea incidence
+            toIterate = [_("Diarrhoea")]  # only model diarrhoea incidence
         else:  # mortality
             toIterate = age_group.causes_death
         update = {cause: 1.0 for cause in toIterate}
         oldCov = self.annual_cov[self.year - 1]
         for cause in toIterate:
-            affFrac = age_group.prog_eff.get((self.name, cause, "Affected fraction"), 0)
+            affFrac = age_group.prog_eff.get((self.name, cause, _("Affected fraction")), 0)
             effectiveness = age_group.prog_eff.get((self.name, cause, effType), 0)
             reduction = affFrac * effectiveness * (self.annual_cov[self.year] - oldCov) / (1.0 - effectiveness * oldCov)
             update[cause] *= 1.0 - reduction
         return update
 
+    @translate
     def _bo_update(self, age_group):
         BOupdate = {BO: 1.0 for BO in self.ss.birth_outcomes}
         oldCov = self.annual_cov[self.year - 1]
         for outcome in self.ss.birth_outcomes:
-            affFrac = age_group.bo_eff[self.name]["affected fraction"][outcome]
-            eff = age_group.bo_eff[self.name]["effectiveness"][outcome]
+            affFrac = age_group.bo_eff[self.name][_("affected fraction")][outcome]
+            eff = age_group.bo_eff[self.name][_("effectiveness")][outcome]
             reduction = affFrac * eff * (self.annual_cov[self.year] - oldCov) / (1.0 - eff * oldCov)
             BOupdate[outcome] = 1.0 - reduction
         return BOupdate
 
+    @translate
     def _bf_practice_update(self, age_group):
         correctPrac = age_group.correct_bf
         correctFracOld = age_group.bf_dist[correctPrac]
-        probCorrectCovered = age_group.probConditionalCoverage["Breastfeeding"][self.name]["covered"]
-        probCorrectNotCovered = age_group.probConditionalCoverage["Breastfeeding"][self.name]["not covered"]
+        probCorrectCovered = age_group.probConditionalCoverage[_("Breastfeeding")][self.name]["covered"]
+        probCorrectNotCovered = age_group.probConditionalCoverage[_("Breastfeeding")][self.name]["not covered"]
         probNew = get_new_prob(self.annual_cov[self.year], probCorrectCovered, probCorrectNotCovered)
         fracChange = probNew - correctFracOld
         return fracChange
@@ -357,7 +376,7 @@ class CostCovCurve(sc.prettyobj):
         except ZeroDivisionError:
             self.maxcov = 0
         self.approx = 0.95
-        self.ss = Settings()
+        # self.ss = Settings() # This doesn't appear to be used?
 
     def set_cost_curve(self):
         if "lin" in self.costtype:
@@ -464,11 +483,11 @@ class CostCovCurve(sc.prettyobj):
         return endcost[0], endnum[0]
 
 
-def set_programs(progset, progdata, all_years):
+def set_programs(progset, progdata, all_years, settings):
     """ Do the error handling here because we have the progset param at this point. """
     programs = sc.odict()
     for name in progset:
-        programs[name] = Program(name, all_years, progdata)
+        programs[name] = Program(name, all_years, progdata, settings)
     return programs
 
 
@@ -539,10 +558,10 @@ class ProgramInfo(sc.prettyobj):
             freeFunds = sum(self.curr) - sum(self.fixed) + add_funds
         return freeFunds
 
-    def make_progs(self, prog_set, all_years):
+    def make_progs(self, prog_set, all_years, settings):
         self.all_years = all_years
         self.sim_years = all_years[1:]
-        self.programs = set_programs(prog_set, self.prog_data, all_years)
+        self.programs = set_programs(prog_set, self.prog_data, all_years, settings)
         self.prog_areas = self._clean_prog_areas(self.prog_data.prog_areas, prog_set)
         self._set_ref_progs()
         self._sort_progs()
@@ -827,7 +846,7 @@ class ProgramInfo(sc.prettyobj):
         :param pops: model population info used to calculate coverages
         :return:
         """
-        new_prog = Program(prog["name"], prog["all_years"], prog["prog_data"])
+        new_prog = Program(prog["name"], prog["all_years"], prog["prog_data"], prog["prog_data"].settings)
         new_prog.set_pop_sizes(pops)
         new_prog.set_costcov()
         self.programs[prog["name"]] = new_prog

@@ -1,5 +1,5 @@
 #######################################################################################################
-#%% Imports
+# %% Imports
 #######################################################################################################
 
 import os
@@ -8,6 +8,9 @@ import numpy as np
 import multiprocessing
 from .version import version
 from .utils import default_trackers, add_dummy_prog_data, pretty_labels, run_parallel
+from .version import version, gitinfo
+from .utils import default_trackers, add_dummy_prog_data
+
 from .data import Dataset
 from .model import Model
 from .scenarios import Scen, run_scen, convert_scen, make_default_scen
@@ -15,15 +18,21 @@ from .optimization import Optim
 from .geospatial import Geospatial
 from .results import write_results, resampled_key_str
 from .plotting import make_plots, get_costeff, plot_costcurve, save_figs
-from .demo import demo_scens, demo_optims, demo_geos
 from . import settings
 from .settings import Settings
 import pandas as pd
 import random
+from .results import write_results
+from .plotting import make_plots, get_costeff, plot_costcurve
+from . import settings
+from . import utils as utils
+from .migration import migrate
+from .utils import get_translator, translate
+from datetime import timezone
 
 
 #######################################################################################################
-#%% Project class -- this contains everything else!
+# %% Project class -- this contains everything else!
 #######################################################################################################
 
 
@@ -53,8 +62,10 @@ class Project(object):
     ### Built-in methods -- initialization, and the thing to print if you call a project
     #######################################################################################################
 
-    def __init__(self, name="default", loadsheets=True, inputspath=None, defaultspath=None):
+    def __init__(self, name="default", loadsheets=True, inputspath=None, defaultspath=None, locale=None):
         """ Initialize the project """
+
+        self.locale = locale or utils.locale  # Fall back to module's default locale if no locale is provided
 
         ## Define the structure sets
         self.datasets = sc.odict()
@@ -67,19 +78,17 @@ class Project(object):
 
         if loadsheets:
             if not inputspath:
-                template_name = "template_input.xlsx"
-                inputspath = sc.makefilepath(filename=template_name, folder=settings.ONpath("inputs"))
-                self.templateinput = sc.Spreadsheet(filename=inputspath)
+                self.templateinput = sc.Spreadsheet(settings.ONpath / "inputs" / self.locale / "template_input.xlsx")
             else:
                 self.load_data(inputspath=inputspath, defaultspath=defaultspath, fromfile=True)
 
         ## Define other quantities
         self.name = name
         self.uid = sc.uuid()
-        self.created = sc.now()
-        self.modified = sc.now()
+        self.created = sc.now(utc=True)
+        self.modified = sc.now(utc=True)
         self.version = version
-        self.gitinfo = sc.gitinfo(__file__)
+        self.gitinfo = gitinfo
         self.filename = None  # File path, only present if self.save() is used
         self.ss = Settings()
 
@@ -97,14 +106,19 @@ class Project(object):
         output += "        Geospatial: %i\n" % len(self.geos)
         output += "      Results sets: %i\n" % len(self.results)
         output += "\n"
-        output += "      Date created: %s\n" % sc.getdate(self.created)
-        output += "     Date modified: %s\n" % sc.getdate(self.modified)
+        output += "      Date created: %s\n" % sc.getdate(self.created.replace(tzinfo=timezone.utc).astimezone(tz=None), dateformat="%Y-%b-%d %H:%M:%S %Z")
+        output += "     Date modified: %s\n" % sc.getdate(self.modified.replace(tzinfo=timezone.utc).astimezone(tz=None), dateformat="%Y-%b-%d %H:%M:%S %Z")
         output += "               UID: %s\n" % self.uid
         output += "  Optima Nutrition: v%s\n" % self.version
         output += "        Git branch: %s\n" % self.gitinfo["branch"]
         output += "          Git hash: %s\n" % self.gitinfo["hash"]
         output += "============================================================\n"
         return output
+
+    def __setstate__(self, d):
+        self.__dict__ = d
+        d = migrate(self)
+        self.__dict__ = d.__dict__
 
     def getinfo(self):
         """ Return an odict with basic information about the project"""
@@ -132,7 +146,7 @@ class Project(object):
     def storeinputs(self, inputspath=None, country=None, region=None, name=None):
         """ Reload the input spreadsheet into the project """
         if inputspath is None:
-            inputspath = settings.data_path(country, region)
+            inputspath = settings.data_path(self.locale, country, region)
         name = self._sanitizename(name, country, region, inputspath)
         self.spreadsheets[name] = sc.Spreadsheet(filename=inputspath)
         return self.inputsheet(name)
@@ -152,7 +166,14 @@ class Project(object):
 
         # Optionally (but almost always) use these to make a model (do not do if blank sheets).
         databook = self.inputsheet(name).pandas()
+
         dataset = Dataset(country=country, region=region, name=name, fromfile=False, doload=True, databook=databook)
+        if dataset.locale != self.locale:
+            if not self.datasets:
+                self.locale = dataset.locale
+            else:
+                raise Exception(f'Data locale "{dataset.locale}" does not match project locale "{self.locale}"')
+
         self.datasets[name] = dataset
         dataset.name = name
         self.add_model(name, growth=growth)  # add model associated with the dataset or datasets
@@ -209,7 +230,7 @@ class Project(object):
         structlist = self.getwhat(what=what)
         structlist[name] = item
         print('Item "{}" added to "{}"'.format(name, what))
-        self.modified = sc.now()
+        self.modified = sc.now(utc=True)
 
     def remove(self, what, name=None):
         structlist = self.getwhat(what=what)
@@ -219,7 +240,7 @@ class Project(object):
         else:
             structlist.pop(name)
         print('{} "{}" removed'.format(what, name))
-        self.modified = sc.now()
+        self.modified = sc.now(utc=True)
 
     def getwhat(self, what):
         """
@@ -240,7 +261,7 @@ class Project(object):
         elif what in ["r", "res", "result", "results"]:
             structlist = self.results
         else:
-            raise settings.ONException("Item not found")
+            raise Exception("Item not found")
         return structlist
 
     #######################################################################################################
@@ -351,7 +372,8 @@ class Project(object):
         if basename not in self.scens.keys():
             defaults = make_default_scen(name, model, "coverage", basename)
             self.add_scens(defaults)
-        self.modified = sc.now()
+
+        self.modified = sc.now(utc=True)
 
         return model
 
@@ -368,7 +390,7 @@ class Project(object):
         scens = sc.promotetolist(scens)
         for scen in scens:
             self.add(name=scen.name, item=scen, what="scen")
-        self.modified = sc.now()
+        self.modified = sc.now(utc=True)
         return scens
 
     def convert_scen(self, key=-1):
@@ -381,11 +403,12 @@ class Project(object):
         self.add_scens(converted)
         return
 
+    @translate
     def run_baseline(self, model_name, prog_set, growth, dorun=True):
         model = sc.dcp(self.model(model_name))
         progvals = sc.odict({prog: [] for prog in prog_set})
-        if "Excess budget not allocated" in prog_set:
-            excess_spend = {"name": "Excess budget not allocated", "all_years": model.prog_info.all_years, "prog_data": add_dummy_prog_data(model.prog_info, "Excess budget not allocated")}
+        if _("Excess budget not allocated") in prog_set:
+            excess_spend = {"name": _("Excess budget not allocated"), "all_years": model.prog_info.all_years, "prog_data": add_dummy_prog_data(model.prog_info, _("Excess budget not allocated"), self.locale)}
             model.prog_info.add_prog(excess_spend, model.pops)
             model.prog_info.prog_data = excess_spend["prog_data"]
         base = Scen(name="Baseline", model_name=model_name, scen_type="coverage", progvals=progvals, growth=growth, enforce_constraints_year=1)
@@ -401,7 +424,7 @@ class Project(object):
         optims = sc.promotetolist(optims)
         for optim in optims:
             self.add(name=optim.name, item=optim, what="optim")
-        self.modified = sc.now()
+        self.modified = sc.now(utc=True)
         return optims
 
     def add_geos(self, geos, overwrite=False):
@@ -410,7 +433,7 @@ class Project(object):
         geos = sc.promotetolist(geos)
         for geo in geos:
             self.add(name=geo.name, item=geo, what="geo")
-        self.modified = sc.now()
+        self.modified = sc.now(utc=True)
         return geos
 
     def add_result(self, result, name=None):
@@ -425,7 +448,7 @@ class Project(object):
         return result
 
     def demo_scens(self, dorun=None, doadd=True):
-        scens = demo_scens()
+        scens = demo_scens(self.locale)
         if doadd:
             self.add_scens(scens)
             if dorun:
@@ -435,7 +458,7 @@ class Project(object):
             return scens
 
     def demo_optims(self, dorun=False, doadd=True):
-        optims = demo_optims()
+        optims = demo_optims(self.locale)
         if doadd:
             self.add_optims(optims)
             if dorun:
@@ -445,7 +468,7 @@ class Project(object):
             return optims
 
     def demo_geos(self, dorun=False, doadd=True):
-        geos = demo_geos()
+        geos = demo_geos(self.locale)
         if doadd:
             self.add_geos(geos)
             if dorun:
@@ -520,9 +543,9 @@ class Project(object):
                     results += self.run_scen(scen, n_samples = n_samples, seed=seed) #actual samples
                 
         self.add_result(results, name="scens")
-
         return results
 
+    @translate
     def run_optim(self, optim=None, key=-1, maxiter=20, swarmsize=None, maxtime=300, parallel=True, dosave=True, runbaseline=True, runbalanced=False, n_samples=0, seed=None):
         if optim is not None:
             self.add_optims(optim)
@@ -541,7 +564,7 @@ class Project(object):
                 results.append(base)
         else:
             base = None
-            
+
         # run optimization
         model = sc.dcp(self.model(optim.model_name))
         model.setup(optim, setcovs=False)
@@ -596,7 +619,7 @@ class Project(object):
         print("Not implemented")
 
     def plot(self, key=-1, toplot=None, optim=False, geo=False, save_plots_folder=None):
-        figs = make_plots(self.result(key), toplot=toplot, optim=optim, geo=geo)
+        figs = make_plots(self.result(key), toplot=toplot, optim=optim, geo=geo, locale=self.locale)
         if figs and save_plots_folder:
             save_figs(figs, path=save_plots_folder)
         return figs
@@ -628,7 +651,124 @@ class Project(object):
     def __bool__(self):
         return True
 
-def demo(scens=False, optims=False, geos=False):
+### DEMO VALUES
+
+
+def demo_scens(locale):
+    _ = get_translator(locale)
+
+    # stunting reduction
+    kwargs1 = {
+        "name": _("Stunting example (coverage)"),
+        "model_name": "demo",
+        "scen_type": "coverage",
+        "progvals": sc.odict(
+            {
+                _("IYCF 1"): [1],
+                _("Vitamin A supplementation"): [1],
+            }
+        ),
+    }
+
+    kwargs2 = {
+        "name": _("Stunting example (budget)"),
+        "model_name": "demo",
+        "scen_type": "budget",
+        "progvals": sc.odict(
+            {
+                _("IYCF 1"): [2e6],
+                _("Vitamin A supplementation"): [2e6],
+            }
+        ),
+    }
+
+    # wasting reduction
+    kwargs3 = {
+        "name": _("Wasting example"),
+        "model_name": "demo",
+        "scen_type": "coverage",
+        "progvals": sc.odict(
+            {
+                _("Treatment of SAM"): [1],
+            }
+        ),
+    }
+
+    # anaemia reduction
+    kwargs4 = {
+        "name": _("Anaemia example"),
+        "model_name": "demo",
+        "scen_type": "coverage",
+        "progvals": sc.odict(
+            {
+                _("Micronutrient powders"): [1],
+                _("IFAS (community)"): [1],
+                _("IFAS (retailer)"): [1],
+                _("IFAS (school)"): [1],
+            }
+        ),
+    }
+
+    scens = [Scen(**kwargs) for kwargs in [kwargs1, kwargs2, kwargs3, kwargs4]]
+    return scens
+
+
+def demo_optims(locale):
+    _ = get_translator(locale)
+
+    kwargs1 = {
+        "name": _("Maximize thrive"),
+        "model_name": "demo",
+        "mults": [1],
+        "weights": sc.odict({"thrive": 1}),
+        "prog_set": [
+            _("Vitamin A supplementation"),
+            _("IYCF 1"),
+            _("IFA fortification of maize"),
+            _("Balanced energy-protein supplementation"),
+            _("Public provision of complementary foods"),
+            _("Iron and iodine fortification of salt"),
+        ],
+        "fix_curr": False,
+        "add_funds": 0,
+        "filter_progs": True,
+    }
+
+    optims = [Optim(**kwargs1, locale=locale)]
+    return optims
+
+
+def demo_geos(locale):
+    _ = get_translator(locale)
+
+    kwargs1 = {
+        "name": _("Geospatial optimization"),
+        "modelnames": ["demoregion1", "demoregion2", "demoregion3"],
+        "weights": "thrive",
+        "fix_curr": False,
+        "fix_regionalspend": False,
+        "add_funds": 0,
+        "prog_set": [
+            _("IFA fortification of maize"),
+            _("IYCF 1"),
+            _("Lipid-based nutrition supplements"),
+            _("Multiple micronutrient supplementation"),
+            _("Micronutrient powders"),
+            _("Kangaroo mother care"),
+            _("Public provision of complementary foods"),
+            _("Treatment of SAM"),
+            _("Vitamin A supplementation"),
+            _("Mg for eclampsia"),
+            _("Zinc for treatment + ORS"),
+            _("Iron and iodine fortification of salt"),
+        ],
+    }
+
+    geos = [Geospatial(**kwargs1, locale=locale)]
+    return geos
+
+
+def demo(scens=False, optims=False, geos=False, locale=None):
     """ Create a demo project with demo settings """
 
     # Parameters
@@ -637,7 +777,7 @@ def demo(scens=False, optims=False, geos=False):
     region = "national"
 
     # Create project and load in demo databook spreadsheet file into 'demo' Spreadsheet, Dataset, and Model.
-    P = Project(name)
+    P = Project(name, locale=locale)
     P.load_data(country, region, name="demo")
     # P.load_data(country, "region1", name="demoregion1")
     # P.load_data(country, "region2", name="demoregion2")

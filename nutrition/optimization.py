@@ -8,7 +8,7 @@ from .scenarios import Scen, run_scen
 class Optim(sc.prettyobj):
     """ Stores settings for running an optimization for a single objective. """
 
-    def __init__(self, name=None, model_name=None, weights=None, mults=None, prog_set=None, active=True, add_funds=0, fix_curr=False, rem_curr=False, growth="fixed budget", filter_progs=True, balanced_optimization=False):
+    def __init__(self, name=None, model_name=None, weights=None, mults=None, prog_set=None, active=True, add_funds=0, fix_curr=False, rem_curr=False, growth="fixed budget", filter_progs=True, balanced_optimization=False, locale=None):
         """
         :param name: the name of the optimization (string)
         :param model_name: the name of the model corresponding to optimizations (string)
@@ -19,6 +19,7 @@ class Optim(sc.prettyobj):
         :param add_funds: additional funds
         :param fix_curr: fix the current allocations?
         :param rem_curr: remove the current allocations?
+        :param locale: Locale to match the weights being passed in
         :param filter_progs: filter out programs which don't impact the objective (can improve optimization results)
         :param growth: consider it is fixed budget ot fixed coverage (boolean)
         :param balanced_optimization: optionally run an additional set of optimizations for each budget multiplier that balances progress toward each objective
@@ -26,7 +27,7 @@ class Optim(sc.prettyobj):
 
         self.name = name
         self.model_name = model_name
-        proc_weights = utils.process_weights(weights)
+        proc_weights = utils.process_weights(weights, locale=locale)
         self.weights = np.transpose(proc_weights)
         self.mults = mults
         self.prog_set = prog_set
@@ -196,6 +197,9 @@ class Optim(sc.prettyobj):
         fixed = kwargs["fixed"]
         model = kwargs["model"]
         weight = kwargs["weights"]
+
+        _ = utils.get_translator(model.locale)
+
         numprogs = np.sum(inds)
         if free > 0 and np.any(inds):  # need both funds and programs
             xmin = np.zeros(numprogs)
@@ -211,10 +215,10 @@ class Optim(sc.prettyobj):
             scaled = utils.scale_end_alloc(free, x, model.prog_info, inds, fixed)  # scales spending to fit budget, limited by saturation and any program coverage dependencies
             inds = np.append(inds, True)
             fixed = np.append(fixed, 0.0)
-            excess_spend = {"name": "Excess budget not allocated", "all_years": model.prog_info.all_years, "prog_data": utils.add_dummy_prog_data(model.prog_info, "Excess budget not allocated")}
+            excess_spend = {"name": _("Excess budget not allocated"), "all_years": model.prog_info.all_years, "prog_data": utils.add_dummy_prog_data(model.prog_info, _("Excess budget not allocated"), model.locale)}
             model.prog_info.add_prog(excess_spend, model.pops)
             model.prog_info.prog_data = excess_spend["prog_data"]
-            self.prog_set.append("Excess budget not allocated")
+            self.prog_set.append(_("Excess budget not allocated"))
             best_alloc = utils.add_fixed_alloc(fixed, scaled, inds)
         else:
             # if one of the multiples is 0, return fixed costs
@@ -224,8 +228,9 @@ class Optim(sc.prettyobj):
         progvals = {prog: spend for prog, spend in zip(self.prog_set, best_alloc)}
         scen = Scen(name=name, model_name=self.model_name, scen_type="budget", progvals=progvals, enforce_constraints_year=0, growth=self.growth)
         res = run_scen(scen, model, obj=self.name, mult=mult, weight=weight, restrictcovs=False)
-        if "Excess budget not allocated" in self.prog_set:
-            self.prog_set.remove("Excess budget not allocated")
+        if _("Excess budget not allocated") in self.prog_set:
+            self.prog_set.remove(_("Excess budget not allocated"))
+
         return res
 
     @utils.trace_exception
@@ -261,12 +266,29 @@ def obj_func(allocation, model, free, fixed, keep_inds, weights):
     return value
 
 
-def make_default_optim(modelname=None, basename="Maximize thrive"):
+def make_default_optim(modelname=None, basename="Maximize thrive", locale=None):
     """
     Creates and returns a prototype / default optimization for a particular Model.
     """
 
-    kwargs1 = {"name": basename, "model_name": modelname, "mults": [1], "weights": sc.odict({"thrive": [1]}), "prog_set": ["Vitamin A supplementation", "IYCF 1", "IFA fortification of maize", "Balanced energy-protein supplementation", "Public provision of complementary foods", "Iron and iodine fortification of salt"], "fix_curr": False, "add_funds": 0, "filter_progs": True}
+    _ = utils.get_translator(locale)
 
-    default = Optim(**kwargs1)
-    return default
+    kwargs1 = {
+        "name": basename,
+        "model_name": modelname,
+        "mults": [1],
+        "weights": sc.odict({"thrive": 1}),
+        "prog_set": [
+            _("Vitamin A supplementation"),
+            _("IYCF 1"),
+            _("IFA fortification of maize"),
+            _("Balanced energy-protein supplementation"),
+            _("Public provision of complementary foods"),
+            _("Iron and iodine fortification of salt"),
+        ],
+        "fix_curr": False,
+        "add_funds": 0,
+        "filter_progs": True,
+    }
+
+    return Optim(**kwargs1, locale=locale)

@@ -6,29 +6,90 @@ import numpy as np
 import scipy.special
 from scipy.optimize import brentq
 import sciris as sc
+import pathlib
+import gettext
+import babel
+
+LOCALE_PATH = pathlib.Path(__file__).parent / "locale"
+locale = "en"  # Set the default locale
+available_locales = sorted([(pathlib.Path(x) / ".." / "..").resolve().name for x in gettext.find("nutrition", LOCALE_PATH, languages=babel.Locale("en").languages.keys(), all=True)])
 
 
-def optimafolder(subfolder=None):
-    if subfolder is None:
-        subfolder = "nutrition"
-    parentfolder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-    folder = os.path.join(parentfolder, subfolder, "")
-    return folder
+def get_translator(this_locale: str = None, context: bool = False):
+    """
+    Get locale translation function
+
+    Example usage
+
+        _ = get_translator() # default/fallback locale, set in nutrition.utils.locale
+        _ = get_translator('fr') # translator for specific locale
+        pgettext = get_translator('fr',context=True) # Include context
+
+        translated = _('original')
+        translated = pgettext('context','original')
+
+    Note that if ``context=True`` it is preferable to assign the returned function to
+    `pgettext` rather than `_` so that Babel extracts the msgctxt correctly.
+
+    :param this_locale: A locale string e.g. `fr` - should match available_locales
+    :param context: Optionally return a two-argument translation function supporting context
+    :return: A callable translation function
+    """
+
+    # Note that this function cannot be cached (e.g. with lrucache) because the default locale is read at runtime
+    if this_locale is None:
+        this_locale = locale  # Use the fallback locale. Loading it this way means users can write to nutrition.utils.locale to change the default at runtime
+
+    translator = gettext.translation("nutrition", LOCALE_PATH, fallback=False, languages=[this_locale])
+    if context:
+        return translator.pgettext
+    else:
+        return translator.gettext
+
+
+def translate(f):
+    """
+    Decorator to inject _ function
+
+    For Babel's extract messages function to work, it requires the translation function
+    to be defined as `_` (which is also the convention for translation functions). For
+    classes that define a `self.locale` attribute, methods can be decorated with
+    this @translate wrapper to inject the translation function, instead of having
+    `_ = utils.get_translator(self.locale)` at the top of the method.
+
+    If the first argument does not have a locale attribute or if has not been set,
+    translation will be carried out using the default locale
+
+    Example usage:
+
+        class Foo():
+            def __init__(self, locale):
+                self.locale = locale
+
+            @translate
+            def bar(self):
+                print(_("string"))
+
+    Notice that the @translate decorator on the `Foo.bar()` method means that `_` can be
+    used inside the method, with the locale drawn from `self.locale`
+
+    """
+
+    def wrapper(*args, **kwargs):
+        g = f.__globals__  # use f.func_globals for py < 2.6
+
+        if hasattr(args[0], 'locale') and args[0].locale is not None:
+            g['_'] = get_translator(args[0].locale)
+        else:
+            g['_'] = get_translator()
+        return f(*args, **kwargs)
+
+    return wrapper
 
 
 # ##############################################################################
 # ### HELPER FUNCTIONS
 # ##############################################################################
-#
-
-
-def format_costtypes(oldlabs):
-    maps = {"Linear (constant marginal cost) [default]": "linear", "Curved with increasing marginal cost": "increasing", "Curved with decreasing marginal cost": "decreasing", "S-shaped (decreasing then increasing marginal cost)": "s-shaped"}
-    newlabs = []
-    for lab in oldlabs:
-        newlabs.append(maps[lab])
-    return newlabs
-
 
 def default_trackers(prev=None, rate=None):
     """
@@ -37,7 +98,41 @@ def default_trackers(prev=None, rate=None):
     :param rate: return just rates (True) or everything else (False) or the entire list (None)
     :return: a list of outcome variable names
     """
-    outcomes = ["thrive", "child_deaths", "stunted", "wasted", "child_anaemic", "stunted_prev", "wasted_prev", "child_anaemprev", "pw_deaths", "pw_anaemic", "pw_anaemprev", "nonpw_anaemic", "nonpw_anaemprev", "child_mortrate", "child_samprev", "child_mamprev", "child_sam", "child_mam", "child_sga", "child_bfprev", "child_1_6months", "child_6_23months", "child_less_5years", "stunting_cost", "wasting_cost", "child_death_cost", "pw_death_cost", "child_anaemic_cost", "pw_anaemic_cost", "pw_mortrate", "total_popn", "pop_rate"]
+    outcomes = [
+        "thrive",
+                "child_deaths",
+                "stunted",
+                "wasted",
+                "child_anaemic",
+                "stunted_prev",
+                "wasted_prev",
+                "child_anaemprev",
+                "pw_deaths",
+                "pw_anaemic",
+                "pw_anaemprev",
+                "nonpw_anaemic",
+                "nonpw_anaemprev",
+                "child_mortrate",
+                "child_samprev",
+                "child_mamprev",
+                "child_sam",
+                "child_mam",
+                "child_sga",
+                "child_bfprev",
+                "child_1_6months",
+                "child_6_23months",
+                "child_less_5years",
+                "stunting_cost",
+                "wasting_cost",
+                "child_death_cost",
+                "pw_death_cost",
+                "child_anaemic_cost",
+                "pw_anaemic_cost",
+                "pw_mortrate",
+                "total_popn",
+                "pop_rate",
+                ]
+
     if prev is not None:
         if prev:
             outcomes = [out for out in outcomes if "prev" in out]
@@ -51,60 +146,82 @@ def default_trackers(prev=None, rate=None):
     return outcomes
 
 
-def pretty_labels(direction=False):
+def pretty_labels(direction=False, locale=None):
     """
     Prettifies the variable names.
     Note that the order of pretty must match the order returned by default_trackers().
     :param direction: Include max/min of the objective
     :return:
     """
+
+    pgettext = get_translator(locale, context=True)
+
     if direction:
         # for use in weighted objective
-        pretty = ["Maximize the number of alive, non-stunted children", "Minimize the number of child deaths", "Minimize the number of stunted children", "Minimize the number of wasted children", "Minimize the number of anaemic children", "Minimize the prevalence of stunting in children", "Minimize the prevalence of wasting in children", "Minimize the prevalence of anaemia in children", "Minimize the number of pregnant women deaths", "Minimize the number of anaemic pregnant women", "Minimize the prevalence of anaemia in pregnant women", "Minimize the number of anaemic non-pregnant women", "Minimize the prevalence of anaemia in non-pregnant women", "Minimize child mortality rate", "Minimize pregnant women mortality rate"]
+        pretty = [
+            pgettext("plotting", "Maximize the number of alive, non-stunted children"),
+            pgettext("plotting", "Minimize the number of child deaths"),
+            pgettext("plotting", "Minimize the number of stunted children"),
+            pgettext("plotting", "Minimize the number of wasted children"),
+            pgettext("plotting", "Minimize the number of anaemic children"),
+            pgettext("plotting", "Minimize the prevalence of stunting in children"),
+            pgettext("plotting", "Minimize the prevalence of wasting in children"),
+            pgettext("plotting", "Minimize the prevalence of anaemia in children"),
+            pgettext("plotting", "Minimize the number of pregnant women deaths"),
+            pgettext("plotting", "Minimize the number of anaemic pregnant women"),
+            pgettext("plotting", "Minimize the prevalence of anaemia in pregnant women"),
+            pgettext("plotting", "Minimize the number of anaemic non-pregnant women"),
+            pgettext("plotting", "Minimize the prevalence of anaemia in non-pregnant women"),
+            pgettext("plotting", "Minimize child mortality rate"),
+            pgettext("plotting", "Minimize pregnant women mortality rate"),
+        ]
     else:
         pretty = [
-            "Number of alive, non-stunted children turning age 5",
-            "Number of child deaths",
-            "Number of stunted children turning age 5",
-            "Number of wasted children turning age 5",
-            "Number of anaemic children turning age 5",
-            "Prevalence of stunting in children",
-            "Prevalence of wasting in children",
-            "Prevalence of anaemia in children",
-            "Number of pregnant women deaths",
-            "Number of anaemic pregnant women",
-            "Prevalence of anaemia in pregnant women",
-            "Number of anaemic non-pregnant women",
-            "Prevalence of anaemia in non-pregnant women",
-            "Child mortality rate",
-            "Prevalence of SAM",
-            "Prevalence of MAM",
-            "Number of SAM children",
-            "Number of MAM children",
-            "Number of SGA births",
-            "Exclusive breastfeeding prevalence <6 months",
-            "Number of children <6 months",
-            "Number of children 6-23 months",
-            "Number of children <5 years",
-            "Economic cost of stunting",
-            "Economic cost of wasting",
-            "Economic cost of child death",
-            "Economic cost of pregnant woman death",
-            "Economic cost of anaemic child",
-            "Economic cost of anaemic pregnant woman",
-            "Pregnant women mortality rate",
-            "Total population",
-            "Population growth rate",
+            pgettext("plotting", "Number of alive, non-stunted children turning age 5"),
+            pgettext("plotting", "Number of child deaths"),
+            pgettext("plotting", "Number of stunted children turning age 5"),
+            pgettext("plotting", "Number of wasted children turning age 5"),
+            pgettext("plotting", "Number of anaemic children turning age 5"),
+            pgettext("plotting", "Prevalence of stunting in children"),
+            pgettext("plotting", "Prevalence of wasting in children"),
+            pgettext("plotting", "Prevalence of anaemia in children"),
+            pgettext("plotting", "Number of pregnant women deaths"),
+            pgettext("plotting", "Number of anaemic pregnant women"),
+            pgettext("plotting", "Prevalence of anaemia in pregnant women"),
+            pgettext("plotting", "Number of anaemic non-pregnant women"),
+            pgettext("plotting", "Prevalence of anaemia in non-pregnant women"),
+            pgettext("plotting", "Child mortality rate"),
+            pgettext("plotting", "Prevalence of SAM"),
+            pgettext("plotting", "Prevalence of MAM"),
+            pgettext("plotting", "Number of SAM children"),
+            pgettext("plotting", "Number of MAM children"),
+            pgettext("plotting", "Number of SGA births"),
+            pgettext("plotting", "Exclusive breastfeeding prevalence <6 months"),
+            pgettext("plotting", "Number of children <6 months"),
+            pgettext("plotting", "Number of children 6-23 months"),
+            pgettext("plotting", "Number of children <5 years"),
+            pgettext("plotting", "Economic cost of stunting"),
+            pgettext("plotting", "Economic cost of wasting"),
+            pgettext("plotting", "Economic cost of child death"),
+            pgettext("plotting", "Economic cost of pregnant woman death"),
+            pgettext("plotting", "Economic cost of anaemic child"),
+            pgettext("plotting", "Economic cost of anaemic pregnant woman"),
+            pgettext("plotting", "Pregnant women mortality rate"),
+            pgettext("plotting", "Total population"),
+            pgettext("plotting", "Population growth rate"),
         ]
     labs = sc.odict(zip(default_trackers(), pretty))
     return labs
 
 
-def relabel(old, direction=False):
+def relabel(old, direction=False, locale=None):
     """Can be given a string or a list of strings.
     Will return corresponding pretty label as a string or a list of strings"""
-    pretty = pretty_labels(direction=direction)
-    pretty["Baseline"] = "Est. spending \n baseline year"  # this is for allocation
+
+    pgettext = get_translator(locale, context=True)
+
+    pretty = pretty_labels(direction=direction, locale=locale)
+    pretty["Baseline"] = pgettext("plotting", "Est. spending \n baseline year")  # this is for allocation
     if isinstance(old, list):
         new = []
         for lab in old:
@@ -128,54 +245,23 @@ def get_sign(obj):
         return 1
 
 
-# def _process_weights(weights): # This is no longer needed if multiple weight are considered moving forward
-#     """ Creates an array of weights with the order corresponding to default_trackers().
-#     If conditions for the max/min problem is violated, will correct these by flipping sign.
-#     :param weights: an odict of (outcome, weight) pairs. Also allowing a string for single objectives.
-#     :return an array of floats """
-#     default = default_trackers()
-#     pretty1 = pretty_labels(direction=False)
-#     # reverse mapping to find outcome
-#     inv_pretty1 = {v: k for k, v in pretty1.items()}
-#     pretty2 = pretty_labels(direction=True)
-#     inv_pretty2 = {v: k for k, v in pretty2.items()}
-#     newweights = np.zeros(len(default))
-#     # if user just enters a string from the pre-defined objectives
-#     if sc.isstring(weights): weights = sc.odict({weights:1})
-#     if isinstance(weights, np.ndarray):
-#         newweights[:len(weights)] = weights
-#         return newweights
-#     for out, weight in weights.items():
-#         if out in default:
-#             thisout = out
-#             ind = default.index(out)
-#         elif out in inv_pretty1:
-#             thisout = inv_pretty1[out]
-#             ind = default.index(thisout)
-#         elif out in inv_pretty2:
-#             thisout = inv_pretty2[out]
-#             ind = default.index(thisout)
-#         else:
-#             print('Warning: "%s" is an invalid weighted outcome, removing'%out)
-#             continue
-#         sign = get_sign(thisout)
-#         newweights[ind] = abs(weight) * sign
-#     if np.all(newweights==0):
-#         raise Exception('All objective weights are zero. Process aborted.')
 
-#     return newweights
-
-
-def process_weights(weights):
-    """Creates an nd array of weights with the order corresponding to default_trackers().
+def process_weights(weights, locale=None):
+    """Creates an array of weights with the order corresponding to default_trackers().
     If conditions for the max/min problem is violated, will correct these by flipping sign.
-    :param weights: an odict of (outcome, array(weight)) pairs. Also allowing a string for single objectives.
-    :return an nd array (rows:- weight groups, columns:- outcome)"""
+
+    Note - if the the weights provided are in a locale different to the specified locale, they will
+    be removed
+
+    :param weights: an odict of (outcome, weight) pairs. Also allowing a string for single objectives.
+    :param locale: A locale string that should match the locale of the weights being passed in, if the weights being passed in are pretty strings
+    :return an array of floats"""
+
     default = default_trackers()
-    pretty1 = pretty_labels(direction=False)
+    pretty1 = pretty_labels(direction=False, locale=locale)
     # reverse mapping to find outcome
     inv_pretty1 = {v: k for k, v in pretty1.items()}
-    pretty2 = pretty_labels(direction=True)
+    pretty2 = pretty_labels(direction=True, locale=locale)
     inv_pretty2 = {v: k for k, v in pretty2.items()}
     newweights = np.zeros((len(default), len(weights[0])))
     # if user just enters a string from the pre-defined objectives
@@ -409,10 +495,13 @@ def solve_quad_bf(oddsRatio, fracA, fracB, p, q):  # custom function for breastf
     return p0, p1
 
 
-def restratify(frac_yes):
+def restratify(frac_yes, locale):
     # Going from binary stunting/wasting to four fractions
     # Yes refers to more than 2 standard deviations below the global mean/median
     # in our notes, frac_yes = alpha
+
+    _ = get_translator(locale)
+
     if frac_yes > 1:
         frac_yes = 1
     invCDFalpha = scipy.special.ndtri(frac_yes)
@@ -420,7 +509,7 @@ def restratify(frac_yes):
     frac_mod = frac_yes - scipy.special.ndtr(invCDFalpha - 1.0)
     frac_mild = scipy.special.ndtr(invCDFalpha + 1.0) - frac_yes
     frac_norm = 1.0 - scipy.special.ndtr(invCDFalpha + 1.0)
-    restrat = {"Normal": frac_norm, "Mild": frac_mild, "Moderate": frac_mod, "High": frac_high}
+    restrat = {_("Normal"): frac_norm, _("Mild"): frac_mild, _("Moderate"): frac_mod, _("High"): frac_high}
     return restrat
 
 
@@ -451,14 +540,15 @@ def check_sol(sol):
         raise Exception(":: Error:: birth outcome probabilities outside interval (0,1)")
 
 
-def add_dummy_prog_data(prog_info, name):
+def add_dummy_prog_data(prog_info, name, locale):
+    _ = get_translator(locale)
     thisprog_data = sc.dcp(prog_info.prog_data)
     thisprog_data.base_cov[name] = 0.0
     thisprog_data.base_prog_set.append(name)
     thisprog_data.costs[name] = 1e12
     thisprog_data.costtype[name] = "linear"
     thisprog_data.impacted_pop[name] = {pop: 1.0 for pop in thisprog_data.settings.all_ages}  # so that it covers everyone in the model
-    thisprog_data.prog_deps[name] = {"Exclusion dependency": [], "Threshold dependency": []}  # so that it has no dependencies
+    thisprog_data.prog_deps[name] = {_("Exclusion dependency"): [], _("Threshold dependency"): []}  # so that it has no dependencies
     thisprog_data.prog_target[name] = {pop: 1.0 for pop in thisprog_data.settings.all_ages}  # so that it covers everyone in the model
     thisprog_data.sat[name] = 1.0
     thisprog_data.max_inc[name] = 1.0

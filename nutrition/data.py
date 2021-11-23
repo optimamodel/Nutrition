@@ -89,8 +89,11 @@ class DemographicData(object):
 
     def __init__(self, spreadsheet, calcscache, locale):
 
-        self.spreadsheet = spreadsheet
+        self.locale = locale
         self.settings = settings.Settings(self.locale)
+
+        self.spreadsheet = spreadsheet
+
         self.demo = None
         self.proj = sc.odict()
         self.death_dist = sc.odict()
@@ -118,7 +121,6 @@ class DemographicData(object):
         self.get_incidences()
         self.get_economic_cost()
 
-        # moved from defaultparams
         self.impacted_pop = None
         self.prog_areas = sc.odict()
         self.pop_areas = sc.odict()
@@ -139,10 +141,11 @@ class DemographicData(object):
         self.man_mam = False
         self.arr_rr_death = sc.odict()
         self.read_spreadsheet()
-
         self.compute_risks()
-        self.spreadsheet = None
+
+        self.spreadsheet = None # Clear spreadsheet
         
+
     def read_spreadsheet(self):
         self.extend_treatsam()
         self.impact_pop()
@@ -358,7 +361,6 @@ class DemographicData(object):
     def get_death_dist(self):
         # Load the main spreadsheet into a DataFrame.
         deathdist = utils.read_sheet(self.spreadsheet, "Causes of death", [0, 1], skiprows=1)
-
         # Recalculate cells that need it, and remember in the calculations cache.
         neonatal_death_pct_sum = deathdist.loc[_("Neonatal")][_("<1 month")].values[:-1].astype(np.float).sum()
         self.calcscache.write_cell(_("Causes of death"), 10, 2, neonatal_death_pct_sum)
@@ -545,6 +547,7 @@ class DemographicData(object):
         self.or_bf_prog.update(self.create_iycf(bf_effects, iycf_packs))
         self.or_stunting_prog.update(self.create_iycf(stunt_effects, iycf_packs))
 
+    @translate
     def create_iycf(self, effects, packages):
         """ Creates IYCF packages based on user input in 'IYCFpackages' """
         # non-empty cells denote program combination
@@ -621,9 +624,7 @@ class DemographicData(object):
         return res_dict
 
 
-
 class ProgramData(object):
-    """Stores all the settings for each project, defined by the user"""
 
     def __init__(self, data, default_data, calcscache):
 
@@ -686,6 +687,7 @@ class ProgramData(object):
             max_dec = self.max_dec[progname]
             if max_dec < 0 or max_dec > 1:
                 errormsg = _("Maximum decrease is outside the interval (0, 100) for %s") % progname
+
                 invalid.append(errormsg)
             cost = self.costs[progname]
             if cost <= 0:
@@ -869,6 +871,18 @@ class ProgramData(object):
             newlabs.append(maps[lab])
         return newlabs
 
+    @translate
+    def _format_costtypes(self, oldlabs):
+        maps = {_("Linear (constant marginal cost) [default]"): "linear",
+                _("Curved with increasing marginal cost"): "increasing",
+                _("Curved with decreasing marginal cost"): "decreasing",
+                _("S-shaped (decreasing then increasing marginal cost)"): "s-shaped",
+                }
+        newlabs = []
+        for lab in oldlabs:
+            newlabs.append(maps[lab])
+        return newlabs
+
     def create_iycf(self):
         packages = self.define_iycf()
         # remove IYCF from base progs if it isn't appropriately defined (avoid error in baseline)
@@ -980,6 +994,8 @@ class Dataset(object):
 
         self.locale = None  # Store the databook locale (set during `Dataset.load`)
 
+        self.locale = None  # Store the databook locale (set during `Dataset.load`)
+
         self.country = country
         self.region = region
 
@@ -1034,7 +1050,7 @@ class Dataset(object):
             raise Exception("Error in reading uncertainty %s" % str(E))
 
         self.t = self.demographic_data.t
-        self.modified = sc.now()
+        self.modified = sc.now(utc=True)
         return None
 
     def set_pops(self):

@@ -4,10 +4,11 @@ from __future__ import unicode_literals
 
 from setuptools import setup, find_packages
 
-with open("nutrition/version.py", "r") as f:
-    version_file = {}
-    exec(f.read(), version_file)
-    version = version_file["version"]
+import os
+
+cwd = os.path.abspath(os.path.dirname(__file__))
+with open(os.path.join(cwd, "nutrition", "version.py"), "r") as f:
+    version = [x.split("=")[1].replace('"', "").strip() for x in f if x.startswith("version =")][0]
 
 try:
     from pypandoc import convert
@@ -46,6 +47,8 @@ setup(
         "matplotlib>=1.4.2",
         "numpy>=1.10.1",
         "scipy",
-        "pandas>=0.17.1",
+        "pandas>=1.2.4",
+        "babel",
+        "openpyxl",
     ],
 )

@@ -1,0 +1,547 @@
+#
+msgid ""
+msgstr ""
+
+msgid "Actions"
+msgstr "Actions"
+
+msgid "Active"
+msgstr "Active"
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "Copy"
+msgstr "Copy"
+
+msgid "Could not upload file"
+msgstr "Could not upload file"
+
+msgid "Create"
+msgstr "Create"
+
+msgid "Databook"
+msgstr "Databook"
+
+msgid "Delete"
+msgstr "Delete"
+
+msgid "Delete selected"
+msgstr "Delete selected"
+
+msgid "Deselect all"
+msgstr "Deselect all"
+
+msgid "Download"
+msgstr "Download"
+
+msgid "Download selected"
+msgstr "Download selected"
+
+msgid "Help"
+msgstr "Help"
+
+msgid "Include"
+msgstr "Include"
+
+msgid "Login"
+msgstr "Login"
+
+msgid "Name"
+msgstr "Name"
+
+msgid "Open"
+msgstr "Open"
+
+msgid "Outcomes"
+msgstr "Outcomes"
+
+msgid "Register"
+msgstr "Register"
+
+msgid "Rename"
+msgstr "Rename"
+
+msgid "Save"
+msgstr "Save"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Upload"
+msgstr "Upload"
+
+msgid "Zoom out"
+msgstr "Zoom out"
+
+msgctxt "common"
+msgid "Can be reallocated"
+msgstr "Can be reallocated"
+
+msgctxt "common"
+msgid "Cannot be reallocated"
+msgstr "Cannot be reallocated"
+
+msgctxt "common"
+msgid "Clear results"
+msgstr "Clear results"
+
+msgctxt "common"
+msgid "Export data"
+msgstr "Export data"
+
+msgctxt "common"
+msgid "Export plots"
+msgstr "Export plots"
+
+msgctxt "common"
+msgid "Export results"
+msgstr "Export results"
+
+msgctxt "common"
+msgid "Plot results"
+msgstr "Plot results"
+
+msgctxt "common"
+msgid "Program name"
+msgstr "Program name"
+
+msgctxt "common"
+msgid "Reset zoom"
+msgstr "Reset zoom"
+
+msgctxt "common"
+msgid "Run"
+msgstr "Run"
+
+msgctxt "common"
+msgid "Test run"
+msgstr "Test run"
+
+msgctxt "common"
+msgid "Zoom in"
+msgstr "Zoom in"
+
+msgctxt "common"
+msgid "Zoom out"
+msgstr "Zoom out"
+
+msgctxt "common"
+msgid "no_data_loaded"
+msgstr ""
+"Data not yet uploaded for the project.  Please upload a databook in the "
+"Projects page"
+
+msgctxt "common"
+msgid "no_project_loaded"
+msgstr "No project is loaded"
+
+msgctxt "footer"
+msgid "Terms and conditions"
+msgstr "Terms and conditions"
+
+msgctxt "geoaptial"
+msgid "Regional spending"
+msgstr "Regional spending"
+
+msgctxt "geospatial"
+msgid "Add geospatial optimization"
+msgstr "Add geospatial optimization"
+
+msgctxt "geospatial"
+msgid "Additional funds to allocate"
+msgstr "Additional funds to allocate"
+
+msgctxt "geospatial"
+msgid "Can be reallocated between regions"
+msgstr "Can be reallocated between regions"
+
+msgctxt "geospatial"
+msgid "Cannot be reallocated between regions"
+msgstr "Cannot be reallocated between regions"
+
+msgctxt "geospatial"
+msgid "Copy geospatial optimization"
+msgstr "Copy geospatial optimization"
+
+msgctxt "geospatial"
+msgid "Define geospatial optimizations"
+msgstr "Define geospatial optimizations"
+
+msgctxt "geospatial"
+msgid "Delete geospatial optimization"
+msgstr "Delete geospatial optimization"
+
+msgctxt "geospatial"
+msgid "Edit geospatial optimization"
+msgstr "Edit geospatial optimization"
+
+msgctxt "geospatial"
+msgid "Existing spending"
+msgstr "Existing spending"
+
+msgctxt "geospatial"
+msgid "Geospatial optimization name"
+msgstr "Geospatial optimization name"
+
+msgctxt "geospatial"
+msgid "Optimization objective"
+msgstr "Optimization objective"
+
+msgctxt "geospatial"
+msgid "Optimization/program"
+msgstr "Optimization/program"
+
+msgctxt "geospatial"
+msgid "Select regions"
+msgstr "Select regions"
+
+msgctxt "geospatial"
+msgid "Weight"
+msgstr "Weight"
+
+msgctxt "inputs"
+msgid "Current sheet"
+msgstr "Current sheet"
+
+msgctxt "inputs"
+msgid "Edit input data"
+msgstr "Edit input data"
+
+msgctxt "inputs"
+msgid "Switch to this sheet"
+msgstr "Switch to this sheet"
+
+msgctxt "inputs"
+msgid "data_not_loaded"
+msgstr "Data not loaded"
+
+msgctxt "inputs"
+msgid "no_project_loaded"
+msgstr "No project loaded"
+
+msgctxt "inputs"
+msgid "revert"
+msgstr "Revert"
+
+msgctxt "inputs"
+msgid "revert_tooltip"
+msgstr "Revert to last saved data"
+
+msgctxt "inputs"
+msgid "save_changes"
+msgstr "Save changes"
+
+msgctxt "inputs"
+msgid "save_tooltip"
+msgstr "Save data to project"
+
+msgctxt "login"
+msgid "New user?"
+msgstr "New user?"
+
+msgctxt "login"
+msgid "Register here"
+msgstr "Register here"
+
+msgctxt "navbar"
+msgid "About"
+msgstr "About"
+
+msgctxt "navbar"
+msgid "Change password"
+msgstr "Change password"
+
+msgctxt "navbar"
+msgid "Edit account"
+msgstr "Edit account"
+
+msgctxt "navbar"
+msgid "Geospatial"
+msgstr "Geospatial"
+
+msgctxt "navbar"
+msgid "Help"
+msgstr "Help"
+
+msgctxt "navbar"
+msgid "Inputs"
+msgstr "Inputs"
+
+msgctxt "navbar"
+msgid "Log out"
+msgstr "Log out"
+
+msgctxt "navbar"
+msgid "Optimizations"
+msgstr "Optimizations"
+
+msgctxt "navbar"
+msgid "Project"
+msgstr "Project"
+
+msgctxt "navbar"
+msgid "Projects"
+msgstr "Projects"
+
+msgctxt "navbar"
+msgid "Scenarios"
+msgstr "Scenarios"
+
+msgctxt "navbar"
+msgid "Toggle navigation"
+msgstr "Toggle navigation"
+
+msgctxt "navbar"
+msgid "User"
+msgstr "User"
+
+msgctxt "optimization"
+msgid "Add optimization"
+msgstr "Add optimization"
+
+msgctxt "optimization"
+msgid "Additional funds to allocate"
+msgstr "Additional funds to allocate"
+
+msgctxt "optimization"
+msgid "Budget multipliers"
+msgstr "Budget multipliers"
+
+msgctxt "optimization"
+msgid "Copy optimization"
+msgstr "Copy optimization"
+
+msgctxt "optimization"
+msgid "Define optimizations"
+msgstr "Define optimizations"
+
+msgctxt "optimization"
+msgid "Delete optimization"
+msgstr "Delete optimization"
+
+msgctxt "optimization"
+msgid "Deselect all interventions"
+msgstr "Deselect all interventions"
+
+msgctxt "optimization"
+msgid "Edit optimization"
+msgstr "Edit optimization"
+
+msgctxt "optimization"
+msgid "Existing spending"
+msgstr "Existing spending"
+
+msgctxt "optimization"
+msgid "Optimization name"
+msgstr "Optimization name"
+
+msgctxt "optimization"
+msgid "Optimization objective"
+msgstr "Optimization objective"
+
+msgctxt "optimization"
+msgid "Optimization/program"
+msgstr "Optimization/program"
+
+msgctxt "optimization"
+msgid "Weight"
+msgstr "Weight"
+
+msgctxt "optimization"
+msgid "current budget"
+msgstr "current budget"
+
+msgctxt "optimization"
+msgid "perform_costeff"
+msgstr "Perform intervention cost-effectiveness analysis"
+
+msgctxt "placeholder"
+msgid "Enter new password"
+msgstr "Enter new password"
+
+msgctxt "placeholder"
+msgid "Reenter old password"
+msgstr "Reenter old password"
+
+msgctxt "projects"
+msgid "Add demo project"
+msgstr "Add demo project"
+
+msgctxt "projects"
+msgid "Copy databook"
+msgstr "Copy databook"
+
+msgctxt "projects"
+msgid "Could not add new project"
+msgstr "Could not add new project "
+
+msgctxt "projects"
+msgid "Could not download project"
+msgstr "Could not download project"
+
+msgctxt "projects"
+msgid "Could not rename databook"
+msgstr "Could not rename databook"
+
+msgctxt "projects"
+msgid "Create blank project"
+msgstr "Create blank project"
+
+msgctxt "projects"
+msgid "Create new project"
+msgstr "Create new project"
+
+msgctxt "projects"
+msgid "Create project"
+msgstr "Create project"
+
+msgctxt "projects"
+msgid "Delete databook"
+msgstr "Delete databook"
+
+msgctxt "projects"
+msgid "Download databook"
+msgstr "Download databook"
+
+msgctxt "projects"
+msgid "Last modified"
+msgstr "Last modified"
+
+msgctxt "projects"
+msgid "Manage projects"
+msgstr "Manage projects"
+
+msgctxt "projects"
+msgid "New name"
+msgstr "New name"
+
+msgctxt "projects"
+msgid "New project"
+msgstr "New project"
+
+msgctxt "projects"
+msgid "New project uploaded"
+msgstr "New project uploaded"
+
+msgctxt "projects"
+msgid "Project actions"
+msgstr "Project actions"
+
+msgctxt "projects"
+msgid "Project name"
+msgstr "Project name"
+
+msgctxt "projects"
+msgid "Rename databook"
+msgstr "Rename databook"
+
+msgctxt "projects"
+msgid "Type here to filter projects"
+msgstr "Type here to filter projects"
+
+msgctxt "projects"
+msgid "Upload databook"
+msgstr "Upload databook"
+
+msgctxt "projects"
+msgid "Upload project from file"
+msgstr "Upload project from file"
+
+msgctxt "projects"
+msgid "loaded_popup"
+msgstr "Project \"{name}\" loaded"
+
+msgctxt "projects"
+msgid "Language"
+msgstr "Language"
+
+msgctxt "register"
+msgid "Already registered?"
+msgstr "Already registered?"
+
+msgctxt "scenarios"
+msgid "Add budget scenario"
+msgstr "Add budget scenario"
+
+msgctxt "scenarios"
+msgid "Add coverage scenario"
+msgstr "Add coverage scenario"
+
+msgctxt "scenarios"
+msgid "Add scenario"
+msgstr "Add scenario"
+
+msgctxt "scenarios"
+msgid "Convert scenario type"
+msgstr "Convert scenario type"
+
+msgctxt "scenarios"
+msgid "Copy scenario"
+msgstr "Copy scenario"
+
+msgctxt "scenarios"
+msgid "Databook"
+msgstr "Databook"
+
+msgctxt "scenarios"
+msgid "Define scenarios"
+msgstr "Define scenarios"
+
+msgctxt "scenarios"
+msgid "Delete scenario"
+msgstr "Delete scenario"
+
+msgctxt "scenarios"
+msgid "Edit scenario"
+msgstr "Edit scenario"
+
+msgctxt "scenarios"
+msgid "Perform intervention cost-effectiveness analysis"
+msgstr "Perform intervention cost-effectiveness analysis"
+
+msgctxt "scenarios"
+msgid "Program cost-effectiveness"
+msgstr "Program cost-effectiveness"
+
+msgctxt "scenarios"
+msgid "Program coverages"
+msgstr "Program coverages"
+
+msgctxt "scenarios"
+msgid "Program spending"
+msgstr "Program spending"
+
+msgctxt "scenarios"
+msgid "Run scenarios"
+msgstr "Run scenarios"
+
+msgctxt "scenarios"
+msgid "Scenario name"
+msgstr "Scenario name"
+
+msgctxt "scenarios"
+msgid "Scenario/program"
+msgstr "Scenario/program"
+
+msgctxt "placeholder"
+msgid "Username"
+msgstr "Username"
+
+msgctxt "placeholder"
+msgid "Password"
+msgstr "Password"
+
+msgctxt "placeholder"
+msgid "Display name (optional)"
+msgstr "Display name (optional)"
+
+msgctxt "placeholder"
+msgid "Email (optional)"
+msgstr "Email (optional)"
+
+msgid "please_wait_spinner"
+msgstr "Please wait..."
