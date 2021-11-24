@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: nutrition 1.7.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2021-11-23 15:30+1100\n"
-"PO-Revision-Date: 2021-11-23 15:36+1100\n"
+"PO-Revision-Date: 2021-11-24 14:30+1100\n"
 "Last-Translator: \n"
 "Language-Team: fr\n"
 "Language: fr\n"
@@ -154,7 +154,7 @@ msgstr "Nombre de naissances"
 
 #: nutrition/data.py:231 nutrition/model.py:554 nutrition/populations.py:816
 msgid "Estimated pregnant women"
-msgstr "Estimation des femmes enceintes"
+msgstr "Estimation du nombre de femmes enceintes"
 
 #: nutrition/data.py:234
 msgid "non-pregnant WRA"
@@ -310,31 +310,33 @@ msgstr "Prévalence de l'allaitement maternel adapté à l'âge des enfants"
 
 #: nutrition/data.py:330
 msgid "Economic loss"
-msgstr ""
+msgstr "Perte économique"
 
 #: nutrition/data.py:331
 msgid "Child wasting episode"
-msgstr ""
+msgstr "Épisode d'amaigrissement d'un enfant"
 
 #: nutrition/data.py:332
 msgid "Child turning age 5 stunted (over lifetime)"
 msgstr ""
+"Enfant souffrant d'un retard de croissance qui aura 5 ans (au cours de sa "
+"vie)"
 
 #: nutrition/data.py:333
 msgid "Child death"
-msgstr ""
+msgstr "Décès d'enfant"
 
 #: nutrition/data.py:334
 msgid "Maternal death"
-msgstr ""
+msgstr "Décès maternel"
 
 #: nutrition/data.py:335
 msgid "Anaemic child (per year)"
-msgstr ""
+msgstr "Enfant anémique (par an)"
 
 #: nutrition/data.py:336
 msgid "Anaemic pregnant woman (per pregnancy)"
-msgstr ""
+msgstr "Femme enceinte anémique (par grossesse)"
 
 #: nutrition/data.py:341 nutrition/data.py:347 nutrition/data.py:352
 #: nutrition/data.py:354
@@ -609,11 +611,12 @@ msgstr "La saturation est en dehors de l'intervalle (0, 100) pour %s"
 #, python-format
 msgid "Maximum increase is outside the interval (0, 100) for %s"
 msgstr ""
+"L'augmentation maximale est en dehors de l'intervalle (0, 100) pour %s"
 
 #: nutrition/data.py:689
 #, python-format
 msgid "Maximum decrease is outside the interval (0, 100) for %s"
-msgstr ""
+msgstr "La reduction maximale est en dehors de l'intervalle (0, 100) pour %s"
 
 #: nutrition/data.py:694
 #, python-format
@@ -820,7 +823,7 @@ msgstr "Désolé, mais vous devez fournir un projet pour load()."
 
 #: nutrition/geospatial.py:62
 msgid "Less than 2 regions selected for geospatial analysis."
-msgstr ""
+msgstr "Moins de 2 regions ont été sélectionnées pour l'analyse geospatiale."
 
 #: nutrition/geospatial.py:96
 msgid "No funds to distribute between or within regions."
@@ -1028,7 +1031,7 @@ msgstr "Mortalité maternelle (pour 1 000 naissances vivantes)"
 
 #: nutrition/programs.py:35 nutrition/utils.py:551
 msgid "Exclusion dependency"
-msgstr "Dépendance d'exclusion"
+msgstr "Dépendance incompatible"
 
 #: nutrition/programs.py:36 nutrition/utils.py:551
 msgid "Threshold dependency"
@@ -1104,11 +1107,11 @@ msgstr "N/A"
 
 #: nutrition/results.py:240
 msgid "Number of SAM children"
-msgstr ""
+msgstr "Nombre d'enfants MAS"
 
 #: nutrition/results.py:240
 msgid "Number of MAM children"
-msgstr ""
+msgstr "Nombre d'enfants MM"
 
 #: nutrition/results.py:262
 msgid "Coverage"
@@ -1358,77 +1361,77 @@ msgstr "Taux de mortalité infantile"
 #: nutrition/utils.py:194
 msgctxt "plotting"
 msgid "Prevalence of SAM"
-msgstr ""
+msgstr "Prevalence de la MAS"
 
 #: nutrition/utils.py:195
 msgctxt "plotting"
 msgid "Prevalence of MAM"
-msgstr ""
+msgstr "Prévalence de la MM"
 
 #: nutrition/utils.py:196
 msgctxt "plotting"
 msgid "Number of SAM children"
-msgstr ""
+msgstr "Nombre d'enfants MAS"
 
 #: nutrition/utils.py:197
 msgctxt "plotting"
 msgid "Number of MAM children"
-msgstr ""
+msgstr "Nombre d'enfants MM"
 
 #: nutrition/utils.py:198
 msgctxt "plotting"
 msgid "Number of SGA births"
-msgstr ""
+msgstr "Nombre de naissances SGA"
 
 #: nutrition/utils.py:199
 msgctxt "plotting"
 msgid "Exclusive breastfeeding prevalence <6 months"
-msgstr ""
+msgstr "Prevalence de l'allaitement maternel exclusive <6 mois"
 
 #: nutrition/utils.py:200
 msgctxt "plotting"
 msgid "Number of children <6 months"
-msgstr ""
+msgstr "Nombre d'enfants <6 mois"
 
 #: nutrition/utils.py:201
 msgctxt "plotting"
 msgid "Number of children 6-23 months"
-msgstr ""
+msgstr "Nombre d'enfants de 6 à 23 mois"
 
 #: nutrition/utils.py:202
 msgctxt "plotting"
 msgid "Number of children <5 years"
-msgstr ""
+msgstr "Nombre d'enfants <5 ans"
 
 #: nutrition/utils.py:203
 msgctxt "plotting"
 msgid "Economic cost of stunting"
-msgstr ""
+msgstr "Coût économique du retard de croissance"
 
 #: nutrition/utils.py:204
 msgctxt "plotting"
 msgid "Economic cost of wasting"
-msgstr ""
+msgstr "Coût économique de l'amaigrissement"
 
 #: nutrition/utils.py:205
 msgctxt "plotting"
 msgid "Economic cost of child death"
-msgstr ""
+msgstr "Coût économique d'un décès d'enfant"
 
 #: nutrition/utils.py:206
 msgctxt "plotting"
 msgid "Economic cost of pregnant woman death"
-msgstr ""
+msgstr "Coût économique d'un décès d'une femme enceinte"
 
 #: nutrition/utils.py:207
 msgctxt "plotting"
 msgid "Economic cost of anaemic child"
-msgstr ""
+msgstr "Coût économique d'un enfant anémique"
 
 #: nutrition/utils.py:208
 msgctxt "plotting"
 msgid "Economic cost of anaemic pregnant woman"
-msgstr ""
+msgstr "Coût économique d'une femme enceinte anémique"
 
 #: nutrition/utils.py:209
 msgctxt "plotting"
@@ -1438,12 +1441,12 @@ msgstr "Taux de mortalité des femmes enceintes"
 #: nutrition/utils.py:210
 msgctxt "plotting"
 msgid "Total population"
-msgstr ""
+msgstr "Population totale"
 
 #: nutrition/utils.py:211
 msgctxt "plotting"
 msgid "Population growth rate"
-msgstr ""
+msgstr "Taux de croissance démographique"
 
 #: nutrition/utils.py:224
 msgctxt "plotting"

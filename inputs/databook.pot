@@ -928,5 +928,212 @@ msgstr ""
 msgid "Cost"
 msgstr ""
 
-msgid "Proprtional Cost"
+msgid "Economic loss"
+msgstr ""
+
+msgid "Type"
+msgstr ""
+
+msgid "Child wasting episode"
+msgstr ""
+
+msgid "Child turning 5 stunted (over lifetime)"
+msgstr ""
+
+msgid "Child death"
+msgstr ""
+
+msgid "Maternal death"
+msgstr ""
+
+msgid "Anaemic child (per year)"
+msgstr ""
+
+msgid "Anaemic pregnant woman (per pregnancy)"
+msgstr ""
+
+msgid "Lower bounds"
+msgstr ""
+
+msgid "Odds ratio for correct breastfeeding - lower"
+msgstr ""
+
+msgid "Odds ratio for stunting - lower"
+msgstr ""
+
+msgid "Odds ratio for correct complementary feeding - lower"
+msgstr ""
+
+msgid "Upper bounds"
+msgstr ""
+
+msgid "Odds ratio for correct breastfeeding - upper"
+msgstr ""
+
+msgid "Odds ratio for stunting - upper"
+msgstr ""
+
+msgid "Odds ratio for correct complementary feeding - upper"
+msgstr ""
+
+msgid "Relative risk by birth spacing - lower"
+msgstr ""
+
+msgid "Odds ratios for women with maternal anaemia - lower"
+msgstr ""
+
+msgid "Odds ratios for conditions - lower"
+msgstr ""
+
+msgid "Relative risks of neonatal causes of death - lower"
+msgstr ""
+
+msgid "Relative risk by birth spacing - upper"
+msgstr ""
+
+msgid "Odds ratios for women with maternal anaemia - upper"
+msgstr ""
+
+msgid "Odds ratios for conditions - upper"
+msgstr ""
+
+msgid "Relative risks of neonatal causes of death - upper"
+msgstr ""
+
+msgid "Stunting (HAZ-score < -2)-l"
+msgstr ""
+
+msgid "MAM (WHZ-score between -3 and -2)-l"
+msgstr ""
+
+msgid "SAM (WHZ-score < -3)-l"
+msgstr ""
+
+msgid "Stunting (HAZ-score < -2)-u"
+msgstr ""
+
+msgid "MAM (WHZ-score between -3 and -2)-u"
+msgstr ""
+
+msgid "SAM (WHZ-score < -3)-u"
+msgstr ""
+
+msgid "Given previous stunting (HAZ < -2 in previous age band) - lower"
+msgstr ""
+
+msgid "Diarrhoea (per additional episode) - lower"
+msgstr ""
+
+msgid "By program - lower"
+msgstr ""
+
+msgid "Public provision of complementary foods - lower"
+msgstr ""
+
+msgid "Lipid-based nutrition supplements - lower"
+msgstr ""
+
+msgid "Zinc supplementation - lower"
+msgstr ""
+
+msgid "Odds ratios for correct breastfeeding by program - lower"
+msgstr ""
+
+msgid "Kangaroo mother care - lower"
+msgstr ""
+
+msgid "For SAM per additional episode of diarrhoea - lower"
+msgstr ""
+
+msgid "For MAM per additional episode of diarrhoea - lower"
+msgstr ""
+
+msgid "For anaemia per additional episode of severe diarrhoea - lower"
+msgstr ""
+
+msgid "Odds ratios for optimal birth spacing by program - lower"
+msgstr ""
+
+msgid "Family planning - lower"
+msgstr ""
+
+msgid "Given previous stunting (HAZ < -2 in previous age band) - upper"
+msgstr ""
+
+msgid "Diarrhoea (per additional episode) - upper"
+msgstr ""
+
+msgid "By program - upper"
+msgstr ""
+
+msgid "Public provision of complementary foods - upper"
+msgstr ""
+
+msgid "Lipid-based nutrition supplements - upper"
+msgstr ""
+
+msgid "Zinc supplementation - upper"
+msgstr ""
+
+msgid "Odds ratios for correct breastfeeding by program - upper"
+msgstr ""
+
+msgid "Kangaroo mother care - upper"
+msgstr ""
+
+msgid "For SAM per additional episode of diarrhoea - upper"
+msgstr ""
+
+msgid "For MAM per additional episode of diarrhoea - upper"
+msgstr ""
+
+msgid "For anaemia per additional episode of severe diarrhoea - upper"
+msgstr ""
+
+msgid "Odds ratios for optimal birth spacing by program - upper"
+msgstr ""
+
+msgid "Family planning - upper"
+msgstr ""
+
+msgid "Odds ratios of being anaemic when covered by intervention - lower"
+msgstr ""
+
+msgid "Relative risks of anaemia when receiving intervention - lower"
+msgstr ""
+
+msgid "Relative risks of anaemia when receiving intervention - upper"
+msgstr ""
+
+msgid "Odds ratios of being anaemic when covered by intervention - upper"
+msgstr ""
+
+msgid "Odds ratio of SAM when covered by program - lower"
+msgstr ""
+
+msgid "Odds ratio of MAM when covered by program - lower"
+msgstr ""
+
+msgid "Odds ratio of SAM when covered by program - upper"
+msgstr ""
+
+msgid "Odds ratio of MAM when covered by program - upper"
+msgstr ""
+
+msgid "Max-increase per annum"
+msgstr ""
+
+msgid "Max-decrease per annum"
+msgstr ""
+
+msgid "Proportional Cost"
+msgstr ""
+
+msgid "Child turning age 5 stunted (over lifetime)"
+msgstr ""
+
+msgid "Lower bound"
+msgstr ""
+
+msgid "Upper bound"
 msgstr ""

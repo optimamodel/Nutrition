@@ -315,7 +315,7 @@ msgid "Nutritional status distribution"
 msgstr "Dist. de l'état nutritionnel"
 
 msgid "Status"
-msgstr "Etat"
+msgstr "État"
 
 msgid "<1 month"
 msgstr "<1 mois"
@@ -596,7 +596,7 @@ msgid "Program dependencies"
 msgstr "Dépendances du programme"
 
 msgid "Exclusion dependency"
-msgstr "Dépendance d'exclusion"
+msgstr "Dépendance incompatible"
 
 msgid "Threshold dependency"
 msgstr "Dépendance de seuil"
@@ -624,8 +624,8 @@ msgstr "Prévalence de la pré-éclampsie"
 
 msgid "Percentage of deaths in baseline year (2017) attributable to cause"
 msgstr ""
-"Pourcentage des morts pendant l'année de référence (2017) imputable à chaque"
-" cause"
+"Pourcentage des morts pendant l'année de référence (2017) imputable à "
+"chaque cause"
 
 msgid "Percentage of population in each category in baseline year (2017)"
 msgstr ""
@@ -752,8 +752,8 @@ msgstr "Risques relatifs des causes du décès néonatales"
 msgid ""
 "Relative risk of causes of death by height-for-age (stunting) distribution"
 msgstr ""
-"Risque relatif des causes du décès par la distribution de la taille-"
-"pour-l'àge (retard de croissance)"
+"Risque relatif des causes du décès par la distribution de la taille-pour-"
+"l'àge (retard de croissance)"
 
 msgid "Cause of death"
 msgstr "Cause du décès"
@@ -899,8 +899,8 @@ msgstr ""
 "référence (\"&start_year&\")\""
 
 msgid ""
-"=\"Percentage of children in each category in baseline year "
-"(\"&start_year&\")\""
+"=\"Percentage of children in each category in baseline year (\"&start_year&"
+"\")\""
 msgstr ""
 "=\"Pourcentage des enfants dans chaque catégorie pendant l'année de "
 "référence (\"&start_year&\")\""
@@ -962,5 +962,260 @@ msgstr "DIU"
 msgid "Cost"
 msgstr "Coût"
 
-msgid "Proprtional Cost"
+msgid "Economic loss"
+msgstr "Perte économique"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Child wasting episode"
+msgstr "Épisode d'amaigrissement d'un enfant"
+
+#, fuzzy
+msgid "Child turning 5 stunted (over lifetime)"
+msgstr ""
+"Enfant souffrant d'un retard de croissance qui aura 5 ans (au cours de sa "
+"vie)"
+
+msgid "Child death"
+msgstr "Décès d'enfant"
+
+msgid "Maternal death"
+msgstr "Décès maternel"
+
+msgid "Anaemic child (per year)"
+msgstr "Enfant anémique (par an)"
+
+msgid "Anaemic pregnant woman (per pregnancy)"
+msgstr "Femme enceinte anémique (par grossesse)"
+
+msgid "Lower bounds"
+msgstr "Bornes inférieures"
+
+msgid "Odds ratio for correct breastfeeding - lower"
+msgstr "Rapport des cotes pour l'allaitement maternelle correct - inférieur"
+
+msgid "Odds ratio for stunting - lower"
+msgstr "Rapport des cotes pour le retard de croissance - inférieur"
+
+msgid "Odds ratio for correct complementary feeding - lower"
+msgstr ""
+"Rapport des cotes pour l'alimentation complémetaire correct - inférieur"
+
+msgid "Upper bounds"
+msgstr "Bornes supérieures"
+
+msgid "Odds ratio for correct breastfeeding - upper"
+msgstr "Rapport des cotes pour l'allaitement maternelle correct - supérieur"
+
+msgid "Odds ratio for stunting - upper"
+msgstr "Rapport de cotes pour le retard de croissance - supérieur"
+
+msgid "Odds ratio for correct complementary feeding - upper"
+msgstr ""
+"Rapport des cotes pour l'alimentation complémetaire correct - supérieur"
+
+msgid "Relative risk by birth spacing - lower"
+msgstr "Risque relatif par espacement des naissances - inférieur"
+
+msgid "Odds ratios for conditions - lower"
+msgstr "Rapport des cotes pour des conditions - inférieur"
+
+msgid "Relative risks of neonatal causes of death - lower"
+msgstr "Risques relatifs des causes du décès néonatales - inférieur"
+
+msgid "Relative risk by birth spacing - upper"
+msgstr "Risque relatif par espacement des naissances - supérieur"
+
+msgid "Odds ratios for conditions - upper"
+msgstr "Rapport des cotes pour des conditions - supérieur"
+
+msgid "Relative risks of neonatal causes of death - upper"
+msgstr "Risques relatifs des causes du décès néonatales - supérieur"
+
+msgid "Stunting (HAZ-score < -2)-l"
+msgstr "Retard de croissance (HAZ-score < -2)-i"
+
+msgid "MAM (WHZ-score between -3 and -2)-l"
+msgstr "MM (score WHZ entre -3 et -2)-i"
+
+msgid "SAM (WHZ-score < -3)-l"
+msgstr "MAS (score WHZ < -3)-i"
+
+msgid "Stunting (HAZ-score < -2)-u"
+msgstr "Retard de croissance (HAZ-score < -2)-s"
+
+msgid "MAM (WHZ-score between -3 and -2)-u"
+msgstr "MM (score WHZ entre -3 et -2)-s"
+
+msgid "SAM (WHZ-score < -3)-u"
+msgstr "MAS (score WHZ < -3)-s"
+
+msgid "Given previous stunting (HAZ < -2 in previous age band) - lower"
+msgstr ""
+"Compte tenu du retard de croissance antérieur (HAZ < -2 dans la tranche "
+"d’âge précédente) - inférieur"
+
+msgid "Diarrhoea (per additional episode) - lower"
+msgstr "Diarrhée (par épisode supplémentaire) - inférieur"
+
+msgid "By program - lower"
+msgstr "Par programme - inférieur"
+
+msgid "Public provision of complementary foods - lower"
+msgstr "Fourniture publique d'aliments complémentaires - inférieur"
+
+msgid "Lipid-based nutrition supplements - lower"
+msgstr "Supplémentation en nutriments à base de lipids - inférieur"
+
+msgid "Zinc supplementation - lower"
+msgstr "Supplémentation en zinc - inférieur"
+
+msgid "Odds ratios for correct breastfeeding by program - lower"
+msgstr "Rapport des cotes pour allaitement correct par programme - inférieur"
+
+msgid "Kangaroo mother care - lower"
+msgstr "Méthode mère kangourou - inférieur"
+
+msgid "For SAM per additional episode of diarrhoea - lower"
+msgstr "Pour MAS par épisode supplémentaire de la diarrhée - inférieur"
+
+msgid "For MAM per additional episode of diarrhoea - lower"
+msgstr "Pour MM par épisode supplémentaire de la diarrhée - inférieur"
+
+msgid "For anaemia per additional episode of severe diarrhoea - lower"
+msgstr ""
+"Pour l'anémie par épisode supplémentaire de la diarrhée aiguë - inférieur"
+
+msgid "Odds ratios for optimal birth spacing by program - lower"
+msgstr ""
+"Rapports des cotes pour l'espacement des naissances optimal par programme - "
+"inférieur"
+
+msgid "Family planning - lower"
+msgstr "Planification familiale - inférieur"
+
+msgid "Given previous stunting (HAZ < -2 in previous age band) - upper"
+msgstr ""
+"Compte tenu du retard de croissance antérieur (HAZ < -2 dans la tranche "
+"d’âge précédente) - supérieur"
+
+msgid "Diarrhoea (per additional episode) - upper"
+msgstr "Diarrhée (par épisode supplémentaire) - supérieur"
+
+msgid "By program - upper"
+msgstr "Par programme - supérieur"
+
+msgid "Public provision of complementary foods - upper"
+msgstr "Fourniture publique d'aliments complémentaires - supérieur"
+
+msgid "Lipid-based nutrition supplements - upper"
+msgstr "Supplémentation en nutriments à base de lipids - supérieur"
+
+msgid "Zinc supplementation - upper"
+msgstr "Supplémentation en zinc - supérieur"
+
+msgid "Odds ratios for correct breastfeeding by program - upper"
+msgstr "Rapport des cotes pour allaitement correct par programme - supérieur"
+
+msgid "Kangaroo mother care - upper"
+msgstr "Méthode mère kangourou - supérieur"
+
+msgid "For SAM per additional episode of diarrhoea - upper"
+msgstr "Pour MAS par épisode supplémentaire de la diarrhée - supérieur"
+
+msgid "For MAM per additional episode of diarrhoea - upper"
+msgstr "Pour MM par épisode supplémentaire de la diarrhée - supérieur"
+
+msgid "For anaemia per additional episode of severe diarrhoea - upper"
+msgstr ""
+"Pour l'anémie par épisode supplémentaire de la diarrhée aiguë - supérieur"
+
+msgid "Odds ratios for optimal birth spacing by program - upper"
+msgstr ""
+"Rapports des cotes pour l'espacement des naissances optimal par programme - "
+"supérieur"
+
+msgid "Family planning - upper"
+msgstr "Planification familiale - supérieur"
+
+msgid "Relative risks of anaemia when receiving intervention - lower"
+msgstr "Risques relatifs de l'anémie en recevant l'intervention - inférieur"
+
+msgid "Relative risks of anaemia when receiving intervention - upper"
+msgstr "Risques relatifs de l'anémie en recevant l'intervention - supérieur"
+
+msgid "Odds ratio of SAM when covered by program - lower"
+msgstr ""
+"Rapport des cotes de la MAS en étant couvert par le programme - inférieur"
+
+msgid "Odds ratio of MAM when covered by program - lower"
+msgstr ""
+"Rapport des cotes de la MM en étant couvert par le programme - inférieur"
+
+msgid "Odds ratio of SAM when covered by program - upper"
+msgstr ""
+"Rapport des cotes de la MAS en étant couvert par le programme - supérieur"
+
+msgid "Odds ratio of MAM when covered by program - upper"
+msgstr ""
+"Rapport des cotes de la MM en étant couvert par le programme - supérieur"
+
+msgid "Max-increase per annum"
+msgstr "Augmentation maximale par an"
+
+msgid "Max-decrease per annum"
+msgstr "Réduction maximale par an"
+
+msgid "Proportional Cost"
 msgstr "Coût proportionnel"
+
+msgid "Child turning age 5 stunted (over lifetime)"
+msgstr ""
+"Enfant souffrant d'un retard de croissance qui aura 5 ans (au cours de sa "
+"vie)"
+
+msgid "Odds ratios for women with maternal anaemia - lower"
+msgstr ""
+"Rapports des cotes pour les femmes avec l'anémie maternelle - inférieur"
+
+msgid "Odds ratios for women with maternal anaemia - upper"
+msgstr ""
+"Rapports des cotes pour les femmes avec l'anémie maternelle - supérieur"
+
+msgid "Odds ratios of being anaemic when covered by intervention - lower"
+msgstr ""
+"Rapport des cotes pour l'anémie en étant couvert par l'intervention - "
+"inférieur"
+
+msgid "Odds ratios of being anaemic when covered by intervention - upper"
+msgstr ""
+"Rapport des cotes pour l'anémie en étant couvert par l'intervention - "
+"supérieur"
+
+msgid "Lower bound"
+msgstr "Borne inférieure"
+
+msgid "Upper bound"
+msgstr "Borne supérieure"
+
+#~ msgid "Odds ratio for women with maternal anaemia - lower"
+#~ msgstr ""
+#~ "Rapport des cotes pour les femmes avec l'anémie maternelle - inférieur"
+
+#~ msgid "Odds ratio for women with maternal anaemia - upper"
+#~ msgstr ""
+#~ "Rapport des cotes pour les femmes avec l'anémie maternelle - supérieur"
+
+#~ msgid "Odds ratio of being anaemic when covered by intervention - lower"
+#~ msgstr ""
+#~ "Rapport des cotes pour l'anémie en étant couvert par l'intervention - "
+#~ "inférieur"
+
+#~ msgid "Odds ratio of being anaemic when covered by intervention - upper"
+#~ msgstr ""
+#~ "Rapport des cotes pour l'anémie en étant couvert par l'intervention - "
+#~ "supérieur"
+
+#~ msgid "Proprtional Cost"
+#~ msgstr "Coût proportionnel"
