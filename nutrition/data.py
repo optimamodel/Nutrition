@@ -1270,9 +1270,6 @@ class UncertaintyParams(object):
         self.rr_diar_lower = None
         self.rr_diar_upper = None
         self.rr_diar_orig = None
-        self.stun_or = None
-        self.wast_or = None
-        self.ane_or = None
         self.stun_or_lower = None
         self.stun_or_upper = None
         self.wast_or_lower = None
