@@ -180,7 +180,7 @@ def plot_prevs_reduce(all_res, all_reduce):
             if thismax > ymax:
                 ymax = thismax
             (line,) = ax.plot(newx, out_p, color=colors[r])
-            ax.fill_between(newx, out_l, out_h, alpha=0.2)
+            ax.fill_between(newx, out_l, out_h, alpha=0.2, color=colors[r])
             lines.append(line)
             leglabels.append(res)
         ax.set_ylabel("Prevalence (%)")  # Shown as tick labels

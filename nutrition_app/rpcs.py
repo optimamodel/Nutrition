@@ -1056,7 +1056,7 @@ def reformat_costeff(costeff):
 
 
 @RPC()
-def run_scens(project_id, doplot=True, do_costeff=False):
+def run_scens(project_id, doplot=True, do_costeff=False, n_runs=1):
 
     print("Running scenarios...")
     proj = load_project(project_id, die=True)
@@ -1067,7 +1067,10 @@ def run_scens(project_id, doplot=True, do_costeff=False):
         except:
             pass
 
-    proj.run_scens()
+    if isinstance(n_runs, str):
+        n_runs = int(n_runs)
+
+    proj.run_scens(n_samples=n_runs)
 
     if do_costeff:
         # Get cost-effectiveness table
@@ -1095,6 +1098,7 @@ def run_scens(project_id, doplot=True, do_costeff=False):
     save_project(proj)
     output = {"graphs": graphs, "table": table}
     return output
+
 
 
 ##################################################################################
