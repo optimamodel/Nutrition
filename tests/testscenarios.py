@@ -46,6 +46,6 @@ if __name__ == "__main__":
 # p.run_scens()
 if doplot:
     p.plot()
-# costeff = p.get_costeff()
+#costeff = p.get_costeff()
 p.write_results("scen_results_test.xlsx")
 p.save("test")

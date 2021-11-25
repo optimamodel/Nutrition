@@ -594,26 +594,27 @@ def plot_clustered_annu_alloc(results, optim: bool, geo: bool):
 def plot_costcurve(results):
     """Plots the cost coverage curves.
     Really only used as a diagnostic plotting tool, since with lots of programs it may not be very informative for a user."""
+    res_list = [res for res in results if resampled_key_str not in res.name]
     fig = pl.figure()
     ax = fig.add_axes(ax_size)
     leglabs = []
-    for res in results[:1]:
+    for res in res_list:
         allocs = res.get_allocs()
         maxspend = 0
-        for name in res.programs.iterkeys():
+        for name in res.programs.keys():
             thisspend = allocs[name]
             leglabs.append(name)
             if maxspend < np.max(thisspend):
                 maxspend = np.max(thisspend)
         x = np.linspace(0, 2e7, 10000)
-        for prog in res.programs.itervalues():
+        for prog in res.programs.values():
             y = prog.func(x)
             ax.plot(x, y)
     ax.set_ylim([0, 1])
     ax.set_xlim([0, 2e7])
     ax.set_ylabel("Coverage (%)")
     ax.set_xlabel("Spending ($US)")
-    ax.legend(leglabs)
+    ax.legend(leglabs, fontsize=10)
     return fig
 
 
@@ -623,6 +624,7 @@ def get_costeff(project, results):
     (Total money spent on all programs (baseline + new) ) / (scneario outcome - zero cov outcome)
     :return: 3 levels of nested odicts, with keys (scen name, child name, pretty outcome) and value of type string
     """
+    results = [res for res in results if resampled_key_str not in res.name]
     parents = []
     baselines = []
     children = sc.odict()
