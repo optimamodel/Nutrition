@@ -63,6 +63,7 @@ Last update: 2019feb11
 
         <div>
           <button class="btn __green" :disabled="!scenariosLoaded" @click="runScens()">Run scenarios</button>
+          <button class="btn __green" :disabled="!scenariosLoaded" @click="runUncertScens()">Run scenarios with uncertainty</button>
           <button class="btn __blue"  :disabled="!scenariosLoaded" @click="addScenModal('coverage')">Add coverage scenario</button>
           <button class="btn __blue"  :disabled="!scenariosLoaded" @click="addScenModal('budget')">Add budget scenario</button>
         </div>
@@ -171,7 +172,7 @@ Last update: 2019feb11
                 <tr>
                   <th>Name</th>
                   <th>Include?</th>
-                  <th>2017</th>
+                  <th v-for="year in defaultScenYears.slice(0, 1)">{{ year - 1 }}</th>
                   <th v-for="year in defaultScenYears">{{ year }}</th>
                 </tr>
                 </thead>

@@ -28,6 +28,7 @@ Last update: 2019feb11
             <th>Name</th>
             <th>Databook</th>
             <th>Status</th>
+            <th>Active?</th>
             <th>Actions</th>
           </tr>
           </thead>
@@ -43,10 +44,12 @@ Last update: 2019feb11
               {{ statusFormatStr(optimSummary) }}
               {{ timeFormatStr(optimSummary) }}
             </td>
+            <td style="text-align: center">
+              <input type="checkbox" v-model="optimSummary.active"/>
+            </td>
             <td style="white-space: nowrap">
               <button class="btn __green" :disabled="!canRunTask(optimSummary)" @click="runOptim(optimSummary, 'full')">Run</button>
               <button class="btn" :disabled="!canRunTask(optimSummary)" @click="runOptim(optimSummary, 'test')">Test run</button>
-              <button class="btn __green" :disabled="!canPlotResults(optimSummary)" @click="plotOptimization(optimSummary)">Plot results</button>
               <button class="btn" :disabled="!canCancelTask(optimSummary)" @click="clearTask(optimSummary)">Clear run</button>
               <button class="btn btn-icon" @click="editOptimModal(optimSummary)" data-tooltip="Edit optimization"><i class="ti-pencil"></i></button>
               <button class="btn btn-icon" @click="copyOptim(optimSummary)" data-tooltip="Copy optimization"><i class="ti-files"></i></button>
@@ -62,6 +65,8 @@ Last update: 2019feb11
         </div>
 
         <div>
+          <button class="btn __green" :disabled="!optimsLoaded" @click="runScens()">Plot active scenarios</button>
+          <button class="btn __green" :disabled="!optimsLoaded" @click="runUncertScens()">Run active scenarios with uncertainty</button>
           <button class="btn" :disabled="!optimsLoaded" @click="addOptimModal()">Add optimization</button>
         </div>
       </div>
