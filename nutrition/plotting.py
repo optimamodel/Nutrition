@@ -202,7 +202,8 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name):
     years = np.array(baseres.years)  # assume these scenarios over same time horizon
     colors = sc.gridcolors(ncolors=len(all_reduce), hueshift=hueshift)
     for i, outcome in enumerate(outcomes): 
-        if "cost" not in outcome and "pop_rate" not in outcome:
+        if ("cost" not in outcome and "pop" not in outcome and seq) or ("mam" not in outcome and "sam" not in outcome and 
+                                                                "sga" not in outcome and "pop" not in outcome and not seq):
             fig = pl.figure(figsize=fig_size)
             ax = fig.add_axes(ax_size)
             ymax = 0
