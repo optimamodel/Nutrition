@@ -186,11 +186,11 @@ msgid "Wasting (weight-for-height)"
 msgstr "Amaigrissement (poids-pour-taille)"
 
 #: nutrition/data.py:263
-msgid "Normal  (WHZ-score > -1)"
+msgid "Normal (WHZ-score > -1)"
 msgstr "Normal (score WHZ > -1)"
 
 #: nutrition/data.py:266
-msgid "Mild  (WHZ-score between -2 and -1)"
+msgid "Mild (WHZ-score between -2 and -1)"
 msgstr "Léger (score WHZ entre -2 et -1)"
 
 #: nutrition/data.py:271 nutrition/data.py:322 nutrition/data.py:437
@@ -357,11 +357,11 @@ msgid "Diarrhoea"
 msgstr "Diarrhée"
 
 #: nutrition/data.py:349
-msgid "MAM   (WHZ-score between -3 and -2)"
+msgid "MAM (WHZ-score between -3 and -2)"
 msgstr "MM (score WHZ entre -3 et -2)"
 
 #: nutrition/data.py:350
-msgid "SAM   (WHZ-score < -3)"
+msgid "SAM (WHZ-score < -3)"
 msgstr "MAS (score WHZ < -3)"
 
 #: nutrition/data.py:351 nutrition/data.py:488 nutrition/data.py:489

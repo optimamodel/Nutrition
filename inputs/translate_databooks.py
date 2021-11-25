@@ -58,7 +58,7 @@ def translate_databook(target_locale: str):
                 # Substitute cell content
                 rg.Replace(a, b, LookAt=1, MatchCase=True) # LookAt=1 is equivalent to "xlWhole" i.e. match entire cell. Otherwise functions get overwritten
 
-            sheet.Protect("nick")  # Need to unprotect, otherwise it will not replace cell values correctly
+            sheet.Protect("nick")  # Restore protection
             sheet.Visible = visible
 
         for property in wb.BuiltinDocumentProperties:

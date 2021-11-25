@@ -110,10 +110,10 @@ Mild (HAZ-score between -2 and -1)
 Moderate (HAZ-score between -3 and -2)
 High (HAZ-score between < -3)
 Wasting (weight-for-height)
-Normal  (WHZ-score > -1)
-Mild  (WHZ-score between -2 and -1)
-MAM   (WHZ-score between -3 and -2)
-SAM   (WHZ-score < -3)
+Normal (WHZ-score > -1)
+Mild (WHZ-score between -2 and -1)
+MAM (WHZ-score between -3 and -2)
+SAM (WHZ-score < -3)
 Anaemia
 PW: 15-19 years
 PW: 20-29 years

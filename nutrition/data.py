@@ -260,10 +260,10 @@ class DemographicData(object):
         wasting_mod_hi_sums = dist.loc[_("Wasting (weight-for-height)")].iloc[2:4, 0:5].astype(np.float).sum().values
         wasting_invs = norm.ppf(wasting_mod_hi_sums, 0.0, 1.0)
         wasting_norm_pcts = np.ones(5) - norm.cdf(wasting_invs + np.ones(5), 0.0, 1.0)
-        dist.loc[(_("Wasting (weight-for-height)"), _("Normal  (WHZ-score > -1)")), cols] = wasting_norm_pcts
+        dist.loc[(_("Wasting (weight-for-height)"), _("Normal (WHZ-score > -1)")), cols] = wasting_norm_pcts
         self.calcscache.write_row(_("Nutritional status distribution"), 7, 2, wasting_norm_pcts)
         wasting_mild_pcts = norm.cdf(wasting_invs + np.ones(5), 0.0, 1.0) - wasting_mod_hi_sums
-        dist.loc[(_("Wasting (weight-for-height)"), _("Mild  (WHZ-score between -2 and -1)")), cols] = wasting_mild_pcts
+        dist.loc[(_("Wasting (weight-for-height)"), _("Mild (WHZ-score between -2 and -1)")), cols] = wasting_mild_pcts
         self.calcscache.write_row(_("Nutritional status distribution"), 8, 2, wasting_mild_pcts)
 
         # dist = dist.drop(dist.index[[1]])
@@ -346,8 +346,8 @@ class DemographicData(object):
         incidences.loc[_("Diarrhoea"), :] = diarr_incid
         self.calcscache.write_row(_("Incidence of conditions"), 1, 1, diarr_incid)
         dist = utils.read_sheet(self.spreadsheet, _("Nutritional status distribution"), [0, 1])
-        mam_incid = dist.loc[_("Wasting (weight-for-height)")].loc[_("MAM   (WHZ-score between -3 and -2)")][0:5].values.astype(np.float) * 2.6
-        sam_incid = dist.loc[_("Wasting (weight-for-height)")].loc[_("SAM   (WHZ-score < -3)")][0:5].values.astype(np.float) * 2.6
+        mam_incid = dist.loc[_("Wasting (weight-for-height)")].loc[_("MAM (WHZ-score between -3 and -2)")][0:5].values.astype(np.float) * 2.6
+        sam_incid = dist.loc[_("Wasting (weight-for-height)")].loc[_("SAM (WHZ-score < -3)")][0:5].values.astype(np.float) * 2.6
         incidences.loc[_("MAM"), :] = mam_incid
         self.calcscache.write_row(_("Incidence of conditions"), 2, 1, mam_incid)
         incidences.loc[_("SAM"), :] = sam_incid
