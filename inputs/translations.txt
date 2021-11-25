@@ -1,163 +1,127 @@
-Baseline year population inputs
-Baseline year data
-Projection years
-Baseline year (projection start year)
-End year
-Population data
-Children under 5 population
-Percentage of population food insecure (default poor)
-Percentage of population at risk of malaria
-School attendance (percentage of 15-19 year women)
-Percentage of pregnant women attending health facility
-Percentage of children attending health facility
-Unmet need for family planning
-Food
-Fraction of subsistence farming
-Fraction eating rice as main staple food
-Fraction eating wheat as main staple food
-Fraction eating maize as main staple food
-Fraction on other staples as main staple food
-Age distribution of pregnant women
-Percentage of pregnant women 15-19 years
-Percentage of pregnant women 20-29 years
-Percentage of pregnant women 30-39 years
-Percentage of pregnant women 40-49 years
-Birth spacing
-First birth
-less than 18 months
+1-5 months
+12-23 months
 18-23 months
 24 months or greater
-Total (must be 100%)
-Baseline year mortality and risk factors
-Mortality
-Neonatal mortality (per 1,000 live births)
-Infant mortality (per 1,000 live births)
-Under 5 mortality (per 1,000 live births)
-Maternal mortality (per 1,000 live births)
-Fraction of pregnancies ending in spontaneous abortion
-Stillbirths (per 1,000 total births)
-Birth outcome distribution
-Pre-term SGA
-Pre-term AGA
-Term SGA
-Term AGA
-Diarrhoea incidence
-Average episodes per year: <1 month
+24-59 months
+6-11 months
+<1 month
+="Baseline ("&start_year&") coverage"
+="Percentage of children in each category in baseline year ("&start_year&")"
+="Percentage of deaths in baseline year ("&start_year&") attributable to cause"
+="Percentage of population in each category in baseline year ("&start_year&")"
+AIDS
+Abortion
+Add extension
+Affected fraction
+Age distribution of pregnant women
+Age group
+All
+Anaemia
+Anaemia prevalence (%)
+Anaemia status
+Anaemic
+Anaemic child (per year)
+Anaemic pregnant woman (per pregnancy)
+Antepartum haemorrhage
 Average episodes per year: 1-5 months
-Average episodes per year: 6-11 months
 Average episodes per year: 12-23 months
 Average episodes per year: 24-59 months
-Other risks
-Percentage of diarrhea that is severe
-Percentage of anaemia that is iron deficient
-Prevalence of pre-eclampsia
-Prevalence of eclampsia
-Demographic projections
-Year
-year
-Number of births
-WRA: 15-19 years
-WRA: 20-29 years
-WRA: 30-39 years
-WRA: 40-49 years
-Total WRA
-Estimated pregnant women
-Non-pregnant WRA
-non-pregnant WRA
-Causes of death
-Percentage of deaths in baseline year (2017) attributable to cause
-Neonatal
-Neonatal diarrhoea
-Neonatal sepsis
-Neonatal pneumonia
-Neonatal asphyxia
-Neonatal prematurity
-Neonatal tetanus
-Neonatal congenital anomalies
-Neonatal other
-Children
-Causes
-Diarrhoea
-Pneumonia
-Meningitis
-Measles
-Malaria
-Pertussis
-AIDS
-Injury
-Other
-1-5 months
-6-11 months
-12-23 months
-24-59 months
-Pregnant women
-Antepartum haemorrhage
-Intrapartum haemorrhage
-Postpartum haemorrhage
-Hypertensive disorders
-Sepsis
-Abortion
-Embolism
-Other direct causes
-Indirect causes
-Nutritional status distribution
-Percentage of population in each category in baseline year (2017)
-Status
-<1 month
-Stunting (height-for-age)
-Normal (HAZ-score > -1)
-Mild (HAZ-score between -2 and -1)
-Moderate (HAZ-score between -3 and -2)
-High (HAZ-score between < -3)
-Wasting (weight-for-height)
-Normal (WHZ-score > -1)
-Mild (WHZ-score between -2 and -1)
-MAM (WHZ-score between -3 and -2)
-SAM (WHZ-score < -3)
-Anaemia
-PW: 15-19 years
-PW: 20-29 years
-PW: 30-39 years
-PW: 40-49 years
-Prevalence of anaemia
-Prevalence of iron deficiency anaemia
-Breastfeeding distribution
-Percentage of children in each category in baseline year (2019)
-Breastfeeding
-Exclusive
-Predominant
-Partial
-None
-Time trends
-Risk
-Population
-Stunting prevalence (%)
-Wasting prevalence (%)
-Anaemia prevalence (%)
-Women of reproductive age
-Prevalence of age-appropriate breastfeeding
-Children 0-5 months
-Children 6-23 months
-Under five (deaths per 1,000 births)
-Maternal (deaths per 1,000 births)
-IYCF packages
-IYCF package
-Target population
-Health facility
-Community
-Mass media
-All
-Programs cost and coverage
-Program
-Baseline (2019) coverage
-Saturation coverage of target population
-Unit cost (US$ per person per year)
-Cost-coverage relationship
+Average episodes per year: 6-11 months
+Average episodes per year: <1 month
 Balanced energy-protein supplementation
+Baseline (2017) coverage
+Baseline (2019) coverage
+Baseline year (projection start year)
+Baseline year data
+Baseline year mortality and risk factors
+Baseline year population inputs
+Behaviour
+Birth number
+Birth outcome distribution
+Birth outcome risks
+Birth outcomes
+Birth spacing
+Breastfeeding
+Breastfeeding distribution
+Breastfeeding status
+Broad population group
+By program
+By program - lower
+By program - upper
 Calcium supplementation
 Cash transfers
+Cause of death
+Causes
+Causes of death
+Child death
+Child turning 5 stunted (over lifetime)
+Child turning age 5 stunted (over lifetime)
+Child wasting episode
+Children
+Children 0-5 months
+Children 0-59 months
+Children 6-23 months
+Children under 5 population
+Community
+Community based
+Community-based
+Condom
+Cost
+Cost curve options
+Cost-coverage relationship
+Curved with decreasing marginal cost
+Curved with increasing marginal cost
+Data
+Default
 Delayed cord clamping
+Delivery mode
+Demographic projections
+Diarrhoea
+Diarrhoea (per additional episode)
+Diarrhoea (per additional episode) - lower
+Diarrhoea (per additional episode) - upper
+Diarrhoea incidence
+Economic loss
+Effectiveness
+Effectiveness incidence
+Effectiveness mortality
+Embolism
+End year
+Estimated pregnant women
+Exclusion dependency
+Exclusive
+Extension
 Family planning
+Family planning - lower
+Family planning - upper
+Female sterilization
+Fertility awareness
+First birth
+Food
+For MAM per additional episode of diarrhoea
+For MAM per additional episode of diarrhoea - lower
+For MAM per additional episode of diarrhoea - upper
+For SAM per additional episode of diarrhoea
+For SAM per additional episode of diarrhoea - lower
+For SAM per additional episode of diarrhoea - upper
+For anaemia per additional episode of severe diarrhoea
+For anaemia per additional episode of severe diarrhoea - lower
+For anaemia per additional episode of severe diarrhoea - upper
+Fraction eating maize as main staple food
+Fraction eating rice as main staple food
+Fraction eating wheat as main staple food
+Fraction of pregnancies ending in spontaneous abortion
+Fraction of subsistence farming
+Fraction on other staples as main staple food
+General population
+Given previous stunting (HAZ < -2 in previous age band)
+Given previous stunting (HAZ < -2 in previous age band) - lower
+Given previous stunting (HAZ < -2 in previous age band) - upper
+HAZ status
+Health facility
+High
+High (HAZ-score between < -3)
+Hypertensive disorders
 IFA fortification of maize
 IFA fortification of rice
 IFA fortification of wheat flour
@@ -168,209 +132,243 @@ IFAS (school)
 IFAS for pregnant women (community)
 IFAS for pregnant women (health facility)
 IPTp
-Iron and iodine fortification of salt
+IUD
 IYCF 1
 IYCF 2
 IYCF 3
+IYCF odds ratios
+IYCF package
+IYCF packages
+Implant
+Incidence of conditions
+Indirect causes
+Infant mortality (per 1,000 live births)
+Injectable
+Injury
+Intrapartum haemorrhage
+Iron and iodine fortification of salt
 Kangaroo mother care
+Kangaroo mother care - lower
+Kangaroo mother care - upper
+Linear (constant marginal cost) [default]
 Lipid-based nutrition supplements
+Lipid-based nutrition supplements - lower
+Lipid-based nutrition supplements - upper
 Long-lasting insecticide-treated bednets
+Lower bound
+Lower bounds
+MAM
+MAM (WHZ-score between -3 and -2)
+MAM (WHZ-score between -3 and -2)-l
+MAM (WHZ-score between -3 and -2)-u
+Malaria
+Male sterilization
+Management of MAM
+Mass media
+Maternal (deaths per 1,000 births)
+Maternal death
+Maternal mortality (per 1,000 live births)
+Maternal risk factors leading to birth outcomes
+Max-decrease per annum
+Max-increase per annum
+Measles
+Meningitis
+Method
 Mg for eclampsia
 Mg for pre-eclampsia
 Micronutrient powders
+Mild
+Mild (HAZ-score between -2 and -1)
+Mild (WHZ-score between -2 and -1)
+Moderate
+Moderate (HAZ-score between -3 and -2)
+Mortality
 Multiple micronutrient supplementation
+Neonatal
+Neonatal asphyxia
+Neonatal congenital anomalies
+Neonatal diarrhoea
+Neonatal mortality (per 1,000 live births)
+Neonatal other
+Neonatal pneumonia
+Neonatal prematurity
+Neonatal sepsis
+Neonatal tetanus
+Non-pregnant WRA
+None
+Normal
+Normal (HAZ-score > -1)
+Normal (WHZ-score > -1)
+Not anaemic
+Number of births
+Nutritional status distribution
+Odds ratio for correct breastfeeding
+Odds ratio for correct breastfeeding - lower
+Odds ratio for correct breastfeeding - upper
+Odds ratio for correct breastfeeding by program
+Odds ratio for correct complementary feeding
+Odds ratio for correct complementary feeding - lower
+Odds ratio for correct complementary feeding - upper
+Odds ratio for stunting
+Odds ratio for stunting - lower
+Odds ratio for stunting - upper
+Odds ratio for women with maternal anaemia
+Odds ratio of MAM when covered by program
+Odds ratio of MAM when covered by program - lower
+Odds ratio of MAM when covered by program - upper
+Odds ratio of SAM when covered by program
+Odds ratio of SAM when covered by program - lower
+Odds ratio of SAM when covered by program - upper
+Odds ratio of being anaemic when covered by intervention
+Odds ratios
+Odds ratios for conditions
+Odds ratios for conditions - lower
+Odds ratios for conditions - upper
+Odds ratios for correct breastfeeding by program
+Odds ratios for correct breastfeeding by program - lower
+Odds ratios for correct breastfeeding by program - upper
+Odds ratios for optimal birth spacing by program
+Odds ratios for optimal birth spacing by program - lower
+Odds ratios for optimal birth spacing by program - upper
+Odds ratios for stunting
+Odds ratios for women with maternal anaemia
+Odds ratios for women with maternal anaemia - lower
+Odds ratios for women with maternal anaemia - upper
+Odds ratios of being anaemic when covered by intervention
+Odds ratios of being anaemic when covered by intervention - lower
+Odds ratios of being anaemic when covered by intervention - upper
 Oral rehydration salts
+Other
+Other direct causes
+Other odds ratios
+Other risks
+PW: 15-19 years
+PW: 20-29 years
+PW: 30-39 years
+PW: 40-49 years
+Partial
+Percentage of anaemia that is iron deficient
+Percentage of children attending health facility
+Percentage of children in each category in baseline year (2019)
+Percentage of deaths in baseline year (2017) attributable to cause
+Percentage of diarrhea that is severe
+Percentage of population at risk of malaria
+Percentage of population food insecure (default poor)
+Percentage of population in each category in baseline year (2017)
+Percentage of pregnant women 15-19 years
+Percentage of pregnant women 20-29 years
+Percentage of pregnant women 30-39 years
+Percentage of pregnant women 40-49 years
+Percentage of pregnant women attending health facility
+Pertussis
+Pill
+Pneumonia
+Population
+Population data
+Population risk areas
+Postpartum haemorrhage
+Pre-term AGA
+Pre-term SGA
+Predominant
+Pregnant women
+Prevalence of age-appropriate breastfeeding
+Prevalence of anaemia
+Prevalence of eclampsia
+Prevalence of iron deficiency anaemia
+Prevalence of pre-eclampsia
+Program
+Program dependencies
+Program risk areas
+Programs anaemia
+Programs birth outcomes
+Programs cost and coverage
+Programs family planning
+Programs for PW
+Programs for children
+Programs impacted population
+Programs target population
+Programs wasting
+Projection years
+Proportional Cost
 Public provision of complementary foods
+Public provision of complementary foods - lower
+Public provision of complementary foods - upper
+Reference programs
+Relative risk by birth spacing
+Relative risk by birth spacing - lower
+Relative risk by birth spacing - upper
+Relative risk of causes of death by anaemia status
+Relative risk of causes of death by breastfeeding status
+Relative risk of causes of death by height-for-age (stunting) distribution
+Relative risk of causes of death by weight-for-height (wasting) distribution
+Relative risks
+Relative risks of anaemia when receiving intervention
+Relative risks of anaemia when receiving intervention - lower
+Relative risks of anaemia when receiving intervention - upper
+Relative risks of experiencing diarrhoea by breastfeeding status
+Relative risks of neonatal causes of death
+Relative risks of neonatal causes of death - lower
+Relative risks of neonatal causes of death - upper
+Risk
+Risks for children who experience birth outcomes
+S-shaped (decreasing then increasing marginal cost)
+SAM
+SAM (WHZ-score < -3)
+SAM (WHZ-score < -3)-l
+SAM (WHZ-score < -3)-u
+Saturation coverage of target population
+School attendance (percentage of 15-19 year women)
+Sepsis
+Status
+Stillbirths (per 1,000 total births)
+Stunting
+Stunting (HAZ-score < -2)
+Stunting (HAZ-score < -2)-l
+Stunting (HAZ-score < -2)-u
+Stunting (height-for-age)
+Stunting prevalence (%)
+Target population
+Targetted condition
+Term AGA
+Term SGA
+Threshold dependency
+Time trends
+Total (must be 100%)
+Total WRA
 Treatment of SAM
+Type
+Under 5 mortality (per 1,000 live births)
+Under five (deaths per 1,000 births)
+Unit cost (US$ per person per year)
+Unit cost (US$)
+Unmet need for family planning
+Upper bound
+Upper bounds
 Vitamin A supplementation
 WASH: Handwashing
 WASH: Hygenic disposal
 WASH: Improved sanitation
 WASH: Improved water source
 WASH: Piped water
-Zinc for treatment + ORS
-Zinc supplementation
-Linear (constant marginal cost) [default]
-Curved with increasing marginal cost
-Curved with decreasing marginal cost
-S-shaped (decreasing then increasing marginal cost)
-Program dependencies
-Exclusion dependency
-Threshold dependency
-Reference programs
-Default
-Extension
-Add extension
-Delivery mode
-Programs target population
-Children 0-59 months
-Community based
-Management of MAM
-General population
-Unit cost (US$)
-Broad population group
-Baseline (2017) coverage
-Community-based
-Programs impacted population
-Program risk areas
-Population risk areas
-IYCF odds ratios
-Birth outcome risks
-Relative risks
-Odds ratios
-Programs birth outcomes
-Programs anaemia
-Programs wasting
-Programs for children
-Programs for PW
-Stunting
+WHZ status
+WRA: 15-19 years
+WRA: 20-29 years
+WRA: 30-39 years
+WRA: 40-49 years
+Wasting
+Wasting (weight-for-height)
+Wasting prevalence (%)
 Wasting prevention
 Wasting treatment
-Birth outcomes
-Birth number
-Age group
-Behaviour
-Odds ratio for correct breastfeeding
-Odds ratio for stunting
-Odds ratio for correct complementary feeding
-Maternal risk factors leading to birth outcomes
-Relative risk by birth spacing
-Odds ratio for women with maternal anaemia
-Risks for children who experience birth outcomes
-Odds ratios for conditions
-Stunting (HAZ-score < -2)
-MAM (WHZ-score between -3 and -2)
-SAM (WHZ-score < -3)
-Relative risks of neonatal causes of death
-Relative risk of causes of death by height-for-age (stunting) distribution
-Cause of death
-HAZ status
-Normal
-Mild
-Moderate
-High
-Relative risk of causes of death by weight-for-height (wasting) distribution
-WHZ status
-Relative risk of causes of death by anaemia status
-Anaemia status
-Not anaemic
-Anaemic
-Relative risk of causes of death by breastfeeding status
-Breastfeeding status
-Relative risks of experiencing diarrhoea by breastfeeding status
-Given previous stunting (HAZ < -2 in previous age band)
-Diarrhoea (per additional episode)
-By program
-Odds ratio for correct breastfeeding by program
-Other odds ratios
-For SAM per additional episode of diarrhoea
-For MAM per additional episode of diarrhoea
-For anaemia per additional episode of severe diarrhoea
-Odds ratios for optimal birth spacing by program
-effectiveness
-Effectiveness
-affected fraction
-Relative risks of anaemia when receiving intervention
-Odds ratio of being anaemic when covered by intervention
-Odds ratio of SAM when covered by program
-Odds ratio of MAM when covered by program
-Targetted condition
-Affected fraction
-Effectiveness mortality
-Effectiveness incidence
-SAM
-MAM
-Odds ratios for women with maternal anaemia
-Odds ratios for stunting
-Odds ratios for correct breastfeeding by program
-="Percentage of deaths in baseline year ("&start_year&") attributable to cause"
-="Percentage of population in each category in baseline year ("&start_year&")"
-="Percentage of children in each category in baseline year ("&start_year&")"
-="Baseline ("&start_year&") coverage"
-Odds ratios of being anaemic when covered by intervention
-Wasting
-Data
-Incidence of conditions
-Cost curve options
-Programs family planning
-Method
-Condom
-Male sterilization
-Female sterilization
-Injectable
-Implant
-Pill
 Withdrawal
-Fertility awareness
-IUD
-Cost
-Economic loss
-Type
-Child wasting episode
-Child turning 5 stunted (over lifetime)
-Child death
-Maternal death
-Anaemic child (per year)
-Anaemic pregnant woman (per pregnancy)
-Lower bounds
-Odds ratio for correct breastfeeding - lower
-Odds ratio for stunting - lower
-Odds ratio for correct complementary feeding - lower
-Upper bounds
-Odds ratio for correct breastfeeding - upper
-Odds ratio for stunting - upper
-Odds ratio for correct complementary feeding - upper
-Relative risk by birth spacing - lower
-Odds ratios for women with maternal anaemia - lower
-Odds ratios for conditions - lower
-Relative risks of neonatal causes of death - lower
-Relative risk by birth spacing - upper
-Odds ratios for women with maternal anaemia - upper
-Odds ratios for conditions - upper
-Relative risks of neonatal causes of death - upper
-Stunting (HAZ-score < -2)-l
-MAM (WHZ-score between -3 and -2)-l
-SAM (WHZ-score < -3)-l
-Stunting (HAZ-score < -2)-u
-MAM (WHZ-score between -3 and -2)-u
-SAM (WHZ-score < -3)-u
-Given previous stunting (HAZ < -2 in previous age band) - lower
-Diarrhoea (per additional episode) - lower
-By program - lower
-Public provision of complementary foods - lower
-Lipid-based nutrition supplements - lower
+Women of reproductive age
+Year
+Zinc for treatment + ORS
+Zinc supplementation
 Zinc supplementation - lower
-Odds ratios for correct breastfeeding by program - lower
-Kangaroo mother care - lower
-For SAM per additional episode of diarrhoea - lower
-For MAM per additional episode of diarrhoea - lower
-For anaemia per additional episode of severe diarrhoea - lower
-Odds ratios for optimal birth spacing by program - lower
-Family planning - lower
-Given previous stunting (HAZ < -2 in previous age band) - upper
-Diarrhoea (per additional episode) - upper
-By program - upper
-Public provision of complementary foods - upper
-Lipid-based nutrition supplements - upper
 Zinc supplementation - upper
-Odds ratios for correct breastfeeding by program - upper
-Kangaroo mother care - upper
-For SAM per additional episode of diarrhoea - upper
-For MAM per additional episode of diarrhoea - upper
-For anaemia per additional episode of severe diarrhoea - upper
-Odds ratios for optimal birth spacing by program - upper
-Family planning - upper
-Odds ratios of being anaemic when covered by intervention - lower
-Relative risks of anaemia when receiving intervention - lower
-Relative risks of anaemia when receiving intervention - upper
-Odds ratios of being anaemic when covered by intervention - upper
-Odds ratio of SAM when covered by program - lower
-Odds ratio of MAM when covered by program - lower
-Odds ratio of SAM when covered by program - upper
-Odds ratio of MAM when covered by program - upper
-Max-increase per annum
-Max-decrease per annum
-Proportional Cost
-Child turning age 5 stunted (over lifetime)
-Lower bound
-Upper bound
+affected fraction
+effectiveness
+less than 18 months
+non-pregnant WRA
+year

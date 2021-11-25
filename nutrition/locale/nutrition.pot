@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nutrition 1.7.5\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-11-23 15:30+1100\n"
+"POT-Creation-Date: 2021-11-26 08:23+1100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -349,11 +349,11 @@ msgstr ""
 msgid "Diarrhoea"
 msgstr ""
 
-#: nutrition/data.py:349
+#: nutrition/data.py:349 nutrition/data.py:536
 msgid "MAM (WHZ-score between -3 and -2)"
 msgstr ""
 
-#: nutrition/data.py:350
+#: nutrition/data.py:350 nutrition/data.py:537
 msgid "SAM (WHZ-score < -3)"
 msgstr ""
 
@@ -543,14 +543,6 @@ msgstr ""
 
 #: nutrition/data.py:535
 msgid "Stunting (HAZ-score < -2)"
-msgstr ""
-
-#: nutrition/data.py:536
-msgid "MAM (WHZ-score between -3 and -2)"
-msgstr ""
-
-#: nutrition/data.py:537
-msgid "SAM (WHZ-score < -3)"
 msgstr ""
 
 #: nutrition/data.py:538

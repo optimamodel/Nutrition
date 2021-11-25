@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nutrition 1.7.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-11-23 15:30+1100\n"
-"PO-Revision-Date: 2021-11-12 11:55+1100\n"
+"POT-Creation-Date: 2021-11-26 08:23+1100\n"
+"PO-Revision-Date: 2021-11-26 08:23+1100\n"
 "Last-Translator: \n"
 "Language: en\n"
 "Language-Team: en <LL@li.org>\n"
@@ -306,33 +306,31 @@ msgstr "Prevalence of age-appropriate breastfeeding"
 
 #: nutrition/data.py:330
 msgid "Economic loss"
-msgstr ""
+msgstr "Economic loss"
 
 #: nutrition/data.py:331
 msgid "Child wasting episode"
-msgstr ""
+msgstr "Child wasting episode"
 
 #: nutrition/data.py:332
 msgid "Child turning age 5 stunted (over lifetime)"
-msgstr ""
+msgstr "Child turning age 5 stunted (over lifetime)"
 
 #: nutrition/data.py:333
-#, fuzzy
 msgid "Child death"
-msgstr "Number of births"
+msgstr "Child death"
 
 #: nutrition/data.py:334
 msgid "Maternal death"
-msgstr ""
+msgstr "Maternal death"
 
 #: nutrition/data.py:335
 msgid "Anaemic child (per year)"
-msgstr ""
+msgstr "Anaemic child (per year)"
 
 #: nutrition/data.py:336
-#, fuzzy
 msgid "Anaemic pregnant woman (per pregnancy)"
-msgstr "Non-pregnant women"
+msgstr "Anaemic pregnant woman (per pregnancy)"
 
 #: nutrition/data.py:341 nutrition/data.py:347 nutrition/data.py:352
 #: nutrition/data.py:354
@@ -352,11 +350,11 @@ msgstr "Diarrhoea incidence"
 msgid "Diarrhoea"
 msgstr "Diarrhoea"
 
-#: nutrition/data.py:349
+#: nutrition/data.py:349 nutrition/data.py:536
 msgid "MAM (WHZ-score between -3 and -2)"
 msgstr "MAM (WHZ-score between -3 and -2)"
 
-#: nutrition/data.py:350
+#: nutrition/data.py:350 nutrition/data.py:537
 msgid "SAM (WHZ-score < -3)"
 msgstr "SAM (WHZ-score < -3)"
 
@@ -548,14 +546,6 @@ msgstr "Odds ratios for conditions"
 msgid "Stunting (HAZ-score < -2)"
 msgstr "Stunting (HAZ-score < -2)"
 
-#: nutrition/data.py:536
-msgid "MAM (WHZ-score between -3 and -2)"
-msgstr "MAM (WHZ-score between -3 and -2)"
-
-#: nutrition/data.py:537
-msgid "SAM (WHZ-score < -3)"
-msgstr "SAM (WHZ-score < -3)"
-
 #: nutrition/data.py:538
 msgid "Relative risk by birth spacing"
 msgstr "Relative risk by birth spacing"
@@ -601,14 +591,14 @@ msgid "Saturation is outside the interval (0, 100) for %s"
 msgstr "Saturation is outside the interval (0, 100) for %s"
 
 #: nutrition/data.py:685
-#, fuzzy, python-format
+#, python-format
 msgid "Maximum increase is outside the interval (0, 100) for %s"
-msgstr "Saturation is outside the interval (0, 100) for %s"
+msgstr "Maximum increase is outside the interval (0, 100) for %s"
 
 #: nutrition/data.py:689
-#, fuzzy, python-format
+#, python-format
 msgid "Maximum decrease is outside the interval (0, 100) for %s"
-msgstr "Saturation is outside the interval (0, 100) for %s"
+msgstr "Maximum decrease is outside the interval (0, 100) for %s"
 
 #: nutrition/data.py:694
 #, python-format
@@ -811,11 +801,11 @@ msgstr "Sorry, but you must supply a project for load()."
 
 #: nutrition/geospatial.py:62
 msgid "Less than 2 regions selected for geospatial analysis."
-msgstr ""
+msgstr "Less than 2 regions selected for geospatial analysis."
 
 #: nutrition/geospatial.py:96
 msgid "No funds to distribute between or within regions."
-msgstr ""
+msgstr "No funds to distribute between or within regions."
 
 #: nutrition/geospatial.py:127 nutrition/geospatial.py:128
 #: nutrition/geospatial.py:129 nutrition/geospatial.py:138
@@ -1075,72 +1065,63 @@ msgstr "Geospatial optimization"
 
 #: nutrition/results.py:104
 msgid "Scenario overall"
-msgstr ""
+msgstr "Scenario overall"
 
 #: nutrition/results.py:228 nutrition/results.py:403
 msgid "Scenario"
-msgstr ""
+msgstr "Scenario"
 
 #: nutrition/results.py:228
-#, fuzzy
 msgid "Outcome"
-msgstr "Birth outcomes"
+msgstr "Outcome"
 
 #: nutrition/results.py:228
-#, fuzzy
 msgid "Cumulative"
 msgstr "Cumulative"
 
 #: nutrition/results.py:237 nutrition/results.py:239 nutrition/results.py:272
 msgid "N/A"
-msgstr ""
+msgstr "N/A"
 
 #: nutrition/results.py:240
-#, fuzzy
 msgid "Number of SAM children"
-msgstr "Number of births"
+msgstr "Number of SAM children"
 
 #: nutrition/results.py:240
-#, fuzzy
 msgid "Number of MAM children"
-msgstr "Number of births"
+msgstr "Number of MAM children"
 
 #: nutrition/results.py:262
-#, fuzzy
 msgid "Coverage"
-msgstr "Coverage (%)"
+msgstr "Coverage"
 
 #: nutrition/results.py:267 nutrition/results.py:272
-#, fuzzy
 msgid "Budget"
-msgstr "Excess budget"
+msgstr "Budget"
 
 #: nutrition/results.py:368
-#, fuzzy
 msgid "Version"
-msgstr "Region"
+msgstr "Version"
 
 #: nutrition/results.py:368
-#, fuzzy
 msgid "Outcomes"
-msgstr "Birth outcomes"
+msgstr "Outcomes"
 
 #: nutrition/results.py:368
 msgid "Budget & coverage"
-msgstr ""
+msgstr "Budget & coverage"
 
 #: nutrition/results.py:403
-#, fuzzy
 msgid "Program"
-msgstr "By program"
+msgstr "Program"
 
 #: nutrition/results.py:403
 msgid "Type"
-msgstr ""
+msgstr "Type"
 
 #: nutrition/results.py:403
 msgid "Cost-coverage type"
-msgstr ""
+msgstr "Cost-coverage type"
 
 #: nutrition/settings.py:23 nutrition/utils.py:512
 msgid "High"
@@ -1209,259 +1190,237 @@ msgstr "PW: 40-49 years"
 #: nutrition/utils.py:162
 msgctxt "plotting"
 msgid "Maximize the number of alive, non-stunted children"
-msgstr ""
+msgstr "Maximize the number of alive, non-stunted children"
 
 #: nutrition/utils.py:163
 msgctxt "plotting"
 msgid "Minimize the number of child deaths"
-msgstr ""
+msgstr "Minimize the number of child deaths"
 
 #: nutrition/utils.py:164
 msgctxt "plotting"
 msgid "Minimize the number of stunted children"
-msgstr ""
+msgstr "Minimize the number of stunted children"
 
 #: nutrition/utils.py:165
 msgctxt "plotting"
 msgid "Minimize the number of wasted children"
-msgstr ""
+msgstr "Minimize the number of wasted children"
 
 #: nutrition/utils.py:166
 msgctxt "plotting"
 msgid "Minimize the number of anaemic children"
-msgstr ""
+msgstr "Minimize the number of anaemic children"
 
 #: nutrition/utils.py:167
 msgctxt "plotting"
 msgid "Minimize the prevalence of stunting in children"
-msgstr ""
+msgstr "Minimize the prevalence of stunting in children"
 
 #: nutrition/utils.py:168
 msgctxt "plotting"
 msgid "Minimize the prevalence of wasting in children"
-msgstr ""
+msgstr "Minimize the prevalence of wasting in children"
 
 #: nutrition/utils.py:169
 msgctxt "plotting"
 msgid "Minimize the prevalence of anaemia in children"
-msgstr ""
+msgstr "Minimize the prevalence of anaemia in children"
 
 #: nutrition/utils.py:170
 msgctxt "plotting"
 msgid "Minimize the number of pregnant women deaths"
-msgstr ""
+msgstr "Minimize the number of pregnant women deaths"
 
 #: nutrition/utils.py:171
 msgctxt "plotting"
 msgid "Minimize the number of anaemic pregnant women"
-msgstr ""
+msgstr "Minimize the number of anaemic pregnant women"
 
 #: nutrition/utils.py:172
 msgctxt "plotting"
 msgid "Minimize the prevalence of anaemia in pregnant women"
-msgstr ""
+msgstr "Minimize the prevalence of anaemia in pregnant women"
 
 #: nutrition/utils.py:173
 msgctxt "plotting"
 msgid "Minimize the number of anaemic non-pregnant women"
-msgstr ""
+msgstr "Minimize the number of anaemic non-pregnant women"
 
 #: nutrition/utils.py:174
 msgctxt "plotting"
 msgid "Minimize the prevalence of anaemia in non-pregnant women"
-msgstr ""
+msgstr "Minimize the prevalence of anaemia in non-pregnant women"
 
 #: nutrition/utils.py:175
 msgctxt "plotting"
 msgid "Minimize child mortality rate"
-msgstr ""
+msgstr "Minimize child mortality rate"
 
 #: nutrition/utils.py:176
 msgctxt "plotting"
 msgid "Minimize pregnant women mortality rate"
-msgstr ""
+msgstr "Minimize pregnant women mortality rate"
 
 #: nutrition/utils.py:180
 msgctxt "plotting"
 msgid "Number of alive, non-stunted children turning age 5"
-msgstr ""
+msgstr "Number of alive, non-stunted children turning age 5"
 
 #: nutrition/utils.py:181
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of child deaths"
-msgstr "Number of births"
+msgstr "Number of child deaths"
 
 #: nutrition/utils.py:182
 msgctxt "plotting"
 msgid "Number of stunted children turning age 5"
-msgstr ""
+msgstr "Number of stunted children turning age 5"
 
 #: nutrition/utils.py:183
 msgctxt "plotting"
 msgid "Number of wasted children turning age 5"
-msgstr ""
+msgstr "Number of wasted children turning age 5"
 
 #: nutrition/utils.py:184
 msgctxt "plotting"
 msgid "Number of anaemic children turning age 5"
-msgstr ""
+msgstr "Number of anaemic children turning age 5"
 
 #: nutrition/utils.py:185
 msgctxt "plotting"
 msgid "Prevalence of stunting in children"
-msgstr ""
+msgstr "Prevalence of stunting in children"
 
 #: nutrition/utils.py:186
 msgctxt "plotting"
 msgid "Prevalence of wasting in children"
-msgstr ""
+msgstr "Prevalence of wasting in children"
 
 #: nutrition/utils.py:187
-#, fuzzy
 msgctxt "plotting"
 msgid "Prevalence of anaemia in children"
-msgstr "Prevalence of anaemia"
+msgstr "Prevalence of anaemia in children"
 
 #: nutrition/utils.py:188
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of pregnant women deaths"
-msgstr "Estimated pregnant women"
+msgstr "Number of pregnant women deaths"
 
 #: nutrition/utils.py:189
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of anaemic pregnant women"
-msgstr "Non-pregnant women"
+msgstr "Number of anaemic pregnant women"
 
 #: nutrition/utils.py:190
-#, fuzzy
 msgctxt "plotting"
 msgid "Prevalence of anaemia in pregnant women"
-msgstr "Prevalence of anaemia"
+msgstr "Prevalence of anaemia in pregnant women"
 
 #: nutrition/utils.py:191
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of anaemic non-pregnant women"
-msgstr "Non-pregnant women"
+msgstr "Number of anaemic non-pregnant women"
 
 #: nutrition/utils.py:192
-#, fuzzy
 msgctxt "plotting"
 msgid "Prevalence of anaemia in non-pregnant women"
-msgstr "Prevalence of anaemia"
+msgstr "Prevalence of anaemia in non-pregnant women"
 
 #: nutrition/utils.py:193
 msgctxt "plotting"
 msgid "Child mortality rate"
-msgstr ""
+msgstr "Child mortality rate"
 
 #: nutrition/utils.py:194
-#, fuzzy
 msgctxt "plotting"
 msgid "Prevalence of SAM"
-msgstr "Prevalence of anaemia"
+msgstr "Prevalence of SAM"
 
 #: nutrition/utils.py:195
-#, fuzzy
 msgctxt "plotting"
 msgid "Prevalence of MAM"
-msgstr "Prevalence of anaemia"
+msgstr "Prevalence of MAM"
 
 #: nutrition/utils.py:196
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of SAM children"
-msgstr "Number of births"
+msgstr "Number of SAM children"
 
 #: nutrition/utils.py:197
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of MAM children"
-msgstr "Number of births"
+msgstr "Number of MAM children"
 
 #: nutrition/utils.py:198
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of SGA births"
-msgstr "Number of births"
+msgstr "Number of SGA births"
 
 #: nutrition/utils.py:199
 msgctxt "plotting"
 msgid "Exclusive breastfeeding prevalence <6 months"
-msgstr ""
+msgstr "Exclusive breastfeeding prevalence <6 months"
 
 #: nutrition/utils.py:200
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of children <6 months"
-msgstr "Number of births"
+msgstr "Number of children <6 months"
 
 #: nutrition/utils.py:201
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of children 6-23 months"
-msgstr "Number of births"
+msgstr "Number of children 6-23 months"
 
 #: nutrition/utils.py:202
-#, fuzzy
 msgctxt "plotting"
 msgid "Number of children <5 years"
-msgstr "Number of births"
+msgstr "Number of children <5 years"
 
 #: nutrition/utils.py:203
 msgctxt "plotting"
 msgid "Economic cost of stunting"
-msgstr ""
+msgstr "Economic cost of stunting"
 
 #: nutrition/utils.py:204
 msgctxt "plotting"
 msgid "Economic cost of wasting"
-msgstr ""
+msgstr "Economic cost of wasting"
 
 #: nutrition/utils.py:205
-#, fuzzy
 msgctxt "plotting"
 msgid "Economic cost of child death"
-msgstr "Number of births"
+msgstr "Economic cost of child death"
 
 #: nutrition/utils.py:206
-#, fuzzy
 msgctxt "plotting"
 msgid "Economic cost of pregnant woman death"
-msgstr "Estimated pregnant women"
+msgstr "Economic cost of pregnant woman death"
 
 #: nutrition/utils.py:207
-#, fuzzy
 msgctxt "plotting"
 msgid "Economic cost of anaemic child"
-msgstr "Prevalence of anaemia"
+msgstr "Economic cost of anaemic child"
 
 #: nutrition/utils.py:208
-#, fuzzy
 msgctxt "plotting"
 msgid "Economic cost of anaemic pregnant woman"
-msgstr "Non-pregnant women"
+msgstr "Economic cost of anaemic pregnant woman"
 
 #: nutrition/utils.py:209
-#, fuzzy
 msgctxt "plotting"
 msgid "Pregnant women mortality rate"
-msgstr "Pregnant women"
+msgstr "Pregnant women mortality rate"
 
 #: nutrition/utils.py:210
-#, fuzzy
 msgctxt "plotting"
 msgid "Total population"
-msgstr "General population"
+msgstr "Total population"
 
 #: nutrition/utils.py:211
-#, fuzzy
 msgctxt "plotting"
 msgid "Population growth rate"
-msgstr "Population risk areas"
+msgstr "Population growth rate"
 
 #: nutrition/utils.py:224
 msgctxt "plotting"
@@ -1469,6 +1428,8 @@ msgid ""
 "Est. spending \n"
 " baseline year"
 msgstr ""
+"Est. spending \n"
+" baseline year"
 
 #: nutrition_app/rpcs.py:446
 msgid "Demo project"
