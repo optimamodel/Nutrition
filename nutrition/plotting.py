@@ -260,7 +260,9 @@ def plot_outputs_reduced(all_res, all_reduce, seq, name):
                     height = rect.get_height()
                     ax.text(rect.get_x() + rect.get_width() / 2.0, height, "{}%".format(change), ha="right", va="bottom", fontsize=10)
             # formatting
+
             title += " %s \n %s-%s" % (utils.relabel(outcome, lower=True), baseres.years[pltstart], baseres.years[-1])
+
             sc.SIticks(ax=ax, axis="y")
             ax.set_ylim([0, ymax * 1.1])
             if scale == 1:
