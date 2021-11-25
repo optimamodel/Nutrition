@@ -100,7 +100,7 @@ def pretty_labels(direction=False):
     return labs
 
 
-def relabel(old, direction=False):
+def relabel(old, direction=False, lower=False):
     """Can be given a string or a list of strings.
     Will return corresponding pretty label as a string or a list of strings"""
     pretty = pretty_labels(direction=direction)
@@ -112,11 +112,15 @@ def relabel(old, direction=False):
                 new.append(pretty[str(lab)])  # do not allow indexing
             except:
                 new.append(lab)
+            if lower:
+                new[-1] = new[-1][0].lower() + new[-1][1:]
     else:
         try:
             new = pretty[str(old)]  # do not allow indexing
         except:
             new = old
+        if lower:
+            new = new[0].lower() + new[1:]
     return new
 
 
